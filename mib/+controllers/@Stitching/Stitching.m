@@ -29,6 +29,14 @@ classdef Stitching < handle
         % N-by-3 double — solved tile origins [y x z]
         canvas
         % struct — output canvas plan (size, tilePlacement, etc.)
+        automaticOptions
+        % struct — feature-detector tuning (per-detector params, RANSAC,
+        % rotation invariance, downsampling) for the Feature-based method;
+        % same shape as controllers.Alignment.defaultAutomaticOptions
+        tileROIs
+        % array of images.roi.Rectangle — draggable tile handles in edit mode
+        roiListeners
+        % cell array of ROIMoved listener handles for tileROIs
     end
 
     events
@@ -87,10 +95,13 @@ classdef Stitching < handle
             obj.edges     = struct('i', {}, 'j', {}, 'direction', {}, 'nominal', {});
             obj.positions = [];
             obj.canvas    = [];
+            obj.tileROIs     = images.roi.Rectangle.empty;
+            obj.roiListeners = {};
+            obj.automaticOptions = obj.defaultFeatureOptions();
 
             % ---- BatchOpt defaults
             obj.BatchOpt.LayoutSource    = {'Grid'};
-            obj.BatchOpt.LayoutSource{2} = {'Grid', 'Position file', 'Filename pattern'};
+            obj.BatchOpt.LayoutSource{2} = {'Grid', 'Position file', 'Filename pattern', 'Bio-Formats metadata'};
 
             obj.BatchOpt.InputPath       = '';
             obj.BatchOpt.SubfolderMode   = false;
@@ -107,6 +118,20 @@ classdef Stitching < handle
 
             obj.BatchOpt.TransformType   = {'Translation'};
             obj.BatchOpt.TransformType{2} = {'Translation'};
+
+            obj.BatchOpt.RegistrationMethod    = {'Phase correlation'};
+            obj.BatchOpt.RegistrationMethod{2} = {'Phase correlation', 'Feature-based'};
+
+            obj.BatchOpt.FeatureDetectorType    = {'Blobs: Speeded-Up Robust Features (SURF) algorithm'};
+            obj.BatchOpt.FeatureDetectorType{2} = { ...
+                'Blobs: Speeded-Up Robust Features (SURF) algorithm', ...
+                'Blobs: Detect scale invariant feature transform (SIFT)', ...
+                'Regions: Maximally Stable Extremal Regions (MSER) algorithm', ...
+                'Corners: Harris-Stephens algorithm', ...
+                'Corners: Binary Robust Invariant Scalable Keypoints (BRISK)', ...
+                'Corners: Features from Accelerated Segment Test (FAST)', ...
+                'Corners: Minimum Eigenvalue algorithm', ...
+                'Oriented FAST and rotated BRIEF (ORB)'};
 
             obj.BatchOpt.QualityThreshold = {0.30, [0 1], 'off'};
             obj.BatchOpt.NominalPositionWeight = {0.10, [0 1], 'off'};
@@ -125,9 +150,9 @@ classdef Stitching < handle
             obj.BatchOpt.mibBatchSectionName = 'Ribbon -> Dataset';
             obj.BatchOpt.mibBatchActionName  = 'Stitch...';
 
-            obj.BatchOpt.mibBatchTooltip.LayoutSource    = 'Source of tile layout: Grid, Position file, or MIB2 filename pattern';
+            obj.BatchOpt.mibBatchTooltip.LayoutSource    = 'How tiles are arranged: Grid, Position file, MIB2 filename pattern, or embedded Bio-Formats stage coordinates';
             obj.BatchOpt.mibBatchTooltip.InputPath       = 'Path to the tile folder, position file, or folder of tile files';
-            obj.BatchOpt.mibBatchTooltip.SubfolderMode   = 'Treat each subfolder as a separate Z-stack tile (position-file mode)';
+            obj.BatchOpt.mibBatchTooltip.SubfolderMode   = 'Each tile is a folder of slice images (a Z-stack) instead of a single image file — works with any layout source';
             obj.BatchOpt.mibBatchTooltip.GridRows        = 'Number of grid rows (0 = auto from tile count)';
             obj.BatchOpt.mibBatchTooltip.GridCols        = 'Number of grid columns (0 = auto from tile count)';
             obj.BatchOpt.mibBatchTooltip.TileOrder       = 'Order tiles were acquired: Horizontal, Horizontal snake, Vertical, or Vertical snake';
@@ -135,6 +160,8 @@ classdef Stitching < handle
             obj.BatchOpt.mibBatchTooltip.OverlapY        = 'Vertical overlap between adjacent tiles in percent (0–90)';
             obj.BatchOpt.mibBatchTooltip.EstimateOverlap = 'Estimate the actual overlap from the images before measuring (grid layout); OverlapX/Y are then only a rough starting guess';
             obj.BatchOpt.mibBatchTooltip.TransformType   = 'Registration transform type (Translation only in Phase 1)';
+            obj.BatchOpt.mibBatchTooltip.RegistrationMethod = 'How pairwise overlaps are measured: Phase correlation (best for small overlaps with modest jitter) or Feature-based (best for large/unknown offsets, matches SURF features over the full tiles)';
+            obj.BatchOpt.mibBatchTooltip.FeatureDetectorType = '[Feature-based]: keypoint detector used to match tiles; configure its parameters + downsampling with the Settings button';
             obj.BatchOpt.mibBatchTooltip.QualityThreshold = 'Minimum normalized peak height to accept a pairwise shift measurement (0–1)';
             obj.BatchOpt.mibBatchTooltip.NominalPositionWeight = 'How strongly tiles with weak or failed registration are pulled back toward their nominal grid positions (0–1)';
             obj.BatchOpt.mibBatchTooltip.SubpixelPlacement = 'Use sub-pixel precision for tile placement (Phase 1: rounds to integer)';
@@ -180,6 +207,73 @@ classdef Stitching < handle
 
             obj.listener{1} = addlistener(obj.mibModel, 'UpdateGuiWidgets', @(src, evnt) obj.ViewListner_Callback2(obj, src, evnt));
             obj.listener{2} = addlistener(obj.mibModel, 'NewDataset', @(src, evnt) obj.ViewListner_Callback2(obj, src, evnt));
+        end
+
+        % ---------------------------------------------------------------
+        function options = defaultFeatureOptions(~)
+            % DEFAULTFEATUREOPTIONS - Default feature-detector tuning for the
+            % Feature-based registration method. Same shape as
+            % controllers.Alignment.defaultAutomaticOptions, tuned for stitching:
+            % full-resolution detection (factor 1) and a lower SURF threshold
+            % (more blobs in thin overlaps).
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      options = obj.defaultFeatureOptions()
+            %
+            options.imgDownsamplingFactorForAnalysis = 1;   % full resolution for stitch precision
+            options.rotationInvariance = true;
+            options.featureMinInliers  = 8;
+            options.detectSURFFeatures = struct('MetricThreshold', 500, 'NumOctaves', 3, 'NumScaleLevels', 4);
+            options.detectSIFTFeatures = struct('ContrastThreshold', 0.0133, 'EdgeThreshold', 10, ...
+                'NumLayersInOctave', 3, 'Sigma', 1.6);
+            options.detectMSERFeatures = struct('ThresholdDelta', 2, 'RegionAreaRange', [30 14000], 'MaxAreaVariation', 0.25);
+            options.detectHarrisFeatures   = struct('MinQuality', 0.01, 'FilterSize', 5);
+            options.detectBRISKFeatures    = struct('MinContrast', 0.2, 'MinQuality', 0.1, 'NumOctaves', 4);
+            options.detectFASTFeatures     = struct('MinQuality', 0.1, 'MinContrast', 0.1);
+            options.detectMinEigenFeatures = struct('MinQuality', 0.01, 'FilterSize', 5);
+            options.detectORBFeatures      = struct('ScaleFactor', 1.2, 'NumLevels', 8);
+            options.estGeomTransform = struct('MaxNumTrials', 1000, 'Confidence', 99, 'MaxDistance', 1.5);
+        end
+
+        % ---------------------------------------------------------------
+        function featureOptions = buildFeatureOptions(obj)
+            % BUILDFEATUREOPTIONS - Assemble the options struct for
+            % utils.stitch.featureShift from the current detector selection and
+            % automaticOptions (used when RegistrationMethod = Feature-based).
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      featureOptions = obj.buildFeatureOptions()
+            %
+            featureOptions = obj.automaticOptions;
+            featureOptions.featureDetector = obj.BatchOpt.FeatureDetectorType{1};
+            featureOptions.downsampleFactor = obj.automaticOptions.imgDownsamplingFactorForAnalysis;
+        end
+
+        % ---------------------------------------------------------------
+        function refreshInputPathWidget(obj)
+            % REFRESHINPUTPATHWIDGET - Show BatchOpt.InputPath in the InputPath
+            % widget, handling either a uieditfield (single newline-joined string)
+            % or a uilistbox (one item per path — better for multi-folder input).
+            % BatchOpt.InputPath stays the newline-joined string in both cases, so
+            % batch mode is unaffected.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.refreshInputPathWidget()
+            %
+            widget = obj.view.handles.InputPath;
+            if isprop(widget, 'Items')      % uilistbox: one path per row
+                entries = strtrim(strsplit(obj.BatchOpt.InputPath, newline));
+                entries = entries(~cellfun(@isempty, entries));
+                widget.Items = entries;
+            else                            % uieditfield: single string
+                widget.Value = obj.BatchOpt.InputPath;
+            end
         end
 
     end % methods

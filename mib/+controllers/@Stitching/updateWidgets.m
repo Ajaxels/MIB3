@@ -12,11 +12,18 @@ handles = obj.view.handles;
 % ---- Input group ----
 handles.LayoutSource.Items  = obj.BatchOpt.LayoutSource{2};
 handles.LayoutSource.Value  = obj.BatchOpt.LayoutSource{1};
-handles.InputPath.Value     = obj.BatchOpt.InputPath;
+obj.refreshInputPathWidget();   % uieditfield (string) or uilistbox (per-path items)
 handles.SubfolderMode.Value = obj.BatchOpt.SubfolderMode;
+% SubfolderMode (tiles are folder Z-stacks) drives folder collection for Grid /
+% Filename pattern only; a position file names folders directly and Bio-Formats
+% reads whole series, so it is n/a for those two sources.
+handles.SubfolderMode.Enable = ismember(obj.BatchOpt.LayoutSource{1}, {'Grid', 'Filename pattern'});
 
-% ---- Grid group (enable only when layout source is Grid) ----
+% ---- Grid group ----
+% Rows/Cols/TileOrder apply only to the Grid source; Overlap X/Y + Estimate
+% overlap also apply to the Filename pattern source (both carry grid indices).
 isGrid = strcmp(obj.BatchOpt.LayoutSource{1}, 'Grid');
+usesOverlap = ismember(obj.BatchOpt.LayoutSource{1}, {'Grid', 'Filename pattern'});
 handles.GridRows.Value   = obj.BatchOpt.GridRows{1};
 handles.GridRows.Limits  = obj.BatchOpt.GridRows{2};
 handles.GridRows.Enable  = isGrid;
@@ -28,7 +35,7 @@ handles.TileOrder.Value  = obj.BatchOpt.TileOrder{1};
 handles.TileOrder.Enable = isGrid;
 % With overlap estimation enabled the spinners are read-only displays of the
 % estimated value — the estimator does not use the entered overlap at all.
-overlapEditable = isGrid && ~obj.BatchOpt.EstimateOverlap;
+overlapEditable = usesOverlap && ~obj.BatchOpt.EstimateOverlap;
 handles.OverlapX.Value   = obj.BatchOpt.OverlapX{1};
 handles.OverlapX.Limits  = obj.BatchOpt.OverlapX{2};
 handles.OverlapX.Enable  = overlapEditable;
@@ -37,12 +44,27 @@ handles.OverlapY.Limits  = obj.BatchOpt.OverlapY{2};
 handles.OverlapY.Enable  = overlapEditable;
 if isfield(handles, 'EstimateOverlap')   % widget may not exist in the mlapp yet
     handles.EstimateOverlap.Value  = obj.BatchOpt.EstimateOverlap;
-    handles.EstimateOverlap.Enable = isGrid;
+    handles.EstimateOverlap.Enable = usesOverlap;
 end
 
 % ---- Registration group ----
 handles.TransformType.Items     = obj.BatchOpt.TransformType{2};
 handles.TransformType.Value     = obj.BatchOpt.TransformType{1};
+if isfield(handles, 'RegistrationMethod')   % widget may not exist in the mlapp yet
+    handles.RegistrationMethod.Items = obj.BatchOpt.RegistrationMethod{2};
+    handles.RegistrationMethod.Value = obj.BatchOpt.RegistrationMethod{1};
+end
+% Feature-detector selector + Settings button are only meaningful for the
+% Feature-based method; disable them for Phase correlation.
+isFeatureBased = strcmp(obj.BatchOpt.RegistrationMethod{1}, 'Feature-based');
+if isfield(handles, 'FeatureDetectorType')   % widget may not exist in the mlapp yet
+    handles.FeatureDetectorType.Items  = obj.BatchOpt.FeatureDetectorType{2};
+    handles.FeatureDetectorType.Value  = obj.BatchOpt.FeatureDetectorType{1};
+    handles.FeatureDetectorType.Enable = isFeatureBased;
+end
+if isfield(handles, 'configureFeaturesBtn')   % widget may not exist in the mlapp yet
+    handles.configureFeaturesBtn.Enable = isFeatureBased;
+end
 handles.QualityThreshold.Value  = obj.BatchOpt.QualityThreshold{1};
 handles.QualityThreshold.Limits = obj.BatchOpt.QualityThreshold{2};
 handles.NominalPositionWeight.Value  = obj.BatchOpt.NominalPositionWeight{1};
@@ -67,6 +89,15 @@ numTiles = numel(obj.layout);
 numEdges = numel(obj.edges);
 handles.statusLabel.Text = sprintf('%d tiles | %d edges measured | solved: %s', ...
     numTiles, numEdges, ternary(~isempty(obj.positions), 'yes', 'no'));
+
+% Reset the alignment-quality chip to neutral until a solve fills it in
+% (optimizePositions_Callback sets the colour/text after solving).
+if isfield(handles, 'rmseLabel') && isempty(obj.positions)
+    handles.rmseLabel.Text = 'Alignment: —';
+    handles.rmseLabel.BackgroundColor = 'none';
+    handles.rmseLabel.FontColor = [0 0 0];
+    handles.rmseLabel.Tooltip = '';
+end
 
 end
 

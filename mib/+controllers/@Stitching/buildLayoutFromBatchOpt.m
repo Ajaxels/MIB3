@@ -19,28 +19,23 @@ if isempty(inputPath)
     error('Stitching:noInputPath', 'InputPath is empty — select a tile folder or position file first');
 end
 
-if strcmp(layoutSource, 'Position file')
+if strcmp(layoutSource, 'Bio-Formats metadata')
+    % One multi-series file (series = tiles) or several single-tile files, each
+    % carrying its own OME stage coordinates. buildLayoutBioFormats resolves a
+    % newline-joined list / single file / folder and reads the positions.
+    obj.layout = utils.stitch.buildLayoutBioFormats(inputPath);
+elseif strcmp(layoutSource, 'Position file')
+    % The position file's filename column may point at images or (when the
+    % tiles are folders) at folder Z-stacks — buildLayoutPositionFile auto-
+    % detects each entry, so SubfolderMode needs no special handling here.
     if ~isfile(inputPath)
         error('Stitching:badInputPath', 'Position file not found: %s', inputPath);
     end
-    posOptions.subfolderMode = obj.BatchOpt.SubfolderMode;
-    obj.layout = utils.stitch.buildLayoutPositionFile(inputPath, posOptions);
+    obj.layout = utils.stitch.buildLayoutPositionFile(inputPath);
 else
-    % Grid or Filename pattern — collect image files from the folder
-    if ~isfolder(inputPath)
-        error('Stitching:badInputPath', 'Tile folder not found: %s', inputPath);
-    end
-    imageExtensions = {'*.tif', '*.tiff', '*.png', '*.jpg', '*.jpeg', '*.bmp'};
-    tileFiles = {};
-    for extIdx = 1:numel(imageExtensions)
-        foundFiles = dir(fullfile(inputPath, imageExtensions{extIdx}));
-        if ~isempty(foundFiles)
-            tileFiles = [tileFiles, fullfile(inputPath, {foundFiles.name})]; %#ok<AGROW>
-        end
-    end
-    if isempty(tileFiles)
-        error('Stitching:noTiles', 'No image files found in %s', inputPath);
-    end
+    % Grid or Filename pattern. Collect the tile ENTRIES — image files, or
+    % folder Z-stacks when SubfolderMode is on (buildLayout* auto-detect folders).
+    tileEntries = collectTileEntries(inputPath, obj.BatchOpt.SubfolderMode);
 
     if strcmp(layoutSource, 'Grid')
         gridOpts.rows       = obj.BatchOpt.GridRows{1};
@@ -48,10 +43,13 @@ else
         gridOpts.tileOrder  = obj.BatchOpt.TileOrder{1};
         gridOpts.overlapX   = obj.BatchOpt.OverlapX{1};
         gridOpts.overlapY   = obj.BatchOpt.OverlapY{1};
-        obj.layout = utils.stitch.buildLayoutGrid(tileFiles, gridOpts);
+        obj.layout = utils.stitch.buildLayoutGrid(tileEntries, gridOpts);
     else
-        % Filename pattern
-        obj.layout = utils.stitch.buildLayoutFilenamePattern(tileFiles);
+        % Filename pattern — grid indices from the _Z##-X##-Y## tokens, with the
+        % same Overlap X/Y as the Grid source (0 = abutting reassembly).
+        patternOpts.overlapX = obj.BatchOpt.OverlapX{1};
+        patternOpts.overlapY = obj.BatchOpt.OverlapY{1};
+        obj.layout = utils.stitch.buildLayoutFilenamePattern(tileEntries, patternOpts);
     end
 end
 
@@ -60,4 +58,47 @@ obj.edges     = [];
 obj.positions = [];
 obj.canvas    = [];
 
+end
+
+% =========================================================================
+function tileEntries = collectTileEntries(inputPath, tilesAreFolders)
+% COLLECTTILEENTRIES - List the tile source paths for a Grid / Filename-pattern
+% layout. tilesAreFolders (SubfolderMode) selects folder Z-stacks over images:
+%   folders ON  — InputPath is a newline-joined folder list (GUI multi-select),
+%                 or a single parent folder whose subfolders are the tiles (batch).
+%   folders OFF — InputPath is one folder; its image files are the tiles.
+if tilesAreFolders
+    tileEntries = strtrim(strsplit(inputPath, newline));
+    tileEntries = tileEntries(~cellfun(@isempty, tileEntries));
+    if isscalar(tileEntries) && isfolder(tileEntries{1})
+        parentFolder = tileEntries{1};
+        subDirs = dir(parentFolder);
+        subDirs = subDirs([subDirs.isdir] & ~ismember({subDirs.name}, {'.', '..'}));
+        if isempty(subDirs)
+            error('Stitching:noTileFolders', 'No tile subfolders found in %s', parentFolder);
+        end
+        tileEntries = fullfile(parentFolder, {subDirs.name});
+    else
+        missing = tileEntries(~cellfun(@isfolder, tileEntries));
+        if ~isempty(missing)
+            error('Stitching:badTileFolder', 'Tile folder not found: %s', missing{1});
+        end
+    end
+    return;
+end
+
+if ~isfolder(inputPath)
+    error('Stitching:badInputPath', 'Tile folder not found: %s', inputPath);
+end
+imageExtensions = {'*.tif', '*.tiff', '*.png', '*.jpg', '*.jpeg', '*.bmp'};
+tileEntries = {};
+for extIdx = 1:numel(imageExtensions)
+    foundFiles = dir(fullfile(inputPath, imageExtensions{extIdx}));
+    if ~isempty(foundFiles)
+        tileEntries = [tileEntries, fullfile(inputPath, {foundFiles.name})]; %#ok<AGROW>
+    end
+end
+if isempty(tileEntries)
+    error('Stitching:noTiles', 'No image files found in %s', inputPath);
+end
 end

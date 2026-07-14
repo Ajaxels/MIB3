@@ -12,6 +12,11 @@ pattern), the tool measures the true overlap between neighboring tiles using pha
 correlation, finds a globally consistent position for every tile, and fuses the tiles
 into a new dataset.
 
+Both 2D tile collections and 3D tiles (Z-stacks) are supported: for 3D data the tool
+performs a single global optimization that jointly minimizes the within-layer (XY) and
+between-layer (Z) constraints, rather than stitching each layer in 2D and aligning the
+layers afterwards.
+
 Small mosaics are assembled directly in memory; mosaics that exceed available memory can
 be streamed to an OME-Zarr file and opened in MIB as a BigData dataset.
 
@@ -32,6 +37,14 @@ automatically.
    computation: wrong settings show up as an incorrect numbering sequence or as gaps
    between rectangles.
 
+    Tick <label class="widget widget-checkbox">Edit layout (drag tiles)</label> to switch the
+    preview into **interactive placement** mode: each tile becomes a draggable rectangle (its size
+    is fixed — only the position moves). Drag tiles to a better rough arrangement when there is no
+    grid/position file to start from, or to fix a badly-placed tile. Each move updates that tile's
+    nominal position and clears any previous measurement, so the next
+    <span class="widget widget-button">Measure overlaps</span> / <span class="widget widget-button">Optimize positions</span>
+    run starts from the corrected layout. Untick to return to the static view.
+
 2. <span class="widget widget-button">Measure overlaps</span> — for every pair of
    neighboring tiles, the expected overlap region is cut from both tiles and their
    *actual* relative displacement is measured with FFT phase correlation. Each
@@ -46,8 +59,12 @@ automatically.
    accumulates drift), the tool solves one global least-squares problem over the whole
    tile graph: every valid measurement is an equation weighted by its quality, and all
    positions are found at once. Tiles whose measurements were rejected are held near
-   their nominal grid positions. The remaining disagreement is reported as **RMSE** —
-   sub-pixel values indicate mutually consistent measurements.
+   their nominal grid positions. The result is summarised by a colour-coded quality
+   rating — **Excellent** (green) / **Good** / **Fair** / **Poor** (red) — based on how
+   much the pairwise measurements still disagree at the solved positions (the residual
+   RMSE in pixels, shown in the chip and its tooltip). Excellent/Good means a clean,
+   consistent solve; Fair/Poor points to a bad overlap setting, a wrong tile order, or
+   feature-poor overlaps.
 
 4. <span class="widget widget-button">Stitch</span> — fuses the tile pixels into the
    output mosaic at the optimized positions, blending the overlap regions according to
@@ -57,21 +74,39 @@ automatically.
 
 ## Input panel
 
-- <span class="widget widget-dropdown">Layout source</span>: how the initial (rough) tile placement is defined
+- <span class="widget widget-dropdown">Layout source</span>: how the tiles are arranged
     - **Grid**: tiles form a regular grid; specify rows, columns, acquisition order, and overlap in the Grid panel.
     - **Position file**: a text file with one line per tile: `filename X Y` or `filename X Y Z`
-      (space-, tab-, or comma-separated). Tiles with different Z values are placed on separate layers.
-    - **Filename pattern**: tile positions are parsed from `_Z##-X##-Y##` tokens in the filenames
-      (the pattern produced by the MIB dataset chunking tool).
-- <span class="widget widget-edit">Input path</span>: the tile folder (Grid, Filename pattern) or the position file. Use the <span class="widget widget-button">...</span> button to browse, or type/paste the path directly.
-- <label class="widget widget-checkbox">Subfolder mode</label>: each subfolder holds one tile as a Z-stack (position-file mode).
+      (space-, tab-, or comma-separated). The optional Z column places tiles on distinct layers;
+      layers that overlap in Z are refined by the same global solve as the XY overlaps.
+    - **Filename pattern**: grid indices are parsed from `_Z##-X##-Y##` tokens in the file (or, for
+      folder tiles, the **folder**) names — the pattern produced by the MIB dataset chunking tool.
+      Tiles default to abutting (0% overlap, exact reassembly of chunks); set **Overlap X/Y** (or tick
+      **Estimate overlap**) when the pattern-named tiles come from an overlapping acquisition and the
+      tool will register them like the Grid source.
+    - **Bio-Formats metadata**: tile positions are read from the **stage coordinates embedded in the
+      image metadata** (OME `Plane PositionX/Y/Z`) — no manual arrangement needed. Point it at one
+      multi-series file (each series is a tile) or at several single-tile files; the microscope's
+      recorded positions become the nominal layout, converted from micrometres to pixels via the
+      stored pixel size. Distinct stage-Z values are placed on separate layers and jointly solved.
+- <label class="widget widget-checkbox">Tiles are folders (Z-stacks)</label>: each tile is a **folder of
+  slice images** (a Z-stack) rather than a single image file. This is orthogonal to the layout source —
+  it changes only how each tile is *provided*, not how tiles are *arranged*:
+    - With **Grid** or **Filename pattern**, the <span class="widget widget-button">...</span> button
+      multi-selects the tile folders (each a Z-stack). Ideal for 3D acquisitions where every XY tile was
+      captured as a folder of slice images.
+    - With a **Position file**, simply list folder paths in the `filename` column — folders are detected
+      automatically, so this checkbox is not needed (and is disabled) for that source. It is likewise
+      disabled for **Bio-Formats metadata**, where each series/file already carries its own stack.
+- <span class="widget widget-edit">Input path</span>: the tile folder (Grid, Filename pattern), the selected tile folders (when *Tiles are folders* is on), the position file, or the selected Bio-Formats file(s). Use the <span class="widget widget-button">...</span> button to browse, or type/paste the path directly.
 
 ---
 
 ## Grid panel
 
-Active when *Layout source* is **Grid**. Any change here immediately rebuilds the layout
-and refreshes the preview.
+Rows / Cols / Tile order apply to the **Grid** source. Overlap X/Y and *Estimate overlap* apply to
+both the **Grid** and **Filename pattern** sources (both derive tile grid indices). Any change here
+immediately rebuilds the layout and refreshes the preview.
 
 - <span class="widget widget-edit">Rows</span> / <span class="widget widget-edit">Cols</span>: grid dimensions; `0` derives the value automatically from the number of tiles.
 - <span class="widget widget-dropdown">Tile order</span>: the order in which the tiles were acquired, which defines how the natural-sorted filenames map onto grid cells
@@ -100,6 +135,30 @@ and refreshes the preview.
 ## Registration panel
 
 - <span class="widget widget-dropdown">Transform type</span>: **Translation** (rigid and affine planned for later versions).
+- <span class="widget widget-dropdown">Registration method</span>: how each pairwise overlap is measured
+    - **Phase correlation** (*default*): FFT phase correlation on the overlap strip. Best for the
+      normal case — small-to-moderate overlaps with modest positioning jitter — and robust on
+      low-contrast, feature-poor content where feature detectors find nothing.
+    - **Feature-based**: detects and matches keypoints over the **whole tiles** and RANSAC-fits
+      a translation. Use it when the initial positions are badly wrong or unknown (large jitter,
+      arbitrary layouts) — cases where the phase-correlation search, which only looks near the
+      nominal position, misses the true offset. Its weakness is feature-poor or strongly repetitive
+      content, where too few reliable matches survive; there phase correlation still wins.
+- <span class="widget widget-dropdown">Feature detector</span> *(Feature-based only)*: the keypoint
+  detector — the same eight choices as the [Alignment](dataset-alignment.md) tool
+  (SURF, SIFT, MSER, Harris, BRISK, FAST, Minimum Eigenvalue, ORB). SURF is a good default for
+  microscopy blobs.
+- <span class="widget widget-button">Settings…</span> *(Feature-based only)*: opens a dialog to tune
+  the selected detector's parameters, the **rotation-invariance** flag, the detection **downsampling
+  factor** (1 = full resolution; higher is faster but less precise on big tiles), and the RANSAC
+  (`estgeotform2d`) trials / confidence / max-distance — identical to the Alignment tool's feature
+  settings.
+
+!!! tip
+    Keep **Phase correlation** for tidy grid/position-file acquisitions. Switch to **Feature-based**
+    when the alignment quality comes out *Poor* with large residuals and you suspect the tiles are
+    far from their nominal positions.
+
 - <span class="widget widget-edit">Quality threshold</span>: minimum quality score (0–1, default 0.30) to accept a pairwise measurement.
   Increase it when wrong matches slip through (e.g. repetitive patterns); decrease it for low-contrast data where valid overlaps score low.
 - <span class="widget widget-edit">Nominal position weight</span>: how strongly tiles with weak or rejected

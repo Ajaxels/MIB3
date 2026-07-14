@@ -118,8 +118,15 @@ readerFcn = @readTile;
                 fullTile(:, :, sliceIdx, :) = oneSlice(:, :, 1, :, 1);
             end
         else
-            raw = io.loadImagesWrapper(entry.filename, loadOptions);   % [H W D C T]
-            fullTile = raw(:, :, :, :, 1);                             % first time point
+            tileLoadOptions = loadOptions;
+            % Bio-Formats tiles (from buildLayoutBioFormats) carry a series index;
+            % force the Bio-Formats reader and select that series.
+            if isfield(entry, 'seriesIndex') && ~isempty(entry.seriesIndex)
+                tileLoadOptions.BioFormatsIndices  = entry.seriesIndex;
+                tileLoadOptions.mibBioformatsCheck = true;
+            end
+            raw = io.loadImagesWrapper(entry.filename, tileLoadOptions);   % [H W D C T]
+            fullTile = raw(:, :, :, :, 1);                                 % first time point
         end
     end
 
@@ -147,6 +154,9 @@ readerFcn = @readTile;
         img = [];
         entry = layout(tileIndex);
         if isfield(entry, 'sliceFiles') && ~isempty(entry.sliceFiles); return; end
+        % Bio-Formats series tiles cannot be sub-region-read via imread (which
+        % only sees the first IFD) — fall through to the full Bio-Formats load.
+        if isfield(entry, 'seriesIndex') && ~isempty(entry.seriesIndex); return; end
         [~, ~, ext] = fileparts(entry.filename);
         ext = lower(ext);
         if ~ismember(ext, {'.tif', '.tiff', '.png'}); return; end

@@ -36,9 +36,13 @@ try
             obj.runOverlapEstimation();
         end
         nominalPairs = utils.stitch.findNeighborPairs(obj.layout, struct('minOverlapPx', 16));
-        measureOptions.qualityThreshold = obj.BatchOpt.QualityThreshold{1};
-        measureOptions.subpixel         = obj.BatchOpt.SubpixelPlacement;
-        measureOptions.showWaitbar      = obj.BatchOpt.showWaitbar && ~batchModeSwitch;
+        measureOptions.qualityThreshold   = obj.BatchOpt.QualityThreshold{1};
+        measureOptions.subpixel           = obj.BatchOpt.SubpixelPlacement;
+        measureOptions.registrationMethod = obj.BatchOpt.RegistrationMethod{1};
+        if strcmp(obj.BatchOpt.RegistrationMethod{1}, 'Feature-based')
+            measureOptions.featureOptions = obj.buildFeatureOptions();
+        end
+        measureOptions.showWaitbar        = obj.BatchOpt.showWaitbar && ~batchModeSwitch;
         if measureOptions.showWaitbar && ~isempty(obj.view)
             measureOptions.parentFigure = obj.view.gui;
         else
@@ -159,17 +163,7 @@ end
 % Save sidecar project
 if obj.BatchOpt.SaveProject
     try
-        if ~isempty(obj.BatchOpt.InputPath)
-            [projectFolder, projectBase, ~] = fileparts(obj.BatchOpt.InputPath);
-            if isfolder(obj.BatchOpt.InputPath)
-                projectFolder = obj.BatchOpt.InputPath;
-                projectBase   = 'stitch_project';
-            end
-        else
-            projectFolder = pwd;
-            projectBase   = 'stitch_project';
-        end
-        projectPath = fullfile(projectFolder, [projectBase, '.mibstitch.json']);
+        projectPath = resolveProjectPath(obj.BatchOpt.InputPath);
 
         outputInfo.outputMode = outputMode;
         outputInfo.blendMode  = blendMode;
@@ -191,4 +185,41 @@ end
 obj.returnBatchOpt(obj.BatchOpt);
 notify(obj.mibModel, 'ShowImage');
 
+end
+
+% =========================================================================
+function projectPath = resolveProjectPath(inputPath)
+% RESOLVEPROJECTPATH - Pick a valid sidecar path from InputPath, which may be a
+% single folder / file, a position/Bio-Formats file, OR a newline-joined list of
+% tile folders (multi-select). fileparts on the whole multi-line string yields a
+% bogus folder, so pick the first EXISTING entry and derive the folder from it.
+projectBase = 'stitch_project';
+
+entries = {};
+if ~isempty(inputPath)
+    entries = strtrim(strsplit(inputPath, newline));
+    entries = entries(~cellfun(@isempty, entries));
+end
+
+firstExisting = '';
+for entryIdx = 1:numel(entries)
+    if isfile(entries{entryIdx}) || isfolder(entries{entryIdx})
+        firstExisting = entries{entryIdx};
+        break;
+    end
+end
+
+if isempty(firstExisting)
+    projectFolder = pwd;
+elseif isfolder(firstExisting)
+    if isscalar(entries)
+        projectFolder = firstExisting;                 % single tile folder → inside it
+    else
+        projectFolder = fileparts(firstExisting);      % multi-folder → common parent
+    end
+else                                                   % a file (position/Bio-Formats)
+    [projectFolder, projectBase, ~] = fileparts(firstExisting);
+end
+
+projectPath = fullfile(projectFolder, [projectBase, '.mibstitch.json']);
 end

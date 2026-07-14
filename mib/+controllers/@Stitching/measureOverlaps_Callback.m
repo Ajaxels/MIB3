@@ -49,10 +49,14 @@ if isempty(nominalPairs)
 end
 
 % Measure all pairs
-measureOptions.qualityThreshold = obj.BatchOpt.QualityThreshold{1};
-measureOptions.subpixel         = obj.BatchOpt.SubpixelPlacement;
-measureOptions.showWaitbar      = obj.BatchOpt.showWaitbar;
-measureOptions.parentFigure     = obj.view.gui;
+measureOptions.qualityThreshold   = obj.BatchOpt.QualityThreshold{1};
+measureOptions.subpixel           = obj.BatchOpt.SubpixelPlacement;
+measureOptions.registrationMethod = obj.BatchOpt.RegistrationMethod{1};
+if strcmp(obj.BatchOpt.RegistrationMethod{1}, 'Feature-based')
+    measureOptions.featureOptions = obj.buildFeatureOptions();
+end
+measureOptions.showWaitbar        = obj.BatchOpt.showWaitbar;
+measureOptions.parentFigure       = obj.view.gui;
 
 try
     obj.edges = utils.stitch.measureAllPairs(obj.layout, nominalPairs, measureOptions);

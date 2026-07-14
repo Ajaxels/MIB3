@@ -43,12 +43,44 @@ catch canvasError
     return;
 end
 
-% Display RMSE in status label
-if isfield(solverInfo, 'rmseTotal')
-    obj.view.handles.rmseLabel.Text = sprintf('RMSE: %.2f px (%d edges pruned)', ...
-        solverInfo.rmseTotal, solverInfo.nPruned);
-end
-
 obj.updateWidgets();
 
+% Colour-coded alignment quality: translate the raw RMSE (in pixels — the mean
+% disagreement between the pairwise measurements at the solved positions) into a
+% plain-language rating on a green→red scale that a non-specialist can read at a
+% glance. The exact px value stays in the text and the tooltip for those who want it.
+if isfield(solverInfo, 'rmseTotal')
+    [ratingText, ratingColor] = qualityRating(solverInfo.rmseTotal);
+    rmseLabel = obj.view.handles.rmseLabel;
+    if solverInfo.nPruned > 0
+        rmseLabel.Text = sprintf('  %s  (%.2f px, %d weak edge(s) dropped)  ', ...
+            ratingText, solverInfo.rmseTotal, solverInfo.nPruned);
+    else
+        rmseLabel.Text = sprintf('  %s  (%.2f px)  ', ratingText, solverInfo.rmseTotal);
+    end
+    rmseLabel.BackgroundColor = ratingColor;
+    rmseLabel.FontColor = [1 1 1];
+    rmseLabel.Tooltip = sprintf(['Alignment residual: %.2f px root-mean-square.\n' ...
+        'How much the pairwise overlap measurements disagree at the solved positions.\n' ...
+        '< 1 px excellent · 1–3 good · 3–10 fair · > 10 poor.'], solverInfo.rmseTotal);
+end
+
+end
+
+% =========================================================================
+function [ratingText, ratingColor] = qualityRating(rmse)
+% QUALITYRATING - Map an RMSE (px) to a plain-language rating + green→red colour.
+if rmse <= 1
+    ratingText  = 'Excellent alignment';
+    ratingColor = [0.20 0.60 0.30];   % green
+elseif rmse <= 3
+    ratingText  = 'Good alignment';
+    ratingColor = [0.45 0.60 0.15];   % olive-green
+elseif rmse <= 10
+    ratingText  = 'Fair alignment';
+    ratingColor = [0.85 0.50 0.05];   % orange
+else
+    ratingText  = 'Poor alignment';
+    ratingColor = [0.75 0.20 0.20];   % red
+end
 end

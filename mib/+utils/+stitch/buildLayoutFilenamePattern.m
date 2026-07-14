@@ -1,37 +1,53 @@
-function layout = buildLayoutFilenamePattern(filenames)
+function layout = buildLayoutFilenamePattern(filenames, options)
 % BUILDLAYOUTFILENAMEPATTERN - Build a tile layout from MIB2 chop filename tokens.
 %
 % Syntax:
 %   .. code-block:: matlab
 %
 %      layout = utils.stitch.buildLayoutFilenamePattern(filenames)
+%      layout = utils.stitch.buildLayoutFilenamePattern(filenames, options)
 %
 % Parses the ``_Z##-X##-Y##`` token embedded in each tile filename
 % (the format produced by MIB2's rechop tool).  The last occurrence of
 % each letter token in the base filename is used, e.g.:
 %   ``myStack_Z01-X02-Y03.tif``  → Z=1, X=2, Y=3
 %
-% Tiles abut (0% overlap): nominal origins are computed from cumulative
-% tile sizes (each tile is assumed the same size as the first tile).
-% Origins are 1-based pixels.
+% Each entry may name a single image file OR a FOLDER holding the tile's
+% Z-stack (auto-detected per entry by :func:`utils.stitch.resolveTileEntry`) —
+% for folder tiles the ``_Z##-X##-Y##`` tokens live in the FOLDER name.
+%
+% Nominal origins are computed from the grid indices and the (uniform) tile size,
+% with an optional XY overlap (default 0% = abutting chunks, the MIB2-rechop
+% reassembly case). With a non-zero overlap the step shrinks like the Grid
+% source, so pattern-named tiles from an overlapping acquisition get honest
+% nominal positions that the measurement pass can then refine. Z layers always
+% abut (no Z-overlap control). Origins are 1-based pixels.
 %
 % Input Arguments:
 %   - **filenames** — [cell] cell array of full-path character vectors
+%   - **options** *(optional)* — struct with fields:
+%
+%     - ``.overlapX`` — [double] horizontal overlap in percent (default: ``0``)
+%     - ``.overlapY`` — [double] vertical overlap in percent (default: ``0``)
 %
 % Output Arguments:
 %   - **layout** — struct array per contract (see ``buildLayoutGrid`` for field list)
 %
-% **Example** — parse a set of MIB2-chopped tiles:
+% **Example** — parse a set of MIB2-chopped tiles with 12% overlap:
 %
 %   .. code-block:: matlab
 %
 %      files = dir('C:\data\chop\*.tif');
-%      layout = utils.stitch.buildLayoutFilenamePattern(fullfile({files.folder}, {files.name}));
+%      layout = utils.stitch.buildLayoutFilenamePattern( ...
+%          fullfile({files.folder}, {files.name}), struct('overlapX', 12, 'overlapY', 12));
 %
 
 arguments
     filenames cell
+    options struct = struct()
 end
+if ~isfield(options, 'overlapX'); options.overlapX = 0; end
+if ~isfield(options, 'overlapY'); options.overlapY = 0; end
 
 if isempty(filenames)
     layout = struct('index', {}, 'filename', {}, 'sliceFiles', {}, 'zLayer', {}, ...
@@ -77,14 +93,13 @@ numTilesZ = max(zNumber);
 numTilesY = max(yNumber);
 numTilesX = max(xNumber);
 
-% Read first tile dimensions
-[tileHeight, tileWidth, tileDepth, tileColors, tileClass] = readTileSize(filenames{1});
-tileSize = [tileHeight, tileWidth, tileDepth, tileColors];
-
-% Abutting placement (0% overlap)
-stepX = tileWidth;
-stepY = tileHeight;
-stepZ = tileDepth;
+% Resolve every entry (single image file or folder Z-stack) and use the first
+% tile's size for the abutting-grid step. Each entry may be a folder tile.
+[firstSliceFiles, firstSize, ~] = utils.stitch.resolveTileEntry(filenames{1});  %#ok<ASGLU>
+% XY step shrinks by the overlap (like buildLayoutGrid); Z always abuts.
+stepX = firstSize(2) * (1 - options.overlapX / 100);
+stepY = firstSize(1) * (1 - options.overlapY / 100);
+stepZ = firstSize(3);
 
 layout = repmat(emptyLayout(), 1, numFiles);
 for fileIdx = 1:numFiles
@@ -96,9 +111,11 @@ for fileIdx = 1:numFiles
     originX = (xIdx - 1) * stepX + 1;
     originZ = (zIdx - 1) * stepZ + 1;
 
+    [sliceFiles, tileSize, tileClass] = utils.stitch.resolveTileEntry(filenames{fileIdx});
+
     layout(fileIdx).index      = fileIdx;
     layout(fileIdx).filename   = filenames{fileIdx};
-    layout(fileIdx).sliceFiles = {};
+    layout(fileIdx).sliceFiles = sliceFiles;
     layout(fileIdx).zLayer     = zIdx;
     layout(fileIdx).gridRC     = [yIdx, xIdx];
     layout(fileIdx).nomOrigin  = [originY, originX, originZ];
@@ -117,62 +134,4 @@ end
 function singleLayout = emptyLayout()
 singleLayout = struct('index', {}, 'filename', {}, 'sliceFiles', {}, 'zLayer', {}, ...
     'gridRC', {}, 'nomOrigin', {}, 'tileSize', {}, 'dataClass', {});
-end
-
-% =========================================================================
-function [tileHeight, tileWidth, tileDepth, tileColors, tileClass] = readTileSize(filename)
-% Read tile dimensions; fast path for common image formats.
-
-[~, ~, extension] = fileparts(filename);
-extension = lower(extension);
-
-tileDepth  = 1;
-tileColors = 1;
-tileClass  = 'uint8';
-tileHeight = 256;
-tileWidth  = 256;
-
-if ismember(extension, {'.tif', '.tiff', '.png', '.jpg', '.jpeg', '.bmp'})
-    try
-        info = imfinfo(filename);
-        tileHeight = info(1).Height;
-        tileWidth  = info(1).Width;
-        tileDepth  = numel(info);
-        if isfield(info(1), 'SamplesPerPixel')
-            tileColors = info(1).SamplesPerPixel;
-        end
-        if isfield(info(1), 'BitDepth')
-            bitDepth = info(1).BitDepth;
-            if tileColors > 1
-                bitDepth = bitDepth / tileColors;
-            end
-            if bitDepth <= 8
-                tileClass = 'uint8';
-            elseif bitDepth <= 16
-                tileClass = 'uint16';
-            else
-                tileClass = 'single';
-            end
-        end
-        return;
-    catch
-        % Fall through
-    end
-end
-
-try
-    loadOpts.silent = true;
-    tileData = io.loadImagesWrapper(filename, loadOpts);
-    if ~isempty(tileData)
-        tileHeight = size(tileData, 1);
-        tileWidth  = size(tileData, 2);
-        tileDepth  = size(tileData, 3);
-        tileColors = size(tileData, 4);
-        tileClass  = class(tileData);
-    end
-catch
-    warning('utils:stitch:buildLayoutFilenamePattern:cannotReadTile', ...
-        'Cannot read tile size from %s; using defaults 256x256.', filename);
-end
-
 end

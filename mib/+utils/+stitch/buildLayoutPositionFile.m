@@ -11,20 +11,22 @@ function layout = buildLayoutPositionFile(positionFilePath, options)
 %   ``filename  X  Y  [Z]``
 % Delimiter is auto-detected among space, tab, and comma; repeated spaces
 % are treated as a single delimiter.  Filenames may be relative to the
-% position file's folder.  X and Y are 0-based pixel origins in the file;
-% they are stored as 1-based in the layout.
+% position file's folder.  X, Y and Z are 0-based pixel/slice origins in the
+% file; they are stored 1-based in ``nomOrigin`` (``[y x z]``, z in SLICES).
 %
-% Distinct Z values are mapped to ``zLayer`` 1..K in ascending order.
-% When ``options.subfolderMode`` is ``true`` the position file is ignored
-% and instead each direct subfolder of the position file's parent directory
-% is treated as one Z-stack tile; subfolder images are natural-sorted into
-% ``layout(i).sliceFiles``.
+% Distinct Z values are additionally ranked into ``zLayer`` 1..K in ascending
+% order — ``zLayer`` drives layer-adjacency logic (``findNeighborPairs``),
+% while ``nomOrigin(3)`` carries the actual nominal slice coordinate used by
+% the solver and canvas.
+%
+% A ``filename`` entry may name a single image file OR a FOLDER holding the
+% tile's Z-stack (one image per slice) — this is auto-detected per entry by
+% ``utils.stitch.resolveTileEntry``, so folder Z-stack tiles work here exactly
+% as in the grid and filename-pattern sources.
 %
 % Input Arguments:
 %   - **positionFilePath** — [char] full path to the position file
-%   - **options** *(optional)* — struct with fields:
-%
-%     - ``.subfolderMode`` — [logical] treat subfolders as Z-stack tiles (default: ``false``)
+%   - **options** *(optional)* — struct (reserved; no fields used currently)
 %
 % Output Arguments:
 %   - **layout** — struct array per contract (see ``buildLayoutGrid`` for field list)
@@ -38,17 +40,12 @@ function layout = buildLayoutPositionFile(positionFilePath, options)
 
 arguments
     positionFilePath (1,:) char
-    options.subfolderMode logical = false
+    options struct = struct() %#ok<INUSA>
 end
 
 rootFolder = fileparts(positionFilePath);
 if isempty(rootFolder)
     rootFolder = pwd;
-end
-
-if options.subfolderMode
-    layout = buildFromSubfolders(rootFolder);
-    return;
 end
 
 layout = buildFromFile(positionFilePath, rootFolder);
@@ -109,7 +106,7 @@ for lineIdx = 1:numTiles
 
     tileName = tokens{1};
     % Resolve relative paths
-    if ~java.io.File(tileName).isAbsolute()
+    if ~isAbsolutePath(tileName)
         tileName = fullfile(rootFolder, tileName);
     end
     filenames{lineIdx} = tileName;
@@ -145,20 +142,18 @@ else
     originZ = zeros(numTiles, 1);
 end
 
-% Read first tile size
-[tileHeight, tileWidth, tileDepth, tileColors, tileClass] = readTileSize(filenames{1});
-tileSize = [tileHeight, tileWidth, tileDepth, tileColors];
-
 layout = repmat(emptyLayout(), 1, numTiles);
 for tileIdx = 1:numTiles
     zValue = originZ(tileIdx);
+    % Resolve each entry (single image file or folder Z-stack) individually.
+    [sliceFiles, tileSize, tileClass] = utils.stitch.resolveTileEntry(filenames{tileIdx});
     layout(tileIdx).index      = tileIdx;
     layout(tileIdx).filename   = filenames{tileIdx};
-    layout(tileIdx).sliceFiles = {};
+    layout(tileIdx).sliceFiles = sliceFiles;
     layout(tileIdx).zLayer     = zLayerMap(zValue);
     layout(tileIdx).gridRC     = [NaN, NaN];
-    % File uses 0-based origins; store 1-based
-    layout(tileIdx).nomOrigin  = [originY(tileIdx) + 1, originX(tileIdx) + 1, layout(tileIdx).zLayer];
+    % File uses 0-based origins; store 1-based. z is a SLICE coordinate.
+    layout(tileIdx).nomOrigin  = [originY(tileIdx) + 1, originX(tileIdx) + 1, zValue + 1];
     layout(tileIdx).tileSize   = tileSize;
     layout(tileIdx).dataClass  = tileClass;
 end
@@ -166,129 +161,15 @@ end
 end
 
 % =========================================================================
-function layout = buildFromSubfolders(rootFolder)
-% Each direct subfolder is one tile (Z-stack); images inside are natural-sorted.
-
-subFolderList = dir(rootFolder);
-subFolderList = subFolderList([subFolderList.isdir]);
-subFolderList = subFolderList(~ismember({subFolderList.name}, {'.', '..'}));
-
-if isempty(subFolderList)
-    layout = emptyLayout();
-    return;
-end
-
-folderNames = {subFolderList.name};
-sortedFolderNames = utils.stitch.naturalSortFiles(folderNames);
-numTiles = numel(sortedFolderNames);
-
-% Read first tile size from first image in first subfolder
-firstTileClass = 'uint8';
-firstTileSize  = [256, 256, 1, 1];
-firstSubfolder = fullfile(rootFolder, sortedFolderNames{1});
-imagePattern   = {'*.tif','*.tiff','*.png','*.jpg','*.jpeg','*.bmp'};
-firstImages    = {};
-for extIdx = 1:numel(imagePattern)
-    foundFiles = dir(fullfile(firstSubfolder, imagePattern{extIdx}));
-    if ~isempty(foundFiles)
-        firstImages = fullfile(firstSubfolder, {foundFiles.name});
-        break;
-    end
-end
-if ~isempty(firstImages)
-    sortedFirstImages = utils.stitch.naturalSortFiles(firstImages);
-    [h, w, d, c, cls] = readTileSize(sortedFirstImages{1});
-    numSlices = numel(sortedFirstImages);
-    firstTileSize  = [h, w, d * numSlices, c];
-    firstTileClass = cls;
-end
-
-layout = repmat(emptyLayout(), 1, numTiles);
-for tileIdx = 1:numTiles
-    subfolderPath = fullfile(rootFolder, sortedFolderNames{tileIdx});
-    % Collect images in the subfolder
-    sliceFiles = {};
-    for extIdx = 1:numel(imagePattern)
-        foundFiles = dir(fullfile(subfolderPath, imagePattern{extIdx}));
-        if ~isempty(foundFiles)
-            sliceFiles = fullfile(subfolderPath, {foundFiles.name});
-            sliceFiles = utils.stitch.naturalSortFiles(sliceFiles);
-            break;
-        end
-    end
-
-    layout(tileIdx).index      = tileIdx;
-    layout(tileIdx).filename   = subfolderPath;
-    layout(tileIdx).sliceFiles = sliceFiles;
-    layout(tileIdx).zLayer     = tileIdx;
-    layout(tileIdx).gridRC     = [NaN, NaN];
-    layout(tileIdx).nomOrigin  = [1, 1, tileIdx];
-    layout(tileIdx).tileSize   = firstTileSize;
-    layout(tileIdx).dataClass  = firstTileClass;
-end
-
+function tf = isAbsolutePath(pathStr)
+% ISABSOLUTEPATH - Pure-MATLAB absolute-path check (no Java — required for
+% compiled standalone builds). Absolute forms: Windows drive roots ('C:\',
+% 'C:/'), UNC shares ('\\server\...'), and POSIX roots ('/...').
+tf = ~isempty(regexp(pathStr, '^([A-Za-z]:[\\/]|\\\\|/)', 'once'));
 end
 
 % =========================================================================
 function singleLayout = emptyLayout()
 singleLayout = struct('index', {}, 'filename', {}, 'sliceFiles', {}, 'zLayer', {}, ...
     'gridRC', {}, 'nomOrigin', {}, 'tileSize', {}, 'dataClass', {});
-end
-
-% =========================================================================
-function [tileHeight, tileWidth, tileDepth, tileColors, tileClass] = readTileSize(filename)
-% Read tile dimensions; fast path for common image formats.
-
-[~, ~, extension] = fileparts(filename);
-extension = lower(extension);
-
-tileDepth  = 1;
-tileColors = 1;
-tileClass  = 'uint8';
-tileHeight = 256;
-tileWidth  = 256;
-
-if ismember(extension, {'.tif', '.tiff', '.png', '.jpg', '.jpeg', '.bmp'})
-    try
-        info = imfinfo(filename);
-        tileHeight = info(1).Height;
-        tileWidth  = info(1).Width;
-        tileDepth  = numel(info);
-        if isfield(info(1), 'SamplesPerPixel')
-            tileColors = info(1).SamplesPerPixel;
-        end
-        if isfield(info(1), 'BitDepth')
-            bitDepth = info(1).BitDepth;
-            if tileColors > 1
-                bitDepth = bitDepth / tileColors;
-            end
-            if bitDepth <= 8
-                tileClass = 'uint8';
-            elseif bitDepth <= 16
-                tileClass = 'uint16';
-            else
-                tileClass = 'single';
-            end
-        end
-        return;
-    catch
-        % Fall through
-    end
-end
-
-try
-    loadOpts.silent = true;
-    tileData = io.loadImagesWrapper(filename, loadOpts);
-    if ~isempty(tileData)
-        tileHeight = size(tileData, 1);
-        tileWidth  = size(tileData, 2);
-        tileDepth  = size(tileData, 3);
-        tileColors = size(tileData, 4);
-        tileClass  = class(tileData);
-    end
-catch
-    warning('utils:stitch:buildLayoutPositionFile:cannotReadTile', ...
-        'Cannot read tile size from %s; using defaults 256x256.', filename);
-end
-
 end

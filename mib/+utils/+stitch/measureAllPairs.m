@@ -32,6 +32,14 @@ function edges = measureAllPairs(layout, pairs, options)
 %     - ``.colorChannel`` — [double|char] channel index to register on, or
 %       ``'max'`` for a max-projection over channels (default: ``1``)
 %     - ``.subpixel`` — [logical] subpixel refinement in ``pairwiseShift`` (default: ``true``)
+%     - ``.registrationMethod`` — [char] ``'Phase correlation'`` (default) or
+%       ``'Feature-based'``; selects :func:`utils.stitch.pairwiseShift` or
+%       :func:`utils.stitch.featureShift` as the per-pair estimator (both share
+%       the same sign convention, so the displacement composition is identical).
+%     - ``.featureOptions`` — [struct] detector settings forwarded to
+%       :func:`utils.stitch.featureShift` when ``registrationMethod`` is
+%       ``'Feature-based'`` (detector type, per-detector params, downsampling,
+%       RANSAC; the ``automaticOptions`` shape). Ignored for phase correlation.
 %     - ``.cacheSizeBytes`` — [double] LRU tile-cache budget (default: ``2*1024^3``)
 %     - ``.useParallel`` — [logical] measure pairs with ``parfor`` (default: ``false``)
 %     - ``.showWaitbar`` — [logical] show a progress dialog (default: ``false``)
@@ -59,6 +67,9 @@ if ~isfield(options, 'cacheSizeBytes');   options.cacheSizeBytes = 2 * 1024^3; e
 if ~isfield(options, 'useParallel');      options.useParallel = false; end
 if ~isfield(options, 'showWaitbar');      options.showWaitbar = false; end
 if ~isfield(options, 'parentFigure');     options.parentFigure = []; end
+if ~isfield(options, 'zSearchRadius');    options.zSearchRadius = 8; end
+if ~isfield(options, 'registrationMethod'); options.registrationMethod = 'Phase correlation'; end
+if ~isfield(options, 'featureOptions');     options.featureOptions = struct(); end
 
 nPairs = numel(pairs);
 edges = repmat(struct('i', [], 'j', [], 'direction', '', 'nominal', [0 0 0], ...
@@ -69,6 +80,25 @@ if nPairs == 0; return; end
 shiftOptions = struct('subpixel', options.subpixel, 'window', true);
 expandPx     = options.expandPx;
 colorChannel = options.colorChannel;
+zSearchRadius = options.zSearchRadius;
+
+% Per-pair estimator: phase correlation (default) or feature-based. Both return
+% [dy dx dz] in the same sign convention (cropB(r,c) ≈ cropA(r-dy,c-dx)), so the
+% displacement composition in measureOne is method-agnostic. The handle is passed
+% into the parfor body (a plain function handle broadcasts cleanly to workers).
+isFeatureBased = strcmpi(options.registrationMethod, 'Feature-based');
+if isFeatureBased
+    shiftFcn = @(a, b, o) utils.stitch.featureShift(a, b, o);
+    % Merge the feature-detector settings (detector type, per-detector params,
+    % downsampling, RANSAC) into shiftOptions so featureShift reads them; the
+    % fields are ignored by pairwiseShift-only callers.
+    featureFields = fieldnames(options.featureOptions);
+    for fieldIdx = 1:numel(featureFields)
+        shiftOptions.(featureFields{fieldIdx}) = options.featureOptions.(featureFields{fieldIdx});
+    end
+else
+    shiftFcn = @(a, b, o) utils.stitch.pairwiseShift(a, b, o);
+end
 
 if options.useParallel
     % Each worker builds its own cache (documented behaviour).
@@ -78,7 +108,7 @@ if options.useParallel
     parfor k = 1:nPairs
         localReader = utils.stitch.makeTileReader(layout, readerOptions);
         [measured(k, :), qualities(k)] = measureOne(layout, pairs(k), ...
-            localReader, expandPx, colorChannel, shiftOptions);
+            localReader, expandPx, colorChannel, shiftOptions, zSearchRadius, shiftFcn, isFeatureBased);
     end
     for k = 1:nPairs
         edges(k) = fillEdge(pairs(k), measured(k, :), qualities(k), options.qualityThreshold);
@@ -93,7 +123,7 @@ else
     end
     for k = 1:nPairs
         [measuredShift, quality] = measureOne(layout, pairs(k), readerFcn, ...
-            expandPx, colorChannel, shiftOptions);
+            expandPx, colorChannel, shiftOptions, zSearchRadius, shiftFcn, isFeatureBased);
         edges(k) = fillEdge(pairs(k), measuredShift, quality, options.qualityThreshold);
         if ~isempty(progressDialog) && isvalid(progressDialog)
             progressDialog.Value = k / nPairs;
@@ -106,11 +136,15 @@ end
 end
 
 % =====================================================================
-function [measuredShift, quality] = measureOne(layout, pair, readerFcn, expandPx, colorChannel, shiftOptions)
+function [measuredShift, quality] = measureOne(layout, pair, readerFcn, expandPx, colorChannel, shiftOptions, zSearchRadius, shiftFcn, isFeatureBased)
 % MEASUREONE - Read overlap crops for one pair and estimate the residual shift.
 % Adapt the expansion to the nominal overlap extent along the pair direction:
 % expanding far beyond the overlap fills the crops with unshared content, which
 % starves the correlation peak and creates genuine competing peaks.
+% shiftFcn(a,b,o) is the per-pair estimator (pairwiseShift or featureShift).
+if nargin < 7; zSearchRadius = 8; end
+if nargin < 8 || isempty(shiftFcn); shiftFcn = @(a, b, o) utils.stitch.pairwiseShift(a, b, o); end
+if nargin < 9; isFeatureBased = false; end
 if strcmp(pair.direction, 'x')
     overlapExtent = layout(pair.i).tileSize(2) - abs(pair.nominal(2));
 elseif strcmp(pair.direction, 'y')
@@ -120,17 +154,24 @@ else
 end
 pairExpandPx = min(expandPx, max(round(0.75 * overlapExtent), 8));
 
-[bboxA, bboxB] = utils.stitch.computeOverlapRegion(layout, pair.i, pair.j, pairExpandPx);
+% Feature-based within-layer matching reads the FULL tiles rather than the thin
+% nominal-overlap strip: RANSAC discards features in the non-shared 90% while the
+% overlap features (too few in a ~40 px strip for scale-space blob detectors)
+% still fit the translation. This also lets it recover offsets far from nominal
+% (unknown/arbitrary layouts) that the restricted phase-correlation search misses.
+% Cross-layer ('z') pairs already sit at ~same XY, so their overlap crop is most
+% of the tile — no full-tile override needed there.
+if isFeatureBased && (strcmp(pair.direction, 'x') || strcmp(pair.direction, 'y'))
+    bboxA = [1, layout(pair.i).tileSize(1); 1, layout(pair.i).tileSize(2)];
+    bboxB = [1, layout(pair.j).tileSize(1); 1, layout(pair.j).tileSize(2)];
+else
+    [bboxA, bboxB] = utils.stitch.computeOverlapRegion(layout, pair.i, pair.j, pairExpandPx);
+end
 cropA = readerFcn(pair.i, bboxA);   % [H W D C]
 cropB = readerFcn(pair.j, bboxB);
 
 cropA = selectChannel(cropA, colorChannel);
 cropB = selectChannel(cropB, colorChannel);
-
-% For a z-direction pair of Z-stacks correlate the facing (mean-projected)
-% slices; for within-layer pairs the crops are already 2D (D == 1).
-cropA = flattenDepth(cropA);
-cropB = flattenDepth(cropB);
 
 % Expected shift when tiles sit exactly at nominal (raw crop-start offset minus
 % the nominal displacement); restrict the peak search to the jitter budget
@@ -140,17 +181,119 @@ shiftOptions.expectedShift = [bboxA(1, 1) - bboxB(1, 1) - pair.nominal(1), ...
 shiftOptions.searchRadius  = pairExpandPx + 8;
 shiftOptions.padPx         = pairExpandPx + 8;
 
-[shiftYXZ, quality] = utils.stitch.pairwiseShift(cropA, cropB, shiftOptions);
+if strcmp(pair.direction, 'z')
+    [shiftYXZ, quality, measuredDz] = measureZShift(cropA, cropB, ...
+        pair.nominal(3), zSearchRadius, shiftOptions, shiftFcn);
+else
+    cropA = flattenDepth(cropA);
+    cropB = flattenDepth(cropB);
+    [shiftYXZ, quality] = shiftFcn(cropA, cropB, shiftOptions);
+    measuredDz = pair.nominal(3);   % within-layer: dz constrained to nominal (0)
+end
 
 % Compose the measured displacement from the actual crop start offsets.
 % With cropB(r,c) ~= cropA(r - dy, c - dx) (pairwiseShift convention) and crops
 % starting at local positions bboxA(:,1)/bboxB(:,1):
 %   P_j - P_i = (bboxA(:,1) - bboxB(:,1)) - [dy dx]
 % This is exact even when border clamping makes the two crops cover different
-% nominal windows. dz keeps the nominal value in Phase 1 (pairwiseShift dz = 0).
+% nominal windows. dz needs no crop-start compensation: both crops carry the
+% FULL depth of their tiles, so slice indices are already tile-local.
 measuredShift = [bboxA(1, 1) - bboxB(1, 1) - shiftYXZ(1), ...
                  bboxA(2, 1) - bboxB(2, 1) - shiftYXZ(2), ...
-                 pair.nominal(3)];
+                 measuredDz];
+end
+
+% =====================================================================
+function [shiftYXZ, quality, measuredDz] = measureZShift(cropA, cropB, nominalDz, zSearchRadius, shiftOptions, shiftFcn)
+% MEASUREZSHIFT - Joint [dy dx dz] measurement for a cross-layer stack pair.
+%
+% XY and Z are decoupled: a mean projection over depth cancels the z-specific
+% content (so it aligns XY well but says NOTHING about dz — a thick-slab
+% correlation scores high for every dz with decent overlap and even prefers the
+% smaller-dz / larger-overlap side). So:
+%   1. dy, dx come from the mean-projection correlation (calibrated pairwiseShift).
+%   2. dz is then chosen by scanning integer offsets and scoring each with the
+%      normalised cross-correlation of the ACTUAL overlapping voxel block after
+%      applying the recovered dy, dx. Real slice content makes the NCC-vs-dz
+%      curve peak sharply at the true offset.
+%
+% When no candidate yields any Z-overlap (serial stacks that merely abut), falls
+% back to the facing-slice correlation for [dy dx] and keeps dz at nominal.
+%
+% dz convention matches the solver: dz = P_j(3) - P_i(3) in slices; A-local
+% slice ``a`` corresponds to B-local slice ``a - dz``. XY convention matches
+% pairwiseShift: ``cropB(r,c) ≈ cropA(r-dy, c-dx)`` ⇒ A(r,c) sits at B(r+dy, c+dx).
+if nargin < 6 || isempty(shiftFcn); shiftFcn = @(a, b, o) utils.stitch.pairwiseShift(a, b, o); end
+Da = size(cropA, 3);
+Db = size(cropB, 3);
+
+projA = mean(single(cropA), 3);
+projB = mean(single(cropB), 3);
+[xyShift, xyQuality] = shiftFcn(projA, projB, shiftOptions);
+dy = round(xyShift(1));
+dx = round(xyShift(2));
+
+[Ha, Wa, ~] = size(cropA);
+Hb = size(cropB, 1);
+Wb = size(cropB, 2);
+
+% Overlapping XY block in A coords such that (r+dy, c+dx) is inside B.
+rowA = max(1, 1 - dy):min(Ha, Hb - dy);
+colA = max(1, 1 - dx):min(Wa, Wb - dx);
+
+dzCandidates = round(nominalDz) + (-zSearchRadius:zSearchRadius);
+bestNcc = -Inf;
+bestDz = round(nominalDz);
+anyOverlap = false;
+if ~isempty(rowA) && ~isempty(colA)
+    blockA = single(cropA(rowA, colA, :));
+    blockB = single(cropB(rowA + dy, colA + dx, :));
+    for candidateIdx = 1:numel(dzCandidates)
+        dz = dzCandidates(candidateIdx);
+        aLo = max(1, 1 + dz);
+        aHi = min(Da, Db + dz);
+        if aHi < aLo; continue; end
+        anyOverlap = true;
+        va = blockA(:, :, aLo:aHi);
+        vb = blockB(:, :, (aLo:aHi) - dz);
+        ncc = normXCorr(va(:), vb(:));
+        if ncc > bestNcc
+            bestNcc = ncc;
+            bestDz = dz;
+        end
+    end
+end
+
+if anyOverlap
+    shiftYXZ = [xyShift(1), xyShift(2), 0];
+    quality = max(xyQuality, 0);
+    measuredDz = bestDz;
+    return;
+end
+
+% Facing-slice fallback: stacks meet without sharing slices.
+if nominalDz >= 0
+    faceA = single(cropA(:, :, Da));   % bottom of A faces ...
+    faceB = single(cropB(:, :, 1));    % ... top of B
+else
+    faceA = single(cropA(:, :, 1));
+    faceB = single(cropB(:, :, Db));
+end
+[shiftYXZ, quality] = shiftFcn(faceA, faceB, shiftOptions);
+measuredDz = nominalDz;
+end
+
+% =====================================================================
+function ncc = normXCorr(a, b)
+% NORMXCORR - Normalised cross-correlation of two equal-length vectors.
+a = a - mean(a);
+b = b - mean(b);
+denom = norm(a) * norm(b);
+if denom < eps
+    ncc = -Inf;
+else
+    ncc = (a' * b) / denom;
+end
 end
 
 % =====================================================================

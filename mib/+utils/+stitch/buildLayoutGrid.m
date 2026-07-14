@@ -61,6 +61,18 @@ end
 sortedFilenames = utils.stitch.naturalSortFiles(filenames);
 numTiles = numel(sortedFilenames);
 
+% Each grid entry is either a single image file or a FOLDER holding the tile's
+% Z-stack. Resolve every entry up front (utils.stitch.resolveTileEntry auto-
+% detects which) so folder tiles carry their images in ``sliceFiles`` and their
+% depth in tileSize(3).
+tileSliceFiles = cell(numTiles, 1);
+tileSizes      = cell(numTiles, 1);
+tileClasses    = cell(numTiles, 1);
+for tileIdx = 1:numTiles
+    [tileSliceFiles{tileIdx}, tileSizes{tileIdx}, tileClasses{tileIdx}] = ...
+        utils.stitch.resolveTileEntry(sortedFilenames{tileIdx});
+end
+
 % Resolve rows/cols
 numRows = gridOptions.rows;
 numCols = gridOptions.cols;
@@ -77,10 +89,9 @@ overlapX = gridOptions.overlapX;
 overlapY = gridOptions.overlapY;
 tileOrder = gridOptions.tileOrder;
 
-% Read first tile dimensions
-[tileHeight, tileWidth, tileDepth, tileColors, tileClass] = readTileSize(sortedFilenames{1});
-
-% Step sizes (sub-pixel exact; origins are 1-based)
+% Step sizes from the first tile's XY size (sub-pixel exact; origins 1-based).
+tileHeight = tileSizes{1}(1);
+tileWidth  = tileSizes{1}(2);
 stepX = tileWidth  * (1 - overlapX / 100);
 stepY = tileHeight * (1 - overlapY / 100);
 
@@ -88,7 +99,6 @@ stepY = tileHeight * (1 - overlapY / 100);
 [rowAssign, colAssign] = assignGridPositions(numTiles, numRows, numCols, tileOrder);
 
 % Build layout struct array
-tileSize = [tileHeight, tileWidth, tileDepth, tileColors];
 layout(numTiles) = struct('index', 0, 'filename', '', 'sliceFiles', {{}}, 'zLayer', 1, ...
     'gridRC', [0 0], 'nomOrigin', [0 0 0], 'tileSize', [0 0 0 0], 'dataClass', '');
 
@@ -100,12 +110,12 @@ for tileIdx = 1:numTiles
 
     layout(tileIdx).index      = tileIdx;
     layout(tileIdx).filename   = sortedFilenames{tileIdx};
-    layout(tileIdx).sliceFiles = {};
+    layout(tileIdx).sliceFiles = tileSliceFiles{tileIdx};
     layout(tileIdx).zLayer     = 1;
     layout(tileIdx).gridRC     = [row, col];
     layout(tileIdx).nomOrigin  = [originY, originX, 1];
-    layout(tileIdx).tileSize   = tileSize;
-    layout(tileIdx).dataClass  = tileClass;
+    layout(tileIdx).tileSize   = tileSizes{tileIdx};   % per-tile [H W D C]
+    layout(tileIdx).dataClass  = tileClasses{tileIdx};
 end
 
 end
@@ -164,67 +174,6 @@ switch tileOrder
     otherwise
         error('utils:stitch:buildLayoutGrid:unknownTileOrder', ...
             'Unknown tileOrder: %s. Must be Horizontal, Horizontal snake, Vertical, or Vertical snake.', tileOrder);
-end
-
-end
-
-% =========================================================================
-function [tileHeight, tileWidth, tileDepth, tileColors, tileClass] = readTileSize(filename)
-% Read tile dimensions from the first file using imfinfo fast path where possible.
-
-[~, ~, extension] = fileparts(filename);
-extension = lower(extension);
-
-tileDepth  = 1;
-tileColors = 1;
-tileClass  = 'uint8';
-tileHeight = 0;
-tileWidth  = 0;
-
-if ismember(extension, {'.tif', '.tiff', '.png', '.jpg', '.jpeg', '.bmp'})
-    try
-        info = imfinfo(filename);
-        tileHeight = info(1).Height;
-        tileWidth  = info(1).Width;
-        tileDepth  = numel(info);
-        if isfield(info(1), 'SamplesPerPixel')
-            tileColors = info(1).SamplesPerPixel;
-        end
-        if isfield(info(1), 'BitDepth')
-            bitDepth = info(1).BitDepth;
-            if tileColors > 1
-                bitDepth = bitDepth / tileColors;
-            end
-            if bitDepth <= 8
-                tileClass = 'uint8';
-            elseif bitDepth <= 16
-                tileClass = 'uint16';
-            else
-                tileClass = 'single';
-            end
-        end
-        return;
-    catch
-        % Fall through to loadImagesWrapper
-    end
-end
-
-% General path via io.loadImagesWrapper
-try
-    loadOpts.silent = true;
-    tileData = io.loadImagesWrapper(filename, loadOpts);
-    if ~isempty(tileData)
-        tileHeight = size(tileData, 1);
-        tileWidth  = size(tileData, 2);
-        tileDepth  = size(tileData, 3);
-        tileColors = size(tileData, 4);
-        tileClass  = class(tileData);
-    end
-catch
-    warning('utils:stitch:buildLayoutGrid:cannotReadTile', ...
-        'Cannot read tile size from %s; using defaults 256x256.', filename);
-    tileHeight = 256;
-    tileWidth  = 256;
 end
 
 end

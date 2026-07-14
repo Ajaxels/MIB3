@@ -9,6 +9,7 @@ deep-learning helpers, and standalone utility functions.
    :caption: Sub-packages
 
    dlgs/index
+   stitch/index
    defaults
 
 .. toctree::

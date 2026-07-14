@@ -6,14 +6,15 @@ function runOverlapEstimation(obj)
 %
 %      obj.runOverlapEstimation()
 %
-% Grid layout source only. Calls :func:`utils.stitch.estimateOverlap` (full-tile
-% phase correlation with peak verification, median over the grid), writes the
-% recovered percentages into ``BatchOpt.OverlapX/OverlapY`` and rebuilds the
-% layout so the subsequent tight measurement pass starts from honest nominal
-% positions. Directions that could not be estimated keep the user's value.
+% Grid-style layout sources only (Grid, Filename pattern — both carry ``.gridRC``).
+% Calls :func:`utils.stitch.estimateOverlap` (full-tile phase correlation with
+% peak verification, median over the grid), writes the recovered percentages into
+% ``BatchOpt.OverlapX/OverlapY`` and rebuilds the layout so the subsequent tight
+% measurement pass starts from honest nominal positions. Directions that could not
+% be estimated keep the user's value.
 %
 
-if ~strcmp(obj.BatchOpt.LayoutSource{1}, 'Grid'); return; end
+if ~ismember(obj.BatchOpt.LayoutSource{1}, {'Grid', 'Filename pattern'}); return; end
 if isempty(obj.layout); obj.buildLayoutFromBatchOpt(); end
 
 estimate = utils.stitch.estimateOverlap(obj.layout);

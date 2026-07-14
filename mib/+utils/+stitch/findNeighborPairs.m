@@ -108,6 +108,18 @@ for tileA = 1:(numTiles - 1)
             if overlapY < minOverlapPixels || overlapX < minOverlapPixels
                 continue;
             end
+            % Cross-layer edges are kept ONLY between tiles at (near) the same XY
+            % position — large overlap in BOTH dims. A thin XY strip (tiles offset
+            % in one axis) or a corner (offset in both) yields an unreliable dz
+            % from its narrow projected crop, and adds nothing: the within-layer
+            % edges already connect the tiles inside each layer, and one
+            % same-position z-edge per stacked tile connects the layers — together
+            % a fully connected graph. So a stray weak z-edge only injects noise.
+            fractionY = overlapY / min(sizeA(1), sizeB(1));
+            fractionX = overlapX / min(sizeA(2), sizeB(2));
+            if fractionY < 0.5 || fractionX < 0.5
+                continue;
+            end
             direction = 'z';
         end
 

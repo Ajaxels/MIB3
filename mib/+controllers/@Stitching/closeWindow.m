@@ -7,6 +7,16 @@ function closeWindow(obj)
 %      obj.closeWindow()
 %
 
+% Delete interactive tile-placement ROI listeners (the ROIs go with the axes).
+if ~isempty(obj.roiListeners)
+    for roiListenerIdx = 1:numel(obj.roiListeners)
+        if isvalid(obj.roiListeners{roiListenerIdx})
+            delete(obj.roiListeners{roiListenerIdx});
+        end
+    end
+    obj.roiListeners = {};
+end
+
 if ~isempty(obj.view) && isvalid(obj.view.gui)
     delete(obj.view.gui);
 end

@@ -18,22 +18,26 @@ isEstimateWidget = isfield(obj.view.handles, 'EstimateOverlap') && ...
     isequal(hObject, obj.view.handles.EstimateOverlap);
 if isequal(hObject, obj.view.handles.LayoutSource) || isEstimateWidget
     isGrid = strcmp(obj.BatchOpt.LayoutSource{1}, 'Grid');
-    overlapEditable = isGrid && ~obj.BatchOpt.EstimateOverlap;
+    usesOverlap = ismember(obj.BatchOpt.LayoutSource{1}, {'Grid', 'Filename pattern'});
+    obj.view.handles.SubfolderMode.Enable = usesOverlap;
+    overlapEditable = usesOverlap && ~obj.BatchOpt.EstimateOverlap;
     obj.view.handles.GridRows.Enable   = isGrid;
     obj.view.handles.GridCols.Enable   = isGrid;
     obj.view.handles.TileOrder.Enable  = isGrid;
     obj.view.handles.OverlapX.Enable   = overlapEditable;
     obj.view.handles.OverlapY.Enable   = overlapEditable;
     if isfield(obj.view.handles, 'EstimateOverlap')
-        obj.view.handles.EstimateOverlap.Enable = isGrid;
+        obj.view.handles.EstimateOverlap.Enable = usesOverlap;
     end
 end
 
 % Layout-parameter changes invalidate the current layout: rebuild it from the
 % updated BatchOpt (input path already chosen) and refresh the preview when one
 % is on screen, so the user sees the new arrangement immediately.
+% (SubfolderMode is excluded: toggling it changes how InputPath is interpreted,
+% so the user must re-select the input rather than auto-rebuilding from stale data.)
 layoutWidgetNames = {'GridRows', 'GridCols', 'TileOrder', ...
-    'OverlapX', 'OverlapY', 'SubfolderMode', 'InputPath'};
+    'OverlapX', 'OverlapY', 'InputPath'};
 isLayoutWidget = false;
 for nameIdx = 1:numel(layoutWidgetNames)
     if isequal(hObject, obj.view.handles.(layoutWidgetNames{nameIdx}))
@@ -50,6 +54,18 @@ if isLayoutWidget && ~isempty(obj.BatchOpt.InputPath)
         end
     catch buildError
         utils.dlgs.showErrorDialog(obj.view.gui, buildError.message, 'Layout rebuild failed');
+    end
+end
+
+% When the registration method changes, enable/disable the feature-detector
+% selector and its Settings button (feature-based only).
+if isfield(obj.view.handles, 'RegistrationMethod') && isequal(hObject, obj.view.handles.RegistrationMethod)
+    isFeatureBased = strcmp(obj.BatchOpt.RegistrationMethod{1}, 'Feature-based');
+    if isfield(obj.view.handles, 'FeatureDetectorType')
+        obj.view.handles.FeatureDetectorType.Enable = isFeatureBased;
+    end
+    if isfield(obj.view.handles, 'configureFeaturesBtn')
+        obj.view.handles.configureFeaturesBtn.Enable = isFeatureBased;
     end
 end
 

@@ -28,10 +28,10 @@ what makes `utils.updateBatchOptFromGUI_Shared` work — it writes
 
 | Handle | Class | Items / Limits / Default | Callback method |
 |------|-------|--------------------------|-----------------|
-| `LayoutSource` | `uidropdown` | Items: `{'Grid','Position file','Filename pattern'}` Default: `'Grid'` | `updateBatchOptFromGUI` |
-| `InputPath` | `uieditfield` (text) | Default: `''` | `updateBatchOptFromGUI` |
+| `LayoutSource` | `uidropdown` | Items: `{'Grid','Position file','Filename pattern','Bio-Formats metadata'}` Default: `'Grid'` | `updateBatchOptFromGUI` |
+| `InputPath` | `uilistbox` (preferred) or `uieditfield` (text) | Default: empty. As a **listbox** it displays one selected path per row (best for multi-folder input) and is populated by Browse — the controller detects the type (`isprop(...,'Items')`) and keeps `BatchOpt.InputPath` as the newline-joined string either way. A listbox is display-only (no `ValueChangedFcn`); an editfield keeps the typed-path sync. | `updateBatchOptFromGUI` (editfield only) |
 | `selectInputBtn` | `uibutton` | Text: `'Browse…'` | `selectInputBtn_Callback` |
-| `SubfolderMode` | `uicheckbox` | Text: `'Subfolder mode'` Default: `false` | `updateBatchOptFromGUI` |
+| `SubfolderMode` | `uicheckbox` | Text: `'Tiles are folders (Z-stacks)'` Default: `false` | `updateBatchOptFromGUI` |
 
 ### Grid group (`uipanel` Name: `gridPanel`, Title: "Grid")
 
@@ -59,6 +59,9 @@ Labels for spinners (not interactive; `uilabel`):
 | Handle | Class | Items / Limits / Default | Callback method |
 |------|-------|--------------------------|-----------------|
 | `TransformType` | `uidropdown` | Items: `{'Translation'}` Default: `'Translation'` | `updateBatchOptFromGUI` |
+| `RegistrationMethod` | `uidropdown` | Items: `{'Phase correlation','Feature-based'}` Default: `'Phase correlation'` | `updateBatchOptFromGUI` |
+| `FeatureDetectorType` | `uidropdown` | Items: the 8 detectors (SURF/SIFT/MSER/Harris/BRISK/FAST/MinEigen/ORB — same list as `controllers.Alignment`) Default: SURF. Enabled only when `RegistrationMethod='Feature-based'` | `updateBatchOptFromGUI` |
+| `configureFeaturesBtn` | `uibutton` | Text: `'Settings…'` — opens the detector-parameter + downsampling + RANSAC dialog. Enabled only when `RegistrationMethod='Feature-based'` | `configureFeaturesBtn_Callback` |
 | `QualityThreshold` | `uispinner` | Limits: `[0 1]` Step: `0.05` Default: `0.30` | `updateBatchOptFromGUI` |
 | `NominalPositionWeight` | `uispinner` | Limits: `[0 1]` Step: `0.01` Default: `0.10` | `updateBatchOptFromGUI` |
 | `SubpixelPlacement` | `uicheckbox` | Text: `'Sub-pixel placement'` Default: `false` | `updateBatchOptFromGUI` |
@@ -68,6 +71,8 @@ Labels:
 | Handle | Text |
 |------|------|
 | `transformTypeLabel` | `'Transform type'` |
+| `registrationMethodLabel` | `'Registration method'` |
+| `featureDetectorTypeLabel` | `'Feature detector'` |
 | `qualityThresholdLabel` | `'Quality threshold'` |
 | `springWeightLabel` | `'Nominal position weight'` |
 
@@ -110,6 +115,7 @@ Labels:
 | Handle | Class | Text | Callback method |
 |------|-------|------|-----------------|
 | `previewLayoutBtn` | `uibutton` | `'Preview layout'` | `previewLayoutBtn_Callback` |
+| `editLayoutCheckbox` | `uicheckbox` | `'Edit layout (drag tiles)'` — toggles the preview between static rectangles and draggable tile ROIs (Phase 3). Non-BatchOpt (a UI mode). | `previewLayoutBtn_Callback` |
 | `measureOverlaps` | `uibutton` | `'Measure overlaps'` | `measureOverlaps_Callback` |
 | `optimizePositions` | `uibutton` | `'Optimize positions'` | `optimizePositions_Callback` |
 | `stitchBtn` | `uibutton` | `'Stitch'` | `stitchBtn_Callback` |

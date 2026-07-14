@@ -6,10 +6,16 @@ function selectInputBtn_Callback(obj)
 %
 %      obj.selectInputBtn_Callback()
 %
-% Behaviour depends on ``BatchOpt.LayoutSource``:
-%   - **Grid** or **Filename pattern** — opens a folder picker; collects all
-%     image files in the folder and calls the appropriate layout builder.
-%   - **Position file** — opens a file picker for the position text file.
+% Behaviour depends on ``BatchOpt.LayoutSource`` and ``BatchOpt.SubfolderMode``
+% (SubfolderMode = each tile is a FOLDER Z-stack rather than a single file):
+%   - **Bio-Formats metadata** — multi-select file picker; one multi-series file
+%     (series = tiles) or several single-tile files carrying stage coordinates.
+%   - **Position file** — file picker for the position text file (the file's
+%     filename column may point at images or, with SubfolderMode, at folders).
+%   - **Grid / Filename pattern**, SubfolderMode OFF — folder picker; the folder's
+%     image files are the tiles.
+%   - **Grid / Filename pattern**, SubfolderMode ON — multi-select the tile
+%     folders (each a Z-stack); stored newline-joined in InputPath.
 %
 % After building the layout, ``obj.layout`` is populated and
 % ``updateWidgets`` is called to refresh the status display.
@@ -17,12 +23,25 @@ function selectInputBtn_Callback(obj)
 
 layoutSource = obj.BatchOpt.LayoutSource{1};
 
-if strcmp(layoutSource, 'Position file')
-    % Pick a position text file
-    startFolder = obj.BatchOpt.InputPath;
-    if isempty(startFolder) || ~isfolder(startFolder)
-        startFolder = obj.mibModel.currentDirectory;
+if strcmp(layoutSource, 'Bio-Formats metadata')
+    % Pick one or more Bio-Formats files (stage coordinates are read from metadata)
+    startFolder = firstExistingPath(obj.BatchOpt.InputPath);
+    if isempty(startFolder); startFolder = obj.mibModel.currentDirectory; end
+    [selectedFiles, selectedFolder] = uigetfile( ...
+        {'*.czi;*.nd2;*.lif;*.oib;*.oif;*.vsi;*.lsm;*.ome.tif;*.ome.tiff;*.tif;*.tiff', ...
+         'Bio-Formats files'; '*.*', 'All files'}, ...
+        'Select Bio-Formats tile file(s)', startFolder, 'MultiSelect', 'on');
+    if isequal(selectedFiles, 0)
+        return;
     end
+    if ischar(selectedFiles); selectedFiles = {selectedFiles}; end
+    fullPaths = fullfile(selectedFolder, selectedFiles);
+    obj.BatchOpt.InputPath = strjoin(fullPaths, newline);
+    obj.refreshInputPathWidget();
+elseif strcmp(layoutSource, 'Position file')
+    % Pick a position text file
+    startFolder = firstExistingPath(obj.BatchOpt.InputPath);
+    if isempty(startFolder); startFolder = obj.mibModel.currentDirectory; end
     [selectedFile, selectedFolder] = uigetfile( ...
         {'*.txt;*.csv;*.tsv', 'Position files (*.txt, *.csv, *.tsv)'; '*.*', 'All files'}, ...
         'Select position file', startFolder);
@@ -31,9 +50,24 @@ if strcmp(layoutSource, 'Position file')
     end
     inputPath = fullfile(selectedFolder, selectedFile);
     obj.BatchOpt.InputPath = inputPath;
-    obj.view.handles.InputPath.Value = inputPath;
+    obj.refreshInputPathWidget();
+elseif obj.BatchOpt.SubfolderMode
+    % Grid / Filename pattern with folder Z-stack tiles — multi-select folders.
+    startFolder = firstExistingPath(obj.BatchOpt.InputPath);
+    if isempty(startFolder); startFolder = obj.mibModel.currentDirectory; end
+    selectedFolders = uigetfile_n_dir(startFolder, 'Select tile folders (each = one Z-stack tile)');
+    if isempty(selectedFolders)
+        return;
+    end
+    selectedFolders = selectedFolders(cellfun(@isfolder, selectedFolders));
+    if isempty(selectedFolders)
+        utils.dlgs.showErrorDialog(obj.view.gui, 'No valid folders selected.', 'Folder selection');
+        return;
+    end
+    obj.BatchOpt.InputPath = strjoin(selectedFolders, newline);
+    obj.refreshInputPathWidget();
 else
-    % Grid or Filename pattern — pick a folder
+    % Grid / Filename pattern with single-image tiles — pick their folder.
     startFolder = obj.BatchOpt.InputPath;
     if isempty(startFolder) || ~isfolder(startFolder)
         startFolder = obj.mibModel.currentDirectory;
@@ -43,7 +77,7 @@ else
         return;
     end
     obj.BatchOpt.InputPath = selectedFolder;
-    obj.view.handles.InputPath.Value = selectedFolder;
+    obj.refreshInputPathWidget();
 end
 
 % Build the layout headlessly from the updated BatchOpt
@@ -56,4 +90,21 @@ end
 
 obj.updateWidgets();
 
+end
+
+% =========================================================================
+function startFolder = firstExistingPath(inputPath)
+% FIRSTEXISTINGPATH - Parent of the first existing entry in a (possibly
+% newline-joined) InputPath, for seeding a picker's start folder. '' if none.
+startFolder = '';
+if isempty(inputPath); return; end
+entries = strtrim(strsplit(inputPath, newline));
+entries = entries(~cellfun(@isempty, entries));
+for k = 1:numel(entries)
+    if isfolder(entries{k})
+        startFolder = fileparts(entries{k}); return;
+    elseif isfile(entries{k})
+        startFolder = fileparts(entries{k}); return;
+    end
+end
 end

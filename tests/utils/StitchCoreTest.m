@@ -232,6 +232,119 @@ classdef StitchCoreTest < matlab.unittest.TestCase
                 'full measure+solve chain did not recover jittered tile origins');
         end
 
+        function featureShift_recoversKnownShift_signConvention(testCase)
+            % featureShift must return the SAME sign convention as pairwiseShift:
+            % cropB(r,c) ≈ cropA(r-dy, c-dx) ⇒ shiftYXZ = [dy dx 0]. A flipped sign
+            % here silently doubles the error through measureOne's composition.
+            base = testCase.texturedImage(200, 200, 7);
+            dy = 6; dx = -4;
+            cropA = base(21:180, 21:180);
+            shifted = circshift(base, [dy dx]);
+            cropB = shifted(21:180, 21:180);
+
+            [shiftYXZ, quality] = utils.stitch.featureShift(cropA, cropB);
+
+            testCase.verifyEqual(shiftYXZ(1:2), [dy dx], 'AbsTol', 0.5, ...
+                'feature-based shift sign/magnitude wrong');
+            testCase.verifyEqual(shiftYXZ(3), 0, 'dz must be 0 in 2D');
+            testCase.verifyGreaterThan(quality, 0.5, ...
+                'a clean textured overlap should score a high inlier ratio');
+        end
+
+        function featureShift_lowQualityOnFlatCrops(testCase)
+            % No detectable features → quality 0, never a confident wrong answer.
+            flat = 20 * ones(160, 160, 'single');
+            [~, quality] = utils.stitch.featureShift(flat, flat);
+            testCase.verifyEqual(quality, 0, ...
+                'featureless crops must not produce a confident match');
+        end
+
+        function featureShift_honorsDetectorAndDownsampling(testCase)
+            % featureShift must accept an automaticOptions-shaped struct: a
+            % non-default detector + a downsampling factor (points scaled back to
+            % full resolution) still recover the same shift.
+            base = testCase.texturedImage(220, 220, 13);
+            dy = 8; dx = 5;
+            cropA = base(21:200, 21:200);
+            shifted = circshift(base, [dy dx]);
+            cropB = shifted(21:200, 21:200);
+
+            harrisOpts = struct( ...
+                'featureDetector', 'Corners: Harris-Stephens algorithm', ...
+                'detectHarrisFeatures', struct('MinQuality', 0.01, 'FilterSize', 5), ...
+                'downsampleFactor', 2, ...
+                'estGeomTransform', struct('MaxNumTrials', 1000, 'Confidence', 99, 'MaxDistance', 1.5));
+            [shiftYXZ, quality] = utils.stitch.featureShift(cropA, cropB, harrisOpts);
+
+            testCase.verifyEqual(shiftYXZ(1:2), [dy dx], 'AbsTol', 1.0, ...
+                'Harris + downsampling must still recover the shift');
+            testCase.verifyGreaterThan(quality, 0.5, ...
+                'a clean overlap should score high with a corner detector too');
+        end
+
+        function fullChain_featureBasedRecoversLargeJitter(testCase)
+            % The differentiator for Feature-based: tile offsets jittered far
+            % beyond phase correlation's restricted search radius. Feature-based
+            % matches over the FULL tiles, so it recovers the arbitrary offsets
+            % that the (restricted) phase-correlation search cannot.
+            original = uint8(testCase.texturedImage(620, 620, 41));
+            overlapPx = 70; tileH = 240; tileW = 240;
+            stepY = tileH - overlapPx; stepX = tileW - overlapPx;
+            jitter = 40;   % >> the phase-correlation jitter budget for this overlap
+
+            tempDir = tempname; mkdir(tempDir);
+            testCase.addTeardown(@() rmdir(tempDir, 's'));
+
+            layout = testCase.emptyLayout(9);
+            trueOrigins = zeros(9, 3);
+            rng(23, 'twister');
+            k = 0;
+            for r = 1:3
+                for c = 1:3
+                    k = k + 1;
+                    oy = min(max(1 + (r - 1) * stepY + randi([-jitter jitter]), 1), 620 - tileH + 1);
+                    ox = min(max(1 + (c - 1) * stepX + randi([-jitter jitter]), 1), 620 - tileW + 1);
+                    trueOrigins(k, :) = [oy, ox, 1];
+                    tileFilename = fullfile(tempDir, sprintf('tile_%02d.tif', k));
+                    imwrite(original(oy:(oy + tileH - 1), ox:(ox + tileW - 1)), tileFilename);
+                    layout(k).index     = k;
+                    layout(k).filename  = tileFilename;
+                    layout(k).gridRC    = [r c];
+                    layout(k).nomOrigin = [1 + (r - 1) * stepY, 1 + (c - 1) * stepX, 1];
+                    layout(k).tileSize  = [tileH, tileW, 1, 1];
+                    layout(k).dataClass = 'uint8';
+                end
+            end
+
+            pairs = utils.stitch.findNeighborPairs(layout);
+            edges = utils.stitch.measureAllPairs(layout, pairs, ...
+                struct('qualityThreshold', 0.3, 'registrationMethod', 'Feature-based'));
+            testCase.verifyGreaterThanOrEqual(sum([edges.valid]), 8, ...
+                'feature-based should validate most edges under large jitter');
+
+            positions = utils.stitch.solveGlobalLeastSquares(layout, edges, ...
+                struct('springWeight', 0.1));
+            residual = positions(:, 1:2) - trueOrigins(:, 1:2);
+            residual = residual - mean(residual, 1);
+            testCase.verifyLessThan(max(abs(residual(:))), 1.5, ...
+                'feature-based full chain did not recover large-jitter origins');
+        end
+
+        function stageCoordsToOrigins_convertsMicronsAndRanksZ(testCase)
+            % Pure Bio-Formats conversion core: µm → 1-based pixel/slice origins,
+            % min-shifted, with distinct Z ranked into layers.
+            pixSize = struct('x', 0.5, 'y', 0.5, 'z', 1);
+            stageXYZum = [0 0 0; 100 0 0; 0 50 2; 100 50 2];   % 100µm/0.5 = 200px
+            [nomOrigin, zLayer] = utils.stitch.stageCoordsToOrigins(stageXYZum, pixSize);
+
+            testCase.verifyEqual(nomOrigin(:, 2), [1; 201; 1; 201], ...
+                '100 µm at 0.5 µm/px must be 200 px apart in X');
+            testCase.verifyEqual(nomOrigin(:, 1), [1; 1; 101; 101], ...
+                '50 µm at 0.5 µm/px must be 100 px apart in Y');
+            testCase.verifyEqual(zLayer(:)', [1 1 2 2], ...
+                'two distinct Z levels must rank into layers 1 and 2');
+        end
+
         function estimateOverlap_recoversTrueOverlapFromWrongGuess(testCase)
             % The user-entered overlap is often a guess; estimateOverlap must
             % recover the actual grid step from the images alone (full-tile
@@ -293,6 +406,104 @@ classdef StitchCoreTest < matlab.unittest.TestCase
             residual = residual - mean(residual, 1);
             testCase.verifyLessThan(max(abs(residual(:))), 1.5, ...
                 'full chain with estimated overlap did not recover tile origins');
+        end
+
+        function fullChain3D_recoversJittered3DLayerStack(testCase)
+            % PHASE 2 milestone: a 2x2 XY grid over 3 Z-layers, every tile a small
+            % Z-stack, cut from a textured 3D volume at JITTERED 3D positions while
+            % the layout carries the clean nominal grid. Exercises the cross-layer
+            % dz measurement (measureZShift), slice-unit nomOrigin(3), and the
+            % z-aware planCanvas. Recovers all three axes to sub-1.5 px, and the
+            % fused mosaic interior must match the ground-truth volume.
+            volumeH = 300; volumeW = 300; volumeDepth = 60;
+            volume = testCase.texturedVolume(volumeH, volumeW, volumeDepth, 77);
+
+            tileH = 180; tileW = 180; tileDepth = 28;
+            stepY = tileH - 60;   % 120, XY overlap 60 px
+            stepX = tileW - 60;
+            stepZ = tileDepth - 12;   % 16, Z overlap 12 slices
+
+            tempDir = tempname; mkdir(tempDir);
+            testCase.addTeardown(@() rmdir(tempDir, 's'));
+
+            layout = testCase.emptyLayout(12);
+            trueOrigins = zeros(12, 3);
+            clampOrigin = @(origin, tileSize, volumeSize) min(max(origin, 1), volumeSize - tileSize + 1);
+            rng(23, 'twister');
+            % Z jitter is per-LAYER, not per-tile: a 2D layer of tiles is one focal
+            % plane, so all tiles in a layer share the same z (within-layer dz == 0,
+            % which the solver enforces). Only XY jitters per tile.
+            layerOz = arrayfun(@(zl) clampOrigin(1 + (zl - 1) * stepZ + randi([-2 2]), ...
+                tileDepth, volumeDepth), 1:3);
+            k = 0;
+            for zl = 1:3
+                for r = 1:2
+                    for c = 1:2
+                        k = k + 1;
+                        oy = clampOrigin(1 + (r - 1) * stepY + randi([-4 4]), tileH, volumeH);
+                        ox = clampOrigin(1 + (c - 1) * stepX + randi([-4 4]), tileW, volumeW);
+                        oz = layerOz(zl);
+                        trueOrigins(k, :) = [oy, ox, oz];
+                        tileVol = volume(oy:oy + tileH - 1, ox:ox + tileW - 1, oz:oz + tileDepth - 1);
+                        tileFilename = fullfile(tempDir, sprintf('tile_%02d.tif', k));
+                        testCase.writeStackTiff(uint8(tileVol), tileFilename);
+                        layout(k).index      = k;
+                        layout(k).filename   = tileFilename;
+                        layout(k).zLayer     = zl;
+                        layout(k).gridRC     = [r c];
+                        layout(k).nomOrigin  = [1 + (r - 1) * stepY, 1 + (c - 1) * stepX, ...
+                                                1 + (zl - 1) * stepZ];
+                        layout(k).tileSize   = [tileH, tileW, tileDepth, 1];
+                        layout(k).dataClass  = 'uint8';
+                    end
+                end
+            end
+
+            pairs = utils.stitch.findNeighborPairs(layout);
+            testCase.assertNotEmpty(pairs, 'no neighbour pairs found for the 3D stack');
+            testCase.assertTrue(any(strcmp({pairs.direction}, 'z')), ...
+                'expected at least one cross-layer z pair');
+
+            edges = utils.stitch.measureAllPairs(layout, pairs, ...
+                struct('qualityThreshold', 0.3, 'subpixel', true));
+
+            % Every valid measured edge (all three axes) matches ground truth.
+            for e = edges([edges.valid])
+                trueDelta = trueOrigins(e.j, :) - trueOrigins(e.i, :);
+                testCase.verifyLessThan(max(abs(e.measured - trueDelta)), 1.5, ...
+                    sprintf('edge (%d,%d,%s) measured %s but truth is %s', ...
+                    e.i, e.j, e.direction, mat2str(round(e.measured, 1)), mat2str(trueDelta)));
+            end
+
+            positions = utils.stitch.solveGlobalLeastSquares(layout, edges);
+            residual = positions - trueOrigins;
+            residual = residual - mean(residual, 1);
+            testCase.verifyLessThan(max(abs(residual(:))), 1.5, ...
+                '3D measure+solve chain did not recover jittered origins in all axes');
+
+            % z-aware canvas: 3 layers with Z overlap must be thinner than a naive
+            % 3*tileDepth stack, and the fused interior must match the volume.
+            canvas = utils.stitch.planCanvas(layout, positions);
+            testCase.verifyLessThan(canvas.size(3), 3 * tileDepth, ...
+                'canvas Z did not account for inter-layer overlap');
+            imgOut = utils.stitch.fuseInMemory(layout, canvas, ...
+                struct('blendMode', 'Feather', 'background', 0));
+
+            % Compare an interior sub-volume against the ground-truth volume,
+            % aligned by the solved gauge (min corner -> pixel 1).
+            gauge = round(min(positions, [], 1));
+            oy = trueOrigins(1, 1) - gauge(1) + 1;
+            ox = trueOrigins(1, 2) - gauge(2) + 1;
+            oz = trueOrigins(1, 3) - gauge(3) + 1;
+            my = 30; mx = 30; mz = 4;
+            aBlock = double(imgOut(oy + my:oy + tileH - my, ox + mx:ox + tileW - mx, ...
+                oz + mz:oz + tileDepth - mz, 1, 1));
+            bBlock = double(volume(trueOrigins(1,1) + my:trueOrigins(1,1) + tileH - my, ...
+                trueOrigins(1,2) + mx:trueOrigins(1,2) + tileW - mx, ...
+                trueOrigins(1,3) + mz:trueOrigins(1,3) + tileDepth - mz));
+            rmse = sqrt(mean((aBlock(:) - bBlock(:)).^2));
+            testCase.verifyLessThan(rmse, 6.0, ...
+                sprintf('fused 3D interior RMSE too high: %.3f', rmse));
         end
 
         function solver_prunesCorruptedEdgeAndSpringHolds(testCase)
@@ -439,6 +650,63 @@ classdef StitchCoreTest < matlab.unittest.TestCase
 
             testCase.verifyEqual(zarrData, fuseData, ...
                 'zarr round-trip differs from in-memory fuse');
+        end
+
+        function buildLayoutBioFormats_fullChainFromStageCoords(testCase)
+            % End-to-end Bio-Formats layout source: write OME-TIFF tiles carrying
+            % OME stage coordinates, build the layout from that metadata, then
+            % measure + solve and check the origins are recovered. Needs the
+            % Bio-Formats Java library; self-skips when it cannot be loaded.
+            import matlab.unittest.fixtures.PathFixture
+            import matlab.unittest.fixtures.TemporaryFolderFixture
+            thisFile = mfilename('fullpath');
+            mibFolder = fullfile(fileparts(fileparts(fileparts(thisFile))), 'mib');
+            testCase.applyFixture(PathFixture(fullfile(mibFolder, 'external', 'bioformats')));
+            try
+                utils.ensureJavaLibraries({'bioformats'});
+            catch loadErr
+                testCase.assumeFail(['Bio-Formats unavailable: ' loadErr.message]);
+            end
+
+            tempFixture = testCase.applyFixture(TemporaryFolderFixture);
+            tempDir = tempFixture.Folder;
+
+            base = uint8(testCase.texturedImage(560, 560, 71));
+            tileSz = 220; step = 170; pixUm = 0.5;
+            rc = [1 1; 1 2; 2 1; 2 2];
+            files = cell(1, 4);
+            trueYX = zeros(4, 2);
+            rng(23, 'twister');
+            for k = 1:4
+                oy = min(max(1 + (rc(k,1)-1)*step + randi([-4 4]), 1), 560 - tileSz + 1);
+                ox = min(max(1 + (rc(k,2)-1)*step + randi([-4 4]), 1), 560 - tileSz + 1);
+                trueYX(k, :) = [oy ox];
+                tile = base(oy:oy+tileSz-1, ox:ox+tileSz-1);
+                files{k} = fullfile(tempDir, sprintf('tile_%02d.ome.tiff', k));
+                meta = createMinimalOMEXMLMetadata(tile);
+                meta.setPlanePositionX(ome.units.quantity.Length(java.lang.Double((ox-1)*pixUm), ome.units.UNITS.MICROMETER), 0, 0);
+                meta.setPlanePositionY(ome.units.quantity.Length(java.lang.Double((oy-1)*pixUm), ome.units.UNITS.MICROMETER), 0, 0);
+                meta.setPixelsPhysicalSizeX(ome.units.quantity.Length(java.lang.Double(pixUm), ome.units.UNITS.MICROMETER), 0);
+                meta.setPixelsPhysicalSizeY(ome.units.quantity.Length(java.lang.Double(pixUm), ome.units.UNITS.MICROMETER), 0);
+                bfsave(tile, files{k}, 'metadata', meta);
+            end
+
+            layout = utils.stitch.buildLayoutBioFormats(strjoin(files, newline));
+            testCase.assertEqual(numel(layout), 4, 'expected 4 tiles from stage metadata');
+            % nomOrigin must reflect the stage grid (min-shifted to 1).
+            nomYX = vertcat(layout.nomOrigin);
+            testCase.verifyEqual(nomYX(:, 1:2) - nomYX(1, 1:2), ...
+                trueYX - trueYX(1, :), 'AbsTol', 1.0, ...
+                'stage-derived nominal origins do not match the true grid');
+
+            pairs = utils.stitch.findNeighborPairs(layout, struct('minOverlapPx', 16));
+            edges = utils.stitch.measureAllPairs(layout, pairs, struct('qualityThreshold', 0.3));
+            positions = utils.stitch.solveGlobalLeastSquares(layout, edges, struct('springWeight', 0.1));
+            solved = positions(:, 1:2) - positions(1, 1:2);
+            truth  = trueYX - trueYX(1, :);
+            err = sqrt(sum((solved - truth).^2, 2));
+            testCase.verifyLessThan(max(err), 1.5, ...
+                'Bio-Formats full chain did not recover the tile origins');
         end
     end
 
@@ -588,6 +856,30 @@ classdef StitchCoreTest < matlab.unittest.TestCase
             img = img - min(img(:));
             img = 200 * img / max(img(:)) + 20;   % into a visible 20..220 range
             img = single(img);
+        end
+
+        function volume = texturedVolume(H, W, D, seed)
+            % TEXTUREDVOLUME - Deterministic 3D textured volume (3D-filtered noise +
+            % gradients) so phase correlation has real content in all three axes.
+            rng(seed, 'twister');
+            noise = randn(H, W, D);
+            noise = imgaussfilt3(noise, 2.0);
+            [xx, yy, zz] = meshgrid(linspace(0, 1, W), linspace(0, 1, H), linspace(0, 1, D));
+            gradient = 0.35 * xx + 0.25 * yy + 0.25 * zz + ...
+                0.15 * sin(5 * pi * xx) .* cos(4 * pi * yy) .* sin(3 * pi * zz);
+            volume = noise / max(abs(noise(:))) + gradient;
+            volume = volume - min(volume(:));
+            volume = 200 * volume / max(volume(:)) + 20;
+            volume = single(volume);
+        end
+
+        function writeStackTiff(volume, filename)
+            % WRITESTACKTIFF - Write a [H W D] uint8 volume as a multi-page TIFF so
+            % makeTileReader stacks the pages back into the depth dimension.
+            imwrite(volume(:, :, 1), filename);
+            for z = 2:size(volume, 3)
+                imwrite(volume(:, :, z), filename, 'WriteMode', 'append');
+            end
         end
 
         function [tiles, origins] = chopIntoTiles(img, rows, cols, overlapPx, jitterPx)

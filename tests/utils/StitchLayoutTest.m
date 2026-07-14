@@ -76,6 +76,38 @@ classdef StitchLayoutTest < matlab.unittest.TestCase
             testCase.verifyEqual(layout(4).nomOrigin(1), 1 + 40, 'AbsTol', 0.5);
         end
 
+        function buildGrid_folderTiles_carrySliceStack(testCase)
+            % Each grid entry is a FOLDER holding a Z-stack; buildLayoutGrid must
+            % record the folder as the tile, list its slices in .sliceFiles, and
+            % set tileSize depth to the slice count — while arranging the folders
+            % on the same XY grid as single-image tiles.
+            tmpFixture = testCase.applyFixture( ...
+                matlab.unittest.fixtures.TemporaryFolderFixture);
+            numSlices = 5;
+            folderPaths = cell(1, 4);
+            for tileIdx = 1:4
+                folderPaths{tileIdx} = fullfile(tmpFixture.Folder, sprintf('tile_%02d', tileIdx));
+                mkdir(folderPaths{tileIdx});
+                for z = 1:numSlices
+                    img = uint8(ones(40, 60, 'uint8') * 100 + tileIdx);
+                    imwrite(img, fullfile(folderPaths{tileIdx}, sprintf('s%02d.png', z)));
+                end
+            end
+
+            opts.rows = 2; opts.cols = 2;
+            opts.tileOrder = 'Horizontal'; opts.overlapX = 0; opts.overlapY = 0;
+            layout = utils.stitch.buildLayoutGrid(folderPaths, opts);
+
+            testCase.verifyEqual(numel(layout), 4);
+            testCase.verifyEqual(layout(1).tileSize, [40 60 numSlices 1]);
+            testCase.verifyNumElements(layout(1).sliceFiles, numSlices);
+            testCase.verifyEqual(layout(1).gridRC, [1 1]);
+            testCase.verifyEqual(layout(4).gridRC, [2 2]);
+            % Grid geometry identical to single-image tiles.
+            testCase.verifyEqual(layout(2).nomOrigin(2), 1 + 60, 'AbsTol', 0.5);
+            testCase.verifyEqual(layout(3).nomOrigin(1), 1 + 40, 'AbsTol', 0.5);
+        end
+
         function buildGrid_horizontalSnake_rowsAlternate(testCase)
             % Snake: row 0 goes L→R, row 1 goes R→L
             tileFolder = testCase.makeSyntheticTiles(4, [40 60]);
@@ -287,6 +319,24 @@ classdef StitchLayoutTest < matlab.unittest.TestCase
             for tileIdx = 1:numel(layout)
                 if layout(tileIdx).gridRC(1) == 2
                     testCase.verifyEqual(layout(tileIdx).nomOrigin(1), 33);  % 32+1
+                end
+            end
+        end
+
+        function filenamePattern_overlapShrinksStep(testCase)
+            % With overlapX/overlapY the XY step shrinks like the Grid source, so
+            % overlapping pattern-named acquisitions get honest nominal positions.
+            tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            filenames = createChopFiles(tmpDir.Folder, [1 1 1; 1 2 1; 2 1 1; 2 2 1], [40 40]);
+
+            layout = utils.stitch.buildLayoutFilenamePattern(filenames, ...
+                struct('overlapX', 25, 'overlapY', 25));   % step = 40 * 0.75 = 30
+
+            for tileIdx = 1:numel(layout)
+                if isequal(layout(tileIdx).gridRC, [2 1])       % Y=2, X=1
+                    testCase.verifyEqual(layout(tileIdx).nomOrigin(1), 31);   % (2-1)*30+1
+                elseif isequal(layout(tileIdx).gridRC, [1 2])   % Y=1, X=2
+                    testCase.verifyEqual(layout(tileIdx).nomOrigin(2), 31);
                 end
             end
         end

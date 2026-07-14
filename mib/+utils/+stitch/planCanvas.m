@@ -11,9 +11,10 @@ function canvas = planCanvas(layout, positions, options)
 % output mosaic: it shifts all origins so the minimum origin lands at pixel 1,
 % rounds to integer tile placements (keeping the fractional remainder as a
 % per-tile subpixel residual for later resampled placement), and derives the
-% total canvas size and physical bounding box. In Phase 1 distinct ``zLayer``
-% values stack along Z: layer ``L`` occupies ``[(L-1)*D+1 .. L*D]`` where ``D`` is
-% the per-tile depth (tiles within a layer share the same z-range).
+% total canvas size and physical bounding box. All three axes use the SOLVED
+% positions — ``positions(:,3)`` is a slice coordinate, so overlapping or
+% jittered Z-stacks land where the global solve put them (tiles within a 2D
+% layer share one z by construction of the within-layer dz constraints).
 %
 % Input Arguments:
 %   - **layout** — [struct array] tile layout with ``.tileSize`` (``[H W D C]``),
@@ -63,33 +64,24 @@ tileC = tileSizes(:, 4);
 
 zLayerIds = arrayfun(@(t) t.zLayer, layout);
 distinctLayers = unique(zLayerIds(:))';
-nLayers = numel(distinctLayers);
 
-% Per-tile depth is assumed uniform within a layer; use the max depth as the
-% per-layer thickness so every layer occupies an equal Z-band.
-perLayerDepth = max(tileD);
-
-% ---- XY placement: shift solved origins so the min origin becomes pixel 1 ----
+% ---- placement: shift solved origins so the min origin becomes pixel/slice 1 --
 % Round to integer placements; keep the fractional remainder as subpixel residual.
 minY = min(positions(:, 1));
 minX = min(positions(:, 2));
+minZ = min(positions(:, 3));
 
 placementY = positions(:, 1) - minY + 1;
 placementX = positions(:, 2) - minX + 1;
+placementZ = positions(:, 3) - minZ + 1;
 
 intPlacementY = round(placementY);
 intPlacementX = round(placementX);
+intPlacementZ = round(placementZ);
 
 subResY = placementY - intPlacementY;
 subResX = placementX - intPlacementX;
-
-% ---- Z placement: layers stack; tiles within a layer share their z-band ------
-intPlacementZ = zeros(nTiles, 1);
-subResZ = zeros(nTiles, 1);
-for t = 1:nTiles
-    layerIdx = find(distinctLayers == zLayerIds(t), 1);
-    intPlacementZ(t) = (layerIdx - 1) * perLayerDepth + 1;
-end
+subResZ = placementZ - intPlacementZ;
 
 tilePlacement = [intPlacementY, intPlacementX, intPlacementZ];
 subpixelResidual = [subResY, subResX, subResZ];
@@ -97,7 +89,7 @@ subpixelResidual = [subResY, subResX, subResZ];
 % ---- total canvas extent -----------------------------------------------------
 H = max(intPlacementY + tileH - 1);
 W = max(intPlacementX + tileW - 1);
-Z = nLayers * perLayerDepth;
+Z = max(intPlacementZ + tileD - 1);
 
 if isfield(options, 'numChannels') && ~isempty(options.numChannels)
     C = options.numChannels;
