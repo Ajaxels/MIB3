@@ -7,6 +7,9 @@ function selectOutputPath_Callback(obj)
 %      obj.selectOutputPath_Callback()
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.Stitching.selectOutputPath_Callback: triggered\n');
+end
 startFolder = obj.BatchOpt.OutputPath;
 if isempty(startFolder) || ~isfolder(fileparts(startFolder))
     startFolder = obj.mibModel.currentDirectory;

@@ -7,6 +7,9 @@ function closeWindow(obj)
 %      obj.closeWindow()
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.Stitching.closeWindow: triggered\n');
+end
 % Delete interactive tile-placement ROI listeners (the ROIs go with the axes).
 if ~isempty(obj.roiListeners)
     for roiListenerIdx = 1:numel(obj.roiListeners)

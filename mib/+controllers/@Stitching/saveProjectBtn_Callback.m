@@ -7,6 +7,9 @@ function saveProjectBtn_Callback(obj)
 %      obj.saveProjectBtn_Callback()
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.Stitching.saveProjectBtn_Callback: triggered\n');
+end
 if isempty(obj.layout)
     warnOptions.MsgBoxOnly  = true;
     warnOptions.Icon        = 'puffin_warning';

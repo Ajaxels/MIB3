@@ -7,6 +7,9 @@ function helpBtn_Callback(obj)
 %      obj.helpBtn_Callback()
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.Stitching.helpBtn_Callback: triggered\n');
+end
 helpFilePath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', ...
     'user-interface', 'ribbon', 'dataset', 'dataset-stitch.html');
 if isfile(helpFilePath)

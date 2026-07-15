@@ -14,6 +14,9 @@ function configureFeaturesBtn_Callback(obj)
 % next *Measure overlaps* / *Stitch* run of the Feature-based method.
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.Stitching.configureFeaturesBtn_Callback: triggered\n');
+end
 featureDetectorType = obj.BatchOpt.FeatureDetectorType{1};
 
 % First (downsampling) row: a factor where 1 = full resolution. Use the first

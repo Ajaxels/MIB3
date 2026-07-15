@@ -10,6 +10,9 @@ function updateBatchOptFromGUI(obj, hObject)
 %   - **hObject** — handle to the AppDesigner widget that changed
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.Stitching.updateBatchOptFromGUI: %s -> %s\n', hObject.Tag, num2str(hObject.Value));
+end
 obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, hObject);
 
 % When layout source or overlap-estimation mode changes, update grid-group

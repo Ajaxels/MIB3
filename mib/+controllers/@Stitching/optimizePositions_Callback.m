@@ -14,6 +14,9 @@ function optimizePositions_Callback(obj)
 % RMSE and residual statistics are displayed in the status label.
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.Stitching.optimizePositions_Callback: triggered\n');
+end
 if isempty(obj.edges)
     warnOptions.MsgBoxOnly  = true;
     warnOptions.Icon        = 'puffin_warning';

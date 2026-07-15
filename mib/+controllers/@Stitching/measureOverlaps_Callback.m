@@ -12,6 +12,9 @@ function measureOverlaps_Callback(obj)
 % in ``obj.edges`` and the status label is updated.
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.Stitching.measureOverlaps_Callback: triggered\n');
+end
 if isempty(obj.layout)
     warnOptions.MsgBoxOnly  = true;
     warnOptions.Icon        = 'puffin_warning';

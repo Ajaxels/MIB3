@@ -22,6 +22,9 @@ function stitchBtn_Callback(obj, batchModeSwitch)
 %
 
 if nargin < 2; batchModeSwitch = false; end
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.Stitching.stitchBtn_Callback: triggered\n');
+end
 
 % Run any pipeline stages not done yet: layout -> measure -> solve -> canvas.
 % In batch mode all stages always run from BatchOpt; in GUI mode the cached

@@ -21,6 +21,9 @@ function selectInputBtn_Callback(obj)
 % ``updateWidgets`` is called to refresh the status display.
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.Stitching.selectInputBtn_Callback: triggered\n');
+end
 layoutSource = obj.BatchOpt.LayoutSource{1};
 
 if strcmp(layoutSource, 'Bio-Formats metadata')

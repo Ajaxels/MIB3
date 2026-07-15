@@ -10,6 +10,9 @@ function loadProjectBtn_Callback(obj)
 % selected ``*.mibstitch.json`` file.
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.Stitching.loadProjectBtn_Callback: triggered\n');
+end
 startFolder = obj.mibModel.currentDirectory;
 if ~isempty(obj.BatchOpt.InputPath) && isfolder(fileparts(obj.BatchOpt.InputPath))
     startFolder = fileparts(obj.BatchOpt.InputPath);

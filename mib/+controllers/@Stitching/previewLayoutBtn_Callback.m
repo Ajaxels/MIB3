@@ -22,6 +22,9 @@ function previewLayoutBtn_Callback(obj)
 % layer shares the same XY grid, so drawing them all would stack rectangles.
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.Stitching.previewLayoutBtn_Callback: triggered\n');
+end
 if isempty(obj.layout)
     warnOptions.MsgBoxOnly  = true;
     warnOptions.Icon        = 'puffin_warning';
