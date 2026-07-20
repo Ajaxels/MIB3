@@ -161,16 +161,29 @@ if isempty(obj.mibModel.pythonEnv)
     onnx_model_path = fullfile(obj.mibModel.preferences.ExternalDirs.DeepMIBDir, onnxFilename);
     checkpoint = fullfile(obj.mibModel.preferences.ExternalDirs.DeepMIBDir, checkpointFilename);
 
-    % Use InProcess: OutOfProcess fails with "CreateProcessW: Wrong Parameter
-    % [system:87]" while launching MATLABPyHost.exe on some Windows systems
-    % (confirmed R2025b). The failure is silent and deferred to the first
-    % pyrun() call below, surfacing only as an "Error while evaluating Figure
-    % WindowButtonDownFcn" with no stack trace. Tradeoff: InProcess runs Python
-    % in the MATLAB process, so a hard torch/CUDA crash now also crashes MATLAB
-    % (OutOfProcess used to isolate that). Switch back to OutOfProcess here if
-    % crash isolation is needed and the host launcher works on the target system.
+    % Execution mode comes from the preferences (External directories ->
+    % Python execution mode), default 'OutOfProcess'.
+    %  - OutOfProcess (default): Python/torch runs in a separate process with
+    %    its own CUDA context. This isolates SAM from MATLAB's GPU: DeepMIB
+    %    calls gpuDevice(), which resets MATLAB's primary CUDA context and frees
+    %    every allocation in it. When SAM shares that process (InProcess), the
+    %    reset invalidates SAM's cached GPU tensors and the next click fails
+    %    with "CUDA error: an illegal memory access was encountered". A separate
+    %    process is immune. A hard torch/CUDA crash also stays isolated.
+    %  - InProcess: fallback for systems where OutOfProcess fails with
+    %    "CreateProcessW: Wrong Parameter [system:87]" while launching
+    %    MATLABPyHost.exe (seen on some Windows setups, R2025b). That failure is
+    %    silent and deferred to the first pyrun() call, surfacing only as an
+    %    "Error while evaluating Figure WindowButtonDownFcn" with no stack trace.
+    %    InProcess shares MATLAB's process, so it is exposed to the DeepMIB GPU
+    %    reset above and a torch/CUDA crash brings down MATLAB too.
+    pythonExecutionMode = 'OutOfProcess';
+    if isfield(obj.mibModel.preferences.ExternalDirs, 'PythonExecutionMode') && ...
+            ~isempty(obj.mibModel.preferences.ExternalDirs.PythonExecutionMode)
+        pythonExecutionMode = obj.mibModel.preferences.ExternalDirs.PythonExecutionMode;
+    end
     [obj.mibModel.pythonEnv, pythonErrorMessage] = utils.initPythonEnv( ...
-        obj.mibModel.preferences.ExternalDirs.PythonInstallationPath, 'InProcess');     % InProcess or OutOfProcess
+        obj.mibModel.preferences.ExternalDirs.PythonInstallationPath, pythonExecutionMode);
     if ~isempty(pythonErrorMessage)
         if BatchOpt.showWaitbar; delete(wb); end
         utils.dlgs.showErrorDialog(obj.mibModel.getProgressBarParent(), pythonErrorMessage, 'SAM segmentation');

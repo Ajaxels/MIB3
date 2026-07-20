@@ -31,6 +31,11 @@ function fuseStreaming(layout, canvas, outputZarrPath, options)
 %     - ``.maxSliceBytes`` — [double] slice-fits threshold in bytes (default: ``4*1024^3``)
 %     - ``.ChunkSize`` — [1x3 double] level-0 chunk shape (default: ``[256 256 16]``)
 %     - ``.Compressors`` — [char] codec name (default: ``'zstd'``)
+%     - ``.Levels`` — [double] explicit pyramid level count (default: auto)
+%     - ``.ShardSize`` — [1x3 double] per-axis chunk multipliers for zarr v3 sharding
+%       (``[]`` = no sharding)
+%     - ``.DownsampleMethod`` — [char] pyramid downsampling method (default: ``'bilinear'``)
+%     - ``.DownsampleStrategy`` — [char] ``'XY only'`` (default) | ``'Anisotropy-preserving'``
 %     - ``.cacheSizeBytes`` — [double] LRU tile-cache budget (default: ``2*1024^3``)
 %     - ``.showWaitbar`` — [logical] show progress (default: ``false``)
 %     - ``.parentFigure`` — [handle] progress-dialog parent (default: ``[]``)
@@ -96,6 +101,14 @@ saverOptions.silent      = ~options.showWaitbar;
 saverOptions.showWaitbar = options.showWaitbar;
 saverOptions.ChunkSize   = options.ChunkSize;
 saverOptions.Compressors = options.Compressors;
+% Forward the optional pyramid settings from the export-settings dialog.
+% ChunkSize/Compressors above already stop Zarr3Saver from re-prompting.
+for pyramidField = {'Levels', 'ShardSize', 'DownsampleMethod', ...
+        'DownsampleStrategy', 'MinLevelSize', 'MaxLevels'}
+    if isfield(options, pyramidField{1})
+        saverOptions.(pyramidField{1}) = options.(pyramidField{1});
+    end
+end
 
 saver = io.savers.Zarr3Saver(struct());
 saver.saveStream(provider, metadata, outputZarrPath, saverOptions);
@@ -125,8 +138,12 @@ if isfolder(outputZarrPath); rmdir(outputZarrPath, 's'); end
 grp = io.zarr.Group.create(outputZarrPath);
 
 % Build the level plan (same as Zarr3Saver so pyramid geometry matches).
-plan = io.savers.Zarr3Saver.computeLevelPlan(H, W, Z, pixSize, ...
-    struct('DownsampleStrategy', 'XY only'));
+planOptions = struct();
+for planField = {'DownsampleStrategy', 'Levels', 'MinLevelSize', 'MaxLevels'}
+    if isfield(options, planField{1}); planOptions.(planField{1}) = options.(planField{1}); end
+end
+if ~isfield(planOptions, 'DownsampleStrategy'); planOptions.DownsampleStrategy = 'XY only'; end
+plan = io.savers.Zarr3Saver.computeLevelPlan(H, W, Z, pixSize, planOptions);
 nLevels = numel(plan);
 
 axesNames = {'y', 'x', 'z'}; axesTypes = {'space', 'space', 'space'};
@@ -143,8 +160,12 @@ for L = 1:nLevels
     chunk = min([chunkY chunkX chunkZ], keepShape(1:3));
     chunk = max(chunk, [1 1 1]);
     if numel(keepShape) > 3; chunk = [chunk, keepShape(4:end)]; end %#ok<AGROW>
-    levelArr{L} = grp.createArray(num2str(L - 1), keepShape, dataClass, ...
-        'chunkShape', chunk, 'compressors', options.Compressors);
+    createArgs = {'chunkShape', chunk, 'compressors', options.Compressors};
+    if isfield(options, 'ShardSize') && ~isempty(options.ShardSize)
+        createArgs = [createArgs, {'shardShape', ...
+            io.savers.Zarr3Saver.computeShard(chunk, options.ShardSize)}]; %#ok<AGROW>
+    end
+    levelArr{L} = grp.createArray(num2str(L - 1), keepShape, dataClass, createArgs{:});
     scaleVec = [plan(L).physScaleY, plan(L).physScaleX, plan(L).physScaleZ];
     if C > 1; scaleVec(end+1) = 1; end %#ok<AGROW>
     if T > 1; scaleVec(end+1) = 1; end %#ok<AGROW>

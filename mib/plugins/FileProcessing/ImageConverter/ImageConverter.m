@@ -1112,8 +1112,15 @@ classdef ImageConverter < handle
             isNativeZarrV3 = strcmp(obj.BatchOpt.OutputImageFormatExtension{1}, 'zarr') && ...
                 ~io.zarr.Config.isPython() && str2double(obj.BatchOpt.ZarrVersion{1}(end)) == 3;
             if ~isNativeZarrV3 && isempty(obj.mibModel.pythonEnv)
+                % execution mode from preferences (default OutOfProcess); see
+                % External directories -> Python execution mode
+                pythonExecutionMode = 'OutOfProcess';
+                if isfield(obj.mibModel.preferences.ExternalDirs, 'PythonExecutionMode') && ...
+                        ~isempty(obj.mibModel.preferences.ExternalDirs.PythonExecutionMode)
+                    pythonExecutionMode = obj.mibModel.preferences.ExternalDirs.PythonExecutionMode;
+                end
                 [obj.mibModel.pythonEnv, pythonErrorMessage] = utils.initPythonEnv( ...
-                    obj.mibModel.preferences.ExternalDirs.PythonInstallationPath, 'OutOfProcess');     % InProcess or OutOfProcess
+                    obj.mibModel.preferences.ExternalDirs.PythonInstallationPath, pythonExecutionMode);
                 if ~isempty(pythonErrorMessage)
                     utils.dlgs.showErrorDialog(obj.view.gui, pythonErrorMessage, 'Image converter');
                     return;
@@ -1418,8 +1425,15 @@ classdef ImageConverter < handle
             levelImageTranslations = levelImageTranslations+boundingBoxShiftsZYX;
 
             %% Init python
+            % execution mode from preferences (default OutOfProcess); see
+            % External directories -> Python execution mode
+            pythonExecutionMode = 'OutOfProcess';
+            if isfield(obj.mibModel.preferences.ExternalDirs, 'PythonExecutionMode') && ...
+                    ~isempty(obj.mibModel.preferences.ExternalDirs.PythonExecutionMode)
+                pythonExecutionMode = obj.mibModel.preferences.ExternalDirs.PythonExecutionMode;
+            end
             [obj.mibModel.pythonEnv, pythonErrorMessage] = utils.initPythonEnv( ...
-                obj.mibModel.preferences.ExternalDirs.PythonInstallationPath, 'OutOfProcess');     % InProcess or OutOfProcess
+                obj.mibModel.preferences.ExternalDirs.PythonInstallationPath, pythonExecutionMode);
             if ~isempty(pythonErrorMessage)
                 utils.dlgs.showErrorDialog(obj.view.gui, pythonErrorMessage, 'Image converter');
                 return;

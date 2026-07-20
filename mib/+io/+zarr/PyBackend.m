@@ -57,7 +57,7 @@ classdef PyBackend
                 pyPath = io.zarr.Config.pythonPath();
                 if ~isempty(pyPath)
                     try
-                        pyenv('Version', pyPath, 'ExecutionMode', 'OutOfProcess');
+                        pyenv('Version', pyPath, 'ExecutionMode', io.zarr.Config.executionMode());
                     catch err
                         % already loaded -> keep the running interpreter
                         if ~strcmp(err.identifier, 'MATLAB:Pyenv:PythonLoaded'); rethrow(err); end

@@ -131,11 +131,13 @@ if isTransformWidget || isAllowRotationWidget
     obj.updateWidgets();
 end
 
-% When output mode changes, update output path enable state
+% When output mode changes, update output path enable state and drop any
+% cached pyramid settings (they belong to the previous output configuration).
 if isequal(hObject, obj.view.handles.OutputMode)
-    isZarr = strcmp(obj.BatchOpt.OutputMode{1}, 'OME-Zarr (BigData)');
+    isZarr = strcmp(obj.BatchOpt.OutputMode{1}, 'OME-Zarr3 (BigData)');
     obj.view.handles.OutputPath.Enable      = isZarr;
     obj.view.handles.selectOutputBtn.Enable = isZarr;
+    obj.zarrExportOptions = [];
 end
 
 end

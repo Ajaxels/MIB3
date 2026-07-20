@@ -16,8 +16,8 @@ if isempty(startFolder) || ~isfolder(fileparts(startFolder))
 end
 
 [selectedFile, selectedFolder] = uiputfile( ...
-    {'*.zarr', 'OME-Zarr directory (*.zarr)'}, ...
-    'Save OME-Zarr output as', fullfile(startFolder, 'stitched.zarr'));
+    {'*.zarr3', 'OME-Zarr directory (*.zarr3)'}, ...
+    'Save OME-Zarr output as', fullfile(startFolder, 'stitched.zarr3'));
 if isequal(selectedFile, 0)
     return;
 end
@@ -25,5 +25,9 @@ end
 outputPath = fullfile(selectedFolder, selectedFile);
 obj.BatchOpt.OutputPath = outputPath;
 obj.view.handles.OutputPath.Value = outputPath;
+
+% A fresh output path means the pyramid settings are re-asked on the next
+% Stitch (they described the previous destination).
+obj.zarrExportOptions = [];
 
 end

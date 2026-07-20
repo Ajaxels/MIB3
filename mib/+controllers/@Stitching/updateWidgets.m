@@ -96,7 +96,7 @@ handles.BlendMode.Value   = obj.BatchOpt.BlendMode{1};
 handles.SaveProject.Value = obj.BatchOpt.SaveProject;
 
 % ---- Enable / disable output path based on output mode ----
-isZarr = strcmp(obj.BatchOpt.OutputMode{1}, 'OME-Zarr (BigData)');
+isZarr = strcmp(obj.BatchOpt.OutputMode{1}, 'OME-Zarr3 (BigData)');
 handles.OutputPath.Enable      = isZarr;
 handles.selectOutputBtn.Enable = isZarr;
 

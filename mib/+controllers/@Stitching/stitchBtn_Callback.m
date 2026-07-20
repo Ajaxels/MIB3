@@ -14,7 +14,9 @@ function stitchBtn_Callback(obj, batchModeSwitch)
 % Fusion path depends on ``BatchOpt.OutputMode``:
 %   - **In memory** — calls ``utils.stitch.fuseInMemory`` then creates a new
 %     ``core.MibDataset`` and notifies ``'NewDataset'``.
-%   - **OME-Zarr (BigData)** — calls ``utils.stitch.fuseStreaming`` to write
+%   - **OME-Zarr3 (BigData)** — asks for the pyramid/chunk/compression settings
+%     (``io.savers.Zarr3Saver.optionsDialog``, the same dialog as the standard
+%     "Export to Zarr3" action), calls ``utils.stitch.fuseStreaming`` to write
 %     chunk-wise to an OME-Zarr file, then reopens it via
 %     ``io.loaders.Zarr3VirtualSetupLoader`` and notifies ``'NewDataset'``.
 %
@@ -120,7 +122,7 @@ if strcmp(outputMode, 'In memory')
     obj.mibModel.I{activeId} = core.MibDataset(fusedVolume, imageMetadata, 'Standard', 'labels63');
     notify(obj.mibModel, 'NewDataset');
 
-elseif strcmp(outputMode, 'OME-Zarr (BigData)')
+elseif strcmp(outputMode, 'OME-Zarr3 (BigData)')
     % --- Streaming fusion to OME-Zarr ---
     outputPath = obj.BatchOpt.OutputPath;
     if isempty(outputPath)
@@ -131,9 +133,31 @@ elseif strcmp(outputMode, 'OME-Zarr (BigData)')
                 return;
             end
             outputPath = fullfile(outputFolder, outputFile);
+            obj.zarrExportOptions = [];   % new path → re-ask pyramid settings
         else
             notify(obj.mibModel, 'StopProtocol');
             return;
+        end
+    end
+
+    % Collect pyramid/chunk/compression settings once (same dialog as the
+    % standard "Export to Zarr3" action); cache them so an inspector re-fuse to
+    % the same path reuses the choice instead of re-prompting. Batch runs and a
+    % pre-seeded cache skip the dialog.
+    if ~batchModeSwitch && isempty(obj.zarrExportOptions)
+        datasetInfo = struct('Y', obj.canvas.size(1), 'X', obj.canvas.size(2), ...
+            'Z', obj.canvas.size(3), 'pixSize', obj.canvas.pixSize);
+        zarrOptions = io.savers.Zarr3Saver.optionsDialog(obj.view.gui, ...
+            obj.mibModel.mibPath, false, datasetInfo);
+        if isempty(zarrOptions)
+            return;   % user cancelled the settings dialog
+        end
+        obj.zarrExportOptions = zarrOptions;
+    end
+    if ~isempty(obj.zarrExportOptions)
+        zarrFields = fieldnames(obj.zarrExportOptions);
+        for zarrFieldIdx = 1:numel(zarrFields)
+            fuseOptions.(zarrFields{zarrFieldIdx}) = obj.zarrExportOptions.(zarrFields{zarrFieldIdx});
         end
     end
 

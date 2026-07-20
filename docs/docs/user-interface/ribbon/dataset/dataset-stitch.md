@@ -294,8 +294,17 @@ the input.
 - <span class="widget widget-edit">Nominal position weight</span>: how strongly tiles with weak or rejected
   measurements are pulled back toward their nominal grid positions (0–1, default 0.10). With `0` such
   tiles are positioned only through their other, valid measurements.
-- <label class="widget widget-checkbox">Sub-pixel placement</label>: refine the measured shifts to sub-pixel
-  precision (the final placement is currently rounded to whole pixels; the sub-pixel residual is stored in the project file).
+- <label class="widget widget-checkbox">Sub-pixel placement</label>: refine each pairwise-shift **measurement** to
+  sub-pixel precision with a parabolic fit to the correlation peak. Off by default, so the measured shifts are
+  whole-pixel unless you tick it.
+
+    !!! note "What it does and does not affect"
+        Despite the label, this option controls the **measurement** step, not where the tiles finally land.
+        Tile *placement* is always rounded to whole pixels: `planCanvas` places every tile at an integer origin
+        and keeps the discarded fraction as a per-tile *sub-pixel residual* in the project file (the fuse step
+        does not resample by it yet). Enabling this therefore sharpens the shifts that feed the global solve —
+        useful when many small overlaps each carry a fraction of a pixel that accumulates across a large grid —
+        but any single tile still snaps to the nearest whole pixel in the output mosaic.
 
 ---
 
@@ -303,8 +312,22 @@ the input.
 
 - <span class="widget widget-dropdown">Output mode</span>:
     - **In memory**: the mosaic is assembled in RAM and replaces the current dataset. Use for mosaics that comfortably fit into memory.
-    - **OME-Zarr (BigData)**: the mosaic is streamed chunk-by-chunk to an OME-Zarr file on disk and opened as a BigData dataset. Use for mosaics of any size.
-- <span class="widget widget-edit">Output path</span>: destination of the OME-Zarr file (OME-Zarr mode only).
+    - **OME-Zarr3 (BigData)**: the mosaic is streamed chunk-by-chunk to an OME-Zarr v3 file on disk and opened as a BigData dataset. Use for mosaics of any size.
+- <span class="widget widget-edit">Output path</span>: destination of the OME-Zarr3 file (OME-Zarr3 mode only).
+
+    !!! info "Pyramid settings dialog"
+        When you press <span class="widget widget-button">Stitch</span> in **OME-Zarr3 (BigData)** mode, MIB shows the same
+        **Export to Zarr3** settings dialog used by the standard dataset→OME-Zarr export, so the streamed mosaic is written
+        as a proper multi-resolution pyramid. You choose:
+
+        - **Pyramid levels** (`0` = auto: add levels while `min(Y,X)/2 ≥ 256 px`, up to 8; or a fixed `1–12`),
+        - **Chunk size** `[Y, X, Z]` and **Shard factors** `[Y, X, Z]` (how many chunks to bundle per shard file; `0` = off),
+        - **Compression** (`zstd` / `gzip` / `none`),
+        - **Downsampling method** and **strategy** (`XY only`, or `Anisotropy-preserving` for anisotropic 3-D stacks).
+
+        Smart defaults are seeded from the mosaic's dimensions and voxel size. The choice is remembered for the current
+        output path, so an inspector **Re-fuse** reuses it without re-asking; picking a new output path or switching output
+        mode asks again. Batch/headless runs skip the dialog and use the defaults (or values supplied in `BatchOpt`).
 - <span class="widget widget-dropdown">Blend mode</span>: how pixel values are combined where tiles overlap
     - **Feather**: weighted blend, weights ramp down toward each tile border — smooth, seam-free transitions (*recommended*).
     - **Average**: plain average of all overlapping tiles.

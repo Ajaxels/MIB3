@@ -337,6 +337,23 @@ Use any temporary directory available on your system. The created files can be r
 <br><br>
 <span class="widget widget-edit">Python installation path</span>: a text field and <span class="widget widget-button">...</span> 
 button to set the path to Python, required for [SAM](../../panels/segm/segm-sam.md), see more in the [System requirements](https://mib.helsinki.fi/downloads_systemreq_sam2.html) section.
+<br><br>
+<span class="widget widget-dropdown">Python execution mode</span>: a dropdown to choose how MIB launches the Python
+interpreter (used by [SAM](../../panels/segm/segm-sam.md) and other Python-based tools):
+
+- `OutOfProcess`: Python and PyTorch run in a **separate process** with their own GPU (CUDA) context (*default, recommended*).
+- `InProcess`: Python runs **inside the MATLAB process**, sharing its GPU context.
+
+!!! warning "Why OutOfProcess is the default"
+    In `InProcess` mode Python shares MATLAB's GPU (CUDA) context. Running [DeepMIB](../../deepmib/index.md)
+    training or prediction resets that context (via `gpuDevice`), which frees the GPU memory still held by a
+    loaded SAM model. The next SAM click then fails with `CUDA error: an illegal memory access was encountered`,
+    and MATLAB must be restarted. `OutOfProcess` isolates Python in its own process, so DeepMIB and SAM no longer
+    interfere. Use `InProcess` only as a fallback on systems where the out-of-process Python host fails to launch.
+
+!!! note
+    Changing this setting takes effect the next time the Python environment is initialised. If Python is already
+    loaded in the current session, restart MIB (or MATLAB) for the new mode to apply.
 
 ---
 

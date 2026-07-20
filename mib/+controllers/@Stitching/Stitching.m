@@ -5,7 +5,7 @@ classdef Stitching < handle
 %   (a) grid dialog, (b) position file, or (c) MIB2 filename pattern.
 % Registration is performed by pairwise phase correlation + global weighted
 % least-squares optimisation (MIST/BigStitcher approach).  Fusion supports
-% in-memory (Standard dataset) and streaming OME-Zarr (BigData) outputs.
+% in-memory (Standard dataset) and streaming OME-Zarr3 (BigData) outputs.
 %
 % Available from Ribbon -> Dataset -> Stitch.
 
@@ -51,6 +51,11 @@ classdef Stitching < handle
         % [] when not open
         inspectorListeners
         % cell array of listeners on the inspector (SeamsUpdated / CloseEvent)
+        zarrExportOptions
+        % struct of OME-Zarr3 pyramid/chunk/compression settings collected once
+        % (io.savers.Zarr3Saver.optionsDialog) for the current output path and
+        % reused by inspector re-fuse; [] until the dialog runs, reset when the
+        % output path or mode changes
     end
 
     events
@@ -115,11 +120,12 @@ classdef Stitching < handle
             obj.roiListeners = {};
             obj.inspector    = [];
             obj.inspectorListeners = {};
+            obj.zarrExportOptions  = [];
             obj.automaticOptions = obj.defaultFeatureOptions();
 
             % ---- BatchOpt defaults
             obj.BatchOpt.LayoutSource    = {'Grid'};
-            obj.BatchOpt.LayoutSource{2} = {'Grid', 'Position file', 'Filename pattern', 'Bio-Formats metadata'};
+            obj.BatchOpt.LayoutSource{2} = {'Bio-Formats metadata', 'Filename pattern', 'Grid', 'Position file'};
 
             obj.BatchOpt.InputPath       = '';
             obj.BatchOpt.SubfolderMode   = false;
@@ -157,7 +163,7 @@ classdef Stitching < handle
             obj.BatchOpt.SubpixelPlacement = false;
 
             obj.BatchOpt.OutputMode      = {'In memory'};
-            obj.BatchOpt.OutputMode{2}   = {'In memory', 'OME-Zarr (BigData)'};
+            obj.BatchOpt.OutputMode{2}   = {'In memory', 'OME-Zarr3 (BigData)'};
             obj.BatchOpt.OutputPath      = '';
 
             obj.BatchOpt.BlendMode       = {'Feather'};
@@ -184,9 +190,9 @@ classdef Stitching < handle
             obj.BatchOpt.mibBatchTooltip.FeatureDetectorType = '[Feature-based]: keypoint detector used to match tiles; configure its parameters + downsampling with the Settings button';
             obj.BatchOpt.mibBatchTooltip.QualityThreshold = 'Minimum normalized peak height to accept a pairwise shift measurement (0–1)';
             obj.BatchOpt.mibBatchTooltip.NominalPositionWeight = 'How strongly tiles with weak or failed registration are pulled back toward their nominal grid positions (0–1)';
-            obj.BatchOpt.mibBatchTooltip.SubpixelPlacement = 'Use sub-pixel precision for tile placement (Phase 1: rounds to integer)';
-            obj.BatchOpt.mibBatchTooltip.OutputMode      = 'Output as Standard in-memory dataset or OME-Zarr BigData file';
-            obj.BatchOpt.mibBatchTooltip.OutputPath      = 'Output path for OME-Zarr BigData file (OutputMode = OME-Zarr)';
+            obj.BatchOpt.mibBatchTooltip.SubpixelPlacement = 'Sub-pixel refinement of the pairwise-shift measurements; tiles are still placed on whole pixels';
+            obj.BatchOpt.mibBatchTooltip.OutputMode      = 'Output as a Standard in-memory dataset or a streamed OME-Zarr3 BigData file (pyramid settings are asked when stitching)';
+            obj.BatchOpt.mibBatchTooltip.OutputPath      = 'Output path for the OME-Zarr3 BigData file (OutputMode = OME-Zarr3)';
             obj.BatchOpt.mibBatchTooltip.BlendMode       = 'Blending strategy at tile seams: Feather, Average, Max, or Overwrite';
             obj.BatchOpt.mibBatchTooltip.SaveProject     = 'Save project sidecar JSON after stitching';
             obj.BatchOpt.mibBatchTooltip.showWaitbar     = 'Show progress bar during stitching (batch-only option, not shown in the GUI)';

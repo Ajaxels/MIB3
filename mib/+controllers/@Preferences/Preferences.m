@@ -306,6 +306,13 @@ classdef Preferences < handle
                 handles.BioFormatsMemoizerMemoDir.Value = char(externalDirPrefs.BioFormatsMemoizerMemoDir);
                 handles.PythonInstallationPath.Value = char(externalDirPrefs.PythonInstallationPath);
                 handles.DeepMIBDir.Value = char(externalDirPrefs.DeepMIBDir);
+                % Python execution mode dropdown (guard preferences saved before
+                % this field existed); Items are {'OutOfProcess','InProcess'}
+                if isfield(externalDirPrefs, 'PythonExecutionMode') && ~isempty(externalDirPrefs.PythonExecutionMode)
+                    handles.PythonExecutionMode.Value = char(externalDirPrefs.PythonExecutionMode);
+                else
+                    handles.PythonExecutionMode.Value = 'OutOfProcess';
+                end
                 obj.renderedPanels(4) = 1;
             end
 
@@ -510,6 +517,9 @@ classdef Preferences < handle
             io.zarr.Config.setLibrary(obj.mibModel.preferences.IO.Zarr.Library);
             io.zarr.Config.setSmoothing(obj.mibModel.preferences.IO.Zarr.Smoothing);
             io.zarr.Config.setPythonPath(obj.mibModel.preferences.ExternalDirs.PythonInstallationPath);
+            if isfield(obj.mibModel.preferences.ExternalDirs, 'PythonExecutionMode')
+                io.zarr.Config.setExecutionMode(obj.mibModel.preferences.ExternalDirs.PythonExecutionMode);
+            end
 
             % activate the selected BioFormats / WSI reader backend (io.BioFormats.Reader)
             if isfield(obj.mibModel.preferences.IO, 'BioFormats')
@@ -812,7 +822,34 @@ classdef Preferences < handle
             end
 
         end
-        
+
+        function ExternalDirectoriesPanelCallbacks(obj, event)
+            % EXTERNALDIRECTORIESPANELCALLBACKS - callbacks for the External directories panel widgets.
+            %
+            % Handles widgets on the External directories panel that are not the
+            % path text fields / select buttons (those use ExternalDirPathChange
+            % and ExternalDirSelect). Currently the Python execution mode dropdown.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.ExternalDirectoriesPanelCallbacks(event)
+            %
+            % Input Arguments:
+            %   - **event** — [struct] event data from the GUI element that triggered callback
+            %
+
+            switch event.Source.Tag
+                case 'PythonExecutionMode'
+                    % execution mode for pyenv used by SAM/SAM2 (and other Python
+                    % tools). 'OutOfProcess' isolates torch's CUDA context from
+                    % MATLAB so DeepMIB's gpuDevice() reset cannot corrupt SAM.
+                    % Only updates the dialog's working copy; committed to
+                    % obj.mibModel.preferences in ApplyButtonPushedCallback.
+                    obj.preferences.ExternalDirs.PythonExecutionMode = obj.view.handles.PythonExecutionMode.Value;
+            end
+        end
+
         function SegmentationPanelCallbacks(obj, event)
             % SEGMENTATIONPANELCALLBACKS - callbacks for modification of the Segmentation tools panel.
             %

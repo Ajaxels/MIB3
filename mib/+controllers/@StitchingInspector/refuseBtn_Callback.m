@@ -9,8 +9,9 @@ function refuseBtn_Callback(obj)
 % Delegates the full fuse to the parent Stitching window's
 % ``stitchBtn_Callback`` — both output modes work identically to pressing
 % *Stitch* there: **In memory** re-fuses in seconds and opens a new dataset,
-% **OME-Zarr (BigData)** re-runs the streaming fuse over the whole canvas and
-% reopens it. If a user fix is still awaiting its global re-solve
+% **OME-Zarr3 (BigData)** re-runs the streaming fuse over the whole canvas and
+% reopens it (reusing the pyramid settings chosen on the first fuse). If a user
+% fix is still awaiting its global re-solve
 % (auto-re-solve off or a deferred nudge), the re-solve runs FIRST so the
 % fuse never uses stale positions. A partial (dirty-region) BigData re-fuse
 % is a listed future optimisation — v1 always re-fuses fully.

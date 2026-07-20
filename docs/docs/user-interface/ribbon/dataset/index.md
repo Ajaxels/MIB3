@@ -37,7 +37,7 @@ See details [here](dataset-alignment.md).
 Assemble a collection of 2D image tiles into a single large mosaic. Starting from a rough
 initial placement (regular grid, position file, or filename pattern), the tool measures
 the actual overlaps between neighboring tiles, optimizes all tile positions globally, and
-fuses the tiles into a new dataset — in memory or streamed to OME-Zarr (BigData) for
+fuses the tiles into a new dataset — in memory or streamed to OME-Zarr3 (BigData) for
 mosaics that exceed available memory.
 
 [See details](dataset-stitch.md)

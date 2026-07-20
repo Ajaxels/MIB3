@@ -80,6 +80,24 @@ classdef Config < handle
             io.zarr.Config.pythonPath(p);
         end
 
+        function out = executionMode(m)
+            % EXECUTIONMODE - get (no args) or set the pyenv execution mode.
+            % Mirrors ExternalDirs.PythonExecutionMode; defaults to
+            % 'OutOfProcess' so the python backend isolates torch's CUDA context
+            % from MATLAB (see io.zarr.PyBackend.ensureLoaded / segmentationSAM2).
+            persistent em
+            if isempty(em); em = 'OutOfProcess'; end
+            if nargin >= 1
+                if isempty(m); em = 'OutOfProcess'; else; em = char(m); end
+            end
+            out = em;
+        end
+
+        function setExecutionMode(m)
+            % SETEXECUTIONMODE - set the pyenv execution mode used by the python backend.
+            io.zarr.Config.executionMode(m);
+        end
+
         function out = smoothing(tf)
             % SMOOTHING - get or set the BigData label up-propagation smoothing flag.
             %

@@ -54,7 +54,7 @@ column.add(widgetHandles.alignment);
 
 % --------- Stitch ---------
 column = section.addColumn();
-widgetHandles.stitch = Button('Stitch',  Icon(fullfile(iconPath, 'alignment_24px.png')));
+widgetHandles.stitch = Button('Stitch', Icon(fullfile(iconPath, 'stitch_24px.png')));
 widgetHandles.stitch.Description = 'Start the image stitching tool (assemble mosaic from overlapping tiles)';
 column.add(widgetHandles.stitch);
 

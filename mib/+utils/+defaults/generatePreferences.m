@@ -146,7 +146,8 @@ Prefs.ExternalDirs.ImarisInstallationPath = [];     % Imaris
 Prefs.ExternalDirs.bm3dInstallationPath = [];       % BM3D
 Prefs.ExternalDirs.bm4dInstallationPath = [];       % BM4D
 Prefs.ExternalDirs.DeepMIBDir = tempdir;            % DeepMIB network architectures
-Prefs.ExternalDirs.PythonInstallationPath = [];     % DeepMIB network architectures
+Prefs.ExternalDirs.PythonInstallationPath = [];     % Python environment
+Prefs.ExternalDirs.PythonExecutionMode = 'OutOfProcess';  % type Execution Mode for pyenv
 Prefs.ExternalDirs.BioFormatsMemoizerMemoDir = [];  % Bioformats Memoizer
 % setting up directory for memoizer
 Prefs.ExternalDirs.BioFormatsMemoizerMemoDir = fullfile(tempdir, 'mibVirtual'); 
