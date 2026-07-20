@@ -1,0 +1,163 @@
+# Stitching — GUI smoke tests
+
+Datasets to exercise the Stitching tool by hand in a running MIB. Each dataset has a
+generator under `development\stitching\stitch_smoke*\`; running it writes the tiles into
+`<repoRoot>\temp\stitch_smoke*\` (the `temp\` tree is untracked, so regenerate freely).
+
+## Generate the data
+
+Run once from MATLAB (each generator `cd`s nowhere — it resolves its own output path):
+
+```matlab
+run('development\stitching\stitch_smoke\generateSmokeTiles.m')
+run('development\stitching\stitch_smoke_3d\generateSmokeTiles3D.m')
+run('development\stitching\stitch_smoke_folders\generateSmokeFolders.m')
+run('development\stitching\stitch_smoke_pattern_folders\generateSmokePatternFolders.m')
+run('development\stitching\stitch_smoke_feature\generateSmokeFeatureTiles.m')
+run('development\stitching\stitch_smoke_bioformats\generateSmokeBioFormatsTiles.m')   % needs Bio-Formats Java
+run('development\stitching\stitch_smoke_affine\generateSmokeAffineTiles.m')
+run('development\stitching\stitch_smoke_affine3d\generateSmokeAffine3DTiles.m')
+run('development\stitching\stitch_smoke_sabotage\generateSmokeSabotageTiles.m')  % needs mib on path (measures + saves a project)
+```
+
+All generators embed randomly-oriented lines + circles (or tilted planes in 3D): a broken
+line/circle at a tile seam is the at-a-glance sign of a bad stitch.
+
+## Tests
+
+Open the tool from **Ribbon → Dataset → Stitch**. Unless noted, finish each with
+*Measure overlaps → Optimize positions → Stitch* and check the mosaic has continuous
+lines/circles across every seam and the status label reports a low RMSE.
+
+"Browse to `…\tiles`" means: press the Input **…** button and multi-select the tile
+image files in that folder (Ctrl+A) — with *Tiles are folders* off the picker selects
+FILES, not a folder. Pasting the folder path into the Input path field still works too.
+
+| # | Dataset (`temp\…`) | Layout source | Settings | What it checks |
+|---|--------------------|---------------|----------|----------------|
+| 1 | `stitch_smoke\tiles` | Grid | Rows 3, Cols 3, tick **Estimate overlap** | Baseline 2D grid + overlap auto-estimation. |
+| 2 | `stitch_smoke\tiles` | Grid | Rows 3, Cols 3, untick Estimate, Overlap X/Y = 15 | Grid with a manually entered overlap. |
+| 3 | `stitch_smoke_3d\positions.txt` | Position file | — | 3D joint solve from a position file (scroll Z; planes must line up across layers). Since 2026-07-17 the seam check is Z-aware: the chip verifies per-slice at the solved dz and cross-layer seams are dz-scanned — a Z misalignment shows as orange "Check Z alignment"; in the inspector the offset readout shows dz + any "pixels prefer dz±k" hint (diagnostic — re-measure or exclude the seam if the Z overlap is wrong). `Q`/`W` browse slices like the main MIB — ALWAYS view-only (verify a few presses never change dz or the chip). A cross-layer XY misalignment is fixed on the z-edge seam itself in Fix XY (Shift+click / drag): the re-solve shifts the whole upper stack AND every layer above it (verified by `zBoundaryFix_shiftsAllLayersAbove`). **Fix mode = Fix Z (match slices)** is the PER-SLICE mosaic check: one tile at slice z-1 (cyan) vs slice z (magenta), fully overlapping, mostly white when aligned; `Q`/`W` moves the boundary, drag or Shift+click aligns slice z — the fix shifts that slice AND every mosaic slice above it (no re-solve; applied at Re-fuse/Stitch; `Z` removes it; persisted in the sidecar — core verified by `planCanvas_zSliceFixesShiftMosaicAboveBoundary`). On a 2D dataset Fix Z flips back to Fix XY with an explaining dialog. Since 2026-07-19 the **seam table is split by fix mode**: Fix XY lists the in-plane `x`/`y` seams, Fix Z lists the cross-layer `z` seams (the old combined list was confusing). Switching the Fix-mode dropdown re-filters the table and lands on a seam of that kind; the table highlight, `N`/`P`, mini-map jumps and the initial pick all stay within the shown set. The cross-layer XY fix is therefore reached from the **Fix Z** table (that is where the `z` seam now appears) — select it, then use Fix XY to Shift+click/drag its in-plane offset. |
+| 4 | `stitch_smoke_folders` (4 folders / parent) | Grid | tick **Tiles are folders (Z-stacks)**, Rows 2, Cols 2 | Folder-Z-stack tiles with the Grid source. |
+| 5 | `stitch_smoke_pattern_folders` (4 folders / parent) | Filename pattern | tick **Tiles are folders**, Overlap X/Y ≈ 22 (or Estimate) | Filename-pattern `_Z##-X##-Y##` + folder tiles + overlap. |
+| 6 | `stitch_smoke_feature\tiles` | Grid | Rows 3, Cols 3, Overlap 25, **untick Estimate** | **Method comparison** — run twice (see below). |
+| 7 | `stitch_smoke_bioformats\tile_01..04.ome.tiff` | Bio-Formats metadata | multi-select the 4 files | Stage coordinates read from OME metadata. |
+| 8 | any of 1/6 | Grid | tick **Edit layout (drag tiles)** on the preview | Phase 3 drag placement: drag a tile, re-Measure/Optimize. |
+| 9 | any of 1/6 | Grid | Output mode = **OME-Zarr (BigData)**, pick a path | Streaming fuse → reopens as a BigData dataset. |
+| 10 | `stitch_smoke_feature\tiles` | Grid | Registration = Feature-based → **Settings…** | Feature preview: changing a detector param pops the matched-features figure. |
+| 11 | `stitch_smoke_affine\tiles` | Grid | Rows 2, Cols 2, Overlap 25, **untick Estimate** | **Transform comparison** — run twice (see below). |
+| 12 | `stitch_smoke_sabotage\sabotage.mibstitch.json` | — (Load project) | **Inspect & fix…** after loading | **Seam inspector** — the residual-invisible corrupted edge (see below). |
+| 13 | `stitch_smoke_affine3d\positions.txt` | Position file | Transform = Affine, tick **Allow rotation** | **3D affine** — in-plane affine on Z-stack tiles across 2 layers (see below). |
+
+### Test 6 — phase correlation vs feature-based (the key comparison)
+
+The feature dataset has ±55 px jitter against a ~75 px overlap strip, so restricted-search phase
+correlation mostly fails while full-tile feature matching recovers it. Verified headlessly:
+
+- **Registration method = Phase correlation** → *Measure overlaps*: ~7/12 edges valid, solve lands
+  ~80 px off — seams visibly break after Stitch.
+- **Registration method = Feature-based** (SURF) → *Measure overlaps → Optimize → Stitch*: ~11/12
+  edges valid, ~0.5 px error, clean seams.
+
+### Test 10 — feature-settings preview
+
+With the feature dataset loaded and Registration = Feature-based, press **Settings…**, change a
+parameter (e.g. lower the SURF metric threshold), accept. A *MIB: stitch feature preview* figure
+opens showing keypoint matches on the first overlapping pair — left = with outliers, right = inliers
+only, titled with the inlier ratio and recovered `[dy dx]`. Mirrors the Alignment feature preview.
+
+### Test 11 — Translation vs Affine (rotated tiles)
+
+The affine dataset warps three of the four tiles by ±1° rotation, ±1% scale and ±8 px jitter.
+
+- **Transform type = Translation** → the rating can still look good (on a 2×2 grid the rotation
+  hides in the overlaps, not in loop inconsistency), but after *Stitch* the seams show
+  rotated/doubled lines.
+- **Transform type = Affine** → *Measure overlaps* switches to feature-based automatically
+  (phase correlation cannot measure rotation), 4/4 edges valid; after *Optimize positions →
+  Stitch* the lines/circles run continuously across every seam. Verified headlessly:
+  transforms recovered to ≤ 0.22 (matrix max-abs), solver RMSE ≈ 0.02 px.
+
+Same tiles, more variations (tick **Allow rotation** for the first two — the truth IS rotated):
+
+- **Similarity** + Allow rotation → near-identical to Affine (the truth is rotation+scale, no shear).
+- **Rigid** + Allow rotation → slightly worse than Similarity (the ±1% true scale cannot be fitted)
+  but seams still visibly better than Translation.
+- Any non-translation model with **Allow rotation UNCHECKED** → rotations locked to zero: the result
+  degrades toward the Translation look (that is the point — the lock protects unrotated data from
+  spurious rotations; on genuinely rotated data like this set you must tick the box).
+- The `AllowRotation` checkbox must be disabled while Transform type = Translation. The
+  Registration method dropdown is disabled for any non-translation type AND displays
+  "Feature-based" (what actually runs — phase correlation cannot measure rotation); the
+  user's own method choice comes back when Transform type returns to Translation.
+
+### Test 12 — seam inspector on the sabotaged chain
+
+The generator measures a 1×3 chain honestly, then corrupts the 2-3 edge by +24 px at
+quality 0.95 (emulating a repetitive-content lock — injected directly because phase
+correlation/RANSAC resist deterministic image-level sabotage) and saves everything as
+`sabotage.mibstitch.json`.
+
+1. **Load project** → the sabotage JSON. *Optimize positions* → the SOLVER part is blind
+   (RMSE ≈ 0 — a chain has no loop, the residuals cannot see the corruption), but since
+   2026-07-17 Optimize also re-reads the pixels at every solved seam: the chip comes out
+   **red "Seams disagree (worst pixel match ≈ 0.1)"** instead of a lying green. The same
+   check catches a wrong layout orientation (e.g. the horizontal chain laid out as
+   vertical: RMSE 0.09 px, worst seam ≈ 0.07 → red chip).
+2. **Inspect & fix…** → the 2-3 seam ranks FIRST with seam score ≈ 0.1 (vs 1.0 for 1-2);
+   the pair view shows the COMPLETE pair at the solved offset (title: "Cyan: tile 2;
+   Magenta: tile 3") — in the falsecolor overlay tile 2 is cyan, tile 3 magenta, and
+   the ~24 px break shows as cyan/magenta ghosting in the overlap instead of white
+   (try all overlay modes; Space flickers). The mouse wheel zooms at the cursor —
+   zoom into the seam, nudge with the arrows and check the zoom SURVIVES the
+   re-render; `F` (or wheeling out) fits the whole pair again.
+3. Exclusion (the coarse option): select the bad seam → **Exclude (X)** → **Re-solve** →
+   the springs pull tile 3 back to nominal (within the ~5 px cut jitter of truth); the seam
+   score improves but stays modest. Press `X` again to re-include the edge, then fix it
+   properly:
+4. **Shift+click-to-correlate** (the real fix): with tile size 160 px, first drop *ROI
+   size* to ~48 (the ROI must be smaller than the overlap region). Hold `Shift` — the
+   cursor becomes a yellow ROI box — and click a distinctive spot inside the seam overlap
+   → the pair snaps, the edge turns `user`, auto re-solve fires and the seam score jumps
+   to ≈ 1.0 — sub-pixel, unlike the exclusion route.
+5. Try the other fixing tools on the same seam: **drag** the overlay (tile j follows at
+   50% alpha, release applies), **Two-click match** (click the same landmark in the
+   side-by-side tiles). The keyboard never moves a tile — arrows and Q/W are slice
+   navigation (on this 2D set they only report "no Z slices"). `Z` undoes back to the
+   corrupted automatic edge — handy for repeating the exercise.
+6. Check the review keyboard: `Enter` confirm + jump, `N`/`P` navigate, mini-map click jumps
+   to a tile's worst seam. The mini-map shows the low-res fused preview behind the score
+   tints — after the click-fix the seams in that preview should visibly close up.
+7. **Re-fuse** (Phase D): with the seam fixed, press *Re-fuse* → the fused dataset opens
+   in MIB exactly as via the main window's *Stitch*, lines continuous across every seam.
+   Repeat with Output mode = OME-Zarr (BigData) for the streaming path. With *Auto
+   re-solve* unchecked, apply a nudge and press *Re-fuse* directly — the pending
+   re-solve must run first (status says so), never fusing stale positions.
+
+### Test 13 — 3D affine (in-plane affine on Z-stack tiles)
+
+The 3D analogue of test 11: a 2x2 grid over **2 Z-layers** of 16-slice Z-stack tiles; every tile
+except the first is warped by its own in-plane ±1° rotation / ±1% scale / ±8 px jitter (the SAME 2D
+warp on every slice — z stays translational), and layer 2 is Z-jittered by ±2 slices against the
+nominal in `positions.txt`.
+
+- **Transform type = Translation** → seams show rotated/doubled lines on every slice after *Stitch*.
+- **Transform type = Affine** + **Allow rotation** → *Measure overlaps* runs feature-based on the
+  depth-flattened tiles (within-layer edges carry the affine; cross-layer edges stay translation),
+  *Optimize positions* solves in-plane affine + scalar z; after *Stitch*, scroll Z: lines/circles are
+  continuous across every seam on every slice, and the embedded tilted planes run continuously across
+  the layer boundary (a Z misalignment breaks them — the chip would show "Check Z alignment").
+- Verified headlessly by `StitchCoreTest.fullChain3DAffine_measureSolveFuseAcrossLayers`.
+
+## Expected numbers (from headless validation)
+
+| Dataset | Recovered origin error |
+|---------|------------------------|
+| `stitch_smoke` (2D grid) | ≤ 0.16 px |
+| `stitch_smoke_3d` | ≤ 0.03 px (all 3 axes) |
+| `stitch_smoke_pattern_folders` | ≈ 0.02 px |
+| `stitch_smoke_feature` (feature-based) | ≤ 0.5 px |
+| `stitch_smoke_bioformats` | ≈ 0.01 px |
+| `stitch_smoke_affine` (TransformType=Affine) | ≤ 0.22 matrix max-abs, RMSE ≈ 0.02 px |
+| `stitch_smoke_affine3d` (TransformType=Affine) | 12/12 edges valid; ≤ 0.39 matrix max-abs, RMSE ≈ 0.09 px, layer dz exact |
+| `stitch_smoke_sabotage` | corrupted seam scores 0.09 vs 1.00; exclude+re-solve → ≤ 6 px; click-fix → ≤ 1 px |

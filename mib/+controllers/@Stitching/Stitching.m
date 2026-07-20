@@ -27,8 +27,17 @@ classdef Stitching < handle
         % struct array — measured pairwise edges (i, j, direction, measured, quality, valid)
         positions
         % N-by-3 double — solved tile origins [y x z]
+        tforms
+        % N-by-1 cell of 3x3 doubles — solved per-tile affine transforms
+        % (tile-local xy -> global xy) when TransformType is not Translation;
+        % {} for the translation solve
         canvas
         % struct — output canvas plan (size, tilePlacement, etc.)
+        zSliceFixes
+        % K-by-3 double — per-slice mosaic corrections [z dy dx] from the
+        % inspector's Fix Z: every output slice >= z shifts in-plane by
+        % [dy dx] (cumulative over rows). Applied by planCanvas/fusers,
+        % persisted in the project sidecar; [] = none
         automaticOptions
         % struct — feature-detector tuning (per-detector params, RANSAC,
         % rotation invariance, downsampling) for the Feature-based method;
@@ -37,6 +46,11 @@ classdef Stitching < handle
         % array of images.roi.Rectangle — draggable tile handles in edit mode
         roiListeners
         % cell array of ROIMoved listener handles for tileROIs
+        inspector
+        % handle to the seam-inspector child controller (controllers.StitchingInspector),
+        % [] when not open
+        inspectorListeners
+        % cell array of listeners on the inspector (SeamsUpdated / CloseEvent)
     end
 
     events
@@ -94,9 +108,13 @@ classdef Stitching < handle
                 'zLayer', {}, 'gridRC', {}, 'nomOrigin', {}, 'tileSize', {}, 'dataClass', {});
             obj.edges     = struct('i', {}, 'j', {}, 'direction', {}, 'nominal', {});
             obj.positions = [];
+            obj.tforms    = {};
             obj.canvas    = [];
+            obj.zSliceFixes = [];
             obj.tileROIs     = images.roi.Rectangle.empty;
             obj.roiListeners = {};
+            obj.inspector    = [];
+            obj.inspectorListeners = {};
             obj.automaticOptions = obj.defaultFeatureOptions();
 
             % ---- BatchOpt defaults
@@ -117,7 +135,8 @@ classdef Stitching < handle
             obj.BatchOpt.EstimateOverlap = true;
 
             obj.BatchOpt.TransformType   = {'Translation'};
-            obj.BatchOpt.TransformType{2} = {'Translation'};
+            obj.BatchOpt.TransformType{2} = {'Translation', 'Rigid', 'Similarity', 'Affine'};
+            obj.BatchOpt.AllowRotation   = false;
 
             obj.BatchOpt.RegistrationMethod    = {'Phase correlation'};
             obj.BatchOpt.RegistrationMethod{2} = {'Phase correlation', 'Feature-based'};
@@ -159,7 +178,8 @@ classdef Stitching < handle
             obj.BatchOpt.mibBatchTooltip.OverlapX        = 'Horizontal overlap between adjacent tiles in percent (0–90)';
             obj.BatchOpt.mibBatchTooltip.OverlapY        = 'Vertical overlap between adjacent tiles in percent (0–90)';
             obj.BatchOpt.mibBatchTooltip.EstimateOverlap = 'Estimate the actual overlap from the images before measuring (grid layout); OverlapX/Y are then only a rough starting guess';
-            obj.BatchOpt.mibBatchTooltip.TransformType   = 'Registration transform type (Translation only in Phase 1)';
+            obj.BatchOpt.mibBatchTooltip.TransformType   = 'Registration transform: Translation (grid stages), Rigid (+rotation), Similarity (+uniform scale) or Affine (+scale/shear); non-translation transforms act in-plane per slice (z stays translational) and use feature-based measurement';
+            obj.BatchOpt.mibBatchTooltip.AllowRotation   = 'Permit per-tile rotation in Rigid/Similarity/Affine solves; keep off for stage-tiled data (stages translate but do not rotate), so noisy overlaps cannot inject spurious rotations';
             obj.BatchOpt.mibBatchTooltip.RegistrationMethod = 'How pairwise overlaps are measured: Phase correlation (best for small overlaps with modest jitter) or Feature-based (best for large/unknown offsets, matches SURF features over the full tiles)';
             obj.BatchOpt.mibBatchTooltip.FeatureDetectorType = '[Feature-based]: keypoint detector used to match tiles; configure its parameters + downsampling with the Settings button';
             obj.BatchOpt.mibBatchTooltip.QualityThreshold = 'Minimum normalized peak height to accept a pairwise shift measurement (0–1)';
@@ -274,6 +294,39 @@ classdef Stitching < handle
             else                            % uieditfield: single string
                 widget.Value = obj.BatchOpt.InputPath;
             end
+        end
+
+        % ---------------------------------------------------------------
+        function updateInfoLabel(obj)
+            % UPDATEINFOLABEL - Set the info label to a short description of what
+            % the current ``LayoutSource`` does, so the user knows what input to
+            % provide. Guarded by ``isfield`` — no-op until the ``infoLabel``
+            % widget exists in the mlapp.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.updateInfoLabel()
+            %
+            if ~isfield(obj.view.handles, 'infoLabel'); return; end
+            % One short (2-line) description per layout source.
+            switch obj.BatchOpt.LayoutSource{1}
+                case 'Grid'
+                    description = sprintf(['Tiles on a regular grid. Browse a folder of tiles, set Rows/Cols and\n' ...
+                        'overlap (or tick Estimate overlap); Tile order sets the scan pattern.']);
+                case 'Position file'
+                    description = sprintf(['A text file lists each tile file and its X Y [Z] position. Browse the\n' ...
+                        '.txt/.csv; positions seed the solve, Z values create layers automatically.']);
+                case 'Filename pattern'
+                    description = sprintf(['Grid indices are read from MIB2 _Z##-X##-Y## tokens in the tile file or\n' ...
+                        'folder names. Browse the folder; set overlap (or tick Estimate overlap).']);
+                case 'Bio-Formats metadata'
+                    description = sprintf(['Tile positions come from embedded microscope stage coordinates. Browse\n' ...
+                        'one multi-series file or several single-tile files — no grid setup needed.']);
+                otherwise
+                    description = '';
+            end
+            obj.view.handles.infoLabel.Text = description;
         end
 
     end % methods

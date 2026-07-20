@@ -42,7 +42,10 @@ try
         measureOptions.qualityThreshold   = obj.BatchOpt.QualityThreshold{1};
         measureOptions.subpixel           = obj.BatchOpt.SubpixelPlacement;
         measureOptions.registrationMethod = obj.BatchOpt.RegistrationMethod{1};
-        if strcmp(obj.BatchOpt.RegistrationMethod{1}, 'Feature-based')
+        measureOptions.transformType      = obj.BatchOpt.TransformType{1};
+        measureOptions.allowRotation      = obj.BatchOpt.AllowRotation;
+        if strcmp(obj.BatchOpt.RegistrationMethod{1}, 'Feature-based') || ...
+                ~strcmp(obj.BatchOpt.TransformType{1}, 'Translation')
             measureOptions.featureOptions = obj.buildFeatureOptions();
         end
         measureOptions.showWaitbar        = obj.BatchOpt.showWaitbar && ~batchModeSwitch;
@@ -56,12 +59,23 @@ try
 
     if isempty(obj.positions)
         solverOptions.springWeight = obj.BatchOpt.NominalPositionWeight{1};
-        obj.positions = utils.stitch.solveGlobalLeastSquares(obj.layout, obj.edges, solverOptions);
+        if strcmp(obj.BatchOpt.TransformType{1}, 'Translation')
+            obj.positions = utils.stitch.solveGlobalLeastSquares(obj.layout, obj.edges, solverOptions);
+            obj.tforms = {};
+        else
+            solverOptions.transformType = obj.BatchOpt.TransformType{1};
+            solverOptions.allowRotation = obj.BatchOpt.AllowRotation;
+            [obj.tforms, obj.positions] = utils.stitch.solveGlobalAffine(obj.layout, obj.edges, solverOptions);
+        end
         obj.canvas = [];   % canvas must match the fresh positions
     end
 
     if isempty(obj.canvas)
-        obj.canvas = utils.stitch.planCanvas(obj.layout, obj.positions);
+        canvasOptions = struct('zSliceFixes', obj.zSliceFixes);
+        if ~isempty(obj.tforms)
+            canvasOptions.tforms = obj.tforms;
+        end
+        obj.canvas = utils.stitch.planCanvas(obj.layout, obj.positions, canvasOptions);
     end
 catch pipelineError
     if ~batchModeSwitch
@@ -175,7 +189,7 @@ if obj.BatchOpt.SaveProject
         end
 
         utils.stitch.saveProject(projectPath, obj.layout, obj.edges, ...
-            obj.positions, struct(), outputInfo);
+            obj.positions, struct(), outputInfo, obj.tforms, obj.zSliceFixes);
     catch saveError
         if ~batchModeSwitch
             utils.dlgs.showErrorDialog(fuseOptions.parentFigure, ...
@@ -220,8 +234,10 @@ elseif isfolder(firstExisting)
     else
         projectFolder = fileparts(firstExisting);      % multi-folder → common parent
     end
-else                                                   % a file (position/Bio-Formats)
+elseif isscalar(entries)                               % a single file (position/Bio-Formats)
     [projectFolder, projectBase, ~] = fileparts(firstExisting);
+else                                                   % multi-select tile FILES → their folder,
+    projectFolder = fileparts(firstExisting);          % generic project name (not tile_01…)
 end
 
 projectPath = fullfile(projectFolder, [projectBase, '.mibstitch.json']);

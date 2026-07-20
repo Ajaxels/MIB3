@@ -12,6 +12,9 @@ function previewLayoutBtn_Callback(obj)
 %
 % Two modes, selected by the ``editLayoutCheckbox`` state:
 %   - **display** (default) — static ``patch`` rectangles (fast, read-only).
+%     Drawn at the SOLVED positions whenever a solve exists (kept current by
+%     ``optimizePositions_Callback`` and hence by every inspector re-solve);
+%     nominal positions otherwise — the title states which.
 %   - **edit** — one draggable :class:`images.roi.Rectangle` per tile
 %     (translate-only, fixed size); dragging a tile writes its new position into
 %     ``layout(i).nomOrigin`` and invalidates the measured edges / solved
@@ -52,10 +55,21 @@ colorMap = lines(numel(obj.layout));
 editMode = isfield(obj.view.handles, 'editLayoutCheckbox') && ...
     obj.view.handles.editLayoutCheckbox.Value;
 
+% Display mode shows the SOLVED positions when a solve exists (edit mode
+% always shows/edits the nominal layout — that is what it manipulates).
+usingSolved = ~editMode && ~isempty(obj.positions) && ...
+    size(obj.positions, 1) == numel(obj.layout);
+if usingSolved
+    origins = obj.positions(:, 1:2);                       % [y x] per tile
+else
+    origins = reshape([obj.layout.nomOrigin], 3, []).';
+    origins = origins(:, 1:2);
+end
+
 if editMode
     drawInteractiveTiles(obj, previewAxes, firstLayerTiles, colorMap);
 else
-    drawStaticTiles(previewAxes, obj.layout, firstLayerTiles, colorMap);
+    drawStaticTiles(previewAxes, obj.layout, firstLayerTiles, colorMap, origins);
 end
 
 hold(previewAxes, 'off');
@@ -63,25 +77,32 @@ set(previewAxes, 'YDir', 'reverse');   % image convention: y increases downward
 xlabel(previewAxes, 'X (pixels)');
 ylabel(previewAxes, 'Y (pixels)');
 
+if usingSolved
+    positionsText = 'solved positions';
+else
+    positionsText = 'nominal positions';
+end
 if editMode
     titleText = sprintf('Drag tiles to reposition — %d tiles', numel(firstLayerTiles));
 elseif numel(distinctLayers) > 1
-    titleText = sprintf('Layout preview — %d tiles in layer 1 of %d', ...
-        numel(firstLayerTiles), numel(distinctLayers));
+    titleText = sprintf('Layout preview (%s) — %d tiles in layer 1 of %d', ...
+        positionsText, numel(firstLayerTiles), numel(distinctLayers));
 else
-    titleText = sprintf('Layout preview — %d tiles', numel(firstLayerTiles));
+    titleText = sprintf('Layout preview (%s) — %d tiles', ...
+        positionsText, numel(firstLayerTiles));
 end
 title(previewAxes, titleText);
 
 end
 
 % =========================================================================
-function drawStaticTiles(previewAxes, layout, firstLayerTiles, colorMap)
+function drawStaticTiles(previewAxes, layout, firstLayerTiles, colorMap, origins)
 % DRAWSTATICTILES - Read-only patch rectangles + index labels (two passes so the
-% numbers stay on top of overlapping tiles).
+% numbers stay on top of overlapping tiles). ``origins`` is [numTiles x 2]
+% ``[y x]`` — solved or nominal, the caller decides.
 for tileIdx = firstLayerTiles
-    originX = layout(tileIdx).nomOrigin(2);
-    originY = layout(tileIdx).nomOrigin(1);
+    originX = origins(tileIdx, 2);
+    originY = origins(tileIdx, 1);
     tileW   = layout(tileIdx).tileSize(2);
     tileH   = layout(tileIdx).tileSize(1);
     rectangleColor = colorMap(tileIdx, :);
@@ -94,8 +115,8 @@ for tileIdx = firstLayerTiles
         'LineWidth', 1.5);
 end
 for tileIdx = firstLayerTiles
-    centerX = layout(tileIdx).nomOrigin(2) + layout(tileIdx).tileSize(2) / 2;
-    centerY = layout(tileIdx).nomOrigin(1) + layout(tileIdx).tileSize(1) / 2;
+    centerX = origins(tileIdx, 2) + layout(tileIdx).tileSize(2) / 2;
+    centerY = origins(tileIdx, 1) + layout(tileIdx).tileSize(1) / 2;
     text(previewAxes, centerX, centerY, num2str(tileIdx), ...
         'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle', ...
         'FontSize', 9, 'FontWeight', 'bold', 'Color', colorMap(tileIdx, :));
@@ -152,6 +173,7 @@ obj.layout(tileIdx).nomOrigin(2) = position(1);   % x
 % Manual placement supersedes any prior measurement/solve.
 obj.edges     = [];
 obj.positions = [];
+obj.tforms    = {};
 obj.canvas    = [];
 obj.updateWidgets();   % refreshes the status + resets the alignment chip
 end

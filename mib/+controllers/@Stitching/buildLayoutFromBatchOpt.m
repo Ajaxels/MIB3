@@ -56,7 +56,9 @@ end
 % Reset downstream state
 obj.edges     = [];
 obj.positions = [];
+obj.tforms    = {};
 obj.canvas    = [];
+obj.zSliceFixes = [];
 
 end
 
@@ -66,7 +68,9 @@ function tileEntries = collectTileEntries(inputPath, tilesAreFolders)
 % layout. tilesAreFolders (SubfolderMode) selects folder Z-stacks over images:
 %   folders ON  — InputPath is a newline-joined folder list (GUI multi-select),
 %                 or a single parent folder whose subfolders are the tiles (batch).
-%   folders OFF — InputPath is one folder; its image files are the tiles.
+%   folders OFF — InputPath is a newline-joined image-file list (GUI
+%                 multi-select), or one folder whose image files are the tiles
+%                 (typed path / batch back-compat).
 if tilesAreFolders
     tileEntries = strtrim(strsplit(inputPath, newline));
     tileEntries = tileEntries(~cellfun(@isempty, tileEntries));
@@ -87,18 +91,27 @@ if tilesAreFolders
     return;
 end
 
-if ~isfolder(inputPath)
-    error('Stitching:badInputPath', 'Tile folder not found: %s', inputPath);
-end
-imageExtensions = {'*.tif', '*.tiff', '*.png', '*.jpg', '*.jpeg', '*.bmp'};
-tileEntries = {};
-for extIdx = 1:numel(imageExtensions)
-    foundFiles = dir(fullfile(inputPath, imageExtensions{extIdx}));
-    if ~isempty(foundFiles)
-        tileEntries = [tileEntries, fullfile(inputPath, {foundFiles.name})]; %#ok<AGROW>
+tileEntries = strtrim(strsplit(inputPath, newline));
+tileEntries = tileEntries(~cellfun(@isempty, tileEntries));
+if isscalar(tileEntries) && isfolder(tileEntries{1})
+    % Single folder: its image files are the tiles.
+    tileFolder = tileEntries{1};
+    imageExtensions = {'*.tif', '*.tiff', '*.png', '*.jpg', '*.jpeg', '*.bmp'};
+    tileEntries = {};
+    for extIdx = 1:numel(imageExtensions)
+        foundFiles = dir(fullfile(tileFolder, imageExtensions{extIdx}));
+        if ~isempty(foundFiles)
+            tileEntries = [tileEntries, fullfile(tileFolder, {foundFiles.name})]; %#ok<AGROW>
+        end
     end
-end
-if isempty(tileEntries)
-    error('Stitching:noTiles', 'No image files found in %s', inputPath);
+    if isempty(tileEntries)
+        error('Stitching:noTiles', 'No image files found in %s', tileFolder);
+    end
+else
+    % Explicit file list from the multi-select picker (or typed/pasted).
+    missing = tileEntries(~cellfun(@isfile, tileEntries));
+    if ~isempty(missing)
+        error('Stitching:badInputPath', 'Tile file not found: %s', missing{1});
+    end
 end
 end

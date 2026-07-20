@@ -157,6 +157,11 @@ readerFcn = @readTile;
         % Bio-Formats series tiles cannot be sub-region-read via imread (which
         % only sees the first IFD) — fall through to the full Bio-Formats load.
         if isfield(entry, 'seriesIndex') && ~isempty(entry.seriesIndex); return; end
+        % Multi-page z-stack tiles: imread reads only the FIRST page, so the
+        % depth would be silently lost — full-load-then-crop instead.
+        if isfield(entry, 'tileSize') && numel(entry.tileSize) >= 3 && entry.tileSize(3) > 1
+            return;
+        end
         [~, ~, ext] = fileparts(entry.filename);
         ext = lower(ext);
         if ~ismember(ext, {'.tif', '.tiff', '.png'}); return; end

@@ -1,10 +1,12 @@
-function saveProject(filePath, layout, edges, positions, solverInfo, outputInfo)
+function saveProject(filePath, layout, edges, positions, solverInfo, outputInfo, tforms, zSliceFixes)
 % SAVEPROJECT - Save a stitching project to a JSON sidecar file.
 %
 % Syntax:
 %   .. code-block:: matlab
 %
 %      utils.stitch.saveProject(filePath, layout, edges, positions, solverInfo, outputInfo)
+%      utils.stitch.saveProject(filePath, layout, edges, positions, solverInfo, outputInfo, tforms)
+%      utils.stitch.saveProject(filePath, layout, edges, positions, solverInfo, outputInfo, tforms, zSliceFixes)
 %
 % Writes all stitching state to ``<name>.mibstitch.json`` for reproducibility
 % and later use by the QC / seam checker.  The file is human-readable JSON
@@ -19,6 +21,11 @@ function saveProject(filePath, layout, edges, positions, solverInfo, outputInfo)
 %     (may be ``[]`` if not yet solved)
 %   - **solverInfo** — struct with solver settings and RMSE (may be ``[]``)
 %   - **outputInfo** — struct with blend mode, output path, canvas size (may be ``[]``)
+%   - **tforms** *(optional)* — [N x 1 cell] solved per-tile 3x3 affine transforms
+%     from :func:`utils.stitch.solveGlobalAffine` (stored per tile as
+%     ``solvedTform``); pass ``{}``/omit for translation-only projects
+%   - **zSliceFixes** *(optional)* — [K x 3] per-slice mosaic corrections
+%     ``[z dy dx]`` from the seam inspector's Fix Z; pass ``[]``/omit for none
 %
 % **Example** — save after solving:
 %
@@ -35,6 +42,8 @@ arguments
     positions
     solverInfo
     outputInfo
+    tforms      cell = {}
+    zSliceFixes double = []
 end
 
 % Ensure correct extension
@@ -43,12 +52,14 @@ if ~endsWith(filePath, '.mibstitch.json')
     filePath = fullfile(folder, [baseName, '.mibstitch.json']);
 end
 
-project.schemaVersion = 1;
+% v2 adds edge provenance for the seam inspector: per-edge 'source'
+% ('auto'|'user'|'confirmed') and 'seamScore' (NCC at the solved placement).
+project.schemaVersion = 2;
 project.createdUtc    = char(datetime('now', 'TimeZone', 'UTC', 'Format', "yyyy-MM-dd'T'HH:mm:ss'Z'"));
 
 % Serialise layout (convert 1×N structs to cell arrays for JSON)
 if ~isempty(layout)
-    project.tiles = layoutToCell(layout, positions);
+    project.tiles = layoutToCell(layout, positions, tforms);
 else
     project.tiles = {};
 end
@@ -74,6 +85,11 @@ else
     project.outputInfo = outputInfo;
 end
 
+% Per-slice mosaic corrections (inspector Fix Z), rows [z dy dx]
+if ~isempty(zSliceFixes)
+    project.zSliceFixes = zSliceFixes;
+end
+
 % Encode and write
 jsonText = jsonencode(project, 'PrettyPrint', true);
 fileID = fopen(filePath, 'w', 'n', 'UTF-8');
@@ -87,8 +103,9 @@ fprintf(fileID, '%s', jsonText);
 end
 
 % =========================================================================
-function tileCell = layoutToCell(layout, positions)
+function tileCell = layoutToCell(layout, positions, tforms)
 % Convert layout struct array to a cell array of structs for jsonencode.
+if nargin < 3; tforms = {}; end
 numTiles = numel(layout);
 tileCell = cell(numTiles, 1);
 for tileIdx = 1:numTiles
@@ -107,6 +124,12 @@ for tileIdx = 1:numTiles
         tileStruct.solvedOrigin = [];
     end
 
+    if numel(tforms) >= tileIdx && ~isempty(tforms{tileIdx})
+        tileStruct.solvedTform = tforms{tileIdx};
+    else
+        tileStruct.solvedTform = [];
+    end
+
     tileCell{tileIdx} = tileStruct;
 end
 end
@@ -117,6 +140,7 @@ function edgeCell = edgesToCell(edges)
 numEdges = numel(edges);
 edgeCell = cell(numEdges, 1);
 for edgeIdx = 1:numEdges
+    edgeStruct = struct();   % fresh struct — optional fields must not leak across edges
     edgeStruct.i         = edges(edgeIdx).i;
     edgeStruct.j         = edges(edgeIdx).j;
     edgeStruct.direction = edges(edgeIdx).direction;
@@ -125,6 +149,18 @@ for edgeIdx = 1:numEdges
         edgeStruct.measured  = edges(edgeIdx).measured;
         edgeStruct.quality   = edges(edgeIdx).quality;
         edgeStruct.valid     = edges(edgeIdx).valid;
+    end
+    if isfield(edges, 'tform') && ~isempty(edges(edgeIdx).tform)
+        edgeStruct.tform = edges(edgeIdx).tform;
+    end
+    if isfield(edges, 'source') && ~isempty(edges(edgeIdx).source)
+        edgeStruct.source = edges(edgeIdx).source;
+    end
+    if isfield(edges, 'seamScore') && ~isempty(edges(edgeIdx).seamScore)
+        edgeStruct.seamScore = edges(edgeIdx).seamScore;
+    end
+    if isfield(edges, 'dzHint') && ~isempty(edges(edgeIdx).dzHint) && edges(edgeIdx).dzHint ~= 0
+        edgeStruct.dzHint = edges(edgeIdx).dzHint;
     end
     edgeCell{edgeIdx} = edgeStruct;
 end

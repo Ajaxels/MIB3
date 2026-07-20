@@ -176,6 +176,47 @@ classdef StitchLayoutTest < matlab.unittest.TestCase
             testCase.verifyLessThanOrEqual(max(allRows), 3);
         end
 
+        function buildGrid_autoRowsCols_exactFactorNoHoles(testCase)
+            % Auto grid must tile the count EXACTLY (closest divisor pair to
+            % square, rows <= cols): 3 tiles -> 1x3, NOT 2x2 with a hole —
+            % a hole breaks the neighbour graph (phantom pairs measure
+            % garbage, the real 2-3 neighbours are never paired).
+            tileFolder = testCase.makeSyntheticTiles(3, [32 32]);
+            files = utils.stitch.naturalSortFiles(tileFolder.files);
+
+            opts.rows = 0; opts.cols = 0;
+            opts.tileOrder = 'Horizontal';
+            opts.overlapX  = 0; opts.overlapY = 0;
+            layout = utils.stitch.buildLayoutGrid(files, opts);
+
+            gridRC = reshape([layout.gridRC], 2, []).';
+            testCase.verifyEqual(max(gridRC(:, 1)), 1, '3 tiles must form a single row');
+            testCase.verifyEqual(sort(gridRC(:, 2)).', 1:3);
+
+            % 12 tiles -> 3x4 (not ceil(sqrt) = 4x3 with ambiguity, and
+            % never a holed grid).
+            tileFolder12 = testCase.makeSyntheticTiles(12, [32 32]);
+            files12 = utils.stitch.naturalSortFiles(tileFolder12.files);
+            layout12 = utils.stitch.buildLayoutGrid(files12, opts);
+            gridRC12 = reshape([layout12.gridRC], 2, []).';
+            testCase.verifyEqual(max(gridRC12(:, 1)), 3);
+            testCase.verifyEqual(max(gridRC12(:, 2)), 4);
+
+            % The tile order states the preferred orientation: Vertical must
+            % give the TALL arrangement (3 tiles -> 3x1, 12 -> 4x3).
+            optsV = opts; optsV.tileOrder = 'Vertical';
+            layoutV = utils.stitch.buildLayoutGrid(files, optsV);
+            gridRCV = reshape([layoutV.gridRC], 2, []).';
+            testCase.verifyEqual(max(gridRCV(:, 1)), 3, ...
+                'Vertical order: 3 tiles must form a single column');
+            testCase.verifyEqual(max(gridRCV(:, 2)), 1);
+
+            layout12V = utils.stitch.buildLayoutGrid(files12, optsV);
+            gridRC12V = reshape([layout12V.gridRC], 2, []).';
+            testCase.verifyEqual(max(gridRC12V(:, 1)), 4);
+            testCase.verifyEqual(max(gridRC12V(:, 2)), 3);
+        end
+
         function buildGrid_withOverlap_reducedStep(testCase)
             % 10% overlap in X → step = 60 * 0.9 = 54
             tileFolder = testCase.makeSyntheticTiles(2, [40 60]);

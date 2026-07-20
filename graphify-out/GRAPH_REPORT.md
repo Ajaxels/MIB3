@@ -1,7 +1,7 @@
-# Graph Report - C:\Matlab\MIB3\mib  (2026-07-11)
+# Graph Report - C:\Matlab\MIB3\mib  (2026-07-17)
 
 ## Corpus Check
-- Large corpus: 922 files · ~762,205 words. Semantic extraction will be expensive (many Claude tokens). Consider running on a subfolder.
+- Large corpus: 995 files · ~803,579 words. Semantic extraction will be expensive (many Claude tokens). Consider running on a subfolder.
 
 ## Summary
 - 1704 nodes · 2855 edges · 113 communities (89 shown, 24 thin omitted)

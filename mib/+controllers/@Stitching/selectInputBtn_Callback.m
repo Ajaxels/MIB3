@@ -12,8 +12,11 @@ function selectInputBtn_Callback(obj)
 %     (series = tiles) or several single-tile files carrying stage coordinates.
 %   - **Position file** — file picker for the position text file (the file's
 %     filename column may point at images or, with SubfolderMode, at folders).
-%   - **Grid / Filename pattern**, SubfolderMode OFF — folder picker; the folder's
-%     image files are the tiles.
+%   - **Grid / Filename pattern**, SubfolderMode OFF — multi-select file picker;
+%     the selected image files are the tiles (stored newline-joined in
+%     InputPath; the layout builder natural-sorts them, so selection order does
+%     not matter). A plain folder path typed/pasted into InputPath still works —
+%     its image files become the tiles (batch back-compat).
 %   - **Grid / Filename pattern**, SubfolderMode ON — multi-select the tile
 %     folders (each a Z-stack); stored newline-joined in InputPath.
 %
@@ -70,16 +73,19 @@ elseif obj.BatchOpt.SubfolderMode
     obj.BatchOpt.InputPath = strjoin(selectedFolders, newline);
     obj.refreshInputPathWidget();
 else
-    % Grid / Filename pattern with single-image tiles — pick their folder.
-    startFolder = obj.BatchOpt.InputPath;
-    if isempty(startFolder) || ~isfolder(startFolder)
-        startFolder = obj.mibModel.currentDirectory;
-    end
-    selectedFolder = uigetdir(startFolder, 'Select tile folder');
-    if isequal(selectedFolder, 0)
+    % Grid / Filename pattern with single-image tiles — multi-select the tile
+    % files (the layout builder natural-sorts them, so selection order is free).
+    startFolder = firstExistingPath(obj.BatchOpt.InputPath);
+    if isempty(startFolder); startFolder = obj.mibModel.currentDirectory; end
+    [selectedFiles, selectedFolder] = uigetfile( ...
+        {'*.tif;*.tiff;*.png;*.jpg;*.jpeg;*.bmp', 'Image files'; '*.*', 'All files'}, ...
+        'Select tile image files', startFolder, 'MultiSelect', 'on');
+    if isequal(selectedFiles, 0)
         return;
     end
-    obj.BatchOpt.InputPath = selectedFolder;
+    if ischar(selectedFiles); selectedFiles = {selectedFiles}; end
+    fullPaths = fullfile(selectedFolder, selectedFiles);
+    obj.BatchOpt.InputPath = strjoin(fullPaths, newline);
     obj.refreshInputPathWidget();
 end
 

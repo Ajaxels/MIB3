@@ -55,7 +55,12 @@ end
 measureOptions.qualityThreshold   = obj.BatchOpt.QualityThreshold{1};
 measureOptions.subpixel           = obj.BatchOpt.SubpixelPlacement;
 measureOptions.registrationMethod = obj.BatchOpt.RegistrationMethod{1};
-if strcmp(obj.BatchOpt.RegistrationMethod{1}, 'Feature-based')
+measureOptions.transformType      = obj.BatchOpt.TransformType{1};
+measureOptions.allowRotation      = obj.BatchOpt.AllowRotation;
+% A non-translation transform implies the feature-based estimator (phase
+% correlation can only measure translation), so its options are needed too.
+if strcmp(obj.BatchOpt.RegistrationMethod{1}, 'Feature-based') || ...
+        ~strcmp(obj.BatchOpt.TransformType{1}, 'Translation')
     measureOptions.featureOptions = obj.buildFeatureOptions();
 end
 measureOptions.showWaitbar        = obj.BatchOpt.showWaitbar;

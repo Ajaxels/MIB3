@@ -81,6 +81,8 @@ Dialogs for organizing, transforming, and exporting datasets.
    RenameShuffle
    ResampleDataset
    Snapshot
+   Stitching
+   StitchingInspector
 
 Segmentation tools
 ------------------

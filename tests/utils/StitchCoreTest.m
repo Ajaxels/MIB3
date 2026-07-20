@@ -577,6 +577,41 @@ classdef StitchCoreTest < matlab.unittest.TestCase
             testCase.verifyLessThanOrEqual(max(abs(canvas.subpixelResidual(:))), 0.5);
         end
 
+        function planCanvas_zSliceFixesShiftMosaicAboveBoundary(testCase)
+            % Inspector Fix Z: rows [z dy dx] in options.zSliceFixes shift every
+            % output slice >= z of the WHOLE mosaic. Verifies the per-slice shift
+            % table, the canvas growth, the fused placement on both sides of the
+            % boundary, and the sidecar round-trip of the corrections.
+            rng(11, 'twister');
+            vol = uint8(255 * rand(60, 80, 6));
+            layout = testCase.makeLineLayout(2, [60 40 6 1], 40);
+            tiles = {vol(:, 1:40, :), vol(:, 41:80, :)};
+            readerFcn = @(tileIdx) tiles{tileIdx};
+            positions = [1 1 1; 1 41 1];
+
+            canvas = utils.stitch.planCanvas(layout, positions, ...
+                struct('zSliceFixes', [4 3 -2]));
+            % Baseline canvas is 60 x 80 x 6; the shift range grows it by [3 2].
+            testCase.verifyEqual(canvas.size(1:3), [63 82 6]);
+            % Slices < 4 carry the baseline (x baseline = +2 from the -2 min),
+            % slices >= 4 the correction on top of it.
+            testCase.verifyEqual(canvas.zShifts(3, :), [0 2]);
+            testCase.verifyEqual(canvas.zShifts(4, :), [3 0]);
+
+            fuseOptions = struct('blendMode', 'Overwrite', 'background', 0);
+            below = utils.stitch.fuseSliceComposite(layout, canvas, 3, 1, readerFcn, fuseOptions);
+            above = utils.stitch.fuseSliceComposite(layout, canvas, 4, 1, readerFcn, fuseOptions);
+            testCase.verifyEqual(below(1:60, 3:82), vol(:, :, 3));
+            testCase.verifyEqual(above(4:63, 1:80), vol(:, :, 4));
+
+            % Sidecar round-trip (a single row must come back as 1x3).
+            sidecarPath = [tempname, '.mibstitch.json'];
+            cleanupSidecar = onCleanup(@() delete(sidecarPath));
+            utils.stitch.saveProject(sidecarPath, layout, [], positions, [], [], {}, [4 3 -2]);
+            [~, ~, ~, ~, ~, ~, zSliceFixes] = utils.stitch.loadProject(sidecarPath);
+            testCase.verifyEqual(zSliceFixes, [4 3 -2]);
+        end
+
         function blendWeights_interiorOneEdgesRamp(testCase)
             w = utils.stitch.blendWeights([100 100], 10);
             testCase.verifyClass(w, 'single');
@@ -711,6 +746,298 @@ classdef StitchCoreTest < matlab.unittest.TestCase
     end
 
     % =================================================================
+    % solveGlobalAffine + warped-footprint canvas + warp fusion
+    % =================================================================
+    methods (Test, TestTags = {'Unit'})
+
+        function affineSolver_recoversExactTransforms(testCase)
+            % Exact, mutually consistent affine edge measurements must be
+            % recovered up to the tiny rank-guard spring bias (well below 0.05).
+            [layout, G] = testCase.makeAffineTruthGrid(31);
+            edges = testCase.affineEdgesFromTruth(layout, G);
+
+            [tforms, positions, stats] = utils.stitch.solveGlobalAffine(layout, edges);
+
+            maxErr = 0;
+            for t = 1:numel(G)
+                maxErr = max(maxErr, max(abs(tforms{t}(:) - G{t}(:))));
+            end
+            testCase.verifyLessThan(maxErr, 0.05, ...
+                'affine solver did not recover the ground-truth transforms');
+            testCase.verifyLessThan(stats.rmseTotal, 0.05);
+            % positions collapse: pixel (1,1) position from each transform.
+            for t = 1:numel(G)
+                originXY = tforms{t}(1:2, 1:2) * [1; 1] + tforms{t}(1:2, 3);
+                testCase.verifyEqual(positions(t, 1:2), [originXY(2), originXY(1)], ...
+                    'AbsTol', 1e-9, 'positions must be the transform of pixel (1,1)');
+            end
+        end
+
+        function affineSolver_translationEdgesCollapseToTranslationSolver(testCase)
+            % With translation-only edges (no .tform) the affine solve must
+            % reduce to the per-axis translation solver: identity linear parts
+            % and matching positions. Guards the edge-synthesis sign convention.
+            [layout, truthOrigins] = testCase.makeGrid(3, 3, [100 100 1 1], 80);
+            rng(5);
+            jitter = round(5 * randn(9, 3)); jitter(:, 3) = 0;
+            trueOrigins = truthOrigins + jitter;
+            trueOrigins(1, :) = truthOrigins(1, :);
+            edges = testCase.perfectEdges(layout, trueOrigins);
+
+            [tforms, positionsAffine] = utils.stitch.solveGlobalAffine(layout, edges);
+            positionsRef = utils.stitch.solveGlobalLeastSquares(layout, edges);
+
+            % The rank-guard springs bias L off identity by O(1e-4) on a jittered
+            % grid; a real assembly/sign error shows up at O(1e-2) or worse.
+            for t = 1:numel(tforms)
+                testCase.verifyEqual(tforms{t}(1:2, 1:2), eye(2), 'AbsTol', 5e-4, ...
+                    'translation edges must keep the linear parts at identity');
+            end
+            testCase.verifyEqual(positionsAffine, positionsRef, 'AbsTol', 0.05, ...
+                'affine solve on translation edges must match the translation solver');
+        end
+
+        function planCanvas_integerTranslationTformsMatchPlainPlan(testCase)
+            % Pure integer-translation transforms must produce the same canvas
+            % size and tile placement as the plain (no-tforms) plan.
+            layout = testCase.makeLineLayout(2, [100 120 1 1], 80);
+            positions = [1 1 1; 1 81 1];
+            plainCanvas = utils.stitch.planCanvas(layout, positions);
+
+            % pos = L*[1;1] + p with L = I  =>  p = origin_xy - 1.
+            tforms = {[eye(2), [0; 0]; 0 0 1]; [eye(2), [80; 0]; 0 0 1]};
+            warpCanvas = utils.stitch.planCanvas(layout, positions, struct('tforms', {tforms}));
+
+            testCase.verifyEqual(warpCanvas.size, plainCanvas.size, ...
+                'integer-translation tforms changed the canvas size');
+            testCase.verifyEqual(warpCanvas.tilePlacement, plainCanvas.tilePlacement, ...
+                'integer-translation tforms changed the tile placement');
+            testCase.verifyTrue(isfield(warpCanvas, 'tforms') && isfield(warpCanvas, 'tileBounds'));
+        end
+
+        function fuseWarp_reconstructsAffineChoppedImage(testCase)
+            % Milestone (plan_transforms.md phase 1): chop a known image with an
+            % affine warp per tile; planning + warp fusion with the GROUND-TRUTH
+            % transforms must reproduce the source image.
+            [layout, G, original] = testCase.buildAffineChoppedCase(43);
+            nomOrigins = vertcat(layout.nomOrigin);
+
+            canvas = utils.stitch.planCanvas(layout, nomOrigins, struct('tforms', {G}));
+            mosaic = utils.stitch.fuseInMemory(layout, canvas, ...
+                struct('blendMode', 'Feather', 'background', 0));
+
+            meanAbsErr = testCase.mosaicVsOriginal(mosaic(:, :, 1, 1, 1), original, ...
+                canvas.tforms{1}, G{1});
+            testCase.verifyLessThan(meanAbsErr, 3.0, ...
+                sprintf('warp fusion with ground-truth transforms off by %.2f grey levels', meanAbsErr));
+        end
+
+        function rigidSolver_recoversRotationsAndStaysOrthogonal(testCase)
+            % Phase 2 milestone (plan_transforms.md): a rotated-tile set is
+            % recovered with TransformType = Rigid, and every solved linear part
+            % is exactly a proper rotation (R'R = I, det = 1 — the projection
+            % guarantee, not a tolerance on the data).
+            [layout, G] = testCase.makeRigidTruthGrid(17);
+            edges = testCase.affineEdgesFromTruth(layout, G);
+
+            [tforms, ~, stats] = utils.stitch.solveGlobalAffine(layout, edges, ...
+                struct('transformType', 'Rigid', 'allowRotation', true));
+
+            maxErr = 0;
+            for t = 1:numel(G)
+                maxErr = max(maxErr, max(abs(tforms{t}(:) - G{t}(:))));
+                L = tforms{t}(1:2, 1:2);
+                testCase.verifyEqual(L' * L, eye(2), 'AbsTol', 1e-12, ...
+                    'rigid-projected linear parts must be orthogonal');
+                testCase.verifyEqual(det(L), 1, 'AbsTol', 1e-12, ...
+                    'rigid-projected linear parts must be proper rotations');
+            end
+            testCase.verifyLessThan(maxErr, 0.05, ...
+                'rigid solve did not recover the ground-truth rotations');
+            testCase.verifyLessThan(stats.rmseTotal, 0.05);
+        end
+
+        function rigidSolver_allowRotationOffForcesExactIdentity(testCase)
+            % Phase 2 milestone: with AllowRotation off the SAME rotated set
+            % solves with rotation residual EXACTLY zero (identity linear parts
+            % by construction), i.e. it degenerates to a translation solve.
+            [layout, G] = testCase.makeRigidTruthGrid(17);
+            edges = testCase.affineEdgesFromTruth(layout, G);
+
+            [tforms, positions] = utils.stitch.solveGlobalAffine(layout, edges, ...
+                struct('transformType', 'Rigid', 'allowRotation', false));
+
+            for t = 1:numel(tforms)
+                testCase.verifyEqual(tforms{t}(1:2, 1:2), eye(2), ...
+                    'AllowRotation=false must force exactly identity linear parts');
+            end
+            testCase.verifyTrue(all(isfinite(positions(:))));
+            % Ground-truth rotations are small, so the rotation-locked positions
+            % must stay close to the true origins (pixel (1,1) of each map).
+            for t = 1:numel(G)
+                trueOrigin = G{t}(1:2, 1:2) * [1; 1] + G{t}(1:2, 3);
+                testCase.verifyEqual(positions(t, 1:2), [trueOrigin(2), trueOrigin(1)], ...
+                    'AbsTol', 3.0, 'rotation-locked positions drifted from the true origins');
+            end
+        end
+
+        function similaritySolver_recoversScaleAndRotation(testCase)
+            % Similarity = s*R per tile: recover a scaled+rotated ground truth;
+            % the solved linear parts must be exact scalar multiples of rotations.
+            [layout, G] = testCase.makeRigidTruthGrid(29);
+            rng(29, 'twister');
+            for t = 2:numel(G)
+                G{t}(1:2, 1:2) = (1 + (rand - 0.5) * 0.02) * G{t}(1:2, 1:2);
+            end
+            edges = testCase.affineEdgesFromTruth(layout, G);
+
+            tforms = utils.stitch.solveGlobalAffine(layout, edges, ...
+                struct('transformType', 'Similarity', 'allowRotation', true));
+
+            maxErr = 0;
+            for t = 1:numel(G)
+                maxErr = max(maxErr, max(abs(tforms{t}(:) - G{t}(:))));
+                L = tforms{t}(1:2, 1:2);
+                s = sqrt(det(L));
+                testCase.verifyEqual((L / s)' * (L / s), eye(2), 'AbsTol', 1e-10, ...
+                    'similarity-projected linear parts must be s * rotation');
+            end
+            testCase.verifyLessThan(maxErr, 0.05, ...
+                'similarity solve did not recover scale + rotation');
+        end
+
+        function featureShift_rotationLockProjectsFittedTransform(testCase)
+            % With allowRotation = false a similarity fit on ROTATED content must
+            % return a transform whose linear part carries no rotation (s * I).
+            base = testCase.texturedImage(300, 300, 19);
+            rotated = imrotate(base, 2, 'bilinear', 'crop');   % 2 degrees
+            cropA = base(51:250, 51:250);
+            cropB = rotated(51:250, 51:250);
+
+            lockedOpts = struct('transformType', 'similarity', 'allowRotation', false);
+            [~, quality, debugInfo] = utils.stitch.featureShift(cropA, cropB, lockedOpts);
+            testCase.assumeGreaterThan(quality, 0, 'fit did not converge on this texture');
+            M = debugInfo.tformA(1:2, 1:2);
+            testCase.verifyEqual(M(1, 2), 0, 'AbsTol', 1e-12, ...
+                'rotation-locked similarity fit must have zero off-diagonal terms');
+            testCase.verifyEqual(M(2, 1), 0, 'AbsTol', 1e-12, ...
+                'rotation-locked similarity fit must have zero off-diagonal terms');
+
+            % Same content with rotation allowed: the fit must SEE the rotation.
+            freeOpts = struct('transformType', 'similarity', 'allowRotation', true);
+            [~, qualityFree, debugFree] = utils.stitch.featureShift(cropA, cropB, freeOpts);
+            testCase.assumeGreaterThan(qualityFree, 0);
+            recoveredDeg = atan2d(debugFree.tformA(2, 1), debugFree.tformA(1, 1));
+            testCase.verifyEqual(abs(recoveredDeg), 2, 'AbsTol', 0.3, ...
+                'unlocked similarity fit should recover the 2-degree rotation');
+        end
+
+        function fullChain_affineMeasureSolveFuse(testCase)
+            % Full affine chain: feature measurement with transformType Affine ->
+            % solveGlobalAffine -> warped canvas -> warp fusion. Solved per-tile
+            % transforms must match the ground truth and the mosaic the source.
+            [layout, G, original] = testCase.buildAffineChoppedCase(59);
+
+            pairs = utils.stitch.findNeighborPairs(layout, struct('minOverlapPx', 16));
+            edges = utils.stitch.measureAllPairs(layout, pairs, ...
+                struct('qualityThreshold', 0.3, 'transformType', 'Affine'));
+
+            testCase.assertGreaterThanOrEqual(sum([edges.valid]), 3, ...
+                'affine feature measurement validated too few edges');
+            for e = edges([edges.valid])
+                testCase.assertFalse(isempty(e.tform), ...
+                    'valid affine edges must carry the fitted pairwise transform');
+            end
+
+            [tforms, ~, stats] = utils.stitch.solveGlobalAffine(layout, edges);
+            maxErr = 0;
+            for t = 1:numel(G)
+                maxErr = max(maxErr, max(abs(tforms{t}(:) - G{t}(:))));
+            end
+            testCase.verifyLessThan(maxErr, 0.5, ...
+                sprintf('solved affine transforms off by %.3f from ground truth', maxErr));
+            testCase.verifyLessThan(stats.rmseTotal, 1.0);
+
+            nomOrigins = vertcat(layout.nomOrigin);
+            canvas = utils.stitch.planCanvas(layout, nomOrigins, struct('tforms', {tforms}));
+            mosaic = utils.stitch.fuseInMemory(layout, canvas, ...
+                struct('blendMode', 'Feather', 'background', 0));
+            meanAbsErr = testCase.mosaicVsOriginal(mosaic(:, :, 1, 1, 1), original, ...
+                canvas.tforms{1}, G{1});
+            testCase.verifyLessThan(meanAbsErr, 3.0, ...
+                sprintf('measured affine chain mosaic off by %.2f grey levels', meanAbsErr));
+        end
+
+        function fullChain3DAffine_measureSolveFuseAcrossLayers(testCase)
+            % Phase 3 milestone (plan_transforms.md): the 2D in-plane affine
+            % model on depth>1 / multi-layer data. A 2x2 grid over 2 Z-layers of
+            % Z-stack tiles, each tile cut with its OWN in-plane affine applied
+            % to every slice, layer 2 jittered in Z. Measure (feature-based,
+            % forced by the Affine model) -> solveGlobalAffine (z via the scalar
+            % path) -> warped-footprint canvas -> per-slice warp fusion must
+            % recover the transforms, the layer dz, and reproduce the volume.
+            [layout, G, volume, trueLayerZ, tileDepth] = testCase.buildAffine3DChoppedCase(67);
+
+            pairs = utils.stitch.findNeighborPairs(layout, struct('minOverlapPx', 16));
+            testCase.assertTrue(any(strcmp({pairs.direction}, 'z')), ...
+                'expected cross-layer z pairs in the 3D affine layout');
+
+            edges = utils.stitch.measureAllPairs(layout, pairs, ...
+                struct('qualityThreshold', 0.3, 'transformType', 'Affine'));
+
+            % Within-layer edges must carry the fitted transform; z-edges stay
+            % translation-only (empty .tform) — the 3D-affine scope.
+            for e = edges([edges.valid])
+                if strcmp(e.direction, 'z')
+                    testCase.assertTrue(isempty(e.tform), ...
+                        'cross-layer edges must be measured as translations');
+                else
+                    testCase.assertFalse(isempty(e.tform), ...
+                        'valid within-layer affine edges must carry the fitted transform');
+                end
+            end
+            testCase.assertGreaterThanOrEqual(sum([edges.valid]), 8, ...
+                '3D affine measurement validated too few edges');
+
+            [tforms, positions, stats] = utils.stitch.solveGlobalAffine(layout, edges);
+            maxErr = 0;
+            for t = 1:numel(G)
+                maxErr = max(maxErr, max(abs(tforms{t}(:) - G{t}(:))));
+            end
+            testCase.verifyLessThan(maxErr, 0.5, ...
+                sprintf('solved 3D affine transforms off by %.3f from ground truth', maxErr));
+            testCase.verifyLessThan(stats.rmseTotal, 1.0);
+
+            % Layer dz (z composes additively regardless of the in-plane model).
+            trueDz = trueLayerZ(2) - trueLayerZ(1);
+            for t = 5:8
+                testCase.verifyEqual(positions(t, 3) - positions(t - 4, 3), trueDz, ...
+                    'AbsTol', 1.0, 'solved layer dz drifted from the true Z jitter');
+            end
+
+            % Warp-fuse the full stack and compare one mid-layer slice per layer
+            % against the matching volume slice (the canvas frame offset comes
+            % from the anchor's canvas transform vs its ground-truth map).
+            canvas = utils.stitch.planCanvas(layout, positions, struct('tforms', {tforms}));
+            testCase.verifyLessThan(canvas.size(3), 2 * tileDepth, ...
+                'canvas Z did not account for the inter-layer overlap');
+            mosaic = utils.stitch.fuseInMemory(layout, canvas, ...
+                struct('blendMode', 'Feather', 'background', 0));
+
+            for probe = [1, 5]   % anchor tile of each layer
+                zLocal = round(tileDepth / 2);
+                zGlobal = canvas.tilePlacement(probe, 3) + zLocal - 1;
+                volumeSlice = volume(:, :, trueLayerZ(1 + (probe > 4)) + zLocal - 1);
+                meanAbsErr = testCase.mosaicVsOriginal(mosaic(:, :, zGlobal, 1, 1), ...
+                    volumeSlice, canvas.tforms{1}, G{1});
+                testCase.verifyLessThan(meanAbsErr, 4.0, ...
+                    sprintf('layer %d mid-slice mosaic off by %.2f grey levels', ...
+                    1 + (probe > 4), meanAbsErr));
+            end
+        end
+    end
+
+    % =================================================================
     % Local helpers
     % =================================================================
     methods (Access = private)
@@ -821,6 +1148,166 @@ classdef StitchCoreTest < matlab.unittest.TestCase
             end
         end
 
+        function [layout, G] = makeAffineTruthGrid(testCase, seed)
+            % 2x2 layout with ground-truth per-tile affine maps: anchor identity
+            % at nominal, others small rotation/scale/shear + XY jitter.
+            [layout, origins] = testCase.makeGrid(2, 2, [200 200 1 1], 140);
+            rng(seed, 'twister');
+            G = cell(4, 1);
+            G{1} = [eye(2), origins(1, [2 1])' - 1; 0 0 1];
+            for t = 2:4
+                ang = (rand - 0.5) * 2 * pi/180;          % +-1 degree
+                sc  = 1 + (rand - 0.5) * 0.02;            % +-1% scale
+                sh  = (rand - 0.5) * 0.01;                % small shear
+                L = sc * [cos(ang), -sin(ang); sin(ang), cos(ang)] * [1 sh; 0 1];
+                jitter = (rand(2, 1) - 0.5) * 8;
+                G{t} = [L, origins(t, [2 1])' - 1 + jitter; 0 0 1];
+            end
+        end
+
+        function [layout, G] = makeRigidTruthGrid(testCase, seed)
+            % 2x2 layout with rotation-only ground truth (proper rotations +
+            % XY jitter, no scale/shear) — the rigid-projection test bed.
+            [layout, origins] = testCase.makeGrid(2, 2, [200 200 1 1], 140);
+            rng(seed, 'twister');
+            G = cell(4, 1);
+            G{1} = [eye(2), origins(1, [2 1])' - 1; 0 0 1];
+            for t = 2:4
+                ang = (rand - 0.5) * 2 * pi/180;          % +-1 degree
+                R = [cos(ang), -sin(ang); sin(ang), cos(ang)];
+                jitter = (rand(2, 1) - 0.5) * 8;
+                G{t} = [R, origins(t, [2 1])' - 1 + jitter; 0 0 1];
+            end
+        end
+
+        function edges = affineEdgesFromTruth(testCase, layout, G)
+            % Exact pairwise transforms for the four 2x2 grid adjacencies:
+            % edge.tform is the tile-local map i->j, T = inv(G_j) * G_i.
+            nomOrigins = reshape([layout.nomOrigin], 3, numel(layout))';
+            pairsIJ = [1 2; 3 4; 1 3; 2 4];
+            edges = testCase.emptyEdges(0);
+            for k = 1:size(pairsIJ, 1)
+                i = pairsIJ(k, 1); j = pairsIJ(k, 2);
+                T = G{j} \ G{i};
+                if k <= 2; direction = 'x'; else; direction = 'y'; end
+                e = testCase.oneEdge(i, j, direction, ...
+                    nomOrigins(j, :) - nomOrigins(i, :), [0 0 0], 1.0, true);
+                e.measured = [-T(2, 3), -T(1, 3), 0];   % translation-part approximation
+                e.tform = T;
+                if isempty(edges); edges = e; else; edges(end+1) = e; end %#ok<AGROW>
+            end
+        end
+
+        function [layout, G, original] = buildAffineChoppedCase(testCase, seed)
+            % Chop a textured image into a 2x2 grid where each tile is CUT with
+            % its own affine warp (tile(v) = original(G*v)) and written to disk —
+            % the affine analogue of buildChoppedFusionCase. 240 px tiles at
+            % 170 px pitch (70 px overlap, the proven feature-detection setup).
+            original = uint8(testCase.texturedImage(620, 620, seed));
+            tileH = 240; tileW = 240;
+            nom = [1 1 1; 1 171 1; 171 1 1; 171 171 1];
+
+            rng(seed, 'twister');
+            G = cell(4, 1);
+            G{1} = [eye(2), nom(1, [2 1])' - 1; 0 0 1];
+            for t = 2:4
+                ang = (rand - 0.5) * 2 * pi/180;
+                sc  = 1 + (rand - 0.5) * 0.02;
+                L = sc * [cos(ang), -sin(ang); sin(ang), cos(ang)];
+                jitter = (rand(2, 1) - 0.5) * 8;
+                G{t} = [L, nom(t, [2 1])' - 1 + jitter; 0 0 1];
+            end
+
+            tempDir = tempname; mkdir(tempDir);
+            testCase.addTeardown(@() rmdir(tempDir, 's'));
+
+            layout = testCase.emptyLayout(4);
+            for t = 1:4
+                tileImg = imwarp(original, affinetform2d(inv(G{t})), 'linear', ...
+                    'OutputView', imref2d([tileH tileW]), 'FillValues', 0);
+                fn = fullfile(tempDir, sprintf('tile_%02d.tif', t));
+                imwrite(tileImg, fn);
+                layout(t).index     = t;
+                layout(t).filename  = fn;
+                layout(t).gridRC    = [floor((t - 1) / 2) + 1, mod(t - 1, 2) + 1];
+                layout(t).nomOrigin = nom(t, :);
+                layout(t).tileSize  = [tileH, tileW, 1, 1];
+                layout(t).dataClass = 'uint8';
+            end
+        end
+
+        function [layout, G, volume, trueLayerZ, tileDepth] = buildAffine3DChoppedCase(testCase, seed)
+            % The 3D analogue of buildAffineChoppedCase: a 2x2 XY grid over 2
+            % Z-layers of Z-stack tiles (multi-page TIFFs), every tile cut with
+            % its own IN-PLANE affine applied identically to all its slices
+            % (tile(v, s) = volume(G*v, oz+s-1)) — the 3D-affine scope where z
+            % stays translational. The volume shares one strong 2D texture
+            % across slices (so the depth-flattened feature matching keeps the
+            % full content) plus a z-varying component (so the dz NCC scan has
+            % a sharp peak). Layer 1 sits at z = 1 (the solver's gauge); layer 2
+            % is Z-jittered against its nominal.
+            base = testCase.texturedImage(620, 620, seed);
+            volumeDepth = 20;
+            tileDepth = 12;
+            stepZ = 7;   % nominal z overlap: tileDepth - stepZ = 5 slices
+            rng(seed, 'twister');
+            zNoise = imgaussfilt3(randn(620, 620, volumeDepth), 2.0);
+            zNoise = zNoise / max(abs(zNoise(:)));
+            volume = 0.75 * repmat(base, 1, 1, volumeDepth) + 0.25 * (100 * zNoise + 120);
+            volume = uint8(min(max(volume, 0), 255));
+
+            tileH = 240; tileW = 240;
+            nomXY = [1 1; 1 171; 171 1; 171 171];
+            trueLayerZ = [1, 1 + stepZ + randi([-1 1])];
+
+            % The linear part is shared per grid SLOT across layers (lens/stage
+            % distortion is per-position, not per-section) — which is also what
+            % the solver assumes: cross-layer edges are translation-only, so a
+            % layer's common linear factor is unobservable and the solver's
+            % M = I z-rows pin each tile's L to its partner in the next layer.
+            % Only the translation jitters independently per tile (observable
+            % through the z-edge [dy dx] measurements).
+            G = cell(8, 1);
+            slotL = cell(4, 1);
+            slotL{1} = eye(2);
+            for gridSlot = 2:4
+                ang = (rand - 0.5) * 2 * pi/180;
+                sc  = 1 + (rand - 0.5) * 0.02;
+                slotL{gridSlot} = sc * [cos(ang), -sin(ang); sin(ang), cos(ang)];
+            end
+            G{1} = [eye(2), nomXY(1, [2 1])' - 1; 0 0 1];
+            for t = 2:8
+                gridSlot = mod(t - 1, 4) + 1;
+                jitter = (rand(2, 1) - 0.5) * 8;
+                G{t} = [slotL{gridSlot}, nomXY(gridSlot, [2 1])' - 1 + jitter; 0 0 1];
+            end
+
+            tempDir = tempname; mkdir(tempDir);
+            testCase.addTeardown(@() rmdir(tempDir, 's'));
+
+            layout = testCase.emptyLayout(8);
+            for t = 1:8
+                gridSlot = mod(t - 1, 4) + 1;
+                zLayer = 1 + (t > 4);
+                oz = trueLayerZ(zLayer);
+                tileVolume = zeros(tileH, tileW, tileDepth, 'uint8');
+                for sliceIdx = 1:tileDepth
+                    tileVolume(:, :, sliceIdx) = imwarp(volume(:, :, oz + sliceIdx - 1), ...
+                        affinetform2d(inv(G{t})), 'linear', ...
+                        'OutputView', imref2d([tileH tileW]), 'FillValues', 0);
+                end
+                fn = fullfile(tempDir, sprintf('tile_%02d.tif', t));
+                testCase.writeStackTiff(tileVolume, fn);
+                layout(t).index     = t;
+                layout(t).filename  = fn;
+                layout(t).zLayer    = zLayer;
+                layout(t).gridRC    = [floor((gridSlot - 1) / 2) + 1, mod(gridSlot - 1, 2) + 1];
+                layout(t).nomOrigin = [nomXY(gridSlot, :), 1 + (zLayer - 1) * stepZ];
+                layout(t).tileSize  = [tileH, tileW, tileDepth, 1];
+                layout(t).dataClass = 'uint8';
+            end
+        end
+
         function [layout, origins] = makeGrid(testCase, rows, cols, tileSize, spacing)
             n = rows * cols;
             layout = testCase.emptyLayout(n);
@@ -880,6 +1367,26 @@ classdef StitchCoreTest < matlab.unittest.TestCase
             for z = 2:size(volume, 3)
                 imwrite(volume(:, :, z), filename, 'WriteMode', 'append');
             end
+        end
+
+        function meanAbsErr = mosaicVsOriginal(mosaic, original, canvasAnchorTform, trueAnchorTform)
+            % MOSAICVSORIGINAL - Mean absolute grey-level difference between a
+            % fused mosaic and its source image. The anchor's canvas transform vs
+            % its ground-truth map gives the (fractional) source->canvas offset;
+            % the source is sampled at the corresponding fractional coordinates.
+            offsetXY = canvasAnchorTform(1:2, 3) - trueAnchorTform(1:2, 3);
+            [H, W] = size(mosaic);
+            margin = 8;   % skip mosaic borders (feather edge + zero fill)
+            rows = (1 + margin):(H - margin);
+            cols = (1 + margin):(W - margin);
+            [colGrid, rowGrid] = meshgrid(cols, rows);
+            srcX = colGrid - offsetXY(1);
+            srcY = rowGrid - offsetXY(2);
+            inside = srcX >= 2 & srcX <= size(original, 2) - 1 & ...
+                     srcY >= 2 & srcY <= size(original, 1) - 1;
+            srcVals = interp2(double(original), srcX(inside), srcY(inside), 'linear');
+            mosaicRegion = double(mosaic(rows, cols));
+            meanAbsErr = mean(abs(mosaicRegion(inside) - srcVals));
         end
 
         function [tiles, origins] = chopIntoTiles(img, rows, cols, overlapPx, jitterPx)

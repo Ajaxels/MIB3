@@ -36,6 +36,21 @@ function edges = measureAllPairs(layout, pairs, options)
 %       ``'Feature-based'``; selects :func:`utils.stitch.pairwiseShift` or
 %       :func:`utils.stitch.featureShift` as the per-pair estimator (both share
 %       the same sign convention, so the displacement composition is identical).
+%     - ``.transformType`` — [char] ``'Translation'`` (default) | ``'Rigid'`` |
+%       ``'Similarity'`` | ``'Affine'``. Phase correlation can only measure
+%       translation, so any non-translation model implies the feature-based
+%       estimator regardless of ``registrationMethod``. Non-translation edges
+%       additionally carry the full fitted transform in ``.tform``.
+%     - ``.allowRotation`` — [logical] ``true`` (default). ``false`` constrains
+%       every pairwise fit to carry no rotation (forwarded to
+%       :func:`utils.stitch.featureShift`); pair it with the same option on
+%       :func:`utils.stitch.solveGlobalAffine` so measurement and solve agree.
+%     - ``.preserveEdges`` — [struct array] previously measured edges whose
+%       USER-made fixes (``.source = 'user'``, from the seam inspector) must
+%       survive this re-measure: after measuring, any output edge whose
+%       ``(i, j)`` pair matches a preserved user edge is replaced by it.
+%       Without this, one re-measure silently discards a QC session. Preserved
+%       user edges whose pair no longer exists in ``pairs`` are dropped.
 %     - ``.featureOptions`` — [struct] detector settings forwarded to
 %       :func:`utils.stitch.featureShift` when ``registrationMethod`` is
 %       ``'Feature-based'`` (detector type, per-detector params, downsampling,
@@ -48,7 +63,14 @@ function edges = measureAllPairs(layout, pairs, options)
 % Output Arguments:
 %   - **edges** — [struct array] one per pair with fields ``.i .j .direction
 %     .nominal`` (copied) plus ``.measured`` (``[dy dx dz]``), ``.quality``
-%     (``[0,1]``) and ``.valid`` (logical).
+%     (``[0,1]``), ``.valid`` (logical), ``.tform`` — the tile-local A→B
+%     transform as a 3x3 double in xy pixel coordinates
+%     (``[x_j; y_j; 1] = tform * [x_i; y_i; 1]``), filled only when a
+%     non-translation ``transformType`` was fitted (``[]`` otherwise; the
+%     translation solver reads ``.measured`` alone) — and the seam-inspector
+%     bookkeeping fields ``.source`` (``'auto'`` here; ``'user'``/
+%     ``'confirmed'`` are set by the inspector) and ``.seamScore``
+%     (``[]`` here; filled by :func:`utils.stitch.scoreSeams`).
 %
 % **Example** — measure all pairs sequentially:
 %
@@ -70,10 +92,16 @@ if ~isfield(options, 'parentFigure');     options.parentFigure = []; end
 if ~isfield(options, 'zSearchRadius');    options.zSearchRadius = 8; end
 if ~isfield(options, 'registrationMethod'); options.registrationMethod = 'Phase correlation'; end
 if ~isfield(options, 'featureOptions');     options.featureOptions = struct(); end
+if ~isfield(options, 'transformType') || isempty(options.transformType)
+    options.transformType = 'Translation';
+end
+if ~isfield(options, 'allowRotation'); options.allowRotation = true; end
+if ~isfield(options, 'preserveEdges'); options.preserveEdges = []; end
 
 nPairs = numel(pairs);
 edges = repmat(struct('i', [], 'j', [], 'direction', '', 'nominal', [0 0 0], ...
-    'measured', [0 0 0], 'quality', 0, 'valid', false), 1, nPairs);
+    'measured', [0 0 0], 'quality', 0, 'valid', false, 'tform', [], ...
+    'source', 'auto', 'seamScore', []), 1, nPairs);
 
 if nPairs == 0; return; end
 
@@ -86,7 +114,10 @@ zSearchRadius = options.zSearchRadius;
 % [dy dx dz] in the same sign convention (cropB(r,c) ≈ cropA(r-dy,c-dx)), so the
 % displacement composition in measureOne is method-agnostic. The handle is passed
 % into the parfor body (a plain function handle broadcasts cleanly to workers).
-isFeatureBased = strcmpi(options.registrationMethod, 'Feature-based');
+% Phase correlation can only measure translation — any richer transform model
+% forces the feature-based estimator.
+fitsFullTransform = ~strcmpi(options.transformType, 'Translation');
+isFeatureBased = strcmpi(options.registrationMethod, 'Feature-based') || fitsFullTransform;
 if isFeatureBased
     shiftFcn = @(a, b, o) utils.stitch.featureShift(a, b, o);
     % Merge the feature-detector settings (detector type, per-detector params,
@@ -96,6 +127,8 @@ if isFeatureBased
     for fieldIdx = 1:numel(featureFields)
         shiftOptions.(featureFields{fieldIdx}) = options.featureOptions.(featureFields{fieldIdx});
     end
+    shiftOptions.transformType = lower(options.transformType);   % estgeotform2d spelling
+    shiftOptions.allowRotation = options.allowRotation;
 else
     shiftFcn = @(a, b, o) utils.stitch.pairwiseShift(a, b, o);
 end
@@ -105,13 +138,14 @@ if options.useParallel
     readerOptions = struct('cacheSizeBytes', options.cacheSizeBytes);
     measured = zeros(nPairs, 3);
     qualities = zeros(nPairs, 1);
+    tforms = cell(nPairs, 1);
     parfor k = 1:nPairs
         localReader = utils.stitch.makeTileReader(layout, readerOptions);
-        [measured(k, :), qualities(k)] = measureOne(layout, pairs(k), ...
+        [measured(k, :), qualities(k), tforms{k}] = measureOne(layout, pairs(k), ...
             localReader, expandPx, colorChannel, shiftOptions, zSearchRadius, shiftFcn, isFeatureBased);
     end
     for k = 1:nPairs
-        edges(k) = fillEdge(pairs(k), measured(k, :), qualities(k), options.qualityThreshold);
+        edges(k) = fillEdge(pairs(k), measured(k, :), qualities(k), options.qualityThreshold, tforms{k});
     end
 else
     readerFcn = utils.stitch.makeTileReader(layout, ...
@@ -122,9 +156,9 @@ else
             'Message', 'Measuring tile overlaps...', 'Title', 'Stitching');
     end
     for k = 1:nPairs
-        [measuredShift, quality] = measureOne(layout, pairs(k), readerFcn, ...
+        [measuredShift, quality, tformTile] = measureOne(layout, pairs(k), readerFcn, ...
             expandPx, colorChannel, shiftOptions, zSearchRadius, shiftFcn, isFeatureBased);
-        edges(k) = fillEdge(pairs(k), measuredShift, quality, options.qualityThreshold);
+        edges(k) = fillEdge(pairs(k), measuredShift, quality, options.qualityThreshold, tformTile);
         if ~isempty(progressDialog) && isvalid(progressDialog)
             progressDialog.Value = k / nPairs;
         end
@@ -133,18 +167,55 @@ else
         close(progressDialog);
     end
 end
+
+edges = mergePreservedUserEdges(edges, options.preserveEdges);
 end
 
 % =====================================================================
-function [measuredShift, quality] = measureOne(layout, pair, readerFcn, expandPx, colorChannel, shiftOptions, zSearchRadius, shiftFcn, isFeatureBased)
+function edges = mergePreservedUserEdges(edges, preserveEdges)
+% MERGEPRESERVEDUSEREDGES - Re-apply user-fixed edges over fresh measurements.
+% Only edges the inspector marked source='user' are carried over; everything
+% else takes the new automatic measurement.
+if isempty(preserveEdges) || ~isfield(preserveEdges, 'source'); return; end
+for p = 1:numel(preserveEdges)
+    preserved = preserveEdges(p);
+    if ~strcmp(preserved.source, 'user'); continue; end
+    for k = 1:numel(edges)
+        if edges(k).i == preserved.i && edges(k).j == preserved.j
+            edges(k).measured  = preserved.measured;
+            edges(k).quality   = preserved.quality;
+            edges(k).valid     = preserved.valid;
+            edges(k).source    = preserved.source;
+            if isfield(preserved, 'tform');     edges(k).tform = preserved.tform; end
+            if isfield(preserved, 'seamScore'); edges(k).seamScore = preserved.seamScore; end
+            break;
+        end
+    end
+end
+end
+
+% =====================================================================
+function [measuredShift, quality, tformTile] = measureOne(layout, pair, readerFcn, expandPx, colorChannel, shiftOptions, zSearchRadius, shiftFcn, isFeatureBased)
 % MEASUREONE - Read overlap crops for one pair and estimate the residual shift.
 % Adapt the expansion to the nominal overlap extent along the pair direction:
 % expanding far beyond the overlap fills the crops with unshared content, which
 % starves the correlation peak and creates genuine competing peaks.
 % shiftFcn(a,b,o) is the per-pair estimator (pairwiseShift or featureShift).
+% tformTile is the fitted tile-local A->B 3x3 (xy) when a non-translation model
+% was requested; [] otherwise.
 if nargin < 7; zSearchRadius = 8; end
 if nargin < 8 || isempty(shiftFcn); shiftFcn = @(a, b, o) utils.stitch.pairwiseShift(a, b, o); end
 if nargin < 9; isFeatureBased = false; end
+tformTile = [];
+% Full transforms are within-layer only: cross-layer ('z') pairs are measured as
+% translations regardless of the requested model (the in-plane affine acts per
+% slice; z composes additively, so z-edges carry no linear part).
+fitsFullTransform = isfield(shiftOptions, 'transformType') && ...
+    ~strcmp(shiftOptions.transformType, 'translation');
+if fitsFullTransform && strcmp(pair.direction, 'z')
+    shiftOptions.transformType = 'translation';
+    fitsFullTransform = false;
+end
 if strcmp(pair.direction, 'x')
     overlapExtent = layout(pair.i).tileSize(2) - abs(pair.nominal(2));
 elseif strcmp(pair.direction, 'y')
@@ -187,8 +258,21 @@ if strcmp(pair.direction, 'z')
 else
     cropA = flattenDepth(cropA);
     cropB = flattenDepth(cropB);
-    [shiftYXZ, quality] = shiftFcn(cropA, cropB, shiftOptions);
+    [shiftYXZ, quality, shiftDebugInfo] = shiftFcn(cropA, cropB, shiftOptions);
     measuredDz = pair.nominal(3);   % within-layer: dz constrained to nominal (0)
+    if fitsFullTransform && isstruct(shiftDebugInfo) && ...
+            isfield(shiftDebugInfo, 'tformA') && ~isempty(shiftDebugInfo.tformA)
+        % Re-express the crop-local fit in tile-local coordinates. With crops
+        % starting at tile pixels oA/oB (1-based, [y x] from the bboxes) and the
+        % crop-frame map x_cropB = M*x_cropA + c:
+        %   x_tileB = M*x_tileA + c + (oB-1) - M*(oA-1)
+        % i.e. T_tile = Tr(oB-1) * T_crop * Tr(-(oA-1)) (xy order). For the
+        % feature-based full-tile reads oA = oB = [1 1] and T_tile = T_crop.
+        offsetA = [bboxA(2, 1) - 1; bboxA(1, 1) - 1];   % [x; y]
+        offsetB = [bboxB(2, 1) - 1; bboxB(1, 1) - 1];
+        tformTile = shiftDebugInfo.tformA;
+        tformTile(1:2, 3) = tformTile(1:2, 3) + offsetB - tformTile(1:2, 1:2) * offsetA;
+    end
 end
 
 % Compose the measured displacement from the actual crop start offsets.
@@ -297,8 +381,9 @@ end
 end
 
 % =====================================================================
-function edge = fillEdge(pair, measuredShift, quality, qualityThreshold)
+function edge = fillEdge(pair, measuredShift, quality, qualityThreshold, tformTile)
 % FILLEDGE - Assemble one output edge struct from a pair + measurement.
+if nargin < 5; tformTile = []; end
 edge.i         = pair.i;
 edge.j         = pair.j;
 edge.direction = pair.direction;
@@ -306,6 +391,9 @@ edge.nominal   = pair.nominal;
 edge.measured  = measuredShift;
 edge.quality   = quality;
 edge.valid     = quality >= qualityThreshold;
+edge.tform     = tformTile;
+edge.source    = 'auto';
+edge.seamScore = [];
 end
 
 % =====================================================================

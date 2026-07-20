@@ -12,6 +12,7 @@ handles = obj.view.handles;
 % ---- Input group ----
 handles.LayoutSource.Items  = obj.BatchOpt.LayoutSource{2};
 handles.LayoutSource.Value  = obj.BatchOpt.LayoutSource{1};
+obj.updateInfoLabel();          % short description of the selected layout source (guarded)
 obj.refreshInputPathWidget();   % uieditfield (string) or uilistbox (per-path items)
 handles.SubfolderMode.Value = obj.BatchOpt.SubfolderMode;
 % SubfolderMode (tiles are folder Z-stacks) drives folder collection for Grid /
@@ -50,20 +51,35 @@ end
 % ---- Registration group ----
 handles.TransformType.Items     = obj.BatchOpt.TransformType{2};
 handles.TransformType.Value     = obj.BatchOpt.TransformType{1};
+isTranslation = strcmp(obj.BatchOpt.TransformType{1}, 'Translation');
+if isfield(handles, 'AllowRotation')   % widget may not exist in the mlapp yet
+    handles.AllowRotation.Value  = obj.BatchOpt.AllowRotation;
+    handles.AllowRotation.Enable = ~isTranslation;   % moot for pure translation
+end
 if isfield(handles, 'RegistrationMethod')   % widget may not exist in the mlapp yet
     handles.RegistrationMethod.Items = obj.BatchOpt.RegistrationMethod{2};
-    handles.RegistrationMethod.Value = obj.BatchOpt.RegistrationMethod{1};
+    % Any non-translation transform implies the feature-based estimator
+    % (phase correlation can only measure translation): the dropdown locks
+    % AND displays what will actually run. BatchOpt keeps the user's own
+    % choice, restored when they return to Translation.
+    if isTranslation
+        handles.RegistrationMethod.Value = obj.BatchOpt.RegistrationMethod{1};
+    else
+        handles.RegistrationMethod.Value = 'Feature-based';
+    end
+    handles.RegistrationMethod.Enable = isTranslation;
 end
-% Feature-detector selector + Settings button are only meaningful for the
-% Feature-based method; disable them for Phase correlation.
-isFeatureBased = strcmp(obj.BatchOpt.RegistrationMethod{1}, 'Feature-based');
+% Feature-detector selector + Settings button are only meaningful when the
+% feature-based estimator will run — the Feature-based method, or any
+% non-translation transform (which forces it).
+usesFeatures = strcmp(obj.BatchOpt.RegistrationMethod{1}, 'Feature-based') || ~isTranslation;
 if isfield(handles, 'FeatureDetectorType')   % widget may not exist in the mlapp yet
     handles.FeatureDetectorType.Items  = obj.BatchOpt.FeatureDetectorType{2};
     handles.FeatureDetectorType.Value  = obj.BatchOpt.FeatureDetectorType{1};
-    handles.FeatureDetectorType.Enable = isFeatureBased;
+    handles.FeatureDetectorType.Enable = usesFeatures;
 end
 if isfield(handles, 'configureFeaturesBtn')   % widget may not exist in the mlapp yet
-    handles.configureFeaturesBtn.Enable = isFeatureBased;
+    handles.configureFeaturesBtn.Enable = usesFeatures;
 end
 handles.QualityThreshold.Value  = obj.BatchOpt.QualityThreshold{1};
 handles.QualityThreshold.Limits = obj.BatchOpt.QualityThreshold{2};
@@ -83,6 +99,11 @@ handles.SaveProject.Value = obj.BatchOpt.SaveProject;
 isZarr = strcmp(obj.BatchOpt.OutputMode{1}, 'OME-Zarr (BigData)');
 handles.OutputPath.Enable      = isZarr;
 handles.selectOutputBtn.Enable = isZarr;
+
+% The seam inspector needs a measured + solved state to review.
+if isfield(handles, 'inspectSeamsBtn')   % widget may not exist in the mlapp yet
+    handles.inspectSeamsBtn.Enable = ~isempty(obj.edges) && ~isempty(obj.positions);
+end
 
 % ---- Status labels reflecting cached state ----
 numTiles = numel(obj.layout);

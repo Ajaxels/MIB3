@@ -11,7 +11,10 @@ function configureFeaturesBtn_Callback(obj)
 % ``FeatureDetectorType`` parameters, the rotation-invariance flag, the
 % detection downsampling factor, and the RANSAC (``estgeotform2d``) settings.
 % The edited values are stored in ``obj.automaticOptions`` and applied on the
-% next *Measure overlaps* / *Stitch* run of the Feature-based method.
+% next *Measure overlaps* / *Stitch* run of the Feature-based method. When the
+% dialog is accepted and a layout is loaded, :func:`previewFeatureMatch` renders
+% the resulting keypoint matches on a representative tile pair so the effect of
+% the change is visible immediately (as in the Alignment feature preview).
 %
 
 if obj.mibModel.preferences.System.DeveloperMode
@@ -38,5 +41,8 @@ downsampleInfo = struct('field', 'imgDownsamplingFactorForAnalysis', ...
 
 if status == 1
     obj.updateWidgets();
+    % Show the effect of the new settings on a representative tile pair, the
+    % same immediate-feedback loop the Alignment feature preview provides.
+    obj.previewFeatureMatch();
 end
 end

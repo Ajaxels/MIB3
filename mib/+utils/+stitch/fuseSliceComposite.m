@@ -12,7 +12,19 @@ function outSlice = fuseSliceComposite(layout, canvas, zGlobal, ~, readerFcn, op
 % ``zGlobal`` (1-based) and time ``t`` by placing every tile whose Z-band covers
 % ``zGlobal`` at its ``canvas.tilePlacement`` origin using the requested blend
 % mode. Feather/Average use single-precision accumulators and divide once at the
-% end; Max/Overwrite write in place.
+% end; Max/Overwrite write in place. When the plan carries per-slice mosaic
+% corrections (``canvas.zShifts`` from the inspector's Fix Z), every tile on
+% this slice is additionally shifted by ``canvas.zShifts(zGlobal, :)``.
+%
+% When ``canvas.tforms`` is present (affine plan from
+% :func:`utils.stitch.planCanvas` + :func:`utils.stitch.solveGlobalAffine`),
+% each tile whose transform is not an integer translation is RESAMPLED into its
+% warped output footprint with ``imwarp`` (bilinear, zero fill); its blend
+% weights are warped identically so the feather follows the warped footprint,
+% and Max/Overwrite only touch pixels the warped tile actually covers. Tiles
+% whose transform reduces to an integer translation — and every tile when there
+% are no ``canvas.tforms`` — take the resampling-free integer-placement fast
+% path, which is bit-identical to the translation-only kernel.
 %
 % Input Arguments:
 %   - **layout** — [struct array] tile layout.
@@ -39,6 +51,15 @@ dataClass = canvas.dataClass;
 
 nTiles = numel(layout);
 placement = canvas.tilePlacement;
+hasTforms = isfield(canvas, 'tforms') && ~isempty(canvas.tforms);
+
+% Per-slice mosaic correction (inspector Fix Z): every tile on this output
+% slice is shifted in-plane by canvas.zShifts(zGlobal, :) — see planCanvas.
+sliceShift = [0, 0];
+if isfield(canvas, 'zShifts') && ~isempty(canvas.zShifts) && ...
+        zGlobal >= 1 && zGlobal <= size(canvas.zShifts, 1)
+    sliceShift = canvas.zShifts(zGlobal, :);
+end
 
 % Determine which tiles contribute to this global Z-slice.
 tileSizes = reshape([layout.tileSize], 4, nTiles)';   % [H W D C]
@@ -75,31 +96,54 @@ for idx = 1:numel(contributing)
         tileSlice = tileSlice(:, :, 1:C);
     end
 
-    oy = placement(t2, 1);
-    ox = placement(t2, 2);
-    rowRange = oy:(oy + Ht - 1);
-    colRange = ox:(ox + Wt - 1);
+    % Resampling path: only when the plan carries per-tile transforms AND this
+    % tile's transform does not reduce to an integer translation. Everything
+    % else takes the integer-placement fast path below.
+    needsWarp = hasTforms && ~isIntegerTranslation(canvas.tforms{t2});
 
-    % Clip to canvas bounds defensively.
-    validRows = rowRange >= 1 & rowRange <= H;
-    validCols = colRange >= 1 & colRange <= W;
-    rowRange = rowRange(validRows);
-    colRange = colRange(validCols);
-    if isempty(rowRange) || isempty(colRange); continue; end
-    tileSlice = tileSlice(validRows, validCols, :);
+    if needsWarp
+        marginPx = [];
+        if isfield(options, 'marginPx'); marginPx = options.marginPx; end
+        sliceTform = canvas.tforms{t2};
+        sliceBounds = canvas.tileBounds(t2, :);
+        if any(sliceShift ~= 0)
+            sliceTform(1:2, 3) = sliceTform(1:2, 3) + [sliceShift(2); sliceShift(1)];
+            sliceBounds = sliceBounds + [sliceShift(1), sliceShift(1), sliceShift(2), sliceShift(2)];
+            sliceBounds = [max(1, sliceBounds(1)), min(H, sliceBounds(2)), ...
+                           max(1, sliceBounds(3)), min(W, sliceBounds(4))];
+        end
+        [tileSlice, weight, coverage, rowRange, colRange] = warpTileSlice( ...
+            tileSlice, sliceTform, sliceBounds, blendMode, marginPx);
+        if isempty(rowRange) || isempty(colRange); continue; end
+    else
+        oy = placement(t2, 1) + sliceShift(1);
+        ox = placement(t2, 2) + sliceShift(2);
+        rowRange = oy:(oy + Ht - 1);
+        colRange = ox:(ox + Wt - 1);
+
+        % Clip to canvas bounds defensively.
+        validRows = rowRange >= 1 & rowRange <= H;
+        validCols = colRange >= 1 & colRange <= W;
+        rowRange = rowRange(validRows);
+        colRange = colRange(validCols);
+        if isempty(rowRange) || isempty(colRange); continue; end
+        tileSlice = tileSlice(validRows, validCols, :);
+    end
 
     switch blendMode
         case {'Feather', 'Average'}
-            if strcmp(blendMode, 'Feather')
-                if isfield(options, 'marginPx') && ~isempty(options.marginPx)
-                    weight = utils.stitch.blendWeights([Ht Wt], options.marginPx);
+            if ~needsWarp
+                if strcmp(blendMode, 'Feather')
+                    if isfield(options, 'marginPx') && ~isempty(options.marginPx)
+                        weight = utils.stitch.blendWeights([Ht Wt], options.marginPx);
+                    else
+                        weight = utils.stitch.blendWeights([Ht Wt]);
+                    end
+                    weight = weight(validRows, validCols);
                 else
-                    weight = utils.stitch.blendWeights([Ht Wt]);
+                    weight = ones(numel(rowRange), numel(colRange), 'single');
                 end
-                weight = weight(validRows, validCols);
-            else
-                weight = ones(numel(rowRange), numel(colRange), 'single');
-            end
+            end   % warped tiles arrive with their weights already warped along
             valueSum(rowRange, colRange, :) = valueSum(rowRange, colRange, :) + ...
                 single(tileSlice) .* weight;
             weightSum(rowRange, colRange, :) = weightSum(rowRange, colRange, :) + weight;
@@ -109,16 +153,36 @@ for idx = 1:numel(contributing)
             tileCast = cast(tileSlice, dataClass);
             % Fresh (not-yet-covered) pixels take the tile value directly (so a
             % non-zero background is never max-ed in); already-covered pixels take
-            % the element-wise max of the current block and the new tile.
-            freshMask = ~maxInitialised(rowRange, colRange);   % [nRows nCols]
+            % the element-wise max of the current block and the new tile. Warped
+            % tiles additionally leave pixels outside their footprint untouched.
+            if needsWarp
+                freshMask = ~maxInitialised(rowRange, colRange) & coverage;
+            else
+                freshMask = ~maxInitialised(rowRange, colRange);   % [nRows nCols]
+            end
             maxed = max(block, tileCast);
             fresh3 = repmat(freshMask, 1, 1, size(block, 3));
             maxed(fresh3) = tileCast(fresh3);
-            outSlice(rowRange, colRange, :) = maxed;
-            maxInitialised(rowRange, colRange) = true;
+            if needsWarp
+                outside3 = repmat(~coverage, 1, 1, size(block, 3));
+                maxed(outside3) = block(outside3);
+                outSlice(rowRange, colRange, :) = maxed;
+                maxInitialised(rowRange, colRange) = maxInitialised(rowRange, colRange) | coverage;
+            else
+                outSlice(rowRange, colRange, :) = maxed;
+                maxInitialised(rowRange, colRange) = true;
+            end
 
         case 'Overwrite'
-            outSlice(rowRange, colRange, :) = cast(tileSlice, dataClass);
+            if needsWarp
+                block = outSlice(rowRange, colRange, :);
+                tileCast = cast(tileSlice, dataClass);
+                coverage3 = repmat(coverage, 1, 1, size(block, 3));
+                block(coverage3) = tileCast(coverage3);
+                outSlice(rowRange, colRange, :) = block;
+            else
+                outSlice(rowRange, colRange, :) = cast(tileSlice, dataClass);
+            end
 
         otherwise
             error('utils:stitch:fuseSliceComposite:badBlend', ...
@@ -134,5 +198,69 @@ if useAccumulator
     % Write only covered pixels; leave the background value everywhere else.
     fusedCast = cast(fused, dataClass);
     outSlice(covered) = fusedCast(covered);
+end
+end
+
+% =====================================================================
+function tf = isIntegerTranslation(tformMatrix)
+% ISINTEGERTRANSLATION - True when a 3x3 transform is a pure translation by a
+% whole number of pixels, i.e. eligible for the resampling-free placement path.
+tformMatrix = double(tformMatrix);
+linearPart = tformMatrix(1:2, 1:2);
+translation = tformMatrix(1:2, 3);
+tf = max(abs(linearPart - eye(2)), [], 'all') < 1e-9 && ...
+     max(abs(translation - round(translation))) < 1e-3;
+end
+
+% =====================================================================
+function [warpedSlice, weight, coverage, rowRange, colRange] = warpTileSlice( ...
+    tileSlice, tformMatrix, bounds, blendMode, marginPx)
+% WARPTILESLICE - Resample one tile slice (and its blend weights) into the
+% tile's warped output footprint.
+%
+% bounds is the integer canvas bbox [y0 y1 x0 x1] from planCanvas. The canvas
+% world frame equals its intrinsic pixel frame (centres at integers), so the
+% OutputView spans the bbox pixel EDGES (centre +- 0.5). Bilinear resampling
+% with zero fill; the weight map is warped with the same transform so the
+% feather follows the warped footprint (and fades with the partial pixel
+% coverage at the resampled border). coverage marks pixels the warped tile
+% actually reaches — Max/Overwrite must not touch anything else.
+y0 = bounds(1); y1 = bounds(2);
+x0 = bounds(3); x1 = bounds(4);
+if y1 < y0 || x1 < x0
+    warpedSlice = []; weight = []; coverage = [];
+    rowRange = []; colRange = [];
+    return;
+end
+rowRange = y0:y1;
+colRange = x0:x1;
+
+Ht = size(tileSlice, 1);
+Wt = size(tileSlice, 2);
+outputView = imref2d([y1 - y0 + 1, x1 - x0 + 1], ...
+    [x0 - 0.5, x1 + 0.5], [y0 - 0.5, y1 + 0.5]);
+tformObj = affinetform2d(double(tformMatrix));
+
+warpedSlice = imwarp(single(tileSlice), tformObj, 'linear', ...
+    'OutputView', outputView, 'FillValues', 0);
+
+switch blendMode
+    case 'Feather'
+        if isempty(marginPx)
+            flatWeight = utils.stitch.blendWeights([Ht Wt]);
+        else
+            flatWeight = utils.stitch.blendWeights([Ht Wt], marginPx);
+        end
+        weight = imwarp(flatWeight, tformObj, 'linear', ...
+            'OutputView', outputView, 'FillValues', 0);
+        coverage = weight > 0;
+    case 'Average'
+        weight = imwarp(ones(Ht, Wt, 'single'), tformObj, 'linear', ...
+            'OutputView', outputView, 'FillValues', 0);
+        coverage = weight > 0;
+    otherwise   % Max / Overwrite need a hard footprint mask, no weights
+        weight = [];
+        coverage = imwarp(ones(Ht, Wt, 'single'), tformObj, 'linear', ...
+            'OutputView', outputView, 'FillValues', 0) > 0.5;
 end
 end

@@ -1,10 +1,11 @@
-function [layout, edges, positions, solverInfo, outputInfo] = loadProject(filePath)
+function [layout, edges, positions, solverInfo, outputInfo, tforms, zSliceFixes] = loadProject(filePath)
 % LOADPROJECT - Load a stitching project from a JSON sidecar file.
 %
 % Syntax:
 %   .. code-block:: matlab
 %
 %      [layout, edges, positions, solverInfo, outputInfo] = utils.stitch.loadProject(filePath)
+%      [layout, edges, positions, solverInfo, outputInfo, tforms] = utils.stitch.loadProject(filePath)
 %
 % Reads the ``*.mibstitch.json`` file saved by ``utils.stitch.saveProject``
 % and reconstructs all stitching state structs.  ``positions`` is ``[]``
@@ -15,10 +16,16 @@ function [layout, edges, positions, solverInfo, outputInfo] = loadProject(filePa
 %
 % Output Arguments:
 %   - **layout** — struct array with tile fields (index, filename, etc.)
-%   - **edges** — struct array with pair edge fields (i, j, direction, nominal, …)
+%   - **edges** — struct array with pair edge fields (i, j, direction, nominal, …;
+%     ``tform`` carries the 3x3 pairwise transform when one was measured)
 %   - **positions** — [double] N-by-3 solved origins ``[y x z]``, or ``[]``
 %   - **solverInfo** — struct with solver settings / RMSE
 %   - **outputInfo** — struct with blend / output settings
+%   - **tforms** — [N x 1 cell] solved per-tile 3x3 transforms (``{}`` for
+%     translation-only projects; tiles saved without one fall back to a pure
+%     translation synthesised from ``solvedOrigin``)
+%   - **zSliceFixes** — [K x 3] per-slice mosaic corrections ``[z dy dx]``
+%     from the seam inspector's Fix Z (``[]`` when none were saved)
 %
 % **Example** — round-trip save / load:
 %
@@ -77,6 +84,35 @@ else
     outputInfo = [];
 end
 
+% Solved per-tile transforms (affine projects). Restored only when at least one
+% tile carries a solvedTform; tiles without one get a pure translation from
+% their solvedOrigin (position of pixel (1,1) => p = origin_xy - 1).
+tforms = {};
+if numTiles > 0 && isfield(layout(1), 'solvedTform') && ...
+        any(arrayfun(@(t) ~isempty(t.solvedTform), layout))
+    tforms = cell(numTiles, 1);
+    for tileIdx = 1:numTiles
+        if ~isempty(layout(tileIdx).solvedTform)
+            tforms{tileIdx} = layout(tileIdx).solvedTform;
+        else
+            if ~isempty(positions)
+                originYXZ = positions(tileIdx, :);
+            else
+                originYXZ = layout(tileIdx).nomOrigin;
+            end
+            tforms{tileIdx} = [eye(2), [originYXZ(2) - 1; originYXZ(1) - 1]; 0 0 1];
+        end
+    end
+end
+
+% Per-slice mosaic corrections (inspector Fix Z), rows [z dy dx].
+% jsondecode returns a 1x3 vector for a single row — normalise to K x 3.
+zSliceFixes = [];
+if isfield(project, 'zSliceFixes') && ~isempty(project.zSliceFixes)
+    zSliceFixes = double(project.zSliceFixes);
+    if isvector(zSliceFixes); zSliceFixes = reshape(zSliceFixes, 1, []); end
+end
+
 end
 
 % =========================================================================
@@ -85,7 +121,8 @@ function layout = cellToLayout(tilesData)
 
 if isempty(tilesData)
     layout = struct('index', {}, 'filename', {}, 'sliceFiles', {}, 'zLayer', {}, ...
-        'gridRC', {}, 'nomOrigin', {}, 'tileSize', {}, 'dataClass', {}, 'solvedOrigin', {});
+        'gridRC', {}, 'nomOrigin', {}, 'tileSize', {}, 'dataClass', {}, ...
+        'solvedOrigin', {}, 'solvedTform', {});
     return;
 end
 
@@ -93,7 +130,8 @@ end
 if iscell(tilesData)
     numTiles = numel(tilesData);
     layout(numTiles) = struct('index', 0, 'filename', '', 'sliceFiles', {{}}, 'zLayer', 1, ...
-        'gridRC', [0 0], 'nomOrigin', [0 0 0], 'tileSize', [0 0 0 0], 'dataClass', '', 'solvedOrigin', []);
+        'gridRC', [0 0], 'nomOrigin', [0 0 0], 'tileSize', [0 0 0 0], 'dataClass', '', ...
+        'solvedOrigin', [], 'solvedTform', []);
     for tileIdx = 1:numTiles
         layout(tileIdx) = copyTileFields(tilesData{tileIdx}, layout(tileIdx));
     end
@@ -111,20 +149,26 @@ end
 function targetTile = copyTileFields(sourceTile, targetTile)
 % Copy decoded tile fields, coercing types as needed.
 fieldList = {'index', 'filename', 'sliceFiles', 'zLayer', 'gridRC', ...
-             'nomOrigin', 'tileSize', 'dataClass', 'solvedOrigin'};
+             'nomOrigin', 'tileSize', 'dataClass', 'solvedOrigin', 'solvedTform'};
 for fieldIdx = 1:numel(fieldList)
     fieldName = fieldList{fieldIdx};
     if isfield(sourceTile, fieldName)
         value = sourceTile.(fieldName);
-        % jsondecode returns row vectors; coerce numeric fields to double row
+        % jsondecode returns row vectors; coerce numeric fields to double row —
+        % except the 3x3 transform, whose shape must survive the round-trip.
         if isnumeric(value)
-            value = double(value(:))';
+            if strcmp(fieldName, 'solvedTform')
+                value = reshape(double(value), 3, []);
+                if ~isequal(size(value), [3 3]); value = []; end
+            else
+                value = double(value(:))';
+            end
         end
         targetTile.(fieldName) = value;
     else
         % Fill default for missing optional fields
         switch fieldName
-            case 'solvedOrigin';  targetTile.(fieldName) = [];
+            case {'solvedOrigin', 'solvedTform'};  targetTile.(fieldName) = [];
             case 'sliceFiles';    targetTile.(fieldName) = {};
             case 'dataClass';     targetTile.(fieldName) = 'uint8';
             otherwise;            targetTile.(fieldName) = [];
@@ -167,5 +211,31 @@ if isfield(source, 'measured')
     edgeStruct.measured = double(source.measured(:))';
     edgeStruct.quality  = double(source.quality);
     edgeStruct.valid    = logical(source.valid);
+end
+
+% Pairwise transform (present on edges measured with a non-translation model).
+% Always set the field so the struct array stays homogeneous.
+if isfield(source, 'tform') && ~isempty(source.tform)
+    edgeStruct.tform = reshape(double(source.tform), 3, []);
+    if ~isequal(size(edgeStruct.tform), [3 3]); edgeStruct.tform = []; end
+else
+    edgeStruct.tform = [];
+end
+
+% Seam-inspector provenance (schema v2); v1 files default to 'auto' / unscored.
+if isfield(source, 'source') && ~isempty(source.source)
+    edgeStruct.source = char(source.source);
+else
+    edgeStruct.source = 'auto';
+end
+if isfield(source, 'seamScore') && ~isempty(source.seamScore)
+    edgeStruct.seamScore = double(source.seamScore);
+else
+    edgeStruct.seamScore = [];
+end
+if isfield(source, 'dzHint') && ~isempty(source.dzHint)
+    edgeStruct.dzHint = double(source.dzHint);
+else
+    edgeStruct.dzHint = 0;   % "solved dz is the local optimum" / unscored
 end
 end

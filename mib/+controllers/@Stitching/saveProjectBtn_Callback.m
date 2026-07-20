@@ -19,10 +19,20 @@ if isempty(obj.layout)
     return;
 end
 
-% Choose save path
-startFolder = fileparts(obj.BatchOpt.InputPath);
-if isempty(startFolder) || ~isfolder(startFolder)
-    startFolder = obj.mibModel.currentDirectory;
+% Choose save path. InputPath may be a newline-joined multi-select list —
+% fileparts on the whole string is bogus, so derive the folder from the first
+% entry (file → its folder; folder → itself).
+startFolder = obj.mibModel.currentDirectory;
+if ~isempty(obj.BatchOpt.InputPath)
+    entries = strtrim(strsplit(obj.BatchOpt.InputPath, newline));
+    entries = entries(~cellfun(@isempty, entries));
+    if ~isempty(entries)
+        if isfolder(entries{1})
+            startFolder = entries{1};
+        elseif isfile(entries{1})
+            startFolder = fileparts(entries{1});
+        end
+    end
 end
 [selectedFile, selectedFolder] = uiputfile( ...
     {'*.mibstitch.json', 'MIB Stitch project (*.mibstitch.json)'}, ...
@@ -41,7 +51,7 @@ outputInfo.blendMode  = obj.BatchOpt.BlendMode{1};
 
 try
     utils.stitch.saveProject(projectPath, obj.layout, obj.edges, ...
-        obj.positions, struct(), outputInfo);
+        obj.positions, struct(), outputInfo, obj.tforms, obj.zSliceFixes);
 catch saveError
     utils.dlgs.showErrorDialog(obj.view.gui, saveError.message, 'Save failed');
 end

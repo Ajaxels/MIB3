@@ -1,5 +1,5 @@
 function [shiftYXZ, quality, debugInfo] = featureShift(cropA, cropB, options)
-% FEATURESHIFT - Feature-based translation estimate between two overlap crops.
+% FEATURESHIFT - Feature-based transform estimate between two overlap crops.
 %
 % Syntax:
 %   .. code-block:: matlab
@@ -9,8 +9,10 @@ function [shiftYXZ, quality, debugInfo] = featureShift(cropA, cropB, options)
 %
 % Drop-in alternative to :func:`utils.stitch.pairwiseShift` for the
 % ``RegistrationMethod = 'Feature-based'`` path. Detects keypoints in each crop
-% (SURF by default), matches descriptors, and RANSAC-fits a pure-translation
-% ``estgeotform2d`` model. Unlike phase correlation it does NOT rely on a large
+% (SURF by default), matches descriptors, and RANSAC-fits an ``estgeotform2d``
+% model — pure translation by default, or the model selected by
+% ``options.transformType``; the full fitted matrix is returned in
+% ``debugInfo.tformA``. Unlike phase correlation it does NOT rely on a large
 % textured overlap: a thin shared strip with a handful of matchable blobs is
 % enough, which is why it recovers small (~10%) or unknown overlaps where phase
 % correlation loses the peak. Its weakness is feature-poor or strongly repetitive
@@ -48,6 +50,16 @@ function [shiftYXZ, quality, debugInfo] = featureShift(cropA, cropB, options)
 %       ``.MaxDistance`` for the RANSAC ``estgeotform2d`` fit.
 %     - ``.featureMinInliers`` — [double] minimum RANSAC inliers to trust the fit
 %       (default: ``8``); below this ``quality = 0``.
+%     - ``.transformType`` — [char] ``estgeotform2d`` model:
+%       ``'translation'`` (default) | ``'rigid'`` | ``'similarity'`` | ``'affine'``.
+%       Non-translation models return their translation component in ``shiftYXZ``
+%       and the full matrix in ``debugInfo.tformA``.
+%     - ``.allowRotation`` — [logical] ``true`` (default). When ``false`` and a
+%       non-translation model is requested, the measured edge is constrained to
+%       carry no rotation: ``'rigid'`` falls back to the (equivalent) pure
+%       translation fit, while ``'similarity'``/``'affine'`` fits are projected
+%       through :func:`utils.stitch.projectLinearPart` (``R = I`` branch) and
+%       the translation re-estimated over the RANSAC inliers.
 %
 %     Fields used only by :func:`utils.stitch.pairwiseShift` (``padPx``,
 %     ``expectedShift``, ``searchRadius``, ``window``, ``subpixel``) are ignored.
@@ -59,7 +71,11 @@ function [shiftYXZ, quality, debugInfo] = featureShift(cropA, cropB, options)
 %     (``inliers / matched``), ``0`` when fewer than ``featureMinInliers`` inliers
 %     survive or the fit fails. Comparable to the phase-correlation quality so the
 %     same ``QualityThreshold`` gates both methods.
-%   - **debugInfo** — struct with ``.numMatched``, ``.numInliers``, ``.status``.
+%   - **debugInfo** — struct with ``.numMatched``, ``.numInliers``, ``.status``,
+%     and ``.tformA`` — the full fitted A→B transform as a 3x3 double
+%     (``[x'; y'; 1] = tformA * [x; y; 1]``, crop-local pixel coordinates, empty
+%     until a fit succeeds). For ``transformType = 'translation'`` its linear
+%     part is the identity.
 %
 % **Example** — recover a known integer shift from a textured crop:
 %
@@ -76,7 +92,7 @@ options = mergeDefaults(options);
 
 shiftYXZ  = [0 0 0];
 quality   = 0;
-debugInfo = struct('numMatched', 0, 'numInliers', 0, 'status', -1);
+debugInfo = struct('numMatched', 0, 'numInliers', 0, 'status', -1, 'tformA', []);
 
 % Grayscale, single, rescaled to [0,1] so detector thresholds behave consistently
 % regardless of the tile's native dynamic range.
@@ -124,10 +140,10 @@ end
 matchedA = validA(indexPairs(:, 1)).Location * scaleBack;
 matchedB = validB(indexPairs(:, 2)).Location * scaleBack;
 
-% RANSAC-fit a pure translation A->B. estgeotform2d returns the inlier mask and a
+% RANSAC-fit the selected model A->B. estgeotform2d returns the inlier mask and a
 % status code (0 = success, 1 = too few points, 2 = not enough inliers).
 try
-    [tform, inlierIdx, status] = estgeotform2d(matchedA, matchedB, 'translation', ...
+    [tform, inlierIdx, status] = estgeotform2d(matchedA, matchedB, options.transformType, ...
         'MaxDistance', options.estGeomTransform.MaxDistance, ...
         'MaxNumTrials', options.estGeomTransform.MaxNumTrials, ...
         'Confidence', options.estGeomTransform.Confidence);
@@ -146,7 +162,18 @@ if numInliers < options.featureMinInliers
 end
 
 T = double(tform.A);               % 3x3, translation in the 3rd column
+if ~options.allowRotation && ~strcmpi(options.transformType, 'translation')
+    % Rotation lock for similarity/affine: project the fitted linear part
+    % (R = I branch of the polar decomposition) and re-estimate the translation
+    % as the least-squares fit over the RANSAC inliers with the linear part fixed.
+    projectedM = utils.stitch.projectLinearPart(T(1:2, 1:2), options.transformType, false);
+    inlierA = double(matchedA(inlierIdx, :));               % Mx2 [x y] (Locations are single)
+    inlierB = double(matchedB(inlierIdx, :));
+    projectedC = mean(inlierB - inlierA * projectedM', 1)';
+    T = [projectedM, projectedC; 0 0 1];
+end
 shiftYXZ = [T(2, 3), T(1, 3), 0];  % [dy dx dz] in the pairwiseShift convention (double, like pairwiseShift)
+debugInfo.tformA = T;              % full fitted A->B model (identity linear part for 'translation')
 
 % Quality = inlier ratio in [0,1]; a clean translation overlap yields a high
 % ratio, repetitive/ambiguous content a low one.
@@ -165,6 +192,14 @@ if ~isfield(options, 'downsampleFactor') || options.downsampleFactor < 1
     options.downsampleFactor = 1;
 end
 if ~isfield(options, 'featureMinInliers'); options.featureMinInliers = 8; end
+if ~isfield(options, 'transformType') || isempty(options.transformType)
+    options.transformType = 'translation';
+end
+if ~isfield(options, 'allowRotation'); options.allowRotation = true; end
+% Rigid without rotation IS a translation — fit the smaller model directly.
+if ~options.allowRotation && strcmpi(options.transformType, 'rigid')
+    options.transformType = 'translation';
+end
 options = fillStruct(options, 'detectSURFFeatures', ...
     struct('MetricThreshold', 500, 'NumOctaves', 3, 'NumScaleLevels', 4));
 options = fillStruct(options, 'detectSIFTFeatures', ...

@@ -77,8 +77,24 @@ end
 numRows = gridOptions.rows;
 numCols = gridOptions.cols;
 if numRows == 0 && numCols == 0
-    numRows = ceil(sqrt(numTiles));
-    numCols = ceil(numTiles / numRows);
+    % Auto grid: the divisor pair closest to square that tiles numTiles
+    % EXACTLY. A ceil(sqrt(N)) grid leaves holes for non-rectangular counts
+    % (3 tiles -> 2x2 with a gap), which breaks the neighbour graph: phantom
+    % pairs across the hole measure garbage while the real neighbours are
+    % never paired. The tile order states the preferred orientation: a
+    % Vertical order gets the tall arrangement (3 tiles -> 3x1), Horizontal
+    % the wide one (1x3).
+    smallDim = floor(sqrt(numTiles));
+    while mod(numTiles, smallDim) ~= 0
+        smallDim = smallDim - 1;
+    end
+    if startsWith(gridOptions.tileOrder, 'Vertical')
+        numRows = numTiles / smallDim;
+        numCols = smallDim;
+    else
+        numRows = smallDim;
+        numCols = numTiles / smallDim;
+    end
 elseif numRows == 0
     numRows = ceil(numTiles / numCols);
 elseif numCols == 0

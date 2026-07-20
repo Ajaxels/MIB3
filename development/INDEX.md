@@ -60,7 +60,7 @@ agent working on a plugin. Cheat sheet for converting MIB2 plugins:
 |--------|-------|-------------|
 | `bigdata/` | BigData mode: tiled/WSI datasets, levelmap, block-mode brush | [bigdata/README.md](bigdata/README.md) |
 | `deepmib/` | DeepMIB deep learning: 2D/3D instance segmentation plans, 3D U-Net migration, MIB3 axis-order pitfalls (`deepmib_dimensions_problems.md`) | folder files |
-| `stitching/` | Tile stitching tool (**active work — coordinate before editing**) | [stitching/plan_stitching.md](stitching/plan_stitching.md) |
+| `stitching/` | Tile stitching tool (**active work — coordinate before editing**); GUI smoke tests + data generators in [stitching/smoke_tests.md](stitching/smoke_tests.md) (`stitch_smoke*/`); transform-model expansion in [stitching/plan_transforms.md](stitching/plan_transforms.md) (phases 1–3 done, incl. 3D affine — kickoff brief [stitching/start_3d_affine.md](stitching/start_3d_affine.md) now historical); seam-inspector design in [stitching/plan_inspector.md](stitching/plan_inspector.md) | [stitching/plan_stitching.md](stitching/plan_stitching.md) |
 | `graphify/` | Codebase knowledge-graph tooling (see graphify section in root CLAUDE.md) | [graphify/run_graphify.md](graphify/run_graphify.md) |
 
 Related, outside `development/`:
@@ -85,6 +85,8 @@ debugging a regression in it, or looking for a precedent pattern. One line each:
 | [contrast_normalization_plan.md](ports/contrast_normalization_plan.md) | `controllers.ContrastNormalization` — implemented; key BatchOpt decisions |
 | [plan_Measurements_class.md](ports/plan_Measurements_class.md) | `core.Measurements` + `controllers.MeasureTool` — implemented 2026-05 |
 | [mibStatistics_conversion.md](ports/mibStatistics_conversion.md) | `mibStatisticsController` → `controllers.Quantification` |
+| [plan_stereology_improvements.md](ports/plan_stereology_improvements.md) | **Evaluation (not yet implemented)** of `controllers.Stereology`: missing probes (cycloid/line/disector), metrics (S_v/L_v/N_v/size), organelle presets, CE rigor, segmentation automation; V_v naming + dY-axis bug fixes |
+| [plan_stereology_implementation.md](ports/plan_stereology_implementation.md) | **Implementation plan** for the Stereology upgrade (companion to the evaluation): 9 phases M1–M4, each with a per-phase Opus/Sonnet model recommendation; reuse map (SurfaceMeasurements, regionprops3mib, skeleton) |
 | [plan_crop.md](ports/plan_crop.md) | CropDataset port: widgets, events, BatchOpt radio pattern, mlapp startupFcn fix |
 | [plan_resample.md](ports/plan_resample.md) | ResampleDataset port: data-write pattern, boundingBox/dim sync |
 | [plan_snapshot.md](ports/plan_snapshot.md) | Snapshot controller port; `AxesLimitsChanged` event |

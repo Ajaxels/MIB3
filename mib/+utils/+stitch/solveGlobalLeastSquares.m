@@ -32,6 +32,12 @@ function [positions, stats] = solveGlobalLeastSquares(layout, edges, options)
 %     - ``.nominalSpringWeight`` — [double] weight of the per-tile self-spring (default: ``0.001``).
 %       Keep tiny: it exists only for rank; any real weight biases tiles whose
 %       true positions deviate from nominal (e.g. border-clamped acquisitions).
+%     - ``.userEdgeWeight`` — [double] weight of USER-fixed edges
+%       (``edge.source = 'user'``, from the seam inspector; default: ``5.0``).
+%       Well above any quality (≤ 1) so a user fix dominates conflicting
+%       automatic edges without being an absolute pin (two contradictory user
+%       fixes average instead of fighting). User edges are never pruned by the
+%       quality threshold and never demoted to springs.
 %
 % Output Arguments:
 %   - **positions** — [N x 3 double] solved ``[y x z]`` origins (fractional allowed);
@@ -56,6 +62,7 @@ function [positions, stats] = solveGlobalLeastSquares(layout, edges, options)
 if nargin < 3; options = struct(); end
 if ~isfield(options, 'springWeight');        options.springWeight = 0.10; end
 if ~isfield(options, 'nominalSpringWeight');  options.nominalSpringWeight = 0.001; end
+if ~isfield(options, 'userEdgeWeight');       options.userEdgeWeight = 5.0; end
 
 nTiles = numel(layout);
 nomOrigins = reshape([layout.nomOrigin], 3, nTiles)';   % N x 3 [y x z]
@@ -66,12 +73,17 @@ stats = struct('residuals', zeros(0, 3), 'rmse', [0 0 0], 'rmseTotal', 0, ...
 
 if nTiles == 0; return; end
 
+% User-fixed edges (seam inspector) participate regardless of their quality
+% flag and at a fixed dominant weight.
+userMask = false(numel(edges), 1);
 validMask = false(numel(edges), 1);
 for k = 1:numel(edges)
-    validMask(k) = ~isempty(edges) && isfield(edges, 'valid') && edges(k).valid;
+    userMask(k) = isfield(edges, 'source') && strcmp(edges(k).source, 'user');
+    validMask(k) = (~isempty(edges) && isfield(edges, 'valid') && edges(k).valid) || userMask(k);
 end
-validEdges   = edges(validMask);
-prunedEdges  = edges(~validMask);
+validEdges     = edges(validMask);
+validUserFlags = userMask(validMask);
+prunedEdges    = edges(~validMask);
 stats.nPruned = numel(prunedEdges);
 
 % ---- connectivity among valid edges (which tiles reach the anchor?) ----------
@@ -98,13 +110,18 @@ rowsMinus = [];   % tile index with -1 (the "i")
 targets = zeros(0, 3);
 weights = zeros(0, 1);
 
-% Valid edges: p_j - p_i = measured, weight = quality.
+% Valid edges: p_j - p_i = measured, weight = quality (user fixes: fixed
+% dominant weight).
 for k = 1:numel(validEdges)
     e = validEdges(k);
     rowsI(end+1, 1)     = e.j; %#ok<AGROW>
     rowsMinus(end+1, 1) = e.i; %#ok<AGROW>
     targets(end+1, :)   = e.measured; %#ok<AGROW>
-    weights(end+1, 1)   = max(e.quality, eps); %#ok<AGROW>
+    if validUserFlags(k)
+        weights(end+1, 1) = options.userEdgeWeight; %#ok<AGROW>
+    else
+        weights(end+1, 1) = max(e.quality, eps); %#ok<AGROW>
+    end
 end
 
 % Pruned edges re-enter as weak springs toward their NOMINAL offset — but only
