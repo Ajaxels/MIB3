@@ -125,7 +125,7 @@ if strcmp(obj.datasetType, 'Standard') && ~strcmp(type, 'everything')
     if isempty(fastOrient) || (isscalar(fastOrient) && isnan(fastOrient))
         fastOrient = obj.orientation;
     end
-    if fastOrient == 3 && ~isfield(options, 'x') && ~isfield(options, 'y') && ~isfield(options, 'z')
+    if fastOrient == 3 && ~isfield(options, 'x') && ~isfield(options, 'y') && ~isfield(options, 'z') && ~isfield(options, 'PixelIdxList')
         if isfield(options, 'blockModeSwitch')
             blockIsOff = (options.blockModeSwitch == 0);
         else
@@ -195,7 +195,12 @@ if isfield(options, 'PixelIdxList')
         options.PixelIdxList = options.PixelIdxList + ...
             obj.labels.width*obj.labels.height*obj.labels.depth*(time-1);
     end
-    result = obj.labels.setPixelIdxList(type, dataset, options.PixelIdxList);
+    % Route through the MibDataset wrapper so the write lands in the correct
+    % layer: for 63-material datasets selection/mask are bit-packed into
+    % obj.labels, but for >63 materials obj.selection / obj.mask are separate
+    % layers. Calling obj.labels.setPixelIdxList directly would misroute a
+    % selection/mask write into the model layer.
+    result = obj.setPixelIdxList(type, dataset, options.PixelIdxList);
     return;
 end
 

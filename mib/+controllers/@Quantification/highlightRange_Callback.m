@@ -27,6 +27,10 @@ function highlightRange_Callback(obj)
 % Updates
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.Quantification.highlightRange_Callback: triggered\n');
+end
+
 data = obj.view.handles.statTable.Data;
 if isempty(data) || size(data, 1) < 1 || iscell(data(1))
     utils.dlgs.showErrorDialog(obj.view.gui, ...

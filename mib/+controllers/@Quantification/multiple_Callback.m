@@ -24,6 +24,10 @@ function multiple_Callback(obj)
 % Updates
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.Quantification.multiple_Callback: triggered\n');
+end
+
 val = obj.view.handles.Multiple.Value;
 if val
     obj.BatchOpt.Multiple = true;

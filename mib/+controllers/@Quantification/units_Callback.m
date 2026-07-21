@@ -25,6 +25,10 @@ function units_Callback(obj)
 % Updates
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.Quantification.units_Callback: triggered\n');
+end
+
 curValue = obj.view.handles.Units.Value;
 
 id = obj.mibModel.getActiveId();

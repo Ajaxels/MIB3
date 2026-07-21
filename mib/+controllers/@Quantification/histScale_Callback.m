@@ -18,6 +18,10 @@ function histScale_Callback(obj)
 % Updates
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.Quantification.histScale_Callback: triggered\n');
+end
+
 if obj.view.handles.logScale.Value
     obj.view.handles.histogram.YScale = 'log';
 else

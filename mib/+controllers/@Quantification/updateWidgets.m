@@ -27,6 +27,10 @@ function updateWidgets(obj)
 % Updates
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.Quantification.updateWidgets: triggered\n');
+end
+
 id = obj.mibModel.getActiveId();
 dataset = obj.mibModel.I{id};
 

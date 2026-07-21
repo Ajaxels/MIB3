@@ -44,6 +44,10 @@ function quantification_Callback(obj, batchModeSwitch)
 tic
 if nargin < 2; batchModeSwitch = 0; end
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.Quantification.quantification_Callback: triggered\n');
+end
+
 id = obj.mibModel.getActiveId();
 dataset = obj.mibModel.I{id};
 

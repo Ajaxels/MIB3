@@ -26,6 +26,10 @@ function gui_WindowButtonDownFcn(obj)
 % Updates
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.Quantification.gui_WindowButtonDownFcn: triggered\n');
+end
+
 % only process clicks inside the histogram axes
 xy = obj.view.handles.histogram.CurrentPoint;
 seltype = obj.view.gui.SelectionType;

@@ -24,6 +24,10 @@ function multipleBtn_Callback(obj)
 % Updates
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.Quantification.multipleBtn_Callback: triggered\n');
+end
+
 obj3d = ~strcmp(obj.view.handles.ObjectShape.SelectedObject.Tag, 'Shape2D');    % 0 = 2D mode, 1 = 3D mode
 
 if isempty(obj.BatchOpt.MultipleProperty)

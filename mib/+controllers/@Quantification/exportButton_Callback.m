@@ -25,6 +25,10 @@ function exportButton_Callback(obj, batchModeSwitch)
 
 if nargin < 2; batchModeSwitch = 0; end
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.Quantification.exportButton_Callback: triggered\n');
+end
+
 id = obj.mibModel.getActiveId();
 dataset = obj.mibModel.I{id};
 fn_out = dataset.image.filename;
@@ -99,7 +103,16 @@ else
     OPTIONS.model_fn = dataset.labels.filename;
     if ~strcmp(obj.BatchOpt.MaterialIndex, '-2')
         matIdx = str2double(obj.BatchOpt.MaterialIndex);
-        OPTIONS.material_id = sprintf('%s (%s)', obj.BatchOpt.MaterialIndex, dataset.labels.materialNames{matIdx});
+        % For large models (maxMaterials >= 256) materialNames holds only two
+        % placeholder entries while the selected index may be much larger, so
+        % indexing into materialNames would exceed its bounds. In that case the
+        % material name is simply the numeric index string itself.
+        if dataset.labels.maxMaterials < 256 && ~isnan(matIdx) && ...
+                matIdx >= 1 && matIdx <= numel(dataset.labels.materialNames)
+            OPTIONS.material_id = sprintf('%s (%s)', obj.BatchOpt.MaterialIndex, dataset.labels.materialNames{matIdx});
+        else
+            OPTIONS.material_id = obj.BatchOpt.MaterialIndex;
+        end
     else
         OPTIONS.material_id = 'Full model';
     end
@@ -126,10 +139,23 @@ else
 end
 
 if strcmp(obj.BatchOpt.ExportResultsTo{1}, 'Export to MATLAB')
+    % Sanitize the target variable name. In interactive mode the user types a
+    % name (default 'MIB_stats'), but in batch mode ExportFilename keeps its
+    % file-style default (e.g. '/img_analysis'), which is not a legal MATLAB
+    % variable name and would make assignin throw — leaving no variable behind.
+    varName = exportFilenameLocal;
+    if ~isempty(varName) && (varName(1) == '/' || varName(1) == '\')
+        varName = varName(2:end);   % drop leading path separator from file-style default
+    end
+    if isempty(varName)
+        varName = 'MIB_stats';
+    elseif ~isvarname(varName)
+        varName = matlab.lang.makeValidName(varName);
+    end
     STATSOUT = obj.STATS;
     STATSOUT(1).OPTIONS = OPTIONS;
-    assignin('base', exportFilenameLocal, STATSOUT);
-    fprintf('"%s" structure with results was created in the MATLAB workspace\n', exportFilenameLocal);
+    assignin('base', varName, STATSOUT);
+    fprintf('"%s" structure with results was created in the MATLAB workspace\n', varName);
 elseif ismember(obj.BatchOpt.ExportResultsTo{1}, obj.BatchOpt.ExportResultsTo{2}(3:6))
     if exportFilenameLocal(1) ~= filesep
         exportFilenameLocal = [filesep exportFilenameLocal];

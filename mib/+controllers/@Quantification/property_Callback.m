@@ -25,6 +25,10 @@ function property_Callback(obj)
 % Updates
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.Quantification.property_Callback: triggered\n');
+end
+
 list = obj.view.handles.Property.Items;
 value = obj.view.handles.Property.Value;
 

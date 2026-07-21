@@ -19,6 +19,10 @@ function closeWindow(obj)
 % Updates
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.Quantification.closeWindow: triggered\n');
+end
+
 for i = numel(obj.childControllers):-1:1
     child = obj.childControllers{i};
     if isa(child, 'handle') && isvalid(child)

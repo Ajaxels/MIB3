@@ -24,6 +24,10 @@ function updateSortingSettings(obj)
 % Updates
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.Quantification.updateSortingSettings: triggered\n');
+end
+
 switch obj.view.handles.sortTable.Value
     case 'Value, ascend';    obj.sortingDirection = 'ascend';  obj.sortingColIndex = 2;
     case 'Value, descend';   obj.sortingDirection = 'descend'; obj.sortingColIndex = 2;

@@ -31,6 +31,10 @@ function radioButton_Callback(obj, hObject)
 % Updates
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.Quantification.radioButton_Callback: triggered\n');
+end
+
 % Update ObjectShape and DetectionType batch options
 obj.BatchOpt.ObjectShape{1} = obj.view.handles.ObjectShape.SelectedObject.Tag;
 obj.BatchOpt.DetectionType{1} = obj.view.handles.DetectionType.SelectedObject.Tag;

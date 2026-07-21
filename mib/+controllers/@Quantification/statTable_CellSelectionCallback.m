@@ -38,6 +38,10 @@ function statTable_CellSelectionCallback(obj, indices, parameter)
 % Updates
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.Quantification.statTable_CellSelectionCallback: triggered\n');
+end
+
 id = obj.mibModel.getActiveId();
 dataset = obj.mibModel.I{id};
 modifier = obj.view.gui.CurrentModifier;

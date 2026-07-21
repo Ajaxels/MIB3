@@ -27,5 +27,9 @@ function updateBatchOptFromGUI(obj, hObject, ~)
 % Updates
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.Quantification.updateBatchOptFromGUI: triggered\n');
+end
+
 obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, hObject);
 end

@@ -28,6 +28,10 @@ function material_Callback(obj)
 % Updates
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.Quantification.material_Callback: triggered\n');
+end
+
 id = obj.mibModel.getActiveId();
 val = obj.view.handles.Material.Value;
 targetList = obj.view.handles.Material.Items;
