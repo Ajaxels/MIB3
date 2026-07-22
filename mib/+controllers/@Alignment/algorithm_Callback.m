@@ -12,6 +12,9 @@ function algorithm_Callback(obj)
 % feature-based variants restrict ``TransformationType`` to a method-specific
 % subset.
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.Alignment.algorithm_Callback: triggered\n');
+end
 h = obj.view.handles;
 methodSelected = h.Algorithm.Value;
 

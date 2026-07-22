@@ -391,6 +391,9 @@ classdef VolRenApp < handle
             % Input Arguments:
             %   - **event** — [event] MATLAB UI callback event from ``obj.view.handles.alphaAxes``
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.VolRenApp.alphaAxesButtonDown: triggered\n');
+            end
             xy = obj.view.handles.alphaAxes.CurrentPoint;
             seltype = obj.view.gui.SelectionType;
             modifier = obj.view.gui.CurrentModifier;
@@ -472,6 +475,9 @@ classdef VolRenApp < handle
             %     - ``'menuBackgroundColor'`` — update the primary background colour
             %     - ``'menuBackgroundGradientColor'`` — update the gradient background colour
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.VolRenApp.updateBackgroundColor: triggered\n');
+            end
             switch event.Source.Tag
                 case 'menuBackgroundColor'
                     obj.Settings.Viewer.backgroundColor = uisetcolor(obj.Settings.Viewer.backgroundColor, 'Select main background color');
@@ -510,6 +516,9 @@ classdef VolRenApp < handle
             %     - ``'colormapBlackPoint'`` — black-point adjustment value
             %     - ``'colormapWhitePoint'`` — white-point adjustment value
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.VolRenApp.updateColormap: triggered\n');
+            end
             switch event.Source.Tag
                 case 'colormapName'
                     obj.Settings.Volume.colormapName = event.Source.Value;
@@ -627,6 +636,9 @@ classdef VolRenApp < handle
             %cameraTarget = obj.volume.CameraTarget
             %cameraDirection = (cameraPos - cameraTarget) / norm(cameraPos - cameraTarget)    % cameraDirection = glm::normalize(cameraPos - cameraTarget);
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.VolRenApp.menuChangeView: triggered\n');
+            end
             switch event.Source.Tag
                 case 'menuDefaultView'
                     obj.viewer.CameraPosition = obj.defaultView.CameraPosition;
@@ -657,6 +669,9 @@ classdef VolRenApp < handle
             %   .. code-block:: matlab
             %
             %      obj.closeWindow()
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.VolRenApp.closeWindow: triggered\n');
+            end
             if isvalid(obj.view.gui)
                 delete(obj.view.gui);   % delete childController window
             end
@@ -812,6 +827,9 @@ classdef VolRenApp < handle
             % Input Arguments:
             %   - **indices** — [numeric] selected cell indices ``[row, col]``
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.VolRenApp.keyFrameTable_CellSelection: triggered\n');
+            end
             if nargin < 2; indices = obj.keyFrameTableIndex; end
 
             obj.keyFrameTableIndex = indices;
@@ -834,6 +852,9 @@ classdef VolRenApp < handle
             % Input Arguments:
             %   - **indices** — [numeric] selected cell indices ``[row, col]``
             
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.VolRenApp.surfaceTable_CellSelection: triggered\n');
+            end
             if nargin < 2; indices = obj.surfaceTableIndex; end
             try
                 obj.surfaceTableIndex = unique(indices(:,1));
@@ -862,6 +883,9 @@ classdef VolRenApp < handle
             %
             % Input Arguments:
             %   - **indices** — [numeric] selected cell indices ``[row, col]``
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.VolRenApp.modelTable_CellSelection: triggered\n');
+            end
             if nargin < 2; indices = obj.modelTableIndex; end
 
             obj.modelTableIndex = indices;
@@ -875,6 +899,9 @@ classdef VolRenApp < handle
             %
             %      obj.loadAnimationPath()
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.VolRenApp.loadAnimationPath: triggered\n');
+            end
             mypath = fileparts(obj.animationFilename);
             [filename, path] = utils.dlgs.mibUiGetFile(...
                 {'*.animation;',  'Matlab format (*.animation)'; ...
@@ -901,6 +928,9 @@ classdef VolRenApp < handle
             %   .. code-block:: matlab
             %
             %      obj.saveAnimationPath()
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.VolRenApp.saveAnimationPath: triggered\n');
+            end
             if ~isfield(obj.animationPath, 'CameraPosition')
                 uialert(obj.view.gui, ...
                     sprintf('!!! Error !!!\n\nThe animation path is not present!\nPlease use the Animation tab to make it!'), ...
@@ -929,6 +959,9 @@ classdef VolRenApp < handle
             %
             %      obj.deleteAllAnimationKeyFrames()
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.VolRenApp.deleteAllAnimationKeyFrames: triggered\n');
+            end
             answer = uiconfirm(obj.view.gui, ...
                 sprintf('!!! Warning !!!\nYou are going to remove all key frames!\nContinue?'), ...
                 'Delete key frames', 'Options', {'Continue','Cancel'}, ...
@@ -1094,6 +1127,9 @@ classdef VolRenApp < handle
             %   - **event** — [event] UI callback event; ``event.Source.Tag`` selects the action:
             %
             %     - ``'modelTable_cm_generateSurface'`` — generate a surface mesh from the selected material
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.VolRenApp.modelTable_cm_Callback: triggered\n');
+            end
             id = obj.mibModel.getActiveId();
             switch event.Source.Tag
                 case 'modelTable_cm_generateSurface'
@@ -1132,6 +1168,9 @@ classdef VolRenApp < handle
             %
             %     - ``'surfaceTable_cm_saveSurface'`` — save the selected surface to an STL file
             %     - ``'surfaceTable_cm_removeSurface'`` — delete the selected surface from the viewer
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.VolRenApp.surfaceTable_cm_Callback: triggered\n');
+            end
             id = obj.mibModel.getActiveId();
             switch event.Source.Tag
                 case 'surfaceTable_cm_saveSurface'
@@ -1198,6 +1237,9 @@ classdef VolRenApp < handle
             %     - ``'keyFrameTable_cm_replaceKeyFrame'`` — replace the selected key frame with the current view
             %     - ``'keyFrameTable_cm_removeKeyFrame'`` — remove the selected key frame
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.VolRenApp.keyFrameTable_cm_Callback: triggered\n');
+            end
             switch event.Source.Tag
                 case 'keyFrameTable_cm_jumpToKeyFrame'
                     obj.viewer.CameraPosition = obj.animationPath.CameraPosition(obj.keyFrameTableIndex, :);
@@ -1239,6 +1281,9 @@ classdef VolRenApp < handle
             %     - ``'resetAlphaCurve'`` — reset the alpha curve to the default
             %     - ``'invertAlphaCurve'`` — invert the alpha curve along the x-axis
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.VolRenApp.alphaCurveOperations: triggered\n');
+            end
             switch event.Source.Tag
                 case 'resetAlphaCurve'      % reset the alpha curve
                     obj.volumeAlphaCurve.x = obj.Settings.Volume.volumeAlphaCurve.x;
@@ -1291,6 +1336,9 @@ classdef VolRenApp < handle
             %
             % Input Arguments:
             %   - **event** — [event] UI callback event from the toggled widget
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.VolRenApp.toggleViewerSettings: triggered\n');
+            end
             switch event.Source.Tag
                 case 'showScaleBar'
                     obj.viewer.ScaleBar = event.Value;
@@ -1864,6 +1912,9 @@ classdef VolRenApp < handle
             % CameraUpVector:   the roll angle (rotation) of the camera
             %                   around it's view axis, defines which axis is up: [0, 0, 1] indicates Z-axis is up
             
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.VolRenApp.spinDataset: triggered\n');
+            end
             if obj.animationPreviewRunning
                 % cancel animation
                 obj.animationPreviewRunning = false;
@@ -2037,6 +2088,9 @@ classdef VolRenApp < handle
             %   .. code-block:: matlab
             %
             %      obj.makeSnapshop()
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.VolRenApp.makeSnapshop: triggered\n');
+            end
             utils.startController(obj, 'controllers.Snapshot', obj);
         end
 
@@ -2157,6 +2211,9 @@ classdef VolRenApp < handle
             % are initialised; afterwards it does the lightweight
             % :func:`refreshOverlayData` that preserves per-material visibility.
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.VolRenApp.refreshOverlay: triggered\n');
+            end
             if isempty(obj.noOverlayMaterials) || obj.noOverlayMaterials < 1
                 obj.modelUpdateOverlay();
             else
@@ -2177,6 +2234,9 @@ classdef VolRenApp < handle
             % as the user segments in the main MIB window; when unchecked the listeners
             % and the debounce timer are removed.
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.VolRenApp.toggleLiveUpdate: triggered\n');
+            end
             if obj.view.handles.liveUpdateCheckBox.Value
                 obj.enableLiveUpdate();
             else
@@ -2471,6 +2531,9 @@ classdef VolRenApp < handle
             %   .. code-block:: matlab
             %
             %      obj.surfaceTableCellEdit(event)
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.VolRenApp.surfaceTableCellEdit: triggered\n');
+            end
             indices = event.Indices;
             newData = event.NewData;
             surfaceId = indices(1);
@@ -2506,6 +2569,9 @@ classdef VolRenApp < handle
             %   .. code-block:: matlab
             %
             %      obj.modelTableCellEdit(event)
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.VolRenApp.modelTableCellEdit: triggered\n');
+            end
             indices = event.Indices;
             newData = event.NewData;
             materialId = indices(1);
@@ -2536,6 +2602,9 @@ classdef VolRenApp < handle
         end
 
         function updateCameraPosition(obj, event)
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.VolRenApp.updateCameraPosition: triggered\n');
+            end
             if ~isvalid(obj.viewer); return; end % skip when the viewer is closed
             
             switch event.Source.Tag
@@ -2581,6 +2650,9 @@ classdef VolRenApp < handle
             %     ``'xSliderEdit'``, ``'ySliderEdit'``, or ``'zSliderEdit'``
             %   - **value** — [numeric] new slice index
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.VolRenApp.changeSlice: triggered\n');
+            end
             if nargin == 3; obj.view.handles.(sourceWidget).Value = value;  end
 
             switch sourceWidget
@@ -2608,6 +2680,9 @@ classdef VolRenApp < handle
             % Input Arguments:
             %   - **showSwitch** *(optional)* — [logical] ``true`` to show, ``false`` to hide
             %     (default: reads ``obj.view.handles.showVolumeCheckBox.Value``)
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.VolRenApp.showVolume: triggered\n');
+            end
             if nargin < 2; showSwitch = obj.view.handles.showVolumeCheckBox.Value; end
 
             if showSwitch
@@ -2629,6 +2704,9 @@ classdef VolRenApp < handle
             % Input Arguments:
             %   - **transparentSwitch** *(optional)* — [logical] ``true`` to make transparent, ``false`` to restore
             %     (default: reads ``obj.view.handles.transparentVolumeCheckBox.Value``)
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.VolRenApp.transparentVolume: triggered\n');
+            end
             if nargin < 2; transparentSwitch = obj.view.handles.transparentVolumeCheckBox.Value; end
 
             if transparentSwitch
@@ -2649,6 +2727,9 @@ classdef VolRenApp < handle
             %      obj.showHelp()
 
             
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.VolRenApp.showHelp: triggered\n');
+            end
             helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'ribbon', 'home', 'home-mib3Dviewer.html');
             if isfile(helpFilPath)
                 web(helpFilPath, '-browser');

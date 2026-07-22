@@ -16,6 +16,9 @@ function protocolList_SelectionCallback(obj)
 %
 
 % sync protocolListIndex from the listbox selection
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.BatchProcessing.protocolList_SelectionCallback: triggered\n');
+end
 items = obj.view.handles.protocolList.Items;
 selVal = obj.view.handles.protocolList.Value;
 if isempty(items) || isempty(selVal)

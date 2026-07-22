@@ -33,6 +33,9 @@ function directoryLoopAction_Callback(obj, BatchOptInput)
 %     obj.directoryLoopAction_Callback(BatchOpt); // apply saved settings
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.BatchProcessing.directoryLoopAction_Callback: triggered\n');
+end
 BatchOpt.DirectoriesList = {obj.mibModel.currentDirectory};   % cell with the selected directory
 BatchOpt.DirectoriesList{2} = {obj.mibModel.currentDirectory};    %  cell array with list of directories
 BatchOpt.DirLoopWaitbar = true;   % when true show waitbar for the directory loop

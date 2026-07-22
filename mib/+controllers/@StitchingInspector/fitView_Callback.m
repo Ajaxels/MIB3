@@ -12,6 +12,9 @@ function fitView_Callback(obj)
 % ``fitViewBtn`` and the ``F`` key.
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.StitchingInspector.fitView_Callback: triggered\n');
+end
 obj.pairZoom = [];
 if isempty(obj.view) || ~isfield(obj.view.handles, 'pairAxes'); return; end
 pairAxes = obj.view.handles.pairAxes;

@@ -19,6 +19,10 @@ function continueBtn_Callback(obj, useBatchMode)
 
 if nargin < 2; useBatchMode = false; end
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.Alignment.continueBtn_Callback: triggered\n');
+end
+
 id = obj.mibModel.getActiveId();
 
 % Parent figure for any dialogs — ``obj.view`` is empty in batch mode

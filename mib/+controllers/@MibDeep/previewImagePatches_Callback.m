@@ -7,6 +7,9 @@ function previewImagePatches_Callback(obj, event)
 %       obj.previewImagePatches_Callback(event)
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibDeep.previewImagePatches_Callback: triggered\n');
+end
     if obj.view.handles.O_PreviewImagePatches.Value && strcmp(obj.view.handles.O_PreviewImagePatches.Enable, 'on')
         obj.view.handles.O_FractionOfPreviewPatches.Enable = 'on';
     else

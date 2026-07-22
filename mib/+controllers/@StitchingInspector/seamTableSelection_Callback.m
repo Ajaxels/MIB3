@@ -10,6 +10,9 @@ function seamTableSelection_Callback(obj, evnt)
 %   - **evnt** — SelectionChanged event data from the uitable (row selection)
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.StitchingInspector.seamTableSelection_Callback: triggered\n');
+end
 if ~obj.dataValid(); return; end
 selection = evnt.Selection;
 if isempty(selection); return; end

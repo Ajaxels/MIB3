@@ -94,6 +94,9 @@ classdef WelcomeTips < handle
             %
             %      obj.closeWindow();
             %
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.WelcomeTips.closeWindow: triggered\n');
+            end
             obj.mibModel.preferences.Tips.ShowTips = obj.view.handles.showTipsCheck.Value;
             obj.mibModel.preferences.Tips.CurrentTipIndex = obj.mibModel.preferences.Tips.CurrentTipIndex + 1;
             if obj.mibModel.preferences.Tips.CurrentTipIndex > numel(obj.mibModel.preferences.Tips.Files)
@@ -153,6 +156,9 @@ classdef WelcomeTips < handle
             %   function nextTipBtn_Callback(obj)
             %
             
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.WelcomeTips.nextTipBtn_Callback: triggered\n');
+            end
             obj.mibModel.preferences.Tips.CurrentTipIndex = obj.mibModel.preferences.Tips.CurrentTipIndex + 1;
             if obj.mibModel.preferences.Tips.CurrentTipIndex > numel(obj.mibModel.preferences.Tips.Files)
                 obj.mibModel.preferences.Tips.CurrentTipIndex = 1;
@@ -167,6 +173,9 @@ classdef WelcomeTips < handle
             %   function previousTipBtn_Callback(obj)
             %
             
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.WelcomeTips.previousTipBtn_Callback: triggered\n');
+            end
             obj.mibModel.preferences.Tips.CurrentTipIndex = obj.mibModel.preferences.Tips.CurrentTipIndex - 1;
             if obj.mibModel.preferences.Tips.CurrentTipIndex == 0
                 obj.mibModel.preferences.Tips.CurrentTipIndex = numel(obj.mibModel.preferences.Tips.Files);

@@ -14,6 +14,9 @@ function gui_Callbacks(obj, source, ~)
 %   - **event** — event data (unused)
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MakeMovie.gui_Callbacks/%s: triggered\n', source.Tag);
+end
 switch source.Tag
     case 'continueBtn'
         obj.continueBtn_Callback();

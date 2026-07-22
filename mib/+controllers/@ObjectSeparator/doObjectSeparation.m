@@ -18,6 +18,9 @@ function doObjectSeparation(obj)
 % Part of Microscopy Image Browser, http://mib.helsinki.fi
 % License: GNU General Public License v3, https://www.gnu.org/licenses/gpl-3.0.en.html
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.ObjectSeparator.doObjectSeparation: triggered\n');
+end
 id = obj.BatchOpt.id;
 
 %% --- Parse BatchOpt ---

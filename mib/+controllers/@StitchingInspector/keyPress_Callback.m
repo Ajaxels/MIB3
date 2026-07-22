@@ -25,6 +25,9 @@ function keyPress_Callback(obj, evnt)
 %   - **evnt** — KeyData from ``WindowKeyPressFcn``
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.StitchingInspector.keyPress_Callback: triggered\n');
+end
 if ~obj.dataValid(); return; end
 
 switch evnt.Key

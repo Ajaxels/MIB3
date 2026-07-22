@@ -176,6 +176,9 @@ classdef GlobalThresholding < handle
         % -----------------------------------------------------------
         function figureKeyPress(obj, event)
             % FIGUREKEYPRESS - Forward key presses to MIB main window shortcuts.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.GlobalThresholding.figureKeyPress: triggered\n');
+            end
             if isempty(event.Character); return; end
             eventData = struct();
             eventData.eventdata = event;
@@ -186,6 +189,9 @@ classdef GlobalThresholding < handle
         % -----------------------------------------------------------
         function closeWindow(obj)
             % CLOSEWINDOW - Destroy view, listeners, fire CloseEvent.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.GlobalThresholding.closeWindow: triggered\n');
+            end
             if ~isempty(obj.view) && isvalid(obj.view.gui); delete(obj.view.gui); end
             for i = 1:numel(obj.listener); delete(obj.listener{i}); end
             notify(obj, 'CloseEvent');
@@ -202,6 +208,9 @@ classdef GlobalThresholding < handle
         % -----------------------------------------------------------
         function updateBatchOptFromGUI(obj, event)
             % UPDATEBATCHOPTFROMGUI - Sync BatchOpt from a widget change event.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.GlobalThresholding.updateBatchOptFromGUI: triggered\n');
+            end
             obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, event.Source);
             obj.triggerAutoPreview();
         end
@@ -209,6 +218,9 @@ classdef GlobalThresholding < handle
         % -----------------------------------------------------------
         function algorithmChanged(obj, event)
             % ALGORITHMCHANGED - Handle Algorithm dropdown change.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.GlobalThresholding.algorithmChanged: triggered\n');
+            end
             obj.BatchOpt.Algorithm{1} = event.Source.Value;
             obj.applyUIRules();
             obj.triggerAutoPreview();
@@ -217,6 +229,9 @@ classdef GlobalThresholding < handle
         % -----------------------------------------------------------
         function foregroundFractionChanged(obj, event)
             % FOREGROUNDFRACTIONCHANGED - Handle ForegroundFraction spinner change; sync slider.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.GlobalThresholding.foregroundFractionChanged: triggered\n');
+            end
             obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, event.Source);
             obj.view.handles.foregroundSlider.Value = obj.BatchOpt.ForegroundFraction{1};
             obj.triggerAutoPreview();
@@ -225,6 +240,9 @@ classdef GlobalThresholding < handle
         % -----------------------------------------------------------
         function foregroundSliderChanged(obj, event)
             % FOREGROUNDSLIDERCHANGED - Handle foregroundSlider change; sync spinner.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.GlobalThresholding.foregroundSliderChanged: triggered\n');
+            end
             newValue = event.Source.Value;
             obj.BatchOpt.ForegroundFraction{1} = newValue;
             obj.view.handles.ForegroundFraction.Value = newValue;
@@ -234,6 +252,9 @@ classdef GlobalThresholding < handle
         % -----------------------------------------------------------
         function thresholdOffsetChanged(obj, event)
             % THRESHOLDOFFSETCHANGED - Handle ThresholdOffset spinner change; sync slider.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.GlobalThresholding.thresholdOffsetChanged: triggered\n');
+            end
             obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, event.Source);
             obj.view.handles.offsetSlider.Value = max(-256, min(256, obj.BatchOpt.ThresholdOffset{1}));
             obj.triggerAutoPreview();
@@ -242,6 +263,9 @@ classdef GlobalThresholding < handle
         % -----------------------------------------------------------
         function offsetSliderChanged(obj, event)
             % OFFSETSLIDERCHANGED - Handle offsetSlider change; sync spinner.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.GlobalThresholding.offsetSliderChanged: triggered\n');
+            end
             newValue = event.Source.Value;
             obj.BatchOpt.ThresholdOffset{1} = newValue;
             obj.view.handles.ThresholdOffset.Value = newValue;
@@ -251,6 +275,9 @@ classdef GlobalThresholding < handle
         % -----------------------------------------------------------
         function resetSliders_Callback(obj)
             % RESETSLIDERS_CALLBACK - Reset ForegroundFraction to 0.5 and ThresholdOffset to 0.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.GlobalThresholding.resetSliders_Callback: triggered\n');
+            end
             obj.BatchOpt.ForegroundFraction{1} = 0.5;
             obj.view.handles.ForegroundFraction.Value = 0.5;
             obj.view.handles.foregroundSlider.Value   = 0.5;
@@ -265,6 +292,9 @@ classdef GlobalThresholding < handle
         % -----------------------------------------------------------
         function autoPreviewChanged(obj, event)
             % AUTOPREVIEWCHANGED - Handle autoPreview checkbox; fire preview if just checked.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.GlobalThresholding.autoPreviewChanged: triggered\n');
+            end
             if event.Source.Value
                 obj.previewBtn_Callback();
             end
@@ -383,6 +413,9 @@ classdef GlobalThresholding < handle
         % -----------------------------------------------------------
         function previewBtn_Callback(obj)
             % PREVIEWBTN_CALLBACK - Apply thresholding to the current slice and show in selection.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.GlobalThresholding.previewBtn_Callback: triggered\n');
+            end
             id = obj.BatchOpt.id;
             colChId = find(ismember(obj.BatchOpt.ColorChannel{2}, obj.BatchOpt.ColorChannel{1}), 1);
 
@@ -418,6 +451,9 @@ classdef GlobalThresholding < handle
             %   - **batchModeSwitch** *(optional)* — logical; ``true`` when called
             %     headlessly from the batch dispatcher. Default ``false``.
             %
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.GlobalThresholding.applyButton_Callback: triggered\n');
+            end
             if nargin < 2; batchModeSwitch = false; end
 
             if isempty(obj.view)
@@ -528,6 +564,9 @@ classdef GlobalThresholding < handle
         function helpButton_Callback(obj)
             % HELPBUTTON_CALLBACK - Open documentation in browser.
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.GlobalThresholding.helpButton_Callback: triggered\n');
+            end
             helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'ribbon', 'tools', 'tools-globalthres.html');
             if isfile(helpFilPath)
                 web(helpFilPath, '-browser');

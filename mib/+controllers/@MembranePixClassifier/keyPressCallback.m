@@ -6,6 +6,10 @@ arguments (Input)
     evnt
 end
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MembranePixClassifier.keyPressCallback: triggered\n');
+end
+
 if isempty(evnt.Character); return; end
 eventData = struct('eventdata', evnt);
 eventData = core.ToggleEventData(eventData);

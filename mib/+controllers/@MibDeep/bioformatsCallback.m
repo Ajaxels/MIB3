@@ -12,6 +12,9 @@ function bioformatsCallback(obj, event)
 %   - **event** — an event structure of appdesigner
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibDeep.bioformatsCallback: triggered\n');
+end
     extensionFieldName = 'ImageFilenameExtension';
     bioformatsFileName = 'Bioformats';
     indexFieldName = 'BioformatsIndex';

@@ -38,6 +38,9 @@ function directoryOperationsAction_Callback(obj, BatchOptInput)
 %     obj.directoryOperationsAction_Callback(BatchOpt); // apply saved settings
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.BatchProcessing.directoryOperationsAction_Callback: triggered\n');
+end
 BatchOpt.Operation = {'Change current MIB directory'};   % specify the operation
 BatchOpt.Operation{2} = {'Change current MIB directory', 'Create new', 'Delete directory'};
 BatchOpt.Mode = {'Relative to current MIB path'};   % directory resolution mode

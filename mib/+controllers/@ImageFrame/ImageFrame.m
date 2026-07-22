@@ -178,6 +178,9 @@ classdef ImageFrame < handle
         % -----------------------------------------------------------
         function figureKeyPress(obj, event)
             % FIGUREKEYPRESS - Forward key presses to MIB main window shortcuts.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ImageFrame.figureKeyPress: triggered\n');
+            end
             if isempty(event.Character); return; end
             eventData = struct();
             eventData.eventdata = event;
@@ -188,6 +191,9 @@ classdef ImageFrame < handle
         % -----------------------------------------------------------
         function closeWindow(obj)
             % CLOSEWINDOW - Destroy view and fire CloseEvent.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ImageFrame.closeWindow: triggered\n');
+            end
             if isvalid(obj.view.gui); delete(obj.view.gui); end
             for i = 1:numel(obj.listener); delete(obj.listener{i}); end
             notify(obj, 'CloseEvent');
@@ -219,12 +225,18 @@ classdef ImageFrame < handle
         % -----------------------------------------------------------
         function updateBatchOptFromGUI(obj, event)
             % UPDATEBATCHOPTFROMGUI - Sync BatchOpt from a widget change event.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ImageFrame.updateBatchOptFromGUI: triggered\n');
+            end
             obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, event.Source);
         end
 
         % -----------------------------------------------------------
         function destinationChanged(obj, event)
             % DESTINATIONCHANGED - Update BatchOpt and toggle NewFrameIntensity field.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ImageFrame.destinationChanged: triggered\n');
+            end
             obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, event.Source);
             if strcmp(obj.BatchOpt.Destination{1}, 'Image')
                 obj.view.handles.NewFrameIntensity.Enable = 'on';
@@ -237,6 +249,9 @@ classdef ImageFrame < handle
         function helpButton_Callback(obj)
             % HELPBUTTON_CALLBACK - Open documentation in browser.
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ImageFrame.helpButton_Callback: triggered\n');
+            end
             helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'ribbon', 'image', 'image-tools-selectframe.html');
             if isfile(helpFilPath)
                 web(helpFilPath, '-browser');
@@ -261,6 +276,9 @@ classdef ImageFrame < handle
             % Parameters:
             %   **batchModeSwitch** *(optional)* — ``true`` when called from batch processing;
             %     skips undo backup and ``returnBatchOpt``. Default: ``false``.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ImageFrame.Calculate: triggered\n');
+            end
             if nargin < 2; batchModeSwitch = false; end
 
             id = obj.BatchOpt.id;

@@ -141,6 +141,9 @@ classdef ContentAwareFill < handle
         % -----------------------------------------------------------
         function figureKeyPress(obj, event)
             % FIGUREKEYPRESS - Forward key presses to MIB main window shortcuts.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ContentAwareFill.figureKeyPress: triggered\n');
+            end
             if isempty(event.Character); return; end
             eventData = core.ToggleEventData(struct('eventdata', event));
             notify(obj.mibModel, 'KeyPressEvent', eventData);
@@ -149,6 +152,9 @@ classdef ContentAwareFill < handle
         % -----------------------------------------------------------
         function updateBatchOptFromGUI(obj, event)
             % UPDATEBATCHOPTFROMGUI - Sync BatchOpt from a widget change event.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ContentAwareFill.updateBatchOptFromGUI: triggered\n');
+            end
             obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, event.Source);
             if obj.view.handles.autoPreview.Value; obj.previewButtonPushed(); end
         end
@@ -156,6 +162,9 @@ classdef ContentAwareFill < handle
         % -----------------------------------------------------------
         function methodChanged(obj, event)
             % METHODCHANGED - Update BatchOpt and toggle method-dependent widget states.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ContentAwareFill.methodChanged: triggered\n');
+            end
             obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, event.Source);
             obj.updateMethodDependentWidgets();
             if obj.view.handles.autoPreview.Value; obj.previewButtonPushed(); end
@@ -195,6 +204,9 @@ classdef ContentAwareFill < handle
         % -----------------------------------------------------------
         function closeWindow(obj)
             % CLOSEWINDOW - Save session settings, destroy view, fire CloseEvent.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ContentAwareFill.closeWindow: triggered\n');
+            end
             obj.mibModel.sessionSettings.contentAwareFill.Method      = obj.BatchOpt.Method{1};
             obj.mibModel.sessionSettings.contentAwareFill.DatasetType = obj.BatchOpt.DatasetType{1};
             obj.mibModel.sessionSettings.contentAwareFill.Mask        = obj.BatchOpt.Mask{1};
@@ -211,6 +223,9 @@ classdef ContentAwareFill < handle
         function helpButton_Callback(obj)
             % HELPBUTTON_CALLBACK - Open documentation in browser.
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ContentAwareFill.helpButton_Callback: triggered\n');
+            end
             helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'ribbon', 'image', 'image-tools-awarefill.html');
             if isfile(helpFilPath)
                 web(helpFilPath, '-browser');
@@ -222,6 +237,9 @@ classdef ContentAwareFill < handle
         % -----------------------------------------------------------
         function previewButtonPushed(obj)
             % PREVIEWBUTTONPUSHED - Apply fill to current view slice and display as overlay.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ContentAwareFill.previewButtonPushed: triggered\n');
+            end
             getDataOptions.blockModeSwitch = 1;
             id = obj.mibModel.getActiveId();
 

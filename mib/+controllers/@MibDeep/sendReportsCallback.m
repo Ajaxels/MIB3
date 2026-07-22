@@ -8,6 +8,9 @@ function sendReportsCallback(obj)
 %
 % email address
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibDeep.sendReportsCallback: triggered\n');
+end
     obj.SendReports.T_SendReports = obj.view.handles.T_SendReports.Value;
     if obj.SendReports.T_SendReports == 0; return; end
 

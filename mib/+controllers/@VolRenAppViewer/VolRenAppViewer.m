@@ -106,6 +106,9 @@ classdef VolRenAppViewer < handle
             %   .. code-block:: matlab
             %
             %      obj.closeWindow()
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.VolRenAppViewer.closeWindow: triggered\n');
+            end
             if isvalid(obj.view.gui)
                 delete(obj.view.gui);   % delete childController window
             end

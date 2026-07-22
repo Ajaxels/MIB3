@@ -134,6 +134,9 @@ classdef ChunkingExport < handle
         % ---------------------------------------------------------------
         function closeWindow(obj)
             % CLOSEWINDOW - Close the dialog and clean up listeners.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ChunkingExport.closeWindow: triggered\n');
+            end
             if isvalid(obj.view.gui)
                 delete(obj.view.gui);
             end
@@ -191,6 +194,9 @@ classdef ChunkingExport < handle
         function helpBtn_Callback(obj)
             % HELPBTN_CALLBACK - show documentation
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ChunkingExport.helpBtn_Callback: triggered\n');
+            end
             helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'ribbon', 'home', 'home-choppedimages.html');
             if isfile(helpFilPath)
                 web(helpFilPath, '-browser');
@@ -204,6 +210,9 @@ classdef ChunkingExport < handle
         % ---------------------------------------------------------------
         function selectDirBtn_Callback(obj)
             % SELECTDIRBTN_CALLBACK - Open a directory picker and update the output path.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ChunkingExport.selectDirBtn_Callback: triggered\n');
+            end
             currentDir = obj.view.handles.OutputDirectory.Value;
             folder = uigetdir(currentDir, 'Select output directory');
             if isequal(folder, 0); return; end
@@ -214,6 +223,9 @@ classdef ChunkingExport < handle
         % ---------------------------------------------------------------
         function dirEdit_Callback(obj, hObject)
             % DIREDIT_CALLBACK - Validate or create the typed output directory.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ChunkingExport.dirEdit_Callback: triggered\n');
+            end
             folder = hObject.Value;
             if exist(folder, 'dir') == 0
                 answer = utils.dlgs.inputQuestDlg(obj.mibModel.getProgressBarParent(), ...
@@ -238,6 +250,9 @@ classdef ChunkingExport < handle
         % ---------------------------------------------------------------
         function updateBatchOptFromGUI(obj, hObject)
             % UPDATEBATCHOPTFROMGUI - Sync a single widget change back to BatchOpt.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ChunkingExport.updateBatchOptFromGUI: triggered\n');
+            end
             obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, hObject);
         end
 
@@ -255,6 +270,9 @@ classdef ChunkingExport < handle
             %   - **batchModeSwitch** — *(optional)* logical; ``true`` when called from batch mode
             %
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ChunkingExport.chunkBtn_Callback: triggered\n');
+            end
             if nargin < 2; batchModeSwitch = false; end
 
             tilesX = obj.BatchOpt.TilesX{1};

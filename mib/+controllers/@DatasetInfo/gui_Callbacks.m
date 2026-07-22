@@ -13,6 +13,9 @@ function gui_Callbacks(obj, source, event) %#ok<INUSD>
 %   - **source** — widget handle that fired the event.
 %   - **event** — event data (unused).
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.DatasetInfo.gui_Callbacks/%s: triggered\n', source.Tag);
+end
 switch source.Tag
     case 'closeButton'
         obj.closeWindow();

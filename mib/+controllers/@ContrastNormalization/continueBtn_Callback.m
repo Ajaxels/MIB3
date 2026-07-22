@@ -16,6 +16,9 @@ function continueBtn_Callback(obj, useBatchMode)
 %   - **useBatchMode** *(optional)* — logical; ``true`` when invoked via
 %     the batch processor (no GUI). Default ``false``.
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.ContrastNormalization.continueBtn_Callback: triggered\n');
+end
 if nargin < 2; useBatchMode = false; end
 
 id = obj.mibModel.getActiveId();

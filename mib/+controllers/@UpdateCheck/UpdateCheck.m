@@ -136,6 +136,9 @@ classdef UpdateCheck < handle
 
         function downloadBtn_Callback(obj)
         % DOWNLOADBTN_CALLBACK - Open the platform-specific MIB download page in a browser.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.UpdateCheck.downloadBtn_Callback: triggered\n');
+            end
             if isdeployed
                 if ismac
                     web('http://mib.helsinki.fi/web-update3/MIB3_Mac.zip', '-browser');
@@ -155,6 +158,9 @@ classdef UpdateCheck < handle
         % Prompts for the installation directory, downloads ``MIB3_Matlab.zip``,
         % unzips it to the destination, then exits and restarts MIB3.
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.UpdateCheck.updateBtn_Callback: triggered\n');
+            end
             answer = utils.dlgs.inputUniversalDlg(obj.view.gui, '', ...
                 {'MIB installation directory'}, {obj.mibModel.mibPath}, 'Update MIB', []);
             if isempty(answer); return; end
@@ -178,11 +184,17 @@ classdef UpdateCheck < handle
 
         function recheckPeriodSpinner_Callback(obj, hObject)
         % RECHECKPERIODSPINNER_CALLBACK - Save the recheck period preference.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.UpdateCheck.recheckPeriodSpinner_Callback: triggered\n');
+            end
             obj.mibModel.preferences.System.Update.RecheckPeriod = hObject.Value;
         end
 
         function closeWindow(obj)
         % CLOSEWINDOW - Close the Update Check dialog and fire CloseEvent.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.UpdateCheck.closeWindow: triggered\n');
+            end
             if isvalid(obj.view.gui); delete(obj.view.gui); end
             notify(obj, 'CloseEvent');
         end

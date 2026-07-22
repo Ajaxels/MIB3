@@ -10,6 +10,9 @@ function getSearchWindow_Callback(obj)
 % non-zero pixels, copies the bounding box of the first connected region into
 % ``minX/minY/maxX/maxY`` widgets and the matching ``BatchOpt`` fields.
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.Alignment.getSearchWindow_Callback: triggered\n');
+end
 selection = cell2mat(obj.mibModel.getData2D('selection'));
 stats = regionprops(selection, 'BoundingBox');
 if isempty(stats)

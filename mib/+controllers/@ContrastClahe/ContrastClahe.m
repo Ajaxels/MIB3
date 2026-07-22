@@ -162,6 +162,9 @@ classdef ContrastClahe < handle
         % ---------------------------------------------------------------
         function figureKeyPress(obj, event)
             % FIGUREKEYPRESS - Forward key presses to MIB main window shortcuts.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ContrastClahe.figureKeyPress: triggered\n');
+            end
             if isempty(event.Character); return; end
             eventData = struct();
             eventData.eventdata = event;
@@ -172,6 +175,9 @@ classdef ContrastClahe < handle
         % ---------------------------------------------------------------
         function updateBatchOptFromGUI(obj, event)
             % UPDATEBATCHOPTFROMGUI - Sync BatchOpt from a widget change event.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ContrastClahe.updateBatchOptFromGUI: triggered\n');
+            end
             obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, event.Source);
             if obj.view.handles.autoPreview.Value; obj.previewButtonPushed(); end
         end
@@ -179,6 +185,9 @@ classdef ContrastClahe < handle
         % ---------------------------------------------------------------
         function distributionChanged(obj, event)
             % DISTRIBUTIONCHANGED - Update BatchOpt and toggle Alpha enable state.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ContrastClahe.distributionChanged: triggered\n');
+            end
             obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, event.Source);
             obj.updateAlphaState();
             if obj.view.handles.autoPreview.Value; obj.previewButtonPushed(); end
@@ -225,6 +234,9 @@ classdef ContrastClahe < handle
         % ---------------------------------------------------------------
         function closeWindow(obj)
             % CLOSEWINDOW - Save session settings, destroy view, fire CloseEvent.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ContrastClahe.closeWindow: triggered\n');
+            end
             obj.mibModel.sessionSettings.CLAHE.NumTiles    = [obj.BatchOpt.NumTilesY{1}, obj.BatchOpt.NumTilesX{1}];
             obj.mibModel.sessionSettings.CLAHE.ClipLimit   = obj.BatchOpt.ClipLimit{1};
             obj.mibModel.sessionSettings.CLAHE.NBins       = obj.BatchOpt.NBins{1};
@@ -243,6 +255,9 @@ classdef ContrastClahe < handle
         % ---------------------------------------------------------------
         function helpButton_Callback(obj)
             % HELPBUTTON_CALLBACK - Open documentation in browser.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ContrastClahe.helpButton_Callback: triggered\n');
+            end
             helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'ribbon', 'image', 'clahe.html');
             if isfile(helpFilPath)
                 web(helpFilPath, '-browser');
@@ -254,6 +269,9 @@ classdef ContrastClahe < handle
         % ---------------------------------------------------------------
         function previewButtonPushed(obj)
             % PREVIEWBUTTONPUSHED - Apply CLAHE to current view and display as overlay.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ContrastClahe.previewButtonPushed: triggered\n');
+            end
             getDataOptions.blockModeSwitch = 1;
             id = obj.mibModel.getActiveId();
             dataset = obj.mibModel.I{id};

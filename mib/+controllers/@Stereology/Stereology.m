@@ -123,6 +123,9 @@ classdef Stereology < handle
             %       obj.closeWindow()
             %
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Stereology.closeWindow: triggered\n');
+            end
             if isvalid(obj.view.gui)
                 delete(obj.view.gui);
             end
@@ -156,6 +159,9 @@ classdef Stereology < handle
             %       obj.helpBtn_Callback()
             %
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Stereology.helpBtn_Callback: triggered\n');
+            end
             helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'ribbon', 'tools', 'tools-stereology.html');
             if isfile(helpFilPath)
                 web(helpFilPath, '-browser');
@@ -176,6 +182,9 @@ classdef Stereology < handle
             % The grid can be centered (even margins on all sides) or offset by user-specified values.
             % Optionally dilated to a specified thickness. Clipped to the active ROI when one is selected.
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Stereology.generateGrid_Callback: triggered\n');
+            end
             id = obj.mibModel.id;
             dataset = obj.mibModel.I{id};
 
@@ -284,6 +293,9 @@ classdef Stereology < handle
             % at each intersection, and exports occurrence counts, surface fractions, and
             % surface-area estimates to a MATLAB workspace variable or an Excel file.
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Stereology.doStereologyBtn_Callback: triggered\n');
+            end
             id = obj.mibModel.id;
             dataset = obj.mibModel.I{id};
 

@@ -5,6 +5,10 @@ arguments (Input)
     obj controllers.MembranePixClassifier
 end
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MembranePixClassifier.saveClassifierBtn_Callback: triggered\n');
+end
+
 obj.view.handles.logList.Items = {''};
 obj.view.handles.logList.Value = '';
 obj.updateLoglist('======= Saving classifier... =======');

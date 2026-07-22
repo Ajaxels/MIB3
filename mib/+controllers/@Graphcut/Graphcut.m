@@ -207,6 +207,9 @@ classdef Graphcut < handle
 
         function closeWindow(obj)
         % CLOSEWINDOW - Delete the view and all listeners, then fire ``CloseEvent``.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Graphcut.closeWindow: triggered\n');
+            end
             if isvalid(obj.view.gui); delete(obj.view.gui); end
             for i = 1:numel(obj.listener); delete(obj.listener{i}); end
             notify(obj, 'CloseEvent');
@@ -248,6 +251,9 @@ classdef Graphcut < handle
 
         function updateMaterialsBtn_Callback(obj)
         % UPDATEMATERIALSBTN_CALLBACK - Repopulate background/signal material dropdowns.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Graphcut.updateMaterialsBtn_Callback: triggered\n');
+            end
             id = obj.mibModel.getActiveId();
             list = obj.mibModel.I{id}.labels.materialNames;
             if obj.mibModel.I{id}.modelExist == 0 || isempty(list)
@@ -279,6 +285,9 @@ classdef Graphcut < handle
         %
         % Output Arguments:
         %   - **status** — [logical] ``1`` when cleared successfully, ``0`` when cancelled
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Graphcut.clearPreprocessBtn_Callback: triggered\n');
+            end
             status = 0;
 
             if ~isempty(obj.graphcut(1).noPix)
@@ -395,6 +404,9 @@ classdef Graphcut < handle
         %
         % Input Arguments:
         %   - **hObject** — handle to the newly selected radio button
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Graphcut.mode2dRadio_Callback: triggered\n');
+            end
             if ~isempty(obj.graphcut(1).noPix)
                 button = utils.dlgs.inputQuestDlg(obj.view.gui, ...
                     sprintf('The pre-processed data will be removed!'), ...
@@ -422,6 +434,9 @@ classdef Graphcut < handle
         %
         % Input Arguments:
         %   - **hObject** — handle to ``xSubareaEdit``, ``ySubareaEdit``, or ``zSubareaEdit``
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Graphcut.checkDimensions: triggered\n');
+            end
             id = obj.mibModel.getActiveId();
             text = hObject.Value;
             typedValue = str2num(text); %#ok<ST2NM>
@@ -441,6 +456,9 @@ classdef Graphcut < handle
 
         function resetDimsBtn_Callback(obj)
         % RESETDIMSBTN_CALLBACK - Reset sub-area edit fields to the full dataset extent.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Graphcut.resetDimsBtn_Callback: triggered\n');
+            end
             status = obj.clearPreprocessBtn_Callback();    
             if status==0; return; end
             id = obj.mibModel.getActiveId();
@@ -453,6 +471,9 @@ classdef Graphcut < handle
 
         function currentViewBtn_Callback(obj)
         % CURRENTVIEWBTN_CALLBACK - Set the XY sub-area from the currently visible image region.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Graphcut.currentViewBtn_Callback: triggered\n');
+            end
             id = obj.mibModel.getActiveId();
             [yMin, yMax, xMin, xMax] = obj.mibModel.I{id}.getCoordinatesOfShownImage();
             obj.view.handles.xSubareaEdit.Value = sprintf('%d:%d', xMin, xMax);
@@ -462,6 +483,9 @@ classdef Graphcut < handle
 
         function subAreaFromSelectionBtn_Callback(obj)
         % SUBAREAFROMBTN_CALLBACK - Set the sub-area from the bounding box of the selection layer.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Graphcut.subAreaFromSelectionBtn_Callback: triggered\n');
+            end
             bgColor = obj.view.handles.subAreaFromSelectionBtn.BackgroundColor;
             obj.view.handles.subAreaFromSelectionBtn.BackgroundColor = [1 0 0];
             drawnow;
@@ -508,6 +532,9 @@ classdef Graphcut < handle
         % Input Arguments:
         %   - **hObject** — handle to ``binSubareaEdit``; ``.Value`` is a semicolon-separated
         %     pair of integers, e.g. ``'2; 1'`` (XY bin; Z bin)
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Graphcut.binSubareaEdit_Callback: triggered\n');
+            end
             val = str2num(hObject.Value); %#ok<ST2NM>
             if isempty(val)
                 val = [1; 1];
@@ -530,11 +557,17 @@ classdef Graphcut < handle
         %
         % Input Arguments:
         %   - **hObject** — handle to ``realtimeCheck``
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Graphcut.realtimeCheck_Callback: triggered\n');
+            end
             obj.realtimeSwitch = hObject.Value;
         end
 
         function parforCheck_Callback(obj)
         % PARFORCHECK_CALLBACK - Start a parallel pool when the parallel checkbox is ticked.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Graphcut.parforCheck_Callback: triggered\n');
+            end
             if obj.view.handles.parforCheck.Value
                 nWorkers = obj.mibModel.preferences.System.cpuParallelLimit;
                 if isempty(gcp('nocreate'))
@@ -948,6 +981,9 @@ classdef Graphcut < handle
         %   - **usePrecomputedSlic** *(optional)* — [logical] when ``1``, skip supervoxel
         %     calculation and rebuild the graph from the existing ``obj.graphcut.slic``;
         %     default: ``0``
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Graphcut.superpixelsBtn_Callback: triggered\n');
+            end
             if nargin < 2; usePrecomputedSlic = 0; end
             id = obj.mibModel.getActiveId();
             dataset =  obj.mibModel.I{id};
@@ -1322,6 +1358,9 @@ classdef Graphcut < handle
 
         function exportSuperpixelsBtn_Callback(obj)
         % EXPORTSUPERPIXELSBTN_CALLBACK - Export the graphcut struct to workspace, file, model, or 3D lines.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Graphcut.exportSuperpixelsBtn_Callback: triggered\n');
+            end
             id = obj.mibModel.getActiveId();
             dataset = obj.mibModel.I{id};
 
@@ -1539,6 +1578,9 @@ classdef Graphcut < handle
         % Input Arguments:
         %   - **noImportSwitch** *(optional)* — [logical] when ``1``, restore the UI from
         %     the current ``obj.graphcut`` without showing the import dialog; default: ``0``
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Graphcut.importSuperpixelsBtn_Callback: triggered\n');
+            end
             if nargin < 2; noImportSwitch = 0; end
             id = obj.mibModel.getActiveId();
 
@@ -1761,6 +1803,9 @@ classdef Graphcut < handle
 
         function superpixelsPreviewBtn_Callback(obj)
         % SUPERPIXELSPREVIEWBTN_CALLBACK - Show supervoxel boundaries in the selection layer.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Graphcut.superpixelsPreviewBtn_Callback: triggered\n');
+            end
             if isempty(obj.graphcut(1).noPix); return; end
             id = obj.mibModel.getActiveId();
 
@@ -1862,6 +1907,9 @@ classdef Graphcut < handle
         % Input Arguments:
         %   - **parameter** *(optional)* — [char] pass ``'keep'`` to suppress clearing
         %     the preprocessed data after UI update; default: ``'clear'``
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Graphcut.superpixTypePopup_Callback: triggered\n');
+            end
             if nargin < 2; parameter = 'clear'; end
 
             obj.view.handles.chopXedit.Enable    = 'off';
@@ -1914,6 +1962,9 @@ classdef Graphcut < handle
         %
         % Input Arguments:
         %   - **showWaitbar** *(optional)* — [logical] show a progress dialog; default: ``0``
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Graphcut.recalcGraph_Callback: triggered\n');
+            end
             if nargin < 2; showWaitbar = 0; end
 
             if ~isfield(obj.graphcut(1), 'EdgesValues')
@@ -1953,6 +2004,9 @@ classdef Graphcut < handle
         %
         % When ticked, calls ``regionprops`` for each graphcut element and stores
         % ``PixelIdxList`` to accelerate incremental mask updates during segmentation.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Graphcut.pixelIdxListCheck_Callback: triggered\n');
+            end
             if isempty(obj.graphcut(1).noPix); return; end
 
             if ~obj.view.handles.pixelIdxListCheck.Value
@@ -1989,6 +2043,9 @@ classdef Graphcut < handle
 
         function segmentBtn_Callback(obj)
         % SEGMENTBTN_CALLBACK - Back up the mask, run one segmentation pass, and show the result.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Graphcut.segmentBtn_Callback: triggered\n');
+            end
             id = obj.mibModel.getActiveId();
             tic
             if ~strcmp(obj.mode, 'mode2dCurrentRadio')
@@ -2025,6 +2082,9 @@ classdef Graphcut < handle
 
         function segmentAllBtn_Callback(obj)
         % SEGMENTALLBTN_CALLBACK - Segment every grid tile sequentially and show the result.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Graphcut.segmentAllBtn_Callback: triggered\n');
+            end
             id = obj.mibModel.getActiveId();
             dataset = obj.mibModel.I{id};
             tic

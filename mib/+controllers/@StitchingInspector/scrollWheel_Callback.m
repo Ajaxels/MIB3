@@ -22,6 +22,9 @@ function scrollWheel_Callback(obj, evnt)
 %     (``VerticalScrollCount`` > 0 = scroll down)
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.StitchingInspector.scrollWheel_Callback: triggered\n');
+end
 if obj.shiftDown
     % ---- Shift+wheel: resize the correlation ROI box -----------------------
     if isempty(obj.view) || ~isfield(obj.view.handles, 'roiSizeSpinner'); return; end

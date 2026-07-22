@@ -37,6 +37,9 @@ function protocolActions_Callback(obj, options)
 %
 %      obj.protocolActions_Callback('moveup');
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.BatchProcessing.protocolActions_Callback: triggered\n');
+end
 switch options
     case {'add', 'insert', 'update', 'duplicate'}      % add, insert or update selected action to the protocol
         if isempty(obj.CurrentBatch)

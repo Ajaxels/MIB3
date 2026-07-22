@@ -193,6 +193,9 @@ classdef MorphOps < handle
         % -----------------------------------------------------------
         function figureKeyPress(obj, event)
             % FIGUREKEYPRESS - Forward key presses to MIB main window shortcuts.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.MorphOps.figureKeyPress: triggered\n');
+            end
             if isempty(event.Character); return; end
 
             eventData = struct();
@@ -204,6 +207,9 @@ classdef MorphOps < handle
         % -----------------------------------------------------------
         function closeWindow(obj)
             % CLOSEWINDOW - Save session settings, destroy view, fire CloseEvent.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.MorphOps.closeWindow: triggered\n');
+            end
             if ~isempty(obj.BatchOpt)
                 obj.mibModel.sessionSettings.morphOpsImages.Objects3D      = obj.BatchOpt.Objects3D;
                 obj.mibModel.sessionSettings.morphOpsImages.MorphOperation  = obj.BatchOpt.MorphOperation{1};
@@ -261,6 +267,9 @@ classdef MorphOps < handle
         % -----------------------------------------------------------
         function updateBatchOptFromGUI(obj, event)
             % UPDATEBATCHOPTFROMGUI - Sync BatchOpt from a widget change event.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.MorphOps.updateBatchOptFromGUI: triggered\n');
+            end
             obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, event.Source);
             obj.triggerAutoPreview();
         end
@@ -268,6 +277,9 @@ classdef MorphOps < handle
         % -----------------------------------------------------------
         function objects3DChanged(obj, event)
             % OBJECTS3DCHANGED - Handle Objects3D checkbox; switch between 2D/3D morphological operations.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.MorphOps.objects3DChanged: triggered\n');
+            end
             obj.BatchOpt.Objects3D = event.Source.Value;
             obj.updateMorphOperationList();
             obj.applyUIRules();
@@ -277,6 +289,9 @@ classdef MorphOps < handle
         % -----------------------------------------------------------
         function modeSelectionChanged(obj, event)
             % MODESELECTIONCHANGED - Handle Mode radio change; update bwulterode connectivity dimension.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.MorphOps.modeSelectionChanged: triggered\n');
+            end
             if strcmp(event.NewValue.Tag, 'mode3D')
                 obj.BatchOpt.BwulterodeMode{1} = '3D';
                 obj.BatchOpt.ApplyTo{1} = 'Stack';
@@ -291,6 +306,9 @@ classdef MorphOps < handle
         % -----------------------------------------------------------
         function operationChanged(obj, event)
             % OPERATIONCHANGED - Handle MorphOperation dropdown change.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.MorphOps.operationChanged: triggered\n');
+            end
             obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, event.Source);
             obj.applyUIRules();
             obj.triggerAutoPreview();
@@ -299,6 +317,9 @@ classdef MorphOps < handle
         % -----------------------------------------------------------
         function iterationsModeChanged(obj, event)
             % ITERATIONSMODECHANGED - Handle limitTo/infinite radio switch.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.MorphOps.iterationsModeChanged: triggered\n');
+            end
             obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, event.Source);
             obj.applyUIRules();
             obj.triggerAutoPreview();
@@ -307,6 +328,9 @@ classdef MorphOps < handle
         % -----------------------------------------------------------
         function autoPreviewChanged(obj, event)
             % AUTOPREVIEWCHANGED - Handle autoPreview checkbox toggle.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.MorphOps.autoPreviewChanged: triggered\n');
+            end
             obj.autoPreview = event.Source.Value;
             obj.triggerAutoPreview();
         end
@@ -444,6 +468,9 @@ classdef MorphOps < handle
         function helpButton_Callback(obj)
             % HELPBUTTON_CALLBACK - Open documentation in browser.
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.MorphOps.helpButton_Callback: triggered\n');
+            end
             helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'ribbon', 'selection', 'selection-morphops.html');
             if isfile(helpFilPath)
                 web(helpFilPath, '-browser');
@@ -492,6 +519,9 @@ classdef MorphOps < handle
         % -----------------------------------------------------------
         function previewButtonPushed(obj)
             % PREVIEWBUTTONPUSHED - Apply 2D operation to current view block and display as overlay.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.MorphOps.previewButtonPushed: triggered\n');
+            end
             getDataOptions.blockModeSwitch = 1;
             getDataOptions.id = obj.BatchOpt.id;
 

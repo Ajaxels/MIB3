@@ -36,6 +36,9 @@ function sliderDragCallback(obj, sliderType, value, isFinal)
 %   ``renderSlider``, ``gui_Callbacks``, ``sliceNumberSlider_Callback``, ``frameNumberSlider_Callback``
 
 % Immediate numeric-box update keeps the readout live during the drag
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibImageDocument.sliderDragCallback: triggered\n');
+end
 switch sliderType
     case 'slice'; obj.handles.sliceNumber.Value = round(value);
     case 'frame'; obj.handles.frameNumber.Value = round(value);

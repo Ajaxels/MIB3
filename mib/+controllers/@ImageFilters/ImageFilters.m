@@ -250,6 +250,9 @@ classdef ImageFilters < handle
         % ---------------------------------------------------------------
         function figureKeyPress(obj, event)
             % FIGUREKEYPRESS - Forward key presses to MIB main window shortcuts.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ImageFilters.figureKeyPress: triggered\n');
+            end
             if isempty(event.Character); return; end
 
             eventData = struct();
@@ -307,6 +310,9 @@ classdef ImageFilters < handle
         % ---------------------------------------------------------------
         function closeWindow(obj)
             % CLOSEWINDOW - Save session settings, destroy view, fire CloseEvent.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ImageFilters.closeWindow: triggered\n');
+            end
             if ~isempty(obj.infoHtmlTempFile) && isfile(obj.infoHtmlTempFile)
                 delete(obj.infoHtmlTempFile);
             end
@@ -341,6 +347,9 @@ classdef ImageFilters < handle
         % ---------------------------------------------------------------
         function updateBatchOptFromGUI(obj, event)
             % UPDATEBATCHOPTFROMGUI - Sync BatchOpt from a widget change event.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ImageFilters.updateBatchOptFromGUI: triggered\n');
+            end
             obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, event.Source);
         end
 
@@ -373,6 +382,9 @@ classdef ImageFilters < handle
         % ---------------------------------------------------------------
         function FilterGroupValueChanged(obj, event)
             % FILTERGROUPVALUECHANGED - Update FilterName list when FilterGroup changes.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ImageFilters.FilterGroupValueChanged: triggered\n');
+            end
             if nargin < 2; event = obj.view.handles.FilterGroup; end
             value = event.Value;
             switch value
@@ -453,6 +465,9 @@ classdef ImageFilters < handle
         % ---------------------------------------------------------------
         function FilterNameValueChanged(obj, event)
             % FILTERNAMEVALUECHANGED - Rebuild parameter widgets when FilterName changes.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ImageFilters.FilterNameValueChanged: triggered\n');
+            end
             if nargin < 2; event = obj.view.handles.FilterName; end
             value = event.Value;
 
@@ -563,6 +578,9 @@ classdef ImageFilters < handle
         % ---------------------------------------------------------------
         function helpButton_Callback(obj)
             % HELPBUTTON_CALLBACK - Open documentation in browser.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ImageFilters.helpButton_Callback: triggered\n');
+            end
             helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'ribbon', 'image', 'image-filters.html');
             if isfile(helpFilPath)
                 web(helpFilPath, '-browser');
@@ -574,6 +592,9 @@ classdef ImageFilters < handle
         % ---------------------------------------------------------------
         function Mode3DValueChanged(obj)
             % MODE3DVALUECHANGED - Toggle 3D mode; force DatasetType to >=3D Stack.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ImageFilters.Mode3DValueChanged: triggered\n');
+            end
             val = obj.view.handles.Mode3D.Value;
             obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, obj.view.handles.Mode3D);
             if val && strcmp(obj.view.handles.DatasetType.Value, '2D, Slice')
@@ -623,6 +644,9 @@ classdef ImageFilters < handle
         % ---------------------------------------------------------------
         function PreviewButtonPushed(obj)
             % PREVIEWBUTTONPUSHED - Apply filter to current view and display as overlay.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ImageFilters.PreviewButtonPushed: triggered\n');
+            end
             getDataOptions.blockModeSwitch = 1;
             id = obj.mibModel.getActiveId();
             dataset = obj.mibModel.I{id};

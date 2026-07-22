@@ -73,6 +73,9 @@ classdef ActionLog < handle
         % -------------------------------------------------------------------
         function closeWindow(obj)
             % CLOSEWINDOW - Close the dialog and release listeners.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ActionLog.closeWindow: triggered\n');
+            end
             if ~isempty(obj.view) && isvalid(obj.view.gui)
                 delete(obj.view.gui);
             end
@@ -107,6 +110,9 @@ classdef ActionLog < handle
         % -------------------------------------------------------------------
         function keyPress_Callback(obj, eventdata)
             % KEYPRESS_CALLBACK - Forward key presses to the main MIB key handler.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ActionLog.keyPress_Callback: triggered\n');
+            end
             if isempty(eventdata.Character); return; end
             evtData = struct('eventdata', eventdata);
             notify(obj.mibModel, 'keyPressEvent', core.ToggleEventData(evtData));
@@ -115,6 +121,9 @@ classdef ActionLog < handle
         % -------------------------------------------------------------------
         function logPrint_Callback(obj)
             % LOGPRINT_CALLBACK - Print all log entries to the MATLAB console.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ActionLog.logPrint_Callback: triggered\n');
+            end
             items = obj.view.handles.logList.Items;
             for entryIndex = 1:numel(items)
                 disp(items{entryIndex});
@@ -124,6 +133,9 @@ classdef ActionLog < handle
         % -------------------------------------------------------------------
         function clipboard_Callback(obj)
             % CLIPBOARD_CALLBACK - Copy all log entries to the system clipboard.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ActionLog.clipboard_Callback: triggered\n');
+            end
             items = obj.view.handles.logList.Items;
             clipboard('copy', strjoin(items, newline));
         end

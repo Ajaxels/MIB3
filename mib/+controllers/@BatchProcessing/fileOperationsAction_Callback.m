@@ -36,6 +36,9 @@ function fileOperationsAction_Callback(obj, BatchOptInput)
 %     obj.fileOperationsAction_Callback(BatchOpt); // apply saved settings
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.BatchProcessing.fileOperationsAction_Callback: triggered\n');
+end
 BatchOpt.Operation = {'Delete'};   % specify the operation
 BatchOpt.Operation{2} = {'Copy', 'Delete', 'Move'};
 BatchOpt.CurrentDirectoryMode = {'Relative to current MIB path'};

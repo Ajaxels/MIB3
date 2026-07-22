@@ -5,6 +5,10 @@ arguments (Input)
     obj controllers.MembranePixClassifier
 end
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MembranePixClassifier.tempDirSelectBtn_Callback: triggered\n');
+end
+
 if isfolder(obj.dirOut)
     pathIn = obj.dirOut;
 else

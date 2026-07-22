@@ -193,6 +193,9 @@ classdef WoundHealing < handle
         % -----------------------------------------------------------
         function closeWindow(obj)
             % CLOSEWINDOW - Destroy view and fire CloseEvent.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.WoundHealing.closeWindow: triggered\n');
+            end
             if isvalid(obj.view.gui); delete(obj.view.gui); end
             for i = 1:numel(obj.listener); delete(obj.listener{i}); end
             notify(obj, 'CloseEvent');
@@ -213,6 +216,9 @@ classdef WoundHealing < handle
         % -----------------------------------------------------------
         function updateBatchOptFromGUI(obj, event)
             % UPDATEBATCHOPTFROMGUI - Sync BatchOpt from a widget change event.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.WoundHealing.updateBatchOptFromGUI: triggered\n');
+            end
             obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, event.Source);
         end
 
@@ -228,6 +234,9 @@ classdef WoundHealing < handle
         function helpButton_Callback(obj)
             % HELPBUTTON_CALLBACK - Open plugin documentation in browser.
             
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.WoundHealing.helpButton_Callback: triggered\n');
+            end
             helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'ribbon', 'tools', 'tools-wound.html');
             if isfile(helpFilPath)
                 web(helpFilPath, '-browser');
@@ -242,6 +251,9 @@ classdef WoundHealing < handle
             %
             % Uses ``uigetfile_n_dir`` to pick one or more directories in a single
             % Java-based dialog.  The selection replaces the current list.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.WoundHealing.selectDirectoriesButton_Callback: triggered\n');
+            end
             startPath = obj.mibModel.currentDirectory;
             if ~isempty(obj.BatchOpt.SelectedDirectories)
                 startPath = obj.BatchOpt.SelectedDirectories{1};
@@ -257,6 +269,9 @@ classdef WoundHealing < handle
         % -----------------------------------------------------------
         function selectOutputDirectoryButton_Callback(obj)
             % SELECTOUTPUTDIRECTORYBUTTON_CALLBACK - Choose output directory via dialog.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.WoundHealing.selectOutputDirectoryButton_Callback: triggered\n');
+            end
             selectedPath = uigetdir(obj.BatchOpt.OutputDirectory, 'Select output directory');
             if selectedPath == 0; return; end
             obj.BatchOpt.OutputDirectory = selectedPath;
@@ -266,6 +281,9 @@ classdef WoundHealing < handle
         % -----------------------------------------------------------
         function updateOutputPath(obj, value)
             % UPDATEOUTPUTPATH - Validate and store output directory from the edit field.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.WoundHealing.updateOutputPath: triggered\n');
+            end
             if ~isfolder(value)
                 mkdir(value);
                 if ~isfolder(value)
@@ -287,6 +305,9 @@ classdef WoundHealing < handle
             %
             % Saves stitched images and a time-stamp log to ``OutputDirectory``.
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.WoundHealing.stitchButton_Callback: triggered\n');
+            end
             if obj.BatchOpt.showWaitbar
                 progressBar = uiprogressdlg(obj.mibModel.getProgressBarParent(), 'Value', 0, 'Cancelable', 'on', ...
                     'Message', 'Please wait...', 'Title', 'Stitching');
@@ -418,6 +439,9 @@ classdef WoundHealing < handle
             % Requires ``cellMigration.m`` on the MATLAB path.
             % Reference: C.C. Reyes-Aldasoro et al., Electronics Letters, 44(13), 2008.
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.WoundHealing.woundHealingButton_Callback: triggered\n');
+            end
             if obj.BatchOpt.showWaitbar
                 progressBar = uiprogressdlg(obj.mibModel.getProgressBarParent(), 'Value', 0, ...
                     'Message', 'Please wait...', 'Title', 'Wound healing assay');

@@ -153,6 +153,9 @@ classdef ChunkingImport < handle
         % ---------------------------------------------------------------
         function closeWindow(obj)
             % CLOSEWINDOW - Close the dialog and clean up listeners.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ChunkingImport.closeWindow: triggered\n');
+            end
             if isvalid(obj.view.gui)
                 delete(obj.view.gui);
             end
@@ -208,6 +211,9 @@ classdef ChunkingImport < handle
         function combineModeChanged_Callback(obj, hObject)
             % COMBINEMODECHANGED_CALLBACK - Toggle offset fields with mode.
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ChunkingImport.combineModeChanged_Callback: triggered\n');
+            end
             if strcmp(hObject.SelectedObject.Tag, 'newRadio')
                 obj.BatchOpt.Mode{1} = 'New Stack';
                 fuseMode = false;
@@ -230,12 +236,18 @@ classdef ChunkingImport < handle
         % ---------------------------------------------------------------
         function updateBatchOptFromGUI(obj, hObject)
             % UPDATEBATCHOPTFROMGUI - Sync a single widget change back to BatchOpt.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ChunkingImport.updateBatchOptFromGUI: triggered\n');
+            end
             obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, hObject);
         end
 
         function helpBtn_Callback(obj)
             % HELPBTN_CALLBACK - show documentation
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ChunkingImport.helpBtn_Callback: triggered\n');
+            end
             helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'ribbon', 'home', 'home-choppedimages.html');
             if isfile(helpFilPath)
                 web(helpFilPath, '-browser');
@@ -249,6 +261,9 @@ classdef ChunkingImport < handle
         function selectFilesBtn_Callback(obj)
             % SELECTFILESBTN_CALLBACK - Open a file picker to select tile files.
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ChunkingImport.selectFilesBtn_Callback: triggered\n');
+            end
             importImages = obj.view.handles.CombineImages.Value;
             importLabels = obj.view.handles.CombineModels.Value;
             importMasks  = obj.view.handles.CombineMasks.Value;
@@ -312,6 +327,9 @@ classdef ChunkingImport < handle
             %   - **batchModeSwitch** — *(optional)* logical; ``true`` when called from batch mode
             %
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ChunkingImport.combineBtn_Callback: triggered\n');
+            end
             if nargin < 2; batchModeSwitch = false; end
 
             % Snapshot filenames before any listener can clear obj.filenames

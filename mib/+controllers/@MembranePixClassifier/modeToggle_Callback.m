@@ -9,6 +9,10 @@ arguments (Input)
     hObject
 end
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MembranePixClassifier.modeToggle_Callback: triggered\n');
+end
+
 h = obj.view.handles;
 
 % prevent deselecting the already-active toggle by clicking it again

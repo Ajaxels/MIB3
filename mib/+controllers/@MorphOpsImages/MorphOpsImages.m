@@ -198,6 +198,9 @@ classdef MorphOpsImages < handle
         % -----------------------------------------------------------
         function figureKeyPress(obj, event)
             % FIGUREKEYPRESS - Forward key presses to MIB main window shortcuts.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.MorphOpsImages.figureKeyPress: triggered\n');
+            end
             if isempty(event.Character); return; end
             eventData = struct();
             eventData.eventdata = event;
@@ -208,6 +211,9 @@ classdef MorphOpsImages < handle
         % -----------------------------------------------------------
         function closeWindow(obj)
             % CLOSEWINDOW - Destroy view, listeners, fire CloseEvent.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.MorphOpsImages.closeWindow: triggered\n');
+            end
             if ~isempty(obj.view) && isvalid(obj.view.gui); delete(obj.view.gui); end
             for i = 1:numel(obj.listener); delete(obj.listener{i}); end
             notify(obj, 'CloseEvent');
@@ -224,6 +230,9 @@ classdef MorphOpsImages < handle
         % -----------------------------------------------------------
         function updateBatchOptFromGUI(obj, event)
             % UPDATEBATCHOPTFROMGUI - Sync BatchOpt from a widget change event.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.MorphOpsImages.updateBatchOptFromGUI: triggered\n');
+            end
             obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, event.Source);
             obj.triggerAutoPreview();
         end
@@ -269,6 +278,9 @@ classdef MorphOpsImages < handle
         % -----------------------------------------------------------
         function modeChanged(obj, event)
             % MODECHANGED - Handle Mode dropdown change.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.MorphOpsImages.modeChanged: triggered\n');
+            end
             obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, event.Source);
             obj.updateConnectivityList();
             obj.applyUIRules();
@@ -278,6 +290,9 @@ classdef MorphOpsImages < handle
         % -----------------------------------------------------------
         function morphOperationChanged(obj, event)
             % MORPHOPERATIONCHANGED - Handle MorphOperation dropdown change.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.MorphOpsImages.morphOperationChanged: triggered\n');
+            end
             obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, event.Source);
             obj.applyUIRules();
             obj.triggerAutoPreview();
@@ -286,6 +301,9 @@ classdef MorphOpsImages < handle
         % -----------------------------------------------------------
         function datasetTypeChanged(obj, event)
             % DATASETTYPECHANGED - Handle DatasetType change; force Mode=2D for slice-only scope.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.MorphOpsImages.datasetTypeChanged: triggered\n');
+            end
             obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, event.Source);
             if strcmp(obj.BatchOpt.DatasetType{1}, '2D, Slice')
                 obj.BatchOpt.Mode{1} = '2D';
@@ -299,6 +317,9 @@ classdef MorphOpsImages < handle
         % -----------------------------------------------------------
         function strelOrMultiplyChanged(obj, event)
             % STRELORCHANGED - Handle StrelSize text edit change.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.MorphOpsImages.strelOrMultiplyChanged: triggered\n');
+            end
             obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, event.Source);
             obj.triggerAutoPreview();
         end
@@ -306,6 +327,9 @@ classdef MorphOpsImages < handle
         % -----------------------------------------------------------
         function smoothHSizeChanged(obj, event)
             % SMOOTHHSIZECHANGED - Handle SmoothHSize change; auto-set SmoothSigma = size/5.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.MorphOpsImages.smoothHSizeChanged: triggered\n');
+            end
             obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, event.Source);
             newSigma = obj.BatchOpt.SmoothHSize{1} / 5;
             obj.BatchOpt.SmoothSigma{1} = newSigma;
@@ -316,6 +340,9 @@ classdef MorphOpsImages < handle
         % -----------------------------------------------------------
         function autoPreviewChanged(obj, event)
             % AUTOPREVIEWCHANGED - Handle autoPreview checkbox; fire preview if just checked.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.MorphOpsImages.autoPreviewChanged: triggered\n');
+            end
             if event.Source.Value
                 obj.previewButtonPushed();
             end
@@ -505,6 +532,9 @@ classdef MorphOpsImages < handle
         % -----------------------------------------------------------
         function previewButtonPushed(obj)
             % PREVIEWBUTTONPUSHED - Apply 2D operation to current view block and display.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.MorphOpsImages.previewButtonPushed: triggered\n');
+            end
             if isempty(obj.view) || ~isvalid(obj.view.gui); return; end
 
             getDataOptions.blockModeSwitch = 1;
@@ -537,6 +567,9 @@ classdef MorphOpsImages < handle
         function helpButton_Callback(obj)
             % HELPBUTTON_CALLBACK - Open documentation in browser.
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.MorphOpsImages.helpButton_Callback: triggered\n');
+            end
             helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'ribbon', 'image', 'image-morphops.html');
             if isfile(helpFilPath)
                 web(helpFilPath, '-browser');

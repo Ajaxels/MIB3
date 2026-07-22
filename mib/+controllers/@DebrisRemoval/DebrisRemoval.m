@@ -141,6 +141,9 @@ classdef DebrisRemoval < handle
         % ---------------------------------------------------------------
         function figureKeyPress(obj, event)
             % FIGUREKEYPRESS - Forward key presses to MIB main window shortcuts.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.DebrisRemoval.figureKeyPress: triggered\n');
+            end
             if isempty(event.Character); return; end
 
             eventData = struct();
@@ -152,6 +155,9 @@ classdef DebrisRemoval < handle
         % -----------------------------------------------------------
         function closeWindow(obj)
             % CLOSEWINDOW - Destroy view and fire CloseEvent.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.DebrisRemoval.closeWindow: triggered\n');
+            end
             if isvalid(obj.view.gui); delete(obj.view.gui); end
             for i = 1:numel(obj.listener); delete(obj.listener{i}); end
             notify(obj, 'CloseEvent');
@@ -167,12 +173,18 @@ classdef DebrisRemoval < handle
         % -----------------------------------------------------------
         function updateBatchOptFromGUI(obj, event)
             % UPDATEBATCHOPTFROMGUI - Sync BatchOpt from a widget change event.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.DebrisRemoval.updateBatchOptFromGUI: triggered\n');
+            end
             obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, event.Source);
         end
 
         % -----------------------------------------------------------
         function detectionModeSelectionChanged(obj, event)
             % DETECTIONMODESELECTIONCHANGED - Update BatchOpt and toggle mode-dependent widgets.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.DebrisRemoval.detectionModeSelectionChanged: triggered\n');
+            end
             obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, event.Source);
             if strcmp(event.Source.SelectedObject.Tag, 'AutomaticDetection')
                 obj.view.handles.ObjectSizeTheshold.Enable = 'on';
@@ -191,6 +203,9 @@ classdef DebrisRemoval < handle
         function helpButton_Callback(obj)
             % HELPBUTTON_CALLBACK - Open documentation in browser.
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.DebrisRemoval.helpButton_Callback: triggered\n');
+            end
             helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'ribbon', 'image', 'image-tools-debris.html');
             if isfile(helpFilPath)
                 web(helpFilPath, '-browser');
@@ -217,6 +232,9 @@ classdef DebrisRemoval < handle
             %   ``'Remove all'`` (default) processes the whole stack (slices 2..depth-1).
             % **batchModeSwitch** *(optional)* — ``true`` when called from batch processing;
             %   skips undo backup. Default: ``false``.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.DebrisRemoval.Calculate: triggered\n');
+            end
             if nargin < 2; mode = 'Remove all'; end
             if nargin < 3; batchModeSwitch = false; end
 

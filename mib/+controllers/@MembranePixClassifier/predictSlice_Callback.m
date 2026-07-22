@@ -5,6 +5,10 @@ arguments (Input)
     obj controllers.MembranePixClassifier
 end
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MembranePixClassifier.predictSlice_Callback: triggered\n');
+end
+
 obj.view.handles.predictSlice.BackgroundColor = [1 0 0];
 id = obj.mibModel.getActiveId();
 sliceNo = obj.mibModel.I{id}.slices{3}(1);

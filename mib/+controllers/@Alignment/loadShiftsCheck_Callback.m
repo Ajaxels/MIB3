@@ -15,6 +15,9 @@ function loadShiftsCheck_Callback(obj)
 % so a mismatch can be flagged. Disabling the checkbox clears the loaded
 % coefficients and the path.
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.Alignment.loadShiftsCheck_Callback: triggered\n');
+end
 h = obj.view.handles;
 if ~h.loadShiftsCheck.Value
     % Unchecking discards any previously loaded coefficients so a subsequent

@@ -15,6 +15,9 @@ function imgOut = applyFilter(obj, imgIn, maskIn)
 %   - **imgOut** — [numeric] filled image (preview mode only).
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.ContentAwareFill.applyFilter: triggered\n');
+end
 imgOut = [];
 
 if nargin > 1 && ~isempty(imgIn)

@@ -11,6 +11,9 @@ function img = Filter(obj, img, batchModeSwitch)
 %   - **img** — *(optional)* image to filter; when empty the filter reads/writes via MibModel
 %   - **batchModeSwitch** — *(optional)* ``1`` in batch mode (skips reading parameters from GUI)
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.ImageFilters.Filter: triggered\n');
+end
 if nargin < 3; batchModeSwitch = 0; end
 if nargin < 2; img = []; end
 

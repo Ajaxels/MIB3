@@ -5,6 +5,10 @@ arguments (Input)
     obj controllers.MembranePixClassifier
 end
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MembranePixClassifier.trainClassifierBtn_Callback: triggered\n');
+end
+
 obj.view.handles.trainClassifierBtn.BackgroundColor = [1.00,0.53,0.10];
 switch obj.BatchOpt.Mode{1}
     case 'trainClassifier'; obj.trainClassifier();

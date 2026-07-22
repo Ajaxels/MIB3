@@ -134,6 +134,9 @@ classdef WhiteBalance < handle
         % -----------------------------------------------------------
         function closeWindow(obj)
             % CLOSEWINDOW - Destroy view and fire CloseEvent.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.WhiteBalance.closeWindow: triggered\n');
+            end
             if isvalid(obj.view.gui); delete(obj.view.gui); end
             for i = 1:numel(obj.listener); delete(obj.listener{i}); end
             notify(obj, 'CloseEvent');
@@ -142,6 +145,9 @@ classdef WhiteBalance < handle
         % ---------------------------------------------------------------
         function figureKeyPress(obj, event)
             % FIGUREKEYPRESS - Forward key presses to MIB main window shortcuts.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.WhiteBalance.figureKeyPress: triggered\n');
+            end
             if isempty(event.Character); return; end
 
             eventData = struct();
@@ -160,12 +166,18 @@ classdef WhiteBalance < handle
         % -----------------------------------------------------------
         function updateBatchOptFromGUI(obj, event)
             % UPDATEBATCHOPTFROMGUI - Sync BatchOpt from a widget change event.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.WhiteBalance.updateBatchOptFromGUI: triggered\n');
+            end
             obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, event.Source);
         end
 
         % -----------------------------------------------------------
         function manualWhiteColorValueChanged(obj, event)
             % MANUALWHITECOLORVALUECHANGED - Validate that ManualWhiteColor contains 3 numeric values.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.WhiteBalance.manualWhiteColorValueChanged: triggered\n');
+            end
             value = obj.view.handles.ManualWhiteColor.Value;
             parsedValues = str2num(value); %#ok<ST2NM>
             if numel(parsedValues) ~= 3
@@ -181,6 +193,9 @@ classdef WhiteBalance < handle
         % -----------------------------------------------------------
         function pickedRegionSelectionChanged(obj, event)
             % PICKEDREGIONSELECTIONCHANGED - Update BatchOpt and toggle ManualWhiteColor enable state.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.WhiteBalance.pickedRegionSelectionChanged: triggered\n');
+            end
             obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, event.Source);
             if strcmp(event.Source.SelectedObject.Tag, 'ManualValue')
                 obj.view.handles.ManualWhiteColor.Enable = 'on';
@@ -192,6 +207,9 @@ classdef WhiteBalance < handle
         % -----------------------------------------------------------
         function helpButton_Callback(obj)
             % HELPBUTTON_CALLBACK - Open documentation in browser.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.WhiteBalance.helpButton_Callback: triggered\n');
+            end
             helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'ribbon', 'image', 'image-tools-whitebalance.html');
             if isfile(helpFilPath)
                 web(helpFilPath, '-browser');
@@ -212,6 +230,9 @@ classdef WhiteBalance < handle
         function detectWhiteFromLayer(obj)
             % DETECTWHITEFROMLAYER - Sample mean RGB from current mask/selection layer
             % and populate ManualWhiteColor; switch PickedRegion to ManualValue.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.WhiteBalance.detectWhiteFromLayer: triggered\n');
+            end
             id = obj.BatchOpt.id;
             dataset = obj.mibModel.I{id};
 
@@ -256,6 +277,9 @@ classdef WhiteBalance < handle
             %   ``'Correct all'`` (default) processes the whole stack.
             % **batchModeSwitch** *(optional)* — ``true`` when called from batch processing;
             %   skips undo backup. Default: ``false``.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.WhiteBalance.correctWhiteBalance: triggered\n');
+            end
             if nargin < 2; mode = 'Correct all'; end
             if nargin < 3; batchModeSwitch = false; end
 

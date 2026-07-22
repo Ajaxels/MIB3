@@ -34,6 +34,9 @@ function fileLoopAction_Callback(obj, BatchOptInput)
 %     obj.fileLoopAction_Callback(BatchOpt); // apply saved settings
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.BatchProcessing.fileLoopAction_Callback: triggered\n');
+end
 BatchOpt.DirectoryName = {'Current MIB path'};   % specify the target directory
 BatchOpt.DirectoryName{2} = {'Current MIB path', 'Inherit from Directory loop', obj.mibModel.currentDirectory};
 BatchOpt.FilenameFilter = '*.*';   % use the filename filter to select files

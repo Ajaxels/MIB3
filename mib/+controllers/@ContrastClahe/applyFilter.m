@@ -16,6 +16,9 @@ function imgOut = applyFilter(obj, imgIn)
 %   - **imgOut** — [numeric] filtered image (only populated in preview mode).
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.ContrastClahe.applyFilter: triggered\n');
+end
 imgOut = [];
 
 if nargin > 1 && ~isempty(imgIn)

@@ -26,6 +26,10 @@ function previewFeaturesBtn_Callback(obj)
 % Updates
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.Alignment.previewFeaturesBtn_Callback: triggered\n');
+end
+
 % Parent figure for any dialogs — ``obj.view`` is empty in batch mode
 if ~isempty(obj.view) && isvalid(obj.view) && isvalid(obj.view.gui)
     parentFig = obj.view.gui;

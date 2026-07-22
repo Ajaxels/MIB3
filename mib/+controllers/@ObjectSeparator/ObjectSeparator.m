@@ -239,6 +239,9 @@ classdef ObjectSeparator < handle
         % -----------------------------------------------------------
         function figureKeyPress(obj, event)
             % FIGUREKEYPRESS - Forward key presses to the MIB main window shortcuts.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ObjectSeparator.figureKeyPress: triggered\n');
+            end
             if isempty(event.Character); return; end
             eventData = struct();
             eventData.eventdata = event;
@@ -249,6 +252,9 @@ classdef ObjectSeparator < handle
         % -----------------------------------------------------------
         function closeWindow(obj)
             % CLOSEWINDOW - Destroy view, delete listeners, fire CloseEvent.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ObjectSeparator.closeWindow: triggered\n');
+            end
             if ~isempty(obj.view) && isvalid(obj.view.gui); delete(obj.view.gui); end
             for i = 1:numel(obj.listener); delete(obj.listener{i}); end
             notify(obj, 'CloseEvent');
@@ -265,6 +271,9 @@ classdef ObjectSeparator < handle
         % -----------------------------------------------------------
         function updateBatchOptFromGUI(obj, hObject)
             % UPDATEBATCHOPTFROMGUI - Sync a single widget change into BatchOpt.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ObjectSeparator.updateBatchOptFromGUI: triggered\n');
+            end
             obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, hObject);
         end
 
@@ -363,6 +372,9 @@ classdef ObjectSeparator < handle
         % -----------------------------------------------------------
         function updateMaterialsBtn_Callback(obj)
             % UPDATEMATERIALSBTN_CALLBACK - Repopulate material dropdowns from the current model.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ObjectSeparator.updateMaterialsBtn_Callback: triggered\n');
+            end
             id            = obj.BatchOpt.id;
             materialNames = obj.mibModel.I{id}.labels.materialNames;
             modelExists   = obj.mibModel.I{id}.modelExist;
@@ -404,24 +416,36 @@ classdef ObjectSeparator < handle
         % -----------------------------------------------------------
         function modeButtonGroup_Callback(obj, event)
             % MODEBUTTONGROUP_CALLBACK - Sync mode button group selection into BatchOpt.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ObjectSeparator.modeButtonGroup_Callback: triggered\n');
+            end
             obj.BatchOpt.Mode{1} = event.NewValue.Tag;
         end
 
         % -----------------------------------------------------------
         function objectSourcePanel_Callback(obj, event)
             % OBJECTSOURCEPANEL_CALLBACK - Sync object-source button group into BatchOpt.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ObjectSeparator.objectSourcePanel_Callback: triggered\n');
+            end
             obj.BatchOpt.ObjectSource{1} = event.NewValue.Tag;
         end
 
         % -----------------------------------------------------------
         function seedSourcePanel_Callback(obj, event)
             % SEEDSOURCEPANEL_CALLBACK - Sync seed-source button group into BatchOpt.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ObjectSeparator.seedSourcePanel_Callback: triggered\n');
+            end
             obj.BatchOpt.SeedSource{1} = event.NewValue.Tag;
         end
 
         % -----------------------------------------------------------
         function watershedSourceChanged_Callback(obj, event)
             % WATERSHEDSOURCECHANGED_CALLBACK - Toggle intensity-widget visibility.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ObjectSeparator.watershedSourceChanged_Callback: triggered\n');
+            end
             obj.BatchOpt.WatershedSource{1} = event.NewValue.Tag;
             intensityVisibility = 'off';
             if strcmp(obj.BatchOpt.WatershedSource{1}, 'Intensity'); intensityVisibility = 'on'; end
@@ -434,6 +458,9 @@ classdef ObjectSeparator < handle
         % -----------------------------------------------------------
         function useSeedsCheck_Callback(obj)
             % USESEEDSCHECK_CALLBACK - Toggle seeds panel vs reduce-oversegmentation checkbox.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ObjectSeparator.useSeedsCheck_Callback: triggered\n');
+            end
             obj.BatchOpt.UseSeeds = obj.view.handles.UseSeeds.Value;
             obj.view.handles.seedsPanel.Visible             = obj.BatchOpt.UseSeeds;
             obj.view.handles.watershedSourcePanel.Visible   = obj.BatchOpt.UseSeeds;
@@ -443,6 +470,9 @@ classdef ObjectSeparator < handle
         % -----------------------------------------------------------
         function aspectRatio_Callback(obj)
             % ASPECTRATIO_CALLBACK - Validate the aspect ratio text field.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ObjectSeparator.aspectRatio_Callback: triggered\n');
+            end
             textValue    = obj.view.handles.AspectRatio.Value;
             ratioValues  = str2num(textValue); %#ok<ST2NM>
             if isempty(ratioValues) || numel(ratioValues) ~= 3 || min(ratioValues) <= 0
@@ -462,6 +492,9 @@ classdef ObjectSeparator < handle
         % -----------------------------------------------------------
         function checkDimensions(obj, hObject)
             % CHECKDIMENSIONS - Validate a subarea text field (XSubarea, YSubarea, ZSubarea).
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ObjectSeparator.checkDimensions: triggered\n');
+            end
             textValue  = hObject.Value;
             typedValue = str2num(textValue); %#ok<ST2NM>
             id = obj.BatchOpt.id;
@@ -485,6 +518,9 @@ classdef ObjectSeparator < handle
         % -----------------------------------------------------------
         function validateBinning(obj)
             % VALIDATEBINNING - Validate and normalise the Binning text field.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ObjectSeparator.validateBinning: triggered\n');
+            end
             textValue = obj.view.handles.Binning.Value;
             binValues = str2num(textValue); %#ok<ST2NM>
             if isempty(binValues) || numel(binValues) < 2 || isnan(binValues(1)) || min(binValues) <= 0.5
@@ -500,6 +536,9 @@ classdef ObjectSeparator < handle
         % -----------------------------------------------------------
         function resetDimsBtn_Callback(obj)
             % RESETDIMSBTN_CALLBACK - Reset subarea fields to the full dataset extent.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ObjectSeparator.resetDimsBtn_Callback: triggered\n');
+            end
             id = obj.BatchOpt.id;
             [height, width, depth] = obj.mibModel.I{id}.getDatasetDimensions('selection', 3);
             newX = sprintf('1:%d', width);
@@ -518,6 +557,9 @@ classdef ObjectSeparator < handle
         % -----------------------------------------------------------
         function currentViewBtn_Callback(obj)
             % CURRENTVIEWBTN_CALLBACK - Set X/Y subarea from the currently visible viewport.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ObjectSeparator.currentViewBtn_Callback: triggered\n');
+            end
             id = obj.BatchOpt.id;
             [yMin, yMax, xMin, xMax] = obj.mibModel.I{id}.getCoordinatesOfShownImage();
             newX = sprintf('%d:%d', xMin, xMax);
@@ -531,6 +573,9 @@ classdef ObjectSeparator < handle
         % -----------------------------------------------------------
         function subAreaFromSelectionBtn_Callback(obj)
             % SUBAREAFROMESELECTIONBTN_CALLBACK - Derive subarea bounds from the selection bounding box.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ObjectSeparator.subAreaFromSelectionBtn_Callback: triggered\n');
+            end
             id = obj.BatchOpt.id;
             originalColor = obj.view.handles.subAreaFromSelectionBtn.BackgroundColor;
             obj.view.handles.subAreaFromSelectionBtn.BackgroundColor = [1 0 0];
@@ -586,6 +631,9 @@ classdef ObjectSeparator < handle
         function helpButton_Callback(obj)
             % HELPBUTTON_CALLBACK - Open the object separation documentation page.
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ObjectSeparator.helpButton_Callback: triggered\n');
+            end
             helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'ribbon', 'tools', 'tools-objectsep.html');
             if isfile(helpFilPath)
                 web(helpFilPath, '-browser');

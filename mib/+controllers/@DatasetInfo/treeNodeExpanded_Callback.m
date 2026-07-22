@@ -12,6 +12,9 @@ function treeNodeExpanded_Callback(obj, ~, event)
 % the active dataset metadata.  After populating, the node is kept expanded
 % and the flat search index is refreshed.
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.DatasetInfo.treeNodeExpanded_Callback: triggered\n');
+end
 node = event.Node;
 nodeData = node.NodeData;
 

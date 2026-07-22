@@ -136,6 +136,9 @@ classdef About < handle
 
         function closeWindow(obj)
         % CLOSEWINDOW - Close the About dialog and fire CloseEvent.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.About.closeWindow: triggered\n');
+            end
             if isvalid(obj.view.gui); delete(obj.view.gui); end
             notify(obj, 'CloseEvent');
         end

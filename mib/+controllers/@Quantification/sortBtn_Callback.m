@@ -32,6 +32,9 @@ function data = sortBtn_Callback(obj, data)
 % Updates
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.Quantification.sortBtn_Callback: triggered\n');
+end
 if nargin < 2; data = obj.view.handles.statTable.Data; end
 if iscell(data); return; end    % nothing to sort
 

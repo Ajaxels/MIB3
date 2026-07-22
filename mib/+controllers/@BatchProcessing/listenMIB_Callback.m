@@ -12,6 +12,9 @@ function listenMIB_Callback(obj)
 %     obj.listenMIB_Callback();
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.BatchProcessing.listenMIB_Callback: triggered\n');
+end
 if obj.view.handles.listenMIB.Value == true
     obj.listener{2}.Enabled = true;
 else

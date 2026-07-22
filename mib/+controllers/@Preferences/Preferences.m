@@ -125,6 +125,9 @@ classdef Preferences < handle
             %   .. code-block:: matlab
             %
             %      obj.closeWindow();
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Preferences.closeWindow: triggered\n');
+            end
             if isvalid(obj.view.gui)
                 delete(obj.view.gui);   % delete childController window
             end
@@ -415,6 +418,9 @@ classdef Preferences < handle
         end
         
         function helpBtnCallback(obj)
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Preferences.helpBtnCallback: triggered\n');
+            end
             if isempty(obj.view.handles.CategoriesTree.SelectedNodes)
 
             else
@@ -460,6 +466,9 @@ classdef Preferences < handle
             %
             %      status = obj.ApplyButtonPushedCallback();
             
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Preferences.ApplyButtonPushedCallback: triggered\n');
+            end
             status = 0;
             activeDataset = obj.mibModel.I{obj.mibModel.id};
             systemPrefs = obj.preferences.System;
@@ -587,6 +596,9 @@ classdef Preferences < handle
             %
             %      obj.OKButtonPushedCallback();
             
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Preferences.OKButtonPushedCallback: triggered\n');
+            end
             status = obj.ApplyButtonPushedCallback();
             if status == 0; return; end
 
@@ -648,6 +660,9 @@ classdef Preferences < handle
             % Input Arguments:
             %   - **event** — [struct] event data from the GUI element that triggered callback
             
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Preferences.ColorPanelCallbacks: triggered\n');
+            end
             switch event.Source.Tag
                 case 'SelectionColorButton'    % update selection color
                     sel_color = obj.preferences.Colors.SelectionColor;
@@ -749,6 +764,9 @@ classdef Preferences < handle
             % Input Arguments:
             %   - **event** — [struct] event data from the GUI element that triggered callback
             
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Preferences.KeyboardShortcutsPanelCallbacks: triggered\n');
+            end
             switch event.Source.Tag
                 case 'ResetKeyShortcutsButton'
                     selection = uiconfirm(obj.view.gui, ...
@@ -774,6 +792,9 @@ classdef Preferences < handle
             %   - **event** — [struct] event data from the GUI element that triggered callback
             %
         
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Preferences.InputOutputPanelCallbacks: triggered\n');
+            end
             switch event.Source.Tag
                 case 'ZarrLibrary'
                     obj.preferences.IO.Zarr.Library = obj.view.handles.ZarrLibrary.Value;
@@ -839,6 +860,9 @@ classdef Preferences < handle
             %   - **event** — [struct] event data from the GUI element that triggered callback
             %
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Preferences.ExternalDirectoriesPanelCallbacks: triggered\n');
+            end
             switch event.Source.Tag
                 case 'PythonExecutionMode'
                     % execution mode for pyenv used by SAM/SAM2 (and other Python
@@ -862,6 +886,9 @@ classdef Preferences < handle
             %   - **event** — [struct] event data from the GUI element that triggered callback
             %
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Preferences.SegmentationPanelCallbacks: triggered\n');
+            end
             switch event.Source.Tag
                 case 'annotationFontSize'
                     obj.preferences.SegmTools.Annotations.FontSize = find(ismember(obj.view.handles.annotationFontSize.Items, obj.view.handles.annotationFontSize.Value));
@@ -892,6 +919,9 @@ classdef Preferences < handle
             %   - **event** — [struct] event data from the GUI element that triggered callback
             %
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Preferences.BackupAndUndoPanelCallbacks: triggered\n');
+            end
             switch event.Source.Tag
                 case 'EnableUndo'
                     obj.preferences.Undo.Enable = obj.view.handles.EnableUndo.Value;
@@ -925,6 +955,9 @@ classdef Preferences < handle
             %   - **event** — [struct] event data from the GUI element that triggered callback
             %
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Preferences.UserInterfacePanelCallbacks: triggered\n');
+            end
             switch event.Source.Tag
                 case 'MouseWheelActionDropDown'
                     if strcmp(obj.view.handles.MouseWheelActionDropDown.Value, 'Zoom In/Out')
@@ -1140,6 +1173,9 @@ classdef Preferences < handle
             % Input Arguments:
             %   - **event** — [struct] event data from the table cell selection
             
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Preferences.TableCellSelectionCallback: triggered\n');
+            end
             indices = event.Indices;
             if isempty(indices); return; end
             
@@ -1181,6 +1217,9 @@ classdef Preferences < handle
             % Paramters:
             % event:  a handle to the event structure
             
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Preferences.ModelsColorsTableContextMenuCallbacks: triggered\n');
+            end
             position = obj.view.handles.ModelsColorsTable.UserData;   % position = [rowIndex, columnIndex]
             sourceTag = event.Source.Tag;     % get tag to the pressed table
             
@@ -1315,6 +1354,9 @@ classdef Preferences < handle
             %
             % Parameters:
             % event:  a handle to the event structure
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Preferences.TableCellEditCallback: triggered\n');
+            end
             indices = event.Indices;
             newData = event.NewData;
             

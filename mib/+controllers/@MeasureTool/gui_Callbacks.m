@@ -18,6 +18,9 @@ datasetId = obj.mibModel.getActiveId();
 hMeasure  = obj.mibModel.I{datasetId}.measure;
 hHandles = obj.view.handles;
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MeasureTool.gui_Callbacks/%s: triggered\n', source.Tag);
+end
 switch source.Tag
     case 'addBtn'
         obj.addMeasurement();

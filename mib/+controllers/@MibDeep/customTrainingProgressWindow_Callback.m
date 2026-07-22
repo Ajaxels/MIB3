@@ -8,6 +8,9 @@ function customTrainingProgressWindow_Callback(obj, event)
 %
 % obj.view.handles.O_CustomTrainingProgressWindow checkbox
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibDeep.customTrainingProgressWindow_Callback: triggered\n');
+end
     if obj.view.handles.O_CustomTrainingProgressWindow.Value
         obj.view.handles.O_RefreshRateIter.Enable = 'on';
         obj.view.handles.O_NumberOfPoints.Enable = 'on';

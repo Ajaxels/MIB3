@@ -13,6 +13,9 @@ function subwindowEdit_Callback(obj, hObject)
 % Coerces out-of-range values back into ``[1, width]`` / ``[1, height]`` and
 % reports the correction via :func:`utils.dlgs.showErrorDialog`.
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.Alignment.subwindowEdit_Callback: triggered\n');
+end
 if nargin < 2; hObject = []; end
 
 id = obj.mibModel.getActiveId();

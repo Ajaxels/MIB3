@@ -5,6 +5,10 @@ arguments (Input)
     obj controllers.MembranePixClassifier
 end
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MembranePixClassifier.wipeTempDirBtn_Callback: triggered\n');
+end
+
 if exist(obj.dirOut, 'dir') == 0; return; end
 
 button = utils.dlgs.inputQuestDlg(obj.view.gui, ...

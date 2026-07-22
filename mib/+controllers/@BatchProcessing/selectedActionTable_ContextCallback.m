@@ -35,6 +35,9 @@ function selectedActionTable_ContextCallback(obj, parameter)
 %     obj.selectedActionTable_ContextCallback('Set second column width');
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.BatchProcessing.selectedActionTable_ContextCallback: triggered\n');
+end
 if obj.selectedActionTableIndex == 0; return; end
 if isempty(obj.CurrentBatch); return; end
 

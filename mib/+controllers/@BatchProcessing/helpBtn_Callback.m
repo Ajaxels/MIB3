@@ -12,6 +12,9 @@ function helpBtn_Callback(obj)
 %     obj.helpBtn_Callback();
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.BatchProcessing.helpBtn_Callback: triggered\n');
+end
 helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'ribbon', 'home', 'home-batchprocessing.html');
 if isfile(helpFilPath)
     web(helpFilPath, '-browser');

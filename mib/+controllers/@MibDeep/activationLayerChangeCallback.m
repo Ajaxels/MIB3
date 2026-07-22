@@ -7,6 +7,9 @@ function activationLayerChangeCallback(obj)
 %       obj.activationLayerChangeCallback()
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibDeep.activationLayerChangeCallback: triggered\n');
+end
     switch obj.view.handles.T_ActivationLayer.Value
         case {'leakyReluLayer', 'clippedReluLayer', 'eluLayer'}
             obj.view.handles.T_ActivationLayerSettings.Enable = 'on';

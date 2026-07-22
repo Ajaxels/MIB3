@@ -220,6 +220,9 @@ classdef ImageArithmetics < handle
             % Output Arguments:
             %   (none)
             %
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ImageArithmetics.closeWindow: triggered\n');
+            end
             if ~isempty(obj.view) && isvalid(obj.view.gui)
                 delete(obj.view.gui);
             end
@@ -267,6 +270,9 @@ classdef ImageArithmetics < handle
             % Output Arguments:
             %   (none)
             %
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ImageArithmetics.updateBatchOptFromGUI: triggered\n');
+            end
             obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, hObject);
         end
 
@@ -303,6 +309,9 @@ classdef ImageArithmetics < handle
             % Output Arguments:
             %   (none)
             %
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ImageArithmetics.Expression_ValueChangedFcn: triggered\n');
+            end
             obj.BatchOpt.Expression = strjoin(hObject.Value, newline);
         end
 
@@ -322,6 +331,9 @@ classdef ImageArithmetics < handle
             % Output Arguments:
             %   (none)
             %
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ImageArithmetics.prevExpPopup_Callback: triggered\n');
+            end
             displayItems = obj.view.handles.prevExpPopup.Items;
             displayValue = obj.view.handles.prevExpPopup.Value;
             idx = find(strcmp(displayItems, displayValue), 1);
@@ -347,6 +359,9 @@ classdef ImageArithmetics < handle
             %   (none)
             %
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ImageArithmetics.helpBtn_Callback: triggered\n');
+            end
             helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'ribbon', 'image', 'image-tools-arithmetic.html');
             if isfile(helpFilPath)
                 web(helpFilPath, '-browser');
@@ -380,6 +395,9 @@ classdef ImageArithmetics < handle
             %
             % Set up progress bar (works in both GUI and headless mode)
             
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ImageArithmetics.runExpressionBtn_Callback: triggered\n');
+            end
             if isempty(obj.view)   % headless batch mode
                 parentFigure = obj.mibModel.mibGUI;
             else

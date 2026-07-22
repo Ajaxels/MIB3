@@ -12,6 +12,9 @@ function Calculate(obj, batchModeSwitch)
 %     and ``returnBatchOpt`` call (default ``false``)
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MorphOpsImages.Calculate: triggered\n');
+end
 if nargin < 2; batchModeSwitch = false; end
 
 id = obj.BatchOpt.id;

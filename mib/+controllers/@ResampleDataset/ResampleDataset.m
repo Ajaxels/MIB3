@@ -181,6 +181,9 @@ classdef ResampleDataset < handle
             %
             %       obj.closeWindow()
             %
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ResampleDataset.closeWindow: triggered\n');
+            end
             if ~isempty(obj.view) && isvalid(obj.view.gui)
                 delete(obj.view.gui);
             end
@@ -212,6 +215,9 @@ classdef ResampleDataset < handle
             %
             %       obj.updateBatchOptFromGUI(hObject)
             %
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ResampleDataset.updateBatchOptFromGUI: triggered\n');
+            end
             obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, hObject);
         end
 
@@ -344,6 +350,9 @@ classdef ResampleDataset < handle
             % Input Arguments:
             %   - **hObject** — event.NewValue — the newly selected radio button
             %
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ResampleDataset.radio_Callback: triggered\n');
+            end
             obj.BatchOpt.ResamplingMode{1} = hObject.Tag;
             obj.updateEditboxStates(hObject.Tag);
             switch hObject.Tag
@@ -368,6 +377,9 @@ classdef ResampleDataset < handle
             %
             %       obj.helpBtn_Callback()
             %
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ResampleDataset.helpBtn_Callback: triggered\n');
+            end
             helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'ribbon', 'dataset', 'dataset-resample.html');
             if isfile(helpFilPath)
                 web(helpFilPath, '-browser');
@@ -389,6 +401,9 @@ classdef ResampleDataset < handle
             % Input Arguments:
             %   - **hObject** — the NumericEditField that changed
             %
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ResampleDataset.editbox_Callback: triggered\n');
+            end
             id = obj.mibModel.getActiveId();
             pixSize = obj.mibModel.I{id}.image.pixSize;
             h = obj.view.handles;
@@ -490,6 +505,9 @@ classdef ResampleDataset < handle
             %   - **batchModeSwitch** — *(optional)* logical; true when called headlessly
             %
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.ResampleDataset.resampleBtn_Callback: triggered\n');
+            end
             if nargin < 2; batchModeSwitch = false; end
             id = obj.mibModel.getActiveId();
             

@@ -5,6 +5,10 @@ arguments (Input)
     obj controllers.MembranePixClassifier
 end
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MembranePixClassifier.tempDirEdit_Callback: triggered\n');
+end
+
 dirPath = obj.view.handles.TempDir.Value;
 if ~isfolder(dirPath)
     mkdir(dirPath);

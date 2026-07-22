@@ -21,6 +21,9 @@ function pairViewButtonDown(obj, evnt)
 %     (``IntersectionPoint`` in pairAxes data coordinates)
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.StitchingInspector.pairViewButtonDown: triggered\n');
+end
 if ~obj.dataValid() || isempty(obj.currentEdgeIdx); return; end
 
 startPoint = evnt.IntersectionPoint(1:2);   % [x y] in axes data coords

@@ -132,6 +132,7 @@ if false
     views.Lines3dDialog;
     views.MakeMovieGUI;
     views.MeasureToolGUI;
+    views.MembranePixClassifierGUI;
     views.MibDeepActivationsGUI;
     views.MibDeepAugmentSettingsGUI;
     views.MibDeepGUI;
@@ -150,7 +151,9 @@ if false
     views.SnapshotGUI;
     views.StereologyGUI;
     views.StitchingGUI;
+    views.StitchingInspectorGUI;
     views.TipsAppGUI;
+    views.UpdateCheckGUI;
     views.VolRenAppGUI;
     views.VolRenAppViewerGUI;
     views.WhiteBalanceGUI;
