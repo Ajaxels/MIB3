@@ -68,13 +68,28 @@ differenceSelection = obj.mibModel.differenceSelection;
 strelSize  = obj.handles.strel.Value;
 
 %% Decide ErodeMode; confirm 3D with the user
+% For a large anisotropic 3D element the accurate ellipsoid is slow, so the
+% confirmation and the fast-vs-accurate method choice are merged into a single
+% dialog (otherwise the model would raise a second dialog). The resulting
+% choice is passed on through BatchOpt.AnisotropicMethod.
+anisotropicMethod = {'Accurate (slow)'};
 if applySegmentationIn3D
-    button = utils.dlgs.inputQuestDlg(obj.mibModel.getProgressBarParent(), ...
-        sprintf('You are going to erode the image in 3D!\nContinue?'), ...
-        'Erode 3D objects', 'Continue', 'Cancel', 'Continue');
-    if ~strcmp(button, 'Continue'); return; end
     ErodeMode = '3D';
     if strcmp(DatasetType, '2D, Slice'); DatasetType = '3D, Stack'; end
+
+    pixSize = obj.mibModel.I{obj.mibModel.id}.image.pixSize;
+    se_size = utils.parseStrelSize(strelSize, true, pixSize.x, pixSize.z);
+    largeAnisotropic = (max(se_size) > 5) && (se_size(1) ~= se_size(2));   % threshold matches erodeImage
+    if largeAnisotropic
+        method = utils.morphAnisotropicMethod(obj.mibModel, 0, '', 'erosion');
+        if strcmp(method, 'cancel'); return; end
+        if strcmp(method, 'fast'); anisotropicMethod = {'Fast (bwdist)'}; end
+    else
+        button = utils.dlgs.inputQuestDlg(obj.mibModel.getProgressBarParent(), ...
+            sprintf('You are going to erode the image in 3D!\nContinue?'), ...
+            'Erode 3D objects', 'Continue', 'Cancel', 'Continue');
+        if ~strcmp(button, 'Continue'); return; end
+    end
 else
     ErodeMode = '2D';
 end
@@ -85,6 +100,7 @@ BatchOpt.DatasetType = {DatasetType};
 BatchOpt.ErodeMode   = {ErodeMode};
 BatchOpt.Difference  = logical(differenceSelection);
 BatchOpt.StrelSize   = strelSize;
+BatchOpt.AnisotropicMethod = anisotropicMethod;
 
 obj.mibModel.erodeImage(BatchOpt);
 end

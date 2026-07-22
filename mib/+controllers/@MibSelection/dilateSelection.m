@@ -77,13 +77,27 @@ end
 restrictMask = logical(dataset.restrictSelectionToMask);
 
 %% Decide DilateMode; confirm 3D with the user
+% For a large anisotropic 3D element the accurate ellipsoid is slow, so the
+% confirmation and the fast-vs-accurate method choice are merged into a single
+% dialog (otherwise the model would raise a second dialog). The resulting
+% choice is passed on through BatchOpt.AnisotropicMethod.
+anisotropicMethod = {'Accurate (slow)'};
 if applySegmentationIn3D
-    button = utils.dlgs.inputQuestDlg(obj.mibModel.getProgressBarParent(), ...
-        sprintf('You are going to dilate the image in 3D!\nContinue?'), ...
-        'Dilate 3D objects', 'Continue', 'Cancel', 'Continue');
-    if ~strcmp(button, 'Continue'); return; end
     DilateMode = '3D';
     if strcmp(DatasetType, '2D, Slice'); DatasetType = '3D, Stack'; end
+
+    se_size = utils.parseStrelSize(strelSize, true, dataset.image.pixSize.x, dataset.image.pixSize.z);
+    largeAnisotropic = (max(se_size) > 5) && (se_size(1) ~= se_size(2));   % threshold matches dilateImage
+    if largeAnisotropic
+        method = utils.morphAnisotropicMethod(obj.mibModel, 0, '', 'dilation');
+        if strcmp(method, 'cancel'); return; end
+        if strcmp(method, 'fast'); anisotropicMethod = {'Fast (bwdist)'}; end
+    else
+        button = utils.dlgs.inputQuestDlg(obj.mibModel.getProgressBarParent(), ...
+            sprintf('You are going to dilate the image in 3D!\nContinue?'), ...
+            'Dilate 3D objects', 'Continue', 'Cancel', 'Continue');
+        if ~strcmp(button, 'Continue'); return; end
+    end
 else
     DilateMode = '2D';
 end
@@ -94,6 +108,7 @@ BatchOpt.DatasetType = {DatasetType};
 BatchOpt.DilateMode  = {DilateMode};
 BatchOpt.Difference  = logical(differenceSelection);
 BatchOpt.StrelSize   = strelSize;
+BatchOpt.AnisotropicMethod = anisotropicMethod;
 BatchOpt.restrictSelectionToMaterial = restrictMaterial;
 BatchOpt.restrictSelectionToMask     = restrictMask;
 

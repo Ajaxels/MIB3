@@ -127,6 +127,15 @@ with the size set in the <span class="widget widget-edit">Strel</span> edit box.
     - Check <span class="widget widget-checkbox">Difference</span> to get the difference between 
     the current and eroded selections.
 
+??? info "How erosion is computed"
+
+    - **Small sizes** use MATLAB's [imerode](https://se.mathworks.com/help/releases/R2024b/images/ref/imerode.html) with a disk (2D) or ball (3D) element.
+    - **Large sizes** (radius above ~5 px) automatically switch to a distance-transform method. It gives an identical result for round elements but runs in near-constant time regardless of size, avoiding the extreme slowdown of very large elements.
+    - **3D on non-cubic voxels:** a dialog lets you choose:
+        - **Accurate** — a true ellipsoid matched to the voxel proportions (physically round), but slower for large sizes.
+        - **Fast** — treats the element as a sphere; almost identical when voxels are close to cubic, but shrinks too much along Z when they are strongly anisotropic.
+    - **Tip:** for accurate results with large sizes, several smaller steps usually work better than a single large one.
+
 ---
 
 ## The <span class="widget widget-button">Dilate</span> button
@@ -152,6 +161,15 @@ by the <span class="widget widget-edit">Adapt.</span> edit box (mean ± standard
     - Enable <span class="widget widget-checkbox">3D</span> for 3D dilation. 
     - Check <span class="widget widget-checkbox">Difference</span> to get the difference between the 
     current and dilated selections.
+
+??? info "How dilation is computed"
+
+    - **Small sizes** use MATLAB's [imdilate](https://se.mathworks.com/help/releases/R2024b/images/ref/imdilate.html) with a disk (2D) or ball (3D) element.
+    - **Large sizes** (radius above ~5 px) automatically switch to a distance-transform method. It gives an identical result for round elements but runs in near-constant time regardless of size, avoiding the extreme slowdown of very large elements.
+    - **3D on non-cubic voxels:** a dialog lets you choose:
+        - **Accurate** — a true ellipsoid matched to the voxel proportions (physically round), but slower for large sizes.
+        - **Fast** — treats the element as a sphere; almost identical when voxels are close to cubic, but stretches along Z when they are strongly anisotropic.
+    - **Tip:** for accurate results with large sizes, several smaller steps usually work better than a single large one.
 
 
 ---
