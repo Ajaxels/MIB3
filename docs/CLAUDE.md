@@ -16,7 +16,8 @@ docs/
     assets/            — images and SVG icons
     index.md           — home page
     ...                — content pages, grouped by nav section
-  site/                — built output (do NOT edit; regenerate with zensical build)
+  html/                — built output (set by `site_dir` in zensical.toml;
+                         do NOT edit; regenerate with zensical build)
 ```
 
 ---
@@ -26,7 +27,7 @@ docs/
 ```bash
 zensical serve        # live-reload preview at localhost:8000
 zensical serve -o     # same, opens browser automatically
-zensical build        # generate static site into docs/site/
+zensical build        # generate static site into docs/html/
 ```
 
 ---

@@ -174,7 +174,7 @@ classdef DebrisRemoval < handle
         function updateBatchOptFromGUI(obj, event)
             % UPDATEBATCHOPTFROMGUI - Sync BatchOpt from a widget change event.
             if obj.mibModel.preferences.System.DeveloperMode
-                fprintf('controllers.DebrisRemoval.updateBatchOptFromGUI: triggered\n');
+                fprintf('controllers.DebrisRemoval.updateBatchOptFromGUI(%s): triggered\n', event.Source.Tag);
             end
             obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, event.Source);
         end

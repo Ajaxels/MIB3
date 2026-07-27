@@ -55,7 +55,7 @@ tic
 % ATTENTION! it is important to have the version number between "ver." and "/" 
 % Release syntax example: "ver. 2025.11 / 04.11.2025"
 % Beta syntax example: "ver. 2025.11 (beta 4) / 04.11.2025"
-mibVersion = 'ver. 2026.0721 / 21.07.2025 (preview)';  
+mibVersion = 'ver. 2026.0727 / 27.07.2025 (preview)';  
 
 % MAKE SURE THAT cpuParallelLimitMax DOES NOT EXCEED NUMBER OF CPUs
 % WHEN COMPILING
@@ -97,7 +97,7 @@ else
     addpath(fullfile(func_dir, 'external', 'RandomForest', 'RF_Class_C'));
     addpath(fullfile(func_dir, 'external', 'RandomForest', 'RF_Reg_C'));
     addpath(fullfile(func_dir, 'external', 'Supervoxels'));
-    addpath(fullfile(func_dir, 'external', 'Zarr3Matlab'));
+    addpath(fullfile(func_dir, 'external', 'zarr-matlab'));
     addpath(fullfile(func_dir, 'legacy'));    
     addpath(fullfile(func_dir, 'assets'));    
     addpath(fullfile(func_dir, 'assets', 'icons'));

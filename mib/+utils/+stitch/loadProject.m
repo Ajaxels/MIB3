@@ -1,4 +1,4 @@
-function [layout, edges, positions, solverInfo, outputInfo, tforms, zSliceFixes] = loadProject(filePath)
+function [layout, edges, positions, solverInfo, outputInfo, tforms, zSliceFixes, settings] = loadProject(filePath)
 % LOADPROJECT - Load a stitching project from a JSON sidecar file.
 %
 % Syntax:
@@ -6,6 +6,7 @@ function [layout, edges, positions, solverInfo, outputInfo, tforms, zSliceFixes]
 %
 %      [layout, edges, positions, solverInfo, outputInfo] = utils.stitch.loadProject(filePath)
 %      [layout, edges, positions, solverInfo, outputInfo, tforms] = utils.stitch.loadProject(filePath)
+%      [..., tforms, zSliceFixes, settings] = utils.stitch.loadProject(filePath)
 %
 % Reads the ``*.mibstitch.json`` file saved by ``utils.stitch.saveProject``
 % and reconstructs all stitching state structs.  ``positions`` is ``[]``
@@ -26,6 +27,8 @@ function [layout, edges, positions, solverInfo, outputInfo, tforms, zSliceFixes]
 %     translation synthesised from ``solvedOrigin``)
 %   - **zSliceFixes** — [K x 3] per-slice mosaic corrections ``[z dy dx]``
 %     from the seam inspector's Fix Z (``[]`` when none were saved)
+%   - **settings** — struct of flattened tool settings (schema v3 and newer);
+%     an empty struct for older files that carry no ``settings`` block
 %
 % **Example** — round-trip save / load:
 %
@@ -111,6 +114,14 @@ zSliceFixes = [];
 if isfield(project, 'zSliceFixes') && ~isempty(project.zSliceFixes)
     zSliceFixes = double(project.zSliceFixes);
     if isvector(zSliceFixes); zSliceFixes = reshape(zSliceFixes, 1, []); end
+end
+
+% Tool settings (schema v3+). Older files have none — an empty struct then tells
+% the caller there is nothing to restore into the dialog.
+settings = struct();
+if isfield(project, 'settings') && isstruct(project.settings) && ...
+        ~isempty(fieldnames(project.settings))
+    settings = project.settings;
 end
 
 end

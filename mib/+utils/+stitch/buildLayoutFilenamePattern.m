@@ -7,14 +7,25 @@ function layout = buildLayoutFilenamePattern(filenames, options)
 %      layout = utils.stitch.buildLayoutFilenamePattern(filenames)
 %      layout = utils.stitch.buildLayoutFilenamePattern(filenames, options)
 %
-% Parses the ``_Z##-X##-Y##`` token embedded in each tile filename
-% (the format produced by MIB2's rechop tool).  The last occurrence of
-% each letter token in the base filename is used, e.g.:
-%   ``myStack_Z01-X02-Y03.tif``  → Z=1, X=2, Y=3
+% Parses the ``Z##`` / ``X##`` / ``Y##`` tokens embedded in each tile filename
+% (the format produced by MIB2's rechop tool), e.g.
+% ``myStack_Z01-X02-Y03.tif`` → Z=1, X=2, Y=3.
+%
+% The three tokens are located INDEPENDENTLY (last occurrence of each letter in
+% the base name), so their ORDER and the separators between them do not matter —
+% ``_Z01-X02-Y03``, ``_X02-Y03-Z01`` and ``Y03X02Z01`` all parse identically.
+% Constraints that DO matter:
+%
+%   - the letter must be upper case and followed by EXACTLY two digits: exactly
+%     two characters are read, so ``Z1`` errors and ``Z001`` silently parses as
+%     ``00`` (a rename to two-digit tokens is required above 99 tiles per axis);
+%   - indices are 1-based (``Z01-X01-Y01`` is the first tile);
+%   - because the LAST occurrence wins, ``Z``/``X``/``Y`` may appear before the
+%     tokens (``XYZstack_Z01-X01-Y01``) but not after (``..._Y01_XY``).
 %
 % Each entry may name a single image file OR a FOLDER holding the tile's
 % Z-stack (auto-detected per entry by :func:`utils.stitch.resolveTileEntry`) —
-% for folder tiles the ``_Z##-X##-Y##`` tokens live in the FOLDER name.
+% for folder tiles the tokens live in the FOLDER name and follow the same rules.
 %
 % Nominal origins are computed from the grid indices and the (uniform) tile size,
 % with an optional XY overlap (default 0% = abutting chunks, the MIB2-rechop

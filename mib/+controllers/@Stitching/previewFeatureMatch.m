@@ -20,6 +20,10 @@ function previewFeatureMatch(obj)
 % settings change is visible immediately — the feedback loop the Alignment
 % preview provides.
 %
+% A ``downsampleFactor`` above 1 affects DETECTION ONLY: keypoints are found on
+% resized copies and their locations scaled back, while the composite is always
+% rendered from the full-resolution tiles (the title notes the detection scale).
+%
 % No stitching is applied. Requires a layout with at least one overlapping pair
 % (select input tiles first); shows an informational dialog otherwise.
 %
@@ -63,17 +67,23 @@ imageB = midSliceGray(readerFcn(pair.j));
 featureOptions = obj.buildFeatureOptions();
 featureDetectorType = featureOptions.featureDetector;
 
-% Optional detection downsampling (scale matched locations back afterwards).
+% Optional detection downsampling. Detection/matching run on the RESIZED copies,
+% but imageA/imageB stay full-resolution: the fitted tform is in full-resolution
+% units (locations are scaled back before the fit), so the composite and the
+% overlaid keypoints below must be in that same frame — mixing a full-resolution
+% tform with downsampled images places the tiles at factor-times the true offset.
 scaleBack = 1;
+detectA = imageA;
+detectB = imageB;
 if featureOptions.downsampleFactor > 1
     ratio = 1 / featureOptions.downsampleFactor;
-    imageA = imresize(imageA, ratio, 'bilinear');
-    imageB = imresize(imageB, ratio, 'bilinear');
+    detectA = imresize(imageA, ratio, 'bilinear');
+    detectB = imresize(imageB, ratio, 'bilinear');
     scaleBack = featureOptions.downsampleFactor;
 end
 
-pointsA = utils.align.detectFeatures(imageA, featureDetectorType, featureOptions);
-pointsB = utils.align.detectFeatures(imageB, featureDetectorType, featureOptions);
+pointsA = utils.align.detectFeatures(detectA, featureDetectorType, featureOptions);
+pointsB = utils.align.detectFeatures(detectB, featureDetectorType, featureOptions);
 if isempty(pointsA) || isempty(pointsB) || pointsA.Count < 3 || pointsB.Count < 3
     utils.dlgs.showErrorDialog(parentFig, ...
         sprintf('Too few features detected with "%s". Loosen the detector threshold and retry.', ...
@@ -82,11 +92,11 @@ if isempty(pointsA) || isempty(pointsB) || pointsA.Count < 3 || pointsB.Count < 
 end
 
 if strcmp(featureDetectorType, 'Oriented FAST and rotated BRIEF (ORB)')
-    [featuresA, validA] = extractFeatures(imageA, pointsA);
-    [featuresB, validB] = extractFeatures(imageB, pointsB);
+    [featuresA, validA] = extractFeatures(detectA, pointsA);
+    [featuresB, validB] = extractFeatures(detectB, pointsB);
 else
-    [featuresA, validA] = extractFeatures(imageA, pointsA, 'Upright', featureOptions.rotationInvariance);
-    [featuresB, validB] = extractFeatures(imageB, pointsB, 'Upright', featureOptions.rotationInvariance);
+    [featuresA, validA] = extractFeatures(detectA, pointsA, 'Upright', featureOptions.rotationInvariance);
+    [featuresB, validB] = extractFeatures(detectB, pointsB, 'Upright', featureOptions.rotationInvariance);
 end
 
 indexPairs = matchFeatures(featuresA, featuresB, 'Unique', true);
@@ -131,10 +141,12 @@ refA = imref2d(size(imageA));
 [composite, refComposite] = imfuse(imageA, refA, warpedB, refB, ...
     'falsecolor', 'Scaling', 'joint', 'ColorChannels', [2 1 2]);   % A→green, B→magenta, grey=agreement
 
-% Inlier keypoint locations in the composite's pixel coordinates: tile-A points
-% are already in A's frame; tile-B points are pushed through invTform into it.
-inlierA = matchedA(inlierIdx).Location;                          % [x y] in A frame
-inlierBinA = transformPointsForward(invTform, matchedB(inlierIdx).Location);
+% Inlier keypoint locations in the composite's pixel coordinates. Detected
+% locations are scaled back to full resolution first (the frame the composite and
+% invTform live in); tile-A points are then already in A's frame, tile-B points
+% are pushed through invTform into it.
+inlierA = matchedA(inlierIdx).Location * scaleBack;              % [x y] in A frame
+inlierBinA = transformPointsForward(invTform, matchedB(inlierIdx).Location * scaleBack);
 [ax, ay] = worldToIntrinsicSafe(refComposite, inlierA(:, 1),    inlierA(:, 2));
 [bx, by] = worldToIntrinsicSafe(refComposite, inlierBinA(:, 1), inlierBinA(:, 2));
 
@@ -156,8 +168,15 @@ plot(hAxes, [ax, bx]', [ay, by]', 'y-', 'LineWidth', 0.5);
 plot(hAxes, ax, ay, 'go', 'MarkerSize', 6, 'LineWidth', 1);
 plot(hAxes, bx, by, 'm+', 'MarkerSize', 6, 'LineWidth', 1);
 hold(hAxes, 'off');
-title(hAxes, sprintf('Tiles %d ↔ %d stitched — %d/%d inliers (ratio %.2f), shift [dy %.1f, dx %.1f] px', ...
-    pair.i, pair.j, nnz(inlierIdx), numel(inlierIdx), inlierRatio, shiftYX(1), shiftYX(2)));
+% Say when detection ran downsampled — otherwise a changed factor gives no visible
+% feedback (the composite is always drawn at full resolution).
+if scaleBack > 1
+    detectionNote = sprintf(', detected at 1/%g scale', scaleBack);
+else
+    detectionNote = '';
+end
+title(hAxes, sprintf('Tiles %d ↔ %d stitched — %d/%d inliers (ratio %.2f), shift [dy %.1f, dx %.1f] px%s', ...
+    pair.i, pair.j, nnz(inlierIdx), numel(inlierIdx), inlierRatio, shiftYX(1), shiftYX(2), detectionNote));
 
 end
 

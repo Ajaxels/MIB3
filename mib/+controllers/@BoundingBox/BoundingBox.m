@@ -178,6 +178,9 @@ classdef BoundingBox < handle
             %   (none)
             %
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.BoundingBox.closeWindow: triggered\n');
+            end
             if isvalid(obj.view.gui)
                 delete(obj.view.gui);   % delete childController window
             end
@@ -329,6 +332,9 @@ classdef BoundingBox < handle
             %   (none)
             %
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.BoundingBox.updateBatchOptFromGUI(%s): triggered\n', hObject.Tag);
+            end
             obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, hObject);
         end
 
@@ -354,6 +360,9 @@ classdef BoundingBox < handle
             %   (none)
             %
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.BoundingBox.importBtn_Callback: triggered\n');
+            end
             if nargin < 2; batchModeSw = 0; end
 
             str = clipboard('paste');
@@ -491,6 +500,9 @@ classdef BoundingBox < handle
             %   (none)
             %
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.BoundingBox.applyButton_Callback: triggered\n');
+            end
             if nargin < 2; batchModeSw = 0; end
 
             if batchModeSw == 0; drawnow; end  % needed to fix callback after the key press
@@ -601,6 +613,9 @@ classdef BoundingBox < handle
             %   (none)
             %
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.BoundingBox.helpButton_Callback: triggered\n');
+            end
             helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'ribbon', 'dataset', 'dataset-bb.html');
             if isfile(helpFilPath)
                 web(helpFilPath, '-browser');
@@ -622,6 +637,9 @@ classdef BoundingBox < handle
             %   (none)
             %
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.BoundingBox.closeButton_Callback: triggered\n');
+            end
             obj.closeWindow();
         end
 

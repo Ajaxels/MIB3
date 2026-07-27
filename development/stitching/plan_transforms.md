@@ -22,7 +22,7 @@ and measurement (`measureAllPairs` / `featureShift` / `pairwiseShift`).
 - `planCanvas` — `options.tforms` → warped-corner union canvas, `canvas.tforms`
   (canvas frame) + `canvas.tileBounds`; no-tforms path untouched.
 - `fuseSliceComposite` — per-tile `imwarp` branch (slice + blend weights warped
-  together, coverage-masked Max/Overwrite); integer-translation tiles and all
+  together, coverage-masked Max/Min/Overwrite); integer-translation tiles and all
   no-tforms plans take the unchanged placement fast path. In-memory / streaming /
   SliceProvider inherit via the shared kernel.
 - Controller — `TransformType{2} = {'Translation','Affine'}`, solver dispatch in
@@ -31,7 +31,7 @@ and measurement (`measureAllPairs` / `featureShift` / `pairwiseShift`).
   per-tile `solvedTform` + per-edge `tform`.
 - Verification — `StitchCoreTest` 32/32 (5 new: exact-recovery, translation-collapse,
   integer-tform canvas parity, ground-truth warp-fuse milestone, full measured chain);
-  GUI smoke dataset `stitch_smoke_affine` (see `smoke_tests.md` test 11).
+  GUI smoke dataset `11_stitch_smoke_affine` (see `smoke_tests.md` test 11).
 
 **Status (2026-07-16): Phase 2 (rigid/similarity + AllowRotation) IMPLEMENTED and verified.**
 
@@ -84,7 +84,7 @@ deferred until a real rotated-3D dataset exists). What it took:
 - **Verification** — `StitchCoreTest` 38/38; new `fullChain3DAffine_measureSolveFuseAcrossLayers`
   (2x2 grid x 2 layers of Z-stack tiles, in-plane affine per slot + Z jitter: measure →
   solve → warp-fuse; transforms ≤ 0.5 max-abs, layer dz within 1 slice, mid-layer mosaic
-  slices ≤ 4 grey levels off). GUI smoke dataset `stitch_smoke_affine3d`
+  slices ≤ 4 grey levels off). GUI smoke dataset `13_stitch_smoke_affine3d`
   (`smoke_tests.md` test 13): 12/12 edges valid, matrix max-abs 0.38, RMSE 0.09 px,
   layer dz exact.
 

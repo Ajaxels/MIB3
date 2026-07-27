@@ -20,7 +20,7 @@ function imgOut = fuseInMemory(layout, canvas, options)
 %   - **canvas** — [struct] from :func:`utils.stitch.planCanvas`.
 %   - **options** *(optional)* — struct with fields:
 %
-%     - ``.blendMode`` — [char] ``'Feather'`` (default) | ``'Average'`` | ``'Max'`` | ``'Overwrite'``
+%     - ``.blendMode`` — [char] ``'Feather'`` (default) | ``'Average'`` | ``'Max'`` | ``'Min'`` | ``'Overwrite'``
 %     - ``.background`` — [double] background fill value (default: ``0``)
 %     - ``.marginPx`` — [double] feather margin (default: derived from tile size)
 %     - ``.cacheSizeBytes`` — [double] LRU tile-cache budget (default: ``2*1024^3``)

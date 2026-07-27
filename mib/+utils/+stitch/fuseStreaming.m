@@ -25,7 +25,7 @@ function fuseStreaming(layout, canvas, outputZarrPath, options)
 %   - **outputZarrPath** — [char] destination ``.zarr3`` folder (overwritten).
 %   - **options** *(optional)* — struct with fields:
 %
-%     - ``.blendMode`` — [char] ``'Feather'`` (default) | ``'Average'`` | ``'Max'`` | ``'Overwrite'``
+%     - ``.blendMode`` — [char] ``'Feather'`` (default) | ``'Average'`` | ``'Max'`` | ``'Min'`` | ``'Overwrite'``
 %     - ``.background`` — [double] background fill value (default: ``0``)
 %     - ``.marginPx`` — [double] feather margin (default: derived from tile size)
 %     - ``.maxSliceBytes`` — [double] slice-fits threshold in bytes (default: ``4*1024^3``)

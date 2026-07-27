@@ -13,6 +13,10 @@
 # Read more: https://zensical.org/docs/setup/basics/#site_name
 site_name = "Microscopy Image Browser v3"
 
+# Output directory for the built site, relative to this config file.
+# Defaults to "site" when omitted; must not contain "..".
+site_dir = "html"
+
 # The site_description is included in the HTML head and should contain a
 # meaningful description of the site content for use by search engines.
 #
@@ -89,7 +93,10 @@ nav = [
       { "Dataset" = [
         "user-interface/ribbon/dataset/index.md",
         { "Alignment tool" = "user-interface/ribbon/dataset/dataset-alignment.md" },
-        { "Stitching" = "user-interface/ribbon/dataset/dataset-stitch.md" },
+        { "Stitching" = [
+          "user-interface/ribbon/dataset/dataset-stitch.md",
+		  { "Stitch inspector" = "user-interface/ribbon/dataset/dataset-stitch-inspector.md" },
+        ]},
         { "Crop" = "user-interface/ribbon/dataset/dataset-crop.md" },
         { "Resample" = "user-interface/ribbon/dataset/dataset-resample.md" },
         { "Transform" = "user-interface/ribbon/dataset/dataset-transform.md" },

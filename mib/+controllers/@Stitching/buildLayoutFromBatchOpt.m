@@ -59,6 +59,9 @@ obj.positions = [];
 obj.tforms    = {};
 obj.canvas    = [];
 obj.zSliceFixes = [];
+obj.solverInfo  = struct();
+% The layout now describes BatchOpt again, so re-deriving it is safe once more.
+obj.layoutFromProject = false;
 
 end
 

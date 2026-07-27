@@ -53,7 +53,7 @@ non-translation transform).
 ## Implement + verify
 
 1. Relax the gate in `measureOverlaps_Callback.m` (allow non-translation on 3D).
-2. Add smoke generator `development/stitching/stitch_smoke_affine3d/generateSmokeAffine3DTiles.m`
+2. Add smoke generator `development/stitching/13_stitch_smoke_affine3d/generateSmokeAffine3DTiles.m`
    (2x2xN-layer chop, tiles rotated +/-1 deg / scaled +/-1%, z jitter) + register in
    `smoke_tests.md`.
 3. Add a `tests/utils/StitchCoreTest.m` case: 3D affine chop -> measure -> `solveGlobalAffine`

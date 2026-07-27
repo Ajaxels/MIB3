@@ -153,7 +153,7 @@ classdef ContentAwareFill < handle
         function updateBatchOptFromGUI(obj, event)
             % UPDATEBATCHOPTFROMGUI - Sync BatchOpt from a widget change event.
             if obj.mibModel.preferences.System.DeveloperMode
-                fprintf('controllers.ContentAwareFill.updateBatchOptFromGUI: triggered\n');
+                fprintf('controllers.ContentAwareFill.updateBatchOptFromGUI(%s): triggered\n', event.Source.Tag);
             end
             obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, event.Source);
             if obj.view.handles.autoPreview.Value; obj.previewButtonPushed(); end

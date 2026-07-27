@@ -85,7 +85,7 @@ Labels:
 | `OutputMode` | `uidropdown` | Items: `{'In memory','OME-Zarr (BigData)'}` Default: `'In memory'` | `updateBatchOptFromGUI` |
 | `OutputPath` | `uieditfield` (text) | Default: `''` Enable: `false` | `updateBatchOptFromGUI` |
 | `selectOutputBtn` | `uibutton` | Text: `'Browse…'` Enable: `false` | `selectOutputPath_Callback` |
-| `BlendMode` | `uidropdown` | Items: `{'Feather','Average','Max','Overwrite'}` Default: `'Feather'` | `updateBatchOptFromGUI` |
+| `BlendMode` | `uidropdown` | Items: `{'Feather','Average','Max','Min','Overwrite'}` Default: `'Feather'` | `updateBatchOptFromGUI` |
 | `SaveProject` | `uicheckbox` | Text: `'Save project JSON'` Default: `true` | `updateBatchOptFromGUI` |
 
 `BatchOpt.showWaitbar` intentionally has **no GUI widget** — it is a batch-only
@@ -188,10 +188,23 @@ dropdown + offset label above and the action buttons below.
 | Handle | Class | Text | Callback (controller wires it) |
 |------|-------|------|-------------------------------|
 | `confirmBtn` | `uibutton` | `'Confirm (Enter)'` | `confirmSeam_Callback` |
-| `excludeBtn` | `uibutton` | `'Exclude (X)'` | `excludeSeam_Callback` |
+| `excludeBtn` | `uibutton` **state** (`uibutton(parent,'state')`) | `'Exclude (X)'` | `excludeSeam_Callback` |
 | `resolveBtn` | `uibutton` | `'Re-solve'` | `resolveBtn_Callback` |
-| `saveProjectBtn` | `uibutton` | `'Save project'` | (delegates to the Stitching window) |
 | `closeButton` | `uibutton` | `'Close'` | `closeWindow` |
+
+**No fuse and no save button here** (both removed from the mlapp 2026-07-26). *Stitch* and *Save
+project* live in the Stitching window, which stays reachable while the inspector is open, so a copy
+would only be the same action under a second name. The inspector mutates the parent's
+`edges`/`positions` in place, so the parent's *Save project* already persists this session's fixes,
+and its *Stitch* applies any pending re-solve itself. Do not re-add `refuseBtn` or `saveProjectBtn`.
+
+**`excludeBtn` is a STATE button** (App Designer palette: *State Button*) — excluding a seam is a
+two-state action, and as a plain push button the second press ("re-include") was invisible. The
+controller pushes the state onto the widget from the EDGE in `refreshExcludeButton`: pressed +
+red `[0.92 0.55 0.55]` + text `'Excluded (X)'` while excluded, unpressed + the button's original
+background + `'Exclude (X)'` otherwise. It never reads the widget, so the `X` key stays equivalent
+and a plain `uibutton` still works (colour + text change, no pressed look) — upgrade the mlapp
+whenever convenient.
 
 ### Phase C widgets (interactive fixing — all guarded, add anytime)
 
@@ -204,7 +217,6 @@ dropdown + offset label above and the action buttons below.
 | `undoFixBtn` | `uibutton` | `'Undo fix (Z)'` | `undoFix_Callback` — restore the original automatic edge. |
 | `fitViewBtn` | `uibutton` | `'Fit view (F)'` | `fitView_Callback` — reset the pair-view wheel zoom to fit the whole pair. |
 | `autoResolveCheckbox` | `uicheckbox` | Text `'Auto re-solve'`, default **checked** | Re-solve + re-rank automatically after each fix. When the widget is absent the controller defaults to ON. |
-| `refuseBtn` | `uibutton` | `'Re-fuse'` | `refuseBtn_Callback` (Phase D) — full fuse with the corrected positions, delegated to the parent's `stitchBtn_Callback` (both output modes); a pending re-solve runs first. |
 
 Pair-view mouse interactions (no mlapp work — the controller wires image
 `ButtonDownFcn`s + the figure's `WindowButtonMotionFcn`/`WindowScrollWheelFcn`):

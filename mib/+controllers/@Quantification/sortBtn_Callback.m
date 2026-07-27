@@ -36,17 +36,26 @@ if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.Quantification.sortBtn_Callback: triggered\n');
 end
 if nargin < 2; data = obj.view.handles.statTable.Data; end
-if iscell(data); return; end    % nothing to sort
+if iscell(data) || isempty(data); return; end    % nothing to sort, i.e. the material has no objects
 
 if obj.sortingColIndex < 5
     [~, index] = sort(data(:, obj.sortingColIndex), obj.sortingDirection);
 else
-    [~, index] = sort(str2num(cell2mat(obj.view.handles.statTable.RowName)), obj.sortingDirection); %#ok<ST2NM>
+    rowNames = obj.view.handles.statTable.RowName;
+    if isempty(rowNames); return; end   % the table was never populated with object indices
+    objectIndices = str2double(cellstr(rowNames));
+    if numel(objectIndices) ~= size(data, 1) || any(isnan(objectIndices))
+        return;     % row names do not encode object indices, e.g. the default 'numbered'
+    end
+    [~, index] = sort(objectIndices, obj.sortingDirection);
 end
 data = data(index, :);
 
 if nargin < 2
     obj.view.handles.statTable.Data = data;
-    obj.view.handles.statTable.RowName = obj.view.handles.statTable.RowName(index);
+    rowNames = obj.view.handles.statTable.RowName;
+    if iscell(rowNames) && numel(rowNames) == numel(index)
+        obj.view.handles.statTable.RowName = rowNames(index);
+    end
 end
 end

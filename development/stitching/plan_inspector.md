@@ -24,7 +24,7 @@ confirm+next, `X` exclude, `N`/`P` navigate). Launched from Stitching's
 `layout/edges/positions/tforms` are the single source of truth (inspector
 mutates in place, `SeamsUpdated` event syncs the parent's widgets; parent
 closes the inspector with itself; `dataValid` guards against a layout rebuild
-mid-session). New smoke dataset `stitch_smoke_sabotage`: honest measurement of
+mid-session). New smoke dataset `12_stitch_smoke_sabotage`: honest measurement of
 a 1×3 chain + a **+24 px / quality 0.95 corruption injected into the 2-3
 edge**, saved as a project file (image-level sabotage was tried and defeated:
 phase correlation whitens the spectrum, so even a 55% stripe band with a 12 px
@@ -68,11 +68,14 @@ Shift+click-to-correlate covers the same need interactively (the user picks
 WHERE, the machine finds EXACTLY), so a dialog-driven re-measure was redundant
 GUI surface. Recoverable from git history if a batch variant is ever wanted.
 **Status (2026-07-17): Phase D (re-fuse integration & polish) IMPLEMENTED** —
-**Re-fuse** (`refuseBtn_Callback`) delegates the full fuse to the parent's
-`stitchBtn_Callback` (both output modes, cached positions reused); a new
-`resolvePending` flag (set by deferred/auto-off fixes, undo and exclude,
-cleared by `resolveBtn_Callback`) makes Re-fuse run the pending re-solve
-FIRST so it never fuses stale positions. **Mini-map fused preview**:
+the inspector gained a **Re-fuse** button (`refuseBtn_Callback`) delegating the
+full fuse to the parent's `stitchBtn_Callback` (both output modes, cached
+positions reused); a new `resolvePending` flag (set by deferred/auto-off fixes,
+undo and exclude, cleared by `resolveBtn_Callback`) made Re-fuse run the pending
+re-solve FIRST so it never fused stale positions.
+**Superseded 2026-07-26 — `refuseBtn` REMOVED, see the entry at the end of this
+file: the guard moved onto the operation and *Stitch* is now the single fuse
+entry point.** **Mini-map fused preview**:
 `ensureTileThumbs` lazily builds jointly-normalised per-tile thumbnails once
 (shared LRU reader, mosaic scaled to ~1000 px, skipped above ~1.5 G total
 full-res pixels or on any read error), and `renderMiniMap` composites them at
@@ -91,8 +94,9 @@ directly; pyramid levels must propagate it block-aligned per level).
 **mlapp to-do (user): build `views\StitchingInspectorGUI.mlapp`** — full widget
 spec in [`mlapp_widgets.md`](mlapp_widgets.md) (now incl. the Phase C row:
 `roiSizeSpinner`, `searchRadiusSpinner`, `suggestBtn`, `twoClickBtn`,
-`undoFixBtn`, `autoResolveCheckbox`, plus Phase D `refuseBtn` and `fitViewBtn`
-— all controller-guarded), plus `inspectSeamsBtn` in the main StitchingGUI.
+`undoFixBtn`, `autoResolveCheckbox`, plus Phase D `fitViewBtn` — all
+controller-guarded; `refuseBtn` is gone, do not add it), plus `inspectSeamsBtn`
+in the main StitchingGUI.
 Companion to [`plan_transforms.md`](plan_transforms.md); builds on the measured edge
 graph (`measureAllPairs`), the global solvers (`solveGlobalLeastSquares` /
 `solveGlobalAffine`), the sidecar (`saveProject`/`loadProject`) and the pair-composite
@@ -151,8 +155,9 @@ disconnected tiles always on top.
 5. **Re-solve** (button, or auto after each fix — toggle): global solve reruns with the
    user edges dominating (below), table re-ranks, mini-map recolours. The user works
    worst-first until the top of the table is green.
-6. **Re-fuse** → hands the corrected positions back to the Stitching window (or fuses
-   directly). **Save project** persists all fixes.
+6. **Fuse / persist** → press *Stitch* and *Save project* in the Stitching window; the
+   inspector has neither button (see the 2026-07-26 entry). Fixes land in the parent's
+   edges as they are made, so its *Save project* already carries them.
 
 Keyboard-first: `Enter` confirm+next, `X` exclude, `Space` flicker, arrows nudge,
 `N`/`P` next/prev, `Z` undo-fix (restore the automatic measurement).
@@ -251,7 +256,7 @@ Non-BatchOpt tool → descriptive lowerCamel handles throughout (per naming rule
 `miniMapAxes`, `pairAxes`, `overlayModeDropdown` (Falsecolor/Flicker/Checkerboard/
 Difference), `roiSizeSpinner` (32–512, default 128), `searchRadiusSpinner` (8–256,
 default 64), `confirmBtn`, `excludeBtn`, `suggestBtn`, `undoFixBtn`, `resolveBtn`,
-`autoResolveCheckbox`, `refuseBtn`, `saveProjectBtn`, `statusLabel`, plus the offset
+`autoResolveCheckbox`, `statusLabel`, plus the offset
 readout label (`offsetLabel`: current [dy dx] vs auto-measured). Keyboard shortcuts via
 `WindowKeyPressFcn` on the child figure (child-dialog shortcut conventions:
 `development/guides/conversion_ui.md`).
@@ -286,7 +291,7 @@ performance path (C) if it misbehaves; D's partial re-fuse → Opus-class.
   (weight 5) beats a contradictory auto edge (quality 1) but two contradictory user
   edges average; `measureAllPairs` re-measure preserves `source='user'` rows; sidecar
   v2 round-trip + v1 file loads with defaulted fields.
-- New smoke generator `stitch_smoke_sabotage`: 3×3 grid with one **repetitive-texture
+- New smoke generator `12_stitch_smoke_sabotage`: 3×3 grid with one **repetitive-texture
   overlap** (striped pattern, period ~24 px) that phase correlation locks onto one
   period off with high quality — the "confidently wrong" case. Checklist: inspector
   ranks that seam first (seam score catches it, residual ~0 on the chain), click-fix
@@ -303,3 +308,13 @@ performance path (C) if it misbehaves; D's partial re-fuse → Opus-class.
 - Seam-score threshold that counts as "reviewed enough" to colour the chip green —
   propose reusing the existing rating bands on `min(seamScore)` rather than inventing
   new ones.
+
+## 2026-07-26 — `refuseBtn` removed: Stitch is the single fuse entry point
+
+*User:* "I do not like duality … Re-fuse and Stitch are doing the same operation, shall Re-fuse be taken away completely as the user can hit Stitch even without closing the inspector?" Correct on both counts — the inspector is non-modal, so the parent window is reachable throughout, and `refuseBtn_Callback` was a thin wrapper around `stitching.stitchBtn_Callback`.
+
+**But they were not equivalent, and the safe one was the hidden one.** `resolvePending` (set by a deferred / auto-off fix, undo, exclude) was honoured ONLY by Re-fuse. `stitchBtn_Callback` re-solves just `if isempty(obj.positions)`, and after a fix the positions are non-empty but STALE — so pressing the obvious button, *Stitch*, silently fused pre-fix positions. Deleting Re-fuse without moving the guard would have made that the only behaviour.
+
+So the guard moved onto the OPERATION: `stitchBtn_Callback` now runs `obj.inspector.resolveBtn_Callback()` up front whenever an inspector is open with `resolvePending`. Then `refuseBtn_Callback.m` was deleted, its wiring and tooltip removed, and `addCallbacks` hides a `refuseBtn` still present in the mlapp (dead control > confusing control) — delete it there when convenient. The general lesson: when two buttons run one operation, a precondition attached to one of them is a trap, not a feature.
+
+**Follow-up the same day: `saveProjectBtn` went too**, at the user's call — it was the same delegation to the parent (`obj.stitching.saveProjectBtn_Callback`), and the argument that saving is "repeated mid-review bookkeeping" did not survive contact with the actual data flow: the inspector mutates the parent's `edges`/`positions` IN PLACE, so the parent's *Save project* has always carried the current fixes with no hand-off needed. The user removed both buttons from `StitchingInspectorGUI.mlapp`; the controller-side wiring, tooltips and the interim `refuseBtn` hide-guard are gone with them. The inspector's bottom row is now Confirm / Exclude / Re-solve / Close, and the window owns exactly one thing: deciding what the seams should be.

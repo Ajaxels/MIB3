@@ -517,6 +517,57 @@ classdef StitchLayoutTest < matlab.unittest.TestCase
             testCase.verifyTrue(isfile(expectedFile));
         end
 
+        function saveLoadProject_settingsBlockRoundTrip(testCase)
+            % Schema v3 carries the tool's own parameters alongside the stitch
+            % state, so "Load project" can reset the dialog to the saved values
+            % or reuse them on a different set of tiles.
+            tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            tileFolder = testCase.makeSyntheticTiles(2, [32 32], tmpDir.Folder);
+            layout = utils.stitch.buildLayoutGrid(tileFolder.files, ...
+                struct('rows', 1, 'cols', 2, 'tileOrder', 'Horizontal', 'overlapX', 10, 'overlapY', 10));
+
+            settings = struct( ...
+                'LayoutSource',    'Filename pattern', ...
+                'InputPath',       fullfile(tmpDir.Folder, 'tiles'), ...
+                'SubfolderMode',   true, ...
+                'GridRows',        3, ...
+                'OverlapX',        22, ...
+                'EstimateOverlap', false, ...
+                'TransformType',   'Affine', ...
+                'BlendMode',       'Max');
+            % Nested feature-detector tuning, incl. a vector parameter
+            settings.FeatureOptions = struct( ...
+                'imgDownsamplingFactorForAnalysis', 2, ...
+                'detectMSERFeatures', struct('RegionAreaRange', [30 14000]));
+
+            projectFile = fullfile(tmpDir.Folder, 'with_settings.mibstitch.json');
+            utils.stitch.saveProject(projectFile, layout, [], [], [], [], {}, [], settings);
+
+            [~, ~, ~, ~, ~, ~, ~, loadedSettings] = utils.stitch.loadProject(projectFile);
+
+            testCase.verifyEqual(loadedSettings.LayoutSource, 'Filename pattern');
+            testCase.verifyEqual(loadedSettings.InputPath, settings.InputPath);
+            testCase.verifyTrue(loadedSettings.SubfolderMode);
+            testCase.verifyEqual(loadedSettings.GridRows, 3, 'AbsTol', 1e-9);
+            testCase.verifyEqual(loadedSettings.OverlapX, 22, 'AbsTol', 1e-9);
+            testCase.verifyFalse(loadedSettings.EstimateOverlap);
+            testCase.verifyEqual(loadedSettings.TransformType, 'Affine');
+            testCase.verifyEqual(loadedSettings.BlendMode, 'Max');
+            testCase.verifyEqual(loadedSettings.FeatureOptions.imgDownsamplingFactorForAnalysis, ...
+                2, 'AbsTol', 1e-9);
+            % jsondecode returns arrays as columns — the controller reshapes them
+            % back to rows; here just check the values survived.
+            testCase.verifyEqual(sort(loadedSettings.FeatureOptions.detectMSERFeatures.RegionAreaRange(:))', ...
+                [30 14000], 'AbsTol', 1e-9);
+
+            % A project saved WITHOUT settings (older schema) still loads, and
+            % reports an empty settings struct so the caller skips the dialog.
+            plainFile = fullfile(tmpDir.Folder, 'no_settings.mibstitch.json');
+            utils.stitch.saveProject(plainFile, layout, [], [], [], []);
+            [~, ~, ~, ~, ~, ~, ~, emptySettings] = utils.stitch.loadProject(plainFile);
+            testCase.verifyEmpty(fieldnames(emptySettings));
+        end
+
     end % methods (Test)
 
     % =====================================================================

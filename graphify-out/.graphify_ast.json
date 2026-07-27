@@ -9397,6 +9397,17 @@
       "contributor": null
     },
     {
+      "id": "controllers_preferences_preferences_externaldirectoriespanelcallbacks",
+      "label": "ExternalDirectoriesPanelCallbacks",
+      "file_type": "code",
+      "source_file": "+controllers\\@Preferences\\Preferences.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "controllers_preferences_preferences_segmentationpanelcallbacks",
       "label": "SegmentationPanelCallbacks",
       "file_type": "code",
@@ -10805,6 +10816,17 @@
       "contributor": null
     },
     {
+      "id": "controllers_stitching_applyprojectsettings_m",
+      "label": "applyProjectSettings.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@Stitching\\applyProjectSettings.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "controllers_stitching_buildlayoutfrombatchopt_m",
       "label": "buildLayoutFromBatchOpt.m",
       "file_type": "code",
@@ -10820,6 +10842,17 @@
       "label": "closeWindow.m",
       "file_type": "code",
       "source_file": "+controllers\\@Stitching\\closeWindow.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_stitching_collectprojectsettings_m",
+      "label": "collectProjectSettings.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@Stitching\\collectProjectSettings.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -10926,6 +10959,17 @@
       "contributor": null
     },
     {
+      "id": "controllers_stitching_refreshqualitychip_m",
+      "label": "refreshQualityChip.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@Stitching\\refreshQualityChip.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "controllers_stitching_returnbatchopt_m",
       "label": "returnBatchOpt.m",
       "file_type": "code",
@@ -11007,6 +11051,17 @@
       "label": "updateWidgets.m",
       "file_type": "code",
       "source_file": "+controllers\\@Stitching\\updateWidgets.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_stitching_stitching_projectsettingfields",
+      "label": "projectSettingFields",
+      "file_type": "code",
+      "source_file": "+controllers\\@Stitching\\Stitching.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -11124,6 +11179,17 @@
       "contributor": null
     },
     {
+      "id": "controllers_stitchinginspector_applyzboundaryfix_m",
+      "label": "applyZBoundaryFix.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@StitchingInspector\\applyZBoundaryFix.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "controllers_stitchinginspector_closewindow_m",
       "label": "closeWindow.m",
       "file_type": "code",
@@ -11157,10 +11223,32 @@
       "contributor": null
     },
     {
+      "id": "controllers_stitchinginspector_ensuretilethumbs_m",
+      "label": "ensureTileThumbs.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@StitchingInspector\\ensureTileThumbs.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "controllers_stitchinginspector_excludeseam_callback_m",
       "label": "excludeSeam_Callback.m",
       "file_type": "code",
       "source_file": "+controllers\\@StitchingInspector\\excludeSeam_Callback.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_stitchinginspector_fitview_callback_m",
+      "label": "fitView_Callback.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@StitchingInspector\\fitView_Callback.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -11212,6 +11300,17 @@
       "contributor": null
     },
     {
+      "id": "controllers_stitchinginspector_pairviewmotion_m",
+      "label": "pairViewMotion.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@StitchingInspector\\pairViewMotion.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "controllers_stitchinginspector_renderminimap_m",
       "label": "renderMiniMap.m",
       "file_type": "code",
@@ -11256,6 +11355,17 @@
       "contributor": null
     },
     {
+      "id": "controllers_stitchinginspector_scrollwheel_callback_m",
+      "label": "scrollWheel_Callback.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@StitchingInspector\\scrollWheel_Callback.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "controllers_stitchinginspector_seamtableselection_callback_m",
       "label": "seamTableSelection_Callback.m",
       "file_type": "code",
@@ -11271,17 +11381,6 @@
       "label": "selectSeam.m",
       "file_type": "code",
       "source_file": "+controllers\\@StitchingInspector\\selectSeam.m",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null
-    },
-    {
-      "id": "controllers_stitchinginspector_suggestbtn_callback_m",
-      "label": "suggestBtn_Callback.m",
-      "file_type": "code",
-      "source_file": "+controllers\\@StitchingInspector\\suggestBtn_Callback.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -11355,8 +11454,96 @@
       "contributor": null
     },
     {
+      "id": "controllers_stitchinginspector_stitchinginspector_refreshexcludebutton",
+      "label": "refreshExcludeButton",
+      "file_type": "code",
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "controllers_stitchinginspector_stitchinginspector_currentoffsetyx",
       "label": "currentOffsetYX",
+      "file_type": "code",
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_stitchinginspector_stitchinginspector_currentdz",
+      "label": "currentDz",
+      "file_type": "code",
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_stitchinginspector_stitchinginspector_pairhasdepth",
+      "label": "pairHasDepth",
+      "file_type": "code",
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_stitchinginspector_stitchinginspector_fixmode",
+      "label": "fixMode",
+      "file_type": "code",
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_stitchinginspector_stitchinginspector_visibleranking",
+      "label": "visibleRanking",
+      "file_type": "code",
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_stitchinginspector_stitchinginspector_boundarymodeactive",
+      "label": "boundaryModeActive",
+      "file_type": "code",
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_stitchinginspector_stitchinginspector_boundarydelta",
+      "label": "boundaryDelta",
+      "file_type": "code",
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_stitchinginspector_stitchinginspector_fixdz",
+      "label": "fixDz",
       "file_type": "code",
       "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
       "source_location": null,
@@ -21816,6 +22003,28 @@
       "contributor": null
     },
     {
+      "id": "io_zarr_config_executionmode",
+      "label": "executionMode",
+      "file_type": "code",
+      "source_file": "+io\\+zarr\\Config.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_zarr_config_setexecutionmode",
+      "label": "setExecutionMode",
+      "file_type": "code",
+      "source_file": "+io\\+zarr\\Config.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "io_zarr_config_smoothing",
       "label": "smoothing",
       "file_type": "code",
@@ -22773,10 +22982,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrarraytest_m",
+      "id": "external_zarr_matlab_tests_zarrarraytest_m",
       "label": "ZarrArrayTest.m",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -22784,10 +22993,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrarraytest_addparenttopath",
+      "id": "external_zarr_matlab_tests_zarrarraytest_addparenttopath",
       "label": "addParentToPath",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -22795,10 +23004,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrarraytest_setuptempdir",
+      "id": "external_zarr_matlab_tests_zarrarraytest_setuptempdir",
       "label": "setupTempDir",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -22806,10 +23015,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrarraytest_removetempdir",
+      "id": "external_zarr_matlab_tests_zarrarraytest_removetempdir",
       "label": "removeTempDir",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -22817,10 +23026,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrarraytest_testcreate",
+      "id": "external_zarr_matlab_tests_zarrarraytest_testcreate",
       "label": "testCreate",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -22828,10 +23037,21 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrarraytest_testcreate1darray",
+      "id": "external_zarr_matlab_tests_zarrarraytest_testhandlelifecycle",
+      "label": "testHandleLifecycle",
+      "file_type": "code",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "external_zarr_matlab_tests_zarrarraytest_testcreate1darray",
       "label": "testCreate1DArray",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -22839,10 +23059,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrarraytest_testcreate2darray",
+      "id": "external_zarr_matlab_tests_zarrarraytest_testcreate2darray",
       "label": "testCreate2DArray",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -22850,10 +23070,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrarraytest_testcreatewithdefaultchunkshape",
+      "id": "external_zarr_matlab_tests_zarrarraytest_testcreatewithdefaultchunkshape",
       "label": "testCreateWithDefaultChunkShape",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -22861,10 +23081,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrarraytest_testcreatefromdatawithdefaultchunkshape",
+      "id": "external_zarr_matlab_tests_zarrarraytest_testcreatefromdatawithdefaultchunkshape",
       "label": "testCreateFromDataWithDefaultChunkShape",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -22872,10 +23092,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrarraytest_testcreateboolarray",
+      "id": "external_zarr_matlab_tests_zarrarraytest_testcreateboolarray",
       "label": "testCreateBoolArray",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -22883,10 +23103,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrarraytest_testcreatefromdatalogical",
+      "id": "external_zarr_matlab_tests_zarrarraytest_testcreatefromdatalogical",
       "label": "testCreateFromDataLogical",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -22894,10 +23114,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrarraytest_testshape",
+      "id": "external_zarr_matlab_tests_zarrarraytest_testshape",
       "label": "testShape",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -22905,10 +23125,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrarraytest_testdatatype",
+      "id": "external_zarr_matlab_tests_zarrarraytest_testdatatype",
       "label": "testDataType",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -22916,10 +23136,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrarraytest_testresize",
+      "id": "external_zarr_matlab_tests_zarrarraytest_testresize",
       "label": "testResize",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -22927,10 +23147,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrarraytest_testwriteread",
+      "id": "external_zarr_matlab_tests_zarrarraytest_testwriteread",
       "label": "testWriteRead",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -22938,10 +23158,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrarraytest_testreadentirearray",
+      "id": "external_zarr_matlab_tests_zarrarraytest_testreadentirearray",
       "label": "testReadEntireArray",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -22949,10 +23169,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrarraytest_testwritewithoutbbox",
+      "id": "external_zarr_matlab_tests_zarrarraytest_testwritewithoutbbox",
       "label": "testWriteWithoutBbox",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -22960,10 +23180,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrarraytest_testwritewithallowresize",
+      "id": "external_zarr_matlab_tests_zarrarraytest_testwritewithallowresize",
       "label": "testWriteWithAllowResize",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -22971,10 +23191,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrarraytest_testwritewithallowresizeatorigin",
+      "id": "external_zarr_matlab_tests_zarrarraytest_testwritewithallowresizeatorigin",
       "label": "testWriteWithAllowResizeAtOrigin",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -22982,10 +23202,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrarraytest_testopenexisting",
+      "id": "external_zarr_matlab_tests_zarrarraytest_testopenexisting",
       "label": "testOpenExisting",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -22993,10 +23213,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrarraytest_testwithdoublequotedstrings",
+      "id": "external_zarr_matlab_tests_zarrarraytest_testwithdoublequotedstrings",
       "label": "testWithDoubleQuotedStrings",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23004,10 +23224,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrarraytest_testwithsharding",
+      "id": "external_zarr_matlab_tests_zarrarraytest_testwithsharding",
       "label": "testWithSharding",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23015,10 +23235,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrarraytest_testwithzstdcompressor",
+      "id": "external_zarr_matlab_tests_zarrarraytest_testwithzstdcompressor",
       "label": "testWithZstdCompressor",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23026,10 +23246,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrarraytest_testwithzstdcompressorconfigured",
+      "id": "external_zarr_matlab_tests_zarrarraytest_testwithzstdcompressorconfigured",
       "label": "testWithZstdCompressorConfigured",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23037,10 +23257,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrarraytest_testwithgzipcompressor",
+      "id": "external_zarr_matlab_tests_zarrarraytest_testwithgzipcompressor",
       "label": "testWithGzipCompressor",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23048,10 +23268,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrarraytest_testwithblosccompressor",
+      "id": "external_zarr_matlab_tests_zarrarraytest_testwithblosccompressor",
       "label": "testWithBloscCompressor",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23059,10 +23279,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrarraytest_testwithblosccompressorconfigured",
+      "id": "external_zarr_matlab_tests_zarrarraytest_testwithblosccompressorconfigured",
       "label": "testWithBloscCompressorConfigured",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23070,10 +23290,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrarraytest_testwithshardingandzstd",
+      "id": "external_zarr_matlab_tests_zarrarraytest_testwithshardingandzstd",
       "label": "testWithShardingAndZstd",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23081,10 +23301,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrarraytest_testwithnocompression",
+      "id": "external_zarr_matlab_tests_zarrarraytest_testwithnocompression",
       "label": "testWithNoCompression",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23092,10 +23312,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrarraytest_testwithnofilters",
+      "id": "external_zarr_matlab_tests_zarrarraytest_testwithnofilters",
       "label": "testWithNoFilters",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23103,10 +23323,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrarraytest_testwithnofiltersandnocompression",
+      "id": "external_zarr_matlab_tests_zarrarraytest_testwithnofiltersandnocompression",
       "label": "testWithNoFiltersAndNoCompression",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23114,10 +23334,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrarraytest_testwithcompressorsequence",
+      "id": "external_zarr_matlab_tests_zarrarraytest_testwithcompressorsequence",
       "label": "testWithCompressorSequence",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23125,10 +23345,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrarraytest_testwithcustomfillvalue",
+      "id": "external_zarr_matlab_tests_zarrarraytest_testwithcustomfillvalue",
       "label": "testWithCustomFillValue",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23136,10 +23356,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrarraytest_testwithchunkkeyencodingdotseparator",
+      "id": "external_zarr_matlab_tests_zarrarraytest_testwithchunkkeyencodingdotseparator",
       "label": "testWithChunkKeyEncodingDotSeparator",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23147,10 +23367,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrarraytest_testwithchunkkeyencodingv2",
+      "id": "external_zarr_matlab_tests_zarrarraytest_testwithchunkkeyencodingv2",
       "label": "testWithChunkKeyEncodingV2",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23158,10 +23378,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrarraytest_testcreatefromdata",
+      "id": "external_zarr_matlab_tests_zarrarraytest_testcreatefromdata",
       "label": "testCreateFromData",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23169,10 +23389,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrarraytest_testcreatefromdatawithcompressor",
+      "id": "external_zarr_matlab_tests_zarrarraytest_testcreatefromdatawithcompressor",
       "label": "testCreateFromDataWithCompressor",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23180,10 +23400,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrarraytest_testcreatefromdatadouble",
+      "id": "external_zarr_matlab_tests_zarrarraytest_testcreatefromdatadouble",
       "label": "testCreateFromDataDouble",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23191,10 +23411,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrarraytest_testgetattributesempty",
+      "id": "external_zarr_matlab_tests_zarrarraytest_testgetattributesempty",
       "label": "testGetAttributesEmpty",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23202,10 +23422,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrarraytest_testsetandgetattributes",
+      "id": "external_zarr_matlab_tests_zarrarraytest_testsetandgetattributes",
       "label": "testSetAndGetAttributes",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23213,10 +23433,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrarraytest_testsetandgetsingleattribute",
+      "id": "external_zarr_matlab_tests_zarrarraytest_testsetandgetsingleattribute",
       "label": "testSetAndGetSingleAttribute",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23224,10 +23444,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrarraytest_testgetnonexistentattribute",
+      "id": "external_zarr_matlab_tests_zarrarraytest_testgetnonexistentattribute",
       "label": "testGetNonExistentAttribute",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23235,10 +23455,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrarraytest_testattributespersist",
+      "id": "external_zarr_matlab_tests_zarrarraytest_testattributespersist",
       "label": "testAttributesPersist",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23246,10 +23466,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrarraytest_testwritewithwrongdatatype",
+      "id": "external_zarr_matlab_tests_zarrarraytest_testwritewithwrongdatatype",
       "label": "testWriteWithWrongDataType",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23257,10 +23477,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrarraytest_testwriteoutofbounds",
+      "id": "external_zarr_matlab_tests_zarrarraytest_testwriteoutofbounds",
       "label": "testWriteOutOfBounds",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23268,10 +23488,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrgrouptest_m",
+      "id": "external_zarr_matlab_tests_zarrgrouptest_m",
       "label": "ZarrGroupTest.m",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrGroupTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrGroupTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23279,10 +23499,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrgrouptest_addparenttopath",
+      "id": "external_zarr_matlab_tests_zarrgrouptest_addparenttopath",
       "label": "addParentToPath",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrGroupTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrGroupTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23290,10 +23510,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrgrouptest_setuptempdir",
+      "id": "external_zarr_matlab_tests_zarrgrouptest_setuptempdir",
       "label": "setupTempDir",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrGroupTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrGroupTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23301,10 +23521,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrgrouptest_removetempdir",
+      "id": "external_zarr_matlab_tests_zarrgrouptest_removetempdir",
       "label": "removeTempDir",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrGroupTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrGroupTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23312,10 +23532,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrgrouptest_testcreate",
+      "id": "external_zarr_matlab_tests_zarrgrouptest_testcreate",
       "label": "testCreate",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrGroupTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrGroupTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23323,10 +23543,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrgrouptest_testopen",
+      "id": "external_zarr_matlab_tests_zarrgrouptest_testopen",
       "label": "testOpen",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrGroupTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrGroupTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23334,10 +23554,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrgrouptest_testcreatesubgroup",
+      "id": "external_zarr_matlab_tests_zarrgrouptest_testcreatesubgroup",
       "label": "testCreateSubgroup",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrGroupTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrGroupTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23345,10 +23565,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrgrouptest_testopensubgroup",
+      "id": "external_zarr_matlab_tests_zarrgrouptest_testopensubgroup",
       "label": "testOpenSubgroup",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrGroupTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrGroupTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23356,10 +23576,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrgrouptest_testcreatearray",
+      "id": "external_zarr_matlab_tests_zarrgrouptest_testcreatearray",
       "label": "testCreateArray",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrGroupTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrGroupTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23367,10 +23587,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrgrouptest_testopenarray",
+      "id": "external_zarr_matlab_tests_zarrgrouptest_testopenarray",
       "label": "testOpenArray",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrGroupTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrGroupTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23378,10 +23598,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrgrouptest_testopenandreadwritearray",
+      "id": "external_zarr_matlab_tests_zarrgrouptest_testopenandreadwritearray",
       "label": "testOpenAndReadWriteArray",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrGroupTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrGroupTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23389,10 +23609,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrgrouptest_testcreatearrayfromdata",
+      "id": "external_zarr_matlab_tests_zarrgrouptest_testcreatearrayfromdata",
       "label": "testCreateArrayFromData",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrGroupTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrGroupTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23400,10 +23620,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrgrouptest_testlist",
+      "id": "external_zarr_matlab_tests_zarrgrouptest_testlist",
       "label": "testList",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrGroupTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrGroupTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23411,10 +23631,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrgrouptest_testlistcontents",
+      "id": "external_zarr_matlab_tests_zarrgrouptest_testlistcontents",
       "label": "testListContents",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrGroupTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrGroupTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23422,10 +23642,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrgrouptest_testnestedstructure",
+      "id": "external_zarr_matlab_tests_zarrgrouptest_testnestedstructure",
       "label": "testNestedStructure",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrGroupTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrGroupTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23433,10 +23653,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrgrouptest_testgetattributesempty",
+      "id": "external_zarr_matlab_tests_zarrgrouptest_testgetattributesempty",
       "label": "testGetAttributesEmpty",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrGroupTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrGroupTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23444,10 +23664,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrgrouptest_testsetandgetattributes",
+      "id": "external_zarr_matlab_tests_zarrgrouptest_testsetandgetattributes",
       "label": "testSetAndGetAttributes",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrGroupTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrGroupTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23455,10 +23675,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrgrouptest_testsetandgetsingleattribute",
+      "id": "external_zarr_matlab_tests_zarrgrouptest_testsetandgetsingleattribute",
       "label": "testSetAndGetSingleAttribute",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrGroupTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrGroupTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23466,10 +23686,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrgrouptest_testgetnonexistentattribute",
+      "id": "external_zarr_matlab_tests_zarrgrouptest_testgetnonexistentattribute",
       "label": "testGetNonExistentAttribute",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrGroupTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrGroupTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23477,10 +23697,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrgrouptest_testattributespersist",
+      "id": "external_zarr_matlab_tests_zarrgrouptest_testattributespersist",
       "label": "testAttributesPersist",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrGroupTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrGroupTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23488,10 +23708,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrgrouptest_testopennonexistent",
+      "id": "external_zarr_matlab_tests_zarrgrouptest_testopennonexistent",
       "label": "testOpenNonExistent",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrGroupTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrGroupTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23499,10 +23719,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrgrouptest_testopenarrayasgroup",
+      "id": "external_zarr_matlab_tests_zarrgrouptest_testopenarrayasgroup",
       "label": "testOpenArrayAsGroup",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrGroupTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrGroupTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23510,10 +23730,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrgrouptest_testcreateexisting",
+      "id": "external_zarr_matlab_tests_zarrgrouptest_testcreateexisting",
       "label": "testCreateExisting",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrGroupTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrGroupTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23521,10 +23741,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrgrouptest_testopenremote",
+      "id": "external_zarr_matlab_tests_zarrgrouptest_testopenremote",
       "label": "testOpenRemote",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrGroupTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrGroupTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23532,10 +23752,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrgrouptest_testopenremotesubgroup",
+      "id": "external_zarr_matlab_tests_zarrgrouptest_testopenremotesubgroup",
       "label": "testOpenRemoteSubgroup",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrGroupTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrGroupTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23543,10 +23763,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrgrouptest_testopenremotearray",
+      "id": "external_zarr_matlab_tests_zarrgrouptest_testopenremotearray",
       "label": "testOpenRemoteArray",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrGroupTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrGroupTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23554,10 +23774,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrgrouptest_testremotelisterror",
+      "id": "external_zarr_matlab_tests_zarrgrouptest_testremotelisterror",
       "label": "testRemoteListError",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrGroupTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrGroupTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23565,10 +23785,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrgrouptest_testremotecreateerror",
+      "id": "external_zarr_matlab_tests_zarrgrouptest_testremotecreateerror",
       "label": "testRemoteCreateError",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrGroupTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrGroupTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23576,10 +23796,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrgrouptest_testremotegetattributes",
+      "id": "external_zarr_matlab_tests_zarrgrouptest_testremotegetattributes",
       "label": "testRemoteGetAttributes",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrGroupTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrGroupTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23587,10 +23807,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrgrouptest_testremotesetattributeserror",
+      "id": "external_zarr_matlab_tests_zarrgrouptest_testremotesetattributeserror",
       "label": "testRemoteSetAttributesError",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrGroupTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrGroupTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23598,10 +23818,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrmextest_m",
+      "id": "external_zarr_matlab_tests_zarrmextest_m",
       "label": "ZarrMexTest.m",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrMexTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrMexTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23609,10 +23829,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrmextest_addparenttopath",
+      "id": "external_zarr_matlab_tests_zarrmextest_addparenttopath",
       "label": "addParentToPath",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrMexTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrMexTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23620,10 +23840,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrmextest_setuptempdir",
+      "id": "external_zarr_matlab_tests_zarrmextest_setuptempdir",
       "label": "setupTempDir",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrMexTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrMexTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23631,10 +23851,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrmextest_removetempdir",
+      "id": "external_zarr_matlab_tests_zarrmextest_removetempdir",
       "label": "removeTempDir",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrMexTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrMexTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23642,10 +23862,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrmextest_testreadfromremote",
+      "id": "external_zarr_matlab_tests_zarrmextest_testreadfromremote",
       "label": "testReadFromRemote",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrMexTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrMexTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23653,10 +23873,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrmextest_testcreatearray",
+      "id": "external_zarr_matlab_tests_zarrmextest_testcreatearray",
       "label": "testCreateArray",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrMexTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrMexTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23664,10 +23884,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrmextest_testwriteandread",
+      "id": "external_zarr_matlab_tests_zarrmextest_testwriteandread",
       "label": "testWriteAndRead",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrMexTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrMexTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23675,10 +23895,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrmextest_testresize",
+      "id": "external_zarr_matlab_tests_zarrmextest_testresize",
       "label": "testResize",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrMexTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrMexTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23686,10 +23906,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrmextest_testinfo",
+      "id": "external_zarr_matlab_tests_zarrmextest_testinfo",
       "label": "testInfo",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrMexTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrMexTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23697,10 +23917,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrmextest_testinfofromremote",
+      "id": "external_zarr_matlab_tests_zarrmextest_testinfofromremote",
       "label": "testInfoFromRemote",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrMexTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrMexTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23708,10 +23928,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrmextest_testreadfromnonexistentpath",
+      "id": "external_zarr_matlab_tests_zarrmextest_testreadfromnonexistentpath",
       "label": "testReadFromNonExistentPath",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrMexTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrMexTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23719,10 +23939,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrmextest_testcreatewithmismatcheddimensions",
+      "id": "external_zarr_matlab_tests_zarrmextest_testcreatewithmismatcheddimensions",
       "label": "testCreateWithMismatchedDimensions",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrMexTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrMexTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23730,10 +23950,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrmextest_testinfofromnonexistentpath",
+      "id": "external_zarr_matlab_tests_zarrmextest_testinfofromnonexistentpath",
       "label": "testInfoFromNonExistentPath",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrMexTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrMexTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23741,10 +23961,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_tests_zarrmextest_createtestmetadatajson",
+      "id": "external_zarr_matlab_tests_zarrmextest_createtestmetadatajson",
       "label": "createTestMetadataJson",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrMexTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrMexTest.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23752,10 +23972,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_zarrarray_m",
+      "id": "external_zarr_matlab_zarrarray_m",
       "label": "ZarrArray.m",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\ZarrArray.m",
+      "source_file": "external\\zarr-matlab\\ZarrArray.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23763,10 +23983,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_zarrarray_create",
+      "id": "external_zarr_matlab_zarrarray_create",
       "label": "create",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\ZarrArray.m",
+      "source_file": "external\\zarr-matlab\\ZarrArray.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23774,10 +23994,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_zarrarray_createfromdata",
+      "id": "external_zarr_matlab_zarrarray_createfromdata",
       "label": "createFromData",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\ZarrArray.m",
+      "source_file": "external\\zarr-matlab\\ZarrArray.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23785,10 +24005,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_zarrarray_defaultchunkshape",
+      "id": "external_zarr_matlab_zarrarray_defaultchunkshape",
       "label": "defaultChunkShape",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\ZarrArray.m",
+      "source_file": "external\\zarr-matlab\\ZarrArray.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23796,10 +24016,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_zarrarray_normalizecodecs",
+      "id": "external_zarr_matlab_zarrarray_normalizecodecs",
       "label": "normalizeCodecs",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\ZarrArray.m",
+      "source_file": "external\\zarr-matlab\\ZarrArray.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23807,10 +24027,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_zarrarray_matlabclasstozarrtype",
+      "id": "external_zarr_matlab_zarrarray_matlabclasstozarrtype",
       "label": "matlabClassToZarrType",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\ZarrArray.m",
+      "source_file": "external\\zarr-matlab\\ZarrArray.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23818,10 +24038,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_zarrarray_buildcodec",
+      "id": "external_zarr_matlab_zarrarray_buildcodec",
       "label": "buildCodec",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\ZarrArray.m",
+      "source_file": "external\\zarr-matlab\\ZarrArray.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23829,10 +24049,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_zarrarray_getdefaultcodecconfig",
+      "id": "external_zarr_matlab_zarrarray_getdefaultcodecconfig",
       "label": "getDefaultCodecConfig",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\ZarrArray.m",
+      "source_file": "external\\zarr-matlab\\ZarrArray.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23840,10 +24060,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_zarrarray_gettypesize",
+      "id": "external_zarr_matlab_zarrarray_gettypesize",
       "label": "getTypeSize",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\ZarrArray.m",
+      "source_file": "external\\zarr-matlab\\ZarrArray.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23851,10 +24071,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_zarrarray_buildbytescodec",
+      "id": "external_zarr_matlab_zarrarray_buildbytescodec",
       "label": "buildBytesCodec",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\ZarrArray.m",
+      "source_file": "external\\zarr-matlab\\ZarrArray.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23862,10 +24082,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_zarrarray_buildchunkkeyencoding",
+      "id": "external_zarr_matlab_zarrarray_buildchunkkeyencoding",
       "label": "buildChunkKeyEncoding",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\ZarrArray.m",
+      "source_file": "external\\zarr-matlab\\ZarrArray.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23873,10 +24093,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_zarrarray_buildtransposecodec",
+      "id": "external_zarr_matlab_zarrarray_buildtransposecodec",
       "label": "buildTransposeCodec",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\ZarrArray.m",
+      "source_file": "external\\zarr-matlab\\ZarrArray.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23884,10 +24104,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_zarrarray_zarrarray",
+      "id": "external_zarr_matlab_zarrarray_zarrarray",
       "label": "ZarrArray",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\ZarrArray.m",
+      "source_file": "external\\zarr-matlab\\ZarrArray.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23895,10 +24115,21 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_zarrarray_info",
+      "id": "external_zarr_matlab_zarrarray_delete",
+      "label": "delete",
+      "file_type": "code",
+      "source_file": "external\\zarr-matlab\\ZarrArray.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "external_zarr_matlab_zarrarray_info",
       "label": "info",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\ZarrArray.m",
+      "source_file": "external\\zarr-matlab\\ZarrArray.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23906,10 +24137,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_zarrarray_shape",
+      "id": "external_zarr_matlab_zarrarray_shape",
       "label": "shape",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\ZarrArray.m",
+      "source_file": "external\\zarr-matlab\\ZarrArray.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23917,10 +24148,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_zarrarray_datatype",
+      "id": "external_zarr_matlab_zarrarray_datatype",
       "label": "dataType",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\ZarrArray.m",
+      "source_file": "external\\zarr-matlab\\ZarrArray.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23928,10 +24159,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_zarrarray_resize",
+      "id": "external_zarr_matlab_zarrarray_resize",
       "label": "resize",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\ZarrArray.m",
+      "source_file": "external\\zarr-matlab\\ZarrArray.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23939,10 +24170,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_zarrarray_read",
+      "id": "external_zarr_matlab_zarrarray_read",
       "label": "read",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\ZarrArray.m",
+      "source_file": "external\\zarr-matlab\\ZarrArray.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23950,10 +24181,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_zarrarray_write",
+      "id": "external_zarr_matlab_zarrarray_write",
       "label": "write",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\ZarrArray.m",
+      "source_file": "external\\zarr-matlab\\ZarrArray.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23961,10 +24192,21 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_zarrgroup_m",
+      "id": "external_zarr_matlab_zarrarray_gethandle",
+      "label": "getHandle",
+      "file_type": "code",
+      "source_file": "external\\zarr-matlab\\ZarrArray.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "external_zarr_matlab_zarrgroup_m",
       "label": "ZarrGroup.m",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\ZarrGroup.m",
+      "source_file": "external\\zarr-matlab\\ZarrGroup.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23972,10 +24214,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_zarrgroup_create",
+      "id": "external_zarr_matlab_zarrgroup_create",
       "label": "create",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\ZarrGroup.m",
+      "source_file": "external\\zarr-matlab\\ZarrGroup.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23983,10 +24225,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_zarrgroup_zarrgroup",
+      "id": "external_zarr_matlab_zarrgroup_zarrgroup",
       "label": "ZarrGroup",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\ZarrGroup.m",
+      "source_file": "external\\zarr-matlab\\ZarrGroup.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23994,10 +24236,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_zarrgroup_opengroup",
+      "id": "external_zarr_matlab_zarrgroup_opengroup",
       "label": "openGroup",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\ZarrGroup.m",
+      "source_file": "external\\zarr-matlab\\ZarrGroup.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -24005,10 +24247,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_zarrgroup_creategroup",
+      "id": "external_zarr_matlab_zarrgroup_creategroup",
       "label": "createGroup",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\ZarrGroup.m",
+      "source_file": "external\\zarr-matlab\\ZarrGroup.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -24016,10 +24258,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_zarrgroup_openarray",
+      "id": "external_zarr_matlab_zarrgroup_openarray",
       "label": "openArray",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\ZarrGroup.m",
+      "source_file": "external\\zarr-matlab\\ZarrGroup.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -24027,10 +24269,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_zarrgroup_createarray",
+      "id": "external_zarr_matlab_zarrgroup_createarray",
       "label": "createArray",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\ZarrGroup.m",
+      "source_file": "external\\zarr-matlab\\ZarrGroup.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -24038,10 +24280,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_zarrgroup_createarrayfromdata",
+      "id": "external_zarr_matlab_zarrgroup_createarrayfromdata",
       "label": "createArrayFromData",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\ZarrGroup.m",
+      "source_file": "external\\zarr-matlab\\ZarrGroup.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -24049,10 +24291,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_zarrgroup_list",
+      "id": "external_zarr_matlab_zarrgroup_list",
       "label": "list",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\ZarrGroup.m",
+      "source_file": "external\\zarr-matlab\\ZarrGroup.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -24060,10 +24302,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_zarrgroup_listcontents",
+      "id": "external_zarr_matlab_zarrgroup_listcontents",
       "label": "listContents",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\ZarrGroup.m",
+      "source_file": "external\\zarr-matlab\\ZarrGroup.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -24071,10 +24313,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_zarrnode_m",
+      "id": "external_zarr_matlab_zarrnode_m",
       "label": "ZarrNode.m",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\ZarrNode.m",
+      "source_file": "external\\zarr-matlab\\ZarrNode.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -24082,10 +24324,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_zarrnode_ishttpurl",
+      "id": "external_zarr_matlab_zarrnode_ishttpurl",
       "label": "isHttpUrl",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\ZarrNode.m",
+      "source_file": "external\\zarr-matlab\\ZarrNode.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -24093,10 +24335,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_zarrnode_joinpath",
+      "id": "external_zarr_matlab_zarrnode_joinpath",
       "label": "joinPath",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\ZarrNode.m",
+      "source_file": "external\\zarr-matlab\\ZarrNode.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -24104,10 +24346,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_zarrnode_fetchmetadata",
+      "id": "external_zarr_matlab_zarrnode_fetchmetadata",
       "label": "fetchMetadata",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\ZarrNode.m",
+      "source_file": "external\\zarr-matlab\\ZarrNode.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -24115,10 +24357,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_zarrnode_getattributes",
+      "id": "external_zarr_matlab_zarrnode_getattributes",
       "label": "getAttributes",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\ZarrNode.m",
+      "source_file": "external\\zarr-matlab\\ZarrNode.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -24126,10 +24368,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_zarrnode_setattributes",
+      "id": "external_zarr_matlab_zarrnode_setattributes",
       "label": "setAttributes",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\ZarrNode.m",
+      "source_file": "external\\zarr-matlab\\ZarrNode.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -24137,10 +24379,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_zarrnode_getattribute",
+      "id": "external_zarr_matlab_zarrnode_getattribute",
       "label": "getAttribute",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\ZarrNode.m",
+      "source_file": "external\\zarr-matlab\\ZarrNode.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -24148,10 +24390,10 @@
       "contributor": null
     },
     {
-      "id": "external_zarr3matlab_zarrnode_setattribute",
+      "id": "external_zarr_matlab_zarrnode_setattribute",
       "label": "setAttribute",
       "file_type": "code",
-      "source_file": "external\\Zarr3Matlab\\ZarrNode.m",
+      "source_file": "external\\zarr-matlab\\ZarrNode.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -34574,6 +34816,16 @@
     },
     {
       "source": "controllers_preferences_preferences_m",
+      "target": "controllers_preferences_preferences_externaldirectoriespanelcallbacks",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@Preferences\\Preferences.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_preferences_preferences_m",
       "target": "controllers_preferences_preferences_segmentationpanelcallbacks",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -35774,6 +36026,16 @@
     },
     {
       "source": "controllers_stitching_stitching_m",
+      "target": "controllers_stitching_applyprojectsettings_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@Stitching\\Stitching.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_stitching_m",
       "target": "controllers_stitching_buildlayoutfrombatchopt_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -35785,6 +36047,16 @@
     {
       "source": "controllers_stitching_stitching_m",
       "target": "controllers_stitching_closewindow_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@Stitching\\Stitching.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_stitching_m",
+      "target": "controllers_stitching_collectprojectsettings_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -35884,6 +36156,16 @@
     },
     {
       "source": "controllers_stitching_stitching_m",
+      "target": "controllers_stitching_refreshqualitychip_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@Stitching\\Stitching.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_stitching_m",
       "target": "controllers_stitching_returnbatchopt_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -35955,6 +36237,16 @@
     {
       "source": "controllers_stitching_stitching_m",
       "target": "controllers_stitching_updatewidgets_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@Stitching\\Stitching.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_stitching_m",
+      "target": "controllers_stitching_stitching_projectsettingfields",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -36054,6 +36346,16 @@
     },
     {
       "source": "controllers_stitchinginspector_stitchinginspector_m",
+      "target": "controllers_stitchinginspector_applyzboundaryfix_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_stitchinginspector_m",
       "target": "controllers_stitchinginspector_closewindow_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -36084,7 +36386,27 @@
     },
     {
       "source": "controllers_stitchinginspector_stitchinginspector_m",
+      "target": "controllers_stitchinginspector_ensuretilethumbs_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_stitchinginspector_m",
       "target": "controllers_stitchinginspector_excludeseam_callback_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_stitchinginspector_m",
+      "target": "controllers_stitchinginspector_fitview_callback_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -36134,6 +36456,16 @@
     },
     {
       "source": "controllers_stitchinginspector_stitchinginspector_m",
+      "target": "controllers_stitchinginspector_pairviewmotion_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_stitchinginspector_m",
       "target": "controllers_stitchinginspector_renderminimap_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -36174,6 +36506,16 @@
     },
     {
       "source": "controllers_stitchinginspector_stitchinginspector_m",
+      "target": "controllers_stitchinginspector_scrollwheel_callback_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_stitchinginspector_m",
       "target": "controllers_stitchinginspector_seamtableselection_callback_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -36185,16 +36527,6 @@
     {
       "source": "controllers_stitchinginspector_stitchinginspector_m",
       "target": "controllers_stitchinginspector_selectseam_m",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "controllers_stitchinginspector_stitchinginspector_m",
-      "target": "controllers_stitchinginspector_suggestbtn_callback_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -36264,7 +36596,87 @@
     },
     {
       "source": "controllers_stitchinginspector_stitchinginspector_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_refreshexcludebutton",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_stitchinginspector_m",
       "target": "controllers_stitchinginspector_stitchinginspector_currentoffsetyx",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_stitchinginspector_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_currentdz",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_stitchinginspector_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_pairhasdepth",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_stitchinginspector_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_fixmode",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_stitchinginspector_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_visibleranking",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_stitchinginspector_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_boundarymodeactive",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_stitchinginspector_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_boundarydelta",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_stitchinginspector_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_fixdz",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -45014,6 +45426,26 @@
     },
     {
       "source": "io_zarr_config_m",
+      "target": "io_zarr_config_executionmode",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+zarr\\Config.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_zarr_config_m",
+      "target": "io_zarr_config_setexecutionmode",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+zarr\\Config.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_zarr_config_m",
       "target": "io_zarr_config_smoothing",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -45793,1202 +46225,1232 @@
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrarraytest_m",
-      "target": "external_zarr3matlab_tests_zarrarraytest_addparenttopath",
+      "source": "external_zarr_matlab_tests_zarrarraytest_m",
+      "target": "external_zarr_matlab_tests_zarrarraytest_addparenttopath",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrarraytest_m",
-      "target": "external_zarr3matlab_tests_zarrarraytest_setuptempdir",
+      "source": "external_zarr_matlab_tests_zarrarraytest_m",
+      "target": "external_zarr_matlab_tests_zarrarraytest_setuptempdir",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrarraytest_m",
-      "target": "external_zarr3matlab_tests_zarrarraytest_removetempdir",
+      "source": "external_zarr_matlab_tests_zarrarraytest_m",
+      "target": "external_zarr_matlab_tests_zarrarraytest_removetempdir",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrarraytest_m",
-      "target": "external_zarr3matlab_tests_zarrarraytest_testcreate",
+      "source": "external_zarr_matlab_tests_zarrarraytest_m",
+      "target": "external_zarr_matlab_tests_zarrarraytest_testcreate",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrarraytest_m",
-      "target": "external_zarr3matlab_tests_zarrarraytest_testcreate1darray",
+      "source": "external_zarr_matlab_tests_zarrarraytest_m",
+      "target": "external_zarr_matlab_tests_zarrarraytest_testhandlelifecycle",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrarraytest_m",
-      "target": "external_zarr3matlab_tests_zarrarraytest_testcreate2darray",
+      "source": "external_zarr_matlab_tests_zarrarraytest_m",
+      "target": "external_zarr_matlab_tests_zarrarraytest_testcreate1darray",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrarraytest_m",
-      "target": "external_zarr3matlab_tests_zarrarraytest_testcreatewithdefaultchunkshape",
+      "source": "external_zarr_matlab_tests_zarrarraytest_m",
+      "target": "external_zarr_matlab_tests_zarrarraytest_testcreate2darray",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrarraytest_m",
-      "target": "external_zarr3matlab_tests_zarrarraytest_testcreatefromdatawithdefaultchunkshape",
+      "source": "external_zarr_matlab_tests_zarrarraytest_m",
+      "target": "external_zarr_matlab_tests_zarrarraytest_testcreatewithdefaultchunkshape",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrarraytest_m",
-      "target": "external_zarr3matlab_tests_zarrarraytest_testcreateboolarray",
+      "source": "external_zarr_matlab_tests_zarrarraytest_m",
+      "target": "external_zarr_matlab_tests_zarrarraytest_testcreatefromdatawithdefaultchunkshape",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrarraytest_m",
-      "target": "external_zarr3matlab_tests_zarrarraytest_testcreatefromdatalogical",
+      "source": "external_zarr_matlab_tests_zarrarraytest_m",
+      "target": "external_zarr_matlab_tests_zarrarraytest_testcreateboolarray",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrarraytest_m",
-      "target": "external_zarr3matlab_tests_zarrarraytest_testshape",
+      "source": "external_zarr_matlab_tests_zarrarraytest_m",
+      "target": "external_zarr_matlab_tests_zarrarraytest_testcreatefromdatalogical",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrarraytest_m",
-      "target": "external_zarr3matlab_tests_zarrarraytest_testdatatype",
+      "source": "external_zarr_matlab_tests_zarrarraytest_m",
+      "target": "external_zarr_matlab_tests_zarrarraytest_testshape",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrarraytest_m",
-      "target": "external_zarr3matlab_tests_zarrarraytest_testresize",
+      "source": "external_zarr_matlab_tests_zarrarraytest_m",
+      "target": "external_zarr_matlab_tests_zarrarraytest_testdatatype",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrarraytest_m",
-      "target": "external_zarr3matlab_tests_zarrarraytest_testwriteread",
+      "source": "external_zarr_matlab_tests_zarrarraytest_m",
+      "target": "external_zarr_matlab_tests_zarrarraytest_testresize",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrarraytest_m",
-      "target": "external_zarr3matlab_tests_zarrarraytest_testreadentirearray",
+      "source": "external_zarr_matlab_tests_zarrarraytest_m",
+      "target": "external_zarr_matlab_tests_zarrarraytest_testwriteread",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrarraytest_m",
-      "target": "external_zarr3matlab_tests_zarrarraytest_testwritewithoutbbox",
+      "source": "external_zarr_matlab_tests_zarrarraytest_m",
+      "target": "external_zarr_matlab_tests_zarrarraytest_testreadentirearray",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrarraytest_m",
-      "target": "external_zarr3matlab_tests_zarrarraytest_testwritewithallowresize",
+      "source": "external_zarr_matlab_tests_zarrarraytest_m",
+      "target": "external_zarr_matlab_tests_zarrarraytest_testwritewithoutbbox",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrarraytest_m",
-      "target": "external_zarr3matlab_tests_zarrarraytest_testwritewithallowresizeatorigin",
+      "source": "external_zarr_matlab_tests_zarrarraytest_m",
+      "target": "external_zarr_matlab_tests_zarrarraytest_testwritewithallowresize",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrarraytest_m",
-      "target": "external_zarr3matlab_tests_zarrarraytest_testopenexisting",
+      "source": "external_zarr_matlab_tests_zarrarraytest_m",
+      "target": "external_zarr_matlab_tests_zarrarraytest_testwritewithallowresizeatorigin",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrarraytest_m",
-      "target": "external_zarr3matlab_tests_zarrarraytest_testwithdoublequotedstrings",
+      "source": "external_zarr_matlab_tests_zarrarraytest_m",
+      "target": "external_zarr_matlab_tests_zarrarraytest_testopenexisting",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrarraytest_m",
-      "target": "external_zarr3matlab_tests_zarrarraytest_testwithsharding",
+      "source": "external_zarr_matlab_tests_zarrarraytest_m",
+      "target": "external_zarr_matlab_tests_zarrarraytest_testwithdoublequotedstrings",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrarraytest_m",
-      "target": "external_zarr3matlab_tests_zarrarraytest_testwithzstdcompressor",
+      "source": "external_zarr_matlab_tests_zarrarraytest_m",
+      "target": "external_zarr_matlab_tests_zarrarraytest_testwithsharding",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrarraytest_m",
-      "target": "external_zarr3matlab_tests_zarrarraytest_testwithzstdcompressorconfigured",
+      "source": "external_zarr_matlab_tests_zarrarraytest_m",
+      "target": "external_zarr_matlab_tests_zarrarraytest_testwithzstdcompressor",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrarraytest_m",
-      "target": "external_zarr3matlab_tests_zarrarraytest_testwithgzipcompressor",
+      "source": "external_zarr_matlab_tests_zarrarraytest_m",
+      "target": "external_zarr_matlab_tests_zarrarraytest_testwithzstdcompressorconfigured",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrarraytest_m",
-      "target": "external_zarr3matlab_tests_zarrarraytest_testwithblosccompressor",
+      "source": "external_zarr_matlab_tests_zarrarraytest_m",
+      "target": "external_zarr_matlab_tests_zarrarraytest_testwithgzipcompressor",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrarraytest_m",
-      "target": "external_zarr3matlab_tests_zarrarraytest_testwithblosccompressorconfigured",
+      "source": "external_zarr_matlab_tests_zarrarraytest_m",
+      "target": "external_zarr_matlab_tests_zarrarraytest_testwithblosccompressor",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrarraytest_m",
-      "target": "external_zarr3matlab_tests_zarrarraytest_testwithshardingandzstd",
+      "source": "external_zarr_matlab_tests_zarrarraytest_m",
+      "target": "external_zarr_matlab_tests_zarrarraytest_testwithblosccompressorconfigured",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrarraytest_m",
-      "target": "external_zarr3matlab_tests_zarrarraytest_testwithnocompression",
+      "source": "external_zarr_matlab_tests_zarrarraytest_m",
+      "target": "external_zarr_matlab_tests_zarrarraytest_testwithshardingandzstd",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrarraytest_m",
-      "target": "external_zarr3matlab_tests_zarrarraytest_testwithnofilters",
+      "source": "external_zarr_matlab_tests_zarrarraytest_m",
+      "target": "external_zarr_matlab_tests_zarrarraytest_testwithnocompression",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrarraytest_m",
-      "target": "external_zarr3matlab_tests_zarrarraytest_testwithnofiltersandnocompression",
+      "source": "external_zarr_matlab_tests_zarrarraytest_m",
+      "target": "external_zarr_matlab_tests_zarrarraytest_testwithnofilters",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrarraytest_m",
-      "target": "external_zarr3matlab_tests_zarrarraytest_testwithcompressorsequence",
+      "source": "external_zarr_matlab_tests_zarrarraytest_m",
+      "target": "external_zarr_matlab_tests_zarrarraytest_testwithnofiltersandnocompression",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrarraytest_m",
-      "target": "external_zarr3matlab_tests_zarrarraytest_testwithcustomfillvalue",
+      "source": "external_zarr_matlab_tests_zarrarraytest_m",
+      "target": "external_zarr_matlab_tests_zarrarraytest_testwithcompressorsequence",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrarraytest_m",
-      "target": "external_zarr3matlab_tests_zarrarraytest_testwithchunkkeyencodingdotseparator",
+      "source": "external_zarr_matlab_tests_zarrarraytest_m",
+      "target": "external_zarr_matlab_tests_zarrarraytest_testwithcustomfillvalue",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrarraytest_m",
-      "target": "external_zarr3matlab_tests_zarrarraytest_testwithchunkkeyencodingv2",
+      "source": "external_zarr_matlab_tests_zarrarraytest_m",
+      "target": "external_zarr_matlab_tests_zarrarraytest_testwithchunkkeyencodingdotseparator",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrarraytest_m",
-      "target": "external_zarr3matlab_tests_zarrarraytest_testcreatefromdata",
+      "source": "external_zarr_matlab_tests_zarrarraytest_m",
+      "target": "external_zarr_matlab_tests_zarrarraytest_testwithchunkkeyencodingv2",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrarraytest_m",
-      "target": "external_zarr3matlab_tests_zarrarraytest_testcreatefromdatawithcompressor",
+      "source": "external_zarr_matlab_tests_zarrarraytest_m",
+      "target": "external_zarr_matlab_tests_zarrarraytest_testcreatefromdata",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrarraytest_m",
-      "target": "external_zarr3matlab_tests_zarrarraytest_testcreatefromdatadouble",
+      "source": "external_zarr_matlab_tests_zarrarraytest_m",
+      "target": "external_zarr_matlab_tests_zarrarraytest_testcreatefromdatawithcompressor",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrarraytest_m",
-      "target": "external_zarr3matlab_tests_zarrarraytest_testgetattributesempty",
+      "source": "external_zarr_matlab_tests_zarrarraytest_m",
+      "target": "external_zarr_matlab_tests_zarrarraytest_testcreatefromdatadouble",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrarraytest_m",
-      "target": "external_zarr3matlab_tests_zarrarraytest_testsetandgetattributes",
+      "source": "external_zarr_matlab_tests_zarrarraytest_m",
+      "target": "external_zarr_matlab_tests_zarrarraytest_testgetattributesempty",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrarraytest_m",
-      "target": "external_zarr3matlab_tests_zarrarraytest_testsetandgetsingleattribute",
+      "source": "external_zarr_matlab_tests_zarrarraytest_m",
+      "target": "external_zarr_matlab_tests_zarrarraytest_testsetandgetattributes",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrarraytest_m",
-      "target": "external_zarr3matlab_tests_zarrarraytest_testgetnonexistentattribute",
+      "source": "external_zarr_matlab_tests_zarrarraytest_m",
+      "target": "external_zarr_matlab_tests_zarrarraytest_testsetandgetsingleattribute",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrarraytest_m",
-      "target": "external_zarr3matlab_tests_zarrarraytest_testattributespersist",
+      "source": "external_zarr_matlab_tests_zarrarraytest_m",
+      "target": "external_zarr_matlab_tests_zarrarraytest_testgetnonexistentattribute",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrarraytest_m",
-      "target": "external_zarr3matlab_tests_zarrarraytest_testwritewithwrongdatatype",
+      "source": "external_zarr_matlab_tests_zarrarraytest_m",
+      "target": "external_zarr_matlab_tests_zarrarraytest_testattributespersist",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrarraytest_m",
-      "target": "external_zarr3matlab_tests_zarrarraytest_testwriteoutofbounds",
+      "source": "external_zarr_matlab_tests_zarrarraytest_m",
+      "target": "external_zarr_matlab_tests_zarrarraytest_testwritewithwrongdatatype",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrgrouptest_m",
-      "target": "external_zarr3matlab_tests_zarrgrouptest_addparenttopath",
+      "source": "external_zarr_matlab_tests_zarrarraytest_m",
+      "target": "external_zarr_matlab_tests_zarrarraytest_testwriteoutofbounds",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrGroupTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrgrouptest_m",
-      "target": "external_zarr3matlab_tests_zarrgrouptest_setuptempdir",
+      "source": "external_zarr_matlab_tests_zarrgrouptest_m",
+      "target": "external_zarr_matlab_tests_zarrgrouptest_addparenttopath",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrGroupTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrGroupTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrgrouptest_m",
-      "target": "external_zarr3matlab_tests_zarrgrouptest_removetempdir",
+      "source": "external_zarr_matlab_tests_zarrgrouptest_m",
+      "target": "external_zarr_matlab_tests_zarrgrouptest_setuptempdir",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrGroupTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrGroupTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrgrouptest_m",
-      "target": "external_zarr3matlab_tests_zarrgrouptest_testcreate",
+      "source": "external_zarr_matlab_tests_zarrgrouptest_m",
+      "target": "external_zarr_matlab_tests_zarrgrouptest_removetempdir",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrGroupTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrGroupTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrgrouptest_m",
-      "target": "external_zarr3matlab_tests_zarrgrouptest_testopen",
+      "source": "external_zarr_matlab_tests_zarrgrouptest_m",
+      "target": "external_zarr_matlab_tests_zarrgrouptest_testcreate",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrGroupTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrGroupTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrgrouptest_m",
-      "target": "external_zarr3matlab_tests_zarrgrouptest_testcreatesubgroup",
+      "source": "external_zarr_matlab_tests_zarrgrouptest_m",
+      "target": "external_zarr_matlab_tests_zarrgrouptest_testopen",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrGroupTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrGroupTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrgrouptest_m",
-      "target": "external_zarr3matlab_tests_zarrgrouptest_testopensubgroup",
+      "source": "external_zarr_matlab_tests_zarrgrouptest_m",
+      "target": "external_zarr_matlab_tests_zarrgrouptest_testcreatesubgroup",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrGroupTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrGroupTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrgrouptest_m",
-      "target": "external_zarr3matlab_tests_zarrgrouptest_testcreatearray",
+      "source": "external_zarr_matlab_tests_zarrgrouptest_m",
+      "target": "external_zarr_matlab_tests_zarrgrouptest_testopensubgroup",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrGroupTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrGroupTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrgrouptest_m",
-      "target": "external_zarr3matlab_tests_zarrgrouptest_testopenarray",
+      "source": "external_zarr_matlab_tests_zarrgrouptest_m",
+      "target": "external_zarr_matlab_tests_zarrgrouptest_testcreatearray",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrGroupTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrGroupTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrgrouptest_m",
-      "target": "external_zarr3matlab_tests_zarrgrouptest_testopenandreadwritearray",
+      "source": "external_zarr_matlab_tests_zarrgrouptest_m",
+      "target": "external_zarr_matlab_tests_zarrgrouptest_testopenarray",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrGroupTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrGroupTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrgrouptest_m",
-      "target": "external_zarr3matlab_tests_zarrgrouptest_testcreatearrayfromdata",
+      "source": "external_zarr_matlab_tests_zarrgrouptest_m",
+      "target": "external_zarr_matlab_tests_zarrgrouptest_testopenandreadwritearray",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrGroupTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrGroupTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrgrouptest_m",
-      "target": "external_zarr3matlab_tests_zarrgrouptest_testlist",
+      "source": "external_zarr_matlab_tests_zarrgrouptest_m",
+      "target": "external_zarr_matlab_tests_zarrgrouptest_testcreatearrayfromdata",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrGroupTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrGroupTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrgrouptest_m",
-      "target": "external_zarr3matlab_tests_zarrgrouptest_testlistcontents",
+      "source": "external_zarr_matlab_tests_zarrgrouptest_m",
+      "target": "external_zarr_matlab_tests_zarrgrouptest_testlist",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrGroupTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrGroupTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrgrouptest_m",
-      "target": "external_zarr3matlab_tests_zarrgrouptest_testnestedstructure",
+      "source": "external_zarr_matlab_tests_zarrgrouptest_m",
+      "target": "external_zarr_matlab_tests_zarrgrouptest_testlistcontents",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrGroupTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrGroupTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrgrouptest_m",
-      "target": "external_zarr3matlab_tests_zarrgrouptest_testgetattributesempty",
+      "source": "external_zarr_matlab_tests_zarrgrouptest_m",
+      "target": "external_zarr_matlab_tests_zarrgrouptest_testnestedstructure",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrGroupTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrGroupTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrgrouptest_m",
-      "target": "external_zarr3matlab_tests_zarrgrouptest_testsetandgetattributes",
+      "source": "external_zarr_matlab_tests_zarrgrouptest_m",
+      "target": "external_zarr_matlab_tests_zarrgrouptest_testgetattributesempty",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrGroupTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrGroupTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrgrouptest_m",
-      "target": "external_zarr3matlab_tests_zarrgrouptest_testsetandgetsingleattribute",
+      "source": "external_zarr_matlab_tests_zarrgrouptest_m",
+      "target": "external_zarr_matlab_tests_zarrgrouptest_testsetandgetattributes",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrGroupTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrGroupTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrgrouptest_m",
-      "target": "external_zarr3matlab_tests_zarrgrouptest_testgetnonexistentattribute",
+      "source": "external_zarr_matlab_tests_zarrgrouptest_m",
+      "target": "external_zarr_matlab_tests_zarrgrouptest_testsetandgetsingleattribute",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrGroupTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrGroupTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrgrouptest_m",
-      "target": "external_zarr3matlab_tests_zarrgrouptest_testattributespersist",
+      "source": "external_zarr_matlab_tests_zarrgrouptest_m",
+      "target": "external_zarr_matlab_tests_zarrgrouptest_testgetnonexistentattribute",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrGroupTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrGroupTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrgrouptest_m",
-      "target": "external_zarr3matlab_tests_zarrgrouptest_testopennonexistent",
+      "source": "external_zarr_matlab_tests_zarrgrouptest_m",
+      "target": "external_zarr_matlab_tests_zarrgrouptest_testattributespersist",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrGroupTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrGroupTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrgrouptest_m",
-      "target": "external_zarr3matlab_tests_zarrgrouptest_testopenarrayasgroup",
+      "source": "external_zarr_matlab_tests_zarrgrouptest_m",
+      "target": "external_zarr_matlab_tests_zarrgrouptest_testopennonexistent",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrGroupTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrGroupTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrgrouptest_m",
-      "target": "external_zarr3matlab_tests_zarrgrouptest_testcreateexisting",
+      "source": "external_zarr_matlab_tests_zarrgrouptest_m",
+      "target": "external_zarr_matlab_tests_zarrgrouptest_testopenarrayasgroup",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrGroupTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrGroupTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrgrouptest_m",
-      "target": "external_zarr3matlab_tests_zarrgrouptest_testopenremote",
+      "source": "external_zarr_matlab_tests_zarrgrouptest_m",
+      "target": "external_zarr_matlab_tests_zarrgrouptest_testcreateexisting",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrGroupTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrGroupTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrgrouptest_m",
-      "target": "external_zarr3matlab_tests_zarrgrouptest_testopenremotesubgroup",
+      "source": "external_zarr_matlab_tests_zarrgrouptest_m",
+      "target": "external_zarr_matlab_tests_zarrgrouptest_testopenremote",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrGroupTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrGroupTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrgrouptest_m",
-      "target": "external_zarr3matlab_tests_zarrgrouptest_testopenremotearray",
+      "source": "external_zarr_matlab_tests_zarrgrouptest_m",
+      "target": "external_zarr_matlab_tests_zarrgrouptest_testopenremotesubgroup",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrGroupTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrGroupTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrgrouptest_m",
-      "target": "external_zarr3matlab_tests_zarrgrouptest_testremotelisterror",
+      "source": "external_zarr_matlab_tests_zarrgrouptest_m",
+      "target": "external_zarr_matlab_tests_zarrgrouptest_testopenremotearray",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrGroupTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrGroupTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrgrouptest_m",
-      "target": "external_zarr3matlab_tests_zarrgrouptest_testremotecreateerror",
+      "source": "external_zarr_matlab_tests_zarrgrouptest_m",
+      "target": "external_zarr_matlab_tests_zarrgrouptest_testremotelisterror",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrGroupTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrGroupTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrgrouptest_m",
-      "target": "external_zarr3matlab_tests_zarrgrouptest_testremotegetattributes",
+      "source": "external_zarr_matlab_tests_zarrgrouptest_m",
+      "target": "external_zarr_matlab_tests_zarrgrouptest_testremotecreateerror",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrGroupTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrGroupTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrgrouptest_m",
-      "target": "external_zarr3matlab_tests_zarrgrouptest_testremotesetattributeserror",
+      "source": "external_zarr_matlab_tests_zarrgrouptest_m",
+      "target": "external_zarr_matlab_tests_zarrgrouptest_testremotegetattributes",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrGroupTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrGroupTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrmextest_m",
-      "target": "external_zarr3matlab_tests_zarrmextest_addparenttopath",
+      "source": "external_zarr_matlab_tests_zarrgrouptest_m",
+      "target": "external_zarr_matlab_tests_zarrgrouptest_testremotesetattributeserror",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrMexTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrGroupTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrmextest_m",
-      "target": "external_zarr3matlab_tests_zarrmextest_setuptempdir",
+      "source": "external_zarr_matlab_tests_zarrmextest_m",
+      "target": "external_zarr_matlab_tests_zarrmextest_addparenttopath",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrMexTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrMexTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrmextest_m",
-      "target": "external_zarr3matlab_tests_zarrmextest_removetempdir",
+      "source": "external_zarr_matlab_tests_zarrmextest_m",
+      "target": "external_zarr_matlab_tests_zarrmextest_setuptempdir",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrMexTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrMexTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrmextest_m",
-      "target": "external_zarr3matlab_tests_zarrmextest_testreadfromremote",
+      "source": "external_zarr_matlab_tests_zarrmextest_m",
+      "target": "external_zarr_matlab_tests_zarrmextest_removetempdir",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrMexTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrMexTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrmextest_m",
-      "target": "external_zarr3matlab_tests_zarrmextest_testcreatearray",
+      "source": "external_zarr_matlab_tests_zarrmextest_m",
+      "target": "external_zarr_matlab_tests_zarrmextest_testreadfromremote",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrMexTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrMexTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrmextest_m",
-      "target": "external_zarr3matlab_tests_zarrmextest_testwriteandread",
+      "source": "external_zarr_matlab_tests_zarrmextest_m",
+      "target": "external_zarr_matlab_tests_zarrmextest_testcreatearray",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrMexTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrMexTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrmextest_m",
-      "target": "external_zarr3matlab_tests_zarrmextest_testresize",
+      "source": "external_zarr_matlab_tests_zarrmextest_m",
+      "target": "external_zarr_matlab_tests_zarrmextest_testwriteandread",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrMexTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrMexTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrmextest_m",
-      "target": "external_zarr3matlab_tests_zarrmextest_testinfo",
+      "source": "external_zarr_matlab_tests_zarrmextest_m",
+      "target": "external_zarr_matlab_tests_zarrmextest_testresize",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrMexTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrMexTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrmextest_m",
-      "target": "external_zarr3matlab_tests_zarrmextest_testinfofromremote",
+      "source": "external_zarr_matlab_tests_zarrmextest_m",
+      "target": "external_zarr_matlab_tests_zarrmextest_testinfo",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrMexTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrMexTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrmextest_m",
-      "target": "external_zarr3matlab_tests_zarrmextest_testreadfromnonexistentpath",
+      "source": "external_zarr_matlab_tests_zarrmextest_m",
+      "target": "external_zarr_matlab_tests_zarrmextest_testinfofromremote",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrMexTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrMexTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrmextest_m",
-      "target": "external_zarr3matlab_tests_zarrmextest_testcreatewithmismatcheddimensions",
+      "source": "external_zarr_matlab_tests_zarrmextest_m",
+      "target": "external_zarr_matlab_tests_zarrmextest_testreadfromnonexistentpath",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrMexTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrMexTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrmextest_m",
-      "target": "external_zarr3matlab_tests_zarrmextest_testinfofromnonexistentpath",
+      "source": "external_zarr_matlab_tests_zarrmextest_m",
+      "target": "external_zarr_matlab_tests_zarrmextest_testcreatewithmismatcheddimensions",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrMexTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrMexTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrmextest_m",
-      "target": "external_zarr3matlab_tests_zarrmextest_createtestmetadatajson",
+      "source": "external_zarr_matlab_tests_zarrmextest_m",
+      "target": "external_zarr_matlab_tests_zarrmextest_testinfofromnonexistentpath",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrMexTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrMexTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_zarrarray_m",
-      "target": "external_zarr3matlab_zarrarray_create",
+      "source": "external_zarr_matlab_tests_zarrmextest_m",
+      "target": "external_zarr_matlab_tests_zarrmextest_createtestmetadatajson",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\ZarrArray.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrMexTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_zarrarray_m",
-      "target": "external_zarr3matlab_zarrarray_createfromdata",
+      "source": "external_zarr_matlab_zarrarray_m",
+      "target": "external_zarr_matlab_zarrarray_create",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\ZarrArray.m",
+      "source_file": "external\\zarr-matlab\\ZarrArray.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_zarrarray_m",
-      "target": "external_zarr3matlab_zarrarray_defaultchunkshape",
+      "source": "external_zarr_matlab_zarrarray_m",
+      "target": "external_zarr_matlab_zarrarray_createfromdata",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\ZarrArray.m",
+      "source_file": "external\\zarr-matlab\\ZarrArray.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_zarrarray_m",
-      "target": "external_zarr3matlab_zarrarray_normalizecodecs",
+      "source": "external_zarr_matlab_zarrarray_m",
+      "target": "external_zarr_matlab_zarrarray_defaultchunkshape",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\ZarrArray.m",
+      "source_file": "external\\zarr-matlab\\ZarrArray.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_zarrarray_m",
-      "target": "external_zarr3matlab_zarrarray_matlabclasstozarrtype",
+      "source": "external_zarr_matlab_zarrarray_m",
+      "target": "external_zarr_matlab_zarrarray_normalizecodecs",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\ZarrArray.m",
+      "source_file": "external\\zarr-matlab\\ZarrArray.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_zarrarray_m",
-      "target": "external_zarr3matlab_zarrarray_buildcodec",
+      "source": "external_zarr_matlab_zarrarray_m",
+      "target": "external_zarr_matlab_zarrarray_matlabclasstozarrtype",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\ZarrArray.m",
+      "source_file": "external\\zarr-matlab\\ZarrArray.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_zarrarray_m",
-      "target": "external_zarr3matlab_zarrarray_getdefaultcodecconfig",
+      "source": "external_zarr_matlab_zarrarray_m",
+      "target": "external_zarr_matlab_zarrarray_buildcodec",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\ZarrArray.m",
+      "source_file": "external\\zarr-matlab\\ZarrArray.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_zarrarray_m",
-      "target": "external_zarr3matlab_zarrarray_gettypesize",
+      "source": "external_zarr_matlab_zarrarray_m",
+      "target": "external_zarr_matlab_zarrarray_getdefaultcodecconfig",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\ZarrArray.m",
+      "source_file": "external\\zarr-matlab\\ZarrArray.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_zarrarray_m",
-      "target": "external_zarr3matlab_zarrarray_buildbytescodec",
+      "source": "external_zarr_matlab_zarrarray_m",
+      "target": "external_zarr_matlab_zarrarray_gettypesize",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\ZarrArray.m",
+      "source_file": "external\\zarr-matlab\\ZarrArray.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_zarrarray_m",
-      "target": "external_zarr3matlab_zarrarray_buildchunkkeyencoding",
+      "source": "external_zarr_matlab_zarrarray_m",
+      "target": "external_zarr_matlab_zarrarray_buildbytescodec",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\ZarrArray.m",
+      "source_file": "external\\zarr-matlab\\ZarrArray.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_zarrarray_m",
-      "target": "external_zarr3matlab_zarrarray_buildtransposecodec",
+      "source": "external_zarr_matlab_zarrarray_m",
+      "target": "external_zarr_matlab_zarrarray_buildchunkkeyencoding",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\ZarrArray.m",
+      "source_file": "external\\zarr-matlab\\ZarrArray.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_zarrarray_m",
-      "target": "external_zarr3matlab_zarrarray_zarrarray",
+      "source": "external_zarr_matlab_zarrarray_m",
+      "target": "external_zarr_matlab_zarrarray_buildtransposecodec",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\ZarrArray.m",
+      "source_file": "external\\zarr-matlab\\ZarrArray.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_zarrarray_m",
-      "target": "external_zarr3matlab_zarrarray_info",
+      "source": "external_zarr_matlab_zarrarray_m",
+      "target": "external_zarr_matlab_zarrarray_zarrarray",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\ZarrArray.m",
+      "source_file": "external\\zarr-matlab\\ZarrArray.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_zarrarray_m",
-      "target": "external_zarr3matlab_zarrarray_shape",
+      "source": "external_zarr_matlab_zarrarray_m",
+      "target": "external_zarr_matlab_zarrarray_delete",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\ZarrArray.m",
+      "source_file": "external\\zarr-matlab\\ZarrArray.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_zarrarray_m",
-      "target": "external_zarr3matlab_zarrarray_datatype",
+      "source": "external_zarr_matlab_zarrarray_m",
+      "target": "external_zarr_matlab_zarrarray_info",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\ZarrArray.m",
+      "source_file": "external\\zarr-matlab\\ZarrArray.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_zarrarray_m",
-      "target": "external_zarr3matlab_zarrarray_resize",
+      "source": "external_zarr_matlab_zarrarray_m",
+      "target": "external_zarr_matlab_zarrarray_shape",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\ZarrArray.m",
+      "source_file": "external\\zarr-matlab\\ZarrArray.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_zarrarray_m",
-      "target": "external_zarr3matlab_zarrarray_read",
+      "source": "external_zarr_matlab_zarrarray_m",
+      "target": "external_zarr_matlab_zarrarray_datatype",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\ZarrArray.m",
+      "source_file": "external\\zarr-matlab\\ZarrArray.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_zarrarray_m",
-      "target": "external_zarr3matlab_zarrarray_write",
+      "source": "external_zarr_matlab_zarrarray_m",
+      "target": "external_zarr_matlab_zarrarray_resize",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\ZarrArray.m",
+      "source_file": "external\\zarr-matlab\\ZarrArray.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_zarrgroup_m",
-      "target": "external_zarr3matlab_zarrgroup_create",
+      "source": "external_zarr_matlab_zarrarray_m",
+      "target": "external_zarr_matlab_zarrarray_read",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\ZarrGroup.m",
+      "source_file": "external\\zarr-matlab\\ZarrArray.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_zarrgroup_m",
-      "target": "external_zarr3matlab_zarrgroup_zarrgroup",
+      "source": "external_zarr_matlab_zarrarray_m",
+      "target": "external_zarr_matlab_zarrarray_write",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\ZarrGroup.m",
+      "source_file": "external\\zarr-matlab\\ZarrArray.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_zarrgroup_m",
-      "target": "external_zarr3matlab_zarrgroup_opengroup",
+      "source": "external_zarr_matlab_zarrarray_m",
+      "target": "external_zarr_matlab_zarrarray_gethandle",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\ZarrGroup.m",
+      "source_file": "external\\zarr-matlab\\ZarrArray.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_zarrgroup_m",
-      "target": "external_zarr3matlab_zarrgroup_creategroup",
+      "source": "external_zarr_matlab_zarrgroup_m",
+      "target": "external_zarr_matlab_zarrgroup_create",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\ZarrGroup.m",
+      "source_file": "external\\zarr-matlab\\ZarrGroup.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_zarrgroup_m",
-      "target": "external_zarr3matlab_zarrgroup_openarray",
+      "source": "external_zarr_matlab_zarrgroup_m",
+      "target": "external_zarr_matlab_zarrgroup_zarrgroup",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\ZarrGroup.m",
+      "source_file": "external\\zarr-matlab\\ZarrGroup.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_zarrgroup_m",
-      "target": "external_zarr3matlab_zarrgroup_createarray",
+      "source": "external_zarr_matlab_zarrgroup_m",
+      "target": "external_zarr_matlab_zarrgroup_opengroup",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\ZarrGroup.m",
+      "source_file": "external\\zarr-matlab\\ZarrGroup.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_zarrgroup_m",
-      "target": "external_zarr3matlab_zarrgroup_createarrayfromdata",
+      "source": "external_zarr_matlab_zarrgroup_m",
+      "target": "external_zarr_matlab_zarrgroup_creategroup",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\ZarrGroup.m",
+      "source_file": "external\\zarr-matlab\\ZarrGroup.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_zarrgroup_m",
-      "target": "external_zarr3matlab_zarrgroup_list",
+      "source": "external_zarr_matlab_zarrgroup_m",
+      "target": "external_zarr_matlab_zarrgroup_openarray",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\ZarrGroup.m",
+      "source_file": "external\\zarr-matlab\\ZarrGroup.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_zarrgroup_m",
-      "target": "external_zarr3matlab_zarrgroup_listcontents",
+      "source": "external_zarr_matlab_zarrgroup_m",
+      "target": "external_zarr_matlab_zarrgroup_createarray",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\ZarrGroup.m",
+      "source_file": "external\\zarr-matlab\\ZarrGroup.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_zarrnode_m",
-      "target": "external_zarr3matlab_zarrnode_ishttpurl",
+      "source": "external_zarr_matlab_zarrgroup_m",
+      "target": "external_zarr_matlab_zarrgroup_createarrayfromdata",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\ZarrNode.m",
+      "source_file": "external\\zarr-matlab\\ZarrGroup.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_zarrnode_m",
-      "target": "external_zarr3matlab_zarrnode_joinpath",
+      "source": "external_zarr_matlab_zarrgroup_m",
+      "target": "external_zarr_matlab_zarrgroup_list",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\ZarrNode.m",
+      "source_file": "external\\zarr-matlab\\ZarrGroup.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_zarrnode_m",
-      "target": "external_zarr3matlab_zarrnode_fetchmetadata",
+      "source": "external_zarr_matlab_zarrgroup_m",
+      "target": "external_zarr_matlab_zarrgroup_listcontents",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\ZarrNode.m",
+      "source_file": "external\\zarr-matlab\\ZarrGroup.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_zarrnode_m",
-      "target": "external_zarr3matlab_zarrnode_getattributes",
+      "source": "external_zarr_matlab_zarrnode_m",
+      "target": "external_zarr_matlab_zarrnode_ishttpurl",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\ZarrNode.m",
+      "source_file": "external\\zarr-matlab\\ZarrNode.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_zarrnode_m",
-      "target": "external_zarr3matlab_zarrnode_setattributes",
+      "source": "external_zarr_matlab_zarrnode_m",
+      "target": "external_zarr_matlab_zarrnode_joinpath",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\ZarrNode.m",
+      "source_file": "external\\zarr-matlab\\ZarrNode.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_zarrnode_m",
-      "target": "external_zarr3matlab_zarrnode_getattribute",
+      "source": "external_zarr_matlab_zarrnode_m",
+      "target": "external_zarr_matlab_zarrnode_fetchmetadata",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\ZarrNode.m",
+      "source_file": "external\\zarr-matlab\\ZarrNode.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_zarrnode_m",
-      "target": "external_zarr3matlab_zarrnode_setattribute",
+      "source": "external_zarr_matlab_zarrnode_m",
+      "target": "external_zarr_matlab_zarrnode_getattributes",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\ZarrNode.m",
+      "source_file": "external\\zarr-matlab\\ZarrNode.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "external_zarr_matlab_zarrnode_m",
+      "target": "external_zarr_matlab_zarrnode_setattributes",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "external\\zarr-matlab\\ZarrNode.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "external_zarr_matlab_zarrnode_m",
+      "target": "external_zarr_matlab_zarrnode_getattribute",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "external\\zarr-matlab\\ZarrNode.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "external_zarr_matlab_zarrnode_m",
+      "target": "external_zarr_matlab_zarrnode_setattribute",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "external\\zarr-matlab\\ZarrNode.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -48883,22 +49345,22 @@
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_zarrarray_m",
-      "target": "external_zarr3matlab_zarrnode_m",
+      "source": "external_zarr_matlab_zarrarray_m",
+      "target": "external_zarr_matlab_zarrnode_m",
       "relation": "inherits_from",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\ZarrArray.m",
+      "source_file": "external\\zarr-matlab\\ZarrArray.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_zarrgroup_m",
-      "target": "external_zarr3matlab_zarrnode_m",
+      "source": "external_zarr_matlab_zarrgroup_m",
+      "target": "external_zarr_matlab_zarrnode_m",
       "relation": "inherits_from",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "external\\Zarr3Matlab\\ZarrGroup.m",
+      "source_file": "external\\zarr-matlab\\ZarrGroup.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -55254,7 +55716,37 @@
     },
     {
       "source": "controllers_stitching_loadprojectbtn_callback_m",
+      "target": "controllers_stitching_applyprojectsettings_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@Stitching\\loadProjectBtn_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_loadprojectbtn_callback_m",
+      "target": "controllers_stitching_buildlayoutfrombatchopt_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@Stitching\\loadProjectBtn_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_loadprojectbtn_callback_m",
       "target": "controllers_stitching_updatewidgets_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@Stitching\\loadProjectBtn_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_loadprojectbtn_callback_m",
+      "target": "controllers_stitching_previewlayoutbtn_callback_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -55313,6 +55805,16 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_stitching_optimizepositions_callback_m",
+      "target": "controllers_stitching_previewlayoutbtn_callback_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@Stitching\\optimizePositions_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_stitching_previewfeaturematch_m",
       "target": "controllers_stitching_stitching_buildfeatureoptions",
       "relation": "calls",
@@ -55359,6 +55861,16 @@
       "confidence": "INFERRED",
       "confidence_score": 0.75,
       "source_file": "+controllers\\@Stitching\\runOverlapEstimation.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_saveprojectbtn_callback_m",
+      "target": "controllers_stitching_collectprojectsettings_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@Stitching\\saveProjectBtn_Callback.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -55435,6 +55947,16 @@
     {
       "source": "controllers_stitching_stitchbtn_callback_m",
       "target": "controllers_stitching_stitching_buildfeatureoptions",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@Stitching\\stitchBtn_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_stitchbtn_callback_m",
+      "target": "controllers_stitching_collectprojectsettings_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -55523,6 +56045,16 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_stitching_updatewidgets_m",
+      "target": "controllers_stitching_refreshqualitychip_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@Stitching\\updateWidgets.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_stitchinginspector_addcallbacks_m",
       "target": "controllers_stitchinginspector_closewindow_m",
       "relation": "calls",
@@ -55545,6 +56077,26 @@
     {
       "source": "controllers_stitchinginspector_addcallbacks_m",
       "target": "controllers_stitchinginspector_keyrelease_callback_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\addCallbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_addcallbacks_m",
+      "target": "controllers_stitchinginspector_pairviewmotion_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\addCallbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_addcallbacks_m",
+      "target": "controllers_stitchinginspector_scrollwheel_callback_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -55604,16 +56156,6 @@
     },
     {
       "source": "controllers_stitchinginspector_addcallbacks_m",
-      "target": "controllers_stitchinginspector_suggestbtn_callback_m",
-      "relation": "calls",
-      "confidence": "INFERRED",
-      "confidence_score": 0.75,
-      "source_file": "+controllers\\@StitchingInspector\\addCallbacks.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "controllers_stitchinginspector_addcallbacks_m",
       "target": "controllers_stitchinginspector_twoclickbtn_callback_m",
       "relation": "calls",
       "confidence": "INFERRED",
@@ -55633,8 +56175,78 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_stitchinginspector_addcallbacks_m",
+      "target": "controllers_stitchinginspector_fitview_callback_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\addCallbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_addcallbacks_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_fixmode",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\addCallbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_addcallbacks_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_visibleranking",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\addCallbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_addcallbacks_m",
+      "target": "controllers_stitchinginspector_updatewidgets_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\addCallbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_addcallbacks_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_setstatus",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\addCallbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_addcallbacks_m",
+      "target": "controllers_stitchinginspector_selectseam_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\addCallbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_stitchinginspector_advancetonextunreviewed_m",
       "target": "controllers_stitchinginspector_stitchinginspector_datavalid",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\advanceToNextUnreviewed.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_advancetonextunreviewed_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_visibleranking",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -55709,6 +56321,36 @@
       "confidence": "INFERRED",
       "confidence_score": 0.75,
       "source_file": "+controllers\\@StitchingInspector\\applyUserFix.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_applyzboundaryfix_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_boundarymodeactive",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\applyZBoundaryFix.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_applyzboundaryfix_m",
+      "target": "controllers_stitchinginspector_renderpairview_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\applyZBoundaryFix.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_applyzboundaryfix_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_setstatus",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\applyZBoundaryFix.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -55764,7 +56406,27 @@
     },
     {
       "source": "controllers_stitchinginspector_correlateatpoint_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_boundarymodeactive",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\correlateAtPoint.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_correlateatpoint_m",
       "target": "controllers_stitchinginspector_stitchinginspector_currentoffsetyx",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\correlateAtPoint.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_correlateatpoint_m",
+      "target": "controllers_stitchinginspector_applyzboundaryfix_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -55779,6 +56441,26 @@
       "confidence": "INFERRED",
       "confidence_score": 0.75,
       "source_file": "+controllers\\@StitchingInspector\\correlateAtPoint.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_correlateatpoint_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_fixdz",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\correlateAtPoint.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_ensuretilethumbs_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_datavalid",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\ensureTileThumbs.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -55824,6 +56506,16 @@
     },
     {
       "source": "controllers_stitchinginspector_jumptotile_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_visibleranking",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\jumpToTile.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_jumptotile_m",
       "target": "controllers_stitchinginspector_selectseam_m",
       "relation": "calls",
       "confidence": "INFERRED",
@@ -55835,6 +56527,16 @@
     {
       "source": "controllers_stitchinginspector_keypress_callback_m",
       "target": "controllers_stitchinginspector_stitchinginspector_datavalid",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\keyPress_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_keypress_callback_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_boundarymodeactive",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -55864,27 +56566,17 @@
     },
     {
       "source": "controllers_stitchinginspector_keypress_callback_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_visibleranking",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\keyPress_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_keypress_callback_m",
       "target": "controllers_stitchinginspector_selectseam_m",
-      "relation": "calls",
-      "confidence": "INFERRED",
-      "confidence_score": 0.75,
-      "source_file": "+controllers\\@StitchingInspector\\keyPress_Callback.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "controllers_stitchinginspector_keypress_callback_m",
-      "target": "controllers_stitchinginspector_applyuserfix_m",
-      "relation": "calls",
-      "confidence": "INFERRED",
-      "confidence_score": 0.75,
-      "source_file": "+controllers\\@StitchingInspector\\keyPress_Callback.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "controllers_stitchinginspector_keypress_callback_m",
-      "target": "controllers_stitchinginspector_stitchinginspector_currentoffsetyx",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -55903,28 +56595,58 @@
       "weight": 1.0
     },
     {
-      "source": "controllers_stitchinginspector_keyrelease_callback_m",
-      "target": "controllers_stitchinginspector_stitchinginspector_datavalid",
+      "source": "controllers_stitchinginspector_keypress_callback_m",
+      "target": "controllers_stitchinginspector_fitview_callback_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
-      "source_file": "+controllers\\@StitchingInspector\\keyRelease_Callback.m",
+      "source_file": "+controllers\\@StitchingInspector\\keyPress_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_keypress_callback_m",
+      "target": "controllers_stitchinginspector_pairviewmotion_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\keyPress_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_keypress_callback_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_pairhasdepth",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\keyPress_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_keypress_callback_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_setstatus",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\keyPress_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_keypress_callback_m",
+      "target": "controllers_stitchinginspector_renderpairview_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\keyPress_Callback.m",
       "source_location": null,
       "weight": 1.0
     },
     {
       "source": "controllers_stitchinginspector_keyrelease_callback_m",
-      "target": "controllers_stitchinginspector_stitchinginspector_autoresolveenabled",
-      "relation": "calls",
-      "confidence": "INFERRED",
-      "confidence_score": 0.75,
-      "source_file": "+controllers\\@StitchingInspector\\keyRelease_Callback.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "controllers_stitchinginspector_keyrelease_callback_m",
-      "target": "controllers_stitchinginspector_resolvebtn_callback_m",
+      "target": "controllers_stitchinginspector_pairviewmotion_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -55964,6 +56686,36 @@
     },
     {
       "source": "controllers_stitchinginspector_pairviewbuttondown_m",
+      "target": "controllers_stitchinginspector_pairviewmotion_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\pairViewButtonDown.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_pairviewbuttondown_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_boundarymodeactive",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\pairViewButtonDown.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_pairviewbuttondown_m",
+      "target": "controllers_stitchinginspector_applyzboundaryfix_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\pairViewButtonDown.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_pairviewbuttondown_m",
       "target": "controllers_stitchinginspector_stitchinginspector_currentoffsetyx",
       "relation": "calls",
       "confidence": "INFERRED",
@@ -55979,6 +56731,36 @@
       "confidence": "INFERRED",
       "confidence_score": 0.75,
       "source_file": "+controllers\\@StitchingInspector\\pairViewButtonDown.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_pairviewbuttondown_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_fixdz",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\pairViewButtonDown.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_pairviewmotion_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_datavalid",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\pairViewMotion.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_renderminimap_m",
+      "target": "controllers_stitchinginspector_ensuretilethumbs_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\renderMiniMap.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -56004,6 +56786,26 @@
     },
     {
       "source": "controllers_stitchinginspector_renderpairview_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_fixmode",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\renderPairView.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_renderpairview_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_boundarydelta",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\renderPairView.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_renderpairview_m",
       "target": "controllers_stitchinginspector_stitchinginspector_currentoffsetyx",
       "relation": "calls",
       "confidence": "INFERRED",
@@ -56014,7 +56816,37 @@
     },
     {
       "source": "controllers_stitchinginspector_renderpairview_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_pairhasdepth",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\renderPairView.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_renderpairview_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_currentdz",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\renderPairView.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_renderpairview_m",
       "target": "controllers_stitchinginspector_pairviewbuttondown_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\renderPairView.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_renderpairview_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_boundarymodeactive",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -56064,6 +56896,16 @@
     },
     {
       "source": "controllers_stitchinginspector_resolvebtn_callback_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_visibleranking",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\resolveBtn_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_resolvebtn_callback_m",
       "target": "controllers_stitchinginspector_selectseam_m",
       "relation": "calls",
       "confidence": "INFERRED",
@@ -56073,8 +56915,38 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_stitchinginspector_scrollwheel_callback_m",
+      "target": "controllers_stitchinginspector_pairviewmotion_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\scrollWheel_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_scrollwheel_callback_m",
+      "target": "controllers_stitchinginspector_fitview_callback_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\scrollWheel_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_stitchinginspector_seamtableselection_callback_m",
       "target": "controllers_stitchinginspector_stitchinginspector_datavalid",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\seamTableSelection_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_seamtableselection_callback_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_visibleranking",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -56095,6 +56967,16 @@
     {
       "source": "controllers_stitchinginspector_selectseam_m",
       "target": "controllers_stitchinginspector_stitchinginspector_datavalid",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\selectSeam.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_selectseam_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_visibleranking",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -56123,42 +57005,22 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_stitchinginspector_selectseam_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_refreshexcludebutton",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\selectSeam.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_stitchinginspector_stitchinginspector_m",
       "target": "core_childview_childview_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.7,
       "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "controllers_stitchinginspector_suggestbtn_callback_m",
-      "target": "controllers_stitchinginspector_stitchinginspector_datavalid",
-      "relation": "calls",
-      "confidence": "INFERRED",
-      "confidence_score": 0.75,
-      "source_file": "+controllers\\@StitchingInspector\\suggestBtn_Callback.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "controllers_stitchinginspector_suggestbtn_callback_m",
-      "target": "controllers_stitchinginspector_stitchinginspector_setstatus",
-      "relation": "calls",
-      "confidence": "INFERRED",
-      "confidence_score": 0.75,
-      "source_file": "+controllers\\@StitchingInspector\\suggestBtn_Callback.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "controllers_stitchinginspector_suggestbtn_callback_m",
-      "target": "controllers_stitchinginspector_applyuserfix_m",
-      "relation": "calls",
-      "confidence": "INFERRED",
-      "confidence_score": 0.75,
-      "source_file": "+controllers\\@StitchingInspector\\suggestBtn_Callback.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -56244,7 +57106,27 @@
     },
     {
       "source": "controllers_stitchinginspector_undofix_callback_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_boundarymodeactive",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\undoFix_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_undofix_callback_m",
       "target": "controllers_stitchinginspector_stitchinginspector_setstatus",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\undoFix_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_undofix_callback_m",
+      "target": "controllers_stitchinginspector_renderpairview_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -56283,18 +57165,28 @@
       "weight": 1.0
     },
     {
-      "source": "controllers_stitchinginspector_undofix_callback_m",
-      "target": "controllers_stitchinginspector_renderpairview_m",
+      "source": "controllers_stitchinginspector_updatewidgets_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_datavalid",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
-      "source_file": "+controllers\\@StitchingInspector\\undoFix_Callback.m",
+      "source_file": "+controllers\\@StitchingInspector\\updateWidgets.m",
       "source_location": null,
       "weight": 1.0
     },
     {
       "source": "controllers_stitchinginspector_updatewidgets_m",
-      "target": "controllers_stitchinginspector_stitchinginspector_datavalid",
+      "target": "controllers_stitchinginspector_stitchinginspector_visibleranking",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\updateWidgets.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_updatewidgets_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_refreshexcludebutton",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -57355,6 +58247,16 @@
     {
       "source": "core_mibdataset_setdata3d_m",
       "target": "core_mibdataset_allocatemask_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+core\\@MibDataset\\setData3D.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibdataset_setdata3d_m",
+      "target": "core_mibdataset_setpixelidxlist_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -60164,7 +61066,7 @@
     },
     {
       "source": "io_adapters_zarrblockedadapter_m",
-      "target": "external_zarr3matlab_zarrgroup_m",
+      "target": "external_zarr_matlab_zarrgroup_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.7,
@@ -60174,7 +61076,7 @@
     },
     {
       "source": "io_adapters_zarrblockedadapter_m",
-      "target": "external_zarr3matlab_zarrarray_m",
+      "target": "external_zarr_matlab_zarrarray_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.7,
@@ -60374,7 +61276,7 @@
     },
     {
       "source": "io_loaders_zarr3virtualsetuploader_m",
-      "target": "external_zarr3matlab_zarrgroup_m",
+      "target": "external_zarr_matlab_zarrgroup_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.7,
@@ -60384,7 +61286,7 @@
     },
     {
       "source": "io_loaders_zarr3virtualsetuploader_m",
-      "target": "external_zarr3matlab_zarrarray_m",
+      "target": "external_zarr_matlab_zarrarray_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.7,
@@ -60444,7 +61346,7 @@
     },
     {
       "source": "io_savers_zarr3saver_m",
-      "target": "external_zarr3matlab_zarrgroup_m",
+      "target": "external_zarr_matlab_zarrgroup_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.7,
@@ -60454,7 +61356,7 @@
     },
     {
       "source": "io_zarr_array_m",
-      "target": "external_zarr3matlab_zarrarray_m",
+      "target": "external_zarr_matlab_zarrarray_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.7,
@@ -60464,7 +61366,7 @@
     },
     {
       "source": "io_zarr_group_m",
-      "target": "external_zarr3matlab_zarrgroup_m",
+      "target": "external_zarr_matlab_zarrgroup_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.7,
@@ -60483,32 +61385,32 @@
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_zarrgroup_m",
-      "target": "external_zarr3matlab_zarrarray_m",
+      "source": "external_zarr_matlab_zarrgroup_m",
+      "target": "external_zarr_matlab_zarrarray_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.7,
-      "source_file": "external\\Zarr3Matlab\\ZarrGroup.m",
+      "source_file": "external\\zarr-matlab\\ZarrGroup.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrarraytest_m",
-      "target": "external_zarr3matlab_zarrarray_m",
+      "source": "external_zarr_matlab_tests_zarrarraytest_m",
+      "target": "external_zarr_matlab_zarrarray_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.7,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrArrayTest.m",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "external_zarr3matlab_tests_zarrgrouptest_m",
-      "target": "external_zarr3matlab_zarrgroup_m",
+      "source": "external_zarr_matlab_tests_zarrgrouptest_m",
+      "target": "external_zarr_matlab_zarrgroup_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.7,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrGroupTest.m",
+      "source_file": "external\\zarr-matlab\\tests\\ZarrGroupTest.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -62875,6 +63777,16 @@
     {
       "source": "controllers_imagearithmetics_imagearithmetics_m",
       "target": "utils_updatebatchoptfromgui_shared_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@ImageArithmetics\\ImageArithmetics.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_imagearithmetics_imagearithmetics_m",
+      "target": "utils_defaults_generatelut_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -65964,11 +66876,51 @@
     },
     {
       "source": "controllers_mibselection_dilateselection_m",
+      "target": "utils_parsestrelsize_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibSelection\\dilateSelection.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibselection_dilateselection_m",
+      "target": "utils_morphanisotropicmethod_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibSelection\\dilateSelection.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibselection_dilateselection_m",
       "target": "utils_dlgs_inputquestdlg_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "+controllers\\@MibSelection\\dilateSelection.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibselection_erodeselection_m",
+      "target": "utils_parsestrelsize_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibSelection\\erodeSelection.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibselection_erodeselection_m",
+      "target": "utils_morphanisotropicmethod_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibSelection\\erodeSelection.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -66933,6 +67885,16 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_stitching_applyprojectsettings_m",
+      "target": "utils_concatenatestructures_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@Stitching\\applyProjectSettings.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_stitching_buildlayoutfrombatchopt_m",
       "target": "utils_stitch_buildlayoutbioformats_m",
       "relation": "calls",
@@ -67005,6 +67967,16 @@
     {
       "source": "controllers_stitching_loadprojectbtn_callback_m",
       "target": "utils_dlgs_showerrordialog_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@Stitching\\loadProjectBtn_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_loadprojectbtn_callback_m",
+      "target": "utils_dlgs_inputquestdlg_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -67095,6 +68067,16 @@
     {
       "source": "controllers_stitching_optimizepositions_callback_m",
       "target": "utils_stitch_plancanvas_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@Stitching\\optimizePositions_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_optimizepositions_callback_m",
+      "target": "utils_stitch_scoreseams_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -67363,12 +68345,32 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_stitchinginspector_addcallbacks_m",
+      "target": "utils_dlgs_inputuniversaldlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@StitchingInspector\\addCallbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_stitchinginspector_correlateatpoint_m",
       "target": "utils_stitch_localcorrelate_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "+controllers\\@StitchingInspector\\correlateAtPoint.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_ensuretilethumbs_m",
+      "target": "utils_stitch_maketilereader_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@StitchingInspector\\ensureTileThumbs.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -67429,26 +68431,6 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "controllers_stitchinginspector_suggestbtn_callback_m",
-      "target": "utils_stitch_suggestfix_m",
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "+controllers\\@StitchingInspector\\suggestBtn_Callback.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "controllers_stitchinginspector_suggestbtn_callback_m",
-      "target": "utils_dlgs_inputquestdlg_m",
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "+controllers\\@StitchingInspector\\suggestBtn_Callback.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -69143,8 +70125,48 @@
       "weight": 1.0
     },
     {
+      "source": "models_mibmodel_dilateimage_m",
+      "target": "utils_parsestrelsize_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+models\\@MibModel\\dilateImage.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_dilateimage_m",
+      "target": "utils_morphballop_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+models\\@MibModel\\dilateImage.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "models_mibmodel_erodeimage_m",
       "target": "utils_updatebatchoptcombinefields_shared_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+models\\@MibModel\\erodeImage.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_erodeimage_m",
+      "target": "utils_parsestrelsize_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+models\\@MibModel\\erodeImage.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_erodeimage_m",
+      "target": "utils_morphballop_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,

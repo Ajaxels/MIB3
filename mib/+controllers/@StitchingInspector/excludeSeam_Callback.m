@@ -11,10 +11,16 @@ function excludeSeam_Callback(obj)
 % otherwise never pruned by the solver). The nominal springs hold the pair
 % together once its measurement is excluded.
 %
+% The EDGE is the single source of truth for the state: this never reads the
+% button, so the ``X`` key and the button behave identically, and
+% :func:`controllers.StitchingInspector.refreshExcludeButton` (called from
+% ``updateWidgets``) pushes the resulting state back onto the widget.
+%
 
 if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.StitchingInspector.excludeSeam_Callback: triggered\n');
 end
+
 if ~obj.dataValid() || isempty(obj.currentEdgeIdx); return; end
 
 k = obj.currentEdgeIdx;

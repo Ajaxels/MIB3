@@ -8,8 +8,10 @@ function configureFeaturesBtn_Callback(obj)
 %
 % Pops the shared :func:`utils.align.detectorSettingsDlg` (also used by
 % :class:`controllers.Alignment`) to edit the currently selected
-% ``FeatureDetectorType`` parameters, the rotation-invariance flag, the
-% detection downsampling factor, and the RANSAC (``estgeotform2d``) settings.
+% ``FeatureDetectorType`` parameters, the upright-descriptor flag
+% (``automaticOptions.rotationInvariance``, which holds MATLAB's ``Upright``
+% value — see :func:`utils.align.detectorSettingsDlg`), the detection
+% downsampling factor, and the RANSAC (``estgeotform2d``) settings.
 % The edited values are stored in ``obj.automaticOptions`` and applied on the
 % next *Measure overlaps* / *Stitch* run of the Feature-based method. When the
 % dialog is accepted and a layout is loaded, :func:`previewFeatureMatch` renders
@@ -36,8 +38,13 @@ end
 downsampleInfo = struct('field', 'imgDownsamplingFactorForAnalysis', ...
     'promptText', promptText, 'limits', [1 64], 'round', true, 'minOne', true);
 
+% The upright-descriptor row is suppressed: whether rotated content can be
+% matched is not a separate decision here — it follows the "Allow rotation"
+% checkbox in the main window (see buildFeatureOptions). Alignment, which has no
+% such checkbox, still shows the row.
 [obj.automaticOptions, status] = utils.align.detectorSettingsDlg(obj.view.gui, ...
-    featureDetectorType, obj.automaticOptions, downsampleInfo);
+    featureDetectorType, obj.automaticOptions, downsampleInfo, ...
+    struct('showUpright', false));
 
 if status == 1
     obj.updateWidgets();

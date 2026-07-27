@@ -1,4 +1,4 @@
-function saveProject(filePath, layout, edges, positions, solverInfo, outputInfo, tforms, zSliceFixes)
+function saveProject(filePath, layout, edges, positions, solverInfo, outputInfo, tforms, zSliceFixes, settings)
 % SAVEPROJECT - Save a stitching project to a JSON sidecar file.
 %
 % Syntax:
@@ -7,6 +7,7 @@ function saveProject(filePath, layout, edges, positions, solverInfo, outputInfo,
 %      utils.stitch.saveProject(filePath, layout, edges, positions, solverInfo, outputInfo)
 %      utils.stitch.saveProject(filePath, layout, edges, positions, solverInfo, outputInfo, tforms)
 %      utils.stitch.saveProject(filePath, layout, edges, positions, solverInfo, outputInfo, tforms, zSliceFixes)
+%      utils.stitch.saveProject(..., tforms, zSliceFixes, settings)
 %
 % Writes all stitching state to ``<name>.mibstitch.json`` for reproducibility
 % and later use by the QC / seam checker.  The file is human-readable JSON
@@ -26,6 +27,11 @@ function saveProject(filePath, layout, edges, positions, solverInfo, outputInfo,
 %     ``solvedTform``); pass ``{}``/omit for translation-only projects
 %   - **zSliceFixes** *(optional)* — [K x 3] per-slice mosaic corrections
 %     ``[z dy dx]`` from the seam inspector's Fix Z; pass ``[]``/omit for none
+%   - **settings** *(optional)* — struct of flattened tool settings (one scalar /
+%     char / logical per ``BatchOpt`` field, plus the nested ``FeatureOptions``)
+%     as produced by :meth:`controllers.Stitching.collectProjectSettings`. Stored
+%     under ``project.settings`` so *Load project* can restore the whole dialog,
+%     or reuse the parameters alone on a different set of tiles. Omit for none.
 %
 % **Example** — save after solving:
 %
@@ -44,6 +50,7 @@ arguments
     outputInfo
     tforms      cell = {}
     zSliceFixes double = []
+    settings    struct = struct()
 end
 
 % Ensure correct extension
@@ -54,7 +61,10 @@ end
 
 % v2 adds edge provenance for the seam inspector: per-edge 'source'
 % ('auto'|'user'|'confirmed') and 'seamScore' (NCC at the solved placement).
-project.schemaVersion = 2;
+% v3 adds the optional 'settings' block (the tool's own parameters), so a
+% loaded project can restore the dialog or serve as a settings template.
+% All three are read back by the same loader — the added blocks are optional.
+project.schemaVersion = 3;
 project.createdUtc    = char(datetime('now', 'TimeZone', 'UTC', 'Format', "yyyy-MM-dd'T'HH:mm:ss'Z'"));
 
 % Serialise layout (convert 1×N structs to cell arrays for JSON)
@@ -88,6 +98,11 @@ end
 % Per-slice mosaic corrections (inspector Fix Z), rows [z dy dx]
 if ~isempty(zSliceFixes)
     project.zSliceFixes = zSliceFixes;
+end
+
+% Tool settings (flattened BatchOpt + feature-detector options)
+if ~isempty(fieldnames(settings))
+    project.settings = settings;
 end
 
 % Encode and write

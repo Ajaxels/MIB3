@@ -50,8 +50,11 @@ outputInfo.outputMode = obj.BatchOpt.OutputMode{1};
 outputInfo.blendMode  = obj.BatchOpt.BlendMode{1};
 
 try
+    % The settings block (schema v3) lets Load project restore the whole dialog,
+    % or reuse just these parameters on a different set of tiles.
     utils.stitch.saveProject(projectPath, obj.layout, obj.edges, ...
-        obj.positions, struct(), outputInfo, obj.tforms, obj.zSliceFixes);
+        obj.positions, obj.solverInfo, outputInfo, obj.tforms, ...
+        obj.zSliceFixes, obj.collectProjectSettings());
 catch saveError
     utils.dlgs.showErrorDialog(obj.view.gui, saveError.message, 'Save failed');
 end

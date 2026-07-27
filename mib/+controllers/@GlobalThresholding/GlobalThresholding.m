@@ -209,7 +209,7 @@ classdef GlobalThresholding < handle
         function updateBatchOptFromGUI(obj, event)
             % UPDATEBATCHOPTFROMGUI - Sync BatchOpt from a widget change event.
             if obj.mibModel.preferences.System.DeveloperMode
-                fprintf('controllers.GlobalThresholding.updateBatchOptFromGUI: triggered\n');
+                fprintf('controllers.GlobalThresholding.updateBatchOptFromGUI(%s): triggered\n', event.Source.Tag);
             end
             obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, event.Source);
             obj.triggerAutoPreview();

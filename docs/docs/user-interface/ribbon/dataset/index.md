@@ -40,7 +40,7 @@ the actual overlaps between neighboring tiles, optimizes all tile positions glob
 fuses the tiles into a new dataset — in memory or streamed to OME-Zarr3 (BigData) for
 mosaics that exceed available memory.
 
-[See details](dataset-stitch.md)
+[See details](dataset-stitch.md) | [Seam inspector](dataset-stitch-inspector.md)
 
 <div class="clear-float"></div>
 

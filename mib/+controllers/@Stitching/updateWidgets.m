@@ -111,14 +111,11 @@ numEdges = numel(obj.edges);
 handles.statusLabel.Text = sprintf('%d tiles | %d edges measured | solved: %s', ...
     numTiles, numEdges, ternary(~isempty(obj.positions), 'yes', 'no'));
 
-% Reset the alignment-quality chip to neutral until a solve fills it in
-% (optimizePositions_Callback sets the colour/text after solving).
-if isfield(handles, 'rmseLabel') && isempty(obj.positions)
-    handles.rmseLabel.Text = 'Alignment: —';
-    handles.rmseLabel.BackgroundColor = 'none';
-    handles.rmseLabel.FontColor = [0 0 0];
-    handles.rmseLabel.Tooltip = '';
-end
+% Alignment-quality chip. Rendered here rather than only after a solve, so it
+% follows every change to the edge set — excluding a seam in the inspector
+% changes which edges the worst-pixel-match is taken over, and a chip left
+% quoting the pre-exclusion verdict would be wrong.
+obj.refreshQualityChip();
 
 end
 

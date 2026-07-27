@@ -42,6 +42,7 @@ Read before starting a task of the matching type. All in `development/guides/`.
 | [drag-and-drop.md](guides/drag-and-drop.md) | OS file drag-and-drop into uifigure/AppContainer apps; `utils.attachFileDnD` helper |
 | [mouse_recentering_screen.md](guides/mouse_recentering_screen.md) | Moving the OS cursor after zoom/moveView; docked vs undocked, multi-monitor, DPI scaling |
 | [performance_for_loop_tweak.md](guides/performance_for_loop_tweak.md) | Copy-on-write fix for per-slice loops — full background behind the root-CLAUDE.md caching rule |
+| [developer_mode_callback_markers.md](guides/developer_mode_callback_markers.md) | Adding `DeveloperMode` "triggered" trace markers to a controller's GUI callbacks: the marker, placement, what to mark/skip, the `gui_Callbacks` global-marker rule |
 | [plugin_system.md](guides/plugin_system.md) | Plugin discovery architecture (MIB2 and MIB3); filesystem-based, no registry |
 | [docs_api_sphinx.md](guides/docs_api_sphinx.md) | **RST docblock style guide** — authoritative for all new/updated function docs |
 
@@ -60,7 +61,7 @@ agent working on a plugin. Cheat sheet for converting MIB2 plugins:
 |--------|-------|-------------|
 | `bigdata/` | BigData mode: tiled/WSI datasets, levelmap, block-mode brush | [bigdata/README.md](bigdata/README.md) |
 | `deepmib/` | DeepMIB deep learning: 2D/3D instance segmentation plans, 3D U-Net migration, MIB3 axis-order pitfalls (`deepmib_dimensions_problems.md`) | folder files |
-| `stitching/` | Tile stitching tool (**active work — coordinate before editing**); GUI smoke tests + data generators in [stitching/smoke_tests.md](stitching/smoke_tests.md) (`stitch_smoke*/`); transform-model expansion in [stitching/plan_transforms.md](stitching/plan_transforms.md) (phases 1–3 done, incl. 3D affine — kickoff brief [stitching/start_3d_affine.md](stitching/start_3d_affine.md) now historical); seam-inspector design in [stitching/plan_inspector.md](stitching/plan_inspector.md) | [stitching/plan_stitching.md](stitching/plan_stitching.md) |
+| `stitching/` | Tile stitching tool (**active work — coordinate before editing**); GUI smoke tests + data generators in [stitching/smoke_tests.md](stitching/smoke_tests.md) (`NN_stitch_smoke*/`, numbered by test); transform-model expansion in [stitching/plan_transforms.md](stitching/plan_transforms.md) (phases 1–3 done, incl. 3D affine — kickoff brief [stitching/start_3d_affine.md](stitching/start_3d_affine.md) now historical); seam-inspector design in [stitching/plan_inspector.md](stitching/plan_inspector.md) | [stitching/plan_stitching.md](stitching/plan_stitching.md) |
 | `graphify/` | Codebase knowledge-graph tooling (see graphify section in root CLAUDE.md) | [graphify/run_graphify.md](graphify/run_graphify.md) |
 
 Related, outside `development/`:

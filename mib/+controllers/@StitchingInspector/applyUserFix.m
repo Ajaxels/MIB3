@@ -54,7 +54,7 @@ if ~deferResolve && obj.autoResolveEnabled()
     obj.resolveBtn_Callback();   % re-solve + re-score + re-rank + SeamsUpdated
     obj.setStatus(sprintf('Seam %d-%d fixed (%s) — re-solved', edge.i, edge.j, description));
 else
-    obj.resolvePending = true;   % Re-fuse must re-solve first (refuseBtn_Callback)
+    obj.resolvePending = true;   % Stitch must re-solve first (Stitching.stitchBtn_Callback)
     obj.updateWidgets();
     obj.renderPairView();
     notify(obj, 'SeamsUpdated');

@@ -31,6 +31,19 @@ classdef Stitching < handle
         % N-by-1 cell of 3x3 doubles — solved per-tile affine transforms
         % (tile-local xy -> global xy) when TransformType is not Translation;
         % {} for the translation solve
+        solverInfo
+        % struct from the last global solve (rmseTotal, nPruned,
+        % disconnectedTiles). Kept on the controller — not just inside
+        % optimizePositions_Callback — so the alignment-quality chip can be
+        % re-rendered whenever the edges change (e.g. the inspector excluding a
+        % seam) without re-solving; [] until the first solve
+        layoutFromProject
+        % logical — true while obj.layout comes from a loaded project sidecar
+        % rather than from BatchOpt. The widgets may then describe a completely
+        % different job (a project carries no layout source/grid before schema
+        % v3), so anything that would silently re-derive the layout from
+        % BatchOpt must stand down. Cleared by buildLayoutFromBatchOpt, i.e. by
+        % every deliberate rebuild
         canvas
         % struct — output canvas plan (size, tilePlacement, etc.)
         zSliceFixes
@@ -54,8 +67,8 @@ classdef Stitching < handle
         zarrExportOptions
         % struct of OME-Zarr3 pyramid/chunk/compression settings collected once
         % (io.savers.Zarr3Saver.optionsDialog) for the current output path and
-        % reused by inspector re-fuse; [] until the dialog runs, reset when the
-        % output path or mode changes
+        % reused by later re-fuses to the same path; [] until the dialog runs,
+        % reset when the output path or mode changes
     end
 
     events
@@ -64,6 +77,31 @@ classdef Stitching < handle
     end
 
     methods (Static)
+        function fieldNames = projectSettingFields()
+            % PROJECTSETTINGFIELDS - BatchOpt fields persisted in the project sidecar.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %       fieldNames = controllers.Stitching.projectSettingFields()
+            %
+            % The single list shared by
+            % :meth:`controllers.Stitching.collectProjectSettings` (save) and
+            % :meth:`controllers.Stitching.applyProjectSettings` (load), so the
+            % two can never drift apart. Excludes ``showWaitbar`` / ``mibBatch*``
+            % / ``id`` — batch plumbing rather than user settings.
+            %
+            % Output Arguments:
+            %   - **fieldNames** — [cell] BatchOpt field names, in dialog order
+            %
+            fieldNames = { ...
+                'LayoutSource', 'InputPath', 'SubfolderMode', ...
+                'GridRows', 'GridCols', 'TileOrder', 'OverlapX', 'OverlapY', 'EstimateOverlap', ...
+                'TransformType', 'AllowRotation', 'RegistrationMethod', 'FeatureDetectorType', ...
+                'QualityThreshold', 'NominalPositionWeight', 'SubpixelPlacement', ...
+                'OutputMode', 'OutputPath', 'BlendMode', 'SaveProject'};
+        end
+
         function ViewListner_Callback2(obj, ~, evnt)
             % VIEWLISTNER_CALLBACK2 - Static model-event listener guard.
             %
@@ -116,6 +154,8 @@ classdef Stitching < handle
             obj.tforms    = {};
             obj.canvas    = [];
             obj.zSliceFixes = [];
+            obj.solverInfo  = struct();
+            obj.layoutFromProject = false;
             obj.tileROIs     = images.roi.Rectangle.empty;
             obj.roiListeners = {};
             obj.inspector    = [];
@@ -167,7 +207,7 @@ classdef Stitching < handle
             obj.BatchOpt.OutputPath      = '';
 
             obj.BatchOpt.BlendMode       = {'Feather'};
-            obj.BatchOpt.BlendMode{2}    = {'Feather', 'Average', 'Max', 'Overwrite'};
+            obj.BatchOpt.BlendMode{2}    = {'Feather', 'Average', 'Max', 'Min', 'Overwrite'};
 
             obj.BatchOpt.SaveProject     = true;
             obj.BatchOpt.showWaitbar     = true;
@@ -185,7 +225,7 @@ classdef Stitching < handle
             obj.BatchOpt.mibBatchTooltip.OverlapY        = 'Vertical overlap between adjacent tiles in percent (0–90)';
             obj.BatchOpt.mibBatchTooltip.EstimateOverlap = 'Estimate the actual overlap from the images before measuring (grid layout); OverlapX/Y are then only a rough starting guess';
             obj.BatchOpt.mibBatchTooltip.TransformType   = 'Registration transform: Translation (grid stages), Rigid (+rotation), Similarity (+uniform scale) or Affine (+scale/shear); non-translation transforms act in-plane per slice (z stays translational) and use feature-based measurement';
-            obj.BatchOpt.mibBatchTooltip.AllowRotation   = 'Permit per-tile rotation in Rigid/Similarity/Affine solves; keep off for stage-tiled data (stages translate but do not rotate), so noisy overlaps cannot inject spurious rotations';
+            obj.BatchOpt.mibBatchTooltip.AllowRotation   = 'Tiles are rotated against each other: permits per-tile rotation in Rigid/Similarity/Affine solves AND switches feature matching to rotation-invariant descriptors. Keep off for stage-tiled data (stages translate but do not rotate) — matching is then faster and noisy overlaps cannot inject spurious rotations';
             obj.BatchOpt.mibBatchTooltip.RegistrationMethod = 'How pairwise overlaps are measured: Phase correlation (best for small overlaps with modest jitter) or Feature-based (best for large/unknown offsets, matches SURF features over the full tiles)';
             obj.BatchOpt.mibBatchTooltip.FeatureDetectorType = '[Feature-based]: keypoint detector used to match tiles; configure its parameters + downsampling with the Settings button';
             obj.BatchOpt.mibBatchTooltip.QualityThreshold = 'Minimum normalized peak height to accept a pairwise shift measurement (0–1)';
@@ -193,7 +233,7 @@ classdef Stitching < handle
             obj.BatchOpt.mibBatchTooltip.SubpixelPlacement = 'Sub-pixel refinement of the pairwise-shift measurements; tiles are still placed on whole pixels';
             obj.BatchOpt.mibBatchTooltip.OutputMode      = 'Output as a Standard in-memory dataset or a streamed OME-Zarr3 BigData file (pyramid settings are asked when stitching)';
             obj.BatchOpt.mibBatchTooltip.OutputPath      = 'Output path for the OME-Zarr3 BigData file (OutputMode = OME-Zarr3)';
-            obj.BatchOpt.mibBatchTooltip.BlendMode       = 'Blending strategy at tile seams: Feather, Average, Max, or Overwrite';
+            obj.BatchOpt.mibBatchTooltip.BlendMode       = 'Blending strategy at tile seams: Feather, Average, Max (brightest tile wins), Min (darkest tile wins), or Overwrite';
             obj.BatchOpt.mibBatchTooltip.SaveProject     = 'Save project sidecar JSON after stitching';
             obj.BatchOpt.mibBatchTooltip.showWaitbar     = 'Show progress bar during stitching (batch-only option, not shown in the GUI)';
 
@@ -249,6 +289,10 @@ classdef Stitching < handle
             %      options = obj.defaultFeatureOptions()
             %
             options.imgDownsamplingFactorForAnalysis = 1;   % full resolution for stitch precision
+            % Placeholder only — buildFeatureOptions DERIVES this from
+            % BatchOpt.AllowRotation on every use, so the stored value is never
+            % read by the registration path. Kept in the struct so the shape
+            % still matches controllers.Alignment.defaultAutomaticOptions.
             options.rotationInvariance = true;
             options.featureMinInliers  = 8;
             options.detectSURFFeatures = struct('MetricThreshold', 500, 'NumOctaves', 3, 'NumScaleLevels', 4);
@@ -269,6 +313,16 @@ classdef Stitching < handle
             % utils.stitch.featureShift from the current detector selection and
             % automaticOptions (used when RegistrationMethod = Feature-based).
             %
+            % ``rotationInvariance`` is DERIVED from ``BatchOpt.AllowRotation``
+            % rather than stored: it is MATLAB's ``extractFeatures`` ``Upright``
+            % flag, so upright descriptors (``true``) cannot match rotated
+            % content at all and would silently veto a rotating solve. The two
+            % are therefore one user decision — "are the tiles rotated?" — and
+            % the single *Allow rotation* checkbox owns it. Deriving it here,
+            % the one place every consumer (measure, stitch,
+            % :func:`previewFeatureMatch`) goes through, means the two cannot
+            % drift and no stale value can survive a project load.
+            %
             % Syntax:
             %   .. code-block:: matlab
             %
@@ -277,6 +331,7 @@ classdef Stitching < handle
             featureOptions = obj.automaticOptions;
             featureOptions.featureDetector = obj.BatchOpt.FeatureDetectorType{1};
             featureOptions.downsampleFactor = obj.automaticOptions.imgDownsamplingFactorForAnalysis;
+            featureOptions.rotationInvariance = ~obj.BatchOpt.AllowRotation;
         end
 
         % ---------------------------------------------------------------

@@ -624,15 +624,56 @@ classdef StitchCoreTest < matlab.unittest.TestCase
     end
 
     % =================================================================
-    % fuseInMemory — all four blend modes vs original
+    % fuseInMemory — all blend modes vs original
     % =================================================================
     methods (Test, TestTags = {'Unit'})
 
         function fuseInMemory_allBlendModesReconstruct(testCase)
-            modes = {'Feather', 'Average', 'Max', 'Overwrite'};
+            modes = {'Feather', 'Average', 'Max', 'Min', 'Overwrite'};
             for m = 1:numel(modes)
                 testCase.subFuseReconstruct(modes{m});
             end
+        end
+
+        function fuseInMemory_maxAndMinPickExtremeTileInOverlap(testCase)
+            % Two constant-intensity tiles overlapping by 20 px on a non-zero
+            % background: Max must keep the brighter tile in the overlap, Min the
+            % darker one, and NEITHER may fold the background into the projection.
+            tempDir = tempname; mkdir(tempDir);
+            testCase.addTeardown(@() rmdir(tempDir, 's'));
+
+            tileH = 40; tileW = 40; overlapPx = 20;
+            values = [200, 80];
+            layout = testCase.emptyLayout(2);
+            for k = 1:2
+                filename = fullfile(tempDir, sprintf('flat_%02d.tif', k));
+                imwrite(uint8(values(k)) + zeros(tileH, tileW, 'uint8'), filename);
+                layout(k).index     = k;
+                layout(k).filename  = filename;
+                layout(k).nomOrigin = [1, 1 + (k - 1) * (tileW - overlapPx), 1];
+                layout(k).tileSize  = [tileH tileW 1 1];
+            end
+            positions = reshape([layout.nomOrigin], 3, 2)';
+            canvas = utils.stitch.planCanvas(layout, positions, ...
+                struct('pixSize', struct('x', 1, 'y', 1, 'z', 1)));
+
+            overlapCols = (tileW - overlapPx + 1):tileW;
+            % Each mode gets the background that would BREAK it if the fresh-pixel
+            % mask were missing: brighter than both tiles for Max, darker for Min.
+            maxOut = utils.stitch.fuseInMemory(layout, canvas, ...
+                struct('blendMode', 'Max', 'background', 250));
+            minOut = utils.stitch.fuseInMemory(layout, canvas, ...
+                struct('blendMode', 'Min', 'background', 5));
+
+            testCase.verifyEqual(unique(maxOut(:, overlapCols, 1, 1, 1)), uint8(max(values)), ...
+                'Max blend must keep the brighter tile across the overlap');
+            testCase.verifyEqual(unique(minOut(:, overlapCols, 1, 1, 1)), uint8(min(values)), ...
+                'Min blend must keep the darker tile across the overlap');
+            % Outside the overlap both modes reproduce the single covering tile.
+            testCase.verifyEqual(unique(minOut(:, 1:(tileW - overlapPx), 1, 1, 1)), uint8(values(1)), ...
+                'Min blend must not fold the background into singly-covered pixels');
+            testCase.verifyEqual(unique(maxOut(:, (tileW + 1):end, 1, 1, 1)), uint8(values(2)), ...
+                'Max blend must not fold the background into singly-covered pixels');
         end
 
         function stitchSliceProvider_matchesFuseInMemory(testCase)

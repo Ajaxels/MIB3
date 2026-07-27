@@ -272,7 +272,7 @@ classdef ObjectSeparator < handle
         function updateBatchOptFromGUI(obj, hObject)
             % UPDATEBATCHOPTFROMGUI - Sync a single widget change into BatchOpt.
             if obj.mibModel.preferences.System.DeveloperMode
-                fprintf('controllers.ObjectSeparator.updateBatchOptFromGUI: triggered\n');
+                fprintf('controllers.ObjectSeparator.updateBatchOptFromGUI(%s): triggered\n', hObject.Tag);
             end
             obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, hObject);
         end

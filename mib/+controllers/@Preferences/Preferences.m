@@ -661,7 +661,7 @@ classdef Preferences < handle
             %   - **event** — [struct] event data from the GUI element that triggered callback
             
             if obj.mibModel.preferences.System.DeveloperMode
-                fprintf('controllers.Preferences.ColorPanelCallbacks: triggered\n');
+                fprintf('controllers.Preferences.ColorPanelCallbacks(%s): triggered\n', event.Source.Tag);
             end
             switch event.Source.Tag
                 case 'SelectionColorButton'    % update selection color
@@ -793,7 +793,7 @@ classdef Preferences < handle
             %
         
             if obj.mibModel.preferences.System.DeveloperMode
-                fprintf('controllers.Preferences.InputOutputPanelCallbacks: triggered\n');
+                fprintf('controllers.Preferences.InputOutputPanelCallbacks(%s): triggered\n', event.Source.Tag);
             end
             switch event.Source.Tag
                 case 'ZarrLibrary'
@@ -887,7 +887,7 @@ classdef Preferences < handle
             %
 
             if obj.mibModel.preferences.System.DeveloperMode
-                fprintf('controllers.Preferences.SegmentationPanelCallbacks: triggered\n');
+                fprintf('controllers.Preferences.SegmentationPanelCallbacks(%s): triggered\n', event.Source.Tag);
             end
             switch event.Source.Tag
                 case 'annotationFontSize'
@@ -920,7 +920,7 @@ classdef Preferences < handle
             %
 
             if obj.mibModel.preferences.System.DeveloperMode
-                fprintf('controllers.Preferences.BackupAndUndoPanelCallbacks: triggered\n');
+                fprintf('controllers.Preferences.BackupAndUndoPanelCallbacks(%s): triggered\n', event.Source.Tag);
             end
             switch event.Source.Tag
                 case 'EnableUndo'
@@ -956,7 +956,7 @@ classdef Preferences < handle
             %
 
             if obj.mibModel.preferences.System.DeveloperMode
-                fprintf('controllers.Preferences.UserInterfacePanelCallbacks: triggered\n');
+                fprintf('controllers.Preferences.UserInterfacePanelCallbacks(%s): triggered\n', event.Source.Tag);
             end
             switch event.Source.Tag
                 case 'MouseWheelActionDropDown'

@@ -268,7 +268,7 @@ classdef MorphOps < handle
         function updateBatchOptFromGUI(obj, event)
             % UPDATEBATCHOPTFROMGUI - Sync BatchOpt from a widget change event.
             if obj.mibModel.preferences.System.DeveloperMode
-                fprintf('controllers.MorphOps.updateBatchOptFromGUI: triggered\n');
+                fprintf('controllers.MorphOps.updateBatchOptFromGUI(%s): triggered\n', event.Source.Tag);
             end
             obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, event.Source);
             obj.triggerAutoPreview();

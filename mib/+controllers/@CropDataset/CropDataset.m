@@ -265,6 +265,9 @@ classdef CropDataset < handle
             %       obj.closeWindow()
             %
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.CropDataset.closeWindow: triggered\n');
+            end
             if isvalid(obj.view.gui)
                 delete(obj.view.gui);
             end
@@ -430,6 +433,9 @@ classdef CropDataset < handle
             %   - **hObject** — handle to the selected radio button (Interactive, Manual, or ROI)
             %
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.CropDataset.radio_Callback(%s): triggered\n', hObject.Tag);
+            end
             mode = hObject.Tag;
             id = obj.mibModel.getActiveId();
 
@@ -484,6 +490,9 @@ classdef CropDataset < handle
             %       obj.editboxes_Callback()
             %
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.CropDataset.editboxes_Callback: triggered\n');
+            end
             obj.BatchOpt.Width  = obj.view.handles.Width.Value;
             obj.BatchOpt.Height = obj.view.handles.Height.Value;
             obj.BatchOpt.Depth  = obj.view.handles.Depth.Value;
@@ -512,6 +521,9 @@ classdef CropDataset < handle
             %       obj.SelectROI_Callback()
             %
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.CropDataset.SelectROI_Callback: triggered\n');
+            end
             % convert dropdown string value to 0-based ROI index
             val = obj.view.handles.SelectROI.ValueIndex - 1;
             id = obj.mibModel.getActiveId();
@@ -556,6 +568,9 @@ classdef CropDataset < handle
             %       obj.resetBtn_Callback()
             %
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.CropDataset.resetBtn_Callback: triggered\n');
+            end
             id = obj.mibModel.getActiveId();
             dataset = obj.mibModel.I{id};
 
@@ -606,6 +621,9 @@ classdef CropDataset < handle
             %       obj.ZarrPyramidLevel_Callback(hObject)
             %
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.CropDataset.ZarrPyramidLevel_Callback: triggered\n');
+            end
             obj.selectZarrLevel();
             obj.updateBatchOptFromGUI(hObject);
         end
@@ -621,6 +639,9 @@ classdef CropDataset < handle
             % Toggles ZarrPyramidLevel enable based on the selected output type.
             % ZarrPyramidLevel is only applicable for BigData → Standard export.
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.CropDataset.OutputType_Callback: triggered\n');
+            end
             obj.updateBatchOptFromGUI(hObject);
             id = obj.mibModel.getActiveId();
             dataset = obj.mibModel.I{id};
@@ -639,6 +660,9 @@ classdef CropDataset < handle
             %       obj.cropToBtn_Callback()
             %
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.CropDataset.cropToBtn_Callback: triggered\n');
+            end
             if strcmp(obj.BatchOpt.Width, 'Multi')
                 dlgOpt.MsgBoxOnly  = true;
                 dlgOpt.Icon        = 'puffin_warning';
@@ -695,6 +719,9 @@ classdef CropDataset < handle
             %   - **hObject** — *(optional)* handle to the pressed button (cropBtn or croptoBtn)
             %
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.CropDataset.cropBtn_Callback: triggered\n');
+            end
             if nargin > 1
                 if strcmp(hObject.Tag, 'cropBtn')
                     obj.BatchOpt.Destination(1) = {'Current'};
@@ -1047,6 +1074,9 @@ classdef CropDataset < handle
             %       obj.helpButton_Callback()
             %
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.CropDataset.helpButton_Callback: triggered\n');
+            end
             helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'ribbon', 'dataset', 'dataset-crop.html');
             if isfile(helpFilPath)
                 web(helpFilPath, '-browser');

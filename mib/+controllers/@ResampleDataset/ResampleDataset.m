@@ -216,7 +216,7 @@ classdef ResampleDataset < handle
             %       obj.updateBatchOptFromGUI(hObject)
             %
             if obj.mibModel.preferences.System.DeveloperMode
-                fprintf('controllers.ResampleDataset.updateBatchOptFromGUI: triggered\n');
+                fprintf('controllers.ResampleDataset.updateBatchOptFromGUI(%s): triggered\n', hObject.Tag);
             end
             obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, hObject);
         end

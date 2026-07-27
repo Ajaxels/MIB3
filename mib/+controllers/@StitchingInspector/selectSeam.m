@@ -28,5 +28,6 @@ end
 
 obj.renderPairView();
 obj.renderMiniMap();   % refresh the current-pair highlight
+obj.refreshExcludeButton();   % the button reflects THIS seam's exclusion state
 
 end

@@ -1337,7 +1337,7 @@ classdef VolRenApp < handle
             % Input Arguments:
             %   - **event** — [event] UI callback event from the toggled widget
             if obj.mibModel.preferences.System.DeveloperMode
-                fprintf('controllers.VolRenApp.toggleViewerSettings: triggered\n');
+                fprintf('controllers.VolRenApp.toggleViewerSettings(%s): triggered\n', event.Source.Tag);
             end
             switch event.Source.Tag
                 case 'showScaleBar'
@@ -2603,7 +2603,7 @@ classdef VolRenApp < handle
 
         function updateCameraPosition(obj, event)
             if obj.mibModel.preferences.System.DeveloperMode
-                fprintf('controllers.VolRenApp.updateCameraPosition: triggered\n');
+                fprintf('controllers.VolRenApp.updateCameraPosition(%s): triggered\n', event.Source.Tag);
             end
             if ~isvalid(obj.viewer); return; end % skip when the viewer is closed
             

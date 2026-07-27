@@ -60,7 +60,13 @@ classdef StitchingInspector < handle
         % full-res pixels per thumbnail pixel (NaN until thumbs are built)
         resolvePending
         % true when a user fix was applied WITHOUT the global re-solve
-        % (auto-re-solve off / deferred) — Re-fuse resolves first then
+        % (auto-re-solve off / deferred). The parent's Stitch checks this and
+        % re-solves before fusing, so the mosaic never comes from stale
+        % positions no matter which window the user works in
+        excludeBtnDefaultColor
+        % BackgroundColor the exclude button had when the window opened, so the
+        % "included" look can be restored without hardcoding a theme colour
+        % ([] until addCallbacks captures it)
         viewSlice
         % browsed z-slices of the pair view: struct .edgeIdx, .sliceA
         % (tile-i slice), .sliceB (tile-j slice), .depthA, .depthB (stack
@@ -113,6 +119,7 @@ classdef StitchingInspector < handle
             obj.thumbScale = NaN;
             obj.resolvePending = false;
             obj.viewSlice = [];
+            obj.excludeBtnDefaultColor = [];
 
             if isempty(obj.stitching.edges) || isempty(obj.stitching.positions)
                 utils.dlgs.showErrorDialog(obj.stitching.view.gui, ...
@@ -151,6 +158,48 @@ classdef StitchingInspector < handle
             tf = isvalid(obj.stitching) && ~isempty(obj.stitching.edges) && ...
                 ~isempty(obj.stitching.positions) && ...
                 numel(obj.ranking) == numel(obj.stitching.edges);
+        end
+
+        % ---------------------------------------------------------------
+        function refreshExcludeButton(obj)
+            % REFRESHEXCLUDEBUTTON - Show the current seam's exclusion state on
+            % the Exclude button. The edge is the single source of truth (the
+            % X key and a table reload change it too), so the button is always
+            % pushed FROM the edge, never read from.
+            %
+            % Works with either widget type: an App Designer STATE button
+            % (``uibutton(...,'state')``, has a ``Value``) shows the state as
+            % pressed + red, a plain push button only as red — so the mlapp can
+            % be upgraded without touching this code.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.refreshExcludeButton()
+            %
+            if isempty(obj.view) || ~isfield(obj.view.handles, 'excludeBtn'); return; end
+            excludeBtn = obj.view.handles.excludeBtn;
+            if ~isvalid(excludeBtn); return; end
+
+            if isempty(obj.excludeBtnDefaultColor)
+                obj.excludeBtnDefaultColor = excludeBtn.BackgroundColor;
+            end
+
+            isExcluded = false;
+            if obj.dataValid() && ~isempty(obj.currentEdgeIdx)
+                isExcluded = ~obj.stitching.edges(obj.currentEdgeIdx).valid;
+            end
+
+            if isprop(excludeBtn, 'Value')      % state button: pressed while excluded
+                excludeBtn.Value = isExcluded;
+            end
+            if isExcluded
+                excludeBtn.BackgroundColor = [1.0 0.72 0.72];
+                excludeBtn.Text = 'Excluded (X)';
+            else
+                excludeBtn.BackgroundColor = obj.excludeBtnDefaultColor;
+                excludeBtn.Text = 'Exclude (X)';
+            end
         end
 
         % ---------------------------------------------------------------

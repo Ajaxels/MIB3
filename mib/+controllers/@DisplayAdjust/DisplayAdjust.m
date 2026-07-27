@@ -237,6 +237,9 @@ classdef DisplayAdjust < handle
             %   (none)
             %
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.DisplayAdjust.closeWindow: triggered\n');
+            end
             if ~isempty(obj.updateTimer) && isvalid(obj.updateTimer)
                 stop(obj.updateTimer);
                 delete(obj.updateTimer);
@@ -458,6 +461,9 @@ classdef DisplayAdjust < handle
             %   (none)
             %
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.DisplayAdjust.updateHist: triggered\n');
+            end
             id      = obj.mibModel.getActiveId();
             channel = obj.getChannelIndex();
             viewPort = obj.mibModel.I{id}.image.viewPort;
@@ -571,6 +577,9 @@ classdef DisplayAdjust < handle
             %   (none)
             %
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.DisplayAdjust.colorChannelCombo_Callback: triggered\n');
+            end
             obj.updateSliders();
         end
 
@@ -587,6 +596,9 @@ classdef DisplayAdjust < handle
             %   (none)
             %
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.DisplayAdjust.minSlider_Callback: triggered\n');
+            end
             id      = obj.mibModel.getActiveId();
             channel = obj.getChannelIndex();
             h = obj.view.handles;
@@ -617,6 +629,9 @@ classdef DisplayAdjust < handle
             %   (none)
             %
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.DisplayAdjust.minEdit_Callback: triggered\n');
+            end
             id      = obj.mibModel.getActiveId();
             channel = obj.getChannelIndex();
             h = obj.view.handles;
@@ -650,6 +665,9 @@ classdef DisplayAdjust < handle
             %   (none)
             %
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.DisplayAdjust.maxSlider_Callback: triggered\n');
+            end
             id      = obj.mibModel.getActiveId();
             channel = obj.getChannelIndex();
             h = obj.view.handles;
@@ -680,6 +698,9 @@ classdef DisplayAdjust < handle
             %   (none)
             %
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.DisplayAdjust.maxEdit_Callback: triggered\n');
+            end
             id      = obj.mibModel.getActiveId();
             channel = obj.getChannelIndex();
             h = obj.view.handles;
@@ -714,6 +735,9 @@ classdef DisplayAdjust < handle
             %   (none)
             %
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.DisplayAdjust.gammaSlider_Callback: triggered\n');
+            end
             h = obj.view.handles;
             h.gammaEdit.Value = h.gammaSlider.Value;
             obj.updateSettings();
@@ -734,6 +758,9 @@ classdef DisplayAdjust < handle
             %   (none)
             %
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.DisplayAdjust.gammaEdit_Callback: triggered\n');
+            end
             h = obj.view.handles;
             val = max(0.1, min(5, h.gammaEdit.Value));
             h.gammaEdit.Value  = val;
@@ -884,6 +911,9 @@ classdef DisplayAdjust < handle
             %   (none)
             %
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.DisplayAdjust.imHist_ButtonDownFcn: triggered\n');
+            end
             h = obj.view.handles;
             xy      = h.imHist.CurrentPoint;
             seltype = obj.view.gui.SelectionType;
@@ -922,6 +952,9 @@ classdef DisplayAdjust < handle
             %   - **minval** — detected minimum intensity value(s)
             %
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.DisplayAdjust.findMinBtn_Callback: triggered\n');
+            end
             if nargin < 3; threshold = 0; end
             if nargin < 2 || isempty(colorCh); colorCh = obj.getChannelIndex(); end
 
@@ -1009,6 +1042,9 @@ classdef DisplayAdjust < handle
             %   - **maxval** — detected maximum intensity value(s)
             %
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.DisplayAdjust.findMaxBtn_Callback: triggered\n');
+            end
             if nargin < 3; threshold = 0; end
             if nargin < 2 || isempty(colorCh); colorCh = obj.getChannelIndex(); end
 
@@ -1095,6 +1131,9 @@ classdef DisplayAdjust < handle
             %   (none)
             %
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.DisplayAdjust.applyBtn_Callback: triggered\n');
+            end
             id = obj.mibModel.getActiveId();
 
             if any(obj.mibModel.I{id}.datasetType(1) == ['V' 'B'])
@@ -1180,6 +1219,9 @@ classdef DisplayAdjust < handle
             %   (none)
             %
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.DisplayAdjust.stretchCurrent_Callback: triggered\n');
+            end
             id = obj.mibModel.getActiveId();
 
             if any(obj.mibModel.I{id}.datasetType(1) == ['V' 'B'])
@@ -1225,6 +1267,9 @@ classdef DisplayAdjust < handle
             %   (none)
             %
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.DisplayAdjust.autoHistCheck_Callback: triggered\n');
+            end
             val = obj.view.handles.autoHistCheck.Value;
             obj.listener{2}.Enabled = val;
             obj.listener{3}.Enabled = val;
@@ -1244,6 +1289,9 @@ classdef DisplayAdjust < handle
             %   (none)
             %
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.DisplayAdjust.adjHelpBtn_Callback: triggered\n');
+            end
             helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'panels', 'selection_imview', 'viewsettings-adjustments.html');
             if isfile(helpFilPath)
                 web(helpFilPath, '-browser');

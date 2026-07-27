@@ -67,7 +67,8 @@ automatically.
       solved positions (RMSE in pixels). Note this is blind on chain-like layouts: with
       no loops in the tile graph the residual is ~0 whatever the measurements claim;
     - the **pixel seam check** — the overlap pixels are re-read at every solved seam and
-      cross-correlated (the same score the seam inspector ranks by). If the worst seam
+      cross-correlated (the same score the
+      [seam inspector](dataset-stitch-inspector.md) ranks by). If the worst seam
       matches poorly the chip turns orange **Check seams** or red **Seams disagree** even
       when the residual looks perfect — the signature of a wrong layout
       orientation/order or a confidently-wrong measurement. Z-stack tiles are scored
@@ -79,8 +80,15 @@ automatically.
     If any tile has **no valid measurement at all** the chip turns orange —
     **Alignment incomplete** — because such a tile is simply parked at its nominal
     position and neither check covers it; check the grid rows/cols or fix its seams in
-    the inspector. The layout preview refreshes automatically after every solve and
-    shows the **solved** positions (the title states solved vs nominal).
+    the [seam inspector](dataset-stitch-inspector.md). The layout preview refreshes
+    automatically after every solve and shows the **solved** positions (the title states
+    solved vs nominal).
+
+    The chip keeps up with the [seam inspector](dataset-stitch-inspector.md) while it is
+    open: excluding a seam changes which seams the worst-match is taken over, so the
+    verdict is re-derived immediately. Until you press *Re-solve* it reads
+    **Seams edited — press Re-solve to update the alignment**, because the residual still
+    belongs to the previous edge set.
 
 4. <span class="widget widget-button">Stitch</span> — fuses the tile pixels into the
    output mosaic at the optimized positions, blending the overlap regions according to
@@ -92,87 +100,16 @@ automatically.
 
 Automatic stitching can fail silently: a measurement that locked onto repetitive content
 one period off satisfies the solver perfectly on sparse tile arrangements — the quality
-rating stays green while a tile sits a full period out of place. The
-<span class="widget widget-button">Inspect & fix…</span> button (enabled after
-*Measure overlaps* + *Optimize positions*) opens the **seam inspector** for a
-worst-first manual review:
+rating stays green while a tile sits a full period out of place.
 
-- Every tile pair gets a **seam score** — how well the actual pixels agree at the solved
-  placement — and the seams are listed worst-first. This catches wrong-but-confident
-  measurements that the residual rating cannot see.
-- The **mini-map** shows the layout with tiles coloured by their worst seam
-  (green → red); click a tile to jump to its worst seam. For datasets of
-  reasonable size a **low-res fused preview** is drawn behind the colouring at the
-  current solved positions — it follows every re-solve, so a grossly misplaced tile
-  is visible in the actual image content.
-- The **pair view** shows the **complete tile pair** composited at the solved offset
-  (downsampled for display when the tiles are large; the title is the colour legend,
-  e.g. *Cyan: tile 2; Magenta: tile 4*). Overlays: falsecolor — tile *i* **cyan**, tile *j*
-  **magenta**, so aligned structures add up to **white** while misaligned ones split
-  into cyan/magenta ghosts — flicker (++Space++ toggles the two tiles), checkerboard,
-  or difference. The **mouse wheel zooms** the pair view at the cursor — the zoom is
-  kept through nudges, drags and fixes of the same seam;
-  <span class="widget widget-button">Fit view (F)</span> (or zooming all the way out)
-  restores the full-pair view.
-- Per seam: <span class="widget widget-button">Confirm (Enter)</span> marks it reviewed
-  and jumps to the next worst; <span class="widget widget-button">Exclude (X)</span>
-  removes its measurement from the solve (the tile is then held near its nominal
-  position); <span class="widget widget-button">Re-solve</span> recomputes all positions
-  and re-ranks. ++N++ / ++P++ step through the ranking.
-- Review decisions are saved with the project file and survive re-measuring.
+The <span class="widget widget-button">Inspect & fix…</span> button (enabled after
+*Measure overlaps* + *Optimize positions*) opens the **seam inspector**, which re-reads the
+actual pixels at every solved seam, ranks the seams worst-first, and lets you correct the
+bad ones by clicking a landmark, dragging the overlay, or matching two points. Both windows
+stay usable side by side: re-solve in the inspector, then press *Stitch* here to fuse the
+corrected mosaic.
 
-### Fixing a bad seam
-
-A fixed seam becomes a high-weight *user* measurement that steers the global solve (it is
-never pruned, and it survives a re-measure). Pick whichever tool fits how wrong the seam is:
-
-- **Hold ++shift++ and click a landmark** in the pair view — the strongest tool for the
-  common case. While ++shift++ is held the cursor becomes a box showing exactly the region
-  (<span class="widget widget-edit">ROI size</span>; resize it with ++shift++ + mouse
-  wheel) that will be used: on click it is cut
-  from the first tile and cross-correlated against the second within
-  <span class="widget widget-edit">Search radius</span> of the current offset; a confident
-  peak snaps the pair to sub-pixel alignment. A weak or ambiguous match only reports why and
-  never moves the tile. On small tiles keep the ROI smaller than the overlap region.
-- **Drag** the overlay — the second tile follows the pointer at 50% opacity; release applies
-  the shift. Offsets are edited **by mouse only** — the keyboard never moves a tile: the
-  arrows and ++q++ / ++w++ are slice navigation, and fine adjustment is what
-  ++shift++-click is for (sub-pixel, both axes at once).
-- **3D pairs** are shown one **slice pair** at a time (the title's second line names the
-  shown slices, e.g. *Slice 5/8 — Q/W browses*, or per colour when the two tiles show
-  different slices), browsed with ++q++ / ++w++ or ++down++ / ++up++ — previous / next,
-  exactly like the main MIB window (++shift++ = 5) — always view-only, browsing never
-  moves a tile. The
-  <span class="widget widget-dropdown">Fix mode</span> dropdown decides what a fix edits:
-    - **Fix XY** (default): the in-plane offset. Both tiles browse together, aligned by
-      the current Z relation; fix seams with the usual tools on any slice.
-    - **Fix Z (match slices)**: for checking that each mosaic slice **continues** the
-      slice below it. The view shows **one tile** at two consecutive slices — slice
-      *z−1* in **cyan** and slice *z* in **magenta**, fully overlapping, so the image
-      is mostly **white** when the mosaic is aligned in Z. ++q++ / ++w++ or ++down++ /
-      ++up++ moves the boundary through the stack (view-only). Where the slices jump
-      apart (cyan/magenta ghosting), **drag** the magenta slice onto the cyan one, or
-      hold ++shift++ and **click a landmark** for the same sub-pixel cross-correlation
-      as in XY. **The fix shifts that slice and every slice above it, across the whole
-      mosaic** — the slices below stay put — and is applied at *Re-fuse* / *Stitch*
-      (the tiles' solved positions are untouched; no re-solve involved). Corrections
-      accumulate per boundary, are saved with the project, and ++z++ removes the one
-      at the boundary on screen. On a 2D dataset there are no Z slices to align, so
-      the mode stays at Fix XY (a dialog explains). For deeper, non-rigid per-slice
-      registration use the [Alignment tool](dataset-alignment.md) on the fused dataset.
-- <span class="widget widget-button">Two-click match</span> — when the offset is hopeless
-  (e.g. a tile locked a full texture period off, beyond any search radius): both full tiles
-  are shown side by side; click the same landmark once in each, and the click difference
-  becomes the offset (sharpened by a local correlation).
-- ++z++ / <span class="widget widget-button">Undo fix (Z)</span> — restores the original
-  automatic measurement of the current seam.
-
-With <span class="widget widget-checkbox">Auto re-solve</span> on (default), every fix
-immediately re-solves all positions, re-scores and re-ranks — work worst-first until the
-top of the list is green, then press <span class="widget widget-button">Re-fuse</span> to
-fuse the mosaic with the corrected positions without leaving the inspector (identical to
-*Stitch* in the main window, for both output modes; if a fix is still awaiting its
-re-solve, the solve runs first). Saving the project persists all fixes either way.
+[**→ Seam inspector: reviewing and fixing seams**](dataset-stitch-inspector.md)
 
 ---
 
@@ -183,8 +120,10 @@ re-solve, the solve runs first). Saving the project persists all fixes either wa
     - **Position file**: a text file with one line per tile: `filename X Y` or `filename X Y Z`
       (space-, tab-, or comma-separated). The optional Z column places tiles on distinct layers;
       layers that overlap in Z are refined by the same global solve as the XY overlaps.
-    - **Filename pattern**: grid indices are parsed from `_Z##-X##-Y##` tokens in the file (or, for
-      folder tiles, the **folder**) names — the pattern produced by the MIB dataset chunking tool.
+    - **Filename pattern**: grid indices are parsed from `Z##`, `X##` and `Y##` tokens in the file
+      (or, for folder tiles, the **folder**) names — the pattern produced by the MIB dataset chunking
+      tool, e.g. `myStack_Z01-X02-Y03.tif` → Z-layer 1, column 2, row 3. **The order of the three
+      tokens does not matter** (see the note below).
       Tiles default to abutting (0% overlap, exact reassembly of chunks); set **Overlap X/Y** (or tick
       **Estimate overlap**) when the pattern-named tiles come from an overlapping acquisition and the
       tool will register them like the Grid source.
@@ -203,6 +142,28 @@ re-solve, the solve runs first). Saving the project persists all fixes either wa
       automatically, so this checkbox is not needed (and is disabled) for that source. It is likewise
       disabled for **Bio-Formats metadata**, where each series/file already carries its own stack.
 - <span class="widget widget-edit">Input path</span>: the selected tile image files (Grid, Filename pattern — the <span class="widget widget-button">...</span> button opens a multi-select file picker; selection order does not matter, the tiles are natural-sorted by name), the selected tile folders (when *Tiles are folders* is on), the position file, or the selected Bio-Formats file(s). A folder path typed/pasted directly into the field also works for Grid/Filename pattern — all image files in that folder become the tiles.
+
+!!! note "Filename pattern: what the tokens must look like"
+    Each of the three tokens is located **independently**, so their **order is irrelevant** and so are
+    the separators — `myStack_Z01-X02-Y03`, `myStack_X02-Y03-Z01` and `myStackY03X02Z01` all describe
+    the very same tile (Z-layer 1, column 2, row 3). The same rules apply to **folder** names when
+    *Tiles are folders* is on. What does matter:
+
+    - each token is an **upper-case** `Z`, `X` or `Y` followed by **exactly two digits** — `Z01`, not
+      `Z1` and not `z01`;
+    - indices are **1-based**: the first tile is `Z01-X01-Y01`;
+    - the **last** `Z`, `X` and `Y` in the name are taken as the tokens. Those letters may therefore
+      appear *before* them (`XYZstack_Z01-X01-Y01` is fine) but not *after*
+      (`..._Z01-X01-Y01_XY` is not);
+    - all three tokens must be present. Tiles named in some other scheme — a folder of `tile_r1c1`,
+      `tile_r1c2`, … for instance — cannot use this source; arrange them with **Grid** instead.
+
+!!! warning "Tokens longer than two digits are silently truncated"
+    Only two characters after each letter are read. A three-digit token such as `Z001-X002-Y003` is
+    parsed as `Z=00, X=00, Y=00` — **without any error** — so every tile is assigned the same invalid
+    grid cell and the layout preview shows them all piled on top of each other. Acquisitions with more
+    than 99 tiles along an axis must be renamed to two-digit tokens, or arranged with the **Grid** or
+    **Position file** source instead. A one-digit token (`Z1`) fails outright with an index error.
 
 ---
 
@@ -251,20 +212,27 @@ the input.
     - **Similarity**: shift + rotation + one uniform scale factor per tile.
     - **Affine**: the full linear model — rotation, scale, and shear per tile.
 
-    All non-translation models need image features to measure, so they always use the
-    feature-based estimator (the *Registration method* dropdown is disabled), and the fused tiles
-    are resampled (bilinear) into their transformed positions. On 3D / multi-layer layouts the
-    transform acts **in-plane**: every slice of a Z-stack tile is warped by that tile's single 2D
-    transform, while Z itself stays translational — cross-layer overlaps are always measured and
-    solved as plain Z/XY shifts. Internally the global solve is always the (linear) affine one;
-    Rigid/Similarity are obtained by projecting each tile's result onto the smaller model — there
-    is no extra cost to the richer models.
+!!! note "What the non-translation models imply"
+    - **Measurement**: they all need image features, so they always use the feature-based
+      estimator — the <span class="widget widget-dropdown">Registration method</span> dropdown is
+      disabled and displays *Feature-based*.
+    - **Fusion**: the tiles are **resampled** (bilinear) into their transformed positions, unlike
+      *Translation*, which copies the original pixel values unchanged.
+    - **3D / multi-layer layouts**: the transform acts **in-plane** — every slice of a Z-stack tile
+      is warped by that tile's single 2D transform, while Z itself stays translational. Overlaps
+      between Z-layers are always measured and solved as plain Z/XY shifts.
+    - **Cost**: the richer models are not slower. The global solve is always the (linear) affine
+      one; *Rigid* and *Similarity* are obtained by projecting each tile's result onto the smaller
+      model.
+
 - <label class="widget widget-checkbox">Allow rotation</label> *(non-translation models only)*:
-  permit per-tile rotation. **Off by default** — microscope stages translate but do not rotate, and
-  with rotation locked a few noisy overlap measurements cannot inject small spurious rotations that
-  compound across a large mosaic. Leave it off for stage-tiled data even with Similarity/Affine
-  (you still get scale/shear); tick it only when the tiles are genuinely rotated against each
-  other. With rotation off, *Rigid* becomes equivalent to *Translation*.
+  **the single "are the tiles rotated?" switch** — it both permits per-tile rotation in the solve and
+  switches feature matching to rotation-invariant descriptors, so the two halves can never disagree
+  (see *How Allow rotation works* below). **Off by default** — microscope stages translate but do not
+  rotate, and with rotation locked a few noisy overlap measurements cannot inject small spurious
+  rotations that compound across a large mosaic. Leave it off for stage-tiled data even with
+  Similarity/Affine (you still get scale/shear); tick it only when the tiles are genuinely rotated
+  against each other. With rotation off, *Rigid* becomes equivalent to *Translation*.
 - <span class="widget widget-dropdown">Registration method</span>: how each pairwise overlap is measured
     - **Phase correlation** (*default*): FFT phase correlation on the overlap strip. Best for the
       normal case — small-to-moderate overlaps with modest positioning jitter — and robust on
@@ -279,10 +247,37 @@ the input.
   (SURF, SIFT, MSER, Harris, BRISK, FAST, Minimum Eigenvalue, ORB). SURF is a good default for
   microscopy blobs.
 - <span class="widget widget-button">Settings…</span> *(Feature-based only)*: opens a dialog to tune
-  the selected detector's parameters, the **rotation-invariance** flag, the detection **downsampling
-  factor** (1 = full resolution; higher is faster but less precise on big tiles), and the RANSAC
-  (`estgeotform2d`) trials / confidence / max-distance — identical to the Alignment tool's feature
-  settings.
+  the selected detector's parameters, the detection **downsampling factor** (1 = full resolution;
+  higher is faster but less precise on big tiles), and the RANSAC (`estgeotform2d`) trials /
+  confidence / max-distance. It is the Alignment tool's feature-settings dialog minus its
+  rotation row — here that decision belongs to <label class="widget widget-checkbox">Allow rotation</label>.
+
+!!! note "How *Allow rotation* works"
+    Matching a rotated tile takes two things, and the one checkbox sets both:
+
+    1. **Finding the match** — keypoints are described either *upright* (at the orientation they sit
+       on screen: faster and more distinctive) or *rotation-invariant* (each keypoint's own
+       orientation measured first, so the patch still matches after being turned).
+    2. **Fitting the result** — whether the solved transform is allowed to contain a rotation.
+
+    Step 1 comes first, and that is why they are one switch: permitting a rotation you cannot match
+    would achieve nothing. Ticking <label class="widget widget-checkbox">Allow rotation</label>
+    therefore switches the descriptors to rotation-invariant at the same time.
+
+    Where it matters, measured on a synthetic rotated pair (SURF, RANSAC inliers):
+
+    | Rotation between tiles | 5° | 10° | 15° | 20° | 25° | 45° |
+    |---|---:|---:|---:|---:|---:|---:|
+    | Allow rotation **off** (upright) | 470 | 294 | 62 | 9 | **0** | **0** |
+    | Allow rotation **on** (invariant) | 350 | 305 | 267 | 258 | 249 | 200 |
+
+    Upright descriptors cope with a few degrees of accidental tilt on their own, so leaving the box
+    unticked is safe for ordinary stage-tiled data — but past roughly 20° they stop matching
+    altogether. Rotation-invariant matching costs some inliers at small angles (470 → 350 at 5°)
+    without hurting the fit, which is what makes coupling the two settings free.
+
+    *ORB* describes keypoints with their orientation regardless, so for it the checkbox only affects
+    the solved model.
 
 !!! tip
     Keep **Phase correlation** for tidy grid/position-file acquisitions. Switch to **Feature-based**
@@ -326,25 +321,50 @@ the input.
         - **Downsampling method** and **strategy** (`XY only`, or `Anisotropy-preserving` for anisotropic 3-D stacks).
 
         Smart defaults are seeded from the mosaic's dimensions and voxel size. The choice is remembered for the current
-        output path, so an inspector **Re-fuse** reuses it without re-asking; picking a new output path or switching output
+        output path, so re-fusing after a [seam inspector](dataset-stitch-inspector.md) fix reuses it without re-asking; picking a new output path or switching output
         mode asks again. Batch/headless runs skip the dialog and use the defaults (or values supplied in `BatchOpt`).
 - <span class="widget widget-dropdown">Blend mode</span>: how pixel values are combined where tiles overlap
     - **Feather**: weighted blend, weights ramp down toward each tile border — smooth, seam-free transitions (*recommended*).
     - **Average**: plain average of all overlapping tiles.
-    - **Max**: maximum intensity of the overlapping tiles.
+    - **Max**: maximum intensity of the overlapping tiles — the brightest tile wins at each pixel.
+    - **Min**: minimum intensity of the overlapping tiles — the darkest tile wins at each pixel.
     - **Overwrite**: the later tile wins; hard seams, but no intensity mixing.
-- <label class="widget widget-checkbox">Save project JSON</label>: after stitching, save a project sidecar file next to the input tiles (see below).
+- <label class="widget widget-checkbox">Save project JSON</label>: after stitching, save a project sidecar file next to the input tiles — the tile layout, the measurements, the solved positions and all settings used (see [Project files](#project-files)).
 
 ---
 
 ## Project files
 
 The complete stitching state — tile list, nominal and optimized positions, all pairwise
-measurements with quality scores, and output settings — can be saved to a
-`*.mibstitch.json` sidecar file with <span class="widget widget-button">Save project</span>
-and restored later with <span class="widget widget-button">Load project</span>. This makes
-a stitch reproducible and allows re-fusing the same layout with different blend or output
-settings without re-measuring.
+measurements with quality scores — together with **every setting of the dialog** can be
+saved to a `*.mibstitch.json` sidecar file with
+<span class="widget widget-button">Save project</span> and restored later with
+<span class="widget widget-button">Load project</span>. This makes a stitch reproducible and
+allows re-fusing the same layout with different blend or output settings without
+re-measuring. The same sidecar is written automatically after every
+<span class="widget widget-button">Stitch</span> while
+<label class="widget widget-checkbox">Save project JSON</label> is ticked, so a finished mosaic
+always records the parameters it was produced with.
+
+Because the file holds two independent things — the **state** of one particular stitch and the
+**settings** it was produced with — <span class="widget widget-button">Load project</span> asks
+which of them you want:
+
+- **Restore everything**: the tiles, seam measurements and solved positions come back from the
+  file *and* every widget is reset to the saved values, reproducing the dialog exactly as it
+  was. Use it to re-open, inspect or re-fuse a mosaic.
+- **Settings only**: the saved parameters (layout source, grid and overlap, transform model,
+  registration method with its feature-detector settings, blend and output mode) are applied to
+  the tiles selected **here** — the current <span class="widget widget-edit">Input path</span>
+  and <span class="widget widget-edit">Output path</span> are kept — and the layout is rebuilt
+  from them. The tiles, measurements and positions stored in the file are ignored. Use it to
+  stitch a new acquisition exactly like a previous one.
+
+!!! note
+    Project files written before this option existed carry no settings block; they load their
+    state directly, without asking. In *Settings only* mode, if the saved layout source does not
+    fit the currently selected input (for example a *Position file* project applied to a folder
+    of tiles), the status line asks you to re-select the input instead of reporting an error.
 
 ---
 

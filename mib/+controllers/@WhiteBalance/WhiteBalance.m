@@ -167,7 +167,7 @@ classdef WhiteBalance < handle
         function updateBatchOptFromGUI(obj, event)
             % UPDATEBATCHOPTFROMGUI - Sync BatchOpt from a widget change event.
             if obj.mibModel.preferences.System.DeveloperMode
-                fprintf('controllers.WhiteBalance.updateBatchOptFromGUI: triggered\n');
+                fprintf('controllers.WhiteBalance.updateBatchOptFromGUI(%s): triggered\n', event.Source.Tag);
             end
             obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, event.Source);
         end

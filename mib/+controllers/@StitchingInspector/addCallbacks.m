@@ -32,7 +32,16 @@ if isfield(handles, 'confirmBtn')
     handles.confirmBtn.ButtonPushedFcn = @(~, ~) obj.confirmSeam_Callback();
 end
 if isfield(handles, 'excludeBtn')
-    handles.excludeBtn.ButtonPushedFcn = @(~, ~) obj.excludeSeam_Callback();
+    % Exclude is a two-state action, so the mlapp may carry either an App
+    % Designer STATE button (has Value/ValueChangedFcn — shows the exclusion as
+    % pressed) or a plain push button. Wire whichever is there; the callback is
+    % the same and never reads the widget, so the X key stays equivalent.
+    if isprop(handles.excludeBtn, 'Value')
+        handles.excludeBtn.ValueChangedFcn = @(~, ~) obj.excludeSeam_Callback();
+    else
+        handles.excludeBtn.ButtonPushedFcn = @(~, ~) obj.excludeSeam_Callback();
+    end
+    obj.excludeBtnDefaultColor = handles.excludeBtn.BackgroundColor;
 end
 if isfield(handles, 'resolveBtn')
     handles.resolveBtn.ButtonPushedFcn = @(~, ~) obj.resolveBtn_Callback();
@@ -46,12 +55,12 @@ end
 if isfield(handles, 'fitViewBtn')
     handles.fitViewBtn.ButtonPushedFcn = @(~, ~) obj.fitView_Callback();
 end
-if isfield(handles, 'refuseBtn')
-    handles.refuseBtn.ButtonPushedFcn = @(~, ~) obj.refuseBtn_Callback();
-end
-if isfield(handles, 'saveProjectBtn')
-    handles.saveProjectBtn.ButtonPushedFcn = @(~, ~) obj.stitching.saveProjectBtn_Callback();
-end
+% Deliberately NOT wired here: fuse and save-project. Both live in the parent
+% Stitching window, which stays reachable while the inspector is open, so a copy
+% would only be the same action under a second name. *Stitch* there applies any
+% pending re-solve itself, and *Save project* persists this session's fixes —
+% the inspector mutates the parent's edges in place, so there is nothing extra
+% for it to save.
 if isfield(handles, 'closeButton')
     handles.closeButton.ButtonPushedFcn = @(~, ~) obj.closeWindow();
 end
@@ -83,14 +92,16 @@ setTooltip(handles, 'fixModeDropdown', sprintf( ...
      'Fix Z — align consecutive MOSAIC slices: one tile at slice z-1 (cyan)\n' ...
      'vs slice z (magenta), mostly white when aligned. Q/W moves the\n' ...
      'boundary; drag or Shift+click aligns slice z — the fix shifts that\n' ...
-     'slice AND every slice above it across the whole mosaic (applied at\n' ...
-     'Re-fuse / Stitch, saved in the project; Z removes it).']));
+     'slice AND every slice above it across the whole mosaic (applied by\n' ...
+     'Stitch in the main window, saved in the project; Z removes it).']));
 setTooltip(handles, 'offsetLabel', ...
     'Current pair offset vs the measured one, plus seam score, measurement quality and provenance.');
 setTooltip(handles, 'confirmBtn', ...
     'Mark this seam as reviewed-OK and jump to the next worst unreviewed one (Enter).');
-setTooltip(handles, 'excludeBtn', ...
-    'Remove this seam''s measurement from the solve — the tiles are then held near their nominal positions. Press again to re-include (X).');
+setTooltip(handles, 'excludeBtn', sprintf( ...
+    ['Exclude this seam''s measurement from the solve — the tiles are then held\n' ...
+     'near their nominal positions. The button stays pressed (red) while the seam\n' ...
+     'is excluded; press it again to put the measurement back (X).']));
 setTooltip(handles, 'resolveBtn', ...
     'Re-run the global solve with the edited seams, then re-score and re-rank the review.');
 setTooltip(handles, 'twoClickBtn', ...
@@ -99,16 +110,12 @@ setTooltip(handles, 'undoFixBtn', ...
     'Restore this seam''s original automatic measurement, undoing every fix applied to it this session (Z).');
 setTooltip(handles, 'fitViewBtn', ...
     'Fit the whole tile pair in the view, resetting the mouse-wheel zoom (F).');
-setTooltip(handles, 'refuseBtn', ...
-    'Fuse the mosaic with the corrected positions — same as Stitch in the main window (both output modes; a pending re-solve runs first).');
 setTooltip(handles, 'roiSizeSpinner', ...
     'Size (px) of the correlation box cut around a Shift+click. Hold Shift and scroll the mouse wheel to adjust. Keep it smaller than the overlap region.');
 setTooltip(handles, 'searchRadiusSpinner', ...
     'How far (px per side) the box is searched around the current offset in the other tile.');
 setTooltip(handles, 'autoResolveCheckbox', ...
     'Re-solve all positions (and re-rank the seams) automatically after each fix.');
-setTooltip(handles, 'saveProjectBtn', ...
-    'Save the stitch project sidecar — review decisions and fixes are stored with it.');
 setTooltip(handles, 'closeButton', 'Close the inspector.');
 
 end

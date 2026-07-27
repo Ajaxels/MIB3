@@ -237,7 +237,7 @@ classdef ChunkingImport < handle
         function updateBatchOptFromGUI(obj, hObject)
             % UPDATEBATCHOPTFROMGUI - Sync a single widget change back to BatchOpt.
             if obj.mibModel.preferences.System.DeveloperMode
-                fprintf('controllers.ChunkingImport.updateBatchOptFromGUI: triggered\n');
+                fprintf('controllers.ChunkingImport.updateBatchOptFromGUI(%s): triggered\n', hObject.Tag);
             end
             obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, hObject);
         end

@@ -232,6 +232,9 @@ classdef Snapshot < handle
 
         function closeWindow(obj)
             % CLOSEWINDOW - Close the Snapshot dialog and clean up.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Snapshot.closeWindow: triggered\n');
+            end
             if isvalid(obj.view.gui)
                 delete(obj.view.gui);
             end
@@ -250,6 +253,10 @@ classdef Snapshot < handle
 
         function updateBatchOptFromGUI(obj, hObject, ~)
             % UPDATEBATCHOPTFROMGUI - Update BatchOpt from GUI widget value.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Snapshot.updateBatchOptFromGUI(%s): triggered\n', hObject.Tag);
+            end
+            
             obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, hObject);
         end
 
@@ -374,6 +381,9 @@ classdef Snapshot < handle
 
         function updateDestination(obj)
             % update destination for the snapshot
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Snapshot.updateDestination: triggered\n');
+            end
             if obj.view.handles.File.Value
                 obj.view.handles.filePanel.Enable = true;
             else
@@ -384,7 +394,10 @@ classdef Snapshot < handle
 
         function updateCropMode(obj)
             % update the crop mode for the snapshot
-            
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Snapshot.updateCropMode: triggered\n');
+            end
+
             % update obj.BatchOpt
             obj.updateBatchOptFromGUI(obj.view.handles.Crop);
             % update the crop factor
@@ -393,6 +406,9 @@ classdef Snapshot < handle
 
         function updateRoiIndex(obj)
             % updateRoiIndex - Update shown ROI selection.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Snapshot.updateRoiIndex: triggered\n');
+            end
             activeId = obj.mibModel.getActiveId();
             roiItems = obj.view.handles.RoiIndex.Items;
             roiValue = obj.view.handles.RoiIndex.Value;
@@ -408,6 +424,9 @@ classdef Snapshot < handle
 
         function binCheck_Callback(obj)
             % update buttons bin/mag buttons
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Snapshot.binCheck_Callback: triggered\n');
+            end
             if obj.view.handles.binCheck.Value
                 obj.view.handles.bin2Btn.Text = 'bin x2';
                 obj.view.handles.bin2Btn.Tooltip = 'Reduce dimensions of the snapshot in 2 times';
@@ -428,6 +447,9 @@ classdef Snapshot < handle
         function binMagButtons_Callback(obj, hObject, event)
             % calculate new width/height of the dataset depending on the
             % pressed button and its text
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Snapshot.binMagButtons_Callback(%s): triggered\n', hObject.Tag);
+            end
 
             % get downsampling / upsampling factor
             switch hObject.Tag
@@ -453,6 +475,9 @@ classdef Snapshot < handle
 
         function FileFormat_Callback(obj)
             % FILEFORMAT_CALLBACK - Switch format tab and update filename extension.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Snapshot.FileFormat_Callback: triggered\n');
+            end
             format = obj.view.handles.FileFormat.Value;
 
             % switch the selected tab
@@ -481,6 +506,9 @@ classdef Snapshot < handle
 
         function FileFormatTabGroup_Callback(obj)
             % FILEFORMATTABGROUP_CALLBACK - Sync format dropdown and filename when a tab is clicked directly.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Snapshot.FileFormatTabGroup_Callback: triggered\n');
+            end
             tabTitle = obj.view.handles.FileFormatTabGroup.SelectedTab.Title;
             obj.view.handles.FileFormat.Value = tabTitle;
             activeId = obj.mibModel.getActiveId();
@@ -494,6 +522,9 @@ classdef Snapshot < handle
 
         function measurements_Callback(obj)
             % enable or disable rendering of measurements on the snapshot
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Snapshot.measurements_Callback: triggered\n');
+            end
 
             obj.view.handles.measurementsOptions.Enable = false;
             if obj.view.handles.Measurements.Value
@@ -512,6 +543,9 @@ classdef Snapshot < handle
 
         function measurementsOptions_Callback(obj)
             % MEASUREMENTSOPTIONS_CALLBACK - Update measurement visualization settings.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Snapshot.measurementsOptions_Callback: triggered\n');
+            end
             activeId = obj.mibModel.getActiveId();
             obj.mibModel.I{activeId}.measure.updateOptions(obj.view.gui);
             notify(obj.mibModel, 'ShowImage');
@@ -519,6 +553,9 @@ classdef Snapshot < handle
 
         function scalebar_Callback(obj)
             % SCALEBAR_CALLBACK - Enable scale bar and verify pixel size.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Snapshot.scalebar_Callback: triggered\n');
+            end
             if obj.view.handles.Scalebar.Value
                 activeId = obj.mibModel.getActiveId();
                 dataset = obj.mibModel.I{activeId};
@@ -574,6 +611,9 @@ classdef Snapshot < handle
 
         function SplitChannels_Callback(obj)
             % SPLITCHANNELS_CALLBACK - Enable/disable split channel controls.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Snapshot.SplitChannels_Callback: triggered\n');
+            end
             if obj.view.handles.SplitChannels.Value
                 obj.view.handles.Grayscale.Enable = 'on';
                 obj.view.handles.ColsNumber.Enable = 'on';
@@ -589,6 +629,9 @@ classdef Snapshot < handle
 
         function outputDir_Callback(obj)
             % OUTPUTDIR_CALLBACK - Validate and update the output filename.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Snapshot.outputDir_Callback: triggered\n');
+            end
             fn = obj.view.handles.outputDir.Value;
             activeId = obj.mibModel.getActiveId();
             [~, ~, ext] = fileparts(fn);
@@ -613,6 +656,9 @@ classdef Snapshot < handle
 
         function selectFileBtn_Callback(obj)
             % SELECTFILEBTN_CALLBACK - Open a file save dialog for the snapshot.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Snapshot.selectFileBtn_Callback: triggered\n');
+            end
             activeId = obj.mibModel.getActiveId();
             format = obj.view.handles.FileFormat.Value;
             switch format
@@ -635,7 +681,10 @@ classdef Snapshot < handle
 
         function Width_Callback(obj)
             % WIDTH_CALLBACK - Update height to maintain aspect ratio when width changes.
-            
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Snapshot.Width_Callback: triggered\n');
+            end
+
             newWidth = obj.view.handles.Width.Value;
             if isempty(obj.extraController)
                 ratio = obj.origHeight / obj.resizedWidth;
@@ -656,6 +705,9 @@ classdef Snapshot < handle
 
         function Height_Callback(obj)
             % HEIGHT_CALLBACK - Update width to maintain aspect ratio when height changes.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Snapshot.Height_Callback: triggered\n');
+            end
             newHeight = obj.view.handles.Height.Value;
             if isempty(obj.extraController)
                 ratio = obj.origHeight / obj.resizedWidth;
@@ -676,6 +728,9 @@ classdef Snapshot < handle
 
         function help(obj)
             % show help
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Snapshot.help: triggered\n');
+            end
             helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'ribbon', 'home', 'home-makesnapshot.html');
             if isfile(helpFilPath)
                 web(helpFilPath, '-browser');
@@ -737,6 +792,9 @@ classdef Snapshot < handle
             %      obj.BatchOpt.Destination{1} = 'File';
             %      obj.snapshotBtn_Callback(1);
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Snapshot.snapshotBtn_Callback: triggered\n');
+            end
             if nargin < 2; useBatchMode = 0; end
             activeId = obj.mibModel.getActiveId();
             dataset = obj.mibModel.I{activeId};

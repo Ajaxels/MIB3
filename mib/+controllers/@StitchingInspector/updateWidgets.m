@@ -83,6 +83,11 @@ if isfield(obj.view.handles, 'statusLabel')
         numel(edges), numReviewed, numExcluded, worstScore);
 end
 
+% ---- exclude button state -------------------------------------------------
+% The table says EXCLUDED in the Used column, but the button itself must show
+% it too — otherwise its toggle behaviour is invisible until you press it.
+obj.refreshExcludeButton();
+
 obj.renderMiniMap();
 
 end

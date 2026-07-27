@@ -22,10 +22,22 @@ function stitchBtn_Callback(obj, batchModeSwitch)
 %
 % The project JSON sidecar is saved if ``BatchOpt.SaveProject`` is true.
 %
+% This is the ONLY fuse entry point — the seam inspector has no button of its
+% own, so a fix made there is baked in by pressing *Stitch* here (both windows
+% stay usable side by side). When the inspector still owes a global re-solve
+% (auto-re-solve off, or a deferred nudge), that re-solve runs FIRST: the guard
+% lives on the operation, not on one button, so the mosaic can never be fused
+% from stale positions.
+%
 
 if nargin < 2; batchModeSwitch = false; end
 if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.Stitching.stitchBtn_Callback: triggered\n');
+end
+
+% Apply any seam fix still awaiting its global re-solve before fusing.
+if ~isempty(obj.inspector) && isvalid(obj.inspector) && obj.inspector.resolvePending
+    obj.inspector.resolveBtn_Callback();
 end
 
 % Run any pipeline stages not done yet: layout -> measure -> solve -> canvas.
@@ -141,9 +153,9 @@ elseif strcmp(outputMode, 'OME-Zarr3 (BigData)')
     end
 
     % Collect pyramid/chunk/compression settings once (same dialog as the
-    % standard "Export to Zarr3" action); cache them so an inspector re-fuse to
-    % the same path reuses the choice instead of re-prompting. Batch runs and a
-    % pre-seeded cache skip the dialog.
+    % standard "Export to Zarr3" action); cache them so re-fusing to the same
+    % path after a seam fix reuses the choice instead of re-prompting. Batch
+    % runs and a pre-seeded cache skip the dialog.
     if ~batchModeSwitch && isempty(obj.zarrExportOptions)
         datasetInfo = struct('Y', obj.canvas.size(1), 'X', obj.canvas.size(2), ...
             'Z', obj.canvas.size(3), 'pixSize', obj.canvas.pixSize);
@@ -212,8 +224,11 @@ if obj.BatchOpt.SaveProject
             outputInfo.canvasSize = obj.canvas.size;
         end
 
+        % The settings block (schema v3) records the parameters this mosaic was
+        % produced with, so Load project can restore the dialog or reuse them.
         utils.stitch.saveProject(projectPath, obj.layout, obj.edges, ...
-            obj.positions, struct(), outputInfo, obj.tforms, obj.zSliceFixes);
+            obj.positions, obj.solverInfo, outputInfo, obj.tforms, ...
+            obj.zSliceFixes, obj.collectProjectSettings());
     catch saveError
         if ~batchModeSwitch
             utils.dlgs.showErrorDialog(fuseOptions.parentFigure, ...

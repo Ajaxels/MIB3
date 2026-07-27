@@ -271,7 +271,7 @@ classdef ImageArithmetics < handle
             %   (none)
             %
             if obj.mibModel.preferences.System.DeveloperMode
-                fprintf('controllers.ImageArithmetics.updateBatchOptFromGUI: triggered\n');
+                fprintf('controllers.ImageArithmetics.updateBatchOptFromGUI(%s): triggered\n', hObject.Tag);
             end
             obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, hObject);
         end
@@ -383,8 +383,9 @@ classdef ImageArithmetics < handle
             % 1. Parse ``BatchOpt.InputVariables`` and fetch each dataset via
             %    ``mibModel.getData4D`` into workspace variables (``I``, ``O``,
             %    ``M``, ``S``, ``I2``, etc.).
-            % 2. Evaluate ``BatchOpt.Expression`` with ``eval``.
-            % 3. Write the result named in ``BatchOpt.OutputVariables`` back via
+            % 2. Evaluate ``BatchOpt.Expression`` with ``eval`` and pick up the
+            %    resulting variable named in ``BatchOpt.OutputVariables``.
+            % 3. Write the result back via
             %    ``mibModel.setData4D``.  When the target container differs from the
             %    source, a new ``core.MibDataset`` is created and ``NewDataset`` is fired.
             % 4. Store the expression in ``preferences.ImageArithmetic`` history and
@@ -418,6 +419,7 @@ classdef ImageArithmetics < handle
             obtainedDatasets = {};
             getDataOptions.blockModeSwitch = 0;
             activeId = obj.mibModel.getActiveId();
+            getDataOptions.id = activeId;   % fallback when InputVariables is empty
 
             for chId = 1:numel(obj.BatchOpt.InputVariables)
                 switch obj.BatchOpt.InputVariables(chId)
@@ -507,6 +509,32 @@ classdef ImageArithmetics < handle
                 return;
             end
 
+            % Fetch the evaluated result from the local workspace; the expression
+            % was evaluated with eval() so the output variable (I, I2, M3, ...)
+            % lives here under the name in datasetOutputString
+            if ~exist(datasetOutputString, 'var')
+                if obj.BatchOpt.showWaitbar; pwb.deletePoolWaitbar(); end
+                notify(obj.mibModel, 'StopProtocol');
+                utils.dlgs.showErrorDialog(parentFigure, ...
+                    sprintf(['!!! Error !!!\n\nThe expression did not produce the output variable "%s"!\n\n' ...
+                    'Make sure that the expression assigns a result to %s.'], ...
+                    datasetOutputString, datasetOutputString), 'Error');
+                return;
+            end
+            outputArray = eval(datasetOutputString);
+
+            % MIB stores images as integer classes only; a floating-point result
+            % (e.g. from "I2 = double(I1)./2") would break dataset initialization
+            if strcmp(outputType, 'image') && ~isinteger(outputArray)
+                if obj.BatchOpt.showWaitbar; pwb.deletePoolWaitbar(); end
+                notify(obj.mibModel, 'StopProtocol');
+                utils.dlgs.showErrorDialog(parentFigure, ...
+                    sprintf(['!!! Error !!!\n\nThe expression produced a "%s" result, but images must be ' ...
+                    'an integer class (uint8, uint16, uint32).\n\nCast the result explicitly, for example:\n%s = uint8(...);'], ...
+                    class(outputArray), datasetOutputString), 'Error');
+                return;
+            end
+
             % Check cancel before the irreversible write
             if obj.BatchOpt.showWaitbar && pwb.getCancelState()
                 pwb.deletePoolWaitbar();
@@ -526,21 +554,15 @@ classdef ImageArithmetics < handle
                 case 'image'
                     if setDataOptions.id == activeId
                         setDataOptions.replaceDatasetSwitch = 1;
-                        % Reinitialize labels if image dimensions changed
-                        execString = sprintf([ ...
-                            'sum([size(%s,1) size(%s,2) size(%s,4) size(%s,5)] == ' ...
-                            '[size(obj.mibModel.I{setDataOptions.id}.labels.data,1) ' ...
-                            'size(obj.mibModel.I{setDataOptions.id}.labels.data,2) ' ...
-                            'size(obj.mibModel.I{setDataOptions.id}.labels.data,3) ' ...
-                            'size(obj.mibModel.I{setDataOptions.id}.labels.data,4)]) ~= 4'], ...
-                            datasetOutputString, datasetOutputString, datasetOutputString, datasetOutputString);
-                        if eval(execString)
+                        % Reinitialize labels if image dimensions changed.
+                        % Both image and labels data are [H, W, Z, C, T], so
+                        % the spatial+time dimensions to compare are [1 2 3 5]
+                        labelsData = obj.mibModel.I{setDataOptions.id}.labels.data;
+                        if ~isequal(size(outputArray, [1 2 3 5]), size(labelsData, [1 2 3 5]))
                             setDataOptions.keepModel = 0;
                         end
-                        execString = sprintf('obj.mibModel.setData4D(%s, ''%s'', 3, NaN, setDataOptions);', ...
-                            datasetOutputString, outputType);
                         try
-                            eval(execString);
+                            obj.mibModel.setData4D(outputArray, outputType, 3, NaN, setDataOptions);
                         catch err
                             if obj.BatchOpt.showWaitbar; pwb.deletePoolWaitbar(); end
                             utils.dlgs.showErrorDialog(parentFigure, ...
@@ -553,16 +575,39 @@ classdef ImageArithmetics < handle
                     else
                         meta = obj.mibModel.I{getDataOptions.id}.image.getMeta();
                         try
-                            execStr = sprintf('meta(''imgClass'') = class(%s);', datasetOutputString); eval(execStr);
-                            meta('MaxInt') = double(intmax(meta('imgClass'))); %#ok<NASGU>
-                            execStr = sprintf('meta(''Height'') = size(%s,1);', datasetOutputString); eval(execStr);
-                            execStr = sprintf('meta(''Width'') = size(%s,2);', datasetOutputString); eval(execStr);
-                            execStr = sprintf('meta(''Colors'') = size(%s,3);', datasetOutputString); eval(execStr);
-                            execStr = sprintf('meta(''Depth'') = size(%s,4);', datasetOutputString); eval(execStr);
-                            execStr = sprintf('meta(''Time'') = size(%s,5);', datasetOutputString); eval(execStr);
-                            execStr = sprintf('obj.mibModel.I{setDataOptions.id} = core.MibDataset(%s, meta, ''Standard'', ''labels63'');', ...
-                                datasetOutputString);
-                            eval(execStr);
+                            % meta is a dictionary with a 'cell' value type, so values
+                            % must be assigned with brace indexing: meta{'key'} = value
+                            outputClass = class(outputArray);
+                            [outputHeight, outputWidth, outputDepth, outputColors, outputTime] = size(outputArray);
+                            meta{'imgClass'} = outputClass;
+                            meta{'MaxInt'}   = double(intmax(outputClass));
+                            % MIB3 image data is [height, width, depth, colors, time]
+                            meta{'Height'} = outputHeight;
+                            meta{'Width'}  = outputWidth;
+                            meta{'Depth'}  = outputDepth;
+                            meta{'Colors'} = outputColors;
+                            meta{'Time'}   = outputTime;
+                            % drop per-slice metadata inherited from the source container
+                            % when the new dataset has a different number of slices/channels
+                            if numel(meta{'SliceName'}) ~= outputDepth
+                                meta{'SliceName'} = [];
+                                meta{'SliceSize'} = [];
+                            end
+                            if isKey(meta, 'lutColors') && size(meta{'lutColors'}, 1) ~= outputColors
+                                meta{'lutColors'} = utils.defaults.generateLUT(outputColors);
+                            end
+                            % MibImage.initialize() upgrades grayscale -> multichannel but never
+                            % the other way round, so downgrade an inherited multichannel type here
+                            if outputColors == 1 && strcmp(meta{'ColorType'}, 'multichannel')
+                                meta{'ColorType'} = 'grayscale';
+                            end
+                            obj.mibModel.I{setDataOptions.id} = core.MibDataset(outputArray, meta, 'Standard', 'labels63');
+                            % keep Sets.datasetTypes in sync, otherwise the dataset-type
+                            % dropdown still shows Virtual/BigData for the destination
+                            targetSet     = floor((setDataOptions.id - 1) / obj.mibModel.Sets.datasetsInSet) + 1;
+                            targetLocalId = mod(setDataOptions.id - 1, obj.mibModel.Sets.datasetsInSet) + 1;
+                            obj.mibModel.Sets.datasetTypes{targetSet, targetLocalId} = ...
+                                obj.mibModel.I{setDataOptions.id}.datasetType;
                         catch err
                             if obj.BatchOpt.showWaitbar; pwb.deletePoolWaitbar(); end
                             utils.dlgs.showErrorDialog(parentFigure, ...
@@ -571,15 +616,17 @@ classdef ImageArithmetics < handle
                             notify(obj.mibModel, 'StopProtocol');
                             return;
                         end
-                        notify(obj.mibModel, 'NewDataset', core.ToggleEventData(setDataOptions.id));
+                        % listener_newDataset expects a struct with .index; passing a
+                        % bare id makes it fall into the no-index branch and error out,
+                        % skipping both the fit-to-screen and the Datasets panel refresh
+                        notify(obj.mibModel, 'NewDataset', ...
+                            core.ToggleEventData(struct('index', setDataOptions.id)));
                     end
                     obj.mibModel.I{setDataOptions.id}.image.updateActionLog('Image Arithmetics operation applied');
 
                 case 'labels'
-                    execString = sprintf('obj.mibModel.setData4D(%s, ''%s'', 3, NaN, setDataOptions);', ...
-                        datasetOutputString, outputType);
                     try
-                        eval(execString);
+                        obj.mibModel.setData4D(outputArray, outputType, 3, NaN, setDataOptions);
                     catch err
                         if obj.BatchOpt.showWaitbar; pwb.deletePoolWaitbar(); end
                         utils.dlgs.showErrorDialog(parentFigure, ...
@@ -593,10 +640,8 @@ classdef ImageArithmetics < handle
                     notify(obj.mibModel, 'UpdateGuiWidgets');
 
                 otherwise  % mask, selection
-                    execString = sprintf('obj.mibModel.setData4D(%s, ''%s'', 3, NaN, setDataOptions);', ...
-                        datasetOutputString, outputType);
                     try
-                        eval(execString);
+                        obj.mibModel.setData4D(outputArray, outputType, 3, NaN, setDataOptions);
                     catch err
                         if obj.BatchOpt.showWaitbar; pwb.deletePoolWaitbar(); end
                         utils.dlgs.showErrorDialog(parentFigure, ...
