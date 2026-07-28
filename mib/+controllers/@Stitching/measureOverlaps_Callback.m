@@ -16,12 +16,7 @@ if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.Stitching.measureOverlaps_Callback: triggered\n');
 end
 if isempty(obj.layout)
-    warnOptions.MsgBoxOnly  = true;
-    warnOptions.Icon        = 'puffin_warning';
-    warnOptions.HeaderLines = 1;
-    utils.dlgs.inputUniversalDlg(obj.view.gui, ...
-        'No layout loaded. Please select input tiles first.', {}, {}, ...
-        'No layout', warnOptions);
+    obj.warnUser('No layout loaded. Please select input tiles first.', 'No layout');
     return;
 end
 
@@ -32,7 +27,7 @@ if obj.BatchOpt.EstimateOverlap
     try
         obj.runOverlapEstimation();
     catch estimateError
-        utils.dlgs.showErrorDialog(obj.view.gui, estimateError.message, 'Overlap estimation failed');
+        obj.reportError(estimateError, 'Overlap estimation failed');
         return;
     end
 end
@@ -42,12 +37,7 @@ pairOptions.minOverlapPx = 16;
 nominalPairs = utils.stitch.findNeighborPairs(obj.layout, pairOptions);
 
 if isempty(nominalPairs)
-    warnOptions.MsgBoxOnly  = true;
-    warnOptions.Icon        = 'puffin_warning';
-    warnOptions.HeaderLines = 1;
-    utils.dlgs.inputUniversalDlg(obj.view.gui, ...
-        'No overlapping tile pairs found. Check overlap settings.', {}, {}, ...
-        'No pairs', warnOptions);
+    obj.warnUser('No overlapping tile pairs found. Check overlap settings.', 'No pairs');
     return;
 end
 
@@ -63,13 +53,13 @@ if strcmp(obj.BatchOpt.RegistrationMethod{1}, 'Feature-based') || ...
         ~strcmp(obj.BatchOpt.TransformType{1}, 'Translation')
     measureOptions.featureOptions = obj.buildFeatureOptions();
 end
-measureOptions.showWaitbar        = obj.BatchOpt.showWaitbar;
-measureOptions.parentFigure       = obj.view.gui;
+measureOptions.parentFigure       = obj.guiFigure();
+measureOptions.showWaitbar        = obj.BatchOpt.showWaitbar && ~isempty(measureOptions.parentFigure);
 
 try
     obj.edges = utils.stitch.measureAllPairs(obj.layout, nominalPairs, measureOptions);
 catch measureError
-    utils.dlgs.showErrorDialog(obj.view.gui, measureError.message, 'Measurement failed');
+    obj.reportError(measureError, 'Measurement failed');
     return;
 end
 

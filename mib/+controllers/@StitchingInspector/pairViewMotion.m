@@ -17,7 +17,7 @@ function pairViewMotion(obj)
 
 if isempty(obj.view) || ~isvalid(obj.view.gui); return; end
 if ~obj.shiftDown || ~obj.dataValid() || isempty(obj.currentEdgeIdx) || ...
-        isempty(obj.pairStrip) || ~isfield(obj.view.handles, 'pairAxes')
+        isempty(obj.pairStrip) || ~obj.hasWidget('pairAxes')
     hideBox(obj);
     return;
 end
@@ -34,7 +34,7 @@ if point(1) < xLimits(1) || point(1) > xLimits(2) || ...
 end
 
 roiSize = 128;
-if isfield(obj.view.handles, 'roiSizeSpinner')
+if obj.hasWidget('roiSizeSpinner')
     roiSize = obj.view.handles.roiSizeSpinner.Value;
 end
 half = roiSize / 2;   % axes data units are full-res tile-i pixels

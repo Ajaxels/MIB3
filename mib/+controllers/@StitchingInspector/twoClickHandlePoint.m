@@ -54,7 +54,7 @@ end
 % Sharpen the eyeballed offset: small radius (the coarse offset is close),
 % widened with the display downsampling so click quantisation stays covered.
 options = struct('roiSize', 128, 'searchRadius', max(12, 4 * state.scale));
-if isfield(obj.view.handles, 'roiSizeSpinner')
+if obj.hasWidget('roiSizeSpinner')
     options.roiSize = obj.view.handles.roiSizeSpinner.Value;
 end
 tileA = obj.readerFcn(edge.i);

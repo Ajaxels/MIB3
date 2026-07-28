@@ -25,7 +25,7 @@ classdef StitchCoreTest < matlab.unittest.TestCase
             import matlab.unittest.fixtures.PathFixture
             testCase.applyFixture(PathFixture({testsFolder, mibFolder, ...
                 fullfile(mibFolder, 'external'), ...
-                fullfile(mibFolder, 'external', 'Zarr3Matlab')}));
+                fullfile(mibFolder, 'external', 'zarr-matlab')}));
         end
     end
 

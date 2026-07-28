@@ -33,10 +33,10 @@ bboxA = obj.pairStrip.bboxA;
 clickXY = [stripPointXY(1) + bboxA(2, 1) - 1, stripPointXY(2) + bboxA(1, 1) - 1];
 
 options = struct('roiSize', 128, 'searchRadius', 64);
-if isfield(obj.view.handles, 'roiSizeSpinner')
+if obj.hasWidget('roiSizeSpinner')
     options.roiSize = obj.view.handles.roiSizeSpinner.Value;
 end
-if isfield(obj.view.handles, 'searchRadiusSpinner')
+if obj.hasWidget('searchRadiusSpinner')
     options.searchRadius = obj.view.handles.searchRadiusSpinner.Value;
 end
 

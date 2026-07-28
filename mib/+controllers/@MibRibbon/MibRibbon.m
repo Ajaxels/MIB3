@@ -138,7 +138,7 @@ classdef MibRibbon
 
             %% Add Callbacks for the DATASET ribbon -> Alignment
             obj.handles.ribbonDataset.alignment.ButtonPushedFcn = @obj.dataset_Callbacks;
-            %% Add Callbacks for the DATASET ribbon -> Stitch
+            %% Add Callbacks for the DATASET ribbon -> Stitching
             obj.handles.ribbonDataset.stitch.ButtonPushedFcn = @obj.dataset_Callbacks;
             %% Add Callbacks for the DATASET ribbon -> Dataset tools
             obj.handles.ribbonDataset.crop.ButtonPushedFcn = @obj.dataset_Callbacks;

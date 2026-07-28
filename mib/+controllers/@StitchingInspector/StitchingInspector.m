@@ -87,19 +87,27 @@ classdef StitchingInspector < handle
     methods
 
         % ---------------------------------------------------------------
-        function obj = StitchingInspector(mibModel, stitchController)
+        function obj = StitchingInspector(mibModel, stitchController, options)
             % STITCHINGINSPECTOR - Constructor.
             %
             % Syntax:
             %   .. code-block:: matlab
             %
             %      obj = controllers.StitchingInspector(mibModel, stitchController)
+            %      obj = controllers.StitchingInspector(mibModel, stitchController, struct('createView', false))
             %
             % Input Arguments:
             %   - **mibModel** — handle to MibModel
             %   - **stitchController** — handle to the launching
             %     ``controllers.Stitching``; must hold a measured ``edges`` set
             %     and solved ``positions``
+            %   - **options** *(optional)* — [struct] with field ``createView``
+            %     [logical]: ``false`` builds the inspector WITHOUT its window —
+            %     the seams are scored and ranked and every review/fix method
+            %     works, but nothing is rendered. Used by the unit tests; every
+            %     widget access in this class is guarded by
+            %     :meth:`hasWidget`, so the review logic is the same code the
+            %     GUI drives. Default ``true``
             %
 
             obj.mibModel  = mibModel;
@@ -121,11 +129,31 @@ classdef StitchingInspector < handle
             obj.viewSlice = [];
             obj.excludeBtnDefaultColor = [];
 
+            createView = true;
+            if nargin > 2 && isstruct(options) && isfield(options, 'createView')
+                createView = logical(options.createView);
+            end
+
             if isempty(obj.stitching.edges) || isempty(obj.stitching.positions)
-                utils.dlgs.showErrorDialog(obj.stitching.view.gui, ...
-                    'Measure overlaps and Optimize positions first — the inspector reviews seams at the SOLVED placement.', ...
-                    'Seam inspector');
-                notify(obj, 'CloseEvent');
+                message = 'Measure overlaps and Optimize positions first — the inspector reviews seams at the SOLVED placement.';
+                if createView
+                    utils.dlgs.showErrorDialog(obj.stitching.guiFigure(), message, 'Seam inspector');
+                    notify(obj, 'CloseEvent');
+                    return;
+                end
+                error('StitchingInspector:noSeams', '%s', message);
+            end
+
+            if ~createView
+                % Headless: no widgets, but the same review state a freshly
+                % opened window would show (scored, ranked, worst seam current).
+                obj.view = [];
+                obj.scoreAndRank();
+                obj.updateWidgets();
+                initialRanking = obj.visibleRanking();
+                if ~isempty(initialRanking)
+                    obj.selectSeam(initialRanking(1));
+                end
                 return;
             end
 
@@ -148,6 +176,51 @@ classdef StitchingInspector < handle
             end
 
             obj.view.gui.Visible = 'on';
+        end
+
+        % ---------------------------------------------------------------
+        function tf = hasWidget(obj, widgetName)
+            % HASWIDGET - Is this widget available to write to?
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      tf = obj.hasWidget('seamTable')
+            %
+            % False both when the mlapp does not (yet) carry the widget — most
+            % of the inspector's UI is optional, see ``mlapp_widgets.md`` — and
+            % when the controller runs without a view at all (headless
+            % construction). Every widget access in this class goes through it,
+            % so the review logic runs identically in both cases.
+            %
+            % Input Arguments:
+            %   - **widgetName** — [char] handle name in ``obj.view.handles``
+            %
+            tf = ~isempty(obj.view) && isfield(obj.view.handles, widgetName);
+        end
+
+        % ---------------------------------------------------------------
+        function figureHandle = progressParent(obj)
+            % PROGRESSPARENT - Figure to anchor a progress dialog to.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      figureHandle = obj.progressParent()
+            %
+            % The inspector window once it is VISIBLE (``uiprogressdlg``
+            % refuses an invisible figure, which the window still is while the
+            % constructor scores the seams), otherwise the parent Stitching
+            % window, otherwise ``[]`` — headless, and the caller then skips
+            % the progress bar entirely.
+            %
+            figureHandle = [];
+            if ~isempty(obj.view) && ~isempty(obj.view.gui) && isvalid(obj.view.gui) ...
+                    && strcmp(obj.view.gui.Visible, 'on')
+                figureHandle = obj.view.gui;
+            elseif ~isempty(obj.stitching) && isvalid(obj.stitching)
+                figureHandle = obj.stitching.guiFigure();
+            end
         end
 
         % ---------------------------------------------------------------
@@ -177,7 +250,7 @@ classdef StitchingInspector < handle
             %
             %      obj.refreshExcludeButton()
             %
-            if isempty(obj.view) || ~isfield(obj.view.handles, 'excludeBtn'); return; end
+            if ~obj.hasWidget('excludeBtn'); return; end
             excludeBtn = obj.view.handles.excludeBtn;
             if ~isvalid(excludeBtn); return; end
 
@@ -245,7 +318,7 @@ classdef StitchingInspector < handle
             % in-plane offset at the aligned slices) or 'z' (match slices
             % across the Z boundary — fixModeDropdown, guarded).
             mode = 'xy';
-            if ~isempty(obj.view) && isfield(obj.view.handles, 'fixModeDropdown') && ...
+            if obj.hasWidget('fixModeDropdown') && ...
                     contains(lower(obj.view.handles.fixModeDropdown.Value), 'z')
                 mode = 'z';
             end
@@ -269,6 +342,74 @@ classdef StitchingInspector < handle
                 r = r(isZ);
             else
                 r = r(~isZ);
+            end
+        end
+
+        % ---------------------------------------------------------------
+        function tiles = currentLayerTiles(obj)
+            % CURRENTLAYERTILES - Tile indices of the Z-layer the mini-map
+            % currently draws: the current seam's layer (its lower tile for a
+            % cross-layer pair), or the lowest layer before anything is
+            % selected. Shared by renderMiniMap (what to draw) and jumpToTile
+            % (what a mini-map click can land on) so the two never drift apart.
+            layout = obj.stitching.layout;
+            zLayers = arrayfun(@(t) t.zLayer, layout);
+            if ~isempty(obj.currentEdgeIdx)
+                currentLayer = layout(obj.stitching.edges(obj.currentEdgeIdx).i).zLayer;
+            else
+                currentLayer = min(zLayers);
+            end
+            tiles = find(zLayers == currentLayer);
+        end
+
+        % ---------------------------------------------------------------
+        function k = edgeAtMiniMapPoint(obj, point)
+            % EDGEATMINIMAPPOINT - Seam (edge index) nearest a mini-map click.
+            %
+            % A tile usually touches more than one seam (a grid tile has a
+            % neighbour on two, three or four sides), so "jump to this tile's
+            % worst seam" can only ever reach the single worst one — clicking
+            % anywhere else on that tile, hoping to land on a DIFFERENT one of
+            % its seams, always lands back on the same worst seam instead.
+            % Fix: give every seam of the current layer (the subset
+            % visibleRanking shows) a location — the midpoint of its two
+            % tiles' overlap rectangle, i.e. where the shared image content
+            % actually is — and return whichever seam's location is nearest
+            % the click. Returns ``[]`` when there is nothing to match (no
+            % seams in this fix mode, or none in the current layer).
+            layout = obj.stitching.layout;
+            positions = obj.stitching.positions;
+            edges = obj.stitching.edges;
+            drawTiles = obj.currentLayerTiles();
+
+            k = [];
+            bestDist = Inf;
+            visibleRanking = obj.visibleRanking();
+            for candidate = visibleRanking(:)'   % (:)' guarantees row orientation for the loop
+                e = edges(candidate);
+                if ~any(drawTiles == e.i) || ~any(drawTiles == e.j)
+                    continue;   % not a seam of the currently-drawn layer
+                end
+                x0i = positions(e.i, 2); y0i = positions(e.i, 1);
+                wi  = layout(e.i).tileSize(2); hi = layout(e.i).tileSize(1);
+                x0j = positions(e.j, 2); y0j = positions(e.j, 1);
+                wj  = layout(e.j).tileSize(2); hj = layout(e.j).tileSize(1);
+                xOverlap = [max(x0i, x0j), min(x0i + wi, x0j + wj)];
+                yOverlap = [max(y0i, y0j), min(y0i + hi, y0j + hj)];
+                if diff(xOverlap) > 0 && diff(yOverlap) > 0
+                    seamPoint = [mean(xOverlap), mean(yOverlap)];
+                else
+                    % No real overlap left at the solved placement (a weak or
+                    % failed measurement) — fall back to the midpoint between
+                    % the two tile centers so the seam still has a location.
+                    seamPoint = ([x0i + wi / 2, y0i + hi / 2] + ...
+                                 [x0j + wj / 2, y0j + hj / 2]) / 2;
+                end
+                seamDist = hypot(point(1) - seamPoint(1), point(2) - seamPoint(2));
+                if seamDist < bestDist
+                    bestDist = seamDist;
+                    k = candidate;
+                end
             end
         end
 
@@ -313,7 +454,7 @@ classdef StitchingInspector < handle
             % Defaults to ON (the solve is milliseconds at inspector sizes)
             % when the checkbox is absent from the mlapp.
             tf = true;
-            if ~isempty(obj.view) && isfield(obj.view.handles, 'autoResolveCheckbox')
+            if obj.hasWidget('autoResolveCheckbox')
                 tf = logical(obj.view.handles.autoResolveCheckbox.Value);
             end
         end
@@ -321,7 +462,7 @@ classdef StitchingInspector < handle
         % ---------------------------------------------------------------
         function setStatus(obj, text)
             % SETSTATUS - Write to the status label (no-op without the widget).
-            if ~isempty(obj.view) && isfield(obj.view.handles, 'statusLabel')
+            if obj.hasWidget('statusLabel')
                 obj.view.handles.statusLabel.Text = text;
             end
         end

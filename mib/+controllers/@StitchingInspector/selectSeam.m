@@ -19,10 +19,15 @@ obj.currentEdgeIdx = edgeIdx;
 % differ across releases; selection is a convenience, not state). rankPos is
 % empty when the seam is filtered out of the current fix mode's table, which
 % clears the selection — the pair view still shows the seam.
-if isfield(obj.view.handles, 'seamTable')
+if obj.hasWidget('seamTable')
     rankPos = find(obj.visibleRanking() == edgeIdx, 1);
     try %#ok<TRYNC>
         obj.view.handles.seamTable.Selection = rankPos;
+        % Selection alone does not bring an out-of-view row into the visible
+        % viewport (uitable has no auto-scroll-to-selection).
+        if ~isempty(rankPos)
+            scroll(obj.view.handles.seamTable, 'row', rankPos);
+        end
     end
 end
 

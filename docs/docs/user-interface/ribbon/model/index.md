@@ -187,7 +187,7 @@ Imports a segmentation model from an OME-Zarr v2 or v3 store. A Zarr store is a 
 (not a single file), so this option opens a folder browser instead of the file dialog used
 by [Load model](#load-model) and the other [Import](#import) options above.
 
-- **Zarr v3** (`.zarr3`): read using the native `Zarr3Matlab` library.
+- **Zarr v3** (`.zarr3`): read using the native `zarr-matlab` library.
 - **Zarr v2** (`.zarr2`): read using a python-backed reader (`zarr`/`numpy`), since Zarr v2
   has no native MATLAB engine. Requires
   [Preferences → External directories → Python installation path](../home/home-preferences.md#external-directories)

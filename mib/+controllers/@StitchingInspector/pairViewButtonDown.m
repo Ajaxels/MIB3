@@ -14,7 +14,10 @@ function pairViewButtonDown(obj, evnt)
 % ``imfuse`` recompute per mouse event) — and applies the released delta as a
 % user fix. A plain click without movement does nothing (stray clicks must
 % never move tiles). In two-click landmark mode the point is routed to the
-% landmark collector instead.
+% landmark collector instead. A **right-click drag** (``SelectionType =
+% 'alt'``) pans the view instead — it never edits alignment, so it works in
+% every mode (including two-click and Fix Z) and is never mistaken for a
+% tile fix.
 %
 % Input Arguments:
 %   - **evnt** — hit event from an image ``ButtonDownFcn``
@@ -27,6 +30,14 @@ end
 if ~obj.dataValid() || isempty(obj.currentEdgeIdx); return; end
 
 startPoint = evnt.IntersectionPoint(1:2);   % [x y] in axes data coords
+figureHandle = obj.view.gui;
+pairAxes = obj.view.handles.pairAxes;
+panPoint = []; panXFull = []; panYFull = [];
+
+if strcmp(figureHandle.SelectionType, 'alt')   % right-click = pan, never a tile fix
+    beginPan();
+    return;
+end
 
 if obj.twoClick.active
     obj.twoClickHandlePoint(startPoint);
@@ -34,13 +45,11 @@ if obj.twoClick.active
 end
 if isempty(obj.pairStrip); return; end
 
-if strcmp(obj.view.gui.SelectionType, 'extend')   % Shift+click = correlate in the box
+if strcmp(figureHandle.SelectionType, 'extend')   % Shift+click = correlate in the box
     obj.correlateAtPoint(startPoint);
     return;
 end
 
-figureHandle = obj.view.gui;
-pairAxes = obj.view.handles.pairAxes;
 edge = obj.stitching.edges(obj.currentEdgeIdx);
 deltaYX = obj.pairStrip.deltaYX;
 displayScale = obj.pairStrip.scale;
@@ -59,6 +68,52 @@ figureHandle.WindowButtonUpFcn = @(~, ~) onRelease();
     function point = axesPoint()
         currentPoint = pairAxes.CurrentPoint;
         point = currentPoint(1, 1:2);
+    end
+
+    % -----------------------------------------------------------------
+    function beginPan()
+        % Right-click drag: pans XLim/YLim, clamped to the rendered extent
+        % (same border clamp as the mouse-wheel zoom in scrollWheel_Callback)
+        % so the view cannot be dragged into empty space.
+        panPoint = axesPoint();
+        imageHandles = findobj(pairAxes, 'Type', 'image');
+        if ~isempty(imageHandles)
+            panXFull = [min(cellfun(@(x) min(x), {imageHandles.XData})), ...
+                        max(cellfun(@(x) max(x), {imageHandles.XData}))] + [-0.5, 0.5];
+            panYFull = [min(cellfun(@(y) min(y), {imageHandles.YData})), ...
+                        max(cellfun(@(y) max(y), {imageHandles.YData}))] + [-0.5, 0.5];
+        else
+            panXFull = pairAxes.XLim;
+            panYFull = pairAxes.YLim;
+        end
+        figureHandle.Pointer = 'hand';
+        figureHandle.WindowButtonMotionFcn = @(~, ~) onPanMotion();
+        figureHandle.WindowButtonUpFcn = @(~, ~) onPanRelease();
+    end
+
+    % -----------------------------------------------------------------
+    function onPanMotion()
+        point = axesPoint();
+        shift = point - panPoint;
+        if all(shift == 0); return; end
+        newXLimits = pairAxes.XLim - shift(1);
+        newYLimits = pairAxes.YLim - shift(2);
+        newXLimits = newXLimits - max(0, newXLimits(2) - panXFull(2)) + max(0, panXFull(1) - newXLimits(1));
+        newYLimits = newYLimits - max(0, newYLimits(2) - panYFull(2)) + max(0, panYFull(1) - newYLimits(1));
+        pairAxes.XLim = newXLimits;
+        pairAxes.YLim = newYLimits;
+        panPoint = axesPoint();   % re-anchor using the (possibly clamped) new mapping
+    end
+
+    % -----------------------------------------------------------------
+    function onPanRelease()
+        figureHandle.Pointer = 'arrow';
+        figureHandle.WindowButtonMotionFcn = @(~, ~) obj.pairViewMotion();
+        figureHandle.WindowButtonUpFcn = '';
+        % Persist like the wheel zoom, so the panned view survives the next
+        % re-render (score refresh, nudge, fix) of this same seam.
+        obj.pairZoom = struct('edgeIdx', obj.currentEdgeIdx, ...
+            'xLim', pairAxes.XLim, 'yLim', pairAxes.YLim);
     end
 
     % -----------------------------------------------------------------

@@ -30,7 +30,7 @@ function generateSmokeSabotageTiles()
 %   Stitch ribbon -> Load project ->
 %   temp\stitching_test\12_stitch_smoke_sabotage\sabotage.mibstitch.json
 %   -> Optimize positions (rating comes out GOOD — the corruption is
-%   residual-invisible) -> Inspect & fix…
+%   residual-invisible) -> Inspect and fix...
 %   The 2-3 seam must rank first with a low seam score (pixels disagree at the
 %   solved placement); the lines/circles across that seam appear broken by
 %   ~24 px. Exclude (X) + Re-solve pulls tile 3 back to its nominal-spring

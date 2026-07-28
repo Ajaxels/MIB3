@@ -4,7 +4,7 @@ classdef ZarrBlockedAdapter < images.blocked.Adapter
 % This class lets MATLAB's ``blockedImage`` framework read and write a
 % chunked, multi-resolution OME-Zarr v3 dataset through MIB3's native zarr
 % engine (``ZarrArray`` / ``ZarrGroup`` / the ``zarrMex`` MEX library in
-% ``mib/external/Zarr3Matlab``). It is the "hybrid" piece of the BigData
+% ``mib/external/zarr-matlab``). It is the "hybrid" piece of the BigData
 % design: ``blockedImage`` provides the tiling / ``apply`` / ``gather`` /
 % memory-management / parallel-write machinery, while zarr remains the
 % on-disk format.

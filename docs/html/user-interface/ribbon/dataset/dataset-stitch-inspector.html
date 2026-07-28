@@ -1665,6 +1665,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#mouse-reference-pair-view" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Mouse reference (pair view)
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#reviewing-the-ranking" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -5432,6 +5443,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#mouse-reference-pair-view" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Mouse reference (pair view)
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#reviewing-the-ranking" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -5688,7 +5710,7 @@ one period off satisfies the solver perfectly on sparse tile arrangements — th
 rating stays green while a tile sits a full period out of place. The seam inspector re-reads
 the actual pixels at every solved seam, ranks the seams worst-first, and gives you the tools
 to correct the ones the automatic pass got wrong.</p>
-<p>Open it with <span class="widget widget-button">Inspect &amp; fix…</span> in the
+<p>Open it with <span class="widget widget-button">Inspect and fix...</span> in the
 <a href="dataset-stitch.html">Stitching</a> window — enabled once <em>Measure overlaps</em> and
 <em>Optimize positions</em> have run.</p>
 <hr />
@@ -5698,10 +5720,13 @@ to correct the ones the automatic pass got wrong.</p>
   placement — and the seams are listed worst-first. This catches wrong-but-confident
   measurements that the residual rating cannot see.</li>
 <li>The <strong>mini-map</strong> shows the layout with tiles coloured by their worst seam
-  (green → red); click a tile to jump to its worst seam. For datasets of
-  reasonable size a <strong>low-res fused preview</strong> is drawn behind the colouring at the
-  current solved positions — it follows every re-solve, so a grossly misplaced tile
-  is visible in the actual image content.</li>
+  (green → red); <mouse class="left"></mouse> click to jump to the review — the seam
+  <strong>nearest the click point</strong> is selected, so clicking near a tile's right edge opens
+  its seam with the tile on that side, and clicking near its bottom edge opens the seam
+  below, even when a tile has neighbours on several sides. For datasets of reasonable
+  size a <strong>low-res fused preview</strong> is drawn behind the colouring at the current solved
+  positions — it follows every re-solve, so a grossly misplaced tile is visible in the
+  actual image content.</li>
 <li>The <strong>pair view</strong> shows the <strong>complete tile pair</strong> composited at the solved offset
   (downsampled for display when the tiles are large; the title is the colour legend,
   e.g. <em>Cyan: tile 2; Magenta: tile 4</em>). Overlays: falsecolor — tile <em>i</em> <strong>cyan</strong>, tile <em>j</em>
@@ -5710,8 +5735,54 @@ to correct the ones the automatic pass got wrong.</p>
   or difference. The <strong>mouse wheel zooms</strong> the pair view at the cursor — the zoom is
   kept through nudges, drags and fixes of the same seam;
   <span class="widget widget-button">Fit view (F)</span> (or zooming all the way out)
-  restores the full-pair view.</li>
+  restores the full-pair view. <strong>Holding <mouse class="right"></mouse> and dragging pans</strong>
+  the view instead of zooming — it never edits alignment, so it works in every mode
+  (Fix XY, Fix Z, two-click) and cannot be mistaken for a tile-fix drag.</li>
 </ul>
+<hr />
+<h2 id="mouse-reference-pair-view">Mouse reference (pair view)<a class="headerlink" href="#mouse-reference-pair-view" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Action</th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><mouse class="left"></mouse> drag</td>
+<td>Move tile <em>j</em> over tile <em>i</em> (Fix Z: the magenta slice over the cyan one); release applies the fix</td>
+</tr>
+<tr>
+<td><mouse class="left"></mouse> click, no movement</td>
+<td>Nothing — stray clicks never move a tile</td>
+</tr>
+<tr>
+<td><span class="keys"><kbd class="key-shift">Shift</kbd></span> + hover</td>
+<td>Shows the correlation ROI box at the cursor (no click needed)</td>
+</tr>
+<tr>
+<td><span class="keys"><kbd class="key-shift">Shift</kbd></span> + <mouse class="left"></mouse> click</td>
+<td>Click-to-correlate: cuts the ROI box and auto-snaps to a confident sub-pixel match</td>
+</tr>
+<tr>
+<td><span class="keys"><kbd class="key-shift">Shift</kbd></span> + wheel</td>
+<td>Resizes the correlation ROI box</td>
+</tr>
+<tr>
+<td>Wheel</td>
+<td>Zooms the pair view at the cursor</td>
+</tr>
+<tr>
+<td><mouse class="right"></mouse> drag</td>
+<td>Pans the view (no zoom change); clamped to the rendered tile extent</td>
+</tr>
+<tr>
+<td><mouse class="left"></mouse> click (two-click match)</td>
+<td>Sets a landmark point on whichever tile was clicked</td>
+</tr>
+</tbody>
+</table>
 <hr />
 <h2 id="reviewing-the-ranking">Reviewing the ranking<a class="headerlink" href="#reviewing-the-ranking" title="Permanent link">&para;</a></h2>
 <ul>

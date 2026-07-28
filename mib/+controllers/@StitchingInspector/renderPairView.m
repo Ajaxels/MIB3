@@ -40,7 +40,7 @@ function renderPairView(obj)
 %
 
 if ~obj.dataValid() || isempty(obj.currentEdgeIdx); return; end
-if ~isfield(obj.view.handles, 'pairAxes'); return; end
+if ~obj.hasWidget('pairAxes'); return; end
 
 pairAxes = obj.view.handles.pairAxes;
 edge = obj.stitching.edges(obj.currentEdgeIdx);
@@ -114,7 +114,7 @@ maxDisplayPx = 1400;
 scale = max(1, ceil(max(unionH, unionW) / maxDisplayPx));
 
 overlayMode = 'Falsecolor';
-if isfield(obj.view.handles, 'overlayModeDropdown')
+if obj.hasWidget('overlayModeDropdown')
     overlayMode = obj.view.handles.overlayModeDropdown.Value;
 end
 % Names the title uses for the two overlaid images: the colours in falsecolor
@@ -296,7 +296,7 @@ end
 function updateOffsetLabel(obj, edge, deltaYX)
 % UPDATEOFFSETLABEL - Current vs measured offset + scores readout; in the
 % Fix-Z boundary view, the boundary position and the mosaic shift above it.
-if ~isfield(obj.view.handles, 'offsetLabel'); return; end
+if ~obj.hasWidget('offsetLabel'); return; end
 if obj.boundaryModeActive()
     storedText = 'none stored';
     fixes = obj.stitching.zSliceFixes;

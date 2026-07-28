@@ -16,7 +16,7 @@ function twoClickBtn_Callback(obj)
 %
 
 if ~obj.dataValid() || isempty(obj.currentEdgeIdx); return; end
-if ~isfield(obj.view.handles, 'pairAxes'); return; end
+if ~obj.hasWidget('pairAxes'); return; end
 
 if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.StitchingInspector.twoClickBtn_Callback: triggered\n');

@@ -1,13 +1,20 @@
 function jumpToTile(obj, tileIdx)
-% JUMPTOTILE - Open the worst incident seam of a tile (mini-map click).
+% JUMPTOTILE - Open the worst incident seam of a tile.
 %
 % Syntax:
 %   .. code-block:: matlab
 %
 %      obj.jumpToTile(tileIdx)
 %
+% Programmatic/headless entry point (e.g. tests). The mini-map itself does
+% NOT call this — a click there goes through
+% :func:`miniMapButtonDown`/:meth:`edgeAtMiniMapPoint`, which resolves to
+% whichever SEAM is nearest the click point, since a tile usually touches
+% more than one seam and "its worst one" is not always the one a click was
+% aimed at.
+%
 % Input Arguments:
-%   - **tileIdx** — [double] tile index clicked in the mini-map
+%   - **tileIdx** — [double] tile index
 %
 
 if ~obj.dataValid(); return; end

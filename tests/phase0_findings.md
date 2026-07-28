@@ -75,7 +75,7 @@ For the **model layer** (MibModel + core classes + get/set/getRGBimage): **only 
 confirmed by the clean `matlab -batch` run, where the spike adds nothing but
 `addpath(fullfile(repoRoot,'mib'))` and everything passes. IO round-trip tests (Phase 2) will
 additionally need the loader-specific folders (`external\bioformats`, `external\nrrd`,
-`external\Zarr3Matlab`, ...) — add to `MibPathFixture` when those tests land.
+`external\zarr-matlab`, ...) — add to `MibPathFixture` when those tests land.
 
 ## Side observations for Phase 1
 

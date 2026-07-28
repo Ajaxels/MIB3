@@ -2,7 +2,7 @@ classdef Zarr3VirtualLoader < handle
 % ZARR3VIRTUALLOADER - On-demand region reader for MIB3 Zarr v3 virtual datasets.
 %
 % Wraps a single OME-Zarr v3 root and reads sub-regions from any
-% pyramid level on demand via the Zarr3Matlab library (zarrMex).
+% pyramid level on demand via the zarr-matlab library (zarrMex).
 % Axis-order mapping between zarr's C-order storage and MIB3's
 % [y, x, z, c, t] Fortran order is precomputed in the constructor.
 %

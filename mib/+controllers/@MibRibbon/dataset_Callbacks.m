@@ -26,7 +26,7 @@ switch mode
     % --------------- Alignment section ---------------
     case 'Alignment'
         obj.mibController.startController('controllers.Alignment');
-    case 'Stitch'
+    case 'Stitching'
         obj.mibController.startController('controllers.Stitching');
     % --------------- Dataset tools section ---------------
     case 'Crop'              % obj.handles.ribbonDataset.crop

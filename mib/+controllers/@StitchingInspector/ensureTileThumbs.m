@@ -40,12 +40,7 @@ scale = max(1, ceil(max(maxYX - minYX) / 1000));
 
 % Progress anchored to the parent Stitching window while our own figure is
 % still hidden (inspector construction), same pattern as scoreAndRank.
-parentFigure = [];
-if ~isempty(obj.view) && isvalid(obj.view.gui) && strcmp(obj.view.gui.Visible, 'on')
-    parentFigure = obj.view.gui;
-elseif ~isempty(obj.stitching.view) && isvalid(obj.stitching.view.gui)
-    parentFigure = obj.stitching.view.gui;
-end
+parentFigure = obj.progressParent();
 progressDialog = [];
 if ~isempty(parentFigure) && strcmp(parentFigure.Visible, 'on')
     progressDialog = uiprogressdlg(parentFigure, 'Value', 0, ...

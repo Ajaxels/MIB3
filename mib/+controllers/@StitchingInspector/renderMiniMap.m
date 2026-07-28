@@ -8,8 +8,11 @@ function renderMiniMap(obj)
 %
 % Each tile is a patch at its SOLVED position, coloured by the worst score of
 % its incident edges (green → red; grey when all incident edges are excluded).
-% The current pair's tiles get a bold blue outline. Clicking a tile jumps the
-% review to that tile's worst incident seam.
+% The current pair's tiles get a bold blue outline. Clicking jumps the review
+% to whichever SEAM of the current layer is nearest the click point — not
+% just the clicked tile's single worst seam, and not just whichever patch
+% happens to be drawn on top of an overlap — see
+% :meth:`controllers.StitchingInspector.edgeAtMiniMapPoint`.
 %
 % Only the tiles of ONE Z-layer are drawn — the layer of the current seam (the
 % lower tile of a cross-layer pair). A multi-layer mosaic stacks every layer at
@@ -25,9 +28,12 @@ function renderMiniMap(obj)
 % re-solve.
 %
 
-if ~isfield(obj.view.handles, 'miniMapAxes'); return; end
+if ~obj.hasWidget('miniMapAxes'); return; end
 mapAxes = obj.view.handles.miniMapAxes;
 cla(mapAxes);
+% Harmless fallback only — see the real (always-present, always-pickable)
+% hit target laid down below, which is what actually receives every click.
+mapAxes.ButtonDownFcn = @(~, ~) obj.miniMapButtonDown();
 
 layout = obj.stitching.layout;
 edges = obj.stitching.edges;
@@ -57,14 +63,21 @@ end
 % cross-layer pair), else the first layer. Layers stack at the same XY, so
 % this is what stops the boxes/labels from overlapping.
 zLayers = arrayfun(@(t) t.zLayer, layout);
-if ~isempty(obj.currentEdgeIdx)
-    currentLayer = layout(edges(obj.currentEdgeIdx).i).zLayer;
-else
-    currentLayer = min(zLayers);
-end
-drawTiles = find(zLayers == currentLayer);
+drawTiles = obj.currentLayerTiles();
+currentLayer = layout(drawTiles(1)).zLayer;
 
 hold(mapAxes, 'on');
+
+% One CLICKABLE object spanning every drawn tile's bounding box, laid down
+% FIRST (bottom of the stack). The tile patches above it are
+% PickableParts='none', so a click anywhere in the layout passes straight
+% through them to whichever pixel of THIS object is underneath — giving an
+% exact CurrentPoint with no z-order ambiguity. (A UIAxes' own ButtonDownFcn
+% is not a reliable fallback once every child is non-pickable, so the mini-map
+% needs one real, always-present hit target rather than relying on that.)
+extentX0 = min(positions(drawTiles, 2)); extentY0 = min(positions(drawTiles, 1));
+extentX1 = max(positions(drawTiles, 2) + arrayfun(@(t) layout(t).tileSize(2), drawTiles));
+extentY1 = max(positions(drawTiles, 1) + arrayfun(@(t) layout(t).tileSize(1), drawTiles));
 
 % Low-res fused preview behind the patches (skipped when thumbs declined).
 obj.ensureTileThumbs();
@@ -87,12 +100,19 @@ if ~isempty(obj.tileThumbs)
         fusedCanvas(rows, cols) = thumb;   % overwrite blend — preview only
     end
     % Pixel-centre extents in full-res units, same convention as the pair view.
-    image(mapAxes, 'XData', [minX, minX + (canvasW - 1) * scale], ...
+    hitTarget = image(mapAxes, 'XData', [minX, minX + (canvasW - 1) * scale], ...
         'YData', [minY, minY + (canvasH - 1) * scale], ...
-        'CData', repmat(fusedCanvas, 1, 1, 3), ...
-        'HitTest', 'off', 'PickableParts', 'none');
+        'CData', repmat(fusedCanvas, 1, 1, 3));
     patchAlpha = 0.25;   % light score tint so the image stays readable
+else
+    % No thumbnail to double as the hit target: an invisible patch instead.
+    % FaceAlpha=0 makes it fully transparent WITHOUT disabling hit-testing on
+    % its face (only HitTest/PickableParts do that).
+    hitTarget = patch(mapAxes, 'XData', [extentX0, extentX1, extentX1, extentX0], ...
+        'YData', [extentY0, extentY0, extentY1, extentY1], ...
+        'FaceColor', [1 1 1], 'FaceAlpha', 0, 'EdgeColor', 'none');
 end
+hitTarget.ButtonDownFcn = @(~, ~) obj.miniMapButtonDown();
 for tileIdx = drawTiles(:)'
     x0 = positions(tileIdx, 2);
     y0 = positions(tileIdx, 1);
@@ -103,11 +123,11 @@ for tileIdx = drawTiles(:)'
     else
         edgeColor = [0.25 0.25 0.25]; lineWidth = 0.5;
     end
-    tilePatch = patch(mapAxes, 'XData', [x0, x0 + w, x0 + w, x0], ...
+    patch(mapAxes, 'XData', [x0, x0 + w, x0 + w, x0], ...
         'YData', [y0, y0, y0 + h, y0 + h], ...
         'FaceColor', tileColor(worstScore(tileIdx)), 'FaceAlpha', patchAlpha, ...
-        'EdgeColor', edgeColor, 'LineWidth', lineWidth);
-    tilePatch.ButtonDownFcn = @(~, ~) obj.jumpToTile(tileIdx);
+        'EdgeColor', edgeColor, 'LineWidth', lineWidth, ...
+        'HitTest', 'off', 'PickableParts', 'none');
     text(mapAxes, x0 + w/2, y0 + h/2, sprintf('%d', tileIdx), ...
         'HorizontalAlignment', 'center', 'FontSize', 9, 'HitTest', 'off', ...
         'PickableParts', 'none');

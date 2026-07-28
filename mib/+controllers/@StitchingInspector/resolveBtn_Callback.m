@@ -22,7 +22,10 @@ obj.stitching.optimizePositions_Callback();
 obj.scoreAndRank();
 obj.updateWidgets();
 if ~isempty(obj.currentEdgeIdx)
-    obj.renderPairView();
+    % Re-ranking can move this seam's row; re-sync the table highlight (and
+    % scroll it into view) to the seam actually being edited, not whatever
+    % now occupies its old row position.
+    obj.selectSeam(obj.currentEdgeIdx);
 else
     visibleRanking = obj.visibleRanking();
     if ~isempty(visibleRanking)

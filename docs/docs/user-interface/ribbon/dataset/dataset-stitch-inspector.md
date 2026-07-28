@@ -12,7 +12,7 @@ rating stays green while a tile sits a full period out of place. The seam inspec
 the actual pixels at every solved seam, ranks the seams worst-first, and gives you the tools
 to correct the ones the automatic pass got wrong.
 
-Open it with <span class="widget widget-button">Inspect & fix…</span> in the
+Open it with <span class="widget widget-button">Inspect and fix...</span> in the
 [Stitching](dataset-stitch.md) window — enabled once *Measure overlaps* and
 *Optimize positions* have run.
 
@@ -24,10 +24,13 @@ Open it with <span class="widget widget-button">Inspect & fix…</span> in the
   placement — and the seams are listed worst-first. This catches wrong-but-confident
   measurements that the residual rating cannot see.
 - The **mini-map** shows the layout with tiles coloured by their worst seam
-  (green → red); click a tile to jump to its worst seam. For datasets of
-  reasonable size a **low-res fused preview** is drawn behind the colouring at the
-  current solved positions — it follows every re-solve, so a grossly misplaced tile
-  is visible in the actual image content.
+  (green → red); <mouse class="left"></mouse> click to jump to the review — the seam
+  **nearest the click point** is selected, so clicking near a tile's right edge opens
+  its seam with the tile on that side, and clicking near its bottom edge opens the seam
+  below, even when a tile has neighbours on several sides. For datasets of reasonable
+  size a **low-res fused preview** is drawn behind the colouring at the current solved
+  positions — it follows every re-solve, so a grossly misplaced tile is visible in the
+  actual image content.
 - The **pair view** shows the **complete tile pair** composited at the solved offset
   (downsampled for display when the tiles are large; the title is the colour legend,
   e.g. *Cyan: tile 2; Magenta: tile 4*). Overlays: falsecolor — tile *i* **cyan**, tile *j*
@@ -36,7 +39,24 @@ Open it with <span class="widget widget-button">Inspect & fix…</span> in the
   or difference. The **mouse wheel zooms** the pair view at the cursor — the zoom is
   kept through nudges, drags and fixes of the same seam;
   <span class="widget widget-button">Fit view (F)</span> (or zooming all the way out)
-  restores the full-pair view.
+  restores the full-pair view. **Holding <mouse class="right"></mouse> and dragging pans**
+  the view instead of zooming — it never edits alignment, so it works in every mode
+  (Fix XY, Fix Z, two-click) and cannot be mistaken for a tile-fix drag.
+
+---
+
+## Mouse reference (pair view)
+
+| Action | Effect |
+|--------|--------|
+| <mouse class="left"></mouse> drag | Move tile *j* over tile *i* (Fix Z: the magenta slice over the cyan one); release applies the fix |
+| <mouse class="left"></mouse> click, no movement | Nothing — stray clicks never move a tile |
+| ++shift++ + hover | Shows the correlation ROI box at the cursor (no click needed) |
+| ++shift++ + <mouse class="left"></mouse> click | Click-to-correlate: cuts the ROI box and auto-snaps to a confident sub-pixel match |
+| ++shift++ + wheel | Resizes the correlation ROI box |
+| Wheel | Zooms the pair view at the cursor |
+| <mouse class="right"></mouse> drag | Pans the view (no zoom change); clamped to the rendered tile extent |
+| <mouse class="left"></mouse> click (two-click match) | Sets a landmark point on whichever tile was clicked |
 
 ---
 

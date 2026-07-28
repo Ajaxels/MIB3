@@ -1,356 +1,133 @@
-# Image Stitching Tool for MIB3 — Implementation Plan
+# Image Stitching Tool for MIB3 — Reference
 
-## Status (2026-07-11)
+**Status: IMPLEMENTED and verified.** All phases done: 2D translation/affine/rigid/similarity
+registration, 3D (multi-layer joint solve + in-plane affine on Z-stacks), streaming zarr→BigData
+fusion, interactive rough placement, and the seam inspector (manual QC). See companion docs:
+[`plan_transforms.md`](plan_transforms.md) (transform models), [`plan_inspector.md`](plan_inspector.md)
+(seam inspector), [`mlapp_widgets.md`](mlapp_widgets.md) (widget spec, needed if the GUI is extended),
+[`smoke_tests.md`](smoke_tests.md) (GUI regression checklist).
 
-**Phase 1 implemented and end-to-end verified.** 42/42 tests pass (`tests\utils\StitchLayoutTest.m` 23, `tests\utils\StitchCoreTest.m` 19 incl. zarr→BigData Integration round-trip and a full-chain ground-truth regression test). `StitchingGUI.mlapp` built in App Designer (all 30 widget tags verified; figure property must be named `Figure` — `core.ChildView` detects App Designer apps by `isprop(gui,'Figure')` and auto-copies component names into Tags). Ground-truth smoke test (3×3 jittered+border-clamped grid through the batch controller): measured edges within 0.05 px, solved positions max 0.75 / mean 0.19 px, fused mosaic interior RMSE 5.1 gray on a std-22.5 image, 0.9 s.
+## What it does
 
-### Post-build fixes (parallel-agent seams + registration debugging)
+Stitches a collection of 2D/3D image tiles into a mosaic: rough initial positions (grid, position
+file, `_Z##-X##-Y##` filename pattern, or Bio-Formats stage coordinates) → pairwise registration
+(phase correlation or feature-based) → **one global sparse least-squares solve** over the whole tile
+graph (all axes, all layers jointly — not "stitch 2D then align 3D") → fuse (in-memory or streaming
+to OME-Zarr, reopened as a BigData dataset). Ribbon → Dataset → Stitching.
 
-*Controller seams:* lowercase option fields (`qualityThreshold`, `springWeight`, `subpixel`); `fuseInMemory(layout, canvas, options)` / `fuseStreaming(layout, canvas, outputZarrPath, options)` create their own tile reader; RMSE display uses `stats.rmseTotal` (`stats.rmse` is 1×3 per-axis); BigData reopen mirrors `applyAlignmentBigData.m:357-374` incl. slices reset; `uiputfile` two-output form; duplicate inline methods removed from `Stitching.m` (were shadowing the richer separate files); batch path now runs the full pipeline via new `buildLayoutFromBatchOpt.m` + auto measure/solve inside `stitchBtn_Callback` (previously fused at nominal positions without registration).
+## Architecture
 
-*Registration bugs found by the ground-truth smoke test (all invisible to solver-only unit tests):*
-1. **Sign flip** — with crops at nominally-corresponding windows, `cropB(r)=cropA(r−dy)` ⇒ correction is **−dy**; `measureOne` composed `nominal + shift`. Now: `measured = (bboxA(:,1) − bboxB(:,1)) − [dy dx]`, exact under asymmetric border clamping.
-2. **Search window destroyed** — `computeOverlapRegion` clamped the expanded window to the intersection of both tiles, clipping the entire ±expandPx for edge-abutting pairs. Now clamps each crop to its OWN tile only (starts preserved; composition above compensates).
-3. **FFT circular aliasing** — border-clamped pairs need raw shifts ≈ −expandPx, outside ±extent/2; peaks aliased by +extent. Fixed with zero-padding (`padPx`) + expected-shift-restricted peak search (`expectedShift`/`searchRadius` options in `pairwiseShift`).
-4. **Quality metric** — PSR barely separated true matches (min 5.6) from independent noise (6.5). Replaced with peak-to-second-peak ratio inside the search region (exclusion lobe rWin=17): true pairs ≥0.94 median, noise/flat 0.00. Mapping `(ratio−1.35)/0.65`. Calibration probe: `temp\stitch_smoke\psrProbe.m`.
-5. **Adaptive expansion** — `expandPx` per pair capped at `0.75 × overlap extent` (over-expanding fills crops with unshared content, starving the peak).
-6. **Diagonal pairs excluded** — `findNeighborPairs` now requires perpendicular overlap ≥50% of tile extent; corner overlaps produced confident-but-wrong shifts and add no information over direct x/y edges.
-7. **Solver springs** — pruned-edge nominal springs only added when they restore connectivity to the anchor; between well-connected tiles they only biased the solution toward nominal.
-8. `views.StitchingGUI` added to the compiler force-include block in `mib3.m`.
+**Computational core — `mib\+utils\+stitch\`** (controller-independent, headless-testable):
+`buildLayoutGrid`/`buildLayoutPositionFile`/`buildLayoutFilenamePattern`/`buildLayoutBioFormats` (nominal
+origins) → `findNeighborPairs` → `pairwiseShift` (phase correlation) / `featureShift` (feature-based,
+also handles affine/rigid/similarity) → `measureAllPairs` (edge list) → `solveGlobalLeastSquares`
+(translation) / `solveGlobalAffine` (affine/rigid/similarity) → `planCanvas` → `fuseInMemory` /
+`fuseStreaming` (+ `mib\+io\+savers\StitchSliceProvider.m` delegating to `Zarr3Saver.saveStream` when a
+slice fits in RAM). Plus `estimateOverlap`, `resolveTileEntry`, `blendWeights`, `tileCacheLRU`,
+`saveProject`/`loadProject` (sidecar JSON), `scoreSeams`/`localCorrelate` (inspector core).
 
-`pairwiseShift` sign convention (load-bearing): if `cropB(r,c) ≈ cropA(r−dy, c−dx)` then `shiftYXZ = [dy dx 0]`; tile displacement composition (with the negation) lives in `measureAllPairs/measureOne`.
-
-**Open items:**
-1. ~~GUI click-through test in live MIB~~ **DONE 2026-07-14** (user-verified with 15% and wrong-guess overlaps + estimation).
-2. ~~Dedicated `stitch_24px.png` icon~~ **DONE 2026-07-14**.
-3. ~~User docs (`docs/`) + RST API entries (`docs_api/`)~~ **DONE 2026-07-14** (`docs/docs/user-interface/ribbon/dataset/dataset-stitch.md` + index entry + nav; RST API entries).
-4. `fuseStreaming` chunk-wise fallback (slice > maxSliceBytes) untested against a real huge-slice case.
-5. T>1: reader returns first time point only (fine for Phase 1).
-6. ~~`buildLayoutPositionFile` uses `java.io.File.isAbsolute()`~~ **DONE 2026-07-14** — replaced with pure-MATLAB regex check (`isAbsolutePath` local function: drive roots, UNC, POSIX).
-
-## Context
-
-MIB3 has no tool to stitch a collection of 2D image tiles into a mosaic. The user's existing panorama script (`c:\MATLAB\Data\Panorama_stitching\FeatureBasedPanoramicImageStitchingExample.m`) does sequential pairwise chaining — fine for camera sweeps, unstable for microscopy tile grids. The new tool stitches tiles from rough initial positions (grid arrangement, coordinate text file, later interactive placement), refines them by pairwise registration, and solves **one global optimization** so that for 3D data the within-layer (2D) and between-layer (Z) constraints are jointly minimized (MIST/BigStitcher approach — *not* "stitch 2D, then align 3D").
-
-**Confirmed decisions:**
-- **Streaming from day 1** — mosaics routinely exceed RAM; fusion writes chunk-wise to OME-Zarr (BigData), opened back into MIB as a BigData dataset. In-memory fast path for small jobs.
-- **Translation-only registration first** (phase correlation on overlap regions + global weighted least squares); rigid/affine as later options.
-- **3D = one global solve** over the whole tile graph: within-layer edges + adjacent-layer edges in the same sparse LS system, quality-weighted, with weak "spring" edges to nominal positions as fallback (two-round MIST).
-- v1 layout inputs: (a) grid dialog (H/V, line-by-line/snake, overlap %), (b) position file `filename X Y [Z]` (space/tab/comma), plus (c) MIB2 `_Z##-X##-Y##` filename pattern as a cheap win. 3D tiles: one subfolder per tile Z-stack, or Z column in the position file (layers auto-created per distinct Z).
-- Later phases: interactive rough-placement canvas; QC/seam checker with manual nudge + re-fuse.
-- Tile layout/transforms persist to a sidecar project file (JSON) for reproducibility and the checker.
-
-## Model recommendation per phase
-
-| Work item | Recommended model | Why |
-|-----------|-------------------|-----|
-| Phase 1 algorithmic core: `pairwiseShift`, `solveGlobalLeastSquares`, `planCanvas`, `fuseStreaming`, `StitchSliceProvider` | **Opus 4.8** | Numerically subtle (FFT peak quality, sparse weighted LS with gauge fixing/springs, chunk-boundary blending). Bugs here are silent and expensive to find later. |
-| Phase 1 scaffolding: `@Stitching` controller, `StitchingGUI.mlapp`, ribbon wiring, BatchOpt, layout builders/parsers, `saveProject`/`loadProject` | **Sonnet** | Pure pattern-following against ResampleDataset/CLAUDE.md conventions and simple parsing; well within Sonnet's range, much cheaper. |
-| Phase 1 unit tests (`tests\utils\StitchTest.m`) | **Sonnet** | Mechanical once the synthetic `chopIntoTiles` spec is written; conventions documented in `tests\plan_unittests.md`. |
-| Phase 2 — 3D joint solve extension (z-edges, cross-layer correlation, Z-aware fusion) | **Opus 4.8** | Extends the solver's math and the streaming fuser; the hardest correctness surface of the project. |
-| Phase 3 — interactive rough placement | **Sonnet** | UI work with existing `images.roi.Rectangle` precedents (CropDataset, MeasureTool). |
-| Phase 4 — QC/seam checker + re-fuse | **Sonnet**, escalate to Opus 4.8 only if re-fusion integration misbehaves | Mostly UI + reuse of `loadProject`/fusers. |
-
-Rule of thumb: anything touching `solveGlobalLeastSquares` or `fuseStreaming` internals → Opus 4.8; everything else → Sonnet.
-
-## Verified reusable infrastructure
-
-| What | Where |
-|------|-------|
-| Streaming zarr writer, pyramid plan, bbox metadata | `mib\+io\+savers\Zarr3Saver.m` — `saveStream` (:280), `computeLevelPlan` (:792), `patchMetadata` (:862) |
-| Chunk-region zarr writes | `io.zarr.Group.create` / `createArray` / `Array.write(data, bbox)` (`mib\+io\+zarr\Array.m:71`) |
-| Slice provider base for saveStream | `mib\+io\+savers\SliceProvider.m` |
-| **Write-zarr → reopen-as-BigData recipe** | `mib\+controllers\@Alignment\applyAlignmentBigData.m:352-362`: `patchMetadata` → `io.loaders.Zarr3VirtualSetupLoader(struct('datasetMode','BigData'))` → `loadMetadata`/`loadImages` → `I{id}.initialize(img, imgInfo, 'BigData')` → `notify('NewDataset')` |
-| In-memory dataset creation | `mib\+controllers\@ChunkingImport\ChunkingImport.m:448-453`: `core.MibImage.initializeImgInfo(...)` + `core.MibDataset(imgOut, imgMeta, 'Standard', ...)` |
-| Any-format tile reader → [H W D C T] | `io.loadImagesWrapper(filename, opts)` |
-| Phase-correlation math to adapt | `utils.align.calcShifts` (full-frame; write overlap-aware variant) |
-| Feature detectors + estGeomTransform opts (later rigid/affine) | `utils.align.detectFeatures`, `@Alignment\Alignment.m` `defaultAutomaticOptions` (~:490) |
-| Controller scaffolding template | `mib\+controllers\@ResampleDataset\` (ChildView, BatchOpt, batch dispatch via `nargin==3` struct/NaN) |
-| Ribbon wiring | `mib\+views\@MibView\addRibbonDataset.m` (~:49, next to Alignment button) + `mib\+controllers\@MibRibbon\dataset_Callbacks.m` (~:26 `startController` case) + callback attach in `MibRibbon.m` |
-| Interactive rect dragging (Phase 3) | `@CropDataset`, `@MeasureTool\drawROI.m` (`images.roi.Rectangle`) |
-| Parallel progress | `core.PoolWaitbar`; sequential `uiprogressdlg` |
-| MIB2 filename-grid parser to port | `C:\Matlab\MIB2\Classes\@mibRechopDatasetController` (lines ~175-231) |
-
-## Module layout
-
-### Computational core — `mib\+utils\+stitch\` (controller-independent, headless-testable)
-
-| File | Purpose |
-|------|---------|
-| `buildLayoutGrid.m` | Grid layout: rows/cols (0=auto), order H/HSnake/V/VSnake, overlap % → nominal origins; natural-sorted files |
-| `buildLayoutPositionFile.m` | Parse `filename X Y [Z]`, auto delimiter; Z-layers per distinct Z; subfolder mode = one Z-stack tile per subfolder |
-| `buildLayoutFilenamePattern.m` | `_Z##-X##-Y##` grid tokens (MIB2 rechop port) |
-| `naturalSortFiles.m` | Natural sort helper |
-| `findNeighborPairs.m` | Overlapping pairs from nominal origins + sizes; tag `'x'`/`'y'` within-layer, `'z'` adjacent-layer |
-| `computeOverlapRegion.m` | Pixel sub-rectangles of nominal overlap (for PixelRegion sub-reads / crops) |
-| `pairwiseShift.m` | Windowed FFT phase correlation on two overlap crops → `[dy dx dz]` + quality (normalized peak height) |
-| `measureAllPairs.m` | Loop pairs → edge list; `readerFcn` wraps `loadImagesWrapper` + LRU cache; parfor + PoolWaitbar |
-| `solveGlobalLeastSquares.m` | **One sparse weighted LS over the whole graph** (x, y, z as independent block systems); anchor tile 1; prune edges below quality threshold; round 2 re-adds pruned edges as weak springs to nominal offsets |
-| `planCanvas.m` | Output `[H W Z C T]`, per-tile integer placement + subpixel residual, physical bounding box |
-| `fuseInMemory.m` | Fast path: allocate canvas, place tiles with blend mode → array for `core.MibDataset` |
-| `fuseStreaming.m` | Primary path: iterate output chunks, load intersecting tiles (LRU), blend, `Array.write(block, bbox)`; pyramid via block downsample |
-| `blendWeights.m` | Feather (linear distance ramp) weight map |
-| `tileCacheLRU.m` | Bounded LRU tile cache around readerFcn |
-| `saveProject.m` / `loadProject.m` | Sidecar JSON round-trip |
-
-Plus `mib\+io\+savers\StitchSliceProvider.m` (`< io.savers.SliceProvider`) — composites tiles for output slice z, so fusion can delegate to `Zarr3Saver.saveStream` (full pyramid/sharding for free) whenever one output XY slice fits in RAM. `fuseStreaming` is the fallback when even a slice doesn't fit.
-
-### Controller — `mib\+controllers\@Stitching\` + view `mib\+views\StitchingGUI.mlapp`
-
-Standard child-controller set (`Stitching.m`, `addCallbacks.m`, `updateWidgets.m`, `updateBatchOptFromGUI.m`, `returnBatchOpt.m`, `closeWindow.m`, `helpBtn_Callback.m`) plus workflow callbacks:
-- `selectInputBtn_Callback.m` — pick folder/subfolders/position file → build layout
-- `previewLayoutBtn_Callback.m` — draw nominal tile rectangles/thumbnails on preview axes
-- `measureOverlaps_Callback.m` — `measureAllPairs` with progress (button "Measure overlaps")
-- `optimizePositions_Callback.m` — global solve + `planCanvas`; show RMSE/residual stats (button "Optimize positions")
-- `stitchBtn_Callback.m` — fuse (in-memory → `core.MibDataset` | zarr → BigData reopen recipe); save sidecar; **single batch entry point**
-- `saveProjectBtn_Callback.m` / `loadProjectBtn_Callback.m`
-
-GUI groups: Input (LayoutSource dropdown, path pickers, SubfolderMode), Grid (Rows/Cols spinners 0=auto, TileOrder dropdown, OverlapX/Y), Registration (TransformType {Translation}, QualityThreshold, SpringWeight, Subpixel), Output (OutputMode {In memory, OME-Zarr (BigData)}, path, BlendMode {Feather, Average, Max, Min, Overwrite}), preview axes, buttons, RMSE readout.
-
-## Data structures
+**Controller — `mib\+controllers\@Stitching\`** + view `mib\+views\StitchingGUI.mlapp`. Standard
+child-controller set + workflow callbacks (`selectInputBtn`, `previewLayoutBtn`, `measureOverlaps`,
+`optimizePositions`, `stitchBtn` — single fuse+save entry point, `saveProjectBtn`/`loadProjectBtn`).
+Sibling child controller **`@StitchingInspector`** (manual seam QC, see `plan_inspector.md`).
 
 ```matlab
 % layout(i): .index .filename .sliceFiles{} .zLayer .gridRC [r c]
 %            .nomOrigin [y x z] .tileSize [H W D C] .dataClass
-% edges(k):  .i .j .direction 'x'|'y'|'z' .measured [dy dx dz]
-%            .nominal [dy dx dz] .quality [0..1] .valid
+% edges(k):  .i .j .direction 'x'|'y'|'z' .measured [dy dx dz] .tform
+%            .nominal [dy dx dz] .quality [0..1] .valid .source .seamScore
 ```
 
-Sidecar `<name>.mibstitch.json`: schemaVersion, layoutSource, pixSize, canvasSize, boundingBox, tiles (with `solvedOrigin`), edges, solver settings + RMSE, blend, output. `loadProject` restores everything; the checker later edits `solvedOrigin` and re-fuses.
+Sidecar `<name>.mibstitch.json` (schema v3): tiles (+`solvedOrigin`/`solvedTform`), edges, solver
+settings+RMSE, blend, output, `zSliceFixes`, optional `project.settings` block (dialog state — see
+"Project files" below). `loadProject`/`saveProject` round-trip all of it; v1/v2 files load with
+defaulted fields.
 
-## BatchOpt (MIB3 conventions)
+**BatchOpt** (MIB3 conventions): `LayoutSource` {Grid, Position file, Filename pattern, Bio-Formats
+metadata}; `InputPath`; `SubfolderMode` (tiles are folders/Z-stacks); `GridRows`/`GridCols` (0=auto);
+`TileOrder`; `OverlapX/Y`; `EstimateOverlap`; `TransformType` {Translation, Rigid, Similarity, Affine};
+`AllowRotation`; `RegistrationMethod` {Phase correlation, Feature-based}; `FeatureDetectorType`;
+`QualityThreshold`; `NominalPositionWeight`; `SubpixelPlacement`; `OutputMode` {In memory, OME-Zarr3
+(BigData)}; `OutputPath`; `BlendMode` {Feather, Average, Max, Min, Overwrite}; `SaveProject`;
+`showWaitbar`. `BatchOpt.id = obj.mibModel.getActiveId()`. Batch dispatch as ResampleDataset.
 
-`LayoutSource` {Grid, Position file, Filename pattern}; `InputPath`; `SubfolderMode` logical; `GridRows`/`GridCols` `{0,[0 10000],'on'}`; `TileOrder` dropdown; `OverlapX/Y` `{10,[0 90],'off'}`; `TransformType` {Translation}; `QualityThreshold` `{0.30,[0 1],'off'}`; `SpringWeight` `{0.10,[0 1],'off'}`; `Subpixel`; `OutputMode` dropdown; `OutputPath`; `BlendMode` dropdown; `SaveProject`; `showWaitbar`; `mibBatchSectionName = 'Ribbon -> Dataset'`. `BatchOpt.id = obj.mibModel.getActiveId()` at point of use. Batch dispatch identical to ResampleDataset.
+## Load-bearing facts (do not re-break these)
 
-## Phasing
+- **`pairwiseShift` sign convention:** if `cropB(r,c) ≈ cropA(r−dy, c−dx)` then `shiftYXZ = [dy dx 0]`;
+  `measureOne` composes `measured = (bboxA(:,1) − bboxB(:,1)) − [dy dx]` (exact under asymmetric border
+  clamping). Full-tile overlap estimation (`estimateOverlap`) uses the OPPOSITE sign composition and NO
+  Hann window (small overlaps put shared content at the tile edges, which a window zeroes).
+- `computeOverlapRegion` clamps each crop to its OWN tile only (not the pair intersection) — clamping to
+  the intersection destroys the search window for edge-abutting pairs.
+- Border-clamped pairs need zero-padding + expected-shift-restricted peak search (raw shifts can exceed
+  ±extent/2 and alias). `expandPx` per pair is capped at 0.75× overlap extent (over-expanding starves
+  the peak with unshared content).
+- **Quality metric** is peak-to-second-peak ratio inside the search region (exclusion lobe), mapped
+  `(ratio−1.35)/0.65` — plain PSR barely separates true matches from noise.
+- **Diagonal tile pairs are excluded** (`findNeighborPairs` requires ≥50% perpendicular overlap) — corner
+  overlaps give confident-but-wrong shifts.
+- Solver: pruned edges only re-added as springs when they restore anchor connectivity; the always-on
+  per-tile rank-guarantee self-spring (`nominalSpringWeight`) must stay tiny (0.001) or it biases
+  border-clamped tiles.
+- **Cross-layer (`'z'`) edges** are kept only between tiles at ~same XY position (≥50% overlap both
+  dims) — thin-strip/corner cross-layer overlaps give unreliable dz and are redundant; dropping them
+  took a 3D smoke solve from 33 px error to 0.03 px. Within-layer tiles share one focal plane (dz
+  constrained to 0); only cross-layer pairs measure dz.
+- **Affine solver:** L-rows (linear-part residuals) must be weighted by `linearScale²`, not
+  `linearScale¹` — a residual `r` in `L` costs `linearScale·r` PIXELS; underweighting lets the solver
+  trade measurement-exactness for spring satisfaction (0.6 px bias vs ~5e-3 px correctly weighted).
+- **3D affine cross-layer coupling:** z-edges enter the affine system with `M = I` (a tile's linear part
+  is pinned to its partner's in the adjacent layer) — a layer's common linear factor is unobservable
+  from translation-only z measurements. Synthetic test truths must share the linear part per grid slot
+  across layers or the solve compromises.
+- **`rotationInvariance` (a.k.a. `Upright`) is inverted from its name** — `true` means orientation is
+  NOT estimated (not rotation-invariant). Stitching derives it as `~BatchOpt.AllowRotation` in
+  `buildFeatureOptions` (one checkbox, not two) rather than exposing the raw field.
+- **Filename-pattern tokens:** order and separators are irrelevant (found by last occurrence of the
+  letter), uppercase only, indices 1-based. `Z001-X002-Y003` silently parses as `00/00/00`
+  (`str2double` reads exactly 2 chars) — a known limitation, not a bug to "fix" without a user call.
+- **Alignment quality chip:** `solverInfo` must be a controller property (not a callback-local) and
+  `refreshQualityChip` must be called from `updateWidgets`, so every edge edit (exclude, undo, inspector
+  fixes) refreshes the chip — a solve's residual can read "Excellent" while a pixel-based seam score
+  disagrees; the chip always re-derives from the worst VALID edge's seam score, not just the solver RMSE.
+- **Fix-Z model** (seam inspector, see `plan_inspector.md`): each mosaic OUTPUT SLICE is a "layer" — a
+  fix shifts that slice and every slice above it; slices below stay put. This is a per-slice mosaic
+  correction outside the tile/solver model (`Stitching.zSliceFixes`), not a per-tile dz edit.
+- **Keyboard never mutates alignment** — all fixes are mouse-only (drag / Shift+click / two-click);
+  arrow/Q/W/PgUp/PgDn keys are view-only navigation in every mode. See
+  [[ux-navigation-keys]] (memory) for why this rule exists.
+- **`Stitch` is the single fuse+save entry point** — the inspector has no Re-fuse/Save button;
+  `stitchBtn_Callback` runs any pending inspector re-solve first (`resolvePending` guard) so it never
+  fuses stale positions.
+- **Min blend mode** needs the fresh-pixel mask (same as Max) or a zero background wins every
+  singly-covered pixel.
 
-**Phase 1 — 2D single layer (grid + position file + filename pattern; in-memory + zarr outputs)** — core: Opus 4.8; scaffolding/tests: Sonnet
-All `utils.stitch` core (2D solve), `StitchSliceProvider`, controller + mlapp, ribbon button.
-Existing files touched: `addRibbonDataset.m`, `dataset_Callbacks.m`, `MibRibbon.m`, new `stitch_24px.png` icon (reuse an existing icon until drawn).
-Milestone: headless test — chop a known image into jittered overlapping tiles, layout→measure→solve→fuse, origins within ±1 px, RMSE below threshold; zarr round-trip read-back matches in-memory fuse.
+## Project files (save/load)
 
-**Phase 1.5 — robustness & input extensions** — **DONE 2026-07-14** (overlap estimation + feature-based registration + Bio-Formats source all landed; 26/26 core + 24/24 layout tests pass)
-- ~~Overlap auto-estimation~~ **DONE 2026-07-14**: `utils.stitch.estimateOverlap` (MIST-style median over grid pairs; unrestricted full-tile phase correlation + top-K NCC peak verification, BigStitcher-style) + `@Stitching\runOverlapEstimation.m`, `BatchOpt.EstimateOverlap` (default true), `EstimateOverlap` checkbox in Grid panel. See Status log for the two full-tile findings (NO Hann window; opposite sign composition vs crop path).
-- ~~**Feature-based registration option**~~ **DONE 2026-07-14** — `utils.stitch.featureShift` (SURF detect/match + `estgeotform2d 'translation'`, RANSAC inlier-ratio quality, SAME sign convention as `pairwiseShift`); `measureAllPairs` gains `options.registrationMethod` {Phase correlation, Feature-based} + a `shiftFcn` threaded through `measureOne`/`measureZShift`. `BatchOpt.RegistrationMethod` dropdown wired in `measureOverlaps_Callback`/`stitchBtn_Callback` (widget guarded with `isfield` until added to the mlapp). **Key finding:** feature-based within-layer pairs read the **FULL tiles**, not the thin overlap strip (a ~40 px strip has too few scale-space blobs for RANSAC's ≥8 inliers). This makes the two methods COMPLEMENTARY: at 10 %% overlap + small jitter phase correlation wins 11/12 vs feature-based 1/12; at 25 %% overlap + 55 px jitter (beyond the restricted phase-corr search) feature-based wins 10/12 @ 0.41 px vs phase-corr 3/12 @ 95 px. Document weakness: feature-poor/repetitive content.
-  - **2026-07-14 follow-up (user request): make it work "the same way as controllers.Alignment"** — feature-based now has a **detector selector + configurable settings dialog + downsampling**, matching the Alignment tool. Extracted Alignment's feature-settings dialog into a shared `utils.align.detectorSettingsDlg` (downsampling row + rotation-invariance + per-detector params + RANSAC), and **refactored `Alignment.updateAutomaticOptions` to call it** (its ~175-line inline feature branch → one call; AMST branch + v1/v2 downsampling-field selection kept). `featureShift` now consumes the full `automaticOptions` shape (per-detector sub-structs, `estGeomTransform`, `rotationInvariance`) plus `downsampleFactor` (resize by 1/factor for detection, scale point locations back before fitting — like `fitPerSliceV2`). Controller: `BatchOpt.FeatureDetectorType` (8 detectors, same list as Alignment), `automaticOptions` property (`defaultFeatureOptions`: factor 1 for stitch precision, SURF MetricThreshold 500), `buildFeatureOptions` → `measureOptions.featureOptions` → `measureAllPairs` merges into `shiftOptions`; `configureFeaturesBtn_Callback` opens the shared dialog. FeatureDetectorType dropdown + Settings button enabled only for Feature-based (guarded with `isfield`). Verified: Harris+downsample×2 recovers the shift; large-jitter chain 10/12 @ 0.33 px. Tests: `featureShift_honorsDetectorAndDownsampling` (Unit). 27/27 core pass.
-- ~~**4th layout source: Bio-Formats metadata**~~ **DONE 2026-07-14** — `LayoutSource` += `'Bio-Formats metadata'`; `utils.stitch.buildLayoutBioFormats` opens each file with a Memoizer'd `bfGetReader`, reads per-series `Plane PositionX/Y/Z` (µm, null→0) + `PixelsPhysicalSize`, and delegates the µm→px/slice conversion to the pure, unit-testable `utils.stitch.stageCoordsToOrigins` (min-shift to 1, distinct-Z→layer ranking like the position file). Multi-series files carry a per-tile `seriesIndex` now honoured by `makeTileReader` (forces Bio-Formats + `BioFormatsIndices`; skips the imread PixelRegion fast path). `selectInputBtn_Callback` multi-selects Bio-Formats files; `buildLayoutFromBatchOpt` branches to it; SubfolderMode disabled for this source. **Verified end-to-end** via a synthetic OME-TIFF round-trip (`createMinimalOMEXMLMetadata` + `setPlanePositionX/Y` + `bfsave`): 4 tiles, origins match the true grid, full chain solves to ≤0.03 px. Tests: `StitchCoreTest.stageCoordsToOrigins_convertsMicronsAndRanksZ` (Unit) + `buildLayoutBioFormats_fullChainFromStageCoords` (Integration, self-skips when Bio-Formats can't load). Assumption to note: stage X→columns, Y→rows, same direction as pixels (`stageCoordsToOrigins` has `flipX`/`flipY` for vendors that invert an axis); pixSize assumed uniform (taken from the first tile).
-
-**Phase 2 — 3D multi-layer global solve** — **DONE 2026-07-14**
-Slice-unit `nomOrigin(3)` (position-file Z + subfolder stacking); cross-layer dz measurement in `measureAllPairs/measureZShift` (XY from mean-projection correlation, dz by NCC scan over real overlapping voxels — mean-projection is z-blind, a thick-slab correlation scores every dz alike and biases to smaller dz); z-aware `planCanvas` (uses `positions(:,3)`, canvas Z = max(placementZ + tileD − 1)); solver already solved all 3 axes; fusers already keyed off `tilePlacement(:,3)`.
-Milestone met: `StitchCoreTest.fullChain3D_recoversJittered3DLayerStack` — 2×2×3-layer stack with 3D jitter, all axes within 1.5 px, canvas accounts for Z-overlap, fused interior RMSE < 6; streaming byte-identical to in-memory on a multi-layer case. 21/21 core + 23/23 layout pass.
-Key findings: within-layer tiles share one focal plane (dz constrained to 0); only cross-layer (`'z'`) pairs measure dz. `zSearchRadius` internal default 8, no new BatchOpt. **Cross-layer pairing rule** (`findNeighborPairs`): keep a `'z'` edge only between tiles at ~same XY position (overlap ≥50% in BOTH dims). Thin-strip / corner cross-layer overlaps give unreliable dz from their narrow projected crops; they are redundant since within-layer edges connect each layer and one same-position z-edge per stacked tile connects the layers (fully connected graph). Dropping them took the 3D smoke solve from 33 px → 0.03 px.
-
-3D GUI smoke example: `development\stitching\03_stitch_smoke_3d\generateSmokeTiles3D.m` — 2×2×3 Z-stack tiles (multi-page TIFF) + `positions.txt` (nominal grid, jittered truth). Load via Layout source = Position file.
-
-**Filename-pattern overlap support** — **DONE 2026-07-15** (user request while testing Filename pattern + folder tiles)
-`buildLayoutFilenamePattern` gained an optional `options.overlapX/overlapY` (default 0 = abutting, backward-compatible): XY step = `tileSize*(1-overlap/100)` like `buildLayoutGrid`; Z always abuts. `buildLayoutFromBatchOpt` passes `BatchOpt.OverlapX/OverlapY` for the Filename-pattern branch; `runOverlapEstimation` now runs for `{Grid, Filename pattern}` (both carry `.gridRC`, which `estimateOverlap` uses); Overlap X/Y spinners + `EstimateOverlap` + SubfolderMode enabled for both sources (`usesOverlap = ismember(...,{'Grid','Filename pattern'})`) while Rows/Cols/TileOrder stay Grid-only. Verified: overlapping pattern-named tiles → 4/4 valid edges @ 0.02 px; default (no options) still abuts (0 pairs, step = full tile). Test `filenamePattern_overlapShrinksStep` (25/25 layout). Smoke: `development\stitching\05_stitch_smoke_pattern_folders\generateSmokePatternFolders.m` (2×2 folder Z-stacks named `stack_Z01-X0i-Y0j`, ~22%% overlap). **Root cause of the user's error**: folders named grid-style (`tile_r1c1`) carry no `_Z##-X##-Y##` tokens — the Filename-pattern source needs the tokens in the file/folder name.
-
-**Multi-folder InputPath: project-save fix + listbox** — **DONE 2026-07-15**
-- *Bug:* with a newline-joined multi-folder `InputPath` (SubfolderMode multi-select), `stitchBtn_Callback` did `fileparts` on the whole multi-line string → bogus folder → "project save failed: Unable to find file" (stitch itself already succeeded). Fixed with a local `resolveProjectPath` that picks the first EXISTING entry: single folder → inside it; multi-folder list → common parent; file (position/Bio-Formats) → next to it, named after it; fallback `pwd`. (Also fixed the file's `end` structure — it needed a terminating `end` once a local function was added.)
-- *UI:* `InputPath` may now be a `uilistbox` (one path per row, better for multi-folder) instead of a `uieditfield`. New `refreshInputPathWidget` method sets `.Items` (listbox) or `.Value` (editfield) by `isprop(...,'Items')`; `updateWidgets`/`selectInputBtn_Callback` call it; `addCallbacks` only wires `InputPath.ValueChangedFcn` for the editfield (a listbox is Browse-populated display-only). `BatchOpt.InputPath` stays the newline-joined string → batch unaffected. mlapp to-do: swap the InputPath editfield for a listbox (optional; both work).
-
-**Smoke-test data relocation + tab group + feature preview** — **DONE 2026-07-15**
-- *Generators relocated:* the six `generateSmoke*.m` scripts now live under `development\stitching\01_stitch_smoke*\` (tracked); each resolves its output folder under `<repoRoot>\temp\` from its own path and writes tiles there (untracked). **Superseded 2026-07-25** — see the output-folder numbering entry at the end of this file. Old copies deleted from `temp\`. Two NEW datasets: `stitch_smoke_bioformats` (4 single-plane OME-TIFF tiles carrying OME `PlanePositionX/Y` + `PixelsPhysicalSize`, clean-grid metadata + jittered cut — Bio-Formats source; needs the bundled Java lib) and `stitch_smoke_feature` (3×3, 25%% overlap, ±55 px jitter — the case where phase correlation fails and Feature-based wins). Full GUI checklist: [smoke_tests.md](smoke_tests.md). Headless validation of the two new sets: Bio-Formats solve 0.01 px; feature set PhaseCorr 7/12 valid @80.5 px vs Feature-based 11/12 @0.47 px.
-- *Tab group considered and dropped:* a `layoutSourceProperties` tab group was prototyped but reverted — with `OverlapX/OverlapY/EstimateOverlap` shared by Grid+Filename pattern (can't duplicate a widget across tabs) there were too few source-unique widgets to justify it. Instead: `gridPanel` renamed to `TileSettingsPanel` (title "Tile settings"), and a new guarded `updateInfoLabel` method sets a 2-line `infoLabel` describing the selected `LayoutSource` (what input to browse for, what to set). Called from `updateWidgets` + `updateBatchOptFromGUI`; no-op until the `infoLabel` widget exists. Spec in `mlapp_widgets.md`.
-- *Feature-settings preview:* new `previewFeatureMatch` method — after `configureFeaturesBtn` accepts settings and a layout is loaded, it reads the first overlapping pair's FULL tiles (mid-Z, first channel), runs the selected detector + `matchFeatures` + RANSAC `estgeotform2d`, and renders `showMatchedFeatures` (with-outliers | inliers-only) titled with inlier ratio + recovered `[dy dx]` in a `mib_StitchFeaturePreview` figure. Mirrors `controllers.Alignment.previewFeaturesBtn_Callback`. Detect→match→render path verified headlessly on the feature set (73 matched / 72 inliers). No new mlapp widget needed.
-
-**Phase 3 — interactive rough placement** — **DONE 2026-07-14**
-Edit mode on the preview axes: the `editLayoutCheckbox` toggles `previewLayoutBtn_Callback` between static `patch` rectangles and one draggable `images.roi.Rectangle` per tile (`InteractionsAllowed='translate'` → fixed tile size, `Deletable=false`, index as hover `Label`). A per-ROI `ROIMoved` listener (`tileMoved` local fcn) writes `Position [xMin yMin]` back into `layout(i).nomOrigin([2 1])` and clears `edges`/`positions`/`canvas` so the next Measure/Optimize uses the corrected layout. Only the first Z-layer is editable (layers share the XY grid). Axis limits are fixed with a 25%% margin (`layerBounds`) so dragged tiles stay visible; `daspect [1 1 1]` keeps tiles square. New controller props `tileROIs` / `roiListeners`; `deleteTileROIs` on every redraw + listeners freed in `closeWindow`. Checkbox wired in `addCallbacks` (guarded `isfield`) to just call `previewLayoutBtn_Callback`. mlapp to-do: add `editLayoutCheckbox` ("Edit layout (drag tiles)") near `previewLayoutBtn`. Verified the `images.roi.Rectangle` translate-only API on a uiaxes headlessly (size preserved, ROIMoved attaches); full click-through is a GUI smoke step once the checkbox exists.
-
-**Transform-model expansion (translation → affine → rigid/similarity + AllowRotation)** — **phase 1 (2D affine) DONE 2026-07-15, phase 2 (Rigid/Similarity + AllowRotation) DONE 2026-07-16**; phase 3 (3D) deferred — design + implementation log in [`plan_transforms.md`](plan_transforms.md)
-Unify 2D/3D (no separate transform pipelines); stage models by solver tractability (affine stays linear, add before rigid; rigid/similarity via SVD projection of the affine solve, 2D-first). New `AllowRotation` checkbox locks rotation to zero (`R = I` branch of the same polar decomposition) — default off, gated off for Translation.
-*Phase 1 delivered:* new `utils.stitch.solveGlobalAffine` (6 params/tile, one sparse weighted LS — L-rows must be weighted by `linearScale²`, see the pitfall note in plan_transforms.md), `edge.tform` from `featureShift`/`measureAllPairs` (`transformType` option; non-translation forces feature-based), warp-aware `planCanvas` (`canvas.tforms`/`tileBounds`) + `imwarp` branch in `fuseSliceComposite` (all three fusers inherit; integer-translation/no-tforms plans take the unchanged fast path), `TransformType = Affine` in the GUI with 2D-only gating and edge invalidation on model change, sidecar `solvedTform`/edge `tform` round-trip. StitchCoreTest 32/32 (5 new tests incl. the affine-chop → solve → warp-fuse milestone); smoke dataset `11_stitch_smoke_affine` ([smoke_tests.md](smoke_tests.md) test 11).
-*Input picker change (2026-07-16):* with SubfolderMode off, the Grid / Filename-pattern Browse button now opens a **multi-select image-FILE picker** (was: folder picker) — `InputPath` becomes a newline-joined file list, like the Bio-Formats/tile-folder modes. `collectTileEntries` accepts both forms (file list, or a single folder whose images are the tiles — typed-path/batch back-compat); `buildLayoutGrid` natural-sorts, so selection order is free. `resolveProjectPath` + save/load-project start folders made newline-list-safe (first-entry logic instead of `fileparts` on the whole string).
-*Phase 2 delivered:* new shared `utils.stitch.projectLinearPart` (polar/SVD, `R = I` branch = the AllowRotation lock); `solveGlobalAffine` projects per-tile linear parts onto Rigid/Similarity then re-solves translations with them fixed (reusing the scalar solver, overlap-centroid anchored); `featureShift` applies the same lock per edge (rigid+noRot → translation fit; similarity/affine → project + re-estimate translation over inliers); GUI grows Rigid/Similarity items + `AllowRotation` checkbox (BatchOpt default **false**; enabled only for non-translation; RegistrationMethod locked to feature-based then; changing either invalidates edges). StitchCoreTest 36/36; mlapp to-do: add the `AllowRotation` uicheckbox (spec in `mlapp_widgets.md`).
-
-**Phase 4 — seam inspector: manual QC + fix when automatic stitching fails** — **phases A (headless core) + B (inspector shell) DONE 2026-07-16, phase C (interactive fixing: click-to-correlate, drag/nudge with live overlay, two-click landmark match, auto-suggest via `utils.stitch.suggestFix`, undo) DONE 2026-07-17, phase D (Re-fuse both output modes with resolve-first guard, mini-map low-res fused preview, PgUp/PgDn dz nudge) DONE 2026-07-17** (needs the `StitchingInspectorGUI.mlapp` from the user — spec in [`mlapp_widgets.md`](mlapp_widgets.md); C milestone verified headlessly: corrupted chain edge fixed by one click → all tiles within 1 px of truth, StitchInspectorTest 15/15); partial (dirty-region) BigData re-fuse remains a listed optimisation — full plan + status in [`plan_inspector.md`](plan_inspector.md)
-*Rating chip pixel verification (2026-07-17):* **Optimize positions now runs `scoreSeams` on every valid edge** and folds the WORST seam NCC into the chip: `< 0.4` → red "Seams disagree … Inspect & fix", `0.4–0.7` → orange "Check seams" — regardless of the residual. Motivation: a vertical mis-layout of the horizontal 3-chain solved to 0.09 px "Excellent" while every seam scored ≈ 0.1; solver residuals are structurally blind on loop-free graphs, only re-reading the pixels catches it. Scores persist on the edges (sidecar + inspector reuse). Advisory: scoring failures never block the solve; auto grid orientation now follows Tile order (Vertical → tall arrangement, e.g. 3 → 3×1).
-*Fix Z = per-slice mosaic corrections (2026-07-18, user feedback, FIVE rounds — read this before touching Fix Z again):* Fix Z went through five interpretations before an explicit AskUserQuestion settled it. Tried and rejected: (1) stepping tile j's slice of the current seam pair; (2) any 3D pair via `pairHasDepth`; (3) auto-zoom to the overlap region; (4) cross-layer z-edge pairs only ("one tile from layer Z vs level z-1" — but the user's datasets are SINGLE-LAYER grids of Z-stacks with no z-edges at all, so the dropdown just flipped back). The user's actual model, confirmed by choice: **each mosaic slice IS a "layer"** — Fix Z shows ONE tile at consecutive slices z-1 (cyan) vs z (magenta), fully overlapping (mostly white when the mosaic is Z-aligned), and a fix shifts THAT OUTPUT SLICE AND EVERY SLICE ABOVE IT across the whole mosaic, slices below stay put ("they are all interconnected"). Implementation: per-slice corrections live OUTSIDE the tile/solver model — `Stitching.zSliceFixes` [K×3 rows [z dy dx], cumulative], `planCanvas(options.zSliceFixes)` → `canvas.zShifts` [Z×2, rounded, baseline-shifted, canvas grown] → `fuseSliceComposite` shifts every tile on that output slice (both fast and warp paths; all three fusers inherit); sidecar `zSliceFixes` round-trip (saveProject arg 8 / loadProject out 7); cleared on layout rebuild; canvas invalidated on every edit so Re-fuse re-plans. Inspector: `boundaryModeActive`/`boundaryDelta`/`applyZBoundaryFix` (drag + Shift+click routed there; NO re-solve, tile positions untouched), `viewSlice.boundaryTile` marks the mode, Q/W move the boundary (clamped [2, depth]), `Z`/undo removes the boundary's correction, magenta drawn at the current correction so a fixed boundary looks white. Seam `fixDz` is now ALWAYS `currentDz` (interactive dz edits dropped; z-edge XY fixes still propagate through the solver per `zBoundaryFix_shiftsAllLayersAbove`; `dzHint` stays diagnostic). Pure-2D datasets flip the dropdown back WITH A DIALOG — the user picked "didn't notice it" about the status line, so mode flips must not rely on it. Core pinned by `planCanvas_zSliceFixesShiftMosaicAboveBoundary` (StitchCoreTest 37/37).
-*Pair-view titles in user language (2026-07-18, user feedback):* the titles spoke solver-speak — "tile 4 is right of tile 2 — cyan = 2, magenta = 4, white = aligned", "Z slice 5/12 vs 5/12" (both slices always printed, even when identical), "Z-MATCH … implied dz +0 (current +0)". Now line 1 is a plain colour legend ("Cyan: tile 2; Magenta: tile 4"; per-mode variants for flicker/checkerboard/difference; `pairDirectionText` local removed — the direction is visible in the image and the offset label has the numbers), and line 2 names the slice ONCE when the pair is Z-aligned ("Slice 5/12 — Q/W browses") or per colour when they differ ("Cyan: slice 5/12; Magenta: slice 8/12"). Fix Z drops the dz jargon: each colour's slice, plus "fix will shift Z by ±n" ONLY once the browsed match deviates from the current alignment. Space-flicker line synced ("Flicker — showing tile N (Space toggles)").
-*Keyboard nudging disabled (2026-07-18, user decision):* the Left/Right X-nudge removed too — THE KEYBOARD NEVER MOVES A TILE; offsets are edited by mouse only (drag / Shift+click / two-click). Dead machinery cleaned out: `nudgePending` property gone, `keyRelease_Callback` reduced to the Shift ROI-box dismissal (the deferred-resolve path had no remaining callers; `applyUserFix`'s `deferResolve` parameter kept as a generic mechanism).
-*Vertical arrows = slice keys everywhere (2026-07-18, user feedback):* Up/Down arrows now browse Z slices in BOTH fix modes, identically to Q/W (main-MIB pairing q/down, w/up) — the mode-dependent split (browse in Fix Z, Y-nudge in Fix XY) was inconsistent. Keyboard nudging is now Left/Right (X) only; Y-nudging is mouse-only (drag / Shift+click), which also removes the last navigation-key mutation path on 2D pairs (Up/Down there just report "no Z slices").
-*Pair-view title + mode-switch feedback (2026-07-18, live-test find):* the pair-view title is now TWO lines — line 1 the view (direction + overlay legend, "Full pair (...)" wrapper dropped for width), line 2 the slice readout ("Z slice 5/8 vs 2/8 — Q/W browses" / "Z-MATCH ... implied dz ..."); the Space-flicker toggle replaces only line 1 so the slice line survives. Switching Fix mode looked broken ("title changes but the image stays the same") because BOTH modes correctly start at the same aligned slice pair — the mode-change handler now says so in the status line and states the next step, instead of leaving the user wondering.
-*Slice keys + Z-propagation model (2026-07-18, user feedback):* slice browsing rebound from PgUp/PgDn to the MAIN-MIB keys — `Q`/`W` (previous/next, both modes; `browseZ` local in keyPress_Callback) and in Fix Z mode also `Down`/`Up` arrows (there the vertical arrows browse instead of nudging; left/right still nudge X); `Shift` ±5, `Ctrl` steps tile i's slice. PgUp/PgDn removed. The Z-correction model confirmed and PINNED BY TEST (`zBoundaryFix_shiftsAllLayersAbove`, 14/14): a Z-boundary XY fix propagates through the chain of cross-layer edges — the corrected layer shifts by the fix, EVERY layer above follows as a block, layers below stay put (stacks are rigid; per-slice drift within a stack = Alignment tool's job, stated in the user docs). Deeper z-registration explicitly out of stitching scope per the user.
-*Fix XY / Fix Z modes (2026-07-17, user domain feedback):* "moving tiles in Z" was solver-speak, not microscopy — what users need is *"align the next z to the previous z"*. The manual dz-edit keybinding (Ctrl+PgUp/PgDn) is GONE; instead a guarded `fixModeDropdown` (`'Fix XY'` | `'Fix Z (match slices)'`) selects what a fix edits. Fix Z = slice-matching across the Z boundary: PgUp/PgDn steps tile j's slice (Ctrl = tile i's) through the FULL stacks (view-only; `viewSlice` now carries `.sliceA`/`.sliceB`; title shows "Z-MATCH … implied dz %+d (current %+d)"), and the next fix — Shift+click (which now correlates exactly the DISPLAYED slice pair), drag or arrows — writes the implied dz together with the in-plane offset via the new `fixDz` accessor. One gesture = XY fine-tune + slice correspondence, "the same cross-correlation operation as for XY" per the user's design. Fix XY keeps the old behaviour (dz untouched by fixes).
-*PgUp/PgDn rebind (2026-07-17, live-test find):* the first dz-nudge binding put ALIGNMENT EDITING on the universal slice-navigation key — the user "browsed" with PgUp/PgDn, silently staggered tiles in Z, and Re-fuse baked it in (fused stack showed one tile per end slice, black elsewhere: correct canvas padding for the accidental z offsets). Now plain `PgUp`/`PgDn` BROWSES the aligned slice pair (`viewSlice` state, view-only, clamped to the overlap slab, kept across dz edits so the same tile-i slice stays on screen) and `Ctrl+PgUp`/`Ctrl+PgDn` EDITS dz with an explicit "tile N MOVED %+g slice(s) in Z" status. Lesson recorded: never bind state-mutating actions to keys with a universal navigation meaning.
-*Auto-suggest removed + slice-aligned 3D pair view (2026-07-17, user decision):* `suggestBtn`/`suggestBtn_Callback`/`utils.stitch.suggestFix` + its 2 tests deleted (Shift+click covers the need interactively; recoverable from git history; stale MATLAB-project XMLs removed too) — StitchInspectorTest now 13/13. The pair view (and the drag overlay) now renders 3D pairs from the **central slice of the depth-overlap slab aligned by the current dz** (`alignedSlicePair` locals in `renderPairView`/`pairViewButtonDown`; title shows e.g. "Z slice 5/8 vs 2/8"; middle slices + "NO Z overlap" note when the slab is empty) instead of the depth-mean projection, which blurred dz errors invisible — a PgUp/PgDn dz nudge now visibly snaps the content, completing the 3D fixing loop (hint → nudge → see it snap → re-solve confirms).
-*Phase D — re-fuse & polish (2026-07-17):* `refuseBtn_Callback` delegates the full fuse to the parent's `stitchBtn_Callback` (both output modes; cached fixed positions reused); new `resolvePending` flag (deferred/auto-off fixes, undo, exclude set it; `resolveBtn_Callback` clears) makes Re-fuse resolve FIRST — never fuses stale positions. Mini-map gains a low-res fused preview: `ensureTileThumbs` builds per-tile thumbnails once (lazy, joint-normalised, ~1000 px mosaic span, auto-skip above ~1.5 G total pixels or on read error) and `renderMiniMap` re-composites them at the SOLVED positions every redraw behind the score patches (alpha 0.85 → 0.25). dz nudge: `PgUp`/`PgDn` ±1 slice (`Shift` ±5) on `pairHasDepth` pairs via the ordinary `applyUserFix` `[dy dx dz]` path, resolve deferred to key release; offset label shows live dz + the scoreSeams `dzHint`. Partial BigData re-fuse deliberately deferred (documented in plan_inspector.md).
-*Layout-source switch fix (2026-07-17):* `LayoutSource` was missing from the layout-rebuild trigger list in `updateBatchOptFromGUI` — picking an input under Grid and then switching to Filename pattern kept the stale grid layout, and Measure silently measured it (live-test find on the pattern-folder set). Now the source dropdown rebuilds like the grid widgets; if the current input is incompatible with the new source (e.g. a file list after switching to Position file) the stale layout/edges/preview are DROPPED (edit-mode ROIs torn down) and the status label asks for a re-select — no modal error, since that's a normal step of changing the source.
-*3D seam verification (2026-07-17):* `scoreSeams` is now Z-aware — strips are depth-aligned by the solved dz and scored as the MEAN of per-slice 2D NCCs over the overlapping slab (same metric `measureZShift` uses to choose dz; volumetric NCC rejected for the thick-slab bias), NaN when no slab overlap; cross-layer (`'z'`) edges are additionally re-scored at dz±2 (`dzScanRadius`) and a neighbour beating the solved dz by ≥ 0.05 (`dzHintMargin`) fills `edges(k).dzHint` (persisted in the sidecar, default 0). Surfaced as an orange **"Check Z alignment (N seam(s) prefer a different Z offset)"** chip branch (a dz error barely dents XY scores, so it needs its own branch) + "pixels prefer dz±k" in the inspector offset label. Also fixed `makeTileReader`: the imread-PixelRegion fast path returned only PAGE 1 of multi-page z-stack tiles (depth silently lost on strip reads) — now guarded by `tileSize(3) > 1`. New test `scoreSeams3D_dzErrorLoweredAndHinted` (synthetic z-pair from one volume: true dz scores ~1/hint 0; dz+2 corruption tanks the score and hints −2; sidecar round-trip) — StitchInspectorTest 15/15, StitchCoreTest 36/36.
-*Pair-view zoom (2026-07-17):* plain mouse wheel over `pairAxes` zooms about the cursor (1.25×/step, ≥ 8 px min range, pan-clamped to the rendered extent; wheeling fully out snaps to fit); the zoom is stored per seam (`pairZoom` prop) and re-applied across the re-renders every nudge/drag/fix triggers — incl. inside `beginDrag`, which otherwise reset the limits. `F` key + guarded `fitViewBtn` reset. Shift+wheel keeps its ROI-resize meaning. Also fixed an `addCallbacks` scoping bug: the `saveProjectBtn`/`closeButton` wiring had slipped inside the `setTooltip` LOCAL function (where `obj` is undefined → error on every open with those widgets present).
-*GUI-test fixes (2026-07-17, from a live run on the sabotage set through the Grid source):* auto Rows/Cols now picks the closest-to-square divisor pair that tiles the count EXACTLY (3 tiles → 1×3, was 2×2-with-hole — the hole created phantom pairs and never paired the real neighbours); the rating chip shows orange **"Alignment incomplete (N tile(s) held at nominal)"** whenever the solve leaves disconnected tiles (RMSE over the surviving edges said "Excellent" while a tile sat wherever the grid guess parked it); the layout preview draws SOLVED positions when they exist (was: always nominal — inspector fixes looked like they did nothing) and auto-refreshes after every solve, incl. the inspector's re-solves.
-Sibling child controller `@StitchingInspector`: seams ranked worst-first by a pixel-based **seam score** (NCC at the solved placement — catches confidently-wrong edges that solver residuals miss on chain graphs), pair view with falsecolor/flicker overlays, fixes by drag/keyboard nudge, one-click ROI cross-correlation, two-click landmark match, or auto-suggest; user fixes become high-weight never-pruned edges (`source='user'`, sidecar v2) that re-steer the global solve; re-fuse hands back to Stitching. Phased A (headless core: `scoreSeams`/`localCorrelate`/solver user-edge support) → B (inspector shell) → C (interactive fixing) → D (re-fuse + partial BigData re-fuse).
+Sidecar v3 adds an optional `project.settings` block (the dialog's BatchOpt, reduced to plain values).
+**Load project** asks "Restore everything" (widgets + layout + solved state) vs "Settings only" (keep
+the newly-selected input, rebuild the layout, clear edges/positions) vs Cancel; pre-v3 files load their
+state with no dialog. `Stitching.projectSettingFields()` is the single field list shared by save/load so
+they cannot drift; `applyProjectSettings` skips/clamps unknown fields or type mismatches instead of
+raising (an old project must load into a newer dialog).
 
 ## Verification
 
-- `tests\utils\StitchTest.m` (`matlab.unittest`, `Unit` tag, follow `tests\plan_unittests.md` conventions): test-local `chopIntoTiles` helper; assert grid order for all 4 TileOrder modes; `pairwiseShift` exact on known integer shifts, low quality on flat tiles; global solve ±1 px 2D and 3D; edge-prune + spring behavior; blend-mode seam checks; `saveProject` round-trip.
-- `Integration` tag: `fuseStreaming` → TemporaryFolderFixture zarr → reopen via `Zarr3VirtualSetupLoader` (`datasetMode='BigData'`) → region compare vs in-memory fuse.
-- Run via `buildtool test` (remember `addpath('tests')` quirk) and `buildtool check`; MATLAB MCP tools (`run_matlab_test_file`, `check_matlab_code`) for iteration.
-- GUI smoke test in live MIB: stitch a small tile folder both output modes; confirm BigData buffer opens and bounding box is correct.
-- Update docs per repo rule: user docs page under `docs/` + RST entries under `docs_api/` for the new public methods.
+- `tests\utils\StitchCoreTest.m`, `StitchLayoutTest.m`, `StitchInspectorTest.m` — `Unit`/`Integration`
+  tagged (`matlab.unittest`, conventions in `tests\plan_unittests.md`); `Integration` includes a
+  `fuseStreaming` → zarr → `Zarr3VirtualSetupLoader` reopen round-trip.
+- `tests\controllers\StitchingControllerTest.m` / `StitchingInspectorControllerTest.m` — controller-level
+  tests driving the real classes headlessly (`controllers.Stitching(mibModel, [], NaN)` builds full
+  default state with no window; `StitchingInspector(..., struct('createView', false))` skips the window).
+- Run via `buildtool test` (needs `addpath('tests')`) / `buildtool check`, or MATLAB MCP
+  `run_matlab_test_file` / `check_matlab_code` for iteration.
+- GUI regression: [`smoke_tests.md`](smoke_tests.md) — 14 numbered datasets/checklists covering every
+  layout source, transform model, blend mode, and the seam inspector.
 
 ## Risks / notes
 
-- **Slice-exceeds-RAM mosaics**: `saveStream`+`StitchSliceProvider` covers slice-fits-in-RAM; `fuseStreaming` (chunk-wise) is the fallback — its pyramid is a manual block-downsample pass.
-- **Low-texture overlaps**: quality threshold + springs; windowing in `pairwiseShift`; fall back to nominal offset on flat peaks.
-- **Multi-channel/time**: register on one channel (user-chosen or max-projection), apply transform to all C/T; default shared layout across T.
-- **Subpixel**: Phase 1 rounds to integer placement, keeps residual in sidecar; resampled placement later.
-- **Per-tile pixel-size mismatch**: assume uniform, warn otherwise; result pixSize from first tile.
-
-### 2026-07-14 — line-embedded smoke data + solver spring fix
-
-- `temp\stitch_smoke\generateSmokeTiles.m` (new, rerunnable) replaces the ad-hoc noise tiles: ground truth = 3-scale noise (25% unsmoothed pixel noise + fine + coarse) + 22 random-angle blended lines (opacity 0.45) + 4 circles. Lines make stitching errors visible at seams; random angles avoid periodic-pattern ambiguity.
-- Data-design lessons: saturated single lines in thin overlap strips make translation ambiguous ALONG the line (confident-wrong edges, error vector parallel to the line); unsmoothed pixel noise gives the true peak a needle-sharp component no line ridge can beat. With blended lines + pixel noise: 12/12 edges valid, q=1.00, edge error <= 0.01 px.
-- `solveGlobalLeastSquares` default `nominalSpringWeight` 0.01 -> 0.001: the always-on per-tile self-spring (rank guarantee) biased border-clamped tiles (42 px from nominal) by up to 1.6 px; with 0.001 the solve lands at max 0.16 px / mean 0.07 px. Keep this weight tiny — it is rank-only.
-
-### 2026-07-14 — overlap auto-estimation (Phase 1.5, first item)
-
-- `utils.stitch.estimateOverlap.m`: grid pairs from `.gridRC` (nominal-independent), full-tile phase correlation zero-padded to 2H×2W, top-5 peaks each verified by NCC of the implied overlap, per-direction median + MAD. Downsamples tiles > `maxDim` (1024). Robust to any claimed overlap: 5–40%% wrong guesses all converge to the same solution on the smoke set (final positions ≤ 0.04 px).
-- **Full-tile findings (both load-bearing):** (1) NO Hann window for full-tile correlation — with small overlaps the shared content sits at the tile edges where the window zeroes it; unwindowed+padded has a dominant peak (5–10× runners-up), windowed has NO peak at the true shift at all. (2) Sign composition is OPPOSITE to the crop path: for full tiles the raw peak of `Fa.*conj(Fb)` is `P_j - P_i` directly (crop path negates and adds crop-start offsets).
-- `computeOverlapRegion` now rounds crop bboxes (fractional nominal origins from percentage-derived steps crashed the reader; rounding is exact because the composition uses actual crop starts).
-- Controller: `runOverlapEstimation.m` (clamps estimate to spinner limits, rebuilds layout, refreshes GUI), invoked from `measureOverlaps_Callback` + `stitchBtn_Callback` when `BatchOpt.EstimateOverlap` (default true, Grid source only). GUI wiring guarded with `isfield` until the `EstimateOverlap` checkbox is added to the mlapp.
-- Test: `StitchCoreTest.estimateOverlap_recoversTrueOverlapFromWrongGuess` (claims 10%%, truth 22%%, expects ±3%% + full-chain ≤1.5 px). 20/20 + 23/23 pass.
-
-### 2026-07-14 — Folders (Z-stacks) layout source
-
-- New `LayoutSource` = "Folders (Z-stacks)": each selected folder is one Z-stack tile, folders arranged on the same XY grid as the Grid source (rows/cols/tileOrder/overlap all apply). `buildLayoutGrid` extended to detect folder entries → populate `sliceFiles` (natural-sorted images) and per-tile depth in `tileSize(3)`; single-image tiles unchanged. `makeTileReader` already stacks `sliceFiles` along depth.
-- Selection via `mib/external/uigetfile_n_dir.m` (Java multi-dir chooser). GUI stores chosen folders newline-joined in `BatchOpt.InputPath` (uieditfield preserves newlines — verified); `buildLayoutFromBatchOpt` splits them, OR if a single existing folder is given treats its subfolders as tiles (batch-friendly). Grid-panel enable logic now keys on `ismember(LayoutSource,{'Grid','Folders (Z-stacks)'})`.
-- Verified: `temp\stitch_smoke_folders\generateSmokeFolders.m` (2×2 folder tiles, 40 slices each) → measure/solve recovers positions to 0.02 px, canvas preserves depth (Z=40), fuses to a 3D volume. Overlap estimate on folder tiles is loose (thick mean-projection over-smooths) but the restricted measure search still recovers exactly. Test `StitchLayoutTest.buildGrid_folderTiles_carrySliceStack`. 24/24 layout + 21/21 core pass.
-
-### 2026-07-14 — refactor: folder tiles as an orthogonal SubfolderMode modifier
-
-Superseded the separate "Folders (Z-stacks)" LayoutSource (previous entry) with the cleaner design the user proposed: the tile PROVIDER (single image vs folder Z-stack) is orthogonal to the ARRANGEMENT (layout source). Changes:
-- New `utils.stitch.resolveTileEntry(path)` — single place that auto-detects file-vs-folder and returns `[sliceFiles, tileSize, dataClass]`. All three builders (`buildLayoutGrid`, `buildLayoutFilenamePattern`, `buildLayoutPositionFile`) now use it, so folder Z-stack tiles work in EVERY layout source. Removed the triplicated local `readTileSize` and `buildLayoutGrid`'s `listFolderImages`.
-- `buildLayoutPositionFile`: dropped `subfolderMode`/`buildFromSubfolders` (the old "ignore the file, stack subfolders in Z" path). A `filename` column may now name a file or a folder — auto-detected.
-- `LayoutSource` back to `{Grid, Position file, Filename pattern}`. `SubfolderMode` is a general "tiles are folders" modifier: for Grid/Filename pattern it multi-selects folders via `uigetfile_n_dir` (newline-joined in InputPath; single folder → its subfolders); for Position file it is n/a (disabled) since folders are named directly in the .txt. `collectTileEntries` local in `buildLayoutFromBatchOpt` centralises entry collection.
-- Verified: Grid+folders and Position-file-listing-folders both build depth-40 tiles and run the full chain (4/4 valid, canvas preserves Z). 24/24 layout + 21/21 core pass. Smoke: the folder-tiles dataset (Grid + Tiles-are-folders).
-
-### 2026-07-25 — Filename-pattern token rules documented (+ a truncation trap)
-
-User question: does the X/Y/Z order in the names matter? Probed `buildLayoutFilenamePattern` against 9 synthetic naming schemes; behaviour confirmed and written into both the user docs (Input panel note + warning) and the function docblock:
-- **Order is irrelevant, and so are the separators** — each token is found by the LAST occurrence of its letter, so `_Z01-X02-Y03`, `_X02-Y03-Z01` and `Y03X02Z01` parse identically.
-- Upper case only (lowercase → clean "does not contain tokens" error); indices 1-based; the letters may appear BEFORE the tokens (`XYZstack_Z01-X01-Y01` OK) but not after (`..._Y01_XY` → index error).
-- **`Z001-X002-Y003` silently parses as 00/00/00** — `str2double(baseName(pos+1:pos+2))` reads exactly two chars, so >99 tiles per axis all collapse onto one invalid grid cell with NO error (origins go negative, preview piles the tiles up). `Z1` errors out instead. Documented as a limitation for now; a `regexp(baseName, 'Z(\d+)')` last-match parse would fix both ends but changes an established parser — not done without a call from the user.
-
-### 2026-07-25 — project files carry the settings; Load project asks what to restore
-
-*User request:* (1) loading a project should reset the widgets to the file's settings, like DeepMIB's config load; (2) people also want to reuse the same parameters on OTHER files, so the load must ask which is meant.
-
-**Sidecar schema v3** — new optional `project.settings` block next to the existing tiles/edges/solverInfo/outputInfo/zSliceFixes. `saveProject` gains a 9th arg `settings`, `loadProject` an 8th output (empty struct for v1/v2 files, which therefore still load unchanged). Both save call sites (`saveProjectBtn_Callback`, `stitchBtn_Callback`'s auto-save; the inspector's Save delegates to the former) now pass it.
-
-**Flatten/unflatten pair on the controller**, sharing one field list so they cannot drift:
-- `Stitching.projectSettingFields()` (static) — the 20 persisted BatchOpt fields, dialog order. Excludes `showWaitbar`/`mibBatch*`/`id` (batch plumbing, not user settings).
-- `collectProjectSettings` — reduces dropdown `{value,{items}}` and spinner `{value,[lims],'on'}` cells to their `{1}` entry (item lists and limits belong to the controller, not the file) and appends the nested `FeatureOptions` = `automaticOptions`.
-- `applyProjectSettings(settings, skipFields)` — writes back guided by the SHAPE of the CURRENT default: unknown fields, dropdown items this MIB no longer offers, and type mismatches are skipped rather than raising (an old project must load into a newer dialog); numeric values are clamped to the live spinner limits. **jsondecode returns arrays as columns** — `numericFieldsToRows` restores row orientation for the nested detector params (`detectMSERFeatures.RegionAreaRange` would otherwise reach the detector as 2×1). Pure: touches only `BatchOpt`/`automaticOptions`, never the layout, so the caller decides what the new settings mean.
-
-**`loadProjectBtn_Callback`** decodes into LOCALS first, then (when the file has a settings block) asks via `inputQuestDlg` 3-button form: **Restore everything** (default) / **Settings only** / Cancel; pre-v3 files skip the dialog. Settings-only keeps `InputPath`/`OutputPath` (`skipFields`) and rebuilds the layout from the current input — on failure (saved source incompatible with the selected input) it clears layout+preview and asks for a re-select **through the status line**, mirroring the LayoutSource-switch handling rather than a modal error. Both modes reset `canvas` + `zarrExportOptions` and refresh an on-screen preview.
-
-Verified live against a running MIB: 20/20 BatchOpt fields + nested feature options restored into a fresh controller and reflected in the widgets; `RegionAreaRange` back as 1×2; settings-only kept both paths and rebuilt 9 tiles; retired dropdown value / wrong-type blend mode ignored, out-of-range quality clamped to 1. Test `StitchLayoutTest.saveLoadProject_settingsBlockRoundTrip` (incl. the no-settings back-compat path) — 27/27 layout pass. Docs: the *Project files* section of `dataset-stitch.md` documents both choices and the auto-save behind the *Save project JSON* checkbox (RST API entries are auto-generated from the docblocks); new GUI smoke [test 14](smoke_tests.md) covers the round-trip, both load modes, Cancel, the incompatible-input status path, and the no-dialog back-compat case — the sabotage generator writes its project through the util WITHOUT a settings block, so test 12 doubles as the pre-v3 fixture and must be left that way.
-
-### 2026-07-27 — the alignment chip never followed the edges (live-test find, test 12 step 3)
-
-*User:* excluding the sabotaged seam in the inspector left `rmseLabel` in the main window unchanged.
-
-*Cause, structural:* `solverInfo` was a LOCAL in `optimizePositions_Callback`, so the chip could only ever be rendered from inside that one function. `updateWidgets` — the thing the inspector's `SeamsUpdated` event actually triggers on the parent — knew only how to blank the chip when `positions` was empty. So every edge edit that did not go through a full re-solve left the previous verdict on screen. This matters because the chip's worst-pixel-match is a **minimum over the VALID edges**: excluding an edge changes the verdict without moving a single tile. Measured on the sabotage set — all edges valid: red *"Seams disagree (worst 0.09, solver 0.01 px)"*; the same scores and the same positions with the bad edge excluded: **green, worst 1.00**.
-
-*Fix:* `solverInfo` is now a controller property (always a struct, so one `isfield` covers "not solved yet"), and the ~60-line chip block moved out of `optimizePositions_Callback` into a new `refreshQualityChip.m` that `updateWidgets` calls. Nothing in it re-reads pixels or re-solves — it re-derives the worst score and the dz-hint count from the seam scores already on the edges — so it is cheap enough to run on every widget refresh. Three follow-ons fell out: `solverInfo` is now cleared wherever positions are (`buildLayoutFromBatchOpt`, the two layout-drop paths), **restored** by `loadProjectBtn_Callback` (which decoded it and then literally discarded it — `solverInfo; %#ok<VUNUS>`), and **saved** by both save call sites, which had been writing `struct()` in its place, so the sidecar's `solverInfo` block was always empty.
-
-*New chip state:* while the inspector owes a re-solve (`resolvePending`), the chip reads orange *"Seams edited — press Re-solve to update the alignment"* rather than quoting an RMSE that no longer describes the current edge set. Recomputing the seam part while silently keeping the stale residual would just be a different lie.
-
-### 2026-07-26 — inspector Re-fuse removed; Stitch is the single fuse entry point (user request)
-
-The inspector is non-modal, so the parent window is reachable throughout and `refuseBtn_Callback` was a thin wrapper around `stitching.stitchBtn_Callback` — the user was right that it was pure duality. **They were not equivalent though, and the safe one was the hidden one:** `resolvePending` was honoured ONLY by Re-fuse, while `stitchBtn_Callback` re-solves just `if isempty(obj.positions)` — after a deferred/auto-off fix the positions are non-empty but STALE, so pressing *Stitch* silently fused pre-fix positions. Deleting Re-fuse alone would have made that the only behaviour. So the guard moved onto the OPERATION (`stitchBtn_Callback` runs `obj.inspector.resolveBtn_Callback()` up front when an inspector is open with `resolvePending`), then `refuseBtn_Callback.m` + wiring + tooltip were deleted and `addCallbacks` hides a `refuseBtn` still present in the mlapp. **`saveProjectBtn` followed it out the same day** (user call): it was the same delegation, and the "saving is repeated mid-review" argument for keeping it does not hold — the inspector mutates the parent's `edges`/`positions` IN PLACE, so the parent's *Save project* has always carried the current fixes. The user removed both buttons from `StitchingInspectorGUI.mlapp`; wiring, tooltips and the interim hide-guard are gone. Inspector bottom row is now Confirm / Exclude / Re-solve / Close — the window decides what the seams should be, the Stitching window owns fuse and persist. Full reasoning in [`plan_inspector.md`](plan_inspector.md).
-
-### 2026-07-26 — inspector Exclude is now a toggle (user request)
-
-Exclude/re-include was one push button whose second press was invisible — the only feedback was `EXCLUDED` in the table's *Used* column. `excludeBtn` is now specified as an App Designer **State Button**, and the new `StitchingInspector.refreshExcludeButton` pushes the state onto it from the EDGE: pressed + red `[0.92 0.55 0.55]` + text `'Excluded (X)'` while excluded, unpressed + the button's captured original background + `'Exclude (X)'` otherwise. Called from `updateWidgets` (state changes) and `selectSeam` (the button must follow the seam you step to).
-
-Load-bearing detail: the callback **never reads the widget**. The edge stays the single source of truth, so the `X` key, the button and a table reload cannot disagree — verified headlessly that click→callback→refresh round-trips cleanly over repeated clicks. `addCallbacks` dispatches on `isprop(excludeBtn,'Value')` (StateButton has it, Button does not — confirmed), wiring `ValueChangedFcn` or `ButtonPushedFcn` accordingly, so a plain `uibutton` still works (colour + text, no pressed look) until the mlapp is upgraded. Spec in `mlapp_widgets.md`; docs: inspector page + smoke test 12 step 3.
-
-### 2026-07-26 — a loaded project's layout was silently rebuilt from the previous job's widgets (live-test find)
-
-*Repro:* finish test 11 (2×2 affine grid) → Load project of test 12's `sabotage.mibstitch.json` (3-tile 1×3 chain) → Measure overlaps → Optimize → **the preview shows test 11's 2×2 grid again**.
-
-*Cause:* `loadProjectBtn_Callback` restored `layout`/`edges`/`positions` but left `BatchOpt` describing the PREVIOUS job — a pre-v3 file has no settings block to correct it, and `saveProject` records neither `layoutSource` nor `inputPath` at all. `measureOverlaps_Callback` then ran `runOverlapEstimation` (EstimateOverlap defaults ON), which calls `buildLayoutFromBatchOpt` after every successful estimate — rebuilding from `LayoutSource=Grid` + job 11's `InputPath` + Rows/Cols 2/2, i.e. job 11's four tiles.
-
-*Fix, two parts — the flag is the load-bearing one:*
-1. New controller property `layoutFromProject`, set by a "Restore everything" load and cleared by `buildLayoutFromBatchOpt` (so EVERY deliberate rebuild clears it, one place) plus the two failure paths that wipe the layout without reaching it. `runOverlapEstimation` returns early while it is set — a project's nominal origins come from the file and need no overlap guess.
-2. `BatchOpt.InputPath` is re-derived from the restored tiles (`inputPathFromLayout` local: unique `{layout.filename}`, newline-joined — `filename` is the source ENTRY, file or Z-stack folder, in every builder). Otherwise the project auto-save and the Browse start folder keep pointing at the previous dataset. Runs BEFORE `applyProjectSettings`, so a v3 file's saved `InputPath` still wins.
-
-Part 2 alone is not enough, and the repro proves it: rebuilding the three REAL sabotage tiles with the stale 2×2 Rows/Cols gives `gridRC [1 1] [1 2] [2 1]` (an L) instead of the project's `[1 1] [1 2] [1 3]`. Verified headlessly by replaying the sequence; layout/inspector suites unchanged (27/27, 14/14).
-
-### 2026-07-26 — feature preview broken by Downsampling factor > 1 (smoke test 10, live-test find)
-
-`previewFeatureMatch` resized `imageA`/`imageB` **in place** for detection, then built the composite from those downsampled images while the fitted `tform` was in FULL-resolution units (locations are scaled back by `scaleBack` before `estgeotform2d`). At factor 2 the tiles were therefore placed at twice the correct offset in downsampled pixels, and the overlaid keypoints mixed frames again (`matchedA.Location` downsampled vs `invTform` full-res). Fix: detection runs on separate `detectA`/`detectB` copies, `imageA`/`imageB` stay full-resolution for the composite, and both inlier sets are scaled back before the overlay. Title now appends "detected at 1/N scale" — otherwise changing the factor produces no visible feedback at all, which is what made the bug read as "the preview is wrong" rather than "the preview ignored my setting". Measured on the feature set: factor 1 → 72/73 inliers, factor 2 → 3/3, both `[dy -26, dx -186]`, composite 326×486 and max keypoint tie-line 0.00 px in both — before the fix, factor 2 gave a 176×336 composite and 93.9 px tie-lines. `utils.stitch.featureShift` has the same resize-in-place but only returns a shift, so it was never affected.
-
-### 2026-07-26 — smoke set 7: the jitter moved into the stage coordinates
-
-Per the user: *stage coordinates are never perfect — backlash and other mechanical issues*. `07_stitch_smoke_bioformats` had it the other way round (clean metadata, jittered cut). Now the tiles are cut on a **perfect** grid and the OME `PlanePositionX/Y` written into each file is that grid **plus** a per-tile, per-axis error of up to ±5 px — **continuous, not whole pixels** (a stage does not snap to the camera raster; `stageCoordsToOrigins` keeps X/Y fractional, so the sub-pixel part survives into `nomOrigin`). Same error magnitude as before, but now the fixture tells the intended story: stitching straight from the metadata is *good but not perfect*, and Optimize is what makes it exact. `trueOrigins.mat` gained `stageJitterPx` (signed, px) next to `trueOrigins` (now the perfect grid, so a successful solve reproduces the source image exactly — the old border clamping is gone with the jittered cut). Measured headlessly: metadata-only origin error 4.04 px → 4/4 valid edges → solved 0.019 px (RMSE 0.004). Docs: generator docblock, `07_.../README.md`, smoke_tests.md table row + new *Test 7* section + expected-value row (was "≈ 0.01 px").
-
-### 2026-07-26 — Min blend mode (minimum-intensity projection)
-
-`BlendMode` gains **Min** next to Max: `{'Feather','Average','Max','Min','Overwrite'}`. `fuseSliceComposite`'s `case 'Max'` became `case {'Max','Min'}` (`maxInitialised` → `extremaInitialised`; `max`/`min` chosen inside), so all three fusers + `StitchSliceProvider` and both the fast and the warped paths inherit it. **The fresh-pixel mask is what makes Min correct** — without it a zero background would win every singly-covered pixel; the existing Max path already needed it for non-zero backgrounds, Min just makes the failure mode obvious. No mlapp edit needed: `updateWidgets` sets `BlendMode.Items` from `BatchOpt`. Test `fuseInMemory_maxAndMinPickExtremeTileInOverlap` (two flat tiles overlapping 20 px; Max run with background 250 and Min with background 5 — each the value that would break its mode if the mask were dropped) plus `Min` added to `fuseInMemory_allBlendModesReconstruct`; StitchCoreTest 39/39. Docs: blend-mode bullet list in `dataset-stitch.md` + `mlapp_widgets.md` item list.
-
-### 2026-07-25/26 — smoke-test folders numbered by test (generators AND output)
-
-Every smoke dataset now carries its zero-padded [`smoke_tests.md`](smoke_tests.md) test number as a folder prefix, in BOTH places, under the SAME name:
-
-- generator source — `development\stitching\NN_<dataset>\` (was `development\stitching\<dataset>\`);
-- generated data — `<repoRoot>\temp\stitching_test\NN_<dataset>\` (was `<repoRoot>\temp\<dataset>\`).
-
-So both listings sort in test order and line up name-for-name, and a test number is enough to find either. Datasets shared by several tests carry the LOWEST test number using them.
-
-| Folder (both trees) | Tests | Note |
-|---|---|---|
-| `01_stitch_smoke` | 1, 2, 8, 9, 14 | baseline 2D grid |
-| `03_stitch_smoke_3d` | 3 | position file, 3 Z-layers |
-| `04_stitch_smoke_folders` | 4 | folder Z-stack tiles |
-| `05_stitch_smoke_pattern_folders` | 5 | filename pattern + folders |
-| `06_stitch_smoke_feature` | 6, 10, 14 | feature-based vs phase corr. |
-| `07_stitch_smoke_bioformats` | 7 | OME stage coordinates |
-| `11_stitch_smoke_affine` | 11 | translation vs affine |
-| `12_stitch_smoke_sabotage` | 12 | seam inspector; also the pre-v3 project fixture |
-| `13_stitch_smoke_affine3d` | 13 | 3D affine |
-
-Numbers 2, 8, 9, 10 and 14 have no folder of their own — they re-use dataset 1 or 6.
-
-The generators resolve `repoRoot` by walking four levels up from `mfilename('fullpath')`, which the rename does not change, so no path logic needed touching — only the `% Generator lives in …` comments and every doc reference. Old `temp\stitch_smoke*\` trees are stale: the saved `.mibstitch.json` projects inside them (notably test 12's `sabotage.mibstitch.json`) hold the OLD absolute tile paths, so re-run the generators rather than moving folders by hand.
-
-### 2026-07-27 — "rotation invariance" checkbox stated the opposite of what it did
-
-*User question:* do `AllowRotation` and the settings dialog's rotation checkbox contradict each other?
-
-*They do not — they act at different stages* and are both needed: `rotationInvariance` reaches `extractFeatures` as `Upright` and decides whether a rotated patch can be **matched** at all (`featureShift.m:130`, `previewFeatureMatch.m:98`); `AllowRotation` constrains the **fitted model** (`featureShift.m:165`, `solveGlobalAffine.m:292`). Matching happens first, so an upright descriptor silently vetoes a rotating solve.
-
-*The real defect was the label.* `rotationInvariance` is named after MATLAB's doc heading for the `Upright` name-value pair but stores `Upright` itself, so it carries the OPPOSITE sense to its name: `true` = orientation not estimated = NOT rotation invariant. MIB2 documents this correctly on the field (`mibAlignmentController.m:166`) and confirms it by logging `rotation = 1 - rotationInvariance`; MIB3 then added a parenthetical to the prompt — `'Rotation invariance (descriptors orientation-agnostic)'` — that asserts the inverse. Measured in the live session: SURF across a 30° rotation gives **0 matches with `Upright=true`, 80 with `Upright=false`**.
-
-*Consequence, and why the smoke tests never caught it:* the defaults are individually right and mutually consistent (`AllowRotation=false` + `rotationInvariance=true` = "no rotation anywhere"), so nothing failed. The broken path is the one a user reaches deliberately — tick *Allow rotation* for genuinely rotated tiles, believe the label, leave the box ticked, and every rotated seam dies at "too few inliers" with no hint that a second setting vetoed it.
-
-*Fix — label, not field.* Inverting or renaming the field would ripple through MIB2-inherited code, Alignment's `1 - rotationInvariance` log, session settings and the sidecar's `FeatureOptions` block, all for a cosmetic gain; the value is correct everywhere it is consumed. `detectorSettingsDlg.m` prompt → `'Upright descriptors: assume no rotation\n(uncheck to match rotated images)'`, plus a `.. warning::` docblock recording the inverted name and why it is kept. The prompt gained a line, so the seven non-ORB `dlgOpt.WindowHeight` values are +25. Shared with Alignment, which carried the same inverted wording and is fixed by the same edit.
-
-*Superseded the same day by the collapse below* — the first fix added a `checkRotationConsistency` guard that warned about the bad combination; the user then asked why the combination is offered at all. It no longer is, and the guard is deleted.
-
-### 2026-07-27 — the two rotation settings collapsed into one checkbox (user request)
-
-*User:* is it logical to have both, or is one checkbox in the main window, propagated to the feature dialog, enough?
-
-*Yes — for Stitching, and it costs nothing.* The four combinations are not four useful configurations: upright+no-rotation is the stage-tiled default, invariant+rotation is the rotated case, upright+rotation is the trap above, and invariant+no-rotation pays for rotation-invariant matching and then discards the rotation. So the user decision is a single one — *are the tiles rotated?* — and `AllowRotation` already asks it.
-
-*Two facts checked before committing to this:* (1) Stitching's `automaticOptions` is private (`defaultFeatureOptions()`, never touching `mibModel.sessionSettings`), while Alignment's IS session-persisted (`Alignment.m:169-171,309`) — so nothing leaks between the tools; (2) Alignment has **no** `AllowRotation` equivalent (its rotation control is `TransformationType`), so it genuinely needs the flag as an independent setting and **keeps its row**. The collapse is Stitching-only.
-
-*Implementation — derive, don't sync:*
-- `Stitching.buildFeatureOptions` sets `featureOptions.rotationInvariance = ~obj.BatchOpt.AllowRotation`. That is the single funnel every consumer (measure, stitch, `previewFeatureMatch`) already goes through, so there is no state to keep in step, and a project file carrying a stale `FeatureOptions.rotationInvariance` cannot resurrect the bad combination. The stored field stays in the struct only to keep the shape identical to `Alignment.defaultAutomaticOptions`.
-- `detectorSettingsDlg` gains `dlgOptions.showUpright` (default **true**, so Alignment is untouched); Stitching passes `false`. Row hidden → height −45, and `automaticOptions.rotationInvariance` deliberately left unwritten.
-- **The load-bearing bit of that edit:** the per-detector answers were read at hard-coded `answer{3..6}` with the upright row assumed present. They now index off `firstParam = numel(prompts)+1`, computed where the leading rows are built, so adding or removing a leading row cannot desync build from read-back.
-- `checkRotationConsistency.m` + both call sites deleted; `AllowRotation` tooltip now states it switches descriptors too.
-
-*Verification:* a scratch harness (timer auto-accepts the modal dialog) round-tripped all **8 detectors × showUpright {true,false} = 16 cases** with every numeric value distinct — 0 failures, and the hidden-row cases leave `rotationInvariance` untouched. Behaviour of the coupling measured through the real `utils.stitch.featureShift` on a synthetic rotated pair (SURF inliers):
-
-| rotation | 5° | 10° | 15° | 20° | 25° | 45° |
-|---|---:|---:|---:|---:|---:|---:|
-| upright | 470 | 294 | 62 | 9 | **0** | **0** |
-| rotation-invariant | 350 | 305 | 267 | 258 | 249 | 200 |
-
-So upright absorbs a few degrees of accidental tilt (no regression for stage data with the box unticked) but dies past ~20°, while rotation-invariant costs only inliers, not quality, at small angles — which is why coupling is free. StitchCoreTest 39/39, StitchLayoutTest 27/27, docs build clean.
-
-**Not yet click-tested in the GUI** — MIB was running, so MATLAB had `controllers.Stitching` locked and could not reload the edited classdef; restart MIB before the next smoke run. (Incidental finding: `@folder` method files need no signature declaration in the classdef — `configureFeaturesBtn_Callback` resolves without one.)
+- **Slice-exceeds-RAM mosaics**: `fuseStreaming` (chunk-wise, manual block-downsample pyramid) is the
+  fallback when even one output slice doesn't fit in RAM.
+- **Low-texture overlaps**: quality threshold + springs; fall back to nominal offset on flat peaks.
+- **Multi-channel/time**: registers on one channel, applies to all C/T; shared layout across T.
+- **Per-tile pixel-size mismatch**: assumed uniform (from the first tile); not warned otherwise.

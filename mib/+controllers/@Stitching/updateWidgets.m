@@ -6,7 +6,11 @@ function updateWidgets(obj)
 %
 %      obj.updateWidgets()
 %
+% No-op without a view (batch protocols and headless runs hold the same state
+% in ``BatchOpt`` — there is simply nothing to render it into).
+%
 
+if isempty(obj.view); return; end
 handles = obj.view.handles;
 
 % ---- Input group ----

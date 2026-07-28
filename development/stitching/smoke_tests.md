@@ -42,7 +42,7 @@ line/circle at a tile seam is the at-a-glance sign of a bad stitch.
 
 ## Tests
 
-Open the tool from **Ribbon → Dataset → Stitch**. Unless noted, finish each with
+Open the tool from **Ribbon → Dataset → Stitching**. Unless noted, finish each with
 *Measure overlaps → Optimize positions → Stitch* and check the mosaic has continuous
 lines/circles across every seam and the status label reports a low RMSE.
 
@@ -59,11 +59,11 @@ FILES, not a folder. Pasting the folder path into the Input path field still wor
 | 5 | `05_stitch_smoke_pattern_folders` (4 folders / parent) | Filename pattern | tick **Tiles are folders**, Overlap X/Y ≈ 22 (or Estimate) | Filename-pattern `_Z##-X##-Y##` + folder tiles + overlap. |
 | 6 | `06_stitch_smoke_feature\tiles` | Grid | Rows 3, Cols 3, Overlap 25, **untick Estimate** | **Method comparison** — run twice (see below). |
 | 7 | `07_stitch_smoke_bioformats\tile_01..04.ome.tiff` | Bio-Formats metadata | multi-select the 4 files | Stage coordinates read from OME metadata — jittered, so Optimize is what makes it exact (see below). |
-| 8 | any of 1/6 | Grid | tick **Edit layout (drag tiles)** on the preview | Phase 3 drag placement: drag a tile, re-Measure/Optimize. |
+| 8 | any of 1/6 | Grid | tick **Edit layout** on the preview | Phase 3 drag placement: drag a tile, re-Measure/Optimize. |
 | 9 | any of 1/6 | Grid | Output mode = **OME-Zarr (BigData)**, pick a path | Streaming fuse → reopens as a BigData dataset. |
-| 10 | `06_stitch_smoke_feature\tiles` | Grid | Registration = Feature-based → **Settings…** | Feature preview: changing a detector param pops the matched-features figure. |
+| 10 | `06_stitch_smoke_feature\tiles` | Grid | Registration = Feature-based → **Settings** (gear button) | Feature preview: changing a detector param pops the matched-features figure. |
 | 11 | `11_stitch_smoke_affine\tiles` | Grid | Rows 2, Cols 2, Overlap 25, **untick Estimate** | **Transform comparison** — run twice (see below). |
-| 12 | `12_stitch_smoke_sabotage\sabotage.mibstitch.json` | — (Load project) | **Inspect & fix…** after loading | **Seam inspector** — the residual-invisible corrupted edge (see below). |
+| 12 | `12_stitch_smoke_sabotage\sabotage.mibstitch.json` | — (Load project) | **Inspect and fix...** after loading | **Seam inspector** — the residual-invisible corrupted edge (see below). |
 | 13 | `13_stitch_smoke_affine3d\positions.txt` | Position file | Transform = Affine, tick **Allow rotation** | **3D affine** — in-plane affine on Z-stack tiles across 2 layers (see below). |
 | 14 | `01_stitch_smoke\tiles` + `06_stitch_smoke_feature\tiles` | Grid | **Save project**, then **Load project** twice | **Project save/load** — settings round-trip + the load-mode question (see below). Needs no new data. |
 
@@ -94,7 +94,7 @@ baked into the metadata) for headless checks.
 
 ### Test 10 — feature-settings preview
 
-With the feature dataset loaded and Registration = Feature-based, press **Settings…**, change a
+With the feature dataset loaded and Registration = Feature-based, press **Settings** (gear button), change a
 parameter (e.g. lower the SURF metric threshold), accept. A *MIB: stitch feature preview* figure
 opens showing keypoint matches on the first overlapping pair — left = with outliers, right = inliers
 only, titled with the inlier ratio and recovered `[dy dx]`. Mirrors the Alignment feature preview.
@@ -145,7 +145,7 @@ correlation/RANSAC resist deterministic image-level sabotage) and saves everythi
    **red "Seams disagree (worst pixel match ≈ 0.1)"** instead of a lying green. The same
    check catches a wrong layout orientation (e.g. the horizontal chain laid out as
    vertical: RMSE 0.09 px, worst seam ≈ 0.07 → red chip).
-2. **Inspect & fix…** → the 2-3 seam ranks FIRST with seam score ≈ 0.1 (vs 1.0 for 1-2);
+2. **Inspect and fix...** → the 2-3 seam ranks FIRST with seam score ≈ 0.1 (vs 1.0 for 1-2);
    the pair view shows the COMPLETE pair at the solved offset (title: "Cyan: tile 2;
    Magenta: tile 3") — in the falsecolor overlay tile 2 is cyan, tile 3 magenta, and
    the ~24 px break shows as cyan/magenta ghosting in the overlap instead of white
@@ -219,12 +219,12 @@ needed — this reuses datasets 1 and 6.
     - Then **Restore everything**: every widget snaps back to the saved values (Grid, 3×3,
       Estimate overlap on, Translation, Feather, In memory), the status line reports the tiles /
       edges / solved state, the preview redraws at the **solved** positions, and
-      *Inspect & fix…* is enabled **without re-measuring**.
+      *Inspect and fix...* is enabled **without re-measuring**.
 4. Now the "same recipe, other files" case: browse a DIFFERENT set of tiles
    (`06_stitch_smoke_feature\tiles`, 9 files), then **Load project** → the same file →
    **Settings only**. The parameters change but the <span>Input path</span> must still list the
    NEW tiles; the status line reads *"Settings loaded from … — layout rebuilt: 9 tiles,
-   re-measure to continue"*, edges/positions are cleared and *Inspect & fix…* is disabled.
+   re-measure to continue"*, edges/positions are cleared and *Inspect and fix...* is disabled.
    *Measure overlaps → Optimize → Stitch* then runs on the new tiles with the old parameters.
 5. Settings-only with an INCOMPATIBLE input: with a folder of tiles selected, load a project
    saved under *Position file*. The layout must be dropped and the status line must ask for a

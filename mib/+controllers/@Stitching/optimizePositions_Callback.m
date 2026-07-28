@@ -18,12 +18,7 @@ if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.Stitching.optimizePositions_Callback: triggered\n');
 end
 if isempty(obj.edges)
-    warnOptions.MsgBoxOnly  = true;
-    warnOptions.Icon        = 'puffin_warning';
-    warnOptions.HeaderLines = 1;
-    utils.dlgs.inputUniversalDlg(obj.view.gui, ...
-        'No edge measurements available. Please run Measure first.', {}, {}, ...
-        'No measurements', warnOptions);
+    obj.warnUser('No edge measurements available. Please run Measure first.', 'No measurements');
     return;
 end
 
@@ -43,7 +38,7 @@ try
             obj.layout, obj.edges, solverOptions);
     end
 catch solverError
-    utils.dlgs.showErrorDialog(obj.view.gui, solverError.message, 'Solver failed');
+    obj.reportError(solverError, 'Solver failed');
     return;
 end
 
@@ -56,7 +51,7 @@ try
     end
     obj.canvas = utils.stitch.planCanvas(obj.layout, obj.positions, canvasOptions);
 catch canvasError
-    utils.dlgs.showErrorDialog(obj.view.gui, canvasError.message, 'Canvas planning failed');
+    obj.reportError(canvasError, 'Canvas planning failed');
     return;
 end
 
@@ -67,9 +62,10 @@ end
 % garbage — only re-reading the actual overlap pixels catches that. Scores are
 % stored on the edges (persisted with the project, reused by the inspector and
 % by refreshQualityChip, which turns them into the rating without re-reading).
+parentFigure = obj.guiFigure();
 try
     obj.edges = utils.stitch.scoreSeams(obj.layout, obj.edges, obj.positions, ...
-        struct('showWaitbar', true, 'parentFigure', obj.view.gui));
+        struct('showWaitbar', ~isempty(parentFigure), 'parentFigure', parentFigure));
 catch
     % pixel verification is advisory — never block the solve on it
 end

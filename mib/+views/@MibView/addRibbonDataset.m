@@ -52,9 +52,9 @@ widgetHandles.alignment = Button('Alignment',  Icon(fullfile(iconPath, 'alignmen
 widgetHandles.alignment.Description = 'Start the alignment tool';
 column.add(widgetHandles.alignment);
 
-% --------- Stitch ---------
+% --------- Stitching ---------
 column = section.addColumn();
-widgetHandles.stitch = Button('Stitch', Icon(fullfile(iconPath, 'stitch_24px.png')));
+widgetHandles.stitch = Button('Stitching', Icon(fullfile(iconPath, 'stitch_24px.png')));
 widgetHandles.stitch.Description = 'Start the image stitching tool (assemble mosaic from overlapping tiles)';
 column.add(widgetHandles.stitch);
 

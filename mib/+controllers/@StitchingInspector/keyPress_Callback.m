@@ -37,7 +37,7 @@ switch evnt.Key
             obj.flickerState = 3 - obj.flickerState;
             obj.pairImageHandles(1).Visible = matlab.lang.OnOffSwitchState(obj.flickerState == 1);
             obj.pairImageHandles(2).Visible = matlab.lang.OnOffSwitchState(obj.flickerState == 2);
-            if isfield(obj.view.handles, 'pairAxes') && ~isempty(obj.currentEdgeIdx)
+            if obj.hasWidget('pairAxes') && ~isempty(obj.currentEdgeIdx)
                 % Replace only the first title line — line 2 (the slice pair
                 % readout on 3D pairs) must survive the flicker toggle.
                 titleHandle = obj.view.handles.pairAxes.Title;

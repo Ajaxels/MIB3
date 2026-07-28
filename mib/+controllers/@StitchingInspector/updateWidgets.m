@@ -15,7 +15,7 @@ function updateWidgets(obj)
 if ~obj.dataValid()
     % A layout rebuild or edge reset in the Stitching window invalidated this
     % review session — nothing sensible left to show.
-    if isfield(obj.view.handles, 'statusLabel')
+    if obj.hasWidget('statusLabel')
         obj.view.handles.statusLabel.Text = 'Edges were reset in the Stitching window — close and reopen the inspector.';
     end
     return;
@@ -25,7 +25,7 @@ edges = obj.stitching.edges;
 positions = obj.stitching.positions;
 
 % ---- seam table -----------------------------------------------------------
-if isfield(obj.view.handles, 'seamTable')
+if obj.hasWidget('seamTable')
     seamTable = obj.view.handles.seamTable;
     visibleRanking = obj.visibleRanking();
     numEdges = numel(visibleRanking);
@@ -72,7 +72,7 @@ if isfield(obj.view.handles, 'seamTable')
 end
 
 % ---- status line ----------------------------------------------------------
-if isfield(obj.view.handles, 'statusLabel')
+if obj.hasWidget('statusLabel')
     numReviewed = nnz(ismember({edges.source}, {'confirmed', 'user'}));
     numExcluded = nnz(~[edges.valid]);
     scores = [edges(logical([edges.valid])).seamScore];

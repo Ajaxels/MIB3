@@ -1,7 +1,7 @@
 classdef Zarr2VirtualSetupLoader < io.loaders.BaseImageLoader
 % ZARR2VIRTUALSETUPLOADER - Setup loader for OME-Zarr v2 datasets — handles all dataset modes.
 %
-% Zarr v2 has no native (zarrMex/Zarr3Matlab) engine, so this loader is always
+% Zarr v2 has no native (zarrMex/zarr-matlab) engine, so this loader is always
 % python-backed: metadata is parsed directly from the v2 JSON sidecar files
 % (``.zattrs``/``.zgroup``/``.zarray``, pure MATLAB ``jsondecode`` — no python
 % needed just to discover shape/dtype/pyramid structure), while pixel data is

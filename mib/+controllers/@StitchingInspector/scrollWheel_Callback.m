@@ -27,7 +27,7 @@ if obj.mibModel.preferences.System.DeveloperMode
 end
 if obj.shiftDown
     % ---- Shift+wheel: resize the correlation ROI box -----------------------
-    if isempty(obj.view) || ~isfield(obj.view.handles, 'roiSizeSpinner'); return; end
+    if ~obj.hasWidget('roiSizeSpinner'); return; end
 
     spinner = obj.view.handles.roiSizeSpinner;
     step = 16;
@@ -43,7 +43,7 @@ if obj.shiftDown
 end
 
 % ---- plain wheel: zoom the pair view about the cursor -----------------------
-if isempty(obj.view) || ~isfield(obj.view.handles, 'pairAxes'); return; end
+if ~obj.hasWidget('pairAxes'); return; end
 pairAxes = obj.view.handles.pairAxes;
 imageHandles = findobj(pairAxes, 'Type', 'image');
 if isempty(imageHandles); return; end

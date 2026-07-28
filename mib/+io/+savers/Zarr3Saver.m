@@ -2,7 +2,7 @@ classdef Zarr3Saver < io.savers.BaseSaver
 % ZARR3SAVER - write an image as an OME-Zarr v3 multi-resolution (multiscales) pyramid.
 %
 % Produces a chunked OME-Zarr v3 group with one downsampled level per
-% pyramid step, written through the native Zarr3Matlab engine
+% pyramid step, written through the native zarr-matlab engine
 % (``ZarrArray``/``ZarrGroup``). The result is readable by MIB's
 % ``io.loaders.Zarr3VirtualSetupLoader`` (and thus openable as a **BigData**
 % dataset) and by other OME-Zarr tools.
@@ -12,7 +12,7 @@ classdef Zarr3Saver < io.savers.BaseSaver
 % BigData segmentation workflow. (A non-zarr Virtual/BioFormats source must
 % first be gathered to memory or streamed level-by-level — future.)
 %
-% **Axis order.** Arrays are created with the Zarr3Matlab transpose codec, so
+% **Axis order.** Arrays are created with the zarr-matlab transpose codec, so
 % they store/return in native MATLAB ``[y, x, z, c, t]`` order. The
 % ``multiscales.axes`` are declared to match (``y, x, z`` plus ``c`` and/or
 % ``t`` only when those dimensions are > 1). ``Zarr3VirtualSetupLoader`` reads

@@ -39,8 +39,8 @@ Needs the `mib` folder on the path (calls `utils.stitch.*` to measure and save a
 run('development\stitching\12_stitch_smoke_sabotage\generateSmokeSabotageTiles.m')
 ```
 
-Stitch ribbon → **Load project** → `temp\stitching_test\12_stitch_smoke_sabotage\sabotage.mibstitch.json`
-→ Optimize positions (chip comes out **red** — seams disagree) → **Inspect & fix…**
+Stitching ribbon → **Load project** → `temp\stitching_test\12_stitch_smoke_sabotage\sabotage.mibstitch.json`
+→ Optimize positions (chip comes out **red** — seams disagree) → **Inspect and fix...**
 The 2-3 seam ranks first; fix it via Exclude+Re-solve (≤ 6 px) or Shift+click (≤ 1 px).
 
 See `smoke_tests.md` test **12** and `plan_inspector.md`.

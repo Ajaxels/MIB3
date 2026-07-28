@@ -28,6 +28,10 @@ function previewLayoutBtn_Callback(obj)
 if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.Stitching.previewLayoutBtn_Callback: triggered\n');
 end
+% Drawing is meaningless without a view; the workflow methods call this
+% unconditionally after a solve, so the check belongs here rather than at
+% every call site.
+if isempty(obj.view); return; end
 if isempty(obj.layout)
     warnOptions.MsgBoxOnly  = true;
     warnOptions.Icon        = 'puffin_warning';

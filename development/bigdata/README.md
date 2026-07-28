@@ -3,22 +3,16 @@
 All documentation for the MIB3 **BigData** dataset type (disk-backed pyramidal OME-Zarr v3
 image + segmentation model) lives here.
 
-## Read these (authoritative, consolidated 2026-06-25)
+## Read these
 
 | File | Purpose |
 |------|---------|
 | [`bigdata_logic.md`](bigdata_logic.md) | **How it works.** Class architecture, image/model pyramids, the level map (`matLevel`) + `.levelmap` sidecar, getData/setData & coordinate conventions, WSI-safe editing, Save modes, invariants/gotchas, file map. Read this first whenever you touch BigData. |
-| [`bigdata_implementation_plan.md`](bigdata_implementation_plan.md) | **Status & remaining work.** Streaming export (Phases 1–4), WSI direct readers (A–D done, E deferred), pending live-GUI validation checklist, deferred backlog, MCP verification helper. |
-| [`user_checklist.md`](user_checklist.md) | **Live-GUI test checklist** for the export + ImageConverter features: units fix, OME-TIFF streaming, BigData mask export, native zarr3 convert, BioFormats→MATLAB warning, voxel round-trip. Automated baseline commands + click-through steps with pass criteria. |
-| [`alignment_plan.md`](alignment_plan.md) | **Plan (not started): alignment for BigData.** Two-pass streaming design — shifts/tforms at a user-selectable pyramid level, aligned image + packed-63 labels written to a new zarr3 store, buffer switch-over. Phased (drift → feature-based v2 → landmarks) with per-phase model recommendations. |
+| [`bigdata_implementation_plan.md`](bigdata_implementation_plan.md) | **Status & remaining work.** What's done, the still-open streaming-export items, WSI Phase E (deferred), the deferred backlog (T>1, `removeMaterial` renumbering, remote zarr, …), and audit findings not yet acted on. **Check here for open work before starting anything BigData-related.** |
+| [`user_checklist.md`](user_checklist.md) | **Live-GUI test checklist** for the export + ImageConverter features — several rows are still unchecked (§D5–D7, §E, §F). |
+| [`alignment_plan.md`](alignment_plan.md) | **Alignment for BigData** — implementation done; gotchas log + the still-open live-GUI acceptance checklists. |
 
-## Superseded detail log (history only)
-
-Kept for the dated, blow-by-blow fix history; everything actionable is folded into the two docs above.
-
-- `plan_bigdata.md` — master log: architecture Phases 0–3, WSI-safe convention, export Phases 1–4, TODOs
-- `bigdata_levelmap_spec.md` — level-map manager spec + perf/naming/crash-safety follow-ups
-- `bigdata_levelmap_plan.md` — task-by-task level-map implementation plan
-- `bigdata_brush_performance.md` — original brush-perf fix (superseded by the level map)
-- `plan_wsi_readers.md` — direct WSI reading plan (BioFormats/OpenSlide), Phases A–E
-- `wsi_livetest_checklist.md` — original GUI live-test checklist (now §4 of the implementation plan)
+Historical dated fix-logs (`plan_bigdata.md`, `bigdata_levelmap_spec.md`/`_plan.md`,
+`bigdata_brush_performance.md`, `plan_wsi_readers.md`, `wsi_livetest_checklist.md`) were removed
+2026-07-27 — everything actionable in them was already folded into the two docs above; recover
+from git history if the blow-by-blow is ever needed.

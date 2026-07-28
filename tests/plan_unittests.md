@@ -90,7 +90,7 @@ One `matlab.unittest`-based system that:
     mean ms), `addTiming`/`addCheck` bookkeeping. **Port these checks; do not invent new ones.**
   - `mib\+controllers\@MibRibbon\homeExamples_Callback.m` — the exact download/reshape/build recipe for
     the real datasets (see §7 for the extracted specs).
-- Existing matlab.unittest idiom to mirror: `mib\external\Zarr3Matlab\tests\ZarrArrayTest.m`
+- Existing matlab.unittest idiom to mirror: `mib\external\zarr-matlab\tests\ZarrArrayTest.m`
   (`matlab.unittest.TestCase`, `TestClassSetup` path handling, `TestMethodSetup/Teardown` temp dirs,
   `verifyEqual` / `verifyTrue` / `verifyError`).
 - Path setup at app start: see `mib\mib3.m` (~lines 78–101) — it adds `mib\` and several
@@ -711,6 +711,8 @@ small arrays only, <1 MB) and `verifyEqual` against it. Update `tests\CLAUDE.md`
 | `tests/io/SaveLoadLabelsTest.m` | `MibModel.saveImage('labels')`, `MibModel.loadModel` — material names + pixel values preserved |
 | `tests/io/SaveLoadMaskTest.m` | `MibModel.saveImage('mask')`, `MibModel.loadMask` — pixel round-trip, checksum preserved |
 | `tests/io/MibFormatRoundTripTest.m` | `MibModel.exportDatasetToMib`, `MibModel.importDatasetFromMib` — labels export/import, mask export between containers |
+| `tests/controllers/StitchingControllerTest.m` | `controllers.Stitching` — BatchOpt defaults, `projectSettingFields`/`collectProjectSettings`/`applyProjectSettings`, `buildFeatureOptions`, `buildLayoutFromBatchOpt`, `measureOverlaps_Callback`, `optimizePositions_Callback`, `refreshQualityChip`, `returnBatchOpt` |
+| `tests/controllers/StitchingInspectorControllerTest.m` | `controllers.StitchingInspector` — headless construction/ranking, `applyUserFix` (+deferred), `undoFix_Callback`, `excludeSeam_Callback`, `confirmSeam_Callback`, `advanceToNextUnreviewed`, `jumpToTile`, `resolveBtn_Callback`, `visibleRanking`, `applyZBoundaryFix` |
 
 #### Untested methods — prioritised backlog
 

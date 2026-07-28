@@ -18,23 +18,64 @@ what makes `utils.updateBatchOptFromGUI_Shared` work — it writes
 ## Conventions
 
 - All **callbacks** are wired in `addCallbacks.m`; leave every `*Fcn` property empty in App Designer.
-- Layout: two-column form on the left, preview `uiaxes` on the right, action buttons across the bottom.
+- Tooltips are set by `addCallbacks` too (BatchOpt widgets reuse `BatchOpt.mibBatchTooltip`) — the mlapp stays layout-only.
+- Dropdown `Items` in the mlapp are placeholders: `updateWidgets` overwrites `.Items`/`.Value` from
+  `BatchOpt` for `LayoutSource`, `TileOrder`, `TransformType`, `RegistrationMethod`,
+  `FeatureDetectorType`, `OutputMode` and `BlendMode`. The lists only need to be non-empty and to
+  contain the mlapp's own `Value`.
+
+---
+
+## Container hierarchy (finalised 2026-07-27)
+
+```
+Figure  (623 × 750, Name 'Stitching')
+└── mainGridLayout          ColumnWidth {22, 70, 90, '1x', 130, 100, 80}
+                            RowHeight   {22, 70, '1x', '1x', 22}
+    ├── row 1–2, col 1–2  Image                 puffin_stitching_96px.png (ScaleMethod 'none')
+    ├── row 1             LayoutsourceLabel + LayoutSource      ← 1. header
+    ├── row 2             infoLabel
+    ├── row 3, col 1–7    TabGroup                              ← 2. settings tabs
+    │   ├── inputTab           'Input tiles'   → inputGridLayout        {22, 60, '1x'} × {22, '1x'}
+    │   ├── tileSettingsTab    'Tile settings' → tileSettingsGridLayout
+    │   └── registrationTab    'Registration'  → registrationGridLayout
+    ├── row 4, col 1–7    OutputPanel  'Output', BorderType 'none'      ← 3. output + preview
+    │                     └── outputGridLayout  {110, 110, 80, 22, '1x', '1x'} × {22,22,22,22,'1x',22,22}
+    └── row 5             helpButton (col 1) | inspectSeamsBtn (col 5) | ← 4. action strip
+                          stitchBtn (col 6) | closeButton (col 7)
+```
+
+**The container handles are not referenced by any controller code.** `@Stitching` addresses every
+widget by its own handle (`obj.view.handles.<name>`) and `core.ChildView.getChildren` recurses
+through `uigridlayout` / `uipanel` / `uitabgroup` / `uitab`, so the flat `handles` struct is
+identical no matter which container a widget sits in. Re-parenting widgets — as the
+panels → tab-group restructure did — is therefore a **pure mlapp change**: the earlier
+`inputPanel` / `TileSettingsPanel` / `registrationPanel` handles were spec-only names that no `.m`
+file ever read.
 
 ---
 
 ## Widget Table
 
-### Input group (`uipanel` Name: `inputPanel`, Title: "Input")
+### 1. Header (direct children of `mainGridLayout`)
 
 | Handle | Class | Items / Limits / Default | Callback method |
 |------|-------|--------------------------|-----------------|
-| `LayoutSource` | `uidropdown` | Items: `{'Grid','Position file','Filename pattern','Bio-Formats metadata'}` Default: `'Grid'` | `updateBatchOptFromGUI` |
-| `InputPath` | `uilistbox` (preferred) or `uieditfield` (text) | Default: empty. As a **listbox** it displays one selected path per row (best for multi-folder input) and is populated by Browse — the controller detects the type (`isprop(...,'Items')`) and keeps `BatchOpt.InputPath` as the newline-joined string either way. A listbox is display-only (no `ValueChangedFcn`); an editfield keeps the typed-path sync. | `updateBatchOptFromGUI` (editfield only) |
-| `selectInputBtn` | `uibutton` | Text: `'Browse…'` | `selectInputBtn_Callback` |
-| `SubfolderMode` | `uicheckbox` | Text: `'Tiles are folders (Z-stacks)'` Default: `false` | `updateBatchOptFromGUI` |
-| `infoLabel` | `uilabel` | Multi-line (`WordWrap='on'`, ~2 lines tall). Non-BatchOpt. The controller sets `.Text` to a short description of the selected `LayoutSource` (via `updateInfoLabel`, guarded by `isfield`). | — |
+| `Image` | `uiimage` | `ImageSource = 'puffin_stitching_96px.png'`, `ScaleMethod = 'none'`. Decoration only. | — |
+| `LayoutsourceLabel` | `uilabel` | Text: `'Layout source'`, right-aligned | — |
+| `LayoutSource` | `uidropdown` | Items: `{'Grid','Position file','Filename pattern','Bio-Formats metadata'}` Default: `'Grid'` (set from BatchOpt by `updateWidgets`) | `updateBatchOptFromGUI` |
+| `infoLabel` | `uilabel` | `WordWrap='on'`, `VerticalAlignment='top'`, italic, ~2 lines tall. Non-BatchOpt — `updateInfoLabel` writes a short description of the selected `LayoutSource` (what to pick, what to set). | — |
 
-### Tile settings group (`uipanel` Name: `TileSettingsPanel`, Title: "Tile settings")
+### 2a. `inputTab` — "Input tiles" (`inputGridLayout`)
+
+| Handle | Class | Items / Limits / Default | Callback method |
+|------|-------|--------------------------|-----------------|
+| `selectInputBtn` | `uibutton` | Text: `'Pick tiles'`, Icon `open_16px.png` | `selectInputBtn_Callback` |
+| `SubfolderMode` | `uicheckbox` | Text: `'Tiles are folders (Z-stacks)'` Default: `false` | `updateBatchOptFromGUI` |
+| `InputPathLabel` | `uilabel` | Text: `'Input tiles'`, right-aligned, top | — |
+| `InputPath` | `uilistbox` (built) or `uieditfield` (text) | Default: empty. As a **listbox** it displays one selected path per row (best for multi-folder input) and is populated by *Pick tiles* — `refreshInputPathWidget` detects the type (`isprop(...,'Items')`) and keeps `BatchOpt.InputPath` as the newline-joined string either way. A listbox is display-only, so `addCallbacks` wires **no** `ValueChangedFcn` for it; an editfield keeps the typed-path sync. | `updateBatchOptFromGUI` (editfield only) |
+
+### 2b. `tileSettingsTab` — "Tile settings" (`tileSettingsGridLayout`)
 
 | Handle | Class | Items / Limits / Default | Callback method |
 |------|-------|--------------------------|-----------------|
@@ -45,17 +86,17 @@ what makes `utils.updateBatchOptFromGUI_Shared` work — it writes
 | `OverlapY` | `uispinner` | Limits: `[0 90]` Step: 1 Default: `10` | `updateBatchOptFromGUI` |
 | `EstimateOverlap` | `uicheckbox` | Text: `'Estimate overlap'` Default: `true` | `updateBatchOptFromGUI` |
 
-Labels for spinners (not interactive; `uilabel`):
+Labels (not interactive; `uilabel` — App Designer auto-names, kept as built):
 
 | Handle | Text |
 |------|------|
-| `gridRowsLabel` | `'Rows (0=auto)'` |
-| `gridColsLabel` | `'Cols (0=auto)'` |
-| `tileOrderLabel` | `'Tile order'` |
-| `overlapXLabel` | `'Overlap X (%)'` |
-| `overlapYLabel` | `'Overlap Y (%)'` |
+| `gridRowsSpinnerLabel` | `'Rows (0=auto)'` |
+| `gridRowsSpinnerLabel_2` | `' Cols (0=auto)'` |
+| `gridRowsSpinnerLabel_3` | `'Overlap X (%)'` |
+| `OverlapYLabel` | `' Overlap Y (%)'` |
+| `TileorderLabel` | `'Tile order'` |
 
-### Registration group (`uipanel` Name: `registrationPanel`, Title: "Registration")
+### 2c. `registrationTab` — "Registration" (`registrationGridLayout`)
 
 | Handle | Class | Items / Limits / Default | Callback method |
 |------|-------|--------------------------|-----------------|
@@ -63,30 +104,42 @@ Labels for spinners (not interactive; `uilabel`):
 | `AllowRotation` | `uicheckbox` | Text: `'Allow rotation'` Default: **unchecked**. Controller enables it only when `TransformType ≠ 'Translation'` (moot otherwise). Tooltip: stage-tiled data does not rotate — keep off so noisy overlaps cannot inject spurious rotations; tick only when tiles are genuinely rotated. Place right under `TransformType`. | `updateBatchOptFromGUI` |
 | `RegistrationMethod` | `uidropdown` | Items: `{'Phase correlation','Feature-based'}` Default: `'Phase correlation'`. Controller disables it (measurement fixed to feature-based) when `TransformType ≠ 'Translation'`. | `updateBatchOptFromGUI` |
 | `FeatureDetectorType` | `uidropdown` | Items: the 8 detectors (SURF/SIFT/MSER/Harris/BRISK/FAST/MinEigen/ORB — same list as `controllers.Alignment`) Default: SURF. Enabled when the feature-based estimator will run: `RegistrationMethod='Feature-based'` OR `TransformType ≠ 'Translation'` | `updateBatchOptFromGUI` |
-| `configureFeaturesBtn` | `uibutton` | Text: `'Settings…'` — opens the detector-parameter + downsampling + RANSAC dialog. Same enable rule as `FeatureDetectorType` | `configureFeaturesBtn_Callback` |
+| `configureFeaturesBtn` | `uibutton` | Icon `settings_16px.png`, Text `''` (icon-only) — opens the detector-parameter + downsampling + RANSAC dialog. Same enable rule as `FeatureDetectorType`. Sits right of `FeatureDetectorType`. | `configureFeaturesBtn_Callback` |
 | `QualityThreshold` | `uispinner` | Limits: `[0 1]` Step: `0.05` Default: `0.30` | `updateBatchOptFromGUI` |
 | `NominalPositionWeight` | `uispinner` | Limits: `[0 1]` Step: `0.01` Default: `0.10` | `updateBatchOptFromGUI` |
 | `SubpixelPlacement` | `uicheckbox` | Text: `'Sub-pixel placement'` Default: `false` | `updateBatchOptFromGUI` |
+| `measureOverlaps` | `uibutton` | Text: `'Measure overlaps'` — **pipeline step 1**, lives on this tab because it consumes these settings | `measureOverlaps_Callback` |
+| `optimizePositions` | `uibutton` | Text: `'Optimize positions'` — **pipeline step 2**, same reason | `optimizePositions_Callback` |
 
-Labels:
+Labels (App Designer auto-names, kept as built):
 
 | Handle | Text |
 |------|------|
-| `transformTypeLabel` | `'Transform type'` |
-| `registrationMethodLabel` | `'Registration method'` |
-| `featureDetectorTypeLabel` | `'Feature detector'` |
-| `qualityThresholdLabel` | `'Quality threshold'` |
-| `springWeightLabel` | `'Nominal position weight'` |
+| `TransformtypeLabel` | `' Transform type'` |
+| `TransformtypeLabel_2` | `'Registration method'` |
+| `FeatureDetectorTypeLabel` | `'Feature detector'` |
+| `QualitythresholdLabel` | `' Quality threshold'` |
+| `NominalpositionweightLabel` | `'Nominal position weight'` |
 
-### Output group (`uipanel` Name: `outputPanel`, Title: "Output")
+### 3. `OutputPanel` — "Output" (`outputGridLayout`)
+
+Holds the layout preview, the output settings, the project buttons and the two status
+readouts — everything about *what comes out* of the tool.
 
 | Handle | Class | Items / Limits / Default | Callback method |
 |------|-------|--------------------------|-----------------|
-| `OutputMode` | `uidropdown` | Items: `{'In memory','OME-Zarr (BigData)'}` Default: `'In memory'` | `updateBatchOptFromGUI` |
-| `OutputPath` | `uieditfield` (text) | Default: `''` Enable: `false` | `updateBatchOptFromGUI` |
-| `selectOutputBtn` | `uibutton` | Text: `'Browse…'` Enable: `false` | `selectOutputPath_Callback` |
+| `previewAxes` | `uiaxes` | Spans rows 1–6 of cols 1–2. `YDir='reverse'`, `XTick=[]`, `YTick=[]`, `Box='on'`, `Toolbar=[]` (the built-in axes toolbar would fight the tile ROIs). Labels/title are set per redraw by `previewLayoutBtn_Callback`. | — |
+| `OutputMode` | `uidropdown` | Items: `{'In memory','OME-Zarr3 (BigData)'}` Default: `'In memory'` | `updateBatchOptFromGUI` |
+| `OutputPath` | `uieditfield` (text) | Default: `''` Enable: `false` (enabled for OME-Zarr3 only) | `updateBatchOptFromGUI` |
+| `selectOutputBtn` | `uibutton` | Text: `'...'` Enable: `false` | `selectOutputPath_Callback` |
 | `BlendMode` | `uidropdown` | Items: `{'Feather','Average','Max','Min','Overwrite'}` Default: `'Feather'` | `updateBatchOptFromGUI` |
 | `SaveProject` | `uicheckbox` | Text: `'Save project JSON'` Default: `true` | `updateBatchOptFromGUI` |
+| `previewLayoutBtn` | `uibutton` | Text: `'Preview layout'` | `previewLayoutBtn_Callback` |
+| `editLayoutCheckbox` | `uicheckbox` | Text: `'Edit layout'` — toggles the preview between static rectangles and draggable tile ROIs (Phase 3). Non-BatchOpt (a UI mode). | `previewLayoutBtn_Callback` |
+| `saveProjectBtn` | `uibutton` | Text: `'Save project'`, Icon `save_16px.png` | `saveProjectBtn_Callback` |
+| `loadProjectBtn` | `uibutton` | Text: `'Load project'`, Icon `open_16px.png` | `loadProjectBtn_Callback` |
+| `statusLabel` | `uilabel` | `WordWrap='on'`, top-aligned. `'N tiles | N edges measured | solved: yes/no'` | — |
+| `rmseLabel` | `uilabel` | The alignment-quality chip (colour + verdict), written by `refreshQualityChip` | — |
 
 `BatchOpt.showWaitbar` intentionally has **no GUI widget** — it is a batch-only
 option (progress bars are always shown in interactive GUI runs).
@@ -95,37 +148,18 @@ Labels:
 
 | Handle | Text |
 |------|------|
-| `outputModeLabel` | `'Output mode'` |
-| `outputPathLabel` | `'Output path'` |
-| `blendModeLabel` | `'Blend mode'` |
+| `OutputmodeLabel` | `' Output mode'` |
+| `outputPathEditFieldLabel` | `'Output path'` |
+| `blendModeDropDownLabel` | `'Blend mode'` |
 
-### Preview axes
-
-| Handle | Class | Properties |
-|------|-------|------------|
-| `previewAxes` | `uiaxes` | XLabel: `'X (pixels)'` YLabel: `'Y (pixels)'` Title: `'Layout preview'` YDir: `'reverse'` |
-
-### Status and RMSE labels
-
-| Handle | Class | Default Text |
-|------|-------|--------------|
-| `statusLabel` | `uilabel` | `'0 tiles | 0 edges measured | solved: no'` |
-| `rmseLabel` | `uilabel` | `'RMSE: —'` |
-
-### Action buttons (bottom row)
+### 4. Action strip (row 5 of `mainGridLayout`)
 
 | Handle | Class | Text | Callback method |
 |------|-------|------|-----------------|
-| `previewLayoutBtn` | `uibutton` | `'Preview layout'` | `previewLayoutBtn_Callback` |
-| `editLayoutCheckbox` | `uicheckbox` | `'Edit layout (drag tiles)'` — toggles the preview between static rectangles and draggable tile ROIs (Phase 3). Non-BatchOpt (a UI mode). | `previewLayoutBtn_Callback` |
-| `measureOverlaps` | `uibutton` | `'Measure overlaps'` | `measureOverlaps_Callback` |
-| `optimizePositions` | `uibutton` | `'Optimize positions'` | `optimizePositions_Callback` |
-| `inspectSeamsBtn` | `uibutton` | `'Inspect & fix…'` — opens the seam inspector (worst-first manual QC, see plan_inspector.md). Controller enables it only when edges + positions exist. Place next to `optimizePositions` / the rating chip. | `inspectSeams_Callback` |
-| `stitchBtn` | `uibutton` | `'Stitch'` | `stitchBtn_Callback` |
-| `saveProjectBtn` | `uibutton` | `'Save project'` | `saveProjectBtn_Callback` |
-| `loadProjectBtn` | `uibutton` | `'Load project'` | `loadProjectBtn_Callback` |
-| `helpButton` | `uibutton` | `'Help'` | `helpBtn_Callback` |
-| `closeButton` | `uibutton` | `'Close'` | `closeWindow` |
+| `helpButton` | `uibutton` | Icon `help_16px.png`, Text `''` (icon-only), col 1 | `helpBtn_Callback` |
+| `inspectSeamsBtn` | `uibutton` | `'Inspect and fix...'`, green `[0.149 0.902 0.180]`, col 5 — opens the seam inspector (worst-first manual QC, see plan_inspector.md). Controller enables it only when edges + positions exist. | `inspectSeams_Callback` |
+| `stitchBtn` | `uibutton` | `'Stitch'`, green, col 6 | `stitchBtn_Callback` |
+| `closeButton` | `uibutton` | `'Close'`, orange `[1 0.529 0.102]`, col 7 | `closeWindow` |
 
 ---
 
@@ -145,13 +179,24 @@ This follows the pattern established in CropDatasetGUI.mlapp (plan_crop.md).
 
 ## Notes for App Designer layout
 
-1. Window size: approximately 900 × 650 px to accommodate the preview axes.
-2. Left column (≈ 300 px wide): stacked panels — Input, Grid, Registration, Output.
-3. Right area: `previewAxes` fills the remaining width.
-4. Bottom strip (≈ 40 px tall): action buttons in a row.
-5. Status strip at the very bottom: `statusLabel` (left) + `rmseLabel` (right).
-6. All numeric spinners: set `RoundFractionalValues = 'on'` where the BatchOpt has `'on'` as 3rd element.
-7. `GridRows` and `GridCols` allow `0` (auto) — set `AllowEmpty = 'off'` and `Limits = [0 10000]`.
+1. Window is portrait — 623 × 750 px — with the four areas stacked top to bottom (see the
+   container hierarchy above), not the two-column form the first draft of this spec described.
+2. Everything is inside `uigridlayout`s, so the window resizes without any `mibRescaleWidgets`
+   equivalent. `previewAxes` gets fixed 220 px of width (`outputGridLayout` cols 1–2) and takes all
+   the vertical slack (`RowHeight` row 5 is `'1x'`).
+3. **What goes on which tab** — a widget belongs to the tab whose step consumes it: *Input tiles*
+   answers "which files", *Tile settings* "how are they arranged", *Registration* "how are they
+   matched" (which is why *Measure overlaps* and *Optimize positions* sit there and not in the
+   bottom strip). The bottom strip holds only what must stay reachable from every tab: help, the
+   inspector, *Stitch*, close.
+4. `LayoutSource` deliberately sits **above** the tab group: it decides which of the tab widgets are
+   even enabled, so hiding it inside one tab would make the enable/disable behaviour look arbitrary.
+   `infoLabel` under it says what to pick for the selected source.
+5. All numeric spinners: set `RoundFractionalValues = 'on'` where the BatchOpt has `'on'` as 3rd element.
+6. `GridRows` and `GridCols` allow `0` (auto) — set `AllowEmpty = 'off'` and `Limits = [0 10000]`.
+7. Icon-only buttons (`helpButton`, `configureFeaturesBtn`) must keep `Text = ''` **and** an `Icon`;
+   the icons resolve from `mib\assets\icons` (`help_16px.png`, `settings_16px.png`, `open_16px.png`,
+   `save_16px.png`), the header image from `mib\assets\images\puffin_stitching_96px.png`.
 
 ---
 

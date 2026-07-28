@@ -16,7 +16,7 @@ if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.StitchingInspector.fitView_Callback: triggered\n');
 end
 obj.pairZoom = [];
-if isempty(obj.view) || ~isfield(obj.view.handles, 'pairAxes'); return; end
+if ~obj.hasWidget('pairAxes'); return; end
 pairAxes = obj.view.handles.pairAxes;
 if isempty(findobj(pairAxes, 'Type', 'image')); return; end
 axis(pairAxes, 'image');   % tight limits around all rendered images

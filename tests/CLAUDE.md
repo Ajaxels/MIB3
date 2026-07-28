@@ -26,6 +26,36 @@ single file:          runtests('tests/models/GetSetDataCorrectnessTest.m')
 7. **MATLAB rules apply**: `dictionary` not containers.Map; descriptive names; cache `.data` locally
    around pixel loops.
 
+## Testing a controller (`tests/controllers/`)
+
+Controllers are testable as `Unit` tests when they can be built **without a view** — no window
+opens, nothing blocks, and the suite still exercises the real methods instead of re-implementing
+their logic in the test. Two patterns, both used by `StitchingControllerTest` /
+`StitchingInspectorControllerTest`:
+
+1. **Build view-less.** The standard `NaN` constructor path returns a fully initialised controller
+   with `view` empty: `controller = controllers.Stitching(mibModel, [], NaN)`. A controller with no
+   such path needs an explicit opt-out (the inspector takes `struct('createView', false)`).
+   Assert `isempty(controller.view)` in the helper so a future constructor change cannot silently
+   start opening windows in the suite.
+2. **Route UI through accessors.** Dialog parents and progress anchors belong behind a
+   `guiFigure()`-style accessor returning `[]` headless, and widget writes behind a
+   `hasWidget(name)` guard. This is what makes the workflow methods run unchanged — and it fixes
+   batch mode at the same time, where `view` is empty for real.
+
+When a test must assert on something the controller *renders*, hand it just that widget:
+
+```matlab
+rmseLabel = mibtest.helpers.FakeWidget();      % a HANDLE — a struct would take a copy
+controller.view = struct('handles', struct('rmseLabel', rmseLabel), 'gui', []);
+controller.refreshQualityChip();
+testCase.verifySubstring(rmseLabel.Text, 'Seams disagree');
+```
+
+Set `mibModel.preferences.System.DeveloperMode = false` in the fixture — controllers print
+progress lines otherwise. Headless controllers must still **error** where the GUI shows a message
+box and returns: a silent `return` reports success for work that never happened.
+
 ## Tags
 
 | Tag | Meaning | Runs in `buildtool test`? |

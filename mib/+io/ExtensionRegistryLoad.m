@@ -250,7 +250,7 @@ classdef ExtensionRegistryLoad < handle
             stdImgFormats = [stdImgFormats.ext 'mrc' 'rec' 'am' 'nrrd' 'h5' 'xml' 'st' 'preali' 'mibImg' 'zarr2' 'zarr3' obj.videoExtensions];
             % standard image extensions
             obj.extensionSets("Standard.Default") = {sort(stdImgFormats)};
-            % zarr v3: native Zarr3Matlab library; zarr v2: python-backed
+            % zarr v3: native zarr-matlab library; zarr v2: python-backed
             % (io.zarr.PyBackend) — see io.loaders.Zarr2VirtualSetupLoader.
             obj.extensionSets("Virtual.Default") = {sort({'h5','hdf5','xml', 'zarr', 'zarr2', 'zarr3'})};
             % BigData zarr2: image pyramid browsing + a read-only existing

@@ -25,6 +25,8 @@ function imgOut = fuseInMemory(layout, canvas, options)
 %     - ``.marginPx`` — [double] feather margin (default: derived from tile size)
 %     - ``.cacheSizeBytes`` — [double] LRU tile-cache budget (default: ``2*1024^3``)
 %     - ``.readerFcn`` — [function_handle] reuse an existing tile reader (optional)
+%     - ``.showWaitbar`` — [logical] show progress (default: ``false``)
+%     - ``.parentFigure`` — [handle] progress-dialog parent (default: ``[]``)
 %
 % Output Arguments:
 %   - **imgOut** — [H x W x Z x C x T] fused mosaic of class ``canvas.dataClass``.
@@ -40,6 +42,8 @@ if nargin < 3; options = struct(); end
 if ~isfield(options, 'blendMode');      options.blendMode = 'Feather'; end
 if ~isfield(options, 'background');     options.background = 0; end
 if ~isfield(options, 'cacheSizeBytes'); options.cacheSizeBytes = 2 * 1024^3; end
+if ~isfield(options, 'showWaitbar');    options.showWaitbar = false; end
+if ~isfield(options, 'parentFigure');   options.parentFigure = []; end
 
 if isfield(options, 'readerFcn') && ~isempty(options.readerFcn)
     readerFcn = options.readerFcn;
@@ -57,10 +61,24 @@ dataClass = canvas.dataClass;
 
 imgOut = cast(options.background, dataClass) + zeros(H, W, Z, C, T, dataClass);
 
+progressDialog = [];
+if options.showWaitbar && ~isempty(options.parentFigure)
+    progressDialog = uiprogressdlg(options.parentFigure, 'Value', 0, ...
+        'Message', 'Fusing mosaic...', 'Title', 'Stitching');
+end
+
+totalSlices = T * Z;
+doneSlices = 0;
 for t = 1:T
     for z = 1:Z
         outSlice = utils.stitch.fuseSliceComposite(layout, canvas, z, t, readerFcn, options);
         imgOut(:, :, z, :, t) = reshape(outSlice, H, W, 1, C);
+        doneSlices = doneSlices + 1;
+        if ~isempty(progressDialog) && isvalid(progressDialog)
+            progressDialog.Value = doneSlices / totalSlices;
+        end
     end
 end
+
+if ~isempty(progressDialog) && isvalid(progressDialog); close(progressDialog); end
 end

@@ -24,20 +24,35 @@ be streamed to an OME-Zarr file and opened in MIB as a BigData dataset.
 
 ---
 
+## The window at a glance
+
+The dialog is arranged top to bottom in four areas, following the order you work through them:
+
+| Area | Contains |
+|------|----------|
+| **Header** | <span class="widget widget-dropdown">Layout source</span> — *how the tiles are arranged*. It governs the whole dialog (which settings below are enabled), so it sits above everything else. The italic line under it reminds you what to select and set for the chosen source. |
+| **Settings tabs** | Three tabs, one per question: <span class="widget widget-button">Input tiles</span> (*which files*), <span class="widget widget-button">Tile settings</span> (*how they are arranged*), <span class="widget widget-button">Registration</span> (*how they are matched* — plus the <span class="widget widget-button">Measure overlaps</span> and <span class="widget widget-button">Optimize positions</span> buttons, which consume exactly those settings). |
+| **Output panel** | The layout preview on the left, the output/blend settings and project buttons on the right, and the two readouts underneath: the status line (tiles / measured seams / solved) and the colour-coded alignment-quality chip. |
+| **Action strip** | Always reachable, whichever tab is open: help, <span class="widget widget-button">Inspect and fix...</span>, <span class="widget widget-button">Stitch</span>, <span class="widget widget-button">Close</span>. |
+
+---
+
 ## The stitching pipeline
 
-Stitching runs in four stages, each with its own button. The stages can be triggered one
-by one — recommended for the first time, to check intermediate results — or the
+Stitching runs in four stages. The stages can be triggered one by one — recommended for
+the first time, to check intermediate results — or the
 <span class="widget widget-button">Stitch</span> button runs any stages not done yet
-automatically.
+automatically. Steps 1–2 sit next to the settings they use (on the *Registration* tab and
+in the *Output* panel); only <span class="widget widget-button">Stitch</span> is in the
+bottom strip.
 
-1. <span class="widget widget-button">Preview layout</span> — draws the nominal tile
-   arrangement as numbered rectangles on the preview axes. Use it to verify that the
-   grid dimensions, tile order, and overlap settings are correct **before** any heavy
-   computation: wrong settings show up as an incorrect numbering sequence or as gaps
+1. <span class="widget widget-button">Preview layout</span> *(Output panel)* — draws the
+   nominal tile arrangement as numbered rectangles on the preview axes. Use it to verify
+   that the grid dimensions, tile order, and overlap settings are correct **before** any
+   heavy computation: wrong settings show up as an incorrect numbering sequence or as gaps
    between rectangles.
 
-    Tick <label class="widget widget-checkbox">Edit layout (drag tiles)</label> to switch the
+    Tick <label class="widget widget-checkbox">Edit layout</label> to switch the
     preview into **interactive placement** mode: each tile becomes a draggable rectangle (its size
     is fixed — only the position moves). Drag tiles to a better rough arrangement when there is no
     grid/position file to start from, or to fix a badly-placed tile. Each move updates that tile's
@@ -45,14 +60,14 @@ automatically.
     <span class="widget widget-button">Measure overlaps</span> / <span class="widget widget-button">Optimize positions</span>
     run starts from the corrected layout. Untick to return to the static view.
 
-2. <span class="widget widget-button">Measure overlaps</span> — for every pair of
+2. <span class="widget widget-button">Measure overlaps</span> *(Registration tab)* — for every pair of
    neighboring tiles, the expected overlap region is cut from both tiles and their
    *actual* relative displacement is measured with FFT phase correlation. Each
    measurement gets a quality score from 0 to 1: a crisp, well-textured overlap scores
    close to 1, while a featureless or non-matching overlap scores close to 0.
    Measurements below the quality threshold are marked invalid.
 
-3. <span class="widget widget-button">Optimize positions</span> — computes the final
+3. <span class="widget widget-button">Optimize positions</span> *(Registration tab)* — computes the final
    position of every tile. Pairwise measurements are only *relative* statements
    ("tile 5 sits 342.7 px right of tile 4"), and with more measurements than tiles they
    slightly contradict each other. Instead of chaining tiles one after another (which
@@ -90,7 +105,7 @@ automatically.
     **Seams edited — press Re-solve to update the alignment**, because the residual still
     belongs to the previous edge set.
 
-4. <span class="widget widget-button">Stitch</span> — fuses the tile pixels into the
+4. <span class="widget widget-button">Stitch</span> *(bottom strip)* — fuses the tile pixels into the
    output mosaic at the optimized positions, blending the overlap regions according to
    the selected blend mode, and opens the result as a new dataset in MIB.
 
@@ -102,8 +117,8 @@ Automatic stitching can fail silently: a measurement that locked onto repetitive
 one period off satisfies the solver perfectly on sparse tile arrangements — the quality
 rating stays green while a tile sits a full period out of place.
 
-The <span class="widget widget-button">Inspect & fix…</span> button (enabled after
-*Measure overlaps* + *Optimize positions*) opens the **seam inspector**, which re-reads the
+The <span class="widget widget-button">Inspect and fix...</span> button in the bottom strip
+(enabled after *Measure overlaps* + *Optimize positions*) opens the **seam inspector**, which re-reads the
 actual pixels at every solved seam, ranks the seams worst-first, and lets you correct the
 bad ones by clicking a landmark, dragging the overlay, or matching two points. Both windows
 stay usable side by side: re-solve in the inspector, then press *Stitch* here to fuse the
@@ -113,35 +128,108 @@ corrected mosaic.
 
 ---
 
-## Input panel
+## Layout source
 
-- <span class="widget widget-dropdown">Layout source</span>: how the tiles are arranged
-    - **Grid**: tiles form a regular grid; specify rows, columns, acquisition order, and overlap in the Grid panel.
-    - **Position file**: a text file with one line per tile: `filename X Y` or `filename X Y Z`
-      (space-, tab-, or comma-separated). The optional Z column places tiles on distinct layers;
-      layers that overlap in Z are refined by the same global solve as the XY overlaps.
-    - **Filename pattern**: grid indices are parsed from `Z##`, `X##` and `Y##` tokens in the file
-      (or, for folder tiles, the **folder**) names — the pattern produced by the MIB dataset chunking
-      tool, e.g. `myStack_Z01-X02-Y03.tif` → Z-layer 1, column 2, row 3. **The order of the three
-      tokens does not matter** (see the note below).
-      Tiles default to abutting (0% overlap, exact reassembly of chunks); set **Overlap X/Y** (or tick
-      **Estimate overlap**) when the pattern-named tiles come from an overlapping acquisition and the
-      tool will register them like the Grid source.
-    - **Bio-Formats metadata**: tile positions are read from the **stage coordinates embedded in the
-      image metadata** (OME `Plane PositionX/Y/Z`) — no manual arrangement needed. Point it at one
-      multi-series file (each series is a tile) or at several single-tile files; the microscope's
-      recorded positions become the nominal layout, converted from micrometres to pixels via the
-      stored pixel size. Distinct stage-Z values are placed on separate layers and jointly solved.
-- <label class="widget widget-checkbox">Tiles are folders (Z-stacks)</label>: each tile is a **folder of
-  slice images** (a Z-stack) rather than a single image file. This is orthogonal to the layout source —
-  it changes only how each tile is *provided*, not how tiles are *arranged*:
-    - With **Grid** or **Filename pattern**, the <span class="widget widget-button">...</span> button
-      multi-selects the tile folders (each a Z-stack). Ideal for 3D acquisitions where every XY tile was
-      captured as a folder of slice images.
-    - With a **Position file**, simply list folder paths in the `filename` column — folders are detected
-      automatically, so this checkbox is not needed (and is disabled) for that source. It is likewise
-      disabled for **Bio-Formats metadata**, where each series/file already carries its own stack.
-- <span class="widget widget-edit">Input path</span>: the selected tile image files (Grid, Filename pattern — the <span class="widget widget-button">...</span> button opens a multi-select file picker; selection order does not matter, the tiles are natural-sorted by name), the selected tile folders (when *Tiles are folders* is on), the position file, or the selected Bio-Formats file(s). A folder path typed/pasted directly into the field also works for Grid/Filename pattern — all image files in that folder become the tiles.
+The <span class="widget widget-dropdown">Layout source</span> dropdown at the top of the window
+states **how the tiles are arranged** — the one choice everything else follows from, which is why
+it sits above the tabs rather than inside one. Switching it re-enables the relevant settings on the
+*Tile settings* tab and rebuilds the layout; if the input you already selected cannot be used with
+the new source, the stale layout is dropped and the status line asks you to re-select it. The
+italic line underneath summarises what to pick and what to set for the selected source.
+
+- **Grid**: tiles form a regular grid; specify rows, columns, acquisition order, and overlap on the
+  *Tile settings* tab.
+- **Position file**: a text file listing every tile with its position — one line per tile,
+  `filename X Y` or `filename X Y Z`, space-, tab-, or comma-separated. Positions are in **pixels**
+  (see the examples below). The optional Z column places tiles on distinct layers; layers that
+  overlap in Z are refined by the same global solve as the XY overlaps.
+- **Filename pattern**: grid indices are parsed from `Z##`, `X##` and `Y##` tokens in the file
+  (or, for folder tiles, the **folder**) names — the pattern produced by the MIB dataset chunking
+  tool, e.g. `myStack_Z01-X02-Y03.tif` → Z-layer 1, column 2, row 3. **The order of the three
+  tokens does not matter** (see the note below).
+  Tiles default to abutting (0% overlap, exact reassembly of chunks); set **Overlap X/Y** (or tick
+  **Estimate overlap**) when the pattern-named tiles come from an overlapping acquisition and the
+  tool will register them like the Grid source.
+- **Bio-Formats metadata**: tile positions are read from the **stage coordinates embedded in the
+  image metadata** (OME `Plane PositionX/Y/Z`) — no manual arrangement needed. Point it at one
+  multi-series file (each series is a tile) or at several single-tile files; the microscope's
+  recorded positions become the nominal layout, converted from **micrometres** to pixels via the
+  stored pixel size. Distinct stage-Z values are placed on separate layers and jointly solved.
+
+??? example "Position file: format, units and examples"
+    **Units — this is the part that trips people up.** The position file is written in **image
+    units, not stage units**:
+
+    | Column | Unit | Meaning |
+    |--------|------|---------|
+    | `X` | **pixels** | horizontal offset of the tile's **top-left corner** in the mosaic; increases to the **right** |
+    | `Y` | **pixels** | vertical offset of the tile's top-left corner; increases **downward** (image convention, not a plot axis) |
+    | `Z` *(optional)* | **slices** | index of the slice the tile starts at — a whole-number slice count, **not** a µm depth |
+
+    Coordinates are **0-based**: the top-left tile of a mosaic is at `0 0` (or `0 0 0`). They may be
+    **fractional** (`130.5`) — sub-pixel nominal positions are kept as given.
+
+    If your stage coordinates are in **micrometres**, divide by the pixel size before writing the
+    file — `X_px = X_µm / pixelSizeX_µm` — or skip the file entirely and use the
+    **Bio-Formats metadata** source, which reads the µm stage coordinates from the images and does
+    that conversion for you.
+
+    The positions only need to be **roughly** right: they are the starting guess that
+    *Measure overlaps* and *Optimize positions* refine. Errors of a few tens of pixels are normal
+    and expected; a systematically wrong overlap is not.
+
+    ---
+
+    **A 2×2 mosaic of 512×512 tiles with ~20 % overlap** (step = 512 × 0.8 ≈ 410 px):
+
+    ```text
+    # tile               X     Y
+    tiles/tile_01.tif      0     0
+    tiles/tile_02.tif    410     0
+    tiles/tile_03.tif      0   410
+    tiles/tile_04.tif    410   410
+    ```
+
+    **The same mosaic on two Z-layers**, each layer 40 slices thick with an 8-slice overlap
+    (layer 1 starts at slice 0, layer 2 at slice 32) — the tiles here are **folders**, one
+    Z-stack each:
+
+    ```text
+    # tile folder          X     Y     Z
+    stacks/tile_01_L1      0     0     0
+    stacks/tile_02_L1    410     0     0
+    stacks/tile_01_L2      0     0    32
+    stacks/tile_02_L2    410     0    32
+    ```
+
+    **Comma-separated, with absolute paths and a filename containing spaces:**
+
+    ```text
+    D:\data\scan 1\tile A.tif, 0, 0
+    D:\data\scan 1\tile B.tif, 410, 0
+    ```
+
+    ---
+
+    **Rules the parser applies:**
+
+    - **One tile per line**, at least 3 columns; a line with fewer is skipped with a warning.
+    - The **delimiter is auto-detected from the first data line**: a comma if the line contains one,
+      otherwise a tab, otherwise runs of whitespace. Filenames containing spaces therefore require
+      the comma or tab form.
+    - Lines that are **empty** or start with `#` or `%` are **comments** and are ignored — so the
+      header lines in the examples above are optional documentation, not parsed column names.
+    - `filename` may be **relative** to the folder holding the position file (as above), or absolute
+      (`C:\…`, `\\server\share\…`, `/…`).
+    - `filename` may name a **single image file or a folder** holding that tile's Z-stack — detected
+      per entry, so the two can even be mixed in one file. The
+      <label class="widget widget-checkbox">Tiles are folders (Z-stacks)</label> checkbox is
+      therefore not needed (and is disabled) for this source.
+    - Each **distinct `Z` value becomes one layer**, numbered in ascending order. Tiles sharing a `Z`
+      value are on the same layer and are matched to each other in XY; tiles on adjacent layers are
+      matched across the layer boundary. Omitting the `Z` column puts every tile on one layer.
+    - Tiles may be listed in **any order** — the file states the positions explicitly, so nothing
+      depends on sorting.
 
 !!! note "Filename pattern: what the tokens must look like"
     Each of the three tokens is located **independently**, so their **order is irrelevant** and so are
@@ -164,18 +252,40 @@ corrected mosaic.
     grid cell and the layout preview shows them all piled on top of each other. Acquisitions with more
     than 99 tiles along an axis must be renamed to two-digit tokens, or arranged with the **Grid** or
     **Position file** source instead. A one-digit token (`Z1`) fails outright with an index error.
+---
+
+## Input tiles tab
+
+- <span class="widget widget-button">Pick tiles</span>: opens the file or folder picker that the
+  selected layout source expects — a multi-select **image-file** picker for *Grid* and
+  *Filename pattern*, a multi-select **folder** picker when *Tiles are folders* is ticked, a single
+  `.txt`/`.csv` for *Position file*, and the image files for *Bio-Formats metadata*.
+- <label class="widget widget-checkbox">Tiles are folders (Z-stacks)</label>: each tile is a **folder of
+  slice images** (a Z-stack) rather than a single image file. This is orthogonal to the layout source —
+  it changes only how each tile is *provided*, not how tiles are *arranged*:
+    - With **Grid** or **Filename pattern**, <span class="widget widget-button">Pick tiles</span>
+      multi-selects the tile folders (each a Z-stack). Ideal for 3D acquisitions where every XY tile was
+      captured as a folder of slice images.
+    - With a **Position file**, simply list folder paths in the `filename` column — folders are detected
+      automatically, so this checkbox is not needed (and is disabled) for that source. It is likewise
+      disabled for **Bio-Formats metadata**, where each series/file already carries its own stack.
+- <span class="widget widget-edit">Input tiles</span>: the list of selected inputs, **one path per
+  row** — the tile image files (*Grid*, *Filename pattern*), the tile folders (when *Tiles are
+  folders* is on), the position file, or the Bio-Formats file(s). It is a display of what
+  *Pick tiles* selected; selection order does not matter, since the tiles are natural-sorted by
+  name. For *Grid* and *Filename pattern* a single folder path also works — every image file in it
+  becomes a tile — which is the form batch protocols normally use.
+
 
 ---
 
-## Grid panel
+## Tile settings tab
 
-Rows / Cols / Tile order apply to the **Grid** source. Overlap X/Y and *Estimate overlap* apply to
-both the **Grid** and **Filename pattern** sources (both derive tile grid indices). Any change here
-immediately rebuilds the layout and refreshes the preview — as does changing the
-<span class="widget widget-dropdown">Layout source</span> itself (e.g. from **Grid** to
-**Filename pattern** after noticing the grid guess was wrong); if the already-selected input cannot
-be used with the new source, the stale layout is dropped and the status line asks you to re-select
-the input.
+How the selected tiles are laid out. Rows / Cols / Tile order apply to the **Grid** source;
+Overlap X/Y and *Estimate overlap* apply to both the **Grid** and **Filename pattern** sources
+(both derive tile grid indices). Settings that do not apply to the current layout source are
+disabled rather than hidden, so the tab always shows the full picture. Any change here immediately
+rebuilds the layout and refreshes the preview.
 
 - <span class="widget widget-edit">Rows</span> / <span class="widget widget-edit">Cols</span>: grid dimensions; `0` derives the value automatically from the number of tiles — the closest-to-square arrangement that tiles the count *exactly*, so no phantom grid holes, oriented by the *Tile order*: a Horizontal order gives the wide arrangement (3 tiles → 1×3, 12 → 3×4), a Vertical order the tall one (3 → 3×1, 12 → 4×3). For an intentionally incomplete grid (e.g. 11 tiles of a 3×4 acquisition) enter the rows/cols explicitly.
 - <span class="widget widget-dropdown">Tile order</span>: the order in which the tiles were acquired, which defines how the natural-sorted filenames map onto grid cells
@@ -201,7 +311,12 @@ the input.
 
 ---
 
-## Registration panel
+## Registration tab
+
+How overlapping tiles are matched to each other — and, at the bottom of the tab, the two buttons
+that use these settings: <span class="widget widget-button">Measure overlaps</span> (step 1) and
+<span class="widget widget-button">Optimize positions</span> (step 2). Changing a setting here
+invalidates the existing measurements, so re-run both after any change.
 
 - <span class="widget widget-dropdown">Transform type</span>: the geometric model solved per tile
     - **Translation** (*default*): tiles only shift — the right model for stage-tiled acquisitions,
@@ -246,7 +361,8 @@ the input.
   detector — the same eight choices as the [Alignment](dataset-alignment.md) tool
   (SURF, SIFT, MSER, Harris, BRISK, FAST, Minimum Eigenvalue, ORB). SURF is a good default for
   microscopy blobs.
-- <span class="widget widget-button">Settings…</span> *(Feature-based only)*: opens a dialog to tune
+- :octicons-gear-16: *(the gear button right of the detector dropdown; Feature-based only)*: opens a
+  dialog to tune
   the selected detector's parameters, the detection **downsampling factor** (1 = full resolution;
   higher is faster but less precise on big tiles), and the RANSAC (`estgeotform2d`) trials /
   confidence / max-distance. It is the Alignment tool's feature-settings dialog minus its
@@ -305,6 +421,17 @@ the input.
 
 ## Output panel
 
+Below the tabs, and visible whichever tab is open. On the left is the **layout preview** with
+<span class="widget widget-button">Preview layout</span> and
+<label class="widget widget-checkbox">Edit layout</label> under it; on the right the output
+settings, <span class="widget widget-button">Save project</span> /
+<span class="widget widget-button">Load project</span>, and the two readouts:
+
+- the **status line** — `N tiles | N edges measured | solved: yes/no`, i.e. how far through the
+  pipeline you are, plus any message from the last action;
+- the **alignment-quality chip** — the colour-coded verdict described under
+  [*Optimize positions*](#the-stitching-pipeline) above.
+
 - <span class="widget widget-dropdown">Output mode</span>:
     - **In memory**: the mosaic is assembled in RAM and replaces the current dataset. Use for mosaics that comfortably fit into memory.
     - **OME-Zarr3 (BigData)**: the mosaic is streamed chunk-by-chunk to an OME-Zarr v3 file on disk and opened as a BigData dataset. Use for mosaics of any size.
@@ -355,7 +482,7 @@ which of them you want:
   was. Use it to re-open, inspect or re-fuse a mosaic.
 - **Settings only**: the saved parameters (layout source, grid and overlap, transform model,
   registration method with its feature-detector settings, blend and output mode) are applied to
-  the tiles selected **here** — the current <span class="widget widget-edit">Input path</span>
+  the tiles selected **here** — the current <span class="widget widget-edit">Input tiles</span>
   and <span class="widget widget-edit">Output path</span> are kept — and the layout is rebuilt
   from them. The tiles, measurements and positions stored in the file are ignored. Use it to
   stitch a new acquisition exactly like a previous one.
@@ -371,7 +498,7 @@ which of them you want:
 ## Batch mode
 
 The tool is compatible with the [Batch processing](../home/home-batchprocessing.md) tool
-(*Ribbon → Dataset → Stitch*). In batch mode the whole pipeline runs headlessly from the
+(*Ribbon → Dataset → Stitching*). In batch mode the whole pipeline runs headlessly from the
 specified parameters; the `showWaitbar` option (batch-only) controls whether a progress
 bar is displayed.
 

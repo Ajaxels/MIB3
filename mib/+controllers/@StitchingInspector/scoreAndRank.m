@@ -20,18 +20,12 @@ if isempty(obj.readerFcn)
     obj.readerFcn = utils.stitch.makeTileReader(obj.stitching.layout);
 end
 
-scoreOptions.readerFcn = obj.readerFcn;
-scoreOptions.showWaitbar = true;
 % During construction obj.view.gui is still invisible and uiprogressdlg
-% refuses it — anchor the progress dialog to the parent Stitching window then.
-if ~isempty(obj.view) && isvalid(obj.view.gui) && strcmp(obj.view.gui.Visible, 'on')
-    scoreOptions.parentFigure = obj.view.gui;
-elseif ~isempty(obj.stitching.view) && isvalid(obj.stitching.view.gui)
-    scoreOptions.parentFigure = obj.stitching.view.gui;
-else
-    scoreOptions.parentFigure = [];
-    scoreOptions.showWaitbar = false;
-end
+% refuses it — progressParent falls back to the parent Stitching window then,
+% and to [] (no progress bar) when there is no window at all.
+scoreOptions.readerFcn    = obj.readerFcn;
+scoreOptions.parentFigure = obj.progressParent();
+scoreOptions.showWaitbar  = ~isempty(scoreOptions.parentFigure);
 
 [obj.stitching.edges, obj.ranking] = utils.stitch.scoreSeams( ...
     obj.stitching.layout, obj.stitching.edges, obj.stitching.positions, scoreOptions);

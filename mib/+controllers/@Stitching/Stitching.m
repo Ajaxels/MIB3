@@ -7,7 +7,7 @@ classdef Stitching < handle
 % least-squares optimisation (MIST/BigStitcher approach).  Fusion supports
 % in-memory (Standard dataset) and streaming OME-Zarr3 (BigData) outputs.
 %
-% Available from Ribbon -> Dataset -> Stitch.
+% Available from Ribbon -> Dataset -> Stitching.
 
     % Updates
     %
@@ -335,6 +335,81 @@ classdef Stitching < handle
         end
 
         % ---------------------------------------------------------------
+        function figureHandle = guiFigure(obj)
+            % GUIFIGURE - Handle of the tool window, or ``[]`` without a view.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      figureHandle = obj.guiFigure()
+            %
+            % Every dialog parent and progress-bar anchor goes through this so
+            % the workflow methods run unchanged whether the tool has a window
+            % (GUI), was launched from a batch protocol, or is driven headlessly
+            % by the test suite. ``utils.dlgs.*`` and the ``utils.stitch``
+            % progress helpers all accept ``[]`` as "no parent".
+            %
+            % Output Arguments:
+            %   - **figureHandle** — [handle] the ``StitchingGUI`` figure, or
+            %     ``[]`` when the controller has no (valid) view
+            %
+            figureHandle = [];
+            if ~isempty(obj.view) && ~isempty(obj.view.gui) && isvalid(obj.view.gui)
+                figureHandle = obj.view.gui;
+            end
+        end
+
+        % ---------------------------------------------------------------
+        function warnUser(obj, message, dlgTitle)
+            % WARNUSER - Report an unmet precondition ("measure first", "no
+            % tiles selected", …).
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.warnUser(message, dlgTitle)
+            %
+            % With a window: a message box, and the caller returns leaving the
+            % state untouched. Without one (batch protocol, headless run) there
+            % is nobody to read a message box, so the same condition is raised
+            % as an error — the caller's ``return`` would otherwise report
+            % success for work that never happened.
+            %
+            % Input Arguments:
+            %   - **message** — [char] what is missing, in user language
+            %   - **dlgTitle** — [char] dialog title
+            %
+            if isempty(obj.view)
+                error('Stitching:precondition', '%s', message);
+            end
+            warnOptions.MsgBoxOnly  = true;
+            warnOptions.Icon        = 'puffin_warning';
+            warnOptions.HeaderLines = 1;
+            utils.dlgs.inputUniversalDlg(obj.guiFigure(), message, {}, {}, dlgTitle, warnOptions);
+        end
+
+        % ---------------------------------------------------------------
+        function reportError(obj, errorInfo, dlgTitle)
+            % REPORTERROR - Surface a caught error from a workflow step.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.reportError(errorInfo, dlgTitle)
+            %
+            % With a window: an error dialog, and the caller returns. Without
+            % one the error is rethrown, so a batch protocol or a test sees the
+            % failure instead of a silently skipped step.
+            %
+            % Input Arguments:
+            %   - **errorInfo** — [MException] the caught error
+            %   - **dlgTitle** — [char] dialog title
+            %
+            if isempty(obj.view); rethrow(errorInfo); end
+            utils.dlgs.showErrorDialog(obj.guiFigure(), errorInfo.message, dlgTitle);
+        end
+
+        % ---------------------------------------------------------------
         function refreshInputPathWidget(obj)
             % REFRESHINPUTPATHWIDGET - Show BatchOpt.InputPath in the InputPath
             % widget, handling either a uieditfield (single newline-joined string)
@@ -373,17 +448,16 @@ classdef Stitching < handle
             % One short (2-line) description per layout source.
             switch obj.BatchOpt.LayoutSource{1}
                 case 'Grid'
-                    description = sprintf(['Tiles on a regular grid. Browse a folder of tiles, set Rows/Cols and\n' ...
+                    description = sprintf(['Tiles on a regular grid. Pick the tile files, set Rows/Cols and ' ...
                         'overlap (or tick Estimate overlap); Tile order sets the scan pattern.']);
                 case 'Position file'
-                    description = sprintf(['A text file lists each tile file and its X Y [Z] position. Browse the\n' ...
-                        '.txt/.csv; positions seed the solve, Z values create layers automatically.']);
+                    description = sprintf(['A text file lists each tile file and its X Y [Z] position:\n' ...
+                        '    tiles/tile_01.tif 0 0 0\n    tiles/tile_02.tif 130 0 0']);
                 case 'Filename pattern'
-                    description = sprintf(['Grid indices are read from MIB2 _Z##-X##-Y## tokens in the tile file or\n' ...
-                        'folder names. Browse the folder; set overlap (or tick Estimate overlap).']);
+                    description = sprintf(['Grid indices are read as pattern:\n   "_Z##-X##-Y##"\nfrom file or ' ...
+                        'folder names. The order of letters is not important but it should contain 2 digits.']);
                 case 'Bio-Formats metadata'
-                    description = sprintf(['Tile positions come from embedded microscope stage coordinates. Browse\n' ...
-                        'one multi-series file or several single-tile files — no grid setup needed.']);
+                    description = sprintf('Tile positions are based on embedded microscope stage coordinates.');
                 otherwise
                     description = '';
             end
