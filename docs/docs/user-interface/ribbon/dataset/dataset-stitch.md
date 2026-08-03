@@ -549,6 +549,39 @@ which of them you want:
 - <span class="widget widget-button">Stitch</span>
 - <span class="widget widget-button">Close</span>
 
+??? note "What Stitch does when pressed directly, without running the earlier steps by hand"
+    <span class="widget widget-button">Stitch</span> does not require *Preview layout*, *Measure
+    overlaps* or *Optimize positions* to have been pressed first - it runs any stage of the
+    [pipeline](#the-stitching-pipeline) not already done, in order:
+
+    1. If the [seam inspector](dataset-stitch-inspector.md) is open with a fix still awaiting its
+       global re-solve, that re-solve runs first, so the mosaic is never fused from stale positions.
+    2. **Build layout** - arranges the selected tiles per the current
+       <span class="widget widget-dropdown">Layout source</span> and, for **Grid**/**Filename
+       pattern**, the <span class="widget widget-dropdown">Tile order</span> and grid size.
+    3. If <label class="widget widget-checkbox">Estimate overlap</label> is ticked (on by default),
+       the true grid overlap is measured from the tiles and the layout is rebuilt from the
+       corrected values.
+    4. **Measure overlaps** for every neighboring tile pair (phase correlation or feature-based,
+       per <span class="widget widget-dropdown">Registration method</span>).
+    5. **Optimize positions** - the global least-squares solve.
+    6. **Plan canvas** - computes the output mosaic size and origin from the solved positions.
+    7. Refreshes the layout preview at the solved positions - exactly what pressing
+       <span class="widget widget-button">Preview layout</span> would draw - so the final tile
+       arrangement is always visible once *Stitch* is done, even if every earlier step was
+       skipped.
+    8. **Fuse** the tiles onto the canvas with the selected <span class="widget widget-dropdown">Blend
+       mode</span>, and open the result as a new dataset (or as a BigData dataset for
+       **OME-Zarr3 (BigData)** output).
+    9. Save the `*.mibstitch.json` project sidecar, if <label class="widget widget-checkbox">Save
+       project JSON</label> is ticked (on by default).
+
+    The preview refresh (step 7) comes **after** the measure-and-solve work, not before it - it
+    confirms what was fused, it does not let you catch a problem cheaply beforehand. For an
+    unfamiliar acquisition, press <span class="widget widget-button">Preview layout</span>
+    yourself first: it only draws rectangles from the nominal layout, so a wrong grid size,
+    <span class="widget widget-dropdown">Tile order</span>, or overlap is visible before the
+    heavier measure/solve/fuse work ever runs.
 
 ## Batch mode
 

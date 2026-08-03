@@ -466,6 +466,21 @@ classdef ChunkingImport < handle
                     imgMeta = core.MibImage.initializeImgInfo( ...
                         'Height', outHeight, 'Width', outWidth, 'Depth', outDepth, ...
                         'Colors', tileColors, 'imgClass', tileClass);
+
+                    % initializeImgInfo defaults MaxInt/viewPort.max to the 8-bit
+                    % ceiling (255); sync them to the rebuilt data's actual class
+                    % (mirrors io.loaders.BaseImageLoader.finalizeImgInfo) so a
+                    % 16-bit+ dataset isn't displayed saturated white.
+                    switch tileClass
+                        case {'single', 'double'}
+                            imgMeta{'MaxInt'} = realmax(tileClass);
+                        otherwise
+                            imgMeta{'MaxInt'} = double(intmax(tileClass));
+                    end
+                    imgMetaViewPort = imgMeta{'viewPort'};
+                    imgMetaViewPort.max = imgMeta{'MaxInt'};
+                    imgMeta{'viewPort'} = imgMetaViewPort;
+
                     obj.mibModel.I{id} = core.MibDataset(imgOut, imgMeta, 'Standard', newModelType);
 
                     notify(obj.mibModel, 'NewDataset');

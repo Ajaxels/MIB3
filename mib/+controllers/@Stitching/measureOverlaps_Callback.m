@@ -11,6 +11,10 @@ function measureOverlaps_Callback(obj)
 % correlation shifts and quality scores for each pair.  Results are cached
 % in ``obj.edges`` and the status label is updated.
 %
+% The progress dialog shown during measurement is cancelable: pressing
+% Cancel leaves ``obj.edges`` and the status line untouched, as if this call
+% had never been made.
+%
 
 if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.Stitching.measureOverlaps_Callback: triggered\n');
@@ -57,12 +61,18 @@ measureOptions.parentFigure       = obj.guiFigure();
 measureOptions.showWaitbar        = obj.BatchOpt.showWaitbar && ~isempty(measureOptions.parentFigure);
 
 try
-    obj.edges = utils.stitch.measureAllPairs(obj.layout, nominalPairs, measureOptions);
+    [measuredEdges, cancelled] = utils.stitch.measureAllPairs(obj.layout, nominalPairs, measureOptions);
 catch measureError
     obj.reportError(measureError, 'Measurement failed');
     return;
 end
 
+% User pressed Cancel on the progress dialog: leave obj.edges (and the status
+% line) exactly as they were before this call, as if Measure overlaps had
+% never been pressed.
+if cancelled; return; end
+
+obj.edges = measuredEdges;
 obj.updateWidgets();
 
 end

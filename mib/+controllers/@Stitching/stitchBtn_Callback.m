@@ -68,7 +68,12 @@ try
         else
             measureOptions.parentFigure = [];
         end
-        obj.edges = utils.stitch.measureAllPairs(obj.layout, nominalPairs, measureOptions);
+        [measuredEdges, cancelled] = utils.stitch.measureAllPairs(obj.layout, nominalPairs, measureOptions);
+        if cancelled
+            notify(obj.mibModel, 'StopProtocol');
+            return;
+        end
+        obj.edges = measuredEdges;
     end
 
     if isempty(obj.positions)
@@ -101,6 +106,14 @@ catch pipelineError
     return;
 end
 
+% Skipping straight to Stitch (no manual Optimize positions click) never runs
+% optimizePositions_Callback, which is what normally refreshes the layout
+% preview at the solved positions — so without this call the preview would
+% still show the nominal layout (or nothing) while a wrong tile
+% order/grid/overlap silently fuses. No-op in batch/headless mode (obj.view
+% is empty).
+obj.previewLayoutBtn_Callback();
+
 outputMode = obj.BatchOpt.OutputMode{1};
 blendMode  = obj.BatchOpt.BlendMode{1};
 
@@ -129,6 +142,20 @@ if strcmp(outputMode, 'In memory')
         'Height', size(fusedVolume, 1), 'Width', size(fusedVolume, 2), ...
         'Depth', size(fusedVolume, 3), 'Colors', size(fusedVolume, 4), ...
         'imgClass', class(fusedVolume));
+
+    % initializeImgInfo defaults MaxInt/viewPort.max to the 8-bit ceiling
+    % (255); sync them to the fused data's actual class (mirrors
+    % io.loaders.BaseImageLoader.finalizeImgInfo) so a 16-bit+ mosaic isn't
+    % displayed saturated white.
+    switch class(fusedVolume)
+        case {'single', 'double'}
+            imageMetadata{'MaxInt'} = realmax(class(fusedVolume));
+        otherwise
+            imageMetadata{'MaxInt'} = double(intmax(class(fusedVolume)));
+    end
+    viewPort = imageMetadata{'viewPort'};
+    viewPort.max = imageMetadata{'MaxInt'};
+    imageMetadata{'viewPort'} = viewPort;
 
     activeId = obj.mibModel.getActiveId();
     obj.mibModel.I{activeId} = core.MibDataset(fusedVolume, imageMetadata, 'Standard', 'labels63');

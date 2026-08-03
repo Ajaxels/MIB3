@@ -354,22 +354,44 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
                                 scaleFactor = 1;
                             end
 
-                            pixSizePos1 = strfind(info.UnknownTags.Value, '[Ux]');
-                            if ~isempty(pixSizePos1)  % Fibics AtlasEngine
-                                pixSizePos2 = strfind(info.UnknownTags.Value, '[Ux]');
-                                pixSize.x = str2double(info.UnknownTags.Value(pixSizePos1+4:pixSizePos2-1)) * scaleFactor;
-                            else  % NPVE
-                                pixSizePos1 = strfind(info.UnknownTags.Value, '[FOVX units]') + 18; % "[FOVX units]=um[32.7667846679687][FOVX]"
-                                pixSizePos2 = strfind(info.UnknownTags.Value, '[FOVX]') - 1;
-                                xFOV = str2double(info.UnknownTags.Value(pixSizePos1:pixSizePos2));
-                                widthPos1 = strfind(info.UnknownTags.Value, '[Width]') + 7;
-                                widthPos2 = strfind(info.UnknownTags.Value, '[Width]') - 1;
-                                imageWidth = str2double(info.UnknownTags.Value(widthPos1:widthPos2));
-                                pixSize.x = xFOV / imageWidth * scaleFactor;
+                            % Newer Fibics AtlasEngine (v5.5+) stores metadata as XML
+                            % ("<Fibics ...><Ux>0.5</Ux>...<Vy>-0.5</Vy>...") rather than
+                            % the older "[Ux]0.5[Ux]"-style bracketed text; Ux/Vy are the
+                            % pixel size (um/pixel) along X/Y.
+                            uxToken = regexp(info.UnknownTags.Value, '<Ux>([^<]+)</Ux>', 'tokens', 'once');
+                            vyToken = regexp(info.UnknownTags.Value, '<Vy>([^<]+)</Vy>', 'tokens', 'once');
+                            if ~isempty(uxToken) && ~isempty(vyToken)
+                                newPixSizeX = abs(str2double(uxToken{1})) * scaleFactor;
+                                newPixSizeY = abs(str2double(vyToken{1})) * scaleFactor;
+                                newPixSizeUnits = 'um';
+                            else
+                                pixSizePos1 = strfind(info.UnknownTags.Value, '[Ux]');
+                                if ~isempty(pixSizePos1)  % Fibics AtlasEngine (legacy bracketed text)
+                                    pixSizePos2 = strfind(info.UnknownTags.Value, '[Ux]');
+                                    newPixSizeX = str2double(info.UnknownTags.Value(pixSizePos1+4:pixSizePos2-1)) * scaleFactor;
+                                else  % NPVE
+                                    pixSizePos1 = strfind(info.UnknownTags.Value, '[FOVX units]') + 18; % "[FOVX units]=um[32.7667846679687][FOVX]"
+                                    pixSizePos2 = strfind(info.UnknownTags.Value, '[FOVX]') - 1;
+                                    xFOV = str2double(info.UnknownTags.Value(pixSizePos1:pixSizePos2));
+                                    widthPos1 = strfind(info.UnknownTags.Value, '[Width]') + 7;
+                                    widthPos2 = strfind(info.UnknownTags.Value, '[Width]') - 1;
+                                    imageWidth = str2double(info.UnknownTags.Value(widthPos1:widthPos2));
+                                    newPixSizeX = xFOV / imageWidth * scaleFactor;
+                                end
+                                pixSizePos3 = strfind(info.UnknownTags.Value, '[FOVX units]') + 13;
+                                newPixSizeUnits = info.UnknownTags.Value(pixSizePos3:pixSizePos3+1);
+                                newPixSizeY = newPixSizeX;
                             end
-                            pixSizePos3 = strfind(info.UnknownTags.Value, '[FOVX units]') + 13;
-                            pixSize.units = info.UnknownTags.Value(pixSizePos3:pixSizePos3+1);
-                            pixSize.y = pixSize.x;
+
+                            % Metadata parsing above can fail to match (unrecognized tag
+                            % layout) and silently yield NaN; keep the existing default
+                            % pixSize in that case rather than propagating NaN, which
+                            % later crashes image display (XData/YData reject NaN).
+                            if isfinite(newPixSizeX) && newPixSizeX > 0 && isfinite(newPixSizeY) && newPixSizeY > 0
+                                pixSize.x = newPixSizeX;
+                                pixSize.y = newPixSizeY;
+                                pixSize.units = newPixSizeUnits;
+                            end
                         end
                     elseif isfield(info, 'UnknownTags') && isfield(info, 'SampleFormat') && ...
                             isfield(info, 'PhotometricInterpretation') && isfield(info, 'ColorType')

@@ -21,11 +21,28 @@ function previewFeatureMatch(obj)
 % preview provides.
 %
 % A ``downsampleFactor`` above 1 affects DETECTION ONLY: keypoints are found on
-% resized copies and their locations scaled back, while the composite is always
-% rendered from the full-resolution tiles (the title notes the detection scale).
+% resized copies and their locations scaled back, while the composite is
+% always BUILT from the full-resolution tiles (the title notes the detection
+% scale). For real-world tile sizes that composite can exceed a GPU's max
+% texture side (commonly ~16384 px) — MATLAB then creates the image object
+% without error, but the driver silently fails to rasterize it while the
+% point/tie-line overlay still renders, i.e. only markers show, no image. To
+% avoid this, the composite is downsized for DISPLAY ONLY past a safe cap
+% (title notes the display scale too); detection/matching/the fitted shift are
+% unaffected.
 %
 % No stitching is applied. Requires a layout with at least one overlapping pair
 % (select input tiles first); shows an informational dialog otherwise.
+%
+% Shows a Cancelable progress dialog spanning tile reading, feature
+% detection/matching, transform fitting, AND composite building + the
+% display-downsize step above — reading/warping/fusing full-resolution tiles
+% off disk can take a noticeable time for large files, and without it the app
+% would look frozen. Cancel is polled between stages (read A, read B, detect,
+% match, fit, build composite, resize for display); since each stage itself is
+% one blocking call, a click takes effect at the next stage boundary, not
+% mid-call. Cancelling closes the dialog and returns without opening the
+% preview figure.
 %
 
 if obj.mibModel.preferences.System.DeveloperMode
@@ -58,10 +75,22 @@ if isempty(xyPairs)
 end
 pair = xyPairs(1);
 
+% Reading full-resolution tiles off disk and detecting/matching features on them
+% can take a noticeable time for large files — show progress so the app does not
+% look frozen while it prepares the preview, and let the user bail out of it.
+progressDialog = uiprogressdlg(parentFig, 'Value', 0, 'Cancelable', 'on', ...
+    'Message', 'Reading tile images...', 'Title', 'Feature preview');
+
 % Read the two FULL tiles (first channel; middle Z slice for 3D stacks).
 readerFcn = utils.stitch.makeTileReader(obj.layout);
 imageA = midSliceGray(readerFcn(pair.i));
+progressDialog.Value = 0.2;
+drawnow;
+if progressDialog.CancelRequested; delete(progressDialog); return; end
 imageB = midSliceGray(readerFcn(pair.j));
+progressDialog.Value = 0.35;
+drawnow;
+if progressDialog.CancelRequested; delete(progressDialog); return; end
 
 % Detector + parameters from the current selection.
 featureOptions = obj.buildFeatureOptions();
@@ -82,9 +111,14 @@ if featureOptions.downsampleFactor > 1
     scaleBack = featureOptions.downsampleFactor;
 end
 
+progressDialog.Message = 'Detecting features...';
+drawnow;
 pointsA = utils.align.detectFeatures(detectA, featureDetectorType, featureOptions);
 pointsB = utils.align.detectFeatures(detectB, featureDetectorType, featureOptions);
+progressDialog.Value = 0.6;
+if progressDialog.CancelRequested; delete(progressDialog); return; end
 if isempty(pointsA) || isempty(pointsB) || pointsA.Count < 3 || pointsB.Count < 3
+    delete(progressDialog);
     utils.dlgs.showErrorDialog(parentFig, ...
         sprintf('Too few features detected with "%s". Loosen the detector threshold and retry.', ...
                 featureDetectorType), 'Feature preview');
@@ -99,8 +133,13 @@ else
     [featuresB, validB] = extractFeatures(detectB, pointsB, 'Upright', featureOptions.rotationInvariance);
 end
 
+progressDialog.Message = 'Matching features...';
+progressDialog.Value = 0.75;
+drawnow;
+if progressDialog.CancelRequested; delete(progressDialog); return; end
 indexPairs = matchFeatures(featuresA, featuresB, 'Unique', true);
 if isempty(indexPairs)
+    delete(progressDialog);
     utils.dlgs.showErrorDialog(parentFig, ...
         'No matching descriptors found. Adjust the detector settings and retry.', ...
         'Feature preview');
@@ -110,6 +149,10 @@ matchedA = validA(indexPairs(:, 1));
 matchedB = validB(indexPairs(:, 2));
 
 % Robust translation fit (RANSAC), matching utils.stitch.featureShift.
+progressDialog.Message = 'Fitting transform...';
+progressDialog.Value = 0.9;
+drawnow;
+if progressDialog.CancelRequested; delete(progressDialog); return; end
 try
     [tform, inlierIdx, status] = estgeotform2d( ...
         matchedA.Location * scaleBack, matchedB.Location * scaleBack, 'translation', ...
@@ -117,10 +160,12 @@ try
         'Confidence',   featureOptions.estGeomTransform.Confidence, ...
         'MaxDistance',  featureOptions.estGeomTransform.MaxDistance);
 catch fitError
+    delete(progressDialog);
     utils.dlgs.showErrorDialog(parentFig, fitError, 'Feature preview: fit failed');
     return;
 end
 if status ~= 0
+    delete(progressDialog);
     utils.dlgs.showErrorDialog(parentFig, ...
         'RANSAC could not fit a translation from the matches. Adjust the detector settings and retry.', ...
         'Feature preview');
@@ -135,6 +180,12 @@ inlierRatio = nnz(inlierIdx) / numel(inlierIdx);
 % imfuse then blends them on the shared union canvas (green = tile i, magenta =
 % tile j, grey where they agree). imwarp/imfuse compute the referencing so the
 % overlap is drawn aligned — a clean seam means the registration is good.
+% Full-resolution tiles here can be large, so this stays under the same
+% progress dialog as the rest of the preparation.
+progressDialog.Message = 'Building composite...';
+progressDialog.Value = 0.95;
+drawnow;
+if progressDialog.CancelRequested; delete(progressDialog); return; end
 invTform = invert(tform);
 refA = imref2d(size(imageA));
 [warpedB, refB] = imwarp(imageB, invTform);
@@ -149,6 +200,31 @@ inlierA = matchedA(inlierIdx).Location * scaleBack;              % [x y] in A fr
 inlierBinA = transformPointsForward(invTform, matchedB(inlierIdx).Location * scaleBack);
 [ax, ay] = worldToIntrinsicSafe(refComposite, inlierA(:, 1),    inlierA(:, 2));
 [bx, by] = worldToIntrinsicSafe(refComposite, inlierBinA(:, 1), inlierBinA(:, 2));
+
+% The composite is always built from the FULL-resolution tiles regardless of
+% the detection downsampleFactor (a downsample setting only thins out
+% keypoint search, it does not shrink the tiles themselves) — with tiles the
+% size of a real microscope mosaic (tens of thousands of px/side) the fused
+% canvas can exceed a GPU's max texture side (commonly ~16384 px). MATLAB then
+% builds the image object without error but the driver silently fails to
+% rasterize it, while the vector point/tie-line overlay below still renders —
+% which looks exactly like "only the points show, no images". Downsize the
+% composite for DISPLAY ONLY past a safe cap; detection, matching and the
+% fitted shift above already ran at the user-chosen resolution and are
+% unaffected.
+maxPreviewDim = 4096;
+compositeMaxDim = max(size(composite, 1), size(composite, 2));
+displayScale = min(1, maxPreviewDim / compositeMaxDim);
+if displayScale < 1
+    progressDialog.Message = 'Resizing preview...';
+    progressDialog.Value = 0.98;
+    drawnow;
+    if progressDialog.CancelRequested; delete(progressDialog); return; end
+    composite = imresize(composite, displayScale, 'bilinear');
+    ax = ax * displayScale; ay = ay * displayScale;
+    bx = bx * displayScale; by = by * displayScale;
+end
+delete(progressDialog);
 
 % ---- Render in a dedicated tagged figure (reused across previews).
 hFig = findall(groot, 'Type', 'figure', 'Tag', 'mib_StitchFeaturePreview');
@@ -175,8 +251,13 @@ if scaleBack > 1
 else
     detectionNote = '';
 end
-title(hAxes, sprintf('Tiles %d ↔ %d stitched — %d/%d inliers (ratio %.2f), shift [dy %.1f, dx %.1f] px%s', ...
-    pair.i, pair.j, nnz(inlierIdx), numel(inlierIdx), inlierRatio, shiftYX(1), shiftYX(2), detectionNote));
+if displayScale < 1
+    displayNote = sprintf(', displayed at 1/%.3g scale', 1 / displayScale);
+else
+    displayNote = '';
+end
+title(hAxes, sprintf('Tiles %d ↔ %d stitched — %d/%d inliers (ratio %.2f), shift [dy %.1f, dx %.1f] px%s%s', ...
+    pair.i, pair.j, nnz(inlierIdx), numel(inlierIdx), inlierRatio, shiftYX(1), shiftYX(2), detectionNote, displayNote));
 
 end
 

@@ -1,4 +1,4 @@
-function edges = measureAllPairs(layout, pairs, options)
+function [edges, cancelled] = measureAllPairs(layout, pairs, options)
 % MEASUREALLPAIRS - Measure the residual shift of every neighbour pair.
 %
 % Syntax:
@@ -57,7 +57,9 @@ function edges = measureAllPairs(layout, pairs, options)
 %       RANSAC; the ``automaticOptions`` shape). Ignored for phase correlation.
 %     - ``.cacheSizeBytes`` — [double] LRU tile-cache budget (default: ``2*1024^3``)
 %     - ``.useParallel`` — [logical] measure pairs with ``parfor`` (default: ``false``)
-%     - ``.showWaitbar`` — [logical] show a progress dialog (default: ``false``)
+%     - ``.showWaitbar`` — [logical] show a progress dialog (default: ``false``); only the
+%       sequential path (``useParallel = false``) makes it ``Cancelable`` — a ``parfor``
+%       batch cannot poll the dialog mid-iteration
 %     - ``.parentFigure`` — [handle] parent for the progress dialog (default: ``[]``)
 %
 % Output Arguments:
@@ -70,7 +72,13 @@ function edges = measureAllPairs(layout, pairs, options)
 %     translation solver reads ``.measured`` alone) — and the seam-inspector
 %     bookkeeping fields ``.source`` (``'auto'`` here; ``'user'``/
 %     ``'confirmed'`` are set by the inspector) and ``.seamScore``
-%     (``[]`` here; filled by :func:`utils.stitch.scoreSeams`).
+%     (``[]`` here; filled by :func:`utils.stitch.scoreSeams`). When cancelled
+%     partway, only the pairs measured before the cancel are included — the
+%     caller must check ``cancelled`` rather than assume ``edges`` covers
+%     every pair in ``pairs``.
+%   - **cancelled** — [logical] ``true`` when the user pressed Cancel on the
+%     progress dialog before all pairs were measured; ``false`` otherwise
+%     (always ``false`` when ``showWaitbar`` is off or no dialog was shown).
 %
 % **Example** — measure all pairs sequentially:
 %
@@ -102,6 +110,7 @@ nPairs = numel(pairs);
 edges = repmat(struct('i', [], 'j', [], 'direction', '', 'nominal', [0 0 0], ...
     'measured', [0 0 0], 'quality', 0, 'valid', false, 'tform', [], ...
     'source', 'auto', 'seamScore', []), 1, nPairs);
+cancelled = false;
 
 if nPairs == 0; return; end
 
@@ -152,10 +161,15 @@ else
         struct('cacheSizeBytes', options.cacheSizeBytes));
     progressDialog = [];
     if options.showWaitbar && ~isempty(options.parentFigure)
-        progressDialog = uiprogressdlg(options.parentFigure, 'Value', 0, ...
+        progressDialog = uiprogressdlg(options.parentFigure, 'Value', 0, 'Cancelable', 'on', ...
             'Message', 'Measuring tile overlaps...', 'Title', 'Stitching');
     end
     for k = 1:nPairs
+        if ~isempty(progressDialog) && isvalid(progressDialog) && progressDialog.CancelRequested
+            cancelled = true;
+            edges = edges(1:k-1);
+            break;
+        end
         [measuredShift, quality, tformTile] = measureOne(layout, pairs(k), readerFcn, ...
             expandPx, colorChannel, shiftOptions, zSearchRadius, shiftFcn, isFeatureBased);
         edges(k) = fillEdge(pairs(k), measuredShift, quality, options.qualityThreshold, tformTile);
@@ -167,6 +181,8 @@ else
         close(progressDialog);
     end
 end
+
+if cancelled; return; end
 
 edges = mergePreservedUserEdges(edges, options.preserveEdges);
 end
