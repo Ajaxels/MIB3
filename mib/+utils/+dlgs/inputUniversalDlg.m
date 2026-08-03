@@ -608,11 +608,14 @@ else
             ctrl = uispinner(widgetParent, 'Limits', [lo hi], 'Value', v, 'Step', step);
 
             % Handle optional Round and ValueDisplayFormat
-            if isfield(val,'Round') && val.Round
+            isRound = isfield(val,'Round') && val.Round;
+            if isRound
                 ctrl.RoundFractionalValues = 'on';
             end
             if isfield(val,'ValueDisplayFormat')
                 ctrl.ValueDisplayFormat = val.ValueDisplayFormat;
+            elseif isRound
+                ctrl.ValueDisplayFormat = '%d';
             end
 
         elseif isnumeric(val) && isscalar(val) && ~isempty(val)

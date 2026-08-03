@@ -161,6 +161,20 @@ on all changed files. Note: one-shot inspection timers still race cold
 uifigure creation (fires inside the pre-`uiwait` `drawnow`) — use the polling
 harness pattern for testing.
 
+## Follow-up: Spinner `Round` defaults `ValueDisplayFormat` to `'%d'` (August 2026)
+
+`defAns{i} = struct('Spinner', true, ..., 'Round', true)` previously left
+`ValueDisplayFormat` at the `uispinner` default (`'%11.4g'`), so a spinner
+rounding to integers could still render like `1234.0` momentarily / with a
+trailing format artifact. Callers had to add `'ValueDisplayFormat','%d'`
+explicitly on every integer spinner.
+
+Fix (`inputUniversalDlg.m`, spinner widget branch): when `Round` is `true`
+and the caller did not supply `ValueDisplayFormat`, it now defaults to
+`'%d'`. An explicit `ValueDisplayFormat` in `defAns{i}` still takes priority
+over the `Round`-implied default. No call site changes required; existing
+callers that already passed both fields are unaffected.
+
 ## Open items
 
 - [ ] Verify modal-on-reuse once in a **deployed build** (P4 single-drawnow change).

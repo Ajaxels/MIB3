@@ -671,13 +671,13 @@ elseif strcmp(operation, 'select')
 
                     switch samMode
                         case 'add, +next material'
-                            % select the first material row in the table
+                            % Shift/Ctrl-click refines the object still being segmented,
+                            % which the first (no-modifier) click already advanced AddTo
+                            % to the next material row for. Move it back to the
+                            % in-progress row so the refinement point lands on the
+                            % correct material, not on the next object.
                             if dataset.selectedAddToMaterial == 4
-                                eventdata2.Indices = [3, 3];
-                                try
-                                    obj.mibSegmentationTable_CellSelectionCallback(eventdata2);     % update materialsTable
-                                catch
-                                end
+                                obj.mibController.cSegmentation.materialsTable_CellSelectionCallback([3, 3]);
                             end
                     end
 

@@ -699,14 +699,15 @@ classdef (Abstract) BaseImageLoader < handle
 
             minVal = double(min(img(:)));
             maxVal = double(max(img(:)));
-            
+            if maxVal <= minVal; maxVal = minVal + 1; end     % guard against a flat image
+
             prompt = {sprintf('Enter minimal intensity value\n(this value will be set to 0)'); ...
                       sprintf('Enter maximal intensity value\n(this value will be set to 65535)')};
-            defAns = {struct('Spinner', true, 'Value', minVal, 'Limits', [0 65534], 'Step', 1, 'Round', true); ... 
-                      struct('Spinner', true, 'Value', maxVal, 'Limits', [1 65535], 'Step', 1, 'Round', true)};
+            defAns = {struct('Spinner', true, 'Value', minVal, 'Limits', [minVal maxVal-1], 'Step', 1, 'Round', true); ...
+                      struct('Spinner', true, 'Value', maxVal, 'Limits', [minVal+1 maxVal], 'Step', 1, 'Round', true)};
 
             mibInputMultiDlgOpt.WindowWidth = 400;
-            mibInputMultiDlgOpt.WindowHeight = 140;
+            mibInputMultiDlgOpt.WindowHeight = 180;
             mibInputMultiDlgOpt.SectionsColumnWidths = {'fit', 100};
             mibInputMultiDlgOpt.mibPath = obj.mibPath;
             answer = utils.dlgs.inputUniversalDlg(obj.ParentFigure, ...
