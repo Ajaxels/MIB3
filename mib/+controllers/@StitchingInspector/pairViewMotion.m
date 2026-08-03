@@ -8,7 +8,7 @@ function pairViewMotion(obj)
 %
 % Wired as the figure's persistent ``WindowButtonMotionFcn``. While ``Shift``
 % is held (tracked by :func:`keyPress_Callback` / :func:`keyRelease_Callback`)
-% a yellow box of exactly ``roiSizeSpinner`` full-res pixels follows the
+% a yellow box of exactly ``ROIsizeSpinner`` full-res pixels follows the
 % cursor over the pair view — a live preview of the region that Shift+click
 % hands to click-to-correlate (:func:`correlateAtPoint`). The box is
 % click-transparent (``PickableParts = 'none'``) so the click lands on the
@@ -34,8 +34,8 @@ if point(1) < xLimits(1) || point(1) > xLimits(2) || ...
 end
 
 roiSize = 128;
-if obj.hasWidget('roiSizeSpinner')
-    roiSize = obj.view.handles.roiSizeSpinner.Value;
+if obj.hasWidget('ROIsizeSpinner')
+    roiSize = obj.view.handles.ROIsizeSpinner.Value;
 end
 half = roiSize / 2;   % axes data units are full-res tile-i pixels
 boxX = point(1) + [-half, half, half, -half, -half];

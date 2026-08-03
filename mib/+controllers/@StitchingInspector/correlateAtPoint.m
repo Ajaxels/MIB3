@@ -14,7 +14,7 @@ function correlateAtPoint(obj, stripPointXY)
 % at slices z-1 / z), as the per-slice mosaic correction via
 % :meth:`applyZBoundaryFix`. A weak/ambiguous match only reports why and
 % never moves anything. ROI size and search radius come from
-% ``roiSizeSpinner`` / ``searchRadiusSpinner`` when present (defaults 128 / 64 px).
+% ``ROIsizeSpinner`` / ``SearchradiusSpinner`` when present (defaults 128 / 64 px).
 %
 % Input Arguments:
 %   - **stripPointXY** — [1x2 double] click ``[x y]`` in pair-view strip
@@ -33,11 +33,11 @@ bboxA = obj.pairStrip.bboxA;
 clickXY = [stripPointXY(1) + bboxA(2, 1) - 1, stripPointXY(2) + bboxA(1, 1) - 1];
 
 options = struct('roiSize', 128, 'searchRadius', 64);
-if obj.hasWidget('roiSizeSpinner')
-    options.roiSize = obj.view.handles.roiSizeSpinner.Value;
+if obj.hasWidget('ROIsizeSpinner')
+    options.roiSize = obj.view.handles.ROIsizeSpinner.Value;
 end
-if obj.hasWidget('searchRadiusSpinner')
-    options.searchRadius = obj.view.handles.searchRadiusSpinner.Value;
+if obj.hasWidget('SearchradiusSpinner')
+    options.searchRadius = obj.view.handles.SearchradiusSpinner.Value;
 end
 
 obj.setStatus(sprintf('Correlating a %dx%d px ROI around the click...', ...

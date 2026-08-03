@@ -7,7 +7,7 @@ function scrollWheel_Callback(obj, evnt)
 %      obj.scrollWheel_Callback(evnt)
 %
 % While ``Shift`` is held (the hover ROI box is showing), the wheel adjusts
-% ``roiSizeSpinner`` — scroll up = larger box — clamped to the spinner's
+% ``ROIsizeSpinner`` — scroll up = larger box — clamped to the spinner's
 % limits, and the box under the cursor resizes live.
 %
 % Without ``Shift``, the wheel ZOOMS the pair view about the cursor (scroll
@@ -27,9 +27,9 @@ if obj.mibModel.preferences.System.DeveloperMode
 end
 if obj.shiftDown
     % ---- Shift+wheel: resize the correlation ROI box -----------------------
-    if ~obj.hasWidget('roiSizeSpinner'); return; end
+    if ~obj.hasWidget('ROIsizeSpinner'); return; end
 
-    spinner = obj.view.handles.roiSizeSpinner;
+    spinner = obj.view.handles.ROIsizeSpinner;
     step = 16;
     if isprop(spinner, 'Step') && ~isempty(spinner.Step)
         step = spinner.Step;

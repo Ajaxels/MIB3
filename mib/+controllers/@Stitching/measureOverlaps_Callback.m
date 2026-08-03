@@ -29,11 +29,12 @@ end
 % restricted-search pairwise measurement.
 if obj.BatchOpt.EstimateOverlap
     try
-        obj.runOverlapEstimation();
+        estimateCancelled = obj.runOverlapEstimation();
     catch estimateError
         obj.reportError(estimateError, 'Overlap estimation failed');
         return;
     end
+    if estimateCancelled; return; end
 end
 
 % Find neighbour pairs from nominal layout

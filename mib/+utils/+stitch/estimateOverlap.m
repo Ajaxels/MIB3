@@ -1,4 +1,4 @@
-function result = estimateOverlap(layout, options)
+function [result, cancelled] = estimateOverlap(layout, options)
 % ESTIMATEOVERLAP - Estimate the true grid overlap from the tile images themselves.
 %
 % Syntax:
@@ -38,6 +38,9 @@ function result = estimateOverlap(layout, options)
 %     - ``.minNcc`` — [double] minimum verification NCC to accept a pair (default: ``0.20``)
 %     - ``.minOverlapPx`` — [double] minimum implied overlap extent (default: ``16``)
 %     - ``.colorChannel`` — [double|'max'] channel used for registration (default: ``1``)
+%     - ``.showWaitbar`` — [logical] show a Cancelable progress dialog (default: ``false``);
+%       reading full-resolution tiles for the sampled pairs can take a noticeable time
+%     - ``.parentFigure`` — [handle] parent for the progress dialog (default: ``[]``)
 %
 % Output Arguments:
 %   - **result** — [struct] with fields:
@@ -47,6 +50,9 @@ function result = estimateOverlap(layout, options)
 %     - ``.stepX`` / ``.stepY`` — [1x2 double] median measured step ``[dy dx]`` per direction
 %     - ``.madX`` / ``.madY`` — [double] median absolute deviation of the step estimates (px)
 %     - ``.numMeasuredX`` / ``.numMeasuredY`` — [double] verified pairs per direction
+%   - **cancelled** — [logical] ``true`` when the user pressed Cancel on the progress
+%     dialog before every sampled pair was measured; ``result`` is then returned at its
+%     all-NaN/zero defaults (a cancelled estimate is discarded, not a partial one).
 %
 % **Example** — recover the overlap for a grid built with a wrong guess:
 %
@@ -63,10 +69,13 @@ if ~isfield(options, 'maxDim');       options.maxDim = 1024; end
 if ~isfield(options, 'minNcc');       options.minNcc = 0.20; end
 if ~isfield(options, 'minOverlapPx'); options.minOverlapPx = 16; end
 if ~isfield(options, 'colorChannel'); options.colorChannel = 1; end
+if ~isfield(options, 'showWaitbar');  options.showWaitbar = false; end
+if ~isfield(options, 'parentFigure'); options.parentFigure = []; end
 
 result = struct('overlapX', NaN, 'overlapY', NaN, ...
     'stepX', [NaN NaN], 'stepY', [NaN NaN], 'madX', NaN, 'madY', NaN, ...
     'numMeasuredX', 0, 'numMeasuredY', 0);
+cancelled = false;
 
 if numel(layout) < 2 || ~isfield(layout, 'gridRC'); return; end
 
@@ -89,8 +98,37 @@ tileW = layout(1).tileSize(2);
 downFactor = max(1, ceil(max(tileH, tileW) / options.maxDim));
 
 % ---- measure both directions ----------------------------------------------
-[stepsX, result.numMeasuredX] = measureDirection(xPairs, readerFcn, downFactor, options);
-[stepsY, result.numMeasuredY] = measureDirection(yPairs, readerFcn, downFactor, options);
+% Reading full-resolution tiles for each sampled pair can take a noticeable
+% time for large files — show progress (one step per pair, across both
+% directions) so the app does not look frozen, and let the user cancel out.
+totalPairs = size(xPairs, 1) + size(yPairs, 1);
+progressDialog = [];
+if options.showWaitbar && ~isempty(options.parentFigure) && totalPairs > 0
+    progressDialog = uiprogressdlg(options.parentFigure, 'Value', 0, 'Cancelable', 'on', ...
+        'Message', 'Estimating tile overlap...', 'Title', 'Stitching');
+end
+
+doneSoFar = 0;
+stepsY = zeros(0, 2);
+[stepsX, result.numMeasuredX, doneSoFar, cancelled] = ...
+    measureDirection(xPairs, readerFcn, downFactor, options, progressDialog, doneSoFar, totalPairs);
+if ~cancelled
+    [stepsY, result.numMeasuredY, doneSoFar, cancelled] = ...
+        measureDirection(yPairs, readerFcn, downFactor, options, progressDialog, doneSoFar, totalPairs); %#ok<ASGLU>
+end
+
+if ~isempty(progressDialog) && isvalid(progressDialog)
+    close(progressDialog);
+end
+
+if cancelled
+    % A cancelled estimate is discarded outright, not applied partially — the
+    % caller (runOverlapEstimation) checks this flag and leaves BatchOpt
+    % untouched, exactly as if Estimate overlap had never run.
+    result.numMeasuredX = 0;
+    result.numMeasuredY = 0;
+    return;
+end
 
 if result.numMeasuredX > 0
     result.stepX = median(stepsX, 1);
@@ -114,15 +152,31 @@ end
 end
 
 % =========================================================================
-function [steps, numMeasured] = measureDirection(pairs, readerFcn, downFactor, options)
+function [steps, numMeasured, doneSoFar, cancelled] = measureDirection(pairs, readerFcn, downFactor, options, progressDialog, doneSoFar, totalPairs)
 % MEASUREDIRECTION - Full-tile registration of each pair; returns verified steps [dy dx].
+%
+% progressDialog is [] when no dialog is shown; doneSoFar/totalPairs track
+% progress across BOTH directions (X then Y), since the caller shares one
+% dialog for the whole estimate. Cancel is checked before each pair (one
+% blocking tile-read + correlation), so a click takes effect at the next pair
+% boundary, not mid-pair; remaining pairs in this direction are then skipped.
 steps = zeros(0, 2);
+cancelled = false;
 for k = 1:size(pairs, 1)
+    if ~isempty(progressDialog) && isvalid(progressDialog) && progressDialog.CancelRequested
+        cancelled = true;
+        numMeasured = size(steps, 1);
+        return;
+    end
     tileA = prepareTile(readerFcn(pairs(k, 1)), downFactor, options.colorChannel);
     tileB = prepareTile(readerFcn(pairs(k, 2)), downFactor, options.colorChannel);
     offset = registerFullTiles(tileA, tileB, options);
     if ~any(isnan(offset))
         steps(end+1, :) = offset * downFactor; %#ok<AGROW>
+    end
+    doneSoFar = doneSoFar + 1;
+    if ~isempty(progressDialog) && isvalid(progressDialog)
+        progressDialog.Value = doneSoFar / totalPairs;
     end
 end
 numMeasured = size(steps, 1);

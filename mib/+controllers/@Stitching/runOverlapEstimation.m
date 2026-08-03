@@ -1,10 +1,10 @@
-function runOverlapEstimation(obj)
+function cancelled = runOverlapEstimation(obj)
 % RUNOVERLAPESTIMATION - Estimate the true grid overlap and rebuild the nominal layout.
 %
 % Syntax:
 %   .. code-block:: matlab
 %
-%      obj.runOverlapEstimation()
+%      cancelled = obj.runOverlapEstimation()
 %
 % Grid-style layout sources only (Grid, Filename pattern — both carry ``.gridRC``).
 % Calls :func:`utils.stitch.estimateOverlap` (full-tile phase correlation with
@@ -19,12 +19,25 @@ function runOverlapEstimation(obj)
 % silently replacing the project's tiles. Its nominal origins come from the file
 % and need no overlap guess.
 %
+% Shows a Cancelable progress dialog while the sampled tile pairs are read and
+% registered — reading full-resolution tiles can take a noticeable time for
+% large files. Returns ``cancelled = true`` (and leaves BatchOpt untouched) if
+% the user cancels before the estimate finished; callers must check this and
+% stop rather than continue to Measure overlaps with an un-estimated guess.
+%
+% Output Arguments:
+%   - **cancelled** — [logical] ``true`` when the user cancelled the estimate.
+%
 
+cancelled = false;
 if ~ismember(obj.BatchOpt.LayoutSource{1}, {'Grid', 'Filename pattern'}); return; end
 if obj.layoutFromProject; return; end
 if isempty(obj.layout); obj.buildLayoutFromBatchOpt(); end
 
-estimate = utils.stitch.estimateOverlap(obj.layout);
+estimateOptions.parentFigure = obj.guiFigure();
+estimateOptions.showWaitbar  = obj.BatchOpt.showWaitbar && ~isempty(estimateOptions.parentFigure);
+[estimate, cancelled] = utils.stitch.estimateOverlap(obj.layout, estimateOptions);
+if cancelled; return; end
 
 overlapChanged = false;
 if isfinite(estimate.overlapX) && estimate.numMeasuredX > 0

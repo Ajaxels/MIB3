@@ -47,6 +47,21 @@ Open it with <span class="widget widget-button">Inspect and fix...</span> in the
 
 ---
 
+## The seam table
+
+Each row is one measured seam (tile pair), ranked worst-first, in six columns:
+
+| Column | Meaning |
+|--------|---------|
+| **Seam** | axis + tile pair, e.g. `X (2-3)` for an in-plane seam or `Z (8-9)` for a cross-layer one. |
+| **Seam score** | pixel-based agreement (masked cross-correlation) of the two tiles re-read at their **solved** placement, 0–1, higher is better. This drives the ranking order and the row colour (green ≥ 0.7, amber ≥ 0.4, red below, grey when excluded). It is what catches a wrong-but-confident measurement: a repetitive-pattern lock-off can leave the solver residual at zero while the pixels themselves stay misaligned. |
+| **Residual px** | how far the global solve's placement differs from what this edge's own measurement asked for. Small means the solve matched this measurement; large means other edges/springs pulled the tile away from it. |
+| **Quality** | the registration confidence recorded when the edge was **measured** (peak-to-second-peak ratio, before any solve ran) — also the weight the solver gave this edge. It answers "how sure was the automatic pass", not "is the seam aligned now" — that is the Seam score. A seam with high Quality but a low Seam score is the dangerous case this inspector exists to catch. |
+| **Source** | `auto` (untouched automatic measurement), `confirmed` (reviewed and accepted as-is), or `user` (repositioned by a manual fix). |
+| **Used** | `yes`, or `EXCLUDED` when the seam has been toggled out of the solve. |
+
+---
+
 ## Mouse reference (pair view)
 
 | Action | Effect |
@@ -59,6 +74,33 @@ Open it with <span class="widget widget-button">Inspect and fix...</span> in the
 | Wheel | Zooms the pair view at the cursor |
 | <mouse class="right"></mouse> drag | Pans the view (no zoom change); clamped to the rendered tile extent |
 | <mouse class="left"></mouse> click (two-click match) | Sets a landmark point on whichever tile was clicked |
+
+---
+
+## Keyboard shortcuts reference
+
+<span class="widget widget-button">Key shortcuts</span> opens a pop-up list of every
+mouse, Shift+mouse, and keyboard control below — a quick reference without leaving the
+dialog.
+
+| Shortcut | Effect |
+|----------|--------|
+| ++enter++ | Confirm the current seam and jump to the next worst unreviewed |
+| ++x++ | Exclude / re-include the current seam from the solve |
+| ++n++ / ++p++ | Next / previous seam in the ranking |
+| ++q++ / ++w++ or ++down++ / ++up++ | Browse Z slices (++shift++ = ±5); always view-only, in both Fix XY and Fix Z |
+| ++z++ | Undo the fix on the current seam, restoring the original automatic edge (Fix Z: removes the boundary correction on screen) |
+| ++f++ | Fit the pair view, resetting the mouse-wheel zoom |
+| ++space++ | Flicker A/B (Flicker overlay mode) |
+
+Positional fixes are mouse-only — the keyboard never moves a tile. The mouse controls
+below live in the pair view (see [Mouse reference](#mouse-reference-pair-view)) plus two
+more, elsewhere in the dialog:
+
+| Control | Effect |
+|---------|--------|
+| <mouse class="left"></mouse> click on the mini-map | Jumps to review the seam nearest the click point |
+| <mouse class="left"></mouse> click on a seam table row | Selects that seam for review |
 
 ---
 

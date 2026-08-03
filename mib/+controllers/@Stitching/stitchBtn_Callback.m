@@ -50,7 +50,11 @@ try
 
     if isempty(obj.edges)
         if obj.BatchOpt.EstimateOverlap
-            obj.runOverlapEstimation();
+            estimateCancelled = obj.runOverlapEstimation();
+            if estimateCancelled
+                notify(obj.mibModel, 'StopProtocol');
+                return;
+            end
         end
         nominalPairs = utils.stitch.findNeighborPairs(obj.layout, struct('minOverlapPx', 16));
         measureOptions.qualityThreshold   = obj.BatchOpt.QualityThreshold{1};
@@ -230,7 +234,21 @@ elseif strcmp(outputMode, 'OME-Zarr3 (BigData)')
         newDataset.slices{5} = repmat(min([newDataset.slices{5}(1), newDataset.image.time]), 1, 2);
         newDataset.slices{newDataset.orientation} = [1, 1];
 
+        % Sync Sets.datasetTypes for the swapped buffer (applyAlignmentBigData.m:401-404)
+        % — the Datasets panel's type dropdown (MibActiveDataset.buffers_Callback)
+        % reads this cache, not dataset.datasetType directly, so without this the
+        % panel keeps showing "Standard" even though the buffer is now BigData.
+        targetSet     = floor((activeId - 1) / obj.mibModel.Sets.datasetsInSet) + 1;
+        targetLocalId = mod(activeId - 1, obj.mibModel.Sets.datasetsInSet) + 1;
+        obj.mibModel.Sets.datasetTypes{targetSet, targetLocalId} = newDataset.datasetType;
+
         notify(obj.mibModel, 'NewDataset');
+        % NewDataset alone does not repaint the type dropdown: listener_newDataset
+        % only fires 'DatasetsPanelUpdate' when the active SET changes, which an
+        % in-place buffer swap never does. Fire it explicitly (CropDataset.m
+        % pattern: "sync datasetType widget in Datasets panel") so the widget
+        % actually re-reads the Sets.datasetTypes value just written above.
+        notify(obj.mibModel, 'DatasetsPanelUpdate');
     catch reopenError
         if ~batchModeSwitch
             utils.dlgs.showErrorDialog(fuseOptions.parentFigure, ...

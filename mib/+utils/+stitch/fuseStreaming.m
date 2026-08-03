@@ -110,7 +110,13 @@ for pyramidField = {'Levels', 'ShardSize', 'DownsampleMethod', ...
     end
 end
 
-saver = io.savers.Zarr3Saver(struct());
+% Zarr3Saver's progress dialog is gated on obj.ParentFigure, a property set
+% only at CONSTRUCTION time (from a 'ParentFigure' field) — saveStream's own
+% options struct (saverOptions.showWaitbar above) does not feed it. Passing
+% struct() here left ParentFigure empty, so createProgressDialog always
+% returned [] and the dialog silently never appeared regardless of
+% showWaitbar. Same pattern as applyAlignmentBigData.m / ImageConverter.m.
+saver = io.savers.Zarr3Saver(struct('ParentFigure', options.parentFigure));
 saver.saveStream(provider, metadata, outputZarrPath, saverOptions);
 end
 

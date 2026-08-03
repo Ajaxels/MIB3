@@ -255,8 +255,8 @@ whenever convenient.
 
 | Handle | Class | Properties / Text | What it drives |
 |------|-------|-------------------|----------------|
-| `roiSizeSpinner` | `uispinner` | Limits `[32 512]`, default `128`, step `16` | Click-to-correlate ROI edge length (px). Keep it SMALLER than the overlap strip on small tiles. |
-| `searchRadiusSpinner` | `uispinner` | Limits `[8 256]`, default `64`, step `8` | Correlation search radius around the current offset (px per side). |
+| `ROIsizeSpinner` | `uispinner` | Limits `[16 Inf]`, default `128`, step `32` | Click-to-correlate ROI edge length (px). Keep it SMALLER than the overlap strip on small tiles. |
+| `SearchradiusSpinner` | `uispinner` | Limits `[8 256]`, default `64`, step `8` | Correlation search radius around the current offset (px per side). |
 | `twoClickBtn` | `uibutton` | `'Two-click match'` | `twoClickBtn_Callback` — side-by-side full tiles, click the same landmark in each (for offsets beyond any search radius). Press again to cancel. |
 | `fixModeDropdown` | `uidropdown` | Items `{'Fix XY','Fix Z (match slices)'}`, default `'Fix XY'` | What a fix edits on 3D pairs (2D pairs ignore it). **Fix Z** = slice-matching across the Z boundary: PgUp/PgDn steps tile j's slice (Ctrl = tile i's) to propose the correspondence; Shift+click/drag/arrows apply it (as dz) together with the in-plane offset. |
 | `undoFixBtn` | `uibutton` | `'Undo fix (Z)'` | `undoFix_Callback` — restore the original automatic edge. |
@@ -269,8 +269,8 @@ Pair-view mouse interactions (no mlapp work — the controller wires image
 to fit; the zoom survives re-renders of the SAME seam — nudges, drags, fixes —
 and resets on seam change or `F`/`fitViewBtn`);
 **Shift+hover** shows the correlation ROI box under the cursor (yellow,
-`roiSizeSpinner`-sized, click-transparent), **Shift+wheel** resizes it (steps
-`roiSizeSpinner` within its limits) and **Shift+click** = click-to-correlate
+`ROIsizeSpinner`-sized, click-transparent), **Shift+wheel** resizes it (steps
+`ROIsizeSpinner` within its limits) and **Shift+click** = click-to-correlate
 within it; DRAG = move tile *j* live (grey background + 50% alpha overlay,
 keeping the current zoom), release applies the fix; a plain click is
 deliberately a no-op (stray clicks must never move tiles).
