@@ -581,7 +581,7 @@ classdef ImageFilters < handle
             if obj.mibModel.preferences.System.DeveloperMode
                 fprintf('controllers.ImageFilters.helpButton_Callback: triggered\n');
             end
-            helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'ribbon', 'image', 'image-filters.html');
+            helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'html', 'user-interface', 'ribbon', 'image', 'image-filters.html');
             if isfile(helpFilPath)
                 web(helpFilPath, '-browser');
             else

@@ -331,7 +331,7 @@ classdef ThreshAnalysisForObjects < handle
         % -----------------------------------------------------------------
         function helpBtn_Callback(obj)
             % helpBtn_Callback  Open plugin documentation in the browser.
-            helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'plugins', 'organelle-analysis', 'thres-analysis-for-objects.html');
+            helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'html', 'user-interface', 'plugins', 'organelle-analysis', 'thres-analysis-for-objects.html');
             if isfile(helpFilPath)
                 web(helpFilPath, '-browser');
             else

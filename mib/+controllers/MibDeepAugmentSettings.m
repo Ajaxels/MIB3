@@ -527,7 +527,7 @@ classdef MibDeepAugmentSettings < handle
             %   function help(obj)
             %
             
-            helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'deepmib', 'deepmib-train.html');
+            helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'html', 'user-interface', 'deepmib', 'deepmib-train.html');
             if isfile(helpFilPath)
                 web(helpFilPath, '-browser');
             else

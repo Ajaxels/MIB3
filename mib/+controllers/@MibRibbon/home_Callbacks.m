@@ -158,7 +158,7 @@ switch mode
         obj.mibModel.preferences.Colors.ModelMaterialColors = obj.mibModel.I{id}.labels.materialColors;
         obj.mibController.startController('controllers.Preferences', obj.mibController);  % a new appdesigner version
     case 'Help'                         % obj.handles.ribbonHome.help
-        helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'index.html');
+        helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'html', 'index.html');
         if isfile(helpFilPath)
             web(helpFilPath, '-browser');
         else
@@ -166,7 +166,7 @@ switch mode
         end
 
     case 'Open MIB help'                % obj.handles.ribbonHome.helpMenu
-        helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'index.html');
+        helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'html', 'index.html');
         if isfile(helpFilPath)
             web(helpFilPath, '-browser');
         else

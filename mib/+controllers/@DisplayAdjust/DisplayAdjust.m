@@ -1292,7 +1292,7 @@ classdef DisplayAdjust < handle
             if obj.mibModel.preferences.System.DeveloperMode
                 fprintf('controllers.DisplayAdjust.adjHelpBtn_Callback: triggered\n');
             end
-            helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'panels', 'selection_imview', 'viewsettings-adjustments.html');
+            helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'html', 'user-interface', 'panels', 'selection_imview', 'viewsettings-adjustments.html');
             if isfile(helpFilPath)
                 web(helpFilPath, '-browser');
             else

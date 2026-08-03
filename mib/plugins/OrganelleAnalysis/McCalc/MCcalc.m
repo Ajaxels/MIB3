@@ -175,7 +175,7 @@ classdef MCcalc < handle
         end
 
         function helpBtn_Callback(obj)
-            helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'plugins', 'organelle-analysis', 'mccalc.html');
+            helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'html', 'user-interface', 'plugins', 'organelle-analysis', 'mccalc.html');
             if isfile(helpFilPath)
                 web(helpFilPath, '-browser');
             else

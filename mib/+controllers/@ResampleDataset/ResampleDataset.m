@@ -380,7 +380,7 @@ classdef ResampleDataset < handle
             if obj.mibModel.preferences.System.DeveloperMode
                 fprintf('controllers.ResampleDataset.helpBtn_Callback: triggered\n');
             end
-            helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'ribbon', 'dataset', 'dataset-resample.html');
+            helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'html', 'user-interface', 'ribbon', 'dataset', 'dataset-resample.html');
             if isfile(helpFilPath)
                 web(helpFilPath, '-browser');
             else

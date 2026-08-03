@@ -17,6 +17,7 @@ function optimizePositions_Callback(obj)
 if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.Stitching.optimizePositions_Callback: triggered\n');
 end
+
 if isempty(obj.edges)
     obj.warnUser('No edge measurements available. Please run Measure first.', 'No measurements');
     return;

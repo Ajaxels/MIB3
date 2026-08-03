@@ -216,7 +216,7 @@ classdef TripleAreaIntensity < handle
         end
 
         function helpBtn_Callback(obj)
-            helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'plugins', 'intensity-analysis', 'triple-area-intensity.html');
+            helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'html', 'user-interface', 'plugins', 'intensity-analysis', 'triple-area-intensity.html');
             if isfile(helpFilPath)
                 web(helpFilPath, '-browser');
             else

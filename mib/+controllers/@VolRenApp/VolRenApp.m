@@ -2730,7 +2730,7 @@ classdef VolRenApp < handle
             if obj.mibModel.preferences.System.DeveloperMode
                 fprintf('controllers.VolRenApp.showHelp: triggered\n');
             end
-            helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'ribbon', 'home', 'home-mib3Dviewer.html');
+            helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'html', 'user-interface', 'ribbon', 'home', 'home-mib3Dviewer.html');
             if isfile(helpFilPath)
                 web(helpFilPath, '-browser');
             else

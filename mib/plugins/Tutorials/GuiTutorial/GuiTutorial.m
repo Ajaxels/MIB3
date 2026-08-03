@@ -218,7 +218,7 @@ classdef GuiTutorial < handle
         % =====================================================================
         function helpBtn_Callback(obj)
         % helpBtn_Callback  Open the MIB tutorials page in the browser.
-            helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'plugins', 'tutorials', 'gui-tutorial.html');
+            helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'html', 'user-interface', 'plugins', 'tutorials', 'gui-tutorial.html');
             if isfile(helpFilPath)
                 web(helpFilPath, '-browser');
             else

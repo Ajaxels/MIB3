@@ -570,7 +570,7 @@ classdef MorphOpsImages < handle
             if obj.mibModel.preferences.System.DeveloperMode
                 fprintf('controllers.MorphOpsImages.helpButton_Callback: triggered\n');
             end
-            helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'ribbon', 'image', 'image-morphops.html');
+            helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'html', 'user-interface', 'ribbon', 'image', 'image-morphops.html');
             if isfile(helpFilPath)
                 web(helpFilPath, '-browser');
             else

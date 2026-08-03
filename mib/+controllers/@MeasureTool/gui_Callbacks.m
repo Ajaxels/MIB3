@@ -91,7 +91,7 @@ switch source.Tag
         obj.updateTable();
 
     case 'helpBtn'
-        helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'ribbon', 'tools', 'tools-measuretool.html');
+        helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'html', 'user-interface', 'ribbon', 'tools', 'tools-measuretool.html');
         if isfile(helpFilPath)
             web(helpFilPath, '-browser');
         else

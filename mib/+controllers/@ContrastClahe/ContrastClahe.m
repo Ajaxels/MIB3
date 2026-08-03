@@ -258,7 +258,7 @@ classdef ContrastClahe < handle
             if obj.mibModel.preferences.System.DeveloperMode
                 fprintf('controllers.ContrastClahe.helpButton_Callback: triggered\n');
             end
-            helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'ribbon', 'image', 'clahe.html');
+            helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'html', 'user-interface', 'ribbon', 'image', 'clahe.html');
             if isfile(helpFilPath)
                 web(helpFilPath, '-browser');
             else

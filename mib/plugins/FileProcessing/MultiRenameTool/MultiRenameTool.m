@@ -506,7 +506,7 @@ classdef MultiRenameTool < handle
 
         function helpButton_Callback(obj)
 
-            helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'plugins', 'file-processing', 'multi-rename-tool.html');
+            helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'html', 'user-interface', 'plugins', 'file-processing', 'multi-rename-tool.html');
             if isfile(helpFilPath)
                 web(helpFilPath, '-browser');
             else

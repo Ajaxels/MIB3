@@ -59,7 +59,7 @@ switch mode
         obj.runMacro();
         
     case 'helpButton' %
-        helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'panels', 'fijiconnect', 'index.html');
+        helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'html', 'user-interface', 'panels', 'fijiconnect', 'index.html');
         if isfile(helpFilPath)
             web(helpFilPath, '-browser');
         else

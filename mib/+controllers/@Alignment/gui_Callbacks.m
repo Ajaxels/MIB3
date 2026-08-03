@@ -24,7 +24,7 @@ switch source.Tag
     case 'closeBtn'
         obj.closeWindow();
     case 'helpBtn'
-        helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'ribbon', 'dataset', 'dataset-alignment.html');
+        helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'html', 'user-interface', 'ribbon', 'dataset', 'dataset-alignment.html');
         if isfile(helpFilPath)
             web(helpFilPath, '-browser');
         else

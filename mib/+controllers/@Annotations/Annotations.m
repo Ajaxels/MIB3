@@ -1309,7 +1309,7 @@ classdef Annotations < handle
             %       obj.helpBtn_Callback()
             %
 
-            helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'panels', 'segm', 'segm-annotations.html');
+            helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'html', 'user-interface', 'panels', 'segm', 'segm-annotations.html');
             if isfile(helpFilPath)
                 web(helpFilPath, '-browser');
             else

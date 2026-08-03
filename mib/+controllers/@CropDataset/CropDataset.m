@@ -1077,7 +1077,7 @@ classdef CropDataset < handle
             if obj.mibModel.preferences.System.DeveloperMode
                 fprintf('controllers.CropDataset.helpButton_Callback: triggered\n');
             end
-            helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'ribbon', 'dataset', 'dataset-crop.html');
+            helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'html', 'user-interface', 'ribbon', 'dataset', 'dataset-crop.html');
             if isfile(helpFilPath)
                 web(helpFilPath, '-browser');
             else

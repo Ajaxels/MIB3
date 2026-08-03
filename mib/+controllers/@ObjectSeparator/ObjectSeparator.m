@@ -634,7 +634,7 @@ classdef ObjectSeparator < handle
             if obj.mibModel.preferences.System.DeveloperMode
                 fprintf('controllers.ObjectSeparator.helpButton_Callback: triggered\n');
             end
-            helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'ribbon', 'tools', 'tools-objectsep.html');
+            helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'html', 'user-interface', 'ribbon', 'tools', 'tools-objectsep.html');
             if isfile(helpFilPath)
                 web(helpFilPath, '-browser');
             else

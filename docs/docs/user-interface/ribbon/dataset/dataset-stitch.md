@@ -6,10 +6,13 @@
 
 ## Overview
 
+![Stitching dialog](images/stitchingDialog.png){.on-glb align=left width="340"}
+
+
 The Stitching tool assembles a collection of 2D image tiles into a single large mosaic.
-Starting from a rough initial placement (a regular grid, a position file, or a filename
-pattern), the tool measures the true overlap between neighboring tiles using phase
-correlation, finds a globally consistent position for every tile, and fuses the tiles
+Starting from a rough initial placement (a regular grid, a position file, a filename
+pattern, or stage coordinates), the tool measures the true overlap between neighboring tiles 
+using phase correlation, finds a globally consistent position for every tile, and fuses the tiles
 into a new dataset.
 
 Both 2D tile collections and 3D tiles (Z-stacks) are supported: for 3D data the tool
@@ -20,8 +23,6 @@ layers afterwards.
 Small mosaics are assembled directly in memory; mosaics that exceed available memory can
 be streamed to an OME-Zarr file and opened in MIB as a BigData dataset.
 
-<!-- ![Stitching Window](images/menuDatasetStitch.png){.on-glb align=left width="400"} -->
-
 ---
 
 ## The window at a glance
@@ -30,8 +31,8 @@ The dialog is arranged top to bottom in four areas, following the order you work
 
 | Area | Contains |
 |------|----------|
-| **Header** | <span class="widget widget-dropdown">Layout source</span> — *how the tiles are arranged*. It governs the whole dialog (which settings below are enabled), so it sits above everything else. The italic line under it reminds you what to select and set for the chosen source. |
-| **Settings tabs** | Three tabs, one per question: <span class="widget widget-button">Input tiles</span> (*which files*), <span class="widget widget-button">Tile settings</span> (*how they are arranged*), <span class="widget widget-button">Registration</span> (*how they are matched* — plus the <span class="widget widget-button">Measure overlaps</span> and <span class="widget widget-button">Optimize positions</span> buttons, which consume exactly those settings). |
+| **Header** | <span class="widget widget-dropdown">Layout source</span> - *how the tiles are arranged*. It governs the whole dialog (which settings below are enabled), so it sits above everything else. The italic text under it gives a short explanation about the selected mode. |
+| **Settings tabs** | Three tabs, one per question: <span class="widget widget-button">Input tiles</span> (*which files*), <span class="widget widget-button">Tile settings</span> (*how they are arranged*), <span class="widget widget-button">Registration</span> (*how they are matched*). |
 | **Output panel** | The layout preview on the left, the output/blend settings and project buttons on the right, and the two readouts underneath: the status line (tiles / measured seams / solved) and the colour-coded alignment-quality chip. |
 | **Action strip** | Always reachable, whichever tab is open: help, <span class="widget widget-button">Inspect and fix...</span>, <span class="widget widget-button">Stitch</span>, <span class="widget widget-button">Close</span>. |
 
@@ -39,35 +40,30 @@ The dialog is arranged top to bottom in four areas, following the order you work
 
 ## The stitching pipeline
 
-Stitching runs in four stages. The stages can be triggered one by one — recommended for
-the first time, to check intermediate results — or the
-<span class="widget widget-button">Stitch</span> button runs any stages not done yet
-automatically. Steps 1–2 sit next to the settings they use (on the *Registration* tab and
-in the *Output* panel); only <span class="widget widget-button">Stitch</span> is in the
-bottom strip.
+Stitching runs in four stages. The stages can be triggered one by one - recommended for
+the first time, to check intermediate results - or the
+<span class="widget widget-button">Stitch</span> button can be used at any stage.
 
-1. <span class="widget widget-button">Preview layout</span> *(Output panel)* — draws the
+1. <span class="widget widget-button">Preview layout</span> *(Output panel)* - draws the
    nominal tile arrangement as numbered rectangles on the preview axes. Use it to verify
    that the grid dimensions, tile order, and overlap settings are correct **before** any
-   heavy computation: wrong settings show up as an incorrect numbering sequence or as gaps
-   between rectangles.
+   heavy computation.
 
     Tick <label class="widget widget-checkbox">Edit layout</label> to switch the
     preview into **interactive placement** mode: each tile becomes a draggable rectangle (its size
-    is fixed — only the position moves). Drag tiles to a better rough arrangement when there is no
-    grid/position file to start from, or to fix a badly-placed tile. Each move updates that tile's
+    is fixed - only the position moves). Drag tiles to a better rough arrangement;each move updates that tile's
     nominal position and clears any previous measurement, so the next
     <span class="widget widget-button">Measure overlaps</span> / <span class="widget widget-button">Optimize positions</span>
-    run starts from the corrected layout. Untick to return to the static view.
+    in the *Registration* tab start computation from the corrected layout. Untick to return to the static view.
 
-2. <span class="widget widget-button">Measure overlaps</span> *(Registration tab)* — for every pair of
+2. <span class="widget widget-button">Measure overlaps</span> *(Registration tab)* - for every pair of
    neighboring tiles, the expected overlap region is cut from both tiles and their
    *actual* relative displacement is measured with FFT phase correlation. Each
    measurement gets a quality score from 0 to 1: a crisp, well-textured overlap scores
    close to 1, while a featureless or non-matching overlap scores close to 0.
    Measurements below the quality threshold are marked invalid.
 
-3. <span class="widget widget-button">Optimize positions</span> *(Registration tab)* — computes the final
+3. <span class="widget widget-button">Optimize positions</span> *(Registration tab)* - computes the final
    position of every tile. Pairwise measurements are only *relative* statements
    ("tile 5 sits 342.7 px right of tile 4"), and with more measurements than tiles they
    slightly contradict each other. Instead of chaining tiles one after another (which
@@ -75,25 +71,25 @@ bottom strip.
    tile graph: every valid measurement is an equation weighted by its quality, and all
    positions are found at once. Tiles whose measurements were rejected are held near
    their nominal grid positions. The result is summarised by a colour-coded quality
-   rating — **Excellent** (green) / **Good** / **Fair** / **Poor** (red) — built from two
+   rating - **Excellent** (green) / **Good** / **Fair** / **Poor** (red) - built from two
    independent checks (both in the chip's tooltip):
 
-    - the **solver residual** — how much the pairwise measurements still disagree at the
+    - the **solver residual** - how much the pairwise measurements still disagree at the
       solved positions (RMSE in pixels). Note this is blind on chain-like layouts: with
       no loops in the tile graph the residual is ~0 whatever the measurements claim;
-    - the **pixel seam check** — the overlap pixels are re-read at every solved seam and
+    - the **pixel seam check** - the overlap pixels are re-read at every solved seam and
       cross-correlated (the same score the
       [seam inspector](dataset-stitch-inspector.md) ranks by). If the worst seam
       matches poorly the chip turns orange **Check seams** or red **Seams disagree** even
-      when the residual looks perfect — the signature of a wrong layout
+      when the residual looks perfect - the signature of a wrong layout
       orientation/order or a confidently-wrong measurement. Z-stack tiles are scored
       **slice by slice at the solved Z offset**, and seams between Z-layers are
       additionally re-scored at nearby Z offsets: if the pixels prefer a different Z
       the chip turns orange **Check Z alignment** and the inspector's offset readout
       states the preferred shift (e.g. *pixels prefer dz+2*).
 
-    If any tile has **no valid measurement at all** the chip turns orange —
-    **Alignment incomplete** — because such a tile is simply parked at its nominal
+    If any tile has **no valid measurement at all** the chip turns orange -
+    **Alignment incomplete** - because such a tile is simply parked at its nominal
     position and neither check covers it; check the grid rows/cols or fix its seams in
     the [seam inspector](dataset-stitch-inspector.md). The layout preview refreshes
     automatically after every solve and shows the **solved** positions (the title states
@@ -102,10 +98,10 @@ bottom strip.
     The chip keeps up with the [seam inspector](dataset-stitch-inspector.md) while it is
     open: excluding a seam changes which seams the worst-match is taken over, so the
     verdict is re-derived immediately. Until you press *Re-solve* it reads
-    **Seams edited — press Re-solve to update the alignment**, because the residual still
+    **Seams edited - press Re-solve to update the alignment**, because the residual still
     belongs to the previous edge set.
 
-4. <span class="widget widget-button">Stitch</span> *(bottom strip)* — fuses the tile pixels into the
+4. <span class="widget widget-button">Stitch</span> *(bottom strip)* - fuses the tile pixels into the
    output mosaic at the optimized positions, blending the overlap regions according to
    the selected blend mode, and opens the result as a new dataset in MIB.
 
@@ -114,7 +110,7 @@ bottom strip.
 ## When automatic stitching fails: Inspect & fix
 
 Automatic stitching can fail silently: a measurement that locked onto repetitive content
-one period off satisfies the solver perfectly on sparse tile arrangements — the quality
+one period off satisfies the solver perfectly on sparse tile arrangements - the quality
 rating stays green while a tile sits a full period out of place.
 
 The <span class="widget widget-button">Inspect and fix...</span> button in the bottom strip
@@ -130,156 +126,195 @@ corrected mosaic.
 
 ## Layout source
 
+![Layout source](images/stitching_layout.png){.off-glb align=right}
+
 The <span class="widget widget-dropdown">Layout source</span> dropdown at the top of the window
-states **how the tiles are arranged** — the one choice everything else follows from, which is why
-it sits above the tabs rather than inside one. Switching it re-enables the relevant settings on the
-*Tile settings* tab and rebuilds the layout; if the input you already selected cannot be used with
-the new source, the stale layout is dropped and the status line asks you to re-select it. The
-italic line underneath summarises what to pick and what to set for the selected source.
+states **how the tiles are arranged**. Switching it re-enables the relevant settings on the
+*Tile settings* tab and rebuilds the layout.
+The italic line underneath summarises the selected layout mode.
 
-- **Grid**: tiles form a regular grid; specify rows, columns, acquisition order, and overlap on the
-  *Tile settings* tab.
-- **Position file**: a text file listing every tile with its position — one line per tile,
-  `filename X Y` or `filename X Y Z`, space-, tab-, or comma-separated. Positions are in **pixels**
-  (see the examples below). The optional Z column places tiles on distinct layers; layers that
-  overlap in Z are refined by the same global solve as the XY overlaps.
-- **Filename pattern**: grid indices are parsed from `Z##`, `X##` and `Y##` tokens in the file
-  (or, for folder tiles, the **folder**) names — the pattern produced by the MIB dataset chunking
-  tool, e.g. `myStack_Z01-X02-Y03.tif` → Z-layer 1, column 2, row 3. **The order of the three
-  tokens does not matter** (see the note below).
-  Tiles default to abutting (0% overlap, exact reassembly of chunks); set **Overlap X/Y** (or tick
-  **Estimate overlap**) when the pattern-named tiles come from an overlapping acquisition and the
-  tool will register them like the Grid source.
-- **Bio-Formats metadata**: tile positions are read from the **stage coordinates embedded in the
-  image metadata** (OME `Plane PositionX/Y/Z`) — no manual arrangement needed. Point it at one
-  multi-series file (each series is a tile) or at several single-tile files; the microscope's
-  recorded positions become the nominal layout, converted from **micrometres** to pixels via the
-  stored pixel size. Distinct stage-Z values are placed on separate layers and jointly solved.
+=== "Bio-Formats metadata"
 
-??? example "Position file: format, units and examples"
-    **Units — this is the part that trips people up.** The position file is written in **image
-    units, not stage units**:
+    Tile positions are read from the **stage coordinates embedded in the
+    image metadata** (OME `Plane PositionX/Y/Z`) - no manual arrangement needed. 
+    
+    Point it at one multi-series file (each series is a tile) or at several single-tile files; 
+    the microscope's recorded positions become the nominal layout, converted from **micrometres** 
+    to pixels via the stored pixel size. 
 
-    | Column | Unit | Meaning |
-    |--------|------|---------|
-    | `X` | **pixels** | horizontal offset of the tile's **top-left corner** in the mosaic; increases to the **right** |
-    | `Y` | **pixels** | vertical offset of the tile's top-left corner; increases **downward** (image convention, not a plot axis) |
-    | `Z` *(optional)* | **slices** | index of the slice the tile starts at — a whole-number slice count, **not** a µm depth |
+    Distinct stage-Z values are placed on separate layers and jointly solved.
 
-    Coordinates are **0-based**: the top-left tile of a mosaic is at `0 0` (or `0 0 0`). They may be
-    **fractional** (`130.5`) — sub-pixel nominal positions are kept as given.
+=== "Filename pattern"
 
-    If your stage coordinates are in **micrometres**, divide by the pixel size before writing the
-    file — `X_px = X_µm / pixelSizeX_µm` — or skip the file entirely and use the
-    **Bio-Formats metadata** source, which reads the µm stage coordinates from the images and does
-    that conversion for you.
+    Grid indices are parsed from `Z##`, `X##` and `Y##` tokens in the file
+    (or, for folder tiles, the **folder**) names *e.g.*<br>
+    `myStack_Z01-X02-Y03.tif` → Z-layer 1, column 2, row 3. 
 
-    The positions only need to be **roughly** right: they are the starting guess that
-    *Measure overlaps* and *Optimize positions* refine. Errors of a few tens of pixels are normal
-    and expected; a systematically wrong overlap is not.
+    **The order of the three tokens does not matter** (see the note below).
 
-    ---
+    Tiles overlap can be specified using <span class="widget widget-edit">Overlap X/Y</span> (or tick
+    <span class="widget widget-checkbox">Estimate overlap</span>) when the pattern-named tiles come from an overlapping acquisition and the
+    tool will register them like the Grid source.
 
-    **A 2×2 mosaic of 512×512 tiles with ~20 % overlap** (step = 512 × 0.8 ≈ 410 px):
+    ??? note "Filename pattern: what the tokens must look like"
+        Each of the three tokens (X, Y, Z) is located **independently**, so their **order is irrelevant** and so are
+        the separators - `myStack_Z01-X02-Y03`, `myStack_X02-Y03-Z01` and `myStackY03X02Z01` all describe
+        the very same tile (Z-layer 1, column 2, row 3). The same rules apply to **folder** names when
+        <span class="widget widget-checkbox">Tiles are folders</span> is on. 
 
-    ```text
-    # tile               X     Y
-    tiles/tile_01.tif      0     0
-    tiles/tile_02.tif    410     0
-    tiles/tile_03.tif      0   410
-    tiles/tile_04.tif    410   410
-    ```
+        What does matter:
+    
+        - [x] each token is an **upper-case** `Z`, `X` or `Y` followed by **exactly two digits** - `Z01`, not
+          `Z1` and not `z01`;
+        - [x] indices are **1-based**: the first tile is `Z01-X01-Y01`;
+        - [x] the **last** `Z`, `X` and `Y` in the name are taken as the tokens. Those letters may therefore
+          appear *before* them (`XYZstack_Z01-X01-Y01` is fine) but not *after*
+          (`..._Z01-X01-Y01_XY` is not);
+        - [x] all three tokens must be present. Tiles named in some other scheme - a folder of `tile_r1c1`,
+          `tile_r1c2`, … for instance - cannot use this source; arrange them with **Grid** instead.
+    
+    ??? warning "Tokens longer than two digits are silently truncated"
+        **Only two characters after each letter are read!**
 
-    **The same mosaic on two Z-layers**, each layer 40 slices thick with an 8-slice overlap
-    (layer 1 starts at slice 0, layer 2 at slice 32) — the tiles here are **folders**, one
-    Z-stack each:
+        A three-digit token such as `Z001-X002-Y003` is parsed as `Z=00, X=00, Y=00` - **without any error**!
 
-    ```text
-    # tile folder          X     Y     Z
-    stacks/tile_01_L1      0     0     0
-    stacks/tile_02_L1    410     0     0
-    stacks/tile_01_L2      0     0    32
-    stacks/tile_02_L2    410     0    32
-    ```
+        Thus every tile is assigned the same invalid grid cell and the layout preview shows them all piled 
+        on top of each other. 
 
-    **Comma-separated, with absolute paths and a filename containing spaces:**
+        Acquisitions with more than 99 tiles along an axis must be renamed to two-digit tokens, or arranged 
+        with the **Grid** or **Position file** source instead. 
+        A one-digit token (`Z1`) fails outright with an index error.
 
-    ```text
-    D:\data\scan 1\tile A.tif, 0, 0
-    D:\data\scan 1\tile B.tif, 410, 0
-    ```
+=== "Grid"
 
-    ---
+    Tiles form a regular grid; specify rows, columns, acquisition order, and overlap on the
+    *Tile settings* tab.
 
-    **Rules the parser applies:**
+=== "Position file"
 
-    - **One tile per line**, at least 3 columns; a line with fewer is skipped with a warning.
-    - The **delimiter is auto-detected from the first data line**: a comma if the line contains one,
-      otherwise a tab, otherwise runs of whitespace. Filenames containing spaces therefore require
-      the comma or tab form.
-    - Lines that are **empty** or start with `#` or `%` are **comments** and are ignored — so the
-      header lines in the examples above are optional documentation, not parsed column names.
-    - `filename` may be **relative** to the folder holding the position file (as above), or absolute
-      (`C:\…`, `\\server\share\…`, `/…`).
-    - `filename` may name a **single image file or a folder** holding that tile's Z-stack — detected
-      per entry, so the two can even be mixed in one file. The
-      <label class="widget widget-checkbox">Tiles are folders (Z-stacks)</label> checkbox is
-      therefore not needed (and is disabled) for this source.
-    - Each **distinct `Z` value becomes one layer**, numbered in ascending order. Tiles sharing a `Z`
-      value are on the same layer and are matched to each other in XY; tiles on adjacent layers are
-      matched across the layer boundary. Omitting the `Z` column puts every tile on one layer.
-    - Tiles may be listed in **any order** — the file states the positions explicitly, so nothing
-      depends on sorting.
+    A text file listing every tile with its position - one line per tile,
+    `filename X Y` or `filename X Y Z`, space-, tab-, or comma-separated. 
 
-!!! note "Filename pattern: what the tokens must look like"
-    Each of the three tokens is located **independently**, so their **order is irrelevant** and so are
-    the separators — `myStack_Z01-X02-Y03`, `myStack_X02-Y03-Z01` and `myStackY03X02Z01` all describe
-    the very same tile (Z-layer 1, column 2, row 3). The same rules apply to **folder** names when
-    *Tiles are folders* is on. What does matter:
+    Positions are in **pixels** (see the examples below). 
+    The optional Z column places tiles on distinct layers; layers that
+    overlap in Z are refined by the same global solve as the XY overlaps.
 
-    - each token is an **upper-case** `Z`, `X` or `Y` followed by **exactly two digits** — `Z01`, not
-      `Z1` and not `z01`;
-    - indices are **1-based**: the first tile is `Z01-X01-Y01`;
-    - the **last** `Z`, `X` and `Y` in the name are taken as the tokens. Those letters may therefore
-      appear *before* them (`XYZstack_Z01-X01-Y01` is fine) but not *after*
-      (`..._Z01-X01-Y01_XY` is not);
-    - all three tokens must be present. Tiles named in some other scheme — a folder of `tile_r1c1`,
-      `tile_r1c2`, … for instance — cannot use this source; arrange them with **Grid** instead.
+    ??? example "Position file: format, units and examples"
+        **Units - this is the part that trips people up.** The position file is written in **image
+        units, not stage units**:
+    
+        | Column | Unit | Meaning |
+        |--------|------|---------|
+        | `X` | **pixels** | horizontal offset of the tile's **top-left corner** in the mosaic; increases to the **right** |
+        | `Y` | **pixels** | vertical offset of the tile's top-left corner; increases **downward** (image convention, not a plot axis) |
+        | `Z` *(optional)* | **slices** | index of the slice the tile starts at - a whole-number slice count, **not** a µm depth |
+    
+        Coordinates are **0-based**: the top-left tile of a mosaic is at `0 0` (or `0 0 0`). They may be
+        **fractional** (`130.5`) - sub-pixel nominal positions are kept as given.
+    
+        If your stage coordinates are in **micrometres**, divide by the pixel size before writing the
+        file - `X_px = X_µm / pixelSizeX_µm` - or skip the file entirely and use the
+        **Bio-Formats metadata** source, which reads the µm stage coordinates from the images and does
+        that conversion for you.
+    
+        The positions only need to be **roughly** right: they are the starting guess that
+        <span class="widget widget-button">Measure overlaps</span> and 
+        <span class="widget widget-button">Optimize positions</span> refine. 
+        Errors of a few tens of pixels are normal and expected; a systematically wrong overlap is not.
+    
+        ---
+    
+        **A 2×2 mosaic of 512×512 tiles with ~20 % overlap** (step = 512 × 0.8 ≈ 410 px):
+    
+        ```text
+        # tile               X     Y
+        tiles/tile_01.tif      0     0
+        tiles/tile_02.tif    410     0
+        tiles/tile_03.tif      0   410
+        tiles/tile_04.tif    410   410
+        ```
+    
+        **The same mosaic on two Z-layers**, each layer 40 slices thick with an 8-slice overlap
+        (layer 1 starts at slice 0, layer 2 at slice 32) - the tiles here are **folders**, one
+        Z-stack each:
+    
+        ```text
+        # tile folder          X     Y     Z
+        stacks/tile_01_L1      0     0     0
+        stacks/tile_02_L1    410     0     0
+        stacks/tile_01_L2      0     0    32
+        stacks/tile_02_L2    410     0    32
+        ```
+    
+        **Comma-separated, with absolute paths and a filename containing spaces:**
+    
+        ```text
+        D:\data\scan 1\tile A.tif, 0, 0
+        D:\data\scan 1\tile B.tif, 410, 0
+        ```
+    
+        ---
+    
+        **Rules the parser applies:**
+    
+        - [x] **One tile per line**, at least 3 columns; a line with fewer is skipped with a warning.
+        - [x] The **delimiter is auto-detected from the first data line**: a comma if the line contains one,
+          otherwise a tab, otherwise runs of whitespace. Filenames containing spaces therefore require
+          the comma or tab form.
+        - [x] Lines that are **empty** or start with `#` or `%` are **comments** and are ignored - so the
+          header lines in the examples above are optional documentation, not parsed column names.
+        - [x] `filename` may be **relative** to the folder holding the position file (as above), or absolute
+          (`C:\…`, `\\server\share\…`, `/…`).
+        - [x] `filename` may name a **single image file or a folder** holding that tile's Z-stack - detected
+          per entry, so the two can even be mixed in one file. The
+          <label class="widget widget-checkbox">Tiles are folders (Z-stacks)</label> checkbox is
+          therefore not needed (and is disabled) for this source.
+        - [x] Each **distinct `Z` value becomes one layer**, numbered in ascending order. Tiles sharing a `Z`
+          value are on the same layer and are matched to each other in XY; tiles on adjacent layers are
+          matched across the layer boundary. Omitting the `Z` column puts every tile on one layer.
+        - [x] Tiles may be listed in **any order** - the file states the positions explicitly, so nothing
+          depends on sorting.
 
-!!! warning "Tokens longer than two digits are silently truncated"
-    Only two characters after each letter are read. A three-digit token such as `Z001-X002-Y003` is
-    parsed as `Z=00, X=00, Y=00` — **without any error** — so every tile is assigned the same invalid
-    grid cell and the layout preview shows them all piled on top of each other. Acquisitions with more
-    than 99 tiles along an axis must be renamed to two-digit tokens, or arranged with the **Grid** or
-    **Position file** source instead. A one-digit token (`Z1`) fails outright with an index error.
+
 ---
 
 ## Input tiles tab
 
-- <span class="widget widget-button">Pick tiles</span>: opens the file or folder picker that the
-  selected layout source expects — a multi-select **image-file** picker for *Grid* and
-  *Filename pattern*, a multi-select **folder** picker when *Tiles are folders* is ticked, a single
-  `.txt`/`.csv` for *Position file*, and the image files for *Bio-Formats metadata*.
+![Input tiles tab](images/stitching_input_tiles.png){.off-glb }
+
+Select image files or folders with tiles to stitch.
+
+<div class="clear-float"></div>
+
+- <span class="widget widget-button">Pick tiles</span>: opens the file or folder selection dialog.<br>
+   Use ++ctrl++ + <mouse class="left"></mouse> or ++shift++ + <mouse class="left"></mouse> to pick image 
+   files or folders (when <span class="widget widget-checkbox">Tiles are folders (Z-stacks)</span> is ticked).
+
 - <label class="widget widget-checkbox">Tiles are folders (Z-stacks)</label>: each tile is a **folder of
-  slice images** (a Z-stack) rather than a single image file. This is orthogonal to the layout source —
-  it changes only how each tile is *provided*, not how tiles are *arranged*:
+  slice images** (a Z-stack) rather than a single image file. <br>
+  This is orthogonal to the layout source - it changes only how each tile is *provided*, not how tiles are *arranged*:
     - With **Grid** or **Filename pattern**, <span class="widget widget-button">Pick tiles</span>
       multi-selects the tile folders (each a Z-stack). Ideal for 3D acquisitions where every XY tile was
       captured as a folder of slice images.
-    - With a **Position file**, simply list folder paths in the `filename` column — folders are detected
+    - With a **Position file**, simply list folder paths in the `filename` column - folders are detected
       automatically, so this checkbox is not needed (and is disabled) for that source. It is likewise
       disabled for **Bio-Formats metadata**, where each series/file already carries its own stack.
-- <span class="widget widget-edit">Input tiles</span>: the list of selected inputs, **one path per
-  row** — the tile image files (*Grid*, *Filename pattern*), the tile folders (when *Tiles are
-  folders* is on), the position file, or the Bio-Formats file(s). It is a display of what
-  *Pick tiles* selected; selection order does not matter, since the tiles are natural-sorted by
-  name. For *Grid* and *Filename pattern* a single folder path also works — every image file in it
-  becomes a tile — which is the form batch protocols normally use.
+- <span class="widget widget-edit">Input tiles</span>: the list of selected inputs, **one path per row** 
+        - the tile image files (*Grid*, *Filename pattern*), the tile folders
+        (when <span class="widget widget-checkbox">Tiles are folders (Z-stacks)</span> is ticked), 
+        the position file, or the Bio-Formats file(s). It is a display of what
+        *Pick tiles* selected; selection order does not matter, since the tiles are natural-sorted by
+        name. For *Grid* and *Filename pattern* a single folder path also works - every image file in it
+        becomes a tile - which is the form batch protocols normally use.
 
 
 ---
 
 ## Tile settings tab
+
+![Tile settings tab](images/stitching_tile_settings.png){.off-glb }
+
+<div class="clear-float"></div>
 
 How the selected tiles are laid out. Rows / Cols / Tile order apply to the **Grid** source;
 Overlap X/Y and *Estimate overlap* apply to both the **Grid** and **Filename pattern** sources
@@ -287,7 +322,7 @@ Overlap X/Y and *Estimate overlap* apply to both the **Grid** and **Filename pat
 disabled rather than hidden, so the tab always shows the full picture. Any change here immediately
 rebuilds the layout and refreshes the preview.
 
-- <span class="widget widget-edit">Rows</span> / <span class="widget widget-edit">Cols</span>: grid dimensions; `0` derives the value automatically from the number of tiles — the closest-to-square arrangement that tiles the count *exactly*, so no phantom grid holes, oriented by the *Tile order*: a Horizontal order gives the wide arrangement (3 tiles → 1×3, 12 → 3×4), a Vertical order the tall one (3 → 3×1, 12 → 4×3). For an intentionally incomplete grid (e.g. 11 tiles of a 3×4 acquisition) enter the rows/cols explicitly.
+- <span class="widget widget-edit">Rows</span> / <span class="widget widget-edit">Cols</span>: grid dimensions; `0` derives the value automatically from the number of tiles - the closest-to-square arrangement that tiles the count *exactly*, so no phantom grid holes, oriented by the *Tile order*: a Horizontal order gives the wide arrangement (3 tiles → 1×3, 12 → 3×4), a Vertical order the tall one (3 → 3×1, 12 → 4×3). For an intentionally incomplete grid (e.g. 11 tiles of a 3×4 acquisition) enter the rows/cols explicitly.
 - <span class="widget widget-dropdown">Tile order</span>: the order in which the tiles were acquired, which defines how the natural-sorted filenames map onto grid cells
     - **Horizontal**: left→right, row by row.
     - **Horizontal snake**: left→right, then right→left on the next row.
@@ -299,13 +334,13 @@ rebuilds the layout and refreshes the preview.
 - <label class="widget widget-checkbox">Estimate overlap</label>: determine the actual overlap from the
   images themselves before measuring (*recommended, on by default*). Each sampled neighbor pair is
   registered by unrestricted whole-tile phase correlation with cross-correlation verification of the
-  candidate peaks, and the median over all pairs gives a robust estimate of the real grid step — even
+  candidate peaks, and the median over all pairs gives a robust estimate of the real grid step - even
   when a fraction of the pairs fails. The *Overlap X/Y* fields are updated with the estimate and only
   serve as a rough starting guess.
 
 !!! tip
     With <label class="widget widget-checkbox">Estimate overlap</label> enabled the entered overlap
-    values barely matter — enter any rough guess. Without it, the overlap must be accurate to within
+    values barely matter - enter any rough guess. Without it, the overlap must be accurate to within
     a few percent: the measurement stage tolerates tile-position jitter of tens of pixels around the
     nominal placement, but not a systematically wrong overlap.
 
@@ -313,27 +348,31 @@ rebuilds the layout and refreshes the preview.
 
 ## Registration tab
 
-How overlapping tiles are matched to each other — and, at the bottom of the tab, the two buttons
+![Registration tab](images/stitching_registration.png){.off-glb }
+
+<div class="clear-float"></div>
+
+How overlapping tiles are matched to each other - and, at the bottom of the tab, the two buttons
 that use these settings: <span class="widget widget-button">Measure overlaps</span> (step 1) and
 <span class="widget widget-button">Optimize positions</span> (step 2). Changing a setting here
 invalidates the existing measurements, so re-run both after any change.
 
 - <span class="widget widget-dropdown">Transform type</span>: the geometric model solved per tile
-    - **Translation** (*default*): tiles only shift — the right model for stage-tiled acquisitions,
+    - **Translation** (*default*): tiles only shift - the right model for stage-tiled acquisitions,
       where the stage moves but does not rotate. Tiles are placed without resampling, preserving
       the original pixel values exactly.
-    - **Rigid**: shift + rotation (no scale change) — tiles that are rotated against each other
+    - **Rigid**: shift + rotation (no scale change) - tiles that are rotated against each other
       but keep their pixel size.
     - **Similarity**: shift + rotation + one uniform scale factor per tile.
-    - **Affine**: the full linear model — rotation, scale, and shear per tile.
+    - **Affine**: the full linear model - rotation, scale, and shear per tile.
 
 !!! note "What the non-translation models imply"
     - **Measurement**: they all need image features, so they always use the feature-based
-      estimator — the <span class="widget widget-dropdown">Registration method</span> dropdown is
+      estimator - the <span class="widget widget-dropdown">Registration method</span> dropdown is
       disabled and displays *Feature-based*.
     - **Fusion**: the tiles are **resampled** (bilinear) into their transformed positions, unlike
       *Translation*, which copies the original pixel values unchanged.
-    - **3D / multi-layer layouts**: the transform acts **in-plane** — every slice of a Z-stack tile
+    - **3D / multi-layer layouts**: the transform acts **in-plane** - every slice of a Z-stack tile
       is warped by that tile's single 2D transform, while Z itself stays translational. Overlaps
       between Z-layers are always measured and solved as plain Z/XY shifts.
     - **Cost**: the richer models are not slower. The global solve is always the (linear) affine
@@ -341,24 +380,24 @@ invalidates the existing measurements, so re-run both after any change.
       model.
 
 - <label class="widget widget-checkbox">Allow rotation</label> *(non-translation models only)*:
-  **the single "are the tiles rotated?" switch** — it both permits per-tile rotation in the solve and
+  **the single "are the tiles rotated?" switch** - it both permits per-tile rotation in the solve and
   switches feature matching to rotation-invariant descriptors, so the two halves can never disagree
-  (see *How Allow rotation works* below). **Off by default** — microscope stages translate but do not
+  (see *How Allow rotation works* below). **Off by default** - microscope stages translate but do not
   rotate, and with rotation locked a few noisy overlap measurements cannot inject small spurious
   rotations that compound across a large mosaic. Leave it off for stage-tiled data even with
   Similarity/Affine (you still get scale/shear); tick it only when the tiles are genuinely rotated
   against each other. With rotation off, *Rigid* becomes equivalent to *Translation*.
 - <span class="widget widget-dropdown">Registration method</span>: how each pairwise overlap is measured
     - **Phase correlation** (*default*): FFT phase correlation on the overlap strip. Best for the
-      normal case — small-to-moderate overlaps with modest positioning jitter — and robust on
+      normal case - small-to-moderate overlaps with modest positioning jitter - and robust on
       low-contrast, feature-poor content where feature detectors find nothing.
     - **Feature-based**: detects and matches keypoints over the **whole tiles** and RANSAC-fits
       a translation. Use it when the initial positions are badly wrong or unknown (large jitter,
-      arbitrary layouts) — cases where the phase-correlation search, which only looks near the
+      arbitrary layouts) - cases where the phase-correlation search, which only looks near the
       nominal position, misses the true offset. Its weakness is feature-poor or strongly repetitive
       content, where too few reliable matches survive; there phase correlation still wins.
 - <span class="widget widget-dropdown">Feature detector</span> *(Feature-based only)*: the keypoint
-  detector — the same eight choices as the [Alignment](dataset-alignment.md) tool
+  detector - the same eight choices as the [Alignment](dataset-alignment.md) tool
   (SURF, SIFT, MSER, Harris, BRISK, FAST, Minimum Eigenvalue, ORB). SURF is a good default for
   microscopy blobs.
 - :octicons-gear-16: *(the gear button right of the detector dropdown; Feature-based only)*: opens a
@@ -366,15 +405,15 @@ invalidates the existing measurements, so re-run both after any change.
   the selected detector's parameters, the detection **downsampling factor** (1 = full resolution;
   higher is faster but less precise on big tiles), and the RANSAC (`estgeotform2d`) trials /
   confidence / max-distance. It is the Alignment tool's feature-settings dialog minus its
-  rotation row — here that decision belongs to <label class="widget widget-checkbox">Allow rotation</label>.
+  rotation row - here that decision belongs to <label class="widget widget-checkbox">Allow rotation</label>.
 
 !!! note "How *Allow rotation* works"
     Matching a rotated tile takes two things, and the one checkbox sets both:
 
-    1. **Finding the match** — keypoints are described either *upright* (at the orientation they sit
+    1. **Finding the match** - keypoints are described either *upright* (at the orientation they sit
        on screen: faster and more distinctive) or *rotation-invariant* (each keypoint's own
        orientation measured first, so the patch still matches after being turned).
-    2. **Fitting the result** — whether the solved transform is allowed to contain a rotation.
+    2. **Fitting the result** - whether the solved transform is allowed to contain a rotation.
 
     Step 1 comes first, and that is why they are one switch: permitting a rotation you cannot match
     would achieve nothing. Ticking <label class="widget widget-checkbox">Allow rotation</label>
@@ -388,7 +427,7 @@ invalidates the existing measurements, so re-run both after any change.
     | Allow rotation **on** (invariant) | 350 | 305 | 267 | 258 | 249 | 200 |
 
     Upright descriptors cope with a few degrees of accidental tilt on their own, so leaving the box
-    unticked is safe for ordinary stage-tiled data — but past roughly 20° they stop matching
+    unticked is safe for ordinary stage-tiled data - but past roughly 20° they stop matching
     altogether. Rotation-invariant matching costs some inliers at small angles (470 → 350 at 5°)
     without hurting the fit, which is what makes coupling the two settings free.
 
@@ -413,13 +452,17 @@ invalidates the existing measurements, so re-run both after any change.
         Despite the label, this option controls the **measurement** step, not where the tiles finally land.
         Tile *placement* is always rounded to whole pixels: `planCanvas` places every tile at an integer origin
         and keeps the discarded fraction as a per-tile *sub-pixel residual* in the project file (the fuse step
-        does not resample by it yet). Enabling this therefore sharpens the shifts that feed the global solve —
-        useful when many small overlaps each carry a fraction of a pixel that accumulates across a large grid —
+        does not resample by it yet). Enabling this therefore sharpens the shifts that feed the global solve -
+        useful when many small overlaps each carry a fraction of a pixel that accumulates across a large grid -
         but any single tile still snaps to the nearest whole pixel in the output mosaic.
 
 ---
 
 ## Output panel
+
+![Output panel](images/stitching_output_panel.png){.off-glb }
+
+<div class="clear-float"></div>
 
 Below the tabs, and visible whichever tab is open. On the left is the **layout preview** with
 <span class="widget widget-button">Preview layout</span> and
@@ -427,9 +470,9 @@ Below the tabs, and visible whichever tab is open. On the left is the **layout p
 settings, <span class="widget widget-button">Save project</span> /
 <span class="widget widget-button">Load project</span>, and the two readouts:
 
-- the **status line** — `N tiles | N edges measured | solved: yes/no`, i.e. how far through the
+- the **status line** - `N tiles | N edges measured | solved: yes/no`, i.e. how far through the
   pipeline you are, plus any message from the last action;
-- the **alignment-quality chip** — the colour-coded verdict described under
+- the **alignment-quality chip** - the colour-coded verdict described under
   [*Optimize positions*](#the-stitching-pipeline) above.
 
 - <span class="widget widget-dropdown">Output mode</span>:
@@ -451,19 +494,19 @@ settings, <span class="widget widget-button">Save project</span> /
         output path, so re-fusing after a [seam inspector](dataset-stitch-inspector.md) fix reuses it without re-asking; picking a new output path or switching output
         mode asks again. Batch/headless runs skip the dialog and use the defaults (or values supplied in `BatchOpt`).
 - <span class="widget widget-dropdown">Blend mode</span>: how pixel values are combined where tiles overlap
-    - **Feather**: weighted blend, weights ramp down toward each tile border — smooth, seam-free transitions (*recommended*).
+    - **Feather**: weighted blend, weights ramp down toward each tile border - smooth, seam-free transitions (*recommended*).
     - **Average**: plain average of all overlapping tiles.
-    - **Max**: maximum intensity of the overlapping tiles — the brightest tile wins at each pixel.
-    - **Min**: minimum intensity of the overlapping tiles — the darkest tile wins at each pixel.
+    - **Max**: maximum intensity of the overlapping tiles - the brightest tile wins at each pixel.
+    - **Min**: minimum intensity of the overlapping tiles - the darkest tile wins at each pixel.
     - **Overwrite**: the later tile wins; hard seams, but no intensity mixing.
-- <label class="widget widget-checkbox">Save project JSON</label>: after stitching, save a project sidecar file next to the input tiles — the tile layout, the measurements, the solved positions and all settings used (see [Project files](#project-files)).
+- <label class="widget widget-checkbox">Save project JSON</label>: after stitching, save a project sidecar file next to the input tiles - the tile layout, the measurements, the solved positions and all settings used (see [Project files](#project-files)).
 
 ---
 
 ## Project files
 
-The complete stitching state — tile list, nominal and optimized positions, all pairwise
-measurements with quality scores — together with **every setting of the dialog** can be
+The complete stitching state - tile list, nominal and optimized positions, all pairwise
+measurements with quality scores - together with **every setting of the dialog** can be
 saved to a `*.mibstitch.json` sidecar file with
 <span class="widget widget-button">Save project</span> and restored later with
 <span class="widget widget-button">Load project</span>. This makes a stitch reproducible and
@@ -473,8 +516,8 @@ re-measuring. The same sidecar is written automatically after every
 <label class="widget widget-checkbox">Save project JSON</label> is ticked, so a finished mosaic
 always records the parameters it was produced with.
 
-Because the file holds two independent things — the **state** of one particular stitch and the
-**settings** it was produced with — <span class="widget widget-button">Load project</span> asks
+Because the file holds two independent things - the **state** of one particular stitch and the
+**settings** it was produced with - <span class="widget widget-button">Load project</span> asks
 which of them you want:
 
 - **Restore everything**: the tiles, seam measurements and solved positions come back from the
@@ -482,8 +525,8 @@ which of them you want:
   was. Use it to re-open, inspect or re-fuse a mosaic.
 - **Settings only**: the saved parameters (layout source, grid and overlap, transform model,
   registration method with its feature-detector settings, blend and output mode) are applied to
-  the tiles selected **here** — the current <span class="widget widget-edit">Input tiles</span>
-  and <span class="widget widget-edit">Output path</span> are kept — and the layout is rebuilt
+  the tiles selected **here** - the current <span class="widget widget-edit">Input tiles</span>
+  and <span class="widget widget-edit">Output path</span> are kept - and the layout is rebuilt
   from them. The tiles, measurements and positions stored in the file are ignored. Use it to
   stitch a new acquisition exactly like a previous one.
 
@@ -494,6 +537,18 @@ which of them you want:
     of tiles), the status line asks you to re-select the input instead of reporting an error.
 
 ---
+
+## Action strip
+
+![Action strip](images/stitching_action_strip.png){.off-glb }
+
+<div class="clear-float"></div>
+
+- <span class="widget widget-button">Help</span>
+- <span class="widget widget-button">Inspect & fix</span>
+- <span class="widget widget-button">Stitch</span>
+- <span class="widget widget-button">Close</span>
+
 
 ## Batch mode
 

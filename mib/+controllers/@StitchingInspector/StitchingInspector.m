@@ -165,7 +165,7 @@ classdef StitchingInspector < handle
                     || ~strcmp(obj.view.handles.closeButton.FontName, Font.FontName)
                 utils.fontSizeUpdate(obj.view.gui, Font);
             end
-            obj.view.gui = utils.moveWindowOutside(obj.view.gui, obj.mibModel.mibGUI, 'right');
+            obj.view.gui = utils.moveWindowOutside(obj.view.gui, stitchController.view.gui, 'right');
 
             obj.addCallbacks();
             obj.scoreAndRank();

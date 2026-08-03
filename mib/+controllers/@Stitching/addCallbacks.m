@@ -33,24 +33,14 @@ handles.GridCols.ValueChangedFcn      = @(src, ~) obj.updateBatchOptFromGUI(src)
 handles.TileOrder.ValueChangedFcn     = @(src, ~) obj.updateBatchOptFromGUI(src);
 handles.OverlapX.ValueChangedFcn      = @(src, ~) obj.updateBatchOptFromGUI(src);
 handles.OverlapY.ValueChangedFcn      = @(src, ~) obj.updateBatchOptFromGUI(src);
-if isfield(handles, 'EstimateOverlap')   % widget may not exist in the mlapp yet
-    handles.EstimateOverlap.ValueChangedFcn = @(src, ~) obj.updateBatchOptFromGUI(src);
-end
+handles.EstimateOverlap.ValueChangedFcn = @(src, ~) obj.updateBatchOptFromGUI(src);
 
 % ---- Registration group ----
 handles.TransformType.ValueChangedFcn    = @(src, ~) obj.updateBatchOptFromGUI(src);
-if isfield(handles, 'AllowRotation')   % widget may not exist in the mlapp yet
-    handles.AllowRotation.ValueChangedFcn = @(src, ~) obj.updateBatchOptFromGUI(src);
-end
-if isfield(handles, 'RegistrationMethod')   % widget may not exist in the mlapp yet
-    handles.RegistrationMethod.ValueChangedFcn = @(src, ~) obj.updateBatchOptFromGUI(src);
-end
-if isfield(handles, 'FeatureDetectorType')   % widget may not exist in the mlapp yet
-    handles.FeatureDetectorType.ValueChangedFcn = @(src, ~) obj.updateBatchOptFromGUI(src);
-end
-if isfield(handles, 'configureFeaturesBtn')   % widget may not exist in the mlapp yet
-    handles.configureFeaturesBtn.ButtonPushedFcn = @(~, ~) obj.configureFeaturesBtn_Callback();
-end
+handles.AllowRotation.ValueChangedFcn = @(src, ~) obj.updateBatchOptFromGUI(src);
+handles.RegistrationMethod.ValueChangedFcn = @(src, ~) obj.updateBatchOptFromGUI(src);
+handles.FeatureDetectorType.ValueChangedFcn = @(src, ~) obj.updateBatchOptFromGUI(src);
+handles.configureFeaturesBtn.ButtonPushedFcn = @(~, ~) obj.configureFeaturesBtn_Callback();
 handles.QualityThreshold.ValueChangedFcn = @(src, ~) obj.updateBatchOptFromGUI(src);
 handles.NominalPositionWeight.ValueChangedFcn = @(src, ~) obj.updateBatchOptFromGUI(src);
 handles.SubpixelPlacement.ValueChangedFcn = @(src, ~) obj.updateBatchOptFromGUI(src);
@@ -63,14 +53,10 @@ handles.BlendMode.ValueChangedFcn     = @(src, ~) obj.updateBatchOptFromGUI(src)
 handles.SaveProject.ValueChangedFcn   = @(src, ~) obj.updateBatchOptFromGUI(src);
 
 % ---- Action buttons ----
-if isfield(handles, 'inspectSeamsBtn')   % widget may not exist in the mlapp yet
-    handles.inspectSeamsBtn.ButtonPushedFcn = @(~, ~) obj.inspectSeams_Callback();
-end
+handles.inspectSeamsBtn.ButtonPushedFcn = @(~, ~) obj.inspectSeams_Callback();
 handles.previewLayoutBtn.ButtonPushedFcn   = @(~, ~) obj.previewLayoutBtn_Callback();
-if isfield(handles, 'editLayoutCheckbox')   % widget may not exist in the mlapp yet
-    % Toggling edit mode just redraws the preview in the matching mode.
-    handles.editLayoutCheckbox.ValueChangedFcn = @(~, ~) obj.previewLayoutBtn_Callback();
-end
+% Toggling edit mode just redraws the preview in the matching mode.
+handles.editLayoutCheckbox.ValueChangedFcn = @(~, ~) obj.previewLayoutBtn_Callback();
 handles.measureOverlaps.ButtonPushedFcn    = @(~, ~) obj.measureOverlaps_Callback();
 handles.optimizePositions.ButtonPushedFcn  = @(~, ~) obj.optimizePositions_Callback();
 handles.stitchBtn.ButtonPushedFcn          = @(~, ~) obj.stitchBtn_Callback(false);

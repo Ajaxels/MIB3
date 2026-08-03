@@ -19,51 +19,28 @@ obj.view.gui.WindowKeyReleaseFcn = @(~, evnt) obj.keyRelease_Callback(evnt);
 obj.view.gui.WindowButtonMotionFcn = @(~, ~) obj.pairViewMotion();
 obj.view.gui.WindowScrollWheelFcn = @(~, evnt) obj.scrollWheel_Callback(evnt);
 
-if isfield(handles, 'seamTable')
-    handles.seamTable.SelectionChangedFcn = @(src, evnt) obj.seamTableSelection_Callback(evnt);
+handles.seamTable.SelectionChangedFcn = @(src, evnt) obj.seamTableSelection_Callback(evnt);
+handles.overlayModeDropdown.ValueChangedFcn = @(~, ~) obj.renderPairView();
+handles.fixModeDropdown.ValueChangedFcn = @(~, ~) fixModeChanged(obj);
+handles.confirmBtn.ButtonPushedFcn = @(~, ~) obj.confirmSeam_Callback();
+
+% Exclude is a two-state action, so the mlapp may carry either an App
+% Designer STATE button (has Value/ValueChangedFcn — shows the exclusion as
+% pressed) or a plain push button. Wire whichever is there; the callback is
+% the same and never reads the widget, so the X key stays equivalent.
+if isprop(handles.excludeBtn, 'Value')
+    handles.excludeBtn.ValueChangedFcn = @(~, ~) obj.excludeSeam_Callback();
+else
+    handles.excludeBtn.ButtonPushedFcn = @(~, ~) obj.excludeSeam_Callback();
 end
-if isfield(handles, 'overlayModeDropdown')
-    handles.overlayModeDropdown.ValueChangedFcn = @(~, ~) obj.renderPairView();
-end
-if isfield(handles, 'fixModeDropdown')
-    handles.fixModeDropdown.ValueChangedFcn = @(~, ~) fixModeChanged(obj);
-end
-if isfield(handles, 'confirmBtn')
-    handles.confirmBtn.ButtonPushedFcn = @(~, ~) obj.confirmSeam_Callback();
-end
-if isfield(handles, 'excludeBtn')
-    % Exclude is a two-state action, so the mlapp may carry either an App
-    % Designer STATE button (has Value/ValueChangedFcn — shows the exclusion as
-    % pressed) or a plain push button. Wire whichever is there; the callback is
-    % the same and never reads the widget, so the X key stays equivalent.
-    if isprop(handles.excludeBtn, 'Value')
-        handles.excludeBtn.ValueChangedFcn = @(~, ~) obj.excludeSeam_Callback();
-    else
-        handles.excludeBtn.ButtonPushedFcn = @(~, ~) obj.excludeSeam_Callback();
-    end
-    obj.excludeBtnDefaultColor = handles.excludeBtn.BackgroundColor;
-end
-if isfield(handles, 'resolveBtn')
-    handles.resolveBtn.ButtonPushedFcn = @(~, ~) obj.resolveBtn_Callback();
-end
-if isfield(handles, 'twoClickBtn')
-    handles.twoClickBtn.ButtonPushedFcn = @(~, ~) obj.twoClickBtn_Callback();
-end
-if isfield(handles, 'undoFixBtn')
-    handles.undoFixBtn.ButtonPushedFcn = @(~, ~) obj.undoFix_Callback();
-end
-if isfield(handles, 'fitViewBtn')
-    handles.fitViewBtn.ButtonPushedFcn = @(~, ~) obj.fitView_Callback();
-end
-% Deliberately NOT wired here: fuse and save-project. Both live in the parent
-% Stitching window, which stays reachable while the inspector is open, so a copy
-% would only be the same action under a second name. *Stitch* there applies any
-% pending re-solve itself, and *Save project* persists this session's fixes —
-% the inspector mutates the parent's edges in place, so there is nothing extra
-% for it to save.
-if isfield(handles, 'closeButton')
-    handles.closeButton.ButtonPushedFcn = @(~, ~) obj.closeWindow();
-end
+obj.excludeBtnDefaultColor = handles.excludeBtn.BackgroundColor;
+
+handles.resolveBtn.ButtonPushedFcn = @(~, ~) obj.resolveBtn_Callback();
+handles.twoClickBtn.ButtonPushedFcn = @(~, ~) obj.twoClickBtn_Callback();
+handles.undoFixBtn.ButtonPushedFcn = @(~, ~) obj.undoFix_Callback();
+handles.fitViewBtn.ButtonPushedFcn = @(~, ~) obj.fitView_Callback();
+handles.helpButton.ButtonPushedFcn = @(~, ~) obj.helpBtn_Callback();
+handles.closeButton.ButtonPushedFcn = @(~, ~) obj.closeWindow();
 % roiSizeSpinner / searchRadiusSpinner / autoResolveCheckbox are read at the
 % point of use — no callbacks needed.
 
@@ -118,6 +95,12 @@ setTooltip(handles, 'autoResolveCheckbox', ...
     'Re-solve all positions (and re-rank the seams) automatically after each fix.');
 setTooltip(handles, 'closeButton', 'Close the inspector.');
 
+% update infoLabel
+handles.infoLabel.Text = sprintf(['' ...
+    '- LMB: move the magenta tile\n' ...
+    '- Shift+LMB: cross-correlation\n' ...
+    '- RMB: pan image\n' ...
+    '- scroll wheel: zoom in or out']);
 end
 
 % =====================================================================
@@ -173,10 +156,11 @@ if strcmp(obj.fixMode(), 'z')
             obj.setStatus('2D dataset — no Z slices to align. Staying in Fix XY.');
             dlgOpt.MsgBoxOnly = true;
             dlgOpt.Icon = 'puffin_info';
+            dlgOpt.HeaderLines = 1;
+            dlgOpt.WindowHeight = 180;
             utils.dlgs.inputUniversalDlg(obj.view.gui, 'Fix Z needs Z slices', {''}, ...
-                {['This dataset is 2D — there are no Z slices to align, so the mode ' ...
-                  'stays at Fix XY. Fix Z aligns mosaic slice z to slice z-1 and ' ...
-                  'shifts everything above it.']}, 'Fix Z', dlgOpt);
+                {sprintf('This dataset is 2D - there are no Z slices to align, so the mode stays at Fix XY.\nFix Z aligns mosaic slice z to slice z-1 and shifts everything above it.')}, ...
+                'Fix Z', dlgOpt);
             return;
         end
         obj.selectSeam(candidateRanked(1));

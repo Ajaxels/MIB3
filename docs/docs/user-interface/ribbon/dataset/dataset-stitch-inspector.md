@@ -1,10 +1,12 @@
-# Stitching: seam inspector
+# Stitching Inspector
 
 *Back to [MIB](../../../index.md) | [User interface](../../index.md) | [Ribbon](../index.md) | [Dataset](index.md) | [Stitching](dataset-stitch.md)*
 
 ---
 
 ## Overview
+
+![Stitching Inspector dialog](images/stitchingInspectorDialog.png){.on-glb align=left width="340"}
 
 Automatic stitching can fail **silently**: a measurement that locked onto repetitive content
 one period off satisfies the solver perfectly on sparse tile arrangements — the quality

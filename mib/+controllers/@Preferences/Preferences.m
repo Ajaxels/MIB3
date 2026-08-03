@@ -424,7 +424,7 @@ classdef Preferences < handle
             if isempty(obj.view.handles.CategoriesTree.SelectedNodes)
 
             else
-                helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'ribbon', 'home', 'home-preferences.html');
+                helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'html', 'user-interface', 'ribbon', 'home', 'home-preferences.html');
                 if isfile(helpFilPath)
                     web(helpFilPath, '-browser');
                 else

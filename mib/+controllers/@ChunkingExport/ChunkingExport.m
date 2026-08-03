@@ -197,7 +197,7 @@ classdef ChunkingExport < handle
             if obj.mibModel.preferences.System.DeveloperMode
                 fprintf('controllers.ChunkingExport.helpBtn_Callback: triggered\n');
             end
-            helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'ribbon', 'home', 'home-choppedimages.html');
+            helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'html', 'user-interface', 'ribbon', 'home', 'home-choppedimages.html');
             if isfile(helpFilPath)
                 web(helpFilPath, '-browser');
             else

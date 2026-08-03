@@ -22,7 +22,7 @@ switch source.Tag
         obj.closeWindow();
 
     case 'helpBtn'
-        helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'ribbon', 'home', 'home-renameandshuffle.html');
+        helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'html', 'user-interface', 'ribbon', 'home', 'home-renameandshuffle.html');
         if isfile(helpFilPath)
             web(helpFilPath, '-browser');
         else
