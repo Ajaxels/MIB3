@@ -241,6 +241,19 @@ classdef MibImageDocument < handle
             %
 
             try
+                % Remove the listeners registered on mibModel FIRST: addlistener
+                % ties their lifetime to the source, and the model outlives this
+                % document, so they would keep firing callbacks on a deleted
+                % object (e.g. ShowImage -> updateMeasureText) after a set is
+                % removed. Deleting them first also keeps them from firing
+                % during the teardown below.
+                for listenerId = 1:numel(obj.listeners)
+                    if ~isempty(obj.listeners{listenerId}) && isvalid(obj.listeners{listenerId})
+                        delete(obj.listeners{listenerId});
+                    end
+                end
+                obj.listeners = {};
+
                 % Stop and delete any pending slider throttle/debounce timer
                 if ~isempty(obj.sliderDebounceTimer) && isvalid(obj.sliderDebounceTimer)
                     stop(obj.sliderDebounceTimer);

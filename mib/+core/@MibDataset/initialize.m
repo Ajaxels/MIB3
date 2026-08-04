@@ -65,39 +65,42 @@ function initialize(obj, img, meta, datasetType, modelType, enableSelection)
     % on-demand readers), otherwise the files stay locked
     if ~isempty(obj.datasetType) && any(obj.datasetType(1)==['V' 'B']); obj.closeVirtualDataset();  end
 
-    % reset the state of the main layers
-    obj.image = NaN;
-    obj.labels = NaN;
-    obj.mask = core.MibLabels([], meta);
-    obj.selection =  core.MibLabels([], meta);
-    
+    % Build the image and labels layers into local variables and install them
+    % only after every constructor has succeeded. Assigning obj.image = NaN up
+    % front (as it was done before) left the container permanently broken when
+    % the image layer failed to build or when datasetType was not recognised:
+    % obj.image stayed a double and every later obj.image.<...> access threw
+    % "Dot indexing is not supported for variables of type double", which also
+    % broke unrelated tools scanning all containers (link views, sync, duplicate)
+    newLabels = NaN;    % stays NaN for an unrecognized modelType, as before
+
     switch datasetType
         case 'Standard'
-            obj.image = core.MibImage(img, meta);
+            newImage = core.MibImage(img, meta);
             % Build metadata matching the image dimensions for label layers
             labelsMeta = core.MibImage.initializeImgInfo( ...
-                'pixSize',   obj.image.pixSize, ...
-                'Height',    obj.image.height, ...
-                'Width',     obj.image.width,  ...
-                'Depth',     obj.image.depth,  ...
-                'Time',      obj.image.time,   ...
+                'pixSize',   newImage.pixSize, ...
+                'Height',    newImage.height, ...
+                'Width',     newImage.width,  ...
+                'Depth',     newImage.depth,  ...
+                'Time',      newImage.time,   ...
                 'Colors',    1, ...
-                'SliceSize', obj.image.sliceSize);
-            labelsDims = [obj.image.height, obj.image.width, obj.image.depth, 1, obj.image.time];
+                'SliceSize', newImage.sliceSize);
+            labelsDims = [newImage.height, newImage.width, newImage.depth, 1, newImage.time];
             switch modelType
                 case 'imageOnly'
                     % Allocate a zero-filled MibLabels63 so that selection/mask
                     % layers are immediately usable (e.g. brush tool) without
                     % requiring an explicit createModel call first.
-                    obj.labels = core.MibLabels63(zeros(labelsDims, 'uint8'), labelsMeta);
+                    newLabels = core.MibLabels63(zeros(labelsDims, 'uint8'), labelsMeta);
                 case 'labels'
-                    obj.labels = core.MibLabels(zeros(size(img), 'uint8'), meta);
+                    newLabels = core.MibLabels(zeros(size(img), 'uint8'), meta);
                 case 'labels63'
-                    obj.labels = core.MibLabels63(zeros(labelsDims, 'uint8'), labelsMeta);
+                    newLabels = core.MibLabels63(zeros(labelsDims, 'uint8'), labelsMeta);
             end
         case 'Virtual'
-            obj.image = core.MibVirtualImage(img, meta);
-            obj.labels = core.MibLabels63(zeros([], 'uint8'), meta);
+            newImage = core.MibVirtualImage(img, meta);
+            newLabels = core.MibLabels63(zeros([], 'uint8'), meta);
 
         case 'BigData'
             % BigData reads on demand from a pyramidal OME-Zarr v3 dataset.
@@ -105,16 +108,26 @@ function initialize(obj, img, meta, datasetType, modelType, enableSelection)
             % subclasses MibVirtualImage). The labels layer is a placeholder
             % empty MibLabels63; a disk-backed pyramidal model is created on
             % demand when the user starts segmentation (Phase 2).
-            obj.image = core.MibBigDataImage(img, meta);
-            obj.labels = core.MibLabels63(zeros([], 'uint8'), meta);
+            newImage = core.MibBigDataImage(img, meta);
+            newLabels = core.MibLabels63(zeros([], 'uint8'), meta);
             % BigData opens browse-only: there is no in-memory selection/model
             % layer until a disk-backed model is created (createModel) or loaded
             % (loadModel), both of which set enableSelection = true. Forcing it
             % false here (regardless of the caller / preferences) prevents the
             % segmentation tools from acting on a non-existent selection layer.
             enableSelection = false;
+        otherwise
+            error('MIB:MibDataset:unknownDatasetType', ...
+                'core.MibDataset.initialize: unknown dataset type "%s"! Expected "Standard", "Virtual", or "BigData"', ...
+                string(datasetType));
     end
-    
+
+    % install the new layers; from here on the container is fully consistent
+    obj.image = newImage;
+    obj.labels = newLabels;
+    obj.mask = core.MibLabels([], meta);
+    obj.selection = core.MibLabels([], meta);
+
     % update the dataset type
     obj.datasetType = datasetType;
 

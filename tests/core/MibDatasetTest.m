@@ -47,6 +47,23 @@ classdef MibDatasetTest < matlab.unittest.TestCase
             testCase.verifyFalse(ds.modelExist);
         end
 
+        function failedInitializeKeepsDatasetUsable(testCase)
+            % a rejected initialize must not leave the container half-built:
+            % previously obj.image was set to NaN before the new layers were
+            % constructed, so every later obj.image.<...> access threw
+            % "Dot indexing is not supported for variables of type double"
+            ds = core.MibDataset(uint8(zeros(16,16,4,1)), dictionary(), ...
+                'Standard', 'labels63');
+
+            testCase.verifyError(@() ds.initialize([], [], 'NoSuchType', [], false), ...
+                'MIB:MibDataset:unknownDatasetType');
+
+            testCase.verifyClass(ds.image, 'core.MibImage');
+            testCase.verifyClass(ds.labels, 'core.MibLabels63');
+            testCase.verifyEqual(ds.datasetType, 'Standard');
+            testCase.verifyEqual(ds.image.height, 16);
+        end
+
         % -----------------------------------------------------------------
         % updateBoundingBox
         % -----------------------------------------------------------------

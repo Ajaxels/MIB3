@@ -75,7 +75,7 @@ switch parameter
         % find a default destination (first loaded dataset different from current)
         destinationGlobalId = maxId;
         for iDs = 1:maxId
-            if ~strcmp(obj.mibModel.I{iDs}.image.filename, 'none.tif') && iDs ~= globalDatasetIndex
+            if isLoadedContainer(obj.mibModel, iDs) && iDs ~= globalDatasetIndex
                 destinationGlobalId = iDs;
                 break;
             end
@@ -98,7 +98,7 @@ switch parameter
         destinationLocalId = obj.mibModel.Sets.datasetsInSet;
         for iDs = 1:obj.mibModel.Sets.datasetsInSet
             globalI = iDs + (selectedSet-1)*obj.mibModel.Sets.datasetsInSet;
-            if strcmp(obj.mibModel.I{globalI}.image.filename, 'none.tif')
+            if ~isLoadedContainer(obj.mibModel, globalI)
                 destinationLocalId = iDs;
                 break;
             end
@@ -134,7 +134,7 @@ switch parameter
         % find first loaded dataset different from current
         destinationGlobalId = maxId;
         for iDs = 1:maxId
-            if ~strcmp(obj.mibModel.I{iDs}.image.filename, 'none.tif') && iDs ~= globalDatasetIndex
+            if isLoadedContainer(obj.mibModel, iDs) && iDs ~= globalDatasetIndex
                 destinationGlobalId = iDs;
                 break;
             end
@@ -294,7 +294,7 @@ switch parameter
         destGlobalId = str2double(BatchOpt.Destination{1}(10:end));
 
         % warn if overwriting a non-empty buffer (interactive mode only)
-        if interactiveMode && ~strcmp(obj.mibModel.I{destGlobalId}.image.filename, 'none.tif')
+        if interactiveMode && isLoadedContainer(obj.mibModel, destGlobalId)
             button = utils.dlgs.inputQuestDlg(obj.view.gui, ...
                 sprintf('You are going to overwrite dataset in buffer %d\n\nAre you sure?', destGlobalId), ...
                 '!! Warning !!', 'Overwrite', 'Cancel', 'Cancel');
@@ -579,4 +579,29 @@ switch parameter
         notify(obj.mibModel, 'SyncBatch', eventdata);
 end
 
+end
+
+function loaded = isLoadedContainer(mibModel, containerId)
+% ISLOADEDCONTAINER - check whether a container holds a dataset loaded from a file.
+%
+% Returns ``false`` for empty containers ('none.tif') and, importantly, also for
+% containers left in a broken state by a failed load or dataset-mode switch,
+% where the image layer is not a core.MibImage. Without this guard the scans
+% above crash with "Dot indexing is not supported for variables of type double"
+% and make the whole context menu unusable because of a single bad container.
+%
+% Input Arguments:
+%   - **mibModel** — [models.MibModel] handle to the model
+%   - **containerId** — [numeric] global container index
+%
+% Output Arguments:
+%   - **loaded** — [logical] true when the container holds a loaded dataset
+%
+
+loaded = false;
+if containerId < 1 || containerId > numel(mibModel.I); return; end
+dataset = mibModel.I{containerId};
+if ~isa(dataset, 'core.MibDataset') || ~isvalid(dataset); return; end
+if ~isa(dataset.image, 'core.MibImage'); return; end
+loaded = ~strcmp(dataset.image.filename, 'none.tif');
 end

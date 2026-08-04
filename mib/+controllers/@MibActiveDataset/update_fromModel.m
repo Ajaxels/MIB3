@@ -31,6 +31,20 @@ function update_fromModel(obj, src, evtData)
 %     evtData event.EventData
 % end
 
+% The sets were reordered ('Sort sets'): the image documents are indexed by the
+% set index too and have to follow, otherwise the code below renames the tabs to
+% the sorted names while each document still shows the set it was created for.
+% Must run before anything else here reads obj.mibController.cImageDoc
+if nargin > 2 && isa(evtData, 'core.ToggleEventData') && ...
+        isstruct(evtData.Parameters) && isfield(evtData.Parameters, 'mode') && ...
+        strcmp(evtData.Parameters.mode, 'sortSets')
+    newOrderOfSets = evtData.Parameters.order(:)';   % row, cImageDoc is a row cell
+    obj.mibController.cImageDoc = obj.mibController.cImageDoc(newOrderOfSets);
+    for setId = 1:numel(obj.mibController.cImageDoc)
+        obj.mibController.cImageDoc{setId}.setOfDatasetsIndex = setId;
+    end
+end
+
 % make aliases
 selectedSet = obj.mibModel.Sets.selectedSet;
 Sets = obj.mibModel.Sets;

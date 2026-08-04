@@ -170,15 +170,48 @@ switch BatchOpt.Mode{1}
         % update all widgets of the Datasets panel
         notify(obj, 'DatasetsPanelUpdate');
     case 'Sort sets'
+        % the datasets are indexed globally and set-major (datasetsInSet
+        % containers per set), so sorting the set names alone would leave the
+        % names pointing at another set's data; refuse to touch anything when
+        % that invariant is already broken rather than shuffling blindly
+        if numel(obj.I) ~= noSets * obj.Sets.datasetsInSet
+            ErrorDlgOpt.winTitle = 'Error in MibModel.datasetsSetsOps';
+            ErrorDlgOpt.optionalPrefix = sprintf(['!!! Error !!!\n\nThe number of containers (%d) does not match ' ...
+                '%d sets x %d containers; the sets can not be sorted!'], numel(obj.I), noSets, obj.Sets.datasetsInSet);
+            eventdata = core.ToggleEventData(ErrorDlgOpt);
+            notify(obj, 'ShowErrorDialog', eventdata);
+            return;
+        end
+
         [~, ids] = sort(obj.Sets.names);
+
+        % move the containers together with their set; obj.I holds handles, so
+        % this permutes pointers only and never copies image data
+        globalIds = reshape(1:numel(obj.I), obj.Sets.datasetsInSet, []);  % one column per set
+        newOrderOfGlobalIds = reshape(globalIds(:, ids), 1, []);   % old global id now sitting at each new position
+        obj.I = obj.I(newOrderOfGlobalIds);
+
+        % remap everything else that caches a global container index
+        newIdOfOldId = zeros(1, numel(obj.I));
+        newIdOfOldId(newOrderOfGlobalIds) = 1:numel(obj.I);
+        obj.id = newIdOfOldId(obj.id);
+        if ~isempty(obj.linkedPairs)
+            obj.linkedPairs = sort(newIdOfOldId(obj.linkedPairs), 2);  % keep the smaller global id first
+        end
+        % undo items store the global container index they were taken from
+        % (see MibModel.undo -> storeOptions.id); after the reindexing they
+        % would restore pixels into a different dataset
+        obj.Backup.clearContents();
+
         obj.Sets.names = obj.Sets.names(ids);
         obj.Sets.datasetTypes = obj.Sets.datasetTypes(ids,:);
         obj.Sets.selectedDataset = obj.Sets.selectedDataset(ids);
         % update the selected set
         obj.Sets.selectedSet = find(ids==obj.Sets.selectedSet);
-        
-        % update all widgets of the Datasets panel
-        notify(obj, 'DatasetsPanelUpdate');
+
+        % update all widgets of the Datasets panel; the image documents are
+        % indexed by the set index as well and are permuted by the listener
+        notify(obj, 'DatasetsPanelUpdate', core.ToggleEventData(struct('mode', 'sortSets', 'order', ids)));
     case 'Remove set'
         %fprintf('models.mibModel.datasetsSetsOps: Remove set\n');
         
@@ -195,6 +228,12 @@ switch BatchOpt.Mode{1}
 
         datasetIndices = firstDatasetIndex:firstDatasetIndex+obj.Sets.datasetsInSet-1;
         obj.I(datasetIndices) = [];
+
+        % removing a set shifts every higher global container index down, while
+        % undo items store the global index they were taken from (see
+        % MibModel.undo -> storeOptions.id) and would restore pixels into a
+        % different dataset afterwards
+        obj.Backup.clearContents();
 
         % update obj.Sets structure
         obj.Sets.names(obj.Sets.selectedSet) = [];
