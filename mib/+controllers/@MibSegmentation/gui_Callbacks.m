@@ -16,7 +16,9 @@ function gui_Callbacks(obj, hWidget, hData)
 %     - ``'loadModel'`` — load model from file
 %     - ``'addMaterial'`` — add material to model
 %     - ``'removeMaterial'`` — remove material from model
-%     - ``'colorWheel'`` — restore default color scheme or generate random colors (for 65535+ materials)
+%     - ``'colorWheel'`` — generate random colors for materials; the random seed is
+%       requested in a dialog, unless the button was clicked with Ctrl held down, in
+%       which case the generator is seeded from the system clock without a dialog
 %     - ``'viewSettings'`` — open visualization settings dialog for model/mask
 %
 %   - **hData** — [matlab.ui.eventdata.ButtonPushedData | matlab.ui.eventdata.ValueChangedData] event data from widget
@@ -32,11 +34,21 @@ end
 
 mode = hWidget.Tag;
 
+% read the modifier before utils.unFocus below: its drawnow yields to the event
+% queue, after which the key release may already have cleared CurrentModifier
+modifier = obj.UIFigure.CurrentModifier;
+ctrlPressed = any(strcmp(modifier, 'control'));
+
 if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.MibSegmentation.gui_Callbacks: clicked on "obj.view.handles.panels.segmentation.handles.%s"\n', mode);
 end
 
-utils.unFocus(hWidget);
+% Ctrl+click on a widget that owns a context menu also raises that menu; toggling
+% Enable of the widget (as utils.unFocus does) while the menu is up leaves it
+% unresponsive to any further right clicks, so skip unfocusing in that case
+if ~(ctrlPressed && ~isempty(hWidget.ContextMenu))
+    utils.unFocus(hWidget);
+end
 
 switch mode
     case 'createModel'
@@ -51,7 +63,13 @@ switch mode
     case 'removeMaterial'
         obj.mibModel.removeMaterial();
     case 'colorWheel'
-        obj.mibModel.setDefaultColorPalette('Random Colors');
+        if ctrlPressed
+            % Ctrl+click: regenerate the random colors right away, seeding the
+            % generator from the system clock instead of asking for a seed
+            obj.mibModel.setDefaultColorPalette('Random Colors', [], 'shuffle');
+        else
+            obj.mibModel.setDefaultColorPalette('Random Colors');
+        end
     case 'viewSettings'
         prompts = {'Show Labels using contours:'; 'Show Mask using contours:'};
         defAns = {

@@ -27,6 +27,9 @@ obj.handles.panels.segmentationPanel.Figure.AutoResizeChildren = 'off';
 panelHandles = views.components.Segmentation('Parent', obj.handles.panels.segmentationPanel.Figure, ...
     'Units', 'normalized', 'Position', [0 0 1 1]); % needs to have normalized units, by default those are pixels
 
+panelHandles.handles.colorWheel.Tooltip = ...
+    sprintf('Adjust the color scheme for visualization of materials.\nUse Ctrl+click for instant random colors, RMB for additional options');
+
 % add handle tags to tooltips
 if obj.mibModel.preferences.System.DeveloperMode
     utils.overrideDescriptions(panelHandles.handles, true, 'obj.cSegmentation.handles'); 

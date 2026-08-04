@@ -72,14 +72,16 @@ if dataset.labels.exists == 0
     dataset.labels.materialNames = {};
 end
 
-% Determine max colors and column editability
+% Determine max colors; no column is editable in place — typing into a cell would
+% start inline editing and swallow the single-key segmentation shortcuts ('a', 's', ...).
+% Materials are renamed via the context menu / F2 (models.MibModel.renameMaterial),
+% which for 65535+ models rewrites the material index stored in the selected slot.
 if dataset.labels.maxMaterials < 256  % 63 and 255 type models
     maxColor = numel(dataset.labels.materialNames);
-    columnEditable = [false, false, false];
-else  % Other models
+else  % 65535 and 4294967295 type models: only two material slots
     maxColor = 2;
-    columnEditable = [false, true, false];
 end
+columnEditable = [false, false, false];
 
 % generate additional colors if needed
 nCurrentColors = size(dataset.labels.materialColors, 1);

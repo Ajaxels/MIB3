@@ -202,11 +202,12 @@ if isempty(updatePanels) || ismember('ribbonModel', updatePanels)
         if obj.mibModel.preferences.System.DeveloperMode
             segmHandles.addMaterial.Tooltip = sprintf('obj.cSegmentation.view.handles.addMaterial:\n%s', segmHandles.addMaterial.Tooltip);
         end
+
         % update the remove material button -> squeeze the labels
         segmHandles.removeMaterial.Icon = core.MibIconCache.get('alpha_cache', 'shrink_16px');
         segmHandles.removeMaterial.Tooltip = 'Squeeze the labels to remove all empty indices and select next available index';
         if obj.mibModel.preferences.System.DeveloperMode
-            segmHandles.addMaterial.Tooltip = sprintf('obj.cSegmentation.view.handles.removeMaterial:\n%s', segmHandles.removeMaterial.Tooltip);
+            segmHandles.removeMaterial.Tooltip = sprintf('obj.cSegmentation.view.handles.removeMaterial:\n%s', segmHandles.removeMaterial.Tooltip);
         end
     end
 end

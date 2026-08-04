@@ -208,7 +208,7 @@ classdef MibModel < handle
         result = setData2D(obj, dataset, type, slice_no, orient, col_channel, options)        % set a 2D slice in the current dataset; wrapper around core.MibDataset.setData2D
         result = setData3D(obj, dataset, type, time, orient, col_channel, options)        % set a 3D dataset in the current dataset; wrapper around core.MibDataset.setData3D
         result = setData4D(obj, dataset, type, orient, col_channel, options)        % set the complete 4D dataset; wrapper around core.MibDataset.setData4D
-        setDefaultColorPalette(obj, paletteName, colorsNo)        % set default color palette for materials of the model
+        setDefaultColorPalette(obj, paletteName, colorsNo, randomSeed)        % set default color palette for materials of the model
         setMagFactor(obj, magFactor, id)        % set magnification for the currently shown or id dataset
         smoothImage(obj, type, BatchOptIn)      % smooth the selection, mask, or labels layer with a Gaussian kernel (2D or 3D)
         status = transformDataset(obj, BatchOptIn)  % Dispatcher for dataset geometry transforms (flip, rotate, transpose, add frame)

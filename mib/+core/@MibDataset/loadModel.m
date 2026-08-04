@@ -351,7 +351,11 @@ end
 
 % Fill material colors if missing
 if isempty(materialColors)
-    if modelType <= 255 && isfield(options, 'preferences') && ...
+    if modelType > 255
+        % >255-material models pick the colour directly by material index, so the
+        % palette has to span the whole range (same as core.MibDataset.createModel)
+        materialColors = rand(65535, 3);
+    elseif modelType <= 255 && isfield(options, 'preferences') && ...
             isfield(options.preferences, 'Colors') && ...
             isfield(options.preferences.Colors, 'ModelMaterialColors') && ...
             ~isempty(options.preferences.Colors.ModelMaterialColors)
@@ -381,11 +385,21 @@ if isempty(materialNames)
     if modelType <= 255
         materialNames = arrayfun(@(x) sprintf('mat%d', x), 1:nMat, 'UniformOutput', false);
     else
-        % >255-material models: plain numeric names carry the material index
-        % itself (see "How to work with models having more than 255 materials"
-        % in docs/user-interface/ribbon/model/index.md), so keep them numeric.
-        materialNames = arrayfun(@(x) num2str(x), 1:nMat, 'UniformOutput', false);
+        % >255-material models: the segmentation table offers only two material
+        % slots and the plain numeric name of each slot carries the material index
+        % currently shown there (see "How to work with models having more than 255
+        % materials" in docs/user-interface/ribbon/model/index.md). Generating one
+        % name per material index instead would desynchronise the slots from the
+        % table rows and break renaming of materials.
+        materialNames = {'1'; '2'};
     end
+end
+
+% Large models address colours by material index, so the palette must always
+% cover the full range even when the file supplied a shorter one
+if modelType > 255 && size(materialColors, 1) < 65535
+    nExistingColors = size(materialColors, 1);
+    materialColors(nExistingColors+1:65535, :) = rand(65535 - nExistingColors, 3);
 end
 
 obj.labels.materialNames  = materialNames;

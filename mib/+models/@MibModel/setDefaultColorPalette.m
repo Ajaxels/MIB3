@@ -1,10 +1,10 @@
-function setDefaultColorPalette(obj, paletteName, colorsNo)
+function setDefaultColorPalette(obj, paletteName, colorsNo, randomSeed)
 % SETDEFAULTCOLORPALETTE - set default color palette for materials of the model.
 %
 % Syntax:
 %   .. code-block:: matlab
 %
-%       obj.setDefaultColorPalette(paletteName, colorsNo)
+%       obj.setDefaultColorPalette(paletteName, colorsNo, randomSeed)
 %
 % Input Arguments:
 %   - **paletteName** — string with the name of the palette to use, see
@@ -13,6 +13,9 @@ function setDefaultColorPalette(obj, paletteName, colorsNo)
 %   - 'current2default' - copy current model colors to preferences as default
 %   - 'default2current' - restore model colors from preferences default
 %   - **colorsNo** — *(optional)* numeric, number of required color channels
+%   - **randomSeed** — *(optional)* seed for the 'Random Colors' palette; when
+%     omitted or empty, a dialog asking for the seed is shown. Use 'shuffle' to
+%     seed the generator from the system clock and skip the dialog
 %
 % Output Arguments:
 %
@@ -29,9 +32,16 @@ function setDefaultColorPalette(obj, paletteName, colorsNo)
 %
 %      obj.mibModel.setDefaultColorPalette('Qualitative (Monte Carlo->Half Baked), 3-12 colors', 6);
 %
+%   **Example 3** — generate random colors without asking for the random seed
+%
+%   .. code-block:: matlab
+%
+%      obj.mibModel.setDefaultColorPalette('Random Colors', [], 'shuffle');
+%
 
 id = obj.getActiveId();
 
+if nargin < 4; randomSeed = []; end
 if nargin < 3; colorsNo = []; end
 if nargin < 2; paletteName = 'Default, 6 colors'; colorsNo = 6; end
 
@@ -62,7 +72,7 @@ switch paletteName
     case 'default2current'
         palette = obj.preferences.Colors.ModelMaterialColors;
     otherwise
-        palette = utils.defaults.generateDefaultPalette(paletteName, colorsNo);
+        palette = utils.defaults.generateDefaultPalette(paletteName, colorsNo, randomSeed);
         if isempty(palette)
             utils.dlgs.showErrorDialog(obj.getProgressBarParent(), ...
                 'Most likely number of materials in the model is larger than the number of colors in the selected color scheme!', ...

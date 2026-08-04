@@ -85,7 +85,8 @@ do different operations.
 - <span class="widget widget-button">-</span> delete the selected material(s) from the model (*only for models with 63 and 255 materials*).
 - <img src="images/PanelsSegmentation_next_empty_button.png"> find and select the next empty index in the model (*only for models with more than 255 materials*).
 - <img src="images/PanelsSegmentation_squeeze_button.png"> squeeze the model—remove all empty indices and select the next available empty index (*only for models with more than 255 materials*).
-- <img src="images/PanelsSegmentation_recolor_button.png"> regenerate colors of materials: <mouse class="left"></mouse> for random colors, 
+- <img src="images/PanelsSegmentation_recolor_button.png"> regenerate colors of materials: <mouse class="left"></mouse> for random colors (prompts for the
+random seed), ++ctrl++ + <mouse class="left"></mouse> for random colors without the prompt, 
 <mouse class="right"></mouse> for a context menu with additional settings:
 
 ??? info "Color schemes and options"
@@ -180,7 +181,9 @@ context menu **Unlink material from Add to**.
 
 - **Show selected material only** toggle to show only the selected material in 
 the [Image View panel](../../image-document/index.md).
-- **Rename (F2)** rename the selected material, use ++f2++ key shortcut.
+- **Rename (F2)** rename the selected material, use ++f2++ key shortcut. For models with 
+more than 255 materials the table offers only two material slots and the name of each slot is 
+the index of the material shown in it; renaming such a slot switches it to another material index.
 - **Set color** change the color of the selected material (*same as <mouse class="left"></mouse> on the color box in the first column of the table*)
 - **Quantify material...** calculate properties for objects of the selected material. 
 See [Ribbon → Model → Model/Mask quantify](../../ribbon/mask/mask-stats.md).

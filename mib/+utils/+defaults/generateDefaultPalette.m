@@ -1,10 +1,11 @@
-function palette = generateDefaultPalette(paletteName, colorsNo)
+function palette = generateDefaultPalette(paletteName, colorsNo, randomSeed)
 % GENERATEDEFAULTPALETTE - Generate a colour palette by name and number of colours.
 %
 % Syntax:
 %   .. code-block:: matlab
 %
 %      palette = generateDefaultPalette(paletteName, colorsNo)
+%      palette = generateDefaultPalette(paletteName, colorsNo, randomSeed)
 %
 % Input Arguments:
 %   - **paletteName** — [char] name of the palette to generate; supported values:
@@ -17,6 +18,10 @@ function palette = generateDefaultPalette(paletteName, colorsNo)
 %     - … and others defined in the function body
 %
 %   - **colorsNo** — [numeric] number of required colour channels (default: ``6``)
+%   - **randomSeed** — *(optional)* seed for the ``'Random Colors'`` palette; when
+%     omitted or empty a dialog asking for the seed is displayed. Provide a numeric
+%     value for a reproducible palette, or ``'shuffle'`` to seed the generator from
+%     the system clock without showing the dialog
 %
 % Output Arguments:
 %   - **palette** — [numeric] matrix ``[colorId, [R G B]]`` with values in range 0–1
@@ -29,7 +34,14 @@ function palette = generateDefaultPalette(paletteName, colorsNo)
 %
 %      palette = utils.defaults.generateDefaultPalette('Default, 6 colors', 3);
 %
+%   **Example 2** — generate 10 random colours without the seed dialog
+%
+%   .. code-block:: matlab
+%
+%      palette = utils.defaults.generateDefaultPalette('Random Colors', 10, 'shuffle');
+%
 
+if nargin < 3; randomSeed = []; end
 if nargin < 2; colorsNo = 6; end
 if nargin < 1; paletteName = 'Default, 6 colors'; end
 
@@ -165,17 +177,24 @@ switch paletteName
     case 'Matlab Hot'
         palette =  hot(colorsNo);
     case 'Random Colors'
-        rng('shuffle');     % randomize generator
-        randomSeed = round(rand()*100000);
+        if isempty(randomSeed)  % ask for the seed only when it was not provided by the caller
+            rng('shuffle');     % randomize generator
+            randomSeed = round(rand()*100000);
 
-        options.Type = 'spinner';
-        options.WindowWidth = 320;
-        answer = utils.dlgs.inputSingleDlg([], 'Random seed number', ...
-            struct('Value', randomSeed, 'Limits', [1 Inf], 'Step', 1, 'Round', true), ...
-            'Specify random seed', options);
-        if isempty(answer); return; end
+            options.Type = 'spinner';
+            options.WindowWidth = 320;
+            answer = utils.dlgs.inputSingleDlg([], 'Random seed number', ...
+                struct('Value', randomSeed, 'Limits', [1 Inf], 'Step', 1, 'Round', true), ...
+                'Specify random seed', options);
+            if isempty(answer); return; end
+            randomSeed = answer;
+        end
 
-        rng(answer, 'twister');
+        if isnumeric(randomSeed)
+            rng(randomSeed, 'twister');
+        else
+            rng(randomSeed);    % 'shuffle', i.e. seed from the system clock
+        end
         palette =  rand([colorsNo,3]);
 end
 

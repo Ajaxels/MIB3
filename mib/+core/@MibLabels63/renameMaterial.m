@@ -48,6 +48,12 @@ if index == 0
         obj.materialNames = newNames;
     end
 else
+    % guard against addressing a non-existing row
+    if index < 1 || index > numel(obj.materialNames)
+        error('MibLabels63:renameMaterial:badIndex', ...
+            'renameMaterial: material index (%d) is outside of the existing materials (1-%d)!', ...
+            index, numel(obj.materialNames));
+    end
     obj.materialNames{index} = newName;
 end
 end
