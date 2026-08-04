@@ -400,10 +400,11 @@ try
 
                     % limit to the selected material of the model
                     if dataset.restrictSelectionToMaterial == 1
-                        % Fetch fresh 2D mask for this slice to avoid stale
-                        % 3D initialImageSelected from a prior Shift+click series.
+                        % the mask as it was before the first click of this object:
+                        % reading it fresh would exclude the area the object itself
+                        % already occupies and erase it on every second click
                         selectedFixToMaterialSAM = dataset.getSelectedMaterialIndex();
-                        materialMaskSAM = uint8(cell2mat(obj.mibModel.getData2D('labels', z, dataset.orientation, selectedFixToMaterialSAM, getDataOpt)));
+                        materialMaskSAM = utils.sam.initialImage(obj.mibModel, dataset, 'initialImageSelected', 'labels', t, selectedFixToMaterialSAM, getDataOpt, [z z], size(imgOut));
                         imgOut = bitand(imgOut, materialMaskSAM);
                     end
 
@@ -411,14 +412,19 @@ try
                         case 'replace'
                             obj.mibModel.setData2D({imgOut}, BatchOpt.Destination{1}, NaN, NaN, dataset.selectedAddToMaterial-2, getDataOpt);
                         case 'add'
-                            obj.mibModel.setData2D({bitor(obj.mibModel.sessionSettings.SAMsegmenter.initialImageAddTo, imgOut)}, BatchOpt.Destination{1}, NaN, NaN, dataset.selectedAddToMaterial-2, getDataOpt);
+                            % state of the layer before the first click of this object,
+                            % re-mapped to the current view when it was zoomed or panned
+                            % since the click that cached it
+                            initialImage = utils.sam.initialImage(obj.mibModel, dataset, 'initialImageAddTo', BatchOpt.Destination{1}, t, dataset.selectedAddToMaterial-2, getDataOpt, [z z], size(imgOut));
+                            obj.mibModel.setData2D({bitor(initialImage, imgOut)}, BatchOpt.Destination{1}, NaN, NaN, dataset.selectedAddToMaterial-2, getDataOpt);
                         case 'subtract'
                             currLayer = cell2mat(obj.mibModel.getData2D(BatchOpt.Destination{1}, NaN, NaN, dataset.selectedAddToMaterial-2, getDataOpt));
                             obj.mibModel.setData2D({currLayer - imgOut}, BatchOpt.Destination{1}, NaN, NaN, dataset.selectedAddToMaterial-2, getDataOpt);
                         case 'add, +next material'
                             selMaterialIndex = dataset.getSelectedMaterialIndex('AddTo');
 
-                            obj.mibModel.setData2D({bitor(obj.mibModel.sessionSettings.SAMsegmenter.initialImageAddTo, imgOut)}, BatchOpt.Destination{1}, NaN, NaN, selMaterialIndex, getDataOpt);
+                            initialImage = utils.sam.initialImage(obj.mibModel, dataset, 'initialImageAddTo', BatchOpt.Destination{1}, t, selMaterialIndex, getDataOpt, [z z], size(imgOut));
+                            obj.mibModel.setData2D({bitor(initialImage, imgOut)}, BatchOpt.Destination{1}, NaN, NaN, selMaterialIndex, getDataOpt);
 
                             % add next material
                             if extraOptions.addNextMaterial

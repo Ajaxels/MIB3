@@ -600,11 +600,24 @@ elseif strcmp(operation, 'select')
 
                     % limit to the selected material of the model
                     if dataset.restrictSelectionToMaterial == 1
-                        % update selected material state
+                        % Store the restricting material as it is now, i.e. before this
+                        % object was segmented. The refinement clicks have to be limited
+                        % by this very mask: the first click has already moved the area
+                        % of the object out of the restricting material (typically
+                        % Exterior -> the new material), so the current mask would cut
+                        % the object out of every following result.
+                        % The shown block is stored as well, see utils.sam.initialImage.
                         selectedFixToMaterial = dataset.getSelectedMaterialIndex();
-                        getData2Doptions.blockModeSwitch = true;
+                        getData3Doptions.blockModeSwitch = true;
+                        getData3Doptions.z = [z z];
+                        % pyramidal datasets are read and written at the displayed level
+                        if any(dataset.datasetType(1) == ['V' 'B']); getData3Doptions.magFactor = dataset.magFactor; end
                         obj.mibModel.sessionSettings.SAMsegmenter.initialImageSelected = ...
-                            uint8(cell2mat(obj.mibModel.getData2D('labels', NaN, NaN, selectedFixToMaterial, getData2Doptions)));
+                            uint8(cell2mat(obj.mibModel.getData3D('labels', NaN, NaN, selectedFixToMaterial, getData3Doptions)));
+                        obj.mibModel.sessionSettings.SAMsegmenter.initialImageSelectedBox = utils.sam.blockBox(dataset, [z z]);
+                    else
+                        obj.mibModel.sessionSettings.SAMsegmenter.initialImageSelected = [];
+                        obj.mibModel.sessionSettings.SAMsegmenter.initialImageSelectedBox = [];
                     end
 
                     switch samMode
@@ -615,9 +628,15 @@ elseif strcmp(operation, 'select')
                             getDataOptions.blockModeSwitch = true;
                             getDataOptions.z = [z1 z2];
 
-                            % store the current state
+                            % store the current state together with the shown block it was
+                            % taken from, so that segmentationSAM/segmentationSAM2 can re-map
+                            % it when the view is zoomed or panned between the clicks
+                            initialReadOptions = getDataOptions;
+                            % pyramidal datasets are read and written at the displayed level
+                            if any(dataset.datasetType(1) == ['V' 'B']); initialReadOptions.magFactor = dataset.magFactor; end
                             obj.mibModel.sessionSettings.SAMsegmenter.initialImageAddTo = ...
-                                uint8(cell2mat(obj.mibModel.getData3D(destinationLayer, t, NaN, dataset.getSelectedMaterialIndex('AddTo'), getDataOptions)));
+                                uint8(cell2mat(obj.mibModel.getData3D(destinationLayer, t, NaN, dataset.getSelectedMaterialIndex('AddTo'), initialReadOptions)));
+                            obj.mibModel.sessionSettings.SAMsegmenter.initialImageAddToBox = utils.sam.blockBox(dataset, [z1 z2]);
 
                             % for Interactive 3D the z-range grows with each Shift+click so
                             % backup is owned by segmentationSAM2 (with full range each time);
@@ -652,6 +671,7 @@ elseif strcmp(operation, 'select')
 
                         otherwise
                             obj.mibModel.sessionSettings.SAMsegmenter.initialImageAddTo = [];
+                            obj.mibModel.sessionSettings.SAMsegmenter.initialImageAddToBox = [];
                     end
 
                 else  % second click with Shift or Ctrl modifiers
@@ -689,15 +709,10 @@ elseif strcmp(operation, 'select')
                             % use NaN value to specify end of the dataset for automatic cropping
                             obj.mibModel.sessionSettings.SAMsegmenter.Points.Value = [obj.mibModel.sessionSettings.SAMsegmenter.Points.Value, NaN];
 
-                            % limit to the selected material of the model
-                            if dataset.restrictSelectionToMaterial == 1
-                                % update selected material state
-                                selectedFixToMaterial = dataset.getSelectedMaterialIndex();
-                                getData3Doptions.blockModeSwitch = true;
-                                getData3Doptions.z = [min([obj.mibModel.sessionSettings.SAMsegmenter.Points.Position(:,3); z]), max([obj.mibModel.sessionSettings.SAMsegmenter.Points.Position(:,3); z])];
-                                obj.mibModel.sessionSettings.SAMsegmenter.initialImageSelected = ...
-                                    uint8(cell2mat(obj.mibModel.getData3D('labels', NaN, NaN, selectedFixToMaterial, getData3Doptions)));
-                            end
+                            % the restricting material mask is not re-read here: it is
+                            % taken on the first click and re-mapped to the grown z-range
+                            % in utils.sam.initialImage. Re-reading it would exclude the
+                            % area already occupied by the object being segmented
                         end
                         obj.mibModel.sessionSettings.SAMsegmenter.Points.Position = [obj.mibModel.sessionSettings.SAMsegmenter.Points.Position; w, h, z];
 
@@ -751,18 +766,21 @@ elseif strcmp(operation, 'select')
 
                 switch samMode
                     case 'add'
-                        if samMethodVal == 2 && ~isempty(modifier)
-                            % Interactive 3D + Shift+click: z-range just grew, so
-                            % refresh initialImageAddTo to match the new [z1,z2] extent.
-                            % Without this, bitor() in segmentationSAM2 would broadcast
-                            % a stale single-slice state across the full 3D output.
-                            obj.mibModel.sessionSettings.SAMsegmenter.initialImageAddTo = ...
-                                uint8(cell2mat(obj.mibModel.getData3D(destinationLayer, t, NaN, dataset.getSelectedMaterialIndex('AddTo'), getDataOptions)));
-                        end
+                        % nothing to do: the initial state was stored on the first
+                        % (no-modifier) click above. The refinement clicks re-map it to the
+                        % grown z-range and to the current view in utils.sam.initialImage,
+                        % instead of re-reading the layer here — re-reading would bake the
+                        % result of the previous click in and make the negative seeds useless
                     case 'add, +next material'
                         if isempty(modifier) % store initial state for the initial selection of the object
+                            % the shown block is stored together with the image, so that the
+                            % refinement clicks can re-map it after a zoom or a pan
+                            initialReadOptions = getDataOptions;
+                            % pyramidal datasets are read and written at the displayed level
+                            if any(dataset.datasetType(1) == ['V' 'B']); initialReadOptions.magFactor = dataset.magFactor; end
                             obj.mibModel.sessionSettings.SAMsegmenter.initialImageAddTo = ...
-                                uint8(cell2mat(obj.mibModel.getData3D(destinationLayer, NaN, NaN, dataset.getSelectedMaterialIndex('AddTo'), getDataOptions)));
+                                uint8(cell2mat(obj.mibModel.getData3D(destinationLayer, NaN, NaN, dataset.getSelectedMaterialIndex('AddTo'), initialReadOptions)));
+                            obj.mibModel.sessionSettings.SAMsegmenter.initialImageAddToBox = utils.sam.blockBox(dataset, [z1 z2]);
                         end
                 end
 

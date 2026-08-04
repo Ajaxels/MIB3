@@ -168,6 +168,7 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
                     end
                     obj.mibModel.moveLayers('selection', 'model', '2D, Slice', 'add');
                     obj.mibModel.sessionSettings.SAMsegmenter.initialImageAddTo = [];
+                    obj.mibModel.sessionSettings.SAMsegmenter.initialImageAddToBox = [];
                     selMaterialIndex = dataset.getSelectedMaterialIndex('AddTo');
                     dataset.labels.materialNames = {num2str(selMaterialIndex), num2str(selMaterialIndex+1)};
                     if size(dataset.labels.materialColors, 1) < selMaterialIndex+1
