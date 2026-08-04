@@ -10,8 +10,13 @@ function backup(obj, type, switch3d, getDataOptions)
 %
 % Input Arguments:
 %   - **type** — 'image', 'selection', 'mask', 'model' (swapped to labels), 'labels',
-%     'everything' (for MibLabels63 only), 'lines3d',
+%     'everything' (for MibLabels63 only), 'modelLayers', 'lines3d',
 %     'annotations', 'measurements', 'mibDataset'
+%
+%     ``'modelLayers'`` stores copies of the labels, selection and mask layer
+%     **objects** instead of a pixel snapshot, so the model type is restored
+%     together with the data. Use it before operations that replace the labels
+%     layer with a different model type (Standard datasets only)
 %   - **switch3d** — a switch to define a 2D or 3D mode to store the dataset
 %
 %     - ``0`` — 2D slice
@@ -102,6 +107,12 @@ function backup(obj, type, switch3d, getDataOptions)
 %   .. code-block:: matlab
 %
 %      obj.mibModel.backup('mibDataset', 1);
+%
+%   **Example 10b** — store the segmentation layers before changing the model type
+%
+%   .. code-block:: matlab
+%
+%      obj.mibModel.backup('modelLayers', 1);
 %
 %   **Example 11** — store only the visible block (block mode) of the selection
 %
@@ -219,6 +230,26 @@ if strcmp(type, 'mibDataset')
     return;
 end
 
+% whole-layer snapshot: keeps the labels/selection/mask OBJECTS rather than a
+% pixel copy, so the model type is part of the entry. Use it before any
+% operation that replaces the labels layer with one of a different type
+% (convertModel, stitchModelInstances) — a pixel snapshot cannot be written
+% back once the type changed, because a type-63 layer keeps mask and selection
+% in bits 7-8 of obj.labels while the larger types keep them separate.
+if strcmp(type, 'modelLayers')
+    % the Virtual / BigData label layers are backed by on-demand readers and
+    % must not be duplicated
+    if ~strcmp(obj.I{id}.datasetType, 'Standard'); return; end
+    if obj.I{id}.enableSelection == 0; return; end
+    if obj.Backup.max3d_steps == 0; return; end
+    getDataOptions.switch3d = 1;
+    getDataOptions.orient = NaN;
+    getDataOptions.roiId = -1;      % whole-layer snapshot: never cropped to a ROI
+    getDataOptions.modelType = obj.I{id}.labels.maxMaterials;
+    obj.Backup.store(type, {obj.I{id}.copyModelLayers()}, NaN, getDataOptions);
+    return;
+end
+
 % disable backup for 5D datasets
 if ~isfield(getDataOptions, 'x') || ~isfield(getDataOptions, 'y') || ...
         ~isfield(getDataOptions, 'z') || ~isfield(getDataOptions, 't')
@@ -241,6 +272,12 @@ if isa(obj.I{id}.labels, 'core.MibLabels63')
     if strcmp(type, 'selection') || strcmp(type, 'mask') || strcmp(type, 'labels')
         type = 'everything';
     end
+end
+
+% stamp the model type on pixel-layer entries: undo refuses to write a
+% snapshot back into a labels layer of a different type (see MibModel.undo)
+if ismember(type, {'selection', 'mask', 'labels', 'everything'})
+    getDataOptions.modelType = obj.I{id}.labels.maxMaterials;
 end
 
 % return when no mask

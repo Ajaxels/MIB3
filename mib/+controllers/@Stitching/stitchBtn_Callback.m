@@ -48,7 +48,12 @@ try
         obj.buildLayoutFromBatchOpt();
     end
 
-    if isempty(obj.edges)
+    % Measuring is only worth doing when the placement is still unknown: with
+    % positions already in hand the solve below is skipped, so the measured edges
+    % would never be read — and an imported placement (a Fibics Atlas mosaic
+    % whose tiles happen not to pair up) would pay for a full registration pass
+    % that changes nothing.
+    if isempty(obj.edges) && isempty(obj.positions)
         if obj.BatchOpt.EstimateOverlap
             estimateCancelled = obj.runOverlapEstimation();
             if estimateCancelled

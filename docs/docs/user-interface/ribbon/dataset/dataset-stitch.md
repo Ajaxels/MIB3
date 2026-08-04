@@ -11,9 +11,9 @@
 
 The Stitching tool assembles a collection of 2D image tiles into a single large mosaic.
 Starting from a rough initial placement (a regular grid, a position file, a filename
-pattern, or stage coordinates), the tool measures the true overlap between neighboring tiles 
-using phase correlation, finds a globally consistent position for every tile, and fuses the tiles
-into a new dataset.
+pattern, stage coordinates, or a Fibics Atlas mosaic), the tool measures the true overlap
+between neighboring tiles using phase correlation, finds a globally consistent position for
+every tile, and fuses the tiles into a new dataset.
 
 Both 2D tile collections and 3D tiles (Z-stacks) are supported: for 3D data the tool
 performs a single global optimization that jointly minimizes the within-layer (XY) and
@@ -192,10 +192,15 @@ The italic line underneath summarises the selected layout mode.
 
 === "Position file"
 
-    A text file listing every tile with its position - one line per tile,
-    `filename X Y` or `filename X Y Z`, space-, tab-, or comma-separated. 
+    **A file that states where every tile goes.** Two kinds qualify, and MIB tells them
+    apart by extension, so one source covers both:
 
-    Positions are in **pixels** (see the examples below). 
+    - a **position text file** you write yourself - one line per tile,
+      `filename X Y` or `filename X Y Z`, space-, tab-, or comma-separated;
+    - a **Fibics Atlas mosaic** (`MosaicInfo_<name>.ve-mif`), whose own stitch can be
+      imported along with it - see *Fibics Atlas mosaics* below.
+
+    For the text form, positions are in **pixels** (see the examples below).
     The optional Z column places tiles on distinct layers; layers that
     overlap in Z are refined by the same global solve as the XY overlaps.
 
@@ -275,6 +280,75 @@ The italic line underneath summarises the selected layout mode.
         - [x] Tiles may be listed in **any order** - the file states the positions explicitly, so nothing
           depends on sorting.
 
+    ### Fibics Atlas mosaics
+
+    Mosaics acquired with **Fibics Atlas** (Zeiss SEM / FIB-SEM) need no position file of
+    their own: point <span class="widget widget-button">Pick tiles</span> at the mosaic's
+    `MosaicInfo_<name>.ve-mif` and the tile list, grid indices and stage positions are all
+    read from it.
+
+    The `.ve-mif` is the **only** Atlas file the picker offers, because it is the only one
+    you have to choose: if Atlas has **already stitched** the mosaic, its result sits in two
+    more files next to that one, and MIB finds them by itself and offers to reuse them
+    instead of registering everything again.
+
+    ??? note "The three Atlas files, and what MIB does with each"
+        Atlas writes up to three XML files that share one base name and describe three
+        successive stages of the same stitch. Only the first always exists; the other two
+        appear once the mosaic has been stitched in Atlas.
+
+        | File | Atlas writes | MIB reads it as |
+        |------|--------------|-----------------|
+        | `MosaicInfo_<name>.ve-mif` | The **acquisition record**: every tile's `row`/`col`, its target and achieved **stage position in µm**, the tile size, field of view, pixel size and nominal overlap. | The **rough placement** - the same role the position text file plays. |
+        | `MosaicInfo_<name>.ve-tie` | The **pairwise seam measurements**: for each overlapping pair, where the shared strip sits in both tiles, the shift Atlas measured for it, a confidence, and whether a person placed it by hand. | The **measured seams** - exactly MIB's own *Measure overlaps* result, so that step can be skipped. |
+        | `MosaicInfo_<name>.ve-updates` | The **final solved placement**: one transform per tile giving its position in the finished mosaic. | The **solved positions** - MIB's own *Optimize positions* result, so that step can be skipped too. |
+
+        Two more files usually sit alongside them and are **not** used:
+        `StageStitchedOverview_<name>.jpg` (a low-resolution preview of the *unrefined*,
+        stage-coordinate mosaic) and `ServerNotifications.log` (the microscope's serial traffic).
+
+        The tile paths recorded inside the XML are the **acquisition machine's** paths
+        (`E:\...`), which normally do not exist where the data is analysed. MIB therefore
+        looks each tile up **by file name in the folder holding the `.ve-mif`**, so a mosaic
+        folder works wherever it was copied to.
+
+        One `.ve-mif` describes **one mosaic** (one section) and is stitched as a single layer.
+
+    **Reusing Atlas's own stitch.** When a `.ve-tie` or `.ve-updates` is found, MIB lists
+    what it found and asks how much of it to take:
+
+    - <span class="widget widget-button">Nominal grid only</span> - ignore both files and
+      start from the stage grid. MIB measures every overlap and solves the mosaic itself.
+    - <span class="widget widget-button">Atlas seam measurements</span> - take the `.ve-tie`
+      shifts and let MIB run its global solve on them. **No image registration is repeated.**
+    - <span class="widget widget-button">Atlas seams + solved positions</span> - also take
+      the `.ve-updates` placement. The mosaic is then ready as it stands: press
+      <span class="widget widget-button">Stitch</span> and it is fused with **nothing
+      recomputed**.
+
+    Only the modes the present files can honour are offered, and the layout preview refreshes
+    straight after the import so the arrangement is visible before anything is fused.
+
+    !!! tip "When to pick *Nominal grid only*"
+        Under some imaging conditions the stage positions Atlas works from do not describe
+        where the tiles actually overlap, and its stitch comes out wrong even though the tiles
+        themselves are perfectly stitchable. That is what this mode is for: it throws away
+        both sidecars and lets MIB find the overlaps from the images.
+
+        The nominal grid is treated as a **rough guess in every mode** for the same reason -
+        in the sample data this was developed against, the recorded stage step is ~30 px out
+        in Y, which Atlas's own ties confirm. Let
+        <span class="widget widget-button">Measure overlaps</span> correct it.
+
+    !!! info "How an imported stitch is checked"
+        An imported placement is not taken on trust. MIB re-reads the overlap pixels at
+        Atlas's positions and scores every seam, so the
+        [alignment-quality chip](#the-stitching-pipeline) rates the imported mosaic exactly
+        as it rates one MIB solved itself - and turns orange or red if the seams disagree.
+        Seams Atlas records as hand-placed (`<User>true</User>`) are imported as **user**
+        seams, so they carry the same weight as your own fixes in the
+        [seam inspector](dataset-stitch-inspector.md) and survive a re-measure.
+
 
 ---
 
@@ -297,12 +371,13 @@ Select image files or folders with tiles to stitch.
       multi-selects the tile folders (each a Z-stack). Ideal for 3D acquisitions where every XY tile was
       captured as a folder of slice images.
     - With a **Position file**, simply list folder paths in the `filename` column - folders are detected
-      automatically, so this checkbox is not needed (and is disabled) for that source. It is likewise
+      automatically, so this checkbox is not needed (and is disabled) for that source (an Atlas
+      `.ve-mif` names its tile files itself). It is likewise
       disabled for **Bio-Formats metadata**, where each series/file already carries its own stack.
 - <span class="widget widget-edit">Input tiles</span>: the list of selected inputs, **one path per row** 
         - the tile image files (*Grid*, *Filename pattern*), the tile folders
         (when <span class="widget widget-checkbox">Tiles are folders (Z-stacks)</span> is ticked), 
-        the position file, or the Bio-Formats file(s). It is a display of what
+        the position file or Atlas `.ve-mif` mosaic, or the Bio-Formats file(s). It is a display of what
         *Pick tiles* selected; selection order does not matter, since the tiles are natural-sorted by
         name. For *Grid* and *Filename pattern* a single folder path also works - every image file in it
         becomes a tile - which is the form batch protocols normally use.
@@ -318,7 +393,9 @@ Select image files or folders with tiles to stitch.
 
 How the selected tiles are laid out. Rows / Cols / Tile order apply to the **Grid** source;
 Overlap X/Y and *Estimate overlap* apply to both the **Grid** and **Filename pattern** sources
-(both derive tile grid indices). Settings that do not apply to the current layout source are
+(both derive tile grid indices). The **Position file** and **Bio-Formats metadata** sources
+state every tile's position explicitly, so none of these settings
+applies to them. Settings that do not apply to the current layout source are
 disabled rather than hidden, so the tab always shows the full picture. Any change here immediately
 rebuilds the layout and refreshes the preview.
 
@@ -563,8 +640,11 @@ which of them you want:
        the true grid overlap is measured from the tiles and the layout is rebuilt from the
        corrected values.
     4. **Measure overlaps** for every neighboring tile pair (phase correlation or feature-based,
-       per <span class="widget widget-dropdown">Registration method</span>).
-    5. **Optimize positions** - the global least-squares solve.
+       per <span class="widget widget-dropdown">Registration method</span>). Skipped when the
+       seams are already known - measured earlier, restored from a project, or imported from an
+       [Atlas mosaic](#layout-source).
+    5. **Optimize positions** - the global least-squares solve. Skipped when the positions are
+       already known, so an imported Atlas placement is fused exactly as it stands.
     6. **Plan canvas** - computes the output mosaic size and origin from the solved positions.
     7. Refreshes the layout preview at the solved positions - exactly what pressing
        <span class="widget widget-button">Preview layout</span> would draw - so the final tile

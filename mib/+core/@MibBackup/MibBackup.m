@@ -21,7 +21,9 @@ classdef MibBackup < handle
         undoList
         % a structure to store the list of the actions for undo:
         %
-        % - ``.type`` — type of the data: 'image', 'labels', 'selection', 'mask', 'measurement', 'everything' (for model_type==uint6 only)
+        % - ``.type`` — type of the data: 'image', 'labels', 'selection', 'mask', 'measurement',
+        %   'everything' (for model_type==uint6 only), 'modelLayers' (copies of the labels,
+        %   selection and mask layer objects — survives a change of the model type)
         % - ``.data`` — a field to store a cell with 3D dataset or 2D slice
         % - ``.meta`` — meta dictionary, for the 'image' type
         % - ``.options`` — a substructure with all additional parameters:
@@ -130,8 +132,8 @@ classdef MibBackup < handle
             % Can store 2D slices or 3D volumes with associated metadata and coordinates.
             %
             % Input Arguments:
-            %   - **type** — [char] data type: ``'image'``, ``'labels'``, ``'selection'``, ``'mask'``, ``'everything'`` (for uint6), ``'lines3d'``, or ``'mibDataset'``
-            %   - **data** — [cell array] 3D or 2D dataset to store; structure for labels; Lines3D object; or :class:`core.MibDataset` for ``'mibDataset'`` type
+            %   - **type** — [char] data type: ``'image'``, ``'labels'``, ``'selection'``, ``'mask'``, ``'everything'`` (for uint6), ``'modelLayers'``, ``'lines3d'``, or ``'mibDataset'``
+            %   - **data** — [cell array] 3D or 2D dataset to store; structure for labels and for ``'modelLayers'`` layer copies; Lines3D object; or :class:`core.MibDataset` for ``'mibDataset'`` type
             %   - **meta** — *(optional)* [dictionary or NaN] imageData metadata; not required for labels/selection/mask/everything
             %   - **options** — *(optional)* [struct] storage parameters:
             %

@@ -95,7 +95,7 @@ classdef Stitching < handle
             %   - **fieldNames** — [cell] BatchOpt field names, in dialog order
             %
             fieldNames = { ...
-                'LayoutSource', 'InputPath', 'SubfolderMode', ...
+                'LayoutSource', 'InputPath', 'SubfolderMode', 'AtlasImport', ...
                 'GridRows', 'GridCols', 'TileOrder', 'OverlapX', 'OverlapY', 'EstimateOverlap', ...
                 'TransformType', 'AllowRotation', 'RegistrationMethod', 'FeatureDetectorType', ...
                 'QualityThreshold', 'NominalPositionWeight', 'SubpixelPlacement', ...
@@ -165,10 +165,21 @@ classdef Stitching < handle
 
             % ---- BatchOpt defaults
             obj.BatchOpt.LayoutSource    = {'Grid'};
-            obj.BatchOpt.LayoutSource{2} = {'Bio-Formats metadata', 'Filename pattern', 'Grid', 'Position file'};
+            obj.BatchOpt.LayoutSource{2} = {'Bio-Formats metadata', 'Filename pattern', ...
+                'Grid', 'Position file'};
 
             obj.BatchOpt.InputPath       = '';
             obj.BatchOpt.SubfolderMode   = false;
+
+            % How much of an Atlas mosaic's own stitch to take. Consulted only
+            % when the Position file source is pointed at a Fibics Atlas
+            % ``.ve-mif`` rather than a position text file. The GUI asks when a
+            % .ve-tie / .ve-updates is found next to the picked .ve-mif and
+            % records the answer here, so a batch protocol or a reloaded project
+            % repeats the same import silently.
+            obj.BatchOpt.AtlasImport     = {'Atlas seams + solved positions'};
+            obj.BatchOpt.AtlasImport{2}  = {'Nominal grid only', ...
+                'Atlas seam measurements', 'Atlas seams + solved positions'};
 
             obj.BatchOpt.GridRows        = {0, [0 10000], 'on'};
             obj.BatchOpt.GridCols        = {0, [0 10000], 'on'};
@@ -215,9 +226,15 @@ classdef Stitching < handle
             obj.BatchOpt.mibBatchSectionName = 'Ribbon -> Dataset';
             obj.BatchOpt.mibBatchActionName  = 'Stitch...';
 
-            obj.BatchOpt.mibBatchTooltip.LayoutSource    = 'How tiles are arranged: Grid, Position file, MIB2 filename pattern, or embedded Bio-Formats stage coordinates';
-            obj.BatchOpt.mibBatchTooltip.InputPath       = 'Path to the tile folder, position file, or folder of tile files';
+            obj.BatchOpt.mibBatchTooltip.LayoutSource    = 'How tiles are arranged: Grid, Position file (a text file or a Fibics Atlas .ve-mif mosaic), MIB2 filename pattern, or embedded Bio-Formats stage coordinates';
+            obj.BatchOpt.mibBatchTooltip.InputPath       = 'Path to the tile folder, position file, Atlas .ve-mif mosaic file, or folder of tile files';
             obj.BatchOpt.mibBatchTooltip.SubfolderMode   = 'Each tile is a folder of slice images (a Z-stack) instead of a single image file — works with any layout source';
+            obj.BatchOpt.mibBatchTooltip.AtlasImport     = sprintf([ ...
+                '[Position file pointed at a Fibics Atlas .ve-mif]: how much of the mosaic''s own stitch to reuse.\n' ...
+                'Nominal grid only — ignore the .ve-tie/.ve-updates files and register from scratch;\n' ...
+                'Atlas seam measurements — take the .ve-tie shifts, let MIB run the global solve;\n' ...
+                'Atlas seams + solved positions — also take the .ve-updates placement, so Stitch fuses with nothing recomputed.\n' ...
+                'Ignored for a plain position text file.']);
             obj.BatchOpt.mibBatchTooltip.GridRows        = 'Number of grid rows (0 = auto from tile count)';
             obj.BatchOpt.mibBatchTooltip.GridCols        = 'Number of grid columns (0 = auto from tile count)';
             obj.BatchOpt.mibBatchTooltip.TileOrder       = 'Order tiles were acquired: Horizontal, Horizontal snake, Vertical, or Vertical snake';
@@ -451,8 +468,9 @@ classdef Stitching < handle
                     description = sprintf(['Tiles on a regular grid. Pick the tile files, set Rows/Cols and ' ...
                         'overlap (or tick Estimate overlap); Tile order sets the scan pattern.']);
                 case 'Position file'
-                    description = sprintf(['A text file lists each tile file and its X Y [Z] position:\n' ...
-                        '    tiles/tile_01.tif 0 0 0\n    tiles/tile_02.tif 130 0 0']);
+                    description = sprintf(['A file stating where each tile goes — either a text file\n' ...
+                        '("tiles/tile_01.tif 0 0 0" per line), or a Fibics Atlas mosaic\n' ...
+                        '("MosaicInfo_*.ve-mif"), whose own stitch can be imported with it.']);
                 case 'Filename pattern'
                     description = sprintf(['Grid indices are read as pattern:\n   "_Z##-X##-Y##"\nfrom file or ' ...
                         'folder names. The order of letters is not important but it should contain 2 digits.']);

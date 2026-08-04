@@ -23,6 +23,8 @@ See more about segmentation layers in the [Data layers section](../../../getting
 ![Model Ribbon Tab](images/menuModel-convert.png){align=left}
 
 Convert the model to a different type; the current type is indicated in the ribbon.
+The Labels, Selection and Mask layers are backed up before the conversion, so it can be undone with
+++ctrl+z++, which brings back the previous model type together with its materials and colors.
 
 <div class="h4-like">Types of models in MIB</div>
 

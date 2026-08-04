@@ -15,7 +15,10 @@ function stats = stitchModelInstances(obj, options, wb)
 % stack. The heavy lifting is done by :func:`utils.stitchInstances2Dto3D`; this
 % method wraps it with the per-timepoint read/write and rebuilds the labels
 % object at a capacity large enough for the resulting instance count (mirrors
-% the indexed-object branch of :func:`core.MibDataset.convertModel`).
+% the indexed-object branch of :func:`core.MibDataset.convertModel`). When the
+% source model is the bit-packed type-63 layer, the selection and mask layers
+% are unpacked into standalone layers first, because the new indexed model can
+% no longer carry them in its bits.
 %
 % Unlike the connected-component options in ``convertModel`` (which turn a
 % *semantic* model into indexed objects), this expects a model whose slices are
@@ -77,6 +80,20 @@ for timePoint = 1:obj.image.time
     newModel(:, :, :, 1, timePoint) = cast(stitched, class(newModel));
 
     if ~isempty(wb); wb.Value = timePoint / obj.image.time; end
+end
+
+% In a type-63 model the selection and mask layers are packed into bits 7-8
+% of obj.labels and obj.selection/obj.mask are empty placeholders. Unpack
+% them into standalone layers before the labels object is replaced with the
+% large-type model, otherwise they stay empty and every later
+% getData2D('selection', ...) call errors out (mirrors createModel and
+% convertModel).
+if obj.labels.maxMaterials == 63 && obj.labels.exists
+    packedData = obj.labels.data;
+    obj.selection = core.MibLabels(uint8(bitand(packedData, uint8(128)) / 128), meta);
+    if obj.maskExist
+        obj.mask = core.MibLabels(uint8(bitand(packedData, uint8(64)) / 64), meta);
+    end
 end
 
 % Replace the labels layer with the stitched instance model

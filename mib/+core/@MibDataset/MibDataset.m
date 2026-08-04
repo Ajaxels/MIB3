@@ -123,6 +123,8 @@ classdef MibDataset < matlab.mixin.Copyable
         PixelIdxList = convertPixelIdxListCrop2Full(obj, PixelIdxListCrop, options) % Convert PixelIdxList of a cropped sub-volume to the full dataset
         convertModel(obj, newType, wb)        % convert the segmentation model to a different storage type (63/255/65535/4294967295 or indexed objects)
         stats = stitchModelInstances(obj, options, wb)        % stitch per-slice 2D instance labels into a consistent 3D instance model
+        snapshot = copyModelLayers(obj)        % take independent copies of the labels, selection and mask layer objects (model type travels with them)
+        restoreModelLayers(obj, snapshot)      % put back layer objects taken with copyModelLayers
         result = copySlice(obj, sliceFrom, sliceTo, orient)      % Copy a slice from one position to another across all layers
         createModel(obj, modelType, modelMaterialNames)        % allocate memory for a new model layer; handles conversion between packed (type-63) and separate-layer models
         result = cropDataset(obj, cropF, options)        % Crop all layers of the dataset (image, labels, mask, selection); handles Virtual → Standard conversion

@@ -24,6 +24,7 @@ run('development\stitching\07_stitch_smoke_bioformats\generateSmokeBioFormatsTil
 run('development\stitching\11_stitch_smoke_affine\generateSmokeAffineTiles.m')
 run('development\stitching\12_stitch_smoke_sabotage\generateSmokeSabotageTiles.m')  % needs mib on path (measures + saves a project)
 run('development\stitching\13_stitch_smoke_affine3d\generateSmokeAffine3DTiles.m')
+run('development\stitching\15_stitch_smoke_atlas\generateSmokeAtlasTiles.m')
 ```
 
 Or regenerate everything at once, in test order (run from the repo root):
@@ -66,6 +67,7 @@ FILES, not a folder. Pasting the folder path into the Input path field still wor
 | 12 | `12_stitch_smoke_sabotage\sabotage.mibstitch.json` | — (Load project) | **Inspect and fix...** after loading | **Seam inspector** — the residual-invisible corrupted edge (see below). |
 | 13 | `13_stitch_smoke_affine3d\positions.txt` | Position file | Transform = Affine, tick **Allow rotation** | **3D affine** — in-plane affine on Z-stack tiles across 2 layers (see below). |
 | 14 | `01_stitch_smoke\tiles` + `06_stitch_smoke_feature\tiles` | Grid | **Save project**, then **Load project** twice | **Project save/load** — settings round-trip + the load-mode question (see below). Needs no new data. |
+| 15 | `15_stitch_smoke_atlas\MosaicInfo_SMOKE.ve-mif` | Position file | pick the `.ve-mif`, answer the import dialog | **Fibics Atlas** — an Atlas mosaic under the Position file source; the three import modes (see below). |
 
 ### Test 6 — phase correlation vs feature-based (the key comparison)
 
@@ -240,6 +242,56 @@ needed — this reuses datasets 1 and 6.
    **Estimate overlap** rebuilt the layout from them. <span>Input path</span> must also list
    the three `12_stitch_smoke_sabotage\tiles\tile_0#.tif` after the load, not job 11's files.
 
+### Test 15 — Fibics Atlas: the three import modes
+
+An Atlas mosaic folder can carry Atlas's own finished stitch beside the acquisition record.
+The generator writes all three files, with the `.ve-mif` stage grid **deliberately 8 px too
+long per row in Y** (1 px per column in X) while the `.ve-tie` / `.ve-updates` describe the
+correct placement — the real failure this source exists to cope with.
+
+An Atlas mosaic has **no layout source of its own** — it is a file that says where the tiles
+go, so it lives under **Position file** alongside the position text file, told apart by
+extension. Set *Layout source* = **Position file**, browse with the Input **…** button and
+pick `MosaicInfo_SMOKE.ve-mif` (a single FILE, not a folder). A dialog must appear listing
+both sidecars with their counts (*12 measured seams*, *9 solved tile positions*) and offering
+three buttons. Run the test once per button; the layout preview must refresh by itself each
+time, without pressing *Preview layout*.
+
+1. **Nominal grid only** — status reads `9 tiles | 0 edges measured | solved: no`, the chip is
+   blank (`Alignment: —`). *Measure overlaps → Optimize positions* must then pull the mosaic
+   into line (chip green, error well under 1 px). Stitching straight from the nominal grid
+   instead — press **Stitch** on a fresh import — is the negative control: with *Estimate
+   overlap* unticked the seams visibly step by ~8 px per row.
+2. **Atlas seam measurements** — status jumps to `9 tiles | 12 edges measured | solved: no`
+   with **no progress bar and no image reads**: the seams came from the file. Press
+   *Optimize positions* only; the chip must go green and the preview title must say **solved**.
+3. **Atlas seams + solved positions** — status reads `solved: yes` immediately and the chip is
+   already green (**Excellent alignment**, seam match ≈ 1.00) — MIB re-read the overlap pixels
+   at Atlas's positions to earn that rating, so a short progress bar here is expected. Press
+   **Stitch** directly: nothing may re-measure or re-solve, and the mosaic must be seamless.
+
+Also check:
+
+- **Tile paths.** The XML records `E:\acquired\session\SMOKE\…`, which does not exist. The
+  tiles must still load, because they are looked up by name next to the `.ve-mif`.
+- **Disabled settings.** On the *Tile settings* tab, Rows / Cols / Tile order / Overlap X/Y /
+  *Estimate overlap* and *Tiles are folders* are all disabled — the Atlas layout is fully
+  determined by the file.
+- **Project round-trip.** **Save project** after mode 3, then **Load project** →
+  *Restore everything*: the layout source must come back as *Position file* with the
+  solved positions intact.
+- **Re-picking.** Browse the same `.ve-mif` again — the dialog must default to the button you
+  chose last time.
+- **Sidecar-free folder.** Delete (or rename) the `.ve-tie` and `.ve-updates` and re-pick the
+  `.ve-mif`: **no dialog at all** must appear, and the tool behaves like mode 1.
+- **Only the `.ve-mif` is offered.** In the picker, the *Fibics Atlas mosaic* filter must list
+  the `.ve-mif` alone — the `.ve-tie` / `.ve-updates` are found from it, not chosen. Switching
+  to *All files* and selecting `MosaicInfo_SMOKE.ve-tie` anyway must still resolve back to the
+  `.ve-mif` and behave identically, not error.
+- **A plain position file still works under the same source.** Without changing *Layout
+  source*, load test 3's `03_stitch_smoke_3d\positions.txt`: the text form must build its
+  layout as before, with no Atlas import dialog and no leftover seams/positions.
+
 ## Expected numbers (from headless validation)
 
 | Dataset | Recovered origin error |
@@ -252,3 +304,4 @@ needed — this reuses datasets 1 and 6.
 | `11_stitch_smoke_affine` (TransformType=Affine) | ≤ 0.22 matrix max-abs, RMSE ≈ 0.02 px |
 | `13_stitch_smoke_affine3d` (TransformType=Affine) | 12/12 edges valid; ≤ 0.39 matrix max-abs, RMSE ≈ 0.09 px, layer dz exact |
 | `12_stitch_smoke_sabotage` | corrupted seam scores 0.09 vs 1.00; exclude+re-solve → ≤ 6 px; click-fix → ≤ 1 px |
+| `15_stitch_smoke_atlas` | nominal grid 16 px off; solve on imported `.ve-tie` → 0.07 px; imported `.ve-updates` → 0.00 px, seam scores 1.00 |

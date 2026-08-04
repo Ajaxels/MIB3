@@ -2,7 +2,8 @@
 
 **Status: IMPLEMENTED and verified.** All phases done: 2D translation/affine/rigid/similarity
 registration, 3D (multi-layer joint solve + in-plane affine on Z-stacks), streaming zarr→BigData
-fusion, interactive rough placement, and the seam inspector (manual QC). See companion docs:
+fusion, interactive rough placement, the seam inspector (manual QC), and the Fibics Atlas layout
+source with optional import of Atlas's own stitch. See companion docs:
 [`plan_transforms.md`](plan_transforms.md) (transform models), [`plan_inspector.md`](plan_inspector.md)
 (seam inspector), [`mlapp_widgets.md`](mlapp_widgets.md) (widget spec, needed if the GUI is extended),
 [`smoke_tests.md`](smoke_tests.md) (GUI regression checklist).
@@ -10,16 +11,19 @@ fusion, interactive rough placement, and the seam inspector (manual QC). See com
 ## What it does
 
 Stitches a collection of 2D/3D image tiles into a mosaic: rough initial positions (grid, position
-file, `_Z##-X##-Y##` filename pattern, or Bio-Formats stage coordinates) → pairwise registration
-(phase correlation or feature-based) → **one global sparse least-squares solve** over the whole tile
-graph (all axes, all layers jointly — not "stitch 2D then align 3D") → fuse (in-memory or streaming
-to OME-Zarr, reopened as a BigData dataset). Ribbon → Dataset → Stitching.
+file — a text file OR a Fibics Atlas `.ve-mif`, `_Z##-X##-Y##` filename pattern, or Bio-Formats
+stage coordinates) → pairwise registration (phase correlation or feature-based) → **one global
+sparse least-squares solve** over the whole tile graph (all axes, all layers jointly — not "stitch
+2D then align 3D") → fuse (in-memory or streaming to OME-Zarr, reopened as a BigData dataset).
+Ribbon → Dataset → Stitching. An Atlas `.ve-mif` can additionally **import** the mosaic's own
+finished stitch and skip the registration/solve stages entirely (see "Fibics Atlas" below).
 
 ## Architecture
 
 **Computational core — `mib\+utils\+stitch\`** (controller-independent, headless-testable):
-`buildLayoutGrid`/`buildLayoutPositionFile`/`buildLayoutFilenamePattern`/`buildLayoutBioFormats` (nominal
-origins) → `findNeighborPairs` → `pairwiseShift` (phase correlation) / `featureShift` (feature-based,
+`buildLayoutGrid`/`buildLayoutPositionFile`/`buildLayoutFilenamePattern`/`buildLayoutBioFormats`/
+`buildLayoutAtlas` (+`findAtlasSidecars`) (nominal origins)
+→ `findNeighborPairs` → `pairwiseShift` (phase correlation) / `featureShift` (feature-based,
 also handles affine/rigid/similarity) → `measureAllPairs` (edge list) → `solveGlobalLeastSquares`
 (translation) / `solveGlobalAffine` (affine/rigid/similarity) → `planCanvas` → `fuseInMemory` /
 `fuseStreaming` (+ `mib\+io\+savers\StitchSliceProvider.m` delegating to `Zarr3Saver.saveStream` when a
@@ -28,8 +32,9 @@ slice fits in RAM). Plus `estimateOverlap`, `resolveTileEntry`, `blendWeights`, 
 
 **Controller — `mib\+controllers\@Stitching\`** + view `mib\+views\StitchingGUI.mlapp`. Standard
 child-controller set + workflow callbacks (`selectInputBtn`, `previewLayoutBtn`, `measureOverlaps`,
-`optimizePositions`, `stitchBtn` — single fuse+save entry point, `saveProjectBtn`/`loadProjectBtn`).
-Sibling child controller **`@StitchingInspector`** (manual seam QC, see `plan_inspector.md`).
+`optimizePositions`, `stitchBtn` — single fuse+save entry point, `saveProjectBtn`/`loadProjectBtn`,
+`askAtlasImportMode`). Sibling child controller **`@StitchingInspector`** (manual seam QC, see
+`plan_inspector.md`).
 
 ```matlab
 % layout(i): .index .filename .sliceFiles{} .zLayer .gridRC [r c]
@@ -44,7 +49,9 @@ settings+RMSE, blend, output, `zSliceFixes`, optional `project.settings` block (
 defaulted fields.
 
 **BatchOpt** (MIB3 conventions): `LayoutSource` {Grid, Position file, Filename pattern, Bio-Formats
-metadata}; `InputPath`; `SubfolderMode` (tiles are folders/Z-stacks); `GridRows`/`GridCols` (0=auto);
+metadata}; `InputPath`; `AtlasImport` {Nominal grid only, Atlas seam measurements, Atlas seams +
+solved positions — widget-less, set by the import dialog, consulted only when InputPath is a
+`.ve-mif`}; `SubfolderMode` (tiles are folders/Z-stacks); `GridRows`/`GridCols` (0=auto);
 `TileOrder`; `OverlapX/Y`; `EstimateOverlap`; `TransformType` {Translation, Rigid, Similarity, Affine};
 `AllowRotation`; `RegistrationMethod` {Phase correlation, Feature-based}; `FeatureDetectorType`;
 `QualityThreshold`; `NominalPositionWeight`; `SubpixelPlacement`; `OutputMode` {In memory, OME-Zarr3
@@ -102,6 +109,66 @@ metadata}; `InputPath`; `SubfolderMode` (tiles are folders/Z-stacks); `GridRows`
 - **Min blend mode** needs the fresh-pixel mask (same as Max) or a zero background wins every
   singly-covered pixel.
 
+## Fibics Atlas (`buildLayoutAtlas`)
+
+**No dropdown entry of its own — it lives under `LayoutSource = 'Position file'`**, which covers
+both kinds of file that state where the tiles go and tells them apart by EXTENSION. A `.ve-mif`
+answers exactly the same question a position text file does, so a second layout source would have
+earned nothing; `findAtlasSidecars` returns an all-empty struct for anything that is not one of the
+three Atlas extensions, and its `.mifPath` is the whole "is this an Atlas mosaic?" test.
+
+Atlas writes three XML files sharing one base name — `.ve-mif` (acquisition record: per-tile
+`row`/`col` + stage µm, tile size, FOV, pixel size), `.ve-tie` (pairwise seam measurements),
+`.ve-updates` (final solved placement). The last two exist only after the mosaic was stitched in
+Atlas. `AtlasImport` selects how far down that chain to read; the import happens in
+`buildLayoutFromBatchOpt` (not the GUI callback) so batch and dialog share one path.
+
+- **The picker offers the `.ve-mif` alone** — it is the only Atlas file that names the tiles, and
+  the other two are DETECTED from it rather than chosen. `findAtlasSidecars` still resolves a
+  `.ve-tie` / `.ve-updates` back to the `.ve-mif` (reachable via "All files", a typed path, or a
+  batch protocol), so the resolution stays even though the dialog no longer advertises it.
+- Everything the Atlas input needs from the enable-state logic it gets for free: `updateWidgets`,
+  `updateBatchOptFromGUI` and `runOverlapEstimation` all gate on POSITIVE lists
+  (`{'Grid', 'Filename pattern'}`), so Position file already disables Rows/Cols/TileOrder/
+  Overlap/Estimate/SubfolderMode. Keep those lists positive.
+
+- **Tie offset composition: `offset = Image1Position − Image2Position + Shift`.** Both positions
+  locate the SAME shared strip, each in its own tile's centre-relative frame, so `pos1 − pos2`
+  alone reproduces the nominal step exactly (`+329 − −329 = 658`). Writing it `pos2 − pos1`
+  flips BOTH axes and every measured offset comes out negated — the one bug found while building
+  this; it survives casual inspection because the magnitudes stay plausible.
+- **Axis signs are DERIVED per mosaic**, not hard-coded: `deriveAxisSigns` correlates each tile's
+  `row`/`col` attribute against its stage coordinate (`signX = sign(cov(col, stageX))`,
+  `signY = sign(cov(row, stageY))`). Stage Y points UP, so `signY` normally comes out −1; a
+  mirrored stage maps correctly with no flag. Degenerate 1×N / N×1 grids fall back to `[+1, −1]`.
+  The `.ve-tie` and `.ve-updates` share the stage frame's orientation, so the same signs apply.
+- **All XML lookups must walk DIRECT children.** `<PixelSize>` appears a second time inside
+  `TileInfo/AutoTune/AutoStigAndFocus` (1.5 µm, unrelated to the mosaic's 0.5) and
+  `<ParentTransform>` a second time inside `<DefaultAlignment>` (the identity-ish default, not the
+  solved transform). `getElementsByTagName` crosses those boundaries and silently returns the
+  wrong node.
+- **Tile files are resolved by BASENAME in the `.ve-mif`'s own folder.** The XML records the
+  acquisition machine's absolute paths (`E:\...`), which never exist where the data is analysed.
+- **Importing positions without ties synthesises the edges** from `findNeighborPairs` +
+  `positions(j) − positions(i)`. Without them `stitchBtn_Callback`'s empty-edge branch runs a full
+  measure pass and throws the import away. Belt and braces: that branch is now guarded by
+  `isempty(edges) && isempty(positions)` — measuring is pointless once the placement is known,
+  because the solve is skipped anyway.
+- **Atlas `Confidence` is an unbounded ratio** (observed up to 1.11), MIB `quality` is `[0 1]` →
+  clamped, not rescaled. `valid` uses the file's OWN `<ConfidenceThreshold>`, not
+  `BatchOpt.QualityThreshold`, so a tie Atlas would have rejected cannot steer MIB's solve.
+- **`<User>true</User>` → `source = 'user'`** — it genuinely means a human placed that seam in
+  Atlas, which is exactly what MIB's `'user'` means (heavier solver weight, survives a re-measure).
+  No new `source` value was introduced; `'atlas'` would have broken
+  `advanceToNextUnreviewed`, which treats anything that is not `'auto'` as reviewed.
+- **An imported placement gets a synthesised `solverInfo`** (residuals of the imported edges at the
+  imported positions) plus a `scoreSeams` pass, so the alignment chip rates it like any solve
+  instead of reading "Alignment: —". This is the check that catches a bad Atlas stitch.
+- **The nominal stage grid is a rough guess in every mode.** On the reference data the recorded Y
+  step is 13–16 µm long (27–33 px, varying by section: 658 µm nominal vs ~642–645 µm real) while X
+  is accurate to <1 px — Atlas's own ties agree. Never treat `.ve-mif` positions as final.
+- One `.ve-mif` = one mosaic = one section = **one `zLayer`**. Multi-section series are not merged.
+
 ## Project files (save/load)
 
 Sidecar v3 adds an optional `project.settings` block (the dialog's BatchOpt, reduced to plain values).
@@ -119,10 +186,23 @@ raising (an old project must load into a newer dialog).
 - `tests\controllers\StitchingControllerTest.m` / `StitchingInspectorControllerTest.m` — controller-level
   tests driving the real classes headlessly (`controllers.Stitching(mibModel, [], NaN)` builds full
   default state with no window; `StitchingInspector(..., struct('createView', false))` skips the window).
+- **Atlas**: `mibtest.helpers.makeAtlasMosaic` writes a synthetic 2×2 mosaic reproducing the
+  format's traps (foreign absolute paths, both duplicated tag names, snake tile order, Y-up stage)
+  with tiles CUT FROM ONE TEXTURE at the tie/updates offsets — so the imported placement is the
+  pixel-correct one (seams score ~1) while the nominal grid is deliberately 4–6 px wrong. Covered
+  in `StitchLayoutTest` (12 tests: sidecar resolution from any of the three files, the non-Atlas
+  predicate, signs, tie conversion, confidence mapping, provenance, synthesised edges) and
+  `StitchingControllerTest` (8 tests: the three import modes, text-file vs mosaic under the one
+  source, sidecar-pick resolution, the chip, Stitch skipping measure/solve, overlap estimation
+  standing down).
+- Cross-validated on real Fibics Atlas data (`Crossbeam 550`, Atlas Engine v5.5.6, 2×2 @ 0.5 µm/px):
+  MIB's own `solveGlobalLeastSquares` fed the imported `.ve-tie` reproduces Atlas's `.ve-updates`
+  placement to **0.007–0.08 px**, and MIB's independent phase-correlation stitch of the same tiles
+  agrees with both to ~1 px.
 - Run via `buildtool test` (needs `addpath('tests')`) / `buildtool check`, or MATLAB MCP
   `run_matlab_test_file` / `check_matlab_code` for iteration.
-- GUI regression: [`smoke_tests.md`](smoke_tests.md) — 14 numbered datasets/checklists covering every
-  layout source, transform model, blend mode, and the seam inspector.
+- GUI regression: [`smoke_tests.md`](smoke_tests.md) — 15 numbered datasets/checklists covering every
+  layout source, transform model, blend mode, the seam inspector, and the Atlas import modes.
 
 ## Risks / notes
 
@@ -131,3 +211,6 @@ raising (an old project must load into a newer dialog).
 - **Low-texture overlaps**: quality threshold + springs; fall back to nominal offset on flat peaks.
 - **Multi-channel/time**: registers on one channel, applies to all C/T; shared layout across T.
 - **Per-tile pixel-size mismatch**: assumed uniform (from the first tile); not warned otherwise.
+- **Atlas rotation/scale**: `.ve-updates` transforms carry a tiny skew term and Atlas can in
+  principle set `PerTileRotation`/`PerTileScale`; only the translation (`M41`/`M42`) is imported.
+  A genuinely rotated Atlas stitch would import as translation-only — no warning is raised.

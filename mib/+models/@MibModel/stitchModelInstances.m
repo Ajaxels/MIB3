@@ -255,8 +255,11 @@ if BatchOpt.CentroidLinkRadius{1} > 0
 end
 
 %% Backup the current model for undo (skip in batch protocols)
+% 'modelLayers' rather than 'labels': stitching replaces the labels layer with
+% an indexed uint16/uint32 model, so a pixel snapshot taken at the old type
+% (typically the bit-packed type 63) could not be written back on Ctrl+Z
 if ~batchModeSwitch
-    obj.backup('labels', 1, struct('id', BatchOpt.id));
+    obj.backup('modelLayers', 1, struct('id', BatchOpt.id));
 end
 
 %% Perform stitching

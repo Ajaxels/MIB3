@@ -8,7 +8,13 @@ function undo(obj, newIndex)
 %
 % Restores a previously stored dataset state from the Backup history.
 % Works with all layer types: image, selection, mask, model, everything,
-% annotations, lines3d, measurements, and mibDataset.
+% modelLayers, annotations, lines3d, measurements, and mibDataset.
+%
+% Entries holding a pixel snapshot of a segmentation layer carry the model type
+% they were captured at (``storeOptions.modelType``). When the live labels layer
+% has since changed type, it is converted back before the snapshot is applied
+% and the current layers are kept for redo as a ``'modelLayers'`` entry — see
+% :func:`core.MibDataset.copyModelLayers`.
 %
 % Input Arguments:
 %   - **newIndex** — *(optional)* index of the dataset to restore. When omitted
@@ -102,8 +108,38 @@ end
 
 obj.Backup.replaceItem(newIndex, NaN, {NaN}, NaN, storeOptions);
 
+% --- model-type guard ---------------------------------------------------
+% A pixel snapshot of a segmentation layer is only valid for the model type it
+% was taken at: a type-63 layer keeps mask and selection in bits 7-8 of
+% obj.labels, the larger types keep them as standalone layers. Operations that
+% replace the labels layer with a different type (convertModel,
+% stitchModelInstances) therefore leave older entries incompatible with the
+% live layer, and writing them back would reinterpret packed bits as material
+% indices. Bring the layer back to the stored type first, and snapshot the
+% current layers wholesale so the redo direction stays exact as well.
+redoEntryStored = false;
+if isfield(storeOptions, 'modelType') && storeOptions.modelType ~= obj.I{id}.labels.maxMaterials && ...
+        ismember(type, {'model', 'labels', 'selection', 'mask', 'everything'})
+    redoOptions = storeOptions;
+    redoOptions.switch3d  = 1;
+    redoOptions.orient    = NaN;
+    redoOptions.modelType = obj.I{id}.labels.maxMaterials;
+    % restoreModelLayers sets these flags itself; stale copies would override it
+    redoOptions = rmfield(redoOptions, intersect(fieldnames(redoOptions), {'maskExist', 'modelExist'}));
+    obj.Backup.replaceItem(newDataIndex, 'modelLayers', {obj.I{id}.copyModelLayers()}, NaN, redoOptions);
+    redoEntryStored = true;
+
+    % note: converting down to type 63 clips material indices above 63 in the
+    % parts of the volume the entry does not cover (a 2D entry covers one
+    % slice). Operations that change the type take a 'modelLayers' backup of
+    % their own, which restores the layer objects and avoids this path.
+    obj.I{id}.convertModel(storeOptions.modelType);
+end
+
 % store the current situation before applying undo data
-if obj.preferences.Undo.Max3dUndoHistory <= 1 && storeOptions.switch3d
+if redoEntryStored
+    % already written by the model-type guard above
+elseif obj.preferences.Undo.Max3dUndoHistory <= 1 && storeOptions.switch3d
     % tweak for storing a single 3D dataset
     switch type
         case 'annotations'
@@ -117,6 +153,8 @@ if obj.preferences.Undo.Max3dUndoHistory <= 1 && storeOptions.switch3d
         case 'mibDataset'
             datasetCopy = obj.deepCopyDataset(id, [], struct('showWaitbar', false));
             obj.Backup.replaceItem(newDataIndex, type, datasetCopy, NaN, storeOptions);
+        case 'modelLayers'
+            obj.Backup.replaceItem(newDataIndex, type, {obj.I{id}.copyModelLayers()}, NaN, storeOptions);
         otherwise
             dataStore = cell([size(storeOptions.x, 1), 1]);
             for roiId = 1:size(storeOptions.x, 1)
@@ -151,6 +189,8 @@ else
             case 'mibDataset'
                 datasetCopy = obj.deepCopyDataset(id, [], struct('showWaitbar', false));
                 obj.Backup.replaceItem(newDataIndex, type, datasetCopy, NaN, storeOptions);
+            case 'modelLayers'
+                obj.Backup.replaceItem(newDataIndex, type, {obj.I{id}.copyModelLayers()}, NaN, storeOptions);
             otherwise
                 dataStore = cell([size(storeOptions.x, 1), 1]);
                 for roiId = 1:size(storeOptions.x, 1)
@@ -219,6 +259,11 @@ if storeOptions.switch3d     % 3D case
                     obj.I{id}.modelExist = 1;
                 case 'everything'
                     obj.I{id}.setData3D(data{cellId}, type, storeOptions.t(1), storeOptions.orient, NaN, setDataOptions2);
+                case 'modelLayers'
+                    % whole-layer restore: brings back the model type, the
+                    % material names/colours and the selected material as well
+                    obj.I{id}.restoreModelLayers(data{cellId});
+                    notify(obj, 'UpdateGuiWidgets', core.ToggleEventData({'ribbonModel', 'checkboxes'}));
                 case 'annotations'
                     annotData = data{cellId};
                     obj.I{id}.annotations.replaceLabels(annotData.labelText, annotData.labelPosition, annotData.labelValue);

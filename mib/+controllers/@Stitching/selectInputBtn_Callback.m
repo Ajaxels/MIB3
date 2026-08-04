@@ -10,8 +10,13 @@ function selectInputBtn_Callback(obj)
 % (SubfolderMode = each tile is a FOLDER Z-stack rather than a single file):
 %   - **Bio-Formats metadata** — multi-select file picker; one multi-series file
 %     (series = tiles) or several single-tile files carrying stage coordinates.
-%   - **Position file** — file picker for the position text file (the file's
-%     filename column may point at images or, with SubfolderMode, at folders).
+%   - **Position file** — file picker for either kind of file that states where the
+%     tiles go: MIB's position text file (whose filename column may point at images
+%     or, with SubfolderMode, at folders), or a **Fibics Atlas** mosaic
+%     (``MosaicInfo_*.ve-mif``). Only the ``.ve-mif`` is offered for Atlas — its
+%     ``.ve-tie`` / ``.ve-updates`` results are detected from it automatically, and
+%     when Atlas already stitched the mosaic the user is asked how much of that
+%     stitch to reuse before the layout is built.
 %   - **Grid / Filename pattern**, SubfolderMode OFF — multi-select file picker;
 %     the selected image files are the tiles (stored newline-joined in
 %     InputPath; the layout builder natural-sorts them, so selection order does
@@ -45,16 +50,45 @@ if strcmp(layoutSource, 'Bio-Formats metadata')
     obj.BatchOpt.InputPath = strjoin(fullPaths, newline);
     obj.refreshInputPathWidget();
 elseif strcmp(layoutSource, 'Position file')
-    % Pick a position text file
+    % Pick a position text file OR a Fibics Atlas mosaic — both state where every
+    % tile goes, so they share this source and are told apart by extension.
     startFolder = firstExistingPath(obj.BatchOpt.InputPath);
     if isempty(startFolder); startFolder = obj.mibModel.currentDirectory; end
+    % Only the .ve-mif is offered for Atlas: it is the one file that names the
+    % tiles, and its .ve-tie / .ve-updates results are found automatically from
+    % it. Listing all three would ask the user to make a choice the tool makes
+    % better itself.
     [selectedFile, selectedFolder] = uigetfile( ...
-        {'*.txt;*.csv;*.tsv', 'Position files (*.txt, *.csv, *.tsv)'; '*.*', 'All files'}, ...
-        'Select position file', startFolder);
+        {'*.txt;*.csv;*.tsv;*.ve-mif', 'Position files and Atlas mosaics'; ...
+         '*.txt;*.csv;*.tsv', 'Position files (*.txt, *.csv, *.tsv)'; ...
+         '*.ve-mif', 'Fibics Atlas mosaic (MosaicInfo_*.ve-mif)'; ...
+         '*.*', 'All files'}, ...
+        'Select position file or Atlas mosaic', startFolder);
     if isequal(selectedFile, 0)
         return;
     end
     inputPath = fullfile(selectedFolder, selectedFile);
+
+    % A .ve-tie / .ve-updates still resolves back to its .ve-mif — the picker no
+    % longer offers them, but "All files" and typed/pasted paths can still reach
+    % them, and they name the same mosaic either way.
+    sidecars = utils.stitch.findAtlasSidecars(inputPath);
+    if ~isempty(sidecars.mifPath)
+        inputPath = sidecars.mifPath;
+        % Ask BEFORE building: the answer lands in BatchOpt.AtlasImport, which is
+        % what buildLayoutFromBatchOpt reads to decide what to import.
+        if ~obj.askAtlasImportMode(inputPath)
+            return;   % cancelled — leave the previous input untouched
+        end
+    elseif ismember(lower(extensionOf(inputPath)), {'.ve-tie', '.ve-updates'})
+        utils.dlgs.showErrorDialog(obj.view.gui, sprintf([ ...
+            'This is one of an Atlas mosaic''s result files, but its ' ...
+            'MosaicInfo_*.ve-mif is missing from the same folder.\n\n' ...
+            'The .ve-mif lists the tiles, so it has to be there too.']), ...
+            'Atlas mosaic incomplete');
+        return;
+    end
+
     obj.BatchOpt.InputPath = inputPath;
     obj.refreshInputPathWidget();
 elseif obj.BatchOpt.SubfolderMode
@@ -99,6 +133,22 @@ end
 
 obj.updateWidgets();
 
+% Draw the arrangement that was just built. For an Atlas mosaic this is the whole
+% point of the import step — the preview shows the SOLVED positions when a
+% placement came with the mosaic, so the user sees what pressing Stitch would
+% fuse before pressing it. Other inputs only refresh a preview already on screen.
+selectedSidecars = utils.stitch.findAtlasSidecars(obj.BatchOpt.InputPath);
+if ~isempty(obj.layout) && (~isempty(selectedSidecars.mifPath) || ...
+        ~isempty(obj.view.handles.previewAxes.Children))
+    obj.previewLayoutBtn_Callback();
+end
+
+end
+
+% =========================================================================
+function extension = extensionOf(filePath)
+% EXTENSIONOF - File extension of a path, '' when it has none.
+[~, ~, extension] = fileparts(filePath);
 end
 
 % =========================================================================

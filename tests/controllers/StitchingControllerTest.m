@@ -381,6 +381,175 @@ classdef StitchingControllerTest < matlab.unittest.TestCase
     end
 
     % =================================================================
+    % Fibics Atlas layout source
+    % =================================================================
+    methods (Test, TestTags = {'Unit'})
+
+        function atlasImportModesFillTheMatchingState(testCase)
+            % BatchOpt.AtlasImport decides how much of an Atlas mosaic's own
+            % stitch buildLayoutFromBatchOpt adopts — and the import must survive
+            % the downstream reset that same method performs.
+            [controller, mosaic] = testCase.atlasController();
+
+            controller.BatchOpt.AtlasImport{1} = 'Nominal grid only';
+            controller.buildLayoutFromBatchOpt();
+            testCase.verifyNumElements(controller.layout, 4);
+            testCase.verifyEmpty(controller.edges);
+            testCase.verifyEmpty(controller.positions);
+
+            controller.BatchOpt.AtlasImport{1} = 'Atlas seam measurements';
+            controller.buildLayoutFromBatchOpt();
+            testCase.verifyNumElements(controller.edges, 4);
+            testCase.verifyEmpty(controller.positions, ...
+                'seam-only import must leave the global solve to MIB');
+
+            controller.BatchOpt.AtlasImport{1} = 'Atlas seams + solved positions';
+            controller.buildLayoutFromBatchOpt();
+            testCase.verifyNumElements(controller.edges, 4);
+            testCase.verifySize(controller.positions, [4 3]);
+            testCase.verifyEqual(mosaic.veMifPath, controller.BatchOpt.InputPath);
+        end
+
+        function atlasImportedPlacementReportsAnAlignmentRating(testCase)
+            % An imported stitch arrives without a solve, so the chip would sit
+            % blank — and the user would have no way to tell a good Atlas result
+            % from the bad one this whole layout source exists to rescue.
+            [controller, ~] = testCase.atlasController();
+            controller.BatchOpt.AtlasImport{1} = 'Atlas seams + solved positions';
+            controller.buildLayoutFromBatchOpt();
+
+            testCase.verifyTrue(isfield(controller.solverInfo, 'rmseTotal'));
+            testCase.verifyLessThan(controller.solverInfo.rmseTotal, 1);
+            testCase.verifyEmpty(controller.solverInfo.disconnectedTiles);
+
+            % The rating is not taken on trust from the file: the overlap pixels
+            % are re-read at the imported placement, which is the only check that
+            % catches an Atlas stitch that came out wrong. The mosaic's tiles are
+            % cut from one texture at exactly these offsets, so the seams match.
+            testCase.verifyGreaterThan(min([controller.edges.seamScore]), 0.7);
+
+            rmseLabel = testCase.attachChipLabel(controller);
+            controller.refreshQualityChip();
+            testCase.verifySubstring(rmseLabel.Text, 'Excellent alignment');
+        end
+
+        function atlasNominalGridIsOnlyAStartingGuess(testCase)
+            % The stage grid Atlas records is off by the per-seam correction (4 px
+            % in X, 6 px in Y here) — the reason this source cannot simply trust
+            % it. MIB's own measurement from that grid must recover the truth.
+            [controller, mosaic] = testCase.atlasController();
+            controller.BatchOpt.AtlasImport{1} = 'Nominal grid only';
+            controller.BatchOpt.EstimateOverlap = false;
+            controller.buildLayoutFromBatchOpt();
+
+            origins = reshape([controller.layout.nomOrigin], 3, []).';
+            testCase.verifyEqual(origins(2, 2) - origins(1, 2), mosaic.stepPx, 'AbsTol', 1e-6);
+            testCase.verifyNotEqual(mosaic.stepPx, mosaic.measuredStepXpx);
+
+            controller.measureOverlaps_Callback();
+            controller.optimizePositions_Callback();
+
+            relative = controller.positions - controller.positions(1, :);
+            testCase.verifyEqual(relative(2, 2), mosaic.measuredStepXpx, 'AbsTol', 1.5);
+            testCase.verifyEqual(relative(3, 1), mosaic.measuredStepYpx, 'AbsTol', 1.5);
+        end
+
+        function atlasImportedPlacementSkipsMeasureOnStitch(testCase)
+            % The point of importing a placement is that Stitch fuses it as it
+            % stands. Nothing may re-measure or re-solve on the way.
+            [controller, ~] = testCase.atlasController();
+            controller.BatchOpt.AtlasImport{1} = 'Atlas seams + solved positions';
+            controller.buildLayoutFromBatchOpt();
+
+            importedPositions = controller.positions;
+            importedEdges     = controller.edges;
+
+            controller.BatchOpt.OutputMode{1} = 'In memory';
+            controller.stitchBtn_Callback(true);
+
+            testCase.verifyEqual(controller.positions, importedPositions, 'AbsTol', 1e-9);
+            testCase.verifyNumElements(controller.edges, numel(importedEdges));
+            testCase.verifyNotEmpty(controller.canvas);
+        end
+
+        function atlasSourceIgnoresGridAndOverlapSettings(testCase)
+            % Rows/Cols/Overlap belong to the grid-style sources; the Atlas layout
+            % comes from the recorded stage positions, and the overlap estimator
+            % must stand down rather than rebuild the layout from a percentage.
+            [controller, ~] = testCase.atlasController();
+            controller.BatchOpt.AtlasImport{1} = 'Nominal grid only';
+            controller.BatchOpt.EstimateOverlap = true;
+            controller.buildLayoutFromBatchOpt();
+            originsBefore = reshape([controller.layout.nomOrigin], 3, []).';
+
+            cancelled = controller.runOverlapEstimation();
+
+            testCase.verifyFalse(cancelled);
+            originsAfter = reshape([controller.layout.nomOrigin], 3, []).';
+            testCase.verifyEqual(originsAfter, originsBefore, 'AbsTol', 1e-9);
+        end
+
+        function positionFileSourceTellsTextFilesFromAtlasMosaics(testCase)
+            % Both file kinds live under ONE layout source, told apart by
+            % extension — the same controller must handle either without the user
+            % switching anything, and a text file must not pick up Atlas state.
+            [controller, mosaic] = testCase.atlasController();
+            controller.BatchOpt.AtlasImport{1} = 'Atlas seams + solved positions';
+            controller.buildLayoutFromBatchOpt();
+            testCase.verifyNumElements(controller.layout, 4);
+            testCase.verifySize(controller.positions, [4 3]);
+
+            % Same controller, same layout source, now a plain position file.
+            tileFolder = testCase.chopChain(41);
+            tileFiles = dir(fullfile(tileFolder, '*.tif'));
+            positionFile = fullfile(mosaic.folder, 'positions.txt');
+            fileId = fopen(positionFile, 'w');
+            for tileIdx = 1:numel(tileFiles)
+                fprintf(fileId, '%s %d 0\n', ...
+                    fullfile(tileFiles(tileIdx).folder, tileFiles(tileIdx).name), ...
+                    (tileIdx - 1) * 120);
+            end
+            fclose(fileId);
+
+            controller.BatchOpt.InputPath = positionFile;
+            controller.buildLayoutFromBatchOpt();
+
+            testCase.verifyNumElements(controller.layout, numel(tileFiles));
+            testCase.verifyEmpty(controller.edges, ...
+                'a text position file carries no seams — Atlas state must not leak in');
+            testCase.verifyEmpty(controller.positions);
+        end
+
+        function atlasSidecarPickResolvesToTheMosaicRecord(testCase)
+            % Picking a .ve-tie / .ve-updates names the same mosaic; the layout
+            % must build from its .ve-mif rather than failing on the wrong file.
+            [controller, mosaic] = testCase.atlasController();
+            [mosaicFolder, mosaicBase] = fileparts(mosaic.veMifPath);
+            controller.BatchOpt.AtlasImport{1} = 'Atlas seams + solved positions';
+
+            controller.BatchOpt.InputPath = mosaic.veMifPath;
+            controller.buildLayoutFromBatchOpt();
+            expectedPositions = controller.positions;
+
+            for extension = {'.ve-tie', '.ve-updates'}
+                controller.BatchOpt.InputPath = fullfile(mosaicFolder, [mosaicBase, extension{1}]);
+                controller.buildLayoutFromBatchOpt();
+                testCase.verifyEqual(controller.positions, expectedPositions, 'AbsTol', 1e-9, ...
+                    sprintf('%s must resolve to the same mosaic', extension{1}));
+            end
+        end
+
+        function atlasMissingMosaicFileRaises(testCase)
+            % Headless callers must see an error where the GUI shows a dialog.
+            controller = testCase.newController();
+            controller.BatchOpt.LayoutSource{1} = 'Position file';
+            controller.BatchOpt.InputPath = fullfile(tempdir, 'no_such_mosaic.ve-mif');
+            testCase.verifyError(@() controller.buildLayoutFromBatchOpt(), ...
+                'Stitching:badInputPath');
+        end
+    end
+
+    % =================================================================
     % Local helpers
     % =================================================================
     methods (Access = private)
@@ -394,6 +563,17 @@ classdef StitchingControllerTest < matlab.unittest.TestCase
             controller = controllers.Stitching(mibModel, [], NaN);
             testCase.assertEmpty(controller.view, 'the NaN path must not build a view');
             controller.BatchOpt.showWaitbar = false;
+        end
+
+        function [controller, mosaic] = atlasController(testCase)
+            % Controller pointed at a synthetic Fibics Atlas mosaic (2x2, with
+            % both sidecars present) — see mibtest.helpers.makeAtlasMosaic for
+            % the geometry and the format traps it reproduces.
+            tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            mosaic = mibtest.helpers.makeAtlasMosaic(tmpDir.Folder);
+            controller = testCase.newController();
+            controller.BatchOpt.LayoutSource{1} = 'Position file';
+            controller.BatchOpt.InputPath       = mosaic.veMifPath;
         end
 
         function [controller, tileDir] = chainController(testCase, seed)

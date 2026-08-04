@@ -162,6 +162,11 @@ if modelType < 4 && obj.I{BatchOpt.id}.labels.maxMaterials > 256
     return;
 end
 
+%% Backup the segmentation layers for undo
+% 'modelLayers' keeps the layer objects, so Ctrl+Z restores the previous model
+% type together with its pixel data, material names and colours
+obj.backup('modelLayers', 1, struct('id', BatchOpt.id));
+
 %% Perform conversion
 wb = [];
 if BatchOpt.showWaitbar

@@ -7,6 +7,10 @@ classdef StitchLayoutTest < matlab.unittest.TestCase
 %   utils.stitch.buildLayoutPositionFile — space/tab/comma delimiters,
 %                                          repeated spaces, Z column, relative paths
 %   utils.stitch.buildLayoutFilenamePattern — _Z##-X##-Y## token parsing
+%   utils.stitch.buildLayoutAtlas       — Fibics Atlas .ve-mif / .ve-tie /
+%                                         .ve-updates: stage grid, derived axis
+%                                         signs, tie conversion, solved positions
+%   utils.stitch.findAtlasSidecars      — which Atlas sidecars are present
 %   utils.stitch.findNeighborPairs      — x/y/z directions, minOverlap filtering
 %   utils.stitch.saveProject / loadProject — JSON round-trip
 
@@ -566,6 +570,219 @@ classdef StitchLayoutTest < matlab.unittest.TestCase
             utils.stitch.saveProject(plainFile, layout, [], [], [], []);
             [~, ~, ~, ~, ~, ~, ~, emptySettings] = utils.stitch.loadProject(plainFile);
             testCase.verifyEmpty(fieldnames(emptySettings));
+        end
+
+        % -----------------------------------------------------------------
+        % buildLayoutAtlas / findAtlasSidecars — Fibics Atlas mosaics
+        % -----------------------------------------------------------------
+
+        function atlasSidecars_reportOnlyWhatExists(testCase)
+            tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            mosaic = mibtest.helpers.makeAtlasMosaic(tmpDir.Folder, struct('writeTies', false, 'writeUpdates', false));
+
+            sidecars = utils.stitch.findAtlasSidecars(mosaic.veMifPath);
+            testCase.verifyEqual(sidecars.mifPath, mosaic.veMifPath);
+            testCase.verifyEmpty(sidecars.tiePath);
+            testCase.verifyEmpty(sidecars.updatesPath);
+
+            mosaicBoth = mibtest.helpers.makeAtlasMosaic(fullfile(tmpDir.Folder, 'both'));
+            sidecarsBoth = utils.stitch.findAtlasSidecars(mosaicBoth.veMifPath);
+            testCase.verifyTrue(isfile(sidecarsBoth.tiePath));
+            testCase.verifyTrue(isfile(sidecarsBoth.updatesPath));
+        end
+
+        function atlasSidecars_resolveAnyOfTheThreeFiles(testCase)
+            % The three files sit side by side with near-identical names, so
+            % whichever the user picks means the same mosaic — .mifPath must come
+            % back pointing at the acquisition record either way.
+            tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            mosaic = mibtest.helpers.makeAtlasMosaic(tmpDir.Folder);
+            [mosaicFolder, mosaicBase] = fileparts(mosaic.veMifPath);
+
+            for extension = {'.ve-mif', '.ve-tie', '.ve-updates'}
+                sidecars = utils.stitch.findAtlasSidecars( ...
+                    fullfile(mosaicFolder, [mosaicBase, extension{1}]));
+                testCase.verifyEqual(sidecars.mifPath, mosaic.veMifPath, ...
+                    sprintf('picking %s must resolve to the .ve-mif', extension{1}));
+            end
+        end
+
+        function atlasSidecars_nonAtlasPathIsNotAnAtlasMosaic(testCase)
+            % .mifPath doubles as the "is this an Atlas input?" test that lets the
+            % Position file source tell a mosaic from a plain position text file,
+            % so a non-Atlas path must come back empty rather than raising.
+            tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            positionFile = fullfile(tmpDir.Folder, 'positions.txt');
+            fileId = fopen(positionFile, 'w'); fprintf(fileId, 'tile.tif 0 0\n'); fclose(fileId);
+
+            for candidate = {positionFile, fullfile(tmpDir.Folder, 'tile.tif'), 'no_extension'}
+                sidecars = utils.stitch.findAtlasSidecars(candidate{1});
+                testCase.verifyEmpty(sidecars.mifPath);
+                testCase.verifyEmpty(sidecars.tiePath);
+                testCase.verifyEmpty(sidecars.updatesPath);
+            end
+        end
+
+        function atlasLayout_stageGridToPixelOrigins(testCase)
+            % The nominal layout comes from the recorded stage positions: a
+            % 22 µm step at 0.5 µm/px is 44 px, and stage Y (which points UP)
+            % must be inverted so row 2 lands BELOW row 1.
+            tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            mosaic = mibtest.helpers.makeAtlasMosaic(tmpDir.Folder);
+
+            layout = utils.stitch.buildLayoutAtlas(mosaic.veMifPath);
+
+            testCase.verifyEqual(numel(layout), 4);
+            % Tiles are ordered row-major regardless of the acquisition order
+            % (the mosaic writes them r1c1, r1c2, r2c2, r2c1 — Atlas snakes).
+            testCase.verifyEqual(vertcat(layout.gridRC), [1 1; 1 2; 2 1; 2 2]);
+
+            origins = reshape([layout.nomOrigin], 3, []).';
+            testCase.verifyEqual(origins(1, 1:2), [1 1], 'AbsTol', 1e-6);
+            testCase.verifyEqual(origins(2, 1:2), [1 45], 'AbsTol', 1e-6);   % +1 column
+            testCase.verifyEqual(origins(3, 1:2), [45 1], 'AbsTol', 1e-6);   % +1 row, Y inverted
+            testCase.verifyEqual(origins(4, 1:2), [45 45], 'AbsTol', 1e-6);
+            testCase.verifyEqual([layout.zLayer], [1 1 1 1]);   % one .ve-mif = one section
+        end
+
+        function atlasLayout_resolvesTilesLocallyNotByRecordedPath(testCase)
+            % The .ve-mif records the ACQUISITION machine's absolute paths, which
+            % never exist where the data is analysed — tiles must be found by name
+            % in the folder holding the .ve-mif.
+            tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            mosaic = mibtest.helpers.makeAtlasMosaic(tmpDir.Folder);   % records E:\acquired\...
+
+            layout = utils.stitch.buildLayoutAtlas(mosaic.veMifPath);
+
+            for tileIdx = 1:numel(layout)
+                testCase.verifyTrue(isfile(layout(tileIdx).filename));
+                testCase.verifyEqual(fileparts(layout(tileIdx).filename), tmpDir.Folder);
+            end
+        end
+
+        function atlasLayout_axisSignsDerivedFromMosaic(testCase)
+            % No vendor convention is assumed: a mosaic whose stage X runs
+            % opposite to the column index must still place column 2 to the RIGHT.
+            tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            mosaic = mibtest.helpers.makeAtlasMosaic(tmpDir.Folder, struct('mirrorStageX', true));
+
+            [layout, ~, ~, atlasInfo] = utils.stitch.buildLayoutAtlas(mosaic.veMifPath);
+
+            testCase.verifyEqual(atlasInfo.signX, -1);
+            origins = reshape([layout.nomOrigin], 3, []).';
+            testCase.verifyEqual(origins(2, 2), 45, 'AbsTol', 1e-6);   % r1c2 still to the right
+            testCase.verifyEqual(origins(1, 2), 1, 'AbsTol', 1e-6);
+        end
+
+        function atlasTies_measuredOffsetsAndProvenance(testCase)
+            % A tie states where the shared strip sits in each tile plus the
+            % correction Atlas measured: offset = pos1 - pos2 + shift. The
+            % synthetic mosaic shortens every vertical seam by 6 px and every
+            % horizontal one by 4 px, so 44 px of nominal step measures 38 / 40.
+            tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            mosaic = mibtest.helpers.makeAtlasMosaic(tmpDir.Folder);
+
+            [layout, edges] = utils.stitch.buildLayoutAtlas(mosaic.veMifPath, ...
+                struct('importTies', true));
+
+            testCase.verifyEqual(numel(edges), 4);
+            % Every edge keeps the i < j orientation the rest of the pipeline emits
+            testCase.verifyTrue(all([edges.i] < [edges.j]));
+
+            verticalEdge = edges(find(strcmp({edges.direction}, 'y'), 1));
+            testCase.verifyEqual(verticalEdge.measured(1), 38, 'AbsTol', 1e-6);
+            testCase.verifyEqual(verticalEdge.measured(3), 0);
+
+            horizontalEdge = edges(find(strcmp({edges.direction}, 'x'), 1));
+            testCase.verifyEqual(horizontalEdge.measured(2), 40, 'AbsTol', 1e-6);
+
+            % nominal comes from OUR layout, not from the tie file, so the
+            % solver's springs stay consistent with the nominal origins
+            testCase.verifyEqual(verticalEdge.nominal, ...
+                layout(verticalEdge.j).nomOrigin - layout(verticalEdge.i).nomOrigin, 'AbsTol', 1e-6);
+        end
+
+        function atlasTies_confidenceMappedAndThresholded(testCase)
+            % Atlas confidence is an unbounded ratio (it runs above 1) while MIB
+            % quality is [0 1]; ties below Atlas's own threshold are imported but
+            % marked invalid, so they act as springs rather than constraints.
+            tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            mosaic = mibtest.helpers.makeAtlasMosaic(tmpDir.Folder, ...
+                struct('confidences', [1.12, 0.95, 0.40, 0.91], 'confidenceThreshold', 0.82));
+
+            [~, edges] = utils.stitch.buildLayoutAtlas(mosaic.veMifPath, struct('importTies', true));
+
+            testCase.verifyEqual(max([edges.quality]), 1);            % 1.12 clamped
+            testCase.verifyTrue(all([edges.quality] >= 0));
+            testCase.verifyEqual(nnz(~[edges.valid]), 1);             % only the 0.40 tie
+            testCase.verifyEqual(edges(~[edges.valid]).quality, 0.40, 'AbsTol', 1e-9);
+        end
+
+        function atlasTies_userPlacedSeamsKeepUserProvenance(testCase)
+            % <User>true</User> means a human placed that seam in Atlas — the same
+            % meaning MIB's 'user' source carries, so it must survive a re-measure
+            % and get the heavier solver weight.
+            tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            mosaic = mibtest.helpers.makeAtlasMosaic(tmpDir.Folder, struct('userTies', [true false false false]));
+
+            [~, edges] = utils.stitch.buildLayoutAtlas(mosaic.veMifPath, struct('importTies', true));
+
+            testCase.verifyEqual(nnz(strcmp({edges.source}, 'user')), 1);
+            testCase.verifyEqual(nnz(strcmp({edges.source}, 'auto')), 3);
+        end
+
+        function atlasUpdates_solvedPositionsImported(testCase)
+            % .ve-updates carries the final placement as a 4x4 transform whose
+            % M41/M42 is the tile offset in µm — in the same stage-frame
+            % orientation as the .ve-mif.
+            tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            mosaic = mibtest.helpers.makeAtlasMosaic(tmpDir.Folder);
+
+            [~, ~, positions] = utils.stitch.buildLayoutAtlas(mosaic.veMifPath, ...
+                struct('importTies', true, 'importPositions', true));
+
+            testCase.verifyEqual(size(positions), [4 3]);
+            relative = positions - positions(1, :);
+            testCase.verifyEqual(relative(2, 1:2), [0 40], 'AbsTol', 1e-6);
+            testCase.verifyEqual(relative(3, 1:2), [38 0], 'AbsTol', 1e-6);
+            testCase.verifyEqual(relative(4, 1:2), [38 40], 'AbsTol', 1e-6);
+        end
+
+        function atlasUpdates_withoutTiesSynthesisesConsistentEdges(testCase)
+            % Solved positions with no edge set would send Stitch back into a full
+            % measure pass, discarding the import; the derived edges must reproduce
+            % the imported placement exactly.
+            tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            mosaic = mibtest.helpers.makeAtlasMosaic(tmpDir.Folder, struct('writeTies', false));
+
+            [layout, edges, positions] = utils.stitch.buildLayoutAtlas(mosaic.veMifPath, ...
+                struct('importPositions', true));
+
+            testCase.verifyNotEmpty(edges);
+            testCase.verifyTrue(all([edges.valid]));
+            for edgeIdx = 1:numel(edges)
+                expected = positions(edges(edgeIdx).j, :) - positions(edges(edgeIdx).i, :);
+                testCase.verifyEqual(edges(edgeIdx).measured, expected, 'AbsTol', 1e-9);
+            end
+
+            % Re-solving must land back on the imported placement. Not to machine
+            % precision: the nominal-position springs pull every tile a hundredth
+            % of a pixel back toward the stage grid, which is the solver working
+            % as designed rather than the import disagreeing with itself.
+            solved = utils.stitch.solveGlobalLeastSquares(layout, edges, struct('springWeight', 0.1));
+            testCase.verifyEqual(solved - solved(1, :), positions - positions(1, :), 'AbsTol', 0.05);
+        end
+
+        function atlasImport_missingSidecarRaises(testCase)
+            % Asking for an import the folder cannot honour must fail loudly —
+            % silently falling back would stitch something other than requested.
+            tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            mosaic = mibtest.helpers.makeAtlasMosaic(tmpDir.Folder, struct('writeTies', false, 'writeUpdates', false));
+
+            testCase.verifyError(@() utils.stitch.buildLayoutAtlas(mosaic.veMifPath, ...
+                struct('importTies', true)), 'utils:stitch:buildLayoutAtlas:noTieFile');
+            testCase.verifyError(@() utils.stitch.buildLayoutAtlas(mosaic.veMifPath, ...
+                struct('importPositions', true)), 'utils:stitch:buildLayoutAtlas:noUpdatesFile');
         end
 
     end % methods (Test)
