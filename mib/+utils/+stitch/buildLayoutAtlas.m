@@ -144,7 +144,7 @@ if options.importPositions
         % the positions), throwing away the very import that was just asked for.
         % Derive the edges the positions imply instead: self-consistent, and the
         % seam inspector needs an edge set to review.
-        edges = synthesizeEdges(layout, positions);
+        edges = utils.stitch.synthesizeEdgesFromPositions(layout, positions);
     end
 end
 
@@ -290,7 +290,13 @@ originXpx = originXpx - min(originXpx) + 1;   % 1-based, fractions kept for the 
 originYpx = originYpx - min(originYpx) + 1;
 
 layout(numTiles) = struct('index', 0, 'filename', '', 'sliceFiles', {{}}, 'zLayer', 1, ...
-    'gridRC', [0 0], 'nomOrigin', [0 0 0], 'tileSize', [0 0 0 0], 'dataClass', '');
+    'gridRC', [0 0], 'nomOrigin', [0 0 0], 'tileSize', [0 0 0 0], 'dataClass', '', ...
+    'pixSize', []);
+
+% The mosaic's own scale, so the stitched dataset inherits it. One .ve-mif is one
+% section and carries no thickness, so Z is the in-plane size.
+tilePixSize = struct('x', atlasInfo.pixelSizeUm, 'y', atlasInfo.pixelSizeUm, ...
+    'z', atlasInfo.pixelSizeUm, 'units', 'um');
 
 for tileIdx = 1:numTiles
     [sliceFiles, tileSize, dataClass] = utils.stitch.resolveTileEntry(tiles(tileIdx).filename);
@@ -302,6 +308,7 @@ for tileIdx = 1:numTiles
     layout(tileIdx).nomOrigin  = [originYpx(tileIdx), originXpx(tileIdx), 1];
     layout(tileIdx).tileSize   = tileSize;
     layout(tileIdx).dataClass  = dataClass;
+    layout(tileIdx).pixSize    = tilePixSize;
 end
 
 end
@@ -445,30 +452,6 @@ positionXpx(unplaced) = nominalOrigins(unplaced, 2);
 positionYpx(unplaced) = nominalOrigins(unplaced, 1);
 
 positions = [positionYpx, positionXpx, nominalOrigins(:, 3)];
-
-end
-
-% =========================================================================
-function edges = synthesizeEdges(layout, positions)
-% SYNTHESIZEEDGES - Derive the edge set implied by an imported placement.
-
-pairs = utils.stitch.findNeighborPairs(layout, struct('minOverlapPx', 16));
-edges = emptyEdges();
-for pairIdx = 1:numel(pairs)
-    newEdge = emptyEdges();
-    newEdge(1).i         = pairs(pairIdx).i;
-    newEdge(1).j         = pairs(pairIdx).j;
-    newEdge(1).direction = pairs(pairIdx).direction;
-    newEdge(1).nominal   = pairs(pairIdx).nominal;
-    newEdge(1).measured  = positions(pairs(pairIdx).j, :) - positions(pairs(pairIdx).i, :);
-    newEdge(1).quality   = 1;
-    newEdge(1).valid     = true;
-    newEdge(1).tform     = [];
-    newEdge(1).source    = 'auto';
-    newEdge(1).seamScore = [];
-    newEdge(1).dzHint    = 0;
-    edges(end + 1) = newEdge; %#ok<AGROW>
-end
 
 end
 

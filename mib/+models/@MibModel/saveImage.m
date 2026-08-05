@@ -270,6 +270,15 @@ else
             labelsDir = fileparts(obj.I{BatchOpt.id}.labels.filename);
             if ~isempty(labelsDir); defaultDir = labelsDir; end
         end
+        % A dataset ASSEMBLED in MIB (stitched, generated, arithmetic result) has
+        % no source folder to go back to, so the path above comes out empty and
+        % uiputfile would silently offer MATLAB's current working folder - which
+        % is wherever MIB was started from and has nothing to do with the user's
+        % data. Fall back to the directory MIB itself is browsing instead, which
+        % is the same folder a loaded dataset would have offered.
+        if isempty(defaultDir) || ~isfolder(defaultDir)
+            defaultDir = obj.currentDirectory;
+        end
         defaultFilename = fullfile(defaultDir, BatchOpt.Filename);
         [~, ~, defaultExt] = fileparts(defaultFilename);
         

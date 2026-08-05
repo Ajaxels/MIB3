@@ -75,6 +75,7 @@ if ~isfield(options, 'maxScoreSlices'); options.maxScoreSlices = 16; end
 if ~isfield(options, 'dzScanRadius');   options.dzScanRadius = 2; end
 if ~isfield(options, 'dzHintMargin');   options.dzHintMargin = 0.05; end
 if ~isfield(options, 'cacheSizeBytes'); options.cacheSizeBytes = 2 * 1024^3; end
+if ~isfield(options, 'correction');      options.correction = []; end
 if ~isfield(options, 'showWaitbar');    options.showWaitbar = false; end
 if ~isfield(options, 'parentFigure');   options.parentFigure = []; end
 
@@ -86,7 +87,7 @@ if isfield(options, 'readerFcn') && ~isempty(options.readerFcn)
     readerFcn = options.readerFcn;
 else
     readerFcn = utils.stitch.makeTileReader(layout, ...
-        struct('cacheSizeBytes', options.cacheSizeBytes));
+        struct('cacheSizeBytes', options.cacheSizeBytes, 'correction', options.correction));
 end
 
 % uiprogressdlg errors on an invisible parent (e.g. a GUI scored during its

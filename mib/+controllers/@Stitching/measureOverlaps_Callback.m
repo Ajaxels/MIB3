@@ -60,6 +60,7 @@ if strcmp(obj.BatchOpt.RegistrationMethod{1}, 'Feature-based') || ...
 end
 measureOptions.parentFigure       = obj.guiFigure();
 measureOptions.showWaitbar        = obj.BatchOpt.showWaitbar && ~isempty(measureOptions.parentFigure);
+measureOptions.correction         = obj.ensureIntensityCorrection();
 
 try
     [measuredEdges, cancelled] = utils.stitch.measureAllPairs(obj.layout, nominalPairs, measureOptions);

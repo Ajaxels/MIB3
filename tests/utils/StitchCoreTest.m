@@ -624,6 +624,168 @@ classdef StitchCoreTest < matlab.unittest.TestCase
     end
 
     % =================================================================
+    % Canvas background colour + autocrop
+    % =================================================================
+    methods (Test, TestTags = {'Unit'})
+
+        function canvasBackground_whiteIsTheClassCeiling(testCase)
+            testCase.verifyEqual(utils.stitch.canvasBackground('uint8', 'black'), 0);
+            testCase.verifyEqual(utils.stitch.canvasBackground('uint16', 'black'), 0);
+            testCase.verifyEqual(utils.stitch.canvasBackground('uint8', 'white'), 255);
+            testCase.verifyEqual(utils.stitch.canvasBackground('uint16', 'white'), 65535);
+            testCase.verifyEqual(utils.stitch.canvasBackground('int16', 'white'), 32767);
+            % Float data rides the normalised 0..1 scale; realmax would be the
+            % literal ceiling and useless as a fill value.
+            testCase.verifyEqual(utils.stitch.canvasBackground('single', 'white'), 1);
+            testCase.verifyEqual(utils.stitch.canvasBackground('uint8'), 0);   % default black
+            testCase.verifyError(@() utils.stitch.canvasBackground('uint8', 'grey'), ...
+                'utils:stitch:canvasBackground:badColor');
+        end
+
+        function canvasBackground_fillsUncoveredPixelsInEveryBlendMode(testCase)
+            % Two tiles side by side with a 5 px gap: the gap column must come out
+            % as the requested background, whichever blend mode wrote the slice.
+            layout = testCase.makeLineLayout(2, [20 30 1 1], 35);
+            positions = [1 1 1; 1 36 1];             % 30-wide tiles, 5 px gap at 31:35
+            canvas = utils.stitch.planCanvas(layout, positions);
+            readerFcn = @(tileIdx) repmat(uint8(60 + 40 * tileIdx), 20, 30);
+
+            whiteValue = utils.stitch.canvasBackground(canvas.dataClass, 'white');
+            modes = {'Feather', 'Average', 'Max', 'Min', 'Overwrite'};
+            for modeIdx = 1:numel(modes)
+                img = utils.stitch.fuseInMemory(layout, canvas, struct( ...
+                    'blendMode', modes{modeIdx}, 'background', whiteValue, ...
+                    'readerFcn', readerFcn));
+                testCase.verifyEqual(unique(img(:, 31:35)), uint8(255), ...
+                    sprintf('gap not filled with white in %s mode', modes{modeIdx}));
+                testCase.verifyEqual(unique(img(:, 1:30)), uint8(100), ...
+                    sprintf('tile pixels disturbed in %s mode', modes{modeIdx}));
+            end
+        end
+
+        function autocrop_matchesBruteForceOptimumAndLeavesNoBackground(testCase)
+            % 2x2 mosaic with per-tile jitter, so the solved positions leave a
+            % ragged frame on all four sides. The crop must (a) be fully covered,
+            % (b) be the LARGEST such rectangle - checked against an exhaustive
+            % search over the real coverage mask - and (c) fuse with no background
+            % pixel anywhere.
+            tileH = 100; tileW = 120;
+            positions = [ 1   1  1;
+                          4  96  1;
+                         89  -3  1;
+                         93 101  1];
+            layout = testCase.emptyLayout(4);
+            for k = 1:4
+                layout(k).index = k;
+                layout(k).nomOrigin = positions(k, :);
+                layout(k).tileSize = [tileH tileW 1 1];
+                layout(k).dataClass = 'uint16';
+            end
+
+            plain   = utils.stitch.planCanvas(layout, positions);
+            cropped = utils.stitch.planCanvas(layout, positions, struct('autocrop', true));
+            testCase.verifyFalse(isfield(plain, 'cropRect'));   % off unless asked for
+            testCase.verifyLessThan(cropped.size(1), plain.size(1));
+            testCase.verifyLessThan(cropped.size(2), plain.size(2));
+
+            coverage = false(plain.size(1), plain.size(2));
+            for k = 1:4
+                r = plain.tilePlacement(k, 1); c = plain.tilePlacement(k, 2);
+                coverage(r:r + tileH - 1, c:c + tileW - 1) = true;
+            end
+            rect = cropped.cropRect;
+            kept = coverage(rect(1):rect(2), rect(3):rect(4));
+            testCase.verifyTrue(all(kept, 'all'), 'cropped region is not fully covered');
+            testCase.verifyEqual(numel(kept), StitchCoreTest.largestCoveredArea(coverage));
+            testCase.verifyEqual(cropped.size(1:2), [rect(2) - rect(1) + 1, rect(4) - rect(3) + 1]);
+
+            readerFcn = @(tileIdx) repmat(uint16(1000 + 100 * tileIdx), tileH, tileW);
+            img = utils.stitch.fuseInMemory(layout, cropped, struct( ...
+                'blendMode', 'Overwrite', 'background', 0, 'readerFcn', readerFcn));
+            testCase.verifyGreaterThan(min(img(:)), 0, 'background survived the crop');
+        end
+
+        function autocrop_intersectsCoverageOverAllZLayers(testCase)
+            % Two z-layers with DIFFERENT in-plane jitter: the kept rectangle must
+            % be covered on both output slices, not just the first.
+            tileH = 60; tileW = 70;
+            layerA = [ 1  1  1;  1 51  1];
+            layerB = [ 6 -4  2;  6 46  2];
+            positions = [layerA; layerB];
+            layout = testCase.emptyLayout(4);
+            for k = 1:4
+                layout(k).index = k;
+                layout(k).zLayer = 1 + (k > 2);
+                layout(k).nomOrigin = positions(k, :);
+                layout(k).tileSize = [tileH tileW 1 1];
+            end
+
+            cropped = utils.stitch.planCanvas(layout, positions, struct('autocrop', true));
+            testCase.verifyEqual(cropped.size(3), 2);   % Z is never cropped
+
+            readerFcn = @(tileIdx) repmat(uint8(50 + 20 * tileIdx), tileH, tileW);
+            img = utils.stitch.fuseInMemory(layout, cropped, struct( ...
+                'blendMode', 'Overwrite', 'background', 0, 'readerFcn', readerFcn));
+            testCase.verifyGreaterThan(min(img(:)), 0, 'background survived on one of the slices');
+        end
+
+        function autocrop_integerTranslationTformsCropLikeThePlainPlan(testCase)
+            % The affine path uses a conservative inscribed footprint; a plan whose
+            % transforms are whole-pixel translations must still crop EXACTLY like
+            % the translation-only plan (same test fuseSliceComposite applies to
+            % pick its resampling-free fast path).
+            positions = [ 1   1  1;
+                          4  96  1;
+                         89  -3  1;
+                         93 101  1];
+            layout = testCase.emptyLayout(4);
+            tforms = cell(4, 1);
+            for k = 1:4
+                layout(k).index = k;
+                layout(k).nomOrigin = positions(k, :);
+                layout(k).tileSize = [100 120 1 1];
+                tforms{k} = [eye(2), positions(k, [2 1])'; 0 0 1];
+            end
+            withTforms = utils.stitch.planCanvas(layout, positions, ...
+                struct('tforms', {tforms}, 'autocrop', true));
+            plainPlan  = utils.stitch.planCanvas(layout, positions, struct('autocrop', true));
+            testCase.verifyEqual(withTforms.cropRect, plainPlan.cropRect);
+            testCase.verifyEqual(withTforms.size(1:2), plainPlan.size(1:2));
+        end
+
+        function autocrop_warpedTilesLeaveNoBackground(testCase)
+            % Small per-tile rotations: the inscribed-parallelogram footprint must
+            % stay INSIDE the warped tiles, including the pixel imwarp blends
+            % against its zero fill.
+            tileH = 100; tileW = 120;
+            positions = [ 1   1  1;
+                          4  96  1;
+                         89  -3  1;
+                         93 101  1];
+            layout = testCase.emptyLayout(4);
+            tforms = cell(4, 1);
+            for k = 1:4
+                layout(k).index = k;
+                layout(k).nomOrigin = positions(k, :);
+                layout(k).tileSize = [tileH tileW 1 1];
+                angle = deg2rad(1.5 * (k - 2));
+                rotation = [cos(angle), -sin(angle); sin(angle), cos(angle)];
+                tforms{k} = [rotation, positions(k, [2 1])'; 0 0 1];
+            end
+            cropped = utils.stitch.planCanvas(layout, positions, ...
+                struct('tforms', {tforms}, 'autocrop', true));
+
+            readerFcn = @(tileIdx) repmat(uint8(40 + 30 * tileIdx), tileH, tileW);
+            for blendMode = {'Overwrite', 'Feather'}
+                img = utils.stitch.fuseInMemory(layout, cropped, struct( ...
+                    'blendMode', blendMode{1}, 'background', 0, 'readerFcn', readerFcn));
+                testCase.verifyGreaterThan(min(img(:)), 0, ...
+                    sprintf('warped tile left background in %s mode', blendMode{1}));
+            end
+        end
+    end
+
+    % =================================================================
     % fuseInMemory — all blend modes vs original
     % =================================================================
     methods (Test, TestTags = {'Unit'})
@@ -1370,6 +1532,24 @@ classdef StitchCoreTest < matlab.unittest.TestCase
     end
 
     methods (Static, Access = private)
+
+        function bestArea = largestCoveredArea(coverage)
+            % LARGESTCOVEREDAREA - Exhaustive maximum-area all-true rectangle in a
+            % logical mask. Deliberately naive (O(H^2 W)) - it is the independent
+            % ground truth utils.stitch.autocropCanvas's compressed-grid answer is
+            % checked against, so it must share no logic with it.
+            bestArea = 0;
+            H = size(coverage, 1);
+            for topRow = 1:H
+                for bottomRow = topRow:H
+                    columnOk = all(coverage(topRow:bottomRow, :), 1);
+                    runEdges = diff([0, columnOk, 0]);
+                    runLengths = find(runEdges == -1) - find(runEdges == 1);
+                    if isempty(runLengths); continue; end
+                    bestArea = max(bestArea, (bottomRow - topRow + 1) * max(runLengths));
+                end
+            end
+        end
 
         function img = texturedImage(H, W, seed)
             % TEXTUREDIMAGE - Deterministic textured single image (filtered noise +

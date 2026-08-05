@@ -59,6 +59,7 @@ if ~isfield(options, 'maxSliceBytes');  options.maxSliceBytes = 4 * 1024^3; end
 if ~isfield(options, 'ChunkSize');      options.ChunkSize = [256 256 16]; end
 if ~isfield(options, 'Compressors');    options.Compressors = 'zstd'; end
 if ~isfield(options, 'cacheSizeBytes'); options.cacheSizeBytes = 2 * 1024^3; end
+if ~isfield(options, 'correction');      options.correction = []; end
 if ~isfield(options, 'showWaitbar');    options.showWaitbar = false; end
 if ~isfield(options, 'parentFigure');   options.parentFigure = []; end
 
@@ -88,8 +89,12 @@ end
 % =====================================================================
 function streamViaSaver(layout, canvas, outputZarrPath, options, pixSize)
 % STREAMVIASAVER - Slice-fits path: delegate to Zarr3Saver.saveStream.
+% correction must ride along: StitchSliceProvider builds its own tile reader, so
+% leaving it out fused this path - the DEFAULT streaming path - on uncorrected
+% pixels while the seams were measured and scored on corrected ones.
 providerOptions = struct('blendMode', options.blendMode, ...
-    'background', options.background, 'cacheSizeBytes', options.cacheSizeBytes);
+    'background', options.background, 'cacheSizeBytes', options.cacheSizeBytes, ...
+    'correction', options.correction);
 if isfield(options, 'marginPx'); providerOptions.marginPx = options.marginPx; end
 
 provider = io.savers.StitchSliceProvider(layout, canvas, providerOptions);
@@ -180,7 +185,7 @@ for L = 1:nLevels
 end
 
 readerFcn = utils.stitch.makeTileReader(layout, ...
-    struct('cacheSizeBytes', options.cacheSizeBytes));
+    struct('cacheSizeBytes', options.cacheSizeBytes, 'correction', options.correction));
 fuseOptions = struct('blendMode', options.blendMode, 'background', options.background);
 if isfield(options, 'marginPx'); fuseOptions.marginPx = options.marginPx; end
 

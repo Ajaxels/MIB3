@@ -97,6 +97,13 @@ handles.OutputMode.Value  = obj.BatchOpt.OutputMode{1};
 handles.OutputPath.Value  = obj.BatchOpt.OutputPath;
 handles.BlendMode.Items   = obj.BatchOpt.BlendMode{2};
 handles.BlendMode.Value   = obj.BatchOpt.BlendMode{1};
+handles.IntensityCorrection.Items = obj.BatchOpt.IntensityCorrection{2};
+handles.IntensityCorrection.Value = obj.BatchOpt.IntensityCorrection{1};
+handles.CanvasColor.Items = obj.BatchOpt.CanvasColor{2};
+handles.CanvasColor.Value = obj.BatchOpt.CanvasColor{1};
+% Kept enabled with Autocrop on: the crop removes the frame around the edges,
+% but a gap left by a missing tile inside the mosaic still shows this colour.
+handles.Autocrop.Value = obj.BatchOpt.Autocrop;
 handles.SaveProject.Value = obj.BatchOpt.SaveProject;
 
 % ---- Enable / disable output path based on output mode ----

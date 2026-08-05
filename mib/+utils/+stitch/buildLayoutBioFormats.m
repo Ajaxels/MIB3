@@ -99,7 +99,7 @@ if numTiles == 0
     error('utils:stitch:buildLayoutBioFormats:noSeries', ...
         'No readable image series found in the selected input.');
 end
-if isempty(pixSize); pixSize = struct('x', 1, 'y', 1, 'z', 1); end
+if isempty(pixSize); pixSize = struct('x', 1, 'y', 1, 'z', 1, 'units', 'um'); end
 
 % ---- Convert stage coordinates to pixel/slice origins (pure, testable) ----
 convOptions = struct('flipX', options.flipX, 'flipY', options.flipY);
@@ -117,6 +117,9 @@ for tileIdx = 1:numTiles
     layout(tileIdx).nomOrigin   = nomOrigin(tileIdx, :);
     layout(tileIdx).tileSize    = tileSizes(tileIdx, :);
     layout(tileIdx).dataClass   = tileClass{tileIdx};
+    % Read from the first tile's OME metadata above; carried per tile so the
+    % stitched dataset inherits the scale instead of defaulting to 1 um.
+    layout(tileIdx).pixSize     = pixSize;
 end
 end
 
@@ -172,7 +175,7 @@ end
 % =========================================================================
 function pixSize = readPixelSize(omeMeta, series0)
 % READPIXELSIZE - Physical pixel size in µm; defaults to 1 when absent.
-pixSize = struct('x', 1, 'y', 1, 'z', 1);
+pixSize = struct('x', 1, 'y', 1, 'z', 1, 'units', 'um');
 pixSize.x = getPhysicalSize(@omeMeta.getPixelsPhysicalSizeX, series0, 1);
 pixSize.y = getPhysicalSize(@omeMeta.getPixelsPhysicalSizeY, series0, pixSize.x);
 pixSize.z = getPhysicalSize(@omeMeta.getPixelsPhysicalSizeZ, series0, pixSize.y);
@@ -220,5 +223,5 @@ function singleLayout = emptyLayout()
 % EMPTYLAYOUT - Layout contract + the Bio-Formats-only seriesIndex field.
 singleLayout = struct('index', {}, 'filename', {}, 'sliceFiles', {}, ...
     'seriesIndex', {}, 'zLayer', {}, 'gridRC', {}, 'nomOrigin', {}, ...
-    'tileSize', {}, 'dataClass', {});
+    'tileSize', {}, 'dataClass', {}, 'pixSize', {});
 end

@@ -11,7 +11,7 @@
 
 The Stitching tool assembles a collection of 2D image tiles into a single large mosaic.
 Starting from a rough initial placement (a regular grid, a position file, a filename
-pattern, stage coordinates, or a Fibics Atlas mosaic), the tool measures the true overlap
+pattern, stage coordinates, a Fibics Atlas mosaic, or a SerialEM montage), the tool measures the true overlap
 between neighboring tiles using phase correlation, finds a globally consistent position for
 every tile, and fuses the tiles into a new dataset.
 
@@ -192,13 +192,15 @@ The italic line underneath summarises the selected layout mode.
 
 === "Position file"
 
-    **A file that states where every tile goes.** Two kinds qualify, and MIB tells them
-    apart by extension, so one source covers both:
+    **A file that states where every tile goes.** Three kinds qualify, and MIB tells them
+    apart by extension, so one source covers all of them:
 
     - a **position text file** you write yourself - one line per tile,
       `filename X Y` or `filename X Y Z`, space-, tab-, or comma-separated;
     - a **Fibics Atlas mosaic** (`MosaicInfo_<name>.ve-mif`), whose own stitch can be
-      imported along with it - see *Fibics Atlas mosaics* below.
+      imported along with it - see *Fibics Atlas mosaics* below;
+    - a **SerialEM montage** (`<name>.mrc.mdoc`, or the `.mrc` stack it describes), likewise
+      able to bring its own stitch - see *SerialEM montages* below.
 
     For the text form, positions are in **pixels** (see the examples below).
     The optional Z column places tiles on distinct layers; layers that
@@ -349,6 +351,63 @@ The italic line underneath summarises the selected layout mode.
         seams, so they carry the same weight as your own fixes in the
         [seam inspector](dataset-stitch-inspector.md) and survive a re-measure.
 
+    ### SerialEM montages
+
+    Montages acquired with **SerialEM** (transmission electron microscopes) also need no
+    position file of their own. A SerialEM montage is **two files**: an MRC stack in which
+    every tile is a **slice**, and a plain-text `.mdoc` beside it saying where those slices
+    go. Point <span class="widget widget-button">Pick tiles</span> at the **`.mdoc`** - it
+    names its image, so the stack is found automatically.
+
+    The `.mdoc` is the **only** SerialEM file the picker offers, for the same reason only the
+    `.ve-mif` is offered for Atlas: the stack on its own says nothing about where its slices
+    go. If you point MIB at a bare `.mrc` whose `.mdoc` is missing, it says so rather than
+    failing later.
+
+    !!! note "The tiles are slices, not files"
+        Every other layout source expects one file (or one folder) per tile. Here the whole
+        montage is a single `.mrc`, and MIB reads the individual slices out of it directly -
+        including for the small overlap crops used during measurement, so nothing decodes a
+        full tile it does not need. Nothing has to be unpacked beforehand.
+
+        Float and signed-integer stacks are converted to `uint16` using the range recorded in
+        the **file header**, so every tile of the montage lands on **one intensity scale**.
+
+    ??? note "What MIB reads from the `.mdoc`"
+        A montage `.mdoc` records three successive stages of the same stitch, one block per
+        slice. The last two appear only once the montage has been stitched (in SerialEM or
+        by IMOD's *blendmont*).
+
+        | Key | SerialEM writes | MIB reads it as |
+        |-----|-----------------|-----------------|
+        | `PieceCoordinates` | The **nominal position** of each piece in the montage frame, in pixels. | The **rough placement** - the same role the position text file plays. |
+        | `XedgeDxy` / `YedgeDxy` | The **measured shift** of each seam, one entry per piece for its neighbours at higher X and Y. | The **measured seams** - exactly MIB's own *Measure overlaps* result, so that step can be skipped. |
+        | `AlignedPieceCoords` | The **final solved position** of each piece. | The **solved positions** - MIB's own *Optimize positions* result, so that step can be skipped too. |
+
+        The montage frame's Y axis runs **upward** while image rows run downward, so MIB
+        mirrors it on the way in; the tiles come out in the same orientation as SerialEM's
+        own stitched output.
+
+        `AlignedPieceCoords` are whole pixels, so re-solving from the imported seams can
+        differ from the recorded placement by up to half a pixel. That is the rounding in the
+        file, not a disagreement.
+
+        SerialEM writes the same `.mdoc` format for **tilt series** and single acquisitions.
+        Those have no `PieceCoordinates` and are not montages; MIB says so rather than trying
+        to stitch them.
+
+    **Reusing SerialEM's own stitch.** Exactly as for Atlas, when measured seams or solved
+    positions are found MIB lists them and asks how much to take -
+    <span class="widget widget-button">Nominal grid only</span>,
+    <span class="widget widget-button">SerialEM seam measurements</span>, or
+    <span class="widget widget-button">SerialEM seams + solved positions</span> - and the
+    imported placement is verified against the overlap pixels the same way.
+
+    !!! tip "Uneven illumination is a separate problem"
+        In TEM the beam shape makes each tile brighter on one side than the other, which
+        leaves visible steps at the seams **even when the tiles are aligned perfectly**.
+        Aligning the montage does not fix that. See
+        [Intensity correction](#intensity-correction) below, which does.
 
 ---
 
@@ -372,12 +431,13 @@ Select image files or folders with tiles to stitch.
       captured as a folder of slice images.
     - With a **Position file**, simply list folder paths in the `filename` column - folders are detected
       automatically, so this checkbox is not needed (and is disabled) for that source (an Atlas
-      `.ve-mif` names its tile files itself). It is likewise
+      `.ve-mif` names its tile files itself, and a SerialEM `.mdoc` reads its tiles out of one
+      MRC stack). It is likewise
       disabled for **Bio-Formats metadata**, where each series/file already carries its own stack.
 - <span class="widget widget-edit">Input tiles</span>: the list of selected inputs, **one path per row** 
         - the tile image files (*Grid*, *Filename pattern*), the tile folders
         (when <span class="widget widget-checkbox">Tiles are folders (Z-stacks)</span> is ticked), 
-        the position file or Atlas `.ve-mif` mosaic, or the Bio-Formats file(s). It is a display of what
+        the position file, Atlas `.ve-mif` mosaic or SerialEM `.mdoc` montage, or the Bio-Formats file(s). It is a display of what
         *Pick tiles* selected; selection order does not matter, since the tiles are natural-sorted by
         name. For *Grid* and *Filename pattern* a single folder path also works - every image file in it
         becomes a tile - which is the form batch protocols normally use.
@@ -555,6 +615,20 @@ settings, <span class="widget widget-button">Save project</span> /
 - <span class="widget widget-dropdown">Output mode</span>:
     - **In memory**: the mosaic is assembled in RAM and replaces the current dataset. Use for mosaics that comfortably fit into memory.
     - **OME-Zarr3 (BigData)**: the mosaic is streamed chunk-by-chunk to an OME-Zarr v3 file on disk and opened as a BigData dataset. Use for mosaics of any size.
+
+    !!! info "What the in-memory dataset is called, and what it measures in"
+        The stitched dataset is named after what it was built from, with a `_stitch` suffix and a
+        `.tif` extension - a SerialEM montage picked as `Cell1.mrc.mdoc` becomes `Cell1_stitch.tif`,
+        and a grid of tiles is named after its first tile. The name points at the **source folder**,
+        so <span class="widget widget-button">Save as</span> opens beside the tiles rather than
+        wherever MATLAB's working folder happens to be.
+
+        The **pixel size** is carried over whenever the layout source records one - a SerialEM
+        `.mdoc` (`PixelSpacing`), a Fibics Atlas `.ve-mif`, or Bio-Formats metadata. Sources that
+        are only a folder of images (Grid, Filename pattern, MIB position file) have nothing to
+        read, and the mosaic gets the default 1 µm; set it afterwards with
+        [Dataset → Parameters](index.md). A montage is a single section and none of these formats
+        state a section thickness, so the Z size is set to the in-plane size rather than invented.
 - <span class="widget widget-edit">Output path</span>: destination of the OME-Zarr3 file (OME-Zarr3 mode only).
 
     !!! info "Pyramid settings dialog"
@@ -570,13 +644,176 @@ settings, <span class="widget widget-button">Save project</span> /
         Smart defaults are seeded from the mosaic's dimensions and voxel size. The choice is remembered for the current
         output path, so re-fusing after a [seam inspector](dataset-stitch-inspector.md) fix reuses it without re-asking; picking a new output path or switching output
         mode asks again. Batch/headless runs skip the dialog and use the defaults (or values supplied in `BatchOpt`).
-- <span class="widget widget-dropdown">Blend mode</span>: how pixel values are combined where tiles overlap
-    - **Feather**: weighted blend, weights ramp down toward each tile border - smooth, seam-free transitions (*recommended*).
-    - **Average**: plain average of all overlapping tiles.
-    - **Max**: maximum intensity of the overlapping tiles - the brightest tile wins at each pixel.
-    - **Min**: minimum intensity of the overlapping tiles - the darkest tile wins at each pixel.
-    - **Overwrite**: the later tile wins; hard seams, but no intensity mixing.
+- <span class="widget widget-dropdown">Blend mode</span>: how pixel values are combined where tiles
+  overlap - see [Blend modes](#blend-modes) below.
+- <span class="widget widget-dropdown">Intensity correction</span>: even out tile brightness *before*
+  anything reads a pixel - see [Intensity correction](#intensity-correction) below.
+- <span class="widget widget-dropdown">Canvas color</span>: what the mosaic pixels that no tile
+  covers are filled with - see [Canvas color and Autocrop](#canvas-color-and-autocrop) below.
 - <label class="widget widget-checkbox">Save project JSON</label>: after stitching, save a project sidecar file next to the input tiles - the tile layout, the measurements, the solved positions and all settings used (see [Project files](#project-files)).
+
+### Blend modes
+
+How pixel values are combined where tiles overlap. This is the **last** step, and it decides only
+how the overlap is mixed - it cannot change what the tiles contain.
+
+| Mode | What it does | Use it when |
+|------|--------------|-------------|
+| **Average** | Plain mean of every tile covering the pixel. | You want the overlap sharper than Feather makes it and the tiles already match in brightness. Any step shows as a hard line at the overlap edges. |
+| **Feather** | Weighted average, each tile's weight fading to zero at its own border, so one tile takes over gradually across the overlap. | The **finished** mosaic. It is the only mode that softens a residual brightness step instead of drawing it. |
+| **Max** | The brightest tile wins at each pixel. | Dark artefacts sit in one tile only - a shadow, a beam-damaged corner, debris. Bright specks survive from every tile. |
+| **Min** | The darkest tile wins at each pixel. | The mirror case: bright artefacts in one tile only - a hot spot, a reflection, a charged patch. |
+| **Overwrite** *(default)* | The last tile written wins; no mixing at all. | Checking the stitch - which is why it is the default. Every misalignment shows as a hard broken edge, with nothing smoothing it away. Switch to **Feather** once the seams are known to be right. |
+
+!!! tip "Why Overwrite is the default"
+    Every other mode mixes the overlap, and mixing *softens a misalignment* - the one thing that
+    must stay visible while you are still judging whether the stitch worked. Starting on Overwrite
+    means the first mosaic you look at tells you the truth about the geometry; changing to
+    **Feather** afterwards is a one-click re-fuse that needs no re-measuring.
+
+!!! warning "Blending hides a brightness step; it does not remove it"
+    If neighbouring tiles genuinely disagree in brightness where they overlap, **Feather** spreads
+    that disagreement over the width of the overlap instead of leaving a line. On a wide overlap
+    that reads as a soft band rather than a seam - fainter, but still there, and it is now a
+    gradient across real image content.
+
+    Fix the cause with [Intensity correction](#intensity-correction) first, then let the blend mode
+    deal with what little is left. Switching to **Overwrite** for one fuse is a quick way to see how
+    much of the seam is brightness and how much is misalignment.
+
+!!! note "Max and Min need a background, not just a bright/dark rule"
+    Both compare only the tiles that actually cover a pixel; empty canvas never wins. Without that,
+    a zero background would beat every real value under **Min** and every singly-covered pixel would
+    come out black.
+
+### Intensity correction
+
+Blending hides a seam; it cannot remove one. If neighbouring tiles genuinely disagree in
+brightness where they overlap, a feathered blend just smears the step over a wider band. This
+dropdown fixes the cause instead.
+
+- **None** *(default)* - use the pixels as they are. Costs nothing.
+- **Flat-field (shared)** - estimate one illumination field by averaging all the tiles, and divide
+  it out. Fast and simple, but see the caveat below.
+- **Flat-field (overlap-solved)** - estimate the same kind of field, but fit it to the
+  **disagreement where tiles overlap** rather than to their average. **Use this one if seams still
+  show.**
+- **Match tile means** - scale each tile so they all share one mean. For a **detector or stain that
+  drifts** over a long acquisition, where the tiles really do differ by a flat factor. It does *not*
+  fix uneven illumination.
+
+The correction is applied wherever the tool reads a tile, so the seams are measured, scored and
+fused on the same pixels - the alignment rating always describes the mosaic you actually get. The
+result is computed once and reused for the rest of the run.
+
+!!! tip "Which one to pick"
+    Measured on a 3×3 TEM montage, as average brightness mismatch across the 12 seams (lower is
+    better):
+
+    | | mismatch | worst seam |
+    |---|---|---|
+    | None | 7.50 % | 11.00 % |
+    | Match tile means | 6.73 % | 11.31 % |
+    | Flat-field (shared) | 2.31 % | 4.35 % |
+    | **Flat-field (overlap-solved)** | **1.01 %** | **1.40 %** |
+
+    Start with **Flat-field (overlap-solved)**. **Match tile means** barely helped here because the
+    tiles' *overall* brightnesses already agreed to 0.16 % - the gradient lives **inside** each tile,
+    so at a vertical seam one tile's dark right edge meets its neighbour's bright left edge.
+
+    Do **not** stack them. Flat-field plus mean matching came out *worse* than flat-field alone:
+    tiles genuinely contain different amounts of material, so forcing their means together fights
+    real signal.
+
+!!! note "Why overlap-solved is the more reliable of the two flat-fields"
+    **Shared** works out what the tiles have in common and calls that illumination. That is sound
+    only when there are many tiles, at modest overlap, each showing different specimen. If your
+    sample has a broad brightness trend of its own - one side genuinely denser than the other - the
+    method cannot tell that from the beam, so it removes some of your sample and leaves some of the
+    beam. With few, heavily-overlapping tiles it can even come out *worse* than uncorrected (a 3×3
+    at 10 % overlap is fine; a 2×2 at 33 % is not).
+
+    **Overlap-solved** has no such failure. Where two tiles overlap they image the *same* specimen,
+    so anything that differs there is the instrument - the sample cancels out exactly, whatever it
+    looks like. It costs a little more setup and reads only the overlap strips.
+
+    Two things it still cannot see, neither of which should trouble you: seams constrain the field
+    near tile *borders*, so the tile centre is interpolated; and on a perfectly regular grid a
+    linear tilt cannot be told from a matching ramp of per-tile brightness. Both are handled - see
+    the two notes below.
+
+    **How flexible a shape to fit is decided from your data, not fixed in advance.** MIB tries
+    several and keeps the simplest one that predicts seams it was not fitted on - then checks that
+    its tile centre still agrees with its borders, and declines to correct at all rather than
+    guess if it cannot vouch for the result. Nothing here needs tuning, which is why this method
+    is the recommended one: it has no hand-set shape parameter, unlike **Flat-field (shared)**.
+
+!!! note "The mosaic is levelled as well as the tiles"
+    Matching every seam does not by itself make a montage evenly lit. Once each tile's internal
+    gradient is divided out, whatever difference remains between whole tiles turns the mosaic into
+    a smooth **staircase** from one side to the other - and the eye reads a gradual gradient as
+    "unevenly lit" far more readily than the repeating sawtooth it replaced. Measured across three
+    TEM montages, correcting the tiles alone made the overall ramp *worse* than doing nothing:
+
+    | montage | uncorrected | tiles corrected | + levelled |
+    |---|---|---|---|
+    | A | +4.9 % | **+9.2 %** | +0.5 % |
+    | B | +0.5 % | +3.2 % | +0.3 % |
+    | C | +2.3 % | +4.4 % | +0.1 % |
+
+    So **Flat-field (overlap-solved)** finishes by flattening the mosaic's overall brightness
+    plane. This is free: it uses the one direction seam measurements genuinely cannot see, so the
+    seam residual comes out unchanged to the last digit. Note that a *genuine* broad brightness
+    trend across your specimen is levelled too - nothing can distinguish the two, and a montage
+    that shades from one side to the other reads as an artefact either way.
+
+!!! failure "If you see a grid of darker bands along the seams"
+    That is the tile *centres* being brightened too much, not the seams being darkened - the
+    signature of an illumination field that was allowed to bend where nothing measures it. MIB
+    guards against this now and will refuse rather than produce it, so if you still see it on some
+    dataset, report it: the fitted shape is too flexible for that geometry.
+
+!!! failure "If one side of the montage is darker than the other"
+    Check the seams first, with **Overwrite** as described below. If the individual seams are
+    clean and only the *overall* brightness drifts across the mosaic, that is the mosaic plane,
+    and **Flat-field (overlap-solved)** removes it. If instead the seams themselves still step,
+    the correction has not taken - try that method if you were on another one.
+
+!!! tip "How to check what is left"
+    Fuse with <span class="widget widget-dropdown">Blend mode</span> = **Overwrite**, which is the
+    default anyway. That draws every seam as a hard edge with nothing smoothing it, so a remaining
+    brightness step is obvious - and if the seams look clean under Overwrite, the correction has
+    done its job and anything you still see after switching to Feather is geometry, not brightness.
+
+### Canvas color and Autocrop
+
+Tiles never fill the output rectangle exactly. The solve moves each of them a few pixels from its
+nominal position, so the outer tiles end up staggered and the mosaic carries a **ragged frame** of
+uncovered pixels around all four sides. Two settings decide what happens to it - colour it, or
+remove it.
+
+- <span class="widget widget-dropdown">Canvas color</span> - what uncovered pixels are filled with:
+    - **white** *(default)*: the highest intensity the output image class can hold (255 for 8-bit,
+      65535 for 16-bit). On transmission EM an empty field *is* bright, so this reads as more empty
+      resin rather than as a black border drawn around the specimen.
+    - **black**: zero, the usual background for fluorescence and other light microscopy, where empty
+      means dark.
+- <label class="widget widget-checkbox">Autocrop</label> (in the action strip, left of
+  <span class="widget widget-button">Stitch</span>) - off by default. When ticked, the mosaic is
+  cropped to the **largest rectangle that tiles cover on every output slice**, so no frame is left
+  at the edges at all. The output is correspondingly smaller than the canvas the preview shows.
+
+!!! note "The two settings are not alternatives"
+    Autocrop removes the frame at the **edges**. A gap left *inside* the mosaic - a tile that failed
+    to load, or a deliberately incomplete acquisition - is still uncovered, and still shows the
+    canvas colour. That is also why the crop can come out much smaller than expected on a layout
+    with a hole in it: the kept rectangle has to avoid the hole.
+
+!!! tip "Autocrop and 3D"
+    The crop is in-plane only, and the rectangle must be covered on **every** slice - a stack whose
+    layers are jittered against each other therefore crops to their common area. The number of
+    slices is never changed: an output slice is either produced or it is not, and silently dropping
+    end slices would change the depth of the stack you asked for.
 
 ---
 
@@ -623,6 +860,8 @@ which of them you want:
 
 - <span class="widget widget-button">Help</span>
 - <span class="widget widget-button">Inspect & fix</span>
+- <label class="widget widget-checkbox">Autocrop</label> - trim the uncovered frame off the fused
+  mosaic, see [Canvas color and Autocrop](#canvas-color-and-autocrop)
 - <span class="widget widget-button">Stitch</span>
 - <span class="widget widget-button">Close</span>
 
@@ -642,9 +881,9 @@ which of them you want:
     4. **Measure overlaps** for every neighboring tile pair (phase correlation or feature-based,
        per <span class="widget widget-dropdown">Registration method</span>). Skipped when the
        seams are already known - measured earlier, restored from a project, or imported from an
-       [Atlas mosaic](#layout-source).
+       [Atlas mosaic or SerialEM montage](#layout-source).
     5. **Optimize positions** - the global least-squares solve. Skipped when the positions are
-       already known, so an imported Atlas placement is fused exactly as it stands.
+       already known, so an imported Atlas or SerialEM placement is fused exactly as it stands.
     6. **Plan canvas** - computes the output mosaic size and origin from the solved positions.
     7. Refreshes the layout preview at the solved positions - exactly what pressing
        <span class="widget widget-button">Preview layout</span> would draw - so the final tile

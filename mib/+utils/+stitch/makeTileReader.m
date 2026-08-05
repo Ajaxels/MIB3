@@ -13,24 +13,41 @@ function readerFcn = makeTileReader(layout, options)
 % the ``layout`` struct array. Only the first time point is returned. Single-file
 % tiles are read via :func:`io.loadImagesWrapper`; subfolder tiles (with a
 % non-empty ``.sliceFiles`` list) are read slice-by-slice and stacked along the
-% depth dimension. A bounded least-recently-used (LRU) cache holds decoded full
+% depth dimension; MRC-container tiles (with a ``.sliceIndex``, from
+% :func:`utils.stitch.buildLayoutMdoc`) are read one slice at a time out of the
+% shared stack. A bounded least-recently-used (LRU) cache holds decoded full
 % tiles so repeated reads (e.g. a tile appearing in several pairwise
 % registrations) do not hit disk again. The cache is a plain cell/struct ring —
 % no ``containers.Map`` — so it is safe to serialise into ``parfor`` workers.
 %
 % The optional ``pixelRegion`` second argument requests a sub-rectangle of a
 % tile. For single-file TIFF/PNG tiles this uses ``imread(..., 'PixelRegion', ...)``
-% as a fast path that avoids decoding the whole image; for every other case the
-% full tile is loaded (and cached) and then cropped.
+% and for MRC-container tiles a ranged ``getVolume``, both avoiding a full decode;
+% for every other case the full tile is loaded (and cached) and then cropped.
+%
+% .. important::
+%    An MRC container is opened afresh on every read rather than kept open in the
+%    closure: an open file handle cannot cross into a ``parfor`` worker, and the
+%    header read it costs is negligible beside the pixels. The intensity scaling
+%    is likewise taken from the FILE HEADER, so every tile of a montage shares one
+%    scale — per-slice statistics would give each tile its own, injecting exactly
+%    the intensity mismatch a stitch must not have.
 %
 % Input Arguments:
 %   - **layout** — [struct array] tile layout; each element has fields
-%     ``.filename`` (char, full path — a folder for subfolder tiles),
-%     ``.sliceFiles`` (cellstr, ``{}`` for single-file tiles) and ``.tileSize``.
+%     ``.filename`` (char, full path — a folder for subfolder tiles, the shared
+%     container for MRC tiles), ``.sliceFiles`` (cellstr, ``{}`` for single-file
+%     tiles), ``.sliceIndex`` *(optional)* (1-based slice inside an MRC container)
+%     and ``.tileSize``.
 %   - **options** *(optional)* — struct with fields:
 %
 %     - ``.cacheSizeBytes`` — [double] LRU cache budget in bytes (default: ``2*1024^3``)
 %     - ``.mibBioformatsCheck`` — [logical] force the BioFormats reader (default: ``false``)
+%     - ``.correction`` — [struct] intensity correction from
+%       :func:`utils.stitch.estimateIntensityCorrection`, applied to every tile as it is
+%       read (default: none). Building the reader with it is what makes the
+%       correction reach measurement, seam scoring and fusion identically — there
+%       is no second place pixels enter the pipeline.
 %
 % Output Arguments:
 %   - **readerFcn** — [function_handle] ``img = readerFcn(tileIndex)`` returns the
@@ -51,6 +68,23 @@ if ~isfield(options, 'cacheSizeBytes') || isempty(options.cacheSizeBytes)
     options.cacheSizeBytes = 2 * 1024^3;
 end
 if ~isfield(options, 'mibBioformatsCheck'); options.mibBioformatsCheck = false; end
+if ~isfield(options, 'correction');         options.correction = []; end
+
+% Resolve the correction once: the per-read path must not re-inspect a struct.
+correctionField  = [];
+correctionGain   = [];
+correctionOffset = [];
+if ~isempty(options.correction) && isstruct(options.correction)
+    if isfield(options.correction, 'field');  correctionField  = single(options.correction.field); end
+    if isfield(options.correction, 'gain');   correctionGain   = options.correction.gain; end
+    if isfield(options.correction, 'offset'); correctionOffset = options.correction.offset; end
+    % An all-neutral correction costs nothing to skip entirely.
+    if isempty(correctionField) && (isempty(correctionGain) || all(correctionGain == 1)) && ...
+            (isempty(correctionOffset) || all(correctionOffset == 0))
+        correctionField = []; correctionGain = []; correctionOffset = [];
+    end
+end
+hasCorrection = ~isempty(correctionField) || ~isempty(correctionGain) || ~isempty(correctionOffset);
 
 % LRU cache state kept in closure-captured variables (no containers.Map).
 cacheIndices = zeros(1, 0);      % tile index stored in each cache slot
@@ -68,11 +102,16 @@ readerFcn = @readTile;
     function img = readTile(tileIndex, pixelRegion)
         if nargin < 2; pixelRegion = []; end
 
-        % Fast path: single-file TIFF/PNG sub-region read via imread PixelRegion.
+        % Fast path: sub-region read that avoids decoding the whole tile.
         if ~isempty(pixelRegion) && ~cacheHas(tileIndex)
-            fastImg = tryImreadPixelRegion(tileIndex, pixelRegion);
+            if isMrcTile(layout(tileIndex))
+                fastImg = tryMrcRegion(tileIndex, pixelRegion);
+            else
+                fastImg = tryImreadPixelRegion(tileIndex, pixelRegion);
+            end
             if ~isempty(fastImg)
-                img = fastImg;
+                % Cropped reads bypass the cache, so they correct their own patch.
+                img = applyCorrection(fastImg, tileIndex, pixelRegion);
                 return;
             end
         end
@@ -99,13 +138,54 @@ readerFcn = @readTile;
             fullTile = cacheData{slot};
             return;
         end
-        fullTile = loadTileFromDisk(tileIndex);
+        % Corrected ONCE on the way into the cache, so repeated reads (and every
+        % crop taken from a cached tile) neither re-do the arithmetic nor risk
+        % applying it twice.
+        fullTile = applyCorrection(loadTileFromDisk(tileIndex), tileIndex, []);
         insertIntoCache(tileIndex, fullTile);
+    end
+
+    function img = applyCorrection(img, tileIndex, pixelRegion)
+        % APPLYCORRECTION - Divide out the illumination field, then per-tile gain.
+        % `pixelRegion` is [] for a whole tile, or the sub-rectangle a fast-path
+        % read returned — the field has to be cropped to match it.
+        if ~hasCorrection; return; end
+        pixelClass = class(img);
+        value = single(img);
+
+        if ~isempty(correctionField)
+            if isempty(pixelRegion)
+                fieldPatch = correctionField;
+            else
+                fieldPatch = correctionField(pixelRegion(1, 1):pixelRegion(1, 2), ...
+                                             pixelRegion(2, 1):pixelRegion(2, 2));
+            end
+            if ~isequal(size(fieldPatch), [size(value, 1), size(value, 2)])
+                error('utils:stitch:makeTileReader:correctionSizeMismatch', ...
+                    ['The intensity correction was estimated for %dx%d tiles but ' ...
+                     'tile %d reads as %dx%d. Re-estimate it for this layout.'], ...
+                    size(correctionField, 1), size(correctionField, 2), ...
+                    tileIndex, size(value, 1), size(value, 2));
+            end
+            value = value ./ fieldPatch;      % [H W] broadcasts over depth + colour
+        end
+
+        if ~isempty(correctionOffset) && correctionOffset(tileIndex) ~= 0
+            value = value - single(correctionOffset(tileIndex));
+        end
+        if ~isempty(correctionGain) && correctionGain(tileIndex) ~= 1
+            value = value * single(correctionGain(tileIndex));
+        end
+
+        img = cast(value, pixelClass);   % integer casts round and SATURATE
     end
 
     function fullTile = loadTileFromDisk(tileIndex)
         entry = layout(tileIndex);
-        if isfield(entry, 'sliceFiles') && ~isempty(entry.sliceFiles)
+        if isMrcTile(entry)
+            % One slice of a shared MRC container (SerialEM montage).
+            fullTile = readMrcSlice(entry, []);
+        elseif isfield(entry, 'sliceFiles') && ~isempty(entry.sliceFiles)
             % Subfolder tile: stack per-slice files along the depth dimension.
             sliceFiles = entry.sliceFiles;
             nSlices    = numel(sliceFiles);
@@ -150,6 +230,15 @@ readerFcn = @readTile;
         totalBytes = totalBytes + bytes;
     end
 
+    function img = tryMrcRegion(tileIndex, pixelRegion)
+        % Ranged read straight out of the container — no full-slice decode.
+        try
+            img = readMrcSlice(layout(tileIndex), pixelRegion);
+        catch
+            img = [];   % fall back to full-load-then-crop
+        end
+    end
+
     function img = tryImreadPixelRegion(tileIndex, pixelRegion)
         img = [];
         entry = layout(tileIndex);
@@ -181,6 +270,67 @@ readerFcn = @readTile;
     end
 end
 
+% =========================================================================
+function tf = isMrcTile(entry)
+% ISMRCTILE - Is this layout entry a slice of a shared MRC container?
+tf = isfield(entry, 'sliceIndex') && ~isempty(entry.sliceIndex) && entry.sliceIndex > 0;
+end
+
+% =========================================================================
+function img = readMrcSlice(entry, pixelRegion)
+% READMRCSLICE - Read one slice (or a sub-rectangle of it) from an MRC container.
+%
+% Returns ``[H W 1 1]`` in MIB's frame, converted to the class
+% :func:`utils.stitch.mrcTargetClass` picks for the container's mode.
+%
+% Two coordinate facts drive the index arithmetic, both matching what
+% :class:`io.loaders.ImodLoader` does to a whole stack:
+%
+%   - MRC is stored ``[x y z]`` and MIB wants ``[row col]``, hence the permute;
+%   - MRC rows run BOTTOM-UP, so ImodLoader flips the y axis. A MIB row ``r``
+%     therefore reads MRC ``j = nY - r + 1``, and a row RANGE maps to the
+%     mirrored range, which is then flipped back inside the block.
+
+mrcFile = MRCImage(entry.filename, 0);   % header only until getVolume is called
+cleanup = onCleanup(@() close(mrcFile));
+header  = getHeader(mrcFile);
+
+sliceIndex = entry.sliceIndex;
+if sliceIndex < 1 || sliceIndex > header.nZ
+    error('utils:stitch:makeTileReader:badSliceIndex', ...
+        'Slice %d requested from %s, which holds %d slices.', ...
+        sliceIndex, entry.filename, header.nZ);
+end
+
+if isempty(pixelRegion)
+    columnRange = [];
+    mirroredRowRange = [];
+else
+    columnRange = [pixelRegion(2, 1), pixelRegion(2, 2)];
+    % Mirror the row range into the container's bottom-up y axis.
+    mirroredRowRange = [header.nY - pixelRegion(1, 2) + 1, ...
+                        header.nY - pixelRegion(1, 1) + 1];
+end
+
+raw = getVolume(mrcFile, columnRange, mirroredRowRange, [sliceIndex sliceIndex]);
+raw = permute(flip(raw, 2), [2 1 3]);    % [x y] bottom-up -> [row col] top-down
+
+[targetClass, needsScaling] = utils.stitch.mrcTargetClass(header.mode);
+if needsScaling
+    % Header densities, never per-slice statistics: one scale for every tile.
+    [minDensity, maxDensity] = getMinAndMaxDensity(mrcFile);
+    densityRange = double(maxDensity) - double(minDensity);
+    if ~isfinite(densityRange) || densityRange <= 0; densityRange = 1; end
+    raw = (single(raw) - single(minDensity)) / single(densityRange) * ...
+        single(double(intmax(targetClass)));
+    raw = max(0, min(single(double(intmax(targetClass))), raw));
+end
+img = cast(raw, targetClass);
+img = reshape(img, size(img, 1), size(img, 2), 1, 1);
+
+end
+
+% =========================================================================
 function nBytes = sizeofClass(className)
 % SIZEOFCLASS - Bytes per element for a numeric class name.
 switch className

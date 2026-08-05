@@ -75,6 +75,11 @@ if ~settingsOnly
     obj.positions   = loadedPositions;
     obj.tforms      = loadedTforms;
     obj.zSliceFixes = loadedZFixes;
+    % These are DIFFERENT tiles, so any cached intensity correction describes the
+    % previous job. It is re-estimated on first use rather than being saved: the
+    % estimate is a deterministic function of the tiles, and an [H W] float field
+    % has no business in the sidecar JSON.
+    obj.intensityCorrection = [];
     % The saved RMSE / prune counts belong to these positions — restoring them
     % lets the alignment chip report the loaded stitch instead of sitting blank
     % until the user re-solves.

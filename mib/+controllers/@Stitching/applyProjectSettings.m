@@ -47,6 +47,10 @@ end
 appliedFields = {};
 if isempty(fieldnames(settings)); return; end
 
+% A project saved before a field was renamed still has to load (AtlasImport ->
+% LayoutImport). Same mapping the batch entry point applies, so the two agree.
+settings = controllers.Stitching.renameLegacyFields(settings);
+
 % ---- Feature-detector tuning (nested struct, merged field by field) ----
 if isfield(settings, 'FeatureOptions') && isstruct(settings.FeatureOptions) && ...
         ~ismember('FeatureOptions', skipFields)

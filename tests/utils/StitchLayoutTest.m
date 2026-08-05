@@ -785,6 +785,710 @@ classdef StitchLayoutTest < matlab.unittest.TestCase
                 struct('importPositions', true)), 'utils:stitch:buildLayoutAtlas:noUpdatesFile');
         end
 
+        % -----------------------------------------------------------------
+        % buildLayoutMdoc / findMdocSidecar — SerialEM montages
+        % -----------------------------------------------------------------
+
+        function mdocSidecar_resolvesFromEitherFile(testCase)
+            % The montage is two files and either identifies the pair, so both
+            % must come back with the .mdoc (the file that has to be parsed) and
+            % the image (the file the pixels come from). The PICKER offers only
+            % the .mdoc, but a typed path or a batch protocol can still name the
+            % .mrc, so the resolution has to work both ways.
+            tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            montage = mibtest.helpers.makeMdocMontage(tmpDir.Folder);
+
+            for candidate = {montage.mdocPath, montage.imagePath}
+                sidecar = utils.stitch.findMdocSidecar(candidate{1});
+                testCase.verifyEqual(sidecar.mdocPath, montage.mdocPath, ...
+                    sprintf('picking %s must resolve to the .mdoc', candidate{1}));
+                testCase.verifyEqual(sidecar.imagePath, montage.imagePath);
+                testCase.verifyTrue(sidecar.isMontage);
+                testCase.verifyEqual(sidecar.numTiles, montage.numTiles);
+                % 2x2: two X seams and two Y seams.
+                testCase.verifyEqual(sidecar.numEdges, 4);
+                testCase.verifyEqual(sidecar.numAligned, montage.numTiles);
+            end
+        end
+
+        function mdocSidecar_reportsOnlyWhatExists(testCase)
+            % A montage SerialEM never stitched carries neither stage, and the
+            % counts are what let the caller offer only the honourable modes.
+            tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            montage = mibtest.helpers.makeMdocMontage(tmpDir.Folder, ...
+                struct('writeEdges', false, 'writeAligned', false));
+
+            sidecar = utils.stitch.findMdocSidecar(montage.mdocPath);
+            testCase.verifyTrue(sidecar.isMontage);
+            testCase.verifyEqual(sidecar.numEdges, 0);
+            testCase.verifyEqual(sidecar.numAligned, 0);
+        end
+
+        function mdocSidecar_nonMontagePathIsNotASerialEMMontage(testCase)
+            % .mdocPath doubles as the "is this a SerialEM input?" test that lets
+            % the Position file source tell a montage from a position text file,
+            % so a non-montage path must come back empty rather than raising.
+            tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            positionFile = fullfile(tmpDir.Folder, 'positions.txt');
+            fileId = fopen(positionFile, 'w'); fprintf(fileId, 'tile.tif 0 0\n'); fclose(fileId);
+
+            for candidate = {positionFile, fullfile(tmpDir.Folder, 'tile.tif'), 'no_extension'}
+                sidecar = utils.stitch.findMdocSidecar(candidate{1});
+                testCase.verifyEmpty(sidecar.mdocPath);
+                testCase.verifyEmpty(sidecar.imagePath);
+                testCase.verifyFalse(sidecar.isMrcImage);
+                testCase.verifyFalse(sidecar.isMontage);
+            end
+        end
+
+        function mdocSidecar_bareMrcIsDistinguishableFromANonSerialEMFile(testCase)
+            % An MRC with no .mdoc beside it and a plain .txt both leave
+            % .mdocPath empty, but they need OPPOSITE handling: the stack earns
+            % an explanation ("where is the .mdoc?"), the text file falls through
+            % to the position-file parser. .isMrcImage is what tells them apart.
+            tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            montage = mibtest.helpers.makeMdocMontage(tmpDir.Folder);
+            delete(montage.mdocPath);
+
+            sidecar = utils.stitch.findMdocSidecar(montage.imagePath);
+            testCase.verifyEmpty(sidecar.mdocPath, ...
+                'without its .mdoc a stack is not a montage');
+            testCase.verifyTrue(sidecar.isMrcImage, ...
+                'but it is still recognisably an MRC image');
+        end
+
+        function mdocLayout_mirrorsTheMontageYAxisAndOrdersByGrid(testCase)
+            % PieceCoordinates Y runs UP while MIB rows run DOWN, so grid row 1
+            % is the piece with the LARGEST Y. Slices are written in acquisition
+            % order (Y fastest within each X), which must NOT leak into the
+            % layout's ordering.
+            tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            montage = mibtest.helpers.makeMdocMontage(tmpDir.Folder);
+
+            layout = utils.stitch.buildLayoutMdoc(montage.mdocPath);
+
+            testCase.verifyEqual(numel(layout), montage.numTiles);
+            testCase.verifyEqual(vertcat(layout.gridRC), [1 1; 1 2; 2 1; 2 2]);
+            % The acquisition order really is scrambled relative to grid order —
+            % otherwise this test would pass on a reader that ignores the sort.
+            testCase.verifyNotEqual([layout.sliceIndex], 1:montage.numTiles);
+
+            % Nominal origins follow the (wrong) recorded step, 1-based.
+            origins = reshape([layout.nomOrigin], 3, []).';
+            step = montage.nominalStepPx;
+            testCase.verifyEqual(origins(:, 1:2), ...
+                [1 1; 1 1+step; 1+step 1; 1+step 1+step], 'AbsTol', 1e-9);
+        end
+
+        function mdocLayout_carriesSliceIndexIntoTheSharedContainer(testCase)
+            % Unlike every other layout source the tiles are not separate files:
+            % .filename is the ONE container and .sliceIndex addresses the tile.
+            tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            montage = mibtest.helpers.makeMdocMontage(tmpDir.Folder);
+
+            layout = utils.stitch.buildLayoutMdoc(montage.mdocPath);
+
+            testCase.verifyEqual(unique({layout.filename}), {montage.imagePath});
+            testCase.verifyEqual(sort([layout.sliceIndex]), 1:montage.numTiles);
+            testCase.verifyEmpty([layout.sliceFiles]);
+            testCase.verifyEqual(layout(1).tileSize, ...
+                [montage.tileSizePx, montage.tileSizePx, 1, 1]);
+
+            % The reader must return the slice the layout points at: read every
+            % tile and check each is the crop the true placement implies.
+            readerFcn = utils.stitch.makeTileReader(layout);
+            for tileIdx = 1:numel(layout)
+                tile = readerFcn(tileIdx);
+                testCase.verifySize(tile, [montage.tileSizePx, montage.tileSizePx, 1, 1]);
+            end
+            % Two tiles that overlap must agree pixel-for-pixel in the shared
+            % strip at the TRUE placement — the check that a wrong sliceIndex,
+            % a missing flip or a transposed permute would all fail.
+            leftTile  = squeeze(readerFcn(1));
+            rightTile = squeeze(readerFcn(2));
+            sharedWidth = montage.tileSizePx - montage.trueStepXpx;
+            testCase.verifyEqual(leftTile(:, end - sharedWidth + 1:end), ...
+                rightTile(:, 1:sharedWidth), ...
+                'overlapping strip must match at the true placement');
+        end
+
+        function mdocLayout_carriesTheAcquisitionPixelSize(testCase)
+            % The .mdoc states PixelSpacing in Angstroms. Without carrying it the
+            % stitched mosaic silently measures in 1 um pixels - wrong by four
+            % orders of magnitude here, and wrong SILENTLY, which is worse: every
+            % distance and area measured on the result would be plausible garbage.
+            tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            montage = mibtest.helpers.makeMdocMontage(tmpDir.Folder);
+
+            layout = utils.stitch.buildLayoutMdoc(montage.mdocPath);
+            pixSize = utils.stitch.layoutPixSize(layout);
+
+            testCase.verifyNotEmpty(pixSize);
+            testCase.verifyEqual(pixSize.x, 18.38 / 10000, 'AbsTol', 1e-9);
+            testCase.verifyEqual(pixSize.y, pixSize.x);
+            testCase.verifyEqual(pixSize.units, 'um');
+            % A montage is one section and the .mdoc records no thickness, so Z is
+            % the in-plane size rather than a fabricated number.
+            testCase.verifyEqual(pixSize.z, pixSize.x);
+
+            % And it has to reach the canvas, which is what the dataset reads.
+            [~, ~, positions] = utils.stitch.buildLayoutMdoc(montage.mdocPath, ...
+                struct('importEdges', true, 'importPositions', true));
+            canvas = utils.stitch.planCanvas(layout, positions, struct('pixSize', pixSize));
+            testCase.verifyEqual(canvas.pixSize.x, pixSize.x, 'AbsTol', 1e-9);
+        end
+
+        function layoutPixSize_saysNothingRatherThanGuessing(testCase)
+            % A layout built from a plain folder of images knows no physical scale.
+            % It must return empty, NOT a 1 um default: planCanvas already applies
+            % that fallback, and inventing it here would make "measured 1 um" and
+            % "no idea" indistinguishable to every caller.
+            tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            [~, tileFiles] = writeShadedTiles(tmpDir.Folder, 4, 32, 0.2);
+            layout = utils.stitch.buildLayoutGrid(tileFiles, ...
+                struct('rows', 2, 'cols', 2, 'tileOrder', 'Horizontal', ...
+                       'overlapX', 10, 'overlapY', 10));
+
+            testCase.verifyEmpty(utils.stitch.layoutPixSize(layout));
+
+            % A partially-filled field must not veto the tiles that do know.
+            layout(1).pixSize = [];
+            layout(2).pixSize = struct('x', 0, 'y', 0, 'z', 0);           % unusable
+            layout(3).pixSize = struct('x', 0.5, 'y', 0.5, 'z', 1.0);     % usable
+            layout(4).pixSize = [];
+            resolved = utils.stitch.layoutPixSize(layout);
+            testCase.verifyEqual(resolved.x, 0.5);
+            testCase.verifyEqual(resolved.z, 1.0);
+            testCase.verifyEqual(resolved.units, 'um', ...
+                'a pixel size with no stated units must be labelled, not left blank');
+        end
+
+        function mdocEdges_convertWithBothSignFlips(testCase)
+            % XedgeDxy/YedgeDxy are [dx dy] stated for the LOWER piece, so the
+            % offset is their negation; the ROW component then flips a second
+            % time through the Y mirror and comes back positive. Getting either
+            % flip wrong still yields plausible magnitudes, so the test pins the
+            % exact measured step per axis.
+            tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            montage = mibtest.helpers.makeMdocMontage(tmpDir.Folder);
+
+            [~, edges] = utils.stitch.buildLayoutMdoc(montage.mdocPath, ...
+                struct('importEdges', true));
+
+            testCase.verifyEqual(numel(edges), 4);
+            for edgeIdx = 1:numel(edges)
+                testCase.verifyLessThan(edges(edgeIdx).i, edges(edgeIdx).j, ...
+                    'edges must be emitted with i < j like every other producer');
+                measured = edges(edgeIdx).measured;
+                if strcmp(edges(edgeIdx).direction, 'x')
+                    testCase.verifyEqual(measured(1:2), [0, montage.trueStepXpx], 'AbsTol', 1e-9);
+                else
+                    testCase.verifyEqual(measured(1:2), [montage.trueStepYpx, 0], 'AbsTol', 1e-9);
+                end
+                % SerialEM records no per-seam confidence.
+                testCase.verifyEqual(edges(edgeIdx).quality, 1);
+                testCase.verifyTrue(edges(edgeIdx).valid);
+                testCase.verifyEqual(edges(edgeIdx).source, 'auto');
+            end
+        end
+
+        function mdocAlignedCoords_giveThePixelCorrectPlacement(testCase)
+            % The tiles were cut from one texture at the ALIGNED offsets, so the
+            % imported placement is the pixel-correct one and its seams score ~1,
+            % while the nominal grid (4 px out in X, 6 in Y) scores far worse.
+            tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            montage = mibtest.helpers.makeMdocMontage(tmpDir.Folder);
+
+            [layout, edges, positions] = utils.stitch.buildLayoutMdoc(montage.mdocPath, ...
+                struct('importEdges', true, 'importPositions', true));
+
+            testCase.verifyEqual(positions(:, 1:2), montage.expectedOriginRC, 'AbsTol', 1e-9);
+
+            scoredAtImport = utils.stitch.scoreSeams(layout, edges, positions, ...
+                struct('showWaitbar', false));
+            nominalOrigins = reshape([layout.nomOrigin], 3, []).';
+            scoredAtNominal = utils.stitch.scoreSeams(layout, edges, nominalOrigins, ...
+                struct('showWaitbar', false));
+
+            testCase.verifyGreaterThan(min([scoredAtImport.seamScore]), 0.95);
+            testCase.verifyLessThan(max([scoredAtNominal.seamScore]), ...
+                min([scoredAtImport.seamScore]));
+        end
+
+        function mdocSolveFromImportedEdgesReproducesTheAlignedPlacement(testCase)
+            % The two later stages must agree: solving MIB's own global system on
+            % SerialEM's edge shifts has to land on SerialEM's own placement.
+            tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            montage = mibtest.helpers.makeMdocMontage(tmpDir.Folder);
+
+            [layout, edges, positions] = utils.stitch.buildLayoutMdoc(montage.mdocPath, ...
+                struct('importEdges', true, 'importPositions', true));
+
+            solved = utils.stitch.solveGlobalLeastSquares(layout, edges, ...
+                struct('nominalWeight', 0.001, 'anchor', 1));
+            solvedRC = solved(:, 1:2) - min(solved(:, 1:2), [], 1) + 1;
+
+            testCase.verifyEqual(solvedRC, positions(:, 1:2), 'AbsTol', 0.05);
+        end
+
+        function mdocPositionsWithoutEdgesSynthesiseThem(testCase)
+            % A placement imported with no measurements would send Stitch back
+            % into a full measure pass, throwing the import away.
+            tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            montage = mibtest.helpers.makeMdocMontage(tmpDir.Folder, ...
+                struct('writeEdges', false));
+
+            [~, edges, positions] = utils.stitch.buildLayoutMdoc(montage.mdocPath, ...
+                struct('importPositions', true));
+
+            testCase.verifyNotEmpty(edges);
+            testCase.verifyNotEmpty(positions);
+            % Self-consistent by construction: each edge is the position delta.
+            for edgeIdx = 1:numel(edges)
+                testCase.verifyEqual(edges(edgeIdx).measured, ...
+                    positions(edges(edgeIdx).j, :) - positions(edges(edgeIdx).i, :), ...
+                    'AbsTol', 1e-9);
+            end
+        end
+
+        function mdocFloatStackRescalesFromTheHeader(testCase)
+            % A float montage must be mapped onto uint16 from the FILE header's
+            % density range, so every tile of the stack shares one scale.
+            tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            montage = mibtest.helpers.makeMdocMontage(tmpDir.Folder, struct('asFloat', true));
+
+            [layout, ~, positions] = utils.stitch.buildLayoutMdoc(montage.mdocPath, ...
+                struct('importEdges', true, 'importPositions', true));
+
+            testCase.verifyEqual(layout(1).dataClass, 'uint16');
+            testCase.verifyEqual(positions(:, 1:2), montage.expectedOriginRC, 'AbsTol', 1e-9);
+
+            % The stack's own min and max must land on the class limits, and the
+            % overlapping strip must still match — a per-slice rescale would put
+            % each tile on its own scale and break the second check.
+            readerFcn = utils.stitch.makeTileReader(layout);
+            allTiles = [];
+            for tileIdx = 1:numel(layout)
+                tile = readerFcn(tileIdx);
+                testCase.verifyClass(tile, 'uint16');
+                allTiles = [allTiles; tile(:)]; %#ok<AGROW>
+            end
+            testCase.verifyEqual(double(min(allTiles)), 0, 'AbsTol', 1);
+            testCase.verifyEqual(double(max(allTiles)), 65535, 'AbsTol', 1);
+
+            leftTile  = squeeze(readerFcn(1));
+            rightTile = squeeze(readerFcn(2));
+            sharedWidth = montage.tileSizePx - montage.trueStepXpx;
+            testCase.verifyEqual(leftTile(:, end - sharedWidth + 1:end), ...
+                rightTile(:, 1:sharedWidth));
+        end
+
+        function mdocRegionReadMatchesTheFullTile(testCase)
+            % The ranged getVolume fast path has to mirror the row range into the
+            % container's bottom-up axis; an off-by-one or a missing flip shows up
+            % only against a full-load-then-crop.
+            tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            montage = mibtest.helpers.makeMdocMontage(tmpDir.Folder);
+            layout = utils.stitch.buildLayoutMdoc(montage.mdocPath);
+
+            fullReader = utils.stitch.makeTileReader(layout);
+            fullTile = fullReader(2);
+
+            pixelRegion = [7 39; 11 52];
+            regionReader = utils.stitch.makeTileReader(layout);   % fresh: no cache to crop
+            regionTile = regionReader(2, pixelRegion);
+
+            testCase.verifyEqual(regionTile, ...
+                fullTile(pixelRegion(1,1):pixelRegion(1,2), pixelRegion(2,1):pixelRegion(2,2), :, :));
+        end
+
+        function mdocTiltSeriesIsRejected(testCase)
+            % SerialEM writes the same format for tilt series, which have no
+            % PieceCoordinates and are not stitchable — one clear error beats a
+            % confusing parse of the wrong file kind.
+            tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            montage = mibtest.helpers.makeMdocMontage(tmpDir.Folder, ...
+                struct('writePieceCoords', false, 'montageKey', false));
+
+            sidecar = utils.stitch.findMdocSidecar(montage.mdocPath);
+            testCase.verifyNotEmpty(sidecar.mdocPath);   % still recognised as SerialEM
+            testCase.verifyFalse(sidecar.isMontage);     % but not as a mosaic
+
+            testCase.verifyError(@() utils.stitch.buildLayoutMdoc(montage.mdocPath), ...
+                'utils:stitch:buildLayoutMdoc:notAMontage');
+        end
+
+        % -----------------------------------------------------------------
+        % estimateIntensityCorrection — intensity correction
+        % -----------------------------------------------------------------
+
+        function intensityCorrection_noneIsNeutralAndReadsNothing(testCase)
+            % 'None' must be free: no tile reads, and pixels byte-identical to a
+            % reader built with no correction at all.
+            tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            montage = mibtest.helpers.makeMdocMontage(tmpDir.Folder, ...
+                struct('shadingPercent', 12, 'plainTexture', true));
+            layout = utils.stitch.buildLayoutMdoc(montage.mdocPath);
+
+            correction = utils.stitch.estimateIntensityCorrection(layout);
+            testCase.verifyEqual(correction.method, 'None');
+            testCase.verifyEmpty(correction.field);
+            testCase.verifyTrue(all(correction.gain == 1));
+            testCase.verifyTrue(all(correction.offset == 0));
+
+            plainReader   = utils.stitch.makeTileReader(layout);
+            neutralReader = utils.stitch.makeTileReader(layout, struct('correction', correction));
+            testCase.verifyEqual(neutralReader(2), plainReader(2), ...
+                'a neutral correction must not touch a single pixel');
+        end
+
+        function intensityCorrection_flatFieldRecoversAKnownField(testCase)
+            % Every tile carries the SAME illumination field over INDEPENDENT
+            % content. That is the assumption the shared-field estimator states,
+            % and under it the field has to come back: matching the truth in shape
+            % (it is normalised to mean 1, so only the shape is recoverable) and
+            % flattening the tiles when divided out.
+            %
+            % Deliberately NOT built on makeMdocMontage: four heavily-overlapping
+            % tiles do not decorrelate, so their content survives the average and
+            % lands in the field. Sixteen independent tiles are what the estimator
+            % is actually for — see the warning in estimateIntensityCorrection.
+            tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            tileSize = 96;
+            fieldSpan = 0.30;
+            [truthField, tileFiles] = writeShadedTiles(tmpDir.Folder, 16, tileSize, fieldSpan);
+
+            layout = utils.stitch.buildLayoutGrid(tileFiles, ...
+                struct('rows', 4, 'cols', 4, 'tileOrder', 'Horizontal', ...
+                       'overlapX', 10, 'overlapY', 10));
+            correction = utils.stitch.estimateIntensityCorrection(layout, ...
+                struct('method', 'Flat-field (shared)'));
+
+            testCase.verifyEqual(correction.method, 'Flat-field (shared)');
+            testCase.verifySize(correction.field, [tileSize, tileSize]);
+            testCase.verifyEqual(double(mean(correction.field, 'all')), 1, 'AbsTol', 0.02);
+
+            % Shape: strongly correlated with the truth, and the same span.
+            estimated = double(correction.field(:));
+            truth     = double(truthField(:));
+            fieldCorrelation = corr(estimated, truth);
+            testCase.verifyGreaterThan(fieldCorrelation, 0.9, ...
+                'the estimated field does not follow the one that was applied');
+            testCase.verifyEqual(max(estimated) - min(estimated), ...
+                max(truth) - min(truth), 'RelTol', 0.35);
+
+            % Effect: averaging the tiles is what exposes the illumination (it is
+            % the only thing they share), so the average of the CORRECTED tiles
+            % has to come out flat. Measured on the average rather than on one
+            % tile, because a single 96 px tile's own texture swamps a 30 % field.
+            rawReader   = utils.stitch.makeTileReader(layout);
+            fixedReader = utils.stitch.makeTileReader(layout, struct('correction', correction));
+            rawSpread   = normalizedTileAverageSpread(rawReader, numel(layout));
+            fixedSpread = normalizedTileAverageSpread(fixedReader, numel(layout));
+
+            testCase.verifyGreaterThan(rawSpread, 0.8 * fieldSpan, ...
+                'the uncorrected tiles should still show the field that was applied');
+            testCase.verifyLessThan(fixedSpread, 0.4 * rawSpread, ...
+                'dividing out the field must flatten what the tiles have in common');
+        end
+
+        function intensityCorrection_fewOverlappingTilesAbsorbTheSpecimen(testCase)
+            % The documented failure mode, pinned so it cannot regress into a
+            % silent surprise: with few heavily-overlapping tiles the shared-field
+            % estimate picks up the SPECIMEN's low-frequency structure, and the
+            % field comes out far larger than the illumination actually applied.
+            % This is why the method is opt-in and why an overlap-driven estimate
+            % is the planned successor — not something to tune the smoothing for.
+            tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            montage = mibtest.helpers.makeMdocMontage(tmpDir.Folder, ...
+                struct('shadingPercent', 12));   % ramped texture, 4 tiles, 33% overlap
+            layout = utils.stitch.buildLayoutMdoc(montage.mdocPath);
+
+            correction = utils.stitch.estimateIntensityCorrection(layout, ...
+                struct('method', 'Flat-field (shared)'));
+
+            appliedSpan = double(max(montage.shadingField(:)) - min(montage.shadingField(:)));
+            estimatedSpan = double(max(correction.field(:)) - min(correction.field(:)));
+            testCase.verifyGreaterThan(estimatedSpan, 2 * appliedSpan, ...
+                ['This configuration is expected to OVER-estimate the field. ' ...
+                 'If it no longer does, the estimator changed — re-read the ' ...
+                 'warning in estimateIntensityCorrection and update it.']);
+        end
+
+        function intensityCorrection_matchTileMeansEqualisesTheMeans(testCase)
+            % 'Match tile means' targets a DIFFERENT fault: tiles that differ by a
+            % flat factor (a drifting detector), not an in-tile gradient.
+            tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            appliedGains = [1.00 1.25 0.80 1.10];
+            montage = mibtest.helpers.makeMdocMontage(tmpDir.Folder, ...
+                struct('tileGains', appliedGains, 'asFloat', true));
+            layout = utils.stitch.buildLayoutMdoc(montage.mdocPath);
+
+            correction = utils.stitch.estimateIntensityCorrection(layout, ...
+                struct('method', 'Match tile means'));
+
+            testCase.verifyEqual(correction.method, 'Match tile means');
+            testCase.verifyEmpty(correction.field, ...
+                'mean matching is a per-tile scalar, not a field');
+
+            readerFcn = utils.stitch.makeTileReader(layout, struct('correction', correction));
+            correctedMeans = zeros(numel(layout), 1);
+            for tileIdx = 1:numel(layout)
+                correctedMeans(tileIdx) = mean(single(readerFcn(tileIdx)), 'all');
+            end
+            spread = (max(correctedMeans) - min(correctedMeans)) / mean(correctedMeans);
+            testCase.verifyLessThan(spread, 0.02, ...
+                'every tile must end up at the common mean');
+        end
+
+        function intensityCorrection_appliesToCropsAndFullTilesAlike(testCase)
+            % A cropped read bypasses the cache and corrects its own patch of the
+            % field. If the crop were taken from the wrong part of the field the
+            % two paths would disagree — which is what this pins down.
+            tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            montage = mibtest.helpers.makeMdocMontage(tmpDir.Folder, ...
+                struct('shadingPercent', 12, 'plainTexture', true));
+            layout = utils.stitch.buildLayoutMdoc(montage.mdocPath);
+            correction = utils.stitch.estimateIntensityCorrection(layout, ...
+                struct('method', 'Flat-field (shared)'));
+
+            fullReader = utils.stitch.makeTileReader(layout, struct('correction', correction));
+            fullTile = fullReader(3);
+
+            pixelRegion = [9 44; 17 60];
+            cropReader = utils.stitch.makeTileReader(layout, struct('correction', correction));
+            cropTile = cropReader(3, pixelRegion);   % fresh reader: takes the fast path
+
+            testCase.verifyEqual(cropTile, ...
+                fullTile(pixelRegion(1,1):pixelRegion(1,2), pixelRegion(2,1):pixelRegion(2,2), :, :), ...
+                'the cropped fast path must correct the matching patch of the field');
+        end
+
+        function intensityCorrection_overlapSolvedSurvivesASpecimenTrend(testCase)
+            % The case the shared-field method cannot handle: the SPECIMEN has a
+            % broad brightness trend of its own. Averaging the tiles cannot tell
+            % that from illumination, so the shared field absorbs it; fitting to
+            % the overlaps can, because both tiles image the same specimen there
+            % and it cancels in the difference.
+            tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            tileSize = 96; stepPx = 72; overlapPercent = 100*(tileSize-stepPx)/tileSize;
+            [truthField, tileFiles, truePositions] = writeOverlappingShadedTiles( ...
+                tmpDir.Folder, tileSize, stepPx, 3, 0.30, 0.40);
+
+            layout = utils.stitch.buildLayoutGrid(tileFiles, ...
+                struct('rows', 3, 'cols', 3, 'tileOrder', 'Horizontal', ...
+                       'overlapX', overlapPercent, 'overlapY', overlapPercent));
+
+            solved = utils.stitch.estimateIntensityCorrection(layout, ...
+                struct('method', 'Flat-field (overlap-solved)', 'positions', truePositions));
+            shared = utils.stitch.estimateIntensityCorrection(layout, ...
+                struct('method', 'Flat-field (shared)'));
+
+            testCase.verifyEqual(solved.method, 'Flat-field (overlap-solved)');
+            testCase.verifySize(solved.field, [tileSize, tileSize]);
+
+            % Seams observe the field only near tile BORDERS, so the polynomial
+            % carries it into the middle unchecked. A degree the seams cannot
+            % support bows there - and this shipped once: a degree-4 fit dipped to
+            % 0.87 at the tile centre against 1.12 at the edges, which brightened
+            % every tile centre and drew a DARK GRID along the seams while the
+            % seam residual read better than any other method. The seam metric is
+            % blind to it by construction, so it has to be asserted separately.
+            fieldValues = double(solved.field);
+            borderWidth = round(0.1 * tileSize);
+            borderMask = false(tileSize);
+            borderMask([1:borderWidth, end-borderWidth+1:end], :) = true;
+            borderMask(:, [1:borderWidth, end-borderWidth+1:end]) = true;
+            centreIdx = round(tileSize/2) + (-round(tileSize/8):round(tileSize/8));
+            centreToBorder = mean(fieldValues(centreIdx, centreIdx), 'all') / ...
+                             mean(fieldValues(borderMask));
+            testCase.verifyEqual(centreToBorder, 1, 'AbsTol', 0.15, ...
+                'the fitted field bows where no seam observes it');
+
+            % The seam-fitted field must track the truth, and beat the averaged one.
+            truth = double(truthField(:));
+            solvedCorrelation = corr(double(solved.field(:)), truth);
+            sharedCorrelation = corr(double(shared.field(:)), truth);
+            testCase.verifyGreaterThan(solvedCorrelation, 0.95, ...
+                'the seam-fitted field does not follow the one that was applied');
+            testCase.verifyGreaterThan(solvedCorrelation, sharedCorrelation, ...
+                'fitting to seams must beat averaging when the specimen has its own trend');
+
+            % And what actually matters: the brightness step across each seam.
+            solvedMismatch = seamBrightnessMismatch(layout, truePositions, solved);
+            sharedMismatch = seamBrightnessMismatch(layout, truePositions, shared);
+            noneMismatch   = seamBrightnessMismatch(layout, truePositions, []);
+            testCase.verifyLessThan(solvedMismatch, sharedMismatch, ...
+                'the seam-fitted field must leave smaller steps than the averaged one');
+            testCase.verifyLessThan(solvedMismatch, 0.25 * noneMismatch);
+        end
+
+        function intensityCorrection_degreeIsChosenAndReported(testCase)
+            % The field's flexibility is chosen by the data, not hard-coded: the
+            % report records what each candidate scored and whether it passed the
+            % interior check, and the chosen degree must be one that passed.
+            tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            tileSize = 96; stepPx = 72; overlapPercent = 100*(tileSize-stepPx)/tileSize;
+            [~, tileFiles, truePositions] = writeOverlappingShadedTiles( ...
+                tmpDir.Folder, tileSize, stepPx, 3, 0.30, 0.40);
+            layout = utils.stitch.buildLayoutGrid(tileFiles, ...
+                struct('rows', 3, 'cols', 3, 'tileOrder', 'Horizontal', ...
+                       'overlapX', overlapPercent, 'overlapY', overlapPercent));
+
+            correction = utils.stitch.estimateIntensityCorrection(layout, ...
+                struct('method', 'Flat-field (overlap-solved)', 'positions', truePositions));
+
+            testCase.verifyNotEmpty(correction.degree);
+            testCase.verifyNotEmpty(correction.degreeReport);
+            testCase.verifyTrue(ismember(correction.degree, [correction.degreeReport.degree]));
+            chosenEntry = correction.degreeReport([correction.degreeReport.degree] == correction.degree);
+            testCase.verifyTrue(chosenEntry.accepted, ...
+                'a degree that failed the interior check must never be chosen');
+            % Every entry carries both scores, so a later regression is diagnosable.
+            testCase.verifyTrue(all(isfinite([correction.degreeReport.interiorDeviation])));
+        end
+
+        function intensityCorrection_forcedBowingDegreeIsRefused(testCase)
+            % A degree the seams cannot support must be refused even when asked
+            % for explicitly - that failure is invisible to every seam metric, so
+            % the interior check is the only thing standing between it and a
+            % mosaic with a dark grid along every seam.
+            tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            tileSize = 96; stepPx = 72; overlapPercent = 100*(tileSize-stepPx)/tileSize;
+            [~, tileFiles, truePositions] = writeOverlappingShadedTiles( ...
+                tmpDir.Folder, tileSize, stepPx, 3, 0.30, 0.40);
+            layout = utils.stitch.buildLayoutGrid(tileFiles, ...
+                struct('rows', 3, 'cols', 3, 'tileOrder', 'Horizontal', ...
+                       'overlapX', overlapPercent, 'overlapY', overlapPercent));
+
+            % An interior tolerance of 0 rejects every candidate, which is the
+            % deterministic way to exercise the refusal path.
+            correction = testCase.verifyWarning(@() ...
+                utils.stitch.estimateIntensityCorrection(layout, struct( ...
+                    'method', 'Flat-field (overlap-solved)', 'positions', truePositions, ...
+                    'maxInteriorDeviation', 0)), ...
+                'utils:stitch:estimateIntensityCorrection:noUsableDegree');
+
+            testCase.verifyEmpty(correction.field, ...
+                'a refused fit must correct nothing rather than ship the artefact');
+            testCase.verifyTrue(all(correction.gain == 1));
+        end
+
+        function intensityCorrection_mosaicLevellingIsFreeAtTheSeams(testCase)
+            % Fitting the seams leaves a whole FAMILY of solutions: field and
+            % per-tile gains can trade a plane between them without changing any
+            % seam difference at all. Levelling spends that freedom on a flat
+            % mosaic, and the proof that it is really free - not a second fit
+            % quietly degrading the first - is that the seam steps come out
+            % IDENTICAL, not merely similar.
+            tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            tileSize = 96; stepPx = 72; overlapPercent = 100*(tileSize-stepPx)/tileSize;
+            [~, tileFiles, truePositions] = writeOverlappingShadedTiles( ...
+                tmpDir.Folder, tileSize, stepPx, 3, 0.30, 0.40);
+            layout = utils.stitch.buildLayoutGrid(tileFiles, ...
+                struct('rows', 3, 'cols', 3, 'tileOrder', 'Horizontal', ...
+                       'overlapX', overlapPercent, 'overlapY', overlapPercent));
+
+            levelled = utils.stitch.estimateIntensityCorrection(layout, struct( ...
+                'method', 'Flat-field (overlap-solved)', 'positions', truePositions));
+            unlevelled = utils.stitch.estimateIntensityCorrection(layout, struct( ...
+                'method', 'Flat-field (overlap-solved)', 'positions', truePositions, ...
+                'levelMosaic', false));
+
+            % The invariant, asserted on the correction itself rather than through
+            % pixels: the field may change by EXACTLY a plane and by nothing else,
+            % and each gain must move by exactly the negative of that plane at its
+            % tile's centre. Those two together are what make the seam differences
+            % cancel; any other change to the field would be a second fit wearing
+            % the gauge's clothes.
+            tileSizePx = double(levelled.tileSize);
+            [allCols, allRows] = meshgrid(1:tileSizePx(2), 1:tileSizePx(1));
+            normX = (allCols(:) - (tileSizePx(2)+1)/2) / (tileSizePx(2)/2);
+            normY = (allRows(:) - (tileSizePx(1)+1)/2) / (tileSizePx(1)/2);
+            fieldChange = log(double(levelled.field(:))) - log(double(unlevelled.field(:)));
+            planeBasis = [ones(numel(normX),1), normX, normY];
+            planeFit = planeBasis \ fieldChange;
+            testCase.verifyLessThan(max(abs(planeBasis*planeFit - fieldChange)), 1e-6, ...
+                'levelling must change the field by a plane and nothing else');
+
+            centres = [(truePositions(:,2) + (tileSizePx(2)-1)/2) / (tileSizePx(2)/2), ...
+                       (truePositions(:,1) + (tileSizePx(1)-1)/2) / (tileSizePx(1)/2)];
+            gainChange = log(levelled.gain) - log(unlevelled.gain);
+            expectedGainChange = -(centres * planeFit(2:3));
+            % Both sets are renormalised (field to mean 1, gains to geometric mean
+            % 1), so the two differ by a constant that carries no seam meaning.
+            testCase.verifyLessThan( ...
+                max(abs((gainChange - mean(gainChange)) - ...
+                        (expectedGainChange - mean(expectedGainChange)))), 1e-6, ...
+                'each gain must absorb exactly the plane added to the field');
+
+            % And the pixels follow. Only approximately here: the reader casts
+            % back to the tile's integer class, and these fixture tiles are 8-bit,
+            % so rounding moves the measured step by a few percent. On real 16-bit
+            % data the two read identical - the exact statement is the one above.
+            testCase.verifyEqual( ...
+                double(seamBrightnessMismatch(layout, truePositions, levelled)), ...
+                double(seamBrightnessMismatch(layout, truePositions, unlevelled)), ...
+                'RelTol', 0.1, ...
+                'levelling must not change the seam steps beyond pixel rounding');
+
+            % And it must actually do something: the mosaic-wide brightness plane
+            % that the un-levelled solve leaves behind is the artefact users
+            % report, even at an excellent seam residual.
+            testCase.verifyLessThan( ...
+                mosaicPlaneStrength(layout, truePositions, levelled), ...
+                0.5 * mosaicPlaneStrength(layout, truePositions, unlevelled), ...
+                'levelling must flatten the mosaic-wide brightness plane');
+            testCase.verifyNotEqual(levelled.mosaicPlane, [0 0]);
+            testCase.verifyEqual(unlevelled.mosaicPlane, [0 0]);
+        end
+
+        function intensityCorrection_overlapSolvedWorksBeforeAnySolve(testCase)
+            % Measure overlaps runs BEFORE any placement is solved, so the method
+            % has to work off nominal origins too - samples are block-averaged, so
+            % a few pixels of placement error cannot move a low-order field.
+            tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            tileSize = 96; stepPx = 72; overlapPercent = 100*(tileSize-stepPx)/tileSize;
+            [truthField, tileFiles] = writeOverlappingShadedTiles( ...
+                tmpDir.Folder, tileSize, stepPx, 3, 0.30, 0.40);
+            layout = utils.stitch.buildLayoutGrid(tileFiles, ...
+                struct('rows', 3, 'cols', 3, 'tileOrder', 'Horizontal', ...
+                       'overlapX', overlapPercent, 'overlapY', overlapPercent));
+
+            % No positions supplied at all: nomOrigin is used.
+            correction = utils.stitch.estimateIntensityCorrection(layout, ...
+                struct('method', 'Flat-field (overlap-solved)'));
+
+            testCase.verifyEqual(correction.method, 'Flat-field (overlap-solved)');
+            testCase.verifyGreaterThan(corr(double(correction.field(:)), double(truthField(:))), 0.95);
+        end
+
+        function intensityCorrection_mismatchedFieldIsRefused(testCase)
+            % A correction estimated for a different layout must fail loudly
+            % rather than silently mis-scale every tile.
+            tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            montage = mibtest.helpers.makeMdocMontage(tmpDir.Folder, ...
+                struct('shadingPercent', 12, 'plainTexture', true));
+            layout = utils.stitch.buildLayoutMdoc(montage.mdocPath);
+            correction = utils.stitch.estimateIntensityCorrection(layout, ...
+                struct('method', 'Flat-field (shared)'));
+            correction.field = correction.field(1:10, 1:10);
+
+            readerFcn = utils.stitch.makeTileReader(layout, struct('correction', correction));
+            testCase.verifyError(@() readerFcn(1), ...
+                'utils:stitch:makeTileReader:correctionSizeMismatch');
+        end
+
+        function mdocMissingContainerIsReported(testCase)
+            % A montage is two files; without the image there is nothing to read.
+            tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            montage = mibtest.helpers.makeMdocMontage(tmpDir.Folder);
+            delete(montage.imagePath);
+
+            testCase.verifyError(@() utils.stitch.buildLayoutMdoc(montage.mdocPath), ...
+                'utils:stitch:buildLayoutMdoc:imageNotFound');
+        end
+
     end % methods (Test)
 
     % =====================================================================
@@ -843,6 +1547,144 @@ layout(2).gridRC     = [1 1];
 layout(2).nomOrigin  = [1 1 2];
 layout(2).tileSize   = [tileHeight tileWidth 1 1];
 layout(2).dataClass  = 'uint8';
+end
+
+% =========================================================================
+function [truthField, tileFiles] = writeShadedTiles(folderPath, numTiles, tileSize, fieldSpan)
+% WRITESHADEDTILES - Independent-content tiles sharing ONE illumination field.
+%
+% The configuration the shared-field estimator assumes: every tile shows different
+% specimen (so content averages out) under the same illumination (so the field
+% does not). `fieldSpan` is the field's peak-to-peak fraction.
+[fieldXX, fieldYY] = meshgrid(linspace(-1, 1, tileSize), linspace(-1, 1, tileSize));
+% Diagonal AND curved, so a transpose or a flip cannot pass unnoticed.
+truthField = 1 + fieldSpan * (0.35 * fieldXX + 0.25 * fieldYY - 0.20 * (fieldXX.^2 - fieldYY.^2));
+truthField = truthField / mean(truthField(:));
+
+tileFiles = cell(numTiles, 1);
+for tileIdx = 1:numTiles
+    rng(1000 + tileIdx, 'twister');   % independent content per tile
+    content = imfilter(randn(tileSize), fspecial('gaussian', [9 9], 2.0), 'replicate');
+    content = 128 + 26 * content / std(content(:));
+    tileFiles{tileIdx} = fullfile(folderPath, sprintf('shaded_%02d.png', tileIdx));
+    imwrite(uint8(min(255, max(0, content .* truthField))), tileFiles{tileIdx});
+end
+end
+
+% =========================================================================
+function [truthField, tileFiles, truePositions] = writeOverlappingShadedTiles( ...
+    folderPath, tileSize, stepPx, gridSize, fieldSpan, specimenRamp)
+% WRITEOVERLAPPINGSHADEDTILES - Overlapping tiles cut from ONE canvas that itself
+% has a broad brightness trend, each then shaded by the SAME illumination field.
+%
+% This is the configuration that separates the two flat-field methods: the
+% canvas-wide ramp is specimen, not illumination, but a method that only averages
+% the tiles has no way to know that. `specimenRamp` is its peak-to-peak fraction,
+% `fieldSpan` the illumination field's.
+canvasSize = tileSize + (gridSize - 1) * stepPx;
+rng(4242, 'twister');
+content = imfilter(randn(canvasSize), fspecial('gaussian', [9 9], 2.0), 'replicate');
+content = content / std(content(:));
+[rampXX, rampYY] = meshgrid(linspace(0, 1, canvasSize), linspace(0, 1, canvasSize));
+% A trend belonging to the SAMPLE, spanning the whole mosaic.
+canvas = 128 * (1 + specimenRamp * (0.6 * rampXX + 0.4 * rampYY - 0.5)) + 22 * content;
+
+[fieldXX, fieldYY] = meshgrid(linspace(-1, 1, tileSize), linspace(-1, 1, tileSize));
+truthField = 1 + fieldSpan * (0.35 * fieldXX + 0.25 * fieldYY - 0.20 * (fieldXX.^2 - fieldYY.^2));
+truthField = truthField / mean(truthField(:));
+
+numTiles = gridSize * gridSize;
+tileFiles = cell(numTiles, 1);
+truePositions = zeros(numTiles, 2);
+tileIdx = 0;
+for rowIdx = 1:gridSize
+    for colIdx = 1:gridSize
+        tileIdx = tileIdx + 1;
+        topRow  = (rowIdx - 1) * stepPx + 1;
+        leftCol = (colIdx - 1) * stepPx + 1;
+        truePositions(tileIdx, :) = [topRow, leftCol];
+        patch = canvas(topRow:topRow + tileSize - 1, leftCol:leftCol + tileSize - 1);
+        tileFiles{tileIdx} = fullfile(folderPath, sprintf('overlap_%02d.png', tileIdx));
+        imwrite(uint8(min(255, max(0, patch .* truthField))), tileFiles{tileIdx});
+    end
+end
+end
+
+% =========================================================================
+function worstMismatch = seamBrightnessMismatch(layout, positions, correction)
+% SEAMBRIGHTNESSMISMATCH - Largest |brightness step| across any seam, in percent.
+% The quantity a user sees at a tile boundary, and the one every correction
+% method is ultimately judged on.
+readerOptions = struct();
+if ~isempty(correction); readerOptions.correction = correction; end
+readerFcn = utils.stitch.makeTileReader(layout, readerOptions);
+tileHeight = layout(1).tileSize(1);
+tileWidth  = layout(1).tileSize(2);
+
+worstMismatch = 0;
+for tileI = 1:numel(layout) - 1
+    for tileJ = tileI + 1:numel(layout)
+        overlapRows = tileHeight - abs(positions(tileI,1) - positions(tileJ,1));
+        overlapCols = tileWidth  - abs(positions(tileI,2) - positions(tileJ,2));
+        if overlapRows < 8 || overlapCols < 8; continue; end
+        rowStart = max(positions(tileI,1), positions(tileJ,1));
+        rowEnd   = min(positions(tileI,1), positions(tileJ,1)) + tileHeight - 1;
+        colStart = max(positions(tileI,2), positions(tileJ,2));
+        colEnd   = min(positions(tileI,2), positions(tileJ,2)) + tileWidth - 1;
+        cropI = single(readerFcn(tileI, [rowStart-positions(tileI,1)+1, rowEnd-positions(tileI,1)+1; ...
+                                         colStart-positions(tileI,2)+1, colEnd-positions(tileI,2)+1]));
+        cropJ = single(readerFcn(tileJ, [rowStart-positions(tileJ,1)+1, rowEnd-positions(tileJ,1)+1; ...
+                                         colStart-positions(tileJ,2)+1, colEnd-positions(tileJ,2)+1]));
+        worstMismatch = max(worstMismatch, ...
+            abs(100 * (mean(cropI(:)) / mean(cropJ(:)) - 1)));
+    end
+end
+end
+
+% =========================================================================
+function strength = mosaicPlaneStrength(layout, positions, correction)
+% MOSAICPLANESTRENGTH - How strongly the CORRECTED mosaic shades across itself.
+%
+% Fitted on the corrected tile means against tile position, which is the same
+% quantity the eye reads as "one side of the montage is darker". Deliberately
+% not a seam measurement: a mosaic can shade from end to end while every
+% individual seam matches perfectly, and that combination is exactly the artefact
+% this exists to catch.
+readerOptions = struct();
+if ~isempty(correction); readerOptions.correction = correction; end
+readerFcn = utils.stitch.makeTileReader(layout, readerOptions);
+tileHeight = layout(1).tileSize(1);
+tileWidth  = layout(1).tileSize(2);
+
+numTiles = numel(layout);
+logMeans = zeros(numTiles, 1);
+for tileIdx = 1:numTiles
+    logMeans(tileIdx) = log(double(mean(single(readerFcn(tileIdx)), 'all')));
+end
+centres = [(positions(:,2) + (tileWidth-1)/2) / (tileWidth/2), ...
+           (positions(:,1) + (tileHeight-1)/2) / (tileHeight/2)];
+coefficients = [ones(numTiles,1), centres] \ logMeans;
+strength = norm(coefficients(2:3));
+end
+
+% =========================================================================
+function spread = normalizedTileAverageSpread(readerFcn, numTiles)
+% NORMALIZEDTILEAVERAGESPREAD - Peak-to-peak of what the tiles have IN COMMON.
+%
+% Each tile is normalised by its own mean and the tiles are averaged, so
+% independent specimen content cancels and only the shared illumination survives.
+% This is the quantity a flat-field correction exists to flatten — and, unlike a
+% single tile, it is not swamped by that tile's own texture.
+accumulated = [];
+for tileIdx = 1:numTiles
+    tilePixels = single(readerFcn(tileIdx));
+    tilePixels = mean(reshape(tilePixels, size(tilePixels, 1), size(tilePixels, 2), []), 3);
+    tilePixels = tilePixels / mean(tilePixels(:));
+    if isempty(accumulated); accumulated = tilePixels; else; accumulated = accumulated + tilePixels; end
+end
+accumulated = accumulated / numTiles;
+accumulated = imgaussfilt(accumulated, 4, 'Padding', 'replicate');
+spread = double(max(accumulated(:)) - min(accumulated(:))) / double(mean(accumulated(:)));
 end
 
 % =========================================================================

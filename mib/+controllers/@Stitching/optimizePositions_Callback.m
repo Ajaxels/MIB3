@@ -46,7 +46,8 @@ end
 % Plan canvas (warped footprints when per-tile transforms exist; per-slice
 % mosaic corrections from the inspector's Fix Z ride along)
 try
-    canvasOptions = struct('zSliceFixes', obj.zSliceFixes);
+    canvasOptions = struct('zSliceFixes', obj.zSliceFixes, ...
+        'autocrop', obj.BatchOpt.Autocrop);
     if ~isempty(obj.tforms)
         canvasOptions.tforms = obj.tforms;
     end
@@ -66,7 +67,8 @@ end
 parentFigure = obj.guiFigure();
 try
     obj.edges = utils.stitch.scoreSeams(obj.layout, obj.edges, obj.positions, ...
-        struct('showWaitbar', ~isempty(parentFigure), 'parentFigure', parentFigure));
+        struct('showWaitbar', ~isempty(parentFigure), 'parentFigure', parentFigure, ...
+               'correction', obj.ensureIntensityCorrection()));
 catch
     % pixel verification is advisory — never block the solve on it
 end

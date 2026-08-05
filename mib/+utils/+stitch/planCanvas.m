@@ -43,6 +43,9 @@ function canvas = planCanvas(layout, positions, options)
 %       in-plane by ``[dy dx]`` (cumulative over rows). Produces
 %       ``canvas.zShifts`` and grows the canvas so nothing is clipped
 %       (default: none)
+%     - ``.autocrop`` — [logical] trim the ragged background frame the solved
+%       positions leave around the mosaic, by handing the finished plan to
+%       :func:`utils.stitch.autocropCanvas` (default: ``false``)
 %
 % Output Arguments:
 %   - **canvas** — [struct] with fields:
@@ -61,6 +64,9 @@ function canvas = planCanvas(layout, positions, options)
 %     - ``.zShifts`` — [Z x 2] integer extra ``[dy dx]`` applied to every tile
 %       on that output slice by the fusers (only with ``options.zSliceFixes``;
 %       baseline-shifted so all entries are >= 0 and fit the grown canvas)
+%     - ``.cropRect`` — [1x4] ``[y0 y1 x0 x1]`` kept region in the uncropped
+%       frame (only with ``options.autocrop``, and only when a fully covered
+%       region exists)
 %
 % **Example** — plan a canvas at 20 nm isotropic:
 %
@@ -222,5 +228,14 @@ if useTforms
 end
 if ~isempty(zShifts)
     canvas.zShifts = zShifts;
+end
+
+% ---- optional autocrop -------------------------------------------------------
+% Applied to the FINISHED plan rather than folded into the extent arithmetic
+% above: the crop depends on where every tile actually lands (including the
+% zShifts correction), which is only known once the plan is complete. Both
+% fusers read the cropped plan, so nothing is fused and then discarded.
+if isfield(options, 'autocrop') && ~isempty(options.autocrop) && options.autocrop
+    canvas = utils.stitch.autocropCanvas(layout, canvas);
 end
 end

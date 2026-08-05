@@ -444,7 +444,7 @@ classdef MibDeep < handle
             obj.BatchOpt.P_MiniBatchSize{3} = true;
             obj.BatchOpt.P_PatchWiseUpsample = false;
             obj.BatchOpt.P_DynamicMasking = false;
-            obj.BatchOpt.P_OverlapInstancesMode = {'Centroid in core'};   % cross-tile stitching mode for 2D Instance prediction
+            obj.BatchOpt.P_OverlapInstancesMode = {'IoU merge'};   % cross-tile stitching mode for 2D Instance prediction
             obj.BatchOpt.P_OverlapInstancesMode{2} = {'Centroid in core', 'IoU merge'};
 
             obj.BatchOpt.O_CustomTrainingProgressWindow = true;

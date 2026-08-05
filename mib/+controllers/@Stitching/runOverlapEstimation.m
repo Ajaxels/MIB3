@@ -36,6 +36,7 @@ if isempty(obj.layout); obj.buildLayoutFromBatchOpt(); end
 
 estimateOptions.parentFigure = obj.guiFigure();
 estimateOptions.showWaitbar  = obj.BatchOpt.showWaitbar && ~isempty(estimateOptions.parentFigure);
+estimateOptions.correction   = obj.ensureIntensityCorrection();
 [estimate, cancelled] = utils.stitch.estimateOverlap(obj.layout, estimateOptions);
 if cancelled; return; end
 

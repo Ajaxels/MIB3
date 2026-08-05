@@ -64,6 +64,13 @@ classdef Stitching < handle
         % [] when not open
         inspectorListeners
         % cell array of listeners on the inspector (SeamsUpdated / CloseEvent)
+        intensityCorrection
+        % struct from utils.stitch.estimateIntensityCorrection — the intensity
+        % correction every tile read is made with. Estimating it costs one pass
+        % over the tiles, so it is computed LAZILY by ensureIntensityCorrection and
+        % kept here; [] means "not estimated yet", which is not the same as
+        % BatchOpt.IntensityCorrection = 'None' (that estimates to a neutral struct).
+        % Dropped whenever the layout is rebuilt or the method changes
         zarrExportOptions
         % struct of OME-Zarr3 pyramid/chunk/compression settings collected once
         % (io.savers.Zarr3Saver.optionsDialog) for the current output path and
@@ -77,6 +84,49 @@ classdef Stitching < handle
     end
 
     methods (Static)
+        function settings = renameLegacyFields(settings)
+            % RENAMELEGACYFIELDS - Map retired BatchOpt field names onto current ones.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %       settings = controllers.Stitching.renameLegacyFields(settings)
+            %
+            % Applied to anything arriving from OUTSIDE this class — a batch
+            % protocol or a project sidecar — before it is merged into
+            % ``BatchOpt``, so both entry points age the same way.
+            %
+            % ``AtlasImport`` became ``LayoutImport`` when SerialEM montages
+            % joined Fibics Atlas in offering their own stitch for import: the
+            % three modes were never Atlas-specific, and the old name made a
+            % SerialEM protocol read as an Atlas one. The values were renamed with
+            % it (``'Atlas seams…'`` → ``'Vendor seams…'``).
+            %
+            % A file carrying BOTH names keeps the current one — an old key
+            % alongside a new one means the writer knew about the new name.
+            %
+            % Input Arguments:
+            %   - **settings** — [struct] BatchOpt-shaped struct, possibly using
+            %     retired field names
+            %
+            % Output Arguments:
+            %   - **settings** — [struct] same struct with retired names replaced
+
+            if ~isstruct(settings); return; end
+
+            if isfield(settings, 'AtlasImport')
+                if ~isfield(settings, 'LayoutImport')
+                    legacyValue = settings.AtlasImport;
+                    % Accept both the raw char and the {'value', {items}} cell form.
+                    if iscell(legacyValue) && ~isempty(legacyValue)
+                        legacyValue = legacyValue{1};
+                    end
+                    settings.LayoutImport = strrep(char(legacyValue), 'Atlas ', 'Vendor ');
+                end
+                settings = rmfield(settings, 'AtlasImport');
+            end
+        end
+
         function fieldNames = projectSettingFields()
             % PROJECTSETTINGFIELDS - BatchOpt fields persisted in the project sidecar.
             %
@@ -95,11 +145,12 @@ classdef Stitching < handle
             %   - **fieldNames** — [cell] BatchOpt field names, in dialog order
             %
             fieldNames = { ...
-                'LayoutSource', 'InputPath', 'SubfolderMode', 'AtlasImport', ...
+                'LayoutSource', 'InputPath', 'SubfolderMode', 'LayoutImport', ...
                 'GridRows', 'GridCols', 'TileOrder', 'OverlapX', 'OverlapY', 'EstimateOverlap', ...
                 'TransformType', 'AllowRotation', 'RegistrationMethod', 'FeatureDetectorType', ...
                 'QualityThreshold', 'NominalPositionWeight', 'SubpixelPlacement', ...
-                'OutputMode', 'OutputPath', 'BlendMode', 'SaveProject'};
+                'OutputMode', 'OutputPath', 'BlendMode', 'IntensityCorrection', ...
+                'CanvasColor', 'Autocrop', 'SaveProject'};
         end
 
         function ViewListner_Callback2(obj, ~, evnt)
@@ -171,15 +222,20 @@ classdef Stitching < handle
             obj.BatchOpt.InputPath       = '';
             obj.BatchOpt.SubfolderMode   = false;
 
-            % How much of an Atlas mosaic's own stitch to take. Consulted only
-            % when the Position file source is pointed at a Fibics Atlas
-            % ``.ve-mif`` rather than a position text file. The GUI asks when a
-            % .ve-tie / .ve-updates is found next to the picked .ve-mif and
-            % records the answer here, so a batch protocol or a reloaded project
-            % repeats the same import silently.
-            obj.BatchOpt.AtlasImport     = {'Atlas seams + solved positions'};
-            obj.BatchOpt.AtlasImport{2}  = {'Nominal grid only', ...
-                'Atlas seam measurements', 'Atlas seams + solved positions'};
+            % How much of an acquisition's OWN stitch to take. Consulted only
+            % when the Position file source is pointed at a file that can carry
+            % one — a Fibics Atlas ``.ve-mif`` or a SerialEM ``.mdoc`` — rather
+            % than a position text file. The GUI asks when the vendor's stitch is
+            % found and records the answer here, so a batch protocol or a reloaded
+            % project repeats the same import silently.
+            %
+            % Vendor-neutral by design: both formats record the same three stages
+            % (nominal placement, pairwise seam measurements, solved positions),
+            % and naming the field after one of them made a SerialEM protocol read
+            % as an Atlas import. ``AtlasImport`` is still accepted on input.
+            obj.BatchOpt.LayoutImport    = {'Vendor seams + solved positions'};
+            obj.BatchOpt.LayoutImport{2} = {'Nominal grid only', ...
+                'Vendor seam measurements', 'Vendor seams + solved positions'};
 
             obj.BatchOpt.GridRows        = {0, [0 10000], 'on'};
             obj.BatchOpt.GridCols        = {0, [0 10000], 'on'};
@@ -217,8 +273,32 @@ classdef Stitching < handle
             obj.BatchOpt.OutputMode{2}   = {'In memory', 'OME-Zarr3 (BigData)'};
             obj.BatchOpt.OutputPath      = '';
 
-            obj.BatchOpt.BlendMode       = {'Feather'};
-            obj.BatchOpt.BlendMode{2}    = {'Feather', 'Average', 'Max', 'Min', 'Overwrite'};
+            % Overwrite by default: it is the honest one. Every other mode mixes
+            % the overlap and so SOFTENS a misalignment, which is exactly what
+            % must stay visible while the stitch is being judged - switch to
+            % Feather once the seams are known to be right.
+            obj.BatchOpt.BlendMode       = {'Overwrite'};
+            obj.BatchOpt.BlendMode{2}    = {'Average', 'Feather', 'Max', 'Min', 'Overwrite'};
+
+            % Evens out tile brightness before anything reads a pixel. A family
+            % rather than a checkbox because the right correction depends on WHY
+            % the tiles differ, and the two causes want opposite treatments — see
+            % utils.stitch.estimateIntensityCorrection for the measured comparison.
+            obj.BatchOpt.IntensityCorrection    = {'None'};
+            obj.BatchOpt.IntensityCorrection{2} = {'None', 'Flat-field (shared)', ...
+                'Flat-field (overlap-solved)', 'Match tile means'};
+
+            % What the mosaic's uncovered pixels are filled with. Defaults to
+            % white because MIB's stitching input is predominantly EM, where an
+            % empty field is bright and a zero frame reads as a black border
+            % drawn around the specimen. See utils.stitch.canvasBackground.
+            obj.BatchOpt.CanvasColor     = {'white'};
+            obj.BatchOpt.CanvasColor{2}  = {'black', 'white'};
+
+            % Trim the ragged frame instead of colouring it. Off by default: it
+            % changes the output dimensions, and a mosaic whose size no longer
+            % matches the plan is a surprise nobody asked for.
+            obj.BatchOpt.Autocrop        = false;
 
             obj.BatchOpt.SaveProject     = true;
             obj.BatchOpt.showWaitbar     = true;
@@ -226,31 +306,76 @@ classdef Stitching < handle
             obj.BatchOpt.mibBatchSectionName = 'Ribbon -> Dataset';
             obj.BatchOpt.mibBatchActionName  = 'Stitch...';
 
-            obj.BatchOpt.mibBatchTooltip.LayoutSource    = 'How tiles are arranged: Grid, Position file (a text file or a Fibics Atlas .ve-mif mosaic), MIB2 filename pattern, or embedded Bio-Formats stage coordinates';
-            obj.BatchOpt.mibBatchTooltip.InputPath       = 'Path to the tile folder, position file, Atlas .ve-mif mosaic file, or folder of tile files';
-            obj.BatchOpt.mibBatchTooltip.SubfolderMode   = 'Each tile is a folder of slice images (a Z-stack) instead of a single image file — works with any layout source';
-            obj.BatchOpt.mibBatchTooltip.AtlasImport     = sprintf([ ...
-                '[Position file pointed at a Fibics Atlas .ve-mif]: how much of the mosaic''s own stitch to reuse.\n' ...
-                'Nominal grid only — ignore the .ve-tie/.ve-updates files and register from scratch;\n' ...
-                'Atlas seam measurements — take the .ve-tie shifts, let MIB run the global solve;\n' ...
-                'Atlas seams + solved positions — also take the .ve-updates placement, so Stitch fuses with nothing recomputed.\n' ...
-                'Ignored for a plain position text file.']);
+            obj.BatchOpt.mibBatchTooltip.LayoutSource    = sprintf([ ...
+                'Where the tile arrangement comes from:\n' ...
+                '  - Grid: a regular grid you describe with Rows/Cols and overlap\n' ...
+                '  - Position file: a file stating where each tile goes - MIB text, a Fibics Atlas ".ve-mif" mosaic, or a SerialEM ".mdoc" montage\n' ...
+                '  - Filename pattern: grid indices read from "_Z##-X##-Y##" in the names\n' ...
+                '  - Bio-Formats metadata: stage coordinates embedded in the image files']);
+            obj.BatchOpt.mibBatchTooltip.InputPath       = 'Path to the tile folder, position file, Atlas .ve-mif mosaic, SerialEM .mdoc/.mrc montage, or folder of tile files';
+            obj.BatchOpt.mibBatchTooltip.SubfolderMode   = 'Each tile is a folder of slice images (a Z-stack) instead of a single image file - works with any layout source';
+            obj.BatchOpt.mibBatchTooltip.LayoutImport    = sprintf([ ...
+                'How much of the acquisition''s own stitch to reuse. Applies to a Fibics Atlas ".ve-mif" or SerialEM ".mdoc"; ignored for a plain position text file:\n' ...
+                '  - Nominal grid only: ignore it, register everything from scratch\n' ...
+                '  - Vendor seam measurements: take the recorded pairwise shifts, let MIB run the global solve\n' ...
+                '  - Vendor seams + solved positions: also take the final placement, so Stitch fuses with nothing recomputed']);
             obj.BatchOpt.mibBatchTooltip.GridRows        = 'Number of grid rows (0 = auto from tile count)';
             obj.BatchOpt.mibBatchTooltip.GridCols        = 'Number of grid columns (0 = auto from tile count)';
-            obj.BatchOpt.mibBatchTooltip.TileOrder       = 'Order tiles were acquired: Horizontal, Horizontal snake, Vertical, or Vertical snake';
-            obj.BatchOpt.mibBatchTooltip.OverlapX        = 'Horizontal overlap between adjacent tiles in percent (0–90)';
-            obj.BatchOpt.mibBatchTooltip.OverlapY        = 'Vertical overlap between adjacent tiles in percent (0–90)';
+            obj.BatchOpt.mibBatchTooltip.TileOrder       = sprintf([ ...
+                'Order the tiles were acquired in, which is how file order maps to grid position:\n' ...
+                '  - Horizontal: row by row, each row restarting on the left\n' ...
+                '  - Horizontal snake: row by row, alternate rows right to left\n' ...
+                '  - Vertical: column by column, each column restarting at the top\n' ...
+                '  - Vertical snake: column by column, alternate columns bottom to top']);
+            obj.BatchOpt.mibBatchTooltip.OverlapX        = 'Horizontal overlap between adjacent tiles in percent (0 - 90)';
+            obj.BatchOpt.mibBatchTooltip.OverlapY        = 'Vertical overlap between adjacent tiles in percent (0 - 90)';
             obj.BatchOpt.mibBatchTooltip.EstimateOverlap = 'Estimate the actual overlap from the images before measuring (grid layout); OverlapX/Y are then only a rough starting guess';
-            obj.BatchOpt.mibBatchTooltip.TransformType   = 'Registration transform: Translation (grid stages), Rigid (+rotation), Similarity (+uniform scale) or Affine (+scale/shear); non-translation transforms act in-plane per slice (z stays translational) and use feature-based measurement';
-            obj.BatchOpt.mibBatchTooltip.AllowRotation   = 'Tiles are rotated against each other: permits per-tile rotation in Rigid/Similarity/Affine solves AND switches feature matching to rotation-invariant descriptors. Keep off for stage-tiled data (stages translate but do not rotate) — matching is then faster and noisy overlaps cannot inject spurious rotations';
-            obj.BatchOpt.mibBatchTooltip.RegistrationMethod = 'How pairwise overlaps are measured: Phase correlation (best for small overlaps with modest jitter) or Feature-based (best for large/unknown offsets, matches SURF features over the full tiles)';
+            obj.BatchOpt.mibBatchTooltip.TransformType   = sprintf([ ...
+                'How much each tile is allowed to move to fit its neighbours:\n' ...
+                '  - Translation: shift only, the right choice for stage-tiled data\n' ...
+                '  - Rigid: shift + rotation\n' ...
+                '  - Similarity: shift + rotation + uniform scale\n' ...
+                '  - Affine: shift + rotation + scale + shear\n' ...
+                'Anything above Translation acts in-plane per slice (z stays a shift) and forces feature-based measurement.']);
+            obj.BatchOpt.mibBatchTooltip.AllowRotation   = sprintf([ ...
+                'The tiles are rotated against each other. Two effects:\n' ...
+                '  - allows per-tile rotation in the Rigid/Similarity/Affine solve\n' ...
+                '  - switches feature matching to rotation-invariant descriptors\n' ...
+                'Keep off for stage-tiled data: stages translate but do not rotate, so matching is faster and a noisy overlap cannot inject a spurious rotation.']);
+            obj.BatchOpt.mibBatchTooltip.RegistrationMethod = sprintf([ ...
+                'How the shift between two overlapping tiles is measured:\n' ...
+                '  - Phase correlation: best for small overlaps with modest jitter\n' ...
+                '  - Feature-based: best for large or unknown offsets, matches SURF features over the full tiles']);
             obj.BatchOpt.mibBatchTooltip.FeatureDetectorType = '[Feature-based]: keypoint detector used to match tiles; configure its parameters + downsampling with the Settings button';
-            obj.BatchOpt.mibBatchTooltip.QualityThreshold = 'Minimum normalized peak height to accept a pairwise shift measurement (0–1)';
-            obj.BatchOpt.mibBatchTooltip.NominalPositionWeight = 'How strongly tiles with weak or failed registration are pulled back toward their nominal grid positions (0–1)';
+            obj.BatchOpt.mibBatchTooltip.QualityThreshold = 'Minimum normalized peak height to accept a pairwise shift measurement (0 - 1)';
+            obj.BatchOpt.mibBatchTooltip.NominalPositionWeight = 'How strongly tiles with weak or failed registration are pulled back toward their nominal grid positions (0 - 1)';
             obj.BatchOpt.mibBatchTooltip.SubpixelPlacement = 'Sub-pixel refinement of the pairwise-shift measurements; tiles are still placed on whole pixels';
-            obj.BatchOpt.mibBatchTooltip.OutputMode      = 'Output as a Standard in-memory dataset or a streamed OME-Zarr3 BigData file (pyramid settings are asked when stitching)';
+            obj.BatchOpt.mibBatchTooltip.OutputMode      = sprintf([ ...
+                'Where the fused mosaic goes:\n' ...
+                '  - In memory: a Standard dataset, opened straight into MIB\n' ...
+                '  - OME-Zarr3 (BigData): streamed to disk tile by tile, for a mosaic that does not fit in RAM; pyramid settings are asked when stitching']);
             obj.BatchOpt.mibBatchTooltip.OutputPath      = 'Output path for the OME-Zarr3 BigData file (OutputMode = OME-Zarr3)';
-            obj.BatchOpt.mibBatchTooltip.BlendMode       = 'Blending strategy at tile seams: Feather, Average, Max (brightest tile wins), Min (darkest tile wins), or Overwrite';
+            obj.BatchOpt.mibBatchTooltip.BlendMode       = sprintf([ ...
+                'How pixels are combined where tiles overlap:\n' ...
+                '  - Average: plain mean of the overlapping tiles; sharper than Feather, but any brightness step stays visible\n' ...
+                '  - Feather: weighted blend fading out toward each tile edge, hides small steps; the choice for a finished mosaic\n' ...
+                '  - Max: brightest tile wins; keeps bright detail, drops dark debris\n' ...
+                '  - Min: darkest tile wins; keeps dark detail, drops bright debris\n' ...
+                '  - Overwrite: the last tile wins; hard seams and no mixing, which is what makes it the honest check that the tiles are actually aligned (default)\n' ...
+                'Blending hides a brightness step, it does not remove it - see Intensity correction.']);
+            obj.BatchOpt.mibBatchTooltip.IntensityCorrection  = sprintf([ ...
+                'Even out tile brightness before measuring and fusing:\n' ...
+                '  - None: use the pixels as they are\n' ...
+                '  - Flat-field (shared): one illumination field averaged from all the tiles; needs many tiles with different specimen under each, or it absorbs the sample''s own shading\n' ...
+                '  - Flat-field (overlap-solved): fits the field to the disagreement where tiles overlap, so the specimen cancels out, then levels the mosaic. Slower to set up but the better answer whenever seams still show\n' ...
+                '  - Match tile means: scale each tile to the common mean. For a detector that drifts over a long acquisition; it does NOT fix uneven illumination, which sits inside each tile']);
+            obj.BatchOpt.mibBatchTooltip.CanvasColor     = sprintf([ ...
+                'Fill for the mosaic pixels no tile covers - the frame the solved positions leave around the edges, and any gap inside:\n' ...
+                '  - white: the highest intensity the output image class can hold; the right choice for EM, where an empty field is bright\n' ...
+                '  - black: zero, the usual background for light microscopy\n' ...
+                'Tick Autocrop to remove the frame instead of colouring it.']);
+            obj.BatchOpt.mibBatchTooltip.Autocrop        = ...
+                'Crop the mosaic to the largest rectangle that tiles cover on every output slice, so no background frame is left along the ragged edges. The output is smaller than the planned canvas';
             obj.BatchOpt.mibBatchTooltip.SaveProject     = 'Save project sidecar JSON after stitching';
             obj.BatchOpt.mibBatchTooltip.showWaitbar     = 'Show progress bar during stitching (batch-only option, not shown in the GUI)';
 
@@ -258,6 +383,7 @@ classdef Stitching < handle
             if nargin == 3
                 BatchOptInput = varargin{2};
                 if isstruct(BatchOptInput)
+                    BatchOptInput = controllers.Stitching.renameLegacyFields(BatchOptInput);
                     obj.BatchOpt = utils.updateBatchOptCombineFields_Shared(obj.BatchOpt, BatchOptInput);
                     obj.BatchOpt.id = obj.mibModel.getActiveId();
                     obj.stitchBtn_Callback(true);
@@ -468,9 +594,9 @@ classdef Stitching < handle
                     description = sprintf(['Tiles on a regular grid. Pick the tile files, set Rows/Cols and ' ...
                         'overlap (or tick Estimate overlap); Tile order sets the scan pattern.']);
                 case 'Position file'
-                    description = sprintf(['A file stating where each tile goes — either a text file\n' ...
-                        '("tiles/tile_01.tif 0 0 0" per line), or a Fibics Atlas mosaic\n' ...
-                        '("MosaicInfo_*.ve-mif"), whose own stitch can be imported with it.']);
+                    description = sprintf(['A file stating where each tile goes: a text file\n' ...
+                        '("tiles/tile_01.tif 0 0 0" per line), a Fibics Atlas mosaic ("*.ve-mif")\n' ...
+                        'or a SerialEM montage ("*.mdoc") - the last two can import their own stitch.']);
                 case 'Filename pattern'
                     description = sprintf(['Grid indices are read as pattern:\n   "_Z##-X##-Y##"\nfrom file or ' ...
                         'folder names. The order of letters is not important but it should contain 2 digits.']);

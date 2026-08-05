@@ -26,6 +26,7 @@ end
 scoreOptions.readerFcn    = obj.readerFcn;
 scoreOptions.parentFigure = obj.progressParent();
 scoreOptions.showWaitbar  = ~isempty(scoreOptions.parentFigure);
+scoreOptions.correction   = obj.stitching.ensureIntensityCorrection();
 
 [obj.stitching.edges, obj.ranking] = utils.stitch.scoreSeams( ...
     obj.stitching.layout, obj.stitching.edges, obj.stitching.positions, scoreOptions);

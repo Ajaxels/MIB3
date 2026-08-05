@@ -42,6 +42,7 @@ classdef StitchSliceProvider < io.savers.SliceProvider
             if ~isfield(options, 'blendMode');      options.blendMode = 'Feather'; end
             if ~isfield(options, 'background');     options.background = 0; end
             if ~isfield(options, 'cacheSizeBytes'); options.cacheSizeBytes = 2 * 1024^3; end
+if ~isfield(options, 'correction');      options.correction = []; end
 
             obj.Layout      = layout;
             obj.Canvas      = canvas;
@@ -51,7 +52,7 @@ classdef StitchSliceProvider < io.savers.SliceProvider
                 obj.ReaderFcn = options.readerFcn;
             else
                 obj.ReaderFcn = utils.stitch.makeTileReader(layout, ...
-                    struct('cacheSizeBytes', options.cacheSizeBytes));
+                    struct('cacheSizeBytes', options.cacheSizeBytes, 'correction', options.correction));
             end
 
             % Populate the SliceProvider shape contract from the canvas.

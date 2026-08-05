@@ -15,6 +15,13 @@ if obj.mibModel.preferences.System.DeveloperMode
 end
 obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, hObject);
 
+% A different correction method means the cached estimate describes the wrong
+% job. Dropped rather than re-estimated: that costs a pass over every tile, and
+% nothing needs pixels until the user asks for a stage that reads them.
+if isequal(hObject, obj.view.handles.IntensityCorrection)
+    obj.intensityCorrection = [];
+end
+
 % When layout source or overlap-estimation mode changes, update grid-group
 % enable states (overlap spinners are read-only while estimation is enabled)
 isEstimateWidget = isfield(obj.view.handles, 'EstimateOverlap') && ...
@@ -131,6 +138,15 @@ if isTransformWidget || isAllowRotationWidget
     obj.tforms    = {};
     obj.canvas    = [];
     obj.updateWidgets();
+end
+
+% The crop is baked into the canvas PLAN (planCanvas -> autocropCanvas), not
+% applied to the fused pixels, so a cached canvas describes the old answer.
+% Dropping it is enough - positions and edges are unaffected, so the next
+% Stitch/Optimize just re-plans. (CanvasColor needs no such reset: it is only a
+% fill value, read at fuse time.)
+if isequal(hObject, obj.view.handles.Autocrop)
+    obj.canvas = [];
 end
 
 % When output mode changes, update output path enable state and drop any

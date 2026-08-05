@@ -42,6 +42,7 @@ if nargin < 3; options = struct(); end
 if ~isfield(options, 'blendMode');      options.blendMode = 'Feather'; end
 if ~isfield(options, 'background');     options.background = 0; end
 if ~isfield(options, 'cacheSizeBytes'); options.cacheSizeBytes = 2 * 1024^3; end
+if ~isfield(options, 'correction');      options.correction = []; end
 if ~isfield(options, 'showWaitbar');    options.showWaitbar = false; end
 if ~isfield(options, 'parentFigure');   options.parentFigure = []; end
 
@@ -49,7 +50,7 @@ if isfield(options, 'readerFcn') && ~isempty(options.readerFcn)
     readerFcn = options.readerFcn;
 else
     readerFcn = utils.stitch.makeTileReader(layout, ...
-        struct('cacheSizeBytes', options.cacheSizeBytes));
+        struct('cacheSizeBytes', options.cacheSizeBytes, 'correction', options.correction));
 end
 
 H = canvas.size(1);

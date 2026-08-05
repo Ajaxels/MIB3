@@ -386,24 +386,24 @@ classdef StitchingControllerTest < matlab.unittest.TestCase
     methods (Test, TestTags = {'Unit'})
 
         function atlasImportModesFillTheMatchingState(testCase)
-            % BatchOpt.AtlasImport decides how much of an Atlas mosaic's own
+            % BatchOpt.LayoutImport decides how much of an Atlas mosaic's own
             % stitch buildLayoutFromBatchOpt adopts — and the import must survive
             % the downstream reset that same method performs.
             [controller, mosaic] = testCase.atlasController();
 
-            controller.BatchOpt.AtlasImport{1} = 'Nominal grid only';
+            controller.BatchOpt.LayoutImport{1} = 'Nominal grid only';
             controller.buildLayoutFromBatchOpt();
             testCase.verifyNumElements(controller.layout, 4);
             testCase.verifyEmpty(controller.edges);
             testCase.verifyEmpty(controller.positions);
 
-            controller.BatchOpt.AtlasImport{1} = 'Atlas seam measurements';
+            controller.BatchOpt.LayoutImport{1} = 'Vendor seam measurements';
             controller.buildLayoutFromBatchOpt();
             testCase.verifyNumElements(controller.edges, 4);
             testCase.verifyEmpty(controller.positions, ...
                 'seam-only import must leave the global solve to MIB');
 
-            controller.BatchOpt.AtlasImport{1} = 'Atlas seams + solved positions';
+            controller.BatchOpt.LayoutImport{1} = 'Vendor seams + solved positions';
             controller.buildLayoutFromBatchOpt();
             testCase.verifyNumElements(controller.edges, 4);
             testCase.verifySize(controller.positions, [4 3]);
@@ -415,7 +415,7 @@ classdef StitchingControllerTest < matlab.unittest.TestCase
             % blank — and the user would have no way to tell a good Atlas result
             % from the bad one this whole layout source exists to rescue.
             [controller, ~] = testCase.atlasController();
-            controller.BatchOpt.AtlasImport{1} = 'Atlas seams + solved positions';
+            controller.BatchOpt.LayoutImport{1} = 'Vendor seams + solved positions';
             controller.buildLayoutFromBatchOpt();
 
             testCase.verifyTrue(isfield(controller.solverInfo, 'rmseTotal'));
@@ -438,7 +438,7 @@ classdef StitchingControllerTest < matlab.unittest.TestCase
             % in X, 6 px in Y here) — the reason this source cannot simply trust
             % it. MIB's own measurement from that grid must recover the truth.
             [controller, mosaic] = testCase.atlasController();
-            controller.BatchOpt.AtlasImport{1} = 'Nominal grid only';
+            controller.BatchOpt.LayoutImport{1} = 'Nominal grid only';
             controller.BatchOpt.EstimateOverlap = false;
             controller.buildLayoutFromBatchOpt();
 
@@ -458,7 +458,7 @@ classdef StitchingControllerTest < matlab.unittest.TestCase
             % The point of importing a placement is that Stitch fuses it as it
             % stands. Nothing may re-measure or re-solve on the way.
             [controller, ~] = testCase.atlasController();
-            controller.BatchOpt.AtlasImport{1} = 'Atlas seams + solved positions';
+            controller.BatchOpt.LayoutImport{1} = 'Vendor seams + solved positions';
             controller.buildLayoutFromBatchOpt();
 
             importedPositions = controller.positions;
@@ -477,7 +477,7 @@ classdef StitchingControllerTest < matlab.unittest.TestCase
             % comes from the recorded stage positions, and the overlap estimator
             % must stand down rather than rebuild the layout from a percentage.
             [controller, ~] = testCase.atlasController();
-            controller.BatchOpt.AtlasImport{1} = 'Nominal grid only';
+            controller.BatchOpt.LayoutImport{1} = 'Nominal grid only';
             controller.BatchOpt.EstimateOverlap = true;
             controller.buildLayoutFromBatchOpt();
             originsBefore = reshape([controller.layout.nomOrigin], 3, []).';
@@ -494,7 +494,7 @@ classdef StitchingControllerTest < matlab.unittest.TestCase
             % extension — the same controller must handle either without the user
             % switching anything, and a text file must not pick up Atlas state.
             [controller, mosaic] = testCase.atlasController();
-            controller.BatchOpt.AtlasImport{1} = 'Atlas seams + solved positions';
+            controller.BatchOpt.LayoutImport{1} = 'Vendor seams + solved positions';
             controller.buildLayoutFromBatchOpt();
             testCase.verifyNumElements(controller.layout, 4);
             testCase.verifySize(controller.positions, [4 3]);
@@ -525,7 +525,7 @@ classdef StitchingControllerTest < matlab.unittest.TestCase
             % must build from its .ve-mif rather than failing on the wrong file.
             [controller, mosaic] = testCase.atlasController();
             [mosaicFolder, mosaicBase] = fileparts(mosaic.veMifPath);
-            controller.BatchOpt.AtlasImport{1} = 'Atlas seams + solved positions';
+            controller.BatchOpt.LayoutImport{1} = 'Vendor seams + solved positions';
 
             controller.BatchOpt.InputPath = mosaic.veMifPath;
             controller.buildLayoutFromBatchOpt();
@@ -552,7 +552,331 @@ classdef StitchingControllerTest < matlab.unittest.TestCase
     % =================================================================
     % Local helpers
     % =================================================================
+    % =================================================================
+    % SerialEM montage layout source
+    % =================================================================
+    methods (Test, TestTags = {'Unit'})
+
+        function mdocImportModesFillTheMatchingState(testCase)
+            % The same three modes as Atlas, reached through the same field —
+            % which is why the field is vendor-neutral.
+            [controller, montage] = testCase.mdocController();
+
+            controller.BatchOpt.LayoutImport{1} = 'Nominal grid only';
+            controller.buildLayoutFromBatchOpt();
+            testCase.verifyNumElements(controller.layout, montage.numTiles);
+            testCase.verifyEmpty(controller.edges);
+            testCase.verifyEmpty(controller.positions);
+
+            controller.BatchOpt.LayoutImport{1} = 'Vendor seam measurements';
+            controller.buildLayoutFromBatchOpt();
+            testCase.verifyNumElements(controller.edges, 4);
+            testCase.verifyEmpty(controller.positions, ...
+                'seam-only import must leave the global solve to MIB');
+
+            controller.BatchOpt.LayoutImport{1} = 'Vendor seams + solved positions';
+            controller.buildLayoutFromBatchOpt();
+            testCase.verifyNumElements(controller.edges, 4);
+            testCase.verifySize(controller.positions, [montage.numTiles 3]);
+            testCase.verifyEqual(controller.positions(:, 1:2), montage.expectedOriginRC, ...
+                'AbsTol', 1e-9);
+        end
+
+        function mdocMontageResolvesFromTheMrcToo(testCase)
+            % A user may pick either half of the pair; both must build the same
+            % montage, since the .mdoc names the image and the image names the
+            % .mdoc.
+            [controllerFromMdoc, montage] = testCase.mdocController();
+            controllerFromMdoc.BatchOpt.LayoutImport{1} = 'Vendor seams + solved positions';
+            controllerFromMdoc.buildLayoutFromBatchOpt();
+
+            controllerFromMrc = testCase.newController();
+            controllerFromMrc.BatchOpt.LayoutSource{1} = 'Position file';
+            controllerFromMrc.BatchOpt.InputPath = montage.imagePath;
+            controllerFromMrc.BatchOpt.LayoutImport{1} = 'Vendor seams + solved positions';
+            controllerFromMrc.buildLayoutFromBatchOpt();
+
+            testCase.verifyEqual(controllerFromMrc.layout, controllerFromMdoc.layout);
+            testCase.verifyEqual(controllerFromMrc.positions, controllerFromMdoc.positions);
+        end
+
+        function mdocImportedPlacementReportsAnAlignmentRating(testCase)
+            % An imported stitch arrives without a solve, so the chip would sit
+            % blank unless the residuals are synthesised for it.
+            [controller, ~] = testCase.mdocController();
+            controller.BatchOpt.LayoutImport{1} = 'Vendor seams + solved positions';
+            controller.buildLayoutFromBatchOpt();
+
+            testCase.verifyTrue(isfield(controller.solverInfo, 'rmseTotal'));
+            testCase.verifyLessThan(controller.solverInfo.rmseTotal, 0.5, ...
+                'the imported edges are exact at the imported positions');
+            testCase.verifyEmpty(controller.solverInfo.disconnectedTiles);
+            % The pixel check must have run too, so a bad vendor stitch is caught.
+            testCase.verifyNotEmpty([controller.edges.seamScore]);
+        end
+
+        function mdocTextPositionFileStillWorksUnderTheSameSource(testCase)
+            % The Position file source now covers three file kinds; adding the
+            % SerialEM branch must not shadow MIB's own text format.
+            tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            tileFile = fullfile(tmpDir.Folder, 'tile.png');
+            imwrite(mibtest.helpers.stitchTextureImage(32, 32, 5), tileFile);
+            positionFile = fullfile(tmpDir.Folder, 'positions.txt');
+            fileId = fopen(positionFile, 'w');
+            fprintf(fileId, 'tile.png 0 0 0\ntile.png 24 0 0\n');
+            fclose(fileId);
+
+            controller = testCase.newController();
+            controller.BatchOpt.LayoutSource{1} = 'Position file';
+            controller.BatchOpt.InputPath = positionFile;
+            controller.BatchOpt.LayoutImport{1} = 'Vendor seams + solved positions';
+            controller.buildLayoutFromBatchOpt();
+
+            testCase.verifyNumElements(controller.layout, 2);
+            testCase.verifyEmpty(controller.edges, ...
+                'a text position file carries no vendor stitch to import');
+        end
+
+        function legacyAtlasImportFieldIsAccepted(testCase)
+            % Projects and batch protocols written before the rename must still
+            % load: AtlasImport -> LayoutImport, with the values mapped too.
+            renamed = controllers.Stitching.renameLegacyFields( ...
+                struct('AtlasImport', 'Atlas seams + solved positions', 'GridRows', 3));
+            testCase.verifyFalse(isfield(renamed, 'AtlasImport'));
+            testCase.verifyEqual(renamed.LayoutImport, 'Vendor seams + solved positions');
+            testCase.verifyEqual(renamed.GridRows, 3);
+
+            % The cell (BatchOpt dropdown) form is accepted as well.
+            fromCell = controllers.Stitching.renameLegacyFields( ...
+                struct('AtlasImport', {{'Atlas seam measurements', {'a', 'b'}}}));
+            testCase.verifyEqual(fromCell.LayoutImport, 'Vendor seam measurements');
+
+            % A file carrying both keeps the current name untouched.
+            bothNames = controllers.Stitching.renameLegacyFields(struct( ...
+                'AtlasImport', 'Atlas seam measurements', ...
+                'LayoutImport', 'Nominal grid only'));
+            testCase.verifyEqual(bothNames.LayoutImport, 'Nominal grid only');
+
+            % And it must survive a real project round-trip into BatchOpt.
+            controller = testCase.newController();
+            controller.applyProjectSettings(struct('AtlasImport', 'Atlas seam measurements'));
+            testCase.verifyEqual(controller.BatchOpt.LayoutImport{1}, 'Vendor seam measurements');
+        end
+
+    end
+
+    % =================================================================
+    % Intensity correction correction
+    % =================================================================
+    methods (Test, TestTags = {'Unit'})
+
+        function intensityCorrectionIsLazyAndDroppedWithTheLayout(testCase)
+            % Estimating reads every tile, so it must not happen until a stage
+            % actually needs pixels — and it must never outlive the tiles it was
+            % estimated from.
+            [controller, ~] = testCase.mdocController();
+            controller.BatchOpt.LayoutImport{1}   = 'Nominal grid only';   % no scoring on build
+            controller.BatchOpt.IntensityCorrection{1} = 'Flat-field (shared)';
+            controller.buildLayoutFromBatchOpt();
+
+            testCase.verifyEmpty(controller.intensityCorrection, ...
+                'building a layout must not trigger an estimate');
+
+            first = controller.ensureIntensityCorrection();
+            testCase.verifyEqual(first.method, 'Flat-field (shared)');
+            testCase.verifyNotEmpty(controller.intensityCorrection);
+            testCase.verifyEqual(controller.ensureIntensityCorrection(), first, ...
+                'a second call must reuse the cached estimate');
+
+            controller.buildLayoutFromBatchOpt();
+            testCase.verifyEmpty(controller.intensityCorrection, ...
+                'a rebuilt layout must drop the estimate made from the old tiles');
+        end
+
+        function intensityCorrectionReEstimatesWhenTheMethodChanges(testCase)
+            % The GUI drops the cache on the dropdown callback, but batch runs and
+            % scripts change BatchOpt directly — so the accessor must notice too,
+            % or a run would silently use the previous method's correction.
+            [controller, ~] = testCase.mdocController();
+            controller.BatchOpt.LayoutImport{1}   = 'Nominal grid only';
+            controller.BatchOpt.IntensityCorrection{1} = 'Flat-field (shared)';
+            controller.buildLayoutFromBatchOpt();
+            withField = controller.ensureIntensityCorrection();
+            testCase.verifyNotEmpty(withField.field);
+
+            controller.BatchOpt.IntensityCorrection{1} = 'Match tile means';
+            switched = controller.ensureIntensityCorrection();
+            testCase.verifyEqual(switched.method, 'Match tile means');
+            testCase.verifyEmpty(switched.field, ...
+                'mean matching is per-tile scalars, not a field');
+        end
+
+        function intensityCorrectionNoneCostsNothingAndChangesNoPixels(testCase)
+            % The default must be free: no tile reads, and pixels identical to a
+            % reader built with no correction at all.
+            [controller, ~] = testCase.mdocController();
+            controller.BatchOpt.LayoutImport{1}   = 'Nominal grid only';
+            controller.BatchOpt.IntensityCorrection{1} = 'None';
+            controller.buildLayoutFromBatchOpt();
+
+            neutral = controller.ensureIntensityCorrection();
+            testCase.verifyEqual(neutral.method, 'None');
+            testCase.verifyEmpty(neutral.field);
+            testCase.verifyTrue(all(neutral.gain == 1));
+
+            plainReader   = utils.stitch.makeTileReader(controller.layout);
+            neutralReader = utils.stitch.makeTileReader(controller.layout, ...
+                struct('correction', neutral));
+            testCase.verifyEqual(neutralReader(1), plainReader(1));
+        end
+
+        function intensityCorrectionMethodRoundTripsThroughProjectSettings(testCase)
+            % The METHOD is persisted; the estimate itself is not (it is a
+            % deterministic function of the tiles, and an [H W] float has no
+            % business in the sidecar JSON).
+            controller = testCase.newController();
+            controller.BatchOpt.IntensityCorrection{1} = 'Flat-field (shared)';
+            settings = controller.collectProjectSettings();
+            testCase.verifyEqual(settings.IntensityCorrection, 'Flat-field (shared)');
+
+            reloaded = testCase.newController();
+            reloaded.applyProjectSettings(settings);
+            testCase.verifyEqual(reloaded.BatchOpt.IntensityCorrection{1}, 'Flat-field (shared)');
+            testCase.verifyEmpty(reloaded.intensityCorrection, ...
+                'loading settings must not carry an estimate with them');
+        end
+
+    end
+
+    % =================================================================
+    methods (Test, TestTags = {'Unit'})
+
+        function stitchedDatasetIsNamedAfterItsSource(testCase)
+            % A fused mosaic has no file of its own, and a dataset with no
+            % filename makes "Save as" open on MATLAB's working folder - somewhere
+            % unrelated to the data. Name it after what it was built from, beside
+            % the source.
+            [controller, montage] = testCase.mdocController();
+            controller.buildLayoutFromBatchOpt();
+
+            stitchedName = controller.stitchedFilename();
+
+            testCase.verifyEqual(fileparts(stitchedName), fileparts(montage.mdocPath), ...
+                'the suggested name must sit beside the tiles it came from');
+            [~, baseName, extension] = fileparts(stitchedName);
+            testCase.verifyEqual(extension, '.tif', ...
+                'a mosaic is a plain image, never its vendor acquisition container');
+            % "Cell1.mrc.mdoc" reads as "Cell1" to a user, so both extensions go.
+            [~, montageBase] = fileparts(montage.mdocPath);
+            [~, montageBase] = fileparts(montageBase);
+            testCase.verifyEqual(baseName, [montageBase '_stitch']);
+        end
+
+        function canvasColourFillsExactlyTheUncoveredPixels(testCase)
+            % Jittered tiles never fill the canvas rectangle, so a frame is left
+            % around the mosaic. Fusing the SAME plan black and white differs on
+            % exactly the uncovered pixels - which is what makes this an exact
+            % check rather than a guess at which corner happens to be empty.
+            controller = testCase.jitteredPlacementController();
+
+            controller.BatchOpt.CanvasColor{1} = 'black';
+            controller.stitchBtn_Callback(true);
+            blackMosaic = testCase.fusedData(controller);
+
+            controller.BatchOpt.CanvasColor{1} = 'white';
+            controller.stitchBtn_Callback(true);
+            whiteMosaic = testCase.fusedData(controller);
+
+            uncovered = blackMosaic ~= whiteMosaic;
+            testCase.assertTrue(any(uncovered, 'all'), ...
+                'the jittered mosaic should leave an uncovered frame to colour');
+            testCase.verifyEqual(unique(whiteMosaic(uncovered)), intmax(class(whiteMosaic)));
+            testCase.verifyEqual(unique(blackMosaic(uncovered)), zeros(1, 1, class(blackMosaic)));
+            testCase.verifyEqual(blackMosaic(~uncovered), whiteMosaic(~uncovered), ...
+                'the fill must not touch a pixel a tile covers');
+        end
+
+        function autocropRemovesTheFrameFromTheFusedMosaic(testCase)
+            % With Autocrop on there is nothing left for CanvasColor to colour:
+            % the black and white fuses come out bit-identical. That equality is
+            % the real assertion - a smaller output alone would not prove the
+            % frame is gone.
+            controller = testCase.jitteredPlacementController();
+
+            controller.stitchBtn_Callback(true);
+            uncroppedSize = size(testCase.fusedData(controller));
+
+            controller.BatchOpt.Autocrop = true;
+            controller.canvas = [];              % what the widget callback does
+            controller.BatchOpt.CanvasColor{1} = 'black';
+            controller.stitchBtn_Callback(true);
+            croppedBlack = testCase.fusedData(controller);
+
+            controller.canvas = [];
+            controller.BatchOpt.CanvasColor{1} = 'white';
+            controller.stitchBtn_Callback(true);
+            croppedWhite = testCase.fusedData(controller);
+
+            testCase.verifyEqual(croppedBlack, croppedWhite, ...
+                'a cropped mosaic must have no uncovered pixel left');
+            testCase.verifyLessThan(size(croppedBlack, 1), uncroppedSize(1));
+            testCase.verifyLessThan(size(croppedBlack, 2), uncroppedSize(2));
+            testCase.verifyEqual(controller.canvas.size(1:2), ...
+                [size(croppedBlack, 1), size(croppedBlack, 2)]);
+            testCase.verifyTrue(isfield(controller.canvas, 'cropRect'));
+        end
+
+        function stitchedNameFallsBackToTheFirstTile(testCase)
+            % No position file to name it after: a Grid layout is named by its
+            % first tile instead, so the rule still produces something beside the
+            % data rather than an empty filename.
+            [controller, tileDir] = testCase.chainController(7);
+            controller.buildLayoutFromBatchOpt();
+
+            stitchedName = controller.stitchedFilename();
+
+            testCase.verifyEqual(fileparts(stitchedName), tileDir);
+            testCase.verifySubstring(stitchedName, '_stitch.tif');
+        end
+
+    end
+
     methods (Access = private)
+
+        function controller = jitteredPlacementController(testCase)
+            % Controller with a solved 2x2 placement that is deliberately RAGGED:
+            % the synthetic Atlas mosaic's imported placement is pixel-perfect (by
+            % construction - the tiles were cut from one texture at those offsets),
+            % so it tiles the canvas exactly and leaves no frame to colour or crop.
+            % Perturbing the positions is what a real solve produces.
+            [controller, ~] = testCase.atlasController();
+            controller.BatchOpt.LayoutImport{1} = 'Vendor seams + solved positions';
+            controller.BatchOpt.OutputMode{1}   = 'In memory';
+            controller.BatchOpt.SaveProject     = false;
+            controller.buildLayoutFromBatchOpt();
+            testCase.assertNumElements(controller.layout, 4);
+            controller.positions = controller.positions + ...
+                [0 0 0; 3 -2 0; -4 5 0; 2 3 0];
+            controller.canvas = [];
+        end
+
+        function pixelData = fusedData(~, controller)
+            % FUSEDDATA - Pixels of the dataset stitchBtn_Callback just created
+            % (In memory output mode replaces the active buffer).
+            pixelData = controller.mibModel.I{controller.mibModel.getActiveId()}.image.data;
+        end
+
+        function [controller, montage] = mdocController(testCase)
+            % Controller pointed at a synthetic SerialEM montage (2x2 in one MRC
+            % stack, edges + aligned coords present) — see
+            % mibtest.helpers.makeMdocMontage for the geometry and the format
+            % traps it reproduces.
+            tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            montage = mibtest.helpers.makeMdocMontage(tmpDir.Folder);
+            controller = testCase.newController();
+            controller.BatchOpt.LayoutSource{1} = 'Position file';
+            controller.BatchOpt.InputPath = montage.mdocPath;
+        end
 
         function controller = newController(testCase)
             % Headless controller: the "return BatchOpt" constructor path

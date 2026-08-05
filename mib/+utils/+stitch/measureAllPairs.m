@@ -94,6 +94,7 @@ if ~isfield(options, 'qualityThreshold'); options.qualityThreshold = 0.30; end
 if ~isfield(options, 'colorChannel');     options.colorChannel = 1; end
 if ~isfield(options, 'subpixel');         options.subpixel = true; end
 if ~isfield(options, 'cacheSizeBytes');   options.cacheSizeBytes = 2 * 1024^3; end
+if ~isfield(options, 'correction');      options.correction = []; end
 if ~isfield(options, 'useParallel');      options.useParallel = false; end
 if ~isfield(options, 'showWaitbar');      options.showWaitbar = false; end
 if ~isfield(options, 'parentFigure');     options.parentFigure = []; end
@@ -144,7 +145,7 @@ end
 
 if options.useParallel
     % Each worker builds its own cache (documented behaviour).
-    readerOptions = struct('cacheSizeBytes', options.cacheSizeBytes);
+    readerOptions = struct('cacheSizeBytes', options.cacheSizeBytes, 'correction', options.correction);
     measured = zeros(nPairs, 3);
     qualities = zeros(nPairs, 1);
     tforms = cell(nPairs, 1);
@@ -158,7 +159,7 @@ if options.useParallel
     end
 else
     readerFcn = utils.stitch.makeTileReader(layout, ...
-        struct('cacheSizeBytes', options.cacheSizeBytes));
+        struct('cacheSizeBytes', options.cacheSizeBytes, 'correction', options.correction));
     progressDialog = [];
     if options.showWaitbar && ~isempty(options.parentFigure)
         progressDialog = uiprogressdlg(options.parentFigure, 'Value', 0, 'Cancelable', 'on', ...

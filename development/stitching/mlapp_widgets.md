@@ -13,6 +13,10 @@ handle **exactly matching its BatchOpt field** (PascalCase, e.g. `TileOrder`,
 what makes `utils.updateBatchOptFromGUI_Shared` work — it writes
 `BatchOpt.(widget.Tag)`, and the Tag equals the handle.
 
+This applies to `Autocrop` too — it shipped briefly as App Designer's
+auto-generated `AutocropCheckBox` and was renamed, which is the right fix rather
+than carrying a `CheckBox` suffix into batch protocols and project sidecars.
+
 ---
 
 ## Conventions
@@ -21,8 +25,14 @@ what makes `utils.updateBatchOptFromGUI_Shared` work — it writes
 - Tooltips are set by `addCallbacks` too (BatchOpt widgets reuse `BatchOpt.mibBatchTooltip`) — the mlapp stays layout-only.
 - Dropdown `Items` in the mlapp are placeholders: `updateWidgets` overwrites `.Items`/`.Value` from
   `BatchOpt` for `LayoutSource`, `TileOrder`, `TransformType`, `RegistrationMethod`,
-  `FeatureDetectorType`, `OutputMode` and `BlendMode`. The lists only need to be non-empty and to
-  contain the mlapp's own `Value`.
+  `FeatureDetectorType`, `OutputMode`, `BlendMode`, `IntensityCorrection` and `CanvasColor`. The lists
+  only need to be non-empty and to contain the mlapp's own `Value`.
+- **Widgets the controller can live without** are read behind `isfield(handles, '<name>')` in both
+  `updateWidgets` and `addCallbacks` (`inspectSeamsBtn`, `EstimateOverlap`, …). This is what lets the
+  `.m` side of a feature land before the mlapp is edited: the tool runs, the parameter keeps its
+  BatchOpt default, and batch protocols can already set it. Drop the guard once the widget is built —
+  as `IntensityCorrection` did — accepting that an older mlapp then errors rather than silently
+  ignoring the parameter.
 
 ---
 
@@ -41,8 +51,8 @@ Figure  (623 × 750, Name 'Stitching')
     │   └── registrationTab    'Registration'  → registrationGridLayout
     ├── row 4, col 1–7    OutputPanel  'Output', BorderType 'none'      ← 3. output + preview
     │                     └── outputGridLayout  {110, 110, 80, 22, '1x', '1x'} × {22,22,22,22,'1x',22,22}
-    └── row 5             helpButton (col 1) | inspectSeamsBtn (col 5) | ← 4. action strip
-                          stitchBtn (col 6) | closeButton (col 7)
+    └── row 5             helpButton (col 1) | inspectSeamsBtn (col 2–3) | ← 4. action strip
+                          AutocropCheckBox (col 5) | stitchBtn (col 6) | closeButton (col 7)
 ```
 
 **The container handles are not referenced by any controller code.** `@Stitching` addresses every
@@ -132,7 +142,9 @@ readouts — everything about *what comes out* of the tool.
 | `OutputMode` | `uidropdown` | Items: `{'In memory','OME-Zarr3 (BigData)'}` Default: `'In memory'` | `updateBatchOptFromGUI` |
 | `OutputPath` | `uieditfield` (text) | Default: `''` Enable: `false` (enabled for OME-Zarr3 only) | `updateBatchOptFromGUI` |
 | `selectOutputBtn` | `uibutton` | Text: `'...'` Enable: `false` | `selectOutputPath_Callback` |
-| `BlendMode` | `uidropdown` | Items: `{'Feather','Average','Max','Min','Overwrite'}` Default: `'Feather'` | `updateBatchOptFromGUI` |
+| `BlendMode` | `uidropdown` | Items: `{'Average','Feather','Max','Min','Overwrite'}` (alphabetical) Default: `'Overwrite'` | `updateBatchOptFromGUI` |
+| `IntensityCorrection` | `uidropdown` | Items: `{'None','Flat-field (shared)','Match tile means'}` Default: `'None'`. Sits directly under `BlendMode` — a pixel-level output choice like blending. | `updateBatchOptFromGUI` |
+| `CanvasColor` | `uidropdown` | Items: `{'black','white'}` Default: `'white'`. Row 3, cols 5–6 — the fill for mosaic pixels no tile covers, so it belongs beside the other pixel-level output choices. | `updateBatchOptFromGUI` |
 | `SaveProject` | `uicheckbox` | Text: `'Save project JSON'` Default: `true` | `updateBatchOptFromGUI` |
 | `previewLayoutBtn` | `uibutton` | Text: `'Preview layout'` | `previewLayoutBtn_Callback` |
 | `editLayoutCheckbox` | `uicheckbox` | Text: `'Edit layout'` — toggles the preview between static rectangles and draggable tile ROIs (Phase 3). Non-BatchOpt (a UI mode). | `previewLayoutBtn_Callback` |
@@ -151,13 +163,16 @@ Labels:
 | `OutputmodeLabel` | `' Output mode'` |
 | `outputPathEditFieldLabel` | `'Output path'` |
 | `blendModeDropDownLabel` | `'Blend mode'` |
+| `blendModeDropDownLabel_2` | `'Intensity correction'` |
+| `blendModeDropDownLabel_3` | `'Canvas color'` (row 3, cols 3–4) |
 
 ### 4. Action strip (row 5 of `mainGridLayout`)
 
 | Handle | Class | Text | Callback method |
 |------|-------|------|-----------------|
 | `helpButton` | `uibutton` | Icon `help_16px.png`, Text `''` (icon-only), col 1 | `helpBtn_Callback` |
-| `inspectSeamsBtn` | `uibutton` | `'Inspect and fix...'`, green `[0.149 0.902 0.180]`, col 5 — opens the seam inspector (worst-first manual QC, see plan_inspector.md). Controller enables it only when edges + positions exist. | `inspectSeams_Callback` |
+| `inspectSeamsBtn` | `uibutton` | `'Inspect and fix...'`, green `[0.149 0.902 0.180]`, cols 2–3 — opens the seam inspector (worst-first manual QC, see plan_inspector.md). Controller enables it only when edges + positions exist. | `inspectSeams_Callback` |
+| `Autocrop` | `uicheckbox` | Text `'Autocrop'`, col 5, Default `false` — trims the uncovered frame off the mosaic. | `updateBatchOptFromGUI` |
 | `stitchBtn` | `uibutton` | `'Stitch'`, green, col 6 | `stitchBtn_Callback` |
 | `closeButton` | `uibutton` | `'Close'`, orange `[1 0.529 0.102]`, col 7 | `closeWindow` |
 

@@ -21,6 +21,18 @@ This file holds the always-needed essentials. Everything deeper lives behind one
 
 **Rule:** whenever you add, rename, or significantly change a public method or UI feature, update the corresponding documentation (`docs/` and/or `docs_api/`).
 
+### Documentation and tooltip style
+
+**Never use the long dash.** Use a plain hyphen `-` (U+002D) in all documentation, code comments,
+docblocks, tooltips and dialog text. Em dash `—` (U+2014) and en dash `–` (U+2013) are banned: they
+render inconsistently in MATLAB tooltips and the compiled standalone app, and they are awkward to
+type and to search for. Write `Feather - weighted blend`, not `Feather — weighted blend`.
+
+**Tooltips stay short; detail lives in `docs/`.** A widget tooltip is a reminder, not a manual: name
+each option and give the one fact that decides between them. Anything longer - trade-offs, measured
+numbers, failure modes - belongs in the matching `docs/docs/user-interface/...` page, which the
+tooltip can point at.
+
 ### MIB2 → MIB3 Migration
 
 Active port of MIB2 to MIB3. MIB3 uses MATLAB's **AppContainer framework** (ribbon UI, `.mlapp` panel components, docked documents). MIB2 uses GUIDE-based `.fig`/`.m` with a flat `Classes/` structure.

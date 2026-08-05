@@ -10,6 +10,9 @@ Datasets shared by several tests carry the LOWEST test number that uses them, so
 9, 10 and 14 have no folder of their own: `01_stitch_smoke` serves tests 1, 2, 8, 9 and 14,
 and `06_stitch_smoke_feature` serves 6, 10 and 14.
 
+Most generators write one image file per tile. Test 16 is the exception — a SerialEM montage is
+one MRC stack whose SLICES are the tiles — so its folder holds two files, not nine.
+
 ## Generate the data
 
 Run once from MATLAB (each generator `cd`s nowhere — it resolves its own output path):
@@ -68,6 +71,8 @@ FILES, not a folder. Pasting the folder path into the Input path field still wor
 | 13 | `13_stitch_smoke_affine3d\positions.txt` | Position file | Transform = Affine, tick **Allow rotation** | **3D affine** — in-plane affine on Z-stack tiles across 2 layers (see below). |
 | 14 | `01_stitch_smoke\tiles` + `06_stitch_smoke_feature\tiles` | Grid | **Save project**, then **Load project** twice | **Project save/load** — settings round-trip + the load-mode question (see below). Needs no new data. |
 | 15 | `15_stitch_smoke_atlas\MosaicInfo_SMOKE.ve-mif` | Position file | pick the `.ve-mif`, answer the import dialog | **Fibics Atlas** — an Atlas mosaic under the Position file source; the three import modes (see below). |
+| 16 | `16_stitch_smoke_mdoc\Montage_SMOKE.mrc.mdoc` | Position file | pick the `.mdoc` (or the `.mrc`), answer the import dialog | **SerialEM** — tiles are SLICES of one MRC stack; the three import modes and the float rescale (see below). |
+| 17 | `01_stitch_smoke\tiles` | Grid | Rows 3, Cols 3, Estimate on; then **Canvas color** / **Autocrop** | **The uncovered frame** — see below. Needs no new data. |
 
 ### Test 6 — phase correlation vs feature-based (the key comparison)
 
@@ -219,7 +224,7 @@ needed — this reuses datasets 1 and 6.
    summarising it (*"9 tiles, 12 measured seams, solved positions"*).
     - **Cancel** first — nothing may change.
     - Then **Restore everything**: every widget snaps back to the saved values (Grid, 3×3,
-      Estimate overlap on, Translation, Feather, In memory), the status line reports the tiles /
+      Estimate overlap on, Translation, Overwrite, In memory), the status line reports the tiles /
       edges / solved state, the preview redraws at the **solved** positions, and
       *Inspect and fix...* is enabled **without re-measuring**.
 4. Now the "same recipe, other files" case: browse a DIFFERENT set of tiles
@@ -292,6 +297,100 @@ Also check:
   source*, load test 3's `03_stitch_smoke_3d\positions.txt`: the text form must build its
   layout as before, with no Atlas import dialog and no leftover seams/positions.
 
+### Test 16 — SerialEM: tiles as slices of one MRC stack
+
+A SerialEM montage is **two files** — `Montage_SMOKE.mrc`, in which every tile is a SLICE, and
+`Montage_SMOKE.mrc.mdoc` beside it saying where those slices go. This is the only layout source
+where the tiles are not separate files, so it is worth confirming that nothing along the way
+assumed they were.
+
+Like Atlas it has **no layout source of its own**: set *Layout source* = **Position file** and
+browse with the Input **…** button, then pick `Montage_SMOKE.mrc.mdoc`. The picker offers the
+**`.mdoc` alone** — the stack is found from it. A dialog must appear listing what the `.mdoc`
+holds (*12 measured seams*, *9 solved tile positions*) and offering three buttons. Run once per
+button; the layout preview must refresh by itself each time.
+
+The generator makes the recorded piece grid **4 px too long in X and 6 px in Y** while the edge
+shifts and `AlignedPieceCoords` describe the correct placement.
+
+1. **Nominal grid only** — status reads `9 tiles | 0 edges measured | solved: no`, chip blank.
+   Pressing **Stitch** straight away (with *Estimate overlap* unticked) is the negative control:
+   the lines and circles visibly break at every seam. *Measure overlaps → Optimize positions*
+   must then pull it into line (chip green, error well under 1 px).
+2. **SerialEM seam measurements** — `9 tiles | 12 edges measured | solved: no` with **no progress
+   bar and no image reads**. Press *Optimize positions* only; chip green, preview title *solved*.
+3. **SerialEM seams + solved positions** — `solved: yes` immediately, chip already green
+   (**Excellent alignment**, seam match ≈ 1.00; a short progress bar is expected, that is the
+   pixel verification). Press **Stitch** directly: nothing may re-measure or re-solve.
+
+Also check:
+
+- **Only the `.mdoc` is offered.** In the picker, the *SerialEM montage* filter must list the
+  `.mdoc` alone. Switching to *All files* and selecting `Montage_SMOKE.mrc` anyway must still
+  resolve to the same montage and behave identically (that path is what batch protocols use).
+- **A bare stack is refused with an explanation.** Copy `Montage_SMOKE.mrc` to another folder
+  WITHOUT its `.mdoc` and pick it via *All files*: MIB must say no `.mdoc` was found, not try
+  to read the binary as a position text file.
+- **The image path inside the file is wrong on purpose.** The `.mdoc` records
+  `E:\acquired\session\SMOKE\Montage_SMOKE.mrc`; the montage must still open, because the stack
+  is found next to the `.mdoc`.
+- **Float rescale.** The stack is float32 on an offset range (≈180000–204000). The fused mosaic
+  must come out `uint16` and look normal — a black or blown-out result means the header-based
+  rescale was skipped. All nine tiles must share one scale.
+- **Disabled settings.** On the *Tile settings* tab, Rows / Cols / Tile order / Overlap X/Y /
+  *Estimate overlap* and *Tiles are folders* are all disabled.
+- **The seam inspector works on slices.** Open **Inspect and fix...** after mode 2 and step
+  through the seams — every pair view must render (this reads sub-regions of individual slices
+  through the ranged fast path, which is where an index-mirroring bug would surface as a
+  vertically flipped or offset crop).
+- **Project round-trip.** **Save project** after mode 3, then **Load project** →
+  *Restore everything*: source back as *Position file*, solved positions intact.
+- **Not every `.mdoc` is a montage.** SerialEM writes the same format for tilt series. There is
+  no such file in the smoke data; to check the guard, copy the `.mdoc`, delete every
+  `PieceCoordinates` line from the copy, rename the pair, and pick it — MIB must say it is not a
+  montage rather than trying to stitch it.
+- **A plain position file still works under the same source.** Without changing *Layout source*,
+  load test 3's `03_stitch_smoke_3d\positions.txt` — no import dialog, no leftover seams.
+
+!!! note "The seams are still visible, and that is not an alignment problem"
+    The generator bakes a 6 % per-tile illumination gradient into the tiles, as a poorly centred
+    TEM beam produces. Even at the pixel-perfect placement of mode 3 the mosaic shows faint 3×3
+    blocking. That is shading, not misalignment — the geometry check is the lines and circles
+    running unbroken across every seam, not the brightness.
+
+    Fix it with <span class="widget widget-dropdown">Intensity correction</span> = **Flat-field
+    (shared)** and re-Stitch: the blocking must visibly drop while the lines and circles stay
+    exactly where they were (the correction changes intensities only, never geometry). Then check
+    that **Match tile means** does almost nothing on the same data — that is the point of having
+    both. Measured on this dataset, as rms brightness mismatch across the 12 seams: None 3.29 %,
+    Match tile means 3.31 %, **Flat-field 1.24 %**.
+
+    Note this generator writes a canvas with **no monotonic ramp**, unlike the others. A ramp is
+    indistinguishable from an illumination field to a mean-based estimator, and with one the
+    flat-field correction makes this montage *worse* (8.08 %) instead of better — which is the
+    documented small-N failure mode, not a bug.
+
+### Test 17 — the uncovered frame (Canvas color / Autocrop)
+
+Any jittered dataset works; dataset 1 is the quickest. Measure → Optimize → Stitch, then read the
+mosaic's edges.
+
+1. **Canvas color = white (default).** The ragged frame around the mosaic must be at the class
+   ceiling — pure white on the 8-bit smoke tiles, not mid-grey. Check with the pixel-value readout
+   at a corner outside the tiles, not by eye: a wrongly-scaled fill would still look bright.
+2. **Canvas color = black, Stitch again.** Same geometry, frame now zero. The mosaic INSIDE must be
+   bit-identical to run 1 — the fill may never touch a pixel a tile covers.
+3. **Tick Autocrop, Stitch again.** The dataset dimensions (Datasets panel) must SHRINK, and no
+   background may be left anywhere along the edges. Flip Canvas color between black and white with
+   Autocrop on: the two mosaics must now be indistinguishable, which is the real check that the
+   frame is gone rather than merely smaller.
+4. **Autocrop is a canvas-plan change, not a post-process.** Repeat step 3 with Output mode =
+   **OME-Zarr3 (BigData)** — the reopened BigData dataset must have the same cropped dimensions,
+   and the pyramid must be built on the cropped mosaic (no frame at the lowest level either).
+5. **Toggling Autocrop must re-plan.** With a mosaic already stitched, tick/untick the checkbox and
+   press Stitch without touching anything else: the size must change each time. A cached canvas
+   surviving the toggle would silently fuse the previous size.
+
 ## Expected numbers (from headless validation)
 
 | Dataset | Recovered origin error |
@@ -305,3 +404,5 @@ Also check:
 | `13_stitch_smoke_affine3d` (TransformType=Affine) | 12/12 edges valid; ≤ 0.39 matrix max-abs, RMSE ≈ 0.09 px, layer dz exact |
 | `12_stitch_smoke_sabotage` | corrupted seam scores 0.09 vs 1.00; exclude+re-solve → ≤ 6 px; click-fix → ≤ 1 px |
 | `15_stitch_smoke_atlas` | nominal grid 16 px off; solve on imported `.ve-tie` → 0.07 px; imported `.ve-updates` → 0.00 px, seam scores 1.00 |
+| `16_stitch_smoke_mdoc` | nominal grid 12 px off (seam scores 0.09–0.64); solve on imported edge shifts → 0.05 px; imported `AlignedPieceCoords` → 0.00 px, seam scores 1.00; MIB's own measure+solve from the images → 0.04 px |
+| `16_stitch_smoke_mdoc` (Intensity correction) | rms seam brightness mismatch: None 3.29 %, Match tile means 3.31 %, Flat-field (shared) 1.24 %. Real `Cell1.mrc` for comparison: 3.50 / 3.13 / 1.04 % |

@@ -50,7 +50,12 @@ handles.OutputMode.ValueChangedFcn    = @(src, ~) obj.updateBatchOptFromGUI(src)
 handles.OutputPath.ValueChangedFcn    = @(src, ~) obj.updateBatchOptFromGUI(src);
 handles.selectOutputBtn.ButtonPushedFcn = @(~, ~) obj.selectOutputPath_Callback();
 handles.BlendMode.ValueChangedFcn     = @(src, ~) obj.updateBatchOptFromGUI(src);
+handles.IntensityCorrection.ValueChangedFcn = @(src, ~) obj.updateBatchOptFromGUI(src);
+handles.IntensityCorrection.Tooltip   = obj.BatchOpt.mibBatchTooltip.IntensityCorrection;
+handles.CanvasColor.ValueChangedFcn   = @(src, ~) obj.updateBatchOptFromGUI(src);
 handles.SaveProject.ValueChangedFcn   = @(src, ~) obj.updateBatchOptFromGUI(src);
+
+handles.Autocrop.ValueChangedFcn      = @(src, ~) obj.updateBatchOptFromGUI(src);
 
 % ---- Action buttons ----
 handles.inspectSeamsBtn.ButtonPushedFcn = @(~, ~) obj.inspectSeams_Callback();

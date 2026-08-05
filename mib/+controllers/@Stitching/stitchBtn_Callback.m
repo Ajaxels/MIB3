@@ -77,6 +77,7 @@ try
         else
             measureOptions.parentFigure = [];
         end
+        measureOptions.correction         = obj.ensureIntensityCorrection();
         [measuredEdges, cancelled] = utils.stitch.measureAllPairs(obj.layout, nominalPairs, measureOptions);
         if cancelled
             notify(obj.mibModel, 'StopProtocol');
@@ -99,9 +100,17 @@ try
     end
 
     if isempty(obj.canvas)
-        canvasOptions = struct('zSliceFixes', obj.zSliceFixes);
+        canvasOptions = struct('zSliceFixes', obj.zSliceFixes, ...
+            'autocrop', obj.BatchOpt.Autocrop);
         if ~isempty(obj.tforms)
             canvasOptions.tforms = obj.tforms;
+        end
+        % Layout sources that know the acquisition scale (SerialEM, Atlas,
+        % Bio-Formats) carry it per tile; without this the canvas - and every
+        % dataset and Zarr written from it - silently falls back to 1 um.
+        layoutPixSize = utils.stitch.layoutPixSize(obj.layout);
+        if ~isempty(layoutPixSize)
+            canvasOptions.pixSize = layoutPixSize;
         end
         obj.canvas = utils.stitch.planCanvas(obj.layout, obj.positions, canvasOptions);
     end
@@ -133,6 +142,14 @@ if ~batchModeSwitch && ~isempty(obj.view)
 else
     fuseOptions.parentFigure = [];
 end
+% The same correction the seams were measured and scored with — fusing without
+% it would produce a mosaic the alignment chip never actually rated.
+fuseOptions.correction   = obj.ensureIntensityCorrection();
+% Fill for whatever no tile covers. Derived from the OUTPUT class, so "white" is
+% 255 on 8-bit tiles and 65535 on 16-bit ones rather than a fixed number that
+% would read as mid-grey on one of them.
+fuseOptions.background   = utils.stitch.canvasBackground( ...
+    obj.canvas.dataClass, obj.BatchOpt.CanvasColor{1});
 
 if strcmp(outputMode, 'In memory')
     % --- In-memory fusion ---
@@ -165,6 +182,23 @@ if strcmp(outputMode, 'In memory')
     viewPort = imageMetadata{'viewPort'};
     viewPort.max = imageMetadata{'MaxInt'};
     imageMetadata{'viewPort'} = viewPort;
+
+    % Name it after what it was built from, so the dataset reads as "<source>_stitch"
+    % everywhere a filename is shown and Save As opens beside the tiles rather
+    % than wherever MATLAB's working folder happens to point.
+    imageMetadata{'Filename'} = obj.stitchedFilename();
+
+    % The physical scale the layout source recorded (planCanvas already resolved
+    % it, or fell back to 1 um); without this the mosaic would measure in pixels.
+    stitchedPixSize = imageMetadata{'pixSize'};
+    sourcePixSize = obj.canvas.pixSize;
+    stitchedPixSize.x = sourcePixSize.x;
+    stitchedPixSize.y = sourcePixSize.y;
+    stitchedPixSize.z = sourcePixSize.z;
+    if isfield(sourcePixSize, 'units') && ~isempty(sourcePixSize.units)
+        stitchedPixSize.units = sourcePixSize.units;
+    end
+    imageMetadata{'pixSize'} = stitchedPixSize;
 
     activeId = obj.mibModel.getActiveId();
     obj.mibModel.I{activeId} = core.MibDataset(fusedVolume, imageMetadata, 'Standard', 'labels63');

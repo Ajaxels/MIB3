@@ -69,6 +69,7 @@ if ~isfield(options, 'maxDim');       options.maxDim = 1024; end
 if ~isfield(options, 'minNcc');       options.minNcc = 0.20; end
 if ~isfield(options, 'minOverlapPx'); options.minOverlapPx = 16; end
 if ~isfield(options, 'colorChannel'); options.colorChannel = 1; end
+if ~isfield(options, 'correction');   options.correction = []; end
 if ~isfield(options, 'showWaitbar');  options.showWaitbar = false; end
 if ~isfield(options, 'parentFigure'); options.parentFigure = []; end
 
@@ -92,7 +93,7 @@ end
 xPairs = samplePairs(xPairs, options.maxPairsPerDirection);
 yPairs = samplePairs(yPairs, options.maxPairsPerDirection);
 
-readerFcn = utils.stitch.makeTileReader(layout);
+readerFcn = utils.stitch.makeTileReader(layout, struct('correction', options.correction));
 tileH = layout(1).tileSize(1);
 tileW = layout(1).tileSize(2);
 downFactor = max(1, ceil(max(tileH, tileW) / options.maxDim));
