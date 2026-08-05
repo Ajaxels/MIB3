@@ -18,6 +18,14 @@ if  obj.mibController.matlabVersion < 24.1; obj.TrainEngine = 'trainNetwork'; en
 counter = 1;
 mibDeepTrainingProgressStruct.emergencyBrake = false;   % emergency brake without finishing the weights
 
+% semantic workflows train via trainnet/trainNetwork, which leave the training loop
+% completely as soon as the OutputFcn requests a stop. Clear the flag a preceding
+% instance-segmentation run may have left behind so the dltrain-specific stop handling in
+% deepmib.customTrainingProgressDisplay stays switched off here
+mibDeepTrainingProgressStruct.dltrainBasedTrainer = false;
+mibDeepTrainingProgressStruct.CheckpointPath = '';
+mibDeepTrainingProgressStruct.spinDownActive = false;
+
 if strcmp(obj.BatchOpt.PreprocessingMode{1}, 'Preprocessing is not required') || strcmp(obj.BatchOpt.PreprocessingMode{1}, 'Split files for training/validation')
     preprocessedSwitch = false;
 

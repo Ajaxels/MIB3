@@ -240,6 +240,93 @@ for training and prediction.
 - **Future improvement — object-density-aware sampling:** adapt the 90/10 object/uniform ratio to
   local object density so sparse regions still get background exposure.
 
+## Known upstream limitation — stopping training early (`trainSOLOV2` / `images.dltrain`)
+
+> **MathWorks bug, mitigated but not eliminated.** Report draft + runnable repro:
+> [`../notes/mathworks_bugreport_dltrain_stop.md`](../notes/mathworks_bugreport_dltrain_stop.md)
+> and [`../notes/dltrainStopRepro.m`](../notes/dltrainStopRepro.m).
+
+### The bug
+
+`trainSOLOV2` trains through `images.dltrain.internal.dltrain`. Its
+`SerialTrainer/fit` (and `ParallelTrainer/fit`) honour a stop request by ending only the
+inner per-iteration `while` loop — the outer `for epoch = 1:MaxEpochs` loop still runs to
+completion:
+
+```matlab
+for epoch = 1:self.TrainingOptions.MaxEpochs      % <-- never exited early
+    while keepTraining(self)                      % <-- only this loop is exited
+        ... one training iteration ...
+    end
+    notify(self, 'EpochEnd', data);               % <-- checkpoint save, every idle epoch
+    reset(self.DataQueue);
+    shuffle(self.DataQueue);                      % when Shuffle == "every-epoch"
+end
+```
+
+So the time to return scales with **`MaxEpochs` − epoch at which Stop was pressed**, not
+with the training actually performed. Repro measurements (stop always at iteration 3):
+`MaxEpochs` 5 → 15.7 s, 20 → 42.2 s, 400 → 765.5 s, with one duplicate checkpoint file per
+idle epoch. Unmitigated, a real run stopped early blocked MATLAB for over an hour.
+
+This affects **only the `2D Instance` workflow**. Semantic workflows use
+`trainnet`/`trainNetwork`, which leave the training loop entirely on a stop request.
+
+### Mitigations implemented
+
+Each idle epoch costs a checkpoint save, a datastore prefetch, and augmentation of that
+prefetch. All three are DeepMIB's own code and are short-circuited once a stop is under way,
+gated on `mibDeepTrainingProgressStruct.spinDownActive`:
+
+| Layer | File | What it does |
+|-------|------|--------------|
+| Checkpoint save | `mib/+deepmib/suspendCheckpointSaving.m` | Renames the checkpoint folder aside so `CheckpointSaver`'s save fails instantly (it only warns). Restored — with the warning state it suppresses — before finalisation; `'restoreOrphaned'` heals a folder stranded by Ctrl+C at the start of the next run. |
+| Datastore prefetch | `mib/+deepmib/readInstancePatch.m` | `minibatchqueue` prefetches a mini-batch on every `reset`/`shuffle`, i.e. once per idle epoch. Returns a cached placeholder observation instead of loading and cropping a real image. |
+| Augmentation | `mib/+deepmib/augmentInstanceData2D.m` | Passes that placeholder through unwarped. |
+
+`spinDownActive` is set in the stop branch of `deepmib.customTrainingProgressDisplay` /
+`deepmib.stopTrainingWithoutPlots` and cleared at the start of every run in
+`startTrainingInstances.m` / `startTraining.m`.
+
+**Why not key the short-circuit on `mibDeepStopTraining`:** the progress display reads
+`stopState` *before* its `drawnow`, so a button press during that `drawnow` is seen only on
+the following call — one genuine training iteration still follows the press. Keying on the
+stop flag would feed that real iteration placeholder data and silently corrupt the weights.
+
+### Emergency brake
+
+Raised from `deepmib.readInstancePatch` as `error('DeepMIB:userEmergencyStop', …)`, caught
+in `startTrainingInstances.m`, which rebuilds the network from the newest checkpoint via the
+local `iRecoverNetworkFromCheckpoint` (synthesising `info` from the progress window's curve).
+
+**Critical gotcha:** it cannot be raised from the training `OutputFcn`. `images.dltrain`
+invokes the `OutputFcn` from a `notify()` listener, and **`notify` catches listener errors
+and downgrades them to a warning** — so the abort is swallowed *and* `stop(trainer)` is
+never reached, leaving training unstoppable by either button. The datastore `ReadFcn` is the
+only DeepMIB code `trainSOLOV2` calls directly from its loop (`next(DataQueue)`), where
+errors propagate normally.
+
+Emergency brake needs `T_SaveProgress` on; the recovered network is up to
+`CheckpointFrequency` epochs stale, so a low frequency (1–2) is worth recommending.
+
+Also fixed here: `deepmib.stopTrainingCallback` compared the button text against
+`'Emergency Brake'` while both progress displays label it `'Emergency brake'` — the brake had
+**never** engaged, in any workflow. Now `strcmpi`. Exposing it then surfaced a second latent
+bug: `Workflow`/`Architecture` were only ever set on the local `trainingProgressOptions`,
+never on the global struct the callback reads; both displays now populate them.
+
+### Residual limitation
+
+Measured on a 1000-epoch run stopped at epoch 11: 450 s (checkpoint suspension only) → 128 s
+(+ placeholder read) → **59 s** (+ augmentation passthrough), i.e. ~0.06 s per idle epoch —
+roughly **a minute per 1000 remaining epochs**. What is left is `minibatchqueue` batching the
+placeholder into a `dlarray` and moving it to the GPU once per idle epoch; shrinking the
+placeholder to dodge that would risk the shape contract `trainSOLOV2` expects and turn a
+graceful stop into an error dialog. Only the upstream `break` removes it.
+
+Stated in the pre-training confirmation dialog (`startTrainingInstances.m`) and in
+`docs/docs/user-interface/deepmib/deepmib-train.md`.
+
 ## Future roadmap — 3D instance segmentation (to be planned)
 
 > **Step 2 prototype done:** the cross-slice merging algorithm is implemented and validated as a

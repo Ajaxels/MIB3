@@ -32,6 +32,37 @@ function out = readInstancePatch(filename, options)
 %   - **out** — ``1×4`` cell ``{image HxWx3, boxes Kx4 [x y w h], labels Kx1 categorical,
 %     masks HxWxK logical}`` as required by ``trainSOLOV2``.
 
+global mibDeepTrainingProgressStruct
+
+% Emergency brake. This ReadFcn is the only DeepMIB code that trainSOLOV2 calls directly
+% from its training loop (SerialTrainer/fit -> next(DataQueue)), rather than through a
+% listener. images.dltrain routes its OutputFcn through notify(), and notify() catches
+% errors thrown by a listener and downgrades them to a warning - so an abort raised there
+% is swallowed and, worse, prevents the stop request from reaching the trainer. Raising it
+% here propagates normally, out through trainSOLOV2 to
+% controllers.MibDeep/startTrainingInstances, which restores the network from the most
+% recent checkpoint.
+if isfield(mibDeepTrainingProgressStruct, 'emergencyBrake') && mibDeepTrainingProgressStruct.emergencyBrake
+    error('DeepMIB:userEmergencyStop', 'Training was stopped by the Emergency brake button');
+end
+
+% Graceful stop. The trainer has already been told to stop, so its inner per-iteration loop
+% is skipped from here on and nothing read by this function will ever be trained on again -
+% but minibatchqueue still prefetches a mini-batch on each reset/shuffle, and the trainer
+% does one of those per remaining epoch. Loading and augmenting a full image for each of
+% those throwaway prefetches is what makes a stop take minutes. Hand back a correctly shaped
+% placeholder instead.
+%
+% Keyed on spinDownActive rather than on mibDeepStopTraining: the button can be pressed
+% during the drawnow at the end of an OutputFcn call, after that call has already returned
+% "keep going", so one more genuine training iteration still follows the button press.
+% spinDownActive is only set once the OutputFcn has actually requested the stop, which
+% guarantees no real iteration is ever fed a placeholder.
+if isfield(mibDeepTrainingProgressStruct, 'spinDownActive') && mibDeepTrainingProgressStruct.spinDownActive
+    out = iPlaceholderObservation(options.patchSize);
+    return;
+end
+
 data = load(filename);      % imageFilename, instanceLabelMap
 labelMap = data.instanceLabelMap;
 
@@ -97,4 +128,36 @@ end
 labels = categorical(repmat({'object'}, [numObjects, 1]), {'object'});
 
 out = {imagePatch, boxes, labels, masks};
+end
+
+% -------------------------------------------------------------------------------------
+function out = iPlaceholderObservation(patchSize)
+% minimal correctly shaped observation, handed to the prefetches of a stopping trainer
+%
+% Shape and categories must still match what trainSOLOV2 expects - the categories in
+% particular have to equal the network ClassNames ({'object'}) - because minibatchqueue
+% batches and formats the data before anything discards it. Cached so the idle epochs do
+% not even repeat the allocation.
+
+persistent cachedObservation
+persistent cachedPatchSize
+
+if isempty(cachedObservation) || ~isequal(cachedPatchSize, patchSize(1:2))
+    patchHeight = patchSize(1);
+    patchWidth = patchSize(2);
+    objectHeight = min(8, patchHeight);
+    objectWidth = min(8, patchWidth);
+
+    imagePatch = zeros([patchHeight, patchWidth, 3], 'uint8');
+    masks = false([patchHeight, patchWidth, 1]);
+    masks(1:objectHeight, 1:objectWidth) = true;
+    boxes = [1, 1, objectWidth, objectHeight];
+    labels = categorical({'object'}, {'object'});
+
+    cachedObservation = {imagePatch, boxes, labels, masks};
+    cachedPatchSize = patchSize(1:2);
+end
+
+out = cachedObservation;
+
 end

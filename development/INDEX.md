@@ -121,6 +121,7 @@ debugging a regression in it, or looking for a precedent pattern. One line each:
 | File | What |
 |------|------|
 | [cuda.txt](notes/cuda.txt) | CUDA / SAM2 "no kernel image" error and fix |
+| [mathworks_bugreport_dltrain_stop.md](notes/mathworks_bugreport_dltrain_stop.md) + [dltrainStopRepro.m](notes/dltrainStopRepro.m) | `trainSOLOV2`/`images.dltrain` ignores stop requests in its outer epoch loop — bug report draft, repro, and what DeepMIB does about it |
 | [linking_split_view_problem.txt](notes/linking_split_view_problem.txt) | Cursor repositioning issue in split view (zoom recentering) |
 | [sync_memory.md](notes/sync_memory.md) | One-time Claude memory-sync junction setup for a new workstation |
 | [doc_template.md](notes/doc_template.md) | **Legacy** Doxygen doc template — superseded by `guides/docs_api_sphinx.md` |

@@ -348,8 +348,27 @@ if (isempty(progressStruct.Iteration) || progressStruct.Iteration == 0 || ...
     mibDeepTrainingProgressStruct.UIFigure.Visible = 'on';
     mibDeepTrainingProgressStruct.maxIter = trainingProgressOptions.iterPerEpoch*trainingProgressOptions.TrainingOpt.MaxEpochs;
     mibDeepTrainingProgressStruct.stopTraining = false;
+    % deepmib.stopTrainingCallback needs these to decide whether the architecture has
+    % BatchNormalization layers that an Emergency brake would leave unfinalized
+    mibDeepTrainingProgressStruct.Workflow = trainingProgressOptions.Workflow;
+    mibDeepTrainingProgressStruct.Architecture = trainingProgressOptions.Architecture;
 else
     if mibDeepStopTraining == true % stop training
+        % The dltrain-based trainer behind trainSOLOV2 ('2D Instance') only leaves the
+        % inner per-epoch loop when asked to stop; its outer "for epoch = 1:MaxEpochs"
+        % loop still runs to the end, re-saving a checkpoint on every idle epoch. See
+        % deepmib.suspendCheckpointSaving for the full description.
+        % make the idle epochs cheap: without a reachable checkpoint folder they cost a
+        % datastore reset and shuffle instead of a full network save.
+        % The Emergency brake is NOT raised here - images.dltrain calls this OutputFcn from
+        % a notify() listener, and notify() catches listener errors and turns them into a
+        % warning, which both swallows the abort and stops the trainer from ever seeing the
+        % stop request. It is raised from deepmib.readInstancePatch instead.
+        if isfield(mibDeepTrainingProgressStruct, 'dltrainBasedTrainer') && mibDeepTrainingProgressStruct.dltrainBasedTrainer
+            % from here on every read is a throwaway prefetch, see deepmib.readInstancePatch
+            mibDeepTrainingProgressStruct.spinDownActive = true;
+            deepmib.suspendCheckpointSaving('suspend');
+        end
         stopState = true;
         return;
     end

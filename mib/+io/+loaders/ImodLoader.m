@@ -203,18 +203,19 @@ classdef ImodLoader < io.loaders.BaseImageLoader
                     % 6 = uint16
                     % 16 = RGB (3 bytes per pixel)
 
+                    % MIB works only with unsigned integer classes, thus the signed
+                    % and floating point modes are converted during loading (see
+                    % loadImages) and the target class is defined here from the
+                    % dynamic range of densities stored in the file header
                     mrcMode = info.mode;
                     switch mrcMode
                         case 0
                             files(fnIndex).imgClass = 'uint8';
-                        case 1
-                            files(fnIndex).imgClass = 'int16';
-                        case 2
-                            files(fnIndex).imgClass = 'single';
                         case 6
                             files(fnIndex).imgClass = 'uint16';
-                        otherwise
-                            files(fnIndex).imgClass = 'single'; % fallback
+                        otherwise   % int16, float32 and the complex/RGB modes
+                            [minDensity, maxDensity] = getMinAndMaxDensity(mrcFile);
+                            files(fnIndex).imgClass = io.loaders.ImodLoader.densityRangeToClass(minDensity, maxDensity);
                     end
 
                     % Close file
@@ -329,9 +330,10 @@ classdef ImodLoader < io.loaders.BaseImageLoader
                 return;
             end
 
-            % Prepare image class
+            % Prepare image class; MIB operates with unsigned integers only, the
+            % signed and floating point classes are converted during loading
             imgClass = files(1).imgClass;
-            if strcmp(imgClass, 'int16'); imgClass = 'uint16'; end
+            if ~ismember(imgClass, {'uint8', 'uint16', 'uint32'}); imgClass = 'uint16'; end
 
             % Pre-allocate image array: [Y, X, Z, C, T]
             img = zeros(height, width, maxZ, color, time, imgClass);
@@ -371,10 +373,10 @@ classdef ImodLoader < io.loaders.BaseImageLoader
                     mrcimage = flip(mrcimage, 2);
 
                     % Check if conversion is needed (single/int16 -> unsigned)
-                    if isa(mrcimage, 'single') || isa(mrcimage, 'int16')
-                        [minInt, maxInt] = getMinAndMaxDensity(mrcFile);
+                    if ~strcmp(class(mrcimage), imgClass)
+                        [minDensity, maxDensity] = getMinAndMaxDensity(mrcFile);
 
-                        if minInt < 0 && ~options.silentMode
+                        if minDensity < 0 && ~options.silentMode
                             selection = uiconfirm(options.ParentFigure, ...
                                 'The dataset will be converted to unsigned integer class.', ...
                                 'Convert image', ...
@@ -387,20 +389,21 @@ classdef ImodLoader < io.loaders.BaseImageLoader
                             options.silentMode = true; % Don't ask again
                         end
 
-                        % Shift to positive range
-                        if minInt < 0
-                            mrcimage = mrcimage - minInt;
+                        densityRange = double(maxDensity) - double(minDensity);
+
+                        % shift the densities to the positive range; the shift is
+                        % also required when the values do not fit into imgClass
+                        if minDensity < 0 || maxDensity > double(intmax(imgClass))
+                            mrcimage = single(mrcimage) - single(minDensity);
                         end
 
-                        % Convert based on dynamic range
-                        diffInt = maxInt - minInt;
-                        if diffInt <= 255
-                            mrcimage = uint8(mrcimage);
-                        elseif diffInt <= 65535
-                            mrcimage = uint16(mrcimage);
-                        elseif diffInt <= 4294967295
-                            mrcimage = uint32(mrcimage);
+                        % squeeze the extra wide ranges into uint32, the resulting
+                        % dataset is later stretched to uint16 by finalizeImageLoading
+                        if densityRange > 4294967295
+                            mrcimage = single(mrcimage) / single(densityRange) * 4294967295;
                         end
+
+                        mrcimage = cast(mrcimage, imgClass);
                     end
 
                     % Permute dimensions: [X, Y, Z] -> [Y, X, Z]
@@ -436,6 +439,46 @@ classdef ImodLoader < io.loaders.BaseImageLoader
             imginfo{'Time'} = time;
 
             [img, imginfo] = obj.finalizeImageLoading(img, imginfo, options);
+        end
+    end
+
+    methods (Static)
+        function imgClass = densityRangeToClass(minDensity, maxDensity)
+            % DENSITYRANGETOCLASS - Pick an unsigned integer class fitting the density range.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      imgClass = io.loaders.ImodLoader.densityRangeToClass(minDensity, maxDensity)
+            %
+            % MRC files may store signed integer (mode 1) or floating point (mode 2)
+            % densities, while MIB operates with unsigned integers. This method
+            % selects the narrowest unsigned class that can accommodate the dynamic
+            % range of the densities; wider ranges are rescaled into uint32 during
+            % loading and further stretched to uint16 by ``finalizeImageLoading``.
+            %
+            % Input Arguments:
+            %   - **minDensity** — [numeric] minimal density value stored in the file
+            %   - **maxDensity** — [numeric] maximal density value stored in the file
+            %
+            % Output Arguments:
+            %   - **imgClass** — [char] ``'uint8'``, ``'uint16'`` or ``'uint32'``
+            %
+            % **Example 1** — class for a float32 tomogram:
+            %
+            %   .. code-block:: matlab
+            %
+            %      imgClass = io.loaders.ImodLoader.densityRangeToClass(224940, 463090);   % -> 'uint32'
+            %
+
+            densityRange = double(maxDensity) - double(minDensity);
+            if densityRange <= 255
+                imgClass = 'uint8';
+            elseif densityRange <= 65535
+                imgClass = 'uint16';
+            else
+                imgClass = 'uint32';
+            end
         end
     end
 end

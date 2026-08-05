@@ -25,8 +25,19 @@ end
 
 % instant training stop with generation of mibDeep file from
 % the recent checkpoint
-if ~isempty(hButton) && isprop(hButton, 'Text') && strcmp(hButton.Text, 'Emergency Brake')
-    if mibDeepTrainingProgressStruct.Workflow(1) == '3' || strcmp(mibDeepTrainingProgressStruct.Architecture, 'SegNet')
+% strcmpi: the buttons created by deepmib.customTrainingProgressDisplay and
+% deepmib.customTrainingProgressDisplayTrainNet are labelled 'Emergency brake' (lower-case
+% 'b'), so a case-sensitive comparison here never matched and the brake never engaged
+if ~isempty(hButton) && isprop(hButton, 'Text') && strcmpi(hButton.Text, 'Emergency brake')
+    % 3D workflows and SegNet carry BatchNormalization layers whose final means and
+    % variances are only computed when the run is finalized normally. The fields are absent
+    % when the progress window was never built (plots disabled), in which case there is
+    % nothing to warn about and the brake is applied directly
+    hasBatchNormalization = isfield(mibDeepTrainingProgressStruct, 'Workflow') && ...
+        ~isempty(mibDeepTrainingProgressStruct.Workflow) && ...
+        (mibDeepTrainingProgressStruct.Workflow(1) == '3' || ...
+        (isfield(mibDeepTrainingProgressStruct, 'Architecture') && strcmp(mibDeepTrainingProgressStruct.Architecture, 'SegNet')));
+    if hasBatchNormalization
         answer = questdlg(sprintf('!!! Warning !!!\n\nThe current network architecture has BatchNormalization layers which requires calculation of final means and variances to finalize the network.\n\nIf you are not planning to use the network or planning to continue training in future this step may be skipped (Stop immediately), otherwise cancel and stop the run normally (Stop and finalize)'), ...
             'Emergency brake', ...
             'Stop immediately', 'Stop and finalize', 'Stop and finalize');

@@ -180,6 +180,21 @@ During training, a loss function plot appears (blue = training, red = validation
 Perform <mouse class="right"></mouse> over the plot to scale it via a context menu.<br>
 Stop training with <span class="widget widget-button">Stop</span> or <span class="widget widget-button">Emergency brake</span> (faster but may not finalize networks with batch normalization).
 
+!!! note "Stopping a **2D Instance** run early"
+
+    Instance segmentation trains through MATLAB's `trainSOLOV2`, whose trainer only ends the
+    current epoch when asked to stop — it still walks through the epochs that were left
+    before it returns. Deep MIB makes those leftover epochs as cheap as it can, but
+    <span class="widget widget-button">Stop</span> still costs roughly a minute per 1000
+    remaining epochs. The network and the full training curve are finalized normally.
+
+    <span class="widget widget-button">Emergency brake</span> leaves the trainer immediately
+    and rebuilds the network from the most recent checkpoint, so keep
+    **Train tab → Save checkpoint networks** enabled if you expect to use it. The recovered
+    network is up to *Checkpoint frequency* epochs behind the point where you pressed the
+    button, and the exported training curve is the one drawn in the progress window rather
+    than the full per-iteration log.
+
 By default, Deep MIB uses a custom progress plot. If you want to use default MATLAB’s training plot (*MATLAB version only*), 
 uncheck **Options tab → Custom training plot → Custom training progress window**.<br> 
 Disable plots for speed via **Train tab → Training → Plots → none**.  

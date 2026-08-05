@@ -301,6 +301,10 @@ if progressStruct.Iteration == 0
     mibDeepTrainingProgressStruct.UIFigure.Visible = 'on';
     mibDeepTrainingProgressStruct.maxIter = trainingProgressOptions.iterPerEpoch*trainingProgressOptions.TrainingOpt.MaxEpochs;
     mibDeepTrainingProgressStruct.stopTraining = false;
+    % deepmib.stopTrainingCallback needs these to decide whether the architecture has
+    % BatchNormalization layers that an Emergency brake would leave unfinalized
+    mibDeepTrainingProgressStruct.Workflow = trainingProgressOptions.Workflow;
+    mibDeepTrainingProgressStruct.Architecture = trainingProgressOptions.Architecture;
 else
     if mibDeepStopTraining == true % stop training
         stopState = true;

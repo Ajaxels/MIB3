@@ -718,12 +718,31 @@ classdef (Abstract) BaseImageLoader < handle
             minVal = answer{1};
             maxVal = answer{2};
 
-            % Convert to uint16
-            img = img - minVal;
-            img = uint16((img / (maxVal - minVal)) * 65535);
+            % Convert to uint16; the rescaling has to be done in a floating point
+            % class, because a division of an integer array rounds the result to
+            % integers and would collapse the image to a 0/65535 bitmap.
+            % The conversion is done slice-by-slice to keep the peak memory low,
+            % the values outside [minVal maxVal] are clipped by the uint16 cast
+            scaleFactor = 65535 / (maxVal - minVal);
+            imgOut = zeros(size(img), 'uint16');
+            for sliceIndex = 1:size(img, 3)
+                imgOut(:,:,sliceIndex,:,:) = uint16((double(img(:,:,sliceIndex,:,:)) - minVal) * scaleFactor);
+            end
+            img = imgOut;
+            clear imgOut;
+
             % update imginfo dictionary
             imginfo{'MaxInt'} = double(intmax('uint16'));
             imginfo{'imgClass'} = 'uint16';
+
+            % sync the viewPort with the new class, otherwise the display max stays
+            % at the uint32 ceiling that was defined during the metadata loading
+            if isKey(imginfo, 'viewPort') && ~isempty(imginfo{'viewPort'})
+                viewPort = imginfo{'viewPort'};
+                viewPort.min = zeros(size(viewPort.min));
+                viewPort.max = zeros(size(viewPort.max)) + imginfo{'MaxInt'};
+                imginfo{'viewPort'} = viewPort;
+            end
         end
     end
 end

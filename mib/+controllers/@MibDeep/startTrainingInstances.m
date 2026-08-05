@@ -29,7 +29,26 @@ end
 
 mibDeepTrainingProgressStruct.emergencyBrake = false;   % emergency brake without finishing the weights
 
-msg = sprintf('You are going to start training of an instance segmentation network!\n\nConfirm that your images located under\n\n%s\n\n%s\n%s\n%s\n%s\n\nPlease also make sure that number of files with labels match number of files with images!', ...
+% instance segmentation trains via trainSOLOV2 -> images.dltrain.internal.dltrain, whose
+% trainer keeps iterating its outer "for epoch = 1:MaxEpochs" loop after a stop request.
+% deepmib.customTrainingProgressDisplay and deepmib.stopTrainingWithoutPlots use this flag
+% to apply the two mitigations described in deepmib.suspendCheckpointSaving
+mibDeepTrainingProgressStruct.dltrainBasedTrainer = true;
+mibDeepTrainingProgressStruct.CheckpointPathSuspended = false;
+mibDeepTrainingProgressStruct.spinDownActive = false;   % true once a stop has been requested
+if obj.BatchOpt.T_SaveProgress
+    mibDeepTrainingProgressStruct.CheckpointPath = fullfile(obj.BatchOpt.ResultingImagesDir, 'ScoreNetwork');
+else
+    mibDeepTrainingProgressStruct.CheckpointPath = '';
+end
+% a previous run killed with Ctrl+C may have left the checkpoint folder renamed
+deepmib.suspendCheckpointSaving('restoreOrphaned');
+
+msg = sprintf(['You are going to start training of an instance segmentation network!\n\nConfirm that your images located under\n\n%s\n\n%s\n%s\n%s\n%s\n\n' ...
+    'Please also make sure that number of files with labels match number of files with images!\n\n' ...
+    'Note on stopping this workflow early:\n' ...
+    '- "Stop training" finalizes the run properly, but MATLAB still has to walk through the epochs that were left, which costs roughly a minute per 1000 remaining epochs\n' ...
+    '- "Emergency brake" stops immediately and rebuilds the network from the most recent checkpoint, so keep "Save checkpoint networks" enabled if you plan to use it'], ...
     obj.BatchOpt.OriginalTrainingImagesDir, ...
     '- TrainImages', '- TrainLabels', ...
     '- ValidationImages', '- ValidationLabels');
@@ -534,6 +553,7 @@ drawnow;
 fprintf('Preparation for training is finished, elapsed time: %f\n', toc(trainTimer));
 
 trainTimer = tic;
+emergencyBrakeUsed = false;     % network was recovered from a checkpoint, info is synthetic
 try
     mibDeepStopTraining = false;
 
@@ -544,9 +564,39 @@ try
         'FreezeSubNetwork', 'backbone');
     %'ExperimentMonitor', 'none');
 catch err
+    % a stop request renames the checkpoint folder out of the way; put it back before any
+    % branch below reads it or gives up on the run
+    deepmib.suspendCheckpointSaving('restore');
+
+    % The Emergency brake button breaks out of trainSOLOV2 by throwing from the datastore
+    % ReadFcn (see deepmib.readInstancePatch), the only way to leave the trainer without
+    % walking through every remaining epoch. The trained network never gets returned in that
+    % case, so rebuild it from the newest checkpoint on disk.
+    % The flag is trusted ahead of the identifier because the error travels out through
+    % minibatchqueue, which may wrap it and replace the identifier on the way
+    if mibDeepTrainingProgressStruct.emergencyBrake || strcmp(err.identifier, 'DeepMIB:userEmergencyStop')
+        [net, info] = iRecoverNetworkFromCheckpoint(...
+            fullfile(obj.BatchOpt.ResultingImagesDir, 'ScoreNetwork'), mibDeepTrainingProgressStruct);
+        if isempty(net)
+            mgsOpt.MsgBoxOnly = true;
+            mgsOpt.Icon = 'puffin_error';
+            mgsOpt.HeaderLines = 4;
+            header = sprintf(['Training was stopped by the Emergency brake, but no checkpoint file was found in\n\n%s\n\n' ...
+                'The network could not be restored. Enable "Save checkpoint networks" before the run to be able to use the Emergency brake.'], ...
+                fullfile(obj.BatchOpt.ResultingImagesDir, 'ScoreNetwork'));
+            utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'No checkpoint to restore', mgsOpt);
+            if mibDeepTrainingProgressStruct.useCustomProgressPlot && isfield(mibDeepTrainingProgressStruct, 'StopTrainingButton')
+                mibDeepTrainingProgressStruct.StopTrainingButton.Text = 'Train';
+                mibDeepTrainingProgressStruct.StopTrainingButton.BackgroundColor = [0.7686    0.9020    0.9882];
+            end
+            obj.view.handles.TrainButton.Text = 'Train';
+            obj.view.handles.TrainButton.BackgroundColor = [0.7686    0.9020    0.9882];
+            return;
+        end
+        emergencyBrakeUsed = true;
     % SOLOv2 validation support can be version-dependent; when a validation set was
     % provided, retry once without validation before reporting the error to the user
-    if ~isempty(valLabelsDS)
+    elseif ~isempty(valLabelsDS)
         warning('DeepMIB:instanceValidation', ...
             'trainSOLOV2 failed with validation data (%s); retrying without validation', err.message);
 
@@ -592,7 +642,12 @@ end
 % is more than one row). Normalise here, once, right after info is produced, so every
 % downstream use of "info" below - and the fieldnames(info) CSV export loop further down -
 % sees the familiar scalar-struct/vector-field shape.
-if isstruct(info) && isfield(info, 'OutputNetworkIteration')
+% put the checkpoint folder back before any finalisation step reads or writes it; a
+% graceful stop leaves it renamed (see deepmib.suspendCheckpointSaving)
+deepmib.suspendCheckpointSaving('restore');
+
+% iRecoverNetworkFromCheckpoint already produces info in the normalised shape
+if ~emergencyBrakeUsed && isstruct(info) && isfield(info, 'OutputNetworkIteration')
     infoRows = info;
     outputRow = find([infoRows.OutputNetworkIteration], 1);
     info = struct();
@@ -743,6 +798,49 @@ obj.view.handles.TrainButton.Text = 'Train';
 obj.view.handles.TrainButton.BackgroundColor = [0.7686    0.9020    0.9882];
 
 fprintf('Training is finished, elapsed time: %f\n', toc(trainTimer));
+end
+
+function [net, info] = iRecoverNetworkFromCheckpoint(checkpointDir, progressStruct)
+% rebuild the network and a minimal training-info struct after an Emergency brake
+%
+% trainSOLOV2 never returns when the OutputFcn throws, so the network is taken from the
+% newest checkpoint file written by images.dltrain.internal.CheckpointSaver and the loss
+% curve is taken from the points the custom progress window has already collected. The
+% recovered network is therefore up to CheckpointFrequency epochs behind the point where
+% the user pressed the button.
+
+net = [];
+info = struct();
+
+checkpointFiles = dir(fullfile(checkpointDir, 'net_checkpoint__*.mat'));
+if isempty(checkpointFiles)     % fall back to any checkpoint-looking file
+    checkpointFiles = dir(fullfile(checkpointDir, '*.mat'));
+end
+if isempty(checkpointFiles); return; end
+
+[~, newestIndex] = max([checkpointFiles.datenum]);
+checkpointFilename = fullfile(checkpointFiles(newestIndex).folder, checkpointFiles(newestIndex).name);
+loadedCheckpoint = load(checkpointFilename, 'net', '-mat');
+if ~isfield(loadedCheckpoint, 'net'); return; end
+net = loadedCheckpoint.net;
+
+% reuse the decimated curve already held by the progress window; it is the only record of
+% the run left once trainSOLOV2 has been aborted
+if isfield(progressStruct, 'TrainXvecIndex') && progressStruct.TrainXvecIndex > 1
+    lastPoint = progressStruct.TrainXvecIndex - 1;
+    info.Iteration = reshape(progressStruct.TrainXvec(1:lastPoint), 1, []);
+    info.TrainingLoss = reshape(progressStruct.TrainLoss(1:lastPoint), 1, []);
+else
+    info.Iteration = [];
+    info.TrainingLoss = [];
+end
+if isfield(progressStruct, 'ValidationXvecIndex') && progressStruct.ValidationXvecIndex > 1
+    lastValidationPoint = progressStruct.ValidationXvecIndex - 1;
+    info.ValidationLoss = reshape(progressStruct.ValidationLoss(1:lastValidationPoint), 1, []);
+end
+info.OutputNetworkIteration = [];   % no "picked iteration" marker for a recovered network
+
+fprintf('DeepMIB: Emergency brake, the network was restored from "%s"\n', checkpointFilename);
 end
 
 function value = iInfoLastValue(info, fieldName)

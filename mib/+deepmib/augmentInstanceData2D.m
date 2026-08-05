@@ -35,6 +35,17 @@ function dataOut = augmentInstanceData2D(dataIn, options)
 %   - **dataOut** — ``1×4`` cell with the augmented ``{image, boxes, labels, masks}``;
 %     instances whose mask vanished after a geometric transform are dropped.
 
+global mibDeepTrainingProgressStruct
+
+% Once a stop has been requested, the trainer no longer trains on anything coming through
+% this transform - it only prefetches a mini-batch per remaining epoch and throws it away
+% (see deepmib.readInstancePatch for the full description). Geometric warping of the
+% placeholder observation those prefetches carry is pure waste, so pass it straight through.
+if isfield(mibDeepTrainingProgressStruct, 'spinDownActive') && mibDeepTrainingProgressStruct.spinDownActive
+    dataOut = dataIn;
+    return;
+end
+
 image = dataIn{1};
 boxes = dataIn{2};
 labels = dataIn{3};
