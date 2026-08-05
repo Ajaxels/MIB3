@@ -71,6 +71,22 @@ classdef Stitching < handle
         % kept here; [] means "not estimated yet", which is not the same as
         % BatchOpt.IntensityCorrection = 'None' (that estimates to a neutral struct).
         % Dropped whenever the layout is rebuilt or the method changes
+        resolvePending
+        % logical — an inspector edit (manual fix, exclude, undo) has changed the
+        % edge set while Auto re-solve was off, so obj.positions no longer follow
+        % from obj.edges. Lives HERE rather than on the inspector because the
+        % debt outlives the window: closing the inspector used to drop the flag
+        % with it, after which the chip stopped warning and Stitch fused the
+        % stale placement. Cleared by any solve (optimizePositions_Callback);
+        % stitchBtn_Callback settles it before fusing
+        seamScoresStamp
+        % struct — what obj.edges' seamScores were computed for (.positions,
+        % .numEdges, .correctionMethod), so the same overlaps are not re-read by
+        % the next consumer that wants them. Set by
+        % controllers.Stitching.ensureSeamScores and by a project load whose
+        % sidecar already carried a complete score set; [] = not scored (yet).
+        % Compared against live state rather than explicitly invalidated, so
+        % nothing can forget to clear it
         zarrExportOptions
         % struct of OME-Zarr3 pyramid/chunk/compression settings collected once
         % (io.savers.Zarr3Saver.optionsDialog) for the current output path and
@@ -211,6 +227,8 @@ classdef Stitching < handle
             obj.roiListeners = {};
             obj.inspector    = [];
             obj.inspectorListeners = {};
+            obj.resolvePending     = false;
+            obj.seamScoresStamp    = [];
             obj.zarrExportOptions  = [];
             obj.automaticOptions = obj.defaultFeatureOptions();
 
@@ -500,6 +518,61 @@ classdef Stitching < handle
             if ~isempty(obj.view) && ~isempty(obj.view.gui) && isvalid(obj.view.gui)
                 figureHandle = obj.view.gui;
             end
+        end
+
+        % ---------------------------------------------------------------
+        function stamp = currentSeamScoreStamp(obj)
+            % CURRENTSEAMSCORESTAMP - What a seam-score pass over the current
+            % state would be valid for.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      stamp = obj.currentSeamScoreStamp()
+            %
+            % One builder shared by everything that records the stamp, so the
+            % fields compared in
+            % :meth:`controllers.Stitching.seamScoresAreCurrent` and the fields
+            % written after scoring cannot drift apart.
+            %
+            % Output Arguments:
+            %   - **stamp** — [struct] ``.positions``, ``.numEdges``,
+            %     ``.correctionMethod``
+            %
+            stamp = struct( ...
+                'positions',        obj.positions, ...
+                'numEdges',         numel(obj.edges), ...
+                'correctionMethod', obj.BatchOpt.IntensityCorrection{1});
+        end
+
+        % ---------------------------------------------------------------
+        function tf = seamScoresAreCurrent(obj)
+            % SEAMSCORESARECURRENT - True when obj.edges' seam scores still
+            % describe the current placement, edge set and intensity correction.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      tf = obj.seamScoresAreCurrent()
+            %
+            % The stamp is COMPARED against live state rather than cleared by
+            % whoever changes that state: a rescore that should have happened
+            % and did not is a mosaic rated on the wrong pixels, and there is no
+            % single place every position change goes through. Every edge must
+            % also actually carry a score - a cancelled pass or a pre-scoring
+            % project leaves some empty, and a partial set is not a set.
+            %
+            tf = false;
+            if isempty(obj.seamScoresStamp) || isempty(obj.edges) || isempty(obj.positions)
+                return;
+            end
+            stamp = obj.seamScoresStamp;
+            if ~isequal(stamp.positions, obj.positions); return; end
+            if stamp.numEdges ~= numel(obj.edges); return; end
+            if ~strcmp(stamp.correctionMethod, obj.BatchOpt.IntensityCorrection{1}); return; end
+            if ~isfield(obj.edges, 'seamScore'); return; end
+            if any(cellfun(@isempty, {obj.edges.seamScore})); return; end
+            tf = true;
         end
 
         % ---------------------------------------------------------------

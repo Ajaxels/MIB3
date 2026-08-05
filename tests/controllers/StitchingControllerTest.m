@@ -365,9 +365,28 @@ classdef StitchingControllerTest < matlab.unittest.TestCase
             testCase.verifyEqual(rmseLabel.BackgroundColor, [0.20 0.60 0.30]);
         end
 
+        function qualityChipSaysSoWhenTheSeamsWereNeverChecked(testCase)
+            % Cancelling "Scoring seams..." clears the partial result, so the
+            % chip is left with a solver residual and no pixel evidence. It must
+            % SAY that rather than print "Seam match: NaN" - on a chain-like
+            % graph the residual alone is exactly the number that cannot be
+            % trusted, so the reader has to know the second check is missing.
+            [controller, ~] = testCase.solvedSabotagedChain(44);
+            rmseLabel = testCase.attachChipLabel(controller);
+            [controller.edges.seamScore] = deal([]);   % what a cancelled pass leaves
+
+            controller.refreshQualityChip();
+
+            testCase.verifySubstring(rmseLabel.Text, 'Seam match: not checked');
+            testCase.verifySubstring(rmseLabel.Tooltip, 'Seam match: not checked');
+            testCase.verifyEmpty(strfind(rmseLabel.Text, 'NaN')); %#ok<STREMP>
+        end
+
         function qualityChipReportsAPendingReSolve(testCase)
-            % While the inspector owes a re-solve, the cached RMSE no longer
-            % describes the current edge set — say so instead of quoting it.
+            % While a re-solve is owed, the cached RMSE no longer describes the
+            % current edge set — say so instead of quoting it. The wording must
+            % also NOT order the user to press Re-solve: Stitch settles the debt
+            % itself, so the button is a shortcut, not a requirement.
             [controller, ~] = testCase.solvedSabotagedChain(32);
             rmseLabel = testCase.attachChipLabel(controller);
             controller.inspector = controllers.StitchingInspector( ...
@@ -375,8 +394,42 @@ classdef StitchingControllerTest < matlab.unittest.TestCase
             controller.inspector.resolvePending = true;
 
             controller.refreshQualityChip();
-            testCase.verifySubstring(rmseLabel.Text, 'Re-solve needed');
+            testCase.verifySubstring(rmseLabel.Text, 'Seams edited');
+            testCase.verifySubstring(rmseLabel.Text, 'or just Stitch');
+            testCase.verifySubstring(rmseLabel.Tooltip, 'never fuses stale positions');
             testCase.verifyEqual(rmseLabel.BackgroundColor, [0.85 0.50 0.05]);
+        end
+
+        function pendingReSolveOutlivesTheInspectorWindow(testCase)
+            % The flag used to live on the inspector, so closing that window
+            % dropped it: the chip went quiet and Stitch fused the PRE-FIX
+            % positions with nothing said. It belongs to the mosaic, not to the
+            % window that happened to edit it.
+            [controller, badEdge] = testCase.solvedSabotagedChain(44);
+            rmseLabel = testCase.attachChipLabel(controller);
+            inspector = controllers.StitchingInspector(controller.mibModel, controller, ...
+                struct('createView', false));
+
+            inspector.selectSeam(badEdge);
+            inspector.excludeSeam_Callback();          % an edit that never auto-resolves
+            testCase.assertTrue(controller.resolvePending);
+
+            delete(inspector);
+            controller.inspector = [];                 % what onInspectorClosed does
+            testCase.verifyTrue(controller.resolvePending, ...
+                'closing the inspector must not discard the pending re-solve');
+            controller.refreshQualityChip();
+            testCase.verifySubstring(rmseLabel.Text, 'Seams edited');
+
+            % ...and Stitch still settles it, with no inspector to delegate to.
+            % Back to fully headless: attachChipLabel left a view stub holding
+            % only rmseLabel, and the fuse path runs the real updateWidgets.
+            controller.view = [];
+            controller.BatchOpt.OutputMode{1} = 'In memory';
+            controller.BatchOpt.SaveProject   = false;
+            controller.stitchBtn_Callback(true);
+            testCase.verifyFalse(controller.resolvePending, ...
+                'Stitch must re-solve before fusing, inspector or no inspector');
         end
     end
 
@@ -470,6 +523,65 @@ classdef StitchingControllerTest < matlab.unittest.TestCase
             testCase.verifyEqual(controller.positions, importedPositions, 'AbsTol', 1e-9);
             testCase.verifyNumElements(controller.edges, numel(importedEdges));
             testCase.verifyNotEmpty(controller.canvas);
+        end
+
+        function importedSeamScoresAreNotRecomputedByTheInspector(testCase)
+            % Importing a vendor stitch scores the seams, and the inspector
+            % scored them again on the way in - two full passes over every
+            % overlap, which on a real mosaic is minutes each. The scores are a
+            % function of the placement, and nothing moved in between.
+            [controller, ~] = testCase.atlasController();
+            controller.BatchOpt.LayoutImport{1} = 'Vendor seams + solved positions';
+            controller.buildLayoutFromBatchOpt();
+
+            testCase.assertNotEmpty(controller.edges);
+            testCase.assertTrue(controller.seamScoresAreCurrent(), ...
+                'the import must record what its seam scores were computed for');
+
+            % A value no correlation produces: if the inspector re-scored, the
+            % real scores would be back and this would fail.
+            sentinel = -0.5;
+            [controller.edges.seamScore] = deal(sentinel);
+
+            inspector = controllers.StitchingInspector(controller.mibModel, controller, ...
+                struct('createView', false));
+            testCase.addTeardown(@() delete(inspector));
+
+            testCase.verifyEqual([controller.edges.seamScore], ...
+                repmat(sentinel, 1, numel(controller.edges)), ...
+                'the inspector re-read every overlap instead of reusing the scores');
+            % The ranking is still derived, since it costs no pixels.
+            testCase.verifyNumElements(inspector.ranking, numel(controller.edges));
+        end
+
+        function seamScoresGoStaleWhenThePlacementOrTheCorrectionChanges(testCase)
+            % The other half of the cache: skipping a rescore that IS needed
+            % would rate the mosaic on pixels it no longer shows.
+            [controller, ~] = testCase.atlasController();
+            controller.BatchOpt.LayoutImport{1} = 'Vendor seams + solved positions';
+            controller.buildLayoutFromBatchOpt();
+            testCase.assertTrue(controller.seamScoresAreCurrent());
+
+            % (a) the tiles moved - the strips are cut at the solved origins
+            movedPositions = controller.positions;
+            movedPositions(2, 1) = movedPositions(2, 1) + 3;
+            controller.positions = movedPositions;
+            testCase.verifyFalse(controller.seamScoresAreCurrent(), ...
+                'a changed placement must force a rescore');
+
+            % (b) different pixels: the scores correlate CORRECTED tiles
+            controller.buildLayoutFromBatchOpt();
+            testCase.assertTrue(controller.seamScoresAreCurrent());
+            controller.BatchOpt.IntensityCorrection{1} = 'Flat-field (shared)';
+            testCase.verifyFalse(controller.seamScoresAreCurrent(), ...
+                'a changed intensity correction must force a rescore');
+
+            % (c) a partial set is not a set (what a cancelled pass leaves)
+            controller.BatchOpt.IntensityCorrection{1} = 'None';
+            testCase.assertTrue(controller.seamScoresAreCurrent());
+            controller.edges(1).seamScore = [];
+            testCase.verifyFalse(controller.seamScoresAreCurrent(), ...
+                'an unscored edge must force a rescore');
         end
 
         function atlasSourceIgnoresGridAndOverlapSettings(testCase)

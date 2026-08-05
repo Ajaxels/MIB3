@@ -77,10 +77,16 @@ if obj.hasWidget('statusLabel')
     numExcluded = nnz(~[edges.valid]);
     scores = [edges(logical([edges.valid])).seamScore];
     scores = scores(~isnan(scores));
-    if isempty(scores); worstScore = NaN; else; worstScore = min(scores); end
+    % No scores at all means the scoring pass never ran or was cancelled (which
+    % clears the partial result) - say so rather than print "worst score NaN".
+    if isempty(scores)
+        worstScoreText = 'not checked';
+    else
+        worstScoreText = sprintf('%.2f', min(scores));
+    end
     obj.view.handles.statusLabel.Text = sprintf( ...
-        '%d seams | %d reviewed | %d excluded | worst score %.2f', ...
-        numel(edges), numReviewed, numExcluded, worstScore);
+        '%d seams | %d reviewed | %d excluded | worst score %s', ...
+        numel(edges), numReviewed, numExcluded, worstScoreText);
 end
 
 % ---- exclude button state -------------------------------------------------

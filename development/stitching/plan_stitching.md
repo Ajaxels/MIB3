@@ -33,7 +33,8 @@ also handles affine/rigid/similarity) → `measureAllPairs` (edge list) → `sol
 slice fits in RAM). Plus `estimateOverlap`, `resolveTileEntry`, `blendWeights`, `canvasBackground`, `tileCacheLRU`,
 `synthesizeEdgesFromPositions` (shared by every source that imports a placement),
 `layoutPixSize` (the acquisition scale, or `[]` when the source does not know it),
-`saveProject`/`loadProject` (sidecar JSON), `scoreSeams`/`localCorrelate` (inspector core).
+`saveProject`/`loadProject` (sidecar JSON), `scoreSeams`/`rankSeams`/`localCorrelate` (inspector core),
+`tileCacheBudget` (the reader's cache size).
 
 **Controller — `mib\+controllers\@Stitching\`** + view `mib\+views\StitchingGUI.mlapp`. Standard
 child-controller set + workflow callbacks (`selectInputBtn`, `previewLayoutBtn`, `measureOverlaps`,
@@ -107,6 +108,48 @@ misalignment is not softened before it has been judged}; `IntensityCorrection`;
 - **Filename-pattern tokens:** order and separators are irrelevant (found by last occurrence of the
   letter), uppercase only, indices 1-based. `Z001-X002-Y003` silently parses as `00/00/00`
   (`str2double` reads exactly 2 chars) — a known limitation, not a bug to "fix" without a user call.
+- **`imread`'s `PixelRegion` takes NUMERIC vectors, not cells.** `makeTileReader`'s sub-region fast
+  path built `{r0, r1}`, imread rejected the argument outright ("its type was cell"), and the
+  `try`/`catch` fallback swallowed it - so every TIFF overlap read silently decoded the whole file
+  from 2026-07 until 2026-08. Measured on a 24000x24000 single-row-strip Deflate tile: a 12 % row
+  band is 0.70 s and a 12 % column band 3.55 s against 8.75 s for the whole tile, so seam scoring a
+  2x2 mosaic went 54 s -> 17.5 s on the fix alone. **A silent fallback is the failure mode to design
+  against here**: the pixels were right either way, so no correctness test could see it. The
+  regression test asserts the tile is NOT resident afterwards - only the fallback path caches -
+  which is the one observable difference between the two.
+- **The tile-cache budget is sized to the layout** (`tileCacheBudget`, the default of
+  `makeTileReader`). The old fixed 2 GB could not hold even ONE PAIR of 1.15 GB tiles, so the
+  inspector re-decoded both tiles every time the user stepped back to a seam: 17.9 s per revisit
+  against 0.00 s once the pair stays resident. Capped at half of what `memory` reports available
+  (Windows-only; elsewhere it falls back to the fixed default), never below 2 GB so small-tile jobs
+  cannot regress. It is an upper bound, not an allocation. **`measureAllPairs`' `parfor` path
+  divides it by the pool size** - each worker builds its own cache, so a budget sized for one reader
+  would be claimed once per worker.
+- **Seam scores are computed AT MOST ONCE per placement** (`Stitching.ensureSeamScores`, same lazy-
+  cache shape as `ensureIntensityCorrection`). Three stages want them - `optimizePositions_Callback`
+  after a solve, `buildLayoutFromBatchOpt` after a vendor import, and `StitchingInspector.scoreAndRank`
+  on the way in - and before this they read every overlap twice on the two paths that chain
+  (import → *Inspect and fix...*, and `resolveBtn_Callback`, which re-solves through the parent and
+  then re-ranks). `seamScoresStamp` records `{positions, numEdges, correctionMethod}` and is COMPARED
+  against live state rather than explicitly invalidated - there is no single funnel every position
+  change goes through, and a rescore that silently did not happen rates the mosaic on the wrong
+  pixels. `seamScoresAreCurrent` additionally requires EVERY edge to carry a score, so a cancelled
+  pass or a pre-scoring project is redone. Deliberately NOT invalidated by an edge edit that leaves
+  the positions alone (excluding a seam, or a fix awaiting its re-solve): no seam's pixels moved.
+  A project load adopts the sidecar's scores when the set is complete, stamped AFTER
+  `applyProjectSettings` so the correction method recorded is the one in force.
+- **`rankSeams` is split out of `scoreSeams` because it reads NO pixels.** That is what lets the
+  scoring be skipped while the worst-first order is still re-derived every time (so it follows an
+  edge excluded since the last pass). `scoreSeams` ends by calling it, so the two orders cannot drift.
+- **Cancelling `scoreSeams` throws the PARTIAL result away** (all `seamScore` cleared, `dzHint`
+  zeroed, `ranking` back to input order, third output `cancelled`). Keeping the scores computed so
+  far would be worse than keeping none: the chip and the inspector ranking both take a MINIMUM over
+  the scored seams, so a half-scored set rates the mosaic on its better half and silently ignores
+  the seams nobody read. Stale input scores are dropped too - scoring only ever runs after the
+  positions changed, so they describe a different placement. "No score" then reads **"not checked"**
+  in the chip and the inspector status line, never `NaN`; `optimizePositions_Callback` appends the
+  reason to the status label and does NOT `StopProtocol` (the solve itself stands - only its
+  advisory pixel verification was skipped).
 - **Alignment quality chip:** `solverInfo` must be a controller property (not a callback-local) and
   `refreshQualityChip` must be called from `updateWidgets`, so every edge edit (exclude, undo, inspector
   fixes) refreshes the chip — a solve's residual can read "Excellent" while a pixel-based seam score
@@ -118,8 +161,17 @@ misalignment is not softened before it has been judged}; `IntensityCorrection`;
   arrow/Q/W/PgUp/PgDn keys are view-only navigation in every mode. See
   [[ux-navigation-keys]] (memory) for why this rule exists.
 - **`Stitch` is the single fuse+save entry point** — the inspector has no Re-fuse/Save button;
-  `stitchBtn_Callback` runs any pending inspector re-solve first (`resolvePending` guard) so it never
-  fuses stale positions.
+  `stitchBtn_Callback` runs any pending re-solve first (`Stitching.resolvePending`) so it never
+  fuses stale positions — delegating to the inspector's `resolveBtn_Callback` when that window is
+  open (it also re-scores and re-ranks the review), and to a plain `optimizePositions_Callback`
+  when it is not. **The flag is the CONTROLLER's, not the inspector's**: it used to live on the
+  inspector, so closing that window discarded the debt, after which the chip stopped warning and
+  Stitch fused the pre-fix placement in silence.
+- **The chip must not order the user to press Re-solve.** Because Stitch settles the debt itself,
+  the button is a shortcut for refreshing the RATING, not a step in the workflow — the old
+  "Re-solve needed to update alignment" sent people to a button they did not need. It now reads
+  `Seams edited / Rating stale until re-solved / Re-solve now, or just Stitch`, and that branch
+  gets its own tooltip: quoting the cached RMSE there would contradict the line above it.
 - **Min blend mode** needs the fresh-pixel mask (same as Max) or a zero background wins every
   singly-covered pixel.
 

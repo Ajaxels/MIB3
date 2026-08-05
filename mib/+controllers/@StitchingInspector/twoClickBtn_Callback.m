@@ -31,11 +31,8 @@ end
 
 pairAxes = obj.view.handles.pairAxes;
 edge = obj.stitching.edges(obj.currentEdgeIdx);
-layout = obj.stitching.layout;
 
-if isempty(obj.readerFcn)
-    obj.readerFcn = utils.stitch.makeTileReader(layout);
-end
+obj.tileReader();
 imageI = flattenForDisplay(obj.readerFcn(edge.i));
 imageJ = flattenForDisplay(obj.readerFcn(edge.j));
 

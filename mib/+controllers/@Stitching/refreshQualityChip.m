@@ -22,9 +22,11 @@ function refreshQualityChip(obj)
 % score is a minimum over the VALID edges, so that set changing changes the
 % verdict even though no position moved.
 %
-% While the inspector owes a global re-solve (``resolvePending`` — a fix made
-% with *Auto re-solve* off), the cached RMSE no longer describes the current
-% edge set, so the chip says so instead of quoting a stale number.
+% While a global re-solve is owed (``obj.resolvePending`` — a fix made with
+% *Auto re-solve* off), the cached RMSE no longer describes the current edge set,
+% so the chip says so instead of quoting a stale number. The flag lives on the
+% CONTROLLER, not on the inspector, so the warning survives the inspector being
+% closed — which is exactly when a stale rating would otherwise go unmentioned.
 
 if isempty(obj.view) || ~isfield(obj.view.handles, 'rmseLabel'); return; end
 rmseLabel = obj.view.handles.rmseLabel;
@@ -63,10 +65,16 @@ end
 nPruned = 0;
 if isfield(obj.solverInfo, 'nPruned'); nPruned = obj.solverInfo.nPruned; end
 
-if resolveIsPending(obj)
+pendingResolve = obj.resolvePending;
+if pendingResolve
     % An edge was edited but the solve has not been re-run: the seam scores
-    % still describe the current placement, the RMSE does not.
-    rmseLabel.Text = sprintf('Seams edited\nRe-solve needed to update alignment');
+    % still describe the current placement, the RMSE does not. The third line
+    % answers the question the second one provokes - pressing Re-solve is
+    % OPTIONAL, because stitchBtn_Callback settles the debt before it fuses.
+    % Telling the user to press it (the old wording did) would send them to a
+    % button they do not need.
+    rmseLabel.Text = sprintf(['Seams edited\nRating stale until re-solved\n' ...
+        'Re-solve now, or just Stitch']);
     rmseLabel.BackgroundColor = [0.85 0.50 0.05];   % orange
 elseif nDisconnected > 0
     % A tile with no valid measurement is parked at its nominal position —
@@ -101,26 +109,46 @@ elseif nPruned > 0
         ratingText, obj.solverInfo.rmseTotal, nPruned);
     rmseLabel.BackgroundColor = ratingColor;
 else
-    rmseLabel.Text = sprintf('%s\nSolver error: %.2f px\nSeam match: %.2f', ...
-        ratingText, obj.solverInfo.rmseTotal, worstSeamScore);
+    rmseLabel.Text = sprintf('%s\nSolver error: %.2f px\nSeam match: %s', ...
+        ratingText, obj.solverInfo.rmseTotal, seamMatchText(worstSeamScore));
     rmseLabel.BackgroundColor = ratingColor;
 end
 rmseLabel.FontColor = [1 1 1];
-rmseLabel.Tooltip = sprintf(['Two checks, combined:\n' ...
-    '- Solver error: %.2f px (avg. mismatch between tiles; <1 great, >10 poor)\n' ...
-    '- Seam match: %.2f (pixel overlap at seams; 0.7+ good, <0.4 bad)\n' ...
-    'Tiles with no measurement stay at their nominal spot, unchecked.\n' ...
-    'Use Inspect & fix to correct problem seams.'], ...
-    obj.solverInfo.rmseTotal, worstSeamScore);
+if pendingResolve
+    % Quoting the cached numbers here would contradict the chip, which has just
+    % said they are stale.
+    rmseLabel.Tooltip = sprintf([ ...
+        'A seam was edited with Auto re-solve off, so the tile positions no\n' ...
+        'longer follow from the measurements and the rating is out of date.\n\n' ...
+        'Press Re-solve in the seam inspector to refresh it now - or simply\n' ...
+        'press Stitch, which re-solves first and never fuses stale positions.']);
+else
+    rmseLabel.Tooltip = sprintf(['Two checks, combined:\n' ...
+        '- Solver error: %.2f px (avg. mismatch between tiles; <1 great, >10 poor)\n' ...
+        '- Seam match: %s (pixel overlap at seams; 0.7+ good, <0.4 bad)\n' ...
+        'Tiles with no measurement stay at their nominal spot, unchecked.\n' ...
+        'Use Inspect & fix to correct problem seams.'], ...
+        obj.solverInfo.rmseTotal, seamMatchText(worstSeamScore));
+end
 
 end
 
 % =========================================================================
-function tf = resolveIsPending(obj)
-% RESOLVEISPENDING - True when an open inspector has edited the edges without
-% re-running the global solve.
-tf = ~isempty(obj.inspector) && isvalid(obj.inspector) && obj.inspector.resolvePending;
+function text = seamMatchText(worstSeamScore)
+% SEAMMATCHTEXT - The seam figure, or why there is none. NaN here means no VALID
+% edge carries a score: either nothing has been scored yet, or the user
+% cancelled the Scoring seams pass (which clears the partial result rather than
+% rate the mosaic on the half of the seams it managed to read). Saying so beats
+% printing "NaN" - and the rating shown beside it is then the solver residual
+% alone, which on a chain-like graph is exactly the number that cannot be
+% trusted on its own.
+if isnan(worstSeamScore)
+    text = 'not checked';
+else
+    text = sprintf('%.2f', worstSeamScore);
 end
+end
+
 
 % =========================================================================
 function [ratingText, ratingColor] = qualityRating(rmse)

@@ -28,7 +28,11 @@ classdef StitchingInspector < handle
         currentEdgeIdx
         % index (into stitching.edges) of the seam shown in the pair view
         readerFcn
-        % shared LRU tile reader (utils.stitch.makeTileReader)
+        % shared LRU tile reader (utils.stitch.makeTileReader); built once by
+        % obj.tileReader(), never directly - see there
+        readerCachedFcn
+        % companion predicate of readerFcn: is that tile resident? Used to put a
+        % progress dialog around the reads that will actually stall on disk
         pairImageHandles
         % [2x1] image handles on pairAxes for the flicker overlay ([] otherwise)
         flickerState
@@ -58,11 +62,6 @@ classdef StitchingInspector < handle
         % ensureTileThumbs ({} until then, {} forever if tiles are too big)
         thumbScale
         % full-res pixels per thumbnail pixel (NaN until thumbs are built)
-        resolvePending
-        % true when a user fix was applied WITHOUT the global re-solve
-        % (auto-re-solve off / deferred). The parent's Stitch checks this and
-        % re-solves before fusing, so the mosaic never comes from stale
-        % positions no matter which window the user works in
         excludeBtnDefaultColor
         % BackgroundColor the exclude button had when the window opened, so the
         % "included" look can be restored without hardcoding a theme colour
@@ -75,6 +74,18 @@ classdef StitchingInspector < handle
         % where the view is the mosaic Z BOUNDARY: that ONE tile at slices
         % z-1 (sliceA, cyan) vs z (sliceB, magenta). Browsing is VIEW ONLY.
         % [] = defaults (central slice)
+    end
+
+    properties (Dependent)
+        resolvePending
+        % true when a user fix was applied WITHOUT the global re-solve
+        % (auto-re-solve off / deferred), so the positions no longer follow from
+        % the edges. An ALIAS of controllers.Stitching.resolvePending, which is
+        % where the flag actually lives: the debt belongs to the mosaic, not to
+        % this window, and while it was stored here closing the inspector took
+        % the pending re-solve with it - the chip stopped warning and Stitch
+        % fused the stale placement. Kept as a property so the inspector's own
+        % code (and its tests) read and write it unchanged
     end
 
     events
@@ -115,6 +126,7 @@ classdef StitchingInspector < handle
             obj.ranking = [];
             obj.currentEdgeIdx = [];
             obj.readerFcn = [];
+            obj.readerCachedFcn = [];
             obj.pairImageHandles = [];
             obj.flickerState = 1;
             obj.autoBackup = {};
@@ -125,7 +137,6 @@ classdef StitchingInspector < handle
             obj.pairZoom = [];
             obj.tileThumbs = {};
             obj.thumbScale = NaN;
-            obj.resolvePending = false;
             obj.viewSlice = [];
             obj.excludeBtnDefaultColor = [];
 
@@ -176,6 +187,70 @@ classdef StitchingInspector < handle
             end
 
             obj.view.gui.Visible = 'on';
+        end
+
+        % ---------------------------------------------------------------
+        function tf = get.resolvePending(obj)
+            tf = false;
+            if ~isempty(obj.stitching) && isvalid(obj.stitching)
+                tf = obj.stitching.resolvePending;
+            end
+        end
+
+        function set.resolvePending(obj, tf)
+            if ~isempty(obj.stitching) && isvalid(obj.stitching)
+                obj.stitching.resolvePending = logical(tf);
+            end
+        end
+
+        % ---------------------------------------------------------------
+        function readerFcn = tileReader(obj)
+            % TILEREADER - The inspector's one shared LRU tile reader.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      readerFcn = obj.tileReader()
+            %
+            % Every place that reads pixels goes through this - the pair view,
+            % the mini-map thumbnails, the seam scoring, the click-to-correlate
+            % fixes - so they share ONE cache. Built lazily on first use and kept
+            % for the session; ``obj.readerCachedFcn`` comes with it.
+            %
+            % **It carries the intensity correction.** The inspector used to
+            % build its reader with ``makeTileReader(layout)`` in four separate
+            % places, none of them passing one, so with a correction selected the
+            % inspector reviewed - and scored - different pixels from the ones
+            % the mosaic is measured and fused on. That is exactly the split
+            % ``utils.stitch.makeTileReader`` exists to prevent.
+            %
+            % Output Arguments:
+            %   - **readerFcn** — [function_handle] see :func:`utils.stitch.makeTileReader`
+            %
+            if isempty(obj.readerFcn)
+                [obj.readerFcn, obj.readerCachedFcn] = utils.stitch.makeTileReader( ...
+                    obj.stitching.layout, ...
+                    struct('correction', obj.stitching.ensureIntensityCorrection()));
+            end
+            readerFcn = obj.readerFcn;
+        end
+
+        % ---------------------------------------------------------------
+        function tf = tilesAreResident(obj, tileIndices)
+            % TILESARERESIDENT - Would reading these tiles return immediately?
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      tf = obj.tilesAreResident([edge.i, edge.j])
+            %
+            % False (the pessimistic answer) whenever the reader has not been
+            % built yet or offers no cache predicate, so a caller that gates a
+            % progress dialog on this errs towards showing one.
+            %
+            tf = false;
+            if isempty(obj.readerCachedFcn); return; end
+            tf = all(arrayfun(@(idx) obj.readerCachedFcn(idx), tileIndices));
         end
 
         % ---------------------------------------------------------------

@@ -55,7 +55,9 @@ function [edges, cancelled] = measureAllPairs(layout, pairs, options)
 %       :func:`utils.stitch.featureShift` when ``registrationMethod`` is
 %       ``'Feature-based'`` (detector type, per-detector params, downsampling,
 %       RANSAC; the ``automaticOptions`` shape). Ignored for phase correlation.
-%     - ``.cacheSizeBytes`` — [double] LRU tile-cache budget (default: ``2*1024^3``)
+%     - ``.cacheSizeBytes`` — [double] LRU tile-cache budget (default: sized to
+%       the layout by :func:`utils.stitch.tileCacheBudget`, divided by the pool
+%       size on the ``parfor`` path where each worker caches separately)
 %     - ``.useParallel`` — [logical] measure pairs with ``parfor`` (default: ``false``)
 %     - ``.showWaitbar`` — [logical] show a progress dialog (default: ``false``); only the
 %       sequential path (``useParallel = false``) makes it ``Cancelable`` — a ``parfor``
@@ -93,7 +95,10 @@ if ~isfield(options, 'expandPx');         options.expandPx = 64; end
 if ~isfield(options, 'qualityThreshold'); options.qualityThreshold = 0.30; end
 if ~isfield(options, 'colorChannel');     options.colorChannel = 1; end
 if ~isfield(options, 'subpixel');         options.subpixel = true; end
-if ~isfield(options, 'cacheSizeBytes');   options.cacheSizeBytes = 2 * 1024^3; end
+% [] lets makeTileReader size the cache to the layout (utils.stitch.tileCacheBudget).
+% The parfor path below overrides it: every worker builds its OWN cache, so a
+% budget sized for one reader would be claimed once per worker.
+if ~isfield(options, 'cacheSizeBytes');   options.cacheSizeBytes = []; end
 if ~isfield(options, 'correction');      options.correction = []; end
 if ~isfield(options, 'useParallel');      options.useParallel = false; end
 if ~isfield(options, 'showWaitbar');      options.showWaitbar = false; end
@@ -144,8 +149,16 @@ else
 end
 
 if options.useParallel
-    % Each worker builds its own cache (documented behaviour).
-    readerOptions = struct('cacheSizeBytes', options.cacheSizeBytes, 'correction', options.correction);
+    % Each worker builds its own cache (documented behaviour), so the budget is
+    % divided by the pool size rather than granted in full to every one of them.
+    workerCount = 1;
+    currentPool = gcp('nocreate');
+    if ~isempty(currentPool); workerCount = currentPool.NumWorkers; end
+    workerCacheBytes = options.cacheSizeBytes;
+    if isempty(workerCacheBytes)
+        workerCacheBytes = utils.stitch.tileCacheBudget(layout, struct('divisor', workerCount));
+    end
+    readerOptions = struct('cacheSizeBytes', workerCacheBytes, 'correction', options.correction);
     measured = zeros(nPairs, 3);
     qualities = zeros(nPairs, 1);
     tforms = cell(nPairs, 1);

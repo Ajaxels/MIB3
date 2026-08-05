@@ -97,9 +97,40 @@ the first time, to check intermediate results - or the
 
     The chip keeps up with the [seam inspector](dataset-stitch-inspector.md) while it is
     open: excluding a seam changes which seams the worst-match is taken over, so the
-    verdict is re-derived immediately. Until you press *Re-solve* it reads
-    **Seams edited - press Re-solve to update the alignment**, because the residual still
-    belongs to the previous edge set.
+    verdict is re-derived immediately. After an edit made with *Auto re-solve* off it reads
+    **Seams edited / Rating stale until re-solved / Re-solve now, or just Stitch**, because
+    the residual still belongs to the previous edge set.
+
+    !!! tip "You do not have to press Re-solve"
+        <span class="widget widget-button">Stitch</span> re-solves first whenever one is
+        owed, so it can never fuse a mosaic from pre-fix positions. Pressing
+        <span class="widget widget-button">Re-solve</span> in the inspector is simply how
+        you refresh the **rating** before deciding whether to fuse at all - useful when
+        you are working through several seams and want to see each fix land.
+
+        The warning also survives closing the inspector: the pending re-solve belongs to
+        the mosaic, not to that window.
+
+    !!! note "The pixel seam check can be cancelled"
+        Scoring re-reads every overlap from disk, which on a large mosaic is the slowest
+        step of a solve. The **Scoring seams...** progress dialog therefore has a
+        <span class="widget widget-button">Cancel</span> button; the solve itself is
+        already finished and is kept, only the verification is skipped.
+
+        Cancelling discards the scores computed so far rather than keeping a partial
+        set - the rating is the *worst* seam, so scoring half of them and stopping would
+        grade the mosaic on its better half and quietly ignore the seams nobody looked
+        at. The chip then reads **Seam match: not checked** and rests on the solver
+        residual alone, and the status line says *seam check cancelled*. Run
+        <span class="widget widget-button">Optimize positions</span> again, or open the
+        [seam inspector](dataset-stitch-inspector.md), to get the check back.
+
+        Conversely, the check runs **once per placement**: opening the seam inspector
+        straight after a solve, after importing a vendor stitch, or after loading a
+        project reuses the scores rather than reading every overlap again. It re-runs
+        when the tiles move, when the edge set changes, or when
+        <span class="widget widget-dropdown">Intensity correction</span> changes - all
+        three change the pixels being compared.
 
 4. <span class="widget widget-button">Stitch</span> *(bottom strip)* - fuses the tile pixels into the
    output mosaic at the optimized positions, blending the overlap regions according to

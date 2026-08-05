@@ -73,13 +73,26 @@ widgets). No BatchOpt/batch mode — inherently interactive.
 `controllers.StitchingInspector(mibModel, stitching, struct('createView', false))` builds the
 inspector headlessly (scored/ranked, no window) for controller-level tests.
 
+**One tile reader per session, built by `obj.tileReader()`** — never
+`utils.stitch.makeTileReader` directly. Four call sites used to build their own with no arguments,
+which cost two things: separate LRU caches (so the pair view could not reuse what scoring had just
+read) and, worse, **no intensity correction** — with a correction selected the inspector reviewed
+and SCORED different pixels from the ones the mosaic is measured and fused on, the exact split
+`makeTileReader` exists to prevent. `obj.tilesAreResident(idx)` (from `makeTileReader`'s second
+output) tells a free read from one that will stall on disk, which is what gates the pair view's
+"Reading tile..." dialog: a whole-tile decode is seconds on a large mosaic, but `Q`/`W` slice
+browsing re-renders constantly and must not flash a dialog every keypress.
+
 ## Fuse / persist — Stitch is the single entry point
 
 The inspector has **no Re-fuse and no Save-project button** (removed — they were thin delegations
 to the parent's `stitchBtn_Callback`/`saveProjectBtn_Callback`, and the inspector mutates the
 parent's `edges`/`positions` in place, so the parent's buttons already see every fix with no
 hand-off). The one asymmetry to preserve: `stitchBtn_Callback` must run any pending inspector
-re-solve (`resolvePending`, set by deferred/auto-off fixes, undo, exclude) BEFORE fusing, or it
+re-solve (`resolvePending` — set by deferred/auto-off fixes, undo, exclude; a DEPENDENT alias of
+`Stitching.resolvePending`, where the flag actually lives, because the debt belongs to the mosaic
+and not to this window: while it was stored on the inspector, closing that window dropped it, the
+chip went quiet and Stitch fused the pre-fix placement) BEFORE fusing, or it
 silently fuses stale positions. Inspector bottom row: Confirm / Exclude / Re-solve / Close.
 
 ## mlapp widgets

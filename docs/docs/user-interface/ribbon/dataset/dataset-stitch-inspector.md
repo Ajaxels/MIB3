@@ -115,6 +115,13 @@ more, elsewhere in the dialog:
   measurement back. The seam's *Used* column reads `EXCLUDED` and its table row greys out to
   match.
 - <span class="widget widget-button">Re-solve</span> recomputes all positions and re-ranks.
+  With <label class="widget widget-checkbox">Auto re-solve</label> unticked this is how you
+  see a fix take effect - but it is **never required**:
+  <span class="widget widget-button">Stitch</span> re-solves first whenever one is owed, so
+  the mosaic can never be fused from pre-fix positions. Unticking *Auto re-solve* and
+  fixing several seams before one final solve is the fast way to work through a large
+  mosaic; the quality chip says *Rating stale until re-solved* meanwhile, and keeps saying
+  it even if you close this window.
 - ++N++ / ++P++ step through the ranking.
 
 Review decisions are saved with the [project file](dataset-stitch.md#project-files) and

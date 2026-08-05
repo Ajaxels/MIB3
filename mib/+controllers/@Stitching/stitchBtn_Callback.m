@@ -35,9 +35,18 @@ if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.Stitching.stitchBtn_Callback: triggered\n');
 end
 
-% Apply any seam fix still awaiting its global re-solve before fusing.
-if ~isempty(obj.inspector) && isvalid(obj.inspector) && obj.inspector.resolvePending
-    obj.inspector.resolveBtn_Callback();
+% Apply any seam fix still awaiting its global re-solve before fusing. The flag
+% is the CONTROLLER's, so this fires whether or not the inspector is still open -
+% while it lived on the inspector, closing that window dropped the debt and the
+% mosaic was fused from the pre-fix positions with nothing said. With the window
+% open the inspector's own Re-solve is used, because it also re-scores and
+% re-ranks its review; without it, the plain solve is all that is needed.
+if obj.resolvePending
+    if ~isempty(obj.inspector) && isvalid(obj.inspector)
+        obj.inspector.resolveBtn_Callback();
+    else
+        obj.optimizePositions_Callback();
+    end
 end
 
 % Run any pipeline stages not done yet: layout -> measure -> solve -> canvas.

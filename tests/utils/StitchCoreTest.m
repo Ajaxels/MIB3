@@ -628,6 +628,98 @@ classdef StitchCoreTest < matlab.unittest.TestCase
     % =================================================================
     methods (Test, TestTags = {'Unit'})
 
+        function makeTileReader_subRegionReadDoesNotDecodeTheWholeTile(testCase)
+            % The sub-region fast path built imread's PixelRegion as CELLS,
+            % which imread rejects outright ("its type was cell"); the try/catch
+            % swallowed it and every TIFF region read silently decoded the whole
+            % file. On a 24000x24000 tile that is 10 s instead of 0.7 s, and
+            % nothing anywhere said so.
+            %
+            % The tell is the cache: only the full-load fallback populates it,
+            % so a genuine region read leaves the tile NOT resident. Asserting
+            % the pixels alone would pass either way - which is exactly why the
+            % bug survived.
+            tempDir = tempname; mkdir(tempDir);
+            testCase.addTeardown(@() rmdir(tempDir, 's'));
+            tileFile = fullfile(tempDir, 'tile_01.tif');
+            fullImage = uint8(mod(reshape(0:(120 * 80 - 1), 120, 80), 251));
+            imwrite(fullImage, tileFile);
+
+            layout = testCase.emptyLayout(1);
+            layout(1).index = 1;
+            layout(1).filename = tileFile;
+            layout(1).tileSize = [120 80 1 1];
+
+            [readerFcn, isCachedFcn] = utils.stitch.makeTileReader(layout);
+            region = [11, 40; 21, 60];                      % [yMin yMax; xMin xMax]
+            crop = readerFcn(1, region);
+
+            testCase.verifyEqual(squeeze(crop), fullImage(11:40, 21:60), ...
+                'the sub-region read returned the wrong pixels');
+            testCase.verifyFalse(isCachedFcn(1), ...
+                'the sub-region read fell back to decoding (and caching) the whole tile');
+
+            % A whole-tile read still caches, and later crops come from it.
+            readerFcn(1);
+            testCase.verifyTrue(isCachedFcn(1));
+            testCase.verifyEqual(squeeze(readerFcn(1, region)), fullImage(11:40, 21:60));
+        end
+
+        function tileCacheBudget_growsToTheLayoutAndNeverShrinks(testCase)
+            % A fixed 2 GB budget could not hold one PAIR of large tiles, so the
+            % inspector re-decoded both on every revisit. The budget must scale
+            % with the layout - and must never come out BELOW the old fixed
+            % default, or small-tile jobs would regress.
+            fixedDefault = 2 * 1024^3;
+
+            small = testCase.emptyLayout(4);
+            for k = 1:4
+                small(k).index = k; small(k).tileSize = [512 512 1 1]; small(k).dataClass = 'uint8';
+            end
+            testCase.verifyEqual(utils.stitch.tileCacheBudget(small), fixedDefault, ...
+                'a tiny layout must not shrink the budget below the old default');
+
+            big = testCase.emptyLayout(4);
+            for k = 1:4
+                big(k).index = k; big(k).tileSize = [24000 24000 1 1]; big(k).dataClass = 'uint16';
+            end
+            bigBudget = utils.stitch.tileCacheBudget(big);
+            testCase.verifyGreaterThanOrEqual(bigBudget, fixedDefault);
+            % Never more than the layout actually needs (4 x 1.15 GB here).
+            testCase.verifyLessThanOrEqual(bigBudget, 4 * 24000 * 24000 * 2);
+
+            % Several concurrent readers share the machine, not multiply it.
+            dividedBudget = utils.stitch.tileCacheBudget(big, struct('divisor', 8));
+            testCase.verifyLessThanOrEqual(dividedBudget, bigBudget);
+
+            testCase.verifyEqual(utils.stitch.tileCacheBudget(testCase.emptyLayout(0)), fixedDefault);
+        end
+
+        function scoreSeams_cancelledIsFalseWithoutAProgressDialog(testCase)
+            % Pins the third output: scoring is Cancelable, but only through the
+            % progress dialog, so every headless/batch caller must see false —
+            % a caller that treated "no dialog" as cancelled would silently drop
+            % the seam check on every batch run.
+            layout = testCase.makeLineLayout(2, [40 40 1 1], 30);
+            positions = [1 1 1; 1 31 1];
+            edges = struct('i', 1, 'j', 2, 'direction', 'x', 'nominal', [0 30 0], ...
+                'measured', [0 30 0], 'quality', 1, 'valid', true, 'tform', [], ...
+                'source', 'auto', 'seamScore', []);
+            % Both tiles cut from one texture at the solved offset, so the seam
+            % genuinely scores high; the reader takes (tileIdx, bbox) like
+            % makeTileReader's.
+            texture = StitchCoreTest.texturedImage(40, 70, 5);
+            tiles = {texture(:, 1:40), texture(:, 31:70)};
+            readerFcn = @(tileIdx, bbox) tiles{tileIdx}(bbox(1,1):bbox(1,2), bbox(2,1):bbox(2,2));
+
+            [scored, ranking, cancelled] = utils.stitch.scoreSeams(layout, edges, positions, ...
+                struct('readerFcn', readerFcn));
+
+            testCase.verifyFalse(cancelled);
+            testCase.verifyEqual(ranking, 1);
+            testCase.verifyGreaterThan(scored(1).seamScore, 0.99);
+        end
+
         function canvasBackground_whiteIsTheClassCeiling(testCase)
             testCase.verifyEqual(utils.stitch.canvasBackground('uint8', 'black'), 0);
             testCase.verifyEqual(utils.stitch.canvasBackground('uint16', 'black'), 0);

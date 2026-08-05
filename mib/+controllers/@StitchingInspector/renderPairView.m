@@ -67,9 +67,25 @@ obj.pairStrip = [];
 obj.roiBoxHandle = [];                    % cla deleted the hover ROI box
 obj.twoClick = struct('active', false);   % any re-render cancels two-click mode
 
-if isempty(obj.readerFcn)
-    obj.readerFcn = utils.stitch.makeTileReader(layout);
+obj.tileReader();
+
+% The pair view needs WHOLE tiles, and on a large mosaic one decode is several
+% seconds - the window would otherwise sit there doing nothing visible while it
+% reads. Gated on the cache: navigating back to a pair that is still resident
+% must not flash a dialog, and Q/W slice browsing re-renders constantly.
+if ~isempty(boundaryTile)
+    tilesNeeded = boundaryTile;
+else
+    tilesNeeded = [edge.i, edge.j];
 end
+loadDialog = [];
+if ~obj.tilesAreResident(tilesNeeded) && ~isempty(obj.progressParent()) && ...
+        strcmp(obj.progressParent().Visible, 'on')
+    loadDialog = uiprogressdlg(obj.progressParent(), 'Indeterminate', 'on', ...
+        'Message', sprintf('Reading tile %s...', strjoin(string(tilesNeeded), ' and ')), ...
+        'Title', 'Seam inspector');
+end
+loadDialogCleanup = onCleanup(@() closeIfValid(loadDialog));
 
 if ~isempty(boundaryTile)
     % ---- boundary view: ONE tile, slices z-1 vs z ----------------------------
@@ -103,6 +119,9 @@ else
     depthI = size(tileFullI, 3);
     depthJ = size(tileFullJ, 3);
 end
+% The pixels are in; what follows is arithmetic on a downsampled copy. The
+% onCleanup above is the belt-and-braces path for an error between here and there.
+closeIfValid(loadDialog);
 
 % ---- geometry (tile-i coordinate frame) --------------------------------------
 rowMin = min(1, 1 + deltaYX(1));
@@ -273,6 +292,16 @@ updateOffsetLabel(obj, edge, deltaYX);
 end
 
 % =====================================================================
+function closeIfValid(progressDialog)
+% CLOSEIFVALID - Close a progress dialog once; safe to call again afterwards
+% (renderPairView closes it explicitly, and its onCleanup then repeats the call
+% on the way out).
+if ~isempty(progressDialog) && isvalid(progressDialog)
+    close(progressDialog);
+end
+end
+
+% =========================================================================
 function [canvasI, canvasJ, canvasExtent] = unionCanvases(imageI, imageJ, ...
     deltaYX, rowMin, colMin, scale)
 % UNIONCANVASES - Place both (downsampled) tiles into same-size union buffers

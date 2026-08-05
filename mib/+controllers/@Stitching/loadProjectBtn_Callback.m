@@ -87,6 +87,7 @@ if ~settingsOnly
     % The layout now comes from the file, not from the widgets — nothing may
     % silently re-derive it from BatchOpt until the user rebuilds deliberately.
     obj.layoutFromProject = true;
+    obj.seamScoresStamp = [];   % stamped below, once the settings are in force
     % Point InputPath at the restored tiles. Without this it still names the
     % PREVIOUS job's input, which sends the project auto-save and the Browse
     % start folder to the wrong dataset (and a pre-v3 file carries no settings
@@ -119,6 +120,18 @@ end
 % settings belong to the previous output configuration.
 obj.canvas = [];
 obj.zarrExportOptions = [];
+
+% The sidecar stores each edge's seamScore alongside the positions it was
+% measured at, so a COMPLETE set is already current: adopt it instead of letting
+% the seam inspector re-read every overlap on the way in. Stamped here rather
+% than with the rest of the restored state because the stamp records the
+% intensity-correction method, which applyProjectSettings has only just put in
+% force. Skipped for a settings-only load - buildLayoutFromBatchOpt clears the
+% stamp there anyway, since those are different tiles.
+if ~settingsOnly && ~isempty(obj.edges) && ~isempty(obj.positions) && ...
+        isfield(obj.edges, 'seamScore') && ~any(cellfun(@isempty, {obj.edges.seamScore}))
+    obj.seamScoresStamp = obj.currentSeamScoreStamp();
+end
 
 % ---- Settings-only: re-derive the layout for the tiles selected here ----
 statusText = '';

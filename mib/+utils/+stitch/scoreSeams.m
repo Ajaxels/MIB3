@@ -1,4 +1,4 @@
-function [edges, ranking] = scoreSeams(layout, edges, positions, options)
+function [edges, ranking, cancelled] = scoreSeams(layout, edges, positions, options)
 % SCORESEAMS - Pixel-based seam quality of every edge at the SOLVED positions.
 %
 % Syntax:
@@ -6,6 +6,7 @@ function [edges, ranking] = scoreSeams(layout, edges, positions, options)
 %
 %      [edges, ranking] = utils.stitch.scoreSeams(layout, edges, positions)
 %      [edges, ranking] = utils.stitch.scoreSeams(layout, edges, positions, options)
+%      [edges, ranking, cancelled] = utils.stitch.scoreSeams(layout, edges, positions, options)
 %
 % For every edge, reads the two tiles' overlap strips AT THE SOLVED POSITIONS
 % and stores their zero-mean normalised cross-correlation in
@@ -55,11 +56,25 @@ function [edges, ranking] = scoreSeams(layout, edges, positions, options)
 %       one by this much before it is hinted (default: ``0.05``)
 %     - ``.cacheSizeBytes`` — [double] LRU tile-cache budget (default: ``2*1024^3``)
 %     - ``.readerFcn`` — [function_handle] reuse an existing tile reader (optional)
-%     - ``.showWaitbar`` / ``.parentFigure`` — progress dialog (default: off)
+%     - ``.showWaitbar`` / ``.parentFigure`` — progress dialog (default: off).
+%       The dialog is ``Cancelable``: scoring re-reads every overlap from disk,
+%       which on a large mosaic is the slowest advisory step in the tool.
 %
 % Output Arguments:
 %   - **edges** — the input edges with ``.seamScore`` and ``.dzHint`` filled in.
-%   - **ranking** — [1 x M double] edge indices in worst-first review order.
+%     **When cancelled, EVERY score is cleared** (``seamScore = []``,
+%     ``dzHint = 0``), including the ones already computed and any the input
+%     carried. A partial set would be worse than none: the quality chip and the
+%     inspector's ranking both take a MINIMUM over the scored seams, so scoring
+%     half of them and stopping would rate the mosaic on its better half and
+%     silently ignore the seams nobody looked at. Whatever the input scores
+%     described, it was a different placement — this function is only ever run
+%     after the positions changed.
+%   - **ranking** — [1 x M double] edge indices in worst-first review order;
+%     plain input order ``1:M`` when cancelled (there is nothing to rank by).
+%   - **cancelled** — [logical] ``true`` when the user pressed Cancel on the
+%     progress dialog before all edges were scored; ``false`` otherwise (always
+%     ``false`` when ``showWaitbar`` is off or no dialog was shown).
 %
 % **Example** — score and list the three worst seams:
 %
@@ -81,6 +96,7 @@ if ~isfield(options, 'parentFigure');   options.parentFigure = []; end
 
 numEdges = numel(edges);
 ranking = 1:numEdges;
+cancelled = false;
 if numEdges == 0; return; end
 
 if isfield(options, 'readerFcn') && ~isempty(options.readerFcn)
@@ -95,11 +111,15 @@ end
 progressDialog = [];
 if options.showWaitbar && ~isempty(options.parentFigure) && ...
         isvalid(options.parentFigure) && strcmp(options.parentFigure.Visible, 'on')
-    progressDialog = uiprogressdlg(options.parentFigure, 'Value', 0, ...
+    progressDialog = uiprogressdlg(options.parentFigure, 'Value', 0, 'Cancelable', 'on', ...
         'Message', 'Scoring seams...', 'Title', 'Stitching');
 end
 
 for k = 1:numEdges
+    if ~isempty(progressDialog) && isvalid(progressDialog) && progressDialog.CancelRequested
+        cancelled = true;
+        break;
+    end
     [edges(k).seamScore, edges(k).dzHint] = scoreOne(layout, edges(k), ...
         positions, readerFcn, options);
     if ~isempty(progressDialog) && isvalid(progressDialog)
@@ -110,17 +130,20 @@ if ~isempty(progressDialog) && isvalid(progressDialog)
     close(progressDialog);
 end
 
+if cancelled
+    % Drop the partial result rather than hand back a half-scored edge set —
+    % see the note on the `edges` output. deal also CREATES the two fields when
+    % the cancel came before the first edge was scored.
+    [edges.seamScore] = deal([]);
+    [edges.dzHint]    = deal(0);
+    ranking = 1:numEdges;
+    return;
+end
+
 % Worst-first review order: pruned edges lead, then seam score ascending with
 % NaN (no overlap at solved positions — definitely broken) before everything.
-validFlags = false(numEdges, 1);
-scores = zeros(numEdges, 1);
-for k = 1:numEdges
-    validFlags(k) = isfield(edges, 'valid') && edges(k).valid;
-    scores(k) = edges(k).seamScore;
-end
-scores(isnan(scores)) = -Inf;
-[~, ranking] = sortrows([validFlags, scores], [1 2]);
-ranking = ranking(:)';
+% Shared with every consumer that re-derives the order WITHOUT re-reading pixels.
+ranking = utils.stitch.rankSeams(edges);
 end
 
 % =====================================================================

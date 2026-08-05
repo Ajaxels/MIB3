@@ -1,13 +1,14 @@
-function readerFcn = makeTileReader(layout, options)
+function [readerFcn, isCachedFcn] = makeTileReader(layout, options)
 % MAKETILEREADER - Build a cached reader closure that returns tile images on demand.
 %
 % Syntax:
 %   .. code-block:: matlab
 %
 %      readerFcn = utils.stitch.makeTileReader(layout)
-%      readerFcn = utils.stitch.makeTileReader(layout, options)
+%      [readerFcn, isCachedFcn] = utils.stitch.makeTileReader(layout, options)
 %      img = readerFcn(tileIndex)
 %      img = readerFcn(tileIndex, pixelRegion)
+%      tf  = isCachedFcn(tileIndex)
 %
 % Returns a function handle that loads and caches individual tiles described by
 % the ``layout`` struct array. Only the first time point is returned. Single-file
@@ -41,7 +42,10 @@ function readerFcn = makeTileReader(layout, options)
 %     and ``.tileSize``.
 %   - **options** *(optional)* — struct with fields:
 %
-%     - ``.cacheSizeBytes`` — [double] LRU cache budget in bytes (default: ``2*1024^3``)
+%     - ``.cacheSizeBytes`` — [double] LRU cache budget in bytes (default:
+%       :func:`utils.stitch.tileCacheBudget`, which sizes it to the layout and to
+%       the memory this machine has — a fixed 2 GB could not hold even ONE PAIR
+%       of large tiles, so the pair view re-decoded both on every revisit)
 %     - ``.mibBioformatsCheck`` — [logical] force the BioFormats reader (default: ``false``)
 %     - ``.correction`` — [struct] intensity correction from
 %       :func:`utils.stitch.estimateIntensityCorrection`, applied to every tile as it is
@@ -53,6 +57,12 @@ function readerFcn = makeTileReader(layout, options)
 %   - **readerFcn** — [function_handle] ``img = readerFcn(tileIndex)`` returns the
 %     tile as ``[H, W, D, C]`` (first time point); ``img = readerFcn(tileIndex, pixelRegion)``
 %     returns a sub-region where ``pixelRegion = [yMin yMax; xMin xMax]``.
+%   - **isCachedFcn** — [function_handle] ``tf = isCachedFcn(tileIndex)``: is that
+%     tile resident, i.e. would a whole-tile read return immediately? Exists so a
+%     caller can tell a free read from one that will stall on disk and put a
+%     progress dialog around only the latter — a decode of a large tile is
+%     several seconds, and a dialog flashed on every cached read would be worse
+%     than none. Never treat it as a promise: a later read can evict the tile.
 %
 % **Example** — read two tiles with a shared cache:
 %
@@ -65,7 +75,7 @@ function readerFcn = makeTileReader(layout, options)
 
 if nargin < 2; options = struct(); end
 if ~isfield(options, 'cacheSizeBytes') || isempty(options.cacheSizeBytes)
-    options.cacheSizeBytes = 2 * 1024^3;
+    options.cacheSizeBytes = utils.stitch.tileCacheBudget(layout);
 end
 if ~isfield(options, 'mibBioformatsCheck'); options.mibBioformatsCheck = false; end
 if ~isfield(options, 'correction');         options.correction = []; end
@@ -97,7 +107,8 @@ totalBytes   = 0;                % sum(cacheBytes)
 loadOptions = struct('mibBioformatsCheck', options.mibBioformatsCheck, ...
     'BioFormatsIndices', 1, 'verbose', false);
 
-readerFcn = @readTile;
+readerFcn   = @readTile;
+isCachedFcn = @cacheHas;
 
     function img = readTile(tileIndex, pixelRegion)
         if nargin < 2; pixelRegion = []; end
@@ -255,8 +266,15 @@ readerFcn = @readTile;
         ext = lower(ext);
         if ~ismember(ext, {'.tif', '.tiff', '.png'}); return; end
         try
-            rows = {pixelRegion(1, 1), pixelRegion(1, 2)};
-            cols = {pixelRegion(2, 1), pixelRegion(2, 2)};
+            % NUMERIC row/column vectors. Building these as cells - {r0, r1} -
+            % makes imread reject PIXELREGION outright ("its type was cell"),
+            % which the catch below then swallowed: every TIFF sub-region read
+            % silently fell back to decoding the whole file. On a 24000x24000
+            % single-row-strip tile that turned a 0.7 s overlap read into 10 s.
+            % The regression test asserts the tile is NOT cached afterwards -
+            % only the fallback path caches, so that is what tells the two apart.
+            rows = [pixelRegion(1, 1), pixelRegion(1, 2)];
+            cols = [pixelRegion(2, 1), pixelRegion(2, 2)];
             raw = imread(entry.filename, 'PixelRegion', {rows, cols});
             % raw is [h w] or [h w c]; normalise to [H W 1 C].
             if ndims(raw) == 3

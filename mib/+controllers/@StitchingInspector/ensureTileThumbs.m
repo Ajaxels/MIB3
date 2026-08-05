@@ -48,9 +48,7 @@ if ~isempty(parentFigure) && strcmp(parentFigure.Visible, 'on')
 end
 
 try
-    if isempty(obj.readerFcn)
-        obj.readerFcn = utils.stitch.makeTileReader(layout);
-    end
+    obj.tileReader();
     thumbs = cell(1, numTiles);
     low = Inf; high = -Inf;
     for tileIdx = 1:numTiles

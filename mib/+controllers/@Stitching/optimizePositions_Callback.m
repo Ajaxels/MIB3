@@ -43,6 +43,10 @@ catch solverError
     return;
 end
 
+% Whoever asked for it, a completed solve settles any debt an inspector edit
+% left behind: the positions now follow from the current edge set again.
+obj.resolvePending = false;
+
 % Plan canvas (warped footprints when per-tile transforms exist; per-slice
 % mosaic corrections from the inspector's Fix Z ride along)
 try
@@ -64,18 +68,25 @@ end
 % garbage — only re-reading the actual overlap pixels catches that. Scores are
 % stored on the edges (persisted with the project, reused by the inspector and
 % by refreshQualityChip, which turns them into the rating without re-reading).
-parentFigure = obj.guiFigure();
-try
-    obj.edges = utils.stitch.scoreSeams(obj.layout, obj.edges, obj.positions, ...
-        struct('showWaitbar', ~isempty(parentFigure), 'parentFigure', parentFigure, ...
-               'correction', obj.ensureIntensityCorrection()));
-catch
-    % pixel verification is advisory — never block the solve on it
-end
+% ensureSeamScores does the reading (and swallows any failure - pixel
+% verification is advisory and must never block the solve). It is a no-op when
+% the scores already describe this placement, which is what stops the seam
+% inspector paying for a second full pass over the overlaps right after a
+% re-solve.
+scoringCancelled = obj.ensureSeamScores();
 
 % Refreshes the widgets AND the alignment-quality chip (updateWidgets calls
 % refreshQualityChip, which reads the solverInfo just cached above).
 obj.updateWidgets();
+
+% The SOLVE stands - only its pixel verification was skipped, so this is a note
+% on the status line rather than an error or a StopProtocol. Set after
+% updateWidgets, which rewrites the label. The chip already says "not checked"
+% (scoreSeams cleared the partial scores), so this only names the reason.
+if scoringCancelled && ~isempty(obj.view)
+    obj.view.handles.statusLabel.Text = sprintf( ...
+        '%s - seam check cancelled', obj.view.handles.statusLabel.Text);
+end
 
 % Refresh the layout preview so it reflects the freshly SOLVED positions.
 if ~isempty(obj.layout)

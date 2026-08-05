@@ -111,6 +111,7 @@ obj.zSliceFixes = [];
 obj.solverInfo  = struct();
 % Estimated from the OLD tiles, so it cannot describe these ones.
 obj.intensityCorrection = [];
+obj.seamScoresStamp     = [];
 % The layout now describes BatchOpt again, so re-deriving it is safe once more.
 obj.layoutFromProject = false;
 
@@ -129,16 +130,11 @@ if ~isempty(importedPositions)
     % Verify by the PIXELS as well: an Atlas mosaic stitched under difficult
     % imaging conditions can carry confident-but-wrong seams, and re-reading the
     % overlaps is the only check that catches it (same rationale as the seam
-    % scoring after every solve in optimizePositions_Callback).
-    parentFigure = obj.guiFigure();
-    try
-        obj.edges = utils.stitch.scoreSeams(obj.layout, obj.edges, obj.positions, ...
-            struct('showWaitbar', obj.BatchOpt.showWaitbar && ~isempty(parentFigure), ...
-                   'parentFigure', parentFigure, ...
-                   'correction', obj.ensureIntensityCorrection()));
-    catch
-        % pixel verification is advisory — never block the import on it
-    end
+    % scoring after every solve in optimizePositions_Callback). Going through
+    % ensureSeamScores records what the scores were computed for, so opening the
+    % seam inspector on an imported placement does not read every overlap a
+    % second time.
+    obj.ensureSeamScores();
 end
 
 end

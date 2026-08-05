@@ -1,30 +1,6 @@
 {
   "nodes": [
     {
-      "id": "utils_getexelocation",
-      "label": "GetExeLocation.c",
-      "file_type": "code",
-      "source_file": "+utils/GetExeLocation.c",
-      "source_location": "L1",
-      "_origin": "ast"
-    },
-    {
-      "id": "utils_getexelocation_mexfunction",
-      "label": "mexFunction()",
-      "file_type": "code",
-      "source_file": "+utils/GetExeLocation.c",
-      "source_location": "L13",
-      "_origin": "ast"
-    },
-    {
-      "id": "mxarray",
-      "label": "mxArray",
-      "file_type": "code",
-      "source_file": "",
-      "source_location": "",
-      "_origin": "ast"
-    },
-    {
       "id": "controllers_about_about_m",
       "label": "About.m",
       "file_type": "code",
@@ -10827,6 +10803,17 @@
       "contributor": null
     },
     {
+      "id": "controllers_stitching_askimportmode_m",
+      "label": "askImportMode.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@Stitching\\askImportMode.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "controllers_stitching_buildlayoutfrombatchopt_m",
       "label": "buildLayoutFromBatchOpt.m",
       "file_type": "code",
@@ -10864,6 +10851,28 @@
       "label": "configureFeaturesBtn_Callback.m",
       "file_type": "code",
       "source_file": "+controllers\\@Stitching\\configureFeaturesBtn_Callback.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_stitching_ensureintensitycorrection_m",
+      "label": "ensureIntensityCorrection.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@Stitching\\ensureIntensityCorrection.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_stitching_ensureseamscores_m",
+      "label": "ensureSeamScores.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@Stitching\\ensureSeamScores.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -11036,6 +11045,17 @@
       "contributor": null
     },
     {
+      "id": "controllers_stitching_stitchedfilename_m",
+      "label": "stitchedFilename.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@Stitching\\stitchedFilename.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "controllers_stitching_updatebatchoptfromgui_m",
       "label": "updateBatchOptFromGUI.m",
       "file_type": "code",
@@ -11051,6 +11071,17 @@
       "label": "updateWidgets.m",
       "file_type": "code",
       "source_file": "+controllers\\@Stitching\\updateWidgets.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_stitching_stitching_renamelegacyfields",
+      "label": "renameLegacyFields",
+      "file_type": "code",
+      "source_file": "+controllers\\@Stitching\\Stitching.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -11115,6 +11146,28 @@
     {
       "id": "controllers_stitching_stitching_guifigure",
       "label": "guiFigure",
+      "file_type": "code",
+      "source_file": "+controllers\\@Stitching\\Stitching.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_stitching_stitching_currentseamscorestamp",
+      "label": "currentSeamScoreStamp",
+      "file_type": "code",
+      "source_file": "+controllers\\@Stitching\\Stitching.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_stitching_stitching_seamscoresarecurrent",
+      "label": "seamScoresAreCurrent",
       "file_type": "code",
       "source_file": "+controllers\\@Stitching\\Stitching.m",
       "source_location": null,
@@ -11289,6 +11342,17 @@
       "contributor": null
     },
     {
+      "id": "controllers_stitchinginspector_helpbtn_callback_m",
+      "label": "helpBtn_Callback.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@StitchingInspector\\helpBtn_Callback.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "controllers_stitchinginspector_jumptotile_m",
       "label": "jumpToTile.m",
       "file_type": "code",
@@ -11315,6 +11379,17 @@
       "label": "keyRelease_Callback.m",
       "file_type": "code",
       "source_file": "+controllers\\@StitchingInspector\\keyRelease_Callback.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_stitchinginspector_keyshortcutsbtn_callback_m",
+      "label": "keyShortcutsBtn_Callback.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@StitchingInspector\\keyShortcutsBtn_Callback.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -11478,6 +11553,28 @@
     {
       "id": "controllers_stitchinginspector_stitchinginspector_stitchinginspector",
       "label": "StitchingInspector",
+      "file_type": "code",
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_stitchinginspector_stitchinginspector_tilereader",
+      "label": "tileReader",
+      "file_type": "code",
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_stitchinginspector_stitchinginspector_tilesareresident",
+      "label": "tilesAreResident",
       "file_type": "code",
       "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
       "source_location": null,
@@ -14292,6 +14389,17 @@
       "contributor": null
     },
     {
+      "id": "core_mibdataset_copymodellayers_m",
+      "label": "copyModelLayers.m",
+      "file_type": "code",
+      "source_file": "+core\\@MibDataset\\copyModelLayers.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "core_mibdataset_copyslice_m",
       "label": "copySlice.m",
       "file_type": "code",
@@ -14659,6 +14767,17 @@
       "label": "resliceDataset.m",
       "file_type": "code",
       "source_file": "+core\\@MibDataset\\resliceDataset.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "core_mibdataset_restoremodellayers_m",
+      "label": "restoreModelLayers.m",
+      "file_type": "code",
+      "source_file": "+core\\@MibDataset\\restoreModelLayers.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -19882,6 +20001,17 @@
     {
       "id": "io_loaders_imodloader_loadimages",
       "label": "loadImages",
+      "file_type": "code",
+      "source_file": "+io\\+loaders\\ImodLoader.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_loaders_imodloader_densityrangetoclass",
+      "label": "densityRangeToClass",
       "file_type": "code",
       "source_file": "+io\\+loaders\\ImodLoader.m",
       "source_location": null,
@@ -26723,75 +26853,6 @@
     }
   ],
   "edges": [
-    {
-      "source": "utils_getexelocation",
-      "target": "mex",
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "+utils/GetExeLocation.c",
-      "source_location": "L1",
-      "weight": 1.0
-    },
-    {
-      "source": "utils_getexelocation",
-      "target": "windows",
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "+utils/GetExeLocation.c",
-      "source_location": "L4",
-      "weight": 1.0
-    },
-    {
-      "source": "utils_getexelocation",
-      "target": "dyld",
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "+utils/GetExeLocation.c",
-      "source_location": "L6",
-      "weight": 1.0
-    },
-    {
-      "source": "utils_getexelocation",
-      "target": "unistd",
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "+utils/GetExeLocation.c",
-      "source_location": "L8",
-      "weight": 1.0
-    },
-    {
-      "source": "utils_getexelocation",
-      "target": "utils_getexelocation_mexfunction",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "+utils/GetExeLocation.c",
-      "source_location": "L13",
-      "weight": 1.0
-    },
-    {
-      "source": "utils_getexelocation_mexfunction",
-      "target": "mxarray",
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "+utils/GetExeLocation.c",
-      "source_location": "L13",
-      "weight": 1.0,
-      "context": "parameter_type"
-    },
-    {
-      "source": "utils_getexelocation_mexfunction",
-      "target": "mxarray",
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "+utils/GetExeLocation.c",
-      "source_location": "L13",
-      "weight": 1.0,
-      "context": "parameter_type"
-    },
     {
       "source": "controllers_about_about_m",
       "target": "controllers_about_about_about",
@@ -36124,6 +36185,16 @@
     },
     {
       "source": "controllers_stitching_stitching_m",
+      "target": "controllers_stitching_askimportmode_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@Stitching\\Stitching.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_stitching_m",
       "target": "controllers_stitching_buildlayoutfrombatchopt_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -36155,6 +36226,26 @@
     {
       "source": "controllers_stitching_stitching_m",
       "target": "controllers_stitching_configurefeaturesbtn_callback_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@Stitching\\Stitching.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_stitching_m",
+      "target": "controllers_stitching_ensureintensitycorrection_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@Stitching\\Stitching.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_stitching_m",
+      "target": "controllers_stitching_ensureseamscores_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -36314,6 +36405,16 @@
     },
     {
       "source": "controllers_stitching_stitching_m",
+      "target": "controllers_stitching_stitchedfilename_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@Stitching\\Stitching.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_stitching_m",
       "target": "controllers_stitching_updatebatchoptfromgui_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -36325,6 +36426,16 @@
     {
       "source": "controllers_stitching_stitching_m",
       "target": "controllers_stitching_updatewidgets_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@Stitching\\Stitching.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_stitching_m",
+      "target": "controllers_stitching_stitching_renamelegacyfields",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -36385,6 +36496,26 @@
     {
       "source": "controllers_stitching_stitching_m",
       "target": "controllers_stitching_stitching_guifigure",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@Stitching\\Stitching.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_stitching_m",
+      "target": "controllers_stitching_stitching_currentseamscorestamp",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@Stitching\\Stitching.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_stitching_m",
+      "target": "controllers_stitching_stitching_seamscoresarecurrent",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -36534,6 +36665,16 @@
     },
     {
       "source": "controllers_stitchinginspector_stitchinginspector_m",
+      "target": "controllers_stitchinginspector_helpbtn_callback_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_stitchinginspector_m",
       "target": "controllers_stitchinginspector_jumptotile_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -36555,6 +36696,16 @@
     {
       "source": "controllers_stitchinginspector_stitchinginspector_m",
       "target": "controllers_stitchinginspector_keyrelease_callback_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_stitchinginspector_m",
+      "target": "controllers_stitchinginspector_keyshortcutsbtn_callback_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -36705,6 +36856,26 @@
     {
       "source": "controllers_stitchinginspector_stitchinginspector_m",
       "target": "controllers_stitchinginspector_stitchinginspector_stitchinginspector",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_stitchinginspector_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_tilereader",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_stitchinginspector_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_tilesareresident",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -39114,6 +39285,16 @@
     },
     {
       "source": "core_mibdataset_mibdataset_m",
+      "target": "core_mibdataset_copymodellayers_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibDataset\\MibDataset.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibdataset_mibdataset_m",
       "target": "core_mibdataset_copyslice_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -39445,6 +39626,16 @@
     {
       "source": "core_mibdataset_mibdataset_m",
       "target": "core_mibdataset_reslicedataset_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibDataset\\MibDataset.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibdataset_mibdataset_m",
+      "target": "core_mibdataset_restoremodellayers_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -43885,6 +44076,16 @@
     {
       "source": "io_loaders_imodloader_m",
       "target": "io_loaders_imodloader_loadimages",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+loaders\\ImodLoader.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_loaders_imodloader_m",
+      "target": "io_loaders_imodloader_densityrangetoclass",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -55833,6 +56034,16 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_stitching_buildlayoutfrombatchopt_m",
+      "target": "controllers_stitching_ensureseamscores_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@Stitching\\buildLayoutFromBatchOpt.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_stitching_configurefeaturesbtn_callback_m",
       "target": "controllers_stitching_updatewidgets_m",
       "relation": "calls",
@@ -55849,6 +56060,56 @@
       "confidence": "INFERRED",
       "confidence_score": 0.75,
       "source_file": "+controllers\\@Stitching\\configureFeaturesBtn_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_ensureintensitycorrection_m",
+      "target": "controllers_stitching_stitching_guifigure",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@Stitching\\ensureIntensityCorrection.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_ensureseamscores_m",
+      "target": "controllers_stitching_stitching_seamscoresarecurrent",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@Stitching\\ensureSeamScores.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_ensureseamscores_m",
+      "target": "controllers_stitching_stitching_guifigure",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@Stitching\\ensureSeamScores.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_ensureseamscores_m",
+      "target": "controllers_stitching_ensureintensitycorrection_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@Stitching\\ensureSeamScores.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_ensureseamscores_m",
+      "target": "controllers_stitching_stitching_currentseamscorestamp",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@Stitching\\ensureSeamScores.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -55885,6 +56146,16 @@
     {
       "source": "controllers_stitching_loadprojectbtn_callback_m",
       "target": "controllers_stitching_applyprojectsettings_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@Stitching\\loadProjectBtn_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_loadprojectbtn_callback_m",
+      "target": "controllers_stitching_stitching_currentseamscorestamp",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -55974,6 +56245,16 @@
     },
     {
       "source": "controllers_stitching_measureoverlaps_callback_m",
+      "target": "controllers_stitching_ensureintensitycorrection_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@Stitching\\measureOverlaps_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_measureoverlaps_callback_m",
       "target": "controllers_stitching_updatewidgets_m",
       "relation": "calls",
       "confidence": "INFERRED",
@@ -56014,7 +56295,7 @@
     },
     {
       "source": "controllers_stitching_optimizepositions_callback_m",
-      "target": "controllers_stitching_stitching_guifigure",
+      "target": "controllers_stitching_ensureseamscores_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -56084,6 +56365,26 @@
     },
     {
       "source": "controllers_stitching_runoverlapestimation_m",
+      "target": "controllers_stitching_stitching_guifigure",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@Stitching\\runOverlapEstimation.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_runoverlapestimation_m",
+      "target": "controllers_stitching_ensureintensitycorrection_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@Stitching\\runOverlapEstimation.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_runoverlapestimation_m",
       "target": "controllers_stitching_updatewidgets_m",
       "relation": "calls",
       "confidence": "INFERRED",
@@ -56114,6 +56415,16 @@
     },
     {
       "source": "controllers_stitching_selectinputbtn_callback_m",
+      "target": "controllers_stitching_askimportmode_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@Stitching\\selectInputBtn_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_selectinputbtn_callback_m",
       "target": "controllers_stitching_buildlayoutfrombatchopt_m",
       "relation": "calls",
       "confidence": "INFERRED",
@@ -56125,6 +56436,16 @@
     {
       "source": "controllers_stitching_selectinputbtn_callback_m",
       "target": "controllers_stitching_updatewidgets_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@Stitching\\selectInputBtn_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_selectinputbtn_callback_m",
+      "target": "controllers_stitching_previewlayoutbtn_callback_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -56154,6 +56475,16 @@
     },
     {
       "source": "controllers_stitching_stitchbtn_callback_m",
+      "target": "controllers_stitching_optimizepositions_callback_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@Stitching\\stitchBtn_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_stitchbtn_callback_m",
       "target": "controllers_stitching_buildlayoutfrombatchopt_m",
       "relation": "calls",
       "confidence": "INFERRED",
@@ -56175,6 +56506,36 @@
     {
       "source": "controllers_stitching_stitchbtn_callback_m",
       "target": "controllers_stitching_stitching_buildfeatureoptions",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@Stitching\\stitchBtn_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_stitchbtn_callback_m",
+      "target": "controllers_stitching_ensureintensitycorrection_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@Stitching\\stitchBtn_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_stitchbtn_callback_m",
+      "target": "controllers_stitching_previewlayoutbtn_callback_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@Stitching\\stitchBtn_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_stitchbtn_callback_m",
+      "target": "controllers_stitching_stitchedfilename_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -56405,6 +56766,26 @@
     {
       "source": "controllers_stitchinginspector_addcallbacks_m",
       "target": "controllers_stitchinginspector_fitview_callback_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\addCallbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_addcallbacks_m",
+      "target": "controllers_stitchinginspector_helpbtn_callback_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\addCallbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_addcallbacks_m",
+      "target": "controllers_stitchinginspector_keyshortcutsbtn_callback_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -56715,6 +57096,16 @@
     {
       "source": "controllers_stitchinginspector_ensuretilethumbs_m",
       "target": "controllers_stitchinginspector_stitchinginspector_progressparent",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\ensureTileThumbs.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_ensuretilethumbs_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_tilereader",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -57154,6 +57545,36 @@
     },
     {
       "source": "controllers_stitchinginspector_renderpairview_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_tilereader",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\renderPairView.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_renderpairview_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_tilesareresident",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\renderPairView.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_renderpairview_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_progressparent",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\renderPairView.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_renderpairview_m",
       "target": "controllers_stitchinginspector_stitchinginspector_boundarydelta",
       "relation": "calls",
       "confidence": "INFERRED",
@@ -57259,6 +57680,16 @@
       "confidence": "INFERRED",
       "confidence_score": 0.75,
       "source_file": "+controllers\\@StitchingInspector\\resolveBtn_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_scoreandrank_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_tilereader",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\scoreAndRank.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -57435,6 +57866,16 @@
     {
       "source": "controllers_stitchinginspector_twoclickbtn_callback_m",
       "target": "controllers_stitchinginspector_stitchinginspector_setstatus",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\twoClickBtn_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_twoclickbtn_callback_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_tilereader",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -58264,16 +58705,6 @@
     },
     {
       "source": "core_mibdataset_initialize_m",
-      "target": "core_miblabels_miblabels_m",
-      "relation": "calls",
-      "confidence": "INFERRED",
-      "confidence_score": 0.7,
-      "source_file": "+core\\@MibDataset\\initialize.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "core_mibdataset_initialize_m",
       "target": "core_mibimage_mibimage_m",
       "relation": "calls",
       "confidence": "INFERRED",
@@ -58285,6 +58716,16 @@
     {
       "source": "core_mibdataset_initialize_m",
       "target": "core_miblabels63_miblabels63_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+core\\@MibDataset\\initialize.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibdataset_initialize_m",
+      "target": "core_miblabels_miblabels_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.7,
@@ -59405,6 +59846,16 @@
     {
       "source": "models_mibmodel_convertmodel_m",
       "target": "models_mibmodel_getprogressbarparent_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\convertModel.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_convertmodel_m",
+      "target": "models_mibmodel_backup_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -66114,6 +66565,16 @@
     },
     {
       "source": "controllers_mibdeep_starttraininginstances_m",
+      "target": "deepmib_suspendcheckpointsaving_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\startTrainingInstances.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_starttraininginstances_m",
       "target": "utils_dlgs_inputuniversaldlg_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
@@ -66413,6 +66874,16 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_mibimagedocument_gui_windowbuttondownfcn_m",
+      "target": "utils_sam_blockbox_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibImageDocument\\gui_WindowButtonDownFcn.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_mibimagedocument_gui_windowbuttonupdraganddropfcn_m",
       "target": "utils_dlgs_inputuniversaldlg_m",
       "relation": "calls",
@@ -66693,6 +67164,16 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_mibimagedocument_segmentationsam_m",
+      "target": "utils_sam_initialimage_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibImageDocument\\segmentationSAM.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_mibimagedocument_segmentationsam2_m",
       "target": "utils_dlgs_showerrordialog_m",
       "relation": "calls",
@@ -66725,6 +67206,16 @@
     {
       "source": "controllers_mibimagedocument_segmentationsam2_m",
       "target": "utils_initpythonenv_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibImageDocument\\segmentationSAM2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibimagedocument_segmentationsam2_m",
+      "target": "utils_sam_initialimage_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -68303,8 +68794,78 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_stitching_askimportmode_m",
+      "target": "utils_dlgs_inputquestdlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@Stitching\\askImportMode.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_askimportmode_m",
+      "target": "utils_stitch_findatlassidecars_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@Stitching\\askImportMode.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_askimportmode_m",
+      "target": "utils_stitch_findmdocsidecar_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@Stitching\\askImportMode.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_stitching_buildlayoutfrombatchopt_m",
       "target": "utils_stitch_buildlayoutbioformats_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@Stitching\\buildLayoutFromBatchOpt.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_buildlayoutfrombatchopt_m",
+      "target": "utils_stitch_findatlassidecars_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@Stitching\\buildLayoutFromBatchOpt.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_buildlayoutfrombatchopt_m",
+      "target": "utils_stitch_findmdocsidecar_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@Stitching\\buildLayoutFromBatchOpt.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_buildlayoutfrombatchopt_m",
+      "target": "utils_stitch_buildlayoutmdoc_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@Stitching\\buildLayoutFromBatchOpt.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_buildlayoutfrombatchopt_m",
+      "target": "utils_stitch_buildlayoutatlas_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -68349,6 +68910,26 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "+controllers\\@Stitching\\configureFeaturesBtn_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_ensureintensitycorrection_m",
+      "target": "utils_stitch_estimateintensitycorrection_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@Stitching\\ensureIntensityCorrection.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_ensureseamscores_m",
+      "target": "utils_stitch_scoreseams_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@Stitching\\ensureSeamScores.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -68435,16 +69016,6 @@
     {
       "source": "controllers_stitching_optimizepositions_callback_m",
       "target": "utils_stitch_plancanvas_m",
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "+controllers\\@Stitching\\optimizePositions_Callback.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "controllers_stitching_optimizepositions_callback_m",
-      "target": "utils_stitch_scoreseams_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -68554,6 +69125,26 @@
     },
     {
       "source": "controllers_stitching_selectinputbtn_callback_m",
+      "target": "utils_stitch_findatlassidecars_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@Stitching\\selectInputBtn_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_selectinputbtn_callback_m",
+      "target": "utils_stitch_findmdocsidecar_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@Stitching\\selectInputBtn_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_selectinputbtn_callback_m",
       "target": "utils_dlgs_showerrordialog_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
@@ -68604,6 +69195,16 @@
     },
     {
       "source": "controllers_stitching_stitchbtn_callback_m",
+      "target": "utils_stitch_layoutpixsize_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@Stitching\\stitchBtn_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_stitchbtn_callback_m",
       "target": "utils_stitch_plancanvas_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
@@ -68615,6 +69216,16 @@
     {
       "source": "controllers_stitching_stitchbtn_callback_m",
       "target": "utils_dlgs_showerrordialog_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@Stitching\\stitchBtn_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_stitchbtn_callback_m",
+      "target": "utils_stitch_canvasbackground_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -68743,38 +69354,18 @@
       "weight": 1.0
     },
     {
-      "source": "controllers_stitchinginspector_ensuretilethumbs_m",
-      "target": "utils_stitch_maketilereader_m",
+      "source": "controllers_stitchinginspector_keyshortcutsbtn_callback_m",
+      "target": "utils_dlgs_inputuniversaldlg_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "+controllers\\@StitchingInspector\\ensureTileThumbs.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "controllers_stitchinginspector_renderpairview_m",
-      "target": "utils_stitch_maketilereader_m",
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "+controllers\\@StitchingInspector\\renderPairView.m",
+      "source_file": "+controllers\\@StitchingInspector\\keyShortcutsBtn_Callback.m",
       "source_location": null,
       "weight": 1.0
     },
     {
       "source": "controllers_stitchinginspector_scoreandrank_m",
-      "target": "utils_stitch_maketilereader_m",
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "+controllers\\@StitchingInspector\\scoreAndRank.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "controllers_stitchinginspector_scoreandrank_m",
-      "target": "utils_stitch_scoreseams_m",
+      "target": "utils_stitch_rankseams_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -68813,12 +69404,12 @@
       "weight": 1.0
     },
     {
-      "source": "controllers_stitchinginspector_twoclickbtn_callback_m",
+      "source": "controllers_stitchinginspector_stitchinginspector_m",
       "target": "utils_stitch_maketilereader_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "+controllers\\@StitchingInspector\\twoClickBtn_Callback.m",
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
       "source_location": null,
       "weight": 1.0
     },
