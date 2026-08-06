@@ -12,7 +12,7 @@ function applySelectedProperties(obj, propertyList)
 % mode if needed, and updates BatchOpt.Property / MultipleProperty.
 %
 % Input Arguments:
-%   - **propertyList** — cell array of selected property names,
+%   - **propertyList** - cell array of selected property names,
 %     e.g. ``{'Area', 'Perimeter', 'MeanIntensity'}``
 %
 % Usage:
@@ -45,7 +45,7 @@ end
 curList = obj.view.handles.Property.Items;
 index = find(ismember(curList, propertyList{1}), 1);
 if isempty(index)
-    % property is in a different mode — switch Object/Intensity
+    % property is in a different mode - switch Object/Intensity
     if obj.view.handles.Object.Value
         obj.view.handles.Intensity.Value = true;
     else

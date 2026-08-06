@@ -7,7 +7,7 @@ function options = getOptions(obj)
 %       options = obj.getOptions()
 %
 % Output Arguments:
-%   - **options** — a structure with options
+%   - **options** - a structure with options
 %
 
 options = struct();

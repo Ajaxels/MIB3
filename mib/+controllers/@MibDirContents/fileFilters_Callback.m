@@ -9,8 +9,8 @@ function fileFilters_Callback(obj, hWidget, hData)
 % the parent widget is obj.handles.panels.dirContents.handles.fileFilters
 %
 % Input Arguments:
-%   - **hWidget** — handle to the pressed widget
-%   - **hData** — handle to supporting ButtonPushedData class
+%   - **hWidget** - handle to the pressed widget
+%   - **hData** - handle to supporting ButtonPushedData class
 %
 
 arguments (Input)

@@ -7,14 +7,14 @@ function jumpToTile(obj, tileIdx)
 %      obj.jumpToTile(tileIdx)
 %
 % Programmatic/headless entry point (e.g. tests). The mini-map itself does
-% NOT call this — a click there goes through
+% NOT call this - a click there goes through
 % :func:`miniMapButtonDown`/:meth:`edgeAtMiniMapPoint`, which resolves to
 % whichever SEAM is nearest the click point, since a tile usually touches
 % more than one seam and "its worst one" is not always the one a click was
 % aimed at.
 %
 % Input Arguments:
-%   - **tileIdx** — [double] tile index
+%   - **tileIdx** - [double] tile index
 %
 
 if ~obj.dataValid(); return; end

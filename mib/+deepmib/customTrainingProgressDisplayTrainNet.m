@@ -8,44 +8,44 @@ function stopState = customTrainingProgressDisplayTrainNet(progressStruct, train
 %      stopState = customTrainingProgressDisplayTrainNet(progressStruct, trainingProgressOptions)
 %
 % Input Arguments:
-%   - **progressStruct** — struct with current training progress (provided by ``trainnet``):
+%   - **progressStruct** - struct with current training progress (provided by ``trainnet``):
 %
-%     - ``.Epoch`` — current epoch number
-%     - ``.Iteration`` — current iteration number
-%     - ``.TimeElapsed`` — elapsed time as ``duration``, e.g. ``00:00:02``
+%     - ``.Epoch`` - current epoch number
+%     - ``.Iteration`` - current iteration number
+%     - ``.TimeElapsed`` - elapsed time as ``duration``, e.g. ``00:00:02``
 %       (called ``TimeSinceStart`` in ``trainNetwork``)
-%     - ``.LearnRate`` — current learning rate, e.g. ``0.0050``
+%     - ``.LearnRate`` - current learning rate, e.g. ``0.0050``
 %       (called ``BaseLearnRate`` in ``trainNetwork``)
-%     - ``.TrainingLoss`` — current training loss, e.g. ``0.7802``
-%     - ``.ValidationLoss`` — validation loss (``[]`` when training without validation)
-%     - ``.TrainingAccuracy`` — training accuracy (%), e.g. ``26.9975``
-%     - ``.ValidationAccuracy`` — validation accuracy (``[]`` when training without validation)
-%     - ``.State`` — training phase string, e.g. ``'iteration'``
+%     - ``.TrainingLoss`` - current training loss, e.g. ``0.7802``
+%     - ``.ValidationLoss`` - validation loss (``[]`` when training without validation)
+%     - ``.TrainingAccuracy`` - training accuracy (%), e.g. ``26.9975``
+%     - ``.ValidationAccuracy`` - validation accuracy (``[]`` when training without validation)
+%     - ``.State`` - training phase string, e.g. ``'iteration'``
 %
-%   - **trainingProgressOptions** — struct with display/training parameters:
+%   - **trainingProgressOptions** - struct with display/training parameters:
 %
-%     - ``.O_NumberOfPoints`` — [numeric] max points in the progress plot
+%     - ``.O_NumberOfPoints`` - [numeric] max points in the progress plot
 %       (``mibDeepController.BatchOpt.O_NumberOfPoints{1}``)
-%     - ``.NetworkFilename`` — [char] network file path
+%     - ``.NetworkFilename`` - [char] network file path
 %       (``mibDeepController.BatchOpt.NetworkFilename``)
-%     - ``.noColorChannels`` — [numeric] number of colour channels
+%     - ``.noColorChannels`` - [numeric] number of colour channels
 %       (``str2num(obj.BatchOpt.T_InputPatchSize)(4)``)
-%     - ``.Workflow`` — [char] active workflow (``obj.BatchOpt.Workflow{1}``)
-%     - ``.Architecture`` — [char] network architecture (``obj.BatchOpt.Architecture{1}``)
-%     - ``.refreshRateIter`` — [numeric] UI refresh rate in iterations
+%     - ``.Workflow`` - [char] active workflow (``obj.BatchOpt.Workflow{1}``)
+%     - ``.Architecture`` - [char] network architecture (``obj.BatchOpt.Architecture{1}``)
+%     - ``.refreshRateIter`` - [numeric] UI refresh rate in iterations
 %       (``obj.BatchOpt.O_RefreshRateIter{1}``)
-%     - ``.matlabVersion`` — [numeric] MATLAB release number (``obj.mibController.matlabVersion``)
-%     - ``.iterPerEpoch`` — [numeric] iterations per epoch
-%     - ``.sendNextReportAtEpoch`` — [numeric] epoch at which to send the next e-mail report
-%     - ``.TrainingOpt.MaxEpochs`` — maximum number of training epochs
-%     - ``.TrainingOpt.solverName`` — optimiser name string
-%     - ``.TrainingOpt.Shuffle`` — dataset shuffle strategy
-%     - ``.TrainingOpt.LearnRateSchedule`` — learning-rate schedule type
-%     - ``.TrainingOpt.OutputNetwork`` — which network to save on each checkpoint
-%     - ``.TrainingOpt.InitialLearnRate`` — initial learning rate
-%     - ``.TrainingOpt.LearnRateDropPeriod`` — period (epochs) for learning-rate drop
-%     - ``.TrainingOpt.ValidationPatience`` — early-stop patience (epochs)
-%     - ``.TrainingOpt.ValidationFrequency`` — validation frequency (iterations)
+%     - ``.matlabVersion`` - [numeric] MATLAB release number (``obj.mibController.matlabVersion``)
+%     - ``.iterPerEpoch`` - [numeric] iterations per epoch
+%     - ``.sendNextReportAtEpoch`` - [numeric] epoch at which to send the next e-mail report
+%     - ``.TrainingOpt.MaxEpochs`` - maximum number of training epochs
+%     - ``.TrainingOpt.solverName`` - optimiser name string
+%     - ``.TrainingOpt.Shuffle`` - dataset shuffle strategy
+%     - ``.TrainingOpt.LearnRateSchedule`` - learning-rate schedule type
+%     - ``.TrainingOpt.OutputNetwork`` - which network to save on each checkpoint
+%     - ``.TrainingOpt.InitialLearnRate`` - initial learning rate
+%     - ``.TrainingOpt.LearnRateDropPeriod`` - period (epochs) for learning-rate drop
+%     - ``.TrainingOpt.ValidationPatience`` - early-stop patience (epochs)
+%     - ``.TrainingOpt.ValidationFrequency`` - validation frequency (iterations)
 %
 
 global mibDeepStopTraining

@@ -12,15 +12,15 @@ function initialize(obj, data, meta)
 % than pixel arrays.
 %
 % Input Arguments:
-%   - **data** — *(optional)*:
+%   - **data** - *(optional)*:
 %
-%     - ``[]`` *(default)* — placeholders are set using ``assets/images/default.h5``
-%     - **cell** array of file-path strings — stored directly in ``obj.data{}``
-%     - **numeric** array — treated as a standard image (unusual; calls parent)
-%   - **meta** — *(optional)*, a dictionary with dataset metadata (same fields as MibImage.initialize)
+%     - ``[]`` *(default)* - placeholders are set using ``assets/images/default.h5``
+%     - **cell** array of file-path strings - stored directly in ``obj.data{}``
+%     - **numeric** array - treated as a standard image (unusual; calls parent)
+%   - **meta** - *(optional)*, a dictionary with dataset metadata (same fields as MibImage.initialize)
 %
 % Output Arguments:
-%   (none — modifies obj in place)
+%   (none - modifies obj in place)
 %
 % Usage:
 %   **Example 1**
@@ -86,7 +86,7 @@ elseif iscell(data)
     if isKey(meta, 'Time') && ~isempty(meta{'Time'}); obj.time = double(meta{'Time'}); end
 
 else
-    % numeric array passed — delegate to base class (unusual for virtual)
+    % numeric array passed - delegate to base class (unusual for virtual)
     obj.initialize@core.MibImage(data, meta);
     return;
 end
@@ -100,7 +100,7 @@ obj.dim_yxzct   = [obj.height, obj.width, obj.depth, obj.colors, obj.time];
 
 % default bounding box (physical units) from dims x voxel size. Virtual/BigData
 % (zarr) datasets carry no ImageDescription "BoundingBox" tag, so unlike
-% core.MibImage.initialize it is never parsed — leaving boundingBox empty and
+% core.MibImage.initialize it is never parsed - leaving boundingBox empty and
 % breaking convertPixelsToUnits / Lines3D / the 3D-lines overlay. Compute the
 % same default MibImage uses (origin at 0). Use the metadata pixSize, which is
 % the source of obj.pixSize.

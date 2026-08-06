@@ -11,18 +11,18 @@ function addNode(obj, x, y, z, newTreeSwitch, options)
 % New nodes can extend an existing tree or start a new tree.
 %
 % Input Arguments:
-%   - **x** — [numeric vector] x coordinates of nodes IN PHYSICAL UNITS
-%   - **y** — [numeric vector] y coordinates of nodes IN PHYSICAL UNITS
-%   - **z** — [numeric vector] z coordinates of nodes IN PHYSICAL UNITS
-%   - **newTreeSwitch** — *(optional)* [numeric] start a new tree (default: ``0`` = extend active tree):
+%   - **x** - [numeric vector] x coordinates of nodes IN PHYSICAL UNITS
+%   - **y** - [numeric vector] y coordinates of nodes IN PHYSICAL UNITS
+%   - **z** - [numeric vector] z coordinates of nodes IN PHYSICAL UNITS
+%   - **newTreeSwitch** - *(optional)* [numeric] start a new tree (default: ``0`` = extend active tree):
 %
-%     - ``0`` — add nodes to the active tree
-%     - ``1`` — start a new tree
+%     - ``0`` - add nodes to the active tree
+%     - ``1`` - start a new tree
 %
-%   - **options** — *(optional)* [struct] metadata and dataset information:
+%   - **options** - *(optional)* [struct] metadata and dataset information:
 %
-%     - ``.pixSize`` — [struct] pixel size with fields ``.x``, ``.y``, ``.z``, ``.units``
-%     - ``.BoundingBox`` — [1×6 numeric] bounding box ``[xmin, width, ymin, height, zmin, depth]``
+%     - ``.pixSize`` - [struct] pixel size with fields ``.x``, ``.y``, ``.z``, ``.units``
+%     - ``.BoundingBox`` - [1×6 numeric] bounding box ``[xmin, width, ymin, height, zmin, depth]``
 %
 
 if nargin < 6; options = struct(); end

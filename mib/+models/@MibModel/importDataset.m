@@ -7,37 +7,37 @@ function importDataset(obj, layerType, BatchOptIn)
 %       obj.importDataset(layerType, BatchOptIn)
 %
 % Input Arguments:
-%   - **layerType** — a string specifying which layer to import:
+%   - **layerType** - a string specifying which layer to import:
 %
-%     - ``'image'`` — replace the active dataset with an image variable from workspace
-%     - ``'mask'`` — import a mask array from workspace into the active dataset
-%     - ``'model'`` — import a model array or struct from workspace into the active dataset
+%     - ``'image'`` - replace the active dataset with an image variable from workspace
+%     - ``'mask'`` - import a mask array from workspace into the active dataset
+%     - ``'model'`` - import a model array or struct from workspace into the active dataset
 %
-%   - **BatchOptIn** — *(optional)* a structure for batch processing mode; when ``NaN``
+%   - **BatchOptIn** - *(optional)* a structure for batch processing mode; when ``NaN``
 %     returns a structure with default options via "SyncBatch" event:
 %
-%     - ``.LayerType`` — cell string, ``{'image'|'mask'|'model'}`` layer to import
-%     - ``.ImageVariable`` — string, [image only] workspace variable name for image data, default ``'I'``
-%     - ``.MetaVariable`` — string, [image only] workspace variable name for metadata (``containers.Map`` or ``dictionary``); empty = skip
-%     - ``.MaskVariable`` — string, [mask only] workspace variable name for mask data, default ``'M'``
-%     - ``.ModelVariable`` — string, [model only] workspace variable name for model data or struct, default ``'O'``
-%     - ``.showWaitbar`` — logical, show or not the waitbar
-%     - ``.id`` — *(optional)* index of the dataset
+%     - ``.LayerType`` - cell string, ``{'image'|'mask'|'model'}`` layer to import
+%     - ``.ImageVariable`` - string, [image only] workspace variable name for image data, default ``'I'``
+%     - ``.MetaVariable`` - string, [image only] workspace variable name for metadata (``containers.Map`` or ``dictionary``); empty = skip
+%     - ``.MaskVariable`` - string, [mask only] workspace variable name for mask data, default ``'M'``
+%     - ``.ModelVariable`` - string, [model only] workspace variable name for model data or struct, default ``'O'``
+%     - ``.showWaitbar`` - logical, show or not the waitbar
+%     - ``.id`` - *(optional)* index of the dataset
 %
 % Usage:
-%   **Example 1** — import image interactively
+%   **Example 1** - import image interactively
 %
 %   .. code-block:: matlab
 %
 %      obj.mibModel.importDataset('image');
 %
-%   **Example 2** — import mask interactively
+%   **Example 2** - import mask interactively
 %
 %   .. code-block:: matlab
 %
 %      obj.mibModel.importDataset('mask');
 %
-%   **Example 3** — batch import of mask
+%   **Example 3** - batch import of mask
 %
 %   .. code-block:: matlab
 %
@@ -54,7 +54,7 @@ if nargin < 2; layerType = 'image'; end
 
 activeId = obj.getActiveId();
 
-%% Pre-flight checks (before building BatchOpt — fail fast)
+%% Pre-flight checks (before building BatchOpt - fail fast)
 if ismember(layerType, {'mask', 'model'})
     if strcmp(obj.I{activeId}.datasetType, 'Virtual')
         toolname = sprintf('Import of %s is', layerType);

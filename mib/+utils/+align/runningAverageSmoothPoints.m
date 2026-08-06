@@ -12,13 +12,13 @@ function smoothedVector = runningAverageSmoothPoints(inputVector, halfwidth, exc
 % real jumps survive the filter.
 %
 % Input Arguments:
-%   - **inputVector** — [numeric vector] input values to be smoothed.
-%   - **halfwidth** — [integer] half-width of the smoothing window; ``0`` disables smoothing.
-%   - **excludePeaks** — [numeric] threshold above which inter-sample differences are
+%   - **inputVector** - [numeric vector] input values to be smoothed.
+%   - **halfwidth** - [integer] half-width of the smoothing window; ``0`` disables smoothing.
+%   - **excludePeaks** - [numeric] threshold above which inter-sample differences are
 %     treated as real jumps and excluded from the smoothing; ``0`` disables peak handling.
 %
 % Output Arguments:
-%   - **smoothedVector** — [numeric vector] residual after subtracting the running average.
+%   - **smoothedVector** - [numeric vector] residual after subtracting the running average.
 
 asInSmooth = true;
 if halfwidth > 0

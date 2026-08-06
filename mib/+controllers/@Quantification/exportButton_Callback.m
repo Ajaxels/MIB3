@@ -13,11 +13,11 @@ function exportButton_Callback(obj, batchModeSwitch)
 % Supported formats:
 %   - Excel (``*.xls``) via xlswrite2 (in mib/external/)
 %   - Comma-separated values (``*.csv``) via writecell / dlmwrite
-%   - MATLAB struct (``*.mat``) — full or minimalistic (no PixelIdxList/BoundingBox)
+%   - MATLAB struct (``*.mat``) - full or minimalistic (no PixelIdxList/BoundingBox)
 %   - Export to MATLAB workspace via assignin
 %
 % Input Arguments:
-%   - **batchModeSwitch** — *(optional)* logical; 1 = headless batch mode, skips dialogs; default 0
+%   - **batchModeSwitch** - *(optional)* logical; 1 = headless batch mode, skips dialogs; default 0
 %
 
 % Updates
@@ -142,7 +142,7 @@ if strcmp(obj.BatchOpt.ExportResultsTo{1}, 'Export to MATLAB')
     % Sanitize the target variable name. In interactive mode the user types a
     % name (default 'MIB_stats'), but in batch mode ExportFilename keeps its
     % file-style default (e.g. '/img_analysis'), which is not a legal MATLAB
-    % variable name and would make assignin throw — leaving no variable behind.
+    % variable name and would make assignin throw - leaving no variable behind.
     varName = exportFilenameLocal;
     if ~isempty(varName) && (varName(1) == '/' || varName(1) == '\')
         varName = varName(2:end);   % drop leading path separator from file-style default

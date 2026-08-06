@@ -7,7 +7,7 @@ function secondsPerCall = timeCallSamples(fcn, nIterations)
 % Ported from timeCall() in homeDevTest_Callback.m; returns raw samples
 % instead of mean ms so PerfBaselineStore can compute both mean and min.
 
-fcn();   % warm-up — JIT, cache warm, excluded from samples
+fcn();   % warm-up - JIT, cache warm, excluded from samples
 secondsPerCall = zeros(1, nIterations);
 for k = 1:nIterations
     tStart = tic;

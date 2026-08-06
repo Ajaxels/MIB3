@@ -12,16 +12,16 @@ function [iconImg, iconColumnWidth] = dlgLoadIcon(iconName, requestedWidth, bgCo
 % (theme switch).
 %
 % Input Arguments:
-%   - **iconName** — [char] icon identifier (``'puffin_question'``, ``'warning_48px'``, ...);
+%   - **iconName** - [char] icon identifier (``'puffin_question'``, ``'warning_48px'``, ...);
 %     unknown ids fall back to a random puffin question icon
-%   - **requestedWidth** — [numeric] target width in pixels, or ``[]`` to keep the
+%   - **requestedWidth** - [numeric] target width in pixels, or ``[]`` to keep the
 %     natural image width; ignored for ``'celebrate'``/``'call4help'`` (always 220 px)
-%   - **bgColor** — [1x3 double] figure background color used for alpha compositing
-%   - **mibDir** — [char] MIB installation folder containing ``assets/images``
+%   - **bgColor** - [1x3 double] figure background color used for alpha compositing
+%   - **mibDir** - [char] MIB installation folder containing ``assets/images``
 %
 % Output Arguments:
-%   - **iconImg** — [uint8] composited image array for ``uiimage``; ``[]`` when unavailable
-%   - **iconColumnWidth** — [numeric] width of the returned image in pixels
+%   - **iconImg** - [uint8] composited image array for ``uiimage``; ``[]`` when unavailable
+%   - **iconColumnWidth** - [numeric] width of the returned image in pixels
 %     (48 when the icon could not be loaded, to keep the layout column sane)
 
 persistent iconCompositeCache   % dictionary: cacheKey -> composited uint8 image

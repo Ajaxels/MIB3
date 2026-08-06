@@ -135,7 +135,7 @@ obj.allTreeNodes = obj.flattenTreeNodes(obj.view.handles.metaTree);
 end
 
 % =====================================================================
-%  Local helper — adds a single extra-key node (any value type)
+%  Local helper - adds a single extra-key node (any value type)
 % =====================================================================
 function addExtraNode(parentNode, keyName, value)
 
@@ -193,7 +193,7 @@ end
 end
 
 % =====================================================================
-%  Local helper — recursively add a struct to the tree
+%  Local helper - recursively add a struct to the tree
 %  (for BioFormats XML customMeta etc.)
 % =====================================================================
 function addStructToTree(parentNode, s)

@@ -4,13 +4,13 @@ classdef StitchingInspector < handle
     % Reviews the measured tile-pair seams worst-first and lets the user
     % confirm, exclude, or (Phase C) fix them; fixes re-steer the global solve
     % through high-weight user edges. Launched from the Stitching tool
-    % (``inspectSeamsBtn``) with the parent ``controllers.Stitching`` handle —
+    % (``inspectSeamsBtn``) with the parent ``controllers.Stitching`` handle -
     % the parent's ``layout``/``edges``/``positions``/``tforms`` are the single
     % source of truth and are mutated in place. Design + phasing:
     % ``development/stitching/plan_inspector.md``.
     %
     % Seams are ranked by ``utils.stitch.scoreSeams`` (pixel NCC at the SOLVED
-    % positions — catches confidently-wrong measurements that solver residuals
+    % positions - catches confidently-wrong measurements that solver residuals
     % miss on chain graphs), pruned edges first.
 
     properties
@@ -39,22 +39,22 @@ classdef StitchingInspector < handle
         % which flicker image is visible (1 = tile i, 2 = tile j)
         autoBackup
         % cell (per edge) with the original automatic edge before the first
-        % user fix — Z / undoFixBtn restores it (in-memory only, not persisted)
+        % user fix - Z / undoFixBtn restores it (in-memory only, not persisted)
         pairStrip
         % struct with the current pair view geometry (.bboxA = tile-i strip
-        % [rowStart rowEnd; colStart colEnd], .deltaYX) — maps clicks on the
+        % [rowStart rowEnd; colStart colEnd], .deltaYX) - maps clicks on the
         % strip back to tile-i pixels; [] when no overlap is rendered
         twoClick
         % two-click landmark match state: .active, .stage (1|2), .scale,
         % .leftWidth, .gap, .clickA ([x y] in tile-i full-res pixels)
         shiftDown
-        % true while Shift is held over the inspector — the pair-view cursor
+        % true while Shift is held over the inspector - the pair-view cursor
         % becomes the correlation ROI box and a click runs click-to-correlate
         roiBoxHandle
         % line handle of the hover ROI box on pairAxes ([] until first shown)
         pairZoom
         % wheel-zoom state of the pair view: struct .edgeIdx (the seam it
-        % belongs to), .xLim, .yLim — re-applied across re-renders of the
+        % belongs to), .xLim, .yLim - re-applied across re-renders of the
         % same seam so nudges/drags keep the zoom; [] = fit to view
         tileThumbs
         % cell (per tile) of low-res greyscale thumbnails for the mini-map
@@ -69,7 +69,7 @@ classdef StitchingInspector < handle
         viewSlice
         % browsed z-slices of the pair view: struct .edgeIdx, .sliceA
         % (tile-i slice), .sliceB (tile-j slice), .depthA, .depthB (stack
-        % depths) and .boundaryTile — [] in Fix XY (sliceA/sliceB are the
+        % depths) and .boundaryTile - [] in Fix XY (sliceA/sliceB are the
         % dz-aligned pair of the seam's tiles), or the tile index in Fix Z,
         % where the view is the mosaic Z BOUNDARY: that ONE tile at slices
         % z-1 (sliceA, cyan) vs z (sliceB, magenta). Browsing is VIEW ONLY.
@@ -108,12 +108,12 @@ classdef StitchingInspector < handle
             %      obj = controllers.StitchingInspector(mibModel, stitchController, struct('createView', false))
             %
             % Input Arguments:
-            %   - **mibModel** — handle to MibModel
-            %   - **stitchController** — handle to the launching
+            %   - **mibModel** - handle to MibModel
+            %   - **stitchController** - handle to the launching
             %     ``controllers.Stitching``; must hold a measured ``edges`` set
             %     and solved ``positions``
-            %   - **options** *(optional)* — [struct] with field ``createView``
-            %     [logical]: ``false`` builds the inspector WITHOUT its window —
+            %   - **options** *(optional)* - [struct] with field ``createView``
+            %     [logical]: ``false`` builds the inspector WITHOUT its window -
             %     the seams are scored and ranked and every review/fix method
             %     works, but nothing is rendered. Used by the unit tests; every
             %     widget access in this class is guarded by
@@ -146,7 +146,7 @@ classdef StitchingInspector < handle
             end
 
             if isempty(obj.stitching.edges) || isempty(obj.stitching.positions)
-                message = 'Measure overlaps and Optimize positions first — the inspector reviews seams at the SOLVED placement.';
+                message = 'Measure overlaps and Optimize positions first - the inspector reviews seams at the SOLVED placement.';
                 if createView
                     utils.dlgs.showErrorDialog(obj.stitching.guiFigure(), message, 'Seam inspector');
                     notify(obj, 'CloseEvent');
@@ -225,7 +225,7 @@ classdef StitchingInspector < handle
             % ``utils.stitch.makeTileReader`` exists to prevent.
             %
             % Output Arguments:
-            %   - **readerFcn** — [function_handle] see :func:`utils.stitch.makeTileReader`
+            %   - **readerFcn** - [function_handle] see :func:`utils.stitch.makeTileReader`
             %
             if isempty(obj.readerFcn)
                 [obj.readerFcn, obj.readerCachedFcn] = utils.stitch.makeTileReader( ...
@@ -262,14 +262,14 @@ classdef StitchingInspector < handle
             %
             %      tf = obj.hasWidget('seamTable')
             %
-            % False both when the mlapp does not (yet) carry the widget — most
-            % of the inspector's UI is optional, see ``mlapp_widgets.md`` — and
+            % False both when the mlapp does not (yet) carry the widget - most
+            % of the inspector's UI is optional, see ``mlapp_widgets.md`` - and
             % when the controller runs without a view at all (headless
             % construction). Every widget access in this class goes through it,
             % so the review logic runs identically in both cases.
             %
             % Input Arguments:
-            %   - **widgetName** — [char] handle name in ``obj.view.handles``
+            %   - **widgetName** - [char] handle name in ``obj.view.handles``
             %
             tf = ~isempty(obj.view) && isfield(obj.view.handles, widgetName);
         end
@@ -286,7 +286,7 @@ classdef StitchingInspector < handle
             % The inspector window once it is VISIBLE (``uiprogressdlg``
             % refuses an invisible figure, which the window still is while the
             % constructor scores the seams), otherwise the parent Stitching
-            % window, otherwise ``[]`` — headless, and the caller then skips
+            % window, otherwise ``[]`` - headless, and the caller then skips
             % the progress bar entirely.
             %
             figureHandle = [];
@@ -317,7 +317,7 @@ classdef StitchingInspector < handle
             %
             % Works with either widget type: an App Designer STATE button
             % (``uibutton(...,'state')``, has a ``Value``) shows the state as
-            % pressed + red, a plain push button only as red — so the mlapp can
+            % pressed + red, a plain push button only as red - so the mlapp can
             % be upgraded without touching this code.
             %
             % Syntax:
@@ -391,7 +391,7 @@ classdef StitchingInspector < handle
         function mode = fixMode(obj)
             % FIXMODE - What a fix edits on 3D pairs: 'xy' (default; the
             % in-plane offset at the aligned slices) or 'z' (match slices
-            % across the Z boundary — fixModeDropdown, guarded).
+            % across the Z boundary - fixModeDropdown, guarded).
             mode = 'xy';
             if obj.hasWidget('fixModeDropdown') && ...
                     contains(lower(obj.view.handles.fixModeDropdown.Value), 'z')
@@ -407,7 +407,7 @@ classdef StitchingInspector < handle
             % tiles in adjacent Z-layers) in Fix Z. The seam table and every
             % seam-to-seam navigation (table click, N/P, resolve, advance,
             % mini-map jump, the initial pick) follow this subset, so the table
-            % never mixes in-plane and cross-layer rows — they read on different
+            % never mixes in-plane and cross-layer rows - they read on different
             % axes and made the combined list confusing. A 2D dataset has only
             % in-plane seams, so Fix XY shows them all and Fix Z is empty.
             r = obj.ranking;
@@ -443,13 +443,13 @@ classdef StitchingInspector < handle
             %
             % A tile usually touches more than one seam (a grid tile has a
             % neighbour on two, three or four sides), so "jump to this tile's
-            % worst seam" can only ever reach the single worst one — clicking
+            % worst seam" can only ever reach the single worst one - clicking
             % anywhere else on that tile, hoping to land on a DIFFERENT one of
             % its seams, always lands back on the same worst seam instead.
             % Fix: give every seam of the current layer (the subset
-            % visibleRanking shows) a location — the midpoint of its two
+            % visibleRanking shows) a location - the midpoint of its two
             % tiles' overlap rectangle, i.e. where the shared image content
-            % actually is — and return whichever seam's location is nearest
+            % actually is - and return whichever seam's location is nearest
             % the click. Returns ``[]`` when there is nothing to match (no
             % seams in this fix mode, or none in the current layer).
             layout = obj.stitching.layout;
@@ -475,7 +475,7 @@ classdef StitchingInspector < handle
                     seamPoint = [mean(xOverlap), mean(yOverlap)];
                 else
                     % No real overlap left at the solved placement (a weak or
-                    % failed measurement) — fall back to the midpoint between
+                    % failed measurement) - fall back to the midpoint between
                     % the two tile centers so the seam still has a location.
                     seamPoint = ([x0i + wi / 2, y0i + hi / 2] + ...
                                  [x0j + wj / 2, y0j + hj / 2]) / 2;
@@ -492,7 +492,7 @@ classdef StitchingInspector < handle
         function tf = boundaryModeActive(obj)
             % BOUNDARYMODEACTIVE - True when the pair view shows a mosaic
             % Z BOUNDARY (Fix Z): the same tile at consecutive slices z-1
-            % (cyan) vs z (magenta), fully overlapping — mostly white when
+            % (cyan) vs z (magenta), fully overlapping - mostly white when
             % the mosaic is Z-aligned. Fixes then edit the per-slice mosaic
             % correction (applyZBoundaryFix), not a seam. renderPairView
             % engages it by storing viewSlice.boundaryTile.
@@ -517,7 +517,7 @@ classdef StitchingInspector < handle
         % ---------------------------------------------------------------
         function dz = fixDz(obj, edgeIdx)
             % FIXDZ - dz component written with any seam fix: always the
-            % current dz — seam fixes never change the Z relation. (Z
+            % current dz - seam fixes never change the Z relation. (Z
             % corrections are per-slice mosaic shifts, applied through
             % applyZBoundaryFix in Fix-Z mode, not edge dz edits.)
             dz = obj.currentDz(edgeIdx);

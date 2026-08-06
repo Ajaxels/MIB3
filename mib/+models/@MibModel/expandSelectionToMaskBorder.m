@@ -12,24 +12,24 @@ function expandSelectionToMaskBorder(obj, BatchOptIn)
 % efficiency rather than the O(N_sel x N_mask) linear scan in MIB2.
 %
 % Input Arguments:
-%   - **BatchOptIn** — *(optional)* structure for batch processing mode; when NaN,
+%   - **BatchOptIn** - *(optional)* structure for batch processing mode; when NaN,
 %     returns default options via the "SyncBatch" event.
 %
-%     - ``.DatasetType`` — cell string, ``{'3D, Stack','4D, Dataset'}`` scope
-%     - ``.showWaitbar`` — logical, show or not the progress dialog
-%     - ``.id`` — *(optional)* dataset index 1-9, default = obj.id
+%     - ``.DatasetType`` - cell string, ``{'3D, Stack','4D, Dataset'}`` scope
+%     - ``.showWaitbar`` - logical, show or not the progress dialog
+%     - ``.id`` - *(optional)* dataset index 1-9, default = obj.id
 %
 % Output Arguments:
 %   (none)
 %
 % Usage:
-%   **Example 1** — expand selection to mask border on current stack
+%   **Example 1** - expand selection to mask border on current stack
 %
 %   .. code-block:: matlab
 %
 %      obj.mibModel.expandSelectionToMaskBorder();
 %
-%   **Example 2** — batch mode across full 4D dataset
+%   **Example 2** - batch mode across full 4D dataset
 %
 %   .. code-block:: matlab
 %
@@ -37,7 +37,7 @@ function expandSelectionToMaskBorder(obj, BatchOptIn)
 %      BatchOpt.showWaitbar = false;
 %      obj.mibModel.expandSelectionToMaskBorder(BatchOpt);
 %
-%   **Example 3** — return default BatchOpt to the Batch Processing editor
+%   **Example 3** - return default BatchOpt to the Batch Processing editor
 %
 %   .. code-block:: matlab
 %
@@ -110,7 +110,7 @@ end
 getDataOptions.id = BatchOpt.id;
 getDataOptions.blockModeSwitch = 0;
 
-%% Backup (only for single-time datasets — multi-time backups are too large)
+%% Backup (only for single-time datasets - multi-time backups are too large)
 if obj.I{BatchOpt.id}.image.time == 1
     obj.backup('selection', true, getDataOptions);
 end

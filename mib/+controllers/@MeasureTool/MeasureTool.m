@@ -11,8 +11,8 @@ classdef MeasureTool < handle
     %
     % **Architecture:**
     %
-    % - ``core.Measurements`` — data-only class on the dataset; this controller drives it.
-    % - ``controllers.MibController`` — parent; provides ``cImageDoc`` and model.
+    % - ``core.Measurements`` - data-only class on the dataset; this controller drives it.
+    % - ``controllers.MibController`` - parent; provides ``cImageDoc`` and model.
     % - All interactive drawing lives here, never in ``core.Measurements``.
     %
     % **Launch via** ``utils.startController``::
@@ -30,7 +30,7 @@ classdef MeasureTool < handle
         view
         % handle to views.MeasureToolGUI (set by core.ChildView in constructor)
         listener
-        % {1×N cell} listener handles — deleted on close
+        % {1×N cell} listener handles - deleted on close
         indices
         % [N×2] currently selected row indices in measureTable
     end
@@ -78,14 +78,14 @@ classdef MeasureTool < handle
             % as ``varargin{1}`` by the caller.
             %
             % Input Arguments:
-            %   - **mibModel** — handle to :class:`models.MibModel`
-            %   - **varargin{1}** — handle to :class:`controllers.MibController`
+            %   - **mibModel** - handle to :class:`models.MibModel`
+            %   - **varargin{1}** - handle to :class:`controllers.MibController`
             %
             % Output Arguments:
-            %   - **obj** — instance of :class:`controllers.MeasureTool`
+            %   - **obj** - instance of :class:`controllers.MeasureTool`
             %
             % Usage:
-            %   **Example 1** — launched via ribbon button callback
+            %   **Example 1** - launched via ribbon button callback
             %
             %   .. code-block:: matlab
             %
@@ -178,8 +178,8 @@ classdef MeasureTool < handle
             % or its view has been deleted.
             %
             % Input Arguments:
-            %   - **obj** — :class:`controllers.MeasureTool` instance
-            %   - **event** — model event object
+            %   - **obj** - :class:`controllers.MeasureTool` instance
+            %   - **event** - model event object
             %
 
             if ~isvalid(obj) || isempty(obj.view) || ~isvalid(obj.view.gui)

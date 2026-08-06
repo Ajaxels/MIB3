@@ -27,14 +27,14 @@ function LandmarkMultiPoint_Alignment(obj, parameters)
 %
 % Modes:
 %   - ``parameters.TransformationMode = 'cropped'`` keeps the original
-%     canvas — each slice is warped with ``imwarp(..., 'OutputView',
+%     canvas - each slice is warped with ``imwarp(..., 'OutputView',
 %     imref2d([H, W]))`` and written back to its slot via :meth:`setData2D`.
 %   - ``parameters.TransformationMode = 'extended'`` grows the canvas to fit
 %     the union of all warped slices; service layers are pre-resized to the
 %     new canvas before :meth:`setData4D`.
 %
 % Input Arguments:
-%   - **parameters** — struct produced by :meth:`continueBtn_Callback`. Reads
+%   - **parameters** - struct produced by :meth:`continueBtn_Callback`. Reads
 %     ``TransformationType``, ``TransformationMode``, ``transformationDegree``,
 %     ``colorCh``, ``backgroundColor``, ``useBatchMode``.
 
@@ -43,7 +43,7 @@ function LandmarkMultiPoint_Alignment(obj, parameters)
 
 id = obj.mibModel.getActiveId();
 
-% Parent figure for any dialogs — ``obj.view`` is empty in batch mode
+% Parent figure for any dialogs - ``obj.view`` is empty in batch mode
 if ~isempty(obj.view) && isvalid(obj.view) && isvalid(obj.view.gui)
     parentFig = obj.view.gui;
 else
@@ -299,7 +299,7 @@ for layer = 2:depth
     if isempty(tformMatrix{layer})
         tformMatrix(layer:end) = {tform2};
     else
-        % Compose with the previously broadcast transform — only meaningful
+        % Compose with the previously broadcast transform - only meaningful
         % when both carry a ``.T`` matrix (affine / similarity / projective).
         if isprop(tform2, 'T') && isprop(tformMatrix{layer}, 'T')
             tform2.T = tform2.T * tformMatrix{layer}.T;

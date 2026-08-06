@@ -8,13 +8,13 @@ function [hSplashScreen, hSplashAxes, hLabel] = showSplashScreen(obj, titleText,
 %      [hSplashScreen, hSplashAxes, hLabel] = obj.showSplashScreen(titleText, initText)
 %
 % Input Arguments:
-%   - **titleText** — char with the window title
-%   - **initText** — char with the initial status text
+%   - **titleText** - char with the window title
+%   - **initText** - char with the initial status text
 %
 % Output Arguments:
-%   - **hSplashScreen** — handle to the splash screen ``figure``
-%   - **hSplashAxes** — handle to the ``axes`` used to display the splash image
-%   - **hLabel** — handle to the status text ``uicontrol``
+%   - **hSplashScreen** - handle to the splash screen ``figure``
+%   - **hSplashAxes** - handle to the ``axes`` used to display the splash image
+%   - **hLabel** - handle to the status text ``uicontrol``
 %
 
 arguments (Input)

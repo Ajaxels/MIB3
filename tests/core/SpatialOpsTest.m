@@ -4,10 +4,10 @@ classdef SpatialOpsTest < matlab.unittest.TestCase
 % Covers: flipDataset, swapSlices, deleteSlice, insertSlice.
 %
 % Verification strategies:
-%   flip  — double-flip = identity (round-trip); single-flip matches flip() builtin
-%   swap  — content at exchanged positions matches pre-swap values
-%   delete — depth decreases by 1; surviving slices hold expected content
-%   insert — depth increases by 1; inserted slice is at the specified position
+%   flip  - double-flip = identity (round-trip); single-flip matches flip() builtin
+%   swap  - content at exchanged positions matches pre-swap values
+%   delete - depth decreases by 1; surviving slices hold expected content
+%   insert - depth increases by 1; inserted slice is at the specified position
 
     methods (TestClassSetup)
         function addPaths(testCase)
@@ -18,7 +18,7 @@ classdef SpatialOpsTest < matlab.unittest.TestCase
     methods (Test, TestTags = {'Unit'})
 
         % -----------------------------------------------------------------
-        % flipDataset — round-trip identity
+        % flipDataset - round-trip identity
         % -----------------------------------------------------------------
 
         function flipHorizontal_doubleFlip_isIdentity(testCase)
@@ -322,7 +322,7 @@ classdef SpatialOpsTest < matlab.unittest.TestCase
         end
 
         % -----------------------------------------------------------------
-        % Multi-channel (numColors=2) — transforms must apply to all channels
+        % Multi-channel (numColors=2) - transforms must apply to all channels
         % -----------------------------------------------------------------
 
         function flip_twoChannel_bothChannelsTransformed(testCase)

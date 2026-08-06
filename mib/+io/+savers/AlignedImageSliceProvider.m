@@ -5,7 +5,7 @@ classdef AlignedImageSliceProvider < io.savers.SliceProvider
 % via ``getData('image', 3, colCh, struct('pyramidLevel', 1, 'z', [z z]))``, applies
 % the per-slice level-0 geometric transform into the (possibly extended) output
 % canvas with ``imwarp``, and returns the placed slice. One code path serves both
-% drift (translation expressed as an affine) and feature/landmark (affine) modes —
+% drift (translation expressed as an affine) and feature/landmark (affine) modes -
 % the caller supplies the per-slice transforms and the interpolation method.
 % Consumed by ``io.savers.Zarr3Saver.saveStream`` so the full-resolution stack is
 % never resident in memory.
@@ -27,16 +27,16 @@ classdef AlignedImageSliceProvider < io.savers.SliceProvider
             % ALIGNEDIMAGESLICEPROVIDER - Build the streaming warped-image provider.
             %
             % Input Arguments:
-            %   - **source** — source ``core.MibBigDataImage`` (read-only).
-            %   - **tforms** — ``{numSlices x 1}`` cell of level-0 geometric
+            %   - **source** - source ``core.MibBigDataImage`` (read-only).
+            %   - **tforms** - ``{numSlices x 1}`` cell of level-0 geometric
             %     transforms (``affinetform2d`` / ``affine2d`` / ``projective2d``).
-            %   - **outputView** — output canvas as an ``imref2d`` (may carry world
+            %   - **outputView** - output canvas as an ``imref2d`` (may carry world
             %     limits for an offset canvas) or a ``[newH0 newW0]`` size vector.
-            %   - **background** — scalar background fill for out-of-canvas pixels.
-            %   - **colChannels** — colour-channel indices; ``[]`` = all channels.
-            %   - **interp** — imwarp interpolation ('nearest' | 'linear' | 'cubic').
-            %   - **numSlices** — number of Z-slices (level-0 depth).
-            %   - **numFrames** — number of time frames (default 1).
+            %   - **background** - scalar background fill for out-of-canvas pixels.
+            %   - **colChannels** - colour-channel indices; ``[]`` = all channels.
+            %   - **interp** - imwarp interpolation ('nearest' | 'linear' | 'cubic').
+            %   - **numSlices** - number of Z-slices (level-0 depth).
+            %   - **numFrames** - number of time frames (default 1).
             if nargin < 5; colChannels = []; end
             if nargin < 6 || isempty(interp); interp = 'cubic'; end
             if nargin < 7 || isempty(numSlices); numSlices = 1; end

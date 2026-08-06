@@ -11,16 +11,16 @@ function exportONNXNetwork(Network, filename, varargin)
 % If ``filename`` already exists it is overwritten.
 %
 % Input Arguments:
-%   - **Network** — trained network or layer graph specified as a
+%   - **Network** - trained network or layer graph specified as a
 %     ``SeriesNetwork``, ``DAGNetwork``, ``dlnetwork``, or ``layerGraph``
-%   - **filename** — [char|string] output file path
+%   - **filename** - [char|string] output file path
 %
 % Name-Value Arguments:
-%   - ``'NetworkName'`` — [char|string] name stored inside the ONNX file
+%   - ``'NetworkName'`` - [char|string] name stored inside the ONNX file
 %     (default: ``'Network'``)
-%   - ``'OpsetVersion'`` — [integer] ONNX operator-set version to use;
+%   - ``'OpsetVersion'`` - [integer] ONNX operator-set version to use;
 %     supported values: ``6``, ``7``, ``8``, ``9`` (default: ``8``)
-%   - ``'BatchSize'`` — [integer] explicit batch size to export, or ``[]``
+%   - ``'BatchSize'`` - [integer] explicit batch size to export, or ``[]``
 %     for variable batch size (default: ``[]``)
 
 

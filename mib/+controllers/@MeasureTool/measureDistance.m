@@ -12,16 +12,16 @@ function annotationText = measureDistance(obj, datasetId, colCh, finetuneCheck, 
 % the intensity profile is integrated laterally across that width.
 %
 % Input Arguments:
-%   - **datasetId** — [double] index into ``mibModel.I``
-%   - **colCh** — [double] colour channel (0 = all, 1+ = specific)
-%   - **finetuneCheck** — [logical] when ``true`` enable fine-tuning of the drawn measurement, when ``false``, it is automatically accepted upon finishing of drawing
-%   - **integrationWidth** — [double] lateral integration half-width in pixels (0 = off)
-%   - **calcIntensity** — [logical] compute intensity profile along the line
-%   - **showInfoDlg** — [logical] show annotation text dialog after drawing
-%   - **insertIndex** — *(optional)* [double] replace-at-position (0 = append)
+%   - **datasetId** - [double] index into ``mibModel.I``
+%   - **colCh** - [double] colour channel (0 = all, 1+ = specific)
+%   - **finetuneCheck** - [logical] when ``true`` enable fine-tuning of the drawn measurement, when ``false``, it is automatically accepted upon finishing of drawing
+%   - **integrationWidth** - [double] lateral integration half-width in pixels (0 = off)
+%   - **calcIntensity** - [logical] compute intensity profile along the line
+%   - **showInfoDlg** - [logical] show annotation text dialog after drawing
+%   - **insertIndex** - *(optional)* [double] replace-at-position (0 = append)
 %
 % Output Arguments:
-%   - **annotationText** — [char] annotation label entered by the user;
+%   - **annotationText** - [char] annotation label entered by the user;
 %     empty string ``''`` when the dialog was skipped or cancelled
 %
 

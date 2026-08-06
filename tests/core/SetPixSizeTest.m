@@ -6,9 +6,9 @@ classdef SetPixSizeTest < matlab.unittest.TestCase
 % obj.image.pixSize.
 %
 % Verification strategies:
-%   scalar update   — setting a new x/y/z updates obj.image.pixSize
-%   units update    — units and tunits fields are propagated
-%   all layers sync — after setPixSize, all layers hold the same pixSize
+%   scalar update   - setting a new x/y/z updates obj.image.pixSize
+%   units update    - units and tunits fields are propagated
+%   all layers sync - after setPixSize, all layers hold the same pixSize
 
     methods (TestClassSetup)
         function addPaths(testCase)

@@ -3,7 +3,7 @@ function [mibModel, groundTruth] = buildSyntheticModel(options)
 %
 % Returns a fresh MibModel (I{1} replaced with a synthetic dataset) and a
 % groundTruth struct holding the raw arrays that the accessors should reproduce.
-% Call once per test method — MibModel/MibDataset are handle objects and must
+% Call once per test method - MibModel/MibDataset are handle objects and must
 % not be shared between test methods.
 %
 % Options:
@@ -23,7 +23,7 @@ arguments
     options.numColors  (1,1) double = 1
 end
 
-rng(0, 'twister');   % determinism — never remove; tests depend on this seed
+rng(0, 'twister');   % determinism - never remove; tests depend on this seed
 
 height    = options.dims(1);
 width     = options.dims(2);

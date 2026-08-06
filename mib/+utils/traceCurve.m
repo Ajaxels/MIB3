@@ -12,24 +12,24 @@ function [mask, status] = traceCurve(img, options, mask)
 % Called from the Membrane Click Tracker segmentation tool.
 %
 % Input Arguments:
-%   - **img** — original image used to probe gradients
-%   - **options** — struct with algorithm parameters:
+%   - **img** - original image used to probe gradients
+%   - **options** - struct with algorithm parameters:
 %
-%     - ``.p1``                   — starting point coordinates ``[y; x]``
-%     - ``.p2``                   — target point coordinates ``[y; x]``
-%     - ``.scaleFactor``          — scale factor for amplifying intensity differences
-%     - ``.segmTrackBlackChk``    — ``1`` when signal is dark (black membrane), ``0`` for bright
-%     - ``.colorId``              — index of the colour channel to follow
+%     - ``.p1``                   - starting point coordinates ``[y; x]``
+%     - ``.p2``                   - target point coordinates ``[y; x]``
+%     - ``.scaleFactor``          - scale factor for amplifying intensity differences
+%     - ``.segmTrackBlackChk``    - ``1`` when signal is dark (black membrane), ``0`` for bright
+%     - ``.colorId``              - index of the colour channel to follow
 %
-%   - **mask** *(optional)* — existing mask/selection layer to draw into
+%   - **mask** *(optional)* - existing mask/selection layer to draw into
 %
 % Output Arguments:
-%   - **mask** — [uint8] bitmap image with the connecting line (use as Selection layer)
-%   - **status** — [numeric] ``1`` on success, ``0`` on failure
+%   - **mask** - [uint8] bitmap image with the connecting line (use as Selection layer)
+%   - **status** - [numeric] ``1`` on success, ``0`` on failure
 %
 % Usage:
 %
-%   **Example 1** — trace a curve between two points
+%   **Example 1** - trace a curve between two points
 %
 %   .. code-block:: matlab
 %

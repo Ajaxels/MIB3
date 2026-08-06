@@ -14,7 +14,7 @@ function status = terminatePythonEnv()
 % "Termination not supported for InProcess execution mode".
 %
 % Output Arguments:
-%   - **status** — [logical] **true** when no Python interpreter remains
+%   - **status** - [logical] **true** when no Python interpreter remains
 %     loaded after the call (it was terminated or was never loaded);
 %     **false** when an InProcess interpreter is loaded and stays loaded
 %

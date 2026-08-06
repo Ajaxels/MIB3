@@ -1,5 +1,5 @@
 classdef Preferences < handle
-% PREFERENCES - Controller for the preferences dialog — displays MIB3 settings.
+% PREFERENCES - Controller for the preferences dialog - displays MIB3 settings.
 %
 % Syntax:
 %   .. code-block:: matlab
@@ -43,7 +43,7 @@ classdef Preferences < handle
     
     methods
         function obj = Preferences(mibModel, varargin)
-            % PREFERENCES - Constructor — create a Preferences controller and open its GUI window.
+            % PREFERENCES - Constructor - create a Preferences controller and open its GUI window.
             %
             % Syntax:
             %   .. code-block:: matlab
@@ -58,13 +58,13 @@ classdef Preferences < handle
             % Directories, Keyboard Shortcuts, and Segmentation Tools.
             %
             % Input Arguments:
-            %   - **mibModel** — handle to the application MibModel instance
-            %   - **varargin{1}** — handle to the parent MibController
+            %   - **mibModel** - handle to the application MibModel instance
+            %   - **varargin{1}** - handle to the parent MibController
             %
             % Output Arguments:
-            %   - **obj** — handle to the created Preferences controller instance
+            %   - **obj** - handle to the created Preferences controller instance
             %
-            % **Example** — open the preferences dialog:
+            % **Example** - open the preferences dialog:
             %
             %   .. code-block:: matlab
             %
@@ -120,7 +120,7 @@ classdef Preferences < handle
             %
             %       obj.closeWindow()
             %
-            % **Example** — close the preferences window:
+            % **Example** - close the preferences window:
             %
             %   .. code-block:: matlab
             %
@@ -151,7 +151,7 @@ classdef Preferences < handle
             %       obj.updateWidgets(panelId)
             %
             % Input Arguments:
-            %   - **panelId** *(optional)* — [char] tag of panel to update; when missing, all panels are updated
+            %   - **panelId** *(optional)* - [char] tag of panel to update; when missing, all panels are updated
 
             panelsList = {'UserInterfacePanel', 'ColorsPanel', 'BackupAndUndoPanel', ...
                 'ExternalDirectoriesPanel', 'KeyboardShortcutsPanel', 'SegmentationToolsPanel', ...
@@ -458,9 +458,9 @@ classdef Preferences < handle
             %      status = obj.ApplyButtonPushedCallback()
             %
             % Output Arguments:
-            %   - **status** — [numeric] 1 if successful, 0 if failed
+            %   - **status** - [numeric] 1 if successful, 0 if failed
             %
-            % **Example** — apply and validate preferences:
+            % **Example** - apply and validate preferences:
             %
             %   .. code-block:: matlab
             %
@@ -569,7 +569,7 @@ classdef Preferences < handle
             %
             %      obj.RescaleGUIButtonPushed()
             %
-            % **Example** — rescale the MIB GUI:
+            % **Example** - rescale the MIB GUI:
             %
             %   .. code-block:: matlab
             %
@@ -590,7 +590,7 @@ classdef Preferences < handle
             %
             %      obj.OKButtonPushedCallback()
             %
-            % **Example** — confirm and apply preferences:
+            % **Example** - confirm and apply preferences:
             %
             %   .. code-block:: matlab
             %
@@ -658,7 +658,7 @@ classdef Preferences < handle
             %      obj.ColorPanelCallbacks(event)
             %
             % Input Arguments:
-            %   - **event** — [struct] event data from the GUI element that triggered callback
+            %   - **event** - [struct] event data from the GUI element that triggered callback
             
             if obj.mibModel.preferences.System.DeveloperMode
                 fprintf('controllers.Preferences.ColorPanelCallbacks(%s): triggered\n', event.Source.Tag);
@@ -762,7 +762,7 @@ classdef Preferences < handle
             %      obj.KeyboardShortcutsPanelCallbacks(event)
             %
             % Input Arguments:
-            %   - **event** — [struct] event data from the GUI element that triggered callback
+            %   - **event** - [struct] event data from the GUI element that triggered callback
             
             if obj.mibModel.preferences.System.DeveloperMode
                 fprintf('controllers.Preferences.KeyboardShortcutsPanelCallbacks: triggered\n');
@@ -789,7 +789,7 @@ classdef Preferences < handle
             %      obj.InputOutputPanelCallbacks(event)
             %
             % Input Arguments:
-            %   - **event** — [struct] event data from the GUI element that triggered callback
+            %   - **event** - [struct] event data from the GUI element that triggered callback
             %
         
             if obj.mibModel.preferences.System.DeveloperMode
@@ -803,7 +803,7 @@ classdef Preferences < handle
                     % Note: this only updates the dialog's working copy of preferences;
                     % the backend is committed in ApplyButtonPushedCallback.
                 case 'ZarrSmoothing'
-                    % optional widget (boolean) — smooth coarse->fine label propagation
+                    % optional widget (boolean) - smooth coarse->fine label propagation
                     obj.preferences.IO.Zarr.Smoothing = logical(obj.view.handles.ZarrSmoothing.Value);
                     % committed in ApplyButtonPushedCallback.
                 case 'BioFormatsLibrary'
@@ -818,7 +818,7 @@ classdef Preferences < handle
                     end
                     % The MATLAB backend needs the "Medical Imaging Toolbox Interface
                     % for Whole Slide Imaging File Reader" support package (provides
-                    % bioformatsread/openslideread). Warn now if it is missing — opening
+                    % bioformatsread/openslideread). Warn now if it is missing - opening
                     % files with this reader would otherwise fail at read time.
                     if strcmp(obj.preferences.IO.BioFormats.Library, 'matlab') && ...
                             exist('bioformatsread', 'file') ~= 2
@@ -833,7 +833,7 @@ classdef Preferences < handle
                             'openslideread).\n\n' ...
                             'Install it from MATLAB: Home tab -> Add-Ons -> Get Add-Ons, then ' ...
                             'search for "Whole Slide Imaging File Reader".\n\n' ...
-                            'Until it is installed, opening files with this reader will fail — ' ...
+                            'Until it is installed, opening files with this reader will fail - ' ...
                             'keep the "MIB" library instead.']);
                         utils.dlgs.inputUniversalDlg(obj.view.gui, ...
                             'The MATLAB BioFormats / WSI reader is not installed', ...
@@ -857,7 +857,7 @@ classdef Preferences < handle
             %      obj.ExternalDirectoriesPanelCallbacks(event)
             %
             % Input Arguments:
-            %   - **event** — [struct] event data from the GUI element that triggered callback
+            %   - **event** - [struct] event data from the GUI element that triggered callback
             %
 
             if obj.mibModel.preferences.System.DeveloperMode
@@ -883,7 +883,7 @@ classdef Preferences < handle
             %      obj.SegmentationPanelCallbacks(event)
             %
             % Input Arguments:
-            %   - **event** — [struct] event data from the GUI element that triggered callback
+            %   - **event** - [struct] event data from the GUI element that triggered callback
             %
 
             if obj.mibModel.preferences.System.DeveloperMode
@@ -916,7 +916,7 @@ classdef Preferences < handle
             %      obj.BackupAndUndoPanelCallbacks(event)
             %
             % Input Arguments:
-            %   - **event** — [struct] event data from the GUI element that triggered callback
+            %   - **event** - [struct] event data from the GUI element that triggered callback
             %
 
             if obj.mibModel.preferences.System.DeveloperMode
@@ -952,7 +952,7 @@ classdef Preferences < handle
             %      obj.UserInterfacePanelCallbacks(event)
             %
             % Input Arguments:
-            %   - **event** — [struct] event data from the GUI element that triggered callback
+            %   - **event** - [struct] event data from the GUI element that triggered callback
             %
 
             if obj.mibModel.preferences.System.DeveloperMode
@@ -1053,7 +1053,7 @@ classdef Preferences < handle
             %      obj.CategoriesTreeSelectionChanged(selectedNodes)
             %
             % Input Arguments:
-            %   - **selectedNodes** — [handle] handle to the selected tree node
+            %   - **selectedNodes** - [handle] handle to the selected tree node
             
             % hide currently visible (previous) panel
             obj.view.handles.(obj.shownPanelTag).Visible = 'off';
@@ -1074,7 +1074,7 @@ classdef Preferences < handle
             %
             %      obj.updateColorPalette()
             %
-            % **Example** — update the color palette:
+            % **Example** - update the color palette:
             %
             %   .. code-block:: matlab
             %
@@ -1096,11 +1096,11 @@ classdef Preferences < handle
             %      obj.updateColorsTables(ColorTableTag, options)
             %
             % Input Arguments:
-            %   - **ColorTableTag** — [char] tag of the table: ``'ModelsColorsTable'`` or ``'LUTColorsTable'``
-            %   - **options** *(optional)* — [struct] structure with additional parameters:
+            %   - **ColorTableTag** - [char] tag of the table: ``'ModelsColorsTable'`` or ``'LUTColorsTable'``
+            %   - **options** *(optional)* - [struct] structure with additional parameters:
             %
-            %     - ``.updateDataOnly`` — [logical] update data only without redrawing styles (default: ``false``)
-            %     - ``.rowId`` — [integer] index of row to update; when empty, update full table (default: ``[]``)
+            %     - ``.updateDataOnly`` - [logical] update data only without redrawing styles (default: ``false``)
+            %     - ``.rowId`` - [integer] index of row to update; when empty, update full table (default: ``[]``)
             
             if nargin < 2; error('ColorTableTag  is missing'); end
             if nargin < 3; options = struct(); end
@@ -1171,7 +1171,7 @@ classdef Preferences < handle
             %      obj.TableCellSelectionCallback(event)
             %
             % Input Arguments:
-            %   - **event** — [struct] event data from the table cell selection
+            %   - **event** - [struct] event data from the table cell selection
             
             if obj.mibModel.preferences.System.DeveloperMode
                 fprintf('controllers.Preferences.TableCellSelectionCallback: triggered\n');
@@ -1405,9 +1405,9 @@ classdef Preferences < handle
             %      obj.ExternalDirSelect(event)
             %
             % Input Arguments:
-            %   - **event** — [struct] event data from the button press
+            %   - **event** - [struct] event data from the button press
             %
-            % **Example** — handle directory selection:
+            % **Example** - handle directory selection:
             %
             %   .. code-block:: matlab
             %
@@ -1474,9 +1474,9 @@ classdef Preferences < handle
             %      obj.ExternalDirPathChange(event)
             %
             % Input Arguments:
-            %   - **event** — [struct] event data from the directory path field
+            %   - **event** - [struct] event data from the directory path field
             %
-            % **Example** — validate and update directory path:
+            % **Example** - validate and update directory path:
             %
             %   .. code-block:: matlab
             %
@@ -1513,9 +1513,9 @@ classdef Preferences < handle
             %      obj.updateKeyShortcut(eventdata)
             %
             % Input Arguments:
-            %   - **eventdata** — [struct] event data from the shortcuts table cell edit
+            %   - **eventdata** - [struct] event data from the shortcuts table cell edit
             %
-            % **Example** — update a keyboard shortcut:
+            % **Example** - update a keyboard shortcut:
             %
             %   .. code-block:: matlab
             %
@@ -1596,7 +1596,7 @@ classdef Preferences < handle
             %
             %      obj.Calculate()
             %
-            % **Example** — trigger calculation:
+            % **Example** - trigger calculation:
             %
             %   .. code-block:: matlab
             %

@@ -93,6 +93,41 @@ Always check `obj.mibModel.I{id}.enableSelection == 0` and return early if disab
 | `size(obj.img{1},1/2/4/5)` → h/w/d/t | `obj.image.height/width/depth/time` |
 | `[h,w,d,t]` dims | `[obj.image.height, obj.image.width, obj.image.depth, 1, obj.image.time]` (5D) |
 
+### `getDatasetDimensions`: the signature AND the output order changed
+
+```matlab
+% MIB2
+[height, width, COLOR, DEPTH, time] = mibImage.getDatasetDimensions(type, orient, color, options)
+% MIB3
+[height, width, DEPTH, COLORS, time] = dataset.getDatasetDimensions(type, orient, options)
+```
+
+**Outputs 3 and 4 are swapped, and the `color` INPUT is gone.** Porting a call verbatim both
+passes one argument too many (*"Too many input arguments"*, loud) and reads the depth out of the
+colours slot (silent — `colors` is 1 for `selection`/`mask` and for any grayscale image, so it
+looks like a plausible depth). This shipped in `segmentationSpot`, where it made every 3D spot one
+slice thick.
+
+`core.MibImage` has its own overload with yet another signature:
+
+```matlab
+dataset.getDatasetDimensions(type, orient, options)   % core.MibDataset
+image.getDatasetDimensions(orient, splitDims, blockModeSwitch)  % core.MibImage
+```
+
+**Call it on the dataset unless you specifically want raw image dims.** The two traps, each of
+which has already shipped:
+
+- **Block mode belongs to the DATASET.** The shown block is `dataset.slices`, which
+  `core.MibImage` does not have — `image.getDatasetDimensions([], [], true)` can only raise
+  *"Unrecognized method, property, or field 'slices'"*. It now refuses with an actionable error
+  instead. Use `dataset.getDatasetDimensions('image', [], struct('blockModeSwitch', true))`.
+- **`orient = []` means different things.** On the dataset it resolves to
+  `dataset.orientation` (the displayed plane); on the image it forces `3` (YX) regardless.
+  Anything that afterwards applies an orientation-dependent correction wants the dataset's answer.
+
+`orient = NaN` is a MIB2 leftover; both classes now accept it as "default", but write `[]`.
+
 ---
 
 ## Model Type 63 Bit Packing (MibLabels63)

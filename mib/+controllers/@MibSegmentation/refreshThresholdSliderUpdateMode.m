@@ -10,9 +10,9 @@ function refreshThresholdSliderUpdateMode(obj)
 % Segmentation panel->Black and white thresholding tool to the appropriate callback
 % type based on the ``threshold3D``/``threshold4D`` checkbox state:
 %
-%   - **2D mode** (both checkboxes off) — thresholding is fast, so the result is updated
+%   - **2D mode** (both checkboxes off) - thresholding is fast, so the result is updated
 %     interactively while dragging the slider (``ValueChangingFcn``).
-%   - **3D/4D mode** (either checkbox on) — thresholding is slow, so the result is updated
+%   - **3D/4D mode** (either checkbox on) - thresholding is slow, so the result is updated
 %     only once the slider is released (``ValueChangedFcn``).
 %
 % Call this whenever the ``threshold3D``/``threshold4D`` checkbox state changes, including

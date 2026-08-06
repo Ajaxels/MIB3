@@ -36,8 +36,8 @@ classdef RenameRestore < handle
             % or its view has been destroyed.
             %
             % Input Arguments:
-            %   - **obj** — :class:`controllers.RenameRestore` instance.
-            %   - **evnt** — event data from the model.
+            %   - **obj** - :class:`controllers.RenameRestore` instance.
+            %   - **evnt** - event data from the model.
             if ~isvalid(obj) || isempty(obj.view) || ~isvalid(obj.view.gui)
                 for i = 1:numel(obj.listener); delete(obj.listener{i}); end
                 return;
@@ -63,7 +63,7 @@ classdef RenameRestore < handle
             %      obj = controllers.RenameRestore(mibModel)
             %
             % Input Arguments:
-            %   - **mibModel** — handle to :class:`models.MibModel`.
+            %   - **mibModel** - handle to :class:`models.MibModel`.
 
             obj.mibModel = mibModel;
             obj.inputFilename = fullfile(obj.mibModel.currentDirectory, 'Shuffled', 'Shuffled.mibShuffle');
@@ -279,8 +279,8 @@ classdef RenameRestore < handle
             %      obj.copyShowDirectory(listId, parameter)
             %
             % Input Arguments:
-            %   - **listId** — ``'randomDirsList'`` or ``'destinationDirsList'``.
-            %   - **parameter** — ``'clipboard'`` or ``'fileexplorer'``.
+            %   - **listId** - ``'randomDirsList'`` or ``'destinationDirsList'``.
+            %   - **parameter** - ``'clipboard'`` or ``'fileexplorer'``.
 
             directoryName = char(obj.view.handles.(listId).Value);
             if isempty(directoryName); return; end
@@ -319,7 +319,7 @@ classdef RenameRestore < handle
             %      obj.updateDir(parameter)
             %
             % Input Arguments:
-            %   - **parameter** — ``'randomDirsList'`` or ``'destinationDirsList'``.
+            %   - **parameter** - ``'randomDirsList'`` or ``'destinationDirsList'``.
 
             if isempty(fieldnames(obj.Settings)); return; end
 
@@ -383,7 +383,7 @@ classdef RenameRestore < handle
             % by replacing the old parent while keeping each subdirectory name.
             %
             % Input Arguments:
-            %   - **parameter** — ``'randomDirsList'`` or ``'destinationDirsList'``.
+            %   - **parameter** - ``'randomDirsList'`` or ``'destinationDirsList'``.
 
             if isempty(fieldnames(obj.Settings)); return; end
 

@@ -11,8 +11,8 @@ function listener_updatePanelPosition(obj, src, evtData)
 % arrangement for each docking orientation.
 %
 % Input Arguments:
-%   - **src** — [matlab.ui.container.Panel] the panel object whose Region property changed
-%   - **evtData** — [matlab.ui.eventdata.PropertyChangedData] property change event data
+%   - **src** - [matlab.ui.container.Panel] the panel object whose Region property changed
+%   - **evtData** - [matlab.ui.eventdata.PropertyChangedData] property change event data
 %
 % Output Arguments:
 %   None
@@ -21,13 +21,13 @@ function listener_updatePanelPosition(obj, src, evtData)
 %
 % The Segmentation panel uses a ``mainGridLayout`` with 4 rows/columns:
 %
-% **Left / Right docking** — vertical, 4-row layout:
+% **Left / Right docking** - vertical, 4-row layout:
 %   - ``RowHeight`` = ``{26, '1x', 54, 187}``
 %   - ``ColumnWidth`` = ``{'1x'}``
 %   - ``topGridLayout`` (row 1): horizontal arrangement with ``ColumnWidth = {45, 45, 22, 22, '1x', 22, 22, 20}``
 %   - ``middleGridLayout`` (row 3): 2-column × 2-row grid with ``ColumnWidth = {'1x', '1x'}``, ``RowHeight = {'1x', '1x'}``
 %
-% **Bottom docking** — horizontal, 4-column layout:
+% **Bottom docking** - horizontal, 4-column layout:
 %   - ``ColumnWidth`` = ``{60, 260, '1x', 260}``
 %   - ``RowHeight`` = ``{'1x'}``
 %   - ``topGridLayout`` (column 1): vertical arrangement with ``RowHeight = {22, 22, 22, 22, '1x', '1x', 22, 22}``
@@ -46,7 +46,7 @@ switch evtData.PropertyName
 
         switch src.Region
             case {'left', 'right'}
-                % already in column layout — nothing to do
+                % already in column layout - nothing to do
                 if isscalar(obj.handles.mainGridLayout.ColumnWidth); return; end
                 % transpose mainGridLayout: column index → row index, single column
                 for i = 1:numel(children)
@@ -87,7 +87,7 @@ switch evtData.PropertyName
                 end
 
             case 'bottom'
-                % already in row layout — nothing to do
+                % already in row layout - nothing to do
                 if isscalar(obj.handles.mainGridLayout.RowHeight); return; end
                 % transpose mainGridLayout: row index → column index, single row
                 for i = 1:numel(children)

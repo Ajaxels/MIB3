@@ -7,14 +7,14 @@ function deleteColorChannel(obj, channel1, options)
 %       obj.deleteColorChannel(channel1, options)
 %
 % Input Arguments:
-%   - **channel1** — vector of 1-based channel indices to delete
-%   - **options** — *(optional)* struct with fields:
+%   - **channel1** - vector of 1-based channel indices to delete
+%   - **options** - *(optional)* struct with fields:
 %
-%     - ``.showWaitbar`` — logical; show progress bar (default ``true``)
-%     - ``.ParentFigure`` — handle to parent figure for the progress dialog (default ``[]``)
+%     - ``.showWaitbar`` - logical; show progress bar (default ``true``)
+%     - ``.ParentFigure`` - handle to parent figure for the progress dialog (default ``[]``)
 %
 % Usage:
-%   **Example 1** — delete channel 3
+%   **Example 1** - delete channel 3
 %
 %   .. code-block:: matlab
 %

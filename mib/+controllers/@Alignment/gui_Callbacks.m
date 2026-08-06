@@ -11,9 +11,9 @@ function gui_Callbacks(obj, source, event) %#ok<INUSD>
 % branch.
 %
 % Input Arguments:
-%   - **obj** — :class:`controllers.Alignment` instance.
-%   - **source** — widget handle that fired the event.
-%   - **event** — event data (unused).
+%   - **obj** - :class:`controllers.Alignment` instance.
+%   - **source** - widget handle that fired the event.
+%   - **event** - event data (unused).
 
 if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.Alignment.gui_Callbacks/%s: triggered\n', source.Tag);

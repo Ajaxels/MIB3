@@ -14,9 +14,9 @@ function updateWidgets(obj)
 
 if ~obj.dataValid()
     % A layout rebuild or edge reset in the Stitching window invalidated this
-    % review session — nothing sensible left to show.
+    % review session - nothing sensible left to show.
     if obj.hasWidget('statusLabel')
-        obj.view.handles.statusLabel.Text = 'Edges were reset in the Stitching window — close and reopen the inspector.';
+        obj.view.handles.statusLabel.Text = 'Edges were reset in the Stitching window - close and reopen the inspector.';
     end
     return;
 end
@@ -35,7 +35,7 @@ if obj.hasWidget('seamTable')
         e = edges(k);
         residual = (positions(e.j, 1:2) - positions(e.i, 1:2)) - e.measured(1:2);
         % One combined identifier per seam: the axis plus the two tiles it
-        % joins — 'X (2-3)' / 'Y (3-6)' for in-plane seams, 'Z (8-9)' for
+        % joins - 'X (2-3)' / 'Y (3-6)' for in-plane seams, 'Z (8-9)' for
         % cross-layer ones. Folding the tile pair in here keeps a long ranked
         % list scannable and drops the need for a separate Tiles column.
         tableData{rankPos, 1} = sprintf('%s (%d-%d)', upper(e.direction), e.i, e.j);
@@ -91,7 +91,7 @@ end
 
 % ---- exclude button state -------------------------------------------------
 % The table says EXCLUDED in the Used column, but the button itself must show
-% it too — otherwise its toggle behaviour is invisible until you press it.
+% it too - otherwise its toggle behaviour is invisible until you press it.
 obj.refreshExcludeButton();
 
 obj.renderMiniMap();

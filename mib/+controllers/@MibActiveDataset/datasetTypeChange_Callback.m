@@ -13,8 +13,8 @@ function datasetTypeChange_Callback(obj, hWidget, hData)
 % - BigData to work with pyramidal/chunked data formats [for future development]
 %
 % Input Arguments:
-%   - **hWidget** — handle to the pressed widget
-%   - **hData** — handle to supporting data class
+%   - **hWidget** - handle to the pressed widget
+%   - **hData** - handle to supporting data class
 %
 
 arguments (Input)
@@ -28,11 +28,11 @@ if obj.mibModel.preferences.System.DeveloperMode
 end
 
 % Special path: convert an OPEN (Standard/Virtual) dataset to BigData by writing
-% it as an OME-Zarr v3 pyramid and reopening it in BigData mode — rather than the
+% it as an OME-Zarr v3 pyramid and reopening it in BigData mode - rather than the
 % generic "close current + start blank" switch below. Only when a real image is open.
 convId = obj.mibModel.getActiveId();
 convDs = obj.mibModel.I{convId};
-% A "real" (user-loaded) dataset — as opposed to an empty placeholder slot
+% A "real" (user-loaded) dataset - as opposed to an empty placeholder slot
 % ('none.tif'), a non-existent image, or one of the default asset images
 % (assets/images/default.png|.h5) loaded as a dummy when a buffer is initialized
 % or its mode switched. Only a real dataset needs a "will be closed" warning.
@@ -70,7 +70,7 @@ if strcmp(hWidget.Value, 'BigData') && ~strcmp(convDs.datasetType, 'BigData') &&
         case 'Convert current'
             % fall through to the conversion below
         otherwise
-            % dialog closed / unexpected — abort the switch
+            % dialog closed / unexpected - abort the switch
             hWidget.Value = hData.PreviousValue;
             return;
     end
@@ -83,7 +83,7 @@ if strcmp(hWidget.Value, 'BigData') && ~strcmp(convDs.datasetType, 'BigData') &&
     if isequal(zFile, 0); hWidget.Value = hData.PreviousValue; return; end
     outPath = fullfile(zDir, zFile);
     % datasetInfo drives the smart chunk/shard/strategy defaults (WSI vs. isotropic vs.
-    % anisotropic 3-D) — without it optionsDialog silently falls back to the isotropic
+    % anisotropic 3-D) - without it optionsDialog silently falls back to the isotropic
     % preset regardless of the dataset's actual voxel size, same as the Export dialogs.
     datasetInfo = struct('Y', convDs.image.height, 'X', convDs.image.width, ...
         'Z', convDs.image.depth, 'pixSize', convDs.image.pixSize);
@@ -162,7 +162,7 @@ if strcmp(hWidget.Value, 'Standard') && strcmp(convDs.datasetType, 'BigData') &&
     end
 end
 
-% confirm the operation — only when a real dataset is loaded. Switching the type
+% confirm the operation - only when a real dataset is loaded. Switching the type
 % of an empty placeholder / dummy buffer closes nothing, so no warning is needed.
 if isRealImage
     selection = uiconfirm(obj.view.gui, ...

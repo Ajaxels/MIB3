@@ -12,31 +12,31 @@ function updateVisualizationMode(obj, mode)
 % When ``mode`` is specified the provided mode is applied directly.
 %
 % Input Arguments:
-%   - **mode** — *(optional)* char, default: ``''`` (cycle/toggle)
+%   - **mode** - *(optional)* char, default: ``''`` (cycle/toggle)
 %
-%     - ``''`` or not provided — cycle: ``bicubic`` → ``nearest`` → ``automatic``
-%     - ``'keepcurrent'`` — sync the button icon to the mode stored in
+%     - ``''`` or not provided - cycle: ``bicubic`` → ``nearest`` → ``automatic``
+%     - ``'keepcurrent'`` - sync the button icon to the mode stored in
 %       ``obj.mibModel.preferences.System.ImageResizeMethod`` without changing it
-%     - ``'bicubic'`` — set bicubic interpolation
-%     - ``'nearest'`` — set nearest-neighbor interpolation
-%     - ``'auto'`` — set automatic mode (bicubic for zoom-out, nearest for zoom-in)
+%     - ``'bicubic'`` - set bicubic interpolation
+%     - ``'nearest'`` - set nearest-neighbor interpolation
+%     - ``'auto'`` - set automatic mode (bicubic for zoom-out, nearest for zoom-in)
 %
 % Output Arguments:
 %   (none)
 %
-% **Example 1** — cycle to the next visualization mode:
+% **Example 1** - cycle to the next visualization mode:
 %
 %   .. code-block:: matlab
 %
 %      obj.updateVisualizationMode();
 %
-% **Example 2** — sync the button icon without changing the mode:
+% **Example 2** - sync the button icon without changing the mode:
 %
 %   .. code-block:: matlab
 %
 %      obj.updateVisualizationMode('keepcurrent');
 %
-% **Example 3** — select bicubic interpolation:
+% **Example 3** - select bicubic interpolation:
 %
 %   .. code-block:: matlab
 %
@@ -64,7 +64,7 @@ elseif ~strcmp(mode, 'keepcurrent')
     obj.mibModel.preferences.System.ImageResizeMethod = mode;
 end
 
-% update the button icon — only when the Image ribbon has actually been built
+% update the button icon - only when the Image ribbon has actually been built
 % (lazy init). Writing into obj.view.handles.ribbonImage before that would
 % auto-vivify a partial 'visualization' struct, which then fools the
 % isfield(...,'ribbonImage') guard in globalTabGroup_SelectionCallback into

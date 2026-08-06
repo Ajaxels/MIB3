@@ -15,7 +15,7 @@ function updateMeasureText(obj, pos)
 % ``clearQuickMeasure`` instead of updating.
 %
 % Input Arguments:
-%   - **pos** *(optional)* — [N×2 numeric] position in physical (XData) coordinates;
+%   - **pos** *(optional)* - [N×2 numeric] position in physical (XData) coordinates;
 %     when ``[]`` or omitted, position is read from ``quickMeasure.roi.Position``
 %
 % Output Arguments:

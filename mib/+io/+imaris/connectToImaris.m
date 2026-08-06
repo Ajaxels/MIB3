@@ -5,11 +5,11 @@ function connImaris = connectToImaris(connImaris, mibGUI)
 %   function connImaris = connectToImaris(connImaris, mibGUI)
 %
 % Input Arguments:
-%   - **connImaris** — *(optional)* a handle to an existing Imaris connection, or [] to create a fresh connection
-%   - **mibGUI** — *(optional)* handle to the main MIB window, used for progress and error dialogs
+%   - **connImaris** - *(optional)* a handle to an existing Imaris connection, or [] to create a fresh connection
+%   - **mibGUI** - *(optional)* handle to the main MIB window, used for progress and error dialogs
 %
 % Output Arguments:
-%   - **connImaris** — a handle to the Imaris connection, or [] on failure
+%   - **connImaris** - a handle to the Imaris connection, or [] on failure
 %
 
 % @note

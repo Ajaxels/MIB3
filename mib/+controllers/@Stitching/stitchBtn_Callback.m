@@ -8,21 +8,25 @@ function stitchBtn_Callback(obj, batchModeSwitch)
 %      obj.stitchBtn_Callback(batchModeSwitch)
 %
 % Input Arguments:
-%   - **batchModeSwitch** *(optional)* — [logical] ``true`` when called headlessly
+%   - **batchModeSwitch** *(optional)* - [logical] ``true`` when called headlessly
 %     (suppresses interactive dialogs); default ``false``
 %
 % Fusion path depends on ``BatchOpt.OutputMode``:
-%   - **In memory** — calls ``utils.stitch.fuseInMemory`` then creates a new
+%   - **In memory** - calls ``utils.stitch.fuseInMemory`` then creates a new
 %     ``core.MibDataset`` and notifies ``'NewDataset'``.
-%   - **OME-Zarr3 (BigData)** — asks for the pyramid/chunk/compression settings
+%   - **OME-Zarr3 (BigData)** - asks for the pyramid/chunk/compression settings
 %     (``io.savers.Zarr3Saver.optionsDialog``, the same dialog as the standard
 %     "Export to Zarr3" action), calls ``utils.stitch.fuseStreaming`` to write
 %     chunk-wise to an OME-Zarr file, then reopens it via
 %     ``io.loaders.Zarr3VirtualSetupLoader`` and notifies ``'NewDataset'``.
+%   - **Image files** - calls ``utils.stitch.fuseToFiles`` to write the mosaic
+%     as ordinary TIF/PNG/Amira files in the format ``BatchOpt.OutputFormat``
+%     names. The result is NOT opened: a 2-D sequence is potentially hundreds of
+%     files, and re-reading what was just fused would cost as much as the stitch.
 %
 % The project JSON sidecar is saved if ``BatchOpt.SaveProject`` is true.
 %
-% This is the ONLY fuse entry point — the seam inspector has no button of its
+% This is the ONLY fuse entry point - the seam inspector has no button of its
 % own, so a fix made there is baked in by pressing *Stitch* here (both windows
 % stay usable side by side). When the inspector still owes a global re-solve
 % (auto-re-solve off, or a deferred nudge), that re-solve runs FIRST: the guard
@@ -59,7 +63,7 @@ try
 
     % Measuring is only worth doing when the placement is still unknown: with
     % positions already in hand the solve below is skipped, so the measured edges
-    % would never be read — and an imported placement (a Fibics Atlas mosaic
+    % would never be read - and an imported placement (a Fibics Atlas mosaic
     % whose tiles happen not to pair up) would pay for a full registration pass
     % that changes nothing.
     if isempty(obj.edges) && isempty(obj.positions)
@@ -135,7 +139,7 @@ end
 
 % Skipping straight to Stitch (no manual Optimize positions click) never runs
 % optimizePositions_Callback, which is what normally refreshes the layout
-% preview at the solved positions — so without this call the preview would
+% preview at the solved positions - so without this call the preview would
 % still show the nominal layout (or nothing) while a wrong tile
 % order/grid/overlap silently fuses. No-op in batch/headless mode (obj.view
 % is empty).
@@ -151,7 +155,7 @@ if ~batchModeSwitch && ~isempty(obj.view)
 else
     fuseOptions.parentFigure = [];
 end
-% The same correction the seams were measured and scored with — fusing without
+% The same correction the seams were measured and scored with - fusing without
 % it would produce a mosaic the alignment chip never actually rated.
 fuseOptions.correction   = obj.ensureIntensityCorrection();
 % Fill for whatever no tile covers. Derived from the OUTPUT class, so "white" is
@@ -212,6 +216,64 @@ if strcmp(outputMode, 'In memory')
     activeId = obj.mibModel.getActiveId();
     obj.mibModel.I{activeId} = core.MibDataset(fusedVolume, imageMetadata, 'Standard', 'labels63');
     notify(obj.mibModel, 'NewDataset');
+
+elseif strcmp(outputMode, 'Image files')
+    % --- Fusion straight to standard image files ---
+    % The picker is the one in selectOutputPath_Callback rather than a second
+    % inline uiputfile: it is also where BatchOpt.OutputFormat is set, so a
+    % separate prompt here would write files in whatever format was last
+    % recorded instead of the one just chosen.
+    if isempty(obj.BatchOpt.OutputPath)
+        if batchModeSwitch
+            notify(obj.mibModel, 'StopProtocol');
+            return;
+        end
+        obj.selectOutputPath_Callback();
+        if isempty(obj.BatchOpt.OutputPath)
+            return;   % user cancelled the file dialog
+        end
+    end
+
+    formatEntry = controllers.Stitching.imageFileFormat(obj.BatchOpt.OutputFormat{1});
+    fuseOptions.Format         = formatEntry.saverFormat;
+    fuseOptions.Saving3DPolicy = formatEntry.policy;
+    fuseOptions.pixSize        = obj.canvas.pixSize;
+    % The mosaic's own identity, so the written header records what it came
+    % from rather than the destination path.
+    fuseOptions.filename       = obj.stitchedFilename();
+    fuseOptions.mibPath        = obj.mibModel.mibPath;
+
+    try
+        writtenFiles = utils.stitch.fuseToFiles(obj.layout, obj.canvas, ...
+            obj.BatchOpt.OutputPath, fuseOptions);
+    catch fuseError
+        if ~batchModeSwitch
+            utils.dlgs.showErrorDialog(fuseOptions.parentFigure, fuseError.message, 'Fusion failed');
+        end
+        notify(obj.mibModel, 'StopProtocol');
+        return;
+    end
+
+    if isempty(writtenFiles)
+        % The saver returns [] when it declined the job (e.g. more colour
+        % channels than the format can hold) - it has already warned, but
+        % without this the run would report success having written nothing.
+        if ~batchModeSwitch
+            utils.dlgs.showErrorDialog(fuseOptions.parentFigure, ...
+                sprintf('The mosaic was not written as "%s".', obj.BatchOpt.OutputFormat{1}), ...
+                'Nothing was saved');
+        end
+        notify(obj.mibModel, 'StopProtocol');
+        return;
+    end
+
+    if ischar(writtenFiles)
+        fprintf('Stitching: wrote %s\n', writtenFiles);
+    elseif isscalar(writtenFiles)
+        fprintf('Stitching: wrote %s\n', writtenFiles{1});
+    else
+        fprintf('Stitching: wrote %d files, %s ...\n', numel(writtenFiles), writtenFiles{1});
+    end
 
 elseif strcmp(outputMode, 'OME-Zarr3 (BigData)')
     % --- Streaming fusion to OME-Zarr ---
@@ -283,7 +345,7 @@ elseif strcmp(outputMode, 'OME-Zarr3 (BigData)')
         newDataset.slices{newDataset.orientation} = [1, 1];
 
         % Sync Sets.datasetTypes for the swapped buffer (applyAlignmentBigData.m:401-404)
-        % — the Datasets panel's type dropdown (MibActiveDataset.buffers_Callback)
+        % - the Datasets panel's type dropdown (MibActiveDataset.buffers_Callback)
         % reads this cache, not dataset.datasetType directly, so without this the
         % panel keeps showing "Standard" even though the buffer is now BigData.
         targetSet     = floor((activeId - 1) / obj.mibModel.Sets.datasetsInSet) + 1;

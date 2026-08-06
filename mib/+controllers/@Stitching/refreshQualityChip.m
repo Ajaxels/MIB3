@@ -7,8 +7,8 @@ function refreshQualityChip(obj)
 %      obj.refreshQualityChip()
 %
 % Colour-coded alignment quality (``rmseLabel``), translating the raw solver
-% RMSE — in pixels, the mean disagreement between the pairwise measurements at
-% the solved positions — into a plain-language rating on a green→red scale that
+% RMSE - in pixels, the mean disagreement between the pairwise measurements at
+% the solved positions - into a plain-language rating on a green→red scale that
 % a non-specialist can read at a glance, DOWNGRADED whenever the pixel seam
 % check disagrees with the residual. The exact numbers stay in the text and the
 % tooltip for those who want them.
@@ -17,16 +17,16 @@ function refreshQualityChip(obj)
 % :func:`controllers.Stitching.optimizePositions_Callback`, restored by
 % :func:`controllers.Stitching.loadProjectBtn_Callback`) and the seam scores
 % currently on ``obj.edges``. Nothing here re-reads pixels or re-solves, so it
-% is cheap enough to run from ``updateWidgets`` — which is what keeps the chip
+% is cheap enough to run from ``updateWidgets`` - which is what keeps the chip
 % honest when the seam inspector excludes or re-includes an edge: the worst
 % score is a minimum over the VALID edges, so that set changing changes the
 % verdict even though no position moved.
 %
-% While a global re-solve is owed (``obj.resolvePending`` — a fix made with
+% While a global re-solve is owed (``obj.resolvePending`` - a fix made with
 % *Auto re-solve* off), the cached RMSE no longer describes the current edge set,
 % so the chip says so instead of quoting a stale number. The flag lives on the
 % CONTROLLER, not on the inspector, so the warning survives the inspector being
-% closed — which is exactly when a stale rating would otherwise go unmentioned.
+% closed - which is exactly when a stale rating would otherwise go unmentioned.
 
 if isempty(obj.view) || ~isfield(obj.view.handles, 'rmseLabel'); return; end
 rmseLabel = obj.view.handles.rmseLabel;
@@ -34,7 +34,7 @@ rmseLabel = obj.view.handles.rmseLabel;
 % Neutral until there is something to report. obj.solverInfo is always a struct
 % (empty until the first solve), so one isfield covers every case.
 if isempty(obj.positions) || ~isfield(obj.solverInfo, 'rmseTotal')
-    rmseLabel.Text = 'Alignment: —';
+    rmseLabel.Text = 'Alignment: -';
     rmseLabel.BackgroundColor = 'none';
     rmseLabel.FontColor = [0 0 0];
     rmseLabel.Tooltip = '';
@@ -77,7 +77,7 @@ if pendingResolve
         'Re-solve now, or just Stitch']);
     rmseLabel.BackgroundColor = [0.85 0.50 0.05];   % orange
 elseif nDisconnected > 0
-    % A tile with no valid measurement is parked at its nominal position —
+    % A tile with no valid measurement is parked at its nominal position -
     % the RMSE over the remaining edges says NOTHING about it, so a green
     % chip would be a lie (a 3-tile row misread as 2x2 solves to 0.1 px
     % while a tile sits wherever the grid guess put it).
@@ -88,7 +88,7 @@ elseif worstSeamScore < 0.4   % NaN compares false: no scores -> RMSE rating
     % The pixels at the solved seams do not match: wrong layout
     % orientation or a confidently-wrong measurement. The residual alone
     % would read "Excellent" here (chain graphs have nothing to
-    % contradict) — that is the lie this branch exists to stop.
+    % contradict) - that is the lie this branch exists to stop.
     rmseLabel.Text = sprintf('Seams disagree, fix needed\nSolver error: %.2f px\nSeam match: %.2f', ...
         obj.solverInfo.rmseTotal, worstSeamScore);
     rmseLabel.BackgroundColor = [0.75 0.20 0.20];   % red
@@ -99,7 +99,7 @@ elseif worstSeamScore < 0.7
 elseif dzMismatchCount > 0
     % The XY seams look fine but the pixels prefer a DIFFERENT Z offset on
     % at least one cross-layer seam (edges(k).dzHint from the dz-scan in
-    % scoreSeams) — a Z misalignment barely dents the XY scores, so it
+    % scoreSeams) - a Z misalignment barely dents the XY scores, so it
     % needs its own branch to be visible.
     rmseLabel.Text = sprintf('Check Z alignment\nSolver error: %.2f px\n%d seam(s) off', ...
         obj.solverInfo.rmseTotal, dzMismatchCount);

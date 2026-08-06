@@ -11,11 +11,11 @@ function previewLayoutBtn_Callback(obj)
 % the full canvas extent.
 %
 % Two modes, selected by the ``editLayoutCheckbox`` state:
-%   - **display** (default) — static ``patch`` rectangles (fast, read-only).
+%   - **display** (default) - static ``patch`` rectangles (fast, read-only).
 %     Drawn at the SOLVED positions whenever a solve exists (kept current by
 %     ``optimizePositions_Callback`` and hence by every inspector re-solve);
-%     nominal positions otherwise — the title states which.
-%   - **edit** — one draggable :class:`images.roi.Rectangle` per tile
+%     nominal positions otherwise - the title states which.
+%   - **edit** - one draggable :class:`images.roi.Rectangle` per tile
 %     (translate-only, fixed size); dragging a tile writes its new position into
 %     ``layout(i).nomOrigin`` and invalidates the measured edges / solved
 %     positions so the next Measure/Optimize run uses the corrected layout. This
@@ -60,7 +60,7 @@ editMode = isfield(obj.view.handles, 'editLayoutCheckbox') && ...
     obj.view.handles.editLayoutCheckbox.Value;
 
 % Display mode shows the SOLVED positions when a solve exists (edit mode
-% always shows/edits the nominal layout — that is what it manipulates).
+% always shows/edits the nominal layout - that is what it manipulates).
 usingSolved = ~editMode && ~isempty(obj.positions) && ...
     size(obj.positions, 1) == numel(obj.layout);
 if usingSolved
@@ -87,12 +87,12 @@ else
     positionsText = 'nominal positions';
 end
 if editMode
-    titleText = sprintf('Drag tiles to reposition — %d tiles', numel(firstLayerTiles));
+    titleText = sprintf('Drag tiles to reposition - %d tiles', numel(firstLayerTiles));
 elseif numel(distinctLayers) > 1
-    titleText = sprintf('Layout preview (%s) — %d tiles in layer 1 of %d', ...
+    titleText = sprintf('Layout preview (%s) - %d tiles in layer 1 of %d', ...
         positionsText, numel(firstLayerTiles), numel(distinctLayers));
 else
-    titleText = sprintf('Layout preview (%s) — %d tiles', ...
+    titleText = sprintf('Layout preview (%s) - %d tiles', ...
         positionsText, numel(firstLayerTiles));
 end
 title(previewAxes, titleText);
@@ -103,7 +103,7 @@ end
 function drawStaticTiles(previewAxes, layout, firstLayerTiles, colorMap, origins)
 % DRAWSTATICTILES - Read-only patch rectangles + index labels (two passes so the
 % numbers stay on top of overlapping tiles). ``origins`` is [numTiles x 2]
-% ``[y x]`` — solved or nominal, the caller decides.
+% ``[y x]`` - solved or nominal, the caller decides.
 for tileIdx = firstLayerTiles
     originX = origins(tileIdx, 2);
     originY = origins(tileIdx, 1);
@@ -154,7 +154,7 @@ for tileIdx = firstLayerTiles
         'Color', colorMap(tileIdx, :), ...
         'FaceAlpha', 0.15, ...
         'LineWidth', 1.5, ...
-        'InteractionsAllowed', 'translate', ...   % move only — tile size is fixed
+        'InteractionsAllowed', 'translate', ...   % move only - tile size is fixed
         'Deletable', false, ...
         'Label', num2str(tileIdx), ...
         'LabelVisible', 'hover');

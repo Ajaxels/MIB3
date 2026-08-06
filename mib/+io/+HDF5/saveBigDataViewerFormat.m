@@ -10,7 +10,7 @@ function result = saveBigDataViewerFormat(filename, I, options)
 % Format description: http://fiji.sc/BigDataViewer#About_the_BigDataViewer_data_format
 %
 % DATA CONVENTION
-% Input I must be [W, H, C, D, T] — i.e. X/Y already swapped by the
+% Input I must be [W, H, C, D, T] - i.e. X/Y already swapped by the
 % caller (HDF5Saver permutes [H,W,D,C,T] → [W,H,C,D,T] before calling).
 % Each colour channel is stored separately under /t{T}/s{C}/{level}/cells
 % as a 3-D dataset [newW, newH, newZ].
@@ -23,27 +23,27 @@ function result = saveBigDataViewerFormat(filename, I, options)
 % options.Format = 'bdv.hdf5' after this function returns.
 %
 % Input Arguments:
-%   - **filename** — full path to the output ``.h5`` file
-%   - **I** — [W, H, C, D, T] image array (X/Y pre-swapped by caller)
-%   - **options** — *(optional)* struct with fields:
+%   - **filename** - full path to the output ``.h5`` file
+%   - **I** - [W, H, C, D, T] image array (X/Y pre-swapped by caller)
+%   - **options** - *(optional)* struct with fields:
 %
-%     - ``.ChunkSize`` — [3×L] chunk sizes per pyramid level (or [3×1] replicated
+%     - ``.ChunkSize`` - [3×L] chunk sizes per pyramid level (or [3×1] replicated
 %       to all levels); default ``[64; 64; 64]``
-%     - ``.Deflate`` — compression level 0–9; default ``0``
-%     - ``.SubSampling`` — [3×L] downsampling factors per level,
+%     - ``.Deflate`` - compression level 0-9; default ``0``
+%     - ``.SubSampling`` - [3×L] downsampling factors per level,
 %       e.g. ``[1 2 4; 1 2 4; 1 2 4]``; default ``[1; 1; 1]``
-%     - ``.ResamplingMethod`` — ``'nearest'``, ``'bicubic'``, or ``'bilinear'``
+%     - ``.ResamplingMethod`` - ``'nearest'``, ``'bicubic'``, or ``'bilinear'``
 %       (default: ``'bicubic'``)
-%     - ``.t`` — time-point start index for multi-time writing (default: ``1``)
-%     - ``.showWaitbar`` — [logical] (default: ``true``)
-%     - ``.ParentFigure`` — handle to the main MIB UIFigure (for ``uiprogressdlg``)
-%     - ``.ImageDescription`` — (char) BoundingBox metadata string
-%     - ``.lutColors`` — [C×3] LUT colours (0–1) per channel
+%     - ``.t`` - time-point start index for multi-time writing (default: ``1``)
+%     - ``.showWaitbar`` - [logical] (default: ``true``)
+%     - ``.ParentFigure`` - handle to the main MIB UIFigure (for ``uiprogressdlg``)
+%     - ``.ImageDescription`` - (char) BoundingBox metadata string
+%     - ``.lutColors`` - [C×3] LUT colours (0-1) per channel
 %
 % Output Arguments:
-%   - **result** — ``1`` = success, ``0`` = failure
+%   - **result** - ``1`` = success, ``0`` = failure
 %
-% **Example 1** — minimal, single resolution level:
+% **Example 1** - minimal, single resolution level:
 %
 %   .. code-block:: matlab
 %
@@ -56,7 +56,7 @@ function result = saveBigDataViewerFormat(filename, I, options)
 %      io.HDF5.saveBigDataViewerFormat('out.h5', dataBDV, opts);
 %      io.HDF5.saveXMLheader('out.h5', opts);         % writes out.xml
 %
-% **Example 2** — three-level pyramid:
+% **Example 2** - three-level pyramid:
 %
 %   .. code-block:: matlab
 %
@@ -128,19 +128,19 @@ if options.t(1) == 1
     if exist(h5Filename, 'file') == 2; delete(h5Filename); end
 
     for colId = 1:colors
-        % /s{cc}/resolutions — [noDims x noLevels] double
+        % /s{cc}/resolutions - [noDims x noLevels] double
         dsName = sprintf('/s%02i/resolutions', colId-1);
         h5create(h5Filename, dsName, [noDims, noLevels], ...
             'Datatype', 'double', 'ChunkSize', [noDims, 1]);
         h5write(h5Filename, dsName, options.SubSampling);
 
-        % /s{cc}/subdivisions — [noDims x noLevels] int32
+        % /s{cc}/subdivisions - [noDims x noLevels] int32
         dsName = sprintf('/s%02i/subdivisions', colId-1);
         h5create(h5Filename, dsName, [noDims, noLevels], ...
             'Datatype', 'int32', 'ChunkSize', [noDims, 1]);
         h5write(h5Filename, dsName, int32(options.ChunkSize));
 
-        % /s{cc}/color — [3 x 1] int32  (optional)
+        % /s{cc}/color - [3 x 1] int32  (optional)
         if isfield(options, 'lutColors') && size(options.lutColors, 1) >= colId
             dsName = sprintf('/s%02i/color', colId-1);
             h5create(h5Filename, dsName, [noDims, 1], ...
@@ -149,7 +149,7 @@ if options.t(1) == 1
         end
     end
 
-    % /ImageDescription — scalar string dataset
+    % /ImageDescription - scalar string dataset
     if isfield(options, 'ImageDescription') && ~isempty(options.ImageDescription)
         file_id  = H5F.open(h5Filename, 'H5F_ACC_RDWR', 'H5P_DEFAULT');
         space_id = H5S.create('H5S_SCALAR');
@@ -184,7 +184,7 @@ for timeId = 1:timePts
             vol = squeeze(I(:, :, colId, :, timeId));  % [W, H, D]
 
             if newW ~= dimW || newH ~= dimH || newZ ~= depth
-                % utils.resizeImage3d expects [H, W, D] input — permute from [W,H,D],
+                % utils.resizeImage3d expects [H, W, D] input - permute from [W,H,D],
                 % resize, cast to int16, permute back to [W,H,D].
                 resOpts.algorithm   = 'imresize';
                 resOpts.method      = options.ResamplingMethod;

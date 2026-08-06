@@ -7,7 +7,7 @@ function updateWidgets(obj)
 %      obj.updateWidgets()
 %
 % No-op without a view (batch protocols and headless runs hold the same state
-% in ``BatchOpt`` — there is simply nothing to render it into).
+% in ``BatchOpt`` - there is simply nothing to render it into).
 %
 
 if isempty(obj.view); return; end
@@ -39,7 +39,7 @@ handles.TileOrder.Items  = obj.BatchOpt.TileOrder{2};
 handles.TileOrder.Value  = obj.BatchOpt.TileOrder{1};
 handles.TileOrder.Enable = isGrid;
 % With overlap estimation enabled the spinners are read-only displays of the
-% estimated value — the estimator does not use the entered overlap at all.
+% estimated value - the estimator does not use the entered overlap at all.
 overlapEditable = usesOverlap && ~obj.BatchOpt.EstimateOverlap;
 handles.OverlapX.Value   = obj.BatchOpt.OverlapX{1};
 handles.OverlapX.Limits  = obj.BatchOpt.OverlapX{2};
@@ -74,7 +74,7 @@ if isfield(handles, 'RegistrationMethod')   % widget may not exist in the mlapp 
     handles.RegistrationMethod.Enable = isTranslation;
 end
 % Feature-detector selector + Settings button are only meaningful when the
-% feature-based estimator will run — the Feature-based method, or any
+% feature-based estimator will run - the Feature-based method, or any
 % non-translation transform (which forces it).
 usesFeatures = strcmp(obj.BatchOpt.RegistrationMethod{1}, 'Feature-based') || ~isTranslation;
 if isfield(handles, 'FeatureDetectorType')   % widget may not exist in the mlapp yet
@@ -107,9 +107,21 @@ handles.Autocrop.Value = obj.BatchOpt.Autocrop;
 handles.SaveProject.Value = obj.BatchOpt.SaveProject;
 
 % ---- Enable / disable output path based on output mode ----
-isZarr = strcmp(obj.BatchOpt.OutputMode{1}, 'OME-Zarr3 (BigData)');
-handles.OutputPath.Enable      = isZarr;
-handles.selectOutputBtn.Enable = isZarr;
+% Both disk-writing modes need a destination; only 'In memory' has none.
+needsOutputPath = ~strcmp(obj.BatchOpt.OutputMode{1}, 'In memory');
+handles.OutputPath.Enable      = needsOutputPath;
+handles.selectOutputBtn.Enable = needsOutputPath;
+
+% Image files pick their format inside the output dialog rather than on a
+% widget, so the path field's tooltip is the only place it can be read back -
+% which matters most for the two Amira rows, both of which end in '.am'.
+if strcmp(obj.BatchOpt.OutputMode{1}, 'Image files')
+    handles.OutputPath.Tooltip = sprintf([ ...
+        'Where the mosaic is written. Format: %s\n' ...
+        'Press the browse button to change either.'], obj.BatchOpt.OutputFormat{1});
+else
+    handles.OutputPath.Tooltip = 'Destination OME-Zarr3 store for the fused mosaic';
+end
 
 % The seam inspector needs a measured + solved state to review.
 if isfield(handles, 'inspectSeamsBtn')   % widget may not exist in the mlapp yet
@@ -123,7 +135,7 @@ handles.statusLabel.Text = sprintf('%d tiles | %d edges measured | solved: %s', 
     numTiles, numEdges, ternary(~isempty(obj.positions), 'yes', 'no'));
 
 % Alignment-quality chip. Rendered here rather than only after a solve, so it
-% follows every change to the edge set — excluding a seam in the inspector
+% follows every change to the edge set - excluding a seam in the inspector
 % changes which edges the worst-pixel-match is taken over, and a chip left
 % quoting the pre-exclusion verdict would be wrong.
 obj.refreshQualityChip();

@@ -9,7 +9,7 @@ function updateSettingsFromPreset(obj, presetId)
 % callback on click of preset1/2/3 buttons or 1/2/3 keyboard shortcuts.
 %
 % Input Arguments:
-%   - **presetId** — [numeric] preset index, 1 to 3
+%   - **presetId** - [numeric] preset index, 1 to 3
 %
 % Output Arguments:
 %

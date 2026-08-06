@@ -19,10 +19,10 @@ classdef ImageArithmetics < handle
         % cell array with handles to listeners
         BatchOpt
         % batch-compatible options structure:
-        % .InputVariables  — input variable list string (I, O, M, S, I2, ...)
-        % .OutputVariables — output variable string
-        % .Expression      — arithmetic expression to evaluate
-        % .showWaitbar     — logical, show progress bar
+        % .InputVariables  - input variable list string (I, O, M, S, I2, ...)
+        % .OutputVariables - output variable string
+        % .Expression      - arithmetic expression to evaluate
+        % .showWaitbar     - logical, show progress bar
     end
 
     events
@@ -44,9 +44,9 @@ classdef ImageArithmetics < handle
             % dispatches to ``updateWidgets`` for the relevant events.
             %
             % Input Arguments:
-            %   - **obj** — handle to the ImageArithmetics controller instance
-            %   - **src** — event source (handle to MibModel); ignored
-            %   - **evnt** — event data; ``evnt.EventName`` identifies the event
+            %   - **obj** - handle to the ImageArithmetics controller instance
+            %   - **src** - event source (handle to MibModel); ignored
+            %   - **evnt** - event data; ``evnt.EventName`` identifies the event
             %
             % Output Arguments:
             %   (none)
@@ -76,22 +76,22 @@ classdef ImageArithmetics < handle
             %
             % Supports three operational modes:
             %
-            % - **GUI mode** — ``(mibModel)`` or ``(mibModel, extra)``: creates and
+            % - **GUI mode** - ``(mibModel)`` or ``(mibModel, extra)``: creates and
             %   shows the AppDesigner dialog.
-            % - **Batch mode** — ``(mibModel, [], BatchOpt)``: evaluates the
+            % - **Batch mode** - ``(mibModel, [], BatchOpt)``: evaluates the
             %   expression in ``BatchOpt.Expression`` headlessly and returns.
-            % - **Query mode** — ``(mibModel, [], NaN)``: fires ``SyncBatch`` with
+            % - **Query mode** - ``(mibModel, [], NaN)``: fires ``SyncBatch`` with
             %   the default ``BatchOpt`` so the Batch controller can read available options.
             %
             % Input Arguments:
-            %   - **mibModel** — handle to the MibModel instance
-            %   - **varargin** — *(optional)* extra arguments:
+            %   - **mibModel** - handle to the MibModel instance
+            %   - **varargin** - *(optional)* extra arguments:
             %
-            %     - ``varargin{1}`` — extra controller handle (unused, pass ``[]``)
-            %     - ``varargin{2}`` — BatchOpt struct for batch mode, or ``NaN`` for query mode
+            %     - ``varargin{1}`` - extra controller handle (unused, pass ``[]``)
+            %     - ``varargin{2}`` - BatchOpt struct for batch mode, or ``NaN`` for query mode
             %
             % Output Arguments:
-            %   - **obj** — handle to the new ImageArithmetics instance
+            %   - **obj** - handle to the new ImageArithmetics instance
             %
             if isdeployed
                 utils.dlgs.showErrorDialog([], ...
@@ -240,7 +240,7 @@ classdef ImageArithmetics < handle
             %      obj.returnBatchOpt(BatchOptOut)
             %
             % Input Arguments:
-            %   - **BatchOptOut** — *(optional)* local BatchOpt structure generated
+            %   - **BatchOptOut** - *(optional)* local BatchOpt structure generated
             %     during the run callback; may contain more fields than ``obj.BatchOpt``.
             %     When omitted, ``obj.BatchOpt`` is used.
             %
@@ -264,7 +264,7 @@ classdef ImageArithmetics < handle
             % to all batch-compatible tools.
             %
             % Input Arguments:
-            %   - **hObject** — handle to the widget that changed; in AppDesigner
+            %   - **hObject** - handle to the widget that changed; in AppDesigner
             %     callbacks this is the event source (``event.Source``)
             %
             % Output Arguments:
@@ -304,7 +304,7 @@ classdef ImageArithmetics < handle
             % newlines before storing in ``obj.BatchOpt.Expression``.
             %
             % Input Arguments:
-            %   - **hObject** — handle to the ``Expression`` uitextarea widget
+            %   - **hObject** - handle to the ``Expression`` uitextarea widget
             %
             % Output Arguments:
             %   (none)

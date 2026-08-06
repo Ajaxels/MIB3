@@ -9,9 +9,9 @@ classdef GuiTutorialBatch < handle
 %   - Parameter discovery for the Batch Processing GUI
 %
 % It is recommended to read GuiTutorial.m and DemoPlugin.m before this file:
-%   GuiTutorial   — teaches the four image operations (Crop/Resize/Convert/Invert)
-%   DemoPlugin    — teaches the BatchOpt system, three calling modes, and macro recording
-%   This file     — combines both: all four operations plus full BatchOpt support
+%   GuiTutorial   - teaches the four image operations (Crop/Resize/Convert/Invert)
+%   DemoPlugin    - teaches the BatchOpt system, three calling modes, and macro recording
+%   This file     - combines both: all four operations plus full BatchOpt support
 %
 % KEY DIFFERENCES FROM GuiTutorial
 % ─────────────────────────────────
@@ -27,9 +27,9 @@ classdef GuiTutorialBatch < handle
 %
 % THREE CALLING MODES
 % ────────────────────
-%   Interactive (normal)  — called from the Plugins ribbon; GUI is shown
-%   Headless/batch        — 3rd constructor arg is a BatchOpt struct
-%   Query                 — 3rd constructor arg is NaN; returns defaults
+%   Interactive (normal)  - called from the Plugins ribbon; GUI is shown
+%   Headless/batch        - 3rd constructor arg is a BatchOpt struct
+%   Query                 - 3rd constructor arg is NaN; returns defaults
 %
 % @b Usage:
 % @code
@@ -60,8 +60,8 @@ classdef GuiTutorialBatch < handle
         % Handle to the central MibModel instance.
         view
         % core.ChildView wrapper for the AppDesigner GUI, or [] in batch mode.
-        %   obj.view.gui           — uifigure handle
-        %   obj.view.handles.<Tag> — individual widget handles
+        %   obj.view.gui           - uifigure handle
+        %   obj.view.handles.<Tag> - individual widget handles
         listener
         % Cell array of event listener handles; deleted in closeWindow().
         BatchOpt
@@ -91,7 +91,7 @@ classdef GuiTutorialBatch < handle
     end
 
     events
-        % CloseEvent — fired by closeWindow() after the GUI is destroyed.
+        % CloseEvent - fired by closeWindow() after the GUI is destroyed.
         % utils.startController wires a listener so the parent controller
         % automatically removes this plugin from its childControllers list.
         CloseEvent
@@ -121,21 +121,21 @@ classdef GuiTutorialBatch < handle
 
         % ─────────────────────────────────────────────────────────────────────
         function obj = GuiTutorialBatch(mibModel, varargin)
-        % GuiTutorialBatch  Constructor — initialise the controller.
+        % GuiTutorialBatch  Constructor - initialise the controller.
         %
         % Parameters:
         % mibModel: handle to MibModel
         % varargin{1}: parent controller (passed by utils.startController; unused here)
         % varargin{2}: [@em optional]
-        %   • struct — BatchOpt for headless / batch mode
-        %   • NaN    — query mode: send default BatchOpt via SyncBatch
-        %   • (absent) — interactive GUI mode
+        %   • struct - BatchOpt for headless / batch mode
+        %   • NaN    - query mode: send default BatchOpt via SyncBatch
+        %   • (absent) - interactive GUI mode
 
             obj.mibModel = mibModel;
             obj.view     = [];  % stays [] in batch / headless mode; assigned below in GUI mode
 
             % -----------------------------------------------------------------
-            % STEP 1 — Define BatchOpt defaults.
+            % STEP 1 - Define BatchOpt defaults.
             %
             % These values are used as:
             %   a) The initial widget state when the GUI is opened.
@@ -155,7 +155,7 @@ classdef GuiTutorialBatch < handle
             obj.BatchOpt.OperationButtonGroup{1} = 'cropRadio';
             obj.BatchOpt.OperationButtonGroup{2} = {'cropRadio', 'resizeRadio', 'convertRadio', 'invertRadio'};
 
-            % Spinners — shared between Crop and Resize operations.
+            % Spinners - shared between Crop and Resize operations.
             % Cell element 1 : current value
             % Cell element 2 : [min  max] spinner limits  (upper = 50 000)
             % Cell element 3 : 'on'  = integer-only rounding
@@ -190,14 +190,14 @@ classdef GuiTutorialBatch < handle
             % Show or suppress the progress dialog
             obj.BatchOpt.showWaitbar = true;
 
-            % Active-dataset index — NOT a widget field.
+            % Active-dataset index - NOT a widget field.
             % Refreshed in updateWidgets() and at the top of Calculate().
             % Stripped before macro recording (returnBatchOpt) because the
             % index is session-specific and meaningless when replaying later.
             obj.BatchOpt.id = obj.mibModel.getActiveId();
 
             % -----------------------------------------------------------------
-            % STEP 2 — Batch registration metadata.
+            % STEP 2 - Batch registration metadata.
             %
             % mibBatchSectionName : category in the Batch Processing menu
             % mibBatchActionName  : label for this specific action
@@ -224,7 +224,7 @@ classdef GuiTutorialBatch < handle
             obj.BatchOpt.mibBatchTooltip.showWaitbar     = 'Show or suppress the progress dialog';
 
             % -----------------------------------------------------------------
-            % STEP 3 — Batch / headless execution branch.
+            % STEP 3 - Batch / headless execution branch.
             %
             % utils.startController calls the constructor as:
             %   GuiTutorialBatch(mibModel)                         interactive
@@ -237,7 +237,7 @@ classdef GuiTutorialBatch < handle
                 BatchOptIn = varargin{2};
                 if ~isstruct(BatchOptIn)
                     if isscalar(BatchOptIn) && isnan(BatchOptIn)
-                        % Query mode — advertise parameters without running.
+                        % Query mode - advertise parameters without running.
                         obj.returnBatchOpt();
                     else
                         utils.dlgs.showErrorDialog([], ...
@@ -272,7 +272,7 @@ classdef GuiTutorialBatch < handle
             end
 
             % -----------------------------------------------------------------
-            % STEP 4 — Interactive GUI mode.
+            % STEP 4 - Interactive GUI mode.
             % -----------------------------------------------------------------
 
             % core.ChildView(controller, appClassName) instantiates the
@@ -281,7 +281,7 @@ classdef GuiTutorialBatch < handle
             % collects all named component properties into obj.view.handles.
             obj.view = core.ChildView(obj, 'GuiTutorialBatchGUI');
 
-            % Window title-bar icon — use a plugin-specific 16 px icon when
+            % Window title-bar icon - use a plugin-specific 16 px icon when
             % present next to this file; otherwise fall back to the shared MIB
             % application icon.
             pluginDir    = fileparts(mfilename('fullpath'));
@@ -450,7 +450,7 @@ classdef GuiTutorialBatch < handle
             if isempty(obj.view); return; end   % no widgets to update in batch mode
 
             % Read the currently selected radio button directly from the widget.
-            % SelectedObject is always up-to-date — no dependency on event order.
+            % SelectedObject is always up-to-date - no dependency on event order.
             bg = obj.view.handles.OperationButtonGroup;
             if ~isempty(bg.SelectedObject)
                 obj.BatchOpt.OperationButtonGroup{1} = bg.SelectedObject.Tag;
@@ -522,7 +522,7 @@ classdef GuiTutorialBatch < handle
         %   end
         %
         % Parameters:
-        % event: AppDesigner event — event.Source is the changed widget
+        % event: AppDesigner event - event.Source is the changed widget
 
             obj.BatchOpt = utils.updateBatchOptFromGUI_Shared( ...
                 obj.BatchOpt, event.Source);
@@ -545,7 +545,7 @@ classdef GuiTutorialBatch < handle
 
             if nargin < 2; BatchOptOut = obj.BatchOpt; end
 
-            % Strip 'id' — the active-dataset index is session-specific and
+            % Strip 'id' - the active-dataset index is session-specific and
             % meaningless when replaying a macro in a different session.
             if isfield(BatchOptOut, 'id')
                 BatchOptOut = rmfield(BatchOptOut, 'id');
@@ -677,7 +677,7 @@ classdef GuiTutorialBatch < handle
                 return;
             end
 
-            % cropF = [x1, y1, dx, dy, z1, dz, t1, dt] — crop the full Z/T extents.
+            % cropF = [x1, y1, dx, dy, z1, dz, t1, dt] - crop the full Z/T extents.
             cropF = [x1, y1, width1, height1, 1, depth, 1, time];
             cropOpts.showWaitbar = obj.canShowWaitbar();
             % UIFigure is the parent for the internal progress dialog.
@@ -744,7 +744,7 @@ classdef GuiTutorialBatch < handle
         %
         % Pixel values are scaled linearly so the full dynamic range of the
         % source class maps to the full dynamic range of the target class
-        % (e.g. 0–255 → 0–65535).
+        % (e.g. 0-255 → 0-65535).
         %
         % Important: setData4D cannot be used for a type conversion because
         % MibImage.setData writes into the existing typed container via
@@ -771,7 +771,7 @@ classdef GuiTutorialBatch < handle
             classFrom = class(img{1});
 
             if strcmp(classFrom, convertTo)
-                % Nothing to do — warn the user and return without recording.
+                % Nothing to do - warn the user and return without recording.
                 dlgOpt.MsgBoxOnly = true;
                 dlgOpt.Icon       = 'puffin_warning';
                 utils.dlgs.inputUniversalDlg(obj.getDialogParent(), ...
@@ -781,7 +781,7 @@ classdef GuiTutorialBatch < handle
             end
 
             % canShowWaitbar() returns true only in interactive mode with a
-            % valid plugin window — PoolWaitbar requires a matlab.ui.Figure and
+            % valid plugin window - PoolWaitbar requires a matlab.ui.Figure and
             % rejects AppContainer (mibModel.mibGUI).  In batch mode progress
             % is shown by the Batch Processing GUI instead.
             showProgress = obj.canShowWaitbar();
@@ -789,7 +789,7 @@ classdef GuiTutorialBatch < handle
                 % core.PoolWaitbar(N, message, parentFig, title, cancelable)
                 progressBar = core.PoolWaitbar(2, ...
                     'Converting dataset...', ...
-                    obj.view.gui, ...   % UIFigure — safe for PoolWaitbar
+                    obj.view.gui, ...   % UIFigure - safe for PoolWaitbar
                     'Convert', false);
             end
 
@@ -807,9 +807,9 @@ classdef GuiTutorialBatch < handle
 
             % Write the converted array directly to MibImage.data and update
             % the three interdependent metadata properties:
-            %   dataClass — the MATLAB class string ('uint8', 'uint16', …)
-            %   maxInt    — the maximum representable integer for this class
-            %   viewPort  — per-channel display range [min, max, gamma]
+            %   dataClass - the MATLAB class string ('uint8', 'uint16', …)
+            %   maxInt    - the maximum representable integer for this class
+            %   viewPort  - per-channel display range [min, max, gamma]
             imageObj           = obj.mibModel.I{id}.image;
             imageObj.data   = img{1};
             imageObj.dataClass = class(img{1});
@@ -864,7 +864,7 @@ classdef GuiTutorialBatch < handle
                 return;
             end
 
-            % Empty options struct — no ROI, no viewport crop.
+            % Empty options struct - no ROI, no viewport crop.
             % Omitting 'roiId' disables ROI mode and processes the full image.
             options = struct();
             [~, ~, depth, ~, time] = ...
@@ -882,13 +882,13 @@ classdef GuiTutorialBatch < handle
             if showProgress
                 progressBar = core.PoolWaitbar(totalFrames, ...
                     'Inverting dataset...', ...
-                    obj.view.gui, ...   % UIFigure — safe for PoolWaitbar
+                    obj.view.gui, ...   % UIFigure - safe for PoolWaitbar
                     'Invert', true);    % true = add Cancel button
             end
 
             for t = 1:time
                 for z = 1:depth
-                    % getData2D returns a cell array — one entry per ROI region
+                    % getData2D returns a cell array - one entry per ROI region
                     % in ROI mode, or a single-entry cell here (no ROI).
                     img    = obj.mibModel.getData2D('image', z, [], colCh, options);
                     maxInt = intmax(class(img{1}));
@@ -902,7 +902,7 @@ classdef GuiTutorialBatch < handle
                     if showProgress
                         if progressBar.getCancelState()
                             progressBar.deletePoolWaitbar();
-                            return;  % success remains false — operation was cancelled
+                            return;  % success remains false - operation was cancelled
                         end
                         progressBar.increment();
                     end
@@ -932,7 +932,7 @@ classdef GuiTutorialBatch < handle
         %
         % NOTE: use this only for utils.dlgs.* and uiprogressdlg calls, which
         % accept AppContainer as a parent.  Do NOT pass the result to
-        % core.PoolWaitbar — that requires a matlab.ui.Figure (UIFigure).
+        % core.PoolWaitbar - that requires a matlab.ui.Figure (UIFigure).
         % Use canShowWaitbar() + obj.view.gui directly for PoolWaitbar instead.
 
             if ~isempty(obj.view) && isvalid(obj.view.gui)
@@ -948,7 +948,7 @@ classdef GuiTutorialBatch < handle
         %
         % core.PoolWaitbar requires a matlab.ui.Figure (UIFigure), but in
         % batch/headless mode obj.view is [] (no plugin window) and
-        % obj.mibModel.mibGUI is an AppContainer — which fails the
+        % obj.mibModel.mibGUI is an AppContainer - which fails the
         % isa(...,'matlab.ui.Figure') check inside PoolWaitbar.
         %
         % This helper returns true only when:
@@ -1008,7 +1008,7 @@ classdef GuiTutorialBatch < handle
                 1:colors, 'UniformOutput', false);
             obj.BatchOpt.colorDropdown{2} = colorsList;
             if ~ismember(obj.BatchOpt.colorDropdown{1}, colorsList)
-                % Requested channel does not exist in this dataset — default
+                % Requested channel does not exist in this dataset - default
                 % to the first channel rather than aborting.
                 fprintf(['GuiTutorialBatch: colorDropdown "%s" is not ' ...
                     'present in this dataset (channels: 1-%d). ' ...

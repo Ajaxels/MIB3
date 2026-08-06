@@ -4,7 +4,7 @@ classdef StitchingControllerTest < matlab.unittest.TestCase
 % The controller layer BETWEEN the GUI and the ``utils.stitch`` core: BatchOpt
 % defaults, layout building from BatchOpt, the measure/optimize workflow
 % methods, the project-settings flatten/restore pair, and the alignment-quality
-% chip. ``utils.stitch`` itself is covered by ``tests/utils/Stitch*Test.m`` —
+% chip. ``utils.stitch`` itself is covered by ``tests/utils/Stitch*Test.m`` -
 % these tests exercise the wiring around it.
 %
 % All tests are headless: ``controllers.Stitching(mibModel, [], NaN)`` builds a
@@ -30,7 +30,7 @@ classdef StitchingControllerTest < matlab.unittest.TestCase
     methods (Test, TestTags = {'Unit'})
 
         function batchOptDropdownDefaultsAreOfferedItems(testCase)
-            % Every dropdown's default must be one of its own items — a typo
+            % Every dropdown's default must be one of its own items - a typo
             % here only shows up as a widget that refuses to display.
             controller = testCase.newController();
             fieldList = fieldnames(controller.BatchOpt);
@@ -116,7 +116,7 @@ classdef StitchingControllerTest < matlab.unittest.TestCase
 
         function buildLayoutGridResetsDownstreamStateAndProjectFlag(testCase)
             % A deliberate rebuild must drop everything derived from the old
-            % layout — including solverInfo (the quality chip reads it) and the
+            % layout - including solverInfo (the quality chip reads it) and the
             % layoutFromProject flag, whose whole job is to stand down once the
             % layout describes BatchOpt again.
             controller = testCase.chainController(11);
@@ -336,7 +336,8 @@ classdef StitchingControllerTest < matlab.unittest.TestCase
             controller = testCase.newController();
             rmseLabel = testCase.attachChipLabel(controller);
             controller.refreshQualityChip();
-            testCase.verifyEqual(rmseLabel.Text, 'Alignment: —');
+            % Plain hyphen, not an em dash - see the dash rule in CLAUDE.md.
+            testCase.verifyEqual(rmseLabel.Text, 'Alignment: -');
             testCase.verifyEqual(rmseLabel.BackgroundColor, 'none');
         end
 
@@ -355,7 +356,7 @@ classdef StitchingControllerTest < matlab.unittest.TestCase
             testCase.verifySubstring(rmseLabel.Text, 'Seams disagree');
             testCase.verifyEqual(rmseLabel.BackgroundColor, [0.75 0.20 0.20]);
 
-            % Exclude it — no re-solve, no new pixels read, same positions.
+            % Exclude it - no re-solve, no new pixels read, same positions.
             positionsBefore = controller.positions;
             controller.edges(badEdge).valid = false;
             controller.refreshQualityChip();
@@ -384,7 +385,7 @@ classdef StitchingControllerTest < matlab.unittest.TestCase
 
         function qualityChipReportsAPendingReSolve(testCase)
             % While a re-solve is owed, the cached RMSE no longer describes the
-            % current edge set — say so instead of quoting it. The wording must
+            % current edge set - say so instead of quoting it. The wording must
             % also NOT order the user to press Re-solve: Stitch settles the debt
             % itself, so the button is a shortcut, not a requirement.
             [controller, ~] = testCase.solvedSabotagedChain(32);
@@ -440,7 +441,7 @@ classdef StitchingControllerTest < matlab.unittest.TestCase
 
         function atlasImportModesFillTheMatchingState(testCase)
             % BatchOpt.LayoutImport decides how much of an Atlas mosaic's own
-            % stitch buildLayoutFromBatchOpt adopts — and the import must survive
+            % stitch buildLayoutFromBatchOpt adopts - and the import must survive
             % the downstream reset that same method performs.
             [controller, mosaic] = testCase.atlasController();
 
@@ -465,7 +466,7 @@ classdef StitchingControllerTest < matlab.unittest.TestCase
 
         function atlasImportedPlacementReportsAnAlignmentRating(testCase)
             % An imported stitch arrives without a solve, so the chip would sit
-            % blank — and the user would have no way to tell a good Atlas result
+            % blank - and the user would have no way to tell a good Atlas result
             % from the bad one this whole layout source exists to rescue.
             [controller, ~] = testCase.atlasController();
             controller.BatchOpt.LayoutImport{1} = 'Vendor seams + solved positions';
@@ -488,7 +489,7 @@ classdef StitchingControllerTest < matlab.unittest.TestCase
 
         function atlasNominalGridIsOnlyAStartingGuess(testCase)
             % The stage grid Atlas records is off by the per-seam correction (4 px
-            % in X, 6 px in Y here) — the reason this source cannot simply trust
+            % in X, 6 px in Y here) - the reason this source cannot simply trust
             % it. MIB's own measurement from that grid must recover the truth.
             [controller, mosaic] = testCase.atlasController();
             controller.BatchOpt.LayoutImport{1} = 'Nominal grid only';
@@ -603,7 +604,7 @@ classdef StitchingControllerTest < matlab.unittest.TestCase
 
         function positionFileSourceTellsTextFilesFromAtlasMosaics(testCase)
             % Both file kinds live under ONE layout source, told apart by
-            % extension — the same controller must handle either without the user
+            % extension - the same controller must handle either without the user
             % switching anything, and a text file must not pick up Atlas state.
             [controller, mosaic] = testCase.atlasController();
             controller.BatchOpt.LayoutImport{1} = 'Vendor seams + solved positions';
@@ -628,7 +629,7 @@ classdef StitchingControllerTest < matlab.unittest.TestCase
 
             testCase.verifyNumElements(controller.layout, numel(tileFiles));
             testCase.verifyEmpty(controller.edges, ...
-                'a text position file carries no seams — Atlas state must not leak in');
+                'a text position file carries no seams - Atlas state must not leak in');
             testCase.verifyEmpty(controller.positions);
         end
 
@@ -670,7 +671,7 @@ classdef StitchingControllerTest < matlab.unittest.TestCase
     methods (Test, TestTags = {'Unit'})
 
         function mdocImportModesFillTheMatchingState(testCase)
-            % The same three modes as Atlas, reached through the same field —
+            % The same three modes as Atlas, reached through the same field -
             % which is why the field is vendor-neutral.
             [controller, montage] = testCase.mdocController();
 
@@ -784,7 +785,7 @@ classdef StitchingControllerTest < matlab.unittest.TestCase
 
         function intensityCorrectionIsLazyAndDroppedWithTheLayout(testCase)
             % Estimating reads every tile, so it must not happen until a stage
-            % actually needs pixels — and it must never outlive the tiles it was
+            % actually needs pixels - and it must never outlive the tiles it was
             % estimated from.
             [controller, ~] = testCase.mdocController();
             controller.BatchOpt.LayoutImport{1}   = 'Nominal grid only';   % no scoring on build
@@ -807,7 +808,7 @@ classdef StitchingControllerTest < matlab.unittest.TestCase
 
         function intensityCorrectionReEstimatesWhenTheMethodChanges(testCase)
             % The GUI drops the cache on the dropdown callback, but batch runs and
-            % scripts change BatchOpt directly — so the accessor must notice too,
+            % scripts change BatchOpt directly - so the accessor must notice too,
             % or a run would silently use the previous method's correction.
             [controller, ~] = testCase.mdocController();
             controller.BatchOpt.LayoutImport{1}   = 'Nominal grid only';
@@ -938,6 +939,98 @@ classdef StitchingControllerTest < matlab.unittest.TestCase
             testCase.verifyTrue(isfield(controller.canvas, 'cropRect'));
         end
 
+        function imageFileFormatsAllNameASaverThatExists(testCase)
+            % The label the picker offers and the format string the fuse passes
+            % to io.SaverFactory are DIFFERENT strings, joined only by this
+            % table - a typo in it is a dialog entry that errors on Stitch.
+            formats = controllers.Stitching.imageFileFormats();
+            imageSaverFormats = io.SaverFactory.getFormats('image');
+            testCase.assertNotEmpty(formats);
+            for entry = formats
+                testCase.verifyTrue(ismember(entry.saverFormat, imageSaverFormats), ...
+                    sprintf('"%s" maps to "%s", which io.SaverFactory does not offer', ...
+                    entry.label, entry.saverFormat));
+                testCase.verifySubstring(entry.label, ['(*' entry.extension ')'], ...
+                    'the label must advertise the extension the fuse will write');
+                testCase.verifyTrue(ismember(entry.policy, {'2D sequence', '3D stack'}));
+            end
+
+            % The BatchOpt item list IS the table, so a format added to one
+            % cannot go missing from the other.
+            controller = testCase.newController();
+            testCase.verifyEqual(controller.BatchOpt.OutputFormat{2}, {formats.label});
+            testCase.verifyTrue(ismember('Image files', controller.BatchOpt.OutputMode{2}));
+
+            % An unknown label (a newer MIB's project) falls back rather than
+            % erroring - the export is still the point of pressing Stitch.
+            testCase.verifyEqual(controllers.Stitching.imageFileFormat('no such format'), ...
+                formats(1));
+            testCase.verifyEqual( ...
+                controllers.Stitching.imageFileFormat(formats(end).label).saverFormat, ...
+                formats(end).saverFormat);
+        end
+
+        function imageFilesModeWritesTheFilesAndLeavesTheDatasetAlone(testCase)
+            % 'Image files' is an EXPORT: the mosaic goes to disk carrying the
+            % acquisition's voxel size, and the buffer the user was looking at is
+            % not replaced the way 'In memory' and the zarr reopen replace it.
+            [controller, montage] = testCase.mdocController();
+            controller.BatchOpt.LayoutImport{1} = 'Vendor seams + solved positions';
+            controller.BatchOpt.OutputMode{1}   = 'Image files';
+            controller.BatchOpt.OutputFormat{1} = 'TIF format uncompressed, 2D sequence (*.tif)';
+            controller.BatchOpt.OutputPath      = fullfile(montage.folder, 'export.tif');
+            controller.BatchOpt.SaveProject     = false;
+
+            activeId = controller.mibModel.getActiveId();
+            datasetBefore = controller.mibModel.I{activeId};
+
+            controller.stitchBtn_Callback(true);
+
+            testCase.verifySameHandle(controller.mibModel.I{activeId}, datasetBefore, ...
+                'an export must not swap the active buffer');
+
+            % One section => one output slice => no numeric suffix.
+            writtenFile = fullfile(montage.folder, 'export.tif');
+            testCase.assertTrue(isfile(writtenFile), 'the mosaic was not written');
+            testCase.verifyEqual(size(imread(writtenFile)), controller.canvas.size(1:2));
+
+            % The SerialEM montage states 18.38 A/px, so a 1 um fallback would
+            % show up here immediately.
+            expectedResolution = utils.calculateResolution(controller.canvas.pixSize);
+            % TIFF stores the resolution as a rational, so it comes back rounded
+            % - the assertion is that the acquisition scale arrived, not that a
+            % double survived the tag bit for bit.
+            writtenInfo = imfinfo(writtenFile);
+            testCase.verifyEqual(writtenInfo.XResolution, expectedResolution(1), 'RelTol', 1e-6);
+            testCase.verifyLessThan(controller.canvas.pixSize.x, 0.01, ...
+                'the mdoc pixel size must have reached the canvas for this to mean anything');
+        end
+
+        function imageFilesModeWithNoPathStopsInsteadOfGuessing(testCase)
+            % Headless there is nobody to ask, and picking a destination on the
+            % user's behalf writes files somewhere they did not choose.
+            [controller, montage] = testCase.mdocController();
+            controller.BatchOpt.LayoutImport{1} = 'Vendor seams + solved positions';
+            controller.BatchOpt.OutputMode{1}   = 'Image files';
+            controller.BatchOpt.OutputPath      = '';
+            controller.BatchOpt.SaveProject     = false;
+
+            stopped = false;
+            listener = addlistener(controller.mibModel, 'StopProtocol', ...
+                @(~, ~) assignStopped()); %#ok<NASGU>
+            filesBefore = numel(dir(fullfile(montage.folder, '*.tif')));
+
+            controller.stitchBtn_Callback(true);
+
+            testCase.verifyTrue(stopped, 'a batch run with no destination must stop the protocol');
+            testCase.verifyEqual(numel(dir(fullfile(montage.folder, '*.tif'))), filesBefore, ...
+                'nothing may be written when the destination is unknown');
+
+            function assignStopped()
+                stopped = true;
+            end
+        end
+
         function stitchedNameFallsBackToTheFirstTile(testCase)
             % No position file to name it after: a Grid layout is named by its
             % first tile instead, so the rule still produces something beside the
@@ -980,7 +1073,7 @@ classdef StitchingControllerTest < matlab.unittest.TestCase
 
         function [controller, montage] = mdocController(testCase)
             % Controller pointed at a synthetic SerialEM montage (2x2 in one MRC
-            % stack, edges + aligned coords present) — see
+            % stack, edges + aligned coords present) - see
             % mibtest.helpers.makeMdocMontage for the geometry and the format
             % traps it reproduces.
             tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
@@ -1003,7 +1096,7 @@ classdef StitchingControllerTest < matlab.unittest.TestCase
 
         function [controller, mosaic] = atlasController(testCase)
             % Controller pointed at a synthetic Fibics Atlas mosaic (2x2, with
-            % both sidecars present) — see mibtest.helpers.makeAtlasMosaic for
+            % both sidecars present) - see mibtest.helpers.makeAtlasMosaic for
             % the geometry and the format traps it reproduces.
             tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
             mosaic = mibtest.helpers.makeAtlasMosaic(tmpDir.Folder);
@@ -1034,7 +1127,7 @@ classdef StitchingControllerTest < matlab.unittest.TestCase
             %
             % How far the seam score falls depends on the texture, so the seeds
             % used with this helper are ones measured to land the sabotaged
-            % seam WELL inside the chip's red band (< 0.4) — 18 px off on this
+            % seam WELL inside the chip's red band (< 0.4) - 18 px off on this
             % 40 px overlap.
             controller = testCase.chainController(seed);
             controller.buildLayoutFromBatchOpt();

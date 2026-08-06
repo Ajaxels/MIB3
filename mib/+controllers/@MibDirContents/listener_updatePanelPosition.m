@@ -11,29 +11,29 @@ function listener_updatePanelPosition(obj, src, evtData)
 % widget arrangement for each docking orientation.
 %
 % Input Arguments:
-%   - **src** — [matlab.ui.container.Panel] the panel object whose Region property changed
-%   - **evtData** — [matlab.ui.eventdata.PropertyChangedData] property change event data
+%   - **src** - [matlab.ui.container.Panel] the panel object whose Region property changed
+%   - **evtData** - [matlab.ui.eventdata.PropertyChangedData] property change event data
 %
 % Output Arguments:
 %   None
 %
 % **Layout configurations:**
 %
-% **Left / Right docking** — vertical arrangement (3 rows × 6 columns):
+% **Left / Right docking** - vertical arrangement (3 rows × 6 columns):
 %   - ``RowHeight`` = ``{'1x', 22, 2}``
 %   - ``ColumnWidth`` = ``{34, 84, 40, '1x', 50, 18}``
 %   - ``ColumnSpacing`` = ``5``, ``RowSpacing`` = ``6``, ``Padding`` = ``[8 8 8 8]``
-%   - Row 1 — ``fileList`` spanning columns [1–6]
-%   - Row 2 — toolbar (5 widgets at columns 1, 2, 3, 5, 6; column 4 = spacer)
-%   - Row 3 — ``dividerPanel`` spanning columns [1–6]
+%   - Row 1 - ``fileList`` spanning columns [1-6]
+%   - Row 2 - toolbar (5 widgets at columns 1, 2, 3, 5, 6; column 4 = spacer)
+%   - Row 3 - ``dividerPanel`` spanning columns [1-6]
 %
-% **Bottom docking** — horizontal arrangement (6 rows × 3 columns):
+% **Bottom docking** - horizontal arrangement (6 rows × 3 columns):
 %   - ``ColumnWidth`` = ``{'1x', 130, 2}``
 %   - ``RowHeight`` = ``{22, 22, 22, '1x', 22, 22}``
 %   - ``ColumnSpacing`` = ``5``, ``RowSpacing`` = ``6``, ``Padding`` = ``[8 8 8 8]``
-%   - Column 1 — ``fileList`` spanning rows [1–6]
-%   - Column 2 — toolbar (5 widgets at rows 1, 2, 3, 5, 6; row 4 = spacer)
-%   - Column 3 — ``dividerPanel`` spanning rows [1–6]
+%   - Column 1 - ``fileList`` spanning rows [1-6]
+%   - Column 2 - toolbar (5 widgets at rows 1, 2, 3, 5, 6; row 4 = spacer)
+%   - Column 3 - ``dividerPanel`` spanning rows [1-6]
 
 switch evtData.PropertyName
     case 'Region'
@@ -46,7 +46,7 @@ switch evtData.PropertyName
         
         switch src.Region
             case {'left', 'right'}
-                % already in left/right layout (3 rows) — nothing to do
+                % already in left/right layout (3 rows) - nothing to do
                 if numel(obj.handles.mainGridLayout.RowHeight) == 3; return; end
                 % restore: col index → row / spanning cols back to [1 6]
                 for i = 1:numel(children)
@@ -69,7 +69,7 @@ switch evtData.PropertyName
                 obj.handles.mainGridLayout.Padding       = [8 8 8 8];
 
             case 'bottom'
-                % already in bottom layout (6 rows) — nothing to do
+                % already in bottom layout (6 rows) - nothing to do
                 if numel(obj.handles.mainGridLayout.RowHeight) == 6; return; end
                 % transpose: row 1 → col 1 (spanning), row 2 → col 2 (per widget),
                 %            row 3 → col 3 (spanning)

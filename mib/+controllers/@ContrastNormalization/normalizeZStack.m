@@ -12,15 +12,15 @@ function options = normalizeZStack(obj, colorChannel, options)
 % dataset-wide std.
 %
 % Input Arguments:
-%   - **obj** — :class:`controllers.ContrastNormalization` instance.
-%   - **colorChannel** — ``[1 x N]`` vector of color-channel indices to process.
-%   - **options** — struct with fields:
+%   - **obj** - :class:`controllers.ContrastNormalization` instance.
+%   - **colorChannel** - ``[1 x N]`` vector of color-channel indices to process.
+%   - **options** - struct with fields:
 %
-%     - ``.id`` — dataset index.
-%     - ``.t`` — ``[tVal tVal]`` time-point pair for the single frame.
-%     - ``.waitbar`` — handle to the ``uiprogressdlg``; may be ``[]``.
-%     - ``.waitbarOffset`` — base progress value before this target starts.
-%     - ``.totalSteps`` — total number of (channel × slice) steps for the waitbar.
+%     - ``.id`` - dataset index.
+%     - ``.t`` - ``[tVal tVal]`` time-point pair for the single frame.
+%     - ``.waitbar`` - handle to the ``uiprogressdlg``; may be ``[]``.
+%     - ``.waitbarOffset`` - base progress value before this target starts.
+%     - ``.totalSteps`` - total number of (channel × slice) steps for the waitbar.
 
 id   = options.id;
 maxZ = obj.mibModel.I{id}.image.depth;

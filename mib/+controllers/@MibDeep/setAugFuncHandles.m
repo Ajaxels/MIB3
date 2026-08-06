@@ -7,15 +7,15 @@ function [status, augNumber] = setAugFuncHandles(obj, mode, augOptions)
 %       [status, augNumber] = obj.setAugFuncHandles(mode, augOptions)
 %
 % Input Arguments:
-%   - **mode** — string defining '2D' or '3D' augmentations
-%   - **augOptions** — a custom temporary structure with augmentation
+%   - **mode** - string defining '2D' or '3D' augmentations
+%   - **augOptions** - a custom temporary structure with augmentation
 %     options to be used instead of obj.AugOpt2D and obj.AugOpt3D.
 %     It is used by mibDeepAugmentSettingsController to preview
 %     selected augmentations
 %
 % Output Arguments:
-%   - **status** — a logical success switch (1-success, 0- fail)
-%   - **augNumber** — number of selected augmentations
+%   - **status** - a logical success switch (1-success, 0- fail)
+%   - **augNumber** - number of selected augmentations
 %
 
     status = 0;

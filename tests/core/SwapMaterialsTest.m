@@ -5,11 +5,11 @@ classdef SwapMaterialsTest < matlab.unittest.TestCase
 % and vice versa across the full 4-D labels array.
 %
 % Verification strategies:
-%   pixel swap  — a voxel labeled 1 before must be labeled 2 after, and
+%   pixel swap  - a voxel labeled 1 before must be labeled 2 after, and
 %                 vice versa
-%   zero intact — background voxels (label 0) must not change
-%   name swap   — material name strings are exchanged in labels.materialNames
-%   depth stable — depth must not change after swap
+%   zero intact - background voxels (label 0) must not change
+%   name swap   - material name strings are exchanged in labels.materialNames
+%   depth stable - depth must not change after swap
 
     methods (TestClassSetup)
         function addPaths(testCase)
@@ -52,7 +52,7 @@ classdef SwapMaterialsTest < matlab.unittest.TestCase
             mibModel.I{1}.swapMaterials(1, 2, []);
 
             result = cell2mat(mibModel.getData3D('labels', 1, 3, [], opt));
-            % Centre voxel (row 10, col 10) was background — must stay 0
+            % Centre voxel (row 10, col 10) was background - must stay 0
             testCase.verifyEqual(result(10, 10, 1), uint8(0), ...
                 'background voxels must not change after swap');
         end

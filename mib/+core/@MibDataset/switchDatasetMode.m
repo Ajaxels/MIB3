@@ -9,26 +9,26 @@ function newModeOut = switchDatasetMode(obj, newMode, enableSelection, initWithI
 % in bj.handles.panels.activeDataset.handles.datasetType as 'Standard', 'Virtual', 'BigData'
 %
 % Input Arguments:
-%   - **newMode** — *(optional)* target dataset mode:
+%   - **newMode** - *(optional)* target dataset mode:
 %
-%     - ``1`` — memory-resident mode (Standard), images loaded to memory
-%     - ``2`` — HDD-resident mode (Virtual), images kept on hard drive
-%     - ``3`` — BigData mode, images loaded on demand
+%     - ``1`` - memory-resident mode (Standard), images loaded to memory
+%     - ``2`` - HDD-resident mode (Virtual), images kept on hard drive
+%     - ``3`` - BigData mode, images loaded on demand
 %
-%   - **enableSelection** — *(optional)* logical switch to enable/disable the selection layer;
+%   - **enableSelection** - *(optional)* logical switch to enable/disable the selection layer;
 %     set based on ``mibModel.preferences.System.EnableSelection``
-%   - **initWithImage** — *(optional)* initialise the class with a provided image:
+%   - **initWithImage** - *(optional)* initialise the class with a provided image:
 %
 %     - for ``'Standard'``: numeric matrix (preloaded image data)
 %     - for ``'Virtual'``: cell array with full path(s) to the dataset
 %
 % Output Arguments:
-%   - **newModeOut** — result of the function:
+%   - **newModeOut** - result of the function:
 %
-%     - ``[]`` — nothing was changed
-%     - ``1`` — switched to the memory-resident (Standard) mode
-%     - ``2`` — switched to the virtual stacking mode
-%     - ``3`` — switched to the BigData mode
+%     - ``[]`` - nothing was changed
+%     - ``1`` - switched to the memory-resident (Standard) mode
+%     - ``2`` - switched to the virtual stacking mode
+%     - ``3`` - switched to the BigData mode
 %
 % Usage:
 %   **Example 1**

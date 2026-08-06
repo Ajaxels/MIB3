@@ -7,26 +7,26 @@ classdef Zarr3Saver < io.savers.BaseSaver
 % ``io.loaders.Zarr3VirtualSetupLoader`` (and thus openable as a **BigData**
 % dataset) and by other OME-Zarr tools.
 %
-% **Primary use — ingest/convert:** turn an in-memory (Standard) dataset into
+% **Primary use - ingest/convert:** turn an in-memory (Standard) dataset into
 % a zarr3 BigData pyramid on disk, so large datasets can be moved into the
 % BigData segmentation workflow. (A non-zarr Virtual/BioFormats source must
-% first be gathered to memory or streamed level-by-level — future.)
+% first be gathered to memory or streamed level-by-level - future.)
 %
 % **Axis order.** Arrays are created with the zarr-matlab transpose codec, so
 % they store/return in native MATLAB ``[y, x, z, c, t]`` order. The
 % ``multiscales.axes`` are declared to match (``y, x, z`` plus ``c`` and/or
 % ``t`` only when those dimensions are > 1). ``Zarr3VirtualSetupLoader`` reads
 % ``axes.name`` to recover this order, and ``Zarr3VirtualLoader`` applies the
-% (identity) permutation — so the round-trip is exact.
+% (identity) permutation - so the round-trip is exact.
 %
 % **Pyramid.** Level 0 = full resolution; each further level halves Y and X
-% (Z is kept — XY-only downsampling). The per-level ``scale`` coordinate
+% (Z is kept - XY-only downsampling). The per-level ``scale`` coordinate
 % transformation encodes the physical voxel size (``pixSize`` × 2^level in XY),
 % which the loader turns into the magnification→level mapping.
 %
 % **Examples**
 %
-% **Example 1** — convert the active dataset to a BigData pyramid:
+% **Example 1** - convert the active dataset to a BigData pyramid:
 %
 %   .. code-block:: matlab
 %
@@ -37,21 +37,21 @@ classdef Zarr3Saver < io.savers.BaseSaver
 %      io.savers.Zarr3Saver().save(data, meta, 'C:\data\out.zarr3');
 %      % then open 'C:\data\out.zarr3' in BigData mode
 %
-% **Example 2** — minimal call (no metadata, default options ⇒ voxel size 1):
+% **Example 2** - minimal call (no metadata, default options ⇒ voxel size 1):
 %
 %   .. code-block:: matlab
 %
 %      vol = uint16(rand(800, 600, 20) * 1000);       % [y x z]
 %      io.savers.Zarr3Saver().save(vol, struct(), 'C:\data\vol.zarr3');
 %
-% **Example 3** — force a fixed number of pyramid levels:
+% **Example 3** - force a fixed number of pyramid levels:
 %
 %   .. code-block:: matlab
 %
 %      opt = struct('Levels', 4);                     % level 0..3 (full, /2, /4, /8 in XY)
 %      io.savers.Zarr3Saver().save(vol, meta, 'C:\data\vol.zarr3', opt);
 %
-% **Example 4** — control where the auto-pyramid stops and its chunking:
+% **Example 4** - control where the auto-pyramid stops and its chunking:
 %
 %   .. code-block:: matlab
 %
@@ -60,14 +60,14 @@ classdef Zarr3Saver < io.savers.BaseSaver
 %                   'ChunkSize',   [512 512 8]);      % [y x z] zarr chunk
 %      io.savers.Zarr3Saver().save(vol, meta, 'C:\data\vol.zarr3', opt);
 %
-% **Example 5** — mode downsampling for label/model pyramids (majority-vote per output pixel):
+% **Example 5** - mode downsampling for label/model pyramids (majority-vote per output pixel):
 %
 %   .. code-block:: matlab
 %
 %      opt = struct('DownsampleMethod', 'mode');      % dominant label in each source block
 %      io.savers.Zarr3Saver().save(labelVol, meta, 'C:\data\labels.zarr3', opt);
 %
-% **Example 6** — multichannel image (axes become ``yxzc``, colours preserved):
+% **Example 6** - multichannel image (axes become ``yxzc``, colours preserved):
 %
 %   .. code-block:: matlab
 %
@@ -75,7 +75,7 @@ classdef Zarr3Saver < io.savers.BaseSaver
 %      io.savers.Zarr3Saver().save(rgb, struct('pixSize', struct('x',.1,'y',.1,'z',.5)), ...
 %                                  'C:\data\rgb.zarr3');
 %
-% **Example 7** — export ONE pyramid level of a BigData dataset back to zarr3
+% **Example 7** - export ONE pyramid level of a BigData dataset back to zarr3
 % (gather the level you want, then write it as a fresh single/low pyramid):
 %
 %   .. code-block:: matlab
@@ -86,7 +86,7 @@ classdef Zarr3Saver < io.savers.BaseSaver
 %      io.savers.Zarr3Saver().save(level, struct('pixSize', ds.image.pixSize), ...
 %                                  'C:\data\level3.zarr3', struct('Levels', 1));
 %
-% **Example 8** — round-trip check (write, reopen via the BigData loader):
+% **Example 8** - round-trip check (write, reopen via the BigData loader):
 %
 %   .. code-block:: matlab
 %
@@ -113,24 +113,24 @@ classdef Zarr3Saver < io.savers.BaseSaver
             % SAVE - write ``data`` as an OME-Zarr v3 multiscales pyramid.
             %
             % Input Arguments:
-            %   - **data** — [y x z c t] numeric image array (full resolution).
-            %   - **metadata** — struct; uses ``.pixSize`` (``.x .y .z``) when present.
-            %   - **filename** — [char] output ``.zarr3`` group path (overwritten if it exists).
-            %   - **options** — *(optional)* struct:
+            %   - **data** - [y x z c t] numeric image array (full resolution).
+            %   - **metadata** - struct; uses ``.pixSize`` (``.x .y .z``) when present.
+            %   - **filename** - [char] output ``.zarr3`` group path (overwritten if it exists).
+            %   - **options** - *(optional)* struct:
             %
-            %     - ``.Levels`` — explicit number of pyramid levels (default: auto)
-            %     - ``.MinLevelSize`` — stop auto-pyramid when min(Y,X) < this (default 256)
-            %     - ``.MaxLevels`` — cap on auto levels (default 8)
-            %     - ``.ChunkSize`` — [y x z] chunk shape (default [256 256 16], clamped)
-            %     - ``.ShardSize`` — [y x z] chunk multipliers; ``[]`` = no sharding. Each
+            %     - ``.Levels`` - explicit number of pyramid levels (default: auto)
+            %     - ``.MinLevelSize`` - stop auto-pyramid when min(Y,X) < this (default 256)
+            %     - ``.MaxLevels`` - cap on auto levels (default 8)
+            %     - ``.ChunkSize`` - [y x z] chunk shape (default [256 256 16], clamped)
+            %     - ``.ShardSize`` - [y x z] chunk multipliers; ``[]`` = no sharding. Each
             %       value says how many chunks to bundle per axis (e.g. [4 4 1])
-            %     - ``.Compressors`` — codec spec for ZarrArray.create (default 'zstd')
-            %     - ``.DownsampleMethod`` — 'bilinear', 'nearest', 'bicubic', 'median', or 'mode' (default 'bilinear').
+            %     - ``.Compressors`` - codec spec for ZarrArray.create (default 'zstd')
+            %     - ``.DownsampleMethod`` - 'bilinear', 'nearest', 'bicubic', 'median', or 'mode' (default 'bilinear').
             %       ``'median'`` picks the median value per block (noise-robust, image data).
             %       ``'mode'`` picks the dominant value per block (categorical label data).
             %
             % Output Arguments:
-            %   - **fnOut** — [char] the written group path.
+            %   - **fnOut** - [char] the written group path.
 
             if nargin < 5; options = struct(); end
             if nargin < 4 || isempty(filename); error('io:Zarr3Saver:noFilename', 'Output filename is required'); end
@@ -149,7 +149,7 @@ classdef Zarr3Saver < io.savers.BaseSaver
             if ~isfield(options, 'DownsampleMethod');   options.DownsampleMethod = 'bilinear'; end
             if ~isfield(options, 'DownsampleStrategy'); options.DownsampleStrategy = 'XY only'; end
 
-            % Label layers are categorical — prevent interpolating methods; allow 'mode'
+            % Label layers are categorical - prevent interpolating methods; allow 'mode'
             % (majority vote) as the accurate alternative to 'nearest'.
             isLabelLayer = (isfield(options,'layerType') && strcmp(options.layerType,'labels')) || ...
                 (isstruct(metadata) && isfield(metadata,'materialNames') && ~isempty(metadata.materialNames));
@@ -283,12 +283,12 @@ classdef Zarr3Saver < io.savers.BaseSaver
             % Memory-bounded twin of ``save``: instead of a full ``[y x z c t]`` array
             % it pulls each Z-slice from ``provider`` (an ``io.savers.SliceProvider``),
             % writes it to level 0, and writes its XY-downsampled copies to the coarser
-            % levels — all via region (``bbox``) writes — so the whole volume is never
+            % levels - all via region (``bbox``) writes - so the whole volume is never
             % resident. This is the out-of-core ingest path (e.g. a large source → zarr3).
             %
             % See ``io.savers.BaseSaver.saveStream``.
             %
-            % **Example** — stream a volume into a fresh OME-Zarr v3 pyramid:
+            % **Example** - stream a volume into a fresh OME-Zarr v3 pyramid:
             %
             %   .. code-block:: matlab
             %
@@ -377,7 +377,7 @@ classdef Zarr3Saver < io.savers.BaseSaver
             %
             % Output slices are NOT written to disk one at a time: a zarr chunk is
             % compressed as a unit, so a 1-slice-thick region write forces a full
-            % decompress + splice + recompress of the ENTIRE chunk it lands in —
+            % decompress + splice + recompress of the ENTIRE chunk it lands in -
             % repeated once per Z-slice inside that chunk (chunkZ-fold redundant
             % work). Instead, output slices are buffered per level up to that
             % level's chunk Z-thickness (``levelInfo(L).chunkZ``) and flushed as one
@@ -489,11 +489,11 @@ classdef Zarr3Saver < io.savers.BaseSaver
             % user cancels. Headless/scripted use (no ``ParentFigure``), batch/``silent``
             % calls, and pre-configured option structs all skip the dialog.
             %
-            % ``sizeYXZ`` — [Y X Z] of the data being saved; forwarded (with
+            % ``sizeYXZ`` - [Y X Z] of the data being saved; forwarded (with
             % ``metadata.pixSize``) as ``optionsDialog``'s ``datasetInfo`` so the smart
             % chunk/shard/strategy defaults (WSI / isotropic / anisotropic 3-D) match
             % what the ribbon "Export to Zarr3" / "Export model to Zarr3" actions show
-            % for the same dataset — omitting it silently falls back to the isotropic
+            % for the same dataset - omitting it silently falls back to the isotropic
             % preset regardless of the data's actual shape or voxel size.
             cancelled = false;
             if isfield(options,'silent') && options.silent; return; end
@@ -526,16 +526,16 @@ classdef Zarr3Saver < io.savers.BaseSaver
             % ``save``. Voxel size is taken from the image's ``pixSize``.
             %
             % Input Arguments:
-            %   - **mibModel** — the ``models.MibModel`` instance.
-            %   - **datasetId** — *(optional)* dataset index; default = active id.
-            %   - **filename** — [char] output ``.zarr3`` path.
-            %   - **options** — *(optional)* struct forwarded to ``save`` (Levels,
+            %   - **mibModel** - the ``models.MibModel`` instance.
+            %   - **datasetId** - *(optional)* dataset index; default = active id.
+            %   - **filename** - [char] output ``.zarr3`` path.
+            %   - **options** - *(optional)* struct forwarded to ``save`` (Levels,
             %     ChunkSize, Compressors, …).
             %
             % Output Arguments:
-            %   - **fnOut** — [char] the written group path.
+            %   - **fnOut** - [char] the written group path.
             %
-            % NOTE: gathers the whole volume into memory — fine for Standard
+            % NOTE: gathers the whole volume into memory - fine for Standard
             % datasets; out-of-core streaming for huge sources is future work.
             if nargin < 4; options = struct(); end
             if nargin < 3 || isempty(filename); error('io:Zarr3Saver:noFilename', 'Output filename is required'); end
@@ -596,7 +596,7 @@ classdef Zarr3Saver < io.savers.BaseSaver
             % dropdown, and BigData alignment. When ``isModel`` is true, the method
             % is restricted to
             % 'nearest' or 'mode' (labels are categorical). The downsampling
-            % *strategy* (XY only vs. Anisotropy-preserving) is offered for both —
+            % *strategy* (XY only vs. Anisotropy-preserving) is offered for both -
             % model reads use their own per-axis ``modelScaleFactors`` (see
             % ``MibBigDataLabels.getData63``), so a model pyramid can shrink Z the
             % same way an image pyramid does. Pick the same strategy as the paired
@@ -610,12 +610,12 @@ classdef Zarr3Saver < io.savers.BaseSaver
             %   - 3-D isotropic   (vxZ <  2× vxXY):  chunk 128×128×64, strategy 'XY only'
             %
             % **Downsampling strategy:**
-            %   - ``XY only`` — halves X & Y at every level, Z stays constant.
-            %   - ``Anisotropy-preserving`` — halves XY until voxels are near-isotropic,
+            %   - ``XY only`` - halves X & Y at every level, Z stays constant.
+            %   - ``Anisotropy-preserving`` - halves XY until voxels are near-isotropic,
             %     then also halves Z to keep the aspect ratio ~1 at coarser levels.
             %     Recommended for 3-D datasets where vxZ >> vxXY.
             %
-            % **Pyramid levels — auto rule (when "Pyramid levels" = 0):** level 0 is
+            % **Pyramid levels - auto rule (when "Pyramid levels" = 0):** level 0 is
             % full resolution; levels are added while the next halving keeps
             % ``min(Y, X) >= 256 px``, capped at 8 levels. A fixed count (1..12) overrides.
             %
@@ -631,7 +631,7 @@ classdef Zarr3Saver < io.savers.BaseSaver
             % corresponding heuristic default.
             %
             % Output Arguments:
-            %   - **options** — struct with fields ``Levels`` (omitted when auto),
+            %   - **options** - struct with fields ``Levels`` (omitted when auto),
             %     ``ChunkSize`` [y x z], ``ShardSize`` [y x z] (omitted when no sharding),
             %     ``Compressors``, ``DownsampleMethod``, ``DownsampleStrategy``;
             %     ``[]`` when cancelled.
@@ -672,20 +672,20 @@ classdef Zarr3Saver < io.savers.BaseSaver
             end
 
             % Conditional header + method items depending on whether this is a model export
-            % (the downsampling *strategy* explanation/prompt is shared by both — see
+            % (the downsampling *strategy* explanation/prompt is shared by both - see
             % the function header comment on why models are not restricted to XY-only)
             if isModel
                 methodLines = { ...
-                    '"nearest" (fast): picks the nearest source pixel — preserves exact'; ...
+                    '"nearest" (fast): picks the nearest source pixel - preserves exact'; ...
                     'label integers, recommended for most models.'; ...
                     '"mode" (slow, precise): dominant label value per block (majority vote)'; ...
-                    '— best semantic accuracy for fine structures or thin boundaries.'};
+                    '- best semantic accuracy for fine structures or thin boundaries.'};
                 methodItems = {'nearest (fast)', 'mode (precise, very slow)'};
             else
                 methodLines = { ...
-                    '"median": median value per block — noise-robust, preserves edges'; ...
+                    '"median": median value per block - noise-robust, preserves edges'; ...
                     'better than bilinear; does not produce new pixel values.'; ...
-                    '"mode": dominant value per block (majority vote) — for categorical'; ...
+                    '"mode": dominant value per block (majority vote) - for categorical'; ...
                     'labels exported as images; slower than "nearest".'};
                 methodItems = {'bilinear (fast, smooth)', 'nearest (fast)', ...
                                'bicubic (slower, sharp)', 'median (very slow, noise-robust)', ...
@@ -699,7 +699,7 @@ classdef Zarr3Saver < io.savers.BaseSaver
                     { ''; ...
                     'Strategy "XY only": halves X & Y at every level, Z constant.'; ...
                     '"Anisotropy-preserving": halves XY until voxels near-isotropic,'; ...
-                    'then also halves Z — keeps aspect ratio ~1 at coarser levels. Use the'; ...
+                    'then also halves Z - keeps aspect ratio ~1 at coarser levels. Use the'; ...
                     'same strategy as the paired image export so the level shapes match.'; ...
                     ''; ...
                     'Shard X-factors [Y,X,Z]: how many chunks to bundle per axis into'; ...
@@ -794,15 +794,15 @@ classdef Zarr3Saver < io.savers.BaseSaver
             %
             % Returns a struct array ``plan`` with one entry per pyramid level.
             % Each entry has fields:
-            %   - ``Yl``, ``Xl``, ``Zl``       — pixel dimensions at this level
-            %   - ``cumXYFactor``, ``cumZFactor`` — cumulative scale vs level 0
-            %   - ``physScaleY``, ``physScaleX``, ``physScaleZ`` — physical voxel size
+            %   - ``Yl``, ``Xl``, ``Zl``       - pixel dimensions at this level
+            %   - ``cumXYFactor``, ``cumZFactor`` - cumulative scale vs level 0
+            %   - ``physScaleY``, ``physScaleX``, ``physScaleZ`` - physical voxel size
             %
             % Options fields consumed:
-            %   - ``DownsampleStrategy`` — 'XY only' (default) | 'Anisotropy-preserving'
-            %   - ``Levels``             — explicit level count (overrides auto when > 0)
-            %   - ``MinLevelSize``       — auto stop when min(Y,X) would drop below this (default 256)
-            %   - ``MaxLevels``          — hard cap on level count (default 8)
+            %   - ``DownsampleStrategy`` - 'XY only' (default) | 'Anisotropy-preserving'
+            %   - ``Levels``             - explicit level count (overrides auto when > 0)
+            %   - ``MinLevelSize``       - auto stop when min(Y,X) would drop below this (default 256)
+            %   - ``MaxLevels``          - hard cap on level count (default 8)
             if ~isfield(options, 'DownsampleStrategy'); options.DownsampleStrategy = 'XY only'; end
             if ~isfield(options, 'MinLevelSize');       options.MinLevelSize = 256; end
             if ~isfield(options, 'MaxLevels');          options.MaxLevels = 8; end
@@ -873,9 +873,9 @@ classdef Zarr3Saver < io.savers.BaseSaver
             %   - Updated ``scale`` per pyramid level from new ``pixSize``
             %
             % Input Arguments:
-            %   - **zarrPath** — [char] local path to the zarr3 root folder
-            %   - **pixSize** — [struct] with fields ``.x``, ``.y``, ``.z``
-            %   - **boundingBox** — [1x6 double] ``[xmin xmax ymin ymax zmin zmax]``
+            %   - **zarrPath** - [char] local path to the zarr3 root folder
+            %   - **pixSize** - [struct] with fields ``.x``, ``.y``, ``.z``
+            %   - **boundingBox** - [1x6 double] ``[xmin xmax ymin ymax zmin zmax]``
             %
             % Output Arguments:
             %   (none)
@@ -908,7 +908,7 @@ classdef Zarr3Saver < io.savers.BaseSaver
 
                 if isempty(ms) || ~isfield(ms, 'datasets')
                     warning('io:Zarr3Saver:patchMetadata:noMultiscales', ...
-                        'patchMetadata: no multiscales in %s — skipped.', zarrPath);
+                        'patchMetadata: no multiscales in %s - skipped.', zarrPath);
                     return;
                 end
 
@@ -1075,9 +1075,9 @@ classdef Zarr3Saver < io.savers.BaseSaver
         function result = reduceZBuffer(bufferCell, method, imgClass, Yl, Xl, C)
             % REDUCEZBUFFER - collapse a cell array of Z-slices into one output slice.
             %
-            % 'mode'   — majority vote per spatial position (for categorical labels).
-            % 'median' — median per spatial position (noise-robust, for images).
-            % All other methods — arithmetic mean cast to imgClass.
+            % 'mode'   - majority vote per spatial position (for categorical labels).
+            % 'median' - median per spatial position (noise-robust, for images).
+            % All other methods - arithmetic mean cast to imgClass.
             if ismember(method, {'mode', 'median'})
                 stacked   = cat(4, bufferCell{:});          % [Yl Xl C nAccum]
                 flat      = reshape(stacked, [], numel(bufferCell));

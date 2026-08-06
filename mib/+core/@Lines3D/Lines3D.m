@@ -10,27 +10,27 @@ classdef Lines3D < matlab.mixin.Copyable
         G
         % a graph with lines.
         %
-        % - ``.Edges`` — a table containing information about edges of the graph:
+        % - ``.Edges`` - a table containing information about edges of the graph:
         %
-        %   - ``.EndNodes`` — connectivity table ``[edgeId][Node1 Node2]``, each row defines an edge
+        %   - ``.EndNodes`` - connectivity table ``[edgeId][Node1 Node2]``, each row defines an edge
         %     with indices of nodes that form the edge
-        %   - ``.Edges`` — matrix with coordinates of the edges, ``[edgeId][x1 y1 z1 x2 y2 z2]``, IN PHYSICAL UNITS
-        %   - ``.Weight`` — weights of edges
-        %   - ``.Length`` — length of nodes, IN PHYSICAL UNITS
+        %   - ``.Edges`` - matrix with coordinates of the edges, ``[edgeId][x1 y1 z1 x2 y2 z2]``, IN PHYSICAL UNITS
+        %   - ``.Weight`` - weights of edges
+        %   - ``.Length`` - length of nodes, IN PHYSICAL UNITS
         %
-        % - ``.Nodes`` — a table containing information about nodes of the graph:
+        % - ``.Nodes`` - a table containing information about nodes of the graph:
         %
-        %   - ``.PointsXYZ`` — coordinates of nodes ``[NodeId][x, y, z]`` IN PHYSICAL UNITS;
+        %   - ``.PointsXYZ`` - coordinates of nodes ``[NodeId][x, y, z]`` IN PHYSICAL UNITS;
         %     to recalculate from pixels to imaging units use ``mibImage.convertPixelsToUnits``
-        %   - ``.TreeName`` — a cell array where each node has the name of the tree
+        %   - ``.TreeName`` - a cell array where each node has the name of the tree
         %     to which the node belongs, ``[NodeId]{'TreeName'}``
-        %   - ``.NodeName`` — a cell array with names for the nodes, ``[NodeId]{'NodeName'}``
-        %   - ``.Radius`` — a vector with radii of nodes
-        %   - ``.Properties.VariableUnits`` — a cell array with units for each variable;
+        %   - ``.NodeName`` - a cell array with names for the nodes, ``[NodeId]{'NodeName'}``
+        %   - ``.Radius`` - a vector with radii of nodes
+        %   - ``.Properties.VariableUnits`` - a cell array with units for each variable;
         %     when coordinates are 'pixels', MIB suggests recomputing them to image units
-        %   - ``.Properties.UserData.pixSize`` — a structure with pixSize of the underlying dataset
-        %     (``.x``, ``.y``, ``.z`` — resolution in um/px)
-        %   - ``.Properties.UserData.BoundingBox`` — a vector with the bounding box information
+        %   - ``.Properties.UserData.pixSize`` - a structure with pixSize of the underlying dataset
+        %     (``.x``, ``.y``, ``.z`` - resolution in um/px)
+        %   - ``.Properties.UserData.BoundingBox`` - a vector with the bounding box information
         %     ``[xmin, width, ymin, height, zmin, depth]``
         %
         activeNodeId = [];
@@ -111,35 +111,35 @@ classdef Lines3D < matlab.mixin.Copyable
             % Initializes a Lines3D container with a graph of 3D nodes and edges.
             %
             % Input Arguments:
-            %   - **Gin** — *(optional)* [graph] a MATLAB ``graph`` object with nodes and edges; must have the following structure:
+            %   - **Gin** - *(optional)* [graph] a MATLAB ``graph`` object with nodes and edges; must have the following structure:
             %
-            %     - ``.Nodes`` — table containing node information:
+            %     - ``.Nodes`` - table containing node information:
             %
-            %       - ``.PointsXYZ`` — coordinates of nodes ``[NodeId][x, y, z]`` IN PHYSICAL UNITS; use ``mibImage.convertPixelsToUnits`` to convert from pixels
-            %       - ``.TreeName`` — cell array with tree name for each node
-            %       - ``.NodeName`` — *(optional)* cell array with individual node names
-            %       - ``.Radius`` — *(optional)* vector with node radii
+            %       - ``.PointsXYZ`` - coordinates of nodes ``[NodeId][x, y, z]`` IN PHYSICAL UNITS; use ``mibImage.convertPixelsToUnits`` to convert from pixels
+            %       - ``.TreeName`` - cell array with tree name for each node
+            %       - ``.NodeName`` - *(optional)* cell array with individual node names
+            %       - ``.Radius`` - *(optional)* vector with node radii
             %
-            %     - ``.Edges`` — table containing edge information:
+            %     - ``.Edges`` - table containing edge information:
             %
-            %       - ``.EndNodes`` — connectivity table ``[edgeId][Node1 Node2]`` defining connected node pairs
-            %       - ``.Weight`` — *(optional)* weights of edges
-            %       - ``.Length`` — *(optional)* length of edges, IN PHYSICAL UNITS
+            %       - ``.EndNodes`` - connectivity table ``[edgeId][Node1 Node2]`` defining connected node pairs
+            %       - ``.Weight`` - *(optional)* weights of edges
+            %       - ``.Length`` - *(optional)* length of edges, IN PHYSICAL UNITS
             %
-            %     - ``.Nodes.Properties.VariableUnits`` — cell array indicating units for each variable; specify ``'pixel'`` when coordinates are in pixels
-            %     - ``.Nodes.Properties.UserData.pixSize`` — struct with pixel size fields ``.x``, ``.y``, ``.z``, ``.units``
-            %     - ``.Nodes.Properties.UserData.BoundingBox`` — vector ``[xmin, width, ymin, height, zmin, depth]``
+            %     - ``.Nodes.Properties.VariableUnits`` - cell array indicating units for each variable; specify ``'pixel'`` when coordinates are in pixels
+            %     - ``.Nodes.Properties.UserData.pixSize`` - struct with pixel size fields ``.x``, ``.y``, ``.z``, ``.units``
+            %     - ``.Nodes.Properties.UserData.BoundingBox`` - vector ``[xmin, width, ymin, height, zmin, depth]``
             %
-            %   - **activeNodeId** — *(optional)* [numeric] index of the node to set as active; can be ``[]``
-            %   - **options** — *(optional)* [struct] display and rendering settings:
+            %   - **activeNodeId** - *(optional)* [numeric] index of the node to set as active; can be ``[]``
+            %   - **options** - *(optional)* [struct] display and rendering settings:
             %
-            %     - ``.edgeColor`` — [1×3 numeric] color of edges ``[R, G, B]``, range 0–1 (default: ``[1.000, 0.800, 0.502]``)
-            %     - ``.edgeThickness`` — [numeric] thickness of edges (default: ``2``)
-            %     - ``.nodeColor`` — [1×3 numeric] color of nodes ``[R, G, B]``, range 0–1 (default: ``[1.0000, 1.0000, 0]``)
-            %     - ``.nodeActiveColor`` — [1×3 numeric] color of the active node ``[R, G, B]``, range 0–1 (default: ``[1.0000, 0.0000, 0]``)
-            %     - ``.nodeRadius`` — [numeric] radius of nodes (default: ``5``)
+            %     - ``.edgeColor`` - [1×3 numeric] color of edges ``[R, G, B]``, range 0-1 (default: ``[1.000, 0.800, 0.502]``)
+            %     - ``.edgeThickness`` - [numeric] thickness of edges (default: ``2``)
+            %     - ``.nodeColor`` - [1×3 numeric] color of nodes ``[R, G, B]``, range 0-1 (default: ``[1.0000, 1.0000, 0]``)
+            %     - ``.nodeActiveColor`` - [1×3 numeric] color of the active node ``[R, G, B]``, range 0-1 (default: ``[1.0000, 0.0000, 0]``)
+            %     - ``.nodeRadius`` - [numeric] radius of nodes (default: ``5``)
             %
-            % **Example 1** — create a simple graph with points in pixels:
+            % **Example 1** - create a simple graph with points in pixels:
             %
             %   .. code-block:: matlab
             %
@@ -156,7 +156,7 @@ classdef Lines3D < matlab.mixin.Copyable
             %       G.Nodes.Properties.UserData.BoundingBox = obj.mibModel.I{obj.mibModel.id}.getBoundingBox();
             %       obj = core.Lines3D(G);
             %
-            % **Example 2** — create a graph with two trees:
+            % **Example 2** - create a graph with two trees:
             %
             %   .. code-block:: matlab
             %

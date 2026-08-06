@@ -12,17 +12,17 @@ function result = deleteSlice(obj, sliceNumbers, orient, options)
 % dimension-related properties.
 %
 % Input Arguments:
-%   - **sliceNumbers** — index or index vector of slices to delete
-%   - **orient** — *(optional)* dimension to operate on:
+%   - **sliceNumbers** - index or index vector of slices to delete
+%   - **orient** - *(optional)* dimension to operate on:
 %     ``1`` = height (y), ``2`` = width (x), ``3`` = depth (z),
 %     ``5`` = time (t). Default: ``obj.orientation``
-%   - **options** — *(optional)* struct with fields:
+%   - **options** - *(optional)* struct with fields:
 %
-%     - ``.showWaitbar`` — logical; **true** (default) shows a progress waitbar
-%     - ``.ParentFigure`` — parent figure handle for the waitbar
+%     - ``.showWaitbar`` - logical; **true** (default) shows a progress waitbar
+%     - ``.ParentFigure`` - parent figure handle for the waitbar
 %
 % Output Arguments:
-%   - **result** — ``1`` on success, ``0`` on failure
+%   - **result** - ``1`` on success, ``0`` on failure
 %
 % Usage:
 %   **Example 1**
@@ -97,16 +97,16 @@ if ~isempty(labelsList)
     for sliceId = 1:numel(slicesSorted)
         currSlice = slicesSorted(sliceId);
         switch orient
-            case 3  % depth (z) — labelPositions(:,1) = z
+            case 3  % depth (z) - labelPositions(:,1) = z
                 labelPositions(labelPositions(:,1) >= currSlice, 1) = ...
                     labelPositions(labelPositions(:,1) >= currSlice, 1) - 1;
-            case 1  % height (y) — labelPositions(:,3) = y
+            case 1  % height (y) - labelPositions(:,3) = y
                 labelPositions(labelPositions(:,3) >= currSlice, 3) = ...
                     labelPositions(labelPositions(:,3) >= currSlice, 3) - 1;
-            case 2  % width (x) — labelPositions(:,2) = x
+            case 2  % width (x) - labelPositions(:,2) = x
                 labelPositions(labelPositions(:,2) >= currSlice, 2) = ...
                     labelPositions(labelPositions(:,2) >= currSlice, 2) - 1;
-            case 5  % time (t) — labelPositions(:,4) = t
+            case 5  % time (t) - labelPositions(:,4) = t
                 labelPositions(labelPositions(:,4) >= currSlice, 4) = ...
                     labelPositions(labelPositions(:,4) >= currSlice, 4) - 1;
         end

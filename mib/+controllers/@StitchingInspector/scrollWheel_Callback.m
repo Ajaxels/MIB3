@@ -7,18 +7,18 @@ function scrollWheel_Callback(obj, evnt)
 %      obj.scrollWheel_Callback(evnt)
 %
 % While ``Shift`` is held (the hover ROI box is showing), the wheel adjusts
-% ``ROIsizeSpinner`` — scroll up = larger box — clamped to the spinner's
+% ``ROIsizeSpinner`` - scroll up = larger box - clamped to the spinner's
 % limits, and the box under the cursor resizes live.
 %
 % Without ``Shift``, the wheel ZOOMS the pair view about the cursor (scroll
 % up = zoom in). Zooming out beyond the rendered extent snaps back to fit;
-% the zoom survives re-renders of the same seam (nudges, drags, fixes — see
+% the zoom survives re-renders of the same seam (nudges, drags, fixes - see
 % :func:`renderPairView`) and is reset by :func:`fitView_Callback` (``F``)
 % or by selecting another seam. Wheel events outside the pair view are
 % ignored.
 %
 % Input Arguments:
-%   - **evnt** — ScrollWheelData from ``WindowScrollWheelFcn``
+%   - **evnt** - ScrollWheelData from ``WindowScrollWheelFcn``
 %     (``VerticalScrollCount`` > 0 = scroll down)
 %
 

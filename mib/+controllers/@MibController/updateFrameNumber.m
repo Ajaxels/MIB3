@@ -13,29 +13,29 @@ function updateFrameNumber(obj, BatchOptIn)
 % frameNumber_Callback, which updates the slider and redraws the image.
 %
 % Input Arguments:
-%   - **BatchOptIn** — *(optional)* structure for batch processing mode; when NaN,
+%   - **BatchOptIn** - *(optional)* structure for batch processing mode; when NaN,
 %     returns default options via the "SyncBatch" event
 %
-%     - ``.FrameNumber`` — [char, default ``'1'``] frame/time number to display as a string;
+%     - ``.FrameNumber`` - [char, default ``'1'``] frame/time number to display as a string;
 %       use ``'0'`` to jump to the last time point of the dataset
 %
 % Output Arguments:
 %   (none)
 %
-% **Example 1** — interactive call (reads from the frame-number widget):
+% **Example 1** - interactive call (reads from the frame-number widget):
 %
 %   .. code-block:: matlab
 %
 %      obj.updateFrameNumber();
 %
-% **Example 2** — batch call: jump to frame 3:
+% **Example 2** - batch call: jump to frame 3:
 %
 %   .. code-block:: matlab
 %
 %      BatchOpt.FrameNumber = '3';
 %      obj.updateFrameNumber(BatchOpt);
 %
-% **Example 3** — batch call: jump to the last frame:
+% **Example 3** - batch call: jump to the last frame:
 %
 %   .. code-block:: matlab
 %

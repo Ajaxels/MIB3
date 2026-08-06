@@ -18,7 +18,7 @@ function sliceNumberSlider_Callback(obj, sliderValue)
 % is updated to include the slice/layer name.
 %
 % Input Arguments:
-%   - **sliderValue** *(optional)* — [numeric] slider position value;
+%   - **sliderValue** *(optional)* - [numeric] slider position value;
 %     if omitted, reads from ``obj.handles.sliceNumberSlider.Value``
 %
 % Output Arguments:

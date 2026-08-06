@@ -10,15 +10,15 @@ function Graph = calculateLengthOfNodes(obj, Graph, options)
 % the ``.Length`` field based on node coordinates and optional filters.
 %
 % Input Arguments:
-%   - **Graph** — [graph] a MATLAB graph object with node and edge information
-%   - **options** — *(optional)* [struct] specifies which edges to recalculate:
+%   - **Graph** - [graph] a MATLAB graph object with node and edge information
+%   - **options** - *(optional)* [struct] specifies which edges to recalculate:
 %
-%     - ``.nodeId`` — [numeric vector] node IDs; edges incident to these nodes are recalculated
-%     - ``.edgeId`` — [numeric vector] edge IDs to recalculate (alternative to nodeId)
+%     - ``.nodeId`` - [numeric vector] node IDs; edges incident to these nodes are recalculated
+%     - ``.edgeId`` - [numeric vector] edge IDs to recalculate (alternative to nodeId)
 %     - If neither option is provided, all edges are recalculated
 %
 % Output Arguments:
-%   - **Graph** — [graph] the input graph with ``.Length`` field populated or updated
+%   - **Graph** - [graph] the input graph with ``.Length`` field populated or updated
 %
 
 if obj.noTrees == 0; return; end

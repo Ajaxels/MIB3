@@ -38,8 +38,8 @@ classdef RenameShuffle < handle
             % or its view has been destroyed.
             %
             % Input Arguments:
-            %   - **obj** — :class:`controllers.RenameShuffle` instance.
-            %   - **evnt** — event data from the model.
+            %   - **obj** - :class:`controllers.RenameShuffle` instance.
+            %   - **evnt** - event data from the model.
             if ~isvalid(obj) || isempty(obj.view) || ~isvalid(obj.view.gui)
                 for i = 1:numel(obj.listener); delete(obj.listener{i}); end
                 return;
@@ -65,7 +65,7 @@ classdef RenameShuffle < handle
             %      obj = controllers.RenameShuffle(mibModel)
             %
             % Input Arguments:
-            %   - **mibModel** — handle to :class:`models.MibModel`.
+            %   - **mibModel** - handle to :class:`models.MibModel`.
 
             obj.mibModel = mibModel;
             obj.outputDir = fullfile(obj.mibModel.currentDirectory, 'Shuffled');

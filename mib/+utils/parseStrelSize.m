@@ -15,15 +15,15 @@ function se_size = parseStrelSize(strelSizeStr, is3D, pixSizeX, pixSizeZ)
 % radius and the Z radius (3D) or X radius (2D anisotropic) explicitly.
 %
 % Input Arguments:
-%   - **strelSizeStr** — char, the ``StrelSize`` value, e.g. ``'5'`` or ``'5 2'``
-%   - **is3D** — logical, true for a 3D (volumetric) element
-%   - **pixSizeX** — *(optional)* numeric, X voxel size (only used for a single
+%   - **strelSizeStr** - char, the ``StrelSize`` value, e.g. ``'5'`` or ``'5 2'``
+%   - **is3D** - logical, true for a 3D (volumetric) element
+%   - **pixSizeX** - *(optional)* numeric, X voxel size (only used for a single
 %     value in 3D); default 1
-%   - **pixSizeZ** — *(optional)* numeric, Z voxel size (only used for a single
+%   - **pixSizeZ** - *(optional)* numeric, Z voxel size (only used for a single
 %     value in 3D); default 1
 %
 % Output Arguments:
-%   - **se_size** — [1x2 double] ``[XYradius, Zradius]`` (3D) or ``[Yradius, Xradius]`` (2D),
+%   - **se_size** - [1x2 double] ``[XYradius, Zradius]`` (3D) or ``[Yradius, Xradius]`` (2D),
 %     clipped at 0
 %
 

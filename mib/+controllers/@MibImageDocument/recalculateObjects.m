@@ -16,7 +16,7 @@ function recalculateObjects(obj)
 % Output Arguments:
 %   (none)
 %
-% **Example** — recalculate object stats:
+% **Example** - recalculate object stats:
 %
 %   .. code-block:: matlab
 %

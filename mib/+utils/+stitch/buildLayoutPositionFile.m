@@ -15,23 +15,23 @@ function layout = buildLayoutPositionFile(positionFilePath, options)
 % file; they are stored 1-based in ``nomOrigin`` (``[y x z]``, z in SLICES).
 %
 % Distinct Z values are additionally ranked into ``zLayer`` 1..K in ascending
-% order — ``zLayer`` drives layer-adjacency logic (``findNeighborPairs``),
+% order - ``zLayer`` drives layer-adjacency logic (``findNeighborPairs``),
 % while ``nomOrigin(3)`` carries the actual nominal slice coordinate used by
 % the solver and canvas.
 %
 % A ``filename`` entry may name a single image file OR a FOLDER holding the
-% tile's Z-stack (one image per slice) — this is auto-detected per entry by
+% tile's Z-stack (one image per slice) - this is auto-detected per entry by
 % ``utils.stitch.resolveTileEntry``, so folder Z-stack tiles work here exactly
 % as in the grid and filename-pattern sources.
 %
 % Input Arguments:
-%   - **positionFilePath** — [char] full path to the position file
-%   - **options** *(optional)* — struct (reserved; no fields used currently)
+%   - **positionFilePath** - [char] full path to the position file
+%   - **options** *(optional)* - struct (reserved; no fields used currently)
 %
 % Output Arguments:
-%   - **layout** — struct array per contract (see ``buildLayoutGrid`` for field list)
+%   - **layout** - struct array per contract (see ``buildLayoutGrid`` for field list)
 %
-% **Example** — load a comma-delimited position file:
+% **Example** - load a comma-delimited position file:
 %
 %   .. code-block:: matlab
 %
@@ -162,7 +162,7 @@ end
 
 % =========================================================================
 function tf = isAbsolutePath(pathStr)
-% ISABSOLUTEPATH - Pure-MATLAB absolute-path check (no Java — required for
+% ISABSOLUTEPATH - Pure-MATLAB absolute-path check (no Java - required for
 % compiled standalone builds). Absolute forms: Windows drive roots ('C:\',
 % 'C:/'), UNC shares ('\\server\...'), and POSIX roots ('/...').
 tf = ~isempty(regexp(pathStr, '^([A-Za-z]:[\\/]|\\\\|/)', 'once'));

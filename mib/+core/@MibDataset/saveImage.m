@@ -15,49 +15,49 @@ function fnOut = saveImage(obj, layerType, filename, options)
 %   1. Validate that the requested layer exists (e.g., mask must exist).
 %   2. Inject dataset-level metadata that the layer objects lack:
 %
-%      - ``.pixSize`` — from ``obj.image.pixSize``
-%      - ``.boundingBox`` — from ``obj.image.boundingBox``
-%      - ``.layerType`` — for format-dispatch (AmiraMesh, HDF5, etc.)
+%      - ``.pixSize`` - from ``obj.image.pixSize``
+%      - ``.boundingBox`` - from ``obj.image.boundingBox``
+%      - ``.layerType`` - for format-dispatch (AmiraMesh, HDF5, etc.)
 %
 %   3. Delegate to the appropriate layer object:
 %
-%      - ``'image'`` — routes to ``obj.image.save(filename, options)``
-%      - ``'labels'`` — routes to ``obj.labels.save(filename, options)``
-%      - ``'mask'`` — directly assemble data + dispatch via ``SaverFactory`` (stored as raw numeric array, not ``MibImage`` subclass)
+%      - ``'image'`` - routes to ``obj.image.save(filename, options)``
+%      - ``'labels'`` - routes to ``obj.labels.save(filename, options)``
+%      - ``'mask'`` - directly assemble data + dispatch via ``SaverFactory`` (stored as raw numeric array, not ``MibImage`` subclass)
 %
-% This method works WITHOUT a MibModel — it is the natural entry point
+% This method works WITHOUT a MibModel - it is the natural entry point
 % for scripted pipelines that load or create a MibDataset object directly.
 %
 % Input Arguments:
-%   - **layerType** — [char] which layer to save:
+%   - **layerType** - [char] which layer to save:
 %
-%     - ``'image'`` — pixel intensity data (``obj.image``)
-%     - ``'labels'`` — segmentation model (``obj.labels``)
-%     - ``'mask'`` — binary mask layer (``obj.mask``)
+%     - ``'image'`` - pixel intensity data (``obj.image``)
+%     - ``'labels'`` - segmentation model (``obj.labels``)
+%     - ``'mask'`` - binary mask layer (``obj.mask``)
 %
-%   - **filename** — [char] full output path including extension (e.g., ``'/data/stack.tif'``,
+%   - **filename** - [char] full output path including extension (e.g., ``'/data/stack.tif'``,
 %     ``'C:\data\Labels_stack.model'``); when ``[]`` or ``''``, falls back to dataset's own filename
 %     with appropriate prefix/suffix
-%   - **options** *(optional)* — [struct] passed through to the layer saver:
+%   - **options** *(optional)* - [struct] passed through to the layer saver:
 %
-%     - ``.Format`` — [char] format string; inferred from extension when absent
-%     - ``.Saving3DPolicy`` — [char] ``'3D stack'`` (default) or ``'2D sequence'``
-%     - ``.showWaitbar`` — [logical] default ``true``
-%     - ``.silent`` — [logical] default ``false``
-%     - ``.overwrite`` — [logical] default ``true``
-%     - ``.FilenameGenerator`` — [char] filename policy for 2-D sequences
-%     - ``.MaterialIndex`` — [numeric or ``[]``] for labels: ``[]`` = all materials, integer = single material
-%     - ``.Compression`` — [char] compression type (TIF/JPG)
-%     - ``.Quality`` — [numeric] JPEG quality ``0–100``
-%     - ``.ParentFigure`` — [handle] main MIB application window; injected automatically by ``MibModel.saveImage()`` when called from GUI; omit for standalone/scripted use
-%     - ``.mibPath`` — [char] path to MIB installation directory; used by savers for resource lookup; injected automatically by ``MibModel.saveImage()``
-%     - ``.MaskColor`` — [numeric] mask overlay RGB colour ``[R G B]`` in range ``[0–1]`` (default: ``[1 0 1]``); mask-specific
-%     - ``.annotations`` — [struct] with fields ``.labelText``, ``.labelValue``, ``.labelPosition`` to include annotation data in ``.model`` files; labels-specific
+%     - ``.Format`` - [char] format string; inferred from extension when absent
+%     - ``.Saving3DPolicy`` - [char] ``'3D stack'`` (default) or ``'2D sequence'``
+%     - ``.showWaitbar`` - [logical] default ``true``
+%     - ``.silent`` - [logical] default ``false``
+%     - ``.overwrite`` - [logical] default ``true``
+%     - ``.FilenameGenerator`` - [char] filename policy for 2-D sequences
+%     - ``.MaterialIndex`` - [numeric or ``[]``] for labels: ``[]`` = all materials, integer = single material
+%     - ``.Compression`` - [char] compression type (TIF/JPG)
+%     - ``.Quality`` - [numeric] JPEG quality ``0-100``
+%     - ``.ParentFigure`` - [handle] main MIB application window; injected automatically by ``MibModel.saveImage()`` when called from GUI; omit for standalone/scripted use
+%     - ``.mibPath`` - [char] path to MIB installation directory; used by savers for resource lookup; injected automatically by ``MibModel.saveImage()``
+%     - ``.MaskColor`` - [numeric] mask overlay RGB colour ``[R G B]`` in range ``[0-1]`` (default: ``[1 0 1]``); mask-specific
+%     - ``.annotations`` - [struct] with fields ``.labelText``, ``.labelValue``, ``.labelPosition`` to include annotation data in ``.model`` files; labels-specific
 %
 % Output Arguments:
-%   - **fnOut** — [char or cell] saved path(s); ``[]`` on failure
+%   - **fnOut** - [char or cell] saved path(s); ``[]`` on failure
 %
-% **Example 1** — Save image layer as a 3-D TIFF stack:
+% **Example 1** - Save image layer as a 3-D TIFF stack:
 %
 %   .. code-block:: matlab
 %
@@ -71,7 +71,7 @@ function fnOut = saveImage(obj, layerType, filename, options)
 %       fnOut = obj.mibModel.I{BatchOpt.id}.saveImage('image', '/output/stack.tif', opts);
 %       fprintf('Saved: %s\n', fnOut);
 %
-% **Example 2** — Save segmentation model in MIB native format:
+% **Example 2** - Save segmentation model in MIB native format:
 %
 %   .. code-block:: matlab
 %
@@ -83,7 +83,7 @@ function fnOut = saveImage(obj, layerType, filename, options)
 %       opts.mibPath        = obj.mibPath;
 %       fnOut = obj.mibModel.I{BatchOpt.id}.saveImage('labels', '/output/Labels_stack.model', opts);
 %
-% **Example 3** — Save binary mask as TIFF 2-D sequence:
+% **Example 3** - Save binary mask as TIFF 2-D sequence:
 %
 %   .. code-block:: matlab
 %
@@ -98,7 +98,7 @@ function fnOut = saveImage(obj, layerType, filename, options)
 %       opts.mibPath        = obj.mibPath;
 %       fnOut = obj.mibModel.I{BatchOpt.id}.saveImage('mask', '/output/Mask_slice.tif', opts);
 %
-% **Example 4** — Save labels, export single material only:
+% **Example 4** - Save labels, export single material only:
 %
 %   .. code-block:: matlab
 %
@@ -111,7 +111,7 @@ function fnOut = saveImage(obj, layerType, filename, options)
 %       opts.mibPath        = obj.mibPath;
 %       fnOut = obj.mibModel.I{BatchOpt.id}.saveImage('labels', '/output/Labels_mat2.tif', opts);
 %
-% **Example 5** — Save labels with annotations:
+% **Example 5** - Save labels with annotations:
 %
 %   .. code-block:: matlab
 %
@@ -125,7 +125,7 @@ function fnOut = saveImage(obj, layerType, filename, options)
 %       opts.mibPath        = obj.mibPath;
 %       fnOut = obj.mibModel.I{BatchOpt.id}.saveImage('labels', '/output/Labels_annotated.model', opts);
 %
-% **Example 6** — Fall back on dataset filename when none provided:
+% **Example 6** - Fall back on dataset filename when none provided:
 %
 %   .. code-block:: matlab
 %
@@ -186,7 +186,7 @@ end
 switch lower(layerType)
 
     case 'image'
-        % Delegate to MibImage.save() — pixSize already in options
+        % Delegate to MibImage.save() - pixSize already in options
         fnOut = obj.image.save(filename, options);
 
     case 'labels'
@@ -341,13 +341,13 @@ function filename = resolveFallbackFilename(obj, layerType, options)
 % layer-appropriate name using a fixed naming convention.
 %
 % Input Arguments:
-%   obj       — MibDataset instance
-%   layerType — (char) 'image' | 'labels' | 'mask'
-%   options   — (struct) forwarded options; only .Format is inspected for
+%   obj       - MibDataset instance
+%   layerType - (char) 'image' | 'labels' | 'mask'
+%   options   - (struct) forwarded options; only .Format is inspected for
 %   the 'image' case, to pick the correct file extension
 %
 % Output Arguments:
-%   filename  — (char) resolved absolute path, or '' if layerType is unknown
+%   filename  - (char) resolved absolute path, or '' if layerType is unknown
 %
 %   Naming conventions applied:
 %   'image'  → <dir>/<name>.<ext>  where <ext> is extracted from

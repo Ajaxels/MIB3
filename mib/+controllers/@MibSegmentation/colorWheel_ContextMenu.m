@@ -11,31 +11,31 @@ function colorWheel_ContextMenu(obj, menuEntry, selectedData)
 % and MATLAB colormaps (Jet, HSV).
 %
 % Input Arguments:
-%   - **menuEntry** — [matlab.ui.container.Menu] handle to the pressed context menu entry; scheme identifier from ``menuEntry.Tag``
-%   - **selectedData** — [matlab.ui.eventdata.MenuSelectedData] event data containing the source button object (``selectedData.ContextObject``)
+%   - **menuEntry** - [matlab.ui.container.Menu] handle to the pressed context menu entry; scheme identifier from ``menuEntry.Tag``
+%   - **selectedData** - [matlab.ui.eventdata.MenuSelectedData] event data containing the source button object (``selectedData.ContextObject``)
 %
 % Output Arguments:
 %   None
 %
 % **Available color schemes (menuEntry.Tag):**
-%   - ``'colorWheelContextSchemeDef'`` — default 6-color scheme
-%   - ``'colorWheelContextSchemeDist'`` — distinct colors (20 colors)
-%   - ``'colorWheelContextSchemeRandom'`` — random color generation
-%   - ``'colorWheelContextSchemeSwap'`` — swap current colors
-%   - ``'colorWheelContextSchemeQMC'`` — qualitative, Monte Carlo Half-Baked (3–12 colors)
-%   - ``'colorWheelContextSchemeDDD'`` — diverging, Deep Bronze → Deep Teal (3–11 colors)
-%   - ``'colorWheelContextSchemeDRK'`` — diverging, Ripe Plum → Kaitoke Green (3–11 colors)
-%   - ``'colorWheelContextSchemeDBG'`` — diverging, Bordeaux → Green Vogue (3–11 colors)
-%   - ``'colorWheelContextSchemeDCB'`` — diverging, Carmine → Bay of Many (3–11 colors)
-%   - ``'colorWheelContextSchemeSKG'`` — sequential, Kaitoke Green (3–9 colors)
-%   - ``'colorWheelContextSchemeSCB'`` — sequential, Catalina Blue (3–9 colors)
-%   - ``'colorWheelContextSchemeSM'`` — sequential, Maroon (3–9 colors)
-%   - ``'colorWheelContextSchemeSAB'`` — sequential, Astronaut Blue (3–9 colors)
-%   - ``'colorWheelContextSchemeSD'`` — sequential, Downriver (3–9 colors)
-%   - ``'colorWheelContextSchemeMJ'`` — MATLAB colormap: Jet
-%   - ``'colorWheelContextSchemeMH'`` — MATLAB colormap: HSV
-%   - ``'colorWheelContextSchemeSetDef'`` — set current scheme as default
-%   - ``'colorWheelContextSchemeUpdate'`` — update colors from default scheme
+%   - ``'colorWheelContextSchemeDef'`` - default 6-color scheme
+%   - ``'colorWheelContextSchemeDist'`` - distinct colors (20 colors)
+%   - ``'colorWheelContextSchemeRandom'`` - random color generation
+%   - ``'colorWheelContextSchemeSwap'`` - swap current colors
+%   - ``'colorWheelContextSchemeQMC'`` - qualitative, Monte Carlo Half-Baked (3-12 colors)
+%   - ``'colorWheelContextSchemeDDD'`` - diverging, Deep Bronze → Deep Teal (3-11 colors)
+%   - ``'colorWheelContextSchemeDRK'`` - diverging, Ripe Plum → Kaitoke Green (3-11 colors)
+%   - ``'colorWheelContextSchemeDBG'`` - diverging, Bordeaux → Green Vogue (3-11 colors)
+%   - ``'colorWheelContextSchemeDCB'`` - diverging, Carmine → Bay of Many (3-11 colors)
+%   - ``'colorWheelContextSchemeSKG'`` - sequential, Kaitoke Green (3-9 colors)
+%   - ``'colorWheelContextSchemeSCB'`` - sequential, Catalina Blue (3-9 colors)
+%   - ``'colorWheelContextSchemeSM'`` - sequential, Maroon (3-9 colors)
+%   - ``'colorWheelContextSchemeSAB'`` - sequential, Astronaut Blue (3-9 colors)
+%   - ``'colorWheelContextSchemeSD'`` - sequential, Downriver (3-9 colors)
+%   - ``'colorWheelContextSchemeMJ'`` - MATLAB colormap: Jet
+%   - ``'colorWheelContextSchemeMH'`` - MATLAB colormap: HSV
+%   - ``'colorWheelContextSchemeSetDef'`` - set current scheme as default
+%   - ``'colorWheelContextSchemeUpdate'`` - update colors from default scheme
 %
 
 arguments (Input)

@@ -10,7 +10,7 @@ classdef BioFormatsVirtualLoader < handle
 % release the file handle when the virtual dataset is closed.
 %
 % Unlike the batch loaders in +io/+loaders/ this class does NOT
-% implement BaseImageLoader — it is stateful and designed for repeated
+% implement BaseImageLoader - it is stateful and designed for repeated
 % single-plane reads rather than single full-dataset loads.
 %
 % Usage example:
@@ -19,7 +19,7 @@ classdef BioFormatsVirtualLoader < handle
 %
 %      loader = io.loaders.BioFormatsVirtualLoader('/data/stack.czi', 0, tempdir);
 %      planes = loader.readPlane([1 512], [1 512], 5, [1 2], 0, 'uint16');
-%      % planes is [512, 512, 2] — one tile per requested channel
+%      % planes is [512, 512, 2] - one tile per requested channel
 %      loader.close();
 
 properties (SetAccess = private)
@@ -43,12 +43,12 @@ methods
         %      obj = BioFormatsVirtualLoader(filename, seriesIndex, memoDir)
         %
         % Input Arguments:
-        %   - **filename** — [char] full path to the BioFormats-readable file
-        %   - **seriesIndex** — [numeric] 0-based series index
-        %   - **memoDir** — [char] directory for BioFormats Memoizer memo files
+        %   - **filename** - [char] full path to the BioFormats-readable file
+        %   - **seriesIndex** - [numeric] 0-based series index
+        %   - **memoDir** - [char] directory for BioFormats Memoizer memo files
         %
         % Output Arguments:
-        %   - **obj** — [BioFormatsVirtualLoader] new loader instance
+        %   - **obj** - [BioFormatsVirtualLoader] new loader instance
         %
 
         obj.filename    = filename;
@@ -69,15 +69,15 @@ methods
         % on all subsequent calls to this loader.
         %
         % Input Arguments:
-        %   - **Ylim** — [1x2 numeric] pixel row range ``[ymin ymax]`` (1-based, inclusive)
-        %   - **Xlim** — [1x2 numeric] pixel column range ``[xmin xmax]`` (1-based, inclusive)
-        %   - **planeId** — [numeric] 1-based z-plane index within this file/series
-        %   - **colChannel** — [1 x nC numeric] vector of 1-based colour channel indices
-        %   - **timepoint** — [numeric] 0-based time-point index (as used by getIndex)
-        %   - **dataClass** — [char] output class, e.g. ``'uint8'`` or ``'uint16'``
+        %   - **Ylim** - [1x2 numeric] pixel row range ``[ymin ymax]`` (1-based, inclusive)
+        %   - **Xlim** - [1x2 numeric] pixel column range ``[xmin xmax]`` (1-based, inclusive)
+        %   - **planeId** - [numeric] 1-based z-plane index within this file/series
+        %   - **colChannel** - [1 x nC numeric] vector of 1-based colour channel indices
+        %   - **timepoint** - [numeric] 0-based time-point index (as used by getIndex)
+        %   - **dataClass** - [char] output class, e.g. ``'uint8'`` or ``'uint16'``
         %
         % Output Arguments:
-        %   - **planes** — [nY x nX x nC numeric] array — one slice per requested channel
+        %   - **planes** - [nY x nX x nC numeric] array - one slice per requested channel
         %
 
         if isempty(obj.reader)
@@ -124,7 +124,7 @@ methods
     end
 
     function delete(obj)
-        % DELETE - Destructor — closes the Bio-Formats reader when the object is destroyed.
+        % DELETE - Destructor - closes the Bio-Formats reader when the object is destroyed.
         %
         % Syntax:
         %   .. code-block:: matlab

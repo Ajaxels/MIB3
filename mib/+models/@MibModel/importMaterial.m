@@ -9,7 +9,7 @@ function status = importMaterial(obj, BatchOptIn)
 % Loads a source model file, lets the user select a subset of its materials
 % (by index), resizes the source pixel array to the current dataset
 % dimensions (nearest-neighbour), then appends the selected materials as
-% new slots — names, colors, and voxels — into the active model using an
+% new slots - names, colors, and voxels - into the active model using an
 % overwrite merge policy (existing voxels at the import locations are
 % replaced by the source values).
 %
@@ -22,31 +22,31 @@ function status = importMaterial(obj, BatchOptIn)
 % reconstructed lazily by the level map.
 %
 % Input Arguments:
-%   - **BatchOptIn** — *(optional)* a structure for batch processing mode; when
+%   - **BatchOptIn** - *(optional)* a structure for batch processing mode; when
 %     NaN, returns a structure with default options via "SyncBatch" event
 %
-%     - ``.Filename`` — char, full path to the source model file; leave empty
+%     - ``.Filename`` - char, full path to the source model file; leave empty
 %       to open the file browser interactively [*default* ``''``]
-%     - ``.MaterialIndices`` — char, MATLAB-style index expression for the
+%     - ``.MaterialIndices`` - char, MATLAB-style index expression for the
 %       source materials to import (e.g. ``'1'``, ``'2:4'``, ``'1 3 5'``);
 %       leave empty to prompt interactively (or import all in batch mode)
 %       [*default* ``''``]
-%     - ``.showWaitbar`` — logical, show or not the progress dialog
+%     - ``.showWaitbar`` - logical, show or not the progress dialog
 %       [*default* ``true``]
-%     - ``.id`` — *(optional)*, dataset index 1-9, default = obj.getActiveId()
+%     - ``.id`` - *(optional)*, dataset index 1-9, default = obj.getActiveId()
 %
 %
 % Output Arguments:
-%   - **status** — logical, true when the import completed successfully
+%   - **status** - logical, true when the import completed successfully
 %
 % Usage:
-%   **Example 1** — interactive: file browser + material selection dialog
+%   **Example 1** - interactive: file browser + material selection dialog
 %
 %   .. code-block:: matlab
 %
 %      obj.mibModel.importMaterial();
 %
-%   **Example 2** — batch: import materials 1 and 3 from a specific file
+%   **Example 2** - batch: import materials 1 and 3 from a specific file
 %
 %   .. code-block:: matlab
 %
@@ -141,7 +141,7 @@ else
 end
 
 if isempty(BatchOpt.Filename)
-    % Interactive file browser — single-select
+    % Interactive file browser - single-select
     fileFilter = { ...
         '*.model',                'MIB model (*.model)'; ...
         '*.am',                   'Amira Mesh (*.am)'; ...
@@ -284,7 +284,7 @@ end
 %% Interactive material selection prompt
 
 if isempty(BatchOpt.MaterialIndices) && nSourceMaterials == 1
-    % Only one source material — import it directly without prompting
+    % Only one source material - import it directly without prompting
     BatchOpt.MaterialIndices = '1';
 elseif isempty(BatchOpt.MaterialIndices)
     % Build a display list of available source materials for the prompt body
@@ -365,7 +365,7 @@ end
 %
 % Standard/Virtual: the write grid is the full-resolution model
 % [height width depth].  BigData: pick the pyramid level whose resolution is
-% closest to the source, then write at that level — the write grid is the
+% closest to the source, then write at that level - the write grid is the
 % size getData63 returns for the level over the full-resolution extent.
 
 currentHeight = obj.I{id}.image.height;
@@ -384,11 +384,11 @@ if isBigData
     bigDataOptions.z = [1, currentDepth];
 
     % WSI safety net (warn-only): a coarse level is small, but a full-res import
-    % level on a gigapixel slide is large — warn once before reading it.
+    % level on a gigapixel slide is large - warn once before reading it.
     levelSizeYX = obj.I{id}.labels.modelLevelSizes(importLevel, 1:2);
     utils.warnLargeFullResRead(levelSizeYX(1), levelSizeYX(2));
 
-    % Read the current labels at the import level — this defines the exact write
+    % Read the current labels at the import level - this defines the exact write
     % grid (size after level-scale division + clamping).
     currentLevelLabels = obj.I{id}.labels.getData63('labels', 3, [], bigDataOptions);
     writeSize  = size(currentLevelLabels, 1:3);
@@ -489,7 +489,7 @@ if isBigData
     % import level + coarser and marked the touched tiles authoritative at that
     % level in the in-memory matLevel; finer levels stay virtual and reconstruct
     % on demand. Without writing the sidecar, reopening the model finds no level
-    % map and falls back to "all levels precise" (initLevelMapFallback) — which
+    % map and falls back to "all levels precise" (initLevelMapFallback) - which
     % reads the never-materialized finer level directly and shows the imported
     % material only on slices that happened to be viewed this session. Saving the
     % sidecar lets a reopen reconstruct every finer slice correctly.
@@ -514,7 +514,7 @@ eventdata = core.ToggleEventData({'ribbonModel', 'checkboxes'});
 notify(obj, 'UpdateGuiWidgets', eventdata);
 notify(obj, 'ShowImage');
 
-% Notify batch mode (remove id — not stored in SyncBatch)
+% Notify batch mode (remove id - not stored in SyncBatch)
 BatchOpt = rmfield(BatchOpt, 'id');
 eventdata = core.ToggleEventData(BatchOpt);
 notify(obj, 'SyncBatch', eventdata);

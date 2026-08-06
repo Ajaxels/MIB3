@@ -1,16 +1,16 @@
 classdef DeepCopyTest < matlab.unittest.TestCase
 % DEEPCOPYTEST - Unit tests for MibModel.deepCopyDataset.
 %
-% deepCopyDataset creates a fully independent copy of a MibDataset —
+% deepCopyDataset creates a fully independent copy of a MibDataset -
 % handle sub-properties (image, labels, mask, selection) are deep-copied,
 % so mutations to the original must not affect the copy and vice versa.
 %
 % Verification strategies:
-%   independence      — mutating the original image after copy must not change
+%   independence      - mutating the original image after copy must not change
 %                       the copy's image; mutating the copy must not change the
 %                       original
-%   dimensions match  — height, width, depth of copy equal the source
-%   install-in-slot   — deepCopyDataset(1, 2, opts) installs copy into I{2}
+%   dimensions match  - height, width, depth of copy equal the source
+%   install-in-slot   - deepCopyDataset(1, 2, opts) installs copy into I{2}
 
     methods (TestClassSetup)
         function addPaths(testCase)

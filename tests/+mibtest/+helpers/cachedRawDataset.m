@@ -9,8 +9,8 @@ function [imageVolume, labelVolume] = cachedRawDataset(spec)
 %   [imageVolume, labelVolume] = mibtest.helpers.cachedRawDataset(spec)
 %
 % Output:
-%   imageVolume  — uint8 [H W D C] as in spec.imageDims
-%   labelVolume  — uint8 [H W D]   as in spec.labelsDims
+%   imageVolume  - uint8 [H W D C] as in spec.imageDims
+%   labelVolume  - uint8 [H W D]   as in spec.labelsDims
 
 if ~isfolder(spec.cacheDir)
     mkdir(spec.cacheDir);

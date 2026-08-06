@@ -10,15 +10,15 @@ function listenerUpdateFileList(obj, src, evtData)
 % is triggered. Optionally highlights a specific filename in the list.
 %
 % Input Arguments:
-%   - **src** — [models.MibModel] model object that triggered the event
-%   - **evtData** — [core.ToggleEventData] event data with optional parameters:
+%   - **src** - [models.MibModel] model object that triggered the event
+%   - **evtData** - [core.ToggleEventData] event data with optional parameters:
 %
-%     - ``.Parameters.filename`` — *(optional)* [char] filename to highlight in the file list; when omitted, highlights the current dataset filename
+%     - ``.Parameters.filename`` - *(optional)* [char] filename to highlight in the file list; when omitted, highlights the current dataset filename
 %
 % Output Arguments:
 %   None
 %
-% **Example 1** — update file list and highlight specific file:
+% **Example 1** - update file list and highlight specific file:
 %
 %   .. code-block:: matlab
 %
@@ -26,7 +26,7 @@ function listenerUpdateFileList(obj, src, evtData)
 %      eventdata = core.ToggleEventData(Options);
 %      notify(obj.mibModel, 'UpdateFileList', eventdata)
 %
-% **Example 2** — update file list with current dataset filename:
+% **Example 2** - update file list with current dataset filename:
 %
 %   .. code-block:: matlab
 %
@@ -46,7 +46,7 @@ if ~isprop(evtData, 'Parameters')
     end
 
     % Folder-based formats (zarr3, zarr, HDF5 group, …) are listed with
-    % square brackets in the directory panel — match that convention.
+    % square brackets in the directory panel - match that convention.
     if isfolder(filename)
         selectedFilename = ['[' fname ext ']'];
     else

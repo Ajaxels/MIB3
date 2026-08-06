@@ -59,11 +59,11 @@ classdef Snapshot < handle
             %       controller = controllers.Snapshot(mibModel, [], BatchOpt)
             %
             % Parameters:
-            %   **mibModel** — handle to the MibModel instance
+            %   **mibModel** - handle to the MibModel instance
             %
-            %   **extraController** *(optional)* — handle to extra controller (volume viewer)
+            %   **extraController** *(optional)* - handle to extra controller (volume viewer)
             %
-            %   **BatchOpt** *(optional)* — structure with batch options or NaN to return defaults
+            %   **BatchOpt** *(optional)* - structure with batch options or NaN to return defaults
 
             obj.mibModel = mibModel;
             if nargin > 1 && ~isempty(varargin{1})
@@ -340,7 +340,14 @@ classdef Snapshot < handle
             dataset = obj.mibModel.I{activeId};
             if isempty(obj.extraController)
                 blockModeSwitch = obj.view.handles.ShownArea.Value;
-                [height, width] = dataset.image.getDatasetDimensions([], [], blockModeSwitch);
+                % Ask the DATASET, not the image: the shown block is defined by
+                % dataset.slices, which core.MibImage does not have - so the
+                % image's own blockModeSwitch branch always errored, and ticking
+                % "Shown area" threw out of the UpdateGuiWidgets listener. It
+                % also resolves orient to the CURRENT orientation instead of
+                % forcing YX, which is what the aspect correction below assumes.
+                [height, width] = dataset.getDatasetDimensions('image', [], ...
+                    struct('blockModeSwitch', blockModeSwitch));
                 obj.origWidth = width;
                 orientation = dataset.orientation;
                 pixSize = dataset.image.pixSize;
@@ -752,19 +759,19 @@ classdef Snapshot < handle
             % in ``obj.BatchOpt`` (crop mode, output dimensions, scale bar, LUT, …)
             % and either saves it to disk or copies it to the system clipboard.
             %
-            % **BigData pyramid-level selection** — for BigData datasets (OME-Zarr / WSI),
+            % **BigData pyramid-level selection** - for BigData datasets (OME-Zarr / WSI),
             % the function selects the *finest* pyramid level whose native resolution still
             % covers the requested output size, avoiding loading the full-resolution image
             % into memory before resize:
             %
-            %   - ``'ShownArea'`` — fetches at ``dataset.magFactor`` (current viewport resolution).
-            %   - ``'FullImage'`` — selects the coarsest level ``L`` where
+            %   - ``'ShownArea'`` - fetches at ``dataset.magFactor`` (current viewport resolution).
+            %   - ``'FullImage'`` - selects the coarsest level ``L`` where
             %     ``levelScaleFactors(L) ≤ min(fullW/newW, fullH/newH)``.
-            %   - ``'ROI'``       — same formula using ``obj.origWidth``/``obj.origHeight``
+            %   - ``'ROI'``       - same formula using ``obj.origWidth``/``obj.origHeight``
             %     (ROI extent in full-res pixels set by ``crop_Callback``); the ROI bounding
             %     box is divided by ``levelScaleFactors(L)`` before ``imcrop``.
             %
-            % **Scale bar correction** — ``utils.addScaleBar`` expects
+            % **Scale bar correction** - ``utils.addScaleBar`` expects
             % ``scale = newWidth / fullResWidth``.  For a downsampled pyramid level the
             % raw ``newWidth / size(img,2)`` ratio is too large, so the correct value is
             % computed from ``pyramid.levelImageSizes(1,2)`` (FullImage), ``scale / magFactor``
@@ -772,16 +779,16 @@ classdef Snapshot < handle
             % unaffected because the Z dimension is never pyramided.
             %
             % Input Arguments:
-            %   - **useBatchMode** *(optional)* — [logical] ``1`` = run silently (no GUI
+            %   - **useBatchMode** *(optional)* - [logical] ``1`` = run silently (no GUI
             %     button flash), used when called from batch processing. Default: ``0``.
             %
-            % **Example 1** — interactive snapshot triggered by the Snapshot button:
+            % **Example 1** - interactive snapshot triggered by the Snapshot button:
             %
             %   .. code-block:: matlab
             %
             %      obj.snapshotBtn_Callback();
             %
-            % **Example 2** — batch-mode: save a 2048 × 2048 PNG of the full image:
+            % **Example 2** - batch-mode: save a 2048 × 2048 PNG of the full image:
             %
             %   .. code-block:: matlab
             %
@@ -846,7 +853,7 @@ classdef Snapshot < handle
             if strcmp(dataset.image.type, 'bigdata') && ~isempty(dataset.image.pyramid.levelNames)
                 switch obj.BatchOpt.Crop{1}
                     case 'ShownArea'
-                        % Fetch at the current display magnification — matches what the user sees
+                        % Fetch at the current display magnification - matches what the user sees
                         options.magFactor = dataset.magFactor;
 
                     case 'FullImage'
@@ -856,7 +863,7 @@ classdef Snapshot < handle
                         scales = dataset.image.pyramid.levelScaleFactors(:, 1);
                         validIdx = find(scales <= targetMagFactor);
                         if isempty(validIdx)
-                            options.pyramidLevel = 1;             % output larger than level 0 — use full-res
+                            options.pyramidLevel = 1;             % output larger than level 0 - use full-res
                         else
                             options.pyramidLevel = validIdx(end); % coarsest level that still covers output
                         end
@@ -910,7 +917,7 @@ classdef Snapshot < handle
                         imshow(img);
                         axHandle = gca;
                         hold(axHandle, 'on');
-                        % imshow maps image pixel (X,Y) to axes coords (X,Y) — identity conversion
+                        % imshow maps image pixel (X,Y) to axes coords (X,Y) - identity conversion
                         convertFcn = @(X, Y) deal(double(X), double(Y));
                         dataset.measure.addMeasurementsToPlot(axHandle, 'full', dataset.orientation, convertFcn, 0);
                         set(axHandle, 'xtick', []);
@@ -947,7 +954,7 @@ classdef Snapshot < handle
 
                         % For BigData XY the fetched image is from a downsampled pyramid level
                         % or display-resolution viewport, so scale = newWidth/size(img,2) does
-                        % not equal newWidth/fullResWidth — which is what addScaleBar requires
+                        % not equal newWidth/fullResWidth - which is what addScaleBar requires
                         % (it computes pixelSize = pixSize.x / scale).
                         % ZX/ZY orientations are unaffected because Z is never pyramided.
                         scaleForBar = scale;

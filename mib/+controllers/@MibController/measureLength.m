@@ -10,7 +10,7 @@ function measureLength(obj, type)
 % Converted from MIB2 @mibController/menuToolsMeasure_Callback.m
 %
 % Input Arguments:
-%   - **type** — a string selecting the measurement mode
+%   - **type** - a string selecting the measurement mode
 %     - 'tool'     - open the full interactive Measure Tool controller
 %     - 'line'     - draw a straight line and report its length
 %     - 'freehand' - draw a freehand path and report its length
@@ -52,7 +52,7 @@ end
 cImageDoc.UIFigure.WindowButtonDownFcn = savedWBDF;
 
 % If the ROI was cancelled during initial placement (Escape before placing
-% points), drawline/drawfreehand returns an invalid handle — clean up and bail.
+% points), drawline/drawfreehand returns an invalid handle - clean up and bail.
 if ~isvalid(roi)
     cImageDoc.quickMeasure = [];
     obj.mibModel.disableSegmentation = false;
@@ -80,12 +80,12 @@ cImageDoc.quickMeasure.mibController = obj;
 cImageDoc.updateMeasureText(roi.Position);
 
 % Intercept Escape (silent delete) and Enter (finalise with distance report).
-% Safe without wait() — no conflict with MATLAB's internal ROI key machinery.
+% Safe without wait() - no conflict with MATLAB's internal ROI key machinery.
 measureKPF = @(~, evt) handleMeasureKey(evt, obj, cImageDoc);
 cImageDoc.quickMeasure.measureKPF = measureKPF;   % stored so gui_WindowButtonUpFcn can restore it
 cImageDoc.UIFigure.WindowKeyPressFcn = measureKPF;
 
-% ----- Fully event-driven — no wait(), function returns now -----
+% ----- Fully event-driven - no wait(), function returns now -----
 %
 %  MovingROI   -> update live text while dragging vertices
 %  ROIClicked  -> double-click finalises: compute distance, show dialog
@@ -105,13 +105,13 @@ function handleMeasureKey(evt, obj, cImageDoc)
 %   function handleMeasureKey(evt, obj, cImageDoc)
 %
     if isempty(cImageDoc.quickMeasure)
-        % ROI already gone — just forward to the normal handler
+        % ROI already gone - just forward to the normal handler
         obj.gui_WindowKeyPressFcn(cImageDoc.UIFigure, evt);
         return;
     end
     switch evt.Key
         case 'escape'
-            % Silent removal — no distance report
+            % Silent removal - no distance report
             cImageDoc.clearQuickMeasure();
         case 'return'
             % Finalise with distance report (same as double-click)

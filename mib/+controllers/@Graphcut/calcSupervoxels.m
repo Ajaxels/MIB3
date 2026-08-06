@@ -9,40 +9,40 @@ function [Graphcut, cancelled] = calcSupervoxels(Graphcut, img, parLoopOptions, 
 %      [Graphcut, cancelled] = controllers.Graphcut.calcSupervoxels(Graphcut, img, parLoopOptions, usePrecomputedSlic)
 %
 % Input Arguments:
-%   - **Graphcut** — struct with graphcut data (fields modified by this function):
+%   - **Graphcut** - struct with graphcut data (fields modified by this function):
 %
-%     - ``.slic``        — label array (read when ``usePrecomputedSlic=1``, written otherwise)
-%     - ``.noPix``       — number of supervoxels (written)
-%     - ``.Edges``       — cell of ``[N×2]`` adjacency edge lists (written)
-%     - ``.EdgesValues`` — cell of ``[N×1]`` mean-intensity differences per edge (written)
-%     - ``.dilateMode``  — ``'pre'`` or ``'post'``; set by Watershed path
+%     - ``.slic``        - label array (read when ``usePrecomputedSlic=1``, written otherwise)
+%     - ``.noPix``       - number of supervoxels (written)
+%     - ``.Edges``       - cell of ``[N×2]`` adjacency edge lists (written)
+%     - ``.EdgesValues`` - cell of ``[N×1]`` mean-intensity differences per edge (written)
+%     - ``.dilateMode``  - ``'pre'`` or ``'post'``; set by Watershed path
 %
-%   - **img** — [uint8 | uint16] 3-D image array ``[height × width × depth]``
-%   - **parLoopOptions** — struct with processing options:
+%   - **img** - [uint8 | uint16] 3-D image array ``[height × width × depth]``
+%   - **parLoopOptions** - struct with processing options:
 %
-%     - ``.binVal``             — [1×2 numeric] ``[xyBin, zBin]`` binning factors
-%     - ``.binHeight``          — [numeric] pre-calculated binned height
-%     - ``.binWidth``           — [numeric] pre-calculated binned width
-%     - ``.binDepth``           — [numeric] pre-calculated binned depth
-%     - ``.waitbar``            — ``uiprogressdlg`` handle or ``[]`` to skip progress updates
-%     - ``.cancelProgressBar``  — ``uiprogressdlg`` handle or ``[]``; checked at phase
+%     - ``.binVal``             - [1×2 numeric] ``[xyBin, zBin]`` binning factors
+%     - ``.binHeight``          - [numeric] pre-calculated binned height
+%     - ``.binWidth``           - [numeric] pre-calculated binned width
+%     - ``.binDepth``           - [numeric] pre-calculated binned depth
+%     - ``.waitbar``            - ``uiprogressdlg`` handle or ``[]`` to skip progress updates
+%     - ``.cancelProgressBar``  - ``uiprogressdlg`` handle or ``[]``; checked at phase
 %       boundaries so the user can cancel without disrupting the progress display
-%     - ``.viewPort``           — struct with ``.min``, ``.max``, ``.gamma`` for contrast mapping
-%     - ``.mibLiveStretchCheck``— [logical] use auto-stretch instead of viewPort limits
-%     - ``.superPixType``       — [char] ``'SLIC'`` or ``'Watershed'``
-%     - ``.blackOnWhite``       — [logical] invert image before watershed
-%     - ``.superpixelSize``     — [numeric] target supervoxel volume (SLIC) or h-minima depth (Watershed)
-%     - ``.superpixelCompact``  — [numeric] SLIC compactness parameter
-%     - ``.tilesX``             — [numeric] number of SLIC tiles in X
-%     - ``.tilesY``             — [numeric] number of SLIC tiles in Y
+%     - ``.viewPort``           - struct with ``.min``, ``.max``, ``.gamma`` for contrast mapping
+%     - ``.mibLiveStretchCheck``- [logical] use auto-stretch instead of viewPort limits
+%     - ``.superPixType``       - [char] ``'SLIC'`` or ``'Watershed'``
+%     - ``.blackOnWhite``       - [logical] invert image before watershed
+%     - ``.superpixelSize``     - [numeric] target supervoxel volume (SLIC) or h-minima depth (Watershed)
+%     - ``.superpixelCompact``  - [numeric] SLIC compactness parameter
+%     - ``.tilesX``             - [numeric] number of SLIC tiles in X
+%     - ``.tilesY``             - [numeric] number of SLIC tiles in Y
 %
-%   - **usePrecomputedSlic** *(optional)* — [logical] when ``1``, skip supervoxel
+%   - **usePrecomputedSlic** *(optional)* - [logical] when ``1``, skip supervoxel
 %     calculation and use ``Graphcut.slic`` as-is; default: ``0``
 %
 % Output Arguments:
-%   - **Graphcut** — updated struct with ``.slic``, ``.noPix``, ``.Edges``,
+%   - **Graphcut** - updated struct with ``.slic``, ``.noPix``, ``.Edges``,
 %     ``.EdgesValues``, and (Watershed only) ``.dilateMode`` populated
-%   - **cancelled** *(optional)* — [logical] ``true`` when the user cancelled via
+%   - **cancelled** *(optional)* - [logical] ``true`` when the user cancelled via
 %     ``parLoopOptions.cancelProgressBar``; the caller must detect this and clean up
 
 if nargin < 4; usePrecomputedSlic = 0; end

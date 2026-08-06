@@ -16,22 +16,22 @@ function imgOut = fuseInMemory(layout, canvas, options)
 % :func:`utils.stitch.fuseStreaming`.
 %
 % Input Arguments:
-%   - **layout** — [struct array] tile layout.
-%   - **canvas** — [struct] from :func:`utils.stitch.planCanvas`.
-%   - **options** *(optional)* — struct with fields:
+%   - **layout** - [struct array] tile layout.
+%   - **canvas** - [struct] from :func:`utils.stitch.planCanvas`.
+%   - **options** *(optional)* - struct with fields:
 %
-%     - ``.blendMode`` — [char] ``'Feather'`` (default) | ``'Average'`` | ``'Max'`` | ``'Min'`` | ``'Overwrite'``
-%     - ``.background`` — [double] background fill value (default: ``0``)
-%     - ``.marginPx`` — [double] feather margin (default: derived from tile size)
-%     - ``.cacheSizeBytes`` — [double] LRU tile-cache budget (default: ``2*1024^3``)
-%     - ``.readerFcn`` — [function_handle] reuse an existing tile reader (optional)
-%     - ``.showWaitbar`` — [logical] show progress (default: ``false``)
-%     - ``.parentFigure`` — [handle] progress-dialog parent (default: ``[]``)
+%     - ``.blendMode`` - [char] ``'Feather'`` (default) | ``'Average'`` | ``'Max'`` | ``'Min'`` | ``'Overwrite'``
+%     - ``.background`` - [double] background fill value (default: ``0``)
+%     - ``.marginPx`` - [double] feather margin (default: derived from tile size)
+%     - ``.cacheSizeBytes`` - [double] LRU tile-cache budget (default: ``2*1024^3``)
+%     - ``.readerFcn`` - [function_handle] reuse an existing tile reader (optional)
+%     - ``.showWaitbar`` - [logical] show progress (default: ``false``)
+%     - ``.parentFigure`` - [handle] progress-dialog parent (default: ``[]``)
 %
 % Output Arguments:
-%   - **imgOut** — [H x W x Z x C x T] fused mosaic of class ``canvas.dataClass``.
+%   - **imgOut** - [H x W x Z x C x T] fused mosaic of class ``canvas.dataClass``.
 %
-% **Example** — feather-blend a solved layout:
+% **Example** - feather-blend a solved layout:
 %
 %   .. code-block:: matlab
 %

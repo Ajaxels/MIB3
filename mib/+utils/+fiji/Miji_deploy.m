@@ -17,7 +17,7 @@ function Miji_deploy(open_imagej)
 %      utils.fiji.Miji_deploy(open_imagej)
 %
 % Input Arguments:
-%   - **open_imagej** *(optional)* — [logical] when ``true`` (default), opens
+%   - **open_imagej** *(optional)* - [logical] when ``true`` (default), opens
 %     the ImageJ window via ``MIJ.start``; when ``false``, initialises
 %     ImageJ in headless mode (``NO_SHOW`` flag)
 %

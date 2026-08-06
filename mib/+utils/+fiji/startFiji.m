@@ -30,7 +30,7 @@ function startFiji(mibGUI)
 %      utils.fiji.startFiji(mibGUI)
 %
 % Input Arguments:
-%   - **mibGUI** *(optional)* — handle to the parent UIFigure used for
+%   - **mibGUI** *(optional)* - handle to the parent UIFigure used for
 %     error dialogs; pass ``[]`` or omit to fall back to a standard dialog
 %
 % Updates
@@ -50,7 +50,7 @@ end
 if exist('MIJ', 'class') == 8
     if ~isempty(ij.gui.Toolbar.getInstance)
         ijInstance = char(ij.gui.Toolbar.getInstance.toString);
-        % ij.gui.Toolbar[canvas1,3,41,548x27,invalid] — instance exists but window closed
+        % ij.gui.Toolbar[canvas1,3,41,548x27,invalid] - instance exists but window closed
         if contains(ijInstance, 'invalid')
             utils.fiji.Miji_wrapper(true);
         end

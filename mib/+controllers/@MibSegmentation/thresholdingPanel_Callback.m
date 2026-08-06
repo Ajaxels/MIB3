@@ -10,20 +10,20 @@ function thresholdingPanel_Callback(obj, hWidget, hData)
 % Supports adaptive and global thresholding modes, threshold value adjustment, and multi-dimensional processing.
 %
 % Input Arguments:
-%   - **hWidget** — [matlab.ui.control.Button | matlab.ui.control.CheckBox | matlab.ui.control.Spinner | matlab.ui.container.ButtonGroup | matlab.ui.control.NumericEditField | matlab.ui.control.DropDown | matlab.ui.control.Slider] pressed widget; operation identified via ``hWidget.Tag``:
+%   - **hWidget** - [matlab.ui.control.Button | matlab.ui.control.CheckBox | matlab.ui.control.Spinner | matlab.ui.container.ButtonGroup | matlab.ui.control.NumericEditField | matlab.ui.control.DropDown | matlab.ui.control.Slider] pressed widget; operation identified via ``hWidget.Tag``:
 %
-%     - ``'thresholdAdaptive'`` — enable/disable adaptive thresholding mode
-%     - ``'thresholdType'`` — select thresholding algorithm (global, adaptive, etc.)
-%     - ``'thresholdInvert'`` — invert image before thresholding in adaptive mode
-%     - ``'threshold3D'`` — apply thresholding to all Z slices (3D mode)
-%     - ``'threshold4D'`` — apply thresholding to all Z and T dimensions (4D mode)
-%     - ``'thresholdLow'`` — adjust low threshold value using slider
-%     - ``'thresholdHigh'`` — adjust high threshold value using slider
-%     - ``'thresholdLowValue'`` — set low threshold value numerically
-%     - ``'thresholdHighValue'`` — set high threshold value numerically
-%     - ``'threshold'`` — execute the thresholding operation
+%     - ``'thresholdAdaptive'`` - enable/disable adaptive thresholding mode
+%     - ``'thresholdType'`` - select thresholding algorithm (global, adaptive, etc.)
+%     - ``'thresholdInvert'`` - invert image before thresholding in adaptive mode
+%     - ``'threshold3D'`` - apply thresholding to all Z slices (3D mode)
+%     - ``'threshold4D'`` - apply thresholding to all Z and T dimensions (4D mode)
+%     - ``'thresholdLow'`` - adjust low threshold value using slider
+%     - ``'thresholdHigh'`` - adjust high threshold value using slider
+%     - ``'thresholdLowValue'`` - set low threshold value numerically
+%     - ``'thresholdHighValue'`` - set high threshold value numerically
+%     - ``'threshold'`` - execute the thresholding operation
 %
-%   - **hData** — [matlab.ui.eventdata.ButtonPushedData | matlab.ui.eventdata.ValueChangedData | matlab.ui.eventdata.ValueChangingData | matlab.ui.eventdata.SelectionChangedData] event data from widget
+%   - **hData** - [matlab.ui.eventdata.ButtonPushedData | matlab.ui.eventdata.ValueChangedData | matlab.ui.eventdata.ValueChangingData | matlab.ui.eventdata.SelectionChangedData] event data from widget
 %
 % Output Arguments:
 %   None

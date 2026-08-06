@@ -8,34 +8,34 @@ function result = bitmap2amiraLabels(filename, bitmap, format, voxel, color_list
 %      result = io.AmiraMesh.bitmap2amiraLabels(filename, bitmap, format, voxel, color_list, modelMaterialNames, overwrite, showWaitbar, extraOptions)
 %
 % Input Arguments:
-%   - **filename** — filename for Amira Mesh file
-%   - **bitmap** — the dataset [height, width, depth]
-%   - **format** — *(optional)* saving format: ``'binaryRLE'``, ``'ascii'``, or ``'binary'``
+%   - **filename** - filename for Amira Mesh file
+%   - **bitmap** - the dataset [height, width, depth]
+%   - **format** - *(optional)* saving format: ``'binaryRLE'``, ``'ascii'``, or ``'binary'``
 %     (default: ``'binary'``)
-%   - **voxel** — *(optional)* struct with voxel size:
+%   - **voxel** - *(optional)* struct with voxel size:
 %
-%     - ``.x`` — physical width of a voxel
-%     - ``.y`` — physical height of a voxel
-%     - ``.z`` — physical thickness of a voxel
-%     - ``.minx`` — minimal X coordinate of the bounding box
-%     - ``.miny`` — minimal Y coordinate of the bounding box
-%     - ``.minz`` — minimal Z coordinate of the bounding box
+%     - ``.x`` - physical width of a voxel
+%     - ``.y`` - physical height of a voxel
+%     - ``.z`` - physical thickness of a voxel
+%     - ``.minx`` - minimal X coordinate of the bounding box
+%     - ``.miny`` - minimal Y coordinate of the bounding box
+%     - ``.minz`` - minimal Z coordinate of the bounding box
 %
-%   - **color_list** — *(optional)* matrix with material colours as
-%     [materialId, Red, Green, Blue] in range 0–1; can be empty
-%   - **modelMaterialNames** — *(optional)* cell array with material name strings; can be empty
-%   - **overwrite** — *(optional)* ``1`` = do not check whether file already exists
-%   - **showWaitbar** — *(optional)* ``1`` = show the wait bar, ``0`` = hide it
-%   - **extraOptions** — *(optional)* struct with fields:
+%   - **color_list** - *(optional)* matrix with material colours as
+%     [materialId, Red, Green, Blue] in range 0-1; can be empty
+%   - **modelMaterialNames** - *(optional)* cell array with material name strings; can be empty
+%   - **overwrite** - *(optional)* ``1`` = do not check whether file already exists
+%   - **showWaitbar** - *(optional)* ``1`` = show the wait bar, ``0`` = hide it
+%   - **extraOptions** - *(optional)* struct with fields:
 %
-%     - ``.TransformationMatrix`` — (char) transformation matrix string
-%     - ``.ParentFigure`` — handle to the main MIB UIFigure; when provided, progress bar
+%     - ``.TransformationMatrix`` - (char) transformation matrix string
+%     - ``.ParentFigure`` - handle to the main MIB UIFigure; when provided, progress bar
 %       is shown as a ``uiprogressdlg`` attached to that window; when absent, legacy ``waitbar`` is used
 %
 % Output Arguments:
-%   - **result** — ``1`` = success, ``0`` = failure
+%   - **result** - ``1`` = success, ``0`` = failure
 %
-% **Example 1** — standalone use (no GUI parent):
+% **Example 1** - standalone use (no GUI parent):
 %
 %   .. code-block:: matlab
 %
@@ -45,7 +45,7 @@ function result = bitmap2amiraLabels(filename, bitmap, format, voxel, color_list
 %      pixStr.minz = boundingBox(5);
 %      io.AmiraMesh.bitmap2amiraLabels('/output/Labels.am', labelsData, 'binary', pixStr, materialColors, materialNames, 1, false, struct());
 %
-% **Example 2** — GUI use (attach progress dialog to MIB window):
+% **Example 2** - GUI use (attach progress dialog to MIB window):
 %
 %   .. code-block:: matlab
 %

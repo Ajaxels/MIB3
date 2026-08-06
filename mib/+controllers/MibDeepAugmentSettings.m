@@ -347,7 +347,7 @@ classdef MibDeepAugmentSettings < handle
             % os always intialized using the provided seed.
             %
             % Input Arguments:
-            %   - **selectedAugmentation** — 'string' with the id of the
+            %   - **selectedAugmentation** - 'string' with the id of the
             %     augmentation to preview. When empty, all augmentations will
             %     be rendered.
             %

@@ -8,18 +8,18 @@ function resolution = calculateResolution(pixSize)
 %      resolution = calculateResolution(pixSize)
 %
 % Input Arguments:
-%   - **pixSize** — struct with physical voxel dimensions:
+%   - **pixSize** - struct with physical voxel dimensions:
 %
-%     - ``.x`` — physical width of the pixel
-%     - ``.y`` — physical height of the pixel
-%     - ``.units`` — physical unit string: ``'m'``, ``'cm'``, ``'mm'``, ``'um'``, ``'nm'``
+%     - ``.x`` - physical width of the pixel
+%     - ``.y`` - physical height of the pixel
+%     - ``.units`` - physical unit string: ``'m'``, ``'cm'``, ``'mm'``, ``'um'``, ``'nm'``
 %
 % Output Arguments:
-%   - **resolution** — [numeric] ``[XResolution, YResolution]`` in Pixels/Inch
+%   - **resolution** - [numeric] ``[XResolution, YResolution]`` in Pixels/Inch
 %
 % Usage:
 %
-%   **Example 1** — compute resolution for TIFF saving
+%   **Example 1** - compute resolution for TIFF saving
 %
 %   .. code-block:: matlab
 %

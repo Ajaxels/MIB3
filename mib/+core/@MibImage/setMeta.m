@@ -7,11 +7,11 @@ function setMeta(obj, meta)
 %       obj.setMeta(meta)
 %
 % Updates the object's properties from a dictionary matching the schema
-% of MibImage.initializeImgInfo(). Does NOT touch obj.data — only
+% of MibImage.initializeImgInfo(). Does NOT touch obj.data - only
 % updates metadata properties. This is the inverse of getMeta().
 %
 % Input Arguments:
-%   - **meta** — dictionary with MibImage metadata fields (as returned by getMeta
+%   - **meta** - dictionary with MibImage metadata fields (as returned by getMeta
 %     or initializeImgInfo)
 %
 % Output Arguments:

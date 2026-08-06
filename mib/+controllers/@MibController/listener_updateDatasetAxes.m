@@ -9,19 +9,19 @@ function listener_updateDatasetAxes(obj, src, evtData)
 % executed upon catch of MibModel->"UpdateDatasetAxes" event
 %
 % Input Arguments:
-%   - **src** — handle to MibModel
-%   - **evtData** — event data, an instance of ``core.ToggleEventData``; ``evtData.Parameters``
+%   - **src** - handle to MibModel
+%   - **evtData** - event data, an instance of ``core.ToggleEventData``; ``evtData.Parameters``
 %     is a structure with the following fields:
 %
-%     - ``.mode`` — update mode; one of ``'resize'`` (default, keep magFactor, adjust FOV),
+%     - ``.mode`` - update mode; one of ``'resize'`` (default, keep magFactor, adjust FOV),
 %       ``'fitToScreen'`` (fit entire image to axes), or ``'zoom'`` (scale during zoom)
-%     - ``.index`` — *(optional)* index of obj.I to update; ``[]`` for the currently selected dataset
-%     - ``.newMagFactor`` — new magnification factor (``'zoom'`` mode only)
+%     - ``.index`` - *(optional)* index of obj.I to update; ``[]`` for the currently selected dataset
+%     - ``.newMagFactor`` - new magnification factor (``'zoom'`` mode only)
 %
 % Output Arguments:
 %   (none)
 %
-% **Example 1** — update axes using a new magnification value for dataset 1:
+% **Example 1** - update axes using a new magnification value for dataset 1:
 %
 %   .. code-block:: matlab
 %
@@ -31,7 +31,7 @@ function listener_updateDatasetAxes(obj, src, evtData)
 %      eventdata = core.ToggleEventData(Options);
 %      notify(obj.mibModel, 'UpdateDatasetAxes', eventdata);
 %
-% **Example 2** — resize axes to fit the current panel:
+% **Example 2** - resize axes to fit the current panel:
 %
 %   .. code-block:: matlab
 %
@@ -39,7 +39,7 @@ function listener_updateDatasetAxes(obj, src, evtData)
 %      eventdata = core.ToggleEventData(Options);
 %      notify(obj.mibModel, 'UpdateDatasetAxes', eventdata);
 %
-% **Example 3** — update using the default resize mode:
+% **Example 3** - update using the default resize mode:
 %
 %   .. code-block:: matlab
 %

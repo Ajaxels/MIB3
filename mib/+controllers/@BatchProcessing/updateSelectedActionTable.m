@@ -9,7 +9,7 @@ function updateSelectedActionTable(obj, BatchOpt)
 % Also updates obj.selectedSection, obj.selectedAction and obj.CurrentBatch.
 %
 % Input Arguments:
-%   - **BatchOpt** — [struct] action parameters. Field types that drive widget rendering in displaySelectedActionTableItems:
+%   - **BatchOpt** - [struct] action parameters. Field types that drive widget rendering in displaySelectedActionTableItems:
 %
 %     - Logical scalar → checkbox
 %     - Cell {value; {list}} → dropdown
@@ -19,11 +19,11 @@ function updateSelectedActionTable(obj, BatchOpt)
 %
 %   Required meta-fields (removed from table display):
 %
-%     - ``.mibBatchSectionName`` — section name string
-%     - ``.mibBatchActionName`` — action name string
-%     - ``.mibBatchTooltip`` *(optional)* — struct with per-field tooltip strings
+%     - ``.mibBatchSectionName`` - section name string
+%     - ``.mibBatchActionName`` - action name string
+%     - ``.mibBatchTooltip`` *(optional)* - struct with per-field tooltip strings
 %
-% **Example** — populate parameter table from BatchOpt:
+% **Example** - populate parameter table from BatchOpt:
 %
 %   .. code-block:: matlab
 %
@@ -90,7 +90,7 @@ for rowId = 1:numel(fieldNames)
     if islogical(val)
         tData{rowId,2} = val(1);        % scalar logical
     elseif ischar(val)
-        tData{rowId,2} = val;           % char vector — keep as is
+        tData{rowId,2} = val;           % char vector - keep as is
     elseif isnumeric(val)
         tData{rowId,2} = num2str(val);  % numeric → display string
     else

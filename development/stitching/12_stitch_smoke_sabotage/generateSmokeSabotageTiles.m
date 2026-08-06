@@ -2,13 +2,13 @@ function generateSmokeSabotageTiles()
 % GENERATESMOKESABOTAGETILES - The "confidently wrong edge" dataset for the seam inspector.
 %
 % Creates a 1x3 tile CHAIN (no graph redundancy), measures it properly, then
-% CORRUPTS the 2-3 edge by +24 px with quality 0.95 — emulating a repetitive-
-% content lock one period off — solves, and saves everything as a
+% CORRUPTS the 2-3 edge by +24 px with quality 0.95 - emulating a repetitive-
+% content lock one period off - solves, and saves everything as a
 % ``sabotage.mibstitch.json`` project. On a chain there is no loop to
 % contradict the corruption: the global solve satisfies every edge EXACTLY
 % (residual RMSE ~0, rating chip green) while tile 3 sits 24 px off. Solver
 % residuals cannot see this failure; only re-checking actual pixels at the
-% solved placement (utils.stitch.scoreSeams — the seam inspector's ranking)
+% solved placement (utils.stitch.scoreSeams - the seam inspector's ranking)
 % catches it. See development/stitching/plan_inspector.md.
 %
 % Why corrupt the edge instead of the imagery: phase correlation whitens the
@@ -29,12 +29,12 @@ function generateSmokeSabotageTiles()
 % Inspector smoke (smoke_tests.md test 12):
 %   Stitch ribbon -> Load project ->
 %   temp\stitching_test\12_stitch_smoke_sabotage\sabotage.mibstitch.json
-%   -> Optimize positions (rating comes out GOOD — the corruption is
+%   -> Optimize positions (rating comes out GOOD - the corruption is
 %   residual-invisible) -> Inspect and fix...
 %   The 2-3 seam must rank first with a low seam score (pixels disagree at the
 %   solved placement); the lines/circles across that seam appear broken by
 %   ~24 px. Exclude (X) + Re-solve pulls tile 3 back to its nominal-spring
-%   position (within the ~5 px cut jitter of truth — the seam score IMPROVES
+%   position (within the ~5 px cut jitter of truth - the seam score IMPROVES
 %   but stays modest, because exclusion recovers only coarsely). Phase C's
 %   click-to-correlate FIXES the edge instead, recovering to sub-pixel.
 

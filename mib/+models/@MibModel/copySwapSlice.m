@@ -14,41 +14,41 @@ function copySwapSlice(obj, sourceSlice, targetSlice, mode, BatchOptIn)
 % source slice are all copied into the newly inserted position.
 %
 % Input Arguments:
-%   - **sourceSlice** — *(optional)* index of the source slice; ``[]`` uses
+%   - **sourceSlice** - *(optional)* index of the source slice; ``[]`` uses
 %     the current slice
-%   - **targetSlice** — *(optional)* index of the destination slice; ``[]``
+%   - **targetSlice** - *(optional)* index of the destination slice; ``[]``
 %     uses the current slice
-%   - **mode** — *(optional)* one of ``'replace'`` (default), ``'insert'``,
+%   - **mode** - *(optional)* one of ``'replace'`` (default), ``'insert'``,
 %     or ``'swap'``
-%   - **BatchOptIn** — *(optional)* struct for batch processing mode; when
+%   - **BatchOptIn** - *(optional)* struct for batch processing mode; when
 %     ``NaN``, returns default options via the ``SyncBatch`` event.
 %
-%     - ``.Mode`` — [cell] operation mode (default: ``{'replace'}``).
+%     - ``.Mode`` - [cell] operation mode (default: ``{'replace'}``).
 %       Allowed values: ``{'replace', 'insert', 'swap'}``
-%     - ``.SourceSlice`` — [numeric cell] ``{value, [minLim maxLim], 'on'}``
+%     - ``.SourceSlice`` - [numeric cell] ``{value, [minLim maxLim], 'on'}``
 %       index of the source slice
-%     - ``.TargetSlice`` — [numeric cell] ``{value, [minLim maxLim], 'on'}``
+%     - ``.TargetSlice`` - [numeric cell] ``{value, [minLim maxLim], 'on'}``
 %       index of the destination slice; for insert mode ``1`` = insert as
 %       first slice, ``0`` = append to the end
-%     - ``.showWaitbar`` — [logical] show the progress dialog (default: ``true``)
-%     - ``.id`` — *(optional)* dataset index 1–9, default = ``obj.getActiveId()``
+%     - ``.showWaitbar`` - [logical] show the progress dialog (default: ``true``)
+%     - ``.id`` - *(optional)* dataset index 1-9, default = ``obj.getActiveId()``
 %
 % Usage:
-%   **Example 1** — copy slice 4 to slice 10
+%   **Example 1** - copy slice 4 to slice 10
 %
 %   .. code-block:: matlab
 %
 %
 %     obj.mibModel.copySwapSlice(4, 10, 'replace');
 %
-%   **Example 2** — swap slices 4 and 10
+%   **Example 2** - swap slices 4 and 10
 %
 %   .. code-block:: matlab
 %
 %
 %     obj.mibModel.copySwapSlice(4, 10, 'swap');
 %
-%   **Example 3** — batch mode
+%   **Example 3** - batch mode
 %
 %   .. code-block:: matlab
 %
@@ -193,8 +193,8 @@ switch BatchOpt.Mode{1}
         obj.I{BatchOpt.id}.insertSlice(img, targetSlice, insertMeta, insertOpts);
 
         % After insertion the dataset is one slice larger.  Compute:
-        %   insertedIdx  — position of the newly inserted empty-label slice
-        %   sourceNewIdx — position of the source slice (may have shifted +1)
+        %   insertedIdx  - position of the newly inserted empty-label slice
+        %   sourceNewIdx - position of the source slice (may have shifted +1)
         if isnan(targetSlice)
             insertedIdx  = maxSlice + 1;   % was appended to the end
             sourceNewIdx = sourceSlice;    % source position unchanged

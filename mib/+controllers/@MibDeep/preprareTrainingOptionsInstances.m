@@ -7,7 +7,7 @@ function TrainingOptions = preprareTrainingOptionsInstances(obj, valDS)
 %       TrainingOptions = obj.preprareTrainingOptionsInstances(valDS)
 %
 % Input Arguments:
-%   - **valDS** — datastore with images for validation
+%   - **valDS** - datastore with images for validation
 %
 
 global mibDeepTrainingProgressStruct

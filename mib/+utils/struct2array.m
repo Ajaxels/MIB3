@@ -10,14 +10,14 @@ function result = struct2array(S)
 % Replacement for the built-in ``struct2array`` that was removed in MATLAB R2021b.
 %
 % Input Arguments:
-%   - **S** — [struct] scalar input structure
+%   - **S** - [struct] scalar input structure
 %
 % Output Arguments:
-%   - **result** — array containing all field values of S concatenated horizontally
+%   - **result** - array containing all field values of S concatenated horizontally
 %
 % Usage:
 %
-%   **Example 1** — flatten a struct of numeric values
+%   **Example 1** - flatten a struct of numeric values
 %
 %   .. code-block:: matlab
 %

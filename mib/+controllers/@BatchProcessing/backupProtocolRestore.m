@@ -7,7 +7,7 @@ function backupProtocolRestore(obj, mode)
 %       obj.backupProtocolRestore(mode)
 %
 % Input Arguments:
-%   - **mode** — a string with direction of restoration
+%   - **mode** - a string with direction of restoration
 %     'undo' - restore the previous state
 %     'redo' - restore the next state
 %

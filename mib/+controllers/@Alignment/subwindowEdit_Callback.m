@@ -8,7 +8,7 @@ function subwindowEdit_Callback(obj, hObject)
 %      obj.subwindowEdit_Callback(hObject)
 %
 % Input Arguments:
-%   - **hObject** *(optional)* — handle to the widget that fired the callback.
+%   - **hObject** *(optional)* - handle to the widget that fired the callback.
 %
 % Coerces out-of-range values back into ``[1, width]`` / ``[1, height]`` and
 % reports the correction via :func:`utils.dlgs.showErrorDialog`.

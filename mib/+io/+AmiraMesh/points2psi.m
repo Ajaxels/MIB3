@@ -26,18 +26,18 @@ function res = points2psi(filename, points, pntLabels, pntValues, options)
 % the file contains cloud of points, their labels and values
 %
 % Input Arguments:
-%   - **filename** — filename to save data
-%   - **points** — a matrix with points [point number, x, y, z]
-%   - **pntLabels** — a cell array with labels for each point; can be empty (default: ``" "``);
+%   - **filename** - filename to save data
+%   - **points** - a matrix with points [point number, x, y, z]
+%   - **pntLabels** - a cell array with labels for each point; can be empty (default: ``" "``);
 %     note: spaces will be replaced with underscores
-%   - **pntValues** — an array of values for each point; can be empty (default: ``1``)
-%   - **options** — a structure with additional options:
+%   - **pntValues** - an array of values for each point; can be empty (default: ``1``)
+%   - **options** - a structure with additional options:
 %
-%     - ``.overwrite`` — ``1`` = automatically overwrite existing files
-%     - ``.format`` — (char) ``'binary'`` or ``'ascii'``
+%     - ``.overwrite`` - ``1`` = automatically overwrite existing files
+%     - ``.format`` - (char) ``'binary'`` or ``'ascii'``
 %
 % Output Arguments:
-%   - **res** — ``1`` = success, ``0`` = failure
+%   - **res** - ``1`` = success, ``0`` = failure
 %
 % .. note::
 %   Data saved in PSI format can be opened in Amira, but saving from Amira

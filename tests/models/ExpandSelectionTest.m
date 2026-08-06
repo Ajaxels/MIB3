@@ -6,12 +6,12 @@ classdef ExpandSelectionTest < matlab.unittest.TestCase
 % the selection blob with the full extent of that mask region.
 %
 % Verification strategies:
-%   expand inside mask  — small selection blob inside a mask blob grows to
+%   expand inside mask  - small selection blob inside a mask blob grows to
 %                         fill the entire mask blob
-%   outside mask        — selection blob that does not touch any mask region
+%   outside mask        - selection blob that does not touch any mask region
 %                         is cleared (set to zero) after expansion
-%   empty selection     — all-zero selection layer is unchanged
-%   image unchanged     — image pixel data must not be modified
+%   empty selection     - all-zero selection layer is unchanged
+%   image unchanged     - image pixel data must not be modified
 
     methods (TestClassSetup)
         function addPaths(testCase)
@@ -26,13 +26,13 @@ classdef ExpandSelectionTest < matlab.unittest.TestCase
                 'modelType', 'labels255', 'dims', [40 40 4]);
             opt = struct('id', 1, 'blockModeSwitch', 0);
 
-            % Mask: rows 5:30, cols 5:30, all slices — one 3D blob
+            % Mask: rows 5:30, cols 5:30, all slices - one 3D blob
             maskVolume = zeros(40, 40, 4, 'uint8');
             maskVolume(5:30, 5:30, :) = 1;
             mibModel.I{1}.clearLayer('mask');
             mibModel.setData3D(maskVolume, 'mask', 1, 3, [], opt);
 
-            % Selection: rows 12:18, cols 12:18 — small blob strictly inside mask
+            % Selection: rows 12:18, cols 12:18 - small blob strictly inside mask
             selVolume = zeros(40, 40, 4, 'uint8');
             selVolume(12:18, 12:18, :) = 1;
             mibModel.I{1}.clearLayer('selection');
@@ -56,7 +56,7 @@ classdef ExpandSelectionTest < matlab.unittest.TestCase
             mibModel.I{1}.clearLayer('mask');
             mibModel.setData3D(maskVolume, 'mask', 1, 3, [], opt);
 
-            % Selection: bottom-right corner — does not overlap mask
+            % Selection: bottom-right corner - does not overlap mask
             selVolume = zeros(40, 40, 4, 'uint8');
             selVolume(30:38, 30:38, :) = 1;
             mibModel.I{1}.clearLayer('selection');

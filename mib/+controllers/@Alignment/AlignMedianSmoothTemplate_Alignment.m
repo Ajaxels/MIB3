@@ -8,7 +8,7 @@ function AlignMedianSmoothTemplate_Alignment(obj, parameters)
 %
 % Intensity-based registration aligning each slice to a **median-smoothed
 % version of the same stack**. Smoothing is applied along Z with
-% :func:`medfilt3` using a ``[1, 1, MedianSize]`` neighbourhood — the
+% :func:`medfilt3` using a ``[1, 1, MedianSize]`` neighbourhood - the
 % template at slice *k* is the median of the surrounding slices, which
 % compensates for local deformations that pure feature matching cannot
 % fix. The dataset is expected to have been pre-aligned with drift
@@ -32,7 +32,7 @@ function AlignMedianSmoothTemplate_Alignment(obj, parameters)
 % AMST is **cropped-mode only** (matches MIB2 behaviour).
 %
 % Input Arguments:
-%   - **parameters** — struct produced by :meth:`continueBtn_Callback`.
+%   - **parameters** - struct produced by :meth:`continueBtn_Callback`.
 %     Reads ``TransformationType``, ``TransformationMode``, ``colorCh``,
 %     ``backgroundColor``, ``useBatchMode``, ``method``.
 
@@ -41,7 +41,7 @@ function AlignMedianSmoothTemplate_Alignment(obj, parameters)
 
 id = obj.mibModel.getActiveId();
 
-% Parent figure for any dialogs — ``obj.view`` is empty in batch mode
+% Parent figure for any dialogs - ``obj.view`` is empty in batch mode
 if ~isempty(obj.view) && isvalid(obj.view) && isvalid(obj.view.gui)
     parentFig = obj.view.gui;
 else
@@ -213,7 +213,7 @@ end
 anyTform = any(~cellfun(@isempty, tformMatrix));
 if ~anyTform
     utils.dlgs.showErrorDialog(parentFig, ...
-        'No transforms were produced — registration may have failed on every slice.', ...
+        'No transforms were produced - registration may have failed on every slice.', ...
         'Alignment');
     return;
 end
@@ -357,7 +357,7 @@ while notOk
         return;
     end
     if strcmp(answer3, 'Apply values')
-        % Write smoothed values back. Assign the full T matrix at once —
+        % Write smoothed values back. Assign the full T matrix at once -
         % element-level assignment triggers the affine2d setter with an
         % intermediate state and fails validation.
         for k = 2:vec_length

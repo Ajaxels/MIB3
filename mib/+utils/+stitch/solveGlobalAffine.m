@@ -21,7 +21,7 @@ function [tforms, positions, stats] = solveGlobalAffine(layout, edges, options)
 %
 % Both are LINEAR in the stacked unknowns ``{L_t, p_t}``, so the global solve
 % stays one sparse weighted least-squares system (the BigStitcher affine model)
-% — no nonlinear optimiser. Edges without a stored transform (phase-correlation
+% - no nonlinear optimiser. Edges without a stored transform (phase-correlation
 % or translation-model measurements) participate with ``M = I`` and ``c``
 % synthesised from ``.measured``, so mixed edge sets are fine.
 %
@@ -36,17 +36,17 @@ function [tforms, positions, stats] = solveGlobalAffine(layout, edges, options)
 % disconnected tiles get a bridge spring; every tile gets a tiny self-spring
 % (position toward nominal, linear part toward identity) for rank.
 %
-% **Rigid / Similarity — solved by projection, not by a nonlinear optimiser.**
+% **Rigid / Similarity - solved by projection, not by a nonlinear optimiser.**
 % ``options.transformType`` restricts the model: after the (always-linear)
 % affine solve, each tile's linear part is polar-decomposed ``L = R * S``
 % (rotation x symmetric stretch, via SVD) and replaced by the closest member of
-% the requested group — ``R`` for Rigid, ``s*R`` (``s`` = mean singular value,
+% the requested group - ``R`` for Rigid, ``s*R`` (``s`` = mean singular value,
 % the Frobenius-optimal scalar) for Similarity. ``options.allowRotation = false``
 % additionally locks the rotation factor to identity (``R = I`` branch of the
 % same decomposition): Rigid degenerates to pure translation, Similarity to
 % scale + translation, Affine keeps scale/shear but no rotation. After the
 % projection the tile translations are RE-SOLVED with the projected linear
-% parts held fixed — each edge then contributes the known offset
+% parts held fixed - each edge then contributes the known offset
 % ``pos_j - pos_i = (L_j - L_i)*[1;1] - L_j*c``, which is exactly the
 % translation solver's row shape, so the refinement reuses
 % :func:`utils.stitch.solveGlobalLeastSquares` (same springs/anchoring).
@@ -56,42 +56,42 @@ function [tforms, positions, stats] = solveGlobalAffine(layout, edges, options)
 % (:func:`utils.stitch.solveGlobalLeastSquares`) and merged into ``positions``.
 %
 % Input Arguments:
-%   - **layout** — [struct array] tile layout with ``.nomOrigin`` (``[y x z]``).
-%   - **edges** — [struct array] from :func:`utils.stitch.measureAllPairs`; uses
+%   - **layout** - [struct array] tile layout with ``.nomOrigin`` (``[y x z]``).
+%   - **edges** - [struct array] from :func:`utils.stitch.measureAllPairs`; uses
 %     ``.i .j .measured .nominal .quality .valid`` and (when present) ``.tform``
 %     (3x3 double, tile-local xy map ``i → j``).
-%   - **options** *(optional)* — struct with fields:
+%   - **options** *(optional)* - struct with fields:
 %
-%     - ``.springWeight`` — [double] weight of re-added pruned/bridge springs (default: ``0.10``)
-%     - ``.nominalSpringWeight`` — [double] weight of the per-tile position self-spring
-%       (default: ``0.001``; rank guard only — real weight biases the solution)
-%     - ``.identitySpringWeight`` — [double] weight of the per-tile linear-part
+%     - ``.springWeight`` - [double] weight of re-added pruned/bridge springs (default: ``0.10``)
+%     - ``.nominalSpringWeight`` - [double] weight of the per-tile position self-spring
+%       (default: ``0.001``; rank guard only - real weight biases the solution)
+%     - ``.identitySpringWeight`` - [double] weight of the per-tile linear-part
 %       self-spring toward identity (default: ``0.001``). A mild prior against
 %       scale/shear drift accumulating across the mosaic.
-%     - ``.transformType`` — [char] ``'Affine'`` (default) | ``'Rigid'`` |
-%       ``'Similarity'`` — the group each tile's linear part is projected onto
+%     - ``.transformType`` - [char] ``'Affine'`` (default) | ``'Rigid'`` |
+%       ``'Similarity'`` - the group each tile's linear part is projected onto
 %       after the linear solve (see above).
-%     - ``.allowRotation`` — [logical] ``true`` (default) permits per-tile
+%     - ``.allowRotation`` - [logical] ``true`` (default) permits per-tile
 %       rotation; ``false`` locks the rotation factor to identity in the
 %       projection (robustness prior for stage-tiled data that cannot rotate).
-%     - ``.userEdgeWeight`` — [double] weight of USER-fixed edges
-%       (``edge.source = 'user'``; default: ``5.0``) — never pruned, dominate
+%     - ``.userEdgeWeight`` - [double] weight of USER-fixed edges
+%       (``edge.source = 'user'``; default: ``5.0``) - never pruned, dominate
 %       conflicting automatic edges (see the translation solver's doc).
 %
 % Output Arguments:
-%   - **tforms** — [N x 1 cell] per-tile 3x3 doubles mapping 1-based tile-local
+%   - **tforms** - [N x 1 cell] per-tile 3x3 doubles mapping 1-based tile-local
 %     xy to global xy: ``[x'; y'; 1] = tforms{t} * [x; y; 1]``. The anchor tile
 %     has an identity linear part and its nominal origin.
-%   - **positions** — [N x 3 double] solved ``[y x z]`` origins — the global
+%   - **positions** - [N x 3 double] solved ``[y x z]`` origins - the global
 %     coordinate of each tile's pixel (1,1) (``L_t*[1;1] + p_t`` in yx order,
 %     z from the scalar solve). Collapses to the translation-solver result when
 %     every edge is a pure translation.
-%   - **stats** — [struct] same shape as the translation solver's:
+%   - **stats** - [struct] same shape as the translation solver's:
 %     ``.residuals`` (M x 3, position mismatch per valid edge evaluated at the
 %     source tile's centre), ``.rmse`` (1x3), ``.rmseTotal``, ``.nPruned``,
 %     ``.nComponents``, ``.anchorComponent``, ``.disconnectedTiles``.
 %
-% **Example** — solve an affine-jittered grid:
+% **Example** - solve an affine-jittered grid:
 %
 %   .. code-block:: matlab
 %
@@ -118,7 +118,7 @@ stats = struct('residuals', zeros(0, 3), 'rmse', [0 0 0], 'rmseTotal', 0, ...
 
 if nTiles == 0; return; end
 
-% z axis is untouched by the in-plane affine model — reuse the scalar solver for
+% z axis is untouched by the in-plane affine model - reuse the scalar solver for
 % the z origins (and let it also compute the graph connectivity once).
 [translationPositions, translationStats] = utils.stitch.solveGlobalLeastSquares(layout, edges, options);
 positions(:, 3) = translationPositions(:, 3);
@@ -145,7 +145,7 @@ isDisconnected(disconnectedTiles) = true;
 
 % Characteristic tile extent: a dimensionless residual r in the linear part
 % causes a pixel error of linearScale*r at the tile edge, so the L rows must
-% enter the quadratic cost as (linearScale*r)^2 — i.e. weighted by
+% enter the quadratic cost as (linearScale*r)^2 - i.e. weighted by
 % linearScale^2 relative to the position rows. Under-weighting them lets the
 % solver tilt L (the L*c lever arm is the tile pitch in pixels) to trade
 % measurement-exactness for spring satisfaction.
@@ -222,7 +222,7 @@ end
 
 % Pruned edges re-enter as weak springs toward NOMINAL, but only when they touch
 % a tile the valid edges leave disconnected from the anchor (same rule as the
-% translation solver — elsewhere they only bias the solution).
+% translation solver - elsewhere they only bias the solution).
 for k = 1:numel(prunedEdges)
     e = prunedEdges(k);
     if ~isDisconnected(e.i) && ~isDisconnected(e.j); continue; end

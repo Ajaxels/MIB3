@@ -13,23 +13,23 @@ function segmentationBrush(obj, y, x, modifier)
 % superpixel-assisted (SLIC/Watershed) modes.
 %
 % Input Arguments:
-%   - **y** — [double] y-coordinate of the mouse cursor at the starting point (in shown image coords)
-%   - **x** — [double] x-coordinate of the mouse cursor at the starting point (in shown image coords)
-%   - **modifier** — [char|cell] modifier keys held during click:
+%   - **y** - [double] y-coordinate of the mouse cursor at the starting point (in shown image coords)
+%   - **x** - [double] x-coordinate of the mouse cursor at the starting point (in shown image coords)
+%   - **modifier** - [char|cell] modifier keys held during click:
 %
-%     - empty string ``''`` — add selection
-%     - ``'control'`` — subtract selection (eraser mode)
+%     - empty string ``''`` - add selection
+%     - ``'control'`` - subtract selection (eraser mode)
 %
 % Output Arguments:
 %   (none)
 %
-% **Example 1** — start brush from shown position:
+% **Example 1** - start brush from shown position:
 %
 %   .. code-block:: matlab
 %
 %      obj.segmentationBrush(50, 75, '');  % start from [y,x]=50,75
 %
-% **Example 2** — start eraser from shown position:
+% **Example 2** - start eraser from shown position:
 %
 %   .. code-block:: matlab
 %
@@ -48,7 +48,7 @@ dataset = obj.mibModel.I{obj.mibModel.id};
 % ---- do backup ----
 % The brush only edits the shown area and commits it via block mode, so on BigData
 % bound the undo backup to the visible block (full-resolution) instead of capturing
-% the whole full-res slice per stroke — WSI-safe. backup() records the block's
+% the whole full-res slice per stroke - WSI-safe. backup() records the block's
 % coordinates, so undo restores the correct region regardless of later pan/zoom.
 backupOptions.blockModeSwitch = (dataset.datasetType(1) == 'B');
 obj.mibModel.backup('selection', 0, backupOptions);

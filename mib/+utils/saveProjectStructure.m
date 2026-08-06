@@ -9,26 +9,26 @@ function saveProjectStructure(rootFolder, outputFile, excludeFolders)
 %      saveProjectStructure(rootFolder, outputFile, excludeFolders)
 %
 % Input Arguments:
-%   - **rootFolder** — [char] root directory path to scan, e.g. ``'C:\Projects\MIB'`` or ``pwd``
-%   - **outputFile** — [char] output file path, e.g. ``'project_structure.txt'``
-%   - **excludeFolders** *(optional)* — [cell of char] folder names to skip (default: ``{'.git', 'assets', 'external'}``).
+%   - **rootFolder** - [char] root directory path to scan, e.g. ``'C:\Projects\MIB'`` or ``pwd``
+%   - **outputFile** - [char] output file path, e.g. ``'project_structure.txt'``
+%   - **excludeFolders** *(optional)* - [cell of char] folder names to skip (default: ``{'.git', 'assets', 'external'}``).
 %     Matching is case-sensitive against bare folder names.
 %
 % Usage:
 %
-%   **Example 1** — scan current directory with default exclusions
+%   **Example 1** - scan current directory with default exclusions
 %
 %   .. code-block:: matlab
 %
 %      utils.saveProjectStructure(pwd, 'structure.txt');
 %
-%   **Example 2** — scan with custom exclusions
+%   **Example 2** - scan with custom exclusions
 %
 %   .. code-block:: matlab
 %
 %      utils.saveProjectStructure(pwd, 'structure.txt', {'assets', 'docs', 'test_data'});
 %
-%   **Example 3** — scan MIB mib/ subfolder
+%   **Example 3** - scan MIB mib/ subfolder
 %
 %   .. code-block:: matlab
 %

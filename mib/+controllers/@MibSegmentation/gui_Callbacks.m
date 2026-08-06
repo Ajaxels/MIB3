@@ -10,18 +10,18 @@ function gui_Callbacks(obj, hWidget, hData)
 % material management, color scheme control, and visualization settings.
 %
 % Input Arguments:
-%   - **hWidget** — [matlab.ui.control.Button | matlab.ui.control.CheckBox] pressed widget; operation identified via ``hWidget.Tag``:
+%   - **hWidget** - [matlab.ui.control.Button | matlab.ui.control.CheckBox] pressed widget; operation identified via ``hWidget.Tag``:
 %
-%     - ``'createModel'`` — create a new segmentation model
-%     - ``'loadModel'`` — load model from file
-%     - ``'addMaterial'`` — add material to model
-%     - ``'removeMaterial'`` — remove material from model
-%     - ``'colorWheel'`` — generate random colors for materials; the random seed is
+%     - ``'createModel'`` - create a new segmentation model
+%     - ``'loadModel'`` - load model from file
+%     - ``'addMaterial'`` - add material to model
+%     - ``'removeMaterial'`` - remove material from model
+%     - ``'colorWheel'`` - generate random colors for materials; the random seed is
 %       requested in a dialog, unless the button was clicked with Ctrl held down, in
 %       which case the generator is seeded from the system clock without a dialog
-%     - ``'viewSettings'`` — open visualization settings dialog for model/mask
+%     - ``'viewSettings'`` - open visualization settings dialog for model/mask
 %
-%   - **hData** — [matlab.ui.eventdata.ButtonPushedData | matlab.ui.eventdata.ValueChangedData] event data from widget
+%   - **hData** - [matlab.ui.eventdata.ButtonPushedData | matlab.ui.eventdata.ValueChangedData] event data from widget
 %
 % Output Arguments:
 %   None

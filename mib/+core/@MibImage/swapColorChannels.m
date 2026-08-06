@@ -7,15 +7,15 @@ function swapColorChannels(obj, channel1, channel2, options)
 %       obj.swapColorChannels(channel1, channel2, options)
 %
 % Input Arguments:
-%   - **channel1** — 1-based index of the first channel
-%   - **channel2** — 1-based index of the second channel
-%   - **options** — *(optional)* struct with fields:
+%   - **channel1** - 1-based index of the first channel
+%   - **channel2** - 1-based index of the second channel
+%   - **options** - *(optional)* struct with fields:
 %
-%     - ``.showWaitbar`` — logical; show progress bar (default ``true``)
-%     - ``.ParentFigure`` — handle to parent figure for the progress dialog (default ``[]``)
+%     - ``.showWaitbar`` - logical; show progress bar (default ``true``)
+%     - ``.ParentFigure`` - handle to parent figure for the progress dialog (default ``[]``)
 %
 % Usage:
-%   **Example 1** — swap channels 1 and 3
+%   **Example 1** - swap channels 1 and 3
 %
 %   .. code-block:: matlab
 %

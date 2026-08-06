@@ -22,22 +22,22 @@ function stats = stitchModelInstances(obj, options, wb)
 %
 % Unlike the connected-component options in ``convertModel`` (which turn a
 % *semantic* model into indexed objects), this expects a model whose slices are
-% **already** per-slice indexed 2D instances — typically the raw output of a 2D
+% **already** per-slice indexed 2D instances - typically the raw output of a 2D
 % instance-segmentation prediction.
 %
 % Input Arguments:
-%   - **options** *(optional)* — structure passed through to
+%   - **options** *(optional)* - structure passed through to
 %     :func:`utils.stitchInstances2Dto3D` (``method``, ``iouThreshold``,
 %     ``ioaThreshold``, ``minOverlapPixels``, ``zLookback``, ``minObjectVoxels``,
 %     ``bidirectional``); missing fields take that function's defaults
-%   - **wb** *(optional)* — ``uiprogressdlg`` handle; pass ``[]`` to skip
+%   - **wb** *(optional)* - ``uiprogressdlg`` handle; pass ``[]`` to skip
 %     progress reporting
 %
 % Output Arguments:
-%   - **stats** — structure from the last processed timepoint with
+%   - **stats** - structure from the last processed timepoint with
 %     ``.numInput2DObjects``, ``.numOutput3DObjects``, ``.objectVoxelCounts``
 %
-% **Example** — stitch the current model with default settings
+% **Example** - stitch the current model with default settings
 %
 %   .. code-block:: matlab
 %

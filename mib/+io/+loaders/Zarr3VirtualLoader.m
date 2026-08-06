@@ -7,19 +7,19 @@ classdef Zarr3VirtualLoader < handle
 % [y, x, z, c, t] Fortran order is precomputed in the constructor.
 %
 % Unlike batch loaders in +io/+loaders/ this class does NOT implement
-% BaseImageLoader — it is stateful and designed for repeated sub-region
+% BaseImageLoader - it is stateful and designed for repeated sub-region
 % reads rather than a single full-dataset load.
 %
 % **Relationship to OmeZarrLoader**
 %
-% OmeZarrLoader — runs ONCE when the user opens a .zarr3 file.
+% OmeZarrLoader - runs ONCE when the user opens a .zarr3 file.
 % Phase : dataset initialisation (MibModel.loadImages)
 % Job : parse OME-Zarr metadata, build pyramid struct, return path.
 % Reads pixels? No (Virtual/BigData mode) / Yes (Standard mode).
 % Lifetime: discarded after open; implements BaseImageLoader.
 % Created by: LoaderFactory (via case "OmeZarr")
 %
-% Zarr3VirtualLoader — runs on EVERY slice request during the session.
+% Zarr3VirtualLoader - runs on EVERY slice request during the session.
 % Phase : on-demand pixel reading (MibVirtualImage.getDataZarr)
 % Job : read sub-region via ZarrArray.read(bbox).
 % Reads pixels? Yes.
@@ -33,7 +33,7 @@ classdef Zarr3VirtualLoader < handle
 % [nX, nY, nZ, nC, nT] in MATLAB. computePermutation() precomputes
 % the permutation vector that maps this to MIB3 [y, x, z, c, t].
 %
-% **Example 1** — local OME-Zarr v3 dataset:
+% **Example 1** - local OME-Zarr v3 dataset:
 %
 %   .. code-block:: matlab
 %
@@ -42,7 +42,7 @@ classdef Zarr3VirtualLoader < handle
 %      block = loader.readRegion('0', [1,512], [1,512], [5,5], [1,2], [1,1], 'uint16');
 %      % block is [512, 512, 1, 2, 1] in [y,x,z,c,t] order
 %
-% **Example 2** — remote OME-Zarr v3 dataset (HTTP):
+% **Example 2** - remote OME-Zarr v3 dataset (HTTP):
 %
 %   .. code-block:: matlab
 %
@@ -80,15 +80,15 @@ methods
         % permutation from the OME-Zarr C-order declaration to MIB3.
         %
         % Input Arguments:
-        %   - **rootPath** — [char] zarr root path (local folder or HTTP/HTTPS URL)
-        %   - **axisOrder** — *(optional)* [char] OME-Zarr axis order in Python
+        %   - **rootPath** - [char] zarr root path (local folder or HTTP/HTTPS URL)
+        %   - **axisOrder** - *(optional)* [char] OME-Zarr axis order in Python
         %     C-order declaration, e.g. ``'tczyx'``, ``'czyx'``, ``'zyx'``
         %     (default: ``'tczyx'``)
         %
         % Output Arguments:
-        %   - **obj** — [Zarr3VirtualLoader] new loader instance
+        %   - **obj** - [Zarr3VirtualLoader] new loader instance
         %
-        % **Example** — local and remote datasets:
+        % **Example** - local and remote datasets:
         %
         %   .. code-block:: matlab
         %
@@ -118,19 +118,19 @@ methods
         % Always returns data in MIB3 [y, x, z, c, t] order.
         %
         % Input Arguments:
-        %   - **levelPath** — [char] relative pyramid level path within root,
+        %   - **levelPath** - [char] relative pyramid level path within root,
         %     e.g. ``'0'`` or ``'1'``; pass ``''`` to read from the root array directly
-        %   - **physYlim** — [1x2 numeric] physical Y range ``[ymin ymax]`` (1-based, inclusive)
-        %   - **physXlim** — [1x2 numeric] physical X range ``[xmin xmax]`` (1-based, inclusive)
-        %   - **physZlim** — [1x2 numeric] physical Z range ``[zmin zmax]`` (1-based, inclusive)
-        %   - **Clim** — [1x2 numeric] channel range ``[cmin cmax]`` (1-based, inclusive)
-        %   - **Tlim** — [1x2 numeric] time range ``[tmin tmax]`` (1-based, inclusive)
-        %   - **dataClass** — [char] output MATLAB class, e.g. ``'uint8'`` or ``'uint16'``
+        %   - **physYlim** - [1x2 numeric] physical Y range ``[ymin ymax]`` (1-based, inclusive)
+        %   - **physXlim** - [1x2 numeric] physical X range ``[xmin xmax]`` (1-based, inclusive)
+        %   - **physZlim** - [1x2 numeric] physical Z range ``[zmin zmax]`` (1-based, inclusive)
+        %   - **Clim** - [1x2 numeric] channel range ``[cmin cmax]`` (1-based, inclusive)
+        %   - **Tlim** - [1x2 numeric] time range ``[tmin tmax]`` (1-based, inclusive)
+        %   - **dataClass** - [char] output MATLAB class, e.g. ``'uint8'`` or ``'uint16'``
         %
         % Output Arguments:
-        %   - **block** — [nY x nX x nZ x nC x nT numeric] array in MIB3 [y,x,z,c,t] order
+        %   - **block** - [nY x nX x nZ x nC x nT numeric] array in MIB3 [y,x,z,c,t] order
         %
-        % **Example** — read channel 1, z=10..20, full XY 512x512:
+        % **Example** - read channel 1, z=10..20, full XY 512x512:
         %
         %   .. code-block:: matlab
         %
@@ -205,17 +205,17 @@ methods (Access = public)
         %
         % Thin wrapper kept for backward compatibility (e.g.
         % ``Zarr3VirtualSetupLoader`` previously created a throwaway loader
-        % instance just to call this) — delegates to the version-agnostic
+        % instance just to call this) - delegates to the version-agnostic
         % ``io.loaders.OmeZarrMetadataUtils.computePermutation``.
         %
         % Input Arguments:
-        %   - **axisOrder** — [char] zarr C-order axis declaration,
+        %   - **axisOrder** - [char] zarr C-order axis declaration,
         %     e.g. ``'czyx'`` or ``'tczyx'``
         %
         % Output Arguments:
-        %   - **perm** — [1x5 numeric] permutation for ``permute(raw, perm)`` → [y,x,z,c,t]
+        %   - **perm** - [1x5 numeric] permutation for ``permute(raw, perm)`` → [y,x,z,c,t]
         %
-        % **Example** — permutation for common axis orders:
+        % **Example** - permutation for common axis orders:
         %
         %   .. code-block:: matlab
         %

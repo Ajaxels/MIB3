@@ -10,8 +10,8 @@ function swapMaterials(obj, index1, index2)
 % beforehand (see MibDataset.swapMaterials).
 %
 % Input Arguments:
-%   - **index1** — double, 1-based index of the first material.
-%   - **index2** — double, 1-based index of the second material.
+%   - **index1** - double, 1-based index of the first material.
+%   - **index2** - double, 1-based index of the second material.
 %
 % Output Arguments:
 %

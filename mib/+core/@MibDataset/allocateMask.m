@@ -2,7 +2,7 @@ function allocateMask(obj)
 % ALLOCATEMASK - allocate a zero-filled Mask layer when it is missing.
 %
 % For datasets with a ``MibLabels63`` model the mask is stored in bit 7 of
-% the packed labels array and needs no separate container — the method
+% the packed labels array and needs no separate container - the method
 % returns without action. For all other model types, when ``obj.mask`` is an
 % empty placeholder (``obj.mask.exists == false``) it is replaced with a
 % zero-filled ``core.MibLabels`` container matching the image dimensions, so
@@ -30,7 +30,7 @@ function allocateMask(obj)
 % Updates
 %
 
-% the mask of MibLabels63 models lives in the packed bits — nothing to allocate
+% the mask of MibLabels63 models lives in the packed bits - nothing to allocate
 if isa(obj.labels, 'core.MibLabels63'); return; end
 if obj.mask.exists; return; end
 

@@ -26,7 +26,7 @@ function stopFiji(mibGUI)
 %      utils.fiji.stopFiji(mibGUI)
 %
 % Input Arguments:
-%   - **mibGUI** *(optional)* — handle to the parent UIFigure used for
+%   - **mibGUI** *(optional)* - handle to the parent UIFigure used for
 %     dialogs; pass ``[]`` or omit to fall back to standard dialogs
 %
 % Updates

@@ -6,14 +6,14 @@ classdef DeleteSliceModelTest < matlab.unittest.TestCase
 % SpatialOpsTest; here we verify the MibModel-level BatchOpt path, including
 % multi-slice deletion and the string-range DeletePosition field.
 %
-% Call pattern: mibModel.deleteSlice([], [], batchOpt) — nargin=4 triggers
+% Call pattern: mibModel.deleteSlice([], [], batchOpt) - nargin=4 triggers
 % the batch path.
 %
 % Verification strategies:
-%   single-slice delete   — depth decreases by 1
-%   multi-slice range     — DeletePosition '2:4' removes 3 slices; depth − 3
-%   content preserved     — a known slice that survives keeps its pixel data
-%   width unchanged       — spatial dimensions other than depth are unaffected
+%   single-slice delete   - depth decreases by 1
+%   multi-slice range     - DeletePosition '2:4' removes 3 slices; depth − 3
+%   content preserved     - a known slice that survives keeps its pixel data
+%   width unchanged       - spatial dimensions other than depth are unaffected
 
     methods (TestClassSetup)
         function addPaths(testCase)
@@ -53,7 +53,7 @@ classdef DeleteSliceModelTest < matlab.unittest.TestCase
 
         function deleteSlice_survivingSlice_contentPreserved(testCase)
             % After deleting slice 3, what was originally slice 5 is now at
-            % position 4 — verify its pixel data matches the ground truth.
+            % position 4 - verify its pixel data matches the ground truth.
             [mibModel, groundTruth] = mibtest.helpers.buildSyntheticModel( ...
                 'modelType', 'labels255', 'dims', [16 16 8]);
             opt = struct('id', 1, 'blockModeSwitch', 0);

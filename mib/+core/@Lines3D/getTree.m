@@ -7,13 +7,13 @@ function [Graph, nodeIds, EdgesTable, NodesTable] = getTree(obj, treeId)
 %       [Graph, nodeIds, EdgesTable, NodesTable] = obj.getTree(treeId)
 %
 % Input Arguments:
-%   - **treeId** — index of tree to get
+%   - **treeId** - index of tree to get
 %
 % Output Arguments:
-%   - **Graph** — graph object containing tree specified in treeId
-%   - **nodeIds** — indices of nodes belonging to this tree
-%   - **EdgesTable** — a table with edges that belong to treeId
-%   - **NodesTable** — a table with nodes that belong to treeId
+%   - **Graph** - graph object containing tree specified in treeId
+%   - **nodeIds** - indices of nodes belonging to this tree
+%   - **EdgesTable** - a table with edges that belong to treeId
+%   - **NodesTable** - a table with nodes that belong to treeId
 %
 
 if nargin < 2; return; end

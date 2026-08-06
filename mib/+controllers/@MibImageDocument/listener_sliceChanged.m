@@ -20,12 +20,12 @@ function listener_sliceChanged(obj)
 %     (which would create an infinite loop by firing ``SliceChanged`` themselves)
 %
 % Input Arguments:
-%   (none — called via ``@(~,~) obj.listener_sliceChanged()``)
+%   (none - called via ``@(~,~) obj.listener_sliceChanged()``)
 %
 % Output Arguments:
 %   (none)
 %
-% **Example** — wired in ``setupCallbacks``:
+% **Example** - wired in ``setupCallbacks``:
 %
 %   .. code-block:: matlab
 %
@@ -39,7 +39,7 @@ if obj.mibModel.Sets.selectedSet ~= obj.setOfDatasetsIndex; return; end
 dataset     = obj.mibModel.I{obj.mibModel.id};
 sliceNumber = dataset.slices{dataset.orientation}(1);
 
-% Sync widgets directly — no callbacks to avoid re-entrant SliceChanged loop.
+% Sync widgets directly - no callbacks to avoid re-entrant SliceChanged loop.
 % Do not move the slider thumb while the user is actively dragging it (that would
 % fight the drag and make the thumb appear to lag/jump).
 obj.handles.sliceNumber.Value = sliceNumber;

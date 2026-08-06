@@ -7,8 +7,8 @@ function connectNodes(obj, s, t)
 %       obj.connectNodes(s, t)
 %
 % Input Arguments:
-%   - **s** — index of the first node
-%   - **t** — index of the second node
+%   - **s** - index of the first node
+%   - **t** - index of the second node
 %
 
 if nargin < 3; error('not enough parameters!'); end

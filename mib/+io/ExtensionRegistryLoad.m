@@ -10,13 +10,13 @@ classdef ExtensionRegistryLoad < handle
         extensionSets dictionary
         % Dictionary mapping mode.reader combinations to extension lists:
         %
-        %   - ``Standard.Default`` — standard dataset loaded to memory, default reader
-        %   - ``Virtual.Default`` — virtual dataset, default reader
-        %   - ``BigData.Default`` — bigdata dataset, default reader
-        %   - ``Standard.BioFormats`` — standard dataset loaded to memory, bio-formats reader
-        %   - ``Virtual.BioFormats`` — virtual dataset, bio-formats reader
-        %   - ``BigData.BioFormats`` — bigdata dataset, bio-formats reader
-        %   - ``Model.Default`` — model files (labels/segmentation)
+        %   - ``Standard.Default`` - standard dataset loaded to memory, default reader
+        %   - ``Virtual.Default`` - virtual dataset, default reader
+        %   - ``BigData.Default`` - bigdata dataset, default reader
+        %   - ``Standard.BioFormats`` - standard dataset loaded to memory, bio-formats reader
+        %   - ``Virtual.BioFormats`` - virtual dataset, bio-formats reader
+        %   - ``BigData.BioFormats`` - bigdata dataset, bio-formats reader
+        %   - ``Model.Default`` - model files (labels/segmentation)
         %
         imreadExtensions
         % Cell array with standard MATLAB image format filename extensions (e.g. ``'tif'``, ``'png'``)
@@ -42,7 +42,7 @@ classdef ExtensionRegistryLoad < handle
             %   (none)
             %
             % Output Arguments:
-            %   - **obj** — instance of ExtensionRegistryLoad
+            %   - **obj** - instance of ExtensionRegistryLoad
 
             obj.extensionSets = dictionary();
             obj.initDefaults();
@@ -62,26 +62,26 @@ classdef ExtensionRegistryLoad < handle
             % the requested mode/reader combination, returns an error message.
             %
             % Input Arguments:
-            %   - **filename** — [char] first filename in the sequence of files to load
-            %   - **mode** — [char] dataset type:
+            %   - **filename** - [char] first filename in the sequence of files to load
+            %   - **mode** - [char] dataset type:
             %
-            %     - ``'Standard'`` — dataset loaded into memory
-            %     - ``'Virtual'`` — dataset loaded on demand
-            %     - ``'BigData'`` — large dataset using OME-Zarr v3
-            %     - ``'Model'`` — segmentation labels/masks
+            %     - ``'Standard'`` - dataset loaded into memory
+            %     - ``'Virtual'`` - dataset loaded on demand
+            %     - ``'BigData'`` - large dataset using OME-Zarr v3
+            %     - ``'Model'`` - segmentation labels/masks
             %
-            %   - **reader** — [char] file reader type:
+            %   - **reader** - [char] file reader type:
             %
-            %     - ``'Default'`` — MATLAB ``imread``, custom, and other native readers
-            %     - ``'BioFormats'`` — BioFormats library reader
+            %     - ``'Default'`` - MATLAB ``imread``, custom, and other native readers
+            %     - ``'BioFormats'`` - BioFormats library reader
             %
             % Output Arguments:
-            %   - **loaderInfo** — struct encoding the loader configuration:
+            %   - **loaderInfo** - struct encoding the loader configuration:
             %
-            %     - ``.mode`` — [char] mode from input
-            %     - ``.reader`` — [char] reader from input
-            %     - ``.extension`` — [char] filename extension without leading dot
-            %     - ``.loaderId`` — [char] identifier of the loader to use (e.g. ``'BioFormatsStd'``, ``'imread'``)
+            %     - ``.mode`` - [char] mode from input
+            %     - ``.reader`` - [char] reader from input
+            %     - ``.extension`` - [char] filename extension without leading dot
+            %     - ``.loaderId`` - [char] identifier of the loader to use (e.g. ``'BioFormatsStd'``, ``'imread'``)
             %
             %     When the extension is incompatible, returns a [char] error message instead.
             %
@@ -123,39 +123,39 @@ classdef ExtensionRegistryLoad < handle
             %      ext = obj.getAllowedExtensions(mode, reader, withDot)
             %
             % Input Arguments:
-            %   - **mode** — [char] dataset type:
+            %   - **mode** - [char] dataset type:
             %
-            %     - ``'Standard'`` — dataset loaded into memory
-            %     - ``'Virtual'`` — dataset loaded on demand
-            %     - ``'BigData'`` — large dataset using OME-Zarr v3
-            %     - ``'Model'`` — segmentation labels/masks
+            %     - ``'Standard'`` - dataset loaded into memory
+            %     - ``'Virtual'`` - dataset loaded on demand
+            %     - ``'BigData'`` - large dataset using OME-Zarr v3
+            %     - ``'Model'`` - segmentation labels/masks
             %
-            %   - **reader** — [char] file reader type:
+            %   - **reader** - [char] file reader type:
             %
-            %     - ``'Default'`` — MATLAB ``imread``, custom, and other native readers
-            %     - ``'BioFormats'`` — BioFormats library reader
+            %     - ``'Default'`` - MATLAB ``imread``, custom, and other native readers
+            %     - ``'BioFormats'`` - BioFormats library reader
             %
-            %   - **withDot** — *(optional)* logical, default: ``true``
+            %   - **withDot** - *(optional)* logical, default: ``true``
             %
-            %     - ``true`` — return extensions without leading dots (e.g. ``{'tif', 'png'}``)
-            %     - ``false`` — return extensions with leading dots (e.g. ``{'.tif', '.png'}``)
+            %     - ``true`` - return extensions without leading dots (e.g. ``{'tif', 'png'}``)
+            %     - ``false`` - return extensions with leading dots (e.g. ``{'.tif', '.png'}``)
             %
             % Output Arguments:
-            %   - **ext** — cell array of [char] filename extensions
+            %   - **ext** - cell array of [char] filename extensions
             %
-            % **Example 1** — get Standard dataset extensions for BioFormats reader with leading dots:
+            % **Example 1** - get Standard dataset extensions for BioFormats reader with leading dots:
             %
             %   .. code-block:: matlab
             %
             %      ext = extReg.getAllowedExtensions('Standard', 'BioFormats', false);
             %
-            % **Example 2** — access from MibModel with Default reader:
+            % **Example 2** - access from MibModel with Default reader:
             %
             %   .. code-block:: matlab
             %
             %      ext = obj.mibModel.extensionRegistryLoad.getAllowedExtensions('Standard', 'Default', false);
             %
-            % **Example 3** — access from MibModel with BioFormats reader:
+            % **Example 3** - access from MibModel with BioFormats reader:
             %
             %   .. code-block:: matlab
             %
@@ -191,19 +191,19 @@ classdef ExtensionRegistryLoad < handle
             % Extensions are stored internally without leading dots for consistency.
             %
             % Input Arguments:
-            %   - **mode** — [char] dataset type:
+            %   - **mode** - [char] dataset type:
             %
-            %     - ``'Standard'`` — dataset loaded into memory
-            %     - ``'Virtual'`` — dataset loaded on demand
-            %     - ``'BigData'`` — large dataset using OME-Zarr v3
-            %     - ``'Model'`` — segmentation labels/masks
+            %     - ``'Standard'`` - dataset loaded into memory
+            %     - ``'Virtual'`` - dataset loaded on demand
+            %     - ``'BigData'`` - large dataset using OME-Zarr v3
+            %     - ``'Model'`` - segmentation labels/masks
             %
-            %   - **reader** — [char] file reader type:
+            %   - **reader** - [char] file reader type:
             %
-            %     - ``'Default'`` — MATLAB ``imread``, custom, and other native readers
-            %     - ``'BioFormats'`` — BioFormats library reader
+            %     - ``'Default'`` - MATLAB ``imread``, custom, and other native readers
+            %     - ``'BioFormats'`` - BioFormats library reader
             %
-            %   - **extensionList** — cell array of [char], new extension list;
+            %   - **extensionList** - cell array of [char], new extension list;
             %     may include or omit leading dots (e.g. both ``'.tif'`` and ``'tif'`` are accepted)
             %
             % Output Arguments:
@@ -251,10 +251,10 @@ classdef ExtensionRegistryLoad < handle
             % standard image extensions
             obj.extensionSets("Standard.Default") = {sort(stdImgFormats)};
             % zarr v3: native zarr-matlab library; zarr v2: python-backed
-            % (io.zarr.PyBackend) — see io.loaders.Zarr2VirtualSetupLoader.
+            % (io.zarr.PyBackend) - see io.loaders.Zarr2VirtualSetupLoader.
             obj.extensionSets("Virtual.Default") = {sort({'h5','hdf5','xml', 'zarr', 'zarr2', 'zarr3'})};
             % BigData zarr2: image pyramid browsing + a read-only existing
-            % labels overlay only (core.MibBigDataLabelsZarr2) — no editable
+            % labels overlay only (core.MibBigDataLabelsZarr2) - no editable
             % disk-backed model store, unlike zarr3.
             obj.extensionSets("BigData.Default") = {sort({'zarr2', 'zarr3'})};
             
@@ -270,10 +270,10 @@ classdef ExtensionRegistryLoad < handle
             obj.extensionSets("Standard.BioFormats") = {sort(bioFormats)};
             obj.extensionSets("Virtual.BioFormats") = {sort([{'am'}, bioFormats])};
             % BigData direct-read via BioFormats (WSI pyramids + any BioFormats file,
-            % read on-demand per pyramid level — see development/bigdata/bigdata_implementation_plan.md).
+            % read on-demand per pyramid level - see development/bigdata/bigdata_implementation_plan.md).
             obj.extensionSets("BigData.BioFormats") = {sort(bioFormats)};
 
-            % OpenSlide reader — classic whole-slide formats. Until the native
+            % OpenSlide reader - classic whole-slide formats. Until the native
             % MATLAB openslideread engine is wired (Phase D), an OpenSlide selection
             % opens through the BioFormats loaders (defaultLoaderId routes it like
             % BioFormats). The extension list is what populates the file-filter
@@ -304,20 +304,20 @@ classdef ExtensionRegistryLoad < handle
             %      key = obj.generateKey(mode, reader)
             %
             % Input Arguments:
-            %   - **mode** — [char|string] dataset type:
+            %   - **mode** - [char|string] dataset type:
             %
-            %     - ``'Standard'`` — dataset loaded into memory
-            %     - ``'Virtual'`` — dataset loaded on demand
-            %     - ``'BigData'`` — large dataset using OME-Zarr v3
-            %     - ``'Model'`` — segmentation labels/masks
+            %     - ``'Standard'`` - dataset loaded into memory
+            %     - ``'Virtual'`` - dataset loaded on demand
+            %     - ``'BigData'`` - large dataset using OME-Zarr v3
+            %     - ``'Model'`` - segmentation labels/masks
             %
-            %   - **reader** — [char|string] file reader type:
+            %   - **reader** - [char|string] file reader type:
             %
-            %     - ``'Default'`` — MATLAB ``imread``, custom, and other native readers
-            %     - ``'BioFormats'`` — BioFormats library reader
+            %     - ``'Default'`` - MATLAB ``imread``, custom, and other native readers
+            %     - ``'BioFormats'`` - BioFormats library reader
             %
             % Output Arguments:
-            %   - **key** — [string] dictionary key in the format ``'<mode>.<reader>'``,
+            %   - **key** - [string] dictionary key in the format ``'<mode>.<reader>'``,
             %     e.g. ``"Standard.Default"``, ``"Virtual.BioFormats"``
             %
 
@@ -340,39 +340,39 @@ classdef ExtensionRegistryLoad < handle
             % mode, file reader type, and filename extension.
             %
             % Input Arguments:
-            %   - **mode** — [char|string] dataset type:
+            %   - **mode** - [char|string] dataset type:
             %
-            %     - ``'Standard'`` — dataset loaded into memory
-            %     - ``'Virtual'`` — dataset loaded on demand
-            %     - ``'BigData'`` — large dataset using OME-Zarr v3
-            %     - ``'Model'`` — segmentation labels/masks
+            %     - ``'Standard'`` - dataset loaded into memory
+            %     - ``'Virtual'`` - dataset loaded on demand
+            %     - ``'BigData'`` - large dataset using OME-Zarr v3
+            %     - ``'Model'`` - segmentation labels/masks
             %
-            %   - **reader** — [char|string] file reader type:
+            %   - **reader** - [char|string] file reader type:
             %
-            %     - ``'Default'`` — MATLAB ``imread``, custom, and other native readers
-            %     - ``'BioFormats'`` — BioFormats library reader
+            %     - ``'Default'`` - MATLAB ``imread``, custom, and other native readers
+            %     - ``'BioFormats'`` - BioFormats library reader
             %
-            %   - **ext** — [char|string] filename extension without leading dot
+            %   - **ext** - [char|string] filename extension without leading dot
             %     (e.g. ``'tif'``, ``'png'``, ``'h5'``)
             %
             % Output Arguments:
-            %   - **id** — [char|string] identifier of the loader class to instantiate:
+            %   - **id** - [char|string] identifier of the loader class to instantiate:
             %
-            %     - ``'BioFormatsVirtual'`` — BioFormats reader for virtual mode
-            %     - ``'BioFormatsStd'`` — BioFormats reader for standard mode
-            %     - ``'AmiraMesh'`` — AmiraMesh format reader
-            %     - ``'imread'`` — MATLAB standard image reader
-            %     - ``'mibImg'`` — custom MIB image format (.mibimg)
-            %     - ``'hdf5-header'`` — HDF5 with header metadata (MIB or BigDataViewer format)
-            %     - ``'hdf5-no-header'`` — HDF5 without header (Ilastik format)
-            %     - ``'hdf5-header-virtual'`` — HDF5 header-based reader for virtual mode
-            %     - ``'hdf5-no-header-virtual'`` — HDF5 headerless reader for virtual mode
-            %     - ``'OmeZarr'`` — OME-Zarr v3 reader (implemented via Zarr3VirtualSetupLoader)
-            %     - ``'OmeZarrV2'`` — OME-Zarr v2 reader, python-backed (Zarr2VirtualSetupLoader)
-            %     - ``'imod'`` — IMOD model/mesh format reader
-            %     - ``'nrrd'`` — NRRD format reader
-            %     - ``'VideoReader'`` — MATLAB video file reader
-            %     - ``'MatModel'`` — MATLAB ``.model``, ``.mat``, or ``.mibcat`` segmentation format
+            %     - ``'BioFormatsVirtual'`` - BioFormats reader for virtual mode
+            %     - ``'BioFormatsStd'`` - BioFormats reader for standard mode
+            %     - ``'AmiraMesh'`` - AmiraMesh format reader
+            %     - ``'imread'`` - MATLAB standard image reader
+            %     - ``'mibImg'`` - custom MIB image format (.mibimg)
+            %     - ``'hdf5-header'`` - HDF5 with header metadata (MIB or BigDataViewer format)
+            %     - ``'hdf5-no-header'`` - HDF5 without header (Ilastik format)
+            %     - ``'hdf5-header-virtual'`` - HDF5 header-based reader for virtual mode
+            %     - ``'hdf5-no-header-virtual'`` - HDF5 headerless reader for virtual mode
+            %     - ``'OmeZarr'`` - OME-Zarr v3 reader (implemented via Zarr3VirtualSetupLoader)
+            %     - ``'OmeZarrV2'`` - OME-Zarr v2 reader, python-backed (Zarr2VirtualSetupLoader)
+            %     - ``'imod'`` - IMOD model/mesh format reader
+            %     - ``'nrrd'`` - NRRD format reader
+            %     - ``'VideoReader'`` - MATLAB video file reader
+            %     - ``'MatModel'`` - MATLAB ``.model``, ``.mat``, or ``.mibcat`` segmentation format
             %
             
             % Model loading: route to format-appropriate loader

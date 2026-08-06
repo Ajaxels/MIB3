@@ -9,25 +9,25 @@ function img = connectPoints(img, pnts, options)
 %      img = connectPoints(img, pnts, options)
 %
 % Input Arguments:
-%   - **img** — [uint8] image where the lines should be drawn
-%   - **pnts** — [numeric] matrix with point coordinates ``[pointNo, [x, y]]``
-%   - **options** *(optional)* — struct with extra parameters:
+%   - **img** - [uint8] image where the lines should be drawn
+%   - **pnts** - [numeric] matrix with point coordinates ``[pointNo, [x, y]]``
+%   - **options** *(optional)* - struct with extra parameters:
 %
-%     - ``.close`` — [logical] when ``1`` the shape will be closed (default: ``0``)
-%     - ``.fill``  — [logical] when ``1`` fill the enclosed shape (default: ``0``)
+%     - ``.close`` - [logical] when ``1`` the shape will be closed (default: ``0``)
+%     - ``.fill``  - [logical] when ``1`` fill the enclosed shape (default: ``0``)
 %
 % Output Arguments:
-%   - **img** — [uint8] bitmap image with drawn lines
+%   - **img** - [uint8] bitmap image with drawn lines
 %
 % Usage:
 %
-%   **Example 1** — draw open polyline
+%   **Example 1** - draw open polyline
 %
 %   .. code-block:: matlab
 %
 %      img = utils.connectPoints(img, pnts);
 %
-%   **Example 2** — draw closed filled polygon
+%   **Example 2** - draw closed filled polygon
 %
 %   .. code-block:: matlab
 %

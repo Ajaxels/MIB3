@@ -1,5 +1,5 @@
 function insertMaterial(obj, materialIndex, materialName, wb)
-% INSERTMATERIAL - Insert a new material at the specified position — MibDataset wrapper.
+% INSERTMATERIAL - Insert a new material at the specified position - MibDataset wrapper.
 %
 % Syntax:
 %   .. code-block:: matlab
@@ -11,11 +11,11 @@ function insertMaterial(obj, materialIndex, materialName, wb)
 % update (names, colours, materialsCount).
 %
 % Input Arguments:
-%   - **materialIndex** — double, 1-based position where the new material is
+%   - **materialIndex** - double, 1-based position where the new material is
 %     inserted.
-%   - **materialName** — char, name of the new material (used for small models;
+%   - **materialName** - char, name of the new material (used for small models;
 %     ignored for large models).
-%   - **wb** — *(optional)* handle to a uiprogressdlg for progress display;
+%   - **wb** - *(optional)* handle to a uiprogressdlg for progress display;
 %     when empty no progress is reported.
 %
 % Output Arguments:

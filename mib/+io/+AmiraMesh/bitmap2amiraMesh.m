@@ -8,38 +8,38 @@ function result = bitmap2amiraMesh(filename, bitmap, img_info, options)
 %      result = io.AmiraMesh.bitmap2amiraMesh(filename, bitmap, img_info, options)
 %
 % Input Arguments:
-%   - **filename** — filename for Amira Mesh file
-%   - **bitmap** — dataset in MIB3 native order [H, W, D, C, T]
+%   - **filename** - filename for Amira Mesh file
+%   - **bitmap** - dataset in MIB3 native order [H, W, D, C, T]
 %     (height, width, depth/slices, colour channels, time points);
 %     only the first time point (T=1) is written
-%   - **img_info** — *(optional)* metadata dictionary (MATLAB ``dictionary``, string → cell);
+%   - **img_info** - *(optional)* metadata dictionary (MATLAB ``dictionary``, string → cell);
 %     pass ``[]`` to use defaults. Recognised keys:
 %
-%     - ``'pixSize'`` — pixSize struct with fields ``.x``, ``.y``, ``.z``, ``.units``
-%     - ``'BoundingBox'`` — [1×6] ``[xmin xmax ymin ymax zmin zmax]``
-%     - ``'colorType'`` — ``'grayscale'`` or ``'multichannel'``
-%     - ``'lutColors'`` — [C×3] colour matrix (0–1)
-%     - ``'ImageDescription'`` — (char) optional description string
-%     - ``'TransformationMatrix'`` — optional transform (char or numeric)
+%     - ``'pixSize'`` - pixSize struct with fields ``.x``, ``.y``, ``.z``, ``.units``
+%     - ``'BoundingBox'`` - [1×6] ``[xmin xmax ymin ymax zmin zmax]``
+%     - ``'colorType'`` - ``'grayscale'`` or ``'multichannel'``
+%     - ``'lutColors'`` - [C×3] colour matrix (0-1)
+%     - ``'ImageDescription'`` - (char) optional description string
+%     - ``'TransformationMatrix'`` - optional transform (char or numeric)
 %
-%   - **options** — *(optional)* struct with fields:
+%   - **options** - *(optional)* struct with fields:
 %
-%     - ``.overwrite`` — ``1`` = do not check whether file already exists
-%     - ``.showWaitbar`` — ``1`` = show the progress bar
-%     - ``.ParentFigure`` — *(optional)* handle to the main MIB UIFigure; when provided,
+%     - ``.overwrite`` - ``1`` = do not check whether file already exists
+%     - ``.showWaitbar`` - ``1`` = show the progress bar
+%     - ``.ParentFigure`` - *(optional)* handle to the main MIB UIFigure; when provided,
 %       the progress bar is shown as a ``uiprogressdlg`` attached to that window;
 %       when absent or empty, the legacy ``waitbar`` is used as a fallback
-%     - ``.colors`` — *(optional)* [C×3] colour matrix (0–1) for multichannel;
+%     - ``.colors`` - *(optional)* [C×3] colour matrix (0-1) for multichannel;
 %       overrides ``img_info`` ``'lutColors'``
-%     - ``.Saving3d`` — ``'multi'`` = save all z-slices in a single file (default);
+%     - ``.Saving3d`` - ``'multi'`` = save all z-slices in a single file (default);
 %       ``'sequence'`` = save one file per z-slice
-%     - ``.SliceName`` — *(optional)* cell array with per-slice filenames (no path)
-%     - ``.verbose`` — *(optional)* [logical] (default: ``true``)
+%     - ``.SliceName`` - *(optional)* cell array with per-slice filenames (no path)
+%     - ``.verbose`` - *(optional)* [logical] (default: ``true``)
 %
 % Output Arguments:
-%   - **result** — ``1`` = success, ``0`` = failure
+%   - **result** - ``1`` = success, ``0`` = failure
 %
-% **Example 1** — standalone use (no GUI parent):
+% **Example 1** - standalone use (no GUI parent):
 %
 %   .. code-block:: matlab
 %
@@ -49,7 +49,7 @@ function result = bitmap2amiraMesh(filename, bitmap, img_info, options)
 %      opts.colors      = lutColors;
 %      io.AmiraMesh.bitmap2amiraMesh('/output/stack.am', data_hwdct, imgInfoDict, opts);
 %
-% **Example 2** — GUI use (attach progress dialog to MIB window):
+% **Example 2** - GUI use (attach progress dialog to MIB window):
 %
 %   .. code-block:: matlab
 %
@@ -154,7 +154,7 @@ function saveAmFile(filename, bitmap, img_info, options, wb)
 %
 %      saveAmFile(filename, bitmap, img_info, options, wb)
 %
-% bitmap: [H, W, D, C, T] — MIB3 native order; only first T is used.
+% bitmap: [H, W, D, C, T] - MIB3 native order; only first T is used.
 
 nC = size(bitmap, 4);   % colour channels
 nD = size(bitmap, 3);   % depth (z-slices)
@@ -206,12 +206,20 @@ for fieldIdx = 1:numel(fields)
             currKey2 = strrep(currKey2, sprintf('\xC5'), 'A');
             currKey2 = strrep(currKey2, sprintf('\xB5'), 'u');
             subVal = val.(extraFields{extraFieldId});
-            if isstruct(subVal) || numel(subVal) > 1
+            % Text is tested FIRST: a char vector has numel > 1 for any word
+            % longer than one letter, so the "too big to write" guard below used
+            % to swallow every string field. That is how the voxel unit came out
+            % as `pixSize_units skipped` - the numbers were written but nothing
+            % said what they were in. Quoted, to match how a top-level char value
+            % is written and because the reader str2num's anything unquoted.
+            isTextScalar = (ischar(subVal) && (isempty(subVal) || isrow(subVal))) || ...
+                (isstring(subVal) && isscalar(subVal));
+            if isTextScalar
+                fprintf(fid, '\t\t%s_%s "%s",\n', currKey, currKey2, char(subVal));
+            elseif isstruct(subVal) || numel(subVal) > 1
                 fprintf(fid, '\t\t%s_%s skipped,\n', currKey, currKey2);
-            elseif ~ischar(subVal) && ~isstring(subVal)
-                fprintf(fid, '\t\t%s_%s %s,\n', currKey, currKey2, num2str(subVal));
             else
-                fprintf(fid, '\t\t%s_%s %s,\n', currKey, currKey2, char(subVal));
+                fprintf(fid, '\t\t%s_%s %s,\n', currKey, currKey2, num2str(subVal));
             end
         end
     elseif iscell(val)

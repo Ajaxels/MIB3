@@ -11,19 +11,19 @@ function img = addText2Img(img, textArray, positionList, options)
 % Toolbox.  Falls back to a legacy implementation when those are unavailable.
 %
 % Input Arguments:
-%   - **img** — [numeric] 2D image to annotate
-%   - **textArray** — [cell] labels to render, e.g. ``{'label1'; 'label2'}``
-%   - **positionList** — [numeric] label positions ``[pointNo; x, y]``
-%   - **options** *(optional)* — struct with rendering settings:
+%   - **img** - [numeric] 2D image to annotate
+%   - **textArray** - [cell] labels to render, e.g. ``{'label1'; 'label2'}``
+%   - **positionList** - [numeric] label positions ``[pointNo; x, y]``
+%   - **options** *(optional)* - struct with rendering settings:
 %
-%     - ``.color``       — [numeric] text colour as an RGB vector or scalar grey value (default: ``0.5``)
-%     - ``.fontSize``    — [numeric] font size index 1–7, mapping to pt 8–20 of Ubuntu Mono (default: ``2``)
-%     - ``.markerText``  — [char] marker+text visibility: ``'Label + Value'`` *(default)*, ``'Label'`` (only label, no value), or ``'Value'`` (only value, no label)
-%     - ``.markerShow``  — [logical] ``true`` - *(default)* show marker; ``false`` - do not show marker
-%     - ``.AnchorPoint`` — [char] text-box reference point: ``'LeftTop'`` *(default)*, ``'LeftCenter'``, ``'LeftBottom'``, ``'CenterTop'``, ``'Center'``, ``'CenterBottom'``, ``'RightTop'``, ``'RightCenter'``, ``'RightBottom'``
+%     - ``.color``       - [numeric] text colour as an RGB vector or scalar grey value (default: ``0.5``)
+%     - ``.fontSize``    - [numeric] font size index 1-7, mapping to pt 8-20 of Ubuntu Mono (default: ``2``)
+%     - ``.markerText``  - [char] marker+text visibility: ``'Label + Value'`` *(default)*, ``'Label'`` (only label, no value), or ``'Value'`` (only value, no label)
+%     - ``.markerShow``  - [logical] ``true`` - *(default)* show marker; ``false`` - do not show marker
+%     - ``.AnchorPoint`` - [char] text-box reference point: ``'LeftTop'`` *(default)*, ``'LeftCenter'``, ``'LeftBottom'``, ``'CenterTop'``, ``'Center'``, ``'CenterBottom'``, ``'RightTop'``, ``'RightCenter'``, ``'RightBottom'``
 %
 % Output Arguments:
-%   - **img** — [numeric] annotated 2D image
+%   - **img** - [numeric] annotated 2D image
 %
 % .. note::
 %    To print special characters, generate them with ``char(dec_index)``.
@@ -37,7 +37,7 @@ function img = addText2Img(img, textArray, positionList, options)
 %
 % Usage:
 %
-%   **Example 1** — add two coloured labels at specified positions
+%   **Example 1** - add two coloured labels at specified positions
 %
 %   .. code-block:: matlab
 %

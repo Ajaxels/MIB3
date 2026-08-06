@@ -13,7 +13,7 @@ classdef MibIconCache
     %       img = core.MibIconCache.get('images', 'mib_question');
     %       core.MibIconCache.buildResourceFile(resourceFilePath, assetsDir);
     %
-    % **Example** — benchmark cache performance vs. direct file reads:
+    % **Example** - benchmark cache performance vs. direct file reads:
     %
     %   .. code-block:: matlab
     %
@@ -55,25 +55,25 @@ classdef MibIconCache
             % file is missing, it is automatically generated from the assets directory.
             %
             % Input Arguments:
-            %   - **foldername** — [char] folder name specifying which type of resource:
+            %   - **foldername** - [char] folder name specifying which type of resource:
             %
-            %     - ``'icons'`` — icons folder
-            %     - ``'images'`` — images folder
+            %     - ``'icons'`` - icons folder
+            %     - ``'images'`` - images folder
             %
-            %   - **name** — [char] icon/image name without extension
-            %   - **resourceFilePath** — *(optional)* [char] full path to resource file (default: ``MIB3/mib/assets/mib_icons.res``)
-            %   - **assetsDir** — *(optional)* [char] path to assets directory containing 'images' and 'icons' folders (default: ``MIB3/mib/assets``)
+            %   - **name** - [char] icon/image name without extension
+            %   - **resourceFilePath** - *(optional)* [char] full path to resource file (default: ``MIB3/mib/assets/mib_icons.res``)
+            %   - **assetsDir** - *(optional)* [char] path to assets directory containing 'images' and 'icons' folders (default: ``MIB3/mib/assets``)
             %
             % Output Arguments:
-            %   - **img** — [numeric array] image data for the requested icon/image
+            %   - **img** - [numeric array] image data for the requested icon/image
             %
-            % **Example 1** — get icon from the icons folder:
+            % **Example 1** - get icon from the icons folder:
             %
             %   .. code-block:: matlab
             %
             %       img = core.MibIconCache.get('icons', 'about_24px');
             %
-            % **Example 2** — get image from the images folder:
+            % **Example 2** - get image from the images folder:
             %
             %   .. code-block:: matlab
             %
@@ -176,7 +176,7 @@ classdef MibIconCache
             %   function img = getIconData(iconData)
             %
             % Input Arguments:
-            %   - **iconData** — a structure with
+            %   - **iconData** - a structure with
             %   - .cdata - matrix ([height, width, col_channel]) with intensity values for the icon
             %   - .alpha - matrix with the alpha value, can be empty
             %
@@ -223,10 +223,10 @@ classdef MibIconCache
             % resource file is missing or when a requested icon is not found.
             %
             % Input Arguments:
-            %   - **assetsDir** — *(optional)* [char] path to assets directory; when empty uses default (``MIB3/mib/assets``)
-            %   - **resourceFilePath** — *(optional)* [char] path for output resource file; when empty uses default (``MIB3/mib/assets/mib_icons.res``)
+            %   - **assetsDir** - *(optional)* [char] path to assets directory; when empty uses default (``MIB3/mib/assets``)
+            %   - **resourceFilePath** - *(optional)* [char] path for output resource file; when empty uses default (``MIB3/mib/assets/mib_icons.res``)
             %
-            % **Example** — build resource file from assets directory:
+            % **Example** - build resource file from assets directory:
             %
             %   .. code-block:: matlab
             %

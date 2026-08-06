@@ -16,7 +16,7 @@
 
 classdef PluginWithoutGUI < handle
 % PluginWithoutGUI < handle
-% Minimalist MIB3 tutorial plugin — demonstrates a plugin that has no
+% Minimalist MIB3 tutorial plugin - demonstrates a plugin that has no
 % persistent window of its own.
 %
 % The plugin thresholds the currently displayed 2D image slice and writes
@@ -25,19 +25,19 @@ classdef PluginWithoutGUI < handle
 %
 % HOW A NO-GUI PLUGIN DIFFERS FROM A GUI PLUGIN
 % ───────────────────────────────────────────────
-%   GUI plugin    — constructor creates a ChildView (AppDesigner window),
+%   GUI plugin    - constructor creates a ChildView (AppDesigner window),
 %                   wires event listeners, and returns.  All work happens
 %                   later inside widget callbacks.
 %
-%   No-GUI plugin — constructor does ALL work synchronously by calling a
+%   No-GUI plugin - constructor does ALL work synchronously by calling a
 %                   Calculate method, then fires CloseEvent to signal
 %                   completion.  There is no persistent window or listener.
 %
 % MINIMUM INTERFACE (required by utils.startController)
 % ──────────────────────────────────────────────────────
-%   Property   view        — must exist; set to [] (no window)
-%   Event      CloseEvent  — fired when the plugin finishes
-%   Method     closeWindow — called by parent on shutdown
+%   Property   view        - must exist; set to [] (no window)
+%   Event      CloseEvent  - fired when the plugin finishes
+%   Method     closeWindow - called by parent on shutdown
 %
 % @b Usage:
 % @code
@@ -60,7 +60,7 @@ classdef PluginWithoutGUI < handle
     end
 
     events
-        % CloseEvent — fired at the end of Calculate() and by closeWindow().
+        % CloseEvent - fired at the end of Calculate() and by closeWindow().
         % utils.startController wires a listener so the parent controller
         % removes this plugin from its childControllers list when CloseEvent
         % fires.
@@ -71,7 +71,7 @@ classdef PluginWithoutGUI < handle
 
         % -----------------------------------------------------------------
         function obj = PluginWithoutGUI(mibModel, varargin)
-        % PluginWithoutGUI  Constructor — validate, run, signal completion.
+        % PluginWithoutGUI  Constructor - validate, run, signal completion.
         %
         % The constructor immediately calls Calculate() and then fires
         % CloseEvent.  There is no persistent state after this returns.
@@ -103,7 +103,7 @@ classdef PluginWithoutGUI < handle
                 return;
             end
 
-            % Run the operation synchronously — all work happens here.
+            % Run the operation synchronously - all work happens here.
             obj.Calculate();
 
             % Signal completion.
@@ -137,14 +137,14 @@ classdef PluginWithoutGUI < handle
         %   1. Ask the user for a threshold value.
         %   2. Show a progress dialog.
         %   3. Read the full current 2D image slice from MibModel.
-        %   4. Threshold each pixel — any channel below threshold → mask = 1.
+        %   4. Threshold each pixel - any channel below threshold → mask = 1.
         %   5. Write the binary mask back to MibModel.
         %   6. Enable the Mask display layer and refresh the canvas.
 
             id = obj.mibModel.getActiveId();
 
             % =================================================================
-            % STEP 1 — Collect the threshold value from the user.
+            % STEP 1 - Collect the threshold value from the user.
             %
             % utils.dlgs.inputUniversalDlg is the MIB3 replacement for
             % MIB2's mibInputMultiDlg.
@@ -152,14 +152,14 @@ classdef PluginWithoutGUI < handle
             % Signature:
             %   (parent, header, prompts, defAns, title [, options])
             %
-            %   parent  — obj.mibModel.mibGUI (AppContainer) is the correct
+            %   parent  - obj.mibModel.mibGUI (AppContainer) is the correct
             %             parent for all MIB3 dialogs.  Do NOT use a UIFigure
             %             here; using the AppContainer keeps the dialog inside
             %             the main MIB window hierarchy on all platforms.
-            %   header  — bold label shown above the input fields; '' = none
-            %   prompts — cell array of field labels
-            %   defAns  — cell array of default strings for each field
-            %   title   — dialog window title
+            %   header  - bold label shown above the input fields; '' = none
+            %   prompts - cell array of field labels
+            %   defAns  - cell array of default strings for each field
+            %   title   - dialog window title
             % =================================================================
             maxInt = obj.mibModel.I{id}.image.maxInt;
             % maxInt = 255 for uint8 images, 65535 for uint16 images.
@@ -185,7 +185,7 @@ classdef PluginWithoutGUI < handle
             end
 
             % =================================================================
-            % STEP 2 — Show a progress dialog.
+            % STEP 2 - Show a progress dialog.
             %
             % uiprogressdlg is the MIB3 replacement for waitbar.
             % The parent must be obj.mibModel.mibGUI (AppContainer or UIFigure).
@@ -196,19 +196,19 @@ classdef PluginWithoutGUI < handle
                 'Value',   0);
 
             % =================================================================
-            % STEP 3 — Read the current 2D image slice.
+            % STEP 3 - Read the current 2D image slice.
             %
             % getData2D returns a cell array {roiId}[height, width(, colors)].
             % cell2mat collapses the single-ROI result into a plain matrix.
             %
             % Key arguments:
             %   type       = 'image'
-            %   slice_no   = []   — use the current Z slice
-            %   orient     = []   — use the current orientation (XY/XZ/YZ)
-            %   col_channel= NaN  — retrieve ALL colour channels at once
+            %   slice_no   = []   - use the current Z slice
+            %   orient     = []   - use the current orientation (XY/XZ/YZ)
+            %   col_channel= NaN  - retrieve ALL colour channels at once
             %                       Result shape: [height, width, numChannels]
             %
-            % options.blockModeSwitch = 0 — always read the FULL slice,
+            % options.blockModeSwitch = 0 - always read the FULL slice,
             %   ignoring any viewport zoom/crop.  Set to 1 to process only
             %   the currently visible region (faster for large datasets).
             % =================================================================
@@ -218,11 +218,11 @@ classdef PluginWithoutGUI < handle
             waitbarHandle.Value = 0.5;
 
             % =================================================================
-            % STEP 4 — Compute the binary threshold mask.
+            % STEP 4 - Compute the binary threshold mask.
             %
             % For multichannel images, a pixel is masked (mask = 1) when ANY
             % channel falls below the threshold.
-            %   any(..., 3) — reduce along the colour dimension to get [H, W].
+            %   any(..., 3) - reduce along the colour dimension to get [H, W].
             %
             % The Mask layer stores uint8 values of 0 (background) or 1 (masked).
             % =================================================================
@@ -230,7 +230,7 @@ classdef PluginWithoutGUI < handle
             waitbarHandle.Value = 0.9;
 
             % =================================================================
-            % STEP 5 — Write the mask back to MibModel.
+            % STEP 5 - Write the mask back to MibModel.
             %
             % MIB3 setData2D signature (NOTE: dataset comes FIRST, unlike MIB2):
             %   setData2D(dataset, type, slice_no, orient, col_channel, options)
@@ -241,17 +241,17 @@ classdef PluginWithoutGUI < handle
             %   • col_channel is meaningless for the mask layer (single-channel);
             %     pass 0 by convention.
             %   • orient = [] means current orientation; slice_no = [] means
-            %     current slice.  Never pass NaN here — use [] instead.
+            %     current slice.  Never pass NaN here - use [] instead.
             % =================================================================
             obj.mibModel.setData2D(mask, 'mask', [], [], 0, options);
             
             % =================================================================
-            % STEP 6 — Enable the Mask display layer and refresh the canvas.
+            % STEP 6 - Enable the Mask display layer and refresh the canvas.
             %
             % Three coordinated actions are required:
             %   a) obj.mibModel.showMask = true
             %      Tells getRGBimage() to composite the mask over the image.
-            %      (MIB2 used notify(mibModel,'showMask') — that event no
+            %      (MIB2 used notify(mibModel,'showMask') - that event no
             %       longer exists in MIB3.)
             %
             %   b) notify UpdateGuiWidgets with eventdata = {'selectionPanel'}

@@ -65,7 +65,7 @@ end
 % positions. The solver residual is blind on chain-like graphs (no loops →
 % residual ~0 whatever the measurements claim), so a confidently-wrong or
 % orientation-mismatched measurement solves to "0.1 px" while the seams are
-% garbage — only re-reading the actual overlap pixels catches that. Scores are
+% garbage - only re-reading the actual overlap pixels catches that. Scores are
 % stored on the edges (persisted with the project, reused by the inspector and
 % by refreshQualityChip, which turns them into the rating without re-reading).
 % ensureSeamScores does the reading (and swallows any failure - pixel

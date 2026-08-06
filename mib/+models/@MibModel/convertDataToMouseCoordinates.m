@@ -13,15 +13,15 @@ function [xOut, yOut] = convertDataToMouseCoordinates(obj, x, y, mode)
 % positions in the axes coordinate frame used for rendering.
 %
 % Input Arguments:
-%   - **x** — numeric — x-coordinate(s) in dataset space
-%   - **y** — numeric — y-coordinate(s) in dataset space
-%   - **mode** — *(optional)* char — rendering mode, default **'shown'**
-%   - 'shown' — standard viewport (most common)
-%   - 'full'  — full-image rendering during panning
+%   - **x** - numeric - x-coordinate(s) in dataset space
+%   - **y** - numeric - y-coordinate(s) in dataset space
+%   - **mode** - *(optional)* char - rendering mode, default **'shown'**
+%   - 'shown' - standard viewport (most common)
+%   - 'full'  - full-image rendering during panning
 %
 % Output Arguments:
-%   - **xOut** — numeric — x-coordinate(s) in axes space
-%   - **yOut** — numeric — y-coordinate(s) in axes space
+%   - **xOut** - numeric - x-coordinate(s) in axes space
+%   - **yOut** - numeric - y-coordinate(s) in axes space
 %
 % Usage:
 %   Example 1::

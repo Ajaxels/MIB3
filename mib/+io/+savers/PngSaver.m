@@ -7,8 +7,8 @@ classdef PngSaver < io.savers.BaseSaver
 % (PNG maximum = 3 channels + optional alpha).
 %
 % Handled format strings:
-% 'Portable Network Graphics (``*.png``)'  — used when saving image layer
-% 'PNG format (``*.png``)'                 — alias used for mask/labels
+% 'Portable Network Graphics (``*.png``)'  - used when saving image layer
+% 'PNG format (``*.png``)'                 - alias used for mask/labels
 %
 % DATA DIMENSIONS
 % Input  data : [H, W, D, C, T]
@@ -87,11 +87,11 @@ classdef PngSaver < io.savers.BaseSaver
             %      saver = io.savers.PngSaver(options)
             %
             % Input Arguments:
-            %   - **options** — *(optional)* struct, saver-level options (usually empty;
+            %   - **options** - *(optional)* struct, saver-level options (usually empty;
             %     per-save options are passed to ``save()`` instead)
             %
             % Output Arguments:
-            %   - **obj** — instance of the PngSaver class
+            %   - **obj** - instance of the PngSaver class
             %
             if nargin < 1; options = struct(); end
             obj.Options = options;
@@ -110,7 +110,7 @@ classdef PngSaver < io.savers.BaseSaver
             %   (none)
             %
             % Output Arguments:
-            %   - **formats** — cell array of format strings for PNG output
+            %   - **formats** - cell array of format strings for PNG output
             %
             formats = { ...
                 'Portable Network Graphics (*.png)'; ...
@@ -129,32 +129,32 @@ classdef PngSaver < io.savers.BaseSaver
             % The stem of the output filename is used as the base for sequential numbering.
             %
             % Input Arguments:
-            %   - **data** — [H, W, D, C, T] numeric array
-            %   - **metadata** — struct with fields:
+            %   - **data** - [H, W, D, C, T] numeric array
+            %   - **metadata** - struct with fields:
             %
-            %     - ``colorType`` — ``'grayscale'`` | ``'multichannel'`` | ``'indexed'``
-            %     - ``lutColors`` — *(optional)* [N × 3] colormap for indexed images
-            %     - ``colormap`` — *(optional)* [N × 3] colormap (alternative to ``lutColors``)
-            %     - ``sliceName`` — *(optional)* per-slice source filenames (for 'Use original filename' mode)
-            %     - ``imageDescription`` — *(optional)* [char] comment/description string for PNG files
-            %     - ``xResolution`` — *(optional)* [numeric] X resolution in pixels/unit; default: ``72``
-            %     - ``yResolution`` — *(optional)* [numeric] Y resolution in pixels/unit; default: ``72``
+            %     - ``colorType`` - ``'grayscale'`` | ``'multichannel'`` | ``'indexed'``
+            %     - ``lutColors`` - *(optional)* [N × 3] colormap for indexed images
+            %     - ``colormap`` - *(optional)* [N × 3] colormap (alternative to ``lutColors``)
+            %     - ``sliceName`` - *(optional)* per-slice source filenames (for 'Use original filename' mode)
+            %     - ``imageDescription`` - *(optional)* [char] comment/description string for PNG files
+            %     - ``xResolution`` - *(optional)* [numeric] X resolution in pixels/unit; default: ``72``
+            %     - ``yResolution`` - *(optional)* [numeric] Y resolution in pixels/unit; default: ``72``
             %
-            %   - **filename** — [char] full path template, e.g. ``'/out/slice.png'``;
+            %   - **filename** - [char] full path template, e.g. ``'/out/slice.png'``;
             %     stem is used as base for sequential names
-            %   - **options** — struct with fields:
+            %   - **options** - struct with fields:
             %
-            %     - ``Format`` — format string
-            %     - ``showWaitbar`` — logical; default: ``true``
-            %     - ``silent`` — logical, suppress dialogs; default: ``false``
-            %     - ``overwrite`` — logical; default: ``true``
-            %     - ``FilenameGenerator`` — ``'Use original filename'`` | ``'Use sequential filename'``
+            %     - ``Format`` - format string
+            %     - ``showWaitbar`` - logical; default: ``true``
+            %     - ``silent`` - logical, suppress dialogs; default: ``false``
+            %     - ``overwrite`` - logical; default: ``true``
+            %     - ``FilenameGenerator`` - ``'Use original filename'`` | ``'Use sequential filename'``
             %
             % Output Arguments:
-            %   - **fnOut** — cell of char [{nD × nT} × 1] with all saved paths,
+            %   - **fnOut** - cell of char [{nD × nT} × 1] with all saved paths,
             %     or single char when only one slice was saved
             %
-            % **Example** — see class-level documentation above.
+            % **Example** - see class-level documentation above.
             %
             % PNG is inherently per-slice, so ``save`` is a thin wrapper over the
             % streaming primitive ``saveStream`` (single code path).
@@ -169,7 +169,7 @@ classdef PngSaver < io.savers.BaseSaver
             % from ``provider.getSlice(z, t)`` and writes it as an individual PNG.
             % See ``io.savers.BaseSaver.saveStream``.
             %
-            % **Example** — stream a level to a numbered PNG sequence:
+            % **Example** - stream a level to a numbered PNG sequence:
             %
             %   .. code-block:: matlab
             %

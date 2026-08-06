@@ -10,19 +10,19 @@ function samPanel_Callback(obj, hWidget, hData)
 % Supports SAM version selection, segmentation method, prompt management, and result layer configuration.
 %
 % Input Arguments:
-%   - **hWidget** — [matlab.ui.control.Button | matlab.ui.control.CheckBox | matlab.ui.control.DropDown] pressed widget; operation identified via ``hWidget.Tag``:
+%   - **hWidget** - [matlab.ui.control.Button | matlab.ui.control.CheckBox | matlab.ui.control.DropDown] pressed widget; operation identified via ``hWidget.Tag``:
 %
-%     - ``'samMethod'`` — select SAM usage method (interactive, automatic, landmark)
-%     - ``'samVersion'`` — select SAM version (SAM 1 or SAM 2)
-%     - ``'samDataset'`` — select dataset type to apply segmentation
-%     - ``'samDestination'`` — select destination layer for segmentation results
-%     - ``'samMode'`` — set segmentation mode (replace, add, or subtract)
-%     - ``'samSettings'`` — open SAM configuration dialog
-%     - ``'samList'`` — show list of annotation points for landmark mode
-%     - ``'samClear'`` — clear all annotation points/prompts
-%     - ``'samSegment'`` — execute SAM segmentation
+%     - ``'samMethod'`` - select SAM usage method (interactive, automatic, landmark)
+%     - ``'samVersion'`` - select SAM version (SAM 1 or SAM 2)
+%     - ``'samDataset'`` - select dataset type to apply segmentation
+%     - ``'samDestination'`` - select destination layer for segmentation results
+%     - ``'samMode'`` - set segmentation mode (replace, add, or subtract)
+%     - ``'samSettings'`` - open SAM configuration dialog
+%     - ``'samList'`` - show list of annotation points for landmark mode
+%     - ``'samClear'`` - clear all annotation points/prompts
+%     - ``'samSegment'`` - execute SAM segmentation
 %
-%   - **hData** — [matlab.ui.eventdata.ButtonPushedData | matlab.ui.eventdata.ValueChangedData] event data from widget
+%   - **hData** - [matlab.ui.eventdata.ButtonPushedData | matlab.ui.eventdata.ValueChangedData] event data from widget
 %
 % Output Arguments:
 %   None

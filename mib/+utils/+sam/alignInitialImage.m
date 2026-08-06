@@ -21,19 +21,19 @@ function alignedImage = alignInitialImage(cachedImage, cachedBox, currentImage, 
 % pyramid level) **currentImage** is returned unchanged.
 %
 % Input Arguments:
-%   - **cachedImage** — [numeric] image cached over **cachedBox**, ``[height, width, depth]``
-%   - **cachedBox** — struct returned by :func:`utils.sam.blockBox` at the moment
+%   - **cachedImage** - [numeric] image cached over **cachedBox**, ``[height, width, depth]``
+%   - **cachedBox** - struct returned by :func:`utils.sam.blockBox` at the moment
 %     **cachedImage** was taken; can be empty
-%   - **currentImage** — [numeric] the destination layer fetched over **currentBox**
-%   - **currentBox** — struct returned by :func:`utils.sam.blockBox` for the current view
+%   - **currentImage** - [numeric] the destination layer fetched over **currentBox**
+%   - **currentBox** - struct returned by :func:`utils.sam.blockBox` for the current view
 %
 % Output Arguments:
-%   - **alignedImage** — [numeric] **currentImage** with **cachedImage** pasted
+%   - **alignedImage** - [numeric] **currentImage** with **cachedImage** pasted
 %     into the overlapping area; same size and class as **currentImage**
 %
 % Usage:
 %
-%   **Example 1** — restore the pre-SAM state after the view was zoomed out
+%   **Example 1** - restore the pre-SAM state after the view was zoomed out
 %
 %   .. code-block:: matlab
 %
@@ -68,15 +68,15 @@ function [indicesCurrent, indicesCached] = matchRange(cachedRange, currentRange,
 % MATCHRANGE - indices of the overlapping part of two ranges in both images.
 %
 % Input Arguments:
-%   - **cachedRange** — ``[minValue, maxValue]`` of the cached block in the dataset coordinates
-%   - **currentRange** — ``[minValue, maxValue]`` of the current block in the dataset coordinates
-%   - **magFactor** — number of dataset units per pixel of the fetched blocks
-%   - **currentCount** — number of pixels of the current image in this dimension
-%   - **cachedCount** — number of pixels of the cached image in this dimension
+%   - **cachedRange** - ``[minValue, maxValue]`` of the cached block in the dataset coordinates
+%   - **currentRange** - ``[minValue, maxValue]`` of the current block in the dataset coordinates
+%   - **magFactor** - number of dataset units per pixel of the fetched blocks
+%   - **currentCount** - number of pixels of the current image in this dimension
+%   - **cachedCount** - number of pixels of the cached image in this dimension
 %
 % Output Arguments:
-%   - **indicesCurrent** — indices of the overlap in the current image
-%   - **indicesCached** — indices of the overlap in the cached image
+%   - **indicesCurrent** - indices of the overlap in the current image
+%   - **indicesCached** - indices of the overlap in the cached image
 %
 
 indicesCurrent = [];

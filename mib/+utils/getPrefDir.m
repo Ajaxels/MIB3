@@ -14,11 +14,11 @@ function prefdir = getPrefDir()
 % - Linux:   ``/home/username/Matlab``
 %
 % Output Arguments:
-%   - **prefdir** — [char] full path to the MIB preferences directory
+%   - **prefdir** - [char] full path to the MIB preferences directory
 %
 % Usage:
 %
-%   **Example 1** — retrieve the preferences directory path
+%   **Example 1** - retrieve the preferences directory path
 %
 %   .. code-block:: matlab
 %

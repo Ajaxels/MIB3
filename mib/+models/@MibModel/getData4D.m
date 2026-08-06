@@ -12,33 +12,33 @@ function dataset = getData4D(obj, type, orient, col_channel, options)
 % All argument semantics are identical to core.MibDataset.getData4D.
 %
 % Input Arguments:
-%   - **type** — type of the dataset layer to retrieve:
+%   - **type** - type of the dataset layer to retrieve:
 %
-%     - ``'image'`` — [*default*] the image layer
-%     - ``'labels'`` — labels layer with segmentation
-%     - ``'mask'`` — mask layer
-%     - ``'selection'`` — selection layer
-%     - ``'everything'`` — packed model/mask/selection (MibLabels63 only)
+%     - ``'image'`` - [*default*] the image layer
+%     - ``'labels'`` - labels layer with segmentation
+%     - ``'mask'`` - mask layer
+%     - ``'selection'`` - selection layer
+%     - ``'everything'`` - packed model/mask/selection (MibLabels63 only)
 %
-%   - **orient** — *(optional)* orientation; ``[]`` = current orientation
-%   - **col_channel** — *(optional)* colour channel(s); ``[]`` = current channels; ``NaN`` = all
-%   - **options** — *(optional)* struct with extra parameters:
+%   - **orient** - *(optional)* orientation; ``[]`` = current orientation
+%   - **col_channel** - *(optional)* colour channel(s); ``[]`` = current channels; ``NaN`` = all
+%   - **options** - *(optional)* struct with extra parameters:
 %
-%     - ``.id`` — *(optional)* dataset index 1-9; default = ``obj.id``
-%     - ``.blockModeSwitch``, ``.roiId``, ``.fillBg``, ``.x``, ``.y``, ``.z``, ``.t`` — see ``MibDataset.getData4D``
+%     - ``.id`` - *(optional)* dataset index 1-9; default = ``obj.id``
+%     - ``.blockModeSwitch``, ``.roiId``, ``.fillBg``, ``.x``, ``.y``, ``.z``, ``.t`` - see ``MibDataset.getData4D``
 %
 % Output Arguments:
-%   - **dataset** — cell array {roiId}[height, width, depth, colors, time] or
-%     {roiId}[height, width, depth, time] — see MibDataset.getData4D
+%   - **dataset** - cell array {roiId}[height, width, depth, colors, time] or
+%     {roiId}[height, width, depth, time] - see MibDataset.getData4D
 %
 % Usage:
-%   **Example 1** — full dataset in shown orientation
+%   **Example 1** - full dataset in shown orientation
 %
 %   .. code-block:: matlab
 %
 %      dataset = obj.mibModel.getData4D('image');
 %
-%   **Example 2** — XY orient, ch 2
+%   **Example 2** - XY orient, ch 2
 %
 %   .. code-block:: matlab
 %

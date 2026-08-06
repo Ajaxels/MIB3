@@ -16,7 +16,7 @@ function addROI(obj)
 % event is fired to repaint the overlay.
 %
 % Input Arguments:
-%   - **obj** — controllers.MibRoi — the ROI panel controller
+%   - **obj** - controllers.MibRoi - the ROI panel controller
 %
 %   Return values: none
 %
@@ -199,7 +199,7 @@ if ~isvalid(roi)
     return;
 end
 
-% Guard against incomplete ROI (Esc pressed before confirming —
+% Guard against incomplete ROI (Esc pressed before confirming -
 % roi.Position/Vertices may be empty or undersized)
 roiCancelled = false;
 switch roiType

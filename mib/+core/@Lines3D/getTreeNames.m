@@ -7,10 +7,10 @@ function treeNames = getTreeNames(obj, index)
 %       treeNames = obj.getTreeNames(index)
 %
 % Input Arguments:
-%   - **index** — *(optional)* indices of the trees
+%   - **index** - *(optional)* indices of the trees
 %
 % Output Arguments:
-%   - **treeNames** — a cell array with names of trees
+%   - **treeNames** - a cell array with names of trees
 %
 
 if nargin < 2; index = []; end

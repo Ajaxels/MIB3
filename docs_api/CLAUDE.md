@@ -50,10 +50,15 @@ For the complete RST docblock style guide see
 ```
 
 Rules:
-- Header: `% METHODNAME - One-line description.` — all-caps name, no function call
+- Header: `% METHODNAME - One-line description.` - all-caps name, no function call
 - Use `.. code-block:: matlab` (never bare `::`)
-- Parameter names in `**bold**` with em-dash `—` separator
+- Parameter names in `**bold**` with a plain hyphen `-` separator
 - Optional params: `*(optional)*` after the bold name
 - Defaults and inline code: double backticks `` ``value`` ``
-- Struct fields: nested RST bullets with `` `.fieldName` `` — description
-- No Doxygen tags (`@b`, `@li`, `[@em ...]`, `@Note:`) — use RST equivalents
+- Struct fields: nested RST bullets with `` `.fieldName` `` - description
+- No Doxygen tags (`@b`, `@li`, `[@em ...]`, `@Note:`) - use RST equivalents
+
+> **Separator changed from em dash to hyphen.** These docblocks used `—` (U+2014)
+> until the repo-wide sweep that made the root [`CLAUDE.md`](../CLAUDE.md) dash rule
+> apply everywhere. Nothing in Sphinx or `sphinxcontrib-matlabdomain` parses the
+> separator - it is prose - so the rendered output is unchanged apart from the glyph.

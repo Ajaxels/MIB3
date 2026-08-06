@@ -12,7 +12,7 @@ function canvas = planCanvas(layout, positions, options)
 % rounds to integer tile placements (keeping the fractional remainder as a
 % per-tile subpixel residual for later resampled placement), and derives the
 % total canvas size and physical bounding box. All three axes use the SOLVED
-% positions — ``positions(:,3)`` is a slice coordinate, so overlapping or
+% positions - ``positions(:,3)`` is a slice coordinate, so overlapping or
 % jittered Z-stacks land where the global solve put them (tiles within a 2D
 % layer share one z by construction of the within-layer dz constraints).
 %
@@ -27,48 +27,48 @@ function canvas = planCanvas(layout, positions, options)
 % the translation-only planner.
 %
 % Input Arguments:
-%   - **layout** — [struct array] tile layout with ``.tileSize`` (``[H W D C]``),
+%   - **layout** - [struct array] tile layout with ``.tileSize`` (``[H W D C]``),
 %     ``.zLayer`` and ``.dataClass``.
-%   - **positions** — [N x 3 double] solved ``[y x z]`` origins (fractional).
-%   - **options** *(optional)* — struct with fields:
+%   - **positions** - [N x 3 double] solved ``[y x z]`` origins (fractional).
+%   - **options** *(optional)* - struct with fields:
 %
-%     - ``.pixSize`` — [struct] ``.x .y .z`` physical voxel size (default: 1 µm iso)
-%     - ``.numChannels`` — [double] output channel count (default: from ``tileSize(4)``)
-%     - ``.numFrames`` — [double] output time frames (default: ``1``)
-%     - ``.tforms`` — [N x 1 cell] per-tile 3x3 tile-local→global xy transforms
+%     - ``.pixSize`` - [struct] ``.x .y .z`` physical voxel size (default: 1 µm iso)
+%     - ``.numChannels`` - [double] output channel count (default: from ``tileSize(4)``)
+%     - ``.numFrames`` - [double] output time frames (default: ``1``)
+%     - ``.tforms`` - [N x 1 cell] per-tile 3x3 tile-local→global xy transforms
 %       from :func:`utils.stitch.solveGlobalAffine`; enables the warped-footprint
-%       plan (default: none — translation placement)
-%     - ``.zSliceFixes`` — [K x 3] per-slice mosaic corrections ``[z dy dx]``
+%       plan (default: none - translation placement)
+%     - ``.zSliceFixes`` - [K x 3] per-slice mosaic corrections ``[z dy dx]``
 %       from the seam inspector's Fix Z: every output slice ``>= z`` shifts
 %       in-plane by ``[dy dx]`` (cumulative over rows). Produces
 %       ``canvas.zShifts`` and grows the canvas so nothing is clipped
 %       (default: none)
-%     - ``.autocrop`` — [logical] trim the ragged background frame the solved
+%     - ``.autocrop`` - [logical] trim the ragged background frame the solved
 %       positions leave around the mosaic, by handing the finished plan to
 %       :func:`utils.stitch.autocropCanvas` (default: ``false``)
 %
 % Output Arguments:
-%   - **canvas** — [struct] with fields:
+%   - **canvas** - [struct] with fields:
 %
-%     - ``.size`` — [1x5] ``[H W Z C T]`` output dimensions
-%     - ``.tilePlacement`` — [N x 3] integer 1-based ``[y x z]`` origins
-%     - ``.subpixelResidual`` — [N x 3] fractional part discarded by rounding
-%     - ``.dataClass`` — [char] numeric class of the mosaic
-%     - ``.boundingBox`` — [1x6] ``[xmin xmax ymin ymax zmin zmax]`` physical extent
-%     - ``.pixSize`` — [struct] the pixel size used
-%     - ``.zLayers`` — [vector] sorted distinct z-layer ids
-%     - ``.tforms`` — [N x 1 cell] tile-local→CANVAS xy transforms (only when
+%     - ``.size`` - [1x5] ``[H W Z C T]`` output dimensions
+%     - ``.tilePlacement`` - [N x 3] integer 1-based ``[y x z]`` origins
+%     - ``.subpixelResidual`` - [N x 3] fractional part discarded by rounding
+%     - ``.dataClass`` - [char] numeric class of the mosaic
+%     - ``.boundingBox`` - [1x6] ``[xmin xmax ymin ymax zmin zmax]`` physical extent
+%     - ``.pixSize`` - [struct] the pixel size used
+%     - ``.zLayers`` - [vector] sorted distinct z-layer ids
+%     - ``.tforms`` - [N x 1 cell] tile-local→CANVAS xy transforms (only when
 %       ``options.tforms`` was given; canvas world frame == intrinsic pixels)
-%     - ``.tileBounds`` — [N x 4] integer output bbox ``[y0 y1 x0 x1]`` of each
+%     - ``.tileBounds`` - [N x 4] integer output bbox ``[y0 y1 x0 x1]`` of each
 %       warped tile footprint, clipped to the canvas (only with ``options.tforms``)
-%     - ``.zShifts`` — [Z x 2] integer extra ``[dy dx]`` applied to every tile
+%     - ``.zShifts`` - [Z x 2] integer extra ``[dy dx]`` applied to every tile
 %       on that output slice by the fusers (only with ``options.zSliceFixes``;
 %       baseline-shifted so all entries are >= 0 and fit the grown canvas)
-%     - ``.cropRect`` — [1x4] ``[y0 y1 x0 x1]`` kept region in the uncropped
+%     - ``.cropRect`` - [1x4] ``[y0 y1 x0 x1]`` kept region in the uncropped
 %       frame (only with ``options.autocrop``, and only when a fully covered
 %       region exists)
 %
-% **Example** — plan a canvas at 20 nm isotropic:
+% **Example** - plan a canvas at 20 nm isotropic:
 %
 %   .. code-block:: matlab
 %
@@ -139,7 +139,7 @@ if useTforms
             min(H,  ceil(cornerMaxXY(tileIdx, 2) + shiftXY(2))), ...
             max(1, floor(cornerMinXY(tileIdx, 1) + shiftXY(1))), ...
             min(W,  ceil(cornerMaxXY(tileIdx, 1) + shiftXY(1)))];
-        % Placement of tile pixel (1,1) — kept for previews and back-compat.
+        % Placement of tile pixel (1,1) - kept for previews and back-compat.
         origin11 = tileTform(1:2, 1:2) * [1; 1] + tileTform(1:2, 3);
         tilePlacement(tileIdx, :) = [round(origin11(2)), round(origin11(1)), intPlacementZ(tileIdx)];
         subpixelResidual(tileIdx, :) = [origin11(2) - round(origin11(2)), ...

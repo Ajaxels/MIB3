@@ -41,9 +41,9 @@ classdef MibDataset < matlab.mixin.Copyable
         datasetType
         % [char] type of the dataset (default: ``'Standard'``), one of:
         %
-        % - ``'Standard'`` — standard image, loaded to memory completely
-        % - ``'Virtual'`` — virtual dataset, loaded upon demand
-        % - ``'BigData'`` — big-data compatible dataset
+        % - ``'Standard'`` - standard image, loaded to memory completely
+        % - ``'Virtual'`` - virtual dataset, loaded upon demand
+        % - ``'BigData'`` - big-data compatible dataset
         dim_yxzct
         % a matrix with dimensions of the dataset [height, width, depth, colors, time]
         % equal to size obj.image{1} for non-virtual datasets
@@ -158,7 +158,7 @@ classdef MibDataset < matlab.mixin.Copyable
         reorderMaterials(obj, newOrder, wb)                     % reorder materials in the model according to a permutation vector (small models only)
         result = resliceDataset(obj, sliceNumbers, orient, options) % Keep only indexed slices across all layers and synchronize metadata
         rotateDataset(obj, mode, parentFigure, showWaitbar)     % rotate dataset 90 or -90 degrees
-        fnOut = saveImage(obj, layerType, filename, options)        % Save a data layer ('image'|'labels'|'mask') to file. Intermediate entry point — injects pixSize/boundingBox and delegates to the appropriate layer object's save() method. See core.MibDataset.save for details.
+        fnOut = saveImage(obj, layerType, filename, options)        % Save a data layer ('image'|'labels'|'mask') to file. Intermediate entry point - injects pixSize/boundingBox and delegates to the appropriate layer object's save() method. See core.MibDataset.save for details.
         setAxesLimits(obj, axesX, axesY)        % set axes limits for the dataset
         result = setData2D(obj, slice, type, slice_no, orient, col_channel, options)        % set the 2D slice with colors: height:width:colors to the dataset
         result = setData3D(obj, type, dataset, time, orient, col_channel, options)        % set the 3D dataset with colors: height:width:depth:colors to the dataset
@@ -185,56 +185,56 @@ classdef MibDataset < matlab.mixin.Copyable
             %      obj = core.MibDataset(img, meta, datasetType, modelType)
             %
             % Input Arguments:
-            %   - **img** *(optional)* — [numeric] matrix with the image data; can be empty or omitted
-            %   - **meta** *(optional)* — [dictionary] metadata dictionary with optional fields:
+            %   - **img** *(optional)* - [numeric] matrix with the image data; can be empty or omitted
+            %   - **meta** *(optional)* - [dictionary] metadata dictionary with optional fields:
             %
-            %     - ``.filename`` — [char] full path to the dataset
-            %     - ``.sliceName`` — [cell] cell array with slice names
-            %     - ``.lutColors`` — [numeric] LUT colors matrix ``(colChannel, RGB)`` in range ``[0-1]``
-            %     - ``.pixSize`` — [dictionary] physical pixel size with sub-fields:
+            %     - ``.filename`` - [char] full path to the dataset
+            %     - ``.sliceName`` - [cell] cell array with slice names
+            %     - ``.lutColors`` - [numeric] LUT colors matrix ``(colChannel, RGB)`` in range ``[0-1]``
+            %     - ``.pixSize`` - [dictionary] physical pixel size with sub-fields:
             %
-            %       - ``.x`` — [numeric] physical width of a pixel
-            %       - ``.y`` — [numeric] physical height of a pixel
-            %       - ``.z`` — [numeric] physical thickness of a voxel
-            %       - ``.t`` — [numeric] time between frames for 2D movies
-            %       - ``.tunits`` — [char] time units (e.g., ``'sec'``, ``'ms'``)
-            %       - ``.units`` — [char] spatial units: ``'m'``, ``'cm'``, ``'mm'``, ``'um'``, or ``'nm'``
+            %       - ``.x`` - [numeric] physical width of a pixel
+            %       - ``.y`` - [numeric] physical height of a pixel
+            %       - ``.z`` - [numeric] physical thickness of a voxel
+            %       - ``.t`` - [numeric] time between frames for 2D movies
+            %       - ``.tunits`` - [char] time units (e.g., ``'sec'``, ``'ms'``)
+            %       - ``.units`` - [char] spatial units: ``'m'``, ``'cm'``, ``'mm'``, ``'um'``, or ``'nm'``
             %
-            %     - ``.viewPort`` — [dictionary] viewing parameters with sub-fields:
+            %     - ``.viewPort`` - [dictionary] viewing parameters with sub-fields:
             %
-            %       - ``.min`` — [numeric] minimal value for intensity stretching per channel
-            %       - ``.max`` — [numeric] maximal value for intensity stretching per channel
-            %       - ``.gamma`` — [numeric] gamma factor for contrast adjustment per channel
+            %       - ``.min`` - [numeric] minimal value for intensity stretching per channel
+            %       - ``.max`` - [numeric] maximal value for intensity stretching per channel
+            %       - ``.gamma`` - [numeric] gamma factor for contrast adjustment per channel
             %
-            %   - **datasetType** *(optional)* — [char] dataset type (default: ``'Standard'``):
+            %   - **datasetType** *(optional)* - [char] dataset type (default: ``'Standard'``):
             %
-            %     - ``'Standard'`` — image loaded completely into memory
-            %     - ``'Virtual'`` — image loaded on demand
-            %     - ``'BigData'`` — big-data compatible dataset
+            %     - ``'Standard'`` - image loaded completely into memory
+            %     - ``'Virtual'`` - image loaded on demand
+            %     - ``'BigData'`` - big-data compatible dataset
             %
-            %   - **modelType** *(optional)* — [char] labels layer type (default: ``'imageOnly'``):
+            %   - **modelType** *(optional)* - [char] labels layer type (default: ``'imageOnly'``):
             %
-            %     - ``'imageOnly'`` — initialize with image only; other layers are ``NaN``
-            %     - ``'labels'`` — initialize model with 255 materials; ``mask`` and ``selection`` same dimensions as ``labels``
-            %     - ``'labels63'`` — initialize model with 63 materials; ``mask`` and ``selection`` are ``NaN``
+            %     - ``'imageOnly'`` - initialize with image only; other layers are ``NaN``
+            %     - ``'labels'`` - initialize model with 255 materials; ``mask`` and ``selection`` same dimensions as ``labels``
+            %     - ``'labels63'`` - initialize model with 63 materials; ``mask`` and ``selection`` are ``NaN``
             %
             % Output Arguments:
-            %   - **obj** — [core.MibDataset] initialized dataset instance
+            %   - **obj** - [core.MibDataset] initialized dataset instance
             %
-            % **Example 1** — Minimal: create an empty dataset:
+            % **Example 1** - Minimal: create an empty dataset:
             %
             %   .. code-block:: matlab
             %
             %      ds = core.MibDataset();
             %
-            % **Example 2** — Create from a raw uint8 volume (grayscale):
+            % **Example 2** - Create from a raw uint8 volume (grayscale):
             %
             %   .. code-block:: matlab
             %
             %      vol = imread('myImage.tif');    % [H, W] or [H, W, C]
             %      ds = core.MibDataset(vol);
             %
-            % **Example 3** — Create from a 3D stack with 63-material labels:
+            % **Example 3** - Create from a 3D stack with 63-material labels:
             %
             %   .. code-block:: matlab
             %
@@ -246,7 +246,7 @@ classdef MibDataset < matlab.mixin.Copyable
             %      ds.image.sliceName = {'myStack.tif'};
             %      ds.updateBoundingBox([], [0 0 0]);
             %
-            % **Example 4** — Create with pre-filled metadata:
+            % **Example 4** - Create with pre-filled metadata:
             %
             %   .. code-block:: matlab
             %
@@ -254,7 +254,7 @@ classdef MibDataset < matlab.mixin.Copyable
             %      meta('filename') = 'C:\data\myImage.tif';
             %      ds = core.MibDataset(vol, meta, 'Standard', 'labels63');
             %
-            % **Example 5** — Replace active dataset in model with fresh volume:
+            % **Example 5** - Replace active dataset in model with fresh volume:
             %
             %   .. code-block:: matlab
             %

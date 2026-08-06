@@ -11,20 +11,20 @@ function moveModelToMaskDataset(obj, action_type, options)
 % performance.
 %
 % Input Arguments:
-%   - **action_type** — [char] type of the desired action:
+%   - **action_type** - [char] type of the desired action:
 %
-%     - ``'add'`` — add the selected material to mask
-%     - ``'remove'`` — remove the selected material from mask
-%     - ``'replace'`` — replace mask with the selected material
+%     - ``'add'`` - add the selected material to mask
+%     - ``'remove'`` - remove the selected material from mask
+%     - ``'replace'`` - replace mask with the selected material
 %
-%   - **options** — [struct] structure with additional parameters:
+%   - **options** - [struct] structure with additional parameters:
 %
-%     - ``.contSelIndex`` — [numeric] index of the "Select from" material
-%     - ``.contAddIndex`` — [numeric] index of the "Add to" material%
+%     - ``.contSelIndex`` - [numeric] index of the "Select from" material
+%     - ``.contAddIndex`` - [numeric] index of the "Add to" material%
 % Output Arguments:
 %   (none)
 %
-% **Example** — Move selected material to mask by adding:
+% **Example** - Move selected material to mask by adding:
 %
 %   .. code-block:: matlab
 %

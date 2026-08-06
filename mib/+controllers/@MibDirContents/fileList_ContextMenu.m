@@ -10,23 +10,23 @@ function fileList_ContextMenu(obj, menuEntry, selectedData)
 % Supports file loading, insertion, color channel operations, and file management (rename, delete, properties).
 %
 % Input Arguments:
-%   - **menuEntry** — [matlab.ui.container.Menu] handle to the pressed context menu entry; menu operations are identified via ``menuEntry.Tag``
-%   - **selectedData** — [matlab.ui.eventdata.MenuSelectedData] event data containing the source file list object (``selectedData.ContextObject``)
+%   - **menuEntry** - [matlab.ui.container.Menu] handle to the pressed context menu entry; menu operations are identified via ``menuEntry.Tag``
+%   - **selectedData** - [matlab.ui.eventdata.MenuSelectedData] event data containing the source file list object (``selectedData.ContextObject``)
 %
 % Output Arguments:
 %   None
 %
 % **Supported menu operations (menuEntry.Tag):**
-%   - ``'fileListContextCombine'`` — combine selected files and open as a single dataset
-%   - ``'fileListContextLoadPart'`` — load a portion (slice range) of a file
-%   - ``'fileListContextLoadNth'`` — load every N-th file and combine into one dataset
-%   - ``'fileListContextInsert'`` — insert selected files into the current dataset
-%   - ``'fileListContextColorCombine'`` — combine selected files as separate color channels
-%   - ``'fileListContextColorAdd'`` — add selected file(s) as a new color channel to current dataset
-%   - ``'fileListContextColorAddNth'`` — add every N-th file as a new color channel
-%   - ``'fileListContextRename'`` — rename the selected file
-%   - ``'fileListContextDelete'`` — delete the selected file
-%   - ``'fileListContextProps'`` — display file properties dialog
+%   - ``'fileListContextCombine'`` - combine selected files and open as a single dataset
+%   - ``'fileListContextLoadPart'`` - load a portion (slice range) of a file
+%   - ``'fileListContextLoadNth'`` - load every N-th file and combine into one dataset
+%   - ``'fileListContextInsert'`` - insert selected files into the current dataset
+%   - ``'fileListContextColorCombine'`` - combine selected files as separate color channels
+%   - ``'fileListContextColorAdd'`` - add selected file(s) as a new color channel to current dataset
+%   - ``'fileListContextColorAddNth'`` - add every N-th file as a new color channel
+%   - ``'fileListContextRename'`` - rename the selected file
+%   - ``'fileListContextDelete'`` - delete the selected file
+%   - ``'fileListContextProps'`` - display file properties dialog
 %
 
 arguments (Input)

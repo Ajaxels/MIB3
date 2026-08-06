@@ -34,7 +34,7 @@ classdef MibLabels63 < core.MibImage
         fnOut = save(obj, filename, options)   % save label data to file; overrides MibImage.save() to use getData63() for correct bit-unpacking
 
         function obj = MibLabels63(img, meta)
-            % MIBLABELS63 - Constructor of MibLabels63 — memory-optimised label storage.
+            % MIBLABELS63 - Constructor of MibLabels63 - memory-optimised label storage.
             %
             % Syntax:
             %   .. code-block:: matlab
@@ -45,30 +45,30 @@ classdef MibLabels63 < core.MibImage
             %
             % Initializes a memory-optimised segmentation label container that packs up to
             % 63 materials, mask, and selection into a single uint8 array:
-            % bits 1–6 = material index, bit 7 = mask, bit 8 = selection.
+            % bits 1-6 = material index, bit 7 = mask, bit 8 = selection.
             % Inherits all properties and methods from ``core.MibImage``.
             %
-            % **Data layout:** ``[H, W, Z, 1, T]`` — single color channel, with depth
+            % **Data layout:** ``[H, W, Z, 1, T]`` - single color channel, with depth
             % in dimension 3. MibLabels63 does NOT apply the ``[H,W,C]→[H,W,1,C]``
             % permutation that MibImage uses for colour images.
             %
             % Input Arguments:
-            %   - **img** — *(optional)* [uint8 array] 2-D to 5-D packed data, or ``[]``.
+            %   - **img** - *(optional)* [uint8 array] 2-D to 5-D packed data, or ``[]``.
             %     Dimension 3 is always treated as depth (Z), never as color:
             %
-            %     - ``[]`` — empty placeholder; ``obj.exists = false``
-            %     - ``[H, W]`` — single 2-D packed label map
-            %     - ``[H, W, Z]`` — 3-D packed label volume (Z slices)
-            %     - ``[H, W, Z, 1, T]`` — full 5-D form (preferred for clarity)
+            %     - ``[]`` - empty placeholder; ``obj.exists = false``
+            %     - ``[H, W]`` - single 2-D packed label map
+            %     - ``[H, W, Z]`` - 3-D packed label volume (Z slices)
+            %     - ``[H, W, Z, 1, T]`` - full 5-D form (preferred for clarity)
             %
-            %   - **meta** — *(optional)* [dictionary] metadata from
+            %   - **meta** - *(optional)* [dictionary] metadata from
             %     ``core.MibImage.initializeImgInfo()``. Pass ``[]`` to use defaults.
             %
             % After construction, ALL dimension properties are set from the actual array size:
             % ``obj.height``, ``obj.width``, ``obj.depth``, ``obj.colors`` (always 1),
             % ``obj.time``, ``obj.dim_yxzct``, ``obj.maxInt``, ``obj.dataClass``.
             %
-            % **Example 1** — create 3-D packed label volume from data:
+            % **Example 1** - create 3-D packed label volume from data:
             %
             %   .. code-block:: matlab
             %
@@ -79,7 +79,7 @@ classdef MibLabels63 < core.MibImage
             %      lbl = core.MibLabels63(rawModel, meta);
             %      % lbl.depth == 3, lbl.colors == 1
             %
-            % **Example 2** — create fresh empty allocation matching current image:
+            % **Example 2** - create fresh empty allocation matching current image:
             %
             %   .. code-block:: matlab
             %
@@ -89,7 +89,7 @@ classdef MibLabels63 < core.MibImage
             %          'Height', dims(1), 'Width', dims(2), 'Depth', dims(3), 'Time', dims(5));
             %      lbl = core.MibLabels63(zeros(dims, 'uint8'), meta);
             %
-            % **Example 3** — create empty placeholder:
+            % **Example 3** - create empty placeholder:
             %
             %   .. code-block:: matlab
             %

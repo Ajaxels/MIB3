@@ -95,7 +95,7 @@ classdef MibModel < handle
     properties (SetObservable)
         disableSegmentation = false;
         % when 1, segmentation tool callbacks return early (pan still works);
-        % used during interactive ROI drawing — mirrors MIB2 mibModel.disableSegmentation
+        % used during interactive ROI drawing - mirrors MIB2 mibModel.disableSegmentation
     end
 
     properties (Dependent)
@@ -236,11 +236,11 @@ classdef MibModel < handle
             %   function obj = MibModel(cpuParallelLimitMax, mibPath, mibVersion)
             %
             % Input Arguments:
-            %   - **cpuParallelLimitMax** — integer, maximal number of possible workers for parallel
+            %   - **cpuParallelLimitMax** - integer, maximal number of possible workers for parallel
             %     processing; when empty (default) the value is computed lazily on the first access
             %     of ``obj.cpuParallelLimitMax`` via ``utils.getMaxParpoolWorkers``
-            %   - **mibPath** — char with the location of MIB3
-            %   - **mibVersion** — char with the MIB version as
+            %   - **mibPath** - char with the location of MIB3
+            %   - **mibVersion** - char with the MIB version as
             %     ATTENTION! it is important to have the version number between "ver." and "/"
             %     Release syntax example: "ver. 2025.11 / 04.11.2025"
             %     Beta syntax example: "ver. 2025.11 (beta 4) / 04.11.2025"

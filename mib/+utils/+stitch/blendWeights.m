@@ -13,17 +13,17 @@ function weightMap = blendWeights(tileHW, marginPx)
 % four separable edge ramps (distance to the nearest edge, normalised by
 % ``marginPx``), so overlapping tiles cross-fade smoothly and no pixel receives
 % exactly zero weight (which keeps ``sum(w*I)/sum(w)`` well defined everywhere).
-% The construction is separable (outer product of 1-D ramps) — no ``bwdist``.
+% The construction is separable (outer product of 1-D ramps) - no ``bwdist``.
 %
 % Input Arguments:
-%   - **tileHW** — [1x2 double] tile size ``[H W]``.
-%   - **marginPx** *(optional)* — [double] feather width in pixels from each edge
+%   - **tileHW** - [1x2 double] tile size ``[H W]``.
+%   - **marginPx** *(optional)* - [double] feather width in pixels from each edge
 %     (default: ``round(min(H, W) / 8)``, at least 1).
 %
 % Output Arguments:
-%   - **weightMap** — [H x W single] blend weights in ``(0, 1]``.
+%   - **weightMap** - [H x W single] blend weights in ``(0, 1]``.
 %
-% **Example** — feather weights with a 32-pixel ramp:
+% **Example** - feather weights with a 32-pixel ramp:
 %
 %   .. code-block:: matlab
 %

@@ -7,8 +7,8 @@ function [ribbonHandles, ribbonWidgets] = addRibbonTabs(obj)
 %      [ribbonHandles, ribbonWidgets] = obj.addRibbonTabs()
 %
 % Output Arguments:
-%   - **ribbonHandles** — [struct] all ribbon panel handles
-%   - **ribbonWidgets** — [struct] widget handles for all ribbon tabs
+%   - **ribbonHandles** - [struct] all ribbon panel handles
+%   - **ribbonWidgets** - [struct] widget handles for all ribbon tabs
 
 arguments (Input)
     obj views.MibView

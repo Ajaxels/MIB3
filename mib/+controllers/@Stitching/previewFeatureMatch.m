@@ -17,14 +17,14 @@ function previewFeatureMatch(obj)
 % grey where they agree) with the inlier keypoints marked on top. A clean seam
 % and tightly overlapping green/magenta keypoints mean a good registration; the
 % recovered shift and inlier ratio are shown in the title, so the effect of a
-% settings change is visible immediately — the feedback loop the Alignment
+% settings change is visible immediately - the feedback loop the Alignment
 % preview provides.
 %
 % A ``downsampleFactor`` above 1 affects DETECTION ONLY: keypoints are found on
 % resized copies and their locations scaled back, while the composite is
 % always BUILT from the full-resolution tiles (the title notes the detection
 % scale). For real-world tile sizes that composite can exceed a GPU's max
-% texture side (commonly ~16384 px) — MATLAB then creates the image object
+% texture side (commonly ~16384 px) - MATLAB then creates the image object
 % without error, but the driver silently fails to rasterize it while the
 % point/tie-line overlay still renders, i.e. only markers show, no image. To
 % avoid this, the composite is downsized for DISPLAY ONLY past a safe cap
@@ -36,7 +36,7 @@ function previewFeatureMatch(obj)
 %
 % Shows a Cancelable progress dialog spanning tile reading, feature
 % detection/matching, transform fitting, AND composite building + the
-% display-downsize step above — reading/warping/fusing full-resolution tiles
+% display-downsize step above - reading/warping/fusing full-resolution tiles
 % off disk can take a noticeable time for large files, and without it the app
 % would look frozen. Cancel is polled between stages (read A, read B, detect,
 % match, fit, build composite, resize for display); since each stage itself is
@@ -69,14 +69,14 @@ if isempty(xyPairs)
     infoOptions.Icon        = 'puffin_info';
     infoOptions.HeaderLines = 1;
     utils.dlgs.inputUniversalDlg(parentFig, ...
-        'No overlapping tile pair found in the current layout — cannot preview feature matches.', ...
+        'No overlapping tile pair found in the current layout - cannot preview feature matches.', ...
         {}, {}, 'Feature preview', infoOptions);
     return;
 end
 pair = xyPairs(1);
 
 % Reading full-resolution tiles off disk and detecting/matching features on them
-% can take a noticeable time for large files — show progress so the app does not
+% can take a noticeable time for large files - show progress so the app does not
 % look frozen while it prepares the preview, and let the user bail out of it.
 progressDialog = uiprogressdlg(parentFig, 'Value', 0, 'Cancelable', 'on', ...
     'Message', 'Reading tile images...', 'Title', 'Feature preview');
@@ -99,7 +99,7 @@ featureDetectorType = featureOptions.featureDetector;
 % Optional detection downsampling. Detection/matching run on the RESIZED copies,
 % but imageA/imageB stay full-resolution: the fitted tform is in full-resolution
 % units (locations are scaled back before the fit), so the composite and the
-% overlaid keypoints below must be in that same frame — mixing a full-resolution
+% overlaid keypoints below must be in that same frame - mixing a full-resolution
 % tform with downsampled images places the tiles at factor-times the true offset.
 scaleBack = 1;
 detectA = imageA;
@@ -179,7 +179,7 @@ inlierRatio = nnz(inlierIdx) / numel(inlierIdx);
 % tform maps A->B, so its inverse warps tile B into tile A's coordinate frame;
 % imfuse then blends them on the shared union canvas (green = tile i, magenta =
 % tile j, grey where they agree). imwarp/imfuse compute the referencing so the
-% overlap is drawn aligned — a clean seam means the registration is good.
+% overlap is drawn aligned - a clean seam means the registration is good.
 % Full-resolution tiles here can be large, so this stays under the same
 % progress dialog as the rest of the preparation.
 progressDialog.Message = 'Building composite...';
@@ -203,11 +203,11 @@ inlierBinA = transformPointsForward(invTform, matchedB(inlierIdx).Location * sca
 
 % The composite is always built from the FULL-resolution tiles regardless of
 % the detection downsampleFactor (a downsample setting only thins out
-% keypoint search, it does not shrink the tiles themselves) — with tiles the
+% keypoint search, it does not shrink the tiles themselves) - with tiles the
 % size of a real microscope mosaic (tens of thousands of px/side) the fused
 % canvas can exceed a GPU's max texture side (commonly ~16384 px). MATLAB then
 % builds the image object without error but the driver silently fails to
-% rasterize it, while the vector point/tie-line overlay below still renders —
+% rasterize it, while the vector point/tie-line overlay below still renders -
 % which looks exactly like "only the points show, no images". Downsize the
 % composite for DISPLAY ONLY past a safe cap; detection, matching and the
 % fitted shift above already ran at the user-chosen resolution and are
@@ -239,12 +239,12 @@ hAxes = axes('Parent', hFig);
 imshow(composite, 'Parent', hAxes);
 hold(hAxes, 'on');
 % Matched inliers: the two tiles' keypoints should land on top of each other
-% after stitching — a short green→magenta tie-line means a small residual.
+% after stitching - a short green→magenta tie-line means a small residual.
 plot(hAxes, [ax, bx]', [ay, by]', 'y-', 'LineWidth', 0.5);
 plot(hAxes, ax, ay, 'go', 'MarkerSize', 6, 'LineWidth', 1);
 plot(hAxes, bx, by, 'm+', 'MarkerSize', 6, 'LineWidth', 1);
 hold(hAxes, 'off');
-% Say when detection ran downsampled — otherwise a changed factor gives no visible
+% Say when detection ran downsampled - otherwise a changed factor gives no visible
 % feedback (the composite is always drawn at full resolution).
 if scaleBack > 1
     detectionNote = sprintf(', detected at 1/%g scale', scaleBack);
@@ -256,7 +256,7 @@ if displayScale < 1
 else
     displayNote = '';
 end
-title(hAxes, sprintf('Tiles %d ↔ %d stitched — %d/%d inliers (ratio %.2f), shift [dy %.1f, dx %.1f] px%s%s', ...
+title(hAxes, sprintf('Tiles %d ↔ %d stitched - %d/%d inliers (ratio %.2f), shift [dy %.1f, dx %.1f] px%s%s', ...
     pair.i, pair.j, nnz(inlierIdx), numel(inlierIdx), inlierRatio, shiftYX(1), shiftYX(2), detectionNote, displayNote));
 
 end

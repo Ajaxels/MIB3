@@ -7,12 +7,12 @@ function selectionBuffer(obj, parameter)
 %       obj.selectionBuffer(parameter)
 %
 % Input Arguments:
-%   - **parameter** — action to perform:
+%   - **parameter** - action to perform:
 %
-%     - ``'copy'`` — store the selection from the current slice into the buffer
-%     - ``'paste'`` — OR the buffered selection into the current slice
-%     - ``'pasteall'`` — OR the buffered selection into all Z-slices of the current stack
-%     - ``'clear'`` — clear the selection buffer
+%     - ``'copy'`` - store the selection from the current slice into the buffer
+%     - ``'paste'`` - OR the buffered selection into the current slice
+%     - ``'pasteall'`` - OR the buffered selection into all Z-slices of the current stack
+%     - ``'clear'`` - clear the selection buffer
 %
 % Updates
 % 01.06.2026, IB, ported from MIB2 menuSelectionBuffer_Callback

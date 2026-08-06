@@ -10,30 +10,30 @@ classdef Measurements < matlab.mixin.Copyable
     %
     % **Supported measurement types:**
     %
-    % - ``'Point'``               — single labelled point
-    % - ``'Distance (linear)'``   — straight-line distance between two points
-    % - ``'Distance (polyline)'`` — cumulative arc-length of a polyline
-    % - ``'Angle'``               — angle formed by three points (vertex = point 2)
-    % - ``'Circle (R)'``          — circle fit to N points; result is radius
-    % - ``'Caliper'``             — oriented bounding-box width measurement
+    % - ``'Point'``               - single labelled point
+    % - ``'Distance (linear)'``   - straight-line distance between two points
+    % - ``'Distance (polyline)'`` - cumulative arc-length of a polyline
+    % - ``'Angle'``               - angle formed by three points (vertex = point 2)
+    % - ``'Circle (R)'``          - circle fit to N points; result is radius
+    % - ``'Caliper'``             - oriented bounding-box width measurement
     %
-    % **Data structure** — each element of ``obj.Data`` struct array contains:
+    % **Data structure** - each element of ``obj.Data`` struct array contains:
     %
-    % - ``.n``              — [double] 1-based index (auto-renumbered on insert/delete)
-    % - ``.type``           — [char] measurement type string (see list above)
-    % - ``.value``          — [double] numeric result in physical units
-    % - ``.X``              — [double vector] data-space pixel X coordinates
-    % - ``.Y``              — [double vector] data-space pixel Y coordinates
-    % - ``.Z``              — [double] Z slice index when measurement was made
-    % - ``.T``              — [double] time-point index when measurement was made
-    % - ``.orientation``    — [double] 1 = zx, 2 = zy, 3 = yx (MIB3 values)
-    % - ``.spline``         — [struct | []] ppval data for ``'Distance (polyline)'``
-    % - ``.circ``           — [struct | []] ``{xc, yc, R}`` for ``'Circle (R)'``
-    % - ``.intensity``      — [double vector] mean intensity per colour channel
-    % - ``.profile``        — [double matrix] ``[position; intensity_ch1; ...]``
-    % - ``.integrateWidth`` — [double | []] integration half-width for ``'Distance (linear)'``
-    % - ``.info``           — [char] user annotation / label text
-    % - ``.colCh``          — [double] colour channel used when measurement was made
+    % - ``.n``              - [double] 1-based index (auto-renumbered on insert/delete)
+    % - ``.type``           - [char] measurement type string (see list above)
+    % - ``.value``          - [double] numeric result in physical units
+    % - ``.X``              - [double vector] data-space pixel X coordinates
+    % - ``.Y``              - [double vector] data-space pixel Y coordinates
+    % - ``.Z``              - [double] Z slice index when measurement was made
+    % - ``.T``              - [double] time-point index when measurement was made
+    % - ``.orientation``    - [double] 1 = zx, 2 = zy, 3 = yx (MIB3 values)
+    % - ``.spline``         - [struct | []] ppval data for ``'Distance (polyline)'``
+    % - ``.circ``           - [struct | []] ``{xc, yc, R}`` for ``'Circle (R)'``
+    % - ``.intensity``      - [double vector] mean intensity per colour channel
+    % - ``.profile``        - [double matrix] ``[position; intensity_ch1; ...]``
+    % - ``.integrateWidth`` - [double | []] integration half-width for ``'Distance (linear)'``
+    % - ``.info``           - [char] user annotation / label text
+    % - ``.colCh``          - [double] colour channel used when measurement was made
     %
     % Interactive UX (drawing, dialogs, export) belongs to
     % ``controllers.MibMeasureToolController``.
@@ -59,11 +59,11 @@ classdef Measurements < matlab.mixin.Copyable
         %   .showText     - numeric, 0 or 1     (default 1)
 
         typeToShow
-        % char — filter for rendering: 'All' or one of the type strings.
+        % char - filter for rendering: 'All' or one of the type strings.
         % Set by the controller before calling addMeasurementsToPlot.
 
         fixZ
-        % logical — when true, Z and T are preserved when a measurement is
+        % logical - when true, Z and T are preserved when a measurement is
         % re-edited; the controller toggles this before calling storeMeasurement.
 
         mibDataset
@@ -88,13 +88,13 @@ classdef Measurements < matlab.mixin.Copyable
             % and stored as ``obj.measurements``.
             %
             % Input Arguments:
-            %   - **mibDataset** — *(optional)* handle to :class:`core.MibDataset`
+            %   - **mibDataset** - *(optional)* handle to :class:`core.MibDataset`
             %     (the parent dataset that owns this measurement collection).
             %     When omitted the class still works but methods that need
             %     image dimensions require explicit arguments.
             %
             % Output Arguments:
-            %   - **obj** — instance of the :class:`core.Measurements` class.
+            %   - **obj** - instance of the :class:`core.Measurements` class.
             %
             % Usage:
             %   **Example 1**
@@ -261,7 +261,7 @@ classdef Measurements < matlab.mixin.Copyable
             % values as defaults.  If the user cancels, no changes are made.
             %
             % Input Arguments:
-            %   - **parentFigure** — handle to the parent window used for dialog
+            %   - **parentFigure** - handle to the parent window used for dialog
             %     centering.  Pass ``[]`` for automatic placement.
             %
             % Output Arguments:
@@ -346,9 +346,9 @@ classdef Measurements < matlab.mixin.Copyable
             % appended.  After any insert all ``.n`` fields are renumbered.
             %
             % Input Arguments:
-            %   - **newData** — [struct] single measurement struct whose fields
+            %   - **newData** - [struct] single measurement struct whose fields
             %     match those of ``obj.Data``.
-            %   - **index** — *(optional)* [double] position at which to store the
+            %   - **index** - *(optional)* [double] position at which to store the
             %     measurement.  Default = append after the last entry.
             %
             % Output Arguments:
@@ -397,11 +397,11 @@ classdef Measurements < matlab.mixin.Copyable
             % array empty, ``clearData`` is also called.  Otherwise the
             % element(s) are deleted and ``.n`` is renumbered.
             %
-            % No confirmation dialog is shown — caller is responsible for
+            % No confirmation dialog is shown - caller is responsible for
             % prompting the user before invoking this method.
             %
             % Input Arguments:
-            %   - **index** — *(optional)* [double] index of the measurement to
+            %   - **index** - *(optional)* [double] index of the measurement to
             %     remove.  Use ``0`` or omit to remove all.
             %
             % Output Arguments:
@@ -459,7 +459,7 @@ classdef Measurements < matlab.mixin.Copyable
             % Input Arguments:
             %
             % Output Arguments:
-            %   - **measurementCount** — [double] number of stored measurements.
+            %   - **measurementCount** - [double] number of stored measurements.
             %
             % Usage:
             %   **Example 1**
@@ -489,10 +489,10 @@ classdef Measurements < matlab.mixin.Copyable
             % ``queryStr``.
             %
             % Input Arguments:
-            %   - **queryStr** — [char | string] label text to search for.
+            %   - **queryStr** - [char | string] label text to search for.
             %
             % Output Arguments:
-            %   - **indices** — [numeric vector] indices of matching entries.
+            %   - **indices** - [numeric vector] indices of matching entries.
             %     Empty if no match found.
             %
             % Usage:
@@ -533,16 +533,16 @@ classdef Measurements < matlab.mixin.Copyable
             % never calls ``mibModel`` directly.
             %
             % Input Arguments:
-            %   - **axesHandle** — handle to the target axes.
-            %   - **mode** — [char] rendering mode passed by the caller: ``'shown'``
+            %   - **axesHandle** - handle to the target axes.
+            %   - **mode** - [char] rendering mode passed by the caller: ``'shown'``
             %     for the standard block-mode viewport, ``'full'`` for the
             %     full-resolution pan coordinate system.  Stored for future use;
             %     the actual coordinate mapping is performed by ``convertFcn``.
-            %   - **orientation** — [double] current orientation (3 = yx, 1 = zx, 2 = zy).
-            %   - **convertFcn** — [function_handle] ``@(X,Y) ...`` that converts
+            %   - **orientation** - [double] current orientation (3 = yx, 1 = zx, 2 = zy).
+            %   - **convertFcn** - [function_handle] ``@(X,Y) ...`` that converts
             %     data coordinates to axes coordinates:
             %     ``[Xscreen, Yscreen] = convertFcn(Xdata, Ydata)``
-            %   - **selectedIdx** — *(optional)* [double] ``0`` = all visible;
+            %   - **selectedIdx** - *(optional)* [double] ``0`` = all visible;
             %     ``>0`` = only that index.  Default ``0``.
             %
             % Output Arguments:
@@ -647,7 +647,7 @@ classdef Measurements < matlab.mixin.Copyable
 
                     case 'Caliper'
                         % Draw baseline P1-P2 and perpendicular P3-P4 as two
-                        % separate segments — no connecting line between P2 and P3.
+                        % separate segments - no connecting line between P2 and P3.
                         if numel(screenX) >= 4
                             plot(axesHandle, screenX(1:2), screenY(1:2), ...
                                 'Color', color, 'LineStyle', effectiveLineStyle, 'LineWidth', lineWidth, ...
@@ -721,11 +721,11 @@ classdef Measurements < matlab.mixin.Copyable
                         end
 
                     case 'Distance (polyline)'
-                        % screenX/screenY hold the dense interpolated path — draw that as the line
+                        % screenX/screenY hold the dense interpolated path - draw that as the line
                         plot(axesHandle, screenX, screenY, ...
                             'Color', color, 'LineStyle', effectiveLineStyle, 'LineWidth', lineWidth, ...
                             'Tag', 'measurements');
-                        % spline.x/y hold the original knot positions — show those as markers
+                        % spline.x/y hold the original knot positions - show those as markers
                         splineData = obj.Data(dataIdx).spline;
                         if options.showMarkers && ~isempty(splineData) && isfield(splineData, 'x')
                             [knotScreenX, knotScreenY] = convertFcn(splineData.x, splineData.y);
@@ -766,7 +766,7 @@ classdef Measurements < matlab.mixin.Copyable
             % Also scales circle centre/radius and spline coordinates if present.
             %
             % Input Arguments:
-            %   - **resampledRatio** — [numeric vector] ``[ratioW, ratioH, ratioZ]``
+            %   - **resampledRatio** - [numeric vector] ``[ratioW, ratioH, ratioZ]``
             %     ratio of new/old dimensions.  For example ``[0.5, 0.5, 1]``
             %     bins XY by 2.
             %
@@ -840,14 +840,14 @@ classdef Measurements < matlab.mixin.Copyable
             % coordinates if present.
             %
             % Input Arguments:
-            %   - **cropF** — [numeric vector] ``[x1, y1, dx, dy, z1, dz]``:
+            %   - **cropF** - [numeric vector] ``[x1, y1, dx, dy, z1, dz]``:
             %
-            %     - ``cropF(1)`` — starting X coordinate (1-based)
-            %     - ``cropF(2)`` — starting Y coordinate (1-based)
-            %     - ``cropF(3)`` — width of crop region
-            %     - ``cropF(4)`` — height of crop region
-            %     - ``cropF(5)`` — starting Z slice (1-based)
-            %     - ``cropF(6)`` — number of Z slices
+            %     - ``cropF(1)`` - starting X coordinate (1-based)
+            %     - ``cropF(2)`` - starting Y coordinate (1-based)
+            %     - ``cropF(3)`` - width of crop region
+            %     - ``cropF(4)`` - height of crop region
+            %     - ``cropF(5)`` - starting Z slice (1-based)
+            %     - ``cropF(6)`` - number of Z slices
             %
             % Output Arguments:
             %
@@ -908,7 +908,7 @@ classdef Measurements < matlab.mixin.Copyable
     end  % methods
 
     % =====================================================================
-    %  Static computation methods — call as core.Measurements.methodName()
+    %  Static computation methods - call as core.Measurements.methodName()
     % =====================================================================
     methods (Static)
 
@@ -925,14 +925,14 @@ classdef Measurements < matlab.mixin.Copyable
             % the angle so that non-isotropic datasets give correct results.
             %
             % Input Arguments:
-            %   - **X** — [double(1×3)] X coordinates of the three points.
-            %   - **Y** — [double(1×3)] Y coordinates of the three points.
-            %   - **pixSize** — [struct] pixel/voxel size with fields ``.x``, ``.y``, ``.z``.
-            %   - **orientation** — *(optional)* [double] 1 = zx, 2 = zy, 3 = yx.
+            %   - **X** - [double(1×3)] X coordinates of the three points.
+            %   - **Y** - [double(1×3)] Y coordinates of the three points.
+            %   - **pixSize** - [struct] pixel/voxel size with fields ``.x``, ``.y``, ``.z``.
+            %   - **orientation** - *(optional)* [double] 1 = zx, 2 = zy, 3 = yx.
             %     Default ``3``.
             %
             % Output Arguments:
-            %   - **angleValue** — [double] angle at the vertex in degrees.
+            %   - **angleValue** - [double] angle at the vertex in degrees.
             %
             % Usage:
             %   **Example 1**
@@ -966,14 +966,14 @@ classdef Measurements < matlab.mixin.Copyable
             %       distanceValue = core.Measurements.computeDistance(X, Y, pixSize, orientation)
             %
             % Input Arguments:
-            %   - **X** — [double(1×2)] X coordinates of the two endpoints.
-            %   - **Y** — [double(1×2)] Y coordinates of the two endpoints.
-            %   - **pixSize** — [struct] pixel/voxel size with fields ``.x``, ``.y``, ``.z``.
-            %   - **orientation** — *(optional)* [double] 1 = zx, 2 = zy, 3 = yx.
+            %   - **X** - [double(1×2)] X coordinates of the two endpoints.
+            %   - **Y** - [double(1×2)] Y coordinates of the two endpoints.
+            %   - **pixSize** - [struct] pixel/voxel size with fields ``.x``, ``.y``, ``.z``.
+            %   - **orientation** - *(optional)* [double] 1 = zx, 2 = zy, 3 = yx.
             %     Default ``3``.
             %
             % Output Arguments:
-            %   - **distanceValue** — [double] Euclidean distance in physical units.
+            %   - **distanceValue** - [double] Euclidean distance in physical units.
             %
             % Usage:
             %   **Example 1**
@@ -1005,15 +1005,15 @@ classdef Measurements < matlab.mixin.Copyable
             % Adapted from the MIB2 ``circlefit`` function.
             %
             % Input Arguments:
-            %   - **x** — [double vector] X coordinates of the input points.
-            %   - **y** — [double vector] Y coordinates of the input points.
+            %   - **x** - [double vector] X coordinates of the input points.
+            %   - **y** - [double vector] Y coordinates of the input points.
             %
             % Output Arguments:
-            %   - **circ** — [struct] with fields:
+            %   - **circ** - [struct] with fields:
             %
-            %     - ``.xc`` — X coordinate of the fitted circle centre
-            %     - ``.yc`` — Y coordinate of the fitted circle centre
-            %     - ``.R``  — radius of the fitted circle
+            %     - ``.xc`` - X coordinate of the fitted circle centre
+            %     - ``.yc`` - Y coordinate of the fitted circle centre
+            %     - ``.R``  - radius of the fitted circle
             %
             % Usage:
             %   **Example 1**
@@ -1051,15 +1051,15 @@ classdef Measurements < matlab.mixin.Copyable
             % suitable for line-profile plots.
             %
             % Input Arguments:
-            %   - **image2D** — [H × W × C double or uint] intensity image.
-            %   - **X** — [double vector] polyline vertex X coords (data space).
-            %   - **Y** — [double vector] polyline vertex Y coords (data space).
-            %   - **pixSize** — [struct] pixel size (currently unused but reserved
+            %   - **image2D** - [H × W × C double or uint] intensity image.
+            %   - **X** - [double vector] polyline vertex X coords (data space).
+            %   - **Y** - [double vector] polyline vertex Y coords (data space).
+            %   - **pixSize** - [struct] pixel size (currently unused but reserved
             %     for physical-unit arc lengths in future).
-            %   - **orientation** — *(optional)* [double] reserved; default ``3``.
+            %   - **orientation** - *(optional)* [double] reserved; default ``3``.
             %
             % Output Arguments:
-            %   - **profileData** — [double matrix] rows = ``[position; ch1; ch2; …]``
+            %   - **profileData** - [double matrix] rows = ``[position; ch1; ch2; …]``
             %     where ``position`` is cumulative arc length in pixels and
             %     each ``chN`` row contains the interpolated intensity for
             %     colour channel N.
@@ -1104,12 +1104,12 @@ classdef Measurements < matlab.mixin.Copyable
             %       kymograph = core.Measurements.computeKymograph(imageStack, X, Y)
             %
             % Input Arguments:
-            %   - **imageStack** — [H × W × C × nSlices] uint or double array (not a cell; use ``imageStackCell{1}`` and permute from ``getData4D`` output).
-            %   - **X** — [double(1×2)] line endpoint X coords (pixel space).
-            %   - **Y** — [double(1×2)] line endpoint Y coords (pixel space).
+            %   - **imageStack** - [H × W × C × nSlices] uint or double array (not a cell; use ``imageStackCell{1}`` and permute from ``getData4D`` output).
+            %   - **X** - [double(1×2)] line endpoint X coords (pixel space).
+            %   - **Y** - [double(1×2)] line endpoint Y coords (pixel space).
             %
             % Output Arguments:
-            %   - **kymograph** — [nSlices × nPoints × C] array of the same
+            %   - **kymograph** - [nSlices × nPoints × C] array of the same
             %     class as ``imageStack(:,:,:,1)``, where rows = slices/frames
             %     and columns = positions along the line.
             %

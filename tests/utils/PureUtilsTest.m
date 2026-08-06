@@ -2,11 +2,11 @@ classdef PureUtilsTest < matlab.unittest.TestCase
 % PUREUTILSTEST - Unit tests for pure (no-GUI) utility functions.
 %
 % Covers:
-%   utils.updatePixSizeAndResolution  — pixSize derivation from img_info
-%   utils.updateBatchOptCombineFields_Shared — batch-opt merge semantics
-%   utils.calculatePixSizes           — resolution → physical pixel size
-%   utils.calculateResolution         — physical pixel size → resolution
-%   MibDataset.convertPixelsToUnits / convertUnitsToPixels — round-trip
+%   utils.updatePixSizeAndResolution  - pixSize derivation from img_info
+%   utils.updateBatchOptCombineFields_Shared - batch-opt merge semantics
+%   utils.calculatePixSizes           - resolution → physical pixel size
+%   utils.calculateResolution         - physical pixel size → resolution
+%   MibDataset.convertPixelsToUnits / convertUnitsToPixels - round-trip
 
     methods (TestClassSetup)
         function addPaths(testCase)

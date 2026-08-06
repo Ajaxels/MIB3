@@ -7,34 +7,34 @@ function exportDatasetToImaris(obj, layerType, BatchOptIn)
 %       obj.exportDatasetToImaris(layerType, BatchOptIn)
 %
 % Input Arguments:
-%   - **layerType** — a string specifying which layer to export:
+%   - **layerType** - a string specifying which layer to export:
 %
-%     - ``'image'`` — export image data
-%     - ``'mask'`` — export mask layer as a single binary channel
-%     - ``'model'`` — export model (labels layer); prompts for material index
+%     - ``'image'`` - export image data
+%     - ``'mask'`` - export mask layer as a single binary channel
+%     - ``'model'`` - export model (labels layer); prompts for material index
 %
-%   - **BatchOptIn** — *(optional)* a structure for batch processing mode; when ``NaN``
+%   - **BatchOptIn** - *(optional)* a structure for batch processing mode; when ``NaN``
 %     returns a structure with default options via "SyncBatch" event:
 %
-%     - ``.LayerType`` — cell string, ``{'image'|'mask'|'model'}`` layer to export
-%     - ``.MaterialIndex`` — string, [model only] material index to export; empty = all materials
-%     - ``.showWaitbar`` — logical, show or not the waitbar
-%     - ``.id`` — *(optional)* index of the dataset
+%     - ``.LayerType`` - cell string, ``{'image'|'mask'|'model'}`` layer to export
+%     - ``.MaterialIndex`` - string, [model only] material index to export; empty = all materials
+%     - ``.showWaitbar`` - logical, show or not the waitbar
+%     - ``.id`` - *(optional)* index of the dataset
 %
 % Usage:
-%   **Example 1** — export image interactively
+%   **Example 1** - export image interactively
 %
 %   .. code-block:: matlab
 %
 %      obj.mibModel.exportDatasetToImaris('image');
 %
-%   **Example 2** — export mask interactively
+%   **Example 2** - export mask interactively
 %
 %   .. code-block:: matlab
 %
 %      obj.mibModel.exportDatasetToImaris('mask');
 %
-%   **Example 3** — export first material in batch mode
+%   **Example 3** - export first material in batch mode
 %
 %   .. code-block:: matlab
 %
@@ -50,7 +50,7 @@ if nargin < 2; layerType = 'image'; end
 
 activeId = obj.getActiveId();
 
-%% Pre-flight checks (before building BatchOpt — fail fast)
+%% Pre-flight checks (before building BatchOpt - fail fast)
 if strcmp(obj.I{activeId}.datasetType, 'Virtual')
     dlgOpt = struct();
     dlgOpt.MsgBoxOnly = true;
@@ -131,10 +131,10 @@ BatchOpt.showWaitbar = true;
 if nargin < 3
     switch BatchOpt.LayerType{1}
         case 'image'
-            % no extra parameters needed — lutColors picked from dataset automatically
+            % no extra parameters needed - lutColors picked from dataset automatically
 
         case 'mask'
-            % no extra parameters — mask is always a single binary channel
+            % no extra parameters - mask is always a single binary channel
 
         case 'model'
             dlgOpt = struct();

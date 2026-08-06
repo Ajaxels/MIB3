@@ -8,7 +8,7 @@ function Calculate(obj, batchModeSwitch)
 %       obj.Calculate(batchModeSwitch)
 %
 % Input Arguments:
-%   - **batchModeSwitch** — *(optional)* logical; when ``true`` skips backup
+%   - **batchModeSwitch** - *(optional)* logical; when ``true`` skips backup
 %     and ``returnBatchOpt`` call (default ``false``)
 %
 
@@ -39,7 +39,7 @@ time  = obj.mibModel.I{id}.image.time;
 getDataOptions.roiId = -1;
 getDataOptions.id    = id;
 
-%% Backup — skip for 4D datasets (too large) and in batch mode
+%% Backup - skip for 4D datasets (too large) and in batch mode
 if ~batchModeSwitch
     backupOptions.id = id;
     switch obj.BatchOpt.DatasetType{1}
@@ -86,7 +86,7 @@ for t = timeStart:timeEnd
     getDataOptions.t = [t t];
 
     if strcmp(obj.BatchOpt.Mode{1}, '3D')
-        %% 3D mode — operate on full volume
+        %% 3D mode - operate on full volume
         imageData     = obj.mibModel.getData3D('image', t, 3, colorChannelIndex, getDataOptions);
         processedData = cell([numel(imageData), 1]);
 
@@ -141,7 +141,7 @@ for t = timeStart:timeEnd
         end
 
     else
-        %% 2D mode — per-slice
+        %% 2D mode - per-slice
         currentOrientation = obj.mibModel.I{id}.orientation;
         if strcmp(obj.BatchOpt.DatasetType{1}, '2D, Slice')
             startSlice = obj.mibModel.I{id}.slices{currentOrientation}(1);

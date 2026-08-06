@@ -8,7 +8,7 @@ function gui_WindowKeyPressFcn_BrushSuperpixel(obj, eventdata)
 % during an active superpixel brush stroke.
 %
 % Input Arguments:
-%   - **eventdata** — KeyData structure with fields:
+%   - **eventdata** - KeyData structure with fields:
 %     - .Key - name of the key pressed, in lower case
 %     - .Character - character interpretation of the key
 %     - .Modifier - cell array of modifier key names ('control', 'shift', 'alt')

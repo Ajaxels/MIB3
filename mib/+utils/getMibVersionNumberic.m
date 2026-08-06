@@ -9,26 +9,26 @@ function mibVersionNumeric = getMibVersionNumberic(mibVersionString)
 %
 % Two string formats are supported:
 %
-% - Release:  ``'ver. 2.909 / 06.08.2024'`` — ``mibVersionNumeric`` is extracted
+% - Release:  ``'ver. 2.909 / 06.08.2024'`` - ``mibVersionNumeric`` is extracted
 %   from the text between ``'ver.'`` and ``'/'``.
-% - Beta:     ``'ver. 2.909 (beta 07) / 06.08.2024'`` — ``mibVersionNumeric`` is
+% - Beta:     ``'ver. 2.909 (beta 07) / 06.08.2024'`` - ``mibVersionNumeric`` is
 %   computed as version minus beta offset: ``2.909 - (1000 - 7) / 1000000``.
 %
 % Input Arguments:
-%   - **mibVersionString** — [char] MIB version string as defined in ``mib3.m``
+%   - **mibVersionString** - [char] MIB version string as defined in ``mib3.m``
 %
 % Output Arguments:
-%   - **mibVersionNumeric** — [double] numeric representation of the MIB version
+%   - **mibVersionNumeric** - [double] numeric representation of the MIB version
 %
 % Usage:
 %
-%   **Example 1** — parse a release version string
+%   **Example 1** - parse a release version string
 %
 %   .. code-block:: matlab
 %
 %      ver = utils.getMibVersionNumberic('ver. 2025.12 / 05.12.2025');
 %
-%   **Example 2** — parse a beta version string
+%   **Example 2** - parse a beta version string
 %
 %   .. code-block:: matlab
 %

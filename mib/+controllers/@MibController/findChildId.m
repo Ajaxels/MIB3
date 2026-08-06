@@ -12,12 +12,12 @@ function id = findChildId(obj, childName)
 % to the list as a new element
 %
 % Input Arguments:
-%   - **childName** — name of a child controller
+%   - **childName** - name of a child controller
 %
 % Output Arguments:
-%   - **id** — index of the requested child controller or empty if it is not open
+%   - **id** - index of the requested child controller or empty if it is not open
 %
-% **Example 1** — find the index of an open child controller:
+% **Example 1** - find the index of an open child controller:
 %
 %   .. code-block:: matlab
 %

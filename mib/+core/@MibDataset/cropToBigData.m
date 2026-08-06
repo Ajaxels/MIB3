@@ -16,22 +16,22 @@ function result = cropToBigData(obj, cropF, options)
 %   - model  → ``<dir>/Labels_<stem><ext>``    (e.g. ``Labels_crop.zarr3``)
 %
 % Input Arguments:
-%   - **cropF** — a vector ``[x1, y1, dx, dy, z1, dz, t1, dt]`` in pixels
+%   - **cropF** - a vector ``[x1, y1, dx, dy, z1, dz, t1, dt]`` in pixels
 %
-%     - *x1,* *y1* — top-left corner of the crop region
-%     - *dx,* *dy* — width and height of the crop region
-%     - *z1,* *dz* — first slice index and number of slices
-%     - *t1,* *dt* — first time point and number of time points
+%     - *x1,* *y1* - top-left corner of the crop region
+%     - *dx,* *dy* - width and height of the crop region
+%     - *z1,* *dz* - first slice index and number of slices
+%     - *t1,* *dt* - first time point and number of time points
 %     - when ``numel(cropF)`` < 7, *t1* and *dt* default to ``[1, obj.image.time]``
 %
-%   - **options** — *(optional)* structure with additional parameters
+%   - **options** - *(optional)* structure with additional parameters
 %
-%     - ``.outputPath`` — [char] path to the destination zarr folder (required)
-%     - ``.showWaitbar`` — logical, show a progress dialog (default: **true**)
-%     - ``.UIFigure`` — handle to the parent UIFigure for the progress dialog
+%     - ``.outputPath`` - [char] path to the destination zarr folder (required)
+%     - ``.showWaitbar`` - logical, show a progress dialog (default: **true**)
+%     - ``.UIFigure`` - handle to the parent UIFigure for the progress dialog
 %
 % Output Arguments:
-%   - **result** — **1** on success, **0** on cancel or error
+%   - **result** - **1** on success, **0** on cancel or error
 %
 % Usage:
 %   **Example**

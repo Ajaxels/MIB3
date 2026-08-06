@@ -34,13 +34,13 @@ classdef MibFijiConnect < handle
             %      obj = MibFijiConnect(mainCtrl, view, guiHandles, model)
             %
             % Input Arguments:
-            %   - **mainCtrl** — [controllers.MibController] handle to main MIB controller
-            %   - **view** — [views.MibView] handle to main MIB view
-            %   - **guiHandles** — [struct] GUI component handles for the ROI panel
-            %   - **model** — [models.MibModel] handle to MIB model
+            %   - **mainCtrl** - [controllers.MibController] handle to main MIB controller
+            %   - **view** - [views.MibView] handle to main MIB view
+            %   - **guiHandles** - [struct] GUI component handles for the ROI panel
+            %   - **model** - [models.MibModel] handle to MIB model
             %
             % Output Arguments:
-            %   - **obj** — [MibFijiConnect] initialized ROI panel controller instance
+            %   - **obj** - [MibFijiConnect] initialized ROI panel controller instance
             %
             obj.mibController = mainCtrl;       % handle to the main MIB controller
             obj.view = view;                    % handle to the main MIB view

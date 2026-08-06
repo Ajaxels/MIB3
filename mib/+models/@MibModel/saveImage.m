@@ -15,42 +15,42 @@ function fnOut = saveImage(obj, layerType, filename, BatchOptIn)
 % and delegates to ``core.MibDataset.saveImage`` for actual file writing.
 %
 % Input Arguments:
-%   - **layerType** — ``'image'`` | ``'mask'`` | ``'labels'`` | ``'everything'`` (MibLabels63 only)
-%   - **filename** — *(optional)* full output path; when empty the path is resolved
+%   - **layerType** - ``'image'`` | ``'mask'`` | ``'labels'`` | ``'everything'`` (MibLabels63 only)
+%   - **filename** - *(optional)* full output path; when empty the path is resolved
 %     through the directory/filename policies below
-%   - **BatchOptIn** — *(optional)* structure for batch processing mode; when NaN,
+%   - **BatchOptIn** - *(optional)* structure for batch processing mode; when NaN,
 %     returns default options via the "SyncBatch" event
-%   - ``.LayerType`` — cell string, ``{'image'|'mask'|'labels'}`` layer to save
-%   - ``.Format`` — cell string, output format (default depends on layer type)
-%   - ``.FilenamePolicy`` — cell string, ``{'Use existing name'}`` | ``{'Use new provided name'}``
-%   - ``.Filename`` — char, stem used when FilenamePolicy = ``'Use new…'``; supports ``[F]``
+%   - ``.LayerType`` - cell string, ``{'image'|'mask'|'labels'}`` layer to save
+%   - ``.Format`` - cell string, output format (default depends on layer type)
+%   - ``.FilenamePolicy`` - cell string, ``{'Use existing name'}`` | ``{'Use new provided name'}``
+%   - ``.Filename`` - char, stem used when FilenamePolicy = ``'Use new…'``; supports ``[F]``
 %     template to embed the source stem: ``'Labels_[F]_suffix'`` → ``'Labels_myStack_suffix.model'``
-%   - ``.OutputDirectoryPolicy`` — cell string, ``{'Same as image'}`` | ``{'Subfolder'}`` |
+%   - ``.OutputDirectoryPolicy`` - cell string, ``{'Same as image'}`` | ``{'Subfolder'}`` |
 %     ``{'Full path'}`` | ``{'Same as loaded'}``
-%   - ``.DestinationDirectory`` — char, meaning depends on OutputDirectoryPolicy
-%   - ``.FilenameGenerator`` — cell string, ``{'Use sequential filename'}`` | ``{'Use original filename'}``
-%   - ``.Saving3DPolicy`` — cell string, ``{'3D stack'}`` | ``{'2D sequence'}``
-%   - ``.MaterialIndex`` — char, ``''`` = all materials, ``'NaN'`` = current
-%   - ``.showWaitbar`` — logical, show progress dialog
-%   - ``.id`` — numeric, dataset index (default: ``obj.id``)
+%   - ``.DestinationDirectory`` - char, meaning depends on OutputDirectoryPolicy
+%   - ``.FilenameGenerator`` - cell string, ``{'Use sequential filename'}`` | ``{'Use original filename'}``
+%   - ``.Saving3DPolicy`` - cell string, ``{'3D stack'}`` | ``{'2D sequence'}``
+%   - ``.MaterialIndex`` - char, ``''`` = all materials, ``'NaN'`` = current
+%   - ``.showWaitbar`` - logical, show progress dialog
+%   - ``.id`` - numeric, dataset index (default: ``obj.id``)
 %
 % Output Arguments:
-%   - **fnOut** — char or cell of char; saved filename(s); ``[]`` on failure
+%   - **fnOut** - char or cell of char; saved filename(s); ``[]`` on failure
 %
 % Usage:
-%   **Example 1** — simple mode — save current image (GUI-based, asks dialogs as needed)
+%   **Example 1** - simple mode - save current image (GUI-based, asks dialogs as needed)
 %
 %   .. code-block:: matlab
 %
 %      obj.mibModel.saveImage('image');
 %
-%   **Example 2** — simple mode with explicit filename (silent, no dialogs)
+%   **Example 2** - simple mode with explicit filename (silent, no dialogs)
 %
 %   .. code-block:: matlab
 %
 %      obj.mibModel.saveImage('image', '/output/stack.tif');
 %
-%   **Example 3** — scripted/batch mode — save image to a specific folder and format
+%   **Example 3** - scripted/batch mode - save image to a specific folder and format
 %
 %   .. code-block:: matlab
 %
@@ -65,7 +65,7 @@ function fnOut = saveImage(obj, layerType, filename, BatchOptIn)
 %      BatchOpt.mibBatchTooltip.LayerType = '';
 %      obj.mibModel.saveImage('image', [], BatchOpt);
 %
-%   **Example 4** — batch mode with [F] template — prefix saved name with dataset stem
+%   **Example 4** - batch mode with [F] template - prefix saved name with dataset stem
 %
 %   .. code-block:: matlab
 %
@@ -80,13 +80,13 @@ function fnOut = saveImage(obj, layerType, filename, BatchOptIn)
 %      BatchOpt.mibBatchTooltip.LayerType = '';
 %      obj.mibModel.saveImage('labels', [], BatchOpt);
 %
-%   **Example 5** — SyncBatch mode — let batch controller discover this function
+%   **Example 5** - SyncBatch mode - let batch controller discover this function
 %
 %   .. code-block:: matlab
 %
 %      obj.mibModel.saveImage('image', [], NaN);
 %
-%   **Example 6** — save mask in Amira format to same directory as source image
+%   **Example 6** - save mask in Amira format to same directory as source image
 %
 %   .. code-block:: matlab
 %
@@ -112,7 +112,7 @@ if nargin < 2
 end
 
 % ================================================================== %
-%  SECTION 1 — Declare default BatchOpt structure                    %
+%  SECTION 1 - Declare default BatchOpt structure                    %
 % ================================================================== %
 BatchOpt = struct();
 
@@ -213,7 +213,7 @@ BatchOpt.mibBatchTooltip.MaterialIndex         = sprintf('[Labels only] Material
 BatchOpt.mibBatchTooltip.showWaitbar           = sprintf('Show or hide the progress bar during saving.');
 
 % ================================================================== %
-%  SECTION 2 — BatchOpt mode routing                                  %
+%  SECTION 2 - BatchOpt mode routing                                  %
 % ================================================================== %
 if nargin == 4  % BatchOptIn was explicitly provided
     if isstruct(BatchOptIn) == 0  % scalar (NaN) → SyncBatch mode
@@ -235,7 +235,7 @@ if nargin == 4  % BatchOptIn was explicitly provided
     end
 else
     % ----------------------------------------------------------------
-    % SIMPLE MODE — no BatchOptIn provided (called from GUI callbacks)
+    % SIMPLE MODE - no BatchOptIn provided (called from GUI callbacks)
     % Assemble saveOptions directly and call MibDataset.saveImage()
     % ----------------------------------------------------------------
     saveOpts = struct();
@@ -335,7 +335,7 @@ else
             levelSizes = saveImageImgObj.pyramid.levelImageSizes;   % [nLev x 3] [Y X Z]
             levelItems = cell(1, saveImageNumLevels);
             for levelId = 1:saveImageNumLevels
-                levelItems{levelId} = sprintf('s%d — %d×%d×%d (W×H×Z)', levelId-1, ...
+                levelItems{levelId} = sprintf('s%d - %d×%d×%d (W×H×Z)', levelId-1, ...
                     levelSizes(levelId,2), levelSizes(levelId,1), levelSizes(levelId,3));
             end
             dlgLevelOpts.mibPath     = obj.mibPath;
@@ -382,7 +382,7 @@ else
 end
 
 % ------------------------------------------------------------------ %
-% Check if caller passed mibBatchTooltip — if not, treat as simple    %
+% Check if caller passed mibBatchTooltip - if not, treat as simple    %
 % parameterised call (not true batch-controller mode)                 %
 % ------------------------------------------------------------------ %
 if ~isfield(BatchOptIn, 'mibBatchTooltip')
@@ -406,7 +406,7 @@ if ~isfield(BatchOptIn, 'mibBatchTooltip')
 end
 
 % ==================================================================   %
-%  SECTION 3 — Full batch mode: resolve directory + filename policies  %
+%  SECTION 3 - Full batch mode: resolve directory + filename policies  %
 % ==================================================================   %
 
 % --- resolve destination directory ---
@@ -448,7 +448,7 @@ if strcmp(BatchOpt.FilenamePolicy{1}, 'Use existing name')
         [~, outputName] = fileparts(BatchOpt.Filename);
     end
 else
-    % 'Use new provided name' — may contain [F] template
+    % 'Use new provided name' - may contain [F] template
     outputName = BatchOpt.Filename;
     tPos = strfind(outputName, '[');
     if ~isempty(tPos)
@@ -466,7 +466,7 @@ if ~isempty(tk); formatExt = ['.' tk{1}]; end
 outputFilename = fullfile(destDir, [outputName, formatExt]);
 
 % ================================================================== %
-%  SECTION 4 — Assemble saveOptions and delegate to MibDataset.saveImage() %
+%  SECTION 4 - Assemble saveOptions and delegate to MibDataset.saveImage() %
 % ================================================================== %
 saveOpts.Format            = BatchOpt.Format{1};
 saveOpts.Saving3DPolicy    = BatchOpt.Saving3DPolicy{1};

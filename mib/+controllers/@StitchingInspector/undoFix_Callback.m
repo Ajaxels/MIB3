@@ -8,7 +8,7 @@ function undoFix_Callback(obj)
 %
 % Undoes ALL fixes applied to the current seam this session (``Z`` or
 % ``undoFixBtn``): the first :func:`applyUserFix` on an edge backs up the
-% original automatic measurement, and this restores it — measurement,
+% original automatic measurement, and this restores it - measurement,
 % quality, validity, transform and provenance alike. In-memory only; a saved
 % project keeps whatever state was current at save time. In the Fix-Z
 % boundary view it instead removes the per-slice mosaic correction at the

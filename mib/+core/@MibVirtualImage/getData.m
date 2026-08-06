@@ -14,24 +14,24 @@ function dataset = getData(obj, layerType, orient, colChannel, options)
 % array of the appropriate size.
 %
 % Input Arguments:
-%   - **layerType** — char, layer to retrieve — only 'image' is functional;
+%   - **layerType** - char, layer to retrieve - only 'image' is functional;
 %     'labels', 'mask', 'selection', 'everything' return zeros
-%   - **orient** — *(optional)*, can be ``[]``; default ``3`` (YX):
+%   - **orient** - *(optional)*, can be ``[]``; default ``3`` (YX):
 %
-%     - ``1`` — XZ view: ``[y,x,z,c,t]`` → ``[x,z,y,c,t]``
-%     - ``2`` — YZ view: ``[y,x,z,c,t]`` → ``[y,z,x,c,t]``
-%     - ``3`` — YX view: ``[y,x,z,c,t]`` *(default, no permutation)*
-%   - **colChannel** — [*optional,* can be []], vector of colour indices;
+%     - ``1`` - XZ view: ``[y,x,z,c,t]`` → ``[x,z,y,c,t]``
+%     - ``2`` - YZ view: ``[y,x,z,c,t]`` → ``[y,z,x,c,t]``
+%     - ``3`` - YX view: ``[y,x,z,c,t]`` *(default, no permutation)*
+%   - **colChannel** - [*optional,* can be []], vector of colour indices;
 %     [] means all channels
-%   - **options** — *(optional)*, struct with optional fields:
+%   - **options** - *(optional)*, struct with optional fields:
 %
-%     - ``.y``, ``.x``, ``.z``, ``.t``    — [min, max] coordinate ranges
-%     - ``.level``            — pyramid level index (for zarr, default 1)
-%     - ``.magFactor``        — magnification factor (for zarr, default 1)
-%     - ``.showWaitbar``      — show / suppress the progress waitbar
+%     - ``.y``, ``.x``, ``.z``, ``.t``    - [min, max] coordinate ranges
+%     - ``.level``            - pyramid level index (for zarr, default 1)
+%     - ``.magFactor``        - magnification factor (for zarr, default 1)
+%     - ``.showWaitbar``      - show / suppress the progress waitbar
 %
 % Output Arguments:
-%   - **dataset** — 5D array [y, x, z, c, t] (MIB3 convention)
+%   - **dataset** - 5D array [y, x, z, c, t] (MIB3 convention)
 %
 % Usage:
 %   **Example 1**

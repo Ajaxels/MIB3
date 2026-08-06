@@ -12,32 +12,32 @@ function outArray = applySizeMismatch(rawArray, imgH, imgW, action, offsetY, off
 % size mismatch against the currently open image.
 %
 % Input Arguments:
-%   - **rawArray** — [numeric|logical] Model/Mask array; the first two
+%   - **rawArray** - [numeric|logical] Model/Mask array; the first two
 %     dimensions are height/width. Any number of trailing dimensions
 %     (depth, time, ...) are carried through unchanged.
-%   - **imgH**, **imgW** — [numeric] target height/width (the open image's).
-%   - **action** — [char] ``'Crop'`` or ``'Resize'``.
-%   - **offsetY**, **offsetX** — [numeric] non-negative pixel offsets, only
+%   - **imgH**, **imgW** - [numeric] target height/width (the open image's).
+%   - **action** - [char] ``'Crop'`` or ``'Resize'``.
+%   - **offsetY**, **offsetX** - [numeric] non-negative pixel offsets, only
 %     used when ``action == 'Crop'``. Meaning depends on which side is
 %     bigger on that axis: when the source is bigger, the offset selects
 %     where the crop window starts within the source; when the source is
 %     smaller, it selects where the data is placed within the destination.
 %     Callers are expected to keep these within ``[0, abs(imgSize - itemSize)]``
-%     so the item stays fully inside the larger of the two — this function
+%     so the item stays fully inside the larger of the two - this function
 %     does not clamp or validate them.
 %
 % Output Arguments:
-%   - **outArray** — array of size ``[imgH, imgW, <trailing dims>]``, same
+%   - **outArray** - array of size ``[imgH, imgW, <trailing dims>]``, same
 %     class as ``rawArray``.
 %
 % Usage:
-%   **Example 1** — crop/place with an offset
+%   **Example 1** - crop/place with an offset
 %
 %   .. code-block:: matlab
 %
 %      outArray = core.MibDataset.applySizeMismatch(rawModel, imgH, imgW, 'Crop', offsetY, offsetX);
 %
-%   **Example 2** — resize (nearest-neighbor, preserves label/mask values)
+%   **Example 2** - resize (nearest-neighbor, preserves label/mask values)
 %
 %   .. code-block:: matlab
 %

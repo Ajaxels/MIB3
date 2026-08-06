@@ -9,8 +9,8 @@ function fileFilters_ContextMenu(obj, menuEntry, selectedData)
 % (obj.handles.panels.activeDataset.handles.fileFilters)
 %
 % Input Arguments:
-%   - **menuEntry** — handle to the pressed context menu entry, 'matlab.ui.container.Menu' class
-%   - **selectedData** — handle to the pressed
+%   - **menuEntry** - handle to the pressed context menu entry, 'matlab.ui.container.Menu' class
+%   - **selectedData** - handle to the pressed
 %     'matlab.ui.eventdata.MenuSelectedData' class, it can be used to find the
 %     button that has the context menu (selectedData.ContextObject)
 %

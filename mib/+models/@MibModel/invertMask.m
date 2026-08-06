@@ -15,40 +15,40 @@ function invertMask(obj, type, sel_switch, BatchOptIn)
 % flipped with ``bitxor``.
 %
 % Input Arguments:
-%   - **type** — char, layer to invert: ``'mask'`` or ``'selection'``;
+%   - **type** - char, layer to invert: ``'mask'`` or ``'selection'``;
 %     pass ``''`` to default to ``'mask'``
-%   - **sel_switch** — *(optional)* char, scope of the inversion; initialises
+%   - **sel_switch** - *(optional)* char, scope of the inversion; initialises
 %     ``BatchOpt.DatasetType``
 %
-%     - ``'2D, Slice'``   — current slice only *(default)*
-%     - ``'3D, Stack'``   — full z-stack at the current time point
-%     - ``'4D, Dataset'`` — entire dataset (all z and t)
+%     - ``'2D, Slice'``   - current slice only *(default)*
+%     - ``'3D, Stack'``   - full z-stack at the current time point
+%     - ``'4D, Dataset'`` - entire dataset (all z and t)
 %
-%   - **BatchOptIn** — *(optional)* structure for batch processing mode; when NaN,
+%   - **BatchOptIn** - *(optional)* structure for batch processing mode; when NaN,
 %     returns default options via the ``SyncBatch`` event
 %
-%     - ``.Target`` — cell string, ``{'mask','selection'}``
-%     - ``.DatasetType`` — cell string, scope of inversion
-%     - ``.showWaitbar`` — logical, show or not the progress dialog
-%     - ``.id`` — *(optional)* dataset index 1–9, default = ``obj.getActiveId()``
+%     - ``.Target`` - cell string, ``{'mask','selection'}``
+%     - ``.DatasetType`` - cell string, scope of inversion
+%     - ``.showWaitbar`` - logical, show or not the progress dialog
+%     - ``.id`` - *(optional)* dataset index 1-9, default = ``obj.getActiveId()``
 %
 % Output Arguments:
 %   (none)
 %
 % Usage:
-%   **Example 1** — invert mask on the current slice
+%   **Example 1** - invert mask on the current slice
 %
 %   .. code-block:: matlab
 %
 %      obj.mibModel.invertMask('mask');
 %
-%   **Example 2** — invert selection across the full z-stack
+%   **Example 2** - invert selection across the full z-stack
 %
 %   .. code-block:: matlab
 %
 %      obj.mibModel.invertMask('selection', '3D, Stack');
 %
-%   **Example 3** — invert mask across the full 4D dataset (batch)
+%   **Example 3** - invert mask across the full 4D dataset (batch)
 %
 %   .. code-block:: matlab
 %
@@ -57,7 +57,7 @@ function invertMask(obj, type, sel_switch, BatchOptIn)
 %      BatchOpt.showWaitbar = false;
 %      obj.mibModel.invertMask('mask', '4D, Dataset', BatchOpt);
 %
-%   **Example 4** — return default BatchOpt to the Batch Processing editor
+%   **Example 4** - return default BatchOpt to the Batch Processing editor
 %
 %   .. code-block:: matlab
 %

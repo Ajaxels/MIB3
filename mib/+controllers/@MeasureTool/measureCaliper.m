@@ -8,19 +8,19 @@ function annotationText = measureCaliper(obj, datasetId, colCh, finetuneCheck, c
 %       obj.measureCaliper(datasetId, colCh, finetuneCheck, calcIntensity, showInfoDlg, insertIndex)
 %
 % Draws a 2-point line (P1, P2) then a single point (P3) perpendicular to
-% it.  Computes the shortest distance from P3 to the line P1–P2, scaled by
+% it.  Computes the shortest distance from P3 to the line P1-P2, scaled by
 % pixel size.  P4 (foot of perpendicular) is stored for overlay rendering.
 %
 % Input Arguments:
-%   - **datasetId** — [double] index into ``mibModel.I``
-%   - **colCh** — [double] colour channel (0 = all, 1+ = specific)
-%   - **finetuneCheck** — [logical] when ``false`` accept each ROI immediately after placement (no double-click required)
-%   - **calcIntensity** — [logical] compute intensity profile along perpendicular
-%   - **showInfoDlg** — [logical] show annotation text dialog
-%   - **insertIndex** — *(optional)* [double] replace-at-position (0 = append)
+%   - **datasetId** - [double] index into ``mibModel.I``
+%   - **colCh** - [double] colour channel (0 = all, 1+ = specific)
+%   - **finetuneCheck** - [logical] when ``false`` accept each ROI immediately after placement (no double-click required)
+%   - **calcIntensity** - [logical] compute intensity profile along perpendicular
+%   - **showInfoDlg** - [logical] show annotation text dialog
+%   - **insertIndex** - *(optional)* [double] replace-at-position (0 = append)
 %
 % Output Arguments:
-%   - **annotationText** — [char] annotation label entered by the user;
+%   - **annotationText** - [char] annotation label entered by the user;
 %     empty string ``''`` when the dialog was skipped or cancelled
 %
 

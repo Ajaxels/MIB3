@@ -1,5 +1,5 @@
 function removeMaterial(obj, BatchOptIn)
-% REMOVEMATERIAL - Remove one or more materials from the current model — wrapper around core.MibDataset.removeMaterial.
+% REMOVEMATERIAL - Remove one or more materials from the current model - wrapper around core.MibDataset.removeMaterial.
 %
 % Syntax:
 %   .. code-block:: matlab
@@ -21,30 +21,30 @@ function removeMaterial(obj, BatchOptIn)
 % the segmentation table and image view refresh.
 %
 % Input Arguments:
-%   - **BatchOptIn** — a structure for batch processing mode; when NaN, returns a
+%   - **BatchOptIn** - a structure for batch processing mode; when NaN, returns a
 %     structure with default options via "SyncBatch" event
 %
-%     - ``.MaterialIndices`` — char, space- or comma-separated list of material
+%     - ``.MaterialIndices`` - char, space- or comma-separated list of material
 %       indices to remove, e.g. ``'2'`` or ``'1 3'`` or ``'2,4,6:8'``; [*default* ``''``],
 %       pre-populated with the currently selected material index when one is
 %       selected in the segmentation table.  For large model types
 %       (65535/4294967295) in batch mode the corresponding pixel values are
 %       zeroed; the squeeze-and-renumber operation is available in interactive
 %       mode only.
-%     - ``.showWaitbar`` — logical, show or not the waitbar [*default* true]
-%     - ``.id`` — *(optional)*, dataset index from 1 to 9, default = obj.id
+%     - ``.showWaitbar`` - logical, show or not the waitbar [*default* true]
+%     - ``.id`` - *(optional)*, dataset index from 1 to 9, default = obj.id
 %
 %
 % Output Arguments:
 %
 % Usage:
-%   **Example 1** — interactive remove with index dialog
+%   **Example 1** - interactive remove with index dialog
 %
 %   .. code-block:: matlab
 %
 %      obj.mibModel.removeMaterial();
 %
-%   **Example 2** — scripted / batch call
+%   **Example 2** - scripted / batch call
 %
 %   .. code-block:: matlab
 %

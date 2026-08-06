@@ -12,27 +12,27 @@ function result = updateVoxelSizes(obj, pixSize, BatchOptIn)
 % Replaces MIB2: mibController.menuDatasetParameters_Callback
 %
 % Input Arguments:
-%   - **pixSize** — *(optional)* [struct] structure with new voxel parameters. When omitted or empty the user is prompted via an interactive dialog. Fields:
+%   - **pixSize** - *(optional)* [struct] structure with new voxel parameters. When omitted or empty the user is prompted via an interactive dialog. Fields:
 %
-%     - **.x** — [numeric] physical voxel size in X
-%     - **.y** — [numeric] physical voxel size in Y
-%     - **.z** — [numeric] physical voxel size in Z
-%     - **.t** — [numeric] time step between frames
-%     - **.units** — [char] physical units: ``'m'``, ``'cm'``, ``'mm'``, ``'um'``, or ``'nm'``
-%     - **.tunits** — [char] time units (e.g., ``'s'``, ``'m'``, ``'h'``)
+%     - **.x** - [numeric] physical voxel size in X
+%     - **.y** - [numeric] physical voxel size in Y
+%     - **.z** - [numeric] physical voxel size in Z
+%     - **.t** - [numeric] time step between frames
+%     - **.units** - [char] physical units: ``'m'``, ``'cm'``, ``'mm'``, ``'um'``, or ``'nm'``
+%     - **.tunits** - [char] time units (e.g., ``'s'``, ``'m'``, ``'h'``)
 %
-%   - **BatchOptIn** — *(optional)* [struct] structure for batch-processing mode. Pass **NaN** to retrieve default options via the 'SyncBatch' event. Fields:
+%   - **BatchOptIn** - *(optional)* [struct] structure for batch-processing mode. Pass **NaN** to retrieve default options via the 'SyncBatch' event. Fields:
 %
-%     - **.VoxelX** — [char] physical voxel size in X
-%     - **.VoxelY** — [char] physical voxel size in Y
-%     - **.VoxelZ** — [char] physical voxel size in Z
-%     - **.VoxelT** — [char] time step between frames
-%     - **.Units** — [cell] ``{'m','cm','mm','um','nm'}`` with selected index as second element
-%     - **.TimeUnits** — [char] time units
-%     - **.id** — *(optional)* [numeric] dataset index 1-9; default = current dataset
+%     - **.VoxelX** - [char] physical voxel size in X
+%     - **.VoxelY** - [char] physical voxel size in Y
+%     - **.VoxelZ** - [char] physical voxel size in Z
+%     - **.VoxelT** - [char] time step between frames
+%     - **.Units** - [cell] ``{'m','cm','mm','um','nm'}`` with selected index as second element
+%     - **.TimeUnits** - [char] time units
+%     - **.id** - *(optional)* [numeric] dataset index 1-9; default = current dataset
 %
 % Output Arguments:
-%   - **result** — **1** on success, **0** on cancel
+%   - **result** - **1** on success, **0** on cancel
 %
 
 % Updates
@@ -83,7 +83,7 @@ if nargin == 3
     end
 end
 
-%% Determine new pixSize — interactive dialog OR from arguments
+%% Determine new pixSize - interactive dialog OR from arguments
 if nargin < 2 || isempty(pixSize)
     if nargin < 2
         %% Interactive mode: delegate to utils.updatePixSizeAndResolution dialog

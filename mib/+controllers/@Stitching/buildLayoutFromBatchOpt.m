@@ -14,8 +14,8 @@ function buildLayoutFromBatchOpt(obj)
 % The **Position file** source covers three file kinds, told apart by extension:
 % MIB's own ``filename X Y [Z]`` text file, a **Fibics Atlas** mosaic
 % (``MosaicInfo_*.ve-mif``), and a **SerialEM** montage (``*.mdoc``, or the
-% ``.mrc`` it describes). All three answer the same question — where does each
-% tile go — so they share one layout source rather than three dropdown entries.
+% ``.mrc`` it describes). All three answer the same question - where does each
+% tile go - so they share one layout source rather than three dropdown entries.
 %
 % The two vendor formats can bring more than a layout: alongside the acquisition
 % record they may carry the vendor's own finished stitch, and
@@ -28,7 +28,7 @@ layoutSource = obj.BatchOpt.LayoutSource{1};
 inputPath = obj.BatchOpt.InputPath;
 
 if isempty(inputPath)
-    error('Stitching:noInputPath', 'InputPath is empty — select a tile folder or position file first');
+    error('Stitching:noInputPath', 'InputPath is empty - select a tile folder or position file first');
 end
 
 % Filled by the Atlas branch below; assigned after the downstream reset so the
@@ -47,14 +47,14 @@ elseif strcmp(layoutSource, 'Position file')
     end
     % Each find*Sidecar* helper returns an all-empty struct for a path that is not
     % its own format, so the returned path doubles as the "is this one of mine?"
-    % test — and resolves whichever member of the format's file set was picked
+    % test - and resolves whichever member of the format's file set was picked
     % back to the one that has to be parsed.
     sidecars     = utils.stitch.findAtlasSidecars(inputPath);
     mdocSidecar  = utils.stitch.findMdocSidecar(inputPath);
     if ~isempty(mdocSidecar.mdocPath)
         % A SerialEM montage: one MRC stack whose slices are the tiles, plus the
         % .mdoc placing them. Same three import stages as Atlas, so the same
-        % downgrade rule applies — asking for a stage the file does not carry
+        % downgrade rule applies - asking for a stage the file does not carry
         % falls back rather than raising, since the montage is still perfectly
         % stitchable from scratch.
         mdocOptions.importEdges = ~strcmp(obj.BatchOpt.LayoutImport{1}, 'Nominal grid only') && ...
@@ -67,7 +67,7 @@ elseif strcmp(layoutSource, 'Position file')
     elseif ~isempty(sidecars.mifPath)
         % One .ve-mif describes one mosaic (one section): tile files, grid indices
         % and nominal stage positions. An import mode asking for a sidecar that is
-        % not there is downgraded rather than raising — the mosaic is still
+        % not there is downgraded rather than raising - the mosaic is still
         % perfectly stitchable from scratch, which is what the nominal layout is for.
         atlasOptions.importTies = ~strcmp(obj.BatchOpt.LayoutImport{1}, 'Nominal grid only') && ...
             ~isempty(sidecars.tiePath);
@@ -77,12 +77,12 @@ elseif strcmp(layoutSource, 'Position file')
             utils.stitch.buildLayoutAtlas(sidecars.mifPath, atlasOptions);
     else
         % MIB's text position file. Its filename column may point at images or
-        % (when the tiles are folders) at folder Z-stacks — buildLayoutPositionFile
+        % (when the tiles are folders) at folder Z-stacks - buildLayoutPositionFile
         % auto-detects each entry, so SubfolderMode needs no handling here.
         obj.layout = utils.stitch.buildLayoutPositionFile(inputPath);
     end
 else
-    % Grid or Filename pattern. Collect the tile ENTRIES — image files, or
+    % Grid or Filename pattern. Collect the tile ENTRIES - image files, or
     % folder Z-stacks when SubfolderMode is on (buildLayout* auto-detect folders).
     tileEntries = collectTileEntries(inputPath, obj.BatchOpt.SubfolderMode);
 
@@ -94,7 +94,7 @@ else
         gridOpts.overlapY   = obj.BatchOpt.OverlapY{1};
         obj.layout = utils.stitch.buildLayoutGrid(tileEntries, gridOpts);
     else
-        % Filename pattern — grid indices from the _Z##-X##-Y## tokens, with the
+        % Filename pattern - grid indices from the _Z##-X##-Y## tokens, with the
         % same Overlap X/Y as the Grid source (0 = abutting reassembly).
         patternOpts.overlapX = obj.BatchOpt.OverlapX{1};
         patternOpts.overlapY = obj.BatchOpt.OverlapY{1};
@@ -122,9 +122,9 @@ end
 if ~isempty(importedPositions)
     obj.positions = importedPositions;
     % A placement that arrives without a solve still needs a residual for the
-    % alignment chip, otherwise an imported stitch reads "Alignment: —" and the
+    % alignment chip, otherwise an imported stitch reads "Alignment: -" and the
     % user has no way to tell a good Atlas result from a bad one. Derive it from
-    % the imported edges at the imported positions — the same quantity
+    % the imported edges at the imported positions - the same quantity
     % solveGlobalLeastSquares reports, just measured rather than minimised.
     obj.solverInfo = residualsAtPositions(obj.layout, obj.edges, obj.positions);
     % Verify by the PIXELS as well: an Atlas mosaic stitched under difficult
@@ -167,7 +167,7 @@ solverInfo.nPruned    = 0;
 solverInfo.nComponents = 1;
 solverInfo.anchorComponent = 1;
 
-% A tile no valid edge touches was never checked by the import — the chip must
+% A tile no valid edge touches was never checked by the import - the chip must
 % say so rather than rate the mosaic on the tiles that were.
 touched = false(numel(layout), 1);
 for edgeIdx = find(validMask)'
@@ -182,9 +182,9 @@ end
 function tileEntries = collectTileEntries(inputPath, tilesAreFolders)
 % COLLECTTILEENTRIES - List the tile source paths for a Grid / Filename-pattern
 % layout. tilesAreFolders (SubfolderMode) selects folder Z-stacks over images:
-%   folders ON  — InputPath is a newline-joined folder list (GUI multi-select),
+%   folders ON  - InputPath is a newline-joined folder list (GUI multi-select),
 %                 or a single parent folder whose subfolders are the tiles (batch).
-%   folders OFF — InputPath is a newline-joined image-file list (GUI
+%   folders OFF - InputPath is a newline-joined image-file list (GUI
 %                 multi-select), or one folder whose image files are the tiles
 %                 (typed path / batch back-compat).
 if tilesAreFolders

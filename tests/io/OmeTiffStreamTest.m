@@ -8,7 +8,7 @@ classdef OmeTiffStreamTest < matlab.unittest.TestCase
 % count, identical to a non-streaming save of the same data.
 %
 % The pixSize carries the long unit spelling 'micrometers' (as zarr/BigData
-% datasets do) — exercising utils.normalizeUnits end-to-end through
+% datasets do) - exercising utils.normalizeUnits end-to-end through
 % io.BioFormats.mibImage2ometiff, which previously errored on it.
 %
 % Tagged Integration: OME-TIFF writing needs the Bio-Formats Java library.
@@ -173,7 +173,7 @@ classdef OmeTiffStreamTest < matlab.unittest.TestCase
         end
 
         function save_5d_channelColorRoundtrip(testCase)
-            % Non-streaming save() 5D path, multichannel — companion coverage
+            % Non-streaming save() 5D path, multichannel - companion coverage
             % for save_2dSequence_channelColorRoundtrip.
             tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
             outFile = fullfile(tmpDir.Folder, 'mc.ome.tiff');

@@ -9,9 +9,9 @@ function gui_Callbacks(obj, source, ~)
 % Routes by ``source.Tag`` to the appropriate action method.
 %
 % Parameters:
-%   - **obj** — :class:`controllers.MakeMovie`
-%   - **source** — widget handle that fired the event
-%   - **event** — event data (unused)
+%   - **obj** - :class:`controllers.MakeMovie`
+%   - **source** - widget handle that fired the event
+%   - **event** - event data (unused)
 %
 
 if obj.mibModel.preferences.System.DeveloperMode

@@ -25,10 +25,10 @@ function net = generateDeepLabV3Network(obj, imageSize, numClasses, targetNetwor
 % segmentation of 2D RGB images
 %
 % Input Arguments:
-%   - **imageSize** — vector [height, width, colors] defining input patch size,
+%   - **imageSize** - vector [height, width, colors] defining input patch size,
 %     should be larger than [224 224] for resnet18, colors should be 3
-%   - **numClasses** — number of output classes (including exterior) for the output results
-%   - **targetNetwork** — string defining the base architecture for the initialization
+%   - **numClasses** - number of output classes (including exterior) for the output results
+%   - **targetNetwork** - string defining the base architecture for the initialization
 %     'resnet18' - resnet18 network
 %     'resnet50' - resnet50 network
 %     'xception' - xception network (requires matlab)

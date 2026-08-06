@@ -20,28 +20,28 @@ classdef LoaderFactory
             % BioFormats, HDF5, NRRD, IMOD, AmiraMesh, OME-Zarr, or other readers.
             %
             % Input Arguments:
-            %   - **loaderInfo** — struct returned by ``ExtensionRegistryLoad.resolveLoader``:
+            %   - **loaderInfo** - struct returned by ``ExtensionRegistryLoad.resolveLoader``:
             %
-            %     - ``.loaderId`` — [char] identifier of the file reader to use
-            %     - ``.mode`` — [char] dataset mode (``'Standard'``, ``'Virtual'``, ``'BigData'``)
-            %     - ``.reader`` — [char] reader type (``'Default'``, ``'BioFormats'``)
-            %     - ``.extension`` — [char] filename extension without leading dot
-            %     - ``.imageFormatType`` — [char] format type identifier
+            %     - ``.loaderId`` - [char] identifier of the file reader to use
+            %     - ``.mode`` - [char] dataset mode (``'Standard'``, ``'Virtual'``, ``'BigData'``)
+            %     - ``.reader`` - [char] reader type (``'Default'``, ``'BioFormats'``)
+            %     - ``.extension`` - [char] filename extension without leading dot
+            %     - ``.imageFormatType`` - [char] format type identifier
             %
-            %   - **options** — *(optional)* struct with configuration options:
+            %   - **options** - *(optional)* struct with configuration options:
             %
-            %     - ``.UseBioFormats`` — [logical] use BioFormats library
-            %     - ``.waitbar`` — [logical] show progress bar during loading
-            %     - ``.mibPath`` — [char] path to MIB installation directory
-            %     - ``.virtual`` — [logical] virtual stacking mode
-            %     - ``.customSections`` — [logical] load custom sections only
-            %     - ``.bioFormatsMemoizerMemoDir`` — [char] location of MemoizerMemo cache for BioFormats
+            %     - ``.UseBioFormats`` - [logical] use BioFormats library
+            %     - ``.waitbar`` - [logical] show progress bar during loading
+            %     - ``.mibPath`` - [char] path to MIB installation directory
+            %     - ``.virtual`` - [logical] virtual stacking mode
+            %     - ``.customSections`` - [logical] load custom sections only
+            %     - ``.bioFormatsMemoizerMemoDir`` - [char] location of MemoizerMemo cache for BioFormats
             %     - Additional format-specific options passed to the loader constructor
             %
             % Output Arguments:
-            %   - **loader** — loader object instance implementing ``loadMetadata`` and ``loadImages`` methods
+            %   - **loader** - loader object instance implementing ``loadMetadata`` and ``loadImages`` methods
             %
-            % **Example 1** — basic usage with Standard mode and imread:
+            % **Example 1** - basic usage with Standard mode and imread:
             %
             %   .. code-block:: matlab
             %
@@ -53,7 +53,7 @@ classdef LoaderFactory
             %      [imginfo, files] = loader.loadMetadata({'image.tif'}, options);
             %      [img, imginfo] = loader.loadImages(files, imginfo, options);
             %
-            % **Example 2** — using BioFormats for complex formats:
+            % **Example 2** - using BioFormats for complex formats:
             %
             %   .. code-block:: matlab
             %
@@ -80,14 +80,14 @@ classdef LoaderFactory
                     % BioFormats reader for virtual stacking / BigData mode.
                     % Pass the dataset mode so the setup loader can decide between a
                     % flat virtual stack (Virtual) and a pyramid-aware direct-read
-                    % setup (BigData) — mirrors the OmeZarr case.
+                    % setup (BigData) - mirrors the OmeZarr case.
                     opts = options;
                     opts.datasetMode  = char(loaderInfo.mode);
                     opts.readerFamily = char(loaderInfo.reader);   % 'BioFormats' | 'OpenSlide'
                     loader = io.loaders.BioFormatsVirtualSetupLoader(opts);
 
                 case "OmeZarr"
-                    % OME-Zarr v3 format — setup loader for all dataset modes.
+                    % OME-Zarr v3 format - setup loader for all dataset modes.
                     % Pass the dataset mode so Zarr3VirtualSetupLoader can decide
                     % whether to load pixels (Standard) or return path only (Virtual/BigData).
                     opts = options;
@@ -95,7 +95,7 @@ classdef LoaderFactory
                     loader = io.loaders.Zarr3VirtualSetupLoader(opts);
 
                 case "OmeZarrV2"
-                    % OME-Zarr v2 format — python-backed setup loader for all dataset
+                    % OME-Zarr v2 format - python-backed setup loader for all dataset
                     % modes (Standard/Virtual/BigData) plus Model (segmentation labels).
                     % Pass the dataset mode so Zarr2VirtualSetupLoader can decide whether
                     % to load pixels (Standard/Model) or return path only (Virtual/BigData).
@@ -112,7 +112,7 @@ classdef LoaderFactory
                     loader = io.loaders.HDF5HeaderLoader(options);
 
                 case "hdf5-header-virtual"
-                    % XML+H5 in virtual stacking mode — metadata from XML, pixels on demand
+                    % XML+H5 in virtual stacking mode - metadata from XML, pixels on demand
                     loader = io.loaders.HDF5VirtualSetupLoader(options, true);
 
                 case "hdf5-no-header"
@@ -120,7 +120,7 @@ classdef LoaderFactory
                     loader = io.loaders.HDF5NoHeaderLoader(options);
 
                 case "hdf5-no-header-virtual"
-                    % Bare H5 in virtual stacking mode — pixels on demand
+                    % Bare H5 in virtual stacking mode - pixels on demand
                     loader = io.loaders.HDF5VirtualSetupLoader(options, false);
 
                 case "mibImg"
@@ -166,13 +166,13 @@ classdef LoaderFactory
             %   (none)
             %
             % Output Arguments:
-            %   - **loaderList** — struct array with loader information:
+            %   - **loaderList** - struct array with loader information:
             %
-            %     - ``.loaderId`` — [char] loader identifier
-            %     - ``.description`` — [char] human-readable description
-            %     - ``.extensions`` — cell array of [char] typical file extensions
+            %     - ``.loaderId`` - [char] loader identifier
+            %     - ``.description`` - [char] human-readable description
+            %     - ``.extensions`` - cell array of [char] typical file extensions
             %
-            % **Example 1** — display all available loaders:
+            % **Example 1** - display all available loaders:
             %
             %   .. code-block:: matlab
             %

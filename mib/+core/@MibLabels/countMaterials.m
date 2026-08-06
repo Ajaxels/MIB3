@@ -18,7 +18,7 @@ function result = countMaterials(obj)
 % Input Arguments:
 %
 % Output Arguments:
-%   - **result** — double, the updated materialsCount value.
+%   - **result** - double, the updated materialsCount value.
 %
 % Usage:
 %   **Example 1**

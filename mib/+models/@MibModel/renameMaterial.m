@@ -16,30 +16,30 @@ function renameMaterial(obj, BatchOptIn)
 % between 1 and the model capacity.
 %
 % Input Arguments:
-%   - **BatchOptIn** — *(optional)* a structure for batch processing mode; when
+%   - **BatchOptIn** - *(optional)* a structure for batch processing mode; when
 %     NaN, returns a structure with default options via "SyncBatch" event
 %
-%     - ``.MaterialIndex`` — char, 1-based row index of the material to rename in
-%       the segmentation table (for 65535+ models: the material slot, 1 or 2 — not
+%     - ``.MaterialIndex`` - char, 1-based row index of the material to rename in
+%       the segmentation table (for 65535+ models: the material slot, 1 or 2 - not
 %       the material index shown in the slot); use ``'0'`` to rename all materials
 %       at once (MaterialName must then be a comma-separated list);
 %       [*default]* row of the currently selected material in the segmentation table
-%     - ``.MaterialName`` — char, new name for the material, or
+%     - ``.MaterialName`` - char, new name for the material, or
 %       comma-separated list when MaterialIndex is ``'0'``; [*default* ``''``]
-%     - ``.showWaitbar`` — logical, show or not the waitbar; [*default* true]
-%     - ``.id`` — *(optional)*, dataset index 1-9, default = obj.id
+%     - ``.showWaitbar`` - logical, show or not the waitbar; [*default* true]
+%     - ``.id`` - *(optional)*, dataset index 1-9, default = obj.id
 %
 %
 % Output Arguments:
 %
 % Usage:
-%   **Example 1** — interactive rename with dialog
+%   **Example 1** - interactive rename with dialog
 %
 %   .. code-block:: matlab
 %
 %      obj.mibModel.renameMaterial();
 %
-%   **Example 2** — scripted / batch call
+%   **Example 2** - scripted / batch call
 %
 %   .. code-block:: matlab
 %
@@ -47,7 +47,7 @@ function renameMaterial(obj, BatchOptIn)
 %      BatchOpt.MaterialName = 'Nucleus';
 %      obj.mibModel.renameMaterial(BatchOpt);
 %
-%   **Example 3** — rename all three materials
+%   **Example 3** - rename all three materials
 %
 %   .. code-block:: matlab
 %
@@ -71,7 +71,7 @@ BatchOpt.id            = obj.getActiveId();
 % MaterialIndex is always a row (slot) index of labels.materialNames. For large
 % models (65535+) the table holds only two material slots whose displayed names
 % store the actual material index, so the displayed name must never be used here
-% as the row index — see controllers.MibController.findMaterialUnderCursor for
+% as the row index - see controllers.MibController.findMaterialUnderCursor for
 % the same slot convention.
 if obj.I{BatchOpt.id}.selectedMaterial > 2
     BatchOpt.MaterialIndex = num2str(obj.I{BatchOpt.id}.selectedMaterial - 2);

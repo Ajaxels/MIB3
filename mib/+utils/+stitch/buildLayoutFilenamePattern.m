@@ -12,7 +12,7 @@ function layout = buildLayoutFilenamePattern(filenames, options)
 % ``myStack_Z01-X02-Y03.tif`` → Z=1, X=2, Y=3.
 %
 % The three tokens are located INDEPENDENTLY (last occurrence of each letter in
-% the base name), so their ORDER and the separators between them do not matter —
+% the base name), so their ORDER and the separators between them do not matter -
 % ``_Z01-X02-Y03``, ``_X02-Y03-Z01`` and ``Y03X02Z01`` all parse identically.
 % Constraints that DO matter:
 %
@@ -24,7 +24,7 @@ function layout = buildLayoutFilenamePattern(filenames, options)
 %     tokens (``XYZstack_Z01-X01-Y01``) but not after (``..._Y01_XY``).
 %
 % Each entry may name a single image file OR a FOLDER holding the tile's
-% Z-stack (auto-detected per entry by :func:`utils.stitch.resolveTileEntry`) —
+% Z-stack (auto-detected per entry by :func:`utils.stitch.resolveTileEntry`) -
 % for folder tiles the tokens live in the FOLDER name and follow the same rules.
 %
 % Nominal origins are computed from the grid indices and the (uniform) tile size,
@@ -35,16 +35,16 @@ function layout = buildLayoutFilenamePattern(filenames, options)
 % abut (no Z-overlap control). Origins are 1-based pixels.
 %
 % Input Arguments:
-%   - **filenames** — [cell] cell array of full-path character vectors
-%   - **options** *(optional)* — struct with fields:
+%   - **filenames** - [cell] cell array of full-path character vectors
+%   - **options** *(optional)* - struct with fields:
 %
-%     - ``.overlapX`` — [double] horizontal overlap in percent (default: ``0``)
-%     - ``.overlapY`` — [double] vertical overlap in percent (default: ``0``)
+%     - ``.overlapX`` - [double] horizontal overlap in percent (default: ``0``)
+%     - ``.overlapY`` - [double] vertical overlap in percent (default: ``0``)
 %
 % Output Arguments:
-%   - **layout** — struct array per contract (see ``buildLayoutGrid`` for field list)
+%   - **layout** - struct array per contract (see ``buildLayoutGrid`` for field list)
 %
-% **Example** — parse a set of MIB2-chopped tiles with 12% overlap:
+% **Example** - parse a set of MIB2-chopped tiles with 12% overlap:
 %
 %   .. code-block:: matlab
 %

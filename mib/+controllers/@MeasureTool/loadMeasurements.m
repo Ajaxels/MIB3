@@ -10,7 +10,7 @@ function loadMeasurements(obj)
 % the selected MAT-file, and replaces the current measurements.
 %
 % Input Arguments:
-%   - **obj** — :class:`controllers.MeasureTool`
+%   - **obj** - :class:`controllers.MeasureTool`
 %
 
 datasetId = obj.mibModel.getActiveId();

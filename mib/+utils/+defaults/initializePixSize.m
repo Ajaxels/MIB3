@@ -9,18 +9,18 @@ function pixSize = initializePixSize(~)
 % Physical units default to micrometres; temporal units to seconds.
 %
 % Output Arguments:
-%   - **pixSize** — struct with default voxel dimensions:
+%   - **pixSize** - struct with default voxel dimensions:
 %
-%     - ``.x``      — [numeric] pixel width (default: ``1``)
-%     - ``.y``      — [numeric] pixel height (default: ``1``)
-%     - ``.z``      — [numeric] slice thickness (default: ``1``)
-%     - ``.units``  — [char] physical units (default: ``'um'``)
-%     - ``.t``      — [numeric] time between frames (default: ``1``)
-%     - ``.tunits`` — [char] time units (default: ``'s'``)
+%     - ``.x``      - [numeric] pixel width (default: ``1``)
+%     - ``.y``      - [numeric] pixel height (default: ``1``)
+%     - ``.z``      - [numeric] slice thickness (default: ``1``)
+%     - ``.units``  - [char] physical units (default: ``'um'``)
+%     - ``.t``      - [numeric] time between frames (default: ``1``)
+%     - ``.tunits`` - [char] time units (default: ``'s'``)
 %
 % Usage:
 %
-%   **Example 1** — create and customise a pixSize struct
+%   **Example 1** - create and customise a pixSize struct
 %
 %   .. code-block:: matlab
 %

@@ -2,15 +2,15 @@ function [mibModel, groundTruth] = buildBenchmarkModel(imageVolume, labelVolume)
 % BUILDBENCHMARKMODEL - headless MibModel with 3 datasets for benchmarking.
 %
 % Mirrors the dataset layout expected by benchmarkGetSetData:
-%   I{1} — labels63  (packed uint8: bits 1-6 material, 7 mask, 8 selection)
-%   I{2} — 255-material  (separate layers, uint8)
-%   I{3} — 65535-material (separate layers, uint16)
+%   I{1} - labels63  (packed uint8: bits 1-6 material, 7 mask, 8 selection)
+%   I{2} - 255-material  (separate layers, uint8)
+%   I{3} - 65535-material (separate layers, uint16)
 %
 % No-arg call: synthetic [64 64 16] volumes.
 % With args: supply imageVolume [h w z 1] uint8 and labelVolume [h w z] uint8.
 %
 % groundTruth.image  [h w z 1] uint8
-% groundTruth.labels {3×1 cell} — uint8 for ids 1-2, uint16 for id 3
+% groundTruth.labels {3×1 cell} - uint8 for ids 1-2, uint16 for id 3
 % groundTruth.mask   [h w z]   uint8
 % groundTruth.selection [h w z] uint8
 

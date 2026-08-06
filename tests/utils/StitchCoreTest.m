@@ -2,14 +2,14 @@ classdef StitchCoreTest < matlab.unittest.TestCase
 % STITCHCORETEST - Unit + integration tests for the utils.stitch algorithmic core.
 %
 % Covers the Phase 1 stitching primitives:
-%   utils.stitch.pairwiseShift            — integer/subpixel shift + quality
-%   utils.stitch.computeOverlapRegion     — local overlap crops
-%   utils.stitch.solveGlobalLeastSquares  — global weighted LS + springs
-%   utils.stitch.planCanvas               — placement + canvas size
-%   utils.stitch.blendWeights             — feather ramp
-%   utils.stitch.fuseInMemory             — all four blend modes
-%   io.savers.StitchSliceProvider         — provider slice == fuseInMemory slice
-%   utils.stitch.fuseStreaming            — zarr round-trip (Integration)
+%   utils.stitch.pairwiseShift            - integer/subpixel shift + quality
+%   utils.stitch.computeOverlapRegion     - local overlap crops
+%   utils.stitch.solveGlobalLeastSquares  - global weighted LS + springs
+%   utils.stitch.planCanvas               - placement + canvas size
+%   utils.stitch.blendWeights             - feather ramp
+%   utils.stitch.fuseInMemory             - all four blend modes
+%   io.savers.StitchSliceProvider         - provider slice == fuseInMemory slice
+%   utils.stitch.fuseStreaming            - zarr round-trip (Integration)
 %
 % `layout` and `pairs` structs are built INLINE in every test (the layout
 % builders are owned by a different agent and must not be called here).
@@ -175,7 +175,7 @@ classdef StitchCoreTest < matlab.unittest.TestCase
             % computeOverlapRegion -> pairwiseShift -> measureAllPairs ->
             % solveGlobalLeastSquares, validated against ground-truth origins.
             % Guards the measured-shift sign convention and the FFT
-            % anti-aliasing (zero-pad + expected-shift peak search) — a sign
+            % anti-aliasing (zero-pad + expected-shift peak search) - a sign
             % flip or wrap-around here passes solver-only tests but produces
             % positions ~2x the jitter off; this test fails on both.
             original = uint8(testCase.texturedImage(560, 560, 33));
@@ -186,7 +186,7 @@ classdef StitchCoreTest < matlab.unittest.TestCase
             testCase.addTeardown(@() rmdir(tempDir, 's'));
 
             % Cut tiles at JITTERED positions (true origins) while the layout
-            % carries the clean nominal grid — exactly what a stage acquisition
+            % carries the clean nominal grid - exactly what a stage acquisition
             % with positioning error looks like. Border clamping is intentional:
             % it produces the asymmetric-crop case that caused the aliasing bug.
             layout = testCase.emptyLayout(9);
@@ -697,7 +697,7 @@ classdef StitchCoreTest < matlab.unittest.TestCase
 
         function scoreSeams_cancelledIsFalseWithoutAProgressDialog(testCase)
             % Pins the third output: scoring is Cancelable, but only through the
-            % progress dialog, so every headless/batch caller must see false —
+            % progress dialog, so every headless/batch caller must see false -
             % a caller that treated "no dialog" as cancelled would silently drop
             % the seam check on every batch run.
             layout = testCase.makeLineLayout(2, [40 40 1 1], 30);
@@ -878,7 +878,7 @@ classdef StitchCoreTest < matlab.unittest.TestCase
     end
 
     % =================================================================
-    % fuseInMemory — all blend modes vs original
+    % fuseInMemory - all blend modes vs original
     % =================================================================
     methods (Test, TestTags = {'Unit'})
 
@@ -945,7 +945,7 @@ classdef StitchCoreTest < matlab.unittest.TestCase
     end
 
     % =================================================================
-    % fuseStreaming — zarr round-trip (Integration)
+    % fuseStreaming - zarr round-trip (Integration)
     % =================================================================
     methods (Test, TestTags = {'Integration'})
 
@@ -971,7 +971,7 @@ classdef StitchCoreTest < matlab.unittest.TestCase
             [imgInfo, files] = loader.loadMetadata({outPath}, loaderOpts);
             [~, ~] = loader.loadImages(files, imgInfo, loaderOpts);
 
-            % Level 0 array read-back — compare the whole level-0 volume.
+            % Level 0 array read-back - compare the whole level-0 volume.
             arr = io.zarr.Array(fullfile(outPath, '0'));
             zarrData = arr.read();     % [Y X Z (C)]
             H = canvas.size(1); W = canvas.size(2); Z = canvas.size(3); C = canvas.size(4);
@@ -1130,7 +1130,7 @@ classdef StitchCoreTest < matlab.unittest.TestCase
         function rigidSolver_recoversRotationsAndStaysOrthogonal(testCase)
             % Phase 2 milestone (plan_transforms.md): a rotated-tile set is
             % recovered with TransformType = Rigid, and every solved linear part
-            % is exactly a proper rotation (R'R = I, det = 1 — the projection
+            % is exactly a proper rotation (R'R = I, det = 1 - the projection
             % guarantee, not a tolerance on the data).
             [layout, G] = testCase.makeRigidTruthGrid(17);
             edges = testCase.affineEdgesFromTruth(layout, G);
@@ -1281,7 +1281,7 @@ classdef StitchCoreTest < matlab.unittest.TestCase
                 struct('qualityThreshold', 0.3, 'transformType', 'Affine'));
 
             % Within-layer edges must carry the fitted transform; z-edges stay
-            % translation-only (empty .tform) — the 3D-affine scope.
+            % translation-only (empty .tform) - the 3D-affine scope.
             for e = edges([edges.valid])
                 if strcmp(e.direction, 'z')
                     testCase.assertTrue(isempty(e.tform), ...
@@ -1333,9 +1333,180 @@ classdef StitchCoreTest < matlab.unittest.TestCase
     end
 
     % =================================================================
+    % fuseToFiles - the mosaic written as ordinary image files
+    % =================================================================
+    methods (Test, TestTags = {'Unit'})
+
+        function fuseToFiles_tifSequenceMatchesTheInMemoryFuse(testCase)
+            % The third fuse path must produce the SAME pixels as fuseInMemory -
+            % it is a different writer, not a different mosaic. Also pins the
+            % naming: zero-padded per-slice files that sort in Z order, which is
+            % the only thing keeping a reloaded sequence in the right order.
+            [layout, canvas, tempDir] = testCase.buildTwoLayerFusionCase();
+            reference = utils.stitch.fuseInMemory(layout, canvas, ...
+                struct('blendMode', 'Overwrite', 'background', 0));
+
+            writtenFiles = utils.stitch.fuseToFiles(layout, canvas, ...
+                fullfile(tempDir, 'mosaic.tif'), struct( ...
+                'Format', 'TIF format uncompressed (*.tif)', ...
+                'Saving3DPolicy', '2D sequence', ...
+                'blendMode', 'Overwrite', 'background', 0));
+
+            testCase.assertTrue(iscell(writtenFiles), ...
+                'a 2-D sequence must return a FLAT cell of paths, not a nested one');
+            testCase.assertNumElements(writtenFiles, canvas.size(3));
+            for z = 1:numel(writtenFiles)
+                [~, sliceName, sliceExt] = fileparts(writtenFiles{z});
+                testCase.verifyEqual([sliceName sliceExt], sprintf('mosaic_%02d.tif', z), ...
+                    'slice files must be zero-padded so they sort in Z order');
+                testCase.verifyEqual(imread(writtenFiles{z}), reference(:, :, z, 1, 1), ...
+                    'the written slice must equal the in-memory fuse of the same plan');
+            end
+        end
+
+        function fuseToFiles_voxelSizeReachesEveryFormat(testCase)
+            % The whole point of routing through the savers rather than imwrite:
+            % the acquisition's voxel size has to land in the file. TIF/PNG carry
+            % it as the resolution tag, every format repeats it as the physical
+            % BoundingBox - a mosaic measured in pixels is not a result.
+            [layout, canvas, tempDir] = testCase.buildTwoLayerFusionCase();
+            expectedResolution = utils.calculateResolution(canvas.pixSize);
+
+            fuseOptions = struct('blendMode', 'Overwrite', 'background', 0);
+
+            fuseOptions.Format = 'TIF format uncompressed (*.tif)';
+            fuseOptions.Saving3DPolicy = '2D sequence';
+            tifFiles = utils.stitch.fuseToFiles(layout, canvas, ...
+                fullfile(tempDir, 'res.tif'), fuseOptions);
+            % Both tags are stored as rationals, so they come back rounded.
+            tifInfo = imfinfo(tifFiles{1});
+            testCase.verifyEqual(tifInfo.XResolution, expectedResolution(1), 'RelTol', 1e-6);
+            testCase.verifyEqual(tifInfo.YResolution, expectedResolution(2), 'RelTol', 1e-6);
+            testCase.verifySubstring(tifInfo.ImageDescription, 'BoundingBox');
+
+            fuseOptions.Format = 'Portable Network Graphics (*.png)';
+            pngFiles = utils.stitch.fuseToFiles(layout, canvas, ...
+                fullfile(tempDir, 'res.png'), fuseOptions);
+            pngInfo = imfinfo(pngFiles{1});
+            testCase.verifyEqual(pngInfo.XResolution, expectedResolution(1), 'RelTol', 1e-6);
+
+            % Amira states it twice: its own pixSize block and the BoundingBox
+            % every Amira reader (MIB's included) derives the voxel size from.
+            fuseOptions.Format = 'Amira Mesh binary (*.am)';
+            fuseOptions.Saving3DPolicy = '3D stack';
+            amiraFile = utils.stitch.fuseToFiles(layout, canvas, ...
+                fullfile(tempDir, 'res.am'), fuseOptions);
+            testCase.assertTrue(ischar(amiraFile), ...
+                'a 3-D stack is one file, so its path is a char');
+            amiraHeader = fileread(amiraFile);
+            testCase.verifySubstring(amiraHeader, sprintf('pixSize_x %g', canvas.pixSize.x));
+            testCase.verifySubstring(amiraHeader, sprintf('pixSize_z %g', canvas.pixSize.z));
+            % The UNIT has to be there too. bitmap2amiraMesh used to test "is
+            % this too big to write" before "is this text", and every unit
+            % longer than one letter came out as `pixSize_units skipped` - three
+            % numbers with nothing saying what they measure.
+            testCase.verifySubstring(amiraHeader, ...
+                sprintf('pixSize_units "%s"', canvas.pixSize.units));
+            testCase.verifyEmpty(strfind(amiraHeader, 'skipped'), ...
+                'no scalar metadata field may be dropped from the Amira header');
+            expectedBox = sprintf('BoundingBox %f %f %f %f %f %f', canvas.boundingBox);
+            testCase.verifySubstring(amiraHeader, expectedBox);
+        end
+
+        function fuseToFiles_lzwTifIsTheSamePixelsCompressed(testCase)
+            % The two TIF rows differ only in the compression tag: same pixels,
+            % and the compression really applied. Deliberately NOT a size
+            % assertion - LZW EXPANDS high-entropy data, and it expands this
+            % synthetic texture by ~2 %. Pinning "smaller" would pin a property
+            % of the test image rather than of the format.
+            [layout, canvas, tempDir] = testCase.buildTwoLayerFusionCase();
+            fuseOptions = struct('blendMode', 'Overwrite', 'background', 0, ...
+                'Saving3DPolicy', '2D sequence');
+
+            fuseOptions.Format = 'TIF format uncompressed (*.tif)';
+            plainFiles = utils.stitch.fuseToFiles(layout, canvas, ...
+                fullfile(tempDir, 'plain.tif'), fuseOptions);
+            fuseOptions.Format = 'TIF format LZW compression (*.tif)';
+            packedFiles = utils.stitch.fuseToFiles(layout, canvas, ...
+                fullfile(tempDir, 'packed.tif'), fuseOptions);
+
+            testCase.assertNumElements(packedFiles, numel(plainFiles));
+            for z = 1:numel(plainFiles)
+                testCase.verifyEqual(imread(packedFiles{z}), imread(plainFiles{z}), ...
+                    'LZW is lossless - the two rows must decode to identical pixels');
+                % The one thing that proves the label's format string reached
+                % the saver rather than falling through to the default.
+                testCase.verifyEqual(imfinfo(packedFiles{z}).Compression, 'LZW');
+                testCase.verifyEqual(imfinfo(plainFiles{z}).Compression, 'Uncompressed');
+            end
+        end
+
+        function fuseToFiles_amiraSequenceWritesOneFilePerSlice(testCase)
+            % The Amira file-sequence format is the one whose saver names its
+            % outputs internally; the returned paths must be the files that were
+            % actually written, or "wrote N files" names something absent.
+            [layout, canvas, tempDir] = testCase.buildTwoLayerFusionCase();
+
+            writtenFiles = utils.stitch.fuseToFiles(layout, canvas, ...
+                fullfile(tempDir, 'amseq.am'), struct( ...
+                'Format', 'Amira Mesh binary file sequence (*.am)', ...
+                'Saving3DPolicy', '2D sequence', ...
+                'blendMode', 'Overwrite', 'background', 0));
+
+            testCase.assertTrue(iscell(writtenFiles));
+            testCase.assertNumElements(writtenFiles, canvas.size(3));
+            for z = 1:numel(writtenFiles)
+                testCase.verifyTrue(isfile(writtenFiles{z}), ...
+                    sprintf('%s was reported but not written', writtenFiles{z}));
+                [~, sliceName] = fileparts(writtenFiles{z});
+                testCase.verifyEqual(sliceName, sprintf('amseq_%02d', z));
+            end
+            testCase.verifyFalse(isfile(fullfile(tempDir, 'amseq.am')), ...
+                'the stem itself is not one of the written files');
+        end
+
+    end
+
+    % =================================================================
     % Local helpers
     % =================================================================
     methods (Access = private)
+
+        function [layout, canvas, tempDir] = buildTwoLayerFusionCase(testCase)
+            % A 2x2 grid repeated over TWO z-layers, so the canvas has depth 2 -
+            % the smallest case in which a 2-D sequence writes more than one file
+            % and its numbering can be checked at all.
+            tempDir = tempname; mkdir(tempDir);
+            testCase.addTeardown(@() rmdir(tempDir, 's'));
+
+            tileH = 60; tileW = 60; stepPx = 44;
+            layout = testCase.emptyLayout(8);
+            tileIdx = 0;
+            for zLayer = 1:2
+                for gridRow = 1:2
+                    for gridCol = 1:2
+                        tileIdx = tileIdx + 1;
+                        tileFile = fullfile(tempDir, sprintf('tile_z%d_%02d.tif', zLayer, tileIdx));
+                        imwrite(uint8(testCase.texturedImage(tileH, tileW, 10 * zLayer + tileIdx)), ...
+                            tileFile);
+                        layout(tileIdx).index     = tileIdx;
+                        layout(tileIdx).filename  = tileFile;
+                        layout(tileIdx).zLayer    = zLayer;
+                        layout(tileIdx).gridRC    = [gridRow gridCol];
+                        layout(tileIdx).nomOrigin = [1 + (gridRow - 1) * stepPx, ...
+                                                     1 + (gridCol - 1) * stepPx, zLayer];
+                        layout(tileIdx).tileSize  = [tileH tileW 1 1];
+                        layout(tileIdx).dataClass = 'uint8';
+                    end
+                end
+            end
+
+            positions = reshape([layout.nomOrigin], 3, numel(layout))';
+            % A deliberately anisotropic, non-unit voxel: a 1 um default would
+            % pass the propagation check without carrying anything.
+            canvas = utils.stitch.planCanvas(layout, positions, struct('pixSize', ...
+                struct('x', 0.002, 'y', 0.002, 'z', 0.05, 'units', 'um')));
+        end
 
         function subFuseReconstruct(testCase, blendMode)
             [layout, canvas, ~, original] = testCase.buildChoppedFusionCase();
@@ -1462,7 +1633,7 @@ classdef StitchCoreTest < matlab.unittest.TestCase
 
         function [layout, G] = makeRigidTruthGrid(testCase, seed)
             % 2x2 layout with rotation-only ground truth (proper rotations +
-            % XY jitter, no scale/shear) — the rigid-projection test bed.
+            % XY jitter, no scale/shear) - the rigid-projection test bed.
             [layout, origins] = testCase.makeGrid(2, 2, [200 200 1 1], 140);
             rng(seed, 'twister');
             G = cell(4, 1);
@@ -1495,7 +1666,7 @@ classdef StitchCoreTest < matlab.unittest.TestCase
 
         function [layout, G, original] = buildAffineChoppedCase(testCase, seed)
             % Chop a textured image into a 2x2 grid where each tile is CUT with
-            % its own affine warp (tile(v) = original(G*v)) and written to disk —
+            % its own affine warp (tile(v) = original(G*v)) and written to disk -
             % the affine analogue of buildChoppedFusionCase. 240 px tiles at
             % 170 px pitch (70 px overlap, the proven feature-detection setup).
             original = uint8(testCase.texturedImage(620, 620, seed));
@@ -1535,7 +1706,7 @@ classdef StitchCoreTest < matlab.unittest.TestCase
             % The 3D analogue of buildAffineChoppedCase: a 2x2 XY grid over 2
             % Z-layers of Z-stack tiles (multi-page TIFFs), every tile cut with
             % its own IN-PLANE affine applied identically to all its slices
-            % (tile(v, s) = volume(G*v, oz+s-1)) — the 3D-affine scope where z
+            % (tile(v, s) = volume(G*v, oz+s-1)) - the 3D-affine scope where z
             % stays translational. The volume shares one strong 2D texture
             % across slices (so the depth-flattened feature matching keeps the
             % full content) plus a z-varying component (so the dz NCC scan has
@@ -1556,7 +1727,7 @@ classdef StitchCoreTest < matlab.unittest.TestCase
             trueLayerZ = [1, 1 + stepZ + randi([-1 1])];
 
             % The linear part is shared per grid SLOT across layers (lens/stage
-            % distortion is per-position, not per-section) — which is also what
+            % distortion is per-position, not per-section) - which is also what
             % the solver assumes: cross-layer edges are translation-only, so a
             % layer's common linear factor is unobservable and the solver's
             % M = I z-rows pin each tile's L to its partner in the next layer.

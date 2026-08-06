@@ -25,18 +25,18 @@
       
       
       <link rel="icon" href="../../../assets/mib_icon.png">
-      <meta name="generator" content="zensical-0.0.44">
+      <meta name="generator" content="zensical-0.0.46">
     
     
       
-        <title>Stitching: seam inspector - Microscopy Image Browser v3</title>
+        <title>Stitching Inspector - Microscopy Image Browser v3</title>
       
     
     
       
         
       
-      <link rel="stylesheet" href="../../../assets/stylesheets/modern/main.fba56155.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/modern/main.19d3147f.min.css">
       
         
           
@@ -89,7 +89,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#stitching-seam-inspector" class="md-skip">
+        <a href="#stitching-inspector" class="md-skip">
           Skip to content
         </a>
       
@@ -124,7 +124,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Stitching: seam inspector
+              Stitching Inspector
             
           </span>
         </div>
@@ -1665,10 +1665,32 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#the-seam-table" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        The seam table
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#mouse-reference-pair-view" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
         Mouse reference (pair view)
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keyboard-shortcuts-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Keyboard shortcuts reference
       </span>
     </span>
   </a>
@@ -5443,10 +5465,32 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#the-seam-table" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        The seam table
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#mouse-reference-pair-view" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
         Mouse reference (pair view)
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keyboard-shortcuts-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Keyboard shortcuts reference
       </span>
     </span>
   </a>
@@ -5701,10 +5745,11 @@
                 
                   
 
-<h1 id="stitching-seam-inspector">Stitching: seam inspector<a class="headerlink" href="#stitching-seam-inspector" title="Permanent link">&para;</a></h1>
+<h1 id="stitching-inspector">Stitching Inspector<a class="headerlink" href="#stitching-inspector" title="Permanent link">&para;</a></h1>
 <p><em>Back to <a href="../../../index.html">MIB</a> | <a href="../../index.html">User interface</a> | <a href="../index.html">Ribbon</a> | <a href="index.html">Dataset</a> | <a href="dataset-stitch.html">Stitching</a></em></p>
 <hr />
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
+<p><a class="glightbox" data-title="Stitching Inspector dialog" data-type="image" href="images/stitchingInspectorDialog.png"><img align="left" alt="Stitching Inspector dialog" class="on-glb" src="images/stitchingInspectorDialog.png" width="340" /></a></p>
 <p>Automatic stitching can fail <strong>silently</strong>: a measurement that locked onto repetitive content
 one period off satisfies the solver perfectly on sparse tile arrangements — the quality
 rating stays green while a tile sits a full period out of place. The seam inspector re-reads
@@ -5739,6 +5784,43 @@ to correct the ones the automatic pass got wrong.</p>
   the view instead of zooming — it never edits alignment, so it works in every mode
   (Fix XY, Fix Z, two-click) and cannot be mistaken for a tile-fix drag.</li>
 </ul>
+<hr />
+<h2 id="the-seam-table">The seam table<a class="headerlink" href="#the-seam-table" title="Permanent link">&para;</a></h2>
+<p>Each row is one measured seam (tile pair), ranked worst-first, in six columns:</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Seam</strong></td>
+<td>axis + tile pair, e.g. <code>X (2-3)</code> for an in-plane seam or <code>Z (8-9)</code> for a cross-layer one.</td>
+</tr>
+<tr>
+<td><strong>Seam score</strong></td>
+<td>pixel-based agreement (masked cross-correlation) of the two tiles re-read at their <strong>solved</strong> placement, 0–1, higher is better. This drives the ranking order and the row colour (green ≥ 0.7, amber ≥ 0.4, red below, grey when excluded). It is what catches a wrong-but-confident measurement: a repetitive-pattern lock-off can leave the solver residual at zero while the pixels themselves stay misaligned.</td>
+</tr>
+<tr>
+<td><strong>Residual px</strong></td>
+<td>how far the global solve's placement differs from what this edge's own measurement asked for. Small means the solve matched this measurement; large means other edges/springs pulled the tile away from it.</td>
+</tr>
+<tr>
+<td><strong>Quality</strong></td>
+<td>the registration confidence recorded when the edge was <strong>measured</strong> (peak-to-second-peak ratio, before any solve ran) — also the weight the solver gave this edge. It answers "how sure was the automatic pass", not "is the seam aligned now" — that is the Seam score. A seam with high Quality but a low Seam score is the dangerous case this inspector exists to catch.</td>
+</tr>
+<tr>
+<td><strong>Source</strong></td>
+<td><code>auto</code> (untouched automatic measurement), <code>confirmed</code> (reviewed and accepted as-is), or <code>user</code> (repositioned by a manual fix).</td>
+</tr>
+<tr>
+<td><strong>Used</strong></td>
+<td><code>yes</code>, or <code>EXCLUDED</code> when the seam has been toggled out of the solve.</td>
+</tr>
+</tbody>
+</table>
 <hr />
 <h2 id="mouse-reference-pair-view">Mouse reference (pair view)<a class="headerlink" href="#mouse-reference-pair-view" title="Permanent link">&para;</a></h2>
 <table>
@@ -5784,6 +5866,70 @@ to correct the ones the automatic pass got wrong.</p>
 </tbody>
 </table>
 <hr />
+<h2 id="keyboard-shortcuts-reference">Keyboard shortcuts reference<a class="headerlink" href="#keyboard-shortcuts-reference" title="Permanent link">&para;</a></h2>
+<p><span class="widget widget-button">Key shortcuts</span> opens a pop-up list of every
+mouse, Shift+mouse, and keyboard control below — a quick reference without leaving the
+dialog.</p>
+<table>
+<thead>
+<tr>
+<th>Shortcut</th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="keys"><kbd class="key-enter">Enter</kbd></span></td>
+<td>Confirm the current seam and jump to the next worst unreviewed</td>
+</tr>
+<tr>
+<td><span class="keys"><kbd class="key-x">X</kbd></span></td>
+<td>Exclude / re-include the current seam from the solve</td>
+</tr>
+<tr>
+<td><span class="keys"><kbd class="key-n">N</kbd></span> / <span class="keys"><kbd class="key-p">P</kbd></span></td>
+<td>Next / previous seam in the ranking</td>
+</tr>
+<tr>
+<td><span class="keys"><kbd class="key-q">Q</kbd></span> / <span class="keys"><kbd class="key-w">W</kbd></span> or <span class="keys"><kbd class="key-arrow-down">Down</kbd></span> / <span class="keys"><kbd class="key-arrow-up">Up</kbd></span></td>
+<td>Browse Z slices (<span class="keys"><kbd class="key-shift">Shift</kbd></span> = ±5); always view-only, in both Fix XY and Fix Z</td>
+</tr>
+<tr>
+<td><span class="keys"><kbd class="key-z">Z</kbd></span></td>
+<td>Undo the fix on the current seam, restoring the original automatic edge (Fix Z: removes the boundary correction on screen)</td>
+</tr>
+<tr>
+<td><span class="keys"><kbd class="key-f">F</kbd></span></td>
+<td>Fit the pair view, resetting the mouse-wheel zoom</td>
+</tr>
+<tr>
+<td><span class="keys"><kbd class="key-space">Space</kbd></span></td>
+<td>Flicker A/B (Flicker overlay mode)</td>
+</tr>
+</tbody>
+</table>
+<p>Positional fixes are mouse-only — the keyboard never moves a tile. The mouse controls
+below live in the pair view (see <a href="#mouse-reference-pair-view">Mouse reference</a>) plus two
+more, elsewhere in the dialog:</p>
+<table>
+<thead>
+<tr>
+<th>Control</th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><mouse class="left"></mouse> click on the mini-map</td>
+<td>Jumps to review the seam nearest the click point</td>
+</tr>
+<tr>
+<td><mouse class="left"></mouse> click on a seam table row</td>
+<td>Selects that seam for review</td>
+</tr>
+</tbody>
+</table>
+<hr />
 <h2 id="reviewing-the-ranking">Reviewing the ranking<a class="headerlink" href="#reviewing-the-ranking" title="Permanent link">&para;</a></h2>
 <ul>
 <li><span class="widget widget-button">Confirm (Enter)</span> marks the current seam reviewed
@@ -5794,7 +5940,14 @@ to correct the ones the automatic pass got wrong.</p>
   stays pressed and turns red, reading <em>Excluded (X)</em>; press it (or <span class="keys"><kbd class="key-x">X</kbd></span>) again to put the
   measurement back. The seam's <em>Used</em> column reads <code>EXCLUDED</code> and its table row greys out to
   match.</li>
-<li><span class="widget widget-button">Re-solve</span> recomputes all positions and re-ranks.</li>
+<li><span class="widget widget-button">Re-solve</span> recomputes all positions and re-ranks.
+  With <label class="widget widget-checkbox">Auto re-solve</label> unticked this is how you
+  see a fix take effect - but it is <strong>never required</strong>:
+  <span class="widget widget-button">Stitch</span> re-solves first whenever one is owed, so
+  the mosaic can never be fused from pre-fix positions. Unticking <em>Auto re-solve</em> and
+  fixing several seams before one final solve is the fast way to work through a large
+  mosaic; the quality chip says <em>Rating stale until re-solved</em> meanwhile, and keeps saying
+  it even if you close this window.</li>
 <li>++N++ / ++P++ step through the ranking.</li>
 </ul>
 <p>Review decisions are saved with the <a href="dataset-stitch.html#project-files">project file</a> and
@@ -5999,10 +6152,10 @@ solve before fusing — the mosaic is never built from stale positions.</p>
     
       
       
-      <script id="__config" type="application/json">{"annotate":null,"base":"../../..","features":["announce.dismiss","content.code.annotate","content.code.copy","content.code.select","content.footnote.tooltips","content.tabs.link","content.tooltips","header.autohide","navigation.footer","navigation.indexes","navigation.path","navigation.top","navigation.tracking","search.highlight","search.suggest"],"search":"../../../assets/javascripts/workers/search.e2d2d235.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
+      <script id="__config" type="application/json">{"annotate":null,"base":"../../..","features":["announce.dismiss","content.code.annotate","content.code.copy","content.code.select","content.footnote.tooltips","content.tabs.link","content.tooltips","header.autohide","navigation.footer","navigation.indexes","navigation.path","navigation.top","navigation.tracking","search.highlight","search.suggest"],"search":"../../../assets/javascripts/workers/search.b6b7e04f.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.6e5f0216.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.ee611ef6.min.js"></script>
       
         <script src="../../../css/extra.js"></script>
       

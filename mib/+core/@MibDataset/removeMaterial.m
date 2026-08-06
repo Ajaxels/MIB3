@@ -1,5 +1,5 @@
 function removeMaterial(obj, materialIndices, wb)
-% REMOVEMATERIAL - Remove materials from the model — low-level data layer.
+% REMOVEMATERIAL - Remove materials from the model - low-level data layer.
 %
 % Syntax:
 %   .. code-block:: matlab
@@ -18,9 +18,9 @@ function removeMaterial(obj, materialIndices, wb)
 % colours of unrelated materials; they are therefore left unchanged.
 %
 % Input Arguments:
-%   - **materialIndices** — double vector, 1-based indices of materials to remove.
+%   - **materialIndices** - double vector, 1-based indices of materials to remove.
 %     Must already be validated by the caller (MibModel.removeMaterial).
-%   - **wb** — *(optional)* handle to a uiprogressdlg used for progress display;
+%   - **wb** - *(optional)* handle to a uiprogressdlg used for progress display;
 %     when empty no progress is reported.
 %
 % Output Arguments:
@@ -88,7 +88,7 @@ if modelType < 256
     end
     obj.labels.materialsCount = numel(obj.labels.materialNames);
 end
-% For large models materialsCount is a high-water mark — zeroing out
+% For large models materialsCount is a high-water mark - zeroing out
 % mid-range indices does not lower it; squeezeMaterialLabels recounts.
 
 % Reset selection to Exterior regardless of model type

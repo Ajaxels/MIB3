@@ -11,24 +11,24 @@ function updateBrushCursor(obj, xyCoordinate, lineStyle, resetOffset)
 % changes style based on painting state.
 %
 % Input Arguments:
-%   - **xyCoordinate** *(optional)* — [double] ``[x, y]`` cursor position in axes coordinates; if empty, uses ``CurrentPoint``
-%   - **lineStyle** *(optional)* — [char] line style for cursor (default: ``':'``):
+%   - **xyCoordinate** *(optional)* - [double] ``[x, y]`` cursor position in axes coordinates; if empty, uses ``CurrentPoint``
+%   - **lineStyle** *(optional)* - [char] line style for cursor (default: ``':'``):
 %
-%     - ``':'`` — dashed line (hover mode)
-%     - ``'-'`` — solid line (painting mode)
+%     - ``':'`` - dashed line (hover mode)
+%     - ``'-'`` - solid line (painting mode)
 %
-%   - **resetOffset** *(optional)* — [logical] reset cursor offset when ``true``, needed when magnification changes (default: ``false``)
+%   - **resetOffset** *(optional)* - [logical] reset cursor offset when ``true``, needed when magnification changes (default: ``false``)
 %
 % Output Arguments:
 %   (none)
 %
-% **Example 1** — update cursor at specific position with dashed style:
+% **Example 1** - update cursor at specific position with dashed style:
 %
 %   .. code-block:: matlab
 %
 %      obj.updateBrushCursor([100, 150], ':', true);
 %
-% **Example 2** — use solid line during painting:
+% **Example 2** - use solid line during painting:
 %
 %   .. code-block:: matlab
 %
@@ -42,7 +42,7 @@ if isempty(lineStyle); lineStyle = ':'; end
 
 % Determine visibility: show only when globally enabled AND inside axes
 % if Virtual mode, do not show cursor.
-% Use this document's local id — mibModel.id is stale in split view.
+% Use this document's local id - mibModel.id is stale in split view.
 localId = obj.mibModel.Sets.selectedDataset(obj.setOfDatasetsIndex) + ...
     (obj.setOfDatasetsIndex - 1) * obj.mibModel.Sets.datasetsInSet;
 % Virtual is browse-only; BigData supports the brush only once a model exists.
@@ -64,7 +64,7 @@ if shouldShow
 
     % Recalculate brush cursor offset when not yet initialised or when the
     % magnification has changed (e.g. after switching to a panel with a
-    % different zoom level — wasInsideAxes cannot detect this because the
+    % different zoom level - wasInsideAxes cannot detect this because the
     % callback simply stops firing while the cursor is in another panel).
     currentMagFactor = obj.mibModel.I{localId}.magFactor;
     if isempty(obj.brushCursorOffset) || ...

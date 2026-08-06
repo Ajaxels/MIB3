@@ -4,7 +4,7 @@ classdef BigDataExportBoundingBoxTest < matlab.unittest.TestCase
 % BioFormats-backed BigData images carry an EMPTY boundingBox (their voxel size
 % lives only in the pyramid). When such a dataset is exported to a standard
 % format, MibImage.save must synthesize a physical BoundingBox from the
-% level-scaled pixSize so the voxel size round-trips — otherwise the reloaded
+% level-scaled pixSize so the voxel size round-trips - otherwise the reloaded
 % dataset defaults to voxel 1. This reproduces that case with a zarr3 pyramid
 % whose boundingBox is cleared to mimic the BioFormats backend.
 
@@ -77,7 +77,7 @@ classdef BigDataExportBoundingBoxTest < matlab.unittest.TestCase
         function boundingBoxOnly_reloadRecoversVoxel(testCase)
             % End-to-end: a TIFF whose ImageDescription is ONLY a BoundingBox (no
             % action log, hence no |/tab/newline separator) must still restore the
-            % voxel size on load — the ImreadLoader parse used to require a separator.
+            % voxel size on load - the ImreadLoader parse used to require a separator.
             here     = fileparts(mfilename('fullpath'));
             repoRoot = fileparts(fileparts(here));
             mibPath  = fullfile(repoRoot, 'mib');

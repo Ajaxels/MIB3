@@ -9,22 +9,22 @@ function flipDataset(obj, mode, parentFigure, showWaitbar)
 % Ported from MIB2 ``@mibModel/flipDataset.m``.
 %
 % Input Arguments:
-%   - **mode** — [char] flipping mode:
+%   - **mode** - [char] flipping mode:
 %
-%     - ``'Flip horizontally'`` — flip along the X (width) axis
-%     - ``'Flip vertically'`` — flip along the Y (height) axis
-%     - ``'Flip Z'`` — flip along the Z (depth) axis
-%     - ``'Flip T'`` — reverse the time-point order
+%     - ``'Flip horizontally'`` - flip along the X (width) axis
+%     - ``'Flip vertically'`` - flip along the Y (height) axis
+%     - ``'Flip Z'`` - flip along the Z (depth) axis
+%     - ``'Flip T'`` - reverse the time-point order
 %
-%   - **parentFigure** *(optional)* — handle to the parent figure for the progress dialog;
+%   - **parentFigure** *(optional)* - handle to the parent figure for the progress dialog;
 %     pass ``[]`` to suppress the progress dialog
-%   - **showWaitbar** *(optional)* — logical, ``true`` to show a progress dialog (default: ``true``)
+%   - **showWaitbar** *(optional)* - logical, ``true`` to show a progress dialog (default: ``true``)
 %
 % Output Arguments:
 %   none
 %
 % Usage:
-%   **Example 1** — flip horizontally from a MibModel context
+%   **Example 1** - flip horizontally from a MibModel context
 %
 %   .. code-block:: matlab
 %
@@ -82,11 +82,11 @@ if strcmp(mode, 'Flip T')
 end
 
 % Flip image (Flip horizontally / Flip vertically / Flip Z) using data{1} directly.
-% Image layout: [H,W,Z,C,T] — Flip H=dim1, W=dim2, Z=dim3.
+% Image layout: [H,W,Z,C,T] - Flip H=dim1, W=dim2, Z=dim3.
 obj.image.data = flipDimension(obj.image.data, mode);
 if showWaitbar; waitbar.Value = 0.5; end
 
-% Flip other layers. Layer layout: [H,W,Z,1,T] — same dims 1/2/3 as image.
+% Flip other layers. Layer layout: [H,W,Z,1,T] - same dims 1/2/3 as image.
 if isa(obj.labels, 'core.MibLabels63') && obj.enableSelection
     if showWaitbar; waitbar.Value = 0.6; waitbar.Message = sprintf('Flipping other layers\nPlease wait...'); end
     obj.labels.data = flipDimension(obj.labels.data, mode);

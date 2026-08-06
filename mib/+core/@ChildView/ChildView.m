@@ -68,7 +68,7 @@ classdef ChildView < handle
             % to the ``obj.handles`` structure for easy access by tag name.
             %
             % Input Arguments:
-            %   - **guiHandle** — [handle] parent GUI element whose children to enumerate
+            %   - **guiHandle** - [handle] parent GUI element whose children to enumerate
             %
             childrenList = guiHandle.Children;
             for i=1:numel(childrenList)     % generate handles structure similar to guide

@@ -8,19 +8,19 @@ function pairViewButtonDown(obj, evnt)
 %
 % A **Shift+click** (``SelectionType = 'extend'``; the hover ROI box from
 % :func:`pairViewMotion` previews the region) triggers click-to-correlate at
-% that spot (:meth:`correlateAtPoint`) — the automated fine-tune. A plain
-% DRAG switches the axes to a live two-layer overlay — tile *i* as a grey
+% that spot (:meth:`correlateAtPoint`) - the automated fine-tune. A plain
+% DRAG switches the axes to a live two-layer overlay - tile *i* as a grey
 % background, tile *j* at 50% alpha following the pointer (per the plan, no
-% ``imfuse`` recompute per mouse event) — and applies the released delta as a
+% ``imfuse`` recompute per mouse event) - and applies the released delta as a
 % user fix. A plain click without movement does nothing (stray clicks must
 % never move tiles). In two-click landmark mode the point is routed to the
 % landmark collector instead. A **right-click drag** (``SelectionType =
-% 'alt'``) pans the view instead — it never edits alignment, so it works in
+% 'alt'``) pans the view instead - it never edits alignment, so it works in
 % every mode (including two-click and Fix Z) and is never mistaken for a
 % tile fix.
 %
 % Input Arguments:
-%   - **evnt** — hit event from an image ``ButtonDownFcn``
+%   - **evnt** - hit event from an image ``ButtonDownFcn``
 %     (``IntersectionPoint`` in pairAxes data coordinates)
 %
 
@@ -193,7 +193,7 @@ figureHandle.WindowButtonUpFcn = @(~, ~) onRelease();
         baseX = xJ; baseY = yJ;
         set(pairAxes, 'YDir', 'reverse', 'XTick', [], 'YTick', []);
         if ~isempty(obj.pairZoom) && isequal(obj.pairZoom.edgeIdx, obj.currentEdgeIdx)
-            % Keep the user's wheel zoom — fine drags are done zoomed in.
+            % Keep the user's wheel zoom - fine drags are done zoomed in.
             set(pairAxes, 'XLim', obj.pairZoom.xLim, 'YLim', obj.pairZoom.yLim);
         else
             set(pairAxes, ...
@@ -201,10 +201,10 @@ figureHandle.WindowButtonUpFcn = @(~, ~) onRelease();
                 'YLim', [min(yI(1), yJ(1)) - 1, max(yI(2), yJ(2)) + 1]);
         end
         if obj.boundaryModeActive()
-            title(pairAxes, sprintf(['Dragging slice %d (50%% alpha) over slice %d — ' ...
+            title(pairAxes, sprintf(['Dragging slice %d (50%% alpha) over slice %d - ' ...
                 'release to shift the mosaic above'], sliceB, sliceA));
         else
-            title(pairAxes, sprintf('Dragging tile %d (50%% alpha) over tile %d — release to fix', ...
+            title(pairAxes, sprintf('Dragging tile %d (50%% alpha) over tile %d - release to fix', ...
                 edge.j, edge.i));
         end
     end

@@ -11,7 +11,7 @@ function removeROI(obj)
 % The ROI list is refreshed and the image is repainted.
 %
 % Input Arguments:
-%   - **obj** — controllers.MibRoi — the ROI panel controller
+%   - **obj** - controllers.MibRoi - the ROI panel controller
 %
 %   Return values: none
 %

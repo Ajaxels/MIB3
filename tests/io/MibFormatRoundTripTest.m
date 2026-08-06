@@ -2,17 +2,17 @@ classdef MibFormatRoundTripTest < matlab.unittest.TestCase
 % Unit tests for MibModel.exportDatasetToMib + importDatasetFromMib.
 %
 % These methods copy a layer (labels or mask) between MIB containers
-% entirely in memory — no file I/O.  A second container is set up via
+% entirely in memory - no file I/O.  A second container is set up via
 % deepCopyDataset so the dimensions match; then the layer is modified
 % in the destination to distinguish it from the source, the transfer
 % is performed, and the result is verified.
 %
 % Verification strategies:
-%   export labels — overwrite container 2 labels with zeros, export from 1,
+%   export labels - overwrite container 2 labels with zeros, export from 1,
 %                   verify container 2 matches gt.labels
-%   import labels — export to container 2, overwrite container 1 with zeros,
+%   import labels - export to container 2, overwrite container 1 with zeros,
 %                   import from container 2, verify container 1 = gt.labels
-%   export mask   — overwrite container 2 mask with zeros, export from 1,
+%   export mask   - overwrite container 2 mask with zeros, export from 1,
 %                   verify container 2 checksum matches container 1
 
     methods (TestClassSetup)

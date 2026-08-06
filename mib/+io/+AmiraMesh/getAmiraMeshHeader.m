@@ -8,20 +8,20 @@ function [par, img_info, dim_xyczt, materialNames, materialColors] = getAmiraMes
 %      [par, img_info, dim_xyczt, materialNames, materialColors] = io.AmiraMesh.getAmiraMeshHeader(filename)
 %
 % Input Arguments:
-%   - **filename** — *(optional)* filename of Amira Mesh file; when omitted,
+%   - **filename** - *(optional)* filename of Amira Mesh file; when omitted,
 %     a file selection dialog is started
 %
 % Output Arguments:
-%   - **par** — struct array with header parameters; each element has fields:
+%   - **par** - struct array with header parameters; each element has fields:
 %
-%     - ``.Name`` — parameter name string
-%     - ``.Value`` — parameter value
+%     - ``.Name`` - parameter name string
+%     - ``.Value`` - parameter value
 %
-%   - **img_info** — MATLAB dictionary (``configureDictionary("string","cell")``);
+%   - **img_info** - MATLAB dictionary (``configureDictionary("string","cell")``);
 %     access values with ``{}`` indexing
-%   - **dim_xyczt** — [1×5] dataset dimensions [width, height, colors, depth, time]
-%   - **materialNames** — cell array of detected material names (``Exterior`` excluded)
-%   - **materialColors** — [Nx3] RGB material colours (0–1); ``Exterior`` excluded
+%   - **dim_xyczt** - [1×5] dataset dimensions [width, height, colors, depth, time]
+%   - **materialNames** - cell array of detected material names (``Exterior`` excluded)
+%   - **materialColors** - [Nx3] RGB material colours (0-1); ``Exterior`` excluded
 %
 
 % Updates

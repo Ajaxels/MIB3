@@ -6,7 +6,7 @@ function updateSessionSettings(obj)
 %
 %       obj.updateSessionSettings()
 %
-% Builds ``obj.mibModel.sessionSettings.ImageFilters`` — a struct with one
+% Builds ``obj.mibModel.sessionSettings.ImageFilters`` - a struct with one
 % sub-struct per filter name.  Each sub-struct holds:
 %
 %   - default parameter values (scalars, cell arrays, strings)
@@ -16,10 +16,10 @@ function updateSessionSettings(obj)
 % not yet exist.  Also callable manually to reset all filter defaults.
 %
 % Input Arguments:
-%   - **obj** — ``controllers.ImageFilters`` instance
+%   - **obj** - ``controllers.ImageFilters`` instance
 %
 % Output Arguments:
-%   (none) — results written to ``obj.mibModel.sessionSettings.ImageFilters``
+%   (none) - results written to ``obj.mibModel.sessionSettings.ImageFilters``
 
 mibPath = obj.mibModel.mibPath;
 ImageFilters = struct();

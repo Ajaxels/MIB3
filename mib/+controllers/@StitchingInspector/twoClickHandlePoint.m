@@ -7,14 +7,14 @@ function twoClickHandlePoint(obj, pointXY)
 %      obj.twoClickHandlePoint(pointXY)
 %
 % Stage 1 stores the landmark click in tile *i* (left image); stage 2 takes
-% the same landmark in tile *j* (right image) — the click difference is the
+% the same landmark in tile *j* (right image) - the click difference is the
 % coarse pair offset (``dy = rowA - rowB``, the ``pos_j - pos_i`` convention),
 % then :func:`utils.stitch.localCorrelate` refines it within a small,
 % scale-aware radius. An unconfident refinement falls back to the coarse
 % offset (it is the user's explicit statement) instead of being dropped.
 %
 % Input Arguments:
-%   - **pointXY** — [1x2 double] click ``[x y]`` in the side-by-side view's
+%   - **pointXY** - [1x2 double] click ``[x y]`` in the side-by-side view's
 %     display coordinates (from :func:`pairViewButtonDown`)
 %
 
@@ -28,7 +28,7 @@ edge = obj.stitching.edges(obj.currentEdgeIdx);
 
 if state.stage == 1
     if pointXY(1) > splitX
-        obj.setStatus(sprintf('First click the landmark in tile %d — the LEFT image', edge.i));
+        obj.setStatus(sprintf('First click the landmark in tile %d - the LEFT image', edge.i));
         return;
     end
     obj.twoClick.clickA = [toFullRes(pointXY(1)), toFullRes(pointXY(2))];
@@ -38,7 +38,7 @@ if state.stage == 1
 end
 
 if pointXY(1) <= splitX
-    obj.setStatus(sprintf('Now the landmark in tile %d — the RIGHT image', edge.j));
+    obj.setStatus(sprintf('Now the landmark in tile %d - the RIGHT image', edge.j));
     return;
 end
 clickA = state.clickA;
@@ -65,6 +65,6 @@ tileB = obj.readerFcn(edge.j);
 if confident
     obj.applyUserFix(refinedOffsetYX, sprintf('two-click + refine, NCC %.2f', score));
 else
-    obj.applyUserFix(coarseOffsetYX, 'two-click (coarse — refinement unconfident)');
+    obj.applyUserFix(coarseOffsetYX, 'two-click (coarse - refinement unconfident)');
 end
 end

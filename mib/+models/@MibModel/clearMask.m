@@ -11,36 +11,36 @@ function clearMask(obj, sel_switch, BatchOptIn)
 % Supports batch-processing mode via BatchOptIn.
 %
 % Input Arguments:
-%   - **sel_switch** — *(optional)* string defining the clear scope
+%   - **sel_switch** - *(optional)* string defining the clear scope
 %
-%     - ``'2D, Slice'``   — clear the currently shown slice only *(default)*
-%     - ``'3D, Stack'``   — clear the full z-stack at the current time point
-%     - ``'4D, Dataset'`` — clear the entire dataset (all z and t)
+%     - ``'2D, Slice'``   - clear the currently shown slice only *(default)*
+%     - ``'3D, Stack'``   - clear the full z-stack at the current time point
+%     - ``'4D, Dataset'`` - clear the entire dataset (all z and t)
 %
-%   - **BatchOptIn** — *(optional)* structure for batch processing mode; when
+%   - **BatchOptIn** - *(optional)* structure for batch processing mode; when
 %     NaN, returns default options via the "SyncBatch" event
 %
-%     - ``.DatasetType`` — cell ``{value, {choices}}`` selecting the clear scope
-%     - ``.showWaitbar`` — logical, show or not the progress bar
-%     - ``.id``          — dataset index 1-9; default = currently active dataset
+%     - ``.DatasetType`` - cell ``{value, {choices}}`` selecting the clear scope
+%     - ``.showWaitbar`` - logical, show or not the progress bar
+%     - ``.id``          - dataset index 1-9; default = currently active dataset
 %
 % Output Arguments:
 %   (none)
 %
 % Usage:
-%   **Example 1** — clear current slice
+%   **Example 1** - clear current slice
 %
 %   .. code-block:: matlab
 %
 %      obj.mibModel.clearMask('2D, Slice');
 %
-%   **Example 2** — clear current z-stack
+%   **Example 2** - clear current z-stack
 %
 %   .. code-block:: matlab
 %
 %      obj.mibModel.clearMask('3D, Stack');
 %
-%   **Example 3** — clear full dataset
+%   **Example 3** - clear full dataset
 %
 %   .. code-block:: matlab
 %

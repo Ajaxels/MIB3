@@ -4,21 +4,21 @@ classdef Zarr2VirtualLoader < handle
 % Python-backed counterpart to ``Zarr3VirtualLoader``. Zarr v2 has no native
 % (zarrMex) engine, so this reader always goes through ``io.zarr.PyBackend``
 % (``zarr.open`` + raw ``pyrun`` byte transfers) rather than ``io.zarr.Array``
-% — the latter's metadata path is native-only and cannot open a v2 store at
+% - the latter's metadata path is native-only and cannot open a v2 store at
 % all. ``io.zarr.PyBackend``'s bulk-I/O calls are otherwise format-agnostic
 % (``zarr-python`` auto-detects v2 vs v3), so no separate python code is
 % needed here beyond calling that facade.
 %
 % **Relationship to Zarr2VirtualSetupLoader**
 %
-% Zarr2VirtualSetupLoader — runs ONCE when the user opens a zarr v2 file.
+% Zarr2VirtualSetupLoader - runs ONCE when the user opens a zarr v2 file.
 % Phase : dataset initialisation (MibModel.loadImages)
 % Job : parse OME-Zarr v2 metadata (.zattrs/.zarray), build pyramid struct.
 % Reads pixels? Yes (Standard/Model mode) / No (Virtual/BigData mode).
 % Lifetime: discarded after open; implements BaseImageLoader.
 % Created by: LoaderFactory (case "OmeZarrV2")
 %
-% Zarr2VirtualLoader — runs on EVERY slice/region request during the session.
+% Zarr2VirtualLoader - runs on EVERY slice/region request during the session.
 % Phase : on-demand pixel reading (MibVirtualImage.getDataZarr).
 % Job : read sub-region via io.zarr.PyBackend.readArray.
 % Reads pixels? Yes.
@@ -31,7 +31,7 @@ classdef Zarr2VirtualLoader < handle
 % size [nC, nZ, nY, nX]. ``io.loaders.OmeZarrMetadataUtils.computePermutation``
 % precomputes the permutation that maps this to MIB3 ``[y, x, z, c, t]``.
 %
-% **Example** — local OME-Zarr v2 dataset:
+% **Example** - local OME-Zarr v2 dataset:
 %
 %   .. code-block:: matlab
 %
@@ -68,13 +68,13 @@ methods
         %      obj = Zarr2VirtualLoader(rootPath, axisOrder)
         %
         % Input Arguments:
-        %   - **rootPath** — [char] zarr root path (local folder or HTTP/HTTPS URL)
-        %   - **axisOrder** — *(optional)* [char] OME-Zarr axis order in Python
+        %   - **rootPath** - [char] zarr root path (local folder or HTTP/HTTPS URL)
+        %   - **axisOrder** - *(optional)* [char] OME-Zarr axis order in Python
         %     C-order declaration, e.g. ``'tczyx'``, ``'czyx'``, ``'zyx'``
         %     (default: ``'tczyx'``)
         %
         % Output Arguments:
-        %   - **obj** — [Zarr2VirtualLoader] new loader instance
+        %   - **obj** - [Zarr2VirtualLoader] new loader instance
 
         obj.rootPath = rootPath;
         if nargin < 2 || isempty(axisOrder)
@@ -94,23 +94,23 @@ methods
         %
         % Always receives PHYSICAL coordinate ranges (not screen-remapped).
         % Always returns data in MIB3 [y, x, z, c, t] order. Assumes the
-        % python zarr backend is already available — ``Zarr2VirtualSetupLoader``
+        % python zarr backend is already available - ``Zarr2VirtualSetupLoader``
         % calls ``io.zarr.PyBackend.ensureLoaded()`` at file-open time so any
         % "python unavailable" failure surfaces once, up front, rather than on
         % every slice scrub.
         %
         % Input Arguments:
-        %   - **levelPath** — [char] relative pyramid level path within root,
+        %   - **levelPath** - [char] relative pyramid level path within root,
         %     e.g. ``'s0'`` or ``'0'``; pass ``''`` to read from the root array directly
-        %   - **physYlim** — [1x2 numeric] physical Y range ``[ymin ymax]`` (1-based, inclusive)
-        %   - **physXlim** — [1x2 numeric] physical X range ``[xmin xmax]`` (1-based, inclusive)
-        %   - **physZlim** — [1x2 numeric] physical Z range ``[zmin zmax]`` (1-based, inclusive)
-        %   - **Clim** — [1x2 numeric] channel range ``[cmin cmax]`` (1-based, inclusive)
-        %   - **Tlim** — [1x2 numeric] time range ``[tmin tmax]`` (1-based, inclusive)
-        %   - **dataClass** — [char] output MATLAB class, e.g. ``'uint8'`` or ``'uint16'``
+        %   - **physYlim** - [1x2 numeric] physical Y range ``[ymin ymax]`` (1-based, inclusive)
+        %   - **physXlim** - [1x2 numeric] physical X range ``[xmin xmax]`` (1-based, inclusive)
+        %   - **physZlim** - [1x2 numeric] physical Z range ``[zmin zmax]`` (1-based, inclusive)
+        %   - **Clim** - [1x2 numeric] channel range ``[cmin cmax]`` (1-based, inclusive)
+        %   - **Tlim** - [1x2 numeric] time range ``[tmin tmax]`` (1-based, inclusive)
+        %   - **dataClass** - [char] output MATLAB class, e.g. ``'uint8'`` or ``'uint16'``
         %
         % Output Arguments:
-        %   - **block** — [nY x nX x nZ x nC x nT numeric] array in MIB3 [y,x,z,c,t] order
+        %   - **block** - [nY x nX x nZ x nC x nT numeric] array in MIB3 [y,x,z,c,t] order
 
         if isempty(levelPath)
             fullPath = obj.rootPath;
@@ -142,7 +142,7 @@ methods
             end
         end
 
-        % Open (or reuse) the python array handle for this level — one open +
+        % Open (or reuse) the python array handle for this level - one open +
         % one metadata query per level, not per slice read.
         if isempty(obj.cachedPyArray) || ~strcmp(fullPath, obj.cachedLevelPath)
             obj.cachedPyArray   = io.zarr.PyBackend.openArray(fullPath, 'r');

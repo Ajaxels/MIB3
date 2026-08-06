@@ -11,22 +11,22 @@ function moveSelectionToMaskDataset(obj, action_type, options)
 % performance.
 %
 % Input Arguments:
-%   - **action_type** — [char] type of the desired action:
+%   - **action_type** - [char] type of the desired action:
 %
-%     - ``'add'`` — add selection to mask
-%     - ``'remove'`` — remove selection from mask
-%     - ``'replace'`` — replace mask with selection
+%     - ``'add'`` - add selection to mask
+%     - ``'remove'`` - remove selection from mask
+%     - ``'replace'`` - replace mask with selection
 %
-%   - **options** — [struct] structure with additional parameters:
+%   - **options** - [struct] structure with additional parameters:
 %
-%     - ``.contSelIndex`` — [numeric] index of the "Select from" material
-%     - ``.contAddIndex`` — [numeric] index of the "Add to" material
-%     - ``.selected_sw`` — [logical] limit actions to the selected material only (``0`` or ``1``)
-%     - ``.maskedAreaSw`` — [logical] limit actions to masked areas only (``0`` or ``1``)%
+%     - ``.contSelIndex`` - [numeric] index of the "Select from" material
+%     - ``.contAddIndex`` - [numeric] index of the "Add to" material
+%     - ``.selected_sw`` - [logical] limit actions to the selected material only (``0`` or ``1``)
+%     - ``.maskedAreaSw`` - [logical] limit actions to masked areas only (``0`` or ``1``)%
 % Output Arguments:
 %   (none)
 %
-% **Example** — Move selection to mask by adding:
+% **Example** - Move selection to mask by adding:
 %
 %   .. code-block:: matlab
 %

@@ -20,36 +20,36 @@ function mosaic = makeAtlasMosaic(folderPath, options)
 %   - stage Y running UP, so row 2 sits at a SMALLER stage Y than row 1.
 %
 % Geometry: 64 px tiles at 0.5 µm/px (32 µm FOV) on a 22 µm step (44 px, leaving
-% 20 px of overlap). Every seam carries a measured correction — 4 px in X, 6 px
-% in Y, deliberately different so an axis swap cannot pass unnoticed — so the
+% 20 px of overlap). Every seam carries a measured correction - 4 px in X, 6 px
+% in Y, deliberately different so an axis swap cannot pass unnoticed - so the
 % ties measure 40 px / 38 px where the nominal grid says 44 px.
 %
 % The tiles are CUT FROM ONE TEXTURED IMAGE at those measured offsets, which is
 % what makes the mosaic testable end to end: the ``.ve-tie`` / ``.ve-updates``
 % placement is the pixel-correct one (seams score ~1), while the nominal stage
-% grid is wrong by 4-6 px — the same shape of error that makes Atlas's rough
+% grid is wrong by 4-6 px - the same shape of error that makes Atlas's rough
 % placement unusable on real data.
 %
 % Input Arguments:
-%   - **folderPath** — [char] folder to write into; created when absent.
-%   - **options** *(optional)* — struct with fields:
+%   - **folderPath** - [char] folder to write into; created when absent.
+%   - **options** *(optional)* - struct with fields:
 %
-%     - ``.writeTies`` — [logical] write the ``.ve-tie`` file (default: ``true``)
-%     - ``.writeUpdates`` — [logical] write the ``.ve-updates`` file (default: ``true``)
-%     - ``.mirrorStageX`` — [logical] make stage X run opposite to the column
+%     - ``.writeTies`` - [logical] write the ``.ve-tie`` file (default: ``true``)
+%     - ``.writeUpdates`` - [logical] write the ``.ve-updates`` file (default: ``true``)
+%     - ``.mirrorStageX`` - [logical] make stage X run opposite to the column
 %       index, for testing the derived axis signs (default: ``false``)
-%     - ``.confidences`` — [1x4 double] per-tie ``<Confidence>`` values
+%     - ``.confidences`` - [1x4 double] per-tie ``<Confidence>`` values
 %       (default: ``[0.96 0.98 0.95 0.86]``)
-%     - ``.confidenceThreshold`` — [double] the file's own
+%     - ``.confidenceThreshold`` - [double] the file's own
 %       ``<ConfidenceThreshold>`` (default: ``0.82``)
-%     - ``.userTies`` — [1x4 logical] per-tie ``<User>`` flag (default: all false)
-%     - ``.textureSeed`` — [double] seed for the source texture (default: ``77``)
+%     - ``.userTies`` - [1x4 logical] per-tie ``<User>`` flag (default: all false)
+%     - ``.textureSeed`` - [double] seed for the source texture (default: ``77``)
 %
 % Output Arguments:
-%   - **mosaic** — struct with ``.folder``, ``.veMifPath``, ``.tileNames``,
+%   - **mosaic** - struct with ``.folder``, ``.veMifPath``, ``.tileNames``,
 %     ``.pixelSizeUm``, ``.stepPx``, ``.measuredStepXpx``, ``.measuredStepYpx``.
 %
-% **Example** — a mosaic Atlas never stitched:
+% **Example** - a mosaic Atlas never stitched:
 %
 %   .. code-block:: matlab
 %
@@ -85,7 +85,7 @@ stageOriginY  = -45614.4;
 stageXSign    = 1;
 if options.mirrorStageX; stageXSign = -1; end
 
-% True (measured) steps in pixels — what the ties and the solved placement state.
+% True (measured) steps in pixels - what the ties and the solved placement state.
 measuredStepXpx = (stepUm + correctionXum) / pixelSizeUm;
 measuredStepYpx = (stepUm + correctionYum) / pixelSizeUm;
 
@@ -112,7 +112,7 @@ for tileIdx = 1:numTiles
     stageYum(tileIdx) = stageOriginY - (gridRowCol(tileIdx, 1) - 1) * stepUm;
 end
 
-% ---- .ve-mif — the acquisition record ----
+% ---- .ve-mif - the acquisition record ----
 xmlLines = {'<?xml version="1.0" encoding="iso-8859-1"?>'};
 xmlLines{end+1} = '<MosaicInfo ID="1"><Application>Atlas Engine v5.5.6</Application>';
 xmlLines{end+1} = '<ReferenceInfo><Name>SYN</Name></ReferenceInfo>';
@@ -135,7 +135,7 @@ xmlLines{end+1} = '</Tiles><Status>completed</Status></MosaicInfo>';
 veMifPath = fullfile(folderPath, 'MosaicInfo_SYN.ve-mif');
 writeTextFile(veMifPath, xmlLines);
 
-% ---- .ve-tie — the four seams of a 2x2, indexed into the <Tiles> listing ----
+% ---- .ve-tie - the four seams of a 2x2, indexed into the <Tiles> listing ----
 tiePairs        = [0 1; 1 2; 0 3; 3 2];   % r1c1-r1c2, r1c2-r2c2, r1c1-r2c1, r2c1-r2c2
 tieIsHorizontal = [true; false; false; true];
 if options.writeTies
@@ -169,7 +169,7 @@ if options.writeTies
     writeTextFile(fullfile(folderPath, 'MosaicInfo_SYN.ve-tie'), xmlLines);
 end
 
-% ---- .ve-updates — the placement those ties imply ----
+% ---- .ve-updates - the placement those ties imply ----
 solvedStepXum = stepUm + correctionXum;
 solvedStepYum = stepUm + correctionYum;
 if options.writeUpdates

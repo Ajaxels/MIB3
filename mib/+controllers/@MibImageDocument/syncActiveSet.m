@@ -20,9 +20,9 @@ function changed = syncActiveSet(obj)
 %   (none)
 %
 % Output Arguments:
-%   - **changed** — [logical] ``true`` if the active set was actually changed
+%   - **changed** - [logical] ``true`` if the active set was actually changed
 %
-% **Example** — sync at start of frequent callback (mouse motion, scroll):
+% **Example** - sync at start of frequent callback (mouse motion, scroll):
 %
 %   .. code-block:: matlab
 %

@@ -18,14 +18,14 @@ function dirOut = obtainDirectoryForAction(obj, dirModeField, filenameField, ste
 %   - 'Inherit dirs +Dirname'       - concatenate stepOptions.DirectoryName with obj.Protocol(stepId).Batch.DirectoryName
 %
 % Input Arguments:
-%   - **dirModeField** — name of a BatchOpt field whose value selects the directory mode
-%   - **filenameField** — name of a BatchOpt field that holds the actual directory path string
-%   - **stepId** — index of the protocol step being executed
-%   - **stepOptions** — a struct passed down from the loop runner; may contain:
+%   - **dirModeField** - name of a BatchOpt field whose value selects the directory mode
+%   - **filenameField** - name of a BatchOpt field that holds the actual directory path string
+%   - **stepId** - index of the protocol step being executed
+%   - **stepOptions** - a struct passed down from the loop runner; may contain:
 %     - .DirectoryName - directory provided by an enclosing Directory loop
 %
 % Output Arguments:
-%   - **dirOut** — resolved absolute directory path, or [] on failure
+%   - **dirOut** - resolved absolute directory path, or [] on failure
 %
 % Usage:
 %   Example 1::

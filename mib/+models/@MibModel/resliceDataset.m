@@ -15,30 +15,30 @@ function resliceDataset(obj, sliceNumbers, orientation, BatchOptIn)
 % ``MibDataset.resliceDataset``.
 %
 % Input Arguments:
-%   - **sliceNumbers** — *(optional)* index vector of slices to keep, or
+%   - **sliceNumbers** - *(optional)* index vector of slices to keep, or
 %     ``[]`` for interactive input
-%   - **orientation** — *(optional)* dimension to reslice:
+%   - **orientation** - *(optional)* dimension to reslice:
 %     ``1`` = height (y), ``2`` = width (x), ``3`` = depth (z).
 %     Default: ``obj.orientation`` of the active dataset
-%   - **BatchOptIn** — *(optional)* struct for batch processing mode; when
+%   - **BatchOptIn** - *(optional)* struct for batch processing mode; when
 %     ``NaN``, returns default options via the ``SyncBatch`` event.
 %
-%     - ``.Dimension`` — [cell] reslice dimension (default: ``{'depth'}``).
+%     - ``.Dimension`` - [cell] reslice dimension (default: ``{'depth'}``).
 %       Allowed values: ``{'height', 'width', 'depth'}``
-%     - ``.SliceNumbers`` — [string] MATLAB index expression; ``'end'`` is
+%     - ``.SliceNumbers`` - [string] MATLAB index expression; ``'end'`` is
 %       substituted with the actual maximum (default: ``'1:2:end'``)
-%     - ``.showWaitbar`` — [logical] show the progress dialog (default: ``true``)
-%     - ``.id`` — *(optional)* dataset index 1–9, default = ``obj.getActiveId()``
+%     - ``.showWaitbar`` - [logical] show the progress dialog (default: ``true``)
+%     - ``.id`` - *(optional)* dataset index 1-9, default = ``obj.getActiveId()``
 %
 % Usage:
-%   **Example 1** — interactive
+%   **Example 1** - interactive
 %
 %   .. code-block:: matlab
 %
 %
 %     obj.mibModel.resliceDataset();
 %
-%   **Example 2** — keep every 10th z-slice via batch
+%   **Example 2** - keep every 10th z-slice via batch
 %
 %   .. code-block:: matlab
 %

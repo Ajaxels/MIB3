@@ -5,32 +5,32 @@ classdef MibImageDocument < handle
 % the FigureDocument container, ImageViewDocument component, and all associated
 % callbacks including mouse interactions and brush cursor visualization.
 %
-% **Example 1** — create new image document:
+% **Example 1** - create new image document:
 %
 %   .. code-block:: matlab
 %
 %      doc = controllers.MibImageDocument(obj.mibController, obj.view, ...
 %          'Dataset 1', docGroupTag, 1, obj.mibModel);
 %
-% **Example 2** — add to document group:
+% **Example 2** - add to document group:
 %
 %   .. code-block:: matlab
 %
 %      obj.view.gui.add(doc.figureDoc);
 %
-% **Example 3** — update description:
+% **Example 3** - update description:
 %
 %   .. code-block:: matlab
 %
 %      doc.setDescription('Buffer 1: myimage.tif');
 %
-% **Example 4** — update brush cursor:
+% **Example 4** - update brush cursor:
 %
 %   .. code-block:: matlab
 %
 %      doc.updateBrushCursor([100, 100], ':');
 %
-% **Example 5** — access the class:
+% **Example 5** - access the class:
 %
 %   .. code-block:: matlab
 %
@@ -95,8 +95,8 @@ classdef MibImageDocument < handle
         % ------------------------- declaration of functions in the external files,
         clearQuickMeasure(obj)        % Silently remove the active quick-measurement ROI and text label
         frameNumber_Callback(obj, parameter, BatchOptIn)        % Callback for changing the time points of the dataset by entering a new time value
-        listener_frameChanged(obj)    % Listener for MibModel 'FrameChanged' event — syncs frame widgets and redraws
-        listener_sliceChanged(obj)    % Listener for MibModel 'SliceChanged' event — syncs slice widgets and redraws
+        listener_frameChanged(obj)    % Listener for MibModel 'FrameChanged' event - syncs frame widgets and redraws
+        listener_sliceChanged(obj)    % Listener for MibModel 'SliceChanged' event - syncs slice widgets and redraws
         frameNumberSlider_Callback(obj, sliderValue)        % Change the currently displayed frame using the time-number slider
         sliderDragCallback(obj, sliderType, value, isFinal)        % Handle slider dragging with a throttle + final render
         renderSlider(obj, sliderType, value)        % Commit a slider value to the model and redraw the image
@@ -157,15 +157,15 @@ classdef MibImageDocument < handle
             % for mouse interactions and navigation controls.
             %
             % Input Arguments:
-            %   - **mainCtrl** — controllers.MibController, main MIB controller
-            %   - **view** — MibView, main MIB view
-            %   - **title** — char, title for the document tab
-            %   - **docGroupTag** — char, document group tag for MDI grouping
-            %   - **setOfDatasetsIndex** — double, index of this document (typically current set number)
-            %   - **model** — models.MibModel, main MIB model
+            %   - **mainCtrl** - controllers.MibController, main MIB controller
+            %   - **view** - MibView, main MIB view
+            %   - **title** - char, title for the document tab
+            %   - **docGroupTag** - char, document group tag for MDI grouping
+            %   - **setOfDatasetsIndex** - double, index of this document (typically current set number)
+            %   - **model** - models.MibModel, main MIB model
             %
             % Output Arguments:
-            %   - **obj** — controllers.MibImageDocument, the created controller instance
+            %   - **obj** - controllers.MibImageDocument, the created controller instance
             %
             % Usage:
             %   docCtrl = controllers.MibImageDocument(obj.mibController, obj.view, 'Buffer 1', 'imageViewGroup', 1, obj.mibModel);

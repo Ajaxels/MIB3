@@ -2,14 +2,14 @@ classdef AmiraMeshSaver < io.savers.BaseSaver
 % AMIRAMESHSAVER - Saver for Amira Mesh binary format output.
 %
 % Handles five format variants:
-% 'Amira Mesh binary (``*.am``)'                      — full 3-D volume,
+% 'Amira Mesh binary (``*.am``)'                      - full 3-D volume,
 % binary encoding, image layer
-% 'Amira Mesh binary file sequence (``*.am``)'        — per-slice .am files,
+% 'Amira Mesh binary file sequence (``*.am``)'        - per-slice .am files,
 % binary encoding, image layer
-% 'Amira mesh binary (``*.am``)'                      — alias for labels/masks
-% 'Amira mesh binary RLE compression SLOW (``*.am``)' — run-length encoded,
+% 'Amira mesh binary (``*.am``)'                      - alias for labels/masks
+% 'Amira mesh binary RLE compression SLOW (``*.am``)' - run-length encoded,
 % binary, labels/masks only
-% 'Amira mesh ascii (``*.am``)'                       — ASCII text encoding,
+% 'Amira mesh ascii (``*.am``)'                       - ASCII text encoding,
 % labels/masks only
 %
 % The active layer type (image vs. mask/labels) is determined by
@@ -19,9 +19,9 @@ classdef AmiraMeshSaver < io.savers.BaseSaver
 %
 % DATA DIMENSIONS
 % Input  data : [H, W, D, C, T]  (MIB3 native order)
-% bitmap2amiraMesh() expects [H, W, C, D] — permuted via
+% bitmap2amiraMesh() expects [H, W, C, D] - permuted via
 % obj.permuteMib3ToHWCD() for the first time point.
-% bitmap2amiraLabels() expects [H, W, D] — squeezed from data.
+% bitmap2amiraLabels() expects [H, W, D] - squeezed from data.
 %
 % PIXEL-SIZE STRUCT (pixStr)
 % For bitmap2amiraLabels the pixStr is extended with bounding-box
@@ -120,11 +120,11 @@ classdef AmiraMeshSaver < io.savers.BaseSaver
             %      saver = io.savers.AmiraMeshSaver(options)
             %
             % Input Arguments:
-            %   - **options** — *(optional)* struct, saver-level options (usually empty;
+            %   - **options** - *(optional)* struct, saver-level options (usually empty;
             %     per-save options are passed to ``save()`` instead)
             %
             % Output Arguments:
-            %   - **obj** — instance of the AmiraMeshSaver class
+            %   - **obj** - instance of the AmiraMeshSaver class
             %
             if nargin < 1; options = struct(); end
             obj.Options = options;
@@ -143,7 +143,7 @@ classdef AmiraMeshSaver < io.savers.BaseSaver
             %   (none)
             %
             % Output Arguments:
-            %   - **formats** — cell array of format strings for Amira Mesh output
+            %   - **formats** - cell array of format strings for Amira Mesh output
             %
             formats = { ...
                 'Amira Mesh binary (*.am)'; ...
@@ -162,31 +162,33 @@ classdef AmiraMeshSaver < io.savers.BaseSaver
             %      fnOut = obj.save(data, metadata, filename, options)
             %
             % Input Arguments:
-            %   - **data** — [H, W, D, C, T] numeric array
-            %   - **metadata** — struct with fields:
+            %   - **data** - [H, W, D, C, T] numeric array
+            %   - **metadata** - struct with fields:
             %
-            %     - ``colorType`` — ``'grayscale'`` | ``'multichannel'`` | ``'indexed'``
-            %     - ``lutColors`` — [C x 3] per-channel LUT colours (0..1)
-            %     - ``dataClass`` — ``'uint8'`` | ``'uint16'`` | ...
-            %     - ``maxInt`` — maximum intensity value
-            %     - ``pixSize`` — struct {``.x``, ``.y``, ``.z``, ``.units``, ``.t``, ``.tunits``}
-            %     - ``boundingBox`` — [xmin xmax ymin ymax zmin zmax]
-            %     - ``materialNames`` — cell array of material name strings (labels mode only)
-            %     - ``materialColors`` — [M x 3] material RGB colours (labels mode)
+            %     - ``colorType`` - ``'grayscale'`` | ``'multichannel'`` | ``'indexed'``
+            %     - ``lutColors`` - [C x 3] per-channel LUT colours (0..1)
+            %     - ``dataClass`` - ``'uint8'`` | ``'uint16'`` | ...
+            %     - ``maxInt`` - maximum intensity value
+            %     - ``pixSize`` - struct {``.x``, ``.y``, ``.z``, ``.units``, ``.t``, ``.tunits``}
+            %     - ``boundingBox`` - [xmin xmax ymin ymax zmin zmax]
+            %     - ``materialNames`` - cell array of material name strings (labels mode only)
+            %     - ``materialColors`` - [M x 3] material RGB colours (labels mode)
             %
-            %   - **filename** — full output path, e.g. ``'/out/stack.am'``
-            %   - **options** — struct with fields:
+            %   - **filename** - full output path, e.g. ``'/out/stack.am'``
+            %   - **options** - struct with fields:
             %
-            %     - ``Format`` — format string (selects encoding)
-            %     - ``layerType`` — ``'image'`` | ``'mask'`` | ``'labels'``; default: ``'image'``
-            %     - ``showWaitbar`` — logical; default: ``true``
-            %     - ``silent`` — logical, suppress dialogs; default: ``false``
-            %     - ``overwrite`` — logical; default: ``true``
+            %     - ``Format`` - format string (selects encoding)
+            %     - ``layerType`` - ``'image'`` | ``'mask'`` | ``'labels'``; default: ``'image'``
+            %     - ``showWaitbar`` - logical; default: ``true``
+            %     - ``silent`` - logical, suppress dialogs; default: ``false``
+            %     - ``overwrite`` - logical; default: ``true``
             %
             % Output Arguments:
-            %   - **fnOut** — [char] path of saved ``.am`` file, ``[]`` on failure
+            %   - **fnOut** - [char] path of the saved ``.am`` file, or [cell of
+            %     char] the per-slice paths for the file-sequence format;
+            %     ``[]`` on failure
             %
-            % **Example** — see class-level documentation above.
+            % **Example** - see class-level documentation above.
             %
 
             fnOut = [];
@@ -303,6 +305,7 @@ classdef AmiraMeshSaver < io.savers.BaseSaver
                         fnOnly{k} = [fn, fe];
                     end
                     savingOptions.SliceName = fnOnly;
+                    writtenSlicePaths = slicePaths;
                 end
 
                 io.AmiraMesh.bitmap2amiraMesh(fullFilepath, data(:,:,:,:,1), metaMap, savingOptions);
@@ -364,7 +367,14 @@ classdef AmiraMeshSaver < io.savers.BaseSaver
                 end
             end
 
-            fnOut = fullFilepath;
+            % A file sequence returns the paths it actually wrote, matching
+            % TiffSaver / PngSaver. Returning the base name instead named a file
+            % that does not exist: the sequence is <base>_01.am … <base>_NN.am.
+            if exist('writtenSlicePaths', 'var')
+                fnOut = writtenSlicePaths;
+            else
+                fnOut = fullFilepath;
+            end
             %fprintf('AmiraMeshSaver: saved → %s\n', fullFilepath);
         end
 
@@ -387,10 +397,10 @@ classdef AmiraMeshSaver < io.savers.BaseSaver
             % ``bitmap2amiraMesh()`` and ``bitmap2amiraLabels()``.
             %
             % Input Arguments:
-            %   - **formatStr** — [char] format string from ``getSupportedFormats()``
+            %   - **formatStr** - [char] format string from ``getSupportedFormats()``
             %
             % Output Arguments:
-            %   - **compressionStr** — ``'binary'`` | ``'binaryRLE'`` | ``'ascii'``
+            %   - **compressionStr** - ``'binary'`` | ``'binaryRLE'`` | ``'ascii'``
             %
             if contains(formatStr, 'RLE', 'IgnoreCase', true)
                 compressionStr = 'binaryRLE';

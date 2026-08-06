@@ -12,14 +12,14 @@ function DriftCorrectionBigData_Alignment(obj, parameters)
 %     ``parameters.pyramidLevel`` and computes per-slice X/Y shifts via
 %     :func:`utils.align.calcShifts`. The math operates on the small level-L
 %     arrays, so the existing helpers are reused unchanged.
-%   - Shifts are scaled to level 0 (``shift0 = round(shiftL * scale)``) — integer
-%     shifts give resample-free placement — and handed to
+%   - Shifts are scaled to level 0 (``shift0 = round(shiftL * scale)``) - integer
+%     shifts give resample-free placement - and handed to
 %     :meth:`applyAlignmentBigData` with ``mode = 'translation'``, which streams a
 %     NEW aligned OME-Zarr v3 image (+ ``Labels_<stem>.zarr3``) and swaps the
 %     active buffer to it. The source store is never modified.
 %
 % Input Arguments:
-%   - **parameters** — struct built by :meth:`continueBtn_Callback`; BigData
+%   - **parameters** - struct built by :meth:`continueBtn_Callback`; BigData
 %     fields: ``isBigData`` (true), ``pyramidLevel`` (1-based analysis level),
 %     ``outputPath`` (target ``.zarr3`` store), plus ``method``, ``colorCh``,
 %     ``backgroundColor``, ``refFrame``, ``IntensityGradient``, ``Subarea``,
@@ -71,7 +71,7 @@ end
 cleanupWb = onCleanup(@() safeDeleteWaitbar(pwb));
 
 % =====================================================================
-% Pass 1 — read the level-L stack and compute shifts
+% Pass 1 - read the level-L stack and compute shifts
 % =====================================================================
 if isempty(obj.shiftsX)
     % getData interprets options.x/y/z in FULL-RESOLUTION coordinates and scales
@@ -107,8 +107,8 @@ if isempty(obj.shiftsX)
     [shiftXL, shiftYL] = utils.align.calcShifts(I, calcOpts);
     if isempty(shiftXL); return; end   % cancelled
 
-    % Scale level-L shifts to level 0 immediately, so obj.shiftsX/Y — the vectors
-    % previewed, running-averaged, applied AND written to file — always hold
+    % Scale level-L shifts to level 0 immediately, so obj.shiftsX/Y - the vectors
+    % previewed, running-averaged, applied AND written to file - always hold
     % LEVEL-0 shifts. This keeps save/load symmetric and analysis-level-independent
     % (a file saved from one dataset replays correctly on another regardless of the
     % pyramid level chosen), mirroring the in-memory path where obj.shiftsX already

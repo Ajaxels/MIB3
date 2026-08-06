@@ -9,7 +9,7 @@ function snapshot = copyModelLayers(obj)
 % Returns deep copies of the three segmentation layer objects together with
 % the flags that describe them. Unlike a pixel snapshot taken with
 % :func:`core.MibDataset.getData3D`, this keeps the **layer objects
-% themselves** — so the model type (63 / 255 / 65535 / 4294967295), the
+% themselves** - so the model type (63 / 255 / 65535 / 4294967295), the
 % material names and colours and the selected material all travel with the
 % snapshot.
 %
@@ -18,15 +18,15 @@ function snapshot = copyModelLayers(obj)
 % ``obj.labels``, in the larger types they are standalone layers, and a pixel
 % snapshot taken under one arrangement cannot be written back under the other.
 %
-% Only meaningful for ``'Standard'`` datasets — the Virtual and BigData label
+% Only meaningful for ``'Standard'`` datasets - the Virtual and BigData label
 % layers are backed by on-demand readers that must not be duplicated.
 %
 % Output Arguments:
-%   - **snapshot** — structure with fields ``labels``, ``selection``, ``mask``
+%   - **snapshot** - structure with fields ``labels``, ``selection``, ``mask``
 %     (independent copies of the layer objects), ``maskExist``,
 %     ``modelExist``, ``selectedMaterial``, ``selectedAddToMaterial``
 %
-% **Example** — snapshot the layers, then restore them
+% **Example** - snapshot the layers, then restore them
 %
 %   .. code-block:: matlab
 %

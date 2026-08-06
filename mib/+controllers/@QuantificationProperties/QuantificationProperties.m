@@ -45,10 +45,10 @@ classdef QuantificationProperties < handle
             %       obj = QuantificationProperties(mibModel, parentController, propertyList, obj3d)
             %
             % Input Arguments:
-            %   - **mibModel** — handle to MibModel
-            %   - **varargin{1}** — handle to parent Quantification controller
-            %   - **varargin{2}** — cell array of pre-selected property names
-            %   - **varargin{3}** — logical — true for 3D shape mode
+            %   - **mibModel** - handle to MibModel
+            %   - **varargin{1}** - handle to parent Quantification controller
+            %   - **varargin{2}** - cell array of pre-selected property names
+            %   - **varargin{3}** - logical - true for 3D shape mode
             %
             % Usage:
             %   Example 1::
@@ -174,7 +174,7 @@ classdef QuantificationProperties < handle
             tags = obj.propertyList;
             if isempty(tags); return; end
 
-            % remove HolesArea — no checkbox for it
+            % remove HolesArea - no checkbox for it
             tags(ismember(tags, 'HolesArea')) = [];
 
             % for 3D mode, shape property tags have a '3d' suffix

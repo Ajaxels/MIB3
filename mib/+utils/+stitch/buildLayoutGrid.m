@@ -15,29 +15,29 @@ function layout = buildLayoutGrid(filenames, gridOptions)
 %   y = (row-1) * height * (1 - overlapY/100) + 1
 %
 % Input Arguments:
-%   - **filenames** — [cell] cell array of full-path character vectors for tile files
-%   - **gridOptions** — struct with fields:
+%   - **filenames** - [cell] cell array of full-path character vectors for tile files
+%   - **gridOptions** - struct with fields:
 %
-%     - ``.rows`` — [double] number of grid rows (0 = auto)
-%     - ``.cols`` — [double] number of grid columns (0 = auto)
-%     - ``.tileOrder`` — [char] one of ``'Horizontal'``, ``'Horizontal snake'``,
+%     - ``.rows`` - [double] number of grid rows (0 = auto)
+%     - ``.cols`` - [double] number of grid columns (0 = auto)
+%     - ``.tileOrder`` - [char] one of ``'Horizontal'``, ``'Horizontal snake'``,
 %       ``'Vertical'``, ``'Vertical snake'``
-%     - ``.overlapX`` — [double] horizontal overlap in percent (0–90)
-%     - ``.overlapY`` — [double] vertical overlap in percent (0–90)
+%     - ``.overlapX`` - [double] horizontal overlap in percent (0-90)
+%     - ``.overlapY`` - [double] vertical overlap in percent (0-90)
 %
 % Output Arguments:
-%   - **layout** — struct array with fields per contract:
+%   - **layout** - struct array with fields per contract:
 %
-%     - ``.index`` — [double] 1-based tile index
-%     - ``.filename`` — [char] full path
-%     - ``.sliceFiles`` — [cell] ``{}`` for single-file tiles
-%     - ``.zLayer`` — [double] always ``1`` (single layer)
-%     - ``.gridRC`` — [double] ``[row col]``
-%     - ``.nomOrigin`` — [double] ``[y x z]`` 1-based pixel origins
-%     - ``.tileSize`` — [double] ``[H W D C]``
-%     - ``.dataClass`` — [char] MATLAB class string
+%     - ``.index`` - [double] 1-based tile index
+%     - ``.filename`` - [char] full path
+%     - ``.sliceFiles`` - [cell] ``{}`` for single-file tiles
+%     - ``.zLayer`` - [double] always ``1`` (single layer)
+%     - ``.gridRC`` - [double] ``[row col]``
+%     - ``.nomOrigin`` - [double] ``[y x z]`` 1-based pixel origins
+%     - ``.tileSize`` - [double] ``[H W D C]``
+%     - ``.dataClass`` - [char] MATLAB class string
 %
-% **Example** — 2x3 grid of TIF tiles with 10% overlap:
+% **Example** - 2x3 grid of TIF tiles with 10% overlap:
 %
 %   .. code-block:: matlab
 %

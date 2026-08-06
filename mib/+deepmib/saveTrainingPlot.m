@@ -7,14 +7,14 @@ function saveTrainingPlot(src, evnt, trainingProgressStruct, outputFilename)
 %      saveTrainingPlot(src, evnt, trainingProgressStruct, outputFilename)
 %
 % Input Arguments:
-%   - **src** — source object that triggered the callback (e.g. menu item)
-%   - **evnt** — event data (unused; pass ``[]`` when calling manually)
-%   - **trainingProgressStruct** — ``mibDeepTrainingProgressStruct`` with fields:
+%   - **src** - source object that triggered the callback (e.g. menu item)
+%   - **evnt** - event data (unused; pass ``[]`` when calling manually)
+%   - **trainingProgressStruct** - ``mibDeepTrainingProgressStruct`` with fields:
 %
-%     - ``.UIFigure`` — handle to the training progress ``uifigure``
-%     - ``.NetworkFilename`` — [char] path to the network file (used to suggest a save name)
+%     - ``.UIFigure`` - handle to the training progress ``uifigure``
+%     - ``.NetworkFilename`` - [char] path to the network file (used to suggest a save name)
 %
-%   - **outputFilename** *(optional)* — [char] full output path; when empty or
+%   - **outputFilename** *(optional)* - [char] full output path; when empty or
 %     omitted a file-save dialog is presented
 %
 

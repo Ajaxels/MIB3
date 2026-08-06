@@ -7,7 +7,7 @@ function saveConfig(obj, configName)
 %       obj.saveConfig(configName)
 %
 % Input Arguments:
-%   - **configName** — [optional] string, full filename to the config file
+%   - **configName** - [optional] string, full filename to the config file
 %
 
     if nargin < 2

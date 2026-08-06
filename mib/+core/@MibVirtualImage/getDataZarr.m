@@ -7,25 +7,25 @@ function dataset = getDataZarr(obj, type, orient, colChannel, options)
 %       dataset = obj.getDataZarr( type, orient, colChannel, options)
 %
 % Input Arguments:
-%   - **type** — type of layer — only 'image' is functional in virtual mode
-%   - **orient** — *(optional)*, orientation of returned dataset; default ``3``:
+%   - **type** - type of layer - only 'image' is functional in virtual mode
+%   - **orient** - *(optional)*, orientation of returned dataset; default ``3``:
 %
-%     - ``1`` — XZ: output ``[x, z, y, c, t]``
-%     - ``2`` — YZ: output ``[y, z, x, c, t]``
-%     - ``3`` — YX: output ``[y, x, z, c, t]`` *(default)*
-%   - **colChannel** — *(optional)*, vector of 1-based colour channel indices;
+%     - ``1`` - XZ: output ``[x, z, y, c, t]``
+%     - ``2`` - YZ: output ``[y, z, x, c, t]``
+%     - ``3`` - YX: output ``[y, x, z, c, t]`` *(default)*
+%   - **colChannel** - *(optional)*, vector of 1-based colour channel indices;
 %     [] = all channels
-%   - **options** — *(optional)*, struct with optional fields:
+%   - **options** - *(optional)*, struct with optional fields:
 %
-%     - ``.y``, ``.x``, ``.z``  — [min, max] coordinate ranges (1-based, full resolution)
-%     - ``.t``          — [tmin, tmax] time-point range
-%     - ``.magFactor``  — magnification factor used to select pyramid level
+%     - ``.y``, ``.x``, ``.z``  - [min, max] coordinate ranges (1-based, full resolution)
+%     - ``.t``          - [tmin, tmax] time-point range
+%     - ``.magFactor``  - magnification factor used to select pyramid level
 %       (default 1 = full resolution); ignored when pyramidLevel provided
 %
-%     - ``.pyramidLevel`` — explicit pyramid level index (1-based); overrides magFactor
+%     - ``.pyramidLevel`` - explicit pyramid level index (1-based); overrides magFactor
 %
 % Output Arguments:
-%   - **dataset** — 5D array [y, x, z, c, t] for orient==3;
+%   - **dataset** - 5D array [y, x, z, c, t] for orient==3;
 %     [x, z, y, c, t] for orient==1;
 %     [y, z, x, c, t] for orient==2
 %
@@ -74,7 +74,7 @@ end
 % THAT physical dimension. (The previous version clamped screen-axis ranges
 % against the dimension mapped to that screen axis, so for XZ/YZ the slice
 % coordinate was clamped against the wrong dimension and produced inverted
-% bounding boxes. The permute below — which defines the on-screen arrangement —
+% bounding boxes. The permute below - which defines the on-screen arrangement -
 % is unchanged, so only the region selection is corrected; YX is identical.)
 fullSize = obj.pyramid.levelImageSizes(1, :);   % [Y X Z]
 switch orient
@@ -147,7 +147,7 @@ switch sourceType
             Clim, Tidx, obj.dataClass);
 
     case 'zarr2'
-        % lazy-create / retrieve cached Zarr2VirtualLoader (python-backed —
+        % lazy-create / retrieve cached Zarr2VirtualLoader (python-backed -
         % zarr v2 has no native zarrMex engine)
         if isempty(obj.loaders) || numel(obj.loaders) < 1 || isempty(obj.loaders{1}) || ...
                 ~isa(obj.loaders{1}, 'io.loaders.Zarr2VirtualLoader')
@@ -184,7 +184,7 @@ switch orient
         dataset = permute(block, [2, 3, 1, 4, 5]);
     case 2  % yz: [y,x,z,c,t] -> [y, z, x, c, t]
         dataset = permute(block, [1, 3, 2, 4, 5]);
-    case 3  % yx: [y,x,z,c,t] — already in MIB3 order
+    case 3  % yx: [y,x,z,c,t] - already in MIB3 order
         dataset = block;
 end
 

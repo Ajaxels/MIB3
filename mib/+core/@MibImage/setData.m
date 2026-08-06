@@ -7,21 +7,21 @@ function result = setData(obj, dataset, layerType, orient, colChannel, options)
 %       result = obj.setData(dataset, layerType, orient, colChannel, options)
 %
 % Input Arguments:
-%   - **dataset** — matrix with the dataset to update MibBaseImage.data
-%   - **layerType** — char with the type of layer to obtain, used for MibLabels63 class, otherwise can be empty.
+%   - **dataset** - matrix with the dataset to update MibBaseImage.data
+%   - **layerType** - char with the type of layer to obtain, used for MibLabels63 class, otherwise can be empty.
 %     Values are 'labels', 'mask', 'selection', or 'everything' to get all
 %     layers at once, *default* = 'image'
-%   - **orient** — *(optional)*, can be ``[]``; default ``3``:
+%   - **orient** - *(optional)*, can be ``[]``; default ``3``:
 %
-%     - ``1`` — updates transposed dataset from ZX configuration: ``[x,z,y,c,t]`` → ``[y,x,z,c,t]``
-%     - ``2`` — updates transposed dataset from ZY configuration: ``[y,z,x,c,t]`` → ``[y,x,z,c,t]``
-%     - ``3`` — updates original dataset from YX configuration: ``[y,x,z,c,t]``
+%     - ``1`` - updates transposed dataset from ZX configuration: ``[x,z,y,c,t]`` → ``[y,x,z,c,t]``
+%     - ``2`` - updates transposed dataset from ZY configuration: ``[y,z,x,c,t]`` → ``[y,x,z,c,t]``
+%     - ``3`` - updates original dataset from YX configuration: ``[y,x,z,c,t]``
 %
-%   - **colChannel** — *(optional)*, can be ``[]``; when ``[]`` sets all color channels or materials:
+%   - **colChannel** - *(optional)*, can be ``[]``; when ``[]`` sets all color channels or materials:
 %
 %     - for ``type = 'image'``: vector of color channel indices; ``[]`` = all channels
 %     - for ``type = 'labels'``: integer material index (returned as binary 0/1); ``[]`` = all materials
-%   - **options** — *(optional)*, a structure with extra parameters
+%   - **options** - *(optional)*, a structure with extra parameters
 %
 %     - ``.y`` *(optional)*, [ymin, ymax] coordinates of the dataset to set after transpose, can be a single number
 %     - ``.x`` *(optional)*, [xmin, xmax] coordinates of the dataset to set after transpose, can be a single number
@@ -29,7 +29,7 @@ function result = setData(obj, dataset, layerType, orient, colChannel, options)
 %     - ``.t`` *(optional)*, [tmin, tmax] coordinates of the dataset to set after transpose, can be a single number
 %
 % Output Arguments:
-%   - **result** — **1** - success, **0** - error
+%   - **result** - **1** - success, **0** - error
 %
 % Usage:
 %   **Example 1**
@@ -99,18 +99,18 @@ if blockModeSwitchLocal == 0  % set the full dataset
 
     if strcmp(obj.type, 'image') || isempty(materialIndex)
         if isequal(colChannel, 1:obj.colors)
-            % Full channel replacement — reshape incoming data to 5D [H,W,Z,C,T]
+            % Full channel replacement - reshape incoming data to 5D [H,W,Z,C,T]
             % so that labels [H,W,Z,T] maps correctly to data [H,W,Z,1,T]
             nC = numel(colChannel);
             targetShape = [size(dataset,1), size(dataset,2), size(dataset,3), nC, ...
                            numel(dataset) / (size(dataset,1) * size(dataset,2) * size(dataset,3) * nC)];
             dataset = reshape(dataset, targetShape);
             if isequal(size(obj.data), targetShape) && ~strcmp(class(dataset), class(obj.data))
-                % same container but different numeric class — keep the indexed
+                % same container but different numeric class - keep the indexed
                 % write so the implicit class conversion applies
                 obj.data(:,:,:,colChannel,:) = dataset;
             else
-                % Full replacement — O(1) copy-on-write swap of the array header
+                % Full replacement - O(1) copy-on-write swap of the array header
                 % instead of an element-wise write; also covers container resizing
                 obj.data    = dataset;
                 obj.height     = targetShape(1);

@@ -7,41 +7,41 @@ function initialize(obj, img, meta, datasetType, modelType, enableSelection)
     %       obj.initialize(img, meta, datasetType, modelType, enableSelection)
     %
     % Input Arguments:
-    %   - **img** — matrix with the image to initialize the class, can be empty
-    %   - **meta** — a dictionary with default settings for the class, can be empty;
+    %   - **img** - matrix with the image to initialize the class, can be empty
+    %   - **meta** - a dictionary with default settings for the class, can be empty;
     %     the following fields are used:
     %
-    %     - ``.filename`` — full path to the dataset
-    %     - ``.sliceName`` — cell array with slice names, can be empty
-    %     - ``.lutColors`` — matrix with LUT colors (colChannel × R G B) in range 0–1
-    %     - ``.pixSize`` — structure with physical voxel size:
+    %     - ``.filename`` - full path to the dataset
+    %     - ``.sliceName`` - cell array with slice names, can be empty
+    %     - ``.lutColors`` - matrix with LUT colors (colChannel × R G B) in range 0-1
+    %     - ``.pixSize`` - structure with physical voxel size:
     %
-    %       - ``.x`` — physical width of a pixel
-    %       - ``.y`` — physical height of a pixel
-    %       - ``.z`` — physical thickness of a pixel
-    %       - ``.t`` — time between the frames for 2D movies
-    %       - ``.tunits`` — time units
-    %       - ``.units`` — physical units for x, y, z; possible values: ``m``, ``cm``, ``mm``, ``um``, ``nm``
+    %       - ``.x`` - physical width of a pixel
+    %       - ``.y`` - physical height of a pixel
+    %       - ``.z`` - physical thickness of a pixel
+    %       - ``.t`` - time between the frames for 2D movies
+    %       - ``.tunits`` - time units
+    %       - ``.units`` - physical units for x, y, z; possible values: ``m``, ``cm``, ``mm``, ``um``, ``nm``
     %
-    %     - ``.viewPort`` — structure with viewing parameters:
+    %     - ``.viewPort`` - structure with viewing parameters:
     %
-    %       - ``.min`` — vector with minimal value for intensity stretching per color channel
-    %       - ``.max`` — vector with maximal value for intensity stretching per color channel
-    %       - ``.gamma`` — vector with gamma factor for contrast adjustment per color channel
+    %       - ``.min`` - vector with minimal value for intensity stretching per color channel
+    %       - ``.max`` - vector with maximal value for intensity stretching per color channel
+    %       - ``.gamma`` - vector with gamma factor for contrast adjustment per color channel
     %
-    %   - **datasetType** — [char] type of the dataset, one of:
+    %   - **datasetType** - [char] type of the dataset, one of:
     %
-    %     - ``'Standard'`` — *(default)* standard image loaded to memory completely
-    %     - ``'Virtual'`` — virtual dataset loaded upon demand
-    %     - ``'BigData'`` — big-data compatible dataset
+    %     - ``'Standard'`` - *(default)* standard image loaded to memory completely
+    %     - ``'Virtual'`` - virtual dataset loaded upon demand
+    %     - ``'BigData'`` - big-data compatible dataset
     %
-    %   - **modelType** — type of the labels layer; when empty, ``'imageOnly'`` is used:
+    %   - **modelType** - type of the labels layer; when empty, ``'imageOnly'`` is used:
     %
-    %     - ``'imageOnly'`` — *(default)* init with the provided image, keep other layers as NaN
-    %     - ``'labels'`` — init with model with 255 materials; ``obj.mask``, ``obj.selection`` have the same dimensions as labels
-    %     - ``'labels63'`` — init with model with 63 materials; ``obj.mask``, ``obj.selection`` are NaN
+    %     - ``'imageOnly'`` - *(default)* init with the provided image, keep other layers as NaN
+    %     - ``'labels'`` - init with model with 255 materials; ``obj.mask``, ``obj.selection`` have the same dimensions as labels
+    %     - ``'labels63'`` - init with model with 63 materials; ``obj.mask``, ``obj.selection`` are NaN
     %
-    %   - **enableSelection** — a logical (true/false) switch to enable/disable selection layer
+    %   - **enableSelection** - a logical (true/false) switch to enable/disable selection layer
     %
     
     if nargin < 6 || isempty(enableSelection); enableSelection = true; end

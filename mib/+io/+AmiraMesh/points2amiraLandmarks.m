@@ -24,15 +24,15 @@ function res = points2amiraLandmarks(filename, points, options)
 %      res = io.AmiraMesh.points2amiraLandmarks(filename, points, options)
 %
 % Input Arguments:
-%   - **filename** — filename to save data
-%   - **points** — matrix with points [pointId, x, y, z]
-%   - **options** — *(optional)* struct with fields:
+%   - **filename** - filename to save data
+%   - **points** - matrix with points [pointId, x, y, z]
+%   - **options** - *(optional)* struct with fields:
 %
-%     - ``.overwrite`` — ``1`` = automatically overwrite existing files
-%     - ``.format`` — (char) ``'binary'`` or ``'ascii'`` (default: ``'ascii'``)
+%     - ``.overwrite`` - ``1`` = automatically overwrite existing files
+%     - ``.format`` - (char) ``'binary'`` or ``'ascii'`` (default: ``'ascii'``)
 %
 % Output Arguments:
-%   - **res** — ``1`` = success, ``0`` = failure
+%   - **res** - ``1`` = success, ``0`` = failure
 %
    
 res = 0;

@@ -11,14 +11,14 @@ function datasetSlices(obj, parameter)
 % warning when applicable.
 %
 % Input Arguments:
-%   - **parameter** — string identifying the requested action:
+%   - **parameter** - string identifying the requested action:
 %
-%     - ``'copySlice'`` — copy a slice from one position to another
-%     - ``'swapSlice'`` — swap two or more slices
-%     - ``'insertSlice'`` — insert empty slice(s)
-%     - ``'deleteSlice'`` — delete a depth (z) slice
-%     - ``'deleteFrame'`` — delete a time-frame
-%     - ``'reslice'`` — stride-reslice the dataset
+%     - ``'copySlice'`` - copy a slice from one position to another
+%     - ``'swapSlice'`` - swap two or more slices
+%     - ``'insertSlice'`` - insert empty slice(s)
+%     - ``'deleteSlice'`` - delete a depth (z) slice
+%     - ``'deleteFrame'`` - delete a time-frame
+%     - ``'reslice'`` - stride-reslice the dataset
 %
 % Usage:
 %   **Example 1**

@@ -1,5 +1,5 @@
 function protocolList_SelectionCallback(obj)
-% PROTOCOLLIST_SELECTIONCALLBACK - handle row selection in the protocol listbox — loads parameters into the action table.
+% PROTOCOLLIST_SELECTIONCALLBACK - handle row selection in the protocol listbox - loads parameters into the action table.
 %
 % Syntax:
 %   .. code-block:: matlab

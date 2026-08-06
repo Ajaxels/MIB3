@@ -11,7 +11,7 @@ function returnBatchOpt(obj, BatchOptOut)
 % so that the MIB batch controller can record this action.
 %
 % Input Arguments:
-%   - **BatchOptOut** — *(optional)* struct with Batch Options to publish;
+%   - **BatchOptOut** - *(optional)* struct with Batch Options to publish;
 %     defaults to obj.BatchOpt
 %
 % Usage:

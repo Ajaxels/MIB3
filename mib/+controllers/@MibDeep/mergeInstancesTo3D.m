@@ -119,7 +119,7 @@ filterSpec = [extTokens, formats];
 defaultFilename = fullfile(fileparts(resultsModelsDir), 'Labels_stitched_3D.model');
 [fname, fpath, filterIndex] = uiputfile(filterSpec, 'Save 3D instance model', defaultFilename);
 if isequal(fname, 0); return; end   % user cancelled
-if filterIndex > size(filterSpec, 1)   % "All Files (*.*)" — no format selected
+if filterIndex > size(filterSpec, 1)   % "All Files (*.*)" - no format selected
     dlgOpt.mibPath = obj.mibModel.mibPath;
     dlgOpt.MsgBoxOnly = true;
     dlgOpt.Icon = 'puffin_warning';

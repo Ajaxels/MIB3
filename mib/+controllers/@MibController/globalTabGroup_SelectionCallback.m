@@ -13,13 +13,13 @@ function globalTabGroup_SelectionCallback(obj, hWidget)
 % obj.view.handles.ribbon.global.SelectedTabChangedFcn = @(~, ~)obj.globalTabGroup_SelectionCallback;
 %
 % Input Arguments:
-%   - **hWidget** — char, tab title to select/initialize, e.g. ``'Dataset'``,
+%   - **hWidget** - char, tab title to select/initialize, e.g. ``'Dataset'``,
 %     ``'Image'``, ``'Model'``; matches ``obj.view.handles.ribbon.global.SelectedTab.Title``
 %
 % Output Arguments:
 %   (none)
 %
-% **Example** — check and initialize the Image ribbon tab:
+% **Example** - check and initialize the Image ribbon tab:
 %
 %   .. code-block:: matlab
 %

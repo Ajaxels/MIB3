@@ -9,32 +9,32 @@ function [patchOut, info, augList, augPars] = augmentAndCrop2dPatchMultiGPU(patc
 %          patchIn, info, inputPatchSize, outputPatchSize, mode, options)
 %
 % Input Arguments:
-%   - **patchIn** — table with ``InputImage`` and ``ResponsePixelLabelImage`` fields
+%   - **patchIn** - table with ``InputImage`` and ``ResponsePixelLabelImage`` fields
 %     (semantic segmentation) or a matrix (classification)
-%   - **info** — additional info struct about the input patch
-%   - **inputPatchSize** — [1×4] input patch size as ``[height, width, depth, color]``
-%   - **outputPatchSize** — [1×4] output patch size as ``[height, width, depth, classes]``
-%   - **mode** — [char] operation mode:
+%   - **info** - additional info struct about the input patch
+%   - **inputPatchSize** - [1×4] input patch size as ``[height, width, depth, color]``
+%   - **outputPatchSize** - [1×4] output patch size as ``[height, width, depth, classes]``
+%   - **mode** - [char] operation mode:
 %
-%     - ``'show'`` — pass through without augmentation or cropping
-%     - ``'crop'`` — crop only, no augmentation
-%     - ``'aug'`` — augment, then crop
+%     - ``'show'`` - pass through without augmentation or cropping
+%     - ``'crop'`` - crop only, no augmentation
+%     - ``'aug'`` - augment, then crop
 %
-%   - **options** — struct with additional parameters:
+%   - **options** - struct with additional parameters:
 %
-%     - ``.Workflow`` — [string] workflow name (``obj.BatchOpt.Workflow{1}``)
-%     - ``.Aug2DFuncNames`` — copy of ``mibDeepController.Aug2DFuncNames``
-%     - ``.AugOpt2D`` — copy of ``mibDeepController.AugOpt2D``
-%     - ``.Aug2DFuncProbability`` — copy of ``mibDeepController.Aug2DFuncProbability``;
+%     - ``.Workflow`` - [string] workflow name (``obj.BatchOpt.Workflow{1}``)
+%     - ``.Aug2DFuncNames`` - copy of ``mibDeepController.Aug2DFuncNames``
+%     - ``.AugOpt2D`` - copy of ``mibDeepController.AugOpt2D``
+%     - ``.Aug2DFuncProbability`` - copy of ``mibDeepController.Aug2DFuncProbability``;
 %       per-function trigger probabilities
-%     - ``.T_ConvolutionPadding`` — [string] convolution padding type
+%     - ``.T_ConvolutionPadding`` - [string] convolution padding type
 %       (``mibDeepController.BatchOpt.T_ConvolutionPadding{1}``)
 %
 % Output Arguments:
-%   - **patchOut** — two-column table as required by ``trainNetwork`` for single-input networks
-%   - **info** — additional info struct about the input patch
-%   - **augList** — cell array with the names of applied augmentation operations
-%   - **augPars** — matrix of applied parameter values (``NaN`` when not used);
+%   - **patchOut** - two-column table as required by ``trainNetwork`` for single-input networks
+%   - **info** - additional info struct about the input patch
+%   - **augList** - cell array with the names of applied augmentation operations
+%   - **augPars** - matrix of applied parameter values (``NaN`` when not used);
 %     second column holds the blend parameter for Hue+Sat jitter
 %
 

@@ -12,18 +12,18 @@ function result = renderVolumeWithFiji(Volume, pixSize, mibGUI)
 %      result = utils.fiji.renderVolumeWithFiji(Volume, pixSize, mibGUI)
 %
 % Input Arguments:
-%   - **Volume** — [uint8] 3D volume to visualize, dimensions [height, width, colors, z]
-%   - **pixSize** — struct with physical voxel dimensions:
+%   - **Volume** - [uint8] 3D volume to visualize, dimensions [height, width, colors, z]
+%   - **pixSize** - struct with physical voxel dimensions:
 %
-%     - ``.x`` — physical width
-%     - ``.y`` — physical height
-%     - ``.z`` — physical thickness
-%     - ``.units`` — physical units string
+%     - ``.x`` - physical width
+%     - ``.y`` - physical height
+%     - ``.z`` - physical thickness
+%     - ``.units`` - physical units string
 %
-%   - **mibGUI** *(optional)* — handle to the parent UIFigure for dialogs and progress bar
+%   - **mibGUI** *(optional)* - handle to the parent UIFigure for dialogs and progress bar
 %
 % Output Arguments:
-%   - **result** — [logical] ``0`` on failure, ``1`` on success
+%   - **result** - [logical] ``0`` on failure, ``1`` on success
 %
 % Updates
 %
@@ -67,7 +67,7 @@ try
         return;
     end
 catch err %#ok<NASGU>
-    % skip — IsJava3DInstalled may be unavailable; not required for newer Fiji versions
+    % skip - IsJava3DInstalled may be unavailable; not required for newer Fiji versions
 end
 
 prompt = {'Reduce the volume down to, max width pixels [no volume reduction when 0]?',... % 'Smoothing 3d kernel, width (no smoothing when 0):',...

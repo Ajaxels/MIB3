@@ -11,34 +11,34 @@ function [outputLabeledImageBlock, scoreBlock] = segmentBlockedImage(block, net,
 % The input block is provided as a batch of blocks from a ``blockedImage``.
 %
 % Input Arguments:
-%   - **block** — struct provided by ``blockedImage/apply``; the first two iterations
+%   - **block** - struct provided by ``blockedImage/apply``; the first two iterations
 %     have ``BatchSize == 1``, subsequent ones use the user-selected batch size:
 %
-%     - ``.BlockSub`` — block subscript index, e.g. ``[1 1 1]``
-%     - ``.Start`` — block start position in the image, e.g. ``[1 1 1]``
-%     - ``.End`` — block end position, e.g. ``[224 224 3]``
-%     - ``.Level`` — resolution level
-%     - ``.ImageNumber`` — index of the source image
-%     - ``.BorderSize`` — border padding, e.g. ``[0 0 0]``
-%     - ``.BlockSize`` — block dimensions, e.g. ``[224 224 3]``
-%     - ``.BatchSize`` — number of blocks in the batch
-%     - ``.Data`` — pixel data array, e.g. ``[224×224×3 uint8]``
+%     - ``.BlockSub`` - block subscript index, e.g. ``[1 1 1]``
+%     - ``.Start`` - block start position in the image, e.g. ``[1 1 1]``
+%     - ``.End`` - block end position, e.g. ``[224 224 3]``
+%     - ``.Level`` - resolution level
+%     - ``.ImageNumber`` - index of the source image
+%     - ``.BorderSize`` - border padding, e.g. ``[0 0 0]``
+%     - ``.BlockSize`` - block dimensions, e.g. ``[224 224 3]``
+%     - ``.BatchSize`` - number of blocks in the batch
+%     - ``.Data`` - pixel data array, e.g. ``[224×224×3 uint8]``
 %
-%   - **net** — trained ``DAGNetwork`` or ``dlnetwork``
-%   - **dataDimension** — [numeric] dataset dimensionality: ``2``, ``2.5``, or ``3``
-%   - **patchwiseWorkflowSwitch** — [logical] ``true`` for patch-wise classification,
+%   - **net** - trained ``DAGNetwork`` or ``dlnetwork``
+%   - **dataDimension** - [numeric] dataset dimensionality: ``2``, ``2.5``, or ``3``
+%   - **patchwiseWorkflowSwitch** - [logical] ``true`` for patch-wise classification,
 %     ``false`` for semantic segmentation
-%   - **generateScoreFiles** — [integer] score file format to generate:
+%   - **generateScoreFiles** - [integer] score file format to generate:
 %
-%     - ``0`` — do not generate score files
-%     - ``1`` — AM format
-%     - ``2`` — MATLAB non-compressed format
-%     - ``3`` — MATLAB compressed format
-%     - ``4`` — MATLAB non-compressed format (range 0–1)
+%     - ``0`` - do not generate score files
+%     - ``1`` - AM format
+%     - ``2`` - MATLAB non-compressed format
+%     - ``3`` - MATLAB compressed format
+%     - ``4`` - MATLAB non-compressed format (range 0-1)
 %
-%   - **executionEnvironment** — [char] execution environment for prediction
+%   - **executionEnvironment** - [char] execution environment for prediction
 %     (e.g. ``'auto'``, ``'gpu'``, ``'cpu'``)
-%   - **padShift** — [numeric] ``[y, x]`` or ``[y, x, z]`` padding to crop output
+%   - **padShift** - [numeric] ``[y, x]`` or ``[y, x, z]`` padding to crop output
 %     during overlap-mode prediction
 %
 

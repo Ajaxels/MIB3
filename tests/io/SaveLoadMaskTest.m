@@ -6,9 +6,9 @@ classdef SaveLoadMaskTest < matlab.unittest.TestCase
 % and then reloaded; final checksum and per-pixel values must match.
 %
 % Verification strategies:
-%   file created    — saveImage must write a .mask file to the temp folder
-%   clear verified  — mask must be all-zero before the reload step
-%   pixel round-trip — reloaded mask values are pixel-exact with the original
+%   file created    - saveImage must write a .mask file to the temp folder
+%   clear verified  - mask must be all-zero before the reload step
+%   pixel round-trip - reloaded mask values are pixel-exact with the original
 
     methods (TestClassSetup)
         function addPaths(testCase)

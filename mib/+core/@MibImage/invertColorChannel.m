@@ -12,36 +12,36 @@ function invertColorChannel(obj, channel1, options)
 % ``MibModel.invertImage`` for ROI-aware 2D inversion).
 %
 % Input Arguments:
-%   - **channel1** — channel index (scalar), vector of indices, or ``0`` = all channels
-%   - **options** — *(optional)* struct with fields:
+%   - **channel1** - channel index (scalar), vector of indices, or ``0`` = all channels
+%   - **options** - *(optional)* struct with fields:
 %
-%     - ``.showWaitbar`` — logical; show progress bar (default ``true``)
-%     - ``.ParentFigure`` — handle to parent figure for the progress dialog (default ``[]``)
-%     - ``.tRange`` — ``[t1, t2]`` time-point range; default = all time points
-%     - ``.zRange`` — ``[z1, z2]`` z-slice range (physical Z, dim 3 of ``data{1}``); default = all z-slices
+%     - ``.showWaitbar`` - logical; show progress bar (default ``true``)
+%     - ``.ParentFigure`` - handle to parent figure for the progress dialog (default ``[]``)
+%     - ``.tRange`` - ``[t1, t2]`` time-point range; default = all time points
+%     - ``.zRange`` - ``[z1, z2]`` z-slice range (physical Z, dim 3 of ``data{1}``); default = all z-slices
 %
 % Usage:
-%   **Example 1** — invert channel 2 across the full dataset
+%   **Example 1** - invert channel 2 across the full dataset
 %
 %   .. code-block:: matlab
 %
 %     obj.image.invertColorChannel(2);
 %
-%   **Example 2** — invert channels 1 and 3, time points 2–4 only
+%   **Example 2** - invert channels 1 and 3, time points 2-4 only
 %
 %   .. code-block:: matlab
 %
 %     opts.tRange = [2, 4];
 %     obj.image.invertColorChannel([1, 3], opts);
 %
-%   **Example 3** — invert all channels
+%   **Example 3** - invert all channels
 %
 %   .. code-block:: matlab
 %
 %     obj.image.invertColorChannel(0);
 
 % Updates
-% 2026-05-24 — added multi-channel vector support and tRange/zRange options
+% 2026-05-24 - added multi-channel vector support and tRange/zRange options
 
 if nargin < 3; options = struct; end
 if ~isfield(options, 'showWaitbar');  options.showWaitbar  = true; end

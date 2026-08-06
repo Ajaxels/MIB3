@@ -141,7 +141,7 @@ while notOk
         useSmoothed = true;
         notOk = false;
     else
-        % "Change window size" — loop with updated defaults
+        % "Change window size" - loop with updated defaults
         defAns{1} = struct('Spinner',true,'Value',halfwidth,'Limits',[1 maxHalfwidth],'Step',1,'Round',true);
         defAns{2} = fixTranslation;
         defAns{3} = struct('Spinner',true,'Value',excludeTranslationJumps,'Limits',[0 Inf],'Step',1,'Round',false);

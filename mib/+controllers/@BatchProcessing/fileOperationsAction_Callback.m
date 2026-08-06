@@ -22,7 +22,7 @@ function fileOperationsAction_Callback(obj, BatchOptInput)
 % MIB path, Inherit from Directory loop).
 %
 % Input Arguments:
-%   - **BatchOptInput** — [optional]
+%   - **BatchOptInput** - [optional]
 %     - NaN    - send default BatchOpt to BatchProcessing via SyncBatch event
 %     - struct - override defaults with supplied fields and apply
 %

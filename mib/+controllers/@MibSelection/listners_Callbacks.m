@@ -7,8 +7,8 @@ function listners_Callbacks(obj, src, evtData)
 %      obj.listners_Callbacks(src, evtData)
 %
 % Input Arguments:
-%   - **obj** — handle to the ``Graphcut`` controller
-%   - **evnt** — event data; ``evnt.EventName`` is inspected for dispatch
+%   - **obj** - handle to the ``Graphcut`` controller
+%   - **evnt** - event data; ``evnt.EventName`` is inspected for dispatch
 
 
 switch evtData.EventName

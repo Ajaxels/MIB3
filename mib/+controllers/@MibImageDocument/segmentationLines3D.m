@@ -11,26 +11,26 @@ function segmentationLines3D(obj, y, x, z, modifier)
 % corresponding method of ``core.Lines3D``.
 %
 % Input Arguments:
-%   - **y** — [double] y-coordinate of clicked point in full-dataset pixels
-%   - **x** — [double] x-coordinate of clicked point in full-dataset pixels
-%   - **z** — [double] z-coordinate (slice index) of clicked point
-%   - **modifier** — [char|cell] modifier key held during click:
+%   - **y** - [double] y-coordinate of clicked point in full-dataset pixels
+%   - **x** - [double] x-coordinate of clicked point in full-dataset pixels
+%   - **z** - [double] z-coordinate (slice index) of clicked point
+%   - **modifier** - [char|cell] modifier key held during click:
 %
-%     - ``''`` or ``{}`` — use default click action
-%     - ``'shift'`` — use shift-click action
-%     - ``'control'`` — use ctrl-click action
-%     - ``'alt'`` — use alt-click action
+%     - ``''`` or ``{}`` - use default click action
+%     - ``'shift'`` - use shift-click action
+%     - ``'control'`` - use ctrl-click action
+%     - ``'alt'`` - use alt-click action
 %
 % Output Arguments:
 %   (none)
 %
-% **Example 1** — default click action:
+% **Example 1** - default click action:
 %
 %   .. code-block:: matlab
 %
 %      obj.segmentationLines3D(50, 75, 10, {});
 %
-% **Example 2** — shift-click action:
+% **Example 2** - shift-click action:
 %
 %   .. code-block:: matlab
 %

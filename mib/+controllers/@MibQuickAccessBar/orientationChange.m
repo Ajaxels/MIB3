@@ -10,16 +10,16 @@ function orientationChange(obj, hWidget, moveMouseSw)
 % Converted from MIB2 @mibController/mibToolbarPlaneToggle.m
 %
 % Input Arguments:
-%   - **hWidget** — [matlab.ui.control.Button|char] orientation button handle (``yx_orientation``, ``xz_orientation``, or ``yz_orientation``) or target orientation description string (for keyboard-shortcut callers)
-%   - **moveMouseSw** *(optional)* — [logical] move mouse cursor to orientation change pivot point (default: ``false``); used with Alt+1/2/3 keyboard shortcuts to keep cursor over image
+%   - **hWidget** - [matlab.ui.control.Button|char] orientation button handle (``yx_orientation``, ``xz_orientation``, or ``yz_orientation``) or target orientation description string (for keyboard-shortcut callers)
+%   - **moveMouseSw** *(optional)* - [logical] move mouse cursor to orientation change pivot point (default: ``false``); used with Alt+1/2/3 keyboard shortcuts to keep cursor over image
 %
-% **Example 1** — Called from gui_Callbacks when orientation button pressed:
+% **Example 1** - Called from gui_Callbacks when orientation button pressed:
 %
 %   .. code-block:: matlab
 %
 %      obj.orientationChange(hWidget);
 %
-% **Example 2** — Called from gui_WindowKeyPressFcn with mouse centering (Alt+1):
+% **Example 2** - Called from gui_WindowKeyPressFcn with mouse centering (Alt+1):
 %
 %   .. code-block:: matlab
 %

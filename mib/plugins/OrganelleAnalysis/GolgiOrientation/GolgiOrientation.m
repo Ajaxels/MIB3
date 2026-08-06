@@ -75,7 +75,7 @@ classdef GolgiOrientation < handle
 
     methods
         function obj = GolgiOrientation(mibModel, varargin)
-        % GolgiOrientation  Constructor — initialise controller and (optionally) GUI.
+        % GolgiOrientation  Constructor - initialise controller and (optionally) GUI.
             obj.mibModel = mibModel;
 
             % default output path from the currently loaded dataset

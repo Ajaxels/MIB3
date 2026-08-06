@@ -11,30 +11,30 @@ function segmentationSAM2(obj, extraOptions, BatchOptIn)
 % Perform segmentation using Segment Anything Model 2. See https://github.com/facebookresearch/segment-anything-2
 %
 % Input Arguments:
-%   - **extraOptions** *(optional)* — [struct] structure with additional options:
+%   - **extraOptions** *(optional)* - [struct] structure with additional options:
 %
-%     - ``.addNextMaterial`` — [logical] switch to add next material for "add, +next material" mode
+%     - ``.addNextMaterial`` - [logical] switch to add next material for "add, +next material" mode
 %
-%   - **BatchOptIn** *(optional)* — [struct|NaN] batch processing mode;
+%   - **BatchOptIn** *(optional)* - [struct|NaN] batch processing mode;
 %     when ``NaN``, returns default structure via "syncBatch" event.
 %     See Declaration of BatchOpt structure below for details; function
 %     variables are preferred over BatchOptIn variables:
 %
-%     - ``.Method`` — [char] specify how SAM2 should execute:
+%     - ``.Method`` - [char] specify how SAM2 should execute:
 %
-%       - ``'Interactive'`` — add points interactively
-%       - ``'Interactive 3D'`` — add points for 3D video segmentation
-%       - ``'Landmarks'`` — process placed points all at once
-%       - ``'Automatic everything'`` — automatically segment all objects on image
+%       - ``'Interactive'`` - add points interactively
+%       - ``'Interactive 3D'`` - add points for 3D video segmentation
+%       - ``'Landmarks'`` - process placed points all at once
+%       - ``'Automatic everything'`` - automatically segment all objects on image
 %
-%     - ``.Dataset`` — [char] segment current slice (``'2D, Slice'``), stack (``'3D, Stack'``), or whole dataset (``'4D, Dataset'``)
-%     - ``.Destination`` — [char] MIB layer for results: ``'selection'``, ``'mask'``, or ``'labels'``
-%     - ``.showWaitbar`` — [logical] show progress bar during execution
+%     - ``.Dataset`` - [char] segment current slice (``'2D, Slice'``), stack (``'3D, Stack'``), or whole dataset (``'4D, Dataset'``)
+%     - ``.Destination`` - [char] MIB layer for results: ``'selection'``, ``'mask'``, or ``'labels'``
+%     - ``.showWaitbar`` - [logical] show progress bar during execution
 %
 % Output Arguments:
 %   (none)
 %
-% **Example** — perform segmentation:
+% **Example** - perform segmentation:
 %
 %   .. code-block:: matlab
 %
@@ -99,10 +99,10 @@ end
 dataset = obj.mibModel.I{BatchOpt.id};
 selectedColorChannel = dataset.selectedColorChannel; % 0 - all, otherwise 1,2,3...
 
-% Virtual stacking is browse-only and has no on-disk model — not supported.
+% Virtual stacking is browse-only and has no on-disk model - not supported.
 % BigData IS supported: the on-demand image reader feeds SAM, and results are
 % written through setData2D/setData3D, which route to the disk-backed 63-class
-% model store (setData63) — exactly like the brush.
+% model store (setData63) - exactly like the brush.
 if dataset.datasetType(1) == 'V'
     dlgOpt.MsgBoxOnly = true;
     dlgOpt.Icon = 'puffin_warning';
@@ -761,20 +761,20 @@ function [imgIn, padSize] = checkAndPreprocessImage(imgIn, methodToUse, currView
 % contast, do image padding and convert to RGB
 %
 % Input Arguments:
-%   - **imgIn** — matrix [height, width, depth, colors] to check and process
-%   - **methodToUse** — index of the SAM2 method that was used, 1-Interactive, 2-Interactive 3D, 3-Landmarks, 4-Automatic
-%   - **currViewPort** — current viewport settings, comes from dataset.image.viewPort as
+%   - **imgIn** - matrix [height, width, depth, colors] to check and process
+%   - **methodToUse** - index of the SAM2 method that was used, 1-Interactive, 2-Interactive 3D, 3-Landmarks, 4-Automatic
+%   - **currViewPort** - current viewport settings, comes from dataset.image.viewPort as
 %     .min
 %     .max
 %     .gamma
-%   - **colCh** — selected color channels
-%   - **liveStretch** — [logical] switch to automatically stretch the contrast
-%   - **is3Ddata** — *(optional)* logical, when true the input is a 3D dataset
+%   - **colCh** - selected color channels
+%   - **liveStretch** - [logical] switch to automatically stretch the contrast
+%   - **is3Ddata** - *(optional)* logical, when true the input is a 3D dataset
 %     where dim3=depth; when false (default) dim3=colors (2D image)
 %
 % Output Arguments:
-%   - **imgIn** — converted image as [height, width, depth, colors]
-%   - **padSize** — size of padding used for the Interactive mode
+%   - **imgIn** - converted image as [height, width, depth, colors]
+%   - **padSize** - size of padding used for the Interactive mode
 %
 
 if nargin < 6; is3Ddata = false; end
@@ -854,13 +854,13 @@ function imgOut = pointsSAM(imgIn, labelPositions, labelIndices, castDataType)
 % labelPositions and labelIndices
 %
 % Input Arguments:
-%   - **imgIn** — image to segment (height, width, colors)
-%   - **labelPositions** — matrix of coordinates for seeds ([seedId; x,y])
-%   - **labelIndices** — matrix positive (1) and negative seeds (0)
-%   - **castDataType** — string with class to cast output imgOut
+%   - **imgIn** - image to segment (height, width, colors)
+%   - **labelPositions** - matrix of coordinates for seeds ([seedId; x,y])
+%   - **labelIndices** - matrix positive (1) and negative seeds (0)
+%   - **castDataType** - string with class to cast output imgOut
 %
 % Output Arguments:
-%   - **imgOut** — results of the segmentation, 2D image (height, width)
+%   - **imgOut** - results of the segmentation, 2D image (height, width)
 %
 
 if nargin < 4; castDataType = 'uint8'; end
@@ -920,13 +920,13 @@ function dataset = pointsVideoSAM(dataset, labelPositions, labelValues, castData
 %   function dataset = pointsVideoSAM(dataset, labelPositions, labelValues, castDataType)
 %
 % Input Arguments:
-%   - **dataset** — 3D dataset to predict as [height, width, depth, colors]
-%   - **labelPositions** — list of seeds from the first slice of the dataset
-%   - **labelValues** — values of the seeds: 1-positiva, 0-negative
-%   - **castDataType** — string with class to cast output imgOut
+%   - **dataset** - 3D dataset to predict as [height, width, depth, colors]
+%   - **labelPositions** - list of seeds from the first slice of the dataset
+%   - **labelValues** - values of the seeds: 1-positiva, 0-negative
+%   - **castDataType** - string with class to cast output imgOut
 %
 % Output Arguments:
-%   - **dataset** — results of the segmentation, 3D image (height, width, depth)
+%   - **dataset** - results of the segmentation, 3D image (height, width, depth)
 %
 
 [height, width, depth, colors] = size(dataset);

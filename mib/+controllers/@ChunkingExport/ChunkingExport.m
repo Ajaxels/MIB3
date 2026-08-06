@@ -49,9 +49,9 @@ classdef ChunkingExport < handle
             %       obj = ChunkingExport(mibModel, mibController, NaN)
             %
             % Input Arguments:
-            %   - **mibModel** — handle to MibModel
-            %   - **varargin{1}** — *(optional)* handle to MibController
-            %   - **varargin{2}** — *(optional)* BatchOpt struct or NaN (batch mode)
+            %   - **mibModel** - handle to MibModel
+            %   - **varargin{1}** - *(optional)* handle to MibController
+            %   - **varargin{2}** - *(optional)* BatchOpt struct or NaN (batch mode)
             %
             % Usage:
             %   Example 1::
@@ -267,7 +267,7 @@ classdef ChunkingExport < handle
             %       obj.chunkBtn_Callback(batchModeSwitch)
             %
             % Input Arguments:
-            %   - **batchModeSwitch** — *(optional)* logical; ``true`` when called from batch mode
+            %   - **batchModeSwitch** - *(optional)* logical; ``true`` when called from batch mode
             %
 
             if obj.mibModel.preferences.System.DeveloperMode
@@ -337,7 +337,7 @@ classdef ChunkingExport < handle
                         cropt.z = [zMin, zMax];
                         cropt.blockModeSwitch = 0;
 
-                        % Load image tile — MIB3 returns [H, W, D, C]
+                        % Load image tile - MIB3 returns [H, W, D, C]
                         imOut = cell2mat(obj.mibModel.getData3D('image', timePnt, 3, 0, cropt));
 
                         % Build metadata for the tile

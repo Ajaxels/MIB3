@@ -21,7 +21,7 @@ function gui_WindowButtonUpFcn(obj, brush_switch)
 %      then triggers full image refresh
 %
 % Input Arguments:
-%   - **brush_switch** *(optional)* — [char] brush mode: when ``'subtract'``, brush stroke is removed from
+%   - **brush_switch** *(optional)* - [char] brush mode: when ``'subtract'``, brush stroke is removed from
 %     current selection instead of being added (needed for eraser mode); default: ``''`` (add mode)
 %
 % Output Arguments:
@@ -47,7 +47,7 @@ if iscell(obj.brushSelection) % return after movement of the brush tool
     currSelection = cell2mat(obj.mibModel.getData2D('selection', [], [], NaN, getDataOptions));
 
     % With no committed selection layer (e.g. a BigData set opened browse-only,
-    % no model created yet) getData2D returns empty — skip the commit instead of
+    % no model created yet) getData2D returns empty - skip the commit instead of
     % crashing on a 0-size imresize. The callback cleanup further below still runs.
     if ~isempty(currSelection)
 

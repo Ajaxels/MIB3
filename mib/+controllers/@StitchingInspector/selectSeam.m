@@ -7,7 +7,7 @@ function selectSeam(obj, edgeIdx)
 %      obj.selectSeam(edgeIdx)
 %
 % Input Arguments:
-%   - **edgeIdx** — [double] index into ``obj.stitching.edges``
+%   - **edgeIdx** - [double] index into ``obj.stitching.edges``
 %
 
 if ~obj.dataValid(); return; end
@@ -18,7 +18,7 @@ obj.currentEdgeIdx = edgeIdx;
 % Sync the table selection to the chosen seam (guarded: selection API may
 % differ across releases; selection is a convenience, not state). rankPos is
 % empty when the seam is filtered out of the current fix mode's table, which
-% clears the selection — the pair view still shows the seam.
+% clears the selection - the pair view still shows the seam.
 if obj.hasWidget('seamTable')
     rankPos = find(obj.visibleRanking() == edgeIdx, 1);
     try %#ok<TRYNC>

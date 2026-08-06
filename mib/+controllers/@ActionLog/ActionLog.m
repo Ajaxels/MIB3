@@ -2,7 +2,7 @@ classdef ActionLog < handle
 % ACTIONLOG - Controller for the Action Log window.
 %
 % Displays and manages the action log of the active dataset.
-% Log entries are stored in ``MibImage.actionLog`` — a cell array of
+% Log entries are stored in ``MibImage.actionLog`` - a cell array of
 % timestamped strings. Insert, Modify, and Delete operations are accessed
 % via a context menu on the log list.
 %
@@ -46,7 +46,7 @@ classdef ActionLog < handle
             % ACTIONLOG - Construct the action log controller.
             %
             % Input Arguments:
-            %   - **mibModel** — handle to :class:`models.MibModel`.
+            %   - **mibModel** - handle to :class:`models.MibModel`.
 
             obj.mibModel = mibModel;
 

@@ -13,15 +13,15 @@ function [edges, ranking, cancelled] = scoreSeams(layout, edges, positions, opti
 % ``edges(k).seamScore`` (range ``[-1, 1]``; higher = better seam). This is the
 % inspector's primary ranking metric (see
 % ``development/stitching/plan_inspector.md``): a confidently WRONG pairwise
-% measurement — RANSAC or phase correlation locked one period off on repetitive
-% content — satisfies the solver perfectly on a chain-like graph (zero
+% measurement - RANSAC or phase correlation locked one period off on repetitive
+% content - satisfies the solver perfectly on a chain-like graph (zero
 % residual), but its pixels do not agree at the solved placement, so only
 % re-checking actual pixels catches it. Edges whose tiles do not overlap at all
 % at the solved positions get ``seamScore = NaN`` (worst possible).
 %
 % **3D (z-stack tiles):** the strips are aligned in depth by the solved ``dz``
 % and scored as the MEAN of per-slice 2D NCCs over the overlapping slab (the
-% same metric ``measureAllPairs`` uses to choose ``dz`` — a volumetric NCC
+% same metric ``measureAllPairs`` uses to choose ``dz`` - a volumetric NCC
 % would inherit the thick-slab bias and stay high at wrong offsets). No slab
 % overlap at the solved ``dz`` scores ``NaN``. Cross-layer (``direction ==
 % 'z'``) edges are additionally re-scored at ``dz ± dzScanRadius``: when a
@@ -39,44 +39,44 @@ function [edges, ranking, cancelled] = scoreSeams(layout, edges, positions, opti
 % meaningful. Transform-aware strip warping is a later refinement.
 %
 % Input Arguments:
-%   - **layout** — [struct array] tile layout (``.tileSize``, reader fields).
-%   - **edges** — [struct array] from :func:`utils.stitch.measureAllPairs`.
-%   - **positions** — [N x 3 double] solved ``[y x z]`` origins.
-%   - **options** *(optional)* — struct with fields:
+%   - **layout** - [struct array] tile layout (``.tileSize``, reader fields).
+%   - **edges** - [struct array] from :func:`utils.stitch.measureAllPairs`.
+%   - **positions** - [N x 3 double] solved ``[y x z]`` origins.
+%   - **options** *(optional)* - struct with fields:
 %
-%     - ``.colorChannel`` — [double|char] channel to score on, or ``'max'``
+%     - ``.colorChannel`` - [double|char] channel to score on, or ``'max'``
 %       (default: ``1``; same semantics as ``measureAllPairs``)
-%     - ``.maxStripPx`` — [double] strips longer than this are downsampled
+%     - ``.maxStripPx`` - [double] strips longer than this are downsampled
 %       before correlation (default: ``1024``)
-%     - ``.maxScoreSlices`` — [double] at most this many z-slices of the
+%     - ``.maxScoreSlices`` - [double] at most this many z-slices of the
 %       overlap slab are correlated, evenly sampled (default: ``16``)
-%     - ``.dzScanRadius`` — [double] cross-layer edges are re-scored at
+%     - ``.dzScanRadius`` - [double] cross-layer edges are re-scored at
 %       ``dz ± radius`` to fill ``dzHint``; ``0`` disables (default: ``2``)
-%     - ``.dzHintMargin`` — [double] a neighbouring dz must beat the solved
+%     - ``.dzHintMargin`` - [double] a neighbouring dz must beat the solved
 %       one by this much before it is hinted (default: ``0.05``)
-%     - ``.cacheSizeBytes`` — [double] LRU tile-cache budget (default: ``2*1024^3``)
-%     - ``.readerFcn`` — [function_handle] reuse an existing tile reader (optional)
-%     - ``.showWaitbar`` / ``.parentFigure`` — progress dialog (default: off).
+%     - ``.cacheSizeBytes`` - [double] LRU tile-cache budget (default: ``2*1024^3``)
+%     - ``.readerFcn`` - [function_handle] reuse an existing tile reader (optional)
+%     - ``.showWaitbar`` / ``.parentFigure`` - progress dialog (default: off).
 %       The dialog is ``Cancelable``: scoring re-reads every overlap from disk,
 %       which on a large mosaic is the slowest advisory step in the tool.
 %
 % Output Arguments:
-%   - **edges** — the input edges with ``.seamScore`` and ``.dzHint`` filled in.
+%   - **edges** - the input edges with ``.seamScore`` and ``.dzHint`` filled in.
 %     **When cancelled, EVERY score is cleared** (``seamScore = []``,
 %     ``dzHint = 0``), including the ones already computed and any the input
 %     carried. A partial set would be worse than none: the quality chip and the
 %     inspector's ranking both take a MINIMUM over the scored seams, so scoring
 %     half of them and stopping would rate the mosaic on its better half and
 %     silently ignore the seams nobody looked at. Whatever the input scores
-%     described, it was a different placement — this function is only ever run
+%     described, it was a different placement - this function is only ever run
 %     after the positions changed.
-%   - **ranking** — [1 x M double] edge indices in worst-first review order;
+%   - **ranking** - [1 x M double] edge indices in worst-first review order;
 %     plain input order ``1:M`` when cancelled (there is nothing to rank by).
-%   - **cancelled** — [logical] ``true`` when the user pressed Cancel on the
+%   - **cancelled** - [logical] ``true`` when the user pressed Cancel on the
 %     progress dialog before all edges were scored; ``false`` otherwise (always
 %     ``false`` when ``showWaitbar`` is off or no dialog was shown).
 %
-% **Example** — score and list the three worst seams:
+% **Example** - score and list the three worst seams:
 %
 %   .. code-block:: matlab
 %
@@ -107,7 +107,7 @@ else
 end
 
 % uiprogressdlg errors on an invisible parent (e.g. a GUI scored during its
-% own startup, before the figure is shown) — skip the dialog in that case.
+% own startup, before the figure is shown) - skip the dialog in that case.
 progressDialog = [];
 if options.showWaitbar && ~isempty(options.parentFigure) && ...
         isvalid(options.parentFigure) && strcmp(options.parentFigure.Visible, 'on')
@@ -131,7 +131,7 @@ if ~isempty(progressDialog) && isvalid(progressDialog)
 end
 
 if cancelled
-    % Drop the partial result rather than hand back a half-scored edge set —
+    % Drop the partial result rather than hand back a half-scored edge set -
     % see the note on the `edges` output. deal also CREATES the two fields when
     % the cancel came before the first edge was scored.
     [edges.seamScore] = deal([]);
@@ -141,7 +141,7 @@ if cancelled
 end
 
 % Worst-first review order: pruned edges lead, then seam score ascending with
-% NaN (no overlap at solved positions — definitely broken) before everything.
+% NaN (no overlap at solved positions - definitely broken) before everything.
 % Shared with every consumer that re-derives the order WITHOUT re-reading pixels.
 ranking = utils.stitch.rankSeams(edges);
 end
@@ -171,7 +171,7 @@ bboxB = [rowRange - deltaYX(1); colRange - deltaYX(2)];
 stripA = reduceChannels(readerFcn(edge.i, bboxA), options.colorChannel);
 stripB = reduceChannels(readerFcn(edge.j, bboxB), options.colorChannel);
 
-% Downsample long strips (XY only) for speed — both by the same factor.
+% Downsample long strips (XY only) for speed - both by the same factor.
 longestSide = max([size(stripA, 1), size(stripA, 2)]);
 if longestSide > options.maxStripPx
     ratio = options.maxStripPx / longestSide;

@@ -10,10 +10,10 @@ function result = loadModel(obj, filenames, options)
 % by MibModel.loadModel after BatchOpt processing, virtual-mode guarding,
 % and file browsing have been completed.  It handles:
 %
-% FILE PATH  — filenames is a cell array of full file paths.
+% FILE PATH  - filenames is a cell array of full file paths.
 % Dispatches to the loader identified by options.loaderInfo.
 %
-% IMPORT PATH — options.model contains the raw array (workspace import).
+% IMPORT PATH - options.model contains the raw array (workspace import).
 % filenames is empty ([]); the loader is bypassed entirely.
 %
 % After the array is obtained the method validates dimensions against the
@@ -21,31 +21,31 @@ function result = loadModel(obj, filenames, options)
 % metadata properties.
 %
 % Input Arguments:
-%   - **filenames** — cell array with full file paths, or [] for the import path
-%   - **options** — struct with loading parameters
+%   - **filenames** - cell array with full file paths, or [] for the import path
+%   - **options** - struct with loading parameters
 %
-%     - ``.loaderInfo`` — struct returned by ExtensionRegistryLoad.resolveLoader
+%     - ``.loaderInfo`` - struct returned by ExtensionRegistryLoad.resolveLoader
 %       (required for the file path; ignored for import)
-%     - ``.model`` — raw array to import (import path only)
-%     - ``.modelMaterialNames`` — cell array of names for the import path
-%     - ``.modelMaterialColors`` — Nx3 RGB matrix for the import path
-%     - ``.modelType`` — numeric model type (63/255/65535/4294967295)
-%     - ``.labelText`` — annotation text cell array (or [])
-%     - ``.labelPosition`` — annotation positions (or [])
-%     - ``.labelValue`` — annotation values (or [])
-%     - ``.batchModeSwitch`` — [logical, {false}] suppress interactive dialogs
-%     - ``.preferences`` — MIB preferences struct (for color fallback)
-%     - ``.ParentFigure`` — parent figure handle for dialogs
-%     - ``.mibPath`` — path to MIB installation directory
-%     - ``.showWaitbar`` — [logical, {true}] show progress dialog
+%     - ``.model`` - raw array to import (import path only)
+%     - ``.modelMaterialNames`` - cell array of names for the import path
+%     - ``.modelMaterialColors`` - Nx3 RGB matrix for the import path
+%     - ``.modelType`` - numeric model type (63/255/65535/4294967295)
+%     - ``.labelText`` - annotation text cell array (or [])
+%     - ``.labelPosition`` - annotation positions (or [])
+%     - ``.labelValue`` - annotation values (or [])
+%     - ``.batchModeSwitch`` - [logical, {false}] suppress interactive dialogs
+%     - ``.preferences`` - MIB preferences struct (for color fallback)
+%     - ``.ParentFigure`` - parent figure handle for dialogs
+%     - ``.mibPath`` - path to MIB installation directory
+%     - ``.showWaitbar`` - [logical, {true}] show progress dialog
 %
 % Output Arguments:
-%   - **result** — struct with loaded metadata, or [] on error or user cancel
+%   - **result** - struct with loaded metadata, or [] on error or user cancel
 %
-%     - ``.materialNames`` — cell array of material names
-%     - ``.materialColors`` — Nx3 RGB color matrix
-%     - ``.modelType`` — numeric type used
-%     - ``.labelsVariable`` — variable name
+%     - ``.materialNames`` - cell array of material names
+%     - ``.materialColors`` - Nx3 RGB color matrix
+%     - ``.modelType`` - numeric type used
+%     - ``.labelsVariable`` - variable name
 %
 % Usage:
 %   **Example 1**
@@ -58,7 +58,7 @@ function result = loadModel(obj, filenames, options)
 %     result = obj.mibModel.I{obj.mibModel.id}.loadModel({'C:\data\Labels.model'}, options);
 %
 %
-%   **Example 2** — import path
+%   **Example 2** - import path
 %
 %   .. code-block:: matlab
 %
@@ -261,7 +261,7 @@ if modelH ~= imgH || modelW ~= imgW
         switch choice.action
             case 'Use bounding box'
                 % offset comes from the model's own BoundingBox rather than user
-                % entry — both bounding boxes are normalized to micrometres by
+                % entry - both bounding boxes are normalized to micrometres by
                 % MibImage.updateBoundingBox, which is how the current image's
                 % own boundingBox was set in the first place
                 shiftY = (boundingBox(3) - obj.image.boundingBox(3)) / obj.image.pixSize.y;

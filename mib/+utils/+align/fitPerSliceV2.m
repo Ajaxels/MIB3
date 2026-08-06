@@ -14,29 +14,29 @@ function [pairwiseTforms, translations, rotations, scales, affine_params, ok] = 
 % RANSAC-fits a 2-D transform via ``estgeotform2d``, and stores the pairwise
 % transform plus its decomposed translation / rotation / scale components.
 % Shared by the in-memory (``AutomaticFeatureBasedV2_Alignment``) and BigData
-% (``AutomaticFeatureBasedV2BigData_Alignment``) paths — they differ ONLY in the
+% (``AutomaticFeatureBasedV2BigData_Alignment``) paths - they differ ONLY in the
 % per-slice read, which the caller supplies as ``readSliceFcn``:
 %
 %   - In-memory: ``@(n) cell2mat(obj.mibModel.getData2D('image', n, [], colCh, opt))``.
 %   - BigData: ``@(n) squeeze(ds.image.getData('image', 3, colCh, struct('pyramidLevel', L, 'z', [n n])))``
-%     — reads the FULL level-L slice directly, bypassing the view-dependent
+%     - reads the FULL level-L slice directly, bypassing the view-dependent
 %     ``getData2D`` (which returns only the visible viewport for a pyramid).
 %
 % Input Arguments:
-%   - **obj** — :class:`controllers.Alignment` (uses ``obj.automaticOptions``).
-%   - **Depth** — [numeric] number of Z-slices.
-%   - **parameters** — struct with ``detectPointsType``, ``TransformationType``.
-%   - **ratio** — [numeric] extra analysis downsampling (``1`` = none).
-%   - **readSliceFcn** — [function handle] ``@(sliceIndex) -> 2-D grayscale slice``.
-%   - **pairwiseTforms / translations / rotations / scales / affine_params** —
+%   - **obj** - :class:`controllers.Alignment` (uses ``obj.automaticOptions``).
+%   - **Depth** - [numeric] number of Z-slices.
+%   - **parameters** - struct with ``detectPointsType``, ``TransformationType``.
+%   - **ratio** - [numeric] extra analysis downsampling (``1`` = none).
+%   - **readSliceFcn** - [function handle] ``@(sliceIndex) -> 2-D grayscale slice``.
+%   - **pairwiseTforms / translations / rotations / scales / affine_params** -
 %     pre-allocated accumulators (see caller).
-%   - **pwb** — [:class:`core.PoolWaitbar`] or ``[]``.
-%   - **parentFig** — parent figure for error dialogs.
+%   - **pwb** - [:class:`core.PoolWaitbar`] or ``[]``.
+%   - **parentFig** - parent figure for error dialogs.
 %
 % Output Arguments:
-%   - **pairwiseTforms** — ``{Depth x 1}`` cell of ``affinetform2d``.
-%   - **translations / rotations / scales / affine_params** — decomposed params.
-%   - **ok** — [logical] ``false`` on cancel / detection failure.
+%   - **pairwiseTforms** - ``{Depth x 1}`` cell of ``affinetform2d``.
+%   - **translations / rotations / scales / affine_params** - decomposed params.
+%   - **ok** - [logical] ``false`` on cancel / detection failure.
 %
 % See also: utils.align.detectFeatures, utils.align.smoothCumulativeV2,
 % controllers.Alignment.AutomaticFeatureBasedV2_Alignment

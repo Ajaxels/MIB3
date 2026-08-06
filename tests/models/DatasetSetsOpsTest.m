@@ -1,14 +1,14 @@
 classdef DatasetSetsOpsTest < matlab.unittest.TestCase
-% Tests for MibModel.datasetsSetsOps — Add, Rename, Select, Remove sets.
+% Tests for MibModel.datasetsSetsOps - Add, Rename, Select, Remove sets.
 %
 % Call pattern (batch mode): mibModel.datasetsSetsOps(batchOpt)
 %   nargin == 2 and batchOpt is a struct triggers batch dispatch.
 %
 % Verification strategies:
-%   renameSet  — Sets.names entry is updated
-%   addSet     — numel(Sets.names) increases by 1
-%   selectSet  — Sets.selectedSet index changes to the named set
-%   removeSet  — numel(Sets.names) decreases back to 1
+%   renameSet  - Sets.names entry is updated
+%   addSet     - numel(Sets.names) increases by 1
+%   selectSet  - Sets.selectedSet index changes to the named set
+%   removeSet  - numel(Sets.names) decreases back to 1
 
     methods (TestClassSetup)
         function addPaths(testCase)

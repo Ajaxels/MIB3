@@ -75,9 +75,9 @@ classdef Annotations < handle
             %       obj = Annotations(mibModel, BatchOpt)
             %
             % Input Arguments:
-            %   - **mibModel** — handle to MibModel
-            %   - **varargin{1}** — controller handle (unused, for startController compatibility)
-            %   - **varargin{2}** — *(optional)* BatchOpt structure; when NaN returns defaults via SyncBatch
+            %   - **mibModel** - handle to MibModel
+            %   - **varargin{1}** - controller handle (unused, for startController compatibility)
+            %   - **varargin{2}** - *(optional)* BatchOpt structure; when NaN returns defaults via SyncBatch
             %
 
             obj.mibModel = mibModel;
@@ -422,9 +422,9 @@ classdef Annotations < handle
             %       obj.saveAnnotationsToFile(labelText, labelPosition, labelValue)
             %
             % Input Arguments:
-            %   - **labelText** — cell array of annotation labels
-            %   - **labelPosition** — Nx4 matrix [z x y t] in pixels
-            %   - **labelValue** — Nx1 numeric array of annotation values
+            %   - **labelText** - cell array of annotation labels
+            %   - **labelPosition** - Nx4 matrix [z x y t] in pixels
+            %   - **labelValue** - Nx1 numeric array of annotation values
             %
 
             id = obj.BatchOpt.id;
@@ -555,7 +555,7 @@ classdef Annotations < handle
             %       obj.annotationTable_CellSelectionCallback(Selection)
             %
             % Input Arguments:
-            %   - **Selection** — Nx2 array of [row col] pairs (from SelectionChangedFcn event.Selection)
+            %   - **Selection** - Nx2 array of [row col] pairs (from SelectionChangedFcn event.Selection)
             %
 
             obj.indices = Selection;
@@ -574,7 +574,7 @@ classdef Annotations < handle
             %       obj.annotationTable_CellEditCallback(Indices)
             %
             % Input Arguments:
-            %   - **Indices** — [row col] of the edited cell (from CellEditCallback event.Indices)
+            %   - **Indices** - [row col] of the edited cell (from CellEditCallback event.Indices)
             %
 
             data      = obj.view.handles.annotationTable.Data;
@@ -626,7 +626,7 @@ classdef Annotations < handle
             %       obj.tableContextMenu_cb(parameter)
             %
             % Input Arguments:
-            %   - **parameter** — string selecting the action
+            %   - **parameter** - string selecting the action
             %   - 'Add'         - add a new annotation
             %   - 'Modify'      - batch-modify values/coords of selected annotations
             %   - 'Rename'      - rename selected annotations
@@ -1206,7 +1206,7 @@ classdef Annotations < handle
 
             if ismember('control', eventdata.Modifier)
                 switch lower(eventdata.Key)
-                    % Ctrl+Z undo — currently not implemented for annotations
+                    % Ctrl+Z undo - currently not implemented for annotations
                 end
             end
         end
@@ -1281,7 +1281,7 @@ classdef Annotations < handle
                 dlgOpt.MsgBoxOnly  = true;
                 dlgOpt.HeaderLines = 1;
                 utils.dlgs.inputUniversalDlg(obj.view.gui, ...
-                    'Wrong value', {''}, {sprintf('Invalid value "%s" — enter a non-negative integer.', answer{1})}, ...
+                    'Wrong value', {''}, {sprintf('Invalid value "%s" - enter a non-negative integer.', answer{1})}, ...
                     'Error', dlgOpt);
                 return;
             end

@@ -2,15 +2,15 @@ classdef GetImagePropertyTest < matlab.unittest.TestCase
 % GETIMAGEPROPERTY - Unit tests for MibModel.getImageProperty.
 %
 % getImageProperty(propertyName) reads a named property directly from
-% obj.I{id} — useful for controller code that needs the active dataset's
+% obj.I{id} - useful for controller code that needs the active dataset's
 % state without knowing its index.
 %
 % Verification strategies:
-%   orientation  — default orientation is 3 (XY)
-%   enableSel    — enableSelection is 1 by default
-%   pixSize      — returns a struct with .x .y .z fields
-%   id override  — id=1 explicitly still returns the same value
-%   unknown prop — returns [] for an unrecognised property name
+%   orientation  - default orientation is 3 (XY)
+%   enableSel    - enableSelection is 1 by default
+%   pixSize      - returns a struct with .x .y .z fields
+%   id override  - id=1 explicitly still returns the same value
+%   unknown prop - returns [] for an unrecognised property name
 
     methods (TestClassSetup)
         function addPaths(testCase)

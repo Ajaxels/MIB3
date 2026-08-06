@@ -23,7 +23,7 @@ classdef GetSetDataCorrectnessTest < matlab.unittest.TestCase
     end
 
     % =====================================================================
-    % Read correctness — accessor output vs raw ground truth
+    % Read correctness - accessor output vs raw ground truth
     % =====================================================================
     methods (Test, TestTags = {'Unit'})
 
@@ -114,7 +114,7 @@ classdef GetSetDataCorrectnessTest < matlab.unittest.TestCase
         end
 
         function get3DEverythingMatchesRaw(testCase, modelType)
-            % 'everything' returns the raw packed uint8 array — labels63 only.
+            % 'everything' returns the raw packed uint8 array - labels63 only.
             testCase.assumeTrue(strcmp(modelType, 'labels63'), ...
                 'everything type only applies to labels63 datasets');
             [mibModel, ~] = mibtest.helpers.buildSyntheticModel(modelType=modelType);
@@ -127,7 +127,7 @@ classdef GetSetDataCorrectnessTest < matlab.unittest.TestCase
     end
 
     % =====================================================================
-    % Set roundtrip correctness — write a modified value, read back, compare
+    % Set roundtrip correctness - write a modified value, read back, compare
     % =====================================================================
     methods (Test, TestTags = {'Unit'})
 
@@ -262,7 +262,7 @@ classdef GetSetDataCorrectnessTest < matlab.unittest.TestCase
     end
 
     % =====================================================================
-    % Multi-channel (numColors=2) — read isolation, write isolation
+    % Multi-channel (numColors=2) - read isolation, write isolation
     % =====================================================================
     methods (Test, TestTags = {'Unit'})
 
@@ -328,7 +328,7 @@ classdef GetSetDataCorrectnessTest < matlab.unittest.TestCase
     end
 
     % =====================================================================
-    % State preservation — all pure roundtrip writes leave data unchanged
+    % State preservation - all pure roundtrip writes leave data unchanged
     % =====================================================================
     methods (Test, TestTags = {'Unit'})
 
@@ -356,13 +356,13 @@ classdef GetSetDataCorrectnessTest < matlab.unittest.TestCase
 
             checksumAfter = GetSetDataCorrectnessTest.stateChecksum(mibModel, 1, is63);
             testCase.verifyEqual(checksumAfter, checksumBefore, ...
-                'State changed after pure roundtrip writes — data was mutated unexpectedly');
+                'State changed after pure roundtrip writes - data was mutated unexpectedly');
         end
 
     end
 
     % =====================================================================
-    % Private helpers — ported from homeDevTest_Callback.m
+    % Private helpers - ported from homeDevTest_Callback.m
     % =====================================================================
     methods (Static, Access = private)
 

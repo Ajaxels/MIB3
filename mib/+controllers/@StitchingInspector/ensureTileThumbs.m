@@ -12,7 +12,7 @@ function ensureTileThumbs(obj)
 % ``[0 1]``. ``renderMiniMap`` composites them at the CURRENT solved
 % positions on every redraw (cheap), so a gross misplacement is visible in
 % the actual image content, not just the score colouring. Built once per
-% session — tiles never change while the inspector is open (``dataValid``
+% session - tiles never change while the inspector is open (``dataValid``
 % guards layout rebuilds). Datasets whose tiles sum to more than ~1.5 G
 % full-res pixels skip the thumbnail (patches only) instead of stalling the
 % open; any read failure declines the same way.
@@ -75,7 +75,7 @@ try
     obj.tileThumbs = thumbs;
     obj.thumbScale = scale;
 catch
-    obj.tileThumbs = {};   % declined — the mini-map falls back to patches only
+    obj.tileThumbs = {};   % declined - the mini-map falls back to patches only
     obj.thumbScale = 0;
 end
 if ~isempty(progressDialog) && isvalid(progressDialog)

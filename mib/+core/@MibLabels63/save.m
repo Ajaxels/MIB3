@@ -12,7 +12,7 @@ function fnOut = save(obj, filename, options)
 %
 % MibLabels63 packs model (bits 1-6), mask (bit 7), and selection (bit 8)
 % into a single uint8 array.  This override calls getData63() to correctly
-% unpack the model layer before saving — whereas the base MibImage.save()
+% unpack the model layer before saving - whereas the base MibImage.save()
 % would write the raw packed bytes.
 %
 % Supported formats: same as core.MibLabels.save (see io.SaverFactory.getFormats('labels'))
@@ -22,37 +22,37 @@ function fnOut = save(obj, filename, options)
 % Supply options.pixSize, or it defaults to 1x1x1 um.
 %
 % Input Arguments:
-%   - **obj** — ``MibLabels63`` instance
-%   - **filename** — (char) full output path including extension
-%   - **options** — *(optional)* struct with saving options:
+%   - **obj** - ``MibLabels63`` instance
+%   - **filename** - (char) full output path including extension
+%   - **options** - *(optional)* struct with saving options:
 %
-%     - ``.Format`` — (char) format string; inferred from extension when absent
-%     - ``.Saving3DPolicy`` — (char) ``'3D stack'`` | ``'2D sequence'``; default ``'3D stack'``
-%     - ``.showWaitbar`` — (logical) default ``true``
-%     - ``.silent`` — (logical) suppress dialogs; default ``false``
-%     - ``.overwrite`` — (logical) default ``true``
-%     - ``.MaterialIndex`` — (double|[]) which material to export:
+%     - ``.Format`` - (char) format string; inferred from extension when absent
+%     - ``.Saving3DPolicy`` - (char) ``'3D stack'`` | ``'2D sequence'``; default ``'3D stack'``
+%     - ``.showWaitbar`` - (logical) default ``true``
+%     - ``.silent`` - (logical) suppress dialogs; default ``false``
+%     - ``.overwrite`` - (logical) default ``true``
+%     - ``.MaterialIndex`` - (double|[]) which material to export:
 %
-%       - ``[]`` or ``NaN`` — all materials
-%       - integer — single material (returned as binary 0/1)
+%       - ``[]`` or ``NaN`` - all materials
+%       - integer - single material (returned as binary 0/1)
 %
-%     - ``.FilenameGenerator`` — (char) filename policy for 2D sequences:
+%     - ``.FilenameGenerator`` - (char) filename policy for 2D sequences:
 %       ``'Use original filename'`` | ``'Use sequential filename'``
-%     - ``.imageSliceNames`` — (cell of char) *(optional)* per-slice source
+%     - ``.imageSliceNames`` - (cell of char) *(optional)* per-slice source
 %       filenames from the parent image layer, injected by
 %       ``MibDataset.saveImage()``.  When present and the labels object has
 %       no own ``sliceName``, these names are forwarded to
 %       ``metadata.sliceName`` so that 2-D sequence savers can apply the
 %       ``'Use original filename'`` policy.
-%     - ``.pixSize`` — (struct) injected by ``MibDataset.saveImage()``
-%     - ``.boundingBox`` — ([1×6]) injected by ``MibDataset.saveImage()``
-%     - ``.annotations`` — (struct) injected by ``MibDataset.saveImage()`` when present
+%     - ``.pixSize`` - (struct) injected by ``MibDataset.saveImage()``
+%     - ``.boundingBox`` - ([1×6]) injected by ``MibDataset.saveImage()``
+%     - ``.annotations`` - (struct) injected by ``MibDataset.saveImage()`` when present
 %
 % Output Arguments:
-%   - **fnOut** — (char or cell of char) saved filename(s); ``[]`` on failure
+%   - **fnOut** - (char or cell of char) saved filename(s); ``[]`` on failure
 %
 % Usage:
-%   **Example 1** — Save type-63 model via MibDataset (recommended: pixSize injected)
+%   **Example 1** - Save type-63 model via MibDataset (recommended: pixSize injected)
 %
 %   .. code-block:: matlab
 %
@@ -63,7 +63,7 @@ function fnOut = save(obj, filename, options)
 %     opts.overwrite   = true;
 %     fnOut = obj.mibModel.I{obj.mibModel.id}.saveImage('labels', '/output/model.model', opts);
 %
-%   **Example 2** — Direct call (standalone, no MibDataset)
+%   **Example 2** - Direct call (standalone, no MibDataset)
 %
 %   .. code-block:: matlab
 %

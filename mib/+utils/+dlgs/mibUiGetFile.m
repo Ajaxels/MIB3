@@ -10,23 +10,23 @@ function [file, path, indx] = mibUiGetFile(filter, title, defname, mode)
 % 'MultiSelect' key
 %
 % Input Arguments:
-%   - **filter** — file filter, specified as a character vector, cell array of character vectors, or a string array
+%   - **filter** - file filter, specified as a character vector, cell array of character vectors, or a string array
 %     For example:
 %     {'*.fig','Figures (``*.fig``)'; ...
 %     '*.mat','MAT-files (``*.mat``)'; ...
 %     '*.png; *.jpg','Images (*.png, *.jpg)'; ...
 %     '*.*',  'All Files (*.*)'}
-%   - **title** — string, dialog box title
-%   - **defname** — default file name field value, specified as a character vector or a string scalar. The defname value can specify a path, or a path and a file name
-%   - **mode** — multiselect mode, ''off'' (default) or ''on''
+%   - **title** - string, dialog box title
+%   - **defname** - default file name field value, specified as a character vector or a string scalar. The defname value can specify a path, or a path and a file name
+%   - **mode** - multiselect mode, ''off'' (default) or ''on''
 %
 % Output Arguments:
-%   - **file** — file name that the user specified in the dialog box, returned as a cell array
-%   - **path** — path to the specified file or files, returned as a character vector
-%   - **indx** — selected filter index, returned as an integer
+%   - **file** - file name that the user specified in the dialog box, returned as a cell array
+%   - **path** - path to the specified file or files, returned as a character vector
+%   - **indx** - selected filter index, returned as an integer
 %
 % Usage:
-%   **Example 1** — Select files with filter
+%   **Example 1** - Select files with filter
 %
 %   .. code-block:: matlab
 %

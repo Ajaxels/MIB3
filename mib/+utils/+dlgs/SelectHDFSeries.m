@@ -40,13 +40,13 @@ classdef SelectHDFSeries < handle
             %      controller = utils.dlgs.SelectHDFSeries(filename, ParentFigure, Font)
             %
             % Input Arguments:
-            %   - **filename** — [char|cell] path to HDF5 file. If cell array,
+            %   - **filename** - [char|cell] path to HDF5 file. If cell array,
             %     uses the first element.
-            %   - **ParentFigure** — [handle] parent window for dialog attachment
-            %   - **Font** — [struct] font configuration with ``.FontSize`` and ``.FontName``
+            %   - **ParentFigure** - [handle] parent window for dialog attachment
+            %   - **Font** - [struct] font configuration with ``.FontSize`` and ``.FontName``
             %
             % Output Arguments:
-            %   - **obj** — instance of SelectHDFSeries controller
+            %   - **obj** - instance of SelectHDFSeries controller
             
             obj.ParentFigure = ParentFigure;
             obj.view = views.SelectHDFSeriesGUI;
@@ -83,11 +83,11 @@ classdef SelectHDFSeries < handle
             %   (none)
             %
             % Output Arguments:
-            %   - **varargout{1}** — [char] selected dataset path; ``'Cancel'`` if cancelled
-            %   - **varargout{2}** — [logical] metadata inclusion flag
-            %   - **varargout{3}** — [1×5 numeric] dimensions ``[y, x, z, c, t]``
+            %   - **varargout{1}** - [char] selected dataset path; ``'Cancel'`` if cancelled
+            %   - **varargout{2}** - [logical] metadata inclusion flag
+            %   - **varargout{3}** - [1×5 numeric] dimensions ``[y, x, z, c, t]``
             %     with ``0`` for unspecified dimensions (legacy behavior)
-            %   - **varargout{4}** — [1×5 numeric] transformation matrix for dimension reordering,
+            %   - **varargout{4}** - [1×5 numeric] transformation matrix for dimension reordering,
             %     or ``NaN`` if no reordering requested
             
             %obj.view.gui.WindowStyle = 'modal';
@@ -208,12 +208,12 @@ classdef SelectHDFSeries < handle
             % from HDF5 dataset metadata.
             %
             % Input Arguments:
-            %   - **dataset** — struct from ``h5info``, HDF5 dataset metadata
-            %   - **groupName** — [char] parent group path (empty for root datasets)
+            %   - **dataset** - struct from ``h5info``, HDF5 dataset metadata
+            %   - **groupName** - [char] parent group path (empty for root datasets)
             %
             % Output Arguments:
-            %   - **row** — cell array ``{fullPath, dim1, dim2, dim3, dim4, dim5, dataClass}``
-            %   - **dimTags** — [char] flipped axis tag string from ``axistags`` attribute
+            %   - **row** - cell array ``{fullPath, dim1, dim2, dim3, dim4, dim5, dataClass}``
+            %   - **dimTags** - [char] flipped axis tag string from ``axistags`` attribute
             %     (e.g. ``'ctzyx'`` from Ilastik); empty if not present
             %
             
@@ -267,7 +267,7 @@ classdef SelectHDFSeries < handle
             % and calculates transformation matrix for the selected row.
             %
             % Input Arguments:
-            %   - **rowIndex** — [numeric] 1-based row index in seriesTable
+            %   - **rowIndex** - [numeric] 1-based row index in seriesTable
             %
             % Output Arguments:
             %   (none)
@@ -309,7 +309,7 @@ classdef SelectHDFSeries < handle
             % ``newDimOrder`` UI control.
             %
             % Input Arguments:
-            %   - **rowIndex** — [numeric] 1-based row index in seriesTable
+            %   - **rowIndex** - [numeric] 1-based row index in seriesTable
             %
             % Output Arguments:
             %   (none)
@@ -368,8 +368,8 @@ classdef SelectHDFSeries < handle
             % index from event data and calls ``processSelection``.
             %
             % Input Arguments:
-            %   - **source** — [handle] table widget (unused)
-            %   - **event** — [struct] table selection event with ``Selection`` field
+            %   - **source** - [handle] table widget (unused)
+            %   - **event** - [struct] table selection event with ``Selection`` field
             %
             % Output Arguments:
             %   (none)
@@ -421,8 +421,8 @@ classdef SelectHDFSeries < handle
             % order string and constructs transformation matrix. Then resumes execution.
             %
             % Input Arguments:
-            %   - **source** — [handle] button widget (unused)
-            %   - **event** — [struct] button event (unused)
+            %   - **source** - [handle] button widget (unused)
+            %   - **event** - [struct] button event (unused)
             %
             % Output Arguments:
             %   (none)

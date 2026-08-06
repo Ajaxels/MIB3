@@ -6,12 +6,12 @@ function startController(obj, controllerName, varargin)
 %
 %       obj.startController(controllerName, varargin)
 %
-% Delegates to utils.startController — see that function for full
+% Delegates to utils.startController - see that function for full
 % documentation of interactive, batch, and lifecycle behaviour.
 %
 % Input Arguments:
-%   - **controllerName** — char — fully-qualified controller class name
-%   - **varargin** — additional arguments forwarded to the child constructor
+%   - **controllerName** - char - fully-qualified controller class name
+%   - **varargin** - additional arguments forwarded to the child constructor
 %
 % Usage:
 %   Example 1::

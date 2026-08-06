@@ -49,32 +49,32 @@ classdef MibActiveDataset
             % for buffer buttons, context menus, dropdown controls, and model event listeners.
             %
             % Input Arguments:
-            %   - **mainCtrl** — [controllers.MibController] handle to main MIB controller
-            %   - **view** — [MibView] handle to main application view
-            %   - **guiHandles** — [views.components.Datasets] handle to Datasets panel GUI component
-            %   - **model** — [models.MibModel] handle to main MIB data model
+            %   - **mainCtrl** - [controllers.MibController] handle to main MIB controller
+            %   - **view** - [MibView] handle to main application view
+            %   - **guiHandles** - [views.components.Datasets] handle to Datasets panel GUI component
+            %   - **model** - [models.MibModel] handle to main MIB data model
             %
             % Output Arguments:
-            %   - **obj** — [MibActiveDataset] initialized controller instance
+            %   - **obj** - [MibActiveDataset] initialized controller instance
             %
             % **Initialization sequence:**
             %   1. Stores references to main controller, view, model, and GUI handles
             %   2. Caches panel-specific handles for efficient access
             %   3. Updates widgets from current model state (``update_fromModel``)
-            %   4. Wires callbacks for 10 buffer buttons (buffer1–buffer10)
+            %   4. Wires callbacks for 10 buffer buttons (buffer1-buffer10)
             %   5. Wires callbacks for dataset set operations (add, rename, sort, remove)
             %   6. Wires callbacks for dataset type dropdown
             %   7. Wires context menus for buffer operations (duplicate, sync, link, close)
             %   8. Adds listener for ``DatasetsPanelUpdate`` events from model
             %
             % **Supported buffer operations:**
-            %   - ``'duplicate'`` — duplicate selected buffer
-            %   - ``'sync_xy'`` — synchronize XY dimensions across buffers
-            %   - ``'sync_xyz'`` — synchronize XYZ dimensions across buffers
-            %   - ``'sync_xyzt'`` — synchronize all dimensions and time across buffers
-            %   - ``'link_views'`` — link view state across buffers
-            %   - ``'close'`` — close selected buffer
-            %   - ``'closeSet'`` — close entire dataset set
+            %   - ``'duplicate'`` - duplicate selected buffer
+            %   - ``'sync_xy'`` - synchronize XY dimensions across buffers
+            %   - ``'sync_xyz'`` - synchronize XYZ dimensions across buffers
+            %   - ``'sync_xyzt'`` - synchronize all dimensions and time across buffers
+            %   - ``'link_views'`` - link view state across buffers
+            %   - ``'close'`` - close selected buffer
+            %   - ``'closeSet'`` - close entire dataset set
             %
             % See also:
             %   ``buffers_Callback``, ``setsOps_Callbacks``, ``buffers_ContextMenu``, ``update_fromModel``

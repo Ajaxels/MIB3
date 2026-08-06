@@ -14,9 +14,9 @@ classdef MembranePixClassifier < handle
     %       obj = controllers.MembranePixClassifier(mibModel, [], BatchOpt)
     %
     % Input Arguments:
-    %   - **mibModel** — handle to the MibModel instance
-    %   - **extraController** — *(optional)* handle to a parent controller
-    %   - **BatchOpt** — *(optional)* struct with batch options, or ``NaN`` to return defaults
+    %   - **mibModel** - handle to the MibModel instance
+    %   - **extraController** - *(optional)* handle to a parent controller
+    %   - **BatchOpt** - *(optional)* struct with batch options, or ``NaN`` to return defaults
     %
 
     properties

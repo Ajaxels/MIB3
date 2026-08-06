@@ -11,8 +11,8 @@ function favTool_Callback(obj, hWidget, hData)
 % press of the 'D' keyboard shortcut key
 %
 % Input Arguments:
-%   - **hWidget** — handle to the pressed widget
-%   - **hData** — handle to supporting data class
+%   - **hWidget** - handle to the pressed widget
+%   - **hData** - handle to supporting data class
 %
 
 arguments (Input)

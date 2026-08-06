@@ -11,18 +11,18 @@ function updateActionLog(obj, logEntry, action, entryIndex)
 %       obj.updateActionLog(logEntry, action, entryIndex)
 %
 % Input Arguments:
-%   - **logEntry** — [char or string] description of the processing step to record,
+%   - **logEntry** - [char or string] description of the processing step to record,
 %     e.g. 'ImFilter: Median, HSize:3 3, Orient:4'. Pass '' when only
 %     performing a delete action.
-%   - **action** — *(optional)* additional operation to perform; when omitted, entry is appended to the end:
+%   - **action** - *(optional)* additional operation to perform; when omitted, entry is appended to the end:
 %
-%     - ``'insert'`` — insert new entry before position ``entryIndex``
-%     - ``'delete'`` — delete entry at position ``entryIndex`` (``logEntry`` is ignored)
-%     - ``'modify'`` — overwrite entry at position ``entryIndex``
-%   - **entryIndex** — *(optional)* 1-based index for 'insert', 'delete', 'modify'
+%     - ``'insert'`` - insert new entry before position ``entryIndex``
+%     - ``'delete'`` - delete entry at position ``entryIndex`` (``logEntry`` is ignored)
+%     - ``'modify'`` - overwrite entry at position ``entryIndex``
+%   - **entryIndex** - *(optional)* 1-based index for 'insert', 'delete', 'modify'
 %
 % Output Arguments:
-%   (none) — modifies obj.actionLog in place.
+%   (none) - modifies obj.actionLog in place.
 %
 % Usage:
 %   **Example 1**

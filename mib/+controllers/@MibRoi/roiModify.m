@@ -12,7 +12,7 @@ function roiModify(obj)
 % (double-click), the ROI data is updated in-place (label preserved).
 %
 % Input Arguments:
-%   - **obj** — controllers.MibRoi — the ROI panel controller
+%   - **obj** - controllers.MibRoi - the ROI panel controller
 %
 %   Return values: none
 %

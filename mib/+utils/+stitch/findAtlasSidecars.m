@@ -9,16 +9,16 @@ function sidecars = findAtlasSidecars(atlasFilePath)
 % A Fibics Atlas mosaic folder holds up to three XML files that share one base
 % name and describe three successive stages of the same stitch:
 %
-%   - ``MosaicInfo_<name>.ve-mif`` — the acquisition record: per-tile grid index
+%   - ``MosaicInfo_<name>.ve-mif`` - the acquisition record: per-tile grid index
 %     and NOMINAL stage position (the rough placement);
-%   - ``MosaicInfo_<name>.ve-tie`` — Atlas's pairwise seam measurements;
-%   - ``MosaicInfo_<name>.ve-updates`` — Atlas's FINAL solved tile positions.
+%   - ``MosaicInfo_<name>.ve-tie`` - Atlas's pairwise seam measurements;
+%   - ``MosaicInfo_<name>.ve-updates`` - Atlas's FINAL solved tile positions.
 %
 % The last two are written only after the mosaic has been stitched in Atlas, so
 % either may be missing. This helper reports which are present, letting the
 % caller offer only the import modes that can actually be honoured.
 %
-% **Any of the three may be passed in** — they sit side by side with near-identical
+% **Any of the three may be passed in** - they sit side by side with near-identical
 % names and a user picking one of them means the same mosaic either way. Whatever
 % is passed, ``.mifPath`` comes back pointing at the acquisition record, which is
 % the file everything else is read relative to.
@@ -28,17 +28,17 @@ function sidecars = findAtlasSidecars(atlasFilePath)
 % an all-empty struct rather than an error, so a caller can branch on it.
 %
 % Input Arguments:
-%   - **atlasFilePath** — [char] full path to any of the mosaic's three XML files.
+%   - **atlasFilePath** - [char] full path to any of the mosaic's three XML files.
 %
 % Output Arguments:
-%   - **sidecars** — struct with fields:
+%   - **sidecars** - struct with fields:
 %
-%     - ``.mifPath`` — [char] full path to the ``.ve-mif``, ``''`` if the input is
+%     - ``.mifPath`` - [char] full path to the ``.ve-mif``, ``''`` if the input is
 %       not an Atlas file or the ``.ve-mif`` itself is missing
-%     - ``.tiePath`` — [char] full path to the ``.ve-tie`` file, ``''`` if absent
-%     - ``.updatesPath`` — [char] full path to the ``.ve-updates`` file, ``''`` if absent
+%     - ``.tiePath`` - [char] full path to the ``.ve-tie`` file, ``''`` if absent
+%     - ``.updatesPath`` - [char] full path to the ``.ve-updates`` file, ``''`` if absent
 %
-% **Example** — branch on whether a picked position file is really an Atlas mosaic:
+% **Example** - branch on whether a picked position file is really an Atlas mosaic:
 %
 %   .. code-block:: matlab
 %
@@ -61,7 +61,7 @@ sidecars.updatesPath = '';
 
 [mosaicFolder, mosaicBaseName, extension] = fileparts(atlasFilePath);
 if ~ismember(lower(extension), {'.ve-mif', '.ve-tie', '.ve-updates'})
-    return;   % not an Atlas file — the caller treats it as whatever else it is
+    return;   % not an Atlas file - the caller treats it as whatever else it is
 end
 
 mifCandidate = fullfile(mosaicFolder, [mosaicBaseName, '.ve-mif']);

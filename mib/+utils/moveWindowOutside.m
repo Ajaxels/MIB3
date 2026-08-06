@@ -12,23 +12,23 @@ function hObject = moveWindowOutside(hObject, mibGUI, alignH, alignV)
 % centring on the main figure when there is insufficient screen space.
 %
 % Input Arguments:
-%   - **hObject** — handle of the window to be moved
-%   - **mibGUI** — handle to the main MIB GUI (``obj.mibModel.mibGUI``); pass ``[]`` to centre on screen
-%   - **alignH** *(optional)* — [char] horizontal alignment: ``'left'`` *(default)*, ``'right'``, ``'center'``
-%   - **alignV** *(optional)* — [char] vertical alignment: ``'top'`` *(default)*, ``'bottom'``, ``'center'``
+%   - **hObject** - handle of the window to be moved
+%   - **mibGUI** - handle to the main MIB GUI (``obj.mibModel.mibGUI``); pass ``[]`` to centre on screen
+%   - **alignH** *(optional)* - [char] horizontal alignment: ``'left'`` *(default)*, ``'right'``, ``'center'``
+%   - **alignV** *(optional)* - [char] vertical alignment: ``'top'`` *(default)*, ``'bottom'``, ``'center'``
 %
 % Output Arguments:
-%   - **hObject** — handle to the repositioned window
+%   - **hObject** - handle to the repositioned window
 %
 % Usage:
 %
-%   **Example 1** — position a child dialog to the left of the main window
+%   **Example 1** - position a child dialog to the left of the main window
 %
 %   .. code-block:: matlab
 %
 %      obj.view.gui = utils.moveWindowOutside(obj.view.gui, obj.mibModel.mibGUI);
 %
-%   **Example 2** — position to the right and bottom
+%   **Example 2** - position to the right and bottom
 %
 %   .. code-block:: matlab
 %
@@ -78,7 +78,7 @@ else
         GCBFPos = mibGUI.OuterPosition;
         mibGUI.Units = GCBFOldUnits;
     end
-    % Always use Position for uifigures — writing OuterPosition can
+    % Always use Position for uifigures - writing OuterPosition can
     % trigger re-layout and shrink the window
     useInnerPosition = isa(hObject, 'matlab.ui.Figure');
     
@@ -132,7 +132,7 @@ if FigPos(2) + FigHeight > screenSize(4)
     FigPos(2) = max(1, screenSize(4) - FigHeight);
 end
 
-% Only reposition (X, Y) — never overwrite the size that MATLAB laid out.
+% Only reposition (X, Y) - never overwrite the size that MATLAB laid out.
 % Reading OuterPosition while the figure is invisible can return a stale
 % (smaller) height, so writing it back would shrink the window.
 if useInnerPosition

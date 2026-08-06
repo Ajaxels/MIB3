@@ -12,7 +12,7 @@ function predictDataset(obj, sliceNumber)
 %       obj.predictDataset(sliceNo)    % predict one slice
 %
 % Input Arguments:
-%   - **sliceNumber** — *(optional)* slice index to predict; omit to predict all slices
+%   - **sliceNumber** - *(optional)* slice index to predict; omit to predict all slices
 
 arguments (Input)
     obj         controllers.MembranePixClassifier

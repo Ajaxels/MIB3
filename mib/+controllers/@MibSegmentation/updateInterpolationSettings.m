@@ -18,7 +18,7 @@ function updateInterpolationSettings(obj)
 %   (none beyond implicit obj)
 %
 % Output Arguments:
-%   (none) — returns early when the user cancels the dialog or when a
+%   (none) - returns early when the user cancels the dialog or when a
 %   validated value is out of range.
 %
 % Usage:

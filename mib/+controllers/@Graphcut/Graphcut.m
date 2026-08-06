@@ -73,8 +73,8 @@ classdef Graphcut < handle
         %      controllers.Graphcut.ViewListner_Callback2(obj, src, evnt)
         %
         % Input Arguments:
-        %   - **obj** — handle to the ``Graphcut`` controller
-        %   - **evnt** — event data; ``evnt.EventName`` is inspected for dispatch
+        %   - **obj** - handle to the ``Graphcut`` controller
+        %   - **evnt** - event data; ``evnt.EventName`` is inspected for dispatch
             if ~isvalid(obj) || isempty(obj.view) || ~isvalid(obj.view.gui)
                 for i = 1:numel(obj.listener); delete(obj.listener{i}); end
                 return;
@@ -94,7 +94,7 @@ classdef Graphcut < handle
         end
 
         [G, calcCancelled] = calcSupervoxels(Graphcut, img, parLoopOptions, usePrecomputedSlic)
-        % declaration — implemented in calcSupervoxels.m
+        % declaration - implemented in calcSupervoxels.m
     end
 
     methods
@@ -107,10 +107,10 @@ classdef Graphcut < handle
         %      controller = controllers.Graphcut(mibModel)
         %
         % Input Arguments:
-        %   - **mibModel** — handle to the ``MibModel`` instance
+        %   - **mibModel** - handle to the ``MibModel`` instance
         %
         % Output Arguments:
-        %   - **controller** — handle to the constructed ``Graphcut`` object
+        %   - **controller** - handle to the constructed ``Graphcut`` object
             obj.mibModel = mibModel;
             obj.view.gui   = mibModel.mibGUI;
 
@@ -169,7 +169,7 @@ classdef Graphcut < handle
             obj.view.gui.CloseRequestFcn = @(~,~) obj.closeWindow();
             handles = obj.view.handles;
 
-            % mode selection — wire the ButtonGroup that contains the 4 radios
+            % mode selection - wire the ButtonGroup that contains the 4 radios
             handles.modeButtonGroup.SelectionChangedFcn = @(~, evnt) obj.mode2dRadio_Callback(evnt.NewValue);
 
             % dimension edit fields
@@ -284,7 +284,7 @@ classdef Graphcut < handle
         %      status = obj.clearPreprocessBtn_Callback()
         %
         % Output Arguments:
-        %   - **status** — [logical] ``1`` when cleared successfully, ``0`` when cancelled
+        %   - **status** - [logical] ``1`` when cleared successfully, ``0`` when cancelled
             if obj.mibModel.preferences.System.DeveloperMode
                 fprintf('controllers.Graphcut.clearPreprocessBtn_Callback: triggered\n');
             end
@@ -403,7 +403,7 @@ classdef Graphcut < handle
         %      obj.mode2dRadio_Callback(hObject)
         %
         % Input Arguments:
-        %   - **hObject** — handle to the newly selected radio button
+        %   - **hObject** - handle to the newly selected radio button
             if obj.mibModel.preferences.System.DeveloperMode
                 fprintf('controllers.Graphcut.mode2dRadio_Callback: triggered\n');
             end
@@ -433,7 +433,7 @@ classdef Graphcut < handle
         %      obj.checkDimensions(hObject)
         %
         % Input Arguments:
-        %   - **hObject** — handle to ``xSubareaEdit``, ``ySubareaEdit``, or ``zSubareaEdit``
+        %   - **hObject** - handle to ``xSubareaEdit``, ``ySubareaEdit``, or ``zSubareaEdit``
             if obj.mibModel.preferences.System.DeveloperMode
                 fprintf('controllers.Graphcut.checkDimensions: triggered\n');
             end
@@ -530,7 +530,7 @@ classdef Graphcut < handle
         %      obj.binSubareaEdit_Callback(hObject)
         %
         % Input Arguments:
-        %   - **hObject** — handle to ``binSubareaEdit``; ``.Value`` is a semicolon-separated
+        %   - **hObject** - handle to ``binSubareaEdit``; ``.Value`` is a semicolon-separated
         %     pair of integers, e.g. ``'2; 1'`` (XY bin; Z bin)
             if obj.mibModel.preferences.System.DeveloperMode
                 fprintf('controllers.Graphcut.binSubareaEdit_Callback: triggered\n');
@@ -556,7 +556,7 @@ classdef Graphcut < handle
         %      obj.realtimeCheck_Callback(hObject)
         %
         % Input Arguments:
-        %   - **hObject** — handle to ``realtimeCheck``
+        %   - **hObject** - handle to ``realtimeCheck``
             if obj.mibModel.preferences.System.DeveloperMode
                 fprintf('controllers.Graphcut.realtimeCheck_Callback: triggered\n');
             end
@@ -580,7 +580,7 @@ classdef Graphcut < handle
         % DOGRAPHCUTSEGMENTATION - Run maxflow/mincut and write the result to the mask layer.
         %
         % Reads object/background seeds from the labels layer, builds the data term,
-        % calls ``maxflow_v222``, and writes the resulting mask — either incrementally
+        % calls ``maxflow_v222``, and writes the resulting mask - either incrementally
         % (when ``shownLabelObj`` is already set) or in full.
             id = obj.mibModel.getActiveId();
             dataset = obj.mibModel.I{id};
@@ -978,7 +978,7 @@ classdef Graphcut < handle
         %      obj.superpixelsBtn_Callback(usePrecomputedSlic)
         %
         % Input Arguments:
-        %   - **usePrecomputedSlic** *(optional)* — [logical] when ``1``, skip supervoxel
+        %   - **usePrecomputedSlic** *(optional)* - [logical] when ``1``, skip supervoxel
         %     calculation and rebuild the graph from the existing ``obj.graphcut.slic``;
         %     default: ``0``
             if obj.mibModel.preferences.System.DeveloperMode
@@ -1531,7 +1531,7 @@ classdef Graphcut < handle
                         dataset.lines3D.replaceGraph(G);
 
                     case 'mode2dCurrentRadio'
-                        % z is the full-dataset current slice — correct as-is; only x/y need offset
+                        % z is the full-dataset current slice - correct as-is; only x/y need offset
                         z = dataset.slices{3}(1);
                         STATS  = regionprops(Graphcut.slic, 'Centroid');
                         points = reshape([STATS.Centroid], [2, numel(STATS)])';
@@ -1576,7 +1576,7 @@ classdef Graphcut < handle
         %      obj.importSuperpixelsBtn_Callback(noImportSwitch)
         %
         % Input Arguments:
-        %   - **noImportSwitch** *(optional)* — [logical] when ``1``, restore the UI from
+        %   - **noImportSwitch** *(optional)* - [logical] when ``1``, restore the UI from
         %     the current ``obj.graphcut`` without showing the import dialog; default: ``0``
             if obj.mibModel.preferences.System.DeveloperMode
                 fprintf('controllers.Graphcut.importSuperpixelsBtn_Callback: triggered\n');
@@ -1905,7 +1905,7 @@ classdef Graphcut < handle
         %      obj.superpixTypePopup_Callback(parameter)
         %
         % Input Arguments:
-        %   - **parameter** *(optional)* — [char] pass ``'keep'`` to suppress clearing
+        %   - **parameter** *(optional)* - [char] pass ``'keep'`` to suppress clearing
         %     the preprocessed data after UI update; default: ``'clear'``
             if obj.mibModel.preferences.System.DeveloperMode
                 fprintf('controllers.Graphcut.superpixTypePopup_Callback: triggered\n');
@@ -1961,7 +1961,7 @@ classdef Graphcut < handle
         %      obj.recalcGraph_Callback(showWaitbar)
         %
         % Input Arguments:
-        %   - **showWaitbar** *(optional)* — [logical] show a progress dialog; default: ``0``
+        %   - **showWaitbar** *(optional)* - [logical] show a progress dialog; default: ``0``
             if obj.mibModel.preferences.System.DeveloperMode
                 fprintf('controllers.Graphcut.recalcGraph_Callback: triggered\n');
             end

@@ -9,7 +9,7 @@ function updateSegmentationPreset(obj, presetId)
 % tool; callback on Shift+click of preset1/2/3 buttons or Shift+1/2/3 keyboard shortcuts.
 %
 % Input Arguments:
-%   - **presetId** — [numeric] preset index, 1 to 3
+%   - **presetId** - [numeric] preset index, 1 to 3
 %
 % Output Arguments:
 %

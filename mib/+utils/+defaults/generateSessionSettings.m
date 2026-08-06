@@ -7,14 +7,14 @@ function sessionSettings = generateSessionSettings()
 %      sessionSettings = generateSessionSettings()
 %
 % Input Arguments:
-%   - **mibPath** — path to MIB installation directory
+%   - **mibPath** - path to MIB installation directory
 %
 % Output Arguments:
-%   - **sessionSettings** — struct with default session settings for MIB
+%   - **sessionSettings** - struct with default session settings for MIB
 %
 % Usage:
 %
-%   **Example 1** — initialise session settings at startup
+%   **Example 1** - initialise session settings at startup
 %
 %   .. code-block:: matlab
 %

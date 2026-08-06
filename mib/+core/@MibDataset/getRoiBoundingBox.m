@@ -12,24 +12,24 @@ function bb = getRoiBoundingBox(obj, roiIndex)
 % pixel coordinates (X = columns, Y = rows, Z = depth).
 %
 % The mapping depends on the orientation stored in the ROI:
-%   - ``3`` (``YX`` plane) — X/Y from bounding box, Z spans ``1`` to full depth
-%   - ``1`` (``ZX`` plane) — ROI X-axis = Z, ROI Y-axis = X; Y spans full height
-%   - ``2`` (``ZY`` plane) — ROI X-axis = Z, ROI Y-axis = Y; X spans full width
+%   - ``3`` (``YX`` plane) - X/Y from bounding box, Z spans ``1`` to full depth
+%   - ``1`` (``ZX`` plane) - ROI X-axis = Z, ROI Y-axis = X; Y spans full height
+%   - ``2`` (``ZY`` plane) - ROI X-axis = Z, ROI Y-axis = Y; X spans full width
 %
 % Input Arguments:
-%   - **roiIndex** *(optional)* — [numeric] index of the ROI to query; when omitted, ``obj.selectedROI``
+%   - **roiIndex** *(optional)* - [numeric] index of the ROI to query; when omitted, ``obj.selectedROI``
 %     is used; when negative or empty, returns ``[]`` immediately
 %
 % Output Arguments:
-%   - **bb** — [numeric] ``[minX maxX minY maxY minZ maxZ]`` in pixels, or ``[]`` when no ROI is selected
+%   - **bb** - [numeric] ``[minX maxX minY maxY minZ maxZ]`` in pixels, or ``[]`` when no ROI is selected
 %
-% **Example 1** — Get bounding box of the selected ROI:
+% **Example 1** - Get bounding box of the selected ROI:
 %
 %   .. code-block:: matlab
 %
 %      bb = obj.getRoiBoundingBox();
 %
-% **Example 2** — Get bounding box of a specific ROI by index:
+% **Example 2** - Get bounding box of a specific ROI by index:
 %
 %   .. code-block:: matlab
 %

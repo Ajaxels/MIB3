@@ -7,21 +7,22 @@ function varargout = getDatasetDimensions(obj, orient, splitDims, blockModeSwitc
 %       varargout = obj.getDatasetDimensions(orient, splitDims, blockModeSwitch)
 %
 % Input Arguments:
-%   - **orient** — *(optional)*, can be ``[]``; default ``3``:
+%   - **orient** - *(optional)*, can be ``[]``; default ``3``:
 %
-%     - ``1`` — returns dimensions in ZX configuration: ``[y,x,z,c,t]`` → ``[x,z,y,c,t]``
-%     - ``2`` — returns dimensions in ZY configuration: ``[y,x,z,c,t]`` → ``[y,z,x,c,t]``
-%     - ``3`` — returns dimensions of the original YX dataset: ``[y,x,z,c,t]``
+%     - ``1`` - returns dimensions in ZX configuration: ``[y,x,z,c,t]`` → ``[x,z,y,c,t]``
+%     - ``2`` - returns dimensions in ZY configuration: ``[y,x,z,c,t]`` → ``[y,z,x,c,t]``
+%     - ``3`` - returns dimensions of the original YX dataset: ``[y,x,z,c,t]``
 %
-%   - **splitDims** — *(optional)* logical; default ``true``:
+%   - **splitDims** - *(optional)* logical; default ``true``:
 %
-%     - ``true`` — return individual outputs: ``height``, ``width``, ``depth``, ``colors``, ``time``
-%     - ``false`` — return a single array ``[height, width, depth, colors, time]``
+%     - ``true`` - return individual outputs: ``height``, ``width``, ``depth``, ``colors``, ``time``
+%     - ``false`` - return a single array ``[height, width, depth, colors, time]``
 %
-%   - **blockModeSwitch** — *(optional)* logical; default ``false``:
-%
-%     - ``false`` — return dimensions of the full dataset
-%     - ``true`` — return dimensions of the shown (block-mode) part only
+%   - **blockModeSwitch** - *(optional)* logical; default ``false``. Must be
+%     ``false``: an image does not know which part of itself is on screen, since
+%     the shown block is ``MibDataset.slices``. Passing ``true`` raises
+%     ``MibImage:getDatasetDimensions:blockModeUnsupported``; use
+%     :meth:`core.MibDataset.getDatasetDimensions` for block-mode dimensions.
 %
 % Output Arguments:
 %   - when **splitDims** = ``true``: ``[height, width, depth, colors, time]`` as separate outputs
@@ -49,40 +50,46 @@ if nargin < 2; orient = []; end
 
 % update default settings
 if isempty(splitDims); splitDims = true; end % split dimensions
-if isempty(orient); orient = 3; end % YX-plane
+% NaN is a MIB2 leftover still passed by some call sites; without this it fell
+% through the branches below with nothing assigned, and the error named the
+% local variable ("Unrecognized function or variable 'height'") rather than the
+% argument that was wrong.
+if isempty(orient) || (isnumeric(orient) && isscalar(orient) && isnan(orient))
+    orient = 3;    % YX-plane
+end
 
 dim_yxz = [obj.height, obj.width, obj.depth];
 colors = obj.colors;
 time = obj.time;
 
+% An image does not know what part of it is on screen: the shown block is
+% dataset.slices, a MibDataset property. This branch used to read obj.slices and
+% could only ever raise "Unrecognized method, property, or field 'slices' for
+% class 'core.MibImage'" - a message that points at this file rather than at the
+% call site that asked the wrong object. Say what to do instead.
 if blockModeSwitch
-    if orient == 3 % yx
-        height = obj.slices{1}(2)-obj.slices{1}(1)+1;
-        width = obj.slices{2}(2)-obj.slices{2}(1)+1;
-        depth = dim_yxz(3);
-    elseif orient==1     % xz
-        depth = dim_yxz(1);
-        height = obj.slices{2}(2)-obj.slices{2}(1)+1;
-        width = obj.slices{3}(2)-obj.slices{3}(1)+1;
-    elseif orient==2 % yz
-        height = obj.slices{1}(2)-obj.slices{1}(1)+1;
-        width = obj.slices{3}(2)-obj.slices{3}(1)+1;
-        depth = dim_yxz(2);
-    end
-else % block mode
-    if orient == 3 % yx
+    error('MibImage:getDatasetDimensions:blockModeUnsupported', ...
+        ['core.MibImage cannot report block-mode dimensions - the shown block is\n' ...
+         'defined by MibDataset.slices. Call it on the dataset instead:\n' ...
+         '    dataset.getDatasetDimensions(''image'', [], struct(''blockModeSwitch'', true))']);
+end
+
+switch orient
+    case 3 % yx
         height = dim_yxz(1);
         width = dim_yxz(2);
         depth = dim_yxz(3);
-    elseif orient==1     % xz
+    case 1 % xz
         height = dim_yxz(2);
         width = dim_yxz(3);
         depth = dim_yxz(1);
-    elseif orient==2 % yz
+    case 2 % yz
         height = dim_yxz(1);
         width = dim_yxz(3);
         depth = dim_yxz(2);
-    end
+    otherwise
+        error('MibImage:getDatasetDimensions:badOrient', ...
+            'orient must be 1 (ZX), 2 (ZY) or 3 (YX); got %s.', num2str(orient));
 end
 
 % Return based on outputMode

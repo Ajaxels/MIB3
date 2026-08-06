@@ -2,16 +2,16 @@ classdef RGBImageTest < matlab.unittest.TestCase
 % RGBIMAGETEST - Unit tests for MibModel.getRGBimage.
 %
 % Phase 0 confirmed getRGBimage works headlessly. Tests use
-%   options.resizeToMagnification = false  — magnificationFactor = 1, no resize
-%   options.useLut = false                 — direct grayscale mapping, predictable pixels
-%   options.sliceNo = 1                    — fix slice to avoid current-position dependency
-%   options.blockModeSwitch = 0            — return full slice, not cropped viewport
+%   options.resizeToMagnification = false  - magnificationFactor = 1, no resize
+%   options.useLut = false                 - direct grayscale mapping, predictable pixels
+%   options.sliceNo = 1                    - fix slice to avoid current-position dependency
+%   options.blockModeSwitch = 0            - return full slice, not cropped viewport
 %
 % Verification strategies:
-%   output size     — [h, w, 3] for a single-channel h×w image
-%   output class    — uint8
-%   all-white input — all-255 single-channel image produces all-255 RGB
-%   all-black input — all-0 single-channel image produces all-0 RGB
+%   output size     - [h, w, 3] for a single-channel h×w image
+%   output class    - uint8
+%   all-white input - all-255 single-channel image produces all-255 RGB
+%   all-black input - all-0 single-channel image produces all-0 RGB
 
     methods (TestClassSetup)
         function addPaths(testCase)

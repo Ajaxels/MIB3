@@ -13,22 +13,22 @@ function insertSlice(obj, img, insertPosition, meta, options)
 % auxiliary layer (labels, mask, selection).
 %
 % Input Arguments:
-%   - **img** — new 2D-5D image stack to insert, dimensions [height, width, depth, colors, time]
-%   - **insertPosition** — *(optional)* position where to insert the new slice/volume
+%   - **img** - new 2D-5D image stack to insert, dimensions [height, width, depth, colors, time]
+%   - **insertPosition** - *(optional)* position where to insert the new slice/volume
 %     starting from **1.** When omitted, *NaN,* or *0* - appends to the end
-%   - **meta** — *(optional)* dictionary with dataset parameters,
+%   - **meta** - *(optional)* dictionary with dataset parameters,
 %     used to retrieve ``'SliceName'`` and ``'SliceSize'`` entries for the
 %     inserted slices; can be ``[]``.  When not provided and the dataset
 %     already has per-slice filenames, slice names are auto-generated from
 %     the neighboring slice name with an ``_empty_NNN`` suffix.
-%   - **options** — *(optional)* structure with additional parameters
+%   - **options** - *(optional)* structure with additional parameters
 %
-%     - ``.dim`` — string defining insertion dimension: 'depth' (default) or 'time'
-%     - ``.BackgroundColorIntensity`` — background fill value for dimension mismatches
-%     - ``.silentMode`` — logical; when **true** no dialogs are shown
-%     - ``.showWaitbar`` — logical; **true** (default) shows a progress waitbar
-%     - ``.ParentFigure`` — handle to parent figure for dialog centering (default: ``[]``)
-%     - ``.mibPath`` — path to MIB installation directory
+%     - ``.dim`` - string defining insertion dimension: 'depth' (default) or 'time'
+%     - ``.BackgroundColorIntensity`` - background fill value for dimension mismatches
+%     - ``.silentMode`` - logical; when **true** no dialogs are shown
+%     - ``.showWaitbar`` - logical; **true** (default) shows a progress waitbar
+%     - ``.ParentFigure`` - handle to parent figure for dialog centering (default: ``[]``)
+%     - ``.mibPath`` - path to MIB installation directory
 %
 % Output Arguments:
 %   none

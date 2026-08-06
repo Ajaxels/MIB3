@@ -48,9 +48,9 @@ classdef CropObjects < handle
             %      CropObjects.ViewListner_Callback2(obj, src, evnt)
             %
             % Input Arguments:
-            %   - **obj** — handle to the CropObjects controller instance
-            %   - **src** — event source handle (unused)
-            %   - **evnt** — event data; ``evnt.EventName`` identifies the event
+            %   - **obj** - handle to the CropObjects controller instance
+            %   - **src** - event source handle (unused)
+            %   - **evnt** - event data; ``evnt.EventName`` identifies the event
             %
             % Output Arguments:
             %   (none)
@@ -79,17 +79,17 @@ classdef CropObjects < handle
             %      obj = CropObjects(mibModel, parentController, batchModeSwitch, annotationLabels)
             %
             % Input Arguments:
-            %   - **mibModel** — handle to MibModel
-            %   - **parentController** — handle to the parent Annotations controller
-            %   - **batchModeSwitch** — *(optional)* logical; when ``true``, runs in
+            %   - **mibModel** - handle to MibModel
+            %   - **parentController** - handle to the parent Annotations controller
+            %   - **batchModeSwitch** - *(optional)* logical; when ``true``, runs in
             %     headless mode without opening the GUI
-            %   - **annotationLabels** — *(optional)* struct with annotation crop coordinates
+            %   - **annotationLabels** - *(optional)* struct with annotation crop coordinates
             %
-            %     - ``.positions`` — [Nx4] matrix with [z, x, y, t] annotation coordinates
-            %     - ``.names`` — {Nx1} cell array of label strings
+            %     - ``.positions`` - [Nx4] matrix with [z, x, y, t] annotation coordinates
+            %     - ``.names`` - {Nx1} cell array of label strings
             %
             % Output Arguments:
-            %   - **obj** — new CropObjects controller instance
+            %   - **obj** - new CropObjects controller instance
             %
 
             if nargin < 4; annotationLabels = []; end
@@ -393,7 +393,7 @@ classdef CropObjects < handle
             %      obj.updateBatchOptFromGUI(hObject)
             %
             % Input Arguments:
-            %   - **hObject** — handle to the widget that changed; ``hObject.Tag``
+            %   - **hObject** - handle to the widget that changed; ``hObject.Tag``
             %     identifies the BatchOpt field to update
             %
             % Output Arguments:
@@ -448,7 +448,7 @@ classdef CropObjects < handle
                 h.dirEdit.Enable      = 'on';
                 obj.parentController.BatchOpt.CropObjectsTo{1} = h.formatPopup.Value;
             else
-                % MATLAB export — ask for variable name
+                % MATLAB export - ask for variable name
                 notOk = true;
                 while notOk
                     answer = utils.dlgs.inputSingleDlg(obj.view.gui, ...
@@ -950,18 +950,18 @@ classdef CropObjects < handle
             %      obj.saveAuxLayer(data, format, fnBase, pixSize, xMinPhys, yMinPhys, zMinPhys, colors, names, saveOpts, id, layerType)
             %
             % Input Arguments:
-            %   - **data** — [H x W x D] uint8 array with model/mask voxel data
-            %   - **format** — [char] one of the ``CropObjectsIncludeModel``/``CropObjectsIncludeMask`` option strings
-            %   - **fnBase** — [char] base filename without extension; directory already included
-            %   - **pixSize** — struct with physical voxel size fields ``.x``, ``.y``, ``.z``, ``.units``
-            %   - **xMinPhys** — [double] physical X origin of the crop region
-            %   - **yMinPhys** — [double] physical Y origin of the crop region
-            %   - **zMinPhys** — [double] physical Z origin of the crop region
-            %   - **colors** — [Nx3] colour matrix for Amira label export
-            %   - **names** — {Nx1} cell array of material names
-            %   - **saveOpts** — shared save options struct (unused; reserved for future use)
-            %   - **id** — [numeric] active dataset index
-            %   - **layerType** — [char] ``'model'`` or ``'mask'``
+            %   - **data** - [H x W x D] uint8 array with model/mask voxel data
+            %   - **format** - [char] one of the ``CropObjectsIncludeModel``/``CropObjectsIncludeMask`` option strings
+            %   - **fnBase** - [char] base filename without extension; directory already included
+            %   - **pixSize** - struct with physical voxel size fields ``.x``, ``.y``, ``.z``, ``.units``
+            %   - **xMinPhys** - [double] physical X origin of the crop region
+            %   - **yMinPhys** - [double] physical Y origin of the crop region
+            %   - **zMinPhys** - [double] physical Z origin of the crop region
+            %   - **colors** - [Nx3] colour matrix for Amira label export
+            %   - **names** - {Nx1} cell array of material names
+            %   - **saveOpts** - shared save options struct (unused; reserved for future use)
+            %   - **id** - [numeric] active dataset index
+            %   - **layerType** - [char] ``'model'`` or ``'mask'``
             %
             % Output Arguments:
             %   (none)

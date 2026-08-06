@@ -17,53 +17,53 @@ function [outputLabels, scoreImg, cancelled] = processBlocksBlockedImage(obj, vo
 % classification, dynamic masking, and optional score-map generation.
 %
 % Input Arguments:
-%   - **obj** — MibDeep controller instance
-%   - **vol** — input image volume
-%     - 2D  — [height, width, colors]
-%     - 2.5D/3D — [height, width, depth, colors]
-%   - **zValue** — z-slice index used when building output filenames for the 2.5D
+%   - **obj** - MibDeep controller instance
+%   - **vol** - input image volume
+%     - 2D  - [height, width, colors]
+%     - 2.5D/3D - [height, width, depth, colors]
+%   - **zValue** - z-slice index used when building output filenames for the 2.5D
 %     per-slice loop; pass NaN for full-volume (2D / 3D) calls
-%   - **net** — trained deep learning network loaded from the network file
-%   - **inputPatchSize** — patch size expected by the network [height, width, colors]
+%   - **net** - trained deep learning network loaded from the network file
+%   - **inputPatchSize** - patch size expected by the network [height, width, colors]
 %     or [height, width, depth, colors]
-%   - **outputPatchSize** — network output patch size; equals inputPatchSize for
+%   - **outputPatchSize** - network output patch size; equals inputPatchSize for
 %     'same' padding, smaller for 'valid' padding
-%   - **blockSize** — effective tile footprint passed to blockedImage/apply; already
+%   - **blockSize** - effective tile footprint passed to blockedImage/apply; already
 %     reduced by padShift when overlap-tile mode is active
-%   - **padShift** — border overlap in pixels [height, width] or [height, width, depth];
+%   - **padShift** - border overlap in pixels [height, width] or [height, width, depth];
 %     zero when overlap-tile mode is off
-%   - **dataDimension** — numeric, dataset/network dimensionality
-%     - 2   — 2D network
-%     - 2.5 — 2.5D (Z-context) network
-%     - 3   — 3D network
-%   - **patchwiseWorkflowSwitch** — logical; true for the '2D Patch-wise' workflow
+%   - **dataDimension** - numeric, dataset/network dimensionality
+%     - 2   - 2D network
+%     - 2.5 - 2.5D (Z-context) network
+%     - 3   - 3D network
+%   - **patchwiseWorkflowSwitch** - logical; true for the '2D Patch-wise' workflow
 %     where the Exterior class is not removed and per-patch CSV files are written
-%   - **patchwisePatchesPredictSwitch** — logical; true when prediction images are
-%     stored in class-named subfolders (patch classification mode) — skips
+%   - **patchwisePatchesPredictSwitch** - logical; true when prediction images are
+%     stored in class-named subfolders (patch classification mode) - skips
 %     the gather/crop post-processing
-%   - **classNames** — cell array of class name strings loaded from the network file
-%   - **generateScoreFiles** — score-file format selector
-%     - 0 — do not generate score files
-%     - 1 — AmiraMesh (.am)
-%     - 2 — MATLAB non-compressed (.mibImg)
-%     - 3 — MATLAB compressed (.mibImg)
-%     - 4 — MATLAB non-compressed, range 0–1 (.mat)
-%   - **executionEnvironment** — string passed to segmentBlockedImage
-%     - 'cpu' — CPU only
-%     - 'gpu' — single GPU
-%     - 'multi-gpu' — multiple GPUs (patch-wise only)
-%     - 'parallel' — parallel pool
-%   - **fn** — base filename (no extension) of the current image; used when writing
+%   - **classNames** - cell array of class name strings loaded from the network file
+%   - **generateScoreFiles** - score-file format selector
+%     - 0 - do not generate score files
+%     - 1 - AmiraMesh (.am)
+%     - 2 - MATLAB non-compressed (.mibImg)
+%     - 3 - MATLAB compressed (.mibImg)
+%     - 4 - MATLAB non-compressed, range 0-1 (.mat)
+%   - **executionEnvironment** - string passed to segmentBlockedImage
+%     - 'cpu' - CPU only
+%     - 'gpu' - single GPU
+%     - 'multi-gpu' - multiple GPUs (patch-wise only)
+%     - 'parallel' - parallel pool
+%   - **fn** - base filename (no extension) of the current image; used when writing
 %     per-patch CSV score/label files
-%   - **pwb** — *(optional)* uiprogressdlg handle used to check for user
+%   - **pwb** - *(optional)* uiprogressdlg handle used to check for user
 %     cancellation between the pre-apply and post-apply stages; pass [] when
 %     no progress dialog is active
 %
 % Output Arguments:
-%   - **outputLabels** — predicted label matrix (uint8); [] when cancelled
-%   - **scoreImg** — probability/score map array; [] when cancelled, 0 when
+%   - **outputLabels** - predicted label matrix (uint8); [] when cancelled
+%   - **scoreImg** - probability/score map array; [] when cancelled, 0 when
 %     generateScoreFiles == 0
-%   - **cancelled** — logical; true when the user pressed Cancel on pwb
+%   - **cancelled** - logical; true when the user pressed Cancel on pwb
 %
 % Usage:
 %   Example 1 - Typical call from startPredictionBlockedImage (2D full-volume path)::

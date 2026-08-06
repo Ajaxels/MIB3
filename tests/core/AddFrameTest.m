@@ -7,11 +7,11 @@ classdef AddFrameTest < matlab.unittest.TestCase
 % Both methods take BatchOpt + parentFigure ([] suppresses the progress dialog).
 %
 % Verification strategies:
-%   addFrame both    — h grows by 2*extH, w grows by 2*extW
-%   addFrame pre     — only one side is added
-%   addFrame content — original pixels survive inside the padded region
-%   addFrameToImage  — canvas reaches target dimensions
-%   addFrameToImage offset — original pixels placed at expected position
+%   addFrame both    - h grows by 2*extH, w grows by 2*extW
+%   addFrame pre     - only one side is added
+%   addFrame content - original pixels survive inside the padded region
+%   addFrameToImage  - canvas reaches target dimensions
+%   addFrameToImage offset - original pixels placed at expected position
 
     methods (TestClassSetup)
         function addPaths(testCase)

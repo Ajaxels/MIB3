@@ -12,31 +12,31 @@ function interpolateImage(obj, imgType, intType, BatchOptIn)
 % Intermediate slices between any two annotated slices are filled in.
 %
 % Input Arguments:
-%   - **imgType** — *(optional)* string, layer to interpolate; default ``'selection'``:
+%   - **imgType** - *(optional)* string, layer to interpolate; default ``'selection'``:
 %
-%     - ``'selection'`` — smooth the Selection layer
-%     - ``'mask'`` — smooth the Mask layer
-%     - ``'labels'`` — smooth a material of the Labels (segmentation model) layer
+%     - ``'selection'`` - smooth the Selection layer
+%     - ``'mask'`` - smooth the Mask layer
+%     - ``'labels'`` - smooth a material of the Labels (segmentation model) layer
 %
-%   - **intType** — *(optional)* string, interpolation algorithm; default from preferences:
+%   - **intType** - *(optional)* string, interpolation algorithm; default from preferences:
 %
-%     - ``'shape'`` — contour-based interpolation, best for filled shapes/blobs
-%     - ``'line'`` — endpoint-based interpolation, best for open lines/membranes
+%     - ``'shape'`` - contour-based interpolation, best for filled shapes/blobs
+%     - ``'line'`` - endpoint-based interpolation, best for open lines/membranes
 %
-%   - **BatchOptIn** — *(optional)* structure for batch processing mode; when ``NaN``,
+%   - **BatchOptIn** - *(optional)* structure for batch processing mode; when ``NaN``,
 %     returns a structure with default options via the "SyncBatch" event:
 %
-%     - ``.Target`` — cell string, ``{'mask','selection','labels'}`` layer to interpolate
-%     - ``.InterpolationType`` — cell string, ``{'shape','line'}`` algorithm
-%     - ``.MaterialIndex`` — string [*only* for ``'labels'``], index of the material
-%     - ``.showWaitbar`` — logical, show or not the waitbar
-%     - ``.id`` — *(optional)* dataset index 1–9, default = ``obj.id``
+%     - ``.Target`` - cell string, ``{'mask','selection','labels'}`` layer to interpolate
+%     - ``.InterpolationType`` - cell string, ``{'shape','line'}`` algorithm
+%     - ``.MaterialIndex`` - string [*only* for ``'labels'``], index of the material
+%     - ``.showWaitbar`` - logical, show or not the waitbar
+%     - ``.id`` - *(optional)* dataset index 1-9, default = ``obj.id``
 %
 % Output Arguments:
-%   (none) — returns early on cancel, invalid input, or unsupported mode.
+%   (none) - returns early on cancel, invalid input, or unsupported mode.
 %
 % Usage:
-%   **Example 1** — shape-interpolate current selection
+%   **Example 1** - shape-interpolate current selection
 %
 %   .. code-block:: matlab
 %

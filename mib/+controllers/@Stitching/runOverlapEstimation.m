@@ -6,7 +6,7 @@ function cancelled = runOverlapEstimation(obj)
 %
 %      cancelled = obj.runOverlapEstimation()
 %
-% Grid-style layout sources only (Grid, Filename pattern — both carry ``.gridRC``).
+% Grid-style layout sources only (Grid, Filename pattern - both carry ``.gridRC``).
 % Calls :func:`utils.stitch.estimateOverlap` (full-tile phase correlation with
 % peak verification, median over the grid), writes the recovered percentages into
 % ``BatchOpt.OverlapX/OverlapY`` and rebuilds the layout so the subsequent tight
@@ -20,13 +20,13 @@ function cancelled = runOverlapEstimation(obj)
 % and need no overlap guess.
 %
 % Shows a Cancelable progress dialog while the sampled tile pairs are read and
-% registered — reading full-resolution tiles can take a noticeable time for
+% registered - reading full-resolution tiles can take a noticeable time for
 % large files. Returns ``cancelled = true`` (and leaves BatchOpt untouched) if
 % the user cancels before the estimate finished; callers must check this and
 % stop rather than continue to Measure overlaps with an un-estimated guess.
 %
 % Output Arguments:
-%   - **cancelled** — [logical] ``true`` when the user cancelled the estimate.
+%   - **cancelled** - [logical] ``true`` when the user cancelled the estimate.
 %
 
 cancelled = false;

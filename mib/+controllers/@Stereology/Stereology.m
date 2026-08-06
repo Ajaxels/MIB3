@@ -56,8 +56,8 @@ classdef Stereology < handle
             %       obj = Stereology(mibModel)
             %
             % Input Arguments:
-            %   - **mibModel** — handle to MibModel
-            %   - **varargin{1}** — controller handle (unused, for startController compatibility)
+            %   - **mibModel** - handle to MibModel
+            %   - **varargin{1}** - controller handle (unused, for startController compatibility)
             %
 
             obj.mibModel = mibModel;

@@ -13,11 +13,11 @@ function undo(obj, newIndex)
 % Entries holding a pixel snapshot of a segmentation layer carry the model type
 % they were captured at (``storeOptions.modelType``). When the live labels layer
 % has since changed type, it is converted back before the snapshot is applied
-% and the current layers are kept for redo as a ``'modelLayers'`` entry — see
+% and the current layers are kept for redo as a ``'modelLayers'`` entry - see
 % :func:`core.MibDataset.copyModelLayers`.
 %
 % Input Arguments:
-%   - **newIndex** — *(optional)* index of the dataset to restore. When omitted
+%   - **newIndex** - *(optional)* index of the dataset to restore. When omitted
 %     (or NaN), restores the last stored dataset (Ctrl+Z behavior). When
 %     provided, navigates the undo history to the specified index (toolbar
 %     arrow button behavior).
@@ -25,7 +25,7 @@ function undo(obj, newIndex)
 % Output Arguments:
 %
 % Usage:
-%   **Example 1** — undo last action (Ctrl+Z shortcut handler in mibController)
+%   **Example 1** - undo last action (Ctrl+Z shortcut handler in mibController)
 %
 %   .. code-block:: matlab
 %
@@ -34,14 +34,14 @@ function undo(obj, newIndex)
 %      obj.mibModel.undo();
 %      obj.showImage();
 %
-%   **Example 2** — navigate to a specific index in the undo history (toolbar arrow button)
+%   **Example 2** - navigate to a specific index in the undo history (toolbar arrow button)
 %
 %   .. code-block:: matlab
 %
 %      obj.mibModel.undo(3);
 %      obj.showImage();
 %
-%   **Example 3** — typical backup + undo workflow from a controller
+%   **Example 3** - typical backup + undo workflow from a controller
 %
 %   .. code-block:: matlab
 %
@@ -49,14 +49,14 @@ function undo(obj, newIndex)
 %      obj.mibModel.I{obj.mibModel.id}.setData2D(newSelection, 'selection', sliceNo, [], NaN);
 %      obj.mibModel.undo();
 %
-%   **Example 4** — undo with 3D data — backup and undo work symmetrically
+%   **Example 4** - undo with 3D data - backup and undo work symmetrically
 %
 %   .. code-block:: matlab
 %
 %      obj.mibModel.backup('mask', 1);
 %      obj.mibModel.undo();
 %
-%   **Example 5** — undo for image type — also restores metadata (dimensions, pixSize, viewPort)
+%   **Example 5** - undo for image type - also restores metadata (dimensions, pixSize, viewPort)
 %
 %   .. code-block:: matlab
 %
@@ -72,9 +72,9 @@ if isnan(newIndex)  % result of Ctrl+Z combination
     newIndex = obj.Backup.prevUndoIndex;
     newDataIndex = obj.Backup.undoIndex;
 else                % when using arrow button in the toolbar
-    if newIndex < obj.Backup.undoIndex   % shift left — do undo
+    if newIndex < obj.Backup.undoIndex   % shift left - do undo
         newDataIndex = newIndex + 1;
-    else                                  % shift right — do redo
+    else                                  % shift right - do redo
         newDataIndex = newIndex - 1;
     end
 end

@@ -5,10 +5,10 @@ classdef TransposeDatasetTest < matlab.unittest.TestCase
 %   parentFigure = [] suppresses the progress dialog.
 %
 % Verification strategies:
-%   Z<->T dim swap   — depth and time are exchanged
-%   Z<->T round-trip — double transpose restores original dims and pixel data
-%   YX->XY dim swap  — height and width are exchanged
-%   YX->YZ dim swap  — width becomes old depth and depth becomes old width
+%   Z<->T dim swap   - depth and time are exchanged
+%   Z<->T round-trip - double transpose restores original dims and pixel data
+%   YX->XY dim swap  - height and width are exchanged
+%   YX->YZ dim swap  - width becomes old depth and depth becomes old width
 
     methods (TestClassSetup)
         function addPaths(testCase)

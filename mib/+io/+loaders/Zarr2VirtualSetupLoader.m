@@ -1,9 +1,9 @@
 classdef Zarr2VirtualSetupLoader < io.loaders.BaseImageLoader
-% ZARR2VIRTUALSETUPLOADER - Setup loader for OME-Zarr v2 datasets — handles all dataset modes.
+% ZARR2VIRTUALSETUPLOADER - Setup loader for OME-Zarr v2 datasets - handles all dataset modes.
 %
 % Zarr v2 has no native (zarrMex/zarr-matlab) engine, so this loader is always
 % python-backed: metadata is parsed directly from the v2 JSON sidecar files
-% (``.zattrs``/``.zgroup``/``.zarray``, pure MATLAB ``jsondecode`` — no python
+% (``.zattrs``/``.zgroup``/``.zarray``, pure MATLAB ``jsondecode`` - no python
 % needed just to discover shape/dtype/pyramid structure), while pixel data is
 % read through ``io.zarr.PyBackend`` (``zarr.open`` + raw ``pyrun`` byte
 % transfers), which is format-agnostic and already part of the v3 dual-backend
@@ -18,7 +18,7 @@ classdef Zarr2VirtualSetupLoader < io.loaders.BaseImageLoader
 % metadata; pixels are read on demand by Zarr2VirtualLoader.
 % BigData : identical to Virtual mode (image reads are pyramid-aware and
 % on-demand either way; BigData additionally gets a disk-backed
-% *editable* label pyramid for zarr v3 only — a zarr v2 BigData
+% *editable* label pyramid for zarr v3 only - a zarr v2 BigData
 % dataset can only display an EXISTING labels array read-only,
 % via core.MibBigDataLabelsZarr2, not create a new one).
 % Model : loadImages() loads the full labels array into memory (same
@@ -29,10 +29,10 @@ classdef Zarr2VirtualSetupLoader < io.loaders.BaseImageLoader
 % from loaderInfo.mode).
 %
 % Supported formats:
-% - OME-Zarr v2 (.zattrs/.zgroup/.zarray metadata) — local folders and HTTP/HTTPS URLs
-% - Single-array zarr v2 (no multiscales metadata) — treated as 1 level
+% - OME-Zarr v2 (.zattrs/.zgroup/.zarray metadata) - local folders and HTTP/HTTPS URLs
+% - Single-array zarr v2 (no multiscales metadata) - treated as 1 level
 %
-% **Example 1** — Virtual mode (typical usage via MibModel.loadImages):
+% **Example 1** - Virtual mode (typical usage via MibModel.loadImages):
 %
 %   .. code-block:: matlab
 %
@@ -42,7 +42,7 @@ classdef Zarr2VirtualSetupLoader < io.loaders.BaseImageLoader
 %      [img, imginfo] = loader.loadImages(files, imginfo, opts);
 %      % img = {'C:\data\stack.zarr2'} and imginfo{"Pyramid"} holds the struct
 %
-% **Example 2** — Standard mode (prompts user to select pyramid level, returns pixel data):
+% **Example 2** - Standard mode (prompts user to select pyramid level, returns pixel data):
 %
 %   .. code-block:: matlab
 %
@@ -64,14 +64,14 @@ methods
         %      obj = Zarr2VirtualSetupLoader(options)
         %
         % Input Arguments:
-        %   - **options** — *(optional)* [struct] options including:
+        %   - **options** - *(optional)* [struct] options including:
         %
-        %     - ``.datasetMode`` — [char] ``'Standard'``, ``'Virtual'``, ``'BigData'``,
+        %     - ``.datasetMode`` - [char] ``'Standard'``, ``'Virtual'``, ``'BigData'``,
         %       or ``'Model'`` (set by LoaderFactory from loaderInfo.mode; default: ``'Virtual'``)
-        %     - ``.ParentFigure`` — [handle] parent figure handle for dialogs
+        %     - ``.ParentFigure`` - [handle] parent figure handle for dialogs
         %
         % Output Arguments:
-        %   - **obj** — [Zarr2VirtualSetupLoader] new loader instance
+        %   - **obj** - [Zarr2VirtualSetupLoader] new loader instance
 
         obj.Options = struct();
         obj.Options.Font = struct('FontName', 'Helvetica', 'FontSize', 12);
@@ -92,19 +92,19 @@ methods
         %      [imginfo, files] = obj.loadMetadata(filenames, options)
         %
         % Confirms the python zarr backend is usable (fails fast, once, at
-        % open time — see ``io.zarr.PyBackend.ensureLoaded``), then reads
+        % open time - see ``io.zarr.PyBackend.ensureLoaded``), then reads
         % ``.zattrs``/``.zarray`` (works for local paths and HTTP/HTTPS URLs).
         % Extracts pyramid levels, axis order, shapes, chunk sizes, and pixel
         % sizes from the OME-Zarr multiscales attribute. Falls back to a
         % single-level read if no multiscales found.
         %
         % Input Arguments:
-        %   - **filenames** — [1x1 cell] path to the zarr root folder or URL
-        %   - **options** — *(optional)* [struct] unused; present for interface compatibility
+        %   - **filenames** - [1x1 cell] path to the zarr root folder or URL
+        %   - **options** - *(optional)* [struct] unused; present for interface compatibility
         %
         % Output Arguments:
-        %   - **imginfo** — [dictionary] image metadata (Height, Width, Depth, etc.)
-        %   - **files** — [struct] parsed metadata for use by loadImages
+        %   - **imginfo** - [dictionary] image metadata (Height, Width, Depth, etc.)
+        %   - **files** - [struct] parsed metadata for use by loadImages
 
         imginfo = core.MibImage.initializeImgInfo();
         rootPath = filenames{1};
@@ -143,7 +143,7 @@ methods
         if ~isempty(ms)
             [files, imginfo] = obj.parseMultiscalesV2(rootPath, ms, imginfo);
         else
-            % multiscales not at root — common in OME-Zarr label containers
+            % multiscales not at root - common in OME-Zarr label containers
             % where root has "labels": ["name"] and multiscales is one level down.
             subPath = obj.findMultiscalesSubPathV2(rootPath, attrs, isHttp);
             if ~isempty(subPath)
@@ -164,7 +164,7 @@ methods
             imginfo{"BoundingBox"} = reshape(double(attrs.mibBoundingBox), 1, 6);
         end
 
-        % Every loader sets numEntries in loadMetadata (not loadImages) — it's
+        % Every loader sets numEntries in loadMetadata (not loadImages) - it's
         % checked by core.MibDataset.loadModel right after loadMetadata returns,
         % before loadImages is ever called.
         imginfo{"numEntries"} = 1;
@@ -186,14 +186,14 @@ methods
         % imginfo{"Pyramid"} and imginfo{"Virtual"} for on-demand reading.
         %
         % Input Arguments:
-        %   - **files** — [struct] from loadMetadata
-        %   - **imginfo** — [dictionary] from loadMetadata
-        %   - **options** — [struct] relevant field: ``.ParentFigure`` (for dialogs)
+        %   - **files** - [struct] from loadMetadata
+        %   - **imginfo** - [dictionary] from loadMetadata
+        %   - **options** - [struct] relevant field: ``.ParentFigure`` (for dialogs)
         %
         % Output Arguments:
-        %   - **img** — Standard/Model mode: [1x1 cell] holding [y,x,z,c,t] numeric array;
+        %   - **img** - Standard/Model mode: [1x1 cell] holding [y,x,z,c,t] numeric array;
         %     Virtual/BigData mode: [1x1 cell] holding the zarr root path string
-        %   - **imginfo** — [dictionary] updated; Virtual mode adds ``"Pyramid"`` and
+        %   - **imginfo** - [dictionary] updated; Virtual mode adds ``"Pyramid"`` and
         %     ``"Virtual"`` keys; Model mode adds ``"numEntries"`` and, when found,
         %     ``"modelMaterialNames"``/``"modelMaterialColors"``
 
@@ -253,7 +253,7 @@ methods (Access = private)
         shardSizes             = cell(nLevels, 1); % v2 has no sharding; mirrors chunkSizes
 
         % See Zarr3VirtualSetupLoader.parseMultiscales for the full
-        % coordinateTransformation semantics — identical here (version-agnostic).
+        % coordinateTransformation semantics - identical here (version-agnostic).
         globalScales = ones(1, numel(axisLabels));
         if isfield(ms, 'coordinateTransformations')
             globalScales = io.loaders.OmeZarrMetadataUtils.extractScaleFromCT(ms.coordinateTransformations, ...
@@ -518,7 +518,7 @@ methods (Access = private)
         %
         %      [img, imginfo] = obj.loadImagesModelV2(files, imginfo, options)
         %
-        % Always reads level 0 (the finest/only level) fully into memory —
+        % Always reads level 0 (the finest/only level) fully into memory -
         % models are always loaded whole, regardless of dataset mode, mirroring
         % every other MibDataset.loadModel loader. Material names/colors are
         % resolved from the store's metadata: MIB's own ``mibMaterials``
@@ -564,7 +564,7 @@ methods (Access = private)
         Pyramid.shardSizes             = files.shardSizes;
         Pyramid.axisOrder              = files.axisOrder;
         % Selects the Zarr2VirtualLoader branch in MibVirtualImage.getDataZarr
-        % (default 'zarr3' otherwise) — required since this is a python-only,
+        % (default 'zarr3' otherwise) - required since this is a python-only,
         % non-zarrMex-openable store.
         Pyramid.sourceType              = 'zarr2';
         imginfo{"Pyramid"} = Pyramid;
@@ -715,7 +715,7 @@ methods (Access = private)
         % READMATERIALMETADATAV2 - Resolve model material names/colors from store metadata.
         %
         % Fetches the v2 ``.zattrs`` sidecars (root group and, if present, the
-        % array level — level-array attributes take precedence on key
+        % array level - level-array attributes take precedence on key
         % collisions) and delegates the actual name/color extraction to the
         % version-agnostic ``io.loaders.OmeZarrMetadataUtils.resolveMaterialMetadata``
         % (shared with ``Zarr3VirtualSetupLoader`` and ``core.MibBigDataLabelsZarr2``).

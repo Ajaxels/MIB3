@@ -12,12 +12,12 @@ function annotationText = measureCircle(obj, datasetId, colCh, finetuneCheck, ca
 % fit.  Stores a 60-point circle arc as ``X``/``Y`` for overlay rendering.
 %
 % Input Arguments:
-%   - **datasetId** — [double] index into ``mibModel.I``
-%   - **colCh** — [double] colour channel (0 = all, 1+ = specific)
-%   - **finetuneCheck** — [logical] when ``false`` accept the ellipse immediately after placement (no double-click required)
-%   - **calcIntensity** — [logical] compute radial intensity profile
-%   - **showInfoDlg** — [logical] show annotation text dialog
-%   - **insertIndex** — *(optional)* [double] replace-at-position (0 = append)
+%   - **datasetId** - [double] index into ``mibModel.I``
+%   - **colCh** - [double] colour channel (0 = all, 1+ = specific)
+%   - **finetuneCheck** - [logical] when ``false`` accept the ellipse immediately after placement (no double-click required)
+%   - **calcIntensity** - [logical] compute radial intensity profile
+%   - **showInfoDlg** - [logical] show annotation text dialog
+%   - **insertIndex** - *(optional)* [double] replace-at-position (0 = append)
 %
 
 if nargin < 7; insertIndex = 0; end

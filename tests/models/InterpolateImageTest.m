@@ -8,11 +8,11 @@ classdef InterpolateImageTest < matlab.unittest.TestCase
 % gives nargin=4, triggering the batch path (no dialogs).
 %
 % Verification strategies:
-%   shape interpolation — annotate selection at z=1 and z=3; leave z=2
+%   shape interpolation - annotate selection at z=1 and z=3; leave z=2
 %                         empty; after interpolation z=2 must be non-zero
-%   mask target         — same logic for the Mask layer
-%   empty input         — all-zero selection stays all-zero (no-op)
-%   image unchanged     — image pixels must not be modified
+%   mask target         - same logic for the Mask layer
+%   empty input         - all-zero selection stays all-zero (no-op)
+%   image unchanged     - image pixels must not be modified
 
     methods (TestClassSetup)
         function addPaths(testCase)

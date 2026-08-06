@@ -12,34 +12,34 @@ function result = setData2D(obj, dataset, type, slice_no, orient, col_channel, o
 % All argument semantics are identical to core.MibDataset.setData2D.
 %
 % Input Arguments:
-%   - **dataset** — 2D image data — matrix or cell array; see ``MibDataset.setData2D``
-%   - **type** — type of the dataset layer to update:
+%   - **dataset** - 2D image data - matrix or cell array; see ``MibDataset.setData2D``
+%   - **type** - type of the dataset layer to update:
 %
-%     - ``'image'`` — [*default*] the image layer
-%     - ``'labels'`` — labels layer with segmentation
-%     - ``'mask'`` — mask layer
-%     - ``'selection'`` — selection layer
-%     - ``'everything'`` — packed model/mask/selection (MibLabels63 only)
+%     - ``'image'`` - [*default*] the image layer
+%     - ``'labels'`` - labels layer with segmentation
+%     - ``'mask'`` - mask layer
+%     - ``'selection'`` - selection layer
+%     - ``'everything'`` - packed model/mask/selection (MibLabels63 only)
 %
-%   - **slice_no** — *(optional)* slice index; ``[]`` = current slice
-%   - **orient** — *(optional)* orientation; ``[]`` = current orientation
-%   - **col_channel** — *(optional)* colour channel(s); ``[]`` = current channels; ``NaN`` = all
-%   - **options** — *(optional)* struct with extra parameters:
+%   - **slice_no** - *(optional)* slice index; ``[]`` = current slice
+%   - **orient** - *(optional)* orientation; ``[]`` = current orientation
+%   - **col_channel** - *(optional)* colour channel(s); ``[]`` = current channels; ``NaN`` = all
+%   - **options** - *(optional)* struct with extra parameters:
 %
-%     - ``.id`` — *(optional)* dataset index 1-9; default = ``obj.id``
-%     - ``.blockModeSwitch``, ``.roiId``, ``.fillBg``, ``.x``, ``.y``, ``.t`` — see ``MibDataset.setData2D``
+%     - ``.id`` - *(optional)* dataset index 1-9; default = ``obj.id``
+%     - ``.blockModeSwitch``, ``.roiId``, ``.fillBg``, ``.x``, ``.y``, ``.t`` - see ``MibDataset.setData2D``
 %
 % Output Arguments:
-%   - **result** — logical; true on success, false on failure
+%   - **result** - logical; true on success, false on failure
 %
 % Usage:
-%   **Example 1** — update selection on current slice
+%   **Example 1** - update selection on current slice
 %
 %   .. code-block:: matlab
 %
 %      result = obj.mibModel.setData2D(slice, 'selection');
 %
-%   **Example 2** — slice 5, XY orient, ch 2
+%   **Example 2** - slice 5, XY orient, ch 2
 %
 %   .. code-block:: matlab
 %

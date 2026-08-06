@@ -18,12 +18,12 @@ function SingleLandmark_Alignment(obj, parameters)
 % write back to the model.
 %
 % Input Arguments:
-%   - **parameters** — struct produced by :meth:`continueBtn_Callback`. Only
+%   - **parameters** - struct produced by :meth:`continueBtn_Callback`. Only
 %     ``backgroundColor``, ``useBatchMode`` are used here.
 
 id = obj.mibModel.getActiveId();
 
-% Parent figure for any dialogs — ``obj.view`` is empty in batch mode
+% Parent figure for any dialogs - ``obj.view`` is empty in batch mode
 if ~isempty(obj.view) && isvalid(obj.view) && isvalid(obj.view.gui)
     parentFig = obj.view.gui;
 else
@@ -179,7 +179,7 @@ imageStack = cell2mat(obj.mibModel.getData4D('image', [], NaN));
 imageStackOut = utils.align.crossShiftStack(imageStack, obj.shiftsX, obj.shiftsY, shiftOpts);
 if isempty(imageStackOut); return; end
 
-% Replace the image canvas directly — alignment enlarges height/width and
+% Replace the image canvas directly - alignment enlarges height/width and
 % setData4D cannot resize the fixed-size data{1}.
 img5D = obj.mibModel.I{id}.image;
 newH  = size(imageStackOut, 1);
@@ -191,7 +191,7 @@ img5D.dim_yxzct = [newH, newW, img5D.depth, img5D.colors, img5D.time];
 clear imageStack imageStackOut;
 
 % --- Sync MibDataset metadata to the new (enlarged) canvas before any
-% setData4D() call below — the layer setters validate against ds.dim_yxzct
+% setData4D() call below - the layer setters validate against ds.dim_yxzct
 ds = obj.mibModel.I{id};
 ds.dim_yxzct = img5D.dim_yxzct;
 oldSlices = ds.slices;

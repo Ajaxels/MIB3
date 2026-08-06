@@ -9,17 +9,17 @@ function [yMin, yMax, xMin, xMax, zMin, zMax] = getCoordinatesOfShownImage(obj, 
 % currently shown.
 %
 % Input Arguments:
-%   - **transposeTo3** — - *(optional)* when
+%   - **transposeTo3** - - *(optional)* when
 %     true, transpose dataset to the orientation 3, when looking on the XY plane of the dataset
 %     false, do not transpose
 %
 % Output Arguments:
-%   - **yMin** — - minimal Y coordinate
-%   - **yMax** — - maximal Y coordinate
-%   - **xMin** — - minimal Y coordinate
-%   - **xMax** — - maximal Y coordinate
-%   - **zMin** — - minimal Z coordinate
-%   - **zMax** — - maximal Z coordinate
+%   - **yMin** - - minimal Y coordinate
+%   - **yMax** - - maximal Y coordinate
+%   - **xMin** - - minimal Y coordinate
+%   - **xMax** - - maximal Y coordinate
+%   - **zMin** - - minimal Z coordinate
+%   - **zMax** - - maximal Z coordinate
 %
 %   **Note:**
 %   it is also possible to get coordinates from .slices field of mibImage class

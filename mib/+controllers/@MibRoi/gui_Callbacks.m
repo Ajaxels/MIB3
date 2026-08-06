@@ -7,8 +7,8 @@ function gui_Callbacks(obj, hWidget, hData)
 %      obj.gui_Callbacks(hWidget, hData)
 %
 % Input Arguments:
-%   - **hWidget** — handle to the pressed widget
-%   - **hData** — handle to supporting data class
+%   - **hWidget** - handle to the pressed widget
+%   - **hData** - handle to supporting data class
 %
 
 % mode: char, optional identifier the widget, used when the same operation

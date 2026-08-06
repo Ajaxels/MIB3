@@ -7,20 +7,20 @@ function augmentationSettings = generateDefaultAugmentations(mode)
 %       function augmentationSettings = generateDefaultAugmentations(mode)
 %
 % Input Arguments:
-%   - **mode** — string '2D', '3D' specifying type of augmentation settings
+%   - **mode** - string '2D', '3D' specifying type of augmentation settings
 %
 % Output Arguments:
-%   - **augmentationSettings** — structure with augmentation settings
+%   - **augmentationSettings** - structure with augmentation settings
 %
 % Usage:
 %
-%   **Example 1** — generate default 2D augmentation settings
+%   **Example 1** - generate default 2D augmentation settings
 %
 %   .. code-block:: matlab
 %
 %      deepmib.generateDefaultAugmentations('2D');
 %
-%   **Example 2** — generate default 2.5D / 3D augmentation settings
+%   **Example 2** - generate default 2.5D / 3D augmentation settings
 %
 %   .. code-block:: matlab
 %

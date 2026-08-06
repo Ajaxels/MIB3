@@ -12,17 +12,17 @@ function options = normalizeTimeSeries(obj, colorChannel, options)
 % the dataset-wide (or manually specified) target values.
 %
 % Input Arguments:
-%   - **obj** — :class:`controllers.ContrastNormalization` instance.
-%   - **colorChannel** — ``[1 x N]`` vector of color-channel indices to process.
-%   - **options** — struct with fields:
+%   - **obj** - :class:`controllers.ContrastNormalization` instance.
+%   - **colorChannel** - ``[1 x N]`` vector of color-channel indices to process.
+%   - **options** - struct with fields:
 %
-%     - ``.id`` — dataset index.
-%     - ``.t1`` — first time-frame index.
-%     - ``.t2`` — last time-frame index.
-%     - ``.currentZ`` — Z-slice index for ``'Based on current 2D slice'`` mode.
-%     - ``.waitbar`` — handle to the ``uiprogressdlg``; may be ``[]``.
-%     - ``.waitbarOffset`` — base progress value before this target starts.
-%     - ``.totalSteps`` — total steps for the waitbar denominator.
+%     - ``.id`` - dataset index.
+%     - ``.t1`` - first time-frame index.
+%     - ``.t2`` - last time-frame index.
+%     - ``.currentZ`` - Z-slice index for ``'Based on current 2D slice'`` mode.
+%     - ``.waitbar`` - handle to the ``uiprogressdlg``; may be ``[]``.
+%     - ``.waitbarOffset`` - base progress value before this target starts.
+%     - ``.totalSteps`` - total steps for the waitbar denominator.
 
 id         = options.id;
 maxZ       = obj.mibModel.I{id}.image.depth;

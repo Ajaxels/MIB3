@@ -12,12 +12,12 @@ function data = sortBtn_Callback(obj, data)
 % no data argument it reads from and writes back to the table widget.
 %
 % Input Arguments:
-%   - **data** — *(optional)* numeric matrix [N×4] with table contents
+%   - **data** - *(optional)* numeric matrix [N×4] with table contents
 %     (cols: ObjId, Value, Slice, TimePnt); when omitted the current
 %     statTable.Data is used and the result is written back to the table
 %
 % Output Arguments:
-%   - **data** — sorted numeric matrix [N×4]
+%   - **data** - sorted numeric matrix [N×4]
 %
 % Usage:
 %   Example 1::

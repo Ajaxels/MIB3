@@ -8,20 +8,20 @@ function listener_updatePanelPosition(obj, src, evtData)
 %
 % The Selection panel uses a mainGridLayout with sub-grids that are transposed when the panel moves:
 %
-% - **Bottom** — horizontal 5-column layout:
+% - **Bottom** - horizontal 5-column layout:
 %   ColumnWidth = ``{320, 3, 320, 3, '1x'}``; RowHeight = ``{'1x'}``
 %   ColumnSpacing = 10, RowSpacing = 4; Padding = ``[10 8 10 6]``
 %
-% - **Left/Right** — vertical 5-row layout:
+% - **Left/Right** - vertical 5-row layout:
 %   RowHeight = ``{130, 3, 130, 3, 1}``; ColumnWidth = ``{'1x'}``
 %   RowSpacing = 10, ColumnSpacing = 4; Padding = ``[8 10 6 10]``
 %
 % Each child grid's ``Layout.Column`` (bottom) becomes ``Layout.Row`` (vertical) and vice-versa.
 %
 % Input Arguments:
-%   - **obj** — [MibSelection] this controller instance
-%   - **src** — [uipanel] the panel whose property changed (``obj.view.handles.panels.selectionPanel``)
-%   - **evtData** — [PropertyChangedData] event data; ``.PropertyName`` checked for ``'Region'``
+%   - **obj** - [MibSelection] this controller instance
+%   - **src** - [uipanel] the panel whose property changed (``obj.view.handles.panels.selectionPanel``)
+%   - **evtData** - [PropertyChangedData] event data; ``.PropertyName`` checked for ``'Region'``
 %
 
 switch evtData.PropertyName
@@ -35,7 +35,7 @@ switch evtData.PropertyName
         
         switch src.Region
             case {'left', 'right'}
-                % already in column layout — nothing to do
+                % already in column layout - nothing to do
                 if isscalar(obj.handles.mainGridLayout.ColumnWidth); return; end
                 % transpose: column index → row index, single column
                 for i = 1:numel(children)
@@ -50,7 +50,7 @@ switch evtData.PropertyName
                 obj.handles.mainGridLayout.Padding       = [8 10 6 10];
 
             case 'bottom'
-                % already in row layout — nothing to do
+                % already in row layout - nothing to do
                 if isscalar(obj.handles.mainGridLayout.RowHeight); return; end
                 % transpose: row index → column index, single row
                 for i = 1:numel(children)

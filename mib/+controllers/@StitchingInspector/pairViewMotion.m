@@ -9,7 +9,7 @@ function pairViewMotion(obj)
 % Wired as the figure's persistent ``WindowButtonMotionFcn``. While ``Shift``
 % is held (tracked by :func:`keyPress_Callback` / :func:`keyRelease_Callback`)
 % a yellow box of exactly ``ROIsizeSpinner`` full-res pixels follows the
-% cursor over the pair view — a live preview of the region that Shift+click
+% cursor over the pair view - a live preview of the region that Shift+click
 % hands to click-to-correlate (:func:`correlateAtPoint`). The box is
 % click-transparent (``PickableParts = 'none'``) so the click lands on the
 % image beneath it. Hidden when Shift is up or the cursor leaves the axes.

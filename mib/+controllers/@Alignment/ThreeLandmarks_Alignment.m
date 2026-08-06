@@ -20,7 +20,7 @@ function ThreeLandmarks_Alignment(obj, parameters)
 % service-layer warps) and immediately before each irreversible write.
 %
 % Input Arguments:
-%   - **parameters** — struct produced by :meth:`continueBtn_Callback`. Only
+%   - **parameters** - struct produced by :meth:`continueBtn_Callback`. Only
 %     ``backgroundColor``, ``colorCh``, ``useBatchMode`` are read here.
 
 % Updates
@@ -28,7 +28,7 @@ function ThreeLandmarks_Alignment(obj, parameters)
 
 id = obj.mibModel.getActiveId();
 
-% Parent figure for any dialogs — ``obj.view`` is empty in batch mode
+% Parent figure for any dialogs - ``obj.view`` is empty in batch mode
 if ~isempty(obj.view) && isvalid(obj.view) && isvalid(obj.view.gui)
     parentFig = obj.view.gui;
 else
@@ -255,8 +255,8 @@ for layer = 1:depth - 1
     STATS1 = regionprops(CC1, 'Centroid');
     STATS2 = regionprops(CC2, 'Centroid');
 
-    X1 = reshape([STATS1.Centroid], [2, numel(STATS1)])';   % fixed   — slice ``layer``
-    X2 = reshape([STATS2.Centroid], [2, numel(STATS2)])';   % moving  — slice ``layer+1``
+    X1 = reshape([STATS1.Centroid], [2, numel(STATS1)])';   % fixed   - slice ``layer``
+    X2 = reshape([STATS2.Centroid], [2, numel(STATS2)])';   % moving  - slice ``layer+1``
     idx = controllers.Alignment.findMatchingPairs(X2, X1);
 
     fixedPoints  = X1;
@@ -288,7 +288,7 @@ if d == 0; out = []; R = []; return; end
 
 % Warp the first slice (all colors at once) to discover the output canvas.
 % Reshape a single ``[h, w, 1, c]`` slab to a ``[h, w, c]`` 2-D / 3-D array
-% — imwarp accepts both and applies the same 2-D transform across colors.
+% - imwarp accepts both and applies the same 2-D transform across colors.
 slice = reshape(in4D(:,:,1,:), h, w, c);
 [firstWarped, R] = imwarp(slice, tform, interp, 'FillValues', fillValue);
 outH = size(firstWarped, 1);
@@ -306,7 +306,7 @@ end
 function imgOut = warpAndStackServiceLayer(obj, layerType, tform, headOpts, tailOpts, serviceOpts)
 % Fetch a service-layer head + tail, warp the tail with ``tform`` (nearest
 % neighbour) and concatenate via crossShiftStacks. Service layers are 3-D
-% ``[H, W, Z]`` — modelSwitch=1 in the helper. Returns ``[]`` on cancel.
+% ``[H, W, Z]`` - modelSwitch=1 in the helper. Returns ``[]`` on cancel.
 
 if strcmp(layerType, 'everything')
     colArg = 0;

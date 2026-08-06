@@ -10,31 +10,31 @@ function segmentBlackWhiteThreshold(obj, BatchOptIn)
 % Tool from the Segmentation panel.
 %
 % Input Arguments:
-%   - **BatchOptIn** *(optional)* — [struct|NaN] batch processing mode;
+%   - **BatchOptIn** *(optional)* - [struct|NaN] batch processing mode;
 %     when ``NaN``, returns default structure via "syncBatch" event:
 %
-%     - ``.Mode`` — [char] ``'2D'``, ``'3D'``, or ``'4D'`` — apply thresholding for current slice, stack, or whole dataset
-%     - ``.MinValue`` — [numeric] minimum intensity or Sensitivity value for thresholding
-%     - ``.MaxValue`` — [numeric] maximum intensity or Width value for thresholding
-%     - ``.ColorChannel`` — [numeric] color channel for thresholding
-%     - ``.FixSelectionToMask`` — [logical] apply thresholding only to masked area
-%     - ``.FixSelectionToMaterial`` — [logical] apply thresholding only to selected material area
-%     - ``.Adaptive`` — [logical] enable adaptive thresholding (use ``MinValue`` for Sensitivity, ``MaxValue`` for Width)
-%     - ``.AdaptiveInvert`` — [logical, adaptive only] invert dataset before adaptive thresholding
-%     - ``.AdaptiveForegroundPolarity`` — [char, adaptive only] determine which pixels are foreground
-%     - ``.Target`` — [char] ``'selection'`` or ``'mask'`` — destination layer for thresholding
-%     - ``.showWaitbar`` — [logical] show progress bar during execution
+%     - ``.Mode`` - [char] ``'2D'``, ``'3D'``, or ``'4D'`` - apply thresholding for current slice, stack, or whole dataset
+%     - ``.MinValue`` - [numeric] minimum intensity or Sensitivity value for thresholding
+%     - ``.MaxValue`` - [numeric] maximum intensity or Width value for thresholding
+%     - ``.ColorChannel`` - [numeric] color channel for thresholding
+%     - ``.FixSelectionToMask`` - [logical] apply thresholding only to masked area
+%     - ``.FixSelectionToMaterial`` - [logical] apply thresholding only to selected material area
+%     - ``.Adaptive`` - [logical] enable adaptive thresholding (use ``MinValue`` for Sensitivity, ``MaxValue`` for Width)
+%     - ``.AdaptiveInvert`` - [logical, adaptive only] invert dataset before adaptive thresholding
+%     - ``.AdaptiveForegroundPolarity`` - [char, adaptive only] determine which pixels are foreground
+%     - ``.Target`` - [char] ``'selection'`` or ``'mask'`` - destination layer for thresholding
+%     - ``.showWaitbar`` - [logical] show progress bar during execution
 %
 % Output Arguments:
 %   (none)
 %
-% **Example 1** — apply thresholding with current widget settings:
+% **Example 1** - apply thresholding with current widget settings:
 %
 %   .. code-block:: matlab
 %
 %      obj.segmentBlackWhiteThreshold();
 %
-% **Example 2** — batch mode with provided options:
+% **Example 2** - batch mode with provided options:
 %
 %   .. code-block:: matlab
 %
@@ -73,7 +73,7 @@ BatchOpt.Mode{2} = {'2D, Slice', '3D, Stack', '4D, Dataset'};
 BatchOpt.ColorChannel{2} = arrayfun(@(x) sprintf('ColCh %d', x), 1:obj.mibModel.I{BatchOpt.id}.image.colors, 'UniformOutput', false);
 BatchOpt.ColorChannel{1} = BatchOpt.ColorChannel{2}{obj.mibModel.I{BatchOpt.id}.selectedColorChannel};
 
-% read from the numeric edit fields, not the sliders — during ValueChangingFcn
+% read from the numeric edit fields, not the sliders - during ValueChangingFcn
 % the slider .Value is stale, but the edit field is already updated by the callback
 BatchOpt.MinValue = num2str(round(segmHandles.thresholdLowValue.Value));
 BatchOpt.MaxValue = num2str(round(segmHandles.thresholdHighValue.Value));

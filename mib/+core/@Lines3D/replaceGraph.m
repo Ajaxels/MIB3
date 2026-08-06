@@ -11,26 +11,26 @@ function replaceGraph(obj, Graph)
 % metadata fields.
 %
 % Input Arguments:
-%   - **Graph** — *(optional)* [graph] a MATLAB ``graph`` object containing the new data; if ``[]`` or missing, clears the graph.
+%   - **Graph** - *(optional)* [graph] a MATLAB ``graph`` object containing the new data; if ``[]`` or missing, clears the graph.
 %     The graph should have the following structure:
 %
-%     - ``.Nodes`` — table containing node information:
+%     - ``.Nodes`` - table containing node information:
 %
-%       - ``.PointsXYZ`` — [required] matrix ``[NodeId × 3]`` with ``(x, y, z)`` coordinates IN PHYSICAL UNITS;
+%       - ``.PointsXYZ`` - [required] matrix ``[NodeId × 3]`` with ``(x, y, z)`` coordinates IN PHYSICAL UNITS;
 %         use ``mibImage.convertPixelsToUnits`` to convert from pixels
-%       - ``.TreeName`` — *(optional)* cell array assigning each node to a tree
-%       - ``.NodeName`` — *(optional)* cell array with individual node names
-%       - ``.Radius`` — *(optional)* vector with radius parameter for each node
-%       - ``.Properties.UserData.pixSize`` — struct with pixel size fields ``.x``, ``.y``, ``.z``, ``.units``
-%       - ``.Properties.UserData.BoundingBox`` — vector ``[xmin, width, ymin, height, zmin, depth]``
-%       - ``.Properties.VariableUnits`` — cell array indicating units; specify ``'pixel'`` when coordinates are in pixels
+%       - ``.TreeName`` - *(optional)* cell array assigning each node to a tree
+%       - ``.NodeName`` - *(optional)* cell array with individual node names
+%       - ``.Radius`` - *(optional)* vector with radius parameter for each node
+%       - ``.Properties.UserData.pixSize`` - struct with pixel size fields ``.x``, ``.y``, ``.z``, ``.units``
+%       - ``.Properties.UserData.BoundingBox`` - vector ``[xmin, width, ymin, height, zmin, depth]``
+%       - ``.Properties.VariableUnits`` - cell array indicating units; specify ``'pixel'`` when coordinates are in pixels
 %
-%     - ``.Edges`` — table containing edge information:
+%     - ``.Edges`` - table containing edge information:
 %
-%       - ``.EndNodes`` — [required] connectivity table ``[EdgeId × 2]`` with ``(Node1, Node2)`` indices
-%       - ``.Edges`` — *(optional)* matrix ``[EdgeId × 6]`` with coordinates ``[x1, y1, z1, x2, y2, z2]`` IN PHYSICAL UNITS
-%       - ``.Weight`` — *(optional)* vector of edge weights
-%       - ``.Length`` — *(optional)* vector of edge lengths IN PHYSICAL UNITS
+%       - ``.EndNodes`` - [required] connectivity table ``[EdgeId × 2]`` with ``(Node1, Node2)`` indices
+%       - ``.Edges`` - *(optional)* matrix ``[EdgeId × 6]`` with coordinates ``[x1, y1, z1, x2, y2, z2]`` IN PHYSICAL UNITS
+%       - ``.Weight`` - *(optional)* vector of edge weights
+%       - ``.Length`` - *(optional)* vector of edge lengths IN PHYSICAL UNITS
 %
 
 if nargin < 2; obj.clearContents(); return; end
@@ -107,7 +107,7 @@ pointsXYZindex = find(ismember(Graph.Nodes.Properties.VariableNames, 'PointsXYZ'
 if strcmp(Graph.Nodes.Properties.VariableUnits{pointsXYZindex}, 'pixel')
     bb      = Graph.Nodes.Properties.UserData.BoundingBox;
     pixSize = Graph.Nodes.Properties.UserData.pixSize;
-    % XY orientation (3) assumed — mirrors MibDataset.convertPixelsToUnits with orientation=3
+    % XY orientation (3) assumed - mirrors MibDataset.convertPixelsToUnits with orientation=3
     Graph.Nodes.PointsXYZ(:,1) = Graph.Nodes.PointsXYZ(:,1) * pixSize.x + bb(1);
     Graph.Nodes.PointsXYZ(:,2) = Graph.Nodes.PointsXYZ(:,2) * pixSize.y + bb(3);
     Graph.Nodes.PointsXYZ(:,3) = Graph.Nodes.PointsXYZ(:,3) * pixSize.z + bb(5) - pixSize.z;

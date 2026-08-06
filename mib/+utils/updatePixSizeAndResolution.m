@@ -17,9 +17,9 @@ function [img_info, pixSize, result] = updatePixSizeAndResolution(img_info, pixS
 % - If both 'BoundingBox' and 'XResolution' is missing, the resolution is recalculated based on imageData.pixSize
 %
 % Input Arguments:
-%   - **img_info** — information about the dataset, an instance of the MATLAB **dictionary** class.
+%   - **img_info** - information about the dataset, an instance of the MATLAB **dictionary** class.
 %     Pass **[]** to skip the img_info resolution update (e.g. when only the dialog / pixSize update is needed).
-%   - **pixSize** — a structure (imageData.pixSize) with dimensions of voxels, ``.x .y .z .t .tunits .units``
+%   - **pixSize** - a structure (imageData.pixSize) with dimensions of voxels, ``.x .y .z .t .tunits .units``
 %     the fields are
 %     - .x - physical width of a pixel
 %     - .y - physical height of a pixel
@@ -27,7 +27,7 @@ function [img_info, pixSize, result] = updatePixSizeAndResolution(img_info, pixS
 %     - .t - time between the frames for 2D movies
 %     - .tunits - time units
 %     - .units - physical units for x, y, z. Possible values: [m, cm, mm, um, nm]
-%   - **options** — *(optional)* a struct with optional fields:
+%   - **options** - *(optional)* a struct with optional fields:
 %     - .showDialog   - logical (default false); when true, prompt the user with an interactive
 %       dialog to review and edit the voxel sizes before applying
 %     - .ParentFigure - handle to the parent figure/window used to anchor the dialog
@@ -36,9 +36,9 @@ function [img_info, pixSize, result] = updatePixSizeAndResolution(img_info, pixS
 %     - .WindowStyle  - [char] ``'normal'`` (default) or ``'modal'``
 %
 % Output Arguments:
-%   - **img_info** — updated imageData.img_info (unchanged and [] when img_info was passed as [])
-%   - **pixSize** — updated imageData.pixSize (unchanged when user cancels the dialog)
-%   - **result** — **1** on success, **0** when the user cancelled the interactive dialog
+%   - **img_info** - updated imageData.img_info (unchanged and [] when img_info was passed as [])
+%   - **pixSize** - updated imageData.pixSize (unchanged when user cancels the dialog)
+%   - **result** - **1** on success, **0** when the user cancelled the interactive dialog
 %
 %
 % .. note::
@@ -46,7 +46,7 @@ function [img_info, pixSize, result] = updatePixSizeAndResolution(img_info, pixS
 %
 % Usage:
 %
-%   **Example 1** — update resolution fields in img_info from a known pixSize (no dialog)
+%   **Example 1** - update resolution fields in img_info from a known pixSize (no dialog)
 %
 %   .. code-block:: matlab
 %
@@ -54,13 +54,13 @@ function [img_info, pixSize, result] = updatePixSizeAndResolution(img_info, pixS
 %      pixSize.t = 1; pixSize.units = 'um'; pixSize.tunits = 's';
 %      [img_info, pixSize] = utils.updatePixSizeAndResolution(img_info, pixSize);
 %
-%   **Example 2** — recalculate pixSize from BoundingBox / XResolution stored in img_info
+%   **Example 2** - recalculate pixSize from BoundingBox / XResolution stored in img_info
 %
 %   .. code-block:: matlab
 %
 %      [img_info, pixSize] = utils.updatePixSizeAndResolution(img_info);
 %
-%   **Example 3** — interactive dialog only (no img_info update needed, e.g. from MibRibbon)
+%   **Example 3** - interactive dialog only (no img_info update needed, e.g. from MibRibbon)
 %
 %   .. code-block:: matlab
 %
@@ -72,7 +72,7 @@ function [img_info, pixSize, result] = updatePixSizeAndResolution(img_info, pixS
 %      if result == 0; return; end
 %      obj.mibModel.I{id}.pixSize = pixSize;
 %
-%   **Example 4** — interactive dialog + img_info update in one call (e.g. during save)
+%   **Example 4** - interactive dialog + img_info update in one call (e.g. during save)
 %
 %   .. code-block:: matlab
 %
@@ -108,7 +108,7 @@ if ~pixSizeProvided
     pixSize.units = 'um';
 end
 
-%% Interactive dialog — prompt user to review / change voxel sizes
+%% Interactive dialog - prompt user to review / change voxel sizes
 if options.showDialog
     unitsList = {'m', 'cm', 'mm', 'um', 'nm'};
     unitIdx   = find(strcmp(unitsList, pixSize.units), 1);
@@ -151,7 +151,7 @@ if options.showDialog
     pixSizeProvided = true;   % treat dialog answer as explicitly provided
 end
 
-%% When no img_info is requested, stop here — pixSize already updated above
+%% When no img_info is requested, stop here - pixSize already updated above
 if isempty(img_info); return; end
 
 % update resolution and pixel sizes

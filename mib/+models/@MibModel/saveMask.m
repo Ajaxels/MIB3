@@ -12,39 +12,39 @@ function fnOut = saveMask(obj, filename, BatchOptIn)
 % is fully available via this wrapper.
 %
 % Input Arguments:
-%   obj        — MibModel instance
-%   filename   — *(optional)* (char) full output path. When empty ([])
+%   obj        - MibModel instance
+%   filename   - *(optional)* (char) full output path. When empty ([])
 %     a uiputfile dialog is shown. When omitted, the existing
 %     mask filename is used.
-%   BatchOptIn — *(optional)* (struct | NaN) batch processing options.
+%   BatchOptIn - *(optional)* (struct | NaN) batch processing options.
 %     When NaN, fires SyncBatch event and returns without saving.
 %     See models.MibModel.saveImage for the full field list.
-%     - .Format          — output format string
-%     - .FilenamePolicy  — ``'Use existing name'`` | ``'Use new provided name'``
-%     - .Filename        — output filename stem (supports ``[F]`` template)
-%     - .OutputDirectoryPolicy — ``'Same as image'`` | ``'Subfolder'`` | ``'Full path'`` | ``'Same as loaded'``
-%     - .DestinationDirectory  — target folder
-%     - .Saving3DPolicy  — ``'3D stack'`` | ``'2D sequence'``
-%     - .showWaitbar     — logical
-%     - .id              — *(optional)* dataset index 1-9, default = ``obj.id``
+%     - .Format          - output format string
+%     - .FilenamePolicy  - ``'Use existing name'`` | ``'Use new provided name'``
+%     - .Filename        - output filename stem (supports ``[F]`` template)
+%     - .OutputDirectoryPolicy - ``'Same as image'`` | ``'Subfolder'`` | ``'Full path'`` | ``'Same as loaded'``
+%     - .DestinationDirectory  - target folder
+%     - .Saving3DPolicy  - ``'3D stack'`` | ``'2D sequence'``
+%     - .showWaitbar     - logical
+%     - .id              - *(optional)* dataset index 1-9, default = ``obj.id``
 %
 % Output Arguments:
-%   fnOut — (char or cell of char) saved filename(s); ``[]`` on failure or cancel
+%   fnOut - (char or cell of char) saved filename(s); ``[]`` on failure or cancel
 %
 % Usage:
-%   **Example 1** — save using existing filename
+%   **Example 1** - save using existing filename
 %
 %   .. code-block:: matlab
 %
 %      obj.mibModel.saveMask();
 %
-%   **Example 2** — show save-as dialog
+%   **Example 2** - show save-as dialog
 %
 %   .. code-block:: matlab
 %
 %      obj.mibModel.saveMask([]);
 %
-%   **Example 3** — full batch mode
+%   **Example 3** - full batch mode
 %
 %   .. code-block:: matlab
 %

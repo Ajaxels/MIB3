@@ -2,7 +2,7 @@ classdef StlSaver < io.savers.BaseSaver
 % STLSAVER - Saver for binary STL (Stereolithography) isosurface mesh output.
 %
 % Handles one format:
-% 'STL isosurface as binary (``*.stl``)' — one binary STL file per
+% 'STL isosurface as binary (``*.stl``)' - one binary STL file per
 % material, e.g. 'Labels_stack_Nucleus.stl', 'Labels_stack_ER.stl'
 %
 % This saver is labels-only.  It extracts a triangular isosurface mesh
@@ -18,7 +18,7 @@ classdef StlSaver < io.savers.BaseSaver
 %
 % DATA DIMENSIONS
 % Input  data : [H, W, D, C, T]  (MIB3 native order)
-% mibRenderModel() expects [H, W, D] — squeezed from data(:,:,:,1,1).
+% mibRenderModel() expects [H, W, D] - squeezed from data(:,:,:,1,1).
 %
 % OUTPUT FILENAMES
 % Each material is written to:
@@ -28,15 +28,15 @@ classdef StlSaver < io.savers.BaseSaver
 % /output/Labels_myStack_ER.stl
 %
 % MESH GENERATION OPTIONS (passed inside savingOptions to mibRenderModel)
-% savingOptions.reduce    — face-count reduction target (0 = no reduction;
+% savingOptions.reduce    - face-count reduction target (0 = no reduction;
 % default 500 if image width > 500, else 0)
-% savingOptions.smooth    — number of Laplacian smoothing iterations
+% savingOptions.smooth    - number of Laplacian smoothing iterations
 % (default 5)
-% savingOptions.maxFaces  — maximum face count per surface (default 300000)
-% savingOptions.slice     — (logical) 0 = full 3-D surface (default)
+% savingOptions.maxFaces  - maximum face count per surface (default 300000)
+% savingOptions.slice     - (logical) 0 = full 3-D surface (default)
 %
 % MATERIAL SELECTION
-% options.MaterialIndex   — [] = all materials (default)
+% options.MaterialIndex   - [] = all materials (default)
 % scalar = index of a single material to export
 %
 %
@@ -110,11 +110,11 @@ classdef StlSaver < io.savers.BaseSaver
             %      saver = io.savers.StlSaver(options)
             %
             % Input Arguments:
-            %   - **options** — *(optional)* struct, saver-level options (usually empty;
+            %   - **options** - *(optional)* struct, saver-level options (usually empty;
             %     per-save options are passed to ``save()`` instead)
             %
             % Output Arguments:
-            %   - **obj** — instance of the StlSaver class
+            %   - **obj** - instance of the StlSaver class
             %
             if nargin < 1; options = struct(); end
             obj.Options = options;
@@ -133,7 +133,7 @@ classdef StlSaver < io.savers.BaseSaver
             %   (none)
             %
             % Output Arguments:
-            %   - **formats** — cell array of format strings for STL output
+            %   - **formats** - cell array of format strings for STL output
             %
             formats = {'STL isosurface as binary (*.stl)'};
         end
@@ -150,34 +150,34 @@ classdef StlSaver < io.savers.BaseSaver
             % is a scalar). File names follow the pattern: ``<fnBase>_<materialName>.stl``
             %
             % Input Arguments:
-            %   - **data** — [H, W, D, C, T] numeric label array;
+            %   - **data** - [H, W, D, C, T] numeric label array;
             %     only the first channel (C=1) and first time point (T=1) are processed
-            %   - **metadata** — struct with fields:
+            %   - **metadata** - struct with fields:
             %
-            %     - ``pixSize`` — struct {``.x``, ``.y``, ``.z``, ``.units``, ``.t``, ``.tunits``}
-            %     - ``boundingBox`` — [xmin xmax ymin ymax zmin zmax]
-            %     - ``materialNames`` — cell array of material name strings
-            %     - ``materialColors`` — [M × 3] material RGB colours (0–1 range)
+            %     - ``pixSize`` - struct {``.x``, ``.y``, ``.z``, ``.units``, ``.t``, ``.tunits``}
+            %     - ``boundingBox`` - [xmin xmax ymin ymax zmin zmax]
+            %     - ``materialNames`` - cell array of material name strings
+            %     - ``materialColors`` - [M × 3] material RGB colours (0-1 range)
             %
-            %   - **filename** — [char] full output path template, e.g. ``'/out/Labels_myStack.stl'``
-            %   - **options** — struct with fields:
+            %   - **filename** - [char] full output path template, e.g. ``'/out/Labels_myStack.stl'``
+            %   - **options** - struct with fields:
             %
-            %     - ``Format`` — format string
-            %     - ``layerType`` — expected ``'labels'`` or ``'mask'``; warning if not
-            %     - ``MaterialIndex`` — *(optional)* [numeric] material index or array; default: ``[]`` (all materials)
-            %     - ``reduce`` — *(optional)* [double] face reduction target; default: ``500`` if width > 500, else ``0``
-            %     - ``smooth`` — *(optional)* [integer] smoothing iterations; default: ``5``
-            %     - ``maxFaces`` — *(optional)* [integer] max faces per mesh; default: ``300000``
-            %     - ``slice`` — *(optional)* [logical] full 3-D mesh (``0``) or 2-D slices (``1``); default: ``0``
-            %     - ``showWaitbar`` — logical; default: ``true``
-            %     - ``silent`` — logical, suppress dialogs; default: ``false``
-            %     - ``overwrite`` — logical; default: ``true``
+            %     - ``Format`` - format string
+            %     - ``layerType`` - expected ``'labels'`` or ``'mask'``; warning if not
+            %     - ``MaterialIndex`` - *(optional)* [numeric] material index or array; default: ``[]`` (all materials)
+            %     - ``reduce`` - *(optional)* [double] face reduction target; default: ``500`` if width > 500, else ``0``
+            %     - ``smooth`` - *(optional)* [integer] smoothing iterations; default: ``5``
+            %     - ``maxFaces`` - *(optional)* [integer] max faces per mesh; default: ``300000``
+            %     - ``slice`` - *(optional)* [logical] full 3-D mesh (``0``) or 2-D slices (``1``); default: ``0``
+            %     - ``showWaitbar`` - logical; default: ``true``
+            %     - ``silent`` - logical, suppress dialogs; default: ``false``
+            %     - ``overwrite`` - logical; default: ``true``
             %
             % Output Arguments:
-            %   - **fnOut** — cell of char with paths of all saved ``.stl`` files,
+            %   - **fnOut** - cell of char with paths of all saved ``.stl`` files,
             %     or single char when only one material is exported; ``[]`` on failure
             %
-            % **Example** — see class-level documentation above.
+            % **Example** - see class-level documentation above.
             %
 
             fnOut = [];

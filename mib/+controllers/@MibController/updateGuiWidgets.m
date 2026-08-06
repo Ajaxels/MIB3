@@ -12,46 +12,46 @@ function updateGuiWidgets(obj, updatePanels)
 % panel changed should pass the relevant name(s) to avoid unnecessary work.
 %
 % Input Arguments:
-%   - **updatePanels** — *(optional)* char or cell array of chars identifying the
+%   - **updatePanels** - *(optional)* char or cell array of chars identifying the
 %     panel(s) to refresh.  Pass ``{}`` or omit to refresh everything.  Valid
 %     name strings:
 %
-%     - ``'ribbonImage'``        — Image ribbon tab (bit depth, color type)
-%     - ``'ribbonModel'``        — Model ribbon tab (model type radio buttons)
-%     - ``'QuickAccessBar'``     — Orientation buttons, ROI, block-mode toggle
-%     - ``'depthSlider'``        — Z-slice number slider and edit field
-%     - ``'timeSlider'``         — Time-frame slider and edit field
-%     - ``'checkboxes'``         — Show mask / model checkboxes, restrict controls
-%     - ``'imView'``             — Image view panel title
-%     - ``'activeDataset'``      — Dataset buffer buttons in the Datasets panel
-%     - ``'dirContentsDataset'`` — Directory contents file list and filter
-%     - ``'panelThresholding'``  — Black/white threshold sliders
-%     - ``'roi'``                — ROI related items
-%     - ``'selectionPanel'``     — LUT checkbox and colour table
-%     - ``'statusBar'``          — Status bar current-directory field
+%     - ``'ribbonImage'``        - Image ribbon tab (bit depth, color type)
+%     - ``'ribbonModel'``        - Model ribbon tab (model type radio buttons)
+%     - ``'QuickAccessBar'``     - Orientation buttons, ROI, block-mode toggle
+%     - ``'depthSlider'``        - Z-slice number slider and edit field
+%     - ``'timeSlider'``         - Time-frame slider and edit field
+%     - ``'checkboxes'``         - Show mask / model checkboxes, restrict controls
+%     - ``'imView'``             - Image view panel title
+%     - ``'activeDataset'``      - Dataset buffer buttons in the Datasets panel
+%     - ``'dirContentsDataset'`` - Directory contents file list and filter
+%     - ``'panelThresholding'``  - Black/white threshold sliders
+%     - ``'roi'``                - ROI related items
+%     - ``'selectionPanel'``     - LUT checkbox and colour table
+%     - ``'statusBar'``          - Status bar current-directory field
 %
 % Output Arguments:
 %   (none)
 %
-% **Example 1** — refresh ALL panels (e.g. after loading a new dataset):
+% **Example 1** - refresh ALL panels (e.g. after loading a new dataset):
 %
 %   .. code-block:: matlab
 %
 %      obj.updateGuiWidgets();
 %
-% **Example 2** — refresh only the Model ribbon tab and the checkboxes panel:
+% **Example 2** - refresh only the Model ribbon tab and the checkboxes panel:
 %
 %   .. code-block:: matlab
 %
 %      obj.updateGuiWidgets({'ribbonModel', 'checkboxes'});
 %
-% **Example 3** — trigger a full refresh via the MibModel event bus:
+% **Example 3** - trigger a full refresh via the MibModel event bus:
 %
 %   .. code-block:: matlab
 %
 %      notify(obj.mibModel, 'UpdateGuiWidgets');
 %
-% **Example 4** — trigger a selective refresh via the MibModel event bus:
+% **Example 4** - trigger a selective refresh via the MibModel event bus:
 %
 %   .. code-block:: matlab
 %
@@ -81,7 +81,7 @@ dataset = obj.mibModel.I{obj.mibModel.id};
 % get new filename
 [newFileDir, newFileName, newFileExt] = fileparts(dataset.image.filename);
 newFileBasename = [newFileName newFileExt];
-if isempty(newFileDir)  % placeholder dataset (e.g. 'none.tif') — keep current directory
+if isempty(newFileDir)  % placeholder dataset (e.g. 'none.tif') - keep current directory
     newFileDir = obj.mibModel.currentDirectory;
 end
 
@@ -302,7 +302,7 @@ if isempty(updatePanels) || ismember('checkboxes', updatePanels)
         dataset.restrictSelectionToMaterial = false;
     end
 
-    % update Restrict to Mask status — inline font-color update to avoid
+    % update Restrict to Mask status - inline font-color update to avoid
     % the focus() call inside restrictMask_Callback, which raises the window
     if segmentationPanelHandles.restrictMask.Value ~= dataset.restrictSelectionToMask
         segmentationPanelHandles.restrictMask.Value = dataset.restrictSelectionToMask;
@@ -313,7 +313,7 @@ if isempty(updatePanels) || ismember('checkboxes', updatePanels)
         end
     end
 
-    % update Restrict to Material status and redraw Materials table —
+    % update Restrict to Material status and redraw Materials table -
     % call updateMaterialsTable directly to avoid the focus() call inside
     % restrictMaterial_Callback, which raises the main MIB window
     segmentationPanelHandles.restrictMaterial.Value = dataset.restrictSelectionToMaterial;
@@ -422,18 +422,18 @@ if isempty(updatePanels) || ismember('dirContentsDataset', updatePanels)
     % the allowed extensions depend on dataset.datasetType (Standard/Virtual/BigData),
     % so switching to a buffer of a different type changes what the file list should
     % show even when the directory itself did not change (e.g. an empty placeholder
-    % buffer keeps obj.mibModel.currentDirectory) — such a change must force a rebuild
+    % buffer keeps obj.mibModel.currentDirectory) - such a change must force a rebuild
     extentionsChanged = ~isequal(previousExtentions, extentions);
 
     if strcmp(newFileDir, obj.mibModel.currentDirectory) && ~extentionsChanged
-        % Same directory and same filters — just highlight the matching file in the existing list
+        % Same directory and same filters - just highlight the matching file in the existing list
         fileListBox = dirContents.handles.fileList;
         if ~isempty(newFileBasename) && ismember(newFileBasename, fileListBox.Items)
             fileListBox.Value = newFileBasename;
             scroll(fileListBox, newFileBasename);
         end
     else
-        % Directory or allowed extensions changed — update currentDirectory and rebuild the file list
+        % Directory or allowed extensions changed - update currentDirectory and rebuild the file list
         obj.mibModel.currentDirectory = newFileDir;
         obj.cDirContents.updateFileList_Callback(newFileBasename);
     end

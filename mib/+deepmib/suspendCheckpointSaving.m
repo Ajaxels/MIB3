@@ -7,14 +7,14 @@ function suspendCheckpointSaving(action)
 %      deepmib.suspendCheckpointSaving(action)
 %
 % Input Arguments:
-%   - **action** — [char] ``'suspend'`` to move the checkpoint folder out of the way,
+%   - **action** - [char] ``'suspend'`` to move the checkpoint folder out of the way,
 %     ``'restore'`` to move it back, or ``'restoreOrphaned'`` to move back a folder left
 %     behind by a run that never reached its restore step (Ctrl+C, crash, MATLAB restart)
 %
 % Notes:
 %   ``trainSOLOV2`` (the ``2D Instance`` workflow) trains via
 %   ``images.dltrain.internal.dltrain``. Its ``SerialTrainer``/``ParallelTrainer`` honour a
-%   stop request by ending the inner per-epoch iteration loop only — the outer
+%   stop request by ending the inner per-epoch iteration loop only - the outer
 %   ``for epoch = 1:MaxEpochs`` loop still runs to completion. Each of those idle epochs
 %   fires an ``EpochEnd`` event and, when a ``CheckpointPath`` is configured, that event
 %   saves the whole network to disk again. Stopping a long run early therefore blocked

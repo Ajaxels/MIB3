@@ -15,29 +15,29 @@ function intensityProjection(obj, BatchOptIn)
 % to avoid loading the full volume into memory.
 %
 % Input Arguments:
-%   - **BatchOptIn** — *(optional)* a structure for batch processing mode; when ``NaN``
+%   - **BatchOptIn** - *(optional)* a structure for batch processing mode; when ``NaN``
 %     returns a structure with default options via ``SyncBatch`` event:
 %
-%     - ``.ProjectionType`` — cell string, type of projection
+%     - ``.ProjectionType`` - cell string, type of projection
 %       (default ``{'Max'}``); values ``{'Max', 'Min', 'Mean', 'Median', 'Sum'}``
 %       (virtual mode omits ``'Median'``)
-%     - ``.Dimension`` — cell string, projection dimension
+%     - ``.Dimension`` - cell string, projection dimension
 %       (default ``{'Z'}``); values ``{'Y', 'X', 'Z', 'C', 'T'}``; virtual mode: ``{'Z'}`` only
-%     - ``.Set`` — cell string, name of the destination set
+%     - ``.Set`` - cell string, name of the destination set
 %       (default: name of the currently active set), e.g. ``{'Set 1'}``
-%     - ``.Container`` — numeric cell, local buffer index within the destination set
+%     - ``.Container`` - numeric cell, local buffer index within the destination set
 %       (default: active buffer); ``{1}`` value, ``{2}`` limits ``[1 N]``, ``{3}`` ``'on'`` (integer)
-%     - ``.showWaitbar`` — logical, show the progress bar (default ``true``)
-%     - ``.id`` — *(runtime)* index of the source dataset; stripped before ``SyncBatch``
+%     - ``.showWaitbar`` - logical, show the progress bar (default ``true``)
+%     - ``.id`` - *(runtime)* index of the source dataset; stripped before ``SyncBatch``
 %
 % Usage:
-%   **Example 1** — max Z-projection interactively
+%   **Example 1** - max Z-projection interactively
 %
 %   .. code-block:: matlab
 %
 %      obj.mibModel.intensityProjection();
 %
-%   **Example 2** — batch: mean projection along Z to buffer 2 of Set 1
+%   **Example 2** - batch: mean projection along Z to buffer 2 of Set 1
 %
 %   .. code-block:: matlab
 %
@@ -48,7 +48,7 @@ function intensityProjection(obj, BatchOptIn)
 %      BatchOpt.showWaitbar    = false;
 %      obj.mibModel.intensityProjection(BatchOpt);
 %
-%   **Example 3** — return default BatchOpt to the Batch Processing editor
+%   **Example 3** - return default BatchOpt to the Batch Processing editor
 %
 %   .. code-block:: matlab
 %
@@ -74,7 +74,7 @@ end
 activeSetIdx  = ceil(activeId / obj.Sets.datasetsInSet);
 activeLocalId = mod(activeId-1, obj.Sets.datasetsInSet) + 1;
 
-%% Default BatchOpt — restore last-used settings from session
+%% Default BatchOpt - restore last-used settings from session
 BatchOpt = struct();
 BatchOpt.ProjectionType = {'Max'};
 BatchOpt.Dimension      = {'Z'};

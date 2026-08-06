@@ -12,36 +12,36 @@ function segmentationAnnotation(obj, y, x, z, t, modifier, options)
 % current position (Shift).
 %
 % Input Arguments:
-%   - **y** — [double] y-coordinate of annotation point in full-dataset pixels
-%   - **x** — [double] x-coordinate of annotation point in full-dataset pixels
-%   - **z** — [double] z-coordinate (slice index) of annotation point
-%   - **t** — [double] t-coordinate (time point) of annotation point
-%   - **modifier** — [char|cell] modifier keys held during click:
+%   - **y** - [double] y-coordinate of annotation point in full-dataset pixels
+%   - **x** - [double] x-coordinate of annotation point in full-dataset pixels
+%   - **z** - [double] z-coordinate (slice index) of annotation point
+%   - **t** - [double] t-coordinate (time point) of annotation point
+%   - **modifier** - [char|cell] modifier keys held during click:
 %
-%     - ``''`` or ``{}`` — add annotation to list
-%     - ``'control'`` or ``{'control'}`` — remove closest annotation
-%     - ``'shift'`` or ``{'shift'}`` — interpolate annotations between last and current position along Z
+%     - ``''`` or ``{}`` - add annotation to list
+%     - ``'control'`` or ``{'control'}`` - remove closest annotation
+%     - ``'shift'`` or ``{'shift'}`` - interpolate annotations between last and current position along Z
 %
-%   - **options** *(optional)* — [struct] additional settings:
+%   - **options** *(optional)* - [struct] additional settings:
 %
-%     - ``.samInteractiveModel`` — [logical] when ``true``, triggers ``segmentationSAM`` after adding annotation (default: ``false``)
+%     - ``.samInteractiveModel`` - [logical] when ``true``, triggers ``segmentationSAM`` after adding annotation (default: ``false``)
 %
 % Output Arguments:
 %   (none)
 %
-% **Example 1** — add annotation:
+% **Example 1** - add annotation:
 %
 %   .. code-block:: matlab
 %
 %      obj.segmentationAnnotation(50, 75, 10, 1, {});
 %
-% **Example 2** — remove closest annotation:
+% **Example 2** - remove closest annotation:
 %
 %   .. code-block:: matlab
 %
 %      obj.segmentationAnnotation(50, 75, 10, 1, {'control'});
 %
-% **Example 3** — interpolate annotations:
+% **Example 3** - interpolate annotations:
 %
 %   .. code-block:: matlab
 %

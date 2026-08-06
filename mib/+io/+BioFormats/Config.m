@@ -4,12 +4,12 @@ classdef Config < handle
 % Mirrors ``io.zarr.Config`` for the image-reading side. Holds one module-level
 % setting shared by the ``io.BioFormats`` facade (``io.BioFormats.Reader``):
 %
-%   * **library** — which engine reads microscopy / whole-slide image files:
+%   * **library** - which engine reads microscopy / whole-slide image files:
 %
-%     - ``'mib'`` *(default)* — MIB's bundled OME **Bio-Formats Java** reader
+%     - ``'mib'`` *(default)* - MIB's bundled OME **Bio-Formats Java** reader
 %       (``bfGetReader`` / ``bfGetPlane`` / ``loci.formats.Memoizer``). Broadest
 %       coverage validated inside MIB; the historical path.
-%     - ``'matlab'`` — MATLAB's built-in **WSI file readers**
+%     - ``'matlab'`` - MATLAB's built-in **WSI file readers**
 %       (``bioformatsinfo`` / ``bioformatsread`` and, for classic WSI formats,
 %       ``openslideinfo`` / ``openslideread``), which return lazy, tiled,
 %       pyramid-aware ``blockedImage`` objects. No Java dependency.

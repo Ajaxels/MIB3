@@ -15,16 +15,16 @@ function [img, boundingBox] = interpolateShapes(img, max_pnts)
 %    ``utils.interpolateLines`` for non-closed line selections.
 %
 % Input Arguments:
-%   - **img** — [uint8] binary image dataset, e.g. the Selection layer ``[height, width, z]``
-%   - **max_pnts** *(optional)* — [numeric] maximum number of points used for interpolation (default: ``140``)
+%   - **img** - [uint8] binary image dataset, e.g. the Selection layer ``[height, width, z]``
+%   - **max_pnts** *(optional)* - [numeric] maximum number of points used for interpolation (default: ``140``)
 %
 % Output Arguments:
-%   - **img** — [uint8] binary image dataset with interpolated shapes
-%   - **boundingBox** — [numeric] bounding box of the interpolated area ``[xMin, xMax, yMin, yMax, zMin, zMax]``; ``[]`` when no interpolation was performed
+%   - **img** - [uint8] binary image dataset with interpolated shapes
+%   - **boundingBox** - [numeric] bounding box of the interpolated area ``[xMin, xMax, yMin, yMax, zMin, zMax]``; ``[]`` when no interpolation was performed
 %
 % Usage:
 %
-%   **Example 1** — interpolate selection shapes across slices
+%   **Example 1** - interpolate selection shapes across slices
 %
 %   .. code-block:: matlab
 %

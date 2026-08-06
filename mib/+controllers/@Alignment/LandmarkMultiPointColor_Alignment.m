@@ -11,12 +11,12 @@ function LandmarkMultiPointColor_Alignment(obj, parameters)
 % annotation pairs placed on the same slice. Annotation values mark the
 % role of each point:
 %
-% - ``value == 1`` — landmarks on the **reference (fixed) channel**.
-% - ``value == 2`` — landmarks on the **channel to be transformed**.
+% - ``value == 1`` - landmarks on the **reference (fixed) channel**.
+% - ``value == 2`` - landmarks on the **channel to be transformed**.
 %
 % Corresponding landmarks must share the same annotation text label.
-% Each slice is processed independently — no cumulative transform is
-% propagated forward — and the warped channel is written back into its
+% Each slice is processed independently - no cumulative transform is
+% propagated forward - and the warped channel is written back into its
 % original slot.
 %
 % The minimum number of landmark pairs per slice depends on the
@@ -35,7 +35,7 @@ function LandmarkMultiPointColor_Alignment(obj, parameters)
 % MIB2 behaviour). Extended-canvas mode is rejected with an error dialog.
 %
 % Input Arguments:
-%   - **parameters** — struct produced by :meth:`continueBtn_Callback`.
+%   - **parameters** - struct produced by :meth:`continueBtn_Callback`.
 %     Reads ``TransformationType``, ``TransformationMode``, ``colorCh``,
 %     ``backgroundColor``, ``transformationDegree``, ``useBatchMode``.
 
@@ -44,7 +44,7 @@ function LandmarkMultiPointColor_Alignment(obj, parameters)
 
 id = obj.mibModel.getActiveId();
 
-% Parent figure for any dialogs — ``obj.view`` is empty in batch mode
+% Parent figure for any dialogs - ``obj.view`` is empty in batch mode
 if ~isempty(obj.view) && isvalid(obj.view) && isvalid(obj.view.gui)
     parentFig = obj.view.gui;
 else

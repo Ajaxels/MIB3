@@ -43,8 +43,8 @@ classdef ContrastNormalization < handle
             % or its view has been destroyed.
             %
             % Input Arguments:
-            %   - **obj** — :class:`controllers.ContrastNormalization` instance.
-            %   - **evnt** — event data from the model.
+            %   - **obj** - :class:`controllers.ContrastNormalization` instance.
+            %   - **evnt** - event data from the model.
             if ~isvalid(obj) || isempty(obj.view) || ~isvalid(obj.view.gui)
                 for i = 1:numel(obj.listener); delete(obj.listener{i}); end
                 return;
@@ -79,9 +79,9 @@ classdef ContrastNormalization < handle
             %      obj = controllers.ContrastNormalization(mibModel, [], NaN)
             %
             % Input Arguments:
-            %   - **mibModel** — handle to :class:`models.MibModel`.
-            %   - **varargin{1}** *(optional)* — reserved compatibility slot.
-            %   - **varargin{2}** *(optional)* — ``BatchOpt`` struct for headless run,
+            %   - **mibModel** - handle to :class:`models.MibModel`.
+            %   - **varargin{1}** *(optional)* - reserved compatibility slot.
+            %   - **varargin{2}** *(optional)* - ``BatchOpt`` struct for headless run,
             %     or ``NaN`` to return the default ``BatchOpt`` schema via ``SyncBatch``.
 
             obj.mibModel = mibModel;
@@ -217,7 +217,7 @@ classdef ContrastNormalization < handle
             %      obj.returnBatchOpt(BatchOptOut)
             %
             % Input Arguments:
-            %   - **BatchOptOut** *(optional)* — override struct; defaults to ``obj.BatchOpt``.
+            %   - **BatchOptOut** *(optional)* - override struct; defaults to ``obj.BatchOpt``.
             if nargin < 2; BatchOptOut = obj.BatchOpt; end
             eventdata = core.ToggleEventData(BatchOptOut);
             notify(obj.mibModel, 'SyncBatch', eventdata);
@@ -233,7 +233,7 @@ classdef ContrastNormalization < handle
             %      obj.updateBatchOptFromGUI(hObject)
             %
             % Input Arguments:
-            %   - **hObject** — AppDesigner widget whose ``Tag`` matches a ``BatchOpt`` field.
+            %   - **hObject** - AppDesigner widget whose ``Tag`` matches a ``BatchOpt`` field.
             obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, hObject);
         end
 
@@ -348,7 +348,7 @@ classdef ContrastNormalization < handle
             %      settings = obj.defaultSessionSettings()
             %
             % Output Arguments:
-            %   - **settings** — struct stored in ``mibModel.sessionSettings.ContNorm``.
+            %   - **settings** - struct stored in ``mibModel.sessionSettings.ContNorm``.
             settings.Target                  = 'Z stack';
             settings.Mode                    = 'Automatic';
             settings.Mean                    = 30000;
@@ -371,7 +371,7 @@ classdef ContrastNormalization < handle
             %      settings = obj.captureSessionSettings()
             %
             % Output Arguments:
-            %   - **settings** — struct ready to be written to ``mibModel.sessionSettings.ContNorm``.
+            %   - **settings** - struct ready to be written to ``mibModel.sessionSettings.ContNorm``.
             settings.Target                  = obj.BatchOpt.Target{1};
             settings.Mode                    = obj.BatchOpt.Mode{1};
             settings.Mean                    = obj.BatchOpt.Mean{1};

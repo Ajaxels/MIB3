@@ -13,9 +13,9 @@ function id = getActiveId(obj)
 % changed through the full UI chain and are therefore always correct.
 %
 % Output Arguments:
-%   - **id** — [numeric] the dataset index (1..datasetsInSet*numberOfSets)
+%   - **id** - [numeric] the dataset index (1..datasetsInSet*numberOfSets)
 %
-% **Example 1** — get the reliable dataset index:
+% **Example 1** - get the reliable dataset index:
 %
 %   .. code-block:: matlab
 %

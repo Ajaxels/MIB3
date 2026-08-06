@@ -8,24 +8,24 @@ function selectInputBtn_Callback(obj)
 %
 % Behaviour depends on ``BatchOpt.LayoutSource`` and ``BatchOpt.SubfolderMode``
 % (SubfolderMode = each tile is a FOLDER Z-stack rather than a single file):
-%   - **Bio-Formats metadata** — multi-select file picker; one multi-series file
+%   - **Bio-Formats metadata** - multi-select file picker; one multi-series file
 %     (series = tiles) or several single-tile files carrying stage coordinates.
-%   - **Position file** — file picker for any kind of file that states where the
+%   - **Position file** - file picker for any kind of file that states where the
 %     tiles go: MIB's position text file (whose filename column may point at images
 %     or, with SubfolderMode, at folders), a **Fibics Atlas** mosaic
 %     (``MosaicInfo_*.ve-mif``), or a **SerialEM** montage (``*.mdoc``). Each
 %     format offers only the ONE file that states where the tiles go: Atlas's
 %     ``.ve-tie`` / ``.ve-updates`` are detected from the ``.ve-mif``, and a
-%     SerialEM ``.mrc`` is reached from its ``.mdoc`` — a bare stack has no
+%     SerialEM ``.mrc`` is reached from its ``.mdoc`` - a bare stack has no
 %     placement in it and is refused with an explanation. When the acquisition
 %     already stitched the mosaic the user is asked how much of that stitch to
 %     reuse before the layout is built.
-%   - **Grid / Filename pattern**, SubfolderMode OFF — multi-select file picker;
+%   - **Grid / Filename pattern**, SubfolderMode OFF - multi-select file picker;
 %     the selected image files are the tiles (stored newline-joined in
 %     InputPath; the layout builder natural-sorts them, so selection order does
-%     not matter). A plain folder path typed/pasted into InputPath still works —
+%     not matter). A plain folder path typed/pasted into InputPath still works -
 %     its image files become the tiles (batch back-compat).
-%   - **Grid / Filename pattern**, SubfolderMode ON — multi-select the tile
+%   - **Grid / Filename pattern**, SubfolderMode ON - multi-select the tile
 %     folders (each a Z-stack); stored newline-joined in InputPath.
 %
 % After building the layout, ``obj.layout`` is populated and
@@ -53,7 +53,7 @@ if strcmp(layoutSource, 'Bio-Formats metadata')
     obj.BatchOpt.InputPath = strjoin(fullPaths, newline);
     obj.refreshInputPathWidget();
 elseif strcmp(layoutSource, 'Position file')
-    % Pick a position text file, a Fibics Atlas mosaic OR a SerialEM montage —
+    % Pick a position text file, a Fibics Atlas mosaic OR a SerialEM montage -
     % all state where every tile goes, so they share this source and are told
     % apart by extension.
     startFolder = firstExistingPath(obj.BatchOpt.InputPath);
@@ -63,7 +63,7 @@ elseif strcmp(layoutSource, 'Position file')
     % it. Listing all three would ask the user to make a choice the tool makes
     % better itself. The SAME reasoning applies to a SerialEM montage: only the
     % .mdoc is offered, because a bare .mrc says nothing about where its slices
-    % go — offering it would let the user pick a stack with no .mdoc beside it
+    % go - offering it would let the user pick a stack with no .mdoc beside it
     % and get a failure two steps later.
     [selectedFile, selectedFolder] = uigetfile( ...
         {'*.txt;*.csv;*.tsv;*.ve-mif;*.mdoc', 'Position files, Atlas mosaics and SerialEM montages'; ...
@@ -77,7 +77,7 @@ elseif strcmp(layoutSource, 'Position file')
     end
     inputPath = fullfile(selectedFolder, selectedFile);
 
-    % A .ve-tie / .ve-updates still resolves back to its .ve-mif — the picker no
+    % A .ve-tie / .ve-updates still resolves back to its .ve-mif - the picker no
     % longer offers them, but "All files" and typed/pasted paths can still reach
     % them, and they name the same mosaic either way.
     sidecars    = utils.stitch.findAtlasSidecars(inputPath);
@@ -103,19 +103,19 @@ elseif strcmp(layoutSource, 'Position file')
         % back to the image either way.
         inputPath = mdocSidecar.mdocPath;
         if ~obj.askImportMode(inputPath)
-            return;   % cancelled — leave the previous input untouched
+            return;   % cancelled - leave the previous input untouched
         end
     elseif ~isempty(sidecars.mifPath)
         inputPath = sidecars.mifPath;
         % Ask BEFORE building: the answer lands in BatchOpt.LayoutImport, which is
         % what buildLayoutFromBatchOpt reads to decide what to import.
         if ~obj.askImportMode(inputPath)
-            return;   % cancelled — leave the previous input untouched
+            return;   % cancelled - leave the previous input untouched
         end
     elseif mdocSidecar.isMrcImage
         % An MRC reached through "All files" or a typed path. On its own a stack
         % says nothing about where its slices go, so without the .mdoc there is
-        % no montage — and falling through would hand the binary to the position
+        % no montage - and falling through would hand the binary to the position
         % TEXT file parser, which fails much less clearly than this.
         utils.dlgs.showErrorDialog(obj.view.gui, sprintf([ ...
             'No .mdoc was found for this image stack.\n\n' ...
@@ -137,7 +137,7 @@ elseif strcmp(layoutSource, 'Position file')
     obj.BatchOpt.InputPath = inputPath;
     obj.refreshInputPathWidget();
 elseif obj.BatchOpt.SubfolderMode
-    % Grid / Filename pattern with folder Z-stack tiles — multi-select folders.
+    % Grid / Filename pattern with folder Z-stack tiles - multi-select folders.
     startFolder = firstExistingPath(obj.BatchOpt.InputPath);
     if isempty(startFolder); startFolder = obj.mibModel.currentDirectory; end
     selectedFolders = uigetfile_n_dir(startFolder, 'Select tile folders (each = one Z-stack tile)');
@@ -152,7 +152,7 @@ elseif obj.BatchOpt.SubfolderMode
     obj.BatchOpt.InputPath = strjoin(selectedFolders, newline);
     obj.refreshInputPathWidget();
 else
-    % Grid / Filename pattern with single-image tiles — multi-select the tile
+    % Grid / Filename pattern with single-image tiles - multi-select the tile
     % files (the layout builder natural-sorts them, so selection order is free).
     startFolder = firstExistingPath(obj.BatchOpt.InputPath);
     if isempty(startFolder); startFolder = obj.mibModel.currentDirectory; end
@@ -179,7 +179,7 @@ end
 obj.updateWidgets();
 
 % Draw the arrangement that was just built. For a mosaic that brought its own
-% stitch this is the whole point of the import step — the preview shows the
+% stitch this is the whole point of the import step - the preview shows the
 % SOLVED positions when a placement came with it, so the user sees what pressing
 % Stitch would fuse before pressing it. Other inputs only refresh a preview
 % already on screen.

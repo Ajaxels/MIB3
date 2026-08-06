@@ -17,38 +17,38 @@ function [newOffsetYX, score, confident, debugInfo] = localCorrelate(tileA, tile
 % weak/ambiguous match never silently moves a tile.
 %
 % **Offset convention.** ``currentOffsetYX``/``newOffsetYX`` are the pair
-% displacement ``positions(j,1:2) - positions(i,1:2)`` — tile-A pixel ``(r, c)``
+% displacement ``positions(j,1:2) - positions(i,1:2)`` - tile-A pixel ``(r, c)``
 % corresponds to tile-B pixel ``(r - dy, c - dx)`` (the solver/edge.measured
 % convention).
 %
 % Input Arguments:
-%   - **tileA** — [numeric] full tile ``i``, 2D or ``[H W D C]`` (depth is
+%   - **tileA** - [numeric] full tile ``i``, 2D or ``[H W D C]`` (depth is
 %     mean-projected, channel selected per ``options.colorChannel``).
-%   - **tileB** — [numeric] full tile ``j``, same conventions.
-%   - **clickXY** — [1x2 double] ``[x y]`` click location in tile-A local pixels.
-%   - **currentOffsetYX** — [1x2 double] current solved ``[dy dx]``.
-%   - **options** *(optional)* — struct with fields:
+%   - **tileB** - [numeric] full tile ``j``, same conventions.
+%   - **clickXY** - [1x2 double] ``[x y]`` click location in tile-A local pixels.
+%   - **currentOffsetYX** - [1x2 double] current solved ``[dy dx]``.
+%   - **options** *(optional)* - struct with fields:
 %
-%     - ``.roiSize`` — [double] ROI edge length around the click (default: ``128``)
-%     - ``.searchRadius`` — [double] search extent around the corresponding
+%     - ``.roiSize`` - [double] ROI edge length around the click (default: ``128``)
+%     - ``.searchRadius`` - [double] search extent around the corresponding
 %       location in B, per side (default: ``64``)
-%     - ``.colorChannel`` — [double|char] channel / ``'max'`` (default: ``1``)
-%     - ``.subpixel`` — [logical] parabolic peak refinement (default: ``true``)
-%     - ``.minPeak`` — [double] minimum peak NCC for confidence (default: ``0.5``)
-%     - ``.minProminence`` — [double] minimum peak − second-peak separation
+%     - ``.colorChannel`` - [double|char] channel / ``'max'`` (default: ``1``)
+%     - ``.subpixel`` - [logical] parabolic peak refinement (default: ``true``)
+%     - ``.minPeak`` - [double] minimum peak NCC for confidence (default: ``0.5``)
+%     - ``.minProminence`` - [double] minimum peak − second-peak separation
 %       (second peak sampled outside a 5-px exclusion zone; default: ``0.05``)
 %
 % Output Arguments:
-%   - **newOffsetYX** — [1x2 double] corrected ``[dy dx]``; equals
+%   - **newOffsetYX** - [1x2 double] corrected ``[dy dx]``; equals
 %     ``currentOffsetYX`` when not confident (never a silent bad move).
-%   - **score** — [double] peak NCC in ``[-1, 1]`` (``0`` when no match ran).
-%   - **confident** — [logical] peak and prominence above the thresholds.
-%   - **debugInfo** — [struct] ``.secondPeak``, ``.templateBBox`` /
+%   - **score** - [double] peak NCC in ``[-1, 1]`` (``0`` when no match ran).
+%   - **confident** - [logical] peak and prominence above the thresholds.
+%   - **debugInfo** - [struct] ``.secondPeak``, ``.templateBBox`` /
 %     ``.searchBBox`` (``[rowStart rowEnd; colStart colEnd]``), ``.reason``
 %     (why not confident: ``''`` | ``'roi-too-small'`` | ``'flat-template'`` |
 %     ``'search-too-small'`` | ``'weak-peak'``).
 %
-% **Example** — snap a seam from a click at a landmark:
+% **Example** - snap a seam from a click at a landmark:
 %
 %   .. code-block:: matlab
 %
@@ -115,7 +115,7 @@ validMap = crossCorr(templateH:numel(searchRows), templateW:numel(searchCols));
 [peakRow, peakCol] = ind2sub(size(validMap), peakIdx);
 score = double(peak);
 
-% Second peak outside a 5-px exclusion zone — ambiguity guard against
+% Second peak outside a 5-px exclusion zone - ambiguity guard against
 % repetitive content (the very failure mode the inspector exists to fix).
 exclusion = 5;
 maskedMap = validMap;

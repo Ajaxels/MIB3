@@ -19,22 +19,22 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
             %      loader = io.loaders.HDF5HeaderLoader(options)
             %
             % Input Arguments:
-            %   - **options** — *(optional)* struct with fields:
+            %   - **options** - *(optional)* struct with fields:
             %
-            %     - ``waitbar`` — [logical] show or not the waitbar; default: ``false``
-            %     - ``mibPath`` — [char] path to MIB directory
-            %     - ``customSections`` — [logical] load custom sections only; default: ``false``
-            %     - ``customSectionsSettings`` — [struct] custom section parameters
-            %     - ``imgStretch`` — [logical] stretch uint32 images to uint16; default: ``false``
-            %     - ``silentMode`` — [logical] do not ask user questions; default: ``false``
-            %     - ``verbose`` — [logical] show timing information; default: ``false``
-            %     - ``Font`` — [struct] font settings for dialogs
-            %     - ``ParentFigure`` — handle of the main MIB window (parent for uiprogressdlg)
+            %     - ``waitbar`` - [logical] show or not the waitbar; default: ``false``
+            %     - ``mibPath`` - [char] path to MIB directory
+            %     - ``customSections`` - [logical] load custom sections only; default: ``false``
+            %     - ``customSectionsSettings`` - [struct] custom section parameters
+            %     - ``imgStretch`` - [logical] stretch uint32 images to uint16; default: ``false``
+            %     - ``silentMode`` - [logical] do not ask user questions; default: ``false``
+            %     - ``verbose`` - [logical] show timing information; default: ``false``
+            %     - ``Font`` - [struct] font settings for dialogs
+            %     - ``ParentFigure`` - handle of the main MIB window (parent for uiprogressdlg)
             %
             % Output Arguments:
-            %   - **obj** — instance of the HDF5HeaderLoader class
+            %   - **obj** - instance of the HDF5HeaderLoader class
             %
-            % **Example 1** — create loader with options:
+            % **Example 1** - create loader with options:
             %
             %   .. code-block:: matlab
             %
@@ -65,31 +65,31 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
             % BigDataViewer format but also supports MATLAB HDF5 with XML headers.
             %
             % Input Arguments:
-            %   - **filename** — [char] full path to XML header file
+            %   - **filename** - [char] full path to XML header file
             %
             % Output Arguments:
-            %   - **imginfo** — dictionary with metadata containing fields:
+            %   - **imginfo** - dictionary with metadata containing fields:
             %
-            %     - ``Format`` — HDF5 format type (``'bdv.hdf5'`` or ``'matlab.hdf5'``)
-            %     - ``Filename`` — full path to HDF5 data file
-            %     - ``Height`` — image height in pixels
-            %     - ``Width`` — image width in pixels
-            %     - ``Depth`` — number of z-slices
-            %     - ``Colors`` — number of color channels
-            %     - ``Time`` — number of time points
-            %     - ``ColorType`` — ``'grayscale'`` or ``'truecolor'``
-            %     - ``ImageDescription`` — optional description text
-            %     - ``Datasetname`` — HDF5 dataset path (optional)
-            %     - ``channelNames`` — cell array of channel names
-            %     - ``lutColors`` — color LUT for channels (optional)
-            %     - ``modelMaterialNames`` — material names cell array (optional)
-            %     - ``modelMaterialColors`` — material colors [N×3] RGB (optional)
-            %     - ``pixSize`` — structure with voxel dimensions
-            %     - ``ReturnedLevel`` — pyramid level (default: ``1``)
+            %     - ``Format`` - HDF5 format type (``'bdv.hdf5'`` or ``'matlab.hdf5'``)
+            %     - ``Filename`` - full path to HDF5 data file
+            %     - ``Height`` - image height in pixels
+            %     - ``Width`` - image width in pixels
+            %     - ``Depth`` - number of z-slices
+            %     - ``Colors`` - number of color channels
+            %     - ``Time`` - number of time points
+            %     - ``ColorType`` - ``'grayscale'`` or ``'truecolor'``
+            %     - ``ImageDescription`` - optional description text
+            %     - ``Datasetname`` - HDF5 dataset path (optional)
+            %     - ``channelNames`` - cell array of channel names
+            %     - ``lutColors`` - color LUT for channels (optional)
+            %     - ``modelMaterialNames`` - material names cell array (optional)
+            %     - ``modelMaterialColors`` - material colors [N×3] RGB (optional)
+            %     - ``pixSize`` - structure with voxel dimensions
+            %     - ``ReturnedLevel`` - pyramid level (default: ``1``)
             %
-            %   - **metaStr** — structure with parsed XML content
+            %   - **metaStr** - structure with parsed XML content
             %
-            % **Example 1** — parse XML header and get dataset info:
+            % **Example 1** - parse XML header and get dataset info:
             %
             %   .. code-block:: matlab
             %
@@ -258,57 +258,57 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
             % metadata required for loading.
             %
             % Input Arguments:
-            %   - **filenames** — cell array with filenames of XML header files
-            %   - **options** — *(optional)* struct with fields:
+            %   - **filenames** - cell array with filenames of XML header files
+            %   - **options** - *(optional)* struct with fields:
             %
-            %     - ``waitbar`` — [logical] show or not the waitbar; default: ``false``
-            %     - ``customSections`` — [logical] load part of the dataset; default: ``false``
-            %     - ``customSectionsSettings`` — [struct] custom section settings
-            %     - ``xMin`` — [numeric] min X coordinate
-            %     - ``xMax`` — [numeric] max X coordinate
-            %     - ``yMin`` — [numeric] min Y coordinate
-            %     - ``yMax`` — [numeric] max Y coordinate
-            %     - ``zMin`` — [numeric] min Z coordinate (slice)
-            %     - ``zMax`` — [numeric] max Z coordinate (slice)
-            %     - ``xyStep`` — [numeric] XY binning step
-            %     - ``mibPath`` — [char] path to MIB directory
-            %     - ``ParentFigure`` — handle to the parent window for progress dialog
-            %     - ``Font`` — [struct] font settings for dialogs
+            %     - ``waitbar`` - [logical] show or not the waitbar; default: ``false``
+            %     - ``customSections`` - [logical] load part of the dataset; default: ``false``
+            %     - ``customSectionsSettings`` - [struct] custom section settings
+            %     - ``xMin`` - [numeric] min X coordinate
+            %     - ``xMax`` - [numeric] max X coordinate
+            %     - ``yMin`` - [numeric] min Y coordinate
+            %     - ``yMax`` - [numeric] max Y coordinate
+            %     - ``zMin`` - [numeric] min Z coordinate (slice)
+            %     - ``zMax`` - [numeric] max Z coordinate (slice)
+            %     - ``xyStep`` - [numeric] XY binning step
+            %     - ``mibPath`` - [char] path to MIB directory
+            %     - ``ParentFigure`` - handle to the parent window for progress dialog
+            %     - ``Font`` - [struct] font settings for dialogs
             %
             % Output Arguments:
-            %   - **imginfo** — dictionary with image metadata containing fields:
+            %   - **imginfo** - dictionary with image metadata containing fields:
             %
-            %     - ``Height`` — image height in pixels
-            %     - ``Width`` — image width in pixels
-            %     - ``Colors`` — number of color channels
-            %     - ``Depth`` — number of z-slices
-            %     - ``Time`` — number of time points
-            %     - ``imgClass`` — image class (``uint8``, ``uint16``, etc.)
-            %     - ``ColorType`` — ``'grayscale'``, ``'truecolor'``, or ``'indexed'``
-            %     - ``ImageDescription`` — description with BoundingBox info
-            %     - ``Format`` — HDF5 format type (``'matlab.hdf5'`` or ``'bdv.hdf5'``)
-            %     - ``Levels`` — number of pyramid levels (for BDV only)
-            %     - ``ReturnedLevel`` — selected pyramid level (for BDV only)
-            %     - ``pixSize`` — struct with pixel sizes: ``.x``, ``.y``, ``.z``, ``.t``,
+            %     - ``Height`` - image height in pixels
+            %     - ``Width`` - image width in pixels
+            %     - ``Colors`` - number of color channels
+            %     - ``Depth`` - number of z-slices
+            %     - ``Time`` - number of time points
+            %     - ``imgClass`` - image class (``uint8``, ``uint16``, etc.)
+            %     - ``ColorType`` - ``'grayscale'``, ``'truecolor'``, or ``'indexed'``
+            %     - ``ImageDescription`` - description with BoundingBox info
+            %     - ``Format`` - HDF5 format type (``'matlab.hdf5'`` or ``'bdv.hdf5'``)
+            %     - ``Levels`` - number of pyramid levels (for BDV only)
+            %     - ``ReturnedLevel`` - selected pyramid level (for BDV only)
+            %     - ``pixSize`` - struct with pixel sizes: ``.x``, ``.y``, ``.z``, ``.t``,
             %       ``.units``, ``.tunits``
             %     - other format-specific metadata fields
             %
-            %   - **files** — structure array with file information for each file:
+            %   - **files** - structure array with file information for each file:
             %
-            %     - ``filename`` — [char] full filename (XML header)
-            %     - ``objecttype`` — [char] type: ``'hdf5_image'`` or ``'bdv.hdf5'``
-            %     - ``extension`` — [char] file extension ``'.xml'``
-            %     - ``height`` — [numeric] image height
-            %     - ``width`` — [numeric] image width
-            %     - ``color`` — [numeric] number of color channels
-            %     - ``noLayers`` — [numeric] number of z-slices
-            %     - ``time`` — [numeric] number of time points
-            %     - ``imgClass`` — [char] image class
-            %     - ``dim_xyzct`` — [numeric array] dimensions [x, y, z, c, t]
-            %     - ``seriesName`` — [char] HDF5 dataset path
-            %     - ``level`` — [numeric] pyramid level (for BDV)
+            %     - ``filename`` - [char] full filename (XML header)
+            %     - ``objecttype`` - [char] type: ``'hdf5_image'`` or ``'bdv.hdf5'``
+            %     - ``extension`` - [char] file extension ``'.xml'``
+            %     - ``height`` - [numeric] image height
+            %     - ``width`` - [numeric] image width
+            %     - ``color`` - [numeric] number of color channels
+            %     - ``noLayers`` - [numeric] number of z-slices
+            %     - ``time`` - [numeric] number of time points
+            %     - ``imgClass`` - [char] image class
+            %     - ``dim_xyzct`` - [numeric array] dimensions [x, y, z, c, t]
+            %     - ``seriesName`` - [char] HDF5 dataset path
+            %     - ``level`` - [numeric] pyramid level (for BDV)
             %
-            % **Example 1** — load metadata from HDF5 files with XML headers:
+            % **Example 1** - load metadata from HDF5 files with XML headers:
             %
             %   .. code-block:: matlab
             %
@@ -590,40 +590,40 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
             % dimension permutation, and supports custom region loading.
             %
             % Input Arguments:
-            %   - **files** — structure array from loadMetadata with file information:
+            %   - **files** - structure array from loadMetadata with file information:
             %
-            %     - ``filename`` — [char] full filename (XML header)
-            %     - ``objecttype`` — [char] ``'hdf5_image'`` or ``'bdv.hdf5'``
-            %     - ``extension`` — [char] file extension ``'.xml'``
-            %     - ``height`` — [numeric] image height
-            %     - ``width`` — [numeric] image width
-            %     - ``color`` — [numeric] number of color channels
-            %     - ``noLayers`` — [numeric] number of z-slices
-            %     - ``time`` — [numeric] number of time points
-            %     - ``imgClass`` — [char] image class
-            %     - ``dim_xyzct`` — [numeric array] dimensions
-            %     - ``seriesName`` — [char] HDF5 dataset path
-            %     - ``transMatrix`` — [numeric array] permutation matrix (optional)
-            %     - ``backgroundColor`` — [numeric] background color (optional)
+            %     - ``filename`` - [char] full filename (XML header)
+            %     - ``objecttype`` - [char] ``'hdf5_image'`` or ``'bdv.hdf5'``
+            %     - ``extension`` - [char] file extension ``'.xml'``
+            %     - ``height`` - [numeric] image height
+            %     - ``width`` - [numeric] image width
+            %     - ``color`` - [numeric] number of color channels
+            %     - ``noLayers`` - [numeric] number of z-slices
+            %     - ``time`` - [numeric] number of time points
+            %     - ``imgClass`` - [char] image class
+            %     - ``dim_xyzct`` - [numeric array] dimensions
+            %     - ``seriesName`` - [char] HDF5 dataset path
+            %     - ``transMatrix`` - [numeric array] permutation matrix (optional)
+            %     - ``backgroundColor`` - [numeric] background color (optional)
             %
-            %   - **imginfo** — dictionary from loadMetadata with image metadata
-            %   - **options** — *(optional)* struct with fields:
+            %   - **imginfo** - dictionary from loadMetadata with image metadata
+            %   - **options** - *(optional)* struct with fields:
             %
-            %     - ``waitbar`` — [logical] show or not the waitbar; default: ``true``
-            %     - ``imgStretch`` — [logical] stretch uint32 to uint16; default: ``true``
-            %     - ``silentMode`` — [logical] do not ask user questions; default: ``false``
+            %     - ``waitbar`` - [logical] show or not the waitbar; default: ``true``
+            %     - ``imgStretch`` - [logical] stretch uint32 to uint16; default: ``true``
+            %     - ``silentMode`` - [logical] do not ask user questions; default: ``false``
             %
             % Output Arguments:
-            %   - **img** — loaded image dataset [height, width, depth, color, time]
-            %   - **imginfo** — updated dictionary with final metadata:
+            %   - **img** - loaded image dataset [height, width, depth, color, time]
+            %   - **imginfo** - updated dictionary with final metadata:
             %
-            %     - ``Height`` — final image height
-            %     - ``Width`` — final image width
-            %     - ``Depth`` — final number of slices
-            %     - ``Time`` — number of time points
-            %     - ``ColorType`` — color type
+            %     - ``Height`` - final image height
+            %     - ``Width`` - final image width
+            %     - ``Depth`` - final number of slices
+            %     - ``Time`` - number of time points
+            %     - ``ColorType`` - color type
             %
-            % **Example 1** — load images from HDF5 file with XML header:
+            % **Example 1** - load images from HDF5 file with XML header:
             %
             %   .. code-block:: matlab
             %
@@ -833,43 +833,43 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
             % Format description: http://fiji.sc/BigDataViewer#About_the_BigDataViewer_data_format
             %
             % Input Arguments:
-            %   - **filename** — [char] path to HDF5 file (``xml`` or ``h5``)
-            %   - **options** — *(optional)* struct with fields:
+            %   - **filename** - [char] path to HDF5 file (``xml`` or ``h5``)
+            %   - **options** - *(optional)* struct with fields:
             %
-            %     - ``y`` — [numeric array] [ymin, ymax] height coordinates to load
-            %     - ``x`` — [numeric array] [xmin, xmax] width coordinates to load
-            %     - ``z`` — [numeric array] [zmin, zmax] depth coordinates to load
-            %     - ``c`` — [numeric array] indices of color channels to load
-            %     - ``t`` — [numeric array] [tmin, tmax] time range to load
-            %     - ``level`` — [numeric] magnification level (``1`` for unbinned)
-            %     - ``waitbar`` — [logical] show waitbar; default: ``true``
-            %     - ``ParentFigure`` — handle to parent window for dialogs
+            %     - ``y`` - [numeric array] [ymin, ymax] height coordinates to load
+            %     - ``x`` - [numeric array] [xmin, xmax] width coordinates to load
+            %     - ``z`` - [numeric array] [zmin, zmax] depth coordinates to load
+            %     - ``c`` - [numeric array] indices of color channels to load
+            %     - ``t`` - [numeric array] [tmin, tmax] time range to load
+            %     - ``level`` - [numeric] magnification level (``1`` for unbinned)
+            %     - ``waitbar`` - [logical] show waitbar; default: ``true``
+            %     - ``ParentFigure`` - handle to parent window for dialogs
             %
-            %   - **imginfo** — *(optional)* dictionary with metadata from XML file
+            %   - **imginfo** - *(optional)* dictionary with metadata from XML file
             %
             % Output Arguments:
-            %   - **img** — loaded dataset [height, width, color, depth, time]
-            %   - **imginfo** — updated dictionary with dataset parameters:
+            %   - **img** - loaded dataset [height, width, color, depth, time]
+            %   - **imginfo** - updated dictionary with dataset parameters:
             %
-            %     - ``Width`` — image width
-            %     - ``Height`` — image height
-            %     - ``Depth`` — number of z-slices
-            %     - ``Colors`` — number of color channels
-            %     - ``Time`` — number of time points
-            %     - ``imgClass`` — image class (``uint8``, ``uint16``)
-            %     - ``ColorType`` — ``'grayscale'`` or ``'truecolor'``
-            %     - ``Format`` — ``'bdv.hdf5'``
-            %     - ``Levels`` — number of pyramid levels
-            %     - ``ReturnedLevel`` — selected pyramid level
+            %     - ``Width`` - image width
+            %     - ``Height`` - image height
+            %     - ``Depth`` - number of z-slices
+            %     - ``Colors`` - number of color channels
+            %     - ``Time`` - number of time points
+            %     - ``imgClass`` - image class (``uint8``, ``uint16``)
+            %     - ``ColorType`` - ``'grayscale'`` or ``'truecolor'``
+            %     - ``Format`` - ``'bdv.hdf5'``
+            %     - ``Levels`` - number of pyramid levels
+            %     - ``ReturnedLevel`` - selected pyramid level
             %
-            % **Example 1** — load complete BigDataViewer dataset:
+            % **Example 1** - load complete BigDataViewer dataset:
             %
             %   .. code-block:: matlab
             %
             %      loader = io.loaders.HDF5HeaderLoader();
             %      [img, imginfo] = loader.loadBigDataViewerFormat('dataset.h5');
             %
-            % **Example 2** — load custom region with downsampling:
+            % **Example 2** - load custom region with downsampling:
             %
             %   .. code-block:: matlab
             %

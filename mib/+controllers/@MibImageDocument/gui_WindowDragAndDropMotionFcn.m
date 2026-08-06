@@ -7,7 +7,7 @@ function gui_WindowDragAndDropMotionFcn(obj, brushSelection)
 %      obj.gui_WindowDragAndDropMotionFcn(brushSelection)
 %
 % Input Arguments:
-%   - **brushSelection** — [uint8 matrix] image of selected layer area
+%   - **brushSelection** - [uint8 matrix] image of selected layer area
 %
 % Output Arguments:
 %   (none)

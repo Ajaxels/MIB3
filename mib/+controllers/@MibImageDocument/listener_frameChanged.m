@@ -22,12 +22,12 @@ function listener_frameChanged(obj)
 %     (which would create an infinite loop by firing ``FrameChanged`` themselves)
 %
 % Input Arguments:
-%   (none — called via ``@(~,~) obj.listener_frameChanged()``)
+%   (none - called via ``@(~,~) obj.listener_frameChanged()``)
 %
 % Output Arguments:
 %   (none)
 %
-% **Example** — wired in ``setupCallbacks``:
+% **Example** - wired in ``setupCallbacks``:
 %
 %   .. code-block:: matlab
 %
@@ -40,7 +40,7 @@ if obj.mibModel.Sets.selectedSet ~= obj.setOfDatasetsIndex; return; end
 
 frameNumber = obj.mibModel.I{obj.mibModel.id}.slices{5}(1);
 
-% Sync widgets directly — no callbacks to avoid re-entrant FrameChanged loop.
+% Sync widgets directly - no callbacks to avoid re-entrant FrameChanged loop.
 % Do not move the slider thumb while the user is actively dragging it.
 obj.handles.frameNumber.Value = frameNumber;
 if ~obj.sliderDragging

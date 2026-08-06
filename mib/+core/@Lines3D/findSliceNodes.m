@@ -7,13 +7,13 @@ function [nodes, indices] = findSliceNodes(obj, z, orientation)
 %       [nodes, indices] = obj.findSliceNodes(z, orientation)
 %
 % Input Arguments:
-%   - **z** — Z-value to obtain the nodes
-%   - **orientation** — [*optional,* default 3 for XY] a number that
+%   - **z** - Z-value to obtain the nodes
+%   - **orientation** - [*optional,* default 3 for XY] a number that
 %     specifies desired orientation, 3-yx, 1-xz, 2-yz
 %
 % Output Arguments:
-%   - **nodes** — a matrix with coordinates of nodes [node; x, y, z]
-%   - **indices** — a vector with indices of returned nodes
+%   - **nodes** - a matrix with coordinates of nodes [node; x, y, z]
+%   - **indices** - a vector with indices of returned nodes
 %
 
 if nargin < 2; error('findSliceNodes: missing parameters'); end

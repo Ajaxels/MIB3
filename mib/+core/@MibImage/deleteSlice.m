@@ -13,13 +13,13 @@ function result = deleteSlice(obj, sliceNumbers, orient)
 % are handled by the caller (``core.MibDataset.deleteSlice``).
 %
 % Input Arguments:
-%   - **sliceNumbers** — index or index vector of slices to delete
-%   - **orient** — dimension to operate on:
+%   - **sliceNumbers** - index or index vector of slices to delete
+%   - **orient** - dimension to operate on:
 %     ``1`` = height (y), ``2`` = width (x), ``3`` = depth (z),
 %     ``5`` = time (t)
 %
 % Output Arguments:
-%   - **result** — ``1`` on success, ``0`` on failure
+%   - **result** - ``1`` on success, ``0`` on failure
 %
 % Usage:
 %   **Example 1**
@@ -52,7 +52,7 @@ maxSlice = size(obj.data, orient);
 if any(sliceNumbers > maxSlice) || any(sliceNumbers < 1); return; end
 
 switch orient
-    case 3  % depth (z) — dim 3 in MIB3
+    case 3  % depth (z) - dim 3 in MIB3
         indexList = setdiff(1:maxSlice, sliceNumbers);
         obj.data = obj.data(:, :, indexList, :, :);
     case 1  % height (y)

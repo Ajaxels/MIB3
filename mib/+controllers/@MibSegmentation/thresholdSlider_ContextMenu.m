@@ -9,8 +9,8 @@ function thresholdSlider_ContextMenu(obj, menuEntry, selectedData)
 % (obj.handles.thresholdLow, obj.handles.thresholdHigh)
 %
 % Input Arguments:
-%   - **menuEntry** — handle to the pressed context menu entry, 'matlab.ui.container.Menu' class
-%   - **selectedData** — handle to 'matlab.ui.eventdata.MenuSelectedData' class;
+%   - **menuEntry** - handle to the pressed context menu entry, 'matlab.ui.container.Menu' class
+%   - **selectedData** - handle to 'matlab.ui.eventdata.MenuSelectedData' class;
 %     selectedData.ContextObject identifies the slider that was right-clicked
 %
 %   Available menu options from 'menuEntry.Tag':

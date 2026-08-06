@@ -1,13 +1,13 @@
 function answer = inputSingleDlg(ParentFigure, prompt, defAns, dlgTitle, options)
 % INPUTSINGLEDLG - Single-input dialog for one text (``uieditfield``) or numeric (``uispinner``) value.
 %
-% Uses direct ``focus()`` for immediate keyboard focus — no ``java.awt.Robot`` dependency.
+% Uses direct ``focus()`` for immediate keyboard focus - no ``java.awt.Robot`` dependency.
 % The dialog blocks the caller via ``uiwait()`` until accepted or cancelled.
 %
 % Keyboard shortcuts:
 %
-% - **Enter** — accept (equivalent to clicking OK)
-% - **Escape** — cancel (equivalent to clicking Cancel)
+% - **Enter** - accept (equivalent to clicking OK)
+% - **Escape** - cancel (equivalent to clicking Cancel)
 %
 % Syntax:
 %   .. code-block:: matlab
@@ -16,56 +16,56 @@ function answer = inputSingleDlg(ParentFigure, prompt, defAns, dlgTitle, options
 %      answer = inputSingleDlg(ParentFigure, prompt, defAns, dlgTitle, options)
 %
 % Input Arguments:
-%   - **ParentFigure** — handle to the parent window (AppContainer, uifigure, or ``[]``);
+%   - **ParentFigure** - handle to the parent window (AppContainer, uifigure, or ``[]``);
 %     used to centre the dialog. Pass ``[]`` to reuse the cached handle from a prior call.
 %     In MIB pass ``obj.mibModel.getProgressBarParent()`` so the dialog follows the
 %     active dataset window when it is undocked.
-%   - **prompt** — [char|string] prompt text displayed above the input field.
+%   - **prompt** - [char|string] prompt text displayed above the input field.
 %     Supports newlines, e.g. ``sprintf('Line 1\nLine 2')``.
-%   - **defAns** — default value for the input widget:
+%   - **defAns** - default value for the input widget:
 %
 %     - For editfield (default): [char|string] default text.
 %     - For spinner: struct with the following fields:
 %
-%       - ``.Value`` — [numeric] initial value (default: ``0``)
-%       - ``.Limits`` — ``[min max]`` spinner range (default: ``[-Inf Inf]``)
-%       - ``.Step`` — [numeric] increment/decrement step (default: ``1``)
-%       - ``.Round`` — [logical] round fractional values (default: ``true``)
-%       - ``.ValueDisplayFormat`` — [char] format string, e.g. ``'%.0f'`` (default: ``'%.d'``)
+%       - ``.Value`` - [numeric] initial value (default: ``0``)
+%       - ``.Limits`` - ``[min max]`` spinner range (default: ``[-Inf Inf]``)
+%       - ``.Step`` - [numeric] increment/decrement step (default: ``1``)
+%       - ``.Round`` - [logical] round fractional values (default: ``true``)
+%       - ``.ValueDisplayFormat`` - [char] format string, e.g. ``'%.0f'`` (default: ``'%.d'``)
 %
-%   - **dlgTitle** — [char|string] dialog window title.
-%   - **options** *(optional)* — struct with configuration fields:
+%   - **dlgTitle** - [char|string] dialog window title.
+%   - **options** *(optional)* - struct with configuration fields:
 %
-%     - ``.mibPath`` — [char] path to MIB installation for icon resolution
+%     - ``.mibPath`` - [char] path to MIB installation for icon resolution
 %       (default: auto-detected via ``which('mib3')``)
-%     - ``.Type`` — [char] input widget type (default: ``'editfield'``):
+%     - ``.Type`` - [char] input widget type (default: ``'editfield'``):
 %
-%       - ``'editfield'`` — text input
-%       - ``'spinner'`` — numeric spinner (auto-set when ``defAns`` is a struct)
+%       - ``'editfield'`` - text input
+%       - ``'spinner'`` - numeric spinner (auto-set when ``defAns`` is a struct)
 %
-%     - ``.WindowWidth`` — [numeric] dialog width in pixels (default: 400)
-%     - ``.WindowHeight`` — [numeric] dialog height in pixels (default: 112)
-%     - ``.WindowStyle`` — [char] ``'normal'`` (default) or ``'modal'``
-%     - ``.Icon`` — [char] icon identifier (default: ``'puffin_question'``):
+%     - ``.WindowWidth`` - [numeric] dialog width in pixels (default: 400)
+%     - ``.WindowHeight`` - [numeric] dialog height in pixels (default: 112)
+%     - ``.WindowStyle`` - [char] ``'normal'`` (default) or ``'modal'``
+%     - ``.Icon`` - [char] icon identifier (default: ``'puffin_question'``):
 %
 %       - ``'puffin_question'``, ``'puffin_warning'``, ``'puffin_error'``,
-%         ``'puffin_measure'``, ``'puffin_info'``, ``'puffin_waiting'`` — puffin icons (96 px)
-%       - ``'question_48px'``, ``'warning_48px'`` — standard icons (48 px)
-%       - ``'celebrate'``, ``'call4help'`` — special icons
+%         ``'puffin_measure'``, ``'puffin_info'``, ``'puffin_waiting'`` - puffin icons (96 px)
+%       - ``'question_48px'``, ``'warning_48px'`` - standard icons (48 px)
+%       - ``'celebrate'``, ``'call4help'`` - special icons
 %
-%     - ``.IconWidth`` — [numeric] icon column width in pixels
+%     - ``.IconWidth`` - [numeric] icon column width in pixels
 %       (default: 96 for puffin icons, 48 for standard icons)
-%     - ``.ParentFigure`` — [handle] alternative parent for centering
+%     - ``.ParentFigure`` - [handle] alternative parent for centering
 %       (overrides the ``ParentFigure`` parameter)
 %
 % Output Arguments:
-%   - **answer** — entered value; ``[]`` when cancelled:
+%   - **answer** - entered value; ``[]`` when cancelled:
 %     - [char] for editfield mode
 %     - [double] for spinner mode
 %
 % Usage:
 %
-%   **Example 1** — Basic editfield: add new material name
+%   **Example 1** - Basic editfield: add new material name
 %
 %   .. code-block:: matlab
 %
@@ -74,7 +74,7 @@ function answer = inputSingleDlg(ParentFigure, prompt, defAns, dlgTitle, options
 %          sprintf('m%.3d', 5), 'Add material');
 %      if isempty(answer); return; end
 %
-%   **Example 2** — Editfield with all options specified
+%   **Example 2** - Editfield with all options specified
 %
 %   .. code-block:: matlab
 %
@@ -89,7 +89,7 @@ function answer = inputSingleDlg(ParentFigure, prompt, defAns, dlgTitle, options
 %          'Enter file name:', 'myfile.txt', 'File Name', options);
 %      if isempty(answer); return; end
 %
-%   **Example 3** — Spinner with full struct configuration
+%   **Example 3** - Spinner with full struct configuration
 %
 %   .. code-block:: matlab
 %
@@ -106,7 +106,7 @@ function answer = inputSingleDlg(ParentFigure, prompt, defAns, dlgTitle, options
 %          'Enter iteration count:', defAns, 'Iterations', options);
 %      if isempty(answer); return; end
 %
-%   **Example 4** — Minimalistic spinner with multiline prompt
+%   **Example 4** - Minimalistic spinner with multiline prompt
 %
 %   .. code-block:: matlab
 %
@@ -119,14 +119,14 @@ function answer = inputSingleDlg(ParentFigure, prompt, defAns, dlgTitle, options
 %          defAns, 'Define number of colors', options);
 %      if isempty(answer); return; end
 %
-%   **Example 5** — No parent figure (standalone call)
+%   **Example 5** - No parent figure (standalone call)
 %
 %   .. code-block:: matlab
 %
 %      answer = utils.dlgs.inputSingleDlg([], 'Enter value:', 'hello', 'Test');
 %      if isempty(answer); return; end
 %
-%   **Example 6** — Editfield with puffin warning icon
+%   **Example 6** - Editfield with puffin warning icon
 %
 %   .. code-block:: matlab
 %
@@ -152,7 +152,7 @@ end
 
 if ~isfield(options, 'mibPath'); options.mibPath = ''; end
 
-% MIB path resolution for icons — the helper caches it; options.mibPath refreshes the cache
+% MIB path resolution for icons - the helper caches it; options.mibPath refreshes the cache
 mibDir = dlgResolveMibDir(options.mibPath);
 
 % Defaults
@@ -263,12 +263,12 @@ answer = [];
 fig.Visible = 'on';
 drawnow;   % realize the figure before re-applying WindowStyle
 
-% Re-apply WindowStyle on the realized (visible) figure — setting it while a
+% Re-apply WindowStyle on the realized (visible) figure - setting it while a
 % cached figure is hidden does not take effect (notably in the deployed web
 % engine), so the dialog would otherwise come up non-modal on reuse.
 fig.WindowStyle = lower(options.WindowStyle);
 
-% Direct focus on input widget — no java.awt.Robot, no timer
+% Direct focus on input widget - no java.awt.Robot, no timer
 focus(inputCtrl);
 
 % Block caller until dialog is closed
@@ -298,7 +298,7 @@ uiwait(fig);
             fig.Visible = 'off';
             uiresume(fig);
         else
-            % Temporary second instance (the cached shell was busy) —
+            % Temporary second instance (the cached shell was busy) -
             % deleting the figure also releases uiwait
             delete(fig);
         end

@@ -11,7 +11,7 @@ function updateBoundingBox(obj, newBB, xyzShift, imgDims)
 % setPixSize() was called by the controller prior to this call (see
 % BoundingBox.applyButton_Callback for the canonical usage pattern).
 %
-% Parameters: identical to core.MibImage.updateBoundingBox — see that file.
+% Parameters: identical to core.MibImage.updateBoundingBox - see that file.
 
 if nargin < 4; imgDims  = []; end
 if nargin < 3; xyzShift = []; end

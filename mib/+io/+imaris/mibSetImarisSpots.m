@@ -24,17 +24,17 @@ function connImaris = mibSetImarisSpots(spots, connImaris, options)
 %      connImaris = io.imaris.mibSetImarisSpots(spots, connImaris, options)
 %
 % Input Arguments:
-%   - **spots** — [n×4] matrix of spot coordinates [x, y, z, t]
-%   - **connImaris** — *(optional)* handle to an existing Imaris connection
-%   - **options** — *(optional)* struct with additional settings:
+%   - **spots** - [n×4] matrix of spot coordinates [x, y, z, t]
+%   - **connImaris** - *(optional)* handle to an existing Imaris connection
+%   - **options** - *(optional)* struct with additional settings:
 %
-%     - ``.radii`` — *(optional)* [n×1] vector of spot radii; default: ``width/150``
-%     - ``.color`` — *(optional)* [1×4] RGBA colour vector (0–1); default red ``[1, 0, 0, 1]``
-%     - ``.name`` — (char) name of the spot object (default: ``'mibSpots'``)
-%     - ``.dt`` — *(optional)* time step (default: ``1``)
+%     - ``.radii`` - *(optional)* [n×1] vector of spot radii; default: ``width/150``
+%     - ``.color`` - *(optional)* [1×4] RGBA colour vector (0-1); default red ``[1, 0, 0, 1]``
+%     - ``.name`` - (char) name of the spot object (default: ``'mibSpots'``)
+%     - ``.dt`` - *(optional)* time step (default: ``1``)
 %
 % Output Arguments:
-%   - **connImaris** — handle to the Imaris connection
+%   - **connImaris** - handle to the Imaris connection
 %
 % .. note::
 %    Uses IceImarisConnector bindings. Requires:
@@ -43,7 +43,7 @@ function connImaris = mibSetImarisSpots(spots, connImaris, options)
 %       directory, e.g. ``'c:\tools\science\imaris'``
 %    2. Restart MATLAB
 %
-% **Example** — send spot coordinates to Imaris:
+% **Example** - send spot coordinates to Imaris:
 %
 %   .. code-block:: matlab
 %

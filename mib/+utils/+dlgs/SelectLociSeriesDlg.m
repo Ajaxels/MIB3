@@ -52,13 +52,13 @@ classdef SelectLociSeriesDlg < handle
             %      controller = utils.dlgs.SelectLociSeriesDlg(filename, hDataset, Font, ParentFigure)
             %
             % Input Arguments:
-            %   - **filename** — [char] path to Bio-Formats compatible file
-            %   - **hDataset** — [object|empty] Bio-Formats reader object; pass ``[]`` to create new reader
-            %   - **Font** — [struct] font configuration with ``.FontName`` and ``.FontSize`` fields
-            %   - **ParentFigure** — [handle] parent window for dialog attachment
+            %   - **filename** - [char] path to Bio-Formats compatible file
+            %   - **hDataset** - [object|empty] Bio-Formats reader object; pass ``[]`` to create new reader
+            %   - **Font** - [struct] font configuration with ``.FontName`` and ``.FontSize`` fields
+            %   - **ParentFigure** - [handle] parent window for dialog attachment
             %
             % Output Arguments:
-            %   - **obj** — instance of SelectLociSeriesDlg controller
+            %   - **obj** - instance of SelectLociSeriesDlg controller
             %
             
             obj.filename = filename;
@@ -109,11 +109,11 @@ classdef SelectLociSeriesDlg < handle
             %   (none)
             %
             % Output Arguments:
-            %   - **varargout{1}** — [numeric|char] selected series index (1-based); ``'Cancel'`` if cancelled
-            %   - **varargout{2}** — [object] Bio-Formats reader object
-            %   - **varargout{3}** — [logical] metadata inclusion flag
-            %   - **varargout{4}** — [1×5 numeric] dimensions ``[x, y, c, z, t]``
-            %   - **varargout{5}** — [cell] selected series name
+            %   - **varargout{1}** - [numeric|char] selected series index (1-based); ``'Cancel'`` if cancelled
+            %   - **varargout{2}** - [object] Bio-Formats reader object
+            %   - **varargout{3}** - [logical] metadata inclusion flag
+            %   - **varargout{4}** - [1×5 numeric] dimensions ``[x, y, c, z, t]``
+            %   - **varargout{5}** - [cell] selected series name
             %
             
             % Check if only one series exists - auto-select and return
@@ -238,7 +238,7 @@ classdef SelectLociSeriesDlg < handle
             %   (none)
             %
             % Output Arguments:
-            %   (none) — updates ``tableData`` and ``dimensionOrder`` properties
+            %   (none) - updates ``tableData`` and ``dimensionOrder`` properties
             %
             numSeries = obj.reader.getSeriesCount();
             obj.tableData = cell(numSeries, 6);  % prepare data for the table
@@ -274,7 +274,7 @@ classdef SelectLociSeriesDlg < handle
             % UI labels, and slice slider limits. Loads and displays preview image.
             %
             % Input Arguments:
-            %   - **rowIndices** — [numeric] 1-based row indices from seriesTable
+            %   - **rowIndices** - [numeric] 1-based row indices from seriesTable
             %
             % Output Arguments:
             %   (none)
@@ -342,7 +342,7 @@ classdef SelectLociSeriesDlg < handle
             % formats, and resizes to fit preview axes.
             %
             % Input Arguments:
-            %   - **sliceNumber** — *(optional)* [numeric] Z-slice to display;
+            %   - **sliceNumber** - *(optional)* [numeric] Z-slice to display;
             %     defaults to current slider value
             %
             % Output Arguments:
@@ -406,7 +406,7 @@ classdef SelectLociSeriesDlg < handle
             %   (none)
             %
             % Output Arguments:
-            %   - **out** — cell array ``{seriesIdx, reader, readMeta, dims, name}``
+            %   - **out** - cell array ``{seriesIdx, reader, readMeta, dims, name}``
             %
             out{1} = obj.selectedSeriesIndex;
             out{2} = obj.hDataset;
@@ -428,8 +428,8 @@ classdef SelectLociSeriesDlg < handle
             %      obj.onTableSelection(source, event)
             %
             % Input Arguments:
-            %   - **source** — [handle] table widget (unused)
-            %   - **event** — [struct] table event with ``Indices`` field
+            %   - **source** - [handle] table widget (unused)
+            %   - **event** - [struct] table event with ``Indices`` field
             %
             % Output Arguments:
             %   (none)
@@ -449,8 +449,8 @@ classdef SelectLociSeriesDlg < handle
             %      obj.onParametersCheck(source, event)
             %
             % Input Arguments:
-            %   - **source** — [handle] checkbox widget
-            %   - **event** — [struct] checkbox event (unused)
+            %   - **source** - [handle] checkbox widget
+            %   - **event** - [struct] checkbox event (unused)
             %
             % Output Arguments:
             %   (none)
@@ -467,8 +467,8 @@ classdef SelectLociSeriesDlg < handle
             %      obj.onPreviewCheck(source, event)
             %
             % Input Arguments:
-            %   - **source** — [handle] checkbox widget (unused)
-            %   - **event** — [struct] checkbox event (unused)
+            %   - **source** - [handle] checkbox widget (unused)
+            %   - **event** - [struct] checkbox event (unused)
             %
             % Output Arguments:
             %   (none)
@@ -487,8 +487,8 @@ classdef SelectLociSeriesDlg < handle
             % Updates preview at most every 100 ms to avoid excessive rendering.
             %
             % Input Arguments:
-            %   - **source** — [handle] slider widget
-            %   - **event** — [struct] slider event with ``Value`` field
+            %   - **source** - [handle] slider widget
+            %   - **event** - [struct] slider event with ``Value`` field
             %
             % Output Arguments:
             %   (none)
@@ -521,8 +521,8 @@ classdef SelectLociSeriesDlg < handle
             % and updates preview display.
             %
             % Input Arguments:
-            %   - **source** — [handle] edit field widget
-            %   - **event** — [struct] edit event (unused)
+            %   - **source** - [handle] edit field widget
+            %   - **event** - [struct] edit event (unused)
             %
             % Output Arguments:
             %   (none)
@@ -555,8 +555,8 @@ classdef SelectLociSeriesDlg < handle
             % Fixes return key behavior in table and delegates to ``onKeyPress``.
             %
             % Input Arguments:
-            %   - **source** — [handle] table widget (unused)
-            %   - **event** — [struct] keyboard event
+            %   - **source** - [handle] table widget (unused)
+            %   - **event** - [struct] keyboard event
             %
             % Output Arguments:
             %   (none)
@@ -580,8 +580,8 @@ classdef SelectLociSeriesDlg < handle
             % Keyboard shortcuts: Escape cancels, Return/Enter continues dialog.
             %
             % Input Arguments:
-            %   - **source** — [handle] figure window (unused)
-            %   - **event** — [struct] keyboard event with ``Key`` field
+            %   - **source** - [handle] figure window (unused)
+            %   - **event** - [struct] keyboard event with ``Key`` field
             %
             % Output Arguments:
             %   (none)
@@ -602,8 +602,8 @@ classdef SelectLociSeriesDlg < handle
             %      obj.onContinue(source, event)
             %
             % Input Arguments:
-            %   - **source** — [handle] button widget (unused)
-            %   - **event** — [struct] button event (unused)
+            %   - **source** - [handle] button widget (unused)
+            %   - **event** - [struct] button event (unused)
             %
             % Output Arguments:
             %   (none)
@@ -622,8 +622,8 @@ classdef SelectLociSeriesDlg < handle
             % Sets ``selectedSeriesIndex`` to ``'Cancel'`` and resumes execution.
             %
             % Input Arguments:
-            %   - **source** — [handle] button widget (unused)
-            %   - **event** — [struct] button event (unused)
+            %   - **source** - [handle] button widget (unused)
+            %   - **event** - [struct] button event (unused)
             %
             % Output Arguments:
             %   (none)

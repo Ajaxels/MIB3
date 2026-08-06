@@ -11,46 +11,46 @@ function moveLayers(obj, SourceLayer, DestinationLayer, DatasetType, ActionType,
 % moving selection to mask, or selection to a specified material of the labels layer.
 %
 % Input Arguments:
-%   - **SourceLayer** — [char] name of a layer to get data: ``'selection'``, ``'mask'``, or
+%   - **SourceLayer** - [char] name of a layer to get data: ``'selection'``, ``'mask'``, or
 %     ``'labels'``; can be empty ``[]``
-%   - **DestinationLayer** — [char] name of a layer to set data: ``'selection'``, ``'mask'``, or
+%   - **DestinationLayer** - [char] name of a layer to set data: ``'selection'``, ``'mask'``, or
 %     ``'labels'``; can be empty ``[]``
-%   - **DatasetType** — [char] type of dataset to move:
+%   - **DatasetType** - [char] type of dataset to move:
 %
-%     - ``'2D, Slice'`` — 2D mode, move only the shown slice ``[y,x]``
-%     - ``'3D, Stack'`` — 3D mode, move 3D dataset ``[y,x,z]``
-%     - ``'4D, Dataset'`` — 4D mode, move 4D dataset ``[y,x,z,t]``
-%   - **ActionType** — [char] type of the desired action:
+%     - ``'2D, Slice'`` - 2D mode, move only the shown slice ``[y,x]``
+%     - ``'3D, Stack'`` - 3D mode, move 3D dataset ``[y,x,z]``
+%     - ``'4D, Dataset'`` - 4D mode, move 4D dataset ``[y,x,z,t]``
+%   - **ActionType** - [char] type of the desired action:
 %
-%     - ``'add'`` — add source to destination
-%     - ``'remove'`` — remove source from destination
-%     - ``'replace'`` — replace destination with source
-%   - **BatchOptIn** *(optional)* — [struct] structure for batch processing mode; when ``NaN``, returns
+%     - ``'add'`` - add source to destination
+%     - ``'remove'`` - remove source from destination
+%     - ``'replace'`` - replace destination with source
+%   - **BatchOptIn** *(optional)* - [struct] structure for batch processing mode; when ``NaN``, returns
 %     default options via ``SyncBatch`` event
 %
-%     - ``.id`` *(optional)* — [numeric] dataset index from 1 to 9 (default: currently shown dataset)
-%     - ``.blockModeSwitch`` — [logical] use or not the block mode
-%     - ``.roiId`` — [char] ROI mode control; ``-1`` to disable
-%     - ``.fillBg`` — [numeric] when ``NaN`` crops as rectangle; when a number fills out-of-ROI areas
-%     - ``.y`` *(optional)* — [numeric] ``[ymin, ymax]`` of the part of the dataset to take
-%     - ``.x`` *(optional)* — [numeric] ``[xmin, xmax]`` of the part of the dataset to take
-%     - ``.z`` *(optional)* — [numeric] ``[zmin, zmax]`` of the part of the dataset to take
-%     - ``.t`` *(optional)* — [numeric] ``[tmin, tmax]`` of the part of the dataset to take
-%     - ``.SelectedMaterial`` — [char] index of the selected material
-%     - ``.selectedAddToMaterial`` — [char] index of the selected add-to material
-%     - ``.restrictSelectionToMaterial`` — [logical] limit selection only to the selected material
-%     - ``.restrictSelectionToMask`` — [logical] perform actions only in masked areas
-%     - ``.showWaitbar`` — [logical] show or hide the progress bar
+%     - ``.id`` *(optional)* - [numeric] dataset index from 1 to 9 (default: currently shown dataset)
+%     - ``.blockModeSwitch`` - [logical] use or not the block mode
+%     - ``.roiId`` - [char] ROI mode control; ``-1`` to disable
+%     - ``.fillBg`` - [numeric] when ``NaN`` crops as rectangle; when a number fills out-of-ROI areas
+%     - ``.y`` *(optional)* - [numeric] ``[ymin, ymax]`` of the part of the dataset to take
+%     - ``.x`` *(optional)* - [numeric] ``[xmin, xmax]`` of the part of the dataset to take
+%     - ``.z`` *(optional)* - [numeric] ``[zmin, zmax]`` of the part of the dataset to take
+%     - ``.t`` *(optional)* - [numeric] ``[tmin, tmax]`` of the part of the dataset to take
+%     - ``.SelectedMaterial`` - [char] index of the selected material
+%     - ``.selectedAddToMaterial`` - [char] index of the selected add-to material
+%     - ``.restrictSelectionToMaterial`` - [logical] limit selection only to the selected material
+%     - ``.restrictSelectionToMask`` - [logical] perform actions only in masked areas
+%     - ``.showWaitbar`` - [logical] show or hide the progress bar
 %
 % Output Arguments:
 %
-% **Example 1** — add selection to mask:
+% **Example 1** - add selection to mask:
 %
 %   .. code-block:: matlab
 %
 %      obj.mibModel.moveLayers('selection', 'mask', '3D, Stack', 'add');
 %
-% **Example 2** — replace selection with mask:
+% **Example 2** - replace selection with mask:
 %
 %   .. code-block:: matlab
 %

@@ -11,15 +11,15 @@ function result = copySlice(obj, sliceFrom, sliceTo, orient)
 % is responsible for auxiliary-layer operations and action-log updates.
 %
 % Input Arguments:
-%   - **sliceFrom** — index or index vector of source slices
-%   - **sliceTo** — index or index vector of destination slices; must be the
+%   - **sliceFrom** - index or index vector of source slices
+%   - **sliceTo** - index or index vector of destination slices; must be the
 %     same length as **sliceFrom**
-%   - **orient** — *(optional)* dimension to operate on:
+%   - **orient** - *(optional)* dimension to operate on:
 %     ``1`` = height (y), ``2`` = width (x), ``3`` = depth (z, default),
 %     ``5`` = time (t)
 %
 % Output Arguments:
-%   - **result** — ``1`` on success, ``0`` on failure
+%   - **result** - ``1`` on success, ``0`` on failure
 %
 % Usage:
 %   **Example 1**
@@ -50,7 +50,7 @@ end
 if numel(sliceFrom) ~= numel(sliceTo); return; end
 
 switch orient
-    case 3  % depth (z) — dim 3 in MIB3
+    case 3  % depth (z) - dim 3 in MIB3
         obj.data(:, :, sliceTo, :, :) = obj.data(:, :, sliceFrom, :, :);
     case 1  % height (y)
         obj.data(sliceTo, :, :, :, :) = obj.data(sliceFrom, :, :, :, :);

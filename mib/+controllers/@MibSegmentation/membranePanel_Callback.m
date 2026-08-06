@@ -10,15 +10,15 @@ function membranePanel_Callback(obj, hWidget, hData)
 % Supports tracking parameter configuration, signal type selection, and visualization control.
 %
 % Input Arguments:
-%   - **hWidget** — [matlab.ui.control.CheckBox | matlab.ui.control.Spinner] pressed widget; operation identified via ``hWidget.Tag``:
+%   - **hWidget** - [matlab.ui.control.CheckBox | matlab.ui.control.Spinner] pressed widget; operation identified via ``hWidget.Tag``:
 %
-%     - ``'membraneScale'`` — set scale parameter for membrane tracking sensitivity
-%     - ``'membraneWidth'`` — set detected membrane thickness/width
-%     - ``'membraneStraightLine'`` — enable/disable straight line mode (vs. tracked membrane)
-%     - ``'membraneBlackSignal'`` — select signal type (black-on-white vs. white-on-black)
-%     - ``'membraneRecenterView'`` — enable/disable automatic view recentering after point placement
+%     - ``'membraneScale'`` - set scale parameter for membrane tracking sensitivity
+%     - ``'membraneWidth'`` - set detected membrane thickness/width
+%     - ``'membraneStraightLine'`` - enable/disable straight line mode (vs. tracked membrane)
+%     - ``'membraneBlackSignal'`` - select signal type (black-on-white vs. white-on-black)
+%     - ``'membraneRecenterView'`` - enable/disable automatic view recentering after point placement
 %
-%   - **hData** — [matlab.ui.eventdata.ValueChangedData] event data from widget
+%   - **hData** - [matlab.ui.eventdata.ValueChangedData] event data from widget
 %
 % Output Arguments:
 %   None

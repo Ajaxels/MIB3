@@ -7,32 +7,32 @@ function setDefaultColorPalette(obj, paletteName, colorsNo, randomSeed)
 %       obj.setDefaultColorPalette(paletteName, colorsNo, randomSeed)
 %
 % Input Arguments:
-%   - **paletteName** — string with the name of the palette to use, see
+%   - **paletteName** - string with the name of the palette to use, see
 %     utils.defaults.generateDefaultPalette for the full list of options;
 %     two special values are also accepted:
 %   - 'current2default' - copy current model colors to preferences as default
 %   - 'default2current' - restore model colors from preferences default
-%   - **colorsNo** — *(optional)* numeric, number of required color channels
-%   - **randomSeed** — *(optional)* seed for the 'Random Colors' palette; when
+%   - **colorsNo** - *(optional)* numeric, number of required color channels
+%   - **randomSeed** - *(optional)* seed for the 'Random Colors' palette; when
 %     omitted or empty, a dialog asking for the seed is shown. Use 'shuffle' to
 %     seed the generator from the system clock and skip the dialog
 %
 % Output Arguments:
 %
 % Usage:
-%   **Example 1** — select the default color scheme with 6 colors
+%   **Example 1** - select the default color scheme with 6 colors
 %
 %   .. code-block:: matlab
 %
 %      obj.mibModel.setDefaultColorPalette('Default, 6 colors');
 %
-%   **Example 2** — set "Qualitative (Monte Carlo->Half Baked)" palette with 6 colors
+%   **Example 2** - set "Qualitative (Monte Carlo->Half Baked)" palette with 6 colors
 %
 %   .. code-block:: matlab
 %
 %      obj.mibModel.setDefaultColorPalette('Qualitative (Monte Carlo->Half Baked), 3-12 colors', 6);
 %
-%   **Example 3** — generate random colors without asking for the random seed
+%   **Example 3** - generate random colors without asking for the random seed
 %
 %   .. code-block:: matlab
 %

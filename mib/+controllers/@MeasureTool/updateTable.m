@@ -11,7 +11,7 @@ function updateTable(obj)
 % ``measureTable.Data`` (columns: n, type, value, info, Z, T).
 %
 % Input Arguments:
-%   - **obj** — :class:`controllers.MeasureTool`
+%   - **obj** - :class:`controllers.MeasureTool`
 %
 
 datasetId   = obj.mibModel.getActiveId();

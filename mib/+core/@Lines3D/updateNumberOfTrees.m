@@ -9,8 +9,8 @@ function [noTrees, nodeByTree] = updateNumberOfTrees(obj)
 % Input Arguments:
 %
 % Output Arguments:
-%   - **noTrees** — total number of isolated trees of the graph
-%   - **nodeByTree** — vector of nodes, where values indicate corresponding tree of the node
+%   - **noTrees** - total number of isolated trees of the graph
+%   - **nodeByTree** - vector of nodes, where values indicate corresponding tree of the node
 %
 
 noTrees = 0;

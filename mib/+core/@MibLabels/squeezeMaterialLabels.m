@@ -16,7 +16,7 @@ function squeezeMaterialLabels(obj, wb)
 % MibModel.addMaterial() to re-register the next available material index.
 %
 % Input Arguments:
-%   - **wb** — *(optional)* handle to a uiprogressdlg used for progress display;
+%   - **wb** - *(optional)* handle to a uiprogressdlg used for progress display;
 %     when empty no progress is reported.
 %
 % Output Arguments:

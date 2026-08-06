@@ -7,22 +7,22 @@ function keyPress_Callback(obj, evnt)
 %      obj.keyPress_Callback(evnt)
 %
 % Shortcuts:
-%   - ``Space``  — flicker A/B (Flicker overlay mode)
-%   - ``Enter``  — confirm current seam + jump to next worst unreviewed
-%   - ``X``      — exclude / re-include current seam
-%   - ``N`` / ``P`` — next / previous seam in the ranking
-%   - ``Q`` / ``W`` and ``Down`` / ``Up`` — BROWSE Z, previous / next, exactly
+%   - ``Space``  - flicker A/B (Flicker overlay mode)
+%   - ``Enter``  - confirm current seam + jump to next worst unreviewed
+%   - ``X``      - exclude / re-include current seam
+%   - ``N`` / ``P`` - next / previous seam in the ranking
+%   - ``Q`` / ``W`` and ``Down`` / ``Up`` - BROWSE Z, previous / next, exactly
 %     like the main MIB (``Shift`` = ±5); ALWAYS view-only, in BOTH fix
 %     modes. Fix XY: the dz-aligned slice pair; Fix Z: the mosaic Z boundary
 %     (both consecutive slices step together). Keyboard nudging is disabled
-%     entirely — offsets are edited by mouse only (drag / Shift+click /
+%     entirely - offsets are edited by mouse only (drag / Shift+click /
 %     two-click)
-%   - ``Z``      — undo the fix on the current seam (restore the auto edge);
+%   - ``Z``      - undo the fix on the current seam (restore the auto edge);
 %     in Fix Z, remove the boundary correction on screen
-%   - ``F``      — fit the pair view (reset the mouse-wheel zoom)
+%   - ``F``      - fit the pair view (reset the mouse-wheel zoom)
 %
 % Input Arguments:
-%   - **evnt** — KeyData from ``WindowKeyPressFcn``
+%   - **evnt** - KeyData from ``WindowKeyPressFcn``
 %
 
 if obj.mibModel.preferences.System.DeveloperMode
@@ -38,17 +38,17 @@ switch evnt.Key
             obj.pairImageHandles(1).Visible = matlab.lang.OnOffSwitchState(obj.flickerState == 1);
             obj.pairImageHandles(2).Visible = matlab.lang.OnOffSwitchState(obj.flickerState == 2);
             if obj.hasWidget('pairAxes') && ~isempty(obj.currentEdgeIdx)
-                % Replace only the first title line — line 2 (the slice pair
+                % Replace only the first title line - line 2 (the slice pair
                 % readout on 3D pairs) must survive the flicker toggle.
                 titleHandle = obj.view.handles.pairAxes.Title;
                 if obj.boundaryModeActive()
                     shown = [obj.viewSlice.sliceA, obj.viewSlice.sliceB];
-                    flickerLine = sprintf('Flicker — showing slice %d (Space toggles)', ...
+                    flickerLine = sprintf('Flicker - showing slice %d (Space toggles)', ...
                         shown(obj.flickerState));
                 else
                     edge = obj.stitching.edges(obj.currentEdgeIdx);
                     shown = [edge.i, edge.j];
-                    flickerLine = sprintf('Flicker — showing tile %d (Space toggles)', ...
+                    flickerLine = sprintf('Flicker - showing tile %d (Space toggles)', ...
                         shown(obj.flickerState));
                 end
                 if iscell(titleHandle.String)
@@ -104,11 +104,11 @@ end
 function browseZ(obj, step, ~)
 % BROWSEZ - Step the browsed z-slice(s) of the pair view. ALWAYS view-only.
 % Fix XY: the dz-aligned pair browses synchronously (sliceB re-derived from
-% sliceA - dz on render). Fix Z (boundary view): moves the boundary — both
+% sliceA - dz on render). Fix Z (boundary view): moves the boundary - both
 % consecutive slices step together, clamped to [2, depth].
 if isempty(obj.currentEdgeIdx); return; end
 if ~obj.pairHasDepth(obj.currentEdgeIdx)
-    obj.setStatus('2D pair — no Z slices here');
+    obj.setStatus('2D pair - no Z slices here');
     return;
 end
 if isempty(obj.viewSlice) || ~isequal(obj.viewSlice.edgeIdx, obj.currentEdgeIdx)

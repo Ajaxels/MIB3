@@ -53,7 +53,7 @@ img = 0.60 * background + 0.12 * (xx / canvasW) + 0.08 * (yy / canvasH) + 0.10;
 % Periodic line grids would create repeated-pattern ambiguity for the phase
 % correlation; random lines keep every overlap unique. Lines are BLENDED (not
 % saturated) on purpose: a single dominant line in a thin overlap strip makes
-% the translation ambiguous along the line direction — enough lines at varied
+% the translation ambiguous along the line direction - enough lines at varied
 % angles plus visible background texture pin the registration, while broken
 % lines at seams still expose stitching errors immediately.
 numLines = 22;

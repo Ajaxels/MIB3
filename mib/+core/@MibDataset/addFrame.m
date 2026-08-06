@@ -9,27 +9,27 @@ function addFrame(obj, BatchOpt, parentFigure)
 % Ported from MIB2 ``@mibModel/addFrame.m``.
 %
 % Input Arguments:
-%   - **BatchOpt** — [struct] parameters for the frame operation:
+%   - **BatchOpt** - [struct] parameters for the frame operation:
 %
-%     - ``.FrameWidth`` — [numeric cell] frame width in pixels (may be negative to trim);
+%     - ``.FrameWidth`` - [numeric cell] frame width in pixels (may be negative to trim);
 %       ``{1}`` value, ``{2}`` limits ``[-Inf, Inf]``, ``{3}`` ``'on'`` (integer)
-%     - ``.FrameHeight`` — [numeric cell] frame height in pixels (may be negative to trim);
+%     - ``.FrameHeight`` - [numeric cell] frame height in pixels (may be negative to trim);
 %       ``{1}`` value, ``{2}`` limits ``[-Inf, Inf]``, ``{3}`` ``'on'`` (integer)
-%     - ``.IntensityPadValue`` — [numeric cell] fill intensity when method is ``'use the pad value'``;
+%     - ``.IntensityPadValue`` - [numeric cell] fill intensity when method is ``'use the pad value'``;
 %       ``{1}`` value, ``{2}`` limits ``[0, Inf]``, ``{3}`` ``'off'``
-%     - ``.Method`` — [cell] one of:
+%     - ``.Method`` - [cell] one of:
 %       ``{'use the pad value'}``, ``{'replicate'}``, ``{'circular'}``, ``{'symmetric'}``
-%     - ``.Direction`` — [cell] one of: ``{'both'}``, ``{'pre'}``, ``{'post'}``
-%     - ``.showWaitbar`` — [logical] show progress dialog (default: ``true``)
+%     - ``.Direction`` - [cell] one of: ``{'both'}``, ``{'pre'}``, ``{'post'}``
+%     - ``.showWaitbar`` - [logical] show progress dialog (default: ``true``)
 %
-%   - **parentFigure** *(optional)* — handle to the parent figure for the progress dialog;
+%   - **parentFigure** *(optional)* - handle to the parent figure for the progress dialog;
 %     pass ``[]`` to suppress the progress dialog
 %
 % Output Arguments:
 %   none
 %
 % Usage:
-%   **Example 1** — add a 10-pixel symmetric frame
+%   **Example 1** - add a 10-pixel symmetric frame
 %
 %   .. code-block:: matlab
 %

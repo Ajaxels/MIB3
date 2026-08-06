@@ -7,7 +7,7 @@ function updatePlotSettings(obj)
 %       obj.updatePlotSettings()
 %
 % Input Arguments:
-%   - **obj** — :class:`controllers.MeasureTool`
+%   - **obj** - :class:`controllers.MeasureTool`
 %
 
 datasetId = obj.mibModel.getActiveId();

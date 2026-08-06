@@ -15,25 +15,25 @@ function [pixelX, pixelY, wasCancelled] = drawROI(obj, roiType, finetuneCheck, m
 % arrays with ``wasCancelled = true``.
 %
 % Input Arguments:
-%   - **roiType** — [char] one of:
+%   - **roiType** - [char] one of:
 %
-%     - ``'line'``     — two-endpoint line (``drawline``)
-%     - ``'polyline'`` — open N-point polygon (``drawpolygon``)
-%     - ``'ellipse'``  — ellipse; returns boundary vertices (``drawellipse``)
-%     - ``'point'``    — single point (``drawpoint``)
-%     - ``'freehand'`` — open freehand path (``drawfreehand``)
+%     - ``'line'``     - two-endpoint line (``drawline``)
+%     - ``'polyline'`` - open N-point polygon (``drawpolygon``)
+%     - ``'ellipse'``  - ellipse; returns boundary vertices (``drawellipse``)
+%     - ``'point'``    - single point (``drawpoint``)
+%     - ``'freehand'`` - open freehand path (``drawfreehand``)
 %
-%   - **finetuneCheck** — *(optional)* [logical] when ``false`` the ROI is
+%   - **finetuneCheck** - *(optional)* [logical] when ``false`` the ROI is
 %     auto-accepted as soon as drawing finishes (no double-click required).
 %     Default: ``true``.
-%   - **maxVertices** — *(optional)* [double] maximum number of vertices for
+%   - **maxVertices** - *(optional)* [double] maximum number of vertices for
 %     ``'polyline'`` drawings; drawing ends automatically when this count is
 %     reached.  Default: ``Inf`` (unlimited).
 %
 % Output Arguments:
-%   - **pixelX** — [double column] X coordinates in data pixel space.
-%   - **pixelY** — [double column] Y coordinates in data pixel space.
-%   - **wasCancelled** — [logical] true when the user pressed Escape.
+%   - **pixelX** - [double column] X coordinates in data pixel space.
+%   - **pixelY** - [double column] Y coordinates in data pixel space.
+%   - **wasCancelled** - [logical] true when the user pressed Escape.
 %
 % Usage:
 %   **Example 1**
@@ -82,7 +82,7 @@ try
         end
     else
         if ~finetuneCheck
-            % Recalculate mode: return stored pixel coordinates directly — no drawing.
+            % Recalculate mode: return stored pixel coordinates directly - no drawing.
             % The caller recomputes the measurement value with the current pixSize.
             pixelX       = initialDataPos(:, 1);
             pixelY       = initialDataPos(:, 2);
@@ -91,7 +91,7 @@ try
             cImageDoc.updateBrushCursor();
             return;
         end
-        % Edit mode — create pre-positioned ROI and wait for user confirmation
+        % Edit mode - create pre-positioned ROI and wait for user confirmation
         switch roiType
             case {'line', 'polyline', 'freehand', 'point'}
                 [screenX, screenY] = obj.mibModel.convertDataToMouseCoordinates( ...
@@ -286,7 +286,7 @@ wasCancelled = false;
                     [ex, ~]  = obj.mibModel.convertMouseToDataCoordinates(c(1)+sa(1), c(2),       'shown');
                     [~,  ey] = obj.mibModel.convertMouseToDataCoordinates(c(1),       c(2)+sa(2), 'shown');
                     cRoi.drawingROI.dataPos = [cx, cy, ex-cx, ey-cy];
-                otherwise   % Polyline / Lasso / Point — Nx2 vertex array
+                otherwise   % Polyline / Lasso / Point - Nx2 vertex array
                     verts = roiObject.Position;
                     [X, Y] = obj.mibModel.convertMouseToDataCoordinates(verts(:,1), verts(:,2), 'shown');
                     cRoi.drawingROI.dataPos = [X(:), Y(:)];

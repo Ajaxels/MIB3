@@ -7,11 +7,11 @@ function [edge, edgeIds] = clipEdge(obj, Box)
 %       [edge, edgeIds] = obj.clipEdge(Box)
 %
 % Input Arguments:
-%   - **Box** — a vector used for cliping the edges [xMin, xMax, yMin, yMax, zMin, zMax]
+%   - **Box** - a vector used for cliping the edges [xMin, xMax, yMin, yMax, zMin, zMax]
 %
 % Output Arguments:
-%   - **edge** — a matrix of edges shown inside the clipping box, [x1 y1 z1 x2 y2 z2]
-%   - **edgeIds** — indices of the returned edges
+%   - **edge** - a matrix of edges shown inside the clipping box, [x1 y1 z1 x2 y2 z2]
+%   - **edgeIds** - indices of the returned edges
 %
 
 try

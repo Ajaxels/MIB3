@@ -10,15 +10,15 @@ function applyUserFix(obj, newOffsetYX, description, deferResolve)
 % The single write path shared by every fixing tool (drag,
 % click-to-correlate, two-click match): backs up the original automatic edge
 % once (for ``Z`` undo), replaces the measurement by the user's offset with
-% ``source = 'user'`` / ``quality = 1`` — the solvers weight user edges at
-% ``userEdgeWeight`` and never prune them — and re-solves globally unless
+% ``source = 'user'`` / ``quality = 1`` - the solvers weight user edges at
+% ``userEdgeWeight`` and never prune them - and re-solves globally unless
 % deferred by the caller or auto-re-solve is off.
 %
 % Input Arguments:
-%   - **newOffsetYX** — [1x2 or 1x3 double] pair offset ``[dy dx]`` (or
+%   - **newOffsetYX** - [1x2 or 1x3 double] pair offset ``[dy dx]`` (or
 %     ``[dy dx dz]``) in the ``positions(j,:) - positions(i,:)`` convention
-%   - **description** — [char] short provenance text for the status line
-%   - **deferResolve** *(optional)* — [logical] skip the auto re-solve
+%   - **description** - [char] short provenance text for the status line
+%   - **deferResolve** *(optional)* - [logical] skip the auto re-solve
 %     (default: ``false``)
 %
 
@@ -52,13 +52,13 @@ obj.stitching.edges(k).tform   = [];   % user fixes are pure translation
 edge = obj.stitching.edges(k);
 if ~deferResolve && obj.autoResolveEnabled()
     obj.resolveBtn_Callback();   % re-solve + re-score + re-rank + SeamsUpdated
-    obj.setStatus(sprintf('Seam %d-%d fixed (%s) — re-solved', edge.i, edge.j, description));
+    obj.setStatus(sprintf('Seam %d-%d fixed (%s) - re-solved', edge.i, edge.j, description));
 else
     obj.resolvePending = true;   % Stitch must re-solve first (Stitching.stitchBtn_Callback)
     obj.updateWidgets();
     obj.renderPairView();
     notify(obj, 'SeamsUpdated');
-    obj.setStatus(sprintf('Seam %d-%d fixed (%s) — press Re-solve to apply globally', ...
+    obj.setStatus(sprintf('Seam %d-%d fixed (%s) - press Re-solve to apply globally', ...
         edge.i, edge.j, description));
 end
 end

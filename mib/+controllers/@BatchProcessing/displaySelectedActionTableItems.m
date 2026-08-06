@@ -15,7 +15,7 @@ function displaySelectedActionTableItems(obj, evnt)
 % numeric selectedActionTableCellNumericEdit
 %
 % Input Arguments:
-%   - **evnt** — [optional] CellSelectionCallback event data; when provided the
+%   - **evnt** - [optional] CellSelectionCallback event data; when provided the
 %     selected row index is read from evnt.Indices(1,1) and stored in
 %     obj.selectedActionTableIndex before updating the widgets
 %

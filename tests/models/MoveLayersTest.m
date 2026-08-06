@@ -62,7 +62,7 @@ classdef MoveLayersTest < matlab.unittest.TestCase
             moveOpts = MoveLayersTest.plainMoveOpts();
             mibModel.I{1}.moveSelectionToMaskDataset('remove', moveOpts);
 
-            % uint8 saturated subtraction — matches the implementation's arithmetic
+            % uint8 saturated subtraction - matches the implementation's arithmetic
             expectedMask = gt.mask - gt.selection;
             maskResult = mibModel.getData3D('mask', 1, 3, NaN, opt);
             testCase.verifyEqual(squeeze(maskResult{1}), expectedMask);

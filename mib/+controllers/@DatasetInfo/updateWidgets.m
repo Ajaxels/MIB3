@@ -36,7 +36,7 @@ rootNode = uitreenode(tree, ...
     'Text', 'meta', ...
     'NodeData', struct('key', 'meta', 'subIndex', [], 'populationType', ''));
 
-% ---- Scalar keys — rendered immediately as leaf nodes ----
+% ---- Scalar keys - rendered immediately as leaf nodes ----
 scalarKeyNames = ["Filename", "Height", "Width", "Depth", "Time", ...
     "Colors", "ColorType", "imgClass", "MaxInt", "ImageDescription"];
 presentMask = isKey(meta, scalarKeyNames);
@@ -58,7 +58,7 @@ for keyIdx = find(presentMask)
         'NodeData', struct('key', keyName, 'subIndex', [], 'populationType', ''));
 end
 
-% ---- Struct keys — deferred ----
+% ---- Struct keys - deferred ----
 structKeyNames = ["pixSize", "viewPort"];
 presentMask = isKey(meta, structKeyNames);
 
@@ -73,7 +73,7 @@ for keyIdx = find(presentMask)
     addLoadingPlaceholder(parentNode);
 end
 
-% ---- Cell array keys — deferred for multi-item ----
+% ---- Cell array keys - deferred for multi-item ----
 cellKeyNames = ["SliceName", "ActionLog"];
 presentMask = isKey(meta, cellKeyNames);
 
@@ -95,7 +95,7 @@ for keyIdx = find(presentMask)
     end
 end
 
-% ---- Matrix keys — deferred for multi-row ----
+% ---- Matrix keys - deferred for multi-row ----
 matrixKeyNames = ["lutColors", "Colormap", "SliceSize"];
 presentMask = isKey(meta, matrixKeyNames);
 
@@ -117,7 +117,7 @@ for keyIdx = find(presentMask)
     end
 end
 
-% ---- customMeta — deferred ----
+% ---- customMeta - deferred ----
 if isKey(meta, 'customMeta')
     customMetaValue = meta{'customMeta'};
     if isstruct(customMetaValue) && ~isempty(fieldnames(customMetaValue))
@@ -128,7 +128,7 @@ if isKey(meta, 'customMeta')
     end
 end
 
-% ---- Extras — deferred ----
+% ---- Extras - deferred ----
 processedKeyNames = [scalarKeyNames, structKeyNames, cellKeyNames, matrixKeyNames, "customMeta"];
 extraKeyNames = allKeys(~ismember(allKeys, processedKeyNames));
 
@@ -139,7 +139,7 @@ if ~isempty(extraKeyNames)
     addLoadingPlaceholder(extrasNode);
 end
 
-% ---- Image pyramid (BigData / pyramidal Virtual datasets) — deferred ----
+% ---- Image pyramid (BigData / pyramidal Virtual datasets) - deferred ----
 pyramid = obj.mibModel.I{datasetId}.image.pyramid;
 if ~isempty(pyramid.levelNames)
     nLevels = size(pyramid.levelScaleFactors, 1);
@@ -161,7 +161,7 @@ obj.allTreeNodes = obj.flattenTreeNodes(tree);
 % Build complete metadata search list (includes collapsed sections).
 obj.metaSearchList = obj.buildMetaSearchList();
 
-% Restore selection — works for first-level nodes; child nodes inside a
+% Restore selection - works for first-level nodes; child nodes inside a
 % deferred section are not found until that section is expanded.
 if ~isempty(obj.selectedNodeText) && ~isempty(obj.allTreeNodes)
     searchPrefix = [obj.selectedNodeText, ':'];
@@ -177,7 +177,7 @@ end
 end
 
 % =====================================================================
-%  Local helper — insert a 'Loading…' sentinel as the sole child of a
+%  Local helper - insert a 'Loading…' sentinel as the sole child of a
 %  deferred parent so the tree widget shows an expand arrow.
 % =====================================================================
 function addLoadingPlaceholder(parentNode)

@@ -158,7 +158,7 @@ classdef MibDatasetTest < matlab.unittest.TestCase
             sliceResult = mibModel.getData2D('selection', midSlice, 3, NaN, opt);
             testCase.verifyEqual(sum(double(sliceResult{1}(:))), 0);
 
-            % other slices must be intact — verify a different slice (slice 1)
+            % other slices must be intact - verify a different slice (slice 1)
             if midSlice > 1
                 otherSlice = mibModel.getData2D('selection', 1, 3, NaN, opt);
                 testCase.verifyEqual(squeeze(otherSlice{1}), ...

@@ -33,7 +33,7 @@ classdef MibController < handle
         % cell array of modifier keys currently held (e.g. {'shift'}, {'alt','shift'}).
         % Updated by gui_WindowKeyPressFcn and cleared by gui_WindowKeyReleaseFcn.
         % Use this property (via obj.mibController.currentModifier) instead of
-        % UIFigure.CurrentModifier inside button callbacks — UIFigure.CurrentModifier
+        % UIFigure.CurrentModifier inside button callbacks - UIFigure.CurrentModifier
         % is only updated by keyboard events on that specific sub-figure, so it
         % returns {} when a Selection-panel button is clicked with a modifier held.
         fastPanningMode = false
@@ -129,8 +129,8 @@ classdef MibController < handle
             % the class with default parameters
             %
             % Input Arguments:
-            %   - **mibModel** — a handle to mibModel class
-            %   - **mibVersion** — a string with the current version of MIB
+            %   - **mibModel** - a handle to mibModel class
+            %   - **mibVersion** - a string with the current version of MIB
             %
 
             % define some global variables

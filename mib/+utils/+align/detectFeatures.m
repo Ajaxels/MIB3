@@ -12,8 +12,8 @@ function points = detectFeatures(image, detector, options)
 % its parameters from the matching field of ``options``.
 %
 % Input Arguments:
-%   - **image** — [numeric] grayscale image to analyse.
-%   - **detector** — [char] detector type. Supported values:
+%   - **image** - [numeric] grayscale image to analyse.
+%   - **detector** - [char] detector type. Supported values:
 %
 %     - ``'Blobs: Speeded-Up Robust Features (SURF) algorithm'`` → ``detectSURFFeatures``
 %     - ``'Blobs: Detect scale invariant feature transform (SIFT)'`` → ``detectSIFTFeatures``
@@ -24,24 +24,24 @@ function points = detectFeatures(image, detector, options)
 %     - ``'Corners: Minimum Eigenvalue algorithm'`` → ``detectMinEigenFeatures``
 %     - ``'Oriented FAST and rotated BRIEF (ORB)'`` → ``detectORBFeatures``
 %
-%   - **options** — struct with one field per detector carrying the
+%   - **options** - struct with one field per detector carrying the
 %     parameters forwarded to the corresponding ``detect*Features`` call:
 %
-%     - ``.detectSURFFeatures``    — ``.MetricThreshold``, ``.NumOctaves``, ``.NumScaleLevels``
-%     - ``.detectSIFTFeatures``    — ``.ContrastThreshold``, ``.EdgeThreshold``, ``.NumLayersInOctave``, ``.Sigma``
-%     - ``.detectMSERFeatures``    — ``.ThresholdDelta``, ``.RegionAreaRange``, ``.MaxAreaVariation``
-%     - ``.detectHarrisFeatures``  — ``.MinQuality``, ``.FilterSize``
-%     - ``.detectBRISKFeatures``   — ``.MinContrast``, ``.MinQuality``, ``.NumOctaves``
-%     - ``.detectFASTFeatures``    — ``.MinQuality``, ``.MinContrast``
-%     - ``.detectMinEigenFeatures``— ``.MinQuality``, ``.FilterSize``
-%     - ``.detectORBFeatures``     — ``.ScaleFactor``, ``.NumLevels``
+%     - ``.detectSURFFeatures``    - ``.MetricThreshold``, ``.NumOctaves``, ``.NumScaleLevels``
+%     - ``.detectSIFTFeatures``    - ``.ContrastThreshold``, ``.EdgeThreshold``, ``.NumLayersInOctave``, ``.Sigma``
+%     - ``.detectMSERFeatures``    - ``.ThresholdDelta``, ``.RegionAreaRange``, ``.MaxAreaVariation``
+%     - ``.detectHarrisFeatures``  - ``.MinQuality``, ``.FilterSize``
+%     - ``.detectBRISKFeatures``   - ``.MinContrast``, ``.MinQuality``, ``.NumOctaves``
+%     - ``.detectFASTFeatures``    - ``.MinQuality``, ``.MinContrast``
+%     - ``.detectMinEigenFeatures``- ``.MinQuality``, ``.FilterSize``
+%     - ``.detectORBFeatures``     - ``.ScaleFactor``, ``.NumLevels``
 %
 % Output Arguments:
-%   - **points** — feature-points object returned by the chosen ``detect*Features``
+%   - **points** - feature-points object returned by the chosen ``detect*Features``
 %     function (e.g. :class:`SURFPoints`, :class:`SIFTPoints`, …). Empty if
 %     ``detector`` did not match any supported case.
 %
-% **Example** — detect SURF features:
+% **Example** - detect SURF features:
 %
 % .. code-block:: matlab
 %

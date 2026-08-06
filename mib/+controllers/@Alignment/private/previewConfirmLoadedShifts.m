@@ -13,11 +13,11 @@ function tf = previewConfirmLoadedShifts(obj, parameters, parentFig)
 % :func:`plotAlignmentTransforms`), and asks the user to confirm. When the
 % coefficient type does not match the currently selected algorithm
 % (``parameters.method``) an error dialog explains the mismatch and the run is
-% aborted — applying, e.g., v2 transforms as a drift correction would fail or
+% aborted - applying, e.g., v2 transforms as a drift correction would fail or
 % silently recompute.
 %
 % Output Arguments:
-%   - **tf** — [logical] ``true`` to proceed with the alignment, ``false`` to abort.
+%   - **tf** - [logical] ``true`` to proceed with the alignment, ``false`` to abort.
 
 tf = false;
 
@@ -71,7 +71,7 @@ end
 
 % --- Preview plot + confirm --------------------------------------------------
 hFig = plotAlignmentTransforms(plotKind, payload, ...
-    sprintf('%s — %s (%d frames)', [upper(kindLabel(1)) kindLabel(2:end)], fileLabel, nFrames));
+    sprintf('%s - %s (%d frames)', [upper(kindLabel(1)) kindLabel(2:end)], fileLabel, nFrames));
 cleanupFig = onCleanup(@() closeIfValid(hFig));
 
 opt.Icon        = 'puffin_question';

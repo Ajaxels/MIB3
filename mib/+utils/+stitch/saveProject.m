@@ -14,26 +14,26 @@ function saveProject(filePath, layout, edges, positions, solverInfo, outputInfo,
 % encoded with ``jsonencode``.
 %
 % Input Arguments:
-%   - **filePath** — [char] full path for the output JSON file (the ``.mibstitch.json``
+%   - **filePath** - [char] full path for the output JSON file (the ``.mibstitch.json``
 %     extension is appended if not already present)
-%   - **layout** — struct array as returned by the layout builders
-%   - **edges** — struct array of measured/validated pair edges (may be ``[]``)
-%   - **positions** — [double] N-by-3 array of solved origins ``[y x z]``
+%   - **layout** - struct array as returned by the layout builders
+%   - **edges** - struct array of measured/validated pair edges (may be ``[]``)
+%   - **positions** - [double] N-by-3 array of solved origins ``[y x z]``
 %     (may be ``[]`` if not yet solved)
-%   - **solverInfo** — struct with solver settings and RMSE (may be ``[]``)
-%   - **outputInfo** — struct with blend mode, output path, canvas size (may be ``[]``)
-%   - **tforms** *(optional)* — [N x 1 cell] solved per-tile 3x3 affine transforms
+%   - **solverInfo** - struct with solver settings and RMSE (may be ``[]``)
+%   - **outputInfo** - struct with blend mode, output path, canvas size (may be ``[]``)
+%   - **tforms** *(optional)* - [N x 1 cell] solved per-tile 3x3 affine transforms
 %     from :func:`utils.stitch.solveGlobalAffine` (stored per tile as
 %     ``solvedTform``); pass ``{}``/omit for translation-only projects
-%   - **zSliceFixes** *(optional)* — [K x 3] per-slice mosaic corrections
+%   - **zSliceFixes** *(optional)* - [K x 3] per-slice mosaic corrections
 %     ``[z dy dx]`` from the seam inspector's Fix Z; pass ``[]``/omit for none
-%   - **settings** *(optional)* — struct of flattened tool settings (one scalar /
+%   - **settings** *(optional)* - struct of flattened tool settings (one scalar /
 %     char / logical per ``BatchOpt`` field, plus the nested ``FeatureOptions``)
 %     as produced by :meth:`controllers.Stitching.collectProjectSettings`. Stored
 %     under ``project.settings`` so *Load project* can restore the whole dialog,
 %     or reuse the parameters alone on a different set of tiles. Omit for none.
 %
-% **Example** — save after solving:
+% **Example** - save after solving:
 %
 %   .. code-block:: matlab
 %
@@ -63,7 +63,7 @@ end
 % ('auto'|'user'|'confirmed') and 'seamScore' (NCC at the solved placement).
 % v3 adds the optional 'settings' block (the tool's own parameters), so a
 % loaded project can restore the dialog or serve as a settings template.
-% All three are read back by the same loader — the added blocks are optional.
+% All three are read back by the same loader - the added blocks are optional.
 project.schemaVersion = 3;
 project.createdUtc    = char(datetime('now', 'TimeZone', 'UTC', 'Format', "yyyy-MM-dd'T'HH:mm:ss'Z'"));
 
@@ -155,7 +155,7 @@ function edgeCell = edgesToCell(edges)
 numEdges = numel(edges);
 edgeCell = cell(numEdges, 1);
 for edgeIdx = 1:numEdges
-    edgeStruct = struct();   % fresh struct — optional fields must not leak across edges
+    edgeStruct = struct();   % fresh struct - optional fields must not leak across edges
     edgeStruct.i         = edges(edgeIdx).i;
     edgeStruct.j         = edges(edgeIdx).j;
     edgeStruct.direction = edges(edgeIdx).direction;

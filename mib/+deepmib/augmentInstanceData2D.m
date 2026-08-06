@@ -17,22 +17,22 @@ function dataOut = augmentInstanceData2D(dataIn, options)
 %   ``labelsDS = transform(labelsDS, @(d)deepmib.augmentInstanceData2D(d, options));``
 %
 % Input Arguments:
-%   - **dataIn** — ``1×4`` cell as returned by deepmib.matReadInstanceLabels:
+%   - **dataIn** - ``1×4`` cell as returned by deepmib.matReadInstanceLabels:
 %
-%     - ``dataIn{1}`` — image ``[H×W×3]``
-%     - ``dataIn{2}`` — bounding boxes ``[M×4]`` in ``[x y width height]`` format
-%     - ``dataIn{3}`` — labels ``[M×1 categorical]``
-%     - ``dataIn{4}`` — instance masks ``[H×W×M logical]``
+%     - ``dataIn{1}`` - image ``[H×W×3]``
+%     - ``dataIn{2}`` - bounding boxes ``[M×4]`` in ``[x y width height]`` format
+%     - ``dataIn{3}`` - labels ``[M×1 categorical]``
+%     - ``dataIn{4}`` - instance masks ``[H×W×M logical]``
 %
-%   - **options** — struct with augmentation settings:
+%   - **options** - struct with augmentation settings:
 %
-%     - ``.AugOpt2D`` — copy of ``mibDeepController.AugOpt2D`` (per-augmentation
+%     - ``.AugOpt2D`` - copy of ``mibDeepController.AugOpt2D`` (per-augmentation
 %       ``.Min``/``.Max`` limits plus global ``.Fraction`` and ``.FillValue``)
-%     - ``.Aug2DFuncNames`` — cell array with names of enabled augmentations
-%     - ``.Aug2DFuncProbability`` — matching per-augmentation trigger probabilities
+%     - ``.Aug2DFuncNames`` - cell array with names of enabled augmentations
+%     - ``.Aug2DFuncProbability`` - matching per-augmentation trigger probabilities
 %
 % Output Arguments:
-%   - **dataOut** — ``1×4`` cell with the augmented ``{image, boxes, labels, masks}``;
+%   - **dataOut** - ``1×4`` cell with the augmented ``{image, boxes, labels, masks}``;
 %     instances whose mask vanished after a geometric transform are dropped.
 
 global mibDeepTrainingProgressStruct

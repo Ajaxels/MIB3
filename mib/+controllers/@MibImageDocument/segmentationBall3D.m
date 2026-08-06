@@ -12,44 +12,44 @@ function segmentationBall3D(obj, y, x, z, modifier, BatchOptIn)
 % the voxel size ratio so the ball appears physically spherical.
 %
 % Input Arguments:
-%   - **y** — [double] y-coordinate of ball centre in full-dataset pixels
-%   - **x** — [double] x-coordinate of ball centre in full-dataset pixels
-%   - **z** — [double] z-coordinate (slice index) of ball centre
-%   - **modifier** — [char|cell] modifier keys held during click:
+%   - **y** - [double] y-coordinate of ball centre in full-dataset pixels
+%   - **x** - [double] x-coordinate of ball centre in full-dataset pixels
+%   - **z** - [double] z-coordinate (slice index) of ball centre
+%   - **modifier** - [char|cell] modifier keys held during click:
 %
-%     - ``''`` — add ball to selection/mask layer
-%     - ``'control'`` — subtract ball from selection/mask layer
+%     - ``''`` - add ball to selection/mask layer
+%     - ``'control'`` - subtract ball from selection/mask layer
 %
-%   - **BatchOptIn** *(optional)* — [struct|NaN] batch processing mode;
+%   - **BatchOptIn** *(optional)* - [struct|NaN] batch processing mode;
 %     when ``NaN``, returns default options via ``'SyncBatch'`` event:
 %
-%     - ``.Radius`` — [char] ball radius in pixels (raw spinner value)
-%     - ``.X`` — [char] vector or single X coordinate of ball centre
-%     - ``.Y`` — [char] vector or single Y coordinate of ball centre
-%     - ``.Z`` — [char] vector or single Z coordinate of ball centre; empty = current slice
-%     - ``.Mode`` — [char] ``'add'`` or ``'erase'`` — add or subtract ball
-%     - ``.restrictSelectionToMask`` — [logical] paint only within mask
-%     - ``.restrictSelectionToMaterial`` — [logical] paint only within selected material
-%     - ``.Target`` — [char] ``'selection'`` or ``'mask'`` — destination layer
-%     - ``.showWaitbar`` — [logical] show progress bar
-%     - ``.id`` *(optional)* — [numeric] dataset index 1–9 (default: ``obj.mibModel.getActiveId()``)
+%     - ``.Radius`` - [char] ball radius in pixels (raw spinner value)
+%     - ``.X`` - [char] vector or single X coordinate of ball centre
+%     - ``.Y`` - [char] vector or single Y coordinate of ball centre
+%     - ``.Z`` - [char] vector or single Z coordinate of ball centre; empty = current slice
+%     - ``.Mode`` - [char] ``'add'`` or ``'erase'`` - add or subtract ball
+%     - ``.restrictSelectionToMask`` - [logical] paint only within mask
+%     - ``.restrictSelectionToMaterial`` - [logical] paint only within selected material
+%     - ``.Target`` - [char] ``'selection'`` or ``'mask'`` - destination layer
+%     - ``.showWaitbar`` - [logical] show progress bar
+%     - ``.id`` *(optional)* - [numeric] dataset index 1-9 (default: ``obj.mibModel.getActiveId()``)
 %
 % Output Arguments:
 %   (none)
 %
-% **Example 1** — add 3D ball at [y,x,z]=[50,75,10]:
+% **Example 1** - add 3D ball at [y,x,z]=[50,75,10]:
 %
 %   .. code-block:: matlab
 %
 %      obj.segmentationBall3D(50, 75, 10, '');
 %
-% **Example 2** — erase 3D ball:
+% **Example 2** - erase 3D ball:
 %
 %   .. code-block:: matlab
 %
 %      obj.segmentationBall3D(50, 75, 10, 'control');
 %
-% **Example 3** — batch processing:
+% **Example 3** - batch processing:
 %
 %     BatchOpt.Radius = '6';
 %     BatchOpt.X = '75'; BatchOpt.Y = '50'; BatchOpt.Z = '10';

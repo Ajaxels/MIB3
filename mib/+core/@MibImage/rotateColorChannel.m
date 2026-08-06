@@ -9,15 +9,15 @@ function rotateColorChannel(obj, channel1, angle, options)
 % Only square images are supported (``obj.width == obj.height``).
 %
 % Input Arguments:
-%   - **channel1** — 1-based index of the channel to rotate
-%   - **angle** — rotation angle in degrees; must be a multiple of 90
-%   - **options** — *(optional)* struct with fields:
+%   - **channel1** - 1-based index of the channel to rotate
+%   - **angle** - rotation angle in degrees; must be a multiple of 90
+%   - **options** - *(optional)* struct with fields:
 %
-%     - ``.showWaitbar`` — logical; show progress bar (default ``true``)
-%     - ``.ParentFigure`` — handle to parent figure for the progress dialog (default ``[]``)
+%     - ``.showWaitbar`` - logical; show progress bar (default ``true``)
+%     - ``.ParentFigure`` - handle to parent figure for the progress dialog (default ``[]``)
 %
 % Usage:
-%   **Example 1** — rotate channel 1 by 90 degrees
+%   **Example 1** - rotate channel 1 by 90 degrees
 %
 %   .. code-block:: matlab
 %

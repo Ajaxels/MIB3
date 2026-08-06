@@ -12,50 +12,50 @@ function status = materialsActions(obj, action, BatchOptIn)
 % dialogs) and batch mode (via BatchOptIn).
 %
 % Input Arguments:
-%   - **action** — char, desired action.  Provide only this parameter for
+%   - **action** - char, desired action.  Provide only this parameter for
 %     interactive behaviour.  One of:
 %
-%     - ``'Rename material'`` — rename a single material (index 0 renames all
+%     - ``'Rename material'`` - rename a single material (index 0 renames all
 %       from a comma-separated list)
-%     - ``'Add material'`` — append a new material at the end of the list;
+%     - ``'Add material'`` - append a new material at the end of the list;
 %       delegates to obj.addMaterial
-%     - ``'Import material'`` — import selected materials (names, colors, and
+%     - ``'Import material'`` - import selected materials (names, colors, and
 %       voxels) from a saved model file into the current model; delegates to
 %       obj.importMaterial (Standard/Virtual datasets; BigData requires Phase 3)
-%     - ``'Insert material'`` — insert a new material at an arbitrary position,
+%     - ``'Insert material'`` - insert a new material at an arbitrary position,
 %       shifting existing materials downward
-%     - ``'Swap materials'`` — exchange two materials (pixel data + metadata)
-%     - ``'Reorder materials'`` — rearrange all materials according to a
+%     - ``'Swap materials'`` - exchange two materials (pixel data + metadata)
+%     - ``'Reorder materials'`` - rearrange all materials according to a
 %       permutation vector (small models only, maxMaterials < 256)
-%     - ``'Export material'`` — [not yet ported] export a material to the
+%     - ``'Export material'`` - [not yet ported] export a material to the
 %       MATLAB workspace
-%     - ``'Save material to file'`` — [not yet ported] save a material to a
+%     - ``'Save material to file'`` - [not yet ported] save a material to a
 %       file on disk
-%     - ``'Remove material'`` — delete one or more materials; delegates to
+%     - ``'Remove material'`` - delete one or more materials; delegates to
 %       obj.removeMaterial
 %
-%   - **BatchOptIn** — *(optional)* a structure for batch processing mode; when
+%   - **BatchOptIn** - *(optional)* a structure for batch processing mode; when
 %     NaN, returns a structure with default options via "SyncBatch" event
 %
-%     - ``.Action`` — cell string with these options:
+%     - ``.Action`` - cell string with these options:
 %       ``'Rename material'``, ``'Add material'``, ``'Import material'``,
 %       ``'Insert material'``, ``'Swap materials'``, ``'Reorder materials'``,
 %       ``'Export material'``, ``'Save material to file'``, ``'Remove material'``
-%     - ``.MaterialIndex1`` — char, primary index(indices) of materials to
+%     - ``.MaterialIndex1`` - char, primary index(indices) of materials to
 %       perform required action; [*default]* index of the currently selected
 %       material in the segmentation table
-%     - ``.MaterialIndex2`` — char, secondary index of materials for swapping
+%     - ``.MaterialIndex2`` - char, secondary index of materials for swapping
 %       of materials; [*default]* index of the selected AddTo material
-%     - ``.MaterialName`` — char, new name for the material; [*default* ``''``]
-%     - ``.showWaitbar`` — logical, show or not the waitbar; [*default* true]
-%     - ``.id`` — *(optional)*, dataset index 1-9, default = obj.id
+%     - ``.MaterialName`` - char, new name for the material; [*default* ``''``]
+%     - ``.showWaitbar`` - logical, show or not the waitbar; [*default* true]
+%     - ``.id`` - *(optional)*, dataset index 1-9, default = obj.id
 %
 %
 % Output Arguments:
-%   - **status** — logical, true when the action completed successfully
+%   - **status** - logical, true when the action completed successfully
 %
 % Usage:
-%   **Example 1** — rename material 3
+%   **Example 1** - rename material 3
 %
 %   .. code-block:: matlab
 %
@@ -64,7 +64,7 @@ function status = materialsActions(obj, action, BatchOptIn)
 %      BatchOptIn.MaterialName = 'material3';
 %      obj.mibModel.materialsActions([], BatchOptIn);
 %
-%   **Example 2** — remove materials 2,3,4,10
+%   **Example 2** - remove materials 2,3,4,10
 %
 %   .. code-block:: matlab
 %
@@ -297,7 +297,7 @@ switch BatchOpt.Action{1}
         status = true;
 
     case 'Export material'
-        % TODO: port from MIB2 — calls obj.modelExport with MaterialIndex
+        % TODO: port from MIB2 - calls obj.modelExport with MaterialIndex
         dlgOpt.MsgBoxOnly  = true;
         dlgOpt.Icon        = 'puffin_warning';
         header      = 'Not yet implemented';
@@ -308,7 +308,7 @@ switch BatchOpt.Action{1}
         return;
 
     case 'Save material to file'
-        % TODO: port from MIB2 — calls obj.saveModel with MaterialIndex
+        % TODO: port from MIB2 - calls obj.saveModel with MaterialIndex
         dlgOpt.MsgBoxOnly  = true;
         dlgOpt.Icon        = 'puffin_warning';
         header      = 'Not yet implemented';

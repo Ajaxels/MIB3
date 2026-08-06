@@ -16,53 +16,53 @@ function dataset = getData63(obj, type, orient, materialIndex, options)
 %
 % **Bit packing** (packed uint8, same as ``core.MibLabels63``):
 %
-%   - bits 1–6 — material index 0–63 (``type='labels'``)
-%   - bit 7     — mask flag (``type='mask'``)
-%   - bit 8     — selection flag (``type='selection'``)
-%   - all bits  — returned as-is (``type='everything'``)
+%   - bits 1-6 - material index 0-63 (``type='labels'``)
+%   - bit 7     - mask flag (``type='mask'``)
+%   - bit 8     - selection flag (``type='selection'``)
+%   - all bits  - returned as-is (``type='everything'``)
 %
 % Input Arguments:
-%   - **type** *(optional)* — [char] layer to unpack:
+%   - **type** *(optional)* - [char] layer to unpack:
 %
-%     - ``'labels'``    — material indices 0–63 (or a binary map when ``materialIndex`` set)
-%     - ``'mask'``      — binary mask (bit 7)
-%     - ``'selection'`` — binary selection (bit 8)
-%     - ``'everything'``— raw packed uint8 (all 3 layers)
+%     - ``'labels'``    - material indices 0-63 (or a binary map when ``materialIndex`` set)
+%     - ``'mask'``      - binary mask (bit 7)
+%     - ``'selection'`` - binary selection (bit 8)
+%     - ``'everything'``- raw packed uint8 (all 3 layers)
 %
 %     Default: ``'labels'``.
 %
-%   - **orient** *(optional)* — [numeric] viewing orientation:
+%   - **orient** *(optional)* - [numeric] viewing orientation:
 %
-%     - ``1`` — XZ (vertical = X, horizontal = Z, slice = Y)
-%     - ``2`` — YZ (vertical = Y, horizontal = Z, slice = X)
-%     - ``3`` — YX (standard XY; vertical = Y, horizontal = X, slice = Z)
+%     - ``1`` - XZ (vertical = X, horizontal = Z, slice = Y)
+%     - ``2`` - YZ (vertical = Y, horizontal = Z, slice = X)
+%     - ``3`` - YX (standard XY; vertical = Y, horizontal = X, slice = Z)
 %
 %     Default: ``3``.
 %
-%   - **materialIndex** *(optional)* — [numeric scalar | empty] when non-empty and
+%   - **materialIndex** *(optional)* - [numeric scalar | empty] when non-empty and
 %     ``type='labels'``, returns a binary ``uint8`` mask that is 1 where the label equals
-%     ``materialIndex``.  Pass ``[]`` to return all material indices (0–63).
+%     ``materialIndex``.  Pass ``[]`` to return all material indices (0-63).
 %
-%   - **options** *(optional)* — [struct] with fields:
+%   - **options** *(optional)* - [struct] with fields:
 %
-%     - ``.magFactor``    — [numeric] current display magnification factor
+%     - ``.magFactor``    - [numeric] current display magnification factor
 %       (``dataset.magFactor``); the nearest pyramid level is chosen.  Default: ``1``.
-%     - ``.pyramidLevel`` — [numeric] explicit 1-based level index (1 = finest).
+%     - ``.pyramidLevel`` - [numeric] explicit 1-based level index (1 = finest).
 %       Overrides ``magFactor`` entirely when set.
-%     - ``.x``            — [1x2 numeric] horizontal screen coordinate range ``[x1 x2]``.
+%     - ``.x``            - [1x2 numeric] horizontal screen coordinate range ``[x1 x2]``.
 %       Default: full width of the selected level.
-%     - ``.y``            — [1x2 numeric] vertical screen coordinate range ``[y1 y2]``.
+%     - ``.y``            - [1x2 numeric] vertical screen coordinate range ``[y1 y2]``.
 %       Default: full height of the selected level.
-%     - ``.z``            — [1x2 numeric] depth (slice) range ``[z1 z2]`` in the selected
+%     - ``.z``            - [1x2 numeric] depth (slice) range ``[z1 z2]`` in the selected
 %       level. Default: full depth of the selected level.
 %
 % Output Arguments:
-%   - **dataset** — [uint8] unpacked layer at display resolution.  Shape is
+%   - **dataset** - [uint8] unpacked layer at display resolution.  Shape is
 %     ``[ny, nx, nz]`` for orientation 3 (YX), with ``ny/nx/nz`` determined by the
 %     ``options.y/x/z`` ranges after level-scale division and display resize.  Returns
 %     ``[]`` when the store is closed (``obj.exists == false``).
 %
-% **Example 1** — read the label map for the current view at the display zoom level:
+% **Example 1** - read the label map for the current view at the display zoom level:
 %
 %   .. code-block:: matlab
 %
@@ -72,7 +72,7 @@ function dataset = getData63(obj, type, orient, materialIndex, options)
 %      opts.z = dataset.slices{3};
 %      labels = obj.mibModel.I{1}.labels.getData63('labels', 3, [], opts);
 %
-% **Example 2** — read the selection at a specific pyramid level:
+% **Example 2** - read the selection at a specific pyramid level:
 %
 %   .. code-block:: matlab
 %
@@ -100,7 +100,7 @@ sf = obj.modelScaleFactors(levelIdx, :);   % [yScale, xScale, zScale]
 % Each edit is stored only at the level it was drawn (+ coarser). Tiles whose
 % authoritative data lives at a coarser level (matLevel > this level) are dirty:
 % materializeForRead recomputes them by upsampling from their source level, writes
-% them to this level, and marks them clean (cached). Clean tiles are untouched —
+% them to this level, and marks them clean (cached). Clean tiles are untouched -
 % so the editing zoom reads its own data directly (no echo halo).
 obj.materializeForRead(levelIdx, physYlim, physXlim, physZlim);
 packed = obj.readPackedLevel(levelIdx, physYlim, physXlim, physZlim);   % [ny nx nz]

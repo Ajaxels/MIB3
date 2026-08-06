@@ -7,7 +7,7 @@ function newDataset = deepCopyDataset(obj, fromId, toId, options)
 %       obj.deepCopyDataset(fromId, toId, options)
 %       newDataset = obj.deepCopyDataset(fromId, [], options)
 %
-% @c copy() (matlab.mixin.Copyable) performs a shallow copy only — all
+% @c copy() (matlab.mixin.Copyable) performs a shallow copy only - all
 % handle sub-properties (*image,* *labels,* *mask,* *selection,*
 % *annotations,* *lines3D,* *measure,* *hROI)* continue to point
 % at the same objects after a plain @c copy(). This method fixes that by
@@ -18,29 +18,29 @@ function newDataset = deepCopyDataset(obj, fromId, toId, options)
 % snapshot type.
 %
 % Input Arguments:
-%   - **fromId** — index of the source dataset in ``obj.I``
-%   - **toId** — index of the destination dataset in ``obj.I``; when
+%   - **fromId** - index of the source dataset in ``obj.I``
+%   - **toId** - index of the destination dataset in ``obj.I``; when
 %     ``[]``, the deep-copied dataset is *not* installed into ``obj.I`` and
 %     is only returned via ``newDataset`` (used by undo/backup)
-%   - **options** — *(optional)* structure with additional parameters
+%   - **options** - *(optional)* structure with additional parameters
 %
-%     - ``.showWaitbar`` — logical, show a progress dialog *(default: true)*
-%     - ``.UIFigure`` — handle to a UIFigure for the progress dialog; when
+%     - ``.showWaitbar`` - logical, show a progress dialog *(default: true)*
+%     - ``.UIFigure`` - handle to a UIFigure for the progress dialog; when
 %       empty the dialog is created without a parent *(default:* ``[]`` *)*
 %
 %
 % Output Arguments:
-%   - **newDataset** — deep-copied :class:`core.MibDataset`; fully
+%   - **newDataset** - deep-copied :class:`core.MibDataset`; fully
 %     independent of ``obj.I{fromId}``
 %
 % Usage:
-%   **Example 1** — deep-copy dataset from container 1 to container 2
+%   **Example 1** - deep-copy dataset from container 1 to container 2
 %
 %   .. code-block:: matlab
 %
 %      obj.mibModel.deepCopyDataset(srcId, destId, options);
 %
-%   **Example 2** — get a free-standing deep copy (no destination slot)
+%   **Example 2** - get a free-standing deep copy (no destination slot)
 %
 %   .. code-block:: matlab
 %
@@ -129,7 +129,7 @@ if options.showWaitbar && ~isempty(wb); wb.Value = 0.90; end
 if ~isempty(obj.I{fromId}.measure)
     newDataset.measure = copy(obj.I{fromId}.measure);
     % re-reference if the class holds a back-pointer (field names vary
-    % between versions — use a defensive check)
+    % between versions - use a defensive check)
     if isprop(newDataset.measure, 'mibDataset')
         newDataset.measure.mibDataset = newDataset;
     end

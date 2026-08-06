@@ -10,16 +10,16 @@ function copyColorChannel(obj, channel1, channel2, options)
 % existing channel is overwritten.
 %
 % Input Arguments:
-%   - **channel1** — 1-based index of the source channel
-%   - **channel2** — 1-based index of the destination channel; pass
+%   - **channel1** - 1-based index of the source channel
+%   - **channel2** - 1-based index of the destination channel; pass
 %     ``obj.colors + 1`` to append as a new channel
-%   - **options** — *(optional)* struct with fields:
+%   - **options** - *(optional)* struct with fields:
 %
-%     - ``.showWaitbar`` — logical; show progress bar (default ``true``)
-%     - ``.ParentFigure`` — handle to parent figure for the progress dialog (default ``[]``)
+%     - ``.showWaitbar`` - logical; show progress bar (default ``true``)
+%     - ``.ParentFigure`` - handle to parent figure for the progress dialog (default ``[]``)
 %
 % Usage:
-%   **Example 1** — copy channel 1 intensities to channel 3
+%   **Example 1** - copy channel 1 intensities to channel 3
 %
 %   .. code-block:: matlab
 %

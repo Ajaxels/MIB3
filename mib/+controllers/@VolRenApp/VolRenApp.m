@@ -6,13 +6,13 @@ classdef VolRenApp < handle
     %
     %      obj.startController('controllers.VolRenApp');
     %
-    % **Example 1** — launch as interactive GUI tool:
+    % **Example 1** - launch as interactive GUI tool:
     %
     %   .. code-block:: matlab
     %
     %      obj.startController('controllers.VolRenApp');
     %
-    % **Example 2** — launch in batch mode:
+    % **Example 2** - launch in batch mode:
     %
     %   .. code-block:: matlab
     %
@@ -23,7 +23,7 @@ classdef VolRenApp < handle
     %      BatchOpt.showWaitbar = true;
     %      obj.startController('controllers.VolRenApp', [], BatchOpt);
     %
-    % **Example 3** — trigger return of available options via ``syncBatch`` event:
+    % **Example 3** - trigger return of available options via ``syncBatch`` event:
     %
     %   .. code-block:: matlab
     %
@@ -42,14 +42,14 @@ classdef VolRenApp < handle
         BatchOpt
         % a structure compatible with batch operation; field names should match widget Tags in the GUI:
         %
-        % - ``.Parameter`` — [editbox], char/string
-        % - ``.Checkbox`` — [checkbox], logical ``true`` or ``false``
-        % - ``.Dropdown{1}`` — [dropdown], cell string for the dropdown
-        % - ``.Dropdown{2}`` — *(optional)* array with possible options
-        % - ``.Radio`` — [radiobuttons], cell string ``'Radio1'`` or ``'Radio2'`` etc.
-        % - ``.ParameterNumeric{1}`` — [numeric editbox], cell with a number
-        % - ``.ParameterNumeric{2}`` — *(optional)* vector with limits ``[min, max]``
-        % - ``.ParameterNumeric{3}`` — *(optional)* ``'on'`` to round the value, ``'off'`` to not round
+        % - ``.Parameter`` - [editbox], char/string
+        % - ``.Checkbox`` - [checkbox], logical ``true`` or ``false``
+        % - ``.Dropdown{1}`` - [dropdown], cell string for the dropdown
+        % - ``.Dropdown{2}`` - *(optional)* array with possible options
+        % - ``.Radio`` - [radiobuttons], cell string ``'Radio1'`` or ``'Radio2'`` etc.
+        % - ``.ParameterNumeric{1}`` - [numeric editbox], cell with a number
+        % - ``.ParameterNumeric{2}`` - *(optional)* vector with limits ``[min, max]``
+        % - ``.ParameterNumeric{3}`` - *(optional)* ``'on'`` to round the value, ``'off'`` to not round
         childControllers
         % list of opened subcontrollers
         childControllersIds
@@ -61,9 +61,9 @@ classdef VolRenApp < handle
         animationPath
         % a structure with animation path:
         %
-        % - ``.CameraPosition`` — matrix of camera positions ``[keyFrame, x, y, z]``
-        % - ``.CameraUpVector`` — matrix of camera up vectors ``[keyFrame, x, y, z]``
-        % - ``.CameraTarget`` — matrix of camera target positions ``[keyFrame, x, y, z]``
+        % - ``.CameraPosition`` - matrix of camera positions ``[keyFrame, x, y, z]``
+        % - ``.CameraUpVector`` - matrix of camera up vectors ``[keyFrame, x, y, z]``
+        % - ``.CameraTarget`` - matrix of camera target positions ``[keyFrame, x, y, z]``
         animationPreviewRunning
         % logical switch defining whether the animation is previewed
         defaultView
@@ -71,8 +71,8 @@ classdef VolRenApp < handle
         figPosStored
         % a structure with stored positions of the widgets for making snapshots:
         %
-        % - ``.mibVolRenAppFigure`` — position of the main figure
-        % - ``.mainGridLayoutRowHeights`` — heights of rows in ``obj.view.handles.mainGridLayout``
+        % - ``.mibVolRenAppFigure`` - position of the main figure
+        % - ``.mainGridLayoutRowHeights`` - heights of rows in ``obj.view.handles.mainGridLayout``
         keyFrameTableIndex
         % index of the selected key frame
         matlabVersion
@@ -92,14 +92,14 @@ classdef VolRenApp < handle
         Settings
         % a structure with settings, initialized from ``obj.mibModel.preferences.VolRen``:
         %
-        % - ``.volumeAlphaCurve.x`` — default ``[0 .3 .7 1]``
-        % - ``.volumeAlphaCurve.y`` — default ``[1 1 0 0]``
-        % - ``.markerSize`` — marker size for the alpha plot
-        % - ``.BackgroundColor`` — color for the background
-        % - ``.colormapName`` — default colormap name, or ``'custom'`` (not yet implemented)
-        % - ``.colormapInvert`` — ``true``/``false``, whether to invert the colormap
-        % - ``.animationPath`` — a structure with animation path
-        % - ``.noFramesPreview`` — number of frames for the animation preview
+        % - ``.volumeAlphaCurve.x`` - default ``[0 .3 .7 1]``
+        % - ``.volumeAlphaCurve.y`` - default ``[1 1 0 0]``
+        % - ``.markerSize`` - marker size for the alpha plot
+        % - ``.BackgroundColor`` - color for the background
+        % - ``.colormapName`` - default colormap name, or ``'custom'`` (not yet implemented)
+        % - ``.colormapInvert`` - ``true``/``false``, whether to invert the colormap
+        % - ``.animationPath`` - a structure with animation path
+        % - ``.noFramesPreview`` - number of frames for the animation preview
         surfList
         % a cell array of generated surfaces
         surfListAlpha
@@ -113,10 +113,10 @@ classdef VolRenApp < handle
         volumeAlphaCurve
         % a structure with alpha curve details:
         %
-        % - ``.x`` — vector of intensity points ``[0..1]``
-        % - ``.y`` — alpha value for each intensity point ``[0..1]``
-        % - ``.alphamap`` — calculated alpha map used in ``volshow``
-        % - ``.activePoint`` — index of the currently selected point
+        % - ``.x`` - vector of intensity points ``[0..1]``
+        % - ``.y`` - alpha value for each intensity point ``[0..1]``
+        % - ``.alphamap`` - calculated alpha map used in ``volshow``
+        % - ``.activePoint`` - index of the currently selected point
         volumeColormap
         % vector with the colormap
         volumeScaleFactor
@@ -188,10 +188,10 @@ classdef VolRenApp < handle
             %      obj = VolRenApp(mibModel, options)
             %
             % Input Arguments:
-            %   - **mibModel** — [handle] handle to the MibModel instance
-            %   - **options** *(optional)* — struct with initialization parameters:
+            %   - **mibModel** - [handle] handle to the MibModel instance
+            %   - **options** *(optional)* - struct with initialization parameters:
             %
-            %     - ``.Settings`` — settings for initialization of the volume viewer
+            %     - ``.Settings`` - settings for initialization of the volume viewer
             
             obj.mibModel = mibModel;    % assign model
             id = obj.mibModel.getActiveId();
@@ -251,7 +251,7 @@ classdef VolRenApp < handle
                 dlgOpt.MsgBoxOnly = true; dlgOpt.Icon = 'puffin_warning';
                 header = 'The 3D volume rendering is not available in the virtual mode!';
                 dlgOpt.HeaderLines = 2;
-                % obj.view is not yet created here — use mibGUI as parent
+                % obj.view is not yet created here - use mibGUI as parent
                 utils.dlgs.inputUniversalDlg(obj.mibModel.mibGUI, header, {}, {'Switch to the memory-resident or BigData mode and try again'}, 'Not implemented', dlgOpt);
                 notify(obj.mibModel, 'StopProtocol');
                 return;
@@ -368,7 +368,7 @@ classdef VolRenApp < handle
             %      obj.updateIsovalue(newIsovalue)
             %
             % Input Arguments:
-            %   - **newIsovalue** — [numeric] new isovalue or gradient opacity value ``[0..1]``
+            %   - **newIsovalue** - [numeric] new isovalue or gradient opacity value ``[0..1]``
 
             switch obj.view.handles.rendererDropDown.Value
                 case 'Isosurface'
@@ -389,7 +389,7 @@ classdef VolRenApp < handle
             %      obj.alphaAxesButtonDown(event)
             %
             % Input Arguments:
-            %   - **event** — [event] MATLAB UI callback event from ``obj.view.handles.alphaAxes``
+            %   - **event** - [event] MATLAB UI callback event from ``obj.view.handles.alphaAxes``
 
             if obj.mibModel.preferences.System.DeveloperMode
                 fprintf('controllers.VolRenApp.alphaAxesButtonDown: triggered\n');
@@ -470,10 +470,10 @@ classdef VolRenApp < handle
             %      obj.updateBackgroundColor(event)
             %
             % Input Arguments:
-            %   - **event** — [event] UI callback event; ``event.Source.Tag`` selects the operation:
+            %   - **event** - [event] UI callback event; ``event.Source.Tag`` selects the operation:
             %
-            %     - ``'menuBackgroundColor'`` — update the primary background colour
-            %     - ``'menuBackgroundGradientColor'`` — update the gradient background colour
+            %     - ``'menuBackgroundColor'`` - update the primary background colour
+            %     - ``'menuBackgroundGradientColor'`` - update the gradient background colour
 
             if obj.mibModel.preferences.System.DeveloperMode
                 fprintf('controllers.VolRenApp.updateBackgroundColor: triggered\n');
@@ -509,12 +509,12 @@ classdef VolRenApp < handle
             %      obj.updateColormap(event)
             %
             % Input Arguments:
-            %   - **event** — [event] UI callback event; ``event.Source.Tag`` selects the field to update:
+            %   - **event** - [event] UI callback event; ``event.Source.Tag`` selects the field to update:
             %
-            %     - ``'colormapName'`` — name of the selected colormap
-            %     - ``'colormapInvert'`` — logical flag to invert the colormap
-            %     - ``'colormapBlackPoint'`` — black-point adjustment value
-            %     - ``'colormapWhitePoint'`` — white-point adjustment value
+            %     - ``'colormapName'`` - name of the selected colormap
+            %     - ``'colormapInvert'`` - logical flag to invert the colormap
+            %     - ``'colormapBlackPoint'`` - black-point adjustment value
+            %     - ``'colormapWhitePoint'`` - white-point adjustment value
 
             if obj.mibModel.preferences.System.DeveloperMode
                 fprintf('controllers.VolRenApp.updateColormap: triggered\n');
@@ -625,12 +625,12 @@ classdef VolRenApp < handle
             %      obj.menuChangeView(event)
             %
             % Input Arguments:
-            %   - **event** — [event] UI callback event; ``event.Source.Tag`` selects the view:
+            %   - **event** - [event] UI callback event; ``event.Source.Tag`` selects the view:
             %
-            %     - ``'menuDefaultView'`` — restore the saved default view
-            %     - ``'menuXYview'`` — show the XY (top-down) view
-            %     - ``'menuXZview'`` — show the XZ (front) view
-            %     - ``'menuYZview'`` — show the YZ (side) view
+            %     - ``'menuDefaultView'`` - restore the saved default view
+            %     - ``'menuXYview'`` - show the XY (top-down) view
+            %     - ``'menuXZview'`` - show the XZ (front) view
+            %     - ``'menuYZview'`` - show the YZ (side) view
 
             %cameraPos = obj.volume.CameraPosition
             %cameraTarget = obj.volume.CameraTarget
@@ -700,7 +700,7 @@ classdef VolRenApp < handle
             % DELETE - Destructor: release live-update listeners/timer.
             %
             % Safety net for the case where the controller is destroyed without
-            % ``closeWindow`` running — the live-update listeners live on the
+            % ``closeWindow`` running - the live-update listeners live on the
             % persistent ``mibModel`` and would otherwise keep firing on a stale handle.
             obj.disableLiveUpdate();
         end
@@ -787,7 +787,7 @@ classdef VolRenApp < handle
             %      obj.addAnimationKeyFrame(posIndex)
             %
             % Input Arguments:
-            %   - **posIndex** *(optional)* — [numeric] insertion position; ``1`` inserts at the beginning
+            %   - **posIndex** *(optional)* - [numeric] insertion position; ``1`` inserts at the beginning
             %
             if nargin < 2
                 if ~isfield(obj.animationPath, 'CameraPosition')
@@ -825,7 +825,7 @@ classdef VolRenApp < handle
             %      obj.keyFrameTable_CellSelection(indices)
             %
             % Input Arguments:
-            %   - **indices** — [numeric] selected cell indices ``[row, col]``
+            %   - **indices** - [numeric] selected cell indices ``[row, col]``
 
             if obj.mibModel.preferences.System.DeveloperMode
                 fprintf('controllers.VolRenApp.keyFrameTable_CellSelection: triggered\n');
@@ -850,7 +850,7 @@ classdef VolRenApp < handle
             %      obj.surfaceTable_CellSelection(indices)
             %
             % Input Arguments:
-            %   - **indices** — [numeric] selected cell indices ``[row, col]``
+            %   - **indices** - [numeric] selected cell indices ``[row, col]``
             
             if obj.mibModel.preferences.System.DeveloperMode
                 fprintf('controllers.VolRenApp.surfaceTable_CellSelection: triggered\n');
@@ -882,7 +882,7 @@ classdef VolRenApp < handle
             %      obj.modelTable_CellSelection(indices)
             %
             % Input Arguments:
-            %   - **indices** — [numeric] selected cell indices ``[row, col]``
+            %   - **indices** - [numeric] selected cell indices ``[row, col]``
             if obj.mibModel.preferences.System.DeveloperMode
                 fprintf('controllers.VolRenApp.modelTable_CellSelection: triggered\n');
             end
@@ -982,7 +982,7 @@ classdef VolRenApp < handle
             %      obj.previewAnimation(noFrames)
             %
             % Input Arguments:
-            %   - **noFrames** *(optional)* — [numeric] number of interpolated frames
+            %   - **noFrames** *(optional)* - [numeric] number of interpolated frames
             %     (default: ``obj.Settings.Animation.noFrames``)
 
             if nargin < 2; noFrames = obj.Settings.Animation.noFrames; end
@@ -1031,17 +1031,17 @@ classdef VolRenApp < handle
             %      positions = obj.generatePositionsForKeyFramesAnimation(noFrames, options)
             %
             % Input Arguments:
-            %   - **noFrames** — [numeric] total number of interpolated frames
-            %   - **options** *(optional)* — struct with additional parameters:
+            %   - **noFrames** - [numeric] total number of interpolated frames
+            %   - **options** *(optional)* - struct with additional parameters:
             %
-            %     - ``.back_and_forth`` — [logical] when ``1``, animate forward then reverse
+            %     - ``.back_and_forth`` - [logical] when ``1``, animate forward then reverse
             %
             % Output Arguments:
-            %   - **positions** — struct with per-frame camera data:
+            %   - **positions** - struct with per-frame camera data:
             %
-            %     - ``.CameraPosition`` — ``[N x 3]`` interpolated camera positions
-            %     - ``.CameraUpVector`` — ``[N x 3]`` interpolated camera-up vectors
-            %     - ``.CameraTarget`` — ``[]`` (target is fixed; reserved for future use)
+            %     - ``.CameraPosition`` - ``[N x 3]`` interpolated camera positions
+            %     - ``.CameraUpVector`` - ``[N x 3]`` interpolated camera-up vectors
+            %     - ``.CameraTarget`` - ``[]`` (target is fixed; reserved for future use)
 
             if nargin < 3; options = struct(); end
             if nargin < 2; noFrames = obj.Settings.Animation.noFrames; end
@@ -1110,7 +1110,7 @@ classdef VolRenApp < handle
             %      obj.updateAnimationNumberOfFrames(noFrames)
             %
             % Input Arguments:
-            %   - **noFrames** — [numeric] new frame count stored in ``obj.Settings.Animation.noFrames``
+            %   - **noFrames** - [numeric] new frame count stored in ``obj.Settings.Animation.noFrames``
 
             obj.Settings.Animation.noFrames = noFrames;
         end
@@ -1124,9 +1124,9 @@ classdef VolRenApp < handle
             %      obj.modelTable_cm_Callback(event)
             %
             % Input Arguments:
-            %   - **event** — [event] UI callback event; ``event.Source.Tag`` selects the action:
+            %   - **event** - [event] UI callback event; ``event.Source.Tag`` selects the action:
             %
-            %     - ``'modelTable_cm_generateSurface'`` — generate a surface mesh from the selected material
+            %     - ``'modelTable_cm_generateSurface'`` - generate a surface mesh from the selected material
             if obj.mibModel.preferences.System.DeveloperMode
                 fprintf('controllers.VolRenApp.modelTable_cm_Callback: triggered\n');
             end
@@ -1164,10 +1164,10 @@ classdef VolRenApp < handle
             %      obj.surfaceTable_cm_Callback(event)
             %
             % Input Arguments:
-            %   - **event** — [event] UI callback event; ``event.Source.Tag`` selects the action:
+            %   - **event** - [event] UI callback event; ``event.Source.Tag`` selects the action:
             %
-            %     - ``'surfaceTable_cm_saveSurface'`` — save the selected surface to an STL file
-            %     - ``'surfaceTable_cm_removeSurface'`` — delete the selected surface from the viewer
+            %     - ``'surfaceTable_cm_saveSurface'`` - save the selected surface to an STL file
+            %     - ``'surfaceTable_cm_removeSurface'`` - delete the selected surface from the viewer
             if obj.mibModel.preferences.System.DeveloperMode
                 fprintf('controllers.VolRenApp.surfaceTable_cm_Callback: triggered\n');
             end
@@ -1230,12 +1230,12 @@ classdef VolRenApp < handle
             %      obj.keyFrameTable_cm_Callback(event)
             %
             % Input Arguments:
-            %   - **event** — [event] UI callback event; ``event.Source.Tag`` selects the action:
+            %   - **event** - [event] UI callback event; ``event.Source.Tag`` selects the action:
             %
-            %     - ``'keyFrameTable_cm_jumpToKeyFrame'`` — jump to the selected key frame
-            %     - ``'keyFrameTable_cm_insertKeyFrame'`` — insert a key frame at the current position
-            %     - ``'keyFrameTable_cm_replaceKeyFrame'`` — replace the selected key frame with the current view
-            %     - ``'keyFrameTable_cm_removeKeyFrame'`` — remove the selected key frame
+            %     - ``'keyFrameTable_cm_jumpToKeyFrame'`` - jump to the selected key frame
+            %     - ``'keyFrameTable_cm_insertKeyFrame'`` - insert a key frame at the current position
+            %     - ``'keyFrameTable_cm_replaceKeyFrame'`` - replace the selected key frame with the current view
+            %     - ``'keyFrameTable_cm_removeKeyFrame'`` - remove the selected key frame
 
             if obj.mibModel.preferences.System.DeveloperMode
                 fprintf('controllers.VolRenApp.keyFrameTable_cm_Callback: triggered\n');
@@ -1276,10 +1276,10 @@ classdef VolRenApp < handle
             %      obj.alphaCurveOperations(event)
             %
             % Input Arguments:
-            %   - **event** — [event] UI callback event; ``event.Source.Tag`` selects the action:
+            %   - **event** - [event] UI callback event; ``event.Source.Tag`` selects the action:
             %
-            %     - ``'resetAlphaCurve'`` — reset the alpha curve to the default
-            %     - ``'invertAlphaCurve'`` — invert the alpha curve along the x-axis
+            %     - ``'resetAlphaCurve'`` - reset the alpha curve to the default
+            %     - ``'invertAlphaCurve'`` - invert the alpha curve along the x-axis
 
             if obj.mibModel.preferences.System.DeveloperMode
                 fprintf('controllers.VolRenApp.alphaCurveOperations: triggered\n');
@@ -1335,7 +1335,7 @@ classdef VolRenApp < handle
             %      obj.toggleViewerSettings(event)
             %
             % Input Arguments:
-            %   - **event** — [event] UI callback event from the toggled widget
+            %   - **event** - [event] UI callback event from the toggled widget
             if obj.mibModel.preferences.System.DeveloperMode
                 fprintf('controllers.VolRenApp.toggleViewerSettings(%s): triggered\n', event.Source.Tag);
             end
@@ -1378,11 +1378,11 @@ classdef VolRenApp < handle
             % so that the dataset is displayed with units in µm.
             %
             % Input Arguments:
-            %   - **pixSize** — [struct] MIB pixel-size structure:
+            %   - **pixSize** - [struct] MIB pixel-size structure:
             %
-            %     - ``.x`` — pixel size in X (µm/pixel)
-            %     - ``.y`` — pixel size in Y (µm/pixel)
-            %     - ``.z`` — slice thickness in Z (µm/slice)
+            %     - ``.x`` - pixel size in X (µm/pixel)
+            %     - ``.y`` - pixel size in Y (µm/pixel)
+            %     - ``.z`` - slice thickness in Z (µm/slice)
 
             Sx = pixSize.x;   % scaling pixels to um ratio, x-axis
             Sy = pixSize.y;   % scaling pixels to um ratio, y-axis
@@ -1407,19 +1407,19 @@ classdef VolRenApp < handle
             %      imgOut = obj.grabFrame(width, height, options)
             %
             % Input Arguments:
-            %   - **width** — [numeric] snapshot width in pixels; ``[]`` uses the current panel width
-            %   - **height** — [numeric] snapshot height in pixels; ``[]`` uses the current panel height
-            %   - **options** *(optional)* — struct with extra parameters:
+            %   - **width** - [numeric] snapshot width in pixels; ``[]`` uses the current panel width
+            %   - **height** - [numeric] snapshot height in pixels; ``[]`` uses the current panel height
+            %   - **options** *(optional)* - struct with extra parameters:
             %
-            %     - ``.resizeWindow`` — [numeric] ``1`` resize window before capture, ``0`` skip (default: ``1``)
-            %     - ``.showWaitbar`` — [logical] show a progress waitbar (default: ``true``)
-            %     - ``.hWaitbar`` — [handle] handle to an existing waitbar dialog
-            %     - ``.waitbarProgress`` — [numeric] waitbar fill fraction (default: ``0.5``)
+            %     - ``.resizeWindow`` - [numeric] ``1`` resize window before capture, ``0`` skip (default: ``1``)
+            %     - ``.showWaitbar`` - [logical] show a progress waitbar (default: ``true``)
+            %     - ``.hWaitbar`` - [handle] handle to an existing waitbar dialog
+            %     - ``.waitbarProgress`` - [numeric] waitbar fill fraction (default: ``0.5``)
             %
             % Output Arguments:
-            %   - **imgOut** — [uint8] ``[height x width x 3]`` RGB image array
+            %   - **imgOut** - [uint8] ``[height x width x 3]`` RGB image array
             %
-            % **Example 1** — capture frames inside an animation loop:
+            % **Example 1** - capture frames inside an animation loop:
             %
             %   .. code-block:: matlab
             %
@@ -1431,7 +1431,7 @@ classdef VolRenApp < handle
             %      end
             %      obj.extraController.restoreWindowAfterGrabFrame();
             %
-            % **Example 2** — single snapshot (e.g., from mibSnapshotController):
+            % **Example 2** - single snapshot (e.g., from mibSnapshotController):
             %
             %   .. code-block:: matlab
             %
@@ -1488,8 +1488,8 @@ classdef VolRenApp < handle
             % viewer panel to exactly ``width × height`` pixels ready for ``grabFrame``.
             %
             % Input Arguments:
-            %   - **width** — [numeric] desired capture width in pixels
-            %   - **height** — [numeric] desired capture height in pixels
+            %   - **width** - [numeric] desired capture width in pixels
+            %   - **height** - [numeric] desired capture height in pixels
             %
             % Usage example:
             %
@@ -1552,10 +1552,10 @@ classdef VolRenApp < handle
             %      obj.makeAnimation(mode)
             %
             % Input Arguments:
-            %   - **mode** — [char] animation type:
+            %   - **mode** - [char] animation type:
             %
-            %     - ``'spin'`` — rotate camera around the selected axis
-            %     - ``'animation'`` — animate the scene using stored key frames
+            %     - ``'spin'`` - rotate camera around the selected axis
+            %     - ``'animation'`` - animate the scene using stored key frames
 
             options.mode = mode;    % mode for movie make
             utils.startController(obj, 'controllers.MakeMovie', obj, options);
@@ -1578,26 +1578,26 @@ classdef VolRenApp < handle
             % ``options.blockModeSwitch=0`` to retrieve the full pyramid level rather than just
             % the current viewport block.  ``obj.volumeScaleFactor`` is set to ``1`` because the
             % pyramid already provides the downsampling.  The voxel size at the chosen level is
-            % taken from ``image.pyramid.levelVoxelSizes`` (``[y x z]``) — directly when that
+            % taken from ``image.pyramid.levelVoxelSizes`` (``[y x z]``) - directly when that
             % array holds a per-level row, otherwise the full-resolution base row scaled by
-            % ``image.pyramid.levelScaleFactors(obj.pyramidLevel, :)`` — to preserve physical
+            % ``image.pyramid.levelScaleFactors(obj.pyramidLevel, :)`` - to preserve physical
             % (µm) units in the 3D viewer.  Note BioFormats-backed BigData leaves
             % ``image.pixSize`` empty, so the voxel size is always sourced from the pyramid.
             %
             % For **Standard** datasets the original user-entered downsample-factor dialog is used.
             %
             % Input Arguments:
-            %   - **volumeType** *(optional)* — [char] volume layer to load (default: ``'image'``):
+            %   - **volumeType** *(optional)* - [char] volume layer to load (default: ``'image'``):
             %
-            %     - ``'image'`` — intensity image data
-            %     - ``'labels'`` — segmentation labels
-            %     - ``'selection'`` — selection layer
-            %     - ``'mask'`` — mask layer
+            %     - ``'image'`` - intensity image data
+            %     - ``'labels'`` - segmentation labels
+            %     - ``'selection'`` - selection layer
+            %     - ``'mask'`` - mask layer
             %
-            %   - **colorChannel** *(optional)* — [numeric] color channel or material index (default: ``1``)
+            %   - **colorChannel** *(optional)* - [numeric] color channel or material index (default: ``1``)
             %
             % Output Arguments:
-            %   - **status** — [numeric] ``1`` on success, ``0`` if cancelled
+            %   - **status** - [numeric] ``1`` on success, ``0`` if cancelled
 
             status = 0;
 
@@ -1882,7 +1882,7 @@ classdef VolRenApp < handle
             %      obj.recalculateAlphamap(transparentVolume)
             %
             % Input Arguments:
-            %   - **transparentVolume** *(optional)* — [logical] when ``true``, set alphamap to ``0``
+            %   - **transparentVolume** *(optional)* - [logical] when ``true``, set alphamap to ``0``
             %     making the volume fully transparent (default: ``false``)
 
             if nargin < 2; transparentVolume = false; end
@@ -1961,19 +1961,19 @@ classdef VolRenApp < handle
             %      positions = obj.generatePositionsForSpinAnimation(noFrames, options)
             %
             % Input Arguments:
-            %   - **noFrames** — [numeric] number of frames (default: ``120``)
-            %   - **options** *(optional)* — struct with rotation parameters:
+            %   - **noFrames** - [numeric] number of frames (default: ``120``)
+            %   - **options** *(optional)* - struct with rotation parameters:
             %
-            %     - ``.back_and_forth`` — [logical] animate forward then reverse (default: ``0``)
-            %     - ``.clockwise`` — [numeric] ``1`` for clockwise, ``0`` for anticlockwise (default: ``0``)
-            %     - ``.rotAxis`` — [char] rotation axis: ``'X-axis'``, ``'Y-axis'``, or ``'Z-axis'``
+            %     - ``.back_and_forth`` - [logical] animate forward then reverse (default: ``0``)
+            %     - ``.clockwise`` - [numeric] ``1`` for clockwise, ``0`` for anticlockwise (default: ``0``)
+            %     - ``.rotAxis`` - [char] rotation axis: ``'X-axis'``, ``'Y-axis'``, or ``'Z-axis'``
             %
             % Output Arguments:
-            %   - **positions** — struct with per-frame camera data:
+            %   - **positions** - struct with per-frame camera data:
             %
-            %     - ``.CameraPosition`` — ``[N x 3]`` array of camera positions
-            %     - ``.CameraUpVector`` — ``[1 x 3]`` fixed up-vector for the chosen spin axis
-            %     - ``.CameraTarget`` — ``[1 x 3]`` fixed camera target (centre of volume)
+            %     - ``.CameraPosition`` - ``[N x 3]`` array of camera positions
+            %     - ``.CameraUpVector`` - ``[1 x 3]`` fixed up-vector for the chosen spin axis
+            %     - ``.CameraTarget`` - ``[1 x 3]`` fixed camera target (centre of volume)
 
             if nargin < 3; options = struct(); end
             if nargin < 2; noFrames = 120; end
@@ -2112,13 +2112,13 @@ classdef VolRenApp < handle
             % ``grabVolume`` is used (``obj.volumeScaleFactor`` resize via ``imresize3``).
             %
             % Input Arguments:
-            %   - **overlayType** *(optional)* — [char] overlay layer type:
+            %   - **overlayType** *(optional)* - [char] overlay layer type:
             %
-            %     - ``'labels'`` — segmentation labels (model) layer
-            %     - ``'mask'`` — mask layer
-            %     - ``'selection'`` — selection layer
+            %     - ``'labels'`` - segmentation labels (model) layer
+            %     - ``'mask'`` - mask layer
+            %     - ``'selection'`` - selection layer
             %
-            %   - **materialId** *(optional)* — [numeric] material index; ``NaN`` to load all materials
+            %   - **materialId** *(optional)* - [numeric] material index; ``NaN`` to load all materials
 
             if nargin < 3; materialId = NaN; end    % get all materials
             if nargin < 2; overlayType = obj.view.handles.overlaySourceDropDown.Value; end    % get all materials
@@ -2257,9 +2257,9 @@ classdef VolRenApp < handle
             % fires only when the data actually changes, whereas ``ShowImage`` also fires on
             % every pan / zoom / slice change and would trigger needless refetches:
             %
-            % - ``SetData`` on ``mibModel`` — fired by :func:`models.MibModel.moveLayers`
+            % - ``SetData`` on ``mibModel`` - fired by :func:`models.MibModel.moveLayers`
             %   (e.g. add/subtract to model).
-            % - ``SetData`` on the **active dataset** (``mibModel.I{id}``) — fired by the core
+            % - ``SetData`` on the **active dataset** (``mibModel.I{id}``) - fired by the core
             %   ``setData2D/3D/4D`` whenever a listener exists (``event.hasListener`` guard),
             %   which is how a **brush selection** commit is caught (it goes through
             %   ``setData2D`` and emits no ``mibModel`` notification).
@@ -2370,7 +2370,7 @@ classdef VolRenApp < handle
             %      obj.refreshOverlayData()
             %
             % Re-reads the active overlay layer at the current pyramid level and
-            % updates only ``obj.volume.OverlayData`` — material visibility, colormap,
+            % updates only ``obj.volume.OverlayData`` - material visibility, colormap,
             % alphamap and the material table are left untouched (unlike
             % ``modelUpdateOverlay`` which re-initialises them). Used as the manual
             % "Refresh overlay" action and the debounced live-update refetch.
@@ -2469,7 +2469,7 @@ classdef VolRenApp < handle
             %      obj.modelHideAllMaterials(hideMaterialsSwitch)
             %
             % Input Arguments:
-            %   - **hideMaterialsSwitch** *(optional)* — [logical] ``true`` to hide, ``false`` to show
+            %   - **hideMaterialsSwitch** *(optional)* - [logical] ``true`` to hide, ``false`` to show
             %     (default: reads ``obj.view.handles.modelHideAllCheckBox.Value``)
             if nargin < 2; hideMaterialsSwitch = obj.view.handles.modelHideAllCheckBox.Value; end
 
@@ -2646,9 +2646,9 @@ classdef VolRenApp < handle
             %      obj.changeSlice(sourceWidget, value)
             %
             % Input Arguments:
-            %   - **sourceWidget** — [char] tag of the source widget:
+            %   - **sourceWidget** - [char] tag of the source widget:
             %     ``'xSliderEdit'``, ``'ySliderEdit'``, or ``'zSliderEdit'``
-            %   - **value** — [numeric] new slice index
+            %   - **value** - [numeric] new slice index
 
             if obj.mibModel.preferences.System.DeveloperMode
                 fprintf('controllers.VolRenApp.changeSlice: triggered\n');
@@ -2678,7 +2678,7 @@ classdef VolRenApp < handle
             %      obj.showVolume(showSwitch)
             %
             % Input Arguments:
-            %   - **showSwitch** *(optional)* — [logical] ``true`` to show, ``false`` to hide
+            %   - **showSwitch** *(optional)* - [logical] ``true`` to show, ``false`` to hide
             %     (default: reads ``obj.view.handles.showVolumeCheckBox.Value``)
             if obj.mibModel.preferences.System.DeveloperMode
                 fprintf('controllers.VolRenApp.showVolume: triggered\n');
@@ -2702,7 +2702,7 @@ classdef VolRenApp < handle
             %      obj.transparentVolume(transparentSwitch)
             %
             % Input Arguments:
-            %   - **transparentSwitch** *(optional)* — [logical] ``true`` to make transparent, ``false`` to restore
+            %   - **transparentSwitch** *(optional)* - [logical] ``true`` to make transparent, ``false`` to restore
             %     (default: reads ``obj.view.handles.transparentVolumeCheckBox.Value``)
             if obj.mibModel.preferences.System.DeveloperMode
                 fprintf('controllers.VolRenApp.transparentVolume: triggered\n');

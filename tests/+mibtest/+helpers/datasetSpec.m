@@ -9,13 +9,13 @@ function spec = datasetSpec(name)
 %   spec = mibtest.helpers.datasetSpec('Huh7')
 %
 % Output fields:
-%   .imageUrl      — direct download URL for raw image bytes (uint8)
-%   .labelsUrl     — direct download URL for raw labels bytes (uint8)
-%   .imageDims     — [H W D C] reshape target for image
-%   .labelsDims    — [H W D]   reshape target for labels
-%   .materialNames — cell of material name strings
-%   .pixSize       — struct with x/y/z voxel size in um
-%   .cacheDir      — local cache directory (from env or LOCALAPPDATA)
+%   .imageUrl      - direct download URL for raw image bytes (uint8)
+%   .labelsUrl     - direct download URL for raw labels bytes (uint8)
+%   .imageDims     - [H W D C] reshape target for image
+%   .labelsDims    - [H W D]   reshape target for labels
+%   .materialNames - cell of material name strings
+%   .pixSize       - struct with x/y/z voxel size in um
+%   .cacheDir      - local cache directory (from env or LOCALAPPDATA)
 
 switch name
     case 'Trypanosoma'

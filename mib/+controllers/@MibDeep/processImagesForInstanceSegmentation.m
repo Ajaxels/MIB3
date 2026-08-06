@@ -16,7 +16,7 @@ function processImagesForInstanceSegmentation(obj, preprocessFor)
 % instanceBoxes and instanceNames
 %
 % Input Arguments:
-%   - **preprocessFor** — a string with target, 'training', 'prediction'
+%   - **preprocessFor** - a string with target, 'training', 'prediction'
 %
 
 if nargin < 2

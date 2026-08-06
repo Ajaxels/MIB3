@@ -30,12 +30,12 @@ classdef UpdateCheck < handle
         %      controller = controllers.UpdateCheck(mibModel, mibController)
         %
         % Input Arguments:
-        %   - **mibModel** — handle to the MibModel instance
-        %   - **mibController** — *(optional)* handle to MibController; pass when the
+        %   - **mibModel** - handle to the MibModel instance
+        %   - **mibController** - *(optional)* handle to MibController; pass when the
         %     in-place MATLAB update button needs to call ``exitProgram()``
         %
         % Output Arguments:
-        %   - **controller** — handle to the constructed ``UpdateCheck`` controller
+        %   - **controller** - handle to the constructed ``UpdateCheck`` controller
 
             obj.mibModel = mibModel;
             if nargin > 1 && ~isempty(varargin{1})

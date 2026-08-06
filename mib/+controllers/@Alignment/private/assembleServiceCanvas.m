@@ -14,9 +14,9 @@ function out3D = assembleServiceCanvas(obj, layerType, tformMatrix, ...
 % per-slice offset on the new ``[newH, newW, depth]`` canvas.
 %
 % Input Arguments:
-%   - **layerType** — [char] one of ``'labels'``, ``'mask'``,
+%   - **layerType** - [char] one of ``'labels'``, ``'mask'``,
 %     ``'selection'``, or ``'everything'``.
-%   - **colArg** — color-channel argument forwarded to
+%   - **colArg** - color-channel argument forwarded to
 %     :meth:`models.MibModel.getData4D` (``NaN`` for labels/selection,
 %     ``0`` for mask/everything).
 

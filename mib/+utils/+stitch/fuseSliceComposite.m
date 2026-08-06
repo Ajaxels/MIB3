@@ -22,24 +22,24 @@ function outSlice = fuseSliceComposite(layout, canvas, zGlobal, ~, readerFcn, op
 % warped output footprint with ``imwarp`` (bilinear, zero fill); its blend
 % weights are warped identically so the feather follows the warped footprint,
 % and Max/Min/Overwrite only touch pixels the warped tile actually covers. Tiles
-% whose transform reduces to an integer translation — and every tile when there
-% are no ``canvas.tforms`` — take the resampling-free integer-placement fast
+% whose transform reduces to an integer translation - and every tile when there
+% are no ``canvas.tforms`` - take the resampling-free integer-placement fast
 % path, which is bit-identical to the translation-only kernel.
 %
 % Input Arguments:
-%   - **layout** — [struct array] tile layout.
-%   - **canvas** — [struct] from :func:`utils.stitch.planCanvas`.
-%   - **zGlobal** — [double] 1-based global output slice index.
-%   - **t** — [double] time frame (1-based).
-%   - **readerFcn** — [function_handle] tile reader from :func:`utils.stitch.makeTileReader`.
-%   - **options** — [struct] with fields:
+%   - **layout** - [struct array] tile layout.
+%   - **canvas** - [struct] from :func:`utils.stitch.planCanvas`.
+%   - **zGlobal** - [double] 1-based global output slice index.
+%   - **t** - [double] time frame (1-based).
+%   - **readerFcn** - [function_handle] tile reader from :func:`utils.stitch.makeTileReader`.
+%   - **options** - [struct] with fields:
 %
-%     - ``.blendMode`` — [char] ``'Feather'`` | ``'Average'`` | ``'Max'`` | ``'Min'`` | ``'Overwrite'``
-%     - ``.background`` — [double] background fill value
-%     - ``.marginPx`` — [double] feather margin (Feather mode; default derived from tile size)
+%     - ``.blendMode`` - [char] ``'Feather'`` | ``'Average'`` | ``'Max'`` | ``'Min'`` | ``'Overwrite'``
+%     - ``.background`` - [double] background fill value
+%     - ``.marginPx`` - [double] feather margin (Feather mode; default derived from tile size)
 %
 % Output Arguments:
-%   - **outSlice** — [H x W x C] fused slice of class ``canvas.dataClass``.
+%   - **outSlice** - [H x W x C] fused slice of class ``canvas.dataClass``.
 
 blendMode  = options.blendMode;
 background = options.background;
@@ -54,7 +54,7 @@ placement = canvas.tilePlacement;
 hasTforms = isfield(canvas, 'tforms') && ~isempty(canvas.tforms);
 
 % Per-slice mosaic correction (inspector Fix Z): every tile on this output
-% slice is shifted in-plane by canvas.zShifts(zGlobal, :) — see planCanvas.
+% slice is shifted in-plane by canvas.zShifts(zGlobal, :) - see planCanvas.
 sliceShift = [0, 0];
 if isfield(canvas, 'zShifts') && ~isempty(canvas.zShifts) && ...
         zGlobal >= 1 && zGlobal <= size(canvas.zShifts, 1)
@@ -152,7 +152,7 @@ for idx = 1:numel(contributing)
             block = outSlice(rowRange, colRange, :);
             tileCast = cast(tileSlice, dataClass);
             % Fresh (not-yet-covered) pixels take the tile value directly (so the
-            % background is never folded into the projection — critical for Min,
+            % background is never folded into the projection - critical for Min,
             % where a zero background would otherwise win everywhere); already-
             % covered pixels take the element-wise extremum of the current block
             % and the new tile. Warped tiles additionally leave pixels outside
@@ -230,7 +230,7 @@ function [warpedSlice, weight, coverage, rowRange, colRange] = warpTileSlice( ..
 % with zero fill; the weight map is warped with the same transform so the
 % feather follows the warped footprint (and fades with the partial pixel
 % coverage at the resampled border). coverage marks pixels the warped tile
-% actually reaches — Max/Min/Overwrite must not touch anything else.
+% actually reaches - Max/Min/Overwrite must not touch anything else.
 y0 = bounds(1); y1 = bounds(2);
 x0 = bounds(3); x1 = bounds(4);
 if y1 < y0 || x1 < x0

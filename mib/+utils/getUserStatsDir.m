@@ -23,12 +23,12 @@ function statsDir = getUserStatsDir()
 % back to ``utils.getPrefDir()``.
 %
 % Output Arguments:
-%   - **statsDir** — [char] full path to the MIB user-stats directory,
+%   - **statsDir** - [char] full path to the MIB user-stats directory,
 %     or ``''`` when the roaming location is unavailable
 %
 % Usage:
 %
-%   **Example 1** — retrieve the user-stats directory path
+%   **Example 1** - retrieve the user-stats directory path
 %
 %   .. code-block:: matlab
 %

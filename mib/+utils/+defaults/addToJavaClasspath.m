@@ -10,12 +10,12 @@ function addToJavaClasspath(classpath, directory)
 % in ``classpath`` using ``javaaddpath``.
 %
 % Input Arguments:
-%   - **classpath** — [cell of char] current Java classpath entries (from ``javaclasspath``)
-%   - **directory** — [char] full path to the directory containing JAR files
+%   - **classpath** - [cell of char] current Java classpath entries (from ``javaclasspath``)
+%   - **directory** - [char] full path to the directory containing JAR files
 %
 % Usage:
 %
-%   **Example 1** — add BioFormats JARs during MIB startup
+%   **Example 1** - add BioFormats JARs during MIB startup
 %
 %   .. code-block:: matlab
 %

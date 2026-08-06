@@ -8,11 +8,11 @@ function imgOut = applyFilter(obj, imgIn, maskIn)
 %       obj.applyFilter()                          % full dataset mode
 %
 % Input Arguments:
-%   - **imgIn** *(optional)* — [numeric] H×W or H×W×C image for preview mode.
-%   - **maskIn** *(optional)* — [logical] H×W binary mask for preview mode.
+%   - **imgIn** *(optional)* - [numeric] H×W or H×W×C image for preview mode.
+%   - **maskIn** *(optional)* - [logical] H×W binary mask for preview mode.
 %
 % Output Arguments:
-%   - **imgOut** — [numeric] filled image (preview mode only).
+%   - **imgOut** - [numeric] filled image (preview mode only).
 %
 
 if obj.mibModel.preferences.System.DeveloperMode

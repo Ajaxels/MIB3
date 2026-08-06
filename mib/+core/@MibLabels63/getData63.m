@@ -7,18 +7,18 @@ function dataset = getData63(obj, type, orient, materialIndex, options) % get co
 %       dataset = obj.getData63(type, orient, materialIndex, options) % get complete 5D dataset
 %
 % Input Arguments:
-%   - **type** — char with the type of layer to obtain, 'labels', 'mask', 'selection', or 'everything' to get all layers at once
-%   - **orient** — *(optional)*, can be ``[]``; default ``3``:
+%   - **type** - char with the type of layer to obtain, 'labels', 'mask', 'selection', or 'everything' to get all layers at once
+%   - **orient** - *(optional)*, can be ``[]``; default ``3``:
 %
-%     - ``1`` — returns transposed dataset in ZX configuration: ``[y,x,z,c,t]`` → ``[x,z,y,c,t]``
-%     - ``2`` — returns transposed dataset in ZY configuration: ``[y,x,z,c,t]`` → ``[y,z,x,c,t]``
-%     - ``3`` — returns original dataset in YX configuration: ``[y,x,z,c,t]``
+%     - ``1`` - returns transposed dataset in ZX configuration: ``[y,x,z,c,t]`` → ``[x,z,y,c,t]``
+%     - ``2`` - returns transposed dataset in ZY configuration: ``[y,x,z,c,t]`` → ``[y,z,x,c,t]``
+%     - ``3`` - returns original dataset in YX configuration: ``[y,x,z,c,t]``
 %
-%   - **materialIndex** — *(optional)*, can be ``[]``:
+%   - **materialIndex** - *(optional)*, can be ``[]``:
 %
 %     - for ``type = 'labels'``: integer material index (returned as binary 0/1); ``[]`` = all materials
 %     - for ``type = 'mask'``, ``'selection'``, ``'everything'``: not used
-%   - **options** — *(optional)*, a structure with extra parameters
+%   - **options** - *(optional)*, a structure with extra parameters
 %
 %     - ``.y`` *(optional)*, [ymin, ymax] coordinates of the dataset to take after transpose, can be a single number
 %     - ``.x`` *(optional)*, [xmin, xmax] coordinates of the dataset to take after transpose, can be a single number
@@ -26,7 +26,7 @@ function dataset = getData63(obj, type, orient, materialIndex, options) % get co
 %     - ``.t`` *(optional)*, [tmin, tmax] coordinates of the dataset to take after transpose, can be a single number
 %
 % Output Arguments:
-%   - **dataset** — 5D stack, [1:height, 1:width, 1:depth, 1:colors, 1:time]
+%   - **dataset** - 5D stack, [1:height, 1:width, 1:depth, 1:colors, 1:time]
 %
 % Usage:
 %   **Example 1**
@@ -77,7 +77,7 @@ end
 
 % split the operations for better performance
 if blockModeSwitchLocal == 0  % return the full dataset
-    % the color dimension is always 1 — operate on obj.data directly:
+    % the color dimension is always 1 - operate on obj.data directly:
     % orient 3 passes a copy-on-write alias (no copy); the bit-unpacking
     % below produces the single output copy
     if orient==3 % yx orientation
@@ -101,7 +101,7 @@ if blockModeSwitchLocal == 0  % return the full dataset
         case 'selection'
             dataset = bitget(dataset, 8);   % bit 8 = 128 = 10000000
         case 'everything'
-            % do nothing — orient 3 returns a copy-on-write alias of obj.data
+            % do nothing - orient 3 returns a copy-on-write alias of obj.data
     end
 else  % return a subvolume of the full dataset
     % get coordinates of the shown block for the original dataset in the yx dimension

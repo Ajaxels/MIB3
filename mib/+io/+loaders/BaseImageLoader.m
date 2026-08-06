@@ -32,12 +32,12 @@ classdef (Abstract) BaseImageLoader < handle
         % format-specific metadata from image files.
         %
         % Input Arguments:
-        %   - **filenames** — [cell] cell array with filenames of images to load
-        %   - **options** — *(optional)* [struct] options for metadata loading
+        %   - **filenames** - [cell] cell array with filenames of images to load
+        %   - **options** - *(optional)* [struct] options for metadata loading
         %
         % Output Arguments:
-        %   - **imginfo** — [dictionary] image metadata, including ``pixSize`` structure
-        %   - **files** — [struct array] file information and dimensions
+        %   - **imginfo** - [dictionary] image metadata, including ``pixSize`` structure
+        %   - **files** - [struct array] file information and dimensions
 
         [img, imginfo] = loadImages(obj, files, imginfo, options)
         % LOADIMAGES - Load image data from files (abstract method).
@@ -51,13 +51,13 @@ classdef (Abstract) BaseImageLoader < handle
         % actual image data using format-specific readers.
         %
         % Input Arguments:
-        %   - **files** — [struct array] from ``loadMetadata`` with file information
-        %   - **imginfo** — [dictionary] from ``loadMetadata`` with image metadata
-        %   - **options** — *(optional)* [struct] options for image loading
+        %   - **files** - [struct array] from ``loadMetadata`` with file information
+        %   - **imginfo** - [dictionary] from ``loadMetadata`` with image metadata
+        %   - **options** - *(optional)* [struct] options for image loading
         %
         % Output Arguments:
-        %   - **img** — [matrix] loaded image dataset ``[height, width, colors, depth]``
-        %   - **imginfo** — [dictionary] updated with final metadata
+        %   - **img** - [matrix] loaded image dataset ``[height, width, colors, depth]``
+        %   - **imginfo** - [dictionary] updated with final metadata
     end
     
     methods (Access = protected)
@@ -73,10 +73,10 @@ classdef (Abstract) BaseImageLoader < handle
             % ``obj.Options`` has been set.
             %
             % Input Arguments:
-            %   - **options** — *(optional)* struct with recognized fields:
+            %   - **options** - *(optional)* struct with recognized fields:
             %
-            %     - ``.mibPath`` — [char] path to MIB installation directory
-            %     - ``.ParentFigure`` — handle to main MIB window for ``uiprogressdlg``
+            %     - ``.mibPath`` - [char] path to MIB installation directory
+            %     - ``.ParentFigure`` - handle to main MIB window for ``uiprogressdlg``
             %
             %     Both fields are optional; absent or empty values are silently ignored.
             %
@@ -104,13 +104,13 @@ classdef (Abstract) BaseImageLoader < handle
             % an empty array is returned.
             %
             % Input Arguments:
-            %   - **title** — [char] dialog title bar text
-            %   - **message** — [char] dialog body message
-            %   - **cancelable** — *(optional)* [logical] show Cancel button; default: ``false``
-            %   - **indeterminate** — *(optional)* [logical] indeterminate spinner mode; default: ``false``
+            %   - **title** - [char] dialog title bar text
+            %   - **message** - [char] dialog body message
+            %   - **cancelable** - *(optional)* [logical] show Cancel button; default: ``false``
+            %   - **indeterminate** - *(optional)* [logical] indeterminate spinner mode; default: ``false``
             %
             % Output Arguments:
-            %   - **wb** — ``matlab.ui.dialog.ProgressDialog`` handle, or ``[]`` when no
+            %   - **wb** - ``matlab.ui.dialog.ProgressDialog`` handle, or ``[]`` when no
             %     parent figure is available. Callers must guard all ``wb`` access
             %     with ``if ~isempty(wb) ... end``
             %
@@ -149,44 +149,44 @@ classdef (Abstract) BaseImageLoader < handle
             % It supports XY binning, Z range selection, and file subsampling.
             %
             % Input Arguments:
-            %   - **files** — structure array with file information:
+            %   - **files** - structure array with file information:
             %
-            %     - ``.filename`` — [char] full filename
-            %     - ``.width`` — [numeric] image width
-            %     - ``.height`` — [numeric] image height
-            %     - ``.noLayers`` — [numeric] number of image frames
+            %     - ``.filename`` - [char] full filename
+            %     - ``.width`` - [numeric] image width
+            %     - ``.height`` - [numeric] image height
+            %     - ``.noLayers`` - [numeric] number of image frames
             %
-            %   - **imginfo** — dictionary with image metadata; key ``'pixSize'``
+            %   - **imginfo** - dictionary with image metadata; key ``'pixSize'``
             %     holds a structure with voxel dimensions:
             %
-            %     - ``.x`` — [numeric] pixel width in physical units
-            %     - ``.y`` — [numeric] pixel height in physical units
-            %     - ``.z`` — [numeric] slice thickness in physical units
-            %     - ``.units`` — [char] physical units label
+            %     - ``.x`` - [numeric] pixel width in physical units
+            %     - ``.y`` - [numeric] pixel height in physical units
+            %     - ``.z`` - [numeric] slice thickness in physical units
+            %     - ``.units`` - [char] physical units label
             %
-            %   - **options** — struct with settings:
+            %   - **options** - struct with settings:
             %
-            %     - ``.customSections`` — [logical] load custom region
-            %     - ``.customSectionsSettings`` — *(optional)* [struct] saved region bounds
-            %     - ``.xMin`` — [numeric] min X coordinate
-            %     - ``.xMax`` — [numeric] max X coordinate
-            %     - ``.yMin`` — [numeric] min Y coordinate
-            %     - ``.yMax`` — [numeric] max Y coordinate
-            %     - ``.zMin`` — [numeric] min Z coordinate
-            %     - ``.zMax`` — [numeric] max Z coordinate
-            %     - ``.xyStep`` — [numeric] XY binning step
-            %     - ``.mibPath`` — [char] path to MIB directory
-            %     - ``.ParentFigure`` — handle to the parent window
-            %     - ``.waitbar`` — [logical] show or hide the waitbar
+            %     - ``.customSections`` - [logical] load custom region
+            %     - ``.customSectionsSettings`` - *(optional)* [struct] saved region bounds
+            %     - ``.xMin`` - [numeric] min X coordinate
+            %     - ``.xMax`` - [numeric] max X coordinate
+            %     - ``.yMin`` - [numeric] min Y coordinate
+            %     - ``.yMax`` - [numeric] max Y coordinate
+            %     - ``.zMin`` - [numeric] min Z coordinate
+            %     - ``.zMax`` - [numeric] max Z coordinate
+            %     - ``.xyStep`` - [numeric] XY binning step
+            %     - ``.mibPath`` - [char] path to MIB directory
+            %     - ``.ParentFigure`` - handle to the parent window
+            %     - ``.waitbar`` - [logical] show or hide the waitbar
             %
             % Output Arguments:
-            %   - **files** — updated structure array with custom section parameters
+            %   - **files** - updated structure array with custom section parameters
             %     (``.xMin``, ``.xMax``, ``.yMin``, ``.yMax``, ``.zMin``, ``.zMax``, ``.xyStep``
             %     added/updated; dimensions `` `.width` ``, `` `.height` ``, `` `.noLayers` `` adjusted)
-            %   - **imginfo** — updated dictionary with adjusted ``'pixSize'`` structure
-            %   - **cancelled** — [logical] ``true`` if user cancelled the dialog
+            %   - **imginfo** - updated dictionary with adjusted ``'pixSize'`` structure
+            %   - **cancelled** - [logical] ``true`` if user cancelled the dialog
             %
-            % **Example 1** — load custom section with user dialog:
+            % **Example 1** - load custom section with user dialog:
             %
             %   .. code-block:: matlab
             %
@@ -307,23 +307,23 @@ classdef (Abstract) BaseImageLoader < handle
             % sections are loaded. It ensures spatial consistency across the dataset.
             %
             % Input Arguments:
-            %   - **files** — structure array with file information:
+            %   - **files** - structure array with file information:
             %
-            %     - ``.width`` — [numeric] image width
-            %     - ``.height`` — [numeric] image height
-            %     - ``.noLayers`` — [numeric] number of layers
-            %     - ``.xMin``, ``.xMax``, ``.yMin``, ``.yMax`` — *(optional)* [numeric] region coordinates
-            %     - ``.zMin``, ``.zMax`` — *(optional)* [numeric] slice range
+            %     - ``.width`` - [numeric] image width
+            %     - ``.height`` - [numeric] image height
+            %     - ``.noLayers`` - [numeric] number of layers
+            %     - ``.xMin``, ``.xMax``, ``.yMin``, ``.yMax`` - *(optional)* [numeric] region coordinates
+            %     - ``.zMin``, ``.zMax`` - *(optional)* [numeric] slice range
             %
-            %   - **imginfo** — dictionary with image metadata:
+            %   - **imginfo** - dictionary with image metadata:
             %
-            %     - ``'ImageDescription'`` — [char] description with ``BoundingBox`` info
-            %     - ``'pixSize'`` — structure with voxel dimensions (``.x``, ``.y``, ``.z``)
+            %     - ``'ImageDescription'`` - [char] description with ``BoundingBox`` info
+            %     - ``'pixSize'`` - structure with voxel dimensions (``.x``, ``.y``, ``.z``)
             %
             % Output Arguments:
-            %   - **imginfo** — updated dictionary with recalculated ``BoundingBox`` in ``'ImageDescription'``
+            %   - **imginfo** - updated dictionary with recalculated ``BoundingBox`` in ``'ImageDescription'``
             %
-            % **Example 1** — recalculate bounding box for mismatched dimensions:
+            % **Example 1** - recalculate bounding box for mismatched dimensions:
             %
             %   .. code-block:: matlab
             %
@@ -408,17 +408,17 @@ classdef (Abstract) BaseImageLoader < handle
             % which helps track data provenance in multi-file datasets.
             %
             % Input Arguments:
-            %   - **files** — structure array with file information:
+            %   - **files** - structure array with file information:
             %
-            %     - ``.filename`` — [char] full filename
-            %     - ``.noLayers`` — [numeric] number of layers per file
+            %     - ``.filename`` - [char] full filename
+            %     - ``.noLayers`` - [numeric] number of layers per file
             %
-            %   - **imginfo** — dictionary with image metadata
+            %   - **imginfo** - dictionary with image metadata
             %
             % Output Arguments:
-            %   - **imginfo** — updated dictionary with ``'SliceName'`` field (cell array of slice names for each layer)
+            %   - **imginfo** - updated dictionary with ``'SliceName'`` field (cell array of slice names for each layer)
             %
-            % **Example 1** — generate slice names and display the first one:
+            % **Example 1** - generate slice names and display the first one:
             %
             %   .. code-block:: matlab
             %
@@ -458,20 +458,20 @@ classdef (Abstract) BaseImageLoader < handle
             % stays at its default empty value), avoiding unnecessary overhead.
             %
             % Input Arguments:
-            %   - **files** — structure array with file information:
+            %   - **files** - structure array with file information:
             %
-            %     - ``.height`` — [numeric] image height for this file
-            %     - ``.width`` — [numeric] image width for this file
-            %     - ``.noLayers`` — [numeric] number of layers per file
+            %     - ``.height`` - [numeric] image height for this file
+            %     - ``.width`` - [numeric] image width for this file
+            %     - ``.noLayers`` - [numeric] number of layers per file
             %
-            %   - **imginfo** — dictionary with image metadata
+            %   - **imginfo** - dictionary with image metadata
             %
             % Output Arguments:
-            %   - **imginfo** — updated dictionary with ``'SliceSize'`` field
+            %   - **imginfo** - updated dictionary with ``'SliceSize'`` field
             %     (``[N×2]`` double matrix, each row ``[height, width]``) when dimensions differ;
             %     unchanged otherwise
             %
-            % **Example 1** — generate slice sizes and display the first one:
+            % **Example 1** - generate slice sizes and display the first one:
             %
             %   .. code-block:: matlab
             %
@@ -503,32 +503,32 @@ classdef (Abstract) BaseImageLoader < handle
             %      imginfo = obj.finalizeImgInfo(imginfo, files, filename)
             %
             % Input Arguments:
-            %   - **imginfo** — dictionary with image metadata; used/updated keys:
+            %   - **imginfo** - dictionary with image metadata; used/updated keys:
             %
-            %     - ``'MaxInt'`` — [numeric] max value available for the data class
-            %     - ``'Colors'`` — [numeric] number of color channels
-            %     - ``'imgClass'`` — [char] image class (``'uint8'``, ``'uint16'``, etc.)
-            %     - ``'Depth'`` — [numeric] total number of sections
-            %     - ``'Height'`` — [numeric] image height
-            %     - ``'Width'`` — [numeric] image width
-            %     - ``'Time'`` — [numeric] number of time points
-            %     - ``'Filename'`` — [char] final filename for the combined dataset
+            %     - ``'MaxInt'`` - [numeric] max value available for the data class
+            %     - ``'Colors'`` - [numeric] number of color channels
+            %     - ``'imgClass'`` - [char] image class (``'uint8'``, ``'uint16'``, etc.)
+            %     - ``'Depth'`` - [numeric] total number of sections
+            %     - ``'Height'`` - [numeric] image height
+            %     - ``'Width'`` - [numeric] image width
+            %     - ``'Time'`` - [numeric] number of time points
+            %     - ``'Filename'`` - [char] final filename for the combined dataset
             %
-            %   - **files** — structure array with file information:
+            %   - **files** - structure array with file information:
             %
-            %     - ``.width`` — [numeric] image width
-            %     - ``.height`` — [numeric] image height
-            %     - ``.noLayers`` — [numeric] number of layers
-            %     - ``.color`` — [numeric] number of color channels
-            %     - ``.time`` — [numeric] number of time points
-            %     - ``.imgClass`` — [char] image class
-            %     - ``.xMin``, ``.xMax``, ``.yMin``, ``.yMax`` — *(optional)* [numeric] region coordinates
-            %     - ``.zMin``, ``.zMax`` — *(optional)* [numeric] slice range
+            %     - ``.width`` - [numeric] image width
+            %     - ``.height`` - [numeric] image height
+            %     - ``.noLayers`` - [numeric] number of layers
+            %     - ``.color`` - [numeric] number of color channels
+            %     - ``.time`` - [numeric] number of time points
+            %     - ``.imgClass`` - [char] image class
+            %     - ``.xMin``, ``.xMax``, ``.yMin``, ``.yMax`` - *(optional)* [numeric] region coordinates
+            %     - ``.zMin``, ``.zMax`` - *(optional)* [numeric] slice range
             %
-            %   - **filename** — [char] final filename to store in ``imginfo``
+            %   - **filename** - [char] final filename to store in ``imginfo``
             %
             % Output Arguments:
-            %   - **imginfo** — updated dictionary with computed/filled-in values
+            %   - **imginfo** - updated dictionary with computed/filled-in values
             %
             
             % update Max value depending on the class
@@ -584,13 +584,13 @@ classdef (Abstract) BaseImageLoader < handle
             % override constructor options.
             %
             % Input Arguments:
-            %   - **opts1** — *(optional)* struct, first options structure (lower priority)
-            %   - **opts2** — *(optional)* struct, second options structure (higher priority)
+            %   - **opts1** - *(optional)* struct, first options structure (lower priority)
+            %   - **opts2** - *(optional)* struct, second options structure (higher priority)
             %
             % Output Arguments:
-            %   - **merged** — struct, merged options structure with ``opts2`` fields overriding ``opts1``
+            %   - **merged** - struct, merged options structure with ``opts2`` fields overriding ``opts1``
             %
-            % **Example 1** — merge options with higher-priority override:
+            % **Example 1** - merge options with higher-priority override:
             %
             %   .. code-block:: matlab
             %
@@ -621,22 +621,22 @@ classdef (Abstract) BaseImageLoader < handle
             % and ensures ``ColorType`` and ``Colormap`` are properly set in imginfo.
             %
             % Input Arguments:
-            %   - **img** — [matrix] image data
-            %   - **imginfo** — [dictionary] image information; updated keys:
+            %   - **img** - [matrix] image data
+            %   - **imginfo** - [dictionary] image information; updated keys:
             %
-            %     - ``'ColorType'`` — [char] color space: ``'grayscale'`` | ``'multichannel'`` | ``'indexed'``
-            %     - ``'Colormap'`` — *(optional)* [numeric] colormap for indexed images
-            %     - ``'ColorTable'`` — *(optional)* [numeric] color lookup table (copied to Colormap if set)
-            %     - ``'ImageDescription'`` — *(optional)* [char] image description (created if missing)
+            %     - ``'ColorType'`` - [char] color space: ``'grayscale'`` | ``'multichannel'`` | ``'indexed'``
+            %     - ``'Colormap'`` - *(optional)* [numeric] colormap for indexed images
+            %     - ``'ColorTable'`` - *(optional)* [numeric] color lookup table (copied to Colormap if set)
+            %     - ``'ImageDescription'`` - *(optional)* [char] image description (created if missing)
             %
-            %   - **options** — [struct] settings:
+            %   - **options** - [struct] settings:
             %
-            %     - ``.imgStretch`` — [logical] apply uint32-to-uint16 conversion; default: ``false``
-            %     - ``.ParentFigure`` — [handle] parent window for dialogs
+            %     - ``.imgStretch`` - [logical] apply uint32-to-uint16 conversion; default: ``false``
+            %     - ``.ParentFigure`` - [handle] parent window for dialogs
             %
             % Output Arguments:
-            %   - **img** — [matrix] processed image (may be uint16 after stretching, or ``[]`` if cancelled)
-            %   - **imginfo** — [dictionary] updated with finalized color type and mapping
+            %   - **img** - [matrix] processed image (may be uint16 after stretching, or ``[]`` if cancelled)
+            %   - **imginfo** - [dictionary] updated with finalized color type and mapping
 
             % Handle uint32 to uint16 conversion
             if isa(img, 'uint32') && options.imgStretch
@@ -681,19 +681,19 @@ classdef (Abstract) BaseImageLoader < handle
             %      [img, imginfo] = obj.stretch32bitImage(img, imginfo)
             %
             % Prompts the user to specify min/max intensity values for the stretch operation,
-            % then rescales the uint32 image to the 0–65535 range of uint16. Used when loading
+            % then rescales the uint32 image to the 0-65535 range of uint16. Used when loading
             % uint32 images that need to be converted to uint16 for compatibility.
             %
             % Input Arguments:
-            %   - **img** — [matrix] uint32 image data to be converted
-            %   - **imginfo** — [dictionary] image metadata; updated keys:
+            %   - **img** - [matrix] uint32 image data to be converted
+            %   - **imginfo** - [dictionary] image metadata; updated keys:
             %
-            %     - ``'MaxInt'`` — [numeric] max possible value (set to ``65535`` for uint16)
-            %     - ``'imgClass'`` — [char] image class name (set to ``'uint16'``)
+            %     - ``'MaxInt'`` - [numeric] max possible value (set to ``65535`` for uint16)
+            %     - ``'imgClass'`` - [char] image class name (set to ``'uint16'``)
             %
             % Output Arguments:
-            %   - **img** — [matrix] uint16 image data (rescaled), or ``[]`` if user cancels
-            %   - **imginfo** — [dictionary] updated with finalized ``MaxInt`` and ``imgClass``
+            %   - **img** - [matrix] uint16 image data (rescaled), or ``[]`` if user cancels
+            %   - **imginfo** - [dictionary] updated with finalized ``MaxInt`` and ``imgClass``
             %
            
 

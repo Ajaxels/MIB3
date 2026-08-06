@@ -7,7 +7,7 @@ function seamTableSelection_Callback(obj, evnt)
 %      obj.seamTableSelection_Callback(evnt)
 %
 % Input Arguments:
-%   - **evnt** — SelectionChanged event data from the uitable (row selection)
+%   - **evnt** - SelectionChanged event data from the uitable (row selection)
 %
 
 if obj.mibModel.preferences.System.DeveloperMode

@@ -8,28 +8,28 @@ function connImaris = setImarisDataset(mibDataset, connImaris, options)
 %      connImaris = io.imaris.setImarisDataset(mibDataset, connImaris, options)
 %
 % Input Arguments:
-%   - **mibDataset** — instance of ``core.MibDataset`` with the dataset to export
-%   - **connImaris** — *(optional)* handle to an existing Imaris connection
-%   - **options** — *(optional)* struct with additional settings:
+%   - **mibDataset** - instance of ``core.MibDataset`` with the dataset to export
+%   - **connImaris** - *(optional)* handle to an existing Imaris connection
+%   - **options** - *(optional)* struct with additional settings:
 %
-%     - ``.type`` — *(optional)* type of dataset layer to send:
+%     - ``.type`` - *(optional)* type of dataset layer to send:
 %       ``'image'`` (default), ``'labels'`` (model), ``'mask'``, ``'selection'``
-%     - ``.modelIndex`` — *(optional)* for ``'labels'``: material index to send;
+%     - ``.modelIndex`` - *(optional)* for ``'labels'``: material index to send;
 %       ``NaN`` = all materials, integer = single material;
 %       ignored for ``'mask'`` and ``'selection'``
-%     - ``.mode`` — *(optional)* ``'3D'`` or ``'4D'`` export mode; prompted if
+%     - ``.mode`` - *(optional)* ``'3D'`` or ``'4D'`` export mode; prompted if
 %       omitted and time > 1
-%     - ``.insertInto`` — *(optional)* cell with time-point index; ``-1`` = replace
+%     - ``.insertInto`` - *(optional)* cell with time-point index; ``-1`` = replace
 %       the whole dataset
-%     - ``.lutColors`` — *(optional)* [nChannels×3] RGB colour matrix (0–1) for
+%     - ``.lutColors`` - *(optional)* [nChannels×3] RGB colour matrix (0-1) for
 %       image channels
-%     - ``.maskColor`` — *(optional)* [1×3] RGB colour (0–1) for mask display in
+%     - ``.maskColor`` - *(optional)* [1×3] RGB colour (0-1) for mask display in
 %       Imaris (default: ``[1 0 0]``)
-%     - ``.showWaitbar`` — [logical] show or hide the progress bar
-%     - ``.mibGUI`` — *(optional)* handle to the main MIB UIFigure for dialogs
+%     - ``.showWaitbar`` - [logical] show or hide the progress bar
+%     - ``.mibGUI`` - *(optional)* handle to the main MIB UIFigure for dialogs
 %
 % Output Arguments:
-%   - **connImaris** — handle to the Imaris connection
+%   - **connImaris** - handle to the Imaris connection
 %
 % .. note::
 %    Uses IceImarisConnector bindings. Requires:
@@ -37,7 +37,7 @@ function connImaris = setImarisDataset(mibDataset, connImaris, options)
 %    1. Set system environment variable ``IMARISPATH`` to the Imaris installation directory
 %    2. Restart MATLAB
 %
-% **Example** — send image data to Imaris:
+% **Example** - send image data to Imaris:
 %
 %   .. code-block:: matlab
 %

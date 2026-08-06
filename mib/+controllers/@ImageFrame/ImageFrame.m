@@ -274,7 +274,7 @@ classdef ImageFrame < handle
             % CALCULATE - Detect and mark image frame border pixels.
             %
             % Parameters:
-            %   **batchModeSwitch** *(optional)* — ``true`` when called from batch processing;
+            %   **batchModeSwitch** *(optional)* - ``true`` when called from batch processing;
             %     skips undo backup and ``returnBatchOpt``. Default: ``false``.
             if obj.mibModel.preferences.System.DeveloperMode
                 fprintf('controllers.ImageFrame.Calculate: triggered\n');
@@ -310,7 +310,7 @@ classdef ImageFrame < handle
             getDataOptions.blockModeSwitch = 0;
             getDataOptions.id = id;
 
-            % Backup current data (skip in batch mode; skip 4D — too expensive)
+            % Backup current data (skip in batch mode; skip 4D - too expensive)
             if ~batchModeSwitch
                 switch datasetType
                     case '2D, Slice'; obj.mibModel.backup(destination, 0, getDataOptions);

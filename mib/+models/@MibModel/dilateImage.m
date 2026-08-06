@@ -29,39 +29,39 @@ function dilateImage(obj, BatchOptIn)
 % callers set the field directly). This method itself never opens a dialog.
 %
 % Input Arguments:
-%   - **BatchOptIn** — *(optional)* structure for batch processing mode; when NaN,
+%   - **BatchOptIn** - *(optional)* structure for batch processing mode; when NaN,
 %     returns default options via the "SyncBatch" event
 %
-%     - ``.TargetLayer`` — cell string, ``{'selection','mask','labels'}`` layer to dilate
-%     - ``.DatasetType`` — cell string, ``{'2D, Slice','3D, Stack','4D, Dataset'}`` scope
-%     - ``.DilateMode`` — cell string, ``{'2D','3D'}`` strel dimensionality
-%     - ``.StrelSize`` — string, strel radius in pixels; one value (isotropic)
+%     - ``.TargetLayer`` - cell string, ``{'selection','mask','labels'}`` layer to dilate
+%     - ``.DatasetType`` - cell string, ``{'2D, Slice','3D, Stack','4D, Dataset'}`` scope
+%     - ``.DilateMode`` - cell string, ``{'2D','3D'}`` strel dimensionality
+%     - ``.StrelSize`` - string, strel radius in pixels; one value (isotropic)
 %       or two values separated by a space (first = XY radius, second = Z radius
 %       for 3D mode or X radius for 2D mode)
-%     - ``.Difference`` — logical, keep only the dilated ring (dilated minus original)
-%     - ``.restrictSelectionToMaterial`` — string, material index (e.g. ``'2'``) or
+%     - ``.Difference`` - logical, keep only the dilated ring (dilated minus original)
+%     - ``.restrictSelectionToMaterial`` - string, material index (e.g. ``'2'``) or
 %       ``'NaN'`` to disable; clips dilation to pixels inside the material
-%     - ``.restrictSelectionToMask`` — logical, clip dilation to the mask layer
-%     - ``.MaterialIndex`` — string, material index for TargetLayer= ``'labels'``
-%     - ``.Use2DParallelComputing`` — logical, use parfor for 2D slice-by-slice dilation
-%     - ``.AnisotropicMethod`` — cell string, ``{'Accurate (slow)','Fast (bwdist)'}``;
-%       only consulted for large-radius 3D dilation on anisotropic voxels — see
+%     - ``.restrictSelectionToMask`` - logical, clip dilation to the mask layer
+%     - ``.MaterialIndex`` - string, material index for TargetLayer= ``'labels'``
+%     - ``.Use2DParallelComputing`` - logical, use parfor for 2D slice-by-slice dilation
+%     - ``.AnisotropicMethod`` - cell string, ``{'Accurate (slow)','Fast (bwdist)'}``;
+%       only consulted for large-radius 3D dilation on anisotropic voxels - see
 %       the performance note below
-%     - ``.showWaitbar`` — logical, show or not the progress dialog
-%     - ``.id`` — *(optional)* dataset index 1-9, default = obj.id
+%     - ``.showWaitbar`` - logical, show or not the progress dialog
+%     - ``.id`` - *(optional)* dataset index 1-9, default = obj.id
 %
 %
 % Output Arguments:
 %   (none)
 %
 % Usage:
-%   **Example 1** — dilate selection on current slice with defaults
+%   **Example 1** - dilate selection on current slice with defaults
 %
 %   .. code-block:: matlab
 %
 %      obj.mibModel.dilateImage();
 %
-%   **Example 2** — dilate the mask layer across the full z-stack with a 5-px radius
+%   **Example 2** - dilate the mask layer across the full z-stack with a 5-px radius
 %
 %   .. code-block:: matlab
 %
@@ -73,7 +73,7 @@ function dilateImage(obj, BatchOptIn)
 %      BatchOpt.showWaitbar = true;
 %      obj.mibModel.dilateImage(BatchOpt);
 %
-%   **Example 3** — 3D ball dilation clipped to material 2, difference mode
+%   **Example 3** - 3D ball dilation clipped to material 2, difference mode
 %
 %   .. code-block:: matlab
 %
@@ -86,7 +86,7 @@ function dilateImage(obj, BatchOptIn)
 %      BatchOpt.showWaitbar = false;
 %      obj.mibModel.dilateImage(BatchOpt);
 %
-%   **Example 4** — return default BatchOpt to the Batch Processing editor
+%   **Example 4** - return default BatchOpt to the Batch Processing editor
 %
 %   .. code-block:: matlab
 %
@@ -131,7 +131,7 @@ BatchOpt.mibBatchActionName  = 'Dilate';
 BatchOpt.mibBatchTooltip.TargetLayer  = 'Layer to be dilated';
 BatchOpt.mibBatchTooltip.DatasetType  = 'Specify whether to dilate the current slice (2D, Slice), the stack (3D, Stack) or complete dataset (4D, Dataset)';
 BatchOpt.mibBatchTooltip.DilateMode   = 'Type of the strel element for dilation';
-BatchOpt.mibBatchTooltip.StrelSize    = 'Radius of the strel element in pixels; one or two numbers — when two values are given the second defines Z radius (3D) or X radius (2D)';
+BatchOpt.mibBatchTooltip.StrelSize    = 'Radius of the strel element in pixels; one or two numbers - when two values are given the second defines Z radius (3D) or X radius (2D)';
 BatchOpt.mibBatchTooltip.MaterialIndex = 'Index of the material to dilate; only for TargetLayer="labels"';
 BatchOpt.mibBatchTooltip.Difference   = 'Obtain the difference between dilated and original (dilated ring only)';
 BatchOpt.mibBatchTooltip.restrictSelectionToMaterial = 'Clip dilation to pixels inside the specified material index; "NaN" disables';
@@ -300,7 +300,7 @@ else
 
     % In-plane isotropic elements above the threshold use the bwdist fast path;
     % anisotropic (elliptical) 2D elements fall back to imdilate with a prebuilt
-    % disk-like strel (no warning — 2D in-plane anisotropy is rare).
+    % disk-like strel (no warning - 2D in-plane anisotropy is rare).
     useBwdist = (radius > bwdistRadiusThreshold) && isIsotropicElement;
     if useBwdist
         se = [];
@@ -427,16 +427,16 @@ function sliceOut = do_dilate(sliceIn, model, mask, take_difference, se, useBwdi
 % Designed to be called from both sequential and parfor loops.
 %
 % Input Arguments:
-%   - **sliceIn** — [uint8, height×width] binary slice to dilate
-%   - **model** — [uint8, height×width] or [] — restrict dilation to these pixels
-%   - **mask** — [uint8, height×width] or [] — clip result to masked area
-%   - **take_difference** — logical, return only the newly added pixels
-%   - **se** — [uint8, height×width] pre-built structuring element (imdilate path)
-%   - **useBwdist** — logical, use the distance-transform fast path (see utils.morphBallOp)
-%   - **R** — numeric, disk radius in pixels (bwdist path)
+%   - **sliceIn** - [uint8, height×width] binary slice to dilate
+%   - **model** - [uint8, height×width] or [] - restrict dilation to these pixels
+%   - **mask** - [uint8, height×width] or [] - clip result to masked area
+%   - **take_difference** - logical, return only the newly added pixels
+%   - **se** - [uint8, height×width] pre-built structuring element (imdilate path)
+%   - **useBwdist** - logical, use the distance-transform fast path (see utils.morphBallOp)
+%   - **R** - numeric, disk radius in pixels (bwdist path)
 %
 % Output Arguments:
-%   - **sliceOut** — [uint8, height×width] dilated binary slice
+%   - **sliceOut** - [uint8, height×width] dilated binary slice
 %
 
 dilatedSlice = utils.morphBallOp(sliceIn, 'dilate', se, useBwdist, R);

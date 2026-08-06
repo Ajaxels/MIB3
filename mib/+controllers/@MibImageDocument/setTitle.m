@@ -10,25 +10,25 @@ function setTitle(obj, title)
 % when renaming datasets or updating document identification.
 %
 % Input Arguments:
-%   - **title** — [char] new title for the document
+%   - **title** - [char] new title for the document
 %
 % Output Arguments:
 %   (none)
 %
-% **Example 1** — set simple title:
+% **Example 1** - set simple title:
 %
 %   .. code-block:: matlab
 %
 %      obj.mibController.cImageDoc{1}.setTitle('Dataset_001');
 %
-% **Example 2** — set title based on filename:
+% **Example 2** - set title based on filename:
 %
 %   .. code-block:: matlab
 %
 %      [~, fname] = fileparts(obj.mibModel.I{1}.image.filename);
 %      obj.mibController.cImageDoc{1}.setTitle(fname);
 %
-% **Example 3** — update title when buffer changes:
+% **Example 3** - update title when buffer changes:
 %
 %   .. code-block:: matlab
 %

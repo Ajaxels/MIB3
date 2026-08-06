@@ -10,7 +10,7 @@ function updateFileList_Callback(obj, selectedFilename)
 % using filters specified in "obj.view.handles.panels.dirContents.handles.fileFilters"
 %
 % Input Arguments:
-%   - **selectedFilename** — *(optional)* char with the selected filename to highlight
+%   - **selectedFilename** - *(optional)* char with the selected filename to highlight
 %
 
 % arguments (Input)

@@ -27,7 +27,7 @@ classdef StitchInstances2Dto3DTest < matlab.unittest.TestCase
             % return a per-slice-scrambled copy that hides the 3D identity.
             %
             % Objects are laid on a non-overlapping grid (one per cell) so they
-            % are guaranteed spatially disjoint — the correctness invariant is
+            % are guaranteed spatially disjoint - the correctness invariant is
             % "no false merge", which only holds if the GT objects never touch.
             if nargin < 4 || isempty(seed); seed = 42; end
             rng(seed, 'twister');

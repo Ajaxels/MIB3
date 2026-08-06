@@ -10,7 +10,7 @@ function fuseStreaming(layout, canvas, outputZarrPath, options)
 % Primary streaming fusion path. When a single output XY slice fits in
 % ``options.maxSliceBytes`` (the common case), a :class:`io.savers.StitchSliceProvider`
 % is fed to :meth:`io.savers.Zarr3Saver.saveStream`, which writes level 0 and the
-% full downsampled pyramid with sharding — the whole mosaic is never resident.
+% full downsampled pyramid with sharding - the whole mosaic is never resident.
 % When even one slice is too large, a chunk-wise fallback creates the zarr array
 % directly (mirroring ``Zarr3Saver`` chunk/shard defaults), iterates output
 % chunks, loads only the intersecting tiles (bounded cache), blends, and writes
@@ -20,31 +20,31 @@ function fuseStreaming(layout, canvas, outputZarrPath, options)
 % BigData dataset.
 %
 % Input Arguments:
-%   - **layout** — [struct array] tile layout.
-%   - **canvas** — [struct] from :func:`utils.stitch.planCanvas`.
-%   - **outputZarrPath** — [char] destination ``.zarr3`` folder (overwritten).
-%   - **options** *(optional)* — struct with fields:
+%   - **layout** - [struct array] tile layout.
+%   - **canvas** - [struct] from :func:`utils.stitch.planCanvas`.
+%   - **outputZarrPath** - [char] destination ``.zarr3`` folder (overwritten).
+%   - **options** *(optional)* - struct with fields:
 %
-%     - ``.blendMode`` — [char] ``'Feather'`` (default) | ``'Average'`` | ``'Max'`` | ``'Min'`` | ``'Overwrite'``
-%     - ``.background`` — [double] background fill value (default: ``0``)
-%     - ``.marginPx`` — [double] feather margin (default: derived from tile size)
-%     - ``.maxSliceBytes`` — [double] slice-fits threshold in bytes (default: ``4*1024^3``)
-%     - ``.ChunkSize`` — [1x3 double] level-0 chunk shape (default: ``[256 256 16]``)
-%     - ``.Compressors`` — [char] codec name (default: ``'zstd'``)
-%     - ``.Levels`` — [double] explicit pyramid level count (default: auto)
-%     - ``.ShardSize`` — [1x3 double] per-axis chunk multipliers for zarr v3 sharding
+%     - ``.blendMode`` - [char] ``'Feather'`` (default) | ``'Average'`` | ``'Max'`` | ``'Min'`` | ``'Overwrite'``
+%     - ``.background`` - [double] background fill value (default: ``0``)
+%     - ``.marginPx`` - [double] feather margin (default: derived from tile size)
+%     - ``.maxSliceBytes`` - [double] slice-fits threshold in bytes (default: ``4*1024^3``)
+%     - ``.ChunkSize`` - [1x3 double] level-0 chunk shape (default: ``[256 256 16]``)
+%     - ``.Compressors`` - [char] codec name (default: ``'zstd'``)
+%     - ``.Levels`` - [double] explicit pyramid level count (default: auto)
+%     - ``.ShardSize`` - [1x3 double] per-axis chunk multipliers for zarr v3 sharding
 %       (``[]`` = no sharding)
-%     - ``.DownsampleMethod`` — [char] pyramid downsampling method (default: ``'bilinear'``)
-%     - ``.DownsampleStrategy`` — [char] ``'XY only'`` (default) | ``'Anisotropy-preserving'``
-%     - ``.cacheSizeBytes`` — [double] LRU tile-cache budget (default: ``2*1024^3``)
-%     - ``.showWaitbar`` — [logical] show progress (default: ``false``)
-%     - ``.parentFigure`` — [handle] progress-dialog parent (default: ``[]``)
-%     - ``.pixSize`` — [struct] override ``canvas.pixSize`` for metadata (optional)
+%     - ``.DownsampleMethod`` - [char] pyramid downsampling method (default: ``'bilinear'``)
+%     - ``.DownsampleStrategy`` - [char] ``'XY only'`` (default) | ``'Anisotropy-preserving'``
+%     - ``.cacheSizeBytes`` - [double] LRU tile-cache budget (default: ``2*1024^3``)
+%     - ``.showWaitbar`` - [logical] show progress (default: ``false``)
+%     - ``.parentFigure`` - [handle] progress-dialog parent (default: ``[]``)
+%     - ``.pixSize`` - [struct] override ``canvas.pixSize`` for metadata (optional)
 %
 % Output Arguments:
-%   (none) — writes ``outputZarrPath`` to disk.
+%   (none) - writes ``outputZarrPath`` to disk.
 %
-% **Example** — stream a mosaic to zarr and reopen as BigData:
+% **Example** - stream a mosaic to zarr and reopen as BigData:
 %
 %   .. code-block:: matlab
 %
@@ -116,7 +116,7 @@ for pyramidField = {'Levels', 'ShardSize', 'DownsampleMethod', ...
 end
 
 % Zarr3Saver's progress dialog is gated on obj.ParentFigure, a property set
-% only at CONSTRUCTION time (from a 'ParentFigure' field) — saveStream's own
+% only at CONSTRUCTION time (from a 'ParentFigure' field) - saveStream's own
 % options struct (saverOptions.showWaitbar above) does not feed it. Passing
 % struct() here left ParentFigure empty, so createProgressDialog always
 % returned [] and the dialog silently never appeared regardless of

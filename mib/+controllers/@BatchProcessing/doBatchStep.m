@@ -16,25 +16,25 @@ function status = doBatchStep(obj, stepId, stepOptions)
 % user pressed the Stop button while the protocol was running).
 %
 % Input Arguments:
-%   - **stepId** — [numeric] 1-based index into obj.Protocol of the step to execute
-%   - **stepOptions** *(optional)* — [struct] loop context struct with fields:
+%   - **stepId** - [numeric] 1-based index into obj.Protocol of the step to execute
+%   - **stepOptions** *(optional)* - [struct] loop context struct with fields:
 %
-%     - ``.DirectoryName`` — directory from an enclosing Directory or File loop
-%     - ``.FilenameFilter`` — bare filename (without path) supplied by a File loop
-%     - ``.Filenames`` — full path(s) to the file supplied by a File loop
-%     - ``.FileLoopWaitbar`` — [logical] when true suppress per-step waitbars
-%     - ``.seriesId`` — integer BioFormats series index (from doSeriesLoop)
+%     - ``.DirectoryName`` - directory from an enclosing Directory or File loop
+%     - ``.FilenameFilter`` - bare filename (without path) supplied by a File loop
+%     - ``.Filenames`` - full path(s) to the file supplied by a File loop
+%     - ``.FileLoopWaitbar`` - [logical] when true suppress per-step waitbars
+%     - ``.seriesId`` - integer BioFormats series index (from doSeriesLoop)
 %
 % Output Arguments:
-%   - **status** — [logical] true on success, false if the step failed or was aborted
+%   - **status** - [logical] true on success, false if the step failed or was aborted
 %
-% **Example 1** — execute a protocol step:
+% **Example 1** - execute a protocol step:
 %
 %   .. code-block:: matlab
 %
 %      status = obj.doBatchStep(stepId);
 %
-% **Example 2** — with loop context:
+% **Example 2** - with loop context:
 %
 %   .. code-block:: matlab
 %

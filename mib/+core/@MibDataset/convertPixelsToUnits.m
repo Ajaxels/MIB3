@@ -9,14 +9,14 @@ function [x, y, z] = convertPixelsToUnits(obj, x, y, z)
 % Convert pixel coordinates to physical imaging units using pixSize and boundingBox.
 %
 % Input Arguments:
-%   - **x** — double, x-coordinate(s) in pixels
-%   - **y** — double, y-coordinate(s) in pixels
-%   - **z** — double, z-coordinate(s) in pixels
+%   - **x** - double, x-coordinate(s) in pixels
+%   - **y** - double, y-coordinate(s) in pixels
+%   - **z** - double, z-coordinate(s) in pixels
 %
 % Output Arguments:
-%   - **x** — double, x-coordinate(s) in physical units (e.g. um)
-%   - **y** — double, y-coordinate(s) in physical units (e.g. um)
-%   - **z** — double, z-coordinate(s) in physical units (e.g. um)
+%   - **x** - double, x-coordinate(s) in physical units (e.g. um)
+%   - **y** - double, y-coordinate(s) in physical units (e.g. um)
+%   - **z** - double, z-coordinate(s) in physical units (e.g. um)
 %
 % Usage:
 %   **Example 1**

@@ -7,11 +7,11 @@ function augSettingsNew = oldAugSettingsToNew(augSettingsOld, mode)
 %      augSettingsNew = oldAugSettingsToNew(augSettingsOld, mode)
 %
 % Input Arguments:
-%   - **augSettingsOld** — struct with old augmentation settings
-%   - **mode** — [char] augmentation type: ``'2D'`` or ``'3D'``
+%   - **augSettingsOld** - struct with old augmentation settings
+%   - **mode** - [char] augmentation type: ``'2D'`` or ``'3D'``
 %
 % Output Arguments:
-%   - **augSettingsNew** — struct with updated augmentation settings
+%   - **augSettingsNew** - struct with updated augmentation settings
 %
 
 oldFieldNames = fieldnames(augSettingsOld);

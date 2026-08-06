@@ -8,7 +8,7 @@ function palette = generateDefaultPalette(paletteName, colorsNo, randomSeed)
 %      palette = generateDefaultPalette(paletteName, colorsNo, randomSeed)
 %
 % Input Arguments:
-%   - **paletteName** — [char] name of the palette to generate; supported values:
+%   - **paletteName** - [char] name of the palette to generate; supported values:
 %
 %     - ``'Default, 6 colors'``
 %     - ``'Distinct colors, 20 colors'``
@@ -17,24 +17,24 @@ function palette = generateDefaultPalette(paletteName, colorsNo, randomSeed)
 %     - ``'Grayscale'``
 %     - … and others defined in the function body
 %
-%   - **colorsNo** — [numeric] number of required colour channels (default: ``6``)
-%   - **randomSeed** — *(optional)* seed for the ``'Random Colors'`` palette; when
+%   - **colorsNo** - [numeric] number of required colour channels (default: ``6``)
+%   - **randomSeed** - *(optional)* seed for the ``'Random Colors'`` palette; when
 %     omitted or empty a dialog asking for the seed is displayed. Provide a numeric
 %     value for a reproducible palette, or ``'shuffle'`` to seed the generator from
 %     the system clock without showing the dialog
 %
 % Output Arguments:
-%   - **palette** — [numeric] matrix ``[colorId, [R G B]]`` with values in range 0–1
+%   - **palette** - [numeric] matrix ``[colorId, [R G B]]`` with values in range 0-1
 %
 % Usage:
 %
-%   **Example 1** — generate a 3-colour default palette
+%   **Example 1** - generate a 3-colour default palette
 %
 %   .. code-block:: matlab
 %
 %      palette = utils.defaults.generateDefaultPalette('Default, 6 colors', 3);
 %
-%   **Example 2** — generate 10 random colours without the seed dialog
+%   **Example 2** - generate 10 random colours without the seed dialog
 %
 %   .. code-block:: matlab
 %

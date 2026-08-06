@@ -12,12 +12,12 @@ function gui_WindowBrushMotionFcn(obj, structElement)
 % superpixel-assisted (SLIC/Watershed) modes.
 %
 % Input Arguments:
-%   - **structElement** — [double matrix] circular structural element for brush dilation (generated in ``segmentationBrush.m``)
+%   - **structElement** - [double matrix] circular structural element for brush dilation (generated in ``segmentationBrush.m``)
 %
 % Output Arguments:
 %   (none)
 %
-% **Usage note** — typically called as a callback, not directly:
+% **Usage note** - typically called as a callback, not directly:
 %
 %   .. code-block:: matlab
 %

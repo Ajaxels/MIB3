@@ -116,7 +116,7 @@ Result: `core.Measurements` is ~1135 LOC vs MIB2's 2412 LOC (the extra lines are
 
 ## Doc Style
 
-All docblocks use the RST `sphinxcontrib-matlabdomain` style per `CLAUDE.md` and `development\guides\docs_api_sphinx.md`: `% METHODNAME - One-line.`, `Syntax`/`Input Arguments`/`Output Arguments`/`Usage` sections, `.. code-block:: matlab`, `**bold**` parameter names with em-dash `—`. Mirror the existing docblocks in `RoiRegion.m`.
+All docblocks use the RST `sphinxcontrib-matlabdomain` style per `CLAUDE.md` and `development\guides\docs_api_sphinx.md`: `% METHODNAME - One-line.`, `Syntax`/`Input Arguments`/`Output Arguments`/`Usage` sections, `.. code-block:: matlab`, `**bold**` parameter names with a plain hyphen `-` separator. Mirror the existing docblocks in `RoiRegion.m`.
 
 ## Verification Results
 

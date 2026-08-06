@@ -9,35 +9,35 @@ function loadMask(obj, mask, BatchOptIn)
 % This is the top-level BatchOpt-compatible wrapper for mask loading.
 % It handles:
 %
-% FILE PATH  — mask is empty; a file browser (GUI) or FilenameFilter
+% FILE PATH  - mask is empty; a file browser (GUI) or FilenameFilter
 %   template (batch) is used to locate the file(s); loading is
 %   delegated to MibDataset.loadMask.
 %
-% IMPORT PATH — mask is a numeric or logical array; the array is
+% IMPORT PATH - mask is a numeric or logical array; the array is
 %   imported directly via MibDataset.loadMask.
 %
 % Input Arguments:
-%   - **mask** — *(optional)* raw mask array [H W D] or [H W D 1 T]
-%   - **BatchOptIn** — *(optional)* structure for batch processing mode; when NaN,
+%   - **mask** - *(optional)* raw mask array [H W D] or [H W D 1 T]
+%   - **BatchOptIn** - *(optional)* structure for batch processing mode; when NaN,
 %     returns default options via the "SyncBatch" event
 %
-%     - ``.DirectoryName`` — [cell, ``{'Inherit from dataset filename'}``] target dir
-%     - ``.FilenameFilter`` — [char, ``'Mask_[F].mask'``] filename or filter;
+%     - ``.DirectoryName`` - [cell, ``{'Inherit from dataset filename'}``] target dir
+%     - ``.FilenameFilter`` - [char, ``'Mask_[F].mask'``] filename or filter;
 %       ``[F]`` is expanded to the base name of the currently open image
-%     - ``.showWaitbar`` — [logical, ``true``] show progress dialog
-%     - ``.id`` — [numeric] dataset index 1..9, default = currently active
+%     - ``.showWaitbar`` - [logical, ``true``] show progress dialog
+%     - ``.id`` - [numeric] dataset index 1..9, default = currently active
 %
 % Output Arguments:
 %   none
 %
 % Usage:
-%   **Example 1** — interactive file browser
+%   **Example 1** - interactive file browser
 %
 %   .. code-block:: matlab
 %
 %      obj.mibModel.loadMask();
 %
-%   **Example 2** — batch: load by name template
+%   **Example 2** - batch: load by name template
 %
 %   .. code-block:: matlab
 %
@@ -45,7 +45,7 @@ function loadMask(obj, mask, BatchOptIn)
 %      BatchOpt.FilenameFilter = 'Mask_[F].mask';
 %      obj.mibModel.loadMask([], BatchOpt);
 %
-%   **Example 3** — import from workspace array
+%   **Example 3** - import from workspace array
 %
 %   .. code-block:: matlab
 %
@@ -142,7 +142,7 @@ dsOpts.preferences     = obj.preferences;
 dsOpts.mibPath         = obj.mibPath;
 dsOpts.ParentFigure    = obj.mibGUI;
 
-%% IMPORT PATH — mask array provided
+%% IMPORT PATH - mask array provided
 if ~isempty(mask)
     dsOpts.mask = mask;
     result = obj.I{id}.loadMask([], dsOpts);
@@ -159,7 +159,7 @@ if ~isempty(mask)
     return;
 end
 
-%% FILE PATH — resolve directory and filenames
+%% FILE PATH - resolve directory and filenames
 
 if strcmp(BatchOpt.DirectoryName{1}, 'Inherit from dataset filename')
     BatchOpt.DirectoryName{1} = defaultDir;
@@ -213,7 +213,7 @@ end
 ext = lower(ext);
 
 if strcmp(ext, '.mask')
-    % .mask files are plain MAT files — handled directly in MibDataset.loadMask
+    % .mask files are plain MAT files - handled directly in MibDataset.loadMask
     dsOpts.loaderType = 'matlab_mask';
 else
     % Use ExtensionRegistryLoad for all other formats

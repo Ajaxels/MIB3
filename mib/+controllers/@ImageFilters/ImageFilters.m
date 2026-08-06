@@ -491,7 +491,7 @@ classdef ImageFilters < handle
             rowId = 1;
             colId = 1;
             for widgetId = 1:numel(paraNames)
-                % add label (skip for logical — checkbox carries its own label)
+                % add label (skip for logical - checkbox carries its own label)
                 if ~islogical(paraList.(paraNames{widgetId}))
                     obj.ParaHandles{index} = uilabel(hParent, 'Text', paraNames{widgetId}, 'HorizontalAlignment', 'right');
                     obj.ParaHandles{index}.Layout.Column = colId;

@@ -2,8 +2,8 @@ classdef OmeTiffSaver < io.savers.BaseSaver
 % OMETIFFSAVER - Saver for OME-TIFF (Open Microscopy Environment TIFF) output.
 %
 % Handles two format variants:
-% 'OME-TIFF 5D (*.ome.tiff)'          — full 5-D OME-TIFF (single file)
-% 'OME-TIFF 2D sequence (*.ome.tiff)' — one OME-TIFF per Z×T slice
+% 'OME-TIFF 5D (*.ome.tiff)'          - full 5-D OME-TIFF (single file)
+% 'OME-TIFF 2D sequence (*.ome.tiff)' - one OME-TIFF per Z×T slice
 %
 % OME-TIFF stores the full 5-D data set [H, W, C, D, T] together with
 % standardised OME-XML metadata describing pixel sizes, channel names,
@@ -14,18 +14,18 @@ classdef OmeTiffSaver < io.savers.BaseSaver
 %
 % DATA DIMENSIONS
 % Input  data : [H, W, D, C, T]  (MIB3 native order)
-% mibImage2ometiff() expects [H, W, C, D, T] — the saver permutes
+% mibImage2ometiff() expects [H, W, C, D, T] - the saver permutes
 % dimensions 3 and 4 before the call.
 %
 % SAVING OPTIONS PASSED TO mibImage2ometiff
-% savingOptions.pixSize          — struct {.x .y .z .units .t .tunits}
-% savingOptions.lutColors        — [C x 3] channel LUT colours (0..1)
-% savingOptions.ImageDescription — (char) dataset description
-% savingOptions.DimensionOrder   — always 'XYCZT'
-% savingOptions.Saving3d         — '5D' | '2D'
-% savingOptions.overwrite        — logical
-% savingOptions.DatasetType      — 'image' | 'mask' | 'labels'
-% savingOptions.showWaitbar      — logical
+% savingOptions.pixSize          - struct {.x .y .z .units .t .tunits}
+% savingOptions.lutColors        - [C x 3] channel LUT colours (0..1)
+% savingOptions.ImageDescription - (char) dataset description
+% savingOptions.DimensionOrder   - always 'XYCZT'
+% savingOptions.Saving3d         - '5D' | '2D'
+% savingOptions.overwrite        - logical
+% savingOptions.DatasetType      - 'image' | 'mask' | 'labels'
+% savingOptions.showWaitbar      - logical
 %
 % NOTES
 % * OME-TIFF is the preferred format for multichannel, multi-Z,
@@ -115,11 +115,11 @@ classdef OmeTiffSaver < io.savers.BaseSaver
             %      saver = io.savers.OmeTiffSaver(options)
             %
             % Input Arguments:
-            %   - **options** — *(optional)* struct, saver-level options (usually empty;
+            %   - **options** - *(optional)* struct, saver-level options (usually empty;
             %     per-save options are passed to ``save()`` instead)
             %
             % Output Arguments:
-            %   - **obj** — instance of the OmeTiffSaver class
+            %   - **obj** - instance of the OmeTiffSaver class
             %
             if nargin < 1; options = struct(); end
             obj.Options = options;
@@ -138,7 +138,7 @@ classdef OmeTiffSaver < io.savers.BaseSaver
             %   (none)
             %
             % Output Arguments:
-            %   - **formats** — cell array of format strings for OME-TIFF output
+            %   - **formats** - cell array of format strings for OME-TIFF output
             %
             formats = { ...
                 'OME-TIFF 5D (*.ome.tiff)'; ...
@@ -154,31 +154,31 @@ classdef OmeTiffSaver < io.savers.BaseSaver
             %      fnOut = obj.save(data, metadata, filename, options)
             %
             % Input Arguments:
-            %   - **data** — [H, W, D, C, T] numeric array
-            %   - **metadata** — struct with fields:
+            %   - **data** - [H, W, D, C, T] numeric array
+            %   - **metadata** - struct with fields:
             %
-            %     - ``colorType`` — ``'grayscale'`` | ``'multichannel'`` | ``'indexed'``
-            %     - ``lutColors`` — [C × 3] per-channel LUT colours (0–1 range)
-            %     - ``dataClass`` — ``'uint8'`` | ``'uint16'`` | ...
-            %     - ``maxInt`` — maximum intensity value
-            %     - ``pixSize`` — struct {``.x``, ``.y``, ``.z``, ``.units``, ``.t``, ``.tunits``}
-            %     - ``imageDescription`` — *(optional)* [char] dataset description string
-            %     - ``sliceName`` — *(optional)* per-slice source filenames (used in 2D mode)
+            %     - ``colorType`` - ``'grayscale'`` | ``'multichannel'`` | ``'indexed'``
+            %     - ``lutColors`` - [C × 3] per-channel LUT colours (0-1 range)
+            %     - ``dataClass`` - ``'uint8'`` | ``'uint16'`` | ...
+            %     - ``maxInt`` - maximum intensity value
+            %     - ``pixSize`` - struct {``.x``, ``.y``, ``.z``, ``.units``, ``.t``, ``.tunits``}
+            %     - ``imageDescription`` - *(optional)* [char] dataset description string
+            %     - ``sliceName`` - *(optional)* per-slice source filenames (used in 2D mode)
             %
-            %   - **filename** — [char] full output path; extension is always normalized to ``.ome.tiff``
-            %   - **options** — struct with fields:
+            %   - **filename** - [char] full output path; extension is always normalized to ``.ome.tiff``
+            %   - **options** - struct with fields:
             %
-            %     - ``Format`` — format string (``'OME-TIFF 5D (*.ome.tiff)'`` or ``'OME-TIFF 2D sequence (*.ome.tiff)'``)
-            %     - ``layerType`` — ``'image'`` | ``'mask'`` | ``'labels'``; default: ``'image'``
-            %     - ``showWaitbar`` — logical; default: ``true``
-            %     - ``silent`` — logical, suppress dialogs; default: ``false``
-            %     - ``overwrite`` — logical; default: ``true``
-            %     - ``FilenameGenerator`` — ``'Use original filename'`` | ``'Use sequential filename'`` (2D mode only)
+            %     - ``Format`` - format string (``'OME-TIFF 5D (*.ome.tiff)'`` or ``'OME-TIFF 2D sequence (*.ome.tiff)'``)
+            %     - ``layerType`` - ``'image'`` | ``'mask'`` | ``'labels'``; default: ``'image'``
+            %     - ``showWaitbar`` - logical; default: ``true``
+            %     - ``silent`` - logical, suppress dialogs; default: ``false``
+            %     - ``overwrite`` - logical; default: ``true``
+            %     - ``FilenameGenerator`` - ``'Use original filename'`` | ``'Use sequential filename'`` (2D mode only)
             %
             % Output Arguments:
-            %   - **fnOut** — [char] path of saved ``.ome.tiff`` file, ``[]`` on failure
+            %   - **fnOut** - [char] path of saved ``.ome.tiff`` file, ``[]`` on failure
             %
-            % **Example** — see class-level documentation above.
+            % **Example** - see class-level documentation above.
             %
 
             fnOut = [];
@@ -286,13 +286,13 @@ classdef OmeTiffSaver < io.savers.BaseSaver
             % Memory-bounded twin of ``save``: instead of receiving a full
             % ``[H W D C T]`` array it pulls each Z-slice from ``provider.getSlice(z, t)``
             % (an ``io.savers.SliceProvider``) so a large pyramid level is never gathered
-            % whole — peak memory stays at one XY slice.
+            % whole - peak memory stays at one XY slice.
             %
-            % - **5D mode** — writes a single OME-TIFF, streaming one plane at a time
+            % - **5D mode** - writes a single OME-TIFF, streaming one plane at a time
             %   through the Bio-Formats Java writer (``loci.formats.ImageWriter`` /
             %   ``OMETiffWriter.saveBytes``). OME-XML metadata is built from the provider's
             %   dimensions (``MetadataTools.populateMetadata``), so no full array is needed.
-            % - **2D sequence mode** — writes one ``.ome.tiff`` per Z×T slice via ``imwrite``.
+            % - **2D sequence mode** - writes one ``.ome.tiff`` per Z×T slice via ``imwrite``.
             %
             % NOTE: streaming bounds memory along Z. A single very large XY plane (e.g.
             % a gigapixel WSI at full resolution, Z=1) is still held whole; tiled BigTIFF
@@ -394,7 +394,7 @@ classdef OmeTiffSaver < io.savers.BaseSaver
             meta.setPixelsPhysicalSizeZ(ome.units.quantity.Length(java.lang.Double(pxZ), ome.units.UNITS.MICROMETER), 0);
             meta.setPixelsTimeIncrement(ome.units.quantity.Time(java.lang.Double(tIncr), tunits), 0);
 
-            % ImageDescription — carries the MIB BoundingBox string
+            % ImageDescription - carries the MIB BoundingBox string
             if isfield(metadata, 'imageDescription') && ~isempty(metadata.imageDescription)
                 desc = metadata.imageDescription;
                 if iscell(desc); desc = desc{1}; end
@@ -468,8 +468,8 @@ classdef OmeTiffSaver < io.savers.BaseSaver
             % WRITEOMETIFFSTREAM2D - Stream a 2-D OME-TIFF sequence (one file per Z×T slice).
             %
             % Non-indexed slices are written through the Bio-Formats Java writer with
-            % real per-file OME-XML metadata (SizeC, pixel size, per-channel Color) —
-            % mirroring ``writeOmeTiffStream5D`` — so LUT colours survive the round-trip.
+            % real per-file OME-XML metadata (SizeC, pixel size, per-channel Color) -
+            % mirroring ``writeOmeTiffStream5D`` - so LUT colours survive the round-trip.
             % Plain ``imwrite`` has no OME concept and would silently drop them (only a
             % 'Description' string, no Channel/Color metadata). Indexed (palette) slices
             % keep using ``imwrite`` since the colormap is embedded directly in the TIFF.

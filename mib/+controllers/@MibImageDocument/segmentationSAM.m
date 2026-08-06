@@ -11,29 +11,29 @@ function segmentationSAM(obj, extraOptions, BatchOptIn)
 % Perform segmentation using Segment Anything Model. See https://segment-anything.com
 %
 % Input Arguments:
-%   - **extraOptions** *(optional)* — [struct] structure with additional options:
+%   - **extraOptions** *(optional)* - [struct] structure with additional options:
 %
-%     - ``.addNextMaterial`` — [logical] switch to add next material for "add, +next material" mode
+%     - ``.addNextMaterial`` - [logical] switch to add next material for "add, +next material" mode
 %
-%   - **BatchOptIn** *(optional)* — [struct|NaN] batch processing mode;
+%   - **BatchOptIn** *(optional)* - [struct|NaN] batch processing mode;
 %     when ``NaN``, returns default structure via "syncBatch" event.
 %     See Declaration of BatchOpt structure below for details; function
 %     variables are preferred over BatchOptIn variables:
 %
-%     - ``.Method`` — [char] specify how SAM should execute:
+%     - ``.Method`` - [char] specify how SAM should execute:
 %
-%       - ``'Interactive'`` — add points interactively
-%       - ``'Landmarks'`` — process placed points all at once
-%       - ``'Automatic everything'`` — automatically segment all objects on image
+%       - ``'Interactive'`` - add points interactively
+%       - ``'Landmarks'`` - process placed points all at once
+%       - ``'Automatic everything'`` - automatically segment all objects on image
 %
-%     - ``.Dataset`` — [char] segment current slice (``'2D, Slice'``), stack (``'3D, Stack'``), or whole dataset (``'4D, Dataset'``)
-%     - ``.Destination`` — [char] MIB layer for results: ``'selection'``, ``'mask'``, or ``'labels'``
-%     - ``.showWaitbar`` — [logical] show progress bar during execution
+%     - ``.Dataset`` - [char] segment current slice (``'2D, Slice'``), stack (``'3D, Stack'``), or whole dataset (``'4D, Dataset'``)
+%     - ``.Destination`` - [char] MIB layer for results: ``'selection'``, ``'mask'``, or ``'labels'``
+%     - ``.showWaitbar`` - [logical] show progress bar during execution
 %
 % Output Arguments:
 %   (none)
 %
-% **Example** — perform segmentation:
+% **Example** - perform segmentation:
 %
 %   .. code-block:: matlab
 %
@@ -300,7 +300,10 @@ tic;
 % do backup
 if t2-t1 == 0 && doBackup
     getDatasetDimensionsOpt.blockModeSwitch = 0;
-    [blockHeight, blockWidth] = dataset.getDatasetDimensions('image', NaN, NaN, getDatasetDimensionsOpt);
+    % (type, orient, options) - one argument too many here threw "Too many
+    % input arguments", and NaN is not an accepted orient: use [] for "current".
+    % segmentationSAM2 already carries the corrected call.
+    [blockHeight, blockWidth] = dataset.getDatasetDimensions('image', [], getDatasetDimensionsOpt);
     [axesX, axesY] = obj.mibModel.getAxesLimits();
     backupOptions.x(1) = max([1 ceil(axesX(1))]);
     backupOptions.x(2) = min([ceil(axesX(2)), blockWidth]);
@@ -497,12 +500,12 @@ function imgOut = pointsSAM(imgIn, labelPositions, labelIndices)
 %   function imgOut = pointsSAM(imgIn, labelPositions, labelIndices)
 %
 % Input Arguments:
-%   - **imgIn** — image to segment (height, width, colors)
-%   - **labelPositions** — matrix of coordinates for seeds ([seedId; x,y])
-%   - **labelIndices** — matrix positive (1) and negative seeds (0)
+%   - **imgIn** - image to segment (height, width, colors)
+%   - **labelPositions** - matrix of coordinates for seeds ([seedId; x,y])
+%   - **labelIndices** - matrix positive (1) and negative seeds (0)
 %
 % Output Arguments:
-%   - **imgOut** — results of the segmentation, 2D image (height, width)
+%   - **imgOut** - results of the segmentation, 2D image (height, width)
 %
 
 pyrun('predictor.set_image(image)', image=py.numpy.array(imgIn))

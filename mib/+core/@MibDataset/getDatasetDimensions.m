@@ -7,28 +7,28 @@ function varargout = getDatasetDimensions(obj, type, orient, options)
 %       varargout = obj.getDatasetDimensions(type, orient, options)
 %
 % Input Arguments:
-%   - **type** — type of the dataset to retrieve dimensions, 'image' (**default),** 'model', 'mask', 'selection'
-%   - **orient** — *(optional)*, orientation of the returned dimensions:
+%   - **type** - type of the dataset to retrieve dimensions, 'image' (**default),** 'model', 'mask', 'selection'
+%   - **orient** - *(optional)*, orientation of the returned dimensions:
 %
-%     - ``[]`` — return dimensions in the current orientation *(default)*
-%     - ``1`` — dimensions transposed to the zx configuration: [y,x,z,c,t] → [x,z,y,c,t]
-%     - ``2`` — dimensions transposed to the zy configuration: [y,x,z,c,t] → [y,z,x,c,t]
-%     - ``3`` — dimensions of the original yx configuration: [y,x,z,c,t]
+%     - ``[]`` - return dimensions in the current orientation *(default)*
+%     - ``1`` - dimensions transposed to the zx configuration: [y,x,z,c,t] → [x,z,y,c,t]
+%     - ``2`` - dimensions transposed to the zy configuration: [y,x,z,c,t] → [y,z,x,c,t]
+%     - ``3`` - dimensions of the original yx configuration: [y,x,z,c,t]
 %
-%   - **options** — *(optional)*, a structure with extra parameters
+%   - **options** - *(optional)*, a structure with extra parameters
 %
-%     - ``.blockModeSwitch`` — ``0`` return dimensions of the full dataset, ``1`` return dimensions of the shown part only
-%     - ``.splitDims`` — logical:
+%     - ``.blockModeSwitch`` - ``0`` return dimensions of the full dataset, ``1`` return dimensions of the shown part only
+%     - ``.splitDims`` - logical:
 %
-%       - ``true`` — *(default)* split dimensions into individual output variables (height, width, depth, color, time)
-%       - ``false`` — return a single array [height, width, depth, color, time]
+%       - ``true`` - *(default)* split dimensions into individual output variables (height, width, depth, color, time)
+%       - ``false`` - return a single array [height, width, depth, color, time]
 %
 % Output Arguments:
-%   - **height** — height of the dataset
-%   - **width** — width of the dataset
-%   - **depth** — number of z-layers of the dataset
-%   - **colors** — vector of colors of the dataset
-%   - **time** — number of time points
+%   - **height** - height of the dataset
+%   - **width** - width of the dataset
+%   - **depth** - number of z-layers of the dataset
+%   - **colors** - vector of colors of the dataset
+%   - **time** - number of time points
 %     or vector with all those numbers when options.splitDims == true
 %
 % Usage:
@@ -60,7 +60,14 @@ if nargin < 2; type = []; end
 if ~isfield(options, 'blockModeSwitch'); options.blockModeSwitch = obj.blockModeSwitch; end
 if ~isfield(options, 'splitDims'); options.splitDims = true; end
 
-if isempty(orient); orient = obj.orientation; end
+% NaN is a MIB2 leftover that several call sites still pass. It used to fall
+% straight through the switch below with no branch taken, so the failure showed
+% up as "Unrecognized function or variable 'height'" - a message that names
+% neither the argument nor the caller. Treat it as "current orientation", the
+% same as [].
+if isempty(orient) || (isnumeric(orient) && isscalar(orient) && isnan(orient))
+    orient = obj.orientation;
+end
 if isempty(type); type = 'image'; end
 time = obj.image.time;
 
@@ -69,7 +76,7 @@ if ~options.blockModeSwitch     % get the full size dataset
         [height, width, depth, colors, time] = obj.image.getDatasetDimensions(orient);
     elseif isa(obj.labels, 'core.MibLabels63')
         if isempty(obj.labels.height)
-            % Uninitialized placeholder (e.g. BigData before model creation) —
+            % Uninitialized placeholder (e.g. BigData before model creation) -
             % labels always share the image volume, so image dims are authoritative.
             [height, width, depth, colors, time] = obj.image.getDatasetDimensions(orient);
         else

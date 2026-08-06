@@ -50,7 +50,7 @@ classdef SurfaceMeasurements < handle
 
         % -----------------------------------------------------------------
         function obj = SurfaceMeasurements(mibModel, varargin)
-        % SurfaceMeasurements  Constructor — initialises plugin controller and GUI.
+        % SurfaceMeasurements  Constructor - initialises plugin controller and GUI.
         %
         % Parameters:
         % mibModel: handle to the MibModel instance
@@ -299,7 +299,7 @@ classdef SurfaceMeasurements < handle
                     end
 
                     progressDialog.Value   = (matLoopIdx - 1) / numMat;
-                    progressDialog.Message = sprintf('Material %d/%d: %s — smoothing...', ...
+                    progressDialog.Message = sprintf('Material %d/%d: %s - smoothing...', ...
                         matLoopIdx, numMat, materialName);
 
                     % Binary sub-volume for this material
@@ -310,13 +310,13 @@ classdef SurfaceMeasurements < handle
                         subVolume = uint8(smooth3(subVolume, 'box', [kernelX kernelY kernelZ]));
                     end
 
-                    progressDialog.Message = sprintf('Material %d/%d: %s — reducing...', ...
+                    progressDialog.Message = sprintf('Material %d/%d: %s - reducing...', ...
                         matLoopIdx, numMat, materialName);
 
                     % Reduce volume resolution
                     [~, ~, ~, subVolumeReduced] = reducevolume(subVolume, [factorX factorY factorZ]);
 
-                    progressDialog.Message = sprintf('Material %d/%d: %s — isosurface...', ...
+                    progressDialog.Message = sprintf('Material %d/%d: %s - isosurface...', ...
                         matLoopIdx, numMat, materialName);
 
                     % Extract isosurface
@@ -333,7 +333,7 @@ classdef SurfaceMeasurements < handle
                     verts(:, 2) = verts(:, 2) * pixSize.y * factorY + bb(3) - pixSize.y * factorY;
                     verts(:, 3) = verts(:, 3) * pixSize.z * factorZ + bb(5) - pixSize.z * factorZ;
 
-                    progressDialog.Message = sprintf('Material %d/%d: %s — connected components...', ...
+                    progressDialog.Message = sprintf('Material %d/%d: %s - connected components...', ...
                         matLoopIdx, numMat, materialName);
 
                     % Split mesh into connected components via graph
@@ -383,7 +383,7 @@ classdef SurfaceMeasurements < handle
                     end
 
                     % Render material mesh in 3-D figure
-                    progressDialog.Message = sprintf('Material %d/%d: %s — rendering...', ...
+                    progressDialog.Message = sprintf('Material %d/%d: %s - rendering...', ...
                         matLoopIdx, numMat, materialName);
 
                     patchHandle = patch('Faces', faces, 'Vertices', verts, ...

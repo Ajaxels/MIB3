@@ -32,9 +32,9 @@ classdef SurfaceArea3d < handle
         % ``updateWidgets`` on ``UpdateGuiWidgets`` and ``NewDataset`` events.
         %
         % Parameters:
-        % **obj** — handle to the ``SurfaceArea3d`` controller instance
-        % **~** — event source (unused)
-        % **evnt** — ``EventData`` object; ``evnt.EventName`` is inspected
+        % **obj** - handle to the ``SurfaceArea3d`` controller instance
+        % **~** - event source (unused)
+        % **evnt** - ``EventData`` object; ``evnt.EventName`` is inspected
             if ~isvalid(obj) || isempty(obj.view) || ~isvalid(obj.view.gui)
                 for i = 1:numel(obj.listener)
                     delete(obj.listener{i});
@@ -56,8 +56,8 @@ classdef SurfaceArea3d < handle
         % SURFACEAREA3D - Constructor.  Initialises plugin controller and GUI.
         %
         % Parameters:
-        % **mibModel** — handle to the ``MibModel`` instance
-        % **varargin** *(optional)* — unused; reserved for future batch options
+        % **mibModel** - handle to the ``MibModel`` instance
+        % **varargin** *(optional)* - unused; reserved for future batch options
 
             obj.mibModel = mibModel;
 
@@ -79,7 +79,7 @@ classdef SurfaceArea3d < handle
             obj.view = core.ChildView(obj, 'SurfaceArea3dGUI');
             obj.view.gui = utils.moveWindowOutside(obj.view.gui, obj.mibModel.mibGUI, 'left');
 
-            % Window icon — use plugin icon if present, fall back to MIB default
+            % Window icon - use plugin icon if present, fall back to MIB default
             pluginDir    = fileparts(mfilename('fullpath'));
             localIcon    = fullfile(pluginDir, 'icon_16px.png');
             fallbackIcon = fullfile(obj.mibModel.mibPath, 'assets', 'icons', 'mib_icon_16px.png');
@@ -849,8 +849,8 @@ classdef SurfaceArea3d < handle
         % coordinates are in dataset physical units (pixels × pixel size).
         %
         % Parameters:
-        % **SurfaceArea** — struct array produced by ``continueBtn_Callback``
-        % **outFn** — full path of the output ``.csv`` file
+        % **SurfaceArea** - struct array produced by ``continueBtn_Callback``
+        % **outFn** - full path of the output ``.csv`` file
 
             SurfaceId = (1:numel(SurfaceArea))';
             centMat   = cat(1, SurfaceArea.Centroid);
@@ -874,8 +874,8 @@ classdef SurfaceArea3d < handle
         % Z, X, Y, SurfaceArea).
         %
         % Parameters:
-        % **SurfaceArea** — struct array produced by ``continueBtn_Callback``
-        % **outFn** — full path of the output ``.xlsx`` file
+        % **SurfaceArea** - struct array produced by ``continueBtn_Callback``
+        % **outFn** - full path of the output ``.xlsx`` file
 
             id = obj.mibModel.getActiveId();
             warning('off', 'MATLAB:xlswrite:AddSheet');

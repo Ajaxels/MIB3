@@ -14,40 +14,40 @@ function replaceMaskedArea(obj, target, BatchOptIn)
 % default options via the ``SyncBatch`` event.
 %
 % Input Arguments:
-%   - **target** — *(optional)* char, pre-sets ``BatchOpt.Target{1}``;
+%   - **target** - *(optional)* char, pre-sets ``BatchOpt.Target{1}``;
 %     pass ``[]`` or omit to use the BatchOptIn value or the default ``'mask'``.
 %     One of: ``'mask'``, ``'selection'``.
 %     Pass ``NaN`` to return default options via the ``SyncBatch`` event.
-%   - **BatchOptIn** — *(optional)* structure for batch processing mode
+%   - **BatchOptIn** - *(optional)* structure for batch processing mode
 %
-%     - ``.Target`` — cell string, layer containing the mask:
+%     - ``.Target`` - cell string, layer containing the mask:
 %       ``{'mask'}`` *(default)* or ``{'selection'}``
-%     - ``.ColorChannel`` — cell string, channel(s) to replace:
+%     - ``.ColorChannel`` - cell string, channel(s) to replace:
 %       ``{'All'}`` *(default)* or ``{'Ch N'}`` for a specific channel
-%     - ``.ColorIntensity`` — 3-cell numeric ``{value, [0 maxInt], 'on'}``;
+%     - ``.ColorIntensity`` - 3-cell numeric ``{value, [0 maxInt], 'on'}``;
 %       intensity written into every masked pixel (default ``{0, [0 Inf], 'on'}``)
-%     - ``.showWaitbar`` — logical, show the progress dialog (default ``true``)
-%     - ``.id`` — *(optional)* dataset index 1–9, default = ``obj.getActiveId()``
-%     - ``.t`` — *(optional)* ``[t1 t2]`` time range; ``0`` = all time points
-%     - ``.z`` — *(optional)* ``[z1 z2]`` z-slice range; ``0`` = all slices
+%     - ``.showWaitbar`` - logical, show the progress dialog (default ``true``)
+%     - ``.id`` - *(optional)* dataset index 1-9, default = ``obj.getActiveId()``
+%     - ``.t`` - *(optional)* ``[t1 t2]`` time range; ``0`` = all time points
+%     - ``.z`` - *(optional)* ``[z1 z2]`` z-slice range; ``0`` = all slices
 %
 % Output Arguments:
 %   (none)
 %
 % Usage:
-%   **Example 1** — interactive dialog for mask layer
+%   **Example 1** - interactive dialog for mask layer
 %
 %   .. code-block:: matlab
 %
 %      obj.mibModel.replaceMaskedArea('mask');
 %
-%   **Example 2** — interactive dialog for selection layer
+%   **Example 2** - interactive dialog for selection layer
 %
 %   .. code-block:: matlab
 %
 %      obj.mibModel.replaceMaskedArea('selection');
 %
-%   **Example 3** — batch mode: set selection area on channel 1 to 128
+%   **Example 3** - batch mode: set selection area on channel 1 to 128
 %
 %   .. code-block:: matlab
 %
@@ -56,7 +56,7 @@ function replaceMaskedArea(obj, target, BatchOptIn)
 %      BatchOpt.ColorIntensity = {128, [0 255], 'on'};
 %      obj.mibModel.replaceMaskedArea('selection', BatchOpt);
 %
-%   **Example 4** — return default BatchOpt to the Batch Processing editor
+%   **Example 4** - return default BatchOpt to the Batch Processing editor
 %
 %   .. code-block:: matlab
 %
@@ -64,12 +64,12 @@ function replaceMaskedArea(obj, target, BatchOptIn)
 %
 
 % Updates
-% 2025 — ported from MIB2 mibController.menuMaskImageReplace_Callback
+% 2025 - ported from MIB2 mibController.menuMaskImageReplace_Callback
 
 if nargin < 2; target = []; end
 if nargin < 3; BatchOptIn = struct(); end
 
-% Handle replaceMaskedArea(NaN) — NaN as target means SyncBatch probe
+% Handle replaceMaskedArea(NaN) - NaN as target means SyncBatch probe
 if ~ischar(target) && ~isempty(target) && isscalar(target) && isnan(target)
     BatchOptIn = NaN;
     target = [];

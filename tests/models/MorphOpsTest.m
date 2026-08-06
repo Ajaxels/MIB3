@@ -2,11 +2,11 @@ classdef MorphOpsTest < matlab.unittest.TestCase
 % MORPHOPSTEST - Unit tests for MibModel.dilateImage, erodeImage, smoothImage.
 %
 % Verification strategies:
-%   dilateImage  — pixel count increases; dilation–erosion round-trip recovers interior;
+%   dilateImage  - pixel count increases; dilation-erosion round-trip recovers interior;
 %                  difference mode contains only the ring; image untouched
-%   erodeImage   — pixel count decreases; erosion–dilation round-trip recovers interior;
+%   erodeImage   - pixel count decreases; erosion-dilation round-trip recovers interior;
 %                  image untouched
-%   smoothImage  — all-zero layer stays zero; solid centre of a filled block is preserved;
+%   smoothImage  - all-zero layer stays zero; solid centre of a filled block is preserved;
 %                  image untouched
 
     methods (TestClassSetup)
@@ -92,7 +92,7 @@ classdef MorphOpsTest < matlab.unittest.TestCase
             selAfter  = mibModel.getData3D('selection', 1, 3, NaN, opt);
             countAfter = sum(double(selAfter{1}(:)));
 
-            % Interior must be preserved — count after should equal or exceed original
+            % Interior must be preserved - count after should equal or exceed original
             testCase.verifyGreaterThanOrEqual(countAfter, countBefore, ...
                 'dilate→erode must not shrink the original filled block interior');
         end

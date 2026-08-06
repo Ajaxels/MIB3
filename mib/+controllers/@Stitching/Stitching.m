@@ -22,41 +22,41 @@ classdef Stitching < handle
         BatchOpt
         % structure compatible with batch processing
         layout
-        % struct array — tile layout (nomOrigin, tileSize, etc.)
+        % struct array - tile layout (nomOrigin, tileSize, etc.)
         edges
-        % struct array — measured pairwise edges (i, j, direction, measured, quality, valid)
+        % struct array - measured pairwise edges (i, j, direction, measured, quality, valid)
         positions
-        % N-by-3 double — solved tile origins [y x z]
+        % N-by-3 double - solved tile origins [y x z]
         tforms
-        % N-by-1 cell of 3x3 doubles — solved per-tile affine transforms
+        % N-by-1 cell of 3x3 doubles - solved per-tile affine transforms
         % (tile-local xy -> global xy) when TransformType is not Translation;
         % {} for the translation solve
         solverInfo
         % struct from the last global solve (rmseTotal, nPruned,
-        % disconnectedTiles). Kept on the controller — not just inside
-        % optimizePositions_Callback — so the alignment-quality chip can be
+        % disconnectedTiles). Kept on the controller - not just inside
+        % optimizePositions_Callback - so the alignment-quality chip can be
         % re-rendered whenever the edges change (e.g. the inspector excluding a
         % seam) without re-solving; [] until the first solve
         layoutFromProject
-        % logical — true while obj.layout comes from a loaded project sidecar
+        % logical - true while obj.layout comes from a loaded project sidecar
         % rather than from BatchOpt. The widgets may then describe a completely
         % different job (a project carries no layout source/grid before schema
         % v3), so anything that would silently re-derive the layout from
         % BatchOpt must stand down. Cleared by buildLayoutFromBatchOpt, i.e. by
         % every deliberate rebuild
         canvas
-        % struct — output canvas plan (size, tilePlacement, etc.)
+        % struct - output canvas plan (size, tilePlacement, etc.)
         zSliceFixes
-        % K-by-3 double — per-slice mosaic corrections [z dy dx] from the
+        % K-by-3 double - per-slice mosaic corrections [z dy dx] from the
         % inspector's Fix Z: every output slice >= z shifts in-plane by
         % [dy dx] (cumulative over rows). Applied by planCanvas/fusers,
         % persisted in the project sidecar; [] = none
         automaticOptions
-        % struct — feature-detector tuning (per-detector params, RANSAC,
+        % struct - feature-detector tuning (per-detector params, RANSAC,
         % rotation invariance, downsampling) for the Feature-based method;
         % same shape as controllers.Alignment.defaultAutomaticOptions
         tileROIs
-        % array of images.roi.Rectangle — draggable tile handles in edit mode
+        % array of images.roi.Rectangle - draggable tile handles in edit mode
         roiListeners
         % cell array of ROIMoved listener handles for tileROIs
         inspector
@@ -65,14 +65,14 @@ classdef Stitching < handle
         inspectorListeners
         % cell array of listeners on the inspector (SeamsUpdated / CloseEvent)
         intensityCorrection
-        % struct from utils.stitch.estimateIntensityCorrection — the intensity
+        % struct from utils.stitch.estimateIntensityCorrection - the intensity
         % correction every tile read is made with. Estimating it costs one pass
         % over the tiles, so it is computed LAZILY by ensureIntensityCorrection and
         % kept here; [] means "not estimated yet", which is not the same as
         % BatchOpt.IntensityCorrection = 'None' (that estimates to a neutral struct).
         % Dropped whenever the layout is rebuilt or the method changes
         resolvePending
-        % logical — an inspector edit (manual fix, exclude, undo) has changed the
+        % logical - an inspector edit (manual fix, exclude, undo) has changed the
         % edge set while Auto re-solve was off, so obj.positions no longer follow
         % from obj.edges. Lives HERE rather than on the inspector because the
         % debt outlives the window: closing the inspector used to drop the flag
@@ -80,7 +80,7 @@ classdef Stitching < handle
         % stale placement. Cleared by any solve (optimizePositions_Callback);
         % stitchBtn_Callback settles it before fusing
         seamScoresStamp
-        % struct — what obj.edges' seamScores were computed for (.positions,
+        % struct - what obj.edges' seamScores were computed for (.positions,
         % .numEdges, .correctionMethod), so the same overlaps are not re-read by
         % the next consumer that wants them. Set by
         % controllers.Stitching.ensureSeamScores and by a project load whose
@@ -108,8 +108,8 @@ classdef Stitching < handle
             %
             %       settings = controllers.Stitching.renameLegacyFields(settings)
             %
-            % Applied to anything arriving from OUTSIDE this class — a batch
-            % protocol or a project sidecar — before it is merged into
+            % Applied to anything arriving from OUTSIDE this class - a batch
+            % protocol or a project sidecar - before it is merged into
             % ``BatchOpt``, so both entry points age the same way.
             %
             % ``AtlasImport`` became ``LayoutImport`` when SerialEM montages
@@ -118,15 +118,15 @@ classdef Stitching < handle
             % SerialEM protocol read as an Atlas one. The values were renamed with
             % it (``'Atlas seams…'`` → ``'Vendor seams…'``).
             %
-            % A file carrying BOTH names keeps the current one — an old key
+            % A file carrying BOTH names keeps the current one - an old key
             % alongside a new one means the writer knew about the new name.
             %
             % Input Arguments:
-            %   - **settings** — [struct] BatchOpt-shaped struct, possibly using
+            %   - **settings** - [struct] BatchOpt-shaped struct, possibly using
             %     retired field names
             %
             % Output Arguments:
-            %   - **settings** — [struct] same struct with retired names replaced
+            %   - **settings** - [struct] same struct with retired names replaced
 
             if ~isstruct(settings); return; end
 
@@ -155,18 +155,84 @@ classdef Stitching < handle
             % :meth:`controllers.Stitching.collectProjectSettings` (save) and
             % :meth:`controllers.Stitching.applyProjectSettings` (load), so the
             % two can never drift apart. Excludes ``showWaitbar`` / ``mibBatch*``
-            % / ``id`` — batch plumbing rather than user settings.
+            % / ``id`` - batch plumbing rather than user settings.
             %
             % Output Arguments:
-            %   - **fieldNames** — [cell] BatchOpt field names, in dialog order
+            %   - **fieldNames** - [cell] BatchOpt field names, in dialog order
             %
             fieldNames = { ...
                 'LayoutSource', 'InputPath', 'SubfolderMode', 'LayoutImport', ...
                 'GridRows', 'GridCols', 'TileOrder', 'OverlapX', 'OverlapY', 'EstimateOverlap', ...
                 'TransformType', 'AllowRotation', 'RegistrationMethod', 'FeatureDetectorType', ...
                 'QualityThreshold', 'NominalPositionWeight', 'SubpixelPlacement', ...
-                'OutputMode', 'OutputPath', 'BlendMode', 'IntensityCorrection', ...
+                'OutputMode', 'OutputPath', 'OutputFormat', 'BlendMode', 'IntensityCorrection', ...
                 'CanvasColor', 'Autocrop', 'SaveProject'};
+        end
+
+        function formats = imageFileFormats()
+            % IMAGEFILEFORMATS - The image file formats ``OutputMode = Image files`` offers.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %       formats = controllers.Stitching.imageFileFormats()
+            %
+            % One table shared by the file picker
+            % (:meth:`controllers.Stitching.selectOutputPath_Callback`), the
+            % ``BatchOpt.OutputFormat`` item list and the fuse
+            % (:meth:`controllers.Stitching.stitchBtn_Callback`), so a label
+            % offered in the dialog cannot name a saver the fuse does not call.
+            %
+            % ``label`` is what the user picks and what ``BatchOpt.OutputFormat``
+            % records; ``saverFormat`` + ``policy`` are what
+            % :func:`utils.stitch.fuseToFiles` passes on to ``io.SaverFactory``.
+            % The two are not the same string because a TIF format name says
+            % nothing about 2-D versus 3-D - MIB's own Save-as asks that
+            % separately, through ``Saving3DPolicy`` - and this dialog raises no
+            % follow-up questions, so the choice has to be in the label.
+            %
+            % Output Arguments:
+            %   - **formats** - [1xN struct] with fields ``.label``,
+            %     ``.extension``, ``.saverFormat``, ``.policy``
+            %
+            formats = struct( ...
+                'label', { ...
+                    'TIF format uncompressed, 2D sequence (*.tif)', ...
+                    'TIF format LZW compression, 2D sequence (*.tif)', ...
+                    'Portable Network Graphics, 2D sequence (*.png)', ...
+                    'Amira Mesh binary, 2D sequence (*.am)', ...
+                    'Amira Mesh binary, 3D stack (*.am)'}, ...
+                'extension', {'.tif', '.tif', '.png', '.am', '.am'}, ...
+                'saverFormat', { ...
+                    'TIF format uncompressed (*.tif)', ...
+                    'TIF format LZW compression (*.tif)', ...
+                    'Portable Network Graphics (*.png)', ...
+                    'Amira Mesh binary file sequence (*.am)', ...
+                    'Amira Mesh binary (*.am)'}, ...
+                'policy', {'2D sequence', '2D sequence', '2D sequence', ...
+                    '2D sequence', '3D stack'});
+        end
+
+        function entry = imageFileFormat(label)
+            % IMAGEFILEFORMAT - Look one :meth:`imageFileFormats` row up by label.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %       entry = controllers.Stitching.imageFileFormat(label)
+            %
+            % Input Arguments:
+            %   - **label** - [char] a ``BatchOpt.OutputFormat`` value
+            %
+            % Output Arguments:
+            %   - **entry** - [struct] the matching row; the FIRST row when the
+            %     label is unknown, so a project or batch protocol written by a
+            %     newer MIB still exports rather than erroring
+            %
+            formats = controllers.Stitching.imageFileFormats();
+            matchIdx = find(strcmp({formats.label}, label), 1);
+            if isempty(matchIdx); matchIdx = 1; end
+            entry = formats(matchIdx);
         end
 
         function ViewListner_Callback2(obj, ~, evnt)
@@ -178,8 +244,8 @@ classdef Stitching < handle
             %       controllers.Stitching.ViewListner_Callback2(obj, src, evnt)
             %
             % Input Arguments:
-            %   - **obj** — handle to the Stitching controller
-            %   - **evnt** — event data from the model
+            %   - **obj** - handle to the Stitching controller
+            %   - **evnt** - event data from the model
             %
             if ~isvalid(obj) || isempty(obj.view) || ~isvalid(obj.view.gui)
                 for listenerIdx = 1:numel(obj.listener)
@@ -208,8 +274,8 @@ classdef Stitching < handle
             %      obj = controllers.Stitching(mibModel, NaN)
             %
             % Input Arguments:
-            %   - **mibModel** — handle to MibModel
-            %   - **varargin{1}** *(optional)* — BatchOpt struct (batch run), or NaN
+            %   - **mibModel** - handle to MibModel
+            %   - **varargin{1}** *(optional)* - BatchOpt struct (batch run), or NaN
             %     (return BatchOpt to mibBatchController)
             %
 
@@ -242,7 +308,7 @@ classdef Stitching < handle
 
             % How much of an acquisition's OWN stitch to take. Consulted only
             % when the Position file source is pointed at a file that can carry
-            % one — a Fibics Atlas ``.ve-mif`` or a SerialEM ``.mdoc`` — rather
+            % one - a Fibics Atlas ``.ve-mif`` or a SerialEM ``.mdoc`` - rather
             % than a position text file. The GUI asks when the vendor's stitch is
             % found and records the answer here, so a batch protocol or a reloaded
             % project repeats the same import silently.
@@ -288,8 +354,16 @@ classdef Stitching < handle
             obj.BatchOpt.SubpixelPlacement = false;
 
             obj.BatchOpt.OutputMode      = {'In memory'};
-            obj.BatchOpt.OutputMode{2}   = {'In memory', 'OME-Zarr3 (BigData)'};
+            obj.BatchOpt.OutputMode{2}   = {'In memory', 'OME-Zarr3 (BigData)', 'Image files'};
             obj.BatchOpt.OutputPath      = '';
+
+            % Which image format 'Image files' writes. Widget-less, like
+            % LayoutImport: the choice is made in the output file picker, where
+            % it belongs - a format dropdown beside a path field is a second
+            % place to state the same thing, and the two can disagree.
+            imageFormats = controllers.Stitching.imageFileFormats();
+            obj.BatchOpt.OutputFormat    = {imageFormats(1).label};
+            obj.BatchOpt.OutputFormat{2} = {imageFormats.label};
 
             % Overwrite by default: it is the honest one. Every other mode mixes
             % the overlap and so SOFTENS a misalignment, which is exactly what
@@ -300,7 +374,7 @@ classdef Stitching < handle
 
             % Evens out tile brightness before anything reads a pixel. A family
             % rather than a checkbox because the right correction depends on WHY
-            % the tiles differ, and the two causes want opposite treatments — see
+            % the tiles differ, and the two causes want opposite treatments - see
             % utils.stitch.estimateIntensityCorrection for the measured comparison.
             obj.BatchOpt.IntensityCorrection    = {'None'};
             obj.BatchOpt.IntensityCorrection{2} = {'None', 'Flat-field (shared)', ...
@@ -371,8 +445,16 @@ classdef Stitching < handle
             obj.BatchOpt.mibBatchTooltip.OutputMode      = sprintf([ ...
                 'Where the fused mosaic goes:\n' ...
                 '  - In memory: a Standard dataset, opened straight into MIB\n' ...
-                '  - OME-Zarr3 (BigData): streamed to disk tile by tile, for a mosaic that does not fit in RAM; pyramid settings are asked when stitching']);
-            obj.BatchOpt.mibBatchTooltip.OutputPath      = 'Output path for the OME-Zarr3 BigData file (OutputMode = OME-Zarr3)';
+                '  - OME-Zarr3 (BigData): streamed to disk tile by tile, for a mosaic that does not fit in RAM; pyramid settings are asked when stitching\n' ...
+                '  - Image files: written to disk as ordinary TIF/PNG/Amira files and not opened; pick the format in the output file dialog']);
+            obj.BatchOpt.mibBatchTooltip.OutputPath      = 'Output path for the OME-Zarr3 BigData store or the image file(s); ignored when OutputMode = In memory';
+            obj.BatchOpt.mibBatchTooltip.OutputFormat    = sprintf([ ...
+                '[OutputMode = Image files] Image format the mosaic is written in, chosen in the output file dialog:\n' ...
+                '  - TIF format uncompressed, 2D sequence: one numbered .tif per mosaic slice, the format everything reads and the fastest to write\n' ...
+                '  - TIF format LZW compression, 2D sequence: the same pixels losslessly compressed; smaller on typical EM data, slower to write, and LZW can EXPAND a noisy image\n' ...
+                '  - Portable Network Graphics, 2D sequence: one numbered .png per slice; lossless, and the most reliably compressed of the three\n' ...
+                '  - Amira Mesh binary, 2D sequence: one numbered .am per slice, carrying the voxel size in each header\n' ...
+                '  - Amira Mesh binary, 3D stack: the whole mosaic in a single .am; needs it all in RAM, the TIF and PNG sequences do not']);
             obj.BatchOpt.mibBatchTooltip.BlendMode       = sprintf([ ...
                 'How pixels are combined where tiles overlap:\n' ...
                 '  - Average: plain mean of the overlapping tiles; sharper than Feather, but any brightness step stays visible\n' ...
@@ -450,7 +532,7 @@ classdef Stitching < handle
             %      options = obj.defaultFeatureOptions()
             %
             options.imgDownsamplingFactorForAnalysis = 1;   % full resolution for stitch precision
-            % Placeholder only — buildFeatureOptions DERIVES this from
+            % Placeholder only - buildFeatureOptions DERIVES this from
             % BatchOpt.AllowRotation on every use, so the stored value is never
             % read by the registration path. Kept in the struct so the shape
             % still matches controllers.Alignment.defaultAutomaticOptions.
@@ -478,7 +560,7 @@ classdef Stitching < handle
             % rather than stored: it is MATLAB's ``extractFeatures`` ``Upright``
             % flag, so upright descriptors (``true``) cannot match rotated
             % content at all and would silently veto a rotating solve. The two
-            % are therefore one user decision — "are the tiles rotated?" — and
+            % are therefore one user decision - "are the tiles rotated?" - and
             % the single *Allow rotation* checkbox owns it. Deriving it here,
             % the one place every consumer (measure, stitch,
             % :func:`previewFeatureMatch`) goes through, means the two cannot
@@ -511,7 +593,7 @@ classdef Stitching < handle
             % progress helpers all accept ``[]`` as "no parent".
             %
             % Output Arguments:
-            %   - **figureHandle** — [handle] the ``StitchingGUI`` figure, or
+            %   - **figureHandle** - [handle] the ``StitchingGUI`` figure, or
             %     ``[]`` when the controller has no (valid) view
             %
             figureHandle = [];
@@ -536,7 +618,7 @@ classdef Stitching < handle
             % written after scoring cannot drift apart.
             %
             % Output Arguments:
-            %   - **stamp** — [struct] ``.positions``, ``.numEdges``,
+            %   - **stamp** - [struct] ``.positions``, ``.numEdges``,
             %     ``.correctionMethod``
             %
             stamp = struct( ...
@@ -588,12 +670,12 @@ classdef Stitching < handle
             % With a window: a message box, and the caller returns leaving the
             % state untouched. Without one (batch protocol, headless run) there
             % is nobody to read a message box, so the same condition is raised
-            % as an error — the caller's ``return`` would otherwise report
+            % as an error - the caller's ``return`` would otherwise report
             % success for work that never happened.
             %
             % Input Arguments:
-            %   - **message** — [char] what is missing, in user language
-            %   - **dlgTitle** — [char] dialog title
+            %   - **message** - [char] what is missing, in user language
+            %   - **dlgTitle** - [char] dialog title
             %
             if isempty(obj.view)
                 error('Stitching:precondition', '%s', message);
@@ -618,8 +700,8 @@ classdef Stitching < handle
             % failure instead of a silently skipped step.
             %
             % Input Arguments:
-            %   - **errorInfo** — [MException] the caught error
-            %   - **dlgTitle** — [char] dialog title
+            %   - **errorInfo** - [MException] the caught error
+            %   - **dlgTitle** - [char] dialog title
             %
             if isempty(obj.view); rethrow(errorInfo); end
             utils.dlgs.showErrorDialog(obj.guiFigure(), errorInfo.message, dlgTitle);
@@ -629,7 +711,7 @@ classdef Stitching < handle
         function refreshInputPathWidget(obj)
             % REFRESHINPUTPATHWIDGET - Show BatchOpt.InputPath in the InputPath
             % widget, handling either a uieditfield (single newline-joined string)
-            % or a uilistbox (one item per path — better for multi-folder input).
+            % or a uilistbox (one item per path - better for multi-folder input).
             % BatchOpt.InputPath stays the newline-joined string in both cases, so
             % batch mode is unaffected.
             %
@@ -652,7 +734,7 @@ classdef Stitching < handle
         function updateInfoLabel(obj)
             % UPDATEINFOLABEL - Set the info label to a short description of what
             % the current ``LayoutSource`` does, so the user knows what input to
-            % provide. Guarded by ``isfield`` — no-op until the ``infoLabel``
+            % provide. Guarded by ``isfield`` - no-op until the ``infoLabel``
             % widget exists in the mlapp.
             %
             % Syntax:

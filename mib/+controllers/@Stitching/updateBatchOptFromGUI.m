@@ -7,7 +7,7 @@ function updateBatchOptFromGUI(obj, hObject)
 %      obj.updateBatchOptFromGUI(hObject)
 %
 % Input Arguments:
-%   - **hObject** — handle to the AppDesigner widget that changed
+%   - **hObject** - handle to the AppDesigner widget that changed
 %
 
 if obj.mibModel.preferences.System.DeveloperMode
@@ -45,7 +45,7 @@ end
 % Layout-parameter changes invalidate the current layout: rebuild it from the
 % updated BatchOpt (input path already chosen) and refresh the preview when one
 % is on screen, so the user sees the new arrangement immediately. This includes
-% LayoutSource itself — picking a Grid input and then switching to Filename
+% LayoutSource itself - picking a Grid input and then switching to Filename
 % pattern must re-derive the arrangement, not keep the grid guess (Measure
 % would silently measure the stale pairs otherwise).
 % (SubfolderMode is excluded: toggling it changes how InputPath is interpreted,
@@ -70,7 +70,7 @@ if isLayoutWidget && ~isempty(obj.BatchOpt.InputPath)
         if isequal(hObject, obj.view.handles.LayoutSource)
             % The current input may simply be incompatible with the NEW source
             % (e.g. a tile-file list after switching to Position file). Keeping
-            % the layout built by the OLD source would be worse — drop it and
+            % the layout built by the OLD source would be worse - drop it and
             % ask for a re-select via the status label (no modal error: this is
             % a normal step of changing the source, not a failure).
             obj.layout    = [];
@@ -94,7 +94,7 @@ if isLayoutWidget && ~isempty(obj.BatchOpt.InputPath)
             cla(obj.view.handles.previewAxes);
             obj.updateWidgets();
             obj.view.handles.statusLabel.Text = sprintf( ...
-                'Layout source changed — re-select the input (%s)', buildError.message);
+                'Layout source changed - re-select the input (%s)', buildError.message);
         else
             utils.dlgs.showErrorDialog(obj.view.gui, buildError.message, 'Layout rebuild failed');
         end
@@ -130,7 +130,7 @@ if isMethodWidget || isTransformWidget
 end
 
 % Changing the transform model or the rotation lock invalidates the measured
-% edges (they carry model-specific transforms) and everything downstream —
+% edges (they carry model-specific transforms) and everything downstream -
 % force a re-measure.
 if isTransformWidget || isAllowRotationWidget
     obj.edges     = struct('i', {}, 'j', {}, 'direction', {}, 'nominal', {});
@@ -149,13 +149,12 @@ if isequal(hObject, obj.view.handles.Autocrop)
     obj.canvas = [];
 end
 
-% When output mode changes, update output path enable state and drop any
-% cached pyramid settings (they belong to the previous output configuration).
+% When output mode changes, refresh the output-path widgets (enable state and
+% the tooltip that names the image format) and drop any cached pyramid settings
+% - they belong to the previous output configuration.
 if isequal(hObject, obj.view.handles.OutputMode)
-    isZarr = strcmp(obj.BatchOpt.OutputMode{1}, 'OME-Zarr3 (BigData)');
-    obj.view.handles.OutputPath.Enable      = isZarr;
-    obj.view.handles.selectOutputBtn.Enable = isZarr;
     obj.zarrExportOptions = [];
+    obj.updateWidgets();
 end
 
 end

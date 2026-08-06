@@ -13,24 +13,24 @@ function [layout, edges, positions, solverInfo, outputInfo, tforms, zSliceFixes,
 % when ``solvedOrigin`` was not recorded in the file.
 %
 % Input Arguments:
-%   - **filePath** — [char] full path to the ``.mibstitch.json`` file
+%   - **filePath** - [char] full path to the ``.mibstitch.json`` file
 %
 % Output Arguments:
-%   - **layout** — struct array with tile fields (index, filename, etc.)
-%   - **edges** — struct array with pair edge fields (i, j, direction, nominal, …;
+%   - **layout** - struct array with tile fields (index, filename, etc.)
+%   - **edges** - struct array with pair edge fields (i, j, direction, nominal, …;
 %     ``tform`` carries the 3x3 pairwise transform when one was measured)
-%   - **positions** — [double] N-by-3 solved origins ``[y x z]``, or ``[]``
-%   - **solverInfo** — struct with solver settings / RMSE
-%   - **outputInfo** — struct with blend / output settings
-%   - **tforms** — [N x 1 cell] solved per-tile 3x3 transforms (``{}`` for
+%   - **positions** - [double] N-by-3 solved origins ``[y x z]``, or ``[]``
+%   - **solverInfo** - struct with solver settings / RMSE
+%   - **outputInfo** - struct with blend / output settings
+%   - **tforms** - [N x 1 cell] solved per-tile 3x3 transforms (``{}`` for
 %     translation-only projects; tiles saved without one fall back to a pure
 %     translation synthesised from ``solvedOrigin``)
-%   - **zSliceFixes** — [K x 3] per-slice mosaic corrections ``[z dy dx]``
+%   - **zSliceFixes** - [K x 3] per-slice mosaic corrections ``[z dy dx]``
 %     from the seam inspector's Fix Z (``[]`` when none were saved)
-%   - **settings** — struct of flattened tool settings (schema v3 and newer);
+%   - **settings** - struct of flattened tool settings (schema v3 and newer);
 %     an empty struct for older files that carry no ``settings`` block
 %
-% **Example** — round-trip save / load:
+% **Example** - round-trip save / load:
 %
 %   .. code-block:: matlab
 %
@@ -109,14 +109,14 @@ if numTiles > 0 && isfield(layout(1), 'solvedTform') && ...
 end
 
 % Per-slice mosaic corrections (inspector Fix Z), rows [z dy dx].
-% jsondecode returns a 1x3 vector for a single row — normalise to K x 3.
+% jsondecode returns a 1x3 vector for a single row - normalise to K x 3.
 zSliceFixes = [];
 if isfield(project, 'zSliceFixes') && ~isempty(project.zSliceFixes)
     zSliceFixes = double(project.zSliceFixes);
     if isvector(zSliceFixes); zSliceFixes = reshape(zSliceFixes, 1, []); end
 end
 
-% Tool settings (schema v3+). Older files have none — an empty struct then tells
+% Tool settings (schema v3+). Older files have none - an empty struct then tells
 % the caller there is nothing to restore into the dialog.
 settings = struct();
 if isfield(project, 'settings') && isstruct(project.settings) && ...
@@ -165,7 +165,7 @@ for fieldIdx = 1:numel(fieldList)
     fieldName = fieldList{fieldIdx};
     if isfield(sourceTile, fieldName)
         value = sourceTile.(fieldName);
-        % jsondecode returns row vectors; coerce numeric fields to double row —
+        % jsondecode returns row vectors; coerce numeric fields to double row -
         % except the 3x3 transform, whose shape must survive the round-trip.
         if isnumeric(value)
             if strcmp(fieldName, 'solvedTform')

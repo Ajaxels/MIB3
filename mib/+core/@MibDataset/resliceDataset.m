@@ -11,18 +11,18 @@ function result = resliceDataset(obj, sliceNumbers, orient, options)
 % and selection layers, then updates dimension-related properties.
 %
 % Input Arguments:
-%   - **sliceNumbers** — index or index vector of slices to *keep*; all
+%   - **sliceNumbers** - index or index vector of slices to *keep*; all
 %     other slices are removed
-%   - **orient** — *(optional)* dimension to operate on:
+%   - **orient** - *(optional)* dimension to operate on:
 %     ``1`` = height (y), ``2`` = width (x), ``3`` = depth (z),
 %     ``5`` = time (t). Default: ``obj.orientation``
-%   - **options** — *(optional)* struct with fields:
+%   - **options** - *(optional)* struct with fields:
 %
-%     - ``.showWaitbar`` — logical; **true** (default) shows a progress waitbar
-%     - ``.ParentFigure`` — parent figure handle for the waitbar
+%     - ``.showWaitbar`` - logical; **true** (default) shows a progress waitbar
+%     - ``.ParentFigure`` - parent figure handle for the waitbar
 %
 % Output Arguments:
-%   - **result** — ``1`` on success, ``0`` on failure
+%   - **result** - ``1`` on success, ``0`` on failure
 %
 % Usage:
 %   **Example 1**

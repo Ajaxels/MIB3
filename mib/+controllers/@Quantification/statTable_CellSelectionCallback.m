@@ -11,10 +11,10 @@ function statTable_CellSelectionCallback(obj, indices, parameter)
 % depending on parameter, highlights it in the selection layer.
 %
 % Input Arguments:
-%   - **indices** — numeric [N×2] array of [row, col] indices of selected cells,
+%   - **indices** - numeric [N×2] array of [row, col] indices of selected cells,
 %     as provided by AppDesigner CellSelectionCallback evnt.Indices;
 %     pass [] to use the last saved selection (obj.indices)
-%   - **parameter** — string controlling highlight behaviour
+%   - **parameter** - string controlling highlight behaviour
 %     - 'skip' - navigate to slice but only highlight if highlightOnClick is on; Ctrl+click forces 'Remove'
 %     - 'Add'     - add selected objects to selection layer
 %     - 'Remove'  - remove selected objects from selection layer

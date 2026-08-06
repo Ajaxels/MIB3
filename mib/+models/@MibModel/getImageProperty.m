@@ -11,20 +11,20 @@ function propertyValue = getImageProperty(obj, propertyName, id)
 % the active dataset index in advance.
 %
 % Input Arguments:
-%   - **propertyName** — string with the property name to read from MibDataset
-%   - **id** — *(optional)* index of the dataset; default is obj.getActiveId()
+%   - **propertyName** - string with the property name to read from MibDataset
+%   - **id** - *(optional)* index of the dataset; default is obj.getActiveId()
 %
 % Output Arguments:
-%   - **propertyValue** — value of the requested property, or [] on error
+%   - **propertyValue** - value of the requested property, or [] on error
 %
 % Usage:
-%   **Example 1** — get orientation of the active dataset
+%   **Example 1** - get orientation of the active dataset
 %
 %   .. code-block:: matlab
 %
 %      orientation = obj.mibModel.getImageProperty('orientation');
 %
-%   **Example 2** — get depth of dataset 2
+%   **Example 2** - get depth of dataset 2
 %
 %   .. code-block:: matlab
 %

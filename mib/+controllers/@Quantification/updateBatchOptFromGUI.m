@@ -11,7 +11,7 @@ function updateBatchOptFromGUI(obj, hObject, ~)
 % argument (~) is accepted but ignored for AppDesigner compatibility.
 %
 % Input Arguments:
-%   - **hObject** — handle to the AppDesigner widget whose value changed
+%   - **hObject** - handle to the AppDesigner widget whose value changed
 %     ~: ignored ValueChangedData argument (AppDesigner passes it automatically)
 %
 % Usage:

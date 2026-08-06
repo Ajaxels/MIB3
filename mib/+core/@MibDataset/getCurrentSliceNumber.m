@@ -9,7 +9,7 @@ function slice_no = getCurrentSliceNumber(obj)
 % Input Arguments:
 %
 % Output Arguments:
-%   - **slice_no** — index of the currently shown slice
+%   - **slice_no** - index of the currently shown slice
 %
 % Usage:
 %   **Example 1**

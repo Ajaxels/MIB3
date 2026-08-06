@@ -26,20 +26,20 @@ function budgetBytes = tileCacheBudget(layout, options)
 %    ``parfor`` path, where every worker builds its own cache.
 %
 % Input Arguments:
-%   - **layout** — [struct array] tile layout (``.tileSize``, ``.dataClass``).
-%   - **options** *(optional)* — struct with fields:
+%   - **layout** - [struct array] tile layout (``.tileSize``, ``.dataClass``).
+%   - **options** *(optional)* - struct with fields:
 %
-%     - ``.minBytes`` — [double] never return less than this, so the budget can
+%     - ``.minBytes`` - [double] never return less than this, so the budget can
 %       only ever grow relative to the old fixed default (default: ``2*1024^3``)
-%     - ``.memoryFraction`` — [double] share of the available memory the cache
+%     - ``.memoryFraction`` - [double] share of the available memory the cache
 %       may claim (default: ``0.5``, leaving room for the mosaic being built)
-%     - ``.divisor`` — [double] number of readers that will exist at once
+%     - ``.divisor`` - [double] number of readers that will exist at once
 %       (default: ``1``)
 %
 % Output Arguments:
-%   - **budgetBytes** — [double] cache budget in bytes.
+%   - **budgetBytes** - [double] cache budget in bytes.
 %
-% **Example** — a reader that can hold the whole mosaic:
+% **Example** - a reader that can hold the whole mosaic:
 %
 %   .. code-block:: matlab
 %

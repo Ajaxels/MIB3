@@ -30,35 +30,35 @@ function [automaticOptions, status] = detectorSettingsDlg(parentFigure, featureD
 %    round-trip compatibility; the dialog label states the ``Upright`` sense.
 %
 % Input Arguments:
-%   - **parentFigure** — handle used as the dialog parent.
-%   - **featureDetectorType** — [char] detector name (see
+%   - **parentFigure** - handle used as the dialog parent.
+%   - **featureDetectorType** - [char] detector name (see
 %     :func:`utils.align.detectFeatures` for the accepted strings).
-%   - **automaticOptions** — struct with per-detector sub-structs
+%   - **automaticOptions** - struct with per-detector sub-structs
 %     (``detectSURFFeatures`` …), ``estGeomTransform``, ``rotationInvariance``
-%     (the ``Upright`` flag — see the warning above) and the downsampling field
+%     (the ``Upright`` flag - see the warning above) and the downsampling field
 %     named by ``downsampleInfo.field``.
-%   - **downsampleInfo** — struct describing the first (downsampling) row:
+%   - **downsampleInfo** - struct describing the first (downsampling) row:
 %
-%     - ``.field`` — [char] field in ``automaticOptions`` holding the value.
-%     - ``.promptText`` — [char] label for the downsampling spinner.
-%     - ``.limits`` *(optional)* — [1x2] spinner limits (default ``[0 Inf]``).
-%     - ``.round`` *(optional)* — [logical] round to integer (default ``true``).
-%     - ``.minOne`` *(optional)* — [logical] clamp a returned ``0`` up to ``1``
+%     - ``.field`` - [char] field in ``automaticOptions`` holding the value.
+%     - ``.promptText`` - [char] label for the downsampling spinner.
+%     - ``.limits`` *(optional)* - [1x2] spinner limits (default ``[0 Inf]``).
+%     - ``.round`` *(optional)* - [logical] round to integer (default ``true``).
+%     - ``.minOne`` *(optional)* - [logical] clamp a returned ``0`` up to ``1``
 %       (default ``false``; used by the "factor" style downsampling).
 %
-%   - **dlgOptions** *(optional)* — struct tuning the dialog itself:
+%   - **dlgOptions** *(optional)* - struct tuning the dialog itself:
 %
-%     - ``.showUpright`` — [logical] show the upright-descriptor row (default
+%     - ``.showUpright`` - [logical] show the upright-descriptor row (default
 %       ``true``). Pass ``false`` when the caller already owns that decision
-%       through a control of its own — :class:`controllers.Stitching` derives
+%       through a control of its own - :class:`controllers.Stitching` derives
 %       ``rotationInvariance`` from its *Allow rotation* checkbox, so showing an
 %       editable copy here would offer a second, ignored control. The stored
 %       ``automaticOptions.rotationInvariance`` is then left untouched.
 %
 % Output Arguments:
-%   - **automaticOptions** — the input struct with the edited fields applied
+%   - **automaticOptions** - the input struct with the edited fields applied
 %     (unchanged when the user cancels).
-%   - **status** — ``1`` when accepted, ``0`` when cancelled.
+%   - **status** - ``1`` when accepted, ``0`` when cancelled.
 
 if ~isfield(downsampleInfo, 'limits'); downsampleInfo.limits = [0 Inf]; end
 if ~isfield(downsampleInfo, 'round');  downsampleInfo.round  = true; end
@@ -69,7 +69,7 @@ if ~isfield(dlgOptions, 'showUpright'); dlgOptions.showUpright = true; end
 
 status = 0;
 downsampleField = downsampleInfo.field;
-dlgTitle = ['Feature detection options — ' featureDetectorType];
+dlgTitle = ['Feature detection options - ' featureDetectorType];
 
 % --- RANSAC (estgeotform2d) rows, appended to every dialog as the last three.
 estGeomPrompts = {

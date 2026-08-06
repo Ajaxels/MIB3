@@ -7,8 +7,8 @@ function home_Callbacks(obj, hWidget, hData)
 %       obj.home_Callbacks(hWidget, hData)
 %
 % Input Arguments:
-%   - **hWidget** — handle to the pressed widget
-%   - **hData** — handle to supporting EventData class
+%   - **hWidget** - handle to the pressed widget
+%   - **hData** - handle to supporting EventData class
 %
 
 arguments (Input)
@@ -24,7 +24,7 @@ end
 
 switch mode
     % ------ Export section ------
-    case 'Save as'     % obj.handles.ribbonHome.saveFileAs — save image with dialog
+    case 'Save as'     % obj.handles.ribbonHome.saveFileAs - save image with dialog
         obj.mibModel.saveImage('image');
     case {'Export', 'Export to MATLAB'}     % obj.handles.ribbonHome.export & obj.handles.ribbonHome.exportToMatlab
         obj.mibModel.exportDataset('image');

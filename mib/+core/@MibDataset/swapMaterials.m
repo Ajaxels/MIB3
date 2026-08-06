@@ -1,5 +1,5 @@
 function swapMaterials(obj, material1, material2, wb)
-% SWAPMATERIALS - Swap two materials in the model — low-level data layer.
+% SWAPMATERIALS - Swap two materials in the model - low-level data layer.
 %
 % Syntax:
 %   .. code-block:: matlab
@@ -12,9 +12,9 @@ function swapMaterials(obj, material1, material2, wb)
 % have no meaningful name/colour metadata to swap).
 %
 % Input Arguments:
-%   - **material1** — double, 1-based index of the first material.
-%   - **material2** — double, 1-based index of the second material.
-%   - **wb** — *(optional)* handle to a uiprogressdlg for progress display;
+%   - **material1** - double, 1-based index of the first material.
+%   - **material2** - double, 1-based index of the second material.
+%   - **wb** - *(optional)* handle to a uiprogressdlg for progress display;
 %     when empty no progress is reported.
 %
 % Output Arguments:

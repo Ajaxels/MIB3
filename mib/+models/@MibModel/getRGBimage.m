@@ -12,35 +12,35 @@ function [imgRGB, imgRAW, modelRAW] = getRGBimage(obj, options, datasetId, sImgI
 % annotations, and 3D lines into a single RGB image for visualization.
 %
 % Input Arguments:
-%   - **options** — struct with display parameters
-%   - ``.blockModeSwitch`` — *(optional)* ``0`` return full slice [*default*], ``1`` crop to visible area
-%   - ``.resizeToMagnification`` — *(optional)* ``true`` resize to current magnification [*default*], ``false`` return at 100%
-%   - ``.sliceNo`` — *(optional)* specific slice index to display
-%   - ``.markerType`` — *(optional)* annotation display type, default from preferences
+%   - **options** - struct with display parameters
+%   - ``.blockModeSwitch`` - *(optional)* ``0`` return full slice [*default*], ``1`` crop to visible area
+%   - ``.resizeToMagnification`` - *(optional)* ``true`` resize to current magnification [*default*], ``false`` return at 100%
+%   - ``.sliceNo`` - *(optional)* specific slice index to display
+%   - ``.markerType`` - *(optional)* annotation display type, default from preferences
 %     (``'Marker'``, ``'Label'``, ``'Value'``, ``'Label + Value'``)
-%   - ``.t`` — *(optional)* [tmin, tmax] time point to display
-%   - ``.y`` — *(optional)* [ymin, ymax] Y-coordinates of region to extract
-%   - ``.x`` — *(optional)* [xmin, xmax] X-coordinates of region to extract
-%   - ``.useLut`` — *(optional)* ``0`` or ``1`` to use LUT color table [*default*: current dataset setting]
-%   - **datasetId** — *(optional)* index of the dataset; when empty uses the currently selected dataset
-%   - **sImgIn** — *(optional)* custom 3D image stack to use instead of loading from dataset
+%   - ``.t`` - *(optional)* [tmin, tmax] time point to display
+%   - ``.y`` - *(optional)* [ymin, ymax] Y-coordinates of region to extract
+%   - ``.x`` - *(optional)* [xmin, xmax] X-coordinates of region to extract
+%   - ``.useLut`` - *(optional)* ``0`` or ``1`` to use LUT color table [*default*: current dataset setting]
+%   - **datasetId** - *(optional)* index of the dataset; when empty uses the currently selected dataset
+%   - **sImgIn** - *(optional)* custom 3D image stack to use instead of loading from dataset
 %
 % Output Arguments:
-%   - **imgRGB** — RGB image combining all visible layers [height × width × 3]
-%   - **imgRAW** — raw image data (used for virtual stacking mode)
-%   - **modelRAW** — model material-index raster aligned with imgRAW (Virtual/
+%   - **imgRGB** - RGB image combining all visible layers [height × width × 3]
+%   - **imgRAW** - raw image data (used for virtual stacking mode)
+%   - **modelRAW** - model material-index raster aligned with imgRAW (Virtual/
 %     BigData modes); empty when no model overlay is rendered. Used by the
 %     cursor material readout in gui_WinMouseMotionFcn
 %
 % Usage:
-%   **Example 1** — get full slice RGB with all layers
+%   **Example 1** - get full slice RGB with all layers
 %
 %   .. code-block:: matlab
 %
 %      options.blockModeSwitch = 0;
 %      imgRGB = obj.getRGBimage(options);
 %
-%   **Example 2** — get cropped RGB of visible area only
+%   **Example 2** - get cropped RGB of visible area only
 %
 %   .. code-block:: matlab
 %
@@ -48,7 +48,7 @@ function [imgRGB, imgRAW, modelRAW] = getRGBimage(obj, options, datasetId, sImgI
 %      options.resizeToMagnification = true;
 %      imgRGB = obj.getRGBimage(options);
 %
-%   **Example 3** — get specific slice without resizing
+%   **Example 3** - get specific slice without resizing
 %
 %   .. code-block:: matlab
 %
@@ -141,7 +141,7 @@ else
 end
 
 %% Resize image to display resolution
-% Precompute subsampling indices once — reused for image, model, mask, selection
+% Precompute subsampling indices once - reused for image, model, mask, selection
 if magnificationFactor > 1
     rowIdx = round(.51:magnificationFactor:size(sImgIn,1)+.49);
     colIdx = round(.51:magnificationFactor:size(sImgIn,2)+.49);
@@ -170,7 +170,7 @@ else
 end
 clear sImgIn;
 
-% Store raw image for on-demand modes (Virtual / BigData) — used by the
+% Store raw image for on-demand modes (Virtual / BigData) - used by the
 % cursor pixel-value readout (gui_WinMouseMotionFcn reads mibModel.Iraw)
 imgRAW = [];
 if any(dataset.datasetType(1) == ['V' 'B']); imgRAW = sImg; end
@@ -193,7 +193,7 @@ end
 % Apply live stretch if enabled
 if obj.onFlyImageStretch
     if ~isa(sImg, 'uint32')
-        % imadjust only accepts 2-D or H×W×3 — fall back to per-channel for 2 or 4+ channels
+        % imadjust only accepts 2-D or H×W×3 - fall back to per-channel for 2 or 4+ channels
         if size(sImg, 3) == 1 || size(sImg, 3) == 3
             sImg = imadjust(sImg, stretchlim(sImg, [0 1]), []);
         else

@@ -33,8 +33,8 @@
 %   UIFigure.CurrentModifier.
 %
 % CONFIRMED BEHAVIOUR:
-%   R2024b — NOT affected (CurrentModifier updates correctly after pyrun)
-%   R2026a — AFFECTED
+%   R2024b - NOT affected (CurrentModifier updates correctly after pyrun)
+%   R2026a - AFFECTED
 
 fig = uifigure('Name', 'CurrentModifier sticky bug (pyrun)', ...
     'Position', [200 200 480 320]);
@@ -54,9 +54,9 @@ uibutton(fig, 'push', ...
     'Position', [20 170 440 36], ...
     'ButtonPushedFcn', @(~,~) runTest(fig));
 
-lblBefore = uilabel(fig, 'Text', 'Modifier at button press:  —', ...
+lblBefore = uilabel(fig, 'Text', 'Modifier at button press:  -', ...
     'Position', [20 130 440 22], 'Tag', 'lblBefore');
-lblAfter  = uilabel(fig, 'Text', 'Modifier after pyrun:  —', ...
+lblAfter  = uilabel(fig, 'Text', 'Modifier after pyrun:  -', ...
     'Position', [20 105 440 22], 'Tag', 'lblAfter');
 lblResult = uilabel(fig, 'Text', '', ...
     'Position', [20 70 440 28], 'FontWeight', 'bold', 'Tag', 'lblResult');
@@ -72,7 +72,7 @@ function runTest(fig)
 
     modBefore = fig.CurrentModifier;
     if isempty(modBefore)
-        lblBefore.Text = 'Modifier at button press:  {} (empty — did you hold Shift?)';
+        lblBefore.Text = 'Modifier at button press:  {} (empty - did you hold Shift?)';
         lblBefore.FontColor = [0.6 0.4 0];
     else
         lblBefore.Text = sprintf('Modifier at button press:  {%s}  ✓', strjoin(modBefore, ', '));
@@ -82,13 +82,13 @@ function runTest(fig)
     lblResult.Text = '';
     drawnow;
 
-    % Blocking Python call — release Shift during this 3-second window
+    % Blocking Python call - release Shift during this 3-second window
     try
         pyrun('import time; time.sleep(3)');
     catch err
         lblAfter.Text  = sprintf('pyrun failed: %s', err.message);
         lblAfter.FontColor = [0.6 0 0];
-        lblResult.Text = 'Python not available — cannot reproduce.';
+        lblResult.Text = 'Python not available - cannot reproduce.';
         lblResult.FontColor = [0.4 0.4 0.4];
         return;
     end
@@ -100,13 +100,13 @@ function runTest(fig)
     if isempty(modAfter)
         lblAfter.Text  = 'Modifier after pyrun:  {} (empty)';
         lblAfter.FontColor = [0 0.45 0];
-        lblResult.Text = 'PASS — CurrentModifier updated correctly.';
+        lblResult.Text = 'PASS - CurrentModifier updated correctly.';
         lblResult.FontColor = [0 0.45 0];
     else
         lblAfter.Text  = sprintf('Modifier after pyrun:  {%s}  ← still set!', ...
             strjoin(modAfter, ', '));
         lblAfter.FontColor = [0.75 0 0];
-        lblResult.Text = 'BUG — CurrentModifier is stale after pyrun.';
+        lblResult.Text = 'BUG - CurrentModifier is stale after pyrun.';
         lblResult.FontColor = [0.75 0 0];
     end
 end

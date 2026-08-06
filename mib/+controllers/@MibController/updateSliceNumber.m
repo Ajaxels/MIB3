@@ -13,29 +13,29 @@ function updateSliceNumber(obj, BatchOptIn)
 % sliceNumber_Callback, which updates the slider and redraws the image.
 %
 % Input Arguments:
-%   - **BatchOptIn** — *(optional)* structure for batch processing mode; when NaN,
+%   - **BatchOptIn** - *(optional)* structure for batch processing mode; when NaN,
 %     returns default options via the "SyncBatch" event
 %
-%     - ``.SliceNumber`` — [char, default ``'1'``] slice number to display as a string;
+%     - ``.SliceNumber`` - [char, default ``'1'``] slice number to display as a string;
 %       use ``'0'`` to jump to the last slice of the dataset
 %
 % Output Arguments:
 %   (none)
 %
-% **Example 1** — interactive call (reads from the slice-number widget):
+% **Example 1** - interactive call (reads from the slice-number widget):
 %
 %   .. code-block:: matlab
 %
 %      obj.updateSliceNumber();
 %
-% **Example 2** — batch call: jump to slice 5:
+% **Example 2** - batch call: jump to slice 5:
 %
 %   .. code-block:: matlab
 %
 %      BatchOpt.SliceNumber = '5';
 %      obj.updateSliceNumber(BatchOpt);
 %
-% **Example 3** — batch call: jump to the last slice:
+% **Example 3** - batch call: jump to the last slice:
 %
 %   .. code-block:: matlab
 %

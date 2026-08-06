@@ -391,6 +391,34 @@ mosaic's edges.
    press Stitch without touching anything else: the size must change each time. A cached canvas
    surviving the toggle would silently fuse the previous size.
 
+### Test 18 — Image files output
+
+Dataset 3 (`03_stitch_smoke_3d`) — it has several Z slices, which is what makes the sequence
+numbering observable at all. Measure → Optimize, then set Output mode = **Image files**.
+
+1. **The picker offers five formats and nothing else.** Press the browse button beside *Output
+   path*: TIF uncompressed 2D sequence, TIF LZW 2D sequence, PNG 2D sequence, Amira 2D sequence,
+   Amira 3D stack. The suggested name must be `<source>_stitch.<ext>` **in the tile folder**, not
+   MATLAB's working folder.
+2. **Reopening the picker offers back what was chosen.** Pick the PNG row, then press browse again:
+   the dialog must open on PNG with a `.png` name, and the *Output path* tooltip must name the
+   chosen format. This is the only place the format is readable, which matters because the two
+   Amira rows both end in `.am`.
+3. **Stitch → a numbered sequence.** `<name>_01.tif … <name>_NN.tif`, zero-padded, one per mosaic
+   slice, sorting in Z order. The active dataset must be **unchanged** — an export does not swap
+   the buffer the way In memory and the zarr reopen do.
+4. **The two TIF rows are the same pixels.** Stitch the same mosaic uncompressed and with LZW: both
+   must load back identical (LZW is lossless). On real EM tiles the LZW files should also be
+   smaller - but do not treat that as a pass criterion, LZW expands a noisy image.
+5. **Load one written slice back into MIB.** Dataset → Parameters must show the same voxel size the
+   Stitching tool used. Repeat with the Amira 3D stack: the reloaded `.am` must carry both the
+   voxel size and the full mosaic depth in one file. Open the `.am` in a text editor and check the
+   header says `pixSize_units "um"`, not `pixSize_units skipped`.
+6. **Cancelling the picker writes nothing.** Clear *Output path*, press Stitch, cancel the dialog
+   that appears: no files, no error, and the dataset untouched.
+7. **The format survives a project round-trip.** Save project, change the format, Load project
+   (*Restore everything*) — the restored format must be the saved one, and the tooltip must say so.
+
 ## Expected numbers (from headless validation)
 
 | Dataset | Recovered origin error |

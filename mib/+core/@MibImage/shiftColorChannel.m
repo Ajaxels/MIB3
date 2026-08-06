@@ -10,18 +10,18 @@ function shiftColorChannel(obj, channel1, dx, dy, fillValue, options)
 % region is filled with ``fillValue``.
 %
 % Input Arguments:
-%   - **channel1** — 1-based index of the channel to shift
-%   - **dx** — shift in X (columns), in pixels; positive = shift right
-%   - **dy** — shift in Y (rows), in pixels; positive = shift down
-%   - **fillValue** — *(optional)* intensity used to fill the vacated border;
+%   - **channel1** - 1-based index of the channel to shift
+%   - **dx** - shift in X (columns), in pixels; positive = shift right
+%   - **dy** - shift in Y (rows), in pixels; positive = shift down
+%   - **fillValue** - *(optional)* intensity used to fill the vacated border;
 %     default ``0``
-%   - **options** — *(optional)* struct with fields:
+%   - **options** - *(optional)* struct with fields:
 %
-%     - ``.showWaitbar`` — logical; show progress bar (default ``true``)
-%     - ``.ParentFigure`` — handle to parent figure for the progress dialog (default ``[]``)
+%     - ``.showWaitbar`` - logical; show progress bar (default ``true``)
+%     - ``.ParentFigure`` - handle to parent figure for the progress dialog (default ``[]``)
 %
 % Usage:
-%   **Example 1** — shift channel 1 by +10 px in X and -5 px in Y
+%   **Example 1** - shift channel 1 by +10 px in X and -5 px in Y
 %
 %   .. code-block:: matlab
 %

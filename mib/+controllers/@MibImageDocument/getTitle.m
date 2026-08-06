@@ -13,16 +13,16 @@ function title = getTitle(obj)
 %   (none)
 %
 % Output Arguments:
-%   - **title** — [char] current title of the document
+%   - **title** - [char] current title of the document
 %
-% **Example 1** — get title of current document:
+% **Example 1** - get title of current document:
 %
 %   .. code-block:: matlab
 %
 %      currentTitle = obj.mibController.cImageDoc{1}.getTitle();
 %      fprintf('Document title: %s\n', currentTitle);
 %
-% **Example 2** — search for document by title:
+% **Example 2** - search for document by title:
 %
 %   .. code-block:: matlab
 %

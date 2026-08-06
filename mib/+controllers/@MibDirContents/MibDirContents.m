@@ -36,13 +36,13 @@ classdef MibDirContents
             % for file operations, filter selection, and context menus.
             %
             % Input Arguments:
-            %   - **mainCtrl** — [controllers.MibController] handle to main MIB controller
-            %   - **view** — [MibView] handle to main application view
-            %   - **guiHandles** — [views.components.DirContents] handle to Directory Contents panel GUI component
-            %   - **model** — [models.MibModel] handle to main MIB data model
+            %   - **mainCtrl** - [controllers.MibController] handle to main MIB controller
+            %   - **view** - [MibView] handle to main application view
+            %   - **guiHandles** - [views.components.DirContents] handle to Directory Contents panel GUI component
+            %   - **model** - [models.MibModel] handle to main MIB data model
             %
             % Output Arguments:
-            %   - **obj** — [MibDirContents] initialized controller instance
+            %   - **obj** - [MibDirContents] initialized controller instance
             %
             % **Initialization sequence:**
             %   1. Stores references to main controller, view, model, and GUI handles

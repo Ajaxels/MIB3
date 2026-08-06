@@ -7,11 +7,11 @@ function Prefs = generatePreferences()
 %      Prefs = generatePreferences()
 %
 % Output Arguments:
-%   - **Prefs** — struct containing all MIB application preferences
+%   - **Prefs** - struct containing all MIB application preferences
 %
 % Usage:
 %
-%   **Example 1** — initialise preferences at startup
+%   **Example 1** - initialise preferences at startup
 %
 %   .. code-block:: matlab
 %

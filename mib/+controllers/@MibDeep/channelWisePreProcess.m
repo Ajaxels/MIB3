@@ -11,10 +11,10 @@ function imgOut = channelWisePreProcess(obj, imgIn)
 % standard deviation of each modality independently.
 %
 % Input Arguments:
-%   - **imgIn** — input image, as matrix [heigth, width, color, depth]
+%   - **imgIn** - input image, as matrix [heigth, width, color, depth]
 %
 % Output Arguments:
-%   - **imgOut** — resulting image, stretched between 0 and 1
+%   - **imgOut** - resulting image, stretched between 0 and 1
 %
 
     imgIn = single(imgIn);

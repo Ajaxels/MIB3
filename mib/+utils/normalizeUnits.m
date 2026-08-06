@@ -6,8 +6,8 @@ function unitsOut = normalizeUnits(unitsIn)
 % from OME-Zarr / BigData, however, carry the long OME spellings
 % (``'micrometers'``, ``'nanometers'``, ...). Several savers
 % (``utils.calculateResolution``, ``io.BioFormats.mibImage2ometiff``) ``switch``
-% on the short code and silently fall back — or, in the OME-TIFF case, error on
-% an undefined scale factor — when handed a long spelling. Run the units string
+% on the short code and silently fall back - or, in the OME-TIFF case, error on
+% an undefined scale factor - when handed a long spelling. Run the units string
 % through this helper first so every caller sees a canonical code.
 %
 % Syntax:
@@ -16,17 +16,17 @@ function unitsOut = normalizeUnits(unitsIn)
 %      unitsOut = utils.normalizeUnits(unitsIn)
 %
 % Input Arguments:
-%   - **unitsIn** — [char | string] a physical-unit string, e.g. ``'micrometers'``,
+%   - **unitsIn** - [char | string] a physical-unit string, e.g. ``'micrometers'``,
 %     ``'um'``, ``'nm'``, ``'pixels'``.
 %
 % Output Arguments:
-%   - **unitsOut** — [char] the canonical short code (``'m'`` | ``'cm'`` | ``'mm'``
+%   - **unitsOut** - [char] the canonical short code (``'m'`` | ``'cm'`` | ``'mm'``
 %     | ``'um'`` | ``'nm'`` | ``'pixels'``). Unrecognised strings are returned
 %     lower-cased and trimmed but otherwise unchanged, so callers keep their own
 %     fallback behaviour.
 %
 % Usage:
-%   **Example 1** — long form to short code
+%   **Example 1** - long form to short code
 %
 %   .. code-block:: matlab
 %

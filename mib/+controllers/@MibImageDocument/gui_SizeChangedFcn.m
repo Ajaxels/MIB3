@@ -15,7 +15,7 @@ function gui_SizeChangedFcn(obj)
 % all visible documents are updated to ensure proper display.
 %
 % Input Arguments:
-%   (none — automatically called by MATLAB when figure size changes)
+%   (none - automatically called by MATLAB when figure size changes)
 %
 % Output Arguments:
 %   (none)
@@ -26,13 +26,13 @@ function gui_SizeChangedFcn(obj)
 %   - Prevents callback re-entrance using persistent variables
 %   - Handles AppContainer divider dragging by updating all documents
 %
-% **Example 1** — automatically triggered when window is resized:
+% **Example 1** - automatically triggered when window is resized:
 %
 %   .. code-block:: matlab
 %
 %      obj.handles.gui.SizeChangedFcn = @(src, evt) obj.gui_SizeChangedFcn();
 %
-% **Example 2** — manual call to force resize update (not typical):
+% **Example 2** - manual call to force resize update (not typical):
 %
 %   .. code-block:: matlab
 %
@@ -83,7 +83,7 @@ function executeResizeAll(obj)
 % Includes re-entrance protection to prevent conflicts if called multiple times simultaneously.
 %
 % Input Arguments:
-%   - **obj** — [handle] MibImageDocument instance that initiated the resize
+%   - **obj** - [handle] MibImageDocument instance that initiated the resize
 %
 % Output Arguments:
 %   (none)
@@ -124,7 +124,7 @@ try
             end
 
             % Trigger image redraw for this document set.
-            % All valid documents need ShowImage — in split-panel view multiple
+            % All valid documents need ShowImage - in split-panel view multiple
             % documents are visible simultaneously and all need re-rendering.
             OptionsShowImage.setOfDatasetsIndex = setId;
             eventdataShowImage = core.ToggleEventData(OptionsShowImage);

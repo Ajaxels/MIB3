@@ -18,18 +18,18 @@ function deleteImageDocument(obj, docIndex)
 % 4. Reindexes all documents after the deleted position
 %
 % Input Arguments:
-%   - **docIndex** — double, index of the document to delete (1-based)
+%   - **docIndex** - double, index of the document to delete (1-based)
 %
 % Output Arguments:
 %   (none)
 %
-% **Example 1** — delete the image document at index 3:
+% **Example 1** - delete the image document at index 3:
 %
 %   .. code-block:: matlab
 %
 %      obj.mibController.deleteImageDocument(3);
 %
-% **Example 2** — delete all documents (cleanup loop):
+% **Example 2** - delete all documents (cleanup loop):
 %
 %   .. code-block:: matlab
 %

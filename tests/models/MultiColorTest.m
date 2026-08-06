@@ -2,15 +2,15 @@ classdef MultiColorTest < matlab.unittest.TestCase
 % Tests for multi-channel (multi-color) datasets using buildSyntheticModel('numColors', 2).
 %
 % Verifies that data accessors, channel-level operations, and getRGBimage all
-% handle 2-channel images correctly — i.e. channels are stored and retrieved
+% handle 2-channel images correctly - i.e. channels are stored and retrieved
 % independently and operations on one channel do not bleed into the other.
 %
 % Verification strategies:
-%   color count       — MibDataset.image.colors reports 2
-%   channel isolation — getData3D with col=1/2 returns the expected channel
-%   write isolation   — setData3D to col=1 does not change col=2
-%   invert isolation  — colorChannelActions invert on ch1 does not change ch2
-%   RGB output        — getRGBimage returns [h w 3] uint8 for a 2-channel input
+%   color count       - MibDataset.image.colors reports 2
+%   channel isolation - getData3D with col=1/2 returns the expected channel
+%   write isolation   - setData3D to col=1 does not change col=2
+%   invert isolation  - colorChannelActions invert on ch1 does not change ch2
+%   RGB output        - getRGBimage returns [h w 3] uint8 for a 2-channel input
 
     methods (TestClassSetup)
         function addPaths(testCase)

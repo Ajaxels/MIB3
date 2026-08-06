@@ -15,16 +15,16 @@ function [sliceFiles, tileSize, dataClass] = resolveTileEntry(entryPath)
 % to how the tiles are ARRANGED (grid, position file, filename pattern).
 %
 % Input Arguments:
-%   - **entryPath** — [char] path to a single image file or a tile folder.
+%   - **entryPath** - [char] path to a single image file or a tile folder.
 %
 % Output Arguments:
-%   - **sliceFiles** — [cell] ``{}`` for a single-file tile, otherwise the
+%   - **sliceFiles** - [cell] ``{}`` for a single-file tile, otherwise the
 %     natural-sorted list of per-slice image paths in the folder.
-%   - **tileSize** — [1x4 double] ``[H W D C]``; ``D`` is the slice count for a
+%   - **tileSize** - [1x4 double] ``[H W D C]``; ``D`` is the slice count for a
 %     folder tile.
-%   - **dataClass** — [char] numeric class of the tile pixels.
+%   - **dataClass** - [char] numeric class of the tile pixels.
 %
-% **Example** — resolve a folder Z-stack tile:
+% **Example** - resolve a folder Z-stack tile:
 %
 %   .. code-block:: matlab
 %

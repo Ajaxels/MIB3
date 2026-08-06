@@ -6,10 +6,10 @@ classdef UndoModelTypeTest < matlab.unittest.TestCase
 % obj.labels, the larger types keep them as standalone layers. These tests
 % cover the two mechanisms that keep undo honest across a type change:
 %
-%   MibModel.backup('modelLayers', ...) — whole-layer snapshot used by
+%   MibModel.backup('modelLayers', ...) - whole-layer snapshot used by
 %       convertModel and stitchModelInstances; restores the layer OBJECTS, so
 %       the model type, material names and colours come back with the pixels
-%   MibModel.undo model-type guard      — a pixel entry captured at a different
+%   MibModel.undo model-type guard      - a pixel entry captured at a different
 %       model type converts the layer back before it is applied, and keeps the
 %       current layers for redo
 
@@ -44,7 +44,7 @@ classdef UndoModelTypeTest < matlab.unittest.TestCase
 
             mibModel.backup('modelLayers', 1, struct('id', 1));
             mibModel.I{1}.convertModel(65535);
-            % wipe the model after the conversion — undo must bring it back
+            % wipe the model after the conversion - undo must bring it back
             mibModel.setData3D(zeros(size(groundTruth.labels), 'uint16'), 'labels', 1, 3, NaN, opt);
 
             mibModel.undo();

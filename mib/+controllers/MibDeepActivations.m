@@ -289,7 +289,7 @@ classdef MibDeepActivations < handle
             % compatible with the Batch mode
             %
             % Input Arguments:
-            %   - **event** — event from the callback
+            %   - **event** - event from the callback
             %
             obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, event.Source);
         end
@@ -303,7 +303,7 @@ classdef MibDeepActivations < handle
             % via the notify 'syncBatch' event
             %
             % Input Arguments:
-            %   - **BatchOptOut** — a local structure with Batch Options generated
+            %   - **BatchOptOut** - a local structure with Batch Options generated
             %     during Continue callback. It may contain more fields than
             %     obj.BatchOpt structure
             %
@@ -322,10 +322,10 @@ classdef MibDeepActivations < handle
             %   function status = getNewImage(obj, filename)
             %
             % Input Arguments:
-            %   - **filename** — short filename of the image to show
+            %   - **filename** - short filename of the image to show
             %
             % Output Arguments:
-            %   - **status** — logical switch, 1 - success
+            %   - **status** - logical switch, 1 - success
             %
             status = 0;
             if nargin < 2; filename = obj.view.Figure.ImageFilename.Value; end
@@ -640,7 +640,7 @@ classdef MibDeepActivations < handle
             %   function changeImage(obj, event)
             %
             % Input Arguments:
-            %   - **event** — an event structure of appdesigner
+            %   - **event** - an event structure of appdesigner
             %
             
             filenameIndex = find(ismember(obj.view.Figure.ImageFilename.Items, obj.view.Figure.ImageFilename.Value)==1);
@@ -662,7 +662,7 @@ classdef MibDeepActivations < handle
             %   function makeCollage(obj, silentMode)
             %
             % Input Arguments:
-            %   - **silentMode** — logical ask or not for FigName and resize, see
+            %   - **silentMode** - logical ask or not for FigName and resize, see
             %     "generateSnapshots = false;" in the ShiftImage function
             %
             

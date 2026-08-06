@@ -13,21 +13,21 @@ function segmentationLasso(obj, modifier)
 % ``drawellipse``, ``drawpolygon``).
 %
 % Input Arguments:
-%   - **modifier** *(optional)* — [char] specify action on generated selection:
+%   - **modifier** *(optional)* - [char] specify action on generated selection:
 %
-%     - ``''`` — make new selection (add to existing)
-%     - ``'control'`` — remove selection from existing
+%     - ``''`` - make new selection (add to existing)
+%     - ``'control'`` - remove selection from existing
 %
 % Output Arguments:
 %   (none)
 %
-% **Example 1** — draw lasso and add to selection:
+% **Example 1** - draw lasso and add to selection:
 %
 %   .. code-block:: matlab
 %
 %      obj.segmentationLasso();
 %
-% **Example 2** — draw lasso and subtract from selection:
+% **Example 2** - draw lasso and subtract from selection:
 %
 %   .. code-block:: matlab
 %

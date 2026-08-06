@@ -12,25 +12,25 @@ function [pointerX, pointerY] = axesCenterPointerLocation(obj, cursorOverAxes)
 %
 % Two strategies are used:
 %
-% - **Runtime self-calibration** *(preferred)* — when ``cursorOverAxes`` is
+% - **Runtime self-calibration** *(preferred)* - when ``cursorOverAxes`` is
 %   ``true`` (the caller knows the cursor is currently over this document's
 %   axes, e.g. zoom or middle-click recenter), the target is computed from the
 %   live offset between ``groot().PointerLocation`` and the figure's
 %   ``CurrentPoint``. Only a small in-axes displacement is converted, so this
 %   needs no window/monitor/chrome geometry and works identically docked,
 %   floating, on any monitor and (for small displacements) any scaling.
-% - **Geometric reconstruction** *(fallback)* — used when the cursor is not over
+% - **Geometric reconstruction** *(fallback)* - used when the cursor is not over
 %   the axes (e.g. ribbon-triggered orientation switch). Derives the absolute
 %   screen position from the docked main window or the floating document window;
 %   relies on the AppContainer chrome insets ``+9`` / ``+31`` for the docked case.
 %
 % Input Arguments:
-%   - **cursorOverAxes** *(optional)* — [logical] whether the OS cursor is
+%   - **cursorOverAxes** *(optional)* - [logical] whether the OS cursor is
 %     currently over this document's axes (default: ``false``)
 %
 % Output Arguments:
-%   - **pointerX** — [double] horizontal pointer location in screen pixels
-%   - **pointerY** — [double] vertical pointer location in screen pixels
+%   - **pointerX** - [double] horizontal pointer location in screen pixels
+%   - **pointerY** - [double] vertical pointer location in screen pixels
 %
 % See also :func:`centerCursorInAxes`.
 

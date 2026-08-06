@@ -4,8 +4,8 @@ function generateSmokeAffine3DTiles()
 % The 3D analogue of generateSmokeAffineTiles: a 2x2 XY grid over 2 Z-layers
 % (8 Z-stack tiles, multi-page TIFFs) cut from a textured volume whose slices
 % share a strong in-plane texture. Every tile except the first is cut with its
-% OWN small IN-PLANE affine warp — +-1 degree rotation, +-1% scale, +-8 px XY
-% jitter — applied identically to every slice of the tile (the 3D-affine scope:
+% OWN small IN-PLANE affine warp - +-1 degree rotation, +-1% scale, +-8 px XY
+% jitter - applied identically to every slice of the tile (the 3D-affine scope:
 % 2D in-plane model on depth>1 data, z stays translational). The layer Z
 % positions are jittered by +-2 slices against the nominal grid in the position
 % file, so the solve has to recover rotation/scale in-plane AND dz across layers.
@@ -46,7 +46,7 @@ jitterPx = 8;
 zJitterSlices = 2;
 
 % ---- in-plane texture: 3-scale noise + gradient + lines + circles ----------
-% Same recipe as stitch_smoke_affine — SURF-friendly blobs and line/circle
+% Same recipe as stitch_smoke_affine - SURF-friendly blobs and line/circle
 % crossings. This 2D base is shared by all slices so the depth-flattened
 % projections the measurer matches keep the full feature content.
 rng(7, 'twister');
@@ -108,10 +108,10 @@ volume = uint8(255 * max(min(volume, 1), 0));
 
 % ---- cut warped Z-stack tiles + build the nominal position file ------------
 % trueTforms{t} maps tile-local 1-based xy pixel coordinates to volume xy; the
-% tile slice is produced by the inverse warp tile(v) = volume(G*v) — the SAME
+% tile slice is produced by the inverse warp tile(v) = volume(G*v) - the SAME
 % 2D map on every slice of the tile (z composes additively, per the 3D scope).
 % The linear part is shared per grid SLOT across the two layers (lens/stage
-% distortion is per-position, not per-section — and the solver's translation-
+% distortion is per-position, not per-section - and the solver's translation-
 % only cross-layer edges assume exactly that); only the XY translation jitters
 % independently per tile.
 rng(42, 'twister');

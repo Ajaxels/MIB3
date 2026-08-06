@@ -5,16 +5,16 @@ function [img, img_info, viewPort] = getImarisDataset_StandardConnection(vImaris
 %   function [img, img_info, viewPort] = getImarisDataset_StandardConnection(vImarisApp)
 %
 % Input Arguments:
-%   - **vImarisApp** — *(optional)* a handle to Imaris
+%   - **vImarisApp** - *(optional)* a handle to Imaris
 %
 % Output Arguments:
-%   - **img** — 4D dataset
-%   - **img_info** — ``containers.Map`` with meta data
-%   - **viewPort** — a structure with the viewPort parameters:
+%   - **img** - 4D dataset
+%   - **img_info** - ``containers.Map`` with meta data
+%   - **viewPort** - a structure with the viewPort parameters:
 %
-%     - ``.min`` — a vector with minimal intensities for contrast adjustment
-%     - ``.max`` — a vector with maximal intensities for contrast adjustment
-%     - ``.gamma`` — a vector with gamma factor for contrast adjustment
+%     - ``.min`` - a vector with minimal intensities for contrast adjustment
+%     - ``.max`` - a vector with maximal intensities for contrast adjustment
+%     - ``.gamma`` - a vector with gamma factor for contrast adjustment
 %
 % Usage:
 %   **Example 1**

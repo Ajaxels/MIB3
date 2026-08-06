@@ -11,7 +11,7 @@ function addMeasurement(obj)
 % the table and image regardless of success or cancellation.
 %
 % Input Arguments:
-%   - **obj** — :class:`controllers.MeasureTool`
+%   - **obj** - :class:`controllers.MeasureTool`
 %
 
 datasetId = obj.mibModel.getActiveId();

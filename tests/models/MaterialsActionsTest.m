@@ -1,5 +1,5 @@
 classdef MaterialsActionsTest < matlab.unittest.TestCase
-% Tests for MibModel.materialsActions — Insert, Swap, Reorder, and Import via
+% Tests for MibModel.materialsActions - Insert, Swap, Reorder, and Import via
 % the MibModel wrapper, plus a focused unit test for
 % MibBigDataLabels.findClosestLevelForImport.
 %
@@ -7,12 +7,12 @@ classdef MaterialsActionsTest < matlab.unittest.TestCase
 %   action = [] and nargin == 3 triggers batch dispatch.
 %
 % Verification strategies:
-%   insertMaterial count  — model grows from 2 to 3 materials
-%   insertMaterial name   — inserted name appears at the requested position
-%   swapMaterials pixels  — pixel values 1 and 2 are exchanged via wrapper
-%   reorderMaterials name — material names follow the permutation vector
-%   importMaterial        — new material slots + pixel overwrite from a .model file
-%   findClosestLevelForImport — pyramid level selection by size ratio
+%   insertMaterial count  - model grows from 2 to 3 materials
+%   insertMaterial name   - inserted name appears at the requested position
+%   swapMaterials pixels  - pixel values 1 and 2 are exchanged via wrapper
+%   reorderMaterials name - material names follow the permutation vector
+%   importMaterial        - new material slots + pixel overwrite from a .model file
+%   findClosestLevelForImport - pyramid level selection by size ratio
 
     methods (TestClassSetup)
         function addPaths(testCase)
@@ -95,7 +95,7 @@ classdef MaterialsActionsTest < matlab.unittest.TestCase
             % Target: a fresh 1-material model (all pixels background/0).
             mibModel = MaterialsActionsTest.buildModelWithMaterials(1);
 
-            % Source: 16×16×4 volume — top half (rows 1..8) = mat 1,
+            % Source: 16×16×4 volume - top half (rows 1..8) = mat 1,
             %         bottom half (rows 9..16) = mat 2.
             sourceLabels = zeros(16, 16, 4, 'uint8');
             sourceLabels(1:8,  :, :) = 1;
@@ -147,7 +147,7 @@ classdef MaterialsActionsTest < matlab.unittest.TestCase
         end
 
         function findClosestLevelForImport_returnsNearestLevel(testCase)
-            % Build a stub MibBigDataLabels — only the two size/scale-factor
+            % Build a stub MibBigDataLabels - only the two size/scale-factor
             % tables need to be set; no on-disk zarr store is required.
             labels = core.MibBigDataLabels();
             %   Level 1 (finest):  100×100×10  scale [1 1 1]
@@ -200,10 +200,10 @@ classdef MaterialsActionsTest < matlab.unittest.TestCase
         function buildSourceModelFile(filename, pixelData, materialNames, materialColors)
             % Save a minimal MIB-format .model file readable by MatModelLoader.
             % Variables follow the MIB3/MIB2 native MAT-model convention:
-            %   modelVariable        — name of the variable holding the label array
-            %   mibModel             — the actual uint8 label pixel array
-            %   modelMaterialNames   — cell array of material names
-            %   modelMaterialColors  — Nx3 float RGB matrix (values 0..1)
+            %   modelVariable        - name of the variable holding the label array
+            %   mibModel             - the actual uint8 label pixel array
+            %   modelMaterialNames   - cell array of material names
+            %   modelMaterialColors  - Nx3 float RGB matrix (values 0..1)
             mibModel            = pixelData;
             modelVariable       = 'mibModel';
             modelMaterialNames  = materialNames;

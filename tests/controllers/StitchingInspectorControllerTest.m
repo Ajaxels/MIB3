@@ -15,7 +15,7 @@ classdef StitchingInspectorControllerTest < matlab.unittest.TestCase
 % Where a test needs a specific widget (the Fix-mode dropdown) it injects a
 % stub ``view`` holding only that one.
 %
-% The fixture is a 1x3 chain with one confidently-wrong seam — a chain has no
+% The fixture is a 1x3 chain with one confidently-wrong seam - a chain has no
 % loop, so the solver residual cannot see the error and only the pixel seam
 % score can, which is the inspector's reason to exist.
 %
@@ -83,7 +83,7 @@ classdef StitchingInspectorControllerTest < matlab.unittest.TestCase
     end
 
     % =================================================================
-    % applyUserFix — the single write path for every fixing tool
+    % applyUserFix - the single write path for every fixing tool
     % =================================================================
     methods (Test, TestTags = {'Unit'})
 
@@ -110,7 +110,7 @@ classdef StitchingInspectorControllerTest < matlab.unittest.TestCase
 
         function deferredFixLeavesPositionsStaleAndFlagsAReSolve(testCase)
             % deferResolve (and auto-re-solve off) is what makes Stitch check
-            % resolvePending before fusing — otherwise the mosaic would come
+            % resolvePending before fusing - otherwise the mosaic would come
             % from positions that predate the fix.
             [inspector, stitching, badEdge] = testCase.openInspector(45);
             positionsBefore = stitching.positions;
@@ -171,7 +171,7 @@ classdef StitchingInspectorControllerTest < matlab.unittest.TestCase
     methods (Test, TestTags = {'Unit'})
 
         function excludeTogglesValidityAndWithdrawsUserProvenance(testCase)
-            % Excluding a user fix withdraws it — user edges are otherwise
+            % Excluding a user fix withdraws it - user edges are otherwise
             % never pruned, so leaving the provenance would re-assert the fix
             % on the next re-solve. The EDGE is the single source of truth, so
             % the second press must re-include.
@@ -216,7 +216,7 @@ classdef StitchingInspectorControllerTest < matlab.unittest.TestCase
         end
 
         function confirmKeepsUserProvenance(testCase)
-            % A fixed seam stays 'user' — confirmation is bookkeeping only and
+            % A fixed seam stays 'user' - confirmation is bookkeeping only and
             % must not downgrade an edge the solver treats specially.
             [inspector, stitching, badEdge] = testCase.openInspector(51);
             inspector.applyUserFix([0 120], 'fix');
@@ -268,7 +268,7 @@ classdef StitchingInspectorControllerTest < matlab.unittest.TestCase
 
         function edgeAtMiniMapPointResolvesEachSideOfATileToItsOwnSeam(testCase)
             % The bug this exists for: a tile with neighbours on TWO different
-            % sides (a 2x2 grid — tile 1 top-left, seams X(1-2) right and
+            % sides (a 2x2 grid - tile 1 top-left, seams X(1-2) right and
             % Y(1-3) below) could only ever be jumped to its single WORST
             % incident seam via jumpToTile, no matter where on the tile you
             % clicked. A click near tile 1's right edge (seam 1-2's location)
@@ -319,7 +319,7 @@ classdef StitchingInspectorControllerTest < matlab.unittest.TestCase
     methods (Test, TestTags = {'Unit'})
 
         function visibleRankingSplitsInPlaneFromCrossLayerSeams(testCase)
-            % The seam table never mixes the two — they read on different axes.
+            % The seam table never mixes the two - they read on different axes.
             [inspector, stitching, badEdge] = testCase.openInspector(54);
             crossLayerEdge = setdiff(1:numel(stitching.edges), badEdge);
             stitching.edges(crossLayerEdge).direction = 'z';
@@ -385,7 +385,7 @@ classdef StitchingInspectorControllerTest < matlab.unittest.TestCase
 
         function [inspector, stitching, badEdge] = openInspector(testCase, seed)
             % Solved 1x3 chain with one confidently-wrong seam, opened in a
-            % headless inspector — the fixture every review test starts from.
+            % headless inspector - the fixture every review test starts from.
             stitching = testCase.chainController(seed);
             stitching.buildLayoutFromBatchOpt();
             stitching.measureOverlaps_Callback();
@@ -432,7 +432,7 @@ classdef StitchingInspectorControllerTest < matlab.unittest.TestCase
         end
 
         function [inspector, stitching] = openGrid2x2Inspector(testCase, seed)
-            % Solved 2x2 grid (no sabotage) opened in a headless inspector —
+            % Solved 2x2 grid (no sabotage) opened in a headless inspector -
             % the fixture for tests where a tile needs neighbours on TWO
             % different sides (a 1xN chain only ever gives a tile one).
             % Tile numbering (default 'Horizontal' order): 1=top-left,

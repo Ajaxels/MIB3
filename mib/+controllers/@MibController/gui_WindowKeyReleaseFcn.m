@@ -11,13 +11,13 @@ function gui_WindowKeyReleaseFcn(obj, ~, ~)
 % every ImageViewDocument UIFigure (see MibImageDocument.setupCallbacks).
 %
 % Input Arguments:
-%   - **src** — event source UIFigure (unused, indicated by ``~`` in the signature)
-%   - **evtData** — key-release event data (unused, indicated by ``~`` in the signature)
+%   - **src** - event source UIFigure (unused, indicated by ``~`` in the signature)
+%   - **evtData** - key-release event data (unused, indicated by ``~`` in the signature)
 %
 % Output Arguments:
 %   (none)
 %
-% **Example** — registered automatically in MibImageDocument.setupCallbacks:
+% **Example** - registered automatically in MibImageDocument.setupCallbacks:
 %
 %   .. code-block:: matlab
 %

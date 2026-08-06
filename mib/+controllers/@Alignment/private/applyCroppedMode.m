@@ -14,14 +14,14 @@ function applyCroppedMode(obj, id, depth, tformMatrix, refImgSize, bgImage, pwb)
 % entry are skipped. The original canvas size (``refImgSize``) is preserved.
 %
 % Input Arguments:
-%   - **obj** — :class:`controllers.Alignment` instance.
-%   - **id** — [scalar] dataset index in ``obj.mibModel.I``.
-%   - **depth** — [scalar] number of slices.
-%   - **tformMatrix** — ``{depth, 1}`` cell of 2-D geometric transforms.
-%   - **refImgSize** — :class:`imref2d` for ``imwarp`` ``'OutputView'``.
-%   - **bgImage** — [numeric] fill value for image warp; service layers
+%   - **obj** - :class:`controllers.Alignment` instance.
+%   - **id** - [scalar] dataset index in ``obj.mibModel.I``.
+%   - **depth** - [scalar] number of slices.
+%   - **tformMatrix** - ``{depth, 1}`` cell of 2-D geometric transforms.
+%   - **refImgSize** - :class:`imref2d` for ``imwarp`` ``'OutputView'``.
+%   - **bgImage** - [numeric] fill value for image warp; service layers
 %     always fill with 0.
-%   - **pwb** — :class:`core.PoolWaitbar` or ``[]`` to disable progress.
+%   - **pwb** - :class:`core.PoolWaitbar` or ``[]`` to disable progress.
 
 % Updates
 %

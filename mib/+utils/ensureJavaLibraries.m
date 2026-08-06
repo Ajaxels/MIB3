@@ -20,19 +20,19 @@ function ensureJavaLibraries(libList, mibPath, externalDirs)
 % during startup), so later calls may provide only ``libList``.
 %
 % Input Arguments:
-%   - **libList** — cell array of library identifiers to initialize.
+%   - **libList** - cell array of library identifiers to initialize.
 %     Valid identifiers: ``'bm3d'``, ``'omero'``, ``'mij.jar'``, ``'bioformats'``,
 %     ``'imageselection'``, ``'fiji'``, ``'poi'``, ``'imaris'``
-%   - **mibPath** — *(optional)* char, MIB installation directory; cached
+%   - **mibPath** - *(optional)* char, MIB installation directory; cached
 %     persistently; when never provided, resolved via ``utils.getInstallationPath``
-%   - **externalDirs** — *(optional)* struct, copy of ``preferences.ExternalDirs``
+%   - **externalDirs** - *(optional)* struct, copy of ``preferences.ExternalDirs``
 %     with the Fiji/OMERO/Imaris/BM3D installation paths; cached persistently;
 %     libraries that require it are skipped when it was never provided
 %
 % Output Arguments:
 %   (none)
 %
-% **Example 1** — make sure Bio-Formats is available before reading a file:
+% **Example 1** - make sure Bio-Formats is available before reading a file:
 %
 %   .. code-block:: matlab
 %

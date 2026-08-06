@@ -8,14 +8,14 @@ classdef MultiChannelIntegrationTest < matlab.unittest.TestCase
 % non-trivial image size (372 × 521 × 75).
 %
 % Channel layout:
-%   ch1 — original Huh7 uint8 grayscale (SBEM)
-%   ch2 — same volume again (independent copy; mutating one must not affect the other)
+%   ch1 - original Huh7 uint8 grayscale (SBEM)
+%   ch2 - same volume again (independent copy; mutating one must not affect the other)
 %
 % Verification strategies:
-%   color count       — MibDataset.image.colors == 2
-%   channel isolation — getData3D with col=1 matches the Huh7 volume; col=2 independent
-%   model load        — labels round-trip through setData3D / getData3D with correct material count
-%   write isolation   — overwriting ch1 with zeros leaves ch2 intact on a subregion
+%   color count       - MibDataset.image.colors == 2
+%   channel isolation - getData3D with col=1 matches the Huh7 volume; col=2 independent
+%   model load        - labels round-trip through setData3D / getData3D with correct material count
+%   write isolation   - overwriting ch1 with zeros leaves ch2 intact on a subregion
 
     methods (TestClassSetup)
         function addPaths(testCase)
@@ -76,7 +76,7 @@ classdef MultiChannelIntegrationTest < matlab.unittest.TestCase
         function [mibModel, imageVol, labelVol, materialNames] = buildTwoChannelHuh7Model(testCase)
             spec = mibtest.helpers.datasetSpec('Huh7');
             testCase.assumeTrue(mibtest.helpers.hasTestData(spec), ...
-                'Huh7 test data not cached and server is unreachable — skipping');
+                'Huh7 test data not cached and server is unreachable - skipping');
 
             dataFixture   = testCase.applyFixture(mibtest.fixtures.ExampleDataFixture('Huh7'));
             imageVol      = dataFixture.Image;    % [372 521 75 1] uint8

@@ -7,7 +7,7 @@ function deleteTree(obj, treeId)
 %       obj.deleteTree(treeId)
 %
 % Input Arguments:
-%   - **treeId** — index of the tree to delete, or string with name of the tree
+%   - **treeId** - index of the tree to delete, or string with name of the tree
 %
 
 if nargin < 2; error('treeId is missing!'); end

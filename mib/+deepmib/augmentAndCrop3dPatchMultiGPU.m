@@ -9,36 +9,36 @@ function [patchOut, info, augList, augPars] = augmentAndCrop3dPatchMultiGPU(patc
 %          patchIn, info, inputPatchSize, outputPatchSize, mode, options)
 %
 % Input Arguments:
-%   - **patchIn** — table with ``InputImage`` and ``ResponsePixelLabelImage`` fields
+%   - **patchIn** - table with ``InputImage`` and ``ResponsePixelLabelImage`` fields
 %     (semantic segmentation) or a matrix (classification)
-%   - **info** — additional info struct about the input patch
-%   - **inputPatchSize** — [1×4] input patch size as ``[height, width, depth, color]``
-%   - **outputPatchSize** — [1×4] output patch size as ``[height, width, depth, classes]``,
+%   - **info** - additional info struct about the input patch
+%   - **inputPatchSize** - [1×4] input patch size as ``[height, width, depth, color]``
+%   - **outputPatchSize** - [1×4] output patch size as ``[height, width, depth, classes]``,
 %     or ``[height, width, classes]`` for 2.5D Z2C networks
-%   - **mode** — [char] operation mode:
+%   - **mode** - [char] operation mode:
 %
-%     - ``'show'`` — pass through without augmentation or cropping
-%     - ``'crop'`` — crop only, no augmentation
-%     - ``'aug'`` — augment, then crop
+%     - ``'show'`` - pass through without augmentation or cropping
+%     - ``'crop'`` - crop only, no augmentation
+%     - ``'aug'`` - augment, then crop
 %
-%   - **options** — struct with additional parameters:
+%   - **options** - struct with additional parameters:
 %
-%     - ``.Workflow`` — [string] workflow name (``options.Workflow``)
-%     - ``.Aug3DFuncNames`` — copy of ``mibDeepController.Aug3DFuncNames``
-%     - ``.AugOpt3D`` — copy of ``mibDeepController.AugOpt3D``
-%     - ``.Aug3DFuncProbability`` — per-function trigger probabilities
-%     - ``.O_PreviewImagePatches`` — [logical] show image patches during augmentation
+%     - ``.Workflow`` - [string] workflow name (``options.Workflow``)
+%     - ``.Aug3DFuncNames`` - copy of ``mibDeepController.Aug3DFuncNames``
+%     - ``.AugOpt3D`` - copy of ``mibDeepController.AugOpt3D``
+%     - ``.Aug3DFuncProbability`` - per-function trigger probabilities
+%     - ``.O_PreviewImagePatches`` - [logical] show image patches during augmentation
 %       (``mibDeepController.BatchOpt.O_PreviewImagePatches``)
-%     - ``.O_FractionOfPreviewPatches`` — [numeric] fraction of patches to preview
+%     - ``.O_FractionOfPreviewPatches`` - [numeric] fraction of patches to preview
 %       (``mibDeepController.BatchOpt.O_FractionOfPreviewPatches{1}``)
-%     - ``.T_ConvolutionPadding`` — [string] convolution padding type
+%     - ``.T_ConvolutionPadding`` - [string] convolution padding type
 %       (``mibDeepController.BatchOpt.T_ConvolutionPadding{1}``)
 %
 % Output Arguments:
-%   - **patchOut** — two-column table as required by ``trainNetwork`` for single-input networks
-%   - **info** — additional info struct about the input patch
-%   - **augList** — cell array with the names of applied augmentation operations
-%   - **augPars** — matrix of applied parameter values (``NaN`` when not used);
+%   - **patchOut** - two-column table as required by ``trainNetwork`` for single-input networks
+%   - **info** - additional info struct about the input patch
+%   - **augList** - cell array with the names of applied augmentation operations
+%   - **augPars** - matrix of applied parameter values (``NaN`` when not used);
 %     second column holds the blend parameter for Hue+Sat jitter
 %
 

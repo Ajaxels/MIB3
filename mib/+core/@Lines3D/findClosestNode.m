@@ -7,10 +7,10 @@ function nodeId = findClosestNode(obj, x, y, z, orientation)
 %       nodeId = obj.findClosestNode(x, y, z, orientation)
 %
 % Input Arguments:
-%   - **x** — x coordinate of a point next to the node
-%   - **y** — y coordinate of a point next to the node
-%   - **z** — z coordinate of a point next to the node
-%   - **orientation** — *(optional)* a number with orientation of the dataset, 3-yx, 1-xz, 2-yz, default 3
+%   - **x** - x coordinate of a point next to the node
+%   - **y** - y coordinate of a point next to the node
+%   - **z** - z coordinate of a point next to the node
+%   - **orientation** - *(optional)* a number with orientation of the dataset, 3-yx, 1-xz, 2-yz, default 3
 %
 
 if nargin < 5; orientation = 3; end

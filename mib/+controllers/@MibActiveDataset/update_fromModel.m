@@ -12,8 +12,8 @@ function update_fromModel(obj, src, evtData)
 % panel (obj.view.handles.panels.activeDataset / obj.handles)
 %
 % Input Arguments:
-%   - **src** — handle to MibModel when called as a listener, from controllers.MibActiveDataset it is not provided
-%   - **evtData** — event data information, when called as a listener, from controllers.MibActiveDataset it is not provided
+%   - **src** - handle to MibModel when called as a listener, from controllers.MibActiveDataset it is not provided
+%   - **evtData** - event data information, when called as a listener, from controllers.MibActiveDataset it is not provided
 %
 % Usage:
 %   Example 1::
@@ -123,11 +123,11 @@ for datasetId = 1:Sets.datasetsInSet
     globalIndex = datasetId + ((selectedSet-1) * Sets.datasetsInSet);
     img = obj.mibModel.I{globalIndex}.image;
     if strcmp(img.filename, 'none.tif') && img.height == 512 && img.width == 512 && img.depth == 1 && img.time == 1
-        % Empty placeholder buffer — no data loaded
+        % Empty placeholder buffer - no data loaded
         buttonHandle.BackgroundColor = defaultBackgroundColor;
         buttonHandle.Tooltip = 'use RMB for a context menu with additional options';
     elseif strcmp(img.filename, 'none.tif')
-        % In-memory dataset — data present but no file on disk (e.g. loaded from Examples)
+        % In-memory dataset - data present but no file on disk (e.g. loaded from Examples)
         buttonHandle.BackgroundColor = [1 0.85 0.6];
         buttonHandle.Tooltip = sprintf('In-memory dataset (%dx%dx%d); use File -> Save to save', img.width, img.height, img.depth);
     else

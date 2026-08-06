@@ -12,53 +12,53 @@ function status = transformDataset(obj, BatchOptIn)
 % batch-compatible.
 %
 % Input Arguments:
-%   - **BatchOptIn** — *(optional)* structure for batch processing mode; when
+%   - **BatchOptIn** - *(optional)* structure for batch processing mode; when
 %     ``NaN``, returns default options via the ``SyncBatch`` event.
 %
-%     - ``.Transform`` — [cell] transform to apply (default: ``{'Flip horizontally'}``).
+%     - ``.Transform`` - [cell] transform to apply (default: ``{'Flip horizontally'}``).
 %       Allowed values:
 %       ``{'Flip horizontally','Flip vertically','Flip Z','Flip T'``
 %       ``'Rotate 90 degrees','Rotate -90 degrees'``
 %       ``'Transpose YX -> YZ','Transpose YX -> XZ','Transpose YX -> XY','Transpose YX -> ZX'``
 %       ``'Transpose Z<->T','Transpose Z<->C'``
 %       ``'Update with new width/height','Update with new dX/dY'}``
-%     - ``.Position`` — [cell] image position for ``'Update with new width/height'``
+%     - ``.Position`` - [cell] image position for ``'Update with new width/height'``
 %       (default: ``{'Center'}``). Allowed values: ``{'Center','Left-upper corner',``
 %       ``'Center-top','Right-upper corner','Left-bottom corner',``
 %       ``'Center-bottom','Right-bottom corner'}``
-%     - ``.NewImageWidth`` — [numeric cell] new width in pixels for ``'Update with new width/height'``;
+%     - ``.NewImageWidth`` - [numeric cell] new width in pixels for ``'Update with new width/height'``;
 %       ``{1}`` value (default: ``0``), ``{2}`` limits ``[1, Inf]``, ``{3}`` ``'on'`` (integer)
-%     - ``.NewImageHeight`` — [numeric cell] new height in pixels for ``'Update with new width/height'``;
+%     - ``.NewImageHeight`` - [numeric cell] new height in pixels for ``'Update with new width/height'``;
 %       ``{1}`` value (default: ``0``), ``{2}`` limits ``[1, Inf]``, ``{3}`` ``'on'`` (integer)
-%     - ``.FrameColorIntensity`` — [numeric cell] fill pixel intensity for ``'Update with new width/height'``;
+%     - ``.FrameColorIntensity`` - [numeric cell] fill pixel intensity for ``'Update with new width/height'``;
 %       ``{1}`` value (default: ``0``), ``{2}`` limits ``[0, Inf]``, ``{3}`` ``'off'``
-%     - ``.FrameWidth`` — [numeric cell] frame half-width in pixels for ``'Update with new dX/dY'``;
+%     - ``.FrameWidth`` - [numeric cell] frame half-width in pixels for ``'Update with new dX/dY'``;
 %       ``{1}`` value (default: ``0``), ``{2}`` limits ``[-Inf, Inf]``, ``{3}`` ``'on'`` (integer)
-%     - ``.FrameHeight`` — [numeric cell] frame half-height in pixels for ``'Update with new dX/dY'``;
+%     - ``.FrameHeight`` - [numeric cell] frame half-height in pixels for ``'Update with new dX/dY'``;
 %       ``{1}`` value (default: ``0``), ``{2}`` limits ``[-Inf, Inf]``, ``{3}`` ``'on'`` (integer)
-%     - ``.IntensityPadValue`` — [numeric cell] pad intensity for ``'Update with new dX/dY'``;
+%     - ``.IntensityPadValue`` - [numeric cell] pad intensity for ``'Update with new dX/dY'``;
 %       ``{1}`` value (default: ``0``), ``{2}`` limits ``[0, Inf]``, ``{3}`` ``'off'``
-%     - ``.Method`` — [cell] pad method for ``'Update with new dX/dY'``
+%     - ``.Method`` - [cell] pad method for ``'Update with new dX/dY'``
 %       (default: ``{'use the pad value'}``). Allowed values:
 %       ``{'use the pad value','replicate','circular','symmetric'}``
-%     - ``.Direction`` — [cell] pad direction for ``'Update with new dX/dY'``
+%     - ``.Direction`` - [cell] pad direction for ``'Update with new dX/dY'``
 %       (default: ``{'both'}``). Allowed values: ``{'both','pre','post'}``
-%     - ``.NumberOfColorChannels`` — [numeric cell] output color channels for ``'Transpose Z<->C'``;
+%     - ``.NumberOfColorChannels`` - [numeric cell] output color channels for ``'Transpose Z<->C'``;
 %       ``{1}`` value (default: ``NaN`` = auto), ``{2}`` limits ``[0, Inf]``, ``{3}`` ``'on'`` (integer)
-%     - ``.showWaitbar`` — [logical] show the progress dialog (default: ``true``)
-%     - ``.id`` — *(optional)* dataset index 1–9, default = ``obj.getActiveId()``
+%     - ``.showWaitbar`` - [logical] show the progress dialog (default: ``true``)
+%     - ``.id`` - *(optional)* dataset index 1-9, default = ``obj.getActiveId()``
 %
 % Output Arguments:
-%   - **status** — ``1`` on success, ``0`` on failure or user cancel
+%   - **status** - ``1`` on success, ``0`` on failure or user cancel
 %
 % Usage:
-%   **Example 1** — flip the current dataset horizontally
+%   **Example 1** - flip the current dataset horizontally
 %
 %   .. code-block:: matlab
 %
 %      obj.mibModel.transformDataset();
 %
-%   **Example 2** — rotate 90 degrees via batch call
+%   **Example 2** - rotate 90 degrees via batch call
 %
 %   .. code-block:: matlab
 %
@@ -66,7 +66,7 @@ function status = transformDataset(obj, BatchOptIn)
 %      BatchOpt.showWaitbar = false;
 %      obj.mibModel.transformDataset(BatchOpt);
 %
-%   **Example 3** — return default BatchOpt to the Batch Processing editor
+%   **Example 3** - return default BatchOpt to the Batch Processing editor
 %
 %   .. code-block:: matlab
 %

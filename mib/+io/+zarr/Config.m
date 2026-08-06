@@ -4,16 +4,16 @@ classdef Config < handle
 % Holds two module-level settings shared by the ``io.zarr`` facade
 % (``io.zarr.Array`` / ``io.zarr.Group``):
 %
-%   * **library** — which backend performs bulk pixel I/O:
+%   * **library** - which backend performs bulk pixel I/O:
 %
-%     - ``'native'`` — the bundled ``zarrMex`` engine (``ZarrArray`` /
+%     - ``'native'`` - the bundled ``zarrMex`` engine (``ZarrArray`` /
 %       ``ZarrGroup``). Default. No external dependency.
-%     - ``'python'`` — the ``zarr-python`` (v3) library via ``pyrun``/numpy.
+%     - ``'python'`` - the ``zarr-python`` (v3) library via ``pyrun``/numpy.
 %
-%   * **pythonPath** — the Python interpreter used by the python backend
+%   * **pythonPath** - the Python interpreter used by the python backend
 %     (normally ``preferences.ExternalDirs.PythonInstallationPath``).
 %
-%   * **smoothing** — when ``true`` (default), the BigData label pyramid smooths
+%   * **smoothing** - when ``true`` (default), the BigData label pyramid smooths
 %     boundaries when an edit made at a coarse (zoomed-out) level is propagated
 %     **up** into finer levels, instead of a blocky nearest-neighbour upsample
 %     (see ``core.MibBigDataLabels.resizeBlockSmooth``).
@@ -26,7 +26,7 @@ classdef Config < handle
 %
 % Metadata operations (creating arrays/groups, attributes, resize) are always
 % performed natively for an identical on-disk structure; only bulk read/write
-% honour the selected library — so a ``'python'`` reader is fully independent
+% honour the selected library - so a ``'python'`` reader is fully independent
 % of ``zarrMex`` on the read path.
 %
 % **Examples**
@@ -105,11 +105,11 @@ classdef Config < handle
             % coarse (zoomed-out) pyramid level is propagated **up** into the finer
             % levels by ``core.MibBigDataLabels``:
             %
-            %   - ``true`` *(default)* — boundaries are reconstructed with a signed
+            %   - ``true`` *(default)* - boundaries are reconstructed with a signed
             %     distance transform + Gaussian smoothing (``smoothLabelUpsampleYX`` /
             %     ``signedDistUpsample``), so a coarse circle becomes a smooth curve
             %     instead of a blocky, stair-stepped one at full magnification.
-            %   - ``false`` — plain nearest-neighbour up-sampling (faster, blocky).
+            %   - ``false`` - plain nearest-neighbour up-sampling (faster, blocky).
             %
             % Only affects **up-sampling** (coarse edit -> finer level); down-sampling
             % always uses nearest. Note this rounds the stair-steps but cannot recover
@@ -127,11 +127,11 @@ classdef Config < handle
             %      io.zarr.Config.smoothing(false);      % disable
             %
             % Input Arguments:
-            %   - **tf** — *(optional)* [logical] new value; omit (or pass ``[]``) to
+            %   - **tf** - *(optional)* [logical] new value; omit (or pass ``[]``) to
             %     query without changing it.
             %
             % Output Arguments:
-            %   - **out** — [logical] the current (possibly just-updated) flag.
+            %   - **out** - [logical] the current (possibly just-updated) flag.
             %
             % See also:
             %   ``io.zarr.Config.setSmoothing``, ``core.MibBigDataLabels.resizeBlockSmooth``
@@ -155,7 +155,7 @@ classdef Config < handle
             %      io.zarr.Config.setSmoothing(true);
             %
             % Input Arguments:
-            %   - **tf** — [logical] ``true`` to smooth coarse->fine label propagation,
+            %   - **tf** - [logical] ``true`` to smooth coarse->fine label propagation,
             %     ``false`` for nearest-neighbour.
             %
             % See also:

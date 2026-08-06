@@ -12,24 +12,24 @@ function result = cropDataset(obj, cropF, options)
 % bounding box.
 %
 % Input Arguments:
-%   - **cropF** — a vector ``[x1, y1, dx, dy, z1, dz, t1, dt]`` in pixels
+%   - **cropF** - a vector ``[x1, y1, dx, dy, z1, dz, t1, dt]`` in pixels
 %
-%     - *x1,* *y1* — top-left corner of the crop region
-%     - *dx,* *dy* — width and height of the crop region
-%     - *z1,* *dz* — first slice index and number of slices
-%     - *t1,* *dt* — first time point and number of time points
+%     - *x1,* *y1* - top-left corner of the crop region
+%     - *dx,* *dy* - width and height of the crop region
+%     - *z1,* *dz* - first slice index and number of slices
+%     - *t1,* *dt* - first time point and number of time points
 %     - when ``numel(cropF)`` < 7, *t1* and *dt* default to ``[1, obj.image.time]``
 %
-%   - **options** — *(optional)* structure with additional parameters
+%   - **options** - *(optional)* structure with additional parameters
 %
-%     - ``.showWaitbar`` — logical, show a progress dialog (default: **true)**
-%     - ``.UIFigure`` — handle to the parent UIFigure for the progress dialog;
+%     - ``.showWaitbar`` - logical, show a progress dialog (default: **true)**
+%     - ``.UIFigure`` - handle to the parent UIFigure for the progress dialog;
 %       when empty or absent the dialog is silently skipped
-%     - ``.pyramidLevel`` — numeric, OME-Zarr pyramid level for virtual datasets
+%     - ``.pyramidLevel`` - numeric, OME-Zarr pyramid level for virtual datasets
 %       (default: **1)**
 %
 % Output Arguments:
-%   - **result** — **1** on success, **0** on cancel or error
+%   - **result** - **1** on success, **0** on cancel or error
 %
 % Usage:
 %   **Example 1**
@@ -65,7 +65,7 @@ y1 = cropF(2);  dy = cropF(4);
 z1 = cropF(5);  dz = cropF(6);
 t1 = cropF(7);  dt = cropF(8);
 
-% Optional progress dialog — only possible when a UIFigure is provided
+% Optional progress dialog - only possible when a UIFigure is provided
 wb = [];
 if options.showWaitbar && ~isempty(options.UIFigure)
     wb = uiprogressdlg(options.UIFigure, ...
@@ -104,7 +104,7 @@ if strcmp(obj.datasetType(1), 'S')
     if ~isempty(wb); wb.Value = 0.7; end
 
 % =========================================================================
-%  Virtual (HDD-resident) path — load subvolume then switch to Standard
+%  Virtual (HDD-resident) path - load subvolume then switch to Standard
 % =========================================================================
 else
     loadOpts.x            = [x1, x1+dx-1];
@@ -233,7 +233,7 @@ obj.slices{5} = repmat(min([obj.slices{5}, obj.image.time]), 1, 2);
 obj.slices{obj.orientation} = repmat( ...
     min(obj.dim_yxzct(obj.orientation), current_layer), 1, 2);
 
-% Shift the physical bounding box by the crop offset — Standard path only;
+% Shift the physical bounding box by the crop offset - Standard path only;
 % Virtual/BigData path handled the BB earlier (with correctly scaled pixSize).
 if ~bbUpdated
     xyzShift = [(x1-1)*obj.image.pixSize.x, ...

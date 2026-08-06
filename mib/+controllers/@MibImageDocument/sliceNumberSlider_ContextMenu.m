@@ -11,17 +11,17 @@ function sliceNumberSlider_ContextMenu(obj, menuEntry, selectedData)
 %   - ``obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}.handles.frameNumberSlider``
 %
 % Input Arguments:
-%   - **menuEntry** — [matlab.ui.container.Menu] handle to pressed context menu entry
-%   - **selectedData** — [matlab.ui.eventdata.MenuSelectedData] event data; use ``selectedData.ContextObject`` to find owning button
+%   - **menuEntry** - [matlab.ui.container.Menu] handle to pressed context menu entry
+%   - **selectedData** - [matlab.ui.eventdata.MenuSelectedData] event data; use ``selectedData.ContextObject`` to find owning button
 %
 % Output Arguments:
 %   (none)
 %
 % **Available menu options** (via ``menuEntry.Tag``):
-%   - ``'sliceNumberSliderContextDefault'`` — reset Z slider settings to default values
-%   - ``'sliceNumberSliderContextSetStep'`` — update Z slider settings with new values
-%   - ``'frameNumberSliderContextDefault'`` — reset T slider settings to default values
-%   - ``'frameNumberSliderContextSetStep'`` — update T slider settings with new values
+%   - ``'sliceNumberSliderContextDefault'`` - reset Z slider settings to default values
+%   - ``'sliceNumberSliderContextSetStep'`` - update Z slider settings with new values
+%   - ``'frameNumberSliderContextDefault'`` - reset T slider settings to default values
+%   - ``'frameNumberSliderContextSetStep'`` - update T slider settings with new values
 
 
 if obj.mibModel.preferences.System.DeveloperMode

@@ -7,17 +7,17 @@ function contextMenu(obj, parameter)
 %       obj.contextMenu(parameter)
 %
 % Input Arguments:
-%   - **obj** — :class:`controllers.MeasureTool`
-%   - **parameter** — [char] action key:
+%   - **obj** - :class:`controllers.MeasureTool`
+%   - **parameter** - [char] action key:
 %
-%     - ``'ModifyInfo'``   — edit the ``.info`` annotation text
-%     - ``'Jump'``         — navigate to the measurement's Z/T slice
-%     - ``'Modify'``       — re-draw measurement on current slice
-%     - ``'Recalculate'``  — re-draw on the stored slice (preserves Z/T)
-%     - ``'Duplicate'``    — append a copy of the selected measurement
-%     - ``'Kymograph'``    — generate kymograph from this measurement
-%     - ``'Plot'``         — plot intensity profile in a standalone figure
-%     - ``'Delete'``       — remove this measurement
+%     - ``'ModifyInfo'``   - edit the ``.info`` annotation text
+%     - ``'Jump'``         - navigate to the measurement's Z/T slice
+%     - ``'Modify'``       - re-draw measurement on current slice
+%     - ``'Recalculate'``  - re-draw on the stored slice (preserves Z/T)
+%     - ``'Duplicate'``    - append a copy of the selected measurement
+%     - ``'Kymograph'``    - generate kymograph from this measurement
+%     - ``'Plot'``         - plot intensity profile in a standalone figure
+%     - ``'Delete'``       - remove this measurement
 %
 
 if isempty(obj.indices); return; end

@@ -1,5 +1,5 @@
 function reorderMaterials(obj, newOrder, wb)
-% REORDERMATERIALS - Reorder materials in the model — low-level data layer.
+% REORDERMATERIALS - Reorder materials in the model - low-level data layer.
 %
 % Syntax:
 %   .. code-block:: matlab
@@ -13,11 +13,11 @@ function reorderMaterials(obj, newOrder, wb)
 % obj.labels.reorderMaterials.
 %
 % Input Arguments:
-%   - **newOrder** — double vector, permutation of 1:numel(materialNames)
+%   - **newOrder** - double vector, permutation of 1:numel(materialNames)
 %     specifying the desired arrangement.  For example [3 1 2] means:
 %     old material 3 becomes new material 1, old 1 becomes new 2, old 2
 %     becomes new 3.
-%   - **wb** — *(optional)* handle to a uiprogressdlg for progress display;
+%   - **wb** - *(optional)* handle to a uiprogressdlg for progress display;
 %     when empty no progress is reported.
 %
 % Output Arguments:

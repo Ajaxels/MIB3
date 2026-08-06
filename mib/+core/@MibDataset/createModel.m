@@ -15,33 +15,33 @@ function createModel(obj, modelType, modelMaterialNames)
 % the selection and mask layers are converted automatically.
 %
 % Input Arguments:
-%   - **modelType** *(optional)* — [numeric] model type (default: current model type):
+%   - **modelType** *(optional)* - [numeric] model type (default: current model type):
 %
-%     - ``63`` — packed type-63 model with up to 63 materials; 'Labels', 'Mask', and
+%     - ``63`` - packed type-63 model with up to 63 materials; 'Labels', 'Mask', and
 %       'Selection' layers packed in single uint8 matrix (``core.MibLabels63``) to reduce memory
-%     - ``255`` — separate-layer type-255 model with up to 255 materials (``core.MibLabels``)
-%     - ``65535`` — large-capacity type-65535 model with up to 65535 materials
-%     - ``4294967295`` — very-large-capacity type-4294967295 model with up to 4294967295 materials
+%     - ``255`` - separate-layer type-255 model with up to 255 materials (``core.MibLabels``)
+%     - ``65535`` - large-capacity type-65535 model with up to 65535 materials
+%     - ``4294967295`` - very-large-capacity type-4294967295 model with up to 4294967295 materials
 %
-%   - **modelMaterialNames** *(optional)* — [cell] cell array with names of materials; only
+%   - **modelMaterialNames** *(optional)* - [cell] cell array with names of materials; only
 %     used for model types 63 and 255; ignored for larger types
 %
 % Output Arguments:
 %   (none)
 %
-% **Example 1** — Create a type-63 model (memory-efficient):
+% **Example 1** - Create a type-63 model (memory-efficient):
 %
 %   .. code-block:: matlab
 %
 %      obj.createModel(63);
 %
-% **Example 2** — Create a type-255 model with material names:
+% **Example 2** - Create a type-255 model with material names:
 %
 %   .. code-block:: matlab
 %
 %      obj.createModel(255, {'Nucleus', 'Cytoplasm'});
 %
-% **Example 3** — Create a large-capacity type-65535 model:
+% **Example 3** - Create a large-capacity type-65535 model:
 %
 %   .. code-block:: matlab
 %
@@ -110,7 +110,7 @@ dims = [obj.image.height, obj.image.width, obj.image.depth, 1, obj.image.time];
 
 if modelType == 63
     if currentModelType == 63
-        % Already type 63: clear model bits (bits 1–6), preserve mask (bit 7)
+        % Already type 63: clear model bits (bits 1-6), preserve mask (bit 7)
         % and selection (bit 8)
         if obj.labels.exists
             obj.labels.data = bitand(obj.labels.data, uint8(192));

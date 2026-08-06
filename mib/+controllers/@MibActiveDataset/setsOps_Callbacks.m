@@ -10,15 +10,15 @@ function setsOps_Callbacks(obj, hWidget, hData, mode)
 % Datasets panel. Supports add, rename, remove, select, and sort operations.
 %
 % Input Arguments:
-%   - **hWidget** — [matlab.ui.container.Menu | matlab.ui.control.DropDown | matlab.ui.control.Button] handle to the widget that triggered the callback
-%   - **hData** — [matlab.ui.eventdata.MenuSelectedData | matlab.ui.eventdata.ValueChangedData | matlab.ui.eventdata.ButtonPushedData] event data from the widget
-%   - **mode** — *(optional)* [char] operation mode identifier; when empty or missing, ``hWidget.Tag`` is used:
+%   - **hWidget** - [matlab.ui.container.Menu | matlab.ui.control.DropDown | matlab.ui.control.Button] handle to the widget that triggered the callback
+%   - **hData** - [matlab.ui.eventdata.MenuSelectedData | matlab.ui.eventdata.ValueChangedData | matlab.ui.eventdata.ButtonPushedData] event data from the widget
+%   - **mode** - *(optional)* [char] operation mode identifier; when empty or missing, ``hWidget.Tag`` is used:
 %
-%     - ``'sets'`` — change the active dataset set
-%     - ``'setsContextAdd'`` — add a new dataset set
-%     - ``'setsContextRename'`` — rename the currently active set
-%     - ``'setsContextSort'`` — sort dataset sets
-%     - ``'setsContextRemove'`` — remove the currently active set
+%     - ``'sets'`` - change the active dataset set
+%     - ``'setsContextAdd'`` - add a new dataset set
+%     - ``'setsContextRename'`` - rename the currently active set
+%     - ``'setsContextSort'`` - sort dataset sets
+%     - ``'setsContextRemove'`` - remove the currently active set
 %
 % Output Arguments:
 %   None

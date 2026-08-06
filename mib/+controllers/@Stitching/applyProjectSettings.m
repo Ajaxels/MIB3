@@ -11,7 +11,7 @@ function appliedFields = applyProjectSettings(obj, settings, skipFields)
 % each saved value is written back into the ``{1}`` slot of a dropdown / numeric
 % ``BatchOpt`` cell, or straight into a logical / char field, guided by the SHAPE
 % of the current default. Unknown fields, dropdown items no longer offered, and
-% type mismatches are ignored rather than raising — a project saved by an older
+% type mismatches are ignored rather than raising - a project saved by an older
 % MIB must still load into a newer dialog.
 %
 % The method only touches ``obj.BatchOpt`` and ``obj.automaticOptions``: it never
@@ -20,16 +20,16 @@ function appliedFields = applyProjectSettings(obj, settings, skipFields)
 % :meth:`controllers.Stitching.loadProjectBtn_Callback`).
 %
 % Input Arguments:
-%   - **settings** — struct as returned by :func:`utils.stitch.loadProject`
+%   - **settings** - struct as returned by :func:`utils.stitch.loadProject`
 %     (8th output); an empty struct applies nothing
-%   - **skipFields** *(optional)* — [cell] field names to leave untouched.
+%   - **skipFields** *(optional)* - [cell] field names to leave untouched.
 %     Pass ``{'InputPath', 'OutputPath'}`` for the "settings only" load, where
 %     the parameters are reused on a DIFFERENT set of tiles.
 %
 % Output Arguments:
-%   - **appliedFields** — [cell] names of the fields actually written
+%   - **appliedFields** - [cell] names of the fields actually written
 %
-% **Example** — reuse a project's parameters on the tiles selected right now:
+% **Example** - reuse a project's parameters on the tiles selected right now:
 %
 %   .. code-block:: matlab
 %
@@ -73,13 +73,13 @@ for fieldIdx = 1:numel(persistedFields)
 
     if iscell(currentValue)
         if numel(currentValue) > 1 && iscell(currentValue{2})
-            % Dropdown {'selected', {items}} — accept only items this MIB offers,
+            % Dropdown {'selected', {items}} - accept only items this MIB offers,
             % so a renamed/removed choice falls back to the current default.
             savedValue = char(savedValue);
             if ~ismember(savedValue, currentValue{2}); continue; end
             obj.BatchOpt.(fieldName){1} = savedValue;
         else
-            % Numeric spinner {value, [minLim maxLim], 'on'|'off'} — clamp to the
+            % Numeric spinner {value, [minLim maxLim], 'on'|'off'} - clamp to the
             % limits in force now (they may be dataset-derived).
             if ~isnumeric(savedValue) || ~isscalar(savedValue); continue; end
             savedValue = double(savedValue);

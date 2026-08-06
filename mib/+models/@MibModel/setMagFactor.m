@@ -7,20 +7,20 @@ function setMagFactor(obj, magFactor, id)
 %       obj.setMagFactor(magFactor, id)
 %
 % Input Arguments:
-%   - **magFactor** — magnification factor
-%   - **id** — *(optional)* id of the dataset, otherwise the currently shown
+%   - **magFactor** - magnification factor
+%   - **id** - *(optional)* id of the dataset, otherwise the currently shown
 %     dataset (obj.id)
 %
 % Output Arguments:
 %
 % Usage:
-%   **Example 1** — set current magFactor to 2
+%   **Example 1** - set current magFactor to 2
 %
 %   .. code-block:: matlab
 %
 %      obj.mibModel.setMagFactor(2);
 %
-%   **Example 2** — set magFactor to 2 for dataset 4
+%   **Example 2** - set magFactor to 2 for dataset 4
 %
 %   .. code-block:: matlab
 %

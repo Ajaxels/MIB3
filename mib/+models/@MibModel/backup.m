@@ -9,7 +9,7 @@ function backup(obj, type, switch3d, getDataOptions)
 % The dataset is stored in the MibBackup class (obj.Backup).
 %
 % Input Arguments:
-%   - **type** — 'image', 'selection', 'mask', 'model' (swapped to labels), 'labels',
+%   - **type** - 'image', 'selection', 'mask', 'model' (swapped to labels), 'labels',
 %     'everything' (for MibLabels63 only), 'modelLayers', 'lines3d',
 %     'annotations', 'measurements', 'mibDataset'
 %
@@ -17,28 +17,28 @@ function backup(obj, type, switch3d, getDataOptions)
 %     **objects** instead of a pixel snapshot, so the model type is restored
 %     together with the data. Use it before operations that replace the labels
 %     layer with a different model type (Standard datasets only)
-%   - **switch3d** — a switch to define a 2D or 3D mode to store the dataset
+%   - **switch3d** - a switch to define a 2D or 3D mode to store the dataset
 %
-%     - ``0`` — 2D slice
-%     - ``1`` — 3D dataset
+%     - ``0`` - 2D slice
+%     - ``1`` - 3D dataset
 %
-%   - **getDataOptions** — *(optional)* a structure with extra parameters
+%   - **getDataOptions** - *(optional)* a structure with extra parameters
 %
-%     - ``.blockModeSwitch`` — *(optional)*, crop the stored dataset to the visible
+%     - ``.blockModeSwitch`` - *(optional)*, crop the stored dataset to the visible
 %       portion of the data, when true, overrides .y and .x fields
-%     - ``.y`` — *(optional)*, [ymin, ymax] of the part of the dataset to store
-%     - ``.x`` — *(optional)*, [xmin, xmax] of the part of the dataset to store
-%     - ``.z`` — *(optional)*, [zmin, zmax] of the part of the dataset to store
-%     - ``.t`` — *(optional)*, [tmin, tmax] of the part of the dataset to store
-%     - ``.roiId`` — *(optional)*, use or not the ROI mode (**when** missing or less
-%       than 0, return full dataset; **0** — return all shown ROIs dataset;
-%       **Index** or ``[]`` — return ROI with this index or currently selected)
-%     - ``.id`` — *(optional)*, index of the dataset to backup
-%     - ``.LinkedVariable`` — *(optional)* additional structure with variable names to
+%     - ``.y`` - *(optional)*, [ymin, ymax] of the part of the dataset to store
+%     - ``.x`` - *(optional)*, [xmin, xmax] of the part of the dataset to store
+%     - ``.z`` - *(optional)*, [zmin, zmax] of the part of the dataset to store
+%     - ``.t`` - *(optional)*, [tmin, tmax] of the part of the dataset to store
+%     - ``.roiId`` - *(optional)*, use or not the ROI mode (**when** missing or less
+%       than 0, return full dataset; **0** - return all shown ROIs dataset;
+%       **Index** or ``[]`` - return ROI with this index or currently selected)
+%     - ``.id`` - *(optional)*, index of the dataset to backup
+%     - ``.LinkedVariable`` - *(optional)* additional structure with variable names to
 %       store; ``.LinkedVariable.Fieldname`` specifies the variable name as seen from
 %       mibController, e.g.
 %       ``getDataOptions.LinkedVariable.Points = 'obj.mibModel.sessionSettings.SAMsegmenter.Points';``
-%     - ``.LinkedData`` — *(optional)* additional structure with data values to store;
+%     - ``.LinkedData`` - *(optional)* additional structure with data values to store;
 %       Fieldname must match Fieldname in ``.LinkedVariable``, e.g.
 %       ``getDataOptions.LinkedData.Points.Position = [];`` and
 %       ``getDataOptions.LinkedData.Points.Value = [];``
@@ -47,81 +47,81 @@ function backup(obj, type, switch3d, getDataOptions)
 % Output Arguments:
 %
 % Usage:
-%   **Example 1** — store the current 2D selection slice before modifying it
+%   **Example 1** - store the current 2D selection slice before modifying it
 %
 %   .. code-block:: matlab
 %
 %      obj.mibModel.backup('selection', 0);
 %
-%   **Example 2** — store the full 3D selection volume before a 3D operation
+%   **Example 2** - store the full 3D selection volume before a 3D operation
 %
 %   .. code-block:: matlab
 %
 %      obj.mibModel.backup('selection', 1);
 %
-%   **Example 3** — store the mask layer for the current 2D slice
+%   **Example 3** - store the mask layer for the current 2D slice
 %
 %   .. code-block:: matlab
 %
 %      obj.mibModel.backup('mask', 0);
 %
-%   **Example 4** — store the model layer as 3D before batch processing
+%   **Example 4** - store the model layer as 3D before batch processing
 %
 %   .. code-block:: matlab
 %
 %      obj.mibModel.backup('labels', 1);
 %
-%   **Example 5** — for type-63 models, 'selection'/'mask'/'labels' are automatically
+%   **Example 5** - for type-63 models, 'selection'/'mask'/'labels' are automatically
 %   converted to 'everything' (all three layers packed together)
 %
 %   .. code-block:: matlab
 %
 %      obj.mibModel.backup('selection', 0);
 %
-%   **Example 6** — store image data (2D slice) — also saves full image metadata
+%   **Example 6** - store image data (2D slice) - also saves full image metadata
 %
 %   .. code-block:: matlab
 %
 %      obj.mibModel.backup('image', 0);
 %
-%   **Example 7** — store image data (3D volume)
+%   **Example 7** - store image data (3D volume)
 %
 %   .. code-block:: matlab
 %
 %      obj.mibModel.backup('image', 1);
 %
-%   **Example 8** — store annotations before editing them
+%   **Example 8** - store annotations before editing them
 %
 %   .. code-block:: matlab
 %
 %      obj.mibModel.backup('annotations', 0);
 %
-%   **Example 9** — store 3D lines/skeletons before modification
+%   **Example 9** - store 3D lines/skeletons before modification
 %
 %   .. code-block:: matlab
 %
 %      obj.mibModel.backup('lines3d', 0);
 %
-%   **Example 10** — store the entire MibDataset (deep copy) for complex operations
+%   **Example 10** - store the entire MibDataset (deep copy) for complex operations
 %
 %   .. code-block:: matlab
 %
 %      obj.mibModel.backup('mibDataset', 1);
 %
-%   **Example 10b** — store the segmentation layers before changing the model type
+%   **Example 10b** - store the segmentation layers before changing the model type
 %
 %   .. code-block:: matlab
 %
 %      obj.mibModel.backup('modelLayers', 1);
 %
-%   **Example 11** — store only the visible block (block mode) of the selection
+%   **Example 11** - store only the visible block (block mode) of the selection
 %
 %   .. code-block:: matlab
 %
 %      backupOpt.blockModeSwitch = true;
 %      obj.mibModel.backup('selection', 0, backupOpt);
 %
-%   **Example 12** — store a specific sub-region of the dataset
+%   **Example 12** - store a specific sub-region of the dataset
 %
 %   .. code-block:: matlab
 %
@@ -130,14 +130,14 @@ function backup(obj, type, switch3d, getDataOptions)
 %      backupOpt.z = [10, 10];
 %      obj.mibModel.backup('selection', 0, backupOpt);
 %
-%   **Example 13** — store backup for a specific dataset (not the currently shown one)
+%   **Example 13** - store backup for a specific dataset (not the currently shown one)
 %
 %   .. code-block:: matlab
 %
 %      backupOpt.id = 2;
 %      obj.mibModel.backup('selection', 1, backupOpt);
 %
-%   **Example 14** — store with LinkedData for SAM segmenter undo support
+%   **Example 14** - store with LinkedData for SAM segmenter undo support
 %
 %   .. code-block:: matlab
 %
@@ -173,14 +173,14 @@ id = getDataOptions.id;
 %
 % Virtual ('V'): the model is full-resolution in memory and the editing tools write
 % full-res, so capture at magFactor=1. Otherwise getData2D would return the displayed
-% (downsampled) level — at e.g. 50% zoom the stored slice is half-size and store()
+% (downsampled) level - at e.g. 50% zoom the stored slice is half-size and store()
 % records its coordinates in displayed pixels, so undo (setData writes the finest
 % level) paints that small snapshot into a wrong, smaller region.
 %
 % BigData ('B', disk-backed level map): the edit is committed to the WORKING pyramid
 % level (setData63 writes that level + coarser, never full-res), so the snapshot must
 % match. Forcing magFactor=1 here would read the entire gigapixel level-1 slice (~8 s
-% on CMU-1) AND trigger materializeForRead at level 1 — prematurely upsampling and
+% on CMU-1) AND trigger materializeForRead at level 1 - prematurely upsampling and
 % writing L1 chunks, defeating the lazy level map. Instead snapshot at the working
 % level's NATIVE scale: lossless (resizeFactor==1, no display resize), small, and fast.
 % The magFactor is stored in the undo entry, so restore/redo write back to that exact
@@ -190,7 +190,7 @@ if ~isfield(getDataOptions, 'magFactor')
         levelIdx = obj.I{id}.labels.pickLevel(struct('magFactor', obj.I{id}.magFactor));
         getDataOptions.magFactor = obj.I{id}.labels.modelScaleFactors(levelIdx, 1);
         % store() fills any absent x/y from the captured data SIZE, which at a coarse
-        % level is in LEVEL pixels — but getData63/setData63 (orientPhysRanges) read
+        % level is in LEVEL pixels - but getData63/setData63 (orientPhysRanges) read
         % options.x/y as FULL-RESOLUTION coordinates. Pin them to the full-res extent
         % so capture and restore agree; otherwise undo writes the snapshot into the
         % wrong (shrunken) region and appears to restore nothing. Block/ROI modes set
@@ -233,7 +233,7 @@ end
 % whole-layer snapshot: keeps the labels/selection/mask OBJECTS rather than a
 % pixel copy, so the model type is part of the entry. Use it before any
 % operation that replaces the labels layer with one of a different type
-% (convertModel, stitchModelInstances) — a pixel snapshot cannot be written
+% (convertModel, stitchModelInstances) - a pixel snapshot cannot be written
 % back once the type changed, because a type-63 layer keeps mask and selection
 % in bits 7-8 of obj.labels while the larger types keep them separate.
 if strcmp(type, 'modelLayers')

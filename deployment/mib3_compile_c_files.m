@@ -4,12 +4,12 @@ mibDir = fileparts(which('mib3'));   % C:\Matlab\MIB3\mib
 
 progressBar = waitbar(0, sprintf('Starting compilation\nPlease wait...'), 'Name', 'Compiling C/C++ files for MIB3');
 
-%% Volume rendering  — NOT present in MIB3 (no external/volren directory)
+%% Volume rendering  - NOT present in MIB3 (no external/volren directory)
 % currDir = fullfile(mibDir, 'external', 'volren');
 % cd(currDir);
 % mex -compatibleArrayDims -v affine_transform_2d_double.c image_interpolation.c;
 
-%% Frangi vesselness filter  — NOT present in MIB3 (no external/Frangi directory)
+%% Frangi vesselness filter  - NOT present in MIB3 (no external/Frangi directory)
 % waitbar(0.05, progressBar, sprintf('Compiling Frangi\nPlease wait...'));
 % currDir = fullfile(mibDir, 'external', 'Frangi');
 % cd(currDir);
@@ -44,7 +44,7 @@ mex('slicsupervoxelmex.c', '-v');
 mex('slicsupervoxelmex_byte.c', '-v');
 mex -v -largeArrayDims maxflowmex_v222.cpp maxflow-v2.22/adjacency_list_new_interface/graph.cpp maxflow-v2.22/adjacency_list_new_interface/maxflow.cpp
 
-%% GetExeLocation — acquires path to deployed MIB3 executable
+%% GetExeLocation - acquires path to deployed MIB3 executable
 waitbar(0.75, progressBar, sprintf('Compiling GetExeLocation\nPlease wait...'));
 currDir = fullfile(mibDir, '+utils');
 cd(currDir);

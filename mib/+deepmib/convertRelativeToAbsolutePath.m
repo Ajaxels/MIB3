@@ -8,21 +8,21 @@ function result = convertRelativeToAbsolutePath(relativePath, absolutePath, temp
 %      result = convertRelativeToAbsolutePath(relativePath, absolutePath, templateText)
 %
 % Input Arguments:
-%   - **relativePath** — [string] relative path containing the template, e.g.
+%   - **relativePath** - [string] relative path containing the template, e.g.
 %     ``'[RELATIVE]\..\..\dir1\subdir1'``
-%   - **absolutePath** — [string] absolute base path, e.g.
+%   - **absolutePath** - [string] absolute base path, e.g.
 %     ``'c:\myfiles\dir2\subdir2'``
-%   - **templateText** — [string] placeholder to replace, e.g. ``'[RELATIVE]'``
+%   - **templateText** - [string] placeholder to replace, e.g. ``'[RELATIVE]'``
 %
 % Output Arguments:
-%   - **result** — [string] reconstructed absolute path
+%   - **result** - [string] reconstructed absolute path
 %
 % Usage:
 %
 %   .. note::
 %      The reverse operation is done using ``deepmib.convertAbsoluteToRelativePath``.
 %
-%   **Example 1** — convert a relative path back to an absolute one
+%   **Example 1** - convert a relative path back to an absolute one
 %
 %   .. code-block:: matlab
 %

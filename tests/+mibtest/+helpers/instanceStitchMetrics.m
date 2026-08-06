@@ -7,10 +7,10 @@ function metrics = instanceStitchMetrics(stitched, groundTruth)
 % from voxel overlap, so the two volumes may use completely different numbering.
 %
 % Definitions (based on the object-overlap contingency table):
-%   - **false merge** — one *output* (stitched) label whose voxels overlap two
+%   - **false merge** - one *output* (stitched) label whose voxels overlap two
 %     or more distinct GT objects. The stitcher fused things that should be
 %     separate.
-%   - **false split** — one *GT* object whose voxels are covered by two or more
+%   - **false split** - one *GT* object whose voxels are covered by two or more
 %     distinct output labels. The stitcher broke one object into pieces.
 %
 % A GT object and an output label are only considered "linked" when their
@@ -24,18 +24,18 @@ function metrics = instanceStitchMetrics(stitched, groundTruth)
 %       m = mibtest.helpers.instanceStitchMetrics(stitched, groundTruth)
 %
 % Output Arguments:
-%   - **metrics** — struct with fields:
+%   - **metrics** - struct with fields:
 %
-%     - ``.numFalseMerge``   — number of output labels covering >=2 GT objects
-%     - ``.numFalseSplit``   — number of GT objects covered by >=2 output labels
-%     - ``.numGtObjects``    — number of distinct nonzero GT objects
-%     - ``.numOutObjects``   — number of distinct nonzero output labels
-%     - ``.numOneToOne``     — GT objects with exactly one matching output label
+%     - ``.numFalseMerge``   - number of output labels covering >=2 GT objects
+%     - ``.numFalseSplit``   - number of GT objects covered by >=2 output labels
+%     - ``.numGtObjects``    - number of distinct nonzero GT objects
+%     - ``.numOutObjects``   - number of distinct nonzero output labels
+%     - ``.numOneToOne``     - GT objects with exactly one matching output label
 %       that in turn matches only that GT object (clean reconstructions)
-%     - ``.linkTable``       — sparse [numGt x numOut] intersection-voxel counts
+%     - ``.linkTable``       - sparse [numGt x numOut] intersection-voxel counts
 %
 % Notes:
-%   - Pure, headless, no MIB dependencies — safe to call from Unit tests.
+%   - Pure, headless, no MIB dependencies - safe to call from Unit tests.
 
 minOverlapVoxels = 1;
 

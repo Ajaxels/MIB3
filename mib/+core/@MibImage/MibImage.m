@@ -47,14 +47,14 @@ classdef MibImage < matlab.mixin.Copyable
         pixSize
         % Physical voxel dimensions. A struct with fields:
         %
-        % - ``.x`` — physical width of a pixel in ``.units``
-        % - ``.y`` — physical height of a pixel in ``.units``
-        % - ``.z`` — physical thickness of a slice in ``.units``
-        % - ``.t`` — time between frames (for movies)
-        % - ``.units`` — spatial units: 'm' | 'cm' | 'mm' | 'um' | 'nm'
-        % - ``.tunits`` — time units string
+        % - ``.x`` - physical width of a pixel in ``.units``
+        % - ``.y`` - physical height of a pixel in ``.units``
+        % - ``.z`` - physical thickness of a slice in ``.units``
+        % - ``.t`` - time between frames (for movies)
+        % - ``.units`` - spatial units: 'm' | 'cm' | 'mm' | 'um' | 'nm'
+        % - ``.tunits`` - time units string
         %
-        % IMPORTANT — always write via ``MibDataset.setPixSize()``:
+        % IMPORTANT - always write via ``MibDataset.setPixSize()``:
         %
         %   ds.setPixSize(newPixSize)       % updates image + labels + mask + selection
         %
@@ -90,9 +90,9 @@ classdef MibImage < matlab.mixin.Copyable
         viewPort
         % a structure with viewing parameters:
         %
-        % - ``.min`` — a vector with minimal value for intensity stretching for each color channel
-        % - ``.max`` — a vector with maximal value for intensity stretching for each color channel
-        % - ``.gamma`` — a vector with gamma factor for contrast adjustment for each color channel
+        % - ``.min`` - a vector with minimal value for intensity stretching for each color channel
+        % - ``.max`` - a vector with maximal value for intensity stretching for each color channel
+        % - ``.gamma`` - a vector with gamma factor for contrast adjustment for each color channel
         customMeta = struct()
         % a struct holding non-standard metadata supplied by loaders
         % (e.g. parsed XML from BioFormats).  Normally empty; populated
@@ -166,25 +166,25 @@ classdef MibImage < matlab.mixin.Copyable
             % dataClass) from the actual data size.
             %
             % Input Arguments:
-            %   - **data** — *(optional)* 2-D to 5-D numeric array, any class.
+            %   - **data** - *(optional)* 2-D to 5-D numeric array, any class.
             %     Accepted input shapes and how they are interpreted:
             %
-            %     - ``[]`` or omitted — empty placeholder; ``obj.exists = false``
-            %     - ``[H, W]`` — single grayscale slice
-            %     - ``[H, W, C]`` — C-channel 2-D image (C < 4); dim 3 is
+            %     - ``[]`` or omitted - empty placeholder; ``obj.exists = false``
+            %     - ``[H, W]`` - single grayscale slice
+            %     - ``[H, W, C]`` - C-channel 2-D image (C < 4); dim 3 is
             %       permuted to dim 4 so storage becomes ``[H,W,1,C]``
-            %     - ``[H, W, C]`` — 3-D stack when C >= 4 (no permute)
-            %     - ``[H, W, Z, C]`` — multi-channel 3-D stack
-            %     - ``[H, W, Z, C, T]`` — full 5-D dataset
+            %     - ``[H, W, C]`` - 3-D stack when C >= 4 (no permute)
+            %     - ``[H, W, Z, C]`` - multi-channel 3-D stack
+            %     - ``[H, W, Z, C, T]`` - full 5-D dataset
             %
-            %     **Note** — the ``[H,W,C]`` → ``[H,W,1,C]`` permute applies to MibImage
+            %     **Note** - the ``[H,W,C]`` → ``[H,W,1,C]`` permute applies to MibImage
             %     only. MibLabels and MibLabels63 store depth in dim 3 and are never permuted.
             %
-            %   - **meta** — *(optional)* metadata dictionary from
+            %   - **meta** - *(optional)* metadata dictionary from
             %     ``core.MibImage.initializeImgInfo()``. Pass ``[]`` to use defaults.
             %
             % Usage:
-            %   **Example 1** — 1. Grayscale 3-D stack (512×512×10, uint8)
+            %   **Example 1** - 1. Grayscale 3-D stack (512×512×10, uint8)
             %
             %   .. code-block:: matlab
             %

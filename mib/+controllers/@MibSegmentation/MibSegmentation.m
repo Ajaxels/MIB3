@@ -59,13 +59,13 @@ classdef MibSegmentation
             % table management, color schemes, and utility functions.
             %
             % Input Arguments:
-            %   - **mainCtrl** — [controllers.MibController] handle to main MIB controller
-            %   - **view** — [MibView] handle to main application view
-            %   - **guiHandles** — [views.components.Segmentation] handle to Segmentation panel GUI component
-            %   - **model** — [models.MibModel] handle to main MIB data model
+            %   - **mainCtrl** - [controllers.MibController] handle to main MIB controller
+            %   - **view** - [MibView] handle to main application view
+            %   - **guiHandles** - [views.components.Segmentation] handle to Segmentation panel GUI component
+            %   - **model** - [models.MibModel] handle to main MIB data model
             %
             % Output Arguments:
-            %   - **obj** — [MibSegmentation] initialized controller instance
+            %   - **obj** - [MibSegmentation] initialized controller instance
             %
             % **Initialization sequence:**
             %   1. Stores references to main controller, view, model, and GUI handles

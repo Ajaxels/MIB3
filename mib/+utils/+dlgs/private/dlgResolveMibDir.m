@@ -10,10 +10,10 @@ function mibDir = dlgResolveMibDir(mibPath)
 % in a persistent variable; passing a non-empty ``mibPath`` refreshes the cache.
 %
 % Input Arguments:
-%   - **mibPath** — [char] explicit MIB installation path; pass ``''`` to use the cache.
+%   - **mibPath** - [char] explicit MIB installation path; pass ``''`` to use the cache.
 %
 % Output Arguments:
-%   - **mibDir** — [char] resolved MIB installation folder.
+%   - **mibDir** - [char] resolved MIB installation folder.
 
 persistent cachedMibDir
 

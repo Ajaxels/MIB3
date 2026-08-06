@@ -10,21 +10,21 @@ function I = addScaleBar(I, pixSize, scale, Options)
 %       imageOut = utils.addScaleBar(I, pixSize, scale, Options)
 %
 % Parameters:
-%   **I** — RGB image that requires the scale bar
+%   **I** - RGB image that requires the scale bar
 %
-%   **pixSize** — structure with pixel size fields (``.x``, ``.y``, ``.z``, ``.units``)
+%   **pixSize** - structure with pixel size fields (``.x``, ``.y``, ``.z``, ``.units``)
 %
-%   **scale** — scaling factor indicating how the pixel size differs from the ``pixSize`` structure
+%   **scale** - scaling factor indicating how the pixel size differs from the ``pixSize`` structure
 %
-%   **Options** *(optional)* — structure with additional settings:
+%   **Options** *(optional)* - structure with additional settings:
 %
-%       - ``.orientation`` — orientation of the snapshot: ``1`` (ZX), ``2`` (ZY), ``3`` (XY, default)
-%       - ``.scaleBarHeight`` — height of the scale bar in pixels (min 22), default ``[]`` (auto)
-%       - ``.bgColor`` — background color, from ``0`` (black) to ``1`` (white), default ``0``
-%       - ``.textSuffix`` — string appended after the scale text, default ``''``
+%       - ``.orientation`` - orientation of the snapshot: ``1`` (ZX), ``2`` (ZY), ``3`` (XY, default)
+%       - ``.scaleBarHeight`` - height of the scale bar in pixels (min 22), default ``[]`` (auto)
+%       - ``.bgColor`` - background color, from ``0`` (black) to ``1`` (white), default ``0``
+%       - ``.textSuffix`` - string appended after the scale text, default ``''``
 %
 % Return values:
-%   **I** — input image with the scale bar appended at the bottom
+%   **I** - input image with the scale bar appended at the bottom
 
 if nargin < 4; Options = struct(); end
 if ~isfield(Options, 'orientation'); Options.orientation = 3; end

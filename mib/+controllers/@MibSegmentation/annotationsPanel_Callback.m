@@ -10,16 +10,16 @@ function annotationsPanel_Callback(obj, hWidget, hData)
 % Supports annotation list management, visualization options, and precision control.
 %
 % Input Arguments:
-%   - **hWidget** — [matlab.ui.control.Button | matlab.ui.control.CheckBox | matlab.ui.control.Spinner | matlab.ui.control.DropDown] pressed widget; operation identified via ``hWidget.Tag``:
+%   - **hWidget** - [matlab.ui.control.Button | matlab.ui.control.CheckBox | matlab.ui.control.Spinner | matlab.ui.control.DropDown] pressed widget; operation identified via ``hWidget.Tag``:
 %
-%     - ``'annAnnotationList'`` — open annotation list management window
-%     - ``'annShowPrompt'`` — show/hide prompt when adding new annotations
-%     - ``'annFocusOnValue'`` — focus on value field when showing prompt
-%     - ``'annPrecision'`` — set floating-point precision for annotation values
-%     - ``'annDeleteAll'`` — delete all annotations from dataset
-%     - ``'annDisplayAs'`` — select annotation visualization mode
+%     - ``'annAnnotationList'`` - open annotation list management window
+%     - ``'annShowPrompt'`` - show/hide prompt when adding new annotations
+%     - ``'annFocusOnValue'`` - focus on value field when showing prompt
+%     - ``'annPrecision'`` - set floating-point precision for annotation values
+%     - ``'annDeleteAll'`` - delete all annotations from dataset
+%     - ``'annDisplayAs'`` - select annotation visualization mode
 %
-%   - **hData** — [matlab.ui.eventdata.ButtonPushedData | matlab.ui.eventdata.ValueChangedData] event data from widget
+%   - **hData** - [matlab.ui.eventdata.ButtonPushedData | matlab.ui.eventdata.ValueChangedData] event data from widget
 %
 % Output Arguments:
 %   None

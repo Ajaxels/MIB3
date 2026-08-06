@@ -14,35 +14,35 @@ function convertModel(obj, newType, wb)
 % models (types 2.4, 2.8, 3.6, 3.26).
 %
 % Type-63 models store material, mask, and selection in a single uint8
-% array (bits 1–6 = material index 0–63, bit 7 = mask, bit 8 = selection).
+% array (bits 1-6 = material index 0-63, bit 7 = mask, bit 8 = selection).
 % Converting to a higher type unpacks these bits into separate layer
 % objects.  Converting back packs them again.
 %
 % Input Arguments:
-%   - **newType** — numeric target model type:
+%   - **newType** - numeric target model type:
 %
-%     - ``63``         — packed uint8 (``core.MibLabels63``)
-%     - ``255``        — separate uint8 labels (``core.MibLabels``)
-%     - ``65535``      — separate uint16 labels (``core.MibLabels``)
-%     - ``4294967295`` — separate uint32 labels (``core.MibLabels``)
-%     - ``2.4``        — 2D connected components, connectivity 4
-%     - ``2.8``        — 2D connected components, connectivity 8
-%     - ``3.6``        — 3D connected components, connectivity 6
-%     - ``3.26``       — 3D connected components, connectivity 26
+%     - ``63``         - packed uint8 (``core.MibLabels63``)
+%     - ``255``        - separate uint8 labels (``core.MibLabels``)
+%     - ``65535``      - separate uint16 labels (``core.MibLabels``)
+%     - ``4294967295`` - separate uint32 labels (``core.MibLabels``)
+%     - ``2.4``        - 2D connected components, connectivity 4
+%     - ``2.8``        - 2D connected components, connectivity 8
+%     - ``3.6``        - 3D connected components, connectivity 6
+%     - ``3.26``       - 3D connected components, connectivity 26
 %
-%   - **wb** *(optional)* — ``uiprogressdlg`` handle; pass ``[]`` to skip
+%   - **wb** *(optional)* - ``uiprogressdlg`` handle; pass ``[]`` to skip
 %     progress reporting
 %
 % Output Arguments:
 %   (none)
 %
-% **Example 1** — convert to 255-material type
+% **Example 1** - convert to 255-material type
 %
 %   .. code-block:: matlab
 %
 %      obj.convertModel(255);
 %
-% **Example 2** — detect 2D connected components (connectivity 8)
+% **Example 2** - detect 2D connected components (connectivity 8)
 %
 %   .. code-block:: matlab
 %

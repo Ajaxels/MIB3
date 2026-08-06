@@ -11,18 +11,18 @@ function imOut = fstack_mib(I, options)
 % noise-robust selective all-in-focus algorithm [1].
 %
 % Input Arguments:
-%   - **I** — image stack ``[height, width, colors, depth]``; numeric array.
-%   - **options** — *(optional)* struct with algorithm parameters:
+%   - **I** - image stack ``[height, width, colors, depth]``; numeric array.
+%   - **options** - *(optional)* struct with algorithm parameters:
 %
-%     - ``.nhsize``      — focus-measure window size (default ``9``).
-%     - ``.focus``       — vector of focus values per frame
+%     - ``.nhsize``      - focus-measure window size (default ``9``).
+%     - ``.focus``       - vector of focus values per frame
 %                          (default ``1:depth``).
-%     - ``.alpha``       — scalar in ``(0,1]`` (default ``0.2``). See [1].
-%     - ``.sth``         — scalar threshold (default ``13``). See [1].
-%     - ``.showWaitbar`` — show progress waitbar (default ``true``).
+%     - ``.alpha``       - scalar in ``(0,1]`` (default ``0.2``). See [1].
+%     - ``.sth``         - scalar threshold (default ``13``). See [1].
+%     - ``.showWaitbar`` - show progress waitbar (default ``true``).
 %
 % Output Arguments:
-%   - **imOut** — single-plane all-in-focus image ``[height, width, colors]``,
+%   - **imOut** - single-plane all-in-focus image ``[height, width, colors]``,
 %                 same class as ``I``.
 %
 % References:

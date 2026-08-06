@@ -49,7 +49,7 @@ classdef Granularity < handle
 
         % -----------------------------------------------------------------
         function obj = Granularity(mibModel)
-        % Granularity  Constructor — initialises controller and GUI.
+        % Granularity  Constructor - initialises controller and GUI.
         %
         % Parameters:
         % mibModel: handle to the MibModel instance
@@ -57,7 +57,7 @@ classdef Granularity < handle
             obj.mibModel = mibModel;
             id = obj.mibModel.getActiveId();
 
-            % check for virtual stacking mode — not supported
+            % check for virtual stacking mode - not supported
             if isprop(obj.mibModel.I{id}, 'Virtual') && obj.mibModel.I{id}.Virtual.virtual == 1
                 dlgOpt.MsgBoxOnly = true;
                 dlgOpt.Icon = 'puffin_warning';
@@ -162,9 +162,9 @@ classdef Granularity < handle
             handles.timelapse2D.Tooltip     = 'Analyze each slice independently as a 2D image (z-stack or timelapse)';
             handles.volume3D.Tooltip        = 'Analyze the full 3D volume; the structuring element is rotated through all orientations';
 
-            handles.xSubareaEdit.Tooltip    = 'X pixel range for the analysis subarea — format: start:end (e.g. 1:512)';
-            handles.ySubareaEdit.Tooltip    = 'Y pixel range for the analysis subarea — format: start:end (e.g. 1:512)';
-            handles.zSubareaEdit.Tooltip    = 'Z slice range for the analysis subarea — format: start:end (e.g. 1:50)';
+            handles.xSubareaEdit.Tooltip    = 'X pixel range for the analysis subarea - format: start:end (e.g. 1:512)';
+            handles.ySubareaEdit.Tooltip    = 'Y pixel range for the analysis subarea - format: start:end (e.g. 1:512)';
+            handles.zSubareaEdit.Tooltip    = 'Z slice range for the analysis subarea - format: start:end (e.g. 1:50)';
             handles.resetDimsBtn.Tooltip    = 'Reset the subarea to cover the full dataset dimensions';
             handles.currentViewBtn.Tooltip  = 'Set the XY subarea to the region currently visible in the Image View panel';
             handles.subAreaFromSelectionBtn.Tooltip = 'Set the subarea bounding box from the bounding box of the current Selection layer';
@@ -172,7 +172,7 @@ classdef Granularity < handle
             handles.strelTypePopup.Tooltip      = 'Shape of the structuring element: disk = circle, rectangle = square, sphere = cross-section of a sphere';
             handles.strelSizeEdit.Tooltip       = 'XY radius of the structuring element in pixels';
             handles.strelSizeZEdit.Tooltip      = 'Z radius in voxels (volume3D mode only); set to 0 to use a flat disc at every Z level';
-            handles.strelRotationsEdit.Tooltip  = 'Number of angular steps for 3D rotation of the structuring element — higher = more accurate but slower';
+            handles.strelRotationsEdit.Tooltip  = 'Number of angular steps for 3D rotation of the structuring element - higher = more accurate but slower';
             handles.previewStrelBtn.Tooltip     = 'Preview the current structuring element shape in a figure window';
 
             handles.sourceMaterialPopup.Tooltip = 'Layer to analyse: ''Mask'' for the binary mask, or a material from the loaded model';

@@ -9,9 +9,9 @@ function gui_Callbacks(obj, source, event)
 % Routes by ``source.Tag`` to the appropriate action.
 %
 % Input Arguments:
-%   - **obj** — :class:`controllers.MeasureTool`
-%   - **source** — widget handle that fired the event
-%   - **event** — event data (ignored for most widgets; used for table selection)
+%   - **obj** - :class:`controllers.MeasureTool`
+%   - **source** - widget handle that fired the event
+%   - **event** - event data (ignored for most widgets; used for table selection)
 %
 
 datasetId = obj.mibModel.getActiveId();

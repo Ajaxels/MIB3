@@ -1,5 +1,5 @@
 function createModel(obj, ModelType, ModelMaterialNames, BatchOptIn)
-% CREATEMODEL - Create a new model — wrapper around core.MibDataset.createModel.
+% CREATEMODEL - Create a new model - wrapper around core.MibDataset.createModel.
 %
 % Syntax:
 %   .. code-block:: matlab
@@ -7,14 +7,14 @@ function createModel(obj, ModelType, ModelMaterialNames, BatchOptIn)
 %       obj.createModel(ModelType, ModelMaterialNames, BatchOptIn)
 %
 % Input Arguments:
-%   - **ModelType** — *(optional)*, can be empty: []; a number with the model type:
+%   - **ModelType** - *(optional)*, can be empty: []; a number with the model type:
 %   - 63 - 63 material model
 %   - 255 - 255 material model
 %   - 65535 - 65535 material model
 %   - 4294967295 - 4294967295 material model
-%   - **ModelMaterialNames** — *(optional)* can be empty: []; a cell array with
+%   - **ModelMaterialNames** - *(optional)* can be empty: []; a cell array with
 %     names of materials; not used for ModelType > 255
-%   - **BatchOptIn** — a structure for batch processing mode; when NaN, returns a
+%   - **BatchOptIn** - a structure for batch processing mode; when NaN, returns a
 %     structure with default options via "SyncBatch" event
 %   - .ModelType - cell string, {'63', '255', '65535', '4294967295'}
 %   - .ModelMaterialNames - string with semicolon-separated material names
@@ -24,7 +24,7 @@ function createModel(obj, ModelType, ModelMaterialNames, BatchOptIn)
 % Output Arguments:
 %
 % Usage:
-%   **Example 1** — create a new model
+%   **Example 1** - create a new model
 %
 %   .. code-block:: matlab
 %
@@ -109,7 +109,7 @@ end
 
 % Check that selection/segmentation layers are enabled.
 % BigData is intentionally browse-only (enableSelection==0) until a model is
-% created — creating the model is what enables segmentation — so skip this gate.
+% created - creating the model is what enables segmentation - so skip this gate.
 if obj.I{BatchOpt.id}.enableSelection == 0 && ~isBigData
     dlgOpt.MsgBoxOnly = true;
     dlgOpt.Icon = 'puffin_warning';
@@ -175,7 +175,7 @@ end
 if isBigData
     % BigData: build the disk-backed packed (63-material) model here so the
     % chosen store path is honored WITHOUT changing core.MibDataset.createModel's
-    % signature — a parameter-count change cannot hot-reload while the running
+    % signature - a parameter-count change cannot hot-reload while the running
     % app holds dataset instances (MATLAB only hot-swaps method bodies).
     ds = obj.I{BatchOpt.id};
     bigMeta = core.MibImage.initializeImgInfo( ...
@@ -191,7 +191,7 @@ if isBigData
     ds.labels.materialColors  = obj.preferences.Colors.ModelMaterialColors;
     ds.labels.labelsVariable  = 'mibModel';
     ds.labels.filename        = '';
-    % MibLabels63's constructor hardcodes maskFilename to 'Mask_none.mask' — re-derive
+    % MibLabels63's constructor hardcodes maskFilename to 'Mask_none.mask' - re-derive
     % it from the dataset's real image filename, same as core.MibDataset.loadModel.m
     % does for Standard datasets, so "Save mask" defaults to the dataset's own name.
     ds.labels.maskFilename    = ds.image.maskFilename;
@@ -223,11 +223,11 @@ if isBigData
         if ~isfield(obj.preferences.DoNotShowDialogs, 'BigDataModelCreated') || ...
                 ~obj.preferences.DoNotShowDialogs.BigDataModelCreated
             htmlBody = sprintf(['<html><p style="font-size:10pt">The model is written to ' ...
-                'disk <b>live</b> — every edit goes straight to its <b>.zarr3</b> store. Each edit is ' ...
+                'disk <b>live</b> - every edit goes straight to its <b>.zarr3</b> store. Each edit is ' ...
                 'saved immediately at the magnification you are working at, plus the coarser overview ' ...
                 'levels; higher-resolution zoom levels are reconstructed on the fly when you zoom in ' ...
                 '(and cached), so editing stays fast at any zoom.<br><br>' ...
-                'Press <b>Save model</b> to <b>finalize</b> the store — this materializes every ' ...
+                'Press <b>Save model</b> to <b>finalize</b> the store - this materializes every ' ...
                 'resolution level so the on-disk model is complete for export and external readers. ' ...
                 'Your work is durable without it (edits persist at their drawn level), but Save makes ' ...
                 'all zoom levels consistent on disk.<br><br>' ...

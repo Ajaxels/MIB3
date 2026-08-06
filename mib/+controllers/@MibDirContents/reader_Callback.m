@@ -13,7 +13,7 @@ function reader_Callback(obj)
 % binary ``bioFormats`` checkbox / ``bioFormats_Callback``.
 %
 % The BioFormats engine (MIB-Java vs MATLAB ``bioformatsread``) is the separate
-% global preference ``IO.BioFormats.Library`` — not selected here.
+% global preference ``IO.BioFormats.Library`` - not selected here.
 %
 % Input Arguments:
 %   (none)

@@ -8,7 +8,7 @@ function twoClickBtn_Callback(obj)
 %
 % For offsets too wrong for any search radius (e.g. a tile a whole texture
 % period off): renders BOTH FULL TILES side by side (downsampled when larger
-% than ~1024 px) and collects one click on the same landmark in each — the
+% than ~1024 px) and collects one click on the same landmark in each - the
 % click difference IS the coarse offset, which a small-radius
 % :func:`utils.stitch.localCorrelate` then sharpens. Clicks are routed here by
 % :func:`pairViewButtonDown`; :func:`twoClickHandlePoint` applies the fix.

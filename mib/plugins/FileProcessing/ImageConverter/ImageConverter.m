@@ -180,12 +180,12 @@ classdef ImageConverter < handle
             % DOWNSAMPLEBLOCK - downsample a 5D block ([T C Z Y X]) by relative factors.
             %
             % Input Arguments:
-            %   - **chunkData** — numeric array ``[T C Z Y X]``, input block to downsample
-            %   - **relFactors** — ``1x3`` numeric array, relative downsampling factors ``[Z_factor Y_factor X_factor]``
-            %   - **imageSwitch** — logical; ``true`` for image ``[t,c,z,y,x]``, ``false`` for labels ``[t,z,y,x]``
+            %   - **chunkData** - numeric array ``[T C Z Y X]``, input block to downsample
+            %   - **relFactors** - ``1x3`` numeric array, relative downsampling factors ``[Z_factor Y_factor X_factor]``
+            %   - **imageSwitch** - logical; ``true`` for image ``[t,c,z,y,x]``, ``false`` for labels ``[t,z,y,x]``
             %
             % Output Arguments:
-            %   - **out** — numeric array ``[T C newZ newY newX]``, downsampled block, same class as input
+            %   - **out** - numeric array ``[T C newZ newY newX]``, downsampled block, same class as input
             arguments
                 chunkData {mustBeNumeric}
                 relFactors (1,3) {mustBePositive, mustBeFinite}
@@ -244,12 +244,12 @@ classdef ImageConverter < handle
             % WRITESUBVOLUMETOLEVEL - write a 5D subvolume to a specified Zarr multiscale level.
             %
             % Input Arguments:
-            %   - **block_tczyx** — numeric array ``[T C Z Y X]``, the subvolume to write
-            %   - **zarrPath** — [char] path to the root Zarr store
-            %   - **levelName** — [char] name of the multiscale level (e.g., ``'s0'``, ``'s1'``)
-            %   - **tIndex** — time index (1-based) in the Zarr dataset
-            %   - **zStart** — starting Z index (1-based) in the Zarr dataset
-            %   - **imageSwitch** — logical; ``true`` for image ``[t,c,z,y,x]``, ``false`` for labels ``[t,z,y,x]``
+            %   - **block_tczyx** - numeric array ``[T C Z Y X]``, the subvolume to write
+            %   - **zarrPath** - [char] path to the root Zarr store
+            %   - **levelName** - [char] name of the multiscale level (e.g., ``'s0'``, ``'s1'``)
+            %   - **tIndex** - time index (1-based) in the Zarr dataset
+            %   - **zStart** - starting Z index (1-based) in the Zarr dataset
+            %   - **imageSwitch** - logical; ``true`` for image ``[t,c,z,y,x]``, ``false`` for labels ``[t,z,y,x]``
             arguments
                 block_tczyx {mustBeNumeric}
                 zarrPath (1,:) char
@@ -285,15 +285,15 @@ classdef ImageConverter < handle
             % Subsequent steps: uniform 2x downsampling until any dimension reaches ``minImageSize``.
             %
             % Input Arguments:
-            %   - **imageSize** — ``[z y x]`` numeric array
-            %   - **voxelSize** — ``[z y x]`` numeric array
-            %   - **minImageSize** — ``[z y x]`` numeric array
+            %   - **imageSize** - ``[z y x]`` numeric array
+            %   - **voxelSize** - ``[z y x]`` numeric array
+            %   - **minImageSize** - ``[z y x]`` numeric array
             %
             % Output Arguments:
-            %   - **levelNames** — ``{'s0','s1',...}``
-            %   - **scaleFactors** — ``nLevels x 3`` cumulative per-axis downsampling factors
-            %   - **levelImageTranslations** — ``nLevels x 3`` physical translation offsets relative to s0
-            %   - **levelImageSizes** — ``nLevels x 3`` image sizes at each level
+            %   - **levelNames** - ``{'s0','s1',...}``
+            %   - **scaleFactors** - ``nLevels x 3`` cumulative per-axis downsampling factors
+            %   - **levelImageTranslations** - ``nLevels x 3`` physical translation offsets relative to s0
+            %   - **levelImageSizes** - ``nLevels x 3`` image sizes at each level
             arguments
                 imageSize (1,3) {mustBeInteger, mustBePositive}
                 voxelSize (1,3) {mustBePositive}
@@ -368,23 +368,23 @@ classdef ImageConverter < handle
             % CREATEMULTISCALEDATASET - creates a multiscale OME-Zarr dataset including arrays and metadata.
             %
             % Input Arguments:
-            %   - **zarrPath** — [char] path to the top-level Zarr folder
-            %   - **imageSize** — integer ``[T, C, Z, Y, X]`` size of the original image
-            %   - **imageType** — [char] data type of the image (e.g., ``'uint8'``, ``'float32'``)
-            %   - **levelNames** — cell array of strings, names of the multiscale levels, e.g. ``{'s0','s1','s2'}``
-            %   - **scaleXYZ** — ``[nLevels x 3]`` array of scale factors ``[Z Y X]``
-            %   - **Options** — struct with additional options:
+            %   - **zarrPath** - [char] path to the top-level Zarr folder
+            %   - **imageSize** - integer ``[T, C, Z, Y, X]`` size of the original image
+            %   - **imageType** - [char] data type of the image (e.g., ``'uint8'``, ``'float32'``)
+            %   - **levelNames** - cell array of strings, names of the multiscale levels, e.g. ``{'s0','s1','s2'}``
+            %   - **scaleXYZ** - ``[nLevels x 3]`` array of scale factors ``[Z Y X]``
+            %   - **Options** - struct with additional options:
             %
-            %     - ``.chunks`` — chunk size for each dimension as ``[T, C, Z, Y, X]``
-            %     - ``.compressionType`` — [char] ``'blosc'``, ``'gzip'``, ``'none'``
-            %     - ``.compressionLevel`` — numeric compression level (0=none, 9=best, -1=default)
-            %     - ``.zarrFormat`` — int, 2 or 3 (default: 2)
-            %     - ``.dataType`` — [char] ``'image'`` (``[T,C,Z,Y,X]``) or ``'labels'`` (``[T,Z,Y,X]``)
-            %     - ``.shards`` — ``[t c z y x]`` sharding sizes (default: ``[]``), Zarr v3 only
-            %     - ``.voxelSize`` — ``[1x3]`` physical voxel size along ``[Z Y X]`` (default: ``[1 1 1]``)
-            %     - ``.voxelUnits`` — [char] units of voxel size (``'nanometers'``, ``'micrometers'``, ``'pixels'``, ...)
-            %     - ``.levelTranslations`` — ``[nLevels x 3]`` physical translations per level (default: zeros)
-            %     - ``.customAttributes`` — struct of extra attributes to add to root.attrs (default: empty)
+            %     - ``.chunks`` - chunk size for each dimension as ``[T, C, Z, Y, X]``
+            %     - ``.compressionType`` - [char] ``'blosc'``, ``'gzip'``, ``'none'``
+            %     - ``.compressionLevel`` - numeric compression level (0=none, 9=best, -1=default)
+            %     - ``.zarrFormat`` - int, 2 or 3 (default: 2)
+            %     - ``.dataType`` - [char] ``'image'`` (``[T,C,Z,Y,X]``) or ``'labels'`` (``[T,Z,Y,X]``)
+            %     - ``.shards`` - ``[t c z y x]`` sharding sizes (default: ``[]``), Zarr v3 only
+            %     - ``.voxelSize`` - ``[1x3]`` physical voxel size along ``[Z Y X]`` (default: ``[1 1 1]``)
+            %     - ``.voxelUnits`` - [char] units of voxel size (``'nanometers'``, ``'micrometers'``, ``'pixels'``, ...)
+            %     - ``.levelTranslations`` - ``[nLevels x 3]`` physical translations per level (default: zeros)
+            %     - ``.customAttributes`` - struct of extra attributes to add to root.attrs (default: empty)
             arguments
                 zarrPath (1,:) char
                 imageSize (1,:) double {mustBePositive}
@@ -593,23 +593,23 @@ classdef ImageConverter < handle
             % CONVERTTOZARR3NATIVE - Convert a folder of image files to a native OME-Zarr v3 pyramid.
             %
             % Streams the image stack in ``imgDS`` (one file per Z-slice) to an OME-Zarr v3
-            % pyramid through ``io.savers.Zarr3Saver.saveStream`` — the same native (zarrMex)
+            % pyramid through ``io.savers.Zarr3Saver.saveStream`` - the same native (zarrMex)
             % writer, level/chunk/shard logic and bounding-box handling used by MIB's in-app
             % "Convert to BigData" and Export. No Python. After streaming, the voxel size and
             % bounding box are written with ``io.savers.Zarr3Saver.patchMetadata``.
             %
             % Input Arguments:
-            %   - **imgDS** — a ``matlab.io.datastore.ImageDatastore`` of ordered Z-slices.
-            %   - **BatchOpt** — the ImageConverter batch struct; reads the ``Zarr*`` fields
+            %   - **imgDS** - a ``matlab.io.datastore.ImageDatastore`` of ordered Z-slices.
+            %   - **BatchOpt** - the ImageConverter batch struct; reads the ``Zarr*`` fields
             %     (``ZarrImageType``, ``ZarrChunkSizes``, ``ZarrUseSharding``,
             %     ``ZarrShardXFactorsXYZ``, ``ZarrCompression``, ``ZarrVoxelSizeXYZ``,
             %     ``ZarrUnits``, ``ZarrBBShiftsXYZ``, ``ZarrDownsampleLimitXYZ``) and
             %     ``OutputDirectory``.
-            %   - **options** — *(optional)* struct with ``.ParentFigure`` (progress parent)
+            %   - **options** - *(optional)* struct with ``.ParentFigure`` (progress parent)
             %     and ``.mibPath``.
             %
             % Output Arguments:
-            %   - **fnOut** — [char] the written ``.zarr3`` group path, or ``[]`` if cancelled.
+            %   - **fnOut** - [char] the written ``.zarr3`` group path, or ``[]`` if cancelled.
             if nargin < 3; options = struct(); end
             parentFig = []; mibPath = '';
             if isfield(options, 'ParentFigure'); parentFig = options.ParentFigure; end
@@ -654,7 +654,7 @@ classdef ImageConverter < handle
 
             % --- labels: derive material names from the values actually present ---
             % ImageConverter has no external material-name source (a folder of raw
-            % label slices, no accompanying .model) — MIB's Materials table only
+            % label slices, no accompanying .model) - MIB's Materials table only
             % ever shows dataset.labels.materialNames, so leaving it empty means
             % the panel shows no materials at all even though the data has labels.
             % Generate "Material 1".."Material N" from the highest label value
@@ -1108,7 +1108,7 @@ classdef ImageConverter < handle
             end
 
             % init python environment (legacy Python zarr pipeline / xml extraction).
-            % The native zarrMex backend writing Zarr v3 needs no Python — skip it there.
+            % The native zarrMex backend writing Zarr v3 needs no Python - skip it there.
             isNativeZarrV3 = strcmp(obj.BatchOpt.OutputImageFormatExtension{1}, 'zarr') && ...
                 ~io.zarr.Config.isPython() && str2double(obj.BatchOpt.ZarrVersion{1}(end)) == 3;
             if ~isNativeZarrV3 && isempty(obj.mibModel.pythonEnv)
@@ -1265,13 +1265,13 @@ classdef ImageConverter < handle
         
         function generateZarrNative(obj, imgDS, wb)
             % function generateZarrNative(obj, imgDS, wb)
-            % Native (zarrMex) Zarr v3 generation via io.savers.Zarr3Saver — the same
+            % Native (zarrMex) Zarr v3 generation via io.savers.Zarr3Saver - the same
             % in-app pyramid/bounding-box/voxel logic, streaming one source file at a
             % time (no Python). Used when io.zarr.Config = native and output = Zarr v3.
             parentFig = [];
             if ~isempty(obj.view) && isvalid(obj.view.gui); parentFig = obj.view.gui; end
 
-            % Zarr3Saver shows its own progress dialog — release the plugin's first
+            % Zarr3Saver shows its own progress dialog - release the plugin's first
             if ~isempty(wb); delete(wb); end
 
             t2 = tic;

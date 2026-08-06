@@ -6,9 +6,9 @@ classdef SaveLoadImageTest < matlab.unittest.TestCase
 % with correct dimensions.
 %
 % Verification strategies:
-%   file created     — saveImage must write an output file to the temp folder
-%   pixel round-trip — getData3D on the reloaded dataset matches gt.image exactly
-%   dimensions       — height / width / depth are preserved through the round-trip
+%   file created     - saveImage must write an output file to the temp folder
+%   pixel round-trip - getData3D on the reloaded dataset matches gt.image exactly
+%   dimensions       - height / width / depth are preserved through the round-trip
 
     methods (TestClassSetup)
         function addPaths(testCase)

@@ -17,7 +17,7 @@ classdef ClearLayerTest < matlab.unittest.TestCase
     methods (Test, TestTags = {'Unit'})
 
         % -----------------------------------------------------------------
-        % Full-volume ('4D') clear — labels63
+        % Full-volume ('4D') clear - labels63
         % -----------------------------------------------------------------
 
         function clearSelection_labels63_zeros(testCase)
@@ -54,7 +54,7 @@ classdef ClearLayerTest < matlab.unittest.TestCase
         end
 
         % -----------------------------------------------------------------
-        % Cross-layer isolation — labels255
+        % Cross-layer isolation - labels255
         % -----------------------------------------------------------------
 
         function clearSelection_labels255_leavesImageIntact(testCase)
@@ -102,7 +102,7 @@ classdef ClearLayerTest < matlab.unittest.TestCase
         end
 
         % -----------------------------------------------------------------
-        % 2D mode — only current slice cleared
+        % 2D mode - only current slice cleared
         % -----------------------------------------------------------------
 
         function clearSelection2D_labels255_onlyCurrentSliceZeroed(testCase)
@@ -122,7 +122,7 @@ classdef ClearLayerTest < matlab.unittest.TestCase
             sliceResult = mibModel.getData2D('selection', midSlice, 3, NaN, opt);
             testCase.verifyEqual(sum(double(sliceResult{1}(:))), 0.0);
 
-            % All other slices are intact — check slice 1 (if different)
+            % All other slices are intact - check slice 1 (if different)
             if midSlice > 1
                 otherResult = mibModel.getData2D('selection', 1, 3, NaN, opt);
                 testCase.verifyEqual(squeeze(otherResult{1}), ...
@@ -152,7 +152,7 @@ classdef ClearLayerTest < matlab.unittest.TestCase
         end
 
         % -----------------------------------------------------------------
-        % 2D mode in non-XY orientations — only the current shown slice
+        % 2D mode in non-XY orientations - only the current shown slice
         % must be cleared (regression: ZX/ZY '2D' clear used to wipe the
         % whole stack because MibDataset.clearLayer reset y/x to full range
         % after pinning the slice axis).

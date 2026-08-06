@@ -14,22 +14,22 @@ function out = readInstancePatch(filename, options)
 % Patch sampling is a mix of object-seeded and uniform-random windows:
 %   - with probability ``options.objectFraction`` a random object is picked and the patch is
 %     placed with a random offset (**coordinate jitter**) so the object lands anywhere in the
-%     patch — never forced to the centre (which would teach a false "object-in-centre" prior);
+%     patch - never forced to the centre (which would teach a false "object-in-centre" prior);
 %   - otherwise a uniform-random window is taken (may be pure background).
 %
 % Input Arguments:
-%   - **filename** — [string] full path to the preprocessed ``*.mat`` (``imageFilename`` +
+%   - **filename** - [string] full path to the preprocessed ``*.mat`` (``imageFilename`` +
 %     ``instanceLabelMap``)
-%   - **options** — struct with fields:
+%   - **options** - struct with fields:
 %
-%     - ``.imageDir`` — folder holding the source images (e.g. ``TrainImages``)
-%     - ``.patchSize`` — ``[height width]`` patch size (= network input H×W)
-%     - ``.objectFraction`` — fraction of patches that are object-seeded (e.g. ``0.9``)
-%     - ``.minObjectArea`` — minimum object area (pixels) kept after cropping
-%     - ``.getImageOptions`` — struct passed to deepmib.storeLoadImages
+%     - ``.imageDir`` - folder holding the source images (e.g. ``TrainImages``)
+%     - ``.patchSize`` - ``[height width]`` patch size (= network input H×W)
+%     - ``.objectFraction`` - fraction of patches that are object-seeded (e.g. ``0.9``)
+%     - ``.minObjectArea`` - minimum object area (pixels) kept after cropping
+%     - ``.getImageOptions`` - struct passed to deepmib.storeLoadImages
 %
 % Output Arguments:
-%   - **out** — ``1×4`` cell ``{image HxWx3, boxes Kx4 [x y w h], labels Kx1 categorical,
+%   - **out** - ``1×4`` cell ``{image HxWx3, boxes Kx4 [x y w h], labels Kx1 categorical,
 %     masks HxWxK logical}`` as required by ``trainSOLOV2``.
 
 global mibDeepTrainingProgressStruct

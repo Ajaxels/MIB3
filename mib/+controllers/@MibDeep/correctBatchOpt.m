@@ -9,7 +9,7 @@ function res = correctBatchOpt(obj, res)
 % with the current version of DeepMIB
 %
 % Input Arguments:
-%   - **res** — BatchOpt structure loaded from a file
+%   - **res** - BatchOpt structure loaded from a file
 %
 
     % update res.BatchOpt to be compatible with DeepMIB v2.83

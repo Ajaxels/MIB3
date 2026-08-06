@@ -55,17 +55,17 @@ classdef WoundHealing < handle
         BatchOpt
         % structure compatible with batch processing; field names match widget Tags
         %
-        % - ``.Extension``           — [edit field] filename extension for input images
-        % - ``.NoRows``              — [spinner] number of rows in the stitching grid
-        % - ``.NoColumns``           — [spinner] number of columns in the stitching grid
-        % - ``.SelectedDirectories`` — cell array of input directory paths
-        % - ``.OutputDirectory``     — output directory path for stitched images
-        % - ``.ConvertToGrayscale``  — [checkbox] convert stitched image to grayscale
-        % - ``.PixelSize``           — [spinner] pixel size (µm) for wound healing analysis
-        % - ``.TimeStep``            — [spinner] time step (h) between images
-        % - ``.DownsampleImages``    — [spinner] % to downsample wound result images
-        % - ``.ShowInteractivePlot`` — [checkbox] show live plot during analysis
-        % - ``.showWaitbar``         — [checkbox] show progress bar
+        % - ``.Extension``           - [edit field] filename extension for input images
+        % - ``.NoRows``              - [spinner] number of rows in the stitching grid
+        % - ``.NoColumns``           - [spinner] number of columns in the stitching grid
+        % - ``.SelectedDirectories`` - cell array of input directory paths
+        % - ``.OutputDirectory``     - output directory path for stitched images
+        % - ``.ConvertToGrayscale``  - [checkbox] convert stitched image to grayscale
+        % - ``.PixelSize``           - [spinner] pixel size (µm) for wound healing analysis
+        % - ``.TimeStep``            - [spinner] time step (h) between images
+        % - ``.DownsampleImages``    - [spinner] % to downsample wound result images
+        % - ``.ShowInteractivePlot`` - [checkbox] show live plot during analysis
+        % - ``.showWaitbar``         - [checkbox] show progress bar
     end
 
     events

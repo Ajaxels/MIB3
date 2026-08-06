@@ -9,21 +9,21 @@ function status = updateAutomaticOptions(obj)
 % Pops an :func:`utils.dlgs.inputUniversalDlg` settings dialog tailored to
 % the currently selected ``Algorithm``:
 %
-% - ``AMST: median-smoothed template`` — image downsampling + pyramid
+% - ``AMST: median-smoothed template`` - image downsampling + pyramid
 %   levels + ``imregconfig`` optimizer parameters (maximum iterations,
 %   gradient-magnitude tolerance, min / max step length, relaxation
 %   factor).
-% - ``Automatic feature-based`` / ``Automatic feature-based v2`` —
+% - ``Automatic feature-based`` / ``Automatic feature-based v2`` -
 %   image downsampling, rotation-invariance flag, the per-detector
 %   parameters for the currently selected ``FeatureDetectorType``, and
-%   the ``estgeotform2d`` (RANSAC) settings — delegated to the shared
+%   the ``estgeotform2d`` (RANSAC) settings - delegated to the shared
 %   :func:`utils.align.detectorSettingsDlg` (also used by the Stitching tool).
 %
 % Updates ``obj.automaticOptions`` in place; the algorithm methods read
 % from there.
 %
 % Output Arguments:
-%   - **status** — ``1`` when the user clicked OK and settings were
+%   - **status** - ``1`` when the user clicked OK and settings were
 %     applied; ``0`` when the dialog was cancelled.
 
 % Updates
@@ -46,15 +46,15 @@ id = obj.mibModel.getActiveId();
 if strcmp(obj.BatchOpt.Algorithm{1}, 'Automatic feature-based v2')
     imageDownsamplingField = 'imgDownsamplingFactorForAnalysis';
     firstInfoText = sprintf(['Downsampling factor for detection (image width = %d px)\n' ...
-        '"1" — full resolution;\n"4" — downsample x4 (faster, less precise)'], imgWidth);
+        '"1" - full resolution;\n"4" - downsample x4 (faster, less precise)'], imgWidth);
 else
     imageDownsamplingField = 'imgWidthForAnalysis';
     firstInfoText = sprintf(['Image width for detection (current image = %d px)\n' ...
-        '"0" — full resolution;\nsmaller values are faster but less precise'], imgWidth);
+        '"0" - full resolution;\nsmaller values are faster but less precise'], imgWidth);
 end
 
 % ============================================================================
-% AMST branch — register-to-template optimizer parameters
+% AMST branch - register-to-template optimizer parameters
 % ============================================================================
 if strcmp(obj.BatchOpt.Algorithm{1}, 'AMST: median-smoothed template')
     dlgTitle = 'AMST settings';
@@ -96,7 +96,7 @@ if strcmp(obj.BatchOpt.Algorithm{1}, 'AMST: median-smoothed template')
 end
 
 % ============================================================================
-% Feature-based branch — per-detector settings + RANSAC (shared dialog)
+% Feature-based branch - per-detector settings + RANSAC (shared dialog)
 % ============================================================================
 downsampleInfo = struct('field', imageDownsamplingField, 'promptText', firstInfoText, ...
     'limits', [0 imgWidth], 'round', true, ...

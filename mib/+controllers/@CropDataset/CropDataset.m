@@ -22,7 +22,7 @@ classdef CropDataset < handle
         % a cell array with position of the ROI for crop
         % obj.roiPos{1} = [1, width, 1, height, 1, depth, 1, time];
         mibController
-        % handle to controllers.MibController — used to resolve the active
+        % handle to controllers.MibController - used to resolve the active
         % image axes dynamically (split-panel safe); see cropBtn_Callback
         mibImageAxes
         % handle to the main image axes of MIB (needed for Interactive mode).
@@ -77,11 +77,11 @@ classdef CropDataset < handle
             % Constructor of the CropDataset controller
             %
             % Input Arguments:
-            %   - **mibModel** — handle to MibModel
-            %   - **varargin{1}** — *(optional)* handle to controllers.MibController
+            %   - **mibModel** - handle to MibModel
+            %   - **varargin{1}** - *(optional)* handle to controllers.MibController
             %     (canonical, split-panel safe) OR an axes handle (legacy)
             %     OR a BatchOpt struct / NaN (batch mode with no controller)
-            %   - **varargin{2}** — *(optional)* BatchOpt struct / NaN when varargin{1}
+            %   - **varargin{2}** - *(optional)* BatchOpt struct / NaN when varargin{1}
             %     is a controller or axes handle
             %
             % Usage:
@@ -325,7 +325,7 @@ classdef CropDataset < handle
             %       obj.returnBatchOpt(BatchOptOut)
             %
             % Input Arguments:
-            %   - **BatchOptOut** — *(optional)* local BatchOpt to send; defaults to obj.BatchOpt
+            %   - **BatchOptOut** - *(optional)* local BatchOpt to send; defaults to obj.BatchOpt
             %
 
             if nargin < 2; BatchOptOut = obj.BatchOpt; end
@@ -343,7 +343,7 @@ classdef CropDataset < handle
             %       obj.updateBatchOptFromGUI(hObject)
             %
             % Input Arguments:
-            %   - **hObject** — handle to the widget that changed
+            %   - **hObject** - handle to the widget that changed
             %
 
             obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, hObject);
@@ -430,7 +430,7 @@ classdef CropDataset < handle
             %       obj.radio_Callback(hObject)
             %
             % Input Arguments:
-            %   - **hObject** — handle to the selected radio button (Interactive, Manual, or ROI)
+            %   - **hObject** - handle to the selected radio button (Interactive, Manual, or ROI)
             %
 
             if obj.mibModel.preferences.System.DeveloperMode
@@ -533,7 +533,7 @@ classdef CropDataset < handle
             tMin = min(str2num(str2)); %#ok<ST2NM>
             tMax = max(str2num(str2)); %#ok<ST2NM>
 
-            if val == 0     % 'All' — collect bounding box of every ROI
+            if val == 0     % 'All' - collect bounding box of every ROI
                 [~, roiIndices] = dataset.hROI.getNumberOfROI(0);
                 i = 1;
                 for idx = roiIndices
@@ -716,7 +716,7 @@ classdef CropDataset < handle
             %       obj.cropBtn_Callback(hObject)
             %
             % Input Arguments:
-            %   - **hObject** — *(optional)* handle to the pressed button (cropBtn or croptoBtn)
+            %   - **hObject** - *(optional)* handle to the pressed button (cropBtn or croptoBtn)
             %
 
             if obj.mibModel.preferences.System.DeveloperMode
@@ -781,7 +781,7 @@ classdef CropDataset < handle
                         end
                         wait(roi);
                         % Escape clears roi.Position without deleting the object;
-                        % deletion (e.g. clicking X) makes isvalid false — check both.
+                        % deletion (e.g. clicking X) makes isvalid false - check both.
                         drawOk = isvalid(roi) && ~isempty(roi.Position);
                     end
                 catch
@@ -880,7 +880,7 @@ classdef CropDataset < handle
                     ~strcmp(BatchOptLoc.Destination{1}, 'Current')
                 bufferId = str2double(BatchOptLoc.Destination{1}(end));
                 % deep-copy dataset to destination buffer before cropping
-                % (skipped for BigData output — cropToBigData creates the destination fresh)
+                % (skipped for BigData output - cropToBigData creates the destination fresh)
                 if ~bigDataOutput
                     copyOpts.showWaitbar = BatchOptLoc.showWaitbar;
                     if ~isempty(obj.view) && isvalid(obj.view.gui)

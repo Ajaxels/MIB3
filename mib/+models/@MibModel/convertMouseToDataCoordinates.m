@@ -7,24 +7,24 @@ function [xOut, yOut, zOut, tOut] = convertMouseToDataCoordinates(obj, x, y, mod
 %       [xOut, yOut, zOut, tOut] = obj.convertMouseToDataCoordinates(x, y, mode, permuteSw)
 %
 % Input Arguments:
-%   - **x** — x - coordinate
-%   - **y** — y - coordinate
-%   - **mode** — *(optional)* string; default ``'shown'``:
+%   - **x** - x - coordinate
+%   - **y** - y - coordinate
+%   - **mode** - *(optional)* string; default ``'shown'``:
 %
-%     - ``'shown'`` — convert coordinates of the mouse above the image to dataset coordinates
-%     - ``'full'`` — conversion for when the full image is rendered in ``handles.imageAxes``
-%     - ``'blockmode'`` — returns coordinates under the mouse for the Block (blockface mode)
+%     - ``'shown'`` - convert coordinates of the mouse above the image to dataset coordinates
+%     - ``'full'`` - conversion for when the full image is rendered in ``handles.imageAxes``
+%     - ``'blockmode'`` - returns coordinates under the mouse for the Block (blockface mode)
 %
-%   - **permuteSw** — *(optional)*, can be ``[]``:
+%   - **permuteSw** - *(optional)*, can be ``[]``:
 %
-%     - ``0`` — returns coordinates for the dataset in the original XY orientation
-%     - ``1`` — *(default)* returns coordinates so that the currently selected orientation becomes XY
+%     - ``0`` - returns coordinates for the dataset in the original XY orientation
+%     - ``1`` - *(default)* returns coordinates so that the currently selected orientation becomes XY
 %
 % Output Arguments:
-%   - **xOut** — x - coordinate with the dataset
-%   - **yOut** — y - coordinate with the dataset
-%   - **zOut** — z - coordinate with the dataset
-%   - **tOut** — t - time coordinate
+%   - **xOut** - x - coordinate with the dataset
+%   - **yOut** - y - coordinate with the dataset
+%   - **zOut** - z - coordinate with the dataset
+%   - **tOut** - t - time coordinate
 %
 % Usage:
 %   **Example 1**

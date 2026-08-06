@@ -7,10 +7,10 @@ function model = storeLoadModel(filename)
 %      model = storeLoadModel(filename)
 %
 % Input Arguments:
-%   - **filename** — [string] full path to the MAT file containing the model
+%   - **filename** - [string] full path to the MAT file containing the model
 %
 % Output Arguments:
-%   - **model** — loaded model array
+%   - **model** - loaded model array
 %
 
 res = load(filename, '-mat');

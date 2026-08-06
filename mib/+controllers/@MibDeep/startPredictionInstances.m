@@ -12,10 +12,10 @@ function startPredictionInstances(obj)
 % instance is saved as a unique integer index in a MIB model (background 0).
 %
 % Cross-tile stitching mode is selected with BatchOpt.P_OverlapInstancesMode:
-%   - 'Centroid in core' (see deepmib.segmentBlockedImageInstances) — objects are emitted
+%   - 'Centroid in core' (see deepmib.segmentBlockedImageInstances) - objects are emitted
 %     by the tile that owns their centroid, requiring the overlap
 %     (P_OverlappingTilesPercentage) to be >= the largest object;
-%   - 'IoU merge' (see deepmib.segmentImageInstancesIoUMerge) — all per-tile detections are
+%   - 'IoU merge' (see deepmib.segmentImageInstancesIoUMerge) - all per-tile detections are
 %     kept and merged across seams when their masks agree inside the shared overlap band;
 %     works for objects larger than the overlap.
 % The detection confidence threshold and the merge IoU/IoA thresholds are taken from

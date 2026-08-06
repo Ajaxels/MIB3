@@ -13,10 +13,10 @@ function buffers_Callback(obj, hWidget, hData, buttonId)
 % - obj.handles.panels.activeDataset.handles.bufferN, where N is number 1 to 10,
 %
 % Input Arguments:
-%   - **obj** — controllers.MibActiveDataset
-%   - **hWidget** — handle to the pressed widget (matlab.ui.control.Button)
-%   - **hData** — handle to supporting ButtonPushedData class (matlab.ui.eventdata.ButtonPushedData)
-%   - **buttonId** — [optional] index of dataset in MibModel (the shown one is
+%   - **obj** - controllers.MibActiveDataset
+%   - **hWidget** - handle to the pressed widget (matlab.ui.control.Button)
+%   - **hData** - handle to supporting ButtonPushedData class (matlab.ui.eventdata.ButtonPushedData)
+%   - **buttonId** - [optional] index of dataset in MibModel (the shown one is
 %     obj.mibModel.id), when omitted a generic callback on the buffer button
 %     press is executed
 %
@@ -47,7 +47,7 @@ if ~strcmp(prevBufferStringId, newBufferStringId)
         obj.view.handles.panels.activeDataset.handles.(prevBufferStringId).BackgroundColor = ...
             obj.view.handles.panels.dirContents.handles.updateFileList.BackgroundColor;
     elseif strcmp(prevImg.filename, 'none.tif')
-        % In-memory dataset — data present but no file on disk
+        % In-memory dataset - data present but no file on disk
         obj.view.handles.panels.activeDataset.handles.(prevBufferStringId).BackgroundColor = [1 0.85 0.6];
     else
         % File-backed dataset
@@ -86,7 +86,7 @@ notify(obj.mibModel, 'UpdateGuiWidgets');
 notify(obj.mibModel, 'ShowImage');
 
 % Highlight the new buffer's file in the Directory Contents panel.
-% Skip placeholder buffers ('none.tif') — nothing meaningful to navigate to.
+% Skip placeholder buffers ('none.tif') - nothing meaningful to navigate to.
 newFilename = obj.mibModel.I{obj.mibModel.id}.image.filename;
 if ~strcmp(newFilename, 'none.tif') && ~isempty(newFilename)
     notify(obj.mibModel, 'UpdateFileList');

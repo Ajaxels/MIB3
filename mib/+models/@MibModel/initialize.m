@@ -15,7 +15,7 @@ function initialize(obj)
 %   none
 %
 % Usage:
-%   **Example 1** — initialize the model after construction
+%   **Example 1** - initialize the model after construction
 %
 %   .. code-block:: matlab
 %

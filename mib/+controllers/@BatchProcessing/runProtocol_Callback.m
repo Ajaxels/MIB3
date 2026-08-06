@@ -17,32 +17,32 @@ function runProtocol_Callback(obj, parameter)
 % obj.stopProtocolSwitch which causes doBatchStep to abort on the next step.
 %
 % Input Arguments:
-%   - **parameter** — [char] execution scope specifier:
+%   - **parameter** - [char] execution scope specifier:
 %
-%     - ``'complete'`` — run all steps from the first to the last
-%     - ``'from'`` — run from the currently selected step to the end
-%     - ``'step'`` — execute only the currently selected step
-%     - ``'stepadvance'`` — execute the currently selected step then advance the selection to the next step
+%     - ``'complete'`` - run all steps from the first to the last
+%     - ``'from'`` - run from the currently selected step to the end
+%     - ``'step'`` - execute only the currently selected step
+%     - ``'stepadvance'`` - execute the currently selected step then advance the selection to the next step
 %
-% **Example 1** — run entire protocol:
+% **Example 1** - run entire protocol:
 %
 %   .. code-block:: matlab
 %
 %      obj.runProtocol_Callback('complete');
 %
-% **Example 2** — resume from selected step:
+% **Example 2** - resume from selected step:
 %
 %   .. code-block:: matlab
 %
 %      obj.runProtocol_Callback('from');
 %
-% **Example 3** — execute single step:
+% **Example 3** - execute single step:
 %
 %   .. code-block:: matlab
 %
 %      obj.runProtocol_Callback('step');
 %
-% **Example 4** — step with auto-advance:
+% **Example 4** - step with auto-advance:
 %
 %   .. code-block:: matlab
 %

@@ -7,7 +7,7 @@ function result = setData2D(obj, dataset, type, slice_no, orient, col_channel, o
 %       result = obj.setData2D(dataset, type, slice_no, orient, col_channel, options)
 %
 % Input Arguments:
-%   - **dataset** — [numeric or cell] 2D image with colors to set:
+%   - **dataset** - [numeric or cell] 2D image with colors to set:
 %
 %     - When ``options.roiId`` is not used (negative): numeric array or cell ``{1}`` with dimensions:
 %
@@ -18,67 +18,67 @@ function result = setData2D(obj, dataset, type, slice_no, orient, col_channel, o
 %
 %       - Image: ``[height, width, colors]``
 %       - Other types: ``[height, width]``
-%   - **type** — [char] layer type to set:
+%   - **type** - [char] layer type to set:
 %
-%     - ``'image'`` — image layer (default)
-%     - ``'labels'`` — labels layer with segmentation
-%     - ``'mask'`` — mask layer for segmentation support
-%     - ``'selection'`` — selection layer (temporary segmentation layer)
-%     - ``'everything'`` — packed data (``'labels'``, ``'mask'``, ``'selection'`` for ``maxMaterials==63`` only)
+%     - ``'image'`` - image layer (default)
+%     - ``'labels'`` - labels layer with segmentation
+%     - ``'mask'`` - mask layer for segmentation support
+%     - ``'selection'`` - selection layer (temporary segmentation layer)
+%     - ``'everything'`` - packed data (``'labels'``, ``'mask'``, ``'selection'`` for ``maxMaterials==63`` only)
 %
-%   - **slice_no** *(optional)* — [numeric or ``[]``] slice index to set:
+%   - **slice_no** *(optional)* - [numeric or ``[]``] slice index to set:
 %
-%     - ``[]`` — set the current slice (default)
-%     - integer — set slice at the specified index for current time point
+%     - ``[]`` - set the current slice (default)
+%     - integer - set slice at the specified index for current time point
 %
-%   - **orient** *(optional)* — [numeric or ``[]``] orientation for dataset update:
+%   - **orient** *(optional)* - [numeric or ``[]``] orientation for dataset update:
 %
-%     - ``[]`` — use currently shown orientation (default)
-%     - ``1`` — ``ZX`` plane: transpose ``[y,x,z,c,t]`` → ``[x,z,y,c,t]``
-%     - ``2`` — ``ZY`` plane: transpose ``[y,x,z,c,t]`` → ``[y,z,x,c,t]``
-%     - ``3`` — ``YX`` plane: native orientation ``[y,x,z,c,t]``
+%     - ``[]`` - use currently shown orientation (default)
+%     - ``1`` - ``ZX`` plane: transpose ``[y,x,z,c,t]`` → ``[x,z,y,c,t]``
+%     - ``2`` - ``ZY`` plane: transpose ``[y,x,z,c,t]`` → ``[y,z,x,c,t]``
+%     - ``3`` - ``YX`` plane: native orientation ``[y,x,z,c,t]``
 %
-%   - **col_channel** *(optional)* — [numeric, ``[]``, or ``NaN``] channel(s) or material(s) to update:
+%   - **col_channel** *(optional)* - [numeric, ``[]``, or ``NaN``] channel(s) or material(s) to update:
 %
 %     - When **type** is ``'image'`` (color channel indices):
 %
-%       - ``[]`` — use channels from ``obj.slices{4}`` (default)
-%       - ``NaN`` — update all color channels
-%       - integer or vector — update specific channel(s)
+%       - ``[]`` - use channels from ``obj.slices{4}`` (default)
+%       - ``NaN`` - update all color channels
+%       - integer or vector - update specific channel(s)
 %
 %     - When **type** is ``'labels'`` (material selection):
 %
-%       - ``[]`` or ``NaN`` — update all materials (default)
-%       - integer — update specific material (data with value 1 will get this material index)
-%   - **options** *(optional)* — [struct] additional parameters:
+%       - ``[]`` or ``NaN`` - update all materials (default)
+%       - integer - update specific material (data with value 1 will get this material index)
+%   - **options** *(optional)* - [struct] additional parameters:
 %
-%     - ``.blockModeSwitch`` — [logical] override block mode (``false`` = full dataset, ``true`` = visible area only)
-%     - ``.roiId`` — [numeric or ``[]``] ROI mode control:
+%     - ``.blockModeSwitch`` - [logical] override block mode (``false`` = full dataset, ``true`` = visible area only)
+%     - ``.roiId`` - [numeric or ``[]``] ROI mode control:
 %
-%       - ``-1`` or missing — full dataset without ROI (default)
-%       - ``[]`` — currently selected ROI
-%       - ``0`` — all ROIs
-%       - integer — specific ROI by index
+%       - ``-1`` or missing - full dataset without ROI (default)
+%       - ``[]`` - currently selected ROI
+%       - ``0`` - all ROIs
+%       - integer - specific ROI by index
 %
-%     - ``.fillBg`` — [numeric or ``NaN``] fill color for ROI background:
+%     - ``.fillBg`` - [numeric or ``NaN``] fill color for ROI background:
 %
-%       - ``NaN`` — crop to rectangular ROI bounding box (default)
-%       - number — fill areas outside ROI with this intensity
+%       - ``NaN`` - crop to rectangular ROI bounding box (default)
+%       - number - fill areas outside ROI with this intensity
 %
-%     - ``.y`` *(optional)* — [numeric] ``[ymin, ymax]`` of slice region to set
-%     - ``.x`` *(optional)* — [numeric] ``[xmin, xmax]`` of slice region to set
-%     - ``.t`` *(optional)* — [numeric] ``[tmin, tmax]`` time point range (default: current time point)
+%     - ``.y`` *(optional)* - [numeric] ``[ymin, ymax]`` of slice region to set
+%     - ``.x`` *(optional)* - [numeric] ``[xmin, xmax]`` of slice region to set
+%     - ``.t`` *(optional)* - [numeric] ``[tmin, tmax]`` time point range (default: current time point)
 %
 % Output Arguments:
-%   - **result** — [logical] ``true`` on success, ``false`` on failure
+%   - **result** - [logical] ``true`` on success, ``false`` on failure
 %
-% **Example 1** — Set the 5th slice of current stack orientation:
+% **Example 1** - Set the 5th slice of current stack orientation:
 %
 %   .. code-block:: matlab
 %
 %      result = obj.setData2D(dataset, 'image', 5);
 %
-% **Example 2** — Set the 5th slice in XY orientation, color channel 2:
+% **Example 2** - Set the 5th slice in XY orientation, color channel 2:
 %
 %   .. code-block:: matlab
 %
@@ -103,7 +103,7 @@ if nargin < 3; type = 'image'; end
 % === FAST PATH ===
 % Shortcut for the most common case: Standard in-memory, YX orient, no ROI, no blockMode.
 % Directly writes data{1}(...) and skips all ROI/Virtual/blockMode machinery.
-% Also skips the notify(obj,'SetData') call when options.suppressNotify==true — the
+% Also skips the notify(obj,'SetData') call when options.suppressNotify==true - the
 % MibDataset.SetData event currently has no registered listeners, so the overhead is pure waste
 % for batch loops. Future callers that need the event should leave suppressNotify unset (default).
 if strcmp(obj.datasetType, 'Standard') && ~strcmp(type, 'everything')

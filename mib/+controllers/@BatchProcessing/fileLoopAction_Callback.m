@@ -20,7 +20,7 @@ function fileLoopAction_Callback(obj, BatchOptInput)
 %   - FileLoopWaitbar - [logical] when true only the file-level waitbar is displayed; all per-step waitbars are suppressed
 %
 % Input Arguments:
-%   - **BatchOptInput** — [optional]
+%   - **BatchOptInput** - [optional]
 %     - NaN    - send default BatchOpt to BatchProcessing via SyncBatch event
 %     - struct - override defaults with supplied fields and apply
 %

@@ -11,11 +11,11 @@ function clearSelection(obj, sel_switch, BatchOptIn)
 % requested scope.  Supports batch-processing mode via BatchOptIn.
 %
 % Input Arguments:
-%   - **sel_switch** — *(optional)* string defining the clear scope
+%   - **sel_switch** - *(optional)* string defining the clear scope
 %   - '2D, Slice'   - clear the currently shown slice only (default)
 %   - '3D, Stack'   - clear the full z-stack at the current time point(s)
 %   - '4D, Dataset' - clear the entire dataset (all z and t)
-%   - **BatchOptIn** — *(optional)* structure for batch processing mode; when
+%   - **BatchOptIn** - *(optional)* structure for batch processing mode; when
 %     NaN, returns default options via the "SyncBatch" event
 %   - .DatasetType  - cell {value, {choices}} selecting the clear scope
 %   - .showWaitbar  - logical, show or not the progress bar
@@ -25,19 +25,19 @@ function clearSelection(obj, sel_switch, BatchOptIn)
 %   (none)
 %
 % Usage:
-%   **Example 1** — clear current slice
+%   **Example 1** - clear current slice
 %
 %   .. code-block:: matlab
 %
 %      obj.mibModel.clearSelection('2D, Slice');
 %
-%   **Example 2** — clear current z-stack
+%   **Example 2** - clear current z-stack
 %
 %   .. code-block:: matlab
 %
 %      obj.mibModel.clearSelection('3D, Stack');
 %
-%   **Example 3** — clear full dataset
+%   **Example 3** - clear full dataset
 %
 %   .. code-block:: matlab
 %
@@ -106,7 +106,7 @@ switch BatchOpt.DatasetType{1}
             curTime  = obj.I{id}.slices{5}(1);
             if orient == 3 && ~isempty(selBB)
                 % XY view with known selection footprint: scope backup and clear to
-                % the footprint only — avoids allocating the full gigapixel slice.
+                % the footprint only - avoids allocating the full gigapixel slice.
                 % setData63 resets selectionBBoxFull once the region contains no
                 % more selection bits.
                 backupOptions.y = [selBB(1), selBB(2)];

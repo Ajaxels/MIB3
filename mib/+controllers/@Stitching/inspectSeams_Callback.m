@@ -17,7 +17,7 @@ if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.Stitching.inspectSeams_Callback: triggered\n');
 end
 
-% Already open — bring to front.
+% Already open - bring to front.
 if ~isempty(obj.inspector) && isvalid(obj.inspector) && ...
         ~isempty(obj.inspector.view) && isvalid(obj.inspector.view.gui)
     figure(obj.inspector.view.gui);

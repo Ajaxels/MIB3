@@ -8,42 +8,42 @@ function result = image2hdf5(filename, imageS, options)
 %      result = io.HDF5.image2hdf5(filename, imageS, options)
 %
 % Input Arguments:
-%   - **filename** — filename for the HDF5 file
-%   - **imageS** — dataset [height, width, colors, depth] or [height, width, depth]
-%   - **options** — *(optional)* struct with additional parameters:
+%   - **filename** - filename for the HDF5 file
+%   - **imageS** - dataset [height, width, colors, depth] or [height, width, depth]
+%   - **options** - *(optional)* struct with additional parameters:
 %
-%     - ``.ChunkSize`` — [y, x, z] matrix of chunk size
-%     - ``.Deflate`` — [numeric] gzip compression level 0–9 (default: ``0``)
-%     - ``.overwrite`` — ``1`` = do not check whether file already exists
-%     - ``.showWaitbar`` — ``1`` = show the progress bar, ``0`` = hide it
-%     - ``.ParentFigure`` — *(optional)* handle to the main MIB UIFigure; when provided,
+%     - ``.ChunkSize`` - [y, x, z] matrix of chunk size
+%     - ``.Deflate`` - [numeric] gzip compression level 0-9 (default: ``0``)
+%     - ``.overwrite`` - ``1`` = do not check whether file already exists
+%     - ``.showWaitbar`` - ``1`` = show the progress bar, ``0`` = hide it
+%     - ``.ParentFigure`` - *(optional)* handle to the main MIB UIFigure; when provided,
 %       the progress bar is shown as a ``uiprogressdlg`` attached to that window;
 %       when absent or empty, the legacy ``waitbar`` is used as a fallback
-%     - ``.lutColors`` — not yet implemented
-%     - ``.pixSize`` — not yet implemented
-%     - ``.ImageDescription`` — cell string with dataset description
-%     - ``.DatasetName`` — cell string or dictionary with metadata
-%     - ``.order`` — (char) axis order string, e.g. ``'yxzct'`` (default) or ``'yxczt'``
-%     - ``.height`` — height of the full dataset (required for initialisation, i.e. when ``options.t == 1``)
-%     - ``.width`` — width of the full dataset (required for initialisation)
-%     - ``.colors`` — number of colour channels (required for initialisation)
-%     - ``.depth`` — depth of the full dataset (required for initialisation)
-%     - ``.time`` — number of time points (required for initialisation)
-%     - ``.x`` — minimal X coordinate for data to store
-%     - ``.y`` — minimal Y coordinate for data to store
-%     - ``.z`` — minimal Z coordinate for data to store
-%     - ``.t`` — minimal T index for data to store
-%     - ``.DatasetType`` — (char) type of the dataset: ``'image'``, ``'model'``, or ``'mask'``
-%     - ``.DatasetClass`` — (char) image class of the dataset, e.g. ``'uint8'``, ``'uint16'``
+%     - ``.lutColors`` - not yet implemented
+%     - ``.pixSize`` - not yet implemented
+%     - ``.ImageDescription`` - cell string with dataset description
+%     - ``.DatasetName`` - cell string or dictionary with metadata
+%     - ``.order`` - (char) axis order string, e.g. ``'yxzct'`` (default) or ``'yxczt'``
+%     - ``.height`` - height of the full dataset (required for initialisation, i.e. when ``options.t == 1``)
+%     - ``.width`` - width of the full dataset (required for initialisation)
+%     - ``.colors`` - number of colour channels (required for initialisation)
+%     - ``.depth`` - depth of the full dataset (required for initialisation)
+%     - ``.time`` - number of time points (required for initialisation)
+%     - ``.x`` - minimal X coordinate for data to store
+%     - ``.y`` - minimal Y coordinate for data to store
+%     - ``.z`` - minimal Z coordinate for data to store
+%     - ``.t`` - minimal T index for data to store
+%     - ``.DatasetType`` - (char) type of the dataset: ``'image'``, ``'model'``, or ``'mask'``
+%     - ``.DatasetClass`` - (char) image class of the dataset, e.g. ``'uint8'``, ``'uint16'``
 %
 % Output Arguments:
-%   - **result** — ``1`` = success, ``0`` = failure
+%   - **result** - ``1`` = success, ``0`` = failure
 %
 
 % Updates
 % 
 
-% **Example 1** — standalone use (no GUI parent):
+% **Example 1** - standalone use (no GUI parent):
 %
 %   .. code-block:: matlab
 %
@@ -51,7 +51,7 @@ function result = image2hdf5(filename, imageS, options)
 %      opts.overwrite   = 1;
 %      io.HDF5.image2hdf5('saveme.h5', image_var, opts);
 %
-% **Example 2** — GUI use (attach progress dialog to MIB window):
+% **Example 2** - GUI use (attach progress dialog to MIB window):
 %
 %   .. code-block:: matlab
 %
@@ -68,7 +68,7 @@ if ~isfield(options, 'ChunkSize'); options.ChunkSize = [];    end
 if ~isfield(options, 'Deflate'); options.Deflate = 0;    end
 if ~isfield(options, 'overwrite'); options.overwrite = 0;    end
 if ~isfield(options, 'showWaitbar'); options.showWaitbar = 1;    end
-% Dimension order must be set first — other defaults depend on it.
+% Dimension order must be set first - other defaults depend on it.
 % Default 'yxzct' matches MIB3 native layout [H, W, D, C, T].
 % Use 'yxczt' for legacy MIB2 / Ilastik-compatible layout [H, W, C, D, T].
 if ~isfield(options, 'order'); options.order = 'yxzct'; end

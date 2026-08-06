@@ -15,7 +15,7 @@ function radioButton_Callback(obj, hObject)
 %   - Switching Object/Intensity toggles ColorChannel1 visibility
 %
 % Input Arguments:
-%   - **hObject** — handle to the radio button widget that fired the callback;
+%   - **hObject** - handle to the radio button widget that fired the callback;
 %     Tag is used to distinguish Shape2D/Shape3D from Object/Intensity
 %
 % Usage:

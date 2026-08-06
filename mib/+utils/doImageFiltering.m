@@ -9,14 +9,14 @@ function [img, logText] = doImageFiltering(img, BatchOpt, cpuParallelLimit, pare
 %       [img, logText] = utils.doImageFiltering(img, BatchOpt, cpuParallelLimit, parentFigure)
 %
 % Input Arguments:
-%   - **img** — a matrix in MIB3 native format ``[height, width, depth, colors]``
-%   - **BatchOpt** — a structure with filter parameters (FilterName, Mode3D, etc.)
-%   - **cpuParallelLimit** — *(optional)* max CPU cores for parallel processing
-%   - **parentFigure** — *(optional)* UIFigure handle passed to ``core.PoolWaitbar``
+%   - **img** - a matrix in MIB3 native format ``[height, width, depth, colors]``
+%   - **BatchOpt** - a structure with filter parameters (FilterName, Mode3D, etc.)
+%   - **cpuParallelLimit** - *(optional)* max CPU cores for parallel processing
+%   - **parentFigure** - *(optional)* UIFigure handle passed to ``core.PoolWaitbar``
 %
 % Return values:
-%   - **img** — filtered dataset ``[height, width, depth, colors]``
-%   - **logText** — log text describing the applied filter and its parameters
+%   - **img** - filtered dataset ``[height, width, depth, colors]``
+%   - **logText** - log text describing the applied filter and its parameters
 
 % Updates
 %
@@ -33,9 +33,9 @@ if ~isfield(BatchOpt, 'showWaitbar'); BatchOpt.showWaitbar = false; end
 
 maxVal = double(intmax(class(img(1))));
 
-% Normalize to MIB3 native format [H, W, Z, C] — depth=dim3, colors=dim4.
+% Normalize to MIB3 native format [H, W, Z, C] - depth=dim3, colors=dim4.
 % getData2D returns [H,W,C] for a 2D slice, getData3D returns [H,W,Z,C] for a
-% 3D stack — but for single-channel images MATLAB drops the trailing C=1 singleton,
+% 3D stack - but for single-channel images MATLAB drops the trailing C=1 singleton,
 % so both can arrive here as ndims==3.  Disambiguate using DatasetType:
 %   '2D, Slice'  → ndims==3 means [H,W,C]; reshape to [H,W,1,C]
 %   '3D, Stack' / '4D, Dataset' → ndims==3 means [H,W,Z] (C=1 implicit);
@@ -46,7 +46,7 @@ if strcmp(BatchOpt.SourceLayer{1}, 'image')
         if is2D   % [H,W,C] → [H,W,1,C]
             img = reshape(img, [size(img,1), size(img,2), 1, size(img,3)]);
         end
-        % 3D/4D single-channel stack: [H,W,Z] stays — filter loops use dim3 as Z
+        % 3D/4D single-channel stack: [H,W,Z] stays - filter loops use dim3 as Z
     end
     % 4D image [H,W,Z,C] (ndims==4) stays as is
 end

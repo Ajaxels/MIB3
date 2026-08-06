@@ -50,9 +50,9 @@ classdef BoundingBox < handle
             % all listeners and returns silently.
             %
             % Input Arguments:
-            %   - **obj** — handle to the BoundingBox controller instance
-            %   - **src** — event source (handle to MibModel)
-            %   - **evnt** — event data; ``evnt.EventName`` identifies the event
+            %   - **obj** - handle to the BoundingBox controller instance
+            %   - **src** - event source (handle to MibModel)
+            %   - **evnt** - event data; ``evnt.EventName`` identifies the event
             %
             % Output Arguments:
             %   (none)
@@ -268,7 +268,7 @@ classdef BoundingBox < handle
 
             handles = obj.view.handles;
 
-            % edit fields — keep BatchOpt in sync with every keystroke
+            % edit fields - keep BatchOpt in sync with every keystroke
             handles.Xmin.ValueChangedFcn             = @obj.updateBatchOptFromGUI;
             handles.Ymin.ValueChangedFcn             = @obj.updateBatchOptFromGUI;
             handles.Zmin.ValueChangedFcn             = @obj.updateBatchOptFromGUI;
@@ -296,7 +296,7 @@ classdef BoundingBox < handle
             %      obj.returnBatchOpt(BatchOptOut)
             %
             % Input Arguments:
-            %   - **BatchOptOut** — *(optional)* local structure with Batch Options
+            %   - **BatchOptOut** - *(optional)* local structure with Batch Options
             %     generated during the Apply callback; may contain more fields than
             %     ``obj.BatchOpt``.  When omitted, ``obj.BatchOpt`` is used.
             %
@@ -323,9 +323,9 @@ classdef BoundingBox < handle
             % to all tools compatible with batch mode.
             %
             % Input Arguments:
-            %   - **hObject** — handle to the widget that changed; in AppDesigner
+            %   - **hObject** - handle to the widget that changed; in AppDesigner
             %     callbacks this is ``event.Source``
-            %   - **valueChangedData** — ``EventData`` object passed by AppDesigner
+            %   - **valueChangedData** - ``EventData`` object passed by AppDesigner
             %     ``ValueChangedFcn`` callbacks (not used directly here)
             %
             % Output Arguments:
@@ -353,7 +353,7 @@ classdef BoundingBox < handle
             % ``Z Position``, ``Rotation``.
             %
             % Input Arguments:
-            %   - **batchModeSw** — *(optional)* logical, default: ``0``; set to
+            %   - **batchModeSw** - *(optional)* logical, default: ``0``; set to
             %     ``1`` when called from batch mode to suppress GUI widget updates
             %
             % Output Arguments:
@@ -366,7 +366,7 @@ classdef BoundingBox < handle
             if nargin < 2; batchModeSw = 0; end
 
             str = clipboard('paste');
-            % Normalize line endings — Windows clipboard uses \r\n
+            % Normalize line endings - Windows clipboard uses \r\n
             str = strrep(str, sprintf('\r\n'), sprintf('\n'));
             str = strrep(str, sprintf('\r'), sprintf('\n'));
             str = [str sprintf('\n')];  % guarantee last line has a terminator
@@ -493,7 +493,7 @@ classdef BoundingBox < handle
             % (e.g. for 3View systems at 45 deg).
             %
             % Input Arguments:
-            %   - **batchModeSw** — *(optional)* logical, default: ``0``; set to
+            %   - **batchModeSw** - *(optional)* logical, default: ``0``; set to
             %     ``1`` when called from batch mode to suppress GUI widget updates
             %
             % Output Arguments:

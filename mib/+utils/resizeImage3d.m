@@ -9,43 +9,43 @@ function imgOut = resizeImage3d(img, scale, options)
 %      imgOut = resizeImage3d(img, scale, options)
 %
 % Input Arguments:
-%   - **img** — [numeric] 3D ``(y, x, z)`` or 4D ``(y, x, z, c)`` dataset to resize
-%   - **scale** — [numeric] scalar or vector ``[scaleY, scaleX, scaleZ]`` resize factor;
+%   - **img** - [numeric] 3D ``(y, x, z)`` or 4D ``(y, x, z, c)`` dataset to resize
+%   - **scale** - [numeric] scalar or vector ``[scaleY, scaleX, scaleZ]`` resize factor;
 %     pass ``[]`` when ``options.width`` / ``options.height`` / ``options.depth`` are used instead
-%   - **options** *(optional)* — struct with resizing settings:
+%   - **options** *(optional)* - struct with resizing settings:
 %
-%     - ``.algorithm``    — [char] resizing algorithm: ``'imresize'`` *(default)*, ``'interpn'``, ``'tformarray'``
-%     - ``.width``        — [numeric] target width; overrides the ``scale`` parameter
-%     - ``.height``       — [numeric] target height; overrides the ``scale`` parameter
-%     - ``.depth``        — [numeric] target depth; overrides the ``scale`` parameter
-%     - ``.method``       — [char] interpolation method (depends on algorithm — see note below)
-%     - ``.imgType``      — [char] dataset type: ``'4D'`` or ``'3D'`` (auto-detected when absent)
-%     - ``.showWaitbar``  — [logical] show a progress bar (default: ``1``); set to ``0`` to suppress
-%     - ``.wb``           — handle to an existing ``uiprogressdlg``; updated in place, NOT deleted on exit
-%     - ``.ParentFigure`` — handle to a parent figure; a local progress dialog is created/deleted when ``.wb`` is absent
+%     - ``.algorithm``    - [char] resizing algorithm: ``'imresize'`` *(default)*, ``'interpn'``, ``'tformarray'``
+%     - ``.width``        - [numeric] target width; overrides the ``scale`` parameter
+%     - ``.height``       - [numeric] target height; overrides the ``scale`` parameter
+%     - ``.depth``        - [numeric] target depth; overrides the ``scale`` parameter
+%     - ``.method``       - [char] interpolation method (depends on algorithm - see note below)
+%     - ``.imgType``      - [char] dataset type: ``'4D'`` or ``'3D'`` (auto-detected when absent)
+%     - ``.showWaitbar``  - [logical] show a progress bar (default: ``1``); set to ``0`` to suppress
+%     - ``.wb``           - handle to an existing ``uiprogressdlg``; updated in place, NOT deleted on exit
+%     - ``.ParentFigure`` - handle to a parent figure; a local progress dialog is created/deleted when ``.wb`` is absent
 %
 % Output Arguments:
-%   - **imgOut** — [numeric] resampled dataset (same class as input)
+%   - **imgOut** - [numeric] resampled dataset (same class as input)
 %
 % .. note::
 %    **Algorithm and method combinations:**
 %
-%    - ``'imresize'`` *(default, fastest)* — uses ``imresize3`` on R2017a+, otherwise resizes XY then Z.
+%    - ``'imresize'`` *(default, fastest)* - uses ``imresize3`` on R2017a+, otherwise resizes XY then Z.
 %      Methods: ``'nearest'``, ``'bilinear'``, ``'bicubic'`` *(default)*, ``'lanczos2'``, ``'lanczos3'``, etc.
-%    - ``'interpn'`` — N-D gridded interpolation; faster than ``'tformarray'`` but needs more memory.
+%    - ``'interpn'`` - N-D gridded interpolation; faster than ``'tformarray'`` but needs more memory.
 %      Methods: ``'linear'``, ``'nearest'``, ``'cubic'`` *(default)*, ``'spline'``, ``'pchip'``.
-%    - ``'tformarray'`` — spatial transform; slowest but most memory-friendly.
+%    - ``'tformarray'`` - spatial transform; slowest but most memory-friendly.
 %      Methods: ``'nearest'``, ``'linear'``, ``'cubic'``.
 %
 % Usage:
 %
-%   **Example 1** — resize uniformly to 50 %
+%   **Example 1** - resize uniformly to 50 %
 %
 %   .. code-block:: matlab
 %
 %      imgOut = utils.resizeImage3d(img, 0.5);
 %
-%   **Example 2** — resize to specific dimensions with bicubic interpolation
+%   **Example 2** - resize to specific dimensions with bicubic interpolation
 %
 %   .. code-block:: matlab
 %
@@ -60,7 +60,7 @@ function imgOut = resizeImage3d(img, scale, options)
 % 11.04.2017, IB added imresize3 if it is available
 % 2026, IB fixed imresize3 API (Method must be name-value pair); added
 %           options.wb and options.ParentFigure progress-bar propagation
-% 2026, IB process natively in the MIB3 [y,x,z,c] layout — removed the
+% 2026, IB process natively in the MIB3 [y,x,z,c] layout - removed the
 %           unconditional input/output permutes (and per-channel squeeze) that
 %           added two full-volume copies per call; the legacy pre-R2017a
 %           imresize fallback keeps a permute confined to its own branch
@@ -76,7 +76,7 @@ if ~isfield(options, 'imgType')
         options.imgType = '3D';
     end
 end
-% Process natively in the MIB3 layout [y,x,z,c] — no permute.
+% Process natively in the MIB3 layout [y,x,z,c] - no permute.
 % A 3D input [y,x,z] reports colors=1, which the per-channel loops handle directly.
 height = size(img, 1);
 width  = size(img, 2);

@@ -7,10 +7,10 @@ function stopTrainingSwitch = stopTrainingWithoutPlots(progressStruct)
 %      stopTrainingSwitch = stopTrainingWithoutPlots(progressStruct)
 %
 % Input Arguments:
-%   - **progressStruct** — training progress struct (unused; required by ``trainNetwork`` callback signature)
+%   - **progressStruct** - training progress struct (unused; required by ``trainNetwork`` callback signature)
 %
 % Output Arguments:
-%   - **stopTrainingSwitch** — [logical] ``true`` when the global ``mibDeepStopTraining`` flag is set
+%   - **stopTrainingSwitch** - [logical] ``true`` when the global ``mibDeepStopTraining`` flag is set
 %
 
 global mibDeepStopTraining

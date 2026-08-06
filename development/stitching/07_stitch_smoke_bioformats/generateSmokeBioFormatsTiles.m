@@ -3,11 +3,11 @@ function generateSmokeBioFormatsTiles()
 %
 % Creates a 2x2 set of single-plane OME-TIFF tiles whose OME metadata carries
 % stage coordinates (Plane PositionX/PositionY in micrometers) + the physical
-% pixel size — the fields the "Bio-Formats metadata" layout source reads via
+% pixel size - the fields the "Bio-Formats metadata" layout source reads via
 % ``utils.stitch.buildLayoutBioFormats``.
 %
 % The tiles are cut on a PERFECT grid, and the stage coordinates written into the
-% metadata are that grid plus a small random JITTER — real stages never land
+% metadata are that grid plus a small random JITTER - real stages never land
 % exactly where they were told (backlash, drift, encoder error). So the mosaic
 % built straight from the metadata already looks good but shows sub-tile seam
 % offsets, and only Measure overlaps + Optimize positions recovers the exact
@@ -86,7 +86,7 @@ groundTruth = uint8(255 * max(min(img, 1), 0));
 % ---- cut 2x2 tiles on the PERFECT grid; metadata carries JITTERED coordinates
 % Ground truth = the clean grid, so a successful Optimize reproduces the source
 % image exactly. The stage coordinates are that grid plus a per-tile, per-axis
-% error of up to +-stageJitterPxMax pixels — the mechanical reality the layout
+% error of up to +-stageJitterPxMax pixels - the mechanical reality the layout
 % source has to swallow. The error is continuous (not whole pixels): a stage
 % does not snap to the camera's pixel raster.
 rowCol = [1 1; 1 2; 2 1; 2 2];
@@ -120,7 +120,7 @@ end
 save(fullfile(outputFolder, 'trueOrigins.mat'), 'trueOrigins', 'stageJitterPx');
 fprintf(['Generated 4 OME-TIFF tiles (%dx%d, step %d px = %.1f um) in %s\n' ...
          'Stage coordinates jittered by up to +-%d px; worst axis error %.2f px ' ...
-         '(%.2f um) — Optimize positions must remove it.\n'], ...
+         '(%.2f um) - Optimize positions must remove it.\n'], ...
     tileSize, tileSize, step, step * pixSizeUm, outputFolder, ...
     stageJitterPxMax, max(abs(stageJitterPx(:))), max(abs(stageJitterPx(:))) * pixSizeUm);
 end

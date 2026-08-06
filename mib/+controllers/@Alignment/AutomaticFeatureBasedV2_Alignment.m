@@ -35,7 +35,7 @@ function AutomaticFeatureBasedV2_Alignment(obj, parameters)
 % flag is set.
 %
 % Input Arguments:
-%   - **parameters** — struct produced by :meth:`continueBtn_Callback`.
+%   - **parameters** - struct produced by :meth:`continueBtn_Callback`.
 %     Reads ``TransformationType``, ``TransformationMode``, ``colorCh``,
 %     ``backgroundColor``, ``useBatchMode``, ``method``.
 
@@ -44,7 +44,7 @@ function AutomaticFeatureBasedV2_Alignment(obj, parameters)
 
 id = obj.mibModel.getActiveId();
 
-% Parent figure for any dialogs — ``obj.view`` is empty in batch mode
+% Parent figure for any dialogs - ``obj.view`` is empty in batch mode
 if ~isempty(obj.view) && isvalid(obj.view) && isvalid(obj.view.gui)
     parentFig = obj.view.gui;
 else
@@ -336,7 +336,7 @@ if canvasChanged
     ds.slices{2} = [1, newW];
     ds.slices{ds.orientation} = repmat(oldSlices{ds.orientation}(1), 1, 2);
 else
-    % Cropped mode — write back per slice
+    % Cropped mode - write back per slice
     for layer = 1:Depth
         obj.mibModel.setData2D(squeeze(Iout(:, :, layer, :)), 'image', layer, [], NaN, optionsGetData);
     end

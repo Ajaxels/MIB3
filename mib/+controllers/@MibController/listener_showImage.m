@@ -9,13 +9,13 @@ function listener_showImage(obj, ~, evtData)
 % executed upon catch of MibModel->"ShowImage" event, MIB2 is using 'plotImage' event
 %
 % Input Arguments:
-%   - **src** — handle to MibModel
-%   - **evtData** — event data, an instance of ``core.ToggleEventData``; ``evtData.Parameters``
+%   - **src** - handle to MibModel
+%   - **evtData** - event data, an instance of ``core.ToggleEventData``; ``evtData.Parameters``
 %     is a structure with the following fields:
 %
-%     - ``.resizeToMagnification`` — logical; ``false`` (default) keeps current view settings,
+%     - ``.resizeToMagnification`` - logical; ``false`` (default) keeps current view settings,
 %       ``true`` resizes the image to fit the screen
-%     - ``.setOfDatasetsIndex`` — *(optional)* numerical id of the set to display;
+%     - ``.setOfDatasetsIndex`` - *(optional)* numerical id of the set to display;
 %       ``[]`` uses the currently selected set
 %
 % Output Arguments:

@@ -13,7 +13,7 @@ function restoreModelLayers(obj, snapshot)
 % dataset ending up sharing the same handle objects.
 %
 % Input Arguments:
-%   - **snapshot** — structure produced by
+%   - **snapshot** - structure produced by
 %     :func:`core.MibDataset.copyModelLayers`
 %
 % **Example**

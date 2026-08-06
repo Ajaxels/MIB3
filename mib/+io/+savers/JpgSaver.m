@@ -1,5 +1,5 @@
 classdef JpgSaver < io.savers.BaseSaver
-% JPGSAVER - Saver for JPEG output — one file per Z-slice (always a 2-D sequence).
+% JPGSAVER - Saver for JPEG output - one file per Z-slice (always a 2-D sequence).
 %
 % JPEG is a lossy format suitable for display purposes; it is NOT
 % recommended for quantitative analysis.  uint16 multichannel data
@@ -13,7 +13,7 @@ classdef JpgSaver < io.savers.BaseSaver
 % imwrite call: [H, W, C] per 2-D slice (C ≤ 3, class == uint8)
 %
 % NOTES
-% * options.Quality  (0–100, default 90): JPEG quality factor.
+% * options.Quality  (0-100, default 90): JPEG quality factor.
 % * options.Compression ('lossy'|'lossless', default 'lossy').
 % * JPEG does not support indexed colourmaps; 'indexed' colour images
 % will be saved using the raw index values as greyscale.
@@ -73,11 +73,11 @@ classdef JpgSaver < io.savers.BaseSaver
             %      saver = io.savers.JpgSaver(options)
             %
             % Input Arguments:
-            %   - **options** — *(optional)* struct, saver-level options (usually empty;
+            %   - **options** - *(optional)* struct, saver-level options (usually empty;
             %     per-save options are passed to ``save()`` instead)
             %
             % Output Arguments:
-            %   - **obj** — instance of the JpgSaver class
+            %   - **obj** - instance of the JpgSaver class
             %
             if nargin < 1; options = struct(); end
             obj.Options = options;
@@ -96,7 +96,7 @@ classdef JpgSaver < io.savers.BaseSaver
             %   (none)
             %
             % Output Arguments:
-            %   - **formats** — cell array of format strings for JPEG output
+            %   - **formats** - cell array of format strings for JPEG output
             %
             formats = {'Joint Photographic Experts Group (*.jpg)'};
         end
@@ -110,25 +110,25 @@ classdef JpgSaver < io.savers.BaseSaver
             %      fnOut = obj.save(data, metadata, filename, options)
             %
             % Input Arguments:
-            %   - **data** — [H, W, D, C, T] uint8 (or uint16 greyscale)
-            %   - **metadata** — struct with fields:
+            %   - **data** - [H, W, D, C, T] uint8 (or uint16 greyscale)
+            %   - **metadata** - struct with fields:
             %
-            %     - ``colorType`` — data type (multichannel RGB must be uint8)
-            %     - ``sliceName`` — (optional) per-slice source filenames
-            %     - ``imageDescription`` — (optional) JPEG Comment tag
+            %     - ``colorType`` - data type (multichannel RGB must be uint8)
+            %     - ``sliceName`` - (optional) per-slice source filenames
+            %     - ``imageDescription`` - (optional) JPEG Comment tag
             %
-            %   - **filename** — full path template, e.g. ``'/out/frame.jpg'``
-            %   - **options** — struct with fields:
+            %   - **filename** - full path template, e.g. ``'/out/frame.jpg'``
+            %   - **options** - struct with fields:
             %
-            %     - ``Quality`` — [double] 0–100; default: ``90``
-            %     - ``Compression`` — [char] ``'lossy'`` | ``'lossless'``; default: ``'lossy'``
-            %     - ``showWaitbar`` — logical; default: ``true``
-            %     - ``silent`` — logical, suppress dialogs; default: ``false``
-            %     - ``overwrite`` — logical; default: ``true``
-            %     - ``FilenameGenerator`` — [char] filename generation mode
+            %     - ``Quality`` - [double] 0-100; default: ``90``
+            %     - ``Compression`` - [char] ``'lossy'`` | ``'lossless'``; default: ``'lossy'``
+            %     - ``showWaitbar`` - logical; default: ``true``
+            %     - ``silent`` - logical, suppress dialogs; default: ``false``
+            %     - ``overwrite`` - logical; default: ``true``
+            %     - ``FilenameGenerator`` - [char] filename generation mode
             %
             % Output Arguments:
-            %   - **fnOut** — cell of char with all saved paths, or single char if only one slice
+            %   - **fnOut** - cell of char with all saved paths, or single char if only one slice
             %
             % JPEG is inherently per-slice, so ``save`` is a thin wrapper over the
             % streaming primitive ``saveStream`` (single code path).
@@ -140,7 +140,7 @@ classdef JpgSaver < io.savers.BaseSaver
             % SAVESTREAM - Write a JPEG 2-D sequence one slice at a time from a SliceProvider.
             % See ``io.savers.BaseSaver.saveStream``.
             %
-            % **Example** — stream a level to a JPEG sequence (quality 90):
+            % **Example** - stream a level to a JPEG sequence (quality 90):
             %
             %   .. code-block:: matlab
             %
@@ -234,7 +234,7 @@ classdef JpgSaver < io.savers.BaseSaver
             % --- progress ---
             wb = [];
             if options.showWaitbar
-                wb = obj.createProgressDialog('Saving images...', sprintf('Saving JPEG — %s', baseName), false);
+                wb = obj.createProgressDialog('Saving images...', sprintf('Saving JPEG - %s', baseName), false);
             end
 
             % Pre-compute loop-invariant values to avoid repeated checks per slice
@@ -245,7 +245,7 @@ classdef JpgSaver < io.savers.BaseSaver
             multiTime = nT > 1;
 
             total = nD * nT;
-            allFn = cell(total, 1);   % pre-allocate — avoids O(N²) dynamic growth
+            allFn = cell(total, 1);   % pre-allocate - avoids O(N²) dynamic growth
             done  = 0;
             wbStep = max(1, round(total / 100));  % throttle: update waitbar ~100 times
 

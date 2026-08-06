@@ -12,7 +12,7 @@ classdef FakeWidget < handle
 %      controller.refreshQualityChip();
 %      testCase.verifySubstring(rmseLabel.Text, 'Seams disagree');
 %
-% Handle semantics are the point — a plain struct would take a COPY and the
+% Handle semantics are the point - a plain struct would take a COPY and the
 % controller's writes would go nowhere. Controllers guard every widget access
 % (``isfield(view.handles, …)`` / ``hasWidget``), so only the widgets a test
 % actually asserts on need to be present in ``handles``.

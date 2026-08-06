@@ -40,8 +40,8 @@ classdef ResampleDataset < handle
             %       obj.ViewListner_Callback2(~, evnt)
             %
             % Input Arguments:
-            %   - **obj** — handle to ResampleDataset
-            %   - **evnt** — event data
+            %   - **obj** - handle to ResampleDataset
+            %   - **evnt** - event data
             %
             if ~isvalid(obj) || isempty(obj.view) || ~isvalid(obj.view.gui)
                 for i = 1:numel(obj.listener); delete(obj.listener{i}); end
@@ -67,8 +67,8 @@ classdef ResampleDataset < handle
             %       obj = ResampleDataset(mibModel, BatchOpt)
             %
             % Input Arguments:
-            %   - **mibModel** — handle to MibModel
-            %   - **varargin{1}** — *(optional)* BatchOpt struct or NaN (batch mode)
+            %   - **mibModel** - handle to MibModel
+            %   - **varargin{1}** - *(optional)* BatchOpt struct or NaN (batch mode)
             %
             % Usage:
             %   Example 1::
@@ -323,7 +323,7 @@ classdef ResampleDataset < handle
             %       obj.updateEditboxStates(mode)
             %
             % Input Arguments:
-            %   - **mode** — string — 'Dimensions' | 'Voxels' | 'PercentageXYZ' | 'PercentageXY'
+            %   - **mode** - string - 'Dimensions' | 'Voxels' | 'PercentageXYZ' | 'PercentageXY'
             %
             h = obj.view.handles;
             isDim  = strcmp(mode, 'Dimensions');
@@ -348,7 +348,7 @@ classdef ResampleDataset < handle
             %       obj.radio_Callback(hObject)
             %
             % Input Arguments:
-            %   - **hObject** — event.NewValue — the newly selected radio button
+            %   - **hObject** - event.NewValue - the newly selected radio button
             %
             if obj.mibModel.preferences.System.DeveloperMode
                 fprintf('controllers.ResampleDataset.radio_Callback: triggered\n');
@@ -399,7 +399,7 @@ classdef ResampleDataset < handle
             %       obj.editbox_Callback(hObject)
             %
             % Input Arguments:
-            %   - **hObject** — the NumericEditField that changed
+            %   - **hObject** - the NumericEditField that changed
             %
             if obj.mibModel.preferences.System.DeveloperMode
                 fprintf('controllers.ResampleDataset.editbox_Callback: triggered\n');
@@ -502,7 +502,7 @@ classdef ResampleDataset < handle
             %       obj.resampleBtn_Callback(batchModeSwitch)
             %
             % Input Arguments:
-            %   - **batchModeSwitch** — *(optional)* logical; true when called headlessly
+            %   - **batchModeSwitch** - *(optional)* logical; true when called headlessly
             %
 
             if obj.mibModel.preferences.System.DeveloperMode
@@ -600,7 +600,7 @@ classdef ResampleDataset < handle
             opts.blockModeSwitch = 0;
             % allocate output in MIB3 layout [h, w, d, c, t].
             % getData3D(..., NaN, ...) below returns ALL color channels of the
-            % dataset, so size the buffer by the total channel count — not
+            % dataset, so size the buffer by the total channel count - not
             % obj.color, which counts only the currently selected/shown channels
             % (obj.slices{4}) and would be too small for multi-channel data.
             totalColors = obj.mibModel.I{id}.image.colors;
@@ -624,7 +624,7 @@ classdef ResampleDataset < handle
             clear img;
             if ~isempty(wb); wb.Value = 0.5; end
 
-            % write image back — replace the data container directly (setData4D
+            % write image back - replace the data container directly (setData4D
             % writes into the existing fixed-size array and would error on a size change)
             img5D = obj.mibModel.I{id}.image;
             oldBB = img5D.boundingBox;          % save physical extent before any changes
@@ -662,7 +662,7 @@ classdef ResampleDataset < handle
             % authoritative flag (false by default, set true by createModel/loadModel/
             % setData*/moveLayers). Using labels.exists here would be wrong for the
             % 63-material packed container: it always "exists" (it also holds the
-            % selection layer), so an EMPTY model would be needlessly resampled —
+            % selection layer), so an EMPTY model would be needlessly resampled -
             % which is what made MIB3 slower than MIB2 (MIB2 gates on modelExist and
             % skips an absent model). An empty model falls through to the cheap
             % zeros-reallocation branch below instead.
@@ -723,7 +723,7 @@ classdef ResampleDataset < handle
                 obj.mibModel.setData4D(imgOutModel, modelDataType, 3, NaN, labelsOpts);
 
             elseif isLabels63
-                % no model data — reset packed container to new size
+                % no model data - reset packed container to new size
                 newDims = [newH, newW, newZ, maxT];
                 obj.mibModel.I{id}.labels.data = zeros(newDims, 'uint8');
                 obj.mibModel.I{id}.labels.height   = newH;

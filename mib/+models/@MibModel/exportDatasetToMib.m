@@ -7,33 +7,33 @@ function exportDatasetToMib(obj, layerType, BatchOptIn)
 %       obj.exportDatasetToMib(layerType, BatchOptIn)
 %
 % Input Arguments:
-%   - **layerType** — a string specifying which layer to copy:
+%   - **layerType** - a string specifying which layer to copy:
 %
-%     - ``'mask'`` — copy the mask layer
-%     - ``'model'`` — copy the model (labels) layer, including material metadata
+%     - ``'mask'`` - copy the mask layer
+%     - ``'model'`` - copy the model (labels) layer, including material metadata
 %
-%   - **BatchOptIn** — *(optional)* a structure for batch processing mode; when ``NaN``
+%   - **BatchOptIn** - *(optional)* a structure for batch processing mode; when ``NaN``
 %     returns a structure with default options via "SyncBatch" event:
 %
-%     - ``.LayerType`` — cell string, ``{'mask'|'model'}`` layer to copy
-%     - ``.Destination`` — cell string, destination container, e.g. ``{'Container 2'}``
-%     - ``.showWaitbar`` — logical, show or not the waitbar
-%     - ``.id`` — *(optional)* index of the source dataset
+%     - ``.LayerType`` - cell string, ``{'mask'|'model'}`` layer to copy
+%     - ``.Destination`` - cell string, destination container, e.g. ``{'Container 2'}``
+%     - ``.showWaitbar`` - logical, show or not the waitbar
+%     - ``.id`` - *(optional)* index of the source dataset
 %
 % Usage:
-%   **Example 1** — copy mask interactively
+%   **Example 1** - copy mask interactively
 %
 %   .. code-block:: matlab
 %
 %      obj.mibModel.exportDatasetToMib('mask');
 %
-%   **Example 2** — copy model interactively
+%   **Example 2** - copy model interactively
 %
 %   .. code-block:: matlab
 %
 %      obj.mibModel.exportDatasetToMib('model');
 %
-%   **Example 3** — batch mode
+%   **Example 3** - batch mode
 %
 %   .. code-block:: matlab
 %
@@ -50,7 +50,7 @@ if nargin < 2; layerType = 'mask'; end
 
 activeId = obj.getActiveId();
 
-%% Pre-flight checks (before building BatchOpt — fail fast)
+%% Pre-flight checks (before building BatchOpt - fail fast)
 if strcmp(obj.I{activeId}.datasetType, 'Virtual')
     toolname = sprintf('Export of %s is', layerType);
     warningBody = sprintf('%s not yet available in the virtual stacking mode.\nPlease switch to the memory-resident mode and try again', toolname);

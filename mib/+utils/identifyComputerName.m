@@ -8,11 +8,11 @@ function computerName = identifyComputerName()
 %      computerName = utils.identifyComputerName()
 %
 % Output Arguments:
-%   - **computerName** — [char] computer hostname with non-alphanumeric characters
+%   - **computerName** - [char] computer hostname with non-alphanumeric characters
 %     replaced by underscores; empty string on failure
 %
 % Usage:
-%   **Example 1** — get computer name for override preferences file
+%   **Example 1** - get computer name for override preferences file
 %
 %   .. code-block:: matlab
 %

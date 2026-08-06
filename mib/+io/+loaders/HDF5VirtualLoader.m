@@ -3,14 +3,14 @@ classdef HDF5VirtualLoader < handle
 %
 % Wraps a single HDF5 file and its internal dataset path.
 % The full axis order is resolved from the HDF5 JSON attribute on
-% the first readRegion call and cached — h5info() is never called more
+% the first readRegion call and cached - h5info() is never called more
 % than once per file per session.
 %
 % Any axis order is supported (e.g. ``'yxzct'``, ``'yxczt'``, ``'zyxct'``, etc.).
 % readRegion always returns data in MIB3 order [y, x, z, c, t].
 %
 % Unlike the batch loaders in +io/+loaders/ this class does NOT
-% implement BaseImageLoader — it is stateful and designed for repeated
+% implement BaseImageLoader - it is stateful and designed for repeated
 % sub-region reads rather than single full-dataset loads.
 %
 % **Relationship to HDF5VirtualSetupLoader**
@@ -18,17 +18,17 @@ classdef HDF5VirtualLoader < handle
 % These two classes serve different phases of the virtual dataset lifecycle
 % and should not be confused:
 %
-% HDF5VirtualSetupLoader — runs ONCE when the user opens a file.
+% HDF5VirtualSetupLoader - runs ONCE when the user opens a file.
 % Phase : dataset initialisation (MibModel.loadImages)
 % Job : parse metadata, build the Virtual struct, return H5 paths.
 % Reads pixels? No.
 % Lifetime: discarded immediately after open; implements BaseImageLoader.
 % Created by: LoaderFactory
 %
-% HDF5VirtualLoader — runs on EVERY slice request during the session.
+% HDF5VirtualLoader - runs on EVERY slice request during the session.
 % Phase : on-demand pixel reading (MibVirtualImage.getDataVirt)
 % Job : call h5read for the requested sub-region; cache axis order.
-% Reads pixels? Yes — one h5read call per z-group per getDataVirt call.
+% Reads pixels? Yes - one h5read call per z-group per getDataVirt call.
 % Lifetime: cached in MibVirtualImage.loaders{} for the session; does
 % NOT implement BaseImageLoader.
 % Created by: MibVirtualImage.getOrCreateLoader (lazily, per file)
@@ -75,13 +75,13 @@ methods
         %      obj = HDF5VirtualLoader(filename, datasetPath, transMatrix)
         %
         % Input Arguments:
-        %   - **filename** — [char] full path to the HDF5 file
-        %   - **datasetPath** — [char] internal HDF5 dataset path
-        %   - **transMatrix** — *(optional)* [1 x 5 numeric] permutation from
+        %   - **filename** - [char] full path to the HDF5 file
+        %   - **datasetPath** - [char] internal HDF5 dataset path
+        %   - **transMatrix** - *(optional)* [1 x 5 numeric] permutation from
         %     SelectHDFSeries dialog; ``[]`` or ``NaN`` = not available
         %
         % Output Arguments:
-        %   - **obj** — [HDF5VirtualLoader] new loader instance
+        %   - **obj** - [HDF5VirtualLoader] new loader instance
         %
 
         obj.filename    = filename;
@@ -107,16 +107,16 @@ methods
         % Always returns data in MIB3 order [y, x, z, c, t].
         %
         % Input Arguments:
-        %   - **Ylim** — [1x2 numeric] pixel row range ``[ymin ymax]`` (1-based, inclusive)
-        %   - **Xlim** — [1x2 numeric] pixel column range ``[xmin xmax]`` (1-based, inclusive)
-        %   - **z1In** — [numeric] first z-slice index within this file (1-based)
-        %   - **zCount** — [numeric] number of z-slices to read
-        %   - **nColors** — [numeric] total number of colour channels in the dataset
-        %   - **Tlim** — [1x2 numeric] time-point range ``[tmin tmax]`` (1-based, inclusive)
-        %   - **dataClass** — [char] output class, e.g. ``'uint8'`` or ``'uint16'``
+        %   - **Ylim** - [1x2 numeric] pixel row range ``[ymin ymax]`` (1-based, inclusive)
+        %   - **Xlim** - [1x2 numeric] pixel column range ``[xmin xmax]`` (1-based, inclusive)
+        %   - **z1In** - [numeric] first z-slice index within this file (1-based)
+        %   - **zCount** - [numeric] number of z-slices to read
+        %   - **nColors** - [numeric] total number of colour channels in the dataset
+        %   - **Tlim** - [1x2 numeric] time-point range ``[tmin tmax]`` (1-based, inclusive)
+        %   - **dataClass** - [char] output class, e.g. ``'uint8'`` or ``'uint16'``
         %
         % Output Arguments:
-        %   - **block** — [nY x nX x zCount x nColors x nT numeric] array in [y,x,z,c,t] order
+        %   - **block** - [nY x nX x zCount x nColors x nT numeric] array in [y,x,z,c,t] order
         %
 
         if isempty(obj.axisOrder)
@@ -171,7 +171,7 @@ methods (Access = private)
         % toMIB3perm(k) = nDims + offset (MATLAB auto-extends to singleton).
         % These extra dimensions evaluate to size 1 after permute().
         %
-        % **Example 1** — native ``'yxczt'`` layout (5 dims, Y=372, X=521, C=75, Z=1, T=1):
+        % **Example 1** - native ``'yxczt'`` layout (5 dims, Y=372, X=521, C=75, Z=1, T=1):
         %
         %   .. code-block:: matlab
         %
@@ -180,7 +180,7 @@ methods (Access = private)
         %      % toMIB3perm  = [1,2,4,3,5]
         %      % permute(raw_yxczt, [1,2,4,3,5])  ->  [y,x,z,c,t]
         %
-        % **Example 2** — native ``'yxz'`` layout (3 dims, no c/t stored):
+        % **Example 2** - native ``'yxz'`` layout (3 dims, no c/t stored):
         %
         %   .. code-block:: matlab
         %
@@ -212,7 +212,7 @@ methods (Access = private)
                     axisArr(pos)       = mib3axes(k);
                     obj.toMIB3perm(k)  = pos;
                 else
-                    % Axis not stored — assign a trailing singleton slot
+                    % Axis not stored - assign a trailing singleton slot
                     obj.toMIB3perm(k) = nextMissing;
                     nextMissing       = nextMissing + 1;
                 end
@@ -244,7 +244,7 @@ methods (Access = private)
             end
         end
 
-        % Case 4: fallback — assume dims map in order y,x,z,c,t
+        % Case 4: fallback - assume dims map in order y,x,z,c,t
         if isempty(obj.axisOrder)
             obj.axisOrder = mib3axes(1:min(nDims, 5));
         end

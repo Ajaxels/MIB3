@@ -28,7 +28,7 @@ function AutomaticFeatureBasedHDDV2_Alignment(obj, parameters)
 % Two-phase fit:
 %   1. **Parallel detect + extract** (parfor when ``UseParallelComputing``
 %      is set). Only descriptors + valid-point locations are kept in memory.
-%   2. **Sequential match + compose** — adjacent descriptor pairs are
+%   2. **Sequential match + compose** - adjacent descriptor pairs are
 %      matched, ``estgeotform2d`` fits a robust 2-D transform, the
 %      pairwise tform is stored and decomposed.
 %
@@ -38,10 +38,10 @@ function AutomaticFeatureBasedHDDV2_Alignment(obj, parameters)
 % ``<InputDir>/HDD_OutputSubfolderName`` via :meth:`core.MibImage.save`.
 % The apply loop runs under ``parfor`` when parallel computing is enabled.
 %
-% No in-memory dataset is touched — no backup, no ``NewDataset`` notify.
+% No in-memory dataset is touched - no backup, no ``NewDataset`` notify.
 %
 % Input Arguments:
-%   - **parameters** — struct produced by :meth:`continueBtn_Callback`.
+%   - **parameters** - struct produced by :meth:`continueBtn_Callback`.
 %     Reads ``TransformationType``, ``TransformationMode``, ``colorCh``,
 %     ``backgroundColor``, ``useBatchMode``, ``method``,
 %     ``UseParallelComputing``.
@@ -106,7 +106,7 @@ end
 numFiles = numel(imgDS.Files);
 if numFiles < 2
     utils.dlgs.showErrorDialog(parentFig, ...
-        sprintf('Found %d files in "%s" — need at least 2 to align.', numFiles, inputDir), ...
+        sprintf('Found %d files in "%s" - need at least 2 to align.', numFiles, inputDir), ...
         'HDD feature-based v2');
     return;
 end
@@ -300,7 +300,7 @@ if ~shiftsLoaded
     end
 end
 
-% --- Phase 2: determine apply canvas (corner projection — mirrors v2 in-memory)
+% --- Phase 2: determine apply canvas (corner projection - mirrors v2 in-memory)
 if ~isempty(pwb)
     if pwb.getCancelState(); return; end
     pwb.updateText('Step 3/3: calculating canvas area...');
@@ -613,7 +613,7 @@ while notOk
         useSmoothed = true;
         notOk = false;
     else
-        % "Change window size" — loop with updated defaults
+        % "Change window size" - loop with updated defaults
         defAns{1} = struct('Spinner',true,'Value',halfwidth,'Limits',[1 maxHalfwidth],'Step',1,'Round',true);
         defAns{2} = fixTranslation;
         defAns{3} = struct('Spinner',true,'Value',excludeTranslationJumps,'Limits',[0 Inf],'Step',1,'Round',false);

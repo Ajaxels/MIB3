@@ -10,12 +10,12 @@ function [imageDescription, actionLog] = splitImageDescription(fullStr)
 % MIB stores two conceptually distinct pieces of information inside the
 % single ImageDescription tag that is written to TIFF (and other) files:
 %
-% 1. Physical extent (BoundingBox) — a compact string describing the
+% 1. Physical extent (BoundingBox) - a compact string describing the
 % real-world coordinates of the dataset in micrometres:
 %
 % 'BoundingBox xmin xmax ymin ymax zmin zmax'
 %
-% 2. Operation log — a pipe-separated list of timestamped records that
+% 2. Operation log - a pipe-separated list of timestamped records that
 % document every processing step applied to the dataset since it was
 % first opened in MIB:
 %
@@ -34,21 +34,21 @@ function [imageDescription, actionLog] = splitImageDescription(fullStr)
 % MibVirtualImage); appended to when operations are performed.
 %
 % Input Arguments:
-%   - **fullStr** — (char) the raw ImageDescription string as read from a file or
+%   - **fullStr** - (char) the raw ImageDescription string as read from a file or
 %     stored in an imginfo dictionary. May be empty, contain only a BoundingBox
 %     with no log entries, or only log entries with no BoundingBox.
 %     All combinations are handled gracefully.
 %
 % Output Arguments:
-%   - **imageDescription** — (char) the substring preceding the first ``'|'``,
+%   - **imageDescription** - (char) the substring preceding the first ``'|'``,
 %     trimmed of whitespace. Contains the BoundingBox tag when present, or is
 %     empty when the input starts immediately with ``'|'``.
-%   - **actionLog** — (1×N cell of char) each element is one log entry, trimmed
+%   - **actionLog** - (1×N cell of char) each element is one log entry, trimmed
 %     of whitespace. Empty entries (consecutive ``'||'`` or trailing ``'|'``) are
 %     silently discarded. Returns ``{}`` when no log entries are found.
 %
 % Usage:
-%   **Example 1** — Typical MIB TIFF tag with BoundingBox and two log entries
+%   **Example 1** - Typical MIB TIFF tag with BoundingBox and two log entries
 %
 %   .. code-block:: matlab
 %
@@ -63,7 +63,7 @@ function [imageDescription, actionLog] = splitImageDescription(fullStr)
 %       % log     -> {'MIB(2601041823): MIB demo dataset, Huh7 SBEM', ...
 %       %             'MIB(2603131934): ImFilter: Gaussian, ...'}
 %
-%   **Example 2** — BoundingBox only, no log
+%   **Example 2** - BoundingBox only, no log
 %
 %   .. code-block:: matlab
 %
@@ -73,7 +73,7 @@ function [imageDescription, actionLog] = splitImageDescription(fullStr)
 %       % imgDesc -> 'BoundingBox 0 511.5 0 511.5 0 49.5'
 %       % log     -> {}
 %
-%   **Example 3** — Log entries only, no BoundingBox (e.g. ImageJ description)
+%   **Example 3** - Log entries only, no BoundingBox (e.g. ImageJ description)
 %
 %   .. code-block:: matlab
 %
@@ -83,7 +83,7 @@ function [imageDescription, actionLog] = splitImageDescription(fullStr)
 %       % imgDesc -> 'ImageJ=1.52p'
 %       % log     -> {'unit=um', 'spacing=0.2', 'loop=false'}
 %
-%   **Example 4** — Empty or default initializer string
+%   **Example 4** - Empty or default initializer string
 %
 %   .. code-block:: matlab
 %
@@ -96,7 +96,7 @@ function [imageDescription, actionLog] = splitImageDescription(fullStr)
 %       % imgDesc -> ''
 %       % log     -> {}
 %
-%   **Example 5** — Typical loader workflow: split immediately after reading metadata
+%   **Example 5** - Typical loader workflow: split immediately after reading metadata
 %
 %   .. code-block:: matlab
 %
@@ -108,7 +108,7 @@ function [imageDescription, actionLog] = splitImageDescription(fullStr)
 %       imginfo{'ImageDescription'} = imgDesc;
 %       imginfo{'ActionLog'}        = actionLog;
 %
-%   **Example 6** — Round-trip test: split then rejoin
+%   **Example 6** - Round-trip test: split then rejoin
 %
 %   .. code-block:: matlab
 %
@@ -138,7 +138,7 @@ end
 pipePos = strfind(fullStr, '|');
 
 if isempty(pipePos)
-    % No pipe at all — the entire string is the imageDescription
+    % No pipe at all - the entire string is the imageDescription
     imageDescription = strtrim(fullStr);
     actionLog        = {};
     return;

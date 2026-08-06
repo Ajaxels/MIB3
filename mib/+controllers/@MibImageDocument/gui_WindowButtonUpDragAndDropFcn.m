@@ -9,27 +9,27 @@ function gui_WindowButtonUpDragAndDropFcn(obj, mode, diffX, diffY, BatchOptIn)
 %      obj.gui_WindowButtonUpDragAndDropFcn(mode, diffX, diffY, BatchOptIn)
 %
 % Input Arguments:
-%   - **mode** — [char] mode for drag-and-drop action:
+%   - **mode** - [char] mode for drag-and-drop action:
 %
-%     - ``'2D, Slice'`` — drag all selection on current slice
-%     - ``'Object2D'`` — drag selected object only on current slice
-%     - ``'3D, Stack'`` — drag all selection for all slices
-%     - ``'Object3D'`` — drag selected 3D object
+%     - ``'2D, Slice'`` - drag all selection on current slice
+%     - ``'Object2D'`` - drag selected object only on current slice
+%     - ``'3D, Stack'`` - drag all selection for all slices
+%     - ``'Object3D'`` - drag selected 3D object
 %
-%   - **diffX** *(optional)* — [double] shift in X direction (pixels); when empty, calculated from mouse position
-%   - **diffY** *(optional)* — [double] shift in Y direction (pixels); when empty, calculated from mouse position
-%   - **BatchOptIn** *(optional)* — [struct] batch processing mode:
+%   - **diffX** *(optional)* - [double] shift in X direction (pixels); when empty, calculated from mouse position
+%   - **diffY** *(optional)* - [double] shift in Y direction (pixels); when empty, calculated from mouse position
+%   - **BatchOptIn** *(optional)* - [struct] batch processing mode:
 %
-%     - ``.Target`` — [char] layer to be moved
-%     - ``.Mode`` — [char] part of dataset to be moved
-%     - ``.shiftX`` — [numeric] X-shift in pixels
-%     - ``.shiftY`` — [numeric] Y-shift in pixels
-%     - ``.showWaitbar`` — [logical] show progress bar
+%     - ``.Target`` - [char] layer to be moved
+%     - ``.Mode`` - [char] part of dataset to be moved
+%     - ``.shiftX`` - [numeric] X-shift in pixels
+%     - ``.shiftY`` - [numeric] Y-shift in pixels
+%     - ``.showWaitbar`` - [logical] show progress bar
 %
 % Output Arguments:
 %   (none)
 %
-% **Example** — shift 5px right, 3px up:
+% **Example** - shift 5px right, 3px up:
 %
 %   .. code-block:: matlab
 %

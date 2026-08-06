@@ -7,23 +7,23 @@ function initialize(obj, data, meta)
 %       obj.initialize(data, meta)
 %
 % Input Arguments:
-%   - **data** — matrix with the image to initialize the class, can be empty
-%   - **meta** — a dictionary with default settings for the class, can be empty;
+%   - **data** - matrix with the image to initialize the class, can be empty
+%   - **meta** - a dictionary with default settings for the class, can be empty;
 %     the following fields are used,
 %     .filename full path to the dataset
 %     .SliceName cell array with slice names, can be empty
 %     .lutColors matrix with LUT colors to use (colChannel, R G B) in range 0-1
 %     .pixSize structure with
 %
-%     - ``.x`` — physical width of a pixel
-%     - ``.y`` — physical height of a pixel
-%     - ``.z`` — physical thickness of a pixel
-%     - ``.t`` — time between the frames for 2D movies
-%     - ``.tunits`` — time units
-%     - ``.units`` — physical units for x, y, z. Possible values: [m, cm, mm, um, nm]
+%     - ``.x`` - physical width of a pixel
+%     - ``.y`` - physical height of a pixel
+%     - ``.z`` - physical thickness of a pixel
+%     - ``.t`` - time between the frames for 2D movies
+%     - ``.tunits`` - time units
+%     - ``.units`` - physical units for x, y, z. Possible values: [m, cm, mm, um, nm]
 %       .viewPort structure with viewing parameters:
-%     - ``.min`` — a vector with minimal value for intensity stretching for each color channel
-%     - ``.max`` — a vector with maximal value for intensity stretching for each color channel
+%     - ``.min`` - a vector with minimal value for intensity stretching for each color channel
+%     - ``.max`` - a vector with maximal value for intensity stretching for each color channel
 %     - ``.gamma`` a vector with gamma factor for contrast adjustment for each color channel
 %
 
@@ -94,8 +94,8 @@ if ~isempty(obj.data)
                   0, (max([obj.depth,  2]) - 1) * pixSize.z ];
 
     % Split the raw ImageDescription string (as stored in the file) into:
-    %   imgDesc   — the 'BoundingBox x1 x2 y1 y2 z1 z2' prefix
-    %   parsedLog — cell array of pipe-separated operation log entries
+    %   imgDesc   - the 'BoundingBox x1 x2 y1 y2 z1 z2' prefix
+    %   parsedLog - cell array of pipe-separated operation log entries
     [imgDesc, parsedLog] = core.MibImage.splitImageDescription(meta{'ImageDescription'});
 
     % Try to parse numeric coordinates from the BoundingBox prefix.

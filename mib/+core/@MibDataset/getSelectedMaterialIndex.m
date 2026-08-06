@@ -7,18 +7,18 @@ function index = getSelectedMaterialIndex(obj, target)
 %       index = obj.getSelectedMaterialIndex(target)
 %
 % Input Arguments:
-%   - **target** — a string specifying the target column of the materials table:
+%   - **target** - a string specifying the target column of the materials table:
 %
-%     - ``'Material'`` — *(default)* the selected row in the material column
-%     - ``'AddTo'`` — the selected row in the AddTo column
+%     - ``'Material'`` - *(default)* the selected row in the material column
+%     - ``'AddTo'`` - the selected row in the AddTo column
 %
 % Output Arguments:
-%   - **index** — index of the currently selected material:
+%   - **index** - index of the currently selected material:
 %
-%     - ``-1`` — Mask
-%     - ``0`` — Exterior
-%     - ``1`` — 1st material of the model
-%     - ``2``, ``3``, ... — 2nd, 3rd, ... material of the model
+%     - ``-1`` - Mask
+%     - ``0`` - Exterior
+%     - ``1`` - 1st material of the model
+%     - ``2``, ``3``, ... - 2nd, 3rd, ... material of the model
 %
 % Usage:
 %   **Example 1**

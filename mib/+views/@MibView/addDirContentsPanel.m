@@ -7,7 +7,7 @@ function panelHandles = addDirContentsPanel(obj)
 %      panelHandles = obj.addDirContentsPanel()
 %
 % Output Arguments:
-%   - **panelHandles** — [struct] handles to the directory contents panel widgets
+%   - **panelHandles** - [struct] handles to the directory contents panel widgets
 %
 % Notes:
 %   The callbacks are added in the controller of the panel: ``controllers.MibDirContents``

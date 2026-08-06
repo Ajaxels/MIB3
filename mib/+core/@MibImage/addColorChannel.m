@@ -7,18 +7,18 @@ function output = addColorChannel(obj, img, channelId, lutColors, options)
 %       output = obj.addColorChannel(img, channelId, lutColors, options)
 %
 % Input Arguments:
-%   - **img** — image stack [height, width, depth, colors, time] to add/replace
-%   - **channelId** — *(optional)* 1-based channel index to replace;
+%   - **img** - image stack [height, width, depth, colors, time] to add/replace
+%   - **channelId** - *(optional)* 1-based channel index to replace;
 %     NaN (default) - append img as new color channel(s)
-%   - **lutColors** — *(optional)* matrix [nNewChannels x 3] with LUT colors in
+%   - **lutColors** - *(optional)* matrix [nNewChannels x 3] with LUT colors in
 %     the range 0-1. Pass NaN (default) to auto-assign random colors.
-%   - **options** — *(optional)* struct with fields:
+%   - **options** - *(optional)* struct with fields:
 %
-%     - ``.ParentFigure`` — handle to parent figure for dialogs (default [])
-%     - ``.showWaitbar`` — logical; show progress bar (default true)
+%     - ``.ParentFigure`` - handle to parent figure for dialogs (default [])
+%     - ``.showWaitbar`` - logical; show progress bar (default true)
 %
 % Output Arguments:
-%   - **output** — 1 - success; 0 - cancelled or failed
+%   - **output** - 1 - success; 0 - cancelled or failed
 %
 % Usage:
 %   **Example 1**

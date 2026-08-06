@@ -35,7 +35,7 @@ classdef PerfBaselineStore
 
             baselineFile = mibtest.perf.PerfBaselineStore.baselineFilePath();
             if ~isfile(baselineFile)
-                fprintf('[PerfBaseline] no baseline file — %s = %.3f ms\n', ...
+                fprintf('[PerfBaseline] no baseline file - %s = %.3f ms\n', ...
                     measurementKey, mean(secondsSamples)*1000);
                 return
             end
@@ -196,7 +196,7 @@ classdef PerfBaselineStore
                     end
                     fprintf(fid, '| %s | %.3f | %.3f | %.2f | %s |\n', key, measMs, baseMs, ratio, status);
                 else
-                    fprintf(fid, '| %s | %.3f | — | — | (new) |\n', key, measMs);
+                    fprintf(fid, '| %s | %.3f | - | - | (new) |\n', key, measMs);
                 end
             end
             fclose(fid);
@@ -240,7 +240,7 @@ classdef PerfBaselineStore
                     fprintf('%-50s %10.3f %10.3f %8.2f\n', key, ...
                         entry.meanSeconds*1000, refEntry.meanSeconds*1000, ratio);
                 else
-                    fprintf('%-50s %10.3f %10s %8s\n', key, entry.meanSeconds*1000, '—', '—');
+                    fprintf('%-50s %10.3f %10s %8s\n', key, entry.meanSeconds*1000, '-', '-');
                 end
             end
             fprintf('\n');

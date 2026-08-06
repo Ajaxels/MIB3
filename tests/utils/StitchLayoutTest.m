@@ -2,17 +2,17 @@ classdef StitchLayoutTest < matlab.unittest.TestCase
 % STITCHLAYOUTTEST - Unit tests for utils.stitch layout builders and helpers.
 %
 % Covers:
-%   utils.stitch.naturalSortFiles       — alphanumeric sort correctness
-%   utils.stitch.buildLayoutGrid        — all four TileOrder modes, auto rows/cols
-%   utils.stitch.buildLayoutPositionFile — space/tab/comma delimiters,
+%   utils.stitch.naturalSortFiles       - alphanumeric sort correctness
+%   utils.stitch.buildLayoutGrid        - all four TileOrder modes, auto rows/cols
+%   utils.stitch.buildLayoutPositionFile - space/tab/comma delimiters,
 %                                          repeated spaces, Z column, relative paths
-%   utils.stitch.buildLayoutFilenamePattern — _Z##-X##-Y## token parsing
-%   utils.stitch.buildLayoutAtlas       — Fibics Atlas .ve-mif / .ve-tie /
+%   utils.stitch.buildLayoutFilenamePattern - _Z##-X##-Y## token parsing
+%   utils.stitch.buildLayoutAtlas       - Fibics Atlas .ve-mif / .ve-tie /
 %                                         .ve-updates: stage grid, derived axis
 %                                         signs, tie conversion, solved positions
-%   utils.stitch.findAtlasSidecars      — which Atlas sidecars are present
-%   utils.stitch.findNeighborPairs      — x/y/z directions, minOverlap filtering
-%   utils.stitch.saveProject / loadProject — JSON round-trip
+%   utils.stitch.findAtlasSidecars      - which Atlas sidecars are present
+%   utils.stitch.findNeighborPairs      - x/y/z directions, minOverlap filtering
+%   utils.stitch.saveProject / loadProject - JSON round-trip
 
     methods (TestClassSetup)
         function addPaths(testCase)
@@ -54,7 +54,7 @@ classdef StitchLayoutTest < matlab.unittest.TestCase
         end
 
         % -----------------------------------------------------------------
-        % buildLayoutGrid — origin formulas
+        % buildLayoutGrid - origin formulas
         % -----------------------------------------------------------------
 
         function buildGrid_horizontal2x3_correctOrigins(testCase)
@@ -83,7 +83,7 @@ classdef StitchLayoutTest < matlab.unittest.TestCase
         function buildGrid_folderTiles_carrySliceStack(testCase)
             % Each grid entry is a FOLDER holding a Z-stack; buildLayoutGrid must
             % record the folder as the tile, list its slices in .sliceFiles, and
-            % set tileSize depth to the slice count — while arranging the folders
+            % set tileSize depth to the slice count - while arranging the folders
             % on the same XY grid as single-image tiles.
             tmpFixture = testCase.applyFixture( ...
                 matlab.unittest.fixtures.TemporaryFolderFixture);
@@ -182,7 +182,7 @@ classdef StitchLayoutTest < matlab.unittest.TestCase
 
         function buildGrid_autoRowsCols_exactFactorNoHoles(testCase)
             % Auto grid must tile the count EXACTLY (closest divisor pair to
-            % square, rows <= cols): 3 tiles -> 1x3, NOT 2x2 with a hole —
+            % square, rows <= cols): 3 tiles -> 1x3, NOT 2x2 with a hole -
             % a hole breaks the neighbour graph (phantom pairs measure
             % garbage, the real 2-3 neighbours are never paired).
             tileFolder = testCase.makeSyntheticTiles(3, [32 32]);
@@ -559,7 +559,7 @@ classdef StitchLayoutTest < matlab.unittest.TestCase
             testCase.verifyEqual(loadedSettings.BlendMode, 'Max');
             testCase.verifyEqual(loadedSettings.FeatureOptions.imgDownsamplingFactorForAnalysis, ...
                 2, 'AbsTol', 1e-9);
-            % jsondecode returns arrays as columns — the controller reshapes them
+            % jsondecode returns arrays as columns - the controller reshapes them
             % back to rows; here just check the values survived.
             testCase.verifyEqual(sort(loadedSettings.FeatureOptions.detectMSERFeatures.RegionAreaRange(:))', ...
                 [30 14000], 'AbsTol', 1e-9);
@@ -573,7 +573,7 @@ classdef StitchLayoutTest < matlab.unittest.TestCase
         end
 
         % -----------------------------------------------------------------
-        % buildLayoutAtlas / findAtlasSidecars — Fibics Atlas mosaics
+        % buildLayoutAtlas / findAtlasSidecars - Fibics Atlas mosaics
         % -----------------------------------------------------------------
 
         function atlasSidecars_reportOnlyWhatExists(testCase)
@@ -593,7 +593,7 @@ classdef StitchLayoutTest < matlab.unittest.TestCase
 
         function atlasSidecars_resolveAnyOfTheThreeFiles(testCase)
             % The three files sit side by side with near-identical names, so
-            % whichever the user picks means the same mosaic — .mifPath must come
+            % whichever the user picks means the same mosaic - .mifPath must come
             % back pointing at the acquisition record either way.
             tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
             mosaic = mibtest.helpers.makeAtlasMosaic(tmpDir.Folder);
@@ -634,7 +634,7 @@ classdef StitchLayoutTest < matlab.unittest.TestCase
 
             testCase.verifyEqual(numel(layout), 4);
             % Tiles are ordered row-major regardless of the acquisition order
-            % (the mosaic writes them r1c1, r1c2, r2c2, r2c1 — Atlas snakes).
+            % (the mosaic writes them r1c1, r1c2, r2c2, r2c1 - Atlas snakes).
             testCase.verifyEqual(vertcat(layout.gridRC), [1 1; 1 2; 2 1; 2 2]);
 
             origins = reshape([layout.nomOrigin], 3, []).';
@@ -647,7 +647,7 @@ classdef StitchLayoutTest < matlab.unittest.TestCase
 
         function atlasLayout_resolvesTilesLocallyNotByRecordedPath(testCase)
             % The .ve-mif records the ACQUISITION machine's absolute paths, which
-            % never exist where the data is analysed — tiles must be found by name
+            % never exist where the data is analysed - tiles must be found by name
             % in the folder holding the .ve-mif.
             tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
             mosaic = mibtest.helpers.makeAtlasMosaic(tmpDir.Folder);   % records E:\acquired\...
@@ -719,7 +719,7 @@ classdef StitchLayoutTest < matlab.unittest.TestCase
         end
 
         function atlasTies_userPlacedSeamsKeepUserProvenance(testCase)
-            % <User>true</User> means a human placed that seam in Atlas — the same
+            % <User>true</User> means a human placed that seam in Atlas - the same
             % meaning MIB's 'user' source carries, so it must survive a re-measure
             % and get the heavier solver weight.
             tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
@@ -733,7 +733,7 @@ classdef StitchLayoutTest < matlab.unittest.TestCase
 
         function atlasUpdates_solvedPositionsImported(testCase)
             % .ve-updates carries the final placement as a 4x4 transform whose
-            % M41/M42 is the tile offset in µm — in the same stage-frame
+            % M41/M42 is the tile offset in µm - in the same stage-frame
             % orientation as the .ve-mif.
             tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
             mosaic = mibtest.helpers.makeAtlasMosaic(tmpDir.Folder);
@@ -774,7 +774,7 @@ classdef StitchLayoutTest < matlab.unittest.TestCase
         end
 
         function atlasImport_missingSidecarRaises(testCase)
-            % Asking for an import the folder cannot honour must fail loudly —
+            % Asking for an import the folder cannot honour must fail loudly -
             % silently falling back would stitch something other than requested.
             tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
             mosaic = mibtest.helpers.makeAtlasMosaic(tmpDir.Folder, struct('writeTies', false, 'writeUpdates', false));
@@ -786,7 +786,7 @@ classdef StitchLayoutTest < matlab.unittest.TestCase
         end
 
         % -----------------------------------------------------------------
-        % buildLayoutMdoc / findMdocSidecar — SerialEM montages
+        % buildLayoutMdoc / findMdocSidecar - SerialEM montages
         % -----------------------------------------------------------------
 
         function mdocSidecar_resolvesFromEitherFile(testCase)
@@ -869,7 +869,7 @@ classdef StitchLayoutTest < matlab.unittest.TestCase
 
             testCase.verifyEqual(numel(layout), montage.numTiles);
             testCase.verifyEqual(vertcat(layout.gridRC), [1 1; 1 2; 2 1; 2 2]);
-            % The acquisition order really is scrambled relative to grid order —
+            % The acquisition order really is scrambled relative to grid order -
             % otherwise this test would pass on a reader that ignores the sort.
             testCase.verifyNotEqual([layout.sliceIndex], 1:montage.numTiles);
 
@@ -902,7 +902,7 @@ classdef StitchLayoutTest < matlab.unittest.TestCase
                 testCase.verifySize(tile, [montage.tileSizePx, montage.tileSizePx, 1, 1]);
             end
             % Two tiles that overlap must agree pixel-for-pixel in the shared
-            % strip at the TRUE placement — the check that a wrong sliceIndex,
+            % strip at the TRUE placement - the check that a wrong sliceIndex,
             % a missing flip or a transposed permute would all fail.
             leftTile  = squeeze(readerFcn(1));
             rightTile = squeeze(readerFcn(2));
@@ -1064,7 +1064,7 @@ classdef StitchLayoutTest < matlab.unittest.TestCase
             testCase.verifyEqual(positions(:, 1:2), montage.expectedOriginRC, 'AbsTol', 1e-9);
 
             % The stack's own min and max must land on the class limits, and the
-            % overlapping strip must still match — a per-slice rescale would put
+            % overlapping strip must still match - a per-slice rescale would put
             % each tile on its own scale and break the second check.
             readerFcn = utils.stitch.makeTileReader(layout);
             allTiles = [];
@@ -1104,7 +1104,7 @@ classdef StitchLayoutTest < matlab.unittest.TestCase
 
         function mdocTiltSeriesIsRejected(testCase)
             % SerialEM writes the same format for tilt series, which have no
-            % PieceCoordinates and are not stitchable — one clear error beats a
+            % PieceCoordinates and are not stitchable - one clear error beats a
             % confusing parse of the wrong file kind.
             tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
             montage = mibtest.helpers.makeMdocMontage(tmpDir.Folder, ...
@@ -1119,7 +1119,7 @@ classdef StitchLayoutTest < matlab.unittest.TestCase
         end
 
         % -----------------------------------------------------------------
-        % estimateIntensityCorrection — intensity correction
+        % estimateIntensityCorrection - intensity correction
         % -----------------------------------------------------------------
 
         function intensityCorrection_noneIsNeutralAndReadsNothing(testCase)
@@ -1152,7 +1152,7 @@ classdef StitchLayoutTest < matlab.unittest.TestCase
             % Deliberately NOT built on makeMdocMontage: four heavily-overlapping
             % tiles do not decorrelate, so their content survives the average and
             % lands in the field. Sixteen independent tiles are what the estimator
-            % is actually for — see the warning in estimateIntensityCorrection.
+            % is actually for - see the warning in estimateIntensityCorrection.
             tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
             tileSize = 96;
             fieldSpan = 0.30;
@@ -1198,7 +1198,7 @@ classdef StitchLayoutTest < matlab.unittest.TestCase
             % estimate picks up the SPECIMEN's low-frequency structure, and the
             % field comes out far larger than the illumination actually applied.
             % This is why the method is opt-in and why an overlap-driven estimate
-            % is the planned successor — not something to tune the smoothing for.
+            % is the planned successor - not something to tune the smoothing for.
             tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
             montage = mibtest.helpers.makeMdocMontage(tmpDir.Folder, ...
                 struct('shadingPercent', 12));   % ramped texture, 4 tiles, 33% overlap
@@ -1211,7 +1211,7 @@ classdef StitchLayoutTest < matlab.unittest.TestCase
             estimatedSpan = double(max(correction.field(:)) - min(correction.field(:)));
             testCase.verifyGreaterThan(estimatedSpan, 2 * appliedSpan, ...
                 ['This configuration is expected to OVER-estimate the field. ' ...
-                 'If it no longer does, the estimator changed — re-read the ' ...
+                 'If it no longer does, the estimator changed - re-read the ' ...
                  'warning in estimateIntensityCorrection and update it.']);
         end
 
@@ -1244,7 +1244,7 @@ classdef StitchLayoutTest < matlab.unittest.TestCase
         function intensityCorrection_appliesToCropsAndFullTilesAlike(testCase)
             % A cropped read bypasses the cache and corrects its own patch of the
             % field. If the crop were taken from the wrong part of the field the
-            % two paths would disagree — which is what this pins down.
+            % two paths would disagree - which is what this pins down.
             tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
             montage = mibtest.helpers.makeMdocMontage(tmpDir.Folder, ...
                 struct('shadingPercent', 12, 'plainTexture', true));
@@ -1673,7 +1673,7 @@ function spread = normalizedTileAverageSpread(readerFcn, numTiles)
 %
 % Each tile is normalised by its own mean and the tiles are averaged, so
 % independent specimen content cancels and only the shared illumination survives.
-% This is the quantity a flat-field correction exists to flatten — and, unlike a
+% This is the quantity a flat-field correction exists to flatten - and, unlike a
 % single tile, it is not swamped by that tile's own texture.
 accumulated = [];
 for tileIdx = 1:numTiles

@@ -12,11 +12,11 @@ function cpuParallelLimitMax = getMaxParpoolWorkers()
 % In the MATLAB development environment, returns ``Inf`` (no limit).
 %
 % Output Arguments:
-%   - **cpuParallelLimitMax** — [numeric] maximum number of workers available for parallel processing
+%   - **cpuParallelLimitMax** - [numeric] maximum number of workers available for parallel processing
 %
 % Usage:
 %
-%   **Example 1** — retrieve the worker limit
+%   **Example 1** - retrieve the worker limit
 %
 %   .. code-block:: matlab
 %

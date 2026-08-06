@@ -8,12 +8,12 @@ function saveMeasurements(obj)
 %
 % Opens a save-file dialog.  Depending on the chosen extension:
 %
-% - ``*.measure`` — serialises ``hMeasure.Data`` to a MAT-file (variable ``Data``).
-% - ``*.xls``     — writes two sheets: **Sheet1** (summary table) and
+% - ``*.measure`` - serialises ``hMeasure.Data`` to a MAT-file (variable ``Data``).
+% - ``*.xls``     - writes two sheets: **Sheet1** (summary table) and
 %   **Sheet2** (intensity profiles).
 %
 % Input Arguments:
-%   - **obj** — :class:`controllers.MeasureTool`
+%   - **obj** - :class:`controllers.MeasureTool`
 %
 
 datasetId = obj.mibModel.getActiveId();

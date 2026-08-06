@@ -17,26 +17,26 @@ classdef (Abstract) BaseSaver < handle
 % MibLabels.save() from the object's own properties.  MibDataset
 % additionally injects .pixSize before delegating.
 % Required fields:
-% .filename    — (char) source image filename
-% .colorType   — (char) 'grayscale' | 'multichannel' | 'indexed'
-% .lutColors   — (double [C x 3]) per-channel LUT, values 0..1
-% .dataClass   — (char) 'uint8' | 'uint16' | 'uint32' | ...
-% .maxInt      — (double) maximum representable intensity
-% .sliceName   — (cell of char) per-slice source filenames
-% .sliceSize   — (double [N×2]) per-slice original [height, width]; empty when uniform
+% .filename    - (char) source image filename
+% .colorType   - (char) 'grayscale' | 'multichannel' | 'indexed'
+% .lutColors   - (double [C x 3]) per-channel LUT, values 0..1
+% .dataClass   - (char) 'uint8' | 'uint16' | 'uint32' | ...
+% .maxInt      - (double) maximum representable intensity
+% .sliceName   - (cell of char) per-slice source filenames
+% .sliceSize   - (double [N×2]) per-slice original [height, width]; empty when uniform
 % Optional fields injected by MibDataset:
-% .pixSize       — struct {.x .y .z .t .units .tunits}
-% .boundingBox   — [xmin xmax ymin ymax zmin zmax]
-% .imageDescription — (char) full ImageDescription tag
-% .xResolution   — scalar pixels/unit horizontal
-% .yResolution   — scalar pixels/unit vertical
+% .pixSize       - struct {.x .y .z .t .units .tunits}
+% .boundingBox   - [xmin xmax ymin ymax zmin zmax]
+% .imageDescription - (char) full ImageDescription tag
+% .xResolution   - scalar pixels/unit horizontal
+% .yResolution   - scalar pixels/unit vertical
 % Label-specific fields injected by MibLabels.save():
-% .materialNames  — cell array of material name strings
-% .materialColors — [M x 3] per-material RGB (0..1)
-% .labelsVariable — (char) variable name used inside .model/.mat
+% .materialNames  - cell array of material name strings
+% .materialColors - [M x 3] per-material RGB (0..1)
+% .labelsVariable - (char) variable name used inside .model/.mat
 % Mask-specific fields injected by MibDataset.save():
-% .maskFilename  — (char) mask output filename
-% .maskColor     — [1 x 3] mask overlay colour (0..1)
+% .maskFilename  - (char) mask output filename
+% .maskColor     - [1 x 3] mask overlay colour (0..1)
 %
 % USAGE (from user scripts)
 % The preferred entry points are the high-level methods:
@@ -67,7 +67,7 @@ classdef (Abstract) BaseSaver < handle
     end
 
     % ------------------------------------------------------------------ %
-    %   Abstract interface — every concrete saver must implement these     %
+    %   Abstract interface - every concrete saver must implement these     %
     % ------------------------------------------------------------------ %
     methods (Abstract)
         fnOut = save(obj, data, metadata, filename, options)
@@ -79,29 +79,29 @@ classdef (Abstract) BaseSaver < handle
         %      fnOut = obj.save(data, metadata, filename, options)
         %
         % Input Arguments:
-        %   - **data** — [H, W, D, C, T] numeric array;
+        %   - **data** - [H, W, D, C, T] numeric array;
         %     for mask/labels it contains uint8/uint16/... label IDs
-        %   - **metadata** — struct (see class-level description for fields)
-        %   - **filename** — [char] full output path INCLUDING extension, e.g.
+        %   - **metadata** - struct (see class-level description for fields)
+        %   - **filename** - [char] full output path INCLUDING extension, e.g.
         %     ``'/data/experiment/out.tif'`` or ``'C:\data\Labels_myStack.model'``;
         %     directory must already exist
-        %   - **options** — struct with runtime options:
+        %   - **options** - struct with runtime options:
         %
-        %     - ``Format`` — format string matching SaverFactory registry
-        %     - ``Saving3DPolicy`` — ``'3D stack'`` | ``'2D sequence'``
-        %     - ``showWaitbar`` — logical, display progress bar
-        %     - ``silent`` — logical, suppress dialogs
-        %     - ``FilenameGenerator`` — ``'Use original filename'`` | ``'Use sequential filename'``
-        %     - ``Compression`` — ``'none'`` | ``'lzw'`` | ``'packbits'`` (TIFF) or ``'lossy'`` | ``'lossless'`` (JPEG)
-        %     - ``Quality`` — [0–100] JPEG quality
-        %     - ``MaterialIndex`` — [numeric | []] material index to export; ``[]`` = all, ``NaN`` = currently selected
-        %     - ``overwrite`` — logical, silently overwrite existing files
+        %     - ``Format`` - format string matching SaverFactory registry
+        %     - ``Saving3DPolicy`` - ``'3D stack'`` | ``'2D sequence'``
+        %     - ``showWaitbar`` - logical, display progress bar
+        %     - ``silent`` - logical, suppress dialogs
+        %     - ``FilenameGenerator`` - ``'Use original filename'`` | ``'Use sequential filename'``
+        %     - ``Compression`` - ``'none'`` | ``'lzw'`` | ``'packbits'`` (TIFF) or ``'lossy'`` | ``'lossless'`` (JPEG)
+        %     - ``Quality`` - [0-100] JPEG quality
+        %     - ``MaterialIndex`` - [numeric | []] material index to export; ``[]`` = all, ``NaN`` = currently selected
+        %     - ``overwrite`` - logical, silently overwrite existing files
         %
         % Output Arguments:
-        %   - **fnOut** — [char or cell of char] path(s) of saved file(s);
+        %   - **fnOut** - [char or cell of char] path(s) of saved file(s);
         %     ``[]`` on failure or cancellation
         %
-        % **Example** — save TIFF stack with standard settings:
+        % **Example** - save TIFF stack with standard settings:
         %
         %   .. code-block:: matlab
         %
@@ -134,10 +134,10 @@ classdef (Abstract) BaseSaver < handle
         % registry so the factory can map format strings to saver classes.
         %
         % Output Arguments:
-        %   - **formats** — cell of char with format strings, e.g.
+        %   - **formats** - cell of char with format strings, e.g.
         %     ``{'TIF format uncompressed (*.tif)', 'TIF format LZW compression (*.tif)'}``
         %
-        % **Example** — get supported TIFF formats:
+        % **Example** - get supported TIFF formats:
         %
         %   .. code-block:: matlab
         %
@@ -166,23 +166,23 @@ classdef (Abstract) BaseSaver < handle
             %
             % **Default implementation** (this method) is a *fallback*: it gathers the
             % provider into a full ``[H W D C T]`` array and delegates to ``obj.save``.
-            % That keeps every not-yet-migrated saver working — memory is still bounded
+            % That keeps every not-yet-migrated saver working - memory is still bounded
             % by the **selected pyramid level** (the caller chooses a coarse level), but
             % a level is held whole. Savers override ``saveStream`` to write truly
             % slice-by-slice (e.g. ``io.savers.TiffSaver``).
             %
             % Input Arguments:
-            %   - **provider** — ``io.savers.SliceProvider`` exposing ``OutputSize``,
+            %   - **provider** - ``io.savers.SliceProvider`` exposing ``OutputSize``,
             %     ``DataClass``, ``NumSlices``, ``NumFrames``, ``NumChannels`` and
             %     ``getSlice(z, t)``
-            %   - **metadata** — struct (see class-level description)
-            %   - **filename** — [char] full output path including extension
-            %   - **options** — struct of runtime options (see ``save``)
+            %   - **metadata** - struct (see class-level description)
+            %   - **filename** - [char] full output path including extension
+            %   - **options** - struct of runtime options (see ``save``)
             %
             % Output Arguments:
-            %   - **fnOut** — [char | cell of char] saved path(s); ``[]`` on failure
+            %   - **fnOut** - [char | cell of char] saved path(s); ``[]`` on failure
             %
-            % **Example** — stream a resident volume to any registered format:
+            % **Example** - stream a resident volume to any registered format:
             %
             %   .. code-block:: matlab
             %
@@ -223,11 +223,11 @@ classdef (Abstract) BaseSaver < handle
             % Call at the end of every concrete saver constructor.
             %
             % Input Arguments:
-            %   - **options** — *(optional)* struct with recognized fields:
+            %   - **options** - *(optional)* struct with recognized fields:
             %
-            %     - `` `.mibPath` `` — [char] path to MIB installation directory
-            %     - `` `.ParentFigure` `` — handle to main MIB window for ``uiprogressdlg``
-            %     - `` `.waitbarHandle` `` — *(optional)* handle to upstream indeterminate progress dialog
+            %     - `` `.mibPath` `` - [char] path to MIB installation directory
+            %     - `` `.ParentFigure` `` - handle to main MIB window for ``uiprogressdlg``
+            %     - `` `.waitbarHandle` `` - *(optional)* handle to upstream indeterminate progress dialog
             %
             %     All fields are optional; absent or empty values are silently ignored.
             %
@@ -259,13 +259,13 @@ classdef (Abstract) BaseSaver < handle
             % Returns ``[]`` when no valid parent is available (standalone or headless use).
             %
             % Input Arguments:
-            %   - **title** — [char] dialog title bar text
-            %   - **message** — [char] dialog body message
-            %   - **cancelable** — *(optional)* [logical] show Cancel button; default: ``false``
-            %   - **indeterminate** — *(optional)* [logical] indeterminate spinner mode; default: ``false``
+            %   - **title** - [char] dialog title bar text
+            %   - **message** - [char] dialog body message
+            %   - **cancelable** - *(optional)* [logical] show Cancel button; default: ``false``
+            %   - **indeterminate** - *(optional)* [logical] indeterminate spinner mode; default: ``false``
             %
             % Output Arguments:
-            %   - **wb** — ``matlab.ui.dialog.ProgressDialog`` handle, or ``[]`` when no
+            %   - **wb** - ``matlab.ui.dialog.ProgressDialog`` handle, or ``[]`` when no
             %     valid parent is available. **Callers must guard all ``wb`` access with
             %     ``if ~isempty(wb) ... end``**
             if nargin < 4; cancelable    = false; end
@@ -276,7 +276,7 @@ classdef (Abstract) BaseSaver < handle
                 try
                     if isvalid(obj.WaitbarHandle)
                         wb = obj.WaitbarHandle;
-                        obj.WaitbarHandle = [];   % consume — caller now owns it
+                        obj.WaitbarHandle = [];   % consume - caller now owns it
                         wb.Indeterminate = 'off';
                         wb.Value         = 0;
                         wb.Title         = title;
@@ -316,20 +316,20 @@ classdef (Abstract) BaseSaver < handle
             % caller has already embedded the directory in ``fname``).
             %
             % Input Arguments:
-            %   - **destDir** — [char] directory portion; may be empty (``''``)
-            %   - **fname** — [char] filename, with or without leading directory
+            %   - **destDir** - [char] directory portion; may be empty (``''``)
+            %   - **fname** - [char] filename, with or without leading directory
             %
             % Output Arguments:
-            %   - **fullpath** — [char] combined path
+            %   - **fullpath** - [char] combined path
             %
-            % **Example 1** — combine directory and filename:
+            % **Example 1** - combine directory and filename:
             %
             %   .. code-block:: matlab
             %
             %      p = obj.buildOutputPath('/data/out', 'stack.tif');
             %      % p == '/data/out/stack.tif'
             %
-            % **Example 2** — empty directory returns filename unchanged:
+            % **Example 2** - empty directory returns filename unchanged:
             %
             %   .. code-block:: matlab
             %
@@ -355,13 +355,13 @@ classdef (Abstract) BaseSaver < handle
             % helpers such as TIFF/PNG/JPG writers ported from MIB2.
             %
             % Input Arguments:
-            %   - **data** — [H, W, D, C, T] numeric array (full 5-D)
-            %   - **t** — [integer] 1-based time point index
+            %   - **data** - [H, W, D, C, T] numeric array (full 5-D)
+            %   - **t** - [integer] 1-based time point index
             %
             % Output Arguments:
-            %   - **imgOut** — [H, W, C, D] numeric array for time point t
+            %   - **imgOut** - [H, W, C, D] numeric array for time point t
             %
-            % **Example 1** — extract first time point with dimension swap:
+            % **Example 1** - extract first time point with dimension swap:
             %
             %   .. code-block:: matlab
             %
@@ -381,14 +381,14 @@ classdef (Abstract) BaseSaver < handle
             %      [pathStr, baseName, ext] = obj.splitFilename(filename)
             %
             % Input Arguments:
-            %   - **filename** — [char] full path to decompose
+            %   - **filename** - [char] full path to decompose
             %
             % Output Arguments:
-            %   - **pathStr** — [char] directory portion
-            %   - **baseName** — [char] file stem without extension
-            %   - **ext** — [char] lower-case extension including dot
+            %   - **pathStr** - [char] directory portion
+            %   - **baseName** - [char] file stem without extension
+            %   - **ext** - [char] lower-case extension including dot
             %
-            % **Example 1** — decompose mixed-case filename:
+            % **Example 1** - decompose mixed-case filename:
             %
             %   .. code-block:: matlab
             %
@@ -408,24 +408,24 @@ classdef (Abstract) BaseSaver < handle
             %      sliceNames = obj.buildSliceNames(baseName, pathStr, depth, ext, options, metadata)
             %
             % Respects the ``options.FilenameGenerator`` policy:
-            % - ``'Use original filename'`` — derives names from ``metadata.sliceName``
+            % - ``'Use original filename'`` - derives names from ``metadata.sliceName``
             %   when available; falls back to sequential if unavailable
-            % - ``'Use sequential filename'`` — generates numbered names (default)
+            % - ``'Use sequential filename'`` - generates numbered names (default)
             %
             % Input Arguments:
-            %   - **baseName** — [char] stem used for sequential naming
-            %   - **pathStr** — [char] destination directory
-            %   - **depth** — [integer] number of slices (Z dimension)
-            %   - **ext** — [char] extension with leading dot, e.g. ``'.tif'``
-            %   - **options** — struct, must contain ``FilenameGenerator`` field;
+            %   - **baseName** - [char] stem used for sequential naming
+            %   - **pathStr** - [char] destination directory
+            %   - **depth** - [integer] number of slices (Z dimension)
+            %   - **ext** - [char] extension with leading dot, e.g. ``'.tif'``
+            %   - **options** - struct, must contain ``FilenameGenerator`` field;
             %     optionally ``FilenamePrefix`` (char, e.g. ``'Labels_'``) prepended to
             %     the stem when using original filenames
-            %   - **metadata** — struct, may contain `` `.sliceName` `` (cell of char)
+            %   - **metadata** - struct, may contain `` `.sliceName` `` (cell of char)
             %
             % Output Arguments:
-            %   - **sliceNames** — [cell of char] {depth × 1} full output paths
+            %   - **sliceNames** - [cell of char] {depth × 1} full output paths
             %
-            % **Example 1** — sequential naming for 5 slices:
+            % **Example 1** - sequential naming for 5 slices:
             %
             %   .. code-block:: matlab
             %
@@ -466,11 +466,11 @@ classdef (Abstract) BaseSaver < handle
             %      img2D = obj.cropSliceToOriginalSize(img2D, sliceSize)
             %
             % Input Arguments:
-            %   - **img2D** — [H, W] or [H, W, C] image slice (possibly padded)
-            %   - **sliceSize** — [1x2] vector ``[origHeight, origWidth]``
+            %   - **img2D** - [H, W] or [H, W, C] image slice (possibly padded)
+            %   - **sliceSize** - [1x2] vector ``[origHeight, origWidth]``
             %
             % Output Arguments:
-            %   - **img2D** — cropped to ``[origHeight, origWidth, :]``
+            %   - **img2D** - cropped to ``[origHeight, origWidth, :]``
             %
             if ~isempty(sliceSize)
                 origH = min(sliceSize(1), size(img2D, 1));

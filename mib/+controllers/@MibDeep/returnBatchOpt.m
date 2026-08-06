@@ -9,7 +9,7 @@ function returnBatchOpt(obj, BatchOptOut)
 % via the notify 'SyncBatch' event
 %
 % Input Arguments:
-%   - **BatchOptOut** — a local structure with Batch Options generated
+%   - **BatchOptOut** - a local structure with Batch Options generated
 %     during Continue callback. It may contain more fields than
 %     obj.BatchOpt structure
 %

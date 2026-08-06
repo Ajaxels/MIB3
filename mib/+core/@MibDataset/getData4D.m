@@ -7,35 +7,35 @@ function dataset = getData4D(obj, type, orient, col_channel, options)
 %       dataset = obj.getData4D(type, orient, col_channel, options)
 %
 % Input Arguments:
-%   - **type** — type of the dataset layer to retrieve:
+%   - **type** - type of the dataset layer to retrieve:
 %
-%     - ``'image'`` — [*default*] the image layer
-%     - ``'labels'`` — labels layer with segmentation
-%     - ``'mask'`` — mask layer, supporting segmentation
-%     - ``'selection'`` — selection layer, a temporary layer for segmentation
-%     - ``'everything'`` — (``'model'``, ``'mask'`` and ``'selection'`` for ``obj.labels.maxMaterials == 63`` only)
+%     - ``'image'`` - [*default*] the image layer
+%     - ``'labels'`` - labels layer with segmentation
+%     - ``'mask'`` - mask layer, supporting segmentation
+%     - ``'selection'`` - selection layer, a temporary layer for segmentation
+%     - ``'everything'`` - (``'model'``, ``'mask'`` and ``'selection'`` for ``obj.labels.maxMaterials == 63`` only)
 %
-%   - **orient** — [*optional,* can be []]
+%   - **orient** - [*optional,* can be []]
 %
-%     - ``[]`` — returns transposed dataset in the currently shown orientation *(default)*
-%     - ``1`` — returns transposed dataset in the zx configuration: [y,x,z,c,t] → [x,z,y,c,t]
-%     - ``2`` — returns transposed dataset in the zy configuration: [y,x,z,c,t] → [y,z,x,c,t]
-%     - ``3`` — returns the original dataset in the yx configuration: [y,x,z,c,t]
+%     - ``[]`` - returns transposed dataset in the currently shown orientation *(default)*
+%     - ``1`` - returns transposed dataset in the zx configuration: [y,x,z,c,t] → [x,z,y,c,t]
+%     - ``2`` - returns transposed dataset in the zy configuration: [y,x,z,c,t] → [y,z,x,c,t]
+%     - ``3`` - returns the original dataset in the yx configuration: [y,x,z,c,t]
 %
-%   - **col_channel** — [*optional*] color channel(s) to retrieve; can be ``[]`` or ``NaN``:
+%   - **col_channel** - [*optional*] color channel(s) to retrieve; can be ``[]`` or ``NaN``:
 %
 %     - when **type** is ``'image'``: a vector of color channel indices:
 %
-%       - ``[]`` — *(default)* take color channels from ``obj.slices{4}``
-%       - ``NaN`` — take all color channels of the dataset
-%       - index — get specific color channel(s) with provided index(s)
+%       - ``[]`` - *(default)* take color channels from ``obj.slices{4}``
+%       - ``NaN`` - take all color channels of the dataset
+%       - index - get specific color channel(s) with provided index(s)
 %
 %     - when **type** is ``'labels'``: the material selection:
 %
-%       - ``[]`` — *(default)* take all materials of the model
-%       - ``NaN`` — take all materials of the model
-%       - index — get specific material; the selected material in **dataset** will have index = 1
-%   - **options** — *(optional)*, a structure with extra parameters
+%       - ``[]`` - *(default)* take all materials of the model
+%       - ``NaN`` - take all materials of the model
+%       - index - get specific material; the selected material in **dataset** will have index = 1
+%   - **options** - *(optional)*, a structure with extra parameters
 %
 %     - ``.blockModeSwitch`` [*logical]* override the block mode switch obj.blockModeSwitch;
 %       use or not the block mode (**false** - return full dataset, **true** - return only the shown part)
@@ -54,7 +54,7 @@ function dataset = getData4D(obj, type, orient, col_channel, options)
 %     - ``.t`` *(optional)*, [tmin, tmax] of the part of the dataset to take
 %
 % Output Arguments:
-%   - **dataset** — a cell array with 4D image with colors.
+%   - **dataset** - a cell array with 4D image with colors.
 %     For the 'image' type: {roiId}[1:height, 1:width, 1:depth, 1:color, 1:time];
 %     for all other types: {roiId}[1:height, 1:width, 1:depth, 1:time]
 %
@@ -120,7 +120,7 @@ if strcmp(obj.datasetType, 'Standard') && ~strcmp(type, 'everything')
                 end
             else
                 % Replicate slow-path reshape: MibImage.getData drops singleton C dim
-                % for non-image types (reshape shares memory — still zero-copy)
+                % for non-image types (reshape shares memory - still zero-copy)
                 rawVol = obj.(type).data;   % COW alias, no copy
                 dataset = {reshape(rawVol, size(rawVol,1), size(rawVol,2), size(rawVol,3), size(rawVol,5))};
             end

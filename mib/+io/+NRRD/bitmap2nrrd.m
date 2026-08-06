@@ -9,24 +9,24 @@ function result = bitmap2nrrd(filename, bitmap, bb, options)
 % Format description: http://teem.sourceforge.net/nrrd/format.html
 %
 % Input Arguments:
-%   - **filename** — filename for NRRD
-%   - **bitmap** — a dataset, [height, width, colors, depth]
-%   - **bb** — bounding box information, a vector [minX, maxX, minY, maxY, minZ, maxZ]
-%   - **options** — *(optional)* struct with fields:
+%   - **filename** - filename for NRRD
+%   - **bitmap** - a dataset, [height, width, colors, depth]
+%   - **bb** - bounding box information, a vector [minX, maxX, minY, maxY, minZ, maxZ]
+%   - **options** - *(optional)* struct with fields:
 %
-%     - ``overwrite`` — [logical] if ``true`` do not check whether file with provided
+%     - ``overwrite`` - [logical] if ``true`` do not check whether file with provided
 %       filename already exists; default: ``false``
-%     - ``showWaitbar`` — [logical] if ``true`` show the progress bar, if ``false``
+%     - ``showWaitbar`` - [logical] if ``true`` show the progress bar, if ``false``
 %       do not show; default: ``true``
-%     - ``ParentFigure`` — *(optional)* handle to the main MIB application window.
+%     - ``ParentFigure`` - *(optional)* handle to the main MIB application window.
 %       When provided, the progress bar is rendered as ``uiprogressdlg`` attached to
 %       that window (recommended for GUI use). When absent or empty the legacy
 %       ``waitbar`` is used as a fallback
 %
 % Output Arguments:
-%   - **result** — ``1`` = success, ``0`` = failure
+%   - **result** - ``1`` = success, ``0`` = failure
 %
-% **Example 1** — standalone / scripted use (no GUI parent):
+% **Example 1** - standalone / scripted use (no GUI parent):
 %
 %   .. code-block:: matlab
 %
@@ -35,7 +35,7 @@ function result = bitmap2nrrd(filename, bitmap, bb, options)
 %      opts.showWaitbar = false;
 %      io.NRRD.bitmap2nrrd('/output/volume.nrrd', imgData_hwd, bb, opts);
 %
-% **Example 2** — GUI use (attach progress dialog to the MIB window):
+% **Example 2** - GUI use (attach progress dialog to the MIB window):
 %
 %   .. code-block:: matlab
 %

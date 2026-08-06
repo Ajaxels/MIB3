@@ -8,27 +8,27 @@ function [profileOut, lineLength, samplePointsX, samplePointsY] = imageProfileIn
 %           utils.imageProfileIntegrate(img, x1, y1, x2, y2, integrationWidth)
 %
 % Samples ``integrationWidth`` parallel scan lines across the rectangle
-% defined by the line ``(x1,y1)–(x2,y2)`` and averages their intensity
+% defined by the line ``(x1,y1)-(x2,y2)`` and averages their intensity
 % profiles, yielding a width-integrated result.
 %
 % Based on code by Damien from MATLAB Central file exchange #11568.
 %
 % Input Arguments:
-%   - **img** — [H × W × C] numeric image array
-%   - **x1** — [double] x-coordinate of line start point
-%   - **y1** — [double] y-coordinate of line start point
-%   - **x2** — [double] x-coordinate of line end point
-%   - **y2** — [double] y-coordinate of line end point
-%   - **integrationWidth** — [double] number of parallel scan lines (rectangle width in pixels)
+%   - **img** - [H × W × C] numeric image array
+%   - **x1** - [double] x-coordinate of line start point
+%   - **y1** - [double] y-coordinate of line start point
+%   - **x2** - [double] x-coordinate of line end point
+%   - **y2** - [double] y-coordinate of line end point
+%   - **integrationWidth** - [double] number of parallel scan lines (rectangle width in pixels)
 %
 % Output Arguments:
-%   - **profileOut** — [C × nPoints] averaged intensity matrix (one row per colour channel)
-%   - **lineLength** — [double] length of the line in pixels
-%   - **samplePointsX** — [integrationWidth × nPoints] x-coordinates of all scan points
-%   - **samplePointsY** — [integrationWidth × nPoints] y-coordinates of all scan points
+%   - **profileOut** - [C × nPoints] averaged intensity matrix (one row per colour channel)
+%   - **lineLength** - [double] length of the line in pixels
+%   - **samplePointsX** - [integrationWidth × nPoints] x-coordinates of all scan points
+%   - **samplePointsY** - [integrationWidth × nPoints] y-coordinates of all scan points
 %
 % Usage:
-%   **Example 1** — single-channel profile with 5-pixel integration width
+%   **Example 1** - single-channel profile with 5-pixel integration width
 %
 %   .. code-block:: matlab
 %

@@ -28,7 +28,7 @@ end
 obj.tileReader();   % one shared reader for the whole inspector session
 
 % During construction obj.view.gui is still invisible and uiprogressdlg
-% refuses it — progressParent falls back to the parent Stitching window then,
+% refuses it - progressParent falls back to the parent Stitching window then,
 % and to [] (no progress bar) when there is no window at all.
 obj.stitching.ensureSeamScores(struct( ...
     'parentFigure', obj.progressParent(), ...

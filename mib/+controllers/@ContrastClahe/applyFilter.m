@@ -8,12 +8,12 @@ function imgOut = applyFilter(obj, imgIn)
 %       obj.applyFilter()                 % full mode: read model, apply, write back
 %
 % Input Arguments:
-%   - **imgIn** *(optional)* — [numeric] 2-D or H×W×C image to process in preview mode.
+%   - **imgIn** *(optional)* - [numeric] 2-D or H×W×C image to process in preview mode.
 %     When omitted the filter is applied to the full dataset region defined by
 %     ``BatchOpt.DatasetType``.
 %
 % Output Arguments:
-%   - **imgOut** — [numeric] filtered image (only populated in preview mode).
+%   - **imgOut** - [numeric] filtered image (only populated in preview mode).
 %
 
 if obj.mibModel.preferences.System.DeveloperMode

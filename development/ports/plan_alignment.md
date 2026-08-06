@@ -293,7 +293,7 @@ pwb.updateText('Applying shifts...');
 - Spinner BatchOpt shape `{value, [min max], roundFlag}`; never `str2double` on spinner values.
 - Event renames: `updateGuiWidgets` → `UpdateGuiWidgets`, `plotImage` → `ShowImage`, `updateId` → `UpdateGuiWidgets`, `updatedAnnotations` → `UpdateAnnotations`.
 - `mibBatchSectionName` `'Menu -> ...'` → `'Ribbon -> Dataset'`.
-- All docblocks RST per `development/guides/docs_api_sphinx.md` — `% FUNCNAME - desc.`, `Syntax:` directive without blank line, `**bold**` params with `—` em-dash, `*(optional)*`, `.. code-block:: matlab`, struct fields in nested bullet list with leading blank `%` line.
+- All docblocks RST per `development/guides/docs_api_sphinx.md` - `% FUNCNAME - desc.`, `Syntax:` directive without blank line, `**bold**` params with a `-` separator, `*(optional)*`, `.. code-block:: matlab`, struct fields in nested bullet list with leading blank `%` line.
 - `getDatasetDimensions` arity differs by class:
   - `MibDataset.getDatasetDimensions(type, orient, options)` (used here)
   - `MibImage.getDatasetDimensions(orient, splitDims, blockModeSwitch)` — wrong receiver gives "Too many input arguments"

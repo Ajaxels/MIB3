@@ -10,8 +10,8 @@ function plotIntensityProfile(obj, dataIndex)
 % measurement at ``dataIndex``.
 %
 % Input Arguments:
-%   - **obj** — :class:`controllers.MeasureTool`
-%   - **dataIndex** — [double] 1-based index in ``hMeasure.Data``
+%   - **obj** - :class:`controllers.MeasureTool`
+%   - **dataIndex** - [double] 1-based index in ``hMeasure.Data``
 %
 
 datasetId = obj.mibModel.getActiveId();
@@ -26,7 +26,7 @@ end
 
 figHandle = figure(1952);
 clf(figHandle);
-figHandle.Name = sprintf('Intensity profile — measurement %d', hMeasure.Data(dataIndex).n);
+figHandle.Name = sprintf('Intensity profile - measurement %d', hMeasure.Data(dataIndex).n);
 
 plotAxes     = axes(figHandle);
 distanceVec  = profileData(1, :);
@@ -47,7 +47,7 @@ hold(plotAxes, 'off');
 
 xlabel(plotAxes, 'Distance (px)');
 ylabel(plotAxes, 'Intensity');
-title(plotAxes, sprintf('%s — n=%d', hMeasure.Data(dataIndex).type, hMeasure.Data(dataIndex).n));
+title(plotAxes, sprintf('%s - n=%d', hMeasure.Data(dataIndex).type, hMeasure.Data(dataIndex).n));
 if nChannels > 1
     legend(plotAxes, 'show');
 end

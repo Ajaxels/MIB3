@@ -9,13 +9,13 @@ function sliderDragCallback(obj, sliderType, value, isFinal)
 % Keeps slider dragging interactive. The numeric readout is updated on every
 % tick, but the expensive ``showImage`` redraw is rate-limited:
 %
-%   - **In-memory datasets, and native (zarrMex) zarr datasets** — redraws are
+%   - **In-memory datasets, and native (zarrMex) zarr datasets** - redraws are
 %     throttled by wall-clock time (at most once per ``obj.sliderThrottleInterval``
 %     seconds) while dragging and rendered live; intermediate ticks only update the
 %     numeric box. On release (``isFinal``) the exact final position is always
 %     rendered (trailing edge). Native zarr reads (~5-10 ms) are fast enough to
 %     render live, so they share this path for smooth scrolling.
-%   - **Python-backend zarr datasets** — out-of-process reads are slower
+%   - **Python-backend zarr datasets** - out-of-process reads are slower
 %     (~15-30 ms+), so the disk read is deferred with a singleShot debounce timer
 %     until the user pauses (100 ms).
 %
@@ -24,9 +24,9 @@ function sliderDragCallback(obj, sliderType, value, isFinal)
 % (which would fight the user's drag and make the thumb appear to lag/jump).
 %
 % Input Arguments:
-%   - **sliderType** — [char] ``'slice'`` or ``'frame'``
-%   - **value** — [numeric] current slider position value
-%   - **isFinal** — [logical] ``true`` when called from the slider ``ValueChanged``
+%   - **sliderType** - [char] ``'slice'`` or ``'frame'``
+%   - **value** - [numeric] current slider position value
+%   - **isFinal** - [logical] ``true`` when called from the slider ``ValueChanged``
 %     (release) event; ``false`` for live ``ValueChanging`` drag events
 %
 % Output Arguments:
@@ -66,7 +66,7 @@ isZarr = any(obj.mibModel.I{datasetId}.datasetType(1) == ['V' 'B']) && ...
 % Slow reads are deferred with a debounce so dragging stays responsive; this is
 % needed for the python zarr backend (out-of-process reads are ~15-30 ms+). Native
 % zarr reads are fast (~5-10 ms), so they render live through the wall-clock throttle
-% below, exactly like in-memory datasets — giving much smoother slice scrolling.
+% below, exactly like in-memory datasets - giving much smoother slice scrolling.
 if isZarr && io.zarr.Config.isPython()
     % defer the disk read until the user pauses dragging
     if ~isempty(obj.sliderDebounceTimer) && isvalid(obj.sliderDebounceTimer)

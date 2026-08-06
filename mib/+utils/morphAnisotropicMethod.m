@@ -11,22 +11,22 @@ function method = morphAnisotropicMethod(obj, batchModeSwitch, batchMethod, opNa
 % intended ellipsoid. This helper decides which engine to use for large
 % anisotropic 3D dilation/erosion:
 %
-%   - ``'accurate'`` — keep the (slow) ellipsoidal ``imdilate``/``imerode``
-%   - ``'fast'``     — use the isotropic ``bwdist`` path (treats the element as a
+%   - ``'accurate'`` - keep the (slow) ellipsoidal ``imdilate``/``imerode``
+%   - ``'fast'``     - use the isotropic ``bwdist`` path (treats the element as a
 %     sphere; acceptable only for slight anisotropy)
-%   - ``'cancel'``   — the user aborted the operation
+%   - ``'cancel'``   - the user aborted the operation
 %
 % In batch mode (``batchModeSwitch == 1``) the ``BatchOpt.AnisotropicMethod``
 % value is honoured with no dialog. Interactively a warning dialog is shown.
 %
 % Input Arguments:
-%   - **obj** — the ``models.MibModel`` instance (for the parent figure)
-%   - **batchModeSwitch** — logical/double; 1 = headless batch mode (no dialog)
-%   - **batchMethod** — char, the ``BatchOpt.AnisotropicMethod{1}`` value used in batch mode
-%   - **opName** — char, ``'dilation'`` or ``'erosion'`` for message wording
+%   - **obj** - the ``models.MibModel`` instance (for the parent figure)
+%   - **batchModeSwitch** - logical/double; 1 = headless batch mode (no dialog)
+%   - **batchMethod** - char, the ``BatchOpt.AnisotropicMethod{1}`` value used in batch mode
+%   - **opName** - char, ``'dilation'`` or ``'erosion'`` for message wording
 %
 % Output Arguments:
-%   - **method** — char, ``'accurate'``, ``'fast'`` or ``'cancel'``
+%   - **method** - char, ``'accurate'``, ``'fast'`` or ``'cancel'``
 %
 
 % Updates

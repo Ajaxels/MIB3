@@ -6,13 +6,13 @@ function miniMapButtonDown(obj)
 %
 %      obj.miniMapButtonDown()
 %
-% Wired on ``miniMapAxes`` itself (not per tile patch — see
+% Wired on ``miniMapAxes`` itself (not per tile patch - see
 % :func:`renderMiniMap`), so the click point comes straight from
 % ``miniMapAxes.CurrentPoint``, exactly like :func:`scrollWheel_Callback` and
 % :func:`pairViewButtonDown` already read the pair-view axes. This sidesteps
 % any doubt about what a PATCH's ``ButtonDownFcn`` hit event actually carries
-% (unlike the image objects the pair view uses) and about which patch — of
-% possibly several overlapping ones — would receive it.
+% (unlike the image objects the pair view uses) and about which patch - of
+% possibly several overlapping ones - would receive it.
 %
 % The nearest seam to that point (:meth:`edgeAtMiniMapPoint`) is selected
 % directly; nothing here falls back to "the clicked tile's worst seam".

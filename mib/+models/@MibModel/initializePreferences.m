@@ -15,7 +15,7 @@ function initializePreferences(obj)
 %   none
 %
 % Usage:
-%   **Example 1** — called internally during MibModel initialization
+%   **Example 1** - called internally during MibModel initialization
 %
 %   .. code-block:: matlab
 %
@@ -98,7 +98,7 @@ end
 
 % force update of cpuParallelLimit; when the limit was not provided to the
 % constructor it is computed lazily (get.cpuParallelLimitMax) to avoid the
-% slow parcluster query during startup — the lazy getter applies this clamp
+% slow parcluster query during startup - the lazy getter applies this clamp
 if ~isempty(obj.cpuParallelLimitMaxCached)
     obj.preferences.System.cpuParallelLimit = min([obj.preferences.System.cpuParallelLimit, obj.cpuParallelLimitMaxCached]);
 end

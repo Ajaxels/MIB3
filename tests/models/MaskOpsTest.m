@@ -2,10 +2,10 @@ classdef MaskOpsTest < matlab.unittest.TestCase
 % MASKOPSTEST - Unit tests for MibModel.invertMask.
 %
 % Verification strategies:
-%   double-invert identity — two inversions recover the original data
-%   complement            — result is bitwise complement of input
-%   cross-layer isolation — image / labels must not change
-%   labels63 packed path  — bit-flip on packed uint8 data
+%   double-invert identity - two inversions recover the original data
+%   complement            - result is bitwise complement of input
+%   cross-layer isolation - image / labels must not change
+%   labels63 packed path  - bit-flip on packed uint8 data
 
     methods (TestClassSetup)
         function addPaths(testCase)
@@ -16,7 +16,7 @@ classdef MaskOpsTest < matlab.unittest.TestCase
     methods (Test, TestTags = {'Unit'})
 
         % -----------------------------------------------------------------
-        % Mask inversion — labels255
+        % Mask inversion - labels255
         % -----------------------------------------------------------------
 
         function invertMask_mask_doubleInvert_isIdentity(testCase)
@@ -82,7 +82,7 @@ classdef MaskOpsTest < matlab.unittest.TestCase
         end
 
         % -----------------------------------------------------------------
-        % Selection inversion — labels255
+        % Selection inversion - labels255
         % -----------------------------------------------------------------
 
         function invertMask_selection_doubleInvert_isIdentity(testCase)

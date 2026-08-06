@@ -12,9 +12,9 @@ function generateKymograph(obj, datasetId, measurementIndex)
 % physical step sizes is written alongside every TIF save.
 %
 % Input Arguments:
-%   - **obj** — :class:`controllers.MeasureTool`
-%   - **datasetId** — [double] index into ``mibModel.I``
-%   - **measurementIndex** — [double] 1-based index in ``hMeasure.Data``
+%   - **obj** - :class:`controllers.MeasureTool`
+%   - **datasetId** - [double] index into ``mibModel.I``
+%   - **measurementIndex** - [double] 1-based index in ``hMeasure.Data``
 %
 
 hMeasure    = obj.mibModel.I{datasetId}.measure;
@@ -47,9 +47,9 @@ outputFormat = dlgAnswer{1};
 addScaleBarFlag = dlgAnswer{2};
 
 % select path coordinates based on measurement type:
-%   Caliper           — perpendicular segment P3-P4
-%   polyline/freehand — dense stored path
-%   linear            — two endpoints
+%   Caliper           - perpendicular segment P3-P4
+%   polyline/freehand - dense stored path
+%   linear            - two endpoints
 storedX = hMeasure.Data(measurementIndex).X;
 storedY = hMeasure.Data(measurementIndex).Y;
 switch measureType
@@ -64,7 +64,7 @@ switch measureType
         kymY = storedY(1:2);
 end
 
-% fetch 4-D stack — getData4D returns {roi}[H x W x depth x colors x time]
+% fetch 4-D stack - getData4D returns {roi}[H x W x depth x colors x time]
 getDataOptions = struct('id', datasetId, 'blockModeSwitch', false);
 imageStackCell = obj.mibModel.getData4D('image', [], colChData, getDataOptions);
 imageStackRaw  = imageStackCell{1};                              % [H x W x depth x colors x time]
@@ -121,7 +121,7 @@ switch outputFormat
         else
             imshow(kymograph(:, :, 1), [], 'Parent', axHandle);
         end
-        title(axHandle, sprintf('Kymograph — measurement %d', hMeasure.Data(measurementIndex).n));
+        title(axHandle, sprintf('Kymograph - measurement %d', hMeasure.Data(measurementIndex).n));
 
     case 'TIF'
         [filename, pathname] = uiputfile({'*.tif', 'TIFF (*.tif)'}, ...

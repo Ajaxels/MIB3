@@ -55,7 +55,7 @@ classdef DatasetInfo < handle
             % DATASETINFO - Construct the dataset information controller.
             %
             % Input Arguments:
-            %   - **mibModel** — handle to :class:`models.MibModel`.
+            %   - **mibModel** - handle to :class:`models.MibModel`.
 
             obj.mibModel = mibModel;
             obj.selectedNodeText = '';
@@ -281,7 +281,7 @@ classdef DatasetInfo < handle
                     value.(answer{1}) = newValue;
                     meta{keyName} = value;
                     obj.mibModel.I{datasetId}.image.setMeta(meta);
-                    % Section node or field node — use section node as parent.
+                    % Section node or field node - use section node as parent.
                     if strcmp(nodeData.populationType, 'struct_fields')
                         parentNode = nodes(1);
                     else
@@ -672,7 +672,7 @@ classdef DatasetInfo < handle
                     obj.mibModel.I{datasetId}.image.setMeta(meta);
                     nodes(1).Text = num2str(value(subIndex, :));
                     if ~strcmp(answer{1}, char(keyName))
-                        % Key renamed — update section node and all populated children.
+                        % Key renamed - update section node and all populated children.
                         sectionNode = nodes(1).Parent;
                         sectionNode.Text = answer{1};
                         nd = sectionNode.NodeData; nd.key = answer{1}; sectionNode.NodeData = nd;
@@ -716,7 +716,7 @@ classdef DatasetInfo < handle
                     nodes(1).Text = char(string(answer{2}));
                 else
                     if numel(value) == 1
-                        % Single-item leaf — let the user edit the value (and optionally rename the key).
+                        % Single-item leaf - let the user edit the value (and optionally rename the key).
                         prompts = {'Key name:', 'New value:'};
                         defAns = {char(keyName), char(string(value{1}))};
                         answer = utils.dlgs.inputUniversalDlg(obj.view.gui, '', ...
@@ -732,7 +732,7 @@ classdef DatasetInfo < handle
                         nodes(1).Text = sprintf('%s: %s', newKeyName, char(string(answer{2})));
                         nd = nodes(1).NodeData; nd.key = newKeyName; nodes(1).NodeData = nd;
                     else
-                        % Section node selected — only allow renaming the key.
+                        % Section node selected - only allow renaming the key.
                         prompts = {'Key name:'};
                         defAns = {char(keyName)};
                         answer = utils.dlgs.inputUniversalDlg(obj.view.gui, '', ...
@@ -787,16 +787,16 @@ classdef DatasetInfo < handle
             %
             % Handles all node depths:
             %
-            % - **Top-level key** — removes the key from the dictionary
+            % - **Top-level key** - removes the key from the dictionary
             %   (standard keys are protected).
-            % - **Struct field** (e.g. ``pixSize.x``) — removes the field.
-            % - **Cell element** (e.g. ``SliceName{3}``) — removes the
+            % - **Struct field** (e.g. ``pixSize.x``) - removes the field.
+            % - **Cell element** (e.g. ``SliceName{3}``) - removes the
             %   element and updates sibling indices.
-            % - **Matrix row** (e.g. ``lutColors`` row 2) — removes the
+            % - **Matrix row** (e.g. ``lutColors`` row 2) - removes the
             %   row and updates sibling indices.
-            % - **customMeta cell** (e.g. ``Instrument (2)``) — removes
+            % - **customMeta cell** (e.g. ``Instrument (2)``) - removes
             %   only that cell element, not the whole field.
-            % - **Parent with children** — removes the key or its children
+            % - **Parent with children** - removes the key or its children
             %   depending on context.
 
             answer = utils.dlgs.inputQuestDlg(obj.view.gui, ...
@@ -881,7 +881,7 @@ classdef DatasetInfo < handle
 
                     try
                         if isfield(nodeData, 'cellIndex') && ~isempty(nodeData.cellIndex)
-                            % cell element — remove from parent cell array
+                            % cell element - remove from parent cell array
                             cellIdx = nodeData.cellIndex;
                             parentPath = subsPath(1:end-1); % path to the cell array
                             if isempty(parentPath)
@@ -926,7 +926,7 @@ classdef DatasetInfo < handle
                                 end
                             end
                         else
-                            % struct field — remove from parent container
+                            % struct field - remove from parent container
                             parentPath = subsPath(1:end-1);
                             if isempty(parentPath)
                                 customMetaValue = rmfield(customMetaValue, char(subIndex));
@@ -1060,7 +1060,7 @@ classdef DatasetInfo < handle
             % is expanded automatically before selecting the tree node.
             %
             % Input Arguments:
-            %   - **parameter** — ``'new'`` to start a forward search from
+            %   - **parameter** - ``'new'`` to start a forward search from
             %     the beginning, ``'next'`` to find the next match,
             %     ``'previous'`` to find the previous match.
 
@@ -1250,10 +1250,10 @@ classdef DatasetInfo < handle
             %
             % Each element of the returned cell array is a struct with:
             %
-            %   - ``text`` — display text exactly as it appears in the tree node
-            %   - ``sectionKey`` — ``NodeData.key`` of the deferred section node
+            %   - ``text`` - display text exactly as it appears in the tree node
+            %   - ``sectionKey`` - ``NodeData.key`` of the deferred section node
             %     to expand before navigating; ``''`` when already visible
-            %   - ``sectionPopulationType`` — ``NodeData.populationType`` of
+            %   - ``sectionPopulationType`` - ``NodeData.populationType`` of
             %     that section node
 
             list = {};
@@ -1485,7 +1485,7 @@ classdef DatasetInfo < handle
 end
 
 % =====================================================================
-%  Local function — recursively flatten a customMeta struct to a list
+%  Local function - recursively flatten a customMeta struct to a list
 %  of node text strings.  Mirrors addStructToTree in
 %  treeNodeExpanded_Callback.m so that texts match exactly.
 % =====================================================================
@@ -1502,7 +1502,7 @@ for fieldIdx = 1:numel(fieldNamesList)
             texts = [texts, subTexts]; %#ok<AGROW>
         end
     elseif strcmp(fieldName, 'AttributesText')
-        % no tree node — skip
+        % no tree node - skip
     elseif strcmp(fieldName, 'Text')
         if ~isempty(fieldValue)
             texts{end+1} = char(string(fieldValue)); %#ok<AGROW>
@@ -1526,7 +1526,7 @@ end
 end
 
 % =====================================================================
-%  Local function — flatten an Extras key value to a list of node text
+%  Local function - flatten an Extras key value to a list of node text
 %  strings.  Mirrors addExtraNode in treeNodeExpanded_Callback.m so
 %  that texts match exactly.
 % =====================================================================

@@ -13,17 +13,17 @@ function smoothedVector = windv(inputVector, windowSize, asInSmooth)
 % ``yy(2) = mean(y(1:3))``, ``yy(3) = mean(y(1:5))`` etc.
 %
 % Input Arguments:
-%   - **inputVector** — [numeric vector] values to smooth.
-%   - **windowSize** — [integer] half-width of the averaging window. ``1`` gives a
+%   - **inputVector** - [numeric vector] values to smooth.
+%   - **windowSize** - [integer] half-width of the averaging window. ``1`` gives a
 %     3-point window, ``2`` gives a 5-point window.
-%   - **asInSmooth** *(optional)* — [logical] when ``true`` use ``smooth``-style edge
+%   - **asInSmooth** *(optional)* - [logical] when ``true`` use ``smooth``-style edge
 %     handling; when ``false`` use a fixed half-window mean at the edges
 %     (default: ``false``).
 %
 % Output Arguments:
-%   - **smoothedVector** — [numeric vector] smoothed result, same size as ``inputVector``.
+%   - **smoothedVector** - [numeric vector] smoothed result, same size as ``inputVector``.
 %
-% **Example** — smooth a drift curve:
+% **Example** - smooth a drift curve:
 %
 % .. code-block:: matlab
 %

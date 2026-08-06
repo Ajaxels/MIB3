@@ -8,18 +8,18 @@ function updateCheckboxes(obj, BatchOptIn)
 %       obj.updateCheckboxes(BatchOptIn)
 %
 % Input Arguments:
-%   - **BatchOptIn** — *(optional)* [struct] batch processing structure; when ``NaN`` returns
+%   - **BatchOptIn** - *(optional)* [struct] batch processing structure; when ``NaN`` returns
 %     default options via ``SyncBatch`` event. Fields:
 %
-%     - ``.FixSelectionToMaterial`` — [cell] restrict selection to material: ``'Unchanged'``, ``'Checked'``, ``'Unchecked'``
-%     - ``.MaskedArea`` — [cell] restrict selection to masked area: ``'Unchanged'``, ``'Checked'``, ``'Unchecked'``
-%     - ``.BrushWatershed`` — [cell] use brush with watershed clustering: ``'Unchanged'``, ``'Checked'``, ``'Unchecked'``
-%     - ``.BrushSlic`` — [cell] use brush with SLIC clustering: ``'Unchanged'``, ``'Checked'``, ``'Unchecked'``
-%     - ``.SelectedMaterial`` — [string] index of the selected material; ``'-1'`` = mask, ``'0'`` = exterior, ``'1'``/``'2'``... = model materials; leave empty to keep unchanged
-%     - ``.SelectedAddToMaterial`` — [string] index of the add-to material; same conventions as ``.SelectedMaterial``
-%     - ``.UnlinkMaterialFromAddTo`` — [logical] unlink selected material from the AddTo material
+%     - ``.FixSelectionToMaterial`` - [cell] restrict selection to material: ``'Unchanged'``, ``'Checked'``, ``'Unchecked'``
+%     - ``.MaskedArea`` - [cell] restrict selection to masked area: ``'Unchanged'``, ``'Checked'``, ``'Unchecked'``
+%     - ``.BrushWatershed`` - [cell] use brush with watershed clustering: ``'Unchanged'``, ``'Checked'``, ``'Unchecked'``
+%     - ``.BrushSlic`` - [cell] use brush with SLIC clustering: ``'Unchanged'``, ``'Checked'``, ``'Unchecked'``
+%     - ``.SelectedMaterial`` - [string] index of the selected material; ``'-1'`` = mask, ``'0'`` = exterior, ``'1'``/``'2'``... = model materials; leave empty to keep unchanged
+%     - ``.SelectedAddToMaterial`` - [string] index of the add-to material; same conventions as ``.SelectedMaterial``
+%     - ``.UnlinkMaterialFromAddTo`` - [logical] unlink selected material from the AddTo material
 %
-% **Example 1** — check the Fix Selection To Material checkbox:
+% **Example 1** - check the Fix Selection To Material checkbox:
 %
 %   .. code-block:: matlab
 %
@@ -116,7 +116,7 @@ for fieldIndex = 1:numel(fieldNames)
                 materialId = str2double(batchOpt2.(fieldNames{fieldIndex}));
                 obj.mibModel.I{BatchOpt.id}.selectedAddToMaterial = materialId + 2;
         end
-    else  % logical — UnlinkMaterialFromAddTo
+    else  % logical - UnlinkMaterialFromAddTo
         obj.mibModel.I{BatchOpt.id}.unlinkMaterials = BatchOpt.UnlinkMaterialFromAddTo;
         if ~BatchOpt.UnlinkMaterialFromAddTo
             obj.mibModel.I{BatchOpt.id}.selectedAddToMaterial = ...

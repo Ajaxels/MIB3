@@ -7,7 +7,7 @@ function statusHandles = addStatusBar(obj)
 %      statusHandles = obj.addStatusBar()
 %
 % Output Arguments:
-%   - **statusHandles** — [struct] handles to the status bar widgets
+%   - **statusHandles** - [struct] handles to the status bar widgets
 
 arguments (Input)
     obj views.MibView

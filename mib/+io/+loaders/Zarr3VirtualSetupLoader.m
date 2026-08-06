@@ -1,5 +1,5 @@
 classdef Zarr3VirtualSetupLoader < io.loaders.BaseImageLoader
-% ZARR3VIRTUALSETUPLOADER - Setup loader for OME-Zarr v3 datasets — handles all dataset modes.
+% ZARR3VIRTUALSETUPLOADER - Setup loader for OME-Zarr v3 datasets - handles all dataset modes.
 %
 % This loader runs ONCE when the user opens a .zarr3 file and handles
 % all three MIB3 dataset modes:
@@ -15,14 +15,14 @@ classdef Zarr3VirtualSetupLoader < io.loaders.BaseImageLoader
 %
 % **Relationship to Zarr3VirtualLoader**
 %
-% Zarr3VirtualSetupLoader — runs ONCE when the user opens a file.
+% Zarr3VirtualSetupLoader - runs ONCE when the user opens a file.
 % Phase : dataset initialisation (MibModel.loadImages)
 % Job : parse OME-Zarr metadata, build pyramid struct, return path.
 % Reads pixels? Yes (Standard mode) / No (Virtual/BigData mode).
 % Lifetime: discarded after open; implements BaseImageLoader.
 % Created by: LoaderFactory (case "OmeZarr")
 %
-% Zarr3VirtualLoader — runs on EVERY slice request during the session.
+% Zarr3VirtualLoader - runs on EVERY slice request during the session.
 % Phase : on-demand pixel reading (MibVirtualImage.getDataZarr)
 % Job : read sub-region via ZarrArray.read(bbox).
 % Reads pixels? Yes.
@@ -31,11 +31,11 @@ classdef Zarr3VirtualSetupLoader < io.loaders.BaseImageLoader
 %
 %
 % Supported formats:
-% - OME-Zarr v3 (zarr.json metadata) — local folders and HTTP/HTTPS URLs
-% - Single-array zarr v3 (no multiscales metadata) — treated as 1 level
-% - NOT zarr v2 (.zattrs / .zgroup) — clear error message is shown
+% - OME-Zarr v3 (zarr.json metadata) - local folders and HTTP/HTTPS URLs
+% - Single-array zarr v3 (no multiscales metadata) - treated as 1 level
+% - NOT zarr v2 (.zattrs / .zgroup) - clear error message is shown
 %
-% **Example 1** — Virtual mode (typical usage via MibModel.loadImages):
+% **Example 1** - Virtual mode (typical usage via MibModel.loadImages):
 %
 %   .. code-block:: matlab
 %
@@ -45,7 +45,7 @@ classdef Zarr3VirtualSetupLoader < io.loaders.BaseImageLoader
 %      [img, imginfo] = loader.loadImages(files, imginfo, opts);
 %      % img = {'C:\data\stack.zarr3'} and imginfo{"Pyramid"} holds the struct
 %
-% **Example 2** — Standard mode (prompts user to select pyramid level, returns pixel data):
+% **Example 2** - Standard mode (prompts user to select pyramid level, returns pixel data):
 %
 %   .. code-block:: matlab
 %
@@ -67,14 +67,14 @@ methods
         %      obj = Zarr3VirtualSetupLoader(options)
         %
         % Input Arguments:
-        %   - **options** — *(optional)* [struct] options including:
+        %   - **options** - *(optional)* [struct] options including:
         %
-        %     - ``.datasetMode`` — [char] ``'Standard'``, ``'Virtual'``, or ``'BigData'``
+        %     - ``.datasetMode`` - [char] ``'Standard'``, ``'Virtual'``, or ``'BigData'``
         %       (set by LoaderFactory from loaderInfo.mode; default: ``'Virtual'``)
-        %     - ``.ParentFigure`` — [handle] parent figure handle for dialogs
+        %     - ``.ParentFigure`` - [handle] parent figure handle for dialogs
         %
         % Output Arguments:
-        %   - **obj** — [Zarr3VirtualSetupLoader] new loader instance
+        %   - **obj** - [Zarr3VirtualSetupLoader] new loader instance
         %
 
         obj.Options = struct();
@@ -101,14 +101,14 @@ methods
         % attribute. Falls back to single-level if no multiscales found.
         %
         % Input Arguments:
-        %   - **filenames** — [1x1 cell] path to the zarr root folder or URL
-        %   - **options** — *(optional)* [struct] unused; present for interface compatibility
+        %   - **filenames** - [1x1 cell] path to the zarr root folder or URL
+        %   - **options** - *(optional)* [struct] unused; present for interface compatibility
         %
         % Output Arguments:
-        %   - **imginfo** — [dictionary] image metadata (Height, Width, Depth, etc.)
-        %   - **files** — [struct] parsed metadata for use by loadImages
+        %   - **imginfo** - [dictionary] image metadata (Height, Width, Depth, etc.)
+        %   - **files** - [struct] parsed metadata for use by loadImages
         %
-        % **Example** — load metadata and print dimensions:
+        % **Example** - load metadata and print dimensions:
         %
         %   .. code-block:: matlab
         %
@@ -165,7 +165,7 @@ methods
             attrs = struct();
         end
 
-        % ---- extract multiscales — search the whole JSON tree ----------
+        % ---- extract multiscales - search the whole JSON tree ----------
         % Locations tried (in order):
         % 1. attrs.multiscales (OME-NGFF v0.4)
         % 2. attrs.ome.multiscales (OME-NGFF v0.5)
@@ -179,13 +179,13 @@ methods
         if ~isempty(ms)
             [files, imginfo] = obj.parseMultiscales(rootPath, ms, imginfo);
         else
-            % multiscales not at root — common in OME-Zarr label containers
+            % multiscales not at root - common in OME-Zarr label containers
             % where root has "labels": ["name"] and multiscales is one level down.
             subPath = obj.findMultiscalesSubPath(rootPath, attrs, grp);
             if ~isempty(subPath)
                 subMs = [];
                 try
-                    % Fetch sub-group zarr.json directly — works for both
+                    % Fetch sub-group zarr.json directly - works for both
                     % local paths and HTTP, and handles arrays vs groups
                     if isHttp
                         subRaw = webread([strtrim(subPath), '/zarr.json'], ...
@@ -209,7 +209,7 @@ methods
                     [files, imginfo] = obj.parseSingleArray(subPath, imginfo);
                 end
             else
-                % Could not locate multiscales — display zarr.json to help diagnose
+                % Could not locate multiscales - display zarr.json to help diagnose
                 fprintf('Zarr3VirtualSetupLoader: zarr.json content for debugging:\n%s\n', ...
                     jsonencode(rawMeta));
                 [files, imginfo] = obj.parseSingleArray(rootPath, imginfo);
@@ -221,14 +221,14 @@ methods
             imginfo{"BoundingBox"} = reshape(double(attrs.mibBoundingBox), 1, 6);
         end
 
-        % Every loader sets numEntries in loadMetadata (not loadImages) — it's
+        % Every loader sets numEntries in loadMetadata (not loadImages) - it's
         % checked by core.MibDataset.loadModel right after loadMetadata returns,
         % before loadImages is ever called.
         imginfo{"numEntries"} = 1;
     end
 
     function [img, imginfo] = loadImages(obj, files, imginfo, options)
-        % LOADIMAGES - Mode-dependent image setup — Standard loads pixels, Virtual returns path.
+        % LOADIMAGES - Mode-dependent image setup - Standard loads pixels, Virtual returns path.
         %
         % Syntax:
         %   .. code-block:: matlab
@@ -241,16 +241,16 @@ methods
         % imginfo{"Pyramid"} and imginfo{"Virtual"} for on-demand reading.
         %
         % Input Arguments:
-        %   - **files** — [struct] from loadMetadata
-        %   - **imginfo** — [dictionary] from loadMetadata
-        %   - **options** — [struct] relevant field: ``.ParentFigure`` (for dialogs)
+        %   - **files** - [struct] from loadMetadata
+        %   - **imginfo** - [dictionary] from loadMetadata
+        %   - **options** - [struct] relevant field: ``.ParentFigure`` (for dialogs)
         %
         % Output Arguments:
-        %   - **img** — Standard mode: [1x1 cell] holding [y,x,z,c,t] numeric array;
+        %   - **img** - Standard mode: [1x1 cell] holding [y,x,z,c,t] numeric array;
         %     Virtual/BigData mode: [1x1 cell] holding the zarr root path string
-        %   - **imginfo** — [dictionary] updated; Virtual mode adds ``"Pyramid"`` and ``"Virtual"`` keys
+        %   - **imginfo** - [dictionary] updated; Virtual mode adds ``"Pyramid"`` and ``"Virtual"`` keys
         %
-        % **Example** — Virtual mode:
+        % **Example** - Virtual mode:
         %
         %   .. code-block:: matlab
         %
@@ -289,13 +289,13 @@ methods (Access = private)
         %      [files, imginfo] = obj.parseMultiscales(rootPath, multiscales, imginfo)
         %
         % Input Arguments:
-        %   - **rootPath** — [char] zarr root path (local folder or HTTP/HTTPS URL)
-        %   - **multiscales** — [struct] OME-Zarr multiscales struct from zarr.json
-        %   - **imginfo** — [dictionary] image metadata dictionary to populate
+        %   - **rootPath** - [char] zarr root path (local folder or HTTP/HTTPS URL)
+        %   - **multiscales** - [struct] OME-Zarr multiscales struct from zarr.json
+        %   - **imginfo** - [dictionary] image metadata dictionary to populate
         %
         % Output Arguments:
-        %   - **files** — [struct] per-file metadata populated from the multiscales entry
-        %   - **imginfo** — [dictionary] updated with Height, Width, Depth, pixSize, etc.
+        %   - **files** - [struct] per-file metadata populated from the multiscales entry
+        %   - **imginfo** - [dictionary] updated with Height, Width, Depth, pixSize, etc.
         %
 
         ms = multiscales(1); % use first multiscales entry
@@ -324,7 +324,7 @@ methods (Access = private)
 
         % **Coordinate transformation semantics**
         %
-        % globalScales [1 x nAxes] — top-level coordinateTransformations
+        % globalScales [1 x nAxes] - top-level coordinateTransformations
         % on the multiscales object (OME-NGFF v0.5 pattern).
         % Represents a common physical unit multiplier applied to ALL
         % pyramid levels before the per-level scale.
@@ -332,7 +332,7 @@ methods (Access = private)
         % globalScales = [t_fac, c_fac, z_fac, y_fac, x_fac]
         % In OME-NGFF v0.4 datasets (no top-level CT) this stays ones.
         %
-        % levelScales [1 x nAxes] — per-dataset coordinateTransformations
+        % levelScales [1 x nAxes] - per-dataset coordinateTransformations
         % giving the ABSOLUTE physical voxel size at this pyramid level
         % after multiplying with globalScales.
         % For a 'tczyx' dataset: [t_s, c_s, z_s, y_s, x_s] where y_s/x_s
@@ -340,10 +340,10 @@ methods (Access = private)
         % Indexed via yIdx/xIdx/zIdx so safeRatio/safeGetScale always
         % pick the correct element regardless of axis count or order.
         %
-        % level0Scales — levelScales of the first (full-resolution) level.
+        % level0Scales - levelScales of the first (full-resolution) level.
         % Used as the reference for computing relative levelScaleFactors.
         %
-        % levelScaleFactors [nLevels x 3, columns y/x/z] — ratio of each
+        % levelScaleFactors [nLevels x 3, columns y/x/z] - ratio of each
         % level's physical voxel size to level 0. Level 0 = [1,1,1].
         % Used by getDataZarr to pick the best pyramid level for the
         % current display magnification (magFactor).
@@ -693,7 +693,7 @@ methods (Access = private)
         targetClass = files.imgClass;
 
         if ismember(actualClass, intClasses)
-            % Integer data — cast to declared class, skip if already correct
+            % Integer data - cast to declared class, skip if already correct
             if ~strcmp(actualClass, targetClass)
                 data = cast(data, targetClass);
             end
@@ -739,7 +739,7 @@ methods (Access = private)
         %
         %      [img, imginfo] = obj.loadImagesModel(files, imginfo, options)
         %
-        % Always reads level 0 (the finest/only level) fully into memory —
+        % Always reads level 0 (the finest/only level) fully into memory -
         % models are always loaded whole, regardless of dataset mode, mirroring
         % every other core.MibDataset.loadModel loader (and
         % io.loaders.Zarr2VirtualSetupLoader's own Model mode). Material
@@ -834,7 +834,7 @@ methods (Access = private)
         % READMATERIALMETADATAV3 - Resolve model material names/colors from store metadata.
         %
         % Fetches zarr.json's custom "attributes" (root group and, if present,
-        % the array level — level-array attributes take precedence on key
+        % the array level - level-array attributes take precedence on key
         % collisions) and delegates the actual name/color extraction to the
         % version-agnostic io.loaders.OmeZarrMetadataUtils.resolveMaterialMetadata
         % (shared with Zarr2VirtualSetupLoader and core.MibBigDataLabelsZarr2).

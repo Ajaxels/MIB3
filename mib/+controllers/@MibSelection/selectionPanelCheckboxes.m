@@ -12,27 +12,27 @@ function selectionPanelCheckboxes(obj, BatchOptIn)
 % ``'0'`` = All channels; ``'1'``, ``'2'``, etc. = individual channels.
 %
 % Input Arguments:
-%   - **BatchOptIn** — [struct] batch options structure with fields:
+%   - **BatchOptIn** - [struct] batch options structure with fields:
 %
-%     - ``.Apply3D`` — [cell] {``'Unchanged'``|``'Checked'``|``'Unchecked'``} Apply-in-3D checkbox
-%     - ``.AutoFillSelection`` — [cell] checkbox state — Auto-fill checkbox
-%     - ``.Difference`` — [cell] checkbox state — Difference mode checkbox (erode/dilate)
-%     - ``.LutColors`` — [cell] checkbox state — LUT colors checkbox
-%     - ``.ShowModel`` — [cell] checkbox state — Show model overlay checkbox
-%     - ``.ShowMask`` — [cell] checkbox state — Show mask overlay checkbox
-%     - ``.ShowAnnotations`` — [cell] checkbox state — Show annotations/measurements checkbox
-%     - ``.HideImage`` — [cell] checkbox state — Hide image checkbox
-%     - ``.OnFly`` — [cell] checkbox state — On-fly contrast stretch checkbox
-%     - ``.ColorChannel`` — [char] channel selection: ``''`` (do not modify), ``'0'`` (All channels), ``'1'``/``'2'``/… (specific channels)
+%     - ``.Apply3D`` - [cell] {``'Unchanged'``|``'Checked'``|``'Unchecked'``} Apply-in-3D checkbox
+%     - ``.AutoFillSelection`` - [cell] checkbox state - Auto-fill checkbox
+%     - ``.Difference`` - [cell] checkbox state - Difference mode checkbox (erode/dilate)
+%     - ``.LutColors`` - [cell] checkbox state - LUT colors checkbox
+%     - ``.ShowModel`` - [cell] checkbox state - Show model overlay checkbox
+%     - ``.ShowMask`` - [cell] checkbox state - Show mask overlay checkbox
+%     - ``.ShowAnnotations`` - [cell] checkbox state - Show annotations/measurements checkbox
+%     - ``.HideImage`` - [cell] checkbox state - Hide image checkbox
+%     - ``.OnFly`` - [cell] checkbox state - On-fly contrast stretch checkbox
+%     - ``.ColorChannel`` - [char] channel selection: ``''`` (do not modify), ``'0'`` (All channels), ``'1'``/``'2'``/… (specific channels)
 %
-% **Example 1** — Enable Apply-in-3D mode:
+% **Example 1** - Enable Apply-in-3D mode:
 %
 %   .. code-block:: matlab
 %
 %      BatchOptIn.Apply3D = {'Checked'};
 %      obj.mibController.cSelection.selectionPanelCheckboxes(BatchOptIn);
 %
-% **Example 2** — Show model overlay and switch to color channel 1:
+% **Example 2** - Show model overlay and switch to color channel 1:
 %
 %   .. code-block:: matlab
 %
@@ -40,7 +40,7 @@ function selectionPanelCheckboxes(obj, BatchOptIn)
 %      BatchOptIn.ColorChannel = '1';
 %      obj.mibController.cSelection.selectionPanelCheckboxes(BatchOptIn);
 %
-% **Example 3** — Hide image and show mask only (mask QC):
+% **Example 3** - Hide image and show mask only (mask QC):
 %
 %   .. code-block:: matlab
 %
@@ -49,7 +49,7 @@ function selectionPanelCheckboxes(obj, BatchOptIn)
 %      BatchOptIn.ShowModel  = {'Unchecked'};
 %      obj.mibController.cSelection.selectionPanelCheckboxes(BatchOptIn);
 %
-% **Example 4** — Enable LUT colors and on-fly contrast stretch:
+% **Example 4** - Enable LUT colors and on-fly contrast stretch:
 %
 %   .. code-block:: matlab
 %
@@ -57,7 +57,7 @@ function selectionPanelCheckboxes(obj, BatchOptIn)
 %      BatchOptIn.OnFly     = {'Checked'};
 %      obj.mibController.cSelection.selectionPanelCheckboxes(BatchOptIn);
 %
-% **Example 5** — Reset all display flags (clean-slate view):
+% **Example 5** - Reset all display flags (clean-slate view):
 %
 %   .. code-block:: matlab
 %
@@ -107,7 +107,7 @@ BatchOpt.mibBatchTooltip.ShowMask        = 'Tweak the state of the "Show mask" c
 BatchOpt.mibBatchTooltip.ShowAnnotations = 'Tweak the state of the "Ann/Measure" (annotations) checkbox';
 BatchOpt.mibBatchTooltip.HideImage       = 'Tweak the state of the "Hide image" checkbox';
 BatchOpt.mibBatchTooltip.OnFly           = 'Tweak the state of the "on-fly" contrast stretch checkbox';
-BatchOpt.mibBatchTooltip.ColorChannel    = 'When empty — do not modify; otherwise index of the colour channel to set: 0 = All, 1 = first, 2 = second, etc.';
+BatchOpt.mibBatchTooltip.ColorChannel    = 'When empty - do not modify; otherwise index of the colour channel to set: 0 = All, 1 = first, 2 = second, etc.';
 
 %% Batch mode check actions
 if nargin == 2

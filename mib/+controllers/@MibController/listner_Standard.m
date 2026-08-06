@@ -7,8 +7,8 @@ function listner_Standard(obj, model, evnt)
 %      obj.listner_Standard(model, evnt)
 %
 % Input Arguments:
-%   - **model** — event source (object that fired the event)
-%   - **evnt** — event data; ``evnt.EventName`` identifies the event type
+%   - **model** - event source (object that fired the event)
+%   - **evnt** - event data; ``evnt.EventName`` identifies the event type
 %
 % Output Arguments:
 %   (none)

@@ -18,9 +18,9 @@ function [dx, dy, rbMatrix] = applyExtendedMode(obj, id, depth, tformMatrix, ...
 % :func:`assembleServiceCanvas`.
 %
 % Output Arguments:
-%   - **dx**, **dy** — canvas offsets used to update the bounding box and
+%   - **dx**, **dy** - canvas offsets used to update the bounding box and
 %     to relocate annotations. Returned empty when ``pwb`` was cancelled.
-%   - **rbMatrix** — ``{depth, 1}`` cell of per-slice :class:`imref2d`
+%   - **rbMatrix** - ``{depth, 1}`` cell of per-slice :class:`imref2d`
 %     returned by ``imwarp`` (or an identity-anchored ``imref2d`` when the
 %     slice carried no tform).
 

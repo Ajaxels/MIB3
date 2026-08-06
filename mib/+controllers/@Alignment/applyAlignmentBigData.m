@@ -26,14 +26,14 @@ function result = applyAlignmentBigData(obj, parameters, tformInfo)
 %   6. Reopen + swap the active buffer (per ``CropDataset``).
 %
 % Input Arguments:
-%   - **parameters** — struct from :meth:`continueBtn_Callback` (``outputPath``,
+%   - **parameters** - struct from :meth:`continueBtn_Callback` (``outputPath``,
 %     ``TransformationMode``, ``backgroundColor``, ...).
-%   - **tformInfo** — struct describing the level-0 transforms:
+%   - **tformInfo** - struct describing the level-0 transforms:
 %
-%     - ``.mode`` — ``'translation'`` or ``'affine'``.
-%     - ``.shiftX0`` / ``.shiftY0`` — [Nx1] integer level-0 shifts (translation mode).
-%     - ``.tforms`` — ``{depth x 1}`` cell of ``affinetform2d`` (affine mode).
-%     - ``.backgroundValue`` — numeric scalar image background fill.
+%     - ``.mode`` - ``'translation'`` or ``'affine'``.
+%     - ``.shiftX0`` / ``.shiftY0`` - [Nx1] integer level-0 shifts (translation mode).
+%     - ``.tforms`` - ``{depth x 1}`` cell of ``affinetform2d`` (affine mode).
+%     - ``.backgroundValue`` - numeric scalar image background fill.
 %
 % See also: io.savers.AlignedImageSliceProvider, io.savers.Zarr3Saver,
 % core.MibBigDataLabels, controllers.Alignment.DriftCorrectionBigData_Alignment
@@ -115,7 +115,7 @@ switch tformInfo.mode
 end
 
 % =====================================================================
-% 2. Saver options + shared level plan — matched to the SOURCE pyramid so the
+% 2. Saver options + shared level plan - matched to the SOURCE pyramid so the
 %    aligned store keeps the same chunking / level count / downsampling strategy
 %    / sharding as the input (image and labels share ONE plan for co-registration).
 % =====================================================================
@@ -188,7 +188,7 @@ nLevels = numel(plan);
 
 outputImagePath = char(parameters.outputPath);
 
-% Output canvas reference — same for image and labels so both co-register.
+% Output canvas reference - same for image and labels so both co-register.
 % translation/affine callers bake the origin offset into their tforms and use a
 % default (unit-pixel) view; landmark callers pass a world-limited view instead.
 if isfield(tformInfo, 'outputView') && ~isempty(tformInfo.outputView)
@@ -238,7 +238,7 @@ if hasModel
     newPyramid.levelImageSizes   = newLevelSizes;
     newPyramid.levelScaleFactors = newScaleFactors;
     newPyramid.axisOrder = axisOrder;
-    % Chunk the labels pyramid like the image (final chunkYXZ — source-matched or
+    % Chunk the labels pyramid like the image (final chunkYXZ - source-matched or
     % dialog-adjusted), laid out in axisOrder for every level. createStore clamps
     % each level's chunk to that level's size.
     chunkAxis = zeros(1, numel(axisOrder));
@@ -252,7 +252,7 @@ if hasModel
     newLabels.createStore([newH0 newW0 depth], modelStorePath, newPyramid);
 
     % Carry the source material names/colours onto the new store so they persist
-    % to disk (mibMaterials attribute, written below) — createStore starts with an
+    % to disk (mibMaterials attribute, written below) - createStore starts with an
     % empty material list, so without this the aligned model reopens unnamed/greyed.
     newLabels.materialNames  = srcMaterialNames;
     newLabels.materialColors = srcMaterialColors;
@@ -263,12 +263,12 @@ if hasModel
     % Z chunk of the label store: createStore uses [256 256 16] by default (no
     % per-level chunkSizes are passed in newPyramid). Batching the Z writes at the
     % chunk depth turns each chunk's compress/decompress from up to 16 partial
-    % read-modify-writes into a single write — the labels store previously wrote
+    % read-modify-writes into a single write - the labels store previously wrote
     % one slice at a time (setData63) and was ~15x slower than the image stream.
     chunkZ = 16;
 
     % Progress dialog only when a valid parent figure exists (headless/batch
-    % runs pass an empty mibGUI — skip the dialog rather than crash).
+    % runs pass an empty mibGUI - skip the dialog rather than crash).
     wbL = [];
     if ~isempty(parentFig) && isvalid(parentFig)
         wbL = uiprogressdlg(parentFig, 'Title', 'BigData alignment', ...
@@ -294,7 +294,7 @@ if hasModel
 
     % --- Pass B: build every coarser level from level 1 in one bulk nearest pass.
     % Global index maps (identical to propagateRegion's inline formula) make the
-    % downsample strip-independent and an exact packed-byte copy — bits 1-6/7/8
+    % downsample strip-independent and an exact packed-byte copy - bits 1-6/7/8
     % transport together with no averaging. This replaces the per-slice EAGER
     % cross-level propagation that setData63('everything') did on every write. ---
     if ~labelsCancelled
@@ -328,7 +328,7 @@ if hasModel
 
     % Every level was written explicitly, so mark the whole volume authoritative
     % at the finest level: getData63 then reads any level directly (materializeAll
-    % is unnecessary — all coarser levels already hold correct data). closeStore
+    % is unnecessary - all coarser levels already hold correct data). closeStore
     % persists the level map.
     newLabels.markTiles([1 newH0], [1 newW0], [1 depth], 1);
     newLabels.writeMaterialMetadata();   % persist names/colours (mibMaterials attr)
@@ -363,7 +363,7 @@ obj.mibModel.I{id}.enableSelection = obj.mibModel.preferences.System.EnableSelec
 
 % initialize() leaves the viewing slices at [1 1]; reset them to the new full
 % extent so the display region is valid (mirrors MibDataset.cropDataset). The
-% GUI's listener_newDataset does NOT reset slices — the creating op must.
+% GUI's listener_newDataset does NOT reset slices - the creating op must.
 newDs = obj.mibModel.I{id};
 current_layer = newDs.slices{newDs.orientation}(1);
 newDs.dim_yxzct = newDs.image.dim_yxzct;
@@ -374,8 +374,8 @@ newDs.slices{5} = repmat(min([newDs.slices{5}(1), newDs.image.time]), 1, 2);
 newDs.slices{newDs.orientation} = repmat( ...
     min(newDs.dim_yxzct(newDs.orientation), current_layer), 1, 2);
 
-% Defensive: if the pan window is uninitialised (NaN) — e.g. a programmatic
-% swap into a never-displayed buffer — seed it to the full extent so the
+% Defensive: if the pan window is uninitialised (NaN) - e.g. a programmatic
+% swap into a never-displayed buffer - seed it to the full extent so the
 % block-mode display read has a valid region. In the GUI the active buffer
 % already has a valid window (listener_newDataset zoom-to-fits), so this is
 % a no-op there.

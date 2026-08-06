@@ -10,20 +10,20 @@ function status = datasetsSetsOps(obj, BatchOptIn)
 % Compatible with the batch processing mode.
 %
 % Input Arguments:
-%   - **BatchOptIn** — *(optional)* structure with parameters; when NaN,
+%   - **BatchOptIn** - *(optional)* structure with parameters; when NaN,
 %     returns default options via "SyncBatch" event
-%   - ``.Mode`` — cell string, operation to perform:
-%   - ``'Select set'`` — select the set in the Datasets panel dropdown
-%   - ``'Add set'`` — add a new set (10 new datasets) into the model
-%   - ``'Rename set'`` — rename the current set
-%   - ``'Remove set'`` — remove the current set
-%   - ``.SetName`` — char, set name to select, rename, or remove; when empty a dialog appears
+%   - ``.Mode`` - cell string, operation to perform:
+%   - ``'Select set'`` - select the set in the Datasets panel dropdown
+%   - ``'Add set'`` - add a new set (10 new datasets) into the model
+%   - ``'Rename set'`` - rename the current set
+%   - ``'Remove set'`` - remove the current set
+%   - ``.SetName`` - char, set name to select, rename, or remove; when empty a dialog appears
 %
 % Output Arguments:
-%   - **status** — logical, ``true`` when the operation completed successfully
+%   - **status** - logical, ``true`` when the operation completed successfully
 %
 % Usage:
-%   **Example 1** — select a set by name
+%   **Example 1** - select a set by name
 %
 %   .. code-block:: matlab
 %
@@ -31,7 +31,7 @@ function status = datasetsSetsOps(obj, BatchOptIn)
 %      BatchOpt.SetName = 'Set 2';
 %      obj.mibModel.datasetsSetsOps(BatchOpt);
 %
-%   **Example 2** — add a new set
+%   **Example 2** - add a new set
 %
 %   .. code-block:: matlab
 %

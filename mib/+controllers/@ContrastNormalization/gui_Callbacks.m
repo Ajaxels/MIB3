@@ -11,9 +11,9 @@ function gui_Callbacks(obj, source, event) %#ok<INUSD>
 % All other widgets fall through to :meth:`updateBatchOptFromGUI`.
 %
 % Input Arguments:
-%   - **obj** — :class:`controllers.ContrastNormalization` instance.
-%   - **source** — widget handle that fired the event.
-%   - **event** — event data (unused).
+%   - **obj** - :class:`controllers.ContrastNormalization` instance.
+%   - **source** - widget handle that fired the event.
+%   - **event** - event data (unused).
 
 if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.ContrastNormalization.gui_Callbacks/%s: triggered\n', source.Tag);

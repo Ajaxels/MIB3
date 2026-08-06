@@ -7,13 +7,13 @@ function lutTable_CellSelection(obj, hWidget, hData)
 %      obj.lutTable_CellSelection(hWidget, hData)
 %
 % Input Arguments:
-%   - **hWidget** — [uitable] handle to the LUT table widget
-%   - **hData** — [CellSelectionChangeData] cell selection event data with properties:
+%   - **hWidget** - [uitable] handle to the LUT table widget
+%   - **hData** - [CellSelectionChangeData] cell selection event data with properties:
 %
-%     - ``.Indices`` — [M×2 numeric] indices of selected cells ``[row, col]``
-%     - ``.DisplayIndices`` — [M×2 numeric] display indices of selected cells
-%     - ``.Source`` — [uitable] handle to the table (lutTable)
-%     - ``.EventName`` — ``'CellSelection'`` event name
+%     - ``.Indices`` - [M×2 numeric] indices of selected cells ``[row, col]``
+%     - ``.DisplayIndices`` - [M×2 numeric] display indices of selected cells
+%     - ``.Source`` - [uitable] handle to the table (lutTable)
+%     - ``.EventName`` - ``'CellSelection'`` event name
 %
 
 if isempty(hData.Indices); return; end

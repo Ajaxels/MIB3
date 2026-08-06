@@ -20,23 +20,23 @@ function bridgeButton = attachFileDnD(webwin, parentFigure, callback)
 %   operation to block the CEF-level navigation before it starts
 %
 % Input Arguments:
-%   - **webwin** — handle to ``matlab.internal.webwindow`` (AppContainer) or
+%   - **webwin** - handle to ``matlab.internal.webwindow`` (AppContainer) or
 %     ``matlab.internal.cef.webwindow`` (standalone mlapp) hosting the app
-%   - **parentFigure** — a ``uifigure`` rendered inside webwin's Chromium document
+%   - **parentFigure** - a ``uifigure`` rendered inside webwin's Chromium document
 %     (the hidden bridge uibutton becomes its child)
-%   - **callback** — function handle invoked on drop as ``callback(params)``
-%     where ``params = {webwin, filenames}`` — the same shape the native
+%   - **callback** - function handle invoked on drop as ``callback(params)``
+%     where ``params = {webwin, filenames}`` - the same shape the native
 %     ``FileDragDropCallback`` produces.  Wrap method calls in an explicit
 %     anonymous function, e.g. ``@(params) obj.myController.dragNdrop_Callback(params)``
 %
 % Output Arguments:
-%   - **bridgeButton** — handle to the hidden uibutton; deleting it detaches the
+%   - **bridgeButton** - handle to the hidden uibutton; deleting it detaches the
 %     MATLAB side of the bridge (the JS handlers remain until the webwindow is
 %     reloaded, but they become no-ops)
 %
 % Usage:
 %
-%   **Example 1** — attach drag-and-drop to the selection panel
+%   **Example 1** - attach drag-and-drop to the selection panel
 %
 %   .. code-block:: matlab
 %
@@ -70,7 +70,7 @@ bridgeButton = uibutton(parentFigure, ...
 bridgeButton.ButtonPushedFcn = @(s,e) fireBridge(s);
 
 % hidden cancel button: clicked by ondragleave when drag leaves without drop,
-% restores allowNavigation(true).  Kept alive by parentFigure — no need to
+% restores allowNavigation(true).  Kept alive by parentFigure - no need to
 % store the handle separately.
 cancelButton = uibutton(parentFigure, ...  %#ok<NASGU>
     'Position', [-200 -200 10 10], ...
@@ -130,7 +130,7 @@ function storePendingFiles(btn, webwin, filenames)
 end
 
 function cancelBridge(btn)
-    % Called when drag leaves the window without a drop — restore navigation.
+    % Called when drag leaves the window without a drop - restore navigation.
     if ~isvalid(btn); return; end
     data = btn.UserData;
     data.pendingFiles = {};

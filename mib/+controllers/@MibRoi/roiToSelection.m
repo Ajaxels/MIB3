@@ -12,7 +12,7 @@ function roiToSelection(obj)
 % updated. Respects *Restrict to material* and *Restrict to mask* flags.
 %
 % Input Arguments:
-%   - **obj** — [controllers.MibRoi] the ROI panel controller
+%   - **obj** - [controllers.MibRoi] the ROI panel controller
 %
 % Return values: none
 %

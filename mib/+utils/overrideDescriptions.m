@@ -8,31 +8,31 @@ function stopped = overrideDescriptions(handles, developerMode, fieldPath, exclu
 % setting.
 %
 % Input Arguments:
-%   - **handles** — handles structure of the view class (obj.handles)
-%   - **developerMode** — logical switch, when
+%   - **handles** - handles structure of the view class (obj.handles)
+%   - **developerMode** - logical switch, when
 %     true  - adds the handle label to the beginning of the Description field that is shown as a tooltip
 %     false - removes the handle label from the beginning of the Description field that is shown as a tooltip
-%   - **fieldPath** — char, optional string to specify the parent name when
+%   - **fieldPath** - char, optional string to specify the parent name when
 %     generating the handle. This text will be added before the handle tag into
 %     the tooltip
-%   - **exclusionList** — cell array of char, optional list of field names to skip.
+%   - **exclusionList** - cell array of char, optional list of field names to skip.
 %     Fields matching any name in this list will not be renamed, and recursion
 %     will not descend into them. Matching is against the bare field name only
 %     (not the full path).
 %
 % Output Arguments:
-%   - **stopped** — logical true if function exited early due to no change needed or first update done
+%   - **stopped** - logical true if function exited early due to no change needed or first update done
 %
 % Usage:
 %
-%   **Example 1** — add handle name to tooltips (developer mode on)
+%   **Example 1** - add handle name to tooltips (developer mode on)
 %
 %   .. code-block:: matlab
 %
 %      developerMode = true;
 %      utils.overrideDescriptions(obj.handles, developerMode);
 %
-%   **Example 2** — skip two panels while adding handle labels
+%   **Example 2** - skip two panels while adding handle labels
 %
 %   .. code-block:: matlab
 %

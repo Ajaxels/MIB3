@@ -8,23 +8,23 @@ function gui_Callbacks(obj, hWidget, hData, mode)
 %      obj.gui_Callbacks(hWidget, hData, mode)
 %
 % Input Arguments:
-%   - **hWidget** — [handle] pressed widget (Button, NumericEditField, or Slider)
-%   - **hData** — [handle] supporting event data class
-%   - **mode** *(optional)* — [char] identifier for the operation; when empty, ``hWidget.Tag`` is used.
+%   - **hWidget** - [handle] pressed widget (Button, NumericEditField, or Slider)
+%   - **hData** - [handle] supporting event data class
+%   - **mode** *(optional)* - [char] identifier for the operation; when empty, ``hWidget.Tag`` is used.
 %     Common modes:
 %
-%     - ``'firstSlice'`` — go to the first slice of the dataset
-%     - ``'prevSlice'`` — go to the previous slice
-%     - ``'sliceNumber'`` — edit the current slice number
-%     - ``'sliceNumberSlider'`` — change the slice number using a slider
-%     - ``'nextSlice'`` — go to the next slice
-%     - ``'lastSlice'`` — go to the last slice
-%     - ``'firstFrame'`` — go to the first time frame
-%     - ``'prevFrame'`` — go to the previous frame
-%     - ``'frameNumber'`` — edit the current time frame
-%     - ``'frameNumberSlider'`` — change time frames using a slider
-%     - ``'nextFrame'`` — go to the next frame
-%     - ``'lastFrame'`` — go to the last frame
+%     - ``'firstSlice'`` - go to the first slice of the dataset
+%     - ``'prevSlice'`` - go to the previous slice
+%     - ``'sliceNumber'`` - edit the current slice number
+%     - ``'sliceNumberSlider'`` - change the slice number using a slider
+%     - ``'nextSlice'`` - go to the next slice
+%     - ``'lastSlice'`` - go to the last slice
+%     - ``'firstFrame'`` - go to the first time frame
+%     - ``'prevFrame'`` - go to the previous frame
+%     - ``'frameNumber'`` - edit the current time frame
+%     - ``'frameNumberSlider'`` - change time frames using a slider
+%     - ``'nextFrame'`` - go to the next frame
+%     - ``'lastFrame'`` - go to the last frame
 %
 
 arguments (Input)

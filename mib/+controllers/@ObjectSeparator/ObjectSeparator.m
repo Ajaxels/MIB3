@@ -346,7 +346,7 @@ classdef ObjectSeparator < handle
                 obj.view.handles.seedsMask.Enable = 'on';
             end
 
-            % Subarea limits — reset to full extent on dataset change
+            % Subarea limits - reset to full extent on dataset change
             [height, width, depth] = obj.mibModel.I{id}.getDatasetDimensions('selection', 3);
             obj.view.handles.XSubarea.Value = sprintf('1:%d', width);
             obj.view.handles.YSubarea.Value = sprintf('1:%d', height);

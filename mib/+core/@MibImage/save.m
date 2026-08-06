@@ -20,7 +20,7 @@ function fnOut = save(obj, filename, options)
 %   4. Delegates the actual I/O to ``saver.save(data, metadata, filename, options)``
 %
 % NOTE ON pixSize:
-% MibImage does NOT store pixel/voxel size — that information lives at
+% MibImage does NOT store pixel/voxel size - that information lives at
 % the MibDataset level.  If you need physically correct metadata in the
 % output file (e.g. for Amira, NRRD, or OME-TIFF), supply
 % options.pixSize explicitly:
@@ -28,41 +28,41 @@ function fnOut = save(obj, filename, options)
 % When options.pixSize is absent a default of 1×1×1 µm is used.
 %
 % Input Arguments:
-%   - **obj** — ``MibImage`` instance
-%   - **filename** — (char) full output path including extension, e.g.
+%   - **obj** - ``MibImage`` instance
+%   - **filename** - (char) full output path including extension, e.g.
 %     ``'/data/out/myStack.tif'`` or ``'C:\data\output.h5'``.
 %     The directory must already exist.
 %     When filename has no path component the current directory is used.
-%   - **options** — *(optional)* struct with saving options:
+%   - **options** - *(optional)* struct with saving options:
 %
-%     - ``.Format`` — (char) format descriptor as listed in
+%     - ``.Format`` - (char) format descriptor as listed in
 %       ``io.SaverFactory.getFormats('image')``, e.g.
 %       ``'TIF format uncompressed (*.tif)'``.
 %       When absent the format is inferred from the file extension.
-%     - ``.Saving3DPolicy`` — (char) ``'3D stack'`` | ``'2D sequence'``, default ``'3D stack'``
-%     - ``.showWaitbar`` — (logical) display progress bar, default ``true``
-%     - ``.silent`` — (logical) suppress all dialogs, default ``false``
-%     - ``.overwrite`` — (logical) silently overwrite existing files, default ``true``
-%     - ``.Compression`` — (char) ``'none'`` | ``'lzw'`` | ``'packbits'`` (for TIF);
+%     - ``.Saving3DPolicy`` - (char) ``'3D stack'`` | ``'2D sequence'``, default ``'3D stack'``
+%     - ``.showWaitbar`` - (logical) display progress bar, default ``true``
+%     - ``.silent`` - (logical) suppress all dialogs, default ``false``
+%     - ``.overwrite`` - (logical) silently overwrite existing files, default ``true``
+%     - ``.Compression`` - (char) ``'none'`` | ``'lzw'`` | ``'packbits'`` (for TIF);
 %       ``'lossy'`` | ``'lossless'`` (for JPG)
-%     - ``.Quality`` — (double 0-100) JPEG quality, default ``90``
-%     - ``.FilenameGenerator`` — (char) ``'Use original filename'`` | ``'Use sequential filename'``
-%     - ``.pixSize`` — (struct) voxel size ``{.x .y .z .t .units .tunits}``;
+%     - ``.Quality`` - (double 0-100) JPEG quality, default ``90``
+%     - ``.FilenameGenerator`` - (char) ``'Use original filename'`` | ``'Use sequential filename'``
+%     - ``.pixSize`` - (struct) voxel size ``{.x .y .z .t .units .tunits}``;
 %       injected by ``MibDataset.save()`` automatically when calling through that layer
-%     - ``.ParentFigure`` — handle to the main MIB application window; passed to
+%     - ``.ParentFigure`` - handle to the main MIB application window; passed to
 %       ``io.SaverFactory.create()`` so the saver and any helper functions can create
 %       ``uiprogressdlg`` dialogs properly parented to the GUI.
 %       Injected by ``MibModel.saveImage()``; omit for standalone use.
-%     - ``.mibPath`` — (char) path to MIB installation directory; forwarded to the saver
+%     - ``.mibPath`` - (char) path to MIB installation directory; forwarded to the saver
 %       for resource/icon lookup.
 %       Injected by ``MibModel.saveImage()``; omit for standalone use.
 %
 % Output Arguments:
-%   - **fnOut** — (char or cell of char) path(s) of saved file(s).
+%   - **fnOut** - (char or cell of char) path(s) of saved file(s).
 %     Returns ``[]`` on failure or cancellation.
 %
 % Usage:
-%   **Example 1** — Simplest case: save existing MibImage to TIF
+%   **Example 1** - Simplest case: save existing MibImage to TIF
 %
 %   .. code-block:: matlab
 %
@@ -81,7 +81,7 @@ function fnOut = save(obj, filename, options)
 %       fnOut = img.save('/output/stack.tif', opts);
 %       fprintf('Saved to: %s\n', fnOut);
 %
-%   **Example 2** — Save as LZW-compressed TIF, 2D sequence
+%   **Example 2** - Save as LZW-compressed TIF, 2D sequence
 %
 %   .. code-block:: matlab
 %
@@ -97,7 +97,7 @@ function fnOut = save(obj, filename, options)
 %       fnOut = img.save('/output/slice.tif', opts);
 %       % Produces: /output/slice_001.tif, /output/slice_002.tif, ...
 %
-%   **Example 3** — Save as PNG without explicit Format (inferred from extension)
+%   **Example 3** - Save as PNG without explicit Format (inferred from extension)
 %
 %   .. code-block:: matlab
 %
@@ -107,7 +107,7 @@ function fnOut = save(obj, filename, options)
 %       opts.overwrite   = true;
 %       fnOut = img.save('/output/slice.png', opts);
 %
-%   **Example 4** — Save 16-bit EM data as HDF5 with voxel metadata
+%   **Example 4** - Save 16-bit EM data as HDF5 with voxel metadata
 %
 %   .. code-block:: matlab
 %
@@ -123,7 +123,7 @@ function fnOut = save(obj, filename, options)
 %
 %       fnOut = imgEM.save('/output/em_volume.h5', opts);
 %
-%   **Example 5** — Save from inside a controller with access to the MIB GUI
+%   **Example 5** - Save from inside a controller with access to the MIB GUI
 %
 %   .. code-block:: matlab
 %
@@ -240,7 +240,7 @@ else
     metadata.sliceSize = [];
 end
 
-% resolution for PNG/TIF Resolution tags — pixels per inch
+% resolution for PNG/TIF Resolution tags - pixels per inch
 resolution = utils.calculateResolution(options.pixSize);
 metadata.xResolution = resolution(1);
 metadata.yResolution = resolution(2);
@@ -271,7 +271,7 @@ end
 saver = io.SaverFactory.create(options.Format, options);
 
 if isPyramidal
-    % Stream the selected pyramid level slice-by-slice — memory stays bounded
+    % Stream the selected pyramid level slice-by-slice - memory stays bounded
     % to one slice (savers that haven't migrated to true streaming fall back to
     % gathering this single level inside BaseSaver.saveStream).
     numSlices = obj.pyramid.levelImageSizes(exportLevel, 3);

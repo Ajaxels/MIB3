@@ -8,22 +8,22 @@ function out = matReadInstanceLabels(filename, getImageOptions)
 %      out = matReadInstanceLabels(filename, getImageOptions)
 %
 % Input Arguments:
-%   - **filename** — [string] full path to the MAT file containing three variables:
+%   - **filename** - [string] full path to the MAT file containing three variables:
 %
-%     - ``instanceBoxes`` — ``[N×4 double]`` bounding-box coordinates (one row per object)
-%     - ``instanceNames`` — ``[N×1 categorical]`` object class labels
-%     - ``instanceMasks`` — ``[H×W×N logical]`` binary mask stack (one slice per object)
+%     - ``instanceBoxes`` - ``[N×4 double]`` bounding-box coordinates (one row per object)
+%     - ``instanceNames`` - ``[N×1 categorical]`` object class labels
+%     - ``instanceMasks`` - ``[H×W×N logical]`` binary mask stack (one slice per object)
 %
-%   - **getImageOptions** — struct passed to ``deepmib.storeLoadImages``
+%   - **getImageOptions** - struct passed to ``deepmib.storeLoadImages``
 %     for loading the corresponding image file; see that function for field details
 %
 % Output Arguments:
-%   - **out** — cell array:
+%   - **out** - cell array:
 %
-%     - ``out{1}`` — loaded image (grayscale converted to RGB)
-%     - ``out{2}`` — ``instanceBoxes`` matrix
-%     - ``out{3}`` — ``instanceNames`` categorical array
-%     - ``out{4}`` — ``instanceMasks`` logical stack
+%     - ``out{1}`` - loaded image (grayscale converted to RGB)
+%     - ``out{2}`` - ``instanceBoxes`` matrix
+%     - ``out{3}`` - ``instanceNames`` categorical array
+%     - ``out{4}`` - ``instanceMasks`` logical stack
 %
 
 

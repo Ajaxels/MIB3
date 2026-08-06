@@ -22,7 +22,7 @@ classdef DisplayAdjust < handle
         BatchOpt
         % a structure compatible with batch operation, see constructor
         updateTimer
-        % matlab.timer — fires ShowImage after dragging pauses, keeps slider responsive
+        % matlab.timer - fires ShowImage after dragging pauses, keeps slider responsive
     end
 
     events
@@ -43,9 +43,9 @@ classdef DisplayAdjust < handle
             % returns silently.
             %
             % Input Arguments:
-            %   - **obj** — handle to the DisplayAdjust controller instance
-            %   - **src** — event source handle (unused)
-            %   - **evnt** — event data; ``evnt.EventName`` identifies the event
+            %   - **obj** - handle to the DisplayAdjust controller instance
+            %   - **src** - event source handle (unused)
+            %   - **evnt** - event data; ``evnt.EventName`` identifies the event
             %
             % Output Arguments:
             %   (none)
@@ -83,13 +83,13 @@ classdef DisplayAdjust < handle
             %      obj = DisplayAdjust(mibModel, controllerHandle, BatchOptIn)
             %
             % Input Arguments:
-            %   - **mibModel** — handle to MibModel
-            %   - **varargin{1}** — *(optional)* controller handle (reserved)
-            %   - **varargin{2}** — *(optional)* BatchOpt struct; pass ``NaN`` to
+            %   - **mibModel** - handle to MibModel
+            %   - **varargin{1}** - *(optional)* controller handle (reserved)
+            %   - **varargin{2}** - *(optional)* BatchOpt struct; pass ``NaN`` to
             %     return the default BatchOpt without opening the GUI
             %
             % Output Arguments:
-            %   - **obj** — new DisplayAdjust controller instance
+            %   - **obj** - new DisplayAdjust controller instance
             %
 
             obj.mibModel = mibModel;
@@ -184,7 +184,7 @@ classdef DisplayAdjust < handle
             guiName = 'views.DisplayAdjustGUI';
             obj.view = core.ChildView(obj, guiName);
 
-            % deferred-render timer — fires ShowImage 80ms after last slider event
+            % deferred-render timer - fires ShowImage 80ms after last slider event
             obj.updateTimer = timer('ExecutionMode', 'singleShot', 'StartDelay', 0.01, 'TimerFcn', @(~,~) notify(obj.mibModel, 'ShowImage'));
 
             obj.addCallbacks();
@@ -264,7 +264,7 @@ classdef DisplayAdjust < handle
             %      obj.returnBatchOpt(BatchOptOut)
             %
             % Input Arguments:
-            %   - **BatchOptOut** — *(optional)* local BatchOpt structure; when omitted,
+            %   - **BatchOptOut** - *(optional)* local BatchOpt structure; when omitted,
             %     ``obj.BatchOpt`` is used
             %
             % Output Arguments:
@@ -778,7 +778,7 @@ classdef DisplayAdjust < handle
             %      obj.minSlider_Changing(event)
             %
             % Input Arguments:
-            %   - **event** — ``ValueChangingData`` from the AppDesigner
+            %   - **event** - ``ValueChangingData`` from the AppDesigner
             %     ``ValueChangingFcn`` callback; ``event.Value`` holds the current slider value
             %
             % Output Arguments:
@@ -815,7 +815,7 @@ classdef DisplayAdjust < handle
             %      obj.maxSlider_Changing(event)
             %
             % Input Arguments:
-            %   - **event** — ``ValueChangingData`` from the AppDesigner
+            %   - **event** - ``ValueChangingData`` from the AppDesigner
             %     ``ValueChangingFcn`` callback; ``event.Value`` holds the current slider value
             %
             % Output Arguments:
@@ -852,7 +852,7 @@ classdef DisplayAdjust < handle
             %      obj.gammaSlider_Changing(event)
             %
             % Input Arguments:
-            %   - **event** — ``ValueChangingData`` from the AppDesigner
+            %   - **event** - ``ValueChangingData`` from the AppDesigner
             %     ``ValueChangingFcn`` callback; ``event.Value`` holds the current slider value
             %
             % Output Arguments:
@@ -944,12 +944,12 @@ classdef DisplayAdjust < handle
             %      minval = obj.findMinBtn_Callback(colorCh, threshold)
             %
             % Input Arguments:
-            %   - **colorCh** — *(optional)* channel index; default = selected channel
-            %   - **threshold** — *(optional)* percentage of pixels to exclude from the
-            %     low end (0–2.5); ``NaN`` prompts the user for a custom value
+            %   - **colorCh** - *(optional)* channel index; default = selected channel
+            %   - **threshold** - *(optional)* percentage of pixels to exclude from the
+            %     low end (0-2.5); ``NaN`` prompts the user for a custom value
             %
             % Output Arguments:
-            %   - **minval** — detected minimum intensity value(s)
+            %   - **minval** - detected minimum intensity value(s)
             %
 
             if obj.mibModel.preferences.System.DeveloperMode
@@ -1034,12 +1034,12 @@ classdef DisplayAdjust < handle
             %      maxval = obj.findMaxBtn_Callback(colorCh, threshold)
             %
             % Input Arguments:
-            %   - **colorCh** — *(optional)* channel index; default = selected channel
-            %   - **threshold** — *(optional)* percentage of pixels to exclude from the
-            %     high end (0–2.5); ``NaN`` prompts the user for a custom value
+            %   - **colorCh** - *(optional)* channel index; default = selected channel
+            %   - **threshold** - *(optional)* percentage of pixels to exclude from the
+            %     high end (0-2.5); ``NaN`` prompts the user for a custom value
             %
             % Output Arguments:
-            %   - **maxval** — detected maximum intensity value(s)
+            %   - **maxval** - detected maximum intensity value(s)
             %
 
             if obj.mibModel.preferences.System.DeveloperMode
@@ -1168,7 +1168,7 @@ classdef DisplayAdjust < handle
             [lowIn, highIn, lowOut, highOut] = obj.mibModel.I{id}.image.getImAdjustStretchCoef(channel);
             gammaVal = viewPort.gamma(channel);
 
-            % Cache data{1} locally — avoids repeated subsref dispatch through
+            % Cache data{1} locally - avoids repeated subsref dispatch through
             % obj.mibModel.I{id}.image.data on every slice (~18x slower in
             % the live MibModel chain than mutating a local variable).
             imageData = obj.mibModel.I{id}.image.data;
@@ -1340,11 +1340,11 @@ classdef DisplayAdjust < handle
             %      obj.resetSlider(whichSlider)
             %
             % Input Arguments:
-            %   - **whichSlider** — ``'min'``, ``'max'``, or ``'gamma'``
+            %   - **whichSlider** - ``'min'``, ``'max'``, or ``'gamma'``
             %
-            %     - ``'min'`` — sets minSlider to ``Limits(1)`` (0, or lower if viewport was negative)
-            %     - ``'max'`` — sets maxSlider to ``Limits(2)`` (maxInt, or higher if viewport exceeded it)
-            %     - ``'gamma'`` — resets gammaSlider to ``1``
+            %     - ``'min'`` - sets minSlider to ``Limits(1)`` (0, or lower if viewport was negative)
+            %     - ``'max'`` - sets maxSlider to ``Limits(2)`` (maxInt, or higher if viewport exceeded it)
+            %     - ``'gamma'`` - resets gammaSlider to ``1``
             %
             % Output Arguments:
             %   (none)
@@ -1379,7 +1379,7 @@ classdef DisplayAdjust < handle
             %      idx = obj.getChannelIndex()
             %
             % Output Arguments:
-            %   - **idx** — integer channel index; falls back to ``1`` on mismatch
+            %   - **idx** - integer channel index; falls back to ``1`` on mismatch
             %
 
             h   = obj.view.handles;

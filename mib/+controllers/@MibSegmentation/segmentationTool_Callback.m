@@ -10,7 +10,7 @@ function segmentationTool_Callback(obj, segmToolIndex)
 % Select segmentation tool
 %
 % Input Arguments:
-%   - **segmToolIndex** — [optional] index of the segmentation tool to select, when
+%   - **segmToolIndex** - [optional] index of the segmentation tool to select, when
 %     not provided, takes currently selected value in obj.view.handles.panels.segmentation.handles.segmTool.ValueIndex
 %
 

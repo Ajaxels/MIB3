@@ -7,19 +7,19 @@ function renderPairView(obj)
 %      obj.renderPairView()
 %
 % Renders BOTH FULL TILES placed at the current pair offset (downsampled when
-% the union exceeds ~1400 px — the axes stay in full-resolution tile-*i*
+% the union exceeds ~1400 px - the axes stay in full-resolution tile-*i*
 % coordinates, so clicks and drags need no unit conversion), according to
 % ``overlayModeDropdown``.
 %
 % 3D pairs are shown as ONE SLICE PAIR (named in the title), selected per
 % ``fixMode``:
 %
-% - **Fix XY** (default) — tile *i* against tile *j*, aligned by the current
+% - **Fix XY** (default) - tile *i* against tile *j*, aligned by the current
 %   dz (slice ``a`` vs ``a − dz``); ``Q``/``W`` browse ``a`` through the
 %   overlap slab (view-only). A Z misalignment ghosts exactly like an XY one.
-% - **Fix Z** — the mosaic Z-BOUNDARY view: ONE tile (the seam's tile with Z
+% - **Fix Z** - the mosaic Z-BOUNDARY view: ONE tile (the seam's tile with Z
 %   slices) at consecutive slices ``z-1`` (cyan) vs ``z`` (magenta), fully
-%   overlapping — mostly WHITE when the mosaic is Z-aligned, and the magenta
+%   overlapping - mostly WHITE when the mosaic is Z-aligned, and the magenta
 %   slice is drawn at the boundary's current correction. ``Q``/``W`` move the
 %   boundary; drag / Shift+click align slice ``z`` to slice ``z-1`` and hand
 %   the offset to :meth:`applyZBoundaryFix`, which shifts EVERY mosaic slice
@@ -27,10 +27,10 @@ function renderPairView(obj)
 %
 % Overlay modes:
 %
-% - **Falsecolor** — tile *i* cyan, tile *j* magenta: aligned structures add
+% - **Falsecolor** - tile *i* cyan, tile *j* magenta: aligned structures add
 %   up to WHITE, misaligned ones split into cyan/magenta ghosts
-% - **Flicker** — both tiles stacked; spacebar toggles which is visible
-% - **Checkerboard** / **Difference** — ``imfuse`` composites on the union
+% - **Flicker** - both tiles stacked; spacebar toggles which is visible
+% - **Checkerboard** / **Difference** - ``imfuse`` composites on the union
 %   canvas
 %
 % The title is a plain colour legend (*Cyan: tile 2; Magenta: tile 4*) with,
@@ -47,7 +47,7 @@ edge = obj.stitching.edges(obj.currentEdgeIdx);
 layout = obj.stitching.layout;
 
 % Fix Z = the mosaic Z-boundary view: the SAME tile at consecutive slices
-% z-1 (cyan) vs z (magenta) — full overlap, mostly white when the mosaic is
+% z-1 (cyan) vs z (magenta) - full overlap, mostly white when the mosaic is
 % Z-aligned; a fix (applyZBoundaryFix) shifts every mosaic slice >= z. It
 % uses the current seam's tile with Z slices (tile i preferred); with 2D
 % tiles only the mode never engages (fixModeChanged flips the dropdown back).
@@ -96,8 +96,8 @@ if ~isempty(boundaryTile)
     sizeI = layout(boundaryTile).tileSize;
     sizeJ = sizeI;
     % The browsed boundary is a property of the MOSAIC, not of the seam: it
-    % is kept when the user switches tiles, so the same boundary — and the
-    % correction stored at it — stays on screen everywhere (that is how the
+    % is kept when the user switches tiles, so the same boundary - and the
+    % correction stored at it - stays on screen everywhere (that is how the
     % global nature of a fix is visible on the other tiles).
     zBoundary = [];
     if ~isempty(obj.viewSlice) && isfield(obj.viewSlice, 'boundaryTile') && ...
@@ -161,9 +161,9 @@ sliceNote = '';
 if ~isempty(boundaryTile)
     shiftText = '';
     if any(deltaYX ~= 0)
-        shiftText = sprintf(' — current shift [%d %d]', deltaYX(1), deltaYX(2));
+        shiftText = sprintf(' - current shift [%d %d]', deltaYX(1), deltaYX(2));
     end
-    sliceNote = sprintf('Tile %d, Z boundary %d/%d — a fix shifts mosaic slices %d..%d%s', ...
+    sliceNote = sprintf('Tile %d, Z boundary %d/%d - a fix shifts mosaic slices %d..%d%s', ...
         boundaryTile, sliceB, depthI, sliceB, depthI, shiftText);
     obj.viewSlice = struct('edgeIdx', obj.currentEdgeIdx, 'sliceA', sliceA, ...
         'sliceB', sliceB, 'depthA', depthI, 'depthB', depthJ, 'boundaryTile', boundaryTile);
@@ -190,15 +190,15 @@ else
     if isempty(slabA)
         sliceA = ceil(depthI / 2);
         sliceB = ceil(depthJ / 2);
-        sliceNote = 'No overlapping Z slices at the current alignment — showing the middle slices';
+        sliceNote = 'No overlapping Z slices at the current alignment - showing the middle slices';
     else
         % The pair aligned by the current dz, browsed within the slab.
         sliceA = min(max(round(requestA), slabA(1)), slabA(end));
         sliceB = sliceA - currentDz;
         if sliceB == sliceA
-            sliceNote = sprintf('Slice %d/%d — Q/W browses', sliceA, depthI);
+            sliceNote = sprintf('Slice %d/%d - Q/W browses', sliceA, depthI);
         else
-            sliceNote = sprintf('%s: slice %d/%d; %s: slice %d/%d — Q/W browses', ...
+            sliceNote = sprintf('%s: slice %d/%d; %s: slice %d/%d - Q/W browses', ...
                 sliceNameI, sliceA, depthI, sliceNameJ, sliceB, depthJ);
         end
     end
@@ -231,7 +231,7 @@ extentJ = {[1 + deltaYX(2), 1 + deltaYX(2) + (size(imageJ, 2) - 1) * scale], ...
 
 % ---- render per overlay mode -------------------------------------------------
 % Two-line title: line 1 = a plain legend naming the tiles, line 2 = the
-% slice pair (3D only) — a single line does not fit the axes width.
+% slice pair (3D only) - a single line does not fit the axes width.
 switch overlayMode
     case 'Flicker'
         imageA = image(pairAxes, 'XData', extentI{1}, 'YData', extentI{2}, ...
@@ -241,9 +241,9 @@ switch overlayMode
         imageB.Visible = 'off';
         obj.pairImageHandles = [imageA, imageB];
         if ~isempty(boundaryTile)
-            titleLine = sprintf('Flicker — showing slice %d (Space toggles)', sliceA);
+            titleLine = sprintf('Flicker - showing slice %d (Space toggles)', sliceA);
         else
-            titleLine = sprintf('Flicker — showing tile %d (Space toggles)', edge.i);
+            titleLine = sprintf('Flicker - showing tile %d (Space toggles)', edge.i);
         end
     case {'Checkerboard', 'Difference'}
         [canvasI, canvasJ, canvasExtent] = unionCanvases(imageI, imageJ, ...
@@ -251,10 +251,10 @@ switch overlayMode
         if strcmp(overlayMode, 'Checkerboard')
             composite = repmat(mat2gray( ...
                 imfuse(canvasI, canvasJ, 'checkerboard', 'Scaling', 'joint')), 1, 1, 3);
-            titleLine = sprintf('Checkerboard — %s vs %s', nameI, nameJ);
+            titleLine = sprintf('Checkerboard - %s vs %s', nameI, nameJ);
         else
             composite = repmat(mat2gray(imfuse(canvasI, canvasJ, 'diff')), 1, 1, 3);
-            titleLine = sprintf('Difference — %s vs %s (dark = match)', nameI, nameJ);
+            titleLine = sprintf('Difference - %s vs %s (dark = match)', nameI, nameJ);
         end
         image(pairAxes, 'XData', canvasExtent{1}, 'YData', canvasExtent{2}, ...
             'CData', composite);
@@ -274,7 +274,7 @@ end
 set(pairAxes, 'YDir', 'reverse', 'XTick', [], 'YTick', []);
 axis(pairAxes, 'image');
 
-% Re-apply the wheel zoom across re-renders of the SAME seam — nudges, drags
+% Re-apply the wheel zoom across re-renders of the SAME seam - nudges, drags
 % and fixes all re-render, and losing the zoom on every arrow key would make
 % fine alignment unusable. Selecting another seam resets to fit.
 if ~isempty(obj.pairZoom) && isequal(obj.pairZoom.edgeIdx, obj.currentEdgeIdx)

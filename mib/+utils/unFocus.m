@@ -11,11 +11,11 @@ function unFocus(hObject)
 % to the parent figure, preventing unwanted keyboard capture by input fields.
 %
 % Input Arguments:
-%   - **hObject** — handle to the UI widget that should lose focus
+%   - **hObject** - handle to the UI widget that should lose focus
 %
 % Usage:
 %
-%   **Example 1** — unfocus a button after clicking
+%   **Example 1** - unfocus a button after clicking
 %
 %   .. code-block:: matlab
 %

@@ -11,28 +11,28 @@ function updateMaterialsTable(obj, position)
 % manages visibility checkboxes, and formats special rows (Mask, Exterior).
 %
 % Input Arguments:
-%   - **position** — *(optional)* [empty | numeric | Inf] scroll position control (default: ``[]``):
+%   - **position** - *(optional)* [empty | numeric | Inf] scroll position control (default: ``[]``):
 %
-%     - ``[]`` — keep current scroll position
-%     - numeric value — scroll to specific row index
-%     - ``Inf`` — scroll to end of table (last material)
+%     - ``[]`` - keep current scroll position
+%     - numeric value - scroll to specific row index
+%     - ``Inf`` - scroll to end of table (last material)
 %
 % Output Arguments:
 %   None
 %
-% **Example 1** — update table and keep current position:
+% **Example 1** - update table and keep current position:
 %
 %   .. code-block:: matlab
 %
 %      obj.updateMaterialsTable([])
 %
-% **Example 2** — update table and scroll to row 5:
+% **Example 2** - update table and scroll to row 5:
 %
 %   .. code-block:: matlab
 %
 %      obj.updateMaterialsTable(5)
 %
-% **Example 3** — update table and scroll to bottom:
+% **Example 3** - update table and scroll to bottom:
 %
 %   .. code-block:: matlab
 %
@@ -72,7 +72,7 @@ if dataset.labels.exists == 0
     dataset.labels.materialNames = {};
 end
 
-% Determine max colors; no column is editable in place — typing into a cell would
+% Determine max colors; no column is editable in place - typing into a cell would
 % start inline editing and swallow the single-key segmentation shortcuts ('a', 's', ...).
 % Materials are renamed via the context menu / F2 (models.MibModel.renameMaterial),
 % which for 65535+ models rewrites the material index stored in the selected slot.
@@ -189,7 +189,7 @@ if ~isempty(position)
     end
 end
 
-% Clamp selection indices before applying them — must happen before the
+% Clamp selection indices before applying them - must happen before the
 % callback that writes to materialsTable.Selection to avoid an out-of-bounds
 % error (AppDesigner raises if the row index exceeds the table row count).
 if dataset.selectedMaterial > numRows; dataset.selectedMaterial = 1; end

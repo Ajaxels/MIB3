@@ -19,22 +19,22 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
             %      loader = io.loaders.AmiraMeshLoader(options)
             %
             % Input Arguments:
-            %   - **options** — *(optional)* struct with fields:
+            %   - **options** - *(optional)* struct with fields:
             %
-            %     - ``waitbar`` — [logical] show or not the waitbar; default: ``false``
-            %     - ``mibPath`` — [char] path to MIB directory
-            %     - ``customSections`` — [logical] load custom sections only; default: ``false``
-            %     - ``customSectionsSettings`` — [struct] custom section parameters
-            %     - ``imgStretch`` — [logical] stretch uint32 images to uint16; default: ``false``
-            %     - ``silentMode`` — [logical] do not ask user questions; default: ``false``
-            %     - ``verbose`` — [logical] show timing information; default: ``false``
-            %     - ``Font`` — [struct] font settings for dialogs
-            %     - ``ParentFigure`` — handle of the main MIB window (parent for uiprogressdlg)
+            %     - ``waitbar`` - [logical] show or not the waitbar; default: ``false``
+            %     - ``mibPath`` - [char] path to MIB directory
+            %     - ``customSections`` - [logical] load custom sections only; default: ``false``
+            %     - ``customSectionsSettings`` - [struct] custom section parameters
+            %     - ``imgStretch`` - [logical] stretch uint32 images to uint16; default: ``false``
+            %     - ``silentMode`` - [logical] do not ask user questions; default: ``false``
+            %     - ``verbose`` - [logical] show timing information; default: ``false``
+            %     - ``Font`` - [struct] font settings for dialogs
+            %     - ``ParentFigure`` - handle of the main MIB window (parent for uiprogressdlg)
             %
             % Output Arguments:
-            %   - **obj** — instance of the AmiraMeshLoader class
+            %   - **obj** - instance of the AmiraMeshLoader class
             %
-            % **Example 1** — create loader with default options:
+            % **Example 1** - create loader with default options:
             %
             %   .. code-block:: matlab
             %
@@ -62,19 +62,19 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
             % - pixSize structure (voxel sizes)
             %
             % Input Arguments:
-            %   - **filenames** — cell array with filenames of Amira Mesh files
-            %   - **options** — *(optional)* struct with fields:
+            %   - **filenames** - cell array with filenames of Amira Mesh files
+            %   - **options** - *(optional)* struct with fields:
             %
-            %     - ``waitbar`` — [logical] show or not the waitbar; default: ``false``
-            %     - ``customSections`` — [logical] load part of the dataset; default: ``false``
-            %     - ``Font`` — [struct] font settings for dialogs
-            %     - ``ParentFigure`` — parent figure handle for uiprogressdlg
+            %     - ``waitbar`` - [logical] show or not the waitbar; default: ``false``
+            %     - ``customSections`` - [logical] load part of the dataset; default: ``false``
+            %     - ``Font`` - [struct] font settings for dialogs
+            %     - ``ParentFigure`` - parent figure handle for uiprogressdlg
             %
             % Output Arguments:
-            %   - **imginfo** — dictionary with image metadata, including pixSize structure
-            %   - **files** — structure array with file information
+            %   - **imginfo** - dictionary with image metadata, including pixSize structure
+            %   - **files** - structure array with file information
             %
-            % **Example 1** — load metadata from Amira Mesh file:
+            % **Example 1** - load metadata from Amira Mesh file:
             %
             %   .. code-block:: matlab
             %
@@ -317,31 +317,31 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
             % into the MIB image array.
             %
             % Input Arguments:
-            %   - **files** — structure array from loadMetadata
-            %   - **imginfo** — dictionary with image metadata containing fields:
+            %   - **files** - structure array from loadMetadata
+            %   - **imginfo** - dictionary with image metadata containing fields:
             %
-            %     - ``Height`` — image height in pixels
-            %     - ``Width`` — image width in pixels
-            %     - ``Colors`` — number of color channels
-            %     - ``Depth`` — number of z-slices
-            %     - ``Time`` — number of time points
-            %     - ``imgClass`` — image class (``uint8``, ``uint16``, etc.)
-            %     - ``ColorType`` — ``'grayscale'``, ``'truecolor'``, or ``'indexed'``
-            %     - ``ImageDescription`` — description with BoundingBox info
-            %     - ``Format`` — HDF5 format type (``'matlab.hdf5'`` or ``'bdv.hdf5'``)
-            %     - ``Levels`` — number of pyramid levels (for BDV only)
-            %     - ``ReturnedLevel`` — selected pyramid level (for BDV only)
-            %     - ``pixSize`` — struct with pixel sizes: ``.x``, ``.y``, ``.z``, ``.t``,
+            %     - ``Height`` - image height in pixels
+            %     - ``Width`` - image width in pixels
+            %     - ``Colors`` - number of color channels
+            %     - ``Depth`` - number of z-slices
+            %     - ``Time`` - number of time points
+            %     - ``imgClass`` - image class (``uint8``, ``uint16``, etc.)
+            %     - ``ColorType`` - ``'grayscale'``, ``'truecolor'``, or ``'indexed'``
+            %     - ``ImageDescription`` - description with BoundingBox info
+            %     - ``Format`` - HDF5 format type (``'matlab.hdf5'`` or ``'bdv.hdf5'``)
+            %     - ``Levels`` - number of pyramid levels (for BDV only)
+            %     - ``ReturnedLevel`` - selected pyramid level (for BDV only)
+            %     - ``pixSize`` - struct with pixel sizes: ``.x``, ``.y``, ``.z``, ``.t``,
             %       ``.units``, ``.tunits``
             %     - other format-specific metadata fields
             %
-            %   - **options** — *(optional)* struct for image loading
+            %   - **options** - *(optional)* struct for image loading
             %
             % Output Arguments:
-            %   - **img** — loaded image dataset
-            %   - **imginfo** — updated dictionary
+            %   - **img** - loaded image dataset
+            %   - **imginfo** - updated dictionary
             %
-            % **Example 1** — load images from Amira Mesh file:
+            % **Example 1** - load images from Amira Mesh file:
             %
             %   .. code-block:: matlab
             %

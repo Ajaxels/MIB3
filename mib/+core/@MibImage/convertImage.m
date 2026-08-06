@@ -11,34 +11,34 @@ function status = convertImage(obj, format, options)
 % has layout ``[H, W, Z, C, T]``.
 %
 % Input Arguments:
-%   - **format** — char, target format:
+%   - **format** - char, target format:
 %
-%     - ``'grayscale'``   — single channel
-%     - ``'multichannel'`` — 2-or-3-channel RGB
-%     - ``'hsvcolor'``    — 3 channels HSV
-%     - ``'indexed'``     — indexed color; colormap stored in ``obj.colormap``
-%     - ``'uint8'``       — cast to 8-bit  [0 – 255]
-%     - ``'uint16'``      — cast to 16-bit [0 – 65535]
-%     - ``'uint32'``      — cast to 32-bit [0 – 4294967295]
+%     - ``'grayscale'``   - single channel
+%     - ``'multichannel'`` - 2-or-3-channel RGB
+%     - ``'hsvcolor'``    - 3 channels HSV
+%     - ``'indexed'``     - indexed color; colormap stored in ``obj.colormap``
+%     - ``'uint8'``       - cast to 8-bit  [0 - 255]
+%     - ``'uint16'``      - cast to 16-bit [0 - 65535]
+%     - ``'uint32'``      - cast to 32-bit [0 - 4294967295]
 %
-%   - **options** — *(optional)* struct with fields:
+%   - **options** - *(optional)* struct with fields:
 %
-%     - ``.showWaitbar`` — logical, show or not the progress dialog; default ``true``
-%     - ``.parentFigure`` — ``matlab.ui.Figure``, parent for dialogs; pass ``[]`` when unavailable
-%     - ``.selectedColorChannels`` — vector of color indices used for LUT blending
+%     - ``.showWaitbar`` - logical, show or not the progress dialog; default ``true``
+%     - ``.parentFigure`` - ``matlab.ui.Figure``, parent for dialogs; pass ``[]`` when unavailable
+%     - ``.selectedColorChannels`` - vector of color indices used for LUT blending
 %       when converting multichannel (>3 ch) to grayscale or indexed; default ``1:obj.colors``
 %
 % Output Arguments:
-%   - **status** — ``1`` on success, ``0`` on failure or user cancel
+%   - **status** - ``1`` on success, ``0`` on failure or user cancel
 %
-% **Example 1** — convert to grayscale
+% **Example 1** - convert to grayscale
 %
 %   .. code-block:: matlab
 %
 %      opt.parentFigure = obj.mibGUI;
 %      status = img.convertImage('grayscale', opt);
 %
-% **Example 2** — cast to 8-bit using current viewport stretch
+% **Example 2** - cast to 8-bit using current viewport stretch
 %
 %   .. code-block:: matlab
 %

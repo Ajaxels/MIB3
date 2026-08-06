@@ -13,15 +13,15 @@ function annotationText = measureDistanceFree(obj, datasetId, colCh, finetuneChe
 % arc-length and stores the measurement.
 %
 % Input Arguments:
-%   - **datasetId** — [double] index into ``mibModel.I``
-%   - **colCh** — [double] colour channel (0 = all, 1+ = specific)
-%   - **finetuneCheck** — [logical] when ``false`` accept the freehand path immediately after drawing (no double-click required)
-%   - **calcIntensity** — [logical] compute intensity profile along path
-%   - **showInfoDlg** — [logical] show annotation text dialog after drawing
-%   - **insertIndex** — *(optional)* [double] replace-at-position (0 = append)
+%   - **datasetId** - [double] index into ``mibModel.I``
+%   - **colCh** - [double] colour channel (0 = all, 1+ = specific)
+%   - **finetuneCheck** - [logical] when ``false`` accept the freehand path immediately after drawing (no double-click required)
+%   - **calcIntensity** - [logical] compute intensity profile along path
+%   - **showInfoDlg** - [logical] show annotation text dialog after drawing
+%   - **insertIndex** - *(optional)* [double] replace-at-position (0 = append)
 %
 % Output Arguments:
-%   - **annotationText** — [char] annotation label entered by the user;
+%   - **annotationText** - [char] annotation label entered by the user;
 %     empty string ``''`` when the dialog was skipped or cancelled
 %
 

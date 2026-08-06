@@ -11,29 +11,29 @@ function buffers_ContextMenu(obj, parameter, buttonID, BatchOptIn)
 % processing mode. Batch-compatible.
 %
 % Input Arguments:
-%   - **parameter** — [char] action to perform:
+%   - **parameter** - [char] action to perform:
 %
-%     - ``'duplicate'`` — duplicate selected buffer to another buffer
-%     - ``'sync_xy'`` — synchronize XY view parameters across buffers
-%     - ``'sync_xyz'`` — synchronize XYZ view parameters across buffers
-%     - ``'sync_xyzt'`` — synchronize all dimensions and time across buffers
-%     - ``'link_views'`` — link or unlink views between two buffers
-%     - ``'close'`` — close the current dataset in the buffer
-%     - ``'closeSet'`` — close all datasets in the current set
+%     - ``'duplicate'`` - duplicate selected buffer to another buffer
+%     - ``'sync_xy'`` - synchronize XY view parameters across buffers
+%     - ``'sync_xyz'`` - synchronize XYZ view parameters across buffers
+%     - ``'sync_xyzt'`` - synchronize all dimensions and time across buffers
+%     - ``'link_views'`` - link or unlink views between two buffers
+%     - ``'close'`` - close the current dataset in the buffer
+%     - ``'closeSet'`` - close all datasets in the current set
 %
-%   - **buttonID** — [numeric] local buffer index (1–10), or ``NaN`` when called from batch mode without a physical button press
-%   - **BatchOptIn** — *(optional)* [struct] batch processing mode options; when ``NaN``, returns default structure via ``'SyncBatch'`` event
+%   - **buttonID** - [numeric] local buffer index (1-10), or ``NaN`` when called from batch mode without a physical button press
+%   - **BatchOptIn** - *(optional)* [struct] batch processing mode options; when ``NaN``, returns default structure via ``'SyncBatch'`` event
 %
 % Output Arguments:
 %   None
 %
-% **Example 1** — duplicate buffer interactively:
+% **Example 1** - duplicate buffer interactively:
 %
 %   .. code-block:: matlab
 %
 %      obj.buffers_ContextMenu('duplicate', 2)
 %
-% **Example 2** — duplicate dataset in batch mode:
+% **Example 2** - duplicate dataset in batch mode:
 %
 %   .. code-block:: matlab
 %
@@ -400,7 +400,7 @@ switch parameter
         end
 
         notify(obj.mibModel, 'ShowImage');
-        % note: sync does not notify SyncBatch — matches MIB2 behaviour
+        % note: sync does not notify SyncBatch - matches MIB2 behaviour
 
     case 'close'
         if strcmp(BatchOpt.Target{1}, 'Current')
@@ -531,7 +531,7 @@ switch parameter
                 obj.mibModel.I{globalI}.image.lutColors = obj.mibModel.preferences.Colors.LUTColors;
             end
 
-            % the replacement is a Standard dataset — reset the panel type label
+            % the replacement is a Standard dataset - reset the panel type label
             obj.mibModel.Sets.datasetTypes{targetSet, iButton} = 'Standard';
 
             % reset buffer buttons only when closing the currently visible set
@@ -591,11 +591,11 @@ function loaded = isLoadedContainer(mibModel, containerId)
 % and make the whole context menu unusable because of a single bad container.
 %
 % Input Arguments:
-%   - **mibModel** — [models.MibModel] handle to the model
-%   - **containerId** — [numeric] global container index
+%   - **mibModel** - [models.MibModel] handle to the model
+%   - **containerId** - [numeric] global container index
 %
 % Output Arguments:
-%   - **loaded** — [logical] true when the container holds a loaded dataset
+%   - **loaded** - [logical] true when the container holds a loaded dataset
 %
 
 loaded = false;

@@ -7,7 +7,7 @@ function panelHandles = addSegmentationPanel(obj)
 %      panelHandles = obj.addSegmentationPanel()
 %
 % Output Arguments:
-%   - **panelHandles** — [struct] handles to the segmentation panel widgets
+%   - **panelHandles** - [struct] handles to the segmentation panel widgets
 %
 % Notes:
 %   The callbacks are added in the controller of the panel: ``controllers.MibSegmentation``

@@ -7,15 +7,15 @@ function insertEmptyColorChannel(obj, channel1, options)
 %       obj.insertEmptyColorChannel(channel1, options)
 %
 % Input Arguments:
-%   - **channel1** — 1-based index of the position to insert the new channel.
+%   - **channel1** - 1-based index of the position to insert the new channel.
 %     Use ``obj.colors + 1`` to append at the end.
-%   - **options** — *(optional)* struct with fields:
+%   - **options** - *(optional)* struct with fields:
 %
-%     - ``.showWaitbar`` — logical; show progress bar (default ``true``)
-%     - ``.ParentFigure`` — handle to parent figure for the progress dialog (default ``[]``)
+%     - ``.showWaitbar`` - logical; show progress bar (default ``true``)
+%     - ``.ParentFigure`` - handle to parent figure for the progress dialog (default ``[]``)
 %
 % Usage:
-%   **Example 1** — insert empty channel before channel 2
+%   **Example 1** - insert empty channel before channel 2
 %
 %   .. code-block:: matlab
 %

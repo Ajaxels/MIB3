@@ -10,20 +10,20 @@ function saveToFile(obj, filename, options)
 % is omitted, a dialog prompts the user to select the filename and format.
 %
 % Input Arguments:
-%   - **filename** — *(optional)* [char] full output path; if ``[]`` or missing, a file dialog opens
-%   - **options** — *(optional)* [struct] export settings:
+%   - **filename** - *(optional)* [char] full output path; if ``[]`` or missing, a file dialog opens
+%   - **options** - *(optional)* [struct] export settings:
 %
-%     - ``.format`` — [char] output format; if missing, inferred from file extension:
+%     - ``.format`` - [char] output format; if missing, inferred from file extension:
 %
-%       - ``'lines3d'`` — MIB native format (MATLAB ``.lines3d`` binary)
-%       - ``'amira-ascii'`` — Amira Spatial Graph ASCII format
-%       - ``'amira-binary'`` — Amira Spatial Graph binary format
-%       - ``'excel'`` — Microsoft Excel ``.xls`` spreadsheet
+%       - ``'lines3d'`` - MIB native format (MATLAB ``.lines3d`` binary)
+%       - ``'amira-ascii'`` - Amira Spatial Graph ASCII format
+%       - ``'amira-binary'`` - Amira Spatial Graph binary format
+%       - ``'excel'`` - Microsoft Excel ``.xls`` spreadsheet
 %
-%     - ``.treeId`` — *(optional)* [numeric or []] tree index to export (default: ``[]`` = all trees)
-%     - ``.NodeFieldName`` — *(optional)* [char] field name to export for nodes (Amira only)
-%     - ``.EdgeFieldName`` — *(optional)* [char] field name to export for edges (Amira only)
-%     - ``.showWaitbar`` — *(optional)* [logical] display progress bar (default: ``1``)
+%     - ``.treeId`` - *(optional)* [numeric or []] tree index to export (default: ``[]`` = all trees)
+%     - ``.NodeFieldName`` - *(optional)* [char] field name to export for nodes (Amira only)
+%     - ``.EdgeFieldName`` - *(optional)* [char] field name to export for edges (Amira only)
+%     - ``.showWaitbar`` - *(optional)* [logical] display progress bar (default: ``1``)
 %
 
 if nargin < 3; options = struct(); end

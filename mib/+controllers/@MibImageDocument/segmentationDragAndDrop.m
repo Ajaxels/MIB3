@@ -10,17 +10,17 @@ function segmentationDragAndDrop(obj, y, x, modifier)
 % button-up callbacks for interactive dragging.
 %
 % Input Arguments:
-%   - **y** — [double] y-coordinate of mouse cursor at starting point
-%   - **x** — [double] x-coordinate of mouse cursor at starting point
-%   - **modifier** — [char] modifier key held during click:
+%   - **y** - [double] y-coordinate of mouse cursor at starting point
+%   - **x** - [double] x-coordinate of mouse cursor at starting point
+%   - **modifier** - [char] modifier key held during click:
 %
-%     - ``'shift'`` — drag all objects on slice
-%     - ``'control'`` — drag only single object under cursor
+%     - ``'shift'`` - drag all objects on slice
+%     - ``'control'`` - drag only single object under cursor
 %
 % Output Arguments:
 %   (none)
 %
-% **Example** — drag object at [y,x]=[50,75]:
+% **Example** - drag object at [y,x]=[50,75]:
 %
 %   .. code-block:: matlab
 %
@@ -46,7 +46,7 @@ id = obj.mibModel.getActiveId();
 isBigData = obj.mibModel.I{id}.datasetType(1) == 'B';
 
 % BigData: only single-object drag (Ctrl) is supported. Dragging the whole layer
-% ('shift') would need a whole-slice full-resolution read/write — not WSI-safe.
+% ('shift') would need a whole-slice full-resolution read/write - not WSI-safe.
 if isBigData && strcmp(modifier, 'shift')
     dlgOpt.MsgBoxOnly = true;
     dlgOpt.Icon = 'puffin_warning';

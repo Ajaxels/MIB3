@@ -16,20 +16,20 @@ function pairs = findNeighborPairs(layout, options)
 % dimensions are excluded.
 %
 % Input Arguments:
-%   - **layout** — struct array as returned by ``buildLayoutGrid`` etc.
-%   - **options** *(optional)* — struct with fields:
+%   - **layout** - struct array as returned by ``buildLayoutGrid`` etc.
+%   - **options** *(optional)* - struct with fields:
 %
-%     - ``.minOverlapPx`` — [double] minimum overlap in pixels (default: ``16``)
+%     - ``.minOverlapPx`` - [double] minimum overlap in pixels (default: ``16``)
 %
 % Output Arguments:
-%   - **pairs** — struct array with fields:
+%   - **pairs** - struct array with fields:
 %
-%     - ``.i`` — [double] index of first tile in the pair
-%     - ``.j`` — [double] index of second tile in the pair
-%     - ``.direction`` — [char] ``'x'``, ``'y'``, or ``'z'``
-%     - ``.nominal`` — [double] ``[dy dx dz]`` = ``layout(j).nomOrigin - layout(i).nomOrigin``
+%     - ``.i`` - [double] index of first tile in the pair
+%     - ``.j`` - [double] index of second tile in the pair
+%     - ``.direction`` - [char] ``'x'``, ``'y'``, or ``'z'``
+%     - ``.nominal`` - [double] ``[dy dx dz]`` = ``layout(j).nomOrigin - layout(i).nomOrigin``
 %
-% **Example** — find all neighbor pairs in a simple 2x2 grid:
+% **Example** - find all neighbor pairs in a simple 2x2 grid:
 %
 %   .. code-block:: matlab
 %
@@ -109,11 +109,11 @@ for tileA = 1:(numTiles - 1)
                 continue;
             end
             % Cross-layer edges are kept ONLY between tiles at (near) the same XY
-            % position — large overlap in BOTH dims. A thin XY strip (tiles offset
+            % position - large overlap in BOTH dims. A thin XY strip (tiles offset
             % in one axis) or a corner (offset in both) yields an unreliable dz
             % from its narrow projected crop, and adds nothing: the within-layer
             % edges already connect the tiles inside each layer, and one
-            % same-position z-edge per stacked tile connects the layers — together
+            % same-position z-edge per stacked tile connects the layers - together
             % a fully connected graph. So a stray weak z-edge only injects noise.
             fractionY = overlapY / min(sizeA(1), sizeB(1));
             fractionX = overlapX / min(sizeA(2), sizeB(2));

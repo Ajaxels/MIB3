@@ -9,20 +9,20 @@ function rotateDataset(obj, mode, parentFigure, showWaitbar)
 % Ported from MIB2 ``@mibModel/rotateDataset.m``.
 %
 % Input Arguments:
-%   - **mode** — [char] rotation mode:
+%   - **mode** - [char] rotation mode:
 %
-%     - ``'Rotate 90 degrees'`` — clockwise 90° rotation (height ↔ width swap)
-%     - ``'Rotate -90 degrees'`` — counter-clockwise 90° rotation
+%     - ``'Rotate 90 degrees'`` - clockwise 90° rotation (height ↔ width swap)
+%     - ``'Rotate -90 degrees'`` - counter-clockwise 90° rotation
 %
-%   - **parentFigure** *(optional)* — handle to the parent figure for the progress dialog;
+%   - **parentFigure** *(optional)* - handle to the parent figure for the progress dialog;
 %     pass ``[]`` to suppress the progress dialog
-%   - **showWaitbar** *(optional)* — logical, ``true`` to show a progress dialog (default: ``true``)
+%   - **showWaitbar** *(optional)* - logical, ``true`` to show a progress dialog (default: ``true``)
 %
 % Output Arguments:
 %   none
 %
 % Usage:
-%   **Example 1** — rotate 90° clockwise from a MibModel context
+%   **Example 1** - rotate 90° clockwise from a MibModel context
 %
 %   .. code-block:: matlab
 %

@@ -11,11 +11,11 @@ function selectedActionTableItem_Update(obj, hObject)
 % selectedActionTableCellPopup, selectedActionTableCellCheck.
 %
 % Input Arguments:
-%   - **hObject** — handle to the widget that triggered the callback; Tag must be
+%   - **hObject** - handle to the widget that triggered the callback; Tag must be
 %     one of 'selectedActionTableCellPopup', 'selectedActionTableCellCheck',
 %     'selectedActionTableCellEdit', or 'selectedActionTableCellNumericEdit'
 %
-% **Example** — update a parameter value:
+% **Example** - update a parameter value:
 %
 %   .. code-block:: matlab
 %

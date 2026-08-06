@@ -10,23 +10,23 @@ function brushPanel_Callback(obj, hWidget, hData, mode)
 % Supports brush size, eraser factor, clustering mode, and interpolation settings configuration.
 %
 % Input Arguments:
-%   - **hWidget** — [matlab.ui.control.Button | matlab.ui.control.CheckBox | matlab.ui.control.Spinner | matlab.ui.control.DropDown] pressed widget; operation identified via ``hWidget.Tag`` (when provided):
+%   - **hWidget** - [matlab.ui.control.Button | matlab.ui.control.CheckBox | matlab.ui.control.Spinner | matlab.ui.control.DropDown] pressed widget; operation identified via ``hWidget.Tag`` (when provided):
 %
-%     - ``'brushRadius'`` — adjust brush size/radius
-%     - ``'brushFixToScreen'`` — toggle fixed screen-pixel brush size
-%     - ``'eraserFactor'`` — set eraser magnification factor
-%     - ``'interpolationSettings'`` — open interpolation settings dialog
-%     - ``'brushUseClustering'`` — enable/select clustering mode
-%     - ``'clustersPar1'`` — set clustering mode parameter 1
-%     - ``'clustersPar2'`` — set clustering mode parameter 2
+%     - ``'brushRadius'`` - adjust brush size/radius
+%     - ``'brushFixToScreen'`` - toggle fixed screen-pixel brush size
+%     - ``'eraserFactor'`` - set eraser magnification factor
+%     - ``'interpolationSettings'`` - open interpolation settings dialog
+%     - ``'brushUseClustering'`` - enable/select clustering mode
+%     - ``'clustersPar1'`` - set clustering mode parameter 1
+%     - ``'clustersPar2'`` - set clustering mode parameter 2
 %
-%   - **hData** — [matlab.ui.eventdata.ValueChangedData] event data from widget
-%   - **mode** — *(optional)* [char] widget identifier; when provided, ``hWidget`` and ``hData`` are ignored
+%   - **hData** - [matlab.ui.eventdata.ValueChangedData] event data from widget
+%   - **mode** - *(optional)* [char] widget identifier; when provided, ``hWidget`` and ``hData`` are ignored
 %
 % Output Arguments:
 %   None
 %
-% **Example** — set brush clustering mode via direct call:
+% **Example** - set brush clustering mode via direct call:
 %
 %   .. code-block:: matlab
 %

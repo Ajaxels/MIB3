@@ -11,13 +11,13 @@ function gui_Brush_scrollWheelFcn(obj, eventdata)
 % stroke with adaptive mode enabled.
 %
 % Input Arguments:
-%   - **eventdata** — [ScrollWheelData] with field ``.VerticalScrollCount``:
+%   - **eventdata** - [ScrollWheelData] with field ``.VerticalScrollCount``:
 %     negative value = scroll up (increase factor), positive value = scroll down (decrease)
 %
 % Output Arguments:
 %   (none)
 %
-% **Usage note** — typically set as a callback, not called directly:
+% **Usage note** - typically set as a callback, not called directly:
 %
 %   .. code-block:: matlab
 %

@@ -9,8 +9,8 @@ function [axesX, axesY] = getAxesLimits(obj)
 % Input Arguments:
 %
 % Output Arguments:
-%   - **axesX** — a vector [min, max] for the X
-%   - **axesY** — a vector [min, max] for the Y
+%   - **axesX** - a vector [min, max] for the X
+%   - **axesY** - a vector [min, max] for the Y
 %
 % Usage:
 %   **Example 1**

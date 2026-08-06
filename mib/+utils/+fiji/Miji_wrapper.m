@@ -12,7 +12,7 @@ function Miji_wrapper(open_imagej)
 %      utils.fiji.Miji_wrapper(open_imagej)
 %
 % Input Arguments:
-%   - **open_imagej** — [logical] passed directly to ``Miji`` or
+%   - **open_imagej** - [logical] passed directly to ``Miji`` or
 %     ``Miji_deploy``; ``true`` opens the ImageJ window, ``false`` runs headless
 %
 % Updates

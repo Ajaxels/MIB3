@@ -10,7 +10,7 @@ function selectProtocolSection_Callback(obj, hObject)
 % BatchOpt, then refreshes the selectedActionTable.
 %
 % Input Arguments:
-%   - **hObject** — handle to the dropdown widget that triggered the callback;
+%   - **hObject** - handle to the dropdown widget that triggered the callback;
 %     Tag must be 'selectProtocolSection' or 'selectProtocolAction'
 %
 % Usage:

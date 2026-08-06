@@ -24,34 +24,34 @@ function res = graph2amiraSpatialGraph(filename, G, options)
 %      res = io.AmiraMesh.graph2amiraSpatialGraph(filename, G, options)
 %
 % Input Arguments:
-%   - **filename** — filename to save data
-%   - **G** — a standard MATLAB ``graph`` object with the following properties:
+%   - **filename** - filename to save data
+%   - **G** - a standard MATLAB ``graph`` object with the following properties:
 %
-%     - ``.Nodes`` — a table with columns:
+%     - ``.Nodes`` - a table with columns:
 %
-%       - ``.XData`` — x coordinate of the node
-%       - ``.YData`` — y coordinate of the node
-%       - ``.ZData`` — z coordinate of the node
-%       - ``.PointsXYZ`` — *(alternative to XData/YData/ZData)* matrix ``[nodeId][x,y,z]``
-%       - ``.Values`` — *(optional)* values for the nodes
+%       - ``.XData`` - x coordinate of the node
+%       - ``.YData`` - y coordinate of the node
+%       - ``.ZData`` - z coordinate of the node
+%       - ``.PointsXYZ`` - *(alternative to XData/YData/ZData)* matrix ``[nodeId][x,y,z]``
+%       - ``.Values`` - *(optional)* values for the nodes
 %
-%     - ``.Edges`` — a table with columns:
+%     - ``.Edges`` - a table with columns:
 %
-%       - ``.EndNodes`` — connectivity matrix for nodes (0-based indexing)
-%       - ``.Points`` — *(optional)* cell array of edge point coordinates; at least 2 per edge; ``{edgeId}[pointId, x y z]``
-%       - ``.Thickness`` — *(optional)* cell array of per-point thickness; ``{edgeId}[pointId, thickness]``
+%       - ``.EndNodes`` - connectivity matrix for nodes (0-based indexing)
+%       - ``.Points`` - *(optional)* cell array of edge point coordinates; at least 2 per edge; ``{edgeId}[pointId, x y z]``
+%       - ``.Thickness`` - *(optional)* cell array of per-point thickness; ``{edgeId}[pointId, thickness]``
 %
-%   - **options** — a structure with additional options:
+%   - **options** - a structure with additional options:
 %
-%     - ``.overwrite`` — ``1`` = automatically overwrite existing files
-%     - ``.format`` — (char) ``'binary'`` or ``'ascii'``
-%     - ``.NodeFieldName`` — (cell, max 2 elements) field names in ``.Nodes`` to export (replaces ``.Values``)
-%     - ``.EdgeFieldName`` — (cell) field name in ``.Edges`` to export (replaces ``.Thickness``)
+%     - ``.overwrite`` - ``1`` = automatically overwrite existing files
+%     - ``.format`` - (char) ``'binary'`` or ``'ascii'``
+%     - ``.NodeFieldName`` - (cell, max 2 elements) field names in ``.Nodes`` to export (replaces ``.Values``)
+%     - ``.EdgeFieldName`` - (cell) field name in ``.Edges`` to export (replaces ``.Thickness``)
 %
 % Output Arguments:
-%   - **res** — ``1`` = success, ``0`` = failure
+%   - **res** - ``1`` = success, ``0`` = failure
 %
-% **Example 1** — save a graph with node coordinates, values, and edge thickness:
+% **Example 1** - save a graph with node coordinates, values, and edge thickness:
 %
 %   .. code-block:: matlab
 %

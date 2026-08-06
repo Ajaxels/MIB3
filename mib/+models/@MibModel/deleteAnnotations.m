@@ -10,23 +10,23 @@ function deleteAnnotations(obj, BatchOptIn)
 % and fires the UpdateAnnotations event so any listening views can refresh.
 %
 % Input Arguments:
-%   - **BatchOptIn** — *(optional)* struct for batch processing mode; when NaN,
+%   - **BatchOptIn** - *(optional)* struct for batch processing mode; when NaN,
 %     returns default options via the 'SyncBatch' event
 %
-%     - ``.id`` — *(optional)* dataset index 1-9, default = obj.getActiveId()
+%     - ``.id`` - *(optional)* dataset index 1-9, default = obj.getActiveId()
 %
 %
 % Output Arguments:
 %   (none)
 %
 % Usage:
-%   **Example 1** — delete all annotations from the active dataset
+%   **Example 1** - delete all annotations from the active dataset
 %
 %   .. code-block:: matlab
 %
 %      obj.mibModel.deleteAnnotations();
 %
-%   **Example 2** — batch call on dataset 1
+%   **Example 2** - batch call on dataset 1
 %
 %   .. code-block:: matlab
 %

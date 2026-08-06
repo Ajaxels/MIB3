@@ -2,11 +2,11 @@ classdef MaterialsTest < matlab.unittest.TestCase
 % MATERIALSTEST - Unit tests for material management and model type conversion.
 %
 % Covers (all at MibDataset / MibLabels level, no GUI):
-%   MibDataset.addMaterial     — count/name registration
-%   MibDataset.removeMaterial  — count/name removal, pixel remapping
-%   MibLabels.renameMaterial   — name update at given index
-%   MibLabels.reorderMaterials — metadata permutation
-%   MibDataset.convertModel    — class change (63 ↔ 255); round-trip preserves image
+%   MibDataset.addMaterial     - count/name registration
+%   MibDataset.removeMaterial  - count/name removal, pixel remapping
+%   MibLabels.renameMaterial   - name update at given index
+%   MibLabels.reorderMaterials - metadata permutation
+%   MibDataset.convertModel    - class change (63 ↔ 255); round-trip preserves image
 
     methods (TestClassSetup)
         function addPaths(testCase)
@@ -43,7 +43,7 @@ classdef MaterialsTest < matlab.unittest.TestCase
             ds.addMaterial('C');
 
             testCase.verifyEqual(ds.labels.materialsCount, 3);
-            % normalise orientation — cell may be row or column vector
+            % normalise orientation - cell may be row or column vector
             testCase.verifyEqual(ds.labels.materialNames(:), {'A'; 'B'; 'C'});
         end
 

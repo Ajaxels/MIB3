@@ -3,14 +3,14 @@ function generateSmokePatternFolders()
 %
 % Creates a 2x2 set of tiles where each tile is a FOLDER of slice images (a
 % Z-stack) and each FOLDER is named with the MIB2 chop pattern
-% ``_Z##-X##-Y##`` — the tokens the "Filename pattern" layout source parses.
+% ``_Z##-X##-Y##`` - the tokens the "Filename pattern" layout source parses.
 % This exercises the "Tiles are folders (Z-stacks)" modifier with the Filename
 % pattern source (the combination that fails when folders are named grid-style,
 % e.g. ``tile_r1c1``, because those carry no Z/X/Y tokens).
 %
 % Ground truth: a textured volume whose every Z-slice carries the SAME randomly
 % oriented lines + circles as the 2D smoke case (``stitch_smoke``). The
-% lines/circles make stitching quality visible at a glance — any XY misplacement
+% lines/circles make stitching quality visible at a glance - any XY misplacement
 % breaks a line or circle at the tile seam on every slice. Tiles are cut with a
 % real ~22% XY overlap and small jitter, so the Filename pattern source's overlap
 % support is exercised end-to-end (measure + optimize actually register them).

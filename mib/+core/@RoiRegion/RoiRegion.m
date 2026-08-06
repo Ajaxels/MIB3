@@ -8,19 +8,19 @@ classdef RoiRegion < matlab.mixin.Copyable
     %
     % **Supported ROI types:**
     %
-    % - ``'rectangle'`` — rectangular ROI (MIB2 equivalent: ``'imrect'``)
-    % - ``'ellipse'`` — elliptical ROI (MIB2 equivalent: ``'imellipse'``)
-    % - ``'polygon'`` — polygonal ROI (MIB2 equivalent: ``'impoly'``)
-    % - ``'freehand'`` — freehand ROI (MIB2 equivalent: ``'imfreehand'``)
+    % - ``'rectangle'`` - rectangular ROI (MIB2 equivalent: ``'imrect'``)
+    % - ``'ellipse'`` - elliptical ROI (MIB2 equivalent: ``'imellipse'``)
+    % - ``'polygon'`` - polygonal ROI (MIB2 equivalent: ``'impoly'``)
+    % - ``'freehand'`` - freehand ROI (MIB2 equivalent: ``'imfreehand'``)
     %
-    % **Data structure** — Each element of ``obj.Data`` struct array contains:
+    % **Data structure** - Each element of ``obj.Data`` struct array contains:
     %
-    % - ``.label`` — [string or cellstr] user-visible label
-    % - ``.type`` — [char] ROI type: ``'rectangle'``, ``'ellipse'``, ``'polygon'``, or ``'freehand'``
-    % - ``.X`` — [numeric vector] X-coordinates of vertices
-    % - ``.Y`` — [numeric vector] Y-coordinates of vertices
-    % - ``.orientation`` — [numeric] orientation when created: ``1`` = zx, ``2`` = zy, ``3`` = yx
-    % - ``.BoundingBox`` — [struct] bounding box with subfields ``.x`` = ``[xmin, xmax]`` and ``.y`` = ``[ymin, ymax]`` 
+    % - ``.label`` - [string or cellstr] user-visible label
+    % - ``.type`` - [char] ROI type: ``'rectangle'``, ``'ellipse'``, ``'polygon'``, or ``'freehand'``
+    % - ``.X`` - [numeric vector] X-coordinates of vertices
+    % - ``.Y`` - [numeric vector] Y-coordinates of vertices
+    % - ``.orientation`` - [numeric] orientation when created: ``1`` = zx, ``2`` = zy, ``3`` = yx
+    % - ``.BoundingBox`` - [struct] bounding box with subfields ``.x`` = ``[xmin, xmax]`` and ``.y`` = ``[ymin, ymax]`` 
 
     properties (SetAccess = public, GetAccess = public)
         Data
@@ -72,14 +72,14 @@ classdef RoiRegion < matlab.mixin.Copyable
             % *core.MibDataset.initialize* and stored as *obj.hROI.*
             %
             % Input Arguments:
-            %   - **mibDataset** — *(optional)* handle to :class:`core.MibDataset`
+            %   - **mibDataset** - *(optional)* handle to :class:`core.MibDataset`
             %     (the parent dataset that owns this ROI collection).
             %     When omitted or empty, the class still works but methods
             %     that need orientation or image dimensions require explicit
             %     arguments.
             %
             % Output Arguments:
-            %   - **obj** — instance of the :class:`core.RoiRegion` class.
+            %   - **obj** - instance of the :class:`core.RoiRegion` class.
             %
             % Usage:
             %   **Example 1**
@@ -242,7 +242,7 @@ classdef RoiRegion < matlab.mixin.Copyable
             % no changes are made.
             %
             % Input Arguments:
-            %   - **parentFigure** — handle to the parent window used for dialog
+            %   - **parentFigure** - handle to the parent window used for dialog
             %     centering.  Can be an AppContainer handle, a uifigure
             %     handle, or *[]* for automatic placement.
             %
@@ -314,12 +314,12 @@ classdef RoiRegion < matlab.mixin.Copyable
             % indices of every ROI visible in the current orientation.
             %
             % Input Arguments:
-            %   - **labelStr** — char/string — the label to search for.
+            %   - **labelStr** - char/string - the label to search for.
             %     Use **'All'** to retrieve all ROIs for the current
             %     dataset orientation.
             %
             % Output Arguments:
-            %   - **index** — numeric vector — index (or indices) of matching ROI(s)
+            %   - **index** - numeric vector - index (or indices) of matching ROI(s)
             %     in the *obj.Data* array.  Empty if no match is found.
             %
             % Usage:
@@ -371,10 +371,10 @@ classdef RoiRegion < matlab.mixin.Copyable
             % entries shift forward).  Otherwise the entry is appended.
             %
             % Input Arguments:
-            %   - **newData** — struct — a single element whose fields match those
+            %   - **newData** - struct - a single element whose fields match those
             %     of *obj.Data* (*.label,* *.type,* *.X,* *.Y,*
             %     *.orientation,* *.BoundingBox).*
-            %   - **index** — *(optional)* numeric — position at which to store
+            %   - **index** - *(optional)* numeric - position at which to store
             %     the ROI.  Default is ``obj.getNumberOfROI(0) + 1``
             %     (append).
             %
@@ -435,7 +435,7 @@ classdef RoiRegion < matlab.mixin.Copyable
             % leaving an empty struct array.
             %
             % Input Arguments:
-            %   - **index** — *(optional)* numeric — index of the ROI to remove.
+            %   - **index** - *(optional)* numeric - index of the ROI to remove.
             %     Use **0** or omit to remove all ROIs.
             %
             % Output Arguments:
@@ -496,38 +496,38 @@ classdef RoiRegion < matlab.mixin.Copyable
             % and optionally returns the indices into ``obj.Data`` of the matching ROIs.
             %
             % Input Arguments:
-            %   - **orientation** — *(optional)* [numeric] filter ROIs by plane:
+            %   - **orientation** - *(optional)* [numeric] filter ROIs by plane:
             %
-            %     - ``1`` — ZX plane
-            %     - ``2`` — ZY plane
-            %     - ``3`` — YX plane (default in MIB3)
-            %     - ``0`` — all ROIs regardless of orientation
+            %     - ``1`` - ZX plane
+            %     - ``2`` - ZY plane
+            %     - ``3`` - YX plane (default in MIB3)
+            %     - ``0`` - all ROIs regardless of orientation
             %
             %     When omitted or empty, uses ``obj.mibDataset.orientation``.
             %
             % Output Arguments:
-            %   - **number** — [numeric] count of ROIs matching the filter
-            %   - **indices** — [numeric vector] indices into ``obj.Data`` of the matching ROIs
+            %   - **number** - [numeric] count of ROIs matching the filter
+            %   - **indices** - [numeric vector] indices into ``obj.Data`` of the matching ROIs
             %
-            % **Example 1** — get ROIs for the current orientation:
+            % **Example 1** - get ROIs for the current orientation:
             %
             %   .. code-block:: matlab
             %
             %       [number, indices] = obj.mibModel.I{obj.mibModel.id}.hROI.getNumberOfROI();
             %
-            % **Example 2** — get ROIs for the YX orientation:
+            % **Example 2** - get ROIs for the YX orientation:
             %
             %   .. code-block:: matlab
             %
             %       [number, indices] = obj.mibModel.I{obj.mibModel.id}.hROI.getNumberOfROI(3);
             %
-            % **Example 3** — get total count of all ROIs:
+            % **Example 3** - get total count of all ROIs:
             %
             %   .. code-block:: matlab
             %
             %       number = obj.mibModel.I{obj.mibModel.id}.hROI.getNumberOfROI(0);
             %
-            % **Example 4** — call within the class:
+            % **Example 4** - call within the class:
             %
             %   .. code-block:: matlab
             %
@@ -569,12 +569,12 @@ classdef RoiRegion < matlab.mixin.Copyable
             % be passed instead of a numeric index.
             %
             % Input Arguments:
-            %   - **index** — numeric or char/string — index of the ROI.
+            %   - **index** - numeric or char/string - index of the ROI.
             %     Use **0** to get a combined bounding box for all visible
             %     ROIs.  A label string (e.g. *'ROI* 1') is also accepted.
             %
             % Output Arguments:
-            %   - **bb** — numeric vector ``[xmin, xmax, ymin, ymax]``
+            %   - **bb** - numeric vector ``[xmin, xmax, ymin, ymax]``
             %
             % Usage:
             %   **Example 1**
@@ -647,21 +647,21 @@ classdef RoiRegion < matlab.mixin.Copyable
             % visible viewport.
             %
             % Input Arguments:
-            %   - **index** — numeric or char/string — ROI index.
+            %   - **index** - numeric or char/string - ROI index.
             %     Use **0** to combine masks of all ROIs visible in the
             %     current orientation.  A label string is also accepted.
-            %   - **Height** — *(optional)* numeric — height of the output mask.
+            %   - **Height** - *(optional)* numeric - height of the output mask.
             %     Default: image height from ``obj.mibDataset``.
-            %   - **Width** — *(optional)* numeric — width of the output mask.
+            %   - **Width** - *(optional)* numeric - width of the output mask.
             %     Default: image width from ``obj.mibDataset``.
-            %   - **orient** — *(optional)* numeric — orientation filter
+            %   - **orient** - *(optional)* numeric - orientation filter
             %     (1/2/3).  Default: ``obj.mibDataset.orientation``.
-            %   - **blockModeSwitch** — *(optional)* numeric — override the
+            %   - **blockModeSwitch** - *(optional)* numeric - override the
             %     block-mode flag (0 or 1).  Default: value from
             %     ``obj.mibDataset.blockModeSwitch``.
             %
             % Output Arguments:
-            %   - **mask** — uint8 matrix ``[Height x Width]`` — binary
+            %   - **mask** - uint8 matrix ``[Height x Width]`` - binary
             %     mask where 1 indicates pixels inside the ROI.
             %
             % Usage:
@@ -784,8 +784,8 @@ classdef RoiRegion < matlab.mixin.Copyable
             % values (3 = yx).
             %
             % Input Arguments:
-            %   - **resampledRatio** — numeric vector ``[ratioW, ratioH, ratioZ]``
-            %     — ratio of new/old dimensions after resampling.
+            %   - **resampledRatio** - numeric vector ``[ratioW, ratioH, ratioZ]``
+            %     - ratio of new/old dimensions after resampling.
             %     For example ``[0.5, 0.5, 1]`` bins XY by 2.
             %
             % Output Arguments:
@@ -863,28 +863,28 @@ classdef RoiRegion < matlab.mixin.Copyable
             % MIB3 (3 = yx) orientation values.
             %
             % Input Arguments:
-            %   - **cropF** — [numeric vector] crop parameters in pixels ``[x1, y1, dx, dy, z1, dz]``:
+            %   - **cropF** - [numeric vector] crop parameters in pixels ``[x1, y1, dx, dy, z1, dz]``:
             %
-            %     - ``cropF(1)`` — starting X coordinate
-            %     - ``cropF(2)`` — starting Y coordinate
-            %     - ``cropF(3)`` — width of the crop region
-            %     - ``cropF(4)`` — height of the crop region
-            %     - ``cropF(5)`` — starting Z slice
-            %     - ``cropF(6)`` — number of Z slices
+            %     - ``cropF(1)`` - starting X coordinate
+            %     - ``cropF(2)`` - starting Y coordinate
+            %     - ``cropF(3)`` - width of the crop region
+            %     - ``cropF(4)`` - height of the crop region
+            %     - ``cropF(5)`` - starting Z slice
+            %     - ``cropF(6)`` - number of Z slices
             %
-            % **Example 1** — define crop parameters:
+            % **Example 1** - define crop parameters:
             %
             %   .. code-block:: matlab
             %
             %       cropF = [100, 50, 200, 200, 1, 10];
             %
-            % **Example 2** — adjust ROI positions after crop:
+            % **Example 2** - adjust ROI positions after crop:
             %
             %   .. code-block:: matlab
             %
             %       obj.mibModel.I{obj.mibModel.id}.hROI.crop(cropF);
             %
-            % **Example 3** — call within the class:
+            % **Example 3** - call within the class:
             %
             %   .. code-block:: matlab
             %
@@ -934,28 +934,28 @@ classdef RoiRegion < matlab.mixin.Copyable
             % ``[Xaxes, Yaxes] = convertFcn(Xdata, Ydata);``
             %
             % Input Arguments:
-            %   - **axesHandle** — handle to the target *matlab.ui.control.UIAxes*
+            %   - **axesHandle** - handle to the target *matlab.ui.control.UIAxes*
             %     or *matlab.graphics.axis.Axes* where ROIs will be drawn.
-            %   - **mode** — char — rendering mode, either **'shown'** (default view)
+            %   - **mode** - char - rendering mode, either **'shown'** (default view)
             %     or **'full'** (used during panning).
-            %   - **orientation** — numeric — current dataset orientation
+            %   - **orientation** - numeric - current dataset orientation
             %     (3 = yx, 1 = zx, 2 = zy).  Only ROIs matching this
             %     orientation are plotted.
-            %   - **convertFcn** — function_handle — ``@(X,Y) ...``
+            %   - **convertFcn** - function_handle - ``@(X,Y) ...``
             %     that converts data coordinates to axes coordinates.
             %     Typically ``@(x,y) obj.mibModel.convertDataToMouseCoordinates(x, y, mode)``.
-            %   - **selectedROI** — *(optional)* numeric — controls which ROIs are drawn:
+            %   - **selectedROI** - *(optional)* numeric - controls which ROIs are drawn:
             %
-            %     - **0** — draw all ROIs matching the current orientation (default).
-            %     - **>0** — draw only the ROI at that index in *obj.Data.*
-            %   - **showLabel** — *(optional)* logical — whether to display ROI
+            %     - **0** - draw all ROIs matching the current orientation (default).
+            %     - **>0** - draw only the ROI at that index in *obj.Data.*
+            %   - **showLabel** - *(optional)* logical - whether to display ROI
             %     labels as text annotations next to each shape.
             %     Default = *false.*
             %
             % Output Arguments:
             %
             % Usage:
-            %   **Example 1** — Full example from controllers.MibController.showImage
+            %   **Example 1** - Full example from controllers.MibController.showImage
             %
             %   .. code-block:: matlab
             %
@@ -1109,7 +1109,7 @@ classdef RoiRegion < matlab.mixin.Copyable
             % Output Arguments:
             %
             % Usage:
-            %   **Example 1** — typical usage after loading an old .roi file
+            %   **Example 1** - typical usage after loading an old .roi file
             %
             %   .. code-block:: matlab
             %

@@ -8,19 +8,19 @@ function lutTable_ContextMenu(obj, menuEntry, selectedData)
 %
 %
 % Input Arguments:
-%   - **menuEntry** — [matlab.ui.container.Menu] pressed context menu entry
-%   - **selectedData** — [MenuSelectedData] menu event data; use ``.ContextObject`` to find source widget
+%   - **menuEntry** - [matlab.ui.container.Menu] pressed context menu entry
+%   - **selectedData** - [MenuSelectedData] menu event data; use ``.ContextObject`` to find source widget
 %
 % Available menu options (from `menuEntry.Tag`):
 %
-%   - ``'lutTableContextInsert'`` — insert an empty color channel
-%   - ``'lutTableContextCopy'`` — copy selected color channel to a new one
-%   - ``'lutTableContextInvert'`` — invert selected color channel
-%   - ``'lutTableContextRotate'`` — rotate selected color channel
-%   - ``'lutTableContextShift'`` — shift selected color channel
-%   - ``'lutTableContextSwap'`` — swap two color channels
-%   - ``'lutTableContextDelete'`` — delete selected color channel
-%   - ``'lutTableContextSetLUT'`` — select new color for selected color channel (LUT mode)
+%   - ``'lutTableContextInsert'`` - insert an empty color channel
+%   - ``'lutTableContextCopy'`` - copy selected color channel to a new one
+%   - ``'lutTableContextInvert'`` - invert selected color channel
+%   - ``'lutTableContextRotate'`` - rotate selected color channel
+%   - ``'lutTableContextShift'`` - shift selected color channel
+%   - ``'lutTableContextSwap'`` - swap two color channels
+%   - ``'lutTableContextDelete'`` - delete selected color channel
+%   - ``'lutTableContextSetLUT'`` - select new color for selected color channel (LUT mode)
 %
 
 arguments (Input)

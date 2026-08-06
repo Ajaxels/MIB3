@@ -1,5 +1,5 @@
 classdef MibBigDataImage < core.MibVirtualImage
-% MIBBIGDATAIMAGE - BigData image class for MIB3 — on-demand reader for pyramidal, chunked datasets.
+% MIBBIGDATAIMAGE - BigData image class for MIB3 - on-demand reader for pyramidal, chunked datasets.
 %
 % Subclass of ``core.MibVirtualImage``. It inherits the full on-demand
 % read machinery (``getData`` → ``getDataZarr`` / ``getDataVirt``,
@@ -7,7 +7,7 @@ classdef MibBigDataImage < core.MibVirtualImage
 % identity used by ``core.MibDataset`` (``datasetType = 'BigData'``).
 %
 % **Why a subclass of MibVirtualImage?**
-%   For browsing, BigData reads are identical to the Virtual zarr path —
+%   For browsing, BigData reads are identical to the Virtual zarr path -
 %   both stream sub-regions from a multi-resolution OME-Zarr v3 pyramid.
 %   What BigData adds on top (a disk-backed, writable, pyramidal
 %   segmentation model via ``io.adapters.ZarrBlockedAdapter``, copy-or-
@@ -37,13 +37,13 @@ classdef MibBigDataImage < core.MibVirtualImage
             % and export paths correctly.
             %
             % Input Arguments:
-            %   - **data** *(optional)* — [cell | empty] cell array of file path string(s)
+            %   - **data** *(optional)* - [cell | empty] cell array of file path string(s)
             %     to the zarr3 dataset, or ``[]`` for a placeholder object with no open store.
-            %   - **meta** *(optional)* — [dictionary] metadata dictionary produced by a
+            %   - **meta** *(optional)* - [dictionary] metadata dictionary produced by a
             %     setup loader (e.g. ``io.loaders.BioFormatsVirtualSetupLoader`` or
             %     ``io.loaders.Zarr3VirtualSetupLoader``).  Default: empty ``MibImage`` info.
             %
-            % **Example** — open a previously converted OME-Zarr pyramid as BigData:
+            % **Example** - open a previously converted OME-Zarr pyramid as BigData:
             %
             %   .. code-block:: matlab
             %

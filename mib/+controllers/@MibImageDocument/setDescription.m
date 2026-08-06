@@ -10,12 +10,12 @@ function setDescription(obj, description)
 % shows buffer number and filename information.
 %
 % Input Arguments:
-%   - **description** — [char] description text to display
+%   - **description** - [char] description text to display
 %
 % Output Arguments:
 %   (none)
 %
-% **Example** — set description with buffer number and filename:
+% **Example** - set description with buffer number and filename:
 %
 %   .. code-block:: matlab
 %

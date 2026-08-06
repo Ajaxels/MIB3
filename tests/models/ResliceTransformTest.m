@@ -2,10 +2,10 @@ classdef ResliceTransformTest < matlab.unittest.TestCase
 % RESLICETRANSFORMTEST - Unit tests for MibModel.resliceDataset and MibModel.transformDataset.
 %
 % Verification strategies:
-%   resliceDataset   — '1:2:end' of 8 slices yields depth = 4;
+%   resliceDataset   - '1:2:end' of 8 slices yields depth = 4;
 %                      '1:end' preserves depth; first surviving slice
 %                      content matches original slice 1
-%   transformDataset — double Flip horizontally is identity (round-trip);
+%   transformDataset - double Flip horizontally is identity (round-trip);
 %                      double Flip Z is identity; returns status = 1 on success
 
     methods (TestClassSetup)
@@ -68,7 +68,7 @@ classdef ResliceTransformTest < matlab.unittest.TestCase
         end
 
         % =================================================================
-        % transformDataset — Flip horizontally
+        % transformDataset - Flip horizontally
         % =================================================================
 
         function transformFlipH_doubleFlip_isIdentity(testCase)

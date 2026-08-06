@@ -10,18 +10,18 @@ function materialsTable_ContextMenu(obj, menuEntry, selectedData)
 % Supports material visualization, renaming, color selection, quantification, and unlinking.
 %
 % Input Arguments:
-%   - **menuEntry** — [matlab.ui.container.Menu] handle to the pressed context menu entry; operation identified via ``menuEntry.Tag``
-%   - **selectedData** — [matlab.ui.eventdata.MenuSelectedData] event data containing the table object (``selectedData.ContextObject``)
+%   - **menuEntry** - [matlab.ui.container.Menu] handle to the pressed context menu entry; operation identified via ``menuEntry.Tag``
+%   - **selectedData** - [matlab.ui.eventdata.MenuSelectedData] event data containing the table object (``selectedData.ContextObject``)
 %
 % Output Arguments:
 %   None
 %
 % **Supported menu operations (menuEntry.Tag):**
-%   - ``'materialsTableContextShowSelected'`` — show only the selected material in view
-%   - ``'materialsTableContextRename'`` — rename the selected material
-%   - ``'materialsTableContextSetColor'`` — open color picker to change material color
-%   - ``'materialsTableContextQuant'`` — open quantification dialog for selected material
-%   - ``'materialsTableContextUnlink'`` — unlink material from "Add to" reference material
+%   - ``'materialsTableContextShowSelected'`` - show only the selected material in view
+%   - ``'materialsTableContextRename'`` - rename the selected material
+%   - ``'materialsTableContextSetColor'`` - open color picker to change material color
+%   - ``'materialsTableContextQuant'`` - open quantification dialog for selected material
+%   - ``'materialsTableContextUnlink'`` - unlink material from "Add to" reference material
 %
 
 % arguments (Input)

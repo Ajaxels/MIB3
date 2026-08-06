@@ -82,7 +82,7 @@ classdef AlignmentBigDataTest < matlab.unittest.TestCase
             end
 
             % Material names/colours must survive in-session AND on disk (the
-            % aligned store is a NEW zarr3 — the mibMaterials attribute must be
+            % aligned store is a NEW zarr3 - the mibMaterials attribute must be
             % written so reopening the file keeps names/colours, not just the
             % swapped in-memory object).
             testCase.verifyEqual(d.labels.materialNames(:), {'a';'b';'c';'d';'e'});
@@ -178,7 +178,7 @@ classdef AlignmentBigDataTest < matlab.unittest.TestCase
 
         function landmarkSingleCroppedKeepsCanvas(testCase)
             % Single-landmark honours TransformationMode: cropped keeps the original
-            % canvas (extended grows it — see landmarkSingleTranslation).
+            % canvas (extended grows it - see landmarkSingleTranslation).
             [mibModel, ~, N, outPath] = testCase.buildBigData('shift', 'annotateSingle', true);
             testCase.runAlign(mibModel, testCase.batch('Single landmark point', 'cropped', outPath));
             d = mibModel.I{1};
@@ -200,7 +200,7 @@ classdef AlignmentBigDataTest < matlab.unittest.TestCase
 
         function driftSaveShiftsWritesLevel0File(testCase)
             % SaveShiftsToFile writes a .coefXY of LEVEL-0 shifts. The saved shifts
-            % must directly predict the (level-0) grown canvas — if they were the
+            % must directly predict the (level-0) grown canvas - if they were the
             % raw level-L analysis shifts, or double-scaled on the applied side, the
             % predicted canvas would not match. This locks save/load as level-0 so a
             % file saved here replays correctly on another dataset via loadShiftsCheck.

@@ -10,8 +10,8 @@ function listener_appStateChanged(obj, src, evtData)
 % At the moment used to catch selection of the figure-document in the Image View panel.
 %
 % Input Arguments:
-%   - **src** — ``matlab.ui.internal.FigureDocumentGroup`` handle to the document group
-%   - **evtData** — ``matlab.ui.container.internal.appcontainer.PropertyChangedEventData``;
+%   - **src** - ``matlab.ui.internal.FigureDocumentGroup`` handle to the document group
+%   - **evtData** - ``matlab.ui.container.internal.appcontainer.PropertyChangedEventData``;
 %     ``evtData.PropertyName`` identifies the changed property
 %
 % Output Arguments:

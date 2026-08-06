@@ -10,18 +10,18 @@ function hFig = plotAlignmentTransforms(kind, payload, titleStr)
 % (:func:`confirmDetectedTransforms`, :func:`previewConfirmLoadedShifts`).
 %
 % Input Arguments:
-%   - **kind** — [char] ``'shifts'`` (translation vectors) or ``'tforms'``
+%   - **kind** - [char] ``'shifts'`` (translation vectors) or ``'tforms'``
 %     (per-slice cumulative transforms).
-%   - **payload** — [struct]
+%   - **payload** - [struct]
 %
 %     - for ``'shifts'``: fields ``shiftX`` / ``shiftY`` (numeric vectors).
 %     - for ``'tforms'``: field ``tforms`` ({Nx1} cell of ``affinetform2d`` /
 %       ``affine2d`` / 3x3 matrices).
 %
-%   - **titleStr** — [char] plot title.
+%   - **titleStr** - [char] plot title.
 %
 % Output Arguments:
-%   - **hFig** — handle to the created figure.
+%   - **hFig** - handle to the created figure.
 
 hFig = figure('Name', 'Detected alignment displacements', 'NumberTitle', 'off');
 

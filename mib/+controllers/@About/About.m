@@ -41,12 +41,12 @@ classdef About < handle
         %      controller = controllers.About(mibModel, versionText)
         %
         % Input Arguments:
-        %   - **mibModel** — handle to the MibModel instance
-        %   - **versionText** — [char] full version string, e.g.
+        %   - **mibModel** - handle to the MibModel instance
+        %   - **versionText** - [char] full version string, e.g.
         %     ``'Microscopy Image Browser ver. 2025.12 / 05.12.2025'``
         %
         % Output Arguments:
-        %   - **controller** — handle to the constructed ``About`` controller
+        %   - **controller** - handle to the constructed ``About`` controller
 
             obj.mibModel = mibModel;
 

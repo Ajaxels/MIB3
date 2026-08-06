@@ -10,14 +10,14 @@ function correlateAtPoint(obj, stripPointXY)
 % pair-view strip back to tile-*i* pixels and runs
 % :func:`utils.stitch.localCorrelate` (ROI ``normxcorr2`` around the click,
 % searched in tile *j* near the current offset). A confident peak is applied
-% as a user fix — or, in the Fix-Z boundary view (both layers = the SAME tile
+% as a user fix - or, in the Fix-Z boundary view (both layers = the SAME tile
 % at slices z-1 / z), as the per-slice mosaic correction via
 % :meth:`applyZBoundaryFix`. A weak/ambiguous match only reports why and
 % never moves anything. ROI size and search radius come from
 % ``ROIsizeSpinner`` / ``SearchradiusSpinner`` when present (defaults 128 / 64 px).
 %
 % Input Arguments:
-%   - **stripPointXY** — [1x2 double] click ``[x y]`` in pair-view strip
+%   - **stripPointXY** - [1x2 double] click ``[x y]`` in pair-view strip
 %     coordinates (the rendered overlap region, pixel 1 = strip origin)
 %
 
@@ -71,7 +71,7 @@ elseif confident
     obj.applyUserFix([newOffsetYX, obj.fixDz(obj.currentEdgeIdx)], ...
         sprintf('click-correlate, NCC %.2f', score));
 else
-    obj.setStatus(sprintf(['No confident match at the click (%s, peak %.2f) — ' ...
+    obj.setStatus(sprintf(['No confident match at the click (%s, peak %.2f) - ' ...
         'offset unchanged. Try a more distinctive spot, a larger ROI, or a wider search.'], ...
         debugInfo.reason, score));
 end

@@ -17,7 +17,7 @@ function repositionDrawingROI(obj)
 % drawing object, keeping the ROI visually anchored to the same image pixels.
 %
 % Input Arguments:
-%   - **obj** — controllers.MibRoi
+%   - **obj** - controllers.MibRoi
 %
 %   Return values: none
 %
@@ -47,7 +47,7 @@ try
                 end
 
             case 'Ellipse'
-                % dp = [cx cy rx ry] – center and semi-axes in data pixels
+                % dp = [cx cy rx ry] - center and semi-axes in data pixels
                 cx = dp(1);  cy = dp(2);
                 rx = dp(3);  ry = dp(4);
                 % convert center
@@ -71,7 +71,7 @@ try
     if hasPlacement
         axH = obj.drawingROI.placementLine.Parent;
         obj.updatePlacementLine(axH);
-        % Delete stale rubber band and fill — recreated on next mouse move
+        % Delete stale rubber band and fill - recreated on next mouse move
         if ~isempty(obj.drawingROI.rubberBandLine) && isvalid(obj.drawingROI.rubberBandLine)
             delete(obj.drawingROI.rubberBandLine);
             obj.drawingROI.rubberBandLine = [];

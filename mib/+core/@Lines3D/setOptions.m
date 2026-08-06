@@ -7,7 +7,7 @@ function setOptions(obj, options)
 %       obj.setOptions(options)
 %
 % Input Arguments:
-%   - **options** — a structure with options to set
+%   - **options** - a structure with options to set
 %
 
 if nargin < 2; return; end

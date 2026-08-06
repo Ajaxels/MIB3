@@ -12,40 +12,40 @@ function [selection, dontShowAgain] = inputQuestDlg(ParentFigure, question, vara
 %      selection = inputQuestDlg(ParentFigure, question, dlgTitle, btn1, btn2, btn3)
 %      selection = inputQuestDlg(ParentFigure, question, dlgTitle, btn1, btn2, defaultBtn)
 %      selection = inputQuestDlg(ParentFigure, question, dlgTitle, btn1, btn2, btn3, defaultBtn)
-%      % extended form — options struct as last argument:
+%      % extended form - options struct as last argument:
 %      [selection, dontShowAgain] = inputQuestDlg(..., options)
 %
 % Input Arguments:
-%   - **ParentFigure** — handle to the parent window (AppContainer, uifigure, or ``[]``);
+%   - **ParentFigure** - handle to the parent window (AppContainer, uifigure, or ``[]``);
 %     used to center the dialog. Pass ``[]`` to use the cached handle from a prior call.
 %     In MIB pass ``obj.mibModel.getProgressBarParent()`` so the dialog follows the
 %     active dataset window when it is undocked.
 %     To supply the MIB installation path use ``options.mibPath``.
-%   - **question** — [char|string|cell] question text; when cell, lines are joined with ``\n``.
-%   - **options** *(optional)* — structure with the following fields:
+%   - **question** - [char|string|cell] question text; when cell, lines are joined with ``\n``.
+%   - **options** *(optional)* - structure with the following fields:
 %
-%     - ``.mibPath`` — [char] path to MIB installation folder (default: ``''``)
-%     - ``.WindowWidth`` — [numeric] dialog width in pixels (default: 420)
-%     - ``.WindowHeight`` — [numeric] dialog height in pixels (default: 160)
-%     - ``.WindowStyle`` — [char] ``'normal'`` or ``'modal'`` (default: ``'modal'``)
-%     - ``.Icon`` — [char]
+%     - ``.mibPath`` - [char] path to MIB installation folder (default: ``''``)
+%     - ``.WindowWidth`` - [numeric] dialog width in pixels (default: 420)
+%     - ``.WindowHeight`` - [numeric] dialog height in pixels (default: 160)
+%     - ``.WindowStyle`` - [char] ``'normal'`` or ``'modal'`` (default: ``'modal'``)
+%     - ``.Icon`` - [char]
 %     ``'puffin_question'`` (default), ``'puffin_warning'``,
 %           ``'puffin_info'``, ``'question_48px'``, ``'warning_48px'``, ``'celebrate'``, ``'call4help'``
-%     - ``.IconWidth`` — [numeric] icon column width in pixels (default: 48)
-%     - ``.ParentFigure`` — [handle] parent window used to centre the dialog (default: ``[]``)
-%     - ``.DefaultKey`` — [char] ``'default'`` or ``'cancel'``; controls which action the Enter key triggers (default: ``'default'``)
-%     - ``.FontSize`` — [numeric] question text font size (default: 14)
-%     - ``.ButtonFontSize`` — [numeric] button font size (default: 12)
-%     - ``.DoNotShowAgain`` — [logical] show a "Do not show again" checkbox (default: ``false``)
-%     - ``.DoNotShowAgainText`` — [char] checkbox label (default: ``'Do not show again'``)
-%     - ``.HelpUrl`` — [char] URL/.html (opened in the browser) or a base-workspace command;
+%     - ``.IconWidth`` - [numeric] icon column width in pixels (default: 48)
+%     - ``.ParentFigure`` - [handle] parent window used to centre the dialog (default: ``[]``)
+%     - ``.DefaultKey`` - [char] ``'default'`` or ``'cancel'``; controls which action the Enter key triggers (default: ``'default'``)
+%     - ``.FontSize`` - [numeric] question text font size (default: 14)
+%     - ``.ButtonFontSize`` - [numeric] button font size (default: 12)
+%     - ``.DoNotShowAgain`` - [logical] show a "Do not show again" checkbox (default: ``false``)
+%     - ``.DoNotShowAgainText`` - [char] checkbox label (default: ``'Do not show again'``)
+%     - ``.HelpUrl`` - [char] URL/.html (opened in the browser) or a base-workspace command;
 %           when provided a Help button is shown at the bottom-left (default: ``[]``)
-%     - ``.HelpBtnText`` — [char] Help button label (default: ``'Help'``)
+%     - ``.HelpBtnText`` - [char] Help button label (default: ``'Help'``)
 %
 % Output Arguments:
-%   - **selection** — [char] label of the pressed button; ``''`` when the dialog is
+%   - **selection** - [char] label of the pressed button; ``''`` when the dialog is
 %     closed or cancelled and no Cancel button exists.
-%   - **dontShowAgain** — [logical] state of the "Do not show again" checkbox
+%   - **dontShowAgain** - [logical] state of the "Do not show again" checkbox
 %     (``false`` when the checkbox is disabled or the dialog is cancelled).
 %
 % Usage example:
@@ -240,7 +240,7 @@ contentGrid.RowHeight     = {'1x'};
 contentGrid.Padding       = [0, 0, 0, 0];
 contentGrid.ColumnSpacing = 18;
 
-% Icon (uiimage with pre-composited alpha — no axes toolbar artifacts)
+% Icon (uiimage with pre-composited alpha - no axes toolbar artifacts)
 if ~isempty(iconImg)
     iconUI = uiimage(contentGrid, 'ImageSource', iconImg);
     iconUI.Layout.Row         = 1;
@@ -267,7 +267,7 @@ bottomGrid.ColumnWidth   = {helpBtnW, '1x', btnsTotalW};
 bottomGrid.Padding       = [0, 0, 0, 0];
 bottomGrid.ColumnSpacing = 8;
 
-% Help button (row 1, col 1) — shown only when options.HelpUrl is set
+% Help button (row 1, col 1) - shown only when options.HelpUrl is set
 if ~isempty(options.HelpUrl)
     helpBtn = uibutton(bottomGrid, 'push');
     helpBtn.Layout.Row      = 1;
@@ -319,7 +319,7 @@ fig.CloseRequestFcn   = @onClose;
 fig.Visible = 'on';
 drawnow;   % realize the figure before re-applying WindowStyle
 
-% Re-apply WindowStyle on the realized (visible) figure — setting it while a
+% Re-apply WindowStyle on the realized (visible) figure - setting it while a
 % cached figure is hidden does not take effect (notably in the deployed web
 % engine), so the dialog would otherwise come up non-modal on reuse.
 if strcmpi(options.WindowStyle, 'modal'); fig.WindowStyle = 'modal'; else; fig.WindowStyle = 'normal'; end
@@ -385,7 +385,7 @@ uiwait(fig);
             fig.Visible = 'off';
             uiresume(fig);
         else
-            % Temporary second instance (the cached shell was busy) —
+            % Temporary second instance (the cached shell was busy) -
             % deleting the figure also releases uiwait
             delete(fig);
         end

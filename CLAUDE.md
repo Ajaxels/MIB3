@@ -28,6 +28,24 @@ docblocks, tooltips and dialog text. Em dash `—` (U+2014) and en dash `–` (U
 render inconsistently in MATLAB tooltips and the compiled standalone app, and they are awkward to
 type and to search for. Write `Feather - weighted blend`, not `Feather — weighted blend`.
 
+**This is the rule that gets broken most often**, because an em dash is what a model reaches for
+when writing English prose and nothing in the editor flags it. Before finishing any task that
+touched `.m` files, run the check and fix what it reports:
+
+```bash
+# must return nothing - strings, comments and RST docblocks alike
+grep -rn --include=*.m "—\|–" . | grep -v "^./deployed/"
+```
+
+**Every `.m` file in the repo is dash-free**, RST docblocks included: the docblock parameter
+separator is a plain hyphen (`**name** - description`), and
+[`docs_api/CLAUDE.md`](docs_api/CLAUDE.md) / [`development/guides/docs_api_sphinx.md`](development/guides/docs_api_sphinx.md)
+were updated to match. Nothing in Sphinx parses that separator, so it is purely a glyph choice.
+
+`deployed/` is excluded because it is untracked build output, regenerated from `mib/` by
+`deploymentScript.m` - editing it there would be undone on the next build. The `.md` documentation
+under `docs/`, `docs_api/` and `development/` has **not** been swept and still contains em dashes.
+
 **Tooltips stay short; detail lives in `docs/`.** A widget tooltip is a reminder, not a manual: name
 each option and give the one fact that decides between them. Anything longer - trade-offs, measured
 numbers, failure modes - belongs in the matching `docs/docs/user-interface/...` page, which the

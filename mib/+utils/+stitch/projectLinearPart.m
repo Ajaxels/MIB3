@@ -11,18 +11,18 @@ function Lp = projectLinearPart(L, transformType, allowRotation)
 % symmetric stretch, SVD-based). This is the shared projection used by
 % :func:`utils.stitch.solveGlobalAffine` (per-tile, after the linear global
 % solve) and :func:`utils.stitch.featureShift` (per-edge, when the rotation
-% lock is on) — the ``R = I`` branch implements the ``AllowRotation = false``
+% lock is on) - the ``R = I`` branch implements the ``AllowRotation = false``
 % constraint (see ``development/stitching/plan_transforms.md``).
 %
 % Input Arguments:
-%   - **L** — [2x2 double] linear part of an affine transform.
-%   - **transformType** — [char] ``'Rigid'`` | ``'Similarity'`` | ``'Affine'``
+%   - **L** - [2x2 double] linear part of an affine transform.
+%   - **transformType** - [char] ``'Rigid'`` | ``'Similarity'`` | ``'Affine'``
 %     (case-insensitive).
-%   - **allowRotation** — [logical] ``false`` locks the rotation factor to
+%   - **allowRotation** - [logical] ``false`` locks the rotation factor to
 %     identity.
 %
 % Output Arguments:
-%   - **Lp** — [2x2 double] the projected linear part:
+%   - **Lp** - [2x2 double] the projected linear part:
 %
 %     - Rigid → ``R`` (or ``I`` when rotation is disallowed)
 %     - Similarity → ``s*R`` with ``s = trace(R'*L)/2``, the Frobenius-optimal
@@ -30,7 +30,7 @@ function Lp = projectLinearPart(L, transformType, allowRotation)
 %     - Affine → ``L`` unchanged when rotation is allowed; the symmetric
 %       stretch part ``P`` (scale/shear, no rotation) when disallowed.
 %
-% **Example** — strip the rotation out of a fitted linear part:
+% **Example** - strip the rotation out of a fitted linear part:
 %
 %   .. code-block:: matlab
 %

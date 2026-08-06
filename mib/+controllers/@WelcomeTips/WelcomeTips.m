@@ -15,7 +15,7 @@
 % Date: 25.04.2023
 
 classdef WelcomeTips < handle
-% WELCOMETIPS - Controller for the Welcome Tips dialog — displays tips at startup.
+% WELCOMETIPS - Controller for the Welcome Tips dialog - displays tips at startup.
 %
 % Syntax:
 %   .. code-block:: matlab
@@ -88,7 +88,7 @@ classdef WelcomeTips < handle
             %
             %       obj.closeWindow()
             %
-            % **Example** — close the tips window:
+            % **Example** - close the tips window:
             %
             %   .. code-block:: matlab
             %
@@ -125,7 +125,7 @@ classdef WelcomeTips < handle
             %
             %       obj.updateWidgets()
             %
-            % **Example** — refresh the tips display:
+            % **Example** - refresh the tips display:
             %
             %   .. code-block:: matlab
             %

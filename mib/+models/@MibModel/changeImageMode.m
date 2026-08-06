@@ -12,24 +12,24 @@ function status = changeImageMode(obj, BatchOptIn)
 % ``core.MibImage.convertImage``.  Fully batch-compatible.
 %
 % Input Arguments:
-%   - **BatchOptIn** — *(optional)* structure for batch processing mode; when ``NaN``,
+%   - **BatchOptIn** - *(optional)* structure for batch processing mode; when ``NaN``,
 %     returns default options via the ``SyncBatch`` event
 %
-%     - ``.Target`` — cell string, ``{'Grayscale'}`` with allowed values
+%     - ``.Target`` - cell string, ``{'Grayscale'}`` with allowed values
 %       ``{'Grayscale','Multi-channel','HSV color','Indexed','8 bit','16 bit','32 bit'}``
-%     - ``.showWaitbar`` — logical, show or not the progress dialog
-%     - ``.id`` — *(optional)* dataset index 1–9, default = ``obj.getActiveId()``
+%     - ``.showWaitbar`` - logical, show or not the progress dialog
+%     - ``.id`` - *(optional)* dataset index 1-9, default = ``obj.getActiveId()``
 %
 % Output Arguments:
-%   - **status** — ``1`` on success, ``0`` on failure or user cancel
+%   - **status** - ``1`` on success, ``0`` on failure or user cancel
 %
-% **Example 1** — convert current dataset to grayscale
+% **Example 1** - convert current dataset to grayscale
 %
 %   .. code-block:: matlab
 %
 %      obj.mibModel.changeImageMode();
 %
-% **Example 2** — cast to 8-bit via batch call
+% **Example 2** - cast to 8-bit via batch call
 %
 %   .. code-block:: matlab
 %
@@ -37,7 +37,7 @@ function status = changeImageMode(obj, BatchOptIn)
 %      BatchOpt.showWaitbar = false;
 %      obj.mibModel.changeImageMode(BatchOpt);
 %
-% **Example 3** — return default BatchOpt to the Batch Processing editor
+% **Example 3** - return default BatchOpt to the Batch Processing editor
 %
 %   .. code-block:: matlab
 %

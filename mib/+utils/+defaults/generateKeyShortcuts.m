@@ -7,11 +7,11 @@ function KeyShortcuts = generateKeyShortcuts()
 %      KeyShortcuts = generateKeyShortcuts()
 %
 % Output Arguments:
-%   - **KeyShortcuts** — structure with default keyboard shortcut bindings used by MIB
+%   - **KeyShortcuts** - structure with default keyboard shortcut bindings used by MIB
 %
 % Usage:
 %
-%   **Example 1** — generate default key shortcuts
+%   **Example 1** - generate default key shortcuts
 %
 %   .. code-block:: matlab
 %

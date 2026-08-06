@@ -12,24 +12,24 @@ function segmentationObjectPicker(obj, yxzCoordinate, modifier)
 % Mask within Selection (AND operation).
 %
 % Input Arguments:
-%   - **yxzCoordinate** — [vector] ``[y, x, z]`` coordinates of starting point;
+%   - **yxzCoordinate** - [vector] ``[y, x, z]`` coordinates of starting point;
 %     ``[y, x]`` is sufficient for 2D case
-%   - **modifier** — [char] specify action with generated selection:
+%   - **modifier** - [char] specify action with generated selection:
 %
-%     - ``''`` — make new selection (add to existing)
-%     - ``'control'`` — remove selection from existing
-%     - ``'shift'`` — used for 3D mode in Mask within Selection; returns union of mask and selection
+%     - ``''`` - make new selection (add to existing)
+%     - ``'control'`` - remove selection from existing
+%     - ``'shift'`` - used for 3D mode in Mask within Selection; returns union of mask and selection
 %
 % Output Arguments:
 %   (none)
 %
-% **Example 1** — select object at [y,x,z]=50,75,1:
+% **Example 1** - select object at [y,x,z]=50,75,1:
 %
 %   .. code-block:: matlab
 %
 %      obj.segmentationObjectPicker([50, 75, 1], '');
 %
-% **Example 2** — subtract object from selection:
+% **Example 2** - subtract object from selection:
 %
 %   .. code-block:: matlab
 %
@@ -46,7 +46,7 @@ id = obj.mibModel.getActiveId();
 
 % Object Picker is not supported for BigData datasets. Its sub-modes rely on
 % whole-volume object statistics held in memory (maskStats) and on
-% getPixelIdxList/setPixelIdxList, which index the in-memory model array — empty
+% getPixelIdxList/setPixelIdxList, which index the in-memory model array - empty
 % for a disk-backed BigData model. The ROI/Click paths also mix full-res click
 % coordinates with display-resolution reads. Guard it with a clear message until
 % an out-of-core implementation is available.
@@ -141,7 +141,7 @@ switch subTool
 
                 % limit to the selected material of the model
                 if obj.mibModel.I{id}.restrictSelectionToMaterial && strcmp(type, 'mask')
-                    % placeholder — not implemented in MIB2 either
+                    % placeholder - not implemented in MIB2 either
                 end
                 % limit selection to the masked area
                 if obj.mibModel.I{id}.restrictSelectionToMask && obj.mibModel.I{id}.maskExist && strcmp(type, 'labels')
@@ -266,7 +266,7 @@ switch subTool
         end
 
     case 'Mask within Selection'
-        % AND the mask/model with current selection — handle fully here and return
+        % AND the mask/model with current selection - handle fully here and return
         options.id = id;
         useVolume = switch3d || (iscell(modifier) && any(strcmp(modifier, 'shift'))) || (ischar(modifier) && strcmp(modifier, 'shift'));
         if useVolume
@@ -357,11 +357,11 @@ function [selected_mask, cancelled] = drawROIAndCreateMask(obj, subTool)
 %   function [selected_mask, cancelled] = drawROIAndCreateMask(obj, subTool)
 %
 % Input Arguments:
-%   - **subTool** — char, one of 'Lasso', 'Rectangle', 'Ellipse', 'Polyline'
+%   - **subTool** - char, one of 'Lasso', 'Rectangle', 'Ellipse', 'Polyline'
 %
 % Output Arguments:
-%   - **selected_mask** — uint8 binary mask (size of displayed image)
-%   - **cancelled** — logical, true if the user cancelled
+%   - **selected_mask** - uint8 binary mask (size of displayed image)
+%   - **cancelled** - logical, true if the user cancelled
 %
 
 cancelled = true;

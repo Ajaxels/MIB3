@@ -12,7 +12,7 @@ classdef LayerMoveFastPathTest < matlab.unittest.TestCase
 %
 % Each method operates in-place across the full 4-D array.
 %
-% Strategy: for each direction, test the 'replace' action — it overwrites
+% Strategy: for each direction, test the 'replace' action - it overwrites
 % the target layer entirely with the source, giving a deterministic result.
 % Additional tests cover 'add' (union) and 'remove' (subtraction) for the
 % two most common directions.

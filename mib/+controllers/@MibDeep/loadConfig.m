@@ -7,7 +7,7 @@ function loadConfig(obj, configName)
 %       obj.loadConfig(configName)
 %
 % Input Arguments:
-%   - **configName** — full filename for the config file to load
+%   - **configName** - full filename for the config file to load
 %
 
 if nargin < 2

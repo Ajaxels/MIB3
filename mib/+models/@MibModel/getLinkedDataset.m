@@ -10,14 +10,14 @@ function partnerId = getLinkedDataset(obj, id)
 % pairs) for a row that contains *id* and returns the other column value.
 %
 % Input Arguments:
-%   - **id** — (1,1) double, global dataset ID to look up
+%   - **id** - (1,1) double, global dataset ID to look up
 %
 % Output Arguments:
-%   - **partnerId** — scalar double with the partner's global ID, or [] if id is not
+%   - **partnerId** - scalar double with the partner's global ID, or [] if id is not
 %     part of any linked pair
 %
 % Usage:
-%   **Example 1** — look up the linked partner for dataset 3
+%   **Example 1** - look up the linked partner for dataset 3
 %
 %   .. code-block:: matlab
 %

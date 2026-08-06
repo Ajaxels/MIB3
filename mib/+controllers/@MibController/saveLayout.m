@@ -8,17 +8,17 @@ function outputPath = saveLayout(obj, mode)
 %      outputPath = obj.saveLayout(mode)
 %
 % Input Arguments:
-%   - **mode** — *(optional)* char, default: ``'localDefault'``
+%   - **mode** - *(optional)* char, default: ``'localDefault'``
 %
-%     - ``'localDefault'`` — save to ``utils.getPrefDir/mibDefaultLayout.json``
-%     - ``'custom'`` — save to ``utils.getPrefDir`` using a custom name
-%     - ``'globalDefault'`` — overwrite the bundled default in ``MIB/assets/defaultLayout.json``
+%     - ``'localDefault'`` - save to ``utils.getPrefDir/mibDefaultLayout.json``
+%     - ``'custom'`` - save to ``utils.getPrefDir`` using a custom name
+%     - ``'globalDefault'`` - overwrite the bundled default in ``MIB/assets/defaultLayout.json``
 %
 % Output Arguments:
-%   - **outputPath** — char with the full path to the saved layout JSON file;
+%   - **outputPath** - char with the full path to the saved layout JSON file;
 %     the file can be restored with ``loadLayout``
 %
-% **Example** — save the current layout as the local default:
+% **Example** - save the current layout as the local default:
 %
 %   .. code-block:: matlab
 %

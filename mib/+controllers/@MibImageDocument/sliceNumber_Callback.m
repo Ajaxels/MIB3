@@ -9,19 +9,19 @@ function sliceNumber_Callback(obj, parameter, BatchOptIn)
 %      obj.sliceNumber_Callback(parameter, BatchOptIn)
 %
 % Input Arguments:
-%   - **parameter** *(optional)* — [numeric] slice number; when provided:
+%   - **parameter** *(optional)* - [numeric] slice number; when provided:
 %
-%     - ``0`` — set dataset to last slice (also used as callback for ``handles.lastSlice``)
-%     - ``1`` — set dataset to first slice (also used as callback for ``handles.firstSlice``)
-%     - other numeric value — slice number to display
+%     - ``0`` - set dataset to last slice (also used as callback for ``handles.lastSlice``)
+%     - ``1`` - set dataset to first slice (also used as callback for ``handles.firstSlice``)
+%     - other numeric value - slice number to display
 %
-%   - **BatchOptIn** *(optional)* — [struct|NaN] batch processing control
+%   - **BatchOptIn** *(optional)* - [struct|NaN] batch processing control
 %     When ``NaN``, returns structure with default options via ``'SyncBatch'`` event:
 %
-%     - ``.SliceNumber`` — [char] slice number to show (use ``'0'`` for last slice)
-%     - ``.mibBatchSectionName`` — [char] UI section label: ``'Panel -> Image view'``
-%     - ``.mibBatchActionName`` — [char] batch action label: ``'Change slice number'``
-%     - ``.mibBatchTooltip`` — [struct] tooltips for each field
+%     - ``.SliceNumber`` - [char] slice number to show (use ``'0'`` for last slice)
+%     - ``.mibBatchSectionName`` - [char] UI section label: ``'Panel -> Image view'``
+%     - ``.mibBatchActionName`` - [char] batch action label: ``'Change slice number'``
+%     - ``.mibBatchTooltip`` - [struct] tooltips for each field
 %
 % Output Arguments:
 %   (none)

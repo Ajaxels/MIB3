@@ -7,8 +7,8 @@ function model_Callbacks(obj, hWidget, hData)
 %       obj.model_Callbacks(hWidget, hData)
 %
 % Input Arguments:
-%   - **hWidget** — handle to the pressed widget
-%   - **hData** — handle to supporting EventData class
+%   - **hWidget** - handle to the pressed widget
+%   - **hData** - handle to supporting EventData class
 %
 
 arguments (Input)
@@ -53,7 +53,7 @@ switch mode
     case 'Import model from another MIB dataset'    % obj.handles.ribbonModel.importFromMIB
         obj.mibModel.importDatasetFromMib('model');
     case 'Import model from Zarr2/3'    % obj.handles.ribbonModel.importFromZarr
-        % Zarr v2/v3 model stores are FOLDERS, not files — loadModel's GUI file
+        % Zarr v2/v3 model stores are FOLDERS, not files - loadModel's GUI file
         % browser (mibUiGetFile) can't select those, so browse for a folder here
         % and hand it to loadModel via BatchOpt.Filenames (bypasses the browser).
         id = obj.mibModel.getActiveId();
@@ -111,15 +111,15 @@ switch mode
             if isvalid(wb); delete(wb); end
             utils.dlgs.showErrorDialog(parentFig, ME.message, 'Export model to Zarr3 failed');
         end
-    case sprintf('Save\nmodel')                                  % obj.handles.ribbonModel.save — save using existing filename
+    case sprintf('Save\nmodel')                                  % obj.handles.ribbonModel.save - save using existing filename
         activeId = obj.mibModel.getActiveId();
         if strcmp(obj.mibModel.I{activeId}.datasetType, 'BigData')
             % BigData model lives on disk as a pyramid; pixel edits are written live.
             % Offer two ways to persist, since full finalization can be lengthy:
-            %   Finalize & save — materialize every resolution level (consistent at all
+            %   Finalize & save - materialize every resolution level (consistent at all
             %                     zooms; needed for export / external readers). Slow on
             %                     a large slide.
-            %   Save sidecar    — write only the small level-map side-file (fast). A
+            %   Save sidecar    - write only the small level-map side-file (fast). A
             %                     crash-safety checkpoint: the level map is the only
             %                     volatile state, so persisting it lets a reopen rebuild
             %                     the deferred finer levels correctly.
@@ -128,10 +128,10 @@ switch mode
                 'HelpUrl', 'https://mib.helsinki.fi/help/main3/getting-started/dataset-types/index.html');
             answer = utils.dlgs.inputQuestDlg(obj.mibModel.getProgressBarParent(), ...
                 sprintf(['How would you like to save the BigData model?\n\n' ...
-                '• Finalize & save — materialize every resolution level so the model is ' ...
+                '• Finalize & save - materialize every resolution level so the model is ' ...
                 'consistent at all zooms (needed for export and external readers). On a ' ...
                 'large slide this can take a while.\n\n' ...
-                '• Save sidecar — quickly write only the level-map file. Edits are already ' ...
+                '• Save sidecar - quickly write only the level-map file. Edits are already ' ...
                 'on disk; this is a fast crash-safety checkpoint so a reopen restores the ' ...
                 'model precisely without re-materializing.']), ...
                 'Save model', 'Finalize & save', 'Save sidecar', 'Cancel', 'Save sidecar', questOpt);
@@ -146,7 +146,7 @@ switch mode
             return;
         end
         if isempty(obj.mibModel.I{activeId}.labels.filename)
-            obj.mibModel.saveLabels([]);   % no filename yet — show Save As dialog
+            obj.mibModel.saveLabels([]);   % no filename yet - show Save As dialog
         else
             % confirm before overwriting the existing model file;
             % Save always writes the internal *.model format, so show the
@@ -165,7 +165,7 @@ switch mode
                     return;
             end
         end
-    case sprintf('Save\nmodel as...')            % obj.handles.ribbonModel.saveAs — save with dialog
+    case sprintf('Save\nmodel as...')            % obj.handles.ribbonModel.saveAs - save with dialog
         obj.mibModel.saveLabels([]);
 
     %% -------------- Materials section --------------

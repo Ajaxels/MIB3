@@ -8,8 +8,8 @@ function img = Filter(obj, img, batchModeSwitch)
 %       img = obj.Filter(img)     % applies filter to supplied image (used by preview/thumbnail)
 %
 % Input Arguments:
-%   - **img** — *(optional)* image to filter; when empty the filter reads/writes via MibModel
-%   - **batchModeSwitch** — *(optional)* ``1`` in batch mode (skips reading parameters from GUI)
+%   - **img** - *(optional)* image to filter; when empty the filter reads/writes via MibModel
+%   - **batchModeSwitch** - *(optional)* ``1`` in batch mode (skips reading parameters from GUI)
 
 if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.ImageFilters.Filter: triggered\n');
@@ -17,7 +17,7 @@ end
 if nargin < 3; batchModeSwitch = 0; end
 if nargin < 2; img = []; end
 
-% build BatchOptOut — merge filter-specific parameters into a flat struct
+% build BatchOptOut - merge filter-specific parameters into a flat struct
 BatchOptOut = obj.BatchOpt;
 
 if batchModeSwitch == 0     % GUI mode: read current filter parameters

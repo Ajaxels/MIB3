@@ -8,18 +8,18 @@ function fontSizeUpdate(hFig, Font)
 %      fontSizeUpdate(hFig, Font)
 %
 % Input Arguments:
-%   - **hFig** — handle to the figure whose widgets should be updated
-%   - **Font** — struct with font settings:
+%   - **hFig** - handle to the figure whose widgets should be updated
+%   - **Font** - struct with font settings:
 %
-%     - ``.FontName``   — [char] font name (e.g. ``'Arial'``)
-%     - ``.FontWeight`` — [char] ``'normal'`` or ``'bold'``
-%     - ``.FontAngle``  — [char] ``'normal'`` or ``'italic'``
-%     - ``.FontUnits``  — [char] units string (e.g. ``'points'``)
-%     - ``.FontSize``   — [numeric] font size in the given units
+%     - ``.FontName``   - [char] font name (e.g. ``'Arial'``)
+%     - ``.FontWeight`` - [char] ``'normal'`` or ``'bold'``
+%     - ``.FontAngle``  - [char] ``'normal'`` or ``'italic'``
+%     - ``.FontUnits``  - [char] units string (e.g. ``'points'``)
+%     - ``.FontSize``   - [numeric] font size in the given units
 %
 % Usage:
 %
-%   **Example 1** — update font from a child controller when font preferences change
+%   **Example 1** - update font from a child controller when font preferences change
 %
 %   .. code-block:: matlab
 %
@@ -106,8 +106,8 @@ function processChildren(h, Font)
 %   function processChildren(h, Font)
 %
 % Input Arguments:
-%   - **h** — handle to a child
-%   - **Font** — - structure with font settings, possible fields
+%   - **h** - handle to a child
+%   - **Font** - - structure with font settings, possible fields
 %     .FontName 'Arial'
 %     .FontWeight 'normal'
 %     .FontAngle 'normal'

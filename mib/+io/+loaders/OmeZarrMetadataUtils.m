@@ -11,7 +11,7 @@ classdef OmeZarrMetadataUtils
 %
 % Things that genuinely differ per zarr version (root-metadata file detection,
 % per-level array metadata file format/location, dtype-string convention) are
-% NOT here — they stay local to each version-specific loader.
+% NOT here - they stay local to each version-specific loader.
 
 methods (Static)
     function ms = extractMultiscales(attrs)
@@ -90,19 +90,19 @@ methods (Static)
         % Missing leading axes (t, c) default to 1.0.
         %
         % Input Arguments:
-        %   - **ct** — coordinateTransformations value from zarr metadata;
+        %   - **ct** - coordinateTransformations value from zarr metadata;
         %     may be a struct array or cell array of transform objects
-        %   - **nAxes** — [numeric] number of axes declared in multiscales.axes
+        %   - **nAxes** - [numeric] number of axes declared in multiscales.axes
         %     (equals the length of the desired output vector)
         %
         % Output Arguments:
-        %   - **scales** — [1 x nAxes numeric] vector in axisLabels order;
+        %   - **scales** - [1 x nAxes numeric] vector in axisLabels order;
         %     for ``'tczyx'`` (nAxes=5): index 1=t, 2=c, 3=z, 4=y, 5=x
         %
         % Alignment rule when CT provides fewer values than nAxes:
         % In OME-Zarr, non-spatial axes (t, c) come BEFORE spatial axes
         % (z, y, x) and typically have scale=1. So a 3-element CT scale
-        % [0.03, 0.13, 0.13] for a 'tczyx' dataset means [z, y, x] — the
+        % [0.03, 0.13, 0.13] for a 'tczyx' dataset means [z, y, x] - the
         % values belong at the END of the output vector:
         %   scales = [1, 1, 0.03, 0.13, 0.13]
         % This is why values are right-aligned, not left-aligned.
@@ -143,7 +143,7 @@ methods (Static)
                 % Exact match: values are already in axisLabels order
                 scales = sc;
             elseif nSc < nAxes
-                % Fewer CT values than axes — right-align so spatial axes
+                % Fewer CT values than axes - right-align so spatial axes
                 % (z, y, x at the end) receive the physical scale values.
                 % Non-spatial leading axes (t, c) remain 1.0.
                 scales(end - nSc + 1 : end) = sc;
@@ -284,7 +284,7 @@ methods (Static)
 
     function [names, colors] = resolveMaterialMetadata(attrs)
         % RESOLVEMATERIALMETADATA - Resolve model material names/colors from an
-        % already-parsed zarr attributes struct (version-agnostic — the caller
+        % already-parsed zarr attributes struct (version-agnostic - the caller
         % is responsible for reading/merging the actual root+level attrs, since
         % that differs between v2 (``.zattrs`` file per group/array) and v3
         % (``zarr.json``'s nested ``attributes`` key)).
@@ -303,16 +303,16 @@ methods (Static)
         %      pairs) and ``properties`` (label-value/name pairs). MATLAB's
         %      ``jsondecode`` sanitises hyphenated JSON keys into underscores
         %      (``image-label`` -> ``image_label``, ``label-value`` ->
-        %      ``label_value``) — both spellings are checked defensively.
+        %      ``label_value``) - both spellings are checked defensively.
         %
         % Input Arguments:
-        %   - **attrs** — [struct] parsed zarr attributes (root group and/or
+        %   - **attrs** - [struct] parsed zarr attributes (root group and/or
         %     array level, already merged by the caller if both apply).
         %
         % Output Arguments:
-        %   - **names** — {1 x N cell} material name strings, or ``{}`` if neither
+        %   - **names** - {1 x N cell} material name strings, or ``{}`` if neither
         %     convention is present (callers then fall back to auto-generated names).
-        %   - **colors** — [N x 3 numeric] RGB colors in ``[0,1]``, or ``[]``.
+        %   - **colors** - [N x 3 numeric] RGB colors in ``[0,1]``, or ``[]``.
 
         names  = {};
         colors = [];
@@ -399,13 +399,13 @@ methods (Static)
         % required [y, x, z, c, t] order.
         %
         % Input Arguments:
-        %   - **axisOrder** — [char] zarr C-order axis declaration,
+        %   - **axisOrder** - [char] zarr C-order axis declaration,
         %     e.g. ``'czyx'`` or ``'tczyx'``
         %
         % Output Arguments:
-        %   - **perm** — [1x5 numeric] permutation for ``permute(raw, perm)`` → [y,x,z,c,t]
+        %   - **perm** - [1x5 numeric] permutation for ``permute(raw, perm)`` → [y,x,z,c,t]
         %
-        % **Example** — permutation for common axis orders:
+        % **Example** - permutation for common axis orders:
         %
         %   .. code-block:: matlab
         %

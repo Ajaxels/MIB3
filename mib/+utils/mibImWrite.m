@@ -11,19 +11,19 @@ function result = mibImWrite(img, filename, parameters)
 %       result = utils.mibImWrite(img, filename, parameters)
 %
 % Parameters:
-%   **img** — image array [height, width, colors]
+%   **img** - image array [height, width, colors]
 %
-%   **filename** — destination filename (extension determines format)
+%   **filename** - destination filename (extension determines format)
 %
-%   **parameters** *(optional)* — structure whose field names and values are
+%   **parameters** *(optional)* - structure whose field names and values are
 %       passed as name-value pairs to ``imwrite``. For example:
 %
-%       - ``.Compression`` — ``'lzw'``, ``'none'``, etc. (TIF)
-%       - ``.Quality`` — numeric 0–100 (JPG)
-%       - ``.BitDepth`` — numeric bit depth (PNG)
+%       - ``.Compression`` - ``'lzw'``, ``'none'``, etc. (TIF)
+%       - ``.Quality`` - numeric 0-100 (JPG)
+%       - ``.BitDepth`` - numeric bit depth (PNG)
 %
 % Return values:
-%   **result** — ``1`` on success, ``0`` on failure
+%   **result** - ``1`` on success, ``0`` on failure
 
 result = 0; %#ok<NASGU>
 [~, ~, ext] = fileparts(filename);

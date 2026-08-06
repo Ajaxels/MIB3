@@ -14,15 +14,15 @@ function connImaris = renderModelImaris(mibDataset, connImaris, options)
 %      connImaris = io.imaris.renderModelImaris(mibDataset, connImaris, options)
 %
 % Input Arguments:
-%   - **mibDataset** — instance of ``core.MibDataset`` with the model to render
-%   - **connImaris** — *(optional)* handle to an existing Imaris connection
-%   - **options** — *(optional)* struct with additional settings:
+%   - **mibDataset** - instance of ``core.MibDataset`` with the model to render
+%   - **connImaris** - *(optional)* handle to an existing Imaris connection
+%   - **options** - *(optional)* struct with additional settings:
 %
-%     - ``.materialIndex`` — [integer] index of material to render; ``0`` = all materials (default: ``0``)
-%     - ``.mibGUI`` — *(optional)* handle to the main MIB UIFigure for modal dialogs
+%     - ``.materialIndex`` - [integer] index of material to render; ``0`` = all materials (default: ``0``)
+%     - ``.mibGUI`` - *(optional)* handle to the main MIB UIFigure for modal dialogs
 %
 % Output Arguments:
-%   - **connImaris** — handle to the Imaris connection
+%   - **connImaris** - handle to the Imaris connection
 %
 % .. note::
 %    Uses IceImarisConnector bindings. Requires:
@@ -30,7 +30,7 @@ function connImaris = renderModelImaris(mibDataset, connImaris, options)
 %    1. Set system environment variable ``IMARISPATH`` to the Imaris installation directory
 %    2. Restart MATLAB
 %
-% **Example** — render all model materials as Imaris surfaces:
+% **Example** - render all model materials as Imaris surfaces:
 %
 %   .. code-block:: matlab
 %

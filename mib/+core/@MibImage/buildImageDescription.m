@@ -24,17 +24,17 @@ function str = buildImageDescription(bb, actionLog)
 % result contains only the joined log entries (or '' if both are empty).
 %
 % Input Arguments:
-%   - **bb** — (1×6 double) bounding box ``[xmin xmax ymin ymax zmin zmax]``.
+%   - **bb** - (1×6 double) bounding box ``[xmin xmax ymin ymax zmin zmax]``.
 %     Pass ``[]`` to omit the BoundingBox prefix.
-%   - **actionLog** — (1×N cell of char) per-operation log strings.
+%   - **actionLog** - (1×N cell of char) per-operation log strings.
 %     Pass ``{}`` or ``[]`` to produce a string with no log section.
 %
 % Output Arguments:
-%   - **str** — (char) the reconstructed ImageDescription string, ready to be
+%   - **str** - (char) the reconstructed ImageDescription string, ready to be
 %     written to a file or stored in a metadata struct.
 %
 % Usage:
-%   **Example 1** — Full round-trip: split then rebuild
+%   **Example 1** - Full round-trip: split then rebuild
 %
 %   .. code-block:: matlab
 %
@@ -49,7 +49,7 @@ function str = buildImageDescription(bb, actionLog)
 %       rebuilt = core.MibImage.buildImageDescription(bb, log);
 %       % rebuilt -> 'BoundingBox 0.000000 6.760000 0.000000 4.823000 0.000000 2.220000 |MIB...'
 %
-%   **Example 2** — From a MibImage object in MibImage.save()
+%   **Example 2** - From a MibImage object in MibImage.save()
 %
 %   .. code-block:: matlab
 %
@@ -58,7 +58,7 @@ function str = buildImageDescription(bb, actionLog)
 %           obj.boundingBox, obj.actionLog);
 %       metadata.boundingBox = obj.boundingBox;
 %
-%   **Example 3** — Mask save in MibDataset.saveImage()
+%   **Example 3** - Mask save in MibDataset.saveImage()
 %
 %   .. code-block:: matlab
 %
@@ -66,7 +66,7 @@ function str = buildImageDescription(bb, actionLog)
 %       metadata.imageDescription = core.MibImage.buildImageDescription( ...
 %           obj.image.boundingBox, obj.image.actionLog);
 %
-%   **Example 4** — BoundingBox only, no log
+%   **Example 4** - BoundingBox only, no log
 %
 %   .. code-block:: matlab
 %
@@ -75,7 +75,7 @@ function str = buildImageDescription(bb, actionLog)
 %       str = core.MibImage.buildImageDescription(bb, {});
 %       % str -> 'BoundingBox 0.000000 511.500000 0.000000 511.500000 0.000000 49.500000'
 %
-%   **Example 5** — Log only, no spatial calibration
+%   **Example 5** - Log only, no spatial calibration
 %
 %   .. code-block:: matlab
 %
@@ -83,7 +83,7 @@ function str = buildImageDescription(bb, actionLog)
 %       str = core.MibImage.buildImageDescription([], {'ImageJ=1.52p', 'unit=um'});
 %       % str -> 'ImageJ=1.52p|unit=um'
 %
-%   **Example 6** — Append a new log entry to a MibImage in-place
+%   **Example 6** - Append a new log entry to a MibImage in-place
 %
 %   .. code-block:: matlab
 %

@@ -21,20 +21,20 @@ function connImaris = mibSetImarisSurface(surface, connImaris, options)
 %   function connImaris = mibSetImarisSurface(surface, connImaris, options)
 %
 % Input Arguments:
-%   - **surface** — a structure with fields:
+%   - **surface** - a structure with fields:
 %
-%     - ``.vertices`` — coordinates of vertices ``[Nx3]``
-%     - ``.faces`` — indices of vertices for each face/triangle
-%     - ``.normals`` — matrix with normals ``[Nx3]``
+%     - ``.vertices`` - coordinates of vertices ``[Nx3]``
+%     - ``.faces`` - indices of vertices for each face/triangle
+%     - ``.normals`` - matrix with normals ``[Nx3]``
 %
-%   - **connImaris** — *(optional)* a handle to Imaris connection
-%   - **options** — *(optional)* structure with additional settings:
+%   - **connImaris** - *(optional)* a handle to Imaris connection
+%   - **options** - *(optional)* structure with additional settings:
 %
-%     - ``.color`` — *(optional)* ``[R G B A]`` vector (1x4, range 0..1)
-%     - ``.name`` — (char) name of the object
+%     - ``.color`` - *(optional)* ``[R G B A]`` vector (1x4, range 0..1)
+%     - ``.name`` - (char) name of the object
 %
 % Output Arguments:
-%   - **connImaris** — a handle to Imaris connection
+%   - **connImaris** - a handle to Imaris connection
 %
 % Usage:
 %   **Example 1**

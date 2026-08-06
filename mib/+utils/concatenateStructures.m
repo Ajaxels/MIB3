@@ -8,15 +8,15 @@ function primaryStruct = concatenateStructures(primaryStruct, secondaryStruct)
 %      primaryStruct = concatenateStructures(primaryStruct, secondaryStruct)
 %
 % Input Arguments:
-%   - **primaryStruct** — primary structure that should be updated
-%   - **secondaryStruct** — secondary structure that should be concatenated into the primary structure
+%   - **primaryStruct** - primary structure that should be updated
+%   - **secondaryStruct** - secondary structure that should be concatenated into the primary structure
 %
 % Output Arguments:
-%   - **primaryStruct** — updated primary structure
+%   - **primaryStruct** - updated primary structure
 %
 % Usage:
 %
-%   **Example 1** — update preferences structure from a saved session
+%   **Example 1** - update preferences structure from a saved session
 %
 %   .. code-block:: matlab
 %

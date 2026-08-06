@@ -8,12 +8,12 @@ function widgetHandles = addRibbonModel(obj, lazyInit)
 %      widgetHandles = obj.addRibbonModel(lazyInit)
 %
 % Input Arguments:
-%   - **lazyInit** *(optional)* — [logical] when ``true``, only a placeholder is
+%   - **lazyInit** *(optional)* - [logical] when ``true``, only a placeholder is
 %     initialized; full rendering occurs on first tab activation via
 %     ``MibController.globalTabGroup_SelectionCallback`` (default: ``false``)
 %
 % Output Arguments:
-%   - **widgetHandles** — [struct] handles to the Model ribbon section widgets
+%   - **widgetHandles** - [struct] handles to the Model ribbon section widgets
 %
 
 arguments (Input)

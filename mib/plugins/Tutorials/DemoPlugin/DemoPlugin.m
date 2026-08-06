@@ -34,10 +34,10 @@ classdef DemoPlugin < handle
 %      value back into BatchOpt.  Both are called via standardised hooks.
 %
 %   3. THREE CALLING MODES (see constructor for details)
-%      • Interactive — normal GUI mode launched from the Plugins ribbon
-%      • Headless    — run without a GUI when a BatchOpt struct is passed
+%      • Interactive - normal GUI mode launched from the Plugins ribbon
+%      • Headless    - run without a GUI when a BatchOpt struct is passed
 %                      as the 3rd constructor argument (macro replay)
-%      • Query       — NaN as 3rd argument returns default settings to the
+%      • Query       - NaN as 3rd argument returns default settings to the
 %                      batch controller without performing any work
 %
 %   4. PROGRESS REPORTING
@@ -54,12 +54,12 @@ classdef DemoPlugin < handle
 %   % Interactive GUI mode (via Plugins ribbon):
 %   utils.startController(parentObj, 'DemoPlugin');
 %
-%   % Batch / headless mode (BatchOpt provided — e.g. from macro replay):
+%   % Batch / headless mode (BatchOpt provided - e.g. from macro replay):
 %   BatchOpt.Parameter = 'hello';
 %   BatchOpt.Checkbox  = false;
 %   DemoPlugin(mibModel, parentObj, BatchOpt);
 %
-%   % Query mode — return default BatchOpt without executing:
+%   % Query mode - return default BatchOpt without executing:
 %   DemoPlugin(mibModel, parentObj, NaN);
 % @endcode
 %
@@ -73,8 +73,8 @@ classdef DemoPlugin < handle
         % Handle to the central MibModel instance.
         view
         % core.ChildView wrapper for the AppDesigner GUI.
-        %   obj.view.gui           — uifigure handle
-        %   obj.view.handles.<Tag> — individual widget handles
+        %   obj.view.gui           - uifigure handle
+        %   obj.view.handles.<Tag> - individual widget handles
         % In headless / batch mode this property is [] (never assigned).
         listener
         % Cell array of event listener handles.  Deleted in closeWindow()
@@ -94,7 +94,7 @@ classdef DemoPlugin < handle
         %  uieditfield     scalar string / char
         %  uicheckbox      logical (true / false)
         %  uidropdown      {selectedString, {'opt1','opt2',...}}
-        %                    element 2 is optional — omit to keep items
+        %                    element 2 is optional - omit to keep items
         %  uibuttongroup   {selectedRadioTag, {'Tag1','Tag2',...}}
         %                    element 2 is metadata only (not pushed to GUI)
         %  uispinner       {value, [min max], 'on'/'off'}
@@ -124,7 +124,7 @@ classdef DemoPlugin < handle
         % is a static method MATLAB does not count it as a strong
         % handle reference, allowing normal garbage collection.
         %
-        % Only acts when the GUI is actually open — the isempty(obj.view)
+        % Only acts when the GUI is actually open - the isempty(obj.view)
         % guard makes this a no-op in headless / batch mode.
             if isempty(obj.view); return; end   % no GUI in batch mode
             switch evnt.EventName
@@ -140,22 +140,22 @@ classdef DemoPlugin < handle
 
         % =================================================================
         function obj = DemoPlugin(mibModel, varargin)
-        % DemoPlugin  Constructor — initialise the controller.
+        % DemoPlugin  Constructor - initialise the controller.
         %
         % Parameters:
         % mibModel: handle to MibModel
         % varargin{1}: parent controller object (passed by utils.startController;
         %              not used in this plugin but must be accepted)
         % varargin{2}: [@em optional]
-        %   • struct   — BatchOpt for headless / batch mode
-        %   • NaN      — query mode: send default BatchOpt via SyncBatch
-        %   • (absent) — interactive GUI mode
+        %   • struct   - BatchOpt for headless / batch mode
+        %   • NaN      - query mode: send default BatchOpt via SyncBatch
+        %   • (absent) - interactive GUI mode
 
             obj.mibModel = mibModel;
             obj.view     = [];  % stays [] in batch / headless mode
 
             % ---------------------------------------------------------
-            % STEP 1 — Define BatchOpt defaults.
+            % STEP 1 - Define BatchOpt defaults.
             %
             % These values are used as the starting state for the GUI AND
             % as defaults when batch mode is called with a partial BatchOpt
@@ -196,14 +196,14 @@ classdef DemoPlugin < handle
             % Show/hide progress dialog (uicheckbox, Tag = 'showWaitbar')
             obj.BatchOpt.showWaitbar = true;
 
-            % Active dataset index — NOT a widget field.
+            % Active dataset index - NOT a widget field.
             % Refreshed in updateWidgets() and at the top of Calculate().
             % Stripped from BatchOpt before macro recording (returnBatchOpt)
             % because the index is session-specific.
             obj.BatchOpt.id = obj.mibModel.getActiveId();
 
             % ---------------------------------------------------------
-            % STEP 2 — Batch registration metadata.
+            % STEP 2 - Batch registration metadata.
             %
             % mibBatchSectionName : category in the batch GUI menu
             % mibBatchActionName  : label for this specific action
@@ -219,13 +219,13 @@ classdef DemoPlugin < handle
 
             obj.BatchOpt.mibBatchTooltip.Parameter        = 'Text or numeric string';
             obj.BatchOpt.mibBatchTooltip.Checkbox         = 'Logical flag (true / false)';
-            obj.BatchOpt.mibBatchTooltip.Dropdown         = 'Dropdown — pass a cell with the selected item string';
-            obj.BatchOpt.mibBatchTooltip.RadioButtonGroup = 'Radio button group — pass a cell with the selected radio Tag';
-            obj.BatchOpt.mibBatchTooltip.ParameterNumeric = 'Numeric value — pass a cell {value, [min max], roundFlag}';
+            obj.BatchOpt.mibBatchTooltip.Dropdown         = 'Dropdown - pass a cell with the selected item string';
+            obj.BatchOpt.mibBatchTooltip.RadioButtonGroup = 'Radio button group - pass a cell with the selected radio Tag';
+            obj.BatchOpt.mibBatchTooltip.ParameterNumeric = 'Numeric value - pass a cell {value, [min max], roundFlag}';
             obj.BatchOpt.mibBatchTooltip.showWaitbar      = 'Show or suppress the progress dialog';
 
             % ---------------------------------------------------------
-            % STEP 3 — Batch / headless execution branch.
+            % STEP 3 - Batch / headless execution branch.
             %
             % utils.startController calls the constructor as:
             %   DemoPlugin(mibModel)                            interactive
@@ -238,7 +238,7 @@ classdef DemoPlugin < handle
                 BatchOptIn = varargin{2};
                 if ~isstruct(BatchOptIn)
                     if isscalar(BatchOptIn) && isnan(BatchOptIn)
-                        % Query mode — advertise parameters without running.
+                        % Query mode - advertise parameters without running.
                         obj.returnBatchOpt();
                     else
                         utils.dlgs.showErrorDialog([], ...
@@ -262,7 +262,7 @@ classdef DemoPlugin < handle
             end
 
             % ---------------------------------------------------------
-            % STEP 4 — Interactive GUI mode.
+            % STEP 4 - Interactive GUI mode.
             % ---------------------------------------------------------
 
             % core.ChildView(controller, appClassName) does three things:
@@ -331,7 +331,7 @@ classdef DemoPlugin < handle
             % 1. Close child controllers in reverse order.
             for i = numel(obj.childControllers):-1:1
                 child = obj.childControllers{i};
-                % isvalid() errors on non-handle types (e.g. []) — always
+                % isvalid() errors on non-handle types (e.g. []) - always
                 % guard with isa() first.
                 if isa(child, 'handle') && isvalid(child)
                     child.closeWindow();
@@ -403,7 +403,7 @@ classdef DemoPlugin < handle
         % BatchOpt field to update (using event.Source.Tag).
         %
         % Parameters:
-        % event: AppDesigner event — event.Source is the changed widget
+        % event: AppDesigner event - event.Source is the changed widget
 
             obj.BatchOpt = utils.updateBatchOptFromGUI_Shared( ...
                 obj.BatchOpt, event.Source);
@@ -432,7 +432,7 @@ classdef DemoPlugin < handle
 
             if nargin < 2; BatchOptOut = obj.BatchOpt; end
 
-            % Strip the 'id' field — the active-dataset index is
+            % Strip the 'id' field - the active-dataset index is
             % session-specific and meaningless when replaying in a
             % different session with a different file order.
             if isfield(BatchOptOut, 'id')
@@ -447,7 +447,7 @@ classdef DemoPlugin < handle
 
         % =================================================================
         function Calculate(obj)
-        % Calculate  Main action — demonstrates BatchOpt round-tripping.
+        % Calculate  Main action - demonstrates BatchOpt round-tripping.
         %
         % In a real plugin this is where the image processing would happen.
         % Here we just read every BatchOpt value and display them in the

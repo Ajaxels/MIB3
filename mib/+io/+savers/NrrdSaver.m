@@ -2,8 +2,8 @@ classdef NrrdSaver < io.savers.BaseSaver
 % NRRDSAVER - Saver for NRRD (Nearly Raw Raster Data) format output.
 %
 % Handles two format variants:
-% 'NRRD Data Format (``*.nrrd``)'      — standard NRRD volume
-% 'NRRD for 3D Slicer (``*.nrrd``)'   — NRRD with 3D Slicer-compatible
+% 'NRRD Data Format (``*.nrrd``)'      - standard NRRD volume
+% 'NRRD for 3D Slicer (``*.nrrd``)'   - NRRD with 3D Slicer-compatible
 % metadata (RAS space, voxel-to-world transform, etc.)
 %
 % Both image and label/mask volumes can be saved.  The layer type is
@@ -16,7 +16,7 @@ classdef NrrdSaver < io.savers.BaseSaver
 %
 % DATA DIMENSIONS
 % Input  data : [H, W, D, C, T]  (MIB3 native order)
-% bitmap2nrrd() expects [H, W, D] — obtained by squeezing the first
+% bitmap2nrrd() expects [H, W, D] - obtained by squeezing the first
 % channel and time point.
 %
 % BOUNDING BOX
@@ -26,8 +26,8 @@ classdef NrrdSaver < io.savers.BaseSaver
 %
 % FILENAME GENERATOR
 % options.FilenameGenerator controls how the output file is named:
-% 'Use sequential filename' (default) — numbered naming
-% 'Use original filename'             — derived from metadata.sliceName
+% 'Use sequential filename' (default) - numbered naming
+% 'Use original filename'             - derived from metadata.sliceName
 %
 % TODO: port bitmap2nrrd from
 % MIB2_RENAMED_FOR_MIB3/ImportExportTools/nrrd/bitmap2nrrd.m
@@ -97,11 +97,11 @@ classdef NrrdSaver < io.savers.BaseSaver
             %      saver = io.savers.NrrdSaver(options)
             %
             % Input Arguments:
-            %   - **options** — *(optional)* struct, saver-level options (usually empty;
+            %   - **options** - *(optional)* struct, saver-level options (usually empty;
             %     per-save options are passed to ``save()`` instead)
             %
             % Output Arguments:
-            %   - **obj** — instance of the NrrdSaver class
+            %   - **obj** - instance of the NrrdSaver class
             %
             if nargin < 1; options = struct(); end
             obj.Options = options;
@@ -120,7 +120,7 @@ classdef NrrdSaver < io.savers.BaseSaver
             %   (none)
             %
             % Output Arguments:
-            %   - **formats** — cell array of format strings for NRRD output
+            %   - **formats** - cell array of format strings for NRRD output
             %
             formats = { ...
                 'NRRD Data Format (*.nrrd)'; ...
@@ -140,30 +140,30 @@ classdef NrrdSaver < io.savers.BaseSaver
             % time point (T=1) is used for time-series data.
             %
             % Input Arguments:
-            %   - **data** — [H, W, D, C, T] numeric array
-            %   - **metadata** — struct with fields:
+            %   - **data** - [H, W, D, C, T] numeric array
+            %   - **metadata** - struct with fields:
             %
-            %     - ``colorType`` — ``'grayscale'`` | ``'multichannel'`` | ``'indexed'``
-            %     - ``dataClass`` — ``'uint8'`` | ``'uint16'`` | ...
-            %     - ``maxInt`` — maximum intensity value
-            %     - ``pixSize`` — struct {``.x``, ``.y``, ``.z``, ``.units``, ``.t``, ``.tunits``}
-            %     - ``boundingBox`` — [xmin xmax ymin ymax zmin zmax]; default: ``zeros(1,6)``
-            %     - ``sliceName`` — *(optional)* per-slice source filenames
+            %     - ``colorType`` - ``'grayscale'`` | ``'multichannel'`` | ``'indexed'``
+            %     - ``dataClass`` - ``'uint8'`` | ``'uint16'`` | ...
+            %     - ``maxInt`` - maximum intensity value
+            %     - ``pixSize`` - struct {``.x``, ``.y``, ``.z``, ``.units``, ``.t``, ``.tunits``}
+            %     - ``boundingBox`` - [xmin xmax ymin ymax zmin zmax]; default: ``zeros(1,6)``
+            %     - ``sliceName`` - *(optional)* per-slice source filenames
             %
-            %   - **filename** — full output path, e.g. ``'/out/stack.nrrd'``
-            %   - **options** — struct with fields:
+            %   - **filename** - full output path, e.g. ``'/out/stack.nrrd'``
+            %   - **options** - struct with fields:
             %
-            %     - ``Format`` — format string (``'NRRD Data Format (*.nrrd)'`` or ``'NRRD for 3D Slicer (*.nrrd)'``)
-            %     - ``layerType`` — ``'image'`` | ``'mask'`` | ``'labels'``; default: ``'image'``
-            %     - ``showWaitbar`` — logical; default: ``true``
-            %     - ``silent`` — logical, suppress dialogs; default: ``false``
-            %     - ``overwrite`` — logical; default: ``true``
-            %     - ``FilenameGenerator`` — ``'Use original filename'`` | ``'Use sequential filename'``
+            %     - ``Format`` - format string (``'NRRD Data Format (*.nrrd)'`` or ``'NRRD for 3D Slicer (*.nrrd)'``)
+            %     - ``layerType`` - ``'image'`` | ``'mask'`` | ``'labels'``; default: ``'image'``
+            %     - ``showWaitbar`` - logical; default: ``true``
+            %     - ``silent`` - logical, suppress dialogs; default: ``false``
+            %     - ``overwrite`` - logical; default: ``true``
+            %     - ``FilenameGenerator`` - ``'Use original filename'`` | ``'Use sequential filename'``
             %
             % Output Arguments:
-            %   - **fnOut** — [char] path of saved ``.nrrd`` file, ``[]`` on failure
+            %   - **fnOut** - [char] path of saved ``.nrrd`` file, ``[]`` on failure
             %
-            % **Example** — see class-level documentation above.
+            % **Example** - see class-level documentation above.
             %
 
             fnOut = [];

@@ -11,23 +11,23 @@ function highlightSelection(obj, object_list, mode, sliceNumbers)
 % slice.  For 3D datasets the entire PixelIdxList is written at once.
 %
 % Input Arguments:
-%   - **object_list** — [numeric] vector of object indices into obj.STATS
-%   - **mode** *(optional)* — [char] highlight action (default: read from obj.view.handles.selectionModePanel.SelectedObject.Text):
+%   - **object_list** - [numeric] vector of object indices into obj.STATS
+%   - **mode** *(optional)* - [char] highlight action (default: read from obj.view.handles.selectionModePanel.SelectedObject.Text):
 %
-%     - ``'Add'`` — add objects to existing selection
-%     - ``'Remove'`` — remove objects from existing selection
-%     - ``'Replace'`` — replace selection with these objects
-%     - ``'obj2model'`` — assign each object as a separate model material (replaces the current model; shows a confirmation dialog first)
+%     - ``'Add'`` - add objects to existing selection
+%     - ``'Remove'`` - remove objects from existing selection
+%     - ``'Replace'`` - replace selection with these objects
+%     - ``'obj2model'`` - assign each object as a separate model material (replaces the current model; shows a confirmation dialog first)
 %
-%   - **sliceNumbers** *(optional)* — [numeric] vector of slice indices, one per object; used to restrict data reading to the relevant slice in 3D datasets
+%   - **sliceNumbers** *(optional)* - [numeric] vector of slice indices, one per object; used to restrict data reading to the relevant slice in 3D datasets
 %
-% **Example 1** — add objects to selection:
+% **Example 1** - add objects to selection:
 %
 %   .. code-block:: matlab
 %
 %      obj.highlightSelection([3, 7], 'Add');
 %
-% **Example 2** — replace selection:
+% **Example 2** - replace selection:
 %
 %   .. code-block:: matlab
 %

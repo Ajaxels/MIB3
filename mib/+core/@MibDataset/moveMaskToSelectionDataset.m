@@ -11,15 +11,15 @@ function moveMaskToSelectionDataset(obj, action_type, options)
 % performance.
 %
 % Input Arguments:
-%   - **action_type** — a type of the desired action
+%   - **action_type** - a type of the desired action
 %   - 'add' - add mask to selection
 %   - 'remove' - remove mask from selection
 %   - 'replace' - replace selection with mask
-%   - **options** — a structure with additional parameters
+%   - **options** - a structure with additional parameters
 %
-%     - ``.contSelIndex`` — index of the Select from material
-%     - ``.contAddIndex`` — index of the Add to material
-%     - ``.selected_sw`` — [0/1] limit actions to the selected material only%
+%     - ``.contSelIndex`` - index of the Select from material
+%     - ``.contAddIndex`` - index of the Add to material
+%     - ``.selected_sw`` - [0/1] limit actions to the selected material only%
 % Output Arguments:
 %
 % Usage:
@@ -48,7 +48,7 @@ if ~isfield(options, 'selected_sw'); options.selected_sw = obj.restrictSelection
 % swap contSelIndex and contAddIndex when selecting mask with fix selection to material
 if options.selected_sw && options.contSelIndex == -1
     if options.contAddIndex == -1
-        options.selected_sw = 0;    % Mask/Mask selected — disable
+        options.selected_sw = 0;    % Mask/Mask selected - disable
     else
         options.contSelIndex = options.contAddIndex;
     end

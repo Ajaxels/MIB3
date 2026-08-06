@@ -24,30 +24,30 @@ function labelMap = segmentImageInstancesIoUMerge(img, net, options)
 % in it (a few tens of pixels in practice).
 %
 % Input Arguments:
-%   - **img** — ``[height, width, 3] uint8`` image to segment (RGB, native resolution)
-%   - **net** — trained ``solov2`` detector
-%   - **options** — structure of parameters:
+%   - **img** - ``[height, width, 3] uint8`` image to segment (RGB, native resolution)
+%   - **net** - trained ``solov2`` detector
+%   - **options** - structure of parameters:
 %
-%     - ``.coreSize`` — ``[h, w]`` tile core size (grid stride), as used by the
+%     - ``.coreSize`` - ``[h, w]`` tile core size (grid stride), as used by the
 %       centroid-in-core mode
-%     - ``.borderSize`` — ``[h, w]`` border (overlap) added on each side of the core;
+%     - ``.borderSize`` - ``[h, w]`` border (overlap) added on each side of the core;
 %       neighbouring tile extents share a band of ``2*borderSize`` pixels
-%     - ``.threshold`` — confidence threshold for ``segmentObjects``
-%     - ``.executionEnvironment`` — ``'auto'`` | ``'gpu'`` | ``'cpu'``
-%     - ``.iouThreshold`` — *(optional, default 0.5)* link two detections when their
+%     - ``.threshold`` - confidence threshold for ``segmentObjects``
+%     - ``.executionEnvironment`` - ``'auto'`` | ``'gpu'`` | ``'cpu'``
+%     - ``.iouThreshold`` - *(optional, default 0.5)* link two detections when their
 %       in-band IoU exceeds this
-%     - ``.ioaThreshold`` — *(optional, default 0.8)* link when the in-band intersection
+%     - ``.ioaThreshold`` - *(optional, default 0.8)* link when the in-band intersection
 %       over the smaller in-band area exceeds this (catches a truncated fragment fully
 %       contained in the neighbour's complete mask)
-%     - ``.minOverlapPixels`` — *(optional, default 5)* absolute minimum in-band
+%     - ``.minOverlapPixels`` - *(optional, default 5)* absolute minimum in-band
 %       intersection to consider a link, guards against spurious 1-2 px overlaps
-%     - ``.segmentFcn`` — *(optional)* ``[masks, labels, scores] = fcn(tileImg)`` override
+%     - ``.segmentFcn`` - *(optional)* ``[masks, labels, scores] = fcn(tileImg)`` override
 %       of the ``segmentObjects`` call, used by unit tests to validate the stitching
 %       without a trained network
 %
 % Output Arguments:
-%   - **labelMap** — ``[height, width] uint32`` instance label map (background 0); IDs are
-%     one per merged group but not guaranteed contiguous after overlap-conflict painting —
+%   - **labelMap** - ``[height, width] uint32`` instance label map (background 0); IDs are
+%     one per merged group but not guaranteed contiguous after overlap-conflict painting -
 %     the caller is expected to relabel to 1..N (as startPredictionInstances does)
 
 % Updates

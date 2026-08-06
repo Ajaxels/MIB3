@@ -7,25 +7,25 @@ function result = saveXMLheader(filename, options)
 %      result = io.HDF5.saveXMLheader(filename, options)
 %
 % Input Arguments:
-%   - **filename** — name of the file: myfile.xml
-%   - **options** — a structure with parameters:
+%   - **filename** - name of the file: myfile.xml
+%   - **options** - a structure with parameters:
 %
-%     - ``.Format`` — (char) template for storing data; ``'bdv.hdf5'`` | ``'ilastik.hdf5'`` | ``'matlab.hdf5'``
-%     - ``.height`` — height of the dataset
-%     - ``.width`` — width of the dataset
-%     - ``.colors`` — number of color channels in the dataset
-%     - ``.depth`` — number of z-stacks
-%     - ``.time`` — number of time points
-%     - ``.pixSize`` — struct with pixel size fields ``.x``, ``.y``, ``.z``, ``.units``
-%     - ``.lutColor`` — *(optional)* matrix with color channel definitions ``[1:colorChannel, R G B]`` (0-1)
-%     - ``.ImageDescription`` — *(optional)* string with description of the dataset
-%     - ``.DatasetName`` — *(optional)* name of the dataset in the H5 file (not used with Big Data Viewer)
-%     - ``.ModelMaterialNames`` — *(optional)* cell array with names of materials
+%     - ``.Format`` - (char) template for storing data; ``'bdv.hdf5'`` | ``'ilastik.hdf5'`` | ``'matlab.hdf5'``
+%     - ``.height`` - height of the dataset
+%     - ``.width`` - width of the dataset
+%     - ``.colors`` - number of color channels in the dataset
+%     - ``.depth`` - number of z-stacks
+%     - ``.time`` - number of time points
+%     - ``.pixSize`` - struct with pixel size fields ``.x``, ``.y``, ``.z``, ``.units``
+%     - ``.lutColor`` - *(optional)* matrix with color channel definitions ``[1:colorChannel, R G B]`` (0-1)
+%     - ``.ImageDescription`` - *(optional)* string with description of the dataset
+%     - ``.DatasetName`` - *(optional)* name of the dataset in the H5 file (not used with Big Data Viewer)
+%     - ``.ModelMaterialNames`` - *(optional)* cell array with names of materials
 %
 % Output Arguments:
-%   - **result** — ``1`` = success, ``0`` = failure
+%   - **result** - ``1`` = success, ``0`` = failure
 %
-% **Example** — save XML header for a BigDataViewer HDF5 file:
+% **Example** - save XML header for a BigDataViewer HDF5 file:
 %
 %   .. code-block:: matlab
 %

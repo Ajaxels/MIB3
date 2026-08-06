@@ -15,10 +15,10 @@ function initialImage = initialImage(mibModel, dataset, cacheName, layerName, ti
 % **before** the first click, because every run overwrites what the previous
 % one produced:
 %
-%   - ``'initialImageAddTo'`` — the destination layer; merging with its current
+%   - ``'initialImageAddTo'`` - the destination layer; merging with its current
 %     state instead would keep the discarded parts of the previous run and make
 %     the negative seeds useless
-%   - ``'initialImageSelected'`` — the "fix selection to material" mask; using
+%   - ``'initialImageSelected'`` - the "fix selection to material" mask; using
 %     its current state instead would exclude the area already taken by the
 %     object itself (the first click moved those pixels out of the restricting
 %     material), so every second click would erase the object and the next one
@@ -34,36 +34,36 @@ function initialImage = initialImage(mibModel, dataset, cacheName, layerName, ti
 % pre-interaction state over the wider area.
 %
 % Input Arguments:
-%   - **mibModel** — [models.MibModel] the model, keeps the caches in ``sessionSettings``
-%   - **dataset** — [core.MibDataset] dataset that is being segmented
-%   - **cacheName** — [char] name of the cached field:
+%   - **mibModel** - [models.MibModel] the model, keeps the caches in ``sessionSettings``
+%   - **dataset** - [core.MibDataset] dataset that is being segmented
+%   - **cacheName** - [char] name of the cached field:
 %     ``'initialImageAddTo'`` or ``'initialImageSelected'``
-%   - **layerName** — [char] layer to fetch: ``'selection'``, ``'mask'`` or ``'labels'``
-%   - **timePoint** — [numeric] index of the time point to fetch
-%   - **materialIndex** — [numeric] index of the material to fetch
-%   - **getDataOptions** — struct with options for :func:`models.MibModel.getData3D`;
+%   - **layerName** - [char] layer to fetch: ``'selection'``, ``'mask'`` or ``'labels'``
+%   - **timePoint** - [numeric] index of the time point to fetch
+%   - **materialIndex** - [numeric] index of the material to fetch
+%   - **getDataOptions** - struct with options for :func:`models.MibModel.getData3D`;
 %     ``.blockModeSwitch`` and ``.z`` are set by this function
-%   - **zRange** — [numeric] ``[zMin, zMax]`` range of slices of the current run
-%   - **targetSize** *(optional)* — [numeric] size of the segmentation result the
+%   - **zRange** - [numeric] ``[zMin, zMax]`` range of slices of the current run
+%   - **targetSize** *(optional)* - [numeric] size of the segmentation result the
 %     returned image has to be combined with; the image is cropped or zero-padded
 %     to it. Guards against the one-pixel differences between the image and the
 %     model blocks of the pyramidal datasets
 %
 % Output Arguments:
-%   - **initialImage** — [uint8] the requested layer as it was before the current
+%   - **initialImage** - [uint8] the requested layer as it was before the current
 %     SAM interaction started, cropped to the shown block over **zRange**,
 %     ``[height, width, depth]``
 %
 % Usage:
 %
-%   **Example 1** — merge the results of the current run with the initial state
+%   **Example 1** - merge the results of the current run with the initial state
 %
 %   .. code-block:: matlab
 %
 %      initialImage = utils.sam.initialImage(obj.mibModel, dataset, 'initialImageAddTo', 'labels', t, selMaterialIndex, getDataOpt, [z1 z2], size(imgDataset));
 %      obj.mibModel.setData3D({bitor(initialImage, imgDataset)}, 'labels', t, dataset.orientation, selMaterialIndex, getDataOpt);
 %
-%   **Example 2** — restrict the results to the selected material
+%   **Example 2** - restrict the results to the selected material
 %
 %   .. code-block:: matlab
 %
@@ -102,7 +102,7 @@ else
 
     % Grow the cache to the wider block. The part that has just been fetched has
     % not been touched by this interaction yet, so it is the initial state of the
-    % new area; without storing it, the next click would fetch it again — but by
+    % new area; without storing it, the next click would fetch it again - but by
     % then it would already contain the result of the current run.
     % Only growing blocks are stored: a smaller block (a zoom in, or the
     % slice-by-slice loop of the 'Interactive' method) would throw the rest of
@@ -121,11 +121,11 @@ function isSuperset = isSupersetBox(currentBox, cachedBox)
 % ISSUPERSETBOX - check that the current block completely covers the cached one.
 %
 % Input Arguments:
-%   - **currentBox** — struct with the current block, see :func:`utils.sam.blockBox`
-%   - **cachedBox** — struct with the cached block; can be empty
+%   - **currentBox** - struct with the current block, see :func:`utils.sam.blockBox`
+%   - **cachedBox** - struct with the cached block; can be empty
 %
 % Output Arguments:
-%   - **isSuperset** — [logical] ``true`` when the current block covers the cached one
+%   - **isSuperset** - [logical] ``true`` when the current block covers the cached one
 %
 
 isSuperset = false;
@@ -143,11 +143,11 @@ function image = fitToSize(image, targetSize)
 % FITTOSIZE - crop or zero-pad an image to the requested size.
 %
 % Input Arguments:
-%   - **image** — [numeric] image to fit, ``[height, width, depth]``
-%   - **targetSize** — [numeric] requested size; when empty the image is returned as is
+%   - **image** - [numeric] image to fit, ``[height, width, depth]``
+%   - **targetSize** - [numeric] requested size; when empty the image is returned as is
 %
 % Output Arguments:
-%   - **image** — [numeric] image of the requested size
+%   - **image** - [numeric] image of the requested size
 %
 
 if isempty(targetSize); return; end

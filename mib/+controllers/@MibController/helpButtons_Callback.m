@@ -10,8 +10,8 @@ function helpButtons_Callback(obj, hWidget, hData)
 % - obj.handles.panels.dirContents.handles.help
 %
 % Input Arguments:
-%   - **hWidget** — handle to the pressed widget
-%   - **hData** — handle to supporting data class
+%   - **hWidget** - handle to the pressed widget
+%   - **hData** - handle to supporting data class
 %
 % Output Arguments:
 %   (none)

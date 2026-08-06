@@ -9,7 +9,7 @@ classdef InMemorySliceProvider < io.savers.SliceProvider
 %
 % See also: io.savers.SliceProvider, io.savers.BaseSaver
 %
-% **Example** — wrap a resident volume and stream it through a saver:
+% **Example** - wrap a resident volume and stream it through a saver:
 %
 %   .. code-block:: matlab
 %
@@ -30,7 +30,7 @@ classdef InMemorySliceProvider < io.savers.SliceProvider
             % INMEMORYSLICEPROVIDER - Wrap a resident [H W D C T] array.
             %
             % Input Arguments:
-            %   - **data** — numeric array, MIB3 native order ``[H, W, D, C, T]``
+            %   - **data** - numeric array, MIB3 native order ``[H, W, D, C, T]``
             %     (trailing singleton dimensions are allowed and assumed = 1).
             sz = ones(1, 5);
             d  = size(data);

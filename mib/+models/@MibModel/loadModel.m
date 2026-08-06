@@ -9,48 +9,48 @@ function loadModel(obj, model, BatchOptIn)
 % This is the top-level BatchOpt-compatible wrapper for model loading.
 % It handles:
 %
-% FILE PATH  — model is empty; a file browser (GUI) or FilenameFilter
+% FILE PATH  - model is empty; a file browser (GUI) or FilenameFilter
 % template (batch) is used to locate the file(s); the
 % factory-pattern loaders in +io are dispatched through
 % MibDataset.loadModel.
 %
-% IMPORT PATH — model is a numeric array or a struct produced by
+% IMPORT PATH - model is a numeric array or a struct produced by
 % mibImage.getData3D/4D or an export helper; metadata is
 % unpacked from the struct before delegating to
 % MibDataset.loadModel.
 %
 % Input Arguments:
-%   - **model** — *(optional)* raw model array (numeric) or struct with fields:
+%   - **model** - *(optional)* raw model array (numeric) or struct with fields:
 %
-%     - ``numeric`` — raw [H W D] or [H W D 1 T] label array
-%     - ``struct`` — may contain: ``.modelMaterialNames``, ``.modelMaterialColors``,
+%     - ``numeric`` - raw [H W D] or [H W D 1 T] label array
+%     - ``struct`` - may contain: ``.modelMaterialNames``, ``.modelMaterialColors``,
 %       ``.modelType``, ``.modelVariable``, ``.labelText``, ``.labelPosition``,
 %       ``.labelValue``, and a field whose name matches ``.modelVariable``
 %       (or any field holding the array)
 %
-%   - **BatchOptIn** — *(optional)* structure for batch processing mode; when NaN,
+%   - **BatchOptIn** - *(optional)* structure for batch processing mode; when NaN,
 %     returns default options via the "SyncBatch" event
 %
-%     - ``.DirectoryName`` — [cell, ``{'Inherit from dataset filename'}``] target dir
-%     - ``.FilenameFilter`` — [char, ``{'Labels_[F].model'}``] filename or wildcard filter;
+%     - ``.DirectoryName`` - [cell, ``{'Inherit from dataset filename'}``] target dir
+%     - ``.FilenameFilter`` - [char, ``{'Labels_[F].model'}``] filename or wildcard filter;
 %       ``[F]`` is replaced with the image base name (no extension).
 %       Relative paths resolve against ``DirectoryName``; absolute paths bypass it.
 %       Wildcards (``*``) are expanded via ``dir()``.
-%     - ``.showWaitbar`` — [logical, ``{true}``] show progress dialog
-%     - ``.id`` — [numeric, ``{obj.id}``] dataset index 1..9
+%     - ``.showWaitbar`` - [logical, ``{true}``] show progress dialog
+%     - ``.id`` - [numeric, ``{obj.id}``] dataset index 1..9
 %
 %
 % Output Arguments:
 %   none
 %
 % Usage:
-%   **Example 1** — interactive file browser
+%   **Example 1** - interactive file browser
 %
 %   .. code-block:: matlab
 %
 %      obj.mibModel.loadModel();
 %
-%   **Example 2** — batch: load by name template
+%   **Example 2** - batch: load by name template
 %
 %   .. code-block:: matlab
 %
@@ -58,7 +58,7 @@ function loadModel(obj, model, BatchOptIn)
 %      BatchOpt.FilenameFilter  = 'Labels_[F].model';
 %      obj.mibModel.loadModel([], BatchOpt);
 %
-%   **Example 3** — import from workspace array
+%   **Example 3** - import from workspace array
 %
 %   .. code-block:: matlab
 %
@@ -121,7 +121,7 @@ if nargin == 3 && ~isempty(BatchOptIn)
         BatchOpt = utils.updateBatchOptCombineFields_Shared(BatchOpt, BatchOptIn);
         batchModeSwitch = isfield(BatchOptIn, 'mibBatchTooltip') || isfield(BatchOptIn, 'FilenameFilter');
         % updateBatchOptCombineFields_Shared copies only {1} from cell fields
-        % that exist in the default — restore the full list when the caller
+        % that exist in the default - restore the full list when the caller
         % supplied multiple files (e.g. drag-and-drop of several model files).
         if isfield(BatchOptIn, 'Filenames') && numel(BatchOptIn.Filenames) > 1
             BatchOpt.Filenames = BatchOptIn.Filenames;
@@ -131,7 +131,7 @@ end
 
 id = BatchOpt.id;
 
-%% BigData mode — attach a disk-backed model store by reference
+%% BigData mode - attach a disk-backed model store by reference
 % The BigData model is a pyramidal zarr GROUP (a folder), not a single file, and
 % must be attached by reference (openStore) rather than read fully into memory.
 % Handled here, before the enableSelection guard, because BigData is browse-only
@@ -164,7 +164,7 @@ if strcmp(obj.I{id}.datasetType, 'BigData') && isempty(model)
         'Height', ds.image.height, 'Width', ds.image.width, ...
         'Depth', ds.image.depth, 'Time', ds.image.time, 'Colors', 1);
     % zarr v2 stores (.zattrs/.zgroup, no zarr.json) get a READ-ONLY overlay
-    % (core.MibBigDataLabelsZarr2, python-backed) — MIB's editable disk-backed
+    % (core.MibBigDataLabelsZarr2, python-backed) - MIB's editable disk-backed
     % pyramid (core.MibBigDataLabels) is native-zarr3-only. Both classes share
     % the same public surface, so everything after this branch is unchanged.
     % (storePath is already validated as an existing folder above)
@@ -202,7 +202,7 @@ if strcmp(obj.I{id}.datasetType, 'BigData') && isempty(model)
     % openStore restores material names/colours from the store when present;
     % fall back to the default palette (cycled to cover all 63 packed material
     % slots) when none were saved, and to random colors when the preference
-    % palette itself is empty — an empty Colormap crashes labeloverlay in
+    % palette itself is empty - an empty Colormap crashes labeloverlay in
     % getRGBimage as soon as the model is displayed, so this must never stay empty.
     if isempty(ds.labels.materialColors)
         palette = obj.preferences.Colors.ModelMaterialColors;
@@ -217,20 +217,20 @@ if strcmp(obj.I{id}.datasetType, 'BigData') && isempty(model)
     % Same idea for names: an externally-created store may carry no material
     % metadata at all (checked by openStore: mibMaterials attr, else OME-NGFF
     % image-label). Scanning the whole disk-backed volume to find which of the
-    % up-to-63 packed indices actually occur is too expensive here, so — same
-    % as the colors fallback above — populate all 63 numbered slots; this
+    % up-to-63 packed indices actually occur is too expensive here, so - same
+    % as the colors fallback above - populate all 63 numbered slots; this
     % mirrors core.MibDataset.loadModel.m's Standard-mode auto-naming and lets
     % the Segmentation panel show/select any material index present in the data.
     % BigData models are always the 63-material packed scheme, so unlike the
     % >255-material case elsewhere, plain numeric names carry no special
-    % meaning here — use "matN" throughout.
+    % meaning here - use "matN" throughout.
     if isempty(ds.labels.materialNames)
         ds.labels.materialNames = arrayfun(@(x) sprintf('mat%d', x), (1:ds.labels.maxMaterials)', 'UniformOutput', false);
     end
     ds.labels.materialsCount = numel(ds.labels.materialNames);
     ds.labels.labelsVariable  = 'mibModel';
     ds.labels.filename        = storePath;
-    % MibLabels63's constructor hardcodes maskFilename to 'Mask_none.mask' — re-derive
+    % MibLabels63's constructor hardcodes maskFilename to 'Mask_none.mask' - re-derive
     % it from the dataset's real image filename, same as core.MibDataset.loadModel.m
     % does for Standard datasets, so "Save mask" defaults to the dataset's own name.
     ds.labels.maskFilename    = ds.image.maskFilename;
@@ -286,7 +286,7 @@ dsOpts.preferences     = obj.preferences;
 dsOpts.mibPath         = obj.mibPath;
 dsOpts.ParentFigure    = obj.mibGUI;
 
-%% IMPORT PATH — model array or struct provided
+%% IMPORT PATH - model array or struct provided
 if ~isempty(model)
     if isstruct(model)
         % Unpack struct exported from workspace
@@ -360,14 +360,14 @@ if ~isempty(model)
     return;
 end
 
-%% FILE PATH — resolve directory and filenames
+%% FILE PATH - resolve directory and filenames
 
 % Expand DirectoryName
 if strcmp(BatchOpt.DirectoryName{1}, 'Inherit from dataset filename')
     BatchOpt.DirectoryName{1} = defaultDir;
 end
 if strcmp(BatchOpt.DirectoryName{1}, 'Inherit from Directory/File loop')
-    % do nothing — already a real path when running in loop
+    % do nothing - already a real path when running in loop
 end
 
 if ~isempty(BatchOpt.Filenames)

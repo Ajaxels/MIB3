@@ -15,33 +15,33 @@ function smoothImage(obj, type, BatchOptIn)
 % range of materials of the labels layer.
 %
 % Input Arguments:
-%   - **type** — char, layer to smooth: ``'selection'``, ``'mask'``, or ``'labels'``;
+%   - **type** - char, layer to smooth: ``'selection'``, ``'mask'``, or ``'labels'``;
 %     pass ``''`` to default to ``'selection'``
-%   - **BatchOptIn** — *(optional)* structure for batch processing mode; when NaN,
+%   - **BatchOptIn** - *(optional)* structure for batch processing mode; when NaN,
 %     returns default options via the ``SyncBatch`` event
 %
-%     - ``.Target`` — cell string, ``{'selection','mask','labels'}``
-%     - ``.SmoothingMode`` — cell string, ``{'2D','3D'}``
-%     - ``.KernelSizeX`` — numeric ``{val, [min max], 'on'}``, X kernel size in pixels
-%     - ``.KernelSizeY`` — numeric ``{val, [min max], 'on'}``, Y kernel size in pixels;
+%     - ``.Target`` - cell string, ``{'selection','mask','labels'}``
+%     - ``.SmoothingMode`` - cell string, ``{'2D','3D'}``
+%     - ``.KernelSizeX`` - numeric ``{val, [min max], 'on'}``, X kernel size in pixels
+%     - ``.KernelSizeY`` - numeric ``{val, [min max], 'on'}``, Y kernel size in pixels;
 %       ``0`` = auto (square, same size as X)
-%     - ``.KernelSizeZ`` — numeric ``{val, [min max], 'on'}``, Z kernel size in pixels (3D only)
-%     - ``.Sigma`` — numeric ``{val, [min max], 'off'}``, Gaussian sigma
-%     - ``.MaterialIndex`` — string, index or range of labels materials, e.g. ``'1'`` or ``'1,3'`` or ``'2:4'``
-%     - ``.showWaitbar`` — logical, show or not the progress dialog
-%     - ``.id`` — *(optional)* dataset index 1–9, default = ``obj.getActiveId()``
+%     - ``.KernelSizeZ`` - numeric ``{val, [min max], 'on'}``, Z kernel size in pixels (3D only)
+%     - ``.Sigma`` - numeric ``{val, [min max], 'off'}``, Gaussian sigma
+%     - ``.MaterialIndex`` - string, index or range of labels materials, e.g. ``'1'`` or ``'1,3'`` or ``'2:4'``
+%     - ``.showWaitbar`` - logical, show or not the progress dialog
+%     - ``.id`` - *(optional)* dataset index 1-9, default = ``obj.getActiveId()``
 %
 % Output Arguments:
 %   (none)
 %
 % Usage:
-%   **Example 1** — smooth selection on the current dataset with interactive dialog
+%   **Example 1** - smooth selection on the current dataset with interactive dialog
 %
 %   .. code-block:: matlab
 %
 %      obj.mibModel.smoothImage('selection');
 %
-%   **Example 2** — 3D Gaussian smoothing of the mask layer, sigma=2, 7-pixel kernel
+%   **Example 2** - 3D Gaussian smoothing of the mask layer, sigma=2, 7-pixel kernel
 %
 %   .. code-block:: matlab
 %
@@ -53,7 +53,7 @@ function smoothImage(obj, type, BatchOptIn)
 %      BatchOpt.showWaitbar   = true;
 %      obj.mibModel.smoothImage('mask', BatchOpt);
 %
-%   **Example 3** — smooth material 2 of the labels layer
+%   **Example 3** - smooth material 2 of the labels layer
 %
 %   .. code-block:: matlab
 %
@@ -61,7 +61,7 @@ function smoothImage(obj, type, BatchOptIn)
 %      BatchOpt.MaterialIndex = '2';
 %      obj.mibModel.smoothImage('labels', BatchOpt);
 %
-%   **Example 4** — return default BatchOpt to the Batch Processing editor
+%   **Example 4** - return default BatchOpt to the Batch Processing editor
 %
 %   .. code-block:: matlab
 %

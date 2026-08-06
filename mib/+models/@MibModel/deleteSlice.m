@@ -12,37 +12,37 @@ function deleteSlice(obj, orientation, sliceNumber, BatchOptIn)
 % without ``BatchOptIn``.  Delegates to ``MibDataset.deleteSlice``.
 %
 % Input Arguments:
-%   - **orientation** — *(optional)* initial dimension:
+%   - **orientation** - *(optional)* initial dimension:
 %     ``1`` = height (y), ``2`` = width (x), ``3`` = depth (z),
 %     ``5`` = time (t). Default: ``obj.orientation`` of the active dataset
-%   - **sliceNumber** — *(optional)* index/indices of slices to delete; ``[]``
+%   - **sliceNumber** - *(optional)* index/indices of slices to delete; ``[]``
 %     uses the current slice position
-%   - **BatchOptIn** — *(optional)* struct for batch processing mode; when
+%   - **BatchOptIn** - *(optional)* struct for batch processing mode; when
 %     ``NaN``, returns default options via the ``SyncBatch`` event.
 %
-%     - ``.Dimension`` — [cell] deletion dimension (default: ``{'depth'}``).
+%     - ``.Dimension`` - [cell] deletion dimension (default: ``{'depth'}``).
 %       Allowed values: ``{'height', 'width', 'depth', 'time'}``
-%     - ``.DeletePosition`` — [string] slice indices, e.g. ``'5'`` or ``'1,5:10'``;
+%     - ``.DeletePosition`` - [string] slice indices, e.g. ``'5'`` or ``'1,5:10'``;
 %       ``'0'`` deletes the last slice/frame
-%     - ``.showWaitbar`` — [logical] show the progress dialog (default: ``true``)
-%     - ``.id`` — *(optional)* dataset index 1–9, default = ``obj.getActiveId()``
+%     - ``.showWaitbar`` - [logical] show the progress dialog (default: ``true``)
+%     - ``.id`` - *(optional)* dataset index 1-9, default = ``obj.getActiveId()``
 %
 % Usage:
-%   **Example 1** — delete the currently visible z-slice
+%   **Example 1** - delete the currently visible z-slice
 %
 %   .. code-block:: matlab
 %
 %
 %     obj.mibModel.deleteSlice(3);
 %
-%   **Example 2** — delete a specific time-frame
+%   **Example 2** - delete a specific time-frame
 %
 %   .. code-block:: matlab
 %
 %
 %     obj.mibModel.deleteSlice(5, 3);
 %
-%   **Example 3** — batch: delete z-slices 2 through 10
+%   **Example 3** - batch: delete z-slices 2 through 10
 %
 %   .. code-block:: matlab
 %

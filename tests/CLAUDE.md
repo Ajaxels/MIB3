@@ -24,7 +24,9 @@ single file:          runtests('tests/models/GetSetDataCorrectnessTest.m')
    `mibtest.perf.timeCallSamples` + `PerfBaselineStore.verifyAgainstBaseline`, then commit the
    baseline (`MIB3_UPDATE_PERF_BASELINE=1` + `buildtool perf`).
 7. **MATLAB rules apply**: `dictionary` not containers.Map; descriptive names; cache `.data` locally
-   around pixel loops.
+   around pixel loops; plain hyphen `-` only, never `—`/`–` (see the dash rule in the root
+   [`CLAUDE.md`](../CLAUDE.md)) - this holds for assertion messages and comments too, so the
+   repo-wide check stays clean.
 
 ## Testing a controller (`tests/controllers/`)
 

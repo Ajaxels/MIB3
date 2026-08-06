@@ -14,13 +14,13 @@ function viewPort = getDefaultViewPort(obj)
 %   (none)
 %
 % Output Arguments:
-%   - **viewPort** — [struct] viewport with fields:
+%   - **viewPort** - [struct] viewport with fields:
 %
-%     - ``.min`` — [numeric] minimum intensity value per channel ``[colors × 1]``
-%     - ``.max`` — [numeric] maximum intensity value per channel ``[colors × 1]``
-%     - ``.gamma`` — [numeric] gamma correction factor per channel ``[colors × 1]`` (default: ``1.0``)
+%     - ``.min`` - [numeric] minimum intensity value per channel ``[colors × 1]``
+%     - ``.max`` - [numeric] maximum intensity value per channel ``[colors × 1]``
+%     - ``.gamma`` - [numeric] gamma correction factor per channel ``[colors × 1]`` (default: ``1.0``)
 %
-% **Example** — Get and display default viewport:
+% **Example** - Get and display default viewport:
 %
 %   .. code-block:: matlab
 %

@@ -28,26 +28,26 @@ function [Model, selection] = mibExportModelToImodModel(O, Options)
 %    Requires matTomo function sets, available in ``mib/external/MatTomo``.
 %
 % Input Arguments:
-%   - **O** — model array [height, width, depth]
-%   - **Options** — struct with fields:
+%   - **O** - model array [height, width, depth]
+%   - **Options** - struct with fields:
 %
-%     - ``.modelFilename`` — filename to save the model (use ``'mod'`` extension)
-%     - ``.pixSize`` — struct with voxel size fields ``.x``, ``.y``, ``.z``
-%     - ``.xyScaleFactor`` — XY step when sampling contour points; e.g. ``5`` = every 5th point
-%     - ``.zScaleFactor`` — Z step when sampling contour points; ``1`` = every section
-%     - ``.colorList`` — [M×3] material RGB colours (0–1)
-%     - ``.ModelMaterialNames`` — cell array with material name strings
-%     - ``.generateSelectionSw`` — ``1`` = generate the Selection layer with contour points
-%     - ``.showWaitbar`` — ``1`` = show the wait bar, ``0`` = hide it
-%     - ``.ParentFigure`` — *(optional)* handle to the main MIB UIFigure; when provided,
+%     - ``.modelFilename`` - filename to save the model (use ``'mod'`` extension)
+%     - ``.pixSize`` - struct with voxel size fields ``.x``, ``.y``, ``.z``
+%     - ``.xyScaleFactor`` - XY step when sampling contour points; e.g. ``5`` = every 5th point
+%     - ``.zScaleFactor`` - Z step when sampling contour points; ``1`` = every section
+%     - ``.colorList`` - [M×3] material RGB colours (0-1)
+%     - ``.ModelMaterialNames`` - cell array with material name strings
+%     - ``.generateSelectionSw`` - ``1`` = generate the Selection layer with contour points
+%     - ``.showWaitbar`` - ``1`` = show the wait bar, ``0`` = hide it
+%     - ``.ParentFigure`` - *(optional)* handle to the main MIB UIFigure; when provided,
 %       the progress bar is shown as a ``uiprogressdlg`` attached to that window;
 %       when absent or empty, the legacy ``waitbar`` is used as a fallback
 %
 % Output Arguments:
-%   - **Model** — IMOD model object
-%   - **selection** — selection layer [height, width, depth]
+%   - **Model** - IMOD model object
+%   - **selection** - selection layer [height, width, depth]
 %
-% **Example 1** — standalone use (no GUI parent):
+% **Example 1** - standalone use (no GUI parent):
 %
 %   .. code-block:: matlab
 %
@@ -61,7 +61,7 @@ function [Model, selection] = mibExportModelToImodModel(O, Options)
 %      savingOptions.showWaitbar         = false;
 %      io.IMOD.mibExportModelToImodModel(modelData_hwd, savingOptions);
 %
-% **Example 2** — GUI use (attach progress dialog to MIB window):
+% **Example 2** - GUI use (attach progress dialog to MIB window):
 %
 %   .. code-block:: matlab
 %

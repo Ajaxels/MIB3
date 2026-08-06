@@ -13,15 +13,15 @@ classdef (Abstract) SliceProvider < handle
 % slice as ``[Height, Width, Colors]`` (a grayscale slice is ``[Height, Width, 1]``).
 %
 % Concrete implementations:
-%   - ``io.savers.InMemorySliceProvider`` — slices a resident 5-D array.
-%   - ``io.savers.MibImageSliceProvider`` — reads slices on demand from any
+%   - ``io.savers.InMemorySliceProvider`` - slices a resident 5-D array.
+%   - ``io.savers.MibImageSliceProvider`` - reads slices on demand from any
 %     ``core.MibImage`` subclass (image or label object) at a chosen pyramid level
 %     via the polymorphic ``getData`` (``options.pyramidLevel`` + ``options.z``).
 %
 % See also: io.savers.BaseSaver, io.savers.InMemorySliceProvider,
 % io.savers.MibImageSliceProvider
 %
-% **Example** — a saver consuming a provider slice-by-slice (memory ≈ one slice):
+% **Example** - a saver consuming a provider slice-by-slice (memory ≈ one slice):
 %
 %   .. code-block:: matlab
 %

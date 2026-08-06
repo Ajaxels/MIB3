@@ -11,7 +11,7 @@ function [result] = bfopen3(r, seriesNumber, sliceNo, options)
 % Returns the selected dataset from a Bio-Formats reader.
 %
 % Input Arguments:
-%   - **r** — handle to a dataset opened with:
+%   - **r** - handle to a dataset opened with:
 %
 %     .. code-block:: matlab
 %
@@ -20,28 +20,28 @@ function [result] = bfopen3(r, seriesNumber, sliceNo, options)
 %        r = loci.formats.gui.BufferedImageReader(r);
 %        r.setId(handles.filename);
 %
-%   - **seriesNumber** — series number to load, starting from ``1``
-%   - **sliceNo** — *(optional)* desired slice number from the series
-%   - **options** — *(optional)* struct with fields (not yet fully tested):
+%   - **seriesNumber** - series number to load, starting from ``1``
+%   - **sliceNo** - *(optional)* desired slice number from the series
+%   - **options** - *(optional)* struct with fields (not yet fully tested):
 %
-%     - ``.x1`` — starting x position
-%     - ``.y1`` — starting y position
-%     - ``.dx`` — width
-%     - ``.dy`` — height
+%     - ``.x1`` - starting x position
+%     - ``.y1`` - starting y position
+%     - ``.dx`` - width
+%     - ``.dy`` - height
 %
 % Output Arguments:
-%   - **result** — struct with the selected series:
+%   - **result** - struct with the selected series:
 %
-%     - ``.img`` — image array [height, width, color, depth]
-%     - ``.ColorType`` — ``'grayscale'``, ``'truecolor'``, or ``'indexed'``
-%     - ``.ColorMap`` — colormap for indexed images
+%     - ``.img`` - image array [height, width, color, depth]
+%     - ``.ColorType`` - ``'grayscale'``, ``'truecolor'``, or ``'indexed'``
+%     - ``.ColorMap`` - colormap for indexed images
 %
 % .. note::
-%   This method is ~1.5×–2.5× slower than Bio-Formats's command line showinf tool,
+%   This method is ~1.5×-2.5× slower than Bio-Formats's command line showinf tool,
 %   due to overhead from copying arrays.
 %
 %   Internet Explorer sometimes erroneously renames the Bio-Formats library to
-%   ``loci_tools.zip`` — if this happens, rename it back to ``loci_tools.jar``.
+%   ``loci_tools.zip`` - if this happens, rename it back to ``loci_tools.jar``.
 %
 %   Thanks to all who offered suggestions and improvements:
 %     * Ville Rantanen

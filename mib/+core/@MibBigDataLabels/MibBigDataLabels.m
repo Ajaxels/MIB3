@@ -2,7 +2,7 @@ classdef MibBigDataLabels < core.MibLabels63
 % MIBBIGDATALABELS - disk-backed, packed 63-class segmentation labels for BigData datasets.
 %
 % Subclass of ``core.MibLabels63``. Keeps the identical bit-packing scheme
-% (bits 1–6 = material 0–63, bit 7 = mask, bit 8 = selection) but stores the
+% (bits 1-6 = material 0-63, bit 7 = mask, bit 8 = selection) but stores the
 % packed uint8 data in a writable **multi-resolution zarr pyramid** on disk
 % (one level per image pyramid level), so models for datasets too large for
 % memory can be segmented and persisted.
@@ -85,13 +85,13 @@ classdef MibBigDataLabels < core.MibLabels63
             % ``obj.exists == false`` and all reads/writes are no-ops.
             %
             % Input Arguments:
-            %   - **img** *(optional)* — [empty] pass ``[]``; pixel data is never stored
+            %   - **img** *(optional)* - [empty] pass ``[]``; pixel data is never stored
             %     in memory for BigData labels.
-            %   - **meta** *(optional)* — [dictionary] metadata dictionary used by the
+            %   - **meta** *(optional)* - [dictionary] metadata dictionary used by the
             %     parent ``core.MibLabels63`` constructor to set dimensions.  Default:
             %     empty ``MibImage`` info.
             %
-            % **Example** — create a fresh labels object and attach a pyramid store:
+            % **Example** - create a fresh labels object and attach a pyramid store:
             %
             %   .. code-block:: matlab
             %
@@ -115,26 +115,26 @@ classdef MibBigDataLabels < core.MibLabels63
             %      obj.createStore(dims, storePath, pyramid)
             %
             % Creates a new zarr3 group at ``storePath`` with one ``uint8`` array per
-            % pyramid level (bits 1–6 = material 0–63, bit 7 = mask, bit 8 = selection).
+            % pyramid level (bits 1-6 = material 0-63, bit 7 = mask, bit 8 = selection).
             % The level count, sizes, scale factors, and chunk shapes are copied from
             % ``pyramid`` so the model mirrors the image pyramid exactly.  An empty level
             % map (``matLevel``) is initialised and persisted as a side-file.
             %
             % Input Arguments:
-            %   - **dims** — [1x3 numeric] ``[height, width, depth]`` in pixels; used as the
+            %   - **dims** - [1x3 numeric] ``[height, width, depth]`` in pixels; used as the
             %     fallback level-0 size when ``pyramid`` is empty.
-            %   - **storePath** *(optional)* — [char|string] zarr group root directory.
+            %   - **storePath** *(optional)* - [char|string] zarr group root directory.
             %     Default: a temporary path (``[tempname '_bigdata_model.zarr3']``).
-            %   - **pyramid** *(optional)* — [struct] image pyramid struct with fields:
+            %   - **pyramid** *(optional)* - [struct] image pyramid struct with fields:
             %
-            %     - ``.levelImageSizes`` — [nLevels x 3] ``[height, width, depth]`` per level
-            %     - ``.levelScaleFactors`` — [nLevels x 3] ``[yScale, xScale, zScale]``
-            %     - ``.chunkSizes`` — {1 x nLevels} per-level chunk vectors in axis order
-            %     - ``.axisOrder`` — [char] axis order string (default ``'tczyx'``)
+            %     - ``.levelImageSizes`` - [nLevels x 3] ``[height, width, depth]`` per level
+            %     - ``.levelScaleFactors`` - [nLevels x 3] ``[yScale, xScale, zScale]``
+            %     - ``.chunkSizes`` - {1 x nLevels} per-level chunk vectors in axis order
+            %     - ``.axisOrder`` - [char] axis order string (default ``'tczyx'``)
             %
             %   When ``pyramid`` is empty, a single full-resolution level is created.
             %
-            % **Example** — create a 3-level model matching a loaded BigData image:
+            % **Example** - create a 3-level model matching a loaded BigData image:
             %
             %   .. code-block:: matlab
             %
@@ -238,7 +238,7 @@ classdef MibBigDataLabels < core.MibLabels63
             % so segmentation can continue across sessions.
             %
             % Input Arguments:
-            %   - **storePath** — [char|string] path to the model zarr group.
+            %   - **storePath** - [char|string] path to the model zarr group.
             storePath = char(storePath);
             grp = io.zarr.Group(storePath);
             attrs = grp.getAttributes();
@@ -360,14 +360,14 @@ classdef MibBigDataLabels < core.MibLabels63
             % The result is clamped to ``[1, nLevels]``.
             %
             % Input Arguments:
-            %   - **options** — [struct] with fields:
+            %   - **options** - [struct] with fields:
             %
-            %     - ``.pyramidLevel`` *(optional)* — [numeric] explicit level (1 = finest).
-            %     - ``.magFactor``    *(optional)* — [numeric] current display magnification
+            %     - ``.pyramidLevel`` *(optional)* - [numeric] explicit level (1 = finest).
+            %     - ``.magFactor``    *(optional)* - [numeric] current display magnification
             %       factor (``dataset.magFactor``).  Default: ``1`` (full resolution).
             %
             % Output Arguments:
-            %   - **levelIdx** — [numeric scalar] 1-based pyramid level index (1 = finest /
+            %   - **levelIdx** - [numeric scalar] 1-based pyramid level index (1 = finest /
             %     full-resolution; ``nLevels`` = coarsest).
             if isfield(options, 'pyramidLevel') && ~isempty(options.pyramidLevel)
                 levelIdx = options.pyramidLevel;
@@ -550,12 +550,12 @@ classdef MibBigDataLabels < core.MibLabels63
             %
             % This is the correct assumption for an imported / externally-created model
             % (all levels were properly downsampled when written) and for any model MIB
-            % saved fully — MIB always persists the sidecar on closeStore, so a MISSING
+            % saved fully - MIB always persists the sidecar on closeStore, so a MISSING
             % sidecar means "not a deferred interactive session", i.e. nothing virtual.
             %
             % It must NOT assume coarsest-only: doing so would make the first zoom-in
             % past the coarsest level trigger materializeForRead, which upsamples the
-            % coarsest data and OVERWRITES the precise finer levels — silently degrading
+            % coarsest data and OVERWRITES the precise finer levels - silently degrading
             % an imported model. With matLevel = 1, reads go straight to the requested
             % level; later edits degrade only the touched tiles (markTiles), which are
             % then recomputed lazily on read or rewritten on Save.
@@ -620,12 +620,12 @@ classdef MibBigDataLabels < core.MibLabels63
             % zoomed-out pushed into a higher-magnification level) uses a smooth,
             % label-aware resize when io.zarr.Config.smoothing is on.
             %
-            % ``direction`` (optional) selects which levels to write — finer levels are
+            % ``direction`` (optional) selects which levels to write - finer levels are
             % numerically SMALLER indices (level 1 = full resolution):
-            %   - ``'all'``     — every other level (default)
-            %   - ``'coarser'`` — only levels coarser than the source (index > source);
+            %   - ``'all'``     - every other level (default)
+            %   - ``'coarser'`` - only levels coarser than the source (index > source);
             %                     a cheap downsample, done eagerly per edit
-            %   - ``'finer'``   — only levels finer than the source (index < source);
+            %   - ``'finer'``   - only levels finer than the source (index < source);
             %                     the expensive upsample toward full res, deferred/lazy
             if nargin < 7 || isempty(direction); direction = 'all'; end
             smoothOn = io.zarr.Config.smoothing();
@@ -649,7 +649,7 @@ classdef MibBigDataLabels < core.MibLabels63
                     obj.writePackedLevel(L2, block2, A2, B2, C2);
                 else
                     % Tiled, index-based nearest resize written in Y-strips so peak
-                    % memory stays ~tileBudget pixels — never materialise a multi-GB
+                    % memory stays ~tileBudget pixels - never materialise a multi-GB
                     % full-resolution array (inlined, no separate method, so this body
                     % hot-reloads onto a live model instance without a MIB restart).
                     pk = uint8(packed);
@@ -735,7 +735,7 @@ classdef MibBigDataLabels < core.MibLabels63
             % (positive inside, negative outside) is a smooth function that is bicubic
             % upsampled and Gaussian-smoothed (sigma = half the up-sampling factor);
             % thresholding the result at 0 reconstructs a smooth boundary at sub-pixel
-            % accuracy (a coarse circle becomes a smooth circle, not a faceted one — far
+            % accuracy (a coarse circle becomes a smooth circle, not a faceted one - far
             % better than bilinear-on-binary, which only rounds a one-pixel ramp). The
             % Gaussian erases the working-level stair-steps while the modest sigma keeps
             % thin structures from being eroded.

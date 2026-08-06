@@ -90,11 +90,11 @@ classdef Lines3dDialog < handle
             % Display and edit 3D line trees, nodes and edges via interactive tables.
             %
             % Input Arguments:
-            %   - **mibModel** — [MibModel] handle to main MIB model
-            %   - **varargin{1}** *(optional)* — [handle] controller handle (unused, for startController compatibility)
+            %   - **mibModel** - [MibModel] handle to main MIB model
+            %   - **varargin{1}** *(optional)* - [handle] controller handle (unused, for startController compatibility)
             %
             % Output Arguments:
-            %   - **obj** — [Lines3dDialog] initialized dialog controller instance
+            %   - **obj** - [Lines3dDialog] initialized dialog controller instance
             %
 
             obj.mibModel = mibModel;
@@ -303,8 +303,8 @@ classdef Lines3dDialog < handle
             % weight and any additional edge fields configured via dropdown.
             %
             % Input Arguments:
-            %   - **activeTreeIndex** — [numeric] index of active tree to display
-            %   - **nodeByTree** *(optional)* — [numeric array] assignment of nodes to trees; automatically computed if omitted
+            %   - **activeTreeIndex** - [numeric] index of active tree to display
+            %   - **nodeByTree** *(optional)* - [numeric array] assignment of nodes to trees; automatically computed if omitted
 
             id = obj.mibModel.getActiveId();
             dataset = obj.mibModel.I{id};
@@ -355,11 +355,11 @@ classdef Lines3dDialog < handle
             % node name, radius (or other field), and XYZ coordinates. Auto-scroll to active node.
             %
             % Input Arguments:
-            %   - **activeTreeIndex** — [numeric] index of active tree to display
-            %   - **nodeByTree** *(optional)* — [numeric array] assignment of nodes to trees; automatically computed if omitted
+            %   - **activeTreeIndex** - [numeric] index of active tree to display
+            %   - **nodeByTree** *(optional)* - [numeric array] assignment of nodes to trees; automatically computed if omitted
             %
             % Output Arguments:
-            %   - **activeIndex** — [numeric] index of the active node in the displayed table (for auto-scroll)
+            %   - **activeIndex** - [numeric] index of the active node in the displayed table (for auto-scroll)
 
             id = obj.mibModel.getActiveId();
             dataset = obj.mibModel.I{id};
@@ -415,7 +415,7 @@ classdef Lines3dDialog < handle
             % Update edge properties (weight or additional field) when user modifies edgesViewTable cells.
             %
             % Input Arguments:
-            %   - **eventdata** — [CellEditData] cell edit event with ``.Indices`` and ``.NewData`` properties
+            %   - **eventdata** - [CellEditData] cell edit event with ``.Indices`` and ``.NewData`` properties
 
             id = obj.mibModel.getActiveId();
             dataset = obj.mibModel.I{id};
@@ -444,7 +444,7 @@ classdef Lines3dDialog < handle
             % modifies nodesViewTable cells. Triggers image re-render for coordinate changes.
             %
             % Input Arguments:
-            %   - **eventdata** — [CellEditData] cell edit event with ``.Indices`` and ``.NewData`` properties
+            %   - **eventdata** - [CellEditData] cell edit event with ``.Indices`` and ``.NewData`` properties
 
             id = obj.mibModel.getActiveId();
             dataset = obj.mibModel.I{id};
@@ -667,7 +667,7 @@ classdef Lines3dDialog < handle
             % Supports optional export to Imaris format.
             %
             % Input Arguments:
-            %   - **treeIds** *(optional)* — [numeric array] tree indices to export; if empty, exports all trees
+            %   - **treeIds** *(optional)* - [numeric array] tree indices to export; if empty, exports all trees
 
             if nargin < 2; treeIds = []; end
 
@@ -823,8 +823,8 @@ classdef Lines3dDialog < handle
             % Update internal selection tracking and optionally jump to selected node position if ``jumpCheck`` is enabled.
             %
             % Input Arguments:
-            %   - **Indices** — [numeric array] selected cell indices from table
-            %   - **forceJump** *(optional)* — [logical] force jump to node; defaults to value of jumpCheck widget
+            %   - **Indices** - [numeric array] selected cell indices from table
+            %   - **forceJump** *(optional)* - [logical] force jump to node; defaults to value of jumpCheck widget
 
             if nargin < 3; forceJump = 0; end
             if forceJump == 0; forceJump = obj.view.handles.jumpCheck.Value; end
@@ -847,8 +847,8 @@ classdef Lines3dDialog < handle
             % Update internal selection tracking and optionally jump to selected edge's target node.
             %
             % Input Arguments:
-            %   - **Indices** — [numeric array] selected cell indices from table
-            %   - **forceJump** *(optional)* — [logical] force jump to edge endpoint; defaults to value of jumpCheck widget
+            %   - **Indices** - [numeric array] selected cell indices from table
+            %   - **forceJump** *(optional)* - [logical] force jump to edge endpoint; defaults to value of jumpCheck widget
 
             if nargin < 3; forceJump = obj.view.handles.jumpCheck.Value; end
             obj.indicesEdges = Indices;
@@ -873,7 +873,7 @@ classdef Lines3dDialog < handle
             % Update active tree, refresh nodes/edges tables, and mark the selected tree node as active.
             %
             % Input Arguments:
-            %   - **Indices** — [numeric array] selected tree row index
+            %   - **Indices** - [numeric array] selected tree row index
 
             if isempty(Indices); return; end
             if isempty(obj.view.handles.nodesViewTable.RowName); return; end
@@ -938,7 +938,7 @@ classdef Lines3dDialog < handle
             % tree renaming or annotation edits in future versions.
             %
             % Input Arguments:
-            %   - **Indices** — [numeric array] edited cell indices ``[row, column]``
+            %   - **Indices** - [numeric array] edited cell indices ``[row, column]``
 
             id = obj.mibModel.getActiveId();
             dataset = obj.mibModel.I{id};
@@ -970,7 +970,7 @@ classdef Lines3dDialog < handle
             % Execute context menu actions: rename, find, visualize, save, or delete selected tree(s).
             %
             % Input Arguments:
-            %   - **parameter** — [char] action: ``'rename'``, ``'find'``, ``'visualize'``, ``'save'``, or ``'delete'``
+            %   - **parameter** - [char] action: ``'rename'``, ``'find'``, ``'visualize'``, ``'save'``, or ``'delete'``
 
             id = obj.mibModel.getActiveId();
             dataset = obj.mibModel.I{id};
@@ -1063,7 +1063,7 @@ classdef Lines3dDialog < handle
             % Execute context menu actions: jump to node or set as active node.
             %
             % Input Arguments:
-            %   - **parameter** — [char] action: ``'Jump'`` (jump to node) or ``'Active'`` (set as active node)
+            %   - **parameter** - [char] action: ``'Jump'`` (jump to node) or ``'Active'`` (set as active node)
 
             id = obj.mibModel.getActiveId();
             dataset = obj.mibModel.I{id};
@@ -1108,8 +1108,8 @@ classdef Lines3dDialog < handle
             % Execute context menu actions: jump to node, set active, rename, edit pixels, or manage annotations.
             %
             % Input Arguments:
-            %   - **parameter** — [char] action: ``'Jump'``, ``'Active'``, ``'Rename'``, ``'Pixels'``, ``'AnnotationsNew'``, ``'AnnotationsAdd'``, ``'AnnotationsDelete'``, or ``'Delete'``
-            %   - **nodeId** *(optional)* — [numeric] specific node to operate on; if omitted, uses selected row
+            %   - **parameter** - [char] action: ``'Jump'``, ``'Active'``, ``'Rename'``, ``'Pixels'``, ``'AnnotationsNew'``, ``'AnnotationsAdd'``, ``'AnnotationsDelete'``, or ``'Delete'``
+            %   - **nodeId** *(optional)* - [numeric] specific node to operate on; if omitted, uses selected row
 
             if nargin < 3; nodeId = []; end
 
@@ -1321,7 +1321,7 @@ classdef Lines3dDialog < handle
             % Optionally overlay an orthoslice from the current dataset.
             %
             % Input Arguments:
-            %   - **treeId** *(optional)* — [numeric] specific tree ID to visualize; if 0 or omitted, visualizes all trees
+            %   - **treeId** *(optional)* - [numeric] specific tree ID to visualize; if 0 or omitted, visualizes all trees
 
             if nargin < 2; treeId = 0; end
 

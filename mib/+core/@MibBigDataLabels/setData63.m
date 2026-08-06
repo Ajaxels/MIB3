@@ -22,40 +22,40 @@ function result = setData63(obj, dataset, type, orient, materialIndex, options)
 %      ``getData63`` call, so a brush stroke at 2% zoom does not trigger a
 %      full-resolution write.
 %
-% **Bit packing** — same scheme as ``getData63``:
-% bits 1–6 = material, bit 7 = mask, bit 8 = selection.
+% **Bit packing** - same scheme as ``getData63``:
+% bits 1-6 = material, bit 7 = mask, bit 8 = selection.
 %
 % Input Arguments:
-%   - **dataset** — [uint8] layer data at display resolution, in screen orientation.
+%   - **dataset** - [uint8] layer data at display resolution, in screen orientation.
 %     Shape ``[ny, nx, nz]`` matching what ``getData63`` would return for the same
 %     ``orient``/``options``.
-%   - **type** *(optional)* — [char] layer to write:
+%   - **type** *(optional)* - [char] layer to write:
 %
-%     - ``'labels'``    — write material index; ``materialIndex`` controls single-material
+%     - ``'labels'``    - write material index; ``materialIndex`` controls single-material
 %       vs full-map mode (see below)
-%     - ``'mask'``      — write binary mask (bit 7)
-%     - ``'selection'`` — write binary selection (bit 8)
-%     - ``'everything'``— overwrite raw packed uint8 (undo / restore; no smoothing)
+%     - ``'mask'``      - write binary mask (bit 7)
+%     - ``'selection'`` - write binary selection (bit 8)
+%     - ``'everything'``- overwrite raw packed uint8 (undo / restore; no smoothing)
 %
 %     Default: ``'labels'``.
 %
-%   - **orient** *(optional)* — [numeric] screen orientation (``1``/``2``/``3``; see
+%   - **orient** *(optional)* - [numeric] screen orientation (``1``/``2``/``3``; see
 %     ``getData63``). Default: ``3``.
 %
-%   - **materialIndex** *(optional)* — [numeric scalar | empty]  when non-empty and
+%   - **materialIndex** *(optional)* - [numeric scalar | empty]  when non-empty and
 %     ``type='labels'``, treats ``dataset`` as a binary indicator and writes only
 %     the voxels where ``dataset == 1`` to material ``materialIndex`` (other materials
 %     unchanged).  Pass ``[]`` to replace the full material map.
 %
-%   - **options** *(optional)* — [struct] with the same fields as ``getData63``:
+%   - **options** *(optional)* - [struct] with the same fields as ``getData63``:
 %     ``.magFactor``, ``.pyramidLevel``, ``.x``, ``.y``, ``.z``.
 %
 % Output Arguments:
-%   - **result** — [logical] ``true`` when at least one voxel changed and was
+%   - **result** - [logical] ``true`` when at least one voxel changed and was
 %     written to disk; ``false`` if the store is closed, the input is empty, or
 %     the merge produced no change (early-exit, no disk I/O).
 %
-% **Example 1** — paint a brush mask onto the selection layer:
+% **Example 1** - paint a brush mask onto the selection layer:
 %
 %   .. code-block:: matlab
 %
@@ -66,7 +66,7 @@ function result = setData63(obj, dataset, type, orient, materialIndex, options)
 %      brushMask = uint8(createBrushMask(...));   % [ny nx 1] binary
 %      obj.mibModel.I{1}.labels.setData63(brushMask, 'selection', 3, [], opts);
 %
-% **Example 2** — accept selection into material 2 (programmatic undo step):
+% **Example 2** - accept selection into material 2 (programmatic undo step):
 %
 %   .. code-block:: matlab
 %
@@ -117,11 +117,11 @@ before = obj.readPackedLevel(levelIdx, Yl, Xl, Zl);
 % A small brush stroke (or selection→material move) at low magnification changes
 % a tiny footprint even though the visible block (Yl/Xl/Zl) is the whole slice.
 % Finding the changed bounding box with a nearest resize (cheap) first means the
-% expensive smoothing below runs on the edit footprint only — per-stroke cost then
+% expensive smoothing below runs on the edit footprint only - per-stroke cost then
 % scales with the edit, not the view (see development/bigdata/bigdata_logic.md).
 % The smooth (signed-distance) reconstruction makes
 % the stored boundary non-blocky when up-sampling display→working; 'everything'
-% (undo/restore of packed bytes) is never smoothed — it must be exact.
+% (undo/restore of packed bytes) is never smoothed - it must be exact.
 smoothOn = io.zarr.Config.smoothing();
 useSmooth = smoothOn && ~strcmp(type, 'everything');
 
@@ -176,11 +176,11 @@ pfZ = [(wZ(1)-1)*sf(3)+1, min(wZ(2)*sf(3), obj.depth)];
 % --- propagate the changed region to COARSER levels only -----------------
 % Each edit is stored at the resolution it was drawn (the working level) plus all
 % COARSER levels (a cheap downsample of the small changed region). FINER levels are
-% NEVER written — they hold no information beyond the working level, so they are
+% NEVER written - they hold no information beyond the working level, so they are
 % reconstructed on demand by getData63 (upsampling the coarsest level for the
 % viewport). This makes a stroke cost ~ one bounded write regardless of zoom or
 % slide size: a 500 px brush at 2% no longer triggers a ~600 MB full-res write.
-% Durability is unaffected — every edit is persisted at its drawn resolution and
+% Durability is unaffected - every edit is persisted at its drawn resolution and
 % coarser, and the coarsest level holds every edit.
 obj.propagateRegion(subPacked, pfY, pfX, pfZ, levelIdx, 'coarser');
 

@@ -11,66 +11,66 @@ function [labelVol, stats] = stitchInstances2Dto3D(inputVol, options)
 % label map per z-slice, object IDs **not** consistent across slices), link
 % objects that overlap between neighbouring slices into single 3D instances
 % with one consistent ID through the whole stack. The input ID *values* are
-% ignored — every slice is internally relabelled to globally-unique nodes, so
+% ignored - every slice is internally relabelled to globally-unique nodes, so
 % the routine is safe on genuinely independent per-slice segmentations.
 %
 % Two linking strategies are provided:
-%   - ``'graph'`` *(default)* — build an undirected overlap graph over all
+%   - ``'graph'`` *(default)* - build an undirected overlap graph over all
 %     slices (an edge whenever a pair of objects on adjacent slices passes the
 %     IoU **or** IoA test) and take connected components (union-find) as 3D
 %     instances. Splits and merges are handled natively; no separate reverse
 %     pass is needed because the graph is undirected.
-%   - ``'hungarian'`` — the empanada-style pipeline: 1-to-1 IoU matching per
+%   - ``'hungarian'`` - the empanada-style pipeline: 1-to-1 IoU matching per
 %     slice pair via ``matchpairs``, then IoA merge-in of the unmatched
 %     objects, optionally run forward and backward and reconciled.
 %
 % Input Arguments:
-%   - **inputVol** — ``[height, width, depth]`` numeric array of per-slice
+%   - **inputVol** - ``[height, width, depth]`` numeric array of per-slice
 %     instance labels (0 = background). Any integer class.
-%   - **options** — *(optional)* structure of parameters:
+%   - **options** - *(optional)* structure of parameters:
 %
-%     - ``.method`` — ``'graph'`` (default) or ``'hungarian'``
-%     - ``.iouThreshold`` — link objects whose IoU exceeds this (default: ``0.25``)
-%     - ``.ioaThreshold`` — link when intersection-over-smaller-area exceeds
+%     - ``.method`` - ``'graph'`` (default) or ``'hungarian'``
+%     - ``.iouThreshold`` - link objects whose IoU exceeds this (default: ``0.25``)
+%     - ``.ioaThreshold`` - link when intersection-over-smaller-area exceeds
 %       this, catching splits/thin bridges (default: ``0.50``)
-%     - ``.minOverlapPixels`` — absolute minimum intersection to consider a
+%     - ``.minOverlapPixels`` - absolute minimum intersection to consider a
 %       link, guards against 1-2 px spurious overlaps (default: ``5``)
-%     - ``.zLookback`` — also test slices up to this many planes apart, to
+%     - ``.zLookback`` - also test slices up to this many planes apart, to
 %       bridge single-slice dropouts (default: ``1`` = adjacent only)
-%     - ``.minObjectVoxels`` — remove 3D objects smaller than this after
+%     - ``.minObjectVoxels`` - remove 3D objects smaller than this after
 %       stitching (default: ``0`` = keep all)
-%     - ``.anisotropyZ`` — voxel aspect ratio ``pixSize.z / pixSize.x`` (>= 1).
+%     - ``.anisotropyZ`` - voxel aspect ratio ``pixSize.z / pixSize.x`` (>= 1).
 %       For anisotropic stacks (thick sections) a true continuation is displaced
 %       more between slices, so its IoU legitimately drops; the effective IoU
 %       threshold is lowered to ``max(iouThreshold / anisotropyZ, iouFloor)``.
-%       IoA (containment) is left unchanged — it is scale-robust — and the
+%       IoA (containment) is left unchanged - it is scale-robust - and the
 %       ``maxCentroidShift`` gate below guards against the relaxed IoU fusing
 %       distant objects (default: ``1`` = isotropic, no relaxation)
-%     - ``.iouFloor`` — lower clamp for the anisotropy-relaxed IoU threshold, so
+%     - ``.iouFloor`` - lower clamp for the anisotropy-relaxed IoU threshold, so
 %       it never falls below a meaningful value (default: ``0.05``)
-%     - ``.maxCentroidShift`` — reject a link when the two objects' centroids are
+%     - ``.maxCentroidShift`` - reject a link when the two objects' centroids are
 %       more than this many pixels apart (scaled by the slice gap for
 %       ``zLookback`` > 1). Lets IoU be relaxed for anisotropy without letting
 %       far-apart objects merge (default: ``Inf`` = gate disabled)
-%     - ``.centroidLinkRadius`` — enable centroid-nearest-neighbour gap bridging
+%     - ``.centroidLinkRadius`` - enable centroid-nearest-neighbour gap bridging
 %       (``'graph'`` only). For objects that have **no** overlap partner on a
 %       slice pair, add a link to the mutually-nearest such orphan on the other
 %       slice when their centroids are within this many pixels (scaled by the
 %       slice gap). Reconnects a continuation that is laterally displaced or
 %       briefly absent - the residual split the overlap graph cannot see
 %       (default: ``0`` = disabled)
-%     - ``.centroidSizeRatio`` — a centroid-NN link additionally requires
+%     - ``.centroidSizeRatio`` - a centroid-NN link additionally requires
 %       ``min(areaA,areaB)/max(areaA,areaB)`` to be at least this, so only
 %       comparably-sized objects are bridged (default: ``0.5``)
-%     - ``.bidirectional`` — for ``'hungarian'``, also run a reverse pass and
+%     - ``.bidirectional`` - for ``'hungarian'``, also run a reverse pass and
 %       reconcile (default: ``true``; ignored by ``'graph'``)
-%     - ``.showWaitbar`` — logical, show progress (default: ``false``)
-%     - ``.verbose`` — logical, print a short summary (default: ``false``)
+%     - ``.showWaitbar`` - logical, show progress (default: ``false``)
+%     - ``.verbose`` - logical, print a short summary (default: ``false``)
 %
 % Output Arguments:
-%   - **labelVol** — ``[height, width, depth]`` relabelled 3D instance volume,
+%   - **labelVol** - ``[height, width, depth]`` relabelled 3D instance volume,
 %     IDs 1..K compacted, class ``uint16`` (or ``uint32`` if K > 65535)
-%   - **stats** — structure with ``.numInput2DObjects``, ``.numOutput3DObjects``,
+%   - **stats** - structure with ``.numInput2DObjects``, ``.numOutput3DObjects``,
 %     ``.objectVoxelCounts`` (K×1), ``.method``, ``.options``
 %
 % Notes:
@@ -80,7 +80,7 @@ function [labelVol, stats] = stitchInstances2Dto3D(inputVol, options)
 %   - ``matchpairs`` (used by ``'hungarian'``) is a core MATLAB function and
 %     needs no toolbox.
 %
-% **Example 1** — stitch a folder of 2D label tiffs read into a volume:
+% **Example 1** - stitch a folder of 2D label tiffs read into a volume:
 %
 %   .. code-block:: matlab
 %
@@ -90,7 +90,7 @@ function [labelVol, stats] = stitchInstances2Dto3D(inputVol, options)
 %      opt.iouThreshold = 0.25;
 %      L = utils.stitchInstances2Dto3D(V, opt);
 %
-% **Example 2** — default one-liner on an in-memory stack, then inspect stats:
+% **Example 2** - default one-liner on an in-memory stack, then inspect stats:
 %
 %   .. code-block:: matlab
 %
@@ -99,7 +99,7 @@ function [labelVol, stats] = stitchInstances2Dto3D(inputVol, options)
 %          stats.numInput2DObjects, stats.numOutput3DObjects);
 %      histogram(stats.objectVoxelCounts);   % 3D object size distribution
 %
-% **Example 3** — drop noise fragments and show a progress bar (typical for a
+% **Example 3** - drop noise fragments and show a progress bar (typical for a
 % large, noisy stack such as an EM mitochondria volume):
 %
 %   .. code-block:: matlab
@@ -107,7 +107,7 @@ function [labelVol, stats] = stitchInstances2Dto3D(inputVol, options)
 %      opt = struct('minObjectVoxels', 200, 'showWaitbar', true, 'verbose', true);
 %      L = utils.stitchInstances2Dto3D(V, opt);   % objects < 200 voxels removed
 %
-% **Example 4** — bridge single-slice dropouts (an object that vanishes for one
+% **Example 4** - bridge single-slice dropouts (an object that vanishes for one
 % plane and reappears) by matching across a 2-slice gap:
 %
 %   .. code-block:: matlab
@@ -116,7 +116,7 @@ function [labelVol, stats] = stitchInstances2Dto3D(inputVol, options)
 %      opt.ioaThreshold = 0.4;     % looser containment test for thin bridges
 %      L = utils.stitchInstances2Dto3D(V, opt);
 %
-% **Example 5** — faithful empanada-style pipeline (1-to-1 Hungarian matching
+% **Example 5** - faithful empanada-style pipeline (1-to-1 Hungarian matching
 % + IoA merge-in, forward and reverse passes) for comparison against ``'graph'``:
 %
 %   .. code-block:: matlab
@@ -125,7 +125,7 @@ function [labelVol, stats] = stitchInstances2Dto3D(inputVol, options)
 %                   'iouThreshold', 0.25, 'ioaThreshold', 0.5);
 %      Lh = utils.stitchInstances2Dto3D(V, opt);
 %
-% **Example 6** — apply to the active MIB dataset's labels layer (once wired
+% **Example 6** - apply to the active MIB dataset's labels layer (once wired
 % into MIB, this is the intended call site):
 %
 %   .. code-block:: matlab
@@ -136,7 +136,7 @@ function [labelVol, stats] = stitchInstances2Dto3D(inputVol, options)
 %      obj.mibModel.setData3D({L}, 'labels', [], 3, NaN, struct('id', id));
 %      notify(obj.mibModel, 'ShowImage');
 %
-% **Example 7** — conservative linking (require a strong IoU, ignore weak
+% **Example 7** - conservative linking (require a strong IoU, ignore weak
 % containment) to keep touching-but-distinct objects separate:
 %
 %   .. code-block:: matlab

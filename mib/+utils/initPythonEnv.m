@@ -16,13 +16,13 @@ function [pythonEnv, errorMessage] = initPythonEnv(pythonPath, executionMode)
 % that MATLAB must be restarted.
 %
 % Input Arguments:
-%   - **pythonPath** — [char] full path to the Python executable
-%   - **executionMode** — [char] ``'InProcess'`` or ``'OutOfProcess'``
+%   - **pythonPath** - [char] full path to the Python executable
+%   - **executionMode** - [char] ``'InProcess'`` or ``'OutOfProcess'``
 %
 % Output Arguments:
-%   - **pythonEnv** — ``matlab.pyclient.PythonEnvironment`` on success;
+%   - **pythonEnv** - ``matlab.pyclient.PythonEnvironment`` on success;
 %     ``[]`` on failure
-%   - **errorMessage** — [char] empty on success; otherwise a message
+%   - **errorMessage** - [char] empty on success; otherwise a message
 %     suitable for ``utils.dlgs.showErrorDialog``
 %
 % Usage:

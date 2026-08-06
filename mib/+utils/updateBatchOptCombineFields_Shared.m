@@ -12,15 +12,15 @@ function BatchOpt = updateBatchOptCombineFields_Shared(BatchOpt, BatchOptInput)
 % (preserving the options list), numeric edit fields, and plain values.
 %
 % Input Arguments:
-%   - **BatchOpt** — struct containing the full default BatchOpt for the controller
-%   - **BatchOptInput** — struct supplied by the caller (may be a subset of fields)
+%   - **BatchOpt** - struct containing the full default BatchOpt for the controller
+%   - **BatchOptInput** - struct supplied by the caller (may be a subset of fields)
 %
 % Output Arguments:
-%   - **BatchOpt** — merged struct with caller values applied over defaults
+%   - **BatchOpt** - merged struct with caller values applied over defaults
 %
 % Usage:
 %
-%   **Example 1** — merge user-supplied options into controller defaults
+%   **Example 1** - merge user-supplied options into controller defaults
 %
 %   .. code-block:: matlab
 %

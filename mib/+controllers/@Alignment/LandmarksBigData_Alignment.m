@@ -9,16 +9,16 @@ function LandmarksBigData_Alignment(obj, parameters)
 % Landmark alignment for disk-backed pyramidal (BigData) stores; branches on
 % ``parameters.method``:
 %
-%   - ``'Single landmark point'`` — one annotation per slice → per-slice
+%   - ``'Single landmark point'`` - one annotation per slice → per-slice
 %     cumulative **translation** (``applyAlignmentBigData`` ``mode='translation'``).
-%   - ``'Three landmark points'`` — the first slice pair carrying 3+
+%   - ``'Three landmark points'`` - the first slice pair carrying 3+
 %     matching-labelled annotations → a single **affine** transform broadcast to
 %     the tail (head unchanged).
-%   - ``'Landmarks, multi points'`` — 3+ matching-labelled annotations per slice
+%   - ``'Landmarks, multi points'`` - 3+ matching-labelled annotations per slice
 %     pair → per-slice cumulative **affine** (``fitgeotrans``).
 %
 % Annotation positions are already in full-resolution (level-0) coordinates, so
-% **no pyramid-level scaling is needed** — the transforms go straight into
+% **no pyramid-level scaling is needed** - the transforms go straight into
 % :meth:`applyAlignmentBigData`, which streams a NEW aligned OME-Zarr v3 store
 % (+ ``Labels_<stem>.zarr3``) and swaps the active buffer. The source is never
 % modified.
@@ -29,7 +29,7 @@ function LandmarksBigData_Alignment(obj, parameters)
 %    by ``selectionBBoxFull``) is a later addition.
 %
 % Input Arguments:
-%   - **parameters** — struct built by :meth:`continueBtn_Callback`; BigData
+%   - **parameters** - struct built by :meth:`continueBtn_Callback`; BigData
 %     fields ``isBigData`` (true), ``outputPath``, plus ``method``,
 %     ``TransformationType``, ``TransformationMode``, ``transformationDegree``,
 %     ``colorCh``, ``backgroundColor``, ``useBatchMode``.

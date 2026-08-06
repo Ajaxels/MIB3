@@ -6,30 +6,30 @@ function startController(parentObj, controllerName, varargin)
 %
 % Works identically to controllers.MibController.startController but can
 % be called from any controller that exposes the following properties:
-% childControllers      — cell array of open child controller handles
-% childControllersIds   — cell array of open child controller class names
-% mibModel              — handle to MibModel
+% childControllers      - cell array of open child controller handles
+% childControllersIds   - cell array of open child controller class names
+% mibModel              - handle to MibModel
 %
 % The child controller must follow the MIB controller contract:
 % Constructor  MyController(mibModel) or MyController(mibModel, [], BatchOpt)
-% Event        CloseEvent — fired when the controller closes
-% Property     view       — empty when running in batch mode (no GUI)
+% Event        CloseEvent - fired when the controller closes
+% Property     view       - empty when running in batch mode (no GUI)
 %
 % Input Arguments:
-%   - **parentObj** — handle — parent controller that owns the child
-%   - **controllerName** — char   — fully-qualified class name, e.g. 'controllers.ResampleDataset'
-%   - **varargin{1}** — *(optional)* extra arg passed to the child constructor (usually [])
-%   - **varargin{2}** — *(optional)* BatchOpt struct to run in batch mode, or NaN for returnBatchOpt
+%   - **parentObj** - handle - parent controller that owns the child
+%   - **controllerName** - char   - fully-qualified class name, e.g. 'controllers.ResampleDataset'
+%   - **varargin{1}** - *(optional)* extra arg passed to the child constructor (usually [])
+%   - **varargin{2}** - *(optional)* BatchOpt struct to run in batch mode, or NaN for returnBatchOpt
 %
 % Usage:
 %
-%   **Example 1** — open ResampleDataset GUI (interactive mode)
+%   **Example 1** - open ResampleDataset GUI (interactive mode)
 %
 %   .. code-block:: matlab
 %
 %      utils.startController(obj, 'controllers.ResampleDataset');
 %
-%   **Example 2** — run ResampleDataset in batch mode (no GUI)
+%   **Example 2** - run ResampleDataset in batch mode (no GUI)
 %
 %   .. code-block:: matlab
 %
@@ -50,7 +50,7 @@ else
 end
 
 if ~isempty(existingId)
-    if numel(varargin) == 2   % batch mode — run even if already open
+    if numel(varargin) == 2   % batch mode - run even if already open
         fh = str2func(controllerName);
         fh(parentObj.mibModel, varargin{1:numel(varargin)});
         return;

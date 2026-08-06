@@ -13,14 +13,14 @@ function result = resliceDataset(obj, sliceNumbers, orient)
 % by the caller (``core.MibDataset.resliceDataset``).
 %
 % Input Arguments:
-%   - **sliceNumbers** — index or index vector of slices to *keep*; all other
+%   - **sliceNumbers** - index or index vector of slices to *keep*; all other
 %     slices are removed
-%   - **orient** — dimension to operate on:
+%   - **orient** - dimension to operate on:
 %     ``1`` = height (y), ``2`` = width (x), ``3`` = depth (z),
 %     ``5`` = time (t)
 %
 % Output Arguments:
-%   - **result** — ``1`` on success, ``0`` on failure
+%   - **result** - ``1`` on success, ``0`` on failure
 %
 % Usage:
 %   **Example 1**
@@ -46,7 +46,7 @@ maxSlice = size(obj.data, orient);
 if any(sliceNumbers > maxSlice) || any(sliceNumbers < 1); return; end
 
 switch orient
-    case 3  % depth (z) — dim 3 in MIB3
+    case 3  % depth (z) - dim 3 in MIB3
         obj.data = obj.data(:, :, sliceNumbers, :, :);
     case 1  % height (y)
         obj.data = obj.data(sliceNumbers, :, :, :, :);

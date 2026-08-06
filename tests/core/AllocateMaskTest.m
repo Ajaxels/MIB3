@@ -6,11 +6,11 @@ classdef AllocateMaskTest < matlab.unittest.TestCase
 % method returns without allocating.
 %
 % Verification strategies:
-%   labels255 — after clearLayer('mask') + allocateMask: maskExist == true;
+%   labels255 - after clearLayer('mask') + allocateMask: maskExist == true;
 %               mask dims match image dims; second call is a no-op
-%   labels63  — allocateMask returns without allocating a separate container
+%   labels63  - allocateMask returns without allocating a separate container
 %               (mask is in packed bits; maskExist remains true via labels63)
-%   zeros     — freshly allocated mask must be all-zero
+%   zeros     - freshly allocated mask must be all-zero
 
     methods (TestClassSetup)
         function addPaths(testCase)
@@ -77,7 +77,7 @@ classdef AllocateMaskTest < matlab.unittest.TestCase
         end
 
         function allocateMask_labels63_maskAccessible(testCase)
-            % For labels63 the mask is stored in packed bits — allocateMask
+            % For labels63 the mask is stored in packed bits - allocateMask
             % is a no-op, but the mask must still be readable (it exists).
             [mibModel, ~] = mibtest.helpers.buildSyntheticModel( ...
                 'modelType', 'labels63', 'dims', [16 16 4]);
@@ -106,7 +106,7 @@ classdef AllocateMaskTest < matlab.unittest.TestCase
             mibModel.I{1} = core.MibDataset(imgData, dictionary(), 'Standard', 'labels63');
             mibModel.I{1}.updateBoundingBox([], [0 0 0]);
             mibModel.I{1}.createModel(255);
-            % Intentionally no setData3D for mask — leaves mask unallocated
+            % Intentionally no setData3D for mask - leaves mask unallocated
         end
 
     end

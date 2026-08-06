@@ -11,10 +11,10 @@ function iconWidth = dlgIconDefaultWidth(iconName)
 % a 96 px puffin).
 %
 % Input Arguments:
-%   - **iconName** — [char] icon identifier, e.g. ``'puffin_question'``, ``'warning_48px'``
+%   - **iconName** - [char] icon identifier, e.g. ``'puffin_question'``, ``'warning_48px'``
 %
 % Output Arguments:
-%   - **iconWidth** — [numeric] default icon column width in pixels (48, 96, or 220)
+%   - **iconWidth** - [numeric] default icon column width in pixels (48, 96, or 220)
 
 switch iconName
     case {'warning_48px', 'question_48px'}

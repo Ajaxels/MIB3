@@ -10,19 +10,19 @@ function lassoPanel_Callback(obj, hWidget, hData)
 % Supports tool selection, mode switching (add/remove), manual placement, and object property recalculation.
 %
 % Input Arguments:
-%   - **hWidget** — [matlab.ui.control.Button | matlab.ui.control.CheckBox | matlab.ui.control.NumericEditField | matlab.ui.control.DropDown] pressed widget; operation identified via ``hWidget.Tag``:
+%   - **hWidget** - [matlab.ui.control.Button | matlab.ui.control.CheckBox | matlab.ui.control.NumericEditField | matlab.ui.control.DropDown] pressed widget; operation identified via ``hWidget.Tag``:
 %
-%     - ``'lassoType'`` — select lasso tool type (Lasso/Object Picker)
-%     - ``'lassoMode'`` — set add/remove/replace mode for lasso selection
-%     - ``'lassoManually'`` — enable/disable manual lasso area placement
-%     - ``'lassoSelect'`` — execute selection with current lasso parameters
-%     - ``'lassoX1'`` — set minimum X coordinate for manual placement
-%     - ``'lassoY1'`` — set minimum Y coordinate for manual placement
-%     - ``'lassoWidth'`` — set width for manual lasso placement
-%     - ``'lassoHeight'`` — set height for manual lasso placement
-%     - ``'objectRecalculate'`` — recalculate 3D object properties from 2D selection
+%     - ``'lassoType'`` - select lasso tool type (Lasso/Object Picker)
+%     - ``'lassoMode'`` - set add/remove/replace mode for lasso selection
+%     - ``'lassoManually'`` - enable/disable manual lasso area placement
+%     - ``'lassoSelect'`` - execute selection with current lasso parameters
+%     - ``'lassoX1'`` - set minimum X coordinate for manual placement
+%     - ``'lassoY1'`` - set minimum Y coordinate for manual placement
+%     - ``'lassoWidth'`` - set width for manual lasso placement
+%     - ``'lassoHeight'`` - set height for manual lasso placement
+%     - ``'objectRecalculate'`` - recalculate 3D object properties from 2D selection
 %
-%   - **hData** — [matlab.ui.eventdata.ButtonPushedData | matlab.ui.eventdata.ValueChangedData] event data from widget
+%   - **hData** - [matlab.ui.eventdata.ButtonPushedData | matlab.ui.eventdata.ValueChangedData] event data from widget
 %
 % Output Arguments:
 %   None

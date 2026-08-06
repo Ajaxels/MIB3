@@ -15,22 +15,22 @@ function [shiftXOut, shiftYOut, halfwidth, excludePeaks] = subtractRunningAverag
 % supplied parameters are applied without prompting.
 %
 % Input Arguments:
-%   - **parentFigure** — [handle] parent ``uifigure`` (or AppContainer) used to
+%   - **parentFigure** - [handle] parent ``uifigure`` (or AppContainer) used to
 %     centre dialogs.
-%   - **shiftX** — [numeric vector] input X displacements.
-%   - **shiftY** — [numeric vector] input Y displacements.
-%   - **halfwidth** *(optional)* — [integer] starting half-width of the smoothing
+%   - **shiftX** - [numeric vector] input X displacements.
+%   - **shiftY** - [numeric vector] input Y displacements.
+%   - **halfwidth** *(optional)* - [integer] starting half-width of the smoothing
 %     window (default: ``25``).
-%   - **excludePeaks** *(optional)* — [numeric] starting peak-exclusion threshold
-%     (default: ``0`` — disabled).
-%   - **useBatchMode** *(optional)* — [logical] when ``true`` apply the supplied
+%   - **excludePeaks** *(optional)* - [numeric] starting peak-exclusion threshold
+%     (default: ``0`` - disabled).
+%   - **useBatchMode** *(optional)* - [logical] when ``true`` apply the supplied
 %     parameters and return without prompting (default: ``false``).
 %
 % Output Arguments:
-%   - **shiftXOut** — [numeric vector] smoothed X displacements; ``[]`` if the user cancelled.
-%   - **shiftYOut** — [numeric vector] smoothed Y displacements; ``[]`` if the user cancelled.
-%   - **halfwidth** — [integer] final half-width used.
-%   - **excludePeaks** — [numeric] final peak-exclusion threshold used.
+%   - **shiftXOut** - [numeric vector] smoothed X displacements; ``[]`` if the user cancelled.
+%   - **shiftYOut** - [numeric vector] smoothed Y displacements; ``[]`` if the user cancelled.
+%   - **halfwidth** - [integer] final half-width used.
+%   - **excludePeaks** - [numeric] final peak-exclusion threshold used.
 
 if nargin < 6; useBatchMode = false; end
 if nargin < 5; excludePeaks = 0;     end

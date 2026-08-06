@@ -17,7 +17,7 @@ classdef MibLabels < core.MibImage
         % number of materials currently in the model.  For small models
         % (63/255) this equals numel(materialNames).  For large models
         % (65535/4294967295) this is the highest material index that has
-        % been assigned — used by MibDataset.addMaterial to determine the
+        % been assigned - used by MibDataset.addMaterial to determine the
         % next available index without scanning the full dataset.
         % Updated by addMaterial (+1), removeMaterial (-N or recount),
         % squeezeMaterialLabels (recount), and createModel (initial value).
@@ -36,7 +36,7 @@ classdef MibLabels < core.MibImage
         reorderMaterials(obj, newOrder)        % reorder material names and colours according to newOrder
 
         function obj = MibLabels(img, meta)
-            % MIBLABELS - Constructor of MibLabels — segmentation label storage.
+            % MIBLABELS - Constructor of MibLabels - segmentation label storage.
             %
             % Syntax:
             %   .. code-block:: matlab
@@ -48,27 +48,27 @@ classdef MibLabels < core.MibImage
             % Initializes a segmentation label container with up to 255 (or 65535 / 4294967295)
             % materials. Inherits all properties and methods from ``core.MibImage``.
             %
-            % **Data layout:** ``[H, W, Z, 1, T]`` — single color channel, with depth
+            % **Data layout:** ``[H, W, Z, 1, T]`` - single color channel, with depth
             % in dimension 3. MibLabels does NOT apply the ``[H,W,C]→[H,W,1,C]``
             % permutation that MibImage uses for colour images.
             %
             % Input Arguments:
-            %   - **img** — *(optional)* [numeric array] 2-D to 5-D uint8/uint16/uint32, or ``[]``.
+            %   - **img** - *(optional)* [numeric array] 2-D to 5-D uint8/uint16/uint32, or ``[]``.
             %     Dimension 3 is always treated as depth (Z), never as color:
             %
-            %     - ``[]`` — empty placeholder; ``obj.exists = false``
-            %     - ``[H, W]`` — single 2-D label map
-            %     - ``[H, W, Z]`` — 3-D label volume (Z slices)
-            %     - ``[H, W, Z, 1, T]`` — full 5-D form (preferred for clarity)
+            %     - ``[]`` - empty placeholder; ``obj.exists = false``
+            %     - ``[H, W]`` - single 2-D label map
+            %     - ``[H, W, Z]`` - 3-D label volume (Z slices)
+            %     - ``[H, W, Z, 1, T]`` - full 5-D form (preferred for clarity)
             %
-            %   - **meta** — *(optional)* [dictionary] metadata from
+            %   - **meta** - *(optional)* [dictionary] metadata from
             %     ``core.MibImage.initializeImgInfo()``. Pass ``[]`` to use defaults.
             %
             % After construction, ALL dimension properties are set from the actual array size:
             % ``obj.height``, ``obj.width``, ``obj.depth``, ``obj.colors``, ``obj.time``,
             % ``obj.dim_yxzct``, ``obj.maxInt``, ``obj.dataClass``.
             %
-            % **Example 1** — create 3-D label volume:
+            % **Example 1** - create 3-D label volume:
             %
             %   .. code-block:: matlab
             %
@@ -79,14 +79,14 @@ classdef MibLabels < core.MibImage
             %      lbl = core.MibLabels(rawLabels, meta);
             %      % lbl.depth == 3, lbl.colors == 1
             %
-            % **Example 2** — create empty placeholder:
+            % **Example 2** - create empty placeholder:
             %
             %   .. code-block:: matlab
             %
             %      lbl = core.MibLabels();
             %      % lbl.exists == false
             %
-            % **Example 3** — create and set large model type:
+            % **Example 3** - create and set large model type:
             %
             %   .. code-block:: matlab
             %

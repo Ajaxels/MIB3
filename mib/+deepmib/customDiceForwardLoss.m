@@ -13,10 +13,10 @@ function loss = customDiceForwardLoss(Y, T, dataDimension, useClasses)
 %    [net, info] = trainnet(AugTrainDS, net, @customDiceForwardLoss, TrainingOptions);
 %
 % Input Arguments:
-%   - **Y** — ``dlarray`` of network predictions (provided by ``trainnet``)
-%   - **T** — ``dlarray`` of training targets (provided by ``trainnet``)
-%   - **dataDimension** — [numeric] dataset dimensionality: ``2``, ``2.5``, or ``3``
-%   - **useClasses** — [numeric] indices of classes to include in the loss;
+%   - **Y** - ``dlarray`` of network predictions (provided by ``trainnet``)
+%   - **T** - ``dlarray`` of training targets (provided by ``trainnet``)
+%   - **dataDimension** - [numeric] dataset dimensionality: ``2``, ``2.5``, or ``3``
+%   - **useClasses** - [numeric] indices of classes to include in the loss;
 %     pass ``[]`` to use all classes
 %
 

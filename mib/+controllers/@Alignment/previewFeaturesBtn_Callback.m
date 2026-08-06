@@ -10,7 +10,7 @@ function previewFeaturesBtn_Callback(obj)
 % feature detector selected in the ``FeatureDetectorType`` widget, matches
 % the descriptors, robust-fits a 2-D geometric transform (RANSAC via
 % ``estgeotform2d``), and renders the matches in a dedicated figure
-% (two subplots — *with outliers* and *inliers only*). No alignment is
+% (two subplots - *with outliers* and *inliers only*). No alignment is
 % applied; this is a tuning aid for the feature-based alignment
 % algorithms.
 %
@@ -30,7 +30,7 @@ if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.Alignment.previewFeaturesBtn_Callback: triggered\n');
 end
 
-% Parent figure for any dialogs — ``obj.view`` is empty in batch mode
+% Parent figure for any dialogs - ``obj.view`` is empty in batch mode
 if ~isempty(obj.view) && isvalid(obj.view) && isvalid(obj.view.gui)
     parentFig = obj.view.gui;
 else
@@ -71,7 +71,7 @@ switch obj.BatchOpt.Algorithm{1}
         ratio = 1;
 end
 
-% Pick the slice pair — current + next, clamped to the end of the stack
+% Pick the slice pair - current + next, clamped to the end of the stack
 sliceNo = obj.mibModel.I{id}.slices{obj.mibModel.I{id}.orientation}(1);
 if sliceNo >= Depth; sliceNo = Depth - 1; end
 

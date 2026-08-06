@@ -12,33 +12,33 @@ function segmentationMagicWand(obj, yxzCoordinate, BatchOptIn)
 % optional radius limit, and connectivity filtering.
 %
 % Input Arguments:
-%   - **yxzCoordinate** — [vector] coordinates of the starting point: ``[y, x]`` for 2D or ``[y, x, z]`` for 3D
-%   - **BatchOptIn** *(optional)* — [struct|char] batch processing mode structure, or modifier key for interactive calls
+%   - **yxzCoordinate** - [vector] coordinates of the starting point: ``[y, x]`` for 2D or ``[y, x, z]`` for 3D
+%   - **BatchOptIn** *(optional)* - [struct|char] batch processing mode structure, or modifier key for interactive calls
 %     When ``NaN``, returns default structure via "syncBatch" event:
 %
-%     - ``.Coordinate`` — [char] seed point as ``'y; x'`` (2D) or ``'y; x; z'`` (3D)
-%     - ``.Mode`` — [char] ``'Slice'`` (2D, current slice) or ``'Stack'`` (3D, whole stack)
-%     - ``.ThresholdLow`` — [numeric] low threshold shift from seed intensity
-%     - ``.ThresholdHigh`` — [numeric] high threshold shift from seed intensity
-%     - ``.ColorChannel`` — [numeric] color channel to use for thresholding
-%     - ``.Radius`` — [numeric] effective radius limit (``0`` = no limit)
-%     - ``.Connectivity`` — [char] connectivity: ``'8/26'``, ``'4/6'``, or ``'None'``
-%     - ``.Action`` — [char] ``'Add'``, ``'Subtract'``, or ``'Replace'``
-%     - ``.FillHoles`` — [logical] fill holes in resulting selection
-%     - ``.FixSelectionToMask`` — [logical] apply selection only to masked area
-%     - ``.FixSelectionToMaterial`` — [logical] apply selection only to selected material area
-%     - ``.showWaitbar`` — [logical] show progress bar during execution
+%     - ``.Coordinate`` - [char] seed point as ``'y; x'`` (2D) or ``'y; x; z'`` (3D)
+%     - ``.Mode`` - [char] ``'Slice'`` (2D, current slice) or ``'Stack'`` (3D, whole stack)
+%     - ``.ThresholdLow`` - [numeric] low threshold shift from seed intensity
+%     - ``.ThresholdHigh`` - [numeric] high threshold shift from seed intensity
+%     - ``.ColorChannel`` - [numeric] color channel to use for thresholding
+%     - ``.Radius`` - [numeric] effective radius limit (``0`` = no limit)
+%     - ``.Connectivity`` - [char] connectivity: ``'8/26'``, ``'4/6'``, or ``'None'``
+%     - ``.Action`` - [char] ``'Add'``, ``'Subtract'``, or ``'Replace'``
+%     - ``.FillHoles`` - [logical] fill holes in resulting selection
+%     - ``.FixSelectionToMask`` - [logical] apply selection only to masked area
+%     - ``.FixSelectionToMaterial`` - [logical] apply selection only to selected material area
+%     - ``.showWaitbar`` - [logical] show progress bar during execution
 %
 % Output Arguments:
 %   (none)
 %
-% **Example 1** — interactive magic wand with shift modifier:
+% **Example 1** - interactive magic wand with shift modifier:
 %
 %   .. code-block:: matlab
 %
 %      obj.segmentationMagicWand([50, 75], 'shift');  % wand from [y,x]=50,75 and add to selection
 %
-% **Example 2** — batch processing mode:
+% **Example 2** - batch processing mode:
 %
 %   .. code-block:: matlab
 %
@@ -183,7 +183,7 @@ if ~switch3d
     options.id = id;
     % Pyramidal (BigData/Virtual): read the image at FULL resolution. getData2D
     % otherwise returns the slice at the displayed pyramid level (downsampled by
-    % magFactor) while the seed coordinates (x,y) are full-res — so currImage(y,x)
+    % magFactor) while the seed coordinates (x,y) are full-res - so currImage(y,x)
     % and bwselect would sample/seed the wrong pixel.
     if any(obj.mibModel.I{id}.datasetType(1) == ['V' 'B']); options.magFactor = 1; end
     % WSI safety net (warn-only): a radius-less wand reads the whole full-res slice.

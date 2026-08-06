@@ -7,7 +7,7 @@ function panelHandles = addActiveDatasetPanel(obj)
 %      panelHandles = obj.addActiveDatasetPanel()
 %
 % Output Arguments:
-%   - **panelHandles** — [struct] handles to the active dataset panel widgets
+%   - **panelHandles** - [struct] handles to the active dataset panel widgets
 %
 % Notes:
 %   The callbacks are added in the controller of the panel: ``controllers.MibActiveDataset``

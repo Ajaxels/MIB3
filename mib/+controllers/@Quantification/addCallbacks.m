@@ -22,7 +22,7 @@ function addCallbacks(obj)
 
 h = obj.view.handles;
 
-% close callback — always set first
+% close callback - always set first
 obj.view.gui.CloseRequestFcn = @(~,~) obj.closeWindow();
 
 % buttons
@@ -46,7 +46,7 @@ h.Multiple.ValueChangedFcn     = @(~,~) obj.multiple_Callback();
 h.logScale.ValueChangedFcn    = @(~,~) obj.histScale_Callback();
 h.highlightOnClick.ValueChangedFcn = @(hObj,~) obj.updateBatchOptFromGUI(hObj);
 
-% radio buttons / button groups — use ButtonGroup SelectionChangedFcn
+% radio buttons / button groups - use ButtonGroup SelectionChangedFcn
 % (fires once per selection change; evt.NewValue is the newly selected button)
 h.ObjectShape.SelectionChangedFcn   = @(~,evt) obj.radioButton_Callback(evt.NewValue);
 h.DetectionType.SelectionChangedFcn = @(~,evt) obj.radioButton_Callback(evt.NewValue);
@@ -58,7 +58,7 @@ h.statTable.CellSelectionCallback = @(~,evnt) obj.statTable_CellSelectionCallbac
 obj.view.gui.WindowButtonDownFcn = @(~,~) obj.gui_WindowButtonDownFcn();
 h.highlightRange.ButtonPushedFcn = @(~,~) obj.highlightRange_Callback();
 
-% keyboard shortcuts (undo, escape) — shared handler for child dialogs
+% keyboard shortcuts (undo, escape) - shared handler for child dialogs
 obj.view.gui.WindowKeyPressFcn = @(h,d) utils.childWindowKeyPressFcn(obj, h, d);
 
 % context menu

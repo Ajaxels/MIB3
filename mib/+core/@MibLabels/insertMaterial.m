@@ -20,10 +20,10 @@ function insertMaterial(obj, index, name, wb)
 % placeholder names).
 %
 % Input Arguments:
-%   - **index** — double, 1-based position where the new material is inserted.
-%   - **name** — char, name of the new material (used for small models; ignored
+%   - **index** - double, 1-based position where the new material is inserted.
+%   - **name** - char, name of the new material (used for small models; ignored
 %     for large models).
-%   - **wb** — *(optional)* handle to a uiprogressdlg for progress display;
+%   - **wb** - *(optional)* handle to a uiprogressdlg for progress display;
 %     when empty no progress is reported.
 %
 % Output Arguments:
@@ -56,7 +56,7 @@ if modelType < 256
     nMats = numel(obj.materialNames);
 
     if index == nMats + 1
-        % Appending at the end — no pixel shift needed
+        % Appending at the end - no pixel shift needed
         obj.materialNames{end+1, 1} = name;
     else
         % Shift pixel data: values >= index get incremented by 1
@@ -84,7 +84,7 @@ if modelType < 256
 
     obj.materialsCount = numel(obj.materialNames);
 else
-    %% Large models — pixel shift only, no name/colour changes
+    %% Large models - pixel shift only, no name/colour changes
     numT = obj.time;
     for t = 1:numT
         img = obj.data(:,:,:,1,t);

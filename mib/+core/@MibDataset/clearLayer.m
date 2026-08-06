@@ -11,46 +11,46 @@ function clearLayer(obj, layer, y, x, z, t, blockModeSwitch)
 % Routes to ``obj.labels.clearLayer`` for ``core.MibLabels63`` or ``obj.(layer).clearLayer`` for other types.
 %
 % Input Arguments:
-%   - **layer** — [char] target layer to clear:
+%   - **layer** - [char] target layer to clear:
 %
-%     - ``'selection'`` or ``[]`` — clear the selection layer (default)
-%     - ``'mask'`` — clear the mask layer
-%     - ``'labels'`` — clear the labels layer
-%     - ``'everything'`` — clear selection, mask, labels layers (``core.MibLabels63`` only)
-%     - ``'image'`` — clear the image layer
+%     - ``'selection'`` or ``[]`` - clear the selection layer (default)
+%     - ``'mask'`` - clear the mask layer
+%     - ``'labels'`` - clear the labels layer
+%     - ``'everything'`` - clear selection, mask, labels layers (``core.MibLabels63`` only)
+%     - ``'image'`` - clear the image layer
 %
-%   - **y** *(optional)* — [numeric or char] y-coordinates or clear mode:
+%   - **y** *(optional)* - [numeric or char] y-coordinates or clear mode:
 %
-%     - ``[]`` — clear complete dataset in ``'4D'`` mode (default)
-%     - ``[minY, maxY]`` — numeric vector of Y-min and Y-max
-%     - ``'2D'`` — clear current slice only
-%     - ``'3D'`` — clear full z-stack at current time
-%     - ``'4D'`` — clear entire 4D dataset
+%     - ``[]`` - clear complete dataset in ``'4D'`` mode (default)
+%     - ``[minY, maxY]`` - numeric vector of Y-min and Y-max
+%     - ``'2D'`` - clear current slice only
+%     - ``'3D'`` - clear full z-stack at current time
+%     - ``'4D'`` - clear entire 4D dataset
 %
-%   - **x** *(optional)* — [numeric] X-min and X-max values ``[minX, maxX]``; ``[]`` for full range
-%   - **z** *(optional)* — [numeric] Z-min and Z-max values ``[minZ, maxZ]``; ``[]`` for full range
-%   - **t** *(optional)* — [numeric] T-min and T-max values ``[minT, maxT]``; ``[]`` for full range
-%   - **blockModeSwitch** *(optional)* — [logical] enable/disable block mode:
+%   - **x** *(optional)* - [numeric] X-min and X-max values ``[minX, maxX]``; ``[]`` for full range
+%   - **z** *(optional)* - [numeric] Z-min and Z-max values ``[minZ, maxZ]``; ``[]`` for full range
+%   - **t** *(optional)* - [numeric] T-min and T-max values ``[minT, maxT]``; ``[]`` for full range
+%   - **blockModeSwitch** *(optional)* - [logical] enable/disable block mode:
 %
-%     - ``[]`` — use currently selected value ``obj.blockModeSwitch`` (default)
-%     - ``true`` — enable block mode; clear only the shown area
-%     - ``false`` — disable block mode; clear the full dataset
+%     - ``[]`` - use currently selected value ``obj.blockModeSwitch`` (default)
+%     - ``true`` - enable block mode; clear only the shown area
+%     - ``false`` - disable block mode; clear the full dataset
 %
 % Output Arguments:
 %
-% **Example 1** — Clear the selection layer completely:
+% **Example 1** - Clear the selection layer completely:
 %
 %   .. code-block:: matlab
 %
 %      obj.clearLayer('selection');
 %
-% **Example 2** — Clear only the current 2D slice:
+% **Example 2** - Clear only the current 2D slice:
 %
 %   .. code-block:: matlab
 %
 %      obj.clearLayer('selection', '2D');
 %
-% **Example 3** — Clear with block mode enabled (visible area only):
+% **Example 3** - Clear with block mode enabled (visible area only):
 %
 %   .. code-block:: matlab
 %
@@ -79,7 +79,7 @@ end
 if ~isempty(charMode)
     switch charMode
         case '2D'
-            % current slice only — pin the slice to the correct data axis for
+            % current slice only - pin the slice to the correct data axis for
             % the shown orientation and leave the two in-plane axes at full
             % range (unless block mode constrains them to the visible window).
             tCur = obj.slices{5}(1);

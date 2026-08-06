@@ -24,11 +24,11 @@ function points = amiraLandmarks2points(filename)
 %      points = io.AmiraMesh.amiraLandmarks2points(filename)
 %
 % Input Arguments:
-%   - **filename** — *(optional)* filename of Amira landmark file; when omitted,
+%   - **filename** - *(optional)* filename of Amira landmark file; when omitted,
 %     a file selection dialog is started
 %
 % Output Arguments:
-%   - **points** — [Nx3] array of landmark coordinates [x, y, z]
+%   - **points** - [Nx3] array of landmark coordinates [x, y, z]
 %
 
 points = [];

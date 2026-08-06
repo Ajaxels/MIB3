@@ -4,7 +4,7 @@ function generateSmokeAffineTiles()
 % Creates a 2x2 grid of 300 px tiles (25% nominal overlap) where every tile
 % except the first is cut from the ground-truth image with its OWN small affine
 % warp: +-1 degree rotation, +-1% scale, and +-8 px XY jitter. A translation
-% solve cannot make these tiles agree — the seams stay visibly rotated/doubled
+% solve cannot make these tiles agree - the seams stay visibly rotated/doubled
 % (note the residual rating can still look good: on a small grid the rotation
 % shows up as in-overlap misalignment, not loop inconsistency). TransformType =
 % Affine measures full pairwise affine transforms, solves them globally, and

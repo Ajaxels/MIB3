@@ -18,34 +18,34 @@ function convertModel(obj, ModelType, BatchOptIn)
 % with per-object indices.
 %
 % Input Arguments:
-%   - **ModelType** *(optional)* — numeric model type to convert to:
+%   - **ModelType** *(optional)* - numeric model type to convert to:
 %
-%     - ``63``         — packed uint8; mask and selection stored in bits 7–8
-%     - ``255``        — separate uint8 labels layer
-%     - ``65535``      — separate uint16 labels layer
-%     - ``4294967295`` — separate uint32 labels layer
-%     - ``2.4``        — detect 2D objects (connectivity 4) and index them
-%     - ``2.8``        — detect 2D objects (connectivity 8) and index them
-%     - ``3.6``        — detect 3D objects (connectivity 6) and index them
-%     - ``3.26``       — detect 3D objects (connectivity 26) and index them
+%     - ``63``         - packed uint8; mask and selection stored in bits 7-8
+%     - ``255``        - separate uint8 labels layer
+%     - ``65535``      - separate uint16 labels layer
+%     - ``4294967295`` - separate uint32 labels layer
+%     - ``2.4``        - detect 2D objects (connectivity 4) and index them
+%     - ``2.8``        - detect 2D objects (connectivity 8) and index them
+%     - ``3.6``        - detect 3D objects (connectivity 6) and index them
+%     - ``3.26``       - detect 3D objects (connectivity 26) and index them
 %
-%   - **BatchOptIn** *(optional)* — structure for batch processing; pass
+%   - **BatchOptIn** *(optional)* - structure for batch processing; pass
 %     ``NaN`` to return default options via ``SyncBatch`` event
 %
-%     - ``.ModelType``    — cell string dropdown, first element is selected value
-%     - ``.showWaitbar``  — logical, show or not the waitbar [*default* ``true``]
-%     - ``.id``           — *(optional)* dataset index 1–9; default = active dataset
+%     - ``.ModelType``    - cell string dropdown, first element is selected value
+%     - ``.showWaitbar``  - logical, show or not the waitbar [*default* ``true``]
+%     - ``.id``           - *(optional)* dataset index 1-9; default = active dataset
 %
 % Output Arguments:
 %   (none)
 %
-% **Example 1** — convert current model to 255-material type
+% **Example 1** - convert current model to 255-material type
 %
 %   .. code-block:: matlab
 %
 %      obj.mibModel.convertModel(255);
 %
-% **Example 2** — batch call
+% **Example 2** - batch call
 %
 %   .. code-block:: matlab
 %

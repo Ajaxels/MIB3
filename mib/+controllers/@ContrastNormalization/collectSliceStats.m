@@ -13,17 +13,17 @@ function [mean_val, std_val] = collectSliceStats(obj, z1, z2, t, colorCh, useMas
 % ``NaN``; the caller is responsible for gap-filling.
 %
 % Input Arguments:
-%   - **obj** — :class:`controllers.ContrastNormalization` instance.
-%   - **z1** — first slice index (1-based).
-%   - **z2** — last slice index (1-based).
-%   - **t** — time-point index.
-%   - **colorCh** — scalar color-channel index.
-%   - **useMask** — logical; ``true`` to restrict stats to the mask layer.
-%   - **options** — struct passed to ``getData2D``; must contain ``.id``.
+%   - **obj** - :class:`controllers.ContrastNormalization` instance.
+%   - **z1** - first slice index (1-based).
+%   - **z2** - last slice index (1-based).
+%   - **t** - time-point index.
+%   - **colorCh** - scalar color-channel index.
+%   - **useMask** - logical; ``true`` to restrict stats to the mask layer.
+%   - **options** - struct passed to ``getData2D``; must contain ``.id``.
 %
 % Output Arguments:
-%   - **mean_val** — ``[maxZ x 1]`` double vector; ``NaN`` for empty-mask slices.
-%   - **std_val** — ``[maxZ x 1]`` double vector; ``NaN`` for empty-mask slices.
+%   - **mean_val** - ``[maxZ x 1]`` double vector; ``NaN`` for empty-mask slices.
+%   - **std_val** - ``[maxZ x 1]`` double vector; ``NaN`` for empty-mask slices.
 
 maxZ    = obj.mibModel.I{options.id}.image.depth;
 getOpt  = options;

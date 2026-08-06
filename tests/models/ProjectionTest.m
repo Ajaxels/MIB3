@@ -4,13 +4,13 @@ classdef ProjectionTest < matlab.unittest.TestCase
 % Internal dimension convention:
 %   getData4D returns [h,w,z,c,t]; PossibleDimensions = {'Y','X','Z','C','T'}.
 %   'Z' maps to dim=3 in the array, so the projection collapses depth and
-%   the output is [h,w,1,c,t] — height and width are preserved, depth=1.
+%   the output is [h,w,1,c,t] - height and width are preserved, depth=1.
 %
 % Verification strategies:
-%   Z-axis projection — output depth = 1 for Max, Min, Mean
-%   output height     — equals original depth (post-permute geometry)
-%   Max >= Min        — pixel-sum of Max result ≥ pixel-sum of Min result
-%   image class       — uint8 in → uint8 out for non-Sum projections
+%   Z-axis projection - output depth = 1 for Max, Min, Mean
+%   output height     - equals original depth (post-permute geometry)
+%   Max >= Min        - pixel-sum of Max result ≥ pixel-sum of Min result
+%   image class       - uint8 in → uint8 out for non-Sum projections
 
     methods (TestClassSetup)
         function addPaths(testCase)
@@ -62,7 +62,7 @@ classdef ProjectionTest < matlab.unittest.TestCase
         end
 
         function maxVsMin_pixelSumOrdering(testCase)
-            % Two fresh identical datasets — Max projection sum ≥ Min projection sum.
+            % Two fresh identical datasets - Max projection sum ≥ Min projection sum.
             [mibModelMax, ~] = mibtest.helpers.buildSyntheticModel( ...
                 'modelType', 'labels255', 'dims', [16 16 8]);
             [mibModelMin, ~] = mibtest.helpers.buildSyntheticModel( ...

@@ -13,11 +13,11 @@ function transpose(obj, new_orient)
 % NOT rearrange the underlying image data in memory.
 %
 % Input Arguments:
-%   - **new_orient** — desired orientation:
+%   - **new_orient** - desired orientation:
 %
-%     - ``1`` — XZ plane (xz)
-%     - ``2`` — YZ plane (yz)
-%     - ``3`` — YX plane (yx, default view)
+%     - ``1`` - XZ plane (xz)
+%     - ``2`` - YZ plane (yz)
+%     - ``3`` - YX plane (yx, default view)
 %
 % Output Arguments:
 %   none

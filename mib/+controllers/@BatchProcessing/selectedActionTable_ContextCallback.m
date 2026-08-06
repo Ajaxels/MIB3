@@ -19,7 +19,7 @@ function selectedActionTable_ContextCallback(obj, parameter)
 %   - 'Set second column width' - prompt for a pixel width and apply it to the second column of selectedActionTable
 %
 % Input Arguments:
-%   - **parameter** — string matching one of the case labels listed above
+%   - **parameter** - string matching one of the case labels listed above
 %
 % Usage:
 %   Example 1::

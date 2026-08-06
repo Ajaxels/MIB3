@@ -9,22 +9,22 @@ function listener_newDataset(obj, src, evtData)
 % executed upon catch of MibModel->"NewDataset" event
 %
 % Input Arguments:
-%   - **src** — handle to MibModel
-%   - **evtData** — event data, an instance of ``core.ToggleEventData``; ``evtData.Parameters``
+%   - **src** - handle to MibModel
+%   - **evtData** - event data, an instance of ``core.ToggleEventData``; ``evtData.Parameters``
 %     is a structure with the following fields:
 %
-%     - ``.index`` — *(optional)* index of obj.I to update; ``[]`` updates the currently selected dataset
+%     - ``.index`` - *(optional)* index of obj.I to update; ``[]`` updates the currently selected dataset
 %
 % Output Arguments:
 %   (none)
 %
-% **Example 1** — update the current dataset (resize to fit screen):
+% **Example 1** - update the current dataset (resize to fit screen):
 %
 %   .. code-block:: matlab
 %
 %      notify(obj.mibModel, 'NewDataset');
 %
-% **Example 2** — update dataset 8 specifically:
+% **Example 2** - update dataset 8 specifically:
 %
 %   .. code-block:: matlab
 %
@@ -43,14 +43,14 @@ end
 % update the missing fields
 if ~isfield(Parameters, 'index')
     Parameters.index = obj.mibModel.id;
-    % fit the new dataset to screen — drawnow ensures the axes panel has a
+    % fit the new dataset to screen - drawnow ensures the axes panel has a
     % valid InnerPosition before listener_updateDatasetAxes reads axSize
     drawnow limitrate;
     % In split-panel mode, drawnow processes queued AppContainer
     % PropertyChanged events, which can trigger listener_appStateChanged
     % → setsOps_Callbacks → datasetsSetsOps and corrupt Sets.selectedSet
     % and mibModel.id.  Restore them to the intended dataset if changed.
-    % Do NOT fire DatasetsPanelUpdate here — it triggers ShowImage via
+    % Do NOT fire DatasetsPanelUpdate here - it triggers ShowImage via
     % buffers_Callback before UpdateDatasetAxes has initialized the axes,
     % causing an Ishown index error.  Restore model state only; the
     % DatasetsPanelUpdate is deferred until after UpdateDatasetAxes below.
@@ -79,7 +79,7 @@ else  % use provided index of the dataset
     notify(obj.mibModel, 'UpdateDatasetAxes', eventdata);
     % Refresh the Datasets-panel button colors (e.g. turn the destination
     % buffer button green). update_fromModel is safe to call here because
-    % the active buffer (mibModel.id) is unchanged — it just repaints buttons.
+    % the active buffer (mibModel.id) is unchanged - it just repaints buttons.
     notify(obj.mibModel, 'DatasetsPanelUpdate');
 end
 
@@ -101,7 +101,7 @@ end
 % update widgets of the MIB view
 obj.updateGuiWidgets();
 
-% clear undo history — but NOT when the caller has just stored a backup it
+% clear undo history - but NOT when the caller has just stored a backup it
 % needs to preserve (Ctrl+Z restore of a 'mibDataset' snapshot, or an
 % in-place dataset rewrite like an alignment that backed itself up first).
 keepBackup = isstruct(Parameters) && isfield(Parameters, 'keepBackup') && Parameters.keepBackup;

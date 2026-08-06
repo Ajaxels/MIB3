@@ -22,25 +22,25 @@ function out = morphBallOp(BW, op, se, useBwdist, R)
 % (ellipsoidal) elements must use the ``imdilate``/``imerode`` path.
 %
 % Input Arguments:
-%   - **BW** — [numeric|logical] binary image or volume (2D or 3D); any nonzero
+%   - **BW** - [numeric|logical] binary image or volume (2D or 3D); any nonzero
 %     value is treated as foreground
-%   - **op** — char, ``'dilate'`` or ``'erode'``
-%   - **se** — structuring element used when ``useBwdist`` is false; pass ``[]``
+%   - **op** - char, ``'dilate'`` or ``'erode'``
+%   - **se** - structuring element used when ``useBwdist`` is false; pass ``[]``
 %     when the fast path is used
-%   - **useBwdist** — logical, use the distance-transform fast path
-%   - **R** — numeric, ball/disk radius in pixels (only used when ``useBwdist`` is true)
+%   - **useBwdist** - logical, use the distance-transform fast path
+%   - **R** - numeric, ball/disk radius in pixels (only used when ``useBwdist`` is true)
 %
 % Output Arguments:
-%   - **out** — same class as ``BW``, the transformed binary image/volume
+%   - **out** - same class as ``BW``, the transformed binary image/volume
 %
 % Usage:
-%   **Example 1** — fast large-radius 3D dilation of a logical volume
+%   **Example 1** - fast large-radius 3D dilation of a logical volume
 %
 %   .. code-block:: matlab
 %
 %      dilated = utils.morphBallOp(BW, 'dilate', [], true, 25);
 %
-%   **Example 2** — classic small-radius erosion with a prebuilt element
+%   **Example 2** - classic small-radius erosion with a prebuilt element
 %
 %   .. code-block:: matlab
 %

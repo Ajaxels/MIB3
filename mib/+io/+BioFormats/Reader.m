@@ -4,17 +4,17 @@ classdef Reader < handle
 % Facade over the BioFormats / WSI engine selected by ``io.BioFormats.Config``
 % (``'mib'`` = bundled OME Bio-Formats Java reader, ``'matlab'`` = MATLAB built-in
 % ``bioformatsread`` / ``openslideread``). It exposes a small, reader-agnostic
-% contract designed to match ``io.loaders.Zarr3VirtualLoader`` so that — in a later
-% phase — the BigData image read seam (``MibVirtualImage.getDataZarr`` →
+% contract designed to match ``io.loaders.Zarr3VirtualLoader`` so that - in a later
+% phase - the BigData image read seam (``MibVirtualImage.getDataZarr`` →
 % ``loaders{1}.readRegion(...)``) can be backed by a WSI file directly, giving the
 % same on-demand, level-aware read experience as a zarr3 dataset.
 %
 % **Contract**
-%   - ``s = info()`` — dimensions, class, and resolution-level metadata.
-%   - ``block = readRegion(level, Ylim, Xlim, Zlim, Clim, Tlim, dataClass)`` —
+%   - ``s = info()`` - dimensions, class, and resolution-level metadata.
+%   - ``block = readRegion(level, Ylim, Xlim, Zlim, Clim, Tlim, dataClass)`` -
 %     read a sub-region at a 1-based resolution ``level``; returns MIB3-order
 %     ``[y, x, z, c, t]``.
-%   - ``close()`` — release the underlying handle.
+%   - ``close()`` - release the underlying handle.
 %
 % **Phase A (2026-06-17):** only the ``'mib'`` (Java) backend is implemented, and
 % only full resolution (``level == 1``); nothing in the app calls this class yet
@@ -56,15 +56,15 @@ classdef Reader < handle
             % READER - construct an on-demand reader; backend from io.BioFormats.Config.
             %
             % Input Arguments:
-            %   - **filename** — [char] full path to the file
-            %   - **seriesIndex** — *(optional)* [double] 0-based series index (default 0)
-            %   - **options** — *(optional)* struct:
+            %   - **filename** - [char] full path to the file
+            %   - **seriesIndex** - *(optional)* [double] 0-based series index (default 0)
+            %   - **options** - *(optional)* struct:
             %
-            %     - ``.library`` — [char] override the backend: ``'mib'`` (Java),
+            %     - ``.library`` - [char] override the backend: ``'mib'`` (Java),
             %       ``'matlab'`` (bioformatsread), or ``'openslide'`` (openslideread).
             %       When omitted, the BioFormats engine comes from io.BioFormats.Config
             %       (``'mib'``|``'matlab'``); ``'openslide'`` must be requested explicitly.
-            %     - ``.memoDir`` — [char] Bio-Formats Memoizer directory (mib backend)
+            %     - ``.memoDir`` - [char] Bio-Formats Memoizer directory (mib backend)
             if nargin < 2 || isempty(seriesIndex); seriesIndex = 0; end
             if nargin < 3; options = struct(); end
 
@@ -94,12 +94,12 @@ classdef Reader < handle
             % INFO - return dimensions + resolution-level metadata.
             %
             % Output Arguments:
-            %   - **s** — struct with fields:
+            %   - **s** - struct with fields:
             %
             %     - ``.height`` ``.width`` ``.depth`` ``.colors`` ``.time``
-            %     - ``.imgClass`` — [char] e.g. ``'uint8'`` / ``'uint16'``
-            %     - ``.numLevels`` — number of resolution (pyramid) levels
-            %     - ``.levelSizes`` — [numLevels x 2] per-level ``[height width]``
+            %     - ``.imgClass`` - [char] e.g. ``'uint8'`` / ``'uint16'``
+            %     - ``.numLevels`` - number of resolution (pyramid) levels
+            %     - ``.levelSizes`` - [numLevels x 2] per-level ``[height width]``
             switch obj.library
                 case 'mib'
                     s = obj.infoMib();
@@ -112,11 +112,11 @@ classdef Reader < handle
             % READREGION - read a sub-region; returns MIB3-order [y, x, z, c, t].
             %
             % Input Arguments:
-            %   - **level** — [double] 1-based resolution level (1 = full resolution)
-            %   - **Ylim**, **Xlim**, **Zlim** — [1x2] inclusive 1-based LEVEL-LOCAL ranges
-            %   - **Clim** — [1x2] inclusive 1-based colour-channel range
-            %   - **Tlim** — [1x2] inclusive 1-based time range
-            %   - **dataClass** — [char] output class
+            %   - **level** - [double] 1-based resolution level (1 = full resolution)
+            %   - **Ylim**, **Xlim**, **Zlim** - [1x2] inclusive 1-based LEVEL-LOCAL ranges
+            %   - **Clim** - [1x2] inclusive 1-based colour-channel range
+            %   - **Tlim** - [1x2] inclusive 1-based time range
+            %   - **dataClass** - [char] output class
             if nargin < 8 || isempty(dataClass); dataClass = 'uint8'; end
             switch obj.library
                 case 'mib'
@@ -135,19 +135,19 @@ classdef Reader < handle
             % (level selection by magnification + level-local region reads).
             %
             % Input Arguments:
-            %   - **voxelSize** — *(optional)* [1x3] full-resolution ``[y x z]`` voxel
+            %   - **voxelSize** - *(optional)* [1x3] full-resolution ``[y x z]`` voxel
             %     size (µm); default ``[1 1 1]``.
             %
             % Output Arguments:
-            %   - **pyramid** — struct with fields:
+            %   - **pyramid** - struct with fields:
             %
-            %     - ``.sourceType`` — ``'bioformats'`` (used by the read dispatch)
-            %     - ``.levelNames`` — {1 x nLevels} ``'0'..'N-1'`` (resolution keys)
-            %     - ``.levelImageSizes`` — [nLevels x 3] per-level ``[Y X Z]``
-            %     - ``.levelScaleFactors`` — [nLevels x 3] level0 ./ levelN ``[y x z]``
-            %     - ``.levelVoxelSizes`` — [1 x 3] full-resolution ``[y x z]`` voxel size
-            %     - ``.axisOrder`` — ``''`` (the reader returns native MIB3 [y x z c t])
-            %     - ``.chunkSizes`` / ``.shardSizes`` — ``[]``
+            %     - ``.sourceType`` - ``'bioformats'`` (used by the read dispatch)
+            %     - ``.levelNames`` - {1 x nLevels} ``'0'..'N-1'`` (resolution keys)
+            %     - ``.levelImageSizes`` - [nLevels x 3] per-level ``[Y X Z]``
+            %     - ``.levelScaleFactors`` - [nLevels x 3] level0 ./ levelN ``[y x z]``
+            %     - ``.levelVoxelSizes`` - [1 x 3] full-resolution ``[y x z]`` voxel size
+            %     - ``.axisOrder`` - ``''`` (the reader returns native MIB3 [y x z c t])
+            %     - ``.chunkSizes`` / ``.shardSizes`` - ``[]``
             if nargin < 2 || isempty(voxelSize); voxelSize = [1 1 1]; end
             s = obj.info();
             nL = s.numLevels;
@@ -241,11 +241,11 @@ classdef Reader < handle
             if rawN < 1; rawN = 1; end
             % Keep only the leading run of TRUE pyramid levels. Some WSI readers append
             % an associated image (macro / label / overview) as a trailing "resolution"
-            % with a different aspect ratio, channel count or pixel type — including it
+            % with a different aspect ratio, channel count or pixel type - including it
             % would corrupt the pyramid (wrong scale factors / class). We keep level 0
             % then accept further levels only while they stay consistent with level 0
             % (same C, same bytes-per-pixel, same aspect ratio ±2 %) and strictly
-            % smaller — and stop at the first inconsistent one.
+            % smaller - and stop at the first inconsistent one.
             % (Note: in un-flattened mode such associated images are usually exposed as
             % a separate *series* anyway, e.g. NDPI "macro image"; this is a safety net.)
             aspect0   = s.width / s.height;
@@ -316,7 +316,7 @@ classdef Reader < handle
 
     % ------------------------------------------------------------------ %
     %   MATLAB built-in backends (bioformatsread / openslideread)         %
-    %   — return lazy, tiled, pyramid-aware blockedImage objects.         %
+    %   - return lazy, tiled, pyramid-aware blockedImage objects.         %
     % ------------------------------------------------------------------ %
     methods (Access = private)
         function openBlocked(obj)
@@ -367,7 +367,7 @@ classdef Reader < handle
                 if nTrail >= 1; ax.hasC = true; ax.C = double(obj.bim.Size(1, 3)); end
                 return;
             end
-            % matlab (bioformatsread) — query Z/C/T from Bio-Formats
+            % matlab (bioformatsread) - query Z/C/T from Bio-Formats
             try
                 utils.ensureJavaLibraries({'bioformats'});
                 loci.common.DebugTools.setRootLevel('ERROR');

@@ -5,7 +5,7 @@ classdef Zarr3SaverTest < matlab.unittest.TestCase
 % Z-downsampled pyramid level and always flushes a trailing partial group
 % (see Zarr3Saver.saveStream, "flush any remaining partial Z group"). So a
 % level's planned Zl must equal ceil(Z / cumZFactor), matching how many
-% slices the flush actually writes — not floor(Z / cumZFactor), which
+% slices the flush actually writes - not floor(Z / cumZFactor), which
 % under-allocates by one whenever Z is not a multiple of cumZFactor and
 % causes an out-of-bounds zarrMex write.
 
@@ -69,7 +69,7 @@ classdef Zarr3SaverTest < matlab.unittest.TestCase
             % Regression: saveStream buffers output slices per level up to that
             % level's chunk Z-thickness before issuing one region write (instead of
             % one write per Z-slice, which forces a decompress/recompress of the
-            % whole chunk per slice — a severe performance bug). This must not
+            % whole chunk per slice - a severe performance bug). This must not
             % scramble data across batch or Z-downsampling-group boundaries: chunkZ
             % (16) does not evenly divide Z (40), and Anisotropy-preserving forces a
             % Z-downsampled level whose cumZFactor (2) does not evenly divide Z
@@ -93,7 +93,7 @@ classdef Zarr3SaverTest < matlab.unittest.TestCase
             grp = io.zarr.Group(zarrPath);
 
             % level 0 (full res, cumZFactor=1): chunkZ=16 does not divide Z=40
-            % (write batches of 16,16,8) — every slice must still land at its own
+            % (write batches of 16,16,8) - every slice must still land at its own
             % Z-index, unscrambled by the write-batch boundaries.
             vol0 = grp.openArray('0').read();
             testCase.verifyEqual(size(vol0, 1:3), [200 180 Z]);

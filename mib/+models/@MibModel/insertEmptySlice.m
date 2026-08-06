@@ -12,30 +12,30 @@ function insertEmptySlice(obj, BatchOptIn)
 % block of the required size and delegates to ``MibDataset.insertSlice``.
 %
 % Input Arguments:
-%   - **BatchOptIn** — *(optional)* struct for batch processing mode; when
+%   - **BatchOptIn** - *(optional)* struct for batch processing mode; when
 %     ``NaN``, returns default options via the ``SyncBatch`` event.
 %
-%     - ``.Dimension`` — [cell] insertion dimension (default: ``{'depth'}``).
+%     - ``.Dimension`` - [cell] insertion dimension (default: ``{'depth'}``).
 %       Allowed values: ``{'depth', 'time'}``
-%     - ``.InsertPosition`` — [numeric cell] ``{value, [minLim maxLim], 'on'}``
+%     - ``.InsertPosition`` - [numeric cell] ``{value, [minLim maxLim], 'on'}``
 %       insert before this 1-based slice index; ``1`` = insert as first slice;
 %       ``0`` = append to the end (default: current slice)
-%     - ``.NumberOfSlices`` — [numeric cell] ``{value, [minLim maxLim], 'on'}``
+%     - ``.NumberOfSlices`` - [numeric cell] ``{value, [minLim maxLim], 'on'}``
 %       number of slices to insert (default: ``{1, [1, maxSlice], 'on'}``)
-%     - ``.BackgroundColor`` — [numeric cell] ``{value, [minLim maxLim], 'on'}``
+%     - ``.BackgroundColor`` - [numeric cell] ``{value, [minLim maxLim], 'on'}``
 %       fill intensity, 0 = black (default: ``{maxInt, [0, maxInt], 'on'}``)
-%     - ``.showWaitbar`` — [logical] show the progress dialog (default: ``true``)
-%     - ``.id`` — *(optional)* dataset index 1–9, default = ``obj.getActiveId()``
+%     - ``.showWaitbar`` - [logical] show the progress dialog (default: ``true``)
+%     - ``.id`` - *(optional)* dataset index 1-9, default = ``obj.getActiveId()``
 %
 % Usage:
-%   **Example 1** — interactive
+%   **Example 1** - interactive
 %
 %   .. code-block:: matlab
 %
 %
 %     obj.mibModel.insertEmptySlice();
 %
-%   **Example 2** — batch: insert 10 blank time-frames before frame 2
+%   **Example 2** - batch: insert 10 blank time-frames before frame 2
 %
 %   .. code-block:: matlab
 %
@@ -110,7 +110,7 @@ if nargin < 2
         {'Dimension:', ...
          sprintf('Destination slice index\n(1 = first, %d = last, 0 = append to end):', maxSlice), ...
          'Number of slices to insert:', ...
-         sprintf('Background intensity (0 – %d):', maxIntValue)}, ...
+         sprintf('Background intensity (0 - %d):', maxIntValue)}, ...
         {[BatchOpt.Dimension{2}, find(ismember(BatchOpt.Dimension{2}, BatchOpt.Dimension{1}), 1)], ...
          struct('Spinner', true, 'Value', BatchOpt.InsertPosition{1}, 'Limits', BatchOpt.InsertPosition{2}, 'Step', 1, 'Round', true), ...
          struct('Spinner', true, 'Value', BatchOpt.NumberOfSlices{1}, 'Limits', BatchOpt.NumberOfSlices{2}, 'Step', 1, 'Round', true), ...
@@ -132,7 +132,7 @@ numSlices   = BatchOpt.NumberOfSlices{1};
 bgColor     = BatchOpt.BackgroundColor{1};
 dataClass   = obj.I{BatchOpt.id}.image.dataClass;
 
-% shape: [y, x, numSlices, colors] — insertSlice treats 4D as [y,x,z,c,1]
+% shape: [y, x, numSlices, colors] - insertSlice treats 4D as [y,x,z,c,1]
 img = zeros([imageHeight, imageWidth, numSlices, imageColors], dataClass) + bgColor;
 
 insertOpts.dim          = BatchOpt.Dimension{1};

@@ -12,18 +12,18 @@ function clearLayer(obj, layerName, y, x, z, t, magFactor)
 % numeric coordinate ranges or [] for full extent.
 %
 % Input Arguments:
-%   - **layerName** — char with the target layer name; default ``'selection'``:
+%   - **layerName** - char with the target layer name; default ``'selection'``:
 %
-%     - ``'selection'`` — clear the selection layer
-%     - ``'mask'`` — clear the mask layer
-%     - ``'labels'`` — clear the labels layer
-%     - ``'everything'`` — clear selection, mask, and labels layers (``core.MibLabels63`` only)
-%     - ``'image'`` — clear the image layer
-%   - **y** — *(optional)* numeric [minY, maxY] or [] for full height extent
-%   - **x** — *(optional)* numeric [minX, maxX] or [] for full width extent
-%   - **z** — *(optional)* numeric [minZ, maxZ] or [] for full depth extent
-%   - **t** — *(optional)* numeric [minT, maxT] or [] for full time extent
-%   - **blockModeSwitch** — *(optional)* unused; block mode is resolved in MibDataset.clearLayer
+%     - ``'selection'`` - clear the selection layer
+%     - ``'mask'`` - clear the mask layer
+%     - ``'labels'`` - clear the labels layer
+%     - ``'everything'`` - clear selection, mask, and labels layers (``core.MibLabels63`` only)
+%     - ``'image'`` - clear the image layer
+%   - **y** - *(optional)* numeric [minY, maxY] or [] for full height extent
+%   - **x** - *(optional)* numeric [minX, maxX] or [] for full width extent
+%   - **z** - *(optional)* numeric [minZ, maxZ] or [] for full depth extent
+%   - **t** - *(optional)* numeric [minT, maxT] or [] for full time extent
+%   - **blockModeSwitch** - *(optional)* unused; block mode is resolved in MibDataset.clearLayer
 %
 % Output Arguments:
 %

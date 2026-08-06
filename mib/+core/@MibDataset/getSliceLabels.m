@@ -9,17 +9,17 @@ function [labelsList, labelValues, labelPositions, indices] = getSliceLabels(obj
 % Get list of labels (mibImage.annotations) shown at the specified slice
 %
 % Input Arguments:
-%   - **sliceNumber** — *(optional)*, a slice number to get labels
-%   - **timePoint** — *(optional)*, a time point to get the labels
-%   - **options** — *(optional)*, structure with additional parameters:
+%   - **sliceNumber** - *(optional)*, a slice number to get labels
+%   - **timePoint** - *(optional)*, a time point to get the labels
+%   - **options** - *(optional)*, structure with additional parameters:
 %
-%     - ``.blockModeSwitch`` — *(optional)*, optionally return labels that are seen only in the current view
-%     - ``.shiftCoordinates`` — *(optional)*, shift coordinates so that they are corrected relative to the crop introduces by blockModeSwitch
+%     - ``.blockModeSwitch`` - *(optional)*, optionally return labels that are seen only in the current view
+%     - ``.shiftCoordinates`` - *(optional)*, shift coordinates so that they are corrected relative to the crop introduces by blockModeSwitch
 %
 % Output Arguments:
-%   - **labelsList** — a cell array with labels
-%   - **labelPositions** — a matrix with coordinates of the labels [labelIndex, z x y]
-%   - **indices** — indices of the labels
+%   - **labelsList** - a cell array with labels
+%   - **labelPositions** - a matrix with coordinates of the labels [labelIndex, z x y]
+%   - **indices** - indices of the labels
 %
 % Usage:
 %   **Example 1**

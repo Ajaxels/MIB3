@@ -7,7 +7,7 @@ function updateNodeStrel(obj, nodeStrelSize)
 %       obj.updateNodeStrel(nodeStrelSize)
 %
 % Input Arguments:
-%   - **nodeStrelSize** — radius of the strel element
+%   - **nodeStrelSize** - radius of the strel element
 %
 
 if verLessThan('matlab', '9')

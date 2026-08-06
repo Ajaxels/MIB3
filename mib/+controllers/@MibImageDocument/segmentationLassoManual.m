@@ -12,36 +12,36 @@ function segmentationLassoManual(obj, BatchOptIn)
 % are not supported in manual mode.
 %
 % Input Arguments:
-%   - **BatchOptIn** *(optional)* — [struct|char|NaN] batch processing control or modifier key;
+%   - **BatchOptIn** *(optional)* - [struct|char|NaN] batch processing control or modifier key;
 %     when ``NaN``, returns default structure via "syncBatch" event:
 %
-%     - ``.Shape`` — [char] ``'Rectangle'`` or ``'Ellipse'`` — shape for manual selection
-%     - ``.Mode`` — [char] ``'Slice'`` (2D, current) or ``'Stack'`` (3D, whole stack)
-%     - ``.X1`` — [numeric] X coordinate: top-left for Rectangle, center for Ellipse
-%     - ``.Y1`` — [numeric] Y coordinate: top-left for Rectangle, center for Ellipse
-%     - ``.Width`` — [numeric] half-width of selection area (semi-axis for Ellipse)
-%     - ``.Height`` — [numeric] half-height of selection area (semi-axis for Ellipse)
-%     - ``.Action`` — [char] ``'Add'`` or ``'Subtract'`` — action on generated selection
-%     - ``.FixSelectionToMask`` — [logical] apply selection only to masked area
-%     - ``.FixSelectionToMaterial`` — [logical] apply selection only to selected material area
-%     - ``.showWaitbar`` — [logical] show progress bar during execution
+%     - ``.Shape`` - [char] ``'Rectangle'`` or ``'Ellipse'`` - shape for manual selection
+%     - ``.Mode`` - [char] ``'Slice'`` (2D, current) or ``'Stack'`` (3D, whole stack)
+%     - ``.X1`` - [numeric] X coordinate: top-left for Rectangle, center for Ellipse
+%     - ``.Y1`` - [numeric] Y coordinate: top-left for Rectangle, center for Ellipse
+%     - ``.Width`` - [numeric] half-width of selection area (semi-axis for Ellipse)
+%     - ``.Height`` - [numeric] half-height of selection area (semi-axis for Ellipse)
+%     - ``.Action`` - [char] ``'Add'`` or ``'Subtract'`` - action on generated selection
+%     - ``.FixSelectionToMask`` - [logical] apply selection only to masked area
+%     - ``.FixSelectionToMaterial`` - [logical] apply selection only to selected material area
+%     - ``.showWaitbar`` - [logical] show progress bar during execution
 %
 % Output Arguments:
 %   (none)
 %
-% **Example 1** — select area and add to selection:
+% **Example 1** - select area and add to selection:
 %
 %   .. code-block:: matlab
 %
 %      obj.segmentationLassoManual();
 %
-% **Example 2** — select area and subtract from selection:
+% **Example 2** - select area and subtract from selection:
 %
 %   .. code-block:: matlab
 %
 %      obj.segmentationLassoManual('control');
 %
-% **Example 3** — batch mode with provided options:
+% **Example 3** - batch mode with provided options:
 %
 %   .. code-block:: matlab
 %

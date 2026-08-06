@@ -24,7 +24,7 @@ function quantification_Callback(obj, batchModeSwitch)
 % and all intensity properties.
 %
 % Input Arguments:
-%   - **batchModeSwitch** — *(optional)* logical; 1 = headless batch mode (no
+%   - **batchModeSwitch** - *(optional)* logical; 1 = headless batch mode (no
 %     GUI updates, no statTable write, auto-exports if configured);
 %     default 0
 %

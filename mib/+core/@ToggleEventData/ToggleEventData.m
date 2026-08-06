@@ -35,10 +35,10 @@ classdef (ConstructOnLoad) ToggleEventData < event.EventData
             %       data = ToggleEventData(newParameter)
             %
             % Input Arguments:
-            %   - **newParameter** — [any type] data to be passed to event listeners
+            %   - **newParameter** - [any type] data to be passed to event listeners
             %
             % Output Arguments:
-            %   - **data** — [ToggleEventData] event data object with wrapped parameter
+            %   - **data** - [ToggleEventData] event data object with wrapped parameter
             %
             
             data.Parameters = newParameter;

@@ -9,12 +9,12 @@ function renderMiniMap(obj)
 % Each tile is a patch at its SOLVED position, coloured by the worst score of
 % its incident edges (green → red; grey when all incident edges are excluded).
 % The current pair's tiles get a bold blue outline. Clicking jumps the review
-% to whichever SEAM of the current layer is nearest the click point — not
+% to whichever SEAM of the current layer is nearest the click point - not
 % just the clicked tile's single worst seam, and not just whichever patch
-% happens to be drawn on top of an overlap — see
+% happens to be drawn on top of an overlap - see
 % :meth:`controllers.StitchingInspector.edgeAtMiniMapPoint`.
 %
-% Only the tiles of ONE Z-layer are drawn — the layer of the current seam (the
+% Only the tiles of ONE Z-layer are drawn - the layer of the current seam (the
 % lower tile of a cross-layer pair). A multi-layer mosaic stacks every layer at
 % the same XY, so drawing them all overlaps the boxes and merges the labels;
 % restricting to the current layer keeps the overview readable and it follows
@@ -24,14 +24,14 @@ function renderMiniMap(obj)
 % When the per-tile thumbnails are available (:func:`ensureTileThumbs`), a
 % low-res FUSED preview is composited at the solved positions behind the
 % patches (which then drop to a light tint), so a gross misplacement shows in
-% the actual image content — re-composited on every redraw, so it tracks each
+% the actual image content - re-composited on every redraw, so it tracks each
 % re-solve.
 %
 
 if ~obj.hasWidget('miniMapAxes'); return; end
 mapAxes = obj.view.handles.miniMapAxes;
 cla(mapAxes);
-% Harmless fallback only — see the real (always-present, always-pickable)
+% Harmless fallback only - see the real (always-present, always-pickable)
 % hit target laid down below, which is what actually receives every click.
 mapAxes.ButtonDownFcn = @(~, ~) obj.miniMapButtonDown();
 
@@ -71,7 +71,7 @@ hold(mapAxes, 'on');
 % One CLICKABLE object spanning every drawn tile's bounding box, laid down
 % FIRST (bottom of the stack). The tile patches above it are
 % PickableParts='none', so a click anywhere in the layout passes straight
-% through them to whichever pixel of THIS object is underneath — giving an
+% through them to whichever pixel of THIS object is underneath - giving an
 % exact CurrentPoint with no z-order ambiguity. (A UIAxes' own ButtonDownFcn
 % is not a reliable fallback once every child is non-pickable, so the mini-map
 % needs one real, always-present hit target rather than relying on that.)
@@ -97,7 +97,7 @@ if ~isempty(obj.tileThumbs)
         thumb = obj.tileThumbs{tileIdx};
         rows = placeRC(tileIdx, 1):placeRC(tileIdx, 1) + size(thumb, 1) - 1;
         cols = placeRC(tileIdx, 2):placeRC(tileIdx, 2) + size(thumb, 2) - 1;
-        fusedCanvas(rows, cols) = thumb;   % overwrite blend — preview only
+        fusedCanvas(rows, cols) = thumb;   % overwrite blend - preview only
     end
     % Pixel-centre extents in full-res units, same convention as the pair view.
     hitTarget = image(mapAxes, 'XData', [minX, minX + (canvasW - 1) * scale], ...

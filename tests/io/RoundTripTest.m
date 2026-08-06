@@ -10,8 +10,8 @@ classdef RoundTripTest < matlab.unittest.TestCase
 % All tests are tagged Unit (fast, offline, headless).
 %
 % Notes on format coverage:
-%   AmiraMesh — full round-trip via loadImagesWrapper (AmiraMeshLoader is headless-safe).
-%   HDF5      — write verified via h5read; HDF5NoHeaderLoader requires interactive
+%   AmiraMesh - full round-trip via loadImagesWrapper (AmiraMeshLoader is headless-safe).
+%   HDF5      - write verified via h5read; HDF5NoHeaderLoader requires interactive
 %               dataset selection (SelectHDFSeries dialog) and cannot be used headlessly.
 
     methods (TestClassSetup)

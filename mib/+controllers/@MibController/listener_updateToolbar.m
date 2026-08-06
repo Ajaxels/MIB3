@@ -9,8 +9,8 @@ function listener_updateToolbar(obj, src, evtData)
 % executed upon catch of MibModel->"UpdateToolbar" event
 %
 % Input Arguments:
-%   - **src** — handle to MibModel
-%   - **evtData** — event data, an instance of core.ToggleEventData class with the following fields:
+%   - **src** - handle to MibModel
+%   - **evtData** - event data, an instance of core.ToggleEventData class with the following fields:
 %     .Parameters field containing a structure with the
 %     .evtData.Parameters.button - [char] handle of the button in the toolbar, e.g. "fastpan",
 %     .evtData.Parameters.state - [logical] state of the button true->pressed, false->depressed
@@ -21,7 +21,7 @@ function listener_updateToolbar(obj, src, evtData)
 % Output Arguments:
 %   (none)
 %
-% **Example 1** — update the state of the fastpan button:
+% **Example 1** - update the state of the fastpan button:
 %
 %   .. code-block:: matlab
 %

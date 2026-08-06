@@ -9,34 +9,34 @@ function [img, DisplacementField, randomSeed] = elasticDistortionFilter(img, Bat
 %       [img, DisplacementField, randomSeed] = utils.elasticDistortionFilter(img, BatchOpt, randomSeed, DisplacementField)
 %
 % Based on: *Best Practices for Convolutional Neural Networks Applied to
-% Visual Document Analysis* — Simard, Steinkraus & Platt (2003).
+% Visual Document Analysis* - Simard, Steinkraus & Platt (2003).
 % See also: https://cognitivemedium.com/assets/rmnist/Simard.pdf
 %
 % Input Arguments:
-%   - **img** — image array ``[height, width, colors, depth]``
-%   - **BatchOpt** — *(optional)* structure with filter parameters:
+%   - **img** - image array ``[height, width, colors, depth]``
+%   - **BatchOpt** - *(optional)* structure with filter parameters:
 %
-%     - ``.ScalingFactor`` — ``{value}`` amplitude of the displacement field (default: ``30``)
-%     - ``.HSize`` — ``char`` filter size for Gaussian smoothing of the field (default: ``'7'``)
-%     - ``.Sigma`` — ``{value}`` sigma for Gaussian smoothing of the field (default: ``4``)
-%     - ``.SourceLayer`` — ``{string}`` layer type; non-image layers use nearest-neighbour
+%     - ``.ScalingFactor`` - ``{value}`` amplitude of the displacement field (default: ``30``)
+%     - ``.HSize`` - ``char`` filter size for Gaussian smoothing of the field (default: ``'7'``)
+%     - ``.Sigma`` - ``{value}`` sigma for Gaussian smoothing of the field (default: ``4``)
+%     - ``.SourceLayer`` - ``{string}`` layer type; non-image layers use nearest-neighbour
 %       interpolation (default: ``'image'``)
-%     - ``.Mode3D`` — logical, apply 3D distortion (not yet implemented; default: ``false``)
-%     - ``.showWaitbar`` — logical, show progress waitbar (default: ``true``)
-%     - ``.UseParallelComputing`` — logical, use parallel computing (default: ``false``)
-%   - **randomSeed** — *(optional)* integer seed for ``rng`` to make distortions reproducible
+%     - ``.Mode3D`` - logical, apply 3D distortion (not yet implemented; default: ``false``)
+%     - ``.showWaitbar`` - logical, show progress waitbar (default: ``true``)
+%     - ``.UseParallelComputing`` - logical, use parallel computing (default: ``false``)
+%   - **randomSeed** - *(optional)* integer seed for ``rng`` to make distortions reproducible
 %     (default: ``0``)
-%   - **DisplacementField** — *(optional)* pre-computed displacement field struct matching
+%   - **DisplacementField** - *(optional)* pre-computed displacement field struct matching
 %     ``[height, width, depth]`` of **img**; fields:
 %
-%     - ``.fdx`` — x-displacement map
-%     - ``.fdy`` — y-displacement map
-%     - ``.fdz`` — z-displacement map (3D mode)
+%     - ``.fdx`` - x-displacement map
+%     - ``.fdy`` - y-displacement map
+%     - ``.fdz`` - z-displacement map (3D mode)
 %
 % Output Arguments:
-%   - **img** — elastically distorted image, same class and size as input
-%   - **DisplacementField** — displacement field applied during filtering
-%   - **randomSeed** — random seed used to generate the field (``[]`` when field was supplied)
+%   - **img** - elastically distorted image, same class and size as input
+%   - **DisplacementField** - displacement field applied during filtering
+%   - **randomSeed** - random seed used to generate the field (``[]`` when field was supplied)
 
 % Updates
 %

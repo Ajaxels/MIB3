@@ -2,9 +2,9 @@ classdef ChunkingImport < handle
 % CHUNKINGIMPORT - Reassembles a set of chopped image tiles back into a single dataset.
 %
 % Two modes:
-%   * **New Stack** — auto-detects the tile grid from filenames (_Z##-X##-Y## pattern)
+%   * **New Stack** - auto-detects the tile grid from filenames (_Z##-X##-Y## pattern)
 %     and assembles a new dataset.
-%   * **Fuse to Existing** — positions each tile in the currently open dataset using
+%   * **Fuse to Existing** - positions each tile in the currently open dataset using
 %     its bounding-box metadata (optional pixel offsets).
 
 
@@ -54,9 +54,9 @@ classdef ChunkingImport < handle
             %       obj = ChunkingImport(mibModel, mibController, NaN)
             %
             % Input Arguments:
-            %   - **mibModel** — handle to MibModel
-            %   - **varargin{1}** — *(optional)* handle to MibController
-            %   - **varargin{2}** — *(optional)* BatchOpt struct or NaN (batch mode)
+            %   - **mibModel** - handle to MibModel
+            %   - **varargin{1}** - *(optional)* handle to MibController
+            %   - **varargin{2}** - *(optional)* BatchOpt struct or NaN (batch mode)
             %
             % For batch mode, supply ``BatchOpt.InputDirectory`` and
             % ``BatchOpt.FilePattern`` to auto-discover tile files instead of
@@ -324,7 +324,7 @@ classdef ChunkingImport < handle
             %       obj.combineBtn_Callback(batchModeSwitch)
             %
             % Input Arguments:
-            %   - **batchModeSwitch** — *(optional)* logical; ``true`` when called from batch mode
+            %   - **batchModeSwitch** - *(optional)* logical; ``true`` when called from batch mode
             %
 
             if obj.mibModel.preferences.System.DeveloperMode
@@ -457,7 +457,7 @@ classdef ChunkingImport < handle
 
                     if obj.BatchOpt.showWaitbar; delete(waitbar); end
 
-                    % Replace current dataset — preserve existing model type (63 or 255 materials)
+                    % Replace current dataset - preserve existing model type (63 or 255 materials)
                     if obj.mibModel.I{id}.labels.maxMaterials == 63
                         newModelType = 'labels63';
                     else
@@ -547,7 +547,7 @@ classdef ChunkingImport < handle
                     end
 
                     % Precompute per-axis cumulative positions using one representative
-                    % tile per unique index — fixes the 2-D/3-D grid overcounting bug.
+                    % tile per unique index - fixes the 2-D/3-D grid overcounting bug.
                     yCumM = [0, cumsum(arrayfun(@(ty) tileHeightM(find(yIndex==ty,1)), 1:tilesY))];
                     xCumM = [0, cumsum(arrayfun(@(tx) tileWidthM(find(xIndex==tx,1)),  1:tilesX))];
                     zCumM = [0, cumsum(arrayfun(@(tz) tileDepthM(find(zIndex==tz,1)),  1:tilesZ))];
@@ -722,7 +722,7 @@ classdef ChunkingImport < handle
                         loader = io.LoaderFactory.create(loaderInfo, loaderOpts);
                         [imginfo, files] = loader.loadMetadata(filenames(fileId), loaderOpts);
 
-                        % Extract bounding box — try direct key first (some loaders),
+                        % Extract bounding box - try direct key first (some loaders),
                         % then fall back to parsing ImageDescription
                         tilesBB = [];
                         if isKey(imginfo, 'BoundingBox')
@@ -853,7 +853,7 @@ classdef ChunkingImport < handle
                         if tilesBB(1) < currBB(1) || tilesBB(2) > currBB(2) || ...
                                 tilesBB(3) < currBB(3) || tilesBB(4) > currBB(4) || ...
                                 tilesBB(5) < currBB(5) || tilesBB(6) > currBB(6)
-                            % Model is larger — crop from left then paste at origin
+                            % Model is larger - crop from left then paste at origin
                             cx1 = max(1, round((currBB(1)-tilesBB(1))/pixSize.x) + 1 + xOffset);
                             cy1 = max(1, round((currBB(3)-tilesBB(3))/pixSize.y) + 1 + yOffset);
                             cz1 = max(1, round((currBB(5)-tilesBB(5))/pixSize.z) + 1 + zOffset);
@@ -941,16 +941,16 @@ classdef ChunkingImport < handle
             %       R = obj.loadModels(filename)
             %
             % Input Arguments:
-            %   - **filename** — (char) full path to the label file
+            %   - **filename** - (char) full path to the label file
             %
             % Output Arguments:
-            %   - **R** — struct with fields:
+            %   - **R** - struct with fields:
             %
-            %     - ``.imOut`` — label volume as uint8 [H, W, D]
-            %     - ``.materialNames`` — (optional) cell array of material names
-            %     - ``.materialColors`` — (optional) [N×3] RGB colors 0-1
-            %     - ``.BoundingBox`` — (optional) [xmin xmax ymin ymax zmin zmax]
-            %     - ``.labelText``, ``.labelValue``, ``.labelPosition`` — point annotations (optional)
+            %     - ``.imOut`` - label volume as uint8 [H, W, D]
+            %     - ``.materialNames`` - (optional) cell array of material names
+            %     - ``.materialColors`` - (optional) [N×3] RGB colors 0-1
+            %     - ``.BoundingBox`` - (optional) [xmin xmax ymin ymax zmin zmax]
+            %     - ``.labelText``, ``.labelValue``, ``.labelPosition`` - point annotations (optional)
             %
 
             R = struct();

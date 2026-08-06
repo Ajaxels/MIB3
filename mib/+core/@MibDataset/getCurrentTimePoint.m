@@ -9,7 +9,7 @@ function timePnt = getCurrentTimePoint(obj)
 % Input Arguments:
 %
 % Output Arguments:
-%   - **timePnt** — index of the currently shown slice
+%   - **timePnt** - index of the currently shown slice
 %
 % Usage:
 %   **Example 1**

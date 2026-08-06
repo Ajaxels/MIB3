@@ -9,13 +9,13 @@ function status = dragNdrop_Callback(obj, parameterIn)
 % Callback for filename drag-and-drop operation in MIB.
 %
 % Input Arguments:
-%   - **parameterIn** — cell array, where
+%   - **parameterIn** - cell array, where
 %
 %     - the first element is a handle to the webWindow that was the target for the drag-and-drop operation
 %     - the second element is a filename that was dragged into MIB
 %
 % Output Arguments:
-%   - **status** — logical; ``true`` on success, ``false`` if the file could not be loaded
+%   - **status** - logical; ``true`` on success, ``false`` if the file could not be loaded
 %
 
 % arguments (Input)
@@ -46,7 +46,7 @@ end
 [path, fn, ext] = fileparts(filenameList{1});
 extLower = lower(ext);
 
-% .mibcfg is a DeepMIB config file — always handled here, never falls through
+% .mibcfg is a DeepMIB config file - always handled here, never falls through
 if strcmpi(extLower, '.mibcfg')
     deepMibIdx = find(strcmp(obj.childControllersIds, 'controllers.MibDeep'), 1);
     if ~isempty(deepMibIdx) && isvalid(obj.childControllers{deepMibIdx})

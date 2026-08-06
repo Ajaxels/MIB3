@@ -7,31 +7,31 @@ function protocolActions_Callback(obj, options)
 %       obj.protocolActions_Callback(options)
 %
 % Input Arguments:
-%   - **options** — [char] operation specifier:
+%   - **options** - [char] operation specifier:
 %
-%     - ``'add'`` — append current action as a new last step
-%     - ``'duplicate'`` — duplicate the selected step (inserts copy after it)
-%     - ``'insert'`` — insert current action before the selected step
-%     - ``'insertstop'`` — insert a STOP EXECUTION step before the selected step
-%     - ``'update'`` — overwrite the selected step with current action settings
-%     - ``'show'`` — display settings of the selected step (read-only)
-%     - ``'delete'`` — remove the selected step
-%     - ``'moveup'`` — swap the selected step with the one above it
-%     - ``'movedown'`` — swap the selected step with the one below it
+%     - ``'add'`` - append current action as a new last step
+%     - ``'duplicate'`` - duplicate the selected step (inserts copy after it)
+%     - ``'insert'`` - insert current action before the selected step
+%     - ``'insertstop'`` - insert a STOP EXECUTION step before the selected step
+%     - ``'update'`` - overwrite the selected step with current action settings
+%     - ``'show'`` - display settings of the selected step (read-only)
+%     - ``'delete'`` - remove the selected step
+%     - ``'moveup'`` - swap the selected step with the one above it
+%     - ``'movedown'`` - swap the selected step with the one below it
 %
-% **Example 1** — add action to protocol:
+% **Example 1** - add action to protocol:
 %
 %   .. code-block:: matlab
 %
 %      obj.protocolActions_Callback('add');
 %
-% **Example 2** — remove step from protocol:
+% **Example 2** - remove step from protocol:
 %
 %   .. code-block:: matlab
 %
 %      obj.protocolActions_Callback('delete');
 %
-% **Example 3** — reorder steps:
+% **Example 3** - reorder steps:
 %
 %   .. code-block:: matlab
 %

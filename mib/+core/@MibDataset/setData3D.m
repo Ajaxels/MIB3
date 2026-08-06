@@ -7,7 +7,7 @@ function result = setData3D(obj, dataset, type, time, orient, col_channel, optio
 %       result = obj.setData3D(dataset, type, time, orient, col_channel, options)
 %
 % Input Arguments:
-%   - **dataset** — [numeric or cell] 3D image with colors to set:
+%   - **dataset** - [numeric or cell] 3D image with colors to set:
 %
 %     - When ``options.roiId`` is not used (negative): numeric array or cell ``{1}`` with dimensions:
 %
@@ -18,76 +18,76 @@ function result = setData3D(obj, dataset, type, time, orient, col_channel, optio
 %
 %       - Image: ``[height, width, depth, colors]``
 %       - Other types: ``[height, width, depth]``
-%   - **type** — [char] layer type to set:
+%   - **type** - [char] layer type to set:
 %
-%     - ``'image'`` — image layer (default)
-%     - ``'labels'`` — labels layer with segmentation
-%     - ``'mask'`` — mask layer for segmentation support
-%     - ``'selection'`` — selection layer (temporary segmentation layer)
-%     - ``'everything'`` — packed data (``'labels'``, ``'mask'``, ``'selection'`` for ``maxMaterials==63`` only)
+%     - ``'image'`` - image layer (default)
+%     - ``'labels'`` - labels layer with segmentation
+%     - ``'mask'`` - mask layer for segmentation support
+%     - ``'selection'`` - selection layer (temporary segmentation layer)
+%     - ``'everything'`` - packed data (``'labels'``, ``'mask'``, ``'selection'`` for ``maxMaterials==63`` only)
 %
-%   - **time** *(optional)* — [numeric or ``[]``] time point index to set:
+%   - **time** *(optional)* - [numeric or ``[]``] time point index to set:
 %
-%     - ``[]`` — set the current time point (default)
-%     - integer — set dataset at the specified time point
+%     - ``[]`` - set the current time point (default)
+%     - integer - set dataset at the specified time point
 %
-%   - **orient** *(optional)* — [numeric or ``[]``] orientation for dataset update:
+%   - **orient** *(optional)* - [numeric or ``[]``] orientation for dataset update:
 %
-%     - ``[]`` — use currently shown orientation (default)
-%     - ``1`` — ``ZX`` plane: transpose ``[y,x,z,c,t]`` → ``[x,z,y,c,t]``
-%     - ``2`` — ``ZY`` plane: transpose ``[y,x,z,c,t]`` → ``[y,z,x,c,t]``
-%     - ``3`` — ``YX`` plane: native orientation ``[y,x,z,c,t]``
+%     - ``[]`` - use currently shown orientation (default)
+%     - ``1`` - ``ZX`` plane: transpose ``[y,x,z,c,t]`` → ``[x,z,y,c,t]``
+%     - ``2`` - ``ZY`` plane: transpose ``[y,x,z,c,t]`` → ``[y,z,x,c,t]``
+%     - ``3`` - ``YX`` plane: native orientation ``[y,x,z,c,t]``
 %
-%   - **col_channel** *(optional)* — [numeric, ``[]``, or ``NaN``] channel(s) or material(s) to update:
+%   - **col_channel** *(optional)* - [numeric, ``[]``, or ``NaN``] channel(s) or material(s) to update:
 %
 %     - When **type** is ``'image'`` (color channel indices):
 %
-%       - ``[]`` — use channels from ``obj.slices{4}`` (default)
-%       - ``NaN`` — update all color channels
-%       - integer or vector — update specific channel(s)
+%       - ``[]`` - use channels from ``obj.slices{4}`` (default)
+%       - ``NaN`` - update all color channels
+%       - integer or vector - update specific channel(s)
 %
 %     - When **type** is ``'labels'`` (material selection):
 %
-%       - ``[]`` or ``NaN`` — update all materials (default)
-%       - integer — update specific material (data with value 1 will get this material index)
-%   - **options** *(optional)* — [struct] additional parameters:
+%       - ``[]`` or ``NaN`` - update all materials (default)
+%       - integer - update specific material (data with value 1 will get this material index)
+%   - **options** *(optional)* - [struct] additional parameters:
 %
-%     - ``.blockModeSwitch`` — [logical] override block mode (``false`` = full dataset, ``true`` = visible area only)
-%     - ``.roiId`` — [numeric or ``[]``] ROI mode control:
+%     - ``.blockModeSwitch`` - [logical] override block mode (``false`` = full dataset, ``true`` = visible area only)
+%     - ``.roiId`` - [numeric or ``[]``] ROI mode control:
 %
-%       - ``-1`` or missing — full dataset without ROI (default)
-%       - ``[]`` — currently selected ROI
-%       - ``0`` — all ROIs
-%       - integer — specific ROI by index
+%       - ``-1`` or missing - full dataset without ROI (default)
+%       - ``[]`` - currently selected ROI
+%       - ``0`` - all ROIs
+%       - integer - specific ROI by index
 %
-%     - ``.fillBg`` — [numeric or ``NaN``] fill color for ROI background:
+%     - ``.fillBg`` - [numeric or ``NaN``] fill color for ROI background:
 %
-%       - ``NaN`` — crop to rectangular ROI bounding box (default)
-%       - number — fill areas outside ROI with this intensity
+%       - ``NaN`` - crop to rectangular ROI bounding box (default)
+%       - number - fill areas outside ROI with this intensity
 %
-%     - ``.y`` *(optional)* — [numeric] ``[ymin, ymax]`` of dataset region to set
-%     - ``.x`` *(optional)* — [numeric] ``[xmin, xmax]`` of dataset region to set
-%     - ``.z`` *(optional)* — [numeric] ``[zmin, zmax]`` of dataset region to set
-%     - ``.level`` *(optional)* — [numeric] image pyramid level index
-%     - ``.PixelIdxList`` *(optional)* — [numeric vector] pixel indices to update (XY orientation). When used,
+%     - ``.y`` *(optional)* - [numeric] ``[ymin, ymax]`` of dataset region to set
+%     - ``.x`` *(optional)* - [numeric] ``[xmin, xmax]`` of dataset region to set
+%     - ``.z`` *(optional)* - [numeric] ``[zmin, zmax]`` of dataset region to set
+%     - ``.level`` *(optional)* - [numeric] image pyramid level index
+%     - ``.PixelIdxList`` *(optional)* - [numeric vector] pixel indices to update (XY orientation). When used,
 %       all other spatial parameters are ignored and ``dataset`` should be a vector. **Not implemented for 'image' type**
 %
 % Output Arguments:
-%   - **result** — [logical] ``true`` on success, ``false`` on failure
+%   - **result** - [logical] ``true`` on success, ``false`` on failure
 %
-% **Example 1** — Set 3D dataset for current time point in current orientation:
+% **Example 1** - Set 3D dataset for current time point in current orientation:
 %
 %   .. code-block:: matlab
 %
 %      result = obj.setData3D(dataset, 'image');
 %
-% **Example 2** — Set 3D dataset for time point 5 in XY orientation:
+% **Example 2** - Set 3D dataset for time point 5 in XY orientation:
 %
 %   .. code-block:: matlab
 %
 %      result = obj.setData3D(dataset, 'image', 5, 3);
 %
-% **Example 3** — Set selection for time point 5 in ZX orientation, color channel 2:
+% **Example 3** - Set selection for time point 5 in ZX orientation, color channel 2:
 %
 %   .. code-block:: matlab
 %

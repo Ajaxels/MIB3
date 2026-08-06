@@ -10,7 +10,7 @@ function updateWidgets(obj)
 % dataset changes.  
 %
 % Repopulates:
-%   - Material dropdown — Mask, Exterior, and all model materials
+%   - Material dropdown - Mask, Exterior, and all model materials
 %   - ColorChannel1/ColorChannel2 dropdowns
 %   - DatasetType, ObjectShape, DetectionType, Property, Connectivity, Units dropdowns
 %   - Multiple checkbox and MultipleProperty string

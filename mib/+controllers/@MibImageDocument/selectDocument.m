@@ -15,13 +15,13 @@ function selectDocument(obj)
 % Output Arguments:
 %   (none)
 %
-% **Example 1** — select document by index:
+% **Example 1** - select document by index:
 %
 %   .. code-block:: matlab
 %
 %      obj.mibController.cImageDoc{2}.selectDocument();
 %
-% **Example 2** — select document after finding it:
+% **Example 2** - select document after finding it:
 %
 %   .. code-block:: matlab
 %

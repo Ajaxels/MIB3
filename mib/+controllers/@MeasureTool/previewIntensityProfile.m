@@ -12,7 +12,7 @@ function previewIntensityProfile(obj)
 % to the measurement's Z/T slice.
 %
 % Input Arguments:
-%   - **obj** — :class:`controllers.MeasureTool`
+%   - **obj** - :class:`controllers.MeasureTool`
 %
 
 datasetId = obj.mibModel.getActiveId();

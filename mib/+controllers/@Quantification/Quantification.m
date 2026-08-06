@@ -31,9 +31,9 @@ classdef Quantification < handle
         sessionSettingsKey
         % key into mibModel.sessionSettings used by CropObjects to persist crop/jitter settings
         sortingDirection
-        % 'ascend' or 'descend' — current sort direction
+        % 'ascend' or 'descend' - current sort direction
         sortingColIndex
-        % column index used for sorting (1–4)
+        % column index used for sorting (1-4)
         sortingRowIndex
         % mapping: sortingRowIndex(i) -> index in STATS after sorting
         statProperties
@@ -45,7 +45,7 @@ classdef Quantification < handle
         childControllersIds
         % cell array with class names of initialized child controllers
         BatchOpt
-        % struct compatible with batch processing — see constructor for fields
+        % struct compatible with batch processing - see constructor for fields
     end
 
     events
@@ -63,9 +63,9 @@ classdef Quantification < handle
             %       obj.ViewListner_Callback2(src, evnt)
             %
             % Input Arguments:
-            %   - **obj** — handle to Quantification controller
-            %   - **src** — event source
-            %   - **evnt** — event data with EventName field
+            %   - **obj** - handle to Quantification controller
+            %   - **src** - event source
+            %   - **evnt** - event data with EventName field
             %
 
             if ~isvalid(obj) || isempty(obj.view) || ~isvalid(obj.view.gui)
@@ -125,13 +125,13 @@ classdef Quantification < handle
             %       obj = controllers.Quantification(mibModel, mibController, BatchOpt, contIndex)
             %
             % Input Arguments:
-            %   - **mibModel** — handle to MibModel
-            %   - **varargin{1}** — *(optional)* handle to parent MibController (for startController compatibility)
-            %   - **varargin{2}** — *(optional)* BatchOpt struct; pass NaN to return default BatchOpt via SyncBatch
-            %   - **varargin{3}** — *(optional)* contIndex - material index to pre-select (-1=Mask, 0=Exterior, 1,2,...=material)
+            %   - **mibModel** - handle to MibModel
+            %   - **varargin{1}** - *(optional)* handle to parent MibController (for startController compatibility)
+            %   - **varargin{2}** - *(optional)* BatchOpt struct; pass NaN to return default BatchOpt via SyncBatch
+            %   - **varargin{3}** - *(optional)* contIndex - material index to pre-select (-1=Mask, 0=Exterior, 1,2,...=material)
             %
             % Output Arguments:
-            %   - **obj** — [Quantification] initialized controller instance
+            %   - **obj** - [Quantification] initialized controller instance
             %
             % Usage:
             %   Example 1::

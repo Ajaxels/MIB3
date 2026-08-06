@@ -8,7 +8,7 @@ function result = countMaterials(obj)
 %
 % When materialNames is available (non-empty), the count is taken from
 % numel(materialNames).  Otherwise the method scans the pixel data across
-% all time-points, extracts the model bits (bits 1–6, mask 0x3F = 63) from
+% all time-points, extracts the model bits (bits 1-6, mask 0x3F = 63) from
 % the packed uint8 container, and finds the highest non-zero material
 % index.
 %
@@ -18,7 +18,7 @@ function result = countMaterials(obj)
 % Input Arguments:
 %
 % Output Arguments:
-%   - **result** — double, the updated materialsCount value.
+%   - **result** - double, the updated materialsCount value.
 %
 % Usage:
 %   **Example 1**

@@ -11,31 +11,31 @@ function segmentationRegionGrowing(obj, yxzCoordinate, BatchOptIn)
 % Requires: compiled ``RegionGrowing_mex.cpp``
 %
 % Input Arguments:
-%   - **yxzCoordinate** — [vector] coordinates of starting point: ``[y, x]`` for 2D or ``[y, x, z]`` for 3D
-%   - **BatchOptIn** *(optional)* — [struct|char] batch processing mode structure or modifier key;
+%   - **yxzCoordinate** - [vector] coordinates of starting point: ``[y, x]`` for 2D or ``[y, x, z]`` for 3D
+%   - **BatchOptIn** *(optional)* - [struct|char] batch processing mode structure or modifier key;
 %     when ``NaN``, returns default structure via "syncBatch" event:
 %
-%     - ``.Coordinate`` — [char] seed point as ``'y; x'`` (2D) or ``'y; x; z'`` (3D)
-%     - ``.Mode`` — [char] ``'Slice'`` (2D, current slice) or ``'Stack'`` (3D, whole stack)
-%     - ``.IntensityVariation`` — [numeric] maximum intensity variation for region growing
-%     - ``.ColorChannel`` — [numeric] color channel to use
-%     - ``.Radius`` — [numeric] effective radius limit (``0`` = no limit)
-%     - ``.Action`` — [char] ``'Add'``, ``'Subtract'``, or ``'Replace'``
-%     - ``.FillHoles`` — [logical] fill holes in resulting selection
-%     - ``.FixSelectionToMask`` — [logical] apply selection only to masked area
-%     - ``.FixSelectionToMaterial`` — [logical] apply selection only to selected material area
-%     - ``.showWaitbar`` — [logical] show progress bar during execution
+%     - ``.Coordinate`` - [char] seed point as ``'y; x'`` (2D) or ``'y; x; z'`` (3D)
+%     - ``.Mode`` - [char] ``'Slice'`` (2D, current slice) or ``'Stack'`` (3D, whole stack)
+%     - ``.IntensityVariation`` - [numeric] maximum intensity variation for region growing
+%     - ``.ColorChannel`` - [numeric] color channel to use
+%     - ``.Radius`` - [numeric] effective radius limit (``0`` = no limit)
+%     - ``.Action`` - [char] ``'Add'``, ``'Subtract'``, or ``'Replace'``
+%     - ``.FillHoles`` - [logical] fill holes in resulting selection
+%     - ``.FixSelectionToMask`` - [logical] apply selection only to masked area
+%     - ``.FixSelectionToMaterial`` - [logical] apply selection only to selected material area
+%     - ``.showWaitbar`` - [logical] show progress bar during execution
 %
 % Output Arguments:
 %   (none)
 %
-% **Example 1** — region growing from [y,x]=50,75 with shift modifier:
+% **Example 1** - region growing from [y,x]=50,75 with shift modifier:
 %
 %   .. code-block:: matlab
 %
 %      obj.segmentationRegionGrowing([50, 75], 'shift');
 %
-% **Example 2** — batch mode:
+% **Example 2** - batch mode:
 %
 %   .. code-block:: matlab
 %

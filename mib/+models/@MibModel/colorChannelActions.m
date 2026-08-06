@@ -14,54 +14,54 @@ function colorChannelActions(obj, mode, channel1, BatchOptIn)
 % arguments, shows the full action-selection dialog.
 %
 % Input Arguments:
-%   - **mode** — *(optional)* char, pre-selects the action; pass ``[]`` or
+%   - **mode** - *(optional)* char, pre-selects the action; pass ``[]`` or
 %     omit to start with the action-selection step.  One of:
 %     ``'Insert empty channel'``, ``'Copy channel'``, ``'Invert channel'``,
 %     ``'Rotate channel'``, ``'Shift channel'``, ``'Swap channels'``,
 %     ``'Delete channel'``.  Pass ``NaN`` to return default options via the
 %     ``SyncBatch`` event.
-%   - **channel1** — *(optional)* numeric scalar, pre-sets
+%   - **channel1** - *(optional)* numeric scalar, pre-sets
 %     ``BatchOpt.Channel1{1}`` (the primary / source channel index).
 %     Pass ``[]`` to use the currently selected channel.
-%   - **BatchOptIn** — *(optional)* struct for batch processing mode
+%   - **BatchOptIn** - *(optional)* struct for batch processing mode
 %
-%     - ``.Action`` — [cell] action to perform
+%     - ``.Action`` - [cell] action to perform
 %       (default: ``{'Insert empty channel'}``).
 %       Allowed values: ``{'Insert empty channel', 'Copy channel',
 %       'Invert channel', 'Rotate channel', 'Shift channel',
 %       'Swap channels', 'Delete channel'}``
-%     - ``.Channel1`` — [numeric cell] ``{value, [minLim maxLim], 'on'}``
+%     - ``.Channel1`` - [numeric cell] ``{value, [minLim maxLim], 'on'}``
 %       source / primary channel index
 %       (default: currently selected channel)
-%     - ``.Channel2`` — [numeric cell] ``{value, [minLim maxLim], 'on'}``
+%     - ``.Channel2`` - [numeric cell] ``{value, [minLim maxLim], 'on'}``
 %       target / secondary channel index; used by Copy and Swap.
 %       For Copy: ``0`` appends source as a new channel at the end.
 %       (default: currently selected channel)
-%     - ``.RotationAngle`` — [cell] rotation angle for Rotate action
+%     - ``.RotationAngle`` - [cell] rotation angle for Rotate action
 %       (default: ``{'90'}``). Allowed: ``{'90', '180', '-90'}``
-%     - ``.dx`` — [numeric cell] ``{value, [minLim maxLim], 'on'}``
+%     - ``.dx`` - [numeric cell] ``{value, [minLim maxLim], 'on'}``
 %       X-shift in pixels for Shift action
 %       (default: ``{0, [-maxDim maxDim], 'on'}``)
-%     - ``.dy`` — [numeric cell] ``{value, [minLim maxLim], 'on'}``
+%     - ``.dy`` - [numeric cell] ``{value, [minLim maxLim], 'on'}``
 %       Y-shift in pixels for Shift action
 %       (default: ``{0, [-maxDim maxDim], 'on'}``)
-%     - ``.FillValue`` — [numeric cell] ``{value, [minLim maxLim], 'on'}``
+%     - ``.FillValue`` - [numeric cell] ``{value, [minLim maxLim], 'on'}``
 %       Fill intensity for Shift action border
 %       (default: ``{0, [0 maxInt], 'on'}``)
-%     - ``.showWaitbar`` — [logical] show the progress dialog
+%     - ``.showWaitbar`` - [logical] show the progress dialog
 %       (default: ``true``)
-%     - ``.id`` — *(optional)* dataset index 1–9,
+%     - ``.id`` - *(optional)* dataset index 1-9,
 %       default = ``obj.getActiveId()``
 %
 % Usage:
-%   **Example 1** — open Insert empty channel dialog
+%   **Example 1** - open Insert empty channel dialog
 %
 %   .. code-block:: matlab
 %
 %
 %     obj.mibModel.colorChannelActions('Insert empty channel');
 %
-%   **Example 2** — batch: delete color channel 2
+%   **Example 2** - batch: delete color channel 2
 %
 %   .. code-block:: matlab
 %
@@ -70,7 +70,7 @@ function colorChannelActions(obj, mode, channel1, BatchOptIn)
 %     BatchOpt.Channel1 = {2, [1 9], 'on'};
 %     obj.mibModel.colorChannelActions('Delete channel', [], BatchOpt);
 %
-%   **Example 3** — batch: shift channel 1 by dx=10, dy=-5
+%   **Example 3** - batch: shift channel 1 by dx=10, dy=-5
 %
 %   .. code-block:: matlab
 %
@@ -149,7 +149,7 @@ if nargin == 4  % batch mode
         BatchOpt = utils.updateBatchOptCombineFields_Shared(BatchOpt, BatchOptIn);
     end
 elseif nargin <= 3 && ~ischar(mode) && ~isempty(mode) && isscalar(mode) && isnan(mode)
-    % colorChannelActions(NaN) — SyncBatch request
+    % colorChannelActions(NaN) - SyncBatch request
     BatchOpt = rmfield(BatchOpt, 'id');
     notify(obj, 'SyncBatch', core.ToggleEventData(BatchOpt));
     return;
@@ -183,7 +183,7 @@ if nargin < 4
         BatchOpt.Action{1}   = answer1{1};
         BatchOpt.Channel1{1} = answer1{2};
     else
-        % Action pre-selected by mode — skip to action-specific dialog directly.
+        % Action pre-selected by mode - skip to action-specific dialog directly.
         % Channel1 defaults to currently selected channel (already set above).
     end
 

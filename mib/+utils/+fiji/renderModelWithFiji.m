@@ -14,20 +14,20 @@ function result = renderModelWithFiji(Volume, materialIndex, pixSize, colorList,
 %      result = utils.fiji.renderModelWithFiji(Volume, materialIndex, pixSize, colorList, mibGUI)
 %
 % Input Arguments:
-%   - **Volume** — [uint8] 3D label volume, dimensions [height, width, depth]; voxel values are material indices
-%   - **materialIndex** — [numeric] material to render: ``0`` renders all materials as RGB; any positive integer renders that single material as grayscale
-%   - **pixSize** — struct with physical voxel dimensions:
+%   - **Volume** - [uint8] 3D label volume, dimensions [height, width, depth]; voxel values are material indices
+%   - **materialIndex** - [numeric] material to render: ``0`` renders all materials as RGB; any positive integer renders that single material as grayscale
+%   - **pixSize** - struct with physical voxel dimensions:
 %
-%     - ``.x`` — physical width
-%     - ``.y`` — physical height
-%     - ``.z`` — physical thickness
-%     - ``.units`` — physical units string
+%     - ``.x`` - physical width
+%     - ``.y`` - physical height
+%     - ``.z`` - physical thickness
+%     - ``.units`` - physical units string
 %
-%   - **colorList** *(optional)* — [M × 3 double] RGB color map for materials, values 0–1; row index corresponds to material index
-%   - **mibGUI** *(optional)* — handle to the parent UIFigure for dialogs and progress bar
+%   - **colorList** *(optional)* - [M × 3 double] RGB color map for materials, values 0-1; row index corresponds to material index
+%   - **mibGUI** *(optional)* - handle to the parent UIFigure for dialogs and progress bar
 %
 % Output Arguments:
-%   - **result** — [logical] ``0`` on failure, ``1`` on success
+%   - **result** - [logical] ``0`` on failure, ``1`` on success
 %
 % Updates
 %
@@ -68,7 +68,7 @@ try
         return;
     end
 catch
-    % skip — IsJava3DInstalled may be unavailable in newer Fiji versions
+    % skip - IsJava3DInstalled may be unavailable in newer Fiji versions
 end
 
 prompt = {'Reduce the volume down to, max width pixels [no volume reduction when 0]?'};

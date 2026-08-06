@@ -12,10 +12,10 @@ function materialsTable_moveLayers(obj, obj_type_from, obj_type_to, layers_id, a
 % -> Mask to Material
 %
 % Input Arguments:
-%   - **obj_type_from** — [char] the source layer ('selection', 'mask', 'labels')
-%   - **obj_type_to** — [char] the destination layer ('selection', 'mask', 'labels')
-%   - **layers_id** — [char] identifier of the dataset ('2D, Slice', '3D, Stack', '4D, Dataset')
-%   - **action_type** — [char] what to do ('replace', 'add', 'remove')
+%   - **obj_type_from** - [char] the source layer ('selection', 'mask', 'labels')
+%   - **obj_type_to** - [char] the destination layer ('selection', 'mask', 'labels')
+%   - **layers_id** - [char] identifier of the dataset ('2D, Slice', '3D, Stack', '4D, Dataset')
+%   - **action_type** - [char] what to do ('replace', 'add', 'remove')
 %
 
 if obj.mibModel.preferences.System.DeveloperMode

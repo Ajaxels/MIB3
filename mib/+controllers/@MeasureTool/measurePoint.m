@@ -11,15 +11,15 @@ function annotationText = measurePoint(obj, datasetId, colCh, finetuneCheck, cal
 % read from the 2-D image slice for all channels.
 %
 % Input Arguments:
-%   - **datasetId** — [double] index into ``mibModel.I``
-%   - **colCh** — [double] colour channel (0 = all, 1+ = specific)
-%   - **finetuneCheck** — [logical] when ``false`` accept the point immediately after placement (no double-click required)
-%   - **calcIntensity** — [logical] read pixel intensity at the point
-%   - **showInfoDlg** — [logical] show annotation text dialog
-%   - **insertIndex** — *(optional)* [double] replace-at-position (0 = append)
+%   - **datasetId** - [double] index into ``mibModel.I``
+%   - **colCh** - [double] colour channel (0 = all, 1+ = specific)
+%   - **finetuneCheck** - [logical] when ``false`` accept the point immediately after placement (no double-click required)
+%   - **calcIntensity** - [logical] read pixel intensity at the point
+%   - **showInfoDlg** - [logical] show annotation text dialog
+%   - **insertIndex** - *(optional)* [double] replace-at-position (0 = append)
 %
 % Output Arguments:
-%   - **annotationText** — [char] annotation label entered by the user;
+%   - **annotationText** - [char] annotation label entered by the user;
 %     empty string ``''`` when the dialog was skipped or cancelled
 %
 

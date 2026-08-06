@@ -7,8 +7,8 @@ function homeImport_Callback(obj, hWidget, hData)
 %       obj.homeImport_Callback(hWidget, hData)
 %
 % Input Arguments:
-%   - **hWidget** — handle to the pressed widget
-%   - **hData** — handle to supporting EventData class
+%   - **hWidget** - handle to the pressed widget
+%   - **hData** - handle to supporting EventData class
 %
 
 arguments (Input)

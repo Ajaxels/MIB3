@@ -18,23 +18,23 @@ function [shiftX, shiftY] = calcShifts(I, options)
 %   Microscopy Today, Volume 22, Number 5, 2014
 %
 % Input Arguments:
-%   - **I** — [numeric] image stack with shape ``[height, width, depth]``.
-%   - **options** *(optional)* — struct with fields:
+%   - **I** - [numeric] image stack with shape ``[height, width, depth]``.
+%   - **options** *(optional)* - struct with fields:
 %
-%     - ``.method`` — [char] ``'Drift correction'`` (default) or ``'Template matching'``.
-%     - ``.refFrame`` — [integer] reference-frame mode (default: ``0``):
+%     - ``.method`` - [char] ``'Drift correction'`` (default) or ``'Template matching'``.
+%     - ``.refFrame`` - [integer] reference-frame mode (default: ``0``):
 %
-%       - ``0`` — use the previous slice as reference (cumulative drift).
-%       - negative — relative to a frame ``N`` slices back.
+%       - ``0`` - use the previous slice as reference (cumulative drift).
+%       - negative - relative to a frame ``N`` slices back.
 %
-%     - ``.waitbar`` — [:class:`core.PoolWaitbar`] existing PoolWaitbar handle to
+%     - ``.waitbar`` - [:class:`core.PoolWaitbar`] existing PoolWaitbar handle to
 %       reuse for progress reporting; pass ``[]`` or omit to disable progress reporting.
 %
 % Output Arguments:
-%   - **shiftX** — [numeric vector] absolute X-shifts of each slice relative to the first.
-%   - **shiftY** — [numeric vector] absolute Y-shifts of each slice relative to the first.
+%   - **shiftX** - [numeric vector] absolute X-shifts of each slice relative to the first.
+%   - **shiftY** - [numeric vector] absolute Y-shifts of each slice relative to the first.
 %
-% **Example** — drift correction with progress on the parent figure:
+% **Example** - drift correction with progress on the parent figure:
 %
 % .. code-block:: matlab
 %

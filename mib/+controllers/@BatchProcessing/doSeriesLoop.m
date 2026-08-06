@@ -14,13 +14,13 @@ function status = doSeriesLoop(obj, startStep, finishStep)
 % Aborts immediately and returns false if any individual step fails.
 %
 % Input Arguments:
-%   - **startStep** — index of the 'Load and combine images' step (Series-by-series mode)
+%   - **startStep** - index of the 'Load and combine images' step (Series-by-series mode)
 %     that defines the container filename; also the first step executed
 %     for each series
-%   - **finishStep** — index of the last protocol step executed per series (inclusive)
+%   - **finishStep** - index of the last protocol step executed per series (inclusive)
 %
 % Output Arguments:
-%   - **status** — [logical] true on success, false if any step returned an error
+%   - **status** - [logical] true on success, false if any step returned an error
 %
 % Usage:
 %   Example 1::

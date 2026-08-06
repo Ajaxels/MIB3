@@ -8,7 +8,7 @@ function Calculate(obj, batchModeSwitch)
 %       obj.Calculate(batchModeSwitch)
 %
 % Input Arguments:
-%   - **batchModeSwitch** — *(optional)* logical; when ``true`` skips backup
+%   - **batchModeSwitch** - *(optional)* logical; when ``true`` skips backup
 %     and ``returnBatchOpt`` call (default ``false``)
 %
 
@@ -42,7 +42,7 @@ time  = obj.mibModel.I{id}.image.time;
 getDataOptions.roiId = -1;
 getDataOptions.id    = id;
 
-%% Backup — only for single time-frame datasets (too expensive for 4D)
+%% Backup - only for single time-frame datasets (too expensive for 4D)
 if ~batchModeSwitch && time == 1
     datasetSwitch = strcmp(obj.BatchOpt.ApplyTo{1}, 'Stack') || ~is2D;
     backupOptions.id = id;

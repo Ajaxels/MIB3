@@ -11,13 +11,13 @@ function layout = buildLayoutBioFormats(inputPath, options)
 % (``Plane PositionX/Y/Z``) and converts it into the stitcher's pixel/slice
 % ``nomOrigin`` frame via :func:`utils.stitch.stageCoordsToOrigins`. This is the
 % ``'Bio-Formats metadata'`` layout source: unlike the grid / position-file /
-% filename-pattern sources it needs no user-supplied arrangement — the
+% filename-pattern sources it needs no user-supplied arrangement - the
 % microscope already recorded where every tile sits.
 %
 % ``inputPath`` may be:
 %   - a single Bio-Formats file whose **series** are the tiles (the typical
 %     mosaic case, e.g. one ``.czi`` / ``.nd2`` / ``.lif`` with N series), or
-%   - a newline-separated list of files, or a folder — one **file per tile**,
+%   - a newline-separated list of files, or a folder - one **file per tile**,
 %     each carrying its own stage position.
 %
 % Pixel size is assumed uniform across tiles (MIB convention) and taken from the
@@ -27,19 +27,19 @@ function layout = buildLayoutBioFormats(inputPath, options)
 % column.
 %
 % Input Arguments:
-%   - **inputPath** — [char] file, newline-list of files, or folder (see above).
-%   - **options** *(optional)* — struct with fields:
+%   - **inputPath** - [char] file, newline-list of files, or folder (see above).
+%   - **options** *(optional)* - struct with fields:
 %
-%     - ``.flipX`` / ``.flipY`` — [logical] negate the stage axis when it runs
+%     - ``.flipX`` / ``.flipY`` - [logical] negate the stage axis when it runs
 %       opposite to the pixel axis (vendor-dependent; default ``false``).
-%     - ``.bioFormatsMemoizerMemoDir`` — [char] memo dir (default: ``tempdir``).
+%     - ``.bioFormatsMemoizerMemoDir`` - [char] memo dir (default: ``tempdir``).
 %
 % Output Arguments:
-%   - **layout** — struct array per the layout contract (see
+%   - **layout** - struct array per the layout contract (see
 %     :func:`utils.stitch.buildLayoutGrid`) with an extra ``.seriesIndex`` field
 %     (1-based Bio-Formats series) honoured by :func:`utils.stitch.makeTileReader`.
 %
-% **Example** — stitch a multi-series confocal mosaic:
+% **Example** - stitch a multi-series confocal mosaic:
 %
 %   .. code-block:: matlab
 %

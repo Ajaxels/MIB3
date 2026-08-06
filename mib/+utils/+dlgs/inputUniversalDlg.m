@@ -13,15 +13,15 @@ function [answer, selectedIndices, dontShowAgain] = inputUniversalDlg(ParentFigu
 %           inputUniversalDlg(ParentFigure, header, prompts, defAns, dlgTitle, options)
 %
 % Input Arguments:
-%   - **ParentFigure** — handle to the parent window (AppContainer, uifigure, or ``[]``);
+%   - **ParentFigure** - handle to the parent window (AppContainer, uifigure, or ``[]``);
 %     used to centre the dialog. Pass ``[]`` to use the cached handle from a prior call.
 %     In MIB controllers / model methods pass ``obj.mibModel.getProgressBarParent()``
 %     (or ``obj.getProgressBarParent()`` inside MibModel) so the dialog follows the
 %     active dataset window when it is undocked.
-%   - **header** *(optional)* — [char] bold label shown above all widgets.
+%   - **header** *(optional)* - [char] bold label shown above all widgets.
 %     Supersedes ``options.Header`` when non-empty.
-%   - **prompts** — ``{n x 1}`` cell array of prompt strings, one per widget row.
-%   - **defAns** — ``{n x 1}`` cell array of default values; supported types per element:
+%   - **prompts** - ``{n x 1}`` cell array of prompt strings, one per widget row.
+%   - **defAns** - ``{n x 1}`` cell array of default values; supported types per element:
 %
 %     - ``''``, ``'text'``, or string scalar → text edit (``uieditfield``);
 %       when the text contains newline characters → multi-line text area
@@ -35,49 +35,49 @@ function [answer, selectedIndices, dontShowAgain] = inputUniversalDlg(ParentFigu
 %     - ``NaN`` → placeholder row (prompt only, no widget)
 %     - string starting with ``'<html>'`` → rich-text display (``uihtml``)
 %
-%   - **dlgTitle** — [char|string] dialog window title.
-%   - **options** *(optional)* — struct with configuration fields:
+%   - **dlgTitle** - [char|string] dialog window title.
+%   - **options** *(optional)* - struct with configuration fields:
 %
-%     - ``.Columns`` — [integer] number of widget columns (default: ``1``)
-%     - ``.DefaultKey`` — [char] button triggered by Enter: ``'OK'`` (default) or ``'Cancel'``
-%     - ``.DoNotShowAgain`` — [logical] show "Do not show again" checkbox (default: ``false``)
-%     - ``.DoNotShowAgainText`` — [char] checkbox label (default: ``'Do not show again'``)
-%     - ``.Focus`` — [integer] 1-based index of widget to focus on open;
+%     - ``.Columns`` - [integer] number of widget columns (default: ``1``)
+%     - ``.DefaultKey`` - [char] button triggered by Enter: ``'OK'`` (default) or ``'Cancel'``
+%     - ``.DoNotShowAgain`` - [logical] show "Do not show again" checkbox (default: ``false``)
+%     - ``.DoNotShowAgainText`` - [char] checkbox label (default: ``'Do not show again'``)
+%     - ``.Focus`` - [integer] 1-based index of widget to focus on open;
 %       ``0`` = focus the OK button (default: ``0``)
-%     - ``.Header`` — [char] text above widgets; superseded by the ``header`` parameter
-%     - ``.HeaderLines`` — [integer] number of lines reserved for the header
-%     - ``.HelpBtnText`` — [char] Help button label (default: ``'Help'``)
-%     - ``.HelpUrl`` — [char] URL or command; when provided, the Help button is shown
-%     - ``.Icon`` — [char] icon identifier (default: ``'puffin_question'``):
+%     - ``.Header`` - [char] text above widgets; superseded by the ``header`` parameter
+%     - ``.HeaderLines`` - [integer] number of lines reserved for the header
+%     - ``.HelpBtnText`` - [char] Help button label (default: ``'Help'``)
+%     - ``.HelpUrl`` - [char] URL or command; when provided, the Help button is shown
+%     - ``.Icon`` - [char] icon identifier (default: ``'puffin_question'``):
 %       ``'puffin_question'``, ``'puffin_warning'``, ``'puffin_info'``,
 %       ``'puffin_error'``, ``'puffin_measure'``, ``'puffin_waiting'``,
 %       ``'question'``, ``'celebrate'``, ``'call4help'``, ``'warning'``
-%     - ``.IconWidth`` — [numeric] icon column width in pixels (default: ``[]``, i.e. use the image's natural width)
-%     - ``.LabelPosition`` — [char] ``'left'`` (default, label beside widget) or ``'top'`` (label above widget)
-%     - ``.LastItemColumns`` — [integer] ``1`` to force the last widget to span all columns, ``0`` otherwise (default: ``0``)
-%     - ``.MainColumnWidths`` — cell array of main-grid column widths, e.g. ``{'1x', '2x'}`` for 2 columns (default: ``'1x'`` for all)
-%     - ``.mibPath`` — [char] path to MIB installation
-%     - ``.MsgBoxOnly`` — [logical] show as a message-box with a single OK button and one HTML content widget (default: ``false``)
-%     - ``.OkBtnText`` — [char] OK button label (default: ``'OK'``)
-%     - ``.ParentFigure`` — [handle] parent figure for centering (default: ``[]``)
-%     - ``.SectionsColumnWidths`` — cell array of label/widget column proportions for
+%     - ``.IconWidth`` - [numeric] icon column width in pixels (default: ``[]``, i.e. use the image's natural width)
+%     - ``.LabelPosition`` - [char] ``'left'`` (default, label beside widget) or ``'top'`` (label above widget)
+%     - ``.LastItemColumns`` - [integer] ``1`` to force the last widget to span all columns, ``0`` otherwise (default: ``0``)
+%     - ``.MainColumnWidths`` - cell array of main-grid column widths, e.g. ``{'1x', '2x'}`` for 2 columns (default: ``'1x'`` for all)
+%     - ``.mibPath`` - [char] path to MIB installation
+%     - ``.MsgBoxOnly`` - [logical] show as a message-box with a single OK button and one HTML content widget (default: ``false``)
+%     - ``.OkBtnText`` - [char] OK button label (default: ``'OK'``)
+%     - ``.ParentFigure`` - [handle] parent figure for centering (default: ``[]``)
+%     - ``.SectionsColumnWidths`` - cell array of label/widget column proportions for
 %       each main column when ``LabelPosition='left'``;
 %       e.g. ``{'1x','2x','1x','2x'}`` gives ``label:widget = 1x:2x`` for both columns
 %       (default: ``'fit'`` for labels and ``'1x'`` for widgets)
-%     - ``.WindowHeight`` — [numeric] dialog height in pixels (default: auto-calculated, min 200, max 800)
-%     - ``.WindowStyle`` — [char] ``'normal'`` (default) or ``'modal'``
-%     - ``.WindowWidth`` — [numeric] dialog width in pixels (default: 450)
+%     - ``.WindowHeight`` - [numeric] dialog height in pixels (default: auto-calculated, min 200, max 800)
+%     - ``.WindowStyle`` - [char] ``'normal'`` (default) or ``'modal'``
+%     - ``.WindowWidth`` - [numeric] dialog width in pixels (default: 450)
 %
 % Output Arguments:
-%   - **answer** — ``{n x 1}`` cell array of entered values; ``[]`` when cancelled.
+%   - **answer** - ``{n x 1}`` cell array of entered values; ``[]`` when cancelled.
 %     Dropdowns return the selected string; numeric edits return ``double``;
 %     spinners return ``double``; checkboxes return ``logical``.
-%   - **selectedIndices** — vector of selected indices for dropdowns;
+%   - **selectedIndices** - vector of selected indices for dropdowns;
 %     ``1`` for non-dropdown items; ``[]`` when cancelled.
-%   - **dontShowAgain** — [logical] state of the "Do not show again" checkbox
+%   - **dontShowAgain** - [logical] state of the "Do not show again" checkbox
 %     (``false`` when cancelled).
 %
-% **Example 1** — Horizontal layout (label on the left, 2 columns, all widget types)
+% **Example 1** - Horizontal layout (label on the left, 2 columns, all widget types)
 %
 % .. code-block:: matlab
 %
@@ -112,7 +112,7 @@ function [answer, selectedIndices, dontShowAgain] = inputUniversalDlg(ParentFigu
 %        'My test Input dialog', prompts, defAns, 'Test Dialog', options);
 %    if isempty(answer); return; end
 %
-% **Example 2** — Vertical layout (label on top, 1 column)
+% **Example 2** - Vertical layout (label on top, 1 column)
 %
 % .. code-block:: matlab
 %
@@ -127,7 +127,7 @@ function [answer, selectedIndices, dontShowAgain] = inputUniversalDlg(ParentFigu
 %        '', prompts, defAns, 'Vertical layout dialog', options);
 %    if isempty(answer); return; end
 %
-% **Example 3** — Warning message box (plain-text body, auto-wrapped to HTML)
+% **Example 3** - Warning message box (plain-text body, auto-wrapped to HTML)
 %
 % .. code-block:: matlab
 %
@@ -138,7 +138,7 @@ function [answer, selectedIndices, dontShowAgain] = inputUniversalDlg(ParentFigu
 %        {'Please enable "Enable selection" in Preferences and try again.'}, ...
 %        'Models are disabled', dlgOpt);
 %
-% **Example 4** — Message box with rich HTML body
+% **Example 4** - Message box with rich HTML body
 %
 % .. code-block:: matlab
 %
@@ -153,7 +153,7 @@ function [answer, selectedIndices, dontShowAgain] = inputUniversalDlg(ParentFigu
 %    [answer, selIndex, dontShow] = utils.dlgs.inputUniversalDlg(obj.mibModel.getProgressBarParent(), ...
 %        'Please Read', {''}, {htmlBody}, 'Information', options);
 %
-% **Example 5** — Minimalist warning with everything in the header
+% **Example 5** - Minimalist warning with everything in the header
 %
 % .. code-block:: matlab
 %
@@ -264,7 +264,7 @@ if strcmpi(options.LabelPosition, 'left')
     end
 end
 
-% MIB path resolution for icons — the helper caches it; options.mibPath refreshes the cache
+% MIB path resolution for icons - the helper caches it; options.mibPath refreshes the cache
 mibDir = dlgResolveMibDir(options.mibPath);
 
 % Build figure (before icon loading to get background color)
@@ -377,7 +377,7 @@ else
     buttonRow = 2;
 end
 
-% Column 1: Icon — spans header+content rows when header present so it isn't clipped
+% Column 1: Icon - spans header+content rows when header present so it isn't clipped
 if ~isempty(iconImg)
     iconUI = uiimage(mainGrid, 'ImageSource', iconImg);
     if hasHeader
@@ -493,7 +493,7 @@ else
     numRegular = n - (options.LastItemColumns == 1);
     itemsPerCol = max(1, ceil(numRegular / options.Columns));
     
-    % Build widgets — each widget is parented directly into the column grid using a
+    % Build widgets - each widget is parented directly into the column grid using a
     % fixed-height row (no per-widget wrapper grids: saves one container per row)
     regIdx = 0;
     for i = 1:n
@@ -688,7 +688,7 @@ else
     cancelBtn = uibutton(btnBox, 'Text', 'Cancel', 'ButtonPushedFcn', @(~,~) onCancel());
 end
 
-% Key handling — WindowKeyPressFcn only; binding KeyPressFcn as well would
+% Key handling - WindowKeyPressFcn only; binding KeyPressFcn as well would
 % fire the handler twice when the figure itself has keyboard focus
 fig.WindowKeyPressFcn = @(~, evt) onKey(evt);
 fig.CloseRequestFcn = @(~,~) onCancel();
@@ -813,7 +813,7 @@ uiwait(fig);
             fig.Visible = 'off';
             uiresume(fig);
         else
-            % Temporary second instance (the cached shell was busy) —
+            % Temporary second instance (the cached shell was busy) -
             % deleting the figure also releases uiwait
             delete(fig);
         end

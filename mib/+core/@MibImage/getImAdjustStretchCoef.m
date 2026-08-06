@@ -9,14 +9,14 @@ function [lowIn, highIn, lowOut, highOut] = getImAdjustStretchCoef(obj, channels
 % stretch contrast of the image
 %
 % Input Arguments:
-%   - **channels** — *(optional)* color channel or vector of color channels to get
+%   - **channels** - *(optional)* color channel or vector of color channels to get
 %     coefficients; when skipped return coefficients for all color channels
 %
 % Output Arguments:
-%   - **lowIn** — values matching low_in parameter of imadjust
-%   - **highIn** — values matching high_in parameter of imadjust
-%   - **lowOut** — values matching low_out parameter of imadjust
-%   - **highOut** — values matching high_in parameter of imadjust
+%   - **lowIn** - values matching low_in parameter of imadjust
+%   - **highIn** - values matching high_in parameter of imadjust
+%   - **lowOut** - values matching low_out parameter of imadjust
+%   - **highOut** - values matching high_in parameter of imadjust
 %
 % Usage:
 %   **Example 1**

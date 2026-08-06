@@ -19,7 +19,7 @@ function directoryLoopAction_Callback(obj, BatchOptInput)
 %   - DirLoopWaitbar  - [logical] whether to show a per-directory waitbar
 %
 % Input Arguments:
-%   - **BatchOptInput** — [optional]
+%   - **BatchOptInput** - [optional]
 %     - NaN    - send default BatchOpt to BatchProcessing via SyncBatch event
 %     - struct - override defaults with supplied fields and apply
 %

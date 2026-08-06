@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../../assets/mib_icon.png">
-      <meta name="generator" content="zensical-0.0.44">
+      <meta name="generator" content="zensical-0.0.46">
     
     
       
@@ -36,7 +36,7 @@
       
         
       
-      <link rel="stylesheet" href="../../assets/stylesheets/modern/main.fba56155.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/modern/main.19d3147f.min.css">
       
         
           
@@ -5788,6 +5788,20 @@ A <code>.mibCfg</code> config file is saved in the same directory, loadable via 
 <p>During training, a loss function plot appears (blue = training, red = validation), with accuracy gauges at the bottom left. 
 Perform <mouse class="right"></mouse> over the plot to scale it via a context menu.<br>
 Stop training with <span class="widget widget-button">Stop</span> or <span class="widget widget-button">Emergency brake</span> (faster but may not finalize networks with batch normalization).</p>
+<div class="admonition note">
+<p class="admonition-title">Stopping a <strong>2D Instance</strong> run early</p>
+<p>Instance segmentation trains through MATLAB's <code>trainSOLOV2</code>, whose trainer only ends the
+current epoch when asked to stop — it still walks through the epochs that were left
+before it returns. Deep MIB makes those leftover epochs as cheap as it can, but
+<span class="widget widget-button">Stop</span> still costs roughly a minute per 1000
+remaining epochs. The network and the full training curve are finalized normally.</p>
+<p><span class="widget widget-button">Emergency brake</span> leaves the trainer immediately
+and rebuilds the network from the most recent checkpoint, so keep
+<strong>Train tab → Save checkpoint networks</strong> enabled if you expect to use it. The recovered
+network is up to <em>Checkpoint frequency</em> epochs behind the point where you pressed the
+button, and the exported training curve is the one drawn in the progress window rather
+than the full per-iteration log.</p>
+</div>
 <p>By default, Deep MIB uses a custom progress plot. If you want to use default MATLAB’s training plot (<em>MATLAB version only</em>), 
 uncheck <strong>Options tab → Custom training plot → Custom training progress window</strong>.<br> 
 Disable plots for speed via <strong>Train tab → Training → Plots → none</strong>.<br />
@@ -5932,10 +5946,10 @@ Preview patches (bottom right) reduce performance; adjust frequency in
     
       
       
-      <script id="__config" type="application/json">{"annotate":null,"base":"../..","features":["announce.dismiss","content.code.annotate","content.code.copy","content.code.select","content.footnote.tooltips","content.tabs.link","content.tooltips","header.autohide","navigation.footer","navigation.indexes","navigation.path","navigation.top","navigation.tracking","search.highlight","search.suggest"],"search":"../../assets/javascripts/workers/search.e2d2d235.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
+      <script id="__config" type="application/json">{"annotate":null,"base":"../..","features":["announce.dismiss","content.code.annotate","content.code.copy","content.code.select","content.footnote.tooltips","content.tabs.link","content.tooltips","header.autohide","navigation.footer","navigation.indexes","navigation.path","navigation.top","navigation.tracking","search.highlight","search.suggest"],"search":"../../assets/javascripts/workers/search.b6b7e04f.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.6e5f0216.min.js"></script>
+      <script src="../../assets/javascripts/bundle.ee611ef6.min.js"></script>
       
         <script src="../../css/extra.js"></script>
       

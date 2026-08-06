@@ -11,12 +11,12 @@ function sortedFiles = naturalSortFiles(cellstrFiles)
 % case-insensitive and operates on the full path string.
 %
 % Input Arguments:
-%   - **cellstrFiles** — [cell] cell array of character vectors (filenames or full paths)
+%   - **cellstrFiles** - [cell] cell array of character vectors (filenames or full paths)
 %
 % Output Arguments:
-%   - **sortedFiles** — [cell] input cell sorted in natural/alphanumeric order
+%   - **sortedFiles** - [cell] input cell sorted in natural/alphanumeric order
 %
-% **Example** — sort a mixed list of tile names:
+% **Example** - sort a mixed list of tile names:
 %
 %   .. code-block:: matlab
 %

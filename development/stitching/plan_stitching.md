@@ -30,7 +30,8 @@ also handles affine/rigid/similarity) → `measureAllPairs` (edge list) → `sol
 (translation) / `solveGlobalAffine` (affine/rigid/similarity) → `planCanvas` (+ `autocropCanvas`)
 → `fuseInMemory` /
 `fuseStreaming` (+ `mib\+io\+savers\StitchSliceProvider.m` delegating to `Zarr3Saver.saveStream` when a
-slice fits in RAM). Plus `estimateOverlap`, `resolveTileEntry`, `blendWeights`, `canvasBackground`, `tileCacheLRU`,
+slice fits in RAM) / `fuseToFiles` (the same provider handed to any `io.SaverFactory` saver's
+`saveStream`). Plus `estimateOverlap`, `resolveTileEntry`, `blendWeights`, `canvasBackground`, `tileCacheLRU`,
 `synthesizeEdgesFromPositions` (shared by every source that imports a placement),
 `layoutPixSize` (the acquisition scale, or `[]` when the source does not know it),
 `saveProject`/`loadProject` (sidecar JSON), `scoreSeams`/`rankSeams`/`localCorrelate` (inspector core),
@@ -68,7 +69,9 @@ solved positions — widget-less, set by the import dialog, consulted only when 
 `TileOrder`; `OverlapX/Y`; `EstimateOverlap`; `TransformType` {Translation, Rigid, Similarity, Affine};
 `AllowRotation`; `RegistrationMethod` {Phase correlation, Feature-based}; `FeatureDetectorType`;
 `QualityThreshold`; `NominalPositionWeight`; `SubpixelPlacement`; `OutputMode` {In memory, OME-Zarr3
-(BigData)}; `OutputPath`; `BlendMode` {Average, Feather, Max, Min, Overwrite *(default)* - the honest one, so a
+(BigData), Image files}; `OutputPath`; `OutputFormat` {the four labels in
+`Stitching.imageFileFormats` - widget-less, set by the output file picker, consulted only when
+OutputMode is `Image files`}; `BlendMode` {Average, Feather, Max, Min, Overwrite *(default)* - the honest one, so a
 misalignment is not softened before it has been judged}; `IntensityCorrection`;
 `CanvasColor` {black, white *(default)*}; `Autocrop`; `SaveProject`;
 `showWaitbar`. `BatchOpt.id = obj.mibModel.getActiveId()`. Batch dispatch as ResampleDataset.
@@ -174,6 +177,65 @@ misalignment is not softened before it has been judged}; `IntensityCorrection`;
   gets its own tooltip: quoting the cached RMSE there would contradict the line above it.
 - **Min blend mode** needs the fresh-pixel mask (same as Max) or a zero background wins every
   singly-covered pixel.
+
+## Image file output (`fuseToFiles`)
+
+The third fusion path: the mosaic written as ordinary TIF/PNG/Amira files and NOT opened. Five
+formats - TIF 2D sequence (uncompressed and LZW), PNG 2D sequence, Amira 2D sequence, Amira 3D
+stack - named the way MIB's own Save-as names them.
+
+- **`StitchSliceProvider` is what makes this nearly free.** The savers already take a
+  `SliceProvider` through `saveStream` (that is how a pyramid level is exported without gathering
+  it), and the stitcher already has one for the zarr path. So `fuseToFiles` is a metadata
+  assembler plus one `saveStream` call - no new blending, no new naming, no new writer. **TIF and
+  PNG therefore stream** (one output slice resident); **Amira does not** - it has no `saveStream`
+  override, so `BaseSaver.saveStream` gathers the volume and both `.am` options cost as much RAM
+  as `In memory`.
+- **Per-slice names come from the saver** (`BaseSaver.buildSliceNames` →
+  `utils.generateSequentialFilename`), which is where the zero-padding-to-the-slice-count rule
+  already lives. Re-deriving `_001` in the stitcher would be a second implementation of a rule the
+  savers apply to every other export.
+- **The label and the saver's format string are DIFFERENT strings**, joined by
+  `Stitching.imageFileFormats`. A format name says nothing about 2-D vs 3-D - MIB's Save-as asks
+  that separately, via `Saving3DPolicy` - and this dialog raises no follow-up questions, so the
+  choice has to be in the label. Two rows share `*.am` and differ only there.
+  `imageFileFormat(label)` falls back to row 1 rather than erroring, so a project from a newer MIB
+  still exports.
+- **`silent = true` + `FilenameGenerator` passed explicitly is what keeps the export quiet.** The
+  savers gate their "Define naming" / "TIF saving settings" dialogs on `~silent && ~callerSetFilename`;
+  `metadata.sliceName` is left `{}` for the same reason (a slice-name list is what makes
+  "Use original filename" offerable, and a fused mosaic has no per-slice source).
+- **Voxel size rides in on `metadata`, assembled exactly as `core.MibImage.save` assembles it** -
+  `xResolution`/`yResolution` from `utils.calculateResolution` (the TIF/PNG resolution tag) plus
+  `boundingBox` + `imageDescription` from `core.MibImage.buildImageDescription` (what every MIB
+  reader actually parses back). Writing through `imwrite` directly would have dropped both.
+  `fillPixSizeDefaults` completes `canvas.pixSize`, which `planCanvas` only guarantees `.x/.y/.z`
+  for. **No voxel-size dialog is raised** - unlike Save-as, which confirms it first.
+- **`fuseToFiles` FLATTENS the saver's return.** `PngSaver` hands back a flat cell of paths,
+  `TiffSaver` one cell per time point each holding its own cell - so "one file per slice" silently
+  meant "one cell per time point" for exactly one of the four. `AmiraMeshSaver` returned the base
+  `<stem>.am`, a file that does not exist in sequence mode; it now returns its `slicePaths` like
+  its two siblings (its `fnOut` was always consumed through an `iscell` branch, so nothing else
+  had to change).
+- **The active buffer is NOT replaced.** `In memory` and the zarr reopen both swap it; an export
+  must not, and a 2-D sequence of hundreds of files would cost a second stitch to re-read. Pinned
+  by a `verifySameHandle` test.
+- **LZW is NOT unconditionally smaller** - it expands high-entropy data, and it expands the
+  synthetic test texture by ~2 %. The test therefore asserts identical pixels plus
+  `imfinfo(...).Compression == 'LZW'` (which is what proves the label's format string reached the
+  saver) and says nothing about bytes; the tooltip and docs say the same. A size assertion would
+  pin a property of the test image, not of the format.
+- **`bitmap2amiraMesh` tested "too big to write" BEFORE "is this text"**, so any struct field whose
+  value was a word - i.e. `pixSize.units` and `pixSize.tunits` - was written as
+  `pixSize_units skipped`: three numbers in the header with nothing saying what they measure. Fixed
+  by testing text first, and writing it QUOTED like every top-level char value (the reader
+  `str2num`s anything unquoted). This affected every Amira file MIB has ever written, Save-as
+  included, not just the stitcher. Nothing reads `pixSize_units` back - the voxel size is derived
+  from `BoundingBox` - so it was invisible until an Amira export had to be checked by eye.
+- **An empty `OutputPath` prompts in the GUI and `StopProtocol`s in batch** - the same rule the
+  zarr branch follows. The prompt is `selectOutputPath_Callback`, not a second inline `uiputfile`,
+  because that callback is also where `BatchOpt.OutputFormat` is set: a separate prompt would write
+  in whatever format was recorded last instead of the one just picked.
 
 ## The uncovered frame (`CanvasColor` / `Autocrop`)
 
@@ -533,6 +595,14 @@ raising (an old project must load into a newer dialog).
 - `tests\utils\StitchCoreTest.m`, `StitchLayoutTest.m`, `StitchInspectorTest.m` — `Unit`/`Integration`
   tagged (`matlab.unittest`, conventions in `tests\plan_unittests.md`); `Integration` includes a
   `fuseStreaming` → zarr → `Zarr3VirtualSetupLoader` reopen round-trip.
+- **Image file output**: `StitchCoreTest` (4 tests: a TIF sequence bit-identical to the
+  `fuseInMemory` fuse of the same plan with zero-padded per-slice names, the voxel size (units
+  included) reaching the resolution tag AND the bounding box in all three formats, LZW decoding to
+  the same pixels with the compression tag actually set, the Amira sequence returning the files it
+  actually wrote) and `StitchingControllerTest` (3 tests: every label mapping to a format
+  `io.SaverFactory` really offers, the export leaving the active buffer untouched while carrying
+  the mdoc's pixel size into the file, and a batch run with no destination stopping rather than
+  guessing one).
 - **Canvas frame**: `StitchCoreTest` (6 tests: the class ceilings, the fill in all five blend modes,
   the crop vs an exhaustive largest-rectangle search on a real mask, the multi-layer intersection,
   identity-tform equivalence, warped tiles leaving no background) and `StitchingControllerTest`

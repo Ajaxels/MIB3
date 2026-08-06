@@ -25,13 +25,13 @@ classdef MibQuickAccessBar
             %      obj = MibQuickAccessBar(mainCtrl, view, guiHandles, model)
             %
             % Input Arguments:
-            %   - **mainCtrl** — [controllers.MibController] handle to main MIB controller
-            %   - **view** — [views.MibView] handle to main MIB view
-            %   - **guiHandles** — [struct] GUI component handles for the Quick Access Bar
-            %   - **model** — [models.MibModel] handle to MIB model
+            %   - **mainCtrl** - [controllers.MibController] handle to main MIB controller
+            %   - **view** - [views.MibView] handle to main MIB view
+            %   - **guiHandles** - [struct] GUI component handles for the Quick Access Bar
+            %   - **model** - [models.MibModel] handle to MIB model
             %
             % Output Arguments:
-            %   - **obj** — [MibQuickAccessBar] initialized Quick Access Bar controller instance
+            %   - **obj** - [MibQuickAccessBar] initialized Quick Access Bar controller instance
             %
             obj.mibController = mainCtrl;       % handle to the main MIB controller
             obj.view = view;                    % handle to the main MIB view

@@ -10,7 +10,7 @@ function updateBatchOptFromGUI(obj, event)
 % compatible with the Batch mode
 %
 % Input Arguments:
-%   - **event** — event from the callback
+%   - **event** - event from the callback
 %
 
     obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, event.Source);

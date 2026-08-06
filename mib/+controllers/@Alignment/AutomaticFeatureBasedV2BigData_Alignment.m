@@ -14,17 +14,17 @@ function AutomaticFeatureBasedV2BigData_Alignment(obj, parameters)
 %     When a coarse level is chosen the level already downsamples, so the v2
 %     analysis factor is forced to 1 (no double downsampling). Cumulative
 %     parameters are composed and optionally smoothed (interactive in GUI,
-%     BatchOpt-driven in batch) — the smoothing acts on the small level-L
+%     BatchOpt-driven in batch) - the smoothing acts on the small level-L
 %     parameter vectors.
 %   - Cumulative transforms are **conjugated to level 0** (``T0 = S*TL*inv(S)``,
-%     ``S = diag([s s 1])`` — the linear block is unchanged, the translation
+%     ``S = diag([s s 1])`` - the linear block is unchanged, the translation
 %     column is multiplied by the level scale ``s``). The extended canvas is
 %     computed by corner projection at level-0 dims. The level-0 transforms are
 %     handed to :meth:`applyAlignmentBigData` with ``mode = 'affine'``, which
 %     streams a NEW aligned OME-Zarr v3 image (+ ``Labels_<stem>.zarr3``) and
 %     swaps the active buffer. The source store is never modified.
 %
-% **Save / replay** — when ``SaveShiftsToFile`` is set the level-0 alignment
+% **Save / replay** - when ``SaveShiftsToFile`` is set the level-0 alignment
 % struct (cumulative + pairwise tforms + decomposed parameters) is written to a
 % ``.coefXY`` file; when ``loadShiftsCheck`` pre-loads such a struct into
 % ``obj.shiftsX`` the detection/fit/smoothing pass is skipped and the loaded
@@ -32,7 +32,7 @@ function AutomaticFeatureBasedV2BigData_Alignment(obj, parameters)
 % The saved transforms are level-0, so replay is pyramid-level-independent.
 %
 % Input Arguments:
-%   - **parameters** — struct built by :meth:`continueBtn_Callback`; BigData
+%   - **parameters** - struct built by :meth:`continueBtn_Callback`; BigData
 %     fields ``isBigData`` (true), ``pyramidLevel``, ``outputPath``, plus
 %     ``TransformationType`` (translation/rigid/similarity/affine),
 %     ``TransformationMode``, ``colorCh``, ``backgroundColor``, ``useBatchMode``.
@@ -92,7 +92,7 @@ else   % 'black'
 end
 
 % =====================================================================
-% Pass 1 — per-slice fit at level L, or REPLAY loaded level-0 transforms
+% Pass 1 - per-slice fit at level L, or REPLAY loaded level-0 transforms
 % =====================================================================
 % loadShiftsCheck stores the loaded v2 struct in obj.shiftsX; its cumulativeTforms
 % are already level-0, so replay skips detection/fit/smoothing/conjugation.

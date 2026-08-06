@@ -11,13 +11,13 @@ function fn = generateSequentialFilename(name, num, files_no, ext)
 % as needed to represent the total file count ``files_no``.
 %
 % Input Arguments:
-%   - **name**     — [char] base filename string, e.g. ``'image'``
-%   - **num**      — [numeric] current file index (1-based), e.g. ``5``
-%   - **files_no** — [numeric] total number of files in the sequence, e.g. ``200``
-%   - **ext**      — [char] file extension string including dot, e.g. ``'.tif'``
+%   - **name**     - [char] base filename string, e.g. ``'image'``
+%   - **num**      - [numeric] current file index (1-based), e.g. ``5``
+%   - **files_no** - [numeric] total number of files in the sequence, e.g. ``200``
+%   - **ext**      - [char] file extension string including dot, e.g. ``'.tif'``
 %
 % Output Arguments:
-%   - **fn** — [char] filename string, e.g. ``'image_005.tif'``
+%   - **fn** - [char] filename string, e.g. ``'image_005.tif'``
 %
 % .. note::
 %    When ``files_no == 1``, no index suffix is added.
@@ -25,7 +25,7 @@ function fn = generateSequentialFilename(name, num, files_no, ext)
 %
 % Usage:
 %
-%   **Example 1** — generate filenames for a 500-image sequence
+%   **Example 1** - generate filenames for a 500-image sequence
 %
 %   .. code-block:: matlab
 %

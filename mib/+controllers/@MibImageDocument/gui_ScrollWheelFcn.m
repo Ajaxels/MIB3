@@ -10,11 +10,11 @@ function gui_ScrollWheelFcn(obj, eventdata)
 % and the MouseWheel mode preference.
 %
 % **Scroll behaviors:**
-%   - ``Ctrl + Scroll`` — adjust brush/tool size by 1 unit
-%   - ``Ctrl + Shift + Scroll`` — adjust brush/tool size by 5 units
-%   - ``Alt + Scroll`` — navigate time frames (scroll mode + AltWithScrollWheel pref)
-%   - ``Scroll`` (zoom mode) — zoom in/out centred on cursor (power law, C=1.10)
-%   - ``Scroll`` (scroll mode) — navigate Z-slices
+%   - ``Ctrl + Scroll`` - adjust brush/tool size by 1 unit
+%   - ``Ctrl + Shift + Scroll`` - adjust brush/tool size by 5 units
+%   - ``Alt + Scroll`` - navigate time frames (scroll mode + AltWithScrollWheel pref)
+%   - ``Scroll`` (zoom mode) - zoom in/out centred on cursor (power law, C=1.10)
+%   - ``Scroll`` (scroll mode) - navigate Z-slices
 %
 % When adjusting brush size, cursor is temporarily replaced with numeric size indicator
 % (capped at display value 99). Brush size is clamped to minimum of 1.
@@ -24,21 +24,21 @@ function gui_ScrollWheelFcn(obj, eventdata)
 % ``VerticalScrollCount`` and ``VerticalScrollAmount``.
 %
 % Input Arguments:
-%   - **eventdata** — [matlab.ui.eventdata.ScrollData | core.ToggleEventData]
+%   - **eventdata** - [matlab.ui.eventdata.ScrollData | core.ToggleEventData]
 %     For normal scroll: ``matlab.ui.eventdata.ScrollData``
 %     For key shortcuts: ``core.ToggleEventData`` with ``.Parameter.VerticalScrollCount`` and ``.Parameter.VerticalScrollAmount``
 %
 % Output Arguments:
 %   (none)
 %
-% **Example usage** — automatically triggered by scroll events:
-%   - ``Ctrl+Scroll Up`` — increase brush size by 1
-%   - ``Ctrl+Shift+Scroll Down`` — decrease brush size by 5
+% **Example usage** - automatically triggered by scroll events:
+%   - ``Ctrl+Scroll Up`` - increase brush size by 1
+%   - ``Ctrl+Shift+Scroll Down`` - decrease brush size by 5
 
 imViewFigure = obj.UIFigure;
 % Use obj.mibController.currentModifier rather than UIFigure.CurrentModifier.
 % UIFigure.CurrentModifier can become stale after a blocking Python (pyrun)
-% call — the Shift key-release event is queued but never delivered while
+% call - the Shift key-release event is queued but never delivered while
 % MATLAB is blocked, so the figure property stays {'shift'} even after the
 % user has released the key.  currentModifier is reset explicitly after each
 % SAM segmentation call, so it always reflects the true keyboard state.

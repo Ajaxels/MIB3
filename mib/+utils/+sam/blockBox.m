@@ -17,25 +17,25 @@ function box = blockBox(dataset, zRange)
 % ``options.blockModeSwitch = true``.
 %
 % Input Arguments:
-%   - **dataset** — [core.MibDataset] dataset that is being segmented
-%   - **zRange** *(optional)* — [numeric] ``[zMin, zMax]`` range of slices of the
+%   - **dataset** - [core.MibDataset] dataset that is being segmented
+%   - **zRange** *(optional)* - [numeric] ``[zMin, zMax]`` range of slices of the
 %     block; when missing or empty, the currently shown slice is used
 %
 % Output Arguments:
-%   - **box** — struct describing the shown block:
+%   - **box** - struct describing the shown block:
 %
-%     - ``.x`` — ``[xMin, xMax]`` horizontal extent in the dataset coordinates
-%     - ``.y`` — ``[yMin, yMax]`` vertical extent in the dataset coordinates
-%     - ``.z`` — ``[zMin, zMax]`` range of slices
-%     - ``.orientation`` — orientation of the dataset the block was taken in
-%     - ``.magFactor`` — scaling between the dataset coordinates and the pixels
+%     - ``.x`` - ``[xMin, xMax]`` horizontal extent in the dataset coordinates
+%     - ``.y`` - ``[yMin, yMax]`` vertical extent in the dataset coordinates
+%     - ``.z`` - ``[zMin, zMax]`` range of slices
+%     - ``.orientation`` - orientation of the dataset the block was taken in
+%     - ``.magFactor`` - scaling between the dataset coordinates and the pixels
 %       of the fetched block: ``1`` for the memory-resident datasets and
 %       ``dataset.magFactor`` for the pyramidal (BigData, Virtual) datasets,
 %       where the block is fetched at the displayed pyramid level
 %
 % Usage:
 %
-%   **Example 1** — tag a cached image with the block it was taken from
+%   **Example 1** - tag a cached image with the block it was taken from
 %
 %   .. code-block:: matlab
 %

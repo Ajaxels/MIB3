@@ -59,11 +59,11 @@ classdef MakeMovie < handle
             %       controller = controllers.MakeMovie(mibModel, extraController, extraOptions)
             %
             % Parameters:
-            %   **mibModel** — handle to the MibModel instance
+            %   **mibModel** - handle to the MibModel instance
             %
-            %   **extraController** *(optional)* — handle to VolRenApp for volume animations
+            %   **extraController** *(optional)* - handle to VolRenApp for volume animations
             %
-            %   **extraOptions** *(optional)* — struct; ``.mode`` = ``'spin'`` or ``'animation'``
+            %   **extraOptions** *(optional)* - struct; ``.mode`` = ``'spin'`` or ``'animation'``
 
             obj.mibModel = mibModel;
 
@@ -259,7 +259,12 @@ classdef MakeMovie < handle
 
             if isempty(obj.extraController)
                 blockModeSwitch = h.shownAreaRadio.Value;
-                [height, width] = dataset.image.getDatasetDimensions([], [], blockModeSwitch);
+                % See Snapshot.updateWidthHeight: the shown block lives on the
+                % DATASET (dataset.slices), so routing this through the image
+                % errored on every "shown area" run. This file mirrored the
+                % Snapshot code, and mirrored its bug with it.
+                [height, width] = dataset.getDatasetDimensions('image', [], ...
+                    struct('blockModeSwitch', blockModeSwitch));
                 obj.origWidth   = width;
 
                 orientation = dataset.orientation;
@@ -526,27 +531,27 @@ classdef MakeMovie < handle
             % ROI, resizes, optionally overlays a scale bar, and writes all frames
             % into the movie file configured in ``obj.view.handles``.
             %
-            % **BigData pyramid-level selection** — for BigData datasets (OME-Zarr / WSI),
+            % **BigData pyramid-level selection** - for BigData datasets (OME-Zarr / WSI),
             % the function selects the *finest* pyramid level whose native resolution still
             % covers the requested frame dimensions, avoiding full-res loads for every frame:
             %
-            %   - Shown-area mode — fetches at ``dataset.magFactor`` (current viewport resolution).
-            %   - Full-image mode — selects the coarsest level ``L`` where
+            %   - Shown-area mode - fetches at ``dataset.magFactor`` (current viewport resolution).
+            %   - Full-image mode - selects the coarsest level ``L`` where
             %     ``levelScaleFactors(L) ≤ min(fullW/newW, fullH/newH)``.
-            %   - ROI mode       — same formula using ``obj.origWidth``/``obj.origHeight``
+            %   - ROI mode       - same formula using ``obj.origWidth``/``obj.origHeight``
             %     (ROI extent in full-res pixels); the bounding box is stored as
             %     ``bigDataRoiBB`` and divided by ``levelScaleFactors(L)`` per frame
             %     via ``imcrop`` (rather than passing ``options.x``/``options.y`` which
             %     are full-res coords incompatible with a downsampled pyramid level).
             %
-            % **Scale bar correction** — computed once on the first frame and reused as a
+            % **Scale bar correction** - computed once on the first frame and reused as a
             % cached strip for all subsequent frames.  Uses ``levelImageSizes(1,2)``
             % (FullImage), ``scale / magFactor`` (ShownArea), or ``newWidth / obj.origWidth``
             % (ROI) so that ``utils.addScaleBar`` receives ``scale = newWidth / fullResWidth``
             % instead of a pyramid-level-relative ratio.  ZX / ZY orientations are unaffected
             % because the Z dimension is never pyramided.
             %
-            % **Example** — triggered by pressing the Continue / Render button in the
+            % **Example** - triggered by pressing the Continue / Render button in the
             % MakeMovie dialog:
             %
             %   .. code-block:: matlab
@@ -763,7 +768,7 @@ classdef MakeMovie < handle
 
                             % For BigData XY the fetched image is from a downsampled pyramid
                             % level or display-resolution viewport, so scale = newWidth/size(img,2)
-                            % does not equal newWidth/fullResWidth — which is what addScaleBar requires.
+                            % does not equal newWidth/fullResWidth - which is what addScaleBar requires.
                             scaleForBar = scale;
                             if isBigData && dataset.orientation == 3
                                 if h.fullImageRadio.Value

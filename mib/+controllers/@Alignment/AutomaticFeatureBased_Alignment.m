@@ -14,10 +14,10 @@ function AutomaticFeatureBased_Alignment(obj, parameters)
 %
 % Two apply modes (chosen via ``parameters.TransformationMode``):
 %
-% - ``'cropped'``  — original canvas preserved; each slice warped with
+% - ``'cropped'``  - original canvas preserved; each slice warped with
 %   ``imwarp(..., 'OutputView', imref2d([H, W]))`` and written back via
 %   :meth:`setData2D`.
-% - ``'extended'`` — canvas grows to fit the union of all warped slices;
+% - ``'extended'`` - canvas grows to fit the union of all warped slices;
 %   the image canvas is replaced atomically and service-layer containers
 %   are pre-resized before :meth:`setData4D`.
 %
@@ -34,11 +34,11 @@ function AutomaticFeatureBased_Alignment(obj, parameters)
 % ``Cancelable = true`` whenever ``BatchOpt.showWaitbar`` is set; cancel
 % state is polled at each phase boundary and immediately before each
 % write. The ``automaticOptions`` settings dialog from MIB2 is currently
-% skipped — the algorithm runs with whatever defaults already exist in
+% skipped - the algorithm runs with whatever defaults already exist in
 % ``obj.automaticOptions``.
 %
 % Input Arguments:
-%   - **parameters** — struct produced by :meth:`continueBtn_Callback`.
+%   - **parameters** - struct produced by :meth:`continueBtn_Callback`.
 %     Reads ``TransformationType``, ``TransformationMode``, ``colorCh``,
 %     ``backgroundColor``, ``useBatchMode``, ``method``.
 
@@ -47,7 +47,7 @@ function AutomaticFeatureBased_Alignment(obj, parameters)
 
 id = obj.mibModel.getActiveId();
 
-% Parent figure for any dialogs — ``obj.view`` is empty in batch mode
+% Parent figure for any dialogs - ``obj.view`` is empty in batch mode
 if ~isempty(obj.view) && isvalid(obj.view) && isvalid(obj.view.gui)
     parentFig = obj.view.gui;
 else
@@ -136,7 +136,7 @@ end
 % Verify we have at least one usable transform
 anyTform = any(~cellfun(@isempty, tformMatrix));
 if ~anyTform
-    utils.dlgs.showErrorDialog(parentFig, 'No transforms were produced — check feature detector settings.', 'Alignment');
+    utils.dlgs.showErrorDialog(parentFig, 'No transforms were produced - check feature detector settings.', 'Alignment');
     return;
 end
 
@@ -300,7 +300,7 @@ for layer = 2:Depth
 
     if size(matchedOriginal, 1) < 3
         utils.dlgs.showErrorDialog(parentFig, ...
-            sprintf(['Only %d matched points between slice %d and %d — at least 3 are required.\n\n' ...
+            sprintf(['Only %d matched points between slice %d and %d - at least 3 are required.\n\n' ...
                     'Adjust feature-detector settings to produce more points.'], size(matchedOriginal, 1), layer - 1, layer), ...
                     'Alignment');
         return;
@@ -494,7 +494,7 @@ while notOk
     end
     if strcmp(answer3, 'Apply values')
         % Write smoothed values back into the tform chain.
-        % Assign the full T matrix at once — element-level assignment triggers
+        % Assign the full T matrix at once - element-level assignment triggers
         % the affine2d setter with an intermediate state and fails validation.
         for k = 2:vec_length
             if isempty(tformMatrix{k}) || ~isprop(tformMatrix{k}, 'T'); continue; end

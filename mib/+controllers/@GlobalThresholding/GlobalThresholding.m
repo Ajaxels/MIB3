@@ -99,7 +99,7 @@ classdef GlobalThresholding < handle
             obj.BatchOpt.mibBatchTooltip.Mode               = 'Apply thresholding for the current slice (2D), current stack (3D) or the whole dataset (4D)';
             obj.BatchOpt.mibBatchTooltip.ColorChannel       = 'Color channel to be used for thresholding';
             obj.BatchOpt.mibBatchTooltip.Destination        = 'Assign thresholding results to the Mask or Selection layer of MIB';
-            obj.BatchOpt.mibBatchTooltip.ForegroundFraction = '[Percentile only]: fraction of foreground pixels (0–1)';
+            obj.BatchOpt.mibBatchTooltip.ForegroundFraction = '[Percentile only]: fraction of foreground pixels (0-1)';
             obj.BatchOpt.mibBatchTooltip.ThresholdOffset    = 'Offset added to the calculated threshold (positive = raise threshold, negative = lower it)';
             obj.BatchOpt.mibBatchTooltip.showWaitbar        = 'Show or not the progress bar during execution';
 
@@ -381,13 +381,13 @@ classdef GlobalThresholding < handle
             % COMPUTETHRESHOLD - Apply the selected thresholding algorithm to img.
             %
             % Input Arguments:
-            %   - **img** — [uint8 | uint16] single-channel 2-D image
-            %   - **algorithm** — [char] algorithm name from BatchOpt.Algorithm{1}
-            %   - **foregroundFraction** — [double] fraction for Percentile algorithm
-            %   - **maxInt** — [double] maximum intensity for the image data type
+            %   - **img** - [uint8 | uint16] single-channel 2-D image
+            %   - **algorithm** - [char] algorithm name from BatchOpt.Algorithm{1}
+            %   - **foregroundFraction** - [double] fraction for Percentile algorithm
+            %   - **maxInt** - [double] maximum intensity for the image data type
             %
             % Output Arguments:
-            %   - **threshold** — [double] raw intensity threshold value
+            %   - **threshold** - [double] raw intensity threshold value
             %
             switch algorithm
                 case 'Concavity';       threshold = th_concavity(img);
@@ -448,7 +448,7 @@ classdef GlobalThresholding < handle
             % APPLYBUTTON_CALLBACK - Perform thresholding on the selected scope.
             %
             % Input Arguments:
-            %   - **batchModeSwitch** *(optional)* — logical; ``true`` when called
+            %   - **batchModeSwitch** *(optional)* - logical; ``true`` when called
             %     headlessly from the batch dispatcher. Default ``false``.
             %
             if obj.mibModel.preferences.System.DeveloperMode

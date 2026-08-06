@@ -11,7 +11,7 @@ classdef MibBigDataVolRenReadTest < matlab.unittest.TestCase
 %      level indices, confirming the pixSize-scaling logic in VolRenApp.grabVolume.
 %
 % Requires CMU-1.ndpi at C:\Matlab2\Data\FileFormats\czi\CMU-1.ndpi.
-% Tagged Integration — all tests skip automatically when the file is absent.
+% Tagged Integration - all tests skip automatically when the file is absent.
 %
 % Note: labels tests use a zero-initialised in-memory store (createStore).
 % The store is built once per test method (TestMethodSetup) and cleaned up
@@ -19,9 +19,9 @@ classdef MibBigDataVolRenReadTest < matlab.unittest.TestCase
 % in TestClassSetup because BioFormats loading takes several seconds.
 
     properties (Access = private)
-        ImageObj        % core.MibBigDataImage — shared across test methods (read-only)
-        LabelsObj       % core.MibBigDataLabels — fresh per test method
-        LabelsStorePath % char — path of the temp zarr3 labels store (per method)
+        ImageObj        % core.MibBigDataImage - shared across test methods (read-only)
+        LabelsObj       % core.MibBigDataLabels - fresh per test method
+        LabelsStorePath % char - path of the temp zarr3 labels store (per method)
     end
 
     methods (TestClassSetup)
@@ -31,7 +31,7 @@ classdef MibBigDataVolRenReadTest < matlab.unittest.TestCase
 
             ndpiFile = 'C:\Matlab2\Data\FileFormats\czi\CMU-1.ndpi';
             testCase.assumeTrue(isfile(ndpiFile), ...
-                'CMU-1.ndpi not found at expected path — skipping BigData VolRen read tests');
+                'CMU-1.ndpi not found at expected path - skipping BigData VolRen read tests');
 
             % Mirror the §7 shared MCP setup helper from bigdata_implementation_plan.md
             io.BioFormats.Config.setLibrary('mib');
@@ -53,7 +53,7 @@ classdef MibBigDataVolRenReadTest < matlab.unittest.TestCase
         function buildLabelsStore(testCase)
             % Skip if image object was not created (file absent).
             testCase.assumeNotEmpty(testCase.ImageObj, ...
-                'ImageObj is empty — image file was absent, skipping labels setup');
+                'ImageObj is empty - image file was absent, skipping labels setup');
 
             storePath = [tempname '_volren_readtest.zarr3'];
             if isfolder(storePath); rmdir(storePath, 's'); end
@@ -116,16 +116,16 @@ classdef MibBigDataVolRenReadTest < matlab.unittest.TestCase
                 expectedZ = levelSizes(levelNumber, 3);
 
                 testCase.verifyEqual(size(result, 1), expectedY, ...
-                    sprintf('Level %d: Y (height) mismatch — expected %d, got %d', ...
+                    sprintf('Level %d: Y (height) mismatch - expected %d, got %d', ...
                     levelNumber, expectedY, size(result, 1)));
                 testCase.verifyEqual(size(result, 2), expectedX, ...
-                    sprintf('Level %d: X (width) mismatch — expected %d, got %d', ...
+                    sprintf('Level %d: X (width) mismatch - expected %d, got %d', ...
                     levelNumber, expectedX, size(result, 2)));
                 testCase.verifyEqual(size(result, 3), expectedZ, ...
-                    sprintf('Level %d: Z (depth) mismatch — expected %d, got %d', ...
+                    sprintf('Level %d: Z (depth) mismatch - expected %d, got %d', ...
                     levelNumber, expectedZ, size(result, 3)));
                 testCase.verifyEqual(size(result, 4), imageObj.colors, ...
-                    sprintf('Level %d: color channel count mismatch — expected %d, got %d', ...
+                    sprintf('Level %d: color channel count mismatch - expected %d, got %d', ...
                     levelNumber, imageObj.colors, size(result, 4)));
             end
         end
@@ -135,7 +135,7 @@ classdef MibBigDataVolRenReadTest < matlab.unittest.TestCase
             % Verify: level 1 has unit scale factors; every coarser level has scaled
             % voxel sizes >= the full-resolution base; the coarsest level is strictly coarser.
             %
-            % Note: for BioFormats-backed BigData, io_.pixSize is [] — the physical voxel
+            % Note: for BioFormats-backed BigData, io_.pixSize is [] - the physical voxel
             % sizes at full resolution are stored in pyramid.levelVoxelSizes (index 1 = Y,
             % 2 = X, 3 = Z).  VolRenApp reads pixSize from mibModel.I{id}.image.pixSize
             % (a struct set during MibDataset assembly), but the scale-factor logic being
@@ -178,7 +178,7 @@ classdef MibBigDataVolRenReadTest < matlab.unittest.TestCase
             % For the disk-backed labels store, getData63 with the same option must return
             % data with spatial dimensions matching levelImageSizes for the chosen level.
             %
-            % The store is zero-initialised — this is a pure dimension check.
+            % The store is zero-initialised - this is a pure dimension check.
             % Level 1 is skipped (WSI full-resolution is too large to allocate labels for).
             imageObj   = testCase.ImageObj;
             labelsObj  = testCase.LabelsObj;
@@ -196,10 +196,10 @@ classdef MibBigDataVolRenReadTest < matlab.unittest.TestCase
                 expectedX = levelSizes(levelNumber, 2);
 
                 testCase.verifyEqual(size(result, 1), expectedY, ...
-                    sprintf('Labels level %d: Y (height) mismatch — expected %d, got %d', ...
+                    sprintf('Labels level %d: Y (height) mismatch - expected %d, got %d', ...
                     levelNumber, expectedY, size(result, 1)));
                 testCase.verifyEqual(size(result, 2), expectedX, ...
-                    sprintf('Labels level %d: X (width) mismatch — expected %d, got %d', ...
+                    sprintf('Labels level %d: X (width) mismatch - expected %d, got %d', ...
                     levelNumber, expectedX, size(result, 2)));
             end
         end

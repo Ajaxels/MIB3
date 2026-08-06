@@ -10,7 +10,7 @@ function closeWindow(obj)
 if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.Stitching.closeWindow: triggered\n');
 end
-% Close the seam inspector first — it holds handles into this controller.
+% Close the seam inspector first - it holds handles into this controller.
 if ~isempty(obj.inspector) && isvalid(obj.inspector)
     obj.inspector.closeWindow();
 end

@@ -48,7 +48,7 @@ classdef Alignment < handle
             % :meth:`updateWidgets`. Deletes stale listeners if the controller or
             % its view has been destroyed.
             if ~isvalid(obj)
-                % Controller already deleted — obj.listener is unreachable, so the
+                % Controller already deleted - obj.listener is unreachable, so the
                 % stale listener can only no-op until the model releases it. Do NOT
                 % touch obj.* here or this callback throws "Invalid or deleted object".
                 return;
@@ -72,11 +72,11 @@ classdef Alignment < handle
             %      idx = controllers.Alignment.findMatchingPairs(X1, X2)
             %
             % Input Arguments:
-            %   - **X1** — ``[N x 2]`` array of (x, y) coordinates.
-            %   - **X2** — ``[M x 2]`` array of (x, y) coordinates.
+            %   - **X1** - ``[N x 2]`` array of (x, y) coordinates.
+            %   - **X2** - ``[M x 2]`` array of (x, y) coordinates.
             %
             % Output Arguments:
-            %   - **idx** — ``[M x 1]`` vector of indices such that
+            %   - **idx** - ``[M x 1]`` vector of indices such that
             %     ``X1(j)`` matches ``X2(idx(j))``; ``NaN`` for unmatched rows.
             distances = zeros(size(X1, 1), size(X2, 1));
             for i = 1:size(X1, 1)
@@ -133,16 +133,16 @@ classdef Alignment < handle
             %      obj = controllers.Alignment(mibModel, [], BatchOptInput)
             %
             % Input Arguments:
-            %   - **mibModel** — handle to :class:`models.MibModel`.
-            %   - **varargin{1}** *(optional)* — reserved (compat slot).
-            %   - **varargin{2}** *(optional)* — ``BatchOpt`` struct for headless run,
+            %   - **mibModel** - handle to :class:`models.MibModel`.
+            %   - **varargin{1}** *(optional)* - reserved (compat slot).
+            %   - **varargin{2}** *(optional)* - ``BatchOpt`` struct for headless run,
             %     or ``NaN`` to request the default ``BatchOpt`` via ``SyncBatch``.
 
             obj.mibModel = mibModel;
             id = obj.mibModel.getActiveId();
             dataset = obj.mibModel.I{id};
 
-            % Virtual-stacking mode has no supported alignment path — reject early.
+            % Virtual-stacking mode has no supported alignment path - reject early.
             % BigData is allowed: alignment writes a NEW aligned zarr3 store (image +
             % labels) and swaps the active buffer to it. Per-algorithm BigData
             % restrictions (feature-v1, AMST) are enforced later in continueBtn_Callback.
@@ -244,7 +244,7 @@ classdef Alignment < handle
             BatchOpt.HDD_OutputFileExtension    = {'TIF'};
             BatchOpt.HDD_OutputFileExtension{2} = {'AM', 'JPG', 'MRC', 'NRRD', 'PNG', 'TIF'};
 
-            % BigData-mode parameters — output is a NEW aligned OME-Zarr v3 store.
+            % BigData-mode parameters - output is a NEW aligned OME-Zarr v3 store.
             % The analysis pyramid level (item list) is populated dynamically in
             % updateWidgets from dataset.image.pyramid; '<auto>' picks the level
             % nearest ~3000 px wide.

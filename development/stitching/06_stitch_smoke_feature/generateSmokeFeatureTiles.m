@@ -4,7 +4,7 @@ function generateSmokeFeatureTiles()
 % Creates a 3x3 grid of tiles with 25% nominal overlap but LARGE (+-55 px)
 % jitter on the true cut positions. The restricted-search phase correlation
 % measures only the nominal overlap strip, so with jitter comparable to the
-% overlap most of its edges come out invalid or wrong — while the Feature-based
+% overlap most of its edges come out invalid or wrong - while the Feature-based
 % method matches descriptors across the FULL tiles and recovers the offsets.
 % This is the dataset for comparing the two registration methods side by side.
 %

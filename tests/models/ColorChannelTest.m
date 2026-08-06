@@ -3,14 +3,14 @@ classdef ColorChannelTest < matlab.unittest.TestCase
 %
 % Call pattern: mibModel.colorChannelActions(mode, [], batchOpt)
 % gives nargin=4 (obj + mode + channel1 + BatchOptIn) which triggers
-% the batch path — no dialogs shown.
+% the batch path - no dialogs shown.
 %
 % Verification strategies:
-%   invert round-trip   — double-invert of ch1 restores original pixels
-%   invert complement   — single invert: pixel = 255 − original
-%   insert channel      — Insert empty channel: colors + 1
-%   delete channel      — Delete channel from 2-channel image: colors − 1
-%   swap channels       — ch1/ch2 pixel values are exchanged
+%   invert round-trip   - double-invert of ch1 restores original pixels
+%   invert complement   - single invert: pixel = 255 − original
+%   insert channel      - Insert empty channel: colors + 1
+%   delete channel      - Delete channel from 2-channel image: colors − 1
+%   swap channels       - ch1/ch2 pixel values are exchanged
 
     methods (TestClassSetup)
         function addPaths(testCase)

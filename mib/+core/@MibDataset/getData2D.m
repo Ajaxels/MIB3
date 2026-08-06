@@ -7,40 +7,40 @@ function dataset = getData2D(obj, type, slice_no, orient, col_channel, options)
 %       dataset = obj.getData2D(type, slice_no, orient, col_channel, options)
 %
 % Input Arguments:
-%   - **type** — type of the dataset layer to retrieve:
+%   - **type** - type of the dataset layer to retrieve:
 %
-%     - ``'image'`` — [*default*] the image layer
-%     - ``'labels'`` — labels layer with segmentation
-%     - ``'mask'`` — mask layer, supporting segmentation
-%     - ``'selection'`` — selection layer, a temporary layer for segmentation
-%     - ``'everything'`` — (``'model'``, ``'mask'`` and ``'selection'`` for ``obj.labels.maxMaterials == 63`` only)
+%     - ``'image'`` - [*default*] the image layer
+%     - ``'labels'`` - labels layer with segmentation
+%     - ``'mask'`` - mask layer, supporting segmentation
+%     - ``'selection'`` - selection layer, a temporary layer for segmentation
+%     - ``'everything'`` - (``'model'``, ``'mask'`` and ``'selection'`` for ``obj.labels.maxMaterials == 63`` only)
 %
-%   - **slice_no** — [*optional,* can be []], an index of the slice to get:
+%   - **slice_no** - [*optional,* can be []], an index of the slice to get:
 %
-%     - ``[]`` — get the current slice *(default)*
-%     - any index — get slice with that index at the current time point (use options to define the time point)
+%     - ``[]`` - get the current slice *(default)*
+%     - any index - get slice with that index at the current time point (use options to define the time point)
 %
-%   - **orient** — [*optional,* can be []]
+%   - **orient** - [*optional,* can be []]
 %
-%     - ``[]`` — returns transposed dataset in the currently shown orientation *(default)*
-%     - ``1`` — returns transposed dataset in the zx configuration: [y,x,z,c,t] → [x,z,y,c,t]
-%     - ``2`` — returns transposed dataset in the zy configuration: [y,x,z,c,t] → [y,z,x,c,t]
-%     - ``3`` — returns the original dataset in the yx configuration: [y,x,z,c,t]
+%     - ``[]`` - returns transposed dataset in the currently shown orientation *(default)*
+%     - ``1`` - returns transposed dataset in the zx configuration: [y,x,z,c,t] → [x,z,y,c,t]
+%     - ``2`` - returns transposed dataset in the zy configuration: [y,x,z,c,t] → [y,z,x,c,t]
+%     - ``3`` - returns the original dataset in the yx configuration: [y,x,z,c,t]
 %
-%   - **col_channel** — [*optional*] color channel(s) to retrieve; can be ``[]`` or ``NaN``:
+%   - **col_channel** - [*optional*] color channel(s) to retrieve; can be ``[]`` or ``NaN``:
 %
 %     - when **type** is ``'image'``: a vector of color channel indices:
 %
-%       - ``[]`` — *(default)* take color channels from ``obj.slices{4}``
-%       - ``NaN`` — take all color channels of the dataset
-%       - index — get specific color channel(s) with provided index(s)
+%       - ``[]`` - *(default)* take color channels from ``obj.slices{4}``
+%       - ``NaN`` - take all color channels of the dataset
+%       - index - get specific color channel(s) with provided index(s)
 %
 %     - when **type** is ``'labels'``: the material selection:
 %
-%       - ``[]`` — *(default)* take all materials of the model
-%       - ``NaN`` — take all materials of the model
-%       - index — get specific material; the selected material will have index = 1
-%   - **options** — *(optional)*, a structure with extra parameters
+%       - ``[]`` - *(default)* take all materials of the model
+%       - ``NaN`` - take all materials of the model
+%       - index - get specific material; the selected material will have index = 1
+%   - **options** - *(optional)*, a structure with extra parameters
 %
 %     - ``.blockModeSwitch`` [*logical]* override the block mode switch obj.blockModeSwitch;
 %       use or not the block mode (**false** - return full dataset, **true** - return only the shown part)
@@ -60,7 +60,7 @@ function dataset = getData2D(obj, type, slice_no, orient, col_channel, options)
 %     - ``.level`` *(optional)*, an index of image level from the image pyramid
 %
 % Output Arguments:
-%   - **dataset** — a cell array with 2D image with colors.
+%   - **dataset** - a cell array with 2D image with colors.
 %     For the 'image' type: {roiId}[1:height, 1:width, 1:colors]; for all other types: {roiId}[1:height, 1:width]
 %
 % Usage:
@@ -97,7 +97,7 @@ if nargin < 2; type = 'image'; end
 % Shortcut for the most common case: Standard in-memory dataset, YX orientation (orient==3),
 % no ROI, no viewport crop, no x/y/z subregion. Bypasses MibImage.getData() entirely
 % (eliminates 3 function-call levels, ~25 guard checks, blockMode limit clamping, and cell
-% boxing overhead per call — critical for slice-by-slice batch loops).
+% boxing overhead per call - critical for slice-by-slice batch loops).
 if strcmp(obj.datasetType, 'Standard') && ~strcmp(type, 'everything')
     fastOrient = orient;
     if isempty(fastOrient) || (isscalar(fastOrient) && isnan(fastOrient))

@@ -2,11 +2,11 @@ classdef StitchInspectorTest < matlab.unittest.TestCase
 % STITCHINSPECTORTEST - Unit tests for the seam-inspector headless core (Phase A).
 %
 % Covers (see development/stitching/plan_inspector.md):
-%   utils.stitch.scoreSeams       — pixel NCC at solved positions + worst-first ranking
-%   utils.stitch.localCorrelate   — click-seeded ROI registration + confidence gate
-%   solver user-edge support      — userEdgeWeight dominance, never-pruned rule
-%   utils.stitch.measureAllPairs  — user edges survive a re-measure (preserveEdges)
-%   saveProject / loadProject     — sidecar v2 (source/seamScore) + v1 back-compat
+%   utils.stitch.scoreSeams       - pixel NCC at solved positions + worst-first ranking
+%   utils.stitch.localCorrelate   - click-seeded ROI registration + confidence gate
+%   solver user-edge support      - userEdgeWeight dominance, never-pruned rule
+%   utils.stitch.measureAllPairs  - user edges survive a re-measure (preserveEdges)
+%   saveProject / loadProject     - sidecar v2 (source/seamScore) + v1 back-compat
 
     methods (TestClassSetup)
         function addPaths(testCase)
@@ -26,7 +26,7 @@ classdef StitchInspectorTest < matlab.unittest.TestCase
 
         function scoreSeams_correctHighMisplacedLow(testCase)
             % Correct placement scores high everywhere; misplacing one tile
-            % tanks exactly its edges' scores — the metric that catches
+            % tanks exactly its edges' scores - the metric that catches
             % confidently-wrong edges the solver residuals cannot see.
             [layout, truth] = testCase.buildChoppedCase(21);
             edges = testCase.edgesFromPairs(layout);
@@ -118,7 +118,7 @@ classdef StitchInspectorTest < matlab.unittest.TestCase
             % The microscopy requirement behind Fix-Z: correcting a Z-boundary
             % seam must shift the WHOLE upper stack and EVERY layer above it
             % (the stacks hang off each other through the cross-layer edges),
-            % while the layers below stay put. Pure solver behaviour — no
+            % while the layers below stay put. Pure solver behaviour - no
             % pixel data needed.
             depth = 8; dzTrue = 6;
             layout = testCase.emptyLayout(3);
@@ -193,7 +193,7 @@ classdef StitchInspectorTest < matlab.unittest.TestCase
 
         function localCorrelate_repetitivePatternNotConfident(testCase)
             % Pure periodic stripes: the second NCC peak ties the first, so the
-            % prominence gate must refuse — this is the failure mode the
+            % prominence gate must refuse - this is the failure mode the
             % inspector exists to fix, it must not reproduce it.
             [cols, ~] = meshgrid(1:300, 1:300);
             stripes = single(127 + 100 * sin(2 * pi * cols / 24));
@@ -300,7 +300,7 @@ classdef StitchInspectorTest < matlab.unittest.TestCase
 
         function clickFix_recoversSabotagedChainWithinOnePixel(testCase)
             % Phase C milestone: the corrupted edge is FIXED (not excluded)
-            % via one click near a landmark — localCorrelate snaps the pair
+            % via one click near a landmark - localCorrelate snaps the pair
             % from the wrong SOLVED offset, the resulting user edge steers
             % the solve, and every tile lands within 1 px of ground truth.
             [layout, truth] = testCase.buildChainCase(91);
@@ -451,7 +451,7 @@ classdef StitchInspectorTest < matlab.unittest.TestCase
         end
 
         function [layout, truth] = buildChainCase(testCase, seed)
-            % 1x3 chain (no loop) chopped with ZERO jitter — nominal == truth,
+            % 1x3 chain (no loop) chopped with ZERO jitter - nominal == truth,
             % so nominal-spring recovery after an exclusion is exact.
             original = uint8(testCase.texturedImage(180, 460, seed));
             tileH = 160; tileW = 160; step = 120;   % 40 px overlap
@@ -555,7 +555,7 @@ classdef StitchInspectorTest < matlab.unittest.TestCase
     methods (Static, Access = private)
 
         function img = texturedImage(H, W, seed)
-            % Deterministic textured image (filtered noise + gradients) — same
+            % Deterministic textured image (filtered noise + gradients) - same
             % recipe as StitchCoreTest so correlation has real content.
             rng(seed, 'twister');
             noise = randn(H, W);

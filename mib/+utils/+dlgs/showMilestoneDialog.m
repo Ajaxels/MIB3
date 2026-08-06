@@ -10,39 +10,39 @@ function [newStatsPath, updatedTiers] = showMilestoneDialog(ParentFigure, userPr
 % video and user performance statistics.
 %
 % Input Arguments:
-%   - **ParentFigure** — handle to the parent window (AppContainer, uifigure, or ``[]``);
+%   - **ParentFigure** - handle to the parent window (AppContainer, uifigure, or ``[]``);
 %     used to center the dialog. Pass ``[]`` to use the cached handle from a prior call.
 %     In MIB pass ``obj.mibModel.getProgressBarParent()`` so the dialog follows the
 %     active dataset window when it is undocked.
 %     To supply the MIB installation path use ``options.mibPath``.
-%   - **userPrefs** — struct — ``mibModel.preferences.Users`` (provides tier data and stats)
-%   - **mode** — [char] display mode:
+%   - **userPrefs** - struct - ``mibModel.preferences.Users`` (provides tier data and stats)
+%   - **mode** - [char] display mode:
 %
-%     - ``'milestoneReached'`` — congratulations dialog for reaching a new tier (default)
-%     - ``'currentStats'`` — show current score and progress
+%     - ``'milestoneReached'`` - congratulations dialog for reaching a new tier (default)
+%     - ``'currentStats'`` - show current score and progress
 %
-%   - **options** *(optional)* — struct with fields:
+%   - **options** *(optional)* - struct with fields:
 %
-%     - ``.mibPath`` — [char] path to MIB installation directory (default: ``''``)
-%     - ``.WindowStyle`` — [char] ``'modal'`` (default for ``'milestoneReached'``) or ``'normal'``
-%     - ``.ParentFigure`` — [handle] uifigure / AppContainer handle for centering
+%     - ``.mibPath`` - [char] path to MIB installation directory (default: ``''``)
+%     - ``.WindowStyle`` - [char] ``'modal'`` (default for ``'milestoneReached'``) or ``'normal'``
+%     - ``.ParentFigure`` - [handle] uifigure / AppContainer handle for centering
 %
 % Output Arguments:
-%   - **newStatsPath** — [char] new ``mib_user.mat`` path chosen by the user,
+%   - **newStatsPath** - [char] new ``mib_user.mat`` path chosen by the user,
 %     or ``''`` if the path was not changed
-%   - **updatedTiers** — struct with potentially updated ``Tiers`` data
+%   - **updatedTiers** - struct with potentially updated ``Tiers`` data
 %     (may differ from the input when a richer stats file was loaded)
 %
-% (none when called without output arguments — dialog blocks until dismissed)
+% (none when called without output arguments - dialog blocks until dismissed)
 %
-% **Example 1** — Show a milestone congratulations dialog
+% **Example 1** - Show a milestone congratulations dialog
 %
 % .. code-block:: matlab
 %
 %    utils.dlgs.showMilestoneDialog(obj.view.gui, ...
 %        obj.mibModel.preferences.Users, 'milestoneReached');
 %
-% **Example 2** — Show current score and progress
+% **Example 2** - Show current score and progress
 %
 % .. code-block:: matlab
 %
@@ -65,7 +65,7 @@ persistent cachedFigure         % reusable hidden uifigure shell
 if ~isfield(options, 'mibPath'); options.mibPath = ''; end
 if ~isfield(options, 'userStatsPath'); options.userStatsPath = ''; end
 
-% Output variables — shared with nested callbacks via closure
+% Output variables - shared with nested callbacks via closure
 newStatsPath = '';
 updatedTiers = struct();
 
@@ -74,7 +74,7 @@ if ~isempty(ParentFigure) && isvalid(ParentFigure)
     parentFigureHandle = ParentFigure;
 end
 
-% Resolve mibDir — update cache when options.mibPath is supplied
+% Resolve mibDir - update cache when options.mibPath is supplied
 if ~isempty(options.mibPath)
     mibDir = options.mibPath;
 elseif isempty(mibDir)
@@ -274,7 +274,7 @@ end
 fig.WindowStyle = lower(windowStyle);
 fig.Position = [fig.Position(1), fig.Position(2), WIN_W, WIN_H];
 
-%% Root grid: [1 row × 2 cols]  —  video | content
+%% Root grid: [1 row × 2 cols]  -  video | content
 rootGrid = uigridlayout(fig, [1, 2], ...
     'ColumnWidth', {VIDEO_COL_W, '1x'}, ...
     'RowHeight',   {'1x'}, ...
@@ -330,7 +330,7 @@ btnGrid = uigridlayout(contentGrid, [1, 3], ...
 btnGrid.Layout.Row    = 3;
 btnGrid.Layout.Column = 1;
 
-% "Set stats file..." button — only shown in currentStats mode
+% "Set stats file..." button - only shown in currentStats mode
 if strcmp(mode, 'currentStats')
     statsFileBtn = uibutton(btnGrid, ...
         'Text',    'Set stats file...', ...
@@ -406,7 +406,7 @@ end
 fig.CloseRequestFcn = @(~,~) onClose();
 fig.Visible = 'on';
 drawnow;
-% Re-apply WindowStyle on the realized (visible) figure — setting it while a
+% Re-apply WindowStyle on the realized (visible) figure - setting it while a
 % cached figure is hidden does not take effect (notably in the deployed web
 % engine), so the dialog would otherwise come up non-modal on reuse.
 fig.WindowStyle = lower(windowStyle);
@@ -490,7 +490,7 @@ uiwait(fig);
                 greetLbl.Text = sprintf('Stats file location set:\n%s', selectedPath);
             end
         else
-            % New location — save current stats there immediately so it exists on next load
+            % New location - save current stats there immediately so it exists on next load
             Tiers = updatedTiers;
             try
                 destDir = fileparts(selectedPath);

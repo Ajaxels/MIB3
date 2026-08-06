@@ -2,9 +2,9 @@ classdef MibImageSliceProvider < io.savers.SliceProvider
 % MIBIMAGESLICEPROVIDER - SliceProvider that streams from a MibImage at a pyramid level.
 %
 % Reads one Z-slice at a time, on demand, from **any** ``core.MibImage`` subclass
-% — a pixel image (``core.MibImage`` / ``core.MibVirtualImage`` /
+% - a pixel image (``core.MibImage`` / ``core.MibVirtualImage`` /
 % ``core.MibBigDataImage``) **or** a label object (``core.MibLabels63`` /
-% ``core.MibBigDataLabels``) — by calling the polymorphic
+% ``core.MibBigDataLabels``) - by calling the polymorphic
 % ``src.getData(layerType, 3, colChannel, options)`` with
 % ``options.pyramidLevel`` and ``options.z = [z z]``. This is the **backend-neutral**
 % read path: it never names zarr, so a future BioFormats / OpenSlide BigData backend
@@ -21,7 +21,7 @@ classdef MibImageSliceProvider < io.savers.SliceProvider
 % core.MibImage.getData, core.MibVirtualImage.getDataZarr,
 % core.MibBigDataLabels.getData63
 %
-% **Example 1** — stream pyramid level 2 of a BigData image to disk:
+% **Example 1** - stream pyramid level 2 of a BigData image to disk:
 %
 %   .. code-block:: matlab
 %
@@ -32,7 +32,7 @@ classdef MibImageSliceProvider < io.savers.SliceProvider
 %      provider  = io.savers.MibImageSliceProvider(img, 'image', level, [], numSlices, img.time, zScale);
 %      slice     = provider.getSlice(1, 1);                     % first slice of level 2
 %
-% **Example 2** — stream a disk-backed BigData model (labels) at a level:
+% **Example 2** - stream a disk-backed BigData model (labels) at a level:
 %
 %   .. code-block:: matlab
 %
@@ -60,13 +60,13 @@ classdef MibImageSliceProvider < io.savers.SliceProvider
             % MIBIMAGESLICEPROVIDER - Build a per-slice reader for a pyramid level.
             %
             % Input Arguments:
-            %   - **src** — a ``core.MibImage`` subclass (image or label object)
-            %   - **layerType** — [char] ``'image'`` | ``'labels'`` | ``'mask'`` | ``'selection'``
-            %   - **level** — [double] 1-based pyramid level to export (1 = full res)
-            %   - **colChannel** — colour-channel indices, ``[]`` = all (ignored for labels)
-            %   - **numSlices** — [double] number of Z-slices at this level
-            %   - **numFrames** — [double] number of time frames
-            %   - **zScale** — [double] full-res Z spacing per level slice (level Z scale
+            %   - **src** - a ``core.MibImage`` subclass (image or label object)
+            %   - **layerType** - [char] ``'image'`` | ``'labels'`` | ``'mask'`` | ``'selection'``
+            %   - **level** - [double] 1-based pyramid level to export (1 = full res)
+            %   - **colChannel** - colour-channel indices, ``[]`` = all (ignored for labels)
+            %   - **numSlices** - [double] number of Z-slices at this level
+            %   - **numFrames** - [double] number of time frames
+            %   - **zScale** - [double] full-res Z spacing per level slice (level Z scale
             %     factor); default 1. Needed because ``getData``'s ``options.z`` is in
             %     full-resolution coordinates.
             if nargin < 4; colChannel = []; end

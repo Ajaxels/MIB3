@@ -9,41 +9,41 @@ function result = setData4D(obj, dataset, type, orient, col_channel, options)
 % Set complete 4D dataset with colors [height:width:depth:colors:time]
 %
 % Input Arguments:
-%   - **dataset** — 4D dataset with colors
+%   - **dataset** - 4D dataset with colors
 %   - if options.roiId is **not** **used,** *slice* can be either
 %     a cell for images ({1}[1:height, 1:width, 1:depth, 1:colors, 1:time]; for all other types: {1}[1:height, 1:width, 1:depth, 1:time]) or
 %     a matrix for images ([1:height, 1:width, 1:depth, 1:colors, 1:time]; for all other types: [1:height, 1:width, 1:depth, 1:time])
 %   - if options.roiId is **used,** *slice* should be
 %     a cell array ({roiId}[1:height, 1:width, 1:depth, 1:colors, 1:time]; for all other types: {roiId}[1:height, 1:width, 1:depth, 1:time])
-%   - **type** — type of the dataset layer to retrieve:
+%   - **type** - type of the dataset layer to retrieve:
 %
-%     - ``'image'`` — [*default*] the image layer
-%     - ``'labels'`` — labels layer with segmentation
-%     - ``'mask'`` — mask layer, supporting segmentation
-%     - ``'selection'`` — selection layer, a temporary layer for segmentation
-%     - ``'everything'`` — (``'model'``, ``'mask'`` and ``'selection'`` for ``obj.labels.maxMaterials == 63`` only)
+%     - ``'image'`` - [*default*] the image layer
+%     - ``'labels'`` - labels layer with segmentation
+%     - ``'mask'`` - mask layer, supporting segmentation
+%     - ``'selection'`` - selection layer, a temporary layer for segmentation
+%     - ``'everything'`` - (``'model'``, ``'mask'`` and ``'selection'`` for ``obj.labels.maxMaterials == 63`` only)
 %
-%   - **orient** — [*optional,* can be []]
+%   - **orient** - [*optional,* can be []]
 %
-%     - ``[]`` — updates transposed dataset in the currently shown orientation *(default)*
-%     - ``1`` — updates transposed dataset in the zx configuration: [y,x,z,c,t] → [x,z,y,c,t]
-%     - ``2`` — updates transposed dataset in the zy configuration: [y,x,z,c,t] → [y,z,x,c,t]
-%     - ``3`` — updates the original dataset in the yx configuration: [y,x,z,c,t]
+%     - ``[]`` - updates transposed dataset in the currently shown orientation *(default)*
+%     - ``1`` - updates transposed dataset in the zx configuration: [y,x,z,c,t] → [x,z,y,c,t]
+%     - ``2`` - updates transposed dataset in the zy configuration: [y,x,z,c,t] → [y,z,x,c,t]
+%     - ``3`` - updates the original dataset in the yx configuration: [y,x,z,c,t]
 %
-%   - **col_channel** — [*optional*] color channel(s) to update; can be ``[]`` or ``NaN``:
+%   - **col_channel** - [*optional*] color channel(s) to update; can be ``[]`` or ``NaN``:
 %
 %     - when **type** is ``'image'``: a vector of color channel indices:
 %
-%       - ``[]`` — *(default)* update color channels from ``obj.slices{4}``
-%       - ``NaN`` — update all color channels of the dataset
-%       - index — update specific color channel(s) with provided index(s)
+%       - ``[]`` - *(default)* update color channels from ``obj.slices{4}``
+%       - ``NaN`` - update all color channels of the dataset
+%       - index - update specific color channel(s) with provided index(s)
 %
 %     - when **type** is ``'labels'``: the material selection:
 %
-%       - ``[]`` — *(default)* update all materials of the model
-%       - ``NaN`` — update all materials of the model
-%       - index — update specific material; the selected material in **slice** will have index = 1
-%   - **options** — *(optional)*, a structure with extra parameters
+%       - ``[]`` - *(default)* update all materials of the model
+%       - ``NaN`` - update all materials of the model
+%       - index - update specific material; the selected material in **slice** will have index = 1
+%   - **options** - *(optional)*, a structure with extra parameters
 %
 %     - ``.blockModeSwitch`` [*logical]* override the block mode switch obj.blockModeSwitch;
 %       use or not the block mode (**false** - return full dataset, **true** - return only the shown part)
@@ -67,7 +67,7 @@ function result = setData4D(obj, dataset, type, orient, col_channel, options)
 %       Used in mibResampleController. Default = true;
 %
 % Output Arguments:
-%   - **result** — true-success, false-fail, result of function execution
+%   - **result** - true-success, false-fail, result of function execution
 %
 % Usage:
 %   **Example 1**

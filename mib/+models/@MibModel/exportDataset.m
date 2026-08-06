@@ -7,39 +7,39 @@ function exportDataset(obj, layerType, BatchOptIn)
 %       obj.exportDataset(layerType, BatchOptIn)
 %
 % Input Arguments:
-%   - **layerType** — a string specifying which layer to export:
+%   - **layerType** - a string specifying which layer to export:
 %
-%     - ``'image'`` — export image data with metadata (and colormap if indexed)
-%     - ``'mask'`` — export mask layer as a uint8 array
-%     - ``'model'`` — export model (labels) as a struct with material info
+%     - ``'image'`` - export image data with metadata (and colormap if indexed)
+%     - ``'mask'`` - export mask layer as a uint8 array
+%     - ``'model'`` - export model (labels) as a struct with material info
 %
-%   - **BatchOptIn** — *(optional)* a structure for batch processing mode; when ``NaN``
+%   - **BatchOptIn** - *(optional)* a structure for batch processing mode; when ``NaN``
 %     returns a structure with default options via "SyncBatch" event:
 %
-%     - ``.LayerType`` — cell string, ``{'image'|'mask'|'model'}`` layer to export
-%     - ``.ImageVariable`` — string, [image only] workspace variable name for image data, default ``'I'``
-%     - ``.ColormapVariable`` — string, [image only, indexed color] variable name for colormap, default ``'cmap'``
-%     - ``.MaskVariable`` — string, [mask only] workspace variable name for mask, default ``'M'``
-%     - ``.LabelsVariable`` — string, [model only] workspace variable name for labels struct, default ``'O'``
-%     - ``.MaterialIndex`` — string, [model only] index of material to export; empty = whole model
-%     - ``.MaterialOutputIndex`` — string, [model only] value assigned to single material export, default ``'1'``
-%     - ``.showWaitbar`` — logical, show or not the waitbar
-%     - ``.id`` — *(optional)* index of the dataset
+%     - ``.LayerType`` - cell string, ``{'image'|'mask'|'model'}`` layer to export
+%     - ``.ImageVariable`` - string, [image only] workspace variable name for image data, default ``'I'``
+%     - ``.ColormapVariable`` - string, [image only, indexed color] variable name for colormap, default ``'cmap'``
+%     - ``.MaskVariable`` - string, [mask only] workspace variable name for mask, default ``'M'``
+%     - ``.LabelsVariable`` - string, [model only] workspace variable name for labels struct, default ``'O'``
+%     - ``.MaterialIndex`` - string, [model only] index of material to export; empty = whole model
+%     - ``.MaterialOutputIndex`` - string, [model only] value assigned to single material export, default ``'1'``
+%     - ``.showWaitbar`` - logical, show or not the waitbar
+%     - ``.id`` - *(optional)* index of the dataset
 %
 % Usage:
-%   **Example 1** — export image interactively
+%   **Example 1** - export image interactively
 %
 %   .. code-block:: matlab
 %
 %      obj.mibModel.exportDataset('image');
 %
-%   **Example 2** — export mask interactively
+%   **Example 2** - export mask interactively
 %
 %   .. code-block:: matlab
 %
 %      obj.mibModel.exportDataset('mask');
 %
-%   **Example 3** — export mask in batch mode
+%   **Example 3** - export mask in batch mode
 %
 %   .. code-block:: matlab
 %
@@ -56,7 +56,7 @@ if nargin < 2; layerType = 'image'; end
 
 activeId = obj.getActiveId();
 
-%% Pre-flight checks (before building BatchOpt — fail fast)
+%% Pre-flight checks (before building BatchOpt - fail fast)
 if ismember(layerType, {'mask', 'model'})
     if strcmp(obj.I{activeId}.datasetType, 'Virtual') == 1
         toolname = sprintf('Export of %s is', layerType);

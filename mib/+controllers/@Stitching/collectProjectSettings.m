@@ -7,9 +7,9 @@ function settings = collectProjectSettings(obj)
 %      settings = obj.collectProjectSettings()
 %
 % Produces the ``settings`` block written by :func:`utils.stitch.saveProject`
-% (schema v3): one plain value per persisted ``BatchOpt`` field — dropdown and
+% (schema v3): one plain value per persisted ``BatchOpt`` field - dropdown and
 % numeric-limit cells are reduced to their ``{1}`` entry, since the item lists
-% and spinner limits belong to the controller, not to the saved project — plus
+% and spinner limits belong to the controller, not to the saved project - plus
 % the nested ``FeatureOptions`` (the feature-detector tuning behind the
 % *Settings…* dialog). :meth:`controllers.Stitching.applyProjectSettings`
 % reverses the flattening on load.
@@ -18,9 +18,9 @@ function settings = collectProjectSettings(obj)
 % (batch plumbing, not user settings) and ``id`` (the active dataset).
 %
 % Output Arguments:
-%   - **settings** — struct with one field per persisted setting
+%   - **settings** - struct with one field per persisted setting
 %
-% **Example** — save the current dialog state with the project:
+% **Example** - save the current dialog state with the project:
 %
 %   .. code-block:: matlab
 %
@@ -36,7 +36,7 @@ for fieldIdx = 1:numel(persistedFields)
     if ~isfield(obj.BatchOpt, fieldName); continue; end
     value = obj.BatchOpt.(fieldName);
     % Dropdowns {'value', {items}} and numeric spinners {value, [lims], 'on'}
-    % both keep only their first element — the rest is controller-side metadata.
+    % both keep only their first element - the rest is controller-side metadata.
     if iscell(value); value = value{1}; end
     settings.(fieldName) = value;
 end

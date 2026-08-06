@@ -13,15 +13,15 @@ function BatchOpt = updateBatchOptFromGUI_Shared(BatchOpt, hObject)
 % numeric edit fields.
 %
 % Input Arguments:
-%   - **BatchOpt** — current BatchOpt struct for the controller
-%   - **hObject** — handle to the GUI widget that triggered the change
+%   - **BatchOpt** - current BatchOpt struct for the controller
+%   - **hObject** - handle to the GUI widget that triggered the change
 %
 % Output Arguments:
-%   - **BatchOpt** — updated BatchOpt struct
+%   - **BatchOpt** - updated BatchOpt struct
 %
 % Usage:
 %
-%   **Example 1** — wire a widget callback to keep BatchOpt in sync
+%   **Example 1** - wire a widget callback to keep BatchOpt in sync
 %
 %   .. code-block:: matlab
 %

@@ -10,14 +10,14 @@ function imgOut = removeBranches(img)
 % all branches. The input is typically produced by
 % ``bwmorph(img, 'thin', Inf)`` or ``bwmorph(img, 'skel', Inf)``.
 %
-% Based on "Exploring shortest paths — part 5" by Steve Eddins
+% Based on "Exploring shortest paths - part 5" by Steve Eddins
 % (https://blogs.mathworks.com/steve/2011/12/13/exploring-shortest-paths-part-5/)
 %
 % Input Arguments:
-%   - **img** — [uint8 | logical] H×W binary image with thinned curves
+%   - **img** - [uint8 | logical] H×W binary image with thinned curves
 %
 % Return values:
-%   - **imgOut** — [uint8] image with branches removed; only the longest
+%   - **imgOut** - [uint8] image with branches removed; only the longest
 %     path in each connected component is retained
 %
 

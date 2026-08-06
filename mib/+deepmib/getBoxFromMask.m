@@ -7,10 +7,10 @@ function boxes = getBoxFromMask(masks)
 %      boxes = deepmib.getBoxFromMask(masks)
 %
 % Input Arguments:
-%   - **masks** — ``[H×W×N logical]`` binary mask stack, one slice per object instance
+%   - **masks** - ``[H×W×N logical]`` binary mask stack, one slice per object instance
 %
 % Output Arguments:
-%   - **boxes** — ``[N×4 double]`` bounding boxes in ``[x y width height]`` format
+%   - **boxes** - ``[N×4 double]`` bounding boxes in ``[x y width height]`` format
 %     (one row per mask slice). Empty mask slices produce a row of ``NaN``, so the
 %     caller can filter them together with the corresponding masks and labels.
 %

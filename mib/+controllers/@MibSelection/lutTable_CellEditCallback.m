@@ -7,16 +7,16 @@ function lutTable_CellEditCallback(obj, hWidget, hData, keyModifier)
 %      obj.lutTable_CellEditCallback(hWidget, hData, keyModifier)
 %
 % Input Arguments:
-%   - **hWidget** — [uitable] handle to the LUT table widget
-%   - **hData** — [CellEditData] edit event data with properties:
+%   - **hWidget** - [uitable] handle to the LUT table widget
+%   - **hData** - [CellEditData] edit event data with properties:
 %
-%     - ``.Indices`` — [1×2 numeric] ``[row, col]`` indices of edited cell
-%     - ``.PreviousData`` — old value before edit
-%     - ``.NewData`` — new value after edit
-%     - ``.Source`` — [uitable] handle to the table
-%     - ``.EventName`` — ``'CellEdit'`` event name
+%     - ``.Indices`` - [1×2 numeric] ``[row, col]`` indices of edited cell
+%     - ``.PreviousData`` - old value before edit
+%     - ``.NewData`` - new value after edit
+%     - ``.Source`` - [uitable] handle to the table
+%     - ``.EventName`` - ``'CellEdit'`` event name
 %
-%   - **keyModifier** — [char|empty] pressed modifier key: ``[]``, ``'control'``, or ``'shift'`` (default: read from Figure.CurrentModifier)
+%   - **keyModifier** - [char|empty] pressed modifier key: ``[]``, ``'control'``, or ``'shift'`` (default: read from Figure.CurrentModifier)
 %
 
 if nargin < 4

@@ -12,46 +12,48 @@ function segmentationSpot(obj, y, x, modifier, BatchOptIn)
 % batch scripting.
 %
 % Input Arguments:
-%   - **y** — [double] y-coordinate of spot centre in full-dataset pixels
-%   - **x** — [double] x-coordinate of spot centre in full-dataset pixels
-%   - **modifier** — [char|cell] modifier keys held during click:
+%   - **y** - [double] y-coordinate of spot centre in full-dataset pixels
+%   - **x** - [double] x-coordinate of spot centre in full-dataset pixels
+%   - **modifier** - [char|cell] modifier keys held during click:
 %
-%     - ``''`` — add selection
-%     - ``'control'`` — subtract selection (eraser mode)
+%     - ``''`` - add selection
+%     - ``'control'`` - subtract selection (eraser mode)
 %
-%   - **BatchOptIn** *(optional)* — [struct|NaN] batch processing mode;
+%   - **BatchOptIn** *(optional)* - [struct|NaN] batch processing mode;
 %     when ``NaN``, returns default options via ``'SyncBatch'`` event:
 %
-%     - ``.Shape`` — [char] ``'circle'`` or ``'square'`` — shape of spot
-%     - ``.Radius`` — [char] spot radius in pixels; two numbers separated by ``;`` for independent half-width/half-height
-%     - ``.X`` — [char] vector or single X coordinate of spot centre
-%     - ``.Y`` — [char] vector or single Y coordinate of spot centre
-%     - ``.Z`` — [char] vector or single Z slice index; empty = current slice
-%     - ``.Mode`` — [char] ``'add'`` or ``'erase'`` — add or subtract spot
-%     - ``.Check3D`` — [logical] apply spot across all z-slices (3D sphere); default from ``obj.mibModel.applySegmentationIn3D``
-%     - ``.restrictSelectionToMask`` — [logical] paint only within mask
-%     - ``.restrictSelectionToMaterial`` — [logical] paint only within selected material
-%     - ``.Orientation`` — [char] ``'XZ'``, ``'YZ'``, ``'YX'``, or ``'not available'`` — dataset orientation when computing spot
-%     - ``.Target`` — [char] ``'selection'`` or ``'mask'`` — destination layer
-%     - ``.showWaitbar`` — [logical] show progress bar
-%     - ``.id`` *(optional)* — [numeric] dataset index 1–9 (default: ``obj.mibModel.getActiveId()``)
+%     - ``.Shape`` - [char] ``'circle'`` or ``'square'`` - shape of spot
+%     - ``.Radius`` - [char] spot radius in pixels; two numbers separated by ``;`` for independent half-width/half-height
+%     - ``.X`` - [char] vector or single X coordinate of spot centre
+%     - ``.Y`` - [char] vector or single Y coordinate of spot centre
+%     - ``.Z`` - [char] vector or single Z slice index; empty = current slice
+%     - ``.Mode`` - [char] ``'add'`` or ``'erase'`` - add or subtract spot
+%     - ``.Check3D`` - [logical] apply spot across all z-slices (3D sphere); default from ``obj.mibModel.applySegmentationIn3D``
+%     - ``.restrictSelectionToMask`` - [logical] paint only within mask
+%     - ``.restrictSelectionToMaterial`` - [logical] paint only within selected material
+%     - ``.Orientation`` - [char] ``'XZ'``, ``'YZ'`` or ``'YX'`` - dataset orientation when
+%       computing the spot. A legacy ``'not available'`` (MIB2 numbered YX as 4 and left
+%       slot 3 unused) is accepted on input and read as ``'YX'``.
+%     - ``.Target`` - [char] ``'selection'`` or ``'mask'`` - destination layer
+%     - ``.showWaitbar`` - [logical] show progress bar
+%     - ``.id`` *(optional)* - [numeric] dataset index 1-9 (default: ``obj.mibModel.getActiveId()``)
 %
 % Output Arguments:
 %   (none)
 %
-% **Example 1** — add spot at dataset [y,x]=[50,75]:
+% **Example 1** - add spot at dataset [y,x]=[50,75]:
 %
 %   .. code-block:: matlab
 %
 %      obj.segmentationSpot(50, 75, '');
 %
-% **Example 2** — erase spot:
+% **Example 2** - erase spot:
 %
 %   .. code-block:: matlab
 %
 %      obj.segmentationSpot(50, 75, 'control');
 %
-% **Example 3** — batch/scripted processing:
+% **Example 3** - batch/scripted processing:
 %
 %   .. code-block:: matlab
 %
@@ -115,7 +117,11 @@ dataset = obj.mibModel.I{BatchOpt.id};
 BatchOpt.Check3D = logical(obj.mibModel.applySegmentationIn3D);
 BatchOpt.restrictSelectionToMask = logical(dataset.restrictSelectionToMask);
 BatchOpt.restrictSelectionToMaterial = logical(dataset.restrictSelectionToMaterial);
-orientChoices = {'XZ', 'YZ', 'not available', 'YX'};
+% Indexed by dataset.orientation, which is 1=ZX, 2=ZY, 3=YX in MIB3. The MIB2
+% list this was ported from was {'XZ','YZ','not available','YX'} - MIB2 numbered
+% YX as 4 and left 3 unused - so the default YX orientation labelled itself
+% "not available" and the 'YX' entry named an orientation MIB3 never produces.
+orientChoices = {'XZ', 'YZ', 'YX'};
 BatchOpt.Orientation{2} = orientChoices;
 BatchOpt.Orientation(1) = orientChoices(dataset.orientation);
 BatchOpt.Target = {'selection'};
@@ -130,7 +136,7 @@ BatchOpt.mibBatchTooltip.X = 'Vector or a single X coordinate of the spot centre
 BatchOpt.mibBatchTooltip.Y = 'Vector or a single Y coordinate of the spot centre';
 BatchOpt.mibBatchTooltip.Z = 'Vector or a single Z coordinate of the spot centre; empty = current slice';
 BatchOpt.mibBatchTooltip.Mode = 'Add or subtract a spot at the provided coordinate(s)';
-BatchOpt.mibBatchTooltip.Check3D = 'Make spot in 3D — the spot will be visible on all slices';
+BatchOpt.mibBatchTooltip.Check3D = 'Make spot in 3D - the spot will be visible on all slices';
 BatchOpt.mibBatchTooltip.restrictSelectionToMask = 'Apply spot only to the masked area';
 BatchOpt.mibBatchTooltip.restrictSelectionToMaterial = 'Apply spot only to the area of the selected material';
 BatchOpt.mibBatchTooltip.Orientation = 'Orientation of the dataset';
@@ -153,6 +159,12 @@ if nargin == 5  % batch mode
         return;
     else
         BatchOpt = utils.updateBatchOptCombineFields_Shared(BatchOpt, BatchOptIn);
+        % A protocol saved while the list still carried MIB2's numbering stored
+        % 'not available' for what was really YX. Left as-is it matches no item,
+        % so the orientation lookup below would come back empty.
+        if strcmp(BatchOpt.Orientation{1}, 'not available')
+            BatchOpt.Orientation{1} = 'YX';
+        end
     end
 end
 
@@ -208,7 +220,7 @@ for index = 1:numel(xVec)
     % (BigData/Virtual) datasets getData2D would return this small region at the
     % displayed pyramid level (downsampled by magFactor), making the spot smaller
     % and shifted relative to the click. Force full resolution so the spot is
-    % computed and written in full-res units (the region is tiny — radius-bounded).
+    % computed and written in full-res units (the region is tiny - radius-bounded).
     if any(dataset.datasetType(1) == ['V' 'B']); options.magFactor = 1; end
 
     % local centre inside the cropped sub-image
@@ -228,7 +240,8 @@ for index = 1:numel(xVec)
 
     if BatchOpt.Check3D
         % ---- 3D spot: replicate the 2D disk across all z-slices ----
-        if orientation == 4      % YX
+        if orientation == 3      % YX (MIB2 numbered this 4, so this branch was dead
+                                 % and a YX 3D spot backed up the WHOLE layer)
             backupOptions.y = options.y;
             backupOptions.x = options.x;
         elseif orientation == 1  % XZ
@@ -244,7 +257,12 @@ for index = 1:numel(xVec)
         end
 
         orient = orientation;
-        [~, ~, ~, localThick] = dataset.getDatasetDimensions(BatchOpt.Target{1}, orient, NaN, options);
+        % Depth is the THIRD output in MIB3. MIB2's signature was
+        % (type, orient, color, options) returning [height width color depth],
+        % so the ported call both passed an argument too many and read the 4th
+        % output - which is now `colors`, i.e. 1. That made every 3D spot a
+        % single slice at z=1 instead of a column through the whole stack.
+        [~, ~, localThick] = dataset.getDatasetDimensions(BatchOpt.Target{1}, orient, options);
         selarea = zeros([size(currSelection,1), size(currSelection,2), localThick], 'uint8');
         options.z = [1, localThick];
         for layer_id = 1:size(selarea, 3)

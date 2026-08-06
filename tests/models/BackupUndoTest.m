@@ -14,7 +14,7 @@ classdef BackupUndoTest < matlab.unittest.TestCase
     methods (Test, TestTags = {'Unit'})
 
         % -----------------------------------------------------------------
-        % 3D backup/undo — whole volume
+        % 3D backup/undo - whole volume
         % -----------------------------------------------------------------
 
         function backup3DSelection_labels63_restored(testCase)
@@ -86,7 +86,7 @@ classdef BackupUndoTest < matlab.unittest.TestCase
         end
 
         % -----------------------------------------------------------------
-        % 2D backup/undo — single slice
+        % 2D backup/undo - single slice
         % -----------------------------------------------------------------
 
         function backup2DSelection_labels255_restored(testCase)

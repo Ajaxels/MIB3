@@ -89,7 +89,7 @@ classdef MibView < handle
            %      obj = MibView(controller)
            %
            % Input Arguments:
-           %   - **controller** — handle to ``MibController`` class
+           %   - **controller** - handle to ``MibController`` class
            %
 
             obj.controller = controller;

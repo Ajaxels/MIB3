@@ -2,12 +2,12 @@ classdef FillOpsTest < matlab.unittest.TestCase
 % FILLOPSTEST - Unit tests for MibModel.fillSelectionOrMask.
 %
 % Verification strategies:
-%   ring fill      — a donut selection (outer box set, inner hole cleared)
+%   ring fill      - a donut selection (outer box set, inner hole cleared)
 %                    must have its hole filled by imfill('holes')
-%   empty stays    — an all-zero layer must remain all-zero after fill
-%   image untouched — pixel checksum of the image layer must not change
-%   mask target    — same ring test applied to the mask layer
-%   solid block    — a hole-free foreground block must not shrink after fill
+%   empty stays    - an all-zero layer must remain all-zero after fill
+%   image untouched - pixel checksum of the image layer must not change
+%   mask target    - same ring test applied to the mask layer
+%   solid block    - a hole-free foreground block must not shrink after fill
 
     methods (TestClassSetup)
         function addPaths(testCase)
@@ -73,7 +73,7 @@ classdef FillOpsTest < matlab.unittest.TestCase
         end
 
         function fillSelection_solidBlock_pixelCountNonDecreasing(testCase)
-            % A solid block has no holes — fill must not reduce pixel count.
+            % A solid block has no holes - fill must not reduce pixel count.
             [mibModel, ~] = mibtest.helpers.buildSyntheticModel( ...
                 'modelType', 'labels255', 'dims', [32 32 4]);
             opt = struct('id', 1, 'blockModeSwitch', 0);

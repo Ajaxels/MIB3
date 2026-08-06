@@ -24,37 +24,37 @@ function [result, cancelled] = estimateOverlap(layout, options)
 %      pairs mismeasure.
 %
 % Large tiles are downsampled to ``options.maxDim`` for speed; the resulting
-% step estimate is coarse (a few px), which is fine — it only repositions the
+% step estimate is coarse (a few px), which is fine - it only repositions the
 % nominal layout for the subsequent tight measurement pass.
 %
 % Input Arguments:
-%   - **layout** — [struct array] tile layout with valid ``.gridRC`` fields
+%   - **layout** - [struct array] tile layout with valid ``.gridRC`` fields
 %     (grid layout source); see :func:`utils.stitch.buildLayoutGrid`.
-%   - **options** *(optional)* — struct with fields:
+%   - **options** *(optional)* - struct with fields:
 %
-%     - ``.maxPairsPerDirection`` — [double] pairs to sample per direction (default: ``6``)
-%     - ``.topK`` — [double] correlation peaks to verify per pair (default: ``5``)
-%     - ``.maxDim`` — [double] downsample tiles above this size (default: ``1024``)
-%     - ``.minNcc`` — [double] minimum verification NCC to accept a pair (default: ``0.20``)
-%     - ``.minOverlapPx`` — [double] minimum implied overlap extent (default: ``16``)
-%     - ``.colorChannel`` — [double|'max'] channel used for registration (default: ``1``)
-%     - ``.showWaitbar`` — [logical] show a Cancelable progress dialog (default: ``false``);
+%     - ``.maxPairsPerDirection`` - [double] pairs to sample per direction (default: ``6``)
+%     - ``.topK`` - [double] correlation peaks to verify per pair (default: ``5``)
+%     - ``.maxDim`` - [double] downsample tiles above this size (default: ``1024``)
+%     - ``.minNcc`` - [double] minimum verification NCC to accept a pair (default: ``0.20``)
+%     - ``.minOverlapPx`` - [double] minimum implied overlap extent (default: ``16``)
+%     - ``.colorChannel`` - [double|'max'] channel used for registration (default: ``1``)
+%     - ``.showWaitbar`` - [logical] show a Cancelable progress dialog (default: ``false``);
 %       reading full-resolution tiles for the sampled pairs can take a noticeable time
-%     - ``.parentFigure`` — [handle] parent for the progress dialog (default: ``[]``)
+%     - ``.parentFigure`` - [handle] parent for the progress dialog (default: ``[]``)
 %
 % Output Arguments:
-%   - **result** — [struct] with fields:
+%   - **result** - [struct] with fields:
 %
-%     - ``.overlapX`` / ``.overlapY`` — [double] estimated overlap in percent, NaN when
+%     - ``.overlapX`` / ``.overlapY`` - [double] estimated overlap in percent, NaN when
 %       the direction could not be estimated (no pairs / no verified measurement)
-%     - ``.stepX`` / ``.stepY`` — [1x2 double] median measured step ``[dy dx]`` per direction
-%     - ``.madX`` / ``.madY`` — [double] median absolute deviation of the step estimates (px)
-%     - ``.numMeasuredX`` / ``.numMeasuredY`` — [double] verified pairs per direction
-%   - **cancelled** — [logical] ``true`` when the user pressed Cancel on the progress
+%     - ``.stepX`` / ``.stepY`` - [1x2 double] median measured step ``[dy dx]`` per direction
+%     - ``.madX`` / ``.madY`` - [double] median absolute deviation of the step estimates (px)
+%     - ``.numMeasuredX`` / ``.numMeasuredY`` - [double] verified pairs per direction
+%   - **cancelled** - [logical] ``true`` when the user pressed Cancel on the progress
 %     dialog before every sampled pair was measured; ``result`` is then returned at its
 %     all-NaN/zero defaults (a cancelled estimate is discarded, not a partial one).
 %
-% **Example** — recover the overlap for a grid built with a wrong guess:
+% **Example** - recover the overlap for a grid built with a wrong guess:
 %
 %   .. code-block:: matlab
 %
@@ -100,7 +100,7 @@ downFactor = max(1, ceil(max(tileH, tileW) / options.maxDim));
 
 % ---- measure both directions ----------------------------------------------
 % Reading full-resolution tiles for each sampled pair can take a noticeable
-% time for large files — show progress (one step per pair, across both
+% time for large files - show progress (one step per pair, across both
 % directions) so the app does not look frozen, and let the user cancel out.
 totalPairs = size(xPairs, 1) + size(yPairs, 1);
 progressDialog = [];
@@ -123,7 +123,7 @@ if ~isempty(progressDialog) && isvalid(progressDialog)
 end
 
 if cancelled
-    % A cancelled estimate is discarded outright, not applied partially — the
+    % A cancelled estimate is discarded outright, not applied partially - the
     % caller (runOverlapEstimation) checks this flag and leaves BatchOpt
     % untouched, exactly as if Estimate overlap had never run.
     result.numMeasuredX = 0;
@@ -208,7 +208,7 @@ function offset = registerFullTiles(tileA, tileB, options)
 %
 % Returns offset = P_j - P_i (= position of tile B minus tile A) as [dy dx],
 % or [NaN NaN] when no candidate passes verification.
-% NO Hann window here — deliberate. For small overlaps the shared content sits
+% NO Hann window here - deliberate. For small overlaps the shared content sits
 % at the tile EDGES, exactly where a window crushes the signal to zero (found
 % empirically: windowed full-tile correlation has no peak at the true shift at
 % all). Zero-padding already prevents circular aliasing; the boundary-step

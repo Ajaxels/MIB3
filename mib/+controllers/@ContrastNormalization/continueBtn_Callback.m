@@ -13,7 +13,7 @@ function continueBtn_Callback(obj, useBatchMode)
 % On completion the image is re-displayed and the batch controller is notified.
 %
 % Input Arguments:
-%   - **useBatchMode** *(optional)* — logical; ``true`` when invoked via
+%   - **useBatchMode** *(optional)* - logical; ``true`` when invoked via
 %     the batch processor (no GUI). Default ``false``.
 
 if obj.mibModel.preferences.System.DeveloperMode

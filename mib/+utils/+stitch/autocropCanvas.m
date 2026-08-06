@@ -41,19 +41,19 @@ function canvas = autocropCanvas(layout, canvas)
 % ``canvas.tforms``.
 %
 % Input Arguments:
-%   - **layout** — [struct array] tile layout (``.tileSize``).
-%   - **canvas** — [struct] from :func:`utils.stitch.planCanvas`.
+%   - **layout** - [struct array] tile layout (``.tileSize``).
+%   - **canvas** - [struct] from :func:`utils.stitch.planCanvas`.
 %
 % Output Arguments:
-%   - **canvas** — [struct] same fields, with ``.size(1:2)``, ``.tilePlacement``,
+%   - **canvas** - [struct] same fields, with ``.size(1:2)``, ``.tilePlacement``,
 %     ``.boundingBox`` and (when present) ``.tforms`` / ``.tileBounds`` moved into
 %     the cropped frame, plus:
 %
-%     - ``.cropRect`` — [1x4] ``[y0 y1 x0 x1]`` of the kept region in the
+%     - ``.cropRect`` - [1x4] ``[y0 y1 x0 x1]`` of the kept region in the
 %       ORIGINAL canvas frame. Absent when no fully covered region exists (the
 %       canvas is then returned untouched and a warning is issued).
 %
-% **Example** — plan and crop:
+% **Example** - plan and crop:
 %
 %   .. code-block:: matlab
 %

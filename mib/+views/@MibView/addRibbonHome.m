@@ -7,7 +7,7 @@ function homeHandles = addRibbonHome(obj)
 %      homeHandles = obj.addRibbonHome()
 %
 % Output Arguments:
-%   - **homeHandles** — [struct] handles to the Home ribbon section widgets
+%   - **homeHandles** - [struct] handles to the Home ribbon section widgets
 %
 
 arguments (Input)

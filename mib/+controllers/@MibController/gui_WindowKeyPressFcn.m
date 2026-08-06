@@ -9,8 +9,8 @@ function gui_WindowKeyPressFcn(obj, hWidget, hData)
 % Linked via: obj.UIFigure.WindowKeyPressFcn = @(~, ~)obj.gui_WindowKeyPressFcn();
 %
 % Input Arguments:
-%   - **hWidget** — handle to the UIFigure that received the key event
-%   - **hData** — ``matlab.ui.eventdata.KeyData`` event data; use ``hData.Key``
+%   - **hWidget** - handle to the UIFigure that received the key event
+%   - **hData** - ``matlab.ui.eventdata.KeyData`` event data; use ``hData.Key``
 %     and ``hData.Modifier`` to identify the pressed key and modifier state
 %
 % Output Arguments:
@@ -19,7 +19,7 @@ function gui_WindowKeyPressFcn(obj, hWidget, hData)
 
 % Read key data from the event object (hData), NOT from hFigure.CurrentKey.
 % hFigure.CurrentKey is a stale cached property that retains the last key
-% pressed on that figure — even when a completely different figure fires the
+% pressed on that figure - even when a completely different figure fires the
 % callback (e.g. MibDirContents after a save dialog closes).  hData is
 % scoped to the exact event that triggered this invocation, so it is always
 % correct regardless of which figure is in focus.
@@ -29,7 +29,7 @@ modifier = hData.Modifier;  % cell array of modifier strings, e.g. {'control'}
 obj.currentModifier = modifier;   % store for button callbacks that can't read UIFigure.CurrentModifier
 
 % Skip if the focused component is an edit field or text area.
-% Use hWidget (the figure that fired the event) — CurrentObject is only
+% Use hWidget (the figure that fired the event) - CurrentObject is only
 % set on the event-source figure.
 focusedComp = hWidget.CurrentObject;
 if ~isempty(focusedComp) && isprop(focusedComp, 'Type') && ...
@@ -109,7 +109,7 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
             % Refresh pixel label so the NEXT keypress reads YX coordinates, not stale ones from the
             % previous orientation.  orientationChange() physically moves the cursor via
             % centerCursorInAxes() but gui_WinMouseMotionFcn doesn't fire until the next event-loop
-            % tick — calling it explicitly here keeps the label in sync.
+            % tick - calling it explicitly here keeps the label in sync.
             cImageDoc.gui_WinMouseMotionFcn();
         case 'Switch dataset to ZY orientation'         % default 'Alt + 2'
             if dataset.orientation == 2 || isnan(cImageDoc.isInsideImage) || ~cImageDoc.isInsideImage || dataset.datasetType(1) == 'V'; return; end
@@ -145,7 +145,7 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
             % default 'a'/'Shift+a', 's'/'Shift+s', 'r'/'Shift+r'
             if dataset.enableSelection == 0; return; end
 
-            % special SAM tweak — only for 'Add to selection to material'
+            % special SAM tweak - only for 'Add to selection to material'
             if strcmp(KeyShortcuts.Action{ActionId}, 'Add to selection to material')
                 selectedSegmentationTool = cSegmentation.handles.segmTool.Value;
                 if strcmp(selectedSegmentationTool, 'Segment-anything model') && ...
@@ -458,7 +458,7 @@ end
 
 % When the keypress came from a child panel (MibSelection, DisplayAdjust, etc.)
 % that has no WindowKeyReleaseFcn registered, the key-release event fires on that
-% panel's figure and never reaches gui_WindowKeyReleaseFcn — so currentModifier
+% panel's figure and never reaches gui_WindowKeyReleaseFcn - so currentModifier
 % would stay stale.  Clear it here after the action is handled.
 if isempty(hWidget.WindowKeyReleaseFcn)
     obj.currentModifier = {};

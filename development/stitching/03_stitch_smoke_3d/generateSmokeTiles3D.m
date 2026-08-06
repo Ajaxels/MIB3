@@ -3,7 +3,7 @@ function generateSmokeTiles3D()
 %
 % Cuts a textured 3D volume into a 2x2 XY grid over 3 Z-layers (12 Z-stack tiles,
 % each a multi-page TIFF) at JITTERED 3D positions, and writes a position file
-% carrying the CLEAN nominal grid — so the tool has to recover the jitter in all
+% carrying the CLEAN nominal grid - so the tool has to recover the jitter in all
 % three axes. Embedded lines/planes make misplacement visible at every seam.
 %
 % Outputs (in <repoRoot>\temp\stitching_test\03_stitch_smoke_3d):
@@ -62,7 +62,7 @@ volume = uint8(230 * volume + 15);
 % ---- cut jittered tiles + build the nominal position file ---------------
 clampOrigin = @(origin, tileSize, volSize) min(max(origin, 1), volSize - tileSize + 1);
 rng(23, 'twister');
-% Per-layer Z (one focal plane per layer — within-layer tiles share z).
+% Per-layer Z (one focal plane per layer - within-layer tiles share z).
 layerOz = arrayfun(@(zl) clampOrigin(1 + (zl - 1) * stepZ + randi([-2 2]), tileD, volumeD), 1:3);
 
 positionLines = {};

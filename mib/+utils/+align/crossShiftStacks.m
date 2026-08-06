@@ -14,34 +14,34 @@ function [imgOut, bbShiftXY] = crossShiftStacks(I1, I2, shiftX, shiftY, options)
 % alignment to glue the unchanged reference slices to the warped tail.
 %
 % Input Arguments:
-%   - **I1** — [numeric] reference stack in MIB3 layout
+%   - **I1** - [numeric] reference stack in MIB3 layout
 %     ``[height, width, depth, color]`` (4-D) or ``[height, width, depth]``
 %     when ``options.modelSwitch = 1`` (service layers).
-%   - **I2** — [numeric] stack to place after ``I1``; same layout / class as ``I1``.
-%   - **shiftX** — [numeric scalar] integer X translation applied to ``I2``
+%   - **I2** - [numeric] stack to place after ``I1``; same layout / class as ``I1``.
+%   - **shiftX** - [numeric scalar] integer X translation applied to ``I2``
 %     relative to ``I1``.
-%   - **shiftY** — [numeric scalar] integer Y translation applied to ``I2``
+%   - **shiftY** - [numeric scalar] integer Y translation applied to ``I2``
 %     relative to ``I1``.
-%   - **options** — *(optional)* struct with fields:
+%   - **options** - *(optional)* struct with fields:
 %
-%     - ``.backgroundColor`` — [char|numeric] padding colour:
+%     - ``.backgroundColor`` - [char|numeric] padding colour:
 %       ``'black'`` *(default)*, ``'white'``, ``'mean'``, or a numeric scalar
 %       of the same class as ``I1``.
-%     - ``.modelSwitch`` — [logical] ``1`` when the input is 3-D
+%     - ``.modelSwitch`` - [logical] ``1`` when the input is 3-D
 %       ``[H, W, Z]`` (mask / labels / selection), ``0`` *(default)* for the
 %       4-D image layout ``[H, W, C, Z]``.
-%     - ``.waitbar`` — [:class:`core.PoolWaitbar`] existing waitbar to reuse
+%     - ``.waitbar`` - [:class:`core.PoolWaitbar`] existing waitbar to reuse
 %       *(optional)*. Cancellation polls ``getCancelState()`` once before the
 %       big allocation; returns ``[]`` on cancel.
 %
 % Output Arguments:
-%   - **imgOut** — [numeric] concatenated and shifted stack with depth
+%   - **imgOut** - [numeric] concatenated and shifted stack with depth
 %     ``size(I1, end) + size(I2, end)``. Empty if cancelled or on input error.
-%   - **bbShiftXY** — [1×2 numeric] ``[xMin, yMin]`` reference-side shift
+%   - **bbShiftXY** - [1×2 numeric] ``[xMin, yMin]`` reference-side shift
 %     introduced by the canvas resize; callers use this to update the
 %     bounding box.
 %
-% **Example** — concatenate a warped tail onto a reference head:
+% **Example** - concatenate a warped tail onto a reference head:
 %
 % .. code-block:: matlab
 %
@@ -67,7 +67,7 @@ if ~isfield(options, 'waitbar');         options.waitbar         = []; end
 pwb = options.waitbar;
 if ~isempty(pwb) && isvalid(pwb) && pwb.getCancelState(); return; end
 
-% MIB3 layout — work natively in [h, w, d, c]. 3-D service-layer inputs
+% MIB3 layout - work natively in [h, w, d, c]. 3-D service-layer inputs
 % (modelSwitch=1) are [h, w, d]; size(..., 4) returns 1 so the same code
 % handles them without any permute.
 [height1, width1, depth1, color1] = size(I1, 1:4);
@@ -94,7 +94,7 @@ shiftY = round(shiftY);
 maxColor    = max(color1, color2);
 totalDepth  = depth1 + depth2;
 
-% Allocate and place — four quadrants depending on the sign of (shiftX, shiftY).
+% Allocate and place - four quadrants depending on the sign of (shiftX, shiftY).
 if shiftX <= 0
     bbShiftXY(1) = shiftX;
     if shiftY >= 0     % I2 sits lower-left relative to I1
@@ -128,7 +128,7 @@ else
     end
 end
 
-% Service-layer callers expect 3-D output [h, w, d] — drop the singleton
+% Service-layer callers expect 3-D output [h, w, d] - drop the singleton
 % colour dim that crept in via the 4-output ``size`` call above.
 if options.modelSwitch == 1
     imgOut = imgOut(:, :, :, 1);

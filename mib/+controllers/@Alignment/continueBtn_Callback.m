@@ -14,7 +14,7 @@ function continueBtn_Callback(obj, useBatchMode)
 % error dialog.
 %
 % Input Arguments:
-%   - **useBatchMode** *(optional)* — [logical] ``true`` when the controller
+%   - **useBatchMode** *(optional)* - [logical] ``true`` when the controller
 %     was invoked via the batch processor (no GUI). Default ``false``.
 
 if nargin < 2; useBatchMode = false; end
@@ -25,7 +25,7 @@ end
 
 id = obj.mibModel.getActiveId();
 
-% Parent figure for any dialogs — ``obj.view`` is empty in batch mode
+% Parent figure for any dialogs - ``obj.view`` is empty in batch mode
 if ~isempty(obj.view) && isvalid(obj.view) && isvalid(obj.view.gui)
     parentFig = obj.view.gui;
 else
@@ -112,7 +112,7 @@ if parameters.isBigData
 end
 
 % --- Pre-loaded coefficients (loadShiftsCheck): preview + confirm before running,
-% warning if their type does not match the selected algorithm. GUI only — the
+% warning if their type does not match the selected algorithm. GUI only - the
 % batch path has no load hook, so obj.shiftsX is never pre-loaded there.
 if ~useBatchMode && ~isempty(obj.shiftsX) ...
         && ~isempty(obj.view) && isvalid(obj.view) && isfield(obj.view.handles, 'loadShiftsCheck') ...

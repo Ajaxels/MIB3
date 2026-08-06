@@ -9,7 +9,7 @@ function bioformatsCallback(obj, event)
 % checkbox
 %
 % Input Arguments:
-%   - **event** — an event structure of appdesigner
+%   - **event** - an event structure of appdesigner
 %
 
 if obj.mibModel.preferences.System.DeveloperMode

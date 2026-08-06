@@ -19,60 +19,60 @@ function stitchModelInstances(obj, BatchOptIn)
 % current model is backed up first, so the operation can be undone (Ctrl+Z).
 %
 % Input Arguments:
-%   - **BatchOptIn** *(optional)* — structure for batch processing; pass ``NaN``
+%   - **BatchOptIn** *(optional)* - structure for batch processing; pass ``NaN``
 %     to return default options via the ``SyncBatch`` event
 %
-%     - ``.Method`` — cell string dropdown selecting the linking strategy:
+%     - ``.Method`` - cell string dropdown selecting the linking strategy:
 %
-%       - ``'graph'`` *(default)* — link every pair of overlapping objects on
+%       - ``'graph'`` *(default)* - link every pair of overlapping objects on
 %         neighbouring slices, then group the links into 3D objects by connected
 %         components. Naturally handles objects that split into several pieces or
 %         merge together between slices.
-%       - ``'hungarian'`` — strict one-to-one matching per slice pair (empanada /
+%       - ``'hungarian'`` - strict one-to-one matching per slice pair (empanada /
 %         MitoNet style), plus a containment merge for the leftovers.
 %
-%     - ``.IoUThreshold`` — Intersection-over-Union link threshold, range 0–1. For
+%     - ``.IoUThreshold`` - Intersection-over-Union link threshold, range 0-1. For
 %       two objects on adjacent slices, ``IoU = overlapping pixels / pixels in
 %       either object``; they are joined into one 3D object when IoU exceeds this
 %       value. **Higher** = only near-identical cross-sections are joined (more,
 %       smaller 3D objects); **lower** = looser joining (fewer, larger objects).
-%     - ``.IoAThreshold`` — logical checkbox: enable Intersection-over-Area
+%     - ``.IoAThreshold`` - logical checkbox: enable Intersection-over-Area
 %       merging of split objects. When ``true`` *(default)*, two objects are also
 %       joined when ``overlapping pixels / pixels in the *smaller* object`` is
 %       high (one is mostly contained in the other), reconnecting a 3D object
 %       that briefly breaks into small fragments on one slice. When ``false``,
 %       objects are linked by IoU only. (Internally maps to an IoA threshold of
 %       ``0.5`` when enabled, ``Inf`` when disabled.)
-%     - ``.MinOverlapPixels`` — absolute minimum number of overlapping pixels
-%       before two objects may be linked; stops a 1–2 px touch between unrelated
+%     - ``.MinOverlapPixels`` - absolute minimum number of overlapping pixels
+%       before two objects may be linked; stops a 1-2 px touch between unrelated
 %       objects from fusing them.
-%     - ``.ZLookback`` — how many slices apart to compare. ``1`` = only directly
+%     - ``.ZLookback`` - how many slices apart to compare. ``1`` = only directly
 %       adjacent slices; ``2+`` also compares a slice with the one 2 (or more)
 %       planes away, so an object that vanishes for a slice or two is reconnected.
-%     - ``.MinObjectVoxels`` — after stitching, delete any 3D object smaller than
+%     - ``.MinObjectVoxels`` - after stitching, delete any 3D object smaller than
 %       this many voxels (``0`` = keep all); useful for removing tiny single-slice
 %       noise fragments.
-%     - ``.UseAnisotropy`` — logical. When ``true``, the IoU link threshold is
+%     - ``.UseAnisotropy`` - logical. When ``true``, the IoU link threshold is
 %       lowered by the dataset voxel aspect ratio ``pixSize.z / pixSize.x`` so a
 %       real but displaced continuation still links across thick Z sections. IoA
 %       (containment) is unaffected. Pair with ``MaxCentroidShift`` to stop the
 %       relaxed threshold from fusing distant objects [*default* ``false``].
-%     - ``.MaxCentroidShift`` — reject a link when the two object centroids are
+%     - ``.MaxCentroidShift`` - reject a link when the two object centroids are
 %       more than this many pixels apart (scaled by the slice gap when
 %       ``ZLookback`` > 1); ``0`` = disabled.
-%     - ``.CentroidLinkRadius`` — advanced centroid nearest-neighbour gap
+%     - ``.CentroidLinkRadius`` - advanced centroid nearest-neighbour gap
 %       bridging: link an object that has no overlapping neighbour to the
 %       mutually-nearest such orphan on the next compared slice within this many
 %       pixels (scaled by the slice gap), when of comparable size. Reconnects a
 %       displaced or briefly-missing continuation on anisotropic/gappy data;
 %       ``0`` = disabled.
-%     - ``.showWaitbar`` — logical, show or not the waitbar [*default* ``true``]
-%     - ``.id`` — *(optional)* dataset index 1–9; default = active dataset
+%     - ``.showWaitbar`` - logical, show or not the waitbar [*default* ``true``]
+%     - ``.id`` - *(optional)* dataset index 1-9; default = active dataset
 %
 % Output Arguments:
 %   (none)
 %
-% **Example** — stitch the active model with default (graph) settings
+% **Example** - stitch the active model with default (graph) settings
 %
 %   .. code-block:: matlab
 %

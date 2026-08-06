@@ -14,10 +14,10 @@ function renameMaterial(obj, index, newName)
 % index; the caller is responsible for supplying a numeric string.
 %
 % Input Arguments:
-%   - **index** — double, 1-based material index to rename.  Use 0 to rename all
+%   - **index** - double, 1-based material index to rename.  Use 0 to rename all
 %     materials at once (newName must then be a comma-separated list of
 %     names matching the number of existing materials).
-%   - **newName** — char, new material name (single name) or comma-separated list
+%   - **newName** - char, new material name (single name) or comma-separated list
 %     (when index == 0).
 %
 % Output Arguments:

@@ -19,17 +19,17 @@ classdef HDF5VirtualSetupLoader < io.loaders.BaseImageLoader
 % These two classes serve different phases of the virtual dataset lifecycle
 % and should not be confused:
 %
-% HDF5VirtualSetupLoader — runs ONCE when the user opens a file.
+% HDF5VirtualSetupLoader - runs ONCE when the user opens a file.
 % Phase : dataset initialisation (MibModel.loadImages)
 % Job : parse metadata, build the Virtual struct, return H5 paths.
 % Reads pixels? No.
 % Lifetime: discarded immediately after open; implements BaseImageLoader.
 % Created by: LoaderFactory
 %
-% HDF5VirtualLoader — runs on EVERY slice request during the session.
+% HDF5VirtualLoader - runs on EVERY slice request during the session.
 % Phase : on-demand pixel reading (MibVirtualImage.getDataVirt)
 % Job : call h5read for the requested sub-region; cache axis order.
-% Reads pixels? Yes — one h5read call per z-group per getDataVirt call.
+% Reads pixels? Yes - one h5read call per z-group per getDataVirt call.
 % Lifetime: cached in MibVirtualImage.loaders{} for the session; does
 % NOT implement BaseImageLoader.
 % Created by: MibVirtualImage.getOrCreateLoader (lazily, per file)
@@ -62,12 +62,12 @@ methods
         %      obj = HDF5VirtualSetupLoader(options, hasHeader)
         %
         % Input Arguments:
-        %   - **options** — *(optional)* [struct] options passed to the inner loader
-        %   - **hasHeader** — *(optional)* [logical] ``true`` = XML+H5 (HDF5HeaderLoader),
+        %   - **options** - *(optional)* [struct] options passed to the inner loader
+        %   - **hasHeader** - *(optional)* [logical] ``true`` = XML+H5 (HDF5HeaderLoader),
         %     ``false`` = bare H5 (HDF5NoHeaderLoader); default: ``true``
         %
         % Output Arguments:
-        %   - **obj** — [HDF5VirtualSetupLoader] new loader instance
+        %   - **obj** - [HDF5VirtualSetupLoader] new loader instance
         %
 
         obj.Options = struct();
@@ -99,24 +99,24 @@ methods
         % reads dimensions.
         %
         % Input Arguments:
-        %   - **filenames** — [cell] cell array of file paths to load
-        %   - **options** — [struct] loader options
+        %   - **filenames** - [cell] cell array of file paths to load
+        %   - **options** - [struct] loader options
         %
         % Output Arguments:
-        %   - **imginfo** — [dictionary] image metadata dictionary
-        %   - **files** — [struct array] per-file metadata; each element has fields:
+        %   - **imginfo** - [dictionary] image metadata dictionary
+        %   - **files** - [struct array] per-file metadata; each element has fields:
         %
-        %     - ``.filename``   — [char] path to the actual H5 file
-        %     - ``.seriesName`` — [char] HDF5 internal dataset path
-        %     - ``.objecttype`` — [char] ``'matlab.hdf5'``, ``'bdv.hdf5'``, or ``'hdf5image'``
-        %     - ``.noLayers``   — [numeric] number of z-slices in this file
+        %     - ``.filename``   - [char] path to the actual H5 file
+        %     - ``.seriesName`` - [char] HDF5 internal dataset path
+        %     - ``.objecttype`` - [char] ``'matlab.hdf5'``, ``'bdv.hdf5'``, or ``'hdf5image'``
+        %     - ``.noLayers``   - [numeric] number of z-slices in this file
         %
 
         [imginfo, files] = obj.innerLoader.loadMetadata(filenames, options);
     end
 
     function [img, imginfo] = loadImages(obj, files, imginfo, options)
-        % LOADIMAGES - Virtual-mode image setup — does NOT load pixel data.
+        % LOADIMAGES - Virtual-mode image setup - does NOT load pixel data.
         %
         % Syntax:
         %   .. code-block:: matlab
@@ -128,21 +128,21 @@ methods
         % imginfo{"Virtual"} with the struct fields required by MibVirtualImage.
         %
         % Input Arguments:
-        %   - **files** — [struct array] per-file metadata from loadMetadata
-        %   - **imginfo** — [dictionary] image metadata from loadMetadata
-        %   - **options** — *(optional)* [struct] unused in virtual mode
+        %   - **files** - [struct array] per-file metadata from loadMetadata
+        %   - **imginfo** - [dictionary] image metadata from loadMetadata
+        %   - **options** - *(optional)* [struct] unused in virtual mode
         %
         % Output Arguments:
-        %   - **img** — [nFiles x 1 cell] cell array of H5 file paths
-        %   - **imginfo** — [dictionary] updated dictionary; ``imginfo{"Virtual"}`` is
+        %   - **img** - [nFiles x 1 cell] cell array of H5 file paths
+        %   - **imginfo** - [dictionary] updated dictionary; ``imginfo{"Virtual"}`` is
         %     added with fields:
         %
-        %     - ``.objectType``    — [cell] normalised type string per file (``'matlab.hdf5'`` or ``'bdv.hdf5'``)
-        %     - ``.seriesName``    — [cell] HDF5 internal dataset path per file
-        %     - ``.slicesPerFile`` — [numeric] z-slice count per file
-        %     - ``.filenames``     — [cell] H5 file paths
-        %     - ``.transMatrix``   — [cell] per-file axis permutation from SelectHDFSeries; ``[]`` when not set
-        %     - ``.readerId``      — [totalZ x 1 numeric] maps each slice index to its source file index
+        %     - ``.objectType``    - [cell] normalised type string per file (``'matlab.hdf5'`` or ``'bdv.hdf5'``)
+        %     - ``.seriesName``    - [cell] HDF5 internal dataset path per file
+        %     - ``.slicesPerFile`` - [numeric] z-slice count per file
+        %     - ``.filenames``     - [cell] H5 file paths
+        %     - ``.transMatrix``   - [cell] per-file axis permutation from SelectHDFSeries; ``[]`` when not set
+        %     - ``.readerId``      - [totalZ x 1 numeric] maps each slice index to its source file index
         %
 
         nFiles = numel(files);

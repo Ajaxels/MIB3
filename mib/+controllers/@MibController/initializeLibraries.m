@@ -14,7 +14,7 @@ function initializeLibraries(obj, initList)
 % their first use via ``utils.ensureJavaLibraries``.
 %
 % Input Arguments:
-%   - **initList** — *(optional)* cell array of library identifiers to initialize.
+%   - **initList** - *(optional)* cell array of library identifiers to initialize.
 %     When empty or missing, all libraries are initialized.
 %     Valid identifiers: ``'bm3d'``, ``'omero'``, ``'mij.jar'``, ``'bioformats'``,
 %     ``'imageselection'``, ``'fiji'``, ``'poi'``, ``'imaris'``
@@ -22,13 +22,13 @@ function initializeLibraries(obj, initList)
 % Output Arguments:
 %   (none)
 %
-% **Example 1** — initialize all libraries:
+% **Example 1** - initialize all libraries:
 %
 %   .. code-block:: matlab
 %
 %      obj.initializeLibraries();
 %
-% **Example 2** — initialize only specific libraries:
+% **Example 2** - initialize only specific libraries:
 %
 %   .. code-block:: matlab
 %

@@ -10,7 +10,7 @@ function crop(obj, cropF)
 % crop parameters.  Scalar dimension properties (*height,* *width,*
 % *depth,* *time,* *dim_yxzct)* and the *sliceName* list are
 % updated to reflect the new extents.  The bounding box and *pixSize*
-% are **not** updated here — the caller (*core.MibDataset.cropDataset)*
+% are **not** updated here - the caller (*core.MibDataset.cropDataset)*
 % is responsible for that.
 %
 % Because *core.MibLabels* and *core.MibLabels63* both inherit from
@@ -19,7 +19,7 @@ function crop(obj, cropF)
 % this method works unchanged for all layer types.
 %
 % Input Arguments:
-%   - **cropF** — a vector ``[x1, y1, dx, dy, z1, dz, t1, dt]``
+%   - **cropF** - a vector ``[x1, y1, dx, dy, z1, dz, t1, dt]``
 %     in pixels where *x1,* *y1* are the top-left corner,
 %     *dx,* *dy* are width and height of the crop region,
 %     *z1,* *dz* are the first slice and depth, and *t1,* *dt*

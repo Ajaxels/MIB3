@@ -7,7 +7,7 @@ function panelHandles = addSelectionViewSettingsPanel(obj)
 %      panelHandles = obj.addSelectionViewSettingsPanel()
 %
 % Output Arguments:
-%   - **panelHandles** — [struct] handles to the selection and view settings panel widgets
+%   - **panelHandles** - [struct] handles to the selection and view settings panel widgets
 %
 % Notes:
 %   The callbacks are added in the controller of the panel: ``controllers.MibSelection``

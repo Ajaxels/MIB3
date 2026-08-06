@@ -14,10 +14,10 @@ function gui_panAxesFcn(obj, xy, imgXLim, imgYLim)
 %      hFig.WindowButtonMotionFcn = @(~,~)obj.gui_panAxesFcn(xy2, imgXLim, imgYLim);
 %
 % Input Arguments:
-%   - **xy** — [1×2 double] axes data-unit coordinates of mouse at moment button was first pressed (from ``gui_WindowButtonDownFcn``)
-%   - **imgXLim** — [1×2 double] ``[xMin, xMax]`` data-coord boundaries of displayed image (left and right edges);
+%   - **xy** - [1×2 double] axes data-unit coordinates of mouse at moment button was first pressed (from ``gui_WindowButtonDownFcn``)
+%   - **imgXLim** - [1×2 double] ``[xMin, xMax]`` data-coord boundaries of displayed image (left and right edges);
 %     ``[1, imgWidth]`` for full image, ``[paddedX(1), paddedX(2)]`` for padded region
-%   - **imgYLim** — [1×2 double] ``[yMin, yMax]`` data-coord boundaries of displayed image (top and bottom edges)
+%   - **imgYLim** - [1×2 double] ``[yMin, yMax]`` data-coord boundaries of displayed image (top and bottom edges)
 %
 % Output Arguments:
 %   (none)

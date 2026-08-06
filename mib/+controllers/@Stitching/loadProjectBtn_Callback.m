@@ -8,13 +8,13 @@ function loadProjectBtn_Callback(obj)
 %
 % A project file carries two independent things: the STATE of one particular
 % stitch (tiles, seam measurements, solved positions) and the SETTINGS it was
-% produced with (layout source, grid, overlap, registration, output — schema v3
+% produced with (layout source, grid, overlap, registration, output - schema v3
 % and newer). Both are useful on their own, so the user is asked which to take:
 %
-%   - **Restore everything** — ``obj.layout`` / ``obj.edges`` / ``obj.positions``
+%   - **Restore everything** - ``obj.layout`` / ``obj.edges`` / ``obj.positions``
 %     / ``obj.tforms`` / ``obj.zSliceFixes`` come back from the file and every
 %     widget is reset to the saved settings, reproducing the dialog as it was.
-%   - **Settings only** — the saved parameters are applied to the tiles selected
+%   - **Settings only** - the saved parameters are applied to the tiles selected
 %     HERE (``InputPath`` / ``OutputPath`` are kept), the layout is rebuilt from
 %     them, and the file's tiles/measurements/positions are ignored. This is the
 %     "stitch a new acquisition exactly like the previous one" case.
@@ -26,7 +26,7 @@ function loadProjectBtn_Callback(obj)
 if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.Stitching.loadProjectBtn_Callback: triggered\n');
 end
-% InputPath may be a newline-joined multi-select list — derive the start folder
+% InputPath may be a newline-joined multi-select list - derive the start folder
 % from the first entry (file → its folder; folder → itself).
 startFolder = obj.mibModel.currentDirectory;
 if ~isempty(obj.BatchOpt.InputPath)
@@ -49,7 +49,7 @@ if isequal(selectedFile, 0)
 end
 projectPath = fullfile(selectedFolder, selectedFile);
 
-% Decode into locals first — the "settings only" branch discards the state.
+% Decode into locals first - the "settings only" branch discards the state.
 try
     [loadedLayout, loadedEdges, loadedPositions, solverInfo, outputInfo, ...
         loadedTforms, loadedZFixes, settings] = utils.stitch.loadProject(projectPath);
@@ -80,11 +80,11 @@ if ~settingsOnly
     % estimate is a deterministic function of the tiles, and an [H W] float field
     % has no business in the sidecar JSON.
     obj.intensityCorrection = [];
-    % The saved RMSE / prune counts belong to these positions — restoring them
+    % The saved RMSE / prune counts belong to these positions - restoring them
     % lets the alignment chip report the loaded stitch instead of sitting blank
     % until the user re-solves.
     obj.solverInfo  = emptyToStruct(solverInfo);
-    % The layout now comes from the file, not from the widgets — nothing may
+    % The layout now comes from the file, not from the widgets - nothing may
     % silently re-derive it from BatchOpt until the user rebuilds deliberately.
     obj.layoutFromProject = true;
     obj.seamScoresStamp = [];   % stamped below, once the settings are in force
@@ -107,7 +107,7 @@ if ~isempty(outputInfo)
     end
 end
 if hasSettings
-    % Settings-only reuse keeps the paths of the CURRENT job — that is the whole
+    % Settings-only reuse keeps the paths of the CURRENT job - that is the whole
     % point of applying the parameters to a different set of files.
     if settingsOnly
         obj.applyProjectSettings(settings, {'InputPath', 'OutputPath'});
@@ -138,19 +138,19 @@ statusText = '';
 if settingsOnly
     if isempty(obj.BatchOpt.InputPath)
         clearLayoutAndPreview(obj);
-        statusText = sprintf('Settings loaded from %s — now select the input tiles', selectedFile);
+        statusText = sprintf('Settings loaded from %s - now select the input tiles', selectedFile);
     else
         try
             obj.buildLayoutFromBatchOpt();   % also resets edges/positions/tforms/canvas
-            statusText = sprintf('Settings loaded from %s — layout rebuilt: %d tiles, re-measure to continue', ...
+            statusText = sprintf('Settings loaded from %s - layout rebuilt: %d tiles, re-measure to continue', ...
                 selectedFile, numel(obj.layout));
         catch buildError
             % The saved layout source may not fit the current input (e.g. a tile
-            % file list under a Position-file source). Not a failure of the load —
+            % file list under a Position-file source). Not a failure of the load -
             % ask for a re-select through the status line, as the layout-source
             % switch does, instead of a modal error.
             clearLayoutAndPreview(obj);
-            statusText = sprintf('Settings loaded from %s — re-select the input (%s)', ...
+            statusText = sprintf('Settings loaded from %s - re-select the input (%s)', ...
                 selectedFile, buildError.message);
         end
     end
@@ -184,9 +184,9 @@ end
 
 question = sprintf([ ...
     '%s\n(%s)\n\n' ...
-    'Restore everything — bring back the tiles, seam measurements and solved\n' ...
+    'Restore everything - bring back the tiles, seam measurements and solved\n' ...
     'positions from the file and reset every setting to the saved values.\n\n' ...
-    'Settings only — apply the saved parameters (layout source, grid, overlap,\n' ...
+    'Settings only - apply the saved parameters (layout source, grid, overlap,\n' ...
     'registration, output) to the tiles selected here, keeping the current input\n' ...
     'path. Use this to stitch other files exactly the same way.'], ...
     projectName, strjoin(summaryParts, ', '));

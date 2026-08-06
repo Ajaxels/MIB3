@@ -11,17 +11,17 @@ function moveMaskToModelDataset(obj, action_type, options)
 % performance.
 %
 % Input Arguments:
-%   - **action_type** — a type of the desired action:
+%   - **action_type** - a type of the desired action:
 %
-%     - ``'add'`` — add mask to the selected material (Add to)
-%     - ``'remove'`` — remove mask from the model
-%     - ``'replace'`` — replace the selected (Add to) material with mask
+%     - ``'add'`` - add mask to the selected material (Add to)
+%     - ``'remove'`` - remove mask from the model
+%     - ``'replace'`` - replace the selected (Add to) material with mask
 %
-%   - **options** — a structure with additional parameters
+%   - **options** - a structure with additional parameters
 %
-%     - ``.contSelIndex`` — index of the Select from material
-%     - ``.contAddIndex`` — index of the Add to material
-%     - ``.selected_sw`` — [0/1] limit actions to the selected material only%
+%     - ``.contSelIndex`` - index of the Select from material
+%     - ``.contAddIndex`` - index of the Add to material
+%     - ``.selected_sw`` - [0/1] limit actions to the selected material only%
 % Output Arguments:
 %
 % Usage:

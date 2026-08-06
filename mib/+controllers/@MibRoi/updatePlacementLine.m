@@ -11,7 +11,7 @@ function updatePlacementLine(obj, axH)
 % object on the given axes.
 %
 % Input Arguments:
-%   - **axH** — handle to the image axes (``imViewAxes``)
+%   - **axH** - handle to the image axes (``imViewAxes``)
 %
 % Output Arguments:
 %   (none)

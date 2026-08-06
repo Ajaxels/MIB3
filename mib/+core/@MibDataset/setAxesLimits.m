@@ -7,8 +7,8 @@ function setAxesLimits(obj, axesX, axesY)
 %       obj.setAxesLimits(axesX, axesY)
 %
 % Input Arguments:
-%   - **axesX** — a vector [min, max] for for X
-%   - **axesY** — a vector [min, max] for for Y
+%   - **axesX** - a vector [min, max] for for X
+%   - **axesY** - a vector [min, max] for for Y
 %
 % Output Arguments:
 %

@@ -9,14 +9,14 @@ function listner_ModelEvent(obj, model, evnt)
 % Requires making the eventdata instance of the ``core.ToggleEventData`` class.
 %
 % Input Arguments:
-%   - **model** — handle to MibModel (event source)
-%   - **evnt** — instance of ``core.ToggleEventData``; ``evnt.EventName`` identifies the
+%   - **model** - handle to MibModel (event source)
+%   - **evnt** - instance of ``core.ToggleEventData``; ``evnt.EventName`` identifies the
 %     event and ``evnt.Parameters`` carries event-specific payload
 %
 % Output Arguments:
 %   (none)
 %
-% **Example 1** — fire a generic model notification:
+% **Example 1** - fire a generic model notification:
 %
 %   .. code-block:: matlab
 %
@@ -24,7 +24,7 @@ function listner_ModelEvent(obj, model, evnt)
 %      eventdata = core.ToggleEventData(notifyEvent);
 %      notify(obj, "modelNotify", eventdata);
 %
-% **Example 2** — forward key presses from a child controller figure to MIB shortcuts
+% **Example 2** - forward key presses from a child controller figure to MIB shortcuts
 % (wire in the child controller's ``addCallbacks``, define ``figureKeyPress`` as a method):
 %
 %   .. code-block:: matlab

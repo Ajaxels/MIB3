@@ -10,9 +10,9 @@ function gui_Callbacks(obj, source, event) %#ok<INUSD>
 % Checkbox cases show a warning dialog when the box is checked.
 %
 % Input Arguments:
-%   - **obj** — :class:`controllers.RenameShuffle` instance.
-%   - **source** — widget handle that fired the event.
-%   - **event** — event data (unused).
+%   - **obj** - :class:`controllers.RenameShuffle` instance.
+%   - **source** - widget handle that fired the event.
+%   - **event** - event data (unused).
 
 if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.RenameShuffle.gui_Callbacks/%s: triggered\n', source.Tag);

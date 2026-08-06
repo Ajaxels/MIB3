@@ -10,16 +10,16 @@ function dragPanel_Callback(obj, hWidget, hData)
 % Supports layer selection, offset configuration, and directional material shifting.
 %
 % Input Arguments:
-%   - **hWidget** — [matlab.ui.control.Button | matlab.ui.control.NumericEditField | matlab.ui.control.DropDown] pressed widget; operation identified via ``hWidget.Tag``:
+%   - **hWidget** - [matlab.ui.control.Button | matlab.ui.control.NumericEditField | matlab.ui.control.DropDown] pressed widget; operation identified via ``hWidget.Tag``:
 %
-%     - ``'dragLayer'`` — select target layer for drag-and-drop operation
-%     - ``'dragValue'`` — set pixel offset for material shifting
-%     - ``'dragUp'`` — shift layer upward (negative Y direction)
-%     - ``'dragRight'`` — shift layer rightward (positive X direction)
-%     - ``'dragLeft'`` — shift layer leftward (negative X direction)
-%     - ``'dragDown'`` — shift layer downward (positive Y direction)
+%     - ``'dragLayer'`` - select target layer for drag-and-drop operation
+%     - ``'dragValue'`` - set pixel offset for material shifting
+%     - ``'dragUp'`` - shift layer upward (negative Y direction)
+%     - ``'dragRight'`` - shift layer rightward (positive X direction)
+%     - ``'dragLeft'`` - shift layer leftward (negative X direction)
+%     - ``'dragDown'`` - shift layer downward (positive Y direction)
 %
-%   - **hData** — [matlab.ui.eventdata.ButtonPushedData | matlab.ui.eventdata.ValueChangedData] event data from widget
+%   - **hData** - [matlab.ui.eventdata.ButtonPushedData | matlab.ui.eventdata.ValueChangedData] event data from widget
 %
 % Output Arguments:
 %   None

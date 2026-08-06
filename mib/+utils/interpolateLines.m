@@ -14,16 +14,16 @@ function img = interpolateLines(img, max_pnts, lineWidth)
 %    Use ``utils.interpolateShapes`` for filled shapes.
 %
 % Input Arguments:
-%   - **img** — [uint8] binary image dataset, e.g. the Selection layer ``[height, width, z]``
-%   - **max_pnts** *(optional)* — [numeric] maximum number of interpolation points (default: ``140``)
-%   - **lineWidth** *(optional)* — [numeric] line width in pixels (default: ``4``)
+%   - **img** - [uint8] binary image dataset, e.g. the Selection layer ``[height, width, z]``
+%   - **max_pnts** *(optional)* - [numeric] maximum number of interpolation points (default: ``140``)
+%   - **lineWidth** *(optional)* - [numeric] line width in pixels (default: ``4``)
 %
 % Output Arguments:
-%   - **img** — [uint8] binary image dataset with interpolated lines
+%   - **img** - [uint8] binary image dataset with interpolated lines
 %
 % Usage:
 %
-%   **Example 1** — interpolate line selections across slices with default settings
+%   **Example 1** - interpolate line selections across slices with default settings
 %
 %   .. code-block:: matlab
 %

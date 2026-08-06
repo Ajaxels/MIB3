@@ -10,7 +10,7 @@ classdef PoolWaitbar < handle
     % waitbar is not used in MIB3).  Always supply either a UIFigure parent
     % handle or an already-open uiprogressdlg handle.  For progress shown over
     % the active dataset, pass ``obj.mibModel.getProgressBarParent()`` (or
-    % ``obj.getProgressBarParent()`` inside MibModel methods) as the parent — it
+    % ``obj.getProgressBarParent()`` inside MibModel methods) as the parent - it
     % returns the document window when undocked, so the bar follows the dataset
     % across monitors, and the main MIB window otherwise.
     %
@@ -18,7 +18,7 @@ classdef PoolWaitbar < handle
     %
     % Usage:
     %   **Basic** examples:
-    %   **Example 1** — PoolWaitbar in an additional MIB child window
+    %   **Example 1** - PoolWaitbar in an additional MIB child window
     %
     %   .. code-block:: matlab
     %
@@ -35,7 +35,7 @@ classdef PoolWaitbar < handle
     %     pwb.deletePoolWaitbar();
     %
     %
-    %   **Example 2** — PoolWaitbar in a docked panel of MIB
+    %   **Example 2** - PoolWaitbar in a docked panel of MIB
     %
     %   .. code-block:: matlab
     %
@@ -52,7 +52,7 @@ classdef PoolWaitbar < handle
     %     pwb.deletePoolWaitbar();
     %
     %
-    %   **Example 3** — Parallel loop with batch cancel polling
+    %   **Example 3** - Parallel loop with batch cancel polling
     %
     %   .. code-block:: matlab
     %
@@ -75,14 +75,14 @@ classdef PoolWaitbar < handle
     %              always uses uiprogressdlg
 
     %% ----------------------------------------------------------------
-    %  Immutable DataQueue – accessible from worker threads
+    %  Immutable DataQueue - accessible from worker threads
     %% ----------------------------------------------------------------
     properties (SetAccess = immutable, GetAccess = private)
         Queue       % parallel.pool.DataQueue for thread-safe send/receive
     end
 
     %% ----------------------------------------------------------------
-    %  Transient state – only touched on the main thread
+    %  Transient state - only touched on the main thread
     %% ----------------------------------------------------------------
     properties (Access = private, Transient)
         N           % double, total number of expected iterations
@@ -125,26 +125,26 @@ classdef PoolWaitbar < handle
             %   function obj = PoolWaitbar(N, message, parentOrHandle, WindowName, Cancelable)
             %
             % Input Arguments:
-            %   - **N** — double, total number of iterations expected
-            %   - **message** — *(optional)* char, text shown inside the dialog;
+            %   - **N** - double, total number of iterations expected
+            %   - **message** - *(optional)* char, text shown inside the dialog;
             %     default 'Please wait...'
-            %   - **parentOrHandle** — *(optional)* either:
+            %   - **parentOrHandle** - *(optional)* either:
             %
-            %     - ``matlab.ui.Figure`` / ``matlab.ui.container.internal.AppContainer`` —
+            %     - ``matlab.ui.Figure`` / ``matlab.ui.container.internal.AppContainer`` -
             %       parent window; a new ``uiprogressdlg`` is created automatically.
             %       Prefer ``obj.mibModel.getProgressBarParent()`` (or
             %       ``obj.getProgressBarParent()`` inside MibModel methods) so the bar
             %       follows the active dataset window when it is undocked
-            %     - ``matlab.ui.dialog.ProgressDialog`` — existing dialog to
+            %     - ``matlab.ui.dialog.ProgressDialog`` - existing dialog to
             %       reuse (its Value is reset to 0 and Message/Title updated)
-            %     - ``[]`` — error; a parent is required in MIB3
-            %   - **WindowName** — *(optional)* char, dialog title; default ''
-            %   - **Cancelable** — *(optional)* logical, add Cancel button;
+            %     - ``[]`` - error; a parent is required in MIB3
+            %   - **WindowName** - *(optional)* char, dialog title; default ''
+            %   - **Cancelable** - *(optional)* logical, add Cancel button;
             %     default false.  Only used when parentOrHandle is a Figure.
             %   - **Indeterminate** - *(optional)* logical, default=false; use the Indeterminate mode
             %
             % Output Arguments:
-            %   - **obj** — core.PoolWaitbar instance
+            %   - **obj** - core.PoolWaitbar instance
             %
             % Usage:
             %   **Example 1**
@@ -154,7 +154,7 @@ classdef PoolWaitbar < handle
             %
             %     pwb = core.PoolWaitbar(200, 'Eroding...', obj.mibModel.getProgressBarParent(), 'Erode');
             %
-            %   **Example 2** — Reuse an open dialog
+            %   **Example 2** - Reuse an open dialog
             %
             %   .. code-block:: matlab
             %
@@ -237,7 +237,7 @@ classdef PoolWaitbar < handle
             % frequently (e.g., every 10 iterations to reduce overhead).
             %
             % Input Arguments:
-            %   - **increment** — double, new step size; default 1
+            %   - **increment** - double, new step size; default 1
             %
             % Output Arguments:
             %   (none)
@@ -265,7 +265,7 @@ classdef PoolWaitbar < handle
             % stitching two sequential phases that share one dialog.
             %
             % Input Arguments:
-            %   - **count** — double, new value for the internal counter
+            %   - **count** - double, new value for the internal counter
             %
             % Output Arguments:
             %   (none)
@@ -285,7 +285,7 @@ classdef PoolWaitbar < handle
             %   (none)
             %
             % Output Arguments:
-            %   - **count** — double, current iteration counter
+            %   - **count** - double, current iteration counter
             %
 
             count = obj.Count;
@@ -299,7 +299,7 @@ classdef PoolWaitbar < handle
             %   function updateMaxNumberOfIterations(obj, N)
             %
             % Input Arguments:
-            %   - **N** — double, new total number of iterations
+            %   - **N** - double, new total number of iterations
             %
             % Output Arguments:
             %   (none)
@@ -316,7 +316,7 @@ classdef PoolWaitbar < handle
             %   function increaseMaxNumberOfIterations(obj, N)
             %
             % Input Arguments:
-            %   - **N** — double, amount to add to the current maximum
+            %   - **N** - double, amount to add to the current maximum
             %
             % Output Arguments:
             %   (none)
@@ -336,7 +336,7 @@ classdef PoolWaitbar < handle
             %   (none)
             %
             % Output Arguments:
-            %   - **result** — double, the N value set at construction or updated
+            %   - **result** - double, the N value set at construction or updated
             %
 
             result = obj.N;
@@ -352,7 +352,7 @@ classdef PoolWaitbar < handle
             % Only safe to call from the main thread (not inside parfor).
             %
             % Input Arguments:
-            %   - **newText** — char, new message string
+            %   - **newText** - char, new message string
             %
             % Output Arguments:
             %   (none)
@@ -381,7 +381,7 @@ classdef PoolWaitbar < handle
             %   function updateIndeterminateMode(obj, indeterminateMode)
             %
             % Input Arguments:
-            %   - **indeterminateMode** — logical, indeterminate switch, when ``true`` show
+            %   - **indeterminateMode** - logical, indeterminate switch, when ``true`` show
             %     the progress bar using indeterminate style. Default = true
             %
             % Output Arguments:
@@ -413,7 +413,7 @@ classdef PoolWaitbar < handle
             %   (none)
             %
             % Output Arguments:
-            %   - **text** — char, current dialog message
+            %   - **text** - char, current dialog message
             %
 
             if isvalid(obj.ClientHandle)
@@ -432,13 +432,13 @@ classdef PoolWaitbar < handle
             %
             % Only meaningful when the dialog was created with
             % Cancelable = true.  Poll this between parfor batches (on the
-            % main thread) — do not call it from inside a parfor body.
+            % main thread) - do not call it from inside a parfor body.
             %
             % Input Arguments:
             %   (none)
             %
             % Output Arguments:
-            %   - **res** — logical, true when Cancel has been requested
+            %   - **res** - logical, true when Cancel has been requested
             %
             % Usage:
             %   **Example 1**
@@ -470,7 +470,7 @@ classdef PoolWaitbar < handle
             %   (none)
             %
             % Output Arguments:
-            %   - **wb** — matlab.ui.dialog.ProgressDialog handle
+            %   - **wb** - matlab.ui.dialog.ProgressDialog handle
             %
             % Usage:
             %   **Example 1**
@@ -492,7 +492,7 @@ classdef PoolWaitbar < handle
             %   function deletePoolWaitbar(obj, keepDialog)
             %
             % Input Arguments:
-            %   - **keepDialog** — *(optional)* logical; when true the underlying
+            %   - **keepDialog** - *(optional)* logical; when true the underlying
             %     uiprogressdlg is NOT deleted so the caller can continue
             %     using it directly.  Default false (dialog is deleted).
             %

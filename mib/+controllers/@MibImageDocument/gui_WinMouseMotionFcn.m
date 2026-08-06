@@ -52,7 +52,7 @@ try
 
     % Only one document can hold the cursor at a time. This figure is the one
     % currently receiving motion events, so clear any stale isInsideAxes flags on
-    % the other documents — otherwise in split view both flags stay true and the
+    % the other documents - otherwise in split view both flags stay true and the
     % zoom / keyboard-navigation handlers act on the wrong document.
     cImageDocs = obj.mibController.cImageDoc;
     if numel(cImageDocs) > 1
@@ -146,7 +146,7 @@ try
         end
 
         if obj.isInsideImage
-            % Use a local id for pixel readout — never write to mibModel.id
+            % Use a local id for pixel readout - never write to mibModel.id
             % here.  Writing mibModel.id on every mouse move corrupts the
             % active-dataset state for panning, keyboard shortcuts, and any
             % MibModel method that reads obj.id as a default.
@@ -178,8 +178,8 @@ try
             if any(dataset.datasetType(1) == ['V' 'B'])
                 % Iraw is the raw image displayed on screen.
                 % When zoomed in (magFactor < 1): Iraw is a full-res crop of the
-                % dataset — use 'blockmode' to get position within that crop.
-                % When zoomed out (magFactor >= 1): Iraw is at screen resolution —
+                % dataset - use 'blockmode' to get position within that crop.
+                % When zoomed out (magFactor >= 1): Iraw is at screen resolution -
                 % axes coordinates index directly into it.
                 if magFactor < 1
                     % blockmode conversion (inline)

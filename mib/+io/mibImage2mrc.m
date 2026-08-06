@@ -11,27 +11,27 @@ function result = mibImage2mrc(O, Options)
 % standard). Requires the MatTomo function set, available in ``mib/external/MatTomo``.
 %
 % Input Arguments:
-%   - **O** — [H, W, D] or [H, W, 1, D] numeric array, volumetric dataset.
+%   - **O** - [H, W, D] or [H, W, 1, D] numeric array, volumetric dataset.
 %     Grayscale format required (MRC does not support multichannel images).
-%   - **Options** — struct with configuration:
+%   - **Options** - struct with configuration:
 %
-%     - ``.volumeFilename`` — [char] output filename; use ``'.mrc'`` extension
-%     - ``.pixSize`` — struct with voxel size information:
+%     - ``.volumeFilename`` - [char] output filename; use ``'.mrc'`` extension
+%     - ``.pixSize`` - struct with voxel size information:
 %
-%       - ``.x`` — [numeric] physical width of voxels
-%       - ``.y`` — [numeric] physical height of voxels
-%       - ``.z`` — [numeric] physical thickness of voxels
-%       - ``.units`` — [char] physical units (``'m'``, ``'cm'``, ``'mm'``, ``'um'``, ``'nm'``)
+%       - ``.x`` - [numeric] physical width of voxels
+%       - ``.y`` - [numeric] physical height of voxels
+%       - ``.z`` - [numeric] physical thickness of voxels
+%       - ``.units`` - [char] physical units (``'m'``, ``'cm'``, ``'mm'``, ``'um'``, ``'nm'``)
 %
-%     - ``.showWaitbar`` — *(optional)* [logical] default: ``true``
+%     - ``.showWaitbar`` - *(optional)* [logical] default: ``true``
 %       show progress bar during save
-%     - ``.ParentFigure`` — *(optional)* [handle] main MIB window for ``uiprogressdlg``
+%     - ``.ParentFigure`` - *(optional)* [handle] main MIB window for ``uiprogressdlg``
 %       attachment (recommended for GUI use). When absent, falls back to legacy ``waitbar``.
 %
 % Output Arguments:
-%   - **result** — [logical] ``1`` on success, ``0`` on failure
+%   - **result** - [logical] ``1`` on success, ``0`` on failure
 %
-% **Example 1** — standalone scripted use (no GUI parent):
+% **Example 1** - standalone scripted use (no GUI parent):
 %
 %   .. code-block:: matlab
 %
@@ -40,7 +40,7 @@ function result = mibImage2mrc(O, Options)
 %      mrcOpts.showWaitbar = false;
 %      io.mibImage2mrc(imageData_hwd, mrcOpts);
 %
-% **Example 2** — GUI use with progress dialog attached to MIB window:
+% **Example 2** - GUI use with progress dialog attached to MIB window:
 %
 %   .. code-block:: matlab
 %

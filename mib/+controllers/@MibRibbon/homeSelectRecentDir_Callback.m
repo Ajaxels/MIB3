@@ -10,7 +10,7 @@ function  homeSelectRecentDir_Callback(obj, recentDir)
 % the Home ribbon (obj.view.handles.ribbonHome)
 %
 % Input Arguments:
-%   - **recentDir** — char with the full directory path
+%   - **recentDir** - char with the full directory path
 %
 
 arguments (Input)

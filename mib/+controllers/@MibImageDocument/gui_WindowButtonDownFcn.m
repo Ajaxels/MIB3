@@ -100,7 +100,7 @@ end
 % before any data access. Uses the same setsOps_Callbacks path as
 % listener_appStateChanged so dropdown, buffer buttons, mibModel.id, and
 % ShowImage all update correctly.
-% NOTE: syncActiveSet() must NOT be called before this block — it would
+% NOTE: syncActiveSet() must NOT be called before this block - it would
 % silently update Sets.selectedSet and make this condition always false,
 % preventing the proper full-UI update path from running.
 if obj.mibModel.Sets.selectedSet ~= obj.setOfDatasetsIndex
@@ -142,7 +142,7 @@ if strcmp(operation, 'pan') %& strcmp(modifier,'alt')
     xy2 = zeros([2,1]);  % converted coordinates
 
     if ~obj.mibController.fastPanningMode % full image / padded mode
-        % Delete ROI and measurement overlay objects — they use data coordinates
+        % Delete ROI and measurement overlay objects - they use data coordinates
         % that become invalid when the image is reloaded at a different scale;
         % showImage redraws them on release. Not needed in fast-pan mode
         % because the image CData/XData are unchanged there.
@@ -157,7 +157,7 @@ if strcmp(operation, 'pan') %& strcmp(modifier,'alt')
 
         % Determine full image dimensions to decide between padded or full load.
         % Use padded loading whenever the viewport shows a sub-region of the
-        % image — covers both magFactor < 1 (zoomed in) and magFactor > 1
+        % image - covers both magFactor < 1 (zoomed in) and magFactor > 1
         % with large images where loading the full image would be too slow.
         getDimsOpts.blockModeSwitch = false;
         [imgFullHeight, imgFullWidth] = dataset.getDatasetDimensions('image', [], getDimsOpts);
@@ -194,7 +194,7 @@ if strcmp(operation, 'pan') %& strcmp(modifier,'alt')
                 obj.handles.imViewAxes.YLim = axesY;  % Y: coef_z == 1
             else
                 % Zoomed out but partial view (large image): load padded
-                % region downscaled by magFactor — same coordinate system
+                % region downscaled by magFactor - same coordinate system
                 % as the full-image path but only loading the padded sub-region.
                 imgRGB = obj.mibModel.getRGBimage(rgbOptions);
                 obj.mibModel.setAxesLimits(axesX, axesY);       % restore the real viewport
@@ -221,7 +221,7 @@ if strcmp(operation, 'pan') %& strcmp(modifier,'alt')
                 % Zoomed in beyond 100%: use blockModeSwitch=0 to load
                 % the FULL image (not clipped to current axesX viewport).
                 % panModeException (blockModeSwitch=0 && mag<1) skips
-                % the upscale in getRGBimage, giving us 1:1 data pixels —
+                % the upscale in getRGBimage, giving us 1:1 data pixels -
                 % the same coordinate system as the padded path above.
                 % This keeps gui_panAxesFcn's magFactorFixed=1 correct.
                 rgbOptions.blockModeSwitch = 0;
@@ -551,7 +551,7 @@ elseif strcmp(operation, 'select')
 
             % Use obj.mibController.currentModifier as the authoritative modifier.
             % Both hFig.CurrentModifier and hFig.SelectionType can become stale
-            % after a blocking pyrun() call — key-release events fired during Python
+            % after a blocking pyrun() call - key-release events fired during Python
             % execution are queued but never delivered, so both figure properties
             % may still show {'shift'} long after the user released the key.
             % currentModifier is maintained by KeyPressFcn/KeyReleaseFcn and is
@@ -769,7 +769,7 @@ elseif strcmp(operation, 'select')
                         % nothing to do: the initial state was stored on the first
                         % (no-modifier) click above. The refinement clicks re-map it to the
                         % grown z-range and to the current view in utils.sam.initialImage,
-                        % instead of re-reading the layer here — re-reading would bake the
+                        % instead of re-reading the layer here - re-reading would bake the
                         % result of the previous click in and make the negative seeds useless
                     case 'add, +next material'
                         if isempty(modifier) % store initial state for the initial selection of the object

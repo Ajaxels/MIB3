@@ -19,7 +19,7 @@ if isempty(obj.layout)
     return;
 end
 
-% Choose save path. InputPath may be a newline-joined multi-select list —
+% Choose save path. InputPath may be a newline-joined multi-select list -
 % fileparts on the whole string is bogus, so derive the folder from the first
 % entry (file → its folder; folder → itself).
 startFolder = obj.mibModel.currentDirectory;

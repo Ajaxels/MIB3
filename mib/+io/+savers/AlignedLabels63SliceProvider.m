@@ -9,7 +9,7 @@ classdef AlignedLabels63SliceProvider < io.savers.SliceProvider
 % averaging.
 %
 % .. note::
-%    Labels are NOT written through ``saveStream`` in the Phase 1 design — the
+%    Labels are NOT written through ``saveStream`` in the Phase 1 design - the
 %    packed pyramid must go through the ``MibBigDataLabels`` materialize /
 %    level-map path so bit semantics and coarse levels stay correct. This
 %    provider exists for symmetry / potential reuse; the apply pipeline may
@@ -28,14 +28,14 @@ classdef AlignedLabels63SliceProvider < io.savers.SliceProvider
         function obj = AlignedLabels63SliceProvider(varargin)
             % ALIGNEDLABELS63SLICEPROVIDER - Construct the provider.
             %
-            % STUB — Phase 0. Fully implemented in Phase 1
+            % STUB - Phase 0. Fully implemented in Phase 1
             % (see development/bigdata/alignment_plan.md).
         end
 
         function slice = getSlice(obj, z, t) %#ok<INUSD,STOUT>
             % GETSLICE - Return the warped packed-63 slice [Height, Width, 1].
             %
-            % STUB — Phase 0. Implemented in Phase 1.
+            % STUB - Phase 0. Implemented in Phase 1.
             error('io:savers:AlignedLabels63SliceProvider:notImplemented', ...
                 'AlignedLabels63SliceProvider.getSlice is not implemented yet (Phase 1).');
         end

@@ -8,16 +8,16 @@ function xy = dlgCenterOnParent(parent, dlgWidth, dlgHeight)
 %
 % AppContainer exposes ``WindowBounds`` (top-left origin); figures expose
 % ``Position`` (bottom-left origin). Returns ``[]`` when the parent is
-% missing/invalid or its position cannot be determined — the caller then keeps
+% missing/invalid or its position cannot be determined - the caller then keeps
 % the default position.
 %
 % Input Arguments:
-%   - **parent** — [handle] parent window (AppContainer, uifigure, or ``[]``)
-%   - **dlgWidth** — [numeric] final dialog width in pixels
-%   - **dlgHeight** — [numeric] final dialog height in pixels
+%   - **parent** - [handle] parent window (AppContainer, uifigure, or ``[]``)
+%   - **dlgWidth** - [numeric] final dialog width in pixels
+%   - **dlgHeight** - [numeric] final dialog height in pixels
 %
 % Output Arguments:
-%   - **xy** — [1x2 numeric] bottom-left dialog position ``[x y]``; ``[]`` when
+%   - **xy** - [1x2 numeric] bottom-left dialog position ``[x y]``; ``[]`` when
 %     centering is not possible
 
 xy = [];

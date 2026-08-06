@@ -1,5 +1,5 @@
 function [result, newMaterialIndex] = addMaterial(obj, materialName, newMaterialIndex, wb)
-% ADDMATERIAL - Add a material to the model — low-level data layer.
+% ADDMATERIAL - Add a material to the model - low-level data layer.
 %
 % Syntax:
 %   .. code-block:: matlab
@@ -18,28 +18,28 @@ function [result, newMaterialIndex] = addMaterial(obj, materialName, newMaterial
 % In all cases obj.labels.materialsCount is incremented by 1 on success.
 %
 % Input Arguments:
-%   - **materialName** *(optional)* — [char] name for the new material (default: ``'NewMaterial'``):
+%   - **materialName** *(optional)* - [char] name for the new material (default: ``'NewMaterial'``):
 %
-%     - For types 63/255 — human-readable label appended to the list
-%     - For types 65535/4294967295 — overridden with string representation of the assigned index
+%     - For types 63/255 - human-readable label appended to the list
+%     - For types 65535/4294967295 - overridden with string representation of the assigned index
 %
-%   - **newMaterialIndex** *(optional)* — [double] next unused 1-based material index; when empty
+%   - **newMaterialIndex** *(optional)* - [double] next unused 1-based material index; when empty
 %     the method uses ``obj.labels.materialsCount + 1``; ignored for types 63/255
-%   - **wb** *(optional)* — [uiprogressdlg] handle to a progress dialog for displaying progress;
+%   - **wb** *(optional)* - [uiprogressdlg] handle to a progress dialog for displaying progress;
 %     when empty no progress is reported
 %
 % Output Arguments:
-%   - **result** — [logical] ``true`` on success; ``false`` when the model is full (capacity exceeded)
-%   - **newMaterialIndex** — [double] material index that was actually assigned; relevant for
+%   - **result** - [logical] ``true`` on success; ``false`` when the model is full (capacity exceeded)
+%   - **newMaterialIndex** - [double] material index that was actually assigned; relevant for
 %     large model types (65535/4294967295); empty for small types (63/255)
 %
-% **Example 1** — Add material to a small model (type 63/255):
+% **Example 1** - Add material to a small model (type 63/255):
 %
 %   .. code-block:: matlab
 %
 %      obj.addMaterial('Nucleus');
 %
-% **Example 2** — Add material to a large model with auto-indexing:
+% **Example 2** - Add material to a large model with auto-indexing:
 %
 %   .. code-block:: matlab
 %

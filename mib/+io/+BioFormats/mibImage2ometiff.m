@@ -1,5 +1,5 @@
 function [result, options] = mibImage2ometiff(filename, imageS, options)
-% MIBIMAGE2OMETIFF - Save image in OME.TIF format — either as a single 5D file or a 2D sequence.
+% MIBIMAGE2OMETIFF - Save image in OME.TIF format - either as a single 5D file or a 2D sequence.
 %
 % Syntax:
 %   .. code-block:: matlab
@@ -8,57 +8,57 @@ function [result, options] = mibImage2ometiff(filename, imageS, options)
 %      [result, options] = io.BioFormats.mibImage2ometiff(filename, imageS, options)
 %
 % Input Arguments:
-%   - **filename** — full path for the output file (extension forced to ``.ome.tiff``)
-%   - **imageS** — dataset [height, width, color_channels, z_slices, time]
-%   - **options** — *(optional)* struct with fields:
+%   - **filename** - full path for the output file (extension forced to ``.ome.tiff``)
+%   - **imageS** - dataset [height, width, color_channels, z_slices, time]
+%   - **options** - *(optional)* struct with fields:
 %
-%     - ``.pixSize`` — MIB pixel-size struct with fields ``.x``, ``.y``, ``.z``, ``.t``,
+%     - ``.pixSize`` - MIB pixel-size struct with fields ``.x``, ``.y``, ``.z``, ``.t``,
 %       ``.units``, ``.tunits``; default: all ``1``, units ``'um'``, tunits ``'s'``
-%     - ``.lutColors`` — [C×3] LUT colour matrix (unused in 2D imwrite path)
-%     - ``.ImageDescription`` — (char or cell-string) description embedded in the file
+%     - ``.lutColors`` - [C×3] LUT colour matrix (unused in 2D imwrite path)
+%     - ``.ImageDescription`` - (char or cell-string) description embedded in the file
 %       (default: ``''``)
-%     - ``.DatasetType`` — ``'image'`` (default) or ``'model'``
-%     - ``.Saving3d`` — ``'5D'`` (default): write all slices into one OME-TIFF via
+%     - ``.DatasetType`` - ``'image'`` (default) or ``'model'``
+%     - ``.Saving3d`` - ``'5D'`` (default): write all slices into one OME-TIFF via
 %       ``bfsave``; ``'2D'``: write each z-slice as a separate ``.tif`` file
-%     - ``.overwrite`` — ``1`` = skip the "file exists" prompt (default: ``0``)
-%     - ``.Compression`` — ``'none'`` (default), ``'lzw'``, or ``'packbits'`` (2D path only)
-%     - ``.showWaitbar`` — ``1`` = show progress bar (default); ``0`` = suppress
-%     - ``.ParentFigure`` — handle to the MIB UIFigure; when provided the progress bar
+%     - ``.overwrite`` - ``1`` = skip the "file exists" prompt (default: ``0``)
+%     - ``.Compression`` - ``'none'`` (default), ``'lzw'``, or ``'packbits'`` (2D path only)
+%     - ``.showWaitbar`` - ``1`` = show progress bar (default); ``0`` = suppress
+%     - ``.ParentFigure`` - handle to the MIB UIFigure; when provided the progress bar
 %       is shown as a ``uiprogressdlg`` attached to that window; when absent the legacy
 %       ``waitbar`` is used
-%     - ``.silent`` — [logical] (default: ``false``); when ``true`` all interactive
+%     - ``.silent`` - [logical] (default: ``false``); when ``true`` all interactive
 %       dialogs are suppressed
-%     - ``.sequentialFn`` — controls 2D output naming:
+%     - ``.sequentialFn`` - controls 2D output naming:
 %
-%       - ``true`` (default when ``NaN``) — sequential names, e.g. ``image_01.ome.tiff``
-%       - ``false`` — use original per-slice names from ``.SliceName``; falls back to
+%       - ``true`` (default when ``NaN``) - sequential names, e.g. ``image_01.ome.tiff``
+%       - ``false`` - use original per-slice names from ``.SliceName``; falls back to
 %         sequential when ``.SliceName`` is absent or empty
-%       - ``NaN`` — decide at runtime (currently defaults to ``true``); normally set by
+%       - ``NaN`` - decide at runtime (currently defaults to ``true``); normally set by
 %         the calling saver (``OmeTiffSaver``) based on the user's dialog choice
 %
-%     - ``.SliceName`` — cell array of per-slice source filenames (without path); used
+%     - ``.SliceName`` - cell array of per-slice source filenames (without path); used
 %       by the ``false`` branch of ``.sequentialFn``
-%     - ``.cmap`` — colormap matrix for indexed images; ``NaN`` (default) means
+%     - ``.cmap`` - colormap matrix for indexed images; ``NaN`` (default) means
 %       grayscale/RGB
-%     - ``.Resolution`` — [xDPI yDPI] written into 2D ``.tif`` files; derived
+%     - ``.Resolution`` - [xDPI yDPI] written into 2D ``.tif`` files; derived
 %       automatically from ``pixSize`` when absent
-%     - ``.DimensionOrder`` — dimension order string passed to ``bfsave`` /
+%     - ``.DimensionOrder`` - dimension order string passed to ``bfsave`` /
 %       ``createMinimalOMEXMLMetadata``; default: ``'XYZCT'``
 %
 % Output Arguments:
-%   - **result** — ``1`` = success, ``0`` = failure
-%   - **options** — the options struct as used (with all defaults filled in)
+%   - **result** - ``1`` = success, ``0`` = failure
+%   - **options** - the options struct as used (with all defaults filled in)
 %
 
 % use SCIFIO to open ome-tiff in Fiji
 % https://imagej.net/SCIFIO
 
 % Updates
-% 2026 — added options.silent, sequentialFn, cmap, Resolution defaults;
+% 2026 - added options.silent, sequentialFn, cmap, Resolution defaults;
 %        fixed 2D sequential naming (.ome compound extension stripped);
 %        moved naming dialog to OmeTiffSaver (caller)
 
-% **Example 1** — standalone 5D save:
+% **Example 1** - standalone 5D save:
 %
 %   .. code-block:: matlab
 %
@@ -69,7 +69,7 @@ function [result, options] = mibImage2ometiff(filename, imageS, options)
 %      opts.overwrite   = 1;
 %      io.BioFormats.mibImage2ometiff('/output/stack.ome.tiff', imageData, opts);
 %
-% **Example 2** — 2D sequence with sequential naming:
+% **Example 2** - 2D sequence with sequential naming:
 %
 %   .. code-block:: matlab
 %
@@ -82,7 +82,7 @@ function [result, options] = mibImage2ometiff(filename, imageS, options)
 %      io.BioFormats.mibImage2ometiff('/output/slice.ome.tiff', imageData, opts);
 %      % produces /output/slice_01.ome.tiff, /output/slice_02.ome.tiff, ...
 %
-% **Example 3** — 2D sequence with original naming:
+% **Example 3** - 2D sequence with original naming:
 %
 %   .. code-block:: matlab
 %
@@ -229,7 +229,7 @@ elseif strcmp(options.Saving3d, '2D')
         end
     else                % use original filenames supplied by the caller
         if ~isfield(options, 'SliceName') || isempty(options.SliceName)
-            % no original names available — fall back to sequential
+            % no original names available - fall back to sequential
             for i = 1:files_no
                 options.SliceName{i} = fullfile(pathstr, utils.generateSequentialFilename(name, i, files_no, '.ome.tiff'));
             end
@@ -279,7 +279,7 @@ elseif strcmp(options.Saving3d, '2D')
             else
                 bfsave(imgSlice, options.SliceName{num}, 'metadata', sliceMetadata, 'Compression', options.Compression);
             end
-        else            % indexed image — palette is embedded directly by imwrite
+        else            % indexed image - palette is embedded directly by imwrite
             % imwrite errors on an empty 'Description' value, so only pass it when non-empty
             descArgs = {};
             if ~isempty(desc); descArgs = {'Description', desc}; end
@@ -314,13 +314,13 @@ metadata.setPixelsPhysicalSizeZ(pixelSize, 0);
 pixelSize = ome.units.quantity.Time(java.lang.Double(options.pixSize.t), tunits);
 metadata.setPixelsTimeIncrement(pixelSize, 0);
 
-% ImageDescription — carries the MIB BoundingBox string so that the
+% ImageDescription - carries the MIB BoundingBox string so that the
 % dataset's physical extent is preserved when reloading in MIB
 if ~isempty(imageDescription)
     metadata.setImageDescription(imageDescription, 0);
 end
 
-% Channel LUT colours — written so that MIB (and Fiji/OMERO) can restore
+% Channel LUT colours - written so that MIB (and Fiji/OMERO) can restore
 % per-channel colours when reloading the file.
 % Cap the loop at the metadata's SizeC: calling setChannelColor beyond the
 % declared channel count creates a phantom Channel node with no ID, which

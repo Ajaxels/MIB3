@@ -11,20 +11,20 @@ function [layout, edges, positions, atlasInfo] = buildLayoutAtlas(veMifPath, opt
 % records three successive stages of the same stitch in three files sharing one
 % base name, and this function can take any prefix of that chain:
 %
-%   ``.ve-mif``      *(always read)* — the acquisition record: per-tile ``row``/``col``
+%   ``.ve-mif``      *(always read)* - the acquisition record: per-tile ``row``/``col``
 %                    and NOMINAL stage position, tile size, FOV and pixel size.
 %                    Becomes the layout's ``gridRC`` / ``nomOrigin``.
-%   ``.ve-tie``      *(options.importTies)* — Atlas's pairwise seam measurements.
+%   ``.ve-tie``      *(options.importTies)* - Atlas's pairwise seam measurements.
 %                    Becomes the ``edges`` array, so MIB can solve without
 %                    re-registering a single pixel.
-%   ``.ve-updates``  *(options.importPositions)* — Atlas's FINAL solved tile
+%   ``.ve-updates``  *(options.importPositions)* - Atlas's FINAL solved tile
 %                    positions. Becomes ``positions``, so the mosaic is ready to
 %                    fuse with nothing recomputed.
 %
 % **Why the nominal placement is only a starting guess.** Under some imaging
 % conditions the stage positions Atlas records do not describe where the tiles
 % actually overlap (the sample data this was written against is off by ~32 px in
-% Y — Atlas's own ties agree). The nominal grid is therefore treated exactly like
+% Y - Atlas's own ties agree). The nominal grid is therefore treated exactly like
 % any other layout source: a rough placement that ``Measure overlaps`` refines.
 % Import the ties (or the ties + positions) to keep Atlas's own answer instead.
 %
@@ -43,38 +43,38 @@ function [layout, edges, positions, atlasInfo] = buildLayoutAtlas(veMifPath, opt
 % local file is missing.
 %
 % Input Arguments:
-%   - **veMifPath** — [char] full path to the ``MosaicInfo_*.ve-mif`` file.
-%   - **options** *(optional)* — struct with fields:
+%   - **veMifPath** - [char] full path to the ``MosaicInfo_*.ve-mif`` file.
+%   - **options** *(optional)* - struct with fields:
 %
-%     - ``.importTies`` — [logical] read the ``.ve-tie`` seam measurements into
+%     - ``.importTies`` - [logical] read the ``.ve-tie`` seam measurements into
 %       ``edges`` (default: ``false``)
-%     - ``.importPositions`` — [logical] read the ``.ve-updates`` solved tile
+%     - ``.importPositions`` - [logical] read the ``.ve-updates`` solved tile
 %       positions into ``positions`` (default: ``false``). With no ties imported
 %       the matching ``edges`` are SYNTHESISED from the solved positions, so the
 %       state is self-consistent (a re-solve reproduces the same placement) and
 %       the seam inspector has something to review.
-%     - ``.tiePath`` / ``.updatesPath`` — [char] explicit sidecar paths; by
+%     - ``.tiePath`` / ``.updatesPath`` - [char] explicit sidecar paths; by
 %       default they are found next to the ``.ve-mif`` by
 %       :func:`utils.stitch.findAtlasSidecars`.
-%     - ``.layout`` — [struct array] a layout already built from this very
+%     - ``.layout`` - [struct array] a layout already built from this very
 %       ``.ve-mif``; supplied to skip re-reading every tile's dimensions when only
-%       the sidecars are wanted (default: ``[]`` — build it).
+%       the sidecars are wanted (default: ``[]`` - build it).
 %
 % Output Arguments:
-%   - **layout** — struct array per the layout contract (see
+%   - **layout** - struct array per the layout contract (see
 %     :func:`utils.stitch.buildLayoutGrid`), one entry per tile, ordered by
-%     ``row`` then ``col``. Single Z layer — one ``.ve-mif`` is one section.
-%   - **edges** — struct array of imported/synthesised seams (empty when neither
+%     ``row`` then ``col``. Single Z layer - one ``.ve-mif`` is one section.
+%   - **edges** - struct array of imported/synthesised seams (empty when neither
 %     sidecar was imported). Ties Atlas marked ``<User>true</User>`` (placed by
 %     hand in Atlas) carry ``.source = 'user'``, so MIB weights them like its own
 %     manual fixes and a re-measure preserves them; the rest are ``'auto'``.
-%   - **positions** — [N x 3 double] solved origins ``[y x z]``, or ``[]``.
-%   - **atlasInfo** — struct describing the mosaic: ``.mosaicName``, ``.folder``,
+%   - **positions** - [N x 3 double] solved origins ``[y x z]``, or ``[]``.
+%   - **atlasInfo** - struct describing the mosaic: ``.mosaicName``, ``.folder``,
 %     ``.pixelSizeUm``, ``.signX`` / ``.signY`` (derived axis directions),
 %     ``.fovUm``, ``.overlapXpercent`` / ``.overlapYpercent``, ``.numTilesX`` /
 %     ``.numTilesY`` and the per-tile ``.tiles`` records.
 %
-% **Example** — fuse an Atlas mosaic exactly as Atlas stitched it:
+% **Example** - fuse an Atlas mosaic exactly as Atlas stitched it:
 %
 %   .. code-block:: matlab
 %
@@ -167,7 +167,7 @@ referenceInfoNode = directChild(rootNode, 'ReferenceInfo');
 atlasInfo.mosaicName = directChildText(referenceInfoNode, 'Name', mosaicBaseName);
 
 % Pixel size: honour the unit attribute (Atlas writes nm). TileInfo holds a
-% SECOND, unrelated PixelSize deep inside the autofocus block — direct-child
+% SECOND, unrelated PixelSize deep inside the autofocus block - direct-child
 % lookups keep the two apart.
 [pixelSizeText, pixelSizeUnit] = directChildTextAndUnit(rootNode, 'PixelSize');
 pixelSizeUm = str2double(pixelSizeText);
@@ -182,7 +182,7 @@ atlasInfo.overlapYum   = directChildNumber(tileInfoNode, 'TileOverlapYum', NaN);
 atlasInfo.numTilesX    = directChildNumber(tileInfoNode, 'NumTilesX', NaN);
 atlasInfo.numTilesY    = directChildNumber(tileInfoNode, 'NumTilesY', NaN);
 
-% Fall back to FOV / tile width when PixelSize is absent or nonsensical — the
+% Fall back to FOV / tile width when PixelSize is absent or nonsensical - the
 % two are redundant in the file and either alone determines the scale.
 if ~isfinite(pixelSizeUm) || pixelSizeUm <= 0
     pixelSizeUm = atlasInfo.fovUm / atlasInfo.tileWidthPx;
@@ -244,7 +244,7 @@ function [signX, signY] = deriveAxisSigns(tiles)
 % ``x_px`` must grow with the column index and ``y_px`` with the row index. Both
 % signs are read off the mosaic itself by correlating the grid index with the
 % stage coordinate, so no vendor/stage convention is assumed. Defaults (X as
-% recorded, Y inverted — the usual Y-up stage) cover degenerate 1xN / Nx1 grids
+% recorded, Y inverted - the usual Y-up stage) cover degenerate 1xN / Nx1 grids
 % where one axis carries no information.
 
 signX = 1;
@@ -320,7 +320,7 @@ function edges = readTies(tiePath, layout, atlasInfo)
 % Each ``<Tie>`` states where the shared strip sits inside both tiles
 % (``Image1Position`` / ``Image2Position``, µm from each tile's centre) and the
 % correction Atlas measured for it (``Shift``). The offset from tile i to tile j
-% is therefore ``(Image2Position - Image1Position) + Shift`` in the stage frame —
+% is therefore ``(Image2Position - Image1Position) + Shift`` in the stage frame -
 % the position terms alone reproduce the nominal step exactly.
 
 documentNode = xmlread(tiePath);
@@ -384,7 +384,7 @@ for tieIdx = 1:numel(tieNodes)
     newEdge(1).quality   = min(1, max(0, confidence));
     newEdge(1).valid     = isOverlap && confidence >= confidenceThreshold;
     newEdge(1).tform     = [];
-    % A tie Atlas marks <User>true</User> was placed by hand in Atlas — exactly
+    % A tie Atlas marks <User>true</User> was placed by hand in Atlas - exactly
     % what 'user' means here, so it gets the same solver weight and the same
     % protection from being overwritten by a re-measure.
     newEdge(1).source    = ternaryChar(isUserPlaced, 'user', 'auto');
@@ -403,7 +403,7 @@ function positions = readUpdates(updatesPath, layout, atlasInfo)
 % Each ``<Tile>`` carries a 4x4 ``<ParentTransform>`` that maps the unit square
 % onto the mosaic: ``M11``/``M22`` are the tile's FOV in µm and ``M41``/``M42``
 % its solved offset, in the same stage-frame orientation as the ``.ve-mif``.
-% Only the translation is used — the linear part is the fixed tile scale, and
+% Only the translation is used - the linear part is the fixed tile scale, and
 % Atlas wrote ``PerTileRotation``/``PerTileScale`` = false.
 %
 % ``<DefaultAlignment>`` holds a second, unrelated ``<ParentTransform>``; taking
@@ -444,7 +444,7 @@ positionYpx = atlasInfo.signY * solvedYum / atlasInfo.pixelSizeUm;
 positionXpx = positionXpx - min(positionXpx, [], 'omitnan') + 1;
 positionYpx = positionYpx - min(positionYpx, [], 'omitnan') + 1;
 
-% A tile Atlas did not place stays where the nominal grid put it — the same
+% A tile Atlas did not place stays where the nominal grid put it - the same
 % treatment the global solver gives a tile with no valid measurement.
 nominalOrigins = reshape([layout.nomOrigin], 3, []).';
 unplaced = isnan(positionXpx) | isnan(positionYpx);
@@ -550,7 +550,7 @@ end
 % ============================== XML helpers ==============================
 % Atlas nests tags that repeat at different depths (<PixelSize> inside the
 % autofocus block, <ParentTransform> inside <DefaultAlignment>), so every lookup
-% here walks DIRECT children only — getElementsByTagName would cross those
+% here walks DIRECT children only - getElementsByTagName would cross those
 % boundaries and pick up the wrong node.
 
 function childNode = directChild(parentNode, tagName)

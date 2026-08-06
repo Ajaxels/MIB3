@@ -7,10 +7,10 @@ function data = storeLoadCategorical(filename)
 %      data = storeLoadCategorical(filename)
 %
 % Input Arguments:
-%   - **filename** — [string] full path to the MAT file
+%   - **filename** - [string] full path to the MAT file
 %
 % Output Arguments:
-%   - **data** — cell array containing the loaded categorical variable
+%   - **data** - cell array containing the loaded categorical variable
 
 inp = load(filename, '-mat');
 if isfield(inp, 'imgVariable')

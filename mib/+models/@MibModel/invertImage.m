@@ -17,38 +17,38 @@ function invertImage(obj, datasetType, BatchOptIn)
 % viewing orientation are handled correctly.
 %
 % Input Arguments:
-%   - **datasetType** — *(optional)* char, pre-sets ``BatchOpt.DatasetType{1}``;
+%   - **datasetType** - *(optional)* char, pre-sets ``BatchOpt.DatasetType{1}``;
 %     pass ``[]`` or omit to use the BatchOptIn value or the default ``'2D, Slice'``.
 %     One of: ``'2D, Slice'``, ``'3D, Stack'``, ``'4D, Dataset'``.
 %     Pass ``NaN`` to return default options via the ``SyncBatch`` event.
-%   - **BatchOptIn** — *(optional)* structure for batch processing mode
+%   - **BatchOptIn** - *(optional)* structure for batch processing mode
 %
-%     - ``.DatasetType`` — cell string, scope of inversion
+%     - ``.DatasetType`` - cell string, scope of inversion
 %       (default ``{'2D, Slice'}``); values:
 %       ``{'2D, Slice', '3D, Stack', '4D, Dataset'}``
-%     - ``.ColorChannels`` — cell string, channels to invert
+%     - ``.ColorChannels`` - cell string, channels to invert
 %       (default ``{'Shown channels'}``); values:
 %       ``{'Shown channels', 'All channels'}``
-%     - ``.showWaitbar`` — logical, show the progress dialog (default ``true``)
-%     - ``.id`` — *(optional)* dataset index 1–9, default = ``obj.getActiveId()``
+%     - ``.showWaitbar`` - logical, show the progress dialog (default ``true``)
+%     - ``.id`` - *(optional)* dataset index 1-9, default = ``obj.getActiveId()``
 %
 % Output Arguments:
 %   (none)
 %
 % Usage:
-%   **Example 1** — invert shown channels on the current slice
+%   **Example 1** - invert shown channels on the current slice
 %
 %   .. code-block:: matlab
 %
 %      obj.mibModel.invertImage();
 %
-%   **Example 2** — pre-select 3D mode (controller calls this from the menu)
+%   **Example 2** - pre-select 3D mode (controller calls this from the menu)
 %
 %   .. code-block:: matlab
 %
 %      obj.mibModel.invertImage('3D, Stack');
 %
-%   **Example 3** — invert all channels across the full dataset (batch)
+%   **Example 3** - invert all channels across the full dataset (batch)
 %
 %   .. code-block:: matlab
 %
@@ -56,21 +56,21 @@ function invertImage(obj, datasetType, BatchOptIn)
 %      BatchOpt.showWaitbar   = true;
 %      obj.mibModel.invertImage('4D, Dataset', BatchOpt);
 %
-%   **Example 4** — return default BatchOpt to the Batch Processing editor
+%   **Example 4** - return default BatchOpt to the Batch Processing editor
 %
 %   .. code-block:: matlab
 %
 %      obj.mibModel.invertImage(NaN);
 
 % Updates
-% 2026-05-24 — ported from MIB2 mibModel.invertImage / menuImageInvert_Callback;
+% 2026-05-24 - ported from MIB2 mibModel.invertImage / menuImageInvert_Callback;
 %              replaced waitbar with uiprogressdlg; orientation 4->3;
 %              3D/4D inversion delegates to MibImage.invertColorChannel
 
 if nargin < 2; datasetType = []; end
 if nargin < 3; BatchOptIn = struct(); end
 
-% Handle invertImage(NaN) — NaN passed positionally as datasetType means SyncBatch
+% Handle invertImage(NaN) - NaN passed positionally as datasetType means SyncBatch
 if ~ischar(datasetType) && ~isempty(datasetType) && isscalar(datasetType) && isnan(datasetType)
     BatchOptIn  = NaN;
     datasetType = [];
@@ -137,8 +137,8 @@ if strcmp(BatchOpt.DatasetType{1}, '4D, Dataset') && obj.I{BatchOpt.id}.image.ti
 end
 
 %% Resolve color channels
-% colChannels      — for invertColorChannel: 0 = all channels, vector = specific
-% colChannelsGetSet — for getData2D/setData2D: NaN = all, [] = shown
+% colChannels      - for invertColorChannel: 0 = all channels, vector = specific
+% colChannelsGetSet - for getData2D/setData2D: NaN = all, [] = shown
 if strcmp(BatchOpt.ColorChannels{1}, 'All channels')
     colChannels       = 0;
     colChannelsGetSet = NaN;
@@ -155,7 +155,7 @@ if ~batchModeSwitch
             obj.backup('image', 0, getDataOptions);
         case '3D, Stack'
             obj.backup('image', 1, getDataOptions);
-        % 4D: no backup — too expensive for large datasets
+        % 4D: no backup - too expensive for large datasets
     end
 end
 

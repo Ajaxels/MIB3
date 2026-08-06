@@ -13,22 +13,22 @@ function updateInterpolationMode(obj, keepCurrent)
 % currently selected type without swapping.
 %
 % Input Arguments:
-%   - **keepCurrent** — *(optional)* logical, default: ``false``
+%   - **keepCurrent** - *(optional)* logical, default: ``false``
 %
-%     - ``true`` — sync the button icon to the currently selected interpolation type
+%     - ``true`` - sync the button icon to the currently selected interpolation type
 %       (``obj.mibModel.preferences.SegmTools.Interpolation.Type``) without swapping
-%     - ``false`` — swap the interpolation type
+%     - ``false`` - swap the interpolation type
 %
 % Output Arguments:
 %   (none)
 %
-% **Example 1** — sync the button icon to the current type (no swap):
+% **Example 1** - sync the button icon to the current type (no swap):
 %
 %   .. code-block:: matlab
 %
 %      obj.mibController.updateInterpolationMode(true);
 %
-% **Example 2** — swap the interpolation type:
+% **Example 2** - swap the interpolation type:
 %
 %   .. code-block:: matlab
 %

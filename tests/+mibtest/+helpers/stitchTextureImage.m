@@ -8,16 +8,16 @@ function image = stitchTextureImage(height, width, seed)
 %
 % Filtered noise plus smooth gradients: enough high-frequency content for phase
 % correlation to have a needle-sharp peak, and enough large-scale structure for
-% feature detectors — the same recipe the ``utils.stitch`` test classes use, so
+% feature detectors - the same recipe the ``utils.stitch`` test classes use, so
 % tiles chopped from it register exactly. Deterministic for a given ``seed``.
 %
 % Input Arguments:
-%   - **height** — [double] image height in pixels
-%   - **width** — [double] image width in pixels
-%   - **seed** — [double] RNG seed (any two different seeds give unrelated content)
+%   - **height** - [double] image height in pixels
+%   - **width** - [double] image width in pixels
+%   - **seed** - [double] RNG seed (any two different seeds give unrelated content)
 %
 % Output Arguments:
-%   - **image** — [uint8] ``height``-by-``width`` textured image
+%   - **image** - [uint8] ``height``-by-``width`` textured image
 %
 % See also: StitchingControllerTest, StitchingInspectorControllerTest, StitchCoreTest
 

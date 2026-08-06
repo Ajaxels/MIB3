@@ -11,11 +11,11 @@ function result = exitProgram(obj, target)
 % Registered as ``AppContainer.ExitFcn`` in MibController.initialize.
 %
 % Input Arguments:
-%   - **target** — ``matlab.ui.container.internal.AppContainer`` handle to the
+%   - **target** - ``matlab.ui.container.internal.AppContainer`` handle to the
 %     main application container
 %
 % Output Arguments:
-%   - **result** — always ``true``; reserved for future cancel-on-close support
+%   - **result** - always ``true``; reserved for future cancel-on-close support
 %
 
 arguments (Input)

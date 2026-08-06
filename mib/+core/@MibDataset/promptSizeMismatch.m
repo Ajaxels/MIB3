@@ -8,26 +8,26 @@ function choice = promptSizeMismatch(itemLabel, curH, curW, imgH, imgW, bounding
 %
 % Builds and shows a single ``utils.dlgs.inputUniversalDlg`` with an action
 % dropdown and, only for axes that actually mismatch, Y/X offset spinners
-% shown alongside it (not a multi-step wizard — the spinner values are
+% shown alongside it (not a multi-step wizard - the spinner values are
 % simply unused by the caller when the chosen action doesn't need them).
 %
 % Input Arguments:
-%   - **itemLabel** — [char] ``'Model'`` or ``'Mask'``, used in dialog text.
-%   - **curH**, **curW** — [numeric] height/width of the loaded item.
-%   - **imgH**, **imgW** — [numeric] height/width of the open image.
-%   - **boundingBox** — [numeric|[]] the loaded model's 6-element
+%   - **itemLabel** - [char] ``'Model'`` or ``'Mask'``, used in dialog text.
+%   - **curH**, **curW** - [numeric] height/width of the loaded item.
+%   - **imgH**, **imgW** - [numeric] height/width of the open image.
+%   - **boundingBox** - [numeric|[]] the loaded model's 6-element
 %     ``[xmin xmax ymin ymax zmin zmax]``, or ``[]`` when unavailable
 %     (masks never have one). When non-empty, a ``'Use bounding box'``
 %     action is offered as the default choice.
-%   - **options** — struct with ``.ParentFigure`` and ``.mibPath``.
+%   - **options** - struct with ``.ParentFigure`` and ``.mibPath``.
 %
 % Output Arguments:
-%   - **choice** — struct with fields:
+%   - **choice** - struct with fields:
 %
-%     - ``.action`` — [char] ``'Use bounding box'``, ``'Crop / Place'``, or ``'Resize'``
-%     - ``.offsetY``, ``.offsetX`` — [numeric] only meaningful when
+%     - ``.action`` - [char] ``'Use bounding box'``, ``'Crop / Place'``, or ``'Resize'``
+%     - ``.offsetY``, ``.offsetX`` - [numeric] only meaningful when
 %       ``.action == 'Crop / Place'``; ``0`` otherwise
-%     - ``.cancelled`` — [logical] true when the dialog was cancelled
+%     - ``.cancelled`` - [logical] true when the dialog was cancelled
 %
 
 % Updates

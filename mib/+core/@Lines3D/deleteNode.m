@@ -9,14 +9,14 @@ function result = deleteNode(obj, x, y, z, orientation)
 % the previous and following nodes get connected after remove of the node
 %
 % Input Arguments:
-%   - **x** — x coordinate of a point next to the node, or index of the
+%   - **x** - x coordinate of a point next to the node, or index of the
 %     node (in this case, y and z should be empty)
-%   - **y** — y coordinate of a point next to the node
-%   - **z** — z coordinate of a point next to the node
-%   - **orientation** — *(optional)* a number with orientation of the dataset, 3-yx, 1-xz, 2-yz, default 3
+%   - **y** - y coordinate of a point next to the node
+%   - **z** - z coordinate of a point next to the node
+%   - **orientation** - *(optional)* a number with orientation of the dataset, 3-yx, 1-xz, 2-yz, default 3
 %
 % Output Arguments:
-%   - **result** — type of the node that was deleted
+%   - **result** - type of the node that was deleted
 %     'removed tree' - the last node of a tree was removed, so the tree was deleted
 %     'middle node'  - the removed node was in a middle of a tree
 %     'multiple split' - the node had more than 2 connections and as result multiple new trees were formed

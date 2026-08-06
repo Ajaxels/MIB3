@@ -7,7 +7,7 @@ function stopTrainingCallback(hButton, varargin)
 %      stopTrainingCallback(hButton)
 %
 % Input Arguments:
-%   - **hButton** — handle to the button that triggered the callback, or a
+%   - **hButton** - handle to the button that triggered the callback, or a
 %     ``matlab.ui.dialog.ProgressDialog`` handle when called from a progress dialog
 
 global mibDeepStopTraining

@@ -25,16 +25,16 @@ function [net, outputSize] = generateUnet2DwithEncoder(obj, imageSize, encoderNe
 % segmentation of 2D RGB images using a specified encoder
 %
 % Input Arguments:
-%   - **imageSize** — vector [height, width, colors] defining input patch size,
+%   - **imageSize** - vector [height, width, colors] defining input patch size,
 %     should be larger than [224 224] for Resnet18, colors should be 3
-%   - **encoderNetwork** — string defining the base architecture for the initialization
+%   - **encoderNetwork** - string defining the base architecture for the initialization
 %     'Classic' - classic unet architecture
 %     'Resnet18' - Resnet18 network
 %     'Resnet50' - Resnet50 network
 %
 % Output Arguments:
-%   - **net** — Unet dlnetwork, with softmax (Name: 'FinalNetworkSoftmax-Layer') as the final layer
-%   - **outputSize** — output size of the network returned as [height, width, number of classes]
+%   - **net** - Unet dlnetwork, with softmax (Name: 'FinalNetworkSoftmax-Layer') as the final layer
+%   - **outputSize** - output size of the network returned as [height, width, number of classes]
 %
 
 if nargin < 3; encoderNetwork = 'Classic'; end

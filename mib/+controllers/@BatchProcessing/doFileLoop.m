@@ -14,18 +14,18 @@ function status = doFileLoop(obj, startStep, finishStep, options)
 % flag is set.
 %
 % Input Arguments:
-%   - **startStep** — [numeric] index of the first protocol step to execute inside the loop body
-%   - **finishStep** — [numeric] index of the last protocol step to execute inside the loop body
-%   - **options** — [struct] loop control struct with fields:
+%   - **startStep** - [numeric] index of the first protocol step to execute inside the loop body
+%   - **finishStep** - [numeric] index of the last protocol step to execute inside the loop body
+%   - **options** - [struct] loop control struct with fields:
 %
-%     - ``.DirectoryName`` — directory to scan; use ``'Current MIB path'`` to resolve at runtime
-%     - ``.FilenameFilter`` — wildcard filter passed to dir() (e.g., ``'*.tif'``)
-%     - ``.FileLoopWaitbar`` — [logical] when true show per-file waitbar and suppress per-step waitbars
+%     - ``.DirectoryName`` - directory to scan; use ``'Current MIB path'`` to resolve at runtime
+%     - ``.FilenameFilter`` - wildcard filter passed to dir() (e.g., ``'*.tif'``)
+%     - ``.FileLoopWaitbar`` - [logical] when true show per-file waitbar and suppress per-step waitbars
 %
 % Output Arguments:
-%   - **status** — [logical] true on success, false if any step returned an error
+%   - **status** - [logical] true on success, false if any step returned an error
 %
-% **Example** — iterate over files matching a filter:
+% **Example** - iterate over files matching a filter:
 %
 %   .. code-block:: matlab
 %

@@ -10,25 +10,25 @@ function selectionActions(obj, action)
 % reads dataset scope from modifier keys, then delegates to ``obj.mibModel.moveLayers``.
 %
 % Input Arguments:
-%   - **action** — [char] the button that was pressed:
+%   - **action** - [char] the button that was pressed:
 %
-%     - ``'add'`` — add selection to active material/mask
-%     - ``'subtract'`` — subtract selection from active material/mask
-%     - ``'replace'`` — replace active material/mask with selection
+%     - ``'add'`` - add selection to active material/mask
+%     - ``'subtract'`` - subtract selection from active material/mask
+%     - ``'replace'`` - replace active material/mask with selection
 %
-% **Example 1** — called from Add button:
+% **Example 1** - called from Add button:
 %
 %   .. code-block:: matlab
 %
 %      obj.selectionActions('add');
 %
-% **Example 2** — called from Subtract button:
+% **Example 2** - called from Subtract button:
 %
 %   .. code-block:: matlab
 %
 %      obj.selectionActions('subtract');
 %
-% **Example 3** — called from Replace button:
+% **Example 3** - called from Replace button:
 %
 %   .. code-block:: matlab
 %

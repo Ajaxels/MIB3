@@ -7,7 +7,7 @@ function fitView_Callback(obj)
 %      obj.fitView_Callback()
 %
 % Clears the wheel-zoom state (:func:`scrollWheel_Callback`) and restores
-% tight limits around whatever the pair view currently shows — the composited
+% tight limits around whatever the pair view currently shows - the composited
 % pair, the flicker stack or the two-click side-by-side. Wired to
 % ``fitViewBtn`` and the ``F`` key.
 %

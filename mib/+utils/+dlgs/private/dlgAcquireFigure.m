@@ -8,18 +8,18 @@ function [fig, isCached] = dlgAcquireFigure(tag, dlgTitle, mibDir)
 %
 % Keeps one cached figure per dialog tag to avoid the ~200-400 ms uifigure
 % creation cost on every call. When the cached figure is currently in use
-% (visible — e.g. a nested dialog of the same type), a temporary figure is
+% (visible - e.g. a nested dialog of the same type), a temporary figure is
 % created WITHOUT touching the cache and ``isCached`` returns false; the caller
 % must delete such a figure on close instead of hiding it, otherwise it leaks.
 %
 % Input Arguments:
-%   - **tag** — [char] dialog identity, e.g. ``'inputUniversalDlg'``; also set as ``fig.Tag``
-%   - **dlgTitle** — [char] window title
-%   - **mibDir** — [char] MIB installation folder (for the window icon)
+%   - **tag** - [char] dialog identity, e.g. ``'inputUniversalDlg'``; also set as ``fig.Tag``
+%   - **dlgTitle** - [char] window title
+%   - **mibDir** - [char] MIB installation folder (for the window icon)
 %
 % Output Arguments:
-%   - **fig** — [handle] hidden uifigure with stale children/callbacks cleared
-%   - **isCached** — [logical] ``true`` when fig is the cached shell (hide on close);
+%   - **fig** - [handle] hidden uifigure with stale children/callbacks cleared
+%   - **isCached** - [logical] ``true`` when fig is the cached shell (hide on close);
 %     ``false`` when it is a temporary instance (delete on close)
 
 persistent figureCache   % dictionary: tag -> {uifigure handle}

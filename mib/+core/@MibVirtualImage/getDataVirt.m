@@ -7,38 +7,38 @@ function dataset = getDataVirt(obj, type, orient, colChannel, options)
 %       dataset = obj.getDataVirt(type, orient, colChannel, options)
 %
 % Input Arguments:
-%   - **type** — [char] layer type to retrieve; only ``'image'`` is supported
-%   - **orient** — *(optional)* [numeric] orientation of returned dataset:
+%   - **type** - [char] layer type to retrieve; only ``'image'`` is supported
+%   - **orient** - *(optional)* [numeric] orientation of returned dataset:
 %
-%     - ``1`` — ``xz`` plane: output ``[x, z, y, c, t]``
-%     - ``2`` — ``yz`` plane: output ``[y, z, x, c, t]``
-%     - ``3`` — ``yx`` plane: output ``[y, x, z, c, t]`` (default)
+%     - ``1`` - ``xz`` plane: output ``[x, z, y, c, t]``
+%     - ``2`` - ``yz`` plane: output ``[y, z, x, c, t]``
+%     - ``3`` - ``yx`` plane: output ``[y, x, z, c, t]`` (default)
 %
-%   - **colChannel** — *(optional)* [numeric vector] colour channel indices;
+%   - **colChannel** - *(optional)* [numeric vector] colour channel indices;
 %     ``[]`` = all channels
-%   - **options** — *(optional)* [struct] with optional fields:
+%   - **options** - *(optional)* [struct] with optional fields:
 %
-%     - ``.y`` — [numeric] ``[ymin ymax]`` pixel range
-%     - ``.x`` — [numeric] ``[xmin xmax]`` pixel range
-%     - ``.z`` — [numeric] ``[zmin zmax]`` slice range
-%     - ``.t`` — [numeric] ``[tmin tmax]`` time-point range
-%     - ``.level`` — [numeric] pyramid level index (default: ``1`` = full resolution)
-%     - ``.showWaitbar`` — [logical or []] override waitbar display; ``[]`` = auto
+%     - ``.y`` - [numeric] ``[ymin ymax]`` pixel range
+%     - ``.x`` - [numeric] ``[xmin xmax]`` pixel range
+%     - ``.z`` - [numeric] ``[zmin zmax]`` slice range
+%     - ``.t`` - [numeric] ``[tmin tmax]`` time-point range
+%     - ``.level`` - [numeric] pyramid level index (default: ``1`` = full resolution)
+%     - ``.showWaitbar`` - [logical or []] override waitbar display; ``[]`` = auto
 %
 % Output Arguments:
-%   - **dataset** — [numeric array] 5D data in MIB3 order:
+%   - **dataset** - [numeric array] 5D data in MIB3 order:
 %
 %     - ``[y, x, z, c, t]`` for ``orient==3`` (default)
 %     - ``[x, z, y, c, t]`` for ``orient==1``
 %     - ``[y, z, x, c, t]`` for ``orient==2``
 %
-% **Example 1** — read full YX dataset:
+% **Example 1** - read full YX dataset:
 %
 %   .. code-block:: matlab
 %
 %      dataset = obj.getDataVirt('image');
 %
-% **Example 2** — read channel 2 in YX orientation:
+% **Example 2** - read channel 2 in YX orientation:
 %
 %   .. code-block:: matlab
 %

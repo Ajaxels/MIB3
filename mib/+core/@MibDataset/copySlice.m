@@ -13,15 +13,15 @@ function result = copySlice(obj, sliceFrom, sliceTo, orient)
 % destination slice with the source slice contents.
 %
 % Input Arguments:
-%   - **sliceFrom** — index or index vector of source slices
-%   - **sliceTo** — index or index vector of destination slices; must be the
+%   - **sliceFrom** - index or index vector of source slices
+%   - **sliceTo** - index or index vector of destination slices; must be the
 %     same length as **sliceFrom**
-%   - **orient** — *(optional)* dimension to operate on:
+%   - **orient** - *(optional)* dimension to operate on:
 %     ``1`` = height (y), ``2`` = width (x), ``3`` = depth (z),
 %     ``5`` = time (t). Default: ``obj.orientation``
 %
 % Output Arguments:
-%   - **result** — ``1`` on success, ``0`` on failure
+%   - **result** - ``1`` on success, ``0`` on failure
 %
 % Usage:
 %   **Example 1**

@@ -7,8 +7,8 @@ function fileList_Callback(obj, hWidget, hData)
 %       obj.fileList_Callback(hWidget, hData)
 %
 % Input Arguments:
-%   - **hWidget** — handle to the pressed widget
-%   - **hData** — handle to supporting ButtonPushedData class
+%   - **hWidget** - handle to the pressed widget
+%   - **hData** - handle to supporting ButtonPushedData class
 %
 
 arguments (Input)

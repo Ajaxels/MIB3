@@ -16,13 +16,13 @@ function editMeasurement(obj, datasetId, measurementIndex, colCh, integrationWid
 % an ``insertIndex`` argument that implements this automatically.
 %
 % Input Arguments:
-%   - **datasetId** — [double] index into ``mibModel.I``
-%   - **measurementIndex** — [double] 1-based row in ``hMeasure.Data``
-%   - **colCh** — [double] colour channel
-%   - **integrationWidth** — [double] integration width for linear distance
-%   - **finetuneCheck** — [logical] allow interactive ROI adjustment
-%   - **calcIntensity** — [logical] recalculate intensity profile
-%   - **useFixedZT** — [logical] preserve original Z/T (true = Recalculate)
+%   - **datasetId** - [double] index into ``mibModel.I``
+%   - **measurementIndex** - [double] 1-based row in ``hMeasure.Data``
+%   - **colCh** - [double] colour channel
+%   - **integrationWidth** - [double] integration width for linear distance
+%   - **finetuneCheck** - [logical] allow interactive ROI adjustment
+%   - **calcIntensity** - [logical] recalculate intensity profile
+%   - **useFixedZT** - [logical] preserve original Z/T (true = Recalculate)
 %
 
 hMeasure     = obj.mibModel.I{datasetId}.measure;

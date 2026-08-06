@@ -18,22 +18,22 @@ classdef VideoReaderLoader < io.loaders.BaseImageLoader
             %      loader = io.loaders.VideoReaderLoader(options)
             %
             % Input Arguments:
-            %   - **options** — *(optional)* struct with fields:
+            %   - **options** - *(optional)* struct with fields:
             %
-            %     - ``waitbar`` — [logical] show or not the waitbar; default: ``false``
-            %     - ``mibPath`` — [char] path to MIB directory
-            %     - ``customSections`` — [logical] load custom sections only; default: ``false``
-            %     - ``customSectionsSettings`` — [struct] custom section parameters
-            %     - ``imgStretch`` — [logical] stretch uint32 images to uint16; default: ``false``
-            %     - ``silentMode`` — [logical] do not ask user questions; default: ``false``
-            %     - ``verbose`` — [logical] show timing information; default: ``false``
-            %     - ``Font`` — [struct] font settings for dialogs
-            %     - ``ParentFigure`` — handle of the main MIB window (parent for uiprogressdlg)
+            %     - ``waitbar`` - [logical] show or not the waitbar; default: ``false``
+            %     - ``mibPath`` - [char] path to MIB directory
+            %     - ``customSections`` - [logical] load custom sections only; default: ``false``
+            %     - ``customSectionsSettings`` - [struct] custom section parameters
+            %     - ``imgStretch`` - [logical] stretch uint32 images to uint16; default: ``false``
+            %     - ``silentMode`` - [logical] do not ask user questions; default: ``false``
+            %     - ``verbose`` - [logical] show timing information; default: ``false``
+            %     - ``Font`` - [struct] font settings for dialogs
+            %     - ``ParentFigure`` - handle of the main MIB window (parent for uiprogressdlg)
             %
             % Output Arguments:
-            %   - **obj** — instance of the VideoReaderLoader class
+            %   - **obj** - instance of the VideoReaderLoader class
             %
-            % **Example 1** — create loader with options:
+            % **Example 1** - create loader with options:
             %
             %   .. code-block:: matlab
             %
@@ -60,55 +60,55 @@ classdef VideoReaderLoader < io.loaders.BaseImageLoader
             % frame dimensions, and frame rate extraction.
             %
             % Input Arguments:
-            %   - **filenames** — cell array with filenames of video files
-            %   - **options** — *(optional)* struct with fields:
+            %   - **filenames** - cell array with filenames of video files
+            %   - **options** - *(optional)* struct with fields:
             %
-            %     - ``waitbar`` — [logical] show or not the waitbar; default: ``false``
-            %     - ``customSections`` — [logical] load part of the dataset; default: ``false``
-            %     - ``customSectionsSettings`` — [struct] custom section settings
-            %       - ``xMin`` — [numeric] min X coordinate
-            %       - ``xMax`` — [numeric] max X coordinate
-            %       - ``yMin`` — [numeric] min Y coordinate
-            %       - ``yMax`` — [numeric] max Y coordinate
-            %       - ``zMin`` — [numeric] min Z coordinate (frame)
-            %       - ``zMax`` — [numeric] max Z coordinate (frame)
-            %       - ``xyStep`` — [numeric] XY binning step
-            %     - ``mibPath`` — [char] path to MIB directory
-            %     - ``ParentFigure`` — handle to the parent window to show progress dialog
-            %     - ``Font`` — [struct] font settings for dialogs
+            %     - ``waitbar`` - [logical] show or not the waitbar; default: ``false``
+            %     - ``customSections`` - [logical] load part of the dataset; default: ``false``
+            %     - ``customSectionsSettings`` - [struct] custom section settings
+            %       - ``xMin`` - [numeric] min X coordinate
+            %       - ``xMax`` - [numeric] max X coordinate
+            %       - ``yMin`` - [numeric] min Y coordinate
+            %       - ``yMax`` - [numeric] max Y coordinate
+            %       - ``zMin`` - [numeric] min Z coordinate (frame)
+            %       - ``zMax`` - [numeric] max Z coordinate (frame)
+            %       - ``xyStep`` - [numeric] XY binning step
+            %     - ``mibPath`` - [char] path to MIB directory
+            %     - ``ParentFigure`` - handle to the parent window to show progress dialog
+            %     - ``Font`` - [struct] font settings for dialogs
             %
             % Output Arguments:
-            %   - **imginfo** — dictionary with image metadata containing fields:
+            %   - **imginfo** - dictionary with image metadata containing fields:
             %
-            %     - ``Height`` — image height in pixels
-            %     - ``Width`` — image width in pixels
-            %     - ``Colors`` — number of color channels
-            %     - ``Depth`` — number of frames
-            %     - ``Time`` — number of time points
-            %     - ``imgClass`` — image class (``uint8``, ``uint16``, etc.)
-            %     - ``ColorType`` — ``'grayscale'``, ``'truecolor'``, or ``'indexed'``
-            %     - ``ImageDescription`` — description with BoundingBox info
-            %     - ``FrameRate`` — frames per second
-            %     - ``Duration`` — video duration in seconds
-            %     - ``pixSize`` — struct with pixel sizes: ``.x``, ``.y``, ``.z``, ``.t``,
+            %     - ``Height`` - image height in pixels
+            %     - ``Width`` - image width in pixels
+            %     - ``Colors`` - number of color channels
+            %     - ``Depth`` - number of frames
+            %     - ``Time`` - number of time points
+            %     - ``imgClass`` - image class (``uint8``, ``uint16``, etc.)
+            %     - ``ColorType`` - ``'grayscale'``, ``'truecolor'``, or ``'indexed'``
+            %     - ``ImageDescription`` - description with BoundingBox info
+            %     - ``FrameRate`` - frames per second
+            %     - ``Duration`` - video duration in seconds
+            %     - ``pixSize`` - struct with pixel sizes: ``.x``, ``.y``, ``.z``, ``.t``,
             %       ``.units``, ``.tunits``
             %     - other format-specific metadata fields
             %
-            %   - **files** — structure array with file information for each file
+            %   - **files** - structure array with file information for each file
             %
-            %     - ``filename`` — [char] full filename
-            %     - ``objecttype`` — [char] type of the image loader ``'movie'``
-            %     - ``extension`` — [char] file extension, including the leading dot
-            %     - ``height`` — [numeric] image height
-            %     - ``width`` — [numeric] image width
-            %     - ``color`` — [numeric] number of color channels
-            %     - ``noLayers`` — [numeric] number of video frames
-            %     - ``time`` — [numeric] number of time points
-            %     - ``imgClass`` — [char] image class, ``'uint8'``, ``'uint16'``, ``'uint32'``
-            %     - ``xMin``, ``xMax``, ``yMin``, ``yMax`` — [numeric] region coordinates
-            %     - ``xyStep`` — [numeric] XY step for binning
+            %     - ``filename`` - [char] full filename
+            %     - ``objecttype`` - [char] type of the image loader ``'movie'``
+            %     - ``extension`` - [char] file extension, including the leading dot
+            %     - ``height`` - [numeric] image height
+            %     - ``width`` - [numeric] image width
+            %     - ``color`` - [numeric] number of color channels
+            %     - ``noLayers`` - [numeric] number of video frames
+            %     - ``time`` - [numeric] number of time points
+            %     - ``imgClass`` - [char] image class, ``'uint8'``, ``'uint16'``, ``'uint32'``
+            %     - ``xMin``, ``xMax``, ``yMin``, ``yMax`` - [numeric] region coordinates
+            %     - ``xyStep`` - [numeric] XY step for binning
             %
-            % **Example 1** — load metadata from video files:
+            % **Example 1** - load metadata from video files:
             %
             %   .. code-block:: matlab
             %
@@ -281,40 +281,40 @@ classdef VideoReaderLoader < io.loaders.BaseImageLoader
             % and dimension mismatch handling with background filling.
             %
             % Input Arguments:
-            %   - **files** — structure array from loadMetadata with file information:
+            %   - **files** - structure array from loadMetadata with file information:
             %
-            %     - ``filename`` — [char] full filename
-            %     - ``objecttype`` — [char] type of the image loader ``'movie'``
-            %     - ``extension`` — [char] file extension with dot - ``'.avi'``
-            %     - ``height`` — [numeric] image height
-            %     - ``width`` — [numeric] image width
-            %     - ``color`` — [numeric] number of color channels
-            %     - ``noLayers`` — [numeric] number of video frames
-            %     - ``time`` — [numeric] number of time frames
-            %     - ``imgClass`` — [char] image class, ``'uint8'``, ``'uint16'``, ``'uint32'``
-            %     - ``xMin``, ``xMax``, ``yMin``, ``yMax`` — [numeric] region coordinates (optional)
-            %     - ``zMin``, ``zMax`` — [numeric] frame range (optional)
-            %     - ``xyStep`` — [numeric] XY step for binning (optional)
-            %     - ``backgroundColor`` — [numeric] background color value (optional)
+            %     - ``filename`` - [char] full filename
+            %     - ``objecttype`` - [char] type of the image loader ``'movie'``
+            %     - ``extension`` - [char] file extension with dot - ``'.avi'``
+            %     - ``height`` - [numeric] image height
+            %     - ``width`` - [numeric] image width
+            %     - ``color`` - [numeric] number of color channels
+            %     - ``noLayers`` - [numeric] number of video frames
+            %     - ``time`` - [numeric] number of time frames
+            %     - ``imgClass`` - [char] image class, ``'uint8'``, ``'uint16'``, ``'uint32'``
+            %     - ``xMin``, ``xMax``, ``yMin``, ``yMax`` - [numeric] region coordinates (optional)
+            %     - ``zMin``, ``zMax`` - [numeric] frame range (optional)
+            %     - ``xyStep`` - [numeric] XY step for binning (optional)
+            %     - ``backgroundColor`` - [numeric] background color value (optional)
             %
-            %   - **imginfo** — dictionary from loadMetadata with image metadata
-            %   - **options** — *(optional)* struct with fields:
+            %   - **imginfo** - dictionary from loadMetadata with image metadata
+            %   - **options** - *(optional)* struct with fields:
             %
-            %     - ``waitbar`` — [logical] show or not the waitbar; default: ``true``
-            %     - ``imgStretch`` — [logical] stretch uint32 to uint16; default: ``true``
-            %     - ``silentMode`` — [logical] do not ask user questions; default: ``false``
+            %     - ``waitbar`` - [logical] show or not the waitbar; default: ``true``
+            %     - ``imgStretch`` - [logical] stretch uint32 to uint16; default: ``true``
+            %     - ``silentMode`` - [logical] do not ask user questions; default: ``false``
             %
             % Output Arguments:
-            %   - **img** — loaded image dataset [1:height, 1:width, 1:depth, 1:color, 1:time]
-            %   - **imginfo** — updated dictionary with final metadata containing fields:
+            %   - **img** - loaded image dataset [1:height, 1:width, 1:depth, 1:color, 1:time]
+            %   - **imginfo** - updated dictionary with final metadata containing fields:
             %
-            %     - ``Height`` — final image height
-            %     - ``Width`` — final image width
-            %     - ``Depth`` — final number of frames
-            %     - ``Time`` — number of time points
-            %     - ``ColorType`` — color type
+            %     - ``Height`` - final image height
+            %     - ``Width`` - final image width
+            %     - ``Depth`` - final number of frames
+            %     - ``Time`` - number of time points
+            %     - ``ColorType`` - color type
             %
-            % **Example 1** — load images from video file:
+            % **Example 1** - load images from video file:
             %
             %   .. code-block:: matlab
             %

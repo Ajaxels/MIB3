@@ -70,31 +70,31 @@ classdef SaverFactory
             % string. Format strings must exactly match those from ``getFormats()``.
             %
             % Input Arguments:
-            %   - **formatStr** — [char] format descriptor as it appears in Format dropdown:
+            %   - **formatStr** - [char] format descriptor as it appears in Format dropdown:
             %
             %     - ``'TIF format uncompressed (*.tif)'``
             %     - ``'Amira mesh binary (*.am)'``
             %     - ``'Matlab format (*.model)'``
             %     - (see ``getFormats()`` for the complete list)
             %
-            %   - **options** — *(optional)* struct passed to saver constructor
+            %   - **options** - *(optional)* struct passed to saver constructor
             %     via ``BaseSaver.initBaseProps()``. Important fields when calling from
             %     GUI context:
             %
-            %     - ``.ParentFigure`` — [handle] to main MIB window;
+            %     - ``.ParentFigure`` - [handle] to main MIB window;
             %       enables ``uiprogressdlg`` dialogs attached to the GUI
             %       (typically ``obj.mibGUI`` from MibModel). Leave empty for standalone use.
-            %     - ``.mibPath`` — [char] MIB installation directory;
+            %     - ``.mibPath`` - [char] MIB installation directory;
             %       used for resource and icon lookup by dialogs.
             %     - All other options are typically passed at ``save()`` time.
             %
             % Output Arguments:
-            %   - **saver** — concrete ``BaseSaver`` subclass instance
+            %   - **saver** - concrete ``BaseSaver`` subclass instance
             %
             % **Throws:**
-            %   - ``io:SaverFactory:UnknownFormat`` — if ``formatStr`` is not registered
+            %   - ``io:SaverFactory:UnknownFormat`` - if ``formatStr`` is not registered
             %
-            % **Example 1** — standalone scripted use:
+            % **Example 1** - standalone scripted use:
             %
             %   .. code-block:: matlab
             %
@@ -115,7 +115,7 @@ classdef SaverFactory
             %      data = uint8(rand(64,64,10,1,1)*255);
             %      fnOut = saver.save(data, meta, '/tmp/out.tif', opts);
             %
-            % **Example 2** — GUI context with progress dialogs:
+            % **Example 2** - GUI context with progress dialogs:
             %
             %   .. code-block:: matlab
             %
@@ -139,7 +139,7 @@ classdef SaverFactory
             %      data = uint8(rand(128,128,20,1,1)*255);
             %      fnOut = saver.save(data, meta, '/tmp/stack.am', opts);
             %
-            % **Example 3** — save segmentation model in native MIB format:
+            % **Example 3** - save segmentation model in native MIB format:
             %
             %   .. code-block:: matlab
             %
@@ -191,17 +191,17 @@ classdef SaverFactory
             % Format dropdowns in ``MibModel.save()`` and ``MibDataset.save()``.
             %
             % Input Arguments:
-            %   - **layerType** — *(optional)* [char], default: ``'all'``
+            %   - **layerType** - *(optional)* [char], default: ``'all'``
             %
-            %     - ``'image'`` — formats for pixel-data saving
-            %     - ``'mask'`` — formats for binary mask saving
-            %     - ``'labels'`` — formats for multi-material segmentation
-            %     - ``'all'`` or omitted — returns all registered formats
+            %     - ``'image'`` - formats for pixel-data saving
+            %     - ``'mask'`` - formats for binary mask saving
+            %     - ``'labels'`` - formats for multi-material segmentation
+            %     - ``'all'`` or omitted - returns all registered formats
             %
             % Output Arguments:
-            %   - **formats** — cell array of [char] sorted format strings
+            %   - **formats** - cell array of [char] sorted format strings
             %
-            % **Example 1** — get available formats by layer type:
+            % **Example 1** - get available formats by layer type:
             %
             %   .. code-block:: matlab
             %
@@ -282,22 +282,22 @@ classdef SaverFactory
             % file extension. Used to initialize ``BatchOpt.Format{1}`` in ``MibModel.save()``.
             %
             % Input Arguments:
-            %   - **layerType** — [char] layer type:
+            %   - **layerType** - [char] layer type:
             %
-            %     - ``'image'`` — default: ``'Amira mesh binary (*.am)'``
-            %     - ``'mask'`` — default: ``'Matlab format (*.mask)'``
-            %     - ``'labels'`` — default: ``'Matlab format (*.model)'``
-            %     - ``'everything'`` — same as ``'all'``, falls back to TIF
+            %     - ``'image'`` - default: ``'Amira mesh binary (*.am)'``
+            %     - ``'mask'`` - default: ``'Matlab format (*.mask)'``
+            %     - ``'labels'`` - default: ``'Matlab format (*.model)'``
+            %     - ``'everything'`` - same as ``'all'``, falls back to TIF
             %
-            %   - **filenameOrExt** — *(optional)* [char] full filename (e.g. ``'out.tif'``)
+            %   - **filenameOrExt** - *(optional)* [char] full filename (e.g. ``'out.tif'``)
             %     or bare extension (e.g. ``'tif'``). When supplied, function first
             %     tries to resolve format from extension; if unknown, falls back to
             %     layer-type default.
             %
             % Output Arguments:
-            %   - **defaultFormat** — [char] default format string matching ``getFormats()`` output
+            %   - **defaultFormat** - [char] default format string matching ``getFormats()`` output
             %
-            % **Example 1** — get default format by layer type and extension:
+            % **Example 1** - get default format by layer type and extension:
             %
             %   .. code-block:: matlab
             %
@@ -439,7 +439,7 @@ classdef SaverFactory
             %   (none)
             %
             % Output Arguments:
-            %   - **registry** — ``dictionary(string, string)`` format→class mapping
+            %   - **registry** - ``dictionary(string, string)`` format→class mapping
             %
             % **Adding a new saver:**
             %

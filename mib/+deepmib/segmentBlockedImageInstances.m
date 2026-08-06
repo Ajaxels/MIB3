@@ -10,7 +10,7 @@ function coreLabel = segmentBlockedImageInstances(block, net, threshold, executi
 % 2D instance segmentation. Each tile is read with a surrounding border of context
 % (``BorderSize`` = overlap). ``segmentObjects`` is run on the bordered tile, and only the
 % instances whose **centroid falls inside the tile core** (the non-border region that
-% ``apply`` writes back) are kept — so each object is emitted by exactly the tile that owns
+% ``apply`` writes back) are kept - so each object is emitted by exactly the tile that owns
 % its centroid, with no duplicates and no seam-splitting.
 %
 % Globally unique instance IDs are assigned via the global counter ``mibInstanceIdCounter``,
@@ -23,14 +23,14 @@ function coreLabel = segmentBlockedImageInstances(block, net, threshold, executi
 % (deepmib.segmentImageInstancesIoUMerge), which lifts this restriction.
 %
 % Input Arguments:
-%   - **block** — struct from ``blockedImage/apply`` with ``.Data`` (bordered tile),
+%   - **block** - struct from ``blockedImage/apply`` with ``.Data`` (bordered tile),
 %     ``.BlockSize`` (core size), ``.BorderSize`` (overlap)
-%   - **net** — trained ``solov2`` detector
-%   - **threshold** — confidence threshold for ``segmentObjects``
-%   - **executionEnvironment** — ``'auto'`` | ``'gpu'`` | ``'cpu'``
+%   - **net** - trained ``solov2`` detector
+%   - **threshold** - confidence threshold for ``segmentObjects``
+%   - **executionEnvironment** - ``'auto'`` | ``'gpu'`` | ``'cpu'``
 %
 % Output Arguments:
-%   - **coreLabel** — ``[BlockSize(1) × BlockSize(2)] uint32`` label map of the tile core
+%   - **coreLabel** - ``[BlockSize(1) × BlockSize(2)] uint32`` label map of the tile core
 %     (each kept instance a unique index, background 0)
 
 global mibInstanceIdCounter

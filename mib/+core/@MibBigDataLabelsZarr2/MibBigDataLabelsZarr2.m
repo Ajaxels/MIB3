@@ -1,11 +1,11 @@
 classdef MibBigDataLabelsZarr2 < core.MibBigDataLabels
 % MIBBIGDATALABELSZARR2 - read-only, python-backed labels overlay for an EXISTING zarr v2 model store.
 %
-% Subclass of ``core.MibBigDataLabels`` — read-only sibling used when a
+% Subclass of ``core.MibBigDataLabels`` - read-only sibling used when a
 % BigData dataset's model store is zarr **v2** rather than v3. Zarr v2 has no
 % native (zarrMex) engine, so ``io.zarr.Group``/``io.zarr.Array`` (which
-% ``MibBigDataLabels`` uses for metadata AND — depending on
-% ``io.zarr.Config`` — bulk I/O) cannot open a v2 store at all: their
+% ``MibBigDataLabels`` uses for metadata AND - depending on
+% ``io.zarr.Config`` - bulk I/O) cannot open a v2 store at all: their
 % metadata path is hard-wired to native zarrMex. This class instead parses
 % v2 metadata directly (``.zattrs``/``.zarray``, pure MATLAB ``jsondecode``)
 % and reads pixel data through ``io.zarr.PyBackend`` (python ``zarr.open`` +
@@ -14,7 +14,7 @@ classdef MibBigDataLabelsZarr2 < core.MibBigDataLabels
 %
 % **Why read-only.** MIB's editable BigData model is a MIB-specific packed
 % byte format (bits 1-6 material, bit 7 mask, bit 8 selection) with a live
-% disk-backed multi-resolution write-back pyramid — building a python-backed
+% disk-backed multi-resolution write-back pyramid - building a python-backed
 % equivalent write path for zarr v2 is a substantially larger project and out
 % of scope (see the zarr2 reader plan). An EXISTING zarr v2 labels array
 % (e.g. produced by another tool) is instead treated as a plain, already
@@ -24,19 +24,19 @@ classdef MibBigDataLabelsZarr2 < core.MibBigDataLabels
 % values stay within the same ``[0,63]`` ceiling BigData imposes everywhere
 % else.
 %
-% **What's overridden.** ``getData63`` itself is inherited unchanged — it
+% **What's overridden.** ``getData63`` itself is inherited unchanged - it
 % already does everything needed (level picking, orientation mapping,
 % display resize, bit-unpacking) purely by calling ``obj.readPackedLevel``/
 % ``obj.pickLevel``/``obj.materializeForRead``, all of which dispatch
 % polymorphically. Only three things differ from ``MibBigDataLabels``:
 %
-%   - ``openStore`` — v2 metadata parsing + python array handles instead of
+%   - ``openStore`` - v2 metadata parsing + python array handles instead of
 %     ``io.zarr.Group``/``io.zarr.Array``; sets ``matLevel(:) = 1`` so the
 %     inherited ``materializeForRead`` is a guaranteed no-op (there is no lazy
 %     up-propagation for a read-only, externally-complete source).
-%   - ``readPackedLevel`` — reads via ``io.zarr.PyBackend.readArray`` instead
+%   - ``readPackedLevel`` - reads via ``io.zarr.PyBackend.readArray`` instead
 %     of ``io.zarr.Array.read``.
-%   - ``setData63`` / ``writePackedLevel`` — writes are blocked; the first
+%   - ``setData63`` / ``writePackedLevel`` - writes are blocked; the first
 %     write attempt per session shows a one-time "read-only" notice (NOT
 %     shown on every call, since ``setData63`` fires on every mouse-move
 %     during a paint stroke) and the store on disk is never touched.
@@ -48,7 +48,7 @@ classdef MibBigDataLabelsZarr2 < core.MibBigDataLabels
         % avoid re-querying shape/dtype from python on every tile read.
         modelAxisOrder = 'yxz'
         % [char] declared C-order of the underlying zarr v2 arrays (e.g.
-        % 'zyx'), from the store's own multiscales.axes — unlike the native
+        % 'zyx'), from the store's own multiscales.axes - unlike the native
         % zarrMex path (which always round-trips in [y,x,z] via a transpose
         % codec applied at write time), a python-opened array here is read in
         % whatever order the EXTERNAL store actually declared, so
@@ -59,7 +59,7 @@ classdef MibBigDataLabelsZarr2 < core.MibBigDataLabels
     properties (Transient)
         readOnlyWarningShown (1,1) logical = false
         % Shown once per session on the first blocked write attempt (see
-        % setData63) — never re-shown for the rest of the session, since a
+        % setData63) - never re-shown for the rest of the session, since a
         % single paint stroke fires setData63 on every mouse-move.
     end
 
@@ -72,14 +72,14 @@ classdef MibBigDataLabelsZarr2 < core.MibBigDataLabels
             %
             %      obj = core.MibBigDataLabelsZarr2([], meta)
             %
-            % Same construction contract as ``core.MibBigDataLabels`` — pass ``[]``
+            % Same construction contract as ``core.MibBigDataLabels`` - pass ``[]``
             % for ``img`` and attach an existing store afterwards via ``openStore``.
             % There is no ``createStore`` counterpart: a new (empty) model on a
             % zarr v2 BigData dataset is not supported.
             %
             % Input Arguments:
-            %   - **img** *(optional)* — [empty] pass ``[]``.
-            %   - **meta** *(optional)* — [dictionary] metadata dictionary used by the
+            %   - **img** *(optional)* - [empty] pass ``[]``.
+            %   - **meta** *(optional)* - [dictionary] metadata dictionary used by the
             %     parent constructor chain to set dimensions. Default: empty MibImage info.
             if nargin < 2; meta = core.MibImage.initializeImgInfo(); end
             if nargin < 1; img = []; end
@@ -104,7 +104,7 @@ classdef MibBigDataLabelsZarr2 < core.MibBigDataLabels
             % attribute first, else the OME-NGFF ``image-label`` convention).
             %
             % Input Arguments:
-            %   - **storePath** — [char|string] path to the zarr v2 labels group
+            %   - **storePath** - [char|string] path to the zarr v2 labels group
             %     (local folder or HTTP/HTTPS URL).
 
             storePath = char(storePath);
@@ -202,7 +202,7 @@ classdef MibBigDataLabelsZarr2 < core.MibBigDataLabels
             obj.exists    = true;
 
             % No local level-map side-file exists for an externally-created
-            % store (MIB never wrote one) — treat every level as already fully
+            % store (MIB never wrote one) - treat every level as already fully
             % materialized, same assumption MibBigDataLabels.initLevelMapFallback
             % makes for any "imported" model. This makes the inherited
             % materializeForRead a guaranteed no-op (nothing is ever dirty).
@@ -221,14 +221,14 @@ classdef MibBigDataLabelsZarr2 < core.MibBigDataLabels
             % READPACKEDLEVEL - read a [ny x nx x nz] block from one level (python-backed).
             %
             % Overrides ``MibBigDataLabels.readPackedLevel``: the source array's
-            % raw values ARE the packed byte (no bit-packing to undo — mask/
+            % raw values ARE the packed byte (no bit-packing to undo - mask/
             % selection bits are always 0 since there is no editing), so this is
             % a direct read, unlike the write side which stays fully blocked.
             %
             % Unlike the native path (whose zarrMex-written arrays always
             % round-trip in [y,x,z] via a transpose codec), a python-opened
             % array here is read in the store's OWN declared axis order
-            % (``obj.modelAxisOrder``, e.g. ``'zyx'``) — the bbox rows and the
+            % (``obj.modelAxisOrder``, e.g. ``'zyx'``) - the bbox rows and the
             % result must both be built/permuted against that, not assumed.
             axisOrder = obj.modelAxisOrder;
             nDims     = numel(axisOrder);
@@ -257,7 +257,7 @@ classdef MibBigDataLabelsZarr2 < core.MibBigDataLabels
         function writePackedLevel(~, ~, ~, ~, ~, ~)
             % WRITEPACKEDLEVEL - blocked; should never be reached (setData63 blocks all writes).
             error('core:MibBigDataLabelsZarr2:readOnly', ...
-                'MibBigDataLabelsZarr2 is read-only — writePackedLevel must never be called.');
+                'MibBigDataLabelsZarr2 is read-only - writePackedLevel must never be called.');
         end
 
         function result = setData63(obj, dataset, type, orient, materialIndex, options) %#ok<INUSD>
@@ -265,7 +265,7 @@ classdef MibBigDataLabelsZarr2 < core.MibBigDataLabels
             %
             % Overrides ``MibBigDataLabels.setData63``. Never modifies the store
             % on disk or any in-memory state. Shows a one-time "read-only" notice
-            % on the FIRST blocked write attempt of the session only — setData63
+            % on the FIRST blocked write attempt of the session only - setData63
             % fires on every mouse-move during a paint stroke, so showing a modal
             % dialog on every call would freeze the UI in a dialog storm.
             result = false;
@@ -274,7 +274,7 @@ classdef MibBigDataLabelsZarr2 < core.MibBigDataLabels
             header = 'Read-only zarr v2 model';
             body = sprintf(['This model was loaded from an existing zarr v2 store.\n' ...
                 'Segmentation editing is not supported for zarr v2 BigData models\n' ...
-                '(no python-backed editable pyramid) — the store on disk is not modified.']);
+                '(no python-backed editable pyramid) - the store on disk is not modified.']);
             dlgOpt = struct('MsgBoxOnly', true, 'Icon', 'puffin_warning', 'HeaderLines', 1);
             try
                 utils.dlgs.inputUniversalDlg([], header, {body}, {body}, header, dlgOpt);
@@ -306,7 +306,7 @@ classdef MibBigDataLabelsZarr2 < core.MibBigDataLabels
             % READMATERIALMETADATAV2 - Resolve material names/colors from store metadata.
             %
             % Fetches the v2 ``.zattrs`` sidecars (root group and, if present,
-            % the array level — level-array attributes take precedence on key
+            % the array level - level-array attributes take precedence on key
             % collisions) and delegates the actual name/color extraction to the
             % version-agnostic ``io.loaders.OmeZarrMetadataUtils.resolveMaterialMetadata``
             % (shared with ``Zarr3VirtualSetupLoader`` and ``Zarr2VirtualSetupLoader``).

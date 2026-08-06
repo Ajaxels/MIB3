@@ -10,7 +10,7 @@ function configureFeaturesBtn_Callback(obj)
 % :class:`controllers.Alignment`) to edit the currently selected
 % ``FeatureDetectorType`` parameters, the upright-descriptor flag
 % (``automaticOptions.rotationInvariance``, which holds MATLAB's ``Upright``
-% value — see :func:`utils.align.detectorSettingsDlg`), the detection
+% value - see :func:`utils.align.detectorSettingsDlg`), the detection
 % downsampling factor, and the RANSAC (``estgeotform2d``) settings.
 % The edited values are stored in ``obj.automaticOptions`` and applied on the
 % next *Measure overlaps* / *Stitch* run of the Feature-based method. When the
@@ -29,17 +29,17 @@ featureDetectorType = obj.BatchOpt.FeatureDetectorType{1};
 if ~isempty(obj.layout) && isfield(obj.layout, 'tileSize') && ~isempty(obj.layout(1).tileSize)
     tileWidth = obj.layout(1).tileSize(2);
     promptText = sprintf(['Downsampling factor for feature detection (tile width = %d px)\n' ...
-        '"1" — full resolution;\n"4" — downsample x4 (faster, less precise)'], tileWidth);
+        '"1" - full resolution;\n"4" - downsample x4 (faster, less precise)'], tileWidth);
 else
     promptText = sprintf(['Downsampling factor for feature detection\n' ...
-        '"1" — full resolution;\n"4" — downsample x4 (faster, less precise)']);
+        '"1" - full resolution;\n"4" - downsample x4 (faster, less precise)']);
 end
 
 downsampleInfo = struct('field', 'imgDownsamplingFactorForAnalysis', ...
     'promptText', promptText, 'limits', [1 64], 'round', true, 'minOne', true);
 
 % The upright-descriptor row is suppressed: whether rotated content can be
-% matched is not a separate decision here — it follows the "Allow rotation"
+% matched is not a separate decision here - it follows the "Allow rotation"
 % checkbox in the main window (see buildFeatureOptions). Alignment, which has no
 % such checkbox, still shows the row.
 [obj.automaticOptions, status] = utils.align.detectorSettingsDlg(obj.view.gui, ...

@@ -7,12 +7,12 @@ function gui_Callbacks(obj, hWidget, hData)
 %      obj.gui_Callbacks(hWidget, hData)
 %
 % Input Arguments:
-%   - **hWidget** — handle to the pressed widget
+%   - **hWidget** - handle to the pressed widget
 %     hWidget.tag char, identifier the widget, used when the same operation
 %     is called from menu
 %     '' ->
 %
-%   - **hData** — handle to supporting data class
+%   - **hData** - handle to supporting data class
 %
 
 arguments (Input)
@@ -29,11 +29,18 @@ end
 
 switch mode
     case 'Open MIB documentation'
+        helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'html', 'index.html');
+        if isfile(helpFilPath)
+            web(helpFilPath, '-browser');
+        else
+            web('http://mib.helsinki.fi/help/main3/index.html', '-browser');
+        end
     case 'Make a snapshot'
+        obj.mibController.startController('controllers.Snapshot');
     case 'Save model to a file'
         activeId = obj.mibModel.getActiveId();
         if isempty(obj.mibModel.I{activeId}.labels.filename)
-            obj.mibModel.saveLabels([]);   % no filename yet — show Save As dialog
+            obj.mibModel.saveLabels([]);   % no filename yet - show Save As dialog
         else
             obj.mibModel.saveLabels();
         end

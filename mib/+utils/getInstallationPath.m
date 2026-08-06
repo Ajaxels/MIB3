@@ -11,14 +11,14 @@ function path = getInstallationPath(softwareName)
 % In deployed mode, uses ``ctfroot`` / process-inspection fallbacks.
 %
 % Input Arguments:
-%   - **softwareName** — [char] name of the software entry-point m-file (e.g. ``'mib3'``)
+%   - **softwareName** - [char] name of the software entry-point m-file (e.g. ``'mib3'``)
 %
 % Output Arguments:
-%   - **path** — [char] full path to the installation directory; ``[]`` on failure
+%   - **path** - [char] full path to the installation directory; ``[]`` on failure
 %
 % Usage:
 %
-%   **Example 1** — get MIB installation directory
+%   **Example 1** - get MIB installation directory
 %
 %   .. code-block:: matlab
 %

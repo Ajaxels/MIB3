@@ -3,8 +3,8 @@ classdef MrcSaver < io.savers.BaseSaver
 %
 % Handles two format variants (both write the same MRC file; the second
 % is an alias used in the SaverFactory registry for volume export):
-% 'MRC format for IMOD (``*.mrc``)'  — standard MRC file for IMOD
-% 'MRC Volume for IMOD (``*.mrc``)'      — alias, same output format
+% 'MRC format for IMOD (``*.mrc``)'  - standard MRC file for IMOD
+% 'MRC Volume for IMOD (``*.mrc``)'      - alias, same output format
 %
 % Both image and label/mask volumes can be saved.  The layer type is
 % controlled by options.layerType (default 'image').
@@ -18,12 +18,12 @@ classdef MrcSaver < io.savers.BaseSaver
 %
 % DATA DIMENSIONS
 % Input  data    : [H, W, D, C, T]  (MIB3 native order)
-% mibImage2mrc() expects [H, W, D] — obtained by squeezing C=1, T=1.
+% mibImage2mrc() expects [H, W, D] - obtained by squeezing C=1, T=1.
 %
 % FILENAME GENERATOR
 % options.FilenameGenerator controls how the output file is named:
-% 'Use sequential filename' (default) — numbered naming
-% 'Use original filename'             — derived from metadata.sliceName
+% 'Use sequential filename' (default) - numbered naming
+% 'Use original filename'             - derived from metadata.sliceName
 %
 % TODO: port mibImage2mrc from
 % MIB2_RENAMED_FOR_MIB3/ImportExportTools/mibImage2mrc.m
@@ -90,11 +90,11 @@ classdef MrcSaver < io.savers.BaseSaver
             %      saver = io.savers.MrcSaver(options)
             %
             % Input Arguments:
-            %   - **options** — *(optional)* struct, saver-level options (usually empty;
+            %   - **options** - *(optional)* struct, saver-level options (usually empty;
             %     per-save options are passed to ``save()`` instead)
             %
             % Output Arguments:
-            %   - **obj** — instance of the MrcSaver class
+            %   - **obj** - instance of the MrcSaver class
             %
             if nargin < 1; options = struct(); end
             obj.Options = options;
@@ -113,7 +113,7 @@ classdef MrcSaver < io.savers.BaseSaver
             %   (none)
             %
             % Output Arguments:
-            %   - **formats** — cell array of format strings for MRC output
+            %   - **formats** - cell array of format strings for MRC output
             %
             formats = { ...
                 'MRC format for IMOD (*.mrc)'; ...
@@ -132,29 +132,29 @@ classdef MrcSaver < io.savers.BaseSaver
             % only the first channel is written if C>1.
             %
             % Input Arguments:
-            %   - **data** — [H, W, D, C, T] numeric array
-            %   - **metadata** — struct with fields:
+            %   - **data** - [H, W, D, C, T] numeric array
+            %   - **metadata** - struct with fields:
             %
-            %     - ``colorType`` — ``'grayscale'`` | ``'multichannel'`` | ``'indexed'``
-            %     - ``dataClass`` — ``'uint8'`` | ``'uint16'`` | ...
-            %     - ``maxInt`` — maximum intensity value
-            %     - ``pixSize`` — struct {``.x``, ``.y``, ``.z``, ``.units``, ``.t``, ``.tunits``};
+            %     - ``colorType`` - ``'grayscale'`` | ``'multichannel'`` | ``'indexed'``
+            %     - ``dataClass`` - ``'uint8'`` | ``'uint16'`` | ...
+            %     - ``maxInt`` - maximum intensity value
+            %     - ``pixSize`` - struct {``.x``, ``.y``, ``.z``, ``.units``, ``.t``, ``.tunits``};
             %       used for MRC cell/voxel size header
             %
-            %   - **filename** — full output path, e.g. ``'/out/tomo.mrc'``
-            %   - **options** — struct with fields:
+            %   - **filename** - full output path, e.g. ``'/out/tomo.mrc'``
+            %   - **options** - struct with fields:
             %
-            %     - ``Format`` — format string
-            %     - ``layerType`` — ``'image'`` | ``'mask'`` | ``'labels'``; default: ``'image'``
-            %     - ``showWaitbar`` — logical; default: ``true``
-            %     - ``silent`` — logical, suppress dialogs; default: ``false``
-            %     - ``overwrite`` — logical; default: ``true``
-            %     - ``FilenameGenerator`` — ``'Use original filename'`` | ``'Use sequential filename'``
+            %     - ``Format`` - format string
+            %     - ``layerType`` - ``'image'`` | ``'mask'`` | ``'labels'``; default: ``'image'``
+            %     - ``showWaitbar`` - logical; default: ``true``
+            %     - ``silent`` - logical, suppress dialogs; default: ``false``
+            %     - ``overwrite`` - logical; default: ``true``
+            %     - ``FilenameGenerator`` - ``'Use original filename'`` | ``'Use sequential filename'``
             %
             % Output Arguments:
-            %   - **fnOut** — [char] path of saved ``.mrc`` file, ``[]`` on failure
+            %   - **fnOut** - [char] path of saved ``.mrc`` file, ``[]`` on failure
             %
-            % **Example** — see class-level documentation above.
+            % **Example** - see class-level documentation above.
             %
 
             fnOut = [];

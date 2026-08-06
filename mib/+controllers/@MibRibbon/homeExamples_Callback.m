@@ -7,7 +7,7 @@ function homeExamples_Callback(obj, BatchOptIn)
 %       obj.homeExamples_Callback(BatchOptIn)
 %
 % Input Arguments:
-%   - **BatchOptIn** — a structure for batch processing mode, when NaN return
+%   - **BatchOptIn** - a structure for batch processing mode, when NaN return
 %     a structure with default options via "syncBatch" event
 %     .Dataset [cell] dataset name
 %     .DirectoryName [cell] output directory, only for DeepMIB projects

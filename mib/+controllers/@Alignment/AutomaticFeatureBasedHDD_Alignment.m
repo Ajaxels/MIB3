@@ -12,12 +12,12 @@ function AutomaticFeatureBasedHDD_Alignment(obj, parameters)
 % configured with :func:`io.loadImagesWrapper` as its ``ReadFcn``.
 %
 % Two-phase fit:
-%   1. **Parallel detect + extract** — every file is opened in turn (parfor
+%   1. **Parallel detect + extract** - every file is opened in turn (parfor
 %      when ``BatchOpt.UseParallelComputing`` is set), features are detected
 %      with :func:`utils.align.detectFeatures` and descriptors are extracted
 %      with :func:`extractFeatures`. Only the descriptors + valid-point
-%      locations are kept in memory — never the images.
-%   2. **Sequential match + compose** — adjacent descriptor pairs are
+%      locations are kept in memory - never the images.
+%   2. **Sequential match + compose** - adjacent descriptor pairs are
 %      matched, :func:`estgeotform2d` fits a robust 2-D transform, the
 %      cumulative tform chain is built via legacy ``.T`` composition.
 %
@@ -28,10 +28,10 @@ function AutomaticFeatureBasedHDD_Alignment(obj, parameters)
 % Cropped + extended apply loops both run under ``parfor`` when parallel
 % computing is enabled.
 %
-% No in-memory dataset is touched — no backup, no ``NewDataset`` notify.
+% No in-memory dataset is touched - no backup, no ``NewDataset`` notify.
 %
 % Input Arguments:
-%   - **parameters** — struct produced by :meth:`continueBtn_Callback`.
+%   - **parameters** - struct produced by :meth:`continueBtn_Callback`.
 %     Reads ``TransformationType``, ``TransformationMode``, ``colorCh``,
 %     ``backgroundColor``, ``useBatchMode``, ``method``,
 %     ``UseParallelComputing``.
@@ -87,7 +87,7 @@ end
 numFiles = numel(imgDS.Files);
 if numFiles < 2
     utils.dlgs.showErrorDialog(parentFig, ...
-        sprintf('Found %d files in "%s" — need at least 2 to align.', numFiles, inputDir), ...
+        sprintf('Found %d files in "%s" - need at least 2 to align.', numFiles, inputDir), ...
         'HDD feature-based');
     return;
 end
@@ -264,14 +264,14 @@ if isCropped
     end
     
 else
-    % Extended mode — mirrors applyExtendedMode logic exactly:
+    % Extended mode - mirrors applyExtendedMode logic exactly:
     %   1. affineOutputView with no BoundsStyle → minimum bounding box
     %      (same world coords as imwarp without OutputView).
     %   2. Union canvas = max(xmax) - min(xmin), no extra abs() term.
     %   3. Each warped patch is tiled at pixel offset (xmin-dx+1, ymin-dy+1).
 
     % Step 1: pre-compute per-slice output view (min bounding box).
-    % NOTE: affineOutputView defaults to a centered/input-sized output —
+    % NOTE: affineOutputView defaults to a centered/input-sized output -
     % 'BoundsStyle','FollowOutput' is required to match imwarp's behavior
     % when called without an OutputView argument.
     for layer = 1:numFiles
@@ -431,7 +431,7 @@ vec_length = numel(tformMatrix);
 % Extract raw scale/shear from the cumulative tform chain.
 % Start from k=2: skip the identity at k=1 so it does not bias the
 % running-average window, matching v1's interactiveSmoothingV1 convention.
-% Cast to double — image-derived T elements may be single on some slices.
+% Cast to double - image-derived T elements may be single on some slices.
 x_stretch = arrayfun(@(k) double(tformMatrix{k}.T(1,1)), 2:vec_length);
 y_stretch = arrayfun(@(k) double(tformMatrix{k}.T(2,2)), 2:vec_length);
 x_shear   = arrayfun(@(k) double(tformMatrix{k}.T(2,1)), 2:vec_length);

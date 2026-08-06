@@ -7,20 +7,20 @@ function dataset = getData(obj, layerType, orient, colChannel, options) % get co
 %       dataset = obj.getData(layerType, orient, colChannel, options) % get complete 5D dataset
 %
 % Input Arguments:
-%   - **layerType** — char with the type of layer to obtain, used for MibLabels63 class, otherwise can be empty.
+%   - **layerType** - char with the type of layer to obtain, used for MibLabels63 class, otherwise can be empty.
 %     Values are 'labels', 'mask', 'selection', or 'everything' to get all
 %     layers at once, *default* = 'image'
-%   - **orient** — *(optional)*, can be ``[]``; when ``[]`` orient defaults to ``3``:
+%   - **orient** - *(optional)*, can be ``[]``; when ``[]`` orient defaults to ``3``:
 %
-%     - ``1`` — returns transposed dataset in ZX configuration: ``[y,x,z,c,t]`` → ``[x,z,y,c,t]``
-%     - ``2`` — returns transposed dataset in ZY configuration: ``[y,x,z,c,t]`` → ``[y,z,x,c,t]``
-%     - ``3`` — returns original dataset in YX configuration: ``[y,x,z,c,t]``
+%     - ``1`` - returns transposed dataset in ZX configuration: ``[y,x,z,c,t]`` → ``[x,z,y,c,t]``
+%     - ``2`` - returns transposed dataset in ZY configuration: ``[y,x,z,c,t]`` → ``[y,z,x,c,t]``
+%     - ``3`` - returns original dataset in YX configuration: ``[y,x,z,c,t]``
 %
-%   - **colChannel** — *(optional)*, can be ``[]``; when ``[]`` returns all color channels or materials:
+%   - **colChannel** - *(optional)*, can be ``[]``; when ``[]`` returns all color channels or materials:
 %
 %     - for ``type = 'image'``: vector of color channel indices; ``[]`` = all channels
 %     - for ``type = 'labels'``: integer material index (returned as binary 0/1); ``[]`` = all materials
-%   - **options** — *(optional)*, a structure with extra parameters
+%   - **options** - *(optional)*, a structure with extra parameters
 %
 %     - ``.y`` *(optional)*, [ymin, ymax] coordinates of the dataset to take after transpose, can be a single number
 %     - ``.x`` *(optional)*, [xmin, xmax] coordinates of the dataset to take after transpose, can be a single number
@@ -28,7 +28,7 @@ function dataset = getData(obj, layerType, orient, colChannel, options) % get co
 %     - ``.t`` *(optional)*, [tmin, tmax] coordinates of the dataset to take after transpose, can be a single number
 %
 % Output Arguments:
-%   - **dataset** — 5D stack, [1:height, 1:width, 1:depth, 1:colors, 1:time]
+%   - **dataset** - 5D stack, [1:height, 1:width, 1:depth, 1:colors, 1:time]
 %
 % Usage:
 %   **Example 1**
@@ -154,7 +154,7 @@ end
 
 % For label-type objects (MibLabels, mask, selection) with a single colour
 % channel, remove the singleton 4th dimension so that the output is
-% [H,W,Z,T] — consistent with getData63 for MibLabels63.
+% [H,W,Z,T] - consistent with getData63 for MibLabels63.
 if ~strcmp(obj.type, 'image') && size(dataset, 4) == 1
     dataset = reshape(dataset, size(dataset,1), size(dataset,2), size(dataset,3), size(dataset,5));
 end

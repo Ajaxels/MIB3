@@ -12,24 +12,24 @@ function img = removeSaltAndPepperNoise(img, BatchOpt, cpuParallelLimit)
 % are replaced by the median value.
 %
 % Input Arguments:
-%   - **img** — image array ``[height, width, colors, depth]``
-%   - **BatchOpt** — *(optional)* structure with filter parameters:
+%   - **img** - image array ``[height, width, colors, depth]``
+%   - **BatchOpt** - *(optional)* structure with filter parameters:
 %
-%     - ``.HSize`` — ``char`` strel element size for the median filter (default: ``'3'``)
-%     - ``.IntensityThreshold`` — ``{value}`` intensity threshold; pixels where
+%     - ``.HSize`` - ``char`` strel element size for the median filter (default: ``'3'``)
+%     - ``.IntensityThreshold`` - ``{value}`` intensity threshold; pixels where
 %       ``|original − median| > threshold`` are replaced (default: ``50``)
-%     - ``.NoiseType`` — ``{string}`` type of noise to remove; one of
+%     - ``.NoiseType`` - ``{string}`` type of noise to remove; one of
 %       ``'salt and pepper'``, ``'salt only'``, ``'pepper only'``
 %       (salt = bright pixels, pepper = dark pixels; default: ``'salt and pepper'``)
-%     - ``.showWaitbar`` — logical, show progress waitbar (default: ``true``)
-%     - ``.UseParallelComputing`` — logical, use parallel computing (default: ``false``)
-%   - **cpuParallelLimit** — *(optional)* number of CPU workers for parallel processing
+%     - ``.showWaitbar`` - logical, show progress waitbar (default: ``true``)
+%     - ``.UseParallelComputing`` - logical, use parallel computing (default: ``false``)
+%   - **cpuParallelLimit** - *(optional)* number of CPU workers for parallel processing
 %     (default: ``0``)
 %
 % Output Arguments:
-%   - **img** — denoised image, same class and size as input
+%   - **img** - denoised image, same class and size as input
 %
-% **Example** — denoise an image corrupted with salt & pepper noise:
+% **Example** - denoise an image corrupted with salt & pepper noise:
 %
 %   .. code-block:: matlab
 %

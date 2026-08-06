@@ -11,7 +11,7 @@ function [result] = bfopen5(r, seriesNumber, sliceNo, options)
 % Returns the selected dataset from a Bio-Formats Memoizer reader.
 %
 % Input Arguments:
-%   - **r** — handle to a Memoizer opened as:
+%   - **r** - handle to a Memoizer opened as:
 %
 %     .. code-block:: matlab
 %
@@ -21,44 +21,44 @@ function [result] = bfopen5(r, seriesNumber, sliceNo, options)
 %
 %     When the Memoizer class is used, ``r`` won't be closed at the end of the
 %     function. Alternatively, pass a ``filename`` string to use with ``setId``.
-%   - **seriesNumber** — series number to load, starting from ``1``
-%   - **sliceNo** — *(optional)* desired slice number from the series
-%   - **options** — *(optional)* struct with fields:
+%   - **seriesNumber** - series number to load, starting from ``1``
+%   - **sliceNo** - *(optional)* desired slice number from the series
+%   - **options** - *(optional)* struct with fields:
 %
-%     - ``.bioFormatsMemoizerMemoDir`` — directory to store Memoizer memo files
-%     - ``.dimensionOrder`` — (char) output order of dimensions:
+%     - ``.bioFormatsMemoizerMemoDir`` - directory to store Memoizer memo files
+%     - ``.dimensionOrder`` - (char) output order of dimensions:
 %
-%       - ``'XYZCT'`` — default
+%       - ``'XYZCT'`` - default
 %       - ``'XYCZT'``
 %       - ``'XYTZC'``
 %       - ``'XYZTC'``
 %
-%     - ``.x1`` — starting x position
-%     - ``.y1`` — starting y position
-%     - ``.z1`` — starting z position
-%     - ``.dx`` — width
-%     - ``.dy`` — height
-%     - ``.dz`` — depth
-%     - ``.waitbarHandle`` — *(optional)* handle to an existing waitbar; ``[]`` if none
-%     - ``.waitbarUpdateFrequency`` — *(optional)* frequency to update the waitbar
+%     - ``.x1`` - starting x position
+%     - ``.y1`` - starting y position
+%     - ``.z1`` - starting z position
+%     - ``.dx`` - width
+%     - ``.dy`` - height
+%     - ``.dz`` - depth
+%     - ``.waitbarHandle`` - *(optional)* handle to an existing waitbar; ``[]`` if none
+%     - ``.waitbarUpdateFrequency`` - *(optional)* frequency to update the waitbar
 %
 % Output Arguments:
-%   - **result** — struct with the selected series:
+%   - **result** - struct with the selected series:
 %
-%     - ``.img`` — image array ``[height, width, depth, color, time]``; dims
+%     - ``.img`` - image array ``[height, width, depth, color, time]``; dims
 %       re-projected per ``options.dimensionOrder``
-%     - ``.ColorType`` — ``'grayscale'``, ``'multichannel'``, or ``'indexed'``
-%     - ``.ColorMap`` — colormap for indexed images
+%     - ``.ColorType`` - ``'grayscale'``, ``'multichannel'``, or ``'indexed'``
+%     - ``.ColorMap`` - colormap for indexed images
 %
 % .. note::
 %   Portions of this code were adapted from:
 %   http://www.mathworks.com/support/solutions/en/data/1-2WPAYR/
 %
-%   This method is ~1.5×–2.5× slower than Bio-Formats's command line showinf tool,
+%   This method is ~1.5×-2.5× slower than Bio-Formats's command line showinf tool,
 %   due to overhead from copying arrays.
 %
 %   Internet Explorer sometimes erroneously renames the Bio-Formats library to
-%   ``loci_tools.zip`` — if this happens, rename it back to ``loci_tools.jar``.
+%   ``loci_tools.zip`` - if this happens, rename it back to ``loci_tools.jar``.
 %
 %   Thanks to all who offered suggestions and improvements:
 %     * Ville Rantanen

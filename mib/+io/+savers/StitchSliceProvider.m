@@ -12,7 +12,7 @@ classdef StitchSliceProvider < io.savers.SliceProvider
 % See also: io.savers.SliceProvider, utils.stitch.fuseSliceComposite,
 % utils.stitch.fuseInMemory
 %
-% **Example** — stream a stitched mosaic into a zarr3 pyramid:
+% **Example** - stream a stitched mosaic into a zarr3 pyramid:
 %
 %   .. code-block:: matlab
 %
@@ -34,9 +34,9 @@ classdef StitchSliceProvider < io.savers.SliceProvider
             % STITCHSLICEPROVIDER - Wrap a solved layout/canvas as a slice provider.
             %
             % Input Arguments:
-            %   - **layout** — [struct array] tile layout.
-            %   - **canvas** — [struct] from :func:`utils.stitch.planCanvas`.
-            %   - **options** *(optional)* — struct with fields ``.blendMode``,
+            %   - **layout** - [struct array] tile layout.
+            %   - **canvas** - [struct] from :func:`utils.stitch.planCanvas`.
+            %   - **options** *(optional)* - struct with fields ``.blendMode``,
             %     ``.background``, ``.marginPx``, ``.cacheSizeBytes``, ``.readerFcn``.
             if nargin < 3; options = struct(); end
             if ~isfield(options, 'blendMode');      options.blendMode = 'Feather'; end

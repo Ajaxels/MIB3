@@ -12,7 +12,7 @@ function frameNumberSlider_Callback(obj, sliderValue)
 % triggers a view refresh.
 %
 % Input Arguments:
-%   - **sliderValue** *(optional)* — [double] raw slider value to apply;
+%   - **sliderValue** *(optional)* - [double] raw slider value to apply;
 %     if omitted, reads from ``obj.handles.frameNumberSlider.Value``
 %
 % Output Arguments:
@@ -24,7 +24,7 @@ function frameNumberSlider_Callback(obj, sliderValue)
 %   - Fires ``'SliceChanged'`` event on ``mibModel`` to notify listeners
 %   - In DeveloperMode, prints diagnostic message to command window
 %
-% **Example** — programmatically jump to frame 7:
+% **Example** - programmatically jump to frame 7:
 %
 %   .. code-block:: matlab
 %

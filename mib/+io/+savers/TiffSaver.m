@@ -2,9 +2,9 @@ classdef TiffSaver < io.savers.BaseSaver
 % TIFFSAVER - Saver for TIFF (Tagged Image File Format) output.
 %
 % Handles three format variants:
-% 'TIF format uncompressed (``*.tif``)'    — no compression, broadest compat.
-% 'TIF format LZW compression (``*.tif``)' — lossless LZW, smaller files
-% 'TIF format (``*.tif``)'                 — alias used for mask/labels export
+% 'TIF format uncompressed (``*.tif``)'    - no compression, broadest compat.
+% 'TIF format LZW compression (``*.tif``)' - lossless LZW, smaller files
+% 'TIF format (``*.tif``)'                 - alias used for mask/labels export
 %
 % Both 3-D multi-frame TIF (all slices in one file) and 2-D sequence
 % (one file per slice) modes are supported via options.Saving3DPolicy.
@@ -26,7 +26,7 @@ classdef TiffSaver < io.savers.BaseSaver
 %
 % .. code-block:: matlab
 %
-%     %% 1. Lowest level — direct saver use (scripted pipeline)
+%     %% 1. Lowest level - direct saver use (scripted pipeline)
 %     saver = io.SaverFactory.create('TIF format uncompressed (``*.tif``)');
 %
 %     opts.Format         = 'TIF format uncompressed (``*.tif``)';
@@ -97,11 +97,11 @@ classdef TiffSaver < io.savers.BaseSaver
             %      saver = io.savers.TiffSaver(options)
             %
             % Input Arguments:
-            %   - **options** — *(optional)* struct, saver-level options (usually empty;
+            %   - **options** - *(optional)* struct, saver-level options (usually empty;
             %     per-save options are passed to ``save()`` instead)
             %
             % Output Arguments:
-            %   - **obj** — instance of the TiffSaver class
+            %   - **obj** - instance of the TiffSaver class
             %
             if nargin < 1; options = struct(); end
             obj.Options = options;
@@ -120,7 +120,7 @@ classdef TiffSaver < io.savers.BaseSaver
             %   (none)
             %
             % Output Arguments:
-            %   - **formats** — cell array of format strings for TIFF output
+            %   - **formats** - cell array of format strings for TIFF output
             %
             formats = { ...
                 'TIF format uncompressed (*.tif)'; ...
@@ -141,33 +141,33 @@ classdef TiffSaver < io.savers.BaseSaver
             % Time-series data (T > 1) is saved with ``_T001``, ``_T002`` suffixes.
             %
             % Input Arguments:
-            %   - **data** — [H, W, D, C, T] numeric array
-            %   - **metadata** — struct with fields:
+            %   - **data** - [H, W, D, C, T] numeric array
+            %   - **metadata** - struct with fields:
             %
-            %     - ``colorType`` — ``'grayscale'`` | ``'multichannel'`` | ``'indexed'``
-            %     - ``lutColors`` — *(optional)* [N × 3] colormap for indexed images
-            %     - ``colormap`` — *(optional)* [N × 3] colormap (alternative to ``lutColors``)
-            %     - ``sliceName`` — *(optional)* cell of char, per-slice source filenames
-            %     - ``imageDescription`` — *(optional)* [char] TIFF ``ImageDescription`` tag
-            %     - ``xResolution`` — *(optional)* [numeric] X resolution in pixels/unit; default: ``72``
-            %     - ``yResolution`` — *(optional)* [numeric] Y resolution in pixels/unit; default: ``72``
+            %     - ``colorType`` - ``'grayscale'`` | ``'multichannel'`` | ``'indexed'``
+            %     - ``lutColors`` - *(optional)* [N × 3] colormap for indexed images
+            %     - ``colormap`` - *(optional)* [N × 3] colormap (alternative to ``lutColors``)
+            %     - ``sliceName`` - *(optional)* cell of char, per-slice source filenames
+            %     - ``imageDescription`` - *(optional)* [char] TIFF ``ImageDescription`` tag
+            %     - ``xResolution`` - *(optional)* [numeric] X resolution in pixels/unit; default: ``72``
+            %     - ``yResolution`` - *(optional)* [numeric] Y resolution in pixels/unit; default: ``72``
             %
-            %   - **filename** — [char] full output path, e.g. ``'/out/stack.tif'``
-            %   - **options** — struct with fields:
+            %   - **filename** - [char] full output path, e.g. ``'/out/stack.tif'``
+            %   - **options** - struct with fields:
             %
-            %     - ``Format`` — format string (selects compression mode)
-            %     - ``Saving3DPolicy`` — ``'3D stack'`` | ``'2D sequence'``; default: ``'3D stack'``
-            %     - ``showWaitbar`` — logical; default: ``true``
-            %     - ``silent`` — logical, suppress dialogs; default: ``false``
-            %     - ``overwrite`` — logical; default: ``true``
-            %     - ``FilenameGenerator`` — ``'Use original filename'`` | ``'Use sequential filename'``
-            %     - ``Compression`` — *(optional)* ``'none'`` | ``'lzw'`` | ``'packbits'``; overrides Format
+            %     - ``Format`` - format string (selects compression mode)
+            %     - ``Saving3DPolicy`` - ``'3D stack'`` | ``'2D sequence'``; default: ``'3D stack'``
+            %     - ``showWaitbar`` - logical; default: ``true``
+            %     - ``silent`` - logical, suppress dialogs; default: ``false``
+            %     - ``overwrite`` - logical; default: ``true``
+            %     - ``FilenameGenerator`` - ``'Use original filename'`` | ``'Use sequential filename'``
+            %     - ``Compression`` - *(optional)* ``'none'`` | ``'lzw'`` | ``'packbits'``; overrides Format
             %
             % Output Arguments:
-            %   - **fnOut** — [char] for 3D stack single file, or [cell of char] for 2D sequence;
+            %   - **fnOut** - [char] for 3D stack single file, or [cell of char] for 2D sequence;
             %     ``[]`` on failure
             %
-            % **Example** — see class-level documentation above.
+            % **Example** - see class-level documentation above.
             %
 
             if nargin < 5; options = struct(); end
@@ -176,7 +176,7 @@ classdef TiffSaver < io.savers.BaseSaver
             % Track which options were explicitly provided by the caller
             % (must be done before applying defaults below).
             % NOTE: callerSetSaving3D is intentionally NOT used to gate the
-            % dialog — MibImage.save() always injects a default Saving3DPolicy
+            % dialog - MibImage.save() always injects a default Saving3DPolicy
             % before reaching here, so that flag would always be true and the
             % dialog would never appear.  We gate on callerSetFilename instead,
             % mirroring PngSaver's approach.
@@ -190,7 +190,7 @@ classdef TiffSaver < io.savers.BaseSaver
             if ~isfield(options, 'FilenameGenerator'); options.FilenameGenerator = 'Use sequential filename'; end
 
             % Determine compression from Format string or explicit field.
-            % 'TIF format (``*.tif``)' is the labels/mask alias — always LZW.
+            % 'TIF format (``*.tif``)' is the labels/mask alias - always LZW.
             if isfield(options, 'Compression')
                 compression = options.Compression;
             elseif isfield(options, 'Format') && contains(options.Format, 'LZW')
@@ -319,7 +319,7 @@ classdef TiffSaver < io.savers.BaseSaver
                         % Inner waitbar (for Z slices)
                         wbInner = [];
                         if options.showWaitbar && isempty(wbOuter)
-                            wbInner = obj.createProgressDialog('Saving images...', sprintf('Saving TIFF — %s', baseName), true);
+                            wbInner = obj.createProgressDialog('Saving images...', sprintf('Saving TIFF - %s', baseName), true);
                         end
 
                         for z = 1:nD
@@ -385,7 +385,7 @@ classdef TiffSaver < io.savers.BaseSaver
             %
             % Input/Output: see ``io.savers.BaseSaver.saveStream``.
             %
-            % **Example** — stream a BigData image level to a 3-D TIFF stack:
+            % **Example** - stream a BigData image level to a 3-D TIFF stack:
             %
             %   .. code-block:: matlab
             %
@@ -509,7 +509,7 @@ classdef TiffSaver < io.savers.BaseSaver
                         end
                         wbInner = [];
                         if options.showWaitbar && isempty(wbOuter)
-                            wbInner = obj.createProgressDialog('Saving images...', sprintf('Saving TIFF — %s', baseName), true);
+                            wbInner = obj.createProgressDialog('Saving images...', sprintf('Saving TIFF - %s', baseName), true);
                         end
                         for z = 1:nD
                             if ~isempty(wbInner) && wbInner.CancelRequested; delete(wbInner); return; end
@@ -598,16 +598,16 @@ classdef TiffSaver < io.savers.BaseSaver
             % loading completely into memory.
             %
             % Input Arguments:
-            %   - **outPath** — [char] full output path
-            %   - **slice4D** — [H, W, C, D] image data for one time point
-            %   - **cmap** — colormap matrix or ``NaN`` (no colormap)
-            %   - **imgDescArr** — {D × 1} cell of ImageDescription strings
-            %   - **compression** — [char] ``'none'`` | ``'lzw'`` | ``'packbits'``
-            %   - **resolution** — [xRes yRes] vector with resolution in pixels/unit
-            %   - **options** — struct with fields used (e.g., ``showWaitbar``, ``overwrite``)
+            %   - **outPath** - [char] full output path
+            %   - **slice4D** - [H, W, C, D] image data for one time point
+            %   - **cmap** - colormap matrix or ``NaN`` (no colormap)
+            %   - **imgDescArr** - {D × 1} cell of ImageDescription strings
+            %   - **compression** - [char] ``'none'`` | ``'lzw'`` | ``'packbits'``
+            %   - **resolution** - [xRes yRes] vector with resolution in pixels/unit
+            %   - **options** - struct with fields used (e.g., ``showWaitbar``, ``overwrite``)
             %
             % Output Arguments:
-            %   - **cancelled** — [logical] ``true`` if user cancelled during progress dialog
+            %   - **cancelled** - [logical] ``true`` if user cancelled during progress dialog
             %
 
             cancelled = false;

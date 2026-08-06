@@ -12,39 +12,39 @@ function dataset = getData2D(obj, type, slice_no, orient, col_channel, options)
 % All argument semantics are identical to core.MibDataset.getData2D.
 %
 % Input Arguments:
-%   - **type** — type of the dataset layer to retrieve:
+%   - **type** - type of the dataset layer to retrieve:
 %
-%     - ``'image'`` — [*default*] the image layer
-%     - ``'labels'`` — labels layer with segmentation
-%     - ``'mask'`` — mask layer
-%     - ``'selection'`` — selection layer
-%     - ``'everything'`` — packed model/mask/selection (MibLabels63 only)
+%     - ``'image'`` - [*default*] the image layer
+%     - ``'labels'`` - labels layer with segmentation
+%     - ``'mask'`` - mask layer
+%     - ``'selection'`` - selection layer
+%     - ``'everything'`` - packed model/mask/selection (MibLabels63 only)
 %
-%   - **slice_no** — *(optional)* slice index; ``[]`` = current slice
-%   - **orient** — *(optional)* orientation; ``[]`` = current orientation
-%   - **col_channel** — *(optional)* colour channel(s); ``[]`` = current channels; ``NaN`` = all
-%   - **options** — *(optional)* struct with extra parameters:
+%   - **slice_no** - *(optional)* slice index; ``[]`` = current slice
+%   - **orient** - *(optional)* orientation; ``[]`` = current orientation
+%   - **col_channel** - *(optional)* colour channel(s); ``[]`` = current channels; ``NaN`` = all
+%   - **options** - *(optional)* struct with extra parameters:
 %
-%     - ``.id`` — *(optional)* dataset index 1-9; default = ``obj.id``
-%     - ``.blockModeSwitch``, ``.roiId``, ``.fillBg``, ``.x``, ``.y``, ``.t``, ``.level`` — see ``MibDataset.getData2D``
+%     - ``.id`` - *(optional)* dataset index 1-9; default = ``obj.id``
+%     - ``.blockModeSwitch``, ``.roiId``, ``.fillBg``, ``.x``, ``.y``, ``.t``, ``.level`` - see ``MibDataset.getData2D``
 %
 % Output Arguments:
-%   - **dataset** — cell array {roiId}[height, width(, colors)] — see MibDataset.getData2D
+%   - **dataset** - cell array {roiId}[height, width(, colors)] - see MibDataset.getData2D
 %
 % Usage:
-%   **Example 1** — current slice, current colour
+%   **Example 1** - current slice, current colour
 %
 %   .. code-block:: matlab
 %
 %      slice = obj.mibModel.getData2D('image');
 %
-%   **Example 2** — slice 5, XY orient, ch 2
+%   **Example 2** - slice 5, XY orient, ch 2
 %
 %   .. code-block:: matlab
 %
 %      slice = obj.mibModel.getData2D('image', 5, 3, 2);
 %
-%   **Example 3** — use blockModeSwitch to get the visible area only
+%   **Example 3** - use blockModeSwitch to get the visible area only
 %
 %   .. code-block:: matlab
 %

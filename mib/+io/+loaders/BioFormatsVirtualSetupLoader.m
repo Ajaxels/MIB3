@@ -13,14 +13,14 @@ classdef BioFormatsVirtualSetupLoader < io.loaders.BaseImageLoader
 %
 % These two classes serve different phases of the virtual dataset lifecycle:
 %
-% BioFormatsVirtualSetupLoader — runs ONCE when the user opens a file.
+% BioFormatsVirtualSetupLoader - runs ONCE when the user opens a file.
 % Phase : dataset initialisation (MibModel.loadImages)
 % Job : parse metadata, build the Virtual struct, return file paths.
 % Reads pixels? No.
 % Lifetime: discarded after open; implements BaseImageLoader.
 % Created by: LoaderFactory
 %
-% BioFormatsVirtualLoader — runs on EVERY slice request during session.
+% BioFormatsVirtualLoader - runs on EVERY slice request during session.
 % Phase : on-demand pixel reading (MibVirtualImage.getDataVirt)
 % Job : open Memoizer reader, call bfGetPlane per channel.
 % Reads pixels? Yes.
@@ -52,10 +52,10 @@ methods
         %      obj = BioFormatsVirtualSetupLoader(options)
         %
         % Input Arguments:
-        %   - **options** — *(optional)* [struct] options passed to BioFormatsStdLoader
+        %   - **options** - *(optional)* [struct] options passed to BioFormatsStdLoader
         %
         % Output Arguments:
-        %   - **obj** — [BioFormatsVirtualSetupLoader] new loader instance
+        %   - **obj** - [BioFormatsVirtualSetupLoader] new loader instance
         %
 
         obj.Options = struct();
@@ -76,17 +76,17 @@ methods
         %      [imginfo, files] = obj.loadMetadata(filenames, options)
         %
         % Input Arguments:
-        %   - **filenames** — [cell] cell array of file paths to load
-        %   - **options** — [struct] loader options
+        %   - **filenames** - [cell] cell array of file paths to load
+        %   - **options** - [struct] loader options
         %
         % Output Arguments:
-        %   - **imginfo** — [dictionary] image metadata dictionary
-        %   - **files** — [struct array] per-file metadata; each element has fields:
+        %   - **imginfo** - [dictionary] image metadata dictionary
+        %   - **files** - [struct array] per-file metadata; each element has fields:
         %
-        %     - ``.origFilename`` — [char] path to the actual file
-        %     - ``.seriesName``   — [numeric] 1-based series index
-        %     - ``.noLayers``     — [numeric] number of z-slices in this series
-        %     - ``.color``        — [numeric] number of colour channels
+        %     - ``.origFilename`` - [char] path to the actual file
+        %     - ``.seriesName``   - [numeric] 1-based series index
+        %     - ``.noLayers``     - [numeric] number of z-slices in this series
+        %     - ``.color``        - [numeric] number of colour channels
         %
 
         if obj.isBigDataMode(options)
@@ -99,7 +99,7 @@ methods
     end
 
     function [img, imginfo] = loadImages(obj, files, imginfo, options) 
-        % LOADIMAGES - Virtual-mode image setup — does NOT load pixel data.
+        % LOADIMAGES - Virtual-mode image setup - does NOT load pixel data.
         %
         % Syntax:
         %   .. code-block:: matlab
@@ -111,20 +111,20 @@ methods
         % imginfo{"Virtual"} with the struct fields required by MibVirtualImage.
         %
         % Input Arguments:
-        %   - **files** — [struct array] per-file metadata from loadMetadata
-        %   - **imginfo** — [dictionary] image metadata from loadMetadata
-        %   - **options** *(optional)* — [struct] unused in virtual mode
+        %   - **files** - [struct array] per-file metadata from loadMetadata
+        %   - **imginfo** - [dictionary] image metadata from loadMetadata
+        %   - **options** *(optional)* - [struct] unused in virtual mode
         %
         % Output Arguments:
-        %   - **img** — [nFiles x 1 cell] cell array of original file paths
-        %   - **imginfo** — [dictionary] updated dictionary; ``imginfo{"Virtual"}`` is
+        %   - **img** - [nFiles x 1 cell] cell array of original file paths
+        %   - **imginfo** - [dictionary] updated dictionary; ``imginfo{"Virtual"}`` is
         %     added with fields:
         %
-        %     - ``.objectType``    — [cell] ``'bioformats'`` per file
-        %     - ``.seriesName``    — [cell] 1-based series index per file
-        %     - ``.slicesPerFile`` — [numeric] z-slice count per file
-        %     - ``.filenames``     — [cell] original file paths (before multi-series rename)
-        %     - ``.readerId``      — [totalZ x 1 numeric] maps each slice index to its source file index
+        %     - ``.objectType``    - [cell] ``'bioformats'`` per file
+        %     - ``.seriesName``    - [cell] 1-based series index per file
+        %     - ``.slicesPerFile`` - [numeric] z-slice count per file
+        %     - ``.filenames``     - [cell] original file paths (before multi-series rename)
+        %     - ``.readerId``      - [totalZ x 1 numeric] maps each slice index to its source file index
         %
 
         % BigData pyramid setup: loadMetadataBigData already filled imginfo
@@ -193,9 +193,9 @@ methods (Access = private)
 
         % Open ONE Memoizer-cached reader for every setup-phase metadata query
         % (scenes, voxel size, LUT). This replaces the three separate raw setId
-        % calls the setup path used before with a single parse and — because the
+        % calls the setup path used before with a single parse and - because the
         % Memoizer persists that parse to a .bfmemo in the shared 'bfFacade' dir
-        % (the same one io.BioFormats.Reader reads at pixel-read time) — makes
+        % (the same one io.BioFormats.Reader reads at pixel-read time) - makes
         % subsequent opens of the same file skip the multi-minute CZI subblock-
         % directory scan, even in a fresh MATLAB session with a cold OS cache.
         % onCleanup releases the handle on every exit path (incl. dialog cancel).

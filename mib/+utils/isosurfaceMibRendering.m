@@ -9,35 +9,35 @@ function fv = isosurfaceMibRendering(Volume, materialIndex, pixSize, boundingBox
 %      fv = isosurfaceMibRendering(Volume, materialIndex, pixSize, boundingBox, options)
 %
 % Ported and refactored from utils.mibRenderModel (MIB2).  Unlike the original,
-% this function is purely computational — it does not open a figure or call
+% this function is purely computational - it does not open a figure or call
 % view3d.  Intended for headless export pipelines such as STL saving.
 %
 % Input Arguments:
-%   - **Volume** — [uint8/uint16] label array ``[H, W, D]``; each voxel is a material index (0 = exterior)
-%   - **materialIndex** — [numeric] scalar index of the material to extract
-%   - **pixSize** — struct with physical voxel dimensions:
+%   - **Volume** - [uint8/uint16] label array ``[H, W, D]``; each voxel is a material index (0 = exterior)
+%   - **materialIndex** - [numeric] scalar index of the material to extract
+%   - **pixSize** - struct with physical voxel dimensions:
 %
-%     - ``.x``     — voxel width
-%     - ``.y``     — voxel height
-%     - ``.z``     — voxel depth
-%     - ``.units`` — physical unit string
+%     - ``.x``     - voxel width
+%     - ``.y``     - voxel height
+%     - ``.z``     - voxel depth
+%     - ``.units`` - physical unit string
 %
-%   - **boundingBox** — [numeric] ``[xMin xMax yMin yMax zMin zMax]`` — physical coordinates of dataset corners
-%   - **options** *(optional)* — struct with mesh generation parameters:
+%   - **boundingBox** - [numeric] ``[xMin xMax yMin yMax zMin zMax]`` - physical coordinates of dataset corners
+%   - **options** *(optional)* - struct with mesh generation parameters:
 %
-%     - ``.reduce``   — target image width in pixels for volume down-sampling before isosurface extraction; ``0`` = no reduction
-%     - ``.smooth``   — isotropic Laplacian smoothing kernel width in X (pixels); Y/Z kernel sizes scaled by aspect ratio; ``0`` = no smoothing
-%     - ``.maxFaces`` — maximum number of faces in the output mesh; ``0`` = no limit
+%     - ``.reduce``   - target image width in pixels for volume down-sampling before isosurface extraction; ``0`` = no reduction
+%     - ``.smooth``   - isotropic Laplacian smoothing kernel width in X (pixels); Y/Z kernel sizes scaled by aspect ratio; ``0`` = no smoothing
+%     - ``.maxFaces`` - maximum number of faces in the output mesh; ``0`` = no limit
 %
 % Output Arguments:
-%   - **fv** — struct with mesh data; ``[]`` when the material is absent or produces an empty surface:
+%   - **fv** - struct with mesh data; ``[]`` when the material is absent or produces an empty surface:
 %
-%     - ``.faces``    — ``[F x 3]`` double, triangle face indices
-%     - ``.vertices`` — ``[V x 3]`` double, vertex coordinates in physical space
+%     - ``.faces``    - ``[F x 3]`` double, triangle face indices
+%     - ``.vertices`` - ``[V x 3]`` double, vertex coordinates in physical space
 %
 % Usage:
 %
-%   **Example 1** — extract material 2 as an STL mesh
+%   **Example 1** - extract material 2 as an STL mesh
 %
 %   .. code-block:: matlab
 %

@@ -7,7 +7,7 @@ function previewModels(obj, loadImagesSwitch)
 %       obj.previewModels(loadImagesSwitch)
 %
 % Input Arguments:
-%   - **loadImagesSwitch** — [logical], load or not (assuming that
+%   - **loadImagesSwitch** - [logical], load or not (assuming that
 %     images have already been preloaded) images. When true, both
 %     images and models are loaded, when false - only models are
 %     loaded

@@ -11,20 +11,20 @@ function zoomEdit_Callback(obj, recenterSwitch, BatchOptIn)
 % Supports direct UI interaction and batch processing mode.
 %
 % Input Arguments:
-%   - **recenterSwitch** *(optional)* — [logical] whether to recenter image after zoom (default: ``false``)
-%   - **BatchOptIn** *(optional)* — [struct|NaN] batch processing options. When ``NaN``, triggers ``'SyncBatch'`` event and returns defaults:
+%   - **recenterSwitch** *(optional)* - [logical] whether to recenter image after zoom (default: ``false``)
+%   - **BatchOptIn** *(optional)* - [struct|NaN] batch processing options. When ``NaN``, triggers ``'SyncBatch'`` event and returns defaults:
 %
-%     - ``.Mode`` — [cell] magnification mode:
+%     - ``.Mode`` - [cell] magnification mode:
 %
-%       - ``'Set magnification'`` — (default)
+%       - ``'Set magnification'`` - (default)
 %       - ``'Fit to screen'``
 %       - ``'100%'``
 %       - ``'Zoom in'``
 %       - ``'Zoom out'``
 %
-%     - ``.MagnificationValue`` — [char] target magnification in percent (used when Mode is ``'Set magnification'``)
+%     - ``.MagnificationValue`` - [char] target magnification in percent (used when Mode is ``'Set magnification'``)
 %
-% **Example 1** — Set magnification to 50%:
+% **Example 1** - Set magnification to 50%:
 %
 %   .. code-block:: matlab
 %
@@ -32,14 +32,14 @@ function zoomEdit_Callback(obj, recenterSwitch, BatchOptIn)
 %      BatchOpt.MagnificationValue = '50';
 %      obj.zoomEdit_Callback([], BatchOpt);
 %
-% **Example 2** — Fit image to screen:
+% **Example 2** - Fit image to screen:
 %
 %   .. code-block:: matlab
 %
 %      BatchOpt.Mode = {'Fit to screen'};
 %      obj.zoomEdit_Callback([], BatchOpt);
 %
-% **Example 3** — Query batch options (returns defaults via SyncBatch event):
+% **Example 3** - Query batch options (returns defaults via SyncBatch event):
 %
 %   .. code-block:: matlab
 %

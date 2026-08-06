@@ -7,18 +7,18 @@ function imOut = storeLoadImages(fn, getDataOptions)
 %      imOut = storeLoadImages(fn, getDataOptions)
 %
 % Input Arguments:
-%   - **fn** — [string] full path to the image file
-%   - **getDataOptions** — struct with load options:
+%   - **fn** - [string] full path to the image file
+%   - **getDataOptions** - struct with load options:
 %
-%     - ``.mibBioformatsCheck`` — [logical] ``true`` to use the BioFormats reader,
+%     - ``.mibBioformatsCheck`` - [logical] ``true`` to use the BioFormats reader,
 %       ``false`` for the standard reader
-%     - ``.BioFormatsIndices`` — [numeric] series index for BioFormats, or slice
+%     - ``.BioFormatsIndices`` - [numeric] series index for BioFormats, or slice
 %       index within a TIF file (default: ``1``)
-%     - ``.Workflow`` — [char] active workflow (``obj.BatchOpt.Workflow{1}``)
-%     - ``.randomCrop`` — ``[cropH cropW]`` for random cropping; ``[0 0]`` to disable
+%     - ``.Workflow`` - [char] active workflow (``obj.BatchOpt.Workflow{1}``)
+%     - ``.randomCrop`` - ``[cropH cropW]`` for random cropping; ``[0 0]`` to disable
 %
 % Output Arguments:
-%   - **imOut** — loaded image array
+%   - **imOut** - loaded image array
 %
 
 if nargin < 2

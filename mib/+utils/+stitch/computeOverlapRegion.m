@@ -20,17 +20,17 @@ function [bboxA, bboxB] = computeOverlapRegion(layout, i, j, expandPx)
 % global rows ``[oy, oy+H-1]`` and columns ``[ox, ox+W-1]``.
 %
 % Input Arguments:
-%   - **layout** — [struct array] tile layout with ``.nomOrigin`` (``[y x z]``)
+%   - **layout** - [struct array] tile layout with ``.nomOrigin`` (``[y x z]``)
 %     and ``.tileSize`` (``[H W D C]``) fields.
-%   - **i** — [double] index of the first tile.
-%   - **j** — [double] index of the second tile.
-%   - **expandPx** *(optional)* — [double] pixels to expand the overlap on each
+%   - **i** - [double] index of the first tile.
+%   - **j** - [double] index of the second tile.
+%   - **expandPx** *(optional)* - [double] pixels to expand the overlap on each
 %     side to absorb jitter (default: ``64``).
 %
 % Output Arguments:
-%   - **bboxA** — [2x2] overlap rectangle in tile ``i`` local coords,
+%   - **bboxA** - [2x2] overlap rectangle in tile ``i`` local coords,
 %     ``[yMin yMax; xMin xMax]`` (1-based, inclusive).
-%   - **bboxB** — [2x2] overlap rectangle in tile ``j`` local coords, same shape;
+%   - **bboxB** - [2x2] overlap rectangle in tile ``j`` local coords, same shape;
 %     both boxes have equal height and width.
 %
 % .. note::
@@ -38,7 +38,7 @@ function [bboxA, bboxB] = computeOverlapRegion(layout, i, j, expandPx)
 %    returned rectangles fall back to the full extent of the smaller shared
 %    region clamped to both tiles, guaranteeing a non-empty, equal-sized crop.
 %
-% **Example** — overlap crop of a horizontal neighbour pair:
+% **Example** - overlap crop of a horizontal neighbour pair:
 %
 %   .. code-block:: matlab
 %
@@ -80,7 +80,7 @@ if xHi < xLo; xHi = xLo; end
 % Convert the expanded global span into each tile's local (1-based) coordinates
 % and clamp each crop to its OWN tile bounds only. The expansion therefore
 % survives INTO each tile even at tile borders where the nominal overlap sits at
-% the tile edge — this is what gives phase correlation room to detect offsets up
+% the tile edge - this is what gives phase correlation room to detect offsets up
 % to expandPx. The two crops then generally cover DIFFERENT nominal windows;
 % measureAllPairs compensates exactly using the crop start offsets:
 %   P_j - P_i = (bboxA(:,1) - bboxB(:,1)) - shift

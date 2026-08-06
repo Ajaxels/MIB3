@@ -15,7 +15,7 @@ function saveTformsToFile(obj, id, useBatchMode, parentFig, label)
 % the path is read from ``obj.view.handles.saveShiftsXYpath.Value``.
 %
 % Input Arguments:
-%   - **label** *(optional)* — [char] human-readable algorithm name
+%   - **label** *(optional)* - [char] human-readable algorithm name
 %     prefixed onto the progress message (default ``'alignment'``).
 
 % Updates

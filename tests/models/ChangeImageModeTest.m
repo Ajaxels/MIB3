@@ -2,11 +2,11 @@ classdef ChangeImageModeTest < matlab.unittest.TestCase
 % CHANGEIMAGEMODETEST - Unit tests for MibModel.changeImageMode.
 %
 % Verification strategies:
-%   bit-depth upgrade   — uint8 → 16 bit / 32 bit: image class and maxInt change
-%   round-trip          — 8 bit → 16 bit → 8 bit restores class and maxInt
-%   dimensions stable   — width / height / depth must not change after conversion
-%   status return       — method must return 1 on success
-%   pixel count stable  — numel of image data must not change after conversion
+%   bit-depth upgrade   - uint8 → 16 bit / 32 bit: image class and maxInt change
+%   round-trip          - 8 bit → 16 bit → 8 bit restores class and maxInt
+%   dimensions stable   - width / height / depth must not change after conversion
+%   status return       - method must return 1 on success
+%   pixel count stable  - numel of image data must not change after conversion
 
     methods (TestClassSetup)
         function addPaths(testCase)

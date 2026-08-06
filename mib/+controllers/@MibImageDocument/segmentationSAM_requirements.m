@@ -11,15 +11,15 @@ function status = segmentationSAM_requirements(obj, samVersionName)
 % See https://segment-anything.com and https://github.com/facebookresearch/segment-anything-2
 %
 % Input Arguments:
-%   - **samVersionName** *(optional)* — [numeric|char] SAM version to check:
+%   - **samVersionName** *(optional)* - [numeric|char] SAM version to check:
 %
-%     - ``1`` or ``'SAM1'`` — first version SAM (https://segment-anything.com)
-%     - ``2`` or ``'SAM2'`` — second version SAM-2 (default; https://github.com/facebookresearch/segment-anything-2)
+%     - ``1`` or ``'SAM1'`` - first version SAM (https://segment-anything.com)
+%     - ``2`` or ``'SAM2'`` - second version SAM-2 (default; https://github.com/facebookresearch/segment-anything-2)
 %
 % Output Arguments:
-%   - **status** — [logical] indicates success of the function
+%   - **status** - [logical] indicates success of the function
 %
-% **Example** — check SAM requirements:
+% **Example** - check SAM requirements:
 %
 %   .. code-block:: matlab
 %

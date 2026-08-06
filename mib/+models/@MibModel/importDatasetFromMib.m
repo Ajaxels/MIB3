@@ -10,33 +10,33 @@ function importDatasetFromMib(obj, layerType, BatchOptIn)
 % container INTO the currently active container.
 %
 % Input Arguments:
-%   - **layerType** — a string specifying which layer to import:
+%   - **layerType** - a string specifying which layer to import:
 %
-%     - ``'mask'`` — copy the mask layer from another container
-%     - ``'model'`` — copy the model (labels) layer + material metadata from another container
+%     - ``'mask'`` - copy the mask layer from another container
+%     - ``'model'`` - copy the model (labels) layer + material metadata from another container
 %
-%   - **BatchOptIn** — *(optional)* a structure for batch processing mode; when ``NaN``
+%   - **BatchOptIn** - *(optional)* a structure for batch processing mode; when ``NaN``
 %     returns a structure with default options via "SyncBatch" event:
 %
-%     - ``.LayerType`` — cell string, ``{'mask'|'model'}`` layer to import
-%     - ``.Source`` — cell string, source container, e.g. ``{'Container 2'}``
-%     - ``.showWaitbar`` — logical, show or not the waitbar
-%     - ``.id`` — *(optional)* index of the destination dataset
+%     - ``.LayerType`` - cell string, ``{'mask'|'model'}`` layer to import
+%     - ``.Source`` - cell string, source container, e.g. ``{'Container 2'}``
+%     - ``.showWaitbar`` - logical, show or not the waitbar
+%     - ``.id`` - *(optional)* index of the destination dataset
 %
 % Usage:
-%   **Example 1** — import mask interactively
+%   **Example 1** - import mask interactively
 %
 %   .. code-block:: matlab
 %
 %      obj.mibModel.importDatasetFromMib('mask');
 %
-%   **Example 2** — import model interactively
+%   **Example 2** - import model interactively
 %
 %   .. code-block:: matlab
 %
 %      obj.mibModel.importDatasetFromMib('model');
 %
-%   **Example 3** — batch mode
+%   **Example 3** - batch mode
 %
 %   .. code-block:: matlab
 %
@@ -53,7 +53,7 @@ if nargin < 2; layerType = 'mask'; end
 
 activeId = obj.getActiveId();
 
-%% Pre-flight checks (before building BatchOpt — fail fast)
+%% Pre-flight checks (before building BatchOpt - fail fast)
 if strcmp(obj.I{activeId}.datasetType, 'Virtual')
     toolname = sprintf('Import of %s is', layerType);
     warningBody = sprintf('%s not yet available in the virtual stacking mode.\nPlease switch to the memory-resident mode and try again', toolname);

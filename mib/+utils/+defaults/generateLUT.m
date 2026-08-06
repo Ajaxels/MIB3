@@ -9,14 +9,14 @@ function lut = generateLUT(noColorChannels)
 % The first 3 color channels are Red, Green, Blue; others are generated using Hue shifts.
 %
 % Input Arguments:
-%   - **noColorChannels** — [numeric] required number of color channels; pass ``[]`` to get 3 colors (Red, Green, Blue)
+%   - **noColorChannels** - [numeric] required number of color channels; pass ``[]`` to get 3 colors (Red, Green, Blue)
 %
 % Output Arguments:
-%   - **lut** — [numeric] matrix with default LUT for color channels, ``lut(colorChannel, [R G B])`` in range 0–1
+%   - **lut** - [numeric] matrix with default LUT for color channels, ``lut(colorChannel, [R G B])`` in range 0-1
 %
 % Usage:
 %
-%   **Example 1** — get the default colour scheme for 5 colour channels
+%   **Example 1** - get the default colour scheme for 5 colour channels
 %
 %   .. code-block:: matlab
 %

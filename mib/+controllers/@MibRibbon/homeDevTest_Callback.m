@@ -6,7 +6,7 @@ function homeDevTest_Callback(obj, hWidget, hData)
 %
 %       obj.homeDevTest_Callback(hWidget, hData)
 %
-% Currently runs benchmarkGetSetData (below) — a correctness + performance
+% Currently runs benchmarkGetSetData (below) - a correctness + performance
 % benchmark of the getData2D/3D/4D and setData2D/3D/4D accessors.
 % Can also be invoked from the MATLAB command line without widget arguments:
 %
@@ -33,9 +33,9 @@ end
 function benchmarkGetSetData(mibModel)
 % Correctness + performance benchmark for MibModel getData2D/3D/4D and
 % setData2D/3D/4D. Expects 3 loaded datasets with initialized model and mask:
-%   id==1 — MibLabels63 model (labels/mask/selection packed into one uint8 array)
-%   id==2 — 255-material model (uint8)
-%   id==3 — 65535-material model (uint16)
+%   id==1 - MibLabels63 model (labels/mask/selection packed into one uint8 array)
+%   id==2 - 255-material model (uint8)
+%   id==3 - 65535-material model (uint16)
 % All writes are pure roundtrips (the data just read is written back), so the
 % datasets are left unmodified; verified by per-dataset checksums at the end.
 
@@ -49,7 +49,7 @@ for id = 1:min(3, numel(mibModel.I))
     if mibModel.I{id}.image.exists; datasetIds(end+1) = id; end %#ok<AGROW>
 end
 if numel(datasetIds) < 3
-    fprintf('benchmarkGetSetData: WARNING — expected 3 loaded datasets, found %d\n', numel(datasetIds));
+    fprintf('benchmarkGetSetData: WARNING - expected 3 loaded datasets, found %d\n', numel(datasetIds));
 end
 
 fprintf('\n=== getData/setData benchmark, %s, MATLAB R%s ===\n', ...

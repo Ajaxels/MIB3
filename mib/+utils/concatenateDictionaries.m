@@ -8,15 +8,15 @@ function primaryDict = concatenateDictionaries(primaryDict, secondaryDict)
 %      primaryDict = concatenateDictionaries(primaryDict, secondaryDict)
 %
 % Input Arguments:
-%   - **primaryDict** — primary dictionary that should be updated
-%   - **secondaryDict** — secondary dictionary that should be concatenated into the primary dictionary
+%   - **primaryDict** - primary dictionary that should be updated
+%   - **secondaryDict** - secondary dictionary that should be concatenated into the primary dictionary
 %
 % Output Arguments:
-%   - **primaryDict** — updated primary dictionary
+%   - **primaryDict** - updated primary dictionary
 %
 % Usage:
 %
-%   **Example 1** — update preferences dictionary from a saved session
+%   **Example 1** - update preferences dictionary from a saved session
 %
 %   .. code-block:: matlab
 %

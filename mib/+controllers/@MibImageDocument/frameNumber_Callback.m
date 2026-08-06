@@ -14,8 +14,8 @@ function frameNumber_Callback(obj, parameter, BatchOptIn)
 % MIB batch processing via the BatchOpt mechanism.
 %
 % Input Arguments:
-%   - **parameter** *(optional)* — [numeric] requested frame number (if omitted, reads from ``obj.handles.frameNumber.Value``)
-%   - **BatchOptIn** *(optional)* — [struct|NaN] batch processing control:
+%   - **parameter** *(optional)* - [numeric] requested frame number (if omitted, reads from ``obj.handles.frameNumber.Value``)
+%   - **BatchOptIn** *(optional)* - [struct|NaN] batch processing control:
 %
 %     - [struct] fields are merged into default BatchOpt, allowing programmatic override of ``FrameNumber``
 %     - ``NaN`` triggers ``'SyncBatch'`` event and returns immediately, sending BatchOpt settings to mibBatchController
@@ -30,24 +30,24 @@ function frameNumber_Callback(obj, parameter, BatchOptIn)
 %   - otherwise → used as-is
 %
 % **BatchOpt Structure Fields:**
-%   - ``.FrameNumber`` — [char] requested frame number as string; use ``'0'`` to jump to last time point
-%   - ``.mibBatchSectionName`` — [char] UI section label: ``'Panel -> Image view'``
-%   - ``.mibBatchActionName`` — [char] batch action label: ``'Change frame/time number'``
-%   - ``.mibBatchTooltip`` — [struct] tooltips for each BatchOpt field
+%   - ``.FrameNumber`` - [char] requested frame number as string; use ``'0'`` to jump to last time point
+%   - ``.mibBatchSectionName`` - [char] UI section label: ``'Panel -> Image view'``
+%   - ``.mibBatchActionName`` - [char] batch action label: ``'Change frame/time number'``
+%   - ``.mibBatchTooltip`` - [struct] tooltips for each BatchOpt field
 %
-% **Example 1** — navigate to frame 5 programmatically:
+% **Example 1** - navigate to frame 5 programmatically:
 %
 %   .. code-block:: matlab
 %
 %      obj.cImageDoc{obj.mibModel.Sets.selectedSet}.frameNumber_Callback(5, struct());
 %
-% **Example 2** — jump to last frame using shorthand value ``0``:
+% **Example 2** - jump to last frame using shorthand value ``0``:
 %
 %   .. code-block:: matlab
 %
 %      obj.cImageDoc{obj.mibModel.Sets.selectedSet}.frameNumber_Callback(0, struct());
 %
-% **Example 3** — query available batch settings:
+% **Example 3** - query available batch settings:
 %
 %   .. code-block:: matlab
 %

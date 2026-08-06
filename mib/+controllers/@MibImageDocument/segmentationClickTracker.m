@@ -11,27 +11,27 @@ function output = segmentationClickTracker(obj, yxzCoordinate, yx, modifier)
 % drawing a straight line segment. In 3D mode only straight lines are supported.
 %
 % Input Arguments:
-%   - **yxzCoordinate** — [vector] ``[y, x, z]`` coordinates of starting point (voxel coordinates of dataset)
-%   - **yx** — [vector] ``[y, x]`` coordinates of clicked point in display coordinate system (before magnification)
-%   - **modifier** — [char] specify action with generated selection:
+%   - **yxzCoordinate** - [vector] ``[y, x, z]`` coordinates of starting point (voxel coordinates of dataset)
+%   - **yx** - [vector] ``[y, x]`` coordinates of clicked point in display coordinate system (before magnification)
+%   - **modifier** - [char] specify action with generated selection:
 %
-%     - ``''`` — trace membrane from starting to selected point
-%     - ``'control'`` — define starting point of membrane (2D mode)
-%     - ``'shift'`` — define starting point of membrane (3D straight-line mode)
+%     - ``''`` - trace membrane from starting to selected point
+%     - ``'control'`` - define starting point of membrane (2D mode)
+%     - ``'shift'`` - define starting point of membrane (3D straight-line mode)
 %
 % Output Arguments:
-%   - **output** — [char] define next action in ``gui_WindowButtonDownFcn``:
+%   - **output** - [char] define next action in ``gui_WindowButtonDownFcn``:
 %
-%     - ``'continue'`` — continue with script
-%     - ``'return'`` — stop execution and return
+%     - ``'continue'`` - continue with script
+%     - ``'return'`` - stop execution and return
 %
-% **Example 1** — define starting point (2D mode, Ctrl+click):
+% **Example 1** - define starting point (2D mode, Ctrl+click):
 %
 %   .. code-block:: matlab
 %
 %      output = obj.segmentationClickTracker([50, 75, 1], [25, 38], {'control'});
 %
-% **Example 2** — trace to endpoint:
+% **Example 2** - trace to endpoint:
 %
 %   .. code-block:: matlab
 %

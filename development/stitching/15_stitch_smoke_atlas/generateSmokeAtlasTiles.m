@@ -14,7 +14,7 @@ function generateSmokeAtlasTiles()
 %
 % **The nominal stage grid is deliberately wrong.** As on real Atlas data, the
 % recorded Y step is longer than the truth (here by 8 px) while X is accurate to
-% about a pixel — the failure this layout source exists to cope with. The
+% about a pixel - the failure this layout source exists to cope with. The
 % ``.ve-tie`` and ``.ve-updates`` files describe the CORRECT placement, so:
 %
 %   Nominal grid only              -> visible seam steps until MIB re-measures
@@ -39,7 +39,7 @@ if ~isfolder(outputFolder); mkdir(outputFolder); end
 numRows = 3;
 numCols = 3;
 tileSize = 240;
-trueStepX = 180;            % 25% overlap — what the pixels actually show
+trueStepX = 180;            % 25% overlap - what the pixels actually show
 trueStepY = 180;
 nominalErrorYpx = 8;        % the .ve-mif Y step is this much too long
 nominalErrorXpx = 1;

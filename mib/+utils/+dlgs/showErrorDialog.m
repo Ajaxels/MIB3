@@ -10,44 +10,44 @@ function showErrorDialog(ParentFigure, err, winTitle, optionalPrefix, optionalSu
 % copy button, and is resizable.
 %
 % Input Arguments:
-%   - **ParentFigure** — handle to the parent window (AppContainer, uifigure, or [])
+%   - **ParentFigure** - handle to the parent window (AppContainer, uifigure, or [])
 %     When empty or a legacy GUIDE figure, falls back to errordlg().
 %     In MIB pass ``obj.mibModel.getProgressBarParent()`` so the dialog follows the
 %     active dataset window when it is undocked.
-%   - **err** — error source, one of:
+%   - **err** - error source, one of:
 %
 %     - [char|string] plain error message text
 %     - [MException] struct with fields:
 %
-%       - ``.identifier`` — error identifier string
-%       - ``.message`` — error message
-%       - ``.cause`` — nested ``MException`` cell array
+%       - ``.identifier`` - error identifier string
+%       - ``.message`` - error message
+%       - ``.cause`` - nested ``MException`` cell array
 %
 %     - empty struct: shows only prefix/suffix
 %
-%   - **winTitle** — [optional] string with dialog window title (default: ``'Error'``)
-%   - **optionalPrefix** — [optional] text shown in bold above the error body (default: ``''``)
-%   - **optionalSuffix** — [optional] text shown in italics below the error body (default: ``''``)
-%   - **options** *(optional)* — struct with fields:
+%   - **winTitle** - [optional] string with dialog window title (default: ``'Error'``)
+%   - **optionalPrefix** - [optional] text shown in bold above the error body (default: ``''``)
+%   - **optionalSuffix** - [optional] text shown in italics below the error body (default: ``''``)
+%   - **options** *(optional)* - struct with fields:
 %
-%     - ``.mibPath`` — [char] path to MIB installation for icon loading (default: ``''``)
-%     - ``.Icon`` — [char] icon name (default: ``'puffin_error'``):
+%     - ``.mibPath`` - [char] path to MIB installation for icon loading (default: ``''``)
+%     - ``.Icon`` - [char] icon name (default: ``'puffin_error'``):
 %       ``'puffin_error'``, ``'puffin_warning'``, ``'puffin_question'``,
 %       ``'warning_48px'``, ``'error_48px'``, ``'question_48px'``,
 %       ``'celebrate'``, ``'call4help'``
-%     - ``.IconWidth`` — [numeric] icon column width in pixels (default: 48, puffins: 96)
-%     - ``.WindowWidth`` — [numeric] dialog width in pixels (default: 420)
-%     - ``.WindowHeight`` — [numeric] dialog height in pixels (default: 220)
-%     - ``.WindowStyle`` — [char] ``'modal'`` (default) or ``'normal'``
-%     - ``.PrefixHeight`` — row height for the prefix label (default: ``'fit'``)
-%     - ``.ErrorHeight`` — row height for the error text area (default: ``'1x'``)
-%     - ``.SuffixHeight`` — row height for the suffix label (default: ``'fit'``)
+%     - ``.IconWidth`` - [numeric] icon column width in pixels (default: 48, puffins: 96)
+%     - ``.WindowWidth`` - [numeric] dialog width in pixels (default: 420)
+%     - ``.WindowHeight`` - [numeric] dialog height in pixels (default: 220)
+%     - ``.WindowStyle`` - [char] ``'modal'`` (default) or ``'normal'``
+%     - ``.PrefixHeight`` - row height for the prefix label (default: ``'fit'``)
+%     - ``.ErrorHeight`` - row height for the error text area (default: ``'1x'``)
+%     - ``.SuffixHeight`` - row height for the suffix label (default: ``'fit'``)
 %
 % Output Arguments:
 %   (none)
 %
 % Usage:
-%   **Example 1** — Basic usage in try/catch
+%   **Example 1** - Basic usage in try/catch
 %
 %   .. code-block:: matlab
 %
@@ -58,14 +58,14 @@ function showErrorDialog(ParentFigure, err, winTitle, optionalPrefix, optionalSu
 %          return;
 %      end
 %
-%   **Example 2** — Plain text with bold prefix and italic suffix
+%   **Example 2** - Plain text with bold prefix and italic suffix
 %
 %   .. code-block:: matlab
 %
 %      utils.dlgs.showErrorDialog(obj.view.gui, 'Something went wrong!', 'Error', ...
 %          'Operation failed:', 'Please check your input.');
 %
-%   **Example 3** — Custom icon, size, and row heights
+%   **Example 3** - Custom icon, size, and row heights
 %
 %   .. code-block:: matlab
 %
@@ -173,7 +173,7 @@ hasPrefix = ~isempty(strtrim(optionalPrefix));
 hasSuffix = ~isempty(strtrim(optionalSuffix));
 hasError  = ~isempty(errBody);  % NEW: skip textarea when errBody is empty
 
-% build row heights dynamically — only include prefix/error/suffix rows if needed
+% build row heights dynamically - only include prefix/error/suffix rows if needed
 rowHeights = {};
 rowMap     = struct();   % maps logical sections to row indices
 currentRow = 1;
@@ -223,7 +223,7 @@ mainGrid = uigridlayout(fig, [numel(rowHeights), 2], ...
     'RowSpacing',   8, ...
     'ColumnSpacing', 14);
 
-% --- icon — spans all rows ---
+% --- icon - spans all rows ---
 if exist(iconPath, 'file')
     iconUI = uiimage(mainGrid, ...
         'ImageSource',         iconPath, ...
@@ -321,7 +321,7 @@ end
 fig.CloseRequestFcn = @(~,~) onClose();
 fig.Visible = 'on';
 drawnow;
-% Re-apply WindowStyle on the realized (visible) figure — setting it while a
+% Re-apply WindowStyle on the realized (visible) figure - setting it while a
 % cached figure is hidden does not take effect (notably in the deployed web
 % engine), so the dialog would otherwise come up non-modal on reuse.
 fig.WindowStyle = lower(options.WindowStyle);

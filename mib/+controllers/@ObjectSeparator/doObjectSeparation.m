@@ -7,10 +7,10 @@ function doObjectSeparation(obj)
 %
 % Four processing branches:
 %
-% * Seeded + 3D   — full-volume seeded watershed
-% * Seeded + 2D   — per-slice seeded watershed
-% * Standard + 3D — full-volume distance-transform watershed
-% * Standard + 2D — per-slice distance-transform watershed
+% * Seeded + 3D   - full-volume seeded watershed
+% * Seeded + 2D   - per-slice seeded watershed
+% * Standard + 3D - full-volume distance-transform watershed
+% * Standard + 2D - per-slice distance-transform watershed
 %
 % The function is a split method and is called from ``ObjectSeparator.m``.
 
@@ -205,7 +205,7 @@ if useSeeds
         W(~objectVolume) = 0;
 
         % bwlabeln distinguishes objects that share the same watershed label
-        % but lack a seed — those must be discarded
+        % but lack a seed - those must be discarded
         if obj.BatchOpt.showWaitbar
             pwb.updateText('Relabeling the objects, please wait...'); pwb.increment();
             if pwb.getCancelState(); pwb.deletePoolWaitbar(); return; end

@@ -7,12 +7,12 @@ function bls = generateDynamicMaskingBlocks(obj, vol, blockSize, noColors)
 %       bls = obj.generateDynamicMaskingBlocks(vol, blockSize, noColors)
 %
 % Input Arguments:
-%   - **vol** — blocked image to process
-%   - **blockSize** — block size
-%   - **noColors** — number of color channels in the blocked image
+%   - **vol** - blocked image to process
+%   - **blockSize** - block size
+%   - **noColors** - number of color channels in the blocked image
 %
 % Output Arguments:
-%   - **bls** — calculated  blockLocationSet
+%   - **bls** - calculated  blockLocationSet
 %     .ImageNumber
 %     .BlockOrigin
 %     .BlockSize

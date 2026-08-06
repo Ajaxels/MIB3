@@ -13,16 +13,16 @@ function imageIntensityProfile(obj, mode)
 % cancel without computing.
 %
 % Input Arguments:
-%   - **mode** — char; drawing mode
+%   - **mode** - char; drawing mode
 %
-%     - ``'line'``      — straight line between two endpoints
-%     - ``'arbitrary'`` — freehand open path
+%     - ``'line'``      - straight line between two endpoints
+%     - ``'arbitrary'`` - freehand open path
 %
 % Output Arguments:
 %   (none)
 %
 % Usage:
-%   **Example 1** — called from image_Callbacks
+%   **Example 1** - called from image_Callbacks
 %
 %   .. code-block:: matlab
 %
@@ -101,7 +101,7 @@ function finalizeProfile(roi, obj, id, colorChannel, mode, cImageDoc, savedKPF)
 % FINALIZEPROFILE - Compute and display the intensity profile, then clean up.
 
 if ~isvalid(roi); return; end
-pos = roi.Position;    % [2×2] for line; [N×2] for freehand — columns are [x, y]
+pos = roi.Position;    % [2×2] for line; [N×2] for freehand - columns are [x, y]
 delete(roi);           % triggers DeletingROI, but cleanupProfileROI is idempotent
 
 % Restore key handler and segmentation immediately so MIB is interactive
@@ -191,7 +191,7 @@ surf(ax1, xGrid, yGrid, zBase(1) + zeros(imgH, imgW), rgbImage, 'EdgeColor', 'no
 colormap(ax1, 'gray');
 hold(ax1, 'off');
 
-title(ax1, sprintf('Image profile — channel(s): %s', num2str(colorChannel)));
+title(ax1, sprintf('Image profile - channel(s): %s', num2str(colorChannel)));
 maxProfileVal = max(profileData(:));
 if maxProfileVal > 0
     ax1.DataAspectRatio = [1, 1, maxProfileVal / imgH * 5];

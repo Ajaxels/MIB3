@@ -8,13 +8,13 @@ function meta = getMeta(obj)
 %
 % Builds a dictionary matching the schema of MibImage.initializeImgInfo()
 % from the current state of the object's properties. This is the inverse
-% of initialize() — it packs the scattered properties back into the
+% of initialize() - it packs the scattered properties back into the
 % canonical dictionary format used throughout MIB3 for metadata transport.
 %
 % Input Arguments:
 %
 % Output Arguments:
-%   - **meta** — dictionary with all standard MibImage metadata fields
+%   - **meta** - dictionary with all standard MibImage metadata fields
 %
 % Usage:
 %   **Example 1**

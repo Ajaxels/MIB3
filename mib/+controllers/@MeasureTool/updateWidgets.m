@@ -12,7 +12,7 @@ function updateWidgets(obj)
 % checkboxes, and refreshes the measurements table.
 %
 % Input Arguments:
-%   - **obj** — :class:`controllers.MeasureTool`
+%   - **obj** - :class:`controllers.MeasureTool`
 %
 
 datasetId = obj.mibModel.getActiveId();

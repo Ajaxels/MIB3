@@ -7,13 +7,13 @@ function [lgraph, outputPatchSize] = createNetwork(obj, previewSwitch)
 %       [lgraph, outputPatchSize] = obj.createNetwork(previewSwitch)
 %
 % Input Arguments:
-%   - **previewSwitch** — logical switch, when 1 - the generated network
+%   - **previewSwitch** - logical switch, when 1 - the generated network
 %     is only for preview, i.e. weights of classes won't be
 %     calculated
 %
 % Output Arguments:
-%   - **lgraph** — network object
-%   - **outputPatchSize** — output patch size as [height, width, depth, color]
+%   - **lgraph** - network object
+%   - **outputPatchSize** - output patch size as [height, width, depth, color]
 %
 
 if nargin < 2; previewSwitch = 0; end

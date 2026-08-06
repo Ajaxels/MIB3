@@ -7,8 +7,8 @@ function renderIsosurface(obj)
 %      obj.renderIsosurface()
 %
 % Prompts the user for mesh generation parameters (volume reduction, smoothing,
-% face limit, orthoslice) and renders the selected material — or all materials
-% when ``showAllMaterials`` is active — as a 3-D isosurface mesh in a dedicated
+% face limit, orthoslice) and renders the selected material - or all materials
+% when ``showAllMaterials`` is active - as a 3-D isosurface mesh in a dedicated
 % MATLAB figure.  Delegates mesh computation to ``utils.isosurfaceMibRendering``.
 %
 % Entry points:

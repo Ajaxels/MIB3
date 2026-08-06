@@ -7,7 +7,7 @@ function processImages(obj, preprocessFor)
 %       obj.processImages(preprocessFor)
 %
 % Input Arguments:
-%   - **preprocessFor** — a string with target, 'training', 'prediction'
+%   - **preprocessFor** - a string with target, 'training', 'prediction'
 %
 
     if nargin < 2

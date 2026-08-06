@@ -10,33 +10,33 @@ function transposeDataset(obj, mode, parentFigure, showWaitbar, noColorChannels)
 % Ported from MIB2 ``@mibModel/transposeDataset.m`` and ``@mibModel/transposeZ2T.m``.
 %
 % Input Arguments:
-%   - **mode** — [char] transpose mode:
+%   - **mode** - [char] transpose mode:
 %
-%     - ``'Transpose YX -> YZ'`` — YX plane becomes YZ plane
-%     - ``'Transpose YX -> XZ'`` — YX plane becomes XZ plane
-%     - ``'Transpose YX -> XY'`` — YX plane becomes XY plane
-%     - ``'Transpose YX -> ZX'`` — YX plane becomes ZX plane
-%     - ``'Transpose Z<->T'`` — swap Z (depth) and T (time) dimensions
-%     - ``'Transpose Z<->C'`` — swap Z (depth) and C (color) dimensions
+%     - ``'Transpose YX -> YZ'`` - YX plane becomes YZ plane
+%     - ``'Transpose YX -> XZ'`` - YX plane becomes XZ plane
+%     - ``'Transpose YX -> XY'`` - YX plane becomes XY plane
+%     - ``'Transpose YX -> ZX'`` - YX plane becomes ZX plane
+%     - ``'Transpose Z<->T'`` - swap Z (depth) and T (time) dimensions
+%     - ``'Transpose Z<->C'`` - swap Z (depth) and C (color) dimensions
 %
-%   - **parentFigure** *(optional)* — handle to the parent figure for the progress dialog;
+%   - **parentFigure** *(optional)* - handle to the parent figure for the progress dialog;
 %     pass ``[]`` to suppress the progress dialog
-%   - **showWaitbar** *(optional)* — logical, ``true`` to show a progress dialog (default: ``true``)
-%   - **noColorChannels** *(optional)* — [numeric] for ``'Transpose Z<->C'`` only:
+%   - **showWaitbar** *(optional)* - logical, ``true`` to show a progress dialog (default: ``true``)
+%   - **noColorChannels** *(optional)* - [numeric] for ``'Transpose Z<->C'`` only:
 %     number of color channels in the output; pass ``NaN`` to use all Z-sections as channels
 %
 % Output Arguments:
 %   none
 %
 % Usage:
-%   **Example 1** — transpose YX to YZ from a MibModel context
+%   **Example 1** - transpose YX to YZ from a MibModel context
 %
 %   .. code-block:: matlab
 %
 %      id = obj.mibModel.getActiveId();
 %      obj.mibModel.I{id}.transposeDataset('Transpose YX -> YZ', obj.mibModel.mibGUI, true);
 %
-%   **Example 2** — transpose Z to C with 3 output channels
+%   **Example 2** - transpose Z to C with 3 output channels
 %
 %   .. code-block:: matlab
 %
@@ -140,7 +140,7 @@ if strcmp(mode, 'Transpose Z<->C')
     end
     clear imageData imageOut;
 
-    % Clear labels/mask/selection — dimensions are now inconsistent with new Z
+    % Clear labels/mask/selection - dimensions are now inconsistent with new Z
     obj.labels.data = zeros([height, width, depthNew, 1, timePoints], 'uint8');
     updateLayerDims(obj.labels, height, width, depthNew, timePoints);
     obj.modelExist = false;

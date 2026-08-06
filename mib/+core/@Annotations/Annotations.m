@@ -83,9 +83,9 @@ classdef Annotations < matlab.mixin.Copyable
             %       obj.addLabels(labels, positions, values)
             %
             % Input Arguments:
-            %   - **labels** — a cell array with labels
-            %   - **positions** — a matrix with coordinates of the labels [pointIndex, z  x  y  t]
-            %   - **values** — an array of numbers with values for the labels [@em
+            %   - **labels** - a cell array with labels
+            %   - **positions** - a matrix with coordinates of the labels [pointIndex, z  x  y  t]
+            %   - **values** - an array of numbers with values for the labels [@em
             %     optional], default = 1
             %
             % Output Arguments:
@@ -153,7 +153,7 @@ classdef Annotations < matlab.mixin.Copyable
             %       obj.crop(cropF)
             %
             % Input Arguments:
-            %   - **cropF** — a vector [x1, y1, dx, dy, z1, dz, t1, dt] with
+            %   - **cropF** - a vector [x1, y1, dx, dy, z1, dz, t1, dt] with
             %     parameters of the crop. **Note!** The units are pixels! Parameters t1 and
             %     dt are optional!
             %
@@ -211,9 +211,9 @@ classdef Annotations < matlab.mixin.Copyable
             % Input Arguments:
             %
             % Output Arguments:
-            %   - **labelsList** — a cell array with labels
-            %   - **labelPositions** — a matrix with coordinates of the labels [labelIndex, z x y t]
-            %   - **indices** — indices of the labels
+            %   - **labelsList** - a cell array with labels
+            %   - **labelPositions** - a matrix with coordinates of the labels [labelIndex, z x y t]
+            %   - **indices** - indices of the labels
             %
             % Usage:
             %   **Example 1**
@@ -253,17 +253,17 @@ classdef Annotations < matlab.mixin.Copyable
             %       [labelsList, labelValues, labelPositions, indices] = obj.getLabels(rangeZ, rangeX, rangeY, rangeT)
             %
             % Input Arguments:
-            %   - **rangeZ** — *(optional)* define range of labels to retrieve for
+            %   - **rangeZ** - *(optional)* define range of labels to retrieve for
             %     Z [minZ maxZ], can be **NaN**
-            %   - **rangeX** — *(optional)* define range of labels to retrieve for X [minX maxX], can be **NaN**
-            %   - **rangeY** — *(optional)* define range of labels to retrieve for Y [minY maxY], can be **NaN**
-            %   - **rangeT** — *(optional)* define range of labels to retrieve for T [minT maxT], can be **NaN**
+            %   - **rangeX** - *(optional)* define range of labels to retrieve for X [minX maxX], can be **NaN**
+            %   - **rangeY** - *(optional)* define range of labels to retrieve for Y [minY maxY], can be **NaN**
+            %   - **rangeT** - *(optional)* define range of labels to retrieve for T [minT maxT], can be **NaN**
             %
             % Output Arguments:
-            %   - **labelsList** — a cell array with labels
-            %   - **labelValues** — an array of numbers with values
-            %   - **labelPositions** — a matrix with coordinates of the labels [labelIndex, z x y t]
-            %   - **indices** — indices of the labels
+            %   - **labelsList** - a cell array with labels
+            %   - **labelValues** - an array of numbers with values
+            %   - **labelPositions** - a matrix with coordinates of the labels [labelIndex, z x y t]
+            %   - **indices** - indices of the labels
             %
             % Usage:
             %   **Example 1**
@@ -358,17 +358,17 @@ classdef Annotations < matlab.mixin.Copyable
             %       [labels, values, positions, indices] = obj.getLabelsById(labelId)
             %
             % Input Arguments:
-            %   - **labelId** — a variable or a vector with a label to retrieve:
+            %   - **labelId** - a variable or a vector with a label to retrieve:
             %
-            %     - **a single number or a column of numbers** — get label that has index equal to the number
-            %     - **a matrix** — get all labels that have coordinates specified in the matrix ``[labelIndex, z x y t]``
-            %     - **a cell array** — get all labels that have text specified in the cell array
+            %     - **a single number or a column of numbers** - get label that has index equal to the number
+            %     - **a matrix** - get all labels that have coordinates specified in the matrix ``[labelIndex, z x y t]``
+            %     - **a cell array** - get all labels that have text specified in the cell array
             %
             % Output Arguments:
-            %   - **labels** — - cell array with labels of annotations
-            %   - **values** — - array with values of annotations
-            %   - **positions** — - a matrix with coordinates (index; z,x,y,t)
-            %   - **indices** — - array with indices of annotations
+            %   - **labels** - - cell array with labels of annotations
+            %   - **values** - - array with values of annotations
+            %   - **positions** - - a matrix with coordinates (index; z,x,y,t)
+            %   - **indices** - - array with indices of annotations
             %
             % Usage:
             %   **Example 1**
@@ -425,7 +425,7 @@ classdef Annotations < matlab.mixin.Copyable
             % Input Arguments:
             %
             % Output Arguments:
-            %   - **labelsNumber** — a number of labels
+            %   - **labelsNumber** - a number of labels
             %
             % Usage:
             %   **Example 1**
@@ -456,14 +456,14 @@ classdef Annotations < matlab.mixin.Copyable
             % Get list of labels shown at the specified slice
             %
             % Input Arguments:
-            %   - **handles** — a handles structure of im_browser
-            %   - **sliceNumber** — *(optional)*, a slice number to get labels
-            %   - **timePoint** — *(optional)*, a time point to get the labels
+            %   - **handles** - a handles structure of im_browser
+            %   - **sliceNumber** - *(optional)*, a slice number to get labels
+            %   - **timePoint** - *(optional)*, a time point to get the labels
             %
             % Output Arguments:
-            %   - **labelsList** — a cell array with labels
-            %   - **labelPositions** — a matrix with coordinates of the labels [labelIndex, z x y]
-            %   - **indices** — indices of the labels
+            %   - **labelsList** - a cell array with labels
+            %   - **labelPositions** - a matrix with coordinates of the labels [labelIndex, z x y]
+            %   - **indices** - indices of the labels
             %
             % Usage:
             %   **Example 1**
@@ -510,8 +510,8 @@ classdef Annotations < matlab.mixin.Copyable
             % Input Arguments:
             %
             % Output Arguments:
-            %   - **minZ** — value of min Z for all annotations
-            %   - **labelIds** — indices of those annotations
+            %   - **minZ** - value of min Z for all annotations
+            %   - **labelIds** - indices of those annotations
             %
 
             minZ = min(obj.labelPosition(:,1));
@@ -529,8 +529,8 @@ classdef Annotations < matlab.mixin.Copyable
             % Input Arguments:
             %
             % Output Arguments:
-            %   - **maxZ** — value of max Z for all annotations
-            %   - **labelIds** — indices of those annotations
+            %   - **maxZ** - value of max Z for all annotations
+            %   - **labelIds** - indices of those annotations
             %
             
             maxZ = max(obj.labelPosition(:,1));
@@ -549,12 +549,12 @@ classdef Annotations < matlab.mixin.Copyable
             % Remove specified labels
             %
             % Input Arguments:
-            %   - **labels** — *(optional)* a variable or a vector with a label to remove:
+            %   - **labels** - *(optional)* a variable or a vector with a label to remove:
             %
-            %     - omitted — remove all labels
-            %     - **a single number or a column of numbers** — remove label that has index equal to the number
-            %     - **a matrix** — remove all labels that have coordinates specified in the matrix ``[labelIndex, z x y t]``
-            %     - **a cell array** — remove all labels that have text specified in the cell array
+            %     - omitted - remove all labels
+            %     - **a single number or a column of numbers** - remove label that has index equal to the number
+            %     - **a matrix** - remove all labels that have coordinates specified in the matrix ``[labelIndex, z x y t]``
+            %     - **a cell array** - remove all labels that have text specified in the cell array
             %
             % Usage:
             %   **Example 1**
@@ -623,16 +623,16 @@ classdef Annotations < matlab.mixin.Copyable
             %       result = obj.renameLabels(oldLabel, newLabelText)
             %
             % Input Arguments:
-            %   - **oldLabel** — a variable or a vector with an old label to be renamed:
+            %   - **oldLabel** - a variable or a vector with an old label to be renamed:
             %
-            %     - **a single number or a column of numbers** — rename the label with this index
-            %     - **a matrix** — rename all labels that have coordinates specified in the matrix ``[labelIndex, z x y t]``
-            %     - **a cell array** — rename all labels that have text specified in the cell array
+            %     - **a single number or a column of numbers** - rename the label with this index
+            %     - **a matrix** - rename all labels that have coordinates specified in the matrix ``[labelIndex, z x y t]``
+            %     - **a cell array** - rename all labels that have text specified in the cell array
             %
-            %   - **newLabelText** — a cell or a char string with new text for the label
+            %   - **newLabelText** - a cell or a char string with new text for the label
             %
             % Output Arguments:
-            %   - **result** — result of the function work: ``1`` = success, ``0`` = failure
+            %   - **result** - result of the function work: ``1`` = success, ``0`` = failure
             %
             % Usage:
             %   **Example 1**
@@ -692,9 +692,9 @@ classdef Annotations < matlab.mixin.Copyable
             % values
             %
             % Input Arguments:
-            %   - **labels** — a cell array with labels
-            %   - **positions** — a matrix with coordinates of the labels [pointIndex, z  x  y  t]
-            %   - **values** — an array of numbers with values of the labels, *(optional)* default = 1
+            %   - **labels** - a cell array with labels
+            %   - **positions** - a matrix with coordinates of the labels [pointIndex, z  x  y  t]
+            %   - **values** - an array of numbers with values of the labels, *(optional)* default = 1
             %
             % Usage:
             %   **Example 1**
@@ -749,18 +749,18 @@ classdef Annotations < matlab.mixin.Copyable
             %       result = obj.updateLabels(oldLabel, newLabelText, newLabelPos, newLabelValues)
             %
             % Input Arguments:
-            %   - **oldLabel** — a variable or a vector with an old label to be updated:
+            %   - **oldLabel** - a variable or a vector with an old label to be updated:
             %
-            %     - **a single number or a column of numbers** — update the label with this index
-            %     - **a matrix** — update all labels that have coordinates specified in the matrix ``[labelIndex, z x y t]``
-            %     - **a cell array** — update all labels that have text specified in the cell array
+            %     - **a single number or a column of numbers** - update the label with this index
+            %     - **a matrix** - update all labels that have coordinates specified in the matrix ``[labelIndex, z x y t]``
+            %     - **a cell array** - update all labels that have text specified in the cell array
             %
-            %   - **newLabelText** — a cell or a char string with new text for the label
-            %   - **newLabelPos** — coordinates of the new label ``[z, x, y]``
-            %   - **newLabelValues** — *(optional)* an array of numbers with values of the labels, default = ``1``
+            %   - **newLabelText** - a cell or a char string with new text for the label
+            %   - **newLabelPos** - coordinates of the new label ``[z, x, y]``
+            %   - **newLabelValues** - *(optional)* an array of numbers with values of the labels, default = ``1``
             %
             % Output Arguments:
-            %   - **result** — result of the function work: **1** - good, **0** - bad
+            %   - **result** - result of the function work: **1** - good, **0** - bad
             %
             % Usage:
             %   **Example 1**
@@ -825,28 +825,28 @@ classdef Annotations < matlab.mixin.Copyable
             %       obj.saveToFile(filename, options)
             %
             % Input Arguments:
-            %   - **filename** — full path to output file
-            %   - **options** — *(optional)* struct with saving parameters:
+            %   - **filename** - full path to output file
+            %   - **options** - *(optional)* struct with saving parameters:
             %
-            %     - ``.format`` — (char) output file format:
+            %     - ``.format`` - (char) output file format:
             %
-            %       - ``'ann'`` — MIB annotation format
-            %       - ``'landmarksAscii'`` — Amira landmarks in ASCII format
-            %       - ``'landmarksBin'`` — Amira landmarks as binaries
-            %       - ``'psi'`` — PSI format ASCII
-            %       - ``'xls'`` — Microsoft Excel format
+            %       - ``'ann'`` - MIB annotation format
+            %       - ``'landmarksAscii'`` - Amira landmarks in ASCII format
+            %       - ``'landmarksBin'`` - Amira landmarks as binaries
+            %       - ``'psi'`` - PSI format ASCII
+            %       - ``'xls'`` - Microsoft Excel format
             %
-            %     - ``.showWaitbar`` — *(optional)* logical; ``1`` = show, ``0`` = hide; requires ``.mibGUI``
-            %     - ``.mibGUI`` — *(optional)* handle to the main app UIFigure, required when ``showWaitbar=1``
-            %     - ``.outputDir`` — *(optional)* output directory
-            %     - ``.convertToUnits`` — *(optional)* logical; convert pixel coordinates to physical units; requires ``.boundingBox`` and ``.pixSize``
-            %     - ``.boundingBox`` — matrix ``[x1 width y1 height z1 depth]``, required for unit conversion
-            %     - ``.pixSize`` — MIB struct with pixel sizes
-            %     - ``.labelText`` — *(optional)* override ``obj.labelText`` with provided cell array
-            %     - ``.labelPosition`` — *(optional)* override ``obj.labelPosition`` with provided matrix
-            %     - ``.labelValue`` — *(optional)* override ``obj.labelValue`` with provided array
-            %     - ``.sliceNames`` — *(optional)* cell array with filenames, used for Excel and CSV export
-            %     - ``.addLabelToFilename`` — *(optional)* logical; append annotation label to filename; default ``false``
+            %     - ``.showWaitbar`` - *(optional)* logical; ``1`` = show, ``0`` = hide; requires ``.mibGUI``
+            %     - ``.mibGUI`` - *(optional)* handle to the main app UIFigure, required when ``showWaitbar=1``
+            %     - ``.outputDir`` - *(optional)* output directory
+            %     - ``.convertToUnits`` - *(optional)* logical; convert pixel coordinates to physical units; requires ``.boundingBox`` and ``.pixSize``
+            %     - ``.boundingBox`` - matrix ``[x1 width y1 height z1 depth]``, required for unit conversion
+            %     - ``.pixSize`` - MIB struct with pixel sizes
+            %     - ``.labelText`` - *(optional)* override ``obj.labelText`` with provided cell array
+            %     - ``.labelPosition`` - *(optional)* override ``obj.labelPosition`` with provided matrix
+            %     - ``.labelValue`` - *(optional)* override ``obj.labelValue`` with provided array
+            %     - ``.sliceNames`` - *(optional)* cell array with filenames, used for Excel and CSV export
+            %     - ``.addLabelToFilename`` - *(optional)* logical; append annotation label to filename; default ``false``
             %
 
             if nargin < 3; options = struct(); end
@@ -1052,20 +1052,20 @@ classdef Annotations < matlab.mixin.Copyable
             %       result = obj.loadAnnotations(filename, options)
             %
             % Input Arguments:
-            %   - **filename** — *(optional)* full path to file; when empty or missing, a file-selection dialog is shown
-            %   - **options** — *(optional)* struct with additional parameters:
+            %   - **filename** - *(optional)* full path to file; when empty or missing, a file-selection dialog is shown
+            %   - **options** - *(optional)* struct with additional parameters:
             %
-            %     - ``.parentFigure`` — handle to parent UIFigure for dialogs (required for the CSV column-mapping dialog)
-            %     - ``.currentDirectory`` — starting directory for the file-selection dialog; default ``''``
-            %     - ``.boundingBox`` — ``[x1 width y1 height z1 depth]`` bounding box for Amira coordinate conversion
-            %     - ``.pixSize`` — MIB pixSize struct (``.x`` ``.y`` ``.z``) for Amira coordinate conversion
-            %     - ``.currentT`` — current time point; used when the file stores only 3-column positions; default ``1``
+            %     - ``.parentFigure`` - handle to parent UIFigure for dialogs (required for the CSV column-mapping dialog)
+            %     - ``.currentDirectory`` - starting directory for the file-selection dialog; default ``''``
+            %     - ``.boundingBox`` - ``[x1 width y1 height z1 depth]`` bounding box for Amira coordinate conversion
+            %     - ``.pixSize`` - MIB pixSize struct (``.x`` ``.y`` ``.z``) for Amira coordinate conversion
+            %     - ``.currentT`` - current time point; used when the file stores only 3-column positions; default ``1``
             %
             % Output Arguments:
-            %   - **result** — ``1`` on success, ``0`` if cancelled or failed
+            %   - **result** - ``1`` on success, ``0`` if cancelled or failed
             %
             % Usage:
-            %   **Example 1** — show file dialog, pass image metadata for coordinate conversion:
+            %   **Example 1** - show file dialog, pass image metadata for coordinate conversion:
             %
             %   .. code-block:: matlab
             %
@@ -1076,7 +1076,7 @@ classdef Annotations < matlab.mixin.Copyable
             %       options.currentT         = obj.mibModel.I{id}.slices{5}(1);
             %       result = obj.mibModel.I{id}.annotations.loadAnnotations([], options);
             %
-            %   **Example 2** — load directly from a known ``.ann`` file:
+            %   **Example 2** - load directly from a known ``.ann`` file:
             %
             %   .. code-block:: matlab
             %
@@ -1216,27 +1216,27 @@ classdef Annotations < matlab.mixin.Copyable
             %       obj.sortLabels(sortBy, direction)
             %
             % Input Arguments:
-            %   - **sortBy** — *(optional)* [char] field to be used for sorting; allowed values:
+            %   - **sortBy** - *(optional)* [char] field to be used for sorting; allowed values:
             %
-            %     - ``'name'`` — sort by the label name (default)
-            %     - ``'value'`` — sort by value
-            %     - ``'x'`` — sort by the X coordinate
-            %     - ``'y'`` — sort by the Y coordinate
-            %     - ``'z'`` — sort by the Z coordinate
-            %     - ``'t'`` — sort by the T coordinate
+            %     - ``'name'`` - sort by the label name (default)
+            %     - ``'value'`` - sort by value
+            %     - ``'x'`` - sort by the X coordinate
+            %     - ``'y'`` - sort by the Y coordinate
+            %     - ``'z'`` - sort by the Z coordinate
+            %     - ``'t'`` - sort by the T coordinate
             %
-            %   - **direction** — *(optional)* [char] sorting direction; allowed values:
+            %   - **direction** - *(optional)* [char] sorting direction; allowed values:
             %
-            %     - ``'ascend'`` — sort in ascending order (default)
-            %     - ``'descend'`` — sort in descending order
+            %     - ``'ascend'`` - sort in ascending order (default)
+            %     - ``'descend'`` - sort in descending order
             %
-            % **Example 1** — sort the list by the label name:
+            % **Example 1** - sort the list by the label name:
             %
             %   .. code-block:: matlab
             %
             %       obj.mibModel.I{obj.mibModel.id}.annotations.sortLabels();
             %
-            % **Example 2** — sort the list by the label name in descending order:
+            % **Example 2** - sort the list by the label name in descending order:
             %
             %   .. code-block:: matlab
             %

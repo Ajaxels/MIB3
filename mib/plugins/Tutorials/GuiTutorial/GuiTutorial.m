@@ -11,10 +11,10 @@ classdef GuiTutorial < handle
 %   - Firing MibModel events to update the main MIB window
 %
 % The plugin provides four operations on the current dataset:
-%   Crop    — crop to a specified XY rectangle
-%   Resize  — resize to new XY dimensions
-%   Convert — convert image class between uint8 and uint16
-%   Invert  — invert a selected colour channel
+%   Crop    - crop to a specified XY rectangle
+%   Resize  - resize to new XY dimensions
+%   Convert - convert image class between uint8 and uint16
+%   Invert  - invert a selected colour channel
 %
 % @b Usage:
 % @code
@@ -28,11 +28,11 @@ classdef GuiTutorial < handle
 % Date: 01.07.2025
 
     properties
-        mibModel            % handle to MibModel — the central application state
+        mibModel            % handle to MibModel - the central application state
         view                % handle to the AppDesigner view (core.ChildView wrapper)
-        listener            % cell array of event listeners — kept so they can be deleted on close
+        listener            % cell array of event listeners - kept so they can be deleted on close
         childControllers    = {}    % handles to open child controllers (e.g. ResampleDataset)
-        childControllersIds = {}    % class names matching childControllers{} — used by utils.startController
+        childControllersIds = {}    % class names matching childControllers{} - used by utils.startController
     end
 
     events
@@ -67,7 +67,7 @@ classdef GuiTutorial < handle
 
         % =====================================================================
         function obj = GuiTutorial(mibModel, varargin)
-        % GuiTutorial Constructor — initialises the plugin controller and GUI.
+        % GuiTutorial Constructor - initialises the plugin controller and GUI.
         %
         % Called by utils.startController as:  GuiTutorial(parentObj.mibModel)
         % The second argument (varargin) is unused here but must be accepted
@@ -141,11 +141,11 @@ classdef GuiTutorial < handle
         % closeWindow  Close the plugin window and release all resources.
         %
         % Call order matters:
-        %  1. Close child controllers first — they may reference this window.
+        %  1. Close child controllers first - they may reference this window.
         %  2. Clear CloseRequestFcn before deleting the figure to prevent
         %     a recursive call (deleting the figure would re-trigger the fcn).
         %  3. Delete event listeners so they cannot fire after deletion.
-        %  4. Fire CloseEvent last — utils.purgeChildController is wired to
+        %  4. Fire CloseEvent last - utils.purgeChildController is wired to
         %     this and removes this controller from the parent's list.
 
             % Reverse iteration avoids index-shift bugs when a child's own
@@ -234,10 +234,10 @@ classdef GuiTutorial < handle
         % from updateWidgets(), so it requires no event argument.
         %
         % Each operation only needs a subset of the available widgets:
-        %   Crop    — XY position (xMin, yMin) and size (width, height)
-        %   Resize  — target size (width, height)
-        %   Convert — target class (convertDropdown)
-        %   Invert  — colour channel (colorDropdown)
+        %   Crop    - XY position (xMin, yMin) and size (width, height)
+        %   Resize  - target size (width, height)
+        %   Convert - target class (convertDropdown)
+        %   Invert  - colour channel (colorDropdown)
 
             % Start from all widgets enabled, then selectively disable those
             % that are irrelevant for the active operation.
@@ -250,7 +250,7 @@ classdef GuiTutorial < handle
 
             if obj.view.handles.cropRadio.Value
                 % Crop needs x/y origin and width/height; class and channel
-                % are irrelevant — disable them to guide the user.
+                % are irrelevant - disable them to guide the user.
                 obj.view.handles.convertDropdown.Enable  = 'off';
                 obj.view.handles.colorDropdown.Enable    = 'off';
             elseif obj.view.handles.resizeRadio.Value
@@ -383,7 +383,7 @@ classdef GuiTutorial < handle
         %
         % Pixel values are scaled linearly so that the full dynamic range
         % of the source class maps to the full dynamic range of the target
-        % class (e.g. 0–255 → 0–65535).
+        % class (e.g. 0-255 → 0-65535).
         %
         % Important: setData4D cannot be used for a type conversion because
         % MibImage.setData writes into the existing typed container via
@@ -429,9 +429,9 @@ classdef GuiTutorial < handle
             % and write the new typed array straight into MibImage.data.
             % After replacing the data we must update three interdependent
             % metadata properties on MibImage:
-            %   dataClass  — the MATLAB class string ('uint8', 'uint16', …)
-            %   maxInt     — the maximum displayable integer for this class
-            %   viewPort   — per-channel display range [min, max, gamma]
+            %   dataClass  - the MATLAB class string ('uint8', 'uint16', …)
+            %   maxInt     - the maximum displayable integer for this class
+            %   viewPort   - per-channel display range [min, max, gamma]
             imageObj           = obj.mibModel.I{id}.image;
             imageObj.data   = img{1};
             imageObj.dataClass = class(img{1});
@@ -464,7 +464,7 @@ classdef GuiTutorial < handle
             % pass it as col_channel to getData2D/setData2D.
             colCh    = find(strcmp(obj.view.handles.colorDropdown.Items, colChStr), 1);
 
-            % Empty options struct — no ROI, no viewport crop.
+            % Empty options struct - no ROI, no viewport crop.
             % Passing roiId in options as [] would activate "currently selected ROI"
             % mode, which fails when no ROI exists.  Omitting roiId disables
             % ROI mode and processes the full image.

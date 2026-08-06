@@ -12,8 +12,8 @@ function renderSlider(obj, sliderType, value)
 % the Zarr debounce timer, so it guards against the document being torn down.
 %
 % Input Arguments:
-%   - **sliderType** — [char] ``'slice'`` or ``'frame'``
-%   - **value** — [numeric] slider position value to commit
+%   - **sliderType** - [char] ``'slice'`` or ``'frame'``
+%   - **value** - [numeric] slider position value to commit
 %
 % Output Arguments:
 %   (none)

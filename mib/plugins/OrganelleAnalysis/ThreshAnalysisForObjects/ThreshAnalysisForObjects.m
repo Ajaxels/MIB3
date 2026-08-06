@@ -48,7 +48,7 @@ classdef ThreshAnalysisForObjects < handle
 
         % -----------------------------------------------------------------
         function obj = ThreshAnalysisForObjects(mibModel)
-        % ThreshAnalysisForObjects  Constructor — initialises controller and GUI.
+        % ThreshAnalysisForObjects  Constructor - initialises controller and GUI.
         %
         % Parameters:
         % mibModel: handle to the MibModel instance
@@ -56,7 +56,7 @@ classdef ThreshAnalysisForObjects < handle
             obj.mibModel = mibModel;
             id = obj.mibModel.getActiveId();
 
-            % check for virtual stacking mode — not supported
+            % check for virtual stacking mode - not supported
             if isprop(obj.mibModel.I{id}, 'Virtual') && obj.mibModel.I{id}.Virtual.virtual == 1
                 dlgOpt.MsgBoxOnly = true;
                 dlgOpt.Icon = 'puffin_warning';

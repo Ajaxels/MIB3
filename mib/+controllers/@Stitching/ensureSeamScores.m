@@ -41,14 +41,14 @@ function cancelled = ensureSeamScores(obj, options)
 % triggers the rescore.
 %
 % Input Arguments:
-%   - **options** *(optional)* — struct with fields:
+%   - **options** *(optional)* - struct with fields:
 %
-%     - ``.parentFigure`` — [handle] progress-dialog parent (default:
+%     - ``.parentFigure`` - [handle] progress-dialog parent (default:
 %       :meth:`guiFigure`; the inspector passes its own window)
-%     - ``.readerFcn`` — [function_handle] reuse an existing tile reader (optional)
+%     - ``.readerFcn`` - [function_handle] reuse an existing tile reader (optional)
 %
 % Output Arguments:
-%   - **cancelled** — [logical] ``true`` when the user cancelled the *Scoring
+%   - **cancelled** - [logical] ``true`` when the user cancelled the *Scoring
 %     seams...* dialog; the scores are then cleared, the stamp is NOT set, and
 %     the next request scores again. ``false`` when scoring ran or was skipped.
 %

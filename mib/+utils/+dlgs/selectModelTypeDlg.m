@@ -48,10 +48,10 @@ classdef selectModelTypeDlg < handle
             %   function obj = selectModelTypeDlg(ParentFigure, mibPath)
             %
             % Input Arguments:
-            %   - **ParentFigure** — handle to the parent GUI (AppContainer or uifigure);
+            %   - **ParentFigure** - handle to the parent GUI (AppContainer or uifigure);
             %     used to center the dialog. In MIB pass ``obj.mibModel.getProgressBarParent()``
             %     so the dialog follows the active dataset window when it is undocked.
-            %   - **mibPath** — *(optional)* char, path to the MIB installation directory;
+            %   - **mibPath** - *(optional)* char, path to the MIB installation directory;
             %     used to locate icon images.  Pass [] or '' to use auto-detection.
             %
 
@@ -77,7 +77,7 @@ classdef selectModelTypeDlg < handle
             %   function modelType = run(obj)
             %
             % Output Arguments:
-            %   - **modelType** — one of {63, 255, 65535, 4294967295}, or [] if cancelled
+            %   - **modelType** - one of {63, 255, 65535, 4294967295}, or [] if cancelled
             %
 
             obj.view.Figure.WindowStyle = 'modal';
@@ -111,7 +111,7 @@ classdef selectModelTypeDlg < handle
             % Center on parent
             utils.moveWindowOutside(fig, obj.ParentFigure, 'center', 'center');
 
-            % Set icon — pick any available puffin_quest image
+            % Set icon - pick any available puffin_quest image
             mibDir = obj.mibPath;
             if isempty(mibDir)
                 mibDir = fileparts(which('mib3'));

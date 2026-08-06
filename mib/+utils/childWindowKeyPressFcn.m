@@ -13,19 +13,19 @@ function childWindowKeyPressFcn(controller, hWidget, hData)
 % preferences so custom bindings are respected.
 %
 % Currently supported actions:
-%   - Undo/Redo last action — calls mibModel.undo() + fires ShowImage
+%   - Undo/Redo last action - calls mibModel.undo() + fires ShowImage
 %
 % Additionally handles Escape independently of KeyShortcuts:
-%   - Escape — calls controller.closeWindow() if the method exists
+%   - Escape - calls controller.closeWindow() if the method exists
 %
 % Input Arguments:
-%   - **controller** — handle to the child controller; must have a ``.mibModel`` property
-%   - **hWidget** — the UIFigure that fired the event (passed by WindowKeyPressFcn)
-%   - **hData** — KeyData event object with ``.Key`` and ``.Modifier`` fields
+%   - **controller** - handle to the child controller; must have a ``.mibModel`` property
+%   - **hWidget** - the UIFigure that fired the event (passed by WindowKeyPressFcn)
+%   - **hData** - KeyData event object with ``.Key`` and ``.Modifier`` fields
 %
 % Usage:
 %
-%   **Example 1** — wire in a child controller's ``addCallbacks``
+%   **Example 1** - wire in a child controller's ``addCallbacks``
 %
 %   .. code-block:: matlab
 %

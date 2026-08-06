@@ -7,19 +7,19 @@ function result = setData63(obj, dataset, type, orient, materialIndex, options)
 %       result = obj.setData63(dataset, type, orient, materialIndex, options)
 %
 % Input Arguments:
-%   - **dataset** — matrix with the dataset to update MibBaseImage.img
-%   - **type** — char with the type of layer to obtain, 'labels', 'mask', 'selection', or 'everything' to get all layers at once
-%   - **orient** — *(optional)*, can be ``[]``; default ``3``:
+%   - **dataset** - matrix with the dataset to update MibBaseImage.img
+%   - **type** - char with the type of layer to obtain, 'labels', 'mask', 'selection', or 'everything' to get all layers at once
+%   - **orient** - *(optional)*, can be ``[]``; default ``3``:
 %
-%     - ``1`` — updates transposed dataset from ZX configuration: ``[x,z,y,c,t]`` → ``[y,x,z,c,t]``
-%     - ``2`` — updates transposed dataset from ZY configuration: ``[y,z,x,c,t]`` → ``[y,x,z,c,t]``
-%     - ``3`` — updates original dataset from YX configuration: ``[y,x,z,c,t]``
+%     - ``1`` - updates transposed dataset from ZX configuration: ``[x,z,y,c,t]`` → ``[y,x,z,c,t]``
+%     - ``2`` - updates transposed dataset from ZY configuration: ``[y,z,x,c,t]`` → ``[y,x,z,c,t]``
+%     - ``3`` - updates original dataset from YX configuration: ``[y,x,z,c,t]``
 %
-%   - **materialIndex** — *(optional)*, can be ``[]``:
+%   - **materialIndex** - *(optional)*, can be ``[]``:
 %
 %     - for ``type = 'labels'``: integer material index (returned as binary 0/1); ``[]`` = all materials
 %     - for ``type = 'mask'``, ``'selection'``, ``'everything'``: not used
-%   - **options** — *(optional)*, a structure with extra parameters
+%   - **options** - *(optional)*, a structure with extra parameters
 %
 %     - ``.y`` *(optional)*, [ymin, ymax] coordinates of the dataset to set after transpose, can be a single number
 %     - ``.x`` *(optional)*, [xmin, xmax] coordinates of the dataset to set after transpose, can be a single number
@@ -27,7 +27,7 @@ function result = setData63(obj, dataset, type, orient, materialIndex, options)
 %     - ``.t`` *(optional)*, [tmin, tmax] coordinates of the dataset to set after transpose, can be a single number
 %
 % Output Arguments:
-%   - **result** — **1** - success, **0** - error
+%   - **result** - **1** - success, **0** - error
 %
 % Usage:
 %   **Example 1**

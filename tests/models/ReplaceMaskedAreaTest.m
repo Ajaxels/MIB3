@@ -2,13 +2,13 @@ classdef ReplaceMaskedAreaTest < matlab.unittest.TestCase
 % REPLACEMASKEDAREATEST - Unit tests for MibModel.replaceMaskedArea.
 %
 % Verification strategies:
-%   masked pixels set    — foreground pixels in the mask/selection layer
+%   masked pixels set    - foreground pixels in the mask/selection layer
 %                          are overwritten with the specified fill value
-%   unmasked unchanged   — boolean indexing confirms pixels outside the
+%   unmasked unchanged   - boolean indexing confirms pixels outside the
 %                          mask are byte-identical before and after
-%   empty mask           — all-zero mask leaves the image untouched
-%   full mask            — entire layer masked → entire image equals fill value
-%   selection target     — same mechanics work when target = 'selection'
+%   empty mask           - all-zero mask leaves the image untouched
+%   full mask            - entire layer masked → entire image equals fill value
+%   selection target     - same mechanics work when target = 'selection'
 
     methods (TestClassSetup)
         function addPaths(testCase)

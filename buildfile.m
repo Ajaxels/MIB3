@@ -25,7 +25,7 @@ plan("check") = CodeIssuesTask("mib", IncludeSubfolders=true, ...
     WarningThreshold=Inf);   % non-blocking on warnings; tighten later
 
 % test / testAll / perf are custom function tasks (see below) so they are
-% never skipped as "up-to-date" — tests always run when explicitly invoked.
+% never skipped as "up-to-date" - tests always run when explicitly invoked.
 plan("test").Dependencies    = "addTestPath";
 plan("testAll").Dependencies = "addTestPath";
 plan("perf").Dependencies    = "addTestPath";
@@ -61,6 +61,6 @@ testsFolder = fullfile(context.Plan.RootFolder, "tests");
 % tests\ is already on the path via the addTestPath dependency
 results = runtests(testsFolder, IncludeSubfolders=true, Tag="Performance");
 mibtest.perf.PerfBaselineStore.finalizeRun();   % write/print before asserting
-% assertSuccess counts Incomplete (assumption-filtered) as failure — check only actual failures
+% assertSuccess counts Incomplete (assumption-filtered) as failure - check only actual failures
 assert(~any([results.Failed]), sprintf('%d performance test(s) failed', sum([results.Failed])));
 end

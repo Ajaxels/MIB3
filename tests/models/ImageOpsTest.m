@@ -4,9 +4,9 @@ classdef ImageOpsTest < matlab.unittest.TestCase
 % Covers: MibModel.invertImage
 %
 % Verification strategies:
-%   pixel complement  — each inverted value must equal maxInt - original
-%   round-trip        — two inversions must yield the original data
-%   cross-layer       — selection/mask/labels must not change during inversion
+%   pixel complement  - each inverted value must equal maxInt - original
+%   round-trip        - two inversions must yield the original data
+%   cross-layer       - selection/mask/labels must not change during inversion
 
     methods (TestClassSetup)
         function addPaths(testCase)
@@ -17,7 +17,7 @@ classdef ImageOpsTest < matlab.unittest.TestCase
     methods (Test, TestTags = {'Unit'})
 
         % -----------------------------------------------------------------
-        % invertImage — pixel correctness
+        % invertImage - pixel correctness
         % -----------------------------------------------------------------
 
         function invertImage_3DStack_pixelComplement(testCase)

@@ -130,7 +130,7 @@ Key rules:
 | Parameter name | `**bold**` | `**options**` |
 | Optional marker | `*(optional)*` after name | `**opts** *(optional)*` |
 | Type hint | `[brackets]` | `[logical]`, `[char]`, `[numeric]`, `[struct]` |
-| Separator | em-dash `—` (U+2014) | `**x** — description` |
+| Separator | plain hyphen `-` (U+002D) | `**x** - description` |
 | Inline code / default | double backticks | `` ``true`` ``, `` ``'yxzct'`` `` |
 | Struct field names | single backticks + dot | `` ``.fieldName`` `` |
 
@@ -232,11 +232,11 @@ Content is indented **3 spaces** under the directive keyword.
 | Example not rendered as a code block | Missing blank `%` line before or after `.. code-block::` | Add blank `%` lines |
 | `...` shown as a comment in code block | Pygments MATLAB lexer quirk | Avoid `...` in example code |
 | Struct fields not indented as sub-list | Missing blank `%` line between parent bullet and field list | Add blank `%` line |
-| Em-dash rendered as hyphen | Plain `-` used instead of `—` | Replace with Unicode `—` (U+2014) |
+| Em dash `—` anywhere in a docblock | Banned repo-wide (root `CLAUDE.md`) | Replace with a plain hyphen `-` |
 | `@b Heading` not rendered bold | Old Doxygen syntax | Replace with `**Heading**` |
 | `@ Note:` not rendered | Old Doxygen syntax | Replace with `.. note::` directive |
 | `[@em optional]` not rendered | Old Doxygen syntax | Replace with `*(optional)*` |
-| Field listed as `.fieldName - desc` | Old Doxygen style | Replace with `` - ``.fieldName`` — desc `` |
+| Field listed as `.fieldName - desc` | Old Doxygen style | Replace with `` - ``.fieldName`` - desc `` |
 
 ---
 
@@ -326,8 +326,8 @@ This renders as a flat list with 4 items; Sphinx warning: "Bullet list ends with
 1. Identify which items are sub-options vs. sibling parameters
 2. Move sub-options from 3-space to 5-space indent
 3. Add blank `%` lines before the first sub-option and after the last sub-option
-4. For `'value' - desc` format, convert to `` ``'value'`` — desc `` with backticks and em-dash
-5. For `.field - desc` format, convert to `` ``.field`` — desc ``
+4. For `'value' - desc` format, convert to `` ``'value'`` - desc `` with backticks
+5. For `.field - desc` format, convert to `` ``.field`` - desc ``
 6. If a Doxygen comment contains multiple paragraphs or a definition list followed by bullet list, insert blank `%` lines between sections to help RST parse the structure
 
 ---

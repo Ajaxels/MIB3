@@ -5,9 +5,9 @@ classdef SaveLoadLabelsTest < matlab.unittest.TestCase
 % save/load round-trip through the Matlab .model format.
 %
 % Verification strategies:
-%   file created      — saveImage must write a .model file to the temp folder
-%   material names    — three material names are preserved verbatim after reload
-%   pixel values      — the full labels array is pixel-exact with the original
+%   file created      - saveImage must write a .model file to the temp folder
+%   material names    - three material names are preserved verbatim after reload
+%   pixel values      - the full labels array is pixel-exact with the original
 
     methods (TestClassSetup)
         function addPaths(testCase)

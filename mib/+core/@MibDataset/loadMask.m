@@ -9,35 +9,35 @@ function result = loadMask(obj, filenames, options)
 % Dataset-level orchestrator for mask loading. Called by MibModel.loadMask
 % after BatchOpt processing, virtual-mode guarding, and file browsing are done.
 %
-% FILE PATH  — filenames is a cell array of full file paths.
+% FILE PATH  - filenames is a cell array of full file paths.
 %   ``.mask`` files are loaded with ``load()``; other formats use LoaderFactory.
 %   Multiple files are stacked slice-by-slice into a 3D volume.
 %
-% IMPORT PATH — options.mask contains the raw array. filenames is empty (``[]``).
+% IMPORT PATH - options.mask contains the raw array. filenames is empty (``[]``).
 %
 % After the array is obtained the method validates dimensions against the open
 % image, binarises the data, rebuilds ``obj.mask`` as a new ``MibLabels``
 % instance, and sets ``obj.maskExist = true``.
 %
 % Input Arguments:
-%   - **filenames** — cell array of full file paths, or ``[]`` for the import path
-%   - **options** — struct with loading parameters
+%   - **filenames** - cell array of full file paths, or ``[]`` for the import path
+%   - **options** - struct with loading parameters
 %
-%     - ``.mask`` — raw array to import (import path only)
-%     - ``.loaderType`` — ``'matlab_mask'`` when loading ``.mask`` MAT files
-%     - ``.loaderInfo`` — struct from ExtensionRegistryLoad.resolveLoader
+%     - ``.mask`` - raw array to import (import path only)
+%     - ``.loaderType`` - ``'matlab_mask'`` when loading ``.mask`` MAT files
+%     - ``.loaderInfo`` - struct from ExtensionRegistryLoad.resolveLoader
 %       (required for non-mask image formats)
-%     - ``.batchModeSwitch`` — [logical, ``false``] suppress interactive dialogs
-%     - ``.preferences`` — MIB preferences struct
-%     - ``.ParentFigure`` — parent figure handle for dialogs
-%     - ``.mibPath`` — path to MIB installation directory
-%     - ``.showWaitbar`` — [logical, ``true``] show progress dialog
+%     - ``.batchModeSwitch`` - [logical, ``false``] suppress interactive dialogs
+%     - ``.preferences`` - MIB preferences struct
+%     - ``.ParentFigure`` - parent figure handle for dialogs
+%     - ``.mibPath`` - path to MIB installation directory
+%     - ``.showWaitbar`` - [logical, ``true``] show progress dialog
 %
 % Output Arguments:
-%   - **result** — struct (non-empty) on success; ``[]`` on error or user cancel
+%   - **result** - struct (non-empty) on success; ``[]`` on error or user cancel
 %
 % Usage:
-%   **Example 1** — file path
+%   **Example 1** - file path
 %
 %   .. code-block:: matlab
 %
@@ -46,7 +46,7 @@ function result = loadMask(obj, filenames, options)
 %      dsOpts.ParentFigure = obj.mibGUI;
 %      result = obj.mibModel.I{id}.loadMask({'C:\data\Mask_stack.mask'}, dsOpts);
 %
-%   **Example 2** — import path
+%   **Example 2** - import path
 %
 %   .. code-block:: matlab
 %
@@ -198,7 +198,7 @@ maskArray = reshape(uint8(maskArray > 0), [imgH, imgW, imgD, 1, 1]);
 %% Store mask
 
 if obj.labels.maxMaterials < 64
-    % MibLabels63: mask bits are packed inside obj.labels — write via setData3D
+    % MibLabels63: mask bits are packed inside obj.labels - write via setData3D
     % so the packing logic inside MibLabels63 is applied correctly.
     obj.setData3D(squeeze(maskArray), 'mask', [], 3, NaN);
     obj.maskExist = true;
@@ -213,7 +213,7 @@ if obj.labels.maxMaterials < 64
     obj.labels.maskFilename = resolvedFilename;
     obj.image.maskFilename  = resolvedFilename;
 else
-    % Standalone MibLabels mask — rebuild the object so all dimension
+    % Standalone MibLabels mask - rebuild the object so all dimension
     % properties (height, width, depth, …) are derived from actual data.
     maskMeta = core.MibImage.initializeImgInfo( ...
         'pixSize', obj.image.pixSize, ...

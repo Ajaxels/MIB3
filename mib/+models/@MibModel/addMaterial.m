@@ -1,5 +1,5 @@
 function addMaterial(obj, BatchOptIn)
-% ADDMATERIAL - Add a material to the current model — wrapper around core.MibDataset.addMaterial.
+% ADDMATERIAL - Add a material to the current model - wrapper around core.MibDataset.addMaterial.
 %
 % Syntax:
 %   .. code-block:: matlab
@@ -20,26 +20,26 @@ function addMaterial(obj, BatchOptIn)
 % events are fired so the segmentation table and image view refresh.
 %
 % Input Arguments:
-%   - **BatchOptIn** — a structure for batch processing mode; when NaN, returns a
+%   - **BatchOptIn** - a structure for batch processing mode; when NaN, returns a
 %     structure with default options via "SyncBatch" event
 %
-%     - ``.MaterialName`` — char, name of the new material (used for types 63
+%     - ``.MaterialName`` - char, name of the new material (used for types 63
 %       and 255; for larger types the value is overridden with the next unused
 %       index string) [*default* 'NewMaterial']
-%     - ``.showWaitbar`` — logical, show or not the waitbar [*default* false]
-%     - ``.id`` — *(optional)*, dataset index from 1 to 9, default = obj.id
+%     - ``.showWaitbar`` - logical, show or not the waitbar [*default* false]
+%     - ``.id`` - *(optional)*, dataset index from 1 to 9, default = obj.id
 %
 %
 % Output Arguments:
 %
 % Usage:
-%   **Example 1** — interactive add with name dialog
+%   **Example 1** - interactive add with name dialog
 %
 %   .. code-block:: matlab
 %
 %      obj.mibModel.addMaterial();
 %
-%   **Example 2** — scripted / batch call
+%   **Example 2** - scripted / batch call
 %
 %   .. code-block:: matlab
 %
@@ -161,7 +161,7 @@ end
 
 % MibDataset.addMaterial already set selectedMaterial/selectedAddToMaterial
 % correctly for all model types (table rows 3-4 for large models, nMats+2
-% for small models). Do NOT override here — for large models newMaterialIndex
+% for small models). Do NOT override here - for large models newMaterialIndex
 % is the raw pixel value (1, 2, 3 …) and adding 2 produces out-of-range row
 % indices that crash the 4-row materialsTable.
 

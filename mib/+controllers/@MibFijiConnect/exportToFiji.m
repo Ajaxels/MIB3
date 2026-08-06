@@ -85,7 +85,7 @@ end
 progressDlg.Value = 0.6; progressDlg.Message = 'Sending data to Fiji...';
 
 if isa(imageData, 'uint16')
-    if ndims(imageData) == 4  % [h,w,d,c] multichannel 16-bit — not supported
+    if ndims(imageData) == 4  % [h,w,d,c] multichannel 16-bit - not supported
         delete(progressDlg);
         utils.dlgs.showErrorDialog(obj.mibModel.getProgressBarParent(), ...
             sprintf('Export to Fiji:\nIt is not possible to export a 16-bit Z-stack to Fiji.\n\nExport supports 8-bit Z-stacks or 16-bit single images.'), ...
@@ -96,7 +96,7 @@ if isa(imageData, 'uint16')
         imp.show;
     end
 else
-    if ndims(imageData) == 4  % [h,w,d,c] multichannel 8-bit — MIJ expects [h,w,d,c]
+    if ndims(imageData) == 4  % [h,w,d,c] multichannel 8-bit - MIJ expects [h,w,d,c]
         MIJ.createColor(datasetName, imageData, 1);
     elseif strcmp(obj.mibModel.I{id}.image.colorType, 'truecolor')
         MIJ.createColor(datasetName, imageData, 1);

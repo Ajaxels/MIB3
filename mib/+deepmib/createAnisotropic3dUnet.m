@@ -15,23 +15,23 @@ function [lgraph, outputPatchSize] = createAnisotropic3dUnet(inputPatchSize, num
 % standard 3D kernels.
 %
 % Input Arguments:
-%   - **inputPatchSize** — 4-element vector [height width depth channels]
-%   - **numClasses** — number of segmentation classes
-%   - **filterSize** — convolution kernel size for the 3D U-Net template
-%   - **numFirstFilters** — number of output channels for the first encoder stage
-%   - **convPadding** — 'same' or 'valid'
-%   - **encoderDepth** — total number of encoder stages
-%   - **numAnisotropicBlocks** — *(optional)* number of initial 2D stages; default 1
+%   - **inputPatchSize** - 4-element vector [height width depth channels]
+%   - **numClasses** - number of segmentation classes
+%   - **filterSize** - convolution kernel size for the 3D U-Net template
+%   - **numFirstFilters** - number of output channels for the first encoder stage
+%   - **convPadding** - 'same' or 'valid'
+%   - **encoderDepth** - total number of encoder stages
+%   - **numAnisotropicBlocks** - *(optional)* number of initial 2D stages; default 1
 %
 % Output Arguments:
-%   - **lgraph** — layerGraph (MATLAB < R2026a) or dlnetwork (MATLAB >= R2026a) with
+%   - **lgraph** - layerGraph (MATLAB < R2026a) or dlnetwork (MATLAB >= R2026a) with
 %     the requested anisotropic modifications applied
-%   - **outputPatchSize** — 4-element vector [height width depth classes], or []
+%   - **outputPatchSize** - 4-element vector [height width depth classes], or []
 %     when convPadding is 'valid'
 %
 % Usage:
 %
-%   **Example 1** — 3D U-Net with 2 initial 2D downsampling stages
+%   **Example 1** - 3D U-Net with 2 initial 2D downsampling stages
 %
 %   .. code-block:: matlab
 %

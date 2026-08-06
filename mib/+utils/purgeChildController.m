@@ -9,12 +9,12 @@ function purgeChildController(parentObj, src)
 % from the parent's tracking arrays.
 %
 % Input Arguments:
-%   - **parentObj** — handle — parent controller (must have childControllers / childControllersIds)
-%   - **src** — handle — the child controller that fired CloseEvent
+%   - **parentObj** - handle - parent controller (must have childControllers / childControllersIds)
+%   - **src** - handle - the child controller that fired CloseEvent
 %
 % Usage:
 %
-%   **Example 1** — wired internally by ``utils.startController`` (not called directly)
+%   **Example 1** - wired internally by ``utils.startController`` (not called directly)
 %
 %   .. code-block:: matlab
 %

@@ -1,1 +1,4 @@
+# notebook
 c:\Python\Miniforge\envs\mkdocs\Scripts\zensical build
+# main workstation
+d:\Python\Miniforge3\envs\Zensical\Scripts\zensical build

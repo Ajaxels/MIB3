@@ -10,17 +10,17 @@ function [shiftYXZ, quality, debugInfo] = featureShift(cropA, cropB, options)
 % Drop-in alternative to :func:`utils.stitch.pairwiseShift` for the
 % ``RegistrationMethod = 'Feature-based'`` path. Detects keypoints in each crop
 % (SURF by default), matches descriptors, and RANSAC-fits an ``estgeotform2d``
-% model — pure translation by default, or the model selected by
+% model - pure translation by default, or the model selected by
 % ``options.transformType``; the full fitted matrix is returned in
 % ``debugInfo.tformA``. Unlike phase correlation it does NOT rely on a large
 % textured overlap: a thin shared strip with a handful of matchable blobs is
 % enough, which is why it recovers small (~10%) or unknown overlaps where phase
 % correlation loses the peak. Its weakness is feature-poor or strongly repetitive
-% content (few / ambiguous matches) — there phase correlation still wins.
+% content (few / ambiguous matches) - there phase correlation still wins.
 %
 % **Sign convention (identical to pairwiseShift, load-bearing).** If ``cropB``
 % equals ``cropA`` shifted DOWN by ``dy`` rows and RIGHT by ``dx`` columns
-% (``cropB(r,c) ≈ cropA(r-dy, c-dx)``), then ``shiftYXZ = [dy dx 0]`` — so the
+% (``cropB(r,c) ≈ cropA(r-dy, c-dx)``), then ``shiftYXZ = [dy dx 0]`` - so the
 % composition in :func:`utils.stitch.measureAllPairs`/``measureOne`` is unchanged
 % between registration methods. Derivation: ``estgeotform2d(A, B)`` returns the
 % map A→B (``B ≈ transformPointsForward(tform, A)``), whose translation
@@ -28,33 +28,33 @@ function [shiftYXZ, quality, debugInfo] = featureShift(cropA, cropB, options)
 % ``cropB(y+ty, x+tx)`` ⇒ ``dy = ty = T(2,3)``, ``dx = tx = T(1,3)``.
 %
 % Input Arguments:
-%   - **cropA** — [numeric] reference crop from tile ``i``, ``[H W]`` or ``[H W C]``.
-%   - **cropB** — [numeric] moving crop from tile ``j``, same size as ``cropA``.
-%   - **options** *(optional)* — struct with fields (all optional). It accepts
+%   - **cropA** - [numeric] reference crop from tile ``i``, ``[H W]`` or ``[H W C]``.
+%   - **cropB** - [numeric] moving crop from tile ``j``, same size as ``cropA``.
+%   - **options** *(optional)* - struct with fields (all optional). It accepts
 %     the same ``automaticOptions`` shape produced by
 %     ``controllers.Alignment.defaultAutomaticOptions`` (per-detector sub-structs
 %     ``detectSURFFeatures`` …, plus ``estGeomTransform`` and
 %     ``rotationInvariance``) so the shared settings dialog
 %     :func:`utils.align.detectorSettingsDlg` can drive it directly:
 %
-%     - ``.featureDetector`` — [char] detector name understood by
+%     - ``.featureDetector`` - [char] detector name understood by
 %       :func:`utils.align.detectFeatures` (default: SURF).
-%     - ``.detectSURFFeatures`` / ``.detectSIFTFeatures`` / … — [struct]
+%     - ``.detectSURFFeatures`` / ``.detectSIFTFeatures`` / … - [struct]
 %       per-detector parameters (defaults mirror ``defaultAutomaticOptions``).
-%     - ``.rotationInvariance`` — [logical] passed as ``extractFeatures`` ``Upright``
-%       (default: ``true`` — upright descriptors, appropriate for translation).
-%     - ``.downsampleFactor`` — [double ≥ 1] detect on tiles resized by
+%     - ``.rotationInvariance`` - [logical] passed as ``extractFeatures`` ``Upright``
+%       (default: ``true`` - upright descriptors, appropriate for translation).
+%     - ``.downsampleFactor`` - [double ≥ 1] detect on tiles resized by
 %       ``1/downsampleFactor`` (faster on big tiles); point locations are scaled
 %       back to full resolution before fitting (default: ``1``).
-%     - ``.estGeomTransform`` — [struct] ``.MaxNumTrials`` / ``.Confidence`` /
+%     - ``.estGeomTransform`` - [struct] ``.MaxNumTrials`` / ``.Confidence`` /
 %       ``.MaxDistance`` for the RANSAC ``estgeotform2d`` fit.
-%     - ``.featureMinInliers`` — [double] minimum RANSAC inliers to trust the fit
+%     - ``.featureMinInliers`` - [double] minimum RANSAC inliers to trust the fit
 %       (default: ``8``); below this ``quality = 0``.
-%     - ``.transformType`` — [char] ``estgeotform2d`` model:
+%     - ``.transformType`` - [char] ``estgeotform2d`` model:
 %       ``'translation'`` (default) | ``'rigid'`` | ``'similarity'`` | ``'affine'``.
 %       Non-translation models return their translation component in ``shiftYXZ``
 %       and the full matrix in ``debugInfo.tformA``.
-%     - ``.allowRotation`` — [logical] ``true`` (default). When ``false`` and a
+%     - ``.allowRotation`` - [logical] ``true`` (default). When ``false`` and a
 %       non-translation model is requested, the measured edge is constrained to
 %       carry no rotation: ``'rigid'`` falls back to the (equivalent) pure
 %       translation fit, while ``'similarity'``/``'affine'`` fits are projected
@@ -65,19 +65,19 @@ function [shiftYXZ, quality, debugInfo] = featureShift(cropA, cropB, options)
 %     ``expectedShift``, ``searchRadius``, ``window``, ``subpixel``) are ignored.
 %
 % Output Arguments:
-%   - **shiftYXZ** — [1x3 double] ``[dy dx dz]`` correction to the nominal offset
+%   - **shiftYXZ** - [1x3 double] ``[dy dx dz]`` correction to the nominal offset
 %     (``dz`` is ``0``; Z handled by the caller).
-%   - **quality** — [double] in ``[0,1]``: the RANSAC inlier ratio
+%   - **quality** - [double] in ``[0,1]``: the RANSAC inlier ratio
 %     (``inliers / matched``), ``0`` when fewer than ``featureMinInliers`` inliers
 %     survive or the fit fails. Comparable to the phase-correlation quality so the
 %     same ``QualityThreshold`` gates both methods.
-%   - **debugInfo** — struct with ``.numMatched``, ``.numInliers``, ``.status``,
-%     and ``.tformA`` — the full fitted A→B transform as a 3x3 double
+%   - **debugInfo** - struct with ``.numMatched``, ``.numInliers``, ``.status``,
+%     and ``.tformA`` - the full fitted A→B transform as a 3x3 double
 %     (``[x'; y'; 1] = tformA * [x; y; 1]``, crop-local pixel coordinates, empty
 %     until a fit succeeds). For ``transformType = 'translation'`` its linear
 %     part is the identity.
 %
-% **Example** — recover a known integer shift from a textured crop:
+% **Example** - recover a known integer shift from a textured crop:
 %
 %   .. code-block:: matlab
 %
@@ -196,7 +196,7 @@ if ~isfield(options, 'transformType') || isempty(options.transformType)
     options.transformType = 'translation';
 end
 if ~isfield(options, 'allowRotation'); options.allowRotation = true; end
-% Rigid without rotation IS a translation — fit the smaller model directly.
+% Rigid without rotation IS a translation - fit the smaller model directly.
 if ~options.allowRotation && strcmpi(options.transformType, 'rigid')
     options.transformType = 'translation';
 end

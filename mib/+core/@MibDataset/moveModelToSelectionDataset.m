@@ -11,21 +11,21 @@ function moveModelToSelectionDataset(obj, action_type, options)
 % performance.
 %
 % Input Arguments:
-%   - **action_type** — [char] type of the desired action:
+%   - **action_type** - [char] type of the desired action:
 %
-%     - ``'add'`` — add the selected material to selection
-%     - ``'remove'`` — remove the selected material from selection
-%     - ``'replace'`` — replace selection with the selected material
+%     - ``'add'`` - add the selected material to selection
+%     - ``'remove'`` - remove the selected material from selection
+%     - ``'replace'`` - replace selection with the selected material
 %
-%   - **options** — [struct] structure with additional parameters:
+%   - **options** - [struct] structure with additional parameters:
 %
-%     - ``.contSelIndex`` — [numeric] index of the "Select from" material
-%     - ``.contAddIndex`` — [numeric] index of the "Add to" material
-%     - ``.maskedAreaSw`` — [logical] limit actions to masked areas only (``0`` or ``1``)%
+%     - ``.contSelIndex`` - [numeric] index of the "Select from" material
+%     - ``.contAddIndex`` - [numeric] index of the "Add to" material
+%     - ``.maskedAreaSw`` - [logical] limit actions to masked areas only (``0`` or ``1``)%
 % Output Arguments:
 %   (none)
 %
-% **Example** — Move selected material to selection by adding:
+% **Example** - Move selected material to selection by adding:
 %
 %   .. code-block:: matlab
 %

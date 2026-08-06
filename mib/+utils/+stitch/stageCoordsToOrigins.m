@@ -21,19 +21,19 @@ function [nomOrigin, zLayer] = stageCoordsToOrigins(stageXYZum, pixSize, options
 % difference between vendors).
 %
 % Input Arguments:
-%   - **stageXYZum** — [N×3 double] per-tile ``[X Y Z]`` stage position in µm.
-%   - **pixSize** — struct with ``.x``, ``.y``, ``.z`` (µm per pixel / per slice).
+%   - **stageXYZum** - [N×3 double] per-tile ``[X Y Z]`` stage position in µm.
+%   - **pixSize** - struct with ``.x``, ``.y``, ``.z`` (µm per pixel / per slice).
 %     A non-positive ``.z`` collapses all tiles to a single Z layer.
-%   - **options** *(optional)* — struct with fields:
+%   - **options** *(optional)* - struct with fields:
 %
-%     - ``.flipX`` — [logical] negate X before conversion (default: ``false``)
-%     - ``.flipY`` — [logical] negate Y before conversion (default: ``false``)
+%     - ``.flipX`` - [logical] negate X before conversion (default: ``false``)
+%     - ``.flipY`` - [logical] negate Y before conversion (default: ``false``)
 %
 % Output Arguments:
-%   - **nomOrigin** — [N×3 double] ``[y x z]`` 1-based origins; ``z`` in slices.
-%   - **zLayer** — [N×1 double] 1..K rank of each tile's distinct Z origin.
+%   - **nomOrigin** - [N×3 double] ``[y x z]`` 1-based origins; ``z`` in slices.
+%   - **zLayer** - [N×1 double] 1..K rank of each tile's distinct Z origin.
 %
-% **Example** — two tiles 100 µm apart at 0.5 µm/px → 200 px apart:
+% **Example** - two tiles 100 µm apart at 0.5 µm/px → 200 px apart:
 %
 %   .. code-block:: matlab
 %

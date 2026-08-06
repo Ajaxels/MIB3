@@ -7,7 +7,7 @@ function panelHandles = addFijiConnectPanel(obj)
 %      panelHandles = obj.addFijiConnectPanel()
 %
 % Output Arguments:
-%   - **panelHandles** — [struct] handles to the ROI panel widgets
+%   - **panelHandles** - [struct] handles to the ROI panel widgets
 %
 % Notes:
 %   The callbacks are added in the controller of the panel: ``controllers.MibFijiConnect``

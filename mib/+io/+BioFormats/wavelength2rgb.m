@@ -25,10 +25,10 @@ function rgb = wavelength2rgb(wavelength)
 % The code is adapted from http://www.efg2.com/Lab/ScienceAndEngineering/Spectra.htm
 %
 % Input Arguments:
-%   - **wavelength** — a number containing wavelength
+%   - **wavelength** - a number containing wavelength
 %
 % Output Arguments:
-%   - **rgb** — an array containing, (red, green, blue) components of the color,
+%   - **rgb** - an array containing, (red, green, blue) components of the color,
 %     range 0-255
 %
 

@@ -23,16 +23,16 @@ function [positions, stats] = solveGlobalLeastSquares(layout, edges, options)
 %      full rank even for isolated tiles.
 %
 % Input Arguments:
-%   - **layout** — [struct array] tile layout with ``.nomOrigin`` (``[y x z]``).
-%   - **edges** — [struct array] from :func:`utils.stitch.measureAllPairs`; uses
+%   - **layout** - [struct array] tile layout with ``.nomOrigin`` (``[y x z]``).
+%   - **edges** - [struct array] from :func:`utils.stitch.measureAllPairs`; uses
 %     ``.i .j .measured .nominal .quality .valid``.
-%   - **options** *(optional)* — struct with fields:
+%   - **options** *(optional)* - struct with fields:
 %
-%     - ``.springWeight`` — [double] weight of re-added pruned/bridge springs (default: ``0.10``)
-%     - ``.nominalSpringWeight`` — [double] weight of the per-tile self-spring (default: ``0.001``).
+%     - ``.springWeight`` - [double] weight of re-added pruned/bridge springs (default: ``0.10``)
+%     - ``.nominalSpringWeight`` - [double] weight of the per-tile self-spring (default: ``0.001``).
 %       Keep tiny: it exists only for rank; any real weight biases tiles whose
 %       true positions deviate from nominal (e.g. border-clamped acquisitions).
-%     - ``.userEdgeWeight`` — [double] weight of USER-fixed edges
+%     - ``.userEdgeWeight`` - [double] weight of USER-fixed edges
 %       (``edge.source = 'user'``, from the seam inspector; default: ``5.0``).
 %       Well above any quality (≤ 1) so a user fix dominates conflicting
 %       automatic edges without being an absolute pin (two contradictory user
@@ -40,19 +40,19 @@ function [positions, stats] = solveGlobalLeastSquares(layout, edges, options)
 %       quality threshold and never demoted to springs.
 %
 % Output Arguments:
-%   - **positions** — [N x 3 double] solved ``[y x z]`` origins (fractional allowed);
+%   - **positions** - [N x 3 double] solved ``[y x z]`` origins (fractional allowed);
 %     row 1 (the anchor) equals ``layout(1).nomOrigin``.
-%   - **stats** — [struct] with fields:
+%   - **stats** - [struct] with fields:
 %
-%     - ``.residuals`` — [M x 3] per valid-edge residual ``(p_j - p_i) - measured``
-%     - ``.rmse`` — [1x3] root-mean-square residual per axis over valid edges
-%     - ``.rmseTotal`` — [double] RMSE over all axes/valid edges
-%     - ``.nPruned`` — [double] number of invalid edges
-%     - ``.nComponents`` — [double] connected components among valid edges
-%     - ``.anchorComponent`` — [double] component id containing the anchor tile
-%     - ``.disconnectedTiles`` — [vector] tiles not connected to the anchor by valid edges
+%     - ``.residuals`` - [M x 3] per valid-edge residual ``(p_j - p_i) - measured``
+%     - ``.rmse`` - [1x3] root-mean-square residual per axis over valid edges
+%     - ``.rmseTotal`` - [double] RMSE over all axes/valid edges
+%     - ``.nPruned`` - [double] number of invalid edges
+%     - ``.nComponents`` - [double] connected components among valid edges
+%     - ``.anchorComponent`` - [double] component id containing the anchor tile
+%     - ``.disconnectedTiles`` - [vector] tiles not connected to the anchor by valid edges
 %
-% **Example** — solve a jittered grid:
+% **Example** - solve a jittered grid:
 %
 %   .. code-block:: matlab
 %
@@ -124,7 +124,7 @@ for k = 1:numel(validEdges)
     end
 end
 
-% Pruned edges re-enter as weak springs toward their NOMINAL offset — but only
+% Pruned edges re-enter as weak springs toward their NOMINAL offset - but only
 % when they touch a tile that the valid edges leave disconnected from the anchor.
 % Between well-connected tiles such springs add no information and only bias the
 % solution toward the (wrong) nominal offsets.
@@ -150,7 +150,7 @@ for t = disconnectedTiles(:)'
 end
 
 % Per-tile self springs to their own nominal origin (absolute constraint against
-% the anchor's frame) — guarantees full rank. Implemented as p_t - anchor = nom_t - nom_anchor.
+% the anchor's frame) - guarantees full rank. Implemented as p_t - anchor = nom_t - nom_anchor.
 for t = 1:nTiles
     rowsI(end+1, 1)     = t; %#ok<AGROW>
     rowsMinus(end+1, 1) = anchorTile; %#ok<AGROW>
@@ -161,7 +161,7 @@ end
 nRows = numel(weights);
 
 % Build sparse design matrix A (nRows x nTiles) with +1 at rowsI, -1 at rowsMinus.
-% The self-difference of the anchor cancels; that is intentional — the anchor
+% The self-difference of the anchor cancels; that is intentional - the anchor
 % column is then removed and folded into the target (gauge fix p_anchor = nom_anchor).
 rowIndex = (1:nRows)';
 iEntries = [rowIndex; rowIndex];

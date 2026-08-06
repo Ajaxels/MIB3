@@ -7,13 +7,13 @@ function magFactor = getMagFactor(obj, id)
     %       magFactor = obj.getMagFactor(id)
     %
     % Input Arguments:
-    %   - **id** — *(optional)* ID of the dataset, otherwise uses current dataset (obj.id)
+    %   - **id** - *(optional)* ID of the dataset, otherwise uses current dataset (obj.id)
     %
     % Output Arguments:
-    %   - **magFactor** — magnification factor
+    %   - **magFactor** - magnification factor
     %
     % Usage:
-    %   **Example 1** — get current magFactor and for dataset 2
+    %   **Example 1** - get current magFactor and for dataset 2
     %
     %   .. code-block:: matlab
     %

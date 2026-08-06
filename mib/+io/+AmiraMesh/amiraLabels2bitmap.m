@@ -24,11 +24,11 @@ function [bitmap] = amiraLabels2bitmap(filename)
 %      bitmap = io.AmiraMesh.amiraLabels2bitmap(filename)
 %
 % Input Arguments:
-%   - **filename** — *(optional)* filename of Amira Mesh labels file; when omitted,
+%   - **filename** - *(optional)* filename of Amira Mesh labels file; when omitted,
 %     a file selection dialog is started
 %
 % Output Arguments:
-%   - **bitmap** — label image as [height, width, colors, depth]
+%   - **bitmap** - label image as [height, width, colors, depth]
 %
 
 % Updates

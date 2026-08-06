@@ -25,37 +25,37 @@ function erodeImage(obj, BatchOptIn)
 % callers set the field directly). This method itself never opens a dialog.
 %
 % Input Arguments:
-%   - **BatchOptIn** — *(optional)* structure for batch processing mode; when NaN,
+%   - **BatchOptIn** - *(optional)* structure for batch processing mode; when NaN,
 %     returns default options via the "SyncBatch" event
 %
-%     - ``.TargetLayer`` — cell string, ``{'selection','mask','labels'}`` layer to erode
-%     - ``.DatasetType`` — cell string, ``{'2D, Slice','3D, Stack','4D, Dataset'}`` scope
-%     - ``.ErodeMode`` — cell string, ``{'2D','3D'}`` strel dimensionality
-%     - ``.StrelSize`` — string, strel radius in pixels; one value (isotropic)
+%     - ``.TargetLayer`` - cell string, ``{'selection','mask','labels'}`` layer to erode
+%     - ``.DatasetType`` - cell string, ``{'2D, Slice','3D, Stack','4D, Dataset'}`` scope
+%     - ``.ErodeMode`` - cell string, ``{'2D','3D'}`` strel dimensionality
+%     - ``.StrelSize`` - string, strel radius in pixels; one value (isotropic)
 %       or two values separated by a space (first = XY radius, second = Z radius
 %       for 3D mode or X radius for 2D mode)
-%     - ``.Difference`` — logical, keep only the eroded ring (original minus eroded)
-%     - ``.MaterialIndex`` — string, material index for TargetLayer= ``'labels'``; use
-%       ``NaN`` to erode all materials (not yet implemented — pass a valid index)
-%     - ``.Use2DParallelComputing`` — logical, use parfor for 2D slice-by-slice erosion
-%     - ``.AnisotropicMethod`` — cell string, ``{'Accurate (slow)','Fast (bwdist)'}``;
-%       only consulted for large-radius 3D erosion on anisotropic voxels — see
+%     - ``.Difference`` - logical, keep only the eroded ring (original minus eroded)
+%     - ``.MaterialIndex`` - string, material index for TargetLayer= ``'labels'``; use
+%       ``NaN`` to erode all materials (not yet implemented - pass a valid index)
+%     - ``.Use2DParallelComputing`` - logical, use parfor for 2D slice-by-slice erosion
+%     - ``.AnisotropicMethod`` - cell string, ``{'Accurate (slow)','Fast (bwdist)'}``;
+%       only consulted for large-radius 3D erosion on anisotropic voxels - see
 %       the performance note below
-%     - ``.showWaitbar`` — logical, show or not the progress dialog
-%     - ``.id`` — *(optional)* dataset index 1-9, default = obj.id
+%     - ``.showWaitbar`` - logical, show or not the progress dialog
+%     - ``.id`` - *(optional)* dataset index 1-9, default = obj.id
 %
 %
 % Output Arguments:
 %   (none)
 %
 % Usage:
-%   **Example 1** — erode selection on current slice with defaults
+%   **Example 1** - erode selection on current slice with defaults
 %
 %   .. code-block:: matlab
 %
 %      obj.mibModel.erodeImage();
 %
-%   **Example 2** — erode the mask layer across the full z-stack with a 5-px radius
+%   **Example 2** - erode the mask layer across the full z-stack with a 5-px radius
 %
 %   .. code-block:: matlab
 %
@@ -67,7 +67,7 @@ function erodeImage(obj, BatchOptIn)
 %      BatchOpt.showWaitbar = true;
 %      obj.mibModel.erodeImage(BatchOpt);
 %
-%   **Example 3** — 3D ball erosion of labels material 2 across whole dataset
+%   **Example 3** - 3D ball erosion of labels material 2 across whole dataset
 %
 %   .. code-block:: matlab
 %
@@ -79,7 +79,7 @@ function erodeImage(obj, BatchOptIn)
 %      BatchOpt.showWaitbar   = false;
 %      obj.mibModel.erodeImage(BatchOpt);
 %
-%   **Example 4** — return default BatchOpt to the Batch Processing editor
+%   **Example 4** - return default BatchOpt to the Batch Processing editor
 %
 %   .. code-block:: matlab
 %
@@ -120,7 +120,7 @@ BatchOpt.mibBatchActionName  = 'Erode';
 BatchOpt.mibBatchTooltip.TargetLayer  = 'Layer to be eroded';
 BatchOpt.mibBatchTooltip.DatasetType  = 'Specify whether to erode the current slice (2D, Slice), the stack (3D, Stack) or complete dataset (4D, Dataset)';
 BatchOpt.mibBatchTooltip.ErodeMode    = 'Type of the strel element for erosion';
-BatchOpt.mibBatchTooltip.StrelSize    = 'Radius of the strel element in pixels; one or two numbers — when two values are given the second defines Z radius (3D) or X radius (2D)';
+BatchOpt.mibBatchTooltip.StrelSize    = 'Radius of the strel element in pixels; one or two numbers - when two values are given the second defines Z radius (3D) or X radius (2D)';
 BatchOpt.mibBatchTooltip.MaterialIndex = 'Index of the material to erode; only for TargetLayer="labels"';
 BatchOpt.mibBatchTooltip.Difference   = 'Obtain the difference between eroded and original (eroded ring only)';
 BatchOpt.mibBatchTooltip.Use2DParallelComputing = 'Use parallel processing for 2D slice-by-slice erosion';
@@ -272,7 +272,7 @@ else
 
     % In-plane isotropic elements above the threshold use the bwdist fast path;
     % anisotropic (elliptical) 2D elements fall back to imerode with a prebuilt
-    % disk-like strel (no warning — 2D in-plane anisotropy is rare).
+    % disk-like strel (no warning - 2D in-plane anisotropy is rare).
     useBwdist = (radius > bwdistRadiusThreshold) && isIsotropicElement;
     if useBwdist
         se = [];

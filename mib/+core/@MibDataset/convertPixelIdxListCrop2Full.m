@@ -7,17 +7,17 @@ function PixelIdxList = convertPixelIdxListCrop2Full(obj, PixelIdxListCrop, opti
 %      PixelIdxList = obj.convertPixelIdxListCrop2Full(PixelIdxListCrop, options)
 %
 % Input Arguments:
-%   - **PixelIdxListCrop** — vector of linear indices within the cropped sub-volume
+%   - **PixelIdxListCrop** - vector of linear indices within the cropped sub-volume
 %     (column-major order: Y varies fastest, then X, then Z)
-%   - **options** — struct with crop-region boundaries:
+%   - **options** - struct with crop-region boundaries:
 %
-%     - ``.y`` — [yMin, yMax] Y-extent of the cropped region (rows)
-%     - ``.x`` — [xMin, xMax] X-extent of the cropped region (columns)
-%     - ``.z`` — *(optional)* [zMin, zMax] Z-extent; when absent the current
+%     - ``.y`` - [yMin, yMax] Y-extent of the cropped region (rows)
+%     - ``.x`` - [xMin, xMax] X-extent of the cropped region (columns)
+%     - ``.z`` - *(optional)* [zMin, zMax] Z-extent; when absent the current
 %       slice is used (XY orientation 3 only)
 %
 % Output Arguments:
-%   - **PixelIdxList** — vector of linear indices in the full dataset
+%   - **PixelIdxList** - vector of linear indices in the full dataset
 
 if nargin < 3; error('convertPixelIdxListCrop2Full: options struct is required'); end
 

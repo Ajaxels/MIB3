@@ -9,13 +9,13 @@ function listener_updateStatusBar(obj, src, evtData)
 % Listener triggered by ``MibModel`` ``'UpdateStatusBar'`` event (e.g., during Batch Processing directory changes).
 %
 % Input Arguments:
-%   - **obj** — [MibStatusBar] controller instance
-%   - **src** — [MibModel] source object
-%   - **evtData** — [ToggleEventData] event data with properties:
+%   - **obj** - [MibStatusBar] controller instance
+%   - **src** - [MibModel] source object
+%   - **evtData** - [ToggleEventData] event data with properties:
 %
-%     - ``.Parameters`` — [struct] optional parameters structure
-%     - ``.Source`` — [MibModel] handle to MibModel
-%     - ``.EventName`` — [char] event name that triggered callback
+%     - ``.Parameters`` - [struct] optional parameters structure
+%     - ``.Source`` - [MibModel] handle to MibModel
+%     - ``.EventName`` - [char] event name that triggered callback
 %
 %
 

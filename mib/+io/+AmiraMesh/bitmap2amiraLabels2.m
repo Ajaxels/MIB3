@@ -30,40 +30,40 @@ function result = bitmap2amiraLabels2(filename, bitmap, format, voxel, color_lis
 %
 % KEY DIFFERENCES vs bitmap2amiraLabels
 % ======================================
-% 1. RLE ENCODER — vectorised, O(R) loop over runs instead of O(N) loop
+% 1. RLE ENCODER - vectorised, O(R) loop over runs instead of O(N) loop
 % over bytes.  For typical segmentation data R << N (often R < N/100),
-% so the encoder is 100–1000× faster.
+% so the encoder is 100-1000× faster.
 %
-% 2. minRLE = 2 — the original used minRLE = 1, which encodes a single
-% repeated byte as [count=1, value] (2 bytes) — actually EXPANDING the
+% 2. minRLE = 2 - the original used minRLE = 1, which encodes a single
+% repeated byte as [count=1, value] (2 bytes) - actually EXPANDING the
 % data vs leaving it in a literal block (1 byte).  Break-even is at
 % run length ≥ 2; anything shorter stays in a literal block.
 %
-% 3. NO in-place overwrite — the original wrote compressed output back
+% 3. NO in-place overwrite - the original wrote compressed output back
 % into the input `bitmap` array.  This version uses a separate
 % pre-allocated output buffer, which is cleaner and avoids potential
 % aliasing bugs.
 %
-% 4. ASCII encoder vectorised — `fprintf(fid, '%d\n', data)` is
+% 4. ASCII encoder vectorised - `fprintf(fid, '%d\n', data)` is
 % called on the entire array in one shot instead of per-element.
 %
-% 5. uint16/uint32 RLE warning — Amira's HxByteRLE operates on raw
+% 5. uint16/uint32 RLE warning - Amira's HxByteRLE operates on raw
 % bytes; for multi-byte label types the encoding is ambiguous.
 % The function warns and falls back to uncompressed binary for
 % uint16/uint32 when binaryRLE is requested.
 %
-% ALGORITHM — binaryRLE (HxByteRLE format)
+% ALGORITHM - binaryRLE (HxByteRLE format)
 % ==========================================
 % Amira's HxByteRLE is a simple run-length encoding over a byte stream:
 %
-% Compressed block  — [N, V]         where N < 0x80 (bit7=0):
+% Compressed block  - [N, V]         where N < 0x80 (bit7=0):
 % N copies of byte V
 %
-% Literal block     — [0x80|N, b1, b2, …, bN]  where N ≤ 127:
+% Literal block     - [0x80|N, b1, b2, …, bN]  where N ≤ 127:
 % N literal bytes follow
 %
 % Encoding strategy:
-% 1. Detect all runs vectorially using diff() — O(N) vectorised, no loop.
+% 1. Detect all runs vectorially using diff() - O(N) vectorised, no loop.
 % 2. Loop over runs (not bytes).  For each run of length L and value V:
 % L ≥ minRLE  → compressed:  emit ceil(L/127) × [chunk, V] pairs
 % L < minRLE  → literal: accumulate into a 127-byte literal buffer,
@@ -73,27 +73,27 @@ function result = bitmap2amiraLabels2(filename, bitmap, format, voxel, color_lis
 % COMPLEXITY
 % Original: O(N) MATLAB loop iterations (N = total bytes)
 % This version: O(N) vectorised + O(R) loop iterations (R = num runs)
-% Typical speedup: 100–1000× on real segmentation data.
+% Typical speedup: 100-1000× on real segmentation data.
 %
 % Input Arguments:
-%   - **filename** — output file path
-%   - **bitmap** — [H, W, D] label array (``uint8`` recommended)
-%   - **format** — *(optional)* saving format: ``'binary'``, ``'binaryRLE'``, or ``'ascii'``
+%   - **filename** - output file path
+%   - **bitmap** - [H, W, D] label array (``uint8`` recommended)
+%   - **format** - *(optional)* saving format: ``'binary'``, ``'binaryRLE'``, or ``'ascii'``
 %     (default: ``'binary'``)
-%   - **voxel** — *(optional)* struct with voxel size fields ``.x``, ``.y``, ``.z``,
+%   - **voxel** - *(optional)* struct with voxel size fields ``.x``, ``.y``, ``.z``,
 %     ``.minx``, ``.miny``, ``.minz``
-%   - **color_list** — *(optional)* [M×3] material RGB colours (0–1)
-%   - **modelMaterialNames** — *(optional)* cell array of material name strings
-%   - **overwrite** — *(optional)* ``1`` = overwrite without asking (default: ``0``)
-%   - **showWaitbar** — *(optional)* ``1`` = show progress bar (default: ``1``)
-%   - **extraOptions** — *(optional)* struct with fields:
+%   - **color_list** - *(optional)* [M×3] material RGB colours (0-1)
+%   - **modelMaterialNames** - *(optional)* cell array of material name strings
+%   - **overwrite** - *(optional)* ``1`` = overwrite without asking (default: ``0``)
+%   - **showWaitbar** - *(optional)* ``1`` = show progress bar (default: ``1``)
+%   - **extraOptions** - *(optional)* struct with fields:
 %
-%     - ``.TransformationMatrix`` — (char) transformation matrix string
+%     - ``.TransformationMatrix`` - (char) transformation matrix string
 %
 % Output Arguments:
-%   - **result** — ``1`` = success, ``0`` = failure/cancel
+%   - **result** - ``1`` = success, ``0`` = failure/cancel
 %
-% **Example 1** — direct use:
+% **Example 1** - direct use:
 %
 %   .. code-block:: matlab
 %
@@ -103,7 +103,7 @@ function result = bitmap2amiraLabels2(filename, bitmap, format, voxel, color_lis
 %          '/output/Labels.am', uint8(labelVolume_hwd), 'binaryRLE', ...
 %          pixStr, materialColors, materialNames, 1, false, struct());
 %
-% **Example 2** — via saver (preferred):
+% **Example 2** - via saver (preferred):
 %
 %   .. code-block:: matlab
 %
@@ -259,7 +259,7 @@ data = reshape(permute(bitmap, [2 1 3]), [], 1);  % [W*H*D, 1]
 switch format
     case 'binary'
         % -----------------------------------------------------------%
-        % Plain binary — fastest, largest file                        %
+        % Plain binary - fastest, largest file                        %
         % -----------------------------------------------------------%
         fprintf(fid, 'Lattice { %s Labels } @1\n\n', classText);
         fprintf(fid, '# Data section follows\n@1\n');
@@ -267,9 +267,9 @@ switch format
 
     case 'ascii'
         % -----------------------------------------------------------%
-        % ASCII — human-readable, vectorised fprintf call             %
+        % ASCII - human-readable, vectorised fprintf call             %
         % IMPROVEMENT: original looped element by element;            %
-        % this passes the entire array in one call (10–50× faster).  %
+        % this passes the entire array in one call (10-50× faster).  %
         % -----------------------------------------------------------%
         fprintf(fid, 'Lattice { %s Labels } @1\n\n', classText);
         fprintf(fid, '# Data section follows\n@1\n');
@@ -278,7 +278,7 @@ switch format
 
     case 'binaryRLE'
         % -----------------------------------------------------------%
-        % HxByteRLE — vectorised RLE encoder                          %
+        % HxByteRLE - vectorised RLE encoder                          %
         % -----------------------------------------------------------%
 
         % Warn for non-uint8: Amira binaryRLE is byte-level; encoding
@@ -325,7 +325,7 @@ function [encoded, nBytes] = encodeHxByteRLE(data)
 %      [encoded, nBytes] = encodeHxByteRLE(data)
 %
 % ALGORITHM
-% 1. Detect all run boundaries with diff() — fully vectorised, no loop.
+% 1. Detect all run boundaries with diff() - fully vectorised, no loop.
 % 2. Loop over RUNS (not bytes).  For typical segmentation data the
 % number of runs R << N (total bytes), so the loop is fast.
 % 3. Runs ≥ minRLE → compressed blocks of max 127 bytes.
@@ -336,13 +336,13 @@ function [encoded, nBytes] = encodeHxByteRLE(data)
 % LITERAL BLOCK:     [0x80|count, b0…bN-1]  count ∈ [1, 127]
 %
 % Input Arguments:
-%   - **data** — [uint8] column vector of input bytes to compress
+%   - **data** - [uint8] column vector of input bytes to compress
 %
 % Output Arguments:
-%   - **encoded** — [uint8] column vector HxByteRLE bitstream
-%   - **nBytes** — [numeric] length of ``encoded`` (number of bytes to write to file)
+%   - **encoded** - [uint8] column vector HxByteRLE bitstream
+%   - **nBytes** - [numeric] length of ``encoded`` (number of bytes to write to file)
 %
-% **Example** — compress a small array:
+% **Example** - compress a small array:
 %
 %   .. code-block:: matlab
 %
@@ -368,7 +368,7 @@ if n == 0
 end
 
 % ------------------------------------------------------------------ %
-%  Step 1 — Vectorised run detection                                   %
+%  Step 1 - Vectorised run detection                                   %
 % ------------------------------------------------------------------ %
 % For multi-byte types (uint16, uint32), cast to uint8 view of bytes
 % and detect runs on the raw byte stream.
@@ -394,7 +394,7 @@ runValues  = rawBytes(runStarts);               % value of each run
 numRuns    = numel(runLengths);
 
 % ------------------------------------------------------------------ %
-%  Step 2 — Pre-allocate output buffer                                 %
+%  Step 2 - Pre-allocate output buffer                                 %
 % ------------------------------------------------------------------ %
 % Worst case: every byte is its own literal block → 2× input size.
 % Add a small margin for block headers.
@@ -406,7 +406,7 @@ litBuf = zeros(MAX_BLOCK, 1, 'uint8');
 litLen = 0;  % how many bytes currently in litBuf
 
 % ------------------------------------------------------------------ %
-%  Step 3 — Encode each run                                            %
+%  Step 3 - Encode each run                                            %
 % ------------------------------------------------------------------ %
 for r = 1 : numRuns
     L = runLengths(r);
@@ -414,7 +414,7 @@ for r = 1 : numRuns
 
     if L >= MIN_RLE
         % ---------------------------------------------------------- %
-        % Compressible run — flush pending literals first, then encode %
+        % Compressible run - flush pending literals first, then encode %
         % ---------------------------------------------------------- %
         if litLen > 0
             outBuf(outPos)              = bitor(uint8(litLen), uint8(0x80));
@@ -435,7 +435,7 @@ for r = 1 : numRuns
 
     else
         % ---------------------------------------------------------- %
-        % Short run — accumulate in literal buffer                    %
+        % Short run - accumulate in literal buffer                    %
         % ---------------------------------------------------------- %
         % Copy L bytes into litBuf (L < MIN_RLE, usually 1)
         litBuf(litLen+1 : litLen+L) = V;
@@ -452,7 +452,7 @@ for r = 1 : numRuns
 end
 
 % ------------------------------------------------------------------ %
-%  Step 4 — Flush remaining literals                                   %
+%  Step 4 - Flush remaining literals                                   %
 % ------------------------------------------------------------------ %
 if litLen > 0
     outBuf(outPos)              = bitor(uint8(litLen), uint8(0x80));

@@ -20,22 +20,22 @@ classdef ImodLoader < io.loaders.BaseImageLoader
             %      loader = io.loaders.ImodLoader(options)
             %
             % Input Arguments:
-            %   - **options** — *(optional)* struct with fields:
+            %   - **options** - *(optional)* struct with fields:
             %
-            %     - ``waitbar`` — [logical] show or not the waitbar; default: ``false``
-            %     - ``mibPath`` — [char] path to MIB directory
-            %     - ``customSections`` — [logical] load custom sections only; default: ``false``
-            %     - ``customSectionsSettings`` — [struct] custom section parameters
-            %     - ``imgStretch`` — [logical] stretch uint32 images to uint16; default: ``false``
-            %     - ``silentMode`` — [logical] do not ask user questions; default: ``false``
-            %     - ``verbose`` — [logical] show timing information; default: ``false``
-            %     - ``Font`` — [struct] font settings for dialogs
-            %     - ``ParentFigure`` — handle of the main MIB window (parent for uiprogressdlg)
+            %     - ``waitbar`` - [logical] show or not the waitbar; default: ``false``
+            %     - ``mibPath`` - [char] path to MIB directory
+            %     - ``customSections`` - [logical] load custom sections only; default: ``false``
+            %     - ``customSectionsSettings`` - [struct] custom section parameters
+            %     - ``imgStretch`` - [logical] stretch uint32 images to uint16; default: ``false``
+            %     - ``silentMode`` - [logical] do not ask user questions; default: ``false``
+            %     - ``verbose`` - [logical] show timing information; default: ``false``
+            %     - ``Font`` - [struct] font settings for dialogs
+            %     - ``ParentFigure`` - handle of the main MIB window (parent for uiprogressdlg)
             %
             % Output Arguments:
-            %   - **obj** — instance of the ImodLoader class
+            %   - **obj** - instance of the ImodLoader class
             %
-            % **Example 1** — create loader with options:
+            % **Example 1** - create loader with options:
             %
             %   .. code-block:: matlab
             %
@@ -64,34 +64,34 @@ classdef ImodLoader < io.loaders.BaseImageLoader
             % dimensions and data types.
             %
             % Input Arguments:
-            %   - **filenames** — cell array with filenames of IMOD files
-            %   - **options** — *(optional)* struct with fields:
+            %   - **filenames** - cell array with filenames of IMOD files
+            %   - **options** - *(optional)* struct with fields:
             %
-            %     - ``waitbar`` — [logical] show or not the waitbar; default: ``false``
-            %     - ``customSections`` — [logical] load part of the dataset; default: ``false``
-            %     - ``Font`` — [struct] font settings for dialogs
+            %     - ``waitbar`` - [logical] show or not the waitbar; default: ``false``
+            %     - ``customSections`` - [logical] load part of the dataset; default: ``false``
+            %     - ``Font`` - [struct] font settings for dialogs
             %
             % Output Arguments:
-            %   - **imginfo** — dictionary with image metadata containing fields:
+            %   - **imginfo** - dictionary with image metadata containing fields:
             %
-            %     - ``Height`` — image height in pixels
-            %     - ``Width`` — image width in pixels
-            %     - ``Colors`` — number of color channels
-            %     - ``Depth`` — number of z-slices
-            %     - ``Time`` — number of time points
-            %     - ``imgClass`` — image class (``uint8``, ``uint16``, etc.)
-            %     - ``ColorType`` — ``'grayscale'``, ``'truecolor'``, or ``'indexed'``
-            %     - ``ImageDescription`` — description with BoundingBox info
-            %     - ``Format`` — HDF5 format type (``'matlab.hdf5'`` or ``'bdv.hdf5'``)
-            %     - ``Levels`` — number of pyramid levels (for BDV only)
-            %     - ``ReturnedLevel`` — selected pyramid level (for BDV only)
-            %     - ``pixSize`` — struct with pixel sizes: ``.x``, ``.y``, ``.z``, ``.t``,
+            %     - ``Height`` - image height in pixels
+            %     - ``Width`` - image width in pixels
+            %     - ``Colors`` - number of color channels
+            %     - ``Depth`` - number of z-slices
+            %     - ``Time`` - number of time points
+            %     - ``imgClass`` - image class (``uint8``, ``uint16``, etc.)
+            %     - ``ColorType`` - ``'grayscale'``, ``'truecolor'``, or ``'indexed'``
+            %     - ``ImageDescription`` - description with BoundingBox info
+            %     - ``Format`` - HDF5 format type (``'matlab.hdf5'`` or ``'bdv.hdf5'``)
+            %     - ``Levels`` - number of pyramid levels (for BDV only)
+            %     - ``ReturnedLevel`` - selected pyramid level (for BDV only)
+            %     - ``pixSize`` - struct with pixel sizes: ``.x``, ``.y``, ``.z``, ``.t``,
             %       ``.units``, ``.tunits``
             %     - other format-specific metadata fields
             %
-            %   - **files** — structure array with file information
+            %   - **files** - structure array with file information
             %
-            % **Example 1** — load metadata from IMOD file:
+            % **Example 1** - load metadata from IMOD file:
             %
             %   .. code-block:: matlab
             %
@@ -286,15 +286,15 @@ classdef ImodLoader < io.loaders.BaseImageLoader
             % - Vertical flipping (MRC convention)
             %
             % Input Arguments:
-            %   - **files** — structure array from loadMetadata
-            %   - **imginfo** — dictionary from loadMetadata
-            %   - **options** — *(optional)* struct for image loading
+            %   - **files** - structure array from loadMetadata
+            %   - **imginfo** - dictionary from loadMetadata
+            %   - **options** - *(optional)* struct for image loading
             %
             % Output Arguments:
-            %   - **img** — loaded image dataset
-            %   - **imginfo** — updated dictionary
+            %   - **img** - loaded image dataset
+            %   - **imginfo** - updated dictionary
             %
-            % **Example 1** — load images from IMOD MRC file:
+            % **Example 1** - load images from IMOD MRC file:
             %
             %   .. code-block:: matlab
             %
@@ -458,13 +458,13 @@ classdef ImodLoader < io.loaders.BaseImageLoader
             % loading and further stretched to uint16 by ``finalizeImageLoading``.
             %
             % Input Arguments:
-            %   - **minDensity** — [numeric] minimal density value stored in the file
-            %   - **maxDensity** — [numeric] maximal density value stored in the file
+            %   - **minDensity** - [numeric] minimal density value stored in the file
+            %   - **maxDensity** - [numeric] maximal density value stored in the file
             %
             % Output Arguments:
-            %   - **imgClass** — [char] ``'uint8'``, ``'uint16'`` or ``'uint32'``
+            %   - **imgClass** - [char] ``'uint8'``, ``'uint16'`` or ``'uint32'``
             %
-            % **Example 1** — class for a float32 tomogram:
+            % **Example 1** - class for a float32 tomogram:
             %
             %   .. code-block:: matlab
             %

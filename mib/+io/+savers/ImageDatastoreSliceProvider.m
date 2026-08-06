@@ -14,7 +14,7 @@ classdef ImageDatastoreSliceProvider < io.savers.SliceProvider
 % See also: io.savers.SliceProvider, io.savers.Zarr3Saver,
 % plugins.FileProcessing.ImageConverter.ImageConverter
 %
-% **Example** — stream a folder of TIFFs into a Zarr v3 pyramid:
+% **Example** - stream a folder of TIFFs into a Zarr v3 pyramid:
 %
 %   .. code-block:: matlab
 %
@@ -33,7 +33,7 @@ classdef ImageDatastoreSliceProvider < io.savers.SliceProvider
             % IMAGEDATASTORESLICEPROVIDER - Wrap an imageDatastore (one file per Z-slice).
             %
             % Input Arguments:
-            %   - **imgDS** — a ``matlab.io.datastore.ImageDatastore`` whose files are
+            %   - **imgDS** - a ``matlab.io.datastore.ImageDatastore`` whose files are
             %     ordered Z-slices (the order in ``imgDS.Files``).
             obj.Datastore = copy(imgDS);   % isolate read position from the caller
 

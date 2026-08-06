@@ -9,9 +9,9 @@ function gui_Callbacks(obj, source, event) %#ok<INUSD>
 % Routes by ``source.Tag`` to the appropriate action method.
 %
 % Input Arguments:
-%   - **obj** — :class:`controllers.DatasetInfo` instance.
-%   - **source** — widget handle that fired the event.
-%   - **event** — event data (unused).
+%   - **obj** - :class:`controllers.DatasetInfo` instance.
+%   - **source** - widget handle that fired the event.
+%   - **event** - event data (unused).
 
 if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.DatasetInfo.gui_Callbacks/%s: triggered\n', source.Tag);

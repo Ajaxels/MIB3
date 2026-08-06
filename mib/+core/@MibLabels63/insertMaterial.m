@@ -13,9 +13,9 @@ function insertMaterial(obj, index, name, wb)
 % colour are added.
 %
 % Input Arguments:
-%   - **index** — double, 1-based position where the new material is inserted.
-%   - **name** — char, name for the new material.
-%   - **wb** — *(optional)* handle to a uiprogressdlg for progress display;
+%   - **index** - double, 1-based position where the new material is inserted.
+%   - **name** - char, name for the new material.
+%   - **wb** - *(optional)* handle to a uiprogressdlg for progress display;
 %     when empty no progress is reported.
 %
 % Output Arguments:
@@ -44,7 +44,7 @@ if nargin < 4; wb = []; end
 nMats = numel(obj.materialNames);
 
 if index == nMats + 1
-    % Appending at the end — no pixel shift needed
+    % Appending at the end - no pixel shift needed
     obj.materialNames{end+1, 1} = name;
 else
     % Shift model indices in bit-packed data: extract bits 1-6, increment

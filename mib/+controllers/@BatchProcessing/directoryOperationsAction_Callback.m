@@ -24,7 +24,7 @@ function directoryOperationsAction_Callback(obj, BatchOptInput)
 %   - 'Inherit dirs +Dirname'       - append DirectoryName to the loop directory
 %
 % Input Arguments:
-%   - **BatchOptInput** — [optional]
+%   - **BatchOptInput** - [optional]
 %     - NaN    - send default BatchOpt to BatchProcessing via SyncBatch event
 %     - struct - override defaults with supplied fields and apply
 %

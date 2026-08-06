@@ -9,7 +9,7 @@ function keyRelease_Callback(obj, evnt)
 % Releasing ``Shift`` hides the hover ROI box and restores the arrow pointer.
 %
 % Input Arguments:
-%   - **evnt** — KeyData from ``WindowKeyReleaseFcn``
+%   - **evnt** - KeyData from ``WindowKeyReleaseFcn``
 %
 
 if obj.mibModel.preferences.System.DeveloperMode

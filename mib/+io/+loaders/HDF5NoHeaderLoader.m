@@ -20,22 +20,22 @@ classdef HDF5NoHeaderLoader < io.loaders.BaseImageLoader
             %      loader = io.loaders.HDF5NoHeaderLoader(options)
             %
             % Input Arguments:
-            %   - **options** — *(optional)* struct with fields:
+            %   - **options** - *(optional)* struct with fields:
             %
-            %     - ``waitbar`` — [logical] show or not the waitbar; default: ``false``
-            %     - ``mibPath`` — [char] path to MIB directory
-            %     - ``customSections`` — [logical] load custom sections only; default: ``false``
-            %     - ``customSectionsSettings`` — [struct] custom section parameters
-            %     - ``imgStretch`` — [logical] stretch uint32 images to uint16; default: ``false``
-            %     - ``silentMode`` — [logical] do not ask user questions; default: ``false``
-            %     - ``verbose`` — [logical] show timing information; default: ``false``
-            %     - ``Font`` — [struct] font settings for dialogs
-            %     - ``ParentFigure`` — handle of the main MIB window (parent for uiprogressdlg)
+            %     - ``waitbar`` - [logical] show or not the waitbar; default: ``false``
+            %     - ``mibPath`` - [char] path to MIB directory
+            %     - ``customSections`` - [logical] load custom sections only; default: ``false``
+            %     - ``customSectionsSettings`` - [struct] custom section parameters
+            %     - ``imgStretch`` - [logical] stretch uint32 images to uint16; default: ``false``
+            %     - ``silentMode`` - [logical] do not ask user questions; default: ``false``
+            %     - ``verbose`` - [logical] show timing information; default: ``false``
+            %     - ``Font`` - [struct] font settings for dialogs
+            %     - ``ParentFigure`` - handle of the main MIB window (parent for uiprogressdlg)
             %
             % Output Arguments:
-            %   - **obj** — instance of the HDF5NoHeaderLoader class
+            %   - **obj** - instance of the HDF5NoHeaderLoader class
             %
-            % **Example 1** — create loader with options:
+            % **Example 1** - create loader with options:
             %
             %   .. code-block:: matlab
             %
@@ -66,34 +66,34 @@ classdef HDF5NoHeaderLoader < io.loaders.BaseImageLoader
             % and determines dimensions and data types.
             %
             % Input Arguments:
-            %   - **filenames** — cell array with filenames of HDF5 files
-            %   - **options** — *(optional)* struct with fields:
+            %   - **filenames** - cell array with filenames of HDF5 files
+            %   - **options** - *(optional)* struct with fields:
             %
-            %     - ``waitbar`` — [logical] show or not the waitbar; default: ``false``
-            %     - ``customSections`` — [logical] load part of the dataset; default: ``false``
-            %     - ``Font`` — [struct] font settings for dialogs
+            %     - ``waitbar`` - [logical] show or not the waitbar; default: ``false``
+            %     - ``customSections`` - [logical] load part of the dataset; default: ``false``
+            %     - ``Font`` - [struct] font settings for dialogs
             %
             % Output Arguments:
-            %   - **imginfo** — dictionary with image metadata containing fields:
+            %   - **imginfo** - dictionary with image metadata containing fields:
             %
-            %     - ``Height`` — image height in pixels
-            %     - ``Width`` — image width in pixels
-            %     - ``Colors`` — number of color channels
-            %     - ``Depth`` — number of z-slices
-            %     - ``Time`` — number of time points
-            %     - ``imgClass`` — image class (``uint8``, ``uint16``, etc.)
-            %     - ``ColorType`` — ``'grayscale'``, ``'truecolor'``, or ``'indexed'``
-            %     - ``ImageDescription`` — description with BoundingBox info
-            %     - ``Format`` — HDF5 format type (``'matlab.hdf5'`` or ``'bdv.hdf5'``)
-            %     - ``Levels`` — number of pyramid levels (for BDV only)
-            %     - ``ReturnedLevel`` — selected pyramid level (for BDV only)
-            %     - ``pixSize`` — struct with pixel sizes: ``.x``, ``.y``, ``.z``, ``.t``,
+            %     - ``Height`` - image height in pixels
+            %     - ``Width`` - image width in pixels
+            %     - ``Colors`` - number of color channels
+            %     - ``Depth`` - number of z-slices
+            %     - ``Time`` - number of time points
+            %     - ``imgClass`` - image class (``uint8``, ``uint16``, etc.)
+            %     - ``ColorType`` - ``'grayscale'``, ``'truecolor'``, or ``'indexed'``
+            %     - ``ImageDescription`` - description with BoundingBox info
+            %     - ``Format`` - HDF5 format type (``'matlab.hdf5'`` or ``'bdv.hdf5'``)
+            %     - ``Levels`` - number of pyramid levels (for BDV only)
+            %     - ``ReturnedLevel`` - selected pyramid level (for BDV only)
+            %     - ``pixSize`` - struct with pixel sizes: ``.x``, ``.y``, ``.z``, ``.t``,
             %       ``.units``, ``.tunits``
             %     - other format-specific metadata fields
             %
-            %   - **files** — structure array with file information
+            %   - **files** - structure array with file information
             %
-            % **Example 1** — load metadata from HDF5 file:
+            % **Example 1** - load metadata from HDF5 file:
             %
             %   .. code-block:: matlab
             %
@@ -365,15 +365,15 @@ classdef HDF5NoHeaderLoader < io.loaders.BaseImageLoader
             % permutation via transMatrix.
             %
             % Input Arguments:
-            %   - **files** — structure array from loadMetadata
-            %   - **imginfo** — dictionary from loadMetadata
-            %   - **options** — *(optional)* struct for image loading
+            %   - **files** - structure array from loadMetadata
+            %   - **imginfo** - dictionary from loadMetadata
+            %   - **options** - *(optional)* struct for image loading
             %
             % Output Arguments:
-            %   - **img** — loaded image dataset
-            %   - **imginfo** — updated dictionary
+            %   - **img** - loaded image dataset
+            %   - **imginfo** - updated dictionary
             %
-            % **Example 1** — load images from HDF5 file:
+            % **Example 1** - load images from HDF5 file:
             %
             %   .. code-block:: matlab
             %

@@ -21,14 +21,14 @@ function backgroundValue = canvasBackground(dataClass, canvasColor)
 % altogether; the colour still shows through any gap left by a missing tile.
 %
 % Input Arguments:
-%   - **dataClass** — [char] numeric class of the mosaic (``canvas.dataClass``).
-%   - **canvasColor** *(optional)* — [char] ``'black'`` (default) | ``'white'``.
+%   - **dataClass** - [char] numeric class of the mosaic (``canvas.dataClass``).
+%   - **canvasColor** *(optional)* - [char] ``'black'`` (default) | ``'white'``.
 %
 % Output Arguments:
-%   - **backgroundValue** — [double] fill value, ready for
+%   - **backgroundValue** - [double] fill value, ready for
 %     ``cast(backgroundValue, dataClass)``.
 %
-% **Example** — fuse an EM mosaic on a white canvas:
+% **Example** - fuse an EM mosaic on a white canvas:
 %
 %   .. code-block:: matlab
 %

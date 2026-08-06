@@ -9,28 +9,28 @@ function addFrameToImage(obj, BatchOpt, parentFigure)
 % Ported from MIB2 ``@mibImage/addFrameToImage.m``.
 %
 % Input Arguments:
-%   - **BatchOpt** — [struct] parameters for the frame operation:
+%   - **BatchOpt** - [struct] parameters for the frame operation:
 %
-%     - ``.Position`` — [cell] one of:
+%     - ``.Position`` - [cell] one of:
 %       ``{'Center'}``, ``{'Left-upper corner'}``, ``{'Center-top'}``,
 %       ``{'Right-upper corner'}``, ``{'Left-bottom corner'}``,
 %       ``{'Center-bottom'}``, ``{'Right-bottom corner'}``
-%     - ``.NewImageWidth`` — [numeric cell] new image width in pixels;
+%     - ``.NewImageWidth`` - [numeric cell] new image width in pixels;
 %       ``{1}`` value, ``{2}`` limits ``[1, Inf]``, ``{3}`` ``'on'`` (integer)
-%     - ``.NewImageHeight`` — [numeric cell] new image height in pixels;
+%     - ``.NewImageHeight`` - [numeric cell] new image height in pixels;
 %       ``{1}`` value, ``{2}`` limits ``[1, Inf]``, ``{3}`` ``'on'`` (integer)
-%     - ``.FrameColorIntensity`` — [numeric cell] fill intensity for the frame pixels;
+%     - ``.FrameColorIntensity`` - [numeric cell] fill intensity for the frame pixels;
 %       ``{1}`` value, ``{2}`` limits ``[0, Inf]``, ``{3}`` ``'off'``
-%     - ``.showWaitbar`` — [logical] show progress dialog (default: ``true``)
+%     - ``.showWaitbar`` - [logical] show progress dialog (default: ``true``)
 %
-%   - **parentFigure** *(optional)* — handle to the parent figure for the progress dialog;
+%   - **parentFigure** *(optional)* - handle to the parent figure for the progress dialog;
 %     pass ``[]`` to suppress the progress dialog
 %
 % Output Arguments:
 %   none
 %
 % Usage:
-%   **Example 1** — add a frame centering the image in 600×500
+%   **Example 1** - add a frame centering the image in 600×500
 %
 %   .. code-block:: matlab
 %

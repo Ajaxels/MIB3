@@ -17,15 +17,15 @@ function [levelIdx, levelSize] = findClosestLevelForImport(obj, sourceDims)
 % display at that resolution.
 %
 % Input Arguments:
-%   - **sourceDims** — [1x2 | 1x3 numeric] size of the source model as
+%   - **sourceDims** - [1x2 | 1x3 numeric] size of the source model as
 %     ``[Y X]`` or ``[Y X Z]`` (the full-slice extent at the source's own
 %     resolution).  Only the Y extent is used for the ratio (X is downsampled
 %     by the same factor in MIB pyramids).
 %
 % Output Arguments:
-%   - **levelIdx** — [numeric scalar] 1-based pyramid level index (1 = finest /
+%   - **levelIdx** - [numeric scalar] 1-based pyramid level index (1 = finest /
 %     full-resolution; ``nLevels`` = coarsest).
-%   - **levelSize** — [1x3 numeric] ``modelLevelSizes(levelIdx, :)`` = the
+%   - **levelSize** - [1x3 numeric] ``modelLevelSizes(levelIdx, :)`` = the
 %     chosen level's ``[Y X Z]`` size.
 %
 % See also pickLevel, core.MibBigDataLabels/getData63, core.MibBigDataLabels/setData63.

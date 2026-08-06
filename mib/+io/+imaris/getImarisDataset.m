@@ -5,19 +5,19 @@ function [img, img_info, viewPort, lutColors, connImaris] = getImarisDataset(con
 %   function [img, img_info, viewPort, lutColors, connImaris] = getImarisDataset(connImaris)
 %
 % Input Arguments:
-%   - **connImaris** — *(optional)* a handle to imaris connection
+%   - **connImaris** - *(optional)* a handle to imaris connection
 %
 % Output Arguments:
-%   - **img** — 4D dataset
-%   - **img_info** — ``containers.Map`` with meta data
-%   - **viewPort** — a structure with the viewPort parameters:
+%   - **img** - 4D dataset
+%   - **img_info** - ``containers.Map`` with meta data
+%   - **viewPort** - a structure with the viewPort parameters:
 %
-%     - ``.min`` — a vector with minimal intensities for contrast adjustment
-%     - ``.max`` — a vector with maximal intensities for contrast adjustment
-%     - ``.gamma`` — a vector with gamma factor for contrast adjustment
+%     - ``.min`` - a vector with minimal intensities for contrast adjustment
+%     - ``.max`` - a vector with maximal intensities for contrast adjustment
+%     - ``.gamma`` - a vector with gamma factor for contrast adjustment
 %
-%   - **lutColors** — a matrix with LUT colors ``[1:colorChannel, R G B]``, (0-1)
-%   - **connImaris** — a handle to Imaris connection
+%   - **lutColors** - a matrix with LUT colors ``[1:colorChannel, R G B]``, (0-1)
+%   - **connImaris** - a handle to Imaris connection
 %
 % Usage:
 %   **Example 1**

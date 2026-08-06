@@ -10,21 +10,21 @@ function setDataFast(obj, dataset, z, colChannel, t)
 % MATLAB mutates ``obj.data`` in place instead of copy-on-writing the whole 5-D
 % array. Writing through ``MibDataset.(layer).data(...) = dataset`` (two handle
 % hops) defeats MATLAB's in-place optimization and copies the entire array on
-% every call — the source of the per-slice ``setData2D``/``setData3D`` slowdown.
+% every call - the source of the per-slice ``setData2D``/``setData3D`` slowdown.
 %
 % When the write spans the **entire** array (all z, all channels, all time
 % points), the element-wise indexed assignment is skipped altogether and
-% ``obj.data`` is replaced by reference (``obj.data = reshape(dataset, …)``) —
+% ``obj.data`` is replaced by reference (``obj.data = reshape(dataset, …)``) -
 % an O(1) copy-on-write swap instead of touching every element.
 %
 % Input Arguments:
-%   - **dataset** — [numeric] 2D slice ``[height, width]`` (when **z** is a scalar),
+%   - **dataset** - [numeric] 2D slice ``[height, width]`` (when **z** is a scalar),
 %     3D volume ``[height, width, depth]`` (when **z** is ``[]``), or 4D series
 %     ``[height, width, depth, time]`` (when both **z** and **t** are ``[]``)
-%   - **z** — [numeric or ``[]``] slice index for a 2D write, or ``[]`` to write the
+%   - **z** - [numeric or ``[]``] slice index for a 2D write, or ``[]`` to write the
 %     full depth (3D volume / 4D series write)
-%   - **colChannel** — [numeric] color channel / material index(es) to write
-%   - **t** — [numeric or ``[]``] time point to write, or ``[]`` to write all time points
+%   - **colChannel** - [numeric] color channel / material index(es) to write
+%   - **t** - [numeric or ``[]``] time point to write, or ``[]`` to write all time points
 %
 %   .. note::
 %      Only the simple full-channel case is routed here by the fast paths; the

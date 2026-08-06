@@ -22,67 +22,67 @@ function [edges, cancelled] = measureAllPairs(layout, pairs, options)
 % or their max-projection (``options.colorChannel = 'max'``).
 %
 % Input Arguments:
-%   - **layout** — [struct array] tile layout (see :func:`utils.stitch.makeTileReader`).
-%   - **pairs** — [struct array] neighbour pairs; each has ``.i``, ``.j``,
+%   - **layout** - [struct array] tile layout (see :func:`utils.stitch.makeTileReader`).
+%   - **pairs** - [struct array] neighbour pairs; each has ``.i``, ``.j``,
 %     ``.direction`` (``'x'``/``'y'``/``'z'``) and ``.nominal`` (``[dy dx dz]``).
-%   - **options** *(optional)* — struct with fields:
+%   - **options** *(optional)* - struct with fields:
 %
-%     - ``.expandPx`` — [double] jitter expansion for the overlap (default: ``64``)
-%     - ``.qualityThreshold`` — [double] ``valid = quality >= threshold`` (default: ``0.30``)
-%     - ``.colorChannel`` — [double|char] channel index to register on, or
+%     - ``.expandPx`` - [double] jitter expansion for the overlap (default: ``64``)
+%     - ``.qualityThreshold`` - [double] ``valid = quality >= threshold`` (default: ``0.30``)
+%     - ``.colorChannel`` - [double|char] channel index to register on, or
 %       ``'max'`` for a max-projection over channels (default: ``1``)
-%     - ``.subpixel`` — [logical] subpixel refinement in ``pairwiseShift`` (default: ``true``)
-%     - ``.registrationMethod`` — [char] ``'Phase correlation'`` (default) or
+%     - ``.subpixel`` - [logical] subpixel refinement in ``pairwiseShift`` (default: ``true``)
+%     - ``.registrationMethod`` - [char] ``'Phase correlation'`` (default) or
 %       ``'Feature-based'``; selects :func:`utils.stitch.pairwiseShift` or
 %       :func:`utils.stitch.featureShift` as the per-pair estimator (both share
 %       the same sign convention, so the displacement composition is identical).
-%     - ``.transformType`` — [char] ``'Translation'`` (default) | ``'Rigid'`` |
+%     - ``.transformType`` - [char] ``'Translation'`` (default) | ``'Rigid'`` |
 %       ``'Similarity'`` | ``'Affine'``. Phase correlation can only measure
 %       translation, so any non-translation model implies the feature-based
 %       estimator regardless of ``registrationMethod``. Non-translation edges
 %       additionally carry the full fitted transform in ``.tform``.
-%     - ``.allowRotation`` — [logical] ``true`` (default). ``false`` constrains
+%     - ``.allowRotation`` - [logical] ``true`` (default). ``false`` constrains
 %       every pairwise fit to carry no rotation (forwarded to
 %       :func:`utils.stitch.featureShift`); pair it with the same option on
 %       :func:`utils.stitch.solveGlobalAffine` so measurement and solve agree.
-%     - ``.preserveEdges`` — [struct array] previously measured edges whose
+%     - ``.preserveEdges`` - [struct array] previously measured edges whose
 %       USER-made fixes (``.source = 'user'``, from the seam inspector) must
 %       survive this re-measure: after measuring, any output edge whose
 %       ``(i, j)`` pair matches a preserved user edge is replaced by it.
 %       Without this, one re-measure silently discards a QC session. Preserved
 %       user edges whose pair no longer exists in ``pairs`` are dropped.
-%     - ``.featureOptions`` — [struct] detector settings forwarded to
+%     - ``.featureOptions`` - [struct] detector settings forwarded to
 %       :func:`utils.stitch.featureShift` when ``registrationMethod`` is
 %       ``'Feature-based'`` (detector type, per-detector params, downsampling,
 %       RANSAC; the ``automaticOptions`` shape). Ignored for phase correlation.
-%     - ``.cacheSizeBytes`` — [double] LRU tile-cache budget (default: sized to
+%     - ``.cacheSizeBytes`` - [double] LRU tile-cache budget (default: sized to
 %       the layout by :func:`utils.stitch.tileCacheBudget`, divided by the pool
 %       size on the ``parfor`` path where each worker caches separately)
-%     - ``.useParallel`` — [logical] measure pairs with ``parfor`` (default: ``false``)
-%     - ``.showWaitbar`` — [logical] show a progress dialog (default: ``false``); only the
-%       sequential path (``useParallel = false``) makes it ``Cancelable`` — a ``parfor``
+%     - ``.useParallel`` - [logical] measure pairs with ``parfor`` (default: ``false``)
+%     - ``.showWaitbar`` - [logical] show a progress dialog (default: ``false``); only the
+%       sequential path (``useParallel = false``) makes it ``Cancelable`` - a ``parfor``
 %       batch cannot poll the dialog mid-iteration
-%     - ``.parentFigure`` — [handle] parent for the progress dialog (default: ``[]``)
+%     - ``.parentFigure`` - [handle] parent for the progress dialog (default: ``[]``)
 %
 % Output Arguments:
-%   - **edges** — [struct array] one per pair with fields ``.i .j .direction
+%   - **edges** - [struct array] one per pair with fields ``.i .j .direction
 %     .nominal`` (copied) plus ``.measured`` (``[dy dx dz]``), ``.quality``
-%     (``[0,1]``), ``.valid`` (logical), ``.tform`` — the tile-local A→B
+%     (``[0,1]``), ``.valid`` (logical), ``.tform`` - the tile-local A→B
 %     transform as a 3x3 double in xy pixel coordinates
 %     (``[x_j; y_j; 1] = tform * [x_i; y_i; 1]``), filled only when a
 %     non-translation ``transformType`` was fitted (``[]`` otherwise; the
-%     translation solver reads ``.measured`` alone) — and the seam-inspector
+%     translation solver reads ``.measured`` alone) - and the seam-inspector
 %     bookkeeping fields ``.source`` (``'auto'`` here; ``'user'``/
 %     ``'confirmed'`` are set by the inspector) and ``.seamScore``
 %     (``[]`` here; filled by :func:`utils.stitch.scoreSeams`). When cancelled
-%     partway, only the pairs measured before the cancel are included — the
+%     partway, only the pairs measured before the cancel are included - the
 %     caller must check ``cancelled`` rather than assume ``edges`` covers
 %     every pair in ``pairs``.
-%   - **cancelled** — [logical] ``true`` when the user pressed Cancel on the
+%   - **cancelled** - [logical] ``true`` when the user pressed Cancel on the
 %     progress dialog before all pairs were measured; ``false`` otherwise
 %     (always ``false`` when ``showWaitbar`` is off or no dialog was shown).
 %
-% **Example** — measure all pairs sequentially:
+% **Example** - measure all pairs sequentially:
 %
 %   .. code-block:: matlab
 %
@@ -129,7 +129,7 @@ zSearchRadius = options.zSearchRadius;
 % [dy dx dz] in the same sign convention (cropB(r,c) ≈ cropA(r-dy,c-dx)), so the
 % displacement composition in measureOne is method-agnostic. The handle is passed
 % into the parfor body (a plain function handle broadcasts cleanly to workers).
-% Phase correlation can only measure translation — any richer transform model
+% Phase correlation can only measure translation - any richer transform model
 % forces the feature-based estimator.
 fitsFullTransform = ~strcmpi(options.transformType, 'Translation');
 isFeatureBased = strcmpi(options.registrationMethod, 'Feature-based') || fitsFullTransform;
@@ -261,7 +261,7 @@ pairExpandPx = min(expandPx, max(round(0.75 * overlapExtent), 8));
 % still fit the translation. This also lets it recover offsets far from nominal
 % (unknown/arbitrary layouts) that the restricted phase-correlation search misses.
 % Cross-layer ('z') pairs already sit at ~same XY, so their overlap crop is most
-% of the tile — no full-tile override needed there.
+% of the tile - no full-tile override needed there.
 if isFeatureBased && (strcmp(pair.direction, 'x') || strcmp(pair.direction, 'y'))
     bboxA = [1, layout(pair.i).tileSize(1); 1, layout(pair.i).tileSize(2)];
     bboxB = [1, layout(pair.j).tileSize(1); 1, layout(pair.j).tileSize(2)];
@@ -322,7 +322,7 @@ function [shiftYXZ, quality, measuredDz] = measureZShift(cropA, cropB, nominalDz
 % MEASUREZSHIFT - Joint [dy dx dz] measurement for a cross-layer stack pair.
 %
 % XY and Z are decoupled: a mean projection over depth cancels the z-specific
-% content (so it aligns XY well but says NOTHING about dz — a thick-slab
+% content (so it aligns XY well but says NOTHING about dz - a thick-slab
 % correlation scores high for every dz with decent overlap and even prefers the
 % smaller-dz / larger-overlap side). So:
 %   1. dy, dx come from the mean-projection correlation (calibrated pairwiseShift).

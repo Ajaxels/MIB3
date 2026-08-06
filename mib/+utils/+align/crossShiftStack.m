@@ -13,26 +13,26 @@ function imgOut = crossShiftStack(imgIn, shiftsX, shiftsY, options)
 %
 % Input layout is MIB3-native: ``[h, w, d]`` for service layers, ``[h, w, d, c]``
 % for image stacks, or ``[h, w, d, c, t]`` for image stacks with a time axis.
-% The depth axis is always dim 3 — color and time are after depth, matching
+% The depth axis is always dim 3 - color and time are after depth, matching
 % :attr:`core.MibImage.data` ``{1}``.
 %
 % Input Arguments:
-%   - **imgIn** — [numeric] input stack in MIB3 layout: ``[h, w, d]``,
+%   - **imgIn** - [numeric] input stack in MIB3 layout: ``[h, w, d]``,
 %     ``[h, w, d, c]``, or ``[h, w, d, c, t]``.
-%   - **shiftsX** — [numeric vector] X translation per slice, length ``d``.
-%   - **shiftsY** — [numeric vector] Y translation per slice, length ``d``.
-%   - **options** *(optional)* — struct with fields:
+%   - **shiftsX** - [numeric vector] X translation per slice, length ``d``.
+%   - **shiftsY** - [numeric vector] Y translation per slice, length ``d``.
+%   - **options** *(optional)* - struct with fields:
 %
-%     - ``.backgroundColor`` — [char|numeric] padding colour: ``'black'`` (default),
+%     - ``.backgroundColor`` - [char|numeric] padding colour: ``'black'`` (default),
 %       ``'white'``, ``'mean'``, or a numeric scalar of the same class as ``imgIn``.
-%     - ``.waitbar`` — [:class:`core.PoolWaitbar`] existing handle to reuse for
+%     - ``.waitbar`` - [:class:`core.PoolWaitbar`] existing handle to reuse for
 %       progress reporting; pass ``[]`` or omit to disable progress reporting.
 %
 % Output Arguments:
-%   - **imgOut** — [numeric] aligned stack with the same layout / class as
+%   - **imgOut** - [numeric] aligned stack with the same layout / class as
 %     ``imgIn`` and enlarged ``h`` / ``w``.
 %
-% **Example** — apply shifts and use the parent figure's PoolWaitbar:
+% **Example** - apply shifts and use the parent figure's PoolWaitbar:
 %
 % .. code-block:: matlab
 %
@@ -54,7 +54,7 @@ if ~isfield(options, 'waitbar');         options.waitbar = []; end
 pwb = options.waitbar;
 showProgress = ~isempty(pwb) && isvalid(pwb);
 
-% MIB3 layout — work natively in [h, w, d, c, t]. Service-layer 3-D and
+% MIB3 layout - work natively in [h, w, d, c, t]. Service-layer 3-D and
 % image-stack 4-D inputs are handled by querying the missing trailing dims
 % as size 1; the assignment below copes uniformly with all three cases.
 [height, width, depth, colors, times] = size(imgIn, 1:5);

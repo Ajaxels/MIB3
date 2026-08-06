@@ -18,8 +18,8 @@ function [readerFcn, isCachedFcn] = makeTileReader(layout, options)
 % :func:`utils.stitch.buildLayoutMdoc`) are read one slice at a time out of the
 % shared stack. A bounded least-recently-used (LRU) cache holds decoded full
 % tiles so repeated reads (e.g. a tile appearing in several pairwise
-% registrations) do not hit disk again. The cache is a plain cell/struct ring —
-% no ``containers.Map`` — so it is safe to serialise into ``parfor`` workers.
+% registrations) do not hit disk again. The cache is a plain cell/struct ring -
+% no ``containers.Map`` - so it is safe to serialise into ``parfor`` workers.
 %
 % The optional ``pixelRegion`` second argument requests a sub-rectangle of a
 % tile. For single-file TIFF/PNG tiles this uses ``imread(..., 'PixelRegion', ...)``
@@ -31,40 +31,40 @@ function [readerFcn, isCachedFcn] = makeTileReader(layout, options)
 %    closure: an open file handle cannot cross into a ``parfor`` worker, and the
 %    header read it costs is negligible beside the pixels. The intensity scaling
 %    is likewise taken from the FILE HEADER, so every tile of a montage shares one
-%    scale — per-slice statistics would give each tile its own, injecting exactly
+%    scale - per-slice statistics would give each tile its own, injecting exactly
 %    the intensity mismatch a stitch must not have.
 %
 % Input Arguments:
-%   - **layout** — [struct array] tile layout; each element has fields
-%     ``.filename`` (char, full path — a folder for subfolder tiles, the shared
+%   - **layout** - [struct array] tile layout; each element has fields
+%     ``.filename`` (char, full path - a folder for subfolder tiles, the shared
 %     container for MRC tiles), ``.sliceFiles`` (cellstr, ``{}`` for single-file
 %     tiles), ``.sliceIndex`` *(optional)* (1-based slice inside an MRC container)
 %     and ``.tileSize``.
-%   - **options** *(optional)* — struct with fields:
+%   - **options** *(optional)* - struct with fields:
 %
-%     - ``.cacheSizeBytes`` — [double] LRU cache budget in bytes (default:
+%     - ``.cacheSizeBytes`` - [double] LRU cache budget in bytes (default:
 %       :func:`utils.stitch.tileCacheBudget`, which sizes it to the layout and to
-%       the memory this machine has — a fixed 2 GB could not hold even ONE PAIR
+%       the memory this machine has - a fixed 2 GB could not hold even ONE PAIR
 %       of large tiles, so the pair view re-decoded both on every revisit)
-%     - ``.mibBioformatsCheck`` — [logical] force the BioFormats reader (default: ``false``)
-%     - ``.correction`` — [struct] intensity correction from
+%     - ``.mibBioformatsCheck`` - [logical] force the BioFormats reader (default: ``false``)
+%     - ``.correction`` - [struct] intensity correction from
 %       :func:`utils.stitch.estimateIntensityCorrection`, applied to every tile as it is
 %       read (default: none). Building the reader with it is what makes the
-%       correction reach measurement, seam scoring and fusion identically — there
+%       correction reach measurement, seam scoring and fusion identically - there
 %       is no second place pixels enter the pipeline.
 %
 % Output Arguments:
-%   - **readerFcn** — [function_handle] ``img = readerFcn(tileIndex)`` returns the
+%   - **readerFcn** - [function_handle] ``img = readerFcn(tileIndex)`` returns the
 %     tile as ``[H, W, D, C]`` (first time point); ``img = readerFcn(tileIndex, pixelRegion)``
 %     returns a sub-region where ``pixelRegion = [yMin yMax; xMin xMax]``.
-%   - **isCachedFcn** — [function_handle] ``tf = isCachedFcn(tileIndex)``: is that
+%   - **isCachedFcn** - [function_handle] ``tf = isCachedFcn(tileIndex)``: is that
 %     tile resident, i.e. would a whole-tile read return immediately? Exists so a
 %     caller can tell a free read from one that will stall on disk and put a
-%     progress dialog around only the latter — a decode of a large tile is
+%     progress dialog around only the latter - a decode of a large tile is
 %     several seconds, and a dialog flashed on every cached read would be worse
 %     than none. Never treat it as a promise: a later read can evict the tile.
 %
-% **Example** — read two tiles with a shared cache:
+% **Example** - read two tiles with a shared cache:
 %
 %   .. code-block:: matlab
 %
@@ -159,7 +159,7 @@ isCachedFcn = @cacheHas;
     function img = applyCorrection(img, tileIndex, pixelRegion)
         % APPLYCORRECTION - Divide out the illumination field, then per-tile gain.
         % `pixelRegion` is [] for a whole tile, or the sub-rectangle a fast-path
-        % read returned — the field has to be cropped to match it.
+        % read returned - the field has to be cropped to match it.
         if ~hasCorrection; return; end
         pixelClass = class(img);
         value = single(img);
@@ -242,7 +242,7 @@ isCachedFcn = @cacheHas;
     end
 
     function img = tryMrcRegion(tileIndex, pixelRegion)
-        % Ranged read straight out of the container — no full-slice decode.
+        % Ranged read straight out of the container - no full-slice decode.
         try
             img = readMrcSlice(layout(tileIndex), pixelRegion);
         catch
@@ -255,10 +255,10 @@ isCachedFcn = @cacheHas;
         entry = layout(tileIndex);
         if isfield(entry, 'sliceFiles') && ~isempty(entry.sliceFiles); return; end
         % Bio-Formats series tiles cannot be sub-region-read via imread (which
-        % only sees the first IFD) — fall through to the full Bio-Formats load.
+        % only sees the first IFD) - fall through to the full Bio-Formats load.
         if isfield(entry, 'seriesIndex') && ~isempty(entry.seriesIndex); return; end
         % Multi-page z-stack tiles: imread reads only the FIRST page, so the
-        % depth would be silently lost — full-load-then-crop instead.
+        % depth would be silently lost - full-load-then-crop instead.
         if isfield(entry, 'tileSize') && numel(entry.tileSize) >= 3 && entry.tileSize(3) > 1
             return;
         end

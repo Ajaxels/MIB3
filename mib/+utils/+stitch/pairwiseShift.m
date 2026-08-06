@@ -27,25 +27,25 @@ function [shiftYXZ, quality, debugInfo] = pairwiseShift(cropA, cropB, options)
 %      % P_j - P_i in the shared global frame:
 %      measured = (bboxA(:,1) - bboxB(:,1))' - [dy dx]
 %
-% — this composition (including the sign NEGATION of the raw shift) lives in
+% - this composition (including the sign NEGATION of the raw shift) lives in
 % ``utils.stitch.measureAllPairs/measureOne``.
 %
 % Input Arguments:
-%   - **cropA** — [numeric] reference crop from tile ``i``, ``[H W]`` or ``[H W C]``.
-%   - **cropB** — [numeric] moving crop from tile ``j``, same size as ``cropA``.
-%   - **options** *(optional)* — struct with fields:
+%   - **cropA** - [numeric] reference crop from tile ``i``, ``[H W]`` or ``[H W C]``.
+%   - **cropB** - [numeric] moving crop from tile ``j``, same size as ``cropA``.
+%   - **options** *(optional)* - struct with fields:
 %
-%     - ``.subpixel`` — [logical] enable parabolic subpixel refinement (default: ``true``)
-%     - ``.window`` — [logical] apply a separable Hann window (default: ``true``)
+%     - ``.subpixel`` - [logical] enable parabolic subpixel refinement (default: ``true``)
+%     - ``.window`` - [logical] apply a separable Hann window (default: ``true``)
 %
 % Output Arguments:
-%   - **shiftYXZ** — [1x3 double] ``[dy dx dz]`` correction to the nominal offset
+%   - **shiftYXZ** - [1x3 double] ``[dy dx dz]`` correction to the nominal offset
 %     (dz is ``0`` in Phase 1).
-%   - **quality** — [double] peak prominence in ``[0, 1]``: the phase-correlation
+%   - **quality** - [double] peak prominence in ``[0, 1]``: the phase-correlation
 %     peak height relative to the surrounding field. Textured overlaps score high
 %     (``> 0.5``), flat/noise overlaps score low (``< 0.1``).
 %
-% **Example** — recover a known integer shift:
+% **Example** - recover a known integer shift:
 %
 %   .. code-block:: matlab
 %
@@ -131,7 +131,7 @@ if isfinite(options.searchRadius)
     searchSurface = correlation;
     searchSurface(~validMask) = -Inf;
     [peakValue, linearIdx] = max(searchSurface(:));
-    if ~isfinite(peakValue)   % degenerate mask — fall back to the global peak
+    if ~isfinite(peakValue)   % degenerate mask - fall back to the global peak
         validMask = true(paddedH, paddedW);
         [peakValue, linearIdx] = max(correlation(:));
     end
@@ -147,7 +147,7 @@ dxInt = wrapIndex(peakCol, paddedW);
 
 % Quality: peak prominence = (peak - meanBackground) / stdBackground, mapped to
 % [0,1]. Background excludes a small neighbourhood around the peak and, when the
-% search is restricted, only samples the physically possible shift region — a
+% search is restricted, only samples the physically possible shift region - a
 % spurious sidelobe outside that region must not degrade the score of a genuine
 % in-window peak.
 [quality, rawPsr] = peakProminence(correlation, peakRow, peakCol, peakValue, validMask);

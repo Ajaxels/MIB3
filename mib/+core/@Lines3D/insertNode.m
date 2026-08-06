@@ -7,10 +7,10 @@ function insertNode(obj, nodeId, x, y, z)
 %       obj.insertNode(nodeId, x, y, z)
 %
 % Input Arguments:
-%   - **nodeId** — index of the node after which a new node should be inserted
-%   - **x** — new x coordinate
-%   - **y** — new y coordinate
-%   - **z** — new z coordinate
+%   - **nodeId** - index of the node after which a new node should be inserted
+%   - **x** - new x coordinate
+%   - **y** - new y coordinate
+%   - **z** - new z coordinate
 %
 
 if nargin < 5; error('not enough parameters!'); end

@@ -8,7 +8,7 @@ function returnBatchOpt(obj, BatchOptOut)
 %      obj.returnBatchOpt(BatchOptOut)
 %
 % Input Arguments:
-%   - **BatchOptOut** *(optional)* — [struct] BatchOpt to send; defaults to ``obj.BatchOpt``
+%   - **BatchOptOut** *(optional)* - [struct] BatchOpt to send; defaults to ``obj.BatchOpt``
 %
 
 if nargin < 2; BatchOptOut = obj.BatchOpt; end

@@ -20,7 +20,7 @@ function alignDriftCorrectionHDD_Alignment(obj, parameters)
 % to ``<InputDir>/HDD_OutputSubfolderName`` in the chosen format via
 % :meth:`core.MibImage.save`.
 %
-% No in-memory dataset is modified — only files in the output directory.
+% No in-memory dataset is modified - only files in the output directory.
 % This means **no backup is taken** (there's nothing to back up) and the
 % trailing ``NewDataset`` notify is suppressed.
 %
@@ -29,7 +29,7 @@ function alignDriftCorrectionHDD_Alignment(obj, parameters)
 % state is polled between every image.
 %
 % Input Arguments:
-%   - **parameters** — struct produced by :meth:`continueBtn_Callback`.
+%   - **parameters** - struct produced by :meth:`continueBtn_Callback`.
 %     Reads ``method``, ``colorCh``, ``backgroundColor``, ``useBatchMode``,
 %     ``refFrame``, ``Subarea``, ``minX/maxX/minY/maxY``,
 %     ``IntensityGradient``.
@@ -37,7 +37,7 @@ function alignDriftCorrectionHDD_Alignment(obj, parameters)
 % Updates
 %
 
-% Parent figure for any dialogs — ``obj.view`` is empty in batch mode
+% Parent figure for any dialogs - ``obj.view`` is empty in batch mode
 if ~isempty(obj.view) && isvalid(obj.view) && isvalid(obj.view.gui)
     parentFig = obj.view.gui;
 else
@@ -96,7 +96,7 @@ end
 NumFiles = numel(imgDS.Files);
 if NumFiles < 2
     utils.dlgs.showErrorDialog(parentFig, ...
-        sprintf('Found %d files in "%s" — need at least 2 to align.', NumFiles, inputDir), ...
+        sprintf('Found %d files in "%s" - need at least 2 to align.', NumFiles, inputDir), ...
         'HDD drift');
     return;
 end
@@ -123,7 +123,7 @@ if isempty(obj.shiftsX)
         case 0      % Previous slice
             shiftX = cumsum(shiftX);
             shiftY = cumsum(shiftY);
-        case 1      % First slice (already absolute — done inside computeHDDShifts)
+        case 1      % First slice (already absolute - done inside computeHDDShifts)
             % no-op
         otherwise   % Relative to N (negative refFrame)
             % Same windowed-step accumulation as MIB2's option 2
@@ -161,7 +161,7 @@ if isempty(obj.shiftsX)
     obj.shiftsY = shiftY;
 end
 
-% --- Phase 2: apply shifts — re-read, pad, save each image to the output dir
+% --- Phase 2: apply shifts - re-read, pad, save each image to the output dir
 shiftsX = obj.shiftsX;
 shiftsY = obj.shiftsY;
 minX = min(shiftsX);   maxX = max(shiftsX);
@@ -381,7 +381,7 @@ if strcmp(answer, 'Apply current values')
     return;  % proceed with unsmoothed shifts
 end
 
-% 'Fix drifts' — subtractRunningAverage already contains the interactive loop
+% 'Fix drifts' - subtractRunningAverage already contains the interactive loop
 halfwidth    = BatchOpt.SubtractRunningAverageStep{1};
 excludePeaks = BatchOpt.SubtractRunningAverageExcludePeaks{1};
 [shiftX, shiftY] = utils.align.subtractRunningAverage(parentFig, ...

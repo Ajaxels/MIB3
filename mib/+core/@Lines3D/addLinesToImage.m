@@ -10,18 +10,18 @@ function img = addLinesToImage(obj, img, Box, options)
 % colors and rendering parameters.
 %
 % Input Arguments:
-%   - **img** — [numeric array] 2D or 3D image array where lines should be rendered
-%   - **Box** — [1×6 numeric] clipping box ``[xmin, xmax, ymin, ymax, zmin, zmax]`` defining the region to render
-%   - **options** — *(optional)* [struct] rendering settings:
+%   - **img** - [numeric array] 2D or 3D image array where lines should be rendered
+%   - **Box** - [1×6 numeric] clipping box ``[xmin, xmax, ymin, ymax, zmin, zmax]`` defining the region to render
+%   - **options** - *(optional)* [struct] rendering settings:
 %
-%     - ``.orientation`` — [numeric] image plane orientation (default: ``3``):
+%     - ``.orientation`` - [numeric] image plane orientation (default: ``3``):
 %
-%       - ``3`` — YX plane (default)
-%       - ``1`` — XZ plane
-%       - ``2`` — YZ plane
+%       - ``3`` - YX plane (default)
+%       - ``1`` - XZ plane
+%       - ``2`` - YZ plane
 %
 % Output Arguments:
-%   - **img** — [numeric array] image with rendered lines and nodes
+%   - **img** - [numeric array] image with rendered lines and nodes
 %
 
 if nargin < 4; options = struct(); end

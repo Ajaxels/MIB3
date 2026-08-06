@@ -1,6 +1,6 @@
 classdef MibPathFixture < matlab.unittest.fixtures.Fixture
     % Adds mib/ and tests/ to the MATLAB path for headless unit tests.
-    % Only mib/ is needed for model-layer tests (Phase 0 confirmed — no external
+    % Only mib/ is needed for model-layer tests (Phase 0 confirmed - no external
     % folders required for getData/setData/getRGBimage).
     methods
         function setup(fixture)

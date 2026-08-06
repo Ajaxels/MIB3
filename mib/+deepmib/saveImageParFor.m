@@ -11,16 +11,16 @@ function saveImageParFor(fn, imgOut, compressImage, options)
 % called directly inside ``parfor``.
 %
 % Input Arguments:
-%   - **fn** — [string] full output filename
-%   - **imgOut** — image matrix to save
-%   - **compressImage** — [logical] ``true`` to enable MAT-file compression
-%   - **options** *(optional)* — struct with additional parameters:
+%   - **fn** - [string] full output filename
+%   - **imgOut** - image matrix to save
+%   - **compressImage** - [logical] ``true`` to enable MAT-file compression
+%   - **options** *(optional)* - struct with additional parameters:
 %
-%     - ``.dimOrder`` — [char] axis order string, e.g. ``'yxzct'``
+%     - ``.dimOrder`` - [char] axis order string, e.g. ``'yxzct'``
 %       meaning ``[height, width, depth, color, time]``
-%     - ``.modelType`` — [double] label model type: ``63``, ``255``, or ``65536``
-%     - ``.modelMaterialNames`` — cell array of class name strings
-%     - ``.modelMaterialColors`` — ``[N×3 double]`` RGB colour matrix per class
+%     - ``.modelType`` - [double] label model type: ``63``, ``255``, or ``65536``
+%     - ``.modelMaterialNames`` - cell array of class name strings
+%     - ``.modelMaterialColors`` - ``[N×3 double]`` RGB colour matrix per class
 %
 
 if nargin < 4; options = struct(); end

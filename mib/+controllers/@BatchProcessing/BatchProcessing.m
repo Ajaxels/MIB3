@@ -1,5 +1,5 @@
 classdef BatchProcessing < handle
-% BATCHPROCESSING - Controller for the Batch Processing tool — MIB3 port of mibBatchController.
+% BATCHPROCESSING - Controller for the Batch Processing tool - MIB3 port of mibBatchController.
 %
 % Syntax:
 %   .. code-block:: matlab
@@ -82,7 +82,7 @@ classdef BatchProcessing < handle
         updateSelectedActionTable(obj, BatchOpt)                                                      % update selected action table from BatchOpt
 
         function obj = BatchProcessing(mibModel, varargin)
-            % BATCHPROCESSING - Constructor — create a BatchProcessing controller and open its GUI window.
+            % BATCHPROCESSING - Constructor - create a BatchProcessing controller and open its GUI window.
             %
             % Syntax:
             %   .. code-block:: matlab
@@ -95,10 +95,10 @@ classdef BatchProcessing < handle
             % and makes the window visible.
             %
             % Input Arguments:
-            %   - **mibModel** — handle to the application MibModel instance
-            %   - **varargin{1}** — handle to the parent MibController
+            %   - **mibModel** - handle to the application MibModel instance
+            %   - **varargin{1}** - handle to the parent MibController
             %
-            % **Example** — start the batch processing controller:
+            % **Example** - start the batch processing controller:
             %
             %   .. code-block:: matlab
             %
@@ -179,10 +179,10 @@ classdef BatchProcessing < handle
             % - StopProtocol     - set stopProtocolSwitch and reset the Run button
             %
             % Input Arguments:
-            %   - **src** — source object that fired the event (unused, required by MATLAB)
-            %   - **evnt** — event data; for SyncBatch, evnt.Parameter carries the BatchOpt struct
+            %   - **src** - source object that fired the event (unused, required by MATLAB)
+            %   - **evnt** - event data; for SyncBatch, evnt.Parameter carries the BatchOpt struct
             %
-            % **Example** — register listeners for model events:
+            % **Example** - register listeners for model events:
             %
             %   .. code-block:: matlab
             %
@@ -193,7 +193,7 @@ classdef BatchProcessing < handle
                     obj.updateWidgets();
                 case 'SyncBatch'
                     obj.selectedActionTableIndex = 1;
-                    % NOTE: do NOT call updateWidgets() here — setting dropdown .Value
+                    % NOTE: do NOT call updateWidgets() here - setting dropdown .Value
                     % from within a ValueChangedFcn callback causes re-entrant execution
                     % which makes the figure handle invalid.
                     % remove batchModeFlag
@@ -219,7 +219,7 @@ classdef BatchProcessing < handle
             %
             %       obj.closeWindow()
             %
-            % **Example** — close the batch processing window:
+            % **Example** - close the batch processing window:
             %
             %   .. code-block:: matlab
             %
@@ -248,21 +248,21 @@ classdef BatchProcessing < handle
             % Called once from the constructor after the view has been created.
             % Wires callbacks to all GUI widgets:
             %
-            %   - ``selectProtocolSection`` / ``selectProtocolAction`` — ``selectProtocolSection_Callback``
-            %   - ``protocolList`` — ``protocolList_SelectionCallback``
-            %   - ``runProtocol`` — ``runProtocol_Callback('complete')``
-            %   - ``runProtocolFromSelected`` — ``runProtocol_Callback('from')``
-            %   - ``runProtocolStep`` — ``runProtocol_Callback('step')``
-            %   - ``runProtocolStepAdvance`` — ``runProtocol_Callback('stepadvance')``
-            %   - ``helpBtn`` — ``helpBtn_Callback``
-            %   - ``loadProtocol``, ``saveProtocol``, ``deleteProtocol`` — respective methods
-            %   - ``undo``, ``redo`` — ``backupProtocolRestore('undo'/'redo')``
-            %   - ``addToProtocol``, ``insertIntoProtocol``, ``updateProtocol`` — ``protocolActions_Callback``
-            %   - ``listenMIB`` — ``listenMIB_Callback``
-            %   - ``selectedActionTableCell*`` — ``selectedActionTableItem_Update``
-            %   - ``selectedActionTable`` — ``displaySelectedActionTableItems``
+            %   - ``selectProtocolSection`` / ``selectProtocolAction`` - ``selectProtocolSection_Callback``
+            %   - ``protocolList`` - ``protocolList_SelectionCallback``
+            %   - ``runProtocol`` - ``runProtocol_Callback('complete')``
+            %   - ``runProtocolFromSelected`` - ``runProtocol_Callback('from')``
+            %   - ``runProtocolStep`` - ``runProtocol_Callback('step')``
+            %   - ``runProtocolStepAdvance`` - ``runProtocol_Callback('stepadvance')``
+            %   - ``helpBtn`` - ``helpBtn_Callback``
+            %   - ``loadProtocol``, ``saveProtocol``, ``deleteProtocol`` - respective methods
+            %   - ``undo``, ``redo`` - ``backupProtocolRestore('undo'/'redo')``
+            %   - ``addToProtocol``, ``insertIntoProtocol``, ``updateProtocol`` - ``protocolActions_Callback``
+            %   - ``listenMIB`` - ``listenMIB_Callback``
+            %   - ``selectedActionTableCell*`` - ``selectedActionTableItem_Update``
+            %   - ``selectedActionTable`` - ``displaySelectedActionTableItems``
             %
-            % **Example** — attach all GUI callbacks:
+            % **Example** - attach all GUI callbacks:
             %
             %   .. code-block:: matlab
             %
@@ -321,23 +321,23 @@ classdef BatchProcessing < handle
             %
             % **protocolList context menu** (calls ``protocolActions_Callback``):
             %
-            %   - ``Show settings`` — display settings of the selected step
-            %   - ``Duplicate`` — duplicate the selected step
-            %   - ``Insert STOP EXECUTION event`` — insert a stop step before the selected step
-            %   - ``Move up`` — move the selected step one position up
-            %   - ``Move down`` — move the selected step one position down
-            %   - ``Delete from protocol`` — remove the selected step from the protocol
+            %   - ``Show settings`` - display settings of the selected step
+            %   - ``Duplicate`` - duplicate the selected step
+            %   - ``Insert STOP EXECUTION event`` - insert a stop step before the selected step
+            %   - ``Move up`` - move the selected step one position up
+            %   - ``Move down`` - move the selected step one position down
+            %   - ``Delete from protocol`` - remove the selected step from the protocol
             %
             % **selectedActionTable context menu** (calls ``selectedActionTable_ContextCallback``):
             %
-            %   - ``Add parameter`` — append a new numeric/logical field to CurrentBatch
-            %   - ``Delete parameter`` — remove the highlighted field from CurrentBatch
-            %   - ``Add directories`` — extend the directory list of a DIR LOOP step
-            %   - ``Modify directory`` — replace the selected directory with a new path
-            %   - ``Remove directories`` — remove checked entries from a DIR LOOP list
-            %   - ``Set second column width`` — resize the value column of the parameter table
+            %   - ``Add parameter`` - append a new numeric/logical field to CurrentBatch
+            %   - ``Delete parameter`` - remove the highlighted field from CurrentBatch
+            %   - ``Add directories`` - extend the directory list of a DIR LOOP step
+            %   - ``Modify directory`` - replace the selected directory with a new path
+            %   - ``Remove directories`` - remove checked entries from a DIR LOOP list
+            %   - ``Set second column width`` - resize the value column of the parameter table
             %
-            % **Example** — build context menus:
+            % **Example** - build context menus:
             %
             %   .. code-block:: matlab
             %
@@ -375,7 +375,7 @@ classdef BatchProcessing < handle
             % updateSelectedActionTable after new data is loaded.
             % Column 1 (parameter names) gets ~38% of inner width; column 2 (values) takes remainder.
             %
-            % **Example** — resize table columns to fit container:
+            % **Example** - resize table columns to fit container:
             %
             %   .. code-block:: matlab
             %
@@ -395,7 +395,7 @@ classdef BatchProcessing < handle
             %
             %       obj.updateWidgets()
             %
-            % **Example** — refresh all GUI widgets:
+            % **Example** - refresh all GUI widgets:
             %
             %   .. code-block:: matlab
             %

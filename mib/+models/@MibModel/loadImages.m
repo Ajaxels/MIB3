@@ -8,37 +8,37 @@ function loadImages(obj, parameter, BatchOptIn)
 %      obj.loadImages(parameter, BatchOptIn)
 %
 % Input Arguments:
-%   - **parameter** — string specifying the loading mode
-%   - ``'Combine datasets'`` — [*default*] combine selected datasets
-%   - ``'Load part of dataset'`` — load part of the dataset
-%   - ``'Load each N-th dataset'`` — load every N-th dataset
-%   - ``'Insert into open dataset'`` — insert into the open dataset
-%   - ``'Combine files as color channels'`` — combine files as color channels
-%   - ``'Add as new color channel'`` — add as a new color channel
-%   - ``'Add each N-th dataset as new color channel'`` — add each N-th dataset as a new color channel
-%   - **BatchOptIn** — *(optional)* structure for batch processing mode; when NaN,
+%   - **parameter** - string specifying the loading mode
+%   - ``'Combine datasets'`` - [*default*] combine selected datasets
+%   - ``'Load part of dataset'`` - load part of the dataset
+%   - ``'Load each N-th dataset'`` - load every N-th dataset
+%   - ``'Insert into open dataset'`` - insert into the open dataset
+%   - ``'Combine files as color channels'`` - combine files as color channels
+%   - ``'Add as new color channel'`` - add as a new color channel
+%   - ``'Add each N-th dataset as new color channel'`` - add each N-th dataset as a new color channel
+%   - **BatchOptIn** - *(optional)* structure for batch processing mode; when NaN,
 %     returns default options via "SyncBatch" event
-%   - ``.Mode`` — cell string, desired loading mode (see **parameter** above for valid values)
-%   - ``.DirectoryName`` — cell string, directory where files are located
-%   - ``.FilenameFilter`` — char, filter for filenames (``'*.*'`` = all files, ``'*.tif'`` = TIF only)
-%   - ``.Filenames`` — *(optional)* cell within a cell array of FULL PATH filenames; batch mode only
-%   - ``.UseBioFormats`` — logical, use Bio-Formats reader when true
-%   - ``.BioFormatsIndices`` — char, *(BioFormats only)* indices of images in file containers; empty = load all
-%   - ``.EachNthStep`` — char, step size for every-N-th mode
-%   - ``.BackgroundColorIntensity`` — char, background fill intensity when image sizes mismatch
-%   - ``.InsertDatasetDimension`` — *(Insert only)* cell string, ``{'depth'}`` | ``{'time'}``
-%   - ``.InsertDatasetPosition`` — *(Insert only)* char; ``'1'`` = beginning, ``'0'`` = end, or a numeric position
-%   - ``.showWaitbar`` — logical, show progress dialog
-%   - ``.id`` — *(optional)* dataset index (default: currently shown dataset)
+%   - ``.Mode`` - cell string, desired loading mode (see **parameter** above for valid values)
+%   - ``.DirectoryName`` - cell string, directory where files are located
+%   - ``.FilenameFilter`` - char, filter for filenames (``'*.*'`` = all files, ``'*.tif'`` = TIF only)
+%   - ``.Filenames`` - *(optional)* cell within a cell array of FULL PATH filenames; batch mode only
+%   - ``.UseBioFormats`` - logical, use Bio-Formats reader when true
+%   - ``.BioFormatsIndices`` - char, *(BioFormats only)* indices of images in file containers; empty = load all
+%   - ``.EachNthStep`` - char, step size for every-N-th mode
+%   - ``.BackgroundColorIntensity`` - char, background fill intensity when image sizes mismatch
+%   - ``.InsertDatasetDimension`` - *(Insert only)* cell string, ``{'depth'}`` | ``{'time'}``
+%   - ``.InsertDatasetPosition`` - *(Insert only)* char; ``'1'`` = beginning, ``'0'`` = end, or a numeric position
+%   - ``.showWaitbar`` - logical, show progress dialog
+%   - ``.id`` - *(optional)* dataset index (default: currently shown dataset)
 %
 % Usage:
-%   **Example 1** — load and combine datasets interactively
+%   **Example 1** - load and combine datasets interactively
 %
 %   .. code-block:: matlab
 %
 %      obj.mibModel.loadImages('Combine datasets');
 %
-%   **Example 2** — batch mode: load every 2nd TIF from a folder
+%   **Example 2** - batch mode: load every 2nd TIF from a folder
 %
 %   .. code-block:: matlab
 %

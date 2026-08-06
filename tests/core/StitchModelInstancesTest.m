@@ -2,8 +2,8 @@ classdef StitchModelInstancesTest < matlab.unittest.TestCase
 % STITCHMODELINSTANCESTEST - Unit tests for MibDataset.stitchModelInstances.
 %
 % Covers (MibDataset level, no GUI):
-%   layer replacement       — labels become an indexed uint16 instance model
-%   type-63 unpacking       — selection and mask survive the switch away from
+%   layer replacement       - labels become an indexed uint16 instance model
+%   type-63 unpacking       - selection and mask survive the switch away from
 %                             the bit-packed model, so getData2D('selection')
 %                             keeps working after stitching (the packed layers
 %                             live in bits 7-8 of obj.labels and are lost
@@ -91,7 +91,7 @@ classdef StitchModelInstancesTest < matlab.unittest.TestCase
     methods (Static, Access = private)
         function [mibModel, groundTruth] = buildInstanceStack(modelType)
             % Two square columns running through the whole stack, with the
-            % per-slice instance indices deliberately swapped between slices —
+            % per-slice instance indices deliberately swapped between slices -
             % this is what independently generated 2D instance predictions look
             % like, and stitching must resolve them into 2 objects.
             dims = [32 32 8];

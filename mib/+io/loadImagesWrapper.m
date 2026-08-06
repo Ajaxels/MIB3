@@ -5,32 +5,32 @@ function img = loadImagesWrapper(filename, options)
 %   function img = loadImagesWrapper(filename, options)
 %
 % Input Arguments:
-%   - **filename** — [char] full path to the image file
-%   - **options** — *(optional)* struct with loading options:
+%   - **filename** - [char] full path to the image file
+%   - **options** - *(optional)* struct with loading options:
 %
-%     - ``.mibBioformatsCheck`` — (logical) use BioFormats reader; default ``false``
-%     - ``.BioFormatsIndices`` — (numeric) BioFormats series index; default ``1``
-%     - ``.verbose`` — (logical) show timing info; default ``false``
+%     - ``.mibBioformatsCheck`` - (logical) use BioFormats reader; default ``false``
+%     - ``.BioFormatsIndices`` - (numeric) BioFormats series index; default ``1``
+%     - ``.verbose`` - (logical) show timing info; default ``false``
 %
 % Output Arguments:
-%   - **img** — image array [height, width, depth, color, time]
+%   - **img** - image array [height, width, depth, color, time]
 %
 % Usage:
-%   **Example 1** — Load a standard TIF image (returns [H, W, 1, C, 1] for a single slice)
+%   **Example 1** - Load a standard TIF image (returns [H, W, 1, C, 1] for a single slice)
 %
 %   .. code-block:: matlab
 %
 %
 %     img = io.loadImagesWrapper('C:\data\image.tif');
 %
-%   **Example 2** — Load an Amira mesh file without verbose output
+%   **Example 2** - Load an Amira mesh file without verbose output
 %
 %   .. code-block:: matlab
 %
 %
 %     img = io.loadImagesWrapper('C:\data\stack.am', struct('verbose', false));
 %
-%   **Example 3** — Load a PNG file and check output dimensions
+%   **Example 3** - Load a PNG file and check output dimensions
 %
 %   .. code-block:: matlab
 %
@@ -38,7 +38,7 @@ function img = loadImagesWrapper(filename, options)
 %     img = io.loadImagesWrapper('C:\data\patch.png');
 %     fprintf('Size: %d x %d x %d x %d x %d\n', size(img,1), size(img,2), size(img,3), size(img,4), size(img,5));
 %
-%   **Example 4** — Load with BioFormats reader, selecting series index 2
+%   **Example 4** - Load with BioFormats reader, selecting series index 2
 %
 %   .. code-block:: matlab
 %
@@ -47,7 +47,7 @@ function img = loadImagesWrapper(filename, options)
 %     opts.BioFormatsIndices = 2;
 %     img = io.loadImagesWrapper('C:\data\multiSeries.czi', opts);
 %
-%   **Example 5** — Use as a ReadFcn in an imageDatastore
+%   **Example 5** - Use as a ReadFcn in an imageDatastore
 %
 %   .. code-block:: matlab
 %
@@ -59,7 +59,7 @@ function img = loadImagesWrapper(filename, options)
 %         'ReadFcn', @(fn) io.loadImagesWrapper(fn, opts));
 %     img = read(ds);   % returns [H, W, Z, C, T]
 %
-%   **Example 6** — Discover supported extensions, then load a file
+%   **Example 6** - Discover supported extensions, then load a file
 %
 %   .. code-block:: matlab
 %
@@ -91,7 +91,7 @@ loader = io.LoaderFactory.create(loaderInfo, options);
 [imginfo, files] = loader.loadMetadata({filename}, options);
 [img, ~] = loader.loadImages(files, imginfo, options);
 
-% loader already returns [H, W, Z, C, T] — ensure 5D
+% loader already returns [H, W, Z, C, T] - ensure 5D
 if ndims(img) < 5
     sz = ones(1, 5);
     sz(1:ndims(img)) = size(img);

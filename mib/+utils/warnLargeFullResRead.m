@@ -17,15 +17,15 @@ function warnLargeFullResRead(height, width, budgetMegapixels)
 % repeated strokes.
 %
 % Input Arguments:
-%   - **height** — [numeric] full-resolution slice height (pixels)
-%   - **width** — [numeric] full-resolution slice width (pixels)
-%   - **budgetMegapixels** — *(optional)* [numeric] threshold in megapixels above
+%   - **height** - [numeric] full-resolution slice height (pixels)
+%   - **width** - [numeric] full-resolution slice width (pixels)
+%   - **budgetMegapixels** - *(optional)* [numeric] threshold in megapixels above
 %     which to warn; default ``256``
 %
 % Output Arguments:
 %   (none)
 %
-% **Example** — guard a radius-less flood fill on a pyramidal dataset:
+% **Example** - guard a radius-less flood fill on a pyramidal dataset:
 %
 %   .. code-block:: matlab
 %
@@ -41,7 +41,7 @@ if nargin < 3 || isempty(budgetMegapixels); budgetMegapixels = 256; end
 megapixels = double(height) * double(width) / 1e6;
 
 if megapixels > budgetMegapixels && ~alreadyWarned
-    alreadyWarned = true;   % once per session — avoid console spam during strokes
+    alreadyWarned = true;   % once per session - avoid console spam during strokes
     warning('MIB:BigData:largeFullResRead', ...
         ['A full-resolution read of ~%.0f megapixels (%d x %d) was requested on a ' ...
          'pyramidal dataset.\nOn very large (WSI / gigapixel) slides this can be slow ' ...

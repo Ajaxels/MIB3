@@ -21,7 +21,8 @@ between-layer (Z) constraints, rather than stitching each layer in 2D and aligni
 layers afterwards.
 
 Small mosaics are assembled directly in memory; mosaics that exceed available memory can
-be streamed to an OME-Zarr file and opened in MIB as a BigData dataset.
+be streamed to an OME-Zarr file and opened in MIB as a BigData dataset. The mosaic can also be
+written straight out as ordinary TIF / PNG / Amira files, for use outside MIB.
 
 ---
 
@@ -646,6 +647,7 @@ settings, <span class="widget widget-button">Save project</span> /
 - <span class="widget widget-dropdown">Output mode</span>:
     - **In memory**: the mosaic is assembled in RAM and replaces the current dataset. Use for mosaics that comfortably fit into memory.
     - **OME-Zarr3 (BigData)**: the mosaic is streamed chunk-by-chunk to an OME-Zarr v3 file on disk and opened as a BigData dataset. Use for mosaics of any size.
+    - **Image files**: the mosaic is written to disk as ordinary TIF / PNG / Amira files - see [Image file output](#image-file-output) below. Use when the result has to be read by software that does not know OME-Zarr.
 
     !!! info "What the in-memory dataset is called, and what it measures in"
         The stitched dataset is named after what it was built from, with a `_stitch` suffix and a
@@ -660,7 +662,10 @@ settings, <span class="widget widget-button">Save project</span> /
         read, and the mosaic gets the default 1 µm; set it afterwards with
         [Dataset → Parameters](index.md). A montage is a single section and none of these formats
         state a section thickness, so the Z size is set to the in-plane size rather than invented.
-- <span class="widget widget-edit">Output path</span>: destination of the OME-Zarr3 file (OME-Zarr3 mode only).
+- <span class="widget widget-edit">Output path</span>: destination of the OME-Zarr3 store or of the
+  image file(s). Enabled in both disk-writing modes; ignored by **In memory**. Press the browse
+  button beside it to choose the path - in **Image files** mode that dialog is also where the image
+  format is picked.
 
     !!! info "Pyramid settings dialog"
         When you press <span class="widget widget-button">Stitch</span> in **OME-Zarr3 (BigData)** mode, MIB shows the same
@@ -682,6 +687,49 @@ settings, <span class="widget widget-button">Save project</span> /
 - <span class="widget widget-dropdown">Canvas color</span>: what the mosaic pixels that no tile
   covers are filled with - see [Canvas color and Autocrop](#canvas-color-and-autocrop) below.
 - <label class="widget widget-checkbox">Save project JSON</label>: after stitching, save a project sidecar file next to the input tiles - the tile layout, the measurements, the solved positions and all settings used (see [Project files](#project-files)).
+
+### Image file output
+
+With <span class="widget widget-dropdown">Output mode</span> set to **Image files** the mosaic is
+written to disk in a standard image format and **not** opened in MIB - unlike the other two modes,
+the current dataset is left alone. Use it when the stitched result has to go to another program.
+
+Press the browse button beside <span class="widget widget-edit">Output path</span> and pick both the
+destination and the format in one dialog. The name offered is the same `<source>_stitch` name the
+in-memory mosaic gets, in the folder the tiles came from.
+
+| Format | Writes | Memory |
+|---|---|---|
+| `TIF format uncompressed, 2D sequence (*.tif)` | one numbered `.tif` per mosaic slice; the format everything reads, and the fastest to write | one slice at a time |
+| `TIF format LZW compression, 2D sequence (*.tif)` | the same pixels losslessly compressed; slower to write | one slice at a time |
+| `Portable Network Graphics, 2D sequence (*.png)` | one numbered `.png` per slice; lossless, and the most reliably compressed of the three | one slice at a time |
+| `Amira Mesh binary, 2D sequence (*.am)` | one numbered `.am` per slice | whole mosaic |
+| `Amira Mesh binary, 3D stack (*.am)` | the whole mosaic in a single `.am` | whole mosaic |
+
+A 2-D sequence is numbered from the name you chose - `mosaic.tif` becomes `mosaic_001.tif`,
+`mosaic_002.tif`, … - zero-padded to as many digits as the slice count needs, so the files sort in Z
+order in any file browser. A single-slice mosaic gets no number.
+
+!!! info "Voxel size in the written files"
+    The pixel size follows the same rules as the in-memory mosaic described above: it comes from the
+    layout source when that source records one, and defaults to 1 µm when it does not. TIF and PNG
+    carry it as the image resolution tag; every format also repeats it as the physical bounding box
+    (in the TIFF `ImageDescription`, in the Amira header), which is what MIB reads back on load.
+
+    No voxel-size dialog is shown before writing - unlike
+    <span class="widget widget-button">Save as</span>, which asks you to confirm it. Check the
+    pixel size in the tool before pressing <span class="widget widget-button">Stitch</span>.
+
+!!! tip "LZW does not always make the files smaller"
+    LZW is lossless - the compressed and uncompressed TIF rows decode to identical pixels - and it
+    shrinks typical EM data well, because a montage is largely smooth. It **expands** a high-noise
+    image, though, by a few percent. If the mosaic is noisy and size matters, use the PNG sequence,
+    which compresses reliably.
+
+!!! warning "The two Amira formats need the whole mosaic in RAM"
+    Only the TIF and PNG sequences are written slice by slice. Both Amira options assemble the
+    complete mosaic first, so they have the same memory requirement as **In memory**. For a mosaic
+    that does not fit, use a TIF or PNG sequence, or **OME-Zarr3 (BigData)**.
 
 ### Blend modes
 
@@ -922,7 +970,8 @@ which of them you want:
        skipped.
     8. **Fuse** the tiles onto the canvas with the selected <span class="widget widget-dropdown">Blend
        mode</span>, and open the result as a new dataset (or as a BigData dataset for
-       **OME-Zarr3 (BigData)** output).
+       **OME-Zarr3 (BigData)** output). **Image files** output only writes the files - nothing is
+       opened and the current dataset is untouched.
     9. Save the `*.mibstitch.json` project sidecar, if <label class="widget widget-checkbox">Save
        project JSON</label> is ticked (on by default).
 

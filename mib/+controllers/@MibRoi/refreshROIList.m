@@ -9,8 +9,8 @@ function refreshROIList(obj, previousValue)
 % preserve the previously selected value.
 %
 % Input Arguments:
-%   - **obj** — controllers.MibRoi — the ROI panel controller
-%   - **previousValue** — char — previously selected item in the list
+%   - **obj** - controllers.MibRoi - the ROI panel controller
+%   - **previousValue** - char - previously selected item in the list
 %
 %   Return values: none
 %

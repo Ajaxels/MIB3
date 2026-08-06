@@ -8,12 +8,12 @@ function widgetHandles = addRibbonImage(obj, lazyInit)
 %      widgetHandles = obj.addRibbonImage(lazyInit)
 %
 % Input Arguments:
-%   - **lazyInit** *(optional)* — [logical] when ``true``, only a placeholder is
+%   - **lazyInit** *(optional)* - [logical] when ``true``, only a placeholder is
 %     initialized; full rendering occurs on first tab activation via
 %     ``MibController.globalTabGroup_SelectionCallback`` (default: ``false``)
 %
 % Output Arguments:
-%   - **widgetHandles** — [struct] handles to the Image ribbon section widgets
+%   - **widgetHandles** - [struct] handles to the Image ribbon section widgets
 %
 
 arguments (Input)

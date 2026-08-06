@@ -378,7 +378,7 @@ classdef MorphOps < handle
                 isSkel = strcmp(currentOp, 'skel');
 
                 if ~is2D && ~isSkel
-                    % 3D non-skel: iterations not applicable — disable all iteration controls
+                    % 3D non-skel: iterations not applicable - disable all iteration controls
                     obj.view.handles.limitTo.Enable          = 'off';
                     obj.view.handles.Infinite.Enable         = 'off';
                     obj.view.handles.Iterations.Enable       = 'off';
@@ -412,7 +412,7 @@ classdef MorphOps < handle
                 end
             end
 
-            % Preview controls — only meaningful in 2D mode
+            % Preview controls - only meaningful in 2D mode
             obj.view.handles.previewButton.Enable = is2D;
             obj.view.handles.autoPreview.Enable   = is2D;
             if ~is2D

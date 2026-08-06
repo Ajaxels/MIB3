@@ -7,7 +7,7 @@ function excludeSeam_Callback(obj)
 %      obj.excludeSeam_Callback()
 %
 % Toggles ``valid`` on the current edge. Excluding also resets the provenance
-% to ``'auto'`` — a user fix that gets excluded is withdrawn (user edges are
+% to ``'auto'`` - a user fix that gets excluded is withdrawn (user edges are
 % otherwise never pruned by the solver). The nominal springs hold the pair
 % together once its measurement is excluded.
 %

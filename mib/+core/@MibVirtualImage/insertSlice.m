@@ -11,16 +11,16 @@ function insertSlice(obj, img, insertPosition, dim, virtMeta, options)
 % file paths (obj.data) and the Virtual metadata struct (obj.Virtual).
 %
 % Input Arguments:
-%   - **img** — cell array of file-path strings to insert (one entry per slice)
-%   - **insertPosition** — 1-based insertion index; 0 or NaN means append to the end
-%   - **dim** — 'depth' (default); 'time' is not supported for virtual datasets
-%   - **virtMeta** — struct with fields matching obj.Virtual:
+%   - **img** - cell array of file-path strings to insert (one entry per slice)
+%   - **insertPosition** - 1-based insertion index; 0 or NaN means append to the end
+%   - **dim** - 'depth' (default); 'time' is not supported for virtual datasets
+%   - **virtMeta** - struct with fields matching obj.Virtual:
 %
 %     - ``.filenames``, ``.objectType``, ``.readerId``, ``.seriesName``, ``.slicesPerFile``
-%   - **options** — *(optional)* struct with fields:
+%   - **options** - *(optional)* struct with fields:
 %
-%     - ``.sliceNames`` — cell array of names for the inserted slices (default {})
-%     - ``.sliceSizes`` — [N×2] double matrix of [height, width] for the inserted slices (default [])
+%     - ``.sliceNames`` - cell array of names for the inserted slices (default {})
+%     - ``.sliceSizes`` - [N×2] double matrix of [height, width] for the inserted slices (default [])
 %
 % Output Arguments:
 %   none

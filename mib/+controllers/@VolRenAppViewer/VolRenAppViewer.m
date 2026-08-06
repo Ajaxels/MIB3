@@ -6,13 +6,13 @@ classdef VolRenAppViewer < handle
     %
     %      obj.startController('controllers.VolRenAppViewer');
     %
-    % **Example 1** — launch as interactive GUI tool:
+    % **Example 1** - launch as interactive GUI tool:
     %
     %   .. code-block:: matlab
     %
     %      obj.startController('controllers.VolRenAppViewer');
     %
-    % **Example 2** — launch in batch mode:
+    % **Example 2** - launch in batch mode:
     %
     %   .. code-block:: matlab
     %
@@ -23,7 +23,7 @@ classdef VolRenAppViewer < handle
     %      BatchOpt.showWaitbar = true;
     %      obj.startController('controllers.VolRenAppViewer', [], BatchOpt);
     %
-    % **Example 3** — trigger return of available options via ``syncBatch`` event:
+    % **Example 3** - trigger return of available options via ``syncBatch`` event:
     %
     %   .. code-block:: matlab
     %
@@ -67,10 +67,10 @@ classdef VolRenAppViewer < handle
             %      obj = VolRenAppViewer(mibModel, parentController)
             %
             % Input Arguments:
-            %   - **mibModel** — [handle] handle to the MibModel instance
-            %   - **varargin{1}** *(optional)* — [handle] handle to the parent VolRenApp controller
+            %   - **mibModel** - [handle] handle to the MibModel instance
+            %   - **varargin{1}** *(optional)* - [handle] handle to the parent VolRenApp controller
             %
-            % **Example 1** — start VolRenAppViewer from a parent controller:
+            % **Example 1** - start VolRenAppViewer from a parent controller:
             %
             %   .. code-block:: matlab
             %

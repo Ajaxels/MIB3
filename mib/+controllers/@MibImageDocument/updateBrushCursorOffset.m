@@ -16,7 +16,7 @@ function updateBrushCursorOffset(obj)
 % Output Arguments:
 %   (none)
 %
-% **Example** — called automatically when brush size changes:
+% **Example** - called automatically when brush size changes:
 %
 %   .. code-block:: matlab
 %
@@ -27,7 +27,7 @@ function updateBrushCursorOffset(obj)
 radius = obj.view.handles.panels.segmentation.handles.brushRadius.Value - 1;
 
 % Get magnification factor for THIS document's panel.
-% Do NOT use getMagFactor() without an id — it reads the global mibModel.id
+% Do NOT use getMagFactor() without an id - it reads the global mibModel.id
 % which is stale in split view (still pointing at the other panel until the
 % user clicks). Use setOfDatasetsIndex to resolve the local dataset id.
 localId = obj.mibModel.Sets.selectedDataset(obj.setOfDatasetsIndex) + ...

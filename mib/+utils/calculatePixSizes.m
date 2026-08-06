@@ -8,19 +8,19 @@ function pixSize = calculatePixSizes(resolution, unitFrom, unitTo)
 %      pixSize = calculatePixSizes(resolution, unitFrom, unitTo)
 %
 % Input Arguments:
-%   - **resolution** — [numeric] current resolution of the dataset ``[XResolution, YResolution]``
-%   - **unitFrom** — [char] source units: ``'Inch'``, ``'Centimeter'``, ``'Meter'``
-%   - **unitTo** — [char] desired units: ``'m'``, ``'cm'``, ``'mm'``, ``'um'``, ``'nm'``
+%   - **resolution** - [numeric] current resolution of the dataset ``[XResolution, YResolution]``
+%   - **unitFrom** - [char] source units: ``'Inch'``, ``'Centimeter'``, ``'Meter'``
+%   - **unitTo** - [char] desired units: ``'m'``, ``'cm'``, ``'mm'``, ``'um'``, ``'nm'``
 %
 % Output Arguments:
-%   - **pixSize** — struct with updated pixel sizes:
+%   - **pixSize** - struct with updated pixel sizes:
 %
-%     - ``.x`` — physical width of the pixel
-%     - ``.y`` — physical height of the pixel
+%     - ``.x`` - physical width of the pixel
+%     - ``.y`` - physical height of the pixel
 %
 % Usage:
 %
-%   **Example 1** — convert 72 dpi resolution to micrometres
+%   **Example 1** - convert 72 dpi resolution to micrometres
 %
 %   .. code-block:: matlab
 %

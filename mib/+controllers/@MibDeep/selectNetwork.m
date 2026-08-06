@@ -9,10 +9,10 @@ function net = selectNetwork(obj, networkName)
 % select a network to use for the Predict mode
 %
 % Input Arguments:
-%   - **networkName** — optional parameter with the network full filename
+%   - **networkName** - optional parameter with the network full filename
 %
 % Output Arguments:
-%   - **net** — trained network
+%   - **net** - trained network
 %
 
     if nargin < 2; networkName = '';  end

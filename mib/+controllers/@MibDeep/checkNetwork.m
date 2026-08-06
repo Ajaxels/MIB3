@@ -7,7 +7,7 @@ function checkNetwork(obj, fn)
 %       obj.checkNetwork(fn)
 %
 % Input Arguments:
-%   - **fn** — optional string with filename (``*.mibDeep``) to preview its
+%   - **fn** - optional string with filename (``*.mibDeep``) to preview its
 %     configuration
 %
 

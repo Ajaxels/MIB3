@@ -11,7 +11,7 @@ function addCallbacks(obj)
 % The context menu is created here and attached to ``measureTable``.
 %
 % Input Arguments:
-%   - **obj** — :class:`controllers.MeasureTool`
+%   - **obj** - :class:`controllers.MeasureTool`
 %
 
 viewGui = obj.view.gui;

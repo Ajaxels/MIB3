@@ -11,17 +11,17 @@ function insertSlice(obj, img, insertPosition, dim, options)
 % caller (core.MibDataset.insertSlice).
 %
 % Input Arguments:
-%   - **img** — 5D array [height, width, depth, colors, time] to insert; must already
+%   - **img** - 5D array [height, width, depth, colors, time] to insert; must already
 %     be the correct class. Use the same conventions as obj.data.
-%   - **insertPosition** — 1-based insertion index (already clamped to a valid range
+%   - **insertPosition** - 1-based insertion index (already clamped to a valid range
 %     by the caller). 0 or NaN means append to the end.
-%   - **dim** — 'depth' (default) inserts along dimension 3 (z);
+%   - **dim** - 'depth' (default) inserts along dimension 3 (z);
 %     'time' inserts along dimension 5 (t)
-%   - **options** — *(optional)* struct with fields:
+%   - **options** - *(optional)* struct with fields:
 %
-%     - ``.BackgroundColorIntensity`` — scalar fill value for dimension mismatches (default 0)
-%     - ``.sliceNames`` — cell array of names for the inserted depth slices (default {})
-%     - ``.sliceSizes`` — [N×2] double matrix of [height, width] for the inserted slices (default [])
+%     - ``.BackgroundColorIntensity`` - scalar fill value for dimension mismatches (default 0)
+%     - ``.sliceNames`` - cell array of names for the inserted depth slices (default {})
+%     - ``.sliceSizes`` - [N×2] double matrix of [height, width] for the inserted slices (default [])
 %
 % Output Arguments:
 %   none

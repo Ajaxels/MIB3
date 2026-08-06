@@ -19,12 +19,12 @@ function ranking = rankSeams(edges)
 % the end, so the two orders cannot drift.
 %
 % Input Arguments:
-%   - **edges** — [struct array] with ``.valid`` and ``.seamScore``. Either field
+%   - **edges** - [struct array] with ``.valid`` and ``.seamScore``. Either field
 %     may be missing or empty; missing ``valid`` counts as valid, an empty or
 %     ``NaN`` score sorts worst.
 %
 % Output Arguments:
-%   - **ranking** — [1 x M double] edge indices, worst first.
+%   - **ranking** - [1 x M double] edge indices, worst first.
 %
 % See also utils.stitch.scoreSeams
 
@@ -42,7 +42,7 @@ for k = 1:numEdges
     if hasScore && ~isempty(edges(k).seamScore)
         scores(k) = edges(k).seamScore;
     else
-        scores(k) = NaN;   % never scored — same standing as "no overlap"
+        scores(k) = NaN;   % never scored - same standing as "no overlap"
     end
 end
 scores(isnan(scores)) = -Inf;

@@ -7,7 +7,7 @@ function qab = addQuickAccessBar(obj)
 %      qab = obj.addQuickAccessBar()
 %
 % Output Arguments:
-%   - **qab** — [struct] handles to the quick access bar widgets
+%   - **qab** - [struct] handles to the quick access bar widgets
 %
 
 arguments (Input)
