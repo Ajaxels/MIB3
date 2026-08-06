@@ -65,6 +65,31 @@ if obj.mibModel.preferences.System.DeveloperMode
 end
 ```
 
+**When the discriminator is an argument, not a handle.** Many shared callbacks are wired
+as `@(~,~) obj.foo_Callback('add')` — the widget handle never reaches the method, and the
+char argument *is* what tells the widgets apart. Print that argument instead of `hObject.Tag`:
+
+```matlab
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.BatchProcessing.protocolActions_Callback(%s): triggered\n', options);
+end
+```
+
+Only ever print a discriminator that is guaranteed `char`/`string` at that point. If the
+argument has a `nargin` default, put the marker **after** the default assignment (it is
+the same exemption `arguments … end` gets) so the value is always defined:
+
+```matlab
+function backupProtocolRestore(obj, mode)
+% ...docstring...
+
+if nargin < 2; mode = 'undo'; end
+
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.BatchProcessing.backupProtocolRestore(%s): triggered\n', mode);
+end
+```
+
 To enumerate them for a controller, read its `addCallbacks`; or grep the wiring:
 
 ```

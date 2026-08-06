@@ -21,7 +21,7 @@ function selectProtocolSection_Callback(obj, hObject)
 
 % disable "add to protocol"
 if obj.mibModel.preferences.System.DeveloperMode
-    fprintf('controllers.BatchProcessing.selectProtocolSection_Callback: triggered\n');
+    fprintf('controllers.BatchProcessing.selectProtocolSection_Callback(%s): triggered\n', hObject.Tag);
 end
 autoAddSwitch = obj.view.handles.autoAddToProtocol.Value;
 obj.view.handles.autoAddToProtocol.Value = false;

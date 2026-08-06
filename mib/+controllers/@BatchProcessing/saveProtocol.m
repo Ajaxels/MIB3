@@ -12,6 +12,10 @@ function saveProtocol(obj)
 %     obj.saveProtocol();
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.BatchProcessing.saveProtocol: triggered\n');
+end
+
 if isempty(obj.Protocol); return; end
 
 fn_out = obj.mibModel.I{obj.mibModel.id}.image.filename;

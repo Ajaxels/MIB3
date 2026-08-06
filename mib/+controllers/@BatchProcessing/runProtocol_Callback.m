@@ -49,7 +49,7 @@ function runProtocol_Callback(obj, parameter)
 %      obj.runProtocol_Callback('stepadvance');
 
 if obj.mibModel.preferences.System.DeveloperMode
-    fprintf('controllers.BatchProcessing.runProtocol_Callback: triggered\n');
+    fprintf('controllers.BatchProcessing.runProtocol_Callback(%s): triggered\n', parameter);
 end
 obj.stopProtocolSwitch = false;
 

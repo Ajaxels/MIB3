@@ -225,6 +225,10 @@ classdef BatchProcessing < handle
             %
             %      obj.closeWindow();
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.BatchProcessing.closeWindow: triggered\n');
+            end
+
             if isvalid(obj.view.gui)
                 delete(obj.view.gui);   % delete childController window
             end

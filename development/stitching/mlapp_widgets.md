@@ -231,9 +231,16 @@ dropdown + offset label above and the action buttons below.
 
 | Handle | Class | Properties |
 |------|-------|------------|
-| `seamTable` | `uitable` | 7 columns (controller sets `Data`/`ColumnName`); `SelectionType = 'row'`, `Multiselect = 'off'`. Worst seam on top. |
+| `SeamsworstfirstLabel` | `uilabel` | Text `'Seams (worst first)'` - the heading above `seamTable`. Referenced by nothing in the controller; it exists only to name the table on screen. |
+| `seamTable` | `uitable` | 6 columns (controller sets `Data`/`ColumnName`); `SelectionType = 'row'`, `Multiselect = 'off'`. Worst seam on top. |
 | `miniMapAxes` | `uiaxes` | Title: `'Layout (click a tile to jump)'`; controller draws score-coloured tile patches; `XTick`/`YTick` cleared by controller. |
 | `statusLabel` | `uilabel` | Default: `'0 seams'`; spans the column. |
+
+**The table's label must say SEAMS, not tiles.** It read `'Tile sets'` until 2026-08 - the rows are
+seam*s* (tile PAIRS), the first column is headed `Seam` and the tooltip calls them seams, so a label
+naming tiles sent readers looking for a tile list. `(worst first)` is carried in the label rather
+than the tooltip because nothing else on screen explains why row 1 is the one to look at. Keep the
+wording identical to the tooltip and the docs (`worst-first` everywhere) so it reads as one concept.
 
 ### Right area
 
@@ -295,8 +302,10 @@ All widget **tooltips are set by the controller** in `addCallbacks`
 stays layout-only.
 
 Keyboard (wired by the controller on the figure, no mlapp work needed):
-`Space` flicker, `Enter` confirm+next, `X` exclude, `N`/`P` next/prev,
-`Q`/`W` AND `Down`/`Up` arrows browse Z slices previous/next like the main
+`Space` flicker, `Enter` confirm+next, `X` exclude, `Down`/`Up` next/prev
+SEAM (one row down/up the table — NOT slice browsing; `N`/`P` retired
+2026-08-06),
+`Q`/`W` browse Z slices previous/next like the main
 MIB — ALWAYS view-only in BOTH modes (THE KEYBOARD NEVER MOVES A TILE;
 offsets are edited by mouse only — drag / Shift+click / two-click): in Fix
 XY both tiles step together through the overlap slab; in Fix Z they step

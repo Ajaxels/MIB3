@@ -59,10 +59,17 @@ its correction propagates through the solver to the whole layer above (pinned by
 ## Keyboard — never mutates alignment
 
 **Rule, load-bearing:** the keyboard never moves a tile. `Enter` confirm+next, `X` exclude,
-`Space` flicker, `N`/`P` navigate, `Z` undo, `F` fit view. `Q`/`W` and `Up`/`Down` browse Z slices
-in BOTH fix modes (view-only); `Left`/`Right` nudge X only (1 px, `Shift` 10, `Ctrl` 0.25) — all
-positional edits happen by mouse (drag / Shift+click / two-click). See [[ux-navigation-keys]]
-(memory) for the incident that established this rule project-wide.
+`Space` flicker, `Up`/`Down` navigate the seam ranking, `Z` undo, `F` fit view. `Q`/`W` browse Z
+slices in BOTH fix modes (view-only). There is NO keyboard nudge at all — every positional edit
+happens by mouse (drag / Shift+click / two-click). See [[ux-navigation-keys]] (memory) for the
+incident that established this rule project-wide.
+
+**The arrows walk the seam TABLE, not the stack** (changed 2026-08-06; `N`/`P` retired, and the
+arrows no longer browse Z). The left half of the window is a ranked list, and arrows over a list is
+the stronger convention — it also agrees with what the focused `uitable` does with `Down` on its
+own, which the old binding contradicted. This is a deliberate DIVERGENCE from the main MIB window,
+where the arrows browse slices; `Q`/`W` is the key pair the two windows still share, so slice
+browsing keeps a common binding while the arrows follow whatever the window's primary list is.
 
 ## Where it lives
 

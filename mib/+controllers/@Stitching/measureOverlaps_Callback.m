@@ -9,7 +9,8 @@ function measureOverlaps_Callback(obj)
 % Calls ``utils.stitch.findNeighborPairs`` to identify all overlapping tile
 % pairs, then calls ``utils.stitch.measureAllPairs`` to compute phase-
 % correlation shifts and quality scores for each pair.  Results are cached
-% in ``obj.edges`` and the status label is updated.
+% in ``obj.edges``, the status label is updated and the layout preview is
+% redrawn (:meth:`previewLayoutBtn_Callback`).
 %
 % The progress dialog shown during measurement is cancelable: pressing
 % Cancel leaves ``obj.edges`` and the status line untouched, as if this call
@@ -76,5 +77,10 @@ if cancelled; return; end
 
 obj.edges = measuredEdges;
 obj.updateWidgets();
+
+% Refresh the layout preview: with EstimateOverlap on, runOverlapEstimation has
+% rebuilt the layout from the measured overlap, so the drawn nominal positions
+% are otherwise the ones the user typed rather than the ones just measured.
+obj.previewLayoutBtn_Callback();
 
 end

@@ -14,6 +14,10 @@ function loadProtocol(obj)
 %     obj.loadProtocol();
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.BatchProcessing.loadProtocol: triggered\n');
+end
+
 if isempty(obj.mibModel.I{obj.mibModel.id}.image.filename)
     path = obj.mibModel.currentDirectory;
 else

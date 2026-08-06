@@ -77,6 +77,8 @@ actionId = 1;
 obj.Sections(secIndex).Name = 'Ribbon -> Dataset';
 obj.Sections(secIndex).Actions(actionId).Name = 'Alignment / Drift correction...';
 obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.startController(''controllers.Alignment'', [], Batch);'; actionId = actionId + 1;
+obj.Sections(secIndex).Actions(actionId).Name = 'Stitching';
+obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.startController(''controllers.Stitching'', [], Batch);'; actionId = actionId + 1;
 obj.Sections(secIndex).Actions(actionId).Name = 'Crop dataset';
 obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.startController(''controllers.CropDataset'', [], Batch);'; actionId = actionId + 1;
 obj.Sections(secIndex).Actions(actionId).Name = 'Resample...';

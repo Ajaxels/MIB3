@@ -29,6 +29,10 @@ function displaySelectedActionTableItems(obj, evnt)
 %     obj.displaySelectedActionTableItems(evnt);
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.BatchProcessing.displaySelectedActionTableItems: triggered\n');
+end
+
 if nargin > 1 && ~isempty(evnt.Indices)
     obj.selectedActionTableIndex = evnt.Indices(1, 1);
 end

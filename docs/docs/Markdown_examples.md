@@ -470,6 +470,13 @@ Toggle over the following text to see a hover tooltip:
 Button: `<span class="widget widget-button">Button</span>`<br>
 <span class="widget widget-button">Button text</span>
 
+Tab: `<span class="widget widget-tab">Tab</span>`<br>
+<span class="widget widget-tab">Tab text</span><br>
+The two greyed stubs peeking out on the right are drawn by the style itself - they are the next,
+unselected tabs of the strip, stacked behind like pages in a book, so a single span reads as
+*a tab*. Name only the tab you mean:<br>
+<span class="widget widget-tab">Input tiles</span> <span class="widget widget-tab">Tile settings</span> <span class="widget widget-tab">Registration</span>
+
 Edit box: `<span class="widget widget-edit">Editbox</span>`
 <br><span class="widget widget-edit">Edit box text</span>
 

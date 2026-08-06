@@ -36,7 +36,7 @@ function selectedActionTable_ContextCallback(obj, parameter)
 %
 
 if obj.mibModel.preferences.System.DeveloperMode
-    fprintf('controllers.BatchProcessing.selectedActionTable_ContextCallback: triggered\n');
+    fprintf('controllers.BatchProcessing.selectedActionTable_ContextCallback(%s): triggered\n', parameter);
 end
 if obj.selectedActionTableIndex == 0; return; end
 if isempty(obj.CurrentBatch); return; end

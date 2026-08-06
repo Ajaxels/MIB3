@@ -26,15 +26,28 @@ have run. Both windows stay open and usable side by side.
 
 ## The window at a glance
 
+The window is split down the middle: **what to review** on the left, **the seam itself** on the
+right.
+
 | Area | Contains |
 |------|----------|
 | **Header** | <span class="widget widget-dropdown">Fix mode</span> - *what a fix edits*. It governs both columns at once - which seams the table lists and what the pair view shows - so it sits above them. |
-| **Seams (worst first)** *(top left)* | Every measured seam, worst first, with its pixel score, residual, quality and review state. Click a row to review it. The **Used** column is reached by scrolling the table sideways. |
+| **Seam table** *(top left)* | Every measured seam, **worst first**, with its pixel score, residual, quality and review state. Click a row to review it. The **Used** column is reached by scrolling the table sideways. |
 | **Status line** *(under the seam table)* | How many seams there are, how many are reviewed or excluded, and the worst score - plus the result of whatever you last did. |
 | **Mini-map** *(bottom left)* | The layout of the current seam's Z-layer, tiles tinted by their worst seam, with a low-res fused preview behind. Click to jump. |
 | **Pair view** *(top right)* | The two tiles of the current seam composited at their solved offset. This is where every fix is made. |
 | **Readout** *(under the pair view)* | The current offset against the measured one, plus this seam's score, quality and provenance. |
 | **Controls** *(bottom right)* | The review and fixing tools, grouped by what they touch. |
+
+The controls under the readout, left to right and top to bottom:
+
+| Control | Touches |
+|---------|---------|
+| <span class="widget widget-button">Fit to the view (F)</span>, <span class="widget widget-dropdown">Overlay mode</span> | **the view only** - never the alignment |
+| <span class="widget widget-button">Confirm</span>, <span class="widget widget-button">Exclude (X)</span> | **the review** - accept the seam, or drop its measurement |
+| <span class="widget widget-button">Undo fix (Z)</span>, <span class="widget widget-button">Two-click match</span>, <span class="widget widget-edit">ROI size</span>, <span class="widget widget-edit">Search radius</span> | **the fix** - the manual tools and their two settings |
+| <span class="widget widget-button">Re-solve</span>, <label class="widget widget-checkbox">Auto re-solve</label> | **the solve** - when the fixes are turned into positions |
+| <span class="widget widget-button">Key shortcuts</span>, :octicons-question-16:, <span class="widget widget-button">Close</span> | **the window** - the control list, this help page, and closing |
 
 ---
 
@@ -95,11 +108,7 @@ the main window all come from this one measurement.
 
 ## The seam table
 
-![Seams table](images/stitching_inspector_seams_table.png){.on-glb align=right width="300"}
-
-Each row of the **Seams (worst first)** table is one measured seam (tile pair), in six columns.
-
-<div class="clear-float"></div>
+Each row is one measured seam (tile pair), ranked worst-first, in six columns:
 
 | Column | Meaning |
 |--------|---------|
@@ -119,22 +128,17 @@ Each row of the **Seams (worst first)** table is one measured seam (tile pair), 
     In-plane seams (`X`, `Y` - tiles side by side within one Z-layer) and cross-layer seams (`Z` -
     tiles in adjacent Z-layers) read on different axes, so mixing them in one ranked list was
     confusing. The table therefore follows the
-    <span class="widget widget-dropdown">Fix mode</span> dropdown: 
-
-    - **Fix XY** lists the in-plane seams, 
-    - **Fix Z** the cross-layer ones. 
-
-    Every navigation - ++down++ / ++up++, *Confirm and advance*, a mini-map click, a re-solve - stays 
-    inside the shown subset.
+    <span class="widget widget-dropdown">Fix mode</span> dropdown: **Fix XY** lists the in-plane
+    seams, **Fix Z** the cross-layer ones. Every navigation - ++n++ / ++p++, *Confirm and advance*,
+    a mini-map click, a re-solve - stays inside the shown subset.
 
     A 2D mosaic has only in-plane seams, so its *Fix Z* table is empty. So is that of a mosaic of
     Z-stacks that all sit on **one** layer: there are no cross-layer seams to list, but the
-    [Fix Z boundary view](#3d-browsing-slices-and-the-fix-mode) still works, because it aligns mosaic *slices* rather
+    [Fix Z boundary view](#fix-z-match-slices) still works, because it aligns mosaic *slices* rather
     than seams.
 
 ??? note "What the status line reports"
-    Between the table and the mini-map: `12 seams | 0 reviewed | 0 excluded | worst score 0.69`.
-    Note that it counts **all** seams, not just the ones the current *Fix mode* lists. *Reviewed* counts
+    Under the mini-map: `12 seams | 5 reviewed | 1 excluded | worst score 0.43`. *Reviewed* counts
     seams marked `confirmed` or `user`; *worst score* is taken over the seams still in use, so
     excluding a bad one changes it.
 
@@ -150,12 +154,8 @@ Each row of the **Seams (worst first)** table is one measured seam (tile pair), 
 
 ## The mini-map
 
-![Minimap](images/stitching_inspector_minimap.png){.on-glb align=right width="200"}
-
 The layout drawn at the **solved** positions, each tile tinted by its worst seam (green → red, grey
 when all its seams are excluded), with the current pair outlined in blue.
-
-<div class="clear-float"></div>
 
 <mouse class="left"></mouse> click jumps to the review - and it selects the seam **nearest the click
 point**, not simply the clicked tile's worst one. Clicking near a tile's right edge opens its seam
@@ -178,14 +178,12 @@ a grid tile usually touches three or four seams.
 
 ## The pair view
 
-![Pair view](images/stitching_inspector_pairview.png){.on-glb align=right width="200"}
-
 The **complete tile pair** composited at the solved offset - not just the overlap strip, so a tile
 that is badly out of place is still visible and still fixable. Large tiles are downsampled for
 display only; every fix is computed at full resolution.
 
-Which tile is which colour is stated in the axes title (*e.g. Cyan: tile 2; Magenta: tile 4*), along
-with the browsed slices on 3D pairs.
+The title is the colour legend (*e.g. Cyan: tile 2; Magenta: tile 4*), with the browsed slices named
+on a second line for 3D pairs.
 
 ### Overlay modes
 
@@ -196,20 +194,12 @@ with the browsed slices on 3D pairs.
 | **Checkerboard** | alternating squares from each tile | whether structures **continue** across the changeover |
 | **Difference** | the intensity difference of the two | a quick look at brightness disagreement as well as misalignment |
 
-???+ tip "Zooming and panning"
-    - **Mouse wheel** zooms at the cursor. The zoom is **kept** through nudges, drags and fixes of
-      the same seam, so you can work zoomed in; it resets when you move to another seam or press
-      <span class="widget widget-button">Fit to the view (F)</span>.
-    - **Hold <mouse class="right"></mouse> and drag** to pan. Panning is deliberately on the right
-      button so it works identically in every mode - Fix XY, Fix Z, two-click - and can never be
-      mistaken for a tile-moving drag.
-
 ### The readout
 
-Directly under the pair view, one line describing the seam on screen:
+Above the pair view, beside the dropdowns:
 
 ```text
-Solved offset [dy dx] = [2760 -4]  |  measured [2761.5 -3.5]  |  seam score 0.69  |  quality 1.00  |  auto
+Solved offset [dy dx] = [12 -418]  |  measured [11.6 -418.2]  |  seam score 0.83  |  quality 0.91  |  auto
 ```
 
 - **Solved offset** - where the pair actually sits after the global solve.
@@ -219,6 +209,15 @@ Solved offset [dy dx] = [2760 -4]  |  measured [2761.5 -3.5]  |  seam score 0.69
 - On 3D pairs, **dz** is appended - and if the pixels prefer a different one, so is a hint such as
   *pixels prefer dz+2*.
 
+### Zooming and panning
+
+- **Mouse wheel** zooms at the cursor. The zoom is **kept** through nudges, drags and fixes of the
+  same seam, so you can work zoomed in; it resets when you move to another seam or press
+  <span class="widget widget-button">Fit to the view (F)</span>.
+- **Hold <mouse class="right"></mouse> and drag** to pan. Panning is deliberately on the right
+  button so it works identically in every mode - Fix XY, Fix Z, two-click - and can never be
+  mistaken for a tile-moving drag.
+
 ---
 
 ## Reviewing the ranking
@@ -227,8 +226,7 @@ Solved offset [dy dx] = [2760 -4]  |  measured [2761.5 -3.5]  |  seam score 0.69
   jumps to the next worst unreviewed one.
 - <span class="widget widget-button">Exclude (X)</span> removes its measurement from the solve.
 - <span class="widget widget-button">Re-solve</span> recomputes all positions and re-ranks.
-- ++down++ / ++up++ step through the ranking without changing anything - one row down or up the
-  table, as in any list.
+- ++n++ / ++p++ step through the ranking without changing anything.
 
 Review decisions are saved with the [project file](dataset-stitch.md#project-files) and survive
 re-measuring.
@@ -332,14 +330,9 @@ applied to it this session, not just the last one.
 
 ## 3D: browsing slices and the Fix mode
 
-**3D pairs** are shown one **slice pair** at a time, browsed with ++q++ / ++w++ - previous / next,
-the same keys as the main MIB window (++shift++ = 5 slices). Browsing is **always view-only, in both
-fix modes**; it never moves a tile.
-
-!!! note "Slices are on Q/W; the arrows walk the seam list"
-    Unlike the main MIB window, ++down++ / ++up++ here move through the **seam table**, not through
-    the stack. The arrows point at rows because that is what the left half of this window is: a
-    ranked list you work down.
+**3D pairs** are shown one **slice pair** at a time, browsed with ++q++ / ++w++ or ++down++ /
+++up++ - previous / next, exactly like the main MIB window (++shift++ = 5 slices). Browsing is
+**always view-only, in both fix modes**; it never moves a tile.
 
 The <span class="widget widget-dropdown">Fix mode</span> dropdown decides what a fix edits.
 
@@ -411,15 +404,15 @@ Elsewhere in the window:
 |----------|--------|
 | ++enter++ | Confirm the current seam and jump to the next worst unreviewed |
 | ++x++ | Exclude / re-include the current seam from the solve |
-| ++down++ / ++up++ | Next / previous seam in the ranking - one row down / up the seam table |
-| ++q++ / ++w++ | Browse Z slices (++shift++ = 5); always view-only, in both Fix XY and Fix Z |
+| ++n++ / ++p++ | Next / previous seam in the ranking |
+| ++q++ / ++w++ or ++down++ / ++up++ | Browse Z slices (++shift++ = 5); always view-only, in both Fix XY and Fix Z |
 | ++z++ | Undo the fix on the current seam, restoring the original automatic measurement (Fix Z: removes the boundary correction on screen) |
 | ++f++ | Fit the pair view, resetting the mouse-wheel zoom |
 | ++space++ | Flicker A/B (*Flicker* overlay mode) |
 
-??? info "The keyboard never moves a tile"
+!!! info "The keyboard never moves a tile"
     Every positional edit is made with the mouse - drag, ++shift++ + click, or two-click match. The
-    arrow keys move between seams and ++q++ / ++w++ browse slices, in **both** fix modes, so a
+    arrow keys and ++q++ / ++w++ browse slices and nothing else, in **both** fix modes, so a
     keystroke can never silently alter an alignment you were only looking at.
 
     Fine adjustment is what ++shift++ + click is for: it is sub-pixel and works on both axes at once,

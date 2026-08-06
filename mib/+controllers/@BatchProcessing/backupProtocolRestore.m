@@ -22,6 +22,11 @@ function backupProtocolRestore(obj, mode)
 %
 
 if nargin < 2; mode = 'undo'; end
+
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.BatchProcessing.backupProtocolRestore(%s): triggered\n', mode);
+end
+
 switch mode
     case 'undo'
         if obj.protocolBackupsCurrNumber == 0; return; end % first history entry is reached

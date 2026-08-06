@@ -21,6 +21,10 @@ function selectedActionTableItem_Update(obj, hObject)
 %
 %      obj.selectedActionTableItem_Update(obj.view.handles.selectedActionTableCellEdit);
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.BatchProcessing.selectedActionTableItem_Update(%s): triggered\n', hObject.Tag);
+end
+
 if obj.selectedActionTableIndex == 0; return; end
 fieldNames = fieldnames(obj.CurrentBatch);
 

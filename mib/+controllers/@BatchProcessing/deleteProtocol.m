@@ -12,6 +12,10 @@ function deleteProtocol(obj)
 %     obj.deleteProtocol();
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.BatchProcessing.deleteProtocol: triggered\n');
+end
+
 obj.backupProtocol();   % store the current protocol
 
 obj.Protocol = [];

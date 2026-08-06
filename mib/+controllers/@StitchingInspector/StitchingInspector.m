@@ -405,7 +405,7 @@ classdef StitchingInspector < handle
             % fixMode edits: the IN-PLANE seams (x/y, tiles side by side or
             % stacked in the same Z-layer) in Fix XY, the CROSS-LAYER seams (z,
             % tiles in adjacent Z-layers) in Fix Z. The seam table and every
-            % seam-to-seam navigation (table click, N/P, resolve, advance,
+            % seam-to-seam navigation (table click, Up/Down, resolve, advance,
             % mini-map jump, the initial pick) follow this subset, so the table
             % never mixes in-plane and cross-layer rows - they read on different
             % axes and made the combined list confusing. A 2D dataset has only

@@ -396,7 +396,7 @@ classdef Stitching < handle
             obj.BatchOpt.showWaitbar     = true;
 
             obj.BatchOpt.mibBatchSectionName = 'Ribbon -> Dataset';
-            obj.BatchOpt.mibBatchActionName  = 'Stitch...';
+            obj.BatchOpt.mibBatchActionName  = 'Stitching';
 
             obj.BatchOpt.mibBatchTooltip.LayoutSource    = sprintf([ ...
                 'Where the tile arrangement comes from:\n' ...

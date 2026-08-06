@@ -10,13 +10,13 @@ function keyPress_Callback(obj, evnt)
 %   - ``Space``  - flicker A/B (Flicker overlay mode)
 %   - ``Enter``  - confirm current seam + jump to next worst unreviewed
 %   - ``X``      - exclude / re-include current seam
-%   - ``N`` / ``P`` - next / previous seam in the ranking
-%   - ``Q`` / ``W`` and ``Down`` / ``Up`` - BROWSE Z, previous / next, exactly
-%     like the main MIB (``Shift`` = ±5); ALWAYS view-only, in BOTH fix
-%     modes. Fix XY: the dz-aligned slice pair; Fix Z: the mosaic Z boundary
-%     (both consecutive slices step together). Keyboard nudging is disabled
-%     entirely - offsets are edited by mouse only (drag / Shift+click /
-%     two-click)
+%   - ``Down`` / ``Up`` - next / previous seam in the ranking, i.e. one row
+%     down / up the seam table
+%   - ``Q`` / ``W`` - BROWSE Z, previous / next, exactly like the main MIB
+%     (``Shift`` = ±5); ALWAYS view-only, in BOTH fix modes. Fix XY: the
+%     dz-aligned slice pair; Fix Z: the mosaic Z boundary (both consecutive
+%     slices step together). Keyboard nudging is disabled entirely - offsets
+%     are edited by mouse only (drag / Shift+click / two-click)
 %   - ``Z``      - undo the fix on the current seam (restore the auto edge);
 %     in Fix Z, remove the boundary correction on screen
 %   - ``F``      - fit the pair view (reset the mouse-wheel zoom)
@@ -62,13 +62,19 @@ switch evnt.Key
         obj.confirmSeam_Callback();
     case 'x'
         obj.excludeSeam_Callback();
-    case {'n', 'p'}
-        % Navigate within the seams the current fix mode shows in the table.
+    case {'uparrow', 'downarrow'}
+        % The vertical arrows walk the seam TABLE, the way arrows walk any
+        % list: Down = one row further down the worst-first ranking, Up =
+        % back. Navigation stays inside the seams the current fix mode shows.
+        %
+        % Z browsing is on Q/W ALONE for this reason - while the arrows also
+        % browsed Z they disagreed with the focused table, which reads Down as
+        % "next row" itself. Rows are what the arrows point at here.
         visibleRanking = obj.visibleRanking();
         if isempty(obj.currentEdgeIdx) || isempty(visibleRanking); return; end
         rankPos = find(visibleRanking == obj.currentEdgeIdx, 1);
         if isempty(rankPos); rankPos = 1; end
-        if strcmp(evnt.Key, 'n')
+        if strcmp(evnt.Key, 'downarrow')
             rankPos = min(rankPos + 1, numel(visibleRanking));
         else
             rankPos = max(rankPos - 1, 1);
@@ -79,13 +85,6 @@ switch evnt.Key
         step = 1;
         if any(strcmpi(evnt.Modifier, 'shift')); step = 5; end
         if strcmp(evnt.Key, 'q'); step = -step; end
-        browseZ(obj, step, any(strcmpi(evnt.Modifier, 'control')));
-    case {'uparrow', 'downarrow'}
-        % Vertical arrows = slice navigation, same as Q/W and the main MIB
-        % (down = previous like q, up = next like w). NEVER a nudge.
-        step = 1;
-        if any(strcmpi(evnt.Modifier, 'shift')); step = 5; end
-        if strcmp(evnt.Key, 'downarrow'); step = -step; end
         browseZ(obj, step, any(strcmpi(evnt.Modifier, 'control')));
     case 'z'
         obj.undoFix_Callback();

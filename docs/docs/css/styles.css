@@ -487,6 +487,46 @@ extra_css:    # location for additional css styles
   color: #000; /* Black text */
 }
 
+.widget-tab {
+  border: 1px solid #aaa; /* Matches .widget-button border */
+  border-bottom: 2px solid #006633; /* Selected-tab underline, green like the other light accents */
+  background-color: #f2f7f5;
+  background-image: linear-gradient(to bottom, #fff, #f2f7f5); /* Lit from above, like a real tab */
+  color: #000; /* Black text */
+  border-radius: 0.35em 0.35em 0 0; /* Rounded top only - the folder-tab silhouette */
+  padding: 0.075em 0.5em; /* Slightly wider than a button */
+  position: relative; /* Anchor for the stubs; z-index stays auto so they can go behind */
+  margin-right: 1.1em; /* Clearance for the stubs, which stick out past the right edge */
+  box-shadow: none; /* A tab sits flush against its panel, so it does not float */
+}
+
+/* Two greyed-out stubs peeking out from BEHIND the right edge: the next,
+   unselected tabs of the same strip, stacked like pages in a book. They are what
+   makes the widget read as a TAB rather than a button, so the label alone never
+   has to carry that.
+   z-index: -1 puts them behind the parent's own background - which works only
+   because .widget-tab sets position without a z-index, so it establishes no
+   stacking context of its own. */
+.widget-tab::before,
+.widget-tab::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: -1px; /* Level with the selected tab's top border - all three are one height */
+  bottom: -2px; /* Their bottom border lands on the selected tab's, not above it */
+  width: 1em;
+  border: 1px solid #bbb;
+  border-bottom: 2px solid #888; /* The strip's baseline, grey where the selected tab is green */
+  border-radius: 0.3em 0.3em 0 0;
+  background-color: #e6e6e6;
+}
+
+/* Painted first, so it sits furthest back: the second tab along. */
+.widget-tab::before { right: -0.95em; }
+
+/* Painted over it: the tab immediately behind the selected one. */
+.widget-tab::after  { right: -0.5em; }
+
 .widget-edit {
   background-color: #e0f5ff; /* Light blue from .dropdown */
   color: #000; /* Black text */
@@ -577,6 +617,22 @@ extra_css:    # location for additional css styles
   box-shadow: 0.075em 0.15em 0.15em #555; /* Lighter shadow */
   color: #333333; /* Bright light blue text */
   background-color: #6c767a;
+}
+
+[data-md-color-scheme="slate"] .widget-tab {
+  border: 1px solid #aaa; /* Keep border */
+  border-bottom: 2px solid #F28C38; /* Selected-tab underline, orange like the other dark accents */
+  background-color: #3c4144;
+  background-image: none; /* The light-mode gradient reads as a smudge on dark */
+  color: #a4c5d5; /* Bright light blue text */
+  box-shadow: none;
+}
+
+[data-md-color-scheme="slate"] .widget-tab::before,
+[data-md-color-scheme="slate"] .widget-tab::after {
+  border-color: #6a6f72;
+  border-bottom-color: #8a8f92; /* Set after border-color, or the shorthand would flatten it */
+  background-color: #2a2e30; /* Recessed against the selected tab, as in light mode */
 }
 
 [data-md-color-scheme="slate"] .widget-edit {
