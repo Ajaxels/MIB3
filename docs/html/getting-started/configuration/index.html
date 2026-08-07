@@ -5549,7 +5549,7 @@
 
 <h1 id="configuration-files">Configuration Files<a class="headerlink" href="#configuration-files" title="Permanent link">&para;</a></h1>
 <p>MIB stores its configuration parameters in files that are created automatically when MIB is closed.
-This page is reference material — you do not need it to start using MIB.</p>
+This page is reference material - you do not need it to start using MIB.</p>
 <h2 id="where-mib-stores-its-settings">Where MIB stores its settings<a class="headerlink" href="#where-mib-stores-its-settings" title="Permanent link">&para;</a></h2>
 <p><strong>MIB3</strong> (current) uses separate files for machine-specific preferences and user statistics:</p>
 <table>
@@ -5605,11 +5605,11 @@ This page is reference material — you do not need it to start using MIB.</p>
 <tbody>
 <tr>
 <td><code>mib3_prefs_override.mat</code></td>
-<td><strong>Global</strong> — applies to every workstation</td>
+<td><strong>Global</strong> - applies to every workstation</td>
 </tr>
 <tr>
 <td><code>mib3_prefs_override_COMPUTERNAME.mat</code></td>
-<td><strong>Workstation-specific</strong> — applies only to the computer with the matching name</td>
+<td><strong>Workstation-specific</strong> - applies only to the computer with the matching name</td>
 </tr>
 </tbody>
 </table>
@@ -5617,23 +5617,23 @@ This page is reference material — you do not need it to start using MIB.</p>
 <ol>
 <li>Start MIB and configure all required settings</li>
 <li><em>For a workstation-specific override:</em> open <strong>Home → Help → About MIB</strong> and note the <strong>Computer name</strong> shown at the bottom of the dialog</li>
-<li>Close MIB — this saves <code>mib3.mat</code> to the user directory (the location is reported in the MATLAB command window upon MIB startup)</li>
+<li>Close MIB - this saves <code>mib3.mat</code> to the user directory (the location is reported in the MATLAB command window upon MIB startup)</li>
 <li>Copy <code>mib3.mat</code> to the MIB program directory</li>
 <li>Rename the copy to <code>mib3_prefs_override.mat</code> (global) or <code>mib3_prefs_override_COMPUTERNAME.mat</code> (workstation-specific), replacing <code>COMPUTERNAME</code> with the name from step 2</li>
 </ol>
 <h3 id="load-priority-at-startup">Load priority at startup<a class="headerlink" href="#load-priority-at-startup" title="Permanent link">&para;</a></h3>
 <p>When MIB starts, it looks for a configuration file in this order:</p>
 <ol>
-<li><code>mib3.mat</code> in the user directory — <strong>used immediately if found</strong></li>
-<li><code>mib3_prefs_override_COMPUTERNAME.mat</code> — workstation-specific override</li>
-<li><code>mib3_prefs_override.mat</code> — global override</li>
-<li>Built-in defaults — used if none of the above are found</li>
+<li><code>mib3.mat</code> in the user directory - <strong>used immediately if found</strong></li>
+<li><code>mib3_prefs_override_COMPUTERNAME.mat</code> - workstation-specific override</li>
+<li><code>mib3_prefs_override.mat</code> - global override</li>
+<li>Built-in defaults - used if none of the above are found</li>
 </ol>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>If <code>mib3.mat</code> already exists in the user directory, override files are ignored entirely. To force reloading from an override file, delete <code>mib3.mat</code> first.</p>
 </div>
-<p>User statistics (tier data stored in <code>mib_user.mat</code>) are never taken from an override file — each user keeps their own.</p>
+<p>User statistics (tier data stored in <code>mib_user.mat</code>) are never taken from an override file - each user keeps their own.</p>
 <hr />
 <h2 id="previous-versions">Previous versions<a class="headerlink" href="#previous-versions" title="Permanent link">&para;</a></h2>
 <p>This documentation describes <strong>MIB3</strong> - the current release. Previous releases are hosted on GitHub and include their own documentation and release notes:</p>

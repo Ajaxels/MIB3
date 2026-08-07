@@ -5493,45 +5493,52 @@
 
 <h1 id="starting-mib">Starting MIB<a class="headerlink" href="#starting-mib" title="Permanent link">&para;</a></h1>
 <p>Once MIB is <a href="../installation/index.html">installed</a>, you can launch it either from inside MATLAB or
-as a standalone application. This page shows both, and what to expect on the first launch.</p>
+as a standalone application. This page covers both, plus what to expect on the first launch.</p>
 <div class="admonition info">
 <p class="admonition-title">Requirements</p>
 <p>The MATLAB version of MIB3 requires <strong>MATLAB R2025a or newer</strong> (<strong>R2026a is recommended</strong>).
-If you run an older MATLAB, use <strong>MIB2</strong> instead — see <a href="../configuration/index.html#previous-versions">Configuration files → Previous versions</a>.</p>
+If you run an older MATLAB, use <strong>MIB2</strong> instead - see <a href="../configuration/index.html#previous-versions">Configuration files → Previous versions</a>.</p>
 </div>
 <hr />
 <h2 id="launch-from-matlab">Launch from MATLAB<a class="headerlink" href="#launch-from-matlab" title="Permanent link">&para;</a></h2>
 <p>Add the <code>mib</code> folder to the MATLAB path (or <code>cd</code> into it) and run the entry point:</p>
-<div class="language-matlab highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nb">cd</span><span class="w"> </span><span class="n">C</span><span class="p">:</span><span class="o">\</span><span class="n">Matlab</span><span class="o">\</span><span class="n">MIB3</span><span class="o">\</span><span class="n">mib</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="n">mib3</span>
+<div class="language-matlab highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c">% C:\Matlab\MIB3\ is the location where MIB3 was downloaded and unzipped</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="nb">cd</span><span class="w"> </span><span class="n">C</span><span class="p">:</span><span class="o">\</span><span class="n">Matlab</span><span class="o">\</span><span class="n">MIB3</span><span class="o">\</span><span class="n">mib</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">mib3</span>
 </span></code></pre></div>
 <p>Adjust the path to wherever you unpacked MIB. The first run may take a few extra seconds while
 MATLAB initialises the required libraries.</p>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>
-<p>To start MIB automatically, add the <code>mib3</code> command to your MATLAB <code>startup.m</code> file.</p>
+<p>Add <code>C:\Matlab\MIB3\mib</code> to the MATLAB search path, and <code>mib3</code> will start from any folder:</p>
+<p><code>MATLAB -&gt; Home tab -&gt; Set Path -&gt; Add Folder... -&gt; Save</code></p>
 </div>
 <hr />
 <h2 id="launch-the-standalone-app">Launch the standalone app<a class="headerlink" href="#launch-the-standalone-app" title="Permanent link">&para;</a></h2>
-<p>The standalone Windows build does not require a MATLAB license — only the matching <strong>MATLAB Runtime</strong>,
+<p>The standalone version does not require a MATLAB license - only the matching <strong>MATLAB Runtime</strong>,
 which the installer sets up for you.</p>
 <ul>
-<li>Start MIB from the <strong>Start menu</strong> / desktop shortcut created during installation, or</li>
-<li>run the installed <code>MIB.exe</code> directly.</li>
+<li>Start MIB from the <strong>Start menu</strong> / desktop shortcut created during installation.</li>
+<li>Or run the installed <code>MIB.exe</code> directly.</li>
 </ul>
+<div class="admonition tip">
+<p class="admonition-title">Start compiled MIB on Linux </p>
+<p>On Linux, start MIB from a terminal. MIB prints progress and diagnostic messages there, so you
+can follow what it is doing while it runs.</p>
+</div>
 <p>See the <a href="../installation/index.html">Installation</a> page for download and setup details.</p>
 <hr />
 <h2 id="on-first-launch">On first launch<a class="headerlink" href="#on-first-launch" title="Permanent link">&para;</a></h2>
-<p>MIB opens its main window — the ribbon along the top, the image document in the centre, and the
+<p>MIB opens its main window - the ribbon along the top, the image document in the centre, and the
 side panels for directory contents, segmentation, and view settings.</p>
-<p><a class="glightbox" data-title="MIB3 user interface" data-type="image" href="../../user-interface/images/mib3_gui.png"><img alt="MIB3 user interface" class="on-glb" src="../../user-interface/images/mib3_gui.png" width="500" /></a></p>
+<p><a class="glightbox" data-title="MIB3 user interface" data-type="image" href="../../user-interface/images/mib3_gui.png"><img alt="MIB3 user interface" class="on-glb" src="../../user-interface/images/mib3_gui.png" width="700" /></a></p>
 <p>For a guided tour of every part of the window, see the <a href="../../user-interface/index.html">User Interface</a>
 section. When you are ready to open an image, continue to <a href="../first-dataset/index.html">First dataset</a>.</p>
-<div class="admonition tip">
-<p class="admonition-title">MIB does not start?</p>
-<p>Check that the <code>mib</code> folder is on the MATLAB path, and/or delete the configuration file
+<details class="failure">
+<summary>If MIB does not start</summary>
+<p>Check that the <code>mib</code> folder is on the MATLAB path. If it is, delete the configuration file
 (<code>mib3.mat</code>) and restart. See <a href="../configuration/index.html">Configuration files</a> for its location.</p>
-</div>
+</details>
 <hr />
 <p><em>Back to <a href="../../index.html">MIB</a> | <a href="../index.html">Getting started</a></em></p>
 

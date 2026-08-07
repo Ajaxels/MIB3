@@ -5514,17 +5514,17 @@
                   
 
 <h1 id="basic-concepts">Basic Concepts<a class="headerlink" href="#basic-concepts" title="Permanent link">&para;</a></h1>
-<p>A few ideas underpin almost everything in MIB. Skim this page once and the rest of the
+<p>A few ideas underpin almost everything in MIB. Check this page once and the rest of the
 documentation will read more easily. Each topic links to its full reference.</p>
 <hr />
 <h2 id="image-layers">Image layers<a class="headerlink" href="#image-layers" title="Permanent link">&para;</a></h2>
 <p>Every dataset in MIB is organised as a stack of co-registered <strong>layers</strong> sharing the same X, Y, Z
 dimensions:</p>
 <ul>
-<li><strong>Image</strong> — the core 2D–4D microscopy data (always present).</li>
-<li><strong>Selection</strong> — a temporary scratch layer where segmentation tools work.</li>
-<li><strong>Model</strong> — where finished segmentation results are stored.</li>
-<li><strong>Mask</strong> — an auxiliary layer marking regions for independent analysis or filtering.</li>
+<li><strong>Image</strong> - the core 2D-4D microscopy data (always present).</li>
+<li><strong>Selection</strong> - a temporary scratch layer where segmentation tools work.</li>
+<li><strong>Model</strong> - where finished segmentation results are stored (in some situations referred as <strong>labels</strong>).</li>
+<li><strong>Mask</strong> - an auxiliary layer marking regions for independent analysis or filtering.</li>
 </ul>
 <p>→ Full details: <a href="../image-layers.html">Image Layers</a>.</p>
 <hr />
@@ -5532,9 +5532,9 @@ dimensions:</p>
 <p>MIB can hold an image in one of three memory/access modes, switchable in the
 <a href="../../user-interface/panels/datasets/index.html#dataset-types">Datasets panel</a>:</p>
 <ul>
-<li><strong>Standard</strong> — the whole dataset is in RAM; fastest, full editing.</li>
-<li><strong>Virtual</strong> — read from disk on demand; browse files too large for RAM (view-only).</li>
-<li><strong>BigData</strong> — pyramidal OME-Zarr v3 on disk; segment datasets far larger than RAM.</li>
+<li><strong>Standard</strong> - the whole dataset is in RAM; fastest, full editing.</li>
+<li><strong>Virtual</strong> - read from disk on demand; browse files too large for RAM (view-only).</li>
+<li><strong>BigData</strong> - pyramidal OME-Zarr v3 on disk and other pyramidal formats segment datasets far larger than RAM.</li>
 </ul>
 <p>→ Full details: <a href="../../user-interface/panels/datasets/index.html#dataset-types">Dataset types</a>.</p>
 <hr />
@@ -5545,9 +5545,13 @@ materials) trade memory for capacity, and the 65535+ types change the Segmentati
 <p>→ Full details: <a href="../../user-interface/ribbon/model/index.html#convert-type">Ribbon → Model → Convert type</a>.</p>
 <hr />
 <h2 id="buffers-and-sets">Buffers and sets<a class="headerlink" href="#buffers-and-sets" title="Permanent link">&para;</a></h2>
-<p>MIB keeps up to <strong>10 datasets</strong> open at once in numbered <strong>buffers</strong>, organised into named
-<strong>sets</strong>. You can switch, duplicate, sync, or link buffer views from the Datasets panel.</p>
-<p>→ Full details: <a href="../../user-interface/panels/datasets/index.html">Datasets panel</a>.</p>
+<p>MIB holds each open dataset in a numbered <strong>buffer</strong>, and buffers are grouped into named <strong>sets</strong> of
+ten. You can switch, duplicate, sync, or link buffer views from the Datasets panel.</p>
+<p><strong>More than one set can be open at a time</strong>, which is how unrelated groups of data are kept apart:
+name one <code>Control</code> and another <code>Treatment</code>, and each keeps its own ten buffers. A set is also one
+<a href="../../user-interface/image-document/index.html">Image Document</a> tab, so switching sets switches the
+whole working context rather than a single image.</p>
+<p>→ Full details: <a href="../../user-interface/panels/datasets/index.html#sets">Datasets panel</a>.</p>
 <hr />
 <p><em>Back to <a href="../../index.html">MIB</a> | <a href="../index.html">Getting started</a></em></p>
 

@@ -490,10 +490,32 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#6-make-your-first-selection" class="md-nav__link">
+  <a href="#6-make-a-model" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        6. Make your first selection
+        6. Make a model
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-make-your-first-selection" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        7. Make your first selection
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-save-the-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        8. Save the model
       </span>
     </span>
   </a>
@@ -5470,10 +5492,32 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#6-make-your-first-selection" class="md-nav__link">
+  <a href="#6-make-a-model" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        6. Make your first selection
+        6. Make a model
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-make-your-first-selection" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        7. Make your first selection
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-save-the-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        8. Save the model
       </span>
     </span>
   </a>
@@ -5590,27 +5634,55 @@ will make the steps below clearer.</p>
 <div class="admonition tip">
 <p class="admonition-title">Explore the Tip of the Day</p>
 <p>Each time MIB starts it shows a <strong>Tip of the Day</strong> window highlighting a feature you may not
-know about. Browsing a few of these is one of the quickest ways to discover what MIB can do.</p>
+know about. Browsing a few of these is one of the quickest ways to discover 
+what MIB can do and find out about other nuances.</p>
 </div>
 <hr />
 <h2 id="1-choose-a-working-directory">1. Choose a working directory<a class="headerlink" href="#1-choose-a-working-directory" title="Permanent link">&para;</a></h2>
 <p>Point MIB at the folder that holds your images. You can:</p>
 <ul>
-<li>use the <span class="widget widget-button">Load</span> button in the <a href="../../user-interface/ribbon/home/index.html">Home ribbon</a>, or</li>
-<li>use the working-directory widgets in the <a href="../../user-interface/statusbar/index.html">Status Bar</a>, or</li>
-<li>simply <strong>drag and drop</strong> image files onto the image document — the working directory updates automatically.</li>
+<li>use the <span class="widget widget-button">Load</span> button in the <a href="../../user-interface/ribbon/home/index.html">Home ribbon</a></li>
+<li>use the working-directory widgets in the <a href="../../user-interface/statusbar/index.html">Status Bar</a></li>
 </ul>
+<p><img alt="Status bar" class="off-glb" src="../../user-interface/statusbar/images/statusbar.png" /></p>
+<ul>
+<li>simply <strong>drag and drop</strong> image files onto the image document - the working directory updates automatically.</li>
+</ul>
+<div class="admonition warning">
+<p class="admonition-title">Drag and drop can crash MATLAB</p>
+<p>Because of a bug in MATLAB itself, dropping a file onto the image document occasionally brings
+down the <strong>whole MATLAB session</strong> without warning, losing anything unsaved. The fault happens
+inside MATLAB's own native drag handler, before MIB is told about the drop, so MIB cannot catch
+it or warn you first.</p>
+<p>It is intermittent and seems to accumulate: a drop often works, and it is a later one that
+fails. Binary files trigger it more readily than plain text.</p>
+<p><strong>If it happens to you more than rarely, stop using drag and drop</strong> and open files with the
+<span class="widget widget-button">Load</span> button or the Status Bar widgets above instead.
+Both reach the same place by a route that does not involve the drag handler.</p>
+</div>
 <h2 id="2-find-your-files">2. Find your files<a class="headerlink" href="#2-find-your-files" title="Permanent link">&para;</a></h2>
 <p>The files in the chosen folder appear in the
 <a href="../../user-interface/panels/dircontents/index.html">Directory Contents panel</a>. Use the
 <span class="widget widget-dropdown">Filter</span> dropdown to narrow the list to a given format.</p>
 <div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>To open the wide variety of proprietary microscopy formats, enable the
-<span class="widget widget-checkbox">Bio</span> checkbox — this loads files through the
-<a href="../../user-interface/panels/dircontents/index.html#bio-checkbox">Bio-Formats reader</a>.</p>
+<p class="admonition-title">Choosing a reader</p>
+<p>The reader dropdown beside it decides which library opens the files, and which extensions
+<em>Filter</em> offers:</p>
+<ul>
+<li><span class="widget widget-dropdown">Default</span> - MIB's own native readers.</li>
+<li><span class="widget widget-dropdown">BioFormats</span> - the
+  <a href="https://www.openmicroscopy.org/bio-formats/">Bio-Formats</a> library, which is how the wide
+  variety of proprietary microscopy formats are opened.</li>
+<li><span class="widget widget-dropdown">OpenSlide</span> - for whole-slide images. This one
+  <strong>needs an extra MATLAB support package</strong>, <em>Medical Imaging Toolbox Interface for Whole Slide
+  Imaging File Reader</em> (<strong>Home</strong> tab → <strong>Add-Ons</strong> → <strong>Get Add-Ons</strong>, then search for <em>Whole
+  Slide Imaging File Reader</em>). Without it, opening a file with this reader fails with an error
+  naming the package.</li>
+</ul>
+<p>See the <a href="../../user-interface/panels/dircontents/index.html">Directory Contents panel</a> for details.</p>
 </div>
 <h2 id="3-select-and-load">3. Select and load<a class="headerlink" href="#3-select-and-load" title="Permanent link">&para;</a></h2>
+<p><a class="glightbox" data-title="Select and load files" data-type="image" href="../../user-interface/panels/dircontents/images/PanelsDirContents.png"><img align="right" alt="Select and load files" class="on-glb" src="../../user-interface/panels/dircontents/images/PanelsDirContents.png" width="300" /></a>   </p>
 <ul>
 <li>Select files with <mouse class="left"></mouse>, or multiple files with
   <span class="keys"><kbd class="key-control">Ctrl</kbd></span> + <mouse class="left"></mouse> and <span class="keys"><kbd class="key-shift">Shift</kbd></span> + <mouse class="left"></mouse>.</li>
@@ -5618,32 +5690,66 @@ know about. Browsing a few of these is one of the quickest ways to discover what
   <a href="../../user-interface/panels/dircontents/index.html#file-list-box"><strong>Combine selected datasets</strong></a>
   to load them as a single 2D/3D/4D dataset.</li>
 </ul>
-<p>A single file can also be opened by double-clicking it.</p>
+<p><span class="twemoji orange-color"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13M6.5 7.75A.75.75 0 0 1 7.25 7h1a.75.75 0 0 1 .75.75v2.75h.25a.75.75 0 0 1 0 1.5h-2a.75.75 0 0 1 0-1.5h.25v-2h-.25a.75.75 0 0 1-.75-.75M8 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2"/></svg></span> A single file can also be opened by double-clicking it.</p>
+<div class="clear-float"></div>
+
 <h2 id="4-adjust-the-display">4. Adjust the display<a class="headerlink" href="#4-adjust-the-display" title="Permanent link">&para;</a></h2>
-<p>Tune brightness, contrast, and visible color channels in the
-<a href="../../user-interface/panels/selection_imview/viewsettings.html">View Settings panel</a>. This changes
-only how the image is shown — the pixel data is untouched.</p>
+<p>Press <span class="widget widget-button">Display</span> in the
+<a href="../../user-interface/panels/selection_imview/viewsettings.html">View Settings panel</a> to tune brightness, contrast, and visible color channels . This changes
+only how the image is shown - the pixel data is untouched.</p>
 <h2 id="5-navigate">5. Navigate<a class="headerlink" href="#5-navigate" title="Permanent link">&para;</a></h2>
 <ul>
+<li>Pan the image using <mouse class="right"></mouse>.</li>
 <li>Scroll the <strong>mouse wheel</strong> to move between slices.</li>
-<li>Press <span class="keys"><kbd class="key-w">W</kbd></span> to zoom in and <span class="keys"><kbd class="key-q">Q</kbd></span> to zoom out (default mouse-wheel mode).</li>
-<li>See all bindings on the <a href="../../user-interface/key-and-mouse-shortcuts.html">Key and mouse shortcuts</a> page.</li>
+<li>Press <span class="keys"><kbd class="key-w">W</kbd></span> to zoom in and <span class="keys"><kbd class="key-q">Q</kbd></span> to zoom out.</li>
+<li>See all customizable bindings on the <a href="../../user-interface/key-and-mouse-shortcuts.html">Key and mouse shortcuts</a> page.</li>
 </ul>
-<h2 id="6-make-your-first-selection">6. Make your first selection<a class="headerlink" href="#6-make-your-first-selection" title="Permanent link">&para;</a></h2>
-<p>Pick a tool in the <a href="../../user-interface/panels/segm/index.html">Segmentation panel</a> — for example the
-<a href="../../user-interface/panels/segm/segm-brush.html">Brush</a> — and paint over a structure. Then transfer
+<h2 id="6-make-a-model">6. Make a model<a class="headerlink" href="#6-make-a-model" title="Permanent link">&para;</a></h2>
+<p>Painting becomes a result only once it is stored in a <strong>model</strong>, so create one before you segment.</p>
+<p><a class="glightbox" data-title="Create model dialog" data-type="image" href="../../user-interface/panels/segm/images/PanelsSegmentation_Create.png"><img align="right" alt="Create model dialog" class="on-glb" src="../../user-interface/panels/segm/images/PanelsSegmentation_Create.png" width="250" /></a></p>
+<ul>
+<li>Press <span class="widget widget-button">Create</span> in the
+  <a href="../../user-interface/panels/segm/index.html#create-button">Segmentation panel</a> and choose how many
+  materials the model may hold. <strong>63</strong> is the default and the right choice for most work.</li>
+<li>Press <span class="widget widget-button">+</span> above the segmentation table to
+  <a href="../../user-interface/panels/segm/index.html#-squeeze-recolor-buttons">add a material</a> - one per
+  structure you intend to segment. Double-click a material in the table to rename it.</li>
+</ul>
+<p><span class="twemoji orange-color"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13M6.5 7.75A.75.75 0 0 1 7.25 7h1a.75.75 0 0 1 .75.75v2.75h.25a.75.75 0 0 1 0 1.5h-2a.75.75 0 0 1 0-1.5h.25v-2h-.25a.75.75 0 0 1-.75-.75M8 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2"/></svg></span> If a model is already open, <span class="widget widget-button">Create</span>
+asks before replacing it - the existing model is deleted, so save it first if you want to keep it.</p>
+<div class="clear-float"></div>
+
+<h2 id="7-make-your-first-selection">7. Make your first selection<a class="headerlink" href="#7-make-your-first-selection" title="Permanent link">&para;</a></h2>
+<p>Pick a tool in the <a href="../../user-interface/panels/segm/index.html">Segmentation panel</a> - for example the
+<a href="../../user-interface/panels/segm/segm-brush.html">Brush</a> - and paint over a structure. Then transfer
 the selection into the model:</p>
 <ul>
-<li><span class="keys"><kbd class="key-a">A</kbd></span> — add the selection on the current slice to the active material,</li>
-<li><span class="keys"><kbd class="key-shift">Shift</kbd><span>+</span><kbd class="key-a">A</kbd></span> — add the selection on all slices.</li>
+<li><span class="keys"><kbd class="key-a">A</kbd></span> - add the selection on the current slice to the active material,</li>
+<li><span class="keys"><kbd class="key-shift">Shift</kbd><span>+</span><kbd class="key-a">A</kbd></span> - add the selection on all slices.</li>
 </ul>
 <p>Your result is now stored in the <strong>Model</strong> layer, ready to save or analyse.</p>
+<h2 id="8-save-the-model">8. Save the model<a class="headerlink" href="#8-save-the-model" title="Permanent link">&para;</a></h2>
+<div class="admonition warning">
+<p class="admonition-title">Remember to save the model</p>
+<p>The model lives in <strong>memory</strong> until you save it (unless you are working in the <em>BigData</em> mode), and nothing writes it to disk for you. Save
+early and often - segmentation is slow to redo.</p>
+</div>
+<ul>
+<li><a href="../../user-interface/ribbon/model/index.html#save-model"><strong>Ribbon → Model → Save model</strong></a> writes it
+  without asking anything, to <code>Labels_&lt;name of the dataset&gt;.model</code> (or wherever it was last saved or
+  loaded from). This is the one to repeat as you work.</li>
+<li><a href="../../user-interface/ribbon/model/index.html#save-model-as"><strong>Ribbon → Model → Save model as...</strong></a>
+  prompts for a name and a format: the native <code>*.model</code>, or Amira, IMOD, NRRD, TIF, PNG, STL and
+  OME-Zarr v3 for other programs.</li>
+</ul>
+<p><span class="twemoji orange-color"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13M6.5 7.75A.75.75 0 0 1 7.25 7h1a.75.75 0 0 1 .75.75v2.75h.25a.75.75 0 0 1 0 1.5h-2a.75.75 0 0 1 0-1.5h.25v-2h-.25a.75.75 0 0 1-.75-.75M8 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2"/></svg></span> The <a href="../../user-interface/quick-access-bar/index.html">Quick Access Bar</a>
+carries a <em>Save model</em> button that does the same as <em>Save model</em>.</p>
 <hr />
 <h2 id="where-to-go-next">Where to go next<a class="headerlink" href="#where-to-go-next" title="Permanent link">&para;</a></h2>
 <ul>
-<li><a href="../basic-concepts/index.html">Basic concepts</a> — layers, dataset types, and models explained.</li>
-<li><a href="../tutorials/index.html">Tutorials</a> — step-by-step guides and video demonstrations.</li>
-<li><a href="../../user-interface/index.html">User Interface</a> — full reference for every panel and ribbon tab.</li>
+<li><a href="../basic-concepts/index.html">Basic concepts</a> - layers, dataset types, and models explained.</li>
+<li><a href="../tutorials/index.html">Tutorials</a> - step-by-step guides and video demonstrations.</li>
+<li><a href="../../user-interface/index.html">User Interface</a> - full reference for every panel and ribbon tab.</li>
 </ul>
 <hr />
 <p><em>Back to <a href="../../index.html">MIB</a> | <a href="../index.html">Getting started</a></em></p>

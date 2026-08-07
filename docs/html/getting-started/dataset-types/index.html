@@ -575,7 +575,7 @@
   <a href="#edits-are-written-at-the-zoom-you-draw-plus-coarser" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Edits are written at the zoom you draw — plus coarser
+        Edits are written at the zoom you draw - plus coarser
       </span>
     </span>
   </a>
@@ -5513,7 +5513,7 @@
   <a href="#edits-are-written-at-the-zoom-you-draw-plus-coarser" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Edits are written at the zoom you draw — plus coarser
+        Edits are written at the zoom you draw - plus coarser
       </span>
     </span>
   </a>
@@ -5662,8 +5662,8 @@
 <p>Every buffer in MIB stores its dataset in one of three <strong>types</strong>, chosen with the
 <span class="widget widget-dropdown">Standard</span> selector at the bottom of the
 <a href="../../user-interface/panels/datasets/index.html">Datasets panel</a>. The type controls
-<em>how the pixels are held</em> — entirely in RAM, streamed from disk for browsing, or
-streamed from disk <strong>and</strong> segmentable — and therefore which datasets you can open and
+<em>how the pixels are held</em> - entirely in RAM, streamed from disk for browsing, or
+streamed from disk <strong>and</strong> segmentable - and therefore which datasets you can open and
 what you can do with them.</p>
 <div class="clear-float"></div>
 
@@ -5686,7 +5686,7 @@ an empty BigData placeholder).</p>
 <td><strong>Standard</strong></td>
 <td style="text-align: center;">whole dataset in RAM</td>
 <td style="text-align: center;">✅ full</td>
-<td>small–medium datasets</td>
+<td>small-medium datasets</td>
 </tr>
 <tr>
 <td><strong>Virtual</strong></td>
@@ -5703,15 +5703,16 @@ an empty BigData placeholder).</p>
 </tbody>
 </table>
 <div class="admonition note">
-<p class="admonition-title">Cold vs. warm start — Bio-Formats / WSI files (CZI, NDPI, …)</p>
+<p class="admonition-title">Cold vs. warm start - Bio-Formats / WSI files (CZI, NDPI, …)</p>
 <p><strong>Virtual</strong> and <strong>BigData</strong> datasets that stream from a Bio-Formats / whole-slide file pay a
 one-time <strong>cold-start</strong> cost the <em>first</em> time a given file is opened: Bio-Formats must scan the
 file's internal tile/metadata directory before any pixels can be shown. This ranges from a second
 or two for a small file to <strong>several minutes</strong> for a very large multi-gigabyte image, and is far
 slower when the file lives on a <strong>network drive</strong> rather than a local disk. (By contrast, the pixel
-reads <em>after</em> opening are cheap — a zoomed-out view reads only a small pyramid level.)</p>
-<p>MIB caches this parse in a small Bio-Formats <em>Memoizer</em> index (a <code>.bfmemo</code> file kept in MIB's
-temporary directory), so <strong>every later open of the same file is near-instant — even after
+reads <em>after</em> opening are cheap - a zoomed-out view reads only a small pyramid level.)</p>
+<p>MIB caches this parse in a small Bio-Formats <em>Memoizer</em> index (a <code>.bfmemo</code> file kept in 
+<strong>Bioformats Memoizer temporary directory</strong> that can be specified from <a href="../../user-interface/ribbon/home/home-preferences.html#external-directories">MIB Preferences</a>.
+, so <strong>every later open of the same file is near-instant - even after
 restarting MIB</strong>. Renaming/moving the file, or replacing it with a newer copy, invalidates the
 cache and triggers one more cold start.</p>
 <p>Datasets already stored as an <strong>OME-Zarr v3</strong> pyramid have <strong>no</strong> cold-start cost (a chunked store
@@ -5724,7 +5725,7 @@ needs no directory scan). For the fastest <em>first</em> open of a Bio-Formats /
 <div class="h4-like">Benefits</div>
 
 <ul>
-<li>Best performance — all pixels are immediately in memory.</li>
+<li>Best performance - all pixels are immediately in memory.</li>
 <li><strong>All</strong> tools, filters, processing and export formats are available.</li>
 <li>Full multi-step Undo/Redo.</li>
 </ul>
@@ -5732,7 +5733,7 @@ needs no directory scan). For the fastest <em>first</em> open of a Bio-Formats /
 
 <ul>
 <li>The dataset (and its model/mask/selection layers) must fit in RAM, with headroom for processing.</li>
-<li>Not suitable for datasets larger than available memory — use <strong>Virtual</strong> (to browse) or <strong>BigData</strong>
+<li>Not suitable for datasets larger than available memory - use <strong>Virtual</strong> (to browse) or <strong>BigData</strong>
   (to browse <em>and</em> segment) instead.</li>
 </ul>
 <hr />
@@ -5748,22 +5749,31 @@ so only the currently viewed region is held in memory.</p>
 <div class="h4-like">Limitations</div>
 
 <ul>
-<li><strong>Browse-only</strong> — segmentation layers (Selection, Mask, Model) and most pixel-editing/processing
+<li><strong>Browse-only</strong> - segmentation layers (Selection, Mask, Model) and most pixel-editing/processing
   tools are disabled; Undo is not kept for these layers.</li>
 <li>Slower per access than Standard (each view reads from disk).</li>
 <li>To segment a large dataset instead of just viewing it, use <strong>BigData</strong>.</li>
 </ul>
 <hr />
 <h2 id="bigdata">BigData<a class="headerlink" href="#bigdata" title="Permanent link">&para;</a></h2>
-<p>For datasets <strong>too large to fit in RAM that you also want to segment</strong>. The image is a pyramidal,
-chunked <strong>OME-Zarr v3</strong> store read on demand (zoom selects the matching resolution level; pan reads only
-the visible region), and the segmentation <strong>model is a disk-backed, pyramidal 63-class store</strong> that mirrors
-the image pyramid. Edits are written straight to disk and propagated across levels, so a model can be far
+<p>For datasets <strong>too large to fit in RAM that you also want to segment</strong>. The image is a <strong>pyramidal</strong>
+source read on demand (zoom selects the matching resolution level; pan reads only the visible region),
+and the segmentation <strong>model is a disk-backed, pyramidal 63-class store</strong> that mirrors the image
+pyramid. Edits are written straight to disk and propagated across levels, so a model can be far
 larger than memory and survives across sessions.</p>
+<p>Two kinds of image can serve as that source:</p>
+<ul>
+<li>an <strong>OME-Zarr v3</strong> store, opened directly;</li>
+<li>any <strong>pyramidal file that Bio-Formats or OpenSlide can read</strong> - the whole-slide formats such as
+  SVS, NDPI, CZI and their relatives - streamed straight from the vendor file, with no conversion
+  step.</li>
+</ul>
+<p>Whichever the image is, the <strong>model is always written as an OME-Zarr v3 store beside it</strong>, named
+<code>Labels_&lt;name of the image&gt;.zarr3</code>.</p>
 <div class="h4-like">Benefits</div>
 
 <ul>
-<li><strong>Segment</strong> datasets much larger than RAM — only the visible region/level is ever in memory.</li>
+<li><strong>Segment</strong> datasets much larger than RAM - only the visible region/level is ever in memory.</li>
 <li>The model is <strong>saved live to disk</strong> (an OME-Zarr v3 group next to the image) and reloads across sessions;
   material names and colours are preserved.</li>
 <li>Smooth zoom/pan and <strong>orientation switching</strong> (XY / ZX / ZY) by reading the appropriate pyramid level.</li>
@@ -5772,7 +5782,7 @@ larger than memory and survives across sessions.</p>
   <a href="../../user-interface/ribbon/model/index.html#save-model-as">Save model as...</a>).</li>
 <li>Selectable Zarr backend (native <code>zarrMex</code> or <code>zarr-python</code>); define in
   <a href="../../user-interface/ribbon/home/home-preferences.html#input-output">Preferences-&gt;Input / Output</a></li>
-<li><strong>3D volume rendering</strong> — the <span class="widget widget-button">Render</span> →
+<li><strong>3D volume rendering</strong> - the <span class="widget widget-button">Render</span> →
   <span class="widget widget-dropdown">MIB Rendering</span> button on the Home ribbon now supports
   BigData: pick a pyramid level to render in 3D (a memory estimate is shown for each level), and
   optionally enable the live-update checkbox so the overlay refreshes automatically as you segment
@@ -5781,13 +5791,17 @@ larger than memory and survives across sessions.</p>
 <div class="h4-like">Limitations</div>
 
 <ul>
-<li>Reads <strong>OME-Zarr v3 only</strong>. Other formats (TIFF, HDF5, BioFormats/WSI, …) must first be <strong>converted</strong> —
-  switch the type dropdown to <em>BigData → Convert current</em>, or use <em>Ribbon → Home → Export → Export to Zarr3</em>, or use
-  <a href="../../plugins/file-processing/image-converter.html">Image converter plugin</a></li>
-<li><strong>Browse-only until a model exists</strong> — create a model (Segmentation panel → <em>Create</em>, or <em>Ribbon → Model →
+<li><strong>The source must be pyramidal.</strong> An OME-Zarr v3 store or a pyramidal Bio-Formats / OpenSlide file
+  opens as BigData as it stands, but a format with only one resolution level (a plain TIFF, an HDF5
+  volume, a folder of slices) has no levels to stream and must first be <strong>converted</strong> - switch the
+  type dropdown to <em>BigData → Convert current</em>, or use <em>Ribbon → Home → Export → Export to Zarr3</em>, or
+  the <a href="../../plugins/file-processing/image-converter.html">Image converter plugin</a>.</li>
+<li>Streaming from a vendor file pays the <strong>cold-start</strong> cost described above; an OME-Zarr v3 store does
+  not. Converting a slide you will return to often therefore still pays off.</li>
+<li><strong>Browse-only until a model exists</strong> - create a model (Segmentation panel → <em>Create</em>, or <em>Ribbon → Model →
   New model</em>, or load one) to enable segmentation.</li>
 <li>Up to <strong>63 materials</strong> (packed model), and <strong>a single time point</strong> (time-series is not yet supported).</li>
-<li>The <strong>source image is read-only</strong> — you edit the model, not the image pixels. To change image pixels,
+<li>The <strong>source image is read-only</strong> - you edit the model, not the image pixels. To change image pixels,
   convert the (cropped) region to Standard.</li>
 <li>A few tools are <strong>not available</strong>: <a href="../../user-interface/panels/segm/segm-objpick.html">Object Picker</a>,
   <a href="../../user-interface/panels/segm/segm-bwthres.html">Black-and-White Thresholding</a>, and SAM's <em>Automatic everything</em>. Each
@@ -5795,35 +5809,79 @@ larger than memory and survives across sessions.</p>
 </ul>
 <div class="admonition tip">
 <p class="admonition-title">Getting into BigData mode</p>
-<p>Open a <code>.zarr3</code> dataset directly (it opens as BigData), or switch an open Standard/Virtual dataset with
-the <strong>Dataset type → BigData</strong> dropdown and choose <em>Convert current</em>.</p>
+<p>Set the <strong>Dataset type</strong> dropdown to <strong>BigData</strong> before opening, and a <code>.zarr3</code> store or a
+pyramidal whole-slide file opens straight into it. To move a dataset that is already open, switch
+the same dropdown to <strong>BigData</strong> and choose <em>Convert current</em>, which writes an OME-Zarr v3 pyramid
+to disk and reopens it.</p>
 </div>
 <hr />
 <h2 id="how-bigdata-works">How BigData works<a class="headerlink" href="#how-bigdata-works" title="Permanent link">&para;</a></h2>
-<p>This section explains the machinery behind BigData segmentation — useful for understanding why
+<p>This section explains the machinery behind BigData segmentation - useful for understanding why
 editing stays fast on a multi-gigapixel slide and what the <strong>Save model</strong> options do.</p>
 <h3 id="the-image-and-model-pyramids">The image and model pyramids<a class="headerlink" href="#the-image-and-model-pyramids" title="Permanent link">&para;</a></h3>
 <p>A BigData image is a <strong>pyramid</strong>: the same picture stored at several resolutions
 (<code>s0</code> = full resolution, <code>s1</code> = half/quarter, … <code>sN</code> = coarsest thumbnail), each split into small
-<strong>chunks</strong> on disk. When you zoom, MIB picks the pyramid level whose scale matches the zoom; when you
-pan, it reads only the chunks under the viewport. Nothing else is loaded, so memory use stays tied to
-the size of the <em>window on screen</em>, not the size of the slide.</p>
+<strong>chunks</strong> on disk. When you zoom, MIB picks the pyramid level whose scale is <strong>nearest</strong> to the
+current magnification; when you pan, it reads only the chunks under the viewport. Nothing else is
+loaded, so memory use stays tied to the size of the <em>window on screen</em>, not the size of the slide.</p>
+<p>At a magnification that falls <strong>between</strong> two levels, the block read from the chosen level is then
+resampled to the exact scale on screen. Because the nearest level is taken, this goes <strong>either way</strong>:
+you may be seeing a finer level scaled <strong>down</strong>, or a coarser level scaled <strong>up</strong>, whichever level's
+scale was closer.</p>
+<details class="info">
+<summary>Which level wins, exactly</summary>
+<p>Each level carries a scale factor relative to full resolution (<code>s0</code> = 1, <code>s1</code> = 2, <code>s2</code> = 4, …),
+and MIB takes the level whose factor differs least from the current magnification. A tie goes to
+the <strong>finer</strong> level.</p>
+<p>With levels at 1x, 2x and 4x:</p>
+<table>
+<thead>
+<tr>
+<th>Magnification</th>
+<th>Level used</th>
+<th>What happens to it</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2x</td>
+<td><code>s1</code> (2x)</td>
+<td>used as read, no resampling</td>
+</tr>
+<tr>
+<td>3x</td>
+<td><code>s1</code> (2x)</td>
+<td>tie with <code>s2</code>, so the finer one is scaled <strong>down</strong></td>
+</tr>
+<tr>
+<td>3.5x</td>
+<td><code>s2</code> (4x)</td>
+<td>nearer than <code>s1</code>, so it is scaled <strong>up</strong></td>
+</tr>
+</tbody>
+</table>
+<p>The resampling is <strong>nearest-neighbour</strong>, which is fast and never invents intermediate intensities;
+upscaling a coarser level therefore looks blocky rather than smooth. Zooming a little further in
+crosses to the finer level and the detail returns.</p>
+<p>This applies to the <strong>display</strong> path only. Tools that ask for a specific pyramid level (export,
+3D rendering) read that level directly, with no resampling.</p>
+</details>
 <p>The <strong>model</strong> (your segmentation) is stored the same way: a parallel pyramid of the same levels, packed
 so each voxel holds the material index plus the mask and selection bits. It lives in an OME-Zarr v3
-group next to the image and is written <strong>live</strong> as you segment — there is no separate "load the whole
+group next to the image and is written <strong>live</strong> as you segment - there is no separate "load the whole
 model into RAM" step.</p>
-<h3 id="edits-are-written-at-the-zoom-you-draw-plus-coarser">Edits are written at the zoom you draw — plus coarser<a class="headerlink" href="#edits-are-written-at-the-zoom-you-draw-plus-coarser" title="Permanent link">&para;</a></h3>
+<h3 id="edits-are-written-at-the-zoom-you-draw-plus-coarser">Edits are written at the zoom you draw - plus coarser<a class="headerlink" href="#edits-are-written-at-the-zoom-you-draw-plus-coarser" title="Permanent link">&para;</a></h3>
 <p>When you paint at, say, 16% zoom, the stroke is written to <strong>that</strong> pyramid level <strong>and every coarser
 level</strong> immediately (a coarser level is small, so downsampling the edited patch into it is cheap). The
-<strong>finer</strong> levels (higher resolution than where you drew) are <strong>not</strong> written right away — they are marked
+<strong>finer</strong> levels (higher resolution than where you drew) are <strong>not</strong> written right away - they are marked
 as needing an update and reconstructed later. This is what keeps a brush stroke cheap regardless of zoom
 or slide size: the cost scales with the <em>edit</em>, not with the whole image.</p>
 <h3 id="finer-levels-are-rebuilt-on-demand-and-cached">Finer levels are rebuilt on demand (and cached)<a class="headerlink" href="#finer-levels-are-rebuilt-on-demand-and-cached" title="Permanent link">&para;</a></h3>
 <p>When you zoom <strong>in</strong> to a level finer than where an edit was made, MIB reconstructs that region for the
-finer level by up-sampling from the level that holds the data, writes it down, and <strong>caches</strong> it — so the
+finer level by up-sampling from the level that holds the data, writes it down, and <strong>caches</strong> it - so the
 next view of the same area is a direct read with no recomputation. An optional, label-aware <strong>smoothing</strong>
-(<em>Preferences → Input/Output → Zarr → Smoothing</em>) removes the blocky stair-steps that plain up-sampling
-would produce at the finer grid.</p>
+(<a href="../../user-interface/ribbon/home/home-preferences.html#smoothing">Preferences → Input/Output</a> → Zarr → Smoothing)
+removes the blocky stair-steps that plain up-sampling would produce at the finer grid.</p>
 <h3 id="the-level-map-and-its-sidecar-file">The level map and its sidecar file<a class="headerlink" href="#the-level-map-and-its-sidecar-file" title="Permanent link">&para;</a></h3>
 <p>To know, for every region, <strong>which level currently holds the real data</strong>, MIB keeps a small <strong>level map</strong>.
 It records per tile the finest materialized level, so reads know whether they can go straight to disk or
@@ -5842,7 +5900,7 @@ must reconstruct first. Two consequences follow:</p>
 <p class="admonition-title">Why a loaded model is always precise</p>
 <p>A model on disk is treated as <strong>precise at every level</strong> unless the sidecar explicitly says some
 tiles still have deferred (not-yet-written) finer levels. So an <strong>imported / externally-created
-model</strong> — where the whole pyramid was written properly — loads at full detail; deferral is purely a
+model</strong> - where the whole pyramid was written properly - loads at full detail; deferral is purely a
 within-a-session optimisation, and that state lives in the sidecar.</p>
 </div>
 <h3 id="saving-a-bigdata-model">Saving a BigData model<a class="headerlink" href="#saving-a-bigdata-model" title="Permanent link">&para;</a></h3>
@@ -5860,7 +5918,7 @@ map. Pressing <span class="widget widget-button">Save</span> on the
 <tbody>
 <tr>
 <td><strong>Finalize &amp; save</strong></td>
-<td>Materializes <strong>every</strong> resolution level from the level map, so the on-disk model is consistent at all zooms — required for export and for opening the store in external readers.</td>
+<td>Materializes <strong>every</strong> resolution level from the level map, so the on-disk model is consistent at all zooms - required for export and for opening the store in external readers.</td>
 <td style="text-align: center;">slower on a large slide</td>
 </tr>
 <tr>
@@ -5871,18 +5929,18 @@ map. Pressing <span class="widget widget-button">Save</span> on the
 </tbody>
 </table>
 <div class="admonition note">
-<p class="admonition-title">The sidecar file is kept after Finalize — this is expected</p>
+<p class="admonition-title">The sidecar file is kept after Finalize - this is expected</p>
 <p>After <strong>Finalize &amp; save</strong>, the <code>.levelmap</code> sidecar file is <strong>not deleted</strong>: it is updated to record
 that every level is now fully materialized. On the next open MIB reads that record and knows the
-model is complete. Without the sidecar, MIB would reach the same conclusion via a fallback — but
+model is complete. Without the sidecar, MIB would reach the same conclusion via a fallback - but
 keeping it makes the distinction between a fully-materialized model and one with deferred levels
-explicit and reliable. <strong>You can safely ignore the sidecar file</strong> — do not delete it, as it is the
+explicit and reliable. <strong>You can safely ignore the sidecar file</strong> - do not delete it, as it is the
 only durable marker that the model is consistent at all zooms.</p>
 </div>
 <div class="admonition tip">
 <p class="admonition-title">Protect against a crash</p>
 <p>During a long session, use <strong>Save model → Save sidecar</strong> periodically. If MIB then closes
-unexpectedly, reopening the model reads the sidecar and restores everything you drew — at every zoom —
+unexpectedly, reopening the model reads the sidecar and restores everything you drew - at every zoom -
 without the cost of full finalization. Run <strong>Finalize &amp; save</strong> once at the end (or before exporting)
 to write every level to disk.</p>
 </div>

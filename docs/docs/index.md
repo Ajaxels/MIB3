@@ -56,7 +56,7 @@ Developed during 2010–2026 by:
 
 Access the API class reference from the MIB interface:
 
-* **Ribbon → Home → Help → [Class Reference :octicons-link-16:](user-interface/ribbon/help/index.md)** 
+* **Ribbon → Home → Help → [Class Reference :octicons-link-16:](user-interface/ribbon/help/index.md#class-reference)** 
 * directly from the website (1)
 { .annotate }
 

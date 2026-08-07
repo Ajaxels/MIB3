@@ -16,14 +16,14 @@ By using the **deployed compiled, standalone version of Microscopy Image Browser
 
 ## Copyright and Development
 
-Developed during 2010–2025 by:
+Developed during 2010-2025 by:
 
 - **Core Developer**: Ilya Belevich
 - **Developers**: Merja Joensuu, Darshan Kumar, Helena Vihinen, Eija Jokitalo
 - **Affiliation**: Electron Microscopy Unit, Institute of Biotechnology, PO Box 56 (Viikinkaari 9), 00014, University of Helsinki, Finland
 
 **Microscopy Image Browser (MIB)**: Image segmentation and beyond  
-**Copyright © 2010–2025**: Ilya Belevich, Merja Joensuu, Darshan Kumar, Helena Vihinen, Eija Jokitalo  
+**Copyright © 2010-2025**: Ilya Belevich, Merja Joensuu, Darshan Kumar, Helena Vihinen, Eija Jokitalo  
 **Website**: [http://mib.helsinki.fi](http://mib.helsinki.fi)
 
 ```aiignore

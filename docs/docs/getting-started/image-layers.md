@@ -33,7 +33,7 @@ Choose the organization type in the [Ribbon → Model → Convert type](../user-
 
 The **Image** layer holds the core 2D-4D microscopy dataset. It’s always present and forms the foundation of MIB’s data structure.
 
-MIB supports three dataset types — **Standard** (full dataset in RAM), **Virtual** (browse large files without loading them fully), and **BigData** (segment datasets far larger than available RAM using a pyramidal on-disk store). See [Dataset types](../user-interface/panels/datasets/index.md#dataset-types) for details.
+MIB supports three dataset types - **Standard** (full dataset in RAM), **Virtual** (browse large files without loading them fully), and **BigData** (segment datasets far larger than available RAM using a pyramidal on-disk store). See [Dataset types](../user-interface/panels/datasets/index.md#dataset-types) for details.
 
 ## Selection Layer
 

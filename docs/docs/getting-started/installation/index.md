@@ -6,9 +6,8 @@ For detailed guidance, visit our main website at [mib.helsinki.fi](http://mib.he
 
 ## Download MIB
 
-Obtain the latest version of MIB directly from [our website](https://mib.helsinki.fi) or from [GitHub](https://github.com/Ajaxels/MIB3).
-
-- **Details**: [https://mib.helsinki.fi/downloads.html](https://mib.helsinki.fi/downloads.html)
+Obtain the latest version of MIB directly from [our website](https://mib.helsinki.fi/downloads.html) 
+or from [GitHub](https://github.com/Ajaxels/MIB3).
 
 ## Installation Instructions
 
@@ -26,7 +25,7 @@ Find information about useful add-ons such as the [Segment Anything Model](https
 
 ## Archive
 
-Access older versions of MIB for compatibility or specific project needs. The archive includes previous releases and their documentation.
+Access older versions of MIB for compatibility or specific project needs: 
 
 - **Details**: [https://mib.helsinki.fi/downloads_archive.html](https://mib.helsinki.fi/downloads_archive.html)
 

@@ -12,8 +12,8 @@ repositories. Each generation targets a different range of MATLAB versions:
 
 | Version | Repository | Recommended MATLAB |
 |---------|-----------|--------------------|
-| **MIB2** | [github.com/Ajaxels/MIB2](https://github.com/Ajaxels/MIB2) | R2014b – R2024b |
-| **MIB** (original) | [github.com/Ajaxels/MIB](https://github.com/Ajaxels/MIB) | R2011a – R2017a |
+| **MIB2** | [github.com/Ajaxels/MIB2](https://github.com/Ajaxels/MIB2) | R2014b - R2024b |
+| **MIB** (original) | [github.com/Ajaxels/MIB](https://github.com/Ajaxels/MIB) | R2011a - R2017a |
 
 !!! tip
     If you are running MATLAB older than R2025a, use **MIB2** (or the original **MIB** for the

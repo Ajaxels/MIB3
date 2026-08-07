@@ -17,7 +17,7 @@ Microscopy Image Browser team would like to acknowledge [the User Community of M
 ## Code Sources
 
 !!! note
-    Throughout the historical development of MIB a variety of external code has been used —
+    Throughout the historical development of MIB a variety of external code has been used -
     including functions that were only used in earlier releases (noted in the list below). See
     [Licenses → External licenses](licenses/licenses-ext.md) to check the exact versions.
 
