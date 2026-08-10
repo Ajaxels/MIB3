@@ -12,6 +12,11 @@ classdef OmeZarrMetadataUtils
 % Things that genuinely differ per zarr version (root-metadata file detection,
 % per-level array metadata file format/location, dtype-string convention) are
 % NOT here - they stay local to each version-specific loader.
+%
+% The one exception is the nested-container search (``findMultiscalesGroups``
+% and its helpers): it has to touch the filesystem and therefore takes a
+% ``zarrFormat`` argument, but the walk itself is identical for v2 and v3, so a
+% single copy shared by both loaders is preferable to two that drift apart.
 
 methods (Static)
     function ms = extractMultiscales(attrs)
@@ -430,6 +435,242 @@ methods (Static)
                 nextSingleton = nextSingleton + 1;
             end
         end
+    end
+
+    function attrs = readGroupAttributes(groupPath, zarrFormat)
+        % READGROUPATTRIBUTES - Read the user attributes of a local zarr group.
+        %
+        % Syntax:
+        %   .. code-block:: matlab
+        %
+        %      attrs = io.loaders.OmeZarrMetadataUtils.readGroupAttributes(groupPath, zarrFormat)
+        %
+        % Local filesystem only - the recursive container walk that uses this
+        % cannot list remote directories anyway. A missing or unparsable
+        % metadata file is not an error: it simply means "no attributes here",
+        % which is exactly how a non-zarr directory should behave.
+        %
+        % Input Arguments:
+        %   - **groupPath** - [char] full path to the group directory
+        %   - **zarrFormat** - [numeric] 2 (``.zattrs``) or 3 (``zarr.json``)
+        %
+        % Output Arguments:
+        %   - **attrs** - [struct] decoded attributes; empty struct when absent
+
+        attrs = struct();
+        try
+            if zarrFormat == 2
+                attributesFile = fullfile(groupPath, '.zattrs');
+                if ~isfile(attributesFile); return; end
+                attrs = jsondecode(fileread(attributesFile));
+            else
+                attributesFile = fullfile(groupPath, 'zarr.json');
+                if ~isfile(attributesFile); return; end
+                rawMeta = jsondecode(fileread(attributesFile));
+                if isfield(rawMeta, 'attributes') && isstruct(rawMeta.attributes)
+                    attrs = rawMeta.attributes;
+                else
+                    % non-standard stores put multiscales at the top level
+                    attrs = rawMeta;
+                end
+            end
+        catch
+            attrs = struct();
+        end
+    end
+
+    function childPaths = listChildGroups(groupPath, zarrFormat)
+        % LISTCHILDGROUPS - List sub-directories of a local zarr group that are groups themselves.
+        %
+        % Syntax:
+        %   .. code-block:: matlab
+        %
+        %      childPaths = io.loaders.OmeZarrMetadataUtils.listChildGroups(groupPath, zarrFormat)
+        %
+        % Arrays are deliberately excluded. That is what keeps a container walk
+        % out of the chunk directory tree: a pyramid level such as ``s0`` is an
+        % array, and with ``dimension_separator = "/"`` it holds thousands of
+        % nested chunk folders that must never be enumerated.
+        %
+        % Input Arguments:
+        %   - **groupPath** - [char] full path to the parent group directory
+        %   - **zarrFormat** - [numeric] 2 or 3
+        %
+        % Output Arguments:
+        %   - **childPaths** - [1xN cell] full paths of child groups, sorted by name
+
+        childPaths = {};
+        try
+            items = dir(groupPath);
+        catch
+            return;
+        end
+        items = items([items.isdir] & ~ismember({items.name}, {'.', '..'}));
+        if isempty(items); return; end
+
+        [~, sortOrder] = sort({items.name});  % deterministic across platforms
+        items = items(sortOrder);
+
+        for itemIndex = 1:numel(items)
+            childPath = fullfile(groupPath, items(itemIndex).name);
+            if zarrFormat == 2
+                % v2: groups carry .zgroup, arrays carry .zarray
+                isGroup = isfile(fullfile(childPath, '.zgroup')) && ...
+                          ~isfile(fullfile(childPath, '.zarray'));
+            else
+                % v3: both node kinds use zarr.json, distinguished by node_type
+                isGroup = false;
+                metadataFile = fullfile(childPath, 'zarr.json');
+                if isfile(metadataFile)
+                    try
+                        nodeMeta = jsondecode(fileread(metadataFile));
+                        isGroup = isfield(nodeMeta, 'node_type') && ...
+                                  strcmpi(nodeMeta.node_type, 'group');
+                    catch
+                        % unparsable zarr.json -> not a usable group
+                    end
+                end
+            end
+            if isGroup
+                childPaths{end+1} = childPath; %#ok<AGROW>
+            end
+        end
+    end
+
+    function groupPaths = findMultiscalesGroups(rootPath, zarrFormat, maxDepth, maxVisited)
+        % FINDMULTISCALESGROUPS - Search a local zarr container for groups holding multiscales metadata.
+        %
+        % Syntax:
+        %   .. code-block:: matlab
+        %
+        %      groupPaths = io.loaders.OmeZarrMetadataUtils.findMultiscalesGroups(rootPath, zarrFormat)
+        %      groupPaths = io.loaders.OmeZarrMetadataUtils.findMultiscalesGroups(rootPath, zarrFormat, maxDepth, maxVisited)
+        %
+        % Breadth-first walk over child groups, collecting every group whose
+        % attributes contain an OME-NGFF ``multiscales`` entry. Needed because
+        % real-world containers nest the image group arbitrarily deep, e.g. the
+        % OpenOrganelle / MoBIE layout ``<store>.zarr/recon-1/em/fibsem-uint8``,
+        % while OME-Zarr label containers nest it one level down.
+        %
+        % A group that has multiscales is never descended into - its children
+        % are the pyramid level arrays.
+        %
+        % Breadth-first order means shallower groups are reported first, so a
+        % caller that just takes the first hit gets the least nested one.
+        %
+        % Input Arguments:
+        %   - **rootPath** - [char] local path to the container root
+        %   - **zarrFormat** - [numeric] 2 or 3
+        %   - **maxDepth** - *(optional)* [numeric] deepest level to visit, root is 0 (default: 5)
+        %   - **maxVisited** - *(optional)* [numeric] hard cap on visited groups,
+        %     a guard against pathological trees (default: 500)
+        %
+        % Output Arguments:
+        %   - **groupPaths** - [1xN cell] full paths of groups with multiscales;
+        %     empty when none found or when rootPath is remote
+
+        arguments
+            rootPath (1,:) char
+            zarrFormat (1,1) double
+            maxDepth (1,1) double = 5
+            maxVisited (1,1) double = 500
+        end
+
+        groupPaths = {};
+        if startsWith(rootPath, 'http://') || startsWith(rootPath, 'https://'); return; end
+        if ~isfolder(rootPath); return; end
+
+        currentLevel = {rootPath};
+        depth        = 0;
+        visited      = 0;
+
+        while ~isempty(currentLevel) && visited < maxVisited
+            nextLevel = {};
+            for levelIndex = 1:numel(currentLevel)
+                groupPath = currentLevel{levelIndex};
+                visited   = visited + 1;
+                if visited > maxVisited; break; end
+
+                attrs = io.loaders.OmeZarrMetadataUtils.readGroupAttributes(groupPath, zarrFormat);
+                if ~isempty(io.loaders.OmeZarrMetadataUtils.extractMultiscales(attrs))
+                    groupPaths{end+1} = groupPath; %#ok<AGROW>
+                    continue;   % children are pyramid arrays, nothing deeper to find
+                end
+
+                if depth >= maxDepth; continue; end
+                nextLevel = [nextLevel, ...
+                    io.loaders.OmeZarrMetadataUtils.listChildGroups(groupPath, zarrFormat)]; %#ok<AGROW>
+            end
+            currentLevel = nextLevel;
+            depth        = depth + 1;
+        end
+    end
+
+    function relativePath = relativeGroupPath(rootPath, groupPath)
+        % RELATIVEGROUPPATH - Format a group path relative to the container root, for display.
+        %
+        % Syntax:
+        %   .. code-block:: matlab
+        %
+        %      relativePath = io.loaders.OmeZarrMetadataUtils.relativeGroupPath(rootPath, groupPath)
+        %
+        % Returns forward-slash separated text such as ``recon-1/em/fibsem-uint8``.
+        % Falls back to the full path when groupPath is not under rootPath.
+
+        relativePath = strrep(groupPath, '\', '/');
+        normalisedRoot = strrep(rootPath, '\', '/');
+        if endsWith(normalisedRoot, '/'); normalisedRoot = normalisedRoot(1:end-1); end
+
+        if startsWith(relativePath, [normalisedRoot, '/'])
+            relativePath = relativePath(numel(normalisedRoot)+2:end);
+        elseif strcmp(relativePath, normalisedRoot)
+            relativePath = '.';  % the root group itself
+        end
+    end
+
+    function selectedPath = selectMultiscalesGroup(rootPath, groupPaths, ParentFigure, dlgTitle)
+        % SELECTMULTISCALESGROUP - Resolve which nested multiscales group to open.
+        %
+        % Syntax:
+        %   .. code-block:: matlab
+        %
+        %      selectedPath = io.loaders.OmeZarrMetadataUtils.selectMultiscalesGroup(rootPath, groupPaths, ParentFigure, dlgTitle)
+        %
+        % Zero candidates returns ``''`` and one candidate is taken silently, so
+        % the dialog only appears for genuinely ambiguous containers (an image
+        % group plus a labels group, several channels, and so on).
+        %
+        % Input Arguments:
+        %   - **rootPath** - [char] container root, used to shorten the displayed names
+        %   - **groupPaths** - [1xN cell] candidates from findMultiscalesGroups
+        %   - **ParentFigure** - [handle] parent figure for the dialog
+        %   - **dlgTitle** - [char] dialog window title
+        %
+        % Output Arguments:
+        %   - **selectedPath** - [char] chosen group path; ``''`` when nothing to
+        %     choose or the user cancelled
+
+        selectedPath = '';
+        if isempty(groupPaths); return; end
+        if isscalar(groupPaths); selectedPath = groupPaths{1}; return; end
+
+        labels = cell(1, numel(groupPaths));
+        for groupIndex = 1:numel(groupPaths)
+            labels{groupIndex} = io.loaders.OmeZarrMetadataUtils.relativeGroupPath(...
+                rootPath, groupPaths{groupIndex});
+        end
+
+        dlgOpts = struct();
+        dlgOpts.WindowWidth   = 520;
+        dlgOpts.WindowHeight  = 180;
+        dlgOpts.LabelPosition = 'top';
+
+        [answer, selectedIndices] = utils.dlgs.inputUniversalDlg(ParentFigure, '', ...
+            {'This container holds several image groups; select the one to open:'}, ...
+            {[labels, {1}]}, dlgTitle, dlgOpts);
+        if isempty(answer); return; end
+
+        selectedPath = groupPaths{selectedIndices(1)};
     end
 end
 end

@@ -61,6 +61,16 @@ selected datasets
     - select the directory using the <mouse class="left"></mouse>
     - open the OME-Zarr dataset using the `Combine selected datasets` option 
 
+    A plain `.zarr` ending does not say which zarr version the store uses, so MIB detects
+    it from the store itself and picks the matching reader.
+
+    **Nested containers.** Many stores keep the image group below the root rather than at it,
+    for example the MoBIE / OpenOrganelle layout where the pyramid lives in
+    `<name>.zarr/recon-1/em/fibsem-uint8`, or an OME-Zarr label container. Select the top
+    `.zarr` directory as usual - MIB searches the container and opens the image group it
+    finds. When a container holds several image groups (an image plus its labels, several
+    channels, ...), a dialog lists them so you can choose which one to open.
+
 - **Load part of the dataset (AM, TIF, BioFormats)**: load a specific part of a larger dataset, defining start/end points, z-step, and XY binning
 (available for Amira Mesh, TIF, and BioFormats-readable datasets) [:fontawesome-brands-youtube:{.red-color} demo](https://youtu.be/sae--XHIjwc).
 - **Load each N-th dataset**: assemble every N-th file into a 3D stack.

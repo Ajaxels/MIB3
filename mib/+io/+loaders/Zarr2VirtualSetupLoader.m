@@ -31,6 +31,11 @@ classdef Zarr2VirtualSetupLoader < io.loaders.BaseImageLoader
 % Supported formats:
 % - OME-Zarr v2 (.zattrs/.zgroup/.zarray metadata) - local folders and HTTP/HTTPS URLs
 % - Single-array zarr v2 (no multiscales metadata) - treated as 1 level
+% - Nested containers where the image group sits below the selected root, e.g.
+%   the OpenOrganelle / MoBIE layout ``<name>.zarr/recon-1/em/fibsem-uint8`` or
+%   an OME-Zarr label container. Local roots are searched recursively; when
+%   several image groups are found the user picks one, and
+%   ``options.ZarrGroupPath`` skips the dialog in batch mode.
 %
 % **Example 1** - Virtual mode (typical usage via MibModel.loadImages):
 %
@@ -106,6 +111,8 @@ methods
         %   - **imginfo** - [dictionary] image metadata (Height, Width, Depth, etc.)
         %   - **files** - [struct] parsed metadata for use by loadImages
 
+        if nargin < 3; options = struct(); end
+
         imginfo = core.MibImage.initializeImgInfo();
         rootPath = filenames{1};
 
@@ -143,19 +150,26 @@ methods
         if ~isempty(ms)
             [files, imginfo] = obj.parseMultiscalesV2(rootPath, ms, imginfo);
         else
-            % multiscales not at root - common in OME-Zarr label containers
-            % where root has "labels": ["name"] and multiscales is one level down.
-            subPath = obj.findMultiscalesSubPathV2(rootPath, attrs, isHttp);
-            if ~isempty(subPath)
-                subAttrs = obj.readZattrsV2(subPath, isHttp);
-                subMs    = io.loaders.OmeZarrMetadataUtils.extractMultiscales(subAttrs);
-                if ~isempty(subMs)
-                    [files, imginfo] = obj.parseMultiscalesV2(subPath, subMs, imginfo);
-                else
-                    [files, imginfo] = obj.parseSingleArrayV2(subPath, imginfo);
-                end
-            else
+            % multiscales not at root - containers nest the image group one or
+            % more levels down (OME-Zarr label containers, and MoBIE /
+            % OpenOrganelle stores such as <name>.zarr/recon-1/em/fibsem-uint8).
+            [groupPath, cancelled] = obj.resolveMultiscalesGroupV2(rootPath, attrs, isHttp, options);
+            if cancelled
+                % user dismissed the group picker - abort quietly, loadImages
+                % treats an empty files struct as "nothing to load"
+                files = struct();
+                return;
+            end
+            if isempty(groupPath)
                 [files, imginfo] = obj.parseSingleArrayV2(rootPath, imginfo);
+            else
+                groupAttrs = obj.readZattrsV2(groupPath, isHttp);
+                groupMs    = io.loaders.OmeZarrMetadataUtils.extractMultiscales(groupAttrs);
+                if ~isempty(groupMs)
+                    [files, imginfo] = obj.parseMultiscalesV2(groupPath, groupMs, imginfo);
+                else
+                    [files, imginfo] = obj.parseSingleArrayV2(groupPath, imginfo);
+                end
             end
         end
 
@@ -263,6 +277,8 @@ methods (Access = private)
         level0Scales = []; % filled on first level
         arrMeta = struct('dtype', 'u1'); % overwritten in the loop; fallback keeps dtype resolution safe
 
+        levelPresent = true(nLevels, 1);
+
         for iLevel = 1:nLevels
             ds = ms.datasets(iLevel);
             levelNames{iLevel} = ds.path;
@@ -271,6 +287,14 @@ methods (Access = private)
                 levelPath = [strtrim(rootPath), '/', ds.path];
             else
                 levelPath = fullfile(rootPath, ds.path);
+            end
+
+            % multiscales may declare levels that were never written (or are
+            % not present in a partial copy of the store) - drop them rather
+            % than failing the whole dataset
+            if ~isHttp && ~isfile(fullfile(levelPath, '.zarray'))
+                levelPresent(iLevel) = false;
+                continue;
             end
 
             arrMeta = obj.readZarrayV2(levelPath, isHttp);
@@ -291,9 +315,11 @@ methods (Access = private)
                 levelScales = levelScales .* globalScales;
             end
 
-            if iLevel == 1
-                level0Scales            = levelScales;
-                levelScaleFactors(1, :) = [1, 1, 1];
+            if isempty(level0Scales)
+                % first level that is actually present defines the reference
+                % resolution for every scale factor below
+                level0Scales                 = levelScales;
+                levelScaleFactors(iLevel, :) = [1, 1, 1];
             else
                 sfY = io.loaders.OmeZarrMetadataUtils.safeRatio(levelScales, yIdx, level0Scales);
                 sfX = io.loaders.OmeZarrMetadataUtils.safeRatio(levelScales, xIdx, level0Scales);
@@ -308,6 +334,26 @@ methods (Access = private)
 
             chunkSizes{iLevel} = arrMeta.chunks;
             shardSizes{iLevel} = arrMeta.chunks; % no sharding concept in zarr v2
+        end
+
+        % ---- drop declared levels that are missing on disk ----------
+        if ~any(levelPresent)
+            errorMessage = sprintf(['Zarr2VirtualSetupLoader: none of the %d pyramid levels\n' ...
+                'declared by the multiscales metadata exist in\n %s'], nLevels, rootPath);
+            utils.dlgs.showErrorDialog(obj.ParentFigure, errorMessage, ...
+                'io:Zarr2VirtualSetupLoader:noLevelsPresent', '', '');
+            files = struct();
+            return;
+        end
+        if ~all(levelPresent)
+            levelNames             = levelNames(levelPresent);
+            levelImageSizes        = levelImageSizes(levelPresent, :);
+            levelImageTranslations = levelImageTranslations(levelPresent, :);
+            levelScaleFactors      = levelScaleFactors(levelPresent, :);
+            levelVoxelSizes        = levelVoxelSizes(levelPresent, :);
+            chunkSizes             = chunkSizes(levelPresent);
+            shardSizes             = shardSizes(levelPresent);
+            nLevels                = sum(levelPresent);
         end
 
         % ---- pixel size from level 0 physical scale -----------------
@@ -641,6 +687,69 @@ methods (Access = private)
         arrMeta.shape  = reshape(double(raw.shape), 1, []);
         arrMeta.chunks = reshape(double(raw.chunks), 1, []);
         arrMeta.dtype  = raw.dtype;
+    end
+
+    function [groupPath, cancelled] = resolveMultiscalesGroupV2(obj, rootPath, attrs, isHttp, options)
+        % RESOLVEMULTISCALESGROUPV2 - Decide which nested group of a v2 container to open.
+        %
+        % Syntax:
+        %   .. code-block:: matlab
+        %
+        %      [groupPath, cancelled] = obj.resolveMultiscalesGroupV2(rootPath, attrs, isHttp, options)
+        %
+        % Called only when the root group itself carries no multiscales.
+        % Resolution order:
+        %
+        %   1. An explicit ``options.ZarrGroupPath`` (relative to the root, or
+        %      absolute) - lets batch mode open a nested group without a dialog.
+        %   2. Local path: recursive search for every group with multiscales;
+        %      one hit opens silently, several hits raise a picker.
+        %   3. HTTP, or a local search that found nothing: the original
+        %      single-level heuristic (``findMultiscalesSubPathV2``), which also
+        %      covers sub-groups that are plain arrays without multiscales.
+        %
+        % Input Arguments:
+        %   - **rootPath** - [char] container root path or URL
+        %   - **attrs** - [struct] already-read root ``.zattrs``
+        %   - **isHttp** - [logical] true when rootPath is a URL
+        %   - **options** - [struct] loader options; ``.ZarrGroupPath`` honoured
+        %
+        % Output Arguments:
+        %   - **groupPath** - [char] group to parse; ``''`` when none was found
+        %   - **cancelled** - [logical] true when the user dismissed the picker
+
+        cancelled = false;
+
+        % ---- 1. explicit override (batch mode) --------------------------
+        requestedGroup = '';
+        if isstruct(options) && isfield(options, 'ZarrGroupPath')
+            requestedGroup = char(options.ZarrGroupPath);
+        elseif isfield(obj.Options, 'ZarrGroupPath')
+            requestedGroup = char(obj.Options.ZarrGroupPath);
+        end
+        if ~isempty(requestedGroup)
+            if isHttp || isfolder(requestedGroup)
+                groupPath = requestedGroup;
+            else
+                groupPath = fullfile(rootPath, requestedGroup);
+            end
+            return;
+        end
+
+        % ---- 2. local containers: recursive search ----------------------
+        if ~isHttp
+            candidates = io.loaders.OmeZarrMetadataUtils.findMultiscalesGroups(rootPath, 2);
+            if ~isempty(candidates)
+                groupPath = io.loaders.OmeZarrMetadataUtils.selectMultiscalesGroup(...
+                    rootPath, candidates, obj.ParentFigure, ...
+                    'Zarr2: select image group');
+                cancelled = isempty(groupPath);
+                return;
+            end
+        end
+
+        % ---- 3. fallback: original single-level heuristic ---------------
+        groupPath = obj.findMultiscalesSubPathV2(rootPath, attrs, isHttp);
     end
 
     function subPath = findMultiscalesSubPathV2(~, rootPath, attrs, isHttp)

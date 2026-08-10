@@ -89,7 +89,16 @@ classdef ExtensionRegistryLoad < handle
             % get the filename extension
             [~, ~, ext] = fileparts(filename); % get the filename extension with '.'
             ext = lower(strrep(ext, '.', '')); % remove the dot
-            
+
+            % The plain ".zarr" extension does not say which zarr version the
+            % store uses, and the two are read by different loaders, so probe
+            % the store itself. Without this a v2 store in a "*.zarr" folder
+            % (the OME-Zarr / OpenOrganelle default naming) is handed to the v3
+            % loader, which cannot read it.
+            if strcmp(ext, 'zarr')
+                ext = io.ExtensionRegistryLoad.detectZarrFormatExtension(filename);
+            end
+
             % generate the dictionary key
             key = obj.generateKey(mode, reader);
 
@@ -446,6 +455,45 @@ classdef ExtensionRegistryLoad < handle
                     id = 'nrrd';
                 case obj.videoExtensions
                     id = 'VideoReader';
+            end
+        end
+    end
+
+    methods (Static)
+        function ext = detectZarrFormatExtension(zarrPath)
+            % DETECTZARRFORMATEXTENSION - Resolve a plain ".zarr" folder to 'zarr2' or 'zarr3'.
+            %
+            % Syntax:
+            %
+            %   .. code-block:: matlab
+            %
+            %      ext = io.ExtensionRegistryLoad.detectZarrFormatExtension(zarrPath)
+            %
+            % The two zarr versions are read by different loaders (v3 by the
+            % native zarr-matlab library, v2 by the python backend) but share
+            % the conventional ".zarr" folder suffix, so the version has to come
+            % from the store: v3 nodes carry ``zarr.json``, v2 nodes carry
+            % ``.zgroup`` / ``.zattrs`` / ``.zarray``.
+            %
+            % Input Arguments:
+            %   - **zarrPath** - [char] path to the zarr root folder
+            %
+            % Output Arguments:
+            %   - **ext** - [char] ``'zarr2'`` or ``'zarr3'``; ``'zarr3'`` when
+            %     the store cannot be probed (URLs, missing folder), preserving
+            %     the previous behaviour
+
+            ext = 'zarr3';
+            try
+                if isfile(fullfile(zarrPath, 'zarr.json'))
+                    ext = 'zarr3';
+                elseif isfile(fullfile(zarrPath, '.zgroup')) || ...
+                       isfile(fullfile(zarrPath, '.zattrs')) || ...
+                       isfile(fullfile(zarrPath, '.zarray'))
+                    ext = 'zarr2';
+                end
+            catch
+                % not probeable (e.g. a URL) -> keep the v3 default
             end
         end
     end
