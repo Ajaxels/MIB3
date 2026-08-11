@@ -165,9 +165,11 @@ Three things are worth knowing before you rely on it:
   zoomed-out browsing responsive; working at full resolution on a remote volume remains slow by
   nature.
 
-A published container often also holds small, densely annotated ground-truth crops. These cannot
-yet be overlaid as a model on their parent volume - open such a crop as an image in its own
-right instead.
+A published container often also holds small, densely annotated ground-truth crops. Selecting one
+opens it as a **Standard** dataset in its own right: MIB cuts the matching region out of the parent
+image, loads that, and puts the selected annotation classes on it as a model - see
+[Label crops](../../user-interface/ribbon/home/home-importfromurl.md#label-crops). Painting such a
+crop onto the full parent volume as an overlay is a different thing, and is not supported.
 
 ---
 
@@ -227,7 +229,7 @@ or slide size: the cost scales with the *edit*, not with the whole image.
 When you zoom **in** to a level finer than where an edit was made, MIB reconstructs that region for the
 finer level by up-sampling from the level that holds the data, writes it down, and **caches** it - so the
 next view of the same area is a direct read with no recomputation. An optional, label-aware **smoothing**
-([Preferences → Input/Output](../../user-interface/ribbon/home/home-preferences.md#smoothing) → Zarr → Smoothing)
+([Preferences → Input/Output](../../user-interface/ribbon/home/home-preferences.md#zarr-library) → Zarr → Smoothing)
 removes the blocky stair-steps that plain up-sampling would produce at the finer grid.
 
 ### The level map and its sidecar file

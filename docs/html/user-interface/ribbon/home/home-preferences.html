@@ -1208,6 +1208,33 @@
   
   
     <li class="md-nav__item">
+      <a href="./home-importfromurl.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Import from URL / Zarr
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="./home-makesnapshot.html" class="md-nav__link">
         
   
@@ -1270,33 +1297,6 @@
     
   
   MIB 3D Viewer
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="./home-importfromurl.html" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-  Import from URL / Zarr
 
     
   </span>
@@ -6481,29 +6481,34 @@ BigData and virtual dataset modes.</p>
 <h3 id="zarr-library">Zarr library<a class="headerlink" href="#zarr-library" title="Permanent link">&para;</a></h3>
 <p><img align="left" alt="Preferences, Zarr library" src="images/file-preferences-io-zarr.png" /></p>
 <p><span class="widget widget-dropdown">Zarr library</span>: a dropdown to select the engine used for
-reading and writing zarr3 data:</p>
+reading and writing zarr data:</p>
 <ul>
-<li><code>native</code>: the bundled <strong>zarrMex</strong> engine — no external dependencies (<em>default, recommended</em>).</li>
+<li><code>native</code>: the bundled <strong>zarrMex</strong> engine - no external dependencies (<em>default, recommended</em>).</li>
 <li>
-<p><code>python</code>: the <strong>zarr-python</strong> (v3) library, called through the Python interpreter set in
+<p><code>python</code>: the <strong>zarr-python</strong> library, called through the Python interpreter set in
   <a href="#external-directories">External directories → Python installation path</a>. Requires the <code>zarr</code> and
-  <code>numpy</code> packages installed in that environment. Reading a <strong>remote</strong> (HTTP/HTTPS) zarr v2 store
-  additionally requires <code>aiohttp</code> and <code>requests</code>, which zarr-python uses to fetch chunks over the
-  network:</p>
+  <code>numpy</code> packages installed in that environment. Reading a <strong>remote</strong> (HTTP/HTTPS) store with this
+  engine additionally requires <code>aiohttp</code> and <code>requests</code>, which zarr-python uses to fetch chunks over
+  the network:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="s2">&quot;&lt;path-to-python.exe&gt;&quot;</span><span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>aiohttp<span class="w"> </span>requests
 </span></code></pre></div>
 </li>
 </ul>
 <p>A short description of the selected library is shown in the label beneath the dropdown. The setting
-takes effect immediately on <span class="widget widget-button">OK</span> / <span class="widget widget-button">Apply</span> — no restart needed.</p>
+takes effect immediately on <span class="widget widget-button">OK</span> / <span class="widget widget-button">Apply</span> - no restart needed.</p>
 <div class="admonition info">
 <p class="admonition-title">Info</p>
 <p>Metadata (array/group creation, attributes, resizing) is always handled by the native engine for
 an identical on-disk structure; only the bulk pixel read/write honours this selection.</p>
-<p>This dropdown applies to <strong>zarr v3 only</strong>. <strong>Zarr v2</strong> stores always go through zarr-python
-whatever the setting, because the bundled <code>zarrMex</code> engine is v3-only - so <code>zarr</code> and <code>numpy</code>
-are required for any v2 dataset, local or remote. Remote <strong>v3</strong> datasets, by contrast, always
-use the native engine, which reads them with HTTP range requests and needs no Python at all.</p>
+<p>This dropdown applies to <strong>zarr v2 and v3 alike</strong>: it selects an engine, never a format. Both
+engines read and write both formats, and return identical data.</p>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Python is optional</p>
+<p>Since the <code>zarrMex</code> engine gained Zarr v2 support, <strong>no zarr dataset needs Python</strong> - v2 and v3,
+local and remote, image and model. The native engine reads remote stores with HTTP range
+requests. Python is only involved if you deliberately select the <code>python</code> engine above, which is
+worth doing only to cross-check a store against the reference implementation.</p>
 </div>
 <div class="h3-like"> Chunk cache</div>
 

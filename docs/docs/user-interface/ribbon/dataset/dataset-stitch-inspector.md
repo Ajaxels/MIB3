@@ -24,20 +24,6 @@ have run. Both windows stay open and usable side by side.
 
 ---
 
-## The window at a glance
-
-| Area | Contains |
-|------|----------|
-| **Header** | <span class="widget widget-dropdown">Fix mode</span> - *what a fix edits*. It governs both columns at once - which seams the table lists and what the pair view shows - so it sits above them. |
-| **Seams (worst first)** *(top left)* | Every measured seam, worst first, with its pixel score, residual, quality and review state. Click a row to review it. The **Used** column is reached by scrolling the table sideways. |
-| **Status line** *(under the seam table)* | How many seams there are, how many are reviewed or excluded, and the worst score - plus the result of whatever you last did. |
-| **Mini-map** *(bottom left)* | The layout of the current seam's Z-layer, tiles tinted by their worst seam, with a low-res fused preview behind. Click to jump. |
-| **Pair view** *(top right)* | The two tiles of the current seam composited at their solved offset. This is where every fix is made. |
-| **Readout** *(under the pair view)* | The current offset against the measured one, plus this seam's score, quality and provenance. |
-| **Controls** *(bottom right)* | The review and fixing tools, grouped by what they touch. |
-
----
-
 ## The review loop
 
 The inspector is built around one repeated cycle: **look at the worst seam, decide, move on**.

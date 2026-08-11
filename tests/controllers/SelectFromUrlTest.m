@@ -24,6 +24,13 @@ classdef SelectFromUrlTest < matlab.unittest.TestCase
         N5Root = 's3://janelia-cosem-datasets/jrc_hela-2/jrc_hela-2.n5';
         ZarrTwin = ['https://janelia-cosem-datasets.s3.amazonaws.com/' ...
             'jrc_hela-2/jrc_hela-2.zarr'];
+        % A COSEM ground-truth crop: 63 class groups plus a merged 'all', all at
+        % 2 nm inside a 4 nm EM volume, so crop s1 pairs with image s0.
+        CropGroup = 'recon-1/labels/groundtruth/crop1';
+        % A crop whose merged 'all' group holds 17 classes in one array, keyed by
+        % the publisher's ids (3, 4, 5, 8, ... 48) with no cellmap block.
+        LiverStore = 's3://janelia-cosem-datasets/jrc_mus-liver-zon-1/jrc_mus-liver-zon-1.zarr';
+        LiverCropAll = 'recon-1/labels/groundtruth/crop266/all';
     end
 
     methods (TestClassSetup)
@@ -167,6 +174,415 @@ classdef SelectFromUrlTest < matlab.unittest.TestCase
         end
     end
 
+    methods (Test, TestTags = {'Unit'})
+
+        % ---- label crops: the offline half ---------------------------------
+
+        function labelGroupsAreResolvedInPickOrder(testCase)
+            % Pick order decides which class wins where two overlap, so it must
+            % survive the round trip through BatchOpt exactly as clicked.
+            controller = testCase.newViewLessController();
+            controller.rootUrl = testCase.ZarrTwin;
+            controller.BatchOpt.LabelGroups = 'a/mito_mem; a/mito_lum ;a/er_mem';
+
+            urls = controller.selectedLabelGroupUrls();
+            testCase.verifyEqual(urls, { ...
+                [testCase.ZarrTwin '/a/mito_mem'], ...
+                [testCase.ZarrTwin '/a/mito_lum'], ...
+                [testCase.ZarrTwin '/a/er_mem']});
+        end
+
+        function asingleGroupPathStillWorksWithNoMultiSelection(testCase)
+            controller = testCase.newViewLessController();
+            controller.rootUrl = testCase.ZarrTwin;
+            controller.BatchOpt.GroupPath = 'labels/mito';
+            testCase.verifyEqual(controller.selectedLabelGroupUrls(), ...
+                {[testCase.ZarrTwin '/labels/mito']});
+        end
+
+        function annotationPathsAreRecognisedByTheLabelsComponent(testCase)
+            % The rule that stops crop1/all - a real pyramid with no cellmap
+            % block that encloses the crop exactly - being offered as the image.
+            controller = testCase.newViewLessController();
+            controller.rootUrl = testCase.ZarrTwin;
+
+            testCase.verifyTrue(controller.isAnnotationPath( ...
+                [testCase.ZarrTwin '/recon-1/labels/groundtruth/crop1/all']));
+            testCase.verifyFalse(controller.isAnnotationPath( ...
+                [testCase.ZarrTwin '/recon-1/em/fibsem-uint8']));
+        end
+
+        function containmentRejectsAnnotationsAndVolumesThatMiss(testCase)
+            controller = testCase.newViewLessController();
+            cropBoxUm = [10 20 10 20 10 20];
+
+            % Candidates declare micrometres here so their boxes compare
+            % directly with the crop's; the nm conversion is covered separately
+            % by OmeZarrWorldGeometryTest.
+            enclosing = testCase.fakePyramid([0 100 0 100 0 100], [1 1 1], 'um');
+            testCase.verifyTrue(controller.imageBoxContains(enclosing, cropBoxUm));
+
+            tooSmall = testCase.fakePyramid([0 15 0 15 0 15], [1 1 1], 'um');
+            testCase.verifyFalse(controller.imageBoxContains(tooSmall, cropBoxUm));
+
+            annotated = enclosing;
+            annotated.annotation = struct('class_name', 'mito');
+            testCase.verifyFalse(controller.imageBoxContains(annotated, cropBoxUm), ...
+                'a group carrying a cellmap annotation is never the image');
+        end
+
+        function theCropPlanPicksTheLevelThatMatchesTheImageScale(testCase)
+            % The COSEM case: labels at 2 nm, EM at 4 nm, so label s1 pairs with
+            % image s0. Level 0 of each would NOT agree, which is the whole point.
+            controller = testCase.newViewLessController();
+
+            labelPyramid = testCase.fakePyramid( ...
+                [25863 27861 899 2897 3132.21 3653.59], [2 2 2.62], 'nm');
+            labelPyramid.levelNames         = {'s0', 's1'};
+            labelPyramid.levelShapesYXZ     = [1000 1000 200; 500 500 100];
+            labelPyramid.levelVoxelSizesXYZ = [2 2 2.62; 4 4 5.24];
+            labelPyramid.levelWorldBoxes    = [ ...
+                25863, 25863+999*2, 899, 899+999*2, 3132.21, 3132.21+199*2.62; ...
+                25864, 25864+499*4, 900, 900+499*4, 3133.52, 3133.52+99*5.24];
+
+            imagePyramid = testCase.fakePyramid([0 47996 0 6396 0 33363.08], [4 4 5.24], 'nm');
+            imagePyramid.levelNames         = {'s0'};
+            imagePyramid.levelShapesYXZ     = [1600 12000 6368];
+            imagePyramid.levelVoxelSizesXYZ = [4 4 5.24];
+            imagePyramid.levelWorldBoxes    = [0 47996 0 6396 0 33363.08];
+
+            plan = controller.planLabelCrop(labelPyramid, imagePyramid);
+
+            testCase.verifyTrue(plan.ok, plan.reason);
+            testCase.verifyEqual(plan.labelLevel, 2, 'label s1 is the 4 nm level');
+            testCase.verifyEqual(plan.imageLevel, 1);
+            testCase.verifyEqual(plan.shapeYXZ, [500 500 100]);
+            testCase.verifyEqual(plan.voxelSizeUm, [0.004 0.004 0.00524], 'AbsTol', 1e-12);
+        end
+
+        function theCropPlanRefusesToResampleAScaleMismatch(testCase)
+            % Sharing a common scale is a property of this store, not a promise.
+            % Forcing a fit would produce labels that look plausible and sit one
+            % structure away from the truth.
+            controller = testCase.newViewLessController();
+
+            labelPyramid = testCase.fakePyramid([0 6 0 6 0 6], [3 3 3], 'nm');
+            labelPyramid.levelShapesYXZ     = [3 3 3];
+            labelPyramid.levelVoxelSizesXYZ = [3 3 3];
+            labelPyramid.levelWorldBoxes    = [0 6 0 6 0 6];
+
+            imagePyramid = testCase.fakePyramid([0 396 0 396 0 396], [4 4 4], 'nm');
+            imagePyramid.levelShapesYXZ     = [100 100 100];
+            imagePyramid.levelVoxelSizesXYZ = [4 4 4];
+            imagePyramid.levelWorldBoxes    = [0 396 0 396 0 396];
+
+            plan = controller.planLabelCrop(labelPyramid, imagePyramid);
+            testCase.verifyFalse(plan.ok);
+            testCase.verifySubstring(plan.reason, 'resample');
+        end
+
+        function theCropPlanReportsAMissingImagePyramid(testCase)
+            controller = testCase.newViewLessController();
+            labelPyramid = testCase.fakePyramid([0 6 0 6 0 6], [2 2 2], 'nm');
+            labelPyramid.levelShapesYXZ     = [4 4 4];
+            labelPyramid.levelVoxelSizesXYZ = [2 2 2];
+            labelPyramid.levelWorldBoxes    = [0 6 0 6 0 6];
+
+            plan = controller.planLabelCrop(labelPyramid, []);
+            testCase.verifyFalse(plan.ok);
+            testCase.verifySubstring(plan.reason, 'No sibling image pyramid');
+        end
+
+        function aDeclaredEncodingWins(testCase)
+            controller = testCase.newViewLessController();
+
+            declared = struct('encoding', struct('present', 7, 'unknown', 9));
+            [present, unknown, isSemantic] = controller.labelEncodingValues(declared);
+            testCase.verifyEqual([present unknown], [7 9], ...
+                'a group states its own encoding and that must win');
+            testCase.verifyTrue(isSemantic);
+        end
+
+        function aGroupWithNoEncodingIsAnIndexMapNotABinaryMask(testCase)
+            % The bug this pins: assuming "binary, present == 1" for a group that
+            % declares nothing looks for voxels equal to 1. A crop's merged 'all'
+            % group has no cellmap block and ids starting at 3, so the assumption
+            % finds nothing and yields an EMPTY model with no error at all.
+            controller = testCase.newViewLessController();
+
+            [~, unknown, isSemantic] = controller.labelEncodingValues(struct('encoding', []));
+            testCase.verifyFalse(isSemantic, ...
+                'no declared present value means a multi-class index map');
+            testCase.verifyEqual(unknown, 255);
+
+            % 'unknown' alone still does not make it binary.
+            [~, ~, isSemantic] = controller.labelEncodingValues( ...
+                struct('encoding', struct('absent', 0, 'unknown', 255)));
+            testCase.verifyFalse(isSemantic);
+        end
+
+        function switchingABufferBackToStandardWorks(testCase)
+            % switchDatasetMode's placeholder argument means different things per
+            % mode: a numeric matrix for Standard, a cell of paths for
+            % Virtual/BigData. Passing the cell form to Standard put a cell in
+            % MibImage.data and blew up on intmax(class(data)) four frames down,
+            % with a message that says nothing about dataset modes.
+            controller = testCase.newViewLessController();
+            mibModel = controller.mibModel;
+            datasetId = mibModel.getActiveId();
+
+            placeholder = {fullfile(mibModel.mibPath, 'assets', 'images', 'default.h5')};
+            testCase.assumeTrue(isfile(placeholder{1}), ...
+                'skipped: the placeholder dataset is missing from this checkout');
+
+            % Standard -> Virtual -> Standard. The last leg is the one that broke.
+            testCase.assertEqual(mibModel.I{datasetId}.datasetType, 'Standard');
+            testCase.assertTrue(controller.ensureDatasetMode(datasetId, 'Virtual'));
+            testCase.assertEqual(mibModel.I{datasetId}.datasetType, 'Virtual');
+
+            testCase.verifyTrue(controller.ensureDatasetMode(datasetId, 'Standard'));
+            testCase.verifyEqual(mibModel.I{datasetId}.datasetType, 'Standard');
+            testCase.verifyTrue(ismember(mibModel.I{datasetId}.image.dataClass, ...
+                {'uint8','uint16','uint32','uint64','int8','int16','int32','int64'}), ...
+                'the Standard placeholder must be an integer image, not a path');
+        end
+
+        function ensuringTheModeAlreadySetIsANoOp(testCase)
+            % switchDatasetMode re-initialises the buffer with a placeholder, so
+            % calling it needlessly would discard whatever is open.
+            controller = testCase.newViewLessController();
+            mibModel = controller.mibModel;
+            datasetId = mibModel.getActiveId();
+            originalDims = mibModel.I{datasetId}.image.dim_yxzct;
+
+            testCase.verifyTrue(controller.ensureDatasetMode(datasetId, 'Standard'));
+            testCase.verifyEqual(mibModel.I{datasetId}.image.dim_yxzct, originalDims, ...
+                'a no-op switch must leave the open dataset untouched');
+        end
+
+        function theProgressBarIsIndeterminateAndAlwaysCleanedUp(testCase)
+            % Nothing in a remote open can report a percentage until the label
+            % groups are counted, so the bar starts Indeterminate. It is held on
+            % the controller because every error path must close it before its
+            % own dialog - a modal bar left up sits in front of the message.
+            controller = testCase.newViewLessController();
+            parentFigure = uifigure('Visible', 'on', 'Position', [50 50 300 120]);
+            testCase.addTeardown(@() delete(parentFigure));
+            controller.view = struct('gui', parentFigure, 'handles', struct());
+
+            controller.startProgress('Opening the dataset...');
+            progressBar = controller.progressDialog;
+            testCase.assertNotEmpty(progressBar);
+            testCase.verifyEqual(char(progressBar.Indeterminate), 'on');
+            testCase.verifyEqual(progressBar.Message, 'Opening the dataset...');
+
+            controller.stopProgress();
+            testCase.verifyEmpty(controller.progressDialog);
+            testCase.verifyFalse(isvalid(progressBar), 'the bar must actually be destroyed');
+
+            % Error paths call stopProgress, then onCleanup calls it again.
+            controller.stopProgress();
+
+            % Restarting replaces rather than stacks a second modal bar.
+            controller.startProgress('first');
+            firstBar = controller.progressDialog;
+            controller.startProgress('second');
+            testCase.verifyFalse(isvalid(firstBar));
+            testCase.verifyTrue(isvalid(controller.progressDialog));
+            controller.stopProgress();
+        end
+
+        function theProgressBarNeverBlocksAnImport(testCase)
+            % A progress bar reports work; it is never the work itself. Both a
+            % suppressed waitbar and a parent uiprogressdlg refuses (it requires
+            % Visible='on') must degrade to "no bar", not to a failed import.
+            controller = testCase.newViewLessController();
+
+            controller.BatchOpt.showWaitbar = false;
+            controller.startProgress('suppressed');
+            testCase.verifyEmpty(controller.progressDialog);
+
+            % headless: no view and no main window to parent to
+            controller.BatchOpt.showWaitbar = true;
+            controller.view   = [];
+            controller.mibGUI = [];
+            controller.startProgress('headless');
+            testCase.verifyEmpty(controller.progressDialog);
+
+            hiddenFigure = uifigure('Visible', 'off');
+            testCase.addTeardown(@() delete(hiddenFigure));
+            controller.view = struct('gui', hiddenFigure, 'handles', struct());
+            controller.startProgress('invisible parent');
+            testCase.verifyEmpty(controller.progressDialog, ...
+                'an invisible parent must give no bar rather than raise');
+        end
+
+        function aGroupNameIsNeverAUrl(testCase)
+            % The fallback used to be relativePath(join(url, '..'), url), but
+            % join() appends '..' instead of resolving it, so relativePath found
+            % no common prefix and returned the whole URL - which then appeared
+            % in the Segmentation panel as the material name.
+            controller = testCase.newViewLessController();
+            groupUrl = [testCase.ZarrTwin '/' testCase.CropGroup '/all'];
+
+            testCase.verifyEqual(controller.labelGroupName(groupUrl, []), 'all');
+            testCase.verifyEqual(controller.labelGroupName([groupUrl '/'], []), 'all');
+            testCase.verifyEqual( ...
+                controller.labelGroupName(groupUrl, struct('className', 'mito_mem')), ...
+                'mito_mem', 'a declared class_name wins over the path');
+        end
+    end
+
+    methods (Test, TestTags = {'Integration', 'RequiresNetwork'})
+
+        function theJaneliaCropPairsWithItsEmRegion(testCase)
+            % Pins the published crop1 geometry end to end against the live
+            % store: which image group, which level of each, and the exact EM
+            % voxel bounds. Every number here is a fraction of a voxel away from
+            % labels that sit on the wrong structures.
+            testCase.assumeTrue(mibtest.helpers.hasNetwork(testCase.Host), ...
+                'skipped: the OpenOrganelle bucket is not reachable');
+
+            controller = testCase.newViewLessController();
+            controller.rootUrl    = testCase.ZarrTwin;
+            controller.zarrFormat = 'zarr2';
+
+            labelUrl = [testCase.ZarrTwin '/' testCase.CropGroup '/mito_mem'];
+            labelPyramid = controller.readGroupPyramid(labelUrl);
+            testCase.assertTrue(labelPyramid.ok);
+            testCase.verifyEqual(labelPyramid.className, 'mito_mem');
+            testCase.verifyEqual(labelPyramid.annotationType, 'semantic_segmentation');
+            testCase.verifyEqual(labelPyramid.levelShapesYXZ(2, :), [500 500 100]);
+
+            [imageUrl, imagePyramid] = controller.resolveSiblingImageGroup(labelUrl, labelPyramid);
+            testCase.verifyEqual(io.RemoteStore.relativePath(testCase.ZarrTwin, imageUrl), ...
+                'recon-1/em/fibsem-uint8', ...
+                'crop1/all is a pyramid enclosing the crop but is an annotation, not the image');
+
+            plan = controller.planLabelCrop(labelPyramid, imagePyramid);
+            testCase.verifyTrue(plan.ok, plan.reason);
+            testCase.verifyEqual(plan.shapeYXZ, [500 500 100]);
+
+            % The published EM bounds for crop1, as 1-based inclusive ranges.
+            voxelRange = io.loaders.OmeZarrMetadataUtils.regionToVoxelRange( ...
+                plan.cropOuterBoxUm * 1000, imagePyramid.levelWorldBoxes(1, :), ...
+                imagePyramid.levelVoxelSizesXYZ(1, :), imagePyramid.levelShapesYXZ(1, [2 1 3]));
+            testCase.verifyEqual(voxelRange, [6467 6966; 226 725; 599 698]);
+        end
+
+        function anInstanceGroupIsIdentifiedSoItCanBeRefused(testCase)
+            % Instance values are object ids; blending one into a material index
+            % map would merge every object into one material, invisibly.
+            testCase.assumeTrue(mibtest.helpers.hasNetwork(testCase.Host), ...
+                'skipped: the OpenOrganelle bucket is not reachable');
+
+            controller = testCase.newViewLessController();
+            controller.rootUrl    = testCase.ZarrTwin;
+            controller.zarrFormat = 'zarr2';
+
+            instancePyramid = controller.readGroupPyramid( ...
+                [testCase.ZarrTwin '/' testCase.CropGroup '/mito']);
+            testCase.verifyEqual(instancePyramid.annotationType, 'instance_segmentation');
+        end
+
+        function theCropOpensAsAnImageRegionWithItsLabelsOnTop(testCase)
+            % The whole feature, headless: image region plus a blended model,
+            % with the labels asserted to sit on the EM structures rather than
+            % merely to have the right shape.
+            testCase.assumeTrue(mibtest.helpers.hasNetwork(testCase.Host), ...
+                'skipped: the OpenOrganelle bucket is not reachable');
+
+            mibModel = mibtest.helpers.buildSyntheticModel();
+            mibModel.preferences.System.DeveloperMode = false;
+
+            BatchOpt = struct();
+            BatchOpt.Url = testCase.ZarrTwin;
+            BatchOpt.LabelGroups = strjoin(cellfun( ...
+                @(className) [testCase.CropGroup '/' className], ...
+                {'mito_mem', 'mito_lum'}, 'UniformOutput', false), ';');
+            BatchOpt.LoadAs = {'Labels'};
+            BatchOpt.showWaitbar = false;
+            controllers.SelectFromUrl(mibModel, [], BatchOpt);
+
+            datasetId = mibModel.getActiveId();
+            image = mibModel.I{datasetId}.image;
+            testCase.verifyEqual(mibModel.I{datasetId}.datasetType, 'Standard');
+            testCase.verifyEqual([image.height, image.width, image.depth], [500 500 100]);
+            % pixSize is in the store's own declared unit, so 4 nm, not 0.004 um.
+            testCase.verifyEqual(image.pixSize.units, 'nm');
+            testCase.verifyEqual(image.pixSize.x, 4, 'AbsTol', 1e-12);
+            testCase.verifyEqual(image.pixSize.z, 5.24, 'AbsTol', 1e-12);
+
+            testCase.assertTrue(mibModel.I{datasetId}.modelExist);
+            testCase.verifyEqual(mibModel.I{datasetId}.labels.materialNames(:)', ...
+                {'mito_mem', 'mito_lum'});
+
+            model = mibModel.getData3D('labels', 1, 3, NaN, struct('id', datasetId));
+            model = model{1};
+            testCase.verifyEqual(size(model), [500 500 100]);
+            testCase.verifyGreaterThan(nnz(model == 1), 0, 'mito_mem must have voxels here');
+            testCase.verifyGreaterThan(nnz(model == 2), 0, 'mito_lum must have voxels here');
+
+            % The alignment check that a shape comparison cannot make: membranes
+            % are darker than the crop as a whole. A one-voxel or one-structure
+            % misplacement would wash this difference out.
+            imageBlock = mibModel.getData3D('image', 1, 3, 1, struct('id', datasetId));
+            imageBlock = double(imageBlock{1});
+            testCase.verifyLessThan(mean(imageBlock(model == 1)), mean(imageBlock(:)) - 10, ...
+                'mito_mem must land on dark membrane, not on arbitrary voxels');
+        end
+
+        function aMergedAllGroupBecomesOneMaterialPerClassId(testCase)
+            % 'all' holds every class of a crop in ONE array, keyed by the
+            % publisher's class ids, and declares no encoding. It has to split
+            % into a material per id; treating it as a binary mask gave an empty
+            % model and no error.
+            testCase.assumeTrue(mibtest.helpers.hasNetwork(testCase.Host), ...
+                'skipped: the OpenOrganelle bucket is not reachable');
+
+            mibModel = mibtest.helpers.buildSyntheticModel();
+            mibModel.preferences.System.DeveloperMode = false;
+
+            BatchOpt = struct();
+            BatchOpt.Url = testCase.LiverStore;
+            BatchOpt.LabelGroups = testCase.LiverCropAll;
+            BatchOpt.LoadAs = {'Labels'};
+            BatchOpt.showWaitbar = false;
+            controllers.SelectFromUrl(mibModel, [], BatchOpt);
+
+            datasetId = mibModel.getActiveId();
+            testCase.assertTrue(mibModel.I{datasetId}.modelExist);
+            testCase.verifyEqual([mibModel.I{datasetId}.image.height, ...
+                mibModel.I{datasetId}.image.width, mibModel.I{datasetId}.image.depth], ...
+                [200 200 200]);
+
+            model = mibModel.getData3D('labels', 1, 3, NaN, struct('id', datasetId));
+            model = model{1};
+
+            % Ground truth: the raw index map, remapped to 1..N in value order.
+            rawUrl = [io.RemoteStore.normalise(testCase.LiverStore) '/' testCase.LiverCropAll '/s1'];
+            raw = permute(io.zarr.Array(rawUrl).read(), [2 3 1]);   % [z,y,x] -> [y,x,z]
+            classValues = unique(raw(raw ~= 0 & raw ~= 255))';
+            expected = zeros(size(raw), 'uint8');
+            for classIndex = 1:numel(classValues)
+                expected(raw == classValues(classIndex)) = classIndex;
+            end
+
+            testCase.verifyGreaterThan(numel(classValues), 1, ...
+                'this crop is meant to hold several classes in one array');
+            testCase.verifyEqual(model, expected, ...
+                'the model must reproduce the index map exactly, not a subset of it');
+
+            % Materials are named by the store's own id, because the ids are the
+            % publisher's table and NOT the crop's class_names order.
+            names = mibModel.I{datasetId}.labels.materialNames(:)';
+            testCase.verifyEqual(numel(names), numel(classValues));
+            testCase.verifyEqual(names{1}, sprintf('all_%d', classValues(1)));
+            testCase.verifyFalse(any(contains(names, 'http')), ...
+                'a material name must never be a URL');
+        end
+    end
+
     methods (Test, TestTags = {'Integration', 'RequiresNetwork', 'RequiresGUI'})
 
         function browsesTheContainerAndOpensTheImageGroup(testCase)
@@ -254,6 +670,20 @@ classdef SelectFromUrlTest < matlab.unittest.TestCase
 
         function recordSync(testCase, event)
             testCase.SyncedBatchOpt = event.Parameters;
+        end
+
+        function pyramidInfo = fakePyramid(~, worldBox, voxelSizeXYZ, unit)
+            % FAKEPYRAMID - A minimal readGroupPyramid result for offline tests.
+            %
+            % Only the geometry fields the planner reads are filled; anything
+            % else stays at the shape readGroupPyramid documents, so a test
+            % cannot accidentally depend on a field the real reader leaves empty.
+            pyramidInfo = struct('ok', true, 'multiscale', [], 'axisOrder', 'zyx', ...
+                'levelNames', {{'s0'}}, 'levelShapesYXZ', [1 1 1], ...
+                'levelVoxelSizesXYZ', reshape(voxelSizeXYZ, 1, 3), ...
+                'levelWorldBoxes', reshape(worldBox, 1, 6), 'unit', unit, ...
+                'dataType', 'uint8', 'annotation', [], 'className', '', ...
+                'annotationType', '', 'encoding', []);
         end
     end
 

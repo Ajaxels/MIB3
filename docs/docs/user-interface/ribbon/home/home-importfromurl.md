@@ -1,5 +1,7 @@
 # Import from URL / Zarr
 
+![Import URL / Zarr dialog](images/import_url_zarr_dialog.png){.on-glb align=right width="300"}
+
 <span class="widget widget-button">Import</span> -> <span class="widget widget-dropdown">URL / Zarr</span> opens a dataset
 straight from the internet, without downloading it first.
 
@@ -48,7 +50,9 @@ copy exists, the status line says so rather than reporting a generic failure.
 
 ## Using the dialog
 
-The dialog opens with the <span class="widget widget-edit">URL</span> field focused; if the
+![Store URL](images/import_url_zarr_store.png){.on-glb align=right width="400"}
+
+The dialog opens with the <span class="widget widget-edit">Store URL</span> field focused; if the
 clipboard holds a link it is already there and selected, so typing or pasting replaces it.
 
 1. Paste the URL of the **container** - the folder usually named `*.zarr` - and press
@@ -77,6 +81,8 @@ only option on servers that do not allow directory listing (see below).
 
 ### Ordinary image URLs
 
+![Ordinary image URL](images/import_url_zarr_std_image.png){.on-glb align=right width="400"}
+
 Steps 2-4 apply to OME-Zarr containers only. If the URL turns out to be a plain image file
 instead, there is nothing to browse and nothing to choose, so pressing ++enter++ downloads and
 opens it right away as a Standard dataset and closes the dialog - paste, ++enter++, done.
@@ -88,9 +94,13 @@ check the URL before anything is downloaded.
 ### Load as
 
 - **Image** - open the group as the dataset.
-- **Labels** - load it as a segmentation model on top of the dataset that is already open. The
-  label store must cover exactly the same extent as the open image; if it does not, the dialog
-  says so before you press Open (see [Limitations](#limitations)).
+- **Labels** - load it as a segmentation model. Two things can happen, and the dialog tells you
+  which before you press Open:
+    - the group covers exactly the same extent as the open image, and it is loaded straight on
+      top of it;
+    - the group is a **ground-truth crop** - a small annotated cube carved out of a much larger
+      volume - in which case MIB opens the matching *image region* as well and puts the labels on
+      that. See [Label crops](#label-crops).
 
 ### Dataset mode
 
@@ -104,8 +114,12 @@ check the URL before anything is downloaded.
 
 ## Worked example: Janelia OpenOrganelle
 
+![Janelia OpenOrganelle](images/import_url_open_organelle.png){.on-glb align=right width="300"}
+
 [OpenOrganelle](https://openorganelle.janelia.org) publishes its FIB-SEM volumes in a public
 bucket. For the dataset `jrc_mus-liver-zon-1`:
+
+<div class="clear-float"></div>
 
 ```
 https://janelia-cosem-datasets.s3.amazonaws.com/jrc_mus-liver-zon-1/jrc_mus-liver-zon-1.zarr
@@ -132,6 +146,84 @@ Other datasets in the same bucket follow the same layout; a few store the image 
 
 ---
 
+## Label crops
+
+Published EM containers may include **ground-truth crops**: small cubes of the parent volume
+annotated densely, class by class, and stored under a `labels` branch. In the OpenOrganelle
+`jrc_hela-2` container they sit at `recon-1/labels/groundtruth/crop1`, `crop9`, and so on, with
+each crop holding one group per class plus a merged `all`.
+
+A crop cannot be loaded onto the open parent volume - it is a 500 x 500 x 100 island inside a
+volume of 12000 x 1600 x 6368. So MIB does not try. Selecting a crop's class groups and pressing
+Open **fetches the matching image region too**, cutting the EM volume down to exactly the crop's
+extent, and puts the labels on that. Image and labels then have identical dimensions and sit on the
+same voxel grid.
+
+### Selecting classes
+
+The tree takes a **multiple selection** - ++ctrl++ or ++shift++ click - because a useful model
+usually blends several classes. **The order you click in matters:** where two classes cover the same
+voxel, the one picked later wins. MIB counts the overlap exactly and reports it after loading, so
+you never have to guess what a pick order did.
+
+Each class becomes one material, named after the class the store declares (`mito_mem`,
+`er_lum`, ...), in pick order.
+
+### The merged `all` group
+
+Every crop also holds an `all` group, which is different in kind from the per-class ones: instead of
+a yes/no mask for one class, it holds **every class of the crop in a single array**, each keyed by
+the publisher's own class id. Selecting it gives you the whole ground truth in one go - MIB splits
+it into one material per id present.
+
+Those materials are named by id - `all_3`, `all_4`, `all_28` - and **not** by class name. The ids
+are the publisher's fixed table and do not follow the order of the crop's own `class_names` list, so
+naming them from that list would label every material wrongly. If you want named materials, select
+the per-class groups instead; they declare their own names.
+
+!!! example
+    `crop266` of `jrc_mus-liver-zon-1` has 17 classes in its `all` group, with ids running 3, 4, 5,
+    8, ... 48. Selecting `all` gives a 17-material model over the matching `200 x 200 x 200` EM
+    region.
+
+### What MIB reports after loading
+
+A summary appears whenever there is something the model itself cannot show you:
+
+- **Overlap** - which class took how many voxels from which other. COSEM classes are deliberately
+  not disjoint: `er` is `er_mem` plus `er_lum`, and `er_mem_all` contains `er_mem`.
+- **Unannotated voxels** - the value `unknown` (255) means "nobody looked here", not "background".
+  It lands in material 0 alongside real background, so the count is reported. Do not treat those
+  voxels as negatives when training on the result.
+- **Empty classes** - a class group can exist in a crop and contain nothing at all. It is kept as a
+  material with no voxels, and named.
+- **A single-material crop** - some crops genuinely are one class throughout (entirely
+  extracellular space, entirely nucleus). Said explicitly, so a solid-colour model does not look
+  like a failure.
+
+### What cannot be blended
+
+**Instance segmentations.** A handful of groups - `mito`, `nuc`, `ves`, `endo`, `lyso`, `ld`,
+`perox`, `np`, `mt`, `cell` - store an object **id** per voxel rather than a class, so merging one
+into a material index map would collapse every object into a single material. MIB refuses and says
+so. Open such a group with **Load as: Image** instead.
+
+### Worked example
+
+Paste the container URL, expand `recon-1` -> `labels` -> `groundtruth` -> `crop1`, then
+++ctrl++ click `mito_mem`, `mito_lum` and `er_mem`. The info panel confirms which image group the
+region will come from and at what size. Press Open: a `500 x 500 x 100` dataset at 4 nm appears in
+**Standard** mode with a three-material model on it, in about ten seconds.
+
+!!! note "Which image, and at which resolution, is worked out from coordinates"
+    The crops are annotated at 2 nm and the EM is 4 nm, so MIB pairs the crop's `s1` level with the
+    image's `s0`. It finds the image group by asking which volume's physical extent *contains* the
+    crop, not by its name, and it refuses to load rather than resample if the two pyramids share no
+    common resolution. You can override the choice with `ImageGroupPath` in
+    [batch mode](#batch-mode).
+
+---
+
 ## Requirements
 
 **None.** Both OME-Zarr formats - v2, which is what OpenOrganelle and most published OME-NGFF v0.4
@@ -144,6 +236,7 @@ engine reaches the network through fsspec and then needs two extra packages in t
 at [Preferences -> External directories -> Python installation path](home-preferences.md#external-directories):
 
 ```bash
+"<path-to-python.exe>" -m pip install zarr
 "<path-to-python.exe>" -m pip install aiohttp requests
 ```
 
@@ -174,11 +267,17 @@ least recently used chunks are dropped. Setting it to 0 turns the cache off.
 The image pyramid does the rest: zoomed out, MIB reads a small downsampled level rather than the
 full-resolution one, so a whole-volume overview costs far less than a full-resolution screenful.
 
-**Sub-volume annotations cannot be overlaid.** Many published containers include ground-truth
-crops - small, densely annotated cubes carved out of the parent volume, often at a finer voxel
-size. MIB cannot yet place such a crop at its true position on the parent volume, so loading one
-with **Load as: Labels** is refused with an explanation. Open the crop itself as an **Image**
-instead (in **Standard** mode, since these are small) and work on it directly.
+**A crop is opened as its own dataset, not as an overlay.** Selecting a ground-truth crop replaces
+what is open with the crop's image region plus its labels ([Label crops](#label-crops)); it does
+not paint the annotation onto the parent volume you were browsing. Drawing a small, finely sampled
+annotation over a multi-terabyte volume it is a tiny part of is a separate feature and does not
+exist yet.
+
+Crops are opened in **Standard** mode, fully in memory, whatever
+<span class="widget widget-combobox">Dataset mode</span> says - MIB tells you when it overrides
+your choice. That is deliberate: an existing remote label store is read-only in MIB, so a BigData
+crop could be viewed but never corrected, which is the main reason to open one. Every crop in the
+reference container fits comfortably - the largest is 64 MB.
 
 **Browsing needs the S3 listing API - but not Amazon.** Any endpoint that answers
 `ListObjectsV2` can be browsed, including institutional MinIO and Ceph servers hosted on their own
@@ -191,5 +290,29 @@ speak the API costs one request. When that happens the dialog says so and you ty
 ## Batch mode
 
 The dialog is available in [Batch processing](home-batchprocessing.md) as
-**Ribbon -> Home -> Import from URL**, with `Url`, `GroupPath`, `LoadAs`, `DatasetMode` and
-`showWaitbar`. `showWaitbar` has no control in the dialog - the dialog always shows progress - and exists so a protocol can suppress it. A recorded protocol replays without browsing, so `GroupPath` should be filled in.
+**Ribbon -> Home -> Import from URL / Zarr**, with `Url`, `GroupPath`, `LabelGroups`, `ImageGroupPath`,
+`LoadAs`, `DatasetMode` and `showWaitbar`. A recorded protocol replays without browsing, so
+`GroupPath` should be filled in.
+
+Three parameters have no control in the dialog and exist only for protocols:
+
+| Parameter | Purpose |
+|---|---|
+| `showWaitbar` | The dialog always shows progress; a protocol can suppress it. |
+| `LabelGroups` | Semicolon-separated label groups to blend, relative to `Url`, **in pick order**. Empty means "just `GroupPath`". |
+| `ImageGroupPath` | Overrides the image group a crop is loaded onto. Empty means "find it by coordinates". |
+
+```
+Url            = https://janelia-cosem-datasets.s3.amazonaws.com/jrc_hela-2/jrc_hela-2.zarr
+LabelGroups    = recon-1/labels/groundtruth/crop1/mito_mem;recon-1/labels/groundtruth/crop1/mito_lum
+LoadAs         = Labels
+```
+
+`MibModel.loadImages` gained two matching parameters that are useful on their own, for local stores
+as much as remote ones:
+
+- `Region` - open only a sub-volume, given as six numbers in **micrometres**,
+  `xmin xmax ymin ymax zmin zmax`. These describe the outer extent (voxel faces, not voxel
+  centres). A region that does not fall on the store's voxel grid is rounded **outward** and the
+  overshoot is reported, never shifted.
+- `ZarrLevel` - the 1-based pyramid level to read in Standard mode, instead of being asked.

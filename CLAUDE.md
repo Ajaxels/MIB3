@@ -309,6 +309,31 @@ pwb.deletePoolWaitbar();
 - Use `dictionary` instead of `containers.Map`: `dictionary(keys, values)` for init, `isKey(d, key)` and `d(key)` for lookups. (R2022b+, supports type inference)
 - Use descriptive variable names — avoid short abbreviations like `vp`, `wb`, `im`, `fn`. Write `viewPort`, `waitbar`, `image`, `filename` etc. in full so the code is self-explanatory without comments.
 
+### Keep single-use logic inline — do not extract it to make it testable
+
+**A helper earns its own file when it has two or more real call sites.** Wanting to unit-test it is
+not a second call site. Fixing a few lines inside a method that is hard to instantiate (a controller
+method needing a live `MibController` and a window, say) does **not** justify moving those lines into
+`+utils` or a new `@Class/method.m`.
+
+When logic is worth testing but unreachable where it lives, **say so and ask** — do not extract
+unilaterally. The trade (an extra file and an indirection, against coverage of a specific bug) is
+the author's call, not a default.
+
+This applies to fixes especially: a one-line guard added to an existing method should stay a
+one-line guard in that method.
+
+**Do not cite recent code as precedent.** Before arguing "this pattern already exists here", check
+who added it and when:
+
+```bash
+git log --format='%an %ad %s' --date=short --diff-filter=A -- path/to/file.m
+```
+
+Code added in the last few sessions may be unreviewed, or your own from an earlier session. Citing
+it back as established convention turns one unilateral decision into a rule. Precedent means
+several independent uses that predate the current work.
+
 ### Copy-on-write in per-slice loops (performance critical)
 
 `MibImage.data` is a plain numeric array (not a cell — the former `data{1}` cell wrapper was removed). Caching it into a local variable before a tight loop eliminates repeated handle-chain traversal (`MibDataset → MibImage → data`) and per-iteration allocations.

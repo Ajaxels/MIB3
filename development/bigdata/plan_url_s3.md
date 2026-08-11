@@ -1,6 +1,6 @@
 # Plan: open remote OME-Zarr datasets from a URL (S3 / HTTPS)
 
-**Status:** implemented through step 15; **step 16 is designed but not built**.
+**Status:** implemented through step 16.
 Written 2026-08-10, last updated 2026-08-11.
 Steps 0-11 are tracked in the [ordered sequence](#ordered-sequence) table; steps 12-16 are prose
 sections following it.
@@ -574,6 +574,7 @@ the label-crop limitation plus the follow-up design.
 | 9 | ~~Ribbon rewire + `mib3.m` inclusion line~~ **DONE 2026-08-10** | 2 files |
 | 10 | ~~Docs~~ **DONE 2026-08-10** | new user page + nav, dataset-types, 4 new RST pages |
 | 11 | ~~`buildtool check`, `buildtool test`, dash grep~~ **DONE 2026-08-10** - 444/449 Unit, 0 failed; 0 codeIssues; dash clean | - |
+| 16 | ~~Label crop + its image region: world boxes, `Region`/`ZarrLevel`, multi-select composition, sibling image pairing~~ **DONE 2026-08-11** - 41 new tests, 0 failed; crop1 opens in 11.7 s with labels on the EM structures | see the file table in [Step 16](#step-16---loading-a-label-crop-with-its-image-region-done-2026-08-11) |
 
 ### Step 8: the view
 
@@ -786,9 +787,238 @@ the write) keeps the cache warm mid-stroke but is the version that can corrupt a
 chunk-boundary arithmetic is wrong, since brush strokes are not chunk-aligned. It must never be the
 first attempt; only consider it after evict-on-write has shipped and been measured as insufficient.
 
-### Step 16 - loading a label crop with its image region (planned, 2026-08-11)
+### Step 16 - loading a label crop with its image region (**DONE 2026-08-11**)
 
-**Status: designed, not implemented.** Supersedes the scoped-out overlay above for the case that
+**Status: implemented and verified against the live store.** Measured end to end: selecting
+`crop1/mito_mem` + `mito_lum` + `er_mem` opens a `500 x 500 x 100` Standard dataset at 4 nm with a
+three-material model in **11.7 s**, and the labels sit on the EM structures (mean EM intensity
+inside `mito_mem` is 136.8 against 155.9 for the crop as a whole - membranes are darker, which a
+shape-only check cannot see). The published voxel bounds are reproduced exactly: EM `s0`
+x 6466-6966, y 225-725, z 598-698.
+
+Everything below the design section is what the build actually needed. **Read the half-voxel
+finding first** - it is the one thing in the original design that was wrong, and it was wrong in the
+direction that produces plausible-looking, misplaced labels.
+
+#### Finding: the voxel table is edge-based, the bounding box is centre-based
+
+The design says translations are pixel-centre based and that `MibImage.boundingBox` uses the same
+convention, so "the mapping is direct, with no half-voxel correction anywhere". **The first half is
+right and the conclusion is wrong.** Both conventions are centre-based, but mapping one *grid* onto
+another is not a coordinate conversion - it is an alignment question, and alignment only exists in
+edge space.
+
+Concretely, for crop1: its first voxel centre is at `x = 25863 nm` on a 2 nm grid, and
+`25863 / 4 = 6465.75`, which reads as a misaligned store. Its *edge* is at `25862 nm`, the EM 4 nm
+grid's first edge is at `-2 nm`, and `(25862 + 2) / 4 = 6466` exactly. The grids do line up; centre
+space hid it. The table of "integer EM s0 voxel bounds" in the design is edge-based and half-open
+throughout.
+
+So the code carries **two deliberately different conventions**, and mixing them is the failure this
+work is most exposed to:
+
+| | Convention | Units |
+|---|---|---|
+| `MibImage.boundingBox`, `worldBoundingBox` | voxel **centres** | the store's own (nm here) |
+| `BatchOpt.Region`, `outerBoundingBox` | voxel **edges** (outer extent) | **micrometres** |
+
+`Region` is in micrometres because it is compared across pyramids that may declare different units;
+bounding boxes stay in store units because that is what MIB's own default box
+(`(dim-1) * pixSize`) already is, so a derived box remains drop-in interchangeable with it.
+`OmeZarrMetadataUtils.outerBoundingBox` is the single conversion point and its docblock carries the
+crop1 numbers above.
+
+`OmeZarrWorldGeometryTest.cropAndEmGridsAlignOnlyInEdgeSpace` pins this by asserting that the
+centre-space index is **not** integral and the edge-space one is.
+
+#### Finding: `crop1/all` defeats every content-based test for "is this the image?"
+
+D.11 says to take "the multiscales group whose world box contains the crop's and which is not under
+`labels/`". Both halves are load-bearing and the second is not optional: `crop1/all` is a genuine
+multiscales pyramid, carries **no** `cellmap` annotation block, and encloses the crop exactly, so
+containment plus "has no annotation" selects it - which is what the first implementation did. It is
+the merged ground truth, not the image.
+
+The fix is to reject on the **path**: any candidate with a `labels` component below the container
+root is an annotation, per the OME-NGFF container convention. Applied *before* any metadata fetch,
+which also keeps the walk cheap - passing back up through `groundtruth` rejects all 26 crops on
+their paths alone. Resolving the image group costs ~2 s and about 13 requests.
+
+#### Finding: the Standard-mode level picker had to be suppressed, and was also a 324 s stall
+
+The pairing decides which level to read, so the level picker must not appear for a crop - any other
+pick would break the dimension match `planLabelCrop` just asserted. That alone justified
+`options.ZarrLevel` (plus `BatchOpt.ZarrLevel` in `loadImages`).
+
+It turned out to matter far more than that. The first working headless open took **324 s**, of which
+the zarr loader accounted for 7.7 s and the raw reads for ~10 s; the same dataset opened locally in
+0.3 s. The whole difference was the level dialog being raised in a headless session. With
+`ZarrLevel` set it is **11.7 s**. Worth remembering as a diagnosis pattern: a remote-only slowdown
+that survives a local repro of the same size is not I/O.
+
+#### Fixed on the way: `MibImage.initialize` ignored `imginfo{"BoundingBox"}`
+
+`core.MibVirtualImage.initialize` has always honoured that key, but the Standard-mode path only
+ever parsed a `BoundingBox` prefix out of an ImageDescription string. Zarr has no such string, so a
+Standard-mode zarr open silently discarded **both** the derived box and MIB's own `mibBoundingBox`
+attribute. Pre-existing, and step 16 depends on it, so it is fixed rather than worked around.
+
+#### Found in use: `all` is an index map, and "no encoding" must not mean "binary"
+
+Reported against `jrc_mus-liver-zon-1` `crop266/all` with `Load as = Labels`: the model came out
+**empty**, and its single material was named with the group's full URL.
+
+The design's decision "**No special case for `all`.** It is just another selectable node" is right
+about the *selection* and wrong about the *decoding*. There are two kinds of group and only one is
+binary:
+
+| | `cellmap` block | Values |
+|---|---|---|
+| `mito_mem` and every other per-class group | yes, declares `present: 1` | `{0, 1}` |
+| `all` | **absent entirely** | the publisher's class ids - for crop266: 3, 4, 5, 8, 9, 16, 17, 20-24, 26, 28, 35, 47, 48 |
+
+The first implementation defaulted to `present = 1` for any group that declared nothing, so on
+`all` it looked for voxels equal to 1, found none, and produced an empty model **with no error** -
+the worst possible failure shape.
+
+`labelEncodingValues` now returns a third output, `isSemantic`, which is true **only when the store
+actually declares a `present` value**. Without one the group is treated as an index map and every
+distinct non-zero value becomes its own material. Verified: `crop266/all` now yields 17 materials
+that reproduce the raw array exactly (`isequal(model, remappedRaw)`), over the correct
+`200 x 200 x 200` EM region at 8 nm, with per-class mean EM intensities that separate organelles
+(112-127) from cytoplasm and ECS (144-158).
+
+Materials from an index map are named `all_3`, `all_28`, ... by the store's own id. They are
+deliberately **not** looked up in the crop's `class_names`: the plan already recorded that "`all`
+ids are a canonical COSEM table, not the `class_names` order - `cyto` is 35", so indexing that list
+by an id would mislabel every material.
+
+Two smaller faults in the same report:
+
+- **The material name was the whole URL.** The fallback for a group with no declared `class_name`
+  was `relativePath(join(url, '..'), url)`, but `io.RemoteStore.join` appends `..` rather than
+  resolving it, so `relativePath` found no common prefix and returned the input unchanged. Now
+  `labelGroupName` takes the last path segment.
+- **`Dataset mode` was silently ignored.** A crop is always opened Standard, by the decision above,
+  but a user who picked BigData deliberately got a Standard buffer with no explanation. The
+  override is now stated in the post-load report.
+
+The image side was **not** at fault: `resolveSiblingImageGroup` resolves
+`recon-1/em/fibsem-uint8` correctly for this store in ~3 s, and `planLabelCrop` pairs label `s1`
+(8 nm) with image `s0` (8 nm) for a `200 x 200 x 200` region. What made it look as though the labels
+had been opened as the image was an all-zero model sitting on top of the EM.
+
+#### Found in use: risk 3 was real - `switchDatasetMode` back to Standard crashed
+
+Reported when opening a crop with `Dataset mode = Standard` while a Virtual or BigData buffer was
+already open:
+
+```
+Error using intmax
+Class name must be a class that supports INTMAX, such as "int64" or "uint64".
+Error in core.MibImage/initialize (line 64)
+```
+
+`switchDatasetMode(newMode, enableSelection, initWithImage)` takes a placeholder whose **form
+depends on the target mode**, which its own docblock states and the calling code ignored:
+
+| Target | `initWithImage` |
+|---|---|
+| `Standard` | a **numeric matrix**, or `[]` to let `MibImage.initialize` build its own 512x512 uint8 image |
+| `Virtual` / `BigData` | a **cell array of file paths** |
+
+`ensureDatasetMode` reused the cell form for every mode, copied from the pre-existing inline call in
+`openBtn_Callback`. For `Standard` that puts a cell in `MibImage.data`, and the next line is
+`intmax(class(obj.data))`. The message names neither the dataset mode nor the placeholder and
+arrives four frames below the caller.
+
+**The same fault was already latent in `openBtn_Callback`'s image branch** - picking
+`Dataset mode = Standard` there while a Virtual buffer was open would have crashed identically. It
+predates step 16. Both paths now go through `ensureDatasetMode`, which picks the placeholder form
+from the target mode, so there is one copy of the rule.
+
+Pinned by `switchingABufferBackToStandardWorks`, which drives Standard -> Virtual -> Standard and
+asserts the resulting image is an integer class rather than a path; the old form was confirmed to
+raise the reported error on exactly that call.
+
+This is [risk 3](#risks-ranked) landing more or less where it was predicted - "`switchDatasetMode`
+called from the dialog is the most likely thing to need adjustment... it re-initialises the buffer
+with a placeholder image".
+
+#### Found in use: a remote import moved `currentDirectory` to a URL
+
+Reported after any remote open: the browsing directory became
+`https://janelia-cosem-datasets.s3.amazonaws.com/.../recon-1/em`.
+
+`controllers.MibController.updateGuiWidgets` derives the folder to browse with
+`fileparts(dataset.image.filename)` and assigns it to `mibModel.currentDirectory`. `fileparts`
+splits a URL perfectly happily, so a remote dataset produced a "directory" that does not exist. It
+already guarded the *placeholder* case (`'none.tif'`, which has no path at all); a remote store
+needs the same treatment for the same reason.
+
+The blast radius is wider than the Directory Contents panel, which is merely left with nothing to
+list: `currentDirectory` is the default starting folder for Save image, Save model, the BigData
+model-store picker, and the recent-directories list, all of which inherited the URL.
+
+The fix is a branch beside the existing placeholder guard, in `updateGuiWidgets`. The basename is
+cleared alongside the directory: no local file corresponds to a remote group, so matching one by
+name would highlight an unrelated file that merely shares it.
+
+**Deliberately not unit-tested.** `updateGuiWidgets` needs a live `MibController` and a window, so
+covering this would have meant extracting the branch into `+utils` purely to reach it - which is
+what the "keep single-use logic inline" rule in [`CLAUDE.md`](../../CLAUDE.md) now forbids by
+default. The guard is four lines beside an identical one that has been correct for years; the
+comment carries the reasoning instead.
+
+Note this is **not** specific to crops - it affected every remote open since step 6, including
+plain image imports.
+
+#### Deviations from the design
+
+- **Empty classes are reported after composition, not greyed out in the picker.** C.8 wants absent
+  groups greyed out, which needs pixel data: nothing in a group's metadata says whether it is empty.
+  That is 63 speculative downloads per crop. The voxel counts come free while blending, so the same
+  information is delivered at the moment it matters - along with the overlap and `unknown` counts.
+- **`ImageGroupPath` has no widget.** `+views/SelectFromUrlGUI.mlapp` is an App Designer binary and
+  cannot be authored as text, so the resolved image group is reported in the info panel and the
+  override is batch-only. Drawing an edit field named exactly `ImageGroupPath` on the canvas is all
+  that is needed to finish it - `updateGUIFromBatchOpt_Shared` skips BatchOpt fields with no
+  matching property, so nothing else has to change.
+- **`worldBoundingBox` takes a multiscales entry, not `attrs`.** A.2 wrote
+  `worldBoundingBox(attrs, levelIdx, shape)`; the loaders already hold `ms`, and re-extracting
+  multiscales from attrs there would be a round trip through a form they do not have.
+- **Model composition does not go through `loadModel`.** Blending N groups into one index map is not
+  something a loader that opens one store as one model can express, so the controller composes and
+  assigns directly (`createModel` + `setData3D`). `loadModel` therefore needed no `Region` at all.
+- **`buildZarrBbox` was factored out** of `Zarr2VirtualLoader` / `Zarr3VirtualLoader` into
+  `OmeZarrMetadataUtils` rather than copied a third time for the whole-level reads.
+
+#### Files
+
+| Area | Files |
+|---|---|
+| Geometry + region arithmetic | `+io/+loaders/OmeZarrMetadataUtils.m` (`extractTranslationFromCT`, `extractCTVector`, `worldBoundingBox`, `outerBoundingBox`, `regionToVoxelRange`, `applyRegionToLevels`, `applyRequestedRegion`, `resolveRegionOption`, `resolveLevelOption`, `unitToMicrometreFactor`, `buildZarrBbox`, `levelRegionBbox`) |
+| Loaders | `Zarr2VirtualSetupLoader.m`, `Zarr3VirtualSetupLoader.m` (per-level world boxes, region crop, `readLevelRegionV2/V3`, explicit level), `Zarr2VirtualLoader.m`, `Zarr3VirtualLoader.m` (bbox dedup) |
+| Read path | `+core/@MibVirtualImage/getDataZarr.m` (crop origin), `+core/@MibImage/initialize.m` (BoundingBox key) |
+| Model | `+models/@MibModel/loadImages.m` (`Region`, `ZarrLevel`) |
+| Dialog | `+controllers/@SelectFromUrl/`: `readGroupPyramid`, `planLabelCrop`, `resolveSiblingImageGroup`, `isAnnotationPath`, `imageBoxContains`, `composeLabelModel`, `labelEncodingValues`, `labelGroupName`, `selectedLabelGroupUrls`, `ensureDatasetMode`, `openLabelCrop`, `reportCropResult` (new); `SelectFromUrl.m`, `openBtn_Callback.m`, `treeSelectionChanged_Callback.m` (edited) |
+| Tests | `tests/io/OmeZarrWorldGeometryTest.m` (22 Unit), `tests/io/ZarrRegionReadTest.m` (12 Unit), `tests/controllers/SelectFromUrlTest.m` (+9 Unit, +4 network) |
+
+#### Verification performed
+
+`buildtool test`: 0 failures. `buildtool check`: 4 errors, all pre-existing in files this work never
+touched (`mapRgbaVectorToScalar.m`, `using_hg2.m`, `readMetaDataFromFibicsTIFs.m`,
+`McCalcGUI.mlapp`). Dash grep clean. Network tests against `jrc_hela-2` pass, including the
+end-to-end crop open.
+
+**Not yet done manually in the GUI** - the multi-select tree, the info-panel crop message and the
+post-load report have been exercised headlessly but not clicked through in a running MIB.
+
+---
+
+#### Original design (retained for context)
+
+Supersedes the scoped-out overlay above for the case that
 actually matters: fetch the crop *region* as an ordinary dataset - EM sub-volume as the image,
 selected label groups as the model - instead of trying to place a 200^3 island inside a
 25-gigavoxel volume. After cutting, image and label dims are identical, so `loadModel`'s dims
@@ -963,10 +1193,13 @@ homogeneous-crop warning. `docs_api/` picks up the two new `OmeZarrMetadataUtils
    0.006 s and makes panning cost only the new chunk columns. Note the diagnosis corrected Step 0:
    with a real viewport this is **bandwidth**-bound, not latency-bound. fsspec `simplecache::` was
    rejected as the fix - it only helps v2, because remote v3 never goes through Python.
-3. **`switchDatasetMode` called from the dialog** is the most likely thing to need
-   adjustment: it re-initialises the buffer with a placeholder image and
-   `datasetTypeChange_Callback` wraps it in extra bookkeeping. Fallback: require the user to
-   set the mode in the Datasets panel and have the dialog only warn.
+3. ~~**`switchDatasetMode` called from the dialog** is the most likely thing to need
+   adjustment: it re-initialises the buffer with a placeholder image.~~ **Hit 2026-08-11, fixed.**
+   The placeholder's form depends on the target mode - numeric for Standard, a cell of paths for
+   Virtual/BigData - and the cell form was being used for all three, crashing on
+   `intmax(class(data))` whenever the target was Standard. Latent in `openBtn_Callback` since step
+   8; both paths now share `ensureDatasetMode`. See the finding in
+   [Step 16](#found-in-use-risk-3-was-real---switchdatasetmode-back-to-standard-crashed).
 4. **`MibBigDataLabels.createStore` mirroring a 15-level Janelia pyramid** - arrays are
    metadata-only until written and the level map lives on the tiny coarsest level, but nobody
    has created a store with a `49645 x 21451 x 23601` declared level 0. Verify before shipping
@@ -978,13 +1211,27 @@ homogeneous-crop warning. `docs_api/` picks up the two new `OmeZarrMetadataUtils
 
 ### Added by step 16
 
-7. **`BatchOpt.Region` touches the read path of every zarr loader**, local and remote, v2 and v3.
-   It is the only part of step 16 that can break datasets nobody is testing. An empty `Region`
-   must be a literal no-op, and the offline tests must pin an un-cropped local open as unchanged.
-8. **Grid alignment is a property of this store, not of OME-NGFF.** All 26 crops here land on
-   integer EM voxel bounds, but nothing in the spec guarantees it. The region intersection must
-   round outward and report the residual rather than assuming a clean fit, or a store with a
-   half-voxel offset will silently shift labels by one voxel against the image.
-9. **Pyramid level pairing assumes the label and image pyramids share a scale somewhere.** True
-   here (label `s1` = image `s0`), not guaranteed. Assert the shapes match and report a mismatch;
-   never resample to force it.
+7. ~~**`BatchOpt.Region` touches the read path of every zarr loader.**~~ **Retired 2026-08-11.**
+   An absent region is a literal no-op by construction: `applyRequestedRegion` returns its inputs
+   unchanged with `levelRegionOrigins` all ones, `readLevelRegionV2/V3` calls the same plain
+   `read()` it replaced rather than a full-extent bbox, and `getDataZarr` adds an offset of zero.
+   `ZarrRegionReadTest` pins the uncropped open as byte-identical, and the full Unit suite passes.
+8. ~~**Grid alignment is a property of this store, not of OME-NGFF.**~~ **Retired 2026-08-11** -
+   `regionToVoxelRange` rounds outward with a grid tolerance and returns a residual;
+   `regionReport.message` names the overshoot in um. Two tests cover it, including the floating-point
+   case (`3133.52 / 5.24` is `597.99999...` in binary, and a bare `floor` loses a voxel there).
+   **The related trap that was NOT anticipated is the centre/edge distinction** - see the half-voxel
+   finding in step 16, which is where a one-voxel shift would actually have come from.
+9. ~~**Pyramid level pairing assumes the pyramids share a scale.**~~ **Retired 2026-08-11** -
+   `planLabelCrop` picks the label level whose voxel size matches the image's finest to within one
+   part in a thousand, then asserts the two shapes agree, and reports both sizes on a mismatch. It
+   never resamples.
+
+### Remaining after step 16
+
+10. **The crop path has not been clicked through in a running MIB.** Multi-select on the tree, the
+    crop message in the info panel and the post-load report are covered headlessly only. The tree's
+    `Multiselect` is set in `addCallbacks` rather than on the canvas, which is the most likely thing
+    to behave differently under a real AppContainer.
+11. **`ImageGroupPath` needs a widget** drawn in App Designer before the override is reachable
+    outside batch mode. Name it exactly `ImageGroupPath` and nothing else changes.

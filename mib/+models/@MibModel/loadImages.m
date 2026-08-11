@@ -84,6 +84,8 @@ BatchOpt.InsertDatasetDimension = {'depth'};
 BatchOpt.InsertDatasetDimension{2} = {'depth', 'time'};
 BatchOpt.InsertDatasetPosition = '0';
 BatchOpt.ZarrGroupPath = '';   % [OME-Zarr only] nested image group inside the container
+BatchOpt.Region = '';          % [OME-Zarr only] world sub-volume to open, um, edge-based
+BatchOpt.ZarrLevel = '';       % [OME-Zarr Standard only] pyramid level to load; empty -> ask
 BatchOpt.showWaitbar = true;   % show or not the waitbar
 BatchOpt.id = obj.getActiveId();   % optional, id
 
@@ -100,6 +102,8 @@ BatchOpt.mibBatchTooltip.BackgroundColorIntensity = sprintf('Intensity of the ba
 BatchOpt.mibBatchTooltip.InsertDatasetDimension = sprintf('[Insert only] Image dimension to insert the dataset');
 BatchOpt.mibBatchTooltip.InsertDatasetPosition = sprintf('[Insert only] insert position; 1 - beginning of the open dataset; 0 - end of the open dataset\nor type any number to define position');
 BatchOpt.mibBatchTooltip.ZarrGroupPath = sprintf('[OME-Zarr only] image group inside the container, relative to the file/URL\ne.g. recon-1/em/fibsem-uint8; leave empty to search the container and ask');
+BatchOpt.mibBatchTooltip.Region = sprintf('[OME-Zarr only] open a sub-volume instead of the whole image\n6 numbers in micrometres: xmin xmax ymin ymax zmin zmax\nleave empty to open the full extent');
+BatchOpt.mibBatchTooltip.ZarrLevel = sprintf('[OME-Zarr, Standard mode only] 1-based pyramid level to read\nleave empty to be asked when the store has more than one level');
 BatchOpt.mibBatchTooltip.showWaitbar = sprintf('Show or not the waitbar');
 
 batchModeSwitch = 0;    % indicates that the function is running in the gui mode
@@ -229,6 +233,47 @@ if isfield(BatchOpt, 'verbose'); options.verbose = BatchOpt.verbose; end
 % when set, so an empty value leaves the interactive behaviour untouched.
 if isfield(BatchOpt, 'ZarrGroupPath') && ~isempty(BatchOpt.ZarrGroupPath)
     options.ZarrGroupPath = BatchOpt.ZarrGroupPath;
+end
+
+% [OME-Zarr] open only a world sub-volume of the group - the route that makes an
+% OpenOrganelle ground-truth crop usable, since the matching EM region and the
+% labels then have identical dimensions. Six numbers in MICROMETRES,
+% [xmin xmax ymin ymax zmin zmax], describing the OUTER extent (voxel faces, not
+% voxel centres). Micrometres because the label and image pyramids are on
+% different scales and in the same store may declare different units, so a
+% voxel-index region would have to name which level it meant; outer extent
+% because grid alignment between two pyramids is only decided correctly in edge
+% space - see io.loaders.OmeZarrMetadataUtils.outerBoundingBox.
+% Accepted as text so a recorded protocol replays, or as a numeric vector.
+% Only forwarded when set, so an empty value is a literal no-op.
+% [OME-Zarr] Standard mode normally asks which pyramid level to read. An explicit
+% level skips that - needed whenever the dataset has to line up with something
+% else, where the level is already decided and a different pick would break the
+% match. Accepted as text so a recorded protocol replays.
+if isfield(BatchOpt, 'ZarrLevel') && ~isempty(BatchOpt.ZarrLevel)
+    if ischar(BatchOpt.ZarrLevel) || isstring(BatchOpt.ZarrLevel)
+        options.ZarrLevel = str2double(BatchOpt.ZarrLevel);
+    else
+        options.ZarrLevel = double(BatchOpt.ZarrLevel);
+    end
+end
+
+if isfield(BatchOpt, 'Region') && ~isempty(BatchOpt.Region)
+    if ischar(BatchOpt.Region) || isstring(BatchOpt.Region)
+        requestedRegion = str2num(char(BatchOpt.Region)); %#ok<ST2NM>
+    else
+        requestedRegion = double(BatchOpt.Region);
+    end
+    if numel(requestedRegion) == 6
+        options.Region = reshape(requestedRegion, 1, 6);
+    else
+        ErrorDlgOpt.winTitle = 'Region Error';
+        ErrorDlgOpt.err = sprintf(['BatchOpt.Region needs 6 numbers in micrometres\n' ...
+            '[xmin xmax ymin ymax zmin zmax], but %d were given.'], numel(requestedRegion));
+        notify(obj, 'ShowErrorDialog', core.ToggleEventData(ErrorDlgOpt));
+        notify(obj, 'StopProtocol');
+        return;
+    end
 end
 
 if strcmp(BatchOpt.Mode{1}, 'Load each N-th dataset') || strcmp(BatchOpt.Mode{1}, 'Add each N-th dataset as new color channel')

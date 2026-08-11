@@ -44,6 +44,10 @@ obj.Sections(secIndex).Actions(actionId).Name = 'Example datasets';
 obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.cRibbon.homeExamples_Callback(Batch);'; actionId = actionId + 1;
 obj.Sections(secIndex).Actions(actionId).Name = 'Import image from MATLAB';
 obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.importDataset("image", Batch);'; actionId = actionId + 1;
+
+obj.Sections(secIndex).Actions(actionId).Name = 'Import from URL / Zarr';
+obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.startController(''controllers.SelectFromUrl'', [], Batch);'; actionId = actionId + 1;
+
 obj.Sections(secIndex).Actions(actionId).Name = 'Export image to MATLAB';
 obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.exportDataset("image", Batch);'; actionId = actionId + 1;
 obj.Sections(secIndex).Actions(actionId).Name = 'Export image to Imaris';

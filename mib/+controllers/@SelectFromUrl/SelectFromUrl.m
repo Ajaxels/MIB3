@@ -58,6 +58,18 @@ classdef SelectFromUrl < handle
         % [dictionary] url -> struct describing a probed group
         connectedUrl
         % [char] URL of the last successful connect; suppresses a repeated probe
+        labelLoadRoute
+        % [char] how LoadAs = Labels will be honoured for the current selection:
+        % 'model' - the group matches the open image, load it straight onto it;
+        % 'crop'  - it is a sub-volume, so its image region is opened too;
+        % ''      - it cannot be loaded as labels at all
+        cropPlan
+        % [struct] last result of planLabelCrop, valid while labelLoadRoute is 'crop'
+        progressDialog
+        % [handle] the import's progress bar, or empty. Held on the controller
+        % rather than passed around because every error path has to close it
+        % before showing its own dialog - a modal progress bar left up would sit
+        % in front of the message explaining why the import stopped.
     end
 
     events
@@ -97,6 +109,9 @@ classdef SelectFromUrl < handle
             obj.isListable   = false;
             obj.probeCache   = configureDictionary("string", "cell");
             obj.connectedUrl = '';
+            obj.labelLoadRoute = '';
+            obj.cropPlan       = [];
+            obj.progressDialog = [];
 
             % Pre-fill from the clipboard when it looks like a link, matching
             % what this menu item has always done.
@@ -112,6 +127,8 @@ classdef SelectFromUrl < handle
 
             obj.BatchOpt.Url           = defaultUrl;
             obj.BatchOpt.GroupPath     = '';
+            obj.BatchOpt.LabelGroups   = '';
+            obj.BatchOpt.ImageGroupPath = '';
             obj.BatchOpt.LoadAs        = {'Image'};
             obj.BatchOpt.LoadAs{2}     = {'Image', 'Labels'};
             obj.BatchOpt.DatasetMode   = {'BigData'};
@@ -120,15 +137,24 @@ classdef SelectFromUrl < handle
             obj.BatchOpt.id            = obj.mibModel.getActiveId();
 
             obj.BatchOpt.mibBatchSectionName = 'Ribbon -> Home';
-            obj.BatchOpt.mibBatchActionName  = 'Import from URL';
+            obj.BatchOpt.mibBatchActionName  = 'Import from URL / Zarr';
             obj.BatchOpt.mibBatchTooltip.Url = sprintf(['URL of the dataset.\nOME-Zarr container: ' ...
                 'https://bucket.s3.amazonaws.com/key, https://s3.<region>.amazonaws.com/bucket/key ' ...
                 'or s3://bucket/key.\nAn OpenOrganelle .n5 URL is switched to the .zarr copy ' ...
                 'published beside it.\nAny ordinary image URL is opened with imread as before']);
             obj.BatchOpt.mibBatchTooltip.GroupPath = sprintf(['[OME-Zarr only] group to open, relative to Url\n' ...
                 'e.g. recon-1/em/fibsem-uint8; leave empty to search the container']);
+            obj.BatchOpt.mibBatchTooltip.LabelGroups = sprintf(['[Load as = Labels] semicolon-separated ' ...
+                'label groups to blend into one model, relative to Url\n' ...
+                'e.g. recon-1/labels/groundtruth/crop1/mito_mem;.../mito_lum\n' ...
+                'pick order matters: where two classes overlap the later one wins\n' ...
+                'leave empty to use the single group in Group path']);
+            obj.BatchOpt.mibBatchTooltip.ImageGroupPath = sprintf(['[Load as = Labels] image group to open ' ...
+                'the labels onto, relative to Url\nleave empty to find the volume the crop was cut from ' ...
+                'by its coordinates']);
             obj.BatchOpt.mibBatchTooltip.LoadAs = sprintf(['Image: open the group as the dataset\n' ...
-                'Labels: load it as a model onto the dataset that is already open']);
+                'Labels: load it as a model onto the dataset that is already open,\n' ...
+                'or, for a ground-truth crop, open its image region and put the labels on that']);
             obj.BatchOpt.mibBatchTooltip.DatasetMode = sprintf(['BigData: browse and segment, model stored locally\n' ...
                 'Virtual: browse only\nStandard: read one pyramid level fully into memory']);
             obj.BatchOpt.mibBatchTooltip.showWaitbar = sprintf('Show or not the progress bar during execution');
@@ -193,6 +219,12 @@ classdef SelectFromUrl < handle
             % ``showWaitbar`` has no widget deliberately - the dialog always
             % shows progress, and the BatchOpt field exists only so a batch
             % protocol can turn the bar off.
+            % Several groups at once, because a ground-truth crop keeps every
+            % class in its own group and a useful model blends them. Set here
+            % rather than on the canvas so the behaviour lives beside the
+            % callback that depends on it.
+            obj.view.handles.groupTree.Multiselect           = 'on';
+
             obj.view.gui.CloseRequestFcn                    = @(~,~) obj.closeWindow();
             obj.view.gui.WindowKeyPressFcn                  = @(~,evnt) obj.keyPress_Callback(evnt);
             obj.view.handles.connectButton.ButtonPushedFcn  = @(~,~) obj.connectBtn_Callback();
@@ -260,6 +292,9 @@ classdef SelectFromUrl < handle
             if obj.mibModel.preferences.System.DeveloperMode
                 fprintf('controllers.SelectFromUrl.closeWindow: triggered\n');
             end
+            % The bar is parented to this window; closing the window out from
+            % under it would leave an orphan.
+            obj.stopProgress();
             if ~isempty(obj.view) && isvalid(obj.view.gui); delete(obj.view.gui); end
             for i = 1:numel(obj.listener); delete(obj.listener{i}); end
             notify(obj, 'CloseEvent');
@@ -304,6 +339,49 @@ classdef SelectFromUrl < handle
             if obj.hasView(); obj.view.handles.statusLabel.Text = message; end
         end
 
+        function startProgress(obj, message)
+            % STARTPROGRESS - Raise the import's progress bar in Indeterminate mode.
+            %
+            % **Indeterminate because nothing here can report a percentage.**
+            % Opening a remote dataset probes the store format, lists a
+            % container, resolves a group and reads level metadata, all before a
+            % single pixel is fetched - a sequence of round trips whose count is
+            % not known in advance and whose duration depends on the host. A bar
+            % that sat at 0% through all of it would say less than a moving one.
+            %
+            % :meth:`openLabelCrop` takes this same bar over and switches it to a
+            % real percentage once it knows how many label groups it will read.
+            %
+            % A no-op in batch mode (no figure to parent to) and when the caller
+            % asked for no waitbar.
+            obj.stopProgress();
+            parentFigure = obj.guiFigure();
+            if ~obj.BatchOpt.showWaitbar || isempty(parentFigure); return; end
+
+            % uiprogressdlg refuses a figure whose Visible is 'off', and there is
+            % no reading of that failure under which the import should stop. A
+            % progress bar reports work; it is never the work itself.
+            try
+                obj.progressDialog = uiprogressdlg(parentFigure, ...
+                    'Indeterminate', 'on', 'Message', message, 'Title', 'Import from URL');
+                drawnow limitrate;
+            catch
+                obj.progressDialog = [];
+            end
+        end
+
+        function stopProgress(obj)
+            % STOPPROGRESS - Close the progress bar if one is up.
+            %
+            % Must be called before every error dialog, not only on success: a
+            % modal progress bar left on screen sits in front of the message
+            % explaining why the import stopped.
+            if ~isempty(obj.progressDialog) && isvalid(obj.progressDialog)
+                delete(obj.progressDialog);
+            end
+            obj.progressDialog = [];
+        end
+
         function updateWidgets(obj)
             % UPDATEWIDGETS - Refresh widgets from BatchOpt and model state.
             if ~obj.hasView(); return; end
@@ -332,7 +410,11 @@ classdef SelectFromUrl < handle
             obj.rootUrl      = '';
             obj.zarrFormat   = '';
             obj.connectedUrl = '';
-            obj.BatchOpt.GroupPath = '';
+            obj.labelLoadRoute = '';
+            obj.cropPlan       = [];
+            obj.BatchOpt.GroupPath      = '';
+            obj.BatchOpt.LabelGroups    = '';
+            obj.BatchOpt.ImageGroupPath = '';
             if obj.hasView()
                 obj.view.handles.GroupPath.Value = '';
                 obj.view.handles.infoTextArea.Value = {''};
@@ -403,11 +485,11 @@ classdef SelectFromUrl < handle
             canOpen   = groupSummary.hasMultiscales;
 
             if canOpen && strcmp(obj.BatchOpt.LoadAs{1}, 'Labels')
-                [labelsFit, reason] = obj.labelsMatchOpenImage(groupSummary);
-                if ~labelsFit
-                    canOpen = false;
-                    infoLines = [infoLines, {'', reason}];
-                end
+                [labelsFit, reason] = obj.resolveLabelRoute(groupUrl, groupSummary);
+                if ~isempty(reason); infoLines = [infoLines, {'', reason}]; end
+                canOpen = labelsFit;
+            else
+                obj.labelLoadRoute = '';
             end
 
             if ~obj.hasView(); return; end
@@ -420,28 +502,84 @@ classdef SelectFromUrl < handle
             end
         end
 
-        function [labelsFit, reason] = labelsMatchOpenImage(obj, groupSummary)
-            % LABELSMATCHOPENIMAGE - Can this group be loaded as a model?
+        function [labelsFit, reason] = resolveLabelRoute(obj, groupUrl, groupSummary)
+            % RESOLVELABELROUTE - Decide how this group can be loaded as a model.
             %
-            % MibModel.loadModel requires the model's finest level to match the
-            % image exactly. core.MibBigDataLabelsZarr2 has no origin or
-            % translation, so a sub-volume annotation (an OpenOrganelle
-            % ground-truth crop, say) cannot be placed correctly on the parent
-            % volume - it would land at the origin at the wrong scale.
+            % Two routes exist and they are not interchangeable:
+            %
+            %   * **model** - the group's finest level already matches the open
+            %     image, so ``MibModel.loadModel`` puts it straight on top. This
+            %     is what a label store published beside its own volume looks like.
+            %   * **crop** - the group is a sub-volume of a larger image, an
+            %     OpenOrganelle ground-truth crop being the case this was built
+            %     for. Placing it on the open parent volume is impossible -
+            %     ``loadModel`` requires matching dimensions and
+            %     ``core.MibBigDataLabelsZarr2`` has no origin concept - so
+            %     instead the crop's own image *region* is opened and the labels
+            %     go onto that. See :meth:`openLabelCrop`.
+            %
+            % Deciding here rather than at Open matters: both failure modes are
+            % silent otherwise, and the answer is what the info panel should be
+            % showing while the user is still choosing.
+            %
+            % Input Arguments:
+            %   - **groupUrl** - [char] URL of the selected group
+            %   - **groupSummary** - [struct] from :meth:`probeGroup`
+            %
+            % Output Arguments:
+            %   - **labelsFit** - [logical] whether Open may be pressed
+            %   - **reason** - [char] the explanation to show, either why it
+            %     cannot be loaded or what loading it will do
 
-            labelsFit = true;
-            reason    = '';
+            obj.labelLoadRoute = '';
+            obj.cropPlan       = [];
+            reason             = '';
+
             openImage = obj.mibModel.I{obj.mibModel.getActiveId()}.image;
             imageSize = [openImage.height, openImage.width, openImage.depth];
 
-            if isequal(imageSize, groupSummary.sizeYXZ); return; end
+            if isequal(imageSize, groupSummary.sizeYXZ)
+                obj.labelLoadRoute = 'model';
+                labelsFit = true;
+                return;
+            end
 
-            labelsFit = false;
-            reason = sprintf(['Cannot load as Labels: this group is %d x %d x %d but the open ' ...
-                'image is %d x %d x %d. A sub-volume annotation cannot be placed on its parent ' ...
-                'volume yet - open it as an Image instead.'], ...
-                groupSummary.sizeYXZ(1), groupSummary.sizeYXZ(2), groupSummary.sizeYXZ(3), ...
-                imageSize(1), imageSize(2), imageSize(3));
+            % Dimensions differ - the crop route, if the store's coordinates
+            % support it.
+            labelPyramid = obj.readGroupPyramid(groupUrl);
+            if ~isempty(obj.BatchOpt.ImageGroupPath)
+                imagePyramid = obj.readGroupPyramid( ...
+                    io.RemoteStore.join(obj.rootUrl, obj.BatchOpt.ImageGroupPath));
+                imageGroupUrl = io.RemoteStore.join(obj.rootUrl, obj.BatchOpt.ImageGroupPath);
+            else
+                [imageGroupUrl, imagePyramid] = obj.resolveSiblingImageGroup(groupUrl, labelPyramid);
+            end
+
+            plan = obj.planLabelCrop(labelPyramid, imagePyramid);
+            if ~plan.ok
+                labelsFit = false;
+                reason = sprintf(['Cannot load as Labels: this group is %d x %d x %d but the open ' ...
+                    'image is %d x %d x %d. %s'], ...
+                    groupSummary.sizeYXZ(1), groupSummary.sizeYXZ(2), groupSummary.sizeYXZ(3), ...
+                    imageSize(1), imageSize(2), imageSize(3), plan.reason);
+                return;
+            end
+
+            obj.labelLoadRoute = 'crop';
+            obj.cropPlan       = plan;
+            labelsFit          = true;
+
+            % ImageGroupPath has no widget on the canvas, so the resolved group
+            % is reported in the info panel below rather than shown in a field.
+            % Overriding it is a batch/protocol parameter until one is drawn.
+            if isempty(obj.BatchOpt.ImageGroupPath)
+                obj.BatchOpt.ImageGroupPath = io.RemoteStore.relativePath(obj.rootUrl, imageGroupUrl);
+            end
+
+            reason = sprintf(['Sub-volume crop: Open will load the matching image region ' ...
+                '(%d x %d x %d at %g nm) from %s and put these labels on it.'], ...
+                plan.shapeYXZ(1), plan.shapeYXZ(2), plan.shapeYXZ(3), ...
+                plan.voxelSizeUm(1) * 1000, obj.BatchOpt.ImageGroupPath);
         end
 
         function returnBatchOpt(obj, BatchOptOut)

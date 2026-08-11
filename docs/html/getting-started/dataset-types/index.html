@@ -1378,6 +1378,33 @@
   
   
     <li class="md-nav__item">
+      <a href="../../user-interface/ribbon/home/home-importfromurl.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Import from URL / Zarr
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../user-interface/ribbon/home/home-makesnapshot.html" class="md-nav__link">
         
   
@@ -1440,33 +1467,6 @@
     
   
   MIB 3D Viewer
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../user-interface/ribbon/home/home-importfromurl.html" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-  Import from URL / Zarr
 
     
   </span>
@@ -5874,18 +5874,25 @@ actually look at are transferred.</p>
 <p>Three things are worth knowing before you rely on it:</p>
 <ul>
 <li>The <strong>model store is always local.</strong> When you create a model on a remote BigData dataset, MIB
-  asks where to put it and writes an OME-Zarr v3 pyramid to your own disk. The remote image is
+  asks where to put it and writes an OME-Zarr pyramid to your own disk. The remote image is
   never written to.</li>
-<li><strong>Remote zarr v2</strong> stores are read through Python and need the <code>aiohttp</code> and <code>requests</code>
-  packages; remote <strong>zarr v3</strong> stores need no Python at all. MIB tells you if something is
-  missing.</li>
-<li>There is <strong>no local tile cache</strong> yet, so panning and slice scrubbing re-fetch tiles over the
-  network. The pyramid keeps this workable when zoomed out; working at full resolution on a
-  remote volume is slow by nature.</li>
+<li><strong>No Python is required</strong>, in either zarr format. The bundled native engine fetches remote v2
+  and v3 stores with HTTP range requests. Python is only used if you deliberately select the
+  <code>python</code> engine in
+  <a href="../../user-interface/ribbon/home/home-preferences.html#zarr-library">Preferences → Zarr library</a>,
+  and that engine does need <code>aiohttp</code> and <code>requests</code> for remote access.</li>
+<li>Decoded chunks are held in a <strong>memory cache</strong>, so revisiting a slice or panning back over ground
+  you have already seen costs nothing. Its size is set by
+  <a href="../../user-interface/ribbon/home/home-preferences.html#zarr-library">Preferences → Chunk cache</a>.
+  Reaching genuinely new tiles is still a network round trip, so the pyramid is what keeps
+  zoomed-out browsing responsive; working at full resolution on a remote volume remains slow by
+  nature.</li>
 </ul>
-<p>A published container often also holds small, densely annotated ground-truth crops. These cannot
-yet be overlaid as a model on their parent volume - open such a crop as an image in its own
-right instead.</p>
+<p>A published container often also holds small, densely annotated ground-truth crops. Selecting one
+opens it as a <strong>Standard</strong> dataset in its own right: MIB cuts the matching region out of the parent
+image, loads that, and puts the selected annotation classes on it as a model - see
+<a href="../../user-interface/ribbon/home/home-importfromurl.html#label-crops">Label crops</a>. Painting such a
+crop onto the full parent volume as an overlay is a different thing, and is not supported.</p>
 <hr />
 <h2 id="how-bigdata-works">How BigData works<a class="headerlink" href="#how-bigdata-works" title="Permanent link">&para;</a></h2>
 <p>This section explains the machinery behind BigData segmentation - useful for understanding why
@@ -5952,7 +5959,7 @@ or slide size: the cost scales with the <em>edit</em>, not with the whole image.
 <p>When you zoom <strong>in</strong> to a level finer than where an edit was made, MIB reconstructs that region for the
 finer level by up-sampling from the level that holds the data, writes it down, and <strong>caches</strong> it - so the
 next view of the same area is a direct read with no recomputation. An optional, label-aware <strong>smoothing</strong>
-(<a href="../../user-interface/ribbon/home/home-preferences.html#smoothing">Preferences → Input/Output</a> → Zarr → Smoothing)
+(<a href="../../user-interface/ribbon/home/home-preferences.html#zarr-library">Preferences → Input/Output</a> → Zarr → Smoothing)
 removes the blocky stair-steps that plain up-sampling would produce at the finer grid.</p>
 <h3 id="the-level-map-and-its-sidecar-file">The level map and its sidecar file<a class="headerlink" href="#the-level-map-and-its-sidecar-file" title="Permanent link">&para;</a></h3>
 <p>To know, for every region, <strong>which level currently holds the real data</strong>, MIB keeps a small <strong>level map</strong>.

@@ -1206,6 +1206,33 @@
   
   
     <li class="md-nav__item">
+      <a href="../home/home-importfromurl.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Import from URL / Zarr
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../home/home-makesnapshot.html" class="md-nav__link">
         
   
@@ -1268,33 +1295,6 @@
     
   
   MIB 3D Viewer
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../home/home-importfromurl.html" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-  Import from URL / Zarr
 
     
   </span>
@@ -5999,13 +5999,10 @@ Provide a variable name with a matrix matching the dataset dimensions <code>[hei
 <p>Imports a segmentation model from an OME-Zarr v2 or v3 store. A Zarr store is a <strong>folder</strong>
 (not a single file), so this option opens a folder browser instead of the file dialog used
 by <a href="#load-model">Load model</a> and the other <a href="#import">Import</a> options above.</p>
-<ul>
-<li><strong>Zarr v3</strong> (<code>.zarr3</code>): read using the native <code>zarr-matlab</code> library.</li>
-<li><strong>Zarr v2</strong> (<code>.zarr2</code>): read using a python-backed reader (<code>zarr</code>/<code>numpy</code>), since Zarr v2
-  has no native MATLAB engine. Requires
-  <a href="../home/home-preferences.html#external-directories">Preferences → External directories → Python installation path</a>
-  to point at a python environment with the <code>zarr</code> package installed.</li>
-</ul>
+<p>Both <strong>Zarr v3</strong> (<code>.zarr3</code>) and <strong>Zarr v2</strong> (<code>.zarr2</code>) are read by the native <code>zarr-matlab</code>
+library, with no Python required. See
+<a href="../home/home-preferences.html#zarr-library">Preferences → Zarr library</a> if you want to read them
+through <code>zarr-python</code> instead.</p>
 <div class="h4-like">Material names and colours</div>
 
 <p>Material names/colours are resolved from the store's metadata, in this order:</p>
@@ -6017,11 +6014,15 @@ by <a href="#load-model">Load model</a> and the other <a href="#import">Import</
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>For a <strong>BigData</strong> dataset, importing a Zarr model attaches the store <strong>by reference</strong> instead
-of loading it into memory (see <a href="../../panels/datasets/index.html">BigData datasets</a>). A
-<strong>Zarr v3</strong> store becomes a fully editable, disk-backed model, same as models created directly
-in BigData mode. A <strong>Zarr v2</strong> store is attached <strong>read-only</strong> - an existing segmentation can be
-viewed and browsed at any zoom level, but voxels cannot be edited, since there is no editable
-on-disk pyramid format for Zarr v2.</p>
+of loading it into memory (see <a href="../../panels/datasets/index.html">BigData datasets</a>).</p>
+<p>Whether it is editable depends on <strong>who wrote the store</strong>, not on its zarr format. A store MIB
+created itself - in either format - is a fully editable, disk-backed model, because it holds
+MIB's packed bytes and is stamped with a marker attribute that says so.</p>
+<p>A store written by <strong>another tool</strong> is attached <strong>read-only</strong>: its values are that tool's own
+label indices, laid out in its own axis order, and writing MIB's packed bytes back into it would
+corrupt them. You can view and browse such a model at any zoom level. To segment on the same
+dataset, create a new model instead - MIB writes its own store and leaves the imported one
+untouched.</p>
 </div>
 <hr />
 <h2 id="export-section">Export Section<a class="headerlink" href="#export-section" title="Permanent link">&para;</a></h2>

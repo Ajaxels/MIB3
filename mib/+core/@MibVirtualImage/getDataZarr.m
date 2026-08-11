@@ -106,6 +106,25 @@ physXlim = [max(physXlim(1), 1), min(physXlim(2), lvl(2))];
 physZlim = [max(physZlim(1), 1), min(physZlim(2), lvl(3))];
 Tidx = [max(options.t(1), 1), min(options.t(2), obj.time)];
 
+% --- crop origin: dataset coordinates -> store coordinates ----------------
+% When the dataset was opened with a region (BatchOpt.Region - an OpenOrganelle
+% ground-truth crop and its matching EM sub-volume, say), levelImageSizes above
+% describes the CROP, so everything up to this point - the caller's ranges, the
+% pyramid scaling, the clamp - is in crop coordinates. The stores still hold the
+% full volume, so the offset is added here, after clamping and immediately
+% before the read. Doing it here rather than inside readRegion keeps that method
+% meaning exactly one thing ("these voxel ranges of that array"), which is the
+% same contract the BioFormats and HDF5 readers honour.
+%
+% An uncropped dataset has an origin of [1 1 1] and this is arithmetic on zero.
+if isfield(obj.pyramid, 'levelRegionOrigins') && ~isempty(obj.pyramid.levelRegionOrigins) && ...
+        size(obj.pyramid.levelRegionOrigins, 1) >= levelIdx
+    regionOrigin = obj.pyramid.levelRegionOrigins(levelIdx, :);   % [y x z], 1-based
+    physYlim = physYlim + regionOrigin(1) - 1;
+    physXlim = physXlim + regionOrigin(2) - 1;
+    physZlim = physZlim + regionOrigin(3) - 1;
+end
+
 % --- pyramid source backend (default zarr3 for existing datasets) ---------
 % A pyramidal image can be backed by an OME-Zarr v3 store ('zarr3', via
 % io.loaders.Zarr3VirtualLoader), an OME-Zarr v2 store ('zarr2', python-backed,

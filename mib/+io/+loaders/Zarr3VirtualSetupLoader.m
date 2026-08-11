@@ -183,7 +183,7 @@ methods
 
         % ---- parse or search one level deeper --------------------------
         if ~isempty(ms)
-            [files, imginfo] = obj.parseMultiscales(rootPath, ms, imginfo);
+            [files, imginfo] = obj.parseMultiscales(rootPath, ms, imginfo, options);
         else
             % multiscales not at root - containers nest the image group one or
             % more levels down (OME-Zarr label containers, and MoBIE /
@@ -217,7 +217,7 @@ methods
                 catch
                 end
                 if ~isempty(subMs)
-                    [files, imginfo] = obj.parseMultiscales(subPath, subMs, imginfo);
+                    [files, imginfo] = obj.parseMultiscales(subPath, subMs, imginfo, options);
                 else
                     [files, imginfo] = obj.parseSingleArray(subPath, imginfo);
                 end
@@ -293,23 +293,30 @@ end
 %% Private helpers
 methods (Access = private)
 
-    function [files, imginfo] = parseMultiscales(obj, rootPath, multiscales, imginfo)
+    function [files, imginfo] = parseMultiscales(obj, rootPath, multiscales, imginfo, options)
         % PARSEMULTISCALES - Parse OME-Zarr multiscales metadata and populate files + imginfo.
         %
         % Syntax:
         %   .. code-block:: matlab
         %
-        %      [files, imginfo] = obj.parseMultiscales(rootPath, multiscales, imginfo)
+        %      [files, imginfo] = obj.parseMultiscales(rootPath, multiscales, imginfo, options)
+        %
+        % ``options.Region`` crops the whole pyramid to a world sub-volume; see
+        % ``io.loaders.OmeZarrMetadataUtils.applyRequestedRegion``. Absent or
+        % empty, nothing about the parse changes.
         %
         % Input Arguments:
         %   - **rootPath** - [char] zarr root path (local folder or HTTP/HTTPS URL)
         %   - **multiscales** - [struct] OME-Zarr multiscales struct from zarr.json
         %   - **imginfo** - [dictionary] image metadata dictionary to populate
+        %   - **options** - *(optional)* [struct] loader options; ``.Region`` honoured
         %
         % Output Arguments:
         %   - **files** - [struct] per-file metadata populated from the multiscales entry
         %   - **imginfo** - [dictionary] updated with Height, Width, Depth, pixSize, etc.
         %
+
+        if nargin < 5; options = struct(); end
 
         ms = multiscales(1); % use first multiscales entry
 
@@ -332,6 +339,7 @@ methods (Access = private)
         levelImageTranslations = zeros(nLevels, 3);
         levelScaleFactors      = zeros(nLevels, 3);
         levelVoxelSizes        = zeros(nLevels, 3);
+        levelWorldBoxes        = zeros(nLevels, 6);
         chunkSizes             = cell(nLevels, 1);
         shardSizes             = cell(nLevels, 1);
 
@@ -435,6 +443,12 @@ methods (Access = private)
             vZ = io.loaders.OmeZarrMetadataUtils.safeGetScale(levelScales, zIdx, 1);
             levelVoxelSizes(iLevel, :) = [vY, vX, vZ];
 
+            % Where this level sits in the container's coordinate space. Needed
+            % per level rather than only for level 0, because a region crop
+            % intersects each level on its own grid.
+            levelBox = io.loaders.OmeZarrMetadataUtils.worldBoundingBox(ms, iLevel, shape);
+            if ~isempty(levelBox); levelWorldBoxes(iLevel, :) = levelBox; end
+
             % chunk / shard sizes (in C-order, as stored)
             chunkSizes{iLevel} = arrInfo.chunkShape;
             shardSizes{iLevel} = arrInfo.shardShape;
@@ -446,6 +460,20 @@ methods (Access = private)
         pixSize.x       = io.loaders.OmeZarrMetadataUtils.safeGetScale(level0Scales, xIdx, 1);
         pixSize.z       = io.loaders.OmeZarrMetadataUtils.safeGetScale(level0Scales, zIdx, 1);
         pixSize.units   = io.loaders.OmeZarrMetadataUtils.extractAxisUnit(ms, yIdx);
+
+        % ---- optional crop to a requested world region ---------------
+        % A literal no-op when no region was asked for.
+        requestedRegion = io.loaders.OmeZarrMetadataUtils.resolveRegionOption(options, obj.Options);
+        [levelImageSizes, levelRegionOrigins, levelWorldBoxes, regionReport] = ...
+            io.loaders.OmeZarrMetadataUtils.applyRequestedRegion(requestedRegion, ...
+                levelImageSizes, levelVoxelSizes, levelWorldBoxes, pixSize.units);
+
+        % ---- world bounding box from the OME translation ------------
+        % See io.loaders.Zarr2VirtualSetupLoader.parseMultiscalesV2 for the
+        % reasoning; identical here, and loadMetadata still applies MIB's own
+        % mibBoundingBox afterwards so a store MIB wrote keeps winning.
+        worldBoundingBox = levelWorldBoxes(1, :);
+        imginfo{"BoundingBox"} = worldBoundingBox;
 
         % ---- populate imginfo from level 0 --------------------------
         imginfo{"Height"}    = levelImageSizes(1, 1);
@@ -478,6 +506,11 @@ methods (Access = private)
         files.chunkSizes            = chunkSizes;
         files.shardSizes            = shardSizes;
         files.pixSize               = pixSize;
+        files.worldBoundingBox      = worldBoundingBox;
+        files.levelWorldBoxes       = levelWorldBoxes;
+        files.levelRegionOrigins    = levelRegionOrigins;
+        files.regionReport          = regionReport;
+        files.multiscale            = ms;
     end
 
     function [groupPath, cancelled] = resolveMultiscalesGroup(obj, rootPath, attrs, grp, isHttp, options)
@@ -702,6 +735,17 @@ methods (Access = private)
         files.chunkSizes             = {arrInfo.chunkShape};
         files.shardSizes             = {arrInfo.shardShape};
         files.pixSize                = pixSize;
+        % A bare array carries no multiscales, hence no coordinateTransformations
+        % and no place to sit other than the origin - and, with no world
+        % coordinates, nothing a region could be expressed against either. The
+        % fields exist so callers never have to test which parse produced the
+        % struct.
+        files.worldBoundingBox       = [];
+        files.levelWorldBoxes        = zeros(1, 6);
+        files.levelRegionOrigins     = [1, 1, 1];
+        files.regionReport           = struct('requested', false, 'isExact', true, ...
+                                              'residual', zeros(3, 2), 'message', '');
+        files.multiscale             = [];
     end
 
     function [img, imginfo] = loadImagesStandard(obj, files, imginfo, options)
@@ -716,8 +760,15 @@ methods (Access = private)
         nLevels = files.nLevels;
 
         % ---- level selection dialog ---------------------------------
+        % An explicit options.ZarrLevel skips it; see
+        % io.loaders.Zarr2VirtualSetupLoader.loadImagesStandardV2 for why that
+        % matters beyond batch convenience.
         selectedLevel = 1;
-        if nLevels > 1
+        requestedLevel = io.loaders.OmeZarrMetadataUtils.resolveLevelOption( ...
+            options, obj.Options, nLevels);
+        if ~isempty(requestedLevel)
+            selectedLevel = requestedLevel;
+        elseif nLevels > 1
             labels = cell(nLevels, 1);
             for k = 1:nLevels
                 sz = files.levelImageSizes(k, :);
@@ -760,8 +811,7 @@ methods (Access = private)
             end
         end
 
-        arr = ZarrArray(fullPath);
-        raw = arr.read(); % read full array
+        raw = obj.readLevelRegionV3(fullPath, files, selectedLevel);
 
         % permute from native MATLAB order to MIB3 [y,x,z,c,t]
         perm = io.loaders.OmeZarrMetadataUtils.computePermutation(files.axisOrder);
@@ -845,8 +895,7 @@ methods (Access = private)
             end
         end
 
-        arr = ZarrArray(fullPath);
-        raw = arr.read(); % read full array
+        raw = obj.readLevelRegionV3(fullPath, files, 1);
 
         perm = io.loaders.OmeZarrMetadataUtils.computePermutation(files.axisOrder);
         img  = permute(raw, perm);
@@ -854,6 +903,39 @@ methods (Access = private)
         [names, colors] = obj.readMaterialMetadataV3(rootPath, levelPath);
         if ~isempty(names);  imginfo{"modelMaterialNames"}  = names;  end
         if ~isempty(colors); imginfo{"modelMaterialColors"} = colors; end
+    end
+
+    function raw = readLevelRegionV3(~, fullPath, files, levelIndex)
+        % READLEVELREGIONV3 - Read one whole pyramid level, honouring a region crop.
+        %
+        % Syntax:
+        %   .. code-block:: matlab
+        %
+        %      raw = obj.readLevelRegionV3(fullPath, files, levelIndex)
+        %
+        % v3 counterpart of ``Zarr2VirtualSetupLoader.readLevelRegionV2``; see
+        % there for why the uncropped case stays the identical ``read()`` call it
+        % always was rather than a full-extent bbox meaning the same thing.
+        %
+        % Input Arguments:
+        %   - **fullPath** - [char] path or URL of the level array
+        %   - **files** - [struct] from loadMetadata
+        %   - **levelIndex** - [numeric] 1-based pyramid level to read
+        %
+        % Output Arguments:
+        %   - **raw** - numeric array in the store's own layout
+
+        arr = ZarrArray(fullPath);
+
+        if ~isfield(files, 'regionReport') || ~files.regionReport.requested
+            raw = arr.read();   % read full array
+            return;
+        end
+
+        bbox = io.loaders.OmeZarrMetadataUtils.levelRegionBbox(files.axisOrder, ...
+            files.levelRegionOrigins(levelIndex, :), files.levelImageSizes(levelIndex, :), ...
+            files.color, files.time);
+        raw = arr.read(bbox);
     end
 
     function [img, imginfo] = loadImagesVirtual(~, files, imginfo)
@@ -874,6 +956,9 @@ methods (Access = private)
         Pyramid.levelImageTranslations = files.levelImageTranslations;
         Pyramid.levelScaleFactors      = files.levelScaleFactors;
         Pyramid.levelVoxelSizes        = files.levelVoxelSizes;
+        % 1-based first voxel of the crop within each level's own array; all ones
+        % when nothing was cropped, which readRegion treats as no offset.
+        Pyramid.levelRegionOrigins     = files.levelRegionOrigins;
         Pyramid.chunkSizes             = files.chunkSizes;
         Pyramid.shardSizes             = files.shardSizes;
         Pyramid.axisOrder              = files.axisOrder;

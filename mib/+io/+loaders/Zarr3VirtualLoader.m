@@ -165,19 +165,7 @@ methods
         % and returns data with the same dimension layout.
         % e.g. axisOrder='czyx': bbox rows are [c_range; z_range; y_range; x_range]
         % and the returned array has size [nC, nZ, nY, nX].
-        nDims = numel(obj.axisOrder);
-
-        % bbox is [nDims x 2]: [start_1based, end_exclusive (end+1)]
-        bbox = zeros(nDims, 2);
-        for dimIdx = 1:nDims
-            ax = obj.axisOrder(dimIdx);     % C-order axis at this position
-            if isfield(axisRanges, ax)
-                rng = axisRanges.(ax);
-                bbox(dimIdx, :) = [rng(1), rng(2) + 1];
-            else
-                bbox(dimIdx, :) = [1, 2];   % singleton for absent axis
-            end
-        end
+        bbox = io.loaders.OmeZarrMetadataUtils.buildZarrBbox(obj.axisOrder, axisRanges);
 
         % Read from zarr through the backend-selectable facade
         % (native zarrMex or python zarr, per io.zarr.Config / preferences.IO.Zarr.Library).

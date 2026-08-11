@@ -83,6 +83,18 @@ dataset = obj.mibModel.I{obj.mibModel.id};
 newFileBasename = [newFileName newFileExt];
 if isempty(newFileDir)  % placeholder dataset (e.g. 'none.tif') - keep current directory
     newFileDir = obj.mibModel.currentDirectory;
+elseif io.RemoteStore.isRemote(dataset.image.filename)
+    % A remote store (http/https/s3) has no local folder to navigate to, but
+    % fileparts splits its URL perfectly happily - without this, currentDirectory
+    % became something like 'https://host/store.zarr/recon-1/em'. That is not a
+    % folder, so the Directory Contents panel has nothing to list, and it is then
+    % inherited as the default location by everything that derives one from
+    % currentDirectory: Save image, Save model, the BigData model-store picker,
+    % the recent-directories list.
+    % The basename goes with it: no local file corresponds to a remote group, so
+    % matching one by name would highlight an unrelated file that merely shares it.
+    newFileDir      = obj.mibModel.currentDirectory;
+    newFileBasename = '';
 end
 
 %% Update the IMAGE TAB ---------------------------------------------
@@ -225,8 +237,18 @@ if isempty(updatePanels) || ismember('depthSlider', updatePanels)
         imViewHandles.sliceNumber.Limits = [1 max_slice+0.001]; % add small value to make sure that limits are not the same
         imViewHandles.sliceNumberSlider.Limits = [1 max_slice+0.001];
         imViewHandles.sliceNumberSlider.MinorTicks = 1:(max_slice-1)/10:max_slice;
+        
+        switch numel(num2str(max_slice))
+            case 3
+                layoutWidth = 30;
+            case 4
+                layoutWidth = 36;
+            case 5
+                layoutWidth = 42;
+        end
+
         % show the slider panel
-        if imViewHandles.mainGridLayout.ColumnWidth{1} ~= 30; imViewHandles.mainGridLayout.ColumnWidth{1} = 30; end
+        if imViewHandles.mainGridLayout.ColumnWidth{1} ~= layoutWidth; imViewHandles.mainGridLayout.ColumnWidth{1} = layoutWidth; end
     elseif max_slice == 1 && max_slice ~= imViewHandles.sliceNumber.Limits(2) - 0.001
         imViewHandles.sliceNumber.Limits = [1 max_slice+0.001];
         imViewHandles.sliceNumberSlider.Limits = [1 max_slice+0.001];

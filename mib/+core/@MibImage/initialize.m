@@ -106,6 +106,18 @@ if ~isempty(obj.data)
         obj.boundingBox = defaultBB;
     end
 
+    % A loader may have resolved the box itself rather than leaving it encoded
+    % in an ImageDescription string - zarr has no such string, so both MIB's own
+    % mibBoundingBox attribute and a box derived from OME
+    % coordinateTransformations arrive this way. Without this a Standard-mode
+    % zarr open silently landed at the origin, which is right for a whole volume
+    % and wrong for anything cropped out of one.
+    % core.MibVirtualImage.initialize has honoured this key all along; this is
+    % the same rule for the in-memory path.
+    if isKey(meta, 'BoundingBox') && ~isempty(meta{'BoundingBox'}) && numel(meta{'BoundingBox'}) == 6
+        obj.boundingBox = reshape(double(meta{'BoundingBox'}), 1, 6);
+    end
+
     % Prefer a pre-split ActionLog already stored in meta by a loader that
     % called splitImageDescription itself; fall back to what we parsed above.
     if isKey(meta, 'ActionLog') && ~isempty(meta{'ActionLog'})

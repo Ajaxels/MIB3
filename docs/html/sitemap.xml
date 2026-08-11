@@ -64,6 +64,9 @@
         <loc>https://mib.helsinki.fi/user-interface/ribbon/home/index.html</loc>
       </url>
       <url>
+        <loc>https://mib.helsinki.fi/user-interface/ribbon/home/home-importfromurl.html</loc>
+      </url>
+      <url>
         <loc>https://mib.helsinki.fi/user-interface/ribbon/home/home-makesnapshot.html</loc>
       </url>
       <url>
@@ -71,9 +74,6 @@
       </url>
       <url>
         <loc>https://mib.helsinki.fi/user-interface/ribbon/home/home-mib3Dviewer.html</loc>
-      </url>
-      <url>
-        <loc>https://mib.helsinki.fi/user-interface/ribbon/home/home-importfromurl.html</loc>
       </url>
       <url>
         <loc>https://mib.helsinki.fi/user-interface/ribbon/home/home-batchprocessing.html</loc>

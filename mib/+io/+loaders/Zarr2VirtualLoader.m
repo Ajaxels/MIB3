@@ -132,17 +132,7 @@ methods
         axisRanges.t = Tlim;
 
         % Build bbox in zarr's C-order (same convention as Zarr3VirtualLoader).
-        nDims = numel(obj.axisOrder);
-        bbox  = zeros(nDims, 2); % [start_1based, end_exclusive (end+1)]
-        for dimIdx = 1:nDims
-            ax = obj.axisOrder(dimIdx);
-            if isfield(axisRanges, ax)
-                rng = axisRanges.(ax);
-                bbox(dimIdx, :) = [rng(1), rng(2) + 1];
-            else
-                bbox(dimIdx, :) = [1, 2]; % singleton for absent axis
-            end
-        end
+        bbox = io.loaders.OmeZarrMetadataUtils.buildZarrBbox(obj.axisOrder, axisRanges);
 
         % Open (or reuse) the array handle for this level - one open + one
         % metadata query per level, not per slice read.

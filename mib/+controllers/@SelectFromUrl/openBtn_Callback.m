@@ -33,9 +33,16 @@ if isempty(obj.rootUrl)
     return;
 end
 
+% Everything past this point reaches the network, so the window has to say it is
+% busy. Indeterminate: none of the work below can report a percentage - see
+% startProgress. Cleared by stopProgress on every exit, success or not.
+obj.startProgress('Opening the dataset...');
+cleanupProgress = onCleanup(@() obj.stopProgress());
+
 % ---- plain image URL: the behaviour this menu item always had ------------
 if isempty(obj.zarrFormat)
     obj.openPlainImageUrl();
+    obj.stopProgress();
     if ~batchModeSwitch; obj.closeWindow(); end
     return;
 end
@@ -47,10 +54,19 @@ if io.zarr.Config.isPython()
     try
         io.zarr.PyBackend.ensureRemoteSupport(obj.rootUrl);
     catch ME
+        obj.stopProgress();
         utils.dlgs.showErrorDialog(obj.guiFigure(), ME.message, ...
             'Remote Zarr: Python packages missing');
         return;
     end
+end
+
+% A batch protocol may name only the label groups to blend, since that is the
+% whole selection for a crop. The first of them is then also the group whose
+% geometry describes the crop, which is what GroupPath means everywhere else.
+if isempty(obj.BatchOpt.GroupPath) && ~isempty(obj.BatchOpt.LabelGroups)
+    firstLabelGroup = strtrim(extractBefore([obj.BatchOpt.LabelGroups ';'], ';'));
+    obj.BatchOpt.GroupPath = char(firstLabelGroup);
 end
 
 targetUrl = io.RemoteStore.join(obj.rootUrl, obj.BatchOpt.GroupPath);
@@ -59,6 +75,21 @@ obj.BatchOpt.id = datasetId;
 
 % ---- labels: load onto the dataset that is already open ------------------
 if strcmp(obj.BatchOpt.LoadAs{1}, 'Labels')
+    % A sub-volume annotation has no working outcome on the open parent volume,
+    % so it takes the crop route instead: open its own image region, then put
+    % the labels on that. resolveLabelRoute decided which applies while the user
+    % was still choosing; batch mode has not run it, so decide here too.
+    if isempty(obj.labelLoadRoute)
+        groupSummary = obj.probeGroup(targetUrl);
+        obj.resolveLabelRoute(targetUrl, groupSummary);
+    end
+    if strcmp(obj.labelLoadRoute, 'crop')
+        obj.openLabelCrop(batchModeSwitch);
+        return;
+    end
+
+    % loadModel raises its own progress bar, so hand the screen over to it.
+    obj.stopProgress();
     modelOptions = struct();
     modelOptions.Filenames   = {targetUrl};
     modelOptions.showWaitbar = obj.BatchOpt.showWaitbar;
@@ -70,19 +101,10 @@ if strcmp(obj.BatchOpt.LoadAs{1}, 'Labels')
 end
 
 % ---- image: put the buffer in the requested mode, then load --------------
-targetMode = obj.BatchOpt.DatasetMode{1};
-if ~strcmp(obj.mibModel.I{datasetId}.datasetType, targetMode)
-    modeIndex = find(strcmp({'Standard', 'Virtual', 'BigData'}, targetMode), 1);
-    placeholderFile = {fullfile(obj.mibModel.mibPath, 'assets', 'images', 'default.h5')};
-    achievedMode = obj.mibModel.I{datasetId}.switchDatasetMode(modeIndex, ...
-        obj.mibModel.preferences.System.EnableSelection, placeholderFile);
-    if achievedMode ~= modeIndex
-        utils.dlgs.showErrorDialog(obj.guiFigure(), ...
-            sprintf('Could not switch the dataset buffer to %s mode.', targetMode), ...
-            'Import from URL');
-        return;
-    end
-end
+% Through ensureDatasetMode rather than inline, because the placeholder that
+% switchDatasetMode needs differs per target mode and the cell form used here
+% before crashed whenever the target was Standard.
+if ~obj.ensureDatasetMode(datasetId, obj.BatchOpt.DatasetMode{1}); return; end
 
 loadOptions = obj.buildLoadImagesBatchOpt();
 obj.mibModel.loadImages('Combine datasets', loadOptions);
@@ -105,6 +127,7 @@ obj.mibModel.Sets.datasetTypes{targetSet, targetLocalId} = ...
     obj.mibModel.I{datasetId}.datasetType;
 notify(obj.mibModel, 'DatasetsPanelUpdate');
 
+obj.stopProgress();
 obj.returnBatchOpt();
 if ~batchModeSwitch; obj.closeWindow(); end
 end

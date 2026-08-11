@@ -113,52 +113,116 @@ methods (Static)
         % This is why values are right-aligned, not left-aligned.
         %
 
-        scales = ones(1, nAxes);
+        scales = io.loaders.OmeZarrMetadataUtils.extractCTVector(ct, nAxes, 'scale', 1);
+    end
+
+    function translations = extractTranslationFromCT(ct, nAxes)
+        % EXTRACTTRANSLATIONFROMCT - Extract the physical origin offset from an OME-Zarr coordinateTransformations.
+        %
+        % Syntax:
+        %   .. code-block:: matlab
+        %
+        %      translations = io.loaders.OmeZarrMetadataUtils.extractTranslationFromCT(ct, nAxes)
+        %
+        % Mirror of :meth:`extractScaleFromCT` for the ``translation`` transform,
+        % with the same axis alignment rule. The default is **zeros**, not ones:
+        % a store that declares no translation sits at the origin, which is what
+        % every store MIB has read so far does, so this must stay a no-op for
+        % them.
+        %
+        % **Translations are pixel-centre based**, i.e.
+        % ``world_centre(i) = translation + i * scale`` for a 0-based index
+        % ``i``. That is not an assumption - it is visible inside a pyramid: the
+        % OpenOrganelle ``jrc_hela-2`` EM volume declares ``translation``
+        % ``[0, 0, 0]`` at ``s0`` and ``[2.62, 2, 2]`` at ``s1``, which is
+        % exactly half of ``s1``'s scale, i.e. where the centre of the first
+        % coarse voxel falls. It is also the convention
+        % ``core.MibImage.updateBoundingBox`` uses, where the extent is
+        % ``(dim-1) * pixSize`` - centre of first voxel to centre of last - so
+        % the two map onto each other with no half-voxel correction.
+        %
+        % Input Arguments:
+        %   - **ct** - coordinateTransformations value from zarr metadata;
+        %     may be a struct array or cell array of transform objects
+        %   - **nAxes** - [numeric] number of axes declared in multiscales.axes
+        %
+        % Output Arguments:
+        %   - **translations** - [1 x nAxes numeric] offsets in axisLabels order,
+        %     in the axis unit declared by the store; all zeros when absent
+
+        translations = io.loaders.OmeZarrMetadataUtils.extractCTVector(ct, nAxes, 'translation', 0);
+    end
+
+    function values = extractCTVector(ct, nAxes, transformType, defaultValue)
+        % EXTRACTCTVECTOR - Pull one named transform out of a coordinateTransformations list.
+        %
+        % Syntax:
+        %   .. code-block:: matlab
+        %
+        %      values = io.loaders.OmeZarrMetadataUtils.extractCTVector(ct, nAxes, transformType, defaultValue)
+        %
+        % Shared implementation behind :meth:`extractScaleFromCT` and
+        % :meth:`extractTranslationFromCT` - the parsing, flattening and
+        % right-alignment rules are identical for both and only the transform
+        % name and the neutral value differ.
+        %
+        % Input Arguments:
+        %   - **ct** - coordinateTransformations value; struct array or cell array
+        %   - **nAxes** - [numeric] number of declared axes
+        %   - **transformType** - [char] ``'scale'`` or ``'translation'``
+        %   - **defaultValue** - [numeric] neutral value for absent axes
+        %     (1 for a scale, 0 for a translation)
+        %
+        % Output Arguments:
+        %   - **values** - [1 x nAxes numeric] in axisLabels order
+
+        values = repmat(defaultValue, 1, nAxes);
         try
-            % Normalise ct to a flat row vector sc
-            sc = [];
+            % Normalise ct to a flat row vector
+            raw = [];
             if isstruct(ct) && ~isempty(ct)
                 for k = 1:numel(ct)
-                    if strcmp(ct(k).type, 'scale')
-                        sc = ct(k).scale;
+                    if strcmp(ct(k).type, transformType) && isfield(ct, transformType)
+                        raw = ct(k).(transformType);
                         break;
                     end
                 end
             elseif iscell(ct)
                 for k = 1:numel(ct)
                     entry = ct{k};
-                    if isfield(entry, 'type') && strcmp(entry.type, 'scale')
-                        sc = entry.scale;
+                    if isfield(entry, 'type') && strcmp(entry.type, transformType) ...
+                            && isfield(entry, transformType)
+                        raw = entry.(transformType);
                         break;
                     end
                 end
             end
 
-            if isempty(sc); return; end
+            if isempty(raw); return; end
 
             % Flatten to row vector
-            if iscell(sc)
-                sc = cell2mat(sc(:)');
+            if iscell(raw)
+                raw = cell2mat(raw(:)');
             else
-                sc = sc(:)';
+                raw = raw(:)';
             end
 
-            nSc = numel(sc);
-            if nSc == nAxes
+            nRaw = numel(raw);
+            if nRaw == nAxes
                 % Exact match: values are already in axisLabels order
-                scales = sc;
-            elseif nSc < nAxes
+                values = raw;
+            elseif nRaw < nAxes
                 % Fewer CT values than axes - right-align so spatial axes
-                % (z, y, x at the end) receive the physical scale values.
-                % Non-spatial leading axes (t, c) remain 1.0.
-                scales(end - nSc + 1 : end) = sc;
+                % (z, y, x at the end) receive the physical values.
+                % Non-spatial leading axes (t, c) keep the neutral value.
+                values(end - nRaw + 1 : end) = raw;
             else
                 % More CT values than declared axes (non-standard).
                 % Take the last nAxes values (spatial axes are at the end).
-                scales = sc(end - nAxes + 1 : end);
+                values = raw(end - nAxes + 1 : end);
             end
         catch
-            % Return default ones on any parsing failure
+            % Return the neutral vector on any parsing failure
         end
     end
 
@@ -201,6 +265,524 @@ methods (Static)
         catch
             % leave default
         end
+    end
+
+    function factor = unitToMicrometreFactor(unit)
+        % UNITTOMICROMETREFACTOR - Multiplier converting a length in ``unit`` to micrometres.
+        %
+        % Syntax:
+        %   .. code-block:: matlab
+        %
+        %      factor = io.loaders.OmeZarrMetadataUtils.unitToMicrometreFactor(unit)
+        %
+        % Same table ``core.MibImage.updateBoundingBox`` uses, kept here so a
+        % loader can convert a region expressed in micrometres into the unit its
+        % store declares without depending on a MibImage instance. An unknown
+        % unit gives 1, i.e. "assume it is already micrometres", which is the
+        % same fallback MibImage takes.
+        %
+        % Input Arguments:
+        %   - **unit** - [char] unit string as normalised by :meth:`extractAxisUnit`
+        %
+        % Output Arguments:
+        %   - **factor** - [numeric] multiply a value in ``unit`` by this to get um
+
+        switch lower(char(unit))
+            case 'm';  factor = 1e6;
+            case 'cm'; factor = 1e4;
+            case 'mm'; factor = 1e3;
+            case 'um'; factor = 1;
+            case 'nm'; factor = 1e-3;
+            otherwise; factor = 1;
+        end
+    end
+
+    function boundingBox = worldBoundingBox(multiscale, levelIndex, shape)
+        % WORLDBOUNDINGBOX - Physical extent of one pyramid level, from its coordinateTransformations.
+        %
+        % Syntax:
+        %   .. code-block:: matlab
+        %
+        %      boundingBox = io.loaders.OmeZarrMetadataUtils.worldBoundingBox(multiscale, levelIndex, shape)
+        %
+        % Returns ``[xmin xmax ymin ymax zmin zmax]`` in the axis unit the store
+        % declares - the same unit :meth:`extractAxisUnit` reports and the same
+        % one the derived ``pixSize`` is in. **Not** forced to micrometres,
+        % deliberately: MIB's own default box is ``(dim-1) * pixSize`` in
+        % ``pixSize.units`` (``core.MibImage.initialize``), so returning store
+        % units is what keeps a derived box interchangeable with the default one.
+        % Convert with :meth:`unitToMicrometreFactor` where absolute units are
+        % needed.
+        %
+        % Pixel-centre convention throughout, matching both OME-NGFF and
+        % ``core.MibImage.updateBoundingBox``: the box runs from the centre of
+        % the first voxel to the centre of the last, so the extent of ``n``
+        % voxels is ``(n-1) * scale`` and **not** ``n * scale``. See
+        % :meth:`extractTranslationFromCT` for why that convention is not a guess.
+        %
+        % A store that declares no translation lands at the origin, which is
+        % exactly what every store MIB read before this existed did - so
+        % deriving a box is safe for them and changes nothing.
+        %
+        % A one-voxel axis is given the extent of two voxels, matching the
+        % ``max([dim 2])`` tweak in ``core.MibImage.updateBoundingBox``. That
+        % keeps a derived box drop-in interchangeable with MIB's default one -
+        % without it a single-slice store would report a zero-thickness Z and
+        % the next ``updateBoundingBox`` would divide it back into ``pixSize.z = 0``.
+        %
+        % Input Arguments:
+        %   - **multiscale** - [struct] a single entry of the ``multiscales``
+        %     array, i.e. ``ms(1)`` where ``ms = extractMultiscales(attrs)``
+        %   - **levelIndex** - [numeric] 1-based index into ``multiscale.datasets``
+        %   - **shape** - [1xN numeric] the level's zarr ``shape``, C-order, so
+        %     its indices line up with ``multiscale.axes``
+        %
+        % Output Arguments:
+        %   - **boundingBox** - [1x6 numeric] ``[xmin xmax ymin ymax zmin zmax]``;
+        %     ``[]`` when the metadata is not usable (no datasets, index out of
+        %     range), which callers must treat as "leave the box alone"
+
+        boundingBox = [];
+        if isempty(multiscale) || ~isfield(multiscale, 'datasets'); return; end
+        if levelIndex < 1 || levelIndex > numel(multiscale.datasets); return; end
+
+        axisOrder  = io.loaders.OmeZarrMetadataUtils.extractAxisOrder(multiscale);
+        axisLabels = io.loaders.OmeZarrMetadataUtils.axisOrderToLabels(axisOrder);
+        nAxes      = numel(axisLabels);
+
+        % The multiscales-level transform applies to the whole pyramid and is
+        % composed AFTER the per-dataset one, hence
+        % world = globalScale .* (levelScale .* index + levelTranslation) + globalTranslation.
+        globalScales       = ones(1, nAxes);
+        globalTranslations = zeros(1, nAxes);
+        if isfield(multiscale, 'coordinateTransformations')
+            globalScales = io.loaders.OmeZarrMetadataUtils.extractScaleFromCT( ...
+                multiscale.coordinateTransformations, nAxes);
+            globalTranslations = io.loaders.OmeZarrMetadataUtils.extractTranslationFromCT( ...
+                multiscale.coordinateTransformations, nAxes);
+        end
+
+        levelScales       = globalScales;
+        levelTranslations = globalTranslations;
+        dataset = multiscale.datasets(levelIndex);
+        if isfield(dataset, 'coordinateTransformations')
+            levelScales = io.loaders.OmeZarrMetadataUtils.extractScaleFromCT( ...
+                dataset.coordinateTransformations, nAxes) .* globalScales;
+            levelTranslations = io.loaders.OmeZarrMetadataUtils.extractTranslationFromCT( ...
+                dataset.coordinateTransformations, nAxes) .* globalScales + globalTranslations;
+        end
+
+        boundingBox = zeros(1, 6);
+        spatialAxes = {'x', 'y', 'z'};
+        for axisIndex = 1:3
+            axisPosition = find(strcmp(axisLabels, spatialAxes{axisIndex}), 1);
+            nVoxels = io.loaders.OmeZarrMetadataUtils.safeGetDim(shape, axisPosition, 1);
+            origin  = io.loaders.OmeZarrMetadataUtils.safeGetScale(levelTranslations, axisPosition, 0);
+            step    = io.loaders.OmeZarrMetadataUtils.safeGetScale(levelScales, axisPosition, 1);
+            boundingBox(axisIndex*2 - 1) = origin;
+            boundingBox(axisIndex*2)     = origin + (max([nVoxels, 2]) - 1) * step;
+        end
+    end
+
+    function outerBox = outerBoundingBox(centreBox, voxelSizeXYZ)
+        % OUTERBOUNDINGBOX - Convert a voxel-centre box into the outer physical extent.
+        %
+        % Syntax:
+        %   .. code-block:: matlab
+        %
+        %      outerBox = io.loaders.OmeZarrMetadataUtils.outerBoundingBox(centreBox, voxelSizeXYZ)
+        %
+        % **The half-voxel here is the whole point of this function.** MIB's
+        % ``boundingBox`` and OME-NGFF ``translation`` both address voxel
+        % *centres*, so a box in that convention is half a voxel short at each
+        % end of the volume's true physical extent. Any arithmetic that maps one
+        % grid onto another - which is what a region read does - has to happen in
+        % *edge* space, or it lands off by a fraction of a voxel and silently
+        % shifts the result by one.
+        %
+        % Concretely, for the OpenOrganelle ``jrc_hela-2`` crop1: its first voxel
+        % centre sits at ``x = 25863 nm`` on a 2 nm grid, and ``25863 / 4`` is
+        % ``6465.75`` - not an integer, which reads as a misaligned store. Its
+        % *edge* is at ``25862 nm``, and the EM 4 nm grid's own first edge is at
+        % ``-2 nm``, so ``(25862 + 2) / 4 = 6466`` exactly. The grids do line up;
+        % only the centre-space arithmetic hid it.
+        %
+        % Input Arguments:
+        %   - **centreBox** - [1x6 numeric] ``[xmin xmax ymin ymax zmin zmax]``
+        %     addressing the centres of the first and last voxel
+        %   - **voxelSizeXYZ** - [1x3 numeric] voxel size ``[x y z]``, same units
+        %
+        % Output Arguments:
+        %   - **outerBox** - [1x6 numeric] the same box grown by half a voxel at
+        %     each end, i.e. the volume's true physical extent
+
+        halfVoxel = reshape(double(voxelSizeXYZ), 1, 3) / 2;
+        outerBox  = reshape(double(centreBox), 1, 6);
+        outerBox([1 3 5]) = outerBox([1 3 5]) - halfVoxel;
+        outerBox([2 4 6]) = outerBox([2 4 6]) + halfVoxel;
+    end
+
+    function [voxelRange, residual] = regionToVoxelRange(outerRegion, levelCentreBox, levelVoxelSizeXYZ, levelShapeXYZ)
+        % REGIONTOVOXELRANGE - Which voxels of one pyramid level a world region covers.
+        %
+        % Syntax:
+        %   .. code-block:: matlab
+        %
+        %      [voxelRange, residual] = io.loaders.OmeZarrMetadataUtils.regionToVoxelRange(outerRegion, levelCentreBox, levelVoxelSizeXYZ, levelShapeXYZ)
+        %
+        % **Rounds outward.** Grid alignment is a property of a particular store,
+        % not of OME-NGFF: the 26 ``jrc_hela-2`` crops all land on integer EM
+        % voxel bounds, but nothing in the spec promises that, and a store with a
+        % half-voxel offset must produce a region one voxel too large rather than
+        % labels shifted one voxel against the image. ``residual`` reports how
+        % much was added so the caller can say so instead of assuming a clean fit.
+        %
+        % All arithmetic is in **edge** space - see :meth:`outerBoundingBox` for
+        % why that is not interchangeable with centre space.
+        %
+        % Input Arguments:
+        %   - **outerRegion** - [1x6 numeric] requested region
+        %     ``[xmin xmax ymin ymax zmin zmax]``, edge-based, in the level's units
+        %   - **levelCentreBox** - [1x6 numeric] the level's own world box,
+        %     centre-based, from :meth:`worldBoundingBox`
+        %   - **levelVoxelSizeXYZ** - [1x3 numeric] the level's voxel size ``[x y z]``
+        %   - **levelShapeXYZ** - [1x3 numeric] the level's voxel counts ``[x y z]``
+        %
+        % Output Arguments:
+        %   - **voxelRange** - [3x2 numeric] 1-based inclusive ``[first last]`` per
+        %     row ``x``, ``y``, ``z``, clamped to the level; a row reads
+        %     ``[1 0]`` when the region misses this level entirely
+        %   - **residual** - [3x2 numeric] per axis, how far the selected extent
+        %     overshoots the requested one at each end, in the level's units;
+        %     zero on an exact fit, negative where clamping cut the region short
+
+        % A voxel index that is a whole number in exact arithmetic can come back
+        % as 597.9999999 after a divide, and floor() would then lose a voxel. One
+        % part in a million of a voxel is far below any real grid offset and far
+        % above the error a few divides introduce.
+        gridTolerance = 1e-6;
+
+        voxelSize = reshape(double(levelVoxelSizeXYZ), 1, 3);
+        shape     = reshape(double(levelShapeXYZ), 1, 3);
+        region    = reshape(double(outerRegion), 1, 6);
+
+        % Edge of voxel 0 on this level's grid.
+        gridOrigin = reshape(double(levelCentreBox([1 3 5])), 1, 3) - voxelSize / 2;
+
+        regionLo = region([1 3 5]);
+        regionHi = region([2 4 6]);
+
+        firstIndex = floor((regionLo - gridOrigin) ./ voxelSize + gridTolerance);
+        lastIndex  = ceil((regionHi - gridOrigin) ./ voxelSize - gridTolerance) - 1;
+
+        clampedFirst = max(firstIndex, 0);
+        clampedLast  = min(lastIndex, shape - 1);
+
+        % Selected extent in edge space, for the residual report.
+        selectedLo = gridOrigin + clampedFirst .* voxelSize;
+        selectedHi = gridOrigin + (clampedLast + 1) .* voxelSize;
+        residual   = [(regionLo - selectedLo)', (selectedHi - regionHi)'];
+
+        voxelRange = [clampedFirst', clampedLast'] + 1;   % 1-based inclusive
+        missesLevel = clampedLast < clampedFirst;
+        voxelRange(missesLevel, :) = repmat([1 0], sum(missesLevel), 1);
+        residual(missesLevel, :)   = 0;
+    end
+
+    function regionInfo = applyRegionToLevels(outerRegion, levelWorldBoxes, levelVoxelSizes, levelImageSizes)
+        % APPLYREGIONTOLEVELS - Crop a whole pyramid to a world region.
+        %
+        % Syntax:
+        %   .. code-block:: matlab
+        %
+        %      regionInfo = io.loaders.OmeZarrMetadataUtils.applyRegionToLevels(outerRegion, levelWorldBoxes, levelVoxelSizes, levelImageSizes)
+        %
+        % Each level is intersected with the region **independently**, on its own
+        % grid, rather than by scaling level 0's answer. Levels are not obliged
+        % to be exact multiples of one another, and dividing a voxel count by a
+        % scale factor accumulates exactly the off-by-one this is trying to
+        % avoid.
+        %
+        % Input Arguments:
+        %   - **outerRegion** - [1x6 numeric] edge-based world box in the store's units
+        %   - **levelWorldBoxes** - [nLevels x 6 numeric] each level's centre-based box
+        %   - **levelVoxelSizes** - [nLevels x 3 numeric] voxel size per level, ``[y x z]``
+        %   - **levelImageSizes** - [nLevels x 3 numeric] voxel counts per level, ``[y x z]``
+        %
+        % Output Arguments:
+        %   - **regionInfo** - [struct] with fields:
+        %
+        %     - ``.levelImageSizes`` - [nLevels x 3] cropped voxel counts ``[y x z]``
+        %     - ``.levelRegionOrigins`` - [nLevels x 3] 1-based first voxel ``[y x z]``
+        %       within each level's own array; all ones means "no crop"
+        %     - ``.levelWorldBoxes`` - [nLevels x 6] centre-based box of the crop per level
+        %     - ``.residual`` - [3x2] level-0 overshoot per axis, see
+        %       :meth:`regionToVoxelRange`
+        %     - ``.isExact`` - [logical] true when level 0 fitted the grid with no overshoot
+
+        nLevels            = size(levelImageSizes, 1);
+        croppedSizes       = zeros(nLevels, 3);
+        levelRegionOrigins = ones(nLevels, 3);
+        croppedWorldBoxes  = zeros(nLevels, 6);
+        residual           = zeros(3, 2);
+
+        for levelIndex = 1:nLevels
+            voxelSizeYXZ = levelVoxelSizes(levelIndex, :);
+            shapeYXZ     = levelImageSizes(levelIndex, :);
+            % regionToVoxelRange works in x,y,z; the pyramid tables are y,x,z.
+            voxelSizeXYZ = voxelSizeYXZ([2 1 3]);
+            shapeXYZ     = shapeYXZ([2 1 3]);
+
+            [voxelRange, levelResidual] = io.loaders.OmeZarrMetadataUtils.regionToVoxelRange( ...
+                outerRegion, levelWorldBoxes(levelIndex, :), voxelSizeXYZ, shapeXYZ);
+            if levelIndex == 1; residual = levelResidual; end
+
+            countXYZ  = max(voxelRange(:, 2) - voxelRange(:, 1) + 1, 0)';
+            originXYZ = voxelRange(:, 1)';
+
+            croppedSizes(levelIndex, :)       = countXYZ([2 1 3]);
+            levelRegionOrigins(levelIndex, :) = originXYZ([2 1 3]);
+
+            % Centre-based box of the cropped extent: the centre of the first
+            % kept voxel, out to the centre of the last.
+            gridOrigin = levelWorldBoxes(levelIndex, [1 3 5]);
+            firstCentre = gridOrigin + (originXYZ - 1) .* voxelSizeXYZ;
+            lastCentre  = firstCentre + max(countXYZ - 1, 0) .* voxelSizeXYZ;
+            croppedWorldBoxes(levelIndex, [1 3 5]) = firstCentre;
+            croppedWorldBoxes(levelIndex, [2 4 6]) = lastCentre;
+        end
+
+        regionInfo = struct();
+        regionInfo.levelImageSizes    = croppedSizes;
+        regionInfo.levelRegionOrigins = levelRegionOrigins;
+        regionInfo.levelWorldBoxes    = croppedWorldBoxes;
+        regionInfo.residual           = residual;
+        regionInfo.isExact            = all(abs(residual(:)) < 1e-9);
+    end
+
+    function requestedRegion = resolveRegionOption(options, loaderOptions)
+        % RESOLVEREGIONOPTION - Pick up ``Region`` from the call or the loader's own options.
+        %
+        % Syntax:
+        %   .. code-block:: matlab
+        %
+        %      requestedRegion = io.loaders.OmeZarrMetadataUtils.resolveRegionOption(options, loaderOptions)
+        %
+        % Same two-place lookup ``ZarrGroupPath`` already uses: a region can
+        % arrive with the ``loadMetadata`` call or be baked into the loader at
+        % construction (which is the route ``core.MibDataset.loadModel`` takes),
+        % and either has to work.
+        %
+        % Input Arguments:
+        %   - **options** - [struct] options passed to loadMetadata
+        %   - **loaderOptions** - [struct] the loader's own ``obj.Options``
+        %
+        % Output Arguments:
+        %   - **requestedRegion** - [1x6 numeric] region in um, or ``[]`` when
+        %     neither source supplies a usable one
+
+        requestedRegion = [];
+        for candidate = {options, loaderOptions}
+            source = candidate{1};
+            if isstruct(source) && isfield(source, 'Region') && ~isempty(source.Region)
+                value = reshape(double(source.Region), 1, []);
+                if numel(value) == 6; requestedRegion = value; return; end
+            end
+        end
+    end
+
+    function requestedLevel = resolveLevelOption(options, loaderOptions, nLevels)
+        % RESOLVELEVELOPTION - Pick up an explicit pyramid level, if one was given.
+        %
+        % Syntax:
+        %   .. code-block:: matlab
+        %
+        %      requestedLevel = io.loaders.OmeZarrMetadataUtils.resolveLevelOption(options, loaderOptions, nLevels)
+        %
+        % Standard mode normally asks which level to read. ``ZarrLevel`` answers
+        % that in advance, and it is not only a batch convenience: when a region
+        % was requested to line a dataset up with something else - a ground-truth
+        % crop and its labels - the level follows from that pairing, and letting
+        % the user pick a different one would silently break the match the
+        % caller just asserted.
+        %
+        % A level outside the pyramid is **ignored rather than clamped**, so a
+        % stale batch protocol falls back to asking instead of quietly opening a
+        % different resolution than it names.
+        %
+        % Same two-place lookup as :meth:`resolveRegionOption`.
+        %
+        % Input Arguments:
+        %   - **options** - [struct] options passed to loadImages
+        %   - **loaderOptions** - [struct] the loader's own ``obj.Options``
+        %   - **nLevels** - [numeric] levels this pyramid actually has
+        %
+        % Output Arguments:
+        %   - **requestedLevel** - [numeric] 1-based level, or ``[]`` for none
+
+        requestedLevel = [];
+        for candidate = {options, loaderOptions}
+            source = candidate{1};
+            if isstruct(source) && isfield(source, 'ZarrLevel') && ~isempty(source.ZarrLevel)
+                value = double(source.ZarrLevel);
+                if isscalar(value) && value >= 1 && value <= nLevels && value == round(value)
+                    requestedLevel = value;
+                    return;
+                end
+            end
+        end
+    end
+
+    function [levelImageSizes, levelRegionOrigins, levelWorldBoxes, regionReport] = ...
+            applyRequestedRegion(requestedRegion, levelImageSizes, levelVoxelSizes, levelWorldBoxes, storeUnits)
+        % APPLYREQUESTEDREGION - Crop the pyramid to a world region, or leave it alone.
+        %
+        % Syntax:
+        %   .. code-block:: matlab
+        %
+        %      [sizes, origins, boxes, report] = io.loaders.OmeZarrMetadataUtils.applyRequestedRegion(requestedRegion, levelImageSizes, levelVoxelSizes, levelWorldBoxes, storeUnits)
+        %
+        % **An absent or empty region is a literal no-op** - the inputs come back
+        % unchanged and ``levelRegionOrigins`` is all ones, which every read path
+        % treats as "start at voxel 1". That matters more than it looks: a region
+        % touches the read path of every zarr dataset MIB opens, local and remote,
+        % v2 and v3, and most of them will never ask for one.
+        %
+        % ``requestedRegion`` is in **micrometres** and is **edge-based** - the
+        % outer physical extent, not voxel centres. Micrometres because a region
+        % is compared across pyramids that declare different units and scales, so
+        % an absolute unit is the only one that cannot be misread; edge-based
+        % because that is the space grid alignment is decided in, see
+        % :meth:`outerBoundingBox`. Both differ deliberately from
+        % ``MibImage.boundingBox``, which is centre-based in the store's own unit,
+        % and mixing the two is exactly the half-voxel error this convention
+        % exists to prevent.
+        %
+        % Input Arguments:
+        %   - **requestedRegion** - [1x6 numeric] region in um, or ``[]`` for none
+        %   - **levelImageSizes** - [nLevels x 3] voxel counts ``[y x z]``
+        %   - **levelVoxelSizes** - [nLevels x 3] voxel sizes ``[y x z]``, store units
+        %   - **levelWorldBoxes** - [nLevels x 6] centre-based boxes, store units
+        %   - **storeUnits** - [char] the store's length unit, e.g. ``'nm'``
+        %
+        % Output Arguments:
+        %   - **levelImageSizes** - cropped voxel counts (or the input, unchanged)
+        %   - **levelRegionOrigins** - [nLevels x 3] 1-based first voxel ``[y x z]``
+        %   - **levelWorldBoxes** - boxes of the cropped extent (or the input)
+        %   - **regionReport** - [struct] ``.requested``, ``.isExact``,
+        %     ``.residual``, ``.message``
+
+        regionReport = struct('requested', false, 'isExact', true, ...
+            'residual', zeros(3, 2), 'message', '');
+        levelRegionOrigins = ones(size(levelImageSizes, 1), 3);
+
+        if isempty(requestedRegion) || numel(requestedRegion) ~= 6
+            return;
+        end
+        requestedRegion = reshape(double(requestedRegion), 1, 6);
+
+        % Region arrives in micrometres; the level tables are in the store's unit.
+        unitFactor = io.loaders.OmeZarrMetadataUtils.unitToMicrometreFactor(storeUnits);
+        regionInStoreUnits = requestedRegion / unitFactor;
+
+        regionInfo = io.loaders.OmeZarrMetadataUtils.applyRegionToLevels( ...
+            regionInStoreUnits, levelWorldBoxes, levelVoxelSizes, levelImageSizes);
+
+        if any(regionInfo.levelImageSizes(1, :) == 0)
+            % Nothing of level 0 lies inside the region. Reported rather than
+            % silently returning a zero-sized dataset, which would surface much
+            % later as an unexplained empty image.
+            regionReport.requested = true;
+            regionReport.isExact   = false;
+            regionReport.message   = sprintf(['The requested region does not overlap this ' ...
+                'image group, so nothing was cropped and the full extent was kept.']);
+            return;
+        end
+
+        levelImageSizes    = regionInfo.levelImageSizes;
+        levelRegionOrigins = regionInfo.levelRegionOrigins;
+        levelWorldBoxes    = regionInfo.levelWorldBoxes;
+
+        regionReport.requested = true;
+        regionReport.isExact   = regionInfo.isExact;
+        regionReport.residual  = regionInfo.residual;
+        if regionInfo.isExact
+            regionReport.message = '';
+        else
+            % Round outward, then say by how much - a store whose grid does not
+            % divide the region evenly gets a region one voxel too big rather
+            % than labels shifted one voxel against the image.
+            overshoot = max(abs(regionInfo.residual(:))) * unitFactor;
+            regionReport.message = sprintf(['The requested region does not fall exactly on ' ...
+                'this pyramid''s voxel grid; it was rounded outward by up to %.4g um.'], overshoot);
+        end
+    end
+
+    function bbox = buildZarrBbox(axisOrder, axisRanges)
+        % BUILDZARRBBOX - Turn per-axis MIB ranges into a zarr C-order read box.
+        %
+        % Syntax:
+        %   .. code-block:: matlab
+        %
+        %      bbox = io.loaders.OmeZarrMetadataUtils.buildZarrBbox(axisOrder, axisRanges)
+        %
+        % The engines take the box in the store's own declared axis order and
+        % return an array laid out the same way, so this is the single point
+        % where MIB's named ranges become positional ones.
+        %
+        % Input Arguments:
+        %   - **axisOrder** - [char] zarr C-order declaration, e.g. ``'tczyx'``
+        %   - **axisRanges** - [struct] fields ``.y .x .z .c .t``, each a
+        %     ``[first last]`` 1-based inclusive pair; an axis the store does not
+        %     declare is ignored, and an axis with no field becomes a singleton
+        %
+        % Output Arguments:
+        %   - **bbox** - [nDims x 2 numeric] rows in ``axisOrder`` order, each
+        %     ``[start_1based, end_exclusive]``
+
+        nDims = numel(axisOrder);
+        bbox  = zeros(nDims, 2);
+        for dimIndex = 1:nDims
+            axisName = axisOrder(dimIndex);
+            if isfield(axisRanges, axisName)
+                range = axisRanges.(axisName);
+                bbox(dimIndex, :) = [range(1), range(2) + 1];
+            else
+                bbox(dimIndex, :) = [1, 2];   % singleton for an absent axis
+            end
+        end
+    end
+
+    function bbox = levelRegionBbox(axisOrder, regionOrigin, levelSize, nColors, nTimes)
+        % LEVELREGIONBBOX - Read box covering a whole cropped level.
+        %
+        % Syntax:
+        %   .. code-block:: matlab
+        %
+        %      bbox = io.loaders.OmeZarrMetadataUtils.levelRegionBbox(axisOrder, regionOrigin, levelSize, nColors, nTimes)
+        %
+        % The whole-level equivalent of what ``getDataZarr`` does per slice: turn
+        % a crop origin plus a cropped size into the store-space box to read.
+        % Used by the Standard and Model load paths, which read a level in one go
+        % rather than region by region.
+        %
+        % Input Arguments:
+        %   - **axisOrder** - [char] zarr C-order declaration
+        %   - **regionOrigin** - [1x3 numeric] 1-based first voxel ``[y x z]``
+        %     within the level's own array; ``[1 1 1]`` for an uncropped store
+        %   - **levelSize** - [1x3 numeric] cropped voxel counts ``[y x z]``
+        %   - **nColors** - [numeric] colour channel count
+        %   - **nTimes** - [numeric] time point count
+        %
+        % Output Arguments:
+        %   - **bbox** - [nDims x 2 numeric] ready for ``io.zarr.Array.read``
+
+        axisRanges.y = [regionOrigin(1), regionOrigin(1) + levelSize(1) - 1];
+        axisRanges.x = [regionOrigin(2), regionOrigin(2) + levelSize(2) - 1];
+        axisRanges.z = [regionOrigin(3), regionOrigin(3) + levelSize(3) - 1];
+        axisRanges.c = [1, nColors];
+        axisRanges.t = [1, nTimes];
+        bbox = io.loaders.OmeZarrMetadataUtils.buildZarrBbox(axisOrder, axisRanges);
     end
 
     function v = safeGetDim(shape, idx, default)

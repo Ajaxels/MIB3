@@ -731,6 +731,14 @@ classdef CropDataset < handle
             BatchOptLoc = obj.BatchOpt;
             id          = obj.mibModel.id;
 
+            % Parent figure for all dialogs of this operation: the crop window
+            % when it is open, otherwise the main MIB window (batch mode)
+            if ~isempty(obj.view) && isvalid(obj.view.gui)
+                progressParent = obj.view.gui;
+            else
+                progressParent = obj.mibModel.getProgressBarParent();
+            end
+
             if strcmp(BatchOptLoc.cropMode{1}, 'Interactive')
                 % --- Interactive mode: draw a rectangle on the image axes ---
                 % Resolve axes, cImageDoc and cRoi from mibController (split-panel safe).
@@ -857,7 +865,7 @@ classdef CropDataset < handle
                     dlgOpt.MsgBoxOnly  = true;
                     dlgOpt.Icon        = 'puffin_warning';
                     dlgOpt.HeaderLines = 1;
-                    utils.dlgs.inputUniversalDlg(obj.view.gui, ...
+                    utils.dlgs.inputUniversalDlg(progressParent, ...
                         'Oops, not implemented yet!', {''}, ...
                         {'Please select a single ROI from the Select ROI combobox'}, ...
                         'Multiple ROI crop', dlgOpt);
@@ -878,16 +886,14 @@ classdef CropDataset < handle
             bigDataOutput = isfield(BatchOptLoc, 'OutputType') && strcmp(BatchOptLoc.OutputType{1}, 'BigData');
             if ~strcmp(BatchOptLoc.Destination{1}, sprintf('Container %d', id)) && ...
                     ~strcmp(BatchOptLoc.Destination{1}, 'Current')
-                bufferId = str2double(BatchOptLoc.Destination{1}(end));
+                % 'Container 12' -> 12; parsing only the last character breaks
+                % for two-digit container indices (datasetsInSet is 10)
+                bufferId = sscanf(BatchOptLoc.Destination{1}, 'Container %d');
                 % deep-copy dataset to destination buffer before cropping
                 % (skipped for BigData output - cropToBigData creates the destination fresh)
                 if ~bigDataOutput
                     copyOpts.showWaitbar = BatchOptLoc.showWaitbar;
-                    if ~isempty(obj.view) && isvalid(obj.view.gui)
-                        copyOpts.UIFigure = obj.view.gui;
-                    else
-                        copyOpts.UIFigure = [];
-                    end
+                    copyOpts.UIFigure    = progressParent;
                     obj.mibModel.deepCopyDataset(id, bufferId, copyOpts);
                 end
             else
@@ -902,7 +908,12 @@ classdef CropDataset < handle
             tMax = max(cropDim);
             crop_factor = [crop_factor, tMin, tMax-tMin+1];
 
-            obj.mibModel.I{bufferId}.enableSelection = obj.mibModel.preferences.System.EnableSelection;
+            % Note: enableSelection is intentionally NOT touched here.
+            % Cropping is a geometric operation and must not change whether
+            % models/selection are enabled in the destination buffer:
+            %  - Standard source: the deep copy already carries the source value
+            %  - Virtual/BigData source: cropDataset converts to Standard via
+            %    switchDatasetMode(1, true), which enables selection itself
 
             % get Zarr pyramid level index if applicable
             if ~obj.batchProcessingSwitch && strcmp(obj.view.handles.ZarrPyramidLevel.Enable, 'on')
@@ -917,9 +928,7 @@ classdef CropDataset < handle
                 % Warn: a new Zarr3 pyramid will be written to disk. When the
                 % destination buffer is the current one the dataset will be
                 % replaced; the original file on disk is not deleted.
-                parentFigForDlg = [];
-                if ~isempty(obj.view) && isvalid(obj.view.gui); parentFigForDlg = obj.view.gui; end
-                warnSel = utils.dlgs.inputQuestDlg(parentFigForDlg, ...
+                warnSel = utils.dlgs.inputQuestDlg(progressParent, ...
                     sprintf(['The crop operation will write a new OME-Zarr v3 pyramid to disk.\n\n' ...
                     'The current dataset in the destination buffer will be replaced with the cropped BigData.\n' ...
                     'The source file on disk is not modified.']), ...
@@ -935,11 +944,8 @@ classdef CropDataset < handle
                 outputPath = fullfile(outputFolder, outputFilename);
 
                 cropOpts.showWaitbar = BatchOptLoc.showWaitbar;
-                cropOpts.UIFigure    = [];
-                if ~isempty(obj.view) && isvalid(obj.view.gui)
-                    cropOpts.UIFigure = obj.view.gui;
-                end
-                cropOpts.outputPath = outputPath;
+                cropOpts.UIFigure    = progressParent;
+                cropOpts.outputPath  = outputPath;
 
                 result = obj.mibModel.I{id}.cropToBigData(crop_factor, cropOpts);
                 if result == 0; notify(obj.mibModel, 'StopProtocol'); return; end
@@ -961,8 +967,9 @@ classdef CropDataset < handle
                 zarr3Loader = io.loaders.Zarr3VirtualSetupLoader(lo);
                 [imgInfo, files] = zarr3Loader.loadMetadata({outputPath}, lo);
                 [img, imgInfo]   = zarr3Loader.loadImages(files, imgInfo, lo);
+                % initialize() keeps BigData browse-only (enableSelection=false);
+                % it is switched on below only when a model store is reattached
                 obj.mibModel.I{bufferId}.initialize(img, imgInfo, 'BigData');
-                obj.mibModel.I{bufferId}.enableSelection = obj.mibModel.preferences.System.EnableSelection;
 
                 % Reattach the model zarr if cropToBigData created one:
                 % model is saved as Labels_<stem><ext> alongside the image zarr
@@ -1000,6 +1007,8 @@ classdef CropDataset < handle
                 % Map ZarrPyramidLevel string ('s0','s1',...) to 1-indexed pyramidLevel
                 zarrStr = BatchOptLoc.ZarrPyramidLevel{1};
                 BatchOptLoc.pyramidLevel = str2double(zarrStr(2:end)) + 1;
+                % cropDataset skips its progress dialog without a parent figure
+                BatchOptLoc.UIFigure = progressParent;
                 result = obj.mibModel.I{bufferId}.cropDataset(crop_factor, BatchOptLoc);
                 if result == 0; notify(obj.mibModel, 'StopProtocol'); return; end
             end
