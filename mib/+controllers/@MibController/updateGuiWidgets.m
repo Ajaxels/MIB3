@@ -238,13 +238,14 @@ if isempty(updatePanels) || ismember('depthSlider', updatePanels)
         imViewHandles.sliceNumberSlider.Limits = [1 max_slice+0.001];
         imViewHandles.sliceNumberSlider.MinorTicks = 1:(max_slice-1)/10:max_slice;
         
+        % define width based on number of digits in max_slice
         switch numel(num2str(max_slice))
-            case 3
-                layoutWidth = 30;
             case 4
                 layoutWidth = 36;
             case 5
                 layoutWidth = 42;
+            otherwise
+                layoutWidth = 30;
         end
 
         % show the slider panel
