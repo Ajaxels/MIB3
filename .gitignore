@@ -45,9 +45,15 @@ codegen/
 /mib/external/Fiji
 
 # graphify
-graphify-out/manifest.json    # mtime-based, breaks after git clone
-graphify-out/cost.json        # local only
-graphify-out/cache/         # optional: commit for speed, skip to keep repo small
+# NOTE: git has no trailing comments in .gitignore - a '#' only starts a comment
+# at the start of a line. These three rules previously carried inline comments,
+# which made them match nothing, so all three paths were committed by accident.
+# manifest.json is mtime-based and breaks after a git clone
+graphify-out/manifest.json
+# cost.json is local only
+graphify-out/cost.json
+# cache/ can be committed for speed, or skipped to keep the repo small
+graphify-out/cache/
 
 # Scratch space - docs/CLAUDE.md calls temp/ scratch only, and its cached zarr
 # stores carry the internal paths of whoever produced them. Never commit it.
