@@ -81,6 +81,74 @@ classdef ImageConverterNativeZarrTest < matlab.unittest.TestCase
                 'mibBoundingBox must encode the shift + physical extent');
         end
 
+        function nativeZarr2_writesV2WithIdenticalPixels(testCase)
+            % The output folder carries no .zarr2/.zarr3 extension, so the format
+            % comes from BatchOpt.ZarrVersion rather than from the path. Assert
+            % both that v2 metadata was written AND that the pixels survived: the
+            % two formats express MATLAB's column-major layout differently, so a
+            % mix-up transposes data while leaving every dimension intact.
+            inDir  = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            outDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+
+            vol = reshape(uint8(mod(0:16*12*8-1, 251) + 1), [16 12 8]);
+            for z = 1:8
+                imwrite(vol(:, :, z), fullfile(inDir.Folder, sprintf('s_%02d.tif', z)));
+            end
+            ds = imageDatastore(inDir.Folder, 'FileExtensions', '.tif');
+
+            zarrPath = fullfile(outDir.Folder, 'out_v2');
+            BatchOpt = struct();
+            BatchOpt.OutputDirectory        = zarrPath;
+            BatchOpt.ZarrVersion            = {'Zarr v2'};
+            BatchOpt.ZarrImageType          = {'image'};
+            BatchOpt.ZarrChunkSizes         = '8, 8, 4, 1, 1';   % x,y,z,c,t
+            BatchOpt.ZarrUseSharding        = false;
+            BatchOpt.ZarrShardXFactorsXYZ   = '2, 2, 1, 1, 1';
+            BatchOpt.ZarrCompression        = {'blosc'};
+            BatchOpt.ZarrVoxelSizeXYZ       = '0.01, 0.02, 0.03';   % x,y,z
+            BatchOpt.ZarrUnits              = {'micrometers'};
+            BatchOpt.ZarrBBShiftsXYZ        = '0, 0, 0';
+            BatchOpt.ZarrDownsampleLimitXYZ = '8, 8, 4';
+
+            fnOut = ImageConverter.convertToZarr3Native(ds, BatchOpt, struct());
+
+            group = io.zarr.Group(fnOut);
+            testCase.verifyEqual(group.zarrFormat(), 2, ...
+                'ZarrVersion must select the format when the path has no extension');
+            testCase.verifyTrue(isfile(fullfile(fnOut, '.zgroup')));
+            testCase.verifyFalse(isfile(fullfile(fnOut, 'zarr.json')));
+
+            testCase.verifyEqual(group.openArray('0').read(), vol, ...
+                'level-0 pixels must survive the v2 write unchanged');
+        end
+
+        function nativeZarr2_shardingIsRefused(testCase)
+            % The dialog clears the sharding checkbox when v2 is picked, so this
+            % combination can only arrive through batch mode - where it must fail
+            % loudly rather than write a differently chunked store than requested.
+            inDir  = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            outDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+
+            imwrite(uint8(zeros(16, 12)), fullfile(inDir.Folder, 's_01.tif'));
+            ds = imageDatastore(inDir.Folder, 'FileExtensions', '.tif');
+
+            BatchOpt = struct();
+            BatchOpt.OutputDirectory        = fullfile(outDir.Folder, 'out_shard');
+            BatchOpt.ZarrVersion            = {'Zarr v2'};
+            BatchOpt.ZarrImageType          = {'image'};
+            BatchOpt.ZarrChunkSizes         = '8, 8, 4, 1, 1';
+            BatchOpt.ZarrUseSharding        = true;
+            BatchOpt.ZarrShardXFactorsXYZ   = '2, 2, 1, 1, 1';
+            BatchOpt.ZarrCompression        = {'blosc'};
+            BatchOpt.ZarrVoxelSizeXYZ       = '0.01, 0.02, 0.03';
+            BatchOpt.ZarrUnits              = {'micrometers'};
+            BatchOpt.ZarrBBShiftsXYZ        = '0, 0, 0';
+            BatchOpt.ZarrDownsampleLimitXYZ = '8, 8, 4';
+
+            testCase.verifyError(@() ImageConverter.convertToZarr3Native(ds, BatchOpt, struct()), ...
+                'io:Zarr3Saver:shardingUnsupportedV2');
+        end
+
         function nativeZarr3_oddSliceCount_anisotropicStream_doesNotCrash(testCase)
             % Regression: an odd number of source slices combined with an
             % anisotropic voxel size (forcing a Z-downsampled pyramid level)

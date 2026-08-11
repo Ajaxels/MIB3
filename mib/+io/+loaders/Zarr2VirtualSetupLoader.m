@@ -1,13 +1,13 @@
 classdef Zarr2VirtualSetupLoader < io.loaders.BaseImageLoader
 % ZARR2VIRTUALSETUPLOADER - Setup loader for OME-Zarr v2 datasets - handles all dataset modes.
 %
-% Zarr v2 has no native (zarrMex/zarr-matlab) engine, so this loader is always
-% python-backed: metadata is parsed directly from the v2 JSON sidecar files
-% (``.zattrs``/``.zgroup``/``.zarray``, pure MATLAB ``jsondecode`` - no python
-% needed just to discover shape/dtype/pyramid structure), while pixel data is
-% read through ``io.zarr.PyBackend`` (``zarr.open`` + raw ``pyrun`` byte
-% transfers), which is format-agnostic and already part of the v3 dual-backend
-% facade.
+% Metadata is parsed directly from the v2 JSON sidecar files
+% (``.zattrs``/``.zgroup``/``.zarray``, pure MATLAB ``jsondecode`` - no engine
+% involved just to discover shape/dtype/pyramid structure), while pixel data
+% is read through ``io.zarr.Array``, so the engine follows ``io.zarr.Config``
+% exactly as it does for v3. The bundled ``zarrMex`` reads zarr v2, so
+% **python is optional**, needed only when the python backend is explicitly
+% selected in ``Preferences -> Input/output -> Zarr library``.
 %
 % This loader runs ONCE when the user opens a zarr v2 file and handles all
 % four MIB3 loading contexts:
@@ -18,9 +18,10 @@ classdef Zarr2VirtualSetupLoader < io.loaders.BaseImageLoader
 % metadata; pixels are read on demand by Zarr2VirtualLoader.
 % BigData : identical to Virtual mode (image reads are pyramid-aware and
 % on-demand either way; BigData additionally gets a disk-backed
-% *editable* label pyramid for zarr v3 only - a zarr v2 BigData
-% dataset can only display an EXISTING labels array read-only,
-% via core.MibBigDataLabelsZarr2, not create a new one).
+% *editable* label pyramid, which MIB creates in whichever zarr
+% format the store path asks for. An EXISTING labels array that
+% MIB did not write is displayed read-only, via
+% core.MibBigDataLabelsZarr2).
 % Model : loadImages() loads the full labels array into memory (same
 % full-array contract every MibDataset.loadModel loader uses),
 % and resolves material names/colors from the store's metadata.
@@ -96,9 +97,10 @@ methods
         %
         %      [imginfo, files] = obj.loadMetadata(filenames, options)
         %
-        % Confirms the python zarr backend is usable (fails fast, once, at
-        % open time - see ``io.zarr.PyBackend.ensureLoaded``), then reads
-        % ``.zattrs``/``.zarray`` (works for local paths and HTTP/HTTPS URLs).
+        % Confirms the selected zarr backend is usable (fails fast, once, at
+        % open time - a no-op for the native engine, which has no external
+        % dependency), then reads ``.zattrs``/``.zarray`` (works for local
+        % paths and HTTP/HTTPS URLs).
         % Extracts pyramid levels, axis order, shapes, chunk sizes, and pixel
         % sizes from the OME-Zarr multiscales attribute. Falls back to a
         % single-level read if no multiscales found.
@@ -116,32 +118,38 @@ methods
         imginfo = core.MibImage.initializeImgInfo();
         rootPath = filenames{1};
 
-        % ---- confirm the python zarr backend is usable (fail fast, once) --
-        % v2 has no native engine, so this is unconditional (unlike the v3
-        % python backend, which is opt-in via io.zarr.Config).
-        try
-            io.zarr.PyBackend.ensureLoaded();
-        catch ME
-            errorMessage = sprintf(['Zarr2VirtualSetupLoader: cannot start the Python Zarr ' ...
-                'backend needed to read zarr v2 stores:\n%s'], ME.message);
-            utils.dlgs.showErrorDialog(obj.Options.ParentFigure, errorMessage, ...
-                'io:Zarr2VirtualSetupLoader:pythonUnavailable', '', '');
-            files = struct();
-            return;
-        end
+        % ---- confirm the selected zarr backend is usable (fail fast, once) --
+        % The native zarrMex engine reads zarr v2 with no external dependency,
+        % local and remote alike, so there is nothing to check for it. Only the
+        % opt-in python backend can fail before a single pixel is read, and it
+        % is worth catching here rather than on the first slice the user
+        % scrubs to.
+        if io.zarr.Config.isPython()
+            try
+                io.zarr.PyBackend.ensureLoaded();
+            catch ME
+                errorMessage = sprintf(['Zarr2VirtualSetupLoader: cannot start the Python Zarr ' ...
+                    'backend selected in Preferences -> Input/output -> Zarr library:\n%s\n' ...
+                    'Switching that setting to ''native'' (zarrMex) reads zarr v2 without python.'], ...
+                    ME.message);
+                utils.dlgs.showErrorDialog(obj.Options.ParentFigure, errorMessage, ...
+                    'io:Zarr2VirtualSetupLoader:pythonUnavailable', '', '');
+                files = struct();
+                return;
+            end
 
-        % A remote store needs two packages a local one does not. Checked here so
-        % a missing aiohttp/requests is reported once, now, instead of on the
-        % first slice the user scrubs to. Reported separately from the block
-        % above because python is running fine - it just cannot reach the network
-        % - and the message says exactly what to install.
-        try
-            io.zarr.PyBackend.ensureRemoteSupport(rootPath);
-        catch ME
-            utils.dlgs.showErrorDialog(obj.Options.ParentFigure, ME.message, ...
-                'Remote Zarr: missing Python packages', '', '');
-            files = struct();
-            return;
+            % A remote store needs two packages a local one does not. Reported
+            % separately from the block above because python is running fine -
+            % it just cannot reach the network - and the message says exactly
+            % what to install.
+            try
+                io.zarr.PyBackend.ensureRemoteSupport(rootPath);
+            catch ME
+                utils.dlgs.showErrorDialog(obj.Options.ParentFigure, ME.message, ...
+                    'Remote Zarr: missing Python packages', '', '');
+                files = struct();
+                return;
+            end
         end
 
         isHttp = startsWith(rootPath, 'http://') || startsWith(rootPath, 'https://');
@@ -519,10 +527,7 @@ methods (Access = private)
         fullPath = obj.buildLevelPath(files.filename, files.levelNames{selectedLevel});
         sz       = files.levelImageSizes(selectedLevel, :);
 
-        io.zarr.PyBackend.ensureLoaded();
-        pyArr = io.zarr.PyBackend.openArray(fullPath, 'r');
-        meta  = io.zarr.PyBackend.arrayMeta(pyArr);
-        raw   = io.zarr.PyBackend.readArray(pyArr, [], meta);
+        raw = io.zarr.Array(fullPath).read();
 
         % permute from zarr C-order to MIB3 [y,x,z,c,t]
         perm = io.loaders.OmeZarrMetadataUtils.computePermutation(files.axisOrder);
@@ -590,10 +595,7 @@ methods (Access = private)
         levelPath = files.levelNames{1};
         fullPath  = obj.buildLevelPath(files.filename, levelPath);
 
-        io.zarr.PyBackend.ensureLoaded();
-        pyArr = io.zarr.PyBackend.openArray(fullPath, 'r');
-        meta  = io.zarr.PyBackend.arrayMeta(pyArr);
-        raw   = io.zarr.PyBackend.readArray(pyArr, [], meta);
+        raw = io.zarr.Array(fullPath).read();
 
         perm = io.loaders.OmeZarrMetadataUtils.computePermutation(files.axisOrder);
         img  = permute(raw, perm);
@@ -624,8 +626,9 @@ methods (Access = private)
         Pyramid.shardSizes             = files.shardSizes;
         Pyramid.axisOrder              = files.axisOrder;
         % Selects the Zarr2VirtualLoader branch in MibVirtualImage.getDataZarr
-        % (default 'zarr3' otherwise) - required since this is a python-only,
-        % non-zarrMex-openable store.
+        % (default 'zarr3' otherwise). Both loaders now use the same engine, so
+        % this records which format the store is in rather than which library
+        % can open it.
         Pyramid.sourceType              = 'zarr2';
         imginfo{"Pyramid"} = Pyramid;
 

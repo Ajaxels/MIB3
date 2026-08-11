@@ -151,14 +151,19 @@ actually look at are transferred.
 Three things are worth knowing before you rely on it:
 
 - The **model store is always local.** When you create a model on a remote BigData dataset, MIB
-  asks where to put it and writes an OME-Zarr v3 pyramid to your own disk. The remote image is
+  asks where to put it and writes an OME-Zarr pyramid to your own disk. The remote image is
   never written to.
-- **Remote zarr v2** stores are read through Python and need the `aiohttp` and `requests`
-  packages; remote **zarr v3** stores need no Python at all. MIB tells you if something is
-  missing.
-- There is **no local tile cache** yet, so panning and slice scrubbing re-fetch tiles over the
-  network. The pyramid keeps this workable when zoomed out; working at full resolution on a
-  remote volume is slow by nature.
+- **No Python is required**, in either zarr format. The bundled native engine fetches remote v2
+  and v3 stores with HTTP range requests. Python is only used if you deliberately select the
+  `python` engine in
+  [Preferences → Zarr library](../../user-interface/ribbon/home/home-preferences.md#zarr-library),
+  and that engine does need `aiohttp` and `requests` for remote access.
+- Decoded chunks are held in a **memory cache**, so revisiting a slice or panning back over ground
+  you have already seen costs nothing. Its size is set by
+  [Preferences → Chunk cache](../../user-interface/ribbon/home/home-preferences.md#zarr-library).
+  Reaching genuinely new tiles is still a network round trip, so the pyramid is what keeps
+  zoomed-out browsing responsive; working at full resolution on a remote volume remains slow by
+  nature.
 
 A published container often also holds small, densely annotated ground-truth crops. These cannot
 yet be overlaid as a model on their parent volume - open such a crop as an image in its own

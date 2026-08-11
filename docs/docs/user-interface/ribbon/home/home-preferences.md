@@ -446,30 +446,34 @@ BigData and virtual dataset modes.
 ![Preferences, Zarr library](images/file-preferences-io-zarr.png){align=left}
 
 <span class="widget widget-dropdown">Zarr library</span>: a dropdown to select the engine used for
-reading and writing zarr3 data:
+reading and writing zarr data:
 
-- `native`: the bundled **zarrMex** engine — no external dependencies (*default, recommended*).
-- `python`: the **zarr-python** (v3) library, called through the Python interpreter set in
+- `native`: the bundled **zarrMex** engine - no external dependencies (*default, recommended*).
+- `python`: the **zarr-python** library, called through the Python interpreter set in
   [External directories → Python installation path](#external-directories). Requires the `zarr` and
-  `numpy` packages installed in that environment. Reading a **remote** (HTTP/HTTPS) zarr v2 store
-  additionally requires `aiohttp` and `requests`, which zarr-python uses to fetch chunks over the
-  network:
+  `numpy` packages installed in that environment. Reading a **remote** (HTTP/HTTPS) store with this
+  engine additionally requires `aiohttp` and `requests`, which zarr-python uses to fetch chunks over
+  the network:
 
     ```bash
     "<path-to-python.exe>" -m pip install aiohttp requests
     ```
 
 A short description of the selected library is shown in the label beneath the dropdown. The setting
-takes effect immediately on <span class="widget widget-button">OK</span> / <span class="widget widget-button">Apply</span> — no restart needed.
+takes effect immediately on <span class="widget widget-button">OK</span> / <span class="widget widget-button">Apply</span> - no restart needed.
 
 !!! info
     Metadata (array/group creation, attributes, resizing) is always handled by the native engine for
     an identical on-disk structure; only the bulk pixel read/write honours this selection.
 
-    This dropdown applies to **zarr v3 only**. **Zarr v2** stores always go through zarr-python
-    whatever the setting, because the bundled `zarrMex` engine is v3-only - so `zarr` and `numpy`
-    are required for any v2 dataset, local or remote. Remote **v3** datasets, by contrast, always
-    use the native engine, which reads them with HTTP range requests and needs no Python at all.
+    This dropdown applies to **zarr v2 and v3 alike**: it selects an engine, never a format. Both
+    engines read and write both formats, and return identical data.
+
+!!! tip "Python is optional"
+    Since the `zarrMex` engine gained Zarr v2 support, **no zarr dataset needs Python** - v2 and v3,
+    local and remote, image and model. The native engine reads remote stores with HTTP range
+    requests. Python is only involved if you deliberately select the `python` engine above, which is
+    worth doing only to cross-check a store against the reference implementation.
 
 <div class="h3-like"> Chunk cache</div>
 

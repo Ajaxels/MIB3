@@ -590,26 +590,31 @@ classdef ImageConverter < handle
         end
 
         function fnOut = convertToZarr3Native(imgDS, BatchOpt, options)
-            % CONVERTTOZARR3NATIVE - Convert a folder of image files to a native OME-Zarr v3 pyramid.
+            % CONVERTTOZARR3NATIVE - Convert a folder of image files to a native OME-Zarr pyramid.
             %
-            % Streams the image stack in ``imgDS`` (one file per Z-slice) to an OME-Zarr v3
+            % Streams the image stack in ``imgDS`` (one file per Z-slice) to an OME-Zarr
             % pyramid through ``io.savers.Zarr3Saver.saveStream`` - the same native (zarrMex)
             % writer, level/chunk/shard logic and bounding-box handling used by MIB's in-app
-            % "Convert to BigData" and Export. No Python. After streaming, the voxel size and
-            % bounding box are written with ``io.savers.Zarr3Saver.patchMetadata``.
+            % "Convert to BigData" and Export. No Python, in either zarr format. After
+            % streaming, the voxel size and bounding box are written with
+            % ``io.savers.Zarr3Saver.patchMetadata``.
+            %
+            % ``BatchOpt.ZarrVersion`` selects the format; the output folder carries no
+            % ``.zarr2``/``.zarr3`` extension to infer it from. Sharding is a v3 feature and
+            % is refused when v2 is selected, rather than silently dropped.
             %
             % Input Arguments:
             %   - **imgDS** - a ``matlab.io.datastore.ImageDatastore`` of ordered Z-slices.
             %   - **BatchOpt** - the ImageConverter batch struct; reads the ``Zarr*`` fields
-            %     (``ZarrImageType``, ``ZarrChunkSizes``, ``ZarrUseSharding``,
+            %     (``ZarrVersion``, ``ZarrImageType``, ``ZarrChunkSizes``, ``ZarrUseSharding``,
             %     ``ZarrShardXFactorsXYZ``, ``ZarrCompression``, ``ZarrVoxelSizeXYZ``,
             %     ``ZarrUnits``, ``ZarrBBShiftsXYZ``, ``ZarrDownsampleLimitXYZ``) and
-            %     ``OutputDirectory``.
+            %     ``OutputDirectory``. ``ZarrVersion`` may be absent, meaning v3.
             %   - **options** - *(optional)* struct with ``.ParentFigure`` (progress parent)
             %     and ``.mibPath``.
             %
             % Output Arguments:
-            %   - **fnOut** - [char] the written ``.zarr3`` group path, or ``[]`` if cancelled.
+            %   - **fnOut** - [char] the written group path, or ``[]`` if cancelled.
             if nargin < 3; options = struct(); end
             parentFig = []; mibPath = '';
             if isfield(options, 'ParentFigure'); parentFig = options.ParentFigure; end
@@ -693,6 +698,15 @@ classdef ImageConverter < handle
                 if numel(shard) >= 3
                     saverOpts.ShardSize = [shard(2) shard(1) shard(3)];
                 end
+            end
+
+            % The output folder carries no .zarr2/.zarr3 extension, so the format
+            % has to be stated rather than inferred from the path. Absent field
+            % means v3, which is what every caller predating v2 support expects.
+            saverOpts.ZarrFormat = 3;
+            if isfield(BatchOpt, 'ZarrVersion') && ~isempty(BatchOpt.ZarrVersion)
+                requestedVersion = str2double(BatchOpt.ZarrVersion{1}(end));
+                if ismember(requestedVersion, [2, 3]); saverOpts.ZarrFormat = requestedVersion; end
             end
 
             % --- stream to disk ---
@@ -1105,10 +1119,11 @@ classdef ImageConverter < handle
             end
 
             % init python environment (legacy Python zarr pipeline / xml extraction).
-            % The native zarrMex backend writing Zarr v3 needs no Python - skip it there.
-            isNativeZarrV3 = strcmp(obj.BatchOpt.OutputImageFormatExtension{1}, 'zarr') && ...
-                ~io.zarr.Config.isPython() && str2double(obj.BatchOpt.ZarrVersion{1}(end)) == 3;
-            if ~isNativeZarrV3 && isempty(obj.mibModel.pythonEnv)
+            % The native zarrMex backend needs no Python for either zarr format, so
+            % starting an interpreter there would be pure start-up cost.
+            isNativeZarr = strcmp(obj.BatchOpt.OutputImageFormatExtension{1}, 'zarr') && ...
+                ~io.zarr.Config.isPython();
+            if ~isNativeZarr && isempty(obj.mibModel.pythonEnv)
                 % execution mode from preferences (default OutOfProcess); see
                 % External directories -> Python execution mode
                 pythonExecutionMode = 'OutOfProcess';
@@ -1262,9 +1277,10 @@ classdef ImageConverter < handle
         
         function generateZarrNative(obj, imgDS, wb)
             % function generateZarrNative(obj, imgDS, wb)
-            % Native (zarrMex) Zarr v3 generation via io.savers.Zarr3Saver - the same
+            % Native (zarrMex) Zarr generation via io.savers.Zarr3Saver - the same
             % in-app pyramid/bounding-box/voxel logic, streaming one source file at a
-            % time (no Python). Used when io.zarr.Config = native and output = Zarr v3.
+            % time (no Python). Used whenever io.zarr.Config = native, for Zarr v2 and
+            % v3 alike; only the python backend takes the legacy pipeline.
             parentFig = [];
             if ~isempty(obj.view) && isvalid(obj.view.gui); parentFig = obj.view.gui; end
 
@@ -1277,10 +1293,11 @@ classdef ImageConverter < handle
             t2 = toc(t2);
             if isempty(fnOut); return; end   % cancelled
 
-            fprintf('Native Zarr v3 written to: %s\nElapsed time is %f seconds\n', fnOut, t2);
+            zarrVersion = obj.BatchOpt.ZarrVersion{1};   % e.g. 'Zarr v3'
+            fprintf('Native %s written to: %s\nElapsed time is %f seconds\n', zarrVersion, fnOut, t2);
             if ~isempty(parentFig)
-                uialert(parentFig, sprintf('Native Zarr v3 written to:\n%s\n\nElapsed time is %.1f seconds', ...
-                    fnOut, t2), 'Zarr conversion done!', 'Icon', 'success');
+                uialert(parentFig, sprintf('Native %s written to:\n%s\n\nElapsed time is %.1f seconds', ...
+                    zarrVersion, fnOut, t2), 'Zarr conversion done!', 'Icon', 'success');
             end
         end
 
@@ -1288,10 +1305,10 @@ classdef ImageConverter < handle
             % function generateZarr(obj, imgDS, wb);
             % convert image stack in imgDS to Zarr format
 
-            % Native (zarrMex) backend writes Zarr v3 directly via io.savers.Zarr3Saver
-            % (shared pyramid + bounding box + voxel logic). Zarr v2 and the python
-            % backend fall through to the legacy Python pipeline below.
-            if ~io.zarr.Config.isPython() && str2double(obj.BatchOpt.ZarrVersion{1}(end)) == 3
+            % Native (zarrMex) backend writes both Zarr formats directly via
+            % io.savers.Zarr3Saver (shared pyramid + bounding box + voxel logic).
+            % Only the python backend falls through to the legacy pipeline below.
+            if ~io.zarr.Config.isPython()
                 obj.generateZarrNative(imgDS, wb);
                 return;
             end

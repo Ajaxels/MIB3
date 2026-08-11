@@ -278,12 +278,12 @@ classdef ExtensionRegistryLoad < handle
             stdImgFormats = [stdImgFormats.ext 'mrc' 'rec' 'am' 'nrrd' 'h5' 'xml' 'st' 'preali' 'mibImg' 'zarr2' 'zarr3' obj.videoExtensions];
             % standard image extensions
             obj.extensionSets("Standard.Default") = {sort(stdImgFormats)};
-            % zarr v3: native zarr-matlab library; zarr v2: python-backed
-            % (io.zarr.PyBackend) - see io.loaders.Zarr2VirtualSetupLoader.
+            % zarr v2 and v3 alike are read by the native zarr-matlab library;
+            % the engine follows io.zarr.Config, so python is optional for both.
             obj.extensionSets("Virtual.Default") = {sort({'h5','hdf5','xml', 'zarr', 'zarr2', 'zarr3'})};
-            % BigData zarr2: image pyramid browsing + a read-only existing
-            % labels overlay only (core.MibBigDataLabelsZarr2) - no editable
-            % disk-backed model store, unlike zarr3.
+            % BigData works in either zarr format: MIB writes its own editable
+            % model store (core.MibBigDataLabels.createStore), while a FOREIGN
+            % v2 labels store is shown read-only (core.MibBigDataLabelsZarr2).
             obj.extensionSets("BigData.Default") = {sort({'zarr2', 'zarr3'})};
             
             % list of compatible Bio-Formats
@@ -396,7 +396,7 @@ classdef ExtensionRegistryLoad < handle
             %     - ``'hdf5-header-virtual'`` - HDF5 header-based reader for virtual mode
             %     - ``'hdf5-no-header-virtual'`` - HDF5 headerless reader for virtual mode
             %     - ``'OmeZarr'`` - OME-Zarr v3 reader (implemented via Zarr3VirtualSetupLoader)
-            %     - ``'OmeZarrV2'`` - OME-Zarr v2 reader, python-backed (Zarr2VirtualSetupLoader)
+            %     - ``'OmeZarrV2'`` - OME-Zarr v2 reader (implemented via Zarr2VirtualSetupLoader)
             %     - ``'imod'`` - IMOD model/mesh format reader
             %     - ``'nrrd'`` - NRRD format reader
             %     - ``'VideoReader'`` - MATLAB video file reader

@@ -1,13 +1,17 @@
 classdef Zarr2VirtualLoader < handle
 % ZARR2VIRTUALLOADER - On-demand region reader for MIB3 Zarr v2 virtual datasets.
 %
-% Python-backed counterpart to ``Zarr3VirtualLoader``. Zarr v2 has no native
-% (zarrMex) engine, so this reader always goes through ``io.zarr.PyBackend``
-% (``zarr.open`` + raw ``pyrun`` byte transfers) rather than ``io.zarr.Array``
-% - the latter's metadata path is native-only and cannot open a v2 store at
-% all. ``io.zarr.PyBackend``'s bulk-I/O calls are otherwise format-agnostic
-% (``zarr-python`` auto-detects v2 vs v3), so no separate python code is
-% needed here beyond calling that facade.
+% Counterpart to ``Zarr3VirtualLoader``, and mechanically identical to it: the
+% region is read through ``io.zarr.Array``, so the engine follows
+% ``io.zarr.Config`` (native ``zarrMex`` or ``zarr-python``) exactly as it does
+% for v3. The bundled ``zarrMex`` reads v2 stores - local and over HTTP range
+% requests - so **python is no longer required for zarr v2**, and both engines
+% return byte-identical data.
+%
+% The class stays separate from ``Zarr3VirtualLoader`` because
+% ``MibVirtualImage`` dispatches on the stored ``objectType`` / ``sourceType``
+% (``'zarr2'`` vs ``'zarr3'``), which is metadata recorded when the dataset was
+% opened.
 %
 % **Relationship to Zarr2VirtualSetupLoader**
 %
@@ -25,11 +29,12 @@ classdef Zarr2VirtualLoader < handle
 % Lifetime: cached in MibVirtualImage.loaders{1} for the session.
 % Created by: MibVirtualImage.getDataZarr / getOrCreateLoader
 %
-% Axis order convention (identical to Zarr3VirtualLoader): a python zarr read
-% returns data in zarr's declared C-order axis layout. For OME-Zarr with
-% axisOrder ``'czyx'`` (shape [nC,nZ,nY,nX]), the returned MATLAB array has
-% size [nC, nZ, nY, nX]. ``io.loaders.OmeZarrMetadataUtils.computePermutation``
-% precomputes the permutation that maps this to MIB3 ``[y, x, z, c, t]``.
+% Axis order convention (identical to Zarr3VirtualLoader): a read returns data
+% whose layout is the reverse of the zarr ``shape`` declaration. For OME-Zarr
+% with axisOrder ``'czyx'`` (shape [nC,nZ,nY,nX]), the returned MATLAB array
+% has size [nX, nY, nZ, nC].
+% ``io.loaders.OmeZarrMetadataUtils.computePermutation`` precomputes the
+% permutation that maps this to MIB3 ``[y, x, z, c, t]``.
 %
 % **Example** - local OME-Zarr v2 dataset:
 %
@@ -48,13 +53,14 @@ properties (SetAccess = private)
     toMIB3perm
     % [1x5] permutation vector: permute(raw, toMIB3perm) -> [y,x,z,c,t].
     cachedLevelPath = ''
-    % [char] full path of the level whose python array handle is currently cached.
-    cachedPyArray = []
-    % [py object] open python zarr array handle, reused across slice reads at
-    % the same pyramid level so it is opened once per level, not once per read.
-    cachedMeta = []
-    % [struct] io.zarr.PyBackend.arrayMeta() result for cachedPyArray (shape/dtype
-    % cached alongside the handle to avoid re-querying python on every read).
+    % [char] full path of the level whose io.zarr.Array is currently cached.
+    cachedArray = []
+    % [io.zarr.Array] reused across slice reads at the same pyramid level, so the
+    % backend handle is opened once per level rather than per read. Refreshed when
+    % the requested level changes.
+    cachedInfo = []
+    % [struct] shape / chunkShape of cachedArray, needed by io.zarr.ChunkCache to
+    % work out which chunks a request touches. Fetched with the handle above.
 end
 
 methods
@@ -93,11 +99,7 @@ methods
         %      block = obj.readRegion(levelPath, physYlim, physXlim, physZlim, Clim, Tlim, dataClass)
         %
         % Always receives PHYSICAL coordinate ranges (not screen-remapped).
-        % Always returns data in MIB3 [y, x, z, c, t] order. Assumes the
-        % python zarr backend is already available - ``Zarr2VirtualSetupLoader``
-        % calls ``io.zarr.PyBackend.ensureLoaded()`` at file-open time so any
-        % "python unavailable" failure surfaces once, up front, rather than on
-        % every slice scrub.
+        % Always returns data in MIB3 [y, x, z, c, t] order.
         %
         % Input Arguments:
         %   - **levelPath** - [char] relative pyramid level path within root,
@@ -142,20 +144,19 @@ methods
             end
         end
 
-        % Open (or reuse) the python array handle for this level - one open +
-        % one metadata query per level, not per slice read.
-        if isempty(obj.cachedPyArray) || ~strcmp(fullPath, obj.cachedLevelPath)
-            obj.cachedPyArray   = io.zarr.PyBackend.openArray(fullPath, 'r');
-            obj.cachedMeta      = io.zarr.PyBackend.arrayMeta(obj.cachedPyArray);
+        % Open (or reuse) the array handle for this level - one open + one
+        % metadata query per level, not per slice read.
+        if isempty(obj.cachedArray) || ~strcmp(fullPath, obj.cachedLevelPath)
+            obj.cachedArray     = io.zarr.Array(fullPath);
+            obj.cachedInfo      = obj.cachedArray.info();
             obj.cachedLevelPath = fullPath;
         end
         % Serve whole decoded chunks from memory where possible. Chunks are the
         % smallest unit the store will hand over and are usually many slices
         % deep, so without this every z-step re-fetches the same chunks and
         % throws away all but one plane of each.
-        raw = io.zarr.ChunkCache.read(fullPath, bbox, obj.cachedMeta.chunkShape, ...
-            obj.cachedMeta.shape, ...
-            @(alignedBbox) io.zarr.PyBackend.readArray(obj.cachedPyArray, alignedBbox, obj.cachedMeta));
+        raw = io.zarr.ChunkCache.read(fullPath, bbox, obj.cachedInfo.chunkShape, ...
+            obj.cachedInfo.shape, @(alignedBbox) obj.cachedArray.read(alignedBbox));
 
         % Permute to MIB3 [y, x, z, c, t] and cast to the requested class
         block = permute(raw, obj.toMIB3perm);

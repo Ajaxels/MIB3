@@ -148,7 +148,7 @@ if strcmp(obj.I{id}.datasetType, 'BigData') && isempty(model)
             storePath = fullfile(BatchOpt.DirectoryName{1}, storePath);
         end
     else
-        selDir = uigetdir(defaultDir, 'Select the BigData model store (.zarr3 or read-only .zarr2 folder)');
+        selDir = uigetdir(defaultDir, 'Select the BigData model store (.zarr3 or .zarr2 folder)');
         if isequal(selDir, 0); return; end   % cancelled
         storePath = selDir;
     end
@@ -167,15 +167,18 @@ if strcmp(obj.I{id}.datasetType, 'BigData') && isempty(model)
     bigMeta = core.MibImage.initializeImgInfo('pixSize', ds.image.pixSize, ...
         'Height', ds.image.height, 'Width', ds.image.width, ...
         'Depth', ds.image.depth, 'Time', ds.image.time, 'Colors', 1);
-    % zarr v2 stores (.zattrs/.zgroup, no zarr.json) get a READ-ONLY overlay
-    % (core.MibBigDataLabelsZarr2, python-backed) - MIB's editable disk-backed
-    % pyramid (core.MibBigDataLabels) is native-zarr3-only. Both classes share
-    % the same public surface, so everything after this branch is unchanged.
-    % Delegated to the shared probe, which handles a local folder and a URL
-    % alike, rather than repeating the marker-file heuristic here.
+    % Which class owns the store depends on who WROTE it, not on its format:
+    % MIB's editable pyramid (core.MibBigDataLabels) reads and writes zarr v2
+    % and v3 alike, but only for stores it created itself - those hold packed
+    % bytes in [y,x,z] and carry the mibModelStore marker. A FOREIGN v2 label
+    % store holds another tool's plain label indices in its own axis order, so
+    % it gets the read-only overlay (core.MibBigDataLabelsZarr2) instead.
+    % Both classes share the same public surface, so everything after this
+    % branch is unchanged. The format probe is delegated to the shared helper,
+    % which handles a local folder and a URL alike.
     isZarrV2Store = strcmp( ...
         io.ExtensionRegistryLoad.detectZarrFormatExtension(storePath), 'zarr2');
-    if isZarrV2Store
+    if isZarrV2Store && ~core.MibBigDataLabels.isMibModelStore(storePath)
         newLabels = core.MibBigDataLabelsZarr2([], bigMeta);
     else
         newLabels = core.MibBigDataLabels([], bigMeta);

@@ -64,7 +64,7 @@ clipboard holds a link it is already there and selected, so typing or pasting re
     Size   : 23601 x 21451 x 49645  (X x Y x Z)
     Type   : uint8
     Voxel  : 8 x 8 x 8 nm
-    Format : OME-Zarr v2  (read through Python)
+    Format : OME-Zarr v2
     ```
 
 4. Choose <span class="widget widget-dropdown">Load as</span> and
@@ -134,17 +134,20 @@ Other datasets in the same bucket follow the same layout; a few store the image 
 
 ## Requirements
 
-Reading a remote **OME-Zarr v2** store - which is what OpenOrganelle and most published
-OME-NGFF v0.4 data are - needs two Python packages beyond those a local zarr v2 store needs,
-installed into the interpreter set at
-[Preferences -> External directories -> Python installation path](home-preferences.md#external-directories):
+**None.** Both OME-Zarr formats - v2, which is what OpenOrganelle and most published OME-NGFF v0.4
+data are, and v3 - are read by the bundled native engine using HTTP range requests. Nothing has to
+be installed.
+
+Python is involved only if you deliberately switch
+[Preferences -> Input/output -> Zarr library](home-preferences.md#zarr-library) to `python`. That
+engine reaches the network through fsspec and then needs two extra packages in the interpreter set
+at [Preferences -> External directories -> Python installation path](home-preferences.md#external-directories):
 
 ```bash
 "<path-to-python.exe>" -m pip install aiohttp requests
 ```
 
 MIB checks for them when you press Open and tells you the exact command if they are missing.
-Remote **OME-Zarr v3** stores need no Python at all.
 
 ---
 

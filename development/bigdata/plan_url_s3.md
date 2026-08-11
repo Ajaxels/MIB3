@@ -98,6 +98,12 @@ Two things to carry into the docs and into any later caching decision:
 
 ## Python prerequisite (carry into user docs)
 
+> **Superseded 2026-08-11 by [`plan_native_zarr2.md`](plan_native_zarr2.md).** `zarrMex` now reads
+> zarr v2, local and remote, so **no python is required for any zarr dataset**. Everything below
+> applies only when the `python` backend is deliberately selected in
+> `Preferences -> Input/output -> Zarr library`. The blocker numbered 4 in the section above is
+> likewise retired.
+
 Remote **Zarr v2** stores - which is what OpenOrganelle, MoBIE and most published OME-NGFF
 v0.4 data are - need two packages **beyond** what local zarr v2 already requires, in the
 interpreter set at `Preferences -> External directories -> Python installation path`:

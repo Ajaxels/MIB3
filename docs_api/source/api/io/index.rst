@@ -50,10 +50,10 @@ Chunk cache
 -----------
 
 ``io.zarr.ChunkCache`` is an in-memory LRU of decoded Zarr chunks, shared by
-``io.loaders.Zarr2VirtualLoader`` (zarr-python) and
-``io.loaders.Zarr3VirtualLoader`` (native zarrMex). It works in Zarr's declared
-C-order index space and knows nothing about OME-Zarr, pyramids or MIB axis
-conventions, which is what lets one implementation serve both.
+``io.loaders.Zarr2VirtualLoader`` and ``io.loaders.Zarr3VirtualLoader``. It works
+in Zarr's declared C-order index space and knows nothing about OME-Zarr,
+pyramids, MIB axis conventions or which engine produced the chunks, which is what
+lets one implementation serve both formats and both backends.
 
 It exists because a chunk is the smallest unit a store will hand over, and
 published volumes are routinely chunked for 3D block access - ``[64, 128, 128]``

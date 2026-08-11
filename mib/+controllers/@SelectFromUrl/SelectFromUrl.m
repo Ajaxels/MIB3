@@ -375,14 +375,17 @@ classdef SelectFromUrl < handle
         end
 
         function note = pythonNote(obj)
-            % PYTHONNOTE - Suffix warning that zarr v2 needs the Python backend.
+            % PYTHONNOTE - Suffix warning that the selected backend needs Python packages.
+            %
+            % Both zarr v2 and v3 are read natively over HTTP range requests, so
+            % there is normally nothing to say. The note only appears when the
+            % user has selected the python backend in Preferences and that
+            % interpreter cannot reach the network, which is the one combination
+            % that fails after Open is pressed.
             note = '';
-            if strcmp(obj.zarrFormat, 'zarr2')
-                if io.zarr.PyBackend.hasRemoteSupport()
-                    note = '  (read through Python)';
-                else
-                    note = '  (NEEDS Python packages: aiohttp, requests)';
-                end
+            if ~io.zarr.Config.isPython(); return; end
+            if ~io.zarr.PyBackend.hasRemoteSupport()
+                note = '  (NEEDS Python packages: aiohttp, requests)';
             end
         end
 

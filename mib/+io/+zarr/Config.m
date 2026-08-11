@@ -1,14 +1,16 @@
 classdef Config < handle
-% CONFIG - process-wide selection of the active OME-Zarr v3 backend.
+% CONFIG - process-wide selection of the active OME-Zarr backend.
 %
 % Holds two module-level settings shared by the ``io.zarr`` facade
-% (``io.zarr.Array`` / ``io.zarr.Group``):
+% (``io.zarr.Array`` / ``io.zarr.Group``). The choice applies to zarr **v2 and
+% v3 alike**: both backends read and write either format, so this selects an
+% engine, never a format.
 %
 %   * **library** - which backend performs bulk pixel I/O:
 %
 %     - ``'native'`` - the bundled ``zarrMex`` engine (``ZarrArray`` /
 %       ``ZarrGroup``). Default. No external dependency.
-%     - ``'python'`` - the ``zarr-python`` (v3) library via ``pyrun``/numpy.
+%     - ``'python'`` - the ``zarr-python`` library via ``pyrun``/numpy.
 %
 %   * **pythonPath** - the Python interpreter used by the python backend
 %     (normally ``preferences.ExternalDirs.PythonInstallationPath``).

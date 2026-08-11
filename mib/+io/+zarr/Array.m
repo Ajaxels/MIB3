@@ -1,23 +1,29 @@
 classdef Array < handle
-% ARRAY - backend-agnostic handle to an OME-Zarr v3 array.
+% ARRAY - backend-agnostic handle to an OME-Zarr v2 or v3 array.
 %
 % Drop-in replacement for ``ZarrArray`` whose bulk read/write are routed to
 % the backend selected by ``io.zarr.Config`` (native ``zarrMex`` or
 % ``zarr-python``). Results are byte-identical across backends, so an array
 % written by one is read correctly by the other.
 %
+% **Format is detected, never declared.** Opening an existing array works for
+% zarr v2 (``.zarray``) and v3 (``zarr.json``) alike - neither the caller nor
+% this class has to know which it is. Only ``create`` needs to choose, and it
+% defaults to v3; pass ``'zarrFormat', 2`` for a v2 array.
+%
 % **Metadata is always native.** ``create`` / ``createFromData`` write the
-% zarr metadata through ``ZarrArray`` (the transpose codec, chunk grid, etc.),
-% guaranteeing an identical on-disk structure regardless of the active
-% backend; only the bulk pixel transfer honours ``io.zarr.Config``. Remote
-% (HTTP/HTTPS) arrays always use the native backend (python remote access
-% needs extra dependencies).
+% zarr metadata through ``ZarrArray`` (the transpose codec or the v2 ``order``
+% field, chunk grid, etc.), guaranteeing an identical on-disk structure
+% regardless of the active backend; only the bulk pixel transfer honours
+% ``io.zarr.Config``. Remote (HTTP/HTTPS) arrays always use the native
+% backend, which reads both formats over HTTP range requests and needs no
+% python dependencies at all.
 %
 % **Examples**
 %
 %   .. code-block:: matlab
 %
-%      % open + read a region (uses the active backend)
+%      % open + read a region (uses the active backend; v2 or v3)
 %      arr   = io.zarr.Array('C:\data\vol.zarr3\0');
 %      block = arr.read([1 513; 1 513; 5 6]);    % [start, end+1) per dim
 %
@@ -25,6 +31,10 @@ classdef Array < handle
 %      arr = io.zarr.Array.create('C:\tmp\a.zarr3', [256 256 16], 'uint16', ...
 %                                 'chunkShape', [256 256 4]);
 %      arr.write(uint16(zeros(256, 256, 16)));
+%
+%      % create a zarr v2 array instead
+%      arr = io.zarr.Array.create('C:\tmp\a.zarr2', [256 256 16], 'uint16', ...
+%                                 'chunkShape', [256 256 4], 'zarrFormat', 2);
 %
 %      % create from data in one step
 %      io.zarr.Array.createFromData('C:\tmp\b.zarr3', uint8(rand(64,64,8)*255));
@@ -100,6 +110,13 @@ classdef Array < handle
             inf = obj.info(); dt = inf.dataType;
         end
 
+        function format = zarrFormat(obj)
+            % ZARRFORMAT - zarr format version of the array on disk (2 or 3).
+            %   Reported by whichever backend is active; both read it from the
+            %   metadata rather than from how the array was opened.
+            inf = obj.info(); format = inf.zarrFormat;
+        end
+
         function resize(obj, newShape)
             % RESIZE - resize the array (extends/shrinks per zarr semantics).
             if strcmp(obj.backend, 'native')
@@ -134,14 +151,15 @@ classdef Array < handle
     methods (Static)
         function arr = create(path, shape, dataType, varargin)
             % CREATE - create a new array (native metadata) and return a facade handle.
-            %   Same arguments as ZarrArray.create. Bulk writes go through the
-            %   active backend.
+            %   Same arguments as ZarrArray.create, including ``'zarrFormat'``
+            %   (2 or 3, default 3). Bulk writes go through the active backend.
             ZarrArray.create(char(path), shape, dataType, varargin{:});
             arr = io.zarr.Array(char(path));
         end
 
         function arr = createFromData(path, data, varargin)
             % CREATEFROMDATA - create an array sized/typed from data and write it.
+            %   Accepts the same options as ``create``, ``'zarrFormat'`` included.
             if io.zarr.Config.isPython() && ~io.zarr.Array.isHttp(path)
                 ZarrArray.create(char(path), size(data), ...
                     io.zarr.Array.zarrTypeFromClass(class(data)), varargin{:});

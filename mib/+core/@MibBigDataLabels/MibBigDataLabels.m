@@ -27,9 +27,18 @@ classdef MibBigDataLabels < core.MibLabels63
 % in a side-file; ``materializeAll`` (Save) finalizes every level. See
 % development/bigdata/bigdata_logic.md.
 %
-% **Axis order.** Levels are created with ``ZarrArray`` (transpose codec) → they
-% round-trip in native MATLAB ``[y, x, z]`` order, no permutation. ``obj.data``
-% stays empty; dimensions come from level 0.
+% **Axis order.** Levels are created with ``ZarrArray`` → they round-trip in
+% native MATLAB ``[y, x, z]`` order, no permutation. That holds in both zarr
+% formats: v3 gets a transpose codec, v2 gets Fortran chunk order, which is the
+% v2 spelling of the same thing. ``obj.data`` stays empty; dimensions come from
+% level 0.
+%
+% **Zarr format.** The store is v3 by default and v2 when the path ends in
+% ``.zarr2`` (``createStore`` / ``zarrFormatFromPath``); both are fully
+% editable, and everything above applies unchanged to either. A store MIB
+% created carries the ``mibModelStore`` marker - a v2 store WITHOUT it was
+% written by another tool and is handled read-only by
+% ``core.MibBigDataLabelsZarr2`` instead.
 
     properties
         modelStorePath (1,1) string = ""
@@ -104,7 +113,7 @@ classdef MibBigDataLabels < core.MibLabels63
             obj.type = 'labels63';
         end
 
-        function createStore(obj, dims, storePath, pyramid)
+        function createStore(obj, dims, storePath, pyramid, zarrFormat)
             % CREATESTORE - Allocate a zero-filled packed label pyramid on disk.
             %
             % Syntax:
@@ -113,12 +122,21 @@ classdef MibBigDataLabels < core.MibLabels63
             %      obj.createStore(dims)
             %      obj.createStore(dims, storePath)
             %      obj.createStore(dims, storePath, pyramid)
+            %      obj.createStore(dims, storePath, pyramid, zarrFormat)
             %
-            % Creates a new zarr3 group at ``storePath`` with one ``uint8`` array per
+            % Creates a new zarr group at ``storePath`` with one ``uint8`` array per
             % pyramid level (bits 1-6 = material 0-63, bit 7 = mask, bit 8 = selection).
             % The level count, sizes, scale factors, and chunk shapes are copied from
             % ``pyramid`` so the model mirrors the image pyramid exactly.  An empty level
             % map (``matLevel``) is initialised and persisted as a side-file.
+            %
+            % The store is written in zarr **v3** by default and in **v2** when the
+            % path ends in ``.zarr2``; both are fully editable and behave
+            % identically, since the packed bytes round-trip in ``[y, x, z]``
+            % either way (a transpose codec in v3, Fortran chunk order in v2).
+            % Either way the group is marked with the ``mibModelStore`` attribute,
+            % which is how ``models.MibModel.loadModel`` later tells a MIB-written
+            % store from a foreign one (see ``core.MibBigDataLabelsZarr2``).
             %
             % Input Arguments:
             %   - **dims** - [1x3 numeric] ``[height, width, depth]`` in pixels; used as the
@@ -134,6 +152,9 @@ classdef MibBigDataLabels < core.MibLabels63
             %
             %   When ``pyramid`` is empty, a single full-resolution level is created.
             %
+            %   - **zarrFormat** *(optional)* - [numeric] ``2`` or ``3``; overrides the
+            %     format implied by the extension. Default: derived from ``storePath``.
+            %
             % **Example** - create a 3-level model matching a loaded BigData image:
             %
             %   .. code-block:: matlab
@@ -144,9 +165,18 @@ classdef MibBigDataLabels < core.MibLabels63
             %                           'Labels.zarr3');
             %      lb.createStore([img.image.height, img.image.width, img.image.depth], ...
             %                     storePath, img.image.pyramid);
+            %
+            % **Example** - the same model as a zarr v2 store:
+            %
+            %   .. code-block:: matlab
+            %
+            %      lb.createStore(dims, 'C:\data\Labels.zarr2', img.image.pyramid);
             if nargin < 4; pyramid = []; end
             if nargin < 3 || isempty(storePath); storePath = [tempname '_bigdata_model.zarr3']; end
             storePath = char(storePath);
+            if nargin < 5 || isempty(zarrFormat)
+                zarrFormat = core.MibBigDataLabels.zarrFormatFromPath(storePath);
+            end
             if isfolder(storePath); rmdir(storePath, 's'); end
 
             % --- resolve levels from the image pyramid (or single fallback) ---
@@ -172,7 +202,8 @@ classdef MibBigDataLabels < core.MibLabels63
             nLevels = size(levelSizes, 1);
 
             % --- build the group + one packed uint8 array per level -----------
-            grp = io.zarr.Group.create(storePath);   % backend per io.zarr.Config
+            % backend per io.zarr.Config; format per the path (or the override)
+            grp = io.zarr.Group.create(storePath, 'zarrFormat', zarrFormat);
             obj.modelArrays = cell(1, nLevels);
             obj.modelLevelNames = cell(1, nLevels);
             for L = 1:nLevels
@@ -671,6 +702,12 @@ classdef MibBigDataLabels < core.MibLabels63
         function writeMultiscales(obj, grp, scaleFac)
             % WRITEMULTISCALES - minimal OME-NGFF multiscales attribute so the model
             % group reopens as a pyramid (Phase 3 saver enriches voxel size / bbox).
+            %
+            % Also stamps the ``mibModelStore`` marker. It matters for zarr v2,
+            % where a store MIB wrote (packed bytes in [y,x,z], editable) and one
+            % another tool wrote (plain label indices in its own axis order,
+            % read-only) are otherwise indistinguishable - see
+            % ``core.MibBigDataLabels.isMibModelStore``.
             nLevels = numel(obj.modelLevelNames);
             axes = {struct('name','y','type','space'), ...
                     struct('name','x','type','space'), ...
@@ -681,11 +718,68 @@ classdef MibBigDataLabels < core.MibLabels63
                     'coordinateTransformations', {{struct('type','scale','scale', scaleFac(L,:))}});
             end
             ms = struct('version','0.5', 'axes', {axes}, 'datasets', {datasets});
-            grp.setAttributes(struct('multiscales', {{ms}}));
+            grp.setAttributes(struct('multiscales', {{ms}}, ...
+                'mibModelStore', core.MibBigDataLabels.storeMarker()));
         end
     end
 
     methods (Static)
+        function marker = storeMarker()
+            % STOREMARKER - the ``mibModelStore`` attribute stamped on a MIB model store.
+            %
+            % ``layout`` records the two things a reader has to assume to use the
+            % arrays directly: values are MIB's packed byte, and the axes are
+            % ``[y, x, z]``. ``version`` is there so a future layout change can be
+            % detected rather than silently misread.
+            marker = struct('version', 1, 'layout', 'packed-uint8-yxz');
+        end
+
+        function format = zarrFormatFromPath(storePath)
+            % ZARRFORMATFROMPATH - zarr format implied by a store path's extension.
+            %
+            % ``.zarr2`` means v2; anything else (``.zarr3``, ``.zarr``, no
+            % extension) means v3, which keeps every existing caller unchanged.
+            %
+            % Input Arguments:
+            %   - **storePath** - [char|string] store path.
+            %
+            % Output Arguments:
+            %   - **format** - [numeric] 2 or 3.
+            [~, ~, ext] = fileparts(char(storePath));
+            if strcmpi(ext, '.zarr2'); format = 2; else; format = 3; end
+        end
+
+        function tf = isMibModelStore(storePath)
+            % ISMIBMODELSTORE - was this store written by MIB as an editable model?
+            %
+            % Reads the group's ``mibModelStore`` marker (see ``storeMarker``).
+            % This is what separates an editable MIB model store from a foreign
+            % label store that happens to be a multiscales group of uint8 arrays:
+            % the two are indistinguishable from their pixels alone, and writing
+            % MIB's packed bytes into a foreign store would corrupt it.
+            %
+            % Never throws - an unreadable or absent store simply answers
+            % ``false``, which routes to the read-only path.
+            %
+            % Older MIB stores predate the marker. That costs nothing in
+            % practice: zarr v3 stores are always opened by this class anyway,
+            % and a v2 model store could not be created before this marker
+            % existed, so there are none in the wild to misclassify.
+            %
+            % Input Arguments:
+            %   - **storePath** - [char|string] store path or URL.
+            %
+            % Output Arguments:
+            %   - **tf** - [logical] true when the marker is present.
+            tf = false;
+            try
+                attrs = io.zarr.Group(char(storePath)).getAttributes();
+                tf = isfield(attrs, 'mibModelStore');
+            catch
+                % not a readable zarr group -> not a MIB model store
+            end
+        end
+
         function p = levelMapPathFor(storePath)
             % LEVELMAPPATHFOR - side-file path for the level map of a model store.
             % Replaces the store's extension (e.g. '.zarr3') with '.levelmap' so the

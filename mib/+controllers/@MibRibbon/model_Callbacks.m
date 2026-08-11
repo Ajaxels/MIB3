@@ -93,8 +93,11 @@ switch mode
         [imgPath, imgStem] = fileparts(ds.image.filename);
         if isempty(imgPath); imgPath = obj.mibModel.currentDirectory; end
         if isempty(imgStem); imgStem = 'dataset'; end
-        [zFile, zDir] = uiputfile({'*.zarr3', 'OME-Zarr v3 (*.zarr3)'}, ...
-            'Export model to Zarr3', fullfile(imgPath, ['Labels_' imgStem '.zarr3']));
+        % the chosen extension selects the zarr format - see
+        % io.savers.Zarr3Saver.resolveZarrFormat
+        [zFile, zDir] = uiputfile({'*.zarr3', 'OME-Zarr v3 (*.zarr3)'; ...
+            '*.zarr2', 'OME-Zarr v2 (*.zarr2)'}, ...
+            'Export model to OME-Zarr', fullfile(imgPath, ['Labels_' imgStem '.zarr3']));
         if isequal(zFile, 0); return; end
         datasetInfo = struct('Y', ds.image.height, 'X', ds.image.width, 'Z', ds.image.depth, ...
             'pixSize', ds.image.pixSize);

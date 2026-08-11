@@ -116,9 +116,13 @@ export a BigData level → reopen with matching dims/voxel size.
    `io.zarr.Config` = native and output = Zarr v3, `ImageConverter.generateZarr` routes through
    `ImageConverter.convertToZarr3Native` → new `io.savers.ImageDatastoreSliceProvider` (one file per
    Z-slice) → `Zarr3Saver.saveStream` (shared level/chunk/shard logic, out-of-core) →
-   `Zarr3Saver.patchMetadata` (bounding box + voxel size). No Python on that path. **Still open:**
-   **Zarr v2** output and the **python backend** keep the legacy Python pipeline (the native
-   `io.zarr` writer is v3-only) — migrating v2 needs a native Zarr-v2 writer first.
+   `Zarr3Saver.patchMetadata` (bounding box + voxel size). No Python on that path.
+   **Zarr v2 done (2026-08-11)** once `zarrMex` gained v2 read/write: the native route is now
+   gated on the backend alone (`~io.zarr.Config.isPython()`), and the format is carried by
+   `saverOpts.ZarrFormat` because the output folder has no `.zarr2`/`.zarr3` extension to infer it
+   from. Sharding is refused for v2 rather than silently dropped. **Still open:** only the
+   **python backend** keeps the legacy Python pipeline. See
+   [`plan_native_zarr2.md`](plan_native_zarr2.md).
 5. **Remote OME-Zarr over HTTP/URL** - **planned in detail: see [`plan_url_s3.md`](plan_url_s3.md).**
    Metadata over HTTP now works end to end for both versions (verified live against Janelia
    OpenOrganelle), and the NGFF v0.4 / v2 gap noted here was closed by `Zarr2VirtualSetupLoader`.

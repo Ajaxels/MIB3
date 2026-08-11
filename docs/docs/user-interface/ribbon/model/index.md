@@ -189,11 +189,10 @@ Imports a segmentation model from an OME-Zarr v2 or v3 store. A Zarr store is a 
 (not a single file), so this option opens a folder browser instead of the file dialog used
 by [Load model](#load-model) and the other [Import](#import) options above.
 
-- **Zarr v3** (`.zarr3`): read using the native `zarr-matlab` library.
-- **Zarr v2** (`.zarr2`): read using a python-backed reader (`zarr`/`numpy`), since Zarr v2
-  has no native MATLAB engine. Requires
-  [Preferences → External directories → Python installation path](../home/home-preferences.md#external-directories)
-  to point at a python environment with the `zarr` package installed.
+Both **Zarr v3** (`.zarr3`) and **Zarr v2** (`.zarr2`) are read by the native `zarr-matlab`
+library, with no Python required. See
+[Preferences → Zarr library](../home/home-preferences.md#zarr-library) if you want to read them
+through `zarr-python` instead.
 
 <div class="h4-like">Material names and colours</div>
 
@@ -205,11 +204,17 @@ Material names/colours are resolved from the store's metadata, in this order:
 
 !!! note
     For a **BigData** dataset, importing a Zarr model attaches the store **by reference** instead
-    of loading it into memory (see [BigData datasets](../../panels/datasets/index.md)). A
-    **Zarr v3** store becomes a fully editable, disk-backed model, same as models created directly
-    in BigData mode. A **Zarr v2** store is attached **read-only** - an existing segmentation can be
-    viewed and browsed at any zoom level, but voxels cannot be edited, since there is no editable
-    on-disk pyramid format for Zarr v2.
+    of loading it into memory (see [BigData datasets](../../panels/datasets/index.md)).
+
+    Whether it is editable depends on **who wrote the store**, not on its zarr format. A store MIB
+    created itself - in either format - is a fully editable, disk-backed model, because it holds
+    MIB's packed bytes and is stamped with a marker attribute that says so.
+
+    A store written by **another tool** is attached **read-only**: its values are that tool's own
+    label indices, laid out in its own axis order, and writing MIB's packed bytes back into it would
+    corrupt them. You can view and browse such a model at any zoom level. To segment on the same
+    dataset, create a new model instead - MIB writes its own store and leaves the imported one
+    untouched.
 
 ---
 

@@ -106,18 +106,24 @@ classdef Zarr3Saver < io.savers.BaseSaver
 
         function formats = getSupportedFormats(~)
             % GETSUPPORTEDFORMATS - format strings handled by Zarr3Saver.
-            formats = {'OME-Zarr v3 (*.zarr3)'};
+            formats = {'OME-Zarr v3 (*.zarr3)', 'OME-Zarr v2 (*.zarr2)'};
         end
 
         function fnOut = save(obj, data, metadata, filename, options)
-            % SAVE - write ``data`` as an OME-Zarr v3 multiscales pyramid.
+            % SAVE - write ``data`` as an OME-Zarr multiscales pyramid.
+            %
+            % Writes zarr v3 by default and zarr v2 when the output path ends in
+            % ``.zarr2``; the pyramid, chunking and metadata are otherwise
+            % identical. Sharding is v3-only and is refused for a v2 output.
             %
             % Input Arguments:
             %   - **data** - [y x z c t] numeric image array (full resolution).
             %   - **metadata** - struct; uses ``.pixSize`` (``.x .y .z``) when present.
-            %   - **filename** - [char] output ``.zarr3`` group path (overwritten if it exists).
+            %   - **filename** - [char] output ``.zarr3``/``.zarr2`` group path
+            %     (overwritten if it exists).
             %   - **options** - *(optional)* struct:
             %
+            %     - ``.ZarrFormat`` - 2 or 3; overrides the format implied by the extension
             %     - ``.Levels`` - explicit number of pyramid levels (default: auto)
             %     - ``.MinLevelSize`` - stop auto-pyramid when min(Y,X) < this (default 256)
             %     - ``.MaxLevels`` - cap on auto levels (default 8)
@@ -183,8 +189,10 @@ classdef Zarr3Saver < io.savers.BaseSaver
 
             % fresh group
             filename = char(filename);
+            zarrFormat = io.savers.Zarr3Saver.resolveZarrFormat(filename, options);
             if isfolder(filename); rmdir(filename, 's'); end
-            grp = io.zarr.Group.create(filename);   % bulk writes follow io.zarr.Config backend
+            % bulk writes follow io.zarr.Config backend; levels inherit the format
+            grp = io.zarr.Group.create(filename, 'zarrFormat', zarrFormat);
 
             datasets = cell(1, nLevels);
             for L = 1:nLevels
@@ -278,13 +286,16 @@ classdef Zarr3Saver < io.savers.BaseSaver
         end
 
         function fnOut = saveStream(obj, provider, metadata, filename, options)
-            % SAVESTREAM - write an OME-Zarr v3 pyramid streaming one Z-slice at a time.
+            % SAVESTREAM - write an OME-Zarr pyramid streaming one Z-slice at a time.
             %
             % Memory-bounded twin of ``save``: instead of a full ``[y x z c t]`` array
             % it pulls each Z-slice from ``provider`` (an ``io.savers.SliceProvider``),
             % writes it to level 0, and writes its XY-downsampled copies to the coarser
             % levels - all via region (``bbox``) writes - so the whole volume is never
-            % resident. This is the out-of-core ingest path (e.g. a large source → zarr3).
+            % resident. This is the out-of-core ingest path (e.g. a large source → zarr).
+            %
+            % Chooses the zarr format exactly as ``save`` does: from the output
+            % extension, or from ``options.ZarrFormat`` when given.
             %
             % See ``io.savers.BaseSaver.saveStream``.
             %
@@ -342,8 +353,9 @@ classdef Zarr3Saver < io.savers.BaseSaver
             nLevels = numel(plan);
 
             filename = char(filename);
+            zarrFormat = io.savers.Zarr3Saver.resolveZarrFormat(filename, options);
             if isfolder(filename); rmdir(filename, 's'); end
-            grp = io.zarr.Group.create(filename);
+            grp = io.zarr.Group.create(filename, 'zarrFormat', zarrFormat);
 
             % --- create every level array up front ---
             levelInfo = repmat(struct('Yl', Y, 'Xl', X, 'Zl', Z, 'arr', [], 'name', '', 'chunkZ', 1), 1, nLevels);
@@ -771,6 +783,48 @@ classdef Zarr3Saver < io.savers.BaseSaver
             % strip the parenthetical note from method items (e.g. 'nearest (fast)' → 'nearest')
             options.DownsampleMethod = strtok(answer{5}, ' ');
             options.DownsampleStrategy = answer{6};
+        end
+
+        function zarrFormat = resolveZarrFormat(filename, options)
+            % RESOLVEZARRFORMAT - which zarr format to write, and is it consistent?
+            %
+            % The output extension chooses the format - ``.zarr2`` writes zarr
+            % v2, anything else v3 - matching the rule
+            % ``core.MibBigDataLabels.zarrFormatFromPath`` applies to model
+            % stores. ``options.ZarrFormat`` overrides it when a caller needs to
+            % be explicit.
+            %
+            % Sharding is rejected here rather than deep inside ``ZarrArray``,
+            % so the message can name the extension that selected v2. Zarr v2
+            % has no sharding codec at all; silently dropping the setting would
+            % write a store with a different chunk layout than was asked for.
+            %
+            % Input Arguments:
+            %   - **filename** - [char] output group path.
+            %   - **options** - [struct] saver options; ``.ZarrFormat`` and
+            %     ``.ShardSize`` are consulted.
+            %
+            % Output Arguments:
+            %   - **zarrFormat** - [numeric] 2 or 3.
+
+            if isstruct(options) && isfield(options, 'ZarrFormat') && ~isempty(options.ZarrFormat)
+                zarrFormat = double(options.ZarrFormat);
+                if ~ismember(zarrFormat, [2, 3])
+                    error('io:Zarr3Saver:zarrFormat', ...
+                        'options.ZarrFormat must be 2 or 3, got %g.', zarrFormat);
+                end
+            else
+                zarrFormat = core.MibBigDataLabels.zarrFormatFromPath(filename);
+            end
+
+            if zarrFormat == 2 && isstruct(options) && isfield(options, 'ShardSize') ...
+                    && ~isempty(options.ShardSize) && any(options.ShardSize > 0)
+                error('io:Zarr3Saver:shardingUnsupportedV2', ...
+                    ['Sharding was requested, but the output is Zarr v2, which has no sharding\n' ...
+                     'codec:\n  %s\n\n' ...
+                     'Either write Zarr v3 instead, or turn sharding off in the export settings.'], ...
+                    filename);
+            end
         end
 
         function shard = computeShard(chunk, shardMultiplier)

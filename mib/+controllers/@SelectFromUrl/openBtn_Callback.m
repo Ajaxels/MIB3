@@ -41,7 +41,9 @@ if isempty(obj.zarrFormat)
 end
 
 % Fail early with an actionable message rather than on the first slice read.
-if strcmp(obj.zarrFormat, 'zarr2')
+% The native engine fetches both zarr v2 and v3 over HTTP range requests with
+% no external dependency, so this only applies to the opt-in python backend.
+if io.zarr.Config.isPython()
     try
         io.zarr.PyBackend.ensureRemoteSupport(obj.rootUrl);
     catch ME

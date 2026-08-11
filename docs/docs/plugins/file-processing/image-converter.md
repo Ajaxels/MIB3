@@ -154,6 +154,9 @@ In this mode, MIB can convert files from variety formats into [OME-Zarr](https:/
 - 'Zarr v2' - legacy Zarr format, widely supported (e.g. MoBIE, OME-Zarr v0.4).
 - 'Zarr v3' - newer Zarr format with sharding support, but fewer tools support it.
 
+Both are written by the bundled native engine, so neither needs Python. Selecting 'Zarr v2' clears
+<span class="widget widget-checkbox">Use sharding</span>, which is a Zarr v3 feature.
+
 <span class="widget widget-dropdown">Image type</span>, specifies the type of data stored in the Zarr array.
 
 - 'image' - intensity/volumetric image data (microscopy, CT, etc).

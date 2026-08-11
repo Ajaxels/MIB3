@@ -221,6 +221,7 @@ classdef PyBackend
             [meta.mtype, meta.isBool] = io.zarr.PyBackend.numpyToMatlabType(zType);
             meta.dataType   = zType;                                   % zarr type name
             meta.chunkShape = io.zarr.PyBackend.tupleToVec(pyArr.chunks);
+            meta.zarrFormat = io.zarr.PyBackend.zarrFormatOf(pyArr);
         end
 
         function data = readArray(pyArr, bbox, meta)
@@ -307,12 +308,13 @@ classdef PyBackend
         end
 
         function s = infoArray(pyArr)
-            % INFOARRAY - struct mirroring ZarrArray.info (shape/dataType/chunkShape).
+            % INFOARRAY - struct mirroring ZarrArray.info (shape/dataType/chunkShape/zarrFormat).
             m = io.zarr.PyBackend.arrayMeta(pyArr);
             s.shape      = m.shape;
             s.chunkShape = m.chunkShape;
             s.shardShape = m.chunkShape;                 % best-effort (no separate shard query)
             s.dataType   = m.dataType;
+            s.zarrFormat = m.zarrFormat;
         end
     end
 
@@ -442,6 +444,18 @@ classdef PyBackend
                     'mibZa[mibSl] = mibReg']);
             end
             code = c;
+        end
+
+        function format = zarrFormatOf(pyArr)
+            % ZARRFORMATOF - format version of an open py array (2 or 3).
+            % zarr-python exposes it on the metadata object; fall back to 3
+            % rather than failing, since this is reported alongside metadata
+            % every read already depends on and is never used to decode bytes.
+            try
+                format = double(pyArr.metadata.zarr_format);
+            catch
+                format = 3;
+            end
         end
 
         function v = tupleToVec(pyTuple)
