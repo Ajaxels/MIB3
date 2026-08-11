@@ -9230,6 +9230,28 @@
       "contributor": null
     },
     {
+      "id": "controllers_preferences_preferences_openinsystembrowser",
+      "label": "openInSystemBrowser",
+      "file_type": "code",
+      "source_file": "+controllers\\@Preferences\\Preferences.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_preferences_preferences_defaultbrowserexecutable",
+      "label": "defaultBrowserExecutable",
+      "file_type": "code",
+      "source_file": "+controllers\\@Preferences\\Preferences.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "controllers_preferences_preferences_preferences",
       "label": "Preferences",
       "file_type": "code",
@@ -10363,6 +10385,314 @@
       "contributor": null
     },
     {
+      "id": "controllers_selectfromurl_selectfromurl_m",
+      "label": "SelectFromUrl.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_selectfromurl_buildloadimagesbatchopt_m",
+      "label": "buildLoadImagesBatchOpt.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@SelectFromUrl\\buildLoadImagesBatchOpt.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_selectfromurl_connectbtn_callback_m",
+      "label": "connectBtn_Callback.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@SelectFromUrl\\connectBtn_Callback.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_selectfromurl_openbtn_callback_m",
+      "label": "openBtn_Callback.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@SelectFromUrl\\openBtn_Callback.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_selectfromurl_openplainimageurl_m",
+      "label": "openPlainImageUrl.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@SelectFromUrl\\openPlainImageUrl.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_selectfromurl_probegroup_m",
+      "label": "probeGroup.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@SelectFromUrl\\probeGroup.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_selectfromurl_treenodeexpanded_callback_m",
+      "label": "treeNodeExpanded_Callback.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@SelectFromUrl\\treeNodeExpanded_Callback.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_selectfromurl_treeselectionchanged_callback_m",
+      "label": "treeSelectionChanged_Callback.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@SelectFromUrl\\treeSelectionChanged_Callback.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_selectfromurl_selectfromurl_viewlistner_callback2",
+      "label": "ViewListner_Callback2",
+      "file_type": "code",
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_selectfromurl_selectfromurl_selectfromurl",
+      "label": "SelectFromUrl",
+      "file_type": "code",
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_selectfromurl_selectfromurl_addcallbacks",
+      "label": "addCallbacks",
+      "file_type": "code",
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_selectfromurl_selectfromurl_keypress_callback",
+      "label": "keyPress_Callback",
+      "file_type": "code",
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_selectfromurl_selectfromurl_loadasvaluechanged",
+      "label": "loadAsValueChanged",
+      "file_type": "code",
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_selectfromurl_selectfromurl_closewindow",
+      "label": "closeWindow",
+      "file_type": "code",
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_selectfromurl_selectfromurl_guifigure",
+      "label": "guiFigure",
+      "file_type": "code",
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_selectfromurl_selectfromurl_resetdialog",
+      "label": "resetDialog",
+      "file_type": "code",
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_selectfromurl_selectfromurl_hasview",
+      "label": "hasView",
+      "file_type": "code",
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_selectfromurl_selectfromurl_setstatus",
+      "label": "setStatus",
+      "file_type": "code",
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_selectfromurl_selectfromurl_updatewidgets",
+      "label": "updateWidgets",
+      "file_type": "code",
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_selectfromurl_selectfromurl_updatebatchoptfromgui",
+      "label": "updateBatchOptFromGUI",
+      "file_type": "code",
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_selectfromurl_selectfromurl_urlvaluechanged",
+      "label": "urlValueChanged",
+      "file_type": "code",
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_selectfromurl_selectfromurl_grouppathvaluechanged",
+      "label": "groupPathValueChanged",
+      "file_type": "code",
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_selectfromurl_selectfromurl_helpbutton_callback",
+      "label": "helpButton_Callback",
+      "file_type": "code",
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_selectfromurl_selectfromurl_nodelabel",
+      "label": "nodeLabel",
+      "file_type": "code",
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_selectfromurl_selectfromurl_pythonnote",
+      "label": "pythonNote",
+      "file_type": "code",
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_selectfromurl_selectfromurl_applysummary",
+      "label": "applySummary",
+      "file_type": "code",
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_selectfromurl_selectfromurl_labelsmatchopenimage",
+      "label": "labelsMatchOpenImage",
+      "file_type": "code",
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_selectfromurl_selectfromurl_returnbatchopt",
+      "label": "returnBatchOpt",
+      "file_type": "code",
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "controllers_snapshot_snapshot_m",
       "label": "Snapshot.m",
       "file_type": "code",
@@ -11091,6 +11421,28 @@
     {
       "id": "controllers_stitching_stitching_projectsettingfields",
       "label": "projectSettingFields",
+      "file_type": "code",
+      "source_file": "+controllers\\@Stitching\\Stitching.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_stitching_stitching_imagefileformats",
+      "label": "imageFileFormats",
+      "file_type": "code",
+      "source_file": "+controllers\\@Stitching\\Stitching.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_stitching_stitching_imagefileformat",
+      "label": "imageFileFormat",
       "file_type": "code",
       "source_file": "+controllers\\@Stitching\\Stitching.m",
       "source_location": null,
@@ -20362,6 +20714,61 @@
       "contributor": null
     },
     {
+      "id": "io_loaders_omezarrmetadatautils_readgroupattributes",
+      "label": "readGroupAttributes",
+      "file_type": "code",
+      "source_file": "+io\\+loaders\\OmeZarrMetadataUtils.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_loaders_omezarrmetadatautils_listchildgroups",
+      "label": "listChildGroups",
+      "file_type": "code",
+      "source_file": "+io\\+loaders\\OmeZarrMetadataUtils.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_loaders_omezarrmetadatautils_findmultiscalesgroups",
+      "label": "findMultiscalesGroups",
+      "file_type": "code",
+      "source_file": "+io\\+loaders\\OmeZarrMetadataUtils.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_loaders_omezarrmetadatautils_relativegrouppath",
+      "label": "relativeGroupPath",
+      "file_type": "code",
+      "source_file": "+io\\+loaders\\OmeZarrMetadataUtils.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_loaders_omezarrmetadatautils_selectmultiscalesgroup",
+      "label": "selectMultiscalesGroup",
+      "file_type": "code",
+      "source_file": "+io\\+loaders\\OmeZarrMetadataUtils.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "io_loaders_videoreaderloader_m",
       "label": "VideoReaderLoader.m",
       "file_type": "code",
@@ -20582,6 +20989,17 @@
       "contributor": null
     },
     {
+      "id": "io_loaders_zarr2virtualsetuploader_resolvemultiscalesgroupv2",
+      "label": "resolveMultiscalesGroupV2",
+      "file_type": "code",
+      "source_file": "+io\\+loaders\\Zarr2VirtualSetupLoader.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "io_loaders_zarr2virtualsetuploader_findmultiscalessubpathv2",
       "label": "findMultiscalesSubPathV2",
       "file_type": "code",
@@ -20705,6 +21123,17 @@
     {
       "id": "io_loaders_zarr3virtualsetuploader_parsemultiscales",
       "label": "parseMultiscales",
+      "file_type": "code",
+      "source_file": "+io\\+loaders\\Zarr3VirtualSetupLoader.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_loaders_zarr3virtualsetuploader_resolvemultiscalesgroup",
+      "label": "resolveMultiscalesGroup",
       "file_type": "code",
       "source_file": "+io\\+loaders\\Zarr3VirtualSetupLoader.m",
       "source_location": null,
@@ -22155,6 +22584,182 @@
       "contributor": null
     },
     {
+      "id": "io_zarr_chunkcache_m",
+      "label": "ChunkCache.m",
+      "file_type": "code",
+      "source_file": "+io\\+zarr\\ChunkCache.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_zarr_chunkcache_read",
+      "label": "read",
+      "file_type": "code",
+      "source_file": "+io\\+zarr\\ChunkCache.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_zarr_chunkcache_clear",
+      "label": "clear",
+      "file_type": "code",
+      "source_file": "+io\\+zarr\\ChunkCache.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_zarr_chunkcache_stats",
+      "label": "stats",
+      "file_type": "code",
+      "source_file": "+io\\+zarr\\ChunkCache.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_zarr_chunkcache_setbudgetmb",
+      "label": "setBudgetMB",
+      "file_type": "code",
+      "source_file": "+io\\+zarr\\ChunkCache.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_zarr_chunkcache_isenabled",
+      "label": "isEnabled",
+      "file_type": "code",
+      "source_file": "+io\\+zarr\\ChunkCache.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_zarr_chunkcache_storeaccess",
+      "label": "storeAccess",
+      "file_type": "code",
+      "source_file": "+io\\+zarr\\ChunkCache.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_zarr_chunkcache_emptystore",
+      "label": "emptyStore",
+      "file_type": "code",
+      "source_file": "+io\\+zarr\\ChunkCache.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_zarr_chunkcache_chunkkey",
+      "label": "chunkKey",
+      "file_type": "code",
+      "source_file": "+io\\+zarr\\ChunkCache.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_zarr_chunkcache_enumeratechunks",
+      "label": "enumerateChunks",
+      "file_type": "code",
+      "source_file": "+io\\+zarr\\ChunkCache.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_zarr_chunkcache_splitandstore",
+      "label": "splitAndStore",
+      "file_type": "code",
+      "source_file": "+io\\+zarr\\ChunkCache.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_zarr_chunkcache_put",
+      "label": "put",
+      "file_type": "code",
+      "source_file": "+io\\+zarr\\ChunkCache.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_zarr_chunkcache_assemble",
+      "label": "assemble",
+      "file_type": "code",
+      "source_file": "+io\\+zarr\\ChunkCache.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_zarr_chunkcache_evict",
+      "label": "evict",
+      "file_type": "code",
+      "source_file": "+io\\+zarr\\ChunkCache.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_zarr_chunkcache_bytesize",
+      "label": "byteSize",
+      "file_type": "code",
+      "source_file": "+io\\+zarr\\ChunkCache.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_zarr_chunkcache_sizevector",
+      "label": "sizeVector",
+      "file_type": "code",
+      "source_file": "+io\\+zarr\\ChunkCache.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "io_zarr_config_m",
       "label": "Config.m",
       "file_type": "code",
@@ -22386,6 +22991,28 @@
       "contributor": null
     },
     {
+      "id": "io_zarr_pybackend_hasremotesupport",
+      "label": "hasRemoteSupport",
+      "file_type": "code",
+      "source_file": "+io\\+zarr\\PyBackend.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_zarr_pybackend_ensureremotesupport",
+      "label": "ensureRemoteSupport",
+      "file_type": "code",
+      "source_file": "+io\\+zarr\\PyBackend.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "io_zarr_pybackend_openarray",
       "label": "openArray",
       "file_type": "code",
@@ -22443,6 +23070,61 @@
     {
       "id": "io_zarr_pybackend_infoarray",
       "label": "infoArray",
+      "file_type": "code",
+      "source_file": "+io\\+zarr\\PyBackend.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_zarr_pybackend_remoteprobecode",
+      "label": "remoteProbeCode",
+      "file_type": "code",
+      "source_file": "+io\\+zarr\\PyBackend.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_zarr_pybackend_lookslikedeadinterpreter",
+      "label": "looksLikeDeadInterpreter",
+      "file_type": "code",
+      "source_file": "+io\\+zarr\\PyBackend.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_zarr_pybackend_raiseifremotedepsmissing",
+      "label": "raiseIfRemoteDepsMissing",
+      "file_type": "code",
+      "source_file": "+io\\+zarr\\PyBackend.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_zarr_pybackend_remotedepsmessage",
+      "label": "remoteDepsMessage",
+      "file_type": "code",
+      "source_file": "+io\\+zarr\\PyBackend.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_zarr_pybackend_environmentnameof",
+      "label": "environmentNameOf",
       "file_type": "code",
       "source_file": "+io\\+zarr\\PyBackend.m",
       "source_location": null,
@@ -22584,6 +23266,50 @@
       "contributor": null
     },
     {
+      "id": "io_extensionregistryload_detectzarrformatextension",
+      "label": "detectZarrFormatExtension",
+      "file_type": "code",
+      "source_file": "+io\\ExtensionRegistryLoad.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_extensionregistryload_proberemotezarr",
+      "label": "probeRemoteZarr",
+      "file_type": "code",
+      "source_file": "+io\\ExtensionRegistryLoad.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_extensionregistryload_clearremoteprobecache",
+      "label": "clearRemoteProbeCache",
+      "file_type": "code",
+      "source_file": "+io\\ExtensionRegistryLoad.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_extensionregistryload_remoteprobecache",
+      "label": "remoteProbeCache",
+      "file_type": "code",
+      "source_file": "+io\\ExtensionRegistryLoad.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "io_loaderfactory_m",
       "label": "LoaderFactory.m",
       "file_type": "code",
@@ -22610,6 +23336,182 @@
       "label": "getAvailableLoaders",
       "file_type": "code",
       "source_file": "+io\\LoaderFactory.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_remotestore_m",
+      "label": "RemoteStore.m",
+      "file_type": "code",
+      "source_file": "+io\\RemoteStore.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_remotestore_isremote",
+      "label": "isRemote",
+      "file_type": "code",
+      "source_file": "+io\\RemoteStore.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_remotestore_normalise",
+      "label": "normalise",
+      "file_type": "code",
+      "source_file": "+io\\RemoteStore.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_remotestore_parse",
+      "label": "parse",
+      "file_type": "code",
+      "source_file": "+io\\RemoteStore.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_remotestore_listchildren",
+      "label": "listChildren",
+      "file_type": "code",
+      "source_file": "+io\\RemoteStore.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_remotestore_clearcache",
+      "label": "clearCache",
+      "file_type": "code",
+      "source_file": "+io\\RemoteStore.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_remotestore_exists",
+      "label": "exists",
+      "file_type": "code",
+      "source_file": "+io\\RemoteStore.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_remotestore_readjson",
+      "label": "readJson",
+      "file_type": "code",
+      "source_file": "+io\\RemoteStore.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_remotestore_join",
+      "label": "join",
+      "file_type": "code",
+      "source_file": "+io\\RemoteStore.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_remotestore_relativepath",
+      "label": "relativePath",
+      "file_type": "code",
+      "source_file": "+io\\RemoteStore.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_remotestore_fetchlisting",
+      "label": "fetchListing",
+      "file_type": "code",
+      "source_file": "+io\\RemoteStore.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_remotestore_parselisting",
+      "label": "parseListing",
+      "file_type": "code",
+      "source_file": "+io\\RemoteStore.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_remotestore_namesunderprefix",
+      "label": "namesUnderPrefix",
+      "file_type": "code",
+      "source_file": "+io\\RemoteStore.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_remotestore_stripslashes",
+      "label": "stripSlashes",
+      "file_type": "code",
+      "source_file": "+io\\RemoteStore.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_remotestore_getoption",
+      "label": "getOption",
+      "file_type": "code",
+      "source_file": "+io\\RemoteStore.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_remotestore_listingcache",
+      "label": "listingCache",
+      "file_type": "code",
+      "source_file": "+io\\RemoteStore.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -34835,6 +35737,26 @@
     },
     {
       "source": "controllers_preferences_preferences_m",
+      "target": "controllers_preferences_preferences_openinsystembrowser",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@Preferences\\Preferences.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_preferences_preferences_m",
+      "target": "controllers_preferences_preferences_defaultbrowserexecutable",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@Preferences\\Preferences.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_preferences_preferences_m",
       "target": "controllers_preferences_preferences_preferences",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -35814,6 +36736,276 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_selectfromurl_selectfromurl_m",
+      "target": "controllers_selectfromurl_buildloadimagesbatchopt_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_selectfromurl_m",
+      "target": "controllers_selectfromurl_connectbtn_callback_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_selectfromurl_m",
+      "target": "controllers_selectfromurl_openbtn_callback_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_selectfromurl_m",
+      "target": "controllers_selectfromurl_openplainimageurl_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_selectfromurl_m",
+      "target": "controllers_selectfromurl_probegroup_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_selectfromurl_m",
+      "target": "controllers_selectfromurl_treenodeexpanded_callback_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_selectfromurl_m",
+      "target": "controllers_selectfromurl_treeselectionchanged_callback_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_selectfromurl_m",
+      "target": "controllers_selectfromurl_selectfromurl_viewlistner_callback2",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_selectfromurl_m",
+      "target": "controllers_selectfromurl_selectfromurl_selectfromurl",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_selectfromurl_m",
+      "target": "controllers_selectfromurl_selectfromurl_addcallbacks",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_selectfromurl_m",
+      "target": "controllers_selectfromurl_selectfromurl_keypress_callback",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_selectfromurl_m",
+      "target": "controllers_selectfromurl_selectfromurl_loadasvaluechanged",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_selectfromurl_m",
+      "target": "controllers_selectfromurl_selectfromurl_closewindow",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_selectfromurl_m",
+      "target": "controllers_selectfromurl_selectfromurl_guifigure",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_selectfromurl_m",
+      "target": "controllers_selectfromurl_selectfromurl_resetdialog",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_selectfromurl_m",
+      "target": "controllers_selectfromurl_selectfromurl_hasview",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_selectfromurl_m",
+      "target": "controllers_selectfromurl_selectfromurl_setstatus",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_selectfromurl_m",
+      "target": "controllers_selectfromurl_selectfromurl_updatewidgets",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_selectfromurl_m",
+      "target": "controllers_selectfromurl_selectfromurl_updatebatchoptfromgui",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_selectfromurl_m",
+      "target": "controllers_selectfromurl_selectfromurl_urlvaluechanged",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_selectfromurl_m",
+      "target": "controllers_selectfromurl_selectfromurl_grouppathvaluechanged",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_selectfromurl_m",
+      "target": "controllers_selectfromurl_selectfromurl_helpbutton_callback",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_selectfromurl_m",
+      "target": "controllers_selectfromurl_selectfromurl_nodelabel",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_selectfromurl_m",
+      "target": "controllers_selectfromurl_selectfromurl_pythonnote",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_selectfromurl_m",
+      "target": "controllers_selectfromurl_selectfromurl_applysummary",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_selectfromurl_m",
+      "target": "controllers_selectfromurl_selectfromurl_labelsmatchopenimage",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_selectfromurl_m",
+      "target": "controllers_selectfromurl_selectfromurl_returnbatchopt",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_snapshot_snapshot_m",
       "target": "controllers_snapshot_snapshot_viewlistner_callback2",
       "relation": "contains",
@@ -36446,6 +37638,26 @@
     {
       "source": "controllers_stitching_stitching_m",
       "target": "controllers_stitching_stitching_projectsettingfields",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@Stitching\\Stitching.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_stitching_m",
+      "target": "controllers_stitching_stitching_imagefileformats",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@Stitching\\Stitching.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_stitching_m",
+      "target": "controllers_stitching_stitching_imagefileformat",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -44354,6 +45566,56 @@
       "weight": 1.0
     },
     {
+      "source": "io_loaders_omezarrmetadatautils_m",
+      "target": "io_loaders_omezarrmetadatautils_readgroupattributes",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+loaders\\OmeZarrMetadataUtils.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_loaders_omezarrmetadatautils_m",
+      "target": "io_loaders_omezarrmetadatautils_listchildgroups",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+loaders\\OmeZarrMetadataUtils.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_loaders_omezarrmetadatautils_m",
+      "target": "io_loaders_omezarrmetadatautils_findmultiscalesgroups",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+loaders\\OmeZarrMetadataUtils.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_loaders_omezarrmetadatautils_m",
+      "target": "io_loaders_omezarrmetadatautils_relativegrouppath",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+loaders\\OmeZarrMetadataUtils.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_loaders_omezarrmetadatautils_m",
+      "target": "io_loaders_omezarrmetadatautils_selectmultiscalesgroup",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+loaders\\OmeZarrMetadataUtils.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "io_loaders_videoreaderloader_m",
       "target": "io_loaders_videoreaderloader_videoreaderloader",
       "relation": "contains",
@@ -44525,6 +45787,16 @@
     },
     {
       "source": "io_loaders_zarr2virtualsetuploader_m",
+      "target": "io_loaders_zarr2virtualsetuploader_resolvemultiscalesgroupv2",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+loaders\\Zarr2VirtualSetupLoader.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_loaders_zarr2virtualsetuploader_m",
       "target": "io_loaders_zarr2virtualsetuploader_findmultiscalessubpathv2",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -44616,6 +45888,16 @@
     {
       "source": "io_loaders_zarr3virtualsetuploader_m",
       "target": "io_loaders_zarr3virtualsetuploader_parsemultiscales",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+loaders\\Zarr3VirtualSetupLoader.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_loaders_zarr3virtualsetuploader_m",
+      "target": "io_loaders_zarr3virtualsetuploader_resolvemultiscalesgroup",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -45744,6 +47026,156 @@
       "weight": 1.0
     },
     {
+      "source": "io_zarr_chunkcache_m",
+      "target": "io_zarr_chunkcache_read",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+zarr\\ChunkCache.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_zarr_chunkcache_m",
+      "target": "io_zarr_chunkcache_clear",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+zarr\\ChunkCache.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_zarr_chunkcache_m",
+      "target": "io_zarr_chunkcache_stats",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+zarr\\ChunkCache.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_zarr_chunkcache_m",
+      "target": "io_zarr_chunkcache_setbudgetmb",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+zarr\\ChunkCache.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_zarr_chunkcache_m",
+      "target": "io_zarr_chunkcache_isenabled",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+zarr\\ChunkCache.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_zarr_chunkcache_m",
+      "target": "io_zarr_chunkcache_storeaccess",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+zarr\\ChunkCache.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_zarr_chunkcache_m",
+      "target": "io_zarr_chunkcache_emptystore",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+zarr\\ChunkCache.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_zarr_chunkcache_m",
+      "target": "io_zarr_chunkcache_chunkkey",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+zarr\\ChunkCache.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_zarr_chunkcache_m",
+      "target": "io_zarr_chunkcache_enumeratechunks",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+zarr\\ChunkCache.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_zarr_chunkcache_m",
+      "target": "io_zarr_chunkcache_splitandstore",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+zarr\\ChunkCache.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_zarr_chunkcache_m",
+      "target": "io_zarr_chunkcache_put",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+zarr\\ChunkCache.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_zarr_chunkcache_m",
+      "target": "io_zarr_chunkcache_assemble",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+zarr\\ChunkCache.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_zarr_chunkcache_m",
+      "target": "io_zarr_chunkcache_evict",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+zarr\\ChunkCache.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_zarr_chunkcache_m",
+      "target": "io_zarr_chunkcache_bytesize",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+zarr\\ChunkCache.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_zarr_chunkcache_m",
+      "target": "io_zarr_chunkcache_sizevector",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+zarr\\ChunkCache.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "io_zarr_config_m",
       "target": "io_zarr_config_library",
       "relation": "contains",
@@ -45925,6 +47357,26 @@
     },
     {
       "source": "io_zarr_pybackend_m",
+      "target": "io_zarr_pybackend_hasremotesupport",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+zarr\\PyBackend.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_zarr_pybackend_m",
+      "target": "io_zarr_pybackend_ensureremotesupport",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+zarr\\PyBackend.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_zarr_pybackend_m",
       "target": "io_zarr_pybackend_openarray",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -45976,6 +47428,56 @@
     {
       "source": "io_zarr_pybackend_m",
       "target": "io_zarr_pybackend_infoarray",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+zarr\\PyBackend.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_zarr_pybackend_m",
+      "target": "io_zarr_pybackend_remoteprobecode",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+zarr\\PyBackend.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_zarr_pybackend_m",
+      "target": "io_zarr_pybackend_lookslikedeadinterpreter",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+zarr\\PyBackend.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_zarr_pybackend_m",
+      "target": "io_zarr_pybackend_raiseifremotedepsmissing",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+zarr\\PyBackend.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_zarr_pybackend_m",
+      "target": "io_zarr_pybackend_remotedepsmessage",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+zarr\\PyBackend.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_zarr_pybackend_m",
+      "target": "io_zarr_pybackend_environmentnameof",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -46094,6 +47596,46 @@
       "weight": 1.0
     },
     {
+      "source": "io_extensionregistryload_m",
+      "target": "io_extensionregistryload_detectzarrformatextension",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\ExtensionRegistryLoad.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_extensionregistryload_m",
+      "target": "io_extensionregistryload_proberemotezarr",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\ExtensionRegistryLoad.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_extensionregistryload_m",
+      "target": "io_extensionregistryload_clearremoteprobecache",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\ExtensionRegistryLoad.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_extensionregistryload_m",
+      "target": "io_extensionregistryload_remoteprobecache",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\ExtensionRegistryLoad.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "io_loaderfactory_m",
       "target": "io_loaderfactory_create",
       "relation": "contains",
@@ -46110,6 +47652,156 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "+io\\LoaderFactory.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_remotestore_m",
+      "target": "io_remotestore_isremote",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\RemoteStore.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_remotestore_m",
+      "target": "io_remotestore_normalise",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\RemoteStore.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_remotestore_m",
+      "target": "io_remotestore_parse",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\RemoteStore.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_remotestore_m",
+      "target": "io_remotestore_listchildren",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\RemoteStore.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_remotestore_m",
+      "target": "io_remotestore_clearcache",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\RemoteStore.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_remotestore_m",
+      "target": "io_remotestore_exists",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\RemoteStore.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_remotestore_m",
+      "target": "io_remotestore_readjson",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\RemoteStore.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_remotestore_m",
+      "target": "io_remotestore_join",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\RemoteStore.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_remotestore_m",
+      "target": "io_remotestore_relativepath",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\RemoteStore.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_remotestore_m",
+      "target": "io_remotestore_fetchlisting",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\RemoteStore.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_remotestore_m",
+      "target": "io_remotestore_parselisting",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\RemoteStore.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_remotestore_m",
+      "target": "io_remotestore_namesunderprefix",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\RemoteStore.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_remotestore_m",
+      "target": "io_remotestore_stripslashes",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\RemoteStore.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_remotestore_m",
+      "target": "io_remotestore_getoption",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\RemoteStore.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_remotestore_m",
+      "target": "io_remotestore_listingcache",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\RemoteStore.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -55844,6 +57536,196 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_selectfromurl_connectbtn_callback_m",
+      "target": "controllers_selectfromurl_selectfromurl_hasview",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@SelectFromUrl\\connectBtn_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_connectbtn_callback_m",
+      "target": "controllers_selectfromurl_selectfromurl_setstatus",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@SelectFromUrl\\connectBtn_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_connectbtn_callback_m",
+      "target": "controllers_selectfromurl_openbtn_callback_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@SelectFromUrl\\connectBtn_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_connectbtn_callback_m",
+      "target": "controllers_selectfromurl_probegroup_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@SelectFromUrl\\connectBtn_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_connectbtn_callback_m",
+      "target": "controllers_selectfromurl_selectfromurl_nodelabel",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@SelectFromUrl\\connectBtn_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_connectbtn_callback_m",
+      "target": "controllers_selectfromurl_treenodeexpanded_callback_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@SelectFromUrl\\connectBtn_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_openbtn_callback_m",
+      "target": "controllers_selectfromurl_selectfromurl_guifigure",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@SelectFromUrl\\openBtn_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_openbtn_callback_m",
+      "target": "controllers_selectfromurl_openplainimageurl_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@SelectFromUrl\\openBtn_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_openbtn_callback_m",
+      "target": "controllers_selectfromurl_selectfromurl_closewindow",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@SelectFromUrl\\openBtn_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_openbtn_callback_m",
+      "target": "controllers_selectfromurl_selectfromurl_returnbatchopt",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@SelectFromUrl\\openBtn_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_openbtn_callback_m",
+      "target": "controllers_selectfromurl_buildloadimagesbatchopt_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@SelectFromUrl\\openBtn_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_openplainimageurl_m",
+      "target": "controllers_selectfromurl_selectfromurl_guifigure",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@SelectFromUrl\\openPlainImageUrl.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_probegroup_m",
+      "target": "controllers_selectfromurl_selectfromurl_applysummary",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@SelectFromUrl\\probeGroup.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_probegroup_m",
+      "target": "controllers_selectfromurl_selectfromurl_pythonnote",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@SelectFromUrl\\probeGroup.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_selectfromurl_m",
+      "target": "core_childview_childview_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_selectfromurl_m",
+      "target": "core_toggleeventdata_toggleeventdata_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_treenodeexpanded_callback_m",
+      "target": "controllers_selectfromurl_selectfromurl_setstatus",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@SelectFromUrl\\treeNodeExpanded_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_treenodeexpanded_callback_m",
+      "target": "controllers_selectfromurl_selectfromurl_nodelabel",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@SelectFromUrl\\treeNodeExpanded_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_treeselectionchanged_callback_m",
+      "target": "controllers_selectfromurl_probegroup_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@SelectFromUrl\\treeSelectionChanged_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_snapshot_snapshot_m",
       "target": "core_childview_childview_m",
       "relation": "calls",
@@ -56264,6 +58146,16 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_stitching_measureoverlaps_callback_m",
+      "target": "controllers_stitching_previewlayoutbtn_callback_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@Stitching\\measureOverlaps_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_stitching_oninspectorclosed_m",
       "target": "controllers_stitching_updatewidgets_m",
       "relation": "calls",
@@ -56454,6 +58346,26 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_stitching_selectoutputpath_callback_m",
+      "target": "controllers_stitching_stitchedfilename_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@Stitching\\selectOutputPath_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_selectoutputpath_callback_m",
+      "target": "controllers_stitching_updatewidgets_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@Stitching\\selectOutputPath_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_stitching_stitchbtn_callback_m",
       "target": "core_mibdataset_mibdataset_m",
       "relation": "calls",
@@ -56536,6 +58448,16 @@
     {
       "source": "controllers_stitching_stitchbtn_callback_m",
       "target": "controllers_stitching_stitchedfilename_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@Stitching\\stitchBtn_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_stitchbtn_callback_m",
+      "target": "controllers_stitching_selectoutputpath_callback_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -67434,16 +69356,6 @@
       "weight": 1.0
     },
     {
-      "source": "controllers_mibribbon_homeimport_callback_m",
-      "target": "utils_dlgs_inputuniversaldlg_m",
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "+controllers\\@MibRibbon\\homeImport_Callback.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
       "source": "controllers_mibribbon_model_callbacks_m",
       "target": "utils_dlgs_showerrordialog_m",
       "relation": "calls",
@@ -68614,6 +70526,86 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_selectfromurl_openbtn_callback_m",
+      "target": "utils_dlgs_showerrordialog_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@SelectFromUrl\\openBtn_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_openplainimageurl_m",
+      "target": "utils_dlgs_showerrordialog_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@SelectFromUrl\\openPlainImageUrl.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_selectfromurl_m",
+      "target": "utils_dlgs_showerrordialog_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_selectfromurl_m",
+      "target": "utils_updatebatchoptcombinefields_shared_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_selectfromurl_m",
+      "target": "utils_movewindowoutside_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_selectfromurl_m",
+      "target": "utils_fontsizeupdate_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_selectfromurl_m",
+      "target": "utils_updateguifrombatchopt_shared_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_selectfromurl_m",
+      "target": "utils_updatebatchoptfromgui_shared_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_snapshot_snapshot_m",
       "target": "utils_dlgs_showerrordialog_m",
       "relation": "calls",
@@ -69236,6 +71228,16 @@
     {
       "source": "controllers_stitching_stitchbtn_callback_m",
       "target": "utils_stitch_fuseinmemory_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@Stitching\\stitchBtn_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_stitchbtn_callback_m",
+      "target": "utils_stitch_fusetofiles_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -70480,6 +72482,16 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "+io\\+loaders\\NrrdLoader.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_loaders_omezarrmetadatautils_m",
+      "target": "utils_dlgs_inputuniversaldlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+loaders\\OmeZarrMetadataUtils.m",
       "source_location": null,
       "weight": 1.0
     },

@@ -510,11 +510,8 @@ classdef MakeMovie < handle
         function help(obj)
             % show help page
             helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'html', 'user-interface', 'ribbon', 'home', 'home-makevideo.html');
-            if isfile(helpFilPath)
-                web(helpFilPath, '-browser');
-            else
-                web('http://mib.helsinki.fi/help/main3/user-interface/ribbon/home/home-makevideo.html', '-browser');
-            end
+            utils.openHelpPage(helpFilPath, ...
+                'http://mib.helsinki.fi/help/main3/user-interface/ribbon/home/home-makevideo.html');
 
         end
 

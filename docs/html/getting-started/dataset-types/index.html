@@ -549,6 +549,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#remote-stores" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Remote stores
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#how-bigdata-works" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -1311,6 +1322,8 @@
       
         
       
+        
+      
     
     
     
@@ -1427,6 +1440,33 @@
     
   
   MIB 3D Viewer
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-interface/ribbon/home/home-importfromurl.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Import from URL / Zarr
 
     
   </span>
@@ -5487,6 +5527,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#remote-stores" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Remote stores
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#how-bigdata-works" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -5814,6 +5865,27 @@ pyramidal whole-slide file opens straight into it. To move a dataset that is alr
 the same dropdown to <strong>BigData</strong> and choose <em>Convert current</em>, which writes an OME-Zarr v3 pyramid
 to disk and reopens it.</p>
 </div>
+<hr />
+<h2 id="remote-stores">Remote stores<a class="headerlink" href="#remote-stores" title="Permanent link">&para;</a></h2>
+<p>A <strong>Virtual</strong> or <strong>BigData</strong> dataset does not have to sit on your disk. MIB can open an OME-Zarr
+container from a public cloud bucket over the network - see
+<a href="../../user-interface/ribbon/home/home-importfromurl.html">Import from URL / Zarr</a> - and only the tiles you
+actually look at are transferred.</p>
+<p>Three things are worth knowing before you rely on it:</p>
+<ul>
+<li>The <strong>model store is always local.</strong> When you create a model on a remote BigData dataset, MIB
+  asks where to put it and writes an OME-Zarr v3 pyramid to your own disk. The remote image is
+  never written to.</li>
+<li><strong>Remote zarr v2</strong> stores are read through Python and need the <code>aiohttp</code> and <code>requests</code>
+  packages; remote <strong>zarr v3</strong> stores need no Python at all. MIB tells you if something is
+  missing.</li>
+<li>There is <strong>no local tile cache</strong> yet, so panning and slice scrubbing re-fetch tiles over the
+  network. The pyramid keeps this workable when zoomed out; working at full resolution on a
+  remote volume is slow by nature.</li>
+</ul>
+<p>A published container often also holds small, densely annotated ground-truth crops. These cannot
+yet be overlaid as a model on their parent volume - open such a crop as an image in its own
+right instead.</p>
 <hr />
 <h2 id="how-bigdata-works">How BigData works<a class="headerlink" href="#how-bigdata-works" title="Permanent link">&para;</a></h2>
 <p>This section explains the machinery behind BigData segmentation - useful for understanding why

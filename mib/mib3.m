@@ -55,7 +55,7 @@ tic
 % ATTENTION! it is important to have the version number between "ver." and "/" 
 % Release syntax example: "ver. 2025.11 / 04.11.2025"
 % Beta syntax example: "ver. 2025.11 (beta 4) / 04.11.2025"
-mibVersion = 'ver. 2026.0727 / 27.07.2025 (preview)';  
+mibVersion = 'ver. 2026.0811 / 11.08.2026 (preview)';  
 
 % MAKE SURE THAT cpuParallelLimitMax DOES NOT EXCEED NUMBER OF CPUs
 % WHEN COMPILING
@@ -145,6 +145,7 @@ if false
     views.RenameRestoreGUI;
     views.RenameShuffleGUI;
     views.ResampleDatasetGUI;
+    views.SelectFromUrlGUI;
     views.SelectHDFSeriesGUI;
     views.SelectLociSeriesGUI;
     views.SelectModelTypeGUI;

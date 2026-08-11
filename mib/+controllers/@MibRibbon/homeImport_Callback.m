@@ -78,69 +78,12 @@ switch mode
         utils.dlgs.showErrorDialog(obj.view.gui, 'Not implemented yet!', 'OMERO import');
         return;
 
-    case 'URL'                 % obj.handles.ribbonHome.importFromURL
-        % Pre-fill URL from clipboard if it looks like a link
-        clipboardText = clipboard('paste');
-        webLink = 'http://mib.helsinki.fi/images/im_browser_splash.jpg';
-        if ~isempty(clipboardText)
-            if contains(clipboardText, {'https://', 'http://'}); webLink = clipboardText; end
-        end
-
-        answer = utils.dlgs.inputUniversalDlg(obj.view.gui, '', ...
-            {'URL of the image to import (including protocol, e.g. http://):'}, ...
-            {webLink}, 'Open URL', struct());
-        if isempty(answer); return; end
-        urlAddress = answer{1};
-
-        % Get image info (number of slices, format, etc.)
-        try
-            imageInfo = imfinfo(urlAddress);
-        catch exception
-            utils.dlgs.showErrorDialog(obj.view.gui, ...
-                sprintf('Cannot get image info from URL:\n%s\n\n%s', urlAddress, exception.message), ...
-                'URL import error');
-            return;
-        end
-
-        % Download with progress
-        progressDialog = uiprogressdlg(obj.view.gui, 'Value', 0, ...
-            'Message', sprintf('Downloading from:\n%s\nPlease wait...', urlAddress), ...
-            'Title', 'Downloading image');
-        try
-            if numel(imageInfo) > 1
-                [imageTemp, colorMap] = imread(urlAddress, 1);
-                imageData = zeros([size(imageTemp,1), size(imageTemp,2), size(imageTemp,3), numel(imageInfo)], class(imageTemp));
-                imageData(:,:,:,1) = imageTemp;
-                for sliceNo = 2:numel(imageInfo)
-                    imageData(:,:,:,sliceNo) = imread(urlAddress, sliceNo);
-                    progressDialog.Value = sliceNo / numel(imageInfo);
-                end
-            else
-                [imageData, colorMap] = imread(urlAddress);
-                progressDialog.Value = 1;
-            end
-        catch exception
-            close(progressDialog);
-            utils.dlgs.showErrorDialog(obj.view.gui, ...
-                sprintf('Cannot download image from URL:\n%s\n\n%s', urlAddress, exception.message), ...
-                'URL import error');
-            return;
-        end
-        close(progressDialog);
-
-        % Convert imread output [h,w,c] or [h,w,c,z] → MIB3 [h,w,z,c,t]
-        imageData = permute(imageData, [1,2,4,3]);
-
-        % Build metadata dictionary: filename derived from URL, colormap for indexed images
-        [~, imageName, imageExt] = fileparts(urlAddress);
-        imageFilename = fullfile(obj.mibModel.currentDirectory, [imageName, imageExt]);
-        imageMeta = core.MibImage.initializeImgInfo('Filename', imageFilename, 'Colormap', colorMap);
-
-        id = obj.mibModel.getActiveId();
-        obj.mibModel.I{id}.initialize(imageData, imageMeta, 'Standard', 'imageOnly', obj.mibModel.preferences.System.EnableSelection);
-
-        notify(obj.mibModel, 'NewDataset');
-        notify(obj.mibModel, 'ShowImage');
+    case 'URL / Zarr'                 % obj.handles.ribbonHome.importFromURL
+        % Handles both an OME-Zarr container (browsed and opened as a
+        % BigData/Virtual/Standard dataset) and an ordinary image URL, which
+        % keeps the original imread behaviour - see
+        % controllers.SelectFromUrl.openPlainImageUrl.
+        obj.mibController.startController('controllers.SelectFromUrl');
 end
 
 end

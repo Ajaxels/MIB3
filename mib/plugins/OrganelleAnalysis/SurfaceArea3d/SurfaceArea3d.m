@@ -365,11 +365,8 @@ classdef SurfaceArea3d < handle
         % MATLAB's ``web`` function with the ``-browser`` flag.
 
             helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'html', 'user-interface', 'plugins', 'organelle-analysis', 'surface-area-3d.html');
-            if isfile(helpFilPath)
-                web(helpFilPath, '-browser');
-            else
-                web('http://mib.helsinki.fi/help/main3/user-interface/plugins/organelle-analysis/surface-area-3d.html', '-browser');
-            end
+            utils.openHelpPage(helpFilPath, ...
+                'http://mib.helsinki.fi/help/main3/user-interface/plugins/organelle-analysis/surface-area-3d.html');
         end
 
         % -----------------------------------------------------------------

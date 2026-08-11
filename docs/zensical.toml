@@ -85,6 +85,7 @@ nav = [
         { "Make snapshot" = "user-interface/ribbon/home/home-makesnapshot.md" },
         { "Make video" = "user-interface/ribbon/home/home-makevideo.md" },
         { "MIB 3D Viewer" = "user-interface/ribbon/home/home-mib3Dviewer.md" },
+        { "Import from URL / Zarr" = "user-interface/ribbon/home/home-importfromurl.md" },
         { "Batch processing" = "user-interface/ribbon/home/home-batchprocessing.md" },
         { "Dataset chunking" = "user-interface/ribbon/home/home-choppedimages.md" },
         { "Image shuffling" = "user-interface/ribbon/home/home-renameandshuffle.md" },

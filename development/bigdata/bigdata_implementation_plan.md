@@ -119,11 +119,14 @@ export a BigData level → reopen with matching dims/voxel size.
    `Zarr3Saver.patchMetadata` (bounding box + voxel size). No Python on that path. **Still open:**
    **Zarr v2** output and the **python backend** keep the legacy Python pipeline (the native
    `io.zarr` writer is v3-only) — migrating v2 needs a native Zarr-v2 writer first.
-5. **Remote OME-Zarr over HTTP/URL** — metadata + native reads work in principle, but: `Import→URL`
-   uses `imread` (never routes to the zarr loader); no GUI entry feeds a URL to the Virtual/BigData open
-   path; `zarrMex` HTTP Range reads fail on servers without Range support; v3-only engine can't read
-   NGFF v0.4 (v2). Future work: an "Open OME-Zarr from URL" entry → `Zarr3VirtualSetupLoader`; a
-   whole-chunk GET path for non-Range hosts; an optional Zarr v2 read path.
+5. **Remote OME-Zarr over HTTP/URL** - **planned in detail: see [`plan_url_s3.md`](plan_url_s3.md).**
+   Metadata over HTTP now works end to end for both versions (verified live against Janelia
+   OpenOrganelle), and the NGFF v0.4 / v2 gap noted here was closed by `Zarr2VirtualSetupLoader`.
+   What remains: `Import→URL` still uses `imread` and never routes to the zarr loaders; no GUI entry
+   feeds a URL to the Virtual/BigData open path; `detectZarrFormatExtension` cannot probe a URL and
+   mis-routes v2 stores to the v3 loader; remote group discovery bails out on HTTP; and remote v2
+   pixel reads need `aiohttp`/`requests` in the python env. `zarrMex` HTTP Range reads still assume
+   Range support (S3 has it) - a whole-chunk GET path for non-Range hosts remains future work.
 6. **Interop nicety:** `createStore.writeMultiscales` writes relative factors as the NGFF `scale`; for
    strict OME-NGFF it should write physical voxel sizes. MIB round-trips either way (openStore
    normalises), so cosmetic.

@@ -11,6 +11,7 @@ image + segmentation model) lives here.
 | [`bigdata_implementation_plan.md`](bigdata_implementation_plan.md) | **Status & remaining work.** What's done, the still-open streaming-export items, WSI Phase E (deferred), the deferred backlog (T>1, `removeMaterial` renumbering, remote zarr, …), and audit findings not yet acted on. **Check here for open work before starting anything BigData-related.** |
 | [`user_checklist.md`](user_checklist.md) | **Live-GUI test checklist** for the export + ImageConverter features — several rows are still unchecked (§D5–D7, §E, §F). |
 | [`alignment_plan.md`](alignment_plan.md) | **Alignment for BigData** — implementation done; gotchas log + the still-open live-GUI acceptance checklists. |
+| [`plan_url_s3.md`](plan_url_s3.md) | **Remote OME-Zarr over URL / S3** - planned, not started. Opening public cloud stores (Janelia OpenOrganelle et al.) as BigData via `Home -> Import -> URL`: the lazy S3 group browser, URL-aware zarr version detection, the `aiohttp`/`requests` prerequisite, and why sub-volume label crops are scoped out. Supersedes the deferred remote-zarr item in `bigdata_implementation_plan.md`. |
 
 Historical dated fix-logs (`plan_bigdata.md`, `bigdata_levelmap_spec.md`/`_plan.md`,
 `bigdata_brush_performance.md`, `plan_wsi_readers.md`, `wsi_livetest_checklist.md`) were removed

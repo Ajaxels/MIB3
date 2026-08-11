@@ -35,7 +35,9 @@ classdef MibBigDataLabelsZarr2 < core.MibBigDataLabels
 %     inherited ``materializeForRead`` is a guaranteed no-op (there is no lazy
 %     up-propagation for a read-only, externally-complete source).
 %   - ``readPackedLevel`` - reads via ``io.zarr.PyBackend.readArray`` instead
-%     of ``io.zarr.Array.read``.
+%     of ``io.zarr.Array.read``, through ``io.zarr.ChunkCache`` like the image
+%     loaders. The cache needs no invalidation here because the store is
+%     read-only.
 %   - ``setData63`` / ``writePackedLevel`` - writes are blocked; the first
 %     write attempt per session shows a one-time "read-only" notice (NOT
 %     shown on every call, since ``setData63`` fires on every mouse-move
@@ -46,6 +48,11 @@ classdef MibBigDataLabelsZarr2 < core.MibBigDataLabels
         % {1 x nLevels} io.zarr.PyBackend.arrayMeta() results, one per level,
         % cached alongside modelArrays{L} (the open python array handle) to
         % avoid re-querying shape/dtype from python on every tile read.
+        modelLevelPaths = {}
+        % {1 x nLevels} full path or URL of each level array, kept from
+        % openStore so readPackedLevel can key io.zarr.ChunkCache on it without
+        % rebuilding the path on every tile read. Same key the image loaders
+        % use, so a store opened both as image and as labels shares its chunks.
         modelAxisOrder = 'yxz'
         % [char] declared C-order of the underlying zarr v2 arrays (e.g.
         % 'zyx'), from the store's own multiscales.axes - unlike the native
@@ -119,6 +126,11 @@ classdef MibBigDataLabelsZarr2 < core.MibBigDataLabels
                     ME.message);
             end
 
+            % Remote label stores additionally need the fsspec HTTP packages.
+            % Left to throw its own io:zarr:PyBackend:remoteDepsMissing error,
+            % which already names the interpreter and the exact install command.
+            io.zarr.PyBackend.ensureRemoteSupport(storePath);
+
             attrs = obj.readZattrsV2(storePath, isHttp);
             ms = io.loaders.OmeZarrMetadataUtils.extractMultiscales(attrs);
             if isempty(ms)
@@ -136,6 +148,7 @@ classdef MibBigDataLabelsZarr2 < core.MibBigDataLabels
             nLevels = numel(ms.datasets);
             obj.modelArrays     = cell(1, nLevels);
             obj.modelArrayMeta  = cell(1, nLevels);
+            obj.modelLevelPaths = cell(1, nLevels);
             obj.modelLevelNames = cell(1, nLevels);
             levelSizes = zeros(nLevels, 3); % [y x z]
             scaleFac   = zeros(nLevels, 3); % [yScale xScale zScale]
@@ -160,8 +173,9 @@ classdef MibBigDataLabelsZarr2 < core.MibBigDataLabels
 
                 pyArr = io.zarr.PyBackend.openArray(levelPath, 'r');
                 meta  = io.zarr.PyBackend.arrayMeta(pyArr);
-                obj.modelArrays{L}    = pyArr;
-                obj.modelArrayMeta{L} = meta;
+                obj.modelArrays{L}     = pyArr;
+                obj.modelArrayMeta{L}  = meta;
+                obj.modelLevelPaths{L} = levelPath;
 
                 shape = meta.shape;
                 nY = io.loaders.OmeZarrMetadataUtils.safeGetDim(shape, yIdx, io.loaders.OmeZarrMetadataUtils.safeGetDim(shape, 1, 1));
@@ -248,7 +262,14 @@ classdef MibBigDataLabelsZarr2 < core.MibBigDataLabels
                 end
             end
 
-            raw  = io.zarr.PyBackend.readArray(obj.modelArrays{levelIdx}, bbox, obj.modelArrayMeta{levelIdx});
+            % Serve whole decoded chunks from memory where possible, exactly as
+            % the image loaders do. Safe here precisely because this store is
+            % read-only (writePackedLevel errors), so a cached chunk can never
+            % go stale behind an edit.
+            meta = obj.modelArrayMeta{levelIdx};
+            raw  = io.zarr.ChunkCache.read(obj.modelLevelPaths{levelIdx}, bbox, ...
+                meta.chunkShape, meta.shape, ...
+                @(alignedBbox) io.zarr.PyBackend.readArray(obj.modelArrays{levelIdx}, alignedBbox, meta));
             perm = io.loaders.OmeZarrMetadataUtils.computePermutation(axisOrder); % -> [y,x,z,*,*]
             block = permute(raw, perm);
             block = reshape(block, Ylim(2)-Ylim(1)+1, Xlim(2)-Xlim(1)+1, Zlim(2)-Zlim(1)+1);

@@ -141,6 +141,31 @@ Whichever the image is, the **model is always written as an OME-Zarr v3 store be
 
 ---
 
+## Remote stores
+
+A **Virtual** or **BigData** dataset does not have to sit on your disk. MIB can open an OME-Zarr
+container from a public cloud bucket over the network - see
+[Import from URL / Zarr](../../user-interface/ribbon/home/home-importfromurl.md) - and only the tiles you
+actually look at are transferred.
+
+Three things are worth knowing before you rely on it:
+
+- The **model store is always local.** When you create a model on a remote BigData dataset, MIB
+  asks where to put it and writes an OME-Zarr v3 pyramid to your own disk. The remote image is
+  never written to.
+- **Remote zarr v2** stores are read through Python and need the `aiohttp` and `requests`
+  packages; remote **zarr v3** stores need no Python at all. MIB tells you if something is
+  missing.
+- There is **no local tile cache** yet, so panning and slice scrubbing re-fetch tiles over the
+  network. The pyramid keeps this workable when zoomed out; working at full resolution on a
+  remote volume is slow by nature.
+
+A published container often also holds small, densely annotated ground-truth crops. These cannot
+yet be overlaid as a model on their parent volume - open such a crop as an image in its own
+right instead.
+
+---
+
 ## How BigData works
 
 This section explains the machinery behind BigData segmentation - useful for understanding why

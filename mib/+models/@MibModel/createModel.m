@@ -145,8 +145,18 @@ end
 % The model is persisted on disk, so a deliberate location is required rather
 % than a hidden temp folder.
 if isBigData && isempty(BatchOpt.ModelStorePath) && nargin < 4
-    [imgPath, imgStem] = fileparts(obj.I{BatchOpt.id}.image.filename);
-    if isempty(imgPath) || strcmp(obj.I{BatchOpt.id}.image.filename, 'none.tif'); imgPath = pwd; end
+    imageFilename = obj.I{BatchOpt.id}.image.filename;
+    if io.RemoteStore.isRemote(imageFilename)
+        % The image lives in a bucket, but the model store is always written
+        % locally - handing uiputfile a URL as its start folder does not work.
+        % The stem still comes from the URL so the suggested name is recognisable.
+        imgPath = obj.currentDirectory;
+        urlSegments = strsplit(strrep(io.RemoteStore.normalise(imageFilename), '\', '/'), '/');
+        imgStem = matlab.lang.makeValidName(urlSegments{end});
+    else
+        [imgPath, imgStem] = fileparts(imageFilename);
+    end
+    if isempty(imgPath) || strcmp(imageFilename, 'none.tif'); imgPath = pwd; end
     if isempty(imgStem); imgStem = 'dataset'; end
     [storeFile, storePathDir] = uiputfile( ...
         {'*.zarr3', 'OME-Zarr v3 model store (*.zarr3)'}, ...

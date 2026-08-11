@@ -1152,6 +1152,8 @@
       
         
       
+        
+      
     
     
     
@@ -1268,6 +1270,33 @@
     
   
   MIB 3D Viewer
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="./home-importfromurl.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Import from URL / Zarr
 
     
   </span>
@@ -1692,17 +1721,6 @@
     <span class="md-ellipsis">
       <span class="md-typeset">
         Zarr library
-      </span>
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#smoothing" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        Smoothing
       </span>
     </span>
   </a>
@@ -5901,17 +5919,6 @@
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#smoothing" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        Smoothing
-      </span>
-    </span>
-  </a>
-  
-</li>
-        
       </ul>
     </nav>
   
@@ -6067,6 +6074,8 @@
       
         
       
+        
+      
     
     
     
@@ -6109,7 +6118,8 @@ making it easy to tweak everything from fonts to undo history.</p>
 <li><strong>External directories</strong>: specifies paths for external tools like Fiji or Python.</li>
 <li><strong>Keyboard shortcuts</strong>: defines custom key bindings for MIB actions.</li>
 <li><strong>Segmentation tools</strong>: adjusts settings and options for segmentation tools.</li>
-<li><strong>Input / output</strong>: selects the OME-Zarr (zarr3) read/write engine and BigData label smoothing.</li>
+<li><strong>Input / output</strong>: selects the OME-Zarr (zarr3) read/write engine, the zarr chunk cache size, and
+  BigData label smoothing.</li>
 </ul>
 <p>At the bottom, you’ll find buttons to manage changes:</p>
 <p><img align="left" alt="Preferences dialog" src="images/file-preferences-buttons.png" /></p>
@@ -6474,19 +6484,51 @@ BigData and virtual dataset modes.</p>
 reading and writing zarr3 data:</p>
 <ul>
 <li><code>native</code>: the bundled <strong>zarrMex</strong> engine — no external dependencies (<em>default, recommended</em>).</li>
-<li><code>python</code>: the <strong>zarr-python</strong> (v3) library, called through the Python interpreter set in
+<li>
+<p><code>python</code>: the <strong>zarr-python</strong> (v3) library, called through the Python interpreter set in
   <a href="#external-directories">External directories → Python installation path</a>. Requires the <code>zarr</code> and
-  <code>numpy</code> packages installed in that environment.</li>
+  <code>numpy</code> packages installed in that environment. Reading a <strong>remote</strong> (HTTP/HTTPS) zarr v2 store
+  additionally requires <code>aiohttp</code> and <code>requests</code>, which zarr-python uses to fetch chunks over the
+  network:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="s2">&quot;&lt;path-to-python.exe&gt;&quot;</span><span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>aiohttp<span class="w"> </span>requests
+</span></code></pre></div>
+</li>
 </ul>
 <p>A short description of the selected library is shown in the label beneath the dropdown. The setting
 takes effect immediately on <span class="widget widget-button">OK</span> / <span class="widget widget-button">Apply</span> — no restart needed.</p>
 <div class="admonition info">
 <p class="admonition-title">Info</p>
 <p>Metadata (array/group creation, attributes, resizing) is always handled by the native engine for
-an identical on-disk structure; only the bulk pixel read/write honours this selection. Remote
-(HTTP/HTTPS) zarr datasets always use the native engine.</p>
+an identical on-disk structure; only the bulk pixel read/write honours this selection.</p>
+<p>This dropdown applies to <strong>zarr v3 only</strong>. <strong>Zarr v2</strong> stores always go through zarr-python
+whatever the setting, because the bundled <code>zarrMex</code> engine is v3-only - so <code>zarr</code> and <code>numpy</code>
+are required for any v2 dataset, local or remote. Remote <strong>v3</strong> datasets, by contrast, always
+use the native engine, which reads them with HTTP range requests and needs no Python at all.</p>
 </div>
-<h3 id="smoothing">Smoothing<a class="headerlink" href="#smoothing" title="Permanent link">&para;</a></h3>
+<div class="h3-like"> Chunk cache</div>
+
+<p><span class="widget widget-edit">Chunk Cache</span>: memory, in megabytes, held for decoded zarr
+chunks (<em>default: 512</em>). Applies to zarr v2 and v3, local and remote, both engines.</p>
+<p>A chunk is the smallest unit a zarr store hands over, and volumes are commonly chunked for 3D
+access rather than for browsing one plane at a time - <code>64 x 128 x 128</code> is typical, meaning <strong>every
+chunk carries 64 slices</strong>. Without a cache each slice change re-fetches and re-decodes those chunks
+and keeps only one plane of each. With it, the other 63 slices are already in memory.</p>
+<p>The effect is dramatic on a remote store and still worthwhile locally, where it saves the decode
+rather than the download. Measured on a remote OME-Zarr v2 volume at full resolution: <strong>~2 s per
+slice change without the cache, ~0.01 s with it</strong>, and panning back to a region already visited is
+equally free.</p>
+<p>Set it to <strong>0</strong> to disable caching entirely - the escape hatch on a machine short of memory. When
+the budget is reached the least recently used chunks are dropped, so the figure is a ceiling, not an
+allocation. Lowering it releases the memory as soon as
+<span class="widget widget-button">Apply</span> is pressed.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>512 MB holds roughly eight full-resolution screenfuls of a <code>64 x 128 x 128</code> store. Raise it if
+you work at full resolution on a remote dataset and have the RAM; there is no benefit in setting
+it larger than the volume you actually browse.</p>
+</div>
+<div class="h3-like"> Smoothing</div>
+
 <p><span class="widget widget-checkbox">Smoothing</span>: a checkbox controlling how a segmentation edit
 made at a low-magnification (zoomed-out) level of a <strong>BigData</strong> model is propagated into the
 higher-resolution pyramid levels (<em>default: enabled</em>).</p>

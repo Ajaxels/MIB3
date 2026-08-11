@@ -159,19 +159,13 @@ switch mode
         obj.mibController.startController('controllers.Preferences', obj.mibController);  % a new appdesigner version
     case 'Help'                         % obj.handles.ribbonHome.help
         helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'html', 'index.html');
-        if isfile(helpFilPath)
-            web(helpFilPath, '-browser');
-        else
-            web('http://mib.helsinki.fi/help/main3/index.html', '-browser');
-        end
+        utils.openHelpPage(helpFilPath, ...
+            'http://mib.helsinki.fi/help/main3/index.html');
 
     case 'Open MIB help'                % obj.handles.ribbonHome.helpMenu
         helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'html', 'index.html');
-        if isfile(helpFilPath)
-            web(helpFilPath, '-browser');
-        else
-            web('http://mib.helsinki.fi/help/main3/index.html', '-browser');
-        end
+        utils.openHelpPage(helpFilPath, ...
+            'http://mib.helsinki.fi/help/main3/index.html');
 
     case 'Tip of the day'               % obj.handles.ribbonHome.tipOfDay
         obj.mibModel.preferences.Tips.ShowTips = true;

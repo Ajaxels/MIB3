@@ -181,6 +181,9 @@ end
 if ~isfield(obj.preferences.IO.Zarr, 'Smoothing')
     obj.preferences.IO.Zarr.Smoothing = true;
 end
+if ~isfield(obj.preferences.IO.Zarr, 'ChunkCacheMB')
+    obj.preferences.IO.Zarr.ChunkCacheMB = 512;
+end
 % backfill the pyenv execution mode for preferences saved before this field existed
 if ~isfield(obj.preferences.ExternalDirs, 'PythonExecutionMode') || ...
         isempty(obj.preferences.ExternalDirs.PythonExecutionMode)
@@ -190,6 +193,7 @@ io.zarr.Config.setLibrary(obj.preferences.IO.Zarr.Library);
 io.zarr.Config.setSmoothing(obj.preferences.IO.Zarr.Smoothing);
 io.zarr.Config.setPythonPath(obj.preferences.ExternalDirs.PythonInstallationPath);
 io.zarr.Config.setExecutionMode(obj.preferences.ExternalDirs.PythonExecutionMode);
+io.zarr.ChunkCache.setBudgetMB(obj.preferences.IO.Zarr.ChunkCacheMB);
 
 % ------------ BioFormats / WSI reader backend ------------
 % Push the configured BioFormats reader engine into the process-wide

@@ -68,8 +68,8 @@ homeHandles.importFromOmero = ListItem('Omero', Icon(fullfile(iconPath, 'omero_2
 homeHandles.importFromOmero.Description = 'Import dataset from OMERO';
 popupList.add(homeHandles.importFromOmero);
 % import from URL
-homeHandles.importFromURL = ListItem('URL', Icon(fullfile(iconPath, 'internet_24px.png')));
-homeHandles.importFromURL.Description = 'Import dataset from URL';
+homeHandles.importFromURL = ListItem('URL / Zarr', Icon(fullfile(iconPath, 'internet_24px.png')));
+homeHandles.importFromURL.Description = 'Import image or Zarr dataset from URL';
 popupList.add(homeHandles.importFromURL);
 
 % add the popup list to the SplitButton button

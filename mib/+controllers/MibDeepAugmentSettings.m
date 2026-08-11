@@ -528,11 +528,8 @@ classdef MibDeepAugmentSettings < handle
             %
             
             helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'html', 'user-interface', 'deepmib', 'deepmib-train.html');
-            if isfile(helpFilPath)
-                web(helpFilPath, '-browser');
-            else
-                web('http://mib.helsinki.fi/help/main3/user-interface/deepmib/deepmib-train.html', '-browser');
-            end
+            utils.openHelpPage(helpFilPath, ...
+                'http://mib.helsinki.fi/help/main3/user-interface/deepmib/deepmib-train.html');
 
         end
 

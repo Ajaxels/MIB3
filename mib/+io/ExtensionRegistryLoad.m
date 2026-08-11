@@ -5,6 +5,14 @@ classdef ExtensionRegistryLoad < handle
 % combination of dataset mode (``Standard``, ``Virtual``, ``BigData``, ``Model``) and
 % file reader (``Default`` or ``BioFormats``). Provides methods to resolve which loader
 % should be used for a given filename, mode, and reader combination.
+%
+% **Zarr needs more than the extension.** Both zarr versions share the ``.zarr``
+% suffix but are read by different loaders, so the store itself is probed -
+% locally by :meth:`detectZarrFormatExtension`, and over the network by
+% :meth:`probeRemoteZarr`. The remote probe also covers a URL that points
+% straight at a nested image group and therefore has no filename extension at
+% all, which is how OME-Zarr data is usually published (for example
+% ``.../<name>.zarr/recon-1/em/fibsem-uint8``).
 
     properties (Access = private)
         extensionSets dictionary
@@ -95,7 +103,18 @@ classdef ExtensionRegistryLoad < handle
             % the store itself. Without this a v2 store in a "*.zarr" folder
             % (the OME-Zarr / OpenOrganelle default naming) is handed to the v3
             % loader, which cannot read it.
-            if strcmp(ext, 'zarr')
+            %
+            % Remote stores need the probe in one more case: a URL may point
+            % straight at a nested image group (".../recon-1/em/fibsem-uint8"),
+            % which has no extension at all. The probe is skipped when the URL
+            % already carries a known extension, so an ordinary remote image
+            % keeps its imread route without paying for a network round trip.
+            if io.RemoteStore.isRemote(filename)
+                if isempty(ext) || strcmp(ext, 'zarr')
+                    probedExtension = io.ExtensionRegistryLoad.probeRemoteZarr(filename);
+                    if ~isempty(probedExtension); ext = probedExtension; end
+                end
+            elseif strcmp(ext, 'zarr')
                 ext = io.ExtensionRegistryLoad.detectZarrFormatExtension(filename);
             end
 
@@ -475,15 +494,29 @@ classdef ExtensionRegistryLoad < handle
             % from the store: v3 nodes carry ``zarr.json``, v2 nodes carry
             % ``.zgroup`` / ``.zattrs`` / ``.zarray``.
             %
+            % Remote stores (http/https/s3) are probed over the network by
+            % :meth:`probeRemoteZarr`; ``isfile`` cannot see them, and without
+            % this a remote v2 store would always fall through to the v3 default
+            % and be handed to a loader that cannot read it.
+            %
             % Input Arguments:
-            %   - **zarrPath** - [char] path to the zarr root folder
+            %   - **zarrPath** - [char] path or URL of the zarr root folder
             %
             % Output Arguments:
             %   - **ext** - [char] ``'zarr2'`` or ``'zarr3'``; ``'zarr3'`` when
-            %     the store cannot be probed (URLs, missing folder), preserving
-            %     the previous behaviour
+            %     the store cannot be probed (missing folder, unreachable URL),
+            %     preserving the previous behaviour. Callers that must tell
+            %     "not a zarr store" apart from "a v3 store" should use
+            %     :meth:`probeRemoteZarr` instead, which returns ``''``.
 
             ext = 'zarr3';
+
+            if io.RemoteStore.isRemote(zarrPath)
+                probedExtension = io.ExtensionRegistryLoad.probeRemoteZarr(zarrPath);
+                if ~isempty(probedExtension); ext = probedExtension; end
+                return;
+            end
+
             try
                 if isfile(fullfile(zarrPath, 'zarr.json'))
                     ext = 'zarr3';
@@ -493,8 +526,115 @@ classdef ExtensionRegistryLoad < handle
                     ext = 'zarr2';
                 end
             catch
-                % not probeable (e.g. a URL) -> keep the v3 default
+                % not probeable -> keep the v3 default
             end
+        end
+
+        function ext = probeRemoteZarr(url)
+            % PROBEREMOTEZARR - Detect the zarr version of a remote store over the network.
+            %
+            % Syntax:
+            %
+            %   .. code-block:: matlab
+            %
+            %      ext = io.ExtensionRegistryLoad.probeRemoteZarr(url)
+            %
+            % Looks for the marker files that identify a zarr node: ``zarr.json``
+            % for v3, and ``.zgroup`` / ``.zattrs`` / ``.zarray`` for v2.
+            %
+            % On an S3-compatible host this costs a **single** ``ListObjectsV2``
+            % request, which also populates the shared listing cache that the URL
+            % browser reuses. On any other host, where nothing can be listed, it
+            % falls back to up to four ranged ``HEAD``/``GET`` probes.
+            %
+            % Unlike :meth:`detectZarrFormatExtension` this returns ``''`` when
+            % the location is not a zarr store at all, so a caller can tell that
+            % apart from a v3 store and leave a plain remote image on its
+            % ``imread`` route.
+            %
+            % Results are memoised for the session; use
+            % :meth:`clearRemoteProbeCache` to force a re-probe.
+            %
+            % Input Arguments:
+            %   - **url** - [char|string] URL of the store root or of a group inside it
+            %
+            % Output Arguments:
+            %   - **ext** - [char] ``'zarr2'``, ``'zarr3'``, or ``''`` when the URL
+            %     is not remote, is unreachable, or carries no zarr marker
+
+            ext = '';
+            if ~io.RemoteStore.isRemote(url); return; end
+            url = io.RemoteStore.normalise(url);
+
+            probeCache = io.ExtensionRegistryLoad.remoteProbeCache();
+            cacheKey   = string(url);
+            if isKey(probeCache, cacheKey)
+                ext = char(probeCache(cacheKey));
+                return;
+            end
+
+            % Preferred path: one listing gives every marker file at once.
+            storeInfo = io.RemoteStore.parse(url);
+            if storeInfo.listable
+                [~, ~, fileNames] = io.RemoteStore.listChildren(url);
+                if ~isempty(fileNames)
+                    if ismember('zarr.json', fileNames)
+                        ext = 'zarr3';
+                    elseif any(ismember({'.zgroup', '.zattrs', '.zarray'}, fileNames))
+                        ext = 'zarr2';
+                    end
+                    % A listing that returned files but no marker is a definitive
+                    % "not a zarr node" - do not spend more requests on it.
+                    probeCache(cacheKey) = string(ext);
+                    io.ExtensionRegistryLoad.remoteProbeCache(probeCache);
+                    return;
+                end
+            end
+
+            % Fallback: host cannot be listed, or the listing came back empty
+            % (which is indistinguishable from a listing that failed).
+            if io.RemoteStore.exists([url '/zarr.json'])
+                ext = 'zarr3';
+            elseif io.RemoteStore.exists([url '/.zgroup']) || ...
+                   io.RemoteStore.exists([url '/.zattrs']) || ...
+                   io.RemoteStore.exists([url '/.zarray'])
+                ext = 'zarr2';
+            end
+
+            probeCache(cacheKey) = string(ext);
+            io.ExtensionRegistryLoad.remoteProbeCache(probeCache);
+        end
+
+        function clearRemoteProbeCache()
+            % CLEARREMOTEPROBECACHE - Drop the memoised remote zarr-version probes.
+            %
+            % Syntax:
+            %
+            %   .. code-block:: matlab
+            %
+            %      io.ExtensionRegistryLoad.clearRemoteProbeCache()
+            %
+            % The probe result is cached for the whole MATLAB session, so a store
+            % that was rewritten on the server keeps reporting its old version
+            % until this is called. ``io.RemoteStore.clearCache`` is separate and
+            % clears the directory listings.
+
+            io.ExtensionRegistryLoad.remoteProbeCache(configureDictionary("string", "string"));
+        end
+    end
+
+    methods (Static, Access = private)
+        function cache = remoteProbeCache(newCache)
+            % REMOTEPROBECACHE - Session-persistent url -> zarr version map.
+
+            persistent cachedProbes
+            if isempty(cachedProbes)
+                cachedProbes = configureDictionary("string", "string");
+            end
+            if nargin > 0
+                cachedProbes = newCache;
+            end
+            cache = cachedProbes;
         end
     end
 end

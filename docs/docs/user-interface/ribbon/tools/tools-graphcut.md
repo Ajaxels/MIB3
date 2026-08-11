@@ -168,7 +168,7 @@ It handles objects with both boundaries and intensity contrast, making it versat
 
 Steps for segmenting mitochondria using Graphcut:
 
-* Load a sample dataset: `Ribbon → Home → Import image from → URL`, enter *http://mib.helsinki.fi/tutorials/WatershedDemo/watershed_demo1.tif*
+* Load a sample dataset: `Ribbon → Home → Import image from → URL / Zarr`, enter *http://mib.helsinki.fi/tutorials/WatershedDemo/watershed_demo1.tif*
 * Add a material named *Background* in the [Segmentation panel](../../panels/segm/index.md) with <span class="widget widget-button">+</span> (right-click to rename)
 * Use the Brush tool to label cytoplasm, then press <span class="widget widget-button">A</span> to add it to *Background*
 

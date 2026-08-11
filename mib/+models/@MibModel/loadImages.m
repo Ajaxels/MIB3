@@ -83,6 +83,7 @@ BatchOpt.BackgroundColorIntensity = '65535';
 BatchOpt.InsertDatasetDimension = {'depth'}; 
 BatchOpt.InsertDatasetDimension{2} = {'depth', 'time'};
 BatchOpt.InsertDatasetPosition = '0';
+BatchOpt.ZarrGroupPath = '';   % [OME-Zarr only] nested image group inside the container
 BatchOpt.showWaitbar = true;   % show or not the waitbar
 BatchOpt.id = obj.getActiveId();   % optional, id
 
@@ -98,6 +99,7 @@ BatchOpt.mibBatchTooltip.EachNthStep = sprintf('Define step to be used for combi
 BatchOpt.mibBatchTooltip.BackgroundColorIntensity = sprintf('Intensity of the background color for cases, when width/height of combined images mismatch');
 BatchOpt.mibBatchTooltip.InsertDatasetDimension = sprintf('[Insert only] Image dimension to insert the dataset');
 BatchOpt.mibBatchTooltip.InsertDatasetPosition = sprintf('[Insert only] insert position; 1 - beginning of the open dataset; 0 - end of the open dataset\nor type any number to define position');
+BatchOpt.mibBatchTooltip.ZarrGroupPath = sprintf('[OME-Zarr only] image group inside the container, relative to the file/URL\ne.g. recon-1/em/fibsem-uint8; leave empty to search the container and ask');
 BatchOpt.mibBatchTooltip.showWaitbar = sprintf('Show or not the waitbar');
 
 batchModeSwitch = 0;    % indicates that the function is running in the gui mode
@@ -219,6 +221,15 @@ if batchModeSwitch == 1    % batch mode is used
     options.BioFormatsIndices = str2num(BatchOpt.BioFormatsIndices);    %#ok<ST2NM> % get indices of images to load using bioformats
 end
 if isfield(BatchOpt, 'verbose'); options.verbose = BatchOpt.verbose; end
+
+% [OME-Zarr] point the setup loader straight at a nested image group, skipping
+% the container search and its picker dialog. Accepts a path relative to the
+% container (recon-1/em/fibsem-uint8) or an absolute one; see
+% io.loaders.Zarr2VirtualSetupLoader.resolveMultiscalesGroupV2. Only forwarded
+% when set, so an empty value leaves the interactive behaviour untouched.
+if isfield(BatchOpt, 'ZarrGroupPath') && ~isempty(BatchOpt.ZarrGroupPath)
+    options.ZarrGroupPath = BatchOpt.ZarrGroupPath;
+end
 
 if strcmp(BatchOpt.Mode{1}, 'Load each N-th dataset') || strcmp(BatchOpt.Mode{1}, 'Add each N-th dataset as new color channel')
     step = str2double(BatchOpt.EachNthStep);

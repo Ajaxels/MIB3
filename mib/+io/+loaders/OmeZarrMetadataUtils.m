@@ -445,34 +445,40 @@ methods (Static)
         %
         %      attrs = io.loaders.OmeZarrMetadataUtils.readGroupAttributes(groupPath, zarrFormat)
         %
-        % Local filesystem only - the recursive container walk that uses this
-        % cannot list remote directories anyway. A missing or unparsable
+        % Works for a local folder and for a remote (http/https/s3) group, which
+        % is fetched with ``io.RemoteStore.readJson``. A missing or unparsable
         % metadata file is not an error: it simply means "no attributes here",
         % which is exactly how a non-zarr directory should behave.
         %
         % Input Arguments:
-        %   - **groupPath** - [char] full path to the group directory
+        %   - **groupPath** - [char] full path or URL of the group
         %   - **zarrFormat** - [numeric] 2 (``.zattrs``) or 3 (``zarr.json``)
         %
         % Output Arguments:
         %   - **attrs** - [struct] decoded attributes; empty struct when absent
 
         attrs = struct();
+
+        if zarrFormat == 2; metadataName = '.zattrs'; else; metadataName = 'zarr.json'; end
+
         try
-            if zarrFormat == 2
-                attributesFile = fullfile(groupPath, '.zattrs');
-                if ~isfile(attributesFile); return; end
-                attrs = jsondecode(fileread(attributesFile));
+            if io.RemoteStore.isRemote(groupPath)
+                rawMeta = io.RemoteStore.readJson( ...
+                    io.RemoteStore.join(groupPath, metadataName));
+                if isempty(rawMeta); return; end
             else
-                attributesFile = fullfile(groupPath, 'zarr.json');
-                if ~isfile(attributesFile); return; end
-                rawMeta = jsondecode(fileread(attributesFile));
-                if isfield(rawMeta, 'attributes') && isstruct(rawMeta.attributes)
-                    attrs = rawMeta.attributes;
-                else
-                    % non-standard stores put multiscales at the top level
-                    attrs = rawMeta;
-                end
+                metadataFile = fullfile(groupPath, metadataName);
+                if ~isfile(metadataFile); return; end
+                rawMeta = jsondecode(fileread(metadataFile));
+            end
+
+            if zarrFormat == 2
+                attrs = rawMeta;
+            elseif isfield(rawMeta, 'attributes') && isstruct(rawMeta.attributes)
+                attrs = rawMeta.attributes;
+            else
+                % non-standard stores put multiscales at the top level
+                attrs = rawMeta;
             end
         catch
             attrs = struct();
@@ -492,14 +498,49 @@ methods (Static)
         % array, and with ``dimension_separator = "/"`` it holds thousands of
         % nested chunk folders that must never be enumerated.
         %
+        % On a remote store the child **names** come from one S3 listing of the
+        % parent, but each child is then classified by fetching its marker file
+        % rather than by listing it. Listing an array would enumerate its chunk
+        % directories - for a store with ``dimension_separator = "/"`` that is
+        % hundreds of prefixes per level and would paginate. Two small ranged
+        % requests per child are bounded and far cheaper.
+        %
         % Input Arguments:
-        %   - **groupPath** - [char] full path to the parent group directory
+        %   - **groupPath** - [char] full path or URL of the parent group
         %   - **zarrFormat** - [numeric] 2 or 3
         %
         % Output Arguments:
         %   - **childPaths** - [1xN cell] full paths of child groups, sorted by name
 
         childPaths = {};
+
+        if io.RemoteStore.isRemote(groupPath)
+            [childUrls, childNames] = io.RemoteStore.listChildren(groupPath);
+            if isempty(childUrls); return; end
+
+            [~, sortOrder] = sort(childNames);   % deterministic, matches the local branch
+            childUrls = childUrls(sortOrder);
+
+            for childIndex = 1:numel(childUrls)
+                childUrl = childUrls{childIndex};
+                if zarrFormat == 2
+                    % v2: only groups carry .zgroup, so one probe settles it -
+                    % an extra .zarray probe would double the request count of
+                    % the walk for no additional information.
+                    isGroup = io.RemoteStore.exists(io.RemoteStore.join(childUrl, '.zgroup'));
+                else
+                    % v3: both node kinds use zarr.json, distinguished by node_type
+                    nodeMeta = io.RemoteStore.readJson(io.RemoteStore.join(childUrl, 'zarr.json'));
+                    isGroup  = ~isempty(nodeMeta) && isfield(nodeMeta, 'node_type') && ...
+                               strcmpi(char(nodeMeta.node_type), 'group');
+                end
+                if isGroup
+                    childPaths{end+1} = childUrl; %#ok<AGROW>
+                end
+            end
+            return;
+        end
+
         try
             items = dir(groupPath);
         catch
@@ -558,16 +599,32 @@ methods (Static)
         % Breadth-first order means shallower groups are reported first, so a
         % caller that just takes the first hit gets the least nested one.
         %
+        % **Remote stores stop at the shallowest level that yields a hit.**
+        % Locally each step is a ``dir()`` call and walking the whole tree is
+        % free, so the local behaviour is unchanged: every match up to
+        % ``maxDepth`` is collected. Remotely each step is a network round trip,
+        % and real containers hide very large subtrees below the image group -
+        % OpenOrganelle's ``recon-1/labels/groundtruth`` holds 42 crops of about
+        % 40 class groups each. Descending past the level that already answered
+        % the question would cost hundreds of requests to produce a picker list
+        % nobody wants. ``maxVisited`` is also capped harder for remote roots, to
+        % bound the case where a store has no multiscales anywhere.
+        %
+        % Deep interactive navigation of a remote container is the job of the
+        % URL browser dialog, which lists exactly one level per user expand.
+        %
         % Input Arguments:
-        %   - **rootPath** - [char] local path to the container root
+        %   - **rootPath** - [char] local path or URL of the container root
         %   - **zarrFormat** - [numeric] 2 or 3
         %   - **maxDepth** - *(optional)* [numeric] deepest level to visit, root is 0 (default: 5)
         %   - **maxVisited** - *(optional)* [numeric] hard cap on visited groups,
-        %     a guard against pathological trees (default: 500)
+        %     a guard against pathological trees (default: 500, capped at 60 for
+        %     a remote root)
         %
         % Output Arguments:
         %   - **groupPaths** - [1xN cell] full paths of groups with multiscales;
-        %     empty when none found or when rootPath is remote
+        %     empty when none found, or when the root is remote on a host that
+        %     cannot be listed
 
         arguments
             rootPath (1,:) char
@@ -577,30 +634,56 @@ methods (Static)
         end
 
         groupPaths = {};
-        if startsWith(rootPath, 'http://') || startsWith(rootPath, 'https://'); return; end
-        if ~isfolder(rootPath); return; end
+
+        isRemoteRoot = io.RemoteStore.isRemote(rootPath);
+        if isRemoteRoot
+            if ~io.RemoteStore.parse(rootPath).listable; return; end
+            maxVisited = min(maxVisited, 60);
+        elseif ~isfolder(rootPath)
+            return;
+        end
 
         currentLevel = {rootPath};
         depth        = 0;
         visited      = 0;
 
+        % Each level is TESTED in full before any of it is EXPANDED. Testing a
+        % group costs one metadata read; expanding it costs a listing plus a
+        % probe per child. Interleaving the two would expand the siblings of a
+        % match before the match is known about - on the OpenOrganelle layout
+        % that means listing 'labels/groundtruth' and probing all 42 crops
+        % moments before the walk was going to stop anyway, which measured as
+        % roughly 60 requests instead of 15.
         while ~isempty(currentLevel) && visited < maxVisited
-            nextLevel = {};
+            % ---- pass 1: test this level ---------------------------------
+            isMatch = false(1, numel(currentLevel));
             for levelIndex = 1:numel(currentLevel)
-                groupPath = currentLevel{levelIndex};
-                visited   = visited + 1;
+                visited = visited + 1;
                 if visited > maxVisited; break; end
 
+                groupPath = currentLevel{levelIndex};
                 attrs = io.loaders.OmeZarrMetadataUtils.readGroupAttributes(groupPath, zarrFormat);
                 if ~isempty(io.loaders.OmeZarrMetadataUtils.extractMultiscales(attrs))
+                    isMatch(levelIndex) = true;
                     groupPaths{end+1} = groupPath; %#ok<AGROW>
-                    continue;   % children are pyramid arrays, nothing deeper to find
                 end
-
-                if depth >= maxDepth; continue; end
-                nextLevel = [nextLevel, ...
-                    io.loaders.OmeZarrMetadataUtils.listChildGroups(groupPath, zarrFormat)]; %#ok<AGROW>
             end
+
+            % Shallowest-wins for remote roots (see the note above).
+            if isRemoteRoot && ~isempty(groupPaths); break; end
+            if depth >= maxDepth; break; end
+
+            % ---- pass 2: expand only the groups that did not match --------
+            % A group with multiscales is never descended into: its children are
+            % the pyramid level arrays.
+            nextLevel = {};
+            for levelIndex = 1:numel(currentLevel)
+                if isMatch(levelIndex); continue; end
+                nextLevel = [nextLevel, ...
+                    io.loaders.OmeZarrMetadataUtils.listChildGroups( ...
+                        currentLevel{levelIndex}, zarrFormat)]; %#ok<AGROW>
+            end
+
             currentLevel = nextLevel;
             depth        = depth + 1;
         end

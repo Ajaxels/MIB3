@@ -617,11 +617,8 @@ classdef BoundingBox < handle
                 fprintf('controllers.BoundingBox.helpButton_Callback: triggered\n');
             end
             helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'html', 'user-interface', 'ribbon', 'dataset', 'dataset-bb.html');
-            if isfile(helpFilPath)
-                web(helpFilPath, '-browser');
-            else
-                web('http://mib.helsinki.fi/help/main3/user-interface/ribbon/dataset/dataset-bb.html', '-browser');
-            end
+            utils.openHelpPage(helpFilPath, ...
+                'http://mib.helsinki.fi/help/main3/user-interface/ribbon/dataset/dataset-bb.html');
 
         end
 

@@ -87,11 +87,13 @@ BatchOpt.DirectoryName   = {'Inherit from dataset filename'};
 BatchOpt.DirectoryName{2} = {'Inherit from dataset filename', obj.currentDirectory, 'Inherit from Directory/File loop'};
 BatchOpt.FilenameFilter  = 'Labels_[F].model';
 BatchOpt.Filenames       = {};   % cell array of full paths; bypasses filter/browser when non-empty
+BatchOpt.ZarrGroupPath   = '';   % [OME-Zarr only] nested labels group inside the container
 BatchOpt.showWaitbar     = true;
 BatchOpt.id              = id;
 
 BatchOpt.mibBatchSectionName = 'Ribbon -> Model';
 BatchOpt.mibBatchActionName  = 'Load model';
+BatchOpt.mibBatchTooltip.ZarrGroupPath  = sprintf('[OME-Zarr only] labels group inside the container, relative to the file/URL\ne.g. labels/mito; leave empty to search the container and ask');
 BatchOpt.mibBatchTooltip.DirectoryName  = sprintf('Directory where the model file is located; "Inherit from dataset filename" uses the directory of the open image');
 BatchOpt.mibBatchTooltip.FilenameFilter = sprintf(['Filename or wildcard filter for the model file; ' ...
     '[F] is replaced with the image base name (no extension). ' ...
@@ -151,7 +153,9 @@ if strcmp(obj.I{id}.datasetType, 'BigData') && isempty(model)
         storePath = selDir;
     end
 
-    if isempty(storePath) || ~isfolder(storePath)
+    % A remote store cannot be checked with isfolder; openStore below fails
+    % with a clear message if the URL turns out not to hold a store.
+    if isempty(storePath) || (~io.RemoteStore.isRemote(storePath) && ~isfolder(storePath))
         ErrorDlgOpt.winTitle = 'Model store not found';
         ErrorDlgOpt.err = sprintf('The BigData model store was not found:\n%s', storePath);
         notify(obj, 'ShowErrorDialog', core.ToggleEventData(ErrorDlgOpt));
@@ -167,9 +171,10 @@ if strcmp(obj.I{id}.datasetType, 'BigData') && isempty(model)
     % (core.MibBigDataLabelsZarr2, python-backed) - MIB's editable disk-backed
     % pyramid (core.MibBigDataLabels) is native-zarr3-only. Both classes share
     % the same public surface, so everything after this branch is unchanged.
-    % (storePath is already validated as an existing folder above)
-    isZarrV2Store = ~isfile(fullfile(storePath, 'zarr.json')) && ...
-        (isfile(fullfile(storePath, '.zattrs')) || isfile(fullfile(storePath, '.zgroup')));
+    % Delegated to the shared probe, which handles a local folder and a URL
+    % alike, rather than repeating the marker-file heuristic here.
+    isZarrV2Store = strcmp( ...
+        io.ExtensionRegistryLoad.detectZarrFormatExtension(storePath), 'zarr2');
     if isZarrV2Store
         newLabels = core.MibBigDataLabelsZarr2([], bigMeta);
     else
@@ -282,6 +287,11 @@ end
 dsOpts = struct();
 dsOpts.batchModeSwitch = batchModeSwitch;
 dsOpts.showWaitbar     = BatchOpt.showWaitbar;
+% [OME-Zarr] point the setup loader at a nested labels group, skipping the
+% container search; accepts a path relative to the container or an absolute one.
+if isfield(BatchOpt, 'ZarrGroupPath') && ~isempty(BatchOpt.ZarrGroupPath)
+    dsOpts.ZarrGroupPath = BatchOpt.ZarrGroupPath;
+end
 dsOpts.preferences     = obj.preferences;
 dsOpts.mibPath         = obj.mibPath;
 dsOpts.ParentFigure    = obj.mibGUI;
@@ -425,6 +435,15 @@ end
 % Determine loader from first file
 [~, ~, ext] = fileparts(filenames{1});
 ext = lower(strrep(ext, '.', ''));
+
+% A URL pointing straight at a label group ('.../labels/mito') has no filename
+% extension at all, so probe the store itself; 'zarr2'/'zarr3' are already in
+% the Model.Default set. Skipped when the URL carries a known extension, so an
+% ordinary remote image keeps its route without a network round trip.
+if io.RemoteStore.isRemote(filenames{1}) && (isempty(ext) || strcmp(ext, 'zarr'))
+    probedExtension = io.ExtensionRegistryLoad.probeRemoteZarr(filenames{1});
+    if ~isempty(probedExtension); ext = probedExtension; end
+end
 
 % Check extension is supported in Model.Default
 allowedExt = obj.extensionRegistryLoad.getAllowedExtensions('Model', 'Default', false);

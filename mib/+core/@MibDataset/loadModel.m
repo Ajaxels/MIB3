@@ -128,6 +128,9 @@ else
     loaderOpts = struct();
     if isfield(options, 'ParentFigure'); loaderOpts.ParentFigure = options.ParentFigure; end
     if isfield(options, 'mibPath');      loaderOpts.mibPath      = options.mibPath; end
+    % [OME-Zarr] nested labels group inside the container, honoured by the
+    % Zarr2/Zarr3 setup loaders to skip the container search and its picker
+    if isfield(options, 'ZarrGroupPath'); loaderOpts.ZarrGroupPath = options.ZarrGroupPath; end
     loaderOpts.showWaitbar = options.showWaitbar;
 
     try

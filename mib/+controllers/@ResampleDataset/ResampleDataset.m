@@ -381,11 +381,8 @@ classdef ResampleDataset < handle
                 fprintf('controllers.ResampleDataset.helpBtn_Callback: triggered\n');
             end
             helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'html', 'user-interface', 'ribbon', 'dataset', 'dataset-resample.html');
-            if isfile(helpFilPath)
-                web(helpFilPath, '-browser');
-            else
-                web('http://mib.helsinki.fi/help/main3/user-interface/ribbon/dataset/dataset-resample.html', '-browser');
-            end
+            utils.openHelpPage(helpFilPath, ...
+                'http://mib.helsinki.fi/help/main3/user-interface/ribbon/dataset/dataset-resample.html');
 
         end
 

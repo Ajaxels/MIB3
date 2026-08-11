@@ -181,8 +181,13 @@ end
 %   Smoothing - when true (default), the BigData label pyramid smooths boundaries
 %       when a coarse (zoomed-out) edit is propagated up into finer levels,
 %       instead of a blocky nearest-neighbour upsample.
-Prefs.IO.Zarr.Library   = 'native';
-Prefs.IO.Zarr.Smoothing = false;
+%   ChunkCacheMB - memory budget for io.zarr.ChunkCache, which keeps decoded
+%       chunks so that scrubbing and panning do not re-fetch them. Chunks are
+%       often tens of slices deep, so this is what makes a remote store usable:
+%       0 disables the cache.
+Prefs.IO.Zarr.Library      = 'native';
+Prefs.IO.Zarr.Smoothing    = false;
+Prefs.IO.Zarr.ChunkCacheMB = 512;
 
 % Settings for BioFormats / WSI image reading used by the io.bioformats facade.
 %   Library - reader engine for microscopy / whole-slide files:

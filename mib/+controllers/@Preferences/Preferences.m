@@ -39,6 +39,87 @@ classdef Preferences < handle
                     obj.updateWidgets();
             end
         end
+
+        function openInSystemBrowser(url)
+            % OPENINSYSTEMBROWSER - Open a URL in the browser, ``#section`` intact.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      controllers.Preferences.openInSystemBrowser(url)
+            %
+            % **Why not simply web(url, '-browser').** A ``file://`` URL carrying
+            % a ``#section`` cannot be opened through the Windows file
+            % association: the shell resolves the URL to a path, opens the file
+            % and throws the fragment away. Measured with a probe page that
+            % printed ``location.hash`` - both ``start "url"`` and
+            % ``rundll32 url.dll,FileProtocolHandler`` reported no fragment,
+            % which is why the Help button always landed at the top of the page.
+            %
+            % Naming the browser executable and passing the URL as its *argument*
+            % keeps the fragment, because the browser parses the URL rather than
+            % the shell. Still launched through ``start`` so this returns at once;
+            % calling the executable directly would block MATLAB until the browser
+            % exits, whenever no instance is already running.
+            %
+            % Input Arguments:
+            %   - **url** - [char] fully formed URL, with its fragment if any
+
+            if ispc
+                browserPath = controllers.Preferences.defaultBrowserExecutable();
+                if ~isempty(browserPath)
+                    command = sprintf('start "" "%s" "%s"', browserPath, url);   % "" is the window title
+                else
+                    command = sprintf('start "" "%s"', url);    % no fragment, but the page opens
+                end
+            elseif ismac
+                command = sprintf('open "%s"', url);
+            else
+                command = sprintf('xdg-open "%s"', url);
+            end
+
+            failed = system(command);
+            if failed
+                % Sandboxed shell, or no handler registered. The section jump is
+                % likely lost, but the page itself is better than nothing.
+                web(url, '-browser');
+            end
+        end
+
+        function browserPath = defaultBrowserExecutable()
+            % DEFAULTBROWSEREXECUTABLE - Path of the default browser, Windows only.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      browserPath = controllers.Preferences.defaultBrowserExecutable()
+            %
+            % Reads the user's http handler rather than assuming a browser, so
+            % this follows whatever they actually set as default.
+            %
+            % Output Arguments:
+            %   - **browserPath** - [char] full path of the executable, or ``''``
+            %     when it cannot be determined; callers must cope with ``''``
+
+            browserPath = '';
+            if ~ispc; return; end
+
+            [failed, registryOutput] = system(['reg query "HKEY_CURRENT_USER\Software\Microsoft\' ...
+                'Windows\Shell\Associations\UrlAssociations\http\UserChoice" /v ProgId']);
+            if failed; return; end
+            progId = regexp(registryOutput, 'ProgId\s+REG_SZ\s+(\S+)', 'tokens', 'once');
+            if isempty(progId); return; end
+
+            [failed, registryOutput] = system(sprintf( ...
+                'reg query "HKEY_CLASSES_ROOT\\%s\\shell\\open\\command" /ve', progId{1}));
+            if failed; return; end
+
+            % The command reads like: "C:\...\chrome.exe" --single-argument %1
+            executable = regexp(registryOutput, '"([^"]+\.exe)"', 'tokens', 'once');
+            if isempty(executable) || ~isfile(executable{1}); return; end
+            browserPath = executable{1};
+        end
+
     end
     
     methods
@@ -376,6 +457,19 @@ classdef Preferences < handle
                 handles.ZarrLibrary.Value = obj.preferences.IO.Zarr.Library;
                 handles.ZarrLibraryLabel.Text = obj.zarrLibraryDescription(obj.preferences.IO.Zarr.Library);
                 handles.ZarrSmoothing.Value = obj.preferences.IO.Zarr.Smoothing;
+                % The other widgets of this panel get their callback in App
+                % Designer; this one is wired here because the field was added to
+                % the .mlapp without one. Assigning it replaces rather than adds,
+                % so wiring it in the designer later cannot double-fire.
+                handles.ChunkCacheMB.ValueChangedFcn = @(~, event) obj.InputOutputPanelCallbacks(event);
+                % 0 is the documented way to switch the cache off, so the field
+                % has to accept it - the designer default starts the range at 1.
+                handles.ChunkCacheMB.Limits = [0 Inf];
+                handles.ChunkCacheMB.Value  = obj.preferences.IO.Zarr.ChunkCacheMB;
+                handles.ChunkCacheMB.Tooltip = sprintf(['Memory held for decoded zarr chunks.\n' ...
+                    'A chunk is often tens of slices deep, so caching it makes the next ' ...
+                    'slice change and small pans instant instead of a re-fetch.\n' ...
+                    '0 turns the cache off.']);
                 % BioFormats / WSI reader backend dropdown (guarded for older .mlapp).
                 % The dropdown shows 'MIB'/'MATLAB'; preferences store the canonical
                 % lowercase 'mib'/'matlab' (normalized both ways).
@@ -418,35 +512,47 @@ classdef Preferences < handle
         end
         
         function helpBtnCallback(obj)
+            % HELPBTNCALLBACK - Open the docs at the section for the selected category.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.helpBtnCallback()
+            %
+            % Jumps to the heading matching the category the user is looking at,
+            % rather than dropping them at the top of a long page. Prefers the
+            % copy shipped with MIB and falls back to the website when this is a
+            % source checkout with no built ``docs/html``.
+
             if obj.mibModel.preferences.System.DeveloperMode
                 fprintf('controllers.Preferences.helpBtnCallback: triggered\n');
             end
-            if isempty(obj.view.handles.CategoriesTree.SelectedNodes)
 
-            else
-                helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'html', 'user-interface', 'ribbon', 'home', 'home-preferences.html');
-                if isfile(helpFilPath)
-                    web(helpFilPath, '-browser');
-                else
-                    web('http://mib.helsinki.fi/help/main3/user-interface/ribbon/home/home-preferences.html', '-browser');
-                end
-
-
-                % switch obj.view.handles.CategoriesTree.SelectedNodes.Text
-                %     case 'User interface'
-                %         web(fullfile(fileparts(obj.mibModel.mibPath), 'docs/html/user-interface/menu/file/file-preferences.html#user-interface'), '-browser');
-                %     case 'Colors and styles'
-                %         web(helpFilPath, '-browser');
-                %     case 'Backup and undo'
-                %         web(fullfile(fileparts(obj.mibModel.mibPath), 'docs/html/user-interface/menu/file/file-preferences.html#backup-and-undo'), '-browser');
-                %     case 'External directories'
-                %         web(fullfile(fileparts(obj.mibModel.mibPath), 'docs/html/user-interface/menu/file/file-preferences.html#external-directories'), '-browser');
-                %     case 'Keyboard shortcuts'
-                %         web(fullfile(fileparts(obj.mibModel.mibPath), 'docs/html/user-interface/menu/file/file-preferences.html#keyboard-shortcuts'), '-browser');
-                %     case 'Segmentation tools'
-                %         web(fullfile(fileparts(obj.mibModel.mibPath), 'docs/html/user-interface/menu/file/file-preferences.html#segmentation-tools'), '-browser');
-                % end
+            % Anchors are generated by Zensical from the headings of
+            % docs/docs/user-interface/ribbon/home/home-preferences.md, by
+            % lowercasing and replacing spaces with hyphens. Renaming a heading
+            % there silently breaks the jump, so PreferencesHelpTest checks these
+            % against the built page.
+            switch obj.shownPanelTag
+                case 'UserInterfacePanel';       anchor = '#user-interface';
+                case 'ColorsPanel';              anchor = '#colors-and-styles';
+                case 'BackupAndUndoPanel';       anchor = '#backup-and-undo';
+                case 'ExternalDirectoriesPanel'; anchor = '#external-directories';
+                case 'KeyboardShortcutsPanel';   anchor = '#keyboard-shortcuts';
+                case 'SegmentationToolsPanel';   anchor = '#segmentation-tools';
+                case 'InputOutputPanel';         anchor = '#input-output';
+                otherwise;                       anchor = '';    % top of the page
             end
+
+            helpFilePath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'html', ...
+                'user-interface', 'ribbon', 'home', 'home-preferences.html');
+            if isfile(helpFilePath)
+                target = ['file:///' strrep(helpFilePath, '\', '/') anchor];
+            else
+                target = ['http://mib.helsinki.fi/help/main3/user-interface/ribbon/home/' ...
+                    'home-preferences.html' anchor];
+            end
+            obj.openInSystemBrowser(target);
         end
 
         function status = ApplyButtonPushedCallback(obj)
@@ -525,6 +631,9 @@ classdef Preferences < handle
             % uses it without restarting MIB (io.zarr.Array / io.zarr.Group)
             io.zarr.Config.setLibrary(obj.mibModel.preferences.IO.Zarr.Library);
             io.zarr.Config.setSmoothing(obj.mibModel.preferences.IO.Zarr.Smoothing);
+            % Shrinking the budget evicts immediately, so the memory is handed
+            % back as soon as Apply is pressed rather than at the next read.
+            io.zarr.ChunkCache.setBudgetMB(obj.mibModel.preferences.IO.Zarr.ChunkCacheMB);
             io.zarr.Config.setPythonPath(obj.mibModel.preferences.ExternalDirs.PythonInstallationPath);
             if isfield(obj.mibModel.preferences.ExternalDirs, 'PythonExecutionMode')
                 io.zarr.Config.setExecutionMode(obj.mibModel.preferences.ExternalDirs.PythonExecutionMode);
@@ -805,6 +914,10 @@ classdef Preferences < handle
                 case 'ZarrSmoothing'
                     % optional widget (boolean) - smooth coarse->fine label propagation
                     obj.preferences.IO.Zarr.Smoothing = logical(obj.view.handles.ZarrSmoothing.Value);
+                    % committed in ApplyButtonPushedCallback.
+                case 'ChunkCacheMB'
+                    % memory held for decoded zarr chunks; 0 disables the cache
+                    obj.preferences.IO.Zarr.ChunkCacheMB = obj.view.handles.ChunkCacheMB.Value;
                     % committed in ApplyButtonPushedCallback.
                 case 'BioFormatsLibrary'
                     % BioFormats / WSI reader backend; dropdown shows 'MIB'/'MATLAB',

@@ -31,8 +31,18 @@ Virtual loaders
    BioFormatsVirtualSetupLoader
    HDF5VirtualLoader
    HDF5VirtualSetupLoader
+   Zarr2VirtualLoader
+   Zarr2VirtualSetupLoader
    Zarr3VirtualLoader
    Zarr3VirtualSetupLoader
+
+Shared helpers
+--------------
+
+.. toctree::
+   :maxdepth: 1
+
+   OmeZarrMetadataUtils
 
 Base class
 ----------

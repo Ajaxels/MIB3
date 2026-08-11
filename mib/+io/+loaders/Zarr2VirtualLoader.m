@@ -149,7 +149,13 @@ methods
             obj.cachedMeta      = io.zarr.PyBackend.arrayMeta(obj.cachedPyArray);
             obj.cachedLevelPath = fullPath;
         end
-        raw = io.zarr.PyBackend.readArray(obj.cachedPyArray, bbox, obj.cachedMeta);
+        % Serve whole decoded chunks from memory where possible. Chunks are the
+        % smallest unit the store will hand over and are usually many slices
+        % deep, so without this every z-step re-fetches the same chunks and
+        % throws away all but one plane of each.
+        raw = io.zarr.ChunkCache.read(fullPath, bbox, obj.cachedMeta.chunkShape, ...
+            obj.cachedMeta.shape, ...
+            @(alignedBbox) io.zarr.PyBackend.readArray(obj.cachedPyArray, alignedBbox, obj.cachedMeta));
 
         % Permute to MIB3 [y, x, z, c, t] and cast to the requested class
         block = permute(raw, obj.toMIB3perm);

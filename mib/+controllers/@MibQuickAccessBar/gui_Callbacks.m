@@ -30,11 +30,8 @@ end
 switch mode
     case 'Open MIB documentation'
         helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'html', 'index.html');
-        if isfile(helpFilPath)
-            web(helpFilPath, '-browser');
-        else
-            web('http://mib.helsinki.fi/help/main3/index.html', '-browser');
-        end
+        utils.openHelpPage(helpFilPath, ...
+            'http://mib.helsinki.fi/help/main3/index.html');
     case 'Make a snapshot'
         obj.mibController.startController('controllers.Snapshot');
     case 'Save model to a file'

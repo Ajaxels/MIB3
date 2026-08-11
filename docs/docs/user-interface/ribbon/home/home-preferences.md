@@ -18,7 +18,8 @@ The dialog organizes settings into seven categories, shown as nodes in the **Cat
 - **External directories**: specifies paths for external tools like Fiji or Python.
 - **Keyboard shortcuts**: defines custom key bindings for MIB actions.
 - **Segmentation tools**: adjusts settings and options for segmentation tools.
-- **Input / output**: selects the OME-Zarr (zarr3) read/write engine and BigData label smoothing.
+- **Input / output**: selects the OME-Zarr (zarr3) read/write engine, the zarr chunk cache size, and
+  BigData label smoothing.
 
 At the bottom, you’ll find buttons to manage changes:
 
@@ -450,17 +451,52 @@ reading and writing zarr3 data:
 - `native`: the bundled **zarrMex** engine — no external dependencies (*default, recommended*).
 - `python`: the **zarr-python** (v3) library, called through the Python interpreter set in
   [External directories → Python installation path](#external-directories). Requires the `zarr` and
-  `numpy` packages installed in that environment.
+  `numpy` packages installed in that environment. Reading a **remote** (HTTP/HTTPS) zarr v2 store
+  additionally requires `aiohttp` and `requests`, which zarr-python uses to fetch chunks over the
+  network:
+
+    ```bash
+    "<path-to-python.exe>" -m pip install aiohttp requests
+    ```
 
 A short description of the selected library is shown in the label beneath the dropdown. The setting
 takes effect immediately on <span class="widget widget-button">OK</span> / <span class="widget widget-button">Apply</span> — no restart needed.
 
 !!! info
     Metadata (array/group creation, attributes, resizing) is always handled by the native engine for
-    an identical on-disk structure; only the bulk pixel read/write honours this selection. Remote
-    (HTTP/HTTPS) zarr datasets always use the native engine.
+    an identical on-disk structure; only the bulk pixel read/write honours this selection.
 
-### Smoothing
+    This dropdown applies to **zarr v3 only**. **Zarr v2** stores always go through zarr-python
+    whatever the setting, because the bundled `zarrMex` engine is v3-only - so `zarr` and `numpy`
+    are required for any v2 dataset, local or remote. Remote **v3** datasets, by contrast, always
+    use the native engine, which reads them with HTTP range requests and needs no Python at all.
+
+<div class="h3-like"> Chunk cache</div>
+
+<span class="widget widget-edit">Chunk Cache</span>: memory, in megabytes, held for decoded zarr
+chunks (*default: 512*). Applies to zarr v2 and v3, local and remote, both engines.
+
+A chunk is the smallest unit a zarr store hands over, and volumes are commonly chunked for 3D
+access rather than for browsing one plane at a time - `64 x 128 x 128` is typical, meaning **every
+chunk carries 64 slices**. Without a cache each slice change re-fetches and re-decodes those chunks
+and keeps only one plane of each. With it, the other 63 slices are already in memory.
+
+The effect is dramatic on a remote store and still worthwhile locally, where it saves the decode
+rather than the download. Measured on a remote OME-Zarr v2 volume at full resolution: **~2 s per
+slice change without the cache, ~0.01 s with it**, and panning back to a region already visited is
+equally free.
+
+Set it to **0** to disable caching entirely - the escape hatch on a machine short of memory. When
+the budget is reached the least recently used chunks are dropped, so the figure is a ceiling, not an
+allocation. Lowering it releases the memory as soon as
+<span class="widget widget-button">Apply</span> is pressed.
+
+!!! tip
+    512 MB holds roughly eight full-resolution screenfuls of a `64 x 128 x 128` store. Raise it if
+    you work at full resolution on a remote dataset and have the RAM; there is no benefit in setting
+    it larger than the volume you actually browse.
+
+<div class="h3-like"> Smoothing</div>
 
 <span class="widget widget-checkbox">Smoothing</span>: a checkbox controlling how a segmentation edit
 made at a low-magnification (zoomed-out) level of a **BigData** model is propagated into the

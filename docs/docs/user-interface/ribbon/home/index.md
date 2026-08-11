@@ -57,7 +57,9 @@ to the selected folder.
 
     <div class="clear-float"></div>
 
-- **URL**: Open an image from a URL address  
+- **URL / Zarr**: Open a dataset from a URL address - an ordinary image, or an OME-Zarr container in a
+  public cloud bucket browsed and opened without downloading it
+  ([see details](home-importfromurl.md))  
   The link must include the protocol (e.g., `http://`)  [:fontawesome-brands-youtube:{.red-color} Brief demo](https://youtu.be/FNEVgKzbGqQ)
 
 ### Example datasets

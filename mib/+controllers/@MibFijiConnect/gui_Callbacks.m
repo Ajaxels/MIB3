@@ -60,11 +60,8 @@ switch mode
         
     case 'helpButton' %
         helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'html', 'user-interface', 'panels', 'fijiconnect', 'index.html');
-        if isfile(helpFilPath)
-            web(helpFilPath, '-browser');
-        else
-            web('http://mib.helsinki.fi/help/main3/user-interface/panels/fijiconnect/index.html', '-browser');
-        end
+        utils.openHelpPage(helpFilPath, ...
+            'http://mib.helsinki.fi/help/main3/user-interface/panels/fijiconnect/index.html');
 
 end
 

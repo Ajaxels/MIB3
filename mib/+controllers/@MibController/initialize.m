@@ -15,7 +15,7 @@ arguments (Input)
 end
 
 % tweaks
-showSplashScreen = false;
+showSplashScreen = true;
 
 % ---- show splash screen
 if showSplashScreen

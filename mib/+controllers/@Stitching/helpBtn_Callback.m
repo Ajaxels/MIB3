@@ -11,10 +11,7 @@ if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.Stitching.helpBtn_Callback: triggered\n');
 end
 helpFilePath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'html', 'user-interface', 'ribbon', 'dataset', 'dataset-stitch.html');
-if isfile(helpFilePath)
-    web(helpFilePath, '-browser');
-else
-    web('http://mib.helsinki.fi/help/main3/user-interface/ribbon/dataset/dataset-stitch.html', '-browser');
-end
+utils.openHelpPage(helpFilePath, ...
+    'http://mib.helsinki.fi/help/main3/user-interface/ribbon/dataset/dataset-stitch.html');
 
 end

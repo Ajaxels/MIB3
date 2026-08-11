@@ -238,11 +238,8 @@ classdef WoundHealing < handle
                 fprintf('controllers.WoundHealing.helpButton_Callback: triggered\n');
             end
             helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'html', 'user-interface', 'ribbon', 'tools', 'tools-wound.html');
-            if isfile(helpFilPath)
-                web(helpFilPath, '-browser');
-            else
-                web('http://mib.helsinki.fi/help/main3/user-interface/ribbon/tools/tools-wound.html', '-browser');
-            end
+            utils.openHelpPage(helpFilPath, ...
+                'http://mib.helsinki.fi/help/main3/user-interface/ribbon/tools/tools-wound.html');
         end
 
         % -----------------------------------------------------------

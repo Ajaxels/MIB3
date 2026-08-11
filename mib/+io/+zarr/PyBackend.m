@@ -95,13 +95,123 @@ classdef PyBackend
             ready = true;
         end
 
+        function [tf, diagnostic] = hasRemoteSupport()
+            % HASREMOTESUPPORT - can the configured interpreter reach remote stores?
+            %
+            % ``zarr-python`` opens ``http(s)`` stores through fsspec's
+            % ``HTTPFileSystem``, which imports ``aiohttp`` and ``requests``
+            % lazily. Neither is a dependency of ``zarr`` itself, so an
+            % environment that reads local v2 stores perfectly well can still
+            % fail on the first remote chunk read.
+            %
+            % Never throws - it answers a question, and is meant for enabling or
+            % disabling a control. Use ``ensureRemoteSupport`` when the answer
+            % should stop the operation.
+            %
+            % ``diagnostic`` is what makes the two failure modes distinguishable:
+            % a dead interpreter and a missing package both make ``tf`` false,
+            % but only one of them is fixed by installing anything.
+            %
+            % A ``true`` result is cached for the session; ``false`` is not, so
+            % installing the packages into the running interpreter's environment
+            % is picked up without restarting MATLAB.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      tf = io.zarr.PyBackend.hasRemoteSupport()
+            %      [tf, diagnostic] = io.zarr.PyBackend.hasRemoteSupport()
+            %
+            % Output Arguments:
+            %   - **tf** - [logical] true when both packages are importable
+            %   - **diagnostic** - [char] empty when ``tf`` is true, otherwise why
+            %     the check failed
+
+            persistent confirmedAvailable
+            if ~isempty(confirmedAvailable) && confirmedAvailable
+                tf = true; diagnostic = ''; return;
+            end
+
+            tf = false;
+            try
+                io.zarr.PyBackend.ensureLoaded();
+            catch err
+                diagnostic = err.message;   % python itself unusable
+                return;
+            end
+
+            try
+                tf = logical(pyrun(io.zarr.PyBackend.remoteProbeCode(), 'mibHasRemote'));
+            catch err
+                diagnostic = err.message;   % e.g. the interpreter died mid-session
+                return;
+            end
+
+            if tf
+                confirmedAvailable = true;
+                diagnostic = '';
+            else
+                diagnostic = 'aiohttp and/or requests are not installed';
+            end
+        end
+
+        function ensureRemoteSupport(path)
+            % ENSUREREMOTESUPPORT - throw an actionable error for a remote path
+            % when the python environment cannot fetch over the network.
+            %
+            % A no-op for local paths, so callers can invoke it unconditionally
+            % next to ``ensureLoaded``. Calling it at open time turns a failure
+            % that would otherwise appear on the first slice scrub into one
+            % message at the moment the user asked for the dataset.
+            %
+            % Distinguishes a **dead interpreter** from **missing packages**:
+            % both make the check fail, but telling someone to ``pip install``
+            % when the Python process has actually exited sends them chasing the
+            % wrong problem. An out-of-process interpreter is killed by
+            % ``clear classes``, among other things.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      io.zarr.PyBackend.ensureRemoteSupport(path)
+            %
+            % Input Arguments:
+            %   - **path** - [char|string] store path or URL about to be opened
+
+            if nargin < 1 || isempty(path); return; end
+            if ~io.RemoteStore.isRemote(path); return; end
+
+            [isSupported, diagnostic] = io.zarr.PyBackend.hasRemoteSupport();
+            if isSupported; return; end
+
+            if io.zarr.PyBackend.looksLikeDeadInterpreter(diagnostic)
+                error('io:zarr:PyBackend:pythonTerminated', ...
+                    ['The Python interpreter is not running, so remote Zarr support could not be\n' ...
+                     'checked:\n  %s\n\n' ...
+                     'Restart MATLAB, or run "terminate(pyenv)" and open the dataset again.\n' ...
+                     'Note that "clear classes" kills an out-of-process interpreter.'], ...
+                    strtrim(diagnostic));
+            end
+
+            error('io:zarr:PyBackend:remoteDepsMissing', '%s', ...
+                io.zarr.PyBackend.remoteDepsMessage());
+        end
+
         function pyArr = openArray(path, mode)
             % OPENARRAY - open a zarr array, returning the py handle.
             %   mode: 'r' (read only) or 'r+' (read/write existing).
             if nargin < 2 || isempty(mode); mode = 'r'; end
             io.zarr.PyBackend.ensureLoaded();
             z = py.importlib.import_module('zarr');
-            pyArr = z.open(char(path), pyargs('mode', char(mode)));
+            try
+                pyArr = z.open(char(path), pyargs('mode', char(mode)));
+            catch err
+                % Translate the raw python ImportError into the same actionable
+                % message ensureRemoteSupport produces, for any caller that
+                % reached a remote store without checking first.
+                io.zarr.PyBackend.raiseIfRemoteDepsMissing(err);
+                rethrow(err);
+            end
         end
 
         function meta = arrayMeta(pyArr)
@@ -207,6 +317,110 @@ classdef PyBackend
     end
 
     methods (Static, Access = private)
+        function code = remoteProbeCode()
+            % REMOTEPROBECODE - cached Python testing for the remote-access packages.
+            % find_spec only looks the modules up on sys.path, so this stays cheap
+            % and does not pull aiohttp's own imports into the interpreter.
+            persistent c
+            if isempty(c)
+                c = sprintf(['import importlib.util as _mibutil\n' ...
+                    'mibHasRemote = (_mibutil.find_spec("aiohttp") is not None) ' ...
+                    'and (_mibutil.find_spec("requests") is not None)']);
+            end
+            code = c;
+        end
+
+        function tf = looksLikeDeadInterpreter(diagnostic)
+            % LOOKSLIKEDEADINTERPRETER - does this failure mean python is not running?
+            % Matches the wording MATLAB uses when an out-of-process interpreter
+            % has exited or crashed, so that case is never reported as a missing
+            % package.
+
+            if isempty(diagnostic); tf = false; return; end
+            tf = contains(diagnostic, 'terminated', 'IgnoreCase', true) || ...
+                 contains(diagnostic, 'Python process', 'IgnoreCase', true) || ...
+                 contains(diagnostic, 'could not be started', 'IgnoreCase', true) || ...
+                 contains(diagnostic, 'pythonUnavailable', 'IgnoreCase', true);
+        end
+
+        function raiseIfRemoteDepsMissing(err)
+            % RAISEIFREMOTEDEPSMISSING - convert a python import failure into the
+            % actionable remote-dependency error, or return and let the caller
+            % rethrow the original.
+
+            message = err.message;
+            looksLikeMissingRemoteDeps = ...
+                contains(message, 'HTTPFileSystem requires') || ...
+                contains(message, 's3fs') || ...
+                (contains(message, 'ImportError') && contains(message, 'aiohttp'));
+
+            if ~looksLikeMissingRemoteDeps; return; end
+
+            error('io:zarr:PyBackend:remoteDepsMissing', '%s\n\nOriginal error:\n  %s', ...
+                io.zarr.PyBackend.remoteDepsMessage(), strtrim(message));
+        end
+
+        function message = remoteDepsMessage()
+            % REMOTEDEPSMESSAGE - the install instructions, naming the actual interpreter.
+
+            interpreterPath = '';
+            try
+                interpreterPath = char(io.zarr.Config.pythonPath());
+                if isempty(interpreterPath)
+                    interpreterPath = char(pyenv().Executable);
+                end
+            catch
+                % leave empty and print a generic form below
+            end
+
+            if isempty(interpreterPath)
+                pipCommand   = 'python -m pip install aiohttp requests';
+                condaCommand = 'conda install -c conda-forge aiohttp requests';
+                whereClause  = 'the configured Python interpreter';
+            else
+                pipCommand = sprintf('"%s" -m pip install aiohttp requests', interpreterPath);
+                environmentName = io.zarr.PyBackend.environmentNameOf(interpreterPath);
+                if isempty(environmentName)
+                    condaCommand = 'conda install -c conda-forge aiohttp requests';
+                else
+                    condaCommand = sprintf('conda install -n %s -c conda-forge aiohttp requests', ...
+                        environmentName);
+                end
+                whereClause = interpreterPath;
+            end
+
+            message = sprintf([ ...
+                'Reading a remote Zarr v2 store needs the "aiohttp" and "requests" Python packages,\n' ...
+                'which zarr-python uses to fetch chunks over the network. They are missing from:\n' ...
+                '  %s\n\n' ...
+                'Install them with:\n' ...
+                '  %s\n' ...
+                'or, for a conda environment:\n' ...
+                '  %s\n\n' ...
+                'The interpreter is set in Preferences -> External directories -> Python installation path.\n' ...
+                'Local Zarr v2 stores are unaffected, and remote Zarr v3 stores need no Python at all\n' ...
+                '(they are read by the native zarrMex engine using HTTP range requests).'], ...
+                whereClause, pipCommand, condaCommand);
+        end
+
+        function environmentName = environmentNameOf(interpreterPath)
+            % ENVIRONMENTNAMEOF - conda environment name from a python executable path.
+            % "...\envs\sam4mib\python.exe" -> "sam4mib". Empty when the layout
+            % does not look like a conda environment.
+
+            environmentName = '';
+            try
+                [interpreterDir, ~] = fileparts(interpreterPath);
+                [parentDir, candidateName] = fileparts(interpreterDir);
+                [~, parentName] = fileparts(parentDir);
+                if strcmpi(parentName, 'envs')
+                    environmentName = candidateName;
+                end
+            catch
+                environmentName = '';
+            end
+        end
+
         function code = readCode()
             % READCODE - cached Python for: slice -> C-contiguous -> raw bytes.
             persistent c

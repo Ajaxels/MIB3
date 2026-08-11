@@ -64,6 +64,9 @@ properties (SetAccess = private)
     % [io.zarr.Array] reused across slice reads at the same pyramid level, so the
     % backend handle (and, for python, the open py array + metadata) is opened once
     % per level rather than per read. Refreshed when the requested level changes.
+    cachedInfo = []
+    % [struct] shape / chunkShape of cachedArray, needed by io.zarr.ChunkCache to
+    % work out which chunks a request touches. Fetched with the handle above.
 end
 
 methods
@@ -182,9 +185,13 @@ methods
         % opened once per level instead of per slice read.
         if isempty(obj.cachedArray) || ~strcmp(fullPath, obj.cachedLevelPath)
             obj.cachedArray     = io.zarr.Array(fullPath);
+            obj.cachedInfo      = obj.cachedArray.info();
             obj.cachedLevelPath = fullPath;
         end
-        raw = obj.cachedArray.read(bbox);   % returns data in zarr C-order
+        % Serve whole decoded chunks from memory where possible; see
+        % io.zarr.ChunkCache for why a per-request read is so wasteful without it.
+        raw = io.zarr.ChunkCache.read(fullPath, bbox, obj.cachedInfo.chunkShape, ...
+            obj.cachedInfo.shape, @(alignedBbox) obj.cachedArray.read(alignedBbox));
 
         % Permute to MIB3 [y, x, z, c, t]
         block = permute(raw, obj.toMIB3perm);

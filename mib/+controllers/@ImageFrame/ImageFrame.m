@@ -253,11 +253,8 @@ classdef ImageFrame < handle
                 fprintf('controllers.ImageFrame.helpButton_Callback: triggered\n');
             end
             helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'html', 'user-interface', 'ribbon', 'image', 'image-tools-selectframe.html');
-            if isfile(helpFilPath)
-                web(helpFilPath, '-browser');
-            else
-                web('http://mib.helsinki.fi/help/main3/user-interface/ribbon/image/image-tools-selectframe.html', '-browser');
-            end
+            utils.openHelpPage(helpFilPath, ...
+                'http://mib.helsinki.fi/help/main3/user-interface/ribbon/image/image-tools-selectframe.html');
 
         end
 

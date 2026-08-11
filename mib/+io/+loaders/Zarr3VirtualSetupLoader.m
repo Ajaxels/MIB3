@@ -520,7 +520,12 @@ methods (Access = private)
             requestedGroup = char(obj.Options.ZarrGroupPath);
         end
         if ~isempty(requestedGroup)
-            if isHttp || isfolder(requestedGroup)
+            if isHttp
+                % join() takes a relative group path as well as an absolute URL,
+                % so a batch protocol can carry the short readable form rather
+                % than repeating the whole URL.
+                groupPath = io.RemoteStore.join(rootPath, requestedGroup);
+            elseif isfolder(requestedGroup)
                 groupPath = requestedGroup;
             else
                 groupPath = fullfile(rootPath, requestedGroup);
@@ -528,19 +533,20 @@ methods (Access = private)
             return;
         end
 
-        % ---- 2. local containers: recursive search ----------------------
-        if ~isHttp
-            candidates = io.loaders.OmeZarrMetadataUtils.findMultiscalesGroups(rootPath, 3);
-            if ~isempty(candidates)
-                groupPath = io.loaders.OmeZarrMetadataUtils.selectMultiscalesGroup(...
-                    rootPath, candidates, obj.ParentFigure, ...
-                    'Zarr3: select image group');
-                cancelled = isempty(groupPath);
-                return;
-            end
+        % ---- 2. containers: recursive search ----------------------------
+        % Runs for local roots and for remote roots on a listable (S3) host;
+        % the remote walk stops at the shallowest level that matches.
+        candidates = io.loaders.OmeZarrMetadataUtils.findMultiscalesGroups(rootPath, 3);
+        if ~isempty(candidates)
+            groupPath = io.loaders.OmeZarrMetadataUtils.selectMultiscalesGroup(...
+                rootPath, candidates, obj.ParentFigure, ...
+                'Zarr3: select image group');
+            cancelled = isempty(groupPath);
+            return;
         end
 
         % ---- 3. fallback: original single-level heuristic ---------------
+        % Still the only option for an HTTP host with no directory listing.
         groupPath = obj.findMultiscalesSubPath(rootPath, attrs, grp);
     end
 

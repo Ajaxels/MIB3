@@ -1148,6 +1148,8 @@
       
         
       
+        
+      
     
     
     
@@ -1264,6 +1266,33 @@
     
   
   MIB 3D Viewer
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ribbon/home/home-importfromurl.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Import from URL / Zarr
 
     
   </span>
@@ -5569,6 +5598,14 @@ selected datasets</p>
 <li>select the directory using the <mouse class="left"></mouse></li>
 <li>open the OME-Zarr dataset using the <code>Combine selected datasets</code> option </li>
 </ul>
+<p>A plain <code>.zarr</code> ending does not say which zarr version the store uses, so MIB detects
+it from the store itself and picks the matching reader.</p>
+<p><strong>Nested containers.</strong> Many stores keep the image group below the root rather than at it,
+for example the MoBIE / OpenOrganelle layout where the pyramid lives in
+<code>&lt;name&gt;.zarr/recon-1/em/fibsem-uint8</code>, or an OME-Zarr label container. Select the top
+<code>.zarr</code> directory as usual - MIB searches the container and opens the image group it
+finds. When a container holds several image groups (an image plus its labels, several
+channels, ...), a dialog lists them so you can choose which one to open.</p>
 </details>
 <ul>
 <li><strong>Load part of the dataset (AM, TIF, BioFormats)</strong>: load a specific part of a larger dataset, defining start/end points, z-step, and XY binning

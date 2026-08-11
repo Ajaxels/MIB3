@@ -130,6 +130,20 @@ methods
             return;
         end
 
+        % A remote store needs two packages a local one does not. Checked here so
+        % a missing aiohttp/requests is reported once, now, instead of on the
+        % first slice the user scrubs to. Reported separately from the block
+        % above because python is running fine - it just cannot reach the network
+        % - and the message says exactly what to install.
+        try
+            io.zarr.PyBackend.ensureRemoteSupport(rootPath);
+        catch ME
+            utils.dlgs.showErrorDialog(obj.Options.ParentFigure, ME.message, ...
+                'Remote Zarr: missing Python packages', '', '');
+            files = struct();
+            return;
+        end
+
         isHttp = startsWith(rootPath, 'http://') || startsWith(rootPath, 'https://');
 
         % ---- root is itself a single array (no group) ---------------
@@ -728,7 +742,12 @@ methods (Access = private)
             requestedGroup = char(obj.Options.ZarrGroupPath);
         end
         if ~isempty(requestedGroup)
-            if isHttp || isfolder(requestedGroup)
+            if isHttp
+                % join() takes a relative group path as well as an absolute URL,
+                % so a batch protocol can carry the short readable form
+                % ('recon-1/em/fibsem-uint8') rather than the whole URL again.
+                groupPath = io.RemoteStore.join(rootPath, requestedGroup);
+            elseif isfolder(requestedGroup)
                 groupPath = requestedGroup;
             else
                 groupPath = fullfile(rootPath, requestedGroup);
@@ -736,19 +755,20 @@ methods (Access = private)
             return;
         end
 
-        % ---- 2. local containers: recursive search ----------------------
-        if ~isHttp
-            candidates = io.loaders.OmeZarrMetadataUtils.findMultiscalesGroups(rootPath, 2);
-            if ~isempty(candidates)
-                groupPath = io.loaders.OmeZarrMetadataUtils.selectMultiscalesGroup(...
-                    rootPath, candidates, obj.ParentFigure, ...
-                    'Zarr2: select image group');
-                cancelled = isempty(groupPath);
-                return;
-            end
+        % ---- 2. containers: recursive search ----------------------------
+        % Runs for local roots and for remote roots on a listable (S3) host;
+        % the remote walk stops at the shallowest level that matches.
+        candidates = io.loaders.OmeZarrMetadataUtils.findMultiscalesGroups(rootPath, 2);
+        if ~isempty(candidates)
+            groupPath = io.loaders.OmeZarrMetadataUtils.selectMultiscalesGroup(...
+                rootPath, candidates, obj.ParentFigure, ...
+                'Zarr2: select image group');
+            cancelled = isempty(groupPath);
+            return;
         end
 
         % ---- 3. fallback: original single-level heuristic ---------------
+        % Still the only option for an HTTP host with no directory listing.
         groupPath = obj.findMultiscalesSubPathV2(rootPath, attrs, isHttp);
     end
 
@@ -850,7 +870,10 @@ methods (Access = private)
 end
 
 %% Static utility helpers
-methods (Static, Access = private)
+% Public because the dialog that previews a remote store before opening it
+% (controllers.SelectFromUrl) has to report the same data type this loader will
+% produce - duplicating the table there would let the two drift apart.
+methods (Static)
 
     function matlabClass = zarrV2TypeToMatlabClass(zarrType)
         % ZARRV2TYPETOMATLABCLASS - Convert a zarr v2 numpy typestring to a MATLAB class string.

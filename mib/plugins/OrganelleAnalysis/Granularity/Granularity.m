@@ -477,11 +477,8 @@ classdef Granularity < handle
         function helpBtn_Callback(obj)
         % helpBtn_Callback  Open online help in the system browser.
             helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'html', 'user-interface', 'plugins', 'organelle-analysis', 'granularity.html');
-            if isfile(helpFilPath)
-                web(helpFilPath, '-browser');
-            else
-                web('http://mib.helsinki.fi/help/main3/user-interface/plugins/organelle-analysis/granularity.html', '-browser');
-            end
+            utils.openHelpPage(helpFilPath, ...
+                'http://mib.helsinki.fi/help/main3/user-interface/plugins/organelle-analysis/granularity.html');
         end
 
         % -----------------------------------------------------------------

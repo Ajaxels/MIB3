@@ -80,6 +80,7 @@ Dialogs for organizing, transforming, and exporting datasets.
    RenameRestore
    RenameShuffle
    ResampleDataset
+   SelectFromUrl
    Snapshot
    Stitching
    StitchingInspector

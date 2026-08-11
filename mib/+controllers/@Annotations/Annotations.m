@@ -1310,11 +1310,8 @@ classdef Annotations < handle
             %
 
             helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'html', 'user-interface', 'panels', 'segm', 'segm-annotations.html');
-            if isfile(helpFilPath)
-                web(helpFilPath, '-browser');
-            else
-                web('http://mib.helsinki.fi/help/main3/user-interface/panels/segm/segm-annotations.html', '-browser');
-            end
+            utils.openHelpPage(helpFilPath, ...
+                'http://mib.helsinki.fi/help/main3/user-interface/panels/segm/segm-annotations.html');
         end
 
     end
