@@ -63,6 +63,15 @@ classdef MibBigDataLabelsZarr2 < core.MibBigDataLabels
         % v3 or Fortran chunk order in v2), a FOREIGN store is read in whatever
         % order it actually declared, so readPackedLevel must build the bbox /
         % permute the result using this rather than assuming [y,x,z].
+        valueRemap = []
+        % [256 x 1 uint8] lookup applied to every block read, or ``[]`` for
+        % pass-through. A foreign store's values are its own labelling scheme,
+        % and MIB's packed byte only has room for 0-63 (bit 7 is the mask, bit 8
+        % the selection). A value of 255 - which is what a COSEM inference
+        % segmentation writes for "foreground", and what the COSEM ground-truth
+        % encoding uses for "not annotated" - would otherwise arrive as material
+        % 63 with the mask AND selection bits set. Built by
+        % ``resolveValueRemap`` at open time; see there for the rules.
     end
 
     properties (Transient)
@@ -237,7 +246,109 @@ classdef MibBigDataLabelsZarr2 < core.MibBigDataLabels
             [names, colors] = obj.readMaterialMetadataV2(storePath, obj.modelLevelNames{1}, isHttp);
             if ~isempty(names);  obj.materialNames  = names(:); end
             if ~isempty(colors); obj.materialColors = colors;   end
+
+            % How this store's values map onto MIB's 0-63 material indices, and
+            % - when the answer is "one class" - what to call the one material.
+            % Only when the store said nothing about its materials: a store that
+            % named them describes its own values and must be left alone.
+            if isempty(names)
+                singleMaterialName = obj.resolveValueRemap(attrs, storePath);
+                if ~isempty(singleMaterialName)
+                    obj.materialNames = {singleMaterialName};
+                end
+            end
+
             obj.materialsCount = numel(obj.materialNames);
+        end
+
+        function singleMaterialName = resolveValueRemap(obj, attrs, storePath)
+            % RESOLVEVALUEREMAP - Decide how the store's values become materials.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      singleMaterialName = obj.resolveValueRemap(attrs, storePath)
+            %
+            % Sets :attr:`valueRemap` and reports whether the store turned out to
+            % hold a single class, in which case the caller names the one
+            % material after it rather than leaving 63 numbered slots.
+            %
+            % Three kinds of foreign store, decided in this order:
+            %
+            %   1. **A declared encoding.** A COSEM ground-truth class group
+            %      carries ``cellmap.annotation`` with ``{absent, present,
+            %      unknown}``. ``present`` becomes material 1 and everything else
+            %      - including ``unknown`` (255), which means "not annotated",
+            %      not "background" - becomes 0. One material, named by the
+            %      store's own ``class_name``.
+            %   2. **An index map.** Values inside 1-63 are already MIB material
+            %      indices; they pass through untouched, which is what makes a
+            %      merged ``all`` group (ids 3, 4, 5 ... 48) keep its classes.
+            %   3. **A binary mask.** An inference segmentation declares nothing
+            %      and writes 0 / 255. Any non-zero value becomes material 1,
+            %      named after the group's own folder.
+            %
+            % **The distinction between 2 and 3 needs pixels**, so the COARSEST
+            % pyramid level is read whole - the top of a pyramid is a few tens of
+            % kilobytes, one request. When it is empty, which a thin sparse
+            % structure often is by the time it has been downsampled eight times,
+            % the binary reading is assumed: it is the one that cannot corrupt
+            % the mask and selection layers, and an index map dense enough to be
+            % worth its ids survives downsampling.
+            %
+            % Input Arguments:
+            %   - **attrs** - [struct] the store's ``.zattrs``, already parsed
+            %   - **storePath** - [char] used only for the fallback material name
+            %
+            % Output Arguments:
+            %   - **singleMaterialName** - [char] name for the one material, or
+            %     ``''`` when the store holds an index map
+
+            obj.valueRemap     = [];
+            singleMaterialName = '';
+
+            % ---- 1. the store declares what its values mean -----------------
+            annotation = [];
+            if isstruct(attrs) && isfield(attrs, 'cellmap') && isstruct(attrs.cellmap) && ...
+                    isfield(attrs.cellmap, 'annotation')
+                annotation = attrs.cellmap.annotation;
+            end
+            if isstruct(annotation) && isfield(annotation, 'annotation_type') && ...
+                    isstruct(annotation.annotation_type) && ...
+                    isfield(annotation.annotation_type, 'encoding') && ...
+                    isstruct(annotation.annotation_type.encoding) && ...
+                    isfield(annotation.annotation_type.encoding, 'present')
+                presentValue   = double(annotation.annotation_type.encoding.present);
+                obj.valueRemap = zeros(256, 1, 'uint8');
+                if presentValue >= 0 && presentValue <= 255
+                    obj.valueRemap(presentValue + 1) = 1;
+                end
+                singleMaterialName = core.MibBigDataLabelsZarr2.lastPathSegment(storePath);
+                if isfield(annotation, 'class_name') && ~isempty(annotation.class_name)
+                    singleMaterialName = char(string(annotation.class_name));
+                end
+                return;
+            end
+
+            % ---- 2 vs 3: ask the smallest level there is --------------------
+            distinctValues = [];
+            try
+                coarsest = obj.modelArrays{end}.read();
+                distinctValues = double(unique(coarsest(:)));
+                distinctValues = distinctValues(distinctValues ~= 0);
+            catch
+                % Unreadable coarsest level: fall through to the binary reading,
+                % which is the safe one - a pass-through here is what puts 255
+                % into the mask and selection bits.
+            end
+
+            if ~isempty(distinctValues) && all(distinctValues <= 63)
+                return;   % an index map in MIB's own range - nothing to do
+            end
+
+            obj.valueRemap    = ones(256, 1, 'uint8');
+            obj.valueRemap(1) = 0;   % value 0 stays background
+            singleMaterialName = core.MibBigDataLabelsZarr2.lastPathSegment(storePath);
         end
 
         function block = readPackedLevel(obj, levelIdx, Ylim, Xlim, Zlim)
@@ -282,6 +393,13 @@ classdef MibBigDataLabelsZarr2 < core.MibBigDataLabels
             perm = io.loaders.OmeZarrMetadataUtils.computePermutation(axisOrder); % -> [y,x,z,*,*]
             block = permute(raw, perm);
             block = reshape(block, Ylim(2)-Ylim(1)+1, Xlim(2)-Xlim(1)+1, Zlim(2)-Zlim(1)+1);
+
+            % The store's values -> MIB material indices. AFTER the chunk cache
+            % on purpose: the cache holds raw chunks keyed by level path, which
+            % is what lets a store opened as an image and as labels share them.
+            if ~isempty(obj.valueRemap) && isa(block, 'uint8')
+                block = intlut(block, obj.valueRemap);
+            end
         end
 
         function writePackedLevel(~, ~, ~, ~, ~, ~)
@@ -357,6 +475,17 @@ classdef MibBigDataLabelsZarr2 < core.MibBigDataLabels
             end
 
             [names, colors] = io.loaders.OmeZarrMetadataUtils.resolveMaterialMetadata(attrs);
+        end
+    end
+
+    methods (Static, Access = private)
+        function segment = lastPathSegment(storePath)
+            % LASTPATHSEGMENT - Group name from a path or URL, for a material name.
+            % Both separators are split on: a URL uses '/' and a local store on
+            % Windows arrives with '\'.
+            segments = strsplit(regexprep(char(storePath), '[/\\]+$', ''), {'/', '\'});
+            segment  = segments{end};
+            if isempty(segment); segment = 'labels'; end
         end
     end
 end

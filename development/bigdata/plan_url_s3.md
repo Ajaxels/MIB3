@@ -1,7 +1,7 @@
 # Plan: open remote OME-Zarr datasets from a URL (S3 / HTTPS)
 
-**Status:** implemented through step 16.
-Written 2026-08-10, last updated 2026-08-11.
+**Status:** implemented through step 20.
+Written 2026-08-10, last updated 2026-08-12.
 Steps 0-11 are tracked in the [ordered sequence](#ordered-sequence) table; steps 12-16 are prose
 sections following it.
 **Supersedes:** the deferred "Remote OME-Zarr over HTTP/URL" item in
@@ -575,6 +575,10 @@ the label-crop limitation plus the follow-up design.
 | 10 | ~~Docs~~ **DONE 2026-08-10** | new user page + nav, dataset-types, 4 new RST pages |
 | 11 | ~~`buildtool check`, `buildtool test`, dash grep~~ **DONE 2026-08-10** - 444/449 Unit, 0 failed; 0 codeIssues; dash clean | - |
 | 16 | ~~Label crop + its image region: world boxes, `Region`/`ZarrLevel`, multi-select composition, sibling image pairing~~ **DONE 2026-08-11** - 41 new tests, 0 failed; crop1 opens in 11.7 s with labels on the EM structures | see the file table in [Step 16](#step-16---loading-a-label-crop-with-its-image-region-done-2026-08-11) |
+| 17 | ~~Fallback to zarr-python for arrays the native engine refuses~~ **DONE 2026-08-12** - `jrc_mus-liver-6` opens; see [Step 17](#step-17---a-store-the-native-engine-refuses-done-2026-08-12) | `+io/+zarr/Array.m`, `tests/io/NativeZarrV2Test.m`, 2 doc pages |
+| 18 | ~~Pre-fill the URL from the open remote dataset; confirm `Load as` for a second one~~ **DONE 2026-08-12** - see [Step 18](#step-18---the-second-dataset-case-in-the-dialog-done-2026-08-12) | `@SelectFromUrl/` (2 files), `tests/controllers/SelectFromUrlTest.m`, 1 doc page |
+| 19 | ~~Refuse a label "crop" that covers the whole volume~~ **DONE 2026-08-12** - see [Step 19](#step-19---a-crop-that-is-the-whole-volume-done-2026-08-12) | `planLabelCrop.m`, `SelectFromUrl.m`, `tests/controllers/SelectFromUrlTest.m`, 1 doc page |
+| 20 | ~~Map a foreign store's values onto materials; auto-connect from the open dataset~~ **DONE 2026-08-12** - see [Step 20](#step-20---a-foreign-stores-values-are-not-mib-material-indices-done-2026-08-12) | `MibBigDataLabelsZarr2.m`, `SelectFromUrl.m`, `tests/io/NativeZarrV2Test.m`, 1 doc page |
 
 ### Step 8: the view
 
@@ -1180,6 +1184,233 @@ labels sit on the EM structures.
 `docs/docs/user-interface/ribbon/home/home-importfromurl.md` gains a "Label crops" section: the
 crop extent readout, multi-select, the instance-group restriction, the `unknown` value, and the
 homogeneous-crop warning. `docs_api/` picks up the two new `OmeZarrMetadataUtils` methods.
+
+---
+
+### Step 17 - a store the native engine refuses (**DONE 2026-08-12**)
+
+Reported opening `jrc_mus-liver-6` from the browser dialog: the dataset opened, and then every
+repaint raised, from inside the `NewDataset` and `ShowImage` listeners,
+
+```
+Error using zarrMex
+Error while opening array: unsupported Zarr V2 array: configuration is unsupported:
+unknown field `checksum`, expected `level`
+```
+
+The store is fine. Its compressor is written as `{"id": "zstd", "level": 6, "checksum": false}` -
+numcodecs has emitted the optional `checksum` flag since 0.13 - and the native engine parses codec
+configurations strictly, rejecting a field it does not know even though it changes nothing about the
+encoded bytes. Neighbouring datasets in the same bucket omit it (`jrc_mus-liver-zon-1`: bare
+`{"id": "zstd", "level": 6}`) and open natively, which is why this survived six earlier steps of
+testing against the same host.
+
+**zarr-python reads the array without complaint**, so the store is readable and only the engine is
+wrong. `io.zarr.Array` now falls back to `io.zarr.PyBackend` for **that array** and says so once,
+naming the store and the message; everything else in the session stays native. Verified live:
+`s5` of the offending store opens in 1.3 s and returns pixels, while the control store stays
+`backend = 'native'`.
+
+Three decisions worth keeping:
+
+- **The fallback is triggered by a failure, not predicted.** The metadata the loaders need comes
+  from `.zarray` as plain JSON and never fails, so nothing before the first pixel read knows the
+  codec is a problem. Probing at open time would cost a request per level to answer a question that
+  is almost always "no".
+- **It keys on the message, not the identifier.** Every store-level failure the engine reports is
+  `zarr:error`, so `isCodecUnsupported` matches the two words serde uses when it refuses a
+  configuration. A missing array (`array metadata is missing`) stays a missing array - rerouting it
+  to python would replace a clear error with a slower one, and hide it entirely where python is
+  absent.
+- **No python, no silence.** When the interpreter cannot take over, the error names both the codec
+  the native engine refused and why python was unusable, as one `io:zarr:Array:codecUnsupported`.
+
+Both the v2 image loader and `MibBigDataLabelsZarr2` go through `io.zarr.Array`, so both inherit
+this. `Zarr3VirtualSetupLoader` still opens `ZarrArray` directly in three places (lines 395, 672,
+928) and would hit the same wall on a **v3** store with an unfamiliar codec field; no such store has
+been seen, and routing those through the facade would change where v3 metadata comes from, so it was
+left alone deliberately.
+
+Tests: `NativeZarrV2Test` gains a locally built v2 zstd array whose `.zarray` is patched as text to
+carry `checksum` - the native refusal, the unrelated-failure case, and (tagged `Integration`, since
+it starts the interpreter) the fallback returning byte-identical pixels.
+
+Docs: the "Requirements: **None**" claim in `home-importfromurl.md` and the "Python is optional" tip
+in `home-preferences.md` both needed the exception spelled out, since this is the one way a `native`
+setting still ends up needing python.
+
+---
+
+### Step 18 - the second-dataset case in the dialog (**DONE 2026-08-12**)
+
+Two changes, both from the same observation: after opening a remote volume, the next thing anyone
+does is come back to the *same container* for its labels, and the dialog was built as though every
+open started from nothing.
+
+**The URL pre-fill now prefers the open dataset over the clipboard.** `openRemoteContainer` reads
+`I{activeId}.image.filename`, and splits it at the last path component naming a store
+(`.zarr`, `.zarr2`, `.zarr3`, `.n5`): the container becomes `Url`, the remainder `GroupPath`. The
+split is the point - the stored filename is the *group* URL, so connecting to it whole would root
+the tree at the image group, which holds nothing but its own pyramid levels, and the labels next
+door would be unreachable without hand-editing the URL.
+
+Two things this must not do, both pinned by tests: it must not fire in **batch** mode (a protocol
+naming a `Url` but no `GroupPath` would inherit the group of whatever happened to be open, and
+replay something it never asked for - so both fields start empty and are filled in the GUI branch
+only), and a local file, an empty buffer (`none.tif`) or a plain image URL must all fall back to the
+clipboard. `strsplit` needed `'CollapseDelimiters', false`, or the empty segment between the
+scheme's two slashes is dropped and rejoining yields `https:/host` - caught by the test, not by
+reading the code.
+
+**Open now confirms `Load as` when a second remote dataset is opened as an Image.** Conditions: GUI
+only, `LoadAs = Image`, a remote dataset already open, and a target group that differs from it.
+The question offers Image / Labels / Cancel; Labels switches the run and clears `labelLoadRoute` so
+the route is resolved for the new group, Cancel returns to the dialog with the selection intact.
+Re-opening the same group is not ambiguous and goes through untouched.
+
+Guarded by `hasView()` rather than only by `batchModeSwitch`: there is nothing to return to without
+a dialog, and it keeps the offline suite safe, since a modal question in a headless test blocks the
+runner instead of failing it.
+
+One thing the confirmation exposed: `LoadAs = Labels` is now reachable for **any** group, so
+`openBtn_Callback` checks `resolveLabelRoute`'s verdict and shows its reason. Previously an
+unusable group fell through to `loadModel` and failed on the dimension guard four frames down.
+
+Files: `+controllers/@SelectFromUrl/SelectFromUrl.m` (`openRemoteContainer`, `confirmLoadAs`,
+constructor), `openBtn_Callback.m`, `tests/controllers/SelectFromUrlTest.m` (+4 Unit),
+`docs/docs/user-interface/ribbon/home/home-importfromurl.md`.
+
+---
+
+### Step 19 - a "crop" that is the whole volume (**DONE 2026-08-12**)
+
+Reported opening `recon-1/labels/inference/segmentations/er` of `jrc_mus-liver-6` as Labels over an
+open image:
+
+```
+Error using cpu>empty
+Python Error: MemoryError: Unable to allocate 510. GiB for an array with
+shape (8500, 8050, 8000) and data type uint8
+```
+
+The label group is an **inference** result, not a ground-truth crop: its `s0` is
+`[8500 8050 8000]` against the EM's `[8501 8050 8000]` - the same volume, one voxel shorter in z.
+Step 16's routing sends anything whose dims differ from the open image down the crop route, and
+`planLabelCrop` was happy to pair label `s0` (8 nm) with image `s0` (8 nm) over a region covering
+the entire volume. Everything that followed was correct given that plan: switch the buffer to
+Standard, read the region, blend the model. The first sign of trouble was a Python MemoryError four
+layers below the dialog, after the buffer had already been switched.
+
+**`planLabelCrop` now refuses a pair it cannot hold in RAM**, because the crop route is
+Standard-mode by construction - the image region is read whole and the model composed beside it -
+so the size is part of "can this pair be opened", not a detail of the reading. The check is the last
+one, after the pairing is known: it needs the agreed shape.
+
+The memory ceiling is an **optional argument** with a machine-derived default (60% of
+`MemAvailableAllArrays`, or 8 GiB where `memory` is unavailable - the same fallback shape as
+`utils.stitch.tileCacheBudget`). That keeps the method pure and the verdict deterministic in tests,
+which pass an explicit limit; nothing about the arithmetic depends on the machine the suite runs on.
+
+Because `resolveLabelRoute` calls the planner while the user is still choosing, the refusal appears
+in the info panel with Open disabled, rather than at Open. `applySummary` now splits a reason on
+newlines - the message is three sentences and a text area shows one cell per row.
+
+Verified against the live store: the `er` group reports 1019.6 GiB required against 149.8 GiB
+usable and is refused; `jrc_hela-2` `crop1/mito_mem` still plans `500 x 500 x 100` at 47.7 MB.
+
+**What this does not do.** The user's actual goal - that segmentation as a model over the EM - has
+no route today. `loadModel` requires the label store's level 0 to match the image dims exactly, and
+these differ by one voxel in z (8500 against 8501), so the model route rejects it too. Supporting it
+means letting a label store be smaller than its image and zero-padding the difference, which is a
+data-integrity decision (how much smaller is a rounding artefact and how much is the wrong store?)
+and was deliberately not bundled here.
+
+Files: `+controllers/@SelectFromUrl/planLabelCrop.m`, `SelectFromUrl.m` (`applySummary`),
+`tests/controllers/SelectFromUrlTest.m` (+2 Unit), `home-importfromurl.md`.
+
+#### Follow-up: say whether the sizes agree before Open (2026-08-12)
+
+The refusal above is correct but late - it explains a dead end after the user has walked into it.
+`applySummary` now answers the question that decides the whole Labels route while they are still
+choosing: a `Match` line in the info panel, plus the selected node turned green and bold in the tree
+when the group's finest level has the same dimensions as the dataset in the active buffer.
+
+Both halves are needed. The colour is the glance; the line is what a colour cannot say - on a
+mismatch it names the size the open dataset actually has, which is the number the user has to act
+on. `uitree` takes `addStyle(tree, uistyle(...), 'node', nodes)` (verified in R2026a, node arrays
+included), so no icon files were needed.
+
+**Only the selection is marked**, and the previous mark is cleared on every selection change. Nothing
+else can be marked honestly: deciding it for a sibling means fetching that sibling's metadata, one
+request each, which is the same reason `nodeLabel` does not mark pyramids either.
+
+The comparison is recomputed per selection rather than stored in the `probeGroup` cache, which is
+keyed by URL for the whole session - the active buffer can change underneath it. Skipped entirely
+for the `none.tif` placeholder: a blank 512x512 is not something anyone is loading labels onto.
+
+Test: `theSelectedNodeIsMarkedWhenItMatchesTheOpenDataset`, tagged `RequiresGUI` because uitree
+styling has no headless stand-in; it drives `applySummary` against a real tree in a hidden figure
+and asserts both directions, style applied and style cleared.
+
+---
+
+### Step 20 - a foreign store's values are not MIB material indices (**DONE 2026-08-12**)
+
+Reported after opening `.../segmentations/er-tubules` as Labels onto a matching image: the
+Segmentation panel filled with 63 materials for a store holding one class.
+
+`MibBigDataLabelsZarr2` treated the source values as MIB's packed byte - the docblock said so
+explicitly, "as long as label values stay within the same [0,63] ceiling". That store writes
+**0 / 255**: 255 is `0b11111111`, so every labelled voxel arrived as material **63 with the mask
+and the selection bit set**, and the 63 numbered names came from `MibModel.loadModel`'s fallback
+for a store that carries no material metadata. Both symptoms, one cause.
+
+`resolveValueRemap` now decides at open time how the store's values map onto materials, in three
+cases:
+
+| Store | Mapping | Materials |
+|---|---|---|
+| declares `cellmap` encoding | `present` -> 1, everything else -> 0 | one, named by `class_name` |
+| binary, declares nothing | any non-zero -> 1 | one, named after the group folder |
+| index map inside 1-63 | unchanged | left to `loadModel`'s 63 slots, as before |
+
+Two things worth keeping:
+
+- **`unknown` (255) must reach background, not a material.** In the COSEM encoding it means "not
+  annotated here", so treating it as the class would teach anything trained on the result that
+  unlabelled tissue is positive. Same rule `composeLabelModel` already applies on the crop route.
+- **Telling a binary mask from an index map needs pixels**, so the coarsest pyramid level is read
+  whole - a few tens of kilobytes, one request. When it comes back empty, which a thin structure
+  often is after eight downsamplings (`er-tubules` is all zero at `s5` and above), the binary
+  reading is assumed: it is the one that cannot corrupt the mask and selection layers, and an index
+  map dense enough to be worth its ids survives downsampling.
+
+The remap is applied **after** `io.zarr.ChunkCache`, so the cache keeps raw chunks keyed by level
+path and a store opened both as an image and as labels still shares them.
+
+Also in this step: the dialog **connects automatically** when the URL was pre-filled from the open
+remote dataset (step 18). That container is known reachable and known to be a zarr store - MIB is
+reading from it right now - so the Connect press asks a question already answered. A clipboard URL
+is deliberately not auto-connected: it may be anything, and that would be an unasked-for network
+call.
+
+And **`MibModel.loadModel` now shows a progress bar while a BigData store is attached**. It never
+had one: the crop route raises its own and the image route goes through `loadImages`, so the model
+route was the one path that sat silent - for ~20 s on a 9-level remote store, since `openStore`
+pays a round trip per level. Indeterminate, because the level count is not known until the metadata
+being fetched arrives. It lives in `loadModel` rather than in the dialog so every caller gets it,
+including Load model from the ribbon. Closed explicitly before each error dialog in that branch (a
+modal bar would sit in front of the message) and again from `onCleanup` on the way out, which is
+why `closeProgressDialog` is written to be safe the second time. No parent, no bar: the accessor
+returns `[]` headless, and `uiprogressdlg` also refuses an invisible parent, which the same
+try/catch absorbs.
+
+Tests: `NativeZarrV2Test` +3 Unit, one per row of the table above, each asserting the values a
+block comes back with and that no mask or selection bit is set.
+
+Files: `+core/@MibBigDataLabelsZarr2/MibBigDataLabelsZarr2.m` (`valueRemap`, `resolveValueRemap`,
+`readPackedLevel`, `lastPathSegment`), `+controllers/@SelectFromUrl/SelectFromUrl.m`,
+`tests/io/NativeZarrV2Test.m`, `home-importfromurl.md`.
 
 ---
 

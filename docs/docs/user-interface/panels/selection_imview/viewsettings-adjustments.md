@@ -26,7 +26,9 @@ each color channel individually.
 - **Min slider and edit box** (*define the black point*)  
   ![Min Slider](images/panelsDisplayAdj_min.png){align=left}  
   Sets the black point; intensities below this are rendered black.  
-     - <mouse class="left"></mouse> on the histogram sets this value.
+     - <mouse class="left"></mouse> on the histogram sets this value; a click on the
+       empty area to the **left** of the histogram moves the black point below the
+       displayed range.
      - <mouse class="double"></mouse> on the slider sets it to 1.  
      - Enter values (including negative) directly in the edit box.
   <div class="clear-float"></div>
@@ -36,7 +38,9 @@ each color channel individually.
 - **Max slider and edit box** (*define the white point*)  
   ![Max Slider](images/panelsDisplayAdj_max.png){align=left}  
   Sets the white point; intensities above this are rendered white or pure color.  
-     - <mouse class="left"></mouse> on the histogram sets this value.
+     - <mouse class="right"></mouse> on the histogram sets this value; a click on the
+       empty area to the **right** of the histogram moves the white point above the
+       displayed range.
      - <mouse class="double"></mouse> on the slider sets it to the maximum for the image class.  
      - Enter values (including above max) in the edit box.
   <div class="clear-float"></div>
@@ -77,6 +81,18 @@ The histogram plots intensity values (X-axis) against pixel counts
     - Slider adjustments
     - <mouse class="left"></mouse> (to set the minimum intensity, i.e. the black point) click on the histogram
     - <mouse class="right"></mouse> (to set the maximum intensity, i.e. the white point) click on the histogram
+
+!!! tip "Extend the displayed range"
+
+    The histogram is drawn over the current **Min**-**Max** range, so a click inside it can
+    only narrow the range. To extend it, click on the empty area **beside** the plot,
+    i.e. on the margins where the axes tick labels are:
+
+    - <mouse class="left"></mouse> to the left of the histogram lowers the black point
+    - <mouse class="right"></mouse> to the right of the histogram raises the white point
+
+    Each such click shifts the point by at least 10% of the currently displayed range,
+    so the range can be extended step by step with repeated clicks.
 
 ---
 

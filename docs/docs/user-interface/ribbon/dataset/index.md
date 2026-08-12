@@ -159,6 +159,11 @@ Operations on individual slices and time frames. The **Slices** dropdown contain
 
 Calibrate physical pixel size (X and Y) using a scale bar printed on the image.
 
+1. Specify the length of the scale bar and its units.
+2. Press <mouse class="left"></mouse> at the start of the scale bar and drag to its end, then release to place the line.
+3. Fine-tune the line by moving its end points.
+4. Double click on the line to confirm the selection.
+
 <div class="h4-like">Demonstration</div>
 
 - [:fontawesome-brands-youtube:{.red-color} Scale bar demonstration](https://youtu.be/NZO0HG1d8ys)

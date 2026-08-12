@@ -59,6 +59,11 @@ Detects objects in all materials and generates a new model where each object has
     - Right-clicking the segmentation table and choosing *Rename...* or by pressing ++f2++
     - Hovering over an object in the Image View panel and pressing ++ctrl+f++.
 
+    The <span class="widget widget-button">+</span> (*Add a new material to the model*) button
+    of the [Segmentation panel](../../panels/segm/index.md) scans the model for the highest index
+    currently in use and switches the working material to the next free one. It does not
+    create anything until you paint, so pressing it twice in a row offers the same index.
+
 <div class="h4-like">Stitch 2D instances to 3D</div>
 
 Links a stack of **independently segmented 2D instances** into consistent 3D objects. Unlike the

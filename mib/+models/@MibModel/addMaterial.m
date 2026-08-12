@@ -10,10 +10,11 @@ function addMaterial(obj, BatchOptIn)
 % name, verifies that the model type can accommodate one more material, then
 % appends the new entry to the list.
 %
-% For models with 65535 or 4294967295 materials: uses
-% obj.labels.materialsCount to determine the next available index, checks
+% For models with 65535 or 4294967295 materials: rescans the model data for
+% the highest label in use to determine the next available index, checks
 % that the model is not full, then asks MibDataset to register the new
-% index.
+% index. Pressing the button repeatedly therefore keeps offering the same
+% free index until it is actually painted.
 %
 % In all cases the model is created automatically when it does not yet
 % exist.  After a successful addition, UpdateGuiWidgets and ShowImage
@@ -120,8 +121,13 @@ if nargin < 2
 end
 
 %% Waitbar
+% The large-model path scans the whole volume for the highest label in use
+% (see core.MibDataset.addMaterial), which is not instant on a big dataset, so
+% an interactive press gets a bar even though showWaitbar defaults to false.
+% Batch calls keep exactly the bar they asked for, and the small-model path
+% stays instant and silent.
 wb = [];
-if BatchOpt.showWaitbar
+if BatchOpt.showWaitbar || (nargin < 2 && modelType >= 256)
     wb = uiprogressdlg(obj.getProgressBarParent(), 'Value', 0, ...
         'Message', 'Adding material, please wait...', ...
         'Title', 'Add material', 'Indeterminate', 'on');
@@ -131,7 +137,7 @@ end
 [result, newMaterialIndex] = obj.I{BatchOpt.id}.addMaterial(BatchOpt.MaterialName, [], wb);
 
 if ~result
-    if BatchOpt.showWaitbar; delete(wb); end
+    if ~isempty(wb); delete(wb); end
     if modelType < 256
         dlgOpt.MsgBoxOnly  = true;
         dlgOpt.Icon        = 'puffin_warning';
@@ -165,7 +171,7 @@ end
 % is the raw pixel value (1, 2, 3 …) and adding 2 produces out-of-range row
 % indices that crash the 4-row materialsTable.
 
-if BatchOpt.showWaitbar; wb.Value = 1; end
+if ~isempty(wb); wb.Value = 1; end
 
 % BigData: persist the updated material list into the disk-backed store
 if isa(obj.I{BatchOpt.id}.labels, 'core.MibBigDataLabels')
@@ -180,5 +186,5 @@ BatchOpt = rmfield(BatchOpt, 'id');
 eventdata = core.ToggleEventData(BatchOpt);
 notify(obj, 'SyncBatch', eventdata);
 
-if BatchOpt.showWaitbar; delete(wb); end
+if ~isempty(wb); delete(wb); end
 end

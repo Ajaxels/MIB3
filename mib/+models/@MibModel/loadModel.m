@@ -163,6 +163,26 @@ if strcmp(obj.I{id}.datasetType, 'BigData') && isempty(model)
         return;
     end
 
+    % Attaching a store is not instant and says nothing while it works: a
+    % pyramid is opened level by level, and a remote one pays a round trip for
+    % each (a 9-level store on S3 takes ~20 s). Indeterminate because the level
+    % count is not known until the metadata that is being fetched has arrived.
+    % Every exit below goes through onCleanup, including the error returns.
+    bigDataProgress = [];
+    if BatchOpt.showWaitbar
+        progressParent = obj.getProgressBarParent();
+        if ~isempty(progressParent) && isvalid(progressParent)
+            try
+                bigDataProgress = uiprogressdlg(progressParent, 'Indeterminate', 'on', ...
+                    'Message', 'Opening the model store...', 'Title', 'Load model');
+                drawnow limitrate;
+            catch
+                bigDataProgress = [];   % a bar is never the work itself
+            end
+        end
+    end
+    cleanupBigDataProgress = onCleanup(@() closeProgressDialog(bigDataProgress));
+
     ds = obj.I{id};
     bigMeta = core.MibImage.initializeImgInfo('pixSize', ds.image.pixSize, ...
         'Height', ds.image.height, 'Width', ds.image.width, ...
@@ -186,6 +206,7 @@ if strcmp(obj.I{id}.datasetType, 'BigData') && isempty(model)
     try
         newLabels.openStore(storePath);
     catch ME
+        closeProgressDialog(bigDataProgress);   % modal, and would sit in front of the message
         ErrorDlgOpt.winTitle = 'Invalid model store';
         ErrorDlgOpt.err = sprintf('"%s" is not a valid BigData model store:\n%s', storePath, ME.message);
         notify(obj, 'ShowErrorDialog', core.ToggleEventData(ErrorDlgOpt));
@@ -196,6 +217,7 @@ if strcmp(obj.I{id}.datasetType, 'BigData') && isempty(model)
     % the model's finest level must match the image's full resolution
     if newLabels.height ~= ds.image.height || newLabels.width ~= ds.image.width || ...
             newLabels.depth ~= ds.image.depth
+        closeProgressDialog(bigDataProgress);
         ErrorDlgOpt.winTitle = 'Dimension mismatch';
         ErrorDlgOpt.err = sprintf(['Model size [%d x %d x %d] does not match the image ' ...
             '[%d x %d x %d]. The model belongs to a different dataset.'], ...
@@ -485,5 +507,18 @@ if batchModeSwitch
     BatchOpt.Filenames = filenames(1);   % report the resolved file back to BatchProcessing
     eventdata = core.ToggleEventData(BatchOpt);
     notify(obj, 'SyncBatch', eventdata);
+end
+end
+
+% =========================================================================
+function closeProgressDialog(progressDialog)
+% CLOSEPROGRESSDIALOG - Close the BigData progress bar if one is up.
+%
+% Called explicitly before every error dialog in the BigData branch - the bar is
+% modal and would otherwise sit in front of the message explaining what went
+% wrong - and again from onCleanup on the way out, so it is written to be safe
+% the second time.
+if ~isempty(progressDialog) && isvalid(progressDialog)
+    delete(progressDialog);
 end
 end

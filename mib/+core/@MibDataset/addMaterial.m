@@ -11,9 +11,9 @@ function [result, newMaterialIndex] = addMaterial(obj, materialName, newMaterial
 % Creates the model when it does not yet exist.  For small model types
 % (63/255) the new name is appended to the materialNames list and a colour
 % row is generated.  For large model types (65535/4294967295) the next
-% unused index is derived from obj.labels.materialsCount (unless the caller
-% supplies it via newMaterialIndex), capacity is verified, and the new
-% index is registered.
+% unused index is found by rescanning the pixel data for the highest label
+% currently in use (unless the caller supplies it via newMaterialIndex),
+% capacity is verified, and the new index is registered.
 %
 % In all cases obj.labels.materialsCount is incremented by 1 on success.
 %
@@ -24,7 +24,8 @@ function [result, newMaterialIndex] = addMaterial(obj, materialName, newMaterial
 %     - For types 65535/4294967295 - overridden with string representation of the assigned index
 %
 %   - **newMaterialIndex** *(optional)* - [double] next unused 1-based material index; when empty
-%     the method uses ``obj.labels.materialsCount + 1``; ignored for types 63/255
+%     the method uses ``obj.labels.countMaterials() + 1``, i.e. one above the highest label
+%     present in the data; ignored for types 63/255
 %   - **wb** *(optional)* - [uiprogressdlg] handle to a progress dialog for displaying progress;
 %     when empty no progress is reported
 %
@@ -91,9 +92,20 @@ else  %% Types 65535 and 4294967295 -------------------------------------------
         obj.createModel(modelType);
     end
 
-    % Derive next index from materialsCount when not supplied
+    % Derive the next free index when not supplied. It has to come from the
+    % DATA, not from the cached obj.labels.materialsCount: that field is only
+    % recomputed on load/import, while this method writes the index it hands
+    % out back into it below. Reading it here would therefore return a new
+    % index on every click - walking the maximum up without a single voxel
+    % being painted - and would also miss indices painted since the model was
+    % loaded. countMaterials() rescans all time points for the highest label
+    % in use (same as MIB2 did here), so pressing the button repeatedly keeps
+    % offering the same free index until it is actually used.
     if isempty(newMaterialIndex)
-        newMaterialIndex = obj.labels.materialsCount + 1;
+        if ~isempty(wb) && isvalid(wb)
+            wb.Message = 'Looking for the next empty material, please wait...';
+        end
+        newMaterialIndex = obj.labels.countMaterials() + 1;
 
         if newMaterialIndex > modelType
             result = false;

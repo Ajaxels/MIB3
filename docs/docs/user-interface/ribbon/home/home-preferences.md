@@ -475,6 +475,13 @@ takes effect immediately on <span class="widget widget-button">OK</span> / <span
     requests. Python is only involved if you deliberately select the `python` engine above, which is
     worth doing only to cross-check a store against the reference implementation.
 
+    The one thing that can override this choice is a store whose compressor declares a setting the
+    native engine does not recognise, such as the optional `checksum` flag some tools write next to
+    the zstd compression level. The native engine rejects the array outright, so MIB reads **that
+    array** with zarr-python and reports it in the command window; the rest of the session stays
+    native. This needs the packages listed above, so a dataset like OpenOrganelle's
+    `jrc_mus-liver-6` does require Python even though the setting says `native`.
+
 <div class="h3-like"> Chunk cache</div>
 
 <span class="widget widget-edit">Chunk Cache</span>: memory, in megabytes, held for decoded zarr

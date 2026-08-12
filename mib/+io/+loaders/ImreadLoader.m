@@ -270,12 +270,18 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
 
                 % Check color type consistency
                 % change truecolor->multichannel to match MIB color scheme
-                if strcmp(info(1).ColorType, 'truecolor'); imginfo{"ColorType"} = 'multichannel'; info(1).ColorType='multichannel'; end
-                if ~isempty(imginfo{"ColorType"}) && ~strcmp(imginfo{"ColorType"}, info(1).ColorType)
+                if strcmp(info(1).ColorType, 'truecolor'); info(1).ColorType = 'multichannel'; end
+                if fnIndex == 1
+                    % the color type of the first file defines the type of the whole dataset.
+                    % imginfo comes pre-filled with 'grayscale' from initializeImgInfo, so it
+                    % can not be used as a "not yet known" marker: comparing the first file
+                    % against it would reject any indexed or multichannel dataset
+                    imginfo{"ColorType"} = info(1).ColorType;
+                elseif ~strcmp(imginfo{"ColorType"}, info(1).ColorType)
                     imginfo = dictionary();
                     if ~isempty(pwb); pwb.deletePoolWaitbar(); end
                     utils.dlgs.showErrorDialog(options.ParentFigure, ...
-                        sprintf('!!! Error !!!\n\nThe files have dissimilar ColorType'), ...
+                        sprintf('!!! Error !!!\n\nio.loaders.ImreadLoader:\nThe files have dissimilar ColorType'), ...
                         'Mixed colors', 'Error in io.loaders.ImreadLoader');
                     return;
                 end

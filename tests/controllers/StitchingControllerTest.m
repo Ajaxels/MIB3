@@ -325,6 +325,43 @@ classdef StitchingControllerTest < matlab.unittest.TestCase
             testCase.verifyEqual(controller.BatchOpt.BlendMode{1}, 'Max');
             testCase.verifyEqual(appliedFields, {'BlendMode'});
         end
+
+        % ---- session settings: what the next open starts from ---------------
+
+        function closingTheDialogSnapshotsItsSettingsIntoTheSession(testCase)
+            % Closing the window records the parameters under
+            % sessionSettings.stitching; the constructor's GUI path reads that
+            % key back, so the next open starts where this one left off.
+            controller = testCase.newController();
+            controller.view = struct('gui', gobjects(1), 'handles', struct());
+            controller.BatchOpt.LayoutSource{1} = 'Filename pattern';
+            controller.BatchOpt.BlendMode{1}    = 'Feather';
+            controller.BatchOpt.InputPath       = 'C:\tiles\job1';
+
+            controller.closeWindow();
+
+            testCase.assertTrue(isfield(controller.mibModel.sessionSettings, 'stitching'));
+            snapshot = controller.mibModel.sessionSettings.stitching;
+            testCase.verifyEqual(snapshot.LayoutSource, 'Filename pattern');
+            testCase.verifyEqual(snapshot.BlendMode, 'Feather');
+            % The snapshot is the project-settings struct verbatim; the paths are
+            % dropped when it is read back, not when it is written, so a future
+            % reader can still see where the last job pointed.
+            testCase.verifyEqual(snapshot.InputPath, 'C:\tiles\job1');
+        end
+
+        function closingWithoutAWindowLeavesTheSessionAlone(testCase)
+            % A batch protocol states its parameters in full and has no business
+            % changing what the dialog opens with.
+            controller = testCase.newController();
+            controller.mibModel.sessionSettings.stitching = struct('LayoutSource', 'Grid');
+            controller.BatchOpt.LayoutSource{1} = 'Bio-Formats metadata';
+
+            controller.closeWindow();
+
+            testCase.verifyEqual( ...
+                controller.mibModel.sessionSettings.stitching.LayoutSource, 'Grid');
+        end
     end
 
     % =================================================================

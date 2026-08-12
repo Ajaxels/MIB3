@@ -529,6 +529,9 @@ prompts = {'Half-width of the averaging window'; 'Fix translation'; 'Exclude jum
 defAns = {struct('Spinner',true,'Value',halfWidthDefault,'Limits',[1 maxHalfwidth],'Step',1,'Round',true); ...
            true; ...
            struct('Spinner',true,'Value',0,'Limits',[0 Inf],'Step',1,'Round',false)};
+dlgOpt.okBtnText = 'Continue';
+dlgOpt.LabelPosition = 'left';
+dlgOpt.WindowHeight = 210;
 
 if ismember(transformType, {'rigid', 'similarity', 'affine'})
     prompts = [prompts; {'Fix rotations'; 'Exclude jumps higher than (0=off):'}];
@@ -537,11 +540,8 @@ end
 if ismember(transformType, {'similarity', 'affine'})
     prompts = [prompts; {'Fix scales'; 'Exclude jumps higher than (0=off):'}];
     defAns  = [defAns;  {true; struct('Spinner',true,'Value',0,'Limits',[0 Inf],'Step',1,'Round',false)}];
+    dlgOpt.WindowHeight = 260;
 end
-
-dlgOpt.okBtnText = 'Continue';
-dlgOpt.LabelPosition = 'left';
-dlgOpt.WindowHeight = 210;
 
 hFig126 = [];
 notOk = true;

@@ -41,6 +41,10 @@ sessionSettings.contentAwareFill.Radius      = 9;
 sessionSettings.contentAwareFill.SmoothingFactor = 4;
 sessionSettings.contentAwareFill.FillOrder   = 'gradient';
 
+% NOTE: sessionSettings.stitching is deliberately absent. The Stitching dialog
+% writes it on close and reads it on open (controllers.Stitching), so seeding
+% defaults here would duplicate its BatchOpt defaults and the two would drift.
+
 % add physical pixel size in meters
 pixelsPerInch = get(0, 'ScreenPixelsPerInch');
 sessionSettings.metersPerPixel = 0.0254/pixelsPerInch;

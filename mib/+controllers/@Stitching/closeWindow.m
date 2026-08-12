@@ -10,6 +10,16 @@ function closeWindow(obj)
 if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.Stitching.closeWindow: triggered\n');
 end
+% Remember the dialog's parameters for the next time it is opened in this
+% session; the constructor restores them, minus InputPath and OutputPath. Only
+% from the GUI, because a batch protocol states its own parameters in full and
+% has no business changing what the dialog opens with. Written on close rather
+% than on every widget change: sessionSettings lives in RAM, so there is nothing
+% an earlier write would survive that this one does not.
+if ~isempty(obj.view)
+    obj.mibModel.sessionSettings.stitching = obj.collectProjectSettings();
+end
+
 % Close the seam inspector first - it holds handles into this controller.
 if ~isempty(obj.inspector) && isvalid(obj.inspector)
     obj.inspector.closeWindow();

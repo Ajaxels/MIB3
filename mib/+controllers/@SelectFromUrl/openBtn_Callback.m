@@ -73,6 +73,13 @@ targetUrl = io.RemoteStore.join(obj.rootUrl, obj.BatchOpt.GroupPath);
 datasetId = obj.mibModel.getActiveId();
 obj.BatchOpt.id = datasetId;
 
+% Opening a second remote group as an Image is the one ambiguous case, so it
+% is confirmed rather than assumed - and the answer may switch this run to
+% Labels, which is why it happens before the branch below reads LoadAs.
+if ~batchModeSwitch && strcmp(obj.BatchOpt.LoadAs{1}, 'Image')
+    if ~obj.confirmLoadAs(targetUrl); return; end
+end
+
 % ---- labels: load onto the dataset that is already open ------------------
 if strcmp(obj.BatchOpt.LoadAs{1}, 'Labels')
     % A sub-volume annotation has no working outcome on the open parent volume,
@@ -81,7 +88,18 @@ if strcmp(obj.BatchOpt.LoadAs{1}, 'Labels')
     % was still choosing; batch mode has not run it, so decide here too.
     if isempty(obj.labelLoadRoute)
         groupSummary = obj.probeGroup(targetUrl);
-        obj.resolveLabelRoute(targetUrl, groupSummary);
+        [labelsFit, reason] = obj.resolveLabelRoute(targetUrl, groupSummary);
+        if ~labelsFit
+            % Reachable from the Load as question raised above, which offers
+            % Labels for any group; without this the run would fall through to
+            % loadModel and fail on the dimension guard four frames down.
+            obj.stopProgress();
+            if isempty(reason)
+                reason = 'This group cannot be loaded as labels onto the open dataset.';
+            end
+            utils.dlgs.showErrorDialog(obj.guiFigure(), reason, 'Load as Labels');
+            return;
+        end
     end
     if strcmp(obj.labelLoadRoute, 'crop')
         obj.openLabelCrop(batchModeSwitch);

@@ -113,19 +113,13 @@ classdef SelectFromUrl < handle
             obj.cropPlan       = [];
             obj.progressDialog = [];
 
-            % Pre-fill from the clipboard when it looks like a link, matching
-            % what this menu item has always done.
-            defaultUrl = '';
-            try
-                clipboardText = strtrim(clipboard('paste'));
-                if contains(clipboardText, {'https://', 'http://', 's3://'})
-                    defaultUrl = clipboardText;
-                end
-            catch
-                % headless or no clipboard access - leave it empty
-            end
-
-            obj.BatchOpt.Url           = defaultUrl;
+            % Url and GroupPath start empty and are pre-filled further down, in
+            % the GUI branch only. A convenience default drawn from the session
+            % (the clipboard, or the dataset in the active buffer) has no place
+            % in a batch run: a protocol that names a Url but no GroupPath would
+            % otherwise inherit the group of whatever happened to be open, and
+            % replay something it never asked for.
+            obj.BatchOpt.Url           = '';
             obj.BatchOpt.GroupPath     = '';
             obj.BatchOpt.LabelGroups   = '';
             obj.BatchOpt.ImageGroupPath = '';
@@ -184,6 +178,23 @@ classdef SelectFromUrl < handle
             end
 
             %% GUI mode
+            % Pre-fill the URL. A remote dataset that is already open wins over
+            % the clipboard: the next thing anyone does after opening a remote
+            % volume is go back to the same container for its labels, and by
+            % then the clipboard usually still holds whatever was copied before.
+            [obj.BatchOpt.Url, obj.BatchOpt.GroupPath] = obj.openRemoteContainer();
+            connectOnOpen = ~isempty(obj.BatchOpt.Url);
+            if ~connectOnOpen
+                try
+                    clipboardText = strtrim(clipboard('paste'));
+                    if contains(clipboardText, {'https://', 'http://', 's3://'})
+                        obj.BatchOpt.Url = clipboardText;
+                    end
+                catch
+                    % headless or no clipboard access - leave it empty
+                end
+            end
+
             obj.view = core.ChildView(obj, 'views.SelectFromUrlGUI');
             % Guarded so the dialog can also be built in a test session, where
             % there is no main MIB window to position against.
@@ -197,11 +208,21 @@ classdef SelectFromUrl < handle
             obj.addCallbacks();
             obj.view.gui.Visible = 'on';
 
-            % Put the caret in the URL field with the clipboard pre-fill selected.
-            % Both likely next actions then take one step: Enter accepts what was
-            % on the clipboard, typing or pasting replaces it outright.
+            % Put the caret in the URL field with the pre-fill selected. Both
+            % likely next actions then take one step: Enter accepts the URL that
+            % is there, typing or pasting replaces it outright.
             drawnow;
             focus(obj.view.handles.Url);
+
+            % Connect straight away when the URL came from the dataset already
+            % open. That container is known to be reachable and known to be a
+            % zarr store - MIB is reading from it right now - so the Connect
+            % press asks a question already answered, and the tree is what the
+            % user came for. Deliberately NOT done for a clipboard URL, which
+            % may be anything at all and would be an unasked-for network call.
+            if connectOnOpen
+                obj.connectBtn_Callback();
+            end
 
             obj.listener{1} = addlistener(obj.mibModel, 'UpdateGuiWidgets', ...
                 @(src, evnt) obj.ViewListner_Callback2(obj, src, evnt));
@@ -334,6 +355,101 @@ classdef SelectFromUrl < handle
             tf = ~isempty(obj.view) && isvalid(obj.view.gui);
         end
 
+        function [containerUrl, groupPath] = openRemoteContainer(obj)
+            % OPENREMOTECONTAINER - Where the active dataset came from, split in two.
+            %
+            % Returns empty strings unless the dataset in the active buffer was
+            % itself opened from a URL. A local dataset, an empty buffer
+            % (``none.tif``) and a plain image URL all give ``''``.
+            %
+            % Split into container plus group rather than handed back whole,
+            % because the stored filename is the **group** URL - something like
+            % ``.../jrc_hela-2.zarr/recon-1/em/fibsem-uint8``. Connecting to that
+            % roots the tree at the image group, which holds nothing but its own
+            % pyramid levels, so the labels next door would be unreachable
+            % without editing the URL by hand. Rooting at the container instead
+            % keeps the whole dataset browsable while ``GroupPath`` still names
+            % exactly what is open.
+            containerUrl = '';
+            groupPath    = '';
+
+            datasetId = obj.mibModel.getActiveId();
+            filename  = obj.mibModel.I{datasetId}.image.filename;
+            if isempty(filename) || ~(ischar(filename) || isstring(filename)); return; end
+            filename = char(filename);
+            if ~io.RemoteStore.isRemote(filename); return; end
+
+            % The container is the last path component naming a store. Matched
+            % by suffix rather than by asking the server, since this runs while
+            % the dialog is being built and must not reach the network.
+            % CollapseDelimiters off, or the empty segment between the scheme's
+            % two slashes is dropped and rejoining gives https:/host
+            segments     = strsplit(regexprep(filename, '/+$', ''), '/', ...
+                'CollapseDelimiters', false);
+            containerIdx = find(endsWith(segments, ...
+                {'.zarr', '.zarr2', '.zarr3', '.n5'}, 'IgnoreCase', true), 1, 'last');
+            if isempty(containerIdx)
+                containerUrl = filename;   % not a recognisable store layout
+                return;
+            end
+            containerUrl = strjoin(segments(1:containerIdx), '/');
+            groupPath    = strjoin(segments(containerIdx + 1:end), '/');
+        end
+
+        function proceed = confirmLoadAs(obj, targetUrl)
+            % CONFIRMLOADAS - Ask what a second remote dataset should be opened as.
+            %
+            % Opening a **different** group while a remote dataset is already up
+            % is the one case where ``Load as`` is genuinely ambiguous, and the
+            % two outcomes are far apart: Image replaces the buffer, Labels puts
+            % the group on top of what is already there. The browse that leads
+            % here - open the EM volume, then go back for its annotations - ends
+            % on the wrong setting more often than not, because Image is the
+            % default and nothing about picking a label group changes it.
+            %
+            % Only asked in the GUI: a batch protocol states what it wants and
+            % must never stop for a question. Re-opening the same group is not
+            % ambiguous either, so that goes through untouched.
+            %
+            % Cancel returns to the dialog with the selection intact, which is
+            % why this reports back rather than deciding on its own - and why
+            % there is nothing to ask without a window to return to.
+            proceed = true;
+            if ~obj.hasView(); return; end
+
+            [openContainer, openGroup] = obj.openRemoteContainer();
+            if isempty(openContainer); return; end
+            openUrl = io.RemoteStore.join(openContainer, openGroup);
+            if strcmp(regexprep(openUrl, '/+$', ''), regexprep(targetUrl, '/+$', '')); return; end
+
+            % The bar is modal and would sit in front of the question.
+            obj.stopProgress();
+
+            questionOptions.WindowWidth  = 620;
+            questionOptions.WindowHeight = 300;
+            questionOptions.Icon         = 'puffin_question';
+            choice = utils.dlgs.inputQuestDlg(obj.guiFigure(), ...
+                sprintf(['This dataset is already open:\n  %s\n\n' ...
+                         'and you are opening a different one:\n  %s\n\n' ...
+                         'Open it as a new Image, or load it as Labels onto the dataset ' ...
+                         'that is already open?'], openUrl, targetUrl), ...
+                'Load as', 'Image', 'Labels', 'Cancel', 'Image', questionOptions);
+
+            switch choice
+                case 'Image'
+                    obj.startProgress('Opening the dataset...');
+                case 'Labels'
+                    obj.BatchOpt.LoadAs{1} = 'Labels';
+                    % The route was resolved for LoadAs = Image (or not at all),
+                    % so let the Labels branch work it out for this group.
+                    obj.labelLoadRoute = '';
+                    if obj.hasView(); obj.view.handles.LoadAs.Value = 'Labels'; end
+                    obj.startProgress('Opening the dataset...');
+                otherwise   % Cancel, or the dialog was closed
+                    proceed = false;
+            end
+        end
+
         function setStatus(obj, message)
             % SETSTATUS - Show a one-line status message, no-op without a view.
             if obj.hasView(); obj.view.handles.statusLabel.Text = message; end
@@ -376,6 +492,14 @@ classdef SelectFromUrl < handle
             % Must be called before every error dialog, not only on success: a
             % modal progress bar left on screen sits in front of the message
             % explaining why the import stopped.
+            %
+            % The isvalid(obj) guard is for the onCleanup handlers in
+            % openBtn_Callback and openLabelCrop: a successful import ends with
+            % closeWindow, whose CloseEvent makes MibController delete this
+            % controller, and the onCleanup then fires on a deleted handle.
+            % Touching any property there raises "Invalid or deleted object"
+            % from inside a destructor, where it can only be warned about.
+            if ~isvalid(obj); return; end
             if ~isempty(obj.progressDialog) && isvalid(obj.progressDialog)
                 delete(obj.progressDialog);
             end
@@ -464,6 +588,12 @@ classdef SelectFromUrl < handle
             % user has selected the python backend in Preferences and that
             % interpreter cannot reach the network, which is the one combination
             % that fails after Open is pressed.
+            %
+            % Not covered here: an array whose codec configuration the native
+            % engine refuses falls back to python on its first read even under
+            % the native setting (see io.zarr.Array.fallbackToPython). Nothing
+            % known before Open distinguishes such a store, so it reports itself
+            % when the fallback happens rather than being predicted here.
             note = '';
             if ~io.zarr.Config.isPython(); return; end
             if ~io.zarr.PyBackend.hasRemoteSupport()
@@ -484,9 +614,39 @@ classdef SelectFromUrl < handle
             infoLines = groupSummary.lines;
             canOpen   = groupSummary.hasMultiscales;
 
+            % ---- how it compares with the dataset already open -------------
+            % Whether the sizes agree is what decides how (and whether)
+            % LoadAs = Labels can work, so it is answered while the user is
+            % choosing rather than in a refusal after Open. Said in words AND
+            % shown on the node below, because a colour alone states that
+            % something is special without saying what.
+            %
+            % Computed here rather than taken from probeGroup: that result is
+            % cached per URL for the session, and the active buffer can change
+            % underneath it.
+            matchesOpenDataset = false;
+            if groupSummary.hasMultiscales
+                openImage = obj.mibModel.I{obj.mibModel.getActiveId()}.image;
+                if ~isempty(openImage.filename) && ~strcmp(openImage.filename, 'none.tif')
+                    openSizeYXZ = [openImage.height, openImage.width, openImage.depth];
+                    matchesOpenDataset = isequal(groupSummary.sizeYXZ, openSizeYXZ);
+                    if matchesOpenDataset
+                        infoLines{end+1} = 'Match  : same size as the open dataset';
+                    else
+                        infoLines{end+1} = sprintf( ...
+                            'Match  : differs, the open dataset is %d x %d x %d  (X x Y x Z)', ...
+                            openSizeYXZ(2), openSizeYXZ(1), openSizeYXZ(3));
+                    end
+                end
+            end
+
             if canOpen && strcmp(obj.BatchOpt.LoadAs{1}, 'Labels')
                 [labelsFit, reason] = obj.resolveLabelRoute(groupUrl, groupSummary);
-                if ~isempty(reason); infoLines = [infoLines, {'', reason}]; end
+                % Split on newline: a reason may be several sentences (the
+                % memory refusal is), and a text area shows one cell per row.
+                if ~isempty(reason)
+                    infoLines = [infoLines, {''}, strsplit(reason, newline)];
+                end
                 canOpen = labelsFit;
             else
                 obj.labelLoadRoute = '';
@@ -499,6 +659,18 @@ classdef SelectFromUrl < handle
                 obj.view.handles.openButton.Enable = 'on';
             else
                 obj.view.handles.openButton.Enable = 'off';
+            end
+
+            % Mark the matching group green in the tree. Only the selection can
+            % carry a verdict - it is the one node whose metadata was fetched -
+            % so the previous one's style is cleared first; deciding this for
+            % every sibling would cost a metadata request each (see nodeLabel).
+            groupTree = obj.view.handles.groupTree;
+            removeStyle(groupTree);
+            if matchesOpenDataset && ~isempty(groupTree.SelectedNodes)
+                addStyle(groupTree, ...
+                    uistyle('FontColor', [0.05 0.45 0.05], 'FontWeight', 'bold'), ...
+                    'node', groupTree.SelectedNodes);
             end
         end
 

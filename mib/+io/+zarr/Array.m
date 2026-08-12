@@ -19,6 +19,11 @@ classdef Array < handle
 % backend, which reads both formats over HTTP range requests and needs no
 % python dependencies at all.
 %
+% **One exception, decided per array.** The native engine refuses a codec
+% configuration carrying a field it does not know, which some published stores
+% have (see ``fallbackToPython``). Such an array falls back to zarr-python for
+% its own reads and says so once; everything else in the session stays native.
+%
 % **Examples**
 %
 %   .. code-block:: matlab
@@ -72,10 +77,14 @@ classdef Array < handle
             %   bbox: [nDims x 2] [start, end+1) 1-based (declared/C-order).
             if nargin < 2; bbox = []; end
             if strcmp(obj.backend, 'native')
-                if isempty(bbox); data = obj.nativeArr.read(); else; data = obj.nativeArr.read(bbox); end
-            else
-                data = io.zarr.PyBackend.readArray(obj.ensurePy(false), bbox, obj.ensureMeta());
+                try
+                    if isempty(bbox); data = obj.nativeArr.read(); else; data = obj.nativeArr.read(bbox); end
+                    return;
+                catch nativeError
+                    obj.fallbackToPython(nativeError);   % rethrows unless it switched
+                end
             end
+            data = io.zarr.PyBackend.readArray(obj.ensurePy(false), bbox, obj.ensureMeta());
         end
 
         function write(obj, data, varargin)
@@ -83,21 +92,29 @@ classdef Array < handle
             %   Mirrors ZarrArray.write: write(data) | write(data, bbox) |
             %   write(data, 'allowResize', true) | write(data, bbox, 'allowResize', true)
             if strcmp(obj.backend, 'native')
-                obj.nativeArr.write(data, varargin{:});
-            else
-                [bbox, allowResize] = io.zarr.Array.parseWriteArgs(varargin{:});
-                io.zarr.PyBackend.writeArray(obj.ensurePy(true), data, bbox, allowResize, obj.ensureMeta());
-                if allowResize; obj.pyMeta = []; end   % shape may have changed
+                try
+                    obj.nativeArr.write(data, varargin{:});
+                    return;
+                catch nativeError
+                    obj.fallbackToPython(nativeError);
+                end
             end
+            [bbox, allowResize] = io.zarr.Array.parseWriteArgs(varargin{:});
+            io.zarr.PyBackend.writeArray(obj.ensurePy(true), data, bbox, allowResize, obj.ensureMeta());
+            if allowResize; obj.pyMeta = []; end   % shape may have changed
         end
 
         function s = info(obj)
             % INFO - struct with shape / dataType / chunkShape / shardShape.
             if strcmp(obj.backend, 'native')
-                s = obj.nativeArr.info();
-            else
-                s = io.zarr.PyBackend.infoArray(obj.ensurePy(false));
+                try
+                    s = obj.nativeArr.info();
+                    return;
+                catch nativeError
+                    obj.fallbackToPython(nativeError);
+                end
             end
+            s = io.zarr.PyBackend.infoArray(obj.ensurePy(false));
         end
 
         function s = shape(obj)
@@ -120,15 +137,58 @@ classdef Array < handle
         function resize(obj, newShape)
             % RESIZE - resize the array (extends/shrinks per zarr semantics).
             if strcmp(obj.backend, 'native')
-                obj.nativeArr.resize(newShape);
-            else
-                io.zarr.PyBackend.resizeArray(obj.ensurePy(true), newShape);
-                obj.pyMeta = [];   % invalidate cached shape
+                try
+                    obj.nativeArr.resize(newShape);
+                    return;
+                catch nativeError
+                    obj.fallbackToPython(nativeError);
+                end
             end
+            io.zarr.PyBackend.resizeArray(obj.ensurePy(true), newShape);
+            obj.pyMeta = [];   % invalidate cached shape
         end
     end
 
     methods (Access = private)
+        function fallbackToPython(obj, nativeError)
+            % FALLBACKTOPYTHON - switch this array to zarr-python, or fail clearly.
+            %
+            % The native engine parses codec configurations strictly and refuses
+            % an array carrying a field it does not know, even an optional one
+            % that changes nothing about the encoded bytes. Real stores do this:
+            % OpenOrganelle's ``jrc_mus-liver-6`` declares
+            % ``{"id": "zstd", "level": 6, "checksum": false}`` - numcodecs has
+            % written the ``checksum`` flag since 0.13 - and the native open
+            % fails with *unknown field `checksum`, expected `level`*, while
+            % neighbouring datasets in the same bucket omit it and open fine.
+            %
+            % zarr-python accepts the same array, so the store is readable and
+            % only the engine is wrong. Switching here rather than at open time
+            % is deliberate: the metadata the loaders need is read from
+            % ``.zarray`` as plain JSON and never fails, so this is the first
+            % point at which the codec is known to be a problem.
+            %
+            % Anything other than a configuration complaint is rethrown
+            % untouched - a 404 or a dropped connection would fail identically
+            % under python, only slower and with a worse message.
+            if ~io.zarr.Array.isCodecUnsupported(nativeError); rethrow(nativeError); end
+
+            try
+                io.zarr.PyBackend.ensureLoaded();
+                io.zarr.PyBackend.ensureRemoteSupport(obj.path);   % no-op when local
+            catch pythonError
+                error('io:zarr:Array:codecUnsupported', ...
+                    ['The native Zarr engine cannot open this array:\n  %s\n  %s\n\n' ...
+                     'zarr-python reads arrays the native engine rejects, but it is not\n' ...
+                     'usable here:\n  %s'], ...
+                    obj.path, nativeError.message, pythonError.message);
+            end
+
+            obj.backend = 'python';
+            io.zarr.Array.reportFallback(obj.path, nativeError);
+        end
+
+
         function a = ensurePy(obj, needWrite)
             % ENSUREPY - lazily open & cache the py handle with a sufficient mode.
             if needWrite; wantMode = 'r+'; else; wantMode = 'r'; end
@@ -175,6 +235,39 @@ classdef Array < handle
     methods (Static, Access = private)
         function tf = isHttp(path)
             tf = startsWith(char(path), 'http://') || startsWith(char(path), 'https://');
+        end
+
+        function tf = isCodecUnsupported(nativeError)
+            % ISCODECUNSUPPORTED - is this failure about the metadata, not the data?
+            %
+            % The native engine reports every store-level failure under the same
+            % ``zarr:error`` identifier, so the message is the only thing that
+            % separates "this array is encoded in a way I do not accept" from
+            % "the network is down". Matching on the two words serde uses when
+            % it refuses a codec configuration keeps genuine I/O failures on
+            % their own path.
+            tf = strcmp(nativeError.identifier, 'zarr:error') && ...
+                 (contains(nativeError.message, 'unsupported', 'IgnoreCase', true) || ...
+                  contains(nativeError.message, 'unknown field', 'IgnoreCase', true));
+        end
+
+        function reportFallback(arrayPath, nativeError)
+            % REPORTFALLBACK - say once per array that the engine was switched.
+            %
+            % Worth saying at all because the array is now read through a
+            % dependency the native engine does not need, so a later "python is
+            % not configured" error on a dataset that opened yesterday has a
+            % visible cause. Once per path: a pyramid opens one array per level
+            % and would otherwise print the same line fifteen times.
+            persistent reportedPaths
+            if isempty(reportedPaths); reportedPaths = strings(0, 1); end
+            if any(strcmp(reportedPaths, arrayPath)); return; end
+            reportedPaths(end + 1, 1) = string(arrayPath);
+
+            fprintf(['io.zarr.Array: the native engine refused "%s"\n' ...
+                     '  %s\n' ...
+                     '  reading it with zarr-python instead\n'], ...
+                    arrayPath, nativeError.message);
         end
 
         function [bbox, allowResize] = parseWriteArgs(varargin)

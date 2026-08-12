@@ -318,13 +318,14 @@ classdef DisplayAdjust < handle
             h.stretchCurrent.ButtonPushedFcn = @(~,~) obj.stretchCurrent_Callback();
             h.adjHelpBtn.ButtonPushedFcn  = @(~,~) obj.adjHelpBtn_Callback();
 
-            % histogram click
-            h.imHist.ButtonDownFcn = @(~,~) obj.imHist_ButtonDownFcn();
-
             % context menus for findMin / findMax
             obj.addFindBtnContextMenus();
 
-            % double-click on sliders resets to limit/default
+            % mouse presses in the window: double-click on sliders resets them,
+            % clicks over the histogram row set the black/white points.
+            % The histogram is handled here rather than by h.imHist.ButtonDownFcn,
+            % because the axes callback misses the margins on the left and right
+            % sides of the plotted area, which are used to extend the range
             obj.view.gui.WindowButtonDownFcn = @(~,~) obj.figureWindowButtonDown_Callback();
         end
 
@@ -899,36 +900,58 @@ classdef DisplayAdjust < handle
         end
 
         % -----------------------------------------------------------------
-        function imHist_ButtonDownFcn(obj)
-            % IMHIST_BUTTONDOWNFCN - Left-click sets min, right-click sets max via histogram axes.
+        function imHistClick_Callback(obj)
+            % IMHISTCLICK_CALLBACK - Left-click sets the black point, right-click the white point.
             %
             % Syntax:
             %   .. code-block:: matlab
             %
-            %      obj.imHist_ButtonDownFcn()
+            %      obj.imHistClick_Callback()
+            %
+            % Dispatched from :func:`figureWindowButtonDown_Callback` for every mouse
+            % press over the histogram row of the window. Clicks inside the plotted
+            % area pick the intensity under the pointer, while clicks on the empty
+            % areas to the left and to the right of the histogram move the point
+            % beyond the displayed range, which is the way to extend the range.
+            % Such a click shifts the point by at least 10% of the displayed range,
+            % so that the narrow margins beside the plot remain usable.
             %
             % Output Arguments:
             %   (none)
             %
 
             if obj.mibModel.preferences.System.DeveloperMode
-                fprintf('controllers.DisplayAdjust.imHist_ButtonDownFcn: triggered\n');
+                fprintf('controllers.DisplayAdjust.imHistClick_Callback: triggered\n');
             end
             h = obj.view.handles;
-            xy      = h.imHist.CurrentPoint;
             seltype = obj.view.gui.SelectionType;
+            if ~any(strcmp(seltype, {'normal', 'alt'})); return; end
 
-            ylims = h.imHist.YLim;
-            if xy(1,2) > ylims(2) + diff(ylims)*0.2; return; end
+            % skip clicks over the widgets above the histogram; imHist occupies the
+            % whole bottom row of the window, so everything below its top edge belongs
+            % to the histogram, including the margins around the plotted area
+            axesPosition = getpixelposition(h.imHist, true);
+            if obj.view.gui.CurrentPoint(2) > axesPosition(2) + axesPosition(4); return; end
+
+            % CurrentPoint is extrapolated for the clicks outside the plotted area and
+            % returns intensities below XLim(1) on the left and above XLim(2) on the right
+            xValue = h.imHist.CurrentPoint(1,1);
+            xLimits = h.imHist.XLim;
+            minimalShift = diff(xLimits)/10;
+            if xValue < xLimits(1)
+                xValue = min(xValue, xLimits(1) - minimalShift);
+            elseif xValue > xLimits(2)
+                xValue = max(xValue, xLimits(2) + minimalShift);
+            end
 
             switch seltype
-                case 'normal'   % left click → set min
-                    if xy(1,1) >= h.maxEdit.Value - 3; return; end
-                    h.minEdit.Value = xy(1,1);
+                case 'normal'   % left click -> set the black point
+                    if xValue >= h.maxEdit.Value - 3; return; end
+                    h.minEdit.Value = xValue;
                     obj.minEdit_Callback();
-                case 'alt'      % right click → set max
-                    if xy(1,1) <= h.minEdit.Value + 3; return; end
-                    h.maxEdit.Value = xy(1,1);
+                case 'alt'      % right click -> set the white point
+                    if xValue <= h.minEdit.Value + 3; return; end
+                    h.maxEdit.Value = xValue;
                     obj.maxEdit_Callback();
             end
         end
@@ -1300,23 +1323,27 @@ classdef DisplayAdjust < handle
 
         % -----------------------------------------------------------------
         function figureWindowButtonDown_Callback(obj)
-            % FIGUREWINDOWBUTTONDOWN_CALLBACK - Reset slider on double-click.
+            % FIGUREWINDOWBUTTONDOWN_CALLBACK - Dispatch mouse presses in the window.
             %
             % Syntax:
             %   .. code-block:: matlab
             %
             %      obj.figureWindowButtonDown_Callback()
             %
-            % Fires on every mouse press in the figure; only acts on
-            % double-click (``SelectionType == 'open'``) over one of the three
-            % sliders.
+            % Fires on every mouse press in the figure: a double-click
+            % (``SelectionType == 'open'``) over one of the three sliders resets it,
+            % any other press is forwarded to :func:`imHistClick_Callback`, which
+            % picks up the ones landing on the histogram row.
             %
             % Output Arguments:
             %   (none)
             %
 
-            if ~strcmp(obj.view.gui.SelectionType, 'open'); return; end
             h = obj.view.handles;
+            if ~strcmp(obj.view.gui.SelectionType, 'open')
+                obj.imHistClick_Callback();
+                return;
+            end
             currentObj = obj.view.gui.CurrentObject;
             if isequal(currentObj, h.minSlider)
                 obj.resetSlider('min');

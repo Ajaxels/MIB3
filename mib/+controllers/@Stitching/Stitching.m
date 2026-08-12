@@ -500,6 +500,27 @@ classdef Stitching < handle
             end
 
             % ---- GUI path
+            % Restore what this dialog was last set to in this MATLAB session,
+            % so a second mosaic from the same acquisition does not start by
+            % re-picking the layout source, tile order, blend mode and the rest.
+            % Session-scoped on purpose: these are job parameters, not
+            % preferences, and one awkward job should not follow the user into
+            % the next MIB session. A project sidecar is what carries them
+            % further than that.
+            %
+            % Reuses the sidecar's own flatten/restore pair rather than a second
+            % field list, so "what counts as a user setting" is defined once
+            % (controllers.Stitching.projectSettingFields).
+            %
+            % The two paths are skipped deliberately: InputPath names the tiles
+            % of the *previous* job, and a restored OutputPath would aim the
+            % next Stitch at the mosaic already written there.
+            if isstruct(obj.mibModel.sessionSettings) && ...
+                    isfield(obj.mibModel.sessionSettings, 'stitching')
+                obj.applyProjectSettings(obj.mibModel.sessionSettings.stitching, ...
+                    {'InputPath', 'OutputPath'});
+            end
+
             obj.view = core.ChildView(obj, 'views.StitchingGUI');
             
             Font = obj.mibModel.preferences.System.Font;

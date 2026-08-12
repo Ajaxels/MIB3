@@ -905,6 +905,24 @@ asks which you want:
     currently selected input (a *Position file* project applied to a folder of tiles, say), the
     status line asks you to re-select the input instead of reporting an error.
 
+### Settings are remembered within the session
+
+Closing the window records its parameters, and opening it again starts from them - the
+<span class="widget widget-dropdown">Layout source</span>, grid and overlap, transform and
+registration settings, blend, intensity correction, canvas and output mode, and the feature-detector
+tuning behind <span class="widget widget-button">Settings...</span>. Stitching a second mosaic from
+the same acquisition therefore begins where the first one left off.
+
+Two things are deliberately **not** carried over: the selected
+<span class="widget widget-edit">Input tiles</span>, which belong to the job just finished, and the
+<span class="widget widget-edit">Output path</span>, so that pressing
+<span class="widget widget-button">Stitch</span> cannot overwrite the mosaic already written there.
+
+This lasts for the MATLAB session only. To carry settings further - to another session, another
+computer, or a colleague - save a project and load it with *Settings only*. Batch protocols are
+unaffected in both directions: they state their own parameters in full, and running one does not
+change what the dialog opens with.
+
 ---
 
 ## Action strip

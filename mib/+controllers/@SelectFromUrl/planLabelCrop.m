@@ -1,13 +1,16 @@
-function cropPlan = planLabelCrop(~, labelPyramid, imagePyramid)
+function cropPlan = planLabelCrop(~, labelPyramid, imagePyramid, memoryLimitBytes)
 % PLANLABELCROP - Work out how a label crop pairs with its parent image pyramid.
 %
 % Syntax:
 %   .. code-block:: matlab
 %
 %      cropPlan = obj.planLabelCrop(labelPyramid, imagePyramid)
+%      cropPlan = obj.planLabelCrop(labelPyramid, imagePyramid, memoryLimitBytes)
 %
 % Pure - takes two :meth:`readGroupPyramid` results and touches nothing else, so
-% the pairing arithmetic can be asserted offline against embedded metadata.
+% the pairing arithmetic can be asserted offline against embedded metadata. The
+% one environment-dependent input, how much memory may be used, is an argument
+% with a machine-derived default rather than a lookup inside.
 %
 % **What has to be decided.** A ground-truth crop is annotated at a finer scale
 % than the volume it came from - the OpenOrganelle crops are 2 nm against 4 nm EM
@@ -22,6 +25,10 @@ function cropPlan = planLabelCrop(~, labelPyramid, imagePyramid)
 % Input Arguments:
 %   - **labelPyramid** - [struct] from readGroupPyramid, the label group
 %   - **imagePyramid** - [struct] from readGroupPyramid, the candidate image group
+%   - **memoryLimitBytes** - *(optional)* [numeric] ceiling for the image region
+%     plus its model. Default: 60% of what MATLAB reports it could still
+%     allocate, or 8 GiB where the platform cannot say (``memory`` is
+%     Windows-only). Pass a value to make the decision deterministic in a test
 %
 % Output Arguments:
 %   - **cropPlan** - [struct] with fields:
@@ -33,9 +40,14 @@ function cropPlan = planLabelCrop(~, labelPyramid, imagePyramid)
 %     - ``.labelLevel`` / ``.imageLevel`` - [numeric] 1-based level indices
 %     - ``.shapeYXZ`` - [1x3] agreed voxel counts
 %     - ``.voxelSizeUm`` - [1x3] ``[x y z]`` voxel size of the chosen pair
+%     - ``.requiredBytes`` - [numeric] what opening it costs in RAM, 0 until the
+%       shapes are known
+
+if nargin < 4 || isempty(memoryLimitBytes); memoryLimitBytes = defaultMemoryLimit(); end
 
 cropPlan = struct('ok', false, 'reason', '', 'cropOuterBoxUm', [], ...
-    'labelLevel', 1, 'imageLevel', 1, 'shapeYXZ', [0 0 0], 'voxelSizeUm', [0 0 0]);
+    'labelLevel', 1, 'imageLevel', 1, 'shapeYXZ', [0 0 0], 'voxelSizeUm', [0 0 0], ...
+    'requiredBytes', 0);
 
 if ~labelPyramid.ok
     cropPlan.reason = 'The selected group has no image pyramid to place.';
@@ -106,9 +118,77 @@ if ~isequal(labelShapeYXZ, imageShapeCropYXZ)
     return;
 end
 
+% ---- will it fit in memory? --------------------------------------------
+% This route is Standard-mode by construction: the image region is read whole
+% and the label groups are blended into a model array beside it. That suits the
+% thing it was built for - a ground-truth crop is tens of megabytes - but the
+% same metadata shape describes a whole-volume inference segmentation, whose
+% "crop region" is the entire volume. jrc_mus-liver-6's er segmentation is
+% 8500 x 8050 x 8000, i.e. 510 GiB, and without this the first sign of trouble
+% was a Python MemoryError from inside the zarr read, four layers down.
+imageBytesPerVoxel = bytesPerVoxel(imagePyramid.dataType);
+% + 1 byte per voxel for the composed model; MIB then needs headroom again for
+% undo and the displayed slice, which is what the 60% default leaves room for.
+cropPlan.requiredBytes = prod(double(labelShapeYXZ)) * (imageBytesPerVoxel + 1);
+
+if cropPlan.requiredBytes > memoryLimitBytes
+    cropPlan.reason = sprintf(['This group covers %d x %d x %d voxels (Y x X x Z), so opening ' ...
+        'it with its image region needs about %s of memory against %s usable here.\n' ...
+        'Labels are loaded onto their own image region in memory, which suits a ground-truth ' ...
+        'crop but not a segmentation of a whole volume. Open it with Load as = Image instead, ' ...
+        'where a pyramid level can be chosen.'], ...
+        labelShapeYXZ(1), labelShapeYXZ(2), labelShapeYXZ(3), ...
+        formatBytes(cropPlan.requiredBytes), formatBytes(memoryLimitBytes));
+    return;
+end
+
 cropPlan.ok          = true;
 cropPlan.labelLevel  = labelLevel;
 cropPlan.imageLevel  = imageLevel;
 cropPlan.shapeYXZ    = labelShapeYXZ;
 cropPlan.voxelSizeUm = labelVoxelSizes(labelLevel, :);
+end
+
+% =========================================================================
+function limitBytes = defaultMemoryLimit()
+% DEFAULTMEMORYLIMIT - What this machine can spare for a crop, in bytes.
+%
+% Same approach as utils.stitch.tileCacheBudget: ask MATLAB, and fall back to a
+% fixed figure where it cannot answer. The fallback is deliberately generous
+% enough for every published COSEM crop (the largest is 64 MB) and far below the
+% whole-volume case this guards against, so a wrong guess on Linux or macOS
+% cannot turn into a refusal of work that would have succeeded.
+limitBytes = 8 * 1024^3;
+try
+    memoryInfo = memory;
+    limitBytes = 0.6 * memoryInfo.MemAvailableAllArrays;
+catch
+    % not Windows - keep the fixed fallback
+end
+end
+
+% =========================================================================
+function nBytes = bytesPerVoxel(className)
+switch className
+    case {'uint8', 'int8', 'logical'};   nBytes = 1;
+    case {'uint16', 'int16'};            nBytes = 2;
+    case {'uint32', 'int32', 'single'};  nBytes = 4;
+    case {'uint64', 'int64', 'double'};  nBytes = 8;
+    otherwise;                           nBytes = 2;   % unknown: assume 16-bit
+end
+end
+
+% =========================================================================
+function text = formatBytes(nBytes)
+units = {'bytes', 'KiB', 'MiB', 'GiB', 'TiB'};
+unitIdx = 1;
+while nBytes >= 1024 && unitIdx < numel(units)
+    nBytes  = nBytes / 1024;
+    unitIdx = unitIdx + 1;
+end
+if unitIdx == 1
+    text = sprintf('%d bytes', round(nBytes));
+else
+    text = sprintf('%.1f %s', nBytes, units{unitIdx});
+end
 end

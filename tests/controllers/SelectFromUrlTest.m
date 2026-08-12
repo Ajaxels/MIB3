@@ -147,6 +147,78 @@ classdef SelectFromUrlTest < matlab.unittest.TestCase
             testCase.verifyWarningFree(@() controller.setStatus('anything'));
             testCase.verifyWarningFree(@() controller.updateWidgets());
         end
+
+        % ---- pre-filling from the dataset that is already open --------------
+
+        function openRemoteContainerSplitsTheStoredGroupUrl(testCase)
+            % The dialog pre-fills from the open dataset's filename, which is the
+            % *group* URL. Connecting to that would root the tree at the image
+            % group and hide the labels next door, so it is split at the store
+            % component and the remainder becomes GroupPath.
+            [controller, ~, mibModel] = testCase.newViewLessController();
+            mibModel.I{mibModel.getActiveId()}.image.filename = ...
+                [testCase.ZarrTwin '/' testCase.ImageGroup];
+
+            [containerUrl, groupPath] = controller.openRemoteContainer();
+
+            testCase.verifyEqual(containerUrl, testCase.ZarrTwin);
+            testCase.verifyEqual(groupPath, testCase.ImageGroup);
+            % and the two halves must rejoin into what was stored
+            testCase.verifyEqual(io.RemoteStore.join(containerUrl, groupPath), ...
+                [testCase.ZarrTwin '/' testCase.ImageGroup]);
+        end
+
+        function openRemoteContainerIgnoresLocalAndEmptyBuffers(testCase)
+            % A local file, the empty-buffer placeholder and a plain image URL
+            % must all leave the pre-fill to the clipboard.
+            [controller, ~, mibModel] = testCase.newViewLessController();
+            activeImage = mibModel.I{mibModel.getActiveId()}.image;
+
+            for storedName = {'none.tif', 'C:\data\stack.tif', '/home/user/stack.tif'}
+                activeImage.filename = storedName{1};
+                [containerUrl, groupPath] = controller.openRemoteContainer();
+                testCase.verifyEmpty(containerUrl, ...
+                    sprintf('%s is not a remote store', storedName{1}));
+                testCase.verifyEmpty(groupPath);
+            end
+
+            % remote, but no store component: usable as a URL, nothing to split
+            activeImage.filename = 'https://example.org/pictures/slice.png';
+            [containerUrl, groupPath] = controller.openRemoteContainer();
+            testCase.verifyEqual(containerUrl, 'https://example.org/pictures/slice.png');
+            testCase.verifyEmpty(groupPath);
+        end
+
+        function batchModeNeverInheritsTheOpenDatasetOrTheClipboard(testCase)
+            % The pre-fill is a GUI convenience. A protocol that names a Url but
+            % no GroupPath would otherwise replay against the group of whatever
+            % dataset happened to be open, which is a different dataset on a
+            % different machine.
+            [controller, ~, mibModel] = testCase.newViewLessController();
+            mibModel.I{mibModel.getActiveId()}.image.filename = ...
+                [testCase.ZarrTwin '/' testCase.ImageGroup];
+
+            testCase.verifyEmpty(controller.BatchOpt.Url);
+            testCase.verifyEmpty(controller.BatchOpt.GroupPath);
+        end
+
+        function loadAsIsNotQuestionedWithoutAWindow(testCase)
+            % The question exists so the user can go back to the dialog and
+            % change the selection, so a controller with no dialog must skip it
+            % and proceed. This also keeps the offline suite safe: the question
+            % is modal, and asking it here would block the runner rather than
+            % fail it.
+            [controller, ~, mibModel] = testCase.newViewLessController();
+            mibModel.I{mibModel.getActiveId()}.image.filename = ...
+                [testCase.ZarrTwin '/' testCase.ImageGroup];
+
+            proceed = controller.confirmLoadAs( ...
+                [testCase.ZarrTwin '/' testCase.CropGroup '/all']);
+
+            testCase.verifyTrue(proceed);
+            testCase.verifyEqual(controller.BatchOpt.LoadAs{1}, 'Image', ...
+                'nothing may be changed by a question that was never asked');
+        end
     end
 
     methods (Test, TestTags = {'Integration', 'RequiresNetwork'})
@@ -279,6 +351,65 @@ classdef SelectFromUrlTest < matlab.unittest.TestCase
             plan = controller.planLabelCrop(labelPyramid, imagePyramid);
             testCase.verifyFalse(plan.ok);
             testCase.verifySubstring(plan.reason, 'resample');
+        end
+
+        function theCropPlanRefusesAWholeVolumeSegmentation(testCase)
+            % The same metadata shape describes a ground-truth crop and a
+            % whole-volume inference segmentation, and only the first can be
+            % loaded this way: the image region is read into RAM with the model
+            % beside it. jrc_mus-liver-6's er segmentation is 8500 x 8050 x 8000,
+            % i.e. about a terabyte, and used to surface as a Python MemoryError
+            % from inside the zarr read after the dataset had already been
+            % switched to Standard mode.
+            controller = testCase.newViewLessController();
+
+            labelPyramid = testCase.fakePyramid([0 67992 0 63992 0 67992], [8 8 8], 'nm');
+            labelPyramid.levelShapesYXZ     = [8050 8000 8500];
+            labelPyramid.levelVoxelSizesXYZ = [8 8 8];
+            labelPyramid.levelWorldBoxes    = [0 63992 0 67992 0 67992];
+            labelPyramid.dataType           = 'uint8';
+
+            imagePyramid = testCase.fakePyramid([0 67992 0 63992 0 68000], [8 8 8], 'nm');
+            imagePyramid.levelShapesYXZ     = [8050 8000 8501];
+            imagePyramid.levelVoxelSizesXYZ = [8 8 8];
+            imagePyramid.levelWorldBoxes    = [0 63992 0 67992 0 68000];
+            imagePyramid.dataType           = 'uint8';
+
+            plan = controller.planLabelCrop(labelPyramid, imagePyramid, 8 * 1024^3);
+
+            testCase.verifyFalse(plan.ok);
+            testCase.verifySubstring(plan.reason, '8050 x 8000 x 8500');
+            testCase.verifySubstring(plan.reason, 'Load as = Image');
+            % image + model, one byte each per voxel
+            testCase.verifyEqual(plan.requiredBytes, 8050 * 8000 * 8500 * 2);
+        end
+
+        function theCropPlanSizesTheRegionAgainstTheGivenLimit(testCase)
+            % The limit is an argument so the verdict does not depend on the
+            % machine the suite runs on. A COSEM crop passes a realistic one and
+            % the same crop is refused by an unrealistic one, which is what pins
+            % that the comparison happens at all.
+            controller = testCase.newViewLessController();
+
+            labelPyramid = testCase.fakePyramid([0 1996 0 1996 0 396], [4 4 4], 'nm');
+            labelPyramid.levelShapesYXZ     = [500 500 100];
+            labelPyramid.levelVoxelSizesXYZ = [4 4 4];
+            labelPyramid.levelWorldBoxes    = [0 1996 0 1996 0 396];
+            labelPyramid.dataType           = 'uint8';
+
+            imagePyramid = testCase.fakePyramid([0 1996 0 1996 0 396], [4 4 4], 'nm');
+            imagePyramid.levelShapesYXZ     = [500 500 100];
+            imagePyramid.levelVoxelSizesXYZ = [4 4 4];
+            imagePyramid.levelWorldBoxes    = [0 1996 0 1996 0 396];
+            imagePyramid.dataType           = 'uint16';
+
+            generous = controller.planLabelCrop(labelPyramid, imagePyramid, 8 * 1024^3);
+            testCase.verifyTrue(generous.ok, generous.reason);
+            % uint16 image + uint8 model = 3 bytes per voxel
+            testCase.verifyEqual(generous.requiredBytes, 500 * 500 * 100 * 3);
+
+            stingy = controller.planLabelCrop(labelPyramid, imagePyramid, 1024^2);
+            testCase.verifyFalse(stingy.ok);
         end
 
         function theCropPlanReportsAMissingImagePyramid(testCase)
@@ -583,6 +714,63 @@ classdef SelectFromUrlTest < matlab.unittest.TestCase
         end
     end
 
+    methods (Test, TestTags = {'Integration', 'RequiresGUI'})
+
+        function theSelectedNodeIsMarkedWhenItMatchesTheOpenDataset(testCase)
+            % Offline, but it needs real graphics: uitree node styling is what
+            % carries the verdict, and there is no headless stand-in for it.
+            %
+            % Both directions matter. The green node says "this one lines up";
+            % the panel line says what it lines up WITH, which is the part a
+            % colour cannot express - and on a mismatch it names the size the
+            % group would have to have.
+            mibModel = mibtest.helpers.buildSyntheticModel();
+            mibModel.preferences.System.DeveloperMode = false;
+            openImage = mibModel.I{mibModel.getActiveId()}.image;
+            % A synthetic model keeps the empty-buffer placeholder name, and the
+            % comparison is deliberately skipped for that: 'none.tif' is a blank
+            % 512x512 nobody is loading labels onto.
+            openImage.filename = 'C:\data\stack.tif';
+            openSizeYXZ = [openImage.height, openImage.width, openImage.depth];
+
+            controller = controllers.SelectFromUrl(mibModel, [], NaN);
+            controller.rootUrl = 'https://host/store.zarr';
+
+            figureHandle = uifigure('Visible', 'off');
+            testCase.addTeardown(@() delete(figureHandle));
+            groupTree = uitree(figureHandle);
+            matchingNode  = uitreenode(groupTree, 'Text', 'sameSize');
+            differingNode = uitreenode(groupTree, 'Text', 'otherSize');
+            controller.view = struct('gui', figureHandle, 'handles', struct( ...
+                'groupTree', groupTree, 'infoTextArea', uitextarea(figureHandle), ...
+                'GroupPath', uieditfield(figureHandle), 'openButton', uibutton(figureHandle)));
+
+            groupSummary = struct('hasMultiscales', true, 'sizeYXZ', openSizeYXZ, ...
+                'levelCount', 3, 'dataType', 'uint8', 'voxelSize', [1 1 1], ...
+                'units', 'nm', 'lines', {{'Levels : 3'}});
+
+            groupTree.SelectedNodes = matchingNode;
+            controller.applySummary('https://host/store.zarr/same', groupSummary);
+
+            testCase.verifyTrue(any(contains(controller.view.handles.infoTextArea.Value, ...
+                'same size as the open dataset')));
+            testCase.assertEqual(height(groupTree.StyleConfigurations), 1, ...
+                'the matching node must carry a style');
+            testCase.verifyEqual(groupTree.StyleConfigurations.TargetIndex{1}.Text, 'sameSize');
+
+            % A different group clears it: only the selection has been probed, so
+            % a style left behind would credit a node nothing was checked for.
+            groupSummary.sizeYXZ    = openSizeYXZ + [7 0 0];
+            groupTree.SelectedNodes = differingNode;
+            controller.applySummary('https://host/store.zarr/other', groupSummary);
+
+            testCase.verifyEqual(height(groupTree.StyleConfigurations), 0);
+            testCase.verifyTrue(any(contains(controller.view.handles.infoTextArea.Value, ...
+                sprintf('%d x %d x %d', openSizeYXZ(2), openSizeYXZ(1), openSizeYXZ(3)))), ...
+                'a mismatch must name the size the open dataset actually has');
+        end
+    end
+
     methods (Test, TestTags = {'Integration', 'RequiresNetwork', 'RequiresGUI'})
 
         function browsesTheContainerAndOpensTheImageGroup(testCase)
@@ -655,8 +843,10 @@ classdef SelectFromUrlTest < matlab.unittest.TestCase
     end
 
     methods (Access = private)
-        function [controller, syncedBatchOpt] = newViewLessController(testCase)
+        function [controller, syncedBatchOpt, mibModel] = newViewLessController(testCase)
             % NEWVIEWLESSCONTROLLER - Build through the documented NaN path.
+            % The model is returned as well for tests that need to stage it -
+            % never shared between methods, since MibModel is a handle.
             mibModel = mibtest.helpers.buildSyntheticModel();
             mibModel.preferences.System.DeveloperMode = false;
 

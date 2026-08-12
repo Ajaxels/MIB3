@@ -244,9 +244,195 @@ classdef NativeZarrV2Test < matlab.unittest.TestCase
                 struct('showWaitbar', false, 'ShardSize', [2, 2, 1])), ...
                 'io:Zarr3Saver:shardingUnsupportedV2');
         end
+
+        % ---- 4. codec configurations the native engine refuses ---------
+
+        function nativeRefusesAnUnknownCodecField(testCase)
+            % The fixture for the fallback below, asserted separately so a
+            % zarrMex that learns the field makes this test fail rather than
+            % making the fallback test pass for the wrong reason.
+            %
+            % OpenOrganelle's jrc_mus-liver-6 declares exactly this - numcodecs
+            % has written the optional zstd "checksum" flag since 0.13 - while
+            % its neighbours in the same bucket omit it and open natively.
+            storePath = testCase.storeWithUnknownCodecField('refused.zarr2');
+
+            nativeMessage = '';
+            try
+                ZarrArray(storePath).info();
+            catch nativeError
+                testCase.verifyEqual(nativeError.identifier, 'zarr:error');
+                nativeMessage = nativeError.message;
+            end
+            testCase.verifySubstring(nativeMessage, 'checksum', ...
+                'the native engine is expected to reject the extra field by name');
+        end
+
+        function unrelatedNativeFailuresAreNotReroutedToPython(testCase)
+            % The engine reports every store-level failure under one identifier,
+            % so the fallback keys on the message. A missing array must stay a
+            % missing array: sending it to python would replace a clear error
+            % with a slower, less clear one - and would hide it entirely on a
+            % machine with no python at all.
+            missing = io.zarr.Array(fullfile(testCase.TempDir, 'absent.zarr2'));
+
+            testCase.verifyError(@() missing.info(), 'zarr:error');
+            testCase.verifyEqual(missing.backend, 'native', ...
+                'a failure unrelated to the codec must not switch the backend');
+        end
+
+        % ---- 5. a foreign label store's values become materials ---------
+
+        function aBinaryForeignMaskBecomesOneMaterial(testCase)
+            % What a COSEM inference segmentation writes: 0 / 255, and not one
+            % word about what the values mean. Passed through, 255 arrives as
+            % MIB's packed byte 0b11111111 - material 63 with the mask AND the
+            % selection bit set - and the Segmentation panel fills with 63
+            % numbered materials for a store that holds exactly one class.
+            expected = zeros(8, 8, 4, 'uint8');
+            expected(2:4, 2:4, 2) = 255;
+            storePath = testCase.makeForeignLabelStore('er-tubules', expected, struct());
+
+            labels = core.MibBigDataLabelsZarr2([], core.MibImage.initializeImgInfo());
+            labels.openStore(storePath);
+            block = labels.readPackedLevel(1, [1 8], [1 8], [1 4]);
+
+            testCase.verifyEqual(labels.materialNames, {'er-tubules'}, ...
+                'a single-class store names its material after the group');
+            testCase.verifyEqual(labels.materialsCount, 1);
+            testCase.verifyEqual(unique(block(:))', uint8([0 1]));
+            testCase.verifyEqual(nnz(block == 1), 9, 'every 255 voxel becomes material 1');
+            testCase.verifyEqual(nnz(bitand(block, 64)), 0, 'no voxel may set the mask bit');
+            testCase.verifyEqual(nnz(bitand(block, 128)), 0, 'no voxel may set the selection bit');
+        end
+
+        function aForeignIndexMapKeepsItsOwnIndices(testCase)
+            % The other kind of undeclared store - a merged ground-truth group,
+            % ids 3, 4, 5 ... 48 - is already in MIB's material range and must
+            % NOT be collapsed: its values are the classes.
+            expected = zeros(8, 8, 4, 'uint8');
+            expected(1:3, 1:3, 1) = 3;
+            expected(5:7, 5:7, 3) = 48;
+            storePath = testCase.makeForeignLabelStore('all', expected, struct());
+
+            labels = core.MibBigDataLabelsZarr2([], core.MibImage.initializeImgInfo());
+            labels.openStore(storePath);
+            block = labels.readPackedLevel(1, [1 8], [1 8], [1 4]);
+
+            testCase.verifyEmpty(labels.valueRemap, 'nothing to remap inside 1-63');
+            testCase.verifyEqual(unique(block(:))', uint8([0 3 48]));
+            testCase.verifyEmpty(labels.materialNames, ...
+                'the names stay for MibModel.loadModel to fill, as before');
+        end
+
+        function aDeclaredEncodingSendsUnknownToBackground(testCase)
+            % A COSEM ground-truth class group states its encoding. 255 there is
+            % "not annotated", which is NOT the same as "this class is present",
+            % so it has to land in material 0 - and the one material takes the
+            % store's own class name rather than the folder's.
+            expected = zeros(8, 8, 4, 'uint8');
+            expected(2:4, 2:4, 2) = 1;     % present
+            expected(6:8, 6:8, 4) = 255;   % unknown
+            cellmap.annotation = struct('class_name', 'mito_mem', ...
+                'annotation_type', struct('type', 'semantic_segmentation', ...
+                'encoding', struct('absent', 0, 'present', 1, 'unknown', 255)));
+            storePath = testCase.makeForeignLabelStore('mito_mem', expected, ...
+                struct('cellmap', cellmap));
+
+            labels = core.MibBigDataLabelsZarr2([], core.MibImage.initializeImgInfo());
+            labels.openStore(storePath);
+            block = labels.readPackedLevel(1, [1 8], [1 8], [1 4]);
+
+            testCase.verifyEqual(labels.materialNames, {'mito_mem'});
+            testCase.verifyEqual(unique(block(:))', uint8([0 1]));
+            testCase.verifyEqual(nnz(block == 1), 9, 'only the "present" voxels are material 1');
+        end
+    end
+
+    methods (Test, TestTags = {'Integration'})
+
+        function unknownCodecFieldFallsBackToPython(testCase)
+            % Offline, but it starts the configured interpreter, so it is not a
+            % Unit test. zarr-python accepts the array the native engine refuses,
+            % which is what makes falling back worth doing at all rather than
+            % reporting the store as unreadable.
+            testCase.assumeTrue(testCase.pythonIsUsable(), ...
+                'no usable python interpreter for the zarr backend');
+
+            expected   = uint8(mod(reshape(1:(16 * 16 * 4), [16, 16, 4]), 251));
+            storePath  = testCase.storeWithUnknownCodecField('fallback.zarr2', expected);
+
+            array = io.zarr.Array(storePath);
+            testCase.verifyEqual(array.backend, 'native', ...
+                'the fallback must be decided by a real failure, not up front');
+
+            % values, not shapes: the two backends differ in how they get from
+            % zarr C-order to a MATLAB array, so a wrong turn there would
+            % preserve every dimension and transpose the pixels
+            testCase.verifyEqual(array.read(), expected);
+            testCase.verifyEqual(array.backend, 'python');
+        end
     end
 
     methods (Access = private)
+        function storePath = makeForeignLabelStore(testCase, storeName, data, attrsExtra)
+            % MAKEFOREIGNLABELSTORE - A single-level v2 labels group written by
+            % "another tool": plain multiscales, no MIB marker.
+            %
+            % Axes are declared y, x, z so the permutation is the identity and
+            % the test is about the values, not about axis handling (covered by
+            % virtualLoaderReadsV2RegionInMibOrder).
+            storePath = fullfile(testCase.TempDir, storeName);
+            group = io.zarr.Group.create(storePath, 'zarrFormat', 2);
+            array = group.createArray('0', size(data), 'uint8', 'chunkShape', size(data));
+            array.write(data);
+
+            attrs = struct('multiscales', {{struct('version', '0.4', ...
+                'axes', {{struct('name', 'y', 'type', 'space'), ...
+                          struct('name', 'x', 'type', 'space'), ...
+                          struct('name', 'z', 'type', 'space')}}, ...
+                'datasets', {{struct('path', '0')}})}});
+            extraNames = fieldnames(attrsExtra);
+            for nameIdx = 1:numel(extraNames)
+                attrs.(extraNames{nameIdx}) = attrsExtra.(extraNames{nameIdx});
+            end
+            group.setAttributes(attrs);
+        end
+
+        function storePath = storeWithUnknownCodecField(testCase, storeName, data)
+            % STOREWITHUNKNOWNCODECFIELD - a v2 zstd array whose compressor
+            % config carries an extra, harmless "checksum" field.
+            %
+            % Written natively and then patched as text, because there is no
+            % way to ask ZarrArray.create for a field it does not know. The
+            % patch is a string insertion rather than a decode/encode round
+            % trip so the rest of the document - "filters": null in particular,
+            % which zarr-python warns about when it becomes [] - is untouched.
+            if nargin < 3
+                data = uint8(mod(reshape(1:(16 * 16 * 4), [16, 16, 4]), 251));
+            end
+            storePath = fullfile(testCase.TempDir, storeName);
+            ZarrArray.createFromData(storePath, data, ...
+                'chunkShape', [8, 8, 2], 'compressors', 'zstd', 'zarrFormat', 2);
+
+            metadataFile = fullfile(storePath, '.zarray');
+            metadata     = fileread(metadataFile);
+            metadata     = regexprep(metadata, '("id"\s*:\s*"zstd")', '$1, "checksum": false', 'once');
+            fileId       = fopen(metadataFile, 'w');
+            fwrite(fileId, metadata);
+            fclose(fileId);
+        end
+
+        function tf = pythonIsUsable(~)
+            % PYTHONISUSABLE - can the configured interpreter run the backend?
+            tf = true;
+            try
+                io.zarr.PyBackend.ensureLoaded();
+            catch
+                tf = false;
+            end
+        end
+
         function labels = createModelStore(testCase, storePath) %#ok<INUSD>
             % CREATEMODELSTORE - a two-level packed model store at storePath.
             % The format follows the extension, which is the behaviour under test.

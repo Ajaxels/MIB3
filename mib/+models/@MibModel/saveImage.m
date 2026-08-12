@@ -161,6 +161,16 @@ else
     end
 end
 
+% Snapshot of the name derived above from the layer as it is RIGHT NOW. The
+% merge in Section 2 replaces BatchOpt.Filename with the value carried by the
+% caller, and a batch protocol carries the value recorded when the protocol was
+% saved - typically 'Labels_none.model', the MibLabels default from before any
+% model was loaded. FilenamePolicy = 'Use existing name' means the name from
+% the last load/save, so it must read this snapshot: taking BatchOpt.Filename
+% would give every file of a FILE LOOP the same recorded stem and make each
+% iteration overwrite the previous one's output.
+existingLayerFilename = BatchOpt.Filename;
+
 BatchOpt.Format    = {io.SaverFactory.getDefaultFormat(layerType, inputFilenameExt)}; % --- file formats list (depends on LayerType) ---
 BatchOpt.Format{2} = io.SaverFactory.getFormats(layerType);
 BatchOpt.FilenamePolicy    = {'Use existing name'};         % --- filename policy ---                                   
@@ -442,10 +452,11 @@ if strcmp(BatchOpt.FilenamePolicy{1}, 'Use existing name')
     if strcmpi(layerType, 'image')
         outputName = imgName;   % image: use source image stem
     else
-        % mask / labels: BatchOpt.Filename was resolved in Section 1 from the
-        % layer's own stored filename (e.g. 'Mask_stack.mask', 'Labels_stack.model').
+        % mask / labels: use the name resolved in Section 1 from the layer's own
+        % stored filename (e.g. 'Mask_stack.mask', 'Labels_stack.model'), NOT the
+        % merged BatchOpt.Filename - see the note at that snapshot.
         % Strip the extension here; formatExt is appended below.
-        [~, outputName] = fileparts(BatchOpt.Filename);
+        [~, outputName] = fileparts(existingLayerFilename);
     end
 else
     % 'Use new provided name' - may contain [F] template

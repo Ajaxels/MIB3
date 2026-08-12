@@ -54,8 +54,13 @@ URL rather than asking you:
 
 ![Store URL](images/import_url_zarr_store.png){.on-glb align=right width="400"}
 
-The dialog opens with the <span class="widget widget-edit">Store URL</span> field focused; if the
-clipboard holds a link it is already there and selected, so typing or pasting replaces it.
+The dialog opens with the <span class="widget widget-edit">Store URL</span> field focused and
+pre-filled, so typing or pasting replaces it in one step. What is offered depends on the session:
+
+- if the dataset in the active buffer was itself opened from a URL, its **container** is offered,
+  with <span class="widget widget-edit">Group path</span> showing which group inside it is open.
+  Connecting therefore lands you back in the same dataset, ready to browse to its labels;
+- otherwise, whatever link is on the clipboard.
 
 1. Paste the URL of the **container** - the folder usually named `*.zarr` - and press
    ++enter++ (or <span class="widget widget-button">Connect</span>).
@@ -71,7 +76,14 @@ clipboard holds a link it is already there and selected, so typing or pasting re
     Type   : uint8
     Voxel  : 8 x 8 x 8 nm
     Format : OME-Zarr v2
+    Match  : differs, the open dataset is 500 x 500 x 100  (X x Y x Z)
     ```
+
+    The **Match** line compares the group with the dataset in the active buffer. When the two are
+    the same size the line says so and the node turns **green and bold** in the tree - that is the
+    case where <span class="widget widget-dropdown">Load as</span> `Labels` puts the group straight
+    on top of what is already open. Only the selected group is marked: it is the only one whose
+    metadata has been read, and checking every sibling would cost a request each.
 
 4. Choose <span class="widget widget-dropdown">Load as</span> and
    <span class="widget widget-dropdown">Dataset mode</span>, then press
@@ -103,6 +115,37 @@ check the URL before anything is downloaded.
     - the group is a **ground-truth crop** - a small annotated cube carved out of a much larger
       volume - in which case MIB opens the matching *image region* as well and puts the labels on
       that. See [Label crops](#label-crops).
+
+!!! info "How a foreign store's values become materials"
+    Another tool's label store uses its own numbering, and MIB's model has 63 material slots, so
+    the values are translated on the way in:
+
+    - a group that **declares its encoding** (the COSEM `cellmap` block) contributes one material,
+      named after its own `class_name`. `present` becomes that material; `unknown` - the value 255,
+      meaning *not annotated* - becomes background, because it is not evidence of the class;
+    - a **binary mask** that declares nothing, which is what an inference segmentation writes, is
+      one material named after the group. Any non-zero value becomes it, so a mask written as
+      0 / 255 works as it stands;
+    - an **index map** whose values already fit MIB's range (a merged ground-truth group with ids
+      3, 4, 5 …) keeps its numbering, one material per id.
+
+    Without this a value of 255 would arrive as material 63 with the mask *and* selection bits set,
+    and the Segmentation panel would list 63 materials for a store holding a single class.
+
+!!! question "Opening a second remote dataset"
+    If a remote dataset is already open and you press
+    <span class="widget widget-button">Open</span> on a **different** group with
+    <span class="widget widget-dropdown">Load as</span> still set to `Image`, MIB asks which you
+    meant before doing anything:
+
+    - **Image** - open it as a new dataset, replacing what is in the buffer;
+    - **Labels** - load it onto the dataset that is already open instead;
+    - **Cancel** - go back to the dialog with your selection intact.
+
+    The question is asked because that is the point where the two are easy to confuse: the usual
+    reason to come back to the same container is the annotations, and `Image` is the default that
+    was never changed. Re-opening the group that is already open is not ambiguous, so it goes
+    through without asking, and [batch mode](#batch-mode) never asks at all.
 
 ### Dataset mode
 
@@ -210,6 +253,13 @@ A summary appears whenever there is something the model itself cannot show you:
 into a material index map would collapse every object into a single material. MIB refuses and says
 so. Open such a group with **Load as: Image** instead.
 
+**Segmentations of a whole volume.** Published containers also carry *inference* results - for
+example `recon-1/labels/inference/segmentations/er` - which look exactly like a ground-truth crop
+in the metadata but cover the entire volume. Loading one as Labels would read the matching image
+region and the model into memory, and for `jrc_mus-liver-6` that is `8050 x 8000 x 8500` voxels, or
+about a terabyte. The info panel says so and Open stays disabled; open the group with
+**Load as: Image** instead, where you can pick a pyramid level.
+
 ### Worked example
 
 Paste the container URL, expand `recon-1` -> `labels` -> `groundtruth` -> `crop1`, then
@@ -243,6 +293,19 @@ at [Preferences -> External directories -> Python installation path](home-prefer
 ```
 
 MIB checks for them when you press Open and tells you the exact command if they are missing.
+
+!!! note "One exception: stores the native engine refuses"
+    A few published stores declare a compression setting the native engine does not recognise, and
+    it rejects the whole array rather than ignoring the unknown field. OpenOrganelle's
+    `jrc_mus-liver-6` is one - its compressor is written as
+    `{"id": "zstd", "level": 6, "checksum": false}`, while its neighbours in the same bucket omit
+    `checksum` and open natively.
+
+    Such an array is read with zarr-python instead, automatically and per array; a line in the
+    MATLAB command window names the store and the reason. Only that dataset is affected - the rest
+    of the session stays native - but it does need `zarr`, `aiohttp` and `requests` installed, as
+    above. If Python is unavailable, opening the dataset reports both the codec MIB could not read
+    and why Python could not take over.
 
 ---
 
