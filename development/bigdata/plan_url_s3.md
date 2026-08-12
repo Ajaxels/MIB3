@@ -1394,16 +1394,25 @@ reading from it right now - so the Connect press asks a question already answere
 is deliberately not auto-connected: it may be anything, and that would be an unasked-for network
 call.
 
-And **`MibModel.loadModel` now shows a progress bar while a BigData store is attached**. It never
-had one: the crop route raises its own and the image route goes through `loadImages`, so the model
-route was the one path that sat silent - for ~20 s on a 9-level remote store, since `openStore`
-pays a round trip per level. Indeterminate, because the level count is not known until the metadata
-being fetched arrives. It lives in `loadModel` rather than in the dialog so every caller gets it,
-including Load model from the ribbon. Closed explicitly before each error dialog in that branch (a
-modal bar would sit in front of the message) and again from `onCleanup` on the way out, which is
-why `closeProgressDialog` is written to be safe the second time. No parent, no bar: the accessor
-returns `[]` headless, and `uiprogressdlg` also refuses an invisible parent, which the same
-try/catch absorbs.
+And **attaching a BigData store now reports progress**. It never did: the crop route raises its own
+bar and the image route goes through `loadImages`, so the model route was the one path that sat
+silent - for ~20 s on a 9-level remote store, since `openStore` pays a round trip per level.
+
+Two halves, because the two callers want different windows:
+
+- `MibModel.loadModel` raises an indeterminate bar of its own, so *Load model* from the ribbon is
+  covered too. Indeterminate because the level count is not known until the metadata being fetched
+  arrives. Closed explicitly before each error dialog in that branch (a modal bar would sit in
+  front of the message) and again from `onCleanup` on the way out, which is why
+  `closeProgressDialog` is written to be safe the second time. No parent, no bar: the accessor
+  returns `[]` headless, and `uiprogressdlg` also refuses an invisible parent, which the same
+  try/catch absorbs.
+- The URL dialog **keeps its own bar instead**, and passes `showWaitbar = false` so there is
+  exactly one. `loadModel` parents to the main MIB window (or an undocked image document), which
+  can leave the bar behind the import dialog - the window the user is actually looking at. Note
+  what that flag means at this call site: not the user's setting, but "the caller is already
+  showing progress". `BatchOpt.showWaitbar` is still honoured, by `startProgress`, which is what
+  raises the bar being kept.
 
 Tests: `NativeZarrV2Test` +3 Unit, one per row of the table above, each asserting the values a
 block comes back with and that no mask or selection bit is set.

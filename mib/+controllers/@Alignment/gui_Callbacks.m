@@ -25,9 +25,7 @@ switch source.Tag
         obj.closeWindow();
     case 'helpBtn'
         helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'html', 'user-interface', 'ribbon', 'dataset', 'dataset-alignment.html');
-        
-        utils.openHelpPage(helpFilPath, ...
-            'http://mib.helsinki.fi/help/main3/user-interface/ribbon/dataset/dataset-alignment.html');
+        utils.openHelpPage(helpFilPath, 'http://mib.helsinki.fi/help/main3/user-interface/ribbon/dataset/dataset-alignment.html');
 
     case 'Algorithm'
         obj.algorithm_Callback();

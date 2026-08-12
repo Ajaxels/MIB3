@@ -97,6 +97,7 @@ classdef MibSelection
             obj.handles.hideImage.ValueChangedFcn = @obj.gui_Callbacks;
             obj.handles.display.ButtonPushedFcn = @obj.gui_Callbacks;
             obj.handles.onFly.ValueChangedFcn = @obj.gui_Callbacks;
+            obj.handles.help.ButtonPushedFcn = @obj.gui_Callbacks;
 
             obj.handles.modelTransparency.ValueChangingFcn = @obj.gui_Callbacks;
             obj.handles.maskTransparency.ValueChangingFcn = @obj.gui_Callbacks;

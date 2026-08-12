@@ -106,13 +106,23 @@ if strcmp(obj.BatchOpt.LoadAs{1}, 'Labels')
         return;
     end
 
-    % loadModel raises its own progress bar, so hand the screen over to it.
-    obj.stopProgress();
+    % Keep THIS dialog's progress bar rather than handing over to loadModel's:
+    % it is parented to the import window, which is the one the user is looking
+    % at, while loadModel parents to the main MIB window (or an undocked image
+    % document) and can land behind it. loadModel's own bar is suppressed so
+    % there is exactly one - showWaitbar here is not the user's setting but a
+    % statement that the caller is already showing progress; obj.progressDialog
+    % is the one that honours BatchOpt.showWaitbar, in startProgress.
+    if ~isempty(obj.progressDialog) && isvalid(obj.progressDialog)
+        obj.progressDialog.Message = 'Opening the label store...';
+        drawnow limitrate;
+    end
     modelOptions = struct();
     modelOptions.Filenames   = {targetUrl};
-    modelOptions.showWaitbar = obj.BatchOpt.showWaitbar;
+    modelOptions.showWaitbar = false;
     modelOptions.id          = datasetId;
     obj.mibModel.loadModel([], modelOptions);
+    obj.stopProgress();
     obj.returnBatchOpt();
     if ~batchModeSwitch; obj.closeWindow(); end
     return;

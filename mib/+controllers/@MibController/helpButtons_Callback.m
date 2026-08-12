@@ -28,13 +28,19 @@ switch hWidget.Tag
         if obj.mibModel.preferences.System.DeveloperMode
             fprintf('controllers.MibController.helpButtons_Callback: clicked on "obj.handles.panels.dirContents.handles.help" -> %s\n', hWidget.Tag);
         end
+        helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'html', 'user-interface', 'panels', 'dircontents', 'index.html');
+        utils.openHelpPage(helpFilPath, 'http://mib.helsinki.fi/help/main3/user-interface/panels/dircontents/index.html');
     case 'segmentationHelp'
         if obj.mibModel.preferences.System.DeveloperMode
             fprintf('controllers.MibController.helpButtons_Callback: clicked on "obj.handles.panels.segmentation.handles.help" -> %s\n', hWidget.Tag);
         end
+        helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'html', 'user-interface', 'panels', 'segm', 'index.html');
+        utils.openHelpPage(helpFilPath, 'http://mib.helsinki.fi/help/main3/user-interface/panels/segm/index.html');
     case 'roiHelp'
         if obj.mibModel.preferences.System.DeveloperMode
             fprintf('controllers.MibController.helpButtons_Callback: clicked on "obj.handles.panels.roi.handles.help" -> %s\n', hWidget.Tag);
         end
+        helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'html', 'user-interface', 'panels', 'roi', 'index.html');
+        utils.openHelpPage(helpFilPath, 'http://mib.helsinki.fi/help/main3/user-interface/panels/roi/index.html');
 end
 end

@@ -1073,9 +1073,8 @@ classdef ImageConverter < handle
         % % Additional functions and callbacks
         function helpButton_Callback(obj)
 
-            helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'html', 'user-interface', 'plugins', 'file-processing', 'image-converter.html');
-            utils.openHelpPage(helpFilPath, ...
-                'http://mib.helsinki.fi/help/main3/user-interface/plugins/file-processing/image-converter.html');
+            helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'html', 'plugins', 'file-processing', 'image-converter.html');
+            utils.openHelpPage(helpFilPath, 'http://mib.helsinki.fi/help/main3/plugins/file-processing/image-converter.html');
 
         end
         

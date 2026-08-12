@@ -53,7 +53,7 @@ classdef About < handle
             % get MATLAB release year for the copyright line
             matlabVersion = ver('Matlab');
             matlabYear = matlabVersion.Date(end-3:end);
-            mathworksString = sprintf('MATLAB(r). (c) 1984 - %s The MathWorks, Inc.', matlabYear);
+            mathworksString = sprintf('Powered by MATLAB(r).\n(c) 1984 - %s The MathWorks, Inc.', matlabYear);
 
             obj.view = core.ChildView(obj, 'views.AboutGUI');
 

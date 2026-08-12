@@ -216,9 +216,8 @@ classdef TripleAreaIntensity < handle
         end
 
         function helpBtn_Callback(obj)
-            helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'html', 'user-interface', 'plugins', 'intensity-analysis', 'triple-area-intensity.html');
-            utils.openHelpPage(helpFilPath, ...
-                'http://mib.helsinki.fi/help/main3/user-interface/plugins/intensity-analysis/triple-area-intensity.html');
+            helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'html', 'plugins', 'intensity-analysis', 'triple-area-intensity.html');
+            utils.openHelpPage(helpFilPath, 'http://mib.helsinki.fi/help/main3/plugins/intensity-analysis/triple-area-intensity.html');
         end
 
         function continueBtn_Callback(obj)

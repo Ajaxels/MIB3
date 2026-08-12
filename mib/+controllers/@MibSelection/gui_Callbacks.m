@@ -152,7 +152,8 @@ switch mode
         obj.mibModel.preferences.Colors.SelectionTransparency = hData.Value;
         notify(obj.mibModel, 'ShowImage');
 
-    case 'help'
-        % help
+    case 'help'        % help
+        helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'html', 'user-interface', 'panels', 'selection_imview', 'index.html');
+        utils.openHelpPage(helpFilPath, 'http://mib.helsinki.fi/help/main3/user-interface/panels/selection_imview/index.html');
 end
 end
