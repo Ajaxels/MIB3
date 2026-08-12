@@ -15,36 +15,38 @@ URL rather than asking you:
 
 ---
 
-## Accepted URL forms
+??? info "Accepted URL forms and formats"
 
-| Form | Example |
-|------|---------|
-| Virtual-host S3 | `https://bucket.s3.amazonaws.com/path/store.zarr` |
-| Virtual-host S3, with region | `https://bucket.s3.us-west-2.amazonaws.com/path/store.zarr` |
-| Path-style S3 | `https://s3.us-west-2.amazonaws.com/bucket/path/store.zarr` |
-| `s3://` shorthand | `s3://bucket/path/store.zarr` |
-| Any S3-compatible host | `https://s3.your-institute.org/bucket/path/store.zarr` |
-| Any other web host | `https://example.org/data/store.zarr` |
+    <div class="h3-like">Accepted URL forms</div>
 
-An `s3://` address is rewritten to its `https://` equivalent and shown back to you in the field,
-so you can always see exactly what is being contacted. Only **public** buckets are supported:
-everything is fetched anonymously, and no credentials are ever requested or stored.
+    | Form | Example |
+    |------|---------|
+    | Virtual-host S3 | `https://bucket.s3.amazonaws.com/path/store.zarr` |
+    | Virtual-host S3, with region | `https://bucket.s3.us-west-2.amazonaws.com/path/store.zarr` |
+    | Path-style S3 | `https://s3.us-west-2.amazonaws.com/bucket/path/store.zarr` |
+    | `s3://` shorthand | `s3://bucket/path/store.zarr` |
+    | Any S3-compatible host | `https://s3.your-institute.org/bucket/path/store.zarr` |
+    | Any other web host | `https://example.org/data/store.zarr` |
+    
+    An `s3://` address is rewritten to its `https://` equivalent and shown back to you in the field,
+    so you can always see exactly what is being contacted. Only **public** buckets are supported:
+    everything is fetched anonymously, and no credentials are ever requested or stored.
 
-### N5 addresses
-
-MIB cannot read **N5** containers. It does not have to: repositories that publish N5 normally
-publish an OME-Zarr copy of the same volume beside it, under the same name. Paste an `.n5` URL and
-MIB looks for that copy, switches to it, and tells you so in the status line:
-
-```
-s3://janelia-cosem-datasets/jrc_hela-2/jrc_hela-2.n5
-   -> https://janelia-cosem-datasets.s3.amazonaws.com/jrc_hela-2/jrc_hela-2.zarr
-```
-
-The swap is checked against the server, never assumed, and the rewritten address is shown in the
-field. A group path inside the container is carried across, so
-`.../jrc_hela-2.n5/recon-1/em/fibsem-uint8` lands on the matching group of the zarr copy. If no
-copy exists, the status line says so rather than reporting a generic failure.
+    <div class="h3-like"> N5 addresses</div>
+    
+    MIB cannot read **N5** containers. It does not have to: repositories that publish N5 normally
+    publish an OME-Zarr copy of the same volume beside it, under the same name. Paste an `.n5` URL and
+    MIB looks for that copy, switches to it, and tells you so in the status line:
+    
+    ```
+    s3://janelia-cosem-datasets/jrc_hela-2/jrc_hela-2.n5
+       -> https://janelia-cosem-datasets.s3.amazonaws.com/jrc_hela-2/jrc_hela-2.zarr
+    ```
+    
+    The swap is checked against the server, never assumed, and the rewritten address is shown in the
+    field. A group path inside the container is carried across, so
+    `.../jrc_hela-2.n5/recon-1/em/fibsem-uint8` lands on the matching group of the zarr copy. If no
+    copy exists, the status line says so rather than reporting a generic failure.
 
 ---
 
@@ -137,7 +139,7 @@ Other datasets in the same bucket follow the same layout; a few store the image 
     <span class="widget widget-button">Copy data url</span> button on a dataset page both hand out
     the `.n5` address, for example
     `s3://janelia-cosem-datasets/jrc_hela-2/jrc_hela-2.n5`. Paste it as it is - MIB switches to the
-    `.zarr` copy published alongside it. See [N5 addresses](#n5-addresses).
+    `.zarr` copy published alongside it. See *N5 addresses*.
 
 !!! tip
     Leaving <span class="widget widget-edit">Group path</span> empty and pressing Open makes MIB

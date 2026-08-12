@@ -93,7 +93,9 @@ storeOptions.blockModeSwitch = 0;
 getDataOptions = storeOptions;
 
 % update LinkedData / LinkedVariable with the current situation
+linkedDataRestored = false;
 if isfield(storeOptions, 'LinkedData') && ~isempty(fieldnames(storeOptions.LinkedData))
+    linkedDataRestored = true;
     linkedFields = fieldnames(storeOptions.LinkedData);
     for fieldId = 1:numel(linkedFields)
         % get the current state of the LinkedData
@@ -336,6 +338,15 @@ if ~strcmp(type, 'selection') && strcmp(type2, 'selection') && newIndex > newDat
     else
         obj.I{id}.clearLayer('selection');
     end
+end
+
+% LinkedData carries state that is mirrored in the GUI rather than in the pixel
+% layers - the SAM "add, +next material" mode stores labels.materialNames there.
+% Restoring it silently leaves the materials table showing the pre-undo names,
+% and because getSelectedMaterialIndex maps a table row through materialNames,
+% the next click would then paint into a different material than the row shows.
+if linkedDataRestored
+    notify(obj, 'UpdateGuiWidgets', core.ToggleEventData({'checkboxes'}));
 end
 
 notify(obj, 'ShowImage');

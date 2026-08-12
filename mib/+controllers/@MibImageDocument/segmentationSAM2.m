@@ -442,6 +442,11 @@ end
 % define default output data type when generating data by pointsSAM and pointsVideoSAM
 castDataType = 'uint8';
 
+% smallest connected component of the predicted mask to keep, see
+% utils.sam.removeSmallRegions; 'Automatic everything' is not filtered here
+% because SAM2AutomaticMaskGenerator already receives the same preference
+minRegionArea = obj.mibModel.preferences.SegmTools.SAM2.min_mask_region_area;
+
 % get current contrast
 currViewPort = dataset.image.viewPort;
 liveStretch = obj.mibModel.onFlyImageStretch;
@@ -532,6 +537,9 @@ try
             end
 
             imgDataset = imgDataset(padSize+1:end-padSize, padSize+1:end-padSize, :, :);    % remove padding
+
+            % drop the low-confidence islands returned beside the object
+            imgDataset = utils.sam.removeSmallRegions(imgDataset, minRegionArea);
 
             % auto fill the shape when auto fill is checked
             if obj.mibModel.autoFillSelection
@@ -644,6 +652,9 @@ try
 
                         imgOut = imgOut(padSize+1:end-padSize, padSize+1:end-padSize);    % remove padding
 
+                        % drop the low-confidence islands returned beside the object
+                        imgOut = utils.sam.removeSmallRegions(imgOut, minRegionArea);
+
                         % auto fill the shape when auto fill is checked
                         if obj.mibModel.autoFillSelection
                             imgOut = imfill(imgOut);
@@ -696,6 +707,8 @@ try
                             labelPositions = labelPositions / dataset.magFactor;
                         end
                         imgOut = pointsSAM(imgIn, labelPositions, labelValues);
+                        % drop the low-confidence islands returned beside the object
+                        imgOut = utils.sam.removeSmallRegions(imgOut, minRegionArea);
                         % auto fill the shape when auto fill is checked
                         if obj.mibModel.autoFillSelection
                             imgOut = imfill(imgOut);

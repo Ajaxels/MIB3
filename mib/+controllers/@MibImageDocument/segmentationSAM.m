@@ -275,6 +275,11 @@ if localWaitbar; wb = uiprogressdlg(obj.mibModel.getProgressBarParent(), 'Value'
 
 currViewPort = dataset.image.viewPort;
 max_int = double(dataset.image.maxInt);
+
+% smallest connected component of the predicted mask to keep, see
+% utils.sam.removeSmallRegions; 'Automatic everything' is not filtered here
+% because the automatic mask generator already receives the same preference
+minRegionArea = obj.mibModel.preferences.SegmTools.SAM1.min_mask_region_area;
 getDataOpt.id = BatchOpt.id;
 % enable blocked mode switch
 getLabelsOpt = struct();
@@ -401,6 +406,9 @@ try
                     imgOut = pointsSAM(imgIn, labelPositions, obj.mibModel.sessionSettings.SAMsegmenter.Points.Value);
                     imgOut = imgOut(padSize+1:end-padSize, padSize+1:end-padSize);    % remove padding
 
+                    % drop the low-confidence islands returned beside the object
+                    imgOut = utils.sam.removeSmallRegions(imgOut, minRegionArea);
+
                     % limit to the selected material of the model
                     if dataset.restrictSelectionToMaterial == 1
                         % the mask as it was before the first click of this object:
@@ -444,6 +452,8 @@ try
                     % keep only x,y
                     labelPositions = labelPositions(:,2:3);
                     imgOut = pointsSAM(imgIn, labelPositions, labelValues);
+                    % drop the low-confidence islands returned beside the object
+                    imgOut = utils.sam.removeSmallRegions(imgOut, minRegionArea);
                     switch BatchOpt.Mode{1}
                         case 'replace'
                             obj.mibModel.setData2D({imgOut}, BatchOpt.Destination{1}, z, NaN, dataset.selectedAddToMaterial-2, getDataOpt);

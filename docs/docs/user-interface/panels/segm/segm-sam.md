@@ -162,6 +162,24 @@ Press <img src="images/icons_settings.jpg"> to open settings.
 - <span class="widget widget-checkbox">Show the progress bar in the interactive mode</span>: toggle progress bar.
 - <span class="widget widget-dropdown">PATH to segment-anything installation</span>: set the unzipped package location 
 <br>(use <span class="widget widget-checkbox">Check to select path</span> for a dialog).
+- <span class="widget widget-edit">min_mask_region_area</span>: drop mask regions smaller than this area, in pixels of the segmented image (`0` = keep everything).
+
+!!! tip "Stray specks next to the segmented object"
+
+    Both models return a continuous field of mask scores and binarize it at a fixed
+    cutoff, so a structure elsewhere in the view that scores just above the cutoff is
+    kept with the same weight as the object you clicked on. It shows up as one or two
+    small blobs some distance away from the real object.
+
+    Those blobs are far smaller than the object, so setting
+    <span class="widget widget-edit">min_mask_region_area</span> to a few hundred
+    pixels removes them without touching the object itself. Raising it too far will
+    also discard the smaller parts of a genuinely multi-part object.
+
+    The area counts pixels of the image the model was given. In the interactive
+    methods that is the currently shown block, and for BigData datasets it is the
+    block at the displayed pyramid level - so a value tuned at one zoom level does
+    not carry over to another.
 
 ---
 

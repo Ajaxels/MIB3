@@ -11,6 +11,10 @@ survive a zoom, a pan or a new seeded slice; this package describes the shown
 block, re-maps a cached image between two blocks and serves the cached states
 to the segmenters.
 
+It also holds the post-processing applied to what the model returns, currently
+the removal of the small low-confidence islands that appear beside the
+segmented object.
+
 .. currentmodule:: utils.sam
 
 .. automodule:: utils.sam
