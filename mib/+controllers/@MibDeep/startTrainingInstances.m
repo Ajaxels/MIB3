@@ -554,6 +554,18 @@ fprintf('Preparation for training is finished, elapsed time: %f\n', toc(trainTim
 
 trainTimer = tic;
 emergencyBrakeUsed = false;     % network was recovered from a checkpoint, info is synthetic
+
+% "Starting weights" decides whether the COCO-pretrained backbone keeps training.
+% A frozen backbone is faster and less prone to overfitting on very small datasets,
+% but leaves the features tuned to natural photographs; letting it train adapts them
+% to microscopy data and wants a lower learning rate.
+% trainSOLOV2 also accepts 'backboneAndNeck', which freezes more and is not exposed.
+if strcmp(obj.BatchOpt.T_StartingWeights{1}, 'COCO, frozen backbone')
+    freezeSubNetwork = 'backbone';
+else
+    freezeSubNetwork = 'none';
+end
+
 try
     mibDeepStopTraining = false;
 
@@ -561,7 +573,7 @@ try
         labelsDS, ...
         lgraph, ...
         TrainingOptions, ...
-        'FreezeSubNetwork', 'backbone');
+        'FreezeSubNetwork', freezeSubNetwork);
     %'ExperimentMonitor', 'none');
 catch err
     % a stop request renames the checkpoint folder out of the way; put it back before any
@@ -618,7 +630,7 @@ catch err
 
         try
             TrainingOptions = obj.preprareTrainingOptionsInstances([]);
-            [net, info] = trainSOLOV2(labelsDS, lgraph, TrainingOptions, 'FreezeSubNetwork', 'backbone');
+            [net, info] = trainSOLOV2(labelsDS, lgraph, TrainingOptions, 'FreezeSubNetwork', freezeSubNetwork);
         catch err2
             utils.dlgs.showErrorDialog(obj.view.gui, err2, 'Train instance network error');
             return;

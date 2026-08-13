@@ -41,8 +41,33 @@ controlling downsampling/upsampling by 2^D. Tweak with <span class="widget widge
 - <span class="widget widget-edit">Filters...</span> defines the number of output channels (filters) in the first encoder stage, doubling per subsequent stage, mirrored in the decoder  
 - <span class="widget widget-edit">Filter size...</span> sets convolutional filter size (e.g., 3, 5, 7)  
 - <span class="widget widget-button">Input layer</span> configures input image normalization settings  
-- <label class="widget widget-checkbox">use ImageNet weights</label> (*MATLAB version only*) initializes 2D patch-wise 
-networks with ImageNet pretrained weights ([ImageNet](http://www.image-net.org)); requires corresponind supporting packages to be installed  
+- <span class="widget widget-dropdown">Starting weights</span> states where the initial weights come from and how much of
+the network is retrained. The available states are a property of the selected workflow, architecture and encoder, so most
+designs offer no choice: the dropdown is then **disabled but still shows the truthful value**, rather than being blank.
+
+    | Network design | Starting weights |
+    |---|---|
+    | 3D Semantic; U-net +Encoder with the `Classic` encoder; SegNet | `None (random)` |
+    | DeepLab v3+ / Z2C + DLv3; U-net +Encoder with a Resnet encoder | `Pretrained` |
+    | 2D Patch-wise (Resnet/Xception) | `None (random)` or `ImageNet` *(user choice)* |
+    | 2D Instance (SOLOv2) | `COCO, trainable backbone` *(default)* or `COCO, frozen backbone` |
+
+    `Pretrained` means the network starts from an already trained template rather than from scratch. **What** that
+    template is depends on the design: DeepLab v3+ with a Resnet encoder downloads a MIB-hosted template the first time
+    it is used and asks you to choose the **Electron Microscopy** or **Light microscopy/Pathology** variant, whereas the
+    U-net Resnet encoders are fetched from the MIB encoder repository. The downloaded template is cached in the DeepMIB
+    directory (*Preferences → External directories*) and reused silently from then on, so the choice is a property of
+    your installation and is not stored in the configuration file.
+
+    `ImageNet` applies to the 2D Patch-wise classification networks and requires the MATLAB version of MIB plus the
+    matching support package; it is not offered in the standalone version.
+
+    For SOLOv2 the network always starts from COCO weights, and the choice is whether the backbone keeps training.
+    `COCO, trainable backbone` (the default) lets the network adapt to microscopy data, which looks nothing like the
+    natural photographs COCO was trained on; pair it with a **lower learning rate** (around `1e-4` with Adam) or the
+    pretrained weights are destroyed early in training. `COCO, frozen backbone` trains faster and is less prone to
+    overfitting on a very small number of annotated images.
+
 -  <span class="widget widget-dropdown">Activation layer</span> selects the activation layer type, with additional settings 
 via the ![Settings button](images/DeepLearningTrainSettingsBtn.png){.inline-image} button when available  
 

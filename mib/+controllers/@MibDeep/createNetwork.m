@@ -178,11 +178,11 @@ try
                         obj.BatchOpt.T_NumAnisotropicBlocks{1});
             end
         case '2D Patch-wise'
-            if obj.BatchOpt.T_UseImageNetWeights
+            if strcmp(obj.BatchOpt.T_StartingWeights{1}, 'ImageNet')
                 if isdeployed
                     mgsOpt.headerLines = 2;
                     header = sprintf('Initialization of the network with imagenet weights is only available in MIB for MATLAB!');
-                    msgText = 'Please uncheck the "use ImageNet weights" checkbox to initialize the network using empty weights and try again.';
+                    msgText = 'Please set "Starting weights" to "None (random)" to initialize the network using empty weights and try again.';
                     utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {msgText}, 'Ops!', mgsOpt);
                     return;
                 end
@@ -251,7 +251,7 @@ if strcmp(obj.BatchOpt.Workflow{1}, '2D Patch-wise') % 2D Patch-wise Resnet18 or
         case 'Xception'
             lgraph = replaceLayer(lgraph, 'predictions', fullConnLayer);
     end
-    if obj.BatchOpt.T_UseImageNetWeights % replace classification output layer
+    if strcmp(obj.BatchOpt.T_StartingWeights{1}, 'ImageNet') % replace classification output layer
         classificationOutputLayer = classificationLayer('Name', 'ClassificationLayer_predictions');
         lgraph = replaceLayer(lgraph, lgraph.Layers(end).Name, classificationOutputLayer); % 'ClassificationLayer_predictions'
     end

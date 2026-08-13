@@ -64,6 +64,23 @@ if ~isfield(res.BatchOpt, 'T_ActivationLayer')
     res.BatchOpt.T_ActivationLayer{2} = {'clippedReluLayer', 'eluLayer', 'leakyReluLayer', 'reluLayer', 'swishLayer', 'tanhLayer'};
 end
 
+% the "use ImageNet weights" checkbox (T_UseImageNetWeights, logical) was replaced with
+% the "Starting weights" dropdown (T_StartingWeights). Only the 2D Patch-wise workflow
+% ever exposed the checkbox; for every other workflow the value is recomputed from the
+% network design by updateStartingWeightsList, so a plain mapping is enough here.
+if ~isfield(res.BatchOpt, 'T_StartingWeights')
+    if isfield(res.BatchOpt, 'T_UseImageNetWeights') && res.BatchOpt.T_UseImageNetWeights
+        res.BatchOpt.T_StartingWeights = {'ImageNet'};
+    else
+        res.BatchOpt.T_StartingWeights = {'None (random)'};
+    end
+    res.BatchOpt.T_StartingWeights{2} = {'None (random)', 'ImageNet'};
+end
+% drop the retired field so it cannot linger in re-saved configs
+if isfield(res.BatchOpt, 'T_UseImageNetWeights')
+    res.BatchOpt = rmfield(res.BatchOpt, 'T_UseImageNetWeights');
+end
+
 % update res.BatchOpt to be compatible with DeepMIB v2.83
 res = obj.correctBatchOpt(res);
 if isempty(res); delete(obj.wb); return; end
@@ -102,6 +119,10 @@ if ~strcmp(obj.view.handles.T_EncoderNetwork.Value, obj.BatchOpt.T_EncoderNetwor
     event.Source = obj.view.handles.T_EncoderNetwork;
     obj.updateBatchOptFromGUI(event);
 end
+% the merge above may have brought in a T_StartingWeights list that does not match the
+% restored network design (selectWorkflow/selectArchitecture only ran if they changed),
+% so rebuild it before the widgets are refreshed
+obj.updateStartingWeightsList();
 obj.wb.Value = 0.8;
 
 try

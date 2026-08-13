@@ -45,6 +45,10 @@ function updateBatchOptFromGUI(obj, event)
                     obj.availableEncoders{encoderKeyValue}{end} = find(ismember(obj.availableEncoders{encoderKeyValue}(1:end-1), selectedEncoder));
                 end
             end
+            % "U-net +Encoder" starts from random weights with the 'Classic' encoder and
+            % from pretrained ones with the Resnet encoders, so the starting weights list
+            % has to follow the encoder as well as the workflow/architecture
+            obj.updateStartingWeightsList();
     end
 end
 

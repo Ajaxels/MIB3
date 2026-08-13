@@ -295,6 +295,7 @@ classdef MibDeep < handle
         lgraph = updateNetworkInputLayer(obj, lgraph, inputPatchSize)        % update the input layer settings for lgraph parameters are taken from obj.InputLayerOpt
         updatePreprocessingMode(obj)        % callback for change of selection in the Preprocess for dropdown
         updateScoreExportSettings(obj)        % update export settings for score files
+        updateStartingWeightsList(obj)        % refresh the "Starting weights" dropdown for the current workflow/architecture/encoder
         lgraph = updateSegmentationLayer(obj, lgraph, classNames)        % redefine the segmentation layer of lgraph based on obj.BatchOpt settings
         updateWidgets(obj)        % update widgets of this window
        
@@ -367,7 +368,10 @@ classdef MibDeep < handle
             obj.BatchOpt.T_FilterSize{2} = [3 Inf];
             obj.BatchOpt.T_NumAnisotropicBlocks{1} = 1;
             obj.BatchOpt.T_NumAnisotropicBlocks{2} = [1 Inf];
-            obj.BatchOpt.T_UseImageNetWeights = false;
+            % where the initial weights come from and how much of the network retrains;
+            % the list is rebuilt per workflow/architecture/encoder by updateStartingWeightsList
+            obj.BatchOpt.T_StartingWeights = {'None (random)'};
+            obj.BatchOpt.T_StartingWeights{2} = {'None (random)', 'ImageNet'};
             obj.BatchOpt.T_PatchesPerImage{1} = 1;
             obj.BatchOpt.T_PatchesPerImage{2} = [1 Inf];
             obj.BatchOpt.T_MiniBatchSize{1} = obj.mibModel.preferences.Deep.MiniBatchSize;
@@ -480,7 +484,7 @@ classdef MibDeep < handle
             obj.BatchOpt.mibBatchTooltip.T_NumFirstEncoderFilters = 'Number of output channels for the first encoder stage';
             obj.BatchOpt.mibBatchTooltip.T_FilterSize = 'Convolutional layer filter size, specified as a positive odd integer';
             obj.BatchOpt.mibBatchTooltip.T_NumAnisotropicBlocks = 'Number of initial 2D-only downsampling blocks before full 3D convolutions; for anisotropic datasets where Z spacing is coarser than XY (U-net Anisotropic only)';
-            obj.BatchOpt.mibBatchTooltip.T_UseImageNetWeights = 'Init the network with imagenet weights [MATLAB version of MIB only]';
+            obj.BatchOpt.mibBatchTooltip.T_StartingWeights = 'Where the starting weights come from; the available states depend on the workflow, architecture and encoder. "Pretrained" starts from a downloaded template (DeepLab v3+ asks for the EM or the LM/Pathology variant on the first use). "ImageNet" requires the MATLAB version of MIB. For SOLOv2, a trainable backbone adapts the network to microscopy data and wants a lower learning rate, a frozen one trains faster and suits very small datasets';
             obj.BatchOpt.mibBatchTooltip.T_PatchesPerImage = 'Number of patches to extract from each image';
             obj.BatchOpt.mibBatchTooltip.T_MiniBatchSize = 'Number of observations that are returned in each batch';
             obj.BatchOpt.mibBatchTooltip.T_augmentation = 'Augment images during training';
@@ -622,6 +626,15 @@ classdef MibDeep < handle
 
             guiName = 'views.MibDeepGUI';
             obj.view = core.ChildView(obj, guiName); % initialize the view
+
+            % panels and widgets of this window use hard-coded pastel background colors, while
+            % the font color is left on "auto" and follows the desktop theme. Under the dark
+            % theme MATLAB switches the text to near-white, which is unreadable on those light
+            % backgrounds. Pin this window to the light theme so the text stays dark;
+            % explicitly assigned background colors are preserved by the theme switch
+            if isprop(obj.view.gui, 'Theme')    % the Theme property requires R2025a or newer
+                theme(obj.view.gui, 'light');
+            end
 
             % update font and size
             % you may need to replace "obj.view.handles.text1" with tag of any text field of your own GUI

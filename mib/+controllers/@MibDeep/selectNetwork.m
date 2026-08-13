@@ -58,6 +58,10 @@ function net = selectNetwork(obj, networkName)
             % update res.BatchOpt to be compatible with DeepMIB v2.83
             res = obj.correctBatchOpt(res);
             obj.BatchOpt = utils.updateBatchOptCombineFields_Shared(obj.BatchOpt, res.BatchOpt);
+            % the merge copies only element {1} of an already existing cell field, so the
+            % list in T_StartingWeights{2} never arrives from the file and still describes
+            % the previously selected network design; rebuild it for the restored one
+            obj.updateStartingWeightsList();
 
             try
                 if isfield(res.AugOpt2DStruct, 'ImageBlur') == 0

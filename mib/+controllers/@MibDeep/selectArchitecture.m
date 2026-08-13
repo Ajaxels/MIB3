@@ -145,5 +145,9 @@ if isKey(obj.availableEncoders, encoderKeyValue)
         obj.view.handles.T_EncoderNetwork.Value = obj.BatchOpt.T_EncoderNetwork{1};
     end
 end
+
+% the possible starting weights depend on the encoder too, so refresh after the
+% encoder list above has been settled
+obj.updateStartingWeightsList();
 end
 
