@@ -158,7 +158,8 @@ preprocess → train → predict → evaluate → config chain.
 > **Status:** Phases 1–6 are implemented and verified end-to-end on the test project (GPU): patch
 > cropping (`deepmib.readInstancePatch`), `Patches per image` replication, `trainSOLOV2` on patch
 > datastore, and tiled centroid-in-core prediction (`deepmib.segmentBlockedImageInstances` via
-> `blockedImage/apply`) all confirmed working. The 3D roadmap below is future.
+> `blockedImage/apply`) all confirmed working. The 3D section below is also **done** - only the
+> deferred streaming phase (Phase D) remains, tracked in `instance_3d_plan.md`.
 >
 > Phase 6 implementation notes: preprocessing now stores a lightweight 2D `instanceLabelMap`
 > (uint16) per image instead of full `H×W×N` mask stacks; training crops native-resolution patches
@@ -224,8 +225,9 @@ for training and prediction.
   neighbouring tiles whose masks agree **inside the shared overlap band** (in-band IoU ≥ 0.5 or
   IoA ≥ 0.8, min 5 px intersection), resolved globally via union-find; merged groups are painted
   low-score-first so stronger groups win pixel conflicts. Selected at prediction time via the new
-  `BatchOpt.P_OverlapInstancesMode` dropdown (`'Centroid in core'` (default) / `'IoU merge'`);
-  when IoU merge is chosen with `P_OverlappingTiles` off, a 5% overlap is forced with a warning.
+  `BatchOpt.P_OverlapInstancesMode` dropdown (`'IoU merge'` (**current default**, `MibDeep.m:447`)
+  / `'Centroid in core'`); when IoU merge is chosen with `P_OverlappingTiles` off, a 5% overlap is
+  forced with a warning.
   Validated with a synthetic fake-`segmentFcn` test (injectable `options.segmentFcn` hook): exact
   6/6 GT partition reconstruction incl. an object far larger than the overlap band, plus
   zero-border and empty-image edge cases. Old configs load fine (missing field falls back to the
@@ -327,27 +329,78 @@ graceful stop into an error dialog. Only the upstream `break` removes it.
 Stated in the pre-training confirmation dialog (`startTrainingInstances.m`) and in
 `docs/docs/user-interface/deepmib/deepmib-train.md`.
 
-## Future roadmap — 3D instance segmentation (to be planned)
+## 3D instance segmentation - DONE (steps 1-3 implemented and wired into DeepMIB)
 
-> **Step 2 prototype done:** the cross-slice merging algorithm is implemented and validated as a
-> standalone utility — `mib/+utils/stitchInstances2Dto3D.m`. See
-> [`stitchInstances2Dto3D.md`](stitchInstances2Dto3D.md) for the algorithm, a critique of the
-> empanada/MitoNet source spec, validation on the easy/hard test sets (perfect 33/33 reconstruction
-> on the easy 3D ground truth), and the MIB/DeepMIB integration path. It is **not yet wired into
-> DeepMIB** (pure `[H×W×Z]` label volume in/out).
+> Open design questions and the remaining work moved to
+> [`instance_3d_plan.md`](instance_3d_plan.md); the algorithm, a critique of the empanada/MitoNet
+> source spec and the benchmark validation live in
+> [`stitchInstances2Dto3D.md`](stitchInstances2Dto3D.md).
 
-The **ultimate goal** is to extend 2D instance results to **3D objects**. Planned approach:
+The goal was to extend 2D instance results to **3D objects**. Delivered:
 
-1. Run 2D instance segmentation slice-by-slice over the volume (reusing the patch/tiled 2D pipeline
-   above), producing a per-slice instance label map.
-2. Run a dedicated **3D merging algorithm** (implemented — see `stitchInstances2Dto3D.md`) that
-   links 2D instances across adjacent slices into consistent 3D object IDs via IoU/IoA of masks
-   between slice `z` and `z+1` (assign the same 3D ID when overlap exceeds a threshold), resolved
-   globally through an undirected overlap graph + union-find.
-3. The merging must handle real-world topology: objects appearing/disappearing across slices,
-   one-to-many **splits** and many-to-one **merges** between consecutive slices, and an IoU/overlap
-   threshold (plus optional size/centroid constraints) to avoid over- or under-merging.
-4. Open design questions for that phase: greedy slice-pairwise linking vs. global optimization
-   (e.g. tracking-by-assignment), anisotropic Z handling, and memory strategy for whole-slide 3D
-   volumes (blocked/streaming). The IoU-merge stitching from Phase 6's future improvements is a
-   natural building block to share here.
+1. **Per-slice 2D prediction** - the patch/tiled 2D pipeline above already writes one `*.model` per
+   prediction image into `ResultingImagesDir/PredictionImages/ResultsModels`, so a volume exported
+   as a 2D image sequence yields the per-slice instance label maps directly.
+2. **Cross-slice merging** - `mib/+utils/stitchInstances2Dto3D.m` links 2D instances across
+   adjacent slices via IoU/IoA of masks between `z` and `z+1`, resolved globally through an
+   undirected overlap graph + union-find (`'graph'`, default) or strict per-pair 1-to-1 matching
+   (`'hungarian'`, kept for paper-faithful comparison).
+3. **Real-world topology** - appearing/disappearing objects, one-to-many splits and many-to-one
+   merges are handled; `zLookback` bridges single-slice dropouts, `minObjectVoxels` removes noise
+   fragments, and `anisotropyZ` / `maxCentroidShift` / `centroidLinkRadius` guard against over- and
+   under-merging. Regression-tested by `tests/utils/StitchInstances2Dto3DTest.m` (11 Unit cases +
+   benchmark Integration cases).
+
+### DeepMIB entry points (all three verified present and enabled for `2D Instance`)
+
+| Widget (Tag) | Wiring | Purpose |
+|--------------|--------|---------|
+| `P_mergeInstancesTo3D` | `MibDeepGUI.mlapp` → `MibDeep.mergeInstancesTo3D` | Predict tab → *Instance segmentation* → "Merge 2D to 3D": loads the per-slice `ResultsModels/*.model` in alphabetical (= Z) order, asks for the 9 stitching settings, stitches, then saves via `io.SaverFactory` as a single 3D file or a 2D sequence. |
+| `P_OverlapInstancesMode` | `BatchOpt` dropdown, read in `startPredictionInstances.m:120` | Cross-**tile** stitching within one slice: `'IoU merge'` (default) / `'Centroid in core'`. |
+| `P_OverlapInstancesSettings` | `MibDeepGUI.mlapp` → `MibDeep.updateOverlapInstancesSettings` | Edits `obj.OverlapInstancesOpt`: `.DetectionThreshold` (both modes), `.MergeIoU` / `.MergeIoA` (IoU-merge mode). |
+
+All three are disabled by default and switched on only for the `2D Instance` workflow
+(`selectArchitecture.m:27-29` and `:122-124`). The two levels of stitching are independent:
+`P_OverlapInstancesMode` merges **tiles inside one slice**, `P_mergeInstancesTo3D` merges
+**slices into a volume**.
+
+Docs: `docs/docs/user-interface/deepmib/deepmib-instance.md` ("Merging 2D predictions into a 3D
+model") and `deepmib-predict.md` (subpanel). The stitcher is also reachable outside DeepMIB via
+Ribbon → Model → `MibModel.stitchModelInstances` for a model already open in MIB.
+
+### 2D images and z-stacks as prediction input (added 2026-08-13)
+
+Instance prediction and merging originally required **2D files only**. Both now accept z-stacks,
+matching the `2D Semantic` behaviour:
+
+- `startPredictionInstances.m` reads `read(imgDS)` **unsqueezed** as `[H W Z C T]` (the documented
+  `io.loadImagesWrapper` contract) instead of `squeeze(...)`. The old squeeze made a grayscale
+  z-stack `[H W Z]` indistinguishable from an RGB 2D image `[H W 3]`, which is exactly why stacks
+  could not be supported before. Depth now comes from `size(vol,3)` and colour from `size(vol,4)`.
+  Each z-slice is segmented separately (same tiling / stitching mode) and written into
+  `outputLabels(:,:,z)`; a depth-1 file still saves a 2D model, so the 2D path is byte-identical.
+  More than one time point raises a warning and only `t=1` is predicted (as in the semantic path).
+- Instance indices stay **contiguous `1..N` per slice**, deliberately *not* unique across the
+  stack: `utils.stitchInstances2Dto3D` relabels every slice internally, and a per-slice range keeps
+  `modelType` at 65535 instead of overflowing into uint32 on deep stacks. `modelType` /
+  `numMaterials` are driven by `maxInstancesPerSlice`.
+- `mergeInstancesTo3D.m` detects the layout from the depth of the **first** `*.model` file:
+  depth 1 = the legacy "one file per Z-slice, one merged output" path; depth > 1 = each file is an
+  independent stack, stitched separately into one output per file. A mixed folder errors out in
+  both directions (`MibDeep:mergeInstancesTo3D:mixedDimensions`). Multi-output runs ask for a
+  folder + a format dropdown (instead of `uiputfile`) and save with `silent = true` so the
+  TIF/model savers do not ask the 3D-stack/2D-sequence question once per file; outputs are named
+  `<inputModelName>_stitched3D.<ext>`. Loading a model file moved into a local `iLoadLabels`
+  subfunction (used by both the layout peek and the two loading paths).
+- Verified in MATLAB against real files: 2D grayscale → `[64 48 1 1 1]`, 2D RGB → `[64 48 1 3 1]`,
+  5-page TIF → `[64 48 5 1 1]`, per-slice extraction always yields `[H W 3]`, slice order
+  preserved, and a synthetic 3D instance model round-trips through save → `iLoadLabels` → stitch
+  (10 2D objects → 2 3D instances).
+
+### What is still open
+- **Phase D (streaming to a BigData sink)** - deferred; the trigger is a single-timepoint labels
+  volume that no longer fits in RAM. `mergeInstancesTo3D` currently builds the whole `H×W×Z`
+  volume in memory.
+- Phase C (hysteresis edges) was **measured and rejected**; Phase C′ (centroid-NN gap bridging) is
+  implemented but **off by default** (no benefit on near-isotropic benchmarks). Numbers behind both
+  decisions are in `instance_3d_plan.md`.

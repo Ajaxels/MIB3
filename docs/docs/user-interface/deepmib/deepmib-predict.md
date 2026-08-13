@@ -100,12 +100,14 @@ The ![Settings button](images/DeepLearningTrainSettingsBtn.png){.inline-image} b
 * <span class="widget widget-edit">Merge IoU threshold (0-1)</span> — (*IoU merge* only) merge detections of neighbouring tiles when the intersection-over-union of their masks within the shared overlap band exceeds this value; decrease when objects get split at tile seams, increase when distinct touching objects get merged (default: `0.5`)  
 * <span class="widget widget-edit">Merge IoA threshold (0-1)</span> — (*IoU merge* only) additionally merge when the intersection over the smaller in-band mask area exceeds this value, catching a truncated fragment fully contained in the neighbouring tile's complete mask (default: `0.8`)  
 
-<span class="widget widget-button">Merge 2D to 3D</span> merges the predicted 2D instance models
-(`3_Results/PredictionImages/ResultsModels`, one `*.model` file per image, taken in alphabetical
-order as the Z-order) into a single 3D instance model, linking objects that overlap between
-neighbouring slices into 3D instances with a consistent index. A dialog asks for the stitching
-settings, then for the destination directory, filename and file format; the result can be saved
-as a single 3D file or as a sequence of 2D files. See the
+<span class="widget widget-button">Merge 2D to 3D</span> stitches the predicted instance models in
+`3_Results/PredictionImages/ResultsModels` into 3D instance models, linking objects that overlap
+between neighbouring slices into 3D instances with a consistent index. The layout is detected
+automatically: **2D** models are the Z-slices of one stack (taken in alphabetical order as the
+Z-order) and give a single merged model, while **3D** models (predicted from z-stack images) are
+each stitched independently into one merged model per file. A dialog asks for the stitching
+settings, then for the destination and file format; the result can be saved as a single 3D file or
+as a sequence of 2D files. See the
 [2D Instance workflow](deepmib-instance.md#merging-2d-predictions-into-a-3d-model) for details.
 
 

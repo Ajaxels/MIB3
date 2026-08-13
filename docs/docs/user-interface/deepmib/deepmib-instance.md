@@ -210,6 +210,18 @@ The result is written as a MIB `.model` file under
 `3_Results/PredictionImages/ResultsModels`, in which **every object instance is a unique index**
 (background `0`), matching the input labelling convention.
 
+Both 2D images and z-stacks may be used as prediction images, exactly as in the *2D Semantic*
+workflow:
+
+* a **2D image** is predicted directly and saved as a 2D model;
+* a **z-stack** (a multi-page TIF, an HDF5 volume, ...) is predicted **slice-by-slice** and saved
+  as a single 3D model with the same number of slices.
+
+In both cases the instance indices run `1..N` **within each slice** and are *not* consistent
+between slices - an object continuing through several slices carries a different index on each of
+them. Linking them into true 3D objects is done afterwards with
+[Merge 2D to 3D](#merging-2d-predictions-into-a-3d-model), which ignores the input indices.
+
 !!! warning "Overlap size vs stitching mode"
 
     With **Centroid in core**, the **tile overlap must be at least as large as the biggest
@@ -225,14 +237,27 @@ The result is written as a MIB `.model` file under
 
 ## Merging 2D predictions into a 3D model
 
-When the prediction images are serial sections of a volume, the per-image 2D instance models can
-be merged into a single **3D instance model** with the
+When the prediction images are serial sections of a volume, the predicted instance models can be
+merged into **3D instance models** with the
 <span class="widget widget-button">Merge 2D to 3D</span> button of the *Instance segmentation*
-subpanel in the [Predict tab](deepmib-predict.md#instance-segmentation-subpanel). The `*.model`
-files under `3_Results/PredictionImages/ResultsModels` are taken in **alphabetical order of
-their filenames** (make sure the prediction images are named in their correct Z-order) and
-objects overlapping between neighbouring slices are linked into 3D instances with one consistent
-index through the whole stack.
+subpanel in the [Predict tab](deepmib-predict.md#instance-segmentation-subpanel). Objects
+overlapping between neighbouring slices are linked into 3D instances with one consistent index
+through the whole stack.
+
+The layout of the results in `3_Results/PredictionImages/ResultsModels` is detected automatically
+from the depth of the first `*.model` file:
+
+* **2D models** (the prediction images were separate 2D files) - all files are the Z-slices of one
+  stack and are taken in **alphabetical order of their filenames**, so make sure the prediction
+  images are named in their correct Z-order. One merged 3D model is written.
+* **3D models** (the prediction images were z-stacks) - every file already is a complete stack, so
+  each is stitched **independently** and one merged 3D model is written per input file.
+
+!!! note "Do not mix the two layouts"
+
+    The results folder must contain either 2D models only or 3D models only. A mixed folder is
+    ambiguous (are the 2D files slices of their own stack, or strays?) and is rejected with an
+    error. Empty the folder before re-running a prediction on a different kind of input.
 
 The stitching settings dialog offers the same options as the
 *Ribbon → Model → Stitch 2D instances to 3D* tool:
@@ -254,10 +279,16 @@ The stitching settings dialog offers the same options as the
 * **Max centroid shift** and **Centroid link radius** — advanced gates/bridging for anisotropic or
   gappy data (`0` = off)
 
-After the settings, a file dialog asks for the destination directory, filename and file format.
+After the settings, the destination is requested. When a **single** merged model is produced, a
+file dialog asks for the directory, filename and file format. When **several** stacks are stitched
+(one per 3D input model), a folder is requested instead, followed by a format dropdown; each output
+is then named after its input model with a `_stitched3D` suffix.
+
 The merged model can be written as a **single 3D file** (e.g. *Matlab format (\*.model)*, TIF
 3D stack, Amira Mesh, HDF5, MRC, NRRD) or as a **sequence of 2D files** (e.g. *Matlab format 2D
-sequence (\*.model)*, TIF/PNG 2D sequence) — for TIF the policy is asked during saving.
+sequence (\*.model)*, TIF/PNG 2D sequence) — for TIF the policy is asked during saving of a single
+model, while multiple models are always written with the format's default policy to avoid one
+dialog per file.
 
 ---
 
