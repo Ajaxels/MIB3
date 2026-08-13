@@ -258,9 +258,9 @@ classdef Lines3dDialog < handle
                 data1(:,2) = num2cell(N');
                 obj.view.handles.treesViewTable.Data = data1;
 
-                activeTreeName = dataset.lines3D.G.Nodes.TreeName(dataset.lines3D.activeNodeId);
-                if ~isempty(activeTreeName)
-                    activeTreeIndex = find(ismember(treeNames, activeTreeName));
+                activeNodeId = dataset.lines3D.activeNodeId;
+                if ~isempty(activeNodeId) && activeNodeId <= numel(nodeByTree)
+                    activeTreeIndex = nodeByTree(activeNodeId);
 
                     curTable = obj.view.handles.tableSelectionPopup.Value;
                     obj.view.handles.nodesViewTable.Visible = false;
@@ -884,8 +884,7 @@ classdef Lines3dDialog < handle
             rowId = Indices(1);
             if obj.indicesTrees ~= rowId
                 if isempty(dataset.lines3D.activeNodeId)
-                    treeName = dataset.lines3D.getTreeNames(rowId);
-                    nodeIds = find(ismember(dataset.lines3D.G.Nodes.TreeName, treeName));
+                    [~, nodeIds] = dataset.lines3D.getTree(rowId);
                     if ~isempty(nodeIds)
                         dataset.lines3D.activeNodeId = nodeIds(end);
                     end
@@ -996,7 +995,7 @@ classdef Lines3dDialog < handle
                     obj.mibModel.backup('lines3d');
                     dataset.lines3D.defaultTreeName = answer;
 
-                    ids = find(ismember(dataset.lines3D.G.Nodes.TreeName, rowText(1)) == 1);
+                    [~, ids] = dataset.lines3D.getTree(rowId(1));   % rename the selected tree only, its name may be shared with another tree
                     dataset.lines3D.G.Nodes.TreeName(ids) = {answer};
                     obj.updateWidgets();
                     notify(obj.mibModel, 'ShowImage');
@@ -1007,9 +1006,8 @@ classdef Lines3dDialog < handle
                         'Enter index of the node to find a corresponding tree:', defAns, 'Find tree');
                     if isempty(nodeId); return; end
                     
-                    TreeName = dataset.lines3D.G.Nodes(nodeId,:).TreeName;
-                    TreeNames = obj.view.handles.treesViewTable.Data(:,1);
-                    Indices = find(ismember(TreeNames, TreeName));
+                    [~, nodeByTree] = dataset.lines3D.updateNumberOfTrees();
+                    Indices = nodeByTree(nodeId);
                     dataset.lines3D.activeNodeId = nodeId;
                     scroll(obj.view.handles.treesViewTable, 'row', Indices);
                     obj.view.handles.treesViewTable.Selection = [Indices(1), 1];
