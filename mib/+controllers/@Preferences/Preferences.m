@@ -162,12 +162,16 @@ classdef Preferences < handle
             obj.preferences = mibModel.preferences;
             obj.oldPreferences = mibModel.preferences;
             
-            % update current preferences using those taken from dataset
-            % logic for disable selection: it is always taken from the
-            % currently shown dataset. The datasets are initialized during
-            % MIB startup with the settings in the preferences
-            obj.preferences.System.EnableSelection = obj.mibModel.I{obj.mibModel.id}.enableSelection;
-            
+            % NOTE: EnableSelection is shown as stored in the preferences and is
+            % deliberately NOT re-read from the currently shown dataset. The
+            % per-dataset enableSelection flag legitimately differs from the
+            % global preference: BigData opens browse-only (forced false until a
+            % model is created), createModel/loadModel force it true, and the
+            % startup placeholder datasets always keep the layer. Copying any of
+            % those into obj.preferences made simply opening this dialog and
+            % pressing OK overwrite (and save) the user's global setting.
+            % The chosen value is still applied to the active dataset on OK.
+
             % move the window to the left hand side of the main window
             obj.view.gui = utils.moveWindowOutside(obj.view.gui, obj.mibModel.mibGUI, 'center', 'center');
             
@@ -250,7 +254,6 @@ classdef Preferences < handle
                 if obj.renderedPanels(1) == 1; return; end  % already rendered
                 systemPrefs = obj.preferences.System;
                 guiScalingPrefs = obj.preferences.System.GUI;
-                activeDataset = obj.mibModel.I{obj.mibModel.id};
 
                 if strcmp(systemPrefs.MouseWheel, 'zoom')   % zoom or scroll
                     handles.MouseWheelActionDropDown.Value = 'Zoom In/Out';
@@ -270,7 +273,11 @@ classdef Preferences < handle
                     handles.AltWithScrollWheel.Value = 'Return to the slice';
                 end
 
-                if activeDataset.enableSelection
+                % show the stored global preference, not activeDataset.enableSelection:
+                % the per-dataset flag is forced false for BigData, true for the
+                % startup placeholders and by createModel/loadModel, and any of
+                % those would be written back to the preferences on OK
+                if systemPrefs.EnableSelection
                     handles.EnableSelectionDropDown.Value = 'yes';
                 else
                     handles.EnableSelectionDropDown.Value = 'no';

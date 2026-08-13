@@ -42,7 +42,10 @@ slice slider in the [Image View Panel](image-document/index.md#slider-step-size)
 - Hold <mouse class="right"></mouse> to pan the image left/right and up/down.
 !!! info "Alternative syntax" 
     Alternative shortcut for usage with a touch screen: ++ctrl++ + ++alt++ + ++shift++ + <mouse class="right"></mouse> 
-- ++shift++ + <mouse class="left"></mouse>: adds to the existing selection.
+- ++shift++ + <mouse class="left"></mouse>: adds to the existing selection. For the
+[Brush](panels/segm/segm-brush.md) in the <span class="widget widget-checkbox">Watershed</span> /
+<span class="widget widget-checkbox">SLIC</span> mode it also paints that stroke as a standard brush,
+without snapping to superpixels.
 - ++ctrl++ + <mouse class="left"></mouse>: removes from the existing selection ([eraser](panels/segm/segm-brush.md), negative seeds in the [Segment Anything Model](panels/segm/segm-sam.md) tool).
 - ++ctrl++ + :material-mouse-scroll-wheel:{.orange-color} **mouse wheel** or ++bracket-left++ ++bracket-right++ or ++shift++ + ++bracket-left++ / ++bracket-right++: 
 adjust brush/selection tool size.

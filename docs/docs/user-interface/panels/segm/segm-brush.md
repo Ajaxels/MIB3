@@ -19,6 +19,9 @@ Use the brush to make selections, with size regulated by the <span class="widget
 ???+ info "Controls"
     - <span class="widget widget-button">Ctrl</span> + **Mouse wheel**: change brush size.
     - **None** or <span class="widget widget-button">Shift</span> + <mouse class="left"></mouse>: paint with brush.
+      In the <span class="widget widget-checkbox">Watershed</span> / <span class="widget widget-checkbox">SLIC</span>
+      modes, <span class="widget widget-button">Shift</span> paints the stroke as a standard brush, without
+      snapping to superpixels.
     - <span class="widget widget-button">Ctrl</span> + <mouse class="left"></mouse>: start eraser (radius amplified by <span class="widget widget-dropdown">Eraser, x</span>).
     - <span class="widget widget-checkbox">Auto fill</span> in the [Selection and View settings panel](../selection_imview/index.md): autofill areas after brushing.
 
@@ -47,6 +50,9 @@ Use the brush to make selections, with size regulated by the <span class="widget
     Enable *Superpixels mode* with [:fontawesome-brands-youtube:{.red-color} Watershed](https://youtu.be/vVh1j3HBh-c) 
     or [:fontawesome-brands-youtube:{.red-color} SLIC](https://youtu.be/6bZb_Mr_nS0?list=PLGkFvW985wz8cj8CWmXOFkXpvoX_HwXzj) checkboxes. 
     The brush selects groups of pixels (superpixels) instead of individual pixels.<br>
+    Hold ++shift++ while drawing to paint that stroke with the standard brush instead, which is handy
+    for touching up a border that the superpixels do not follow. The eraser (++ctrl++) always
+    works pixel-wise as well.<br>
     Undo the last superpixel with ++ctrl++ + ++z++.
 
     Algorithms:

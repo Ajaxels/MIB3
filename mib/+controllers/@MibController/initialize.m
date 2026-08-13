@@ -56,11 +56,16 @@ obj.addGuiControllers();
 obj.view.handles.ribbon.global.SelectedTabChangedFcn = @(~, ~)obj.globalTabGroup_SelectionCallback;
 
 
-if obj.mibModel.preferences.System.EnableSelection
-    obj.view.brushCursorShow =  true;
-else
-    obj.view.brushCursorShow =  false;
-end
+% seed the brush cursor visibility from the segmentation tool that the dropdown
+% starts with: segmentationTool_Callback does not fire during startup and
+% updateGuiWidgets only runs when a dataset is loaded, so without this the flag
+% would stay wrong until the user switches tools. The same tool list is used in
+% MibSegmentation.segmentationTool_Callback and MibController.updateGuiWidgets.
+% preferences.System.EnableSelection is not the condition here: it is a
+% per-dataset property, and updateBrushCursor already re-checks browse-only
+% datasets on every mouse move
+obj.view.brushCursorShow = ismember(obj.cSegmentation.handles.segmTool.Value, ...
+    {'3D ball', 'Spot', 'Brush'});
 
 % --------- update listeners
 % callback for change of properties in obj.view.handles.imageViewDocGroup, used to track selection of panels in the image view panel

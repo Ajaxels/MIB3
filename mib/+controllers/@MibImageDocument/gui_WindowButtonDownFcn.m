@@ -424,9 +424,18 @@ elseif strcmp(operation, 'select')
             % the Brush mode
             x = round(xy(1,1));
             y = round(xy(1,2));
+            % Shift makes the stroke a standard brush even when SLIC/Watershed
+            % clustering is on. As for the Annotations case above, Shift+click
+            % reports as SelectionType 'extend' even when the bare Shift key
+            % press was missed by WindowKeyPressFcn (currentModifier empty), so
+            % promote 'extend' to a 'shift' modifier
+            brushModifier = modifier;
+            if strcmp(seltype, 'extend') && ~any(strcmp(brushModifier, 'shift'))
+                brushModifier{end+1} = 'shift';
+            end
             hFig.WindowScrollWheelFcn = []; % turn off callback for the mouse wheel during the brush selection
             hFig.WindowKeyPressFcn = [];    % turn off callback for the keys during the brush selection
-            obj.segmentationBrush(y, x, modifier);
+            obj.segmentationBrush(y, x, brushModifier);
             return;
 
         case 'BW Thresholding'

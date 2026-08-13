@@ -130,13 +130,14 @@ switch BatchOpt.Mode{1}
 
             % update MibDataset using the default values
             if ~isempty(obj.preferences) % standard call when obj.preferences is initialized
-                % check whether the selection is enabled or not
-                if obj.preferences.System.EnableSelection
-                    obj.I{i} = core.MibDataset(I, meta, BatchOpt.DatasetType{1}, 'labels63');
-                else
-                    obj.I{i} = core.MibDataset(I, meta, BatchOpt.DatasetType{1}, 'imageOnly');
-                    obj.I{i}.enableSelection = false;
-                end
+                % the placeholder datasets always keep the selection layer,
+                % independently of preferences.System.EnableSelection. That
+                % preference is there to save memory on real datasets and is
+                % applied when one is loaded (importDataset, homeImport, the
+                % loaders); the 512x512 default image costs nothing, so keeping
+                % the layer makes the brush and the other segmentation tools
+                % usable right after MIB starts
+                obj.I{i} = core.MibDataset(I, meta, BatchOpt.DatasetType{1}, 'labels63');
 
                 % update obj.I{i} properties
                 obj.I{i}.labels.materialColors = obj.preferences.Colors.ModelMaterialColors; % update default model colors

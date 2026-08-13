@@ -422,12 +422,11 @@ switch parameter
         fn = fullfile(obj.mibModel.mibPath, 'assets', 'images', 'default.png');
         imgData = imread(fn);
         meta = dictionary();
-        if obj.mibModel.preferences.System.EnableSelection
-            obj.mibModel.I{targetGlobalId} = core.MibDataset(imgData, meta, 'Standard', 'labels63');
-        else
-            obj.mibModel.I{targetGlobalId} = core.MibDataset(imgData, meta, 'Standard', 'imageOnly');
-            obj.mibModel.I{targetGlobalId}.enableSelection = false;
-        end
+        % as with the placeholders made at startup (MibModel.datasetsSetsOps),
+        % the fresh dummy keeps its selection layer regardless of
+        % preferences.System.EnableSelection: it costs nothing at 512x512 and
+        % the preference is applied again as soon as a real dataset is loaded
+        obj.mibModel.I{targetGlobalId} = core.MibDataset(imgData, meta, 'Standard', 'labels63');
         obj.mibModel.I{targetGlobalId}.labels.materialColors = obj.mibModel.preferences.Colors.ModelMaterialColors;
         if obj.mibModel.I{targetGlobalId}.image.colors < size(obj.mibModel.preferences.Colors.LUTColors, 1)
             obj.mibModel.I{targetGlobalId}.image.lutColors = obj.mibModel.preferences.Colors.LUTColors;
@@ -520,12 +519,9 @@ switch parameter
             delete(obj.mibModel.I{globalI});
 
             meta = dictionary();
-            if obj.mibModel.preferences.System.EnableSelection
-                obj.mibModel.I{globalI} = core.MibDataset(imgData, meta, 'Standard', 'labels63');
-            else
-                obj.mibModel.I{globalI} = core.MibDataset(imgData, meta, 'Standard', 'imageOnly');
-                obj.mibModel.I{globalI}.enableSelection = false;
-            end
+            % placeholders always keep the selection layer, see the comment in
+            % the 'Close dataset' branch above
+            obj.mibModel.I{globalI} = core.MibDataset(imgData, meta, 'Standard', 'labels63');
             obj.mibModel.I{globalI}.labels.materialColors = obj.mibModel.preferences.Colors.ModelMaterialColors;
             if obj.mibModel.I{globalI}.image.colors < size(obj.mibModel.preferences.Colors.LUTColors, 1)
                 obj.mibModel.I{globalI}.image.lutColors = obj.mibModel.preferences.Colors.LUTColors;

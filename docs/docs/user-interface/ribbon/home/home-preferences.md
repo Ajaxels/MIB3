@@ -77,6 +77,11 @@ interpolated for visualization in the [Image Document](../../image-document/inde
 
   - `yes`: Enables segmentation tools (default).
   - `no`: Saves memory but disables segmentation.
+
+This setting is applied to the currently shown dataset and to every dataset loaded
+afterwards. It does not affect the empty placeholder datasets that MIB creates at
+startup and when a dataset is closed: those always keep the Selection layer, so the
+brush and the other segmentation tools can be tried on the default image right away.
 <br>
 
 <span class="widget widget-edit">Number of recent dirs</span>: a numeric field to set how many recently accessed 

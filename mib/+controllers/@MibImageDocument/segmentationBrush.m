@@ -19,6 +19,8 @@ function segmentationBrush(obj, y, x, modifier)
 %
 %     - empty string ``''`` - add selection
 %     - ``'control'`` - subtract selection (eraser mode)
+%     - ``'shift'`` - add selection with a standard brush, ignoring the
+%       SLIC/Watershed clustering mode for this stroke
 %
 % Output Arguments:
 %   (none)
@@ -34,6 +36,12 @@ function segmentationBrush(obj, y, x, modifier)
 %   .. code-block:: matlab
 %
 %      obj.segmentationBrush(50, 75, 'control');  % start in eraser mode
+%
+% **Example 3** - start a standard brush while the clustering mode is on:
+%
+%   .. code-block:: matlab
+%
+%      obj.segmentationBrush(50, 75, 'shift');  % no superpixels for this stroke
 %
 
 % Updates
@@ -58,13 +66,15 @@ radius = obj.view.handles.panels.segmentation.handles.brushRadius.Value;
 if radius == 0; return; end
 
 % ---- determine add/subtract mode ----
-if iscell(modifier)
-    isCtrl = any(strcmp(modifier, 'control'));
-elseif ischar(modifier)
-    isCtrl = strcmp(modifier, 'control');
-else
-    isCtrl = false;
+% the modifier arrives either as a cell (mibController.currentModifier) or as a
+% char, normalize it once so both keys can be tested the same way
+if ischar(modifier)
+    modifier = {modifier};
+elseif ~iscell(modifier)
+    modifier = {};
 end
+isCtrl = any(strcmp(modifier, 'control'));   % eraser
+isShift = any(strcmp(modifier, 'shift'));    % ignore the superpixels for this stroke
 
 if isCtrl
     brush_switch = 'subtract';
@@ -127,10 +137,14 @@ else
     obj.brushSelection{1}.selection = bwdist(obj.brushSelection{1}.selection) <= size(structElement, 1)/2;
 end
 
-% ---- superpixel/cluster mode (not for eraser) ----
+% ---- superpixel/cluster mode (not for eraser, not when Shift is held) ----
+% Shift temporarily downgrades the stroke to a standard brush: skipping this
+% block leaves obj.brushSelection with a single element, which is what
+% gui_WindowBrushMotionFcn and gui_WindowButtonUpFcn use to tell the two modes
+% apart, exactly as the Ctrl (eraser) stroke already does
 clusterMode = obj.mibController.cSegmentation.handles.brushUseClustering.SelectedObject.Text;
 
-if ~strcmp(clusterMode, 'No clusters') && ~isCtrl
+if ~strcmp(clusterMode, 'No clusters') && ~isCtrl && ~isShift
     % read color channel
     col_channel = dataset.selectedColorChannel;
     if col_channel == 0; col_channel = NaN; end
