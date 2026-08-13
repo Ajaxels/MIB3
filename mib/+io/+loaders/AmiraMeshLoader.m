@@ -94,6 +94,9 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
             % Initialize default options
             if ~isfield(options, 'waitbar'); options.waitbar = false; end
             if ~isfield(options, 'customSections'); options.customSections = false; end
+            % callers outside MIB (io.loadImagesWrapper, datastore ReadFcns) do not supply a
+            % parent figure; showErrorDialog falls back to errordlg when it is empty
+            if ~isfield(options, 'ParentFigure'); options.ParentFigure = []; end
 
             noFiles = numel(filenames);
 

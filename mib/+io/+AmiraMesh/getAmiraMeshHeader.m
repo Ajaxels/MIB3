@@ -73,8 +73,6 @@ par = struct();
 level = 0;
 % skiping the header
 parIndex = 1;
-removeGroup.Switch = 0;  % indicator to remove certain groups
-removeGroup.Level = 0;  % indicator if the level to remove certain groups
 
 while numel(strfind(tline, 'Lattice')) == 0
     tline = strtrim(fgetl(fid));
@@ -89,10 +87,15 @@ while numel(strfind(tline, 'Lattice')) == 0
         if strcmp(strtrim(tline(1:openGroup(1)-1)),'im_browser')    % remove the group made with im_browser
             field(level) = cellstr('');
         elseif strcmp(strtrim(tline(1:openGroup(1)-1)),'HistoryLogHead')    % remove the group HistoryLogHead
-            removeGroup.Switch = 1;
-            removeGroup.Level = level;  % indicator if the level to remove certain groups
+            % HistoryLogHead is Amira's undo/history log, not metadata. It cannot be
+            % skipped line-by-line like the rest of the header: its ModuleState entries
+            % are multi-line quoted strings containing braces and even the word
+            % "Lattice", which corrupts the brace level and terminates this loop early
+            % (leaving par without a single field). Consume the whole group at once,
+            % honouring quoting, and drop back to the level we came from.
+            level = level - 1;
+            io.AmiraMesh.skipQuotedGroup(fid);
         elseif tline(end) == '{' && level > 1
-            if removeGroup.Switch == 1; continue; end
             level = level - 1;
             par(parIndex).Name = field{level};
             par(parIndex).Value = cellstr(loopHeader(fid, tline, level));
@@ -102,14 +105,9 @@ while numel(strfind(tline, 'Lattice')) == 0
         end
     elseif isempty(openGroup) & ~isempty(closeGroup)
         level = level - 1;
-        if removeGroup.Switch == 1 && removeGroup.Level == level
-            removeGroup.Switch = 0;
-        end
         if level == -1; break; end  % end of the Parameters section
         field(level+1) = cellstr('');
     else
-        if removeGroup.Switch == 1; continue; end    % skip elements 
-        
         spaces = strfind(strtrim(tline), ' ');
         if isempty(spaces); continue; end
         parField = '';
@@ -156,6 +154,9 @@ end
 
 % check the header for proper CoordType and ContentType fields
 HxMultiChannelField3_sw = 0;
+% par stays a fieldless struct() when the Parameters block held nothing parsable,
+% which would make {par.Name} throw "Unrecognized field name"
+if ~isfield(par, 'Name'); par = struct('Name', {}, 'Value', {}); end
 parNames = {par.Name};
 parIndex = find(ismember(parNames, 'ContentType'));
 if ~isempty(parIndex)
