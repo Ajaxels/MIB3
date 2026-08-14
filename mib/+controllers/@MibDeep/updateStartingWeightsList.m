@@ -32,10 +32,15 @@ function updateStartingWeightsList(obj)
 %     MathWorks ImageNet-pretrained weights (requires the matching support package)
 %   - ``'COCO, trainable backbone'`` *(default)* - SOLOv2 from COCO weights, the whole
 %     network keeps training (``trainSOLOV2(..., 'FreezeSubNetwork', 'none')``), so the
-%     features adapt to microscopy data; use a lower learning rate with it
+%     features adapt to microscopy data. **The initial learning rate must come down to
+%     about 1e-4**: at the rates that suit a frozen backbone (1e-3 to 1e-2) the pretrained
+%     backbone is destroyed within the first hundred iterations, the loss flatlines and
+%     the network detects nothing. The reliable way to use it is to continue training an
+%     already trained frozen network, which applies the current freeze setting to the
+%     restored weights (see :func:`startTrainingInstances`)
 %   - ``'COCO, frozen backbone'`` - SOLOv2 from COCO weights, the backbone stays at its
-%     COCO values (``'FreezeSubNetwork', 'backbone'``); faster and less prone to
-%     overfitting on very small datasets
+%     COCO values (``'FreezeSubNetwork', 'backbone'``); faster, tolerant of a high
+%     learning rate and less prone to overfitting on very small datasets
 %
 % ``'ImageNet'`` is dropped from the list in the deployed (standalone) version, where
 % the pretrained networks are not shipped - see :func:`createNetwork`.

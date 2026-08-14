@@ -63,10 +63,24 @@ designs offer no choice: the dropdown is then **disabled but still shows the tru
     matching support package; it is not offered in the standalone version.
 
     For SOLOv2 the network always starts from COCO weights, and the choice is whether the backbone keeps training.
-    `COCO, trainable backbone` (the default) lets the network adapt to microscopy data, which looks nothing like the
-    natural photographs COCO was trained on; pair it with a **lower learning rate** (around `1e-4` with Adam) or the
-    pretrained weights are destroyed early in training. `COCO, frozen backbone` trains faster and is less prone to
-    overfitting on a very small number of annotated images.
+    `COCO, frozen backbone` holds the COCO features fixed while the heads learn; it trains faster, tolerates a high
+    learning rate and is less prone to overfitting on a very small number of annotated images. **Start here.**
+
+    `COCO, trainable backbone` lets the features adapt to microscopy data, which looks nothing like the natural
+    photographs COCO was trained on, but it only works at a much lower learning rate.
+
+    !!! warning "Lower the learning rate before unfreezing the backbone"
+
+        A rate that is perfectly safe with a frozen backbone (`1e-3` to `1e-2`) destroys the pretrained weights within
+        the first hundred iterations once the backbone is trainable. The symptom is unmistakable: the loss drops a
+        little, then flatlines for the rest of the run, and the validation mAP stays at exactly `0` - the network
+        detects nothing at all, not even on its own training images.
+
+        Use an initial learning rate of about `1e-4` with Adam, and prefer to **continue training an already trained
+        frozen network** rather than unfreezing from scratch: press <span class="widget widget-button">Train</span>,
+        select the existing `.mibDeep` file in the checkpoint dialog, and the restored weights are trained with the
+        freeze setting currently selected in the dropdown. The heads are already sensible at that point, so the
+        gradients reaching the backbone are small enough to refine it instead of overwriting it.
 
 -  <span class="widget widget-dropdown">Activation layer</span> selects the activation layer type, with additional settings 
 via the ![Settings button](images/DeepLearningTrainSettingsBtn.png){.inline-image} button when available  
