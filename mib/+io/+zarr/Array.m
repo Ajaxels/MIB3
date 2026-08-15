@@ -159,14 +159,26 @@ classdef Array < handle
             % OpenOrganelle's ``jrc_mus-liver-6`` declares
             % ``{"id": "zstd", "level": 6, "checksum": false}`` - numcodecs has
             % written the ``checksum`` flag since 0.13 - and the native open
-            % fails with *unknown field `checksum`, expected `level`*, while
-            % neighbouring datasets in the same bucket omit it and open fine.
+            % used to fail with *unknown field `checksum`, expected `level`*,
+            % while neighbouring datasets in the same bucket opened fine.
             %
             % zarr-python accepts the same array, so the store is readable and
             % only the engine is wrong. Switching here rather than at open time
             % is deliberate: the metadata the loaders need is read from
             % ``.zarray`` as plain JSON and never fails, so this is the first
             % point at which the codec is known to be a problem.
+            %
+            % **No known store still triggers this.** The bundled ``zarrMex``
+            % learned ``checksum`` on 15.08.2026 and reads ``jrc_mus-liver-6``
+            % natively. This is kept as insurance because the cause is
+            % structural - a strict Rust parser against permissive numcodecs -
+            % and will recur with the next optional field. It is deliberately
+            % untested end to end: a fixture would need a field numcodecs
+            % accepts and the engine does not, and every field invented to keep
+            % the engine refusing is equally unknown to numcodecs, so python
+            % rejects it too (verified with ``bogusField``). Only the rethrow
+            % above is covered, by
+            % ``NativeZarrV2Test.unrelatedNativeFailuresAreNotReroutedToPython``.
             %
             % Anything other than a configuration complaint is rethrown
             % untouched - a 404 or a dropped connection would fail identically

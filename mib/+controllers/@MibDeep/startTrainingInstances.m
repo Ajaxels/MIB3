@@ -246,12 +246,36 @@ try
     end
 
     valModelList = dir(fullfile(obj.BatchOpt.OriginalTrainingImagesDir, 'ValidationLabels', '*.mat'));
+    noValidationObservations = 0;
     if ~isempty(valModelList)
         valPatchOpt = patchOpt;
         valPatchOpt.imageDir = fullfile(obj.BatchOpt.OriginalTrainingImagesDir, 'ValidationImages');
         valModelFiles = arrayfun(@(f) fullfile(f.folder, f.name), valModelList, 'UniformOutput', false);
-        valLabelsDS = fileDatastore(valModelFiles(:), ...
-            'ReadFcn', @(fn)deepmib.readInstancePatch(fn, valPatchOpt));
+        % replicate like the training list above, so validation averages over
+        % "Patches per image" windows per image rather than a single one; a handful of
+        % patches makes the validation loss too noisy to compare between evaluations
+        valModelFiles = repmat(valModelFiles(:), [patchesPerImage, 1]);
+        noValidationObservations = numel(valModelFiles);
+
+        % Unlike training, validation must crop the SAME windows at every evaluation,
+        % otherwise the curve reports which crops were drawn as much as how good the
+        % network is - and "best-validation-loss" then picks the luckiest draw. Give each
+        % observation its own fixed seed, following the same convention as the training
+        % patches: seed 0 means "do not fix anything", any other value is reproducible.
+        baseSeed = obj.BatchOpt.T_RandomGeneratorSeed{1};
+        valObservationSeeds = zeros(noValidationObservations, 1);
+        if baseSeed ~= 0
+            % keep the result in [1, 2^32-2] so a wrap can never produce 0, which is the
+            % value reserved below to mean "unseeded"
+            valObservationSeeds = mod(baseSeed * 100003 + (1:noValidationObservations)', 2^32 - 2) + 1;
+        end
+
+        % an indexed datastore rather than a fileDatastore: the replicated file names are
+        % identical strings, so the observation index is the only way to give each replica
+        % a distinct patch
+        valLabelsDS = transform(...
+            arrayDatastore((1:noValidationObservations)', 'ReadSize', 1), ...
+            @(observationIndex) iReadValidationPatch(observationIndex, valModelFiles, valObservationSeeds, valPatchOpt));
     else    % do not use validation
         valLabelsDS = [];
     end
@@ -500,7 +524,7 @@ try
     
     % validation is attempted when a validation set is available; if trainSOLOV2
     % rejects it at runtime we retry once without validation (see below)
-    if isempty(valLabelsDS) || numel(valLabelsDS.Files) == 0
+    if noValidationObservations == 0
         valLabelsDS = [];
     end
     TrainingOptions = obj.preprareTrainingOptionsInstances(valLabelsDS);
@@ -810,6 +834,20 @@ obj.view.handles.TrainButton.Text = 'Train';
 obj.view.handles.TrainButton.BackgroundColor = [0.7686    0.9020    0.9882];
 
 fprintf('Training is finished, elapsed time: %f\n', toc(trainTimer));
+end
+
+function out = iReadValidationPatch(observationIndex, valModelFiles, valObservationSeeds, valPatchOpt)
+% read one validation observation, cropping the same window on every evaluation
+%
+% arrayDatastore hands the index over wrapped in a cell; a seed of 0 means the user asked
+% for unseeded sampling, in which case no patchSeed is set and readInstancePatch falls back
+% to the global stream (the pre-existing behaviour).
+
+if iscell(observationIndex); observationIndex = observationIndex{1}; end
+if valObservationSeeds(observationIndex) ~= 0
+    valPatchOpt.patchSeed = valObservationSeeds(observationIndex);
+end
+out = deepmib.readInstancePatch(valModelFiles{observationIndex}, valPatchOpt);
 end
 
 function [net, info] = iRecoverNetworkFromCheckpoint(checkpointDir, progressStruct)

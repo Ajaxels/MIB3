@@ -245,28 +245,7 @@ classdef NativeZarrV2Test < matlab.unittest.TestCase
                 'io:Zarr3Saver:shardingUnsupportedV2');
         end
 
-        % ---- 4. codec configurations the native engine refuses ---------
-
-        function nativeRefusesAnUnknownCodecField(testCase)
-            % The fixture for the fallback below, asserted separately so a
-            % zarrMex that learns the field makes this test fail rather than
-            % making the fallback test pass for the wrong reason.
-            %
-            % OpenOrganelle's jrc_mus-liver-6 declares exactly this - numcodecs
-            % has written the optional zstd "checksum" flag since 0.13 - while
-            % its neighbours in the same bucket omit it and open natively.
-            storePath = testCase.storeWithUnknownCodecField('refused.zarr2');
-
-            nativeMessage = '';
-            try
-                ZarrArray(storePath).info();
-            catch nativeError
-                testCase.verifyEqual(nativeError.identifier, 'zarr:error');
-                nativeMessage = nativeError.message;
-            end
-            testCase.verifySubstring(nativeMessage, 'checksum', ...
-                'the native engine is expected to reject the extra field by name');
-        end
+        % ---- 4. the python fallback must not swallow unrelated failures --
 
         function unrelatedNativeFailuresAreNotReroutedToPython(testCase)
             % The engine reports every store-level failure under one identifier,
@@ -274,6 +253,12 @@ classdef NativeZarrV2Test < matlab.unittest.TestCase
             % missing array: sending it to python would replace a clear error
             % with a slower, less clear one - and would hide it entirely on a
             % machine with no python at all.
+            %
+            % This is the only half of io.zarr.Array's codec fallback that can
+            % still be tested, and it is the half that can do damage. The other
+            % half - a refused codec actually rerouting to python - no longer
+            % has a constructible fixture; see the note in Array.m and step 17
+            % of development/bigdata/plan_url_s3.md.
             missing = io.zarr.Array(fullfile(testCase.TempDir, 'absent.zarr2'));
 
             testCase.verifyError(@() missing.info(), 'zarr:error');
@@ -349,31 +334,6 @@ classdef NativeZarrV2Test < matlab.unittest.TestCase
         end
     end
 
-    methods (Test, TestTags = {'Integration'})
-
-        function unknownCodecFieldFallsBackToPython(testCase)
-            % Offline, but it starts the configured interpreter, so it is not a
-            % Unit test. zarr-python accepts the array the native engine refuses,
-            % which is what makes falling back worth doing at all rather than
-            % reporting the store as unreadable.
-            testCase.assumeTrue(testCase.pythonIsUsable(), ...
-                'no usable python interpreter for the zarr backend');
-
-            expected   = uint8(mod(reshape(1:(16 * 16 * 4), [16, 16, 4]), 251));
-            storePath  = testCase.storeWithUnknownCodecField('fallback.zarr2', expected);
-
-            array = io.zarr.Array(storePath);
-            testCase.verifyEqual(array.backend, 'native', ...
-                'the fallback must be decided by a real failure, not up front');
-
-            % values, not shapes: the two backends differ in how they get from
-            % zarr C-order to a MATLAB array, so a wrong turn there would
-            % preserve every dimension and transpose the pixels
-            testCase.verifyEqual(array.read(), expected);
-            testCase.verifyEqual(array.backend, 'python');
-        end
-    end
-
     methods (Access = private)
         function storePath = makeForeignLabelStore(testCase, storeName, data, attrsExtra)
             % MAKEFOREIGNLABELSTORE - A single-level v2 labels group written by
@@ -397,40 +357,6 @@ classdef NativeZarrV2Test < matlab.unittest.TestCase
                 attrs.(extraNames{nameIdx}) = attrsExtra.(extraNames{nameIdx});
             end
             group.setAttributes(attrs);
-        end
-
-        function storePath = storeWithUnknownCodecField(testCase, storeName, data)
-            % STOREWITHUNKNOWNCODECFIELD - a v2 zstd array whose compressor
-            % config carries an extra, harmless "checksum" field.
-            %
-            % Written natively and then patched as text, because there is no
-            % way to ask ZarrArray.create for a field it does not know. The
-            % patch is a string insertion rather than a decode/encode round
-            % trip so the rest of the document - "filters": null in particular,
-            % which zarr-python warns about when it becomes [] - is untouched.
-            if nargin < 3
-                data = uint8(mod(reshape(1:(16 * 16 * 4), [16, 16, 4]), 251));
-            end
-            storePath = fullfile(testCase.TempDir, storeName);
-            ZarrArray.createFromData(storePath, data, ...
-                'chunkShape', [8, 8, 2], 'compressors', 'zstd', 'zarrFormat', 2);
-
-            metadataFile = fullfile(storePath, '.zarray');
-            metadata     = fileread(metadataFile);
-            metadata     = regexprep(metadata, '("id"\s*:\s*"zstd")', '$1, "checksum": false', 'once');
-            fileId       = fopen(metadataFile, 'w');
-            fwrite(fileId, metadata);
-            fclose(fileId);
-        end
-
-        function tf = pythonIsUsable(~)
-            % PYTHONISUSABLE - can the configured interpreter run the backend?
-            tf = true;
-            try
-                io.zarr.PyBackend.ensureLoaded();
-            catch
-                tf = false;
-            end
         end
 
         function labels = createModelStore(testCase, storePath) %#ok<INUSD>

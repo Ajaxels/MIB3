@@ -1,5 +1,8 @@
 # DeepMIB Dimension Problems
 
+> Deferred DeepMIB ideas (checkpoint weight averaging, two-phase freeze/unfreeze training) are
+> collected in [`potential_improvements.md`](potential_improvements.md).
+
 ## Background
 
 MIB2 stored images in `[Y, X, C, Z, T]` axis order (color = dim 3, depth = dim 4).

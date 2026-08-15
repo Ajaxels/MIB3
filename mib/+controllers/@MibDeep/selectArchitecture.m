@@ -21,6 +21,13 @@ obj.view.handles.T_ConvolutionPadding.Enable = 'on';
 obj.view.handles.T_EncoderDepth.Enable = 'on';
 obj.view.handles.T_PatchesPerImage.Enable = 'on';
 obj.view.handles.T_SegmentationLayer.Enable = 'on';
+obj.view.handles.T_ActivationLayer.Enable = 'on';
+obj.view.handles.T_NumberOfClasses.Enable = 'on';
+obj.view.handles.InputLayerSettings.Enable = 'on';
+% the two "settings" buttons only apply to some layer types, so re-derive their state
+% from the current selection instead of forcing them on
+obj.activationLayerChangeCallback();
+obj.setSegmentationLayer();
 obj.view.handles.P_OverlappingTiles.Enable = 'on';
 obj.view.handles.P_OverlappingTilesPercentage.Enable = 'on';
 obj.view.handles.P_PatchWiseUpsample.Enable = 'off';
@@ -116,6 +123,25 @@ switch obj.BatchOpt.Workflow{1}
         obj.view.handles.P_ExtraPaddingPercentage.Enable = 'off';
     case '2D Instance'
         obj.view.handles.T_EncoderNetwork.Enable = 'on';
+
+        % The network comes ready-made from solov2(detectorName, ...), so none of the
+        % layer-level design settings are read by startTrainingInstances - leaving them
+        % editable suggests an influence they do not have. The values are left untouched:
+        % nothing in the instance path reads them (instance training hardcodes
+        % classNames = {'object'}, and processImages routes 2D Instance to
+        % processImagesForInstanceSegmentation before the class-count code is reached), so
+        % overwriting them would only destroy the settings of the user's semantic projects
+        obj.view.handles.T_EncoderDepth.Enable = 'off';
+        obj.view.handles.T_NumFirstEncoderFilters.Enable = 'off';
+        obj.view.handles.T_FilterSize.Enable = 'off';
+        obj.view.handles.T_ActivationLayer.Enable = 'off';
+        obj.view.handles.T_ActivationLayerSettings.Enable = 'off';
+        obj.view.handles.T_SegmentationLayer.Enable = 'off';
+        obj.view.handles.T_SegmentationLayerSettings.Enable = 'off';
+        obj.view.handles.T_NumberOfClasses.Enable = 'off';
+        % SOLOv2 does its own input preprocessing; obj.InputLayerOpt is never applied
+        obj.view.handles.InputLayerSettings.Enable = 'off';
+
         % Options tab settings
         obj.view.handles.O_CalculateAccuracyInstances.Enable = 'on';
         % Prediction tab settings

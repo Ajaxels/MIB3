@@ -294,18 +294,19 @@ at [Preferences -> External directories -> Python installation path](home-prefer
 
 MIB checks for them when you press Open and tells you the exact command if they are missing.
 
-!!! note "One exception: stores the native engine refuses"
-    A few published stores declare a compression setting the native engine does not recognise, and
-    it rejects the whole array rather than ignoring the unknown field. OpenOrganelle's
-    `jrc_mus-liver-6` is one - its compressor is written as
-    `{"id": "zstd", "level": 6, "checksum": false}`, while its neighbours in the same bucket omit
-    `checksum` and open natively.
+!!! note "If the native engine ever refuses a store"
+    The native engine parses compression settings strictly, and an older build rejected a whole
+    array over an unknown but harmless field. OpenOrganelle's `jrc_mus-liver-6` triggered this -
+    its compressor is written as `{"id": "zstd", "level": 6, "checksum": false}`, while its
+    neighbours in the same bucket omit `checksum`. **This is fixed: `jrc_mus-liver-6` and every
+    other store tested opens natively, and no Python is needed.**
 
-    Such an array is read with zarr-python instead, automatically and per array; a line in the
-    MATLAB command window names the store and the reason. Only that dataset is affected - the rest
-    of the session stays native - but it does need `zarr`, `aiohttp` and `requests` installed, as
-    above. If Python is unavailable, opening the dataset reports both the codec MIB could not read
-    and why Python could not take over.
+    Should a future store declare something the engine still does not recognise, MIB reads **that
+    array** with zarr-python automatically and prints a line in the MATLAB command window naming
+    the store and the reason. Only that dataset is affected - the rest of the session stays native
+    - but it does need `zarr`, `aiohttp` and `requests` installed, as above. If Python is
+    unavailable, opening the dataset reports both the codec MIB could not read and why Python
+    could not take over.
 
 ---
 

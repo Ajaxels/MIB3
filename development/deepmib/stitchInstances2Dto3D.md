@@ -1,5 +1,8 @@
 # 2D→3D Instance Stitching — `utils.stitchInstances2Dto3D`
 
+> Deferred DeepMIB ideas (checkpoint weight averaging, two-phase freeze/unfreeze training) are
+> collected in [`potential_improvements.md`](potential_improvements.md).
+
 First building block of the **3D instance segmentation** roadmap in
 [`instance_2d_plan.md`](instance_2d_plan.md) ("Future roadmap — 3D instance segmentation").
 Implements step 2 of that roadmap: linking independently-segmented 2D instance masks across

@@ -1187,7 +1187,34 @@ homogeneous-crop warning. `docs_api/` picks up the two new `OmeZarrMetadataUtils
 
 ---
 
-### Step 17 - a store the native engine refuses (**DONE 2026-08-12**)
+### Step 17 - a store the native engine refuses (**DONE 2026-08-12; trigger retired 2026-08-15**)
+
+> **Retired by a library update (2026-08-15).** The rebuilt `zarrMex` learned `checksum`, so
+> `jrc_mus-liver-6` opens natively and needs no python. Verified live: `s5` reads in 1.55 s with
+> `backend` staying `'native'` and pixels **identical** to a zarr-python read of the same bbox
+> (which took 9.79 s, so this is a ~6x speedup, not merely a dependency removal); the full store
+> opens through `MibModel.loadImages` as BigData in 2.2 s, `[8050 8000 8501]`, 9 levels, 8 nm, and
+> `getData2D` serves a full-resolution 512x512 in 2.27 s cold / 0.010 s on the next z slice.
+>
+> **The fallback code is kept; both of its tests were deleted.** The obvious repair - re-point the
+> fixture at some other unknown field - **does not work, and this is the finding worth keeping**:
+> any field invented to keep the engine refusing is equally unknown to numcodecs, so python rejects
+> it too. Measured with an extra `"bogusField": 1` in the zstd config: native gives *"configuration
+> is unsupported: data did not match any variant of untagged enum ZstdCodecConfiguration"* and
+> python gives *"TypeError: `__init__()` got an unexpected keyword argument 'bogusField'"*. A
+> working fixture needs a field numcodecs accepts and the engine does not - which is precisely the
+> unanticipated real-world divergence that cannot be manufactured. `checksum` was one only because
+> it was a genuine numcodecs field the Rust parser had not implemented.
+>
+> So `nativeRefusesAnUnknownCodecField` (asserted a now-false fact) and
+> `unknownCodecFieldFallsBackToPython` (no constructible fixture) are gone, along with the
+> `storeWithUnknownCodecField` and `pythonIsUsable` helpers.
+> `unrelatedNativeFailuresAreNotReroutedToPython` stays and still passes - it covers the half that
+> can do damage, since `isCodecUnsupported` matches on message text and the live risk is a false
+> positive rerouting a network error to python. The uncovered half fails safe: if the fallback
+> never fires, the user sees the raw engine error, which is the pre-step-17 behaviour.
+>
+> Everything below is the original write-up, kept because the mechanism is still in the code.
 
 Reported opening `jrc_mus-liver-6` from the browser dialog: the dataset opened, and then every
 repaint raised, from inside the `NewDataset` and `ShowImage` listeners,

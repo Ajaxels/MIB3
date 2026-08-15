@@ -210,9 +210,11 @@ classdef DisplayAdjust < handle
             if strcmp(obj.mibModel.I{id}.image.colorType, 'indexed')
                 dlgOpt.MsgBoxOnly   = true;
                 dlgOpt.Icon         = 'puffin_warning';
-                prompts = {sprintf('Indexed images cannot be adjusted!\nPlease convert to Grayscale or RGB first:\nMenu -> Image -> Mode ->')};
-                defAns  = {''};
-                utils.dlgs.inputUniversalDlg(obj.mibModel.getProgressBarParent(), prompts, defAns, 'Indexed colors', dlgOpt);
+                dlgOpt.HeaderLines  = 1;
+                utils.dlgs.inputUniversalDlg(obj.mibModel.getProgressBarParent(), ...
+                    'Indexed images cannot be adjusted!', {''}, ...
+                    {'Please convert the image to Grayscale or RGB first: Ribbon -> Image -> Mode'}, ...
+                    'Indexed colors', dlgOpt);
             end
 
             % ---- register event listeners
@@ -466,12 +468,30 @@ classdef DisplayAdjust < handle
                 fprintf('controllers.DisplayAdjust.updateHist: triggered\n');
             end
             id      = obj.mibModel.getActiveId();
+
+            % Nothing to plot until the axes are laid out. core.MibDataset.initialize
+            % leaves axesX/axesY a scalar NaN, and this method runs from the
+            % NewDataset listener, which can fire before the axes are
+            % initialised - closing a Virtual or BigData buffer does exactly
+            % that. The block mode below would then hand core.MibVirtualImage a
+            % region it cannot compute, and there is no good answer further
+            % down: it currently throws on the Xlim(2) clamp, and making it
+            % fall back to the full extent instead is worse, because
+            % getDataZarr picks the level from magFactor, which is 1 here - a
+            % remote pyramid would fetch its entire full-resolution slice
+            % (~3900 chunks on jrc_mus-liver-6) and appear to hang.
+            % The histogram is refreshed by the next event once the axes exist.
+            [axesX, axesY] = obj.mibModel.I{id}.getAxesLimits();
+            if numel(axesX) < 2 || numel(axesY) < 2 || any(isnan([axesX(:); axesY(:)]))
+                return;
+            end
+
             channel = obj.getChannelIndex();
             viewPort = obj.mibModel.I{id}.image.viewPort;
             maxInt  = double(obj.mibModel.I{id}.image.maxInt);
             h = obj.view.handles;
 
-            % get current slice (blockModeSwitch=1 → crop to visible area)
+            % get current slice (blockModeSwitch=1 -> crop to visible area)
             options.blockModeSwitch = 1;
             img = cell2mat(obj.mibModel.getData2D('image', [], [], channel, options));
 

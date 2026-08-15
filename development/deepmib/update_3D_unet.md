@@ -1,5 +1,8 @@
 # Update: 3D U-Net — unet3dLayers → unet3d Migration + Anisotropic Refactor
 
+> Deferred DeepMIB ideas (checkpoint weight averaging, two-phase freeze/unfreeze training) are
+> collected in [`potential_improvements.md`](potential_improvements.md).
+
 **Date:** 2026-04-22
 **Author:** Ilya Belevich / Claude Code
 

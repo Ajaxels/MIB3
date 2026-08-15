@@ -1,5 +1,8 @@
 # DeepMIB — Finish 2D Instance Segmentation (SOLOv2)
 
+> Deferred DeepMIB ideas (checkpoint weight averaging, two-phase freeze/unfreeze training) are
+> collected in [`potential_improvements.md`](potential_improvements.md).
+
 > **Step 0 (on approval):** copy this file to `development/deepmib/instance_2d_plan.md`
 > (repo-tracked location the user requested; plan-mode restrictions prevent creating it now).
 

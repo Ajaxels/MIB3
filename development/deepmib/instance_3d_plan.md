@@ -1,5 +1,8 @@
 # 3D Instance Stitching — Improvement Plan (`utils.stitchInstances2Dto3D`)
 
+> Deferred DeepMIB ideas (checkpoint weight averaging, two-phase freeze/unfreeze training) are
+> collected in [`potential_improvements.md`](potential_improvements.md).
+
 Follow-up to [`stitchInstances2Dto3D.md`](stitchInstances2Dto3D.md) (algorithm + MIB integration,
 already done) and the "Future roadmap — 3D instance segmentation" section of
 [`instance_2d_plan.md`](instance_2d_plan.md). This plan re-evaluates the three open design

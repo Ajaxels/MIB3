@@ -27,6 +27,13 @@ function out = readInstancePatch(filename, options)
 %     - ``.objectFraction`` - fraction of patches that are object-seeded (e.g. ``0.9``)
 %     - ``.minObjectArea`` - minimum object area (pixels) kept after cropping
 %     - ``.getImageOptions`` - struct passed to deepmib.storeLoadImages
+%     - ``.patchSeed`` - *optional* seed for a private random stream. When present the same
+%       call always crops the same window, which is what the validation set needs: its loss
+%       is only comparable between evaluations if the patches do not change underneath it.
+%       Training leaves this out, so every epoch re-samples fresh windows from the global
+%       stream (that resampling is a large part of what "patches per image" buys). The
+%       private stream is used instead of ``rng`` so that seeding a validation read never
+%       disturbs the global stream feeding the training patches.
 %
 % Output Arguments:
 %   - **out** - ``1×4`` cell ``{image HxWx3, boxes Kx4 [x y w h], labels Kx1 categorical,
@@ -86,23 +93,30 @@ if height < ph || width < pw
     [height, width, ~] = size(image);
 end
 
+% a seeded private stream makes this call reproducible without touching the global stream
+if isfield(options, 'patchSeed') && ~isempty(options.patchSeed)
+    patchStream = RandStream('threefry4x64_20', 'Seed', options.patchSeed);
+else
+    patchStream = RandStream.getGlobalStream();
+end
+
 objectList = unique(labelMap(labelMap > 0));
-useObjectSeed = ~isempty(objectList) && rand <= options.objectFraction;
+useObjectSeed = ~isempty(objectList) && rand(patchStream) <= options.objectFraction;
 
 % pick a patch window; for object-seeded patches retry until the window holds an object
 maxAttempts = 10;
 y1 = 1; x1 = 1;
 for attempt = 1:maxAttempts
     if useObjectSeed
-        objId = objectList(randi(numel(objectList)));
+        objId = objectList(randi(patchStream, numel(objectList)));
         [ptsR, ptsC] = find(labelMap == objId);
-        anchorIdx = randi(numel(ptsR));
+        anchorIdx = randi(patchStream, numel(ptsR));
         % jitter: place the anchor pixel at a random position inside the patch
-        y1 = ptsR(anchorIdx) - randi(ph) + 1;
-        x1 = ptsC(anchorIdx) - randi(pw) + 1;
+        y1 = ptsR(anchorIdx) - randi(patchStream, ph) + 1;
+        x1 = ptsC(anchorIdx) - randi(patchStream, pw) + 1;
     else
-        y1 = randi(height - ph + 1);
-        x1 = randi(width - pw + 1);
+        y1 = randi(patchStream, height - ph + 1);
+        x1 = randi(patchStream, width - pw + 1);
     end
     y1 = min(max(y1, 1), height - ph + 1);
     x1 = min(max(x1, 1), width - pw + 1);
