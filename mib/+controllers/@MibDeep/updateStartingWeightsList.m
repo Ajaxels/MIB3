@@ -30,7 +30,12 @@ function updateStartingWeightsList(obj)
 %     cannot be reported here.
 %   - ``'ImageNet'`` - 2D Patch-wise classification networks initialized from the
 %     MathWorks ImageNet-pretrained weights (requires the matching support package)
-%   - ``'COCO, trainable backbone'`` *(default)* - SOLOv2 from COCO weights, the whole
+%   - ``'COCO, frozen then trainable'`` *(default)* - the two-phase schedule: train with the
+%     backbone frozen, then unfreeze it and continue at a much lower rate. Phase 1 ends as
+%     soon as the training loss goes flat, or at a cap, whichever comes first; the epochs it
+%     does not use go to phase 2. Configured through ``obj.StartingWeightsOpt``
+%     (see :func:`setStartingWeightsSettings`) and run by :func:`startTrainingInstances`
+%   - ``'COCO, trainable backbone'`` - SOLOv2 from COCO weights, the whole
 %     network keeps training (``trainSOLOV2(..., 'FreezeSubNetwork', 'none')``), so the
 %     features adapt to microscopy data. **The initial learning rate must come down to
 %     about 1e-4**: at the rates that suit a frozen backbone (1e-3 to 1e-2) the pretrained
@@ -90,11 +95,12 @@ switch obj.BatchOpt.Workflow{1}
             itemsList = {randomWeights, imagenetWeights};
         end
     case '2D Instance'
-        % solov2() can only be built from a named COCO-pretrained detector, so
-        % random initialization is not offered; the choice is whether the backbone
-        % keeps training. The trainable backbone is first, i.e. the default: COCO
-        % features are a poor match for microscopy data and benefit from adapting
-        itemsList = {'COCO, trainable backbone', 'COCO, frozen backbone'};
+        % solov2() can only be built from a named COCO-pretrained detector, so random
+        % initialization is not offered; the choice is what happens to the backbone.
+        % The two-phase schedule is first, i.e. the default, because it measured best on
+        % the mitochondria benchmark (validation mAP 0.76 against 0.00 for a backbone
+        % unfrozen from the start at the rate that suits a frozen one)
+        itemsList = {'COCO, frozen then trainable', 'COCO, frozen backbone', 'COCO, trainable backbone'};
 end
 
 obj.BatchOpt.T_StartingWeights{2} = itemsList;
@@ -110,5 +116,13 @@ if numel(itemsList) > 1
     obj.view.handles.T_StartingWeights.Enable = 'on';
 else
     obj.view.handles.T_StartingWeights.Enable = 'off';
+end
+
+% the settings button only configures the two-phase schedule, so it is meaningless for
+% every other state
+if strcmp(obj.BatchOpt.T_StartingWeights{1}, 'COCO, frozen then trainable')
+    obj.view.handles.T_StartingWeightsSettings.Enable = 'on';
+else
+    obj.view.handles.T_StartingWeightsSettings.Enable = 'off';
 end
 end

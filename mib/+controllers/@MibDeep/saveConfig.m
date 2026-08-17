@@ -41,6 +41,7 @@ function saveConfig(obj, configName)
     DynamicMaskOpt = obj.DynamicMaskOpt;
     ScoreExportOpt = obj.ScoreExportOpt;
     OverlapInstancesOpt = obj.OverlapInstancesOpt;
+    StartingWeightsOpt = obj.StartingWeightsOpt;
 
     % try to export path as relatives
     BatchOpt.NetworkFilename = deepmib.convertAbsoluteToRelativePath(BatchOpt.NetworkFilename, projectPath, '[RELATIVE]');
@@ -56,7 +57,7 @@ function saveConfig(obj, configName)
     save(configName, ...
         'TrainingOptStruct', 'AugOpt2DStruct', 'AugOpt3DStruct', ...
         'SegmentationLayerOpt', 'ActivationLayerOpt', 'DynamicMaskOpt', 'ScoreExportOpt', ...
-        'OverlapInstancesOpt', ...
+        'OverlapInstancesOpt', 'StartingWeightsOpt', ...
         'InputLayerOpt', 'BatchOpt', 'mibVersion', '-mat', '-v7.3');
 end
 

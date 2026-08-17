@@ -70,6 +70,11 @@ dims = [obj.image.height, obj.image.width, obj.image.depth, 1, obj.image.time];
 % Preserve material metadata before replacing the labels object
 existingMaterialColors = obj.labels.materialColors;
 existingMaterialNames  = obj.labels.materialNames;
+% The MibLabels/MibLabels63 constructors reset filename to 'Labels_none.model',
+% so keep the current model filename and mat-file variable name and restore
+% them on the new layer object - conversion does not change where the model came from
+existingFilename       = obj.labels.filename;
+existingLabelsVariable = obj.labels.labelsVariable;
 
 %% Indexed-object detection (types 2.4, 2.8, 3.6, 3.26)
 if newType < 4
@@ -147,6 +152,8 @@ if newType < 4
     obj.labels.maxMaterials   = newModelType;
     obj.labels.materialNames  = {'1'; '2'};
     obj.labels.materialColors = rand(65535, 3);
+    obj.labels.filename       = existingFilename;
+    obj.labels.labelsVariable = existingLabelsVariable;
     obj.selectedMaterial = 3;
     obj.selectedAddToMaterial = 3;
     return;
@@ -185,6 +192,8 @@ if newType == 63
     obj.selection = core.MibLabels([], meta);
     obj.mask      = core.MibLabels([], meta);
 
+    obj.labels.filename       = existingFilename;
+    obj.labels.labelsVariable = existingLabelsVariable;
     obj.labels.materialNames = existingMaterialNames;
     if ~isempty(existingMaterialColors) && size(existingMaterialColors, 2) == 3
         obj.labels.materialColors = existingMaterialColors;
@@ -229,6 +238,8 @@ if ~isempty(wb); wb.Value = 0.7; end
 
 obj.labels = core.MibLabels(newData, meta);
 obj.labels.maxMaterials = newType;
+obj.labels.filename       = existingFilename;
+obj.labels.labelsVariable = existingLabelsVariable;
 obj.maskExist = 1;
 
 % Adjust material names and colors for type boundary crossings

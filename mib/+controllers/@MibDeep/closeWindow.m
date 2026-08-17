@@ -27,6 +27,7 @@ obj.mibModel.preferences.Deep.ActivationLayerOpt = obj.ActivationLayerOpt;
 obj.mibModel.preferences.Deep.SegmentationLayerOpt = obj.SegmentationLayerOpt;
 obj.mibModel.preferences.Deep.DynamicMaskOpt = obj.DynamicMaskOpt;
 obj.mibModel.preferences.Deep.OverlapInstancesOpt = obj.OverlapInstancesOpt;
+obj.mibModel.preferences.Deep.StartingWeightsOpt = obj.StartingWeightsOpt;
 
 obj.mibModel.preferences.Deep.SendReports = obj.SendReports;
 

@@ -248,7 +248,7 @@ wording identical to the tooltip and the docs (`worst-first` everywhere) so it r
 |------|-------|------------|
 | `overlayModeDropdown` | `uidropdown` | Items: `{'Falsecolor','Flicker','Checkerboard','Difference'}` Default: `'Falsecolor'` |
 | `offsetLabel` | `uilabel` | Default: `''` — current vs measured offset + scores readout (next to the dropdown). |
-| `pairAxes` | `uiaxes` | The seam composite; controller manages everything (`YDir`, ticks). |
+| `pairAxes` | `uiaxes` | The seam composite; controller manages everything (`YDir`, ticks, limits). Pixels stay 1:1, but the controller widens the short side of the view so it fills the whole cell instead of drawing a letterboxed column - see `plan_inspector.md`, "The pair view fills its grid cell". |
 
 ### Action buttons (bottom row of the right area)
 

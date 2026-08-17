@@ -144,13 +144,14 @@ if numel(checkPointFiles) > 1
 
     switch selPosition
         case 1  % start new training
+            % Only the checkpoint networks are cleared. They are named
+            % "net_checkpoint__<iteration>__<timestamp>.mat" with no reference to the run,
+            % so they accumulate across runs and clutter the restore dialog above.
+            % The score and CSV files are NOT deleted: they are written with a
+            % "<yyMMddHHmm>_<network name>" prefix, so runs cannot overwrite each other
+            % and the history of a project stays intact.
             if obj.BatchOpt.T_SaveProgress
-                delete(fullfile(obj.BatchOpt.ResultingImagesDir, 'ScoreNetwork', '*.mat'));     % delete all score matlab files
-            end
-            % make directories for export of the training scores
-            if obj.BatchOpt.T_ExportTrainingPlots
-                delete(fullfile(obj.BatchOpt.ResultingImagesDir, 'ScoreNetwork', '*.csv'));     % delete all csv files
-                delete(fullfile(obj.BatchOpt.ResultingImagesDir, 'ScoreNetwork', '*.score'));     % delete all score matlab files
+                delete(fullfile(obj.BatchOpt.ResultingImagesDir, 'ScoreNetwork', 'net_checkpoint__*.mat'));
             end
         case 2  % continue from the loaded net
             if exist(obj.BatchOpt.NetworkFilename, 'file') == 2     % when the mibDeep file is present
@@ -161,13 +162,8 @@ if numel(checkPointFiles) > 1
         otherwise  % continue from the checkpoint
             checkPointRestoreFile = fullfile(obj.BatchOpt.ResultingImagesDir, 'ScoreNetwork', answer{1});
     end
-else
-    % make directories for export of the training scores
-    if obj.BatchOpt.T_ExportTrainingPlots
-        delete(fullfile(obj.BatchOpt.ResultingImagesDir, 'ScoreNetwork', '*.csv'));     % delete all csv files
-        delete(fullfile(obj.BatchOpt.ResultingImagesDir, 'ScoreNetwork', '*.score'));     % delete all score matlab files
-    end
 end
+% nothing is deleted here: the exported files carry a per-run prefix, see above
 
 trainTimer = tic;
 
@@ -724,6 +720,22 @@ try
             end
     end
     
+    % randomPatchExtractionDatastore crops fresh random patches on every pass, so without
+    % this the validation loss is measured on different data at every evaluation and
+    % reports which crops were drawn as much as how the network is doing - which also
+    % makes "best-validation-loss" pick the luckiest draw rather than the best network.
+    % A non-zero validation seed freezes the patches, 0 keeps the previous behaviour.
+    % Applied here, to the finished validation datastore, rather than to valPatchDS: the
+    % augmentation transforms above are created with 'IncludeInfo', which a datastore
+    % built by transform() cannot serve as the layer underneath them.
+    % 2D Patch-wise validates on whole images from an imageDatastore, which never moves,
+    % so there is nothing to freeze there.
+    if ~isempty(valDS) && obj.BatchOpt.T_RandomGeneratorValSeed{1} ~= 0 && ...
+            ~strcmp(obj.BatchOpt.Workflow{1}, '2D Patch-wise')
+        valDS = iFreezeValidationPatches(valDS, obj.BatchOpt.T_RandomGeneratorValSeed{1}, ...
+            obj.BatchOpt.T_MiniBatchSize{1});
+    end
+
     % calculate max number of iterations
     if strcmp(obj.BatchOpt.Workflow{1}, '2D Patch-wise')
         mibDeepTrainingProgressStruct.maxNoIter = ...        % as noImages*PatchesPerImage*MaxEpochs/Minibatch
@@ -1093,3 +1105,71 @@ obj.view.handles.TrainButton.BackgroundColor = [0.7686    0.9020    0.9882];
 fprintf('Training is finished, elapsed time: %f\n', toc(trainTimer));
 end
 
+% -------------------------------------------------------------------------------------
+function frozenDS = iFreezeValidationPatches(valDS, seedValue, miniBatchSize)
+% read the validation datastore once and replay those exact batches at every evaluation
+%
+% randomPatchExtractionDatastore picks its crops lazily from the global random stream, so a
+% second pass over it yields different patches (verified: two passes over the same
+% datastore return different data). For training that is a feature - it is what makes
+% "Patches per image" worth more than a fixed set. For validation it means the loss is
+% measured on different data every time, so the curve is not comparable between
+% evaluations and "best-validation-loss" ends up selecting the luckiest draw.
+%
+% Called with the finished validation datastore, after the augmentation transforms have
+% been wrapped around it, so the batches replayed here are exactly what the trainer would
+% otherwise have received.
+%
+% Input Arguments:
+%   - **valDS** - the finished validation datastore
+%   - **seedValue** - non-zero seed used for the one extraction pass
+%   - **miniBatchSize** - only used to report how much was captured
+%
+% Output Arguments:
+%   - **frozenDS** - datastore replaying the captured batches; on any problem the original
+%     datastore is returned unchanged, since a randomised validation set is much better
+%     than a failed training run
+
+frozenDS = valDS;
+
+% never disturb the sequence of training patches, which is fixed by the training seed;
+% restored explicitly rather than through onCleanup, because the datastore built below
+% keeps its defining workspace alive and an onCleanup object there would never fire
+rngState = rng();
+rng(seedValue, 'twister');
+
+try
+    reset(valDS);
+    validationBatches = {};
+    while hasdata(valDS)
+        validationBatches{end+1} = read(valDS); %#ok<AGROW>
+    end
+    reset(valDS);
+catch err
+    rng(rngState);
+    warning('DeepMIB:freezeValidationPatches', ...
+        'could not pre-extract the validation patches (%s); they stay randomised', err.message);
+    return;
+end
+rng(rngState);
+
+noBatches = numel(validationBatches);
+if noBatches == 0; return; end
+
+% the patches are held in memory for the whole run, so back out rather than run the
+% machine out of RAM on an unusually large validation set
+capturedBytes = whos('validationBatches');
+if capturedBytes.bytes > 2e9
+    warning('DeepMIB:freezeValidationPatches', ...
+        ['the validation patches would need %.1f GB to keep in memory, so they stay randomised.\n' ...
+        'Reduce "Patches per image" or the number of validation images to get a stable validation curve.'], ...
+        capturedBytes.bytes/1e9);
+    return;
+end
+
+fprintf('DeepMIB: validation patches fixed with seed %d (%d batches of up to %d, %.0f MB)\n', ...
+    seedValue, noBatches, miniBatchSize, capturedBytes.bytes/1e6);
+
+frozenDS = transform(arrayDatastore((1:noBatches)', 'ReadSize', 1, 'OutputType', 'same'), ...
+    @(batchIndex) validationBatches{batchIndex});
+end

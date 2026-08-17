@@ -64,6 +64,10 @@ handleJ = image(pairAxes, 'XData', [widthI + gap + 1, widthI + gap + size(imageJ
 set([handleI, handleJ], 'ButtonDownFcn', @(~, evnt) obj.pairViewButtonDown(evnt));
 set(pairAxes, 'YDir', 'reverse', 'XTick', [], 'YTick', []);
 axis(pairAxes, 'image');
+[xLim, yLim] = obj.pairAxesFillLimits();   % use the whole reserved cell
+if ~isempty(xLim)
+    set(pairAxes, 'XLim', xLim, 'YLim', yLim);
+end
 title(pairAxes, sprintf('Two-click match: tile %d (left) and tile %d (right)', ...
     edge.i, edge.j));
 

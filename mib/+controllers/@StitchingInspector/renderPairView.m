@@ -276,12 +276,31 @@ axis(pairAxes, 'image');
 
 % Re-apply the wheel zoom across re-renders of the SAME seam - nudges, drags
 % and fixes all re-render, and losing the zoom on every arrow key would make
-% fine alignment unusable. Selecting another seam resets to fit.
+% fine alignment unusable.
+%
+% The zoom LEVEL also follows the user ACROSS seams: a QC pass means judging
+% every seam at the same magnification, and re-zooming after each Enter was
+% the most repetitive thing in it. Only the CENTRE is re-anchored, onto the
+% new pair's overlap - the part actually being judged - because the axes are
+% in tile-*i* pixels and the same coordinates mean something different for
+% every pair. A carried zoom wider than the new pair just fits instead.
 if ~isempty(obj.pairZoom) && isequal(obj.pairZoom.edgeIdx, obj.currentEdgeIdx)
-    pairAxes.XLim = obj.pairZoom.xLim;
-    pairAxes.YLim = obj.pairZoom.yLim;
+    [xLim, yLim] = obj.pairAxesFillLimits(obj.pairZoom.xLim, obj.pairZoom.yLim);
 else
-    obj.pairZoom = [];
+    [xLim, yLim] = carriedZoomOnNewSeam(obj, deltaYX, sizeI, sizeJ, ...
+        [colMin, colMin + unionW - 1], [rowMin, rowMin + unionH - 1]);
+    if isempty(xLim)
+        obj.pairZoom = [];
+        [xLim, yLim] = obj.pairAxesFillLimits();   % 'axis image' left it letterboxed
+    else
+        obj.pairZoom = struct('edgeIdx', obj.currentEdgeIdx, 'xLim', xLim, 'yLim', yLim);
+    end
+end
+% Fill the whole reserved cell instead of a letterboxed column (see
+% pairAxesFillLimits); the pixels stay 1:1, only the shown context grows.
+if ~isempty(xLim)
+    pairAxes.XLim = xLim;
+    pairAxes.YLim = yLim;
 end
 
 % Phase C interactions: click = correlate at that spot, drag = move tile j.
@@ -319,6 +338,42 @@ canvasJ(positionJ(1):positionJ(1) + size(imageJ, 1) - 1, ...
         positionJ(2):positionJ(2) + size(imageJ, 2) - 1) = imageJ;
 canvasExtent = {[colMin, colMin + (bufferW - 1) * scale], ...
                 [rowMin, rowMin + (bufferH - 1) * scale]};
+end
+
+% =====================================================================
+function [xLim, yLim] = carriedZoomOnNewSeam(obj, deltaYX, sizeI, sizeJ, xFull, yFull)
+% CARRIEDZOOMONNEWSEAM - Same magnification, re-centred on the new seam.
+%
+% Returns the stored zoom's SPAN placed over the overlap between the two
+% tiles - where the seam is, and the only part of the pair worth being zoomed
+% into - clamped to stay inside the rendered union. ``[]`` when there is no
+% zoom to carry or it is no longer a zoom on this pair (span at least as big
+% as the union in both directions), which tells the caller to fit instead.
+xLim = []; yLim = [];
+if isempty(obj.pairZoom); return; end
+
+spanX = diff(obj.pairZoom.xLim);
+spanY = diff(obj.pairZoom.yLim);
+if spanX >= diff(xFull) && spanY >= diff(yFull); return; end
+
+% Overlap in the tile-i frame; the union centre when the tiles do not overlap
+% at all (a badly placed pair - then the whole pair is the subject).
+overlapY = [max(1, 1 + deltaYX(1)), min(sizeI(1), sizeJ(1) + deltaYX(1))];
+overlapX = [max(1, 1 + deltaYX(2)), min(sizeI(2), sizeJ(2) + deltaYX(2))];
+if diff(overlapY) <= 0 || diff(overlapX) <= 0
+    centre = [mean(xFull), mean(yFull)];
+else
+    centre = [mean(overlapX), mean(overlapY)];
+end
+
+xLim = centre(1) + [-0.5, 0.5] * spanX;
+yLim = centre(2) + [-0.5, 0.5] * spanY;
+% Same border clamp as the wheel zoom: a span wider than the union collapses
+% to "centred on the union", which is what that direction wants.
+xLim = xLim - max(0, xLim(2) - xFull(2)) + max(0, xFull(1) - xLim(1));
+yLim = yLim - max(0, yLim(2) - yFull(2)) + max(0, yFull(1) - yLim(1));
+
+[xLim, yLim] = obj.pairAxesFillLimits(xLim, yLim);
 end
 
 % =====================================================================

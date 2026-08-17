@@ -109,6 +109,14 @@ classdef MibDeep < handle
         % .Method = 'Keep above threshold';  % 'Keep above threshold' or 'Keep below threshold'
         % .ThresholdValue = 60;
         % .InclusionThreshold = 0.1;     % Inclusion threshold for mask blocks
+        StartingWeightsOpt
+        % options for the "COCO, frozen then trainable" two-phase schedule of the 2D
+        % Instance workflow (see controllers.MibDeep/startTrainingInstances)
+        % .MinFrozenFraction = 0.1;  % smallest share of MaxEpochs before a switch is allowed
+        % .MaxFrozenFraction = 0.25;  % largest share of MaxEpochs the frozen phase may use
+        % .PlateauWindowEpochs = 25;  % averaging window used to call the loss flat
+        % .PlateauTolerance = 0.01;  % relative improvement below which the loss is flat
+        % .TrainableLearnRate = 1e-4;  % absolute learn rate of phase 2, capped at InitialLearnRate
         OverlapInstancesOpt
         % options for stitching of instances across tiles during 2D Instance prediction
         % (the stitching mode itself is in BatchOpt.P_OverlapInstancesMode)
@@ -250,7 +258,7 @@ classdef MibDeep < handle
         loadConfig(obj, configName)        % load config file with Deep MIB settings
         mergeInstancesTo3D(obj)        % merge predicted 2D instance models into a 3D instance model
         TrainingOptions = preprareTrainingOptions(obj, valDS)        % prepare trainig options for the network training
-        TrainingOptions = preprareTrainingOptionsInstances(obj, valDS);     % prepare options for training of instance segmentation network
+        TrainingOptions = preprareTrainingOptionsInstances(obj, valDS, trainingOptOverrides);     % prepare options for training of instance segmentation network
         previewDynamicMask(obj)        % preview results for the dynamic mode
         previewImagePatches_Callback(obj, event)        % callback for value change of obj.view.handles.O_PreviewImagePatches
         previewModels(obj, loadImagesSwitch)        % load images for predictions and the resulting models into MIB
@@ -290,6 +298,8 @@ classdef MibDeep < handle
         lgraph = updateConvolutionLayers(obj, lgraph)        % update the convolution layers by providing new set of weight initializers
         updateDynamicMaskSettings(obj)        % update settings for calculation of dynamic masks during prediction using blockedimage mode the settings are stored in obj.DynamicMaskOpt
         updateOverlapInstancesSettings(obj)        % update settings for stitching of instances across tiles during 2D Instance prediction, the settings are stored in obj.OverlapInstancesOpt
+        setStartingWeightsSettings(obj)        % update settings for the two-phase "COCO, frozen then trainable" schedule, the settings are stored in obj.StartingWeightsOpt
+        previewValidationPatches(obj)        % show a collage of the patches that the current validation seed produces
         updateImageDirectoryPath(obj, event)        % update directories with images for training, prediction and results
         lgraph = updateMaxPoolAndTransConvLayers(obj, lgraph, poolSize)        % update maxPool and TransposedConvolution layers depending on network downsampling factor only for U-net and SegNet
         lgraph = updateNetworkInputLayer(obj, lgraph, inputPatchSize)        % update the input layer settings for lgraph parameters are taken from obj.InputLayerOpt
@@ -383,6 +393,12 @@ classdef MibDeep < handle
             obj.BatchOpt.T_RandomGeneratorSeed{1} = obj.mibModel.preferences.Deep.RandomGeneratorSeed;  % random seed generator for training
             obj.BatchOpt.T_RandomGeneratorSeed{2} = [0 Inf];
             obj.BatchOpt.T_RandomGeneratorSeed{3} = true;
+            % separate seed for the validation patches of the 2D Instance workflow; it
+            % defaults to a fixed value because a moving validation set cannot be compared
+            % between evaluations, which is the opposite of what training patches want
+            obj.BatchOpt.T_RandomGeneratorValSeed{1} = 1;   % random seed generator for the validation patches
+            obj.BatchOpt.T_RandomGeneratorValSeed{2} = [0 Inf];
+            obj.BatchOpt.T_RandomGeneratorValSeed{3} = true;
 
             obj.BatchOpt.Bioformats = false;    % use bioformats file reader for prediction images
             obj.BatchOpt.BioformatsTraining = false;    % use bioformats file reader for training images
@@ -484,7 +500,7 @@ classdef MibDeep < handle
             obj.BatchOpt.mibBatchTooltip.T_NumFirstEncoderFilters = 'Number of output channels for the first encoder stage';
             obj.BatchOpt.mibBatchTooltip.T_FilterSize = 'Convolutional layer filter size, specified as a positive odd integer';
             obj.BatchOpt.mibBatchTooltip.T_NumAnisotropicBlocks = 'Number of initial 2D-only downsampling blocks before full 3D convolutions; for anisotropic datasets where Z spacing is coarser than XY (U-net Anisotropic only)';
-            obj.BatchOpt.mibBatchTooltip.T_StartingWeights = 'Where the starting weights come from; the available states are decided by the network design, so the dropdown is disabled when there is no choice. For SOLOv2, start with a frozen backbone: a trainable backbone needs the learning rate lowered to about 1e-4 or the pretrained weights are destroyed';
+            obj.BatchOpt.mibBatchTooltip.T_StartingWeights = 'Where the starting weights come from; the available states are decided by the network design, so the dropdown is disabled when there is no choice. For SOLOv2 use "frozen then trainable", which trains with the backbone frozen and then unfreezes it at a lower rate on its own; the single-phase states are there for comparison, and a backbone left trainable from the start destroys the pretrained weights unless the learning rate is lowered to about 1e-4';
             obj.BatchOpt.mibBatchTooltip.T_PatchesPerImage = 'Number of patches to extract from each image per epoch; it is applied to the validation images as well, so observations per epoch = this value x number of training images, and the validation set is this value x number of validation images';
             obj.BatchOpt.mibBatchTooltip.T_MiniBatchSize = 'Number of observations that are returned in each batch';
             obj.BatchOpt.mibBatchTooltip.T_augmentation = 'Augment images during training';
@@ -505,7 +521,8 @@ classdef MibDeep < handle
             obj.BatchOpt.mibBatchTooltip.PreprocessingMode = 'Preprocess images for prediction or training by splitting the datasets for training and validation';
             obj.BatchOpt.mibBatchTooltip.ValidationFraction = 'Fraction of images used for validation during training';
             obj.BatchOpt.mibBatchTooltip.RandomGeneratorSeed = 'Seed for random number generator used during splitting of test and validation datasets';
-            obj.BatchOpt.mibBatchTooltip.T_RandomGeneratorSeed = 'Seed for random number generator used during initialization of training. Use 0 for random initialization each time or any other number for reproducibility. For 2D Instance it also fixes the validation patches: with a non-zero seed every validation image is always cropped at the same windows, so the validation loss is comparable between evaluations; training patches stay freshly sampled each epoch either way';
+            obj.BatchOpt.mibBatchTooltip.T_RandomGeneratorSeed = 'Random seed for the training patches. Use 0 for random initialization each time or any other number for reproducibility. The training patches are re-sampled every epoch either way, this seed only fixes the sequence they are drawn in';
+            obj.BatchOpt.mibBatchTooltip.T_RandomGeneratorValSeed = 'Random seed for validation patches. With a non-zero value the same patches are used at every evaluation, so the validation loss is comparable between evaluations and "best-validation-loss" selects a network rather than a lucky crop. Use 0 to crop fresh random validation patches at every evaluation. It has no effect on 2D Patch-wise, where validation uses whole images and is stable already';
             obj.BatchOpt.mibBatchTooltip.MaskAway = 'Mask away areas that should not be used for training, requires MIB *.mask files under Mask subfolder for preprocessing or use of 0s (Exterior) to specify mask out areas in models';
             obj.BatchOpt.mibBatchTooltip.SingleModelTrainingFile = 'When checked a single Model file with labels is used, when unchecked each image should have a corresponding model file with labels';
             obj.BatchOpt.mibBatchTooltip.ModelFilenameExtension = 'Extension for model filenames with labels, the files should be placed under "Labels" subfolder';
@@ -566,6 +583,37 @@ classdef MibDeep < handle
                 obj.OverlapInstancesOpt.DetectionThreshold = 0.5;
                 obj.OverlapInstancesOpt.MergeIoU = 0.5;
                 obj.OverlapInstancesOpt.MergeIoA = 0.8;
+            end
+
+            % two-phase "frozen then trainable" schedule
+            % All four were calibrated by replaying the rule over recorded DeepMIB loss
+            % curves (see development/deepmib/potential_improvements.md).
+            % The frozen phase is capped at a quarter of the budget because the trainable
+            % phase is where the gains are: on the mitochondria benchmark the frozen phase
+            % went 0.61 -> 0.33 over its last 4500 iterations while the trainable phase
+            % went 1.28 -> 0.14 in a third of that time and was still improving.
+            % Tolerance stays at 1%: replaying 1%, 1.5%, 2% and 3% over a healthy frozen
+            % curve gives an identical result (none of them fire, the cap governs), while
+            % 5% fires at iteration 2400 on a curve that was still improving 5% per window
+            % - so raising it buys nothing and starts to cost.
+            obj.StartingWeightsOpt.MinFrozenFraction = 0.1;
+            obj.StartingWeightsOpt.MaxFrozenFraction = 0.25;
+            obj.StartingWeightsOpt.PlateauWindowEpochs = 25;
+            obj.StartingWeightsOpt.PlateauTolerance = 0.01;
+            % an absolute rate rather than a fraction of the frozen phase: the frozen
+            % phase searches from random heads and tolerates a wide band (1e-3 to 1e-2
+            % both converged), while the trainable phase protects an already good
+            % backbone, and how large a step that tolerates is a property of the
+            % pretrained weights, not of what phase 1 happened to use
+            obj.StartingWeightsOpt.TrainableLearnRate = 1e-4;
+            % merged rather than replaced, so a stored struct written by an older version
+            % cannot leave a field missing and break the settings dialog
+            if isfield(obj.mibModel.preferences.Deep, 'StartingWeightsOpt')
+                obj.StartingWeightsOpt = utils.concatenateStructures(obj.StartingWeightsOpt, ...
+                    obj.mibModel.preferences.Deep.StartingWeightsOpt);
+                if isfield(obj.StartingWeightsOpt, 'TrainableLearnRateFactor')   % pre-absolute-rate name
+                    obj.StartingWeightsOpt = rmfield(obj.StartingWeightsOpt, 'TrainableLearnRateFactor');
+                end
             end
 
             if isfield(obj.mibModel.preferences.Deep, 'ActivationLayerOpt')

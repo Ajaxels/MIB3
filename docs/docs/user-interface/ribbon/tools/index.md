@@ -20,7 +20,7 @@ Additional tools available in MIB.
 
 Provides training of deep convolutional networks on user data and their use for image segmentation.
 
-See [Deep Learning details](../../deepmib/index.md).
+See [Deep Learning details](../../../deepmib/index.md).
 
 ---
 

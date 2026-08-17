@@ -11,7 +11,9 @@ function scrollWheel_Callback(obj, evnt)
 % limits, and the box under the cursor resizes live.
 %
 % Without ``Shift``, the wheel ZOOMS the pair view about the cursor (scroll
-% up = zoom in). Zooming out beyond the rendered extent snaps back to fit;
+% up = zoom in), keeping the window shaped like the axes so it fills the whole
+% reserved cell (:meth:`StitchingInspector.pairAxesFillLimits`). Zooming out
+% beyond the rendered extent IN BOTH DIRECTIONS snaps back to fit;
 % the zoom survives re-renders of the same seam (nudges, drags, fixes - see
 % :func:`renderPairView`) and is reset by :func:`fitView_Callback` (``F``)
 % or by selecting another seam. Wheel events outside the pair view are
@@ -73,13 +75,22 @@ if zoomFactor < 1 && (diff(newXLimits) < minRange || diff(newYLimits) < minRange
     return;
 end
 
-if diff(newXLimits) >= diff(xFull) || diff(newYLimits) >= diff(yFull)
-    % Zoomed out to (or beyond) the full extent: snap back to fit.
+if diff(newXLimits) >= diff(xFull) && diff(newYLimits) >= diff(yFull)
+    % Zoomed out to (or beyond) the full extent: snap back to fit. BOTH
+    % directions have to cover it: the fitted view is deliberately wider than
+    % the content in one of them (pairAxesFillLimits), so an OR here would
+    % snap on the very first click of the wheel.
     obj.fitView_Callback();
     return;
 end
 
+% Match the axes' shape so the zoomed window uses the whole reserved cell.
+[newXLimits, newYLimits] = obj.pairAxesFillLimits(newXLimits, newYLimits);
+
 % Keep the window inside the rendered extent while panning at the borders.
+% (When the window is WIDER than the content - which the fill above makes it
+% in one direction - both correction terms fire and cancel down to "centre on
+% the content", which is what that direction wants anyway.)
 newXLimits = newXLimits - max(0, newXLimits(2) - xFull(2)) + max(0, xFull(1) - newXLimits(1));
 newYLimits = newYLimits - max(0, newYLimits(2) - yFull(2)) + max(0, yFull(1) - newYLimits(1));
 

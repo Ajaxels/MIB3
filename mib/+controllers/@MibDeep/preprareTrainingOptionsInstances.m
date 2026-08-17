@@ -1,21 +1,42 @@
-function TrainingOptions = preprareTrainingOptionsInstances(obj, valDS)
+function TrainingOptions = preprareTrainingOptionsInstances(obj, valDS, trainingOptOverrides)
 % PREPRARETRAININGOPTIONSINSTANCES - prepare trainig options for training of the instance segmentation network.
 %
 % Syntax:
 %   .. code-block:: matlab
 %
 %       TrainingOptions = obj.preprareTrainingOptionsInstances(valDS)
+%       TrainingOptions = obj.preprareTrainingOptionsInstances(valDS, trainingOptOverrides)
 %
 % Input Arguments:
 %   - **valDS** - datastore with images for validation
+%   - **trainingOptOverrides** - *optional* struct whose fields replace the matching fields
+%     of ``obj.TrainingOpt`` for this call only. Used by the two-phase "frozen then
+%     trainable" schedule, where each phase needs its own ``MaxEpochs`` and
+%     ``InitialLearnRate`` without disturbing what the user configured
+%     (see :func:`startTrainingInstances`). ``obj.TrainingOpt`` is never modified.
+%
+% Output Arguments:
+%   - **TrainingOptions** - options object accepted by ``trainSOLOV2``
 %
 
 global mibDeepTrainingProgressStruct
 
+if nargin < 3; trainingOptOverrides = struct(); end
+
+% work on a copy so a phase-specific learning rate or epoch count never leaks back into
+% the user's settings, and so the progress window is told about the phase it is showing
+trainingOpt = obj.TrainingOpt;
+% 'plateauDetection' is not a trainingOptions parameter, it is forwarded to the progress
+% display further down, so it must not join the copy
+overrideFields = setdiff(fieldnames(trainingOptOverrides), {'plateauDetection'}, 'stable');
+for overrideId = 1:numel(overrideFields)
+    trainingOpt.(overrideFields{overrideId}) = trainingOptOverrides.(overrideFields{overrideId});
+end
+
 TrainingOptions = struct();
 
 verboseSwitch = false;
-if strcmp(obj.TrainingOpt.Plots, 'none')
+if strcmp(trainingOpt.Plots, 'none')
     verboseSwitch = true;   % drop message into the command window when the plots are disabled
     mibDeepTrainingProgressStruct.useCustomProgressPlot = 0;
 else
@@ -28,7 +49,7 @@ else
     if mibDeepTrainingProgressStruct.useCustomProgressPlot
         PlotsSwitch = 'none';
     else
-        PlotsSwitch = obj.TrainingOpt.Plots;
+        PlotsSwitch = trainingOpt.Plots;
     end
 end
 
@@ -52,23 +73,37 @@ try
         case 'Parallel'
             executionEnvironment = 'parallel';
         otherwise
-            gpuDevice(selectedIndex);   % choose selected GPU device
+            % gpuDevice(index) RESETS the device and invalidates every gpuArray that
+            % already exists - and it does so even when the requested index is the one
+            % already selected (verified: parallel:gpu:array:InvalidData). This function
+            % runs once per training phase, and the "frozen then trainable" schedule
+            % carries a trained network from one phase into the next, so an unconditional
+            % call here destroys those weights and phase 2 dies on its first forward pass.
+            % Only select when the device is not already the current one.
+            try
+                currentDevice = gpuDevice();    % query only, this form does not reset
+            catch
+                currentDevice = [];
+            end
+            if isempty(currentDevice) || currentDevice.Index ~= selectedIndex
+                gpuDevice(selectedIndex);   % choose selected GPU device
+            end
             executionEnvironment = 'gpu';
     end
 
     % recalculate validation frequency from epochs to
     % interations
-    ValidationFrequencyInIterations = ceil(mibDeepTrainingProgressStruct.iterPerEpoch / obj.TrainingOpt.ValidationFrequency);
+    ValidationFrequencyInIterations = ceil(mibDeepTrainingProgressStruct.iterPerEpoch / trainingOpt.ValidationFrequency);
 
     evalTrainingOptions = join([
-        "TrainingOptions = trainingOptions(obj.TrainingOpt.solverName,"
-        "'MaxEpochs', obj.TrainingOpt.MaxEpochs,"
-        "'Shuffle', obj.TrainingOpt.Shuffle,"
-        "'InitialLearnRate', obj.TrainingOpt.InitialLearnRate,"
-        "'LearnRateSchedule', obj.TrainingOpt.LearnRateSchedule,"
-        "'LearnRateDropPeriod', obj.TrainingOpt.LearnRateDropPeriod,"
-        "'LearnRateDropFactor', obj.TrainingOpt.LearnRateDropFactor,"
-        "'L2Regularization', obj.TrainingOpt.L2Regularization,"
+        "TrainingOptions = trainingOptions(trainingOpt.solverName,"
+        "'MaxEpochs', trainingOpt.MaxEpochs,"
+        "'Shuffle', trainingOpt.Shuffle,"
+        "'InitialLearnRate', trainingOpt.InitialLearnRate,"
+        "'LearnRateSchedule', trainingOpt.LearnRateSchedule,"
+        "'LearnRateDropPeriod', trainingOpt.LearnRateDropPeriod,"
+        "'LearnRateDropFactor', trainingOpt.LearnRateDropFactor,"
+        "'L2Regularization', trainingOpt.L2Regularization,"
         "'Plots', PlotsSwitch,"
         "'Verbose', verboseSwitch,"
         "'ResetInputNormalization', false,"
@@ -92,11 +127,16 @@ try
                 trainingProgressOptions.matlabVersion = obj.mibController.matlabVersion;
                 trainingProgressOptions.gpuDevice = obj.view.Figure.GPUDropDown.Value;
                 trainingProgressOptions.iterPerEpoch = mibDeepTrainingProgressStruct.iterPerEpoch;
-                trainingProgressOptions.TrainingOpt = obj.TrainingOpt;
+                trainingProgressOptions.TrainingOpt = trainingOpt;
                 trainingProgressOptions.calculateAccuracy = obj.BatchOpt.O_CalculateAccuracyInstances;   % whether the validation mAP metric is computed
+                % only the frozen phase of the two-phase schedule sets this; see
+                % deepmib.customTrainingProgressDisplay
+                if isfield(trainingOptOverrides, 'plateauDetection')
+                    trainingProgressOptions.plateauDetection = trainingOptOverrides.plateauDetection;
+                end
                 trainingProgressOptions.sendNextReportAtEpoch = -1;   % next epoch value to send training report
                 if obj.SendReports.T_SendReports && obj.SendReports.sendDuringRun
-                    trainingProgressOptions.sendNextReportAtEpoch = obj.TrainingOpt.CheckpointFrequency+1; % the value is taken from the checkpoint frequency
+                    trainingProgressOptions.sendNextReportAtEpoch = trainingOpt.CheckpointFrequency+1; % the value is taken from the checkpoint frequency
                     trainingProgressOptions.sendReportToEmail = obj.SendReports.TO_email;
                 end
 
@@ -115,11 +155,16 @@ try
                 trainingProgressOptions.matlabVersion = obj.mibController.matlabVersion;
                 trainingProgressOptions.gpuDevice = obj.view.Figure.GPUDropDown.Value;
                 trainingProgressOptions.iterPerEpoch = mibDeepTrainingProgressStruct.iterPerEpoch;
-                trainingProgressOptions.TrainingOpt = obj.TrainingOpt;
+                trainingProgressOptions.TrainingOpt = trainingOpt;
                 trainingProgressOptions.calculateAccuracy = obj.BatchOpt.O_CalculateAccuracyInstances;   % whether the validation mAP metric is computed
+                % only the frozen phase of the two-phase schedule sets this; see
+                % deepmib.customTrainingProgressDisplay
+                if isfield(trainingOptOverrides, 'plateauDetection')
+                    trainingProgressOptions.plateauDetection = trainingOptOverrides.plateauDetection;
+                end
                 trainingProgressOptions.sendNextReportAtEpoch = -1;   % next epoch value to send training report
                 if obj.SendReports.T_SendReports && obj.SendReports.sendDuringRun
-                    trainingProgressOptions.sendNextReportAtEpoch = obj.TrainingOpt.CheckpointFrequency+1; % the value is taken from the checkpoint frequency
+                    trainingProgressOptions.sendNextReportAtEpoch = trainingOpt.CheckpointFrequency+1; % the value is taken from the checkpoint frequency
                     trainingProgressOptions.sendReportToEmail = obj.SendReports.TO_email;
                 end
 
@@ -145,19 +190,19 @@ try
     end
 
     % define solver specific settings
-    switch obj.TrainingOpt.solverName
+    switch trainingOpt.solverName
         case 'adam'
             evalTrainingOptions = join([evalTrainingOptions
-                "'GradientDecayFactor', obj.TrainingOpt.GradientDecayFactor,"
-                "'SquaredGradientDecayFactor', obj.TrainingOpt.SquaredGradientDecayFactor,"
+                "'GradientDecayFactor', trainingOpt.GradientDecayFactor,"
+                "'SquaredGradientDecayFactor', trainingOpt.SquaredGradientDecayFactor,"
                 ], ' ');
         case 'rmsprop'
             evalTrainingOptions = join([evalTrainingOptions
-                "'SquaredGradientDecayFactor', obj.TrainingOpt.SquaredGradientDecayFactor,"
+                "'SquaredGradientDecayFactor', trainingOpt.SquaredGradientDecayFactor,"
                 ], ' ');
         case 'sgdm'
             evalTrainingOptions = join([evalTrainingOptions
-                "'Momentum', obj.TrainingOpt.Momentum,"
+                "'Momentum', trainingOpt.Momentum,"
                 ], ' ');
     end
 
@@ -166,7 +211,7 @@ try
         evalTrainingOptions = join([evalTrainingOptions
             "'ValidationData', valDS,"
             "'ValidationFrequency', ValidationFrequencyInIterations,"
-            "'ValidationPatience', obj.TrainingOpt.ValidationPatience," ...
+            "'ValidationPatience', trainingOpt.ValidationPatience," ...
             ], ' ');
 
         % trainSOLOV2 never computes a training-time accuracy metric (only Loss/ClsLoss/
@@ -188,7 +233,7 @@ try
     end
 
     % add output network selection method
-    if strcmp(obj.TrainingOpt.OutputNetwork, 'best-validation-loss') && isempty(valDS)
+    if strcmp(trainingOpt.OutputNetwork, 'best-validation-loss') && isempty(valDS)
         selection = uiconfirm(obj.view.gui, ...
             sprintf('The current training options have OutputNetwork parameter set to "best-validation-loss" to return the network corresponding to the training iteration with the lowest validation loss.\n\nPlease hit Cancel and provide images for validation (Directories and preprocessing->Fraction of images for validation) and start training again.\n\nAlternatively press "Continue using last-iteration output" to return the network corresponding to the last training iteration.'), ...
             'Missing validation images',...
@@ -196,17 +241,18 @@ try
             'DefaultOption', 'Cancel', ...
             'Icon','warning');
         if strcmp(selection, 'Cancel'); delete(obj.wb); return; end
-        obj.TrainingOpt.OutputNetwork = 'last-iteration';
+        trainingOpt.OutputNetwork = 'last-iteration';
+        obj.TrainingOpt.OutputNetwork = 'last-iteration';   % remember, so a second phase does not ask again
     end
 
     evalTrainingOptions = join([evalTrainingOptions
-        "'OutputNetwork', obj.TrainingOpt.OutputNetwork,"
+        "'OutputNetwork', trainingOpt.OutputNetwork,"
         ], ' ');
 
     % add frequency of checkpoint generations
     if obj.BatchOpt.T_SaveProgress
         evalTrainingOptions = join([evalTrainingOptions
-            "'CheckpointFrequency', obj.TrainingOpt.CheckpointFrequency,"
+            "'CheckpointFrequency', trainingOpt.CheckpointFrequency,"
             ], ' ');
     end
     

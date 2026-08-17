@@ -153,8 +153,21 @@ Full tables: `development/guides/conversion_reference.md` (data structures, back
 | `warndlg` with body text | same but pass body in prompts/defAns: `utils.dlgs.inputUniversalDlg(obj.mibGUI, '!!! Warning !!!', {''}, {'body text'}, title, dlgOpt)` |
 | `errordlg(msg, title)` | `utils.dlgs.showErrorDialog(obj.mibGUI, msg, title)` |
 | `questdlg(msg,title,b1,b2,def)` | `utils.dlgs.inputQuestDlg(obj.mibGUI, msg, title, b1, b2, def)` |
-| `waitbar` | `wb = uiprogressdlg(obj.mibGUI,'Value',v,'Message',msg,'Title',title)` |
+| `waitbar` | `wb = uiprogressdlg(obj.mibGUI,'Value',v,'Message',msg,'Title',title,'Cancelable','on')` |
 | `inputdlg` / `mibInputMultiDlg` | `utils.dlgs.inputUniversalDlg(obj.mibGUI, header, prompts, defAns, title, options)` |
+
+**Progress dialogs are always cancelable.** Any `uiprogressdlg` must be created with `'Cancelable', 'on'`, and any `core.PoolWaitbar` with its 5th argument `Cancelable = true` (it defaults to **false**). Creating it is not enough — actually honour it: check `wb.CancelRequested` / `pwb.getCancelState()` at the top of every loop iteration and before every irreversible operation, then clean up and return. A progress bar the user cannot stop is a bug — if an operation is long enough to deserve a progress dialog, it is long enough to deserve an exit. When work is abandoned part-way, say what was and was not done rather than reporting success.
+
+```matlab
+wb = uiprogressdlg(obj.view.gui, 'Message', 'Working...', 'Title', 'Task', 'Cancelable', 'on');
+for k = 1:n
+    if wb.CancelRequested; break; end     % also pass wb into helpers that loop
+    wb.Value = k/n;
+    ...
+end
+cancelled = wb.CancelRequested;   % read before deleting the handle
+delete(wb);
+```
 
 **`inputUniversalDlg` signature:** `(ParentFigure, header, prompts, defAns, dlgTitle, options)` — `header` is a bold label shown above the content; pass `''` when not needed. Icons: `'puffin_question'` (default), `'puffin_warning'`, `'puffin_error'`, `'puffin_info'`.
 
@@ -285,11 +298,16 @@ if obj.mibModel.I{id}.enableSelection == 0; return; end   % always check first
 
 ### Parallel Progress
 ```matlab
-pwb = core.PoolWaitbar(n, 'Processing...', obj.mibGUI, 'Title');
-parfor (i=1:n, parforArg); pwb.increment(); end
+% the 5th argument is Cancelable and defaults to FALSE - always pass true
+pwb = core.PoolWaitbar(n, 'Processing...', obj.mibGUI, 'Title', true);
+parfor (i=1:n, parforArg)
+    if pwb.getCancelState(); continue; end   % parfor cannot break, so skip the remainder
+    pwb.increment();
+end
 pwb.deletePoolWaitbar();
 % Sequential loops: use plain uiprogressdlg with wb.Value = k/n
 ```
+Both forms must be cancelable and must check for it — see "Progress dialogs are always cancelable" in the Dialogs section.
 
 ### Misc Renames
 

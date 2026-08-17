@@ -3114,8 +3114,8 @@
       "contributor": null
     },
     {
-      "id": "controllers_displayadjust_displayadjust_imhist_buttondownfcn",
-      "label": "imHist_ButtonDownFcn",
+      "id": "controllers_displayadjust_displayadjust_imhistclick_callback",
+      "label": "imHistClick_Callback",
       "file_type": "code",
       "source_file": "+controllers\\@DisplayAdjust\\DisplayAdjust.m",
       "source_location": null,
@@ -6106,6 +6106,17 @@
       "contributor": null
     },
     {
+      "id": "controllers_mibdeep_previewvalidationpatches_m",
+      "label": "previewValidationPatches.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@MibDeep\\previewValidationPatches.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "controllers_mibdeep_processblocksblockedimage_m",
       "label": "processBlocksBlockedImage.m",
       "file_type": "code",
@@ -6297,6 +6308,17 @@
       "label": "setSegmentationLayerOptions.m",
       "file_type": "code",
       "source_file": "+controllers\\@MibDeep\\setSegmentationLayerOptions.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_mibdeep_setstartingweightssettings_m",
+      "label": "setStartingWeightsSettings.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@MibDeep\\setStartingWeightsSettings.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -6561,6 +6583,17 @@
       "label": "updateSegmentationLayer.m",
       "file_type": "code",
       "source_file": "+controllers\\@MibDeep\\updateSegmentationLayer.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_mibdeep_updatestartingweightslist_m",
+      "label": "updateStartingWeightsList.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@MibDeep\\updateStartingWeightsList.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -10715,6 +10748,28 @@
       "contributor": null
     },
     {
+      "id": "controllers_selectfromurl_selectfromurl_openremotecontainer",
+      "label": "openRemoteContainer",
+      "file_type": "code",
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_selectfromurl_selectfromurl_confirmloadas",
+      "label": "confirmLoadAs",
+      "file_type": "code",
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "controllers_selectfromurl_selectfromurl_setstatus",
       "label": "setStatus",
       "file_type": "code",
@@ -12103,6 +12158,17 @@
     {
       "id": "controllers_stitchinginspector_stitchinginspector_haswidget",
       "label": "hasWidget",
+      "file_type": "code",
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_stitchinginspector_stitchinginspector_pairaxesfilllimits",
+      "label": "pairAxesFillLimits",
       "file_type": "code",
       "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
       "source_location": null,
@@ -14752,6 +14818,17 @@
       "contributor": null
     },
     {
+      "id": "core_mibbigdatalabelszarr2_mibbigdatalabelszarr2_resolvevalueremap",
+      "label": "resolveValueRemap",
+      "file_type": "code",
+      "source_file": "+core\\@MibBigDataLabelsZarr2\\MibBigDataLabelsZarr2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "core_mibbigdatalabelszarr2_mibbigdatalabelszarr2_readpackedlevel",
       "label": "readPackedLevel",
       "file_type": "code",
@@ -14798,6 +14875,17 @@
     {
       "id": "core_mibbigdatalabelszarr2_mibbigdatalabelszarr2_readmaterialmetadatav2",
       "label": "readMaterialMetadataV2",
+      "file_type": "code",
+      "source_file": "+core\\@MibBigDataLabelsZarr2\\MibBigDataLabelsZarr2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "core_mibbigdatalabelszarr2_mibbigdatalabelszarr2_lastpathsegment",
+      "label": "lastPathSegment",
       "file_type": "code",
       "source_file": "+core\\@MibBigDataLabelsZarr2\\MibBigDataLabelsZarr2.m",
       "source_location": null,
@@ -22870,6 +22958,17 @@
       "contributor": null
     },
     {
+      "id": "io_zarr_array_fallbacktopython",
+      "label": "fallbackToPython",
+      "file_type": "code",
+      "source_file": "+io\\+zarr\\Array.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "io_zarr_array_ensurepy",
       "label": "ensurePy",
       "file_type": "code",
@@ -22916,6 +23015,28 @@
     {
       "id": "io_zarr_array_ishttp",
       "label": "isHttp",
+      "file_type": "code",
+      "source_file": "+io\\+zarr\\Array.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_zarr_array_iscodecunsupported",
+      "label": "isCodecUnsupported",
+      "file_type": "code",
+      "source_file": "+io\\+zarr\\Array.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_zarr_array_reportfallback",
+      "label": "reportFallback",
       "file_type": "code",
       "source_file": "+io\\+zarr\\Array.m",
       "source_location": null,
@@ -27391,6 +27512,358 @@
       "contributor": null
     },
     {
+      "id": "plugins_myplugins_mccalc2_mccalc2_m",
+      "label": "MCcalc2.m",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_viewlistner_callback",
+      "label": "ViewListner_Callback",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_mccalc2",
+      "label": "MCcalc2",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_restorethresholdlists",
+      "label": "restoreThresholdLists",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_syncthresholdselection",
+      "label": "syncThresholdSelection",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_closewindow",
+      "label": "closeWindow",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_updatewidgets",
+      "label": "updateWidgets",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_updatebatchoptfromgui",
+      "label": "updateBatchOptFromGUI",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_returnbatchopt",
+      "label": "returnBatchOpt",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_dnd_files_callback",
+      "label": "dnd_files_callback",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_calculateinpixels_clicked",
+      "label": "calculateInPixels_clicked",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_scalelocalminimawithdistance_clicked",
+      "label": "scaleLocalMinimaWithDistance_clicked",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_contactthrestable_cellselection",
+      "label": "contactThresTable_cellselection",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_contactthrestable_update",
+      "label": "contactThresTable_update",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_analysislistbox_clicked",
+      "label": "analysisListbox_clicked",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_analysiscontacts_menuclicked",
+      "label": "analysisContacts_MenuClicked",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_analysisfilelist_menuclicked",
+      "label": "AnalysisFilelist_MenuClicked",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_analysiscondition_menuclicked",
+      "label": "AnalysisCondition_MenuClicked",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_saveconfig",
+      "label": "saveConfig",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_loadconfig",
+      "label": "loadConfig",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_updategenerateimagesrendercutoffs",
+      "label": "updateGenerateImagesRenderCutoffs",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_extendedrays_clicked",
+      "label": "ExtendedRays_clicked",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_generateimages_clicked",
+      "label": "GenerateImages_clicked",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_exportresultstomatlab_clicked",
+      "label": "ExportResultsToMatlab_clicked",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_highlightcontacts_clicked",
+      "label": "highlightContacts_clicked",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_showhelp",
+      "label": "showHelp",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_raytraceobject",
+      "label": "raytraceObject",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_selectoutputdirectory",
+      "label": "selectOutputDirectory",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_savetoexcel",
+      "label": "saveToExcel",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_calculate",
+      "label": "Calculate",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_closeallfigures",
+      "label": "closeAllFigures",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_analysecontacts",
+      "label": "analyseContacts",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "plugins_organelleanalysis_golgiorientation_golgiorientation_m",
       "label": "GolgiOrientation.m",
       "file_type": "code",
@@ -27812,7 +28285,7 @@
       "id": "plugins_organelleanalysis_mccalc_mccalc_m",
       "label": "MCcalc.m",
       "file_type": "code",
-      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -27823,7 +28296,7 @@
       "id": "plugins_organelleanalysis_mccalc_mccalc_viewlistner_callback2",
       "label": "ViewListner_Callback2",
       "file_type": "code",
-      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -27834,7 +28307,7 @@
       "id": "plugins_organelleanalysis_mccalc_mccalc_mccalc",
       "label": "MCcalc",
       "file_type": "code",
-      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -27845,7 +28318,7 @@
       "id": "plugins_organelleanalysis_mccalc_mccalc_closewindow",
       "label": "closeWindow",
       "file_type": "code",
-      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -27856,7 +28329,7 @@
       "id": "plugins_organelleanalysis_mccalc_mccalc_addcallbacks",
       "label": "addCallbacks",
       "file_type": "code",
-      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -27867,7 +28340,7 @@
       "id": "plugins_organelleanalysis_mccalc_mccalc_updatewidgets",
       "label": "updateWidgets",
       "file_type": "code",
-      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -27878,7 +28351,7 @@
       "id": "plugins_organelleanalysis_mccalc_mccalc_calcpixelscheck_callback",
       "label": "calcPixelsCheck_Callback",
       "file_type": "code",
-      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -27889,7 +28362,7 @@
       "id": "plugins_organelleanalysis_mccalc_mccalc_exportmatlabcheck_callback",
       "label": "exportMatlabCheck_Callback",
       "file_type": "code",
-      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -27900,7 +28373,7 @@
       "id": "plugins_organelleanalysis_mccalc_mccalc_helpbtn_callback",
       "label": "helpBtn_Callback",
       "file_type": "code",
-      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -27911,7 +28384,7 @@
       "id": "plugins_organelleanalysis_mccalc_mccalc_saveresultscheck_callback",
       "label": "saveResultsCheck_Callback",
       "file_type": "code",
-      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -27922,7 +28395,7 @@
       "id": "plugins_organelleanalysis_mccalc_mccalc_exportresultsfilename_callback",
       "label": "exportResultsFilename_Callback",
       "file_type": "code",
-      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -27933,7 +28406,7 @@
       "id": "plugins_organelleanalysis_mccalc_mccalc_resultsimagescheck_callback",
       "label": "resultsImagesCheck_Callback",
       "file_type": "code",
-      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -27944,7 +28417,7 @@
       "id": "plugins_organelleanalysis_mccalc_mccalc_resultimagesdirbtn_callback",
       "label": "resultImagesDirBtn_Callback",
       "file_type": "code",
-      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -27955,7 +28428,7 @@
       "id": "plugins_organelleanalysis_mccalc_mccalc_detectcontactscheck_callback",
       "label": "detectContactsCheck_Callback",
       "file_type": "code",
-      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -27966,7 +28439,7 @@
       "id": "plugins_organelleanalysis_mccalc_mccalc_extendrays_callback",
       "label": "extendRays_Callback",
       "file_type": "code",
-      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -27977,7 +28450,7 @@
       "id": "plugins_organelleanalysis_mccalc_mccalc_continuebtn_callback",
       "label": "continueBtn_Callback",
       "file_type": "code",
-      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -27988,7 +28461,7 @@
       "id": "plugins_organelleanalysis_mccalc_mccalc_savetoexcel",
       "label": "saveToExcel",
       "file_type": "code",
-      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -31648,7 +32121,7 @@
     },
     {
       "source": "controllers_displayadjust_displayadjust_m",
-      "target": "controllers_displayadjust_displayadjust_imhist_buttondownfcn",
+      "target": "controllers_displayadjust_displayadjust_imhistclick_callback",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -34248,6 +34721,16 @@
     },
     {
       "source": "controllers_mibdeep_mibdeep_m",
+      "target": "controllers_mibdeep_previewvalidationpatches_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\MibDeep.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_mibdeep_m",
       "target": "controllers_mibdeep_processblocksblockedimage_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -34419,6 +34902,16 @@
     {
       "source": "controllers_mibdeep_mibdeep_m",
       "target": "controllers_mibdeep_setsegmentationlayeroptions_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\MibDeep.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_mibdeep_m",
+      "target": "controllers_mibdeep_setstartingweightssettings_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -34659,6 +35152,16 @@
     {
       "source": "controllers_mibdeep_mibdeep_m",
       "target": "controllers_mibdeep_updatesegmentationlayer_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\MibDeep.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_mibdeep_m",
+      "target": "controllers_mibdeep_updatestartingweightslist_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -38248,6 +38751,26 @@
     },
     {
       "source": "controllers_selectfromurl_selectfromurl_m",
+      "target": "controllers_selectfromurl_selectfromurl_openremotecontainer",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_selectfromurl_m",
+      "target": "controllers_selectfromurl_selectfromurl_confirmloadas",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_selectfromurl_m",
       "target": "controllers_selectfromurl_selectfromurl_setstatus",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -39469,6 +39992,16 @@
     {
       "source": "controllers_stitchinginspector_stitchinginspector_m",
       "target": "controllers_stitchinginspector_stitchinginspector_haswidget",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_stitchinginspector_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_pairaxesfilllimits",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -41738,6 +42271,16 @@
     },
     {
       "source": "core_mibbigdatalabelszarr2_mibbigdatalabelszarr2_m",
+      "target": "core_mibbigdatalabelszarr2_mibbigdatalabelszarr2_resolvevalueremap",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibBigDataLabelsZarr2\\MibBigDataLabelsZarr2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibbigdatalabelszarr2_mibbigdatalabelszarr2_m",
       "target": "core_mibbigdatalabelszarr2_mibbigdatalabelszarr2_readpackedlevel",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -41779,6 +42322,16 @@
     {
       "source": "core_mibbigdatalabelszarr2_mibbigdatalabelszarr2_m",
       "target": "core_mibbigdatalabelszarr2_mibbigdatalabelszarr2_readmaterialmetadatav2",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibBigDataLabelsZarr2\\MibBigDataLabelsZarr2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibbigdatalabelszarr2_mibbigdatalabelszarr2_m",
+      "target": "core_mibbigdatalabelszarr2_mibbigdatalabelszarr2_lastpathsegment",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -48508,6 +49061,16 @@
     },
     {
       "source": "io_zarr_array_m",
+      "target": "io_zarr_array_fallbacktopython",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+zarr\\Array.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_zarr_array_m",
       "target": "io_zarr_array_ensurepy",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -48549,6 +49112,26 @@
     {
       "source": "io_zarr_array_m",
       "target": "io_zarr_array_ishttp",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+zarr\\Array.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_zarr_array_m",
+      "target": "io_zarr_array_iscodecunsupported",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+zarr\\Array.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_zarr_array_m",
+      "target": "io_zarr_array_reportfallback",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -52387,6 +52970,316 @@
       "weight": 1.0
     },
     {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_viewlistner_callback",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_mccalc2",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_restorethresholdlists",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_syncthresholdselection",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_closewindow",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_updatewidgets",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_updatebatchoptfromgui",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_returnbatchopt",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_dnd_files_callback",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_calculateinpixels_clicked",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_scalelocalminimawithdistance_clicked",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_contactthrestable_cellselection",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_contactthrestable_update",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_analysislistbox_clicked",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_analysiscontacts_menuclicked",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_analysisfilelist_menuclicked",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_analysiscondition_menuclicked",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_saveconfig",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_loadconfig",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_updategenerateimagesrendercutoffs",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_extendedrays_clicked",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_generateimages_clicked",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_exportresultstomatlab_clicked",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_highlightcontacts_clicked",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_showhelp",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_raytraceobject",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_selectoutputdirectory",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_savetoexcel",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_calculate",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_closeallfigures",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_analysecontacts",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "plugins_organelleanalysis_golgiorientation_golgiorientation_m",
       "target": "plugins_organelleanalysis_golgiorientation_golgiorientation_viewlistner_callback2",
       "relation": "contains",
@@ -52752,7 +53645,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -52762,7 +53655,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -52772,7 +53665,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -52782,7 +53675,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -52792,7 +53685,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -52802,7 +53695,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -52812,7 +53705,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -52822,7 +53715,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -52832,7 +53725,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -52842,7 +53735,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -52852,7 +53745,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -52862,7 +53755,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -52872,7 +53765,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -52882,7 +53775,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -52892,7 +53785,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -52902,7 +53795,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -57178,6 +58071,16 @@
     },
     {
       "source": "controllers_mibdeep_loadconfig_m",
+      "target": "controllers_mibdeep_updatestartingweightslist_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@MibDeep\\loadConfig.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_loadconfig_m",
       "target": "controllers_mibdeep_updatewidgets_m",
       "relation": "calls",
       "confidence": "INFERRED",
@@ -57288,7 +58191,37 @@
     },
     {
       "source": "controllers_mibdeep_selectarchitecture_m",
+      "target": "controllers_mibdeep_activationlayerchangecallback_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@MibDeep\\selectArchitecture.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_selectarchitecture_m",
+      "target": "controllers_mibdeep_setsegmentationlayer_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@MibDeep\\selectArchitecture.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_selectarchitecture_m",
       "target": "controllers_mibdeep_singlemodeltrainingfilevaluechanged_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@MibDeep\\selectArchitecture.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_selectarchitecture_m",
+      "target": "controllers_mibdeep_updatestartingweightslist_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -57299,6 +58232,16 @@
     {
       "source": "controllers_mibdeep_selectnetwork_m",
       "target": "controllers_mibdeep_correctbatchopt_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@MibDeep\\selectNetwork.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_selectnetwork_m",
+      "target": "controllers_mibdeep_updatestartingweightslist_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -57633,6 +58576,16 @@
       "confidence": "INFERRED",
       "confidence_score": 0.75,
       "source_file": "+controllers\\@MibDeep\\transferLearning.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_updatebatchoptfromgui_m",
+      "target": "controllers_mibdeep_updatestartingweightslist_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@MibDeep\\updateBatchOptFromGUI.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -60028,6 +60981,16 @@
     },
     {
       "source": "controllers_selectfromurl_openbtn_callback_m",
+      "target": "controllers_selectfromurl_selectfromurl_confirmloadas",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@SelectFromUrl\\openBtn_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_openbtn_callback_m",
       "target": "controllers_selectfromurl_probegroup_m",
       "relation": "calls",
       "confidence": "INFERRED",
@@ -60553,6 +61516,16 @@
       "confidence": "INFERRED",
       "confidence_score": 0.75,
       "source_file": "+controllers\\@Stitching\\buildLayoutFromBatchOpt.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_closewindow_m",
+      "target": "controllers_stitching_collectprojectsettings_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@Stitching\\closeWindow.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -61707,6 +62680,16 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_stitchinginspector_fitview_callback_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_pairaxesfilllimits",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\fitView_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_stitchinginspector_jumptotile_m",
       "target": "controllers_stitchinginspector_stitchinginspector_datavalid",
       "relation": "calls",
@@ -62007,6 +62990,16 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_stitchinginspector_pairviewbuttondown_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_pairaxesfilllimits",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\pairViewButtonDown.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_stitchinginspector_pairviewmotion_m",
       "target": "controllers_stitchinginspector_stitchinginspector_datavalid",
       "relation": "calls",
@@ -62168,6 +63161,16 @@
     },
     {
       "source": "controllers_stitchinginspector_renderpairview_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_pairaxesfilllimits",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\renderPairView.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_renderpairview_m",
       "target": "controllers_stitchinginspector_pairviewbuttondown_m",
       "relation": "calls",
       "confidence": "INFERRED",
@@ -62279,6 +63282,16 @@
     {
       "source": "controllers_stitchinginspector_scrollwheel_callback_m",
       "target": "controllers_stitchinginspector_fitview_callback_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\scrollWheel_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_scrollwheel_callback_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_pairaxesfilllimits",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -62439,6 +63452,16 @@
     {
       "source": "controllers_stitchinginspector_twoclickbtn_callback_m",
       "target": "controllers_stitchinginspector_pairviewbuttondown_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\twoClickBtn_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_twoclickbtn_callback_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_pairaxesfilllimits",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -66957,6 +67980,46 @@
       "weight": 1.0
     },
     {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "core_childview_childview_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "core_toggleeventdata_toggleeventdata_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "core_poolwaitbar_poolwaitbar_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "controllers_boundingbox_boundingbox_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "plugins_organelleanalysis_golgiorientation_golgiorientation_m",
       "target": "core_childview_childview_m",
       "relation": "calls",
@@ -67022,7 +68085,7 @@
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.7,
-      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -67032,7 +68095,7 @@
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.7,
-      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -70227,6 +71290,16 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_mibcontroller_helpbuttons_callback_m",
+      "target": "utils_openhelppage_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibController\\helpButtons_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_mibcontroller_initializelibraries_m",
       "target": "utils_ensurejavalibraries_m",
       "relation": "calls",
@@ -70688,6 +71761,16 @@
     },
     {
       "source": "controllers_mibdeep_mibdeep_m",
+      "target": "utils_concatenatestructures_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\MibDeep.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_mibdeep_m",
       "target": "utils_dlgs_showerrordialog_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
@@ -70823,6 +71906,46 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "+controllers\\@MibDeep\\previewPredictions.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_previewvalidationpatches_m",
+      "target": "utils_dlgs_inputuniversaldlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\previewValidationPatches.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_previewvalidationpatches_m",
+      "target": "utils_dlgs_showerrordialog_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\previewValidationPatches.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_previewvalidationpatches_m",
+      "target": "deepmib_storeloadimages_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\previewValidationPatches.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_previewvalidationpatches_m",
+      "target": "deepmib_readinstancepatch_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\previewValidationPatches.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -71033,6 +72156,16 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "+controllers\\@MibDeep\\setSegmentationLayerOptions.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_setstartingweightssettings_m",
+      "target": "utils_dlgs_inputuniversaldlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\setStartingWeightsSettings.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -71399,6 +72532,16 @@
     {
       "source": "controllers_mibdeep_starttraininginstances_m",
       "target": "deepmib_augmentinstancedata2d_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\startTrainingInstances.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_starttraininginstances_m",
+      "target": "deepmib_savetrainingplot_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -71958,6 +73101,16 @@
     },
     {
       "source": "controllers_mibimagedocument_segmentationsam_m",
+      "target": "utils_sam_removesmallregions_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibImageDocument\\segmentationSAM.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibimagedocument_segmentationsam_m",
       "target": "utils_sam_initialimage_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
@@ -71999,6 +73152,16 @@
     {
       "source": "controllers_mibimagedocument_segmentationsam2_m",
       "target": "utils_initpythonenv_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibImageDocument\\segmentationSAM2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibimagedocument_segmentationsam2_m",
+      "target": "utils_sam_removesmallregions_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -72639,6 +73802,16 @@
     {
       "source": "controllers_mibselection_gui_callbacks_m",
       "target": "utils_startcontroller_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibSelection\\gui_Callbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibselection_gui_callbacks_m",
+      "target": "utils_openhelppage_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -73559,6 +74732,16 @@
     {
       "source": "controllers_selectfromurl_selectfromurl_m",
       "target": "utils_fontsizeupdate_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_selectfromurl_m",
+      "target": "utils_dlgs_inputquestdlg_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -77547,6 +78730,116 @@
       "weight": 1.0
     },
     {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "utils_updatebatchoptcombinefields_shared_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "utils_dlgs_showerrordialog_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "utils_movewindowoutside_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "utils_fontsizeupdate_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "utils_updateguifrombatchopt_shared_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "utils_attachfilednd_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "utils_updatebatchoptfromgui_shared_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "utils_dlgs_inputuniversaldlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "utils_dlgs_mibuigetfile_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "utils_concatenatestructures_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "utils_align_windv_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "plugins_organelleanalysis_golgiorientation_golgiorientation_m",
       "target": "utils_updatebatchoptcombinefields_shared_m",
       "relation": "calls",
@@ -77702,7 +78995,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -77712,7 +79005,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -77722,7 +79015,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -77732,7 +79025,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -77742,7 +79035,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -77752,7 +79045,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -77762,7 +79055,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
       "source_location": null,
       "weight": 1.0
     },

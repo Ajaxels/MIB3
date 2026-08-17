@@ -33,6 +33,42 @@ click the same spot in each tile's full view, click difference = coarse offset +
 **undo** (`Z`, restores the original automatic edge). **Re-solve** re-runs the global solve with
 user edges dominating; the table re-ranks. No Fuse/Save button here — see below.
 
+## The pair view fills its grid cell
+
+`axis image` gives 1:1 pixels and *tight* limits, so a tall pair (two tiles stacked vertically)
+drew as a narrow column using ~45% of the width reserved for `pairAxes` in `mainGridLayout` -
+measured on the real GUI - and zooming in only made the column taller.
+`StitchingInspector.pairAxesFillLimits` grows the SHORTER side of the requested window until its
+aspect matches `pairAxes.InnerPosition`, so the composite uses the whole cell. The extra span is
+context around the tiles: never a distortion (`DataAspectRatio` stays `[1 1 1]`) and never a crop
+(the window only ever grows). `InnerPosition` is the region *available* for the plot box - it
+excludes the title but is **not** shrunk by the aspect letterbox, so reading it is not circular.
+
+Applied at every place that writes the limits: `renderPairView` (fit and restored-zoom),
+`fitView_Callback`, `scrollWheel_Callback`, the drag preview and the two-click side-by-side.
+
+Two consequences in `scrollWheel_Callback`, both load-bearing:
+
+- the snap-back-to-fit test is `&&`, not `||` - the fitted window is deliberately wider than the
+  content in one direction, so an OR snapped on the first click of the wheel;
+- the border clamp is left as it was: when the window is wider than the content both correction
+  terms fire and cancel down to "centre on the content", which is exactly what that direction wants.
+
+### The zoom level survives a seam change
+
+Selecting another seam (table click, `Up`/`Down`, `Enter`, a mini-map jump) **keeps the
+magnification** and re-anchors only the CENTRE, onto the new pair's overlap - the part being judged.
+Reviewing a mosaic means looking at every seam at the same magnification, and re-zooming after each
+`Enter` was the most repetitive thing in a pass. The centre has to be recomputed rather than carried
+because `pairAxes` is in tile-*i* full-res pixels and those coordinates mean something different for
+every pair; a carried span at least as wide as the new union in both directions just fits instead
+(`renderPairView/carriedZoomOnNewSeam`). `pairZoom.edgeIdx` is rewritten as part of this, so only
+`F` (`fitView_Callback`) and a fix-mode switch still reset to fit.
+
+**A window resize does not re-fill** (the figure's `SizeChangedFcn` never fires while
+`AutoResizeChildren` is `'on'`, and with it off the callback reads a stale `InnerPosition` - the
+grid has not relaid out yet). The next render, wheel zoom or `F` picks the new shape up.
+
 ## Trust model (how user fixes steer the global solve)
 
 Edge fields: `.source` (`'auto'`|`'user'`|`'confirmed'`), `.seamScore`. Solver option

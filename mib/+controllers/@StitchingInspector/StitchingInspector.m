@@ -55,7 +55,10 @@ classdef StitchingInspector < handle
         pairZoom
         % wheel-zoom state of the pair view: struct .edgeIdx (the seam it
         % belongs to), .xLim, .yLim - re-applied across re-renders of the
-        % same seam so nudges/drags keep the zoom; [] = fit to view
+        % same seam so nudges/drags keep the zoom; [] = fit to view.
+        % Selecting ANOTHER seam keeps the magnification and re-centres it on
+        % that pair's overlap (renderPairView/carriedZoomOnNewSeam), rewriting
+        % .edgeIdx - only fitView_Callback (F) and a fix-mode switch clear it
         tileThumbs
         % cell (per tile) of low-res greyscale thumbnails for the mini-map
         % fused preview, jointly normalised to [0 1]; built lazily once by
@@ -272,6 +275,63 @@ classdef StitchingInspector < handle
             %   - **widgetName** - [char] handle name in ``obj.view.handles``
             %
             tf = ~isempty(obj.view) && isfield(obj.view.handles, widgetName);
+        end
+
+        % ---------------------------------------------------------------
+        function [xLim, yLim] = pairAxesFillLimits(obj, xLim, yLim)
+            % PAIRAXESFILLLIMITS - Widen a data window to the pair axes' shape.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      [xLim, yLim] = obj.pairAxesFillLimits()
+            %      [xLim, yLim] = obj.pairAxesFillLimits(xLim, yLim)
+            %
+            % ``axis image`` gives tight limits at 1:1 pixels, so a tall pair
+            % (two tiles stacked vertically) drew as a narrow column with the
+            % rest of the reserved grid cell empty - and zooming in only made
+            % the column taller. This grows the SHORTER side of the requested
+            % window until its aspect matches the axes rectangle on screen, so
+            % the composite fills the whole cell; the extra span is context
+            % around the tiles, never a distortion (the data aspect stays 1:1)
+            % and never a crop (the window only ever grows).
+            %
+            % ``InnerPosition`` is the region available for the plot box - it
+            % excludes the title but is NOT shrunk by the letterbox the aspect
+            % constraint applies, so reading it here is not circular.
+            %
+            % The window is not re-fitted when the user resizes the inspector:
+            % the next render, wheel zoom or ``F`` picks the new shape up.
+            %
+            % Input Arguments:
+            %   - **xLim**, **yLim** - [1x2] window to widen; omitted = the
+            %     axes' current limits
+            %
+            % Return Values:
+            %   - **xLim**, **yLim** - [1x2] widened window; the caller writes
+            %     it to the axes
+            %
+            if ~obj.hasWidget('pairAxes')
+                if nargin < 3; xLim = []; yLim = []; end
+                return;
+            end
+            pairAxes = obj.view.handles.pairAxes;
+            if nargin < 3
+                xLim = pairAxes.XLim;
+                yLim = pairAxes.YLim;
+            end
+            box = pairAxes.InnerPosition;
+            if numel(box) < 4 || box(3) <= 0 || box(4) <= 0; return; end
+            xRange = diff(xLim);
+            yRange = diff(yLim);
+            if xRange <= 0 || yRange <= 0; return; end
+
+            boxAspect = box(3) / box(4);
+            if xRange / yRange < boxAspect
+                xLim = mean(xLim) + [-0.5, 0.5] * yRange * boxAspect;
+            else
+                yLim = mean(yLim) + [-0.5, 0.5] * xRange / boxAspect;
+            end
         end
 
         % ---------------------------------------------------------------

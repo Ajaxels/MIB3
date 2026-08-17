@@ -384,6 +384,49 @@ else
         return;
     end
 
+    % Plateau detection for the two-phase "COCO, frozen then trainable" schedule. The
+    % frozen phase asks to stop as soon as the training loss stops improving, and
+    % controllers.MibDeep/startTrainingInstances then continues into the trainable phase
+    % with the network trainSOLOV2 returns. A separate flag is raised alongside
+    % mibDeepStopTraining so a plateau stays distinguishable from the user pressing Stop -
+    % the two must not lead to the same outcome.
+    % Placed above the refresh-rate early return below, so every iteration is counted
+    % rather than every 5th.
+    if isfield(trainingProgressOptions, 'plateauDetection') && ~isempty(trainingProgressOptions.plateauDetection) && ...
+            ~mibDeepStopTraining && isscalar(progressStruct.TrainingLoss) && ~isnan(progressStruct.TrainingLoss)
+        plateauOpt = trainingProgressOptions.plateauDetection;
+        if ~isfield(mibDeepTrainingProgressStruct, 'plateauLoss') || isempty(mibDeepTrainingProgressStruct.plateauLoss)
+            mibDeepTrainingProgressStruct.plateauLoss = nan(1, ceil(mibDeepTrainingProgressStruct.maxIter) + 1);
+        end
+        if progressStruct.Iteration <= numel(mibDeepTrainingProgressStruct.plateauLoss)
+            mibDeepTrainingProgressStruct.plateauLoss(progressStruct.Iteration) = progressStruct.TrainingLoss;
+        end
+
+        % Compare the mean loss of the last window against the window before it; a
+        % relative measure so the same tolerance works whatever the loss scale is.
+        % Two guards, both calibrated on recorded loss curves:
+        %   - a floor on the window length, because a configuration with few iterations
+        %     per epoch would otherwise average over a handful of very noisy points;
+        %   - MinIterations, before which no switch is allowed at all. Training losses
+        %     routinely sit on a long shoulder early on and then break away from it, and
+        %     no local test can tell that shoulder from convergence.
+        windowIterations = max(50, round(plateauOpt.WindowEpochs * trainingProgressOptions.iterPerEpoch));
+        if progressStruct.Iteration >= plateauOpt.MinIterations && ...
+                progressStruct.Iteration >= 2*windowIterations && mod(progressStruct.Iteration, windowIterations) == 0
+            recentLoss = mean(mibDeepTrainingProgressStruct.plateauLoss(progressStruct.Iteration-windowIterations+1:progressStruct.Iteration), 'omitnan');
+            earlierLoss = mean(mibDeepTrainingProgressStruct.plateauLoss(progressStruct.Iteration-2*windowIterations+1:progressStruct.Iteration-windowIterations), 'omitnan');
+            relativeImprovement = (earlierLoss - recentLoss) / max(abs(earlierLoss), eps);
+            if relativeImprovement < plateauOpt.Tolerance
+                fprintf(['DeepMIB: training loss is flat at iteration %d (%.4f -> %.4f over %d iterations, ' ...
+                    '%.2f%% improvement against the %.2f%% threshold), unfreezing the backbone\n'], ...
+                    progressStruct.Iteration, earlierLoss, recentLoss, windowIterations, ...
+                    relativeImprovement*100, plateauOpt.Tolerance*100);
+                mibDeepTrainingProgressStruct.phaseSwitchRequested = true;
+                mibDeepStopTraining = true;
+            end
+        end
+    end
+
     if progressStruct.Epoch == mibDeepTrainingProgressStruct.sendNextReportAtEpoch
         %trainingProgressOptions.sendNextReportAtEpoch = trainingProgressOptions.sendNextReportAtEpoch + trainingProgressOptions.TrainingOpt.CheckpointFrequency;
         mibDeepTrainingProgressStruct.sendNextReportAtEpoch = mibDeepTrainingProgressStruct.sendNextReportAtEpoch + trainingProgressOptions.TrainingOpt.CheckpointFrequency;

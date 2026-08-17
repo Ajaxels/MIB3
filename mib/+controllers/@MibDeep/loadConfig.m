@@ -153,6 +153,16 @@ try
     if isfield(res, 'OverlapInstancesOpt')   % new in MIB3, 2D Instance workflow
         obj.OverlapInstancesOpt = utils.concatenateStructures(obj.OverlapInstancesOpt, res.OverlapInstancesOpt);
     end
+    if isfield(res, 'StartingWeightsOpt')   % new in MIB3, "COCO, frozen then trainable" schedule
+        obj.StartingWeightsOpt = utils.concatenateStructures(obj.StartingWeightsOpt, res.StartingWeightsOpt);
+        % the phase-2 rate used to be stored as a fraction of the frozen-phase rate, which
+        % could not express the value it actually needs (an absolute ~1e-4 whatever phase 1
+        % used). Drop the old field so it cannot be mistaken for a live setting; the
+        % merge above has already left TrainableLearnRate at its default
+        if isfield(obj.StartingWeightsOpt, 'TrainableLearnRateFactor')
+            obj.StartingWeightsOpt = rmfield(obj.StartingWeightsOpt, 'TrainableLearnRateFactor');
+        end
+    end
 catch err
     % when the training was stopped before finish,
     % those structures are not stored

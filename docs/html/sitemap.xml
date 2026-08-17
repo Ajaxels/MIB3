@@ -277,28 +277,28 @@
         <loc>https://mib.helsinki.fi/user-interface/statusbar/index.html</loc>
       </url>
       <url>
-        <loc>https://mib.helsinki.fi/user-interface/deepmib/index.html</loc>
-      </url>
-      <url>
-        <loc>https://mib.helsinki.fi/user-interface/deepmib/deepmib-networks.html</loc>
-      </url>
-      <url>
-        <loc>https://mib.helsinki.fi/user-interface/deepmib/deepmib-dirs.html</loc>
-      </url>
-      <url>
-        <loc>https://mib.helsinki.fi/user-interface/deepmib/deepmib-train.html</loc>
-      </url>
-      <url>
-        <loc>https://mib.helsinki.fi/user-interface/deepmib/deepmib-predict.html</loc>
-      </url>
-      <url>
-        <loc>https://mib.helsinki.fi/user-interface/deepmib/deepmib-options.html</loc>
-      </url>
-      <url>
-        <loc>https://mib.helsinki.fi/user-interface/deepmib/deepmib-instance.html</loc>
-      </url>
-      <url>
         <loc>https://mib.helsinki.fi/user-interface/key-and-mouse-shortcuts.html</loc>
+      </url>
+      <url>
+        <loc>https://mib.helsinki.fi/deepmib/index.html</loc>
+      </url>
+      <url>
+        <loc>https://mib.helsinki.fi/deepmib/deepmib-networks.html</loc>
+      </url>
+      <url>
+        <loc>https://mib.helsinki.fi/deepmib/deepmib-dirs.html</loc>
+      </url>
+      <url>
+        <loc>https://mib.helsinki.fi/deepmib/deepmib-train.html</loc>
+      </url>
+      <url>
+        <loc>https://mib.helsinki.fi/deepmib/deepmib-predict.html</loc>
+      </url>
+      <url>
+        <loc>https://mib.helsinki.fi/deepmib/deepmib-options.html</loc>
+      </url>
+      <url>
+        <loc>https://mib.helsinki.fi/deepmib/deepmib-instance.html</loc>
       </url>
       <url>
         <loc>https://mib.helsinki.fi/plugins/index.html</loc>

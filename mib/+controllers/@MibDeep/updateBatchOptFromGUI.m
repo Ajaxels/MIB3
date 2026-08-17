@@ -49,6 +49,10 @@ function updateBatchOptFromGUI(obj, event)
             % from pretrained ones with the Resnet encoders, so the starting weights list
             % has to follow the encoder as well as the workflow/architecture
             obj.updateStartingWeightsList();
+        case 'T_StartingWeights'
+            % only the two-phase schedule has settings to configure, so the button next
+            % to the dropdown follows the selection
+            obj.updateStartingWeightsList();
     end
 end
 

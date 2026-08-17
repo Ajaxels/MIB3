@@ -143,13 +143,15 @@ if numel(checkPointFiles) > 1
 
     switch selPosition
         case 1  % start new training
+            % Only the checkpoint networks are cleared. They are named by
+            % images.dltrain as "net_checkpoint__<iteration>__<timestamp>.mat" with no
+            % reference to the run, so they accumulate across runs and clutter the
+            % restore dialog above (at ~70 MB each).
+            % The score, CSV, PNG and FIG files are NOT deleted: every one of them is
+            % written with a "<yyMMddHHmm>_<network name>" prefix, so runs cannot
+            % overwrite each other and the history of a project stays intact.
             if obj.BatchOpt.T_SaveProgress
-                delete(fullfile(obj.BatchOpt.ResultingImagesDir, 'ScoreNetwork', '*.mat'));     % delete all score matlab files
-            end
-            % make directories for export of the training scores
-            if obj.BatchOpt.T_ExportTrainingPlots
-                delete(fullfile(obj.BatchOpt.ResultingImagesDir, 'ScoreNetwork', '*.csv'));     % delete all csv files
-                delete(fullfile(obj.BatchOpt.ResultingImagesDir, 'ScoreNetwork', '*.score'));     % delete all score matlab files
+                delete(fullfile(obj.BatchOpt.ResultingImagesDir, 'ScoreNetwork', 'net_checkpoint__*.mat'));
             end
         case 2  % continue from the loaded net
             if exist(obj.BatchOpt.NetworkFilename, 'file') == 2     % when the mibDeep file is present
@@ -160,13 +162,8 @@ if numel(checkPointFiles) > 1
         otherwise  % continue from the checkpoint
             checkPointRestoreFile = fullfile(obj.BatchOpt.ResultingImagesDir, 'ScoreNetwork', answer{1});
     end
-else
-    % make directories for export of the training scores
-    if obj.BatchOpt.T_ExportTrainingPlots
-        delete(fullfile(obj.BatchOpt.ResultingImagesDir, 'ScoreNetwork', '*.csv'));     % delete all csv files
-        delete(fullfile(obj.BatchOpt.ResultingImagesDir, 'ScoreNetwork', '*.score'));     % delete all score matlab files
-    end
 end
+% nothing is deleted here: the exported files carry a per-run prefix, see above
 
 trainTimer = tic;
 
@@ -261,8 +258,10 @@ try
         % otherwise the curve reports which crops were drawn as much as how good the
         % network is - and "best-validation-loss" then picks the luckiest draw. Give each
         % observation its own fixed seed, following the same convention as the training
-        % patches: seed 0 means "do not fix anything", any other value is reproducible.
-        baseSeed = obj.BatchOpt.T_RandomGeneratorSeed{1};
+        % seed: 0 means "do not fix anything", any other value is reproducible. It is a
+        % separate setting because the two want opposite things - training benefits from
+        % fresh patches every epoch, validation from patches that never move.
+        baseSeed = obj.BatchOpt.T_RandomGeneratorValSeed{1};
         valObservationSeeds = zeros(noValidationObservations, 1);
         if baseSeed ~= 0
             % keep the result in [1, 2^32-2] so a wrap can never produce 0, which is the
@@ -579,15 +578,47 @@ fprintf('Preparation for training is finished, elapsed time: %f\n', toc(trainTim
 trainTimer = tic;
 emergencyBrakeUsed = false;     % network was recovered from a checkpoint, info is synthetic
 
-% "Starting weights" decides whether the COCO-pretrained backbone keeps training.
-% A frozen backbone is faster and less prone to overfitting on very small datasets,
-% but leaves the features tuned to natural photographs; letting it train adapts them
-% to microscopy data and wants a lower learning rate.
+% "Starting weights" decides what happens to the COCO-pretrained backbone.
+% A frozen backbone is faster and less prone to overfitting on very small datasets, but
+% leaves the features tuned to natural photographs; letting it train adapts them to
+% microscopy data and needs a much lower learning rate - low enough that the two do not
+% share one setting, which is why "frozen then trainable" runs them as separate phases.
 % trainSOLOV2 also accepts 'backboneAndNeck', which freezes more and is not exposed.
-if strcmp(obj.BatchOpt.T_StartingWeights{1}, 'COCO, frozen backbone')
-    freezeSubNetwork = 'backbone';
-else
-    freezeSubNetwork = 'none';
+switch obj.BatchOpt.T_StartingWeights{1}
+    case 'COCO, frozen backbone'
+        freezeSubNetwork = 'backbone';
+    case 'COCO, frozen then trainable'
+        freezeSubNetwork = 'backbone';      % phase 1; phase 2 switches it to 'none'
+    otherwise
+        freezeSubNetwork = 'none';
+end
+twoPhaseSchedule = strcmp(obj.BatchOpt.T_StartingWeights{1}, 'COCO, frozen then trainable');
+
+if twoPhaseSchedule
+    % Phase 1 is capped at a share of the total epochs and may end earlier if the loss
+    % goes flat; whatever it leaves unused is handed to phase 2, so the total epoch
+    % budget the user asked for is preserved either way.
+    frozenPhaseEpochs = max(1, round(obj.TrainingOpt.MaxEpochs * obj.StartingWeightsOpt.MaxFrozenFraction));
+    phaseOverrides = struct('MaxEpochs', frozenPhaseEpochs);
+    % Plateau detection lives in the custom progress window's OutputFcn, so without that
+    % window there is nothing watching the loss - fall back to the epoch cap alone.
+    if obj.BatchOpt.O_CustomTrainingProgressWindow && ~strcmp(obj.TrainingOpt.Plots, 'none')
+        % both fractions are shares of the *total* epoch budget, so the earliest and the
+        % latest switch are expressed on the same scale the user set MaxEpochs on
+        minFrozenIterations = ceil(obj.TrainingOpt.MaxEpochs * obj.StartingWeightsOpt.MinFrozenFraction * ...
+            mibDeepTrainingProgressStruct.iterPerEpoch);
+        phaseOverrides.plateauDetection = struct(...
+            'WindowEpochs', obj.StartingWeightsOpt.PlateauWindowEpochs, ...
+            'Tolerance', obj.StartingWeightsOpt.PlateauTolerance, ...
+            'MinIterations', minFrozenIterations);
+    else
+        warning('DeepMIB:instancePlateau', ...
+            ['the custom training progress window is disabled, so the frozen phase cannot watch the loss; ' ...
+            'it will run the full %d epochs before unfreezing'], frozenPhaseEpochs);
+    end
+    TrainingOptions = obj.preprareTrainingOptionsInstances(valLabelsDS, phaseOverrides);
+    fprintf('DeepMIB: phase 1 of 2, backbone frozen, up to %d epochs at a learn rate of %g\n', ...
+        frozenPhaseEpochs, obj.TrainingOpt.InitialLearnRate);
 end
 
 try
@@ -683,18 +714,149 @@ end
 deepmib.suspendCheckpointSaving('restore');
 
 % iRecoverNetworkFromCheckpoint already produces info in the normalised shape
-if ~emergencyBrakeUsed && isstruct(info) && isfield(info, 'OutputNetworkIteration')
-    infoRows = info;
-    outputRow = find([infoRows.OutputNetworkIteration], 1);
-    info = struct();
-    infoFieldNames = setdiff(fieldnames(infoRows), 'OutputNetworkIteration', 'stable');
-    for infoFieldIdx = 1:numel(infoFieldNames)
-        info.(infoFieldNames{infoFieldIdx}) = [infoRows.(infoFieldNames{infoFieldIdx})];
-    end
-    if isempty(outputRow)
-        info.OutputNetworkIteration = [];
+if ~emergencyBrakeUsed
+    info = iNormalizeTrainingInfo(info);
+end
+% The progress window that is on screen belongs to whichever phase ran last and counts its
+% own iterations from 1, while "info" may be the concatenation of both phases. Keep the
+% last phase's record separately: everything drawn into that window has to use it, or the
+% picked-iteration marker lands off the end of the axes and the curve is stretched to the
+% combined length. Exports use the concatenated "info".
+lastPhaseInfo = info;
+
+%% Phase 2 of the "COCO, frozen then trainable" schedule
+% The backbone is unfrozen and training continues from the network phase 1 produced, at a
+% much lower learning rate. FreezeSubNetwork is an argument of trainSOLOV2 rather than a
+% property of the detector, so it applies to the restored weights exactly as it would to a
+% fresh solov2() - only the weights carry over.
+% Skipped when the user stopped the run or used the Emergency brake: both mean "stop", and
+% silently starting a second phase would ignore that.
+if twoPhaseSchedule && ~emergencyBrakeUsed
+    plateauReached = isfield(mibDeepTrainingProgressStruct, 'phaseSwitchRequested') && ...
+        mibDeepTrainingProgressStruct.phaseSwitchRequested;
+    userStopped = mibDeepStopTraining && ~plateauReached;
+
+    if userStopped
+        fprintf('DeepMIB: training was stopped during the frozen phase, the trainable phase is skipped\n');
     else
-        info.OutputNetworkIteration = infoRows(outputRow).Iteration;
+        frozenInfo = info;
+        frozenNet = net;
+        % epochs the frozen phase actually used; a plateau stop can leave a large unused
+        % remainder, which is handed to the trainable phase
+        if isfield(frozenInfo, 'Epoch') && ~isempty(frozenInfo.Epoch)
+            frozenEpochsUsed = max(frozenInfo.Epoch);
+        else
+            frozenEpochsUsed = frozenPhaseEpochs;
+        end
+        frozenIterationsUsed = numel(frozenInfo.TrainingLoss);
+        trainablePhaseEpochs = max(1, obj.TrainingOpt.MaxEpochs - frozenEpochsUsed);
+        % capped at the frozen-phase rate so the trainable phase can never end up taking
+        % larger steps than the phase that only had to move randomly initialized heads
+        trainableLearnRate = min(obj.StartingWeightsOpt.TrainableLearnRate, obj.TrainingOpt.InitialLearnRate);
+        if trainableLearnRate < obj.StartingWeightsOpt.TrainableLearnRate
+            fprintf(['DeepMIB: the trainable-phase learn rate was capped from %g to the frozen-phase rate %g\n' ...
+                '  (a trainable backbone should never take larger steps than a frozen one)\n'], ...
+                obj.StartingWeightsOpt.TrainableLearnRate, trainableLearnRate);
+        end
+
+        fprintf('DeepMIB: phase 2 of 2, backbone trainable, %d epochs at a learn rate of %g\n', ...
+            trainablePhaseEpochs, trainableLearnRate);
+
+        % Always keep the frozen-phase network, independently of "Save checkpoint
+        % networks". It is the only moment in the run where a network of a genuinely
+        % different kind exists, it is what the trainable phase is compared against, and
+        % without it a failure in phase 2 would leave nothing to fall back on. The
+        % "frozenPhaseEnd" suffix names it; the "net_checkpoint__" prefix is kept so the
+        % resume dialog and iRecoverNetworkFromCheckpoint both find it.
+        try
+            checkpointDir = fullfile(obj.BatchOpt.ResultingImagesDir, 'ScoreNetwork');
+            if ~isfolder(checkpointDir); mkdir(checkpointDir); end
+            phaseCheckpointName = fullfile(checkpointDir, ...
+                sprintf('net_checkpoint__frozenPhaseEnd_%d__%s.mat', frozenIterationsUsed, ...
+                char(datetime('now', 'Format', 'yyyy_MM_dd__HH_mm_ss'))));
+            % "net" still holds the frozen-phase network here, and that is the variable
+            % name every restore path in this file loads by
+            save(phaseCheckpointName, 'net', 'inputPatchSize', 'outputPatchSize', '-mat', '-v7.3');
+            fprintf('DeepMIB: the frozen-phase network was saved as\n  %s\n', phaseCheckpointName);
+        catch saveErr
+            % never let a failed bookkeeping save cost the run
+            warning('DeepMIB:frozenPhaseCheckpoint', ...
+                'could not save the frozen-phase network (%s); training continues', saveErr.message);
+        end
+
+        % The phase 1 window is about to be destroyed, so its plot has to be captured now
+        % or it is gone for good - unlike the curve itself, which survives in the
+        % concatenated info and the exported CSVs.
+        frozenSnapshotOk = iSaveProgressSnapshot(obj, mibDeepTrainingProgressStruct, '_frozenPhase');
+
+        % the trainer restarts its iteration counter, so give the progress display a clean
+        % window rather than letting phase 2 draw on top of the phase 1 curve; the missing
+        % sendNextReportAtEpoch field is what makes the OutputFcn rebuild it
+        if mibDeepTrainingProgressStruct.useCustomProgressPlot
+            if isfield(mibDeepTrainingProgressStruct, 'UIFigure') && ~isempty(mibDeepTrainingProgressStruct.UIFigure) && isvalid(mibDeepTrainingProgressStruct.UIFigure)
+                if frozenSnapshotOk
+                    delete(mibDeepTrainingProgressStruct.UIFigure);
+                else
+                    % the PNG could not be captured (locked screen), so leave this window
+                    % on screen instead of destroying the only live copy of the phase 1
+                    % curve; its own "Save plot" button still works, because that callback
+                    % holds its own reference to this figure. Phase 2 builds a new window.
+                    mibDeepTrainingProgressStruct.UIFigure.Name = ...
+                        'DeepMIB training, frozen phase - press "Save plot" to store this plot';
+                end
+            end
+            if isfield(mibDeepTrainingProgressStruct, 'sendNextReportAtEpoch')
+                mibDeepTrainingProgressStruct = rmfield(mibDeepTrainingProgressStruct, 'sendNextReportAtEpoch');
+            end
+        end
+        mibDeepTrainingProgressStruct.phaseSwitchRequested = false;
+        mibDeepTrainingProgressStruct.spinDownActive = false;
+        mibDeepTrainingProgressStruct.plateauLoss = [];     % phase 2 has no plateau detector
+        mibDeepStopTraining = false;
+
+        mibDeepTrainingProgressStruct.maxNoIter = ...
+            ceil((noFiles - mod(noFiles, obj.BatchOpt.T_MiniBatchSize{1}))/obj.BatchOpt.T_MiniBatchSize{1}) * trainablePhaseEpochs;
+        mibDeepTrainingProgressStruct.iterPerEpoch = mibDeepTrainingProgressStruct.maxNoIter / trainablePhaseEpochs;
+
+        try
+            TrainingOptions = obj.preprareTrainingOptionsInstances(valLabelsDS, ...
+                struct('MaxEpochs', trainablePhaseEpochs, 'InitialLearnRate', trainableLearnRate));
+            [net, info] = trainSOLOV2(labelsDS, frozenNet, TrainingOptions, 'FreezeSubNetwork', 'none');
+            deepmib.suspendCheckpointSaving('restore');
+            info = iNormalizeTrainingInfo(info);
+            lastPhaseInfo = info;   % what the on-screen phase-2 window is showing
+            info = iConcatenateTrainingInfo(frozenInfo, info, frozenIterationsUsed);
+        catch err
+            deepmib.suspendCheckpointSaving('restore');
+            if mibDeepTrainingProgressStruct.emergencyBrake || strcmp(err.identifier, 'DeepMIB:userEmergencyStop')
+                [recoveredNet, recoveredInfo] = iRecoverNetworkFromCheckpoint(...
+                    fullfile(obj.BatchOpt.ResultingImagesDir, 'ScoreNetwork'), mibDeepTrainingProgressStruct);
+                if isempty(recoveredNet)
+                    % nothing to restore, keep what the frozen phase produced rather than
+                    % losing the whole run
+                    net = frozenNet;
+                    info = frozenInfo;
+
+                    net = frozenNet;
+                    lastPhaseInfo = frozenInfo;
+                else
+                    net = recoveredNet;
+                    lastPhaseInfo = recoveredInfo;
+                    info = iConcatenateTrainingInfo(frozenInfo, recoveredInfo, frozenIterationsUsed);
+                    emergencyBrakeUsed = true;
+                end
+            else
+                % the frozen phase succeeded, so report the failure but still save its
+                % network - discarding it would throw away hours of finished work
+                utils.dlgs.showErrorDialog(obj.view.gui, err, ...
+                    'Trainable phase failed, saving the frozen-phase network');
+                net = frozenNet;
+                info = frozenInfo;
+
+                net = frozenNet;
+                lastPhaseInfo = frozenInfo;
+            end
+        end
     end
 end
 
@@ -705,24 +867,41 @@ end
 
 if mibDeepTrainingProgressStruct.useCustomProgressPlot && isfield(mibDeepTrainingProgressStruct, 'UILossAxes') && isvalid(mibDeepTrainingProgressStruct.UILossAxes)
     hold(mibDeepTrainingProgressStruct.UILossAxes, 'on');
+    % Everything below is drawn into the window of the phase that ran last, so it uses
+    % lastPhaseInfo and its local iteration numbers. Using the concatenated "info" here
+    % put the picked-iteration marker past the end of the axes (7280 on a plot that
+    % stopped at 1556) and stretched the curve to the combined length.
+    lastPhaseIterations = numel(lastPhaseInfo.TrainingLoss);
+
     % add a vertical line at the selected iteration indicating the picked network.
     % OutputNetworkIteration can be empty (e.g. when training was retried without
     % validation) - skip the marker line in that case to avoid a plot size mismatch
-    if isfield(info, 'OutputNetworkIteration') && ~isempty(info.OutputNetworkIteration)
-        mibDeepTrainingProgressStruct.hPlot(3) = plot(mibDeepTrainingProgressStruct.UILossAxes, [info.OutputNetworkIteration, info.OutputNetworkIteration], mibDeepTrainingProgressStruct.UILossAxes.YLim, '-');
+    if isfield(lastPhaseInfo, 'OutputNetworkIteration') && ~isempty(lastPhaseInfo.OutputNetworkIteration)
+        pickedIteration = lastPhaseInfo.OutputNetworkIteration;
+        mibDeepTrainingProgressStruct.hPlot(3) = plot(mibDeepTrainingProgressStruct.UILossAxes, [pickedIteration, pickedIteration], mibDeepTrainingProgressStruct.UILossAxes.YLim, '-');
         mibDeepTrainingProgressStruct.hPlot(3).Color = [0 .7 0];
-        mibDeepTrainingProgressStruct.UILossAxes.Legend.String = {'Training'  'Validation'  sprintf('Picked iteration: %d', info.OutputNetworkIteration)};
+        mibDeepTrainingProgressStruct.UILossAxes.Legend.String = {'Training'  'Validation'  sprintf('Picked iteration: %d', pickedIteration)};
     end
     % add last point to the plot
-    if ~isempty(mibDeepTrainingProgressStruct.hPlot(1).XData) && mibDeepTrainingProgressStruct.hPlot(1).XData(end) < numel(info.TrainingLoss)
+    if ~isempty(mibDeepTrainingProgressStruct.hPlot(1).XData) && mibDeepTrainingProgressStruct.hPlot(1).XData(end) < lastPhaseIterations
         warning('off','MATLAB:gui:array:InvalidArrayShape');
-        mibDeepTrainingProgressStruct.hPlot(1).XData = [mibDeepTrainingProgressStruct.hPlot(1).XData, numel(info.TrainingLoss)];
-        mibDeepTrainingProgressStruct.hPlot(1).YData = [mibDeepTrainingProgressStruct.hPlot(1).YData, info.TrainingLoss(end)];
-        if isfield(info, 'ValidationLoss')
-            mibDeepTrainingProgressStruct.hPlot(2).XData = [mibDeepTrainingProgressStruct.hPlot(2).XData numel(info.ValidationLoss)];
-            mibDeepTrainingProgressStruct.hPlot(2).YData = [mibDeepTrainingProgressStruct.hPlot(2).YData info.ValidationLoss(end)];
+        mibDeepTrainingProgressStruct.hPlot(1).XData = [mibDeepTrainingProgressStruct.hPlot(1).XData, lastPhaseIterations];
+        mibDeepTrainingProgressStruct.hPlot(1).YData = [mibDeepTrainingProgressStruct.hPlot(1).YData, lastPhaseInfo.TrainingLoss(end)];
+        % ValidationLoss is padded with NaN on the iterations where no validation ran, so
+        % the last element is usually NaN; take the last one that actually holds a value
+        if isfield(lastPhaseInfo, 'ValidationLoss')
+            lastValidation = find(~isnan(lastPhaseInfo.ValidationLoss), 1, 'last');
+            if ~isempty(lastValidation)
+                mibDeepTrainingProgressStruct.hPlot(2).XData = [mibDeepTrainingProgressStruct.hPlot(2).XData lastValidation];
+                mibDeepTrainingProgressStruct.hPlot(2).YData = [mibDeepTrainingProgressStruct.hPlot(2).YData lastPhaseInfo.ValidationLoss(lastValidation)];
+            end
         end
         warning('on','MATLAB:gui:array:InvalidArrayShape');
+    end
+    % a stopped run ends well before the planned number of iterations, so bring the axis
+    % back to where the data actually ends instead of leaving the full budget on screen
+    if lastPhaseIterations > 0
+        xlim(mibDeepTrainingProgressStruct.UILossAxes, [0, lastPhaseIterations]);
     end
     hold(mibDeepTrainingProgressStruct.UILossAxes, 'off');
 end
@@ -746,8 +925,9 @@ if mibDeepTrainingProgressStruct.emergencyBrake && (obj.BatchOpt.Workflow{1}(1) 
 end
 
 OverlapInstancesOpt = obj.OverlapInstancesOpt;
+StartingWeightsOpt = obj.StartingWeightsOpt;   %#ok<NASGU> saved below, records the two-phase schedule that produced this network
 save(obj.BatchOpt.NetworkFilename, 'net', 'TrainingOptStruct', 'AugOpt2DStruct', 'AugOpt3DStruct', 'InputLayerOpt', ...
-    'ActivationLayerOpt', 'SegmentationLayerOpt', 'DynamicMaskOpt', 'OverlapInstancesOpt', ...
+    'ActivationLayerOpt', 'SegmentationLayerOpt', 'DynamicMaskOpt', 'OverlapInstancesOpt', 'StartingWeightsOpt', ...
     'classNames', 'classColors', 'inputPatchSize', 'outputPatchSize', 'BatchOpt', '-mat', '-v7.3');
 
 if showWaitbarLocal
@@ -770,6 +950,9 @@ if obj.BatchOpt.T_ExportTrainingPlots
         writematrix(info.(fieldNames{fieldId}), ...
             fullfile(obj.BatchOpt.ResultingImagesDir, 'ScoreNetwork', [fnTemplate '_' fieldNames{fieldId} '.csv']));
     end
+    % snapshot of the finished progress window, as the semantic workflow does at the end of
+    % controllers.MibDeep/startTraining
+    iSaveProgressSnapshot(obj, mibDeepTrainingProgressStruct, '');
 end
 if showWaitbarLocal
     obj.wb.Value = 1;
@@ -836,6 +1019,144 @@ obj.view.handles.TrainButton.BackgroundColor = [0.7686    0.9020    0.9882];
 fprintf('Training is finished, elapsed time: %f\n', toc(trainTimer));
 end
 
+function snapshotOk = iSaveProgressSnapshot(obj, progressStruct, nameSuffix)
+% write a PNG (and a .fig) of the custom training progress window
+%
+% Mirrors what controllers.MibDeep/startTraining does for the semantic workflows, and is
+% called twice by the two-phase schedule: once when the frozen phase ends, because that
+% window is deleted before the trainable phase starts, and once when the run finishes.
+% The name matches the sibling .score and CSV files so a run's outputs group together.
+%
+% Input Arguments:
+%   - **progressStruct** - the mibDeepTrainingProgressStruct with the live UIFigure
+%   - **nameSuffix** - appended to the file name, e.g. ``'_frozenPhase'``; ``''`` for the
+%     snapshot of the finished run
+%
+% Output Arguments:
+%   - **snapshotOk** - [logical] false when the PNG could not be produced. deepmib.saveTrainingPlot
+%     works by grabbing the screen rectangle the window occupies (``java.awt.Robot``), which
+%     returns an all-black image while the workstation is locked - a long training run left
+%     overnight is exactly when that happens. The caller uses this to keep the window on
+%     screen so the plot can still be saved by hand from its "Save plot" button.
+%
+% Nothing here is worth failing a run over, so every step is inside a try.
+
+snapshotOk = false;
+if ~obj.BatchOpt.T_ExportTrainingPlots; return; end
+if ~obj.BatchOpt.O_CustomTrainingProgressWindow; return; end
+if ~isfield(progressStruct, 'UIFigure') || isempty(progressStruct.UIFigure) || ~isvalid(progressStruct.UIFigure)
+    return;
+end
+
+try
+    scoreDir = fullfile(obj.BatchOpt.ResultingImagesDir, 'ScoreNetwork');
+    if ~isfolder(scoreDir); mkdir(scoreDir); end
+    [~, networkName] = fileparts(obj.BatchOpt.NetworkFilename);
+    snapshotTemplate = [char(datetime('now', 'format', 'yyMMddHHmm')), '_', networkName, nameSuffix];
+
+    % The .fig goes first and does not involve the screen at all, so the plot is
+    % recoverable with openfig() even when the capture below produces nothing usable
+    figName = fullfile(scoreDir, [snapshotTemplate '.fig']);
+    savefig(progressStruct.UIFigure, figName);
+
+    % saveTrainingPlot grabs the screen rectangle the window occupies, so it has to be
+    % on top and finished redrawing before the capture
+    pngName = fullfile(scoreDir, [snapshotTemplate '.png']);
+    figure(progressStruct.UIFigure);
+    drawnow;
+    deepmib.saveTrainingPlot([], [], progressStruct, pngName);
+
+    % A locked or blanked screen yields an all-black grab. Keeping that file would be
+    % worse than having none: it looks like a saved plot until it is opened.
+    capturedImage = imread(pngName);
+    if nnz(capturedImage) / numel(capturedImage) < 0.01
+        delete(pngName);
+        warning('DeepMIB:trainingSnapshotBlank', ...
+            ['the training plot could not be captured, the screen was most likely locked.\n' ...
+            'The plot was still saved as a figure:\n  %s\nReopen it with openfig(...), or use ' ...
+            '"Save plot" in the progress window, which stays open for this reason.'], figName);
+        return;
+    end
+    snapshotOk = true;
+catch snapshotErr
+    warning('DeepMIB:trainingSnapshot', ...
+        'could not save the training plot snapshot (%s)', snapshotErr.message);
+end
+end
+
+% -------------------------------------------------------------------------------------
+function info = iNormalizeTrainingInfo(info)
+% reshape trainSOLOV2 training info into the scalar-struct/vector-field form used elsewhere
+%
+% trainSOLOV2 (dltrain-based) returns info as a STRUCT ARRAY with one row per logged
+% iteration, and OutputNetworkIteration as a per-row logical flag marking the row whose
+% network was selected as output (see images.dltrain.internal.dltrain.m: "info(end
+% /BestNetworkIteration-matching row).OutputNetworkIteration = true"). This differs from
+% trainNetwork/trainnet, which return a SCALAR struct with vector-valued fields and a
+% scalar OutputNetworkIteration iteration number - the shape the finalisation/reporting
+% code (shared with the semantic workflow, see controllers.MibDeep/startTraining) expects.
+% Dot-indexing a field on a multi-row struct array (e.g. info.TrainingLoss) expands into a
+% comma-separated list, which crashes any function called on it directly (e.g.
+% isempty(info.OutputNetworkIteration) errors "Too many input arguments" once there is more
+% than one row).
+
+if ~isstruct(info) || ~isfield(info, 'OutputNetworkIteration'); return; end
+
+infoRows = info;
+outputRow = find([infoRows.OutputNetworkIteration], 1);
+info = struct();
+infoFieldNames = setdiff(fieldnames(infoRows), 'OutputNetworkIteration', 'stable');
+for infoFieldIdx = 1:numel(infoFieldNames)
+    info.(infoFieldNames{infoFieldIdx}) = [infoRows.(infoFieldNames{infoFieldIdx})];
+end
+if isempty(outputRow)
+    info.OutputNetworkIteration = [];
+else
+    info.OutputNetworkIteration = infoRows(outputRow).Iteration;
+end
+end
+
+% -------------------------------------------------------------------------------------
+function info = iConcatenateTrainingInfo(firstInfo, secondInfo, iterationOffset)
+% join the training info of the two phases into one continuous record
+%
+% The trainer restarts its Iteration and Epoch counters for the second phase, so both are
+% shifted by what the first phase used; every other field is a plain per-iteration series
+% and is simply appended. Only fields present in both phases survive - a metric that ran in
+% one phase but not the other cannot form a continuous curve, and a ragged field would
+% break the CSV export loop, which writes one row per field.
+
+info = struct();
+sharedFields = intersect(fieldnames(firstInfo), fieldnames(secondInfo), 'stable');
+epochOffset = 0;
+if ismember('Epoch', sharedFields) && ~isempty(firstInfo.Epoch)
+    epochOffset = max(firstInfo.Epoch);
+end
+
+for fieldIdx = 1:numel(sharedFields)
+    fieldName = sharedFields{fieldIdx};
+    if strcmp(fieldName, 'OutputNetworkIteration')
+        % the network that was kept comes from the second phase
+        if isempty(secondInfo.OutputNetworkIteration)
+            info.OutputNetworkIteration = [];
+        else
+            info.OutputNetworkIteration = secondInfo.OutputNetworkIteration + iterationOffset;
+        end
+        continue;
+    end
+    firstValues = reshape(firstInfo.(fieldName), 1, []);
+    secondValues = reshape(secondInfo.(fieldName), 1, []);
+    switch fieldName
+        case 'Iteration'
+            secondValues = secondValues + iterationOffset;
+        case 'Epoch'
+            secondValues = secondValues + epochOffset;
+    end
+    info.(fieldName) = [firstValues, secondValues];
+end
+end
+
+% -------------------------------------------------------------------------------------
 function out = iReadValidationPatch(observationIndex, valModelFiles, valObservationSeeds, valPatchOpt)
 % read one validation observation, cropping the same window on every evaluation
 %

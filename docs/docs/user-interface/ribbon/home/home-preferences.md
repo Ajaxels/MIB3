@@ -339,7 +339,7 @@ to set the path to [BM4D](https://webpages.tuni.fi/foi/GCF-BM3D/index.html), see
 Use any temporary directory available on your system. The created files can be removed any moment.
 <br><br>
 <span class="widget widget-edit">Directory to store network architectures for DeepMIB</span>: a text field and 
-<span class="widget widget-button">...</span> to set the [DeepMIB](../../deepmib/index.md) and [SAM](../../panels/segm/segm-sam.md) network storage paths.
+<span class="widget widget-button">...</span> to set the [DeepMIB](../../../deepmib/index.md) and [SAM](../../panels/segm/segm-sam.md) network storage paths.
 <br><br>
 <span class="widget widget-edit">Python installation path</span>: a text field and <span class="widget widget-button">...</span> 
 button to set the path to Python, required for [SAM](../../panels/segm/segm-sam.md), see more in the [System requirements](https://mib.helsinki.fi/downloads_systemreq_sam2.html) section.
@@ -351,7 +351,7 @@ interpreter (used by [SAM](../../panels/segm/segm-sam.md) and other Python-based
 - `InProcess`: Python runs **inside the MATLAB process**, sharing its GPU context.
 
 !!! warning "Why OutOfProcess is the default"
-    In `InProcess` mode Python shares MATLAB's GPU (CUDA) context. Running [DeepMIB](../../deepmib/index.md)
+    In `InProcess` mode Python shares MATLAB's GPU (CUDA) context. Running [DeepMIB](../../../deepmib/index.md)
     training or prediction resets that context (via `gpuDevice`), which frees the GPU memory still held by a
     loaded SAM model. The next SAM click then fails with `CUDA error: an illegal memory access was encountered`,
     and MATLAB must be restarted. `OutOfProcess` isolates Python in its own process, so DeepMIB and SAM no longer
