@@ -38,7 +38,7 @@ Start a new project by selecting a workflow:
         - Ronneberger, O., et al. "U-Net: Convolutional Networks for Biomedical Image Segmentation." *MICCAI*, 2015 ([arXiv](https://arxiv.org/abs/1505.04597)).  
         - [MATLAB U-Net layers](https://se.mathworks.com/help/vision/ref/unetlayers.html).
 
-    - **2D SegNet**: a convolutional network from the University of Cambridge, UK, designed for general image segmentation, less suited for microscopy data compared to U-net.  
+    - **2D SegNet** *(MATLAB R2025b and older only)*: a convolutional network from the University of Cambridge, UK, designed for general image segmentation, less suited for microscopy data compared to U-net. MATLAB removed the function that builds it in R2026a, so the architecture is not offered there; projects that used it open with DeepLab v3+ instead and need retraining.  
       **References**:  
         - Badrinarayanan, V., et al. "SegNet: A Deep Convolutional Encoder-Decoder Architecture for Image Segmentation." *arXiv*, 2015 ([arXiv](https://arxiv.org/abs/1511.00561)).  
         - [MATLAB SegNet layers](https://se.mathworks.com/help/vision/ref/segnetlayers.html).

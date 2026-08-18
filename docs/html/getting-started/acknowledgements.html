@@ -5535,7 +5535,10 @@
 <li><strong>Konstantin Kogan</strong>, University of Helsinki, for assistance with Mac OS</li>
 <li><strong>David Legland</strong>, INRA, France, for modification of the <a href="http://www.mathworks.com/matlabcentral/fileexchange/16938-region-adjacency-graph--rag-">Region Adjacency Graph (imRAG)</a> function for detection of indices between watershed regions and help with few other functions</li>
 <li><strong>Vladimir Moltchanov</strong>, for discussions on software architectures</li>
+<li><strong>Norman Rzepka</strong>, Scalable Minds GmbH for implementation of Zarr&#8532; libraries for MATLAB</li>
 <li><strong>Henrik P Sahlin Pettersen</strong>, Norwegian University of Science and Technology/St. Olavs hospital, Trondheim, for driving DeepMIB for pathology</li>
+<li><strong>František Kitzberger</strong> (Inst. of Parasitology, Biology Centre CAS) and <strong>Leonhard Breitsprecher</strong> (University of Osnabrueck) for beta testing of MIB3</li>
+<li><strong>Anthropic Claude</strong> for help with MIB2 conversion to MIB3 and implementation of new tools in MIB3</li>
 </ul>
 <p>Microscopy Image Browser team would like to acknowledge <a href="https://se.mathworks.com/matlabcentral/">the User Community of MATLAB-Central</a> and the authors whose code was used during MIB development (see below).</p>
 <h2 id="code-sources">Code Sources<a class="headerlink" href="#code-sources" title="Permanent link">&para;</a></h2>
@@ -5584,7 +5587,7 @@ including functions that were only used in earlier releases (noted in the list b
 <li><a href="http://www.mathworks.com/matlabcentral/fileexchange/21310-maxflow"><strong>MAXFLOW/MINCUT MATLAB wrapper</strong></a> is written by Michael Rubinstein (Google) is used in the Graphcut tool</li>
 <li><a href="https://www.mkdocs.org"><strong>MkDocs</strong></a> is acknowledged for documentation generation for MIB 2.91</li>
 <li><a href="https://se.mathworks.com/matlabcentral/fileexchange/8472-num2clip-copy-numerical-arrays-to-clipboard"><strong>NUM2CLIP</strong></a> function by Grigor Browning, 2005, is used to copy column items to the system clipboard</li>
-<li>NRRD, Nearly Raw Raster Data format is implemented using <a href="http://www.na-mic.org/Wiki/index.php/Projects:MATLABSlicerExampleModule"><strong>Projects:MATLABSlicerExampleModule</strong></a> written by John Melonakos for NRRD reading using <a href="http://teem.sourceforge.net/">TEEM</a>; and a custom function for reading metadata based on <a href="http://www.mathworks.com/matlabcentral/fileexchange/34653-nrrd-format-file-reader">NRRD Format File Reader</a> written by Jeff Mather, 2012</li>
+<li>NRRD, Nearly Raw Raster Data format is implemented using <a href="http://www.na-mic.org/Wiki/index.php/Projects:MATLABSlicerExampleModule"><strong>Projects:MATLABSlicerExampleModule</strong></a> written by John Melonakos for NRRD reading using <a href="http://teem.sourceforge.net/">TEEM</a> and <a href="https://vtk.org/about/"><strong>VTKPNG.DLL</strong></a> by Ken Martin, Will Schroeder, and Bill Lorensen; and a custom function for reading metadata based on <a href="http://www.mathworks.com/matlabcentral/fileexchange/34653-nrrd-format-file-reader">NRRD Format File Reader</a> written by Jeff Mather, 2012</li>
 <li><a href="http://www.openmicroscopy.org/site/products/omero/downloads"><strong>OMERO MATLAB bindings</strong></a> (included into the compiled version, but should be downloaded separately for the MATLAB version) are used for connection to OMERO servers</li>
 <li><a href="http://www.mathworks.com/matlabcentral/fileexchange/25713-highly-portable-json-input-parser"><strong>P_JSON</strong></a>, highly portable JSON parser function, is written by Nedialko, 2009, is used for work with HDF5 files</li>
 <li><a href="https://se.mathworks.com/matlabcentral/fileexchange/24330-patch-normals"><strong>PATCHNORMALS</strong></a>, by Dirk-Jan Kroon (University of Twente), implementation 2009, is used for calculation of normals during export of surfaces to Imaris</li>
@@ -5607,9 +5610,11 @@ including functions that were only used in earlier releases (noted in the list b
 <li><a href="https://se.mathworks.com/matlabcentral/fileexchange/38591-xlwrite--generate-xls-x--files-without-excel-on-mac-linux-win"><strong>XLWRITE: Generate XLS(X) files without Excel on Mac/Linux/Win</strong></a> by Alec de Zegher, NV Bekaert SA, 2013</li>
 <li><a href="http://www.mathworks.com/matlabcentral/fileexchange/27236-improved-xlswrite-m"><strong>XLSWRITE</strong></a> mod by Barry Dillon (AON Insurance Brokers, 2010)</li>
 <li><a href="http://www.mathworks.com/matlabcentral/fileexchange/28518-xml2struct"><strong>XML2STRUCT</strong></a> and <a href="http://www.mathworks.com/matlabcentral/fileexchange/28639-struct2xml">STRUCT2XML</a> by Wouter Falkena (Delft University of Technology, 2010)</li>
+<li><a href="https://github.com/scalableminds/zarr-matlab"><strong>zarr-matlab</strong></a> by Alessandro Motta (Max Planck Institute for Brain Research) and scalable minds, 2020-2025, is used for reading and writing Zarr&#8532; datasets</li>
+<li><a href="https://github.com/zensical/zensical"><strong>zensical</strong></a> by Zensical LLC, 2025-2026, is used for documentation generation for MIB3</li>
 </ul>
 <h2 id="color-palettes">Color Palettes<a class="headerlink" href="#color-palettes" title="Permanent link">&para;</a></h2>
-<p>Color palettes are generated with help of:</p>
+<p>Color palettes are generated with help of: </p>
 <ul>
 <li><a href="http://jfly.iam.u-tokyo.ac.jp/color/">Yasuyo G. Ichihara, Masataka Okabe, Koichi Iga, Yosuke Tanaka, Kohei Musha, Kei Ito</a>. Color Universal Design - The selection of four easily distinguishable colors for all color vision types. Proc Spie 6807 (2008)</li>
 <li><a href="http://colorbrewer2.org/">Cynthia Brewer, Mark Harrower, Ben Sheesley, Andy Woodruff, David Heyman</a>. ColorBrewer 2.0</li>
@@ -5619,6 +5624,7 @@ including functions that were only used in earlier releases (noted in the list b
 <ul>
 <li>Some icons used in MIB were provided by <a href="https://icons8.com">Icons8.com</a>, <a href="https://icons8.com/license">license information</a></li>
 <li>Some images were generated using <a href="https://stability.ai/blog/stable-diffusion-public-release">stable-diffusion image generative AI</a></li>
+<li>Puffin-pirate is a collabroration with Nano Banana 2 by <a href="https://labs.google">Google</a></li>
 </ul>
 <hr />
 <p><em>Back to <a href="../index.html">MIB</a> | <a href="index.html">Getting started</a></em></p>

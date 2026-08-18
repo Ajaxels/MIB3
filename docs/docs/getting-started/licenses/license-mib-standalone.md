@@ -12,24 +12,24 @@ By using the **deployed compiled, standalone version of Microscopy Image Browser
 - The external packages used by MIB are also subject to their respective [licenses](licenses-ext.md)
 - Please note that Microscopy Image Browser was compiled using an Academic license, and its distribution, made by the Electron Microscopy Unit, University of Helsinki is intended only for non-commercial academic research purposes
 
-- The corresponding license files are also included into the MIB distribution under `MIB/licenses` directory.
+- The corresponding license files are also included into the MIB distribution under `MIB3/mib/licenses` directory.
 
 ## Copyright and Development
 
-Developed during 2010-2025 by:
+Developed during 2010-2026 by:
 
 - **Core Developer**: Ilya Belevich
 - **Developers**: Merja Joensuu, Darshan Kumar, Helena Vihinen, Eija Jokitalo
 - **Affiliation**: Electron Microscopy Unit, Institute of Biotechnology, PO Box 56 (Viikinkaari 9), 00014, University of Helsinki, Finland
 
 **Microscopy Image Browser (MIB)**: Image segmentation and beyond  
-**Copyright © 2010-2025**: Ilya Belevich, Merja Joensuu, Darshan Kumar, Helena Vihinen, Eija Jokitalo  
+**Copyright © 2010-2026**: Ilya Belevich, Merja Joensuu, Darshan Kumar, Helena Vihinen, Eija Jokitalo  
 **Website**: [http://mib.helsinki.fi](http://mib.helsinki.fi)
 
 ```aiignore
 Microscopy Image Browser (MIB)
 image segmentation and beyond
-Copyright (c) 2010-2023
+Copyright (c) 2010-2026
 Ilya Belevich, Merja Joensuu, Darshan Kumar, Helena Vihinen and Eija Jokitalo
 http://mib.helsinki.fi
 

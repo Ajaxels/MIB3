@@ -86,6 +86,11 @@ xyString = obj.cStatus.handles.pixelLabel.Text;
 xy = sscanf(xyString, '%f:%f', 2);
 
 if ~isempty(ActionId) % find in the list of existing shortcuts
+    % count user's points
+    obj.mibModel.preferences.Users.Tiers.numberOfKeyShortcuts = obj.mibModel.preferences.Users.Tiers.numberOfKeyShortcuts+1;
+    eventdata = core.ToggleEventData(0.5);    % scale scoring by factor 0.5
+    notify(obj.mibModel, 'UpdateUserScore', eventdata);
+    
     % compute layer scope from modifier combination (used by several cases)
     modCount = sum([altPressed, shiftPressed]);
     scopeList = {'2D, Slice', '3D, Stack', '4D, Dataset'};
@@ -454,6 +459,8 @@ else    % all other possible shortcuts
                 cImageDoc.updateBrushCursor([], '-', true);
             end
     end
+
+    % count user's points -> see above
 end
 
 % When the keypress came from a child panel (MibSelection, DisplayAdjust, etc.)

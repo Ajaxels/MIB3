@@ -574,6 +574,8 @@ Prefs.Users.Tiers.numberOfInferencedDeepNetworks = 0;
 Prefs.Users.Tiers.numberOfMeasurements = 0; 
 Prefs.Users.Tiers.numberOfGetStats = 0;    
 Prefs.Users.Tiers.numberOfKeyShortcuts = 0; % key shortcuts
+Prefs.Users.Tiers.numberOfAlignments = 0; 
+Prefs.Users.Tiers.numberOfStitchings = 0; 
 
 Prefs.Users.singleToolScores = 0.5;   % score awarded for a single standard tool use (i.e. Ball3D or spot)
 Prefs.Users.tierPointsCoef = 500;  % for points calculations, as nextTier = tierPointsCoef * 2^[userTier];

@@ -10,7 +10,10 @@
 - **Konstantin Kogan**, University of Helsinki, for assistance with Mac OS
 - **David Legland**, INRA, France, for modification of the [Region Adjacency Graph (imRAG)](http://www.mathworks.com/matlabcentral/fileexchange/16938-region-adjacency-graph--rag-) function for detection of indices between watershed regions and help with few other functions
 - **Vladimir Moltchanov**, for discussions on software architectures
+- **Norman Rzepka**, Scalable Minds GmbH for implementation of Zarr2/3 libraries for MATLAB
 - **Henrik P Sahlin Pettersen**, Norwegian University of Science and Technology/St. Olavs hospital, Trondheim, for driving DeepMIB for pathology
+- **František Kitzberger** (Inst. of Parasitology, Biology Centre CAS) and **Leonhard Breitsprecher** (University of Osnabrueck) for beta testing of MIB3
+- **Anthropic Claude** for help with MIB2 conversion to MIB3 and implementation of new tools in MIB3
 
 Microscopy Image Browser team would like to acknowledge [the User Community of MATLAB-Central](https://se.mathworks.com/matlabcentral/) and the authors whose code was used during MIB development (see below).
 
@@ -60,7 +63,7 @@ Microscopy Image Browser adapts partially or completely codes from the following
 - [**MAXFLOW/MINCUT MATLAB wrapper**](http://www.mathworks.com/matlabcentral/fileexchange/21310-maxflow) is written by Michael Rubinstein (Google) is used in the Graphcut tool
 - [**MkDocs**](https://www.mkdocs.org) is acknowledged for documentation generation for MIB 2.91
 - [**NUM2CLIP**](https://se.mathworks.com/matlabcentral/fileexchange/8472-num2clip-copy-numerical-arrays-to-clipboard) function by Grigor Browning, 2005, is used to copy column items to the system clipboard
-- NRRD, Nearly Raw Raster Data format is implemented using [**Projects:MATLABSlicerExampleModule**](http://www.na-mic.org/Wiki/index.php/Projects:MATLABSlicerExampleModule) written by John Melonakos for NRRD reading using [TEEM](http://teem.sourceforge.net/); and a custom function for reading metadata based on [NRRD Format File Reader](http://www.mathworks.com/matlabcentral/fileexchange/34653-nrrd-format-file-reader) written by Jeff Mather, 2012
+- NRRD, Nearly Raw Raster Data format is implemented using [**Projects:MATLABSlicerExampleModule**](http://www.na-mic.org/Wiki/index.php/Projects:MATLABSlicerExampleModule) written by John Melonakos for NRRD reading using [TEEM](http://teem.sourceforge.net/) and [**VTKPNG.DLL**](https://vtk.org/about/) by Ken Martin, Will Schroeder, and Bill Lorensen; and a custom function for reading metadata based on [NRRD Format File Reader](http://www.mathworks.com/matlabcentral/fileexchange/34653-nrrd-format-file-reader) written by Jeff Mather, 2012
 - [**OMERO MATLAB bindings**](http://www.openmicroscopy.org/site/products/omero/downloads) (included into the compiled version, but should be downloaded separately for the MATLAB version) are used for connection to OMERO servers
 - [**P_JSON**](http://www.mathworks.com/matlabcentral/fileexchange/25713-highly-portable-json-input-parser), highly portable JSON parser function, is written by Nedialko, 2009, is used for work with HDF5 files
 - [**PATCHNORMALS**](https://se.mathworks.com/matlabcentral/fileexchange/24330-patch-normals), by Dirk-Jan Kroon (University of Twente), implementation 2009, is used for calculation of normals during export of surfaces to Imaris
@@ -83,10 +86,12 @@ Microscopy Image Browser adapts partially or completely codes from the following
 - [**XLWRITE: Generate XLS(X) files without Excel on Mac/Linux/Win**](https://se.mathworks.com/matlabcentral/fileexchange/38591-xlwrite--generate-xls-x--files-without-excel-on-mac-linux-win) by Alec de Zegher, NV Bekaert SA, 2013
 - [**XLSWRITE**](http://www.mathworks.com/matlabcentral/fileexchange/27236-improved-xlswrite-m) mod by Barry Dillon (AON Insurance Brokers, 2010)
 - [**XML2STRUCT**](http://www.mathworks.com/matlabcentral/fileexchange/28518-xml2struct) and [STRUCT2XML](http://www.mathworks.com/matlabcentral/fileexchange/28639-struct2xml) by Wouter Falkena (Delft University of Technology, 2010)
+- [**zarr-matlab**](https://github.com/scalableminds/zarr-matlab) by Alessandro Motta (Max Planck Institute for Brain Research) and scalable minds, 2020-2025, is used for reading and writing Zarr2/3 datasets
+- [**zensical**](https://github.com/zensical/zensical) by Zensical LLC, 2025-2026, is used for documentation generation for MIB3
 
 ## Color Palettes
 
-Color palettes are generated with help of:
+Color palettes are generated with help of: 
 
 - [Yasuyo G. Ichihara, Masataka Okabe, Koichi Iga, Yosuke Tanaka, Kohei Musha, Kei Ito](http://jfly.iam.u-tokyo.ac.jp/color/). Color Universal Design - The selection of four easily distinguishable colors for all color vision types. Proc Spie 6807 (2008)
 - [Cynthia Brewer, Mark Harrower, Ben Sheesley, Andy Woodruff, David Heyman](http://colorbrewer2.org/). ColorBrewer 2.0
@@ -96,6 +101,7 @@ Color palettes are generated with help of:
 
 - Some icons used in MIB were provided by [Icons8.com](https://icons8.com), [license information](https://icons8.com/license)
 - Some images were generated using [stable-diffusion image generative AI](https://stability.ai/blog/stable-diffusion-public-release)
+- Puffin-pirate is a collabroration with Nano Banana 2 by [Google](https://labs.google)
 
 ---
 

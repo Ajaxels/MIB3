@@ -107,6 +107,15 @@ if ~strcmp(obj.BatchOpt.Architecture{1}, res.BatchOpt.Architecture{1})
         res.BatchOpt.Architecture{1} = 'U-net +Encoder';
         res.BatchOpt.T_EncoderNetwork{1} = 'Classic';
     end
+    % SegNet is not offered from R2026a (see the architecture list in MibDeep) and assigning
+    % it to the dropdown would error, since it is no longer among the items
+    if strcmp(res.BatchOpt.Architecture{1}, 'SegNet') && ~isMATLABReleaseOlderThan('R2026a')
+        errText = sprintf(['SegNet is no longer available: MATLAB removed segnetLayers in R2026a and\n' ...
+            'provides no replacement for it.\n\nThe project is loaded with "DeepLab v3+" instead and the\n' ...
+            'remaining parameters are restored, but the network has to be retrained.']);
+        utils.dlgs.showErrorDialog(obj.view.gui, errText, 'The architecture is not supported')
+        res.BatchOpt.Architecture{1} = 'DeepLab v3+';
+    end
     obj.view.handles.Architecture.Value = res.BatchOpt.Architecture{1};
     obj.selectArchitecture();
 end

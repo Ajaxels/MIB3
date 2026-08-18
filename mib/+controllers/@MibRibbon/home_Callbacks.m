@@ -162,13 +162,11 @@ switch mode
         obj.mibController.startController('controllers.Preferences', obj.mibController);  % a new appdesigner version
     case 'Help'                         % obj.handles.ribbonHome.help
         helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'html', 'index.html');
-        utils.openHelpPage(helpFilPath, ...
-            'http://mib.helsinki.fi/help/main3/index.html');
+        utils.openHelpPage(helpFilPath, 'http://mib.helsinki.fi/help/main3/index.html');
 
     case 'Open MIB help'                % obj.handles.ribbonHome.helpMenu
         helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'html', 'index.html');
-        utils.openHelpPage(helpFilPath, ...
-            'http://mib.helsinki.fi/help/main3/index.html');
+        utils.openHelpPage(helpFilPath, 'http://mib.helsinki.fi/help/main3/index.html');
 
     case 'Tip of the day'               % obj.handles.ribbonHome.tipOfDay
         obj.mibModel.preferences.Tips.ShowTips = true;
@@ -212,7 +210,7 @@ switch mode
     case 'Check for update'             % obj.handles.ribbonHome.checkUpdate
         obj.mibController.startController('controllers.UpdateCheck');
 
-    case 'Your personal stats'          % obj.handles.ribbonHome.personalStats
+    case 'Your stats'          % obj.handles.ribbonHome.personalStats
         [newStatsPath, updatedTiers] = utils.dlgs.showMilestoneDialog( ...
             obj.mibController.view.gui, ...
             obj.mibModel.preferences.Users, ...

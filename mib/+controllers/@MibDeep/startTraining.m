@@ -928,7 +928,14 @@ if showWaitbarLocal
         'Title', 'Finalize training', 'Cancelable', 'on');
 end
 
-if mibDeepTrainingProgressStruct.useCustomProgressPlot && isfield(info, 'OutputNetworkIteration')
+% Every read of mibDeepTrainingProgressStruct from here on is guarded with isfield: pressing
+% "Stop training" a second time takes deepmib.stopTrainingCallback down its 'Stopping...'
+% branch, which detaches the progress window by resetting the global to an empty struct.
+% That happens while this finalization code is still running, so the fields it wants can
+% disappear between two consecutive statements.
+if isfield(mibDeepTrainingProgressStruct, 'useCustomProgressPlot') && mibDeepTrainingProgressStruct.useCustomProgressPlot && ...
+        isfield(mibDeepTrainingProgressStruct, 'UILossAxes') && isvalid(mibDeepTrainingProgressStruct.UILossAxes) && ...
+        isfield(info, 'OutputNetworkIteration')
     % add line at the selected iteration indicating the picked network
     hold(mibDeepTrainingProgressStruct.UILossAxes, 'on');
     mibDeepTrainingProgressStruct.hPlot(3) = plot(mibDeepTrainingProgressStruct.UILossAxes, [info.OutputNetworkIteration, info.OutputNetworkIteration], mibDeepTrainingProgressStruct.UILossAxes.YLim, '-');
@@ -1019,7 +1026,8 @@ if showWaitbarLocal
     delete(obj.wb);
 end
 
-if mibDeepTrainingProgressStruct.useCustomProgressPlot
+if isfield(mibDeepTrainingProgressStruct, 'useCustomProgressPlot') && mibDeepTrainingProgressStruct.useCustomProgressPlot && ...
+        isfield(mibDeepTrainingProgressStruct, 'StopTrainingButton') && isvalid(mibDeepTrainingProgressStruct.StopTrainingButton)
     mibDeepTrainingProgressStruct.StopTrainingButton.BackgroundColor = [0 1 0];
     mibDeepTrainingProgressStruct.StopTrainingButton.Text = 'Finished!!!';
 end
@@ -1036,11 +1044,13 @@ end
 % .StopReason: "Stopped by OutputFcn"
 
 
-if obj.SendReports.T_SendReports && info.OutputNetworkIteration >= mibDeepTrainingProgressStruct.maxNoIter && ...
-        obj.SendReports.sendWhenFinished && ...
+if obj.SendReports.T_SendReports && obj.SendReports.sendWhenFinished && ...
+        isfield(mibDeepTrainingProgressStruct, 'maxNoIter') && ...
+        info.OutputNetworkIteration >= mibDeepTrainingProgressStruct.maxNoIter && ...
+        isfield(mibDeepTrainingProgressStruct, 'sendNextReportAtEpoch') && ...
         mibDeepTrainingProgressStruct.sendNextReportAtEpoch ~= -1
     [~, fn] = fileparts(obj.BatchOpt.NetworkFilename);
-    if mibDeepTrainingProgressStruct.useCustomProgressPlot
+    if isfield(mibDeepTrainingProgressStruct, 'useCustomProgressPlot') && mibDeepTrainingProgressStruct.useCustomProgressPlot
         mgsText = sprintf(['DeepMIB training of "%s" network\n' ...
                 '%s\n' ...
                 'Iteration Number: %s\n\n' ...

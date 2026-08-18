@@ -200,4 +200,9 @@ end
 % Headless batch mode: report BatchOpt back to the batch controller
 if useBatchMode; obj.returnBatchOpt(); end
 
+% count user's points
+obj.mibModel.preferences.Users.Tiers.numberOfAlignments = obj.mibModel.preferences.Users.Tiers.numberOfAlignments+1;
+eventdata = core.ToggleEventData(5);    % scale scoring by factor 5
+notify(obj.mibModel, 'UpdateUserScore', eventdata);
+
 end

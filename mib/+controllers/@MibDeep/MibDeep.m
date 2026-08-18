@@ -300,6 +300,7 @@ classdef MibDeep < handle
         updateOverlapInstancesSettings(obj)        % update settings for stitching of instances across tiles during 2D Instance prediction, the settings are stored in obj.OverlapInstancesOpt
         setStartingWeightsSettings(obj)        % update settings for the two-phase "COCO, frozen then trainable" schedule, the settings are stored in obj.StartingWeightsOpt
         previewValidationPatches(obj)        % show a collage of the patches that the current validation seed produces
+        findBestMinibatchSize(obj)        % measure which mini-batch size gives the best throughput on this GPU
         updateImageDirectoryPath(obj, event)        % update directories with images for training, prediction and results
         lgraph = updateMaxPoolAndTransConvLayers(obj, lgraph, poolSize)        % update maxPool and TransposedConvolution layers depending on network downsampling factor only for U-net and SegNet
         lgraph = updateNetworkInputLayer(obj, lgraph, inputPatchSize)        % update the input layer settings for lgraph parameters are taken from obj.InputLayerOpt
@@ -326,6 +327,13 @@ classdef MibDeep < handle
             % define available architectures
             workflowsList = {'2D Semantic', '2.5D Semantic', '3D Semantic', '2D Patch-wise', '2D Instance'};
             architectureList{1} = {'DeepLab v3+', 'SegNet', 'U-net +Encoder'};
+            % segnetLayers was removed in R2026a and, unlike unetLayers/unet3dLayers, has no
+            % replacement function - MathWorks says to assemble SegNet from a dlnetwork by
+            % hand. Drop it from the list rather than offer an architecture that throws the
+            % moment Train is pressed. Configs that still name it are remapped in loadConfig.
+            if ~isMATLABReleaseOlderThan('R2026a')
+                architectureList{1} = architectureList{1}(~strcmp(architectureList{1}, 'SegNet'));
+            end
             %architectureList{2} = {'3DC + DLv3 Resnet18', 'Z2C + DLv3 Resnet18', 'Z2C + DLv3 Resnet50', 'Z2C + U-net', 'Z2C + U-net +Encoder'};
             architectureList{2} = {'Z2C + DLv3', 'Z2C + U-net', 'Z2C + U-net +Encoder'}; % 3DC + DLv3 Resnet18'
             architectureList{3} = {'U-net', 'U-net Anisotropic'};
@@ -600,11 +608,23 @@ classdef MibDeep < handle
             obj.StartingWeightsOpt.MaxFrozenFraction = 0.25;
             obj.StartingWeightsOpt.PlateauWindowEpochs = 25;
             obj.StartingWeightsOpt.PlateauTolerance = 0.01;
-            % an absolute rate rather than a fraction of the frozen phase: the frozen
-            % phase searches from random heads and tolerates a wide band (1e-3 to 1e-2
-            % both converged), while the trainable phase protects an already good
-            % backbone, and how large a step that tolerates is a property of the
-            % pretrained weights, not of what phase 1 happened to use
+            % Number of consecutive validation evaluations reporting a zero mAP that mark
+            % the frozen phase as collapsed rather than converged. SOLOv2 fails by
+            % saturating its category branch to "background everywhere": the loss goes
+            % flat at a high value and no object is ever detected, which the plateau test
+            % above cannot tell apart from convergence. Unfreezing then wastes days on a
+            % network that cannot recover at the trainable rate.
+            % Calibrated on recorded runs: the healthy two-phase run reported its first
+            % non-zero mAP at validation evaluation #3, the warm-started one at #1, while
+            % the two collapsed runs stayed at exactly 0.000 for 27 and 126 evaluations.
+            % 8 leaves a comfortable margin over the worst healthy case.
+            obj.StartingWeightsOpt.CollapseEvaluations = 8;
+            % an absolute rate rather than a fraction of the frozen phase: the trainable
+            % phase protects an already good backbone, and how large a step that tolerates
+            % is a property of the pretrained weights, not of what phase 1 happened to use.
+            % The frozen phase is not as forgiving as it looks either - 1e-3 converges but
+            % 3e-3 and 5e-3 both collapse the head outright, so neither phase has a wide
+            % usable band with the adam solver.
             obj.StartingWeightsOpt.TrainableLearnRate = 1e-4;
             % merged rather than replaced, so a stored struct written by an older version
             % cannot leave a field missing and break the settings dialog

@@ -396,6 +396,11 @@ end
 obj.returnBatchOpt(obj.BatchOpt);
 notify(obj.mibModel, 'ShowImage');
 
+% count user's points
+obj.mibModel.preferences.Users.Tiers.numberOfStitchings = obj.mibModel.preferences.Users.Tiers.numberOfStitchings+1;
+eventdata = core.ToggleEventData(5);    % scale scoring by factor 5
+notify(obj.mibModel, 'UpdateUserScore', eventdata);
+
 end
 
 % =========================================================================

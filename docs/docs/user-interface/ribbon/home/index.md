@@ -45,17 +45,18 @@ to the selected folder.
   [:fontawesome-brands-youtube:{.red-color} Demo](https://youtu.be/MbK2JcTrZFw?list=PLGkFvW985wz8cj8CWmXOFkXpvoX_HwXzj)
 
 - **OMERO**: connect to an OMERO server and load images.  
-??? failure "Not implemented"
-
-    Requires [OMERO server](http://www.openmicroscopy.org/site) files; see [System Requirements](https://mib.helsinki.fi/downloads_systemreq.html#omero) for installation details.  
-    [:fontawesome-brands-youtube:{.red-color} Demo](https://youtu.be/iR7OL0eJGuw)
-
-    1. Select a server (do not copy/paste the password):  
-    ![OMERO Login](images/menuFileImportOmero1.png)
-    2. Choose a dataset and range:  
-    ![OMERO Selection](images/menuFileImportOmero2.png){.on-glb align=left width="400"}
-
-    <div class="clear-float"></div>
+    
+    ??? failure "Not implemented"
+    
+        Requires [OMERO server](http://www.openmicroscopy.org/site) files; see [System Requirements](https://mib.helsinki.fi/downloads_systemreq.html#omero) for installation details.  
+        [:fontawesome-brands-youtube:{.red-color} Demo](https://youtu.be/iR7OL0eJGuw)
+    
+        1. Select a server (do not copy/paste the password):  
+        ![OMERO Login](images/menuFileImportOmero1.png)
+        2. Choose a dataset and range:  
+        ![OMERO Selection](images/menuFileImportOmero2.png){.on-glb align=left width="400"}
+    
+        <div class="clear-float"></div>
 
 - **URL / Zarr**: Open a dataset from a URL address - an ordinary image, or an OME-Zarr container in a
   public cloud bucket browsed and opened without downloading it

@@ -3,6 +3,19 @@
 //   - javascripts/extra.js
 // into mkdocs.yml
 
+// GLightbox options, merged by the theme into its own defaults when it creates
+// the lightbox for {.on-glb} images.
+//
+// selector: null disables GLightbox's built-in click handling. The theme calls
+// setElements() with the anchors it collected and binds its own click -> openAt(n),
+// but GLightbox has already bound its own click -> open(anchor) via the default
+// ".glightbox" selector. Entries built by setElements() carry no "node" property,
+// so GLightbox's getElementIndex(anchor) always fails and its handler falls back
+// to slide 0. One click then opens two slides: slide 0 and the one clicked, both
+// keeping the "current" class, both laid out in flow - the first image on the page
+// appears next to whichever image was clicked.
+window.GLightboxOptions = {selector: null};
+
 // generate a tooltip balloon
 document.addEventListener("DOMContentLoaded", function() {
   const helpElements = document.querySelectorAll("[data-help]");

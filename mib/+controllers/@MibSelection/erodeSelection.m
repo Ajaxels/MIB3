@@ -65,7 +65,7 @@ end
 %% Read Selection panel state
 applySegmentationIn3D = obj.mibModel.applySegmentationIn3D;
 differenceSelection = obj.mibModel.differenceSelection;
-strelSize  = obj.handles.strel.Value;
+strelSize  = obj.getStrelSizeString();
 
 %% Decide ErodeMode; confirm 3D with the user
 % For a large anisotropic 3D element the accurate ellipsoid is slow, so the

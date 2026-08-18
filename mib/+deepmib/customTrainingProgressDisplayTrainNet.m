@@ -79,14 +79,20 @@ if progressStruct.Iteration == 0
     mibDeepTrainingProgressStruct.UIFigure = uifigure('Visible', 'off');
     ScreenSize = get(0, 'ScreenSize');
     FigPos(1) = 1/2*(ScreenSize(3)-800);
-    FigPos(2) = 2/3*(ScreenSize(4)-600);
-    mibDeepTrainingProgressStruct.UIFigure.Position = [FigPos(1), FigPos(2), 800, 600];
+    FigPos(2) = 2/3*(ScreenSize(4)-620);
+    mibDeepTrainingProgressStruct.UIFigure.Position = [FigPos(1), FigPos(2), 800, 620];
     [~, netName] = fileparts(trainingProgressOptions.NetworkFilename);
     mibDeepTrainingProgressStruct.UIFigure.Name = sprintf('Training progress (%s)', netName);
 
     % Create GridLayouts
     mibDeepTrainingProgressStruct.GridLayout = uigridlayout(mibDeepTrainingProgressStruct.UIFigure, [2, 1]);
     mibDeepTrainingProgressStruct.GridLayout.ColumnWidth = {'1x'};
+    % The panel row is pinned to a pixel height instead of sharing the figure evenly with
+    % the plot. Everything inside the three panels is positioned in absolute pixels, so a
+    % row that grows and shrinks with the window leaves them stranded at the bottom. 305 is
+    % 285 (what an even split of the old 600 px figure gave) plus the 20 px the new
+    % Time/epoch line needs; the figure grew by the same 20 so the plot keeps its height.
+    mibDeepTrainingProgressStruct.GridLayout.RowHeight = {'1x', 305};
 
     mibDeepTrainingProgressStruct.GridLayout2 = uigridlayout(mibDeepTrainingProgressStruct.GridLayout);
     mibDeepTrainingProgressStruct.GridLayout2.ColumnWidth = {'0.8x', '3.2x', '2x'};
@@ -113,18 +119,18 @@ if progressStruct.Iteration == 0
     % Create widgets
     mibDeepTrainingProgressStruct.AccTrainGauge = uigauge(mibDeepTrainingProgressStruct.AccuracyPanel, 'linear');
     mibDeepTrainingProgressStruct.AccTrainGauge.Orientation = 'vertical';
-    mibDeepTrainingProgressStruct.AccTrainGauge.Position = [6 28 40 190];
+    mibDeepTrainingProgressStruct.AccTrainGauge.Position = [6 28 40 210];
     mibDeepTrainingProgressStruct.AccValGauge = uigauge(mibDeepTrainingProgressStruct.AccuracyPanel, 'linear');
     mibDeepTrainingProgressStruct.AccValGauge.Orientation = 'vertical';
-    mibDeepTrainingProgressStruct.AccValGauge.Position = [54 28 40 190];
+    mibDeepTrainingProgressStruct.AccValGauge.Position = [54 28 40 210];
 
     mibDeepTrainingProgressStruct.TrainingLabel = uilabel(mibDeepTrainingProgressStruct.AccuracyPanel);
-    mibDeepTrainingProgressStruct.TrainingLabel.Position = [10 221 48 22];
+    mibDeepTrainingProgressStruct.TrainingLabel.Position = [10 241 48 22];
     mibDeepTrainingProgressStruct.TrainingLabel.Text = 'Train';
 
     mibDeepTrainingProgressStruct.ValidationLabel = uilabel(mibDeepTrainingProgressStruct.AccuracyPanel);
     mibDeepTrainingProgressStruct.ValidationLabel.HorizontalAlignment = 'center';
-    mibDeepTrainingProgressStruct.ValidationLabel.Position = [46 221 57 22];
+    mibDeepTrainingProgressStruct.ValidationLabel.Position = [46 241 57 22];
     mibDeepTrainingProgressStruct.ValidationLabel.Text = 'Valid.';
 
     mibDeepTrainingProgressStruct.AccTrainingValue = uilabel(mibDeepTrainingProgressStruct.AccuracyPanel);
@@ -136,21 +142,51 @@ if progressStruct.Iteration == 0
     mibDeepTrainingProgressStruct.AccValidationValue.Text = '0';
 
     mibDeepTrainingProgressStruct.TrainingProgress = uilabel(mibDeepTrainingProgressStruct.InformationPanel);
-    mibDeepTrainingProgressStruct.TrainingProgress.Position = [7 218 220 22];
+    % 385 wide (the full panel width from x=7) rather than 220: the plain device name
+    % already needed 182 px, and the memory figure appended by
+    % deepmib.updateGpuMemoryStatus takes it to 296, or 361 with the overcommit marker
+    mibDeepTrainingProgressStruct.TrainingProgress.Position = [7 238 385 22];
     mibDeepTrainingProgressStruct.TrainingProgress.FontWeight = 'bold';
     mibDeepTrainingProgressStruct.TrainingProgress.Text = trainingProgressOptions.gpuDevice;
-    
+
+    % GPU memory / overcommit tracking, see deepmib.updateGpuMemoryStatus
+    mibDeepTrainingProgressStruct.gpuBaseLabel = '';
+    mibDeepTrainingProgressStruct.gpuTotalMemory = 0;
+    mibDeepTrainingProgressStruct.gpuPeakUsed = 0;
+    mibDeepTrainingProgressStruct.gpuRateSamples = [];
+    mibDeepTrainingProgressStruct.gpuBaselineRate = NaN;
+    mibDeepTrainingProgressStruct.gpuPrevIteration = 0;
+    mibDeepTrainingProgressStruct.gpuPrevElapsed = 0;
+    mibDeepTrainingProgressStruct.gpuSpillWarned = false;
+    if isfield(trainingProgressOptions, 'executionEnvironment') && ...
+            strcmp(trainingProgressOptions.executionEnvironment, 'gpu')
+        try
+            mibDeepTrainingProgressStruct.gpuTotalMemory = gpuDevice().TotalMemory;
+            mibDeepTrainingProgressStruct.gpuBaseLabel = trainingProgressOptions.gpuDevice;
+        catch
+            % no usable device, leave gpuBaseLabel empty and the reporting stays off
+        end
+    end
+
     mibDeepTrainingProgressStruct.StartTime = uilabel(mibDeepTrainingProgressStruct.InformationPanel);
-    mibDeepTrainingProgressStruct.StartTime.Position = [7 196 175 22];
+    mibDeepTrainingProgressStruct.StartTime.Position = [7 216 184 22];
     mibDeepTrainingProgressStruct.StartTime.Text = sprintf('Started: %s', datetime('now'));
 
     mibDeepTrainingProgressStruct.ElapsedTime = uilabel(mibDeepTrainingProgressStruct.InformationPanel);
-    mibDeepTrainingProgressStruct.ElapsedTime.Position = [7 176 175 22];
+    mibDeepTrainingProgressStruct.ElapsedTime.Position = [7 196 184 22];
     mibDeepTrainingProgressStruct.ElapsedTime.Text = 'Elapsed: --.--.--';
 
     mibDeepTrainingProgressStruct.TimeToGo = uilabel(mibDeepTrainingProgressStruct.InformationPanel);
-    mibDeepTrainingProgressStruct.TimeToGo.Position = [7 156 175 22];
+    mibDeepTrainingProgressStruct.TimeToGo.Position = [7 176 184 22];
     mibDeepTrainingProgressStruct.TimeToGo.Text = 'Time to go: --.--.--';
+
+    % Last of the four time lines, on the same 20 px pitch as the three above it, which
+    % leaves the wider gap before Epoch untouched
+    mibDeepTrainingProgressStruct.TimePerEpoch = uilabel(mibDeepTrainingProgressStruct.InformationPanel);
+    mibDeepTrainingProgressStruct.TimePerEpoch.Position = [7 156 184 22];
+    mibDeepTrainingProgressStruct.TimePerEpoch.Text = 'Time/epoch: --.--.--';
+    mibDeepTrainingProgressStruct.TimePerEpoch.Tooltip = ...
+        'Average wall-clock time one epoch takes so far, and the same figure per iteration';
 
     mibDeepTrainingProgressStruct.ProgressGauge = uigauge(mibDeepTrainingProgressStruct.InformationPanel, 'semicircular');
     mibDeepTrainingProgressStruct.ProgressGauge.Position = [30 5 120 65];
@@ -168,27 +204,27 @@ if progressStruct.Iteration == 0
     mibDeepTrainingProgressStruct.IterationNumberValue.Text = sprintf('0 of %d', trainingProgressOptions.iterPerEpoch*trainingProgressOptions.TrainingOpt.MaxEpochs);
 
     mibDeepTrainingProgressStruct.IterationsPerEpoch = uilabel(mibDeepTrainingProgressStruct.InformationPanel);
-    mibDeepTrainingProgressStruct.IterationsPerEpoch.Position = [192 196 202 22];
+    mibDeepTrainingProgressStruct.IterationsPerEpoch.Position = [192 216 202 22];
     mibDeepTrainingProgressStruct.IterationsPerEpoch.Text = sprintf('Iterations per epoch: %d', trainingProgressOptions.iterPerEpoch);
 
     mibDeepTrainingProgressStruct.Solver = uilabel(mibDeepTrainingProgressStruct.InformationPanel);
-    mibDeepTrainingProgressStruct.Solver.Position = [192 176 202 22];
+    mibDeepTrainingProgressStruct.Solver.Position = [192 196 202 22];
     mibDeepTrainingProgressStruct.Solver.Text = sprintf('Solver name: %s', trainingProgressOptions.TrainingOpt.solverName);
 
     mibDeepTrainingProgressStruct.TrainingOpt.Shuffle = uilabel(mibDeepTrainingProgressStruct.InformationPanel);
-    mibDeepTrainingProgressStruct.TrainingOpt.Shuffle.Position = [192 156 202 22];
+    mibDeepTrainingProgressStruct.TrainingOpt.Shuffle.Position = [192 176 202 22];
     mibDeepTrainingProgressStruct.TrainingOpt.Shuffle.Text = sprintf('Shuffle: %s', trainingProgressOptions.TrainingOpt.Shuffle);
 
     mibDeepTrainingProgressStruct.TrainingOpt.LearnRateSchedule = uilabel(mibDeepTrainingProgressStruct.InformationPanel);
-    mibDeepTrainingProgressStruct.TrainingOpt.LearnRateSchedule.Position = [192 136 202 22];
+    mibDeepTrainingProgressStruct.TrainingOpt.LearnRateSchedule.Position = [192 156 202 22];
     mibDeepTrainingProgressStruct.TrainingOpt.LearnRateSchedule.Text = sprintf('Learn rate schedule: %s', trainingProgressOptions.TrainingOpt.LearnRateSchedule);
 
-    zLinePos = 106;
+    zLinePos = 126;
     if trainingProgressOptions.matlabVersion >= 9.11
         mibDeepTrainingProgressStruct.TrainingOpt.OutputNetwork = uilabel(mibDeepTrainingProgressStruct.InformationPanel);
-        mibDeepTrainingProgressStruct.TrainingOpt.OutputNetwork.Position = [192 116 202 22];
+        mibDeepTrainingProgressStruct.TrainingOpt.OutputNetwork.Position = [192 136 202 22];
         mibDeepTrainingProgressStruct.TrainingOpt.OutputNetwork.Text = sprintf('Output network: %s', trainingProgressOptions.TrainingOpt.OutputNetwork);
-        zLinePos = 86;
+        zLinePos = 106;
     end
 
     mibDeepTrainingProgressStruct.TrainingOpt.InitialLearnRate = uilabel(mibDeepTrainingProgressStruct.InformationPanel);
@@ -267,7 +303,7 @@ if progressStruct.Iteration == 0
     mibDeepTrainingProgressStruct.imgPatch.YTickLabel = '';
     mibDeepTrainingProgressStruct.imgPatch.XColor = 'none';
     mibDeepTrainingProgressStruct.imgPatch.YColor = 'none';
-    mibDeepTrainingProgressStruct.imgPatch.Position = [6 123 116 116];
+    mibDeepTrainingProgressStruct.imgPatch.Position = [6 143 116 116];
     mibDeepTrainingProgressStruct.imgPatch.Box = 'on';
     mibDeepTrainingProgressStruct.imgPatch.Units = 'pixels';
     mibDeepTrainingProgressStruct.imgPatch.DataAspectRatio = [1 1 1];
@@ -363,12 +399,34 @@ else
         mibDeepTrainingProgressStruct.TimeToGo.Text = ...
             sprintf('Time to go: ~%.0f h %.0f min %.2d sec', floor(timerValue/3600), floor(mod(round(timerValue),3600)/60), mod(round(timerValue),60));
         mibDeepTrainingProgressStruct.BaseLearnRate.Text = sprintf('Base learn rate: %.3e', progressStruct.BaseLearnRate);
+        elapsedSeconds = progressStruct.TimeSinceStart;
     else %  when trainnet is used
         mibDeepTrainingProgressStruct.ElapsedTime.Text = sprintf('Elapsed time: %s sec', progressStruct.TimeElapsed);
         timerValue = progressStruct.TimeElapsed/progressStruct.Iteration*(mibDeepTrainingProgressStruct.maxIter-progressStruct.Iteration);
         mibDeepTrainingProgressStruct.TimeToGo.Text = sprintf('Time to go: ~%s sec', timerValue);
         mibDeepTrainingProgressStruct.BaseLearnRate.Text = sprintf('Base learn rate: %.3e', progressStruct.LearnRate); % renamed to LearnRate
+        elapsedSeconds = progressStruct.TimeElapsed;
+        % trainnet reports this as a duration while trainNetwork uses plain seconds;
+        % comparing a duration against a double below would error, so normalize first
+        if isduration(elapsedSeconds); elapsedSeconds = seconds(elapsedSeconds); end
     end
+
+    % Pace of the run. Derived from the iteration count rather than progressStruct.Epoch,
+    % which is an integer and would leave the line empty for the whole of a long first
+    % epoch; iteration/iterPerEpoch gives a usable number from the first refresh.
+    if trainingProgressOptions.iterPerEpoch > 0 && progressStruct.Iteration > 0 && elapsedSeconds > 0
+        secondsPerIteration = elapsedSeconds / progressStruct.Iteration;
+        secondsPerEpoch = secondsPerIteration * trainingProgressOptions.iterPerEpoch;
+        mibDeepTrainingProgressStruct.TimePerEpoch.Text = ...
+            sprintf('Time/epoch: %.0f h %.0f min %.2d sec', floor(secondsPerEpoch/3600), ...
+            floor(mod(round(secondsPerEpoch),3600)/60), mod(round(secondsPerEpoch),60));
+        mibDeepTrainingProgressStruct.TimePerEpoch.Tooltip = ...
+            sprintf('%.3g sec per iteration over %d iterations of %g per epoch', ...
+            secondsPerIteration, progressStruct.Iteration, trainingProgressOptions.iterPerEpoch);
+    end
+
+    % GPU memory headroom, plus the one-off warning when the card is overcommitted
+    deepmib.updateGpuMemoryStatus(progressStruct.Iteration, elapsedSeconds);
     mibDeepTrainingProgressStruct.Epoch.Text = sprintf('Epoch: %d of %d', progressStruct.Epoch, trainingProgressOptions.TrainingOpt.MaxEpochs);
     mibDeepTrainingProgressStruct.IterationNumberValue.Text = sprintf('%d of %d', progressStruct.Iteration, round(mibDeepTrainingProgressStruct.maxIter));
     mibDeepTrainingProgressStruct.ProgressGauge.Value = progressStruct.Iteration/mibDeepTrainingProgressStruct.maxIter*100;

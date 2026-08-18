@@ -92,16 +92,15 @@ the network is retrained. The available states are a property of the selected wo
             held fixed while the heads learn, then it is unfrozen and training continues from that network at a much lower rate
             so the features adapt to microscopy data. Nothing has to be restarted by hand.
 
-            - `COCO, frozen backbone` holds the COCO features fixed for the whole run. Fast, tolerant of a high learning rate,
-            and the safest choice on a very small number of annotated images.
+            - `COCO, frozen backbone` holds the COCO features fixed for the whole run. Fast, and the safest choice on a
+            very small number of annotated images.
 
             - `COCO, trainable backbone` unfreezes from the very start. Only use it deliberately, and only with the learning rate
             already lowered - see the warning below.
 
-            The two phases solve different problems. The frozen phase is **searching** - the heads start from random
-            weights and have to travel a long way, which works over a wide band (`1e-3` and `1e-2` both converged here).
-            The trainable phase is **protecting** - the COCO backbone is already at a good point, and how large a step
-            it tolerates is a property of those pretrained weights, not of whatever phase 1 used.
+            The two phases need different learning rates: the heads start from random weights and have a long way to
+            travel, while the COCO backbone is already good and only tolerates small steps. Phase 2 therefore uses its
+            own rate, set in the settings dialog below.
 
             The epoch budget is **not** increased: whatever the frozen phase leaves unused is handed to the trainable phase, so
             `MaxEpochs` still describes the whole run. Each phase draws its own progress plot, and the exported `.score` and
@@ -111,16 +110,26 @@ the network is retrained. The available states are a property of the selected wo
             `<Results>/ScoreNetwork/net_checkpoint__frozenPhaseEnd_<iterations>__<timestamp>.mat`, whether or not
             <label class="widget widget-checkbox">Save checkpoint networks</label> is enabled.
 
-        ??? warning "Never unfreeze the backbone at the learning rate that suits a frozen one"
-    
-            A rate that is perfectly safe with a frozen backbone (`1e-3` to `1e-2`) destroys the pretrained weights within
-            the first hundred iterations once the backbone is trainable. The symptom is unmistakable: the loss drops a
-            little, then flatlines for the rest of the run, and the validation mAP stays at exactly `0` - the network
-            detects nothing at all, not even on its own training images.
-    
-            `COCO, frozen then trainable` handles this for you. If you use `COCO, trainable backbone` directly, set the
-            initial learning rate to about `1e-4` with Adam, and prefer to continue training an already trained frozen
-            network rather than unfreezing from scratch.
+        ???+ warning "SOLOv2 needs a small initial learning rate - use `0.001`"
+
+            The <span class="widget widget-edit">Initial learn rate</span> tooltip quotes two MATLAB defaults: `0.01` for
+            the `sgdm` solver and `0.001` for `adam`. DeepMIB uses **adam**, so `0.001` is the one that applies.
+
+            Above about `0.003` the network **collapses** and never recovers, whether the backbone is frozen or not. The
+            symptom is easy to recognise: the loss drops for a few hundred iterations, then sits flat at a high value,
+            and the validation mAP stays at `0.000` for the whole run - nothing is detected at all.
+
+            If this happens, lower the learning rate and start again. Unfreezing the backbone cannot repair it.
+
+        ??? info "Collapse detection"
+
+            A collapsed run and a finished one both show a flat loss curve, so `COCO, frozen then trainable` also watches
+            the validation mAP. If it stays at `0.000` for several evaluations in a row the run is treated as failed: it
+            stops instead of moving to the trainable phase, and a dialog explains what to change.
+
+            *Collapse evaluations* in the ![Settings button](images/DeepLearningTrainSettingsBtn.png){.inline-image}
+            dialog sets how many (default `8`, `0` turns the check off). It needs a validation set and the custom
+            training progress window.
 
     ??? info "Starting weights settings"
 
@@ -134,6 +143,7 @@ the network is retrained. The available states are a property of the selected wo
         | Plateau window | 25 epochs | The mean loss of the last window is compared with the window before it |
         | Plateau tolerance | 0.01 | Below 1% improvement between those windows, the loss counts as flat |
         | Trainable phase learn rate | 1e-4 | The learning rate phase 2 runs at, capped at the initial rate |
+        | Collapse evaluations | 8 | Abandon the run after this many consecutive validation evaluations with a zero mAP; `0` disables the check |
 
 - <span class="widget widget-button">Check network</span> previews and validates the network (limited info in standalone MIB)  
 
@@ -205,6 +215,25 @@ The *Training process design* section configures the training process, started w
 
 - <span class="widget widget-edit">Patches per image...</span> sets patches per image/dataset per epoch. Use 1 patch with many epochs and *Shuffling: every-epoch* (via <span class="widget widget-button">Training</span>) for best results, or adjust as needed  
 - <span class="widget widget-edit">Mini Batch Size...</span> number of patches processed simultaneously, limited by GPU memory. Loss is averaged across the batch  
+
+    ??? info "Finding a good mini-batch size"
+        A larger mini-batch normally trains faster, until it no longer fits in GPU memory - after which training slows
+        down dramatically instead of stopping with an error.
+
+        The <span class="widget widget-button">T</span> button next to the field measures this for you, for any workflow.
+        It trains the current network on randomly generated patches for a few iterations at each mini-batch size and
+        reports how many patches per second each one manages; the best value is where that number peaks. Your images are
+        not used and nothing is written to the project.
+
+        You are asked which size to start from (`1` by default). Testing doubles from there and stops once throughput
+        starts dropping, so raising the start value skips small sizes that cannot win and shortens the test. Large
+        patches can still take a few minutes.
+
+        The result table also gives **epochs/hour** for each size, together with an estimate of how long the configured
+        *Max epochs* would take. Use it to check the run is affordable before starting it.
+
+        The suggested value is an optimistic one, because a real run also holds the validation set and the augmented
+        patches in memory. If a run using it slows down or fails, drop to the next size down.  
 - <span class="widget widget-edit">Random seeds for training and validation...</span> seeds the random number generator for training initialization 
 (use any fixed value except `0` for reproducibility, otherwise use `0` for random initialization each training attempt). 
 Training patches are re-sampled every epoch either way - this seed only fixes the sequence they are drawn in  
@@ -347,6 +376,28 @@ Stop training with <span class="widget widget-button">Stop</span> or <span class
 
 By default, Deep MIB uses a custom progress plot. If you want to use default MATLAB’s training plot (*MATLAB version only*), 
 uncheck **Options tab → Custom training plot → Custom training progress window**.<br> 
+
+The *Training progress and settings* panel reports four timings: when the run **Started**, the **Elapsed time**, the
+estimated **Time to go**, and **Time/epoch** - the average time one epoch has taken so far. Use the last one to check
+that the configured *Max epochs* is affordable before leaving a run overnight: multiply it by the epochs remaining.
+Hover it to see the time per iteration.
+
+??? info "GPU memory readout"
+
+    On a single GPU the device name also shows how much memory the run has used at most:
+    `1. NVIDIA GeForce RTX 3080 Ti (peak 7.2/12.0 GB)`. It is a conservative figure - the real peak inside an iteration is
+    higher - so treat it as a rough guide to how much headroom is left rather than an exact measurement.
+
+    If the card runs short of memory, Windows does not report an error: it moves GPU memory into ordinary system RAM and
+    training carries on many times slower. Deep MIB notices this by watching how long an iteration takes, and when the
+    run slows down sharply it colours the device name red and adds `- over limit`. Training is not stopped, but it is
+    worth restarting with a smaller <span class="widget widget-edit">Mini-batch size</span>.
+
+    This only catches a run that slows down partway through. If the mini-batch was too large from the very start there is
+    nothing to compare against, so use the <span class="widget widget-button">T</span> button next to
+    <span class="widget widget-edit">Mini-batch size</span> to find a good value beforehand.
+
+
 Disable plots for speed via **Train tab → Training → Plots → none**.  
 Preview patches (bottom right) reduce performance; adjust frequency in 
 **Options tab → Custom training plot → Preview image patches** and **Fraction of images for preview** (1 = all, 0.01 = 1%).

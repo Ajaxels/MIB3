@@ -22,6 +22,7 @@ classdef MibSelection
         clearSelection(obj)        % Clear the Selection layer; scope set by modifier keys (no/Shift/Alt/Alt+Shift → 2D/3D/3D/4D)
         dilateSelection(obj)       % Dilate (expand) the Selection layer; reads strel, Apply-in-3D, Difference from panel + modifier keys
         erodeSelection(obj)        % Erode (shrink) the Selection layer; reads strel, Apply-in-3D, Difference from panel + modifier keys
+        strelSize = getStrelSizeString(obj)    % Build the StrelSize string from the strel1/strel2 panel widgets
         fillSelection(obj)         % Fill holes in the Selection layer; scope set by modifier keys
         selectionActions(obj, action)  % Add / Subtract / Replace selection to/from the active material or mask; delegates to MibModel.moveLayers
         lutTable_ContextMenu(obj, menuEntry, selectedData)        % callbacks for the context menu of the LUT table widget (obj.view.handles.panels.selection.handles.lutTable)
@@ -87,7 +88,8 @@ classdef MibSelection
             obj.handles.preset3.ButtonPushedFcn = @obj.gui_Callbacks;
             obj.handles.erode.ButtonPushedFcn = @obj.gui_Callbacks;
             obj.handles.dilate.ButtonPushedFcn = @obj.gui_Callbacks;
-            obj.handles.strel.ValueChangedFcn = @obj.gui_Callbacks;
+            obj.handles.strel1.ValueChangedFcn = @obj.gui_Callbacks;
+            obj.handles.strel2.ValueChangedFcn = @obj.gui_Callbacks;
             obj.handles.differenceSelection.ValueChangedFcn = @obj.gui_Callbacks;
 
             obj.handles.lutColors.ValueChangedFcn = @obj.gui_Callbacks;

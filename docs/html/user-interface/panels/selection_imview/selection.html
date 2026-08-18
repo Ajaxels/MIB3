@@ -5888,7 +5888,7 @@ This can happen automatically if <span class="widget widget-checkbox">Auto fill 
 <hr />
 <h2 id="the-erode-button">The <span class="widget widget-button">Erode</span> button<a class="headerlink" href="#the-erode-button" title="Permanent link">&para;</a></h2>
 <p>Performs binary erosion (shrinkage) on the Selection layer using MATLAB's <a href="https://se.mathworks.com/help/releases/R2024b/images/ref/imerode.html">imerode</a> function, 
-with the size set in the <span class="widget widget-edit">Strel</span> edit box.<br> </p>
+with the size set in the <span class="widget widget-edit">Strel</span> edit boxes.<br> </p>
 <p><img align="left" alt="Erode Operation" src="images/SelectionPanelOperationsErode.png" /></p>
 <div class="clear-float"></div>
 
@@ -5924,11 +5924,8 @@ the current and eroded selections.</li>
 <hr />
 <h2 id="the-dilate-button">The <span class="widget widget-button">Dilate</span> button<a class="headerlink" href="#the-dilate-button" title="Permanent link">&para;</a></h2>
 <p>Performs binary dilation (expansion) on the Selection layer using MATLAB's <a href="https://se.mathworks.com/help/releases/R2024b/images/ref/imdilate.html">imdilate</a>
-function, with the size set in the <span class="widget widget-edit">Strel</span> edit box. </p>
+function, with the size set in the <span class="widget widget-edit">Strel</span> edit boxes. </p>
 <p><img alt="Dilate Operation" src="images/SelectionPanelOperationsDilate.png" /></p>
-<p>When <span class="widget widget-checkbox">Adapt.</span> is checked, 
-dilation adapts to image intensities in expanded areas, controlled 
-by the <span class="widget widget-edit">Adapt.</span> edit box (mean ± standard deviation × coefficient).</p>
 <div class="clear-float"></div>
 
 <details class="info" open="open">
@@ -5970,9 +5967,14 @@ the brush tool (and eraser) after releasing the left mouse button.</li>
 <li><span class="widget widget-checkbox">Apply in 3D</span>: enables 3D manipulations for image and Mask/Model layers.</li>
 <li><span class="widget widget-checkbox">Difference</span>: shows the difference between original and 
 eroded/dilated Selection layers.</li>
-<li><span class="widget widget-edit">Strel</span> edit box: sets the structural element size for 
-erosion and dilation. Use a single number (e.g., 3) or two semi-colon-separated 
-numbers (e.g., <code>3;5</code> for 3x5 pixels in 2D, or 3x3x5 in 3D).</li>
+<li><span class="widget widget-edit">Strel</span> edit boxes: set the structural element size for 
+erosion and dilation. <ul>
+<li>The first box is the XY radius in 3D (Y radius in 2D). </li>
+<li>The second box is optional: it sets the Z radius in 3D (X radius in 2D). Leave it empty (<code>auto</code>) for an isotropic 
+element, in which case the Z radius in 3D is scaled by the voxel aspect ratio. Setting the second 
+box to <code>0</code> gives a flat element that spreads only within each slice.</li>
+</ul>
+</li>
 </ul>
 <hr />
 <h2 id="tool-preset-buttons">Tool preset buttons<a class="headerlink" href="#tool-preset-buttons" title="Permanent link">&para;</a></h2>

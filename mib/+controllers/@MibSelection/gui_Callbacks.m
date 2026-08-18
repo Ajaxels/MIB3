@@ -22,7 +22,8 @@ function gui_Callbacks(obj, hWidget, hData)
 %     - ``'preset3'`` - apply preset 3 to selected segmentation tool
 %     - ``'erode'`` - erode selection
 %     - ``'dilate'`` - dilate selection
-%     - ``'strel'`` - set strel size for erosion/dilation
+%     - ``'strel1'`` - set XY strel radius for erosion/dilation
+%     - ``'strel2'`` - set Z (3D) or X (2D anisotropic) strel radius for erosion/dilation
 %     - ``'differenceSelection'`` - enable difference mode for dilate/erode
 %     - ``'lutColors'`` - visualize image using LUT colors
 %     - ``'showModel'`` - show model layer
@@ -41,7 +42,7 @@ function gui_Callbacks(obj, hWidget, hData)
 
 arguments (Input)
     obj controllers.MibSelection
-    hWidget {mustBeA(hWidget, {'matlab.ui.control.Button', 'matlab.ui.control.CheckBox', 'matlab.ui.control.DropDown', 'matlab.ui.control.EditField', 'matlab.ui.control.Slider'})}
+    hWidget {mustBeA(hWidget, {'matlab.ui.control.Button', 'matlab.ui.control.CheckBox', 'matlab.ui.control.DropDown', 'matlab.ui.control.EditField', 'matlab.ui.control.NumericEditField', 'matlab.ui.control.Slider'})}
     hData {mustBeA(hData, {'matlab.ui.eventdata.ButtonPushedData', 'matlab.ui.eventdata.ValueChangedData', 'matlab.ui.eventdata.ValueChangingData'})}
 end
 
@@ -103,7 +104,7 @@ switch mode
     case 'dilate' % dilate selection
         obj.dilateSelection();
 
-    case 'strel' % set strel size for erosion/dilation
+    case {'strel1', 'strel2'} % set strel size for erosion/dilation
         %fprintf('controller.selectionPanel_Callbacks: Clicked on a widget of the selection/view settings panel (obj.handles.panels.selection): %s -> %s\n', mode, hWidget.Value);
 
     case 'differenceSelection' % enable the differenceSelection mode for the dilate/erode

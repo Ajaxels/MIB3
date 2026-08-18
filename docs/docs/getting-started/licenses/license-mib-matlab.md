@@ -4,7 +4,7 @@
 
 ## MIB for MATLAB License
 
-The source code of Microscopy Image Browser (MIB) for MATLAB is licensed under the
+The **source code** of Microscopy Image Browser (MIB) for MATLAB is licensed under the
 [GNU General Public License, version 3 (GPLv3)](https://www.gnu.org/licenses/gpl-3.0.en.html).
 
 By using MIB in **MATLAB source code form**, you agree to the terms of
@@ -30,26 +30,31 @@ By using MIB in **MATLAB source code form**, you agree to the terms of
 
 ```
 Microscopy Image Browser *.m-files are licensed under version 3 of the License, 
-or (at your option) any later version, see the file `MIB/licenses/LICENSE_MIB_for_MATLAB` 
+or (at your option) any later version, see the file `MIB3/mib/licenses/LICENSE_MIB_for_MATLAB` 
 or refer to the document below for details. Initially, the software was licensed under GPLv2, 
 but it has been upgraded to GPLv3 in order to comply with new external packages
 
+!!! warning "Compiled MIB comes with a custom license"
+    
+    In case you are using the compiled version of MIB please check its license conditions: [MIB Standalone license](license-mib-standalone.md)
+
+
 ## Copyright and Development
 
-Developed during 2010-2025 by:
+Developed during 2010-2026 by: 
 
 - **Core Developer**: Ilya Belevich
 - **Developers**: Merja Joensuu, Darshan Kumar, Helena Vihinen, Eija Jokitalo
 - **Affiliation**: Electron Microscopy Unit, Institute of Biotechnology, PO Box 56 (Viikinkaari 9), 00014, University of Helsinki, Finland
 
 **Microscopy Image Browser (MIB)**: Image segmentation and beyond  
-**Copyright © 2010-2025**: Ilya Belevich, Merja Joensuu, Darshan Kumar, Helena Vihinen, Eija Jokitalo  
+**Copyright © 2010-2026**: Ilya Belevich, Merja Joensuu, Darshan Kumar, Helena Vihinen, Eija Jokitalo  
 **Website**: [http://mib.helsinki.fi](http://mib.helsinki.fi)
 
 ```aiignore
 Microscopy Image Browser (MIB)
 image segmentation and beyond
-Copyright (c) 2010-2023
+Copyright (c) 2010-2026
 Ilya Belevich, Merja Joensuu, Darshan Kumar, Helena Vihinen and Eija Jokitalo
 http://mib.helsinki.fi
 

@@ -65,7 +65,7 @@ end
 %% Read Selection panel state
 applySegmentationIn3D = obj.mibModel.applySegmentationIn3D;
 differenceSelection   = obj.mibModel.differenceSelection;
-strelSize = obj.handles.strel.Value;
+strelSize = obj.getStrelSizeString();
 
 %% Restrict-to-material and restrict-to-mask (dataset-level properties)
 dataset = obj.mibModel.I{obj.mibModel.id};

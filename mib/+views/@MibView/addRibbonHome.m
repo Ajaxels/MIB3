@@ -387,7 +387,7 @@ popupList.add(homeHandles.checkUpdate);
 separator = PopupListSeparator();
 popupList.add(separator);
 % Check for update
-homeHandles.personalStats = ListItem('Your personal stats', Icon(fullfile(iconPath, 'personal_stats_16px.png')));
+homeHandles.personalStats = ListItem('Your stats', Icon(fullfile(iconPath, 'personal_stats_16px.png')));
 popupList.add(homeHandles.personalStats);
 
 % separator

@@ -126,6 +126,7 @@ try
                 trainingProgressOptions.refreshRateIter = obj.BatchOpt.O_RefreshRateIter{1};
                 trainingProgressOptions.matlabVersion = obj.mibController.matlabVersion;
                 trainingProgressOptions.gpuDevice = obj.view.Figure.GPUDropDown.Value;
+                trainingProgressOptions.executionEnvironment = executionEnvironment;   % deepmib.updateGpuMemoryStatus only samples a single-GPU run
                 trainingProgressOptions.iterPerEpoch = mibDeepTrainingProgressStruct.iterPerEpoch;
                 trainingProgressOptions.TrainingOpt = trainingOpt;
                 trainingProgressOptions.calculateAccuracy = obj.BatchOpt.O_CalculateAccuracyInstances;   % whether the validation mAP metric is computed
@@ -154,6 +155,7 @@ try
                 trainingProgressOptions.refreshRateIter = obj.BatchOpt.O_RefreshRateIter{1};
                 trainingProgressOptions.matlabVersion = obj.mibController.matlabVersion;
                 trainingProgressOptions.gpuDevice = obj.view.Figure.GPUDropDown.Value;
+                trainingProgressOptions.executionEnvironment = executionEnvironment;   % deepmib.updateGpuMemoryStatus only samples a single-GPU run
                 trainingProgressOptions.iterPerEpoch = mibDeepTrainingProgressStruct.iterPerEpoch;
                 trainingProgressOptions.TrainingOpt = trainingOpt;
                 trainingProgressOptions.calculateAccuracy = obj.BatchOpt.O_CalculateAccuracyInstances;   % whether the validation mAP metric is computed

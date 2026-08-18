@@ -600,6 +600,12 @@ if twoPhaseSchedule
     % budget the user asked for is preserved either way.
     frozenPhaseEpochs = max(1, round(obj.TrainingOpt.MaxEpochs * obj.StartingWeightsOpt.MaxFrozenFraction));
     phaseOverrides = struct('MaxEpochs', frozenPhaseEpochs);
+    % cleared explicitly rather than relying on the end-of-run reset of the global: a run
+    % that errored out during finalization would otherwise leave a stale flag behind and
+    % the next run would skip its trainable phase without ever having trained
+    mibDeepTrainingProgressStruct.phaseSwitchRequested = false;
+    mibDeepTrainingProgressStruct.collapseDetected = false;
+    mibDeepTrainingProgressStruct.zeroDetectionEvaluations = 0;
     % Plateau detection lives in the custom progress window's OutputFcn, so without that
     % window there is nothing watching the loss - fall back to the epoch cap alone.
     if obj.BatchOpt.O_CustomTrainingProgressWindow && ~strcmp(obj.TrainingOpt.Plots, 'none')
@@ -611,6 +617,13 @@ if twoPhaseSchedule
             'WindowEpochs', obj.StartingWeightsOpt.PlateauWindowEpochs, ...
             'Tolerance', obj.StartingWeightsOpt.PlateauTolerance, ...
             'MinIterations', minFrozenIterations);
+        % Deliberately not bounded by minFrozenIterations: a collapsed head shows itself
+        % within a few hundred iterations, and the whole point is to stop before the
+        % epoch cap burns hours on a run that cannot produce a network.
+        if obj.StartingWeightsOpt.CollapseEvaluations > 0
+            phaseOverrides.collapseDetection = struct(...
+                'Evaluations', obj.StartingWeightsOpt.CollapseEvaluations);
+        end
     else
         warning('DeepMIB:instancePlateau', ...
             ['the custom training progress window is disabled, so the frozen phase cannot watch the loss; ' ...
@@ -652,7 +665,8 @@ catch err
                 'The network could not be restored. Enable "Save checkpoint networks" before the run to be able to use the Emergency brake.'], ...
                 fullfile(obj.BatchOpt.ResultingImagesDir, 'ScoreNetwork'));
             utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'No checkpoint to restore', mgsOpt);
-            if mibDeepTrainingProgressStruct.useCustomProgressPlot && isfield(mibDeepTrainingProgressStruct, 'StopTrainingButton')
+            if isfield(mibDeepTrainingProgressStruct, 'useCustomProgressPlot') && mibDeepTrainingProgressStruct.useCustomProgressPlot && ...
+                    isfield(mibDeepTrainingProgressStruct, 'StopTrainingButton')
                 mibDeepTrainingProgressStruct.StopTrainingButton.Text = 'Train';
                 mibDeepTrainingProgressStruct.StopTrainingButton.BackgroundColor = [0.7686    0.9020    0.9882];
             end
@@ -734,9 +748,32 @@ lastPhaseInfo = info;
 if twoPhaseSchedule && ~emergencyBrakeUsed
     plateauReached = isfield(mibDeepTrainingProgressStruct, 'phaseSwitchRequested') && ...
         mibDeepTrainingProgressStruct.phaseSwitchRequested;
-    userStopped = mibDeepStopTraining && ~plateauReached;
+    % A collapsed frozen phase looks exactly like a converged one in the loss curve, so it
+    % has to be tested separately - see the collapse detector in
+    % deepmib.customTrainingProgressDisplay for what it measures and why.
+    collapseDetected = isfield(mibDeepTrainingProgressStruct, 'collapseDetected') && ...
+        mibDeepTrainingProgressStruct.collapseDetected;
+    userStopped = mibDeepStopTraining && ~plateauReached && ~collapseDetected;
 
-    if userStopped
+    if collapseDetected
+        collapseMessage = sprintf([ ...
+            'The frozen phase collapsed: validation mAP stayed at 0.000 for %d consecutive evaluations, ' ...
+            'so the network is detecting nothing at all.\n\n' ...
+            'The backbone was NOT unfrozen. Unfreezing cannot repair a saturated detection head - the ' ...
+            'trainable phase runs at a much smaller learn rate and would only spend hours confirming the ' ...
+            'same result.\n\n' ...
+            'The usual cause is too large an initial learn rate. With the adam solver this workflow needs ' ...
+            'about 0.001; 0.003 and above collapse the head within a few hundred iterations. The 0.01 in ' ...
+            'the "Initial learn rate" tooltip is the sgdm default and does not apply to adam.\n\n' ...
+            'Lower the initial learn rate in the training settings and start the run again.'], ...
+            obj.StartingWeightsOpt.CollapseEvaluations);
+        fprintf('DeepMIB: %s\n', collapseMessage);
+        collapseDlgOpt.MsgBoxOnly = true;
+        collapseDlgOpt.Icon = 'puffin_warning';
+        collapseDlgOpt.HeaderLines = 12;
+        utils.dlgs.inputUniversalDlg(obj.view.gui, collapseMessage, {}, {}, ...
+            'Frozen phase collapsed', collapseDlgOpt);
+    elseif userStopped
         fprintf('DeepMIB: training was stopped during the frozen phase, the trainable phase is skipped\n');
     else
         frozenInfo = info;
@@ -792,7 +829,7 @@ if twoPhaseSchedule && ~emergencyBrakeUsed
         % the trainer restarts its iteration counter, so give the progress display a clean
         % window rather than letting phase 2 draw on top of the phase 1 curve; the missing
         % sendNextReportAtEpoch field is what makes the OutputFcn rebuild it
-        if mibDeepTrainingProgressStruct.useCustomProgressPlot
+        if isfield(mibDeepTrainingProgressStruct, 'useCustomProgressPlot') && mibDeepTrainingProgressStruct.useCustomProgressPlot
             if isfield(mibDeepTrainingProgressStruct, 'UIFigure') && ~isempty(mibDeepTrainingProgressStruct.UIFigure) && isvalid(mibDeepTrainingProgressStruct.UIFigure)
                 if frozenSnapshotOk
                     delete(mibDeepTrainingProgressStruct.UIFigure);
@@ -865,7 +902,8 @@ if showWaitbarLocal
         'Title', 'Finalize training', 'Cancelable', 'on');
 end
 
-if mibDeepTrainingProgressStruct.useCustomProgressPlot && isfield(mibDeepTrainingProgressStruct, 'UILossAxes') && isvalid(mibDeepTrainingProgressStruct.UILossAxes)
+if isfield(mibDeepTrainingProgressStruct, 'useCustomProgressPlot') && mibDeepTrainingProgressStruct.useCustomProgressPlot && ...
+        isfield(mibDeepTrainingProgressStruct, 'UILossAxes') && isvalid(mibDeepTrainingProgressStruct.UILossAxes)
     hold(mibDeepTrainingProgressStruct.UILossAxes, 'on');
     % Everything below is drawn into the window of the phase that ran last, so it uses
     % lastPhaseInfo and its local iteration numbers. Using the concatenated "info" here
@@ -959,19 +997,27 @@ if showWaitbarLocal
     delete(obj.wb);
 end
 
-if mibDeepTrainingProgressStruct.useCustomProgressPlot
+% Every read of mibDeepTrainingProgressStruct from here on is guarded with isfield: pressing
+% "Stop training" a second time takes deepmib.stopTrainingCallback down its 'Stopping...'
+% branch, which detaches the progress window by resetting the global to an empty struct.
+% That happens while this finalization code is still running, so the fields it wants can
+% disappear between two consecutive statements.
+if isfield(mibDeepTrainingProgressStruct, 'useCustomProgressPlot') && mibDeepTrainingProgressStruct.useCustomProgressPlot && ...
+        isfield(mibDeepTrainingProgressStruct, 'StopTrainingButton') && isvalid(mibDeepTrainingProgressStruct.StopTrainingButton)
     mibDeepTrainingProgressStruct.StopTrainingButton.BackgroundColor = [0 1 0];
     mibDeepTrainingProgressStruct.StopTrainingButton.Text = 'Finished!!!';
 end
 
-if obj.SendReports.T_SendReports && numel(info.TrainingLoss) >= mibDeepTrainingProgressStruct.maxNoIter && ...
-        obj.SendReports.sendWhenFinished && ...
+if obj.SendReports.T_SendReports && obj.SendReports.sendWhenFinished && ...
+        isfield(mibDeepTrainingProgressStruct, 'maxNoIter') && ...
+        numel(info.TrainingLoss) >= mibDeepTrainingProgressStruct.maxNoIter && ...
+        isfield(mibDeepTrainingProgressStruct, 'sendNextReportAtEpoch') && ...
         mibDeepTrainingProgressStruct.sendNextReportAtEpoch ~= -1
     [~, fn] = fileparts(obj.BatchOpt.NetworkFilename);
     % SOLOv2 info has fewer fields than semantic training (no accuracy/validation
     % metrics); fetch each metric defensively so the report never errors
     infoVal = @(fieldName) iInfoLastValue(info, fieldName);
-    if mibDeepTrainingProgressStruct.useCustomProgressPlot
+    if isfield(mibDeepTrainingProgressStruct, 'useCustomProgressPlot') && mibDeepTrainingProgressStruct.useCustomProgressPlot
         mgsText = sprintf(['DeepMIB training of "%s" network\n' ...
             '%s\n' ...
             'Iteration Number: %s\n\n' ...
@@ -1132,6 +1178,13 @@ epochOffset = 0;
 if ismember('Epoch', sharedFields) && ~isempty(firstInfo.Epoch)
     epochOffset = max(firstInfo.Epoch);
 end
+% TimeElapsed restarts at zero for the second trainSOLOV2 call the same way Iteration and
+% Epoch do, which made the exported CSV jump backwards at the phase boundary (11:24:56 in
+% the last frozen row, then 00:00:12 in the first trainable one)
+timeOffset = 0;
+if ismember('TimeElapsed', sharedFields) && ~isempty(firstInfo.TimeElapsed)
+    timeOffset = max(firstInfo.TimeElapsed);
+end
 
 for fieldIdx = 1:numel(sharedFields)
     fieldName = sharedFields{fieldIdx};
@@ -1151,6 +1204,8 @@ for fieldIdx = 1:numel(sharedFields)
             secondValues = secondValues + iterationOffset;
         case 'Epoch'
             secondValues = secondValues + epochOffset;
+        case 'TimeElapsed'
+            secondValues = secondValues + timeOffset;
     end
     info.(fieldName) = [firstValues, secondValues];
 end
