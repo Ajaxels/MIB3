@@ -112,8 +112,8 @@ classdef MibDeep < handle
         StartingWeightsOpt
         % options for the "COCO, frozen then trainable" two-phase schedule of the 2D
         % Instance workflow (see controllers.MibDeep/startTrainingInstances)
-        % .MinFrozenFraction = 0.1;  % smallest share of MaxEpochs before a switch is allowed
-        % .MaxFrozenFraction = 0.25;  % largest share of MaxEpochs the frozen phase may use
+        % .MinFrozenFraction = 0.07;  % smallest share of MaxEpochs before a switch is allowed
+        % .MaxFrozenFraction = 0.15;  % largest share of MaxEpochs the frozen phase may use
         % .PlateauWindowEpochs = 25;  % averaging window used to call the loss flat
         % .PlateauTolerance = 0.01;  % relative improvement below which the loss is flat
         % .TrainableLearnRate = 1e-4;  % absolute learn rate of phase 2, capped at InitialLearnRate
@@ -596,16 +596,22 @@ classdef MibDeep < handle
             % two-phase "frozen then trainable" schedule
             % All four were calibrated by replaying the rule over recorded DeepMIB loss
             % curves (see development/deepmib/potential_improvements.md).
-            % The frozen phase is capped at a quarter of the budget because the trainable
+            % The frozen phase is capped at a small share of the budget because the trainable
             % phase is where the gains are: on the mitochondria benchmark the frozen phase
             % went 0.61 -> 0.33 over its last 4500 iterations while the trainable phase
             % went 1.28 -> 0.14 in a third of that time and was still improving.
+            % The first complete healthy two-phase run measured this directly: 56 frozen
+            % epochs cost 5.6 h to reach mAP 0.585, of which the first 20 epochs (1.9 h)
+            % already reached 0.409 - and unfreezing then added 0.26 in 3.7 h. The frozen
+            % phase only has to stop a randomly initialized head from wrecking pretrained
+            % weights, which is done well before a quarter of the budget, so the cap came
+            % down from 0.25 to 0.15 and the floor from 0.1 to 0.07.
             % Tolerance stays at 1%: replaying 1%, 1.5%, 2% and 3% over a healthy frozen
             % curve gives an identical result (none of them fire, the cap governs), while
             % 5% fires at iteration 2400 on a curve that was still improving 5% per window
             % - so raising it buys nothing and starts to cost.
-            obj.StartingWeightsOpt.MinFrozenFraction = 0.1;
-            obj.StartingWeightsOpt.MaxFrozenFraction = 0.25;
+            obj.StartingWeightsOpt.MinFrozenFraction = 0.07;
+            obj.StartingWeightsOpt.MaxFrozenFraction = 0.15;
             obj.StartingWeightsOpt.PlateauWindowEpochs = 25;
             obj.StartingWeightsOpt.PlateauTolerance = 0.01;
             % Number of consecutive validation evaluations reporting a zero mAP that mark

@@ -76,53 +76,26 @@ end
 % ------------------------------------------------------------------ %
 %  Stitching settings dialog                                          %
 % ------------------------------------------------------------------ %
-prompt = {...
-    sprintf('Method:\n  "graph" links every overlapping pair and groups them by connected components\n  "hungarian" uses strict 1-to-1 matching per slice pair'), ...
-    sprintf('IoU threshold (0-1):\n  join two objects when (overlap area)/(their union area) exceeds this;\nhigher = stricter, giving more but smaller 3D objects'), ...
-    sprintf('Merge split objects (IoA):\n  also join when a smaller object is mostly contained in a neighbour,\n  reconnecting an object that breaks into pieces on one slice'), ...
-    sprintf('Min overlap (pixels):\n  require at least this many overlapping pixels before linking, to block tiny spurious touches'), ...
-    sprintf('Z lookback (slices):\n  also compare slices this many planes apart;\n  1 = adjacent slices only, higher bridges an object that briefly vanishes'), ...
-    sprintf('Min object size (voxels):\n  after stitching, delete 3D objects smaller than this; 0 = keep all'), ...
-    sprintf('Z anisotropy ratio (voxel Z-size / XY-size):\n  lower the IoU threshold by this ratio for thick sections,\n  so a real but displaced continuation still links; 1 = isotropic (off)'), ...
-    sprintf('Max centroid shift (pixels):\n  reject a link when object centroids are farther apart than this;\n  0 = off. Pair with the anisotropy ratio to avoid fusing distant objects'), ...
-    sprintf('Centroid link radius (pixels):\n  advanced gap bridging - link an object with no overlapping neighbour\n  to the mutually-nearest one within this distance; 0 = off')};
-
-defAns = {{'graph', 'hungarian', 1}, ...
-          struct('Spinner', true, 'Value', 0.25, 'Limits', [0, 1],    'Step', 0.05, 'Round', false), ...
-          true, ...
-          struct('Spinner', true, 'Value', 5,    'Limits', [0, 1e6],  'Step', 1,    'Round', true), ...
-          struct('Spinner', true, 'Value', 1,    'Limits', [1, 100],  'Step', 1,    'Round', true), ...
-          struct('Spinner', true, 'Value', 0,    'Limits', [0, 1e9],  'Step', 1,    'Round', true), ...
-          struct('Spinner', true, 'Value', 1,    'Limits', [1, 1000], 'Step', 0.5,  'Round', false), ...
-          struct('Spinner', true, 'Value', 0,    'Limits', [0, 1e6],  'Step', 1,    'Round', true), ...
-          struct('Spinner', true, 'Value', 0,    'Limits', [0, 1e6],  'Step', 1,    'Round', true)};
-
-dlgParams.mibPath = obj.mibModel.mibPath;
-dlgParams.WindowWidth = 720;
-dlgParams.WindowHeight = 560;
-dlgParams.HeaderLines = 2;
-dlgParams.LabelPosition = 'left';
-answer = utils.dlgs.inputUniversalDlg(obj.view.gui, note, prompt, defAns, ...
-    'Merge 2D instances to 3D', dlgParams);
-if isempty(answer); return; end
-
-% assemble the options for utils.stitchInstances2Dto3D; the IoA checkbox maps
-% to a 0.5 containment threshold when enabled, Inf (never links) when disabled
-stitchOptions = struct();
-stitchOptions.method = answer{1};
-stitchOptions.iouThreshold = answer{2};
-if answer{3}
-    stitchOptions.ioaThreshold = 0.5;
+% seed the dialog with the settings last used in this MIB session; the shared
+% dialog falls back to its own defaults for anything missing and clamps a stored
+% value that falls outside a widget's range
+if isfield(obj.mibModel.sessionSettings, 'mergeInstancesTo3D')
+    dlgDefaults = obj.mibModel.sessionSettings.mergeInstancesTo3D;
 else
-    stitchOptions.ioaThreshold = inf;
+    dlgDefaults = struct();
 end
-stitchOptions.minOverlapPixels = answer{4};
-stitchOptions.zLookback = answer{5};
-stitchOptions.minObjectVoxels = answer{6};
-anisotropyZ = answer{7};
-if anisotropyZ > 1; stitchOptions.anisotropyZ = anisotropyZ; end
-if answer{8} > 0; stitchOptions.maxCentroidShift = answer{8}; end
-if answer{9} > 0; stitchOptions.centroidLinkRadius = answer{9}; end
+
+% 'ratio' mode: raw prediction images carry no pixel size, so the Z anisotropy
+% is asked for directly as a number instead of being read from a dataset
+dlgSettings.anisotropyMode = 'ratio';
+dlgSettings.dlgTitle = 'Merge 2D instances to 3D';
+dlgSettings.mibPath = obj.mibModel.mibPath;
+[stitchOptions, values] = utils.dlgs.stitchInstancesSettingsDlg(obj.view.gui, ...
+    note, dlgDefaults, dlgSettings);
+if isempty(stitchOptions); return; end   % cancelled
+obj.mibModel.sessionSettings.mergeInstancesTo3D = values;
+% kept separately: it is also written into the saved model's pixSize.z below
+anisotropyZ = values.Anisotropy;
 
 % ------------------------------------------------------------------ %
 %  Destination directory, filename and format                         %

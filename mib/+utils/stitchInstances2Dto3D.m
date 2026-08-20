@@ -30,15 +30,60 @@ function [labelVol, stats] = stitchInstances2Dto3D(inputVol, options)
 %   - **options** - *(optional)* structure of parameters:
 %
 %     - ``.method`` - ``'graph'`` (default) or ``'hungarian'``
+%     - ``.splitDisconnected2D`` - treat each **connected component** of a
+%       per-slice label as its own 2D object, rather than the whole label index
+%       (default: ``true``). 2D instance predictors regularly emit a single
+%       instance index covering several spatially separate blobs (a SOLOv2 mask
+%       head firing at more than one location, or a tile-merge that fused two
+%       detections). Such a label welds all of those blobs' 3D chains into one
+%       object, and because the welds chain transitively across slices, a
+%       handful of them can fuse most of the stack into a single giant instance.
+%       Set to ``false`` only when the input indices are trusted and a genuinely
+%       disconnected 2D mask must stay one object
 %     - ``.iouThreshold`` - link objects whose IoU exceeds this (default: ``0.25``)
 %     - ``.ioaThreshold`` - link when intersection-over-smaller-area exceeds
 %       this, catching splits/thin bridges (default: ``0.50``)
 %     - ``.minOverlapPixels`` - absolute minimum intersection to consider a
 %       link, guards against 1-2 px spurious overlaps (default: ``5``)
+%     - ``.absOverlapPixels`` - link a pair whose intersection reaches this many
+%       pixels, whatever its IoU and IoA (default: ``0`` = disabled). Both ratio
+%       tests are relative to object *area*, so a large cross-section meeting a
+%       much smaller one scores low on each even when the shared area is
+%       substantial in absolute terms: 3795 px against 1689 px sharing 716 px is
+%       IoU 0.15 and IoA 0.42, below both defaults. This is a **sufficient**
+%       condition added to the IoU/IoA tests, unlike ``minOverlapPixels`` which
+%       is a necessary guard applied to all of them. It is an in-plane pixel
+%       count, so a sensible value depends on the objects' size in this dataset
+%       - inspect a few genuine links before setting it, and keep the
+%       ``maxCentroidShift`` gate in mind, which still applies
 %     - ``.zLookback`` - also test slices up to this many planes apart, to
 %       bridge single-slice dropouts (default: ``1`` = adjacent only)
 %     - ``.minObjectVoxels`` - remove 3D objects smaller than this after
 %       stitching (default: ``0`` = keep all)
+%     - ``.minObjectSlices`` - remove 3D objects that appear on this many
+%       Z-slices or fewer (default: ``0`` = keep all; ``1`` drops single-slice
+%       objects, ``2`` also drops those seen on two slices). Complements
+%       ``minObjectVoxels``: a false detection can be large in-plane yet not
+%       propagate through the stack, so an area threshold cannot see it while a
+%       depth threshold can. Counts the slices an object actually occupies, not
+%       its first-to-last span, so a ``zLookback`` bridge over a gap does not
+%       inflate the count
+%     - ``.absorbFragmentVoxels`` - after stitching, hand the voxels of any object
+%       of this size or smaller to the object that surrounds it in-plane, rather
+%       than leaving it as a separate speck (default: ``5``; ``0`` = off, and the
+%       default matches ``minOverlapPixels`` because that is exactly the size
+%       below which an object can never be linked at all). 2D instance
+%       predictors emit stray pixels - a couple of pixels of one index sitting
+%       inside another index's mask, or shaved off its rim - and
+%       ``splitDisconnected2D`` correctly gives each its own object. Being
+%       smaller than ``minOverlapPixels`` they can never satisfy the link guard,
+%       so they survive stitching as unlinkable dust, typically a hole punched in
+%       an otherwise solid object. Lowering ``minOverlapPixels`` is not the cure:
+%       a speck lying over object A on one slice and under object B on the next
+%       then links both and welds two unrelated objects together. Reassigning
+%       voxels here runs after the linking is finished, so it cannot weld
+%       anything. A fragment with no labelled neighbour is left alone - use
+%       ``minObjectVoxels`` to delete those
 %     - ``.anisotropyZ`` - voxel aspect ratio ``pixSize.z / pixSize.x`` (>= 1).
 %       For anisotropic stacks (thick sections) a true continuation is displaced
 %       more between slices, so its IoU legitimately drops; the effective IoU
@@ -71,9 +116,17 @@ function [labelVol, stats] = stitchInstances2Dto3D(inputVol, options)
 %   - **labelVol** - ``[height, width, depth]`` relabelled 3D instance volume,
 %     IDs 1..K compacted, class ``uint16`` (or ``uint32`` if K > 65535)
 %   - **stats** - structure with ``.numInput2DObjects``, ``.numOutput3DObjects``,
-%     ``.objectVoxelCounts`` (K×1), ``.method``, ``.options``
+%     ``.objectVoxelCounts`` (K×1), ``.objectSliceCounts`` (K×1, empty unless
+%     ``minObjectSlices`` was used), ``.numAbsorbedFragments`` and
+%     ``.numAbsorbedVoxels`` (both 0 unless ``absorbFragmentVoxels`` was used),
+%     ``.method``, ``.options``
 %
 % Notes:
+%   - Over-merging (one output object swallowing most of the stack) is almost
+%     always caused by per-slice labels whose pixels form several separate
+%     blobs - check with ``bwconncomp`` on a slice and compare the component
+%     count against ``numel(unique(slice(slice>0)))``. ``splitDisconnected2D``
+%     (on by default) removes that failure mode.
 %   - Memory: the output volume is materialised in RAM (same footprint order
 %     as the input). The graph itself needs only a union-find array over the
 %     total 2D-object count plus two slices at a time.
@@ -106,6 +159,24 @@ function [labelVol, stats] = stitchInstances2Dto3D(inputVol, options)
 %
 %      opt = struct('minObjectVoxels', 200, 'showWaitbar', true, 'verbose', true);
 %      L = utils.stitchInstances2Dto3D(V, opt);   % objects < 200 voxels removed
+%
+%   A false detection can be large in-plane yet live on one slice only, which no
+%   voxel count will catch. Add a depth threshold for those:
+%
+%   .. code-block:: matlab
+%
+%      opt.minObjectSlices = 2;   % also drop anything seen on 1 or 2 slices
+%      L = utils.stitchInstances2Dto3D(V, opt);
+%
+%   Specks that sit *inside* a real object should be given back to it rather than
+%   deleted, which would leave a hole:
+%
+%   .. code-block:: matlab
+%
+%      opt.absorbFragmentVoxels = 4;   % <=4-voxel objects join their neighbour
+%      [L, stats] = utils.stitchInstances2Dto3D(V, opt);
+%      fprintf('%d fragments absorbed (%d voxels)\n', ...
+%          stats.numAbsorbedFragments, stats.numAbsorbedVoxels);
 %
 % **Example 4** - bridge single-slice dropouts (an object that vanishes for one
 % plane and reappears) by matching across a 2-slice gap:
@@ -150,11 +221,15 @@ function [labelVol, stats] = stitchInstances2Dto3D(inputVol, options)
 
 if nargin < 2; options = struct(); end
 if ~isfield(options, 'method');           options.method = 'graph'; end
+if ~isfield(options, 'splitDisconnected2D'); options.splitDisconnected2D = true; end
 if ~isfield(options, 'iouThreshold');     options.iouThreshold = 0.25; end
 if ~isfield(options, 'ioaThreshold');     options.ioaThreshold = 0.50; end
 if ~isfield(options, 'minOverlapPixels'); options.minOverlapPixels = 5; end
+if ~isfield(options, 'absOverlapPixels'); options.absOverlapPixels = 0; end
 if ~isfield(options, 'zLookback');        options.zLookback = 1; end
 if ~isfield(options, 'minObjectVoxels');  options.minObjectVoxels = 0; end
+if ~isfield(options, 'minObjectSlices');  options.minObjectSlices = 0; end
+if ~isfield(options, 'absorbFragmentVoxels'); options.absorbFragmentVoxels = 5; end
 if ~isfield(options, 'anisotropyZ');      options.anisotropyZ = 1; end
 if ~isfield(options, 'iouFloor');         options.iouFloor = 0.05; end
 if ~isfield(options, 'maxCentroidShift'); options.maxCentroidShift = inf; end
@@ -172,7 +247,7 @@ depth = size(inputVol, 3);
 compactSlices = cell(depth, 1);
 countPerSlice = zeros(depth, 1);
 for z = 1:depth
-    [compactSlices{z}, countPerSlice(z)] = localCompact(inputVol(:,:,z));
+    [compactSlices{z}, countPerSlice(z)] = localCompact(inputVol(:,:,z), options.splitDisconnected2D);
 end
 offset = [0; cumsum(countPerSlice)];   % global node = offset(z) + localLabel
 totalNodes = offset(end);
@@ -180,7 +255,9 @@ totalNodes = offset(end);
 if totalNodes == 0    % empty input
     labelVol = zeros(size(inputVol), 'uint16');
     stats = struct('numInput2DObjects', 0, 'numOutput3DObjects', 0, ...
-        'objectVoxelCounts', [], 'method', options.method, 'options', options);
+        'objectVoxelCounts', [], 'objectSliceCounts', [], ...
+        'numAbsorbedFragments', 0, 'numAbsorbedVoxels', 0, ...
+        'method', options.method, 'options', options);
     return;
 end
 
@@ -249,10 +326,37 @@ for z = 1:depth
     end
 end
 
-% -- Optional small-object removal + relabel
 objectVoxelCounts = accumarray(labelVol(labelVol>0), 1, [numObjects 1]);
+
+% -- Optional absorption of dust fragments into the object around them.
+% Runs before the size filters below so that a speck lying inside a real object
+% is given back to it, while a speck floating in the background - which has no
+% neighbour to join - is still left for minObjectVoxels to delete.
+numAbsorbedFragments = 0;
+numAbsorbedVoxels = 0;
+if options.absorbFragmentVoxels > 0
+    [labelVol, objectVoxelCounts, numAbsorbedFragments, numAbsorbedVoxels] = ...
+        localAbsorbFragments(labelVol, objectVoxelCounts, options.absorbFragmentVoxels);
+end
+
+% -- Optional noise removal (too few voxels and/or too few slices) + relabel
+objectSliceCounts = [];
+keep = objectVoxelCounts > 0;   % a fully absorbed fragment has no voxels left
 if options.minObjectVoxels > 0
-    keep = objectVoxelCounts >= options.minObjectVoxels;
+    keep = keep & objectVoxelCounts >= options.minObjectVoxels;
+end
+if options.minObjectSlices > 0
+    % Slices actually occupied, counted per object. A large in-plane false
+    % detection that never propagates is invisible to the voxel threshold.
+    objectSliceCounts = zeros(numObjects, 1);
+    for z = 1:depth
+        plane = labelVol(:,:,z);
+        present = unique(plane(plane > 0));
+        objectSliceCounts(present) = objectSliceCounts(present) + 1;
+    end
+    keep = keep & objectSliceCounts > options.minObjectSlices;
+end
+if ~all(keep)
     remap = zeros(numObjects, 1);
     remap(keep) = 1:nnz(keep);
     nzAll = labelVol > 0;
@@ -260,6 +364,7 @@ if options.minObjectVoxels > 0
     labelVol(nzAll) = newVals;
     numObjects = nnz(keep);
     objectVoxelCounts = objectVoxelCounts(keep);
+    if ~isempty(objectSliceCounts); objectSliceCounts = objectSliceCounts(keep); end
     if numObjects <= 65535 && ~isa(labelVol, 'uint16')
         labelVol = uint16(labelVol);
     end
@@ -269,6 +374,9 @@ stats = struct();
 stats.numInput2DObjects = totalNodes;
 stats.numOutput3DObjects = numObjects;
 stats.objectVoxelCounts = objectVoxelCounts;
+stats.objectSliceCounts = objectSliceCounts;   % empty unless minObjectSlices was used
+stats.numAbsorbedFragments = numAbsorbedFragments;
+stats.numAbsorbedVoxels = numAbsorbedVoxels;
 stats.method = options.method;
 stats.options = options;
 
@@ -279,8 +387,9 @@ end
 end
 
 % =====================================================================
-function [compact, n] = localCompact(slice)
+function [compact, n] = localCompact(slice, splitDisconnected)
 % relabel a 2D slice's positive labels to a contiguous 1..n (int32), 0=bg
+if nargin < 2; splitDisconnected = true; end
 slice = double(slice);
 pos = slice > 0;
 if ~any(pos(:)); compact = zeros(size(slice), 'int32'); n = 0; return; end
@@ -291,6 +400,93 @@ lut = zeros(max(u) + 1, 1);
 lut(u + 1) = 1:n;
 compact = zeros(size(slice), 'int32');
 compact(pos) = int32(lut(vals + 1));
+
+if ~splitDisconnected; return; end
+
+% Give every connected component of a label its own node. A 2D predictor may
+% hand the same index to several separate blobs; keeping them as one node
+% welds their 3D chains together and the welds chain across slices, collapsing
+% the stack into one giant object. Each label is cropped to its bounding box
+% first, so the cost stays proportional to the objects' area, not n * slice.
+boxes = regionprops(double(compact), 'BoundingBox');
+split = zeros(size(compact), 'int32');
+next = 0;
+for k = 1:n
+    box = boxes(k).BoundingBox;
+    col1 = floor(box(1)) + 1;   col2 = col1 + box(3) - 1;
+    row1 = floor(box(2)) + 1;   row2 = row1 + box(4) - 1;
+    subMask = compact(row1:row2, col1:col2) == k;
+    components = bwconncomp(subMask, 8);
+    subSplit = split(row1:row2, col1:col2);
+    for c = 1:components.NumObjects
+        next = next + 1;
+        subSplit(components.PixelIdxList{c}) = next;
+    end
+    split(row1:row2, col1:col2) = subSplit;
+end
+compact = split;
+n = next;
+end
+
+% =====================================================================
+function [labelVol, voxelCounts, numFragments, numVoxels] = localAbsorbFragments(labelVol, voxelCounts, maxFragmentVoxels)
+% Give the voxels of dust objects to the object surrounding them in-plane.
+%
+% Deliberately a *voxel* operation, run after the union-find is finished, not
+% another link rule: a 2-voxel speck that lies over object A on one slice and
+% under object B on the next would, as a graph link, weld A and B into one
+% object. Reassigning its voxels instead cannot join anything - each group of
+% voxels is decided on its own slice, by its own neighbours.
+%
+% A fragment is absorbed into the majority label among its 8-neighbours on that
+% slice, counting only objects that are not themselves fragments, so absorption
+% never chains from one speck to the next. A fragment with no such neighbour
+% (floating in the background) keeps its voxels and stays an object.
+
+numFragments = 0;
+numVoxels = 0;
+isFragment = voxelCounts > 0 & voxelCounts <= maxFragmentVoxels;
+if ~any(isFragment); return; end
+
+[height, width, ~] = size(labelVol);
+sliceStride = height * width;
+
+nonZeroIdx = find(labelVol > 0);
+nonZeroLabels = double(labelVol(nonZeroIdx));
+isSelected = isFragment(nonZeroLabels);
+fragmentIdx = nonZeroIdx(isSelected);
+fragmentLabels = nonZeroLabels(isSelected);
+clear nonZeroIdx nonZeroLabels isSelected;
+
+% one group per (fragment, slice): a fragment may occupy more than one slice and
+% each slice has its own neighbourhood to decide against
+fragmentSlices = ceil(fragmentIdx / sliceStride);
+[groups, ~, groupIndex] = unique([fragmentLabels, fragmentSlices], 'rows');
+[groupIndex, order] = sort(groupIndex);
+fragmentIdx = fragmentIdx(order);
+groupStart = [1; find(diff(groupIndex)) + 1];
+groupEnd = [groupStart(2:end) - 1; numel(groupIndex)];
+
+absorbedPerObject = zeros(numel(voxelCounts), 1);
+for g = 1:size(groups, 1)
+    fragmentLabel = groups(g, 1);
+    z = groups(g, 2);
+    voxels = fragmentIdx(groupStart(g):groupEnd(g));
+    [rows, cols] = ind2sub([height, width], voxels - (z - 1) * sliceStride);
+    row1 = max(1, min(rows) - 1);   row2 = min(height, max(rows) + 1);
+    col1 = max(1, min(cols) - 1);   col2 = min(width, max(cols) + 1);
+    patch = labelVol(row1:row2, col1:col2, z);
+    neighbours = double(patch(patch > 0 & patch ~= fragmentLabel));
+    neighbours = neighbours(~isFragment(neighbours));
+    if isempty(neighbours); continue; end
+    target = mode(neighbours);
+    labelVol(voxels) = target;
+    absorbedPerObject(fragmentLabel) = absorbedPerObject(fragmentLabel) + numel(voxels);
+    voxelCounts(target) = voxelCounts(target) + numel(voxels);
+    numVoxels = numVoxels + numel(voxels);
+end
+voxelCounts = voxelCounts - absorbedPerObject;
+numFragments = nnz(absorbedPerObject > 0 & voxelCounts == 0);
 end
 
 % =====================================================================
@@ -357,10 +553,20 @@ if isfinite(options.maxCentroidShift) && ~isempty(ia)
     centroidOK = centroidDist <= options.maxCentroidShift * gap;
 end
 
+% Absolute-overlap link: IoU and IoA are both ratios against object area, so a
+% large cross-section meeting a much smaller one scores low on each even when
+% the shared area is large in absolute terms. A sufficient condition on the raw
+% intersection catches that; the centroid gate above still applies.
+if options.absOverlapPixels > 0
+    absOverlapOK = inter >= options.absOverlapPixels;
+else
+    absOverlapOK = false(size(inter));
+end
+
 if ~useHungarian
-    % graph: link on IoU OR IoA above threshold
+    % graph: link on IoU OR IoA above threshold, or on a large absolute overlap
     sel = inter >= options.minOverlapPixels & centroidOK & ...
-        (iou >= effIouThreshold | ioa >= options.ioaThreshold);
+        (iou >= effIouThreshold | ioa >= options.ioaThreshold | absOverlapOK);
     ea = ia(sel); eb = ib(sel);
 
     % Centroid-NN gap bridging: for objects left with no overlap link on this
@@ -411,8 +617,9 @@ else
             end
         end
     end
-    % IoA merge-in: any B object not matched but strongly contained in an A object
-    ioaValid = ioa >= options.ioaThreshold & inter >= options.minOverlapPixels;
+    % IoA merge-in: any B object not matched but strongly contained in an A
+    % object, or sharing a large absolute overlap with one
+    ioaValid = (ioa >= options.ioaThreshold | absOverlapOK) & inter >= options.minOverlapPixels;
     ivmA = ia(ioaValid); ivmB = ib(ioaValid); ivmIoA = ioa(ioaValid);
     [ivmB, order] = sort(ivmB); ivmA = ivmA(order); ivmIoA = ivmIoA(order);
     prevB = -1; bestIoA = -1; bestA = -1;

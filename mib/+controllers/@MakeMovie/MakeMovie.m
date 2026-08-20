@@ -47,6 +47,33 @@ classdef MakeMovie < handle
         end
     end
 
+    methods (Access = private)
+        function updateMovieProgress(~, progressDialog, frameId, noFrames, frameTimer)
+            % UPDATEMOVIEPROGRESS - Show the frame count and a time estimate while recording.
+            %
+            % Grabbing one frame out of the volume viewer costs close to a second, so the
+            % dialog is refreshed on every frame and tells the user how long is left.
+            %
+            % Input Arguments:
+            %   - **progressDialog** - [handle] the ``uiprogressdlg`` to update
+            %   - **frameId** - [numeric] index of the frame just written
+            %   - **noFrames** - [numeric] total number of frames to write
+            %   - **frameTimer** - [uint64] ``tic`` identifier taken when recording started
+
+            secondsLeft = toc(frameTimer)/frameId*(noFrames-frameId);
+            if ~isfinite(secondsLeft) || secondsLeft <= 0
+                remainingText = 'almost done';
+            elseif secondsLeft < 90
+                remainingText = sprintf('about %.0f s left', max(1, round(secondsLeft)));
+            else
+                remainingText = sprintf('about %.0f min left', round(secondsLeft/60));
+            end
+
+            progressDialog.Value   = frameId / noFrames;
+            progressDialog.Message = sprintf('Frame %d / %d\n%s', frameId, noFrames, remainingText);
+        end
+    end
+
     methods
         function obj = MakeMovie(mibModel, varargin)
             % MAKEMOVIE - Constructor for the MakeMovie controller.
@@ -187,8 +214,8 @@ classdef MakeMovie < handle
                 h.lastFrameEdit.Visible         = 'off';
                 h.firstFrameEdit.Value          = 360;
                 h.framerateEdit.Value           = 24;
-                h.lastFrameText.Visible         = 'off';
-                h.firstFrameText.Text           = 'Number of frames:';
+                h.lastFrameEditLabel.Visible    = 'off';
+                h.FirstframenumberEditFieldLabel.Text = 'Number of frames';
             end
 
             % initialize filename if not yet set for this dataset
@@ -664,6 +691,7 @@ classdef MakeMovie < handle
                 'Message',   sprintf('%s\nPlease wait...', movieFilename), ...
                 'Cancelable', 'on', ...
                 'Value',     0);
+            framesWritten = 0;   % how many frames actually reached the file
 
             if isempty(obj.extraController)
                 % --- MIB image view rendering ---
@@ -720,6 +748,8 @@ classdef MakeMovie < handle
                         close(progressDialog);
                         dataset.slices{4} = colorChannels;
                         h.continueBtn.BackgroundColor = [0.149 0.902 0.1804];
+                        fprintf('MIB: movie recording cancelled, %d of %d frames written to: %s\n', ...
+                            framesWritten, noFrames, movieFilename);
                         return;
                     end
 
@@ -810,6 +840,7 @@ classdef MakeMovie < handle
                     end
 
                     writeVideo(writerObj, im2frame(imgOut));
+                    framesWritten = frameIdx;
                     if mod(frameIdx, 10) == 0
                         progressDialog.Value   = frameIdx / noFrames;
                         progressDialog.Message = sprintf('Frame %d / %d', frameIdx, noFrames);
@@ -833,12 +864,16 @@ classdef MakeMovie < handle
                 grabOpts.showWaitbar  = 0;
                 grabOpts.resizeWindow = 0;
 
+                % grabbing a frame out of the volume viewer costs close to a second
+                % (see development/notes/volren_movie_capture_speed.md), so the progress
+                % dialog is updated on every frame and carries a time estimate
+                frameTimer = tic;
+
                 switch obj.extraOptions.mode
                     case 'animation'
                         positions   = obj.extraController.generatePositionsForKeyFramesAnimation(noFrames, extraOpts);
                         noFrames    = size(positions.CameraPosition, 1);
                         hasTarget   = ~isempty(positions.CameraTarget);   % hoist out of loop
-                        updateEvery = max(1, floor(noFrames / 50));       % ~50 progress updates total
                         obj.extraController.prepareWindowForGrabFrame(newWidth, newHeight);
                         if hasTarget
                             for frameId = 1:noFrames
@@ -847,9 +882,8 @@ classdef MakeMovie < handle
                                 obj.extraController.(cameraObject).CameraUpVector = positions.CameraUpVector(frameId, :);
                                 obj.extraController.(cameraObject).CameraTarget   = positions.CameraTarget(frameId, :);
                                 writeVideo(writerObj, obj.extraController.grabFrame(newWidth, newHeight, grabOpts));
-                                if mod(frameId, updateEvery) == 0
-                                    progressDialog.Value = frameId / noFrames;
-                                end
+                                framesWritten = frameId;
+                                obj.updateMovieProgress(progressDialog, frameId, noFrames, frameTimer);
                             end
                         else
                             for frameId = 1:noFrames
@@ -857,9 +891,8 @@ classdef MakeMovie < handle
                                 obj.extraController.(cameraObject).CameraPosition = positions.CameraPosition(frameId, :);
                                 obj.extraController.(cameraObject).CameraUpVector = positions.CameraUpVector(frameId, :);
                                 writeVideo(writerObj, obj.extraController.grabFrame(newWidth, newHeight, grabOpts));
-                                if mod(frameId, updateEvery) == 0
-                                    progressDialog.Value = frameId / noFrames;
-                                end
+                                framesWritten = frameId;
+                                obj.updateMovieProgress(progressDialog, frameId, noFrames, frameTimer);
                             end
                         end
                         obj.extraController.restoreWindowAfterGrabFrame();
@@ -867,7 +900,6 @@ classdef MakeMovie < handle
                     case 'spin'
                         positions   = obj.extraController.generatePositionsForSpinAnimation(noFrames, extraOpts);
                         noFrames    = size(positions.CameraPosition, 1);
-                        updateEvery = max(1, floor(noFrames / 50));
                         obj.extraController.prepareWindowForGrabFrame(newWidth, newHeight);
                         obj.extraController.(cameraObject).CameraUpVector = positions.CameraUpVector;
                         obj.extraController.(cameraObject).CameraTarget   = positions.CameraTarget;
@@ -875,16 +907,26 @@ classdef MakeMovie < handle
                             if progressDialog.CancelRequested; break; end
                             obj.extraController.(cameraObject).CameraPosition = positions.CameraPosition(frameId, :);
                             writeVideo(writerObj, obj.extraController.grabFrame(newWidth, newHeight, grabOpts));
-                            if mod(frameId, updateEvery) == 0
-                                progressDialog.Value = frameId / noFrames;
-                            end
+                            framesWritten = frameId;
+                            obj.updateMovieProgress(progressDialog, frameId, noFrames, frameTimer);
                         end
                         obj.extraController.restoreWindowAfterGrabFrame();
                 end
             end
 
+            % read before the dialog is deleted; pressing cancel during the very last frame
+            % still leaves a complete file, so only an incomplete one counts as cancelled
+            cancelled = progressDialog.CancelRequested && framesWritten < noFrames;
             close(writerObj);
             close(progressDialog);
+
+            if cancelled
+                % the file holds whatever was recorded before the user stopped
+                fprintf('MIB: movie recording cancelled, %d of %d frames written to: %s\n', ...
+                    framesWritten, noFrames, movieFilename);
+                h.continueBtn.BackgroundColor = [0.149 0.902 0.1804];
+                return;
+            end
 
             obj.mibModel.preferences.Users.Tiers.numberOfSnapAndMovies = ...
                 obj.mibModel.preferences.Users.Tiers.numberOfSnapAndMovies + 1;

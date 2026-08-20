@@ -51,6 +51,25 @@ each option and give the one fact that decides between them. Anything longer - t
 numbers, failure modes - belongs in the matching `docs/docs/user-interface/...` page, which the
 tooltip can point at.
 
+**Match the writing to the audience.** The same feature gets described at several levels; the detail
+belongs at the right one and must not leak downwards:
+
+| Where | Written for | What belongs there |
+|-------|-------------|--------------------|
+| Widget tooltip | a user mid-task | one reminder line, see above |
+| `docs/docs/...` | general users | what the feature does and what to do; behaviour, never mechanism |
+| RST docblocks in `.m` | developers reading the API | **full technical detail** - arguments, types, defaults, edge cases, why the code does what it does. Keep these as precise as they are now |
+| `development/` | whoever revisits the design | benchmarks, measured numbers, alternatives tried and rejected |
+
+**`docs/` is the level that gets over-written**, because the implementation is fresh in mind while
+writing it. Describe the behaviour, not the machinery: write "the 3D viewer shows up to 255 materials
+at a time", not "MATLAB keeps the overlay colours in a 256-entry lookup table, so 255 materials plus
+the background". Keep entries short, and leave out measured numbers and design rationale - if the
+reasoning is worth keeping, put it in `development/` and have the code comment point there.
+
+Docblocks are the opposite case: being terse there is the mistake. They are the developer reference,
+so an argument with a non-obvious contract deserves the full explanation.
+
 ### MIB2 → MIB3 Migration
 
 Active port of MIB2 to MIB3. MIB3 uses MATLAB's **AppContainer framework** (ribbon UI, `.mlapp` panel components, docked documents). MIB2 uses GUIDE-based `.fig`/`.m` with a flat `Classes/` structure.

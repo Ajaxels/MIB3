@@ -776,6 +776,15 @@ if twoPhaseSchedule && ~emergencyBrakeUsed
     elseif userStopped
         fprintf('DeepMIB: training was stopped during the frozen phase, the trainable phase is skipped\n');
     else
+        % Phase 1 is over, but the window is still on screen and will stay there while the
+        % 170+ MB frozen-phase checkpoint is written and the snapshot is captured - long
+        % enough for the user to read "Stop training" next to a finished curve and conclude
+        % the run has hung. Retire the buttons first: they are also live wires from this
+        % point on, since deepmib.stopTrainingCallback sets the global stop flag and would
+        % take phase 2 down with it.
+        iRetireProgressButton(mibDeepTrainingProgressStruct, 'StopTrainingButton', 'Phase 1 done');
+        iRetireProgressButton(mibDeepTrainingProgressStruct, 'EmergencyBrakeButton', 'Phase 1 done');
+
         frozenInfo = info;
         frozenNet = net;
         % epochs the frozen phase actually used; a plateau stop can leave a large unused
@@ -1277,5 +1286,19 @@ if isfield(info, fieldName) && ~isempty(info.(fieldName))
 else
     value = NaN;
 end
+end
+
+function iRetireProgressButton(progressStruct, buttonField, labelText)
+% grey out and relabel one of the progress window buttons once its phase is over, so that a
+% finished curve is not left sitting under a button that still offers to stop the training
+if ~isfield(progressStruct, 'useCustomProgressPlot') || ~progressStruct.useCustomProgressPlot; return; end
+if ~isfield(progressStruct, buttonField) || ~isvalid(progressStruct.(buttonField)); return; end
+
+hButton = progressStruct.(buttonField);
+hButton.Text = labelText;
+hButton.BackgroundColor = [0.85 0.85 0.85];
+hButton.Enable = 'off';
+hButton.Tooltip = 'The frozen phase is over, this window is kept only so its plot can still be saved';
+drawnow;
 end
 

@@ -1,7 +1,8 @@
 # 3D Instance Stitching — Improvement Plan (`utils.stitchInstances2Dto3D`)
 
-> Deferred DeepMIB ideas (checkpoint weight averaging, two-phase freeze/unfreeze training) are
-> collected in [`potential_improvements.md`](potential_improvements.md).
+> Deferred DeepMIB ideas (checkpoint weight averaging, two-phase freeze/unfreeze training,
+> per-object score export and score-guided gap bridging) are collected in
+> [`potential_improvements.md`](potential_improvements.md).
 
 Follow-up to [`stitchInstances2Dto3D.md`](stitchInstances2Dto3D.md) (algorithm + MIB integration,
 already done) and the "Future roadmap — 3D instance segmentation" section of
@@ -111,6 +112,8 @@ single-timepoint labels volume no longer fits comfortably in RAM.
 - Edit (Phase B): `mib/+utils/stitchInstances2Dto3D.m`,
   `mib/+core/@MibDataset/stitchModelInstances.m`, `mib/+models/@MibModel/stitchModelInstances.m`;
   docs in `docs_api/` + `docs/` per repo doc rules.
+- Shared settings dialog: `mib/+utils/+dlgs/stitchInstancesSettingsDlg.m` - **add any new stitching
+  parameter here**, not in the two callers.
 
 ## Status
 - **Phase A — done.** `tests/utils/StitchInstances2Dto3DTest.m` (9 Unit cases) +
@@ -172,3 +175,120 @@ single-timepoint labels volume no longer fits comfortably in RAM.
     gaps; the feature's value is for genuinely anisotropic / dropout-heavy data (proven synthetically).
     Left **off by default** — zero risk to existing behaviour.
 - **Phase D (streaming)** — deferred per trigger condition.
+- **Disconnected 2D labels (`splitDisconnected2D`) — found and fixed 2026-08-19.** Reported as
+  "stitching merges most mitochondria into one object" on a real 1078×1380×101 salivary-gland
+  stack. Root cause: `localCompact` keyed a node on the per-slice **index value**, so a 2D index
+  covering several separate blobs welded all of their 3D chains together, unconditionally (the pair
+  never reaches the IoU/IoA test). The welds chain transitively, so ~24 % of blobs sharing an index
+  (7385 indices over 9746 blobs) collapsed 76.9 % of all labelled voxels into a single object.
+  Fix: a node is now one connected component of an index. Same stack, default settings:
+  354 objects / largest 76.9 % → **1481 objects / largest 4.6 %**, at +1.8 s (bbox-cropped
+  `bwconncomp` per label). New `options.splitDisconnected2D` (default `true`) restores the old
+  semantics when `false`; surfaced as a checkbox in both `MibModel.stitchModelInstances` and
+  `MibDeep.mergeInstancesTo3D`. Tests: `sharedIndexDoesNotCascadeIntoOneObject`,
+  `splitDisconnected2DOffKeepsOneLabelTogether`.
+  - **Caveat:** the Phase C benchmark numbers recorded above predate this default and were measured
+    with index-keyed nodes. The MitoNet benchmark data is no longer on this machine
+    (`c:\MATLAB\Data\SOLOv2_Implementation\MitoNet_benchmark` is gone), so the Integration cases
+    self-skipped and the baselines were not re-measured. Re-run them before citing those tables.
+  - **Upstream follow-up (not done):** the shared indices are themselves wrong 2D instances. Worth
+    checking whether they come from the SOLOv2 mask head firing at several locations (raise the
+    prediction threshold) or from `deepmib.segmentImageInstancesIoUMerge` fusing detections across
+    tile seams. Splitting at stitch time contains the damage but does not recover the correct 2D
+    instances.
+- **`minObjectSlices` noise filter — added 2026-08-19.** Follow-up from the same session: with the
+  cascade fixed, the remaining spurious objects are 2D false positives that are *large in-plane*
+  but present on one or two slices, which `minObjectVoxels` structurally cannot reach. New
+  `options.minObjectSlices` removes objects occupying N or fewer slices (0 = keep all, 1 = drop
+  single-slice); counts occupied slices, not first-to-last span, so `zLookback` bridges do not
+  inflate it. Same stack: 1481 → 460 objects at N=1 while keeping 99.0 % of labelled voxels.
+  Justification for it being a separate lever: single-slice objects had median 4 voxels but max
+  2415, and genuine multi-slice objects went down to 16 voxels, so `minObjectVoxels = 2415` would
+  have deleted 180 real objects. Surfaced in both dialogs; `stats.objectSliceCounts` added (empty
+  unless the filter ran). Tests: `minObjectSlicesRemovesShallowObjects`,
+  `minObjectSlicesCountsOccupiedSlicesNotSpan`.
+- **`absOverlapPixels` link criterion — added 2026-08-19.** Reported as two objects staying apart
+  despite a clear Z overlap (buffer-4 objects 105 and 136 at z27/28). Measured cause: IoU and IoA
+  are both normalised by object area, which double-penalises a size-mismatched pair. 3795 px vs
+  1689 px sharing **716 px** scores IoU 0.150 / IoA 0.424, under both defaults, so the pair is never
+  linked. New `options.absOverlapPixels` (default `0` = off) links a pair on raw intersection alone
+  - a *sufficient* condition, the mirror of `minOverlapPixels`' *necessary* guard; `maxCentroidShift`
+  still vetoes. Sweep on the stack (460-object baseline): 300 → 458, 500-716 → 459, 900+ → no
+  change; largest object unmoved at 4.7 % throughout, so no cascade risk. Value is in in-plane
+  pixels and dataset-specific - no defensible default. Tests:
+  `absOverlapPixelsLinksLargeAgainstSmall`, `absOverlapPixelsStillObeysCentroidGate`.
+  - **Unresolved:** whether 105 and 136 *should* merge is a data question, not an algorithm one.
+    They coexist as separate objects across z26-38 (13 slices, each 1500-3900 px) and touch across
+    Z exactly once. That is equally consistent with one bent mitochondrion cut into two profiles and
+    with two adjacent mitochondria. Left to the user's reading of the image.
+- Suite after all three changes: **19/19 Unit green**.
+- **`absorbFragmentVoxels` - added 2026-08-20.** Reported as "why was object 1299 at x=1072,y=600,
+  z=90 not combined with the larger object 537 that surrounds it". Traced on the live buffers: the
+  pixel is a **2-px island of 2D index 43** stranded inside index 68, 21 px from index 43's own
+  492-px body. `splitDisconnected2D` correctly makes it its own node; it cannot merge in-plane (the
+  stitcher only ever links across Z); and its one z-partner overlaps it by 2 px, under
+  `minOverlapPixels = 5`, so it is rejected before IoU/IoA are consulted - its IoA would be 1.00.
+  Result: a 2-voxel hole in an otherwise solid object. **545 of 1481 objects (37 %) on that stack
+  are under 5 voxels** and structurally unlinkable, for 0.0175 % of the labelled voxels: 78 fully
+  enclosed by one object, 304 on an object's rim, 1 touching several, 162 free-floating.
+  - **Relaxing the guard was tried and rejected on measurement.** `minOverlapPixels = 1` (1064
+    objects) and a prototype "full containment bypasses the guard" (1086) both absorb the dust *and*
+    fuse the same four pairs of large objects. Traced mechanism: a 2-voxel speck on z=10 lies over
+    object A (8503 vox, z=1..9) and under object B (66315 vox, z=1..32), so linking it to both welds
+    them. A speck is a bad node to route a chain through - the `splitDisconnected2D` cascade again,
+    in miniature.
+  - **Built instead as a voxel post-pass** (`localAbsorbFragments`, runs after union-find, before the
+    size filters): each (fragment, slice) group goes to the majority label among its 8-neighbours on
+    that slice, counting only non-fragment objects so absorption cannot chain. No union happens, so
+    no weld is possible. A fragment with no qualifying neighbour is left for `minObjectVoxels` /
+    `minObjectSlices`. New `stats.numAbsorbedFragments` / `.numAbsorbedVoxels`.
+  - **Measured on the same stack:** `=2` 1180 objects / 301 absorbed, `=4` 1098 / 383, `=5` 1094 /
+    387, `=10` 1085 / 396; largest object unmoved at 4.62 % throughout, voxel support
+    bit-identical, ~0.3 s. **Zero** groups fuse two objects of >= 5 voxels (vs 4 for
+    `minOverlapPixels = 1`). `absorbFragmentVoxels` + `minObjectSlices = 1` gives the same 460
+    objects as `minObjectSlices = 1` alone while keeping **~800 more voxels** - holes filled, not
+    punched out.
+  - **Default `5`, set 2026-08-20, deliberately equal to `minOverlapPixels`** - an object below
+    that size cannot produce a large enough intersection to be linked on any slice pair, so the
+    default reaches exactly the objects the linker structurally cannot and nothing else. The only
+    cleanup parameter that is on by default, because unlike the two delete thresholds it removes
+    nothing: it moves voxels between objects. Three unit tests now pass
+    `absorbFragmentVoxels = 0` explicitly to assert the un-absorbed baseline.
+  - Surfaced in `utils.dlgs.stitchInstancesSettingsDlg` (so both callers get it) and as
+    `BatchOpt.AbsorbFragmentVoxels` in `MibModel.stitchModelInstances`; `MibDeep.mergeInstancesTo3D`
+    needed no edit, which is the dedup paying off. Tests:
+    `absorbFragmentVoxelsFillsEnclosedSpeck`, `absorbFragmentVoxelsDoesNotJoinObjectsAcrossZ`
+    (asserts the `minOverlapPixels = 1` weld *and* that absorption avoids it),
+    `absorbFragmentVoxelsWillNotAbsorbIntoAnotherFragment`. **22/22 Unit green.**
+  - **Upstream, still open:** the 2-px island is a wrong 2D instance. Same root as the
+    shared-index note above - worth checking the SOLOv2 prediction threshold and
+    `deepmib.segmentImageInstancesIoUMerge`'s tile-seam fusion. Stitch-time absorption contains the
+    damage; it does not recover correct 2D instances.
+- **Score-guided gap bridging — proposed 2026-08-19, not built.** Idea: when a strong overlap spans
+  a one-slice gap, consult prediction scores on the skipped slice to tell a detection dropout from a
+  genuine object end. A **dense score map is the wrong tool** - not because of size (one uint8
+  channel suffices; identity lives in the `.model`, so touching objects need no distinct indices)
+  but because a map painted from accepted detections is **zero on the gap slice by construction**,
+  and SOLOv2 exposes no per-pixel objectness to fall back on. The signal lives in **sub-threshold
+  detections** instead: predict at a low recall threshold, keep the weak ones as *tentative* objects
+  in a separate layer, and link `A(z)`/`B(z+2)` only when a tentative instance on `z+1` overlaps
+  both - hysteresis at instance level, decided on geometry with no image access at stitch time.
+  Gated on one measurement: for the pairs `zLookback = 2` already bridges, how many have a
+  0.3-threshold detection on the skipped slice overlapping both. Phase C′ and the 52-810-slice
+  separations of the residual false splits are evidence that gaps may not be the real failure mode
+  here. Full write-up, including the per-object score export it depends on:
+  [`potential_improvements.md`](potential_improvements.md#3-instance-scores-per-object-export-and-score-guided-gap-bridging).
+  Note also that scores are already computed and discarded in both stitching modes
+  (`segmentBlockedImageInstances.m:50`, `segmentImageInstancesIoUMerge.m:182`), and that the
+  `P_ScoreFiles` dropdown stays enabled for `2D Instance` while being ignored by
+  `startPredictionInstances` - a separate UI bug.
+- **Settings dialog deduplicated — 2026-08-19.** Adding those three parameters meant editing the
+  same 12-field dialog in `MibModel.stitchModelInstances` and `MibDeep.mergeInstancesTo3D` and
+  renumbering `answer{n}` in both, three times, with nothing to catch a mismatch. Extracted to
+  `utils.dlgs.stitchInstancesSettingsDlg` (returns a ready `stitchOptions` plus a `values` struct of
+  raw widget values); the callers' only genuine difference, how Z anisotropy is obtained, is a
+  `dlgOptions.anisotropyMode` of `'checkbox'` (MibModel, derives the ratio from `pixSize`) or
+  `'ratio'` (MibDeep, raw prediction images have no pixel size). Everything else - input, output,
+  undo, batch support, guards - stays in the callers. `MibModel` still rebuilds its options from
+  `BatchOpt`, so the batch path is untouched. Details in
+  [`stitchInstances2Dto3D.md`](stitchInstances2Dto3D.md#where-the-settings-dialog-lives).

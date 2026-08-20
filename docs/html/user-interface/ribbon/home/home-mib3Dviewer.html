@@ -1437,6 +1437,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="3D Controls -&gt; Model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#models-with-many-materials" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Models with many materials
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -5575,6 +5592,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="3D Controls -&gt; Model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#models-with-many-materials" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Models with many materials
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -5970,12 +6004,28 @@ to modify position of the camera.</p>
 <li><span class="widget widget-dropdown">Overlay source</span>: specify the layer type for visualization as a model.</li>
 <li><label class="widget widget-checkbox">Hide all</label>: toggle show/hide all selected materials in the table.</li>
 <li><span class="widget widget-button">Refresh view</span>: pull the latest segmentation into the overlay on demand. The first use initialises the overlay (same as <span class="widget widget-button">Update overlay</span>); afterwards it performs a lightweight refresh that updates only the overlay data while preserving per-material visibility and display settings. This is also the action invoked automatically by <label class="widget widget-checkbox">Live update</label>.</li>
+<li><span class="widget widget-dropdown">Materials to show</span>, <span class="widget widget-edit">material list</span> and <span class="widget widget-button">Add current</span>: choose which materials to render, see <a href="#models-with-many-materials">Models with many materials</a> below.</li>
 </ul>
 <div class="clear-float"></div>
 
 <ul>
-<li><strong>Table with materials</strong>: list of model materials; each can be shown/hidden and assigned a transparency value (<strong>Alpha</strong>, 0-1). Right-click for a menu with <span class="widget widget-dropdown">Generate surface(s)</span> to create surfaces for the <em>Surfaces</em> tab.</li>
+<li><strong>Table with materials</strong>: list of model materials; each can be shown/hidden and assigned a transparency value (<strong>Alpha</strong>, 0-1). Right-click for a menu with:<ul>
+<li><strong>Generate surface(s)</strong>: create surfaces for the selected rows in the <em>Surfaces</em> tab.</li>
+<li><strong>Generate surface by index...</strong>: create a surface for any material by typing its index.</li>
+<li><strong>Remove selected materials</strong>: drop the selected rows from the rendered list (<em>Selected materials</em> mode only).</li>
 </ul>
+</li>
+</ul>
+<h3 id="models-with-many-materials">Models with many materials<a class="headerlink" href="#models-with-many-materials" title="Permanent link">&para;</a></h3>
+<p>Instance segmentation produces models with thousands of materials (the 65535 and 4294967295 model types). The 3D viewer shows up to 255 materials at a time, so these models offer two modes in the <span class="widget widget-dropdown">Materials to show</span> dropdown:</p>
+<ul>
+<li><strong>All materials</strong>: everything is shown at once, using a repeating set of colors. Neighbouring objects always get different colors, so the segmentation is easy to judge as a whole. The material table has a single row that sets transparency and visibility for the whole overlay.</li>
+<li><strong>Selected materials</strong>: only the materials you list are shown, each in the same color as in the 2D view and with its own transparency and show/hide switch. Type indices and ranges into the edit field, for example <code>1:10,45</code>, or press <span class="widget widget-button">Add current</span> to add the material selected in the main MIB window.</li>
+</ul>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Use <span class="widget widget-button">Update overlay</span> for these models. Showing the model as the volume itself gives a gradient rather than separate objects.</p>
+</div>
 <hr />
 <h2 id="3d-controls-surfaces">3D Controls -&gt; Surfaces<a class="headerlink" href="#3d-controls-surfaces" title="Permanent link">&para;</a></h2>
 <p>Surfaces generated from the <em>Model</em> tab’s material table (via right-click) are visualized using settings in this tab.</p>

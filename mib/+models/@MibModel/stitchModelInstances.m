@@ -31,6 +31,13 @@ function stitchModelInstances(obj, BatchOptIn)
 %       - ``'hungarian'`` - strict one-to-one matching per slice pair (empanada /
 %         MitoNet style), plus a containment merge for the leftovers.
 %
+%     - ``.SplitDisconnected2D`` - logical checkbox. When ``true`` *(default)*
+%       each connected blob of a per-slice index is treated as its own 2D
+%       object. 2D instance predictors regularly give one index to several
+%       separate blobs; keeping them as one object welds their 3D chains
+%       together, and the welds chain across slices until most of the stack is
+%       a single giant instance. Uncheck only when the per-slice indices are
+%       trusted and a genuinely disconnected 2D mask must stay one object.
 %     - ``.IoUThreshold`` - Intersection-over-Union link threshold, range 0-1. For
 %       two objects on adjacent slices, ``IoU = overlapping pixels / pixels in
 %       either object``; they are joined into one 3D object when IoU exceeds this
@@ -46,12 +53,35 @@ function stitchModelInstances(obj, BatchOptIn)
 %     - ``.MinOverlapPixels`` - absolute minimum number of overlapping pixels
 %       before two objects may be linked; stops a 1-2 px touch between unrelated
 %       objects from fusing them.
+%     - ``.AbsOverlapPixels`` - link two objects whose overlap reaches this many
+%       pixels whatever their IoU and IoA (``0`` = disabled). IoU and IoA are
+%       both ratios against object area, so a large cross-section meeting a much
+%       smaller one scores low on each even when the shared area is substantial.
+%       This is a *sufficient* condition added to the ratio tests, the opposite
+%       role from ``MinOverlapPixels``, which is a guard applied to all of them.
+%       The right value depends on object size in the dataset.
 %     - ``.ZLookback`` - how many slices apart to compare. ``1`` = only directly
 %       adjacent slices; ``2+`` also compares a slice with the one 2 (or more)
 %       planes away, so an object that vanishes for a slice or two is reconnected.
 %     - ``.MinObjectVoxels`` - after stitching, delete any 3D object smaller than
 %       this many voxels (``0`` = keep all); useful for removing tiny single-slice
 %       noise fragments.
+%     - ``.MinObjectSlices`` - after stitching, delete any 3D object that appears
+%       on this many Z-slices or fewer (``0`` = keep all, ``1`` = drop
+%       single-slice objects, ``2`` = also drop those seen on two slices).
+%       Catches the noise ``MinObjectVoxels`` cannot: a false detection may be
+%       large in-plane yet never propagate through the stack.
+%     - ``.AbsorbFragmentVoxels`` - after stitching, give any 3D object of this
+%       size or smaller to the object surrounding it in-plane [*default* ``5``,
+%       matching ``MinOverlapPixels`` - the size below which an object can never
+%       be linked at all; ``0`` = off].
+%       2D predictors leave stray pixels inside or on the rim of a neighbouring
+%       mask; being smaller than ``MinOverlapPixels`` they can never be linked
+%       and survive as specks, usually a hole in an otherwise solid object.
+%       Deleting them with ``MinObjectVoxels`` leaves the hole, and relaxing
+%       ``MinOverlapPixels`` instead is unsafe - a speck touching two different
+%       objects on consecutive slices would then weld them together. A fragment
+%       with no labelled neighbour is left for ``MinObjectVoxels``.
 %     - ``.UseAnisotropy`` - logical. When ``true``, the IoU link threshold is
 %       lowered by the dataset voxel aspect ratio ``pixSize.z / pixSize.x`` so a
 %       real but displaced continuation still links across thick Z sections. IoA
@@ -90,27 +120,64 @@ showDialog = isstruct(BatchOptIn) && ~isfield(BatchOptIn, 'Method');
 BatchOpt = struct();
 BatchOpt.Method = {'graph'};
 BatchOpt.Method{2} = {'graph', 'hungarian'};
+BatchOpt.SplitDisconnected2D = true;   % each connected blob of an index is its own 2D object
 BatchOpt.IoUThreshold = {0.25, [0, 1], 'off'};
 BatchOpt.IoAThreshold = true;   % logical -> checkbox; enables IoA-based merging of split objects
 BatchOpt.MinOverlapPixels = {5, [0, 1e6], 'on'};
+BatchOpt.AbsOverlapPixels = {0, [0, 1e9], 'on'};   % 0 = disabled; sufficient link condition
 BatchOpt.ZLookback = {1, [1, 100], 'on'};
 BatchOpt.MinObjectVoxels = {0, [0, 1e9], 'on'};
+BatchOpt.MinObjectSlices = {0, [0, 1e6], 'on'};   % 0 = keep all, 1 = drop single-slice objects
+BatchOpt.AbsorbFragmentVoxels = {5, [0, 1e6], 'on'};   % 0 = off; dust joins the object around it
 BatchOpt.UseAnisotropy = false;   % lower the IoU threshold by pixSize.z/pixSize.x
 BatchOpt.MaxCentroidShift = {0, [0, 1e6], 'on'};   % 0 = gate disabled
 BatchOpt.CentroidLinkRadius = {0, [0, 1e6], 'on'};   % 0 = centroid-NN bridging off
 BatchOpt.showWaitbar = true;
 BatchOpt.id = obj.getActiveId();
 
+%% Restore the settings last used in this MIB session
+% Only plain values are stored; the spinner limits and rounding flags above stay
+% owned by this file, so a stale session entry cannot widen them. Applied before
+% the BatchOptIn merge, so an explicit caller argument still wins.
+if isfield(obj.sessionSettings, 'stitchModelInstances')
+    lastUsed = obj.sessionSettings.stitchModelInstances;
+    if isfield(lastUsed, 'Method') && ismember(lastUsed.Method, BatchOpt.Method{2})
+        BatchOpt.Method{1} = lastUsed.Method;
+    end
+    for logicalField = {'SplitDisconnected2D', 'IoAThreshold', 'UseAnisotropy'}
+        name = logicalField{1};
+        if isfield(lastUsed, name) && isscalar(lastUsed.(name))
+            BatchOpt.(name) = logical(lastUsed.(name));
+        end
+    end
+    for numericField = {'IoUThreshold', 'MinOverlapPixels', 'AbsOverlapPixels', 'ZLookback', ...
+            'MinObjectVoxels', 'MinObjectSlices', 'AbsorbFragmentVoxels', ...
+            'MaxCentroidShift', 'CentroidLinkRadius'}
+        name = numericField{1};
+        if ~isfield(lastUsed, name); continue; end
+        storedValue = lastUsed.(name);
+        allowedRange = BatchOpt.(name){2};
+        if isnumeric(storedValue) && isscalar(storedValue) && ...
+                storedValue >= allowedRange(1) && storedValue <= allowedRange(2)
+            BatchOpt.(name){1} = storedValue;
+        end
+    end
+end
+
 BatchOpt.mibBatchSectionName = 'Ribbon -> Model';
 BatchOpt.mibBatchActionName  = 'Stitch 2D instances to 3D';
 
 BatchOpt.mibBatchTooltip.Method           = 'Linking strategy. "graph": link every pair of overlapping objects on neighbouring slices and group them by connected components - handles objects that split or merge between slices. "hungarian": strict one-to-one matching per slice pair (empanada/MitoNet style) plus a containment merge for leftovers';
+BatchOpt.mibBatchTooltip.SplitDisconnected2D = 'Treat each separate blob of a per-slice index as its own 2D object. 2D predictors often give one index to several unconnected blobs; without this they are welded into one 3D object and the welds chain across slices, fusing most of the stack into a single giant instance. Uncheck only if the per-slice indices are trusted and a disconnected 2D mask must stay one object';
 BatchOpt.mibBatchTooltip.IoUThreshold     = 'Intersection-over-Union link threshold (0-1). IoU = overlapping pixels / pixels in either object. Two cross-sections on adjacent slices are joined into one 3D object when IoU exceeds this. Higher = only near-identical shapes join (more, smaller objects); lower = looser joining';
 BatchOpt.mibBatchTooltip.IoAThreshold     = 'Merge split objects using Intersection-over-Area. When enabled, two objects are also joined when (overlapping pixels)/(pixels in the SMALLER object) is high, i.e. one is mostly contained in the other - this reconnects a 3D object that briefly breaks into small fragments on one slice. Uncheck to link by IoU only';
 BatchOpt.mibBatchTooltip.MinOverlapPixels = 'Minimum number of overlapping pixels required before two objects on adjacent slices may be linked. Prevents a 1-2 pixel touch between unrelated objects from fusing them';
+BatchOpt.mibBatchTooltip.AbsOverlapPixels = 'Link two objects when they share at least this many pixels, whatever their IoU and IoA. 0 = disabled. IoU and IoA are ratios against object area, so a large cross-section meeting a much smaller one scores low on both even when hundreds of pixels are shared. Note this is the opposite role from "Min overlap": that one blocks links, this one creates them. The right value depends on how large objects are in this dataset';
 BatchOpt.mibBatchTooltip.ZLookback        = 'How many slices apart to compare. 1 = only directly adjacent slices; 2 or more also compares a slice with the one further away, so an object that disappears for a slice or two can still be reconnected';
 BatchOpt.mibBatchTooltip.MinObjectVoxels  = 'After stitching, remove any 3D object smaller than this many voxels (0 = keep all). Useful for discarding tiny single-slice noise fragments';
-BatchOpt.mibBatchTooltip.UseAnisotropy    = 'For anisotropic stacks (thick Z sections), a real continuation is displaced more between slices, so its IoU legitimately drops. When enabled, the IoU threshold is lowered by the voxel aspect ratio (pixSize.z / pixSize.x) taken from the dataset. Pair with a Max centroid shift to stop the relaxed threshold from fusing distant objects';
+BatchOpt.mibBatchTooltip.MinObjectSlices  = 'After stitching, remove any 3D object that appears on this many Z-slices or fewer. 0 = keep all, 1 = remove objects found on a single slice, 2 = also remove those seen on two slices. Catches noise that "Min object size" cannot: a false detection can be large in-plane yet never propagate through the stack';
+BatchOpt.mibBatchTooltip.AbsorbFragmentVoxels = 'After stitching, hand any 3D object of this size or smaller to the object surrounding it in-plane, instead of leaving it as a separate speck. 0 = disabled. Stray pixels left by a 2D predictor are smaller than "Min overlap" and so can never be linked; they survive as holes inside otherwise solid objects. Deleting them with "Min object size" leaves the hole behind, and lowering "Min overlap" instead is unsafe, because a speck touching two different objects on consecutive slices would weld them together. A fragment with no labelled neighbour is left alone';
+BatchOpt.mibBatchTooltip.UseAnisotropy    ='For anisotropic stacks (thick Z sections), a real continuation is displaced more between slices, so its IoU legitimately drops. When enabled, the IoU threshold is lowered by the voxel aspect ratio (pixSize.z / pixSize.x) taken from the dataset. Pair with a Max centroid shift to stop the relaxed threshold from fusing distant objects';
 BatchOpt.mibBatchTooltip.MaxCentroidShift = 'Reject a link when the two object centroids are more than this many pixels apart (scaled by the slice gap when Z lookback > 1). 0 = disabled. Use together with anisotropic-Z relaxation so that a lower IoU threshold does not merge far-apart objects';
 BatchOpt.mibBatchTooltip.CentroidLinkRadius = 'Centroid nearest-neighbour gap bridging (advanced, for anisotropic / gappy data). For an object with NO overlapping neighbour on the next compared slice, link it to the mutually-nearest such orphan within this many pixels (scaled by the slice gap), if of comparable size. Reconnects a continuation that is laterally displaced or briefly missing. 0 = disabled';
 BatchOpt.mibBatchTooltip.showWaitbar      = 'Show or not the progress bar during execution';
@@ -178,54 +245,55 @@ if showDialog && ~batchModeSwitch
     note = sprintf(['The active model is treated as a stack of independent 2D instance masks;\n' ...
         'objects overlapping between neighbouring slices are linked into one 3D instance.']);
 
-    prompt = {...
-        sprintf('Method:\n  "graph" links every overlapping pair and groups them by connected components\n  "hungarian" uses strict 1-to-1 matching per slice pair'), ...
-        sprintf('IoU threshold (0-1):\n  join two objects when (overlap area)/(their union area) exceeds this;\nhigher = stricter, giving more but smaller 3D objects'), ...
-        sprintf('Merge split objects (IoA):\n  also join when a smaller object is mostly contained in a neighbour,\n  reconnecting an object that breaks into pieces on one slice'), ...
-        sprintf('Min overlap (pixels):\n  require at least this many overlapping pixels before linking, to block tiny spurious touches'), ...
-        sprintf('Z lookback (slices):\n  also compare slices this many planes apart;\n  1 = adjacent slices only, higher bridges an object that briefly vanishes'), ...
-        sprintf('Min object size (voxels):\n  after stitching, delete 3D objects smaller than this; 0 = keep all'), ...
-        sprintf('Anisotropic Z (use pixel size):\n  lower the IoU threshold by pixSize.z/pixSize.x for thick sections,\n  so a real but displaced continuation still links'), ...
-        sprintf('Max centroid shift (pixels):\n  reject a link when object centroids are farther apart than this;\n  0 = off. Pair with anisotropic Z to avoid fusing distant objects'), ...
-        sprintf('Centroid link radius (pixels):\n  advanced gap bridging - link an object with no overlapping neighbour\n  to the mutually-nearest one within this distance; 0 = off')};
+    % the shared dialog (utils.dlgs.stitchInstancesSettingsDlg) also builds the
+    % stitch options, but they are rebuilt below from BatchOpt so that the batch
+    % path, which never opens the dialog, goes through the same code
+    dlgDefaults = struct(...
+        'Method',              BatchOpt.Method{1}, ...
+        'SplitDisconnected2D', BatchOpt.SplitDisconnected2D, ...
+        'IoUThreshold',        BatchOpt.IoUThreshold{1}, ...
+        'IoAThreshold',        BatchOpt.IoAThreshold, ...
+        'MinOverlapPixels',    BatchOpt.MinOverlapPixels{1}, ...
+        'AbsOverlapPixels',    BatchOpt.AbsOverlapPixels{1}, ...
+        'ZLookback',           BatchOpt.ZLookback{1}, ...
+        'MinObjectVoxels',     BatchOpt.MinObjectVoxels{1}, ...
+        'MinObjectSlices',     BatchOpt.MinObjectSlices{1}, ...
+        'AbsorbFragmentVoxels', BatchOpt.AbsorbFragmentVoxels{1}, ...
+        'Anisotropy',          BatchOpt.UseAnisotropy, ...
+        'MaxCentroidShift',    BatchOpt.MaxCentroidShift{1}, ...
+        'CentroidLinkRadius',  BatchOpt.CentroidLinkRadius{1});
 
-    methodChoices = [BatchOpt.Method{2}, find(strcmp(BatchOpt.Method{2}, BatchOpt.Method{1}))];
-    defAns = {methodChoices, ...
-              struct('Spinner', true, 'Value', BatchOpt.IoUThreshold{1},     'Limits', BatchOpt.IoUThreshold{2},     'Step', 0.05, 'Round', false), ...
-              logical(BatchOpt.IoAThreshold), ...
-              struct('Spinner', true, 'Value', BatchOpt.MinOverlapPixels{1}, 'Limits', BatchOpt.MinOverlapPixels{2}, 'Step', 1,    'Round', true), ...
-              struct('Spinner', true, 'Value', BatchOpt.ZLookback{1},        'Limits', BatchOpt.ZLookback{2},        'Step', 1,    'Round', true), ...
-              struct('Spinner', true, 'Value', BatchOpt.MinObjectVoxels{1},  'Limits', BatchOpt.MinObjectVoxels{2},  'Step', 1,    'Round', true), ...
-              logical(BatchOpt.UseAnisotropy), ...
-              struct('Spinner', true, 'Value', BatchOpt.MaxCentroidShift{1},   'Limits', BatchOpt.MaxCentroidShift{2},   'Step', 1, 'Round', true), ...
-              struct('Spinner', true, 'Value', BatchOpt.CentroidLinkRadius{1}, 'Limits', BatchOpt.CentroidLinkRadius{2}, 'Step', 1, 'Round', true)};
+    dlgSettings.anisotropyMode = 'checkbox';   % the ratio comes from the dataset pixel size
+    dlgSettings.dlgTitle = 'Stitch 2D instances to 3D';
+    dlgSettings.mibPath = obj.mibPath;
+    [~, values] = utils.dlgs.stitchInstancesSettingsDlg(obj.getProgressBarParent(), ...
+        note, dlgDefaults, dlgSettings);
+    if isempty(values); notify(obj, 'StopProtocol'); return; end
 
-    dlgParams.mibPath = obj.mibPath;
-    dlgParams.WindowWidth = 720;
-    dlgParams.WindowHeight = 560;
-    dlgParams.HeaderLines = 2;
-    dlgParams.LabelPosition = 'left';
-    answer = utils.dlgs.inputUniversalDlg(obj.getProgressBarParent(), note, prompt, defAns, ...
-        'Stitch 2D instances to 3D', dlgParams);
-    if isempty(answer); notify(obj, 'StopProtocol'); return; end
-
-    BatchOpt.Method{1}          = answer{1};
-    BatchOpt.IoUThreshold{1}    = answer{2};
-    BatchOpt.IoAThreshold       = answer{3};   % logical (checkbox)
-    BatchOpt.MinOverlapPixels{1} = answer{4};
-    BatchOpt.ZLookback{1}       = answer{5};
-    BatchOpt.MinObjectVoxels{1} = answer{6};
-    BatchOpt.UseAnisotropy      = answer{7};   % logical (checkbox)
-    BatchOpt.MaxCentroidShift{1} = answer{8};
-    BatchOpt.CentroidLinkRadius{1} = answer{9};
+    BatchOpt.Method{1}             = values.Method;
+    BatchOpt.SplitDisconnected2D   = values.SplitDisconnected2D;
+    BatchOpt.IoUThreshold{1}       = values.IoUThreshold;
+    BatchOpt.IoAThreshold          = values.IoAThreshold;
+    BatchOpt.MinOverlapPixels{1}   = values.MinOverlapPixels;
+    BatchOpt.AbsOverlapPixels{1}   = values.AbsOverlapPixels;
+    BatchOpt.ZLookback{1}          = values.ZLookback;
+    BatchOpt.MinObjectVoxels{1}    = values.MinObjectVoxels;
+    BatchOpt.MinObjectSlices{1}    = values.MinObjectSlices;
+    BatchOpt.AbsorbFragmentVoxels{1} = values.AbsorbFragmentVoxels;
+    BatchOpt.UseAnisotropy         = values.Anisotropy;
+    BatchOpt.MaxCentroidShift{1}   = values.MaxCentroidShift;
+    BatchOpt.CentroidLinkRadius{1} = values.CentroidLinkRadius;
 end
 
 %% Assemble the options for utils.stitchInstances2Dto3D
+% Built from BatchOpt rather than from the dialog result, so the batch path
+% (which skips the dialog entirely) produces exactly the same options.
 % IoAThreshold is a checkbox: enabled -> use a 0.5 containment threshold;
 % disabled -> Inf so IoA never contributes a link (IoU-only linking).
 ioaEnabledThreshold = 0.5;
 options = struct();
 options.method = BatchOpt.Method{1};
+options.splitDisconnected2D = logical(BatchOpt.SplitDisconnected2D);
 options.iouThreshold = BatchOpt.IoUThreshold{1};
 if BatchOpt.IoAThreshold
     options.ioaThreshold = ioaEnabledThreshold;
@@ -233,12 +301,16 @@ else
     options.ioaThreshold = inf;
 end
 options.minOverlapPixels = BatchOpt.MinOverlapPixels{1};
+options.absOverlapPixels = BatchOpt.AbsOverlapPixels{1};
 options.zLookback = BatchOpt.ZLookback{1};
 options.minObjectVoxels = BatchOpt.MinObjectVoxels{1};
+options.minObjectSlices = BatchOpt.MinObjectSlices{1};
+options.absorbFragmentVoxels = BatchOpt.AbsorbFragmentVoxels{1};
 
-% Anisotropic Z: derive the voxel aspect ratio from the dataset pixel size and
-% pass it through so the utility lowers the effective IoU threshold for thick
-% sections. Left at 1 (isotropic, no relaxation) when the option is off.
+% Anisotropic Z: the dialog only collects a yes/no, so derive the voxel aspect
+% ratio from the dataset pixel size here and pass it through so the utility
+% lowers the effective IoU threshold for thick sections. Left at 1 (isotropic,
+% no relaxation) when the option is off.
 if BatchOpt.UseAnisotropy
     pixSize = obj.I{BatchOpt.id}.image.pixSize;
     if isfield(pixSize, 'x') && pixSize.x > 0
@@ -279,7 +351,29 @@ toc
 if obj.preferences.System.DeveloperMode
     fprintf('MibModel.stitchModelInstances: %d 2D objects -> %d 3D instances (method=%s)\n', ...
         stats.numInput2DObjects, stats.numOutput3DObjects, options.method);
+    if stats.numAbsorbedFragments > 0
+        fprintf('   %d fragments absorbed into their neighbours (%d voxels)\n', ...
+            stats.numAbsorbedFragments, stats.numAbsorbedVoxels);
+    end
 end
+
+%% Remember the settings for the rest of this MIB session
+% So a second run of the dialog opens on the values just used - the common case
+% while trialling thresholds on one dataset.
+obj.sessionSettings.stitchModelInstances = struct(...
+    'Method',              BatchOpt.Method{1}, ...
+    'SplitDisconnected2D', BatchOpt.SplitDisconnected2D, ...
+    'IoUThreshold',        BatchOpt.IoUThreshold{1}, ...
+    'IoAThreshold',        BatchOpt.IoAThreshold, ...
+    'MinOverlapPixels',    BatchOpt.MinOverlapPixels{1}, ...
+    'AbsOverlapPixels',    BatchOpt.AbsOverlapPixels{1}, ...
+    'ZLookback',           BatchOpt.ZLookback{1}, ...
+    'MinObjectVoxels',     BatchOpt.MinObjectVoxels{1}, ...
+    'MinObjectSlices',     BatchOpt.MinObjectSlices{1}, ...
+    'AbsorbFragmentVoxels', BatchOpt.AbsorbFragmentVoxels{1}, ...
+    'UseAnisotropy',       BatchOpt.UseAnisotropy, ...
+    'MaxCentroidShift',    BatchOpt.MaxCentroidShift{1}, ...
+    'CentroidLinkRadius',  BatchOpt.CentroidLinkRadius{1});
 
 notify(obj, 'UpdateGuiWidgets', core.ToggleEventData({'ribbonModel', 'checkboxes'}));
 notify(obj, 'ShowImage');

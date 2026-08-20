@@ -302,7 +302,117 @@ see [`instance_2d_plan.md`](instance_2d_plan.md).
 
 ---
 
-## 3. Smaller items
+## 3. Instance scores: per-object export, and score-guided gap bridging
+
+**Status:** discussed 2026-08-19, no code written. Two related items: the export (3a) is small and
+independently useful; the stitching use (3b) is gated on a measurement that has not been run.
+
+Companion entry in [`instance_3d_plan.md`](instance_3d_plan.md) - the stitcher side of this idea is
+listed there under the same name.
+
+### Where the scores are today
+
+`segmentObjects` returns a scalar confidence per detected instance. Both stitching modes already
+hold it and both throw it away:
+
+- `mib/+deepmib/segmentBlockedImageInstances.m:50` - sorted at line 58 to decide painting order,
+  then discarded.
+- `mib/+deepmib/segmentImageInstancesIoUMerge.m:103,121` - accumulated into `detScore`; line 182
+  already computes `groupScore` (max per merged group), used for paint order at 183, then discarded.
+
+`startPredictionInstances.m` never reads `BatchOpt.P_ScoreFiles` and never creates
+`PredictionImages/ResultsScores`. The semantic paths do (`startPrediction2D.m:38`,
+`startPrediction3D.m:38`, `startPredictionBlockedImage.m:67` -> `processBlocksBlockedImage` ->
+`deepmib.segmentBlockedImage`). `updateWidgets.m:89` does **not** disable the dropdown for
+`2D Instance`, so it is live but ignored: selecting a score format silently produces nothing. That
+is a plain UI bug and is worth fixing whatever happens to the rest of this section.
+
+### 3a. Export per-object scores
+
+Semantic scores are an `[h w numClasses]` probability image, which is why the AM / mibImg / MAT
+image containers make sense there. An instance score is one scalar per object - typically tens to a
+couple of hundred per slice - so an image is the wrong container.
+
+Proposed output: a table next to each model,
+`PredictionImages/ResultsScores/Score_<name>.csv`, with columns
+`SliceIndex, InstanceIndex, Score, Area, CentroidX, CentroidY` (plus bounding box), where
+`InstanceIndex` matches the relabelled `1..N` values written into the `.model`, so the two can be
+joined directly. Needs the per-tile functions to return the surviving scores alongside the labels,
+and `startPredictionInstances` to collect and write them. For `IoU merge` the merged score is
+`groupScore`, already computed; for `Centroid in core` it is the score of the emitting detection.
+
+Uses that depend on nothing else being built: filtering weak detections before stitching, sorting
+objects for manual review, and informing `absOverlapPixels` / threshold choices.
+
+### 3b. Score-guided gap bridging, and why a dense score map is the wrong tool
+
+Motivating idea: when `utils.stitchInstances2Dto3D` sees a strong overlap across a one-slice gap,
+consult a score map on the skipped slice to decide whether the gap is a dropout or a genuine object
+end.
+
+**A dense score map cannot answer that**, for a reason that is not size:
+
+- Size is not the objection. A score map needs one channel, not one per object: paint each object's
+  pixels with `round(score*255)`. Touching objects need no distinct indices, because identity is not
+  being recovered from the map - it is already in the `.model`. That is ~150 MB uint8 for a
+  1078x1380x101 stack, and highly compressible because it is piecewise constant.
+- **It is empty exactly where the query is.** A map painted from accepted detections is zero on the
+  gap slice by construction, because the gap exists precisely because nothing there cleared the
+  threshold. The lookup would confirm the gap every time.
+- **SOLOv2 offers no fallback.** Unlike semantic segmentation there is no per-pixel objectness
+  output; `segmentObjects` returns logical masks plus scalar scores, and the pre-binarisation mask
+  logits stay inside MathWorks' implementation.
+
+**What does carry the signal: sub-threshold detections.** A dropout slice usually has a detection
+sitting at ~0.25-0.45 that `Threshold = 0.5` discarded. So the mechanism is a two-threshold
+(hysteresis) scheme, the instance-level analogue of Canny:
+
+1. predict at a low recall threshold; detections above the confident threshold are real, the rest
+   are **tentative**;
+2. write tentative objects into a second label layer, never into the main model, so they can never
+   become objects on their own;
+3. in the stitcher, link A(z) and B(z+2) when they overlap across the gap **and** a tentative
+   instance on z+1 overlaps both.
+
+That is direct evidence at the gap slice, it is a pure geometry test, it needs no image data at
+stitch time, and it can run off bounding boxes plus the 3a table (kilobytes) instead of a score
+volume.
+
+**Risk to respect.** Lowering the threshold feeds the false-positive problem already recorded in
+[`instance_3d_plan.md`](instance_3d_plan.md): the shared 2D indices behind the `splitDisconnected2D`
+cascade were themselves wrong 2D instances, with the prediction threshold named as a suspect.
+Tentative objects must stay quarantined as bridge evidence only, or gaps get traded for that cascade.
+
+### The measurement that gates 3b
+
+Confirm first that gaps are a real failure mode on the target data. The 3D plan's own results point
+the other way: Phase C' (centroid-NN bridging) found no benefit on the hard benchmark because the
+residual false splits were 52-810 slices apart with zero z-overlap, i.e. not gaps at all; and
+`zLookback` already bridges single-slice dropouts blindly, with nothing yet measuring whether it
+over-merges.
+
+Cheapest informative test, on the salivary-gland stack: predict twice, at threshold 0.5 and 0.3;
+then for every pair that `zLookback = 2` currently bridges, count how many have a 0.3-threshold
+detection on the skipped slice overlapping both.
+
+- High fraction -> hysteresis bridging is worth building, and `zLookback` is doing the right thing
+  for the right reason.
+- Low fraction -> the gaps are real object ends and no amount of score plumbing will help.
+
+Note that the MitoNet benchmark data is off this machine and the Phase C numbers predate the
+`splitDisconnected2D` default, so they must be re-measured before being cited either way.
+
+### Key files
+
+- Export: `mib/+controllers/@MibDeep/startPredictionInstances.m`,
+  `mib/+deepmib/segmentBlockedImageInstances.m`, `mib/+deepmib/segmentImageInstancesIoUMerge.m`;
+  dropdown gating in `mib/+controllers/@MibDeep/updateWidgets.m`.
+- Bridging: `mib/+utils/stitchInstances2Dto3D.m`, with any new stitching parameter going into
+  `mib/+utils/+dlgs/stitchInstancesSettingsDlg.m` rather than into the two callers.
+
+---
+
+## 4. Smaller items
 
 - **`T_ConvolutionPadding` for 2D Instance.** Unread by the instance path, but
   `selectArchitecture.m` disables overlapping tiles whenever it is `'valid'`, so a value left over

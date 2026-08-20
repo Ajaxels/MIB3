@@ -29,10 +29,168 @@ Two strategies:
 | `'graph'` *(default)* | undirected overlap graph across all slices (edge when a pair passes IoU **or** IoA) → connected components via union-find | splits/merges handled natively; no reverse pass needed |
 | `'hungarian'` | empanada-style: 1-to-1 IoU matching per pair (`matchpairs`) + IoA merge-in of unmatched, forward **and** reverse passes | faithful reproduction of the paper for comparison |
 
-**Options:** `method`, `iouThreshold` (0.25), `ioaThreshold` (0.50), `minOverlapPixels` (5),
-`zLookback` (1 = adjacent only), `minObjectVoxels` (0), `bidirectional` (true, hungarian only),
-`showWaitbar`, `verbose`. Returns `[labelVol, stats]` where `stats` carries
-`numInput2DObjects`, `numOutput3DObjects`, `objectVoxelCounts`, `method`, `options`.
+**Options:** `method`, `splitDisconnected2D` (true), `iouThreshold` (0.25), `ioaThreshold` (0.50),
+`minOverlapPixels` (5), `absOverlapPixels` (0), `zLookback` (1 = adjacent only), `minObjectVoxels`
+(0), `minObjectSlices` (0), `absorbFragmentVoxels` (5), `bidirectional` (true, hungarian only),
+`showWaitbar`, `verbose`. Returns `[labelVol, stats]` where `stats` carries `numInput2DObjects`,
+`numOutput3DObjects`, `objectVoxelCounts`, `objectSliceCounts`, `numAbsorbedFragments`,
+`numAbsorbedVoxels`, `method`, `options`.
+
+### `absOverlapPixels` — the ratio tests are blind to size mismatch
+
+IoU and IoA are both normalised by object area, which double-penalises a pair whose two
+cross-sections differ a lot in size. A real miss on the mitochondria stack: 3795 px on z=27 against
+1689 px on z=28, sharing **716 px** — IoU 0.150, IoA 0.424, under both defaults, so no link.
+`absOverlapPixels` adds a *sufficient* condition on the raw intersection (`inter >= N` links the
+pair regardless of the ratios). It is the mirror image of `minOverlapPixels`, which is a *necessary*
+guard; the `maxCentroidShift` gate still applies to both.
+
+Sweep on the same stack (`splitDisconnected2D` on, `minObjectSlices=1`, 460 objects at baseline):
+
+| `absOverlapPixels` | objects | largest object | the 716 px pair joined |
+|---|---|---|---|
+| 0 (off) | 460 | 4.7 % | no |
+| 300 | 458 | 4.7 % | yes |
+| 500 | 459 | 4.7 % | yes |
+| 716 | 459 | 4.7 % | yes |
+| 900+ | 460 | 4.7 % | no |
+
+The effect is local, not a cascade — the largest object is unmoved. That is expected: unlike a
+shared 2D index, an absolute-overlap link still has to be earned pair by pair. The value is in
+in-plane pixels and so is dataset-specific; there is no defensible default, hence `0` = off.
+
+### `minObjectSlices` — depth is a better noise discriminator than area
+
+`minObjectVoxels` assumes noise is *small*. It often is not: a 2D false positive can be a large,
+confident, well-formed blob that simply does not exist on the neighbouring slices.
+`minObjectSlices` removes objects occupying **N or fewer slices** (`0` = keep all, `1` = drop
+single-slice objects). It counts occupied slices rather than the first-to-last span, so an object
+bridged by `zLookback` across a dropout is judged on the slices it is actually on.
+
+Measured on the same 1078×1380×101 mitochondria stack (`splitDisconnected2D` on, no other cleanup):
+
+| `minObjectSlices` | objects | labelled voxels kept |
+|---|---|---|
+| 0 | 1481 | 100 % |
+| 1 | 460 | 99.0 % |
+| 2 | 360 | 98.2 % |
+| 3 | 310 | 97.2 % |
+| 5 | 268 | 95.7 % |
+
+The 1021 single-slice objects had a median size of 4 voxels but a **maximum of 2415**, while genuine
+multi-slice objects went down to 16 voxels. Setting `minObjectVoxels = 2415` to catch that one blob
+would have deleted 180 real objects — the two thresholds are not substitutes.
+
+### `absorbFragmentVoxels` - dust is a voxel problem, not a linking problem
+
+An object smaller than `minOverlapPixels` can never reach the guard, whatever it overlaps: a 2-voxel
+speck has at most a 2 px intersection, so the pair is rejected before IoU or IoA is consulted (its
+IoA would be 1.00 — full containment). Such specks therefore survive stitching as unlinkable
+objects, and because `splitDisconnected2D` correctly splits a stray blob off its index, there are a
+lot of them. On the mitochondria stack, **545 of 1481 objects (37 %) are under 5 voxels**, while
+accounting for 0.0175 % of the labelled voxels. Classified by their in-plane surroundings:
+
+| where the speck sits | count |
+|---|---|
+| fully enclosed by one object (a hole punched in it) | 78 |
+| touching one object plus background (a rim nibble) | 304 |
+| touching several objects | 1 |
+| free-floating in background | 162 |
+
+**Relaxing the guard is the wrong fix, and this was measured, not assumed.** Both `minOverlapPixels
+= 1` and a prototype "full containment bypasses the guard" rule absorb the dust *and* fuse the same
+four pairs of large objects. The mechanism, traced on one of them: a 2-voxel speck on z=10 lies over
+object A (8503 voxels, z=1..9) and under object B (66315 voxels, z=1..32), so linking it to both
+welds A and B into one 74818-voxel object. It is the `splitDisconnected2D` cascade in miniature - a
+speck is a terrible node to route a 3D chain through.
+
+`absorbFragmentVoxels` instead runs **after** the union-find, as a voxel operation: each
+(fragment, slice) group is given to the majority label among its 8-neighbours *on that slice*,
+counting only objects that are not themselves fragments (so absorption cannot chain). Nothing is
+unioned, so nothing can weld. A fragment with no qualifying neighbour keeps its voxels and is left
+for `minObjectVoxels` / `minObjectSlices`.
+
+Same stack, `absorbFragmentVoxels` alone:
+
+| value | objects | fragments absorbed | voxels moved | largest object |
+|---|---|---|---|---|
+| 0 (off) | 1481 | - | - | 4.62 % |
+| 2 | 1180 | 301 | 504 | 4.62 % |
+| 4 | 1098 | 383 | 801 | 4.62 % |
+| **5 (default)** | **1094** | **387** | **821** | 4.62 % |
+| 10 | 1085 | 396 | 886 | 4.62 % |
+
+**Default is `5`, deliberately equal to `minOverlapPixels`.** That is not a tuned number: an object
+of fewer voxels than `minOverlapPixels` cannot produce a large enough intersection to be linked on
+any slice pair, so the default absorbs exactly the objects the linker is structurally unable to
+reach and nothing else. It is the only one of the cleanup parameters that is on out of the box,
+because unlike the two delete thresholds it cannot remove anything - it moves voxels between
+objects. Above `minOverlapPixels` the value becomes a judgement about what counts as noise, which
+is why the curve keeps improving slowly but the default stops there.
+
+At `4`, **zero** groups fuse two objects of 5 voxels or more (against 4 such fusions for
+`minOverlapPixels = 1`), the voxel support is bit-identical, and the largest object does not move.
+Cost is ~0.3 s on that stack. Combined with the recommended cleanup, `absorbFragmentVoxels` +
+`minObjectSlices = 1` gives the same 460 objects as `minObjectSlices = 1` alone but keeps ~800 more
+voxels - the holes are filled rather than punched out.
+
+### `splitDisconnected2D` — why a node is a blob, not an index
+
+A node is one **connected component** of a per-slice index, not the index itself. 2D instance
+predictors routinely give a single index to several spatially separate blobs (a SOLOv2 mask head
+firing at more than one location; a tile merge fusing two detections). Keyed on the index alone,
+such a label is an unconditional weld between all of its blobs' 3D chains — no threshold can
+reject it, because the pairing never enters the IoU/IoA test in the first place. The welds then
+chain transitively, and a small fraction of them collapses most of the stack into one object.
+
+Measured on a real 1078×1380×101 salivary-gland mitochondria stack (2D SOLOv2 prediction, 7385
+per-slice indices covering 9746 blobs, so ~24 % of blobs shared an index):
+
+| `splitDisconnected2D` | 2D nodes | 3D objects | largest object |
+|---|---|---|---|
+| `false` (index-keyed, pre-2026-08 behaviour) | 7385 | 354 | **76.9 % of all labelled voxels** |
+| `true` (default) | 9746 | 1481 | 4.6 % |
+
+Cost is one `bwconncomp` per label, cropped to its bounding box: +1.8 s on that stack (2.2 s → 4.0 s).
+
+The trade going the other way is small: a genuine instance the network split into two blobs on one
+slice becomes two nodes, but they rejoin through their shared neighbour on the adjacent slice
+whenever the object really is 3D-connected. `false` is kept for inputs whose indices are trusted.
+
+## Where the settings dialog lives
+
+The utility has two entry points - `MibModel.stitchModelInstances` (active labels layer) and
+`MibDeep.mergeInstancesTo3D` (predicted `*.model` files on disk). They differ in everything around
+the call (input, output, undo, batch support, guards) but presented the *same* settings dialog
+(12 fields at the time, 13 now), duplicated line for line. Adding a parameter meant editing two
+prompt lists and renumbering `answer{n}` in both, with nothing to catch a mismatched index.
+
+That dialog is now a single function, `utils.dlgs.stitchInstancesSettingsDlg`, returning both a
+ready `stitchOptions` struct and a `values` struct of raw widget values keyed by parameter name.
+The one real difference between the callers is handled by `dlgOptions.anisotropyMode`:
+
+| mode | widget | who uses it | `anisotropyZ` |
+|---|---|---|---|
+| `'checkbox'` | yes/no toggle | `MibModel` - has a dataset | left unset; the caller derives it from `pixSize.z / pixSize.x` |
+| `'ratio'` | numeric spinner | `MibDeep` - raw prediction images have no pixel size | set from the entered ratio when > 1 |
+
+`MibModel` uses only the `values` output and rebuilds its options from `BatchOpt`, so the batch path
+(which never opens the dialog) goes through exactly the same code as before.
+
+Two conveniences for parameter trials, both added because a run is otherwise unreproducible from the
+log and every trial means re-entering a dozen fields:
+
+- **Console echo.** On acceptance the dialog prints one line naming every option it is passing.
+  It is built by walking the returned `stitchOptions` struct, not from a hand-written list, so a new
+  parameter appears without a second edit. Disabled gates are absent from the line rather than
+  printed as zero - that is what actually reaches the utility.
+- **Per-session memory.** The dialog itself stays stateless; the callers store the returned `values`
+  in `MibModel.sessionSettings.stitchModelInstances` / `.mergeInstancesTo3D` and hand it back as
+  `defaults` next time. Neither key is preseeded in `utils.defaults.generateSessionSettings` - the
+  same convention already used for `sessionSettings.stitching`, so the defaults live in one place
+  and cannot drift. `MibModel` validates a restored value against its own `BatchOpt` limits before
+  applying it (the batch path can consume it without the dialog ever running); the shared dialog
+  independently clamps any seeded numeric into the widget's range.
 
 ## Critique of the source spec (and what changed here)
 

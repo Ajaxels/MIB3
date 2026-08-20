@@ -314,6 +314,239 @@ classdef StitchInstances2Dto3DTest < matlab.unittest.TestCase
                 'mutual-NN must recover both tubes without fusing them');
         end
 
+        function absOverlapPixelsLinksLargeAgainstSmall(testCase)
+            % Reproduces a real miss: a wide cross-section on z=1 meeting a
+            % much narrower one on z=2. Both ratios are dragged down by the
+            % size difference (IoU ~0.15, IoA ~0.42, against defaults of 0.25
+            % and 0.50) even though the two share hundreds of pixels.
+            V = zeros(120, 120, 2, 'uint16');
+            V(11:70,  11:74, 1) = 5;    % 60 x 64 = 3840 px
+            V(56:95,  11:66, 2) = 8;    % 40 x 56 = 2240 px, overlaps rows 56:70
+            shared = 15 * 56;           % 840 px -> IoU 0.160, IoA 0.375
+
+            [~, ratiosOnly] = utils.stitchInstances2Dto3D(V);
+            testCase.verifyEqual(ratiosOnly.numOutput3DObjects, 2, ...
+                'IoU/IoA are expected to miss this pair - that is the point of the test');
+
+            [~, withAbs] = utils.stitchInstances2Dto3D(V, ...
+                struct('absOverlapPixels', shared));
+            testCase.verifyEqual(withAbs.numOutput3DObjects, 1, ...
+                'an absolute overlap at the threshold must link the pair');
+
+            [~, tooHigh] = utils.stitchInstances2Dto3D(V, ...
+                struct('absOverlapPixels', shared + 1));
+            testCase.verifyEqual(tooHigh.numOutput3DObjects, 2, ...
+                'one pixel above the shared area must not link');
+        end
+
+        function absOverlapPixelsStillObeysCentroidGate(testCase)
+            % The absolute-overlap link is a sufficient condition on the ratio
+            % tests, not an override of the guards: maxCentroidShift must still
+            % be able to veto it.
+            V = zeros(120, 120, 2, 'uint16');
+            V(11:70,  11:74, 1) = 5;
+            V(56:95,  11:66, 2) = 8;
+            opts = struct('absOverlapPixels', 800);
+
+            [~, gateOff] = utils.stitchInstances2Dto3D(V, opts);
+            opts.maxCentroidShift = 5;   % the centroids are ~35 px apart
+            [~, gateOn] = utils.stitchInstances2Dto3D(V, opts);
+
+            testCase.verifyEqual(gateOff.numOutput3DObjects, 1);
+            testCase.verifyEqual(gateOn.numOutput3DObjects, 2, ...
+                'the centroid gate must still veto an absolute-overlap link');
+        end
+
+        function minObjectSlicesRemovesShallowObjects(testCase)
+            % A real object spanning the stack, plus two false detections that
+            % are LARGER in-plane but live on 1 and 2 slices. minObjectVoxels
+            % cannot separate them (the noise outweighs the signal); the slice
+            % threshold can, and its levels must be monotone.
+            H = 60; W = 90; Z = 6;
+            V = zeros(H, W, Z, 'uint16');
+            V(5:14,  5:14,  :)   = 1;    % real: 10x10 over 6 slices
+            V(5:24,  30:49, 3)   = 2;    % noise: 20x20 on one slice
+            V(5:24,  60:79, 4:5) = 3;    % noise: 20x20 on two slices
+
+            [~, keepAll] = utils.stitchInstances2Dto3D(V, struct('minObjectSlices', 0));
+            [~, dropOne] = utils.stitchInstances2Dto3D(V, struct('minObjectSlices', 1));
+            [~, dropTwo] = utils.stitchInstances2Dto3D(V, struct('minObjectSlices', 2));
+            testCase.verifyEqual(keepAll.numOutput3DObjects, 3);
+            testCase.verifyEqual(dropOne.numOutput3DObjects, 2, ...
+                'the single-slice detection must go');
+            testCase.verifyEqual(dropTwo.numOutput3DObjects, 1, ...
+                'the two-slice detection must go as well');
+
+            % the survivor is the real object, and it is the SMALLEST of the three
+            [labels, stats] = utils.stitchInstances2Dto3D(V, struct('minObjectSlices', 2));
+            testCase.verifyEqual(stats.objectVoxelCounts, 10*10*Z);
+            testCase.verifyEqual(unique(labels(labels > 0)), uint16(1));
+            testCase.verifyEqual(stats.objectSliceCounts, Z);
+        end
+
+        function minObjectSlicesCountsOccupiedSlicesNotSpan(testCase)
+            % An object bridged by zLookback over a missing slice occupies 2
+            % slices but spans 3. The threshold must count what is occupied,
+            % so minObjectSlices=2 removes it and =1 keeps it.
+            V = zeros(30, 30, 3, 'uint16');
+            V(10:20, 10:20, 1) = 4;
+            V(10:20, 10:20, 3) = 9;      % slice 2 is empty - a dropout
+
+            opts = struct('zLookback', 2);
+            [~, bridged] = utils.stitchInstances2Dto3D(V, opts);
+            testCase.verifyEqual(bridged.numOutput3DObjects, 1, ...
+                'zLookback must bridge the dropout for this test to mean anything');
+
+            opts.minObjectSlices = 1;
+            [~, keptAt1] = utils.stitchInstances2Dto3D(V, opts);
+            opts.minObjectSlices = 2;
+            [~, goneAt2] = utils.stitchInstances2Dto3D(V, opts);
+            testCase.verifyEqual(keptAt1.numOutput3DObjects, 1);
+            testCase.verifyEqual(goneAt2.numOutput3DObjects, 0);
+        end
+
+        % -----------------------------------------------------------------
+        % Disconnected 2D labels (splitDisconnected2D)
+        % -----------------------------------------------------------------
+
+        function sharedIndexDoesNotCascadeIntoOneObject(testCase)
+            % Three spatially disjoint columns. Every slice hands the same
+            % index to two of them, alternating which pair shares it, exactly
+            % as a 2D predictor does when one mask fires at several locations.
+            % Keyed on the index alone, the shared labels weld all three
+            % columns together; splitting by connected component must not.
+            H = 40; W = 100; Z = 5;
+            [xg, yg] = meshgrid(1:W, 1:H);
+            columns = {(xg-15).^2 + (yg-20).^2 <= 5^2, ...
+                       (xg-50).^2 + (yg-20).^2 <= 5^2, ...
+                       (xg-85).^2 + (yg-20).^2 <= 3^2};
+            V = zeros(H, W, Z, 'uint16');
+            for z = 1:Z
+                slice = zeros(H, W, 'uint16');
+                if mod(z, 2) == 1       % columns 1+2 share index 7
+                    slice(columns{1}) = 7;  slice(columns{2}) = 7;  slice(columns{3}) = 9;
+                else                    % columns 2+3 share index 6
+                    slice(columns{1}) = 4;  slice(columns{2}) = 6;  slice(columns{3}) = 6;
+                end
+                V(:, :, z) = slice;
+            end
+
+            [~, statsSplit] = utils.stitchInstances2Dto3D(V);   % default: on
+            testCase.verifyEqual(statsSplit.numOutput3DObjects, 3, ...
+                'each column must stay its own 3D object');
+            testCase.verifyEqual(statsSplit.numInput2DObjects, 3*Z);
+
+            [~, statsWhole] = utils.stitchInstances2Dto3D(V, ...
+                struct('splitDisconnected2D', false));
+            testCase.verifyEqual(statsWhole.numOutput3DObjects, 1, ...
+                'index-keyed nodes are expected to cascade - this is what the split fixes');
+            testCase.verifyEqual(statsWhole.numInput2DObjects, 2*Z);
+        end
+
+        function splitDisconnected2DOffKeepsOneLabelTogether(testCase)
+            % Opt-out: a single index deliberately covering two blobs stays
+            % one 3D object when the split is disabled, and becomes two when
+            % it is enabled. Documents the trade the option controls.
+            H = 40; W = 60; Z = 4;
+            V = zeros(H, W, Z, 'uint16');
+            V(10:20, 5:15,  :) = 3;
+            V(10:20, 40:50, :) = 3;
+
+            [~, statsOff] = utils.stitchInstances2Dto3D(V, ...
+                struct('splitDisconnected2D', false));
+            [~, statsOn]  = utils.stitchInstances2Dto3D(V);
+
+            testCase.verifyEqual(statsOff.numOutput3DObjects, 1);
+            testCase.verifyEqual(statsOn.numOutput3DObjects, 2);
+        end
+
+        % -----------------------------------------------------------------
+        % absorbFragmentVoxels: dust rejoins the object around it
+        % -----------------------------------------------------------------
+
+        function absorbFragmentVoxelsFillsEnclosedSpeck(testCase)
+            % The real failure this option exists for: a 2D predictor drops a
+            % couple of pixels of another index inside an object's mask.
+            % splitDisconnected2D correctly makes them their own object, but at
+            % 2 voxels they can never reach minOverlapPixels, so they survive as
+            % a hole. Absorption must hand them back and lose nothing.
+            H = 40; W = 40; Z = 5;
+            V = zeros(H, W, Z, 'uint16');
+            for z = 1:Z
+                V(10:20, 10:20, z) = 100 + z;   % scrambled per-slice index
+            end
+            V(14:15, 15, 3) = 777;              % 2 px of a foreign index inside
+
+            [~, plain] = utils.stitchInstances2Dto3D(V, struct('absorbFragmentVoxels', 0));
+            testCase.verifyEqual(plain.numOutput3DObjects, 2, ...
+                'with absorption off the speck survives as its own object');
+            testCase.verifyEqual(sort(plain.objectVoxelCounts), [2; 11*11*Z - 2]);
+            testCase.verifyEqual(plain.numAbsorbedFragments, 0);
+
+            [labels, absorbed] = utils.stitchInstances2Dto3D(V, ...
+                struct('absorbFragmentVoxels', 2));
+            testCase.verifyEqual(absorbed.numOutput3DObjects, 1, ...
+                'the speck must rejoin the object it sits inside');
+            testCase.verifyEqual(absorbed.objectVoxelCounts, 11*11*Z, ...
+                'the column must come out solid, with no hole left');
+            testCase.verifyEqual(absorbed.numAbsorbedFragments, 1);
+            testCase.verifyEqual(absorbed.numAbsorbedVoxels, 2);
+            testCase.verifyEqual(nnz(labels), nnz(V), ...
+                'absorption reassigns voxels, it must never delete any');
+        end
+
+        function absorbFragmentVoxelsDoesNotJoinObjectsAcrossZ(testCase)
+            % Why this is a voxel pass and not another link rule. A speck lying
+            % over object A on one slice and under object B on the next would,
+            % as a graph link, weld A and B into one object - which is exactly
+            % what lowering minOverlapPixels does here. Absorption decides on
+            % the fragment's own slice, so it cannot weld anything; and a
+            % fragment with no labelled neighbour is left alone.
+            H = 40; W = 40; Z = 5;
+            V = zeros(H, W, Z, 'uint16');
+            V(5:15, 5:15, 1:2) = 3;     % object A
+            V(5:15, 5:15, 4:5) = 8;     % object B, same footprint, 2 slices away
+            V(10:11, 10, 3)    = 42;    % 2 px bridging them, slice 3 otherwise empty
+
+            [~, plain] = utils.stitchInstances2Dto3D(V, struct('absorbFragmentVoxels', 0));
+            testCase.verifyEqual(plain.numOutput3DObjects, 3, ...
+                'A, B and the speck must start out as three objects');
+
+            [~, welded] = utils.stitchInstances2Dto3D(V, ...
+                struct('minOverlapPixels', 1, 'absorbFragmentVoxels', 0));
+            testCase.verifyEqual(welded.numOutput3DObjects, 1, ...
+                'relaxing the link guard is expected to weld A and B - the trap being avoided');
+
+            [~, absorbed] = utils.stitchInstances2Dto3D(V, ...
+                struct('absorbFragmentVoxels', 2));
+            testCase.verifyEqual(absorbed.numOutput3DObjects, 3, ...
+                'absorption must leave A and B apart, and the neighbourless speck alone');
+            testCase.verifyEqual(absorbed.numAbsorbedFragments, 0);
+        end
+
+        function absorbFragmentVoxelsWillNotAbsorbIntoAnotherFragment(testCase)
+            % A fragment joins the object around it only when that object
+            % survives on its own; two specks touching each other absorb
+            % neither, so absorption cannot chain from dust to dust.
+            H = 40; W = 40; Z = 3;
+            V = zeros(H, W, Z, 'uint16');
+            V(5:25, 5:25, :) = 1;    % a real object
+            V(10:11, 26,  2) = 50;   % 2 px on its rim, no z-overlap with it
+            V(35, 35, 2)     = 60;   % two 1-px specks touching only each other
+            V(35, 36, 2)     = 61;
+
+            [~, plain] = utils.stitchInstances2Dto3D(V, struct('absorbFragmentVoxels', 0));
+            testCase.verifyEqual(plain.numOutput3DObjects, 4);
+
+            [~, absorbed] = utils.stitchInstances2Dto3D(V, ...
+                struct('absorbFragmentVoxels', 2));
+            testCase.verifyEqual(absorbed.numOutput3DObjects, 3, ...
+                'only the rim speck has a surviving neighbour to join');
+            testCase.verifyEqual(absorbed.numAbsorbedFragments, 1);
+            testCase.verifyEqual(absorbed.numAbsorbedVoxels, 2);
+            testCase.verifyEqual(max(absorbed.objectVoxelCounts), 21*21*Z + 2);
+        end
+
         % -----------------------------------------------------------------
         % Metric helper self-check (guards the objective function itself)
         % -----------------------------------------------------------------

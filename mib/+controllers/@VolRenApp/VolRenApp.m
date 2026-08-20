@@ -85,6 +85,18 @@ classdef VolRenApp < handle
         % a vector of shown (true) or hidden (false) materials in the model overlay
         overlayAlpha
         % a vector with alpha values for overlay materials
+        overlayRowMaterials
+        % real material index behind each row of the model table; empty in the cycled color mode
+        overlayRowNames
+        % a cell array with names shown in the model table
+        overlayRowColors
+        % a matrix [row, R G B] with background colors of the model table
+        overlayRowMap
+        % a cell array; for each row of the model table, the ``OverlayAlphamap`` rows it controls
+        overlayMaterialsMode
+        % for models with 256 materials and more: ``'All materials'`` or ``'Selected materials'``
+        overlayMaterialsSelection
+        % a vector of material indices rendered in the ``'Selected materials'`` mode
         modelTableIndex
         % index of the selected material in the modelTable
         scalingTransform
@@ -178,6 +190,9 @@ classdef VolRenApp < handle
     end
 
     methods
+        % declaration of methods in external files
+        [overlayIdx, overlayInfo] = buildOverlayIndexVolume(obj, overlayData, overlayType)   % map an overlay layer onto the 255 color slots of volshow
+        
         function obj = VolRenApp(mibModel, varargin)
             % VOLRENAPP - Class constructor for the VolRenApp controller.
             %
@@ -241,6 +256,12 @@ classdef VolRenApp < handle
             obj.noOverlayMaterials = 0;     % number of the model overlay materials
             obj.overlayShownMaterials = [];          % vertor of shown/hidden materials of the overlay
             obj.overlayAlpha = [];        % a vector with alpha values for overlay materials
+            obj.overlayRowMaterials = [];
+            obj.overlayRowNames = {};
+            obj.overlayRowColors = zeros([0, 3]);
+            obj.overlayRowMap = {};
+            obj.overlayMaterialsMode = 'All materials';     % for models with 256 materials and more
+            obj.overlayMaterialsSelection = [];
             obj.surfList = {};  % cell array with the generated surface
             obj.surfListAlpha = []; % array of alpha values for the generated surfaces
 
@@ -268,7 +289,7 @@ classdef VolRenApp < handle
             end
             % move the window to the left hand side of the main window
             obj.view.gui = utils.moveWindowOutside(obj.view.gui, obj.mibModel.mibGUI, 'left');
-            
+
             % generate output filename for animations
             [pathstr, name] = fileparts(obj.mibModel.I{id}.image.filename);
             fn_out = fullfile(pathstr, [name '.animation']);
@@ -330,6 +351,9 @@ classdef VolRenApp < handle
             % ``'MinimumIntensityProjection'``, ``'GradientOpacity'``,
             % ``'Isosurface'``, ``'SlicePlanes'``.
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.VolRenApp.updateVolumeRenderingStyle: triggered\n');
+            end
             obj.view.handles.slicesGridLayout.Visible = 'off';
 
             switch obj.view.handles.rendererDropDown.Value
@@ -370,6 +394,9 @@ classdef VolRenApp < handle
             % Input Arguments:
             %   - **newIsovalue** - [numeric] new isovalue or gradient opacity value ``[0..1]``
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.VolRenApp.updateIsovalue: triggered\n');
+            end
             switch obj.view.handles.rendererDropDown.Value
                 case 'Isosurface'
                     obj.Settings.Volume.isosurfaceValue = newIsovalue;
@@ -476,7 +503,7 @@ classdef VolRenApp < handle
             %     - ``'menuBackgroundGradientColor'`` - update the gradient background colour
 
             if obj.mibModel.preferences.System.DeveloperMode
-                fprintf('controllers.VolRenApp.updateBackgroundColor: triggered\n');
+                fprintf('controllers.VolRenApp.updateBackgroundColor(%s): triggered\n', event.Source.Tag);
             end
             switch event.Source.Tag
                 case 'menuBackgroundColor'
@@ -517,7 +544,7 @@ classdef VolRenApp < handle
             %     - ``'colormapWhitePoint'`` - white-point adjustment value
 
             if obj.mibModel.preferences.System.DeveloperMode
-                fprintf('controllers.VolRenApp.updateColormap: triggered\n');
+                fprintf('controllers.VolRenApp.updateColormap(%s): triggered\n', event.Source.Tag);
             end
             switch event.Source.Tag
                 case 'colormapName'
@@ -637,7 +664,7 @@ classdef VolRenApp < handle
             %cameraDirection = (cameraPos - cameraTarget) / norm(cameraPos - cameraTarget)    % cameraDirection = glm::normalize(cameraPos - cameraTarget);
 
             if obj.mibModel.preferences.System.DeveloperMode
-                fprintf('controllers.VolRenApp.menuChangeView: triggered\n');
+                fprintf('controllers.VolRenApp.menuChangeView(%s): triggered\n', event.Source.Tag);
             end
             switch event.Source.Tag
                 case 'menuDefaultView'
@@ -744,6 +771,7 @@ classdef VolRenApp < handle
 
             obj.plotAlphaPlot();
             obj.updateKeyFrameTable();
+            obj.updateOverlayMaterialWidgets();
             obj.view.handles.menuBackgroundGradient.Checked = obj.Settings.Viewer.backgroundGradient;
 
             obj.childControllers{1}.view.handles.statusText.Text = sprintf('CameraPosition: %.3f x %.3f x %.3f --- CameraUpVector: %.3f x %.3f x %.3f --- CameraTarget: %.3f x %.3f x %.3f --- CameraZoom: %f', ...
@@ -789,6 +817,9 @@ classdef VolRenApp < handle
             % Input Arguments:
             %   - **posIndex** *(optional)* - [numeric] insertion position; ``1`` inserts at the beginning
             %
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.VolRenApp.addAnimationKeyFrame: triggered\n');
+            end
             if nargin < 2
                 if ~isfield(obj.animationPath, 'CameraPosition')
                     posIndex = 1;
@@ -985,6 +1016,9 @@ classdef VolRenApp < handle
             %   - **noFrames** *(optional)* - [numeric] number of interpolated frames
             %     (default: ``obj.Settings.Animation.noFrames``)
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.VolRenApp.previewAnimation: triggered\n');
+            end
             if nargin < 2; noFrames = obj.Settings.Animation.noFrames; end
             if ~isfield(obj.animationPath, 'CameraPosition'); return; end
 
@@ -1112,6 +1146,9 @@ classdef VolRenApp < handle
             % Input Arguments:
             %   - **noFrames** - [numeric] new frame count stored in ``obj.Settings.Animation.noFrames``
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.VolRenApp.updateAnimationNumberOfFrames: triggered\n');
+            end
             obj.Settings.Animation.noFrames = noFrames;
         end
 
@@ -1126,32 +1163,55 @@ classdef VolRenApp < handle
             % Input Arguments:
             %   - **event** - [event] UI callback event; ``event.Source.Tag`` selects the action:
             %
-            %     - ``'modelTable_cm_generateSurface'`` - generate a surface mesh from the selected material
+            %     - ``'modelTable_cm_generateSurface'`` - generate a surface mesh from the selected rows
+            %     - ``'modelTable_cm_generateSurfaceByIndex'`` - ask for a material index and generate
+            %       its surface; the only option in the cycled color mode, where a table row stands
+            %       for 255 materials rather than one
+            %     - ``'modelTable_cm_removeMaterials'`` - drop the selected rows from the
+            %       ``'Selected materials'`` list and refresh the overlay
             if obj.mibModel.preferences.System.DeveloperMode
-                fprintf('controllers.VolRenApp.modelTable_cm_Callback: triggered\n');
+                fprintf('controllers.VolRenApp.modelTable_cm_Callback(%s): triggered\n', event.Source.Tag);
             end
-            id = obj.mibModel.getActiveId();
             switch event.Source.Tag
                 case 'modelTable_cm_generateSurface'
-                    materialId = obj.modelTableIndex;     % get index of the selected material
-                    wb = waitbar(0, sprintf('Generating surfaces\nPlease wait...'));
-            
-                    for matID = 1:numel(materialId)
-                        waitbar(matID/numel(materialId), wb); 
-                        matIndex = materialId(matID);
-                        mask = (obj.volume.OverlayData == matIndex);  % generate mask from the material
-                        surfId = numel(obj.surfList) + 1;
-                        obj.surfList{surfId} = images.ui.graphics3d.Surface(obj.viewer, ...
-                            'Color', obj.mibModel.I{id}.labels.materialColors(matIndex,:), ...
-                            'Data', mask, ...
-                            'Transformation', obj.scalingTransform, ...
-                            'Visible', true);
-                        obj.surfList{surfId}.UserData.Name = cell2mat(obj.view.handles.modelTable.Data(matIndex,2));
-                        obj.surfListAlpha(surfId) = 1;
-                        obj.surfList{surfId}.Alpha = 1;
+                    rowIds = obj.modelTableIndex;     % get indices of the selected rows
+                    if isempty(rowIds); return; end
+                    if isempty(obj.overlayRowMaterials)
+                        dlgOpt.MsgBoxOnly  = true;
+                        dlgOpt.Icon        = 'puffin_warning';
+                        dlgOpt.HeaderLines = 2;
+                        utils.dlgs.inputUniversalDlg(obj.view.gui, 'A table row stands for 255 materials in this mode!', ...
+                            {''}, {'Use "Generate surface by index..." or switch to the Selected materials mode'}, ...
+                            'Cycled colors', dlgOpt);
+                        return;
                     end
-                    obj.updateSurfaceTable();
+
+                    wb = uiprogressdlg(obj.view.gui, 'Message', sprintf('Generating surfaces\nPlease wait...'), ...
+                        'Title', 'Generate surfaces', 'Cancelable', 'on');
+                    for rowIndex = 1:numel(rowIds)
+                        if wb.CancelRequested; break; end
+                        wb.Value = rowIndex/numel(rowIds);
+                        rowId = rowIds(rowIndex);
+                        mask = (obj.volume.OverlayData == rowId);   % generate mask from the material
+                        obj.addSurfaceFromMask(mask, obj.overlayRowNames{rowId}, obj.overlayRowColors(rowId, :));
+                    end
+                    cancelled = wb.CancelRequested;
                     delete(wb);
+                    obj.updateSurfaceTable();
+                    if cancelled
+                        fprintf('controllers.VolRenApp: surface generation cancelled, %d of %d surfaces were made\n', ...
+                            rowIndex-1, numel(rowIds));
+                    end
+                case 'modelTable_cm_generateSurfaceByIndex'
+                    obj.generateSurfaceByMaterialIndex();
+                case 'modelTable_cm_removeMaterials'
+                    rowIds = obj.modelTableIndex;
+                    if isempty(rowIds) || isempty(obj.overlayRowMaterials); return; end
+                    if ~strcmp(obj.overlayMaterialsMode, 'Selected materials'); return; end
+                    obj.overlayMaterialsSelection = setdiff(obj.overlayMaterialsSelection, obj.overlayRowMaterials(rowIds));
+                    obj.view.handles.overlayMaterialsList.Value = obj.materialsSelectionAsText();
+                    obj.modelTableIndex = [];
+                    obj.modelUpdateOverlay();
             end
         end
 
@@ -1169,7 +1229,7 @@ classdef VolRenApp < handle
             %     - ``'surfaceTable_cm_saveSurface'`` - save the selected surface to an STL file
             %     - ``'surfaceTable_cm_removeSurface'`` - delete the selected surface from the viewer
             if obj.mibModel.preferences.System.DeveloperMode
-                fprintf('controllers.VolRenApp.surfaceTable_cm_Callback: triggered\n');
+                fprintf('controllers.VolRenApp.surfaceTable_cm_Callback(%s): triggered\n', event.Source.Tag);
             end
             id = obj.mibModel.getActiveId();
             switch event.Source.Tag
@@ -1238,7 +1298,7 @@ classdef VolRenApp < handle
             %     - ``'keyFrameTable_cm_removeKeyFrame'`` - remove the selected key frame
 
             if obj.mibModel.preferences.System.DeveloperMode
-                fprintf('controllers.VolRenApp.keyFrameTable_cm_Callback: triggered\n');
+                fprintf('controllers.VolRenApp.keyFrameTable_cm_Callback(%s): triggered\n', event.Source.Tag);
             end
             switch event.Source.Tag
                 case 'keyFrameTable_cm_jumpToKeyFrame'
@@ -1282,7 +1342,7 @@ classdef VolRenApp < handle
             %     - ``'invertAlphaCurve'`` - invert the alpha curve along the x-axis
 
             if obj.mibModel.preferences.System.DeveloperMode
-                fprintf('controllers.VolRenApp.alphaCurveOperations: triggered\n');
+                fprintf('controllers.VolRenApp.alphaCurveOperations(%s): triggered\n', event.Source.Tag);
             end
             switch event.Source.Tag
                 case 'resetAlphaCurve'      % reset the alpha curve
@@ -1405,6 +1465,12 @@ classdef VolRenApp < handle
             %
             %      imgOut = obj.grabFrame(width, height)
             %      imgOut = obj.grabFrame(width, height, options)
+            %
+            % The ``getframe`` call below costs close to a second because the pixels have to
+            % be read back out of the WebGL canvas that ``viewer3d`` renders into; the volume
+            % rendering itself takes about 20 ms. That is a MATLAB limitation with no faster
+            % public API - see ``development/notes/volren_movie_capture_speed.md`` for the
+            % measurements and the routes already ruled out, before trying to optimise it.
             %
             % Input Arguments:
             %   - **width** - [numeric] snapshot width in pixels; ``[]`` uses the current panel width
@@ -1557,6 +1623,9 @@ classdef VolRenApp < handle
             %     - ``'spin'`` - rotate camera around the selected axis
             %     - ``'animation'`` - animate the scene using stored key frames
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.VolRenApp.makeAnimation(%s): triggered\n', mode);
+            end
             options.mode = mode;    % mode for movie make
             utils.startController(obj, 'controllers.MakeMovie', obj, options);
         end
@@ -1586,6 +1655,10 @@ classdef VolRenApp < handle
             %
             % For **Standard** datasets the original user-entered downsample-factor dialog is used.
             %
+            % For models with **256 materials and more** the material dropdown is replaced by a
+            % spinner for the material index, because ``labels.materialNames`` only keeps two
+            % renameable slots for those model types and cannot list the materials.
+            %
             % Input Arguments:
             %   - **volumeType** *(optional)* - [char] volume layer to load (default: ``'image'``):
             %
@@ -1611,14 +1684,29 @@ classdef VolRenApp < handle
 
             isBigData = obj.mibModel.I{id}.datasetType(1) == 'B';
 
+            % models with 256 materials and more keep only two renameable slots in
+            % labels.materialNames, so they get a spinner for the material index
+            % instead of a dropdown listing every material
+            isLargeModel = strcmp(volumeType, 'labels') && obj.mibModel.I{id}.labels.maxMaterials >= 256;
+
+            colorChannelPrompt = 'Select color channel:';
             if strcmp(volumeType, 'image')
                 colorChannelList = arrayfun(@(x) sprintf('ColCh %d', x), 1:obj.mibModel.I{id}.image.colors, 'UniformOutput', false);
                 colorChannelList = [{'Selected'}, {'All'}, colorChannelList];
+                colorChannelEntry = [colorChannelList, colorChannel+1];
+            elseif isLargeModel
+                maxMaterials = obj.mibModel.I{id}.labels.maxMaterials;
+                defMaterialIndex = max(0, obj.mibModel.I{id}.getSelectedMaterialIndex());
+                colorChannelPrompt = sprintf('Material index (0 - all materials, max %d):', maxMaterials);
+                colorChannelEntry = struct('Spinner', true, 'Value', defMaterialIndex, ...
+                    'Limits', [0 maxMaterials], 'Step', 1, 'Round', true);
             elseif strcmp(volumeType, 'labels')
                 colorChannelList = [{'All materials'}, obj.mibModel.I{id}.labels.materialNames'];
+                colorChannelPrompt = 'Select material:';
+                colorChannelEntry = [colorChannelList, colorChannel+1];
             else
                 colorChannelList = {'Selected'};
-                colorChannel = 0;
+                colorChannelEntry = [colorChannelList, 1];
             end
 
             dlgOptions.HeaderLines = 2;
@@ -1660,8 +1748,8 @@ classdef VolRenApp < handle
                     defLevel = obj.pyramidLevel;
                 end
 
-                prompts = {'Select pyramid level to render:'; 'Select color channel:'};
-                defAns = {[levelList, defLevel]; [colorChannelList, colorChannel+1]};
+                prompts = {'Select pyramid level to render:'; colorChannelPrompt};
+                defAns = {[levelList, defLevel]; colorChannelEntry};
                 dlgTitle = 'Pyramid level and color channel';
                 header = 'Select a pyramid level (resolution) and a color channel (or material) to render in 3D';
                 [answer, selIndices] = utils.dlgs.inputUniversalDlg(obj.view.gui, header, prompts, defAns, dlgTitle, dlgOptions);
@@ -1677,12 +1765,16 @@ classdef VolRenApp < handle
                     elseif colorChannel == 0    % take all color channels
                         colorChannel = NaN;
                     end
+                elseif isLargeModel
+                    colorChannel = answer{2};   % spinner with the material index
+                    if colorChannel == 0; colorChannel = NaN; end   % take all materials
                 else
                     colorChannel = selIndices(2) - 1; % All materials, mat1, mat2...
+                    if colorChannel == 0; colorChannel = NaN; end   % take all materials of the layer
                 end
             else
-                prompts = {sprintf('Would you like to downsample the volume?\nVolume dimensions: %d x %d x %d\n\nDownsample factor (times):', width, height, depth); sprintf('or\nnew width in pixels:'); 'Select color channel:'};
-                defAns = {num2str(obj.volumeScaleFactor); num2str(width); [colorChannelList, colorChannel+1]};
+                prompts = {sprintf('Would you like to downsample the volume?\nVolume dimensions: %d x %d x %d\n\nDownsample factor (times):', width, height, depth); sprintf('or\nnew width in pixels:'); colorChannelPrompt};
+                defAns = {num2str(obj.volumeScaleFactor); num2str(width); colorChannelEntry};
                 dlgTitle = 'Color channel and downsample';
                 header = 'Select color channel (or material) to render and possibly downsample the dataset to improve performance';
                 [answer, selIndices] = utils.dlgs.inputUniversalDlg(obj.view.gui, header, prompts, defAns, dlgTitle, dlgOptions);
@@ -1695,8 +1787,12 @@ classdef VolRenApp < handle
                     elseif colorChannel == 0
                         colorChannel = NaN; %take all color channel
                     end
+                elseif isLargeModel
+                    colorChannel = answer{3};   % spinner with the material index
+                    if colorChannel == 0; colorChannel = NaN; end   % take all materials
                 else
                     colorChannel = selIndices(3) - 1; % All materials, mat1, mat2...
+                    if colorChannel == 0; colorChannel = NaN; end   % take all materials of the layer
                 end
 
                 if str2double(answer{1}) == 1
@@ -2111,6 +2207,11 @@ classdef VolRenApp < handle
             % the rendered volume.  For **Standard** datasets the same downsample path as
             % ``grabVolume`` is used (``obj.volumeScaleFactor`` resize via ``imresize3``).
             %
+            % The fetched layer is passed through :func:`buildOverlayIndexVolume`, which packs it
+            % into the 255 colour slots that ``volshow`` provides. That is what makes models with
+            % 65535 or 4294967295 materials renderable: they are either cycled through 255 colours
+            % or reduced to the material indices listed in the ``overlayMaterialsList`` widget.
+            %
             % Input Arguments:
             %   - **overlayType** *(optional)* - [char] overlay layer type:
             %
@@ -2122,23 +2223,20 @@ classdef VolRenApp < handle
 
             if nargin < 3; materialId = NaN; end    % get all materials
             if nargin < 2; overlayType = obj.view.handles.overlaySourceDropDown.Value; end    % get all materials
+
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.VolRenApp.modelUpdateOverlay(%s): triggered\n', overlayType);
+            end
             obj.overlayMaterialId = materialId;     % remember for the live overlay refresh
             id = obj.mibModel.getActiveId();
             isBigData = obj.mibModel.I{id}.datasetType(1) == 'B';
             dataset = obj.mibModel.I{id};
             existStatus = dataset.enableSelection;
-            obj.noOverlayMaterials = 1;
             switch overlayType
                 case 'labels'
-                    % get number of materials
-                    obj.noOverlayMaterials = numel(dataset.labels.materialNames);
                     existStatus = dataset.modelExist;
-                    overlayColormap = [0, 0, 0; dataset.labels.materialColors(1:obj.noOverlayMaterials,:)];
                 case 'mask'
                     existStatus = dataset.maskExist;
-                    overlayColormap = [0, 0, 0; obj.mibModel.preferences.Colors.MaskColor];
-                case 'selection'
-                    overlayColormap = [0, 0, 0; obj.mibModel.preferences.Colors.SelectionColor];
             end
             if existStatus == 0
                 dlgOpt.MsgBoxOnly  = true;
@@ -2172,29 +2270,329 @@ classdef VolRenApp < handle
             % add one extra slice for single images
             if imgD < 2; overlay = repmat(overlay, [1 1 2]); end
 
+            % pack the layer into the 255 color slots available in volshow
+            [overlayIdx, overlayInfo] = obj.buildOverlayIndexVolume(overlay, overlayType);
+            obj.overlayRowMaterials = overlayInfo.rowMaterials;
+            obj.overlayRowNames = overlayInfo.rowNames;
+            obj.overlayRowColors = overlayInfo.rowColors;
+            obj.overlayRowMap = overlayInfo.rowMap;
+            obj.noOverlayMaterials = numel(overlayInfo.rowNames);
+            obj.overlayAlpha = ones([obj.noOverlayMaterials, 1]);
+            obj.overlayShownMaterials = true([obj.noOverlayMaterials, 1]);
+            obj.view.handles.modelHideAllCheckBox.Value = false;   % a fresh overlay starts visible
+
             % update volume
-            obj.volume.OverlayData = overlay;
-            
-            % https://se.mathworks.com/help/releases/R2024b/images/ref/images.ui.graphics.image-properties.html?searchHighlight=OverlayDisplayRange&s_tid=doc_srchtitle#mw_1bf93e21-15d7-4716-93b7-d0b98195db15
-            % a new property at least in R2024b which should be set to
-            % 'data-range' or 'manual' with obj.volume.OverlayDisplayRange = [0 numberOfmaterials]
-            % if isprop(obj.volume, 'OverlayDisplayRangeMode') 
-            %     if obj.mibModel.matlabVersion <= 24.1
-            %         obj.volume.OverlayDisplayRangeMode = 'manual';
-            %         obj.volume.OverlayDisplayRange = [0 obj.noOverlayMaterials];
-            %     else
-                     obj.volume.OverlayDisplayRangeMode = 'data-range'; 
-            %     end
-            % end
-            
-            obj.volume.OverlayAlphamap = [0 ones([1, obj.noOverlayMaterials])];
-            obj.volume.OverlayColormap = overlayColormap;
+            obj.volume.OverlayData = overlayIdx;
+            obj.volume.OverlayColormap = overlayInfo.colormap;
+
+            % MATLAB keeps the overlay colormap in a fixed 256-entry table, so a manual
+            % display range of [0 255] is what makes index N land on colormap row N+1.
+            % With 'data-range' the mapping would depend on the labels present in the
+            % volume and every material would shift color as soon as one is missing.
+            obj.volume.OverlayDisplayRangeMode = 'manual';
+            obj.volume.OverlayDisplayRange = [0 255];
             obj.volume.OverlayThreshold = 0.0001;
-            
+            obj.applyOverlayAlphamap();
+
             % update rendering style
             obj.volume.OverlayRenderingStyle = obj.view.handles.overlayRenderingStyle.Value; % LabelOverlay, VolumeOverlay, GradientOverlay
-            obj.overlayShownMaterials = logical(ones([obj.noOverlayMaterials, 1]));
             obj.updateModelTable(); % update table with materials
+        end
+
+        function applyOverlayAlphamap(obj)
+            % APPLYOVERLAYALPHAMAP - Rebuild ``obj.volume.OverlayAlphamap`` from the material table state.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.applyOverlayAlphamap()
+            %
+            % The alphamap of ``volshow`` is a fixed 256-entry vector. Each row of the material
+            % table controls the entries listed in ``obj.overlayRowMap`` - one entry per material
+            % in the normal case, and all 255 color bins for the single row of the cycled mode.
+            % Row 1 is the background and always stays transparent.
+
+            if isempty(obj.volume) || ~isvalid(obj.volume); return; end
+
+            alphamap = zeros([256, 1]);
+            if ~obj.view.handles.modelHideAllCheckBox.Value
+                for rowId = 1:numel(obj.overlayRowMap)
+                    if obj.overlayShownMaterials(rowId)
+                        alphamap(obj.overlayRowMap{rowId}) = obj.overlayAlpha(rowId);
+                    end
+                end
+            end
+            alphamap(1) = 0;    % background
+            obj.volume.OverlayAlphamap = alphamap;
+        end
+
+        function updateOverlayMaterialWidgets(obj)
+            % UPDATEOVERLAYMATERIALWIDGETS - Enable the large-model overlay widgets when they apply.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.updateOverlayMaterialWidgets()
+            %
+            % The materials mode, the index list and the "Add current" button only make sense for
+            % the ``'labels'`` overlay of a model with 256 materials or more; for everything else
+            % the material table already lists every material.
+
+            if ~isfield(obj.view.handles, 'overlayMaterialsMode'); return; end
+
+            id = obj.mibModel.getActiveId();
+            isLargeModel = obj.mibModel.I{id}.labels.maxMaterials >= 256 && ...
+                strcmp(obj.view.handles.overlaySourceDropDown.Value, 'labels');
+            selectedMode = obj.overlayMaterialsMode;
+
+            obj.view.handles.overlayMaterialsMode.Enable = isLargeModel;
+            obj.view.handles.overlayMaterialsMode.Value = selectedMode;
+            obj.view.handles.overlayMaterialsList.Enable = isLargeModel && strcmp(selectedMode, 'Selected materials');
+            obj.view.handles.addCurrentMaterialButton.Enable = obj.view.handles.overlayMaterialsList.Enable;
+        end
+
+        function overlayMaterialsModeChanged(obj)
+            % OVERLAYMATERIALSMODECHANGED - Switch between the cycled and the selected materials mode.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.overlayMaterialsModeChanged()
+            %
+            % Callback target for the ``overlayMaterialsMode`` dropdown. When the
+            % ``'Selected materials'`` mode is entered with an empty list, the list is seeded from
+            % the material selected in the main MIB window so that something is rendered.
+
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.VolRenApp.overlayMaterialsModeChanged: triggered\n');
+            end
+            obj.overlayMaterialsMode = obj.view.handles.overlayMaterialsMode.Value;
+
+            if strcmp(obj.overlayMaterialsMode, 'Selected materials') && isempty(obj.overlayMaterialsSelection)
+                id = obj.mibModel.getActiveId();
+                seedIndex = obj.mibModel.I{id}.getSelectedMaterialIndex();
+                if seedIndex < 1; seedIndex = 1; end
+                obj.overlayMaterialsSelection = seedIndex;
+                obj.view.handles.overlayMaterialsList.Value = obj.materialsSelectionAsText();
+            end
+            obj.updateOverlayMaterialWidgets();
+            if ~isempty(obj.volume) && isvalid(obj.volume) && obj.noOverlayMaterials > 0
+                obj.modelUpdateOverlay();
+            end
+        end
+
+        function applyOverlayMaterialsList(obj)
+            % APPLYOVERLAYMATERIALSLIST - Parse the material index list and refresh the overlay.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.applyOverlayMaterialsList()
+            %
+            % Callback target for the ``overlayMaterialsList`` edit field. The text is parsed with
+            % ``str2num``, so indices and ranges can be mixed: ``1:10, 45, 900:5:1000``. Indices
+            % outside the model are dropped and the list is capped at the 255 colors that
+            % ``volshow`` provides.
+
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.VolRenApp.applyOverlayMaterialsList: triggered\n');
+            end
+            id = obj.mibModel.getActiveId();
+            maxMaterials = obj.mibModel.I{id}.labels.maxMaterials;
+
+            % str2num evaluates its argument, so accept digits and range syntax only
+            materialsText = obj.view.handles.overlayMaterialsList.Value;
+            if isempty(regexp(materialsText, '^[\d\s,;:]*$', 'once'))
+                selectedMaterials = [];
+            else
+                selectedMaterials = str2num(['[' materialsText ']']); %#ok<ST2NM>
+            end
+            if (isempty(selectedMaterials) && ~isempty(strtrim(materialsText))) || ...
+                    ~isnumeric(selectedMaterials) || any(~isfinite(selectedMaterials))
+                utils.dlgs.showErrorDialog(obj.view.gui, ...
+                    sprintf('Can not read the list of materials!\n\nUse indices and ranges, for example: 1:10, 45, 900'), ...
+                    'Wrong material list');
+                obj.view.handles.overlayMaterialsList.Value = obj.materialsSelectionAsText();
+                return;
+            end
+
+            selectedMaterials = unique(round(selectedMaterials(:)'));
+            selectedMaterials = selectedMaterials(selectedMaterials >= 1 & selectedMaterials <= maxMaterials);
+            if numel(selectedMaterials) > 255
+                dlgOpt.MsgBoxOnly  = true;
+                dlgOpt.Icon        = 'puffin_warning';
+                dlgOpt.HeaderLines = 2;
+                utils.dlgs.inputUniversalDlg(obj.view.gui, 'Only 255 materials can be rendered at once!', ...
+                    {''}, {sprintf('The list was cut down to the first 255 of %d materials', numel(selectedMaterials))}, ...
+                    'Too many materials', dlgOpt);
+                selectedMaterials = selectedMaterials(1:255);
+            end
+
+            obj.overlayMaterialsSelection = selectedMaterials;
+            obj.view.handles.overlayMaterialsList.Value = obj.materialsSelectionAsText();
+            if ~isempty(obj.volume) && isvalid(obj.volume) && obj.noOverlayMaterials > 0
+                obj.modelUpdateOverlay();
+            end
+        end
+
+        function addCurrentMaterialToList(obj)
+            % ADDCURRENTMATERIALTOLIST - Append the material selected in MIB to the rendered list.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.addCurrentMaterialToList()
+            %
+            % Callback target for the ``addCurrentMaterialButton`` button. For large models
+            % ``core.MibDataset.getSelectedMaterialIndex`` resolves the selected table slot to the
+            % real material index, so the index appended here is the one shown in the 2D view.
+
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.VolRenApp.addCurrentMaterialToList: triggered\n');
+            end
+            id = obj.mibModel.getActiveId();
+            materialIndex = obj.mibModel.I{id}.getSelectedMaterialIndex();
+            if materialIndex < 1
+                dlgOpt.MsgBoxOnly  = true;
+                dlgOpt.Icon        = 'puffin_warning';
+                dlgOpt.HeaderLines = 2;
+                utils.dlgs.inputUniversalDlg(obj.view.gui, 'No material is selected in the main MIB window!', ...
+                    {''}, {'Select a material in the Segmentation panel and try again'}, ...
+                    'Missing material', dlgOpt);
+                return;
+            end
+
+            obj.overlayMaterialsSelection = union(obj.overlayMaterialsSelection, materialIndex);
+            obj.view.handles.overlayMaterialsList.Value = obj.materialsSelectionAsText();
+            obj.applyOverlayMaterialsList();
+        end
+
+        function materialsText = materialsSelectionAsText(obj)
+            % MATERIALSSELECTIONASTEXT - Format ``obj.overlayMaterialsSelection`` for the edit field.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      materialsText = obj.materialsSelectionAsText()
+            %
+            % Output Arguments:
+            %   - **materialsText** - [char] comma separated list of the rendered material
+            %     indices, without spaces, for example ``1,2,3,4``
+
+            if isempty(obj.overlayMaterialsSelection)
+                materialsText = '';
+            else
+                materialsText = strjoin(arrayfun(@(x) sprintf('%d', x), ...
+                    obj.overlayMaterialsSelection(:)', 'UniformOutput', false), ',');
+            end
+        end
+
+        function generateSurfaceByMaterialIndex(obj)
+            % GENERATESURFACEBYMATERIALINDEX - Generate a surface for a material given by its index.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.generateSurfaceByMaterialIndex()
+            %
+            % Asks for a material index and refetches that material from MIB as a binary mask, so
+            % it works for any material of a large model, including those that are not currently
+            % listed in the material table.
+
+            id = obj.mibModel.getActiveId();
+            if ~obj.mibModel.I{id}.modelExist
+                utils.dlgs.showErrorDialog(obj.view.gui, 'The model is not present in MIB!', 'Missing model');
+                return;
+            end
+            maxMaterials = obj.mibModel.I{id}.labels.maxMaterials;
+            defIndex = max(1, obj.mibModel.I{id}.getSelectedMaterialIndex());
+
+            dlgOpt.Type = 'spinner';
+            dlgOpt.WindowWidth = 320;
+            materialIndex = utils.dlgs.inputSingleDlg(obj.view.gui, ...
+                sprintf('Please enter the material index\n(max. value is %d)', maxMaterials), ...
+                struct('Value', defIndex, 'Limits', [1 maxMaterials], 'Step', 1, 'Round', true), ...
+                'Generate surface by index', dlgOpt);
+            if isempty(materialIndex); return; end
+
+            wb = uiprogressdlg(obj.view.gui, 'Message', sprintf('Generating the surface\nPlease wait...'), ...
+                'Title', 'Generate surface', 'Cancelable', 'on');
+            mask = obj.fetchOverlayMask('labels', materialIndex);
+            if wb.CancelRequested || isempty(mask); delete(wb); return; end
+            wb.Value = 0.7;
+
+            palette = obj.mibModel.I{id}.labels.materialColors;
+            surfaceColor = palette(mod(materialIndex-1, size(palette, 1)) + 1, :);
+            obj.addSurfaceFromMask(mask ~= 0, sprintf('%d', materialIndex), surfaceColor);
+            delete(wb);
+            obj.updateSurfaceTable();
+        end
+
+        function addSurfaceFromMask(obj, mask, surfaceName, surfaceColor)
+            % ADDSURFACEFROMMASK - Append a surface generated from a binary mask to the viewer.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.addSurfaceFromMask(mask, surfaceName, surfaceColor)
+            %
+            % Input Arguments:
+            %   - **mask** - [logical] 3-D binary mask of the object
+            %   - **surfaceName** - [char] name shown in the surface table
+            %   - **surfaceColor** - [numeric] ``[R G B]`` color of the surface
+
+            surfId = numel(obj.surfList) + 1;
+            obj.surfList{surfId} = images.ui.graphics3d.Surface(obj.viewer, ...
+                'Color', surfaceColor, ...
+                'Data', mask, ...
+                'Transformation', obj.scalingTransform, ...
+                'Visible', true);
+            obj.surfList{surfId}.UserData.Name = surfaceName;
+            obj.surfListAlpha(surfId) = 1;
+            obj.surfList{surfId}.Alpha = 1;
+        end
+
+        function overlayMask = fetchOverlayMask(obj, overlayType, materialIndex)
+            % FETCHOVERLAYMASK - Read one material from MIB and match it to the rendered volume.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      overlayMask = obj.fetchOverlayMask(overlayType, materialIndex)
+            %
+            % Uses the same pyramid level and downsample factor as :func:`modelUpdateOverlay`, so
+            % the returned mask is aligned with ``obj.volume.Data`` voxel for voxel.
+            %
+            % Input Arguments:
+            %   - **overlayType** - [char] layer type, normally ``'labels'``
+            %   - **materialIndex** - [numeric] material index to fetch
+            %
+            % Output Arguments:
+            %   - **overlayMask** - [uint8] binary mask of the requested material
+
+            id = obj.mibModel.getActiveId();
+            isBigData = obj.mibModel.I{id}.datasetType(1) == 'B';
+
+            getOptions = struct();
+            if isBigData
+                getOptions.pyramidLevel = obj.pyramidLevel;
+                getOptions.blockModeSwitch = 0;
+            end
+            overlayMask = cell2mat(obj.mibModel.getData3D(overlayType, [], 3, materialIndex, getOptions));
+
+            if ~isBigData && obj.volumeScaleFactor ~= 1
+                rescaleOpt.imgType = '3D';
+                rescaleOpt.method = 'nearest';
+                overlayMask = utils.resizeImage3d(overlayMask, obj.volumeScaleFactor, rescaleOpt);
+            end
+
+            if ~isempty(obj.volume) && isvalid(obj.volume)
+                [volH, volW, volD] = size(obj.volume.Data);
+                [maskH, maskW, maskD] = size(overlayMask);
+                if maskH ~= volH || maskW ~= volW || maskD ~= volD
+                    overlayMask = imresize3(overlayMask, [volH, volW, volD], 'nearest');
+                end
+            end
         end
 
         function refreshOverlay(obj)
@@ -2369,11 +2767,12 @@ classdef VolRenApp < handle
             %
             %      obj.refreshOverlayData()
             %
-            % Re-reads the active overlay layer at the current pyramid level and
-            % updates only ``obj.volume.OverlayData`` - material visibility, colormap,
-            % alphamap and the material table are left untouched (unlike
-            % ``modelUpdateOverlay`` which re-initialises them). Used as the manual
-            % "Refresh overlay" action and the debounced live-update refetch.
+            % Re-reads the active overlay layer at the current pyramid level, passes it
+            % through :func:`buildOverlayIndexVolume` and updates only
+            % ``obj.volume.OverlayData`` - material visibility, colormap, alphamap and
+            % the material table are left untouched (unlike ``modelUpdateOverlay`` which
+            % re-initialises them). Used as the manual "Refresh overlay" action and the
+            % debounced live-update refetch.
 
             if isempty(obj.volume) || ~isvalid(obj.volume); return; end
             id = obj.mibModel.getActiveId();
@@ -2410,7 +2809,8 @@ classdef VolRenApp < handle
                 overlay = imresize3(overlay, [volH, volW, volD], 'nearest');
             end
 
-            obj.volume.OverlayData = overlay;
+            % the colormap and the table stay as they are, only the index volume is refreshed
+            obj.volume.OverlayData = obj.buildOverlayIndexVolume(overlay, overlayType);
         end
 
         function updateOverlayRenderingStyle(obj)
@@ -2421,6 +2821,9 @@ classdef VolRenApp < handle
             %
             %      obj.updateOverlayRenderingStyle()
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.VolRenApp.updateOverlayRenderingStyle: triggered\n');
+            end
             obj.volume.OverlayRenderingStyle = obj.view.handles.overlayRenderingStyle.Value; % LabelOverlay, VolumeOverlay, GradientOverlay
         end
 
@@ -2471,18 +2874,14 @@ classdef VolRenApp < handle
             % Input Arguments:
             %   - **hideMaterialsSwitch** *(optional)* - [logical] ``true`` to hide, ``false`` to show
             %     (default: reads ``obj.view.handles.modelHideAllCheckBox.Value``)
+
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.VolRenApp.modelHideAllMaterials: triggered\n');
+            end
             if nargin < 2; hideMaterialsSwitch = obj.view.handles.modelHideAllCheckBox.Value; end
 
-            if hideMaterialsSwitch
-                obj.volume.OverlayAlphamap = zeros([1, obj.noOverlayMaterials+1])';
-            else
-                overlapAlphaMap = obj.overlayAlpha;
-                overlapAlphaMap(~obj.overlayShownMaterials) = 0;
-                obj.volume.OverlayAlphamap = [0; overlapAlphaMap];
-            end
-            %obj.overlayShownMaterials = logical(ones([obj.noOverlayMaterials, 1]));
-            %obj.updateModelTable(); % update table with materials
-            
+            obj.view.handles.modelHideAllCheckBox.Value = hideMaterialsSwitch;
+            obj.applyOverlayAlphamap();
         end
 
 
@@ -2493,23 +2892,19 @@ classdef VolRenApp < handle
             %   .. code-block:: matlab
             %
             %      obj.updateModelTable()
-            data = cell([obj.noOverlayMaterials, 4]);
-            id = obj.mibModel.getActiveId();
-            dataset = obj.mibModel.I{id};
+            %
+            % The rows come from the mapping generated by :func:`buildOverlayIndexVolume`, so a
+            % model with 65535 materials produces either a single row (cycled colors) or one row
+            % per selected material index, never one row per material.
 
-            switch obj.view.handles.overlaySourceDropDown.Value
-                case 'labels'
-                    data(:,2) = dataset.labels.materialNames;
-                    bgColorsList = dataset.labels.materialColors(1:obj.noOverlayMaterials, :);
-                case 'selection'
-                    data(1,2) = {'selection'};
-                    bgColorsList = obj.mibModel.preferences.Colors.SelectionColor;
-                case 'mask'
-                    data(1,2) = {'mask'};
-                    bgColorsList = obj.mibModel.preferences.Colors.MaskColor;
+            removeStyle(obj.view.handles.modelTable);    % remove current styles
+            if isempty(obj.overlayRowNames)
+                obj.view.handles.modelTable.Data = [];
+                return;
             end
-            % alpha values for the overlay
-            obj.overlayAlpha = ones([obj.noOverlayMaterials, 1]);
+
+            data = cell([numel(obj.overlayRowNames), 4]);
+            data(:,2) = obj.overlayRowNames;
             data(:,3) = num2cell(obj.overlayAlpha);
             data(:,4) = num2cell(obj.overlayShownMaterials);
             obj.view.handles.modelTable.Data = data;
@@ -2517,8 +2912,7 @@ classdef VolRenApp < handle
             % Update colors for the table
             % define color styles
             origColors = [1 1 1; 0.94 0.94 0.94];
-            obj.view.handles.modelTable.BackgroundColor = bgColorsList;
-            removeStyle(obj.view.handles.modelTable);    % remove current styles
+            obj.view.handles.modelTable.BackgroundColor = obj.overlayRowColors;
             s1 = uistyle;
             s1.BackgroundColor = origColors(1, :);
             addStyle(obj.view.handles.modelTable, s1, 'column', 2:4);
@@ -2584,20 +2978,13 @@ classdef VolRenApp < handle
                     return;
                 end
                 obj.overlayAlpha(materialId) = newData;
-                obj.volume.OverlayAlphamap(materialId+1) = newData;     % obj.volume.OverlayAlphamap(1) -> background
+                obj.applyOverlayAlphamap();
             elseif indices(2) == 4  % show / hide material
                 if obj.view.handles.modelHideAllCheckBox.Value % deal with the Hide All button
                     obj.view.handles.modelHideAllCheckBox.Value = false;
-                    obj.modelHideAllMaterials(false);
                 end
-                if newData == 0     % hide material
-                    obj.volume.OverlayAlphamap(materialId+1) = 0;
-                    obj.overlayShownMaterials(materialId) = false;
-                else                % show material
-
-                    obj.volume.OverlayAlphamap(materialId+1) = obj.overlayAlpha(materialId);
-                    obj.overlayShownMaterials(materialId) = true;
-                end
+                obj.overlayShownMaterials(materialId) = logical(newData);
+                obj.applyOverlayAlphamap();
             end
         end
 
@@ -2651,7 +3038,7 @@ classdef VolRenApp < handle
             %   - **value** - [numeric] new slice index
 
             if obj.mibModel.preferences.System.DeveloperMode
-                fprintf('controllers.VolRenApp.changeSlice: triggered\n');
+                fprintf('controllers.VolRenApp.changeSlice(%s): triggered\n', sourceWidget);
             end
             if nargin == 3; obj.view.handles.(sourceWidget).Value = value;  end
 

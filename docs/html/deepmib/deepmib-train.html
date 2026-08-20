@@ -5765,12 +5765,12 @@ enabled for <code>COCO, frozen then trainable</code> and configures the schedule
 <tbody>
 <tr>
 <td>Minimum frozen share</td>
-<td>0.1</td>
+<td>0.07</td>
 <td>No switch happens before this share of the total epochs</td>
 </tr>
 <tr>
 <td>Maximum frozen share</td>
-<td>0.25</td>
+<td>0.15</td>
 <td>The switch happens no later than this</td>
 </tr>
 <tr>
@@ -5874,12 +5874,14 @@ down dramatically instead of stopping with an error.</p>
 It trains the current network on randomly generated patches for a few iterations at each mini-batch size and
 reports how many patches per second each one manages; the best value is where that number peaks. Your images are
 not used and nothing is written to the project.</p>
+<p>For instance segmentation the generated patches are given as many objects as your own labels contain, since that
+is what drives the cost - the label maps are sampled to find out, the images still are not read.</p>
 <p>You are asked which size to start from (<code>1</code> by default). Testing doubles from there and stops once throughput
 starts dropping, so raising the start value skips small sizes that cannot win and shortens the test. Large
 patches can still take a few minutes.</p>
 <p>The result table also gives <strong>epochs/hour</strong> for each size, together with an estimate of how long the configured
 <em>Max epochs</em> would take. Use it to check the run is affordable before starting it.</p>
-<p>The suggested value is an optimistic one, because a real run also holds the validation set and the augmented
+<p>The suggested value is slightly optimistic, because a real run also holds the validation set and the augmented
 patches in memory. If a run using it slows down or fails, drop to the next size down.  </p>
 </details>
 <ul>

@@ -27,9 +27,11 @@ function stats = stitchModelInstances(obj, options, wb)
 %
 % Input Arguments:
 %   - **options** *(optional)* - structure passed through to
-%     :func:`utils.stitchInstances2Dto3D` (``method``, ``iouThreshold``,
-%     ``ioaThreshold``, ``minOverlapPixels``, ``zLookback``, ``minObjectVoxels``,
-%     ``bidirectional``); missing fields take that function's defaults
+%     :func:`utils.stitchInstances2Dto3D` (``method``, ``splitDisconnected2D``,
+%     ``iouThreshold``, ``ioaThreshold``, ``minOverlapPixels``,
+%     ``absOverlapPixels``, ``zLookback``, ``minObjectVoxels``,
+%     ``minObjectSlices``, ``bidirectional``); missing fields take that
+%     function's defaults
 %   - **wb** *(optional)* - ``uiprogressdlg`` handle; pass ``[]`` to skip
 %     progress reporting
 %

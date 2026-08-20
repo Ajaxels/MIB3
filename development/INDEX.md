@@ -123,6 +123,7 @@ debugging a regression in it, or looking for a precedent pattern. One line each:
 | [cuda.txt](notes/cuda.txt) | CUDA / SAM2 "no kernel image" error and fix |
 | [mathworks_bugreport_dltrain_stop.md](notes/mathworks_bugreport_dltrain_stop.md) + [dltrainStopRepro.m](notes/dltrainStopRepro.m) | `trainSOLOV2`/`images.dltrain` ignores stop requests in its outer epoch loop — bug report draft, repro, and what DeepMIB does about it |
 | [linking_split_view_problem.txt](notes/linking_split_view_problem.txt) | Cursor repositioning issue in split view (zoom recentering) |
+| [volren_movie_capture_speed.md](notes/volren_movie_capture_speed.md) | Why 3D viewer animations record at ~1 fps — measured capture routes, what was ruled out, and why it was not "fixed" |
 | [sync_memory.md](notes/sync_memory.md) | One-time Claude memory-sync junction setup for a new workstation |
 | [doc_template.md](notes/doc_template.md) | **Legacy** Doxygen doc template — superseded by `guides/docs_api_sphinx.md` |
 | [focusExample.m](notes/focusExample.m) | Proof that `focus()` works on visible uifigures (basis of dialog focus handling) |

@@ -144,10 +144,24 @@ List of widgets for tweaking visualization settings:
 - <span class="widget widget-dropdown">Overlay source</span>: specify the layer type for visualization as a model.
 - <label class="widget widget-checkbox">Hide all</label>: toggle show/hide all selected materials in the table.
 - <span class="widget widget-button">Refresh view</span>: pull the latest segmentation into the overlay on demand. The first use initialises the overlay (same as <span class="widget widget-button">Update overlay</span>); afterwards it performs a lightweight refresh that updates only the overlay data while preserving per-material visibility and display settings. This is also the action invoked automatically by <label class="widget widget-checkbox">Live update</label>.
+- <span class="widget widget-dropdown">Materials to show</span>, <span class="widget widget-edit">material list</span> and <span class="widget widget-button">Add current</span>: choose which materials to render, see [Models with many materials](#models-with-many-materials) below.
 
 <div class="clear-float"></div>
 
-- **Table with materials**: list of model materials; each can be shown/hidden and assigned a transparency value (**Alpha**, 0-1). Right-click for a menu with <span class="widget widget-dropdown">Generate surface(s)</span> to create surfaces for the *Surfaces* tab.
+- **Table with materials**: list of model materials; each can be shown/hidden and assigned a transparency value (**Alpha**, 0-1). Right-click for a menu with:
+    - **Generate surface(s)**: create surfaces for the selected rows in the *Surfaces* tab.
+    - **Generate surface by index...**: create a surface for any material by typing its index.
+    - **Remove selected materials**: drop the selected rows from the rendered list (*Selected materials* mode only).
+
+### Models with many materials
+
+Instance segmentation produces models with thousands of materials (the 65535 and 4294967295 model types). The 3D viewer shows up to 255 materials at a time, so these models offer two modes in the <span class="widget widget-dropdown">Materials to show</span> dropdown:
+
+- **All materials**: everything is shown at once, using a repeating set of colors. Neighbouring objects always get different colors, so the segmentation is easy to judge as a whole. The material table has a single row that sets transparency and visibility for the whole overlay.
+- **Selected materials**: only the materials you list are shown, each in the same color as in the 2D view and with its own transparency and show/hide switch. Type indices and ranges into the edit field, for example `1:10,45`, or press <span class="widget widget-button">Add current</span> to add the material selected in the main MIB window.
+
+!!! tip
+    Use <span class="widget widget-button">Update overlay</span> for these models. Showing the model as the volume itself gives a gradient rather than separate objects.
 
 ---
 

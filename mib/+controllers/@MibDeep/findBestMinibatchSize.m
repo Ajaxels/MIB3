@@ -14,8 +14,10 @@ function findBestMinibatchSize(obj)
 %   recommended value to ``BatchOpt.T_MiniBatchSize``
 %
 % Trains the configured network on **synthetic patches** for a few iterations at each
-% candidate mini-batch size and reports patches per second. Nothing is read from the project
-% directories and nothing is written to them.
+% candidate mini-batch size and reports patches per second. The project images are never read
+% and nothing is ever written to the project; the 2D Instance workflow does read a sample of
+% the label maps, to match the object count of the synthetic patches to the real ones (see
+% :func:`iSampleInstancesPerPatch`).
 %
 % **Why throughput and not a memory reading.** MATLAB's ``gpuDevice().AvailableMemory``
 % saturates: in a calibration sweep on a 12 GB card it read 10.91 GB used both in the last
@@ -38,13 +40,37 @@ function findBestMinibatchSize(obj)
 % either - the overhead varies by more than the signal, which made short runs come out
 % *slower* than long ones when this was tried.
 %
-% **The result is an upper bound.** The probe runs the network alone; a real run also holds
-% the validation set, augmentation buffers and the datastore prefetch. If the recommended
-% value is the largest one tested, the true optimum may be higher still.
+% **The result is a mild upper bound.** The probe runs the network alone; a real run also
+% holds the validation set and the augmentation buffers. Reading and augmenting a patch was
+% measured at 0.085 s against a 3.70 s iteration, so on this workflow that margin is around
+% 9% and the timing below matches a recorded run to 1%. If the recommended value is the
+% largest one tested, the true optimum may be higher still.
 %
 % For 2D Instance the probe deliberately measures with ``FreezeSubNetwork`` set to
 % ``'none'``, the most memory-hungry case, because the two-phase schedule ends up there and
 % a size chosen against the cheaper frozen phase would fail once the backbone is unfrozen.
+%
+% **How many instances a synthetic patch carries is measured, not assumed.** SOLOv2's cost is
+% driven by the ground-truth instance count: the loss assigns every instance across the FPN
+% levels and the target is an ``[h w K]`` logical stack. This used to generate a fixed 5
+% objects per patch, and on a mitochondria project whose patches actually hold a median of 31
+% the probe came out **2.1x too fast** (17.4 epochs/hour predicted against 8.3 recorded) while
+% modelling a mask tensor six times smaller than the real one - 11.8 MB per iteration against
+% 74 MB. Understating the memory is the worse half of that, because it lets the probe
+% recommend a size that then pages in the real run. :func:`iSampleInstancesPerPatch` therefore
+% reads a sample of the project's own label maps first. Only the label maps are read, never
+% the images, and a project that is not preprocessed yet falls back to the old constant.
+%
+% Measured against that same recorded run - Resnet50, 768x768, mini-batch 4, whose real
+% iteration took 3.700 s:
+%
+% ==========================  ==============  =============
+% objects per synthetic patch  sec/iteration   epochs/hour
+% ==========================  ==============  =============
+% 5 (the old constant)        1.618           19.0
+% 31 (measured from labels)   **3.732**       **8.2**
+% real run                    3.700           8.3
+% ==========================  ==============  =============
 %
 % A 2D U-net at 256x256 on a 12 GB card, repeated twice and agreeing to 0.1%:
 %
@@ -108,6 +134,8 @@ dlgOpt.Icon = 'puffin_question';
 dlgOpt.WindowWidth = 490;
 dlgOpt.WindowHeight = 340;
 
+isInstanceWorkflow = strcmp(obj.BatchOpt.Workflow{1}, '2D Instance');
+
 header = 'Identify the best size for Mini Batch';
 dlgOpt.HeaderLines = 1;
 textStr = sprintf([ ...
@@ -115,7 +143,7 @@ textStr = sprintf([ ...
     'mini-batch size, and report how many patches per second each one achieves.\n\n' ...
     'The best size is the one where throughput peaks: below the limit of the card a larger ' ...
     'batch is faster, above it the driver starts paging GPU memory to system RAM and ' ...
-    'throughput collapses. Your data is not read and nothing is written to the project.\n\n' ...
+    'throughput collapses.\n\n' ...
     'Testing starts at the size below and doubles it until throughput drops. Raise it to ' ...
     'skip sizes you know are too small - on a large card the small ones are slow to ' ...
     'measure and can never win.\n\n' ...
@@ -147,7 +175,14 @@ obj.wb = uiprogressdlg(obj.view.gui, 'Message', 'Building the network...', ...
 rngState = rng();
 cleanupRng = onCleanup(@() rng(rngState));
 
-isInstanceWorkflow = strcmp(obj.BatchOpt.Workflow{1}, '2D Instance');
+% measured from the project's own label maps, see iSampleInstancesPerPatch; unused by the
+% semantic workflows, whose cost does not depend on an object count
+objectsPerPatch = 0;
+if isInstanceWorkflow
+    obj.wb.Message = 'Sampling the label maps...';
+    objectsPerPatch = iSampleInstancesPerPatch(obj, inputPatchSize(1:2));
+end
+
 try
     if isInstanceWorkflow
         inputPatchSize = [inputPatchSize([1 2]) 3];
@@ -181,7 +216,7 @@ bestThroughput = 0;
 obj.wb.Message = 'Warming up...';
 try
     iTimeCandidate(obj, probeNetwork, inputPatchSize, outputPatchSize, ...
-        candidateSizes(1), 3, isInstanceWorkflow);
+        candidateSizes(1), 3, isInstanceWorkflow, objectsPerPatch);
 catch
     % if the start size does not even fit, the loop below reports it properly
 end
@@ -194,11 +229,11 @@ for candidateIdx = 1:numel(candidateSizes)
 
     try
         secondsPerIteration = iTimeCandidate(obj, probeNetwork, inputPatchSize, outputPatchSize, ...
-            miniBatchSize, probeIterationsInitial, isInstanceWorkflow);
+            miniBatchSize, probeIterationsInitial, isInstanceWorkflow, objectsPerPatch);
         if ~isnan(secondsPerIteration) && secondsPerIteration < shortIterationSeconds
             % too fast to time reliably over so few iterations, measure again with more
             secondsPerIteration = iTimeCandidate(obj, probeNetwork, inputPatchSize, outputPatchSize, ...
-                miniBatchSize, probeIterationsRefined, isInstanceWorkflow);
+                miniBatchSize, probeIterationsRefined, isInstanceWorkflow, objectsPerPatch);
         end
     catch err
         if contains(lower(err.message), 'memory') || contains(lower(err.identifier), 'oom') || ...
@@ -280,10 +315,11 @@ if cancelled
 end
 
 applyOpt.Icon = 'puffin_info';
+applyOpt.WindowStyle = 'normal';
 applyOpt.WindowWidth = 620;
-applyOpt.WindowHeight = 260 + 20*size(results,1);   % one line per measured candidate
+applyOpt.WindowHeight = 300 + 20*size(results,1) + 20*isInstanceWorkflow;   % one line per measured candidate
 if trainingObservations > 0
-    epochsNote = sprintf(['\n\nepochs/hour assumes %d training patches per epoch (%d images x %d patches each).\n' ...
+    epochsNote = sprintf(['\n\nepochs/hour assumes %d training patches per epoch (%d images x %d patches each). ' ...
         'At the recommended size, the %d epochs currently configured would take about %s.'], ...
         trainingObservations, round(trainingObservations/obj.BatchOpt.T_PatchesPerImage{1}), ...
         obj.BatchOpt.T_PatchesPerImage{1}, obj.TrainingOpt.MaxEpochs, ...
@@ -294,11 +330,19 @@ else
         'Preprocess or split the project first.']);
 end
 
+% the instance count is the dominant cost term for SOLOv2, so say which one was used rather
+% than leaving the reader to assume the synthetic patches resemble their data
+instancesNote = '';
+if isInstanceWorkflow
+    instancesNote = sprintf(['\n\nSynthetic patches carry %d instances each, the median measured ' ...
+        'in this project''s label maps.'], objectsPerPatch);
+end
+
 applyHeader = sprintf(['Measured on synthetic %s patches.\n\n%s\n\n' ...
     'Recommended mini-batch size: %d\n' ...
-    '(an upper bound - a real run also holds the validation set and augmentation buffers)%s%s\n\n' ...
+    '(an upper bound - a real run also holds the validation set and augmentation buffers)%s%s%s\n\n' ...
     'Apply this value?'], obj.BatchOpt.T_InputPatchSize, reportText, recommendedSize, ...
-    epochsNote, trailer);
+    instancesNote, epochsNote, trailer);
 answer = utils.dlgs.inputQuestDlg(obj.view.gui, applyHeader, 'Measurement finished', ...
     sprintf('Use %d', recommendedSize), 'Keep current', sprintf('Use %d', recommendedSize), applyOpt);
 if ~strcmp(answer, sprintf('Use %d', recommendedSize)); return; end
@@ -313,7 +357,7 @@ end
 
 % -------------------------------------------------------------------------------------
 function secondsPerIteration = iTimeCandidate(obj, probeNetwork, inputPatchSize, outputPatchSize, ...
-    miniBatchSize, numIterations, isInstanceWorkflow)
+    miniBatchSize, numIterations, isInstanceWorkflow, objectsPerPatch)
 % train on synthetic patches and return the median time of one iteration
 %
 % One epoch over exactly miniBatchSize*numIterations observations, so the iteration count is
@@ -343,7 +387,7 @@ trainingOptions_ = trainingOptions('adam', ...
     'OutputFcn', @recordIteration);
 
 if isInstanceWorkflow
-    probeDatastore = iSyntheticInstanceDatastore(inputPatchSize, numObservations);
+    probeDatastore = iSyntheticInstanceDatastore(inputPatchSize, numObservations, objectsPerPatch);
     trainSOLOV2(probeDatastore, probeNetwork, trainingOptions_, 'FreezeSubNetwork', 'none');
 else
     % trainNetwork cannot consume a dlnetwork, and from R2026a the network builders return
@@ -397,11 +441,98 @@ end
 end
 
 % -------------------------------------------------------------------------------------
-function probeDatastore = iSyntheticInstanceDatastore(inputPatchSize, numObservations)
-% random images with a handful of square objects, in the 4-column layout trainSOLOV2 wants
-% (image, boxes, labels, masks), matching what deepmib.readInstancePatch produces
+function objectsPerPatch = iSampleInstancesPerPatch(obj, patchSize)
+% median number of ground-truth instances a patch of this project actually contains
+%
+% Windows are placed the way deepmib.readInstancePatch places them - object-seeded 90% of
+% the time, uniform-random otherwise - because a uniform sample would land in background far
+% more often than training does and would report too few objects.
+%
+% Only the ``instanceLabelMap`` variable of each ``*.mat`` is loaded; the images are never
+% touched, which keeps this at roughly 15 ms per file. Deliberately independent of
+% deepmib.readInstancePatch despite duplicating its window placement: that function
+% short-circuits on the ``mibDeepTrainingProgressStruct`` globals, so a stale
+% ``spinDownActive`` left by an earlier stopped run would silently hand back placeholder
+% observations and a stale ``emergencyBrake`` would throw - neither is acceptable in a
+% measurement tool that runs when no training is in progress.
 
-objectsPerPatch = 5;
+filesToSample = 12;
+windowsPerFile = 3;
+objectFraction = 0.9;       % same object-seeded/uniform mix as deepmib.readInstancePatch
+minObjectArea = 4;          % same threshold, drops slivers left at the window edge
+% what this function assumed unconditionally before it measured anything; also the answer
+% for a project whose labels have not been preprocessed yet
+fallbackCount = 5;
+
+objectsPerPatch = fallbackCount;
+try
+    labelDir = fullfile(obj.BatchOpt.OriginalTrainingImagesDir, 'TrainLabels');
+    fileList = dir(fullfile(labelDir, '*.mat'));
+    if isempty(fileList); return; end
+    if numel(fileList) > filesToSample
+        fileList = fileList(round(linspace(1, numel(fileList), filesToSample)));
+    end
+
+    counts = nan(numel(fileList) * windowsPerFile, 1);
+    countIdx = 0;
+    for fileIdx = 1:numel(fileList)
+        data = load(fullfile(fileList(fileIdx).folder, fileList(fileIdx).name), 'instanceLabelMap');
+        if ~isfield(data, 'instanceLabelMap') || isempty(data.instanceLabelMap); continue; end
+        labelMap = data.instanceLabelMap;
+        [height, width] = size(labelMap);
+        % a patch larger than the image is padded during training, so the whole image is
+        % the window in that case
+        patchHeight = min(patchSize(1), height);
+        patchWidth = min(patchSize(2), width);
+        objectList = unique(labelMap(labelMap > 0));
+
+        for windowIdx = 1:windowsPerFile
+            if ~isempty(objectList) && rand <= objectFraction
+                objectId = objectList(randi(numel(objectList)));
+                [rowsOfObject, colsOfObject] = find(labelMap == objectId);
+                anchorIdx = randi(numel(rowsOfObject));
+                % same jitter as the training reader: the object lands anywhere in the patch
+                topRow  = rowsOfObject(anchorIdx) - randi(patchHeight) + 1;
+                leftCol = colsOfObject(anchorIdx) - randi(patchWidth) + 1;
+            else
+                topRow  = randi(height - patchHeight + 1);
+                leftCol = randi(width - patchWidth + 1);
+            end
+            topRow  = min(max(topRow, 1), height - patchHeight + 1);
+            leftCol = min(max(leftCol, 1), width - patchWidth + 1);
+
+            window = labelMap(topRow:topRow+patchHeight-1, leftCol:leftCol+patchWidth-1);
+            presentLabels = double(window(window > 0));
+            countIdx = countIdx + 1;
+            if isempty(presentLabels)
+                counts(countIdx) = 0;
+            else
+                areaPerLabel = accumarray(presentLabels(:), 1);
+                counts(countIdx) = sum(areaPerLabel >= minObjectArea);
+            end
+        end
+    end
+
+    counts = counts(~isnan(counts));
+    if ~isempty(counts)
+        % at least 1: a patch with no object still costs the loss something, and 0 would
+        % build a degenerate [h w 0] mask stack that trainSOLOV2 cannot consume
+        objectsPerPatch = max(1, round(median(counts)));
+    end
+catch
+    % a half-prepared project must never stop the measurement
+    objectsPerPatch = fallbackCount;
+end
+end
+
+% -------------------------------------------------------------------------------------
+function probeDatastore = iSyntheticInstanceDatastore(inputPatchSize, numObservations, objectsPerPatch)
+% random images with square objects, in the 4-column layout trainSOLOV2 wants
+% (image, boxes, labels, masks), matching what deepmib.readInstancePatch produces
+%
+% objectsPerPatch comes from the project's own label maps (see iSampleInstancesPerPatch)
+% because it, not the patch size, is what drives SOLOv2's cost and its target tensor size
+
 objectSide = max(16, round(min(inputPatchSize(1:2))/8));
 images = cell(numObservations,1); boxes = cell(numObservations,1);
 labels = cell(numObservations,1); masks = cell(numObservations,1);

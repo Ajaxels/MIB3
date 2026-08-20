@@ -5865,7 +5865,9 @@ carries a <em>different</em> index on each slice.</p>
 through the whole stack. The current model is backed up first, so the operation can be undone with
 <span class="keys"><kbd class="key-control">Ctrl</kbd><span>+</span><kbd class="key-z">Z</kbd></span>. The result is stored as a 65535- (or 4294967295-) material indexed model, one index per
 3D object.</p>
-<p>A settings dialog collects the linking parameters:</p>
+<p>A settings dialog collects the parameters, in three groups. The defaults are a sensible starting
+point - in most cases only the cleanup settings need adjusting.</p>
+<p><strong>Linking</strong> - which 2D objects are recognised as the same 3D object:</p>
 <table>
 <thead>
 <tr>
@@ -5876,39 +5878,77 @@ through the whole stack. The current model is backed up first, so the operation 
 <tbody>
 <tr>
 <td><strong>Method</strong></td>
-<td><code>graph</code> (<em>default</em>) links every overlapping pair of objects on neighbouring slices and groups them by connected components - handling objects that <strong>split</strong> into pieces or <strong>merge</strong> together between slices; <code>hungarian</code> performs strict one-to-one matching per slice pair (empanada / MitoNet style) plus a containment merge for the leftovers.</td>
+<td><code>graph</code> (<em>default</em>) links every overlapping pair of objects on neighbouring slices and groups them together, which copes with objects that split into pieces or merge between slices. <code>hungarian</code> matches strictly one-to-one per slice pair (empanada / MitoNet style). Leave on <code>graph</code> unless you are reproducing the published method.</td>
+</tr>
+<tr>
+<td><strong>Split disconnected 2D objects</strong></td>
+<td>Checkbox, on by <em>default</em>. A 2D predictor sometimes gives one index to several separate blobs on a slice. Taken at face value, those blobs act as a bridge that welds their 3D objects together, and the effect cascades until much of the stack is one giant object. Uncheck only if you trust the per-slice indices and need a genuinely disconnected 2D mask to stay one object.</td>
 </tr>
 <tr>
 <td><strong>IoU threshold</strong> (0-1)</td>
-<td>Join two objects when <em>(overlap area) / (their union area)</em> exceeds this. Higher = stricter, giving more but smaller 3D objects.</td>
+<td>How much two cross-sections must overlap to be joined, measured as <em>overlap ÷ combined area</em>. Higher = stricter, giving more but smaller 3D objects.</td>
 </tr>
 <tr>
 <td><strong>Merge split objects (IoA)</strong></td>
-<td>Checkbox. When enabled (<em>default</em>), objects are also joined when a smaller object is mostly contained in a neighbour — i.e. <em>(overlap area) / (area of the smaller object)</em> is high — reconnecting a 3D object that briefly breaks into small pieces on one slice. Uncheck to link by IoU only.</td>
+<td>Checkbox, on by <em>default</em>. Also join when a smaller object lies mostly inside its neighbour, which reconnects an object that briefly breaks into pieces on one slice. Uncheck to link on IoU alone.</td>
 </tr>
 <tr>
 <td><strong>Min overlap</strong> (pixels)</td>
-<td>Require at least this many overlapping pixels before two objects may be linked, to block tiny spurious touches from fusing unrelated objects.</td>
+<td>The smallest overlap that may count as a link, so a one- or two-pixel touch between unrelated objects cannot fuse them.</td>
+</tr>
+<tr>
+<td><strong>Absolute overlap to link</strong> (pixels)</td>
+<td>Join two objects sharing at least this many pixels, whatever the two settings above say. <code>0</code> = off. Both of those are divided by object area, so a wide cross-section meeting a much narrower one can score low even when the shared area is large. The useful value depends on how big objects are in your data, so look at a few genuine links before setting it.</td>
 </tr>
 <tr>
 <td><strong>Z lookback</strong> (slices)</td>
-<td>How many slices apart to compare. <code>1</code> = adjacent slices only; higher values also compare a slice with one further away, bridging an object that briefly disappears.</td>
+<td>How far apart slices are compared. <code>1</code> = neighbouring slices only; <code>2</code> or more also bridges an object that disappears for a slice or two.</td>
 </tr>
+</tbody>
+</table>
+<p><strong>Cleanup</strong> - what happens to the leftovers once the objects are built:</p>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
 <tr>
 <td><strong>Min object size</strong> (voxels)</td>
-<td>After stitching, delete any 3D object smaller than this many voxels. <code>0</code> = keep all; raise it to remove single-slice noise fragments.</td>
+<td>Delete 3D objects smaller than this many voxels. <code>0</code> = keep all. The first thing to try against noise; values around <code>50-200</code> suit dense EM data.</td>
 </tr>
 <tr>
+<td><strong>Min object depth</strong> (slices)</td>
+<td>Delete 3D objects present on this many slices or fewer. <code>0</code> = keep all, <code>1</code> = drop single-slice objects. This catches what a size threshold cannot: a false detection can be large in the plane yet not exist on the next slice, so no voxel count separates it from a genuine small object.</td>
+</tr>
+<tr>
+<td><strong>Absorb fragments</strong> (voxels)</td>
+<td>Give 3D objects this small to the object around them, instead of leaving them as separate specks. On by <em>default</em> (<code>5</code>); <code>0</code> = off. Such specks are usually a few stray pixels the 2D predictor placed inside a neighbouring object - too small ever to be linked, but part of a real object, so deleting them would leave a hole in it. Specks with no neighbour to join are left to the two settings above.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Thick sections and gaps</strong> - only needed for anisotropic or patchy data:</p>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
 <td><strong>Anisotropic Z (use pixel size)</strong></td>
-<td>Checkbox. For datasets with thick Z sections, a real continuation is displaced more between slices, so its IoU legitimately drops. When enabled, the IoU threshold is lowered by the voxel aspect ratio <em>(pixSize.z / pixSize.x)</em> read from the dataset, so a displaced continuation still links. Pair it with <strong>Max centroid shift</strong> to keep the relaxed threshold from fusing distant objects.</td>
+<td>Checkbox. When Z sections are thick, an object shifts further between slices, so its overlap drops even though it is the same object. Enabling this lowers the IoU threshold by the dataset's Z/XY voxel ratio. Best used together with <strong>Max centroid shift</strong>.</td>
 </tr>
 <tr>
 <td><strong>Max centroid shift</strong> (pixels)</td>
-<td>Reject a link when the two object centroids are farther apart than this (scaled by the slice gap when <strong>Z lookback</strong> &gt; 1). <code>0</code> = disabled. Useful together with anisotropic-Z relaxation to prevent a lower IoU threshold from merging far-apart objects.</td>
+<td>Refuse a link when the two objects' centres are farther apart than this. <code>0</code> = off. Its job is to stop a relaxed IoU threshold from joining distant objects.</td>
 </tr>
 <tr>
 <td><strong>Centroid link radius</strong> (pixels)</td>
-<td>Advanced gap bridging for anisotropic or gappy data. For an object that has <em>no overlapping neighbour</em> on the next compared slice, link it to the mutually-nearest such object within this distance (scaled by the slice gap) if they are of comparable size — reconnecting a continuation that is laterally displaced or briefly missing. <code>0</code> = disabled. Leave off for near-isotropic data.</td>
+<td>Join an object that has <em>no</em> overlapping neighbour at all to the nearest object of comparable size within this distance. <code>0</code> = off. Leave it off unless the data is strongly anisotropic or has frequent gaps.</td>
 </tr>
 </tbody>
 </table>
@@ -5918,12 +5958,60 @@ through the whole stack. The current model is backed up first, so the operation 
 run 2D instance prediction slice-by-slice, then stitch the per-slice result into 3D objects here.</p>
 </div>
 <div class="admonition tip">
-<p class="admonition-title">Tip</p>
-<p>On noisy real data the most effective cleanup is <strong>Min object size</strong> — single-slice detection
-fragments otherwise appear as spurious extra objects. On a dense benchmark (salivary-gland
-mitochondria) a value of ~50-200 voxels removed the great majority of spurious fragments and
-roughly doubled the number of correctly reconstructed 3D objects, without affecting the genuine
-ones. Start there before adjusting the linking thresholds.</p>
+<p class="admonition-title">Cleaning up noise objects</p>
+<p>Most spurious objects come from the 2D prediction rather than from the stitching, so try the
+cleanup settings before adjusting the linking parameters.</p>
+<p>Start by asking what a speck actually is. If it belongs to the object beside it,
+<strong>Absorb fragments</strong> hands it back - which is why that one is on by default. If it belongs to
+nothing, delete it: <strong>Min object size</strong> for small fragments, and <strong>Min object depth</strong> for false
+detections that are large in the plane but appear on only one or two slices.</p>
+</div>
+<div class="admonition info">
+<p class="admonition-title">The settings are remembered, and echoed to the console</p>
+<p>The dialog reopens on the values used last, for as long as MIB is running - trialling a
+threshold does not mean re-entering the other twelve fields each time. The values are per
+session and are not written to preferences, so restarting MIB returns to the defaults.</p>
+<p>Each accepted run also prints one line to the MATLAB console listing exactly what was used, for
+example:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Stitch 2D instances to 3D: method=graph, splitDisconnected2D=1, iouThreshold=0.25, ioaThreshold=0.5, minOverlapPixels=5, absOverlapPixels=500, zLookback=1, minObjectVoxels=0, minObjectSlices=1, useAnisotropy=0
+</span></code></pre></div>
+<p>A parameter left at its "off" value is absent from the line rather than shown as zero, matching
+what is actually passed to the algorithm. Copy the line into your notes to record which trial
+produced which model.</p>
+</div>
+<div class="admonition question">
+<p class="admonition-title">Two objects stayed apart although they clearly overlap in Z</p>
+<p>Check the two cross-sections' <strong>areas</strong>, not just the overlap. IoU and IoA are ratios against
+area, so a wide profile meeting a much narrower one is penalised twice over and can fail both
+tests on a substantial shared area. Measure the pair before changing anything:</p>
+<div class="language-matlab highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">labels</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">mib</span><span class="p">.</span><span class="n">mibModel</span><span class="p">.</span><span class="n">I</span><span class="p">{</span><span class="mi">1</span><span class="p">}.</span><span class="n">labels</span><span class="p">.</span><span class="n">data</span><span class="p">;</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">maskA</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">labels</span><span class="p">(:,:,</span><span class="mi">27</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">15</span><span class="p">;</span><span class="w">   </span><span class="c">% the two 2D objects you are looking at</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="n">maskB</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">labels</span><span class="p">(:,:,</span><span class="mi">28</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">13</span><span class="p">;</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="n">inter</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">nnz</span><span class="p">(</span><span class="n">maskA</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">maskB</span><span class="p">);</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="nb">fprintf</span><span class="p">(</span><span class="s">&#39;inter %d, IoU %.3f, IoA %.3f\n&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">inter</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">    </span><span class="n">inter</span><span class="o">/</span><span class="p">(</span><span class="nb">nnz</span><span class="p">(</span><span class="n">maskA</span><span class="p">)</span><span class="o">+</span><span class="nb">nnz</span><span class="p">(</span><span class="n">maskB</span><span class="p">)</span><span class="o">-</span><span class="n">inter</span><span class="p">),</span><span class="w"> </span><span class="n">inter</span><span class="o">/</span><span class="nb">min</span><span class="p">(</span><span class="nb">nnz</span><span class="p">(</span><span class="n">maskA</span><span class="p">),</span><span class="w"> </span><span class="nb">nnz</span><span class="p">(</span><span class="n">maskB</span><span class="p">)));</span>
+</span></code></pre></div>
+<p>If the ratios are low but <code>inter</code> is large, set <strong>Absolute overlap to link</strong> a little below that
+<code>inter</code>. Prefer it to lowering the IoU or IoA thresholds, which relaxes <em>every</em> pair in the
+stack; the absolute rule only fires where a genuinely large area is shared. Before committing,
+confirm the two objects really are one: if they coexist as separate objects over many slices,
+each with its own sizeable cross-section, they are more likely two neighbours that touch once.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Most objects came out as one giant object</p>
+<p>That is the signature of per-slice indices shared by several unconnected blobs, and no
+threshold will fix it — each shared index welds its blobs' 3D objects together, and the welds
+chain from slice to slice until most of the stack is a single instance. Keep
+<strong>Split disconnected 2D objects</strong> enabled. To confirm the input is affected, compare the number
+of indices on a slice against the number of separate blobs:</p>
+<div class="language-matlab highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nb">slice</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">mib</span><span class="p">.</span><span class="n">mibModel</span><span class="p">.</span><span class="n">I</span><span class="p">{</span><span class="mi">1</span><span class="p">}.</span><span class="n">labels</span><span class="p">.</span><span class="n">data</span><span class="p">(:,:,</span><span class="mi">13</span><span class="p">);</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="n">ids</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">unique</span><span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="nb">slice</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">));</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="n">blobs</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">sum</span><span class="p">(</span><span class="nb">arrayfun</span><span class="p">(@(</span><span class="n">k</span><span class="p">)</span><span class="w"> </span><span class="n">bwconncomp</span><span class="p">(</span><span class="nb">slice</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">k</span><span class="p">,</span><span class="w"> </span><span class="mi">8</span><span class="p">).</span><span class="n">NumObjects</span><span class="p">,</span><span class="w"> </span><span class="n">ids</span><span class="p">));</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="nb">fprintf</span><span class="p">(</span><span class="s">&#39;%d indices, %d blobs\n&#39;</span><span class="p">,</span><span class="w"> </span><span class="nb">numel</span><span class="p">(</span><span class="n">ids</span><span class="p">),</span><span class="w"> </span><span class="n">blobs</span><span class="p">);</span>
+</span></code></pre></div>
+<p>More blobs than indices means the 2D prediction reuses indices, and the split is doing real
+work. It is worth improving the 2D step as well (raise the prediction threshold, retrain), since
+each shared index is a wrong 2D instance.</p>
 </div>
 <div class="clear-float"></div>
 

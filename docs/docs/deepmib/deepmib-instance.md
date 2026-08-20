@@ -265,19 +265,39 @@ The stitching settings dialog offers the same options as the
 * <span class="widget widget-dropdown">Method</span> — *graph* (default) links every overlapping
   pair of objects and groups them by connected components; *hungarian* uses strict one-to-one
   matching per slice pair
+* **Split disconnected 2D objects** — enabled by default; treats each separate blob of a per-slice
+  index as its own 2D object. A SOLOv2 mask that fires at several locations gives one index to
+  unconnected blobs, which otherwise welds their 3D objects together and cascades across slices
+  into a single giant instance. Uncheck only if the per-slice indices are trusted
 * **IoU threshold** — join two objects when their overlap-over-union exceeds this value; higher =
   stricter (more, smaller 3D objects)
 * **Merge split objects (IoA)** — also join when a smaller object is mostly contained in a
   neighbour, reconnecting an object that breaks into pieces on one slice
 * **Min overlap (pixels)** — minimal number of overlapping pixels before two objects may be linked
+* **Absolute overlap to link (pixels)** — link two objects sharing at least this many pixels
+  whatever their IoU and IoA (`0` = off). Both ratios are relative to object area, so a wide
+  cross-section meeting a much narrower one fails them even on a large shared area. Opposite role
+  to *Min overlap*: that one blocks links, this one creates them
 * **Z lookback (slices)** — also compare slices further apart to bridge an object that briefly
   vanishes
 * **Min object size (voxels)** — remove 3D objects smaller than this after stitching; values of
-  `50-200` are recommended to suppress single-slice noise fragments
+  `50-200` are recommended to suppress small noise fragments
+* **Min object depth (slices)** — remove 3D objects seen on this many slices or fewer (`0` = keep
+  all, `1` = drop single-slice objects). Catches what the size threshold cannot: a false detection
+  can be large in-plane yet never propagate through the stack
+* **Absorb fragments (voxels)** - give 3D objects of this size or smaller to the object surrounding
+  them in-plane instead of leaving them as separate specks (`5` by default, matching *Min overlap*;
+  `0` = off). Stray pixels left inside a neighbouring mask are too small to ever be linked, and
+  deleting them by size would leave a hole. A fragment with no labelled neighbour is left for the
+  two thresholds above
 * **Z anisotropy ratio** — for thick sections, lower the IoU threshold by the voxel Z/XY aspect
   ratio so a real but displaced continuation still links (`1` = isotropic, off)
 * **Max centroid shift** and **Centroid link radius** — advanced gates/bridging for anisotropic or
   gappy data (`0` = off)
+
+The dialog reopens on the values used last for as long as MIB is running, and each accepted run
+prints one line to the MATLAB console listing exactly what was used - handy when trialling
+thresholds over several runs. The values are per session and are not written to preferences.
 
 After the settings, the destination is requested. When a **single** merged model is produced, a
 file dialog asks for the directory, filename and file format. When **several** stacks are stitched

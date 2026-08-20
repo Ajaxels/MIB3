@@ -18,6 +18,7 @@ Standard dialogs
    showErrorDialog
    showErrorDialogStd
    showMilestoneDialog
+   stitchInstancesSettingsDlg
 
 Dialog classes
 --------------

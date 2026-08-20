@@ -77,30 +77,103 @@ through the whole stack. The current model is backed up first, so the operation 
 ++ctrl+z++. The result is stored as a 65535- (or 4294967295-) material indexed model, one index per
 3D object.
 
-A settings dialog collects the linking parameters:
+A settings dialog collects the parameters, in three groups. The defaults are a sensible starting
+point - in most cases only the cleanup settings need adjusting.
+
+**Linking** - which 2D objects are recognised as the same 3D object:
 
 | Setting | Description |
 |---------|-------------|
-| **Method** | `graph` (*default*) links every overlapping pair of objects on neighbouring slices and groups them by connected components - handling objects that **split** into pieces or **merge** together between slices; `hungarian` performs strict one-to-one matching per slice pair (empanada / MitoNet style) plus a containment merge for the leftovers. |
-| **IoU threshold** (0-1) | Join two objects when *(overlap area) / (their union area)* exceeds this. Higher = stricter, giving more but smaller 3D objects. |
-| **Merge split objects (IoA)** | Checkbox. When enabled (*default*), objects are also joined when a smaller object is mostly contained in a neighbour — i.e. *(overlap area) / (area of the smaller object)* is high — reconnecting a 3D object that briefly breaks into small pieces on one slice. Uncheck to link by IoU only. |
-| **Min overlap** (pixels) | Require at least this many overlapping pixels before two objects may be linked, to block tiny spurious touches from fusing unrelated objects. |
-| **Z lookback** (slices) | How many slices apart to compare. `1` = adjacent slices only; higher values also compare a slice with one further away, bridging an object that briefly disappears. |
-| **Min object size** (voxels) | After stitching, delete any 3D object smaller than this many voxels. `0` = keep all; raise it to remove single-slice noise fragments. |
-| **Anisotropic Z (use pixel size)** | Checkbox. For datasets with thick Z sections, a real continuation is displaced more between slices, so its IoU legitimately drops. When enabled, the IoU threshold is lowered by the voxel aspect ratio *(pixSize.z / pixSize.x)* read from the dataset, so a displaced continuation still links. Pair it with **Max centroid shift** to keep the relaxed threshold from fusing distant objects. |
-| **Max centroid shift** (pixels) | Reject a link when the two object centroids are farther apart than this (scaled by the slice gap when **Z lookback** > 1). `0` = disabled. Useful together with anisotropic-Z relaxation to prevent a lower IoU threshold from merging far-apart objects. |
-| **Centroid link radius** (pixels) | Advanced gap bridging for anisotropic or gappy data. For an object that has *no overlapping neighbour* on the next compared slice, link it to the mutually-nearest such object within this distance (scaled by the slice gap) if they are of comparable size — reconnecting a continuation that is laterally displaced or briefly missing. `0` = disabled. Leave off for near-isotropic data. |
+| **Method** | `graph` (*default*) links every overlapping pair of objects on neighbouring slices and groups them together, which copes with objects that split into pieces or merge between slices. `hungarian` matches strictly one-to-one per slice pair (empanada / MitoNet style). Leave on `graph` unless you are reproducing the published method. |
+| **Split disconnected 2D objects** | Checkbox, on by *default*. A 2D predictor sometimes gives one index to several separate blobs on a slice. Taken at face value, those blobs act as a bridge that welds their 3D objects together, and the effect cascades until much of the stack is one giant object. Uncheck only if you trust the per-slice indices and need a genuinely disconnected 2D mask to stay one object. |
+| **IoU threshold** (0-1) | How much two cross-sections must overlap to be joined, measured as *overlap ÷ combined area*. Higher = stricter, giving more but smaller 3D objects. |
+| **Merge split objects (IoA)** | Checkbox, on by *default*. Also join when a smaller object lies mostly inside its neighbour, which reconnects an object that briefly breaks into pieces on one slice. Uncheck to link on IoU alone. |
+| **Min overlap** (pixels) | The smallest overlap that may count as a link, so a one- or two-pixel touch between unrelated objects cannot fuse them. |
+| **Absolute overlap to link** (pixels) | Join two objects sharing at least this many pixels, whatever the two settings above say. `0` = off. Both of those are divided by object area, so a wide cross-section meeting a much narrower one can score low even when the shared area is large. The useful value depends on how big objects are in your data, so look at a few genuine links before setting it. |
+| **Z lookback** (slices) | How far apart slices are compared. `1` = neighbouring slices only; `2` or more also bridges an object that disappears for a slice or two. |
+
+**Cleanup** - what happens to the leftovers once the objects are built:
+
+| Setting | Description |
+|---------|-------------|
+| **Min object size** (voxels) | Delete 3D objects smaller than this many voxels. `0` = keep all. The first thing to try against noise; values around `50-200` suit dense EM data. |
+| **Min object depth** (slices) | Delete 3D objects present on this many slices or fewer. `0` = keep all, `1` = drop single-slice objects. This catches what a size threshold cannot: a false detection can be large in the plane yet not exist on the next slice, so no voxel count separates it from a genuine small object. |
+| **Absorb fragments** (voxels) | Give 3D objects this small to the object around them, instead of leaving them as separate specks. On by *default* (`5`); `0` = off. Such specks are usually a few stray pixels the 2D predictor placed inside a neighbouring object - too small ever to be linked, but part of a real object, so deleting them would leave a hole in it. Specks with no neighbour to join are left to the two settings above. |
+
+**Thick sections and gaps** - only needed for anisotropic or patchy data:
+
+| Setting | Description |
+|---------|-------------|
+| **Anisotropic Z (use pixel size)** | Checkbox. When Z sections are thick, an object shifts further between slices, so its overlap drops even though it is the same object. Enabling this lowers the IoU threshold by the dataset's Z/XY voxel ratio. Best used together with **Max centroid shift**. |
+| **Max centroid shift** (pixels) | Refuse a link when the two objects' centres are farther apart than this. `0` = off. Its job is to stop a relaxed IoU threshold from joining distant objects. |
+| **Centroid link radius** (pixels) | Join an object that has *no* overlapping neighbour at all to the nearest object of comparable size within this distance. `0` = off. Leave it off unless the data is strongly anisotropic or has frequent gaps. |
 
 !!! note
     This entry is intended as the 3D post-processing step for the **2D Instance** DeepMIB workflow:
     run 2D instance prediction slice-by-slice, then stitch the per-slice result into 3D objects here.
 
-!!! tip
-    On noisy real data the most effective cleanup is **Min object size** — single-slice detection
-    fragments otherwise appear as spurious extra objects. On a dense benchmark (salivary-gland
-    mitochondria) a value of ~50-200 voxels removed the great majority of spurious fragments and
-    roughly doubled the number of correctly reconstructed 3D objects, without affecting the genuine
-    ones. Start there before adjusting the linking thresholds.
+!!! tip "Cleaning up noise objects"
+    Most spurious objects come from the 2D prediction rather than from the stitching, so try the
+    cleanup settings before adjusting the linking parameters.
+
+    Start by asking what a speck actually is. If it belongs to the object beside it,
+    **Absorb fragments** hands it back - which is why that one is on by default. If it belongs to
+    nothing, delete it: **Min object size** for small fragments, and **Min object depth** for false
+    detections that are large in the plane but appear on only one or two slices.
+
+!!! info "The settings are remembered, and echoed to the console"
+    The dialog reopens on the values used last, for as long as MIB is running - trialling a
+    threshold does not mean re-entering the other twelve fields each time. The values are per
+    session and are not written to preferences, so restarting MIB returns to the defaults.
+
+    Each accepted run also prints one line to the MATLAB console listing exactly what was used, for
+    example:
+
+    ```
+    Stitch 2D instances to 3D: method=graph, splitDisconnected2D=1, iouThreshold=0.25, ioaThreshold=0.5, minOverlapPixels=5, absOverlapPixels=500, zLookback=1, minObjectVoxels=0, minObjectSlices=1, useAnisotropy=0
+    ```
+
+    A parameter left at its "off" value is absent from the line rather than shown as zero, matching
+    what is actually passed to the algorithm. Copy the line into your notes to record which trial
+    produced which model.
+
+!!! question "Two objects stayed apart although they clearly overlap in Z"
+    Check the two cross-sections' **areas**, not just the overlap. IoU and IoA are ratios against
+    area, so a wide profile meeting a much narrower one is penalised twice over and can fail both
+    tests on a substantial shared area. Measure the pair before changing anything:
+
+    ```matlab
+    labels = mib.mibModel.I{1}.labels.data;
+    maskA = labels(:,:,27) == 15;   % the two 2D objects you are looking at
+    maskB = labels(:,:,28) == 13;
+    inter = nnz(maskA & maskB);
+    fprintf('inter %d, IoU %.3f, IoA %.3f\n', inter, ...
+        inter/(nnz(maskA)+nnz(maskB)-inter), inter/min(nnz(maskA), nnz(maskB)));
+    ```
+
+    If the ratios are low but `inter` is large, set **Absolute overlap to link** a little below that
+    `inter`. Prefer it to lowering the IoU or IoA thresholds, which relaxes *every* pair in the
+    stack; the absolute rule only fires where a genuinely large area is shared. Before committing,
+    confirm the two objects really are one: if they coexist as separate objects over many slices,
+    each with its own sizeable cross-section, they are more likely two neighbours that touch once.
+
+!!! warning "Most objects came out as one giant object"
+    That is the signature of per-slice indices shared by several unconnected blobs, and no
+    threshold will fix it — each shared index welds its blobs' 3D objects together, and the welds
+    chain from slice to slice until most of the stack is a single instance. Keep
+    **Split disconnected 2D objects** enabled. To confirm the input is affected, compare the number
+    of indices on a slice against the number of separate blobs:
+
+    ```matlab
+    slice = mib.mibModel.I{1}.labels.data(:,:,13);
+    ids = unique(slice(slice > 0));
+    blobs = sum(arrayfun(@(k) bwconncomp(slice == k, 8).NumObjects, ids));
+    fprintf('%d indices, %d blobs\n', numel(ids), blobs);
+    ```
+
+    More blobs than indices means the 2D prediction reuses indices, and the split is doing real
+    work. It is worth improving the 2D step as well (raise the prediction threshold, retrain), since
+    each shared index is a wrong 2D instance.
 
 <div class="clear-float"></div>
 

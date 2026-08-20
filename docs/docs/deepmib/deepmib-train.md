@@ -138,8 +138,8 @@ the network is retrained. The available states are a property of the selected wo
 
         | Setting | Default | Meaning |
         |---|---|---|
-        | Minimum frozen share | 0.1 | No switch happens before this share of the total epochs |
-        | Maximum frozen share | 0.25 | The switch happens no later than this |
+        | Minimum frozen share | 0.07 | No switch happens before this share of the total epochs |
+        | Maximum frozen share | 0.15 | The switch happens no later than this |
         | Plateau window | 25 epochs | The mean loss of the last window is compared with the window before it |
         | Plateau tolerance | 0.01 | Below 1% improvement between those windows, the loss counts as flat |
         | Trainable phase learn rate | 1e-4 | The learning rate phase 2 runs at, capped at the initial rate |
@@ -225,6 +225,9 @@ The *Training process design* section configures the training process, started w
         reports how many patches per second each one manages; the best value is where that number peaks. Your images are
         not used and nothing is written to the project.
 
+        For instance segmentation the generated patches are given as many objects as your own labels contain, since that
+        is what drives the cost - the label maps are sampled to find out, the images still are not read.
+
         You are asked which size to start from (`1` by default). Testing doubles from there and stops once throughput
         starts dropping, so raising the start value skips small sizes that cannot win and shortens the test. Large
         patches can still take a few minutes.
@@ -232,7 +235,7 @@ The *Training process design* section configures the training process, started w
         The result table also gives **epochs/hour** for each size, together with an estimate of how long the configured
         *Max epochs* would take. Use it to check the run is affordable before starting it.
 
-        The suggested value is an optimistic one, because a real run also holds the validation set and the augmented
+        The suggested value is slightly optimistic, because a real run also holds the validation set and the augmented
         patches in memory. If a run using it slows down or fails, drop to the next size down.  
 - <span class="widget widget-edit">Random seeds for training and validation...</span> seeds the random number generator for training initialization 
 (use any fixed value except `0` for reproducibility, otherwise use `0` for random initialization each training attempt). 

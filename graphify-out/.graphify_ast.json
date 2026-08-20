@@ -4555,6 +4555,17 @@
       "contributor": null
     },
     {
+      "id": "controllers_makemovie_makemovie_updatemovieprogress",
+      "label": "updateMovieProgress",
+      "file_type": "code",
+      "source_file": "+controllers\\@MakeMovie\\MakeMovie.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "controllers_makemovie_makemovie_makemovie",
       "label": "MakeMovie",
       "file_type": "code",
@@ -5934,6 +5945,17 @@
       "label": "exportNetwork.m",
       "file_type": "code",
       "source_file": "+controllers\\@MibDeep\\exportNetwork.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_mibdeep_findbestminibatchsize_m",
+      "label": "findBestMinibatchSize.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@MibDeep\\findBestMinibatchSize.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -8255,6 +8277,17 @@
       "label": "fillSelection.m",
       "file_type": "code",
       "source_file": "+controllers\\@MibSelection\\fillSelection.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_mibselection_getstrelsizestring_m",
+      "label": "getStrelSizeString.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@MibSelection\\getStrelSizeString.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -12442,6 +12475,17 @@
       "contributor": null
     },
     {
+      "id": "controllers_volrenapp_buildoverlayindexvolume_m",
+      "label": "buildOverlayIndexVolume.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@VolRenApp\\buildOverlayIndexVolume.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "controllers_volrenapp_volrenapp_viewlistner_callback",
       "label": "ViewListner_Callback",
       "file_type": "code",
@@ -12895,6 +12939,105 @@
     {
       "id": "controllers_volrenapp_volrenapp_modelupdateoverlay",
       "label": "modelUpdateOverlay",
+      "file_type": "code",
+      "source_file": "+controllers\\@VolRenApp\\VolRenApp.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_volrenapp_volrenapp_applyoverlayalphamap",
+      "label": "applyOverlayAlphamap",
+      "file_type": "code",
+      "source_file": "+controllers\\@VolRenApp\\VolRenApp.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_volrenapp_volrenapp_updateoverlaymaterialwidgets",
+      "label": "updateOverlayMaterialWidgets",
+      "file_type": "code",
+      "source_file": "+controllers\\@VolRenApp\\VolRenApp.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_volrenapp_volrenapp_overlaymaterialsmodechanged",
+      "label": "overlayMaterialsModeChanged",
+      "file_type": "code",
+      "source_file": "+controllers\\@VolRenApp\\VolRenApp.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_volrenapp_volrenapp_applyoverlaymaterialslist",
+      "label": "applyOverlayMaterialsList",
+      "file_type": "code",
+      "source_file": "+controllers\\@VolRenApp\\VolRenApp.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_volrenapp_volrenapp_addcurrentmaterialtolist",
+      "label": "addCurrentMaterialToList",
+      "file_type": "code",
+      "source_file": "+controllers\\@VolRenApp\\VolRenApp.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_volrenapp_volrenapp_materialsselectionastext",
+      "label": "materialsSelectionAsText",
+      "file_type": "code",
+      "source_file": "+controllers\\@VolRenApp\\VolRenApp.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_volrenapp_volrenapp_generatesurfacebymaterialindex",
+      "label": "generateSurfaceByMaterialIndex",
+      "file_type": "code",
+      "source_file": "+controllers\\@VolRenApp\\VolRenApp.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_volrenapp_volrenapp_addsurfacefrommask",
+      "label": "addSurfaceFromMask",
+      "file_type": "code",
+      "source_file": "+controllers\\@VolRenApp\\VolRenApp.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_volrenapp_volrenapp_fetchoverlaymask",
+      "label": "fetchOverlayMask",
       "file_type": "code",
       "source_file": "+controllers\\@VolRenApp\\VolRenApp.m",
       "source_location": null,
@@ -33361,6 +33504,16 @@
     },
     {
       "source": "controllers_makemovie_makemovie_m",
+      "target": "controllers_makemovie_makemovie_updatemovieprogress",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MakeMovie\\MakeMovie.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_makemovie_makemovie_m",
       "target": "controllers_makemovie_makemovie_makemovie",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -34562,6 +34715,16 @@
     {
       "source": "controllers_mibdeep_mibdeep_m",
       "target": "controllers_mibdeep_exportnetwork_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\MibDeep.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_mibdeep_m",
+      "target": "controllers_mibdeep_findbestminibatchsize_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -36592,6 +36755,16 @@
     {
       "source": "controllers_mibselection_mibselection_m",
       "target": "controllers_mibselection_fillselection_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibSelection\\MibSelection.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibselection_mibselection_m",
+      "target": "controllers_mibselection_getstrelsizestring_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -40231,6 +40404,16 @@
     },
     {
       "source": "controllers_volrenapp_volrenapp_m",
+      "target": "controllers_volrenapp_buildoverlayindexvolume_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@VolRenApp\\VolRenApp.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_volrenapp_volrenapp_m",
       "target": "controllers_volrenapp_volrenapp_viewlistner_callback",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -40642,6 +40825,96 @@
     {
       "source": "controllers_volrenapp_volrenapp_m",
       "target": "controllers_volrenapp_volrenapp_modelupdateoverlay",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@VolRenApp\\VolRenApp.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_volrenapp_volrenapp_m",
+      "target": "controllers_volrenapp_volrenapp_applyoverlayalphamap",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@VolRenApp\\VolRenApp.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_volrenapp_volrenapp_m",
+      "target": "controllers_volrenapp_volrenapp_updateoverlaymaterialwidgets",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@VolRenApp\\VolRenApp.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_volrenapp_volrenapp_m",
+      "target": "controllers_volrenapp_volrenapp_overlaymaterialsmodechanged",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@VolRenApp\\VolRenApp.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_volrenapp_volrenapp_m",
+      "target": "controllers_volrenapp_volrenapp_applyoverlaymaterialslist",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@VolRenApp\\VolRenApp.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_volrenapp_volrenapp_m",
+      "target": "controllers_volrenapp_volrenapp_addcurrentmaterialtolist",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@VolRenApp\\VolRenApp.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_volrenapp_volrenapp_m",
+      "target": "controllers_volrenapp_volrenapp_materialsselectionastext",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@VolRenApp\\VolRenApp.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_volrenapp_volrenapp_m",
+      "target": "controllers_volrenapp_volrenapp_generatesurfacebymaterialindex",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@VolRenApp\\VolRenApp.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_volrenapp_volrenapp_m",
+      "target": "controllers_volrenapp_volrenapp_addsurfacefrommask",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@VolRenApp\\VolRenApp.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_volrenapp_volrenapp_m",
+      "target": "controllers_volrenapp_volrenapp_fetchoverlaymask",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -54961,6 +55234,16 @@
     },
     {
       "source": "controllers_alignment_continuebtn_callback_m",
+      "target": "core_toggleeventdata_toggleeventdata_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+controllers\\@Alignment\\continueBtn_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_alignment_continuebtn_callback_m",
       "target": "controllers_alignment_driftcorrectionbigdata_alignment_m",
       "relation": "calls",
       "confidence": "INFERRED",
@@ -58020,6 +58303,16 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_mibdeep_findbestminibatchsize_m",
+      "target": "controllers_mibdeep_createnetwork_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@MibDeep\\findBestMinibatchSize.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_mibdeep_importnetwork_m",
       "target": "controllers_mibdeep_saveconfig_m",
       "relation": "calls",
@@ -59916,6 +60209,26 @@
       "confidence": "INFERRED",
       "confidence_score": 0.75,
       "source_file": "+controllers\\@MibSegmentation\\update_fromModel.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibselection_dilateselection_m",
+      "target": "controllers_mibselection_getstrelsizestring_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@MibSelection\\dilateSelection.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibselection_erodeselection_m",
+      "target": "controllers_mibselection_getstrelsizestring_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@MibSelection\\erodeSelection.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -61982,6 +62295,16 @@
     {
       "source": "controllers_stitching_stitchbtn_callback_m",
       "target": "io_loaders_zarr3virtualsetuploader_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+controllers\\@Stitching\\stitchBtn_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_stitchbtn_callback_m",
+      "target": "core_toggleeventdata_toggleeventdata_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.7,
@@ -71640,6 +71963,36 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_mibdeep_findbestminibatchsize_m",
+      "target": "utils_dlgs_showerrordialog_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\findBestMinibatchSize.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_findbestminibatchsize_m",
+      "target": "utils_dlgs_inputuniversaldlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\findBestMinibatchSize.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_findbestminibatchsize_m",
+      "target": "utils_dlgs_inputquestdlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\findBestMinibatchSize.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_mibdeep_generate3ddeeplabv3network_m",
       "target": "utils_dlgs_inputuniversaldlg_m",
       "relation": "calls",
@@ -71732,6 +72085,16 @@
     {
       "source": "controllers_mibdeep_mergeinstancesto3d_m",
       "target": "utils_dlgs_showerrordialog_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\mergeInstancesTo3D.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_mergeinstancesto3d_m",
+      "target": "utils_dlgs_stitchinstancessettingsdlg_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -75751,6 +76114,16 @@
     },
     {
       "source": "controllers_volrenapp_volrenapp_m",
+      "target": "utils_dlgs_inputsingledlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@VolRenApp\\VolRenApp.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_volrenapp_volrenapp_m",
       "target": "utils_openhelppage_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
@@ -78252,6 +78625,16 @@
     {
       "source": "models_mibmodel_stitchmodelinstances_m",
       "target": "utils_dlgs_inputuniversaldlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+models\\@MibModel\\stitchModelInstances.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_stitchmodelinstances_m",
+      "target": "utils_dlgs_stitchinstancessettingsdlg_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
