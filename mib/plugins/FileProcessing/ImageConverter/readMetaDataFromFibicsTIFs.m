@@ -27,12 +27,10 @@ function dataOut = readMetaDataFromFibicsTIFs(filename)
 
 info = imfinfo(filename);
 
+% the tags are returned for any vendor, not only for Fibics: the consumer
+% (extractToXMLMetaFromFibicsTIFs) detects XML vs plain text headers itself
 if isfield(info, 'UnknownTags')
-    if isfield(info, 'Software') && strcmp( info(1).Software(1:min([6 numel(info(1).Software)])), 'Fibics')
-        dataOut = info(1).UnknownTags.Value;
-    else
-        dataOut = info(1).UnknownTags.Value;
-    end
+    dataOut = info(1).UnknownTags.Value;
 else
     dataOut = [];
 end

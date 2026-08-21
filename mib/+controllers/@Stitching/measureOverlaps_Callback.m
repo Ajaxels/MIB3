@@ -21,7 +21,18 @@ if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.Stitching.measureOverlaps_Callback: triggered\n');
 end
 if isempty(obj.layout)
-    obj.warnUser('No layout loaded. Please select input tiles first.', 'No layout');
+    % Headless (batch protocol, test suite) there is nobody to read a message
+    % box, and the return below would report success for work that never ran.
+    if isempty(obj.view)
+        error('Stitching:precondition', ...
+            'No layout loaded. Please select input tiles first.');
+    end
+    warnOptions.MsgBoxOnly  = true;
+    warnOptions.Icon        = 'puffin_warning';
+    warnOptions.HeaderLines = 1;
+    utils.dlgs.inputUniversalDlg(obj.guiFigure(), ...
+        'No layout loaded. Please select input tiles first.', {}, {}, ...
+        'No layout', warnOptions);
     return;
 end
 
@@ -43,7 +54,16 @@ pairOptions.minOverlapPx = 16;
 nominalPairs = utils.stitch.findNeighborPairs(obj.layout, pairOptions);
 
 if isempty(nominalPairs)
-    obj.warnUser('No overlapping tile pairs found. Check overlap settings.', 'No pairs');
+    if isempty(obj.view)
+        error('Stitching:precondition', ...
+            'No overlapping tile pairs found. Check overlap settings.');
+    end
+    warnOptions.MsgBoxOnly  = true;
+    warnOptions.Icon        = 'puffin_warning';
+    warnOptions.HeaderLines = 1;
+    utils.dlgs.inputUniversalDlg(obj.guiFigure(), ...
+        'No overlapping tile pairs found. Check overlap settings.', {}, {}, ...
+        'No pairs', warnOptions);
     return;
 end
 

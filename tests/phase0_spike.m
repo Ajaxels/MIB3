@@ -24,7 +24,7 @@ addpath(mibFolder);
 % via fullfile(obj.mibPath, 'assets', ...); empty mibPath only works when
 % the assets happen to be resolvable from the MATLAB path or cwd.
 try
-    mibModel = models.MibModel(1, mibFolder);
+    mibModel = models.MibModel(1, mibFolder, Verbose = false, Preferences = 'defaults');
     findings = addResult(findings, 'MibModel() constructs headlessly', true, ...
         sprintf('numel(I)=%d, id=%d', numel(mibModel.I), mibModel.id));
 catch err

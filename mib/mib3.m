@@ -52,11 +52,6 @@ function controller = mib3()
 % add path to other directories
 tic
 
-% ATTENTION! it is important to have the version number between "ver." and "/" 
-% Release syntax example: "ver. 2025.11 / 04.11.2025"
-% Beta syntax example: "ver. 2025.11 (beta 4) / 04.11.2025"
-mibVersion = 'ver. 2026.0818 / 18.08.2026 (preview)';  
-
 % MAKE SURE THAT cpuParallelLimitMax DOES NOT EXCEED NUMBER OF CPUs
 % WHEN COMPILING
 % max number of parallel workers is computed lazily on the first access of
@@ -161,6 +156,10 @@ if false
     views.WhiteBalanceGUI;
     views.WoundHealingGUI;
 end
+
+% read after the addpath block above, so that the +utils package resolves even
+% when mib3.m was started by its full path with nothing else on the MATLAB path
+mibVersion = utils.getMibVersion();
 
 mibPath = utils.getInstallationPath('mib3');
 fprintf('MIB installation path: %s\n', mibPath);

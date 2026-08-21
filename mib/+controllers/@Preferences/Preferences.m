@@ -120,6 +120,93 @@ classdef Preferences < handle
             browserPath = executable{1};
         end
 
+        function allocateLabelsLayer(dataset)
+            % ALLOCATELABELSLAYER - allocate the 63-material labels layer of a dataset that carries an empty one.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %       controllers.Preferences.allocateLabelsLayer(dataset)
+            %
+            % Called from the Apply and OK handlers when the user switches
+            % ``System.EnableSelection`` back on. A dataset opened while the
+            % preference was off carries an empty ``labels`` container - see
+            % ``core.MibDataset.initialize``, which skips the allocation to keep a
+            % browse-only dataset down to the cost of the image alone - so the layer
+            % has to be built from the dataset dimensions here.
+            %
+            % ``initialize`` is used rather than a bare ``dataset.labels.data``
+            % assignment because it also sets ``exists`` and the
+            % height/width/depth/time/dataClass bookkeeping that
+            % ``core.MibLabels63.setData63`` and ``core.MibImage.clearLayer`` clip
+            % their coordinates against. Assigning ``data`` alone leaves those at the
+            % class defaults, which silently truncates every later write to the layer.
+            %
+            % Input Arguments:
+            %   - **dataset** - [core.MibDataset] dataset whose labels layer to allocate
+            %
+
+            labelsDims = [dataset.dim_yxzct(1), dataset.dim_yxzct(2), ...
+                          dataset.dim_yxzct(3), 1, dataset.dim_yxzct(5)];
+            labelsMeta = core.MibImage.initializeImgInfo( ...
+                'Filename',  dataset.labels.filename, ...
+                'pixSize',   dataset.image.pixSize, ...
+                'Height',    labelsDims(1), ...
+                'Width',     labelsDims(2), ...
+                'Depth',     labelsDims(3), ...
+                'Time',      labelsDims(5), ...
+                'Colors',    1, ...
+                'SliceSize', dataset.image.sliceSize);
+            dataset.labels.initialize(zeros(labelsDims, 'uint8'), labelsMeta);
+        end
+
+        function releaseSegmentationLayers(dataset)
+            % RELEASESEGMENTATIONLAYERS - drop the model, mask and selection layers of a dataset.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %       controllers.Preferences.releaseSegmentationLayers(dataset)
+            %
+            % Called from the Apply and OK handlers when the user switches
+            % ``System.EnableSelection`` off, having confirmed the warning that says
+            % the Model and Mask layers will be deleted. The dataset is left in the
+            % state ``core.MibDataset.initialize`` produces for a browse-only open, so
+            % the re-enable path (``allocateLabelsLayer``) can rebuild from it.
+            %
+            % The labels handle is **replaced** rather than emptied in place, which is
+            % what actually deletes a 255+ material model: emptying the existing
+            % ``core.MibLabels`` would leave ``maxMaterials`` at 255, and re-enabling
+            % then takes the selection branch, which cannot rebuild a model layer.
+            % ``createModel`` and ``convertModel`` swap these handles the same way.
+            %
+            % Input Arguments:
+            %   - **dataset** - [core.MibDataset] dataset whose segmentation layers to drop
+            %
+
+            labelsMeta = core.MibImage.initializeImgInfo( ...
+                'pixSize', dataset.image.pixSize, ...
+                'Height',  dataset.image.height, ...
+                'Width',   dataset.image.width,  ...
+                'Depth',   dataset.image.depth,  ...
+                'Time',    dataset.image.time,   ...
+                'Colors',  1);
+
+            dataset.labels    = core.MibLabels63([], labelsMeta);
+            dataset.mask      = core.MibLabels([], labelsMeta);
+            dataset.selection = core.MibLabels([], labelsMeta);
+
+            % without these the panels keep reporting a model and a mask that no
+            % longer hold any data, and the materials list keeps its old entries
+            dataset.modelExist = false;
+            dataset.maskExist  = false;
+
+            % the materials went with the model, so the indices into them must go too
+            dataset.selectedMaterial      = 1;
+            dataset.selectedAddToMaterial = 1;
+            dataset.lastSegmSelection     = [2 1];
+        end
+
     end
     
     methods
@@ -610,25 +697,21 @@ classdef Preferences < handle
             obj.preferences.KeyShortcuts.alt = cell2mat(data(:, 6))';
 
             % deal with change of selection mode
-            if systemPrefs.EnableSelection   % turn ON the Selection
-                if activeDataset.labels.maxMaterials == 255 && ~activeDataset.selection.exists
-                    obj.mibController.mibModel.clearLayer('selection');
-                elseif activeDataset.labels.maxMaterials == 63 && ~activeDataset.labels.exists
-                    activeDataset.labels.data = zeros(...
-                        [activeDataset.dim_yxzct(1), activeDataset.dim_yxzct(2), ...
-                        activeDataset.dim_yxzct(3), 1, activeDataset.dim_yxzct(5)], 'uint8');
+            % Virtual / BigData layers are read-on-demand / disk-backed: obj.data is
+            % empty by design, so the in-memory (de)allocation below does not apply and
+            % dropping the container would break a live disk-backed model. Just apply
+            % the enableSelection flag for those - same rule as OKButtonPushedCallback
+            if ~any(activeDataset.datasetType(1) == ['V' 'B'])
+                if systemPrefs.EnableSelection   % turn ON the Selection
+                    if activeDataset.labels.maxMaterials >= 255 && ~activeDataset.selection.exists
+                        obj.mibController.mibModel.clearLayer('selection');
+                    elseif activeDataset.labels.maxMaterials == 63 && ~activeDataset.labels.exists
+                        obj.allocateLabelsLayer(activeDataset);
+                    end
+                else         % turn OFF the Selection, Mask, Model
+                    obj.releaseSegmentationLayers(activeDataset);
+                    obj.mibModel.Backup.clearContents();  % delete backup history
                 end
-            else         % turn OFF the Selection, Mask, Model
-                if activeDataset.labels.maxMaterials == 63
-                    activeDataset.labels.data = [];
-                    activeDataset.labels.exists = false;
-                else
-                    activeDataset.selection.data = [];
-                    activeDataset.selection.exists = false;
-                    activeDataset.mask.data = [];
-                    activeDataset.mask.exists = false;
-                end
-                obj.mibModel.Backup.clearContents();  % delete backup history
             end
             activeDataset.enableSelection = systemPrefs.EnableSelection;
 
@@ -739,29 +822,26 @@ classdef Preferences < handle
             % disk-backed model). Just apply the enableSelection flag for those.
             if ~any(activeDataset.datasetType(1) == ['V' 'B'])
                 if obj.preferences.System.EnableSelection
-                    if activeDataset.labels.maxMaterials >= 255 && isnan(activeDataset.selection.data(1))
+                    % test 'exists' rather than isnan(data(1)): a dataset opened while
+                    % the preference was off has data = [], and data(1) errors on it.
+                    % Both spellings of "not allocated" (NaN below, [] from
+                    % core.MibDataset.initialize) set exists = false
+                    if activeDataset.labels.maxMaterials >= 255 && ~activeDataset.selection.exists
                         obj.mibController.mibModel.clearLayer('selection');
-                    elseif activeDataset.labels.maxMaterials == 63 && isnan(activeDataset.labels.data(1))
-                        activeDataset.labels.data = zeros(...
-                            [activeDataset.dim_yxzct(1), activeDataset.dim_yxzct(2), ...
-                            activeDataset.dim_yxzct(3), 1, activeDataset.dim_yxzct(5)], 'uint8');
+                    elseif activeDataset.labels.maxMaterials == 63 && ~activeDataset.labels.exists
+                        obj.allocateLabelsLayer(activeDataset);
                     end
                 else         % turn OFF the Selection, Mask, Model
-                    if activeDataset.labels.maxMaterials == 63
-                        activeDataset.labels.data = NaN;
-                        activeDataset.labels.exists = false;
-                    else
-                        activeDataset.selection.data = NaN;
-                        activeDataset.selection.exists = false;
-                        activeDataset.mask.data = NaN;
-                        activeDataset.mask.exists = false;
-                    end
+                    obj.releaseSegmentationLayers(activeDataset);
                     backup.clearContents();  % delete backup history
                 end
             end
             activeDataset.enableSelection = obj.preferences.System.EnableSelection;
 
             notify(obj.mibModel, 'ShowImage');
+            % modelExist / maskExist and the materials list may have just changed, and
+            % only UpdateGuiWidgets refreshes the Segmentation panel that shows them
+            notify(obj.mibModel, 'UpdateGuiWidgets');
             obj.closeWindow();
         end
         

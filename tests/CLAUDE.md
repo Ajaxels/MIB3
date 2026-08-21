@@ -54,9 +54,11 @@ controller.refreshQualityChip();
 testCase.verifySubstring(rmseLabel.Text, 'Seams disagree');
 ```
 
-Set `mibModel.preferences.System.DeveloperMode = false` in the fixture — controllers print
-progress lines otherwise. Headless controllers must still **error** where the GUI shows a message
-box and returns: a silent `return` reports success for work that never happened.
+Keep `mibModel.preferences.System.DeveloperMode = false` — controllers print progress lines
+otherwise. A model built with `Preferences = 'defaults'` (see below) already has it false, so the
+explicit line in the fixture is only needed for stub models that are plain structs rather than a
+real `MibModel`. Headless controllers must still **error** where the GUI shows a message box and
+returns: a silent `return` reports success for work that never happened.
 
 ## Tags
 
@@ -77,5 +79,17 @@ state from one test to corrupt the next.
 ## Path and MibModel construction
 
 `MibPathFixture` adds `mib/` and `tests/` to the path. `buildSyntheticModel` derives the absolute
-`mib/` path from `mfilename` and passes it to `models.MibModel(1, mibFolder)` — the explicit path
-is required; an empty `mibPath` fails in clean sessions (Phase 0 finding).
+`mib/` path from `mfilename` and passes it to
+`models.MibModel(1, mibFolder, Verbose = false, Preferences = 'defaults')` — the explicit path is
+required; an empty `mibPath` fails in clean sessions (Phase 0 finding).
+
+**Always construct with both flags.** They default the other way so the real app is unaffected;
+only tests opt out.
+
+| Flag | Why tests need it |
+|------|-------------------|
+| `Verbose = false` | the constructor otherwise prints which preferences file and user statistics folder it picked up — once per model, i.e. once per test method. Warnings and errors still print. |
+| `Preferences = 'defaults'` | without it the model loads the developer's real `mib3.mat`, so a preference last saved from the GUI can change what a test asserts. It also stops the statistics migration steps in `initializePreferences`, which `movefile` real user data, from ever running inside the suite. |
+
+With `Preferences = 'defaults'` the preferences are exactly what `utils.defaults.generatePreferences`
+produces, so assert against those values — not against whatever is in your own `mib3.mat`.

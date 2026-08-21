@@ -90,6 +90,18 @@ classdef MibModel < handle
         % handle to an active IceImarisConnector connection; [] when not connected
         storedSelection = []
         % buffer for the selection layer, used by selectionBuffer (copy/paste/clear)
+        verboseStartup = true
+        % when true (default) initializePreferences prints which preferences
+        % and user statistics files were picked up; set to false via the
+        % Verbose name-value argument of the constructor to keep the model
+        % silent, as done by the test helpers that build a model per test method
+        preferencesMode = 'saved'
+        % 'saved' (default) restores the preferences of the previous session
+        % from mib3.mat; 'defaults' keeps the freshly generated defaults and
+        % touches no file of the user - no mib3.mat, no override file, no user
+        % statistics shard and no statistics migration. Set via the Preferences
+        % name-value argument of the constructor; tests use 'defaults' so that
+        % a preference saved from the GUI cannot change what they assert
     end
 
     properties (SetObservable)
@@ -178,6 +190,7 @@ classdef MibModel < handle
         dataset = getData4D(obj, type, orient, col_channel, options)        % get the complete 4D dataset; wrapper around core.MibDataset.getData4D
         propertyValue = getImageProperty(obj, propertyName, id)        % get a property of the currently shown or specified MibDataset
         partnerId = getLinkedDataset(obj, id)        % return the global dataset ID of the linked partner, or [] if id is not part of any linked pair
+        ownTiers = getOwnStatsShard(obj)        % this workstation's contribution to the user statistics, i.e. the shard it loaded plus the current session delta
         magFactor = getMagFactor(obj, id)        % get magnification factor for the currently shown or specified dataset
         [imgRGB, imgRAW, modelRAW] = getRGBimage(obj, options, datasetId, sImgIn)        % generate RGB image from all layers that have to be shown on the screen.
         importDataset(obj, layerType, BatchOptIn)        % Import the image, mask, or model layer from the MATLAB main workspace.
@@ -198,6 +211,7 @@ classdef MibModel < handle
         removeMaterial(obj, BatchOptIn)        % remove one or more materials from the current model; wrapper around core.MibDataset.removeMaterial
         replaceMaskedArea(obj, target, BatchOptIn)   % replace pixel intensities inside the Masked or Selected area with a given value
         renameMaterial(obj, BatchOptIn)        % rename one or all materials of the current model; wrapper around core.MibLabels.renameMaterial
+        relocateUserStats(obj, statsFolder)        % move the user statistics of this workstation to another folder and pick up the statistics already stored there
         resliceDataset(obj, sliceNumbers, orientation, BatchOptIn) % Keep only specified slices; remove all others (stride-reslicing)
         fnOut = save(obj, layerType, filename, BatchOptIn)        % Unified BatchOpt-compatible save: writes 'image', 'mask', or 'labels' layer. Handles directory/filename policies, [F] template expansion, SyncBatch event, and StopProtocol notification. See models.MibModel.save for full documentation and usage examples.
         fnOut = saveImage(obj, layerType, filename, BatchOptIn)        % Save image, mask, or labels layer; top-level BatchOpt-compatible wrapper.
@@ -229,33 +243,61 @@ classdef MibModel < handle
             value = obj.cpuParallelLimitMaxCached;
         end
 
-        function obj = MibModel(cpuParallelLimitMax, mibPath, mibVersion)
+        function obj = MibModel(cpuParallelLimitMax, mibPath, mibVersion, options)
             % MIBMODEL - Construct an instance of this class.
             %
             % Syntax:
-            %   function obj = MibModel(cpuParallelLimitMax, mibPath, mibVersion)
+            %   function obj = MibModel(cpuParallelLimitMax, mibPath, mibVersion, options)
             %
             % Input Arguments:
             %   - **cpuParallelLimitMax** - integer, maximal number of possible workers for parallel
             %     processing; when empty (default) the value is computed lazily on the first access
             %     of ``obj.cpuParallelLimitMax`` via ``utils.getMaxParpoolWorkers``
             %   - **mibPath** - char with the location of MIB3
-            %   - **mibVersion** - char with the MIB version as
+            %   - **mibVersion** - char with the MIB version, by default the string returned by
+            %     :func:`utils.getMibVersion`, which is the only place the version is written down.
+            %     Pass a value only to emulate another version - a version older than the one
+            %     recorded in ``mib3.mat`` makes ``initializePreferences`` fall back to the
+            %     defaults and ignore the saved preferences.
             %     ATTENTION! it is important to have the version number between "ver." and "/"
             %     Release syntax example: "ver. 2025.11 / 04.11.2025"
             %     Beta syntax example: "ver. 2025.11 (beta 4) / 04.11.2025"
+            %   - **options.Verbose** - logical, default true; when false the model is constructed
+            %     silently, i.e. ``initializePreferences`` does not print which preferences file,
+            %     override file and user statistics folder were picked up. Tests build a model per
+            %     test method, so they pass false to keep the test output readable; warnings and
+            %     errors are printed regardless of this setting
+            %   - **options.Preferences** - char, ``'saved'`` (default) or ``'defaults'``.
+            %     ``'saved'`` restores the preferences of the previous session from ``mib3.mat``,
+            %     applies an override file when present and loads the user statistics shards.
+            %     ``'defaults'`` keeps the freshly generated defaults and reads or writes no file
+            %     belonging to the user, which is what tests need: the outcome of a test must not
+            %     depend on a preference last saved from the GUI, and the statistics migration
+            %     steps (which move real files) must never run from the suite
+            %
+            % Usage:
+            %   **Example 1** - a silent, self-contained model, as built by the test helpers
+            %
+            %   .. code-block:: matlab
+            %
+            %      mibModel = models.MibModel(1, mibFolder, Verbose = false, Preferences = 'defaults');
             %
 
             arguments
                 % https://se.mathworks.com/help/releases/R2025a/matlab/input-and-output-arguments.html
                 cpuParallelLimitMax double {mustBeScalarOrEmpty} = []
                 mibPath (1,:) char = ''
-                mibVersion (1,:) char = 'ver. 2025.12 / 05.12.2025 (alpha)'
+                mibVersion (1,:) char = utils.getMibVersion()
+                options.Verbose (1,1) logical = true
+                options.Preferences (1,:) char {mustBeMember(options.Preferences, {'saved', 'defaults'})} = 'saved'
             end
 
             obj.cpuParallelLimitMaxCached = cpuParallelLimitMax;
             obj.mibPath = mibPath;
             obj.mibVersion = mibVersion;
+            % both must be set before initialize(), which reads them in initializePreferences
+            obj.verboseStartup = options.Verbose;
+            obj.preferencesMode = options.Preferences;
             obj.initialize();
         end
     end

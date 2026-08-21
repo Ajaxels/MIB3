@@ -1,8 +1,8 @@
 classdef Stitching < handle
 % STITCHING - Controller for the Image Stitching tool.
 %
-% Assembles a mosaic from overlapping 2D/3D tile images using:
-%   (a) grid dialog, (b) position file, or (c) MIB2 filename pattern.
+% Assembles a mosaic from overlapping 2D/3D tile images using a grid dialog,
+% a position file, or a MIB2 filename pattern.
 % Registration is performed by pairwise phase correlation + global weighted
 % least-squares optimisation (MIST/BigStitcher approach).  Fusion supports
 % in-memory (Standard dataset) and streaming OME-Zarr3 (BigData) outputs.
@@ -676,35 +676,6 @@ classdef Stitching < handle
             if ~isfield(obj.edges, 'seamScore'); return; end
             if any(cellfun(@isempty, {obj.edges.seamScore})); return; end
             tf = true;
-        end
-
-        % ---------------------------------------------------------------
-        function warnUser(obj, message, dlgTitle)
-            % WARNUSER - Report an unmet precondition ("measure first", "no
-            % tiles selected", …).
-            %
-            % Syntax:
-            %   .. code-block:: matlab
-            %
-            %      obj.warnUser(message, dlgTitle)
-            %
-            % With a window: a message box, and the caller returns leaving the
-            % state untouched. Without one (batch protocol, headless run) there
-            % is nobody to read a message box, so the same condition is raised
-            % as an error - the caller's ``return`` would otherwise report
-            % success for work that never happened.
-            %
-            % Input Arguments:
-            %   - **message** - [char] what is missing, in user language
-            %   - **dlgTitle** - [char] dialog title
-            %
-            if isempty(obj.view)
-                error('Stitching:precondition', '%s', message);
-            end
-            warnOptions.MsgBoxOnly  = true;
-            warnOptions.Icon        = 'puffin_warning';
-            warnOptions.HeaderLines = 1;
-            utils.dlgs.inputUniversalDlg(obj.guiFigure(), message, {}, {}, dlgTitle, warnOptions);
         end
 
         % ---------------------------------------------------------------

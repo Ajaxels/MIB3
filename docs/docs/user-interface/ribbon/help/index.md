@@ -81,9 +81,13 @@ Use **Ribbon → Home → Help → The Game of MIB** to open your personalized s
 See your current score, track your segmentation achievements, and make annotation just a little more fun.
 
 ??? info Tracking data 
-    The tracking data is stored on your computer and is not transferred anywhere away.<br>
-    You can find the tracking file (`mib_user.mat`) at the same location where the mib preference file is stored, 
-    [see here](../home/index.md#preferences).
+    The tracking data stays on your computer and is not transferred anywhere away.<br>
+    Each computer writes its own tracking file (`mib_user_COMPUTERNAME.mat`), and MIB adds up
+    every file it finds in the folder. Keeping that folder somewhere all your computers can
+    reach - your OneDrive or your network home directory - therefore makes your statistics
+    follow you. Use <span class="widget widget-button">Set stats folder...</span> in the stats
+    dialog to choose it, and see
+    [Sharing your statistics between computers](../../../getting-started/configuration/index.md#sharing-your-statistics-between-computers).
 
 
 

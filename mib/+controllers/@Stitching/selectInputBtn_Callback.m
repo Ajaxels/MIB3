@@ -8,6 +8,7 @@ function selectInputBtn_Callback(obj)
 %
 % Behaviour depends on ``BatchOpt.LayoutSource`` and ``BatchOpt.SubfolderMode``
 % (SubfolderMode = each tile is a FOLDER Z-stack rather than a single file):
+%
 %   - **Bio-Formats metadata** - multi-select file picker; one multi-series file
 %     (series = tiles) or several single-tile files carrying stage coordinates.
 %   - **Position file** - file picker for any kind of file that states where the

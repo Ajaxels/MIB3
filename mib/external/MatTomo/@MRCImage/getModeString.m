@@ -34,6 +34,8 @@ switch  mRCImage.header.mode
     modeString = 'int16*2';   % used for complex short ints
   case 4
     modeString = 'float32*2'; % used for complex floating point
+  case 6
+    modeString = 'uint16';    % MRC2014 / IMOD unsigned 16-bit; added for MIB
   otherwise
     PEETError('Unsupported MRCImage mode %d!', mRCImage.header.mode);
 end

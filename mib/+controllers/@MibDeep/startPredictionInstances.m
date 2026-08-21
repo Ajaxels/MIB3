@@ -12,20 +12,24 @@ function startPredictionInstances(obj)
 % instance is saved as a unique integer index in a MIB model (background 0).
 %
 % Both 2D images and z-stacks are accepted, as in the 2D Semantic workflow:
+%
 %   - a 2D file is predicted directly and saved as a 2D model;
 %   - a file with several z-slices is predicted slice-by-slice and saved as a single
 %     3D model.
+%
 % The instance indices are contiguous 1..N **within each slice** and are not consistent
 % between slices - linking them into 3D objects is the job of the "Merge 2D to 3D"
 % button (mergeInstancesTo3D), which ignores the input indices anyway.
 %
 % Cross-tile stitching mode is selected with BatchOpt.P_OverlapInstancesMode:
+%
 %   - 'Centroid in core' (see deepmib.segmentBlockedImageInstances) - objects are emitted
 %     by the tile that owns their centroid, requiring the overlap
 %     (P_OverlappingTilesPercentage) to be >= the largest object;
 %   - 'IoU merge' (see deepmib.segmentImageInstancesIoUMerge) - all per-tile detections are
 %     kept and merged across seams when their masks agree inside the shared overlap band;
 %     works for objects larger than the overlap.
+%
 % The detection confidence threshold and the merge IoU/IoA thresholds are taken from
 % obj.OverlapInstancesOpt (updateOverlapInstancesSettings).
 % Instance prediction does not require preprocessing: images are read directly.

@@ -1,5 +1,5 @@
 MembranePixClassifier
-===========
+=====================
 
 .. currentmodule:: controllers
 

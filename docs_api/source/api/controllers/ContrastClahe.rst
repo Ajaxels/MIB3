@@ -1,5 +1,5 @@
 ContrastClahe
-===========
+=============
 
 .. currentmodule:: controllers
 

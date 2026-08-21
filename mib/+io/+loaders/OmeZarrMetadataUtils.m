@@ -108,8 +108,8 @@ methods (Static)
         % In OME-Zarr, non-spatial axes (t, c) come BEFORE spatial axes
         % (z, y, x) and typically have scale=1. So a 3-element CT scale
         % [0.03, 0.13, 0.13] for a 'tczyx' dataset means [z, y, x] - the
-        % values belong at the END of the output vector:
-        %   scales = [1, 1, 0.03, 0.13, 0.13]
+        % values belong at the END of the output vector, i.e.
+        % ``scales = [1, 1, 0.03, 0.13, 0.13]``.
         % This is why values are right-aligned, not left-aligned.
         %
 

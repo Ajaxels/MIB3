@@ -3,18 +3,20 @@ classdef AmiraImportDlg < handle
 %
 % The AmiraImportDlg class is responsible for a dialog to advanced opening of Amira Mesh files.
 % It manages the interaction logic between the model and the App Designer view.
-% Usage:
-%   % Initialize controller
-%   controller = utils.dlgs.AmiraImportDlg(dimxyczt, ParentFigure, options.Font);
-%   %   % Run dialog
-%   result = controller.run();
 %
-%   % Result structure contains:
-%   % result.startIndex
-%   % result.endIndex
-%   % result.zstep
-%   % result.xy_step
-%   % result.method
+% Usage:
+%   .. code-block:: matlab
+%
+%      controller = utils.dlgs.AmiraImportDlg(dimxyczt, ParentFigure, options.Font);
+%      result = controller.run();
+%
+% The result structure contains:
+%
+%   - `.startIndex`
+%   - `.endIndex`
+%   - `.zstep`
+%   - `.xy_step`
+%   - `.method`
 %
     
     % Author: Ilya Belevich, University of Helsinki (ilya.belevich @ helsinki.fi)

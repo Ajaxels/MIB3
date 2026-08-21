@@ -27,7 +27,7 @@ function [shiftYXZ, quality, debugInfo] = pairwiseShift(cropA, cropB, options)
 %      % P_j - P_i in the shared global frame:
 %      measured = (bboxA(:,1) - bboxB(:,1))' - [dy dx]
 %
-% - this composition (including the sign NEGATION of the raw shift) lives in
+% This composition (including the sign NEGATION of the raw shift) lives in
 % ``utils.stitch.measureAllPairs/measureOne``.
 %
 % Input Arguments:

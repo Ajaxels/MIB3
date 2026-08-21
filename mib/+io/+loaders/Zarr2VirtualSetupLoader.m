@@ -30,6 +30,7 @@ classdef Zarr2VirtualSetupLoader < io.loaders.BaseImageLoader
 % from loaderInfo.mode).
 %
 % Supported formats:
+%
 % - OME-Zarr v2 (.zattrs/.zgroup/.zarray metadata) - local folders and HTTP/HTTPS URLs
 % - Single-array zarr v2 (no multiscales metadata) - treated as 1 level
 % - Nested containers where the image group sits below the selected root, e.g.

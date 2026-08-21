@@ -47,6 +47,49 @@ classdef MibDatasetTest < matlab.unittest.TestCase
             testCase.verifyFalse(ds.modelExist);
         end
 
+        % -----------------------------------------------------------------
+        % enableSelection
+        % -----------------------------------------------------------------
+
+        function enableSelectionAllocatesLabelsLayer(testCase)
+            ds = core.MibDataset();
+            ds.initialize(uint8(zeros(16,16,4,1)), [], 'Standard', 'imageOnly', true);
+
+            testCase.verifyTrue(ds.enableSelection);
+            testCase.verifyTrue(ds.labels.exists);
+            testCase.verifyEqual(numel(ds.labels.data), 16*16*4);
+        end
+
+        function browseOnlyInitializeSkipsLabelsAllocation(testCase)
+            % enableSelection == false must cost no label memory: a zero-filled
+            % labels layer is as big as a single-color copy of the image, which
+            % defeats the point of switching the selection layer off on a stack
+            % large enough to need it
+            ds = core.MibDataset();
+            ds.initialize(uint8(zeros(16,16,4,1)), [], 'Standard', 'imageOnly', false);
+
+            testCase.verifyFalse(ds.enableSelection);
+            testCase.verifyFalse(ds.labels.exists);
+            testCase.verifyEmpty(ds.labels.data);
+            % the container class is kept so the layer can be allocated later
+            testCase.verifyClass(ds.labels, 'core.MibLabels63');
+            % the image itself is untouched
+            testCase.verifyEqual(ds.image.height, 16);
+            testCase.verifyEqual(ds.dim_yxzct, [16 16 4 1 1]);
+        end
+
+        function emptyDatasetTypeKeepsCurrentType(testCase)
+            % models.MibModel.loadImages passes [] for datasetType so it can
+            % reach the enableSelection argument without restating the type
+            ds = core.MibDataset(uint8(zeros(16,16,4,1)), dictionary(), ...
+                'Standard', 'imageOnly');
+            ds.initialize(uint8(zeros(8,8,2,1)), [], [], [], false);
+
+            testCase.verifyEqual(ds.datasetType, 'Standard');
+            testCase.verifyEqual(ds.dim_yxzct, [8 8 2 1 1]);
+            testCase.verifyFalse(ds.enableSelection);
+        end
+
         function failedInitializeKeepsDatasetUsable(testCase)
             % a rejected initialize must not leave the container half-built:
             % previously obj.image was set to NaN before the new layers were

@@ -102,7 +102,7 @@ classdef AllocateMaskTest < matlab.unittest.TestCase
             mibFolder   = fullfile(fileparts(testsFolder), 'mib');
             rng(0, 'twister');
             imgData = uint8(randi(255, [dims(1), dims(2), dims(3), 1]));
-            mibModel = models.MibModel(1, mibFolder);
+            mibModel = models.MibModel(1, mibFolder, Verbose = false, Preferences = 'defaults');
             mibModel.I{1} = core.MibDataset(imgData, dictionary(), 'Standard', 'labels63');
             mibModel.I{1}.updateBoundingBox([], [0 0 0]);
             mibModel.I{1}.createModel(255);

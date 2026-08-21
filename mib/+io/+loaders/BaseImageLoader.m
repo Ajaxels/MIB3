@@ -564,11 +564,19 @@ classdef (Abstract) BaseImageLoader < handle
             imginfo{"Depth"} = sum([files.noLayers]);
             imginfo{"Filename"} = filename;
 
-            if isempty(imginfo{"Height"}); imginfo{"Height"} = max([files.height]); end
-            if isempty(imginfo{"Width"}); imginfo{"Width"} = max([files.width]); end
-            if isempty(imginfo{"Depth"}); imginfo{"Depth"} = max([files.noLayers]); end
-            if isempty(imginfo{"Colors"}); imginfo{"Colors"} = max([files.color]); end
-            if isempty(imginfo{"Time"}); imginfo{"Time"} = max([files.time]); end
+            % Dimensions of the combined dataset, derived from files() with the
+            % same formulas every loader's loadImages uses, so metadata read on
+            % its own already describes what a later load will return.
+            %
+            % These used to be guarded by isempty() and therefore never ran:
+            % core.MibImage.initializeImgInfo seeds Height/Width with 512 and
+            % Time with 1, and none of those is empty, so every loader reported
+            % a 512x512 dataset until loadImages overwrote it. The Depth and
+            % Colors guards were dead twice over - both keys are assigned
+            % unconditionally a few lines above - and are gone.
+            imginfo{"Height"} = max([files.height]);
+            imginfo{"Width"}  = max([files.width]);
+            imginfo{"Time"}   = max([files.time]);
         end
 
         function merged = mergeOptions(~, opts1, opts2)

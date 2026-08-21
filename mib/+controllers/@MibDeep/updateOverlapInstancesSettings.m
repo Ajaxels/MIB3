@@ -9,9 +9,10 @@ function updateOverlapInstancesSettings(obj)
 % Settings for prediction in the 2D Instance workflow; the stitching mode itself is
 % selected with the "Overlap mode" dropdown (BatchOpt.P_OverlapInstancesMode) and the
 % values below are stored in obj.OverlapInstancesOpt:
-%   .DetectionThreshold - confidence threshold of segmentObjects [both overlap modes]
-%   .MergeIoU - in-band intersection-over-union to merge detections ["IoU merge" mode]
-%   .MergeIoA - in-band intersection-over-smaller-area to merge detections ["IoU merge" mode]
+%
+%   - `.DetectionThreshold` - confidence threshold of segmentObjects [both overlap modes]
+%   - `.MergeIoU` - in-band intersection-over-union to merge detections ["IoU merge" mode]
+%   - `.MergeIoA` - in-band intersection-over-smaller-area to merge detections ["IoU merge" mode]
 
 % lazy init to cover instances created before this property was introduced
 if isempty(obj.OverlapInstancesOpt)

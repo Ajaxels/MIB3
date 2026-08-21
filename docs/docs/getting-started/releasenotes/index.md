@@ -1,4 +1,4 @@
-# Current Release Notes
+i# Current Release Notes
 
 This page lists the current and potentially beta-version release notes for **Microscopy Image Browser (MIB)**, detailing new features, improvements, and fixes across versions.<br> 
 For the latest updates, visit [MIB website](https://mib.helsinki.fi/downloads.html) or check the [Current release notes](index.md).

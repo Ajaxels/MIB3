@@ -1,5 +1,5 @@
 WoundHealing
-===========
+============
 
 .. currentmodule:: controllers
 

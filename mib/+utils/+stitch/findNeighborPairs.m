@@ -9,7 +9,7 @@ function pairs = findNeighborPairs(layout, options)
 %
 % Tests all tile pairs for rectangle overlap using their nominal origins and
 % tile sizes.  Within-layer pairs are tagged ``'x'`` (primarily side-by-side,
-% |dx| >= |dy|) or ``'y'`` (primarily top-bottom).  Pairs in adjacent Z-layers
+% ``abs(dx) >= abs(dy)``) or ``'y'`` (primarily top-bottom).  Pairs in adjacent Z-layers
 % whose XY footprints overlap are tagged ``'z'``.
 %
 % Pairs with overlap smaller than ``options.minOverlapPx`` pixels in both

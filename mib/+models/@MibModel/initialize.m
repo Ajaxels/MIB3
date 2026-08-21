@@ -28,10 +28,14 @@ arguments (Input)
 end
 
 %% initialize preferences
-obj.initializePreferences();
-
-% define default sessionSettings
+% sessionSettings must be generated FIRST: initializePreferences stores the user
+% statistics baselines (UserStats.TotalAtLoad/OwnShardAtLoad) in it, and
+% generateSessionSettings replaces the whole structure rather than merging into
+% it - running it afterwards used to drop those baselines, which made
+% MibController.exitProgram write the sum over all workstations into this
+% machine's own shard instead of the session delta
 obj.sessionSettings = utils.defaults.generateSessionSettings();
+obj.initializePreferences();
 
 
 %% define MibModel properties

@@ -35,6 +35,8 @@ switch  mRCImage.header.mode
   nBytes = 4;
  case 4
   nBytes = 8;
+ case 6
+  nBytes = 2;   % MRC2014 / IMOD unsigned 16-bit; added for MIB
  otherwise
   nBytes = -1;
 end

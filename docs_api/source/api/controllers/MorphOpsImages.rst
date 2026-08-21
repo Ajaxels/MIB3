@@ -1,5 +1,5 @@
 MorphOpsImages
-===========
+==============
 
 .. currentmodule:: controllers
 

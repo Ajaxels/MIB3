@@ -89,7 +89,7 @@ classdef MultiChannelIntegrationTest < matlab.unittest.TestCase
             testsFolder = fileparts(fileparts(mfilename('fullpath')));
             mibFolder   = fullfile(fileparts(testsFolder), 'mib');
 
-            mibModel = models.MibModel(1, mibFolder);
+            mibModel = models.MibModel(1, mibFolder, Verbose = false, Preferences = 'defaults');
             mibModel.I{1} = core.MibDataset(twoChannelVol, dictionary(), 'Standard', 'labels63');
             mibModel.I{1}.updateBoundingBox([], [0 0 0]);
             mibModel.I{1}.createModel(255);

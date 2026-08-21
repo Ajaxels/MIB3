@@ -13,11 +13,11 @@ function startController(obj, controllerName, varargin)
 %
 % Behaviour:
 %   - If the child window is already open, it is brought to the front and
-% its widgets are refreshed.
+%     its widgets are refreshed.
 %   - If a BatchOpt struct is supplied (varargin{2}), the child runs in
-% batch mode (no GUI) and returns immediately.
+%     batch mode (no GUI) and returns immediately.
 %   - Lifecycle is managed automatically: a CloseEvent listener is wired
-% on the child and calls utils.purgeChildController on close.
+%     on the child and calls utils.purgeChildController on close.
 %
 % Input Arguments:
 %   - **controllerName** - char - fully-qualified child controller class name,

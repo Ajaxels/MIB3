@@ -42,7 +42,13 @@ mibFolder   = fullfile(fileparts(testsFolder), 'mib');
 % mibPath MUST be the absolute path to mib/ (Phase 0 finding: empty mibPath
 % fails in clean sessions because datasetsSetsOps.m resolves assets relative
 % to mibPath and imread('assets/images/default.png') fails without it).
-mibModel = models.MibModel(1, mibFolder);
+% Verbose = false: a model is built per test method, the startup lines naming
+% the preferences file and the user statistics folder would otherwise be
+% printed between every pair of test dots.
+% Preferences = 'defaults': the test must assert against known defaults rather
+% than against whatever was last saved from the GUI, and the statistics
+% migration steps must never move real files from the suite.
+mibModel = models.MibModel(1, mibFolder, Verbose = false, Preferences = 'defaults');
 
 mibModel.I{1} = core.MibDataset(groundTruth.image, dictionary(), 'Standard', 'labels63');
 mibModel.I{1}.updateBoundingBox([], [0 0 0]);

@@ -21,7 +21,8 @@ function moveMaskToModelDataset(obj, action_type, options)
 %
 %     - ``.contSelIndex`` - index of the Select from material
 %     - ``.contAddIndex`` - index of the Add to material
-%     - ``.selected_sw`` - [0/1] limit actions to the selected material only%
+%     - ``.selected_sw`` - [0/1] limit actions to the selected material only
+%
 % Output Arguments:
 %
 % Usage:

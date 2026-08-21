@@ -14,7 +14,7 @@ classdef RenameRestore < handle
         mibModel            % handle to MibModel
         view                % handle to RenameRestoreGUI (set by core.ChildView)
         listener            % cell array of listener handles
-        inputFilename = []  % path to *.mibShuffle project file
+        inputFilename = []  % path to a ``.mibShuffle`` project file
         Settings = struct() % project settings loaded from the project file
     end
 
@@ -237,7 +237,7 @@ classdef RenameRestore < handle
 
         % ---------------------------------------------------------------
         function selectSettingsFileBtn_Callback(obj)
-            % SELECTSETTINGSFILEBN_CALLBACK - Browse for a *.mibShuffle project file.
+            % SELECTSETTINGSFILEBN_CALLBACK - Browse for a ``.mibShuffle`` project file.
             %
             % Syntax:
             %   .. code-block:: matlab

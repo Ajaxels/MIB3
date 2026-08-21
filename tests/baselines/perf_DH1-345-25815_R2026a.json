@@ -1,407 +1,422 @@
 {
   "schemaVersion": 1,
-  "host": "LH4-919-31134",
+  "host": "DH1-345-25815",
   "matlabRelease": "R2026a",
-  "createdUtc": "2026-06-11T13:46:04Z",
+  "createdUtc": "2026-08-21T16:03:19Z",
   "measurements": {
+    "GetSetDataPerf_SLASH_get3D_image_SLASH_trypanosoma": {
+      "meanSeconds": 0.00028966,
+      "minSeconds": 0.0001901,
+      "samples": 5
+    },
+    "GetSetDataPerf_SLASH_get3D_labels_SLASH_trypanosoma": {
+      "meanSeconds": 0.01131032,
+      "minSeconds": 0.01097,
+      "samples": 5
+    },
+    "GetSetDataPerf_SLASH_get2D_image_SLASH_trypanosoma": {
+      "meanSeconds": 0.000447525,
+      "minSeconds": 0.0004272,
+      "samples": 100
+    },
     "GetSetDataPerf_SLASH_getRGBimage_SLASH_labels63": {
-      "meanSeconds": 0.0021140349999999994,
-      "minSeconds": 0.00149,
+      "meanSeconds": 0.0036806049999999991,
+      "minSeconds": 0.0029851,
       "samples": 20
     },
     "GetSetDataPerf_SLASH_getRGBimage_SLASH_labels255": {
-      "meanSeconds": 0.00202833,
-      "minSeconds": 0.0012092,
+      "meanSeconds": 0.0028879250000000004,
+      "minSeconds": 0.0028424,
       "samples": 20
     },
     "GetSetDataPerf_SLASH_getRGBimage_SLASH_labels65535": {
-      "meanSeconds": 0.002162695,
-      "minSeconds": 0.0015762,
+      "meanSeconds": 0.002885975,
+      "minSeconds": 0.0028168,
       "samples": 20
     },
     "GetSetDataPerf_SLASH_get4D_image_SLASH_labels63": {
-      "meanSeconds": 0.00025516,
-      "minSeconds": 6.16E-5,
+      "meanSeconds": 0.0002409,
+      "minSeconds": 8.2E-5,
       "samples": 5
     },
     "GetSetDataPerf_SLASH_get4D_image_SLASH_labels255": {
-      "meanSeconds": 4.638E-5,
-      "minSeconds": 3.85E-5,
+      "meanSeconds": 7.01E-5,
+      "minSeconds": 5.64E-5,
       "samples": 5
     },
     "GetSetDataPerf_SLASH_get4D_image_SLASH_labels65535": {
-      "meanSeconds": 4.2420000000000004E-5,
-      "minSeconds": 3.69E-5,
+      "meanSeconds": 5.8020000000000004E-5,
+      "minSeconds": 5.55E-5,
       "samples": 5
     },
     "GetSetDataPerf_SLASH_get4D_labels_SLASH_labels63": {
-      "meanSeconds": 0.00207902,
-      "minSeconds": 0.0016238,
+      "meanSeconds": 0.00135632,
+      "minSeconds": 0.0012152,
       "samples": 5
     },
     "GetSetDataPerf_SLASH_get4D_labels_SLASH_labels255": {
-      "meanSeconds": 7.298E-5,
-      "minSeconds": 4.89E-5,
+      "meanSeconds": 5.85E-5,
+      "minSeconds": 5.05E-5,
       "samples": 5
     },
     "GetSetDataPerf_SLASH_get4D_labels_SLASH_labels65535": {
-      "meanSeconds": 5.9239999999999995E-5,
-      "minSeconds": 3.97E-5,
+      "meanSeconds": 5.6099999999999995E-5,
+      "minSeconds": 5.01E-5,
       "samples": 5
     },
     "GetSetDataPerf_SLASH_set4D_image_SLASH_labels63": {
-      "meanSeconds": 0.00045382,
-      "minSeconds": 0.0001017,
+      "meanSeconds": 0.00034852,
+      "minSeconds": 0.0001094,
       "samples": 5
     },
     "GetSetDataPerf_SLASH_set4D_image_SLASH_labels255": {
-      "meanSeconds": 5.6099999999999995E-5,
-      "minSeconds": 4.97E-5,
+      "meanSeconds": 0.00011146,
+      "minSeconds": 8.01E-5,
       "samples": 5
     },
     "GetSetDataPerf_SLASH_set4D_image_SLASH_labels65535": {
-      "meanSeconds": 5.216E-5,
-      "minSeconds": 4.69E-5,
+      "meanSeconds": 8.3099999999999987E-5,
+      "minSeconds": 7.97E-5,
       "samples": 5
     },
     "GetSetDataPerf_SLASH_set4D_labels_SLASH_labels63": {
-      "meanSeconds": 0.00322712,
-      "minSeconds": 0.0022002,
+      "meanSeconds": 0.0038062999999999994,
+      "minSeconds": 0.0032892,
       "samples": 5
     },
     "GetSetDataPerf_SLASH_set4D_labels_SLASH_labels255": {
-      "meanSeconds": 7.3519999999999987E-5,
-      "minSeconds": 5.71E-5,
+      "meanSeconds": 9.0839999999999991E-5,
+      "minSeconds": 7.98E-5,
       "samples": 5
     },
     "GetSetDataPerf_SLASH_set4D_labels_SLASH_labels65535": {
-      "meanSeconds": 0.00013094000000000002,
-      "minSeconds": 4.63E-5,
+      "meanSeconds": 0.00018041999999999998,
+      "minSeconds": 0.0001397,
       "samples": 5
     },
     "GetSetDataPerf_SLASH_get3D_image_SLASH_labels63": {
-      "meanSeconds": 0.00049558,
-      "minSeconds": 8.03E-5,
+      "meanSeconds": 0.00024549999999999995,
+      "minSeconds": 6.61E-5,
       "samples": 5
     },
     "GetSetDataPerf_SLASH_get3D_image_SLASH_labels255": {
-      "meanSeconds": 3.348E-5,
-      "minSeconds": 2.81E-5,
+      "meanSeconds": 4.836E-5,
+      "minSeconds": 4.6E-5,
       "samples": 5
     },
     "GetSetDataPerf_SLASH_get3D_image_SLASH_labels65535": {
-      "meanSeconds": 3.454E-5,
-      "minSeconds": 2.92E-5,
+      "meanSeconds": 4.8580000000000006E-5,
+      "minSeconds": 4.61E-5,
       "samples": 5
     },
     "GetSetDataPerf_SLASH_get3D_labels_SLASH_labels63": {
-      "meanSeconds": 0.0012248,
-      "minSeconds": 0.0009315,
+      "meanSeconds": 0.0013654399999999999,
+      "minSeconds": 0.0011741,
       "samples": 5
     },
     "GetSetDataPerf_SLASH_get3D_labels_SLASH_labels255": {
-      "meanSeconds": 7.374E-5,
-      "minSeconds": 4.69E-5,
+      "meanSeconds": 4.734E-5,
+      "minSeconds": 4.08E-5,
       "samples": 5
     },
     "GetSetDataPerf_SLASH_get3D_labels_SLASH_labels65535": {
-      "meanSeconds": 3.586E-5,
-      "minSeconds": 2.7E-5,
+      "meanSeconds": 4.772E-5,
+      "minSeconds": 4.11E-5,
       "samples": 5
     },
     "GetSetDataPerf_SLASH_get3D_mask_SLASH_labels63": {
-      "meanSeconds": 0.0011742800000000002,
-      "minSeconds": 0.000819,
+      "meanSeconds": 0.00151096,
+      "minSeconds": 0.0012485,
       "samples": 5
     },
     "GetSetDataPerf_SLASH_get3D_mask_SLASH_labels255": {
-      "meanSeconds": 4.92E-5,
-      "minSeconds": 4.16E-5,
+      "meanSeconds": 4.3179999999999997E-5,
+      "minSeconds": 4.1E-5,
       "samples": 5
     },
     "GetSetDataPerf_SLASH_get3D_mask_SLASH_labels65535": {
-      "meanSeconds": 3.0420000000000004E-5,
-      "minSeconds": 2.73E-5,
+      "meanSeconds": 5.266E-5,
+      "minSeconds": 4.12E-5,
       "samples": 5
     },
     "GetSetDataPerf_SLASH_get3D_selection_SLASH_labels63": {
-      "meanSeconds": 0.00140984,
-      "minSeconds": 0.001093,
+      "meanSeconds": 0.0015823,
+      "minSeconds": 0.0013503,
       "samples": 5
     },
     "GetSetDataPerf_SLASH_get3D_selection_SLASH_labels255": {
-      "meanSeconds": 3.0399999999999997E-5,
-      "minSeconds": 2.75E-5,
+      "meanSeconds": 4.264E-5,
+      "minSeconds": 4.08E-5,
       "samples": 5
     },
     "GetSetDataPerf_SLASH_get3D_selection_SLASH_labels65535": {
-      "meanSeconds": 2.858E-5,
-      "minSeconds": 2.53E-5,
+      "meanSeconds": 4.132E-5,
+      "minSeconds": 3.95E-5,
       "samples": 5
     },
     "GetSetDataPerf_SLASH_get3D_labelsMaterial_SLASH_labels63": {
-      "meanSeconds": 0.0019790999999999997,
-      "minSeconds": 0.0015617,
+      "meanSeconds": 0.0022129399999999996,
+      "minSeconds": 0.0019557,
       "samples": 5
     },
     "GetSetDataPerf_SLASH_get3D_labelsMaterial_SLASH_labels255": {
-      "meanSeconds": 0.00221674,
-      "minSeconds": 0.0019086,
+      "meanSeconds": 0.0020952600000000003,
+      "minSeconds": 0.0019681,
       "samples": 5
     },
     "GetSetDataPerf_SLASH_get3D_labelsMaterial_SLASH_labels65535": {
-      "meanSeconds": 0.00181036,
-      "minSeconds": 0.001616,
+      "meanSeconds": 0.0019337,
+      "minSeconds": 0.0017423,
       "samples": 5
     },
     "GetSetDataPerf_SLASH_get3D_imageOrient1_SLASH_labels63": {
-      "meanSeconds": 0.00247752,
-      "minSeconds": 0.0019313,
+      "meanSeconds": 0.0043954400000000005,
+      "minSeconds": 0.0040664,
       "samples": 5
     },
     "GetSetDataPerf_SLASH_get3D_imageOrient1_SLASH_labels255": {
-      "meanSeconds": 0.0054866,
-      "minSeconds": 0.0021633,
+      "meanSeconds": 0.00441688,
+      "minSeconds": 0.0041478,
       "samples": 5
     },
     "GetSetDataPerf_SLASH_get3D_imageOrient1_SLASH_labels65535": {
-      "meanSeconds": 0.0018714399999999998,
-      "minSeconds": 0.0016222,
+      "meanSeconds": 0.00456752,
+      "minSeconds": 0.0042628,
       "samples": 5
     },
     "GetSetDataPerf_SLASH_get3D_everything_SLASH_labels63": {
-      "meanSeconds": 0.00031128000000000004,
-      "minSeconds": 7.81E-5,
+      "meanSeconds": 0.00023894000000000004,
+      "minSeconds": 7.73E-5,
       "samples": 5
     },
     "GetSetDataPerf_SLASH_set3D_image_SLASH_labels63": {
-      "meanSeconds": 0.00034045999999999995,
-      "minSeconds": 8.52E-5,
+      "meanSeconds": 0.00027246000000000003,
+      "minSeconds": 0.0001019,
       "samples": 5
     },
     "GetSetDataPerf_SLASH_set3D_image_SLASH_labels255": {
-      "meanSeconds": 4.886E-5,
-      "minSeconds": 4.34E-5,
+      "meanSeconds": 7.616E-5,
+      "minSeconds": 7.39E-5,
       "samples": 5
     },
     "GetSetDataPerf_SLASH_set3D_image_SLASH_labels65535": {
-      "meanSeconds": 5.0479999999999991E-5,
-      "minSeconds": 4.33E-5,
+      "meanSeconds": 7.572E-5,
+      "minSeconds": 7.32E-5,
       "samples": 5
     },
     "GetSetDataPerf_SLASH_set3D_labels_SLASH_labels63": {
-      "meanSeconds": 0.00225444,
-      "minSeconds": 0.0018102,
+      "meanSeconds": 0.0031847800000000003,
+      "minSeconds": 0.0029425,
       "samples": 5
     },
     "GetSetDataPerf_SLASH_set3D_labels_SLASH_labels255": {
-      "meanSeconds": 5.097999999999999E-5,
-      "minSeconds": 4.15E-5,
+      "meanSeconds": 7.606E-5,
+      "minSeconds": 7.26E-5,
       "samples": 5
     },
     "GetSetDataPerf_SLASH_set3D_labels_SLASH_labels65535": {
-      "meanSeconds": 5.2260000000000004E-5,
-      "minSeconds": 4.04E-5,
+      "meanSeconds": 7.922E-5,
+      "minSeconds": 7.22E-5,
       "samples": 5
     },
     "GetSetDataPerf_SLASH_set3D_mask_SLASH_labels63": {
-      "meanSeconds": 0.00234828,
-      "minSeconds": 0.0018573,
+      "meanSeconds": 0.0034293400000000003,
+      "minSeconds": 0.0030323,
       "samples": 5
     },
     "GetSetDataPerf_SLASH_set3D_mask_SLASH_labels255": {
-      "meanSeconds": 7.45E-5,
-      "minSeconds": 5E-5,
+      "meanSeconds": 8.164E-5,
+      "minSeconds": 7.87E-5,
       "samples": 5
     },
     "GetSetDataPerf_SLASH_set3D_mask_SLASH_labels65535": {
-      "meanSeconds": 6.718E-5,
-      "minSeconds": 4.55E-5,
+      "meanSeconds": 8.2319999999999984E-5,
+      "minSeconds": 7.92E-5,
       "samples": 5
     },
     "GetSetDataPerf_SLASH_set3D_selection_SLASH_labels63": {
-      "meanSeconds": 0.00243282,
-      "minSeconds": 0.0020414,
+      "meanSeconds": 0.0034123,
+      "minSeconds": 0.0031075,
       "samples": 5
     },
     "GetSetDataPerf_SLASH_set3D_selection_SLASH_labels255": {
-      "meanSeconds": 0.00011754,
-      "minSeconds": 0.000111,
+      "meanSeconds": 6.852E-5,
+      "minSeconds": 6.66E-5,
       "samples": 5
     },
     "GetSetDataPerf_SLASH_set3D_selection_SLASH_labels65535": {
-      "meanSeconds": 4.398E-5,
-      "minSeconds": 3.94E-5,
+      "meanSeconds": 8.0200000000000011E-5,
+      "minSeconds": 6.63E-5,
       "samples": 5
     },
     "GetSetDataPerf_SLASH_set3D_labelsMaterial_SLASH_labels63": {
-      "meanSeconds": 0.01790746,
-      "minSeconds": 0.0138403,
+      "meanSeconds": 0.026779940000000002,
+      "minSeconds": 0.0261095,
       "samples": 5
     },
     "GetSetDataPerf_SLASH_set3D_labelsMaterial_SLASH_labels255": {
-      "meanSeconds": 0.01785536,
-      "minSeconds": 0.0170418,
+      "meanSeconds": 0.034794200000000004,
+      "minSeconds": 0.034341,
       "samples": 5
     },
     "GetSetDataPerf_SLASH_set3D_labelsMaterial_SLASH_labels65535": {
-      "meanSeconds": 0.02020196,
-      "minSeconds": 0.0181222,
+      "meanSeconds": 0.0404791,
+      "minSeconds": 0.0382764,
       "samples": 5
     },
     "GetSetDataPerf_SLASH_set3D_everything_SLASH_labels63": {
-      "meanSeconds": 0.0003493,
-      "minSeconds": 9.64E-5,
+      "meanSeconds": 0.00027964,
+      "minSeconds": 0.0001002,
       "samples": 5
     },
     "GetSetDataPerf_SLASH_get2D_image_SLASH_labels63": {
-      "meanSeconds": 8.0218999999999985E-5,
-      "minSeconds": 5.48E-5,
+      "meanSeconds": 0.00020244400000000003,
+      "minSeconds": 0.0001862,
       "samples": 100
     },
     "GetSetDataPerf_SLASH_get2D_image_SLASH_labels255": {
-      "meanSeconds": 7.1035E-5,
-      "minSeconds": 6.03E-5,
+      "meanSeconds": 0.000189736,
+      "minSeconds": 0.0001852,
       "samples": 100
     },
     "GetSetDataPerf_SLASH_get2D_image_SLASH_labels65535": {
-      "meanSeconds": 7.8699999999999988E-5,
-      "minSeconds": 5.58E-5,
+      "meanSeconds": 0.00018927800000000003,
+      "minSeconds": 0.000183,
       "samples": 100
     },
     "GetSetDataPerf_SLASH_get2D_labels_SLASH_labels63": {
-      "meanSeconds": 0.00025383999999999997,
-      "minSeconds": 0.0001436,
+      "meanSeconds": 0.000278187,
+      "minSeconds": 0.0002565,
       "samples": 100
     },
     "GetSetDataPerf_SLASH_get2D_labels_SLASH_labels255": {
-      "meanSeconds": 5.5664999999999996E-5,
-      "minSeconds": 5.05E-5,
+      "meanSeconds": 0.000206096,
+      "minSeconds": 0.0001793,
       "samples": 100
     },
     "GetSetDataPerf_SLASH_get2D_labels_SLASH_labels65535": {
-      "meanSeconds": 5.5357E-5,
-      "minSeconds": 5.02E-5,
+      "meanSeconds": 0.00017333900000000003,
+      "minSeconds": 0.0001672,
       "samples": 100
     },
     "GetSetDataPerf_SLASH_get2D_mask_SLASH_labels63": {
-      "meanSeconds": 0.000126228,
-      "minSeconds": 9.38E-5,
+      "meanSeconds": 0.00027742099999999997,
+      "minSeconds": 0.0002561,
       "samples": 100
     },
     "GetSetDataPerf_SLASH_get2D_mask_SLASH_labels255": {
-      "meanSeconds": 7.5074E-5,
-      "minSeconds": 5.65E-5,
+      "meanSeconds": 0.000190957,
+      "minSeconds": 0.0001804,
       "samples": 100
     },
     "GetSetDataPerf_SLASH_get2D_mask_SLASH_labels65535": {
-      "meanSeconds": 5.6585000000000022E-5,
-      "minSeconds": 5.06E-5,
+      "meanSeconds": 0.000185477,
+      "minSeconds": 0.0001797,
       "samples": 100
     },
     "GetSetDataPerf_SLASH_get2D_selection_SLASH_labels63": {
-      "meanSeconds": 0.000131744,
-      "minSeconds": 9.91E-5,
+      "meanSeconds": 0.000274781,
+      "minSeconds": 0.0002559,
       "samples": 100
     },
     "GetSetDataPerf_SLASH_get2D_selection_SLASH_labels255": {
-      "meanSeconds": 5.6905999999999994E-5,
-      "minSeconds": 5E-5,
+      "meanSeconds": 0.000183577,
+      "minSeconds": 0.0001786,
       "samples": 100
     },
     "GetSetDataPerf_SLASH_get2D_selection_SLASH_labels65535": {
-      "meanSeconds": 5.734E-5,
-      "minSeconds": 5.1E-5,
+      "meanSeconds": 0.00018961000000000002,
+      "minSeconds": 0.0001792,
       "samples": 100
     },
     "GetSetDataPerf_SLASH_get2D_labelsMaterial_SLASH_labels63": {
-      "meanSeconds": 0.00032123400000000005,
-      "minSeconds": 0.0001926,
+      "meanSeconds": 0.000354788,
+      "minSeconds": 0.0003254,
       "samples": 100
     },
     "GetSetDataPerf_SLASH_get2D_labelsMaterial_SLASH_labels255": {
-      "meanSeconds": 0.00027828600000000004,
-      "minSeconds": 0.0001796,
+      "meanSeconds": 0.00034581,
+      "minSeconds": 0.000324,
       "samples": 100
     },
     "GetSetDataPerf_SLASH_get2D_labelsMaterial_SLASH_labels65535": {
-      "meanSeconds": 0.00031786799999999996,
-      "minSeconds": 0.0001864,
+      "meanSeconds": 0.00039276200000000006,
+      "minSeconds": 0.0003683,
       "samples": 100
     },
     "GetSetDataPerf_SLASH_set2D_image_SLASH_labels63": {
-      "meanSeconds": 0.000878138,
-      "minSeconds": 0.0007178,
+      "meanSeconds": 0.0015752350000000001,
+      "minSeconds": 0.0014726,
       "samples": 100
     },
     "GetSetDataPerf_SLASH_set2D_image_SLASH_labels255": {
-      "meanSeconds": 0.00089716099999999994,
-      "minSeconds": 0.0006967,
+      "meanSeconds": 0.001519095,
+      "minSeconds": 0.0014607,
       "samples": 100
     },
     "GetSetDataPerf_SLASH_set2D_image_SLASH_labels65535": {
-      "meanSeconds": 0.0010213709999999999,
-      "minSeconds": 0.0007068,
+      "meanSeconds": 0.0015414239999999998,
+      "minSeconds": 0.0014793,
       "samples": 100
     },
     "GetSetDataPerf_SLASH_set2D_labels_SLASH_labels63": {
-      "meanSeconds": 0.0012356429999999998,
-      "minSeconds": 0.0008926,
+      "meanSeconds": 0.0018717770000000002,
+      "minSeconds": 0.0017613,
       "samples": 100
     },
     "GetSetDataPerf_SLASH_set2D_labels_SLASH_labels255": {
-      "meanSeconds": 0.000921516,
-      "minSeconds": 0.0006973,
+      "meanSeconds": 0.0015357969999999998,
+      "minSeconds": 0.0014682,
       "samples": 100
     },
     "GetSetDataPerf_SLASH_set2D_labels_SLASH_labels65535": {
-      "meanSeconds": 0.0015233730000000002,
-      "minSeconds": 0.0013779,
+      "meanSeconds": 0.002946259,
+      "minSeconds": 0.0028197,
       "samples": 100
     },
     "GetSetDataPerf_SLASH_set2D_mask_SLASH_labels63": {
-      "meanSeconds": 0.0011830369999999998,
-      "minSeconds": 0.0009074,
+      "meanSeconds": 0.0018293030000000004,
+      "minSeconds": 0.0017232,
       "samples": 100
     },
     "GetSetDataPerf_SLASH_set2D_mask_SLASH_labels255": {
-      "meanSeconds": 0.00088720500000000007,
-      "minSeconds": 0.0006994,
+      "meanSeconds": 0.001514123,
+      "minSeconds": 0.0014456,
       "samples": 100
     },
     "GetSetDataPerf_SLASH_set2D_mask_SLASH_labels65535": {
-      "meanSeconds": 0.00087209200000000009,
-      "minSeconds": 0.0007191,
+      "meanSeconds": 0.00150846,
+      "minSeconds": 0.001452,
       "samples": 100
     },
     "GetSetDataPerf_SLASH_set2D_selection_SLASH_labels63": {
-      "meanSeconds": 0.001219244,
-      "minSeconds": 0.0009332,
+      "meanSeconds": 0.001877727,
+      "minSeconds": 0.0017219,
       "samples": 100
     },
     "GetSetDataPerf_SLASH_set2D_selection_SLASH_labels255": {
-      "meanSeconds": 0.0008674799999999999,
-      "minSeconds": 0.0006847,
+      "meanSeconds": 0.0014842350000000002,
+      "minSeconds": 0.0014349,
       "samples": 100
     },
     "GetSetDataPerf_SLASH_set2D_selection_SLASH_labels65535": {
-      "meanSeconds": 0.000857129,
-      "minSeconds": 0.0006981,
+      "meanSeconds": 0.00149001,
+      "minSeconds": 0.0014297,
       "samples": 100
     },
     "GetSetDataPerf_SLASH_set2D_labelsMaterial_SLASH_labels63": {
-      "meanSeconds": 0.0018218009999999998,
-      "minSeconds": 0.0014303,
+      "meanSeconds": 0.0026665459999999997,
+      "minSeconds": 0.0025131,
       "samples": 100
     },
     "GetSetDataPerf_SLASH_set2D_labelsMaterial_SLASH_labels255": {
-      "meanSeconds": 0.0015674640000000002,
-      "minSeconds": 0.0013185,
+      "meanSeconds": 0.002922559,
+      "minSeconds": 0.0027122,
       "samples": 100
     },
     "GetSetDataPerf_SLASH_set2D_labelsMaterial_SLASH_labels65535": {
-      "meanSeconds": 0.002455751,
-      "minSeconds": 0.0019544,
+      "meanSeconds": 0.004917174,
+      "minSeconds": 0.0041733,
       "samples": 100
     }
   }

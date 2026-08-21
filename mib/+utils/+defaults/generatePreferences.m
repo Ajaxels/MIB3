@@ -71,17 +71,31 @@ Prefs.System.Update.RecheckPeriod = 30;
 
 Prefs.System.RenderingEngine = 'Viewer3d, R2022b';   % default rendering engine from R2022b, alternative is "Volshow, R2018b"
 % Developer mode
-Prefs.System.DeveloperMode = true;   % logical switch to turn on the developer mode, in this mode, the tooltip starts with the handle of the widget
+Prefs.System.DeveloperMode = false;   % logical switch to turn on the developer mode, in this mode, the tooltip starts with the handle of the widget
 
-% Path to the user statistics file (mib_user.mat).
-% Stored in the OS roaming profile directory so it syncs across workstations.
-% Users can change this path via Help > Your personal stats > Set stats file...
+% Path to this workstation's user statistics file.
+% Statistics are stored as one file per machine (mib_user_<COMPUTERNAME>.mat)
+% so that several workstations can share one folder without overwriting each
+% other; the folder part of this path is what actually matters, and the shards
+% found in it are summed by utils.loadUserStats.
+% The default is machine-local: %APPDATA% only travels between workstations when
+% an administrator configured a roaming profile, which is rarely the case. MIB
+% asks once per workstation (see controllers.MibController.initialize) whether to
+% use a shared folder instead, and the choice can be revisited via
+% Help > Your personal stats > Set stats file...
 userStatsDirDefault = utils.getUserStatsDir();
 if isempty(userStatsDirDefault)
     userStatsDirDefault = utils.getPrefDir();
 end
-Prefs.System.UserStatsProfile = fullfile(userStatsDirDefault, 'mib_user.mat');
+Prefs.System.UserStatsProfile = fullfile(userStatsDirDefault, ...
+    sprintf('mib_user_%s.mat', utils.identifyComputerName()));
 clear userStatsDirDefault;
+
+% Whether the one-time "where should the statistics live" question was already
+% asked on this workstation. Stored in mib3.mat, which is machine-local, so the
+% question is asked once per computer - which is what is needed, since every
+% computer has to be pointed at the shared folder independently.
+Prefs.System.UserStatsPromptShown = false;
 
 %% ----------- COLORS PANEL -----------
 

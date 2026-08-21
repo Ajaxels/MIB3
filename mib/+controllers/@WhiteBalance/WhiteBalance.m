@@ -270,9 +270,9 @@ classdef WhiteBalance < handle
             % CORRECTWHITEBALANCE - Apply white balance correction to the image.
             %
             % Parameters:
-            % **mode** *(optional)* - ``'Correct current'`` processes current slice only;
+            %   **mode** *(optional)* - ``'Correct current'`` processes current slice only;
             %   ``'Correct all'`` (default) processes the whole stack.
-            % **batchModeSwitch** *(optional)* - ``true`` when called from batch processing;
+            %   **batchModeSwitch** *(optional)* - ``true`` when called from batch processing;
             %   skips undo backup. Default: ``false``.
             if obj.mibModel.preferences.System.DeveloperMode
                 fprintf('controllers.WhiteBalance.correctWhiteBalance: triggered\n');

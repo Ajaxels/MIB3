@@ -93,7 +93,7 @@ classdef BigDataExportBoundingBoxTest < matlab.unittest.TestCase
                 imwrite(vol(:,:,z), tif, 'tif', 'WriteMode', mode, 'Description', desc);
             end
 
-            mibModel = models.MibModel(1, mibPath);
+            mibModel = models.MibModel(1, mibPath, Verbose = false, Preferences = 'defaults');
             mibModel.loadImages('Combine datasets', ...
                 struct('Filenames', {{tif}}, 'showWaitbar', false, 'id', 1));
             p = mibModel.I{1}.image.pixSize;

@@ -116,7 +116,7 @@ classdef AlignmentBigDataTest < matlab.unittest.TestCase
                        'ChunkSize', [64 64 2], 'Levels', 3, 'DownsampleStrategy', 'XY only'));
 
             mibFolder = fullfile(fileparts(fileparts(fileparts(mfilename('fullpath')))), 'mib');
-            mibModel = models.MibModel(1, mibFolder);
+            mibModel = models.MibModel(1, mibFolder, Verbose = false, Preferences = 'defaults');
             lo = struct('datasetMode', 'BigData');
             loader = io.loaders.Zarr3VirtualSetupLoader(lo);
             [imgInfo, files] = loader.loadMetadata({srcImg}, lo);
@@ -293,7 +293,7 @@ classdef AlignmentBigDataTest < matlab.unittest.TestCase
                 struct('silent', true, 'showWaitbar', false));
 
             mibFolder = fullfile(fileparts(fileparts(fileparts(mfilename('fullpath')))), 'mib');
-            mibModel = models.MibModel(1, mibFolder);
+            mibModel = models.MibModel(1, mibFolder, Verbose = false, Preferences = 'defaults');
             lo = struct('datasetMode', 'BigData');
             loader = io.loaders.Zarr3VirtualSetupLoader(lo);
             [imgInfo, files] = loader.loadMetadata({srcImg}, lo);

@@ -33,11 +33,17 @@ Standalone utility functions
 
 .. autofunction:: getPrefDir
 
+.. autofunction:: getUserStatsCandidates
+
+.. autofunction:: getUserStatsDir
+
 .. autofunction:: interpolateLines
 
 .. autofunction:: interpolateShapes
 
 .. autofunction:: isosurfaceMibRendering
+
+.. autofunction:: loadUserStats
 
 .. autofunction:: moveWindowOutside
 
@@ -48,6 +54,8 @@ Standalone utility functions
 .. autofunction:: resizeImage3d
 
 .. autofunction:: saveProjectStructure
+
+.. autofunction:: saveUserStats
 
 .. autofunction:: startController
 

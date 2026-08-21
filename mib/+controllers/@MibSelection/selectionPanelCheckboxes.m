@@ -14,7 +14,7 @@ function selectionPanelCheckboxes(obj, BatchOptIn)
 % Input Arguments:
 %   - **BatchOptIn** - [struct] batch options structure with fields:
 %
-%     - ``.Apply3D`` - [cell] {``'Unchanged'``|``'Checked'``|``'Unchecked'``} Apply-in-3D checkbox
+%     - ``.Apply3D`` - [cell] checkbox state (``'Unchanged'``, ``'Checked'`` or ``'Unchecked'``) - Apply-in-3D checkbox
 %     - ``.AutoFillSelection`` - [cell] checkbox state - Auto-fill checkbox
 %     - ``.Difference`` - [cell] checkbox state - Difference mode checkbox (erode/dilate)
 %     - ``.LutColors`` - [cell] checkbox state - LUT colors checkbox

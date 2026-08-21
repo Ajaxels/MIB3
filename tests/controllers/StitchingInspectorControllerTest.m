@@ -407,7 +407,7 @@ classdef StitchingInspectorControllerTest < matlab.unittest.TestCase
             % Headless Stitching controller over a 1x3 chain of 160x160 tiles
             % (40 px overlap, zero jitter -> truth [1 1] / [1 121] / [1 241]).
             repoRoot = fileparts(fileparts(fileparts(mfilename('fullpath'))));
-            mibModel = models.MibModel(1, fullfile(repoRoot, 'mib'));
+            mibModel = models.MibModel(1, fullfile(repoRoot, 'mib'), Verbose = false, Preferences = 'defaults');
             mibModel.preferences.System.DeveloperMode = false;
             controller = controllers.Stitching(mibModel, [], NaN);
             controller.BatchOpt.showWaitbar     = false;
@@ -439,7 +439,7 @@ classdef StitchingInspectorControllerTest < matlab.unittest.TestCase
             % 2=top-right, 3=bottom-left, 4=bottom-right -> seams X(1-2),
             % X(3-4), Y(1-3), Y(2-4).
             repoRoot = fileparts(fileparts(fileparts(mfilename('fullpath'))));
-            mibModel = models.MibModel(1, fullfile(repoRoot, 'mib'));
+            mibModel = models.MibModel(1, fullfile(repoRoot, 'mib'), Verbose = false, Preferences = 'defaults');
             mibModel.preferences.System.DeveloperMode = false;
             stitching = controllers.Stitching(mibModel, [], NaN);
             stitching.BatchOpt.showWaitbar     = false;

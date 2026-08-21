@@ -111,7 +111,7 @@ classdef Quantification < handle
         statTable_CellSelectionCallback(obj, indices, parameter) % Handle cell selection in statTable and optionally highlight objects
         tableContextMenu_cb(obj, parameter) % Handle context menu actions on statTable rows
         units_Callback(obj) % Handle selection change in the Units dropdown
-        updateBatchOptFromGUI(obj, hObject, ~)  % Sync BatchOpt from a changed widget using the shared utility
+        updateBatchOptFromGUI(obj, hObject, eventData)  % Sync BatchOpt from a changed widget using the shared utility
         updateSortingSettings(obj) % Sync sort direction and column index from the sortTable dropdown
         updateWidgets(obj) % Refresh all GUI widgets from the current model state and BatchOpt
 

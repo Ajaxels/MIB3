@@ -112,6 +112,53 @@ if obj.mibModel.preferences.Tips.ShowTips == 1
     end
 end
 
+% tell the user that mib3.mat came from a newer MIB than this one, which is
+% detected in models.MibModel.initializePreferences long before there is a
+% window to parent a dialog to. Only the settings this version implements were
+% restored, and the newer file was parked under its own version - worth saying
+% out loud, since the standalone application shows no command window
+if isfield(obj.mibModel.sessionSettings, 'PreferencesDowngradeMessage')
+    downgradeMsg = obj.mibModel.sessionSettings.PreferencesDowngradeMessage;
+    obj.mibModel.sessionSettings = rmfield(obj.mibModel.sessionSettings, 'PreferencesDowngradeMessage');   % show once
+    try
+        dlgOptions.MsgBoxOnly = true;
+        dlgOptions.Icon = 'puffin_warning';
+        dlgOptions.HeaderLines = 3;
+        utils.dlgs.inputUniversalDlg(obj.view.gui, downgradeMsg, {}, {}, ...
+            'Preferences from a newer MIB', dlgOptions);
+    catch err
+        warning('MIB:preferencesFromNewerVersion', ...
+            'Could not show the preferences version dialog: %s', err.message);
+    end
+end
+
+% ask once per workstation where the user statistics should be kept.
+% The default folder is machine-local: on Windows %APPDATA% only travels
+% between computers when an administrator configured a roaming profile, which
+% is rarely the case, so without asking the statistics would silently stay
+% behind. The flag lives in the machine-local mib3.mat, hence once per
+% computer - which is what is needed, as every computer has to be pointed at
+% the shared folder on its own.
+% Deliberately not part of deferredStartupTasks: unlike the update check this
+% costs no network, and a dialog appearing seconds after the window is up
+% would be jarring.
+if ~obj.mibModel.preferences.System.UserStatsPromptShown
+    obj.mibModel.preferences.System.UserStatsPromptShown = true;    % ask only once, even if the dialog fails
+    try
+        currentStatsFolder = fileparts(obj.mibModel.preferences.System.UserStatsProfile);
+        chosenStatsFolder = utils.dlgs.chooseUserStatsLocation(obj.view.gui, currentStatsFolder, ...
+            struct('mibPath', obj.mibModel.mibPath, ...
+                   'tierPointsCoef', obj.mibModel.preferences.Users.tierPointsCoef, ...
+                   'firstRun', true));
+        if ~isempty(chosenStatsFolder) && ~strcmp(chosenStatsFolder, currentStatsFolder)
+            obj.mibModel.relocateUserStats(chosenStatsFolder);
+        end
+    catch err
+        warning('MIB:userStatsPrompt', ...
+            'Could not show the statistics location dialog: %s', err.message);
+    end
+end
+
 % run deferred startup tasks (parallel limit warm-up, check for update) from
 % a single-shot timer, so the slow parcluster query and the network request
 % (up to 4 s timeout when offline) never block the startup

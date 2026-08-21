@@ -37,7 +37,7 @@ groundTruth.labels    = {labelVolume; labelVolume; uint16(labelVolume)};
 
 testsFolder = fileparts(fileparts(fileparts(mfilename('fullpath'))));
 mibFolder   = fullfile(fileparts(testsFolder), 'mib');
-mibModel    = models.MibModel(1, mibFolder);
+mibModel    = models.MibModel(1, mibFolder, Verbose = false, Preferences = 'defaults');   % quiet and self-contained, see buildSyntheticModel
 
 datasetIds = [1 2 3];
 modelTypes = {255, 65535};   % id1 stays labels63; ids 2-3 get createModel

@@ -1124,7 +1124,7 @@ classdef StitchingControllerTest < matlab.unittest.TestCase
             % Headless controller: the "return BatchOpt" constructor path
             % builds the full default state without a view.
             repoRoot  = fileparts(fileparts(fileparts(mfilename('fullpath'))));
-            mibModel  = models.MibModel(1, fullfile(repoRoot, 'mib'));
+            mibModel  = models.MibModel(1, fullfile(repoRoot, 'mib'), Verbose = false, Preferences = 'defaults');
             mibModel.preferences.System.DeveloperMode = false;   % keep test output clean
             controller = controllers.Stitching(mibModel, [], NaN);
             testCase.assertEmpty(controller.view, 'the NaN path must not build a view');

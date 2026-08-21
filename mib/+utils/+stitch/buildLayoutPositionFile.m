@@ -7,8 +7,8 @@ function layout = buildLayoutPositionFile(positionFilePath, options)
 %      layout = utils.stitch.buildLayoutPositionFile(positionFilePath)
 %      layout = utils.stitch.buildLayoutPositionFile(positionFilePath, options)
 %
-% The position file contains one tile per line with columns:
-%   ``filename  X  Y  [Z]``
+% The position file contains one tile per line with columns
+% ``filename  X  Y  [Z]``.
 % Delimiter is auto-detected among space, tab, and comma; repeated spaces
 % are treated as a single delimiter.  Filenames may be relative to the
 % position file's folder.  X, Y and Z are 0-based pixel/slice origins in the

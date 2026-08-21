@@ -225,9 +225,9 @@ classdef DebrisRemoval < handle
             % CALCULATE - Remove debris artifacts from the image stack.
             %
             % Parameters:
-            % **mode** *(optional)* - ``'Current'`` processes the current slice only;
+            %   **mode** *(optional)* - ``'Current'`` processes the current slice only;
             %   ``'Remove all'`` (default) processes the whole stack (slices 2..depth-1).
-            % **batchModeSwitch** *(optional)* - ``true`` when called from batch processing;
+            %   **batchModeSwitch** *(optional)* - ``true`` when called from batch processing;
             %   skips undo backup. Default: ``false``.
             if obj.mibModel.preferences.System.DeveloperMode
                 fprintf('controllers.DebrisRemoval.Calculate: triggered\n');

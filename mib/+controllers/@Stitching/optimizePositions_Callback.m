@@ -19,7 +19,18 @@ if obj.mibModel.preferences.System.DeveloperMode
 end
 
 if isempty(obj.edges)
-    obj.warnUser('No edge measurements available. Please run Measure first.', 'No measurements');
+    % Headless (batch protocol, test suite) there is nobody to read a message
+    % box, and the return below would report success for a solve that never ran.
+    if isempty(obj.view)
+        error('Stitching:precondition', ...
+            'No edge measurements available. Please run Measure first.');
+    end
+    warnOptions.MsgBoxOnly  = true;
+    warnOptions.Icon        = 'puffin_warning';
+    warnOptions.HeaderLines = 1;
+    utils.dlgs.inputUniversalDlg(obj.guiFigure(), ...
+        'No edge measurements available!', {}, {'Please run Measure overlaps first...'}, ...
+        'No measurements', warnOptions);
     return;
 end
 

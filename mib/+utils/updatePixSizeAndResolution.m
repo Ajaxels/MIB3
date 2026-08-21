@@ -20,14 +20,17 @@ function [img_info, pixSize, result] = updatePixSizeAndResolution(img_info, pixS
 %   - **img_info** - information about the dataset, an instance of the MATLAB **dictionary** class.
 %     Pass **[]** to skip the img_info resolution update (e.g. when only the dialog / pixSize update is needed).
 %   - **pixSize** - a structure (imageData.pixSize) with dimensions of voxels, ``.x .y .z .t .tunits .units``
-%     the fields are
+%     the fields are:
+%
 %     - .x - physical width of a pixel
 %     - .y - physical height of a pixel
 %     - .z - physical depth of a pixel
 %     - .t - time between the frames for 2D movies
 %     - .tunits - time units
 %     - .units - physical units for x, y, z. Possible values: [m, cm, mm, um, nm]
+%
 %   - **options** - *(optional)* a struct with optional fields:
+%
 %     - .showDialog   - logical (default false); when true, prompt the user with an interactive
 %       dialog to review and edit the voxel sizes before applying
 %     - .ParentFigure - handle to the parent figure/window used to anchor the dialog

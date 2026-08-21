@@ -28,8 +28,7 @@ function [selection, dontShowAgain] = inputQuestDlg(ParentFigure, question, vara
 %     - ``.WindowWidth`` - [numeric] dialog width in pixels (default: 420)
 %     - ``.WindowHeight`` - [numeric] dialog height in pixels (default: 160)
 %     - ``.WindowStyle`` - [char] ``'normal'`` or ``'modal'`` (default: ``'modal'``)
-%     - ``.Icon`` - [char]
-%     ``'puffin_question'`` (default), ``'puffin_warning'``,
+%     - ``.Icon`` - [char] ``'puffin_question'`` (default), ``'puffin_warning'``,
 %           ``'puffin_info'``, ``'question_48px'``, ``'warning_48px'``, ``'celebrate'``, ``'call4help'``
 %     - ``.IconWidth`` - [numeric] icon column width in pixels (default: 48)
 %     - ``.ParentFigure`` - [handle] parent window used to centre the dialog (default: ``[]``)

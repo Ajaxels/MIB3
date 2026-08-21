@@ -16,11 +16,20 @@ The ``+io`` package implements a factory-based I/O pipeline:
 Factory functions
 -----------------
 
-.. autofunction:: ExtensionRegistryLoad
+.. autoclass:: ExtensionRegistryLoad
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
-.. autofunction:: LoaderFactory
+.. autoclass:: LoaderFactory
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
-.. autofunction:: SaverFactory
+.. autoclass:: SaverFactory
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 .. autofunction:: loadImagesWrapper
 
@@ -44,7 +53,10 @@ is flagged ``parse(url).flavour == 's3compatible'`` to mark the guess as
 unconfirmed; one that does not answer the API simply returns an empty listing,
 and callers fall back to an explicit user-supplied path.
 
-.. autofunction:: RemoteStore
+.. autoclass:: RemoteStore
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 Chunk cache
 -----------
@@ -65,7 +77,10 @@ one request concurrently.
 
 .. currentmodule:: io.zarr
 
-.. autofunction:: ChunkCache
+.. autoclass:: ChunkCache
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 .. currentmodule:: io
 
@@ -86,6 +101,7 @@ Format sub-packages
 
    AmiraMesh
    BioFormats
+   Fiji
    HDF5
    imaris
    IMOD

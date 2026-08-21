@@ -451,11 +451,12 @@ classdef MibBigDataLabels < core.MibLabels63
             % setData63 write that may have changed selection bits (type
             % 'selection'/'everything').
             %
-            % fullBlock : the WHOLE processed working block (the nearest-merged result
-            %             over the incoming region [Yl Xl Zl]); its selection bit (bit 8)
-            %             is authoritative for the resulting selection over that region.
-            % Yl/Xl/Zl  : working-level absolute index ranges of fullBlock.
-            % levelIdx  : working level fullBlock lives at.
+            % Parameters:
+            %   **fullBlock** - the WHOLE processed working block (the nearest-merged
+            %   result over the incoming region [Yl Xl Zl]); its selection bit (bit 8)
+            %   is authoritative for the resulting selection over that region.
+            %   **Yl/Xl/Zl** - working-level absolute index ranges of fullBlock.
+            %   **levelIdx** - working level fullBlock lives at.
             %
             % The processed region [Yl Xl Zl] is the area we have authoritative info
             % over. When it fully covers the previous bbox we REPLACE (so a clear or a
@@ -833,8 +834,10 @@ classdef MibBigDataLabels < core.MibLabels63
             % better than bilinear-on-binary, which only rounds a one-pixel ramp). The
             % Gaussian erases the working-level stair-steps while the modest sigma keeps
             % thin structures from being eroded.
+            %
             %   - materials: per-label signed-distance upsample + arg-max;
             %   - mask / selection: signed-distance upsample of the binary indicator.
+            %
             % Z is resized first with nearest (the pyramid keeps Z, so usually a no-op).
             % Falls back to nearest when not actually up-sampling in YX.
             block = uint8(block);
@@ -865,10 +868,12 @@ classdef MibBigDataLabels < core.MibLabels63
             % RESIZELAYERSMOOTH - smooth UP-sample of a raw (unpacked) layer to
             % targetSize=[ty tx tz], used by setData63 to bring a brush stroke captured
             % at display resolution onto a finer working level without blocky steps.
+            %
             %   - isLabelMap=true  -> multi-material map (values 0-63): per-label SDF
             %     arg-max (smoothLabelUpsampleYX);
             %   - isLabelMap=false -> binary layer (selection / mask / single-material
             %     indicator): signed-distance upsample.
+            %
             % Z is matched first with nearest. Falls back to nearest when not up-sampling
             % in YX (down-sample / equal size).
             layer = uint8(layer);

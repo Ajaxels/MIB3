@@ -12,6 +12,18 @@ classdef PerfBaselineStore
     properties (Constant)
         WarnRatio          = 1.15;   % >this ratio -> warning (no test failure)
         FailRatio          = 1.30;   % >this ratio -> testCase.verifyFail
+        % Measurements below this are recorded and reported but not gated on: a ratio
+        % threshold is meaningless there. getData3D/getData4D return the stored array
+        % whole for labels255/labels65535, so the call is O(1) copy-on-write and lands
+        % at 7-50 us on any dataset size - a figure set by CPU frequency and cache
+        % state, not by MIB. Two full buildtool perf runs minutes apart measured the
+        % same keys at 0.043 ms and 0.007 ms with min ~= mean in both, so the shift is
+        % between runs and no statistic taken within a run can correct for it.
+        % 120 us sits above that cluster (0.086 ms worst case observed) and below the
+        % cheapest measurement that does scale with the code (get2D_labels, ~0.14 ms).
+        % Gating resumes as soon as either side crosses the floor, so an accessor that
+        % started copying - jumping to milliseconds - still fails the build.
+        MinGatedSeconds    = 120e-6;
         DefaultIterations2D = 100;
         DefaultIterations3D = 5;
         DefaultIterationsRGB = 20;
@@ -33,6 +45,13 @@ classdef PerfBaselineStore
             % Record measurement, then compare to baseline if one exists.
             mibtest.perf.PerfBaselineStore.record(measurementKey, secondsSamples);
 
+            % Recording a baseline and gating against it are mutually exclusive: in update
+            % mode the committed numbers are the ones being replaced, so comparing to them
+            % would fail the build for every measurement that legitimately changed.
+            if strcmp(getenv('MIB3_UPDATE_PERF_BASELINE'), '1')
+                return
+            end
+
             baselineFile = mibtest.perf.PerfBaselineStore.baselineFilePath();
             if ~isfile(baselineFile)
                 fprintf('[PerfBaseline] no baseline file - %s = %.3f ms\n', ...
@@ -46,16 +65,18 @@ classdef PerfBaselineStore
                 return
             end
 
-            % JSON field names with / are encoded by jsondecode as x0x2F (URL-encoded)
-            safeKey = strrep(strrep(measurementKey, '/', 'x0x2F_'), '-', '_');
-            % Try the original key name too (jsondecode behavior varies)
+            safeKey = mibtest.perf.PerfBaselineStore.safeFieldName(measurementKey);
             if isfield(baseline.measurements, safeKey)
                 refEntry = baseline.measurements.(safeKey);
-            elseif isfield(baseline.measurements, measurementKey)
-                refEntry = baseline.measurements.(measurementKey);
             else
                 fprintf('[PerfBaseline] no baseline entry for %s = %.3f ms\n', ...
                     measurementKey, mean(secondsSamples)*1000);
+                return
+            end
+
+            % Below the floor on BOTH sides the ratio is noise - report only.
+            floorSeconds = mibtest.perf.PerfBaselineStore.MinGatedSeconds;
+            if mean(secondsSamples) < floorSeconds && refEntry.meanSeconds < floorSeconds
                 return
             end
 
@@ -107,6 +128,14 @@ classdef PerfBaselineStore
 
     methods (Static, Access = private)
 
+        function safeKey = safeFieldName(measurementKey)
+            % Encode a measurement key ('MyTest/op/variant') as a valid struct/JSON field name.
+            % Writing and reading the baseline MUST use this same function - a mismatch makes every
+            % lookup miss and every test report "no baseline entry" right after a baseline was written.
+            safeKey = strrep(char(measurementKey), '/', '_SLASH_');
+            safeKey = strrep(safeKey, '-', '_');
+        end
+
         function buffer = sessionBuffer(newBuffer)
             % Persistent dictionary acting as the session measurement buffer.
             persistent buf
@@ -138,8 +167,7 @@ classdef PerfBaselineStore
             for k = 1:numel(keys)
                 key   = keys(k);
                 entry = buffer(key);
-                % Convert / to _SLASH_ for valid JSON field names
-                safeKey = strrep(char(key), '/', '_SLASH_');
+                safeKey = mibtest.perf.PerfBaselineStore.safeFieldName(key);
                 measurements.(safeKey) = entry;
                 fprintf('[PerfBaseline] wrote %s = %.3f ms\n', key, entry.meanSeconds*1000);
             end
@@ -181,13 +209,16 @@ classdef PerfBaselineStore
             for k = 1:numel(keys)
                 key   = char(keys(k));
                 entry = buffer(keys(k));
-                safeKey = strrep(key, '/', '_SLASH_');
+                safeKey = mibtest.perf.PerfBaselineStore.safeFieldName(key);
                 measMs = entry.meanSeconds * 1000;
                 if hasSaved && isfield(baseline, 'measurements') && isfield(baseline.measurements, safeKey)
                     refEntry = baseline.measurements.(safeKey);
                     ratio = entry.meanSeconds / refEntry.meanSeconds;
                     baseMs = refEntry.meanSeconds * 1000;
-                    if ratio > mibtest.perf.PerfBaselineStore.FailRatio
+                    floorSeconds = mibtest.perf.PerfBaselineStore.MinGatedSeconds;
+                    if entry.meanSeconds < floorSeconds && refEntry.meanSeconds < floorSeconds
+                        status = 'not gated';   % see MinGatedSeconds
+                    elseif ratio > mibtest.perf.PerfBaselineStore.FailRatio
                         status = 'FAIL';
                     elseif ratio > mibtest.perf.PerfBaselineStore.WarnRatio
                         status = 'WARN';
@@ -204,18 +235,23 @@ classdef PerfBaselineStore
         end
 
         function versionString = getMibVersion()
-            % Read the mibVersion string from mib/mib3.m without executing it.
-            testsFolder = fileparts(fileparts(fileparts(mfilename('fullpath'))));
-            mib3File = fullfile(fileparts(testsFolder), 'mib', 'mib3.m');
+            % utils.getMibVersion is the single place the version string is written down, so
+            % call it when mib\ is on the path. finalizeRun() runs after runtests() has torn
+            % down MibPathFixture, which may already have removed mib\ - read the literal out
+            % of that same file in that case rather than reporting 'unknown'.
             versionString = 'unknown';
-            if ~isfile(mib3File); return; end
-            lines = splitlines(fileread(mib3File));
-            for k = 1:numel(lines)
-                tokens = regexp(lines{k}, "mibVersion\s*=\s*'([^']+)'", 'tokens', 'once');
-                if ~isempty(tokens)
-                    versionString = tokens{1};
-                    return
-                end
+            try
+                versionString = utils.getMibVersion();
+                return
+            catch
+                % mib\ not on the path - fall through to reading the file
+            end
+            testsFolder = fileparts(fileparts(fileparts(mfilename('fullpath'))));
+            versionFile = fullfile(fileparts(testsFolder), 'mib', '+utils', 'getMibVersion.m');
+            if ~isfile(versionFile); return; end
+            tokens = regexp(fileread(versionFile), "mibVersion\s*=\s*'([^']+)'", 'tokens', 'once');
+            if ~isempty(tokens)
+                versionString = tokens{1};
             end
         end
 
@@ -233,7 +269,7 @@ classdef PerfBaselineStore
             for k = 1:numel(keys)
                 key   = char(keys(k));
                 entry = buffer(keys(k));
-                safeKey = strrep(key, '/', '_SLASH_');
+                safeKey = mibtest.perf.PerfBaselineStore.safeFieldName(key);
                 if hasSaved && isfield(baseline, 'measurements') && isfield(baseline.measurements, safeKey)
                     refEntry = baseline.measurements.(safeKey);
                     ratio = entry.meanSeconds / refEntry.meanSeconds;

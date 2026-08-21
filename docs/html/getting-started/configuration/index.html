@@ -554,6 +554,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#sharing-your-statistics-between-computers" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Sharing your statistics between computers
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#overriding-default-settings" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -5436,6 +5447,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#sharing-your-statistics-between-computers" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Sharing your statistics between computers
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#overriding-default-settings" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -5593,9 +5615,9 @@ This page is reference material - you do not need it to start using MIB.</p>
 <td>Main preferences (display settings, last-used path, etc.). Falls back to the system TEMP directory if <code>Matlab/</code> cannot be created.</td>
 </tr>
 <tr>
-<td><code>mib_user.mat</code></td>
+<td><code>mib_user_COMPUTERNAME.mat</code></td>
 <td>Windows: <code>C:\Users\Username\AppData\Roaming\MathWorks\MIB\</code> <br> macOS: <code>~/Library/Application Support/MIB/</code> <br> Linux: <code>~/.local/share/MIB/</code></td>
-<td>User statistics (tier data). Stored in the OS roaming profile so it syncs automatically across workstations (<strong>Note</strong> the location can be defined from the Personal stats dialog from <em>Home-&gt;Help</em>). Falls back to the same <code>Matlab/</code> folder as <code>mib3.mat</code> if the roaming directory is unavailable.</td>
+<td>User statistics (tier data). Each computer writes its own file, and MIB adds up every file it finds in the folder - see <a href="#sharing-your-statistics-between-computers">Sharing your statistics between computers</a>. Falls back to the same <code>Matlab/</code> folder as <code>mib3.mat</code> if the directory above is unavailable.</td>
 </tr>
 </tbody>
 </table>
@@ -5616,6 +5638,19 @@ This page is reference material - you do not need it to start using MIB.</p>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>
 <p>If MIB does not start, check the MATLAB path and/or delete the configuration file (<code>mib3.mat</code> or the legacy equivalent) listed above, then restart.</p>
+</div>
+<hr />
+<h2 id="sharing-your-statistics-between-computers">Sharing your statistics between computers<a class="headerlink" href="#sharing-your-statistics-between-computers" title="Permanent link">&para;</a></h2>
+<p>By default your statistics stay on the computer that recorded them. On Windows the default folder sits under <code>AppData\Roaming</code>, but that name is misleading: the folder only travels to other computers if your administrator set up a <em>roaming profile</em> for your account, which is rarely the case. Neither OneDrive nor Windows settings sync ever copies <code>AppData</code>.</p>
+<p>To make your statistics follow you, put them in a folder that all your computers can reach:</p>
+<ol>
+<li>The first time MIB starts on a computer it asks where to keep your statistics and offers the locations it found - typically your OneDrive folder and, on a university machine, your network home directory.</li>
+<li>Pick the same folder on every computer you use. You can change the choice later from <strong>Home → Help → Your stats → Set stats folder...</strong></li>
+</ol>
+<p>Each computer writes its own file into that folder and MIB adds them all up, so nothing is ever overwritten and no points are lost when you use two computers on the same day. A computer that is temporarily offline simply does not contribute until its file syncs again.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Choosing a shared folder brings the statistics of that computer with it and picks up whatever your other computers have already stored there. Files left in the previous folder are not deleted.</p>
 </div>
 <hr />
 <h2 id="overriding-default-settings">Overriding default settings<a class="headerlink" href="#overriding-default-settings" title="Permanent link">&para;</a></h2>
@@ -5659,7 +5694,7 @@ This page is reference material - you do not need it to start using MIB.</p>
 <p class="admonition-title">Note</p>
 <p>If <code>mib3.mat</code> already exists in the user directory, override files are ignored entirely. To force reloading from an override file, delete <code>mib3.mat</code> first.</p>
 </div>
-<p>User statistics (tier data stored in <code>mib_user.mat</code>) are never taken from an override file - each user keeps their own.</p>
+<p>User statistics (tier data stored in <code>mib_user_COMPUTERNAME.mat</code>) are never taken from an override file - each user keeps their own.</p>
 <hr />
 <h2 id="previous-versions">Previous versions<a class="headerlink" href="#previous-versions" title="Permanent link">&para;</a></h2>
 <p>This documentation describes <strong>MIB3</strong> - the current release. Previous releases are hosted on GitHub and include their own documentation and release notes:</p>

@@ -64,26 +64,26 @@ function findBestMinibatchSize(obj)
 % Measured against that same recorded run - Resnet50, 768x768, mini-batch 4, whose real
 % iteration took 3.700 s:
 %
-% ==========================  ==============  =============
-% objects per synthetic patch  sec/iteration   epochs/hour
-% ==========================  ==============  =============
-% 5 (the old constant)        1.618           19.0
-% 31 (measured from labels)   **3.732**       **8.2**
-% real run                    3.700           8.3
-% ==========================  ==============  =============
+% ===========================  =============  ===========
+% objects per synthetic patch  sec/iteration  epochs/hour
+% ===========================  =============  ===========
+% 5 (the old constant)         1.618          19.0
+% 31 (measured from labels)    **3.732**      **8.2**
+% real run                     3.700          8.3
+% ===========================  =============  ===========
 %
 % A 2D U-net at 256x256 on a 12 GB card, repeated twice and agreeing to 0.1%:
 %
-% ======  ==============  ================
-% size    sec/iteration   patches/second
-% ======  ==============  ================
-% 1       0.0254          39.40
-% 2       0.0353          56.72
-% 4       0.0539          74.16
-% 8       0.1001          **79.95**
-% 16      0.2346          68.21
-% 32      0.5983          53.48
-% ======  ==============  ================
+% ====  =============  ==============
+% size  sec/iteration  patches/second
+% ====  =============  ==============
+% 1     0.0254         39.40
+% 2     0.0353         56.72
+% 4     0.0539         74.16
+% 8     0.1001         **79.95**
+% 16    0.2346         68.21
+% 32    0.5983         53.48
+% ====  =============  ==============
 %
 % The decline past the peak here is ordinary diminishing returns. Running out of memory
 % looks entirely different: with Resnet50 at 768x768 on the same card, an iteration went

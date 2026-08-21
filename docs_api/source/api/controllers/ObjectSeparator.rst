@@ -1,5 +1,5 @@
 ObjectSeparator
-===========
+===============
 
 .. currentmodule:: controllers
 

@@ -70,15 +70,12 @@ prefdir = utils.getPrefDir();
 try
     mib_pars.preferences.Users = rmfield(mib_pars.preferences.Users, 'Tiers'); % remove user's stats from the output preferences structure
     save(fullfile(prefdir, 'mib3.mat'), 'mib_pars');
-    % Save user Tiers stats to the path stored in preferences (roaming by default;
-    % user can override via the milestone dialog).
-    Tiers = obj.mibModel.preferences.Users.Tiers;
-    userStatsFn = obj.mibModel.preferences.System.UserStatsProfile;
-    userStatsDir = fileparts(userStatsFn);
-    if ~exist(userStatsDir, 'dir')
-        mkdir(userStatsDir);
-    end
-    save(userStatsFn, 'Tiers');
+    % Save the user statistics as this workstation's own file. Only this
+    % machine's contribution may be written: preferences.Users.Tiers holds the
+    % sum over every workstation sharing the folder, so writing it out as-is
+    % would re-count the other machines on every exit.
+    userStatsDir = fileparts(obj.mibModel.preferences.System.UserStatsProfile);
+    utils.saveUserStats(userStatsDir, obj.mibModel.getOwnStatsShard());
 catch err
     errorOpts.mibPath = obj.mibModel.mibPath;
     utils.dlgs.showErrorDialog(obj.view.gui, err, 'Save preferences error ', ...

@@ -1,5 +1,5 @@
 ContrastNormalization
-===========
+=====================
 
 .. currentmodule:: controllers
 

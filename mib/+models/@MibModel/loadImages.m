@@ -545,7 +545,12 @@ switch BatchOpt.Mode{1}
             %obj.mibView.handles.toolbarFastPanMode.State = 'on'; 
         end
 
-        obj.I{BatchOpt.id}.initialize(img, img_info);
+        % Honour preferences.System.EnableSelection, as MIB2 did in
+        % mibFilesListbox_Callback. Omitting the argument here made every file load
+        % default to true, which left the preference doing nothing on the only path
+        % most users take and allocated the labels layer even for browse-only work.
+        % The empty datasetType keeps the current one, as before.
+        obj.I{BatchOpt.id}.initialize(img, img_info, [], [], obj.preferences.System.EnableSelection);
 
         % Pass BioFormats memoizer path to virtual image so BioFormatsVirtualLoader
         % can open readers without access to MibDataset.bioFormatsMemoizerMemoDir

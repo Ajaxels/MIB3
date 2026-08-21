@@ -1,5 +1,5 @@
 GlobalThresholding
-===========
+==================
 
 .. currentmodule:: controllers
 

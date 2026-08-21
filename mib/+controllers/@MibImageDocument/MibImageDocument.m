@@ -35,6 +35,29 @@ classdef MibImageDocument < handle
 %   .. code-block:: matlab
 %
 %      obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}
+%
+% **Notes** - the ``brushSelection`` property holds state for the Brush tool as a
+% 3-element cell array, scaled with respect to ``magFactor`` and the image crop
+% within the viewing window at the time of computation:
+%
+%   - **brushSelection{1}** - painting state
+%
+%     - `.selection` - contains brush selection during drawing
+%     - `.travelPathInPixels` - distance the brush travelled during painting
+%   - **brushSelection{2}** - labels of the superpixels (SLIC) and related info
+%
+%     - `.slic` - a label image with superpixels
+%     - `.selectedSlic` - a bitmap image of the selected superpixels
+%     - `.selectedSlicIndices` - indices of the selected SLIC superpixels
+%     - `.selectedSlicIndicesNew` - freshly selected SLIC indices when moving
+%       the brush, used for the undo with Ctrl+Z
+%     - `.CData` - a copy of the shown image in imageAxes, used for the undo
+%   - **brushSelection{3}** - state for the adaptive mode
+%
+%     - `.meanVals` - array of mean intensity values for each superpixel
+%     - `.mean` - mean intensity value for the initial selection
+%     - `.std` - standard deviation of intensities for the initial selection
+%     - `.factor` - factor defining the allowed STD variation
 
 
     properties
@@ -50,25 +73,8 @@ classdef MibImageDocument < handle
         brushCursor             % matlab.graphics.chart.primitive.Line, handle to brush cursor plot
         brushCursorOffset       % 2×N double array, [X offsets; Y offsets] for brush cursor circle
         brushCursorMagFactor    % scalar double, magFactor used when brushCursorOffset was last computed
-        brushPrevXY             % coordinates of the previous pixel for the @em Brush tool,
-                                % @note dimensions: [x, y] or []
-        brushSelection = []     % selection layer during the brush tool movement, @code {1:2}[1:height,1:width] or NaN @endcode
-                                % brushSelection{1} 
-                                %   .selection - contains brush selection during drawing
-                                %   .travelPathInPixels - distance of brush travelled during painting
-                                % brushSelection{2} - contains labels of the supervoxels and some additional information
-                                %   .slic - a label image with superpixels
-                                %   .selectedSlic - a bitmap image of the selected with the Brush tool superpixels 
-                                %   .selectedSlicIndices - indices of the selected Slic superpixels
-                                %   .selectedSlicIndicesNew - a list of freshly selected Slic indices when moving the brush, used for the undo with Ctrl+Z
-                                %   .CData - a copy of the shown in the imageAxes image, to be used for the undo
-                                % brushSelection{3} - a structure that contains information for
-                                % the adaptive mode:
-                                %   .meanVals - array of mean intensity values for each superpixels
-                                %   .mean - mean intensity value for the initial selection
-                                %   .std - standard deviation of intensities for the initial selection
-                                %   .factor - factor that defines variation of STD variation
-                                % @note the 'brushSelection' is modified with respect to @code magFactor @endcode and crop of the image within the viewing window
+        brushPrevXY             % coordinates of the previous pixel for the Brush tool, [x, y] or []
+        brushSelection = []     % selection layer during the brush tool movement, see class docstring for the cell layout
         centralMarker           % marker for the center of the axes
         imageHandle = matlab.graphics.primitive.Image('CData', []); % handle to the rendered image
         listeners = {}          % cell array with handles to listeners

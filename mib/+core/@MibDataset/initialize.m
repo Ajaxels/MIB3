@@ -41,12 +41,16 @@ function initialize(obj, img, meta, datasetType, modelType, enableSelection)
     %     - ``'labels'`` - init with model with 255 materials; ``obj.mask``, ``obj.selection`` have the same dimensions as labels
     %     - ``'labels63'`` - init with model with 63 materials; ``obj.mask``, ``obj.selection`` are NaN
     %
-    %   - **enableSelection** - a logical (true/false) switch to enable/disable selection layer
+    %   - **enableSelection** - a logical (true/false) switch to enable/disable
+    %     the selection layer; when ``false`` the labels container is left empty
+    %     (``obj.labels.exists == false``) and no memory is allocated for it, so a
+    %     browse-only dataset costs only the image itself. Turning the layer back
+    %     on (Preferences -> Enable selection) allocates ``labels.data`` then
     %
-    
+
     if nargin < 6 || isempty(enableSelection); enableSelection = true; end
     if nargin < 5; modelType = []; end
-    if nargin < 4; datasetType = obj.datasetType; end
+    if nargin < 4 || isempty(datasetType); datasetType = obj.datasetType; end
     if nargin < 3; meta = []; end
     if nargin < 2; img = []; end
     
@@ -87,16 +91,31 @@ function initialize(obj, img, meta, datasetType, modelType, enableSelection)
                 'Colors',    1, ...
                 'SliceSize', newImage.sliceSize);
             labelsDims = [newImage.height, newImage.width, newImage.depth, 1, newImage.time];
+            % A zero-filled labels layer costs as much memory as a single-color copy
+            % of the image, so a browse-only dataset (enableSelection == false) gets
+            % an empty container instead: same class, obj.labels.exists == false, no
+            % allocation. That is what switching the selection layer off is for, and
+            % on a large stack the saving decides whether the image fits at all.
+            % MIB2 did the same - mibImage.clearContents left model/selection/maskImg
+            % as NaN whenever enableSelection was 0. The layer is allocated later by
+            % createModel, or by Preferences when selection is switched back on.
+            if enableSelection
+                labelsData    = zeros(labelsDims, 'uint8');
+                labelsData255 = zeros(size(img), 'uint8');
+            else
+                labelsData    = [];
+                labelsData255 = [];
+            end
             switch modelType
                 case 'imageOnly'
                     % Allocate a zero-filled MibLabels63 so that selection/mask
                     % layers are immediately usable (e.g. brush tool) without
                     % requiring an explicit createModel call first.
-                    newLabels = core.MibLabels63(zeros(labelsDims, 'uint8'), labelsMeta);
+                    newLabels = core.MibLabels63(labelsData, labelsMeta);
                 case 'labels'
-                    newLabels = core.MibLabels(zeros(size(img), 'uint8'), meta);
+                    newLabels = core.MibLabels(labelsData255, meta);
                 case 'labels63'
-                    newLabels = core.MibLabels63(zeros(labelsDims, 'uint8'), labelsMeta);
+                    newLabels = core.MibLabels63(labelsData, labelsMeta);
             end
         case 'Virtual'
             newImage = core.MibVirtualImage(img, meta);

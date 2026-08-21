@@ -31,6 +31,7 @@ classdef Zarr3VirtualSetupLoader < io.loaders.BaseImageLoader
 %
 %
 % Supported formats:
+%
 % - OME-Zarr v3 (zarr.json metadata) - local folders and HTTP/HTTPS URLs
 % - Single-array zarr v3 (no multiscales metadata) - treated as 1 level
 % - Nested containers where the image group sits below the selected root

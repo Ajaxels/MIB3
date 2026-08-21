@@ -92,6 +92,7 @@ function result = setData3D(obj, dataset, type, time, orient, col_channel, optio
 %   .. code-block:: matlab
 %
 %      result = obj.setData3D(dataset, 'selection', 5, 1, 2);
+%
 %   **Example 4**
 %
 %   .. code-block:: matlab

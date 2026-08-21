@@ -115,7 +115,7 @@ classdef ColorChannelTest < matlab.unittest.TestCase
             ch1Data = uint8(randi(200, [height, width, depth, 1]));
             ch2Data = zeros([height, width, depth, 1], 'uint8');
             imgData = cat(4, ch1Data, ch2Data);
-            mibModel = models.MibModel(1, mibFolder);
+            mibModel = models.MibModel(1, mibFolder, Verbose = false, Preferences = 'defaults');
             mibModel.I{1} = core.MibDataset(imgData, dictionary(), 'Standard', 'labels63');
             mibModel.I{1}.updateBoundingBox([], [0 0 0]);
             mibModel.I{1}.createModel(255);

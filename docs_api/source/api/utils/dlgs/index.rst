@@ -11,6 +11,7 @@ Standard dialogs
 .. toctree::
    :maxdepth: 1
 
+   chooseUserStatsLocation
    inputQuestDlg
    inputSingleDlg
    inputUniversalDlg

@@ -18,12 +18,14 @@ classdef MibVirtualImage < core.MibImage
     %
     % **Key differences from MIB2:**
     %
-    %   | Property | MIB3 | MIB2 |
-    %   |----------|------|------|
-    %   | Dimension order | ``[y, x, z, c, t]`` | ``[y, x, c, z, t]`` |
-    %   | YX orientation | ``3`` | ``4`` |
-    %   | Image data | ``obj.data{}`` | ``obj.img{}`` |
-    %   | Image class | ``obj.dataClass`` | ``obj.meta('imgClass')`` |
+    %   ===============  ===================  ========================
+    %   Property         MIB3                 MIB2
+    %   ===============  ===================  ========================
+    %   Dimension order  ``[y, x, z, c, t]``  ``[y, x, c, z, t]``
+    %   YX orientation   ``3``                ``4``
+    %   Image data       ``obj.data{}``       ``obj.img{}``
+    %   Image class      ``obj.dataClass``    ``obj.meta('imgClass')``
+    %   ===============  ===================  ========================
 
     properties
         filePaths = {}

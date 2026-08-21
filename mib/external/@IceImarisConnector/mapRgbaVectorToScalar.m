@@ -76,7 +76,7 @@ function rgbaScalar = mapRgbaVectorToScalar(rgbaVector)
 
 % check input
 if ~isvector(rgbaVector) || length(rgbaVector) ~= 4 || ...
-        any(rgbaVector < 0) || any(rgbaVector) > 1
+        any(rgbaVector < 0) || any(rgbaVector > 1)
     error('rgbaVector must be 1-by-4 with all elements between 0 and 1.')
 end
 

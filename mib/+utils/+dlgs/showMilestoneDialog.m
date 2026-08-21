@@ -28,10 +28,13 @@ function [newStatsPath, updatedTiers] = showMilestoneDialog(ParentFigure, userPr
 %     - ``.ParentFigure`` - [handle] uifigure / AppContainer handle for centering
 %
 % Output Arguments:
-%   - **newStatsPath** - [char] new ``mib_user.mat`` path chosen by the user,
-%     or ``''`` if the path was not changed
-%   - **updatedTiers** - struct with potentially updated ``Tiers`` data
-%     (may differ from the input when a richer stats file was loaded)
+%   - **newStatsPath** - [char] folder chosen by the user for the
+%     per-workstation statistics files, or ``''`` if it was not changed.
+%     The caller is expected to hand it to
+%     :func:`models.MibModel.relocateUserStats`, which carries this machine's
+%     points over and sums in the statistics of the other workstations
+%   - **updatedTiers** - struct with the ``Tiers`` data the dialog was shown
+%     with; unchanged by the dialog itself
 %
 % (none when called without output arguments - dialog blocks until dismissed)
 %
@@ -337,8 +340,8 @@ btnGrid.Layout.Column = 1;
 % "Set stats file..." button - only shown in currentStats mode
 if strcmp(mode, 'currentStats')
     statsFileBtn = uibutton(btnGrid, ...
-        'Text',    'Set stats file...', ...
-        'Tooltip', sprintf('Choose a custom location for mib_user.mat\n(e.g. a synced network folder)\nThe current:\n%s', options.userStatsPath), ...
+        'Text',    'Set stats folder...', ...
+        'Tooltip', sprintf('Keep the stats in a folder shared with your other computers\nso that they all add up\nThe current:\n%s', fileparts(options.userStatsPath)), ...
         'ButtonPushedFcn', @(~,~) onSetStatsFile());
     statsFileBtn.Layout.Column = 1;
 end
@@ -457,58 +460,22 @@ uiwait(fig);
     end
 
     function onSetStatsFile()
-        % Determine starting directory for the browser
-        startPath = options.userStatsPath;
-        if isempty(startPath)
-            startDir = utils.getUserStatsDir();
-            if isempty(startDir); startDir = utils.getPrefDir(); end
-            startPath = fullfile(startDir, 'mib_user.mat');
-        end
+        % Pick the folder that holds the per-workstation statistics files.
+        % Adopting the folder - carrying this machine's own points over and
+        % summing in whatever the other machines left there - is done by
+        % models.MibModel.relocateUserStats once this dialog returns, so that
+        % the caller stays the only place that mutates the preferences.
+        selectedFolder = utils.dlgs.chooseUserStatsLocation(fig, ...
+            fileparts(options.userStatsPath), struct('mibPath', mibDir));
+        figure(fig);   % the child dialog took the modal focus
+        if isempty(selectedFolder); return; end   % cancelled
 
-        pathname = uigetdir(fileparts(startPath), 'Specify location for mib_user.mat');
-        if isequal(pathname, 0); return; end   % cancelled
-
-        selectedPath = fullfile(pathname, 'mib_user.mat');
-
-        % Compare collected points when an existing stats file was selected
-        if isfile(selectedPath)
-            try
-                loadedVars = load(selectedPath, 'Tiers');
-                if isfield(loadedVars, 'Tiers') && isfield(loadedVars.Tiers, 'collectedPoints')
-                    currentPoints = 0;
-                    if isfield(updatedTiers, 'collectedPoints')
-                        currentPoints = updatedTiers.collectedPoints;
-                    end
-                    if loadedVars.Tiers.collectedPoints > currentPoints
-                        updatedTiers = loadedVars.Tiers;
-                        greetLbl.Text = sprintf( ...
-                            'Richer stats loaded from:\n%s', selectedPath);
-                    else
-                        greetLbl.Text = sprintf( ...
-                            'Stats file location set (current stats kept):\n%s', selectedPath);
-                    end
-                else
-                    greetLbl.Text = sprintf('Stats file location set:\n%s', selectedPath);
-                end
-            catch
-                greetLbl.Text = sprintf('Stats file location set:\n%s', selectedPath);
-            end
-        else
-            % New location - save current stats there immediately so it exists on next load
-            Tiers = updatedTiers;
-            try
-                destDir = fileparts(selectedPath);
-                if ~exist(destDir, 'dir'); mkdir(destDir); end
-                save(selectedPath, 'Tiers');
-                greetLbl.Text = sprintf('Stats saved to new location:\n%s', selectedPath);
-            catch saveErr
-                greetLbl.Text = sprintf('Could not save to:\n%s\n%s', selectedPath, saveErr.message);
-                return;
-            end
-        end
-
-        newStatsPath = selectedPath;
-        options.userStatsPath = selectedPath;   % prevent double-trigger
+        newStatsPath = selectedFolder;
+        % only the folder of this path is ever read back (line above); the shard
+        % name is used so that it cannot be mistaken for the MIB2 statistics file
+        options.userStatsPath = fullfile(selectedFolder, ...
+            sprintf('mib_user_%s.mat', utils.identifyComputerName()));   % prevent double-trigger
+        greetLbl.Text = sprintf('Statistics folder set to:\n%s', selectedFolder);
     end
 
 end
