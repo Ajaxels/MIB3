@@ -290,9 +290,12 @@ if isfield(obj.preferences, 'ExternalDirs') && ...
     io.BioFormats.Config.setMemoDir(obj.preferences.ExternalDirs.BioFormatsMemoizerMemoDir);
 end
 
-% preload an image used for filter previews
-% move preloading to the first call of the image filters dialog
-obj.sessionSettings.ImageFilters.TestImg = []; %imread(fullfile(obj.mibPath, 'assets', 'images', 'test_img_for_previews.png'));
+% sessionSettings.ImageFilters is intentionally NOT created here: it is built on
+% the first call of the image filters dialog by
+% controllers.ImageFilters.updateSessionSettings, which also preloads TestImg -
+% the image used for filter previews. Creating even an empty field here would
+% satisfy the isfield() guard in the ImageFilters constructor and leave the
+% filter defaults unpopulated.
 
 % ------------ update tips of a day settings ------------
 tipFolder = fullfile(obj.mibPath, 'assets', 'tips', '*.html');

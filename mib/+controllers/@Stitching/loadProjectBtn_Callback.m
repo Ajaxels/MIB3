@@ -15,7 +15,7 @@ function loadProjectBtn_Callback(obj)
 %     / ``obj.tforms`` / ``obj.zSliceFixes`` come back from the file and every
 %     widget is reset to the saved settings, reproducing the dialog as it was.
 %   - **Settings only** - the saved parameters are applied to the tiles selected
-%     HERE (``InputPath`` / ``OutputPath`` are kept), the layout is rebuilt from
+%     HERE (``InputPath`` / ``OutputPatih`` are kept), the layout is rebuilt from
 %     them, and the file's tiles/measurements/positions are ignored. This is the
 %     "stitch a new acquisition exactly like the previous one" case.
 %
