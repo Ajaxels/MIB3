@@ -15,8 +15,11 @@ function exportNetwork(obj)
         return;
     end
 
-    prompts = {'Output format'; 'Alter the final segmentation layer as'; 'Version of ONNX operator set'};
-    defAns = {{'ONNX', 'TensorFlow', 1};{'Keep as it is', 'Remove the layer', 'pixelClassificationLayer', 'dicePixelClassificationLayer', 1};  {'6', '7', '8', '9','10','11','12','13', 4}; };
+    prompts = {'Output format'; 'Alter the final segmentation layer as'; 'Version of ONNX operator set [6-20]'};
+    defAns = {{'ONNX', 'TensorFlow', 1}; ...
+              {'Keep as it is', 'Remove the layer', 'pixelClassificationLayer', 'dicePixelClassificationLayer', 1}; ...
+              struct('Spinner', true, 'Value', 14, 'Limits', [6 20], 'Step',1, 'Round',true) };
+
     dlgTitle = 'Export network';
     header = sprintf('Convert and export the network to ONNX or TensorFlow format');
     options.HeaderLines = 1;
@@ -29,7 +32,7 @@ function exportNetwork(obj)
 
     exportFormat = answer{1};
     finalSegmentationLayer = answer{2};
-    opsetVersion = str2double(answer{3});
+    opsetVersion = answer{3};
 
     [currDir, fn] = fileparts(obj.BatchOpt.NetworkFilename);
 
@@ -89,21 +92,15 @@ function exportNetwork(obj)
     switch exportFormat
         case 'ONNX'
             try
-                deepmib.exportONNXNetwork(lgraph, outputFilename, 'OpsetVersion', opsetVersion);
+                exportONNXNetwork(lgraph, outputFilename, 'OpsetVersion', opsetVersion);
             catch err
-                % when addSpkgBinPath is not patched a second attempt to export is needed
-                % line 6: should be "if isempty(pathSet) && ~isdeployed"
-                try
-                    deepmib.exportONNXNetwork(lgraph, outputFilename, 'OpsetVersion', opsetVersion);
-                catch err2
-                    delete(wb);
-                    reply = uiconfirm(obj.view.gui, ...
-                        sprintf('!!! Error !!!\n\n%s\n\n%s\n\nThe error message was copied to clipboard', err2.identifier, err2.message), ...
-                        'ONNX export', ...
-                        'Options',{'Copy error message to clipboard and close', 'Close'}, 'Icon', 'error');
-                    if strcmp(reply, 'Copy error message to clipboard and close'); clipboard('copy', err2.message); end
-                    return;
-                end
+                delete(wb);
+                reply = uiconfirm(obj.view.gui, ...
+                    sprintf('!!! Error !!!\n\n%s\n\n%s\n\nThe error message was copied to clipboard', err.identifier, err.message), ...
+                    'ONNX export', ...
+                    'Options',{'Copy error message to clipboard and close', 'Close'}, 'Icon', 'error');
+                if strcmp(reply, 'Copy error message to clipboard and close'); clipboard('copy', err.message); end
+                return;
             end
         case 'TensorFlow'
             try
