@@ -136,11 +136,19 @@ BatchOpt.showWaitbar = true;
 BatchOpt.id = obj.getActiveId();
 
 %% Restore the settings last used in this MIB session
+% The key is shared with controllers.MibDeep.mergeInstancesTo3D: it is the same
+% dialog driving the same algorithm, so a threshold trialled at one entry point
+% is offered at the other. The two differ only in how Z anisotropy is asked for,
+% which is why that one is stored under two names - 'UseAnisotropy' (this
+% method's yes/no, the ratio coming from the dataset pixel size) and
+% 'Anisotropy' (MibDeep's raw ratio, prediction images having no pixel size).
+% Each entry point reads and writes only its own, so neither clobbers the other.
+%
 % Only plain values are stored; the spinner limits and rounding flags above stay
 % owned by this file, so a stale session entry cannot widen them. Applied before
 % the BatchOptIn merge, so an explicit caller argument still wins.
-if isfield(obj.sessionSettings, 'stitchModelInstances')
-    lastUsed = obj.sessionSettings.stitchModelInstances;
+if isfield(obj.sessionSettings, 'stitchInstances2Dto3D')
+    lastUsed = obj.sessionSettings.stitchInstances2Dto3D;
     if isfield(lastUsed, 'Method') && ismember(lastUsed.Method, BatchOpt.Method{2})
         BatchOpt.Method{1} = lastUsed.Method;
     end
@@ -337,16 +345,26 @@ end
 %% Perform stitching
 wb = [];
 if BatchOpt.showWaitbar
-    % Indeterminate: the graph-building phase inside stitchInstances2Dto3D is a
-    % single opaque pass with no fine-grained progress to report.
+    % Indeterminate: the phases inside stitchInstances2Dto3D report themselves
+    % through wb.Message (which slice of which pass), but there is no single
+    % fraction that covers them all honestly.
     wb = uiprogressdlg(obj.getProgressBarParent(), 'Indeterminate', 'on', ...
         'Message', 'Stitching 2D instances into 3D objects, please wait...', ...
-        'Title', 'Stitch 2D instances to 3D');
+        'Title', 'Stitch 2D instances to 3D', 'Cancelable', 'on');
 end
 
 tic
 stats = obj.I{BatchOpt.id}.stitchModelInstances(options, wb);
 toc
+
+% Cancelled: the dataset was left untouched by MibDataset.stitchModelInstances,
+% so there is nothing to undo, redraw or report back to a batch protocol.
+if stats.cancelled
+    if ~isempty(wb) && isvalid(wb); delete(wb); end
+    fprintf('MibModel.stitchModelInstances: cancelled by the user, the model was not modified\n');
+    notify(obj, 'StopProtocol');
+    return;
+end
 
 if obj.preferences.System.DeveloperMode
     fprintf('MibModel.stitchModelInstances: %d 2D objects -> %d 3D instances (method=%s)\n', ...
@@ -359,8 +377,11 @@ end
 
 %% Remember the settings for the rest of this MIB session
 % So a second run of the dialog opens on the values just used - the common case
-% while trialling thresholds on one dataset.
-obj.sessionSettings.stitchModelInstances = struct(...
+% while trialling thresholds on one dataset - whether that run comes from here or
+% from DeepMIB's "Merge 2D to 3D". Written field by field into whatever is
+% already stored rather than replacing it, so MibDeep's 'Anisotropy' ratio
+% survives a run from this side (see the note at the top).
+sessionValues = struct(...
     'Method',              BatchOpt.Method{1}, ...
     'SplitDisconnected2D', BatchOpt.SplitDisconnected2D, ...
     'IoUThreshold',        BatchOpt.IoUThreshold{1}, ...
@@ -374,6 +395,15 @@ obj.sessionSettings.stitchModelInstances = struct(...
     'UseAnisotropy',       BatchOpt.UseAnisotropy, ...
     'MaxCentroidShift',    BatchOpt.MaxCentroidShift{1}, ...
     'CentroidLinkRadius',  BatchOpt.CentroidLinkRadius{1});
+if isfield(obj.sessionSettings, 'stitchInstances2Dto3D')
+    stored = obj.sessionSettings.stitchInstances2Dto3D;
+else
+    stored = struct();
+end
+for sessionField = fieldnames(sessionValues)'
+    stored.(sessionField{1}) = sessionValues.(sessionField{1});
+end
+obj.sessionSettings.stitchInstances2Dto3D = stored;
 
 notify(obj, 'UpdateGuiWidgets', core.ToggleEventData({'ribbonModel', 'checkboxes'}));
 notify(obj, 'ShowImage');

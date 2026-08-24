@@ -1,5 +1,5 @@
 classdef StitchModelInstancesTest < matlab.unittest.TestCase
-% STITCHMODELINSTANCESTEST - Unit tests for MibDataset.stitchModelInstances.
+% STITCHMODELINSTANCESTEST - Unit tests for 2D-to-3D instance stitching.
 %
 % Covers (MibDataset level, no GUI):
 %   layer replacement       - labels become an indexed uint16 instance model
@@ -8,6 +8,19 @@ classdef StitchModelInstancesTest < matlab.unittest.TestCase
 %                             keeps working after stitching (the packed layers
 %                             live in bits 7-8 of obj.labels and are lost
 %                             unless stitchModelInstances unpacks them first)
+%
+% and (MibModel level, batch mode so no dialog opens):
+%   session settings        - the last-used dialog values live under the single
+%                             key sessionSettings.stitchInstances2Dto3D, shared
+%                             with controllers.MibDeep.mergeInstancesTo3D so a
+%                             threshold trialled at one entry point is offered
+%                             at the other. Kept here rather than in a file of
+%                             its own so the feature's tests stay together.
+%                             MibDeep's half of the round trip needs a live
+%                             controller and a modal dialog, so what is asserted
+%                             here is the contract it depends on: the key is
+%                             read and written, and the other entry point's
+%                             anisotropy field is not clobbered.
 
     methods (TestClassSetup)
         function addPaths(testCase)
@@ -86,9 +99,172 @@ classdef StitchModelInstancesTest < matlab.unittest.TestCase
             testCase.verifyEqual(selection, groundTruth.selection);
         end
 
+        % -----------------------------------------------------------------
+        % model filename propagation
+        % -----------------------------------------------------------------
+
+        function filename_carriesOverWithTheSuffix(testCase)
+            % regression: replacing obj.labels resets filename to the MibLabels
+            % placeholder, so the name of the stitched 2D model used to be lost
+            mibModel = StitchModelInstancesTest.buildInstanceStack('labels65535');
+            mibModel.I{1}.labels.filename = fullfile('C:', 'data', 'Labels_stack.model');
+
+            mibModel.I{1}.stitchModelInstances();
+
+            testCase.verifyEqual(mibModel.I{1}.labels.filename, ...
+                fullfile('C:', 'data', 'Labels_stack_3d.model'), ...
+                'the 2D model name must be propagated with _3d inserted before the extension');
+        end
+
+        function filename_labelsVariableIsPreserved(testCase)
+            mibModel = StitchModelInstancesTest.buildInstanceStack('labels65535');
+            mibModel.I{1}.labels.filename = 'Labels_stack.model';
+            mibModel.I{1}.labels.labelsVariable = 'myLabels';
+
+            mibModel.I{1}.stitchModelInstances();
+
+            testCase.verifyEqual(mibModel.I{1}.labels.labelsVariable, 'myLabels');
+        end
+
+        function filename_suffixIsNotAppendedTwice(testCase)
+            % stitching an already-stitched model must not build up _3d_3d
+            mibModel = StitchModelInstancesTest.buildInstanceStack('labels65535');
+            mibModel.I{1}.labels.filename = 'Labels_stack_3d.model';
+
+            mibModel.I{1}.stitchModelInstances();
+
+            testCase.verifyEqual(mibModel.I{1}.labels.filename, 'Labels_stack_3d.model');
+        end
+
+        function filename_unsetNameIsLeftAlone(testCase)
+            % '' is a model created in MIB and never saved, 'Labels_none.model'
+            % the MibLabels default - neither has a name worth propagating, and
+            % inventing one would stop Save As suggesting a name from the image
+            for unsetName = {'', 'Labels_none.model'}
+                mibModel = StitchModelInstancesTest.buildInstanceStack('labels65535');
+                mibModel.I{1}.labels.filename = unsetName{1};
+
+                mibModel.I{1}.stitchModelInstances();
+
+                testCase.verifyEqual(mibModel.I{1}.labels.filename, unsetName{1}, ...
+                    sprintf('"%s" must be left as it is', unsetName{1}));
+            end
+        end
+
+        function filename_emptySuffixKeepsTheNameUnchanged(testCase)
+            mibModel = StitchModelInstancesTest.buildInstanceStack('labels65535');
+            mibModel.I{1}.labels.filename = 'Labels_stack.model';
+
+            mibModel.I{1}.stitchModelInstances(struct('filenameSuffix', ''));
+
+            testCase.verifyEqual(mibModel.I{1}.labels.filename, 'Labels_stack.model');
+        end
+
+        function filename_survivesUndo(testCase)
+            % the 'modelLayers' backup deep-copies the layer object, so Ctrl+Z
+            % must bring back the 2D model's name along with its pixels
+            mibModel = StitchModelInstancesTest.buildInstanceStack('labels65535');
+            mibModel.I{1}.labels.filename = 'Labels_stack.model';
+
+            mibModel.backup('modelLayers', 1, struct('id', 1));
+            mibModel.I{1}.stitchModelInstances();
+            testCase.assertEqual(mibModel.I{1}.labels.filename, 'Labels_stack_3d.model');
+
+            mibModel.undo();
+
+            testCase.verifyEqual(mibModel.I{1}.labels.filename, 'Labels_stack.model');
+        end
+
+        % -----------------------------------------------------------------
+        % session settings: one key, shared with MibDeep.mergeInstancesTo3D
+        % -----------------------------------------------------------------
+
+        function sessionSettings_writtenUnderTheSharedKey(testCase)
+            mibModel = StitchModelInstancesTest.buildInstanceStack('labels65535');
+            testCase.assertFalse(isfield(mibModel.sessionSettings, 'stitchInstances2Dto3D'), ...
+                'the key must not be seeded by generateSessionSettings');
+
+            StitchModelInstancesTest.runBatch(mibModel, ...
+                'IoUThreshold', {0.42, [0 1], 'off'}, 'MinObjectVoxels', {123, [0 1e9], 'on'});
+
+            testCase.assertTrue(isfield(mibModel.sessionSettings, 'stitchInstances2Dto3D'));
+            stored = mibModel.sessionSettings.stitchInstances2Dto3D;
+            testCase.verifyEqual(stored.IoUThreshold, 0.42);
+            testCase.verifyEqual(stored.MinObjectVoxels, 123);
+        end
+
+        function sessionSettings_areReadBackOnTheNextRun(testCase)
+            % A value stored by a previous run - or by MibDeep - must reappear
+            % as the default, which is what the reported bug was about.
+            mibModel = StitchModelInstancesTest.buildInstanceStack('labels65535');
+            mibModel.sessionSettings.stitchInstances2Dto3D = struct( ...
+                'IoUThreshold', 0.11, 'ZLookback', 3, 'MinObjectVoxels', 77);
+
+            % no IoUThreshold / ZLookback / MinObjectVoxels in this call, so the
+            % stored values are the only place they can come from
+            StitchModelInstancesTest.runBatch(mibModel);
+
+            stored = mibModel.sessionSettings.stitchInstances2Dto3D;
+            testCase.verifyEqual(stored.IoUThreshold, 0.11);
+            testCase.verifyEqual(stored.ZLookback, 3);
+            testCase.verifyEqual(stored.MinObjectVoxels, 77);
+        end
+
+        function sessionSettings_explicitArgumentWinsOverTheStoredValue(testCase)
+            mibModel = StitchModelInstancesTest.buildInstanceStack('labels65535');
+            mibModel.sessionSettings.stitchInstances2Dto3D = struct('IoUThreshold', 0.11);
+
+            StitchModelInstancesTest.runBatch(mibModel, 'IoUThreshold', {0.9, [0 1], 'off'});
+
+            testCase.verifyEqual(mibModel.sessionSettings.stitchInstances2Dto3D.IoUThreshold, 0.9);
+        end
+
+        function sessionSettings_mibDeepAnisotropyRatioSurvivesARibbonRun(testCase)
+            % The one value the two entry points cannot share: here it is a
+            % yes/no (the ratio comes from the dataset pixel size), in MibDeep a
+            % raw ratio. They are stored under separate names and each side must
+            % write only its own, or one dialog silently resets the other.
+            mibModel = StitchModelInstancesTest.buildInstanceStack('labels65535');
+            mibModel.sessionSettings.stitchInstances2Dto3D = struct( ...
+                'Anisotropy', 4, 'IoUThreshold', 0.3);
+
+            StitchModelInstancesTest.runBatch(mibModel, 'UseAnisotropy', true);
+
+            stored = mibModel.sessionSettings.stitchInstances2Dto3D;
+            testCase.verifyEqual(stored.Anisotropy, 4, ...
+                'MibDeep''s ratio must survive a run from the ribbon');
+            testCase.verifyTrue(stored.UseAnisotropy, ...
+                'the ribbon stores its own answer under its own name');
+        end
+
+        function sessionSettings_outOfRangeStoredValueIsIgnored(testCase)
+            % A stale or hand-edited entry must not widen a spinner's range.
+            mibModel = StitchModelInstancesTest.buildInstanceStack('labels65535');
+            mibModel.sessionSettings.stitchInstances2Dto3D = struct( ...
+                'IoUThreshold', 42, 'ZLookback', -5);
+
+            StitchModelInstancesTest.runBatch(mibModel);
+
+            stored = mibModel.sessionSettings.stitchInstances2Dto3D;
+            testCase.verifyEqual(stored.IoUThreshold, 0.25, 'must fall back to the default');
+            testCase.verifyEqual(stored.ZLookback, 1, 'must fall back to the default');
+        end
+
     end
 
     methods (Static, Access = private)
+
+        function runBatch(mibModel, varargin)
+            % Drive MibModel.stitchModelInstances non-interactively. Passing
+            % .Method is what switches the dialog off, so every case here goes
+            % through the real session-settings read and write.
+            BatchOptIn = struct('Method', {{'graph'}}, 'showWaitbar', false);
+            for k = 1:2:numel(varargin)
+                BatchOptIn.(varargin{k}) = varargin{k+1};
+            end
+            mibModel.stitchModelInstances(BatchOptIn);
+        end
+
         function [mibModel, groundTruth] = buildInstanceStack(modelType)
             % Two square columns running through the whole stack, with the
             % per-slice instance indices deliberately swapped between slices -

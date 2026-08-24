@@ -45,10 +45,11 @@ sessionSettings.contentAwareFill.FillOrder   = 'gradient';
 % writes it on close and reads it on open (controllers.Stitching), so seeding
 % defaults here would duplicate its BatchOpt defaults and the two would drift.
 
-% NOTE: sessionSettings.stitchModelInstances and .mergeInstancesTo3D are absent
-% for the same reason - the 2D-to-3D instance stitching dialog owns them
-% (models.MibModel.stitchModelInstances, controllers.MibDeep.mergeInstancesTo3D),
-% writing them after a run and reading them back to reopen on the last values.
+% NOTE: sessionSettings.stitchInstances2Dto3D is absent for the same reason - the
+% 2D-to-3D instance stitching dialog owns it, writing it after a run and reading
+% it back to reopen on the last values. One key, shared by both entry points
+% (models.MibModel.stitchModelInstances and controllers.MibDeep.mergeInstancesTo3D),
+% because they show the same dialog for the same algorithm.
 
 % add physical pixel size in meters
 pixelsPerInch = get(0, 'ScreenPixelsPerInch');

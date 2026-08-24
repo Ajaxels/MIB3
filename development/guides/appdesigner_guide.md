@@ -153,6 +153,9 @@ Full widget syntax table:
 | `.BackgroundColor = 'g'` | `.BackgroundColor = [0 1 0]` |
 | `.CData` (button icon) | `.Icon` |
 | `.Visible = 'on'/'off'` | `.Visible = 'on'/'off'` (both work) |
+| Button `Callback` | `ButtonPushedFcn` |
+| Edit `Callback` | `ValueChangedFcn` |
+| `findjobj` + `jTable.changeSelection` | `scroll(uitableHandle, 'row', r)` |
 
 ---
 

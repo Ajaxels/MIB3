@@ -1,4 +1,4 @@
-function [labelVol, stats] = stitchInstances2Dto3D(inputVol, options)
+function [labelVol, stats] = stitchInstances2Dto3D(inputVol, options, wb)
 % STITCHINSTANCES2DTO3D - Stitch per-slice 2D instance labels into a 3D instance volume.
 %
 % Syntax:
@@ -6,6 +6,7 @@ function [labelVol, stats] = stitchInstances2Dto3D(inputVol, options)
 %
 %       labelVol = utils.stitchInstances2Dto3D(inputVol)
 %       [labelVol, stats] = utils.stitchInstances2Dto3D(inputVol, options)
+%       [labelVol, stats] = utils.stitchInstances2Dto3D(inputVol, options, wb)
 %
 % Given a stack of independently generated 2D instance segmentations (one
 % label map per z-slice, object IDs **not** consistent across slices), link
@@ -109,17 +110,27 @@ function [labelVol, stats] = stitchInstances2Dto3D(inputVol, options)
 %       comparably-sized objects are bridged (default: ``0.5``)
 %     - ``.bidirectional`` - for ``'hungarian'``, also run a reverse pass and
 %       reconcile (default: ``true``; ignored by ``'graph'``)
-%     - ``.showWaitbar`` - logical, show progress (default: ``false``)
 %     - ``.verbose`` - logical, print a short summary (default: ``false``)
+%
+%   - **wb** - *(optional)* handle of a caller-owned ``uiprogressdlg``, created
+%     with ``'Cancelable', 'on'``. Its ``Message`` is updated with the current
+%     phase and slice counter, and ``CancelRequested`` is polled in every loop,
+%     so a stitch over a large stack can be interrupted. Pass ``[]`` for none.
+%     ``Value`` is left alone - the caller owns it, because it may be stitching
+%     several volumes and scaling the bar over all of them. This replaces the
+%     former ``options.showWaitbar``, which could never work: it built a
+%     :class:`core.PoolWaitbar` with an empty parent, which that class rejects
 %
 % Output Arguments:
 %   - **labelVol** - ``[height, width, depth]`` relabelled 3D instance volume,
-%     IDs 1..K compacted, class ``uint16`` (or ``uint32`` if K > 65535)
+%     IDs 1..K compacted, class ``uint16`` (or ``uint32`` if K > 65535). Empty
+%     when the user cancelled
 %   - **stats** - structure with ``.numInput2DObjects``, ``.numOutput3DObjects``,
 %     ``.objectVoxelCounts`` (K×1), ``.objectSliceCounts`` (K×1, empty unless
 %     ``minObjectSlices`` was used), ``.numAbsorbedFragments`` and
 %     ``.numAbsorbedVoxels`` (both 0 unless ``absorbFragmentVoxels`` was used),
-%     ``.method``, ``.options``
+%     ``.cancelled`` (logical; when ``true`` nothing else in the structure is
+%     meaningful and ``labelVol`` is empty), ``.method``, ``.options``
 %
 % Notes:
 %   - Over-merging (one output object swallowing most of the stack) is almost
@@ -152,12 +163,12 @@ function [labelVol, stats] = stitchInstances2Dto3D(inputVol, options)
 %          stats.numInput2DObjects, stats.numOutput3DObjects);
 %      histogram(stats.objectVoxelCounts);   % 3D object size distribution
 %
-% **Example 3** - drop noise fragments and show a progress bar (typical for a
-% large, noisy stack such as an EM mitochondria volume):
+% **Example 3** - drop noise fragments (typical for a large, noisy stack such as
+% an EM mitochondria volume):
 %
 %   .. code-block:: matlab
 %
-%      opt = struct('minObjectVoxels', 200, 'showWaitbar', true, 'verbose', true);
+%      opt = struct('minObjectVoxels', 200, 'verbose', true);
 %      L = utils.stitchInstances2Dto3D(V, opt);   % objects < 200 voxels removed
 %
 %   A false detection can be large in-plane yet live on one slice only, which no
@@ -215,10 +226,21 @@ function [labelVol, stats] = stitchInstances2Dto3D(inputVol, options)
 %      opt = struct('iouThreshold', 0.5, 'ioaThreshold', 1.01, ...
 %                   'minOverlapPixels', 20);   % ioaThreshold>1 disables IoA links
 %      L = utils.stitchInstances2Dto3D(V, opt);
+%
+% **Example 8** - report progress and let the user stop a long stitch:
+%
+%   .. code-block:: matlab
+%
+%      wb = uiprogressdlg(parentFigure, 'Title', 'Stitch 2D instances to 3D', ...
+%          'Indeterminate', 'on', 'Cancelable', 'on');
+%      [L, stats] = utils.stitchInstances2Dto3D(V, opt, wb);
+%      delete(wb);
+%      if stats.cancelled; return; end   % L is empty, nothing was produced
 
 % Updates
 %
 
+if nargin < 3; wb = []; end
 if nargin < 2; options = struct(); end
 if ~isfield(options, 'method');           options.method = 'graph'; end
 if ~isfield(options, 'splitDisconnected2D'); options.splitDisconnected2D = true; end
@@ -236,10 +258,17 @@ if ~isfield(options, 'maxCentroidShift'); options.maxCentroidShift = inf; end
 if ~isfield(options, 'centroidLinkRadius'); options.centroidLinkRadius = 0; end
 if ~isfield(options, 'centroidSizeRatio');  options.centroidSizeRatio = 0.5; end
 if ~isfield(options, 'bidirectional');    options.bidirectional = true; end
-if ~isfield(options, 'showWaitbar');      options.showWaitbar = false; end
 if ~isfield(options, 'verbose');          options.verbose = false; end
 
 depth = size(inputVol, 3);
+
+% Progress and cancellation, both through the caller's wb. The message is
+% refreshed only every messageStep slices - a uifigure property write forces a
+% redraw, which on a thousand-slice stack costs more than the work it reports
+% on. The cancel poll runs on every slice, though - one slice is enough work to
+% be worth interrupting, and a Cancel button that only answers once a percent is
+% not one the user can rely on.
+messageStep = max(1, floor(depth/100));
 
 % -- Pass 1: relabel every slice to compact 1..n and count objects per slice
 % Store the compacted slices as int32 planes so the ID values never collide
@@ -247,6 +276,10 @@ depth = size(inputVol, 3);
 compactSlices = cell(depth, 1);
 countPerSlice = zeros(depth, 1);
 for z = 1:depth
+    if localCancelled(wb); [labelVol, stats] = localCancelledResult(options); return; end
+    if mod(z, messageStep) == 0
+        localReport(wb, sprintf('Splitting 2D objects: slice %d of %d...', z, depth));
+    end
     [compactSlices{z}, countPerSlice(z)] = localCompact(inputVol(:,:,z), options.splitDisconnected2D);
 end
 offset = [0; cumsum(countPerSlice)];   % global node = offset(z) + localLabel
@@ -256,7 +289,7 @@ if totalNodes == 0    % empty input
     labelVol = zeros(size(inputVol), 'uint16');
     stats = struct('numInput2DObjects', 0, 'numOutput3DObjects', 0, ...
         'objectVoxelCounts', [], 'objectSliceCounts', [], ...
-        'numAbsorbedFragments', 0, 'numAbsorbedVoxels', 0, ...
+        'numAbsorbedFragments', 0, 'numAbsorbedVoxels', 0, 'cancelled', false, ...
         'method', options.method, 'options', options);
     return;
 end
@@ -264,44 +297,47 @@ end
 % union-find parent array over all 2D objects in the stack
 parent = (1:totalNodes)';
 
-if options.showWaitbar
-    pwb = core.PoolWaitbar(depth-1, sprintf('Stitching 2D instances into 3D\nPlease wait...'), [], '2D->3D stitching');
-else
-    pwb = [];
-end
-
 switch lower(options.method)
     case 'graph'
         for z = 2:depth
+            if localCancelled(wb); [labelVol, stats] = localCancelledResult(options); return; end
+            if mod(z, messageStep) == 0
+                localReport(wb, sprintf('Linking objects across Z: slice %d of %d...', z, depth));
+            end
             for g = 1:min(options.zLookback, z-1)
                 parent = localLinkPair(parent, ...
                     compactSlices{z-g}, offset(z-g), countPerSlice(z-g), ...
                     compactSlices{z},   offset(z),   countPerSlice(z), options, false, g);
             end
-            if ~isempty(pwb); pwb.increment(); end
         end
     case 'hungarian'
         % forward pass
         for z = 2:depth
+            if localCancelled(wb); [labelVol, stats] = localCancelledResult(options); return; end
+            if mod(z, messageStep) == 0
+                localReport(wb, sprintf('Linking objects across Z: slice %d of %d...', z, depth));
+            end
             parent = localLinkPair(parent, ...
                 compactSlices{z-1}, offset(z-1), countPerSlice(z-1), ...
                 compactSlices{z},   offset(z),   countPerSlice(z), options, true, 1);
-            if ~isempty(pwb); pwb.increment(); end
         end
         % reverse pass (reconciled via the shared union-find)
         if options.bidirectional
             for z = depth:-1:2
+                if localCancelled(wb); [labelVol, stats] = localCancelledResult(options); return; end
+                if mod(z, messageStep) == 0
+                    localReport(wb, sprintf('Linking objects across Z (reverse pass): slice %d of %d...', z, depth));
+                end
                 parent = localLinkPair(parent, ...
                     compactSlices{z},   offset(z),   countPerSlice(z), ...
                     compactSlices{z-1}, offset(z-1), countPerSlice(z-1), options, true, 1);
             end
         end
     otherwise
-        if ~isempty(pwb); delete(pwb); end
         error('utils:stitchInstances2Dto3D:badMethod', ...
             'Unknown method "%s" (use "graph" or "hungarian")', options.method);
 end
-if ~isempty(pwb); delete(pwb); end
+localReport(wb, 'Building the 3D instance volume...');
 
 % -- Flatten union-find to root ids, then compact roots to 1..K
 root = localFindAll(parent);
@@ -335,8 +371,10 @@ objectVoxelCounts = accumarray(labelVol(labelVol>0), 1, [numObjects 1]);
 numAbsorbedFragments = 0;
 numAbsorbedVoxels = 0;
 if options.absorbFragmentVoxels > 0
-    [labelVol, objectVoxelCounts, numAbsorbedFragments, numAbsorbedVoxels] = ...
-        localAbsorbFragments(labelVol, objectVoxelCounts, options.absorbFragmentVoxels);
+    localReport(wb,'Absorbing fragments into their neighbours...');
+    [labelVol, objectVoxelCounts, numAbsorbedFragments, numAbsorbedVoxels, cancelled] = ...
+        localAbsorbFragments(labelVol, objectVoxelCounts, options.absorbFragmentVoxels, wb);
+    if cancelled; [labelVol, stats] = localCancelledResult(options); return; end
 end
 
 % -- Optional noise removal (too few voxels and/or too few slices) + relabel
@@ -348,8 +386,10 @@ end
 if options.minObjectSlices > 0
     % Slices actually occupied, counted per object. A large in-plane false
     % detection that never propagates is invisible to the voxel threshold.
+    localReport(wb,'Removing objects that span too few slices...');
     objectSliceCounts = zeros(numObjects, 1);
     for z = 1:depth
+        if localCancelled(wb); [labelVol, stats] = localCancelledResult(options); return; end
         plane = labelVol(:,:,z);
         present = unique(plane(plane > 0));
         objectSliceCounts(present) = objectSliceCounts(present) + 1;
@@ -377,6 +417,7 @@ stats.objectVoxelCounts = objectVoxelCounts;
 stats.objectSliceCounts = objectSliceCounts;   % empty unless minObjectSlices was used
 stats.numAbsorbedFragments = numAbsorbedFragments;
 stats.numAbsorbedVoxels = numAbsorbedVoxels;
+stats.cancelled = false;
 stats.method = options.method;
 stats.options = options;
 
@@ -384,6 +425,30 @@ if options.verbose
     fprintf('stitchInstances2Dto3D: %d 2D objects across %d slices -> %d 3D instances (method=%s)\n', ...
         totalNodes, depth, numObjects, options.method);
 end
+end
+
+% =====================================================================
+function cancelled = localCancelled(wb)
+% true once the user has pressed Cancel on the caller's progress dialog
+cancelled = ~isempty(wb) && isvalid(wb) && wb.CancelRequested;
+end
+
+% =====================================================================
+function localReport(wb, message)
+% show the current phase on the caller's progress dialog, if there is one
+if ~isempty(wb) && isvalid(wb); wb.Message = message; end
+end
+
+% =====================================================================
+function [labelVol, stats] = localCancelledResult(options)
+% Common exit for a cancelled run: no partial volume is returned, because a
+% half-linked stack looks like a valid result and would silently be written
+% over the user's model. The caller checks stats.cancelled.
+labelVol = [];
+stats = struct('numInput2DObjects', 0, 'numOutput3DObjects', 0, ...
+    'objectVoxelCounts', [], 'objectSliceCounts', [], ...
+    'numAbsorbedFragments', 0, 'numAbsorbedVoxels', 0, 'cancelled', true, ...
+    'method', options.method, 'options', options);
 end
 
 % =====================================================================
@@ -429,7 +494,7 @@ n = next;
 end
 
 % =====================================================================
-function [labelVol, voxelCounts, numFragments, numVoxels] = localAbsorbFragments(labelVol, voxelCounts, maxFragmentVoxels)
+function [labelVol, voxelCounts, numFragments, numVoxels, cancelled] = localAbsorbFragments(labelVol, voxelCounts, maxFragmentVoxels, wb)
 % Give the voxels of dust objects to the object surrounding them in-plane.
 %
 % Deliberately a *voxel* operation, run after the union-find is finished, not
@@ -445,6 +510,7 @@ function [labelVol, voxelCounts, numFragments, numVoxels] = localAbsorbFragments
 
 numFragments = 0;
 numVoxels = 0;
+cancelled = false;
 isFragment = voxelCounts > 0 & voxelCounts <= maxFragmentVoxels;
 if ~any(isFragment); return; end
 
@@ -468,7 +534,12 @@ groupStart = [1; find(diff(groupIndex)) + 1];
 groupEnd = [groupStart(2:end) - 1; numel(groupIndex)];
 
 absorbedPerObject = zeros(numel(voxelCounts), 1);
-for g = 1:size(groups, 1)
+% Unlike the per-slice loops, one iteration here is a few dozen pixels, so a
+% cancel poll every iteration would cost more than the absorption itself.
+numGroups = size(groups, 1);
+cancelStep = max(1, floor(numGroups/100));
+for g = 1:numGroups
+    if mod(g, cancelStep) == 0 && localCancelled(wb); cancelled = true; return; end
     fragmentLabel = groups(g, 1);
     z = groups(g, 2);
     voxels = fragmentIdx(groupStart(g):groupEnd(g));

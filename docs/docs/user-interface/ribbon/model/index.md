@@ -77,6 +77,9 @@ through the whole stack. The current model is backed up first, so the operation 
 ++ctrl+z++. The result is stored as a 65535- (or 4294967295-) material indexed model, one index per
 3D object.
 
+Stitching a large stack takes a while. It can be stopped at any point with
+<span class="widget widget-button">Cancel</span>, which leaves the model as it was.
+
 A settings dialog collects the parameters, in three groups. The defaults are a sensible starting
 point - in most cases only the cleanup settings need adjusting.
 
@@ -125,6 +128,9 @@ point - in most cases only the cleanup settings need adjusting.
     The dialog reopens on the values used last, for as long as MIB is running - trialling a
     threshold does not mean re-entering the other twelve fields each time. The values are per
     session and are not written to preferences, so restarting MIB returns to the defaults.
+
+    DeepMIB's <span class="widget widget-button">Merge 2D to 3D</span> shares them, so a threshold
+    tried there is offered here and the other way round.
 
     Each accepted run also prints one line to the MATLAB console listing exactly what was used, for
     example:

@@ -20,10 +20,19 @@ function [stitchOptions, values] = stitchInstancesSettingsDlg(parentFigure, note
 % log without a second list to keep in step.
 %
 % The dialog itself is stateless - a caller that wants the widgets to reopen on
-% the last-used values stores the returned ``values`` struct (typically in
-% ``MibModel.sessionSettings``) and hands it back as ``defaults`` next time. A
-% seeded numeric outside a widget's range is clamped rather than rejected, so a
-% stale entry cannot break the dialog.
+% the last-used values stores the returned ``values`` struct and hands it back as
+% ``defaults`` next time. A seeded numeric outside a widget's range is clamped
+% rather than rejected, so a stale entry cannot break the dialog, and a
+% ``defaults`` field the dialog does not know is ignored, because the seeding
+% walks the dialog's own field list rather than what it was given.
+%
+% Both callers persist under **one shared key**,
+% ``MibModel.sessionSettings.stitchInstances2Dto3D``, so a threshold trialled at
+% one entry point is offered at the other. They write into it field by field
+% instead of replacing it, because the anisotropy answer is the one value that
+% cannot be shared - see ``anisotropyMode`` below. It lives under
+% ``UseAnisotropy`` (the checkbox) and ``Anisotropy`` (the ratio), and each
+% caller touches only its own.
 %
 % The callers differ only in how the Z anisotropy is obtained, which
 % ``dlgOptions.anisotropyMode`` selects:

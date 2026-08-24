@@ -53,15 +53,17 @@ end
 modelFiles = modelFiles(sortIndices);
 numFiles = numel(modelFiles);
 
-% peek at the first file to detect the layout of the prediction results
+% peek at the first file to detect the layout of the prediction results; only
+% its dimensions are needed, so read the header rather than the pixels
 try
-    firstLabels = iLoadLabels(fullfile(resultsModelsDir, modelFiles(1).name));
+    firstLabelsSize = iPeekLabelsSize(fullfile(resultsModelsDir, modelFiles(1).name));
 catch err
     utils.dlgs.showErrorDialog(obj.view.gui, err, 'Merge instances to 3D');
     return;
 end
-stackPerFile = size(firstLabels, 3) > 1;
-clear firstLabels;
+% more than one plane in the file, counting past any trailing singleton
+% dimensions, which iLoadLabels squeezes away
+stackPerFile = numel(firstLabelsSize) >= 3 && prod(firstLabelsSize(3:end)) > 1;
 
 if stackPerFile
     numJobs = numFiles;
@@ -76,11 +78,16 @@ end
 % ------------------------------------------------------------------ %
 %  Stitching settings dialog                                          %
 % ------------------------------------------------------------------ %
-% seed the dialog with the settings last used in this MIB session; the shared
+% Seed the dialog with the settings last used in this MIB session. The key is
+% shared with models.MibModel.stitchModelInstances (Ribbon -> Model -> Stitch 2D
+% instances to 3D): it is the same dialog driving the same algorithm, so a
+% threshold trialled there is offered here and the other way round. The shared
 % dialog falls back to its own defaults for anything missing and clamps a stored
-% value that falls outside a widget's range
-if isfield(obj.mibModel.sessionSettings, 'mergeInstancesTo3D')
-    dlgDefaults = obj.mibModel.sessionSettings.mergeInstancesTo3D;
+% value that falls outside a widget's range, so a struct written by the other
+% entry point is safe to hand over as-is. Its extra fields are ignored - the
+% dialog seeds from its own field list, not from what it is given.
+if isfield(obj.mibModel.sessionSettings, 'stitchInstances2Dto3D')
+    dlgDefaults = obj.mibModel.sessionSettings.stitchInstances2Dto3D;
 else
     dlgDefaults = struct();
 end
@@ -93,7 +100,16 @@ dlgSettings.mibPath = obj.mibModel.mibPath;
 [stitchOptions, values] = utils.dlgs.stitchInstancesSettingsDlg(obj.view.gui, ...
     note, dlgDefaults, dlgSettings);
 if isempty(stitchOptions); return; end   % cancelled
-obj.mibModel.sessionSettings.mergeInstancesTo3D = values;
+
+% Store field by field rather than replacing the struct, so the ribbon entry
+% point's 'UseAnisotropy' checkbox survives a run from here. That one parameter
+% cannot be shared: here it is a raw ratio (values.Anisotropy), there a yes/no
+% with the ratio taken from the dataset pixel size, so each side keeps its own.
+sessionValues = dlgDefaults;
+for sessionField = fieldnames(values)'
+    sessionValues.(sessionField{1}) = values.(sessionField{1});
+end
+obj.mibModel.sessionSettings.stitchInstances2Dto3D = sessionValues;
 % kept separately: it is also written into the saved model's pixSize.z below
 anisotropyZ = values.Anisotropy;
 
@@ -168,7 +184,11 @@ wb = uiprogressdlg(obj.view.gui, 'Title', 'Merge 2D instances to 3D', ...
 totalInput2DObjects = 0;
 totalOutput3DObjects = 0;
 for jobId = 1:numJobs
-    if wb.CancelRequested; delete(wb); return; end
+    if wb.CancelRequested
+        delete(wb);
+        iReportCancelled(obj, jobId, numJobs, outputFilenames);
+        return;
+    end
     jobProgressBase = (jobId-1)/numJobs;
 
     % --- assemble the input volume ---
@@ -193,7 +213,14 @@ for jobId = 1:numJobs
             numSlices = numFiles;
             inputVol = [];
             for sliceId = 1:numSlices
-                if wb.CancelRequested; delete(wb); return; end
+                if wb.CancelRequested
+                    delete(wb);
+                    iReportCancelled(obj, jobId, numJobs, outputFilenames);
+                    return;
+                end
+                if mod(sliceId, 10) == 0
+                    wb.Message = sprintf('Loading instance models: %d of %d...', sliceId, numSlices);
+                end
                 sliceLabels = iLoadLabels(fullfile(resultsModelsDir, modelFiles(sliceId).name));
                 if size(sliceLabels, 3) > 1
                     error('MibDeep:mergeInstancesTo3D:mixedDimensions', ...
@@ -233,14 +260,25 @@ for jobId = 1:numJobs
     [imgHeight, imgWidth, ~] = size(inputVol);
 
     % --- stitch ---
-    if wb.CancelRequested; delete(wb); return; end
+    if wb.CancelRequested
+        delete(wb);
+        iReportCancelled(obj, jobId, numJobs, outputFilenames);
+        return;
+    end
     wb.Indeterminate = 'on';
     wb.Message = sprintf('Stitching 2D instances into 3D objects (%d of %d), please wait...', jobId, numJobs);
     try
-        [labelVol, stats] = utils.stitchInstances2Dto3D(inputVol, stitchOptions);
+        [labelVol, stats] = utils.stitchInstances2Dto3D(inputVol, stitchOptions, wb);
     catch err
         delete(wb);
         utils.dlgs.showErrorDialog(obj.view.gui, err, 'Merge instances to 3D');
+        return;
+    end
+    % Cancelled during the stitch: nothing has been written to disk for this job,
+    % and the jobs already finished keep the files they saved (reported below).
+    if stats.cancelled
+        delete(wb);
+        iReportCancelled(obj, jobId, numJobs, outputFilenames);
         return;
     end
     clear inputVol;
@@ -325,6 +363,63 @@ dlgOpt.Icon        = 'puffin_info';
 dlgOpt.HeaderLines = 1;
 utils.dlgs.inputUniversalDlg(obj.view.gui, 'The merge is complete!', {''}, {resultText}, ...
     'Merge 2D instances to 3D', dlgOpt);
+end
+
+function iReportCancelled(obj, jobId, numJobs, outputFilenames)
+% Tell the user where the merge stopped. The jobs that finished before the
+% cancel have already written their files and those stay on disk, so saying
+% only "cancelled" would leave the output folder in an unexplained state.
+completedJobs = jobId - 1;
+if numJobs == 1 || completedJobs == 0
+    resultText = 'No merged 3D model was written.';
+else
+    resultText = sprintf(['%d of %d merged 3D models were written before the cancel and are kept in\n%s\n\n' ...
+        'The remaining %d were not processed.'], ...
+        completedJobs, numJobs, fileparts(outputFilenames{1}), numJobs - completedJobs);
+end
+fprintf('MibDeep.mergeInstancesTo3D: cancelled by the user after %d of %d jobs\n', completedJobs, numJobs);
+
+dlgOpt.mibPath     = obj.mibModel.mibPath;
+dlgOpt.MsgBoxOnly  = true;
+dlgOpt.Icon        = 'puffin_info';
+dlgOpt.HeaderLines = 1;
+utils.dlgs.inputUniversalDlg(obj.view.gui, 'The merge was cancelled', {''}, {resultText}, ...
+    'Merge 2D instances to 3D', dlgOpt);
+end
+
+function labelsSize = iPeekLabelsSize(filename)
+% Dimensions of the labels array in a *.model file, taken from the MAT-file
+% header instead of loading it. Only the layout (2D slices vs 3D stacks) is
+% needed before the settings dialog opens, and a prediction stack can be
+% several GB - loading one just to read size(...,3) is what used to keep the
+% dialog off screen for a long time on large results.
+info = whos('-file', filename);
+if isempty(info)
+    error('MibDeep:mergeInstancesTo3D:badModelFile', ...
+        'The file is empty:\n%s', filename);
+end
+names = {info.name};
+
+% mirrors the variable resolution of iLoadLabels below; modelVariable is a short
+% char array, so loading that one variable to learn the name is still cheap
+labelsName = '';
+if ismember('modelVariable', names)
+    % '-mat' is required: without it the .model extension makes load() try to
+    % parse the file as ASCII and error out
+    stored = load(filename, '-mat', 'modelVariable');
+    if ismember(stored.modelVariable, names); labelsName = stored.modelVariable; end
+end
+if isempty(labelsName)
+    for candidate = {'outputLabels', 'mibModel'}
+        if ismember(candidate{1}, names); labelsName = candidate{1}; break; end
+    end
+end
+if isempty(labelsName)
+    [~, fn, ext] = fileparts(filename);
+    error('MibDeep:mergeInstancesTo3D:badModelFile', ...
+        'The labels variable could not be identified in\n%s', [fn ext]);
+end
+labelsSize = info(strcmp(names, labelsName)).size;
 end
 
 function labels = iLoadLabels(filename)

@@ -625,8 +625,9 @@ classdef (Abstract) BaseImageLoader < handle
             %
             %      [img, imginfo] = obj.finalizeImageLoading(img, imginfo, options)
             %
-            % This method handles uint32-to-uint16 conversion (when ``options.imgStretch`` is ``true``)
-            % and ensures ``ColorType`` and ``Colormap`` are properly set in imginfo.
+            % This method handles uint32-to-uint16 conversion (when ``options.imgStretch`` is ``true``),
+            % float-to-uint16 conversion (see ``convertFloatImage``, always applied) and
+            % ensures ``ColorType`` and ``Colormap`` are properly set in imginfo.
             %
             % Input Arguments:
             %   - **img** - [matrix] image data
@@ -649,6 +650,12 @@ classdef (Abstract) BaseImageLoader < handle
             % Handle uint32 to uint16 conversion
             if isa(img, 'uint32') && options.imgStretch
                 [img, imginfo] = obj.stretch32bitImage(img, imginfo);
+                if isempty(img); return; end
+            elseif isfloat(img)
+                % MIB operates with integer images, so floating point data is
+                % always converted; options.imgStretch and options.silentMode
+                % only decide whether the conversion mode is asked from the user
+                [img, imginfo] = obj.convertFloatImage(img, imginfo, options);
                 if isempty(img); return; end
             end
 
@@ -739,12 +746,144 @@ classdef (Abstract) BaseImageLoader < handle
             img = imgOut;
             clear imgOut;
 
-            % update imginfo dictionary
+            imginfo = obj.finalizeUint16Conversion(imginfo);
+        end
+
+        function [img, imginfo] = convertFloatImage(obj, img, imginfo, options)
+            % CONVERTFLOATIMAGE - Convert a floating point image to uint16.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      [img, imginfo] = obj.convertFloatImage(img, imginfo, options)
+            %
+            % MIB operates with integer images, so ``single``/``double`` data has to be
+            % converted during loading. Two conversion modes are available:
+            %
+            % - **Drop the fractional part** - the values are truncated towards zero and
+            %   cast to uint16, i.e. the intensities are kept as they are. This is the mode
+            %   for detectors that store integer counts in a floating point container
+            %   (TEM cameras, deconvolved stacks): stretching such data would silently
+            %   change the intensities.
+            % - **Stretch intensities to 0-65535** - the ``[minVal maxVal]`` range is
+            %   rescaled to the full uint16 range. Required for normalized (0-1) data,
+            %   for negative values and for ranges wider than uint16.
+            %
+            % The default mode is picked from the intensity range of the dataset: dropping
+            % the fractional part is offered when the values fit into uint16 without
+            % clipping (``minVal >= 0``, ``maxVal <= 65535``) and the dynamic range is at
+            % least 256 grey levels wide, so that truncation cannot collapse a narrow
+            % range into a handful of intensities. Everything else defaults to stretching.
+            % The user can always override the suggestion in the dialog.
+            %
+            % Input Arguments:
+            %   - **img** - [matrix] ``single`` or ``double`` image data to be converted
+            %   - **imginfo** - [dictionary] image metadata; updated keys:
+            %
+            %     - ``'MaxInt'`` - [numeric] max possible value (set to ``65535`` for uint16)
+            %     - ``'imgClass'`` - [char] image class name (set to ``'uint16'``)
+            %     - ``'viewPort'`` - *(optional)* [struct] display range, synced to the new class
+            %
+            %   - **options** - [struct] settings:
+            %
+            %     - ``.imgStretch`` - [logical] when ``false`` the dialog is skipped and the
+            %       suggested mode is applied; default: ``true``
+            %     - ``.silentMode`` - [logical] when ``true`` the dialog is skipped and the
+            %       suggested mode is applied; default: ``false``
+            %
+            % Output Arguments:
+            %   - **img** - [matrix] uint16 image data, or ``[]`` if the user cancels
+            %   - **imginfo** - [dictionary] updated with finalized ``MaxInt`` and ``imgClass``
+
+            if ~isfield(options, 'silentMode'); options.silentMode = false; end
+            if ~isfield(options, 'imgStretch'); options.imgStretch = true; end
+
+            minVal = double(min(img(:)));
+            maxVal = double(max(img(:)));
+            if maxVal <= minVal; maxVal = minVal + 1; end     % guard against a flat image
+
+            modes = {'Drop the fractional part', 'Stretch intensities to 0-65535'};
+            if minVal >= 0 && maxVal <= 65535 && maxVal - minVal >= 256
+                modeIndex = 1;
+            else
+                modeIndex = 2;
+            end
+
+            if ~options.silentMode && options.imgStretch
+                header = sprintf('The dataset is %s precision floating point with intensities %g - %g', ...
+                    class(img), minVal, maxVal);
+                prompt = {'Conversion mode'; ...
+                          sprintf('\n[Stretch only] minimal intensity\n(this value will be set to 0)'); ...
+                          sprintf('[Stretch only] maximal intensity\n(this value will be set to 65535)')};
+                % the intensities are shown as spinners, a plain numeric field
+                % would display them in the %.3g format (3976.51 -> 3.98e+03)
+                intensityStep = (maxVal - minVal) / 100;
+                defAns = {[modes, {modeIndex}]; ...
+                          struct('Spinner', true, 'Value', minVal, 'Limits', [minVal maxVal], 'Step', intensityStep, 'Round', false, 'ValueDisplayFormat', '%g'); ...
+                          struct('Spinner', true, 'Value', maxVal, 'Limits', [minVal maxVal], 'Step', intensityStep, 'Round', false, 'ValueDisplayFormat', '%g')};
+
+                mibInputMultiDlgOpt.WindowWidth = 480;
+                mibInputMultiDlgOpt.WindowHeight = 300;
+                mibInputMultiDlgOpt.HeaderLines = 2;
+                mibInputMultiDlgOpt.SectionsColumnWidths = {'fit', 140};
+                mibInputMultiDlgOpt.mibPath = obj.mibPath;
+                [answer, selectedIndices] = utils.dlgs.inputUniversalDlg(obj.ParentFigure, ...
+                    header, prompt, defAns, 'Conversion to 16bit format', mibInputMultiDlgOpt);
+                if isempty(answer); img = []; return; end
+
+                modeIndex = selectedIndices(1);
+                minVal = answer{2};
+                maxVal = answer{3};
+                if maxVal <= minVal; maxVal = minVal + 1; end
+            end
+
+            % The conversion is done slice-by-slice to keep the peak memory low,
+            % the values outside the uint16 range are clipped by the cast
+            imgOut = zeros(size(img), 'uint16');
+            if modeIndex == 1
+                for sliceIndex = 1:size(img, 3)
+                    imgOut(:,:,sliceIndex,:,:) = uint16(fix(img(:,:,sliceIndex,:,:)));
+                end
+            else
+                % the rescaling has to be done in a floating point class of at least
+                % double precision, otherwise single precision rounding shows up as
+                % banding in the converted image
+                scaleFactor = 65535 / (maxVal - minVal);
+                for sliceIndex = 1:size(img, 3)
+                    imgOut(:,:,sliceIndex,:,:) = uint16((double(img(:,:,sliceIndex,:,:)) - minVal) * scaleFactor);
+                end
+            end
+            img = imgOut;
+            clear imgOut;
+
+            imginfo = obj.finalizeUint16Conversion(imginfo);
+        end
+
+        function imginfo = finalizeUint16Conversion(~, imginfo)
+            % FINALIZEUINT16CONVERSION - Sync imginfo with an image converted to uint16.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      imginfo = obj.finalizeUint16Conversion(imginfo)
+            %
+            % Shared tail of ``stretch32bitImage`` and ``convertFloatImage``.
+            %
+            % Input Arguments:
+            %   - **imginfo** - [dictionary] image metadata; updated keys:
+            %
+            %     - ``'MaxInt'`` - [numeric] set to ``65535``
+            %     - ``'imgClass'`` - [char] set to ``'uint16'``
+            %     - ``'viewPort'`` - *(optional)* [struct] ``.min`` reset to 0, ``.max`` to 65535
+            %
+            % Output Arguments:
+            %   - **imginfo** - [dictionary] updated metadata
+
             imginfo{'MaxInt'} = double(intmax('uint16'));
             imginfo{'imgClass'} = 'uint16';
 
             % sync the viewPort with the new class, otherwise the display max stays
-            % at the uint32 ceiling that was defined during the metadata loading
+            % at the ceiling that was defined during the metadata loading
             if isKey(imginfo, 'viewPort') && ~isempty(imginfo{'viewPort'})
                 viewPort = imginfo{'viewPort'};
                 viewPort.min = zeros(size(viewPort.min));

@@ -282,6 +282,57 @@ single-timepoint labels volume no longer fits comfortably in RAM.
   (`segmentBlockedImageInstances.m:50`, `segmentImageInstancesIoUMerge.m:182`), and that the
   `P_ScoreFiles` dropdown stays enabled for `2D Instance` while being ignored by
   `startPredictionInstances` - a separate UI bug.
+- **Cancellation + faster MibDeep dialog — 2026-08-24.** Both entry points can now stop a running
+  stitch, and the "Merge 2D to 3D" settings dialog opens immediately.
+  - `utils.stitchInstances2Dto3D` takes an optional 3rd argument `wb` (a caller-owned
+    `uiprogressdlg`): it writes the phase and slice counter to `wb.Message` and polls
+    `wb.CancelRequested` in every per-slice loop plus the fragment-absorption loop. On cancel it
+    returns `labelVol = []` and `stats.cancelled = true` - deliberately no partial volume, which
+    would look like a valid result and be written over the user's model. `wb.Value` is left to the
+    caller, which may be scaling one bar over several volumes.
+  - Message writes are throttled to every `depth/100` slices (a uifigure property write forces a
+    redraw); the cancel poll is per slice. The absorption loop throttles both, one iteration there
+    being a few dozen pixels.
+  - `MibModel.stitchModelInstances` creates its bar with `'Cancelable', 'on'`;
+    `MibDataset.stitchModelInstances` forwards `wb` and returns before any write when cancelled, so
+    the model survives untouched. `MibDeep.mergeInstancesTo3D` forwards `wb` too and now says how
+    many of its jobs were written before the stop, rather than closing silently.
+  - **`options.showWaitbar` removed.** It built a `core.PoolWaitbar` with an empty parent, which
+    that class rejects with `core:PoolWaitbar:noParent` - so the path had never worked and no caller
+    used it. `wb` replaces it.
+  - **Dialog latency fixed:** the pre-dialog layout peek loaded the whole first `*.model`
+    (`load(fn, '-mat')`) just to read `size(...,3)`. Now `whos('-file', ...)` reads the header only.
+    Measured on a 413 MB v7.3 prediction file: **4.92 s -> 0.082 s**. The `modelVariable` lookup
+    needs `load(fn, '-mat', 'modelVariable')` - without `-mat` the `.model` extension sends `load`
+    down its ASCII path and it errors.
+  - Tests: `progressDialogDoesNotChangeTheResult`, `cancelReturnsNoVolumeAtAllPhases` (budgets
+    derived from a measured uncancelled run, so a moved poll cannot silently disable the case),
+    `cancelIsHonouredByHungarianToo`, plus a new `mibtest.helpers.FakeProgressDialog` test double.
+    **25/25 Unit green**; full `buildtool check` + `buildtool test` clean.
+- **Shared session settings + model filename propagation — 2026-08-24.** Two follow-ups from the
+  same session:
+  - **One session key.** The two entry points stored under
+    `sessionSettings.stitchModelInstances` and `.mergeInstancesTo3D`, so settings entered at one were
+    not offered at the other. Now both use `sessionSettings.stitchInstances2Dto3D`. Anisotropy is the
+    one field that cannot be shared (checkbox + dataset `pixSize` on the ribbon vs a raw ratio in
+    MibDeep, prediction images having no pixel size), so it lives under `UseAnisotropy` and
+    `Anisotropy` and both callers write **field by field** into the stored struct rather than
+    replacing it. Details in
+    [`stitchInstances2Dto3D.md`](stitchInstances2Dto3D.md#where-the-settings-dialog-lives).
+  - **Model filename was lost.** `MibDataset.stitchModelInstances` replaces `obj.labels`, and the
+    `MibLabels` constructor resets `filename` to `'Labels_none.model'` - `convertModel` restores it,
+    this method did not, so Save Model had nothing to suggest after a stitch. Now carried over with
+    `options.filenameSuffix` (default `'_3d'`) inserted before the extension:
+    `Labels_stack.model` -> `Labels_stack_3d.model`. The suffix rather than a verbatim reuse because
+    stitching produces a different model and a save must not overwrite the 2D one it came from.
+    `labelsVariable` is preserved alongside it. Left alone: an unset name (`''` from `createModel`,
+    or the `MibLabels` placeholder) and a stem that already ends with the suffix, so repeated
+    stitching cannot build up `_3d_3d`. Undo restores the original name for free, `copyModelLayers`
+    deep-copying the whole layer object.
+  - Tests: 11 new cases in `tests/core/StitchModelInstancesTest.m` (filename carry-over, suffix
+    idempotence, unset names, empty suffix, `labelsVariable`, undo; plus session-key read/write,
+    argument precedence, cross-entry-point anisotropy survival and out-of-range rejection).
+    **16/16 green.**
 - **Settings dialog deduplicated — 2026-08-19.** Adding those three parameters meant editing the
   same 12-field dialog in `MibModel.stitchModelInstances` and `MibDeep.mergeInstancesTo3D` and
   renumbering `answer{n}` in both, three times, with nothing to catch a mismatch. Extracted to

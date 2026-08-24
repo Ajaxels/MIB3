@@ -291,16 +291,29 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
                     end
                     files(layerId).color = filesTemp.dim_xyczt(fileSubIndex, 3);
 
-                    % Image class
-                    bpp = filesTemp.hDataset.getBitsPerPixel();
-                    if bpp == 8
-                        files(layerId).imgClass = 'uint8';
-                    elseif bpp == 16
-                        files(layerId).imgClass = 'uint16';
-                    elseif bpp == 32
-                        files(layerId).imgClass = 'uint32';
+                    % Image class; floating point pixels (32-bit float images of
+                    % TEM cameras, deconvolved stacks) are loaded as single and
+                    % converted to uint16 by BaseImageLoader.convertFloatImage,
+                    % so that the fractional part is available when the
+                    % conversion mode is decided
+                    pixelType = filesTemp.hDataset.getPixelType();
+                    if loci.formats.FormatTools.isFloatingPoint(pixelType)
+                        if loci.formats.FormatTools.getBytesPerPixel(pixelType) > 4
+                            files(layerId).imgClass = 'double';
+                        else
+                            files(layerId).imgClass = 'single';
+                        end
                     else
-                        files(layerId).imgClass = 'double';
+                        bpp = filesTemp.hDataset.getBitsPerPixel();
+                        if bpp == 8
+                            files(layerId).imgClass = 'uint8';
+                        elseif bpp == 16
+                            files(layerId).imgClass = 'uint16';
+                        elseif bpp == 32
+                            files(layerId).imgClass = 'uint32';
+                        else
+                            files(layerId).imgClass = 'double';
+                        end
                     end
 
                     % Update filename for multi-series

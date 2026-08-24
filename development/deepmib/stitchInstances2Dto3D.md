@@ -185,12 +185,32 @@ log and every trial means re-entering a dozen fields:
   parameter appears without a second edit. Disabled gates are absent from the line rather than
   printed as zero - that is what actually reaches the utility.
 - **Per-session memory.** The dialog itself stays stateless; the callers store the returned `values`
-  in `MibModel.sessionSettings.stitchModelInstances` / `.mergeInstancesTo3D` and hand it back as
-  `defaults` next time. Neither key is preseeded in `utils.defaults.generateSessionSettings` - the
-  same convention already used for `sessionSettings.stitching`, so the defaults live in one place
-  and cannot drift. `MibModel` validates a restored value against its own `BatchOpt` limits before
-  applying it (the batch path can consume it without the dialog ever running); the shared dialog
-  independently clamps any seeded numeric into the widget's range.
+  and hand it back as `defaults` next time. The key is not preseeded in
+  `utils.defaults.generateSessionSettings` - the same convention already used for
+  `sessionSettings.stitching`, so the defaults live in one place and cannot drift. `MibModel`
+  validates a restored value against its own `BatchOpt` limits before applying it (the batch path can
+  consume it without the dialog ever running); the shared dialog independently clamps any seeded
+  numeric into the widget's range and ignores a field it does not know, since it seeds from its own
+  field list rather than from what it is handed.
+- **One key, both entry points - fixed 2026-08-24.** The two callers originally stored under
+  `sessionSettings.stitchModelInstances` and `.mergeInstancesTo3D`, so a threshold trialled from the
+  ribbon was not offered by DeepMIB's *Merge 2D to 3D* and vice versa - reported as "it does not
+  respect options stored in sessionSettings". They now share
+  `sessionSettings.stitchInstances2Dto3D`. Same dialog, same algorithm, so the settings should
+  follow the user rather than the button.
+  - **Anisotropy is the one field that cannot be shared,** because the two modes ask different
+    questions: `'checkbox'` (MibModel) stores a yes/no under `UseAnisotropy` and derives the ratio
+    from `pixSize.z/pixSize.x`; `'ratio'` (MibDeep) stores the raw number under `Anisotropy`, raw
+    prediction images having no pixel size. A checkbox cannot be converted into a ratio, so the two
+    live side by side under separate names.
+  - Consequently both callers write **field by field into whatever is already stored** rather than
+    replacing the struct - otherwise a run from one side would silently reset the other side's
+    anisotropy answer. The extra field each leaves behind is harmless: `MibModel` reads an explicit
+    list of names, and the dialog seeds from its own.
+  - Regression cases in `tests/core/StitchModelInstancesTest.m` (MibModel level, batch mode so no
+    dialog opens): key name, read-back, explicit-argument precedence, cross-entry-point anisotropy
+    survival, and out-of-range rejection. MibDeep's half of the round trip needs a live controller
+    and a modal dialog, so it is covered only by the contract those cases pin down.
 
 ## Critique of the source spec (and what changed here)
 

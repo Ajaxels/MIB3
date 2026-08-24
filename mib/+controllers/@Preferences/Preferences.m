@@ -638,7 +638,7 @@ classdef Preferences < handle
                 otherwise;                       anchor = '';    % top of the page
             end
 
-            helpFilePath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'html', ...
+            helpFilePath = fullfile(utils.getDocsPath(), ...
                 'user-interface', 'ribbon', 'home', 'home-preferences.html');
             if isfile(helpFilePath)
                 target = ['file:///' strrep(helpFilePath, '\', '/') anchor];

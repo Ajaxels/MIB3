@@ -25,6 +25,8 @@ Standalone utility functions
 
 .. autofunction:: generateSequentialFilename
 
+.. autofunction:: getDocsPath
+
 .. autofunction:: getInstallationPath
 
 .. autofunction:: getMaxParpoolWorkers

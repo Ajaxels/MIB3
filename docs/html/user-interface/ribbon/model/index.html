@@ -5865,6 +5865,8 @@ carries a <em>different</em> index on each slice.</p>
 through the whole stack. The current model is backed up first, so the operation can be undone with
 <span class="keys"><kbd class="key-control">Ctrl</kbd><span>+</span><kbd class="key-z">Z</kbd></span>. The result is stored as a 65535- (or 4294967295-) material indexed model, one index per
 3D object.</p>
+<p>Stitching a large stack takes a while. It can be stopped at any point with
+<span class="widget widget-button">Cancel</span>, which leaves the model as it was.</p>
 <p>A settings dialog collects the parameters, in three groups. The defaults are a sensible starting
 point - in most cases only the cleanup settings need adjusting.</p>
 <p><strong>Linking</strong> - which 2D objects are recognised as the same 3D object:</p>
@@ -5971,6 +5973,8 @@ detections that are large in the plane but appear on only one or two slices.</p>
 <p>The dialog reopens on the values used last, for as long as MIB is running - trialling a
 threshold does not mean re-entering the other twelve fields each time. The values are per
 session and are not written to preferences, so restarting MIB returns to the defaults.</p>
+<p>DeepMIB's <span class="widget widget-button">Merge 2D to 3D</span> shares them, so a threshold
+tried there is offered here and the other way round.</p>
 <p>Each accepted run also prints one line to the MATLAB console listing exactly what was used, for
 example:</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Stitch 2D instances to 3D: method=graph, splitDisconnected2D=1, iouThreshold=0.25, ioaThreshold=0.5, minOverlapPixels=5, absOverlapPixels=500, zLookback=1, minObjectVoxels=0, minObjectSlices=1, useAnisotropy=0

@@ -469,7 +469,13 @@ switch BatchOpt.Mode{1}
             % Show background color dialog if images have different XY dimensions or color count
             if numel(unique([files.height])) > 1 || numel(unique([files.width])) > 1 || numel(unique([files.color])) > 1
                 if ~isfield(options, 'BackgroundColorIntensity')
-                    maxInt = double(intmax(files(1).imgClass)); 
+                    switch files(1).imgClass
+                        case {'single', 'double'}
+                            % floating point datasets are converted to uint16 during loading
+                            maxInt = double(intmax('uint16'));
+                        otherwise
+                            maxInt = double(intmax(files(1).imgClass));
+                    end
                     dlgOpt.Icon = 'puffin_warning';
                     dlgOpt.HeaderLines = 5;
                     dlgOpt.WindowHeight = 200;

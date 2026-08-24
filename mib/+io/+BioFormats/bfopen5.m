@@ -135,15 +135,26 @@ else
     end
 end
 
-bpp = r.getBitsPerPixel();
-if bpp <= 8
-    ImageClassType = 'uint8';
-elseif bpp <= 16
-    ImageClassType = 'uint16';
-elseif bpp <= 32
-    ImageClassType = 'uint32';
+if loci.formats.FormatTools.isFloatingPoint(r.getPixelType())
+    % floating point pixels are kept floating point here; the conversion to an
+    % integer class needs the intensity range of the whole dataset and is done
+    % later, in io.loaders.BaseImageLoader.convertFloatImage
+    if loci.formats.FormatTools.getBytesPerPixel(r.getPixelType()) > 4
+        ImageClassType = 'double';
+    else
+        ImageClassType = 'single';
+    end
 else
-    ImageClassType = 'double';
+    bpp = r.getBitsPerPixel();
+    if bpp <= 8
+        ImageClassType = 'uint8';
+    elseif bpp <= 16
+        ImageClassType = 'uint16';
+    elseif bpp <= 32
+        ImageClassType = 'uint32';
+    else
+        ImageClassType = 'double';
+    end
 end
 
 

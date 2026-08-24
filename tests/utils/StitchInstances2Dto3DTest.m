@@ -137,6 +137,67 @@ classdef StitchInstances2Dto3DTest < matlab.unittest.TestCase
         end
 
         % -----------------------------------------------------------------
+        % Cancellation through the caller's progress dialog
+        % -----------------------------------------------------------------
+
+        function progressDialogDoesNotChangeTheResult(testCase)
+            % A dialog the user never cancels must be invisible to the result.
+            [~, scrambled] = StitchInstances2Dto3DTest.makeStack(6, [96 96 20]);
+
+            [withoutDialog, statsWithout] = utils.stitchInstances2Dto3D(scrambled);
+            waitbar = mibtest.helpers.FakeProgressDialog();
+            [withDialog, statsWith] = utils.stitchInstances2Dto3D(scrambled, struct(), waitbar);
+
+            testCase.verifyEqual(withDialog, withoutDialog, ...
+                'passing a progress dialog must not alter the stitched volume');
+            testCase.verifyFalse(statsWith.cancelled);
+            testCase.verifyFalse(statsWithout.cancelled, ...
+                'stats.cancelled must be present and false when no dialog is passed');
+            testCase.verifyEqual(statsWith.numOutput3DObjects, statsWithout.numOutput3DObjects);
+            testCase.verifyNotEmpty(waitbar.Message, ...
+                'the current phase must be reported to the dialog');
+        end
+
+        function cancelReturnsNoVolumeAtAllPhases(testCase)
+            % Cancelling must never hand back a partly stitched volume - it
+            % would look like a valid result and be written over the model.
+            % A full uncancelled run is measured first to learn how many polls
+            % the whole job makes, and the cancel is then placed at the start,
+            % the middle and near the end of that budget. Deriving the numbers
+            % keeps the case meaningful if the polls are ever moved around; a
+            % hard-coded budget past the total would silently stop cancelling.
+            [~, scrambled] = StitchInstances2Dto3DTest.makeStack(6, [96 96 20]);
+            opt = struct('minObjectSlices', 1, 'absorbFragmentVoxels', 2);
+
+            reference = mibtest.helpers.FakeProgressDialog();
+            utils.stitchInstances2Dto3D(scrambled, opt, reference);
+            totalPolls = reference.polls;
+            testCase.assumeGreaterThan(totalPolls, 4, ...
+                'the run must poll often enough for the budgets below to differ');
+
+            budgets = [0, floor(totalPolls/2), totalPolls-1];
+            for k = 1:numel(budgets)
+                waitbar = mibtest.helpers.FakeProgressDialog(budgets(k));
+                [stitched, stats] = utils.stitchInstances2Dto3D(scrambled, opt, waitbar);
+                testCase.verifyTrue(stats.cancelled, ...
+                    sprintf('cancel after %d polls must be reported', budgets(k)));
+                testCase.verifyEmpty(stitched, ...
+                    sprintf('cancel after %d polls must return no volume', budgets(k)));
+                testCase.verifyGreaterThan(waitbar.polls, budgets(k), ...
+                    'the function must keep working until the cancel is raised');
+            end
+        end
+
+        function cancelIsHonouredByHungarianToo(testCase)
+            [~, scrambled] = StitchInstances2Dto3DTest.makeStack(5, [96 96 18], 7);
+            waitbar = mibtest.helpers.FakeProgressDialog(25);
+            [stitched, stats] = utils.stitchInstances2Dto3D(scrambled, ...
+                struct('method', 'hungarian'), waitbar);
+            testCase.verifyTrue(stats.cancelled);
+            testCase.verifyEmpty(stitched);
+        end
+
+        % -----------------------------------------------------------------
         % Edge cases
         % -----------------------------------------------------------------
 

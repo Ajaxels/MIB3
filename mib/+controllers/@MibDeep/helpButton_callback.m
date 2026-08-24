@@ -9,7 +9,7 @@ function helpButton_callback(obj)
 if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.MibDeep.helpButton_callback: triggered\n');
 end
-    helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'html', 'user-interface', 'deepmib');
+    helpFilPath = fullfile(utils.getDocsPath(), 'user-interface', 'deepmib');
     switch obj.view.handles.Mode.SelectedTab.Title
         case 'Directories and Preprocessing'
             targetFilename = 'deepmib-dirs.html';

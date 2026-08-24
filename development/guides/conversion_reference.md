@@ -11,8 +11,8 @@ Lives at `mib/+core/@PoolWaitbar/PoolWaitbar.m` — wraps `uiprogressdlg` with `
 
 | Pattern | Code |
 |---------|------|
-| Create (new dialog) | `pwb = core.PoolWaitbar(n, 'Message...', obj.mibGUI, 'Title');` |
-| Create (cancelable) | `pwb = core.PoolWaitbar(n, 'Message...', obj.mibGUI, 'Title', true);` |
+| Create - **always pass Cancelable** | `pwb = core.PoolWaitbar(n, 'Message...', obj.mibGUI, 'Title', true);` |
+| Create (5th arg omitted → **not** cancelable; do not use) | `pwb = core.PoolWaitbar(n, 'Message...', obj.mibGUI, 'Title');` |
 | Reuse existing dialog | `pwb = core.PoolWaitbar(n, 'Message...', existingWb);` |
 | Signal one step (worker-safe) | `pwb.increment();` — the **only** method safe inside `parfor` |
 | Set step size | `pwb.setIncrement(10);` — call before parfor to reduce IPC overhead |
@@ -157,6 +157,44 @@ meta = core.MibImage.initializeImgInfo( ...
     'Time', obj.image.time, 'Colors', 1);
 dims = [obj.image.height, obj.image.width, obj.image.depth, 1, obj.image.time];
 ```
+
+---
+
+## MibModel Data Accessors
+
+```matlab
+% Reading (options.id defaults to obj.getActiveId())
+dataset = obj.mibModel.getData2D(type, slice_no, orient, col_channel, options)
+dataset = obj.mibModel.getData3D(type, time, orient, col_channel, options)
+dataset = obj.mibModel.getData4D(type, orient, col_channel, options)
+
+% Writing - MIB3 takes the data BEFORE the type (MIB2 had type before data!)
+obj.mibModel.setData2D(dataset, type, slice_no, orient, col_channel, options)
+obj.mibModel.setData3D(dataset, type, time, orient, col_channel, options)
+obj.mibModel.setData4D(dataset, type, orient, col_channel, options)
+```
+
+| Change | Detail |
+|--------|--------|
+| `setData` argument order swapped | MIB2 `(type, dataset, ...)` → MIB3 `(dataset, type, ...)`. `getData` (type first) is unchanged |
+| Current slice / orientation | use `[]`, not `NaN`, for `slice_no` and `orient` |
+| Orient values | MIB2 used `4` for native YX, MIB3 uses `3` - convert every orient argument `4` → `3` |
+| Type renamed | MIB2 `'model'` → MIB3 `'labels'` |
+
+### `obj.id` vs `obj.getActiveId()` - split-panel safety
+
+`obj.id` can be **stale** between user clicks in split-panel mode.
+
+```matlab
+BatchOpt.id = obj.id;             % WRONG - may point at the wrong dataset
+BatchOpt.id = obj.getActiveId();  % CORRECT - always uses Sets.selectedSet
+```
+
+Every `MibModel` method that initialises `BatchOpt.id` as a default must use `obj.getActiveId()`.
+A direct `obj.id` is fine after the caller has explicitly set it.
+
+`gui_WinMouseMotionFcn` must **never** write to `mibModel.id` or `Sets.selectedSet` - doing so breaks
+panning and keyboard shortcuts. Full story: [`../ports/port_splitpanel.md`](../ports/port_splitpanel.md).
 
 ---
 

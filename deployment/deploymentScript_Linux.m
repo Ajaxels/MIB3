@@ -21,6 +21,20 @@ for pluginIndex = 1:numel(EXCLUDE_PLUGINS)
     if isfolder(excludedFolder); rmdir(excludedFolder, "s"); end
 end
 
+% The built user documentation ships next to the executable so that the Help
+% buttons open local pages instead of mib.helsinki.fi. Both the installer and
+% the copy loop at the end of this script name the destination folder after
+% the basename of the source, so docs/html cannot be listed directly - a
+% staged folder called "docs" holding "html" gives the wanted docs/html layout.
+docsSource = fullfile(PROJECT_ROOT, "docs", "html");
+if ~isfolder(docsSource)
+    error('deploymentScript:noDocs', ...
+        'Built documentation is missing in %s, build docs before packaging', docsSource);
+end
+stagedDocs = fullfile(tempdir, "MIB3_build_staging", "docs");
+if isfolder(stagedDocs); rmdir(stagedDocs, "s"); end
+copyfile(docsSource, fullfile(stagedDocs, "html"));
+
 % Create target build options object, set build properties and build.
 % buildOpts = compiler.build.StandaloneApplicationOptions(fullfile(PROJECT_ROOT, "mib", "mib3.m"));
 buildOpts = compiler.build.StandaloneApplicationOptions(fullfile(PROJECT_ROOT, "mib", "mib3_deploy.m"));
@@ -86,15 +100,18 @@ AdditionalFolders = [...
     "assets", ...
     "jars", ...
     "licenses", ...
-    "plugins"];
+    "plugins", ...
+    "docs"];
 
-% sources for the folders above; plugins are taken from the staged copy so
-% that EXCLUDE_PLUGINS are missing from the installer as well
+% sources for the folders above; plugins and docs are taken from the staged
+% copies so that EXCLUDE_PLUGINS are missing from the installer as well and
+% the documentation keeps its docs/html nesting
 AdditionalFolderSources = [...
     fullfile(PROJECT_ROOT, "mib", "assets"), ...
     fullfile(PROJECT_ROOT, "mib", "jars"), ...
     fullfile(PROJECT_ROOT, "mib", "licenses"), ...
-    stagedPlugins];
+    stagedPlugins, ...
+    stagedDocs];
 
 AdditionalFiles = [...
     fullfile(PROJECT_ROOT, "mib", "mib3_override_params.md")];

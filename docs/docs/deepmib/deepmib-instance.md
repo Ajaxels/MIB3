@@ -299,6 +299,9 @@ The dialog reopens on the values used last for as long as MIB is running, and ea
 prints one line to the MATLAB console listing exactly what was used - handy when trialling
 thresholds over several runs. The values are per session and are not written to preferences.
 
+*Ribbon → Model → Stitch 2D instances to 3D* shares them, so a threshold tried there is offered here
+and the other way round.
+
 After the settings, the destination is requested. When a **single** merged model is produced, a
 file dialog asks for the directory, filename and file format. When **several** stacks are stitched
 (one per 3D input model), a folder is requested instead, followed by a format dropdown; each output
@@ -309,6 +312,10 @@ The merged model can be written as a **single 3D file** (e.g. *Matlab format (\*
 sequence (\*.model)*, TIF/PNG 2D sequence) — for TIF the policy is asked during saving of a single
 model, while multiple models are always written with the format's default policy to avoid one
 dialog per file.
+
+Merging takes a while. It can be stopped at any point with
+<span class="widget widget-button">Cancel</span>; when several stacks are being merged, the models
+finished before the stop are kept and the rest are not written.
 
 ---
 

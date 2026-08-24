@@ -554,6 +554,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#using-several-versions-of-mib" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Using several versions of MIB
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#sharing-your-statistics-between-computers" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -561,6 +572,23 @@
       </span>
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Sharing your statistics between computers">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#coming-from-mib2" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Coming from MIB2
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -5447,6 +5475,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#using-several-versions-of-mib" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Using several versions of MIB
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#sharing-your-statistics-between-computers" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -5454,6 +5493,23 @@
       </span>
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Sharing your statistics between computers">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#coming-from-mib2" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Coming from MIB2
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -5619,6 +5675,11 @@ This page is reference material - you do not need it to start using MIB.</p>
 <td>Windows: <code>C:\Users\Username\AppData\Roaming\MathWorks\MIB\</code> <br> macOS: <code>~/Library/Application Support/MIB/</code> <br> Linux: <code>~/.local/share/MIB/</code></td>
 <td>User statistics (tier data). Each computer writes its own file, and MIB adds up every file it finds in the folder - see <a href="#sharing-your-statistics-between-computers">Sharing your statistics between computers</a>. Falls back to the same <code>Matlab/</code> folder as <code>mib3.mat</code> if the directory above is unavailable.</td>
 </tr>
+<tr>
+<td><code>mib3_VERSION.mat</code></td>
+<td>next to <code>mib3.mat</code></td>
+<td>Appears only when an older MIB is started after a newer one - see <a href="#using-several-versions-of-mib">Using several versions of MIB</a>.</td>
+</tr>
 </tbody>
 </table>
 <details class="info">
@@ -5640,6 +5701,16 @@ This page is reference material - you do not need it to start using MIB.</p>
 <p>If MIB does not start, check the MATLAB path and/or delete the configuration file (<code>mib3.mat</code> or the legacy equivalent) listed above, then restart.</p>
 </div>
 <hr />
+<h2 id="using-several-versions-of-mib">Using several versions of MIB<a class="headerlink" href="#using-several-versions-of-mib" title="Permanent link">&para;</a></h2>
+<p>Settings written by an older MIB are always understood by a newer one, so upgrading needs no action: your preferences carry over and anything the new version added starts at its default.</p>
+<p>Going back to an <strong>older</strong> MIB is the case that needs care, because the older version cannot know what the newer one added. When that happens MIB tells you so at startup and:</p>
+<ul>
+<li>restores the settings the older version does have;</li>
+<li>ignores the newer ones instead of guessing;</li>
+<li>keeps the newer preferences in a separate file (<code>mib3_VERSION.mat</code>, e.g. <code>mib3_2026.09.mat</code>), so that closing the older MIB cannot discard them.</li>
+</ul>
+<p>Start the newer version again and it picks that file back up, including any change you made while working in the older one. Both versions can be used side by side; only the file names in the table above ever appear.</p>
+<hr />
 <h2 id="sharing-your-statistics-between-computers">Sharing your statistics between computers<a class="headerlink" href="#sharing-your-statistics-between-computers" title="Permanent link">&para;</a></h2>
 <p>By default your statistics stay on the computer that recorded them. On Windows the default folder sits under <code>AppData\Roaming</code>, but that name is misleading: the folder only travels to other computers if your administrator set up a <em>roaming profile</em> for your account, which is rarely the case. Neither OneDrive nor Windows settings sync ever copies <code>AppData</code>.</p>
 <p>To make your statistics follow you, put them in a folder that all your computers can reach:</p>
@@ -5652,6 +5723,8 @@ This page is reference material - you do not need it to start using MIB.</p>
 <p class="admonition-title">Note</p>
 <p>Choosing a shared folder brings the statistics of that computer with it and picks up whatever your other computers have already stored there. Files left in the previous folder are not deleted.</p>
 </div>
+<h3 id="coming-from-mib2">Coming from MIB2<a class="headerlink" href="#coming-from-mib2" title="Permanent link">&para;</a></h3>
+<p>The points you collected in MIB2 are taken over the first time MIB3 runs on that computer. MIB2 keeps its own file and goes on using it, so both programs remain usable - but the handover happens once, and points earned in MIB2 afterwards are not added to MIB3.</p>
 <hr />
 <h2 id="overriding-default-settings">Overriding default settings<a class="headerlink" href="#overriding-default-settings" title="Permanent link">&para;</a></h2>
 <p>Administrators can preconfigure MIB with custom default settings by placing an <em>override file</em> into the MIB program directory (the folder that contains <code>mib3.m</code>, or the installation folder of the standalone version). This is useful for deploying the same configuration to multiple workstations, for example in a core facility.</p>

@@ -36,6 +36,7 @@ Read before starting a task of the matching type. All in `development/guides/`.
 
 | File | When to read |
 |------|--------------|
+| [dialogs_and_batchopt.md](guides/dialogs_and_batchopt.md) | **Read before adding a dialog, a progress bar or a BatchOpt field**: MIB2→MIB3 dialog map, `inputUniversalDlg` signature and widget specs, the always-cancelable rule and what a long function owes its caller, numeric BatchOpt fields, widget↔field naming, session memory |
 | [how_to_make_input_dialog.md](guides/how_to_make_input_dialog.md) | Building input dialogs; focus handling without Java Robot (see also `../notes/focusExample.m`) |
 | [uiprogressdlg_to_PoolWaitbar.md](guides/uiprogressdlg_to_PoolWaitbar.md) | When and how to convert `uiprogressdlg` → `core.PoolWaitbar` (Cancel button, parfor) |
 | [startController.md](guides/startController.md) | `utils.startController` — launching child controllers from anywhere (interactive, batch, already-open) |
@@ -45,6 +46,7 @@ Read before starting a task of the matching type. All in `development/guides/`.
 | [developer_mode_callback_markers.md](guides/developer_mode_callback_markers.md) | Adding `DeveloperMode` "triggered" trace markers to a controller's GUI callbacks: the marker, placement, what to mark/skip, the `gui_Callbacks` global-marker rule |
 | [plugin_system.md](guides/plugin_system.md) | Plugin discovery architecture (MIB2 and MIB3); filesystem-based, no registry |
 | [docs_api_sphinx.md](guides/docs_api_sphinx.md) | **RST docblock style guide** — authoritative for all new/updated function docs |
+| [documentation_style.md](guides/documentation_style.md) | **Read before writing user-facing docs**: which of the four levels a fact belongs to, why `docs/` gets over-written, worked before/after examples, the long-dash rule and its background |
 
 ### Plugin development (standalone)
 

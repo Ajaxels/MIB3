@@ -8,9 +8,12 @@ function openHelpPage(helpFilePath, onlineUrl)
 %      utils.openHelpPage(helpFilePath, onlineUrl)
 %
 % Opens the local copy of a help page when it is present, and the page on
-% mib.helsinki.fi otherwise.  The local copy is missing in the compiled
-% standalone, which ships no ``docs`` folder, so the online address is the
-% normal path there rather than an error case.
+% mib.helsinki.fi otherwise.  Callers spell the address for the source tree,
+% where ``docs`` is a sibling of ``mib``; when nothing is found there the
+% address is rebuilt against ``utils.getDocsPath()``, which is where the
+% compiled standalone keeps its copy.  The online address remains the normal
+% outcome for a checkout with no built documentation, rather than an error
+% case.
 %
 % Local pages are launched through the shell rather than through
 % ``web(..., '-browser')``.  On Windows ``web`` reports success while the
@@ -37,6 +40,10 @@ function openHelpPage(helpFilePath, onlineUrl)
 %
 
 if ~isfile(helpFilePath)
+    helpFilePath = relocateToDocsRoot(helpFilePath);
+end
+
+if ~isfile(helpFilePath)
     web(onlineUrl, '-browser');
     return;
 end
@@ -58,4 +65,19 @@ end
 if status ~= 0
     web(pageUrl, '-browser');
 end
+end
+
+function relocatedPath = relocateToDocsRoot(helpFilePath)
+% take the part of the address below docs/html and hang it under the docs
+% root that this installation actually has; returns the address unchanged
+% when it was not built from a docs/html folder in the first place
+marker = [filesep 'docs' filesep 'html' filesep];
+markerPosition = strfind(helpFilePath, marker);
+if isempty(markerPosition)
+    relocatedPath = helpFilePath;
+    return;
+end
+
+pageRelativePath = helpFilePath(markerPosition(end)+numel(marker):end);
+relocatedPath = fullfile(utils.getDocsPath(), pageRelativePath);
 end
