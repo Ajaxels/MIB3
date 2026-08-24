@@ -12,9 +12,9 @@ segmentation tools.
 
 ## Requirements
 
-- MATLAB R2026a or newer
+- MATLAB R2025b or newer (R2026a is recommended)
 - A compiled standalone version, which does not require a MATLAB licence, is distributed
-  separately from https://mib.helsinki.fi
+  separately from https://mib.helsinki.fi or github releases
 
 ## Running from source
 

@@ -73,11 +73,15 @@ if isempty(orient); orient = 3; end
 materialIndex = []; % for the labels type index of material to get
 if isempty(colChannel) || (isscalar(colChannel) && isnan(colChannel)) % take all color channels or materials
     colChannel = 1:obj.colors;
-else
-    if strcmp(obj.type, 'labels')
-        materialIndex = colChannel;
-        colChannel = 1;
-    end
+elseif strcmp(obj.type, 'labels')
+    % obj.type is 'labels' for the model, the selection and the mask containers alike, so
+    % it is layerType - the layer being read - and not the container that decides whether
+    % colChannel is a material index. Selection and mask are binary single-channel layers
+    % and have no materials to extract; taking "data == index" there returns an empty (or
+    % inverted, for index 0) mask instead of the layer. Matches the skipLabelsIdx test of
+    % the MibDataset.getData2D/3D/4D fast paths, which already ignore the index for them.
+    if strcmp(layerType, 'labels'); materialIndex = colChannel; end
+    colChannel = 1;
 end
 
 blockModeSwitchLocal = 0;

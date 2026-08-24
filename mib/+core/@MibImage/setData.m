@@ -73,11 +73,16 @@ if isempty(orient); orient = 3; end
 materialIndex = []; % for the labels type index of material to get
 if isempty(colChannel) || (isscalar(colChannel) && (colChannel == 0 || isnan(colChannel))) % take all color channels or materials
     colChannel = 1:obj.colors;
-else
-    if strcmp(obj.type, 'labels')
-        materialIndex = colChannel;
-        colChannel = 1;
-    end
+elseif strcmp(obj.type, 'labels')
+    % obj.type is 'labels' for the model, the selection and the mask containers alike, so
+    % it is layerType - the layer being written - and not the container that decides
+    % whether colChannel is a material index. Selection and mask are binary single-channel
+    % layers: an index written there ends up in the pixels themselves and saturates to 255
+    % for the uint8 containers, after which the layer no longer equals 1 and everything
+    % that tests it (moveLayers, the brush, the selection tools) silently does nothing.
+    % Matches the skipLabelsIdx test of the MibDataset.setData2D/3D/4D fast paths.
+    if strcmp(layerType, 'labels'); materialIndex = colChannel; end
+    colChannel = 1;
 end
 
 blockModeSwitchLocal = 0;
