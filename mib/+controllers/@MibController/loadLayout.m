@@ -84,26 +84,47 @@ end
 % Load the layout from the JSON file
 layoutData = jsondecode(fileread(layoutFilename));
 
-% Guard: if the saved layout was created before a panel was added, the
-% children counts will differ - applying it would hide the new panel.
-for position = {'left', 'right', 'bottom'}
-    positionName = position{1};
-    if isfield(obj.view.gui.PanelLayout, positionName)
-        currentCount = numel(obj.view.gui.PanelLayout.(positionName).children);
-        if isfield(layoutData.panelLayout, positionName)
-            loadedCount = numel(layoutData.panelLayout.(positionName).children);
-        else
-            loadedCount = 0;
-        end
-        if currentCount ~= loadedCount
-            status = false;
-            return;
-        end
-    end
+% Guard: compare the set of panel ids regardless of which side they are
+% docked to, so a panel that was moved to a different side (left/right/
+% bottom) since the layout was saved still restores correctly - only a
+% genuine mismatch (a panel added or removed, e.g. after a MIB update)
+% should block restoring, because applying it would hide the new panel or
+% reference one that no longer exists.
+currentIds = getPanelIds(obj.view.gui.PanelLayout);
+if isfield(layoutData, 'panelLayout')
+    loadedIds = getPanelIds(layoutData.panelLayout);
+else
+    loadedIds = {};
+end
+
+if ~isempty(setxor(currentIds, loadedIds))
+    status = false;
+    return;
 end
 
 % Restore the layout using the loaded data
 obj.view.gui.PanelLayout = layoutData.panelLayout;
 
 status = true;
+end
+
+function panelIds = getPanelIds(panelLayout)
+% collect panel ids across all docking sides (left/right/bottom/top, ...)
+% of a PanelLayout structure, irrespective of which side each is docked to
+panelIds = {};
+sideNames = fieldnames(panelLayout);
+for sideIndex = 1:numel(sideNames)
+    side = panelLayout.(sideNames{sideIndex});
+    if isstruct(side) && isfield(side, 'children')
+        children = side.children;
+        % jsondecode returns a struct array when all children share the
+        % same fields, but falls back to a cell array of structs when they
+        % do not (e.g. only some panels have a "showing" field)
+        if iscell(children)
+            panelIds = [panelIds; cellfun(@(child) child.id, children, 'UniformOutput', false)]; %#ok<AGROW>
+        else
+            panelIds = [panelIds; {children.id}']; %#ok<AGROW>
+        end
+    end
+end
 end
