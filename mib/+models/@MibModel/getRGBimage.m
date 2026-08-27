@@ -304,6 +304,16 @@ switch colortype
            (currViewPort.min(1) ~= 0 || currViewPort.max(1) ~= max_int || currViewPort.gamma(1) ~= 1)
 
             if ~isa(sImg, 'uint32')
+                if size(sImg, 3) ~= 1
+                    % Should never happen for a grayscale dataset - getData2D
+                    % is expected to return a single Z/color page here. Log
+                    % enough state to diagnose a recurrence instead of
+                    % crashing imadjust, and fall back to the first page.
+                    fprintf(2, ['MIB: getRGBimage got a %s slice with %d pages for a grayscale ' ...
+                        'dataset (orientation=%d, sliceToShowIdx=%d, datasetType=%s); using page 1.\n'], ...
+                        mat2str(size(sImg)), size(sImg, 3), orientation, sliceToShowIdx, dataset.datasetType);
+                    sImg = sImg(:,:,1);
+                end
                 [lowIn, highIn, lowOut, highOut] = dataset.image.getImAdjustStretchCoef(1);
                 sImg = imadjust(sImg, [lowIn, highIn], [lowOut highOut], currViewPort.gamma(1));
             else

@@ -102,16 +102,17 @@ notify(obj.mibModel, 'UpdateDatasetAxes', eventdata);
 % Update all GUI widgets (ribbon controls, spinners, etc.)
 obj.mibController.updateGuiWidgets({'depthSlider'}); % only depth slider needs to be updated
 
+% Orientation switch changes coef_z (pixel aspect ratio); magFactor itself is
+% restored to its pre-switch value, so updateBrushCursor's own magFactor-change
+% check will not catch this. Clear the stored offset before rendering, so the
+% showImage() call below recomputes the ellipse from fresh data immediately
+% instead of showing the previous orientation's shape until the next mouse
+% move/click.
+cImageDoc = obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet};
+cImageDoc.brushCursorOffset = [];
+
 % Render the image
 obj.mibController.showImage();
-
-cImageDoc = obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet};
-
-% Orientation switch changes coef_z (pixel aspect ratio).  showImage() has
-% just updated imageHandle.XData with the new coef_z, so the stored brush
-% cursor offset (computed for the old orientation) is now wrong.  Clear it
-% so the next updateBrushCursor call recomputes the ellipse from fresh data.
-cImageDoc.brushCursorOffset = [];
 
 % ---- Move mouse cursor to the pivot point (for keyboard shortcut callers) ----
 if moveMouseSw

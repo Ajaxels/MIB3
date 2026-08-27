@@ -236,6 +236,17 @@ switch BatchOpt.Mode{1}
         % different dataset afterwards
         obj.Backup.clearContents();
 
+        % linkedPairs also caches global container indices (see
+        % MibController.showImage -> linked-view propagation); drop pairs
+        % that referenced a container in the removed set, and shift the
+        % indices of the remaining pairs down to match the new obj.I layout,
+        % otherwise a stale index above numel(obj.I) crashes showImage
+        if ~isempty(obj.linkedPairs)
+            obj.linkedPairs(any(ismember(obj.linkedPairs, datasetIndices), 2), :) = [];
+            obj.linkedPairs(obj.linkedPairs > datasetIndices(end)) = ...
+                obj.linkedPairs(obj.linkedPairs > datasetIndices(end)) - obj.Sets.datasetsInSet;
+        end
+
         % update obj.Sets structure
         obj.Sets.names(obj.Sets.selectedSet) = [];
         obj.Sets.datasetTypes(obj.Sets.selectedSet, :) = [];
