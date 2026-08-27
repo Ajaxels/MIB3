@@ -104,16 +104,20 @@ they reach the boundary of the *Mask* layer.
 
 ---
 
-### Interpolate as shape
+### Interpolate
 
 ![Interpolate](images/menuSelection-interpolate.png){align=left}
 
-Reconstructs the *Selection* layer on empty slices between two annotated slices (shortcut ++i++).
-The button label and icon reflect the active interpolation type set in
-[Preferences](../../ribbon/home/home-preferences.md):
+Reconstructs the *Selection* layer on empty slices between two annotated slices. Clicking the main
+button runs interpolation using the active method (shortcut ++i++); the icon reflects that method.
 
-- **Interpolate as shape** — ideal for blobs and filled structures. [:fontawesome-brands-youtube:{.red-color} Demo](https://youtu.be/ZcJQb59YzUA?t=4m3s)
-- **Interpolate as line** — suited for unclosed lines such as membranes. [:fontawesome-brands-youtube:{.red-color} Demo](https://youtu.be/ZcJQb59YzUA?t=2m22s)
+<div class="clear-float"></div>
+
+The dropdown switches the method or opens its settings:
+
+- **Interpolate as Shape** — ideal for blobs and filled structures. [:fontawesome-brands-youtube:{.red-color} Demo](https://youtu.be/ZcJQb59YzUA?t=4m3s)
+- **Interpolate as Lines** — suited for unclosed lines such as membranes. [:fontawesome-brands-youtube:{.red-color} Demo](https://youtu.be/ZcJQb59YzUA?t=2m22s)
+- **Interpolation settings** — opens the dialog to set the number of interpolation points and the line width.
 
 !!! warning
     Only one object should be present in the *Selection* layer on both the starting and ending slices.

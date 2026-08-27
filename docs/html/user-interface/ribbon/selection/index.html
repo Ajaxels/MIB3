@@ -5416,10 +5416,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#interpolate-as-shape" class="md-nav__link">
+  <a href="#interpolate" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Interpolate as shape
+        Interpolate
       </span>
     </span>
   </a>
@@ -5777,14 +5777,17 @@ Clicking the main button inverts the complete volume (4D). The dropdown selects 
 <p>Expands each selected area to fill the containing mask region — selected pixels grow outward until
 they reach the boundary of the <em>Mask</em> layer.</p>
 <hr />
-<h3 id="interpolate-as-shape">Interpolate as shape<a class="headerlink" href="#interpolate-as-shape" title="Permanent link">&para;</a></h3>
+<h3 id="interpolate">Interpolate<a class="headerlink" href="#interpolate" title="Permanent link">&para;</a></h3>
 <p><img align="left" alt="Interpolate" src="images/menuSelection-interpolate.png" /></p>
-<p>Reconstructs the <em>Selection</em> layer on empty slices between two annotated slices (shortcut <span class="keys"><kbd class="key-i">I</kbd></span>).
-The button label and icon reflect the active interpolation type set in
-<a href="../../ribbon/home/home-preferences.html">Preferences</a>:</p>
+<p>Reconstructs the <em>Selection</em> layer on empty slices between two annotated slices. Clicking the main
+button runs interpolation using the active method (shortcut <span class="keys"><kbd class="key-i">I</kbd></span>); the icon reflects that method.</p>
+<div class="clear-float"></div>
+
+<p>The dropdown switches the method or opens its settings:</p>
 <ul>
-<li><strong>Interpolate as shape</strong> — ideal for blobs and filled structures. <a href="https://youtu.be/ZcJQb59YzUA?t=4m3s"><span class="twemoji red-color"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 7.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2026 Fonticons, Inc.--><path fill="currentColor" d="M549.7 124.1c-6.2-23.7-24.8-42.3-48.3-48.6C458.9 64 288.1 64 288.1 64S117.3 64 74.7 75.5c-23.5 6.3-42 24.9-48.3 48.6C15 167 15 256.4 15 256.4s0 89.4 11.4 132.3c6.3 23.6 24.8 41.5 48.3 47.8C117.3 448 288.1 448 288.1 448s170.8 0 213.4-11.5c23.5-6.3 42-24.2 48.3-47.8 11.4-42.9 11.4-132.3 11.4-132.3s0-89.4-11.4-132.3zM232.2 337.6V175.2l142.7 81.2z"/></svg></span> Demo</a></li>
-<li><strong>Interpolate as line</strong> — suited for unclosed lines such as membranes. <a href="https://youtu.be/ZcJQb59YzUA?t=2m22s"><span class="twemoji red-color"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 7.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2026 Fonticons, Inc.--><path fill="currentColor" d="M549.7 124.1c-6.2-23.7-24.8-42.3-48.3-48.6C458.9 64 288.1 64 288.1 64S117.3 64 74.7 75.5c-23.5 6.3-42 24.9-48.3 48.6C15 167 15 256.4 15 256.4s0 89.4 11.4 132.3c6.3 23.6 24.8 41.5 48.3 47.8C117.3 448 288.1 448 288.1 448s170.8 0 213.4-11.5c23.5-6.3 42-24.2 48.3-47.8 11.4-42.9 11.4-132.3 11.4-132.3s0-89.4-11.4-132.3zM232.2 337.6V175.2l142.7 81.2z"/></svg></span> Demo</a></li>
+<li><strong>Interpolate as Shape</strong> — ideal for blobs and filled structures. <a href="https://youtu.be/ZcJQb59YzUA?t=4m3s"><span class="twemoji red-color"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 7.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2026 Fonticons, Inc.--><path fill="currentColor" d="M549.7 124.1c-6.2-23.7-24.8-42.3-48.3-48.6C458.9 64 288.1 64 288.1 64S117.3 64 74.7 75.5c-23.5 6.3-42 24.9-48.3 48.6C15 167 15 256.4 15 256.4s0 89.4 11.4 132.3c6.3 23.6 24.8 41.5 48.3 47.8C117.3 448 288.1 448 288.1 448s170.8 0 213.4-11.5c23.5-6.3 42-24.2 48.3-47.8 11.4-42.9 11.4-132.3 11.4-132.3s0-89.4-11.4-132.3zM232.2 337.6V175.2l142.7 81.2z"/></svg></span> Demo</a></li>
+<li><strong>Interpolate as Lines</strong> — suited for unclosed lines such as membranes. <a href="https://youtu.be/ZcJQb59YzUA?t=2m22s"><span class="twemoji red-color"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 7.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2026 Fonticons, Inc.--><path fill="currentColor" d="M549.7 124.1c-6.2-23.7-24.8-42.3-48.3-48.6C458.9 64 288.1 64 288.1 64S117.3 64 74.7 75.5c-23.5 6.3-42 24.9-48.3 48.6C15 167 15 256.4 15 256.4s0 89.4 11.4 132.3c6.3 23.6 24.8 41.5 48.3 47.8C117.3 448 288.1 448 288.1 448s170.8 0 213.4-11.5c23.5-6.3 42-24.2 48.3-47.8 11.4-42.9 11.4-132.3 11.4-132.3s0-89.4-11.4-132.3zM232.2 337.6V175.2l142.7 81.2z"/></svg></span> Demo</a></li>
+<li><strong>Interpolation settings</strong> — opens the dialog to set the number of interpolation points and the line width.</li>
 </ul>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>

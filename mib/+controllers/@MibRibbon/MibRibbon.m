@@ -386,6 +386,9 @@ classdef MibRibbon
             % other tools
             obj.handles.ribbonSelection.expandToMask.ButtonPushedFcn = @obj.selection_Callbacks;
             obj.handles.ribbonSelection.interpolate.ButtonPushedFcn = @obj.selection_Callbacks;
+            obj.handles.ribbonSelection.interpolateAsShape.ItemPushedFcn = @obj.selection_Callbacks;
+            obj.handles.ribbonSelection.interpolateAsLine.ItemPushedFcn = @obj.selection_Callbacks;
+            obj.handles.ribbonSelection.interpolationSettings.ItemPushedFcn = @obj.selection_Callbacks;
             obj.handles.ribbonSelection.replaceImage.ButtonPushedFcn = @obj.selection_Callbacks;
             obj.handles.ribbonSelection.smooth.ButtonPushedFcn = @obj.selection_Callbacks;
         end

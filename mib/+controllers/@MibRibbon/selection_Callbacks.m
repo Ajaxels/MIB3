@@ -94,8 +94,16 @@ switch mode
         % ----------- Other Selection Tools -------------
     case sprintf('Expand to\nmask border')        % obj.handles.ribbonSelection.expandToMask
         obj.mibModel.expandSelectionToMaskBorder();
-    case {sprintf('Interpolate as\nshape'), sprintf('Interpolate as\nline')}        % obj.handles.ribbonSelection.interpolate
-        obj.mibController.updateInterpolationMode();
+    case {sprintf('Interpolate as\nshape'), sprintf('Interpolate as\nline')}        % obj.handles.ribbonSelection.interpolate, split button body
+        obj.mibModel.interpolateImage('selection');
+    case 'Interpolate as Shape'        % obj.handles.ribbonSelection.interpolateAsShape
+        obj.mibModel.preferences.SegmTools.Interpolation.Type = 'shape';
+        obj.mibController.updateInterpolationMode(true);
+    case 'Interpolate as Lines'        % obj.handles.ribbonSelection.interpolateAsLine
+        obj.mibModel.preferences.SegmTools.Interpolation.Type = 'line';
+        obj.mibController.updateInterpolationMode(true);
+    case 'Interpolation settings'        % obj.handles.ribbonSelection.interpolationSettings
+        obj.mibController.cSegmentation.updateInterpolationSettings();
     case sprintf('Replace\nselected areas')        % obj.handles.ribbonSelection.replaceImage
         obj.mibModel.replaceMaskedArea('selection');
     case sprintf('Smooth\nselection')        % obj.handles.ribbonSelection.smooth

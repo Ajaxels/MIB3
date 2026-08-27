@@ -199,11 +199,33 @@ widgetHandles.expandToMask = Button(sprintf('Expand to\nmask border'),  Icon(ful
 widgetHandles.expandToMask.Description = 'Expand to mask border';
 column.add(widgetHandles.expandToMask);
 
-% ------------- Interpolate as Shape (I) -------------
+% ------------- Interpolate (I) -------------
 column = section.addColumn();
-%widgetHandles.interpolate = matlab.ui.internal.toolstrip.ToggleButton(sprintf('Interpolate as\nshape'),  Icon(fullfile(iconPath, 'selection_shape_24px.png')));
-widgetHandles.interpolate = Button(sprintf('Interpolate as\nshape'),  Icon(fullfile(iconPath, sprintf('selection_%s_24px.png', obj.mibModel.preferences.SegmTools.Interpolation.Type))));
+if strcmp(obj.mibModel.preferences.SegmTools.Interpolation.Type, 'line')
+    interpolateText = sprintf('Interpolate as\nline');
+else
+    interpolateText = sprintf('Interpolate as\nshape');
+end
+widgetHandles.interpolate = matlab.ui.internal.toolstrip.SplitButton(interpolateText, ...
+    Icon(fullfile(iconPath, sprintf('selection_%s_24px.png', obj.mibModel.preferences.SegmTools.Interpolation.Type))));
 widgetHandles.interpolate.Description = 'Interpolate the selected areas (i - key shortcut)';
+
+popupList = PopupList();
+header1 = PopupListHeader('Interpolation method');
+popupList.add(header1);
+% Interpolate as Shape
+widgetHandles.interpolateAsShape = ListItem('Interpolate as Shape', Icon(fullfile(iconPath, 'selection_shape_24px.png')));
+popupList.add(widgetHandles.interpolateAsShape);
+% Interpolate as Lines
+widgetHandles.interpolateAsLine = ListItem('Interpolate as Lines', Icon(fullfile(iconPath, 'selection_line_24px.png')));
+popupList.add(widgetHandles.interpolateAsLine);
+separator = PopupListSeparator();
+popupList.add(separator);
+% Interpolation settings
+widgetHandles.interpolationSettings = ListItem('Interpolation settings', Icon(fullfile(iconPath, 'settings_green_24px.png')));
+popupList.add(widgetHandles.interpolationSettings);
+
+widgetHandles.interpolate.Popup = popupList;
 column.add(widgetHandles.interpolate);
 
 % ------------- Replace selected areas in the image -------------
