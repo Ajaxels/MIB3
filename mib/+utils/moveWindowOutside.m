@@ -56,6 +56,12 @@ OldPos = hObject.OuterPosition;
 FigWidth = OldPos(3);   % width of the window to move
 FigHeight = OldPos(4);  % height of the window to move
 
+% Always use Position for uifigures - writing OuterPosition can trigger
+% re-layout and shrink the window. Decided before the branch below because both
+% paths reach the write at the end of the function; assigning it only in the
+% else branch left it undefined whenever mibGUI was empty.
+useInnerPosition = isa(hObject, 'matlab.ui.Figure');
+
 if isempty(mibGUI)
     ScreenUnits=get(0, 'Units');
     set(0, 'Units', 'pixels');
@@ -78,10 +84,6 @@ else
         GCBFPos = mibGUI.OuterPosition;
         mibGUI.Units = GCBFOldUnits;
     end
-    % Always use Position for uifigures - writing OuterPosition can
-    % trigger re-layout and shrink the window
-    useInnerPosition = isa(hObject, 'matlab.ui.Figure');
-    
     switch alignH
         case 'left'
             if GCBFPos(1)-FigWidth > 0  % put figure on the left side of the main figure

@@ -523,6 +523,7 @@ Prefs.Deep.DynamicMaskOpt.InclusionThreshold = 0;     % Inclusion threshold for 
 Prefs.Deep.OverlapInstancesOpt.DetectionThreshold = 0.5;    % confidence threshold of segmentObjects [both overlap modes]
 Prefs.Deep.OverlapInstancesOpt.MergeIoU = 0.5;      % in-band intersection-over-union to merge detections ['IoU merge' mode]
 Prefs.Deep.OverlapInstancesOpt.MergeIoA = 0.8;      % in-band intersection-over-smaller-area to merge detections ['IoU merge' mode]
+Prefs.Deep.OverlapInstancesOpt.MinSplitArea = 100;  % min area, px, of a component when splitting a stitched label into separate objects [both overlap modes]
 
 Prefs.Deep.Metrics.Accuracy = true;  % parameters for metrics evaluation
 Prefs.Deep.Metrics.BFscore = false;

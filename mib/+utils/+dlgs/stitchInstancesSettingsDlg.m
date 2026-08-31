@@ -7,7 +7,7 @@ function [stitchOptions, values] = stitchInstancesSettingsDlg(parentFigure, note
 %       [stitchOptions, values] = utils.dlgs.stitchInstancesSettingsDlg(parentFigure, note, defaults, dlgOptions)
 %
 % The single definition of the settings dialog for
-% :func:`utils.stitchInstances2Dto3D`, shared by its two entry points:
+% :func:`utils.instances.stitch2Dto3D`, shared by its two entry points:
 % :func:`models.MibModel.stitchModelInstances` (stitches the active labels
 % layer) and :func:`controllers.MibDeep.mergeInstancesTo3D` (stitches predicted
 % ``*.model`` files from disk). Keeping one copy means a new stitching parameter
@@ -73,7 +73,7 @@ function [stitchOptions, values] = stitchInstancesSettingsDlg(parentFigure, note
 %     - ``.mibPath`` - MIB installation path, for the dialog icon
 %
 % Output Arguments:
-%   - **stitchOptions** - structure ready for :func:`utils.stitchInstances2Dto3D`;
+%   - **stitchOptions** - structure ready for :func:`utils.instances.stitch2Dto3D`;
 %     ``[]`` when the user cancelled
 %   - **values** - structure of the raw widget values under the ``defaults``
 %     field names, so a caller can write them back into its own ``BatchOpt``;
@@ -203,7 +203,7 @@ values.Anisotropy            = answer{11};
 values.MaxCentroidShift      = answer{12};
 values.CentroidLinkRadius    = answer{13};
 
-%% Options for utils.stitchInstances2Dto3D
+%% Options for utils.instances.stitch2Dto3D
 % The IoA checkbox maps to a 0.5 containment threshold when enabled, Inf (never
 % links) when disabled.
 ioaEnabledThreshold = 0.5;

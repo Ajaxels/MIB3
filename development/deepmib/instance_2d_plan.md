@@ -239,9 +239,78 @@ for training and prediction.
   button (Tag `P_OverlapInstancesSettings` → `updateOverlapInstancesSettings`); both enabled only
   for the `2D Instance` workflow (`selectArchitecture.m`). Tunable settings live in
   `obj.OverlapInstancesOpt` (`.DetectionThreshold` — `segmentObjects` confidence, both modes;
-  `.MergeIoU` / `.MergeIoA` — in-band merge thresholds, IoU-merge mode), persisted via
+  `.MergeIoU` / `.MergeIoA` — in-band merge thresholds, IoU-merge mode; `.MinSplitArea` — smallest
+  component kept when a stitched label is split into one index per object, IoU-merge mode),
+  persisted via
   `preferences.Deep.OverlapInstancesOpt` (`generatePreferences`/`closeWindow`), the `.mibCfg`
   (`saveConfig`/`loadConfig`) and the trained `.mibDeep` (`startTrainingInstances`).
+- **Under-counting through IoA bridging - FIXED 2026-08-31.** On a real mitochondria prediction
+  (`3_Results_RN50_p3/.../Labels_260330_B002B_Neuromast_R01_16nm.model`, 1714x2606x2009) **5.0% of
+  instance indices covered two or more spatially separate objects** (second blob >= 100 px, median
+  gap 187 px, up to 495 px); 69% of those pairs sat inside the *same* core tile, which is why
+  centroid-in-core testing never showed it.
+
+  Re-running inference on `A404-Zebrafish-NM_R01_16nm_crop.am` with the link decisions logged
+  (768 px patch, 20% overlap -> core 460 / border 154, IoU 0.5 / IoA 0.8) attributed **9 of 11
+  splits to the merge and only 2 to fragmented SOLOv2 masks**. Mechanism: SOLOv2 occasionally
+  emits one detection spanning two neighbouring objects, and `ioa = interArea/min(areaA,areaB)`
+  is 1.00 for every smaller detection contained in it, so the spanning detection bridges unrelated
+  objects through the union-find. Logged example (z=30):
+
+  ```
+  det 186  tile 32  bbox[y 987-1078  x 563-976]    <- spans 413 px
+  det  67  tile 21  bbox[y 987-1074  x 563-614]    link 67<->186   iou=0.94 ioa=0.98
+  det 137  tile 23  bbox[y 935-1018  x 971-1011]   link 137<->186  iou=0.00 ioa=1.00
+  ```
+
+  Tightening thresholds does not help - containment is 1.00 by construction (IoU 0.7: still 11
+  splits; IoA 0.95: still 11; minOverlapPixels 50: 9).
+
+  Two changes, measured over 5 slices of the crop:
+
+  | | objects | labels covering >1 object | objects hidden |
+  |---|---|---|---|
+  | before | 405 | 11 | 13 |
+  | + IoA gated on truncation | 410 | 7 | 8 |
+  | + connected-component split, min 100 px | **417** | **0** | **0** |
+
+  1. The IoA criterion now applies only when the smaller detection is truncated by its own tile
+     extent (`detTruncated`), which is the only situation it was meant for.
+  2. Pass 4 splits every painted label into its connected components (`options.minSplitArea`,
+     default 100 px, exposed as `OverlapInstancesOpt.MinSplitArea`). It discards 0.24% of
+     foreground as speckle; without a minimum, 24 speckles per 5 slices become objects.
+
+  The split lives in **`mib/+utils/+instances/splitDisconnected.m`** (2D-per-slice with
+  `connectivity` 8 or 3D with 26, `minObjectPixels`, `perSliceNumbering`), so both stitching modes
+  use the same code: pass 4 of the IoU merge and, after `gather`, the centroid-in-core branch of
+  `startPredictionInstances`. Centroid-in-core needs it for the same reason - a detection whose
+  mask covers two objects is emitted whole by the tile owning "its" centroid (measured on the
+  crop: 2 bad labels on z=30 before, 0 after; 76 -> 77 objects). Each label is searched inside its
+  own bounding box: 0.06 s instead of 1.2 s on a 1714x2606 slice with ~220 labels.
+
+  **Measured caveat:** with the split in place the gating is a no-op on this data (417 objects
+  either way) - it was kept because linking two detections with IoU 0.00 is wrong at the source and
+  it costs nothing, not because it changed the count. It did not over-split anywhere either
+  (410 intermediate groups collapse to the same 417 objects).
+
+  Regression tests: `tests/deepmib/SegmentImageInstancesIoUMergeTest.m` (synthetic `segmentFcn`;
+  the spanning-detection case fails against the pre-fix code with 3 labels / 2 components, and the
+  truncated-fragment case fails if the IoA rescue is lost) and
+  `tests/utils/SplitDisconnectedInstancesTest.m`.
+
+  **Repairing an existing prediction** does not need a re-run - the split is a pure post-process:
+
+  ```matlab
+  R = load(modelFile, '-mat');
+  options = struct('connectivity', 8, 'minObjectPixels', 13, 'perSliceNumbering', true);
+  [R.(R.modelVariable), stats] = utils.instances.splitDisconnected(R.(R.modelVariable), options);
+  ```
+
+  Applied to `SplitMergeToolkit/Labels_B002B_2D.model` (624x901x501): 60015 -> 62923 objects,
+  4335 indices covered more than one object, 5765 extra objects exposed, 2857 speckle components
+  (0.085% of the foreground) dropped. `minObjectPixels` **must be scaled to the pixel size**: that
+  file is a 624 px wide copy of the 1714 px prediction, so 13 px there is the 100 px default here -
+  using 100 px on it would have deleted 27.7% of the objects.
 - **Future improvement — object-density-aware sampling:** adapt the 90/10 object/uniform ratio to
   local object density so sparse regions still get background exposure.
 
@@ -344,7 +413,7 @@ The goal was to extend 2D instance results to **3D objects**. Delivered:
 1. **Per-slice 2D prediction** - the patch/tiled 2D pipeline above already writes one `*.model` per
    prediction image into `ResultingImagesDir/PredictionImages/ResultsModels`, so a volume exported
    as a 2D image sequence yields the per-slice instance label maps directly.
-2. **Cross-slice merging** - `mib/+utils/stitchInstances2Dto3D.m` links 2D instances across
+2. **Cross-slice merging** - `mib/+utils/+instances/stitch2Dto3D.m` links 2D instances across
    adjacent slices via IoU/IoA of masks between `z` and `z+1`, resolved globally through an
    undirected overlap graph + union-find (`'graph'`, default) or strict per-pair 1-to-1 matching
    (`'hungarian'`, kept for paper-faithful comparison).
@@ -384,7 +453,7 @@ matching the `2D Semantic` behaviour:
   `outputLabels(:,:,z)`; a depth-1 file still saves a 2D model, so the 2D path is byte-identical.
   More than one time point raises a warning and only `t=1` is predicted (as in the semantic path).
 - Instance indices stay **contiguous `1..N` per slice**, deliberately *not* unique across the
-  stack: `utils.stitchInstances2Dto3D` relabels every slice internally, and a per-slice range keeps
+  stack: `utils.instances.stitch2Dto3D` relabels every slice internally, and a per-slice range keeps
   `modelType` at 65535 instead of overflowing into uint32 on deep stacks. `modelType` /
   `numMaterials` are driven by `maxInstancesPerSlice`.
 - `mergeInstancesTo3D.m` detects the layout from the depth of the **first** `*.model` file:

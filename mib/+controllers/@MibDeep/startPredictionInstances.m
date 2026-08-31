@@ -30,15 +30,22 @@ function startPredictionInstances(obj)
 %     kept and merged across seams when their masks agree inside the shared overlap band;
 %     works for objects larger than the overlap.
 %
-% The detection confidence threshold and the merge IoU/IoA thresholds are taken from
-% obj.OverlapInstancesOpt (updateOverlapInstancesSettings).
+% Both modes finish by splitting every index into its connected components
+% (utils.instances.splitDisconnected), so two objects that are separated in the image never
+% share an instance index.
+%
+% The detection confidence threshold, the merge IoU/IoA thresholds and the minimal object
+% area are taken from obj.OverlapInstancesOpt (updateOverlapInstancesSettings).
 % Instance prediction does not require preprocessing: images are read directly.
 
 global mibInstanceIdCounter
 
 % lazy init to cover instances created before this property was introduced
 if isempty(obj.OverlapInstancesOpt)
-    obj.OverlapInstancesOpt = struct('DetectionThreshold', 0.5, 'MergeIoU', 0.5, 'MergeIoA', 0.8);
+    obj.OverlapInstancesOpt = struct('DetectionThreshold', 0.5, 'MergeIoU', 0.5, 'MergeIoA', 0.8, 'MinSplitArea', 100);
+end
+if ~isfield(obj.OverlapInstancesOpt, 'MinSplitArea')     % configs saved before this field existed
+    obj.OverlapInstancesOpt.MinSplitArea = 100;
 end
 
 msg = sprintf(['!!! Warning !!!\nYou are going to start instance segmentation prediction.\n' ...
@@ -192,6 +199,7 @@ while hasdata(imgDS)
                     mergeOptions.executionEnvironment = executionEnvironment;
                     mergeOptions.iouThreshold = obj.OverlapInstancesOpt.MergeIoU;
                     mergeOptions.ioaThreshold = obj.OverlapInstancesOpt.MergeIoA;
+                    mergeOptions.minSplitArea = obj.OverlapInstancesOpt.MinSplitArea;
                     sliceLabels = deepmib.segmentImageInstancesIoUMerge(sliceImg, net, mergeOptions);
                 otherwise   % 'Centroid in core'
                     mibInstanceIdCounter = 0;   % reset the global unique-instance-ID counter for this slice
@@ -209,6 +217,12 @@ while hasdata(imgDS)
                     sliceLabels = gather(labelBim, 'Level', 1);
                     % crop away the padding added for partial blocks
                     sliceLabels = sliceLabels(1:imgHeight, 1:imgWidth);
+                    % same repair as pass 4 of the IoU merge: a single segmentObjects
+                    % detection whose mask covers two neighbouring objects is emitted by
+                    % the tile owning "its" centroid and would otherwise give both objects
+                    % one index
+                    sliceLabels = utils.instances.splitDisconnected(sliceLabels, ...
+                        struct('connectivity', 8, 'minObjectPixels', obj.OverlapInstancesOpt.MinSplitArea));
             end
         catch err
             utils.dlgs.showErrorDialog(obj.view.gui, err, 'Instance prediction error');
@@ -217,7 +231,7 @@ while hasdata(imgDS)
         end
 
         % relabel to a contiguous 1..N index range within this slice; the indices are
-        % deliberately not made unique across the stack - utils.stitchInstances2Dto3D
+        % deliberately not made unique across the stack - utils.instances.stitch2Dto3D
         % relabels every slice internally, and a per-slice range keeps the model type small
         uniqueIds = unique(sliceLabels(sliceLabels > 0));
         numInstances = numel(uniqueIds);

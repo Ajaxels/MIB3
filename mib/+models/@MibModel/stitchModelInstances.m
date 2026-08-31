@@ -12,7 +12,7 @@ function stitchModelInstances(obj, BatchOptIn)
 % links overlapping objects between neighbouring slices into single 3D
 % instances with one consistent index through the whole stack. Wrapper around
 % :func:`core.MibDataset.stitchModelInstances`, which in turn calls
-% :func:`utils.stitchInstances2Dto3D`.
+% :func:`utils.instances.stitch2Dto3D`.
 %
 % When called interactively (no ``BatchOptIn`` or a struct without ``.Method``)
 % a settings dialog is shown to pick the linking strategy and thresholds. The
@@ -293,7 +293,7 @@ if showDialog && ~batchModeSwitch
     BatchOpt.CentroidLinkRadius{1} = values.CentroidLinkRadius;
 end
 
-%% Assemble the options for utils.stitchInstances2Dto3D
+%% Assemble the options for utils.instances.stitch2Dto3D
 % Built from BatchOpt rather than from the dialog result, so the batch path
 % (which skips the dialog entirely) produces exactly the same options.
 % IoAThreshold is a checkbox: enabled -> use a 0.5 containment threshold;
@@ -345,7 +345,7 @@ end
 %% Perform stitching
 wb = [];
 if BatchOpt.showWaitbar
-    % Indeterminate: the phases inside stitchInstances2Dto3D report themselves
+    % Indeterminate: the phases inside utils.instances.stitch2Dto3D report themselves
     % through wb.Message (which slice of which pass), but there is no single
     % fraction that covers them all honestly.
     wb = uiprogressdlg(obj.getProgressBarParent(), 'Indeterminate', 'on', ...

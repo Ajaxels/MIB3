@@ -169,6 +169,7 @@ classdef MibModel < handle
         colorChannelActions(obj, mode, channel1, BatchOptIn)  % handle various color channel operations (insert, delete, copy, invert, rotate, shift, swap)
         convertModel(obj, ModelType, BatchOptIn)        % convert the segmentation model to a different type; wrapper around core.MibDataset.convertModel
         stitchModelInstances(obj, BatchOptIn)        % stitch per-slice 2D instance labels into a 3D instance model; wrapper around core.MibDataset.stitchModelInstances
+        applied = editInstanceObjects(obj, BatchOptIn)        % split, merge, connect and delete objects of an instance model; the operations behind controllers.InstanceEditor
         copySwapSlice(obj, sourceSlice, targetSlice, mode, BatchOptIn)  % Batch-compatible dispatcher for copy, insert, and swap slice operations
         createModel(obj, ModelType, ModelMaterialNames, BatchOptIn)        % create a new model; wrapper around core.MibDataset.createModel
         status = datasetsSetsOps(obj, BatchOptIn)        % operations with sets of the model; compatible with the batch mode.

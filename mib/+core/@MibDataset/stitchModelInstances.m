@@ -12,7 +12,7 @@ function stats = stitchModelInstances(obj, options, wb)
 % instance segmentations** (each z-slice carries its own instance indices, not
 % consistent across slices) and links objects that overlap between neighbouring
 % slices into single 3D instances with one consistent index through the whole
-% stack. The heavy lifting is done by :func:`utils.stitchInstances2Dto3D`; this
+% stack. The heavy lifting is done by :func:`utils.instances.stitch2Dto3D`; this
 % method wraps it with the per-timepoint read/write and rebuilds the labels
 % object at a capacity large enough for the resulting instance count (mirrors
 % the indexed-object branch of :func:`core.MibDataset.convertModel`). When the
@@ -31,7 +31,7 @@ function stats = stitchModelInstances(obj, options, wb)
 %
 % Input Arguments:
 %   - **options** *(optional)* - structure passed through to
-%     :func:`utils.stitchInstances2Dto3D` (``method``, ``splitDisconnected2D``,
+%     :func:`utils.instances.stitch2Dto3D` (``method``, ``splitDisconnected2D``,
 %     ``iouThreshold``, ``ioaThreshold``, ``minOverlapPixels``,
 %     ``absOverlapPixels``, ``zLookback``, ``minObjectVoxels``,
 %     ``minObjectSlices``, ``bidirectional``); missing fields take that
@@ -47,7 +47,7 @@ function stats = stitchModelInstances(obj, options, wb)
 %   - **wb** *(optional)* - ``uiprogressdlg`` handle; pass ``[]`` to skip
 %     progress reporting. When it was created with ``'Cancelable', 'on'`` the
 %     stitching can be interrupted - the handle is forwarded to
-%     :func:`utils.stitchInstances2Dto3D`, which polls it in its own loops
+%     :func:`utils.instances.stitch2Dto3D`, which polls it in its own loops
 %
 % Output Arguments:
 %   - **stats** - structure from the last processed timepoint with
@@ -96,12 +96,18 @@ newModelType = 65535;
 stats = struct('numInput2DObjects', 0, 'numOutput3DObjects', 0, 'objectVoxelCounts', [], ...
     'cancelled', false);
 
+% Highest instance index written, over all time points. Tracked here because
+% the stitcher already knows it: the alternative, MibLabels.countMaterials(),
+% rescans every time point for its maximum, and anything that needs the next
+% free index would pay for that scan on each call.
+highestInstanceIndex = 0;
+
 readOpt = struct('blockModeSwitch', 0);
 for timePoint = 1:obj.image.time
     % whole indexed model for this timepoint as [height, width, depth]
     volume = cell2mat(obj.getData3D('labels', timePoint, 3, NaN, readOpt));
 
-    [stitched, stats] = utils.stitchInstances2Dto3D(volume, options, wb);
+    [stitched, stats] = utils.instances.stitch2Dto3D(volume, options, wb);
     % Cancelled: return before anything below writes to the dataset, so the
     % existing model survives untouched rather than being replaced by a stack
     % in which only the first timepoints were stitched.
@@ -112,6 +118,7 @@ for timePoint = 1:obj.image.time
         newModelType = 4294967295;
     end
     newModel(:, :, :, 1, timePoint) = cast(stitched, class(newModel));
+    highestInstanceIndex = max(highestInstanceIndex, stats.numOutput3DObjects);
 
     if ~isempty(wb); wb.Value = timePoint / obj.image.time; end
 end
@@ -138,8 +145,12 @@ obj.labels.materialNames  = {'1'; '2'};
 obj.labels.materialColors = rand(65535, 3);
 obj.labels.filename       = iSuffixFilename(existingFilename, options.filenameSuffix);
 obj.labels.labelsVariable = existingLabelsVariable;
+obj.labels.materialsCount = highestInstanceIndex;
 obj.selectedMaterial = 3;
 obj.selectedAddToMaterial = 3;
+
+% The cached per-object index describes the model that has just been replaced.
+obj.instanceIndex = [];
 end
 
 function newFilename = iSuffixFilename(filename, suffix)

@@ -262,6 +262,12 @@ switch mode
         end
         obj.mibModel.connImaris = io.imaris.renderModelImaris(obj.mibModel.I{id}, obj.mibModel.connImaris, options);
 
+    %% -------------- Instance editor --------------
+    case sprintf('Instance\neditor')    % obj.handles.ribbonModel.instanceEditor
+        % the controller is passed so it can reach the image document to take
+        % over the mouse for click-picking, and mibController.currentModifier
+        obj.mibController.startController('controllers.InstanceEditor', obj.mibController);
+
     %% -------------- Quantification section --------------
     case 'Quantify'
         obj.mibController.startController('controllers.Quantification');

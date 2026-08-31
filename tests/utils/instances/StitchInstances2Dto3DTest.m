@@ -1,6 +1,6 @@
 classdef StitchInstances2Dto3DTest < matlab.unittest.TestCase
 % STITCHINSTANCES2DTO3DTEST - Regression + measurement harness for
-% utils.stitchInstances2Dto3D (2D->3D instance label stitching).
+% utils.instances.stitch2Dto3D (2D->3D instance label stitching).
 %
 % Purpose (Phase A of development/deepmib/instance_3d_plan.md):
 %   - lock in the validated correctness (scrambled per-slice IDs must be
@@ -109,7 +109,7 @@ classdef StitchInstances2Dto3DTest < matlab.unittest.TestCase
             [gt, scrambled] = StitchInstances2Dto3DTest.makeStack(numObjects, [96 96 20]);
 
             opt = struct('method', 'graph');
-            [stitched, stats] = utils.stitchInstances2Dto3D(scrambled, opt);
+            [stitched, stats] = utils.instances.stitch2Dto3D(scrambled, opt);
 
             metrics = mibtest.helpers.instanceStitchMetrics(stitched, gt);
 
@@ -128,7 +128,7 @@ classdef StitchInstances2Dto3DTest < matlab.unittest.TestCase
             [gt, scrambled] = StitchInstances2Dto3DTest.makeStack(numObjects, [96 96 18], 7);
 
             opt = struct('method', 'hungarian', 'bidirectional', true);
-            [stitched, stats] = utils.stitchInstances2Dto3D(scrambled, opt);
+            [stitched, stats] = utils.instances.stitch2Dto3D(scrambled, opt);
 
             metrics = mibtest.helpers.instanceStitchMetrics(stitched, gt);
             testCase.verifyEqual(stats.numOutput3DObjects, numObjects);
@@ -144,9 +144,9 @@ classdef StitchInstances2Dto3DTest < matlab.unittest.TestCase
             % A dialog the user never cancels must be invisible to the result.
             [~, scrambled] = StitchInstances2Dto3DTest.makeStack(6, [96 96 20]);
 
-            [withoutDialog, statsWithout] = utils.stitchInstances2Dto3D(scrambled);
+            [withoutDialog, statsWithout] = utils.instances.stitch2Dto3D(scrambled);
             waitbar = mibtest.helpers.FakeProgressDialog();
-            [withDialog, statsWith] = utils.stitchInstances2Dto3D(scrambled, struct(), waitbar);
+            [withDialog, statsWith] = utils.instances.stitch2Dto3D(scrambled, struct(), waitbar);
 
             testCase.verifyEqual(withDialog, withoutDialog, ...
                 'passing a progress dialog must not alter the stitched volume');
@@ -170,7 +170,7 @@ classdef StitchInstances2Dto3DTest < matlab.unittest.TestCase
             opt = struct('minObjectSlices', 1, 'absorbFragmentVoxels', 2);
 
             reference = mibtest.helpers.FakeProgressDialog();
-            utils.stitchInstances2Dto3D(scrambled, opt, reference);
+            utils.instances.stitch2Dto3D(scrambled, opt, reference);
             totalPolls = reference.polls;
             testCase.assumeGreaterThan(totalPolls, 4, ...
                 'the run must poll often enough for the budgets below to differ');
@@ -178,7 +178,7 @@ classdef StitchInstances2Dto3DTest < matlab.unittest.TestCase
             budgets = [0, floor(totalPolls/2), totalPolls-1];
             for k = 1:numel(budgets)
                 waitbar = mibtest.helpers.FakeProgressDialog(budgets(k));
-                [stitched, stats] = utils.stitchInstances2Dto3D(scrambled, opt, waitbar);
+                [stitched, stats] = utils.instances.stitch2Dto3D(scrambled, opt, waitbar);
                 testCase.verifyTrue(stats.cancelled, ...
                     sprintf('cancel after %d polls must be reported', budgets(k)));
                 testCase.verifyEmpty(stitched, ...
@@ -191,7 +191,7 @@ classdef StitchInstances2Dto3DTest < matlab.unittest.TestCase
         function cancelIsHonouredByHungarianToo(testCase)
             [~, scrambled] = StitchInstances2Dto3DTest.makeStack(5, [96 96 18], 7);
             waitbar = mibtest.helpers.FakeProgressDialog(25);
-            [stitched, stats] = utils.stitchInstances2Dto3D(scrambled, ...
+            [stitched, stats] = utils.instances.stitch2Dto3D(scrambled, ...
                 struct('method', 'hungarian'), waitbar);
             testCase.verifyTrue(stats.cancelled);
             testCase.verifyEmpty(stitched);
@@ -203,7 +203,7 @@ classdef StitchInstances2Dto3DTest < matlab.unittest.TestCase
 
         function emptyVolumeReturnsEmptyStats(testCase)
             empty = zeros(32, 32, 8, 'uint16');
-            [stitched, stats] = utils.stitchInstances2Dto3D(empty);
+            [stitched, stats] = utils.instances.stitch2Dto3D(empty);
             testCase.verifyEqual(stats.numInput2DObjects, 0);
             testCase.verifyEqual(stats.numOutput3DObjects, 0);
             testCase.verifyEqual(nnz(stitched), 0);
@@ -214,13 +214,13 @@ classdef StitchInstances2Dto3DTest < matlab.unittest.TestCase
             slice = zeros(40, 40, 1, 'uint16');
             slice(5:10,  5:10)  = 3;
             slice(20:30, 20:30) = 7;
-            [~, stats] = utils.stitchInstances2Dto3D(slice);
+            [~, stats] = utils.instances.stitch2Dto3D(slice);
             testCase.verifyEqual(stats.numOutput3DObjects, 2);
         end
 
         function outputClassPromotesToUint16(testCase)
             [~, scrambled] = StitchInstances2Dto3DTest.makeStack(4, [48 48 10]);
-            stitched = utils.stitchInstances2Dto3D(scrambled);
+            stitched = utils.instances.stitch2Dto3D(scrambled);
             testCase.verifyClass(stitched, 'uint16');
         end
 
@@ -241,8 +241,8 @@ classdef StitchInstances2Dto3DTest < matlab.unittest.TestCase
                 V(:, :, z) = slice;
             end
 
-            [~, statsAdjacent] = utils.stitchInstances2Dto3D(V, struct('zLookback', 1));
-            [~, statsBridged]  = utils.stitchInstances2Dto3D(V, struct('zLookback', 2));
+            [~, statsAdjacent] = utils.instances.stitch2Dto3D(V, struct('zLookback', 1));
+            [~, statsBridged]  = utils.instances.stitch2Dto3D(V, struct('zLookback', 2));
 
             testCase.verifyEqual(statsAdjacent.numOutput3DObjects, 2, ...
                 'adjacent-only linking cannot cross the empty slice');
@@ -259,8 +259,8 @@ classdef StitchInstances2Dto3DTest < matlab.unittest.TestCase
             % add a tiny single-voxel fragment on one slice
             scrambled(1, 1, 1) = 999;
 
-            [~, statsKeep] = utils.stitchInstances2Dto3D(scrambled, struct('minObjectVoxels', 0));
-            [~, statsDrop] = utils.stitchInstances2Dto3D(scrambled, struct('minObjectVoxels', 50));
+            [~, statsKeep] = utils.instances.stitch2Dto3D(scrambled, struct('minObjectVoxels', 0));
+            [~, statsDrop] = utils.instances.stitch2Dto3D(scrambled, struct('minObjectVoxels', 50));
 
             testCase.verifyLessThan(statsDrop.numOutput3DObjects, statsKeep.numOutput3DObjects, ...
                 'minObjectVoxels must drop at least the 1-voxel fragment');
@@ -287,8 +287,8 @@ classdef StitchInstances2Dto3DTest < matlab.unittest.TestCase
                 V(:, :, z) = slice;
             end
 
-            [~, statsDefault] = utils.stitchInstances2Dto3D(V, struct('anisotropyZ', 1));
-            [~, statsAniso]   = utils.stitchInstances2Dto3D(V, struct('anisotropyZ', 2));
+            [~, statsDefault] = utils.instances.stitch2Dto3D(V, struct('anisotropyZ', 1));
+            [~, statsAniso]   = utils.instances.stitch2Dto3D(V, struct('anisotropyZ', 2));
 
             testCase.verifyGreaterThan(statsDefault.numOutput3DObjects, 1, ...
                 'isotropic thresholds should over-split the drifting object');
@@ -314,8 +314,8 @@ classdef StitchInstances2Dto3DTest < matlab.unittest.TestCase
             V(10:40, 10:40, 2) = 1;              % P on z=2 (shrunk, top-left)
             V(50:58, 50:58, 2) = 2;              % Q on z=2 (separate, inside P z1)
 
-            [~, statsNoGate] = utils.stitchInstances2Dto3D(V, struct('maxCentroidShift', inf));
-            [~, statsGate]   = utils.stitchInstances2Dto3D(V, struct('maxCentroidShift', 20));
+            [~, statsNoGate] = utils.instances.stitch2Dto3D(V, struct('maxCentroidShift', inf));
+            [~, statsGate]   = utils.instances.stitch2Dto3D(V, struct('maxCentroidShift', 20));
 
             testCase.verifyEqual(statsNoGate.numOutput3DObjects, 1, ...
                 'without the gate, containment fuses P and Q into one object');
@@ -342,8 +342,8 @@ classdef StitchInstances2Dto3DTest < matlab.unittest.TestCase
                 V(:, :, z) = slice;
             end
 
-            [~, statsOff] = utils.stitchInstances2Dto3D(V, struct('centroidLinkRadius', 0));
-            [~, statsOn]  = utils.stitchInstances2Dto3D(V, struct('centroidLinkRadius', 15));
+            [~, statsOff] = utils.instances.stitch2Dto3D(V, struct('centroidLinkRadius', 0));
+            [~, statsOn]  = utils.instances.stitch2Dto3D(V, struct('centroidLinkRadius', 15));
 
             testCase.verifyEqual(statsOff.numOutput3DObjects, 5, ...
                 'no overlap between drifted discs -> overlap graph splits into 5');
@@ -367,8 +367,8 @@ classdef StitchInstances2Dto3DTest < matlab.unittest.TestCase
                 V(:, :, z) = slice;
             end
 
-            [~, statsOff] = utils.stitchInstances2Dto3D(V, struct('centroidLinkRadius', 0));
-            [~, statsOn]  = utils.stitchInstances2Dto3D(V, struct('centroidLinkRadius', 15));
+            [~, statsOff] = utils.instances.stitch2Dto3D(V, struct('centroidLinkRadius', 0));
+            [~, statsOn]  = utils.instances.stitch2Dto3D(V, struct('centroidLinkRadius', 15));
 
             testCase.verifyEqual(statsOff.numOutput3DObjects, 10);
             testCase.verifyEqual(statsOn.numOutput3DObjects, 2, ...
@@ -385,16 +385,16 @@ classdef StitchInstances2Dto3DTest < matlab.unittest.TestCase
             V(56:95,  11:66, 2) = 8;    % 40 x 56 = 2240 px, overlaps rows 56:70
             shared = 15 * 56;           % 840 px -> IoU 0.160, IoA 0.375
 
-            [~, ratiosOnly] = utils.stitchInstances2Dto3D(V);
+            [~, ratiosOnly] = utils.instances.stitch2Dto3D(V);
             testCase.verifyEqual(ratiosOnly.numOutput3DObjects, 2, ...
                 'IoU/IoA are expected to miss this pair - that is the point of the test');
 
-            [~, withAbs] = utils.stitchInstances2Dto3D(V, ...
+            [~, withAbs] = utils.instances.stitch2Dto3D(V, ...
                 struct('absOverlapPixels', shared));
             testCase.verifyEqual(withAbs.numOutput3DObjects, 1, ...
                 'an absolute overlap at the threshold must link the pair');
 
-            [~, tooHigh] = utils.stitchInstances2Dto3D(V, ...
+            [~, tooHigh] = utils.instances.stitch2Dto3D(V, ...
                 struct('absOverlapPixels', shared + 1));
             testCase.verifyEqual(tooHigh.numOutput3DObjects, 2, ...
                 'one pixel above the shared area must not link');
@@ -409,9 +409,9 @@ classdef StitchInstances2Dto3DTest < matlab.unittest.TestCase
             V(56:95,  11:66, 2) = 8;
             opts = struct('absOverlapPixels', 800);
 
-            [~, gateOff] = utils.stitchInstances2Dto3D(V, opts);
+            [~, gateOff] = utils.instances.stitch2Dto3D(V, opts);
             opts.maxCentroidShift = 5;   % the centroids are ~35 px apart
-            [~, gateOn] = utils.stitchInstances2Dto3D(V, opts);
+            [~, gateOn] = utils.instances.stitch2Dto3D(V, opts);
 
             testCase.verifyEqual(gateOff.numOutput3DObjects, 1);
             testCase.verifyEqual(gateOn.numOutput3DObjects, 2, ...
@@ -429,9 +429,9 @@ classdef StitchInstances2Dto3DTest < matlab.unittest.TestCase
             V(5:24,  30:49, 3)   = 2;    % noise: 20x20 on one slice
             V(5:24,  60:79, 4:5) = 3;    % noise: 20x20 on two slices
 
-            [~, keepAll] = utils.stitchInstances2Dto3D(V, struct('minObjectSlices', 0));
-            [~, dropOne] = utils.stitchInstances2Dto3D(V, struct('minObjectSlices', 1));
-            [~, dropTwo] = utils.stitchInstances2Dto3D(V, struct('minObjectSlices', 2));
+            [~, keepAll] = utils.instances.stitch2Dto3D(V, struct('minObjectSlices', 0));
+            [~, dropOne] = utils.instances.stitch2Dto3D(V, struct('minObjectSlices', 1));
+            [~, dropTwo] = utils.instances.stitch2Dto3D(V, struct('minObjectSlices', 2));
             testCase.verifyEqual(keepAll.numOutput3DObjects, 3);
             testCase.verifyEqual(dropOne.numOutput3DObjects, 2, ...
                 'the single-slice detection must go');
@@ -439,7 +439,7 @@ classdef StitchInstances2Dto3DTest < matlab.unittest.TestCase
                 'the two-slice detection must go as well');
 
             % the survivor is the real object, and it is the SMALLEST of the three
-            [labels, stats] = utils.stitchInstances2Dto3D(V, struct('minObjectSlices', 2));
+            [labels, stats] = utils.instances.stitch2Dto3D(V, struct('minObjectSlices', 2));
             testCase.verifyEqual(stats.objectVoxelCounts, 10*10*Z);
             testCase.verifyEqual(unique(labels(labels > 0)), uint16(1));
             testCase.verifyEqual(stats.objectSliceCounts, Z);
@@ -454,14 +454,14 @@ classdef StitchInstances2Dto3DTest < matlab.unittest.TestCase
             V(10:20, 10:20, 3) = 9;      % slice 2 is empty - a dropout
 
             opts = struct('zLookback', 2);
-            [~, bridged] = utils.stitchInstances2Dto3D(V, opts);
+            [~, bridged] = utils.instances.stitch2Dto3D(V, opts);
             testCase.verifyEqual(bridged.numOutput3DObjects, 1, ...
                 'zLookback must bridge the dropout for this test to mean anything');
 
             opts.minObjectSlices = 1;
-            [~, keptAt1] = utils.stitchInstances2Dto3D(V, opts);
+            [~, keptAt1] = utils.instances.stitch2Dto3D(V, opts);
             opts.minObjectSlices = 2;
-            [~, goneAt2] = utils.stitchInstances2Dto3D(V, opts);
+            [~, goneAt2] = utils.instances.stitch2Dto3D(V, opts);
             testCase.verifyEqual(keptAt1.numOutput3DObjects, 1);
             testCase.verifyEqual(goneAt2.numOutput3DObjects, 0);
         end
@@ -492,12 +492,12 @@ classdef StitchInstances2Dto3DTest < matlab.unittest.TestCase
                 V(:, :, z) = slice;
             end
 
-            [~, statsSplit] = utils.stitchInstances2Dto3D(V);   % default: on
+            [~, statsSplit] = utils.instances.stitch2Dto3D(V);   % default: on
             testCase.verifyEqual(statsSplit.numOutput3DObjects, 3, ...
                 'each column must stay its own 3D object');
             testCase.verifyEqual(statsSplit.numInput2DObjects, 3*Z);
 
-            [~, statsWhole] = utils.stitchInstances2Dto3D(V, ...
+            [~, statsWhole] = utils.instances.stitch2Dto3D(V, ...
                 struct('splitDisconnected2D', false));
             testCase.verifyEqual(statsWhole.numOutput3DObjects, 1, ...
                 'index-keyed nodes are expected to cascade - this is what the split fixes');
@@ -513,9 +513,9 @@ classdef StitchInstances2Dto3DTest < matlab.unittest.TestCase
             V(10:20, 5:15,  :) = 3;
             V(10:20, 40:50, :) = 3;
 
-            [~, statsOff] = utils.stitchInstances2Dto3D(V, ...
+            [~, statsOff] = utils.instances.stitch2Dto3D(V, ...
                 struct('splitDisconnected2D', false));
-            [~, statsOn]  = utils.stitchInstances2Dto3D(V);
+            [~, statsOn]  = utils.instances.stitch2Dto3D(V);
 
             testCase.verifyEqual(statsOff.numOutput3DObjects, 1);
             testCase.verifyEqual(statsOn.numOutput3DObjects, 2);
@@ -538,13 +538,13 @@ classdef StitchInstances2Dto3DTest < matlab.unittest.TestCase
             end
             V(14:15, 15, 3) = 777;              % 2 px of a foreign index inside
 
-            [~, plain] = utils.stitchInstances2Dto3D(V, struct('absorbFragmentVoxels', 0));
+            [~, plain] = utils.instances.stitch2Dto3D(V, struct('absorbFragmentVoxels', 0));
             testCase.verifyEqual(plain.numOutput3DObjects, 2, ...
                 'with absorption off the speck survives as its own object');
             testCase.verifyEqual(sort(plain.objectVoxelCounts), [2; 11*11*Z - 2]);
             testCase.verifyEqual(plain.numAbsorbedFragments, 0);
 
-            [labels, absorbed] = utils.stitchInstances2Dto3D(V, ...
+            [labels, absorbed] = utils.instances.stitch2Dto3D(V, ...
                 struct('absorbFragmentVoxels', 2));
             testCase.verifyEqual(absorbed.numOutput3DObjects, 1, ...
                 'the speck must rejoin the object it sits inside');
@@ -569,16 +569,16 @@ classdef StitchInstances2Dto3DTest < matlab.unittest.TestCase
             V(5:15, 5:15, 4:5) = 8;     % object B, same footprint, 2 slices away
             V(10:11, 10, 3)    = 42;    % 2 px bridging them, slice 3 otherwise empty
 
-            [~, plain] = utils.stitchInstances2Dto3D(V, struct('absorbFragmentVoxels', 0));
+            [~, plain] = utils.instances.stitch2Dto3D(V, struct('absorbFragmentVoxels', 0));
             testCase.verifyEqual(plain.numOutput3DObjects, 3, ...
                 'A, B and the speck must start out as three objects');
 
-            [~, welded] = utils.stitchInstances2Dto3D(V, ...
+            [~, welded] = utils.instances.stitch2Dto3D(V, ...
                 struct('minOverlapPixels', 1, 'absorbFragmentVoxels', 0));
             testCase.verifyEqual(welded.numOutput3DObjects, 1, ...
                 'relaxing the link guard is expected to weld A and B - the trap being avoided');
 
-            [~, absorbed] = utils.stitchInstances2Dto3D(V, ...
+            [~, absorbed] = utils.instances.stitch2Dto3D(V, ...
                 struct('absorbFragmentVoxels', 2));
             testCase.verifyEqual(absorbed.numOutput3DObjects, 3, ...
                 'absorption must leave A and B apart, and the neighbourless speck alone');
@@ -596,10 +596,10 @@ classdef StitchInstances2Dto3DTest < matlab.unittest.TestCase
             V(35, 35, 2)     = 60;   % two 1-px specks touching only each other
             V(35, 36, 2)     = 61;
 
-            [~, plain] = utils.stitchInstances2Dto3D(V, struct('absorbFragmentVoxels', 0));
+            [~, plain] = utils.instances.stitch2Dto3D(V, struct('absorbFragmentVoxels', 0));
             testCase.verifyEqual(plain.numOutput3DObjects, 4);
 
-            [~, absorbed] = utils.stitchInstances2Dto3D(V, ...
+            [~, absorbed] = utils.instances.stitch2Dto3D(V, ...
                 struct('absorbFragmentVoxels', 2));
             testCase.verifyEqual(absorbed.numOutput3DObjects, 3, ...
                 'only the rim speck has a surviving neighbour to join');
@@ -658,7 +658,7 @@ classdef StitchInstances2Dto3DTest < matlab.unittest.TestCase
             V = StitchInstances2Dto3DTest.readSliceFolder( ...
                 fullfile(benchmarkDir, 'easy', 'slices_2d_objects'), size(gt));
 
-            [L, stats] = utils.stitchInstances2Dto3D(V, struct('method', 'graph'));
+            [L, stats] = utils.instances.stitch2Dto3D(V, struct('method', 'graph'));
             m = mibtest.helpers.instanceStitchMetrics(L, gt);
 
             % Measured baseline: 2707 2D objects -> 33 3D instances, exact.
@@ -692,7 +692,7 @@ classdef StitchInstances2Dto3DTest < matlab.unittest.TestCase
                 fullfile(benchmarkDir, 'hard', 'slices_2d_objects'), size(gt));
 
             opt = struct('method', 'graph', 'minObjectVoxels', 200, 'zLookback', 2);
-            [L, ~] = utils.stitchInstances2Dto3D(V, opt);
+            [L, ~] = utils.instances.stitch2Dto3D(V, opt);
             clear V;
             m = mibtest.helpers.instanceStitchMetrics(L, gt);
 

@@ -202,13 +202,16 @@ dropdown of the *Instance segmentation* subpanel in the Predict tab:
   (intersection-over-union test). Objects larger than the overlap are detected piecewise and
   merged, so only the band width matters — use this mode when objects may exceed the overlap.
 
-The detection confidence threshold and the merge IoU/IoA thresholds are configured with the
-subpanel's *Settings* button — see the
+The detection confidence threshold, the merge IoU/IoA thresholds and the minimal object area are
+configured with the subpanel's *Settings* button — see the
 [Predict tab](deepmib-predict.md#instance-segmentation-subpanel) for details.
 
 The result is written as a MIB `.model` file under
 `3_Results/PredictionImages/ResultsModels`, in which **every object instance is a unique index**
-(background `0`), matching the input labelling convention.
+(background `0`), matching the input labelling convention. Two objects that are separated in the
+image never share an index: in both overlap modes each index is finally split into its separate
+objects, and components below <span class="widget widget-edit">Minimal object area, pixels</span>
+are discarded.
 
 Both 2D images and z-stacks may be used as prediction images, exactly as in the *2D Semantic*
 workflow:

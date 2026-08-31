@@ -1,4 +1,4 @@
-# 2D→3D Instance Stitching — `utils.stitchInstances2Dto3D`
+# 2D→3D Instance Stitching — `utils.instances.stitch2Dto3D`
 
 > Deferred DeepMIB ideas (checkpoint weight averaging, two-phase freeze/unfreeze training) are
 > collected in [`potential_improvements.md`](potential_improvements.md).
@@ -8,7 +8,7 @@ First building block of the **3D instance segmentation** roadmap in
 Implements step 2 of that roadmap: linking independently-segmented 2D instance masks across
 adjacent slices into consistent 3D object IDs.
 
-- **Function:** `mib/+utils/stitchInstances2Dto3D.m` (standalone utility, **not yet wired into
+- **Function:** `mib/+utils/+instances/stitch2Dto3D.m` (standalone utility, **not yet wired into
   MIB/DeepMIB** — pure `[H×W×Z]` label-volume in, relabelled `[H×W×Z]` volume out).
 - **Source spec:** `d:\CNN\SOLOv2_Implementation\MitoNet_benchmark\examples\2Dto3D_stitching_algorithm_spec.md`
   (empanada / MitoNet — Conrad & Narayan, 2023).
@@ -267,7 +267,7 @@ perfectly despite scrambled input IDs. `zLookback=2` on hard bridges dropouts (2
      protocols; verified that Ctrl+Z restores the exact pre-stitch model); and an **indeterminate**
      progress dialog (the graph-building pass has no fine-grained progress to report).
    - `mib/+core/@MibDataset/stitchModelInstances.m` — per-timepoint read (`getData3D('labels',…)`)
-     → `utils.stitchInstances2Dto3D` → rebuild `core.MibLabels` at 65535/4294967295 capacity
+     → `utils.instances.stitch2Dto3D` → rebuild `core.MibLabels` at 65535/4294967295 capacity
      (mirrors the indexed-object branch of `convertModel`).
 
    Verified end-to-end headless (via `buildSyntheticModel`-style harness): a 60-slice easy subset

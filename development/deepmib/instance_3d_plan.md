@@ -1,4 +1,4 @@
-# 3D Instance Stitching — Improvement Plan (`utils.stitchInstances2Dto3D`)
+# 3D Instance Stitching — Improvement Plan (`utils.instances.stitch2Dto3D`)
 
 > Deferred DeepMIB ideas (checkpoint weight averaging, two-phase freeze/unfreeze training,
 > per-object score export and score-guided gap bridging) are collected in
@@ -11,7 +11,7 @@ questions raised for the wider 3D phase and lays out an efficient, measurement-d
 
 ## Current state (verified 2026-07)
 
-- **Utility:** `mib/+utils/stitchInstances2Dto3D.m` — `[H×W×Z]` label volume in/out, `'graph'`
+- **Utility:** `mib/+utils/+instances/stitch2Dto3D.m` — `[H×W×Z]` label volume in/out, `'graph'`
   (union-find over an undirected overlap graph) default, `'hungarian'` kept for paper-faithful
   comparison. Validated once (easy set: 2707→33, median IoU 1.000 vs 3D GT; hard set: 13923→206).
 - **MIB path is fully wired** (not pending): ribbon → `MibModel.stitchModelInstances`
@@ -87,7 +87,7 @@ single-timepoint labels volume no longer fits comfortably in RAM.
 - Deliverable: a red/green signal for correctness + the merge/split counts.
 
 ### Phase B — Anisotropy  *(highest value)*
-- `utils.stitchInstances2Dto3D`: add `options.anisotropyZ` (default `1`, backward-compatible) and
+- `utils.instances.stitch2Dto3D`: add `options.anisotropyZ` (default `1`, backward-compatible) and
   `options.maxCentroidShift` (default `Inf` = off). Scale `iouThreshold` down with `anisotropyZ`,
   weight toward IoA, and gate links on centroid displacement (accumulate centroids in
   `localLinkPair` next to the existing area accumulators).
@@ -109,7 +109,7 @@ single-timepoint labels volume no longer fits comfortably in RAM.
 
 ## Key files
 - New: `tests/utils/StitchInstances2Dto3DTest.m`, `tests/+mibtest/+helpers/instanceStitchMetrics.m`.
-- Edit (Phase B): `mib/+utils/stitchInstances2Dto3D.m`,
+- Edit (Phase B): `mib/+utils/+instances/stitch2Dto3D.m`,
   `mib/+core/@MibDataset/stitchModelInstances.m`, `mib/+models/@MibModel/stitchModelInstances.m`;
   docs in `docs_api/` + `docs/` per repo doc rules.
 - Shared settings dialog: `mib/+utils/+dlgs/stitchInstancesSettingsDlg.m` - **add any new stitching
@@ -124,7 +124,7 @@ single-timepoint labels volume no longer fits comfortably in RAM.
   Test-data note: GT objects are placed on a **non-overlapping grid** — the "no false merge"
   invariant only holds when GT objects are spatially disjoint.
 - **Phase B — done.** Anisotropy support:
-  - `utils.stitchInstances2Dto3D` — new `anisotropyZ` (relaxes effective IoU to
+  - `utils.instances.stitch2Dto3D` — new `anisotropyZ` (relaxes effective IoU to
     `max(iouThreshold/anisotropyZ, iouFloor)`, IoA left unchanged), `iouFloor`, and
     `maxCentroidShift` (centroid-distance gate, scaled by the slice gap). Applies to both `graph`
     and `hungarian`. Defaults (`anisotropyZ=1`, `maxCentroidShift=Inf`) are fully backward-compatible.
@@ -284,7 +284,7 @@ single-timepoint labels volume no longer fits comfortably in RAM.
   `startPredictionInstances` - a separate UI bug.
 - **Cancellation + faster MibDeep dialog — 2026-08-24.** Both entry points can now stop a running
   stitch, and the "Merge 2D to 3D" settings dialog opens immediately.
-  - `utils.stitchInstances2Dto3D` takes an optional 3rd argument `wb` (a caller-owned
+  - `utils.instances.stitch2Dto3D` takes an optional 3rd argument `wb` (a caller-owned
     `uiprogressdlg`): it writes the phase and slice counter to `wb.Message` and polls
     `wb.CancelRequested` in every per-slice loop plus the fragment-absorption loop. On cancel it
     returns `labelVol = []` and `stats.cancelled = true` - deliberately no partial volume, which

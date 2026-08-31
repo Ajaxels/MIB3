@@ -165,7 +165,7 @@ point - in most cases only the cleanup settings need adjusting.
 
 !!! warning "Most objects came out as one giant object"
     That is the signature of per-slice indices shared by several unconnected blobs, and no
-    threshold will fix it — each shared index welds its blobs' 3D objects together, and the welds
+    threshold will fix it - each shared index welds its blobs' 3D objects together, and the welds
     chain from slice to slice until most of the stack is a single instance. Keep
     **Split disconnected 2D objects** enabled. To confirm the input is affected, compare the number
     of indices on a slice against the number of separate blobs:
@@ -531,6 +531,79 @@ Renders the model in Imaris. Requires Imaris and ImarisXT (see [System Requireme
 - [:fontawesome-brands-youtube:{.red-color} With ImarisXT](https://youtu.be/yODGYJUzTr0)
 
 The rendered material is specified in the Materials list of the [Segmentation Panel](../../panels/segm/index.md).
+
+<div class="clear-float"></div>
+
+---
+
+### Instance editor
+
+Corrects individual objects of an instance model by hand: splitting one object into two, merging
+several into one, bridging a gap between two halves of the same object, and deleting false
+detections.
+
+It is the proofreading step after **Stitch 2D instances to 3D**. Automatic stitching leaves errors
+that no threshold can remove - two objects that genuinely overlap across many slices are fused, and
+one object that breaks in two far apart in Z stays two - and those are repaired here.
+
+Requires an instance model (65535 or 4294967295 materials), where every object has its own index.
+
+<div class="h4-like">2D and 3D</div>
+
+<span class="widget widget-checkbox">3D (whole object)</span> decides what an operation reaches. With it off, everything is confined to the shown slice, and the list follows: it names the objects on that slice and gives their area on it.
+
+This is the mode for a model that has not been stitched into 3D yet. There the numbering starts again from 1 on every slice, so the same number is a different object on each one - which is why the list cannot describe the whole stack at once, and why objects picked on one slice are dropped when the list moves to another.
+
+Moving to another slice re-reads the list. On a large stack, turn <span class="widget widget-checkbox">Update the list on slice change</span> off and press <span class="widget widget-button">Update list</span> when you need it; until then the status line says which slice the list is describing.
+
+<div class="h4-like">Choosing the objects to work on</div>
+
+Objects can be picked from the list, or with
+<span class="widget widget-checkbox">Pick objects by clicking</span>, which lets you click them
+directly in the Image View panel. While clicking, a plain <mouse class="left"></mouse> starts a new
+selection, ++shift++ adds an object to it and ++ctrl++ takes one out. Panning with
+<mouse class="right"></mouse> keeps working as usual. Whatever is picked is shown in the Selection
+layer, so you can see what you are about to change before you change it.
+
+To take an object back out of the list of selected objects, highlight it there and right-click for
+<span class="widget widget-button">Remove highlighted from selection</span>. The selection is emptied
+by itself after an operation, ready for the next one.
+
+Selecting a single object in the list also moves the view to it, so an object can be found from its
+number alone; in 2D the view stays on the current slice. Use **jump to index** to reach an object
+that the list does not currently show.
+
+<div class="h4-like">Operations</div>
+
+| Operation | Description |
+|-----------|-------------|
+| **Merge** | Joins the selected objects into one. The result takes the **smallest** of their indices; the others become free. |
+| **Split components** | Breaks each selected object into its separate pieces. The largest piece keeps the index, every other piece gets a new one. Use it when one index covers two things that do not touch. |
+| **Split by selection** | Removes whatever is in the Selection layer from the object, then splits what is left. This is the one to use after drawing a break with the brush - see below. |
+| **Cut at slice** | Splits the object along Z: everything from the shown slice onwards becomes a new object. Use it on an object that runs correctly for a while and then continues into a neighbour. |
+| **Connect** | Joins two objects that belong together but are separated by a gap in Z, filling the gap between them. `interpolate` morphs between their two facing cross-sections; `selection` uses whatever is in the Selection layer instead, for a gap whose shape cannot be guessed. Only empty space is filled, so an object lying between the two is never overwritten. |
+| **Delete** | Removes the selected objects. |
+| **Cleanup** | Applies the same noise filters as the stitching dialog to the whole model, without re-stitching it. Object numbers are left alone. |
+| **Compact** | Renumbers every object to a continuous 1, 2, 3... after deletes and splits have left gaps. **All object numbers change.** |
+
+Every operation can be undone with ++ctrl+z++.
+
+!!! tip "Splitting an object with the brush"
+    The most direct way to split an object is to draw the break yourself:
+
+    1. Brush the break into the Selection layer where the object should be cut. In 3D, brush it on a
+       few slices and press ++i++ to interpolate between them.
+    2. Press <span class="widget widget-button">Split by selection</span>.
+
+    The brushed area is cleared out of the object and the two halves become separate objects, in a
+    single undoable step.
+
+!!! note "Rebuilding the list"
+    The object list is built once and then kept up to date as you edit, which is what keeps the tool
+    responsive on models with thousands of objects. Changing the model with another tool - a brush
+    stroke, an undo - leaves it out of date, and the status line says so. The next operation rebuilds
+    it before doing anything, so nothing can be applied to stale information; press
+    <span class="widget widget-button">Rebuild</span> to refresh the list without waiting for that.
 
 <div class="clear-float"></div>
 

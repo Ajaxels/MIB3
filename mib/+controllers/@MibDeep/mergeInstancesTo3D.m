@@ -11,7 +11,7 @@ function mergeInstancesTo3D(obj)
 % ``ResultingImagesDir/PredictionImages/ResultsModels``) and stitches their slices
 % into 3D instance models: objects overlapping between neighbouring slices are
 % linked into one 3D instance with a consistent index through the whole stack
-% (via :func:`utils.stitchInstances2Dto3D`).
+% (via :func:`utils.instances.stitch2Dto3D`).
 %
 % Two layouts of the prediction results are recognized automatically from the
 % depth of the first model file:
@@ -268,7 +268,7 @@ for jobId = 1:numJobs
     wb.Indeterminate = 'on';
     wb.Message = sprintf('Stitching 2D instances into 3D objects (%d of %d), please wait...', jobId, numJobs);
     try
-        [labelVol, stats] = utils.stitchInstances2Dto3D(inputVol, stitchOptions, wb);
+        [labelVol, stats] = utils.instances.stitch2Dto3D(inputVol, stitchOptions, wb);
     catch err
         delete(wb);
         utils.dlgs.showErrorDialog(obj.view.gui, err, 'Merge instances to 3D');

@@ -10,7 +10,7 @@ classdef FakeProgressDialog < handle
 %   .. code-block:: matlab
 %
 %      wb = mibtest.helpers.FakeProgressDialog(20);   % cancel on the 21st poll
-%      [labels, stats] = utils.stitchInstances2Dto3D(volume, options, wb);
+%      [labels, stats] = utils.instances.stitch2Dto3D(volume, options, wb);
 %      testCase.verifyTrue(stats.cancelled);
 %      testCase.verifyEmpty(labels);
 %
@@ -21,7 +21,7 @@ classdef FakeProgressDialog < handle
 % Handle semantics are required: the function under test writes ``Message`` and
 % the poll counter has to survive across calls.
 %
-% See also: mibtest.helpers.FakeWidget, utils.stitchInstances2Dto3D
+% See also: mibtest.helpers.FakeWidget, utils.instances.stitch2Dto3D
 
     properties
         Message = ''

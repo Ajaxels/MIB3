@@ -125,6 +125,7 @@ if false
     views.ImageArithmeticsGUI;
     views.ImageFiltersGUI;
     views.ImageFrameGUI;
+    views.InstanceEditorGUI;
     views.Lines3dDialog;
     views.MakeMovieGUI;
     views.MeasureToolGUI;

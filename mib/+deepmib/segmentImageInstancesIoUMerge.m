@@ -38,17 +38,32 @@ function labelMap = segmentImageInstancesIoUMerge(img, net, options)
 %       in-band IoU exceeds this
 %     - ``.ioaThreshold`` - *(optional, default 0.8)* link when the in-band intersection
 %       over the smaller in-band area exceeds this (catches a truncated fragment fully
-%       contained in the neighbour's complete mask)
+%       contained in the neighbour's complete mask). Applied **only** when the smaller
+%       detection is itself truncated by its tile, see the note below
 %     - ``.minOverlapPixels`` - *(optional, default 5)* absolute minimum in-band
 %       intersection to consider a link, guards against spurious 1-2 px overlaps
+%     - ``.minSplitArea`` - *(optional, default 100)* after painting, each label is split
+%       into its connected components so that one index never covers two separate objects;
+%       components smaller than this many pixels are dropped as speckle. Set to 0 to keep
+%       every component
 %     - ``.segmentFcn`` - *(optional)* ``[masks, labels, scores] = fcn(tileImg)`` override
 %       of the ``segmentObjects`` call, used by unit tests to validate the stitching
 %       without a trained network
 %
+% Why the IoA criterion is restricted to truncated detections:
+% SOLOv2 occasionally returns a single detection whose mask spans two neighbouring objects.
+% Containment (IoA) is 1.0 for every smaller detection that falls inside such a mask, no
+% matter how little of it that explains, so an unrestricted IoA link lets one spanning
+% detection bridge two unrelated objects through the union-find - measured on a mitochondria
+% dataset, this welded objects up to 500 px apart and hid ~3-5% of all instances. IoA exists
+% only to rescue a fragment cut off by a tile edge, and such a fragment always touches its
+% own tile extent; a detection lying clear of the tile border is a different object, not a
+% truncation, so for it only the symmetric IoU criterion applies.
+%
 % Output Arguments:
-%   - **labelMap** - ``[height, width] uint32`` instance label map (background 0); IDs are
-%     one per merged group but not guaranteed contiguous after overlap-conflict painting -
-%     the caller is expected to relabel to 1..N (as startPredictionInstances does)
+%   - **labelMap** - ``[height, width] uint32`` instance label map (background 0). Each ID
+%     is exactly one connected object; the final component split also renumbers the IDs to
+%     1..N, so the relabelling the caller does (startPredictionInstances) is a no-op here
 
 % Updates
 %
@@ -56,6 +71,7 @@ function labelMap = segmentImageInstancesIoUMerge(img, net, options)
 if ~isfield(options, 'iouThreshold');     options.iouThreshold = 0.5; end
 if ~isfield(options, 'ioaThreshold');     options.ioaThreshold = 0.8; end
 if ~isfield(options, 'minOverlapPixels'); options.minOverlapPixels = 5; end
+if ~isfield(options, 'minSplitArea');     options.minSplitArea = 100; end
 if ~isfield(options, 'segmentFcn')
     options.segmentFcn = @(tileImg) segmentObjects(net, tileImg, ...
         'Threshold', options.threshold, ...
@@ -85,6 +101,7 @@ tileWidth  = coreSize(2) + 2*borderSize(2);
 detBBox = zeros(0, 4);      % [ymin ymax xmin xmax] in original image coordinates
 detMask = {};               % cropped logical masks matching detBBox
 detScore = zeros(0, 1);
+detTruncated = false(0, 1); % the mask runs into its own tile extent, i.e. the object is cut
 tileDetIds = cell(numTileRows, numTileCols);    % detection indices per tile
 tileExtent = cell(numTileRows, numTileCols);    % clipped tile extent [ymin ymax xmin xmax]
 
@@ -119,6 +136,14 @@ for tileRow = 1:numTileRows
                                  boxCol1+localCol1-1+offsetX, boxCol2+localCol1-1+offsetX]; %#ok<AGROW>
             detMask{end+1, 1} = maskInImage(boxRow1:boxRow2, boxCol1:boxCol2); %#ok<AGROW>
             detScore(end+1, 1) = scores(maskId); %#ok<AGROW>
+            % a detection reaching the edge of its own tile extent is cut by that edge, so
+            % it may be only a fragment of an object the neighbouring tile sees in full;
+            % edges that coincide with the image border do not truncate anything
+            extent = tileExtent{tileRow, tileCol};
+            bbox = detBBox(end, :);
+            detTruncated(end+1, 1) = ...
+                (bbox(1) <= extent(1) && extent(1) > 1) || (bbox(2) >= extent(2) && extent(2) < imgHeight) || ...
+                (bbox(3) <= extent(3) && extent(3) > 1) || (bbox(4) >= extent(4) && extent(4) < imgWidth); %#ok<AGROW>
             tileDetIds{tileRow, tileCol}(end+1) = size(detBBox, 1);
         end
     end
@@ -166,7 +191,12 @@ for tileRow = 1:numTileRows
                         if interArea < options.minOverlapPixels; continue; end
                         iou = interArea / (areaA + areaB - interArea);
                         ioa = interArea / min(areaA, areaB);
-                        if iou >= options.iouThreshold || ioa >= options.ioaThreshold
+                        % containment only means "same object" when the contained detection
+                        % is a truncated fragment; otherwise a mask spanning two objects
+                        % scores ioa = 1 against both and bridges them (see the note above)
+                        if areaA <= areaB; smallerDet = detA; else; smallerDet = detB; end
+                        if iou >= options.iouThreshold || ...
+                                (detTruncated(smallerDet) && ioa >= options.ioaThreshold)
                             parent = localUnion(parent, detA, detB);
                         end
                     end
@@ -187,6 +217,15 @@ for detId = paintOrder'
     region(detMask{detId}) = uint32(groupId(detId));
     labelMap(box(1):box(2), box(3):box(4)) = region;
 end
+
+% -- Pass 4: one index per connected object
+% A group can still cover several separate objects: a single detection whose mask spans two
+% of them needs no link at all to do it, and painting can cut a group in two when a stronger
+% group overwrites the pixels that joined it. Splitting each label into its connected
+% components makes the count right in both cases; the tiny leftovers this exposes are
+% thresholding speckle rather than objects, so they are dropped.
+labelMap = uint32(utils.instances.splitDisconnected(labelMap, ...
+    struct('connectivity', 8, 'minObjectPixels', options.minSplitArea)));
 end
 
 % =====================================================================

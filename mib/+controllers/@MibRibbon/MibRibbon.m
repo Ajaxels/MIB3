@@ -299,6 +299,8 @@ classdef MibRibbon
             obj.handles.ribbonModel.renderMatlabVolView.ItemPushedFcn = @obj.model_Callbacks;
             obj.handles.ribbonModel.renderFiji.ItemPushedFcn = @obj.model_Callbacks;
             obj.handles.ribbonModel.renderImaris.ItemPushedFcn = @obj.model_Callbacks;
+            % Instance editor
+            obj.handles.ribbonModel.instanceEditor.ButtonPushedFcn = @obj.model_Callbacks;
             % Quantification
             obj.handles.ribbonModel.quantification.ButtonPushedFcn = @obj.model_Callbacks;            
         end

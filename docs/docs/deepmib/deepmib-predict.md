@@ -98,7 +98,8 @@ The ![Settings button](images/DeepLearningTrainSettingsBtn.png){.inline-image} b
 
 * <span class="widget widget-edit">Detection confidence threshold (0-1)</span> — minimal confidence score for a detected instance to be kept (both overlap modes); decrease to detect more (weaker) objects, increase to keep only confident detections (default: `0.5`)  
 * <span class="widget widget-edit">Merge IoU threshold (0-1)</span> — (*IoU merge* only) merge detections of neighbouring tiles when the intersection-over-union of their masks within the shared overlap band exceeds this value; decrease when objects get split at tile seams, increase when distinct touching objects get merged (default: `0.5`)  
-* <span class="widget widget-edit">Merge IoA threshold (0-1)</span> — (*IoU merge* only) additionally merge when the intersection over the smaller in-band mask area exceeds this value, catching a truncated fragment fully contained in the neighbouring tile's complete mask (default: `0.8`)  
+* <span class="widget widget-edit">Merge IoA threshold (0-1)</span> - (*IoU merge* only) additionally merge when the intersection over the smaller in-band mask area exceeds this value, catching a truncated fragment fully contained in the neighbouring tile's complete mask; applied only to fragments that are really cut by a tile edge (default: `0.8`)  
+* <span class="widget widget-edit">Minimal object area, pixels</span> - (both overlap modes) after stitching, each index is split into its separate objects so that two isolated objects never share one index; components smaller than this are discarded as speckle, set to `0` to keep every component (default: `100`)  
 
 <span class="widget widget-button">Merge 2D to 3D</span> stitches the predicted instance models in
 `3_Results/PredictionImages/ResultsModels` into 3D instance models, linking objects that overlap

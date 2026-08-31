@@ -1,12 +1,12 @@
-function [labelVol, stats] = stitchInstances2Dto3D(inputVol, options, wb)
-% STITCHINSTANCES2DTO3D - Stitch per-slice 2D instance labels into a 3D instance volume.
+function [labelVol, stats] = stitch2Dto3D(inputVol, options, wb)
+% STITCH2DTO3D - Stitch per-slice 2D instance labels into a 3D instance volume.
 %
 % Syntax:
 %   .. code-block:: matlab
 %
-%       labelVol = utils.stitchInstances2Dto3D(inputVol)
-%       [labelVol, stats] = utils.stitchInstances2Dto3D(inputVol, options)
-%       [labelVol, stats] = utils.stitchInstances2Dto3D(inputVol, options, wb)
+%       labelVol = utils.instances.stitch2Dto3D(inputVol)
+%       [labelVol, stats] = utils.instances.stitch2Dto3D(inputVol, options)
+%       [labelVol, stats] = utils.instances.stitch2Dto3D(inputVol, options, wb)
 %
 % Given a stack of independently generated 2D instance segmentations (one
 % label map per z-slice, object IDs **not** consistent across slices), link
@@ -152,13 +152,13 @@ function [labelVol, stats] = stitchInstances2Dto3D(inputVol, options, wb)
 %      V = zeros(h, w, numel(files), 'uint16');
 %      for z = 1:numel(files); V(:,:,z) = imread(fullfile(folder, files(z).name)); end
 %      opt.iouThreshold = 0.25;
-%      L = utils.stitchInstances2Dto3D(V, opt);
+%      L = utils.instances.stitch2Dto3D(V, opt);
 %
 % **Example 2** - default one-liner on an in-memory stack, then inspect stats:
 %
 %   .. code-block:: matlab
 %
-%      [L, stats] = utils.stitchInstances2Dto3D(V);
+%      [L, stats] = utils.instances.stitch2Dto3D(V);
 %      fprintf('%d 2D objects -> %d 3D instances\n', ...
 %          stats.numInput2DObjects, stats.numOutput3DObjects);
 %      histogram(stats.objectVoxelCounts);   % 3D object size distribution
@@ -169,7 +169,7 @@ function [labelVol, stats] = stitchInstances2Dto3D(inputVol, options, wb)
 %   .. code-block:: matlab
 %
 %      opt = struct('minObjectVoxels', 200, 'verbose', true);
-%      L = utils.stitchInstances2Dto3D(V, opt);   % objects < 200 voxels removed
+%      L = utils.instances.stitch2Dto3D(V, opt);   % objects < 200 voxels removed
 %
 %   A false detection can be large in-plane yet live on one slice only, which no
 %   voxel count will catch. Add a depth threshold for those:
@@ -177,7 +177,7 @@ function [labelVol, stats] = stitchInstances2Dto3D(inputVol, options, wb)
 %   .. code-block:: matlab
 %
 %      opt.minObjectSlices = 2;   % also drop anything seen on 1 or 2 slices
-%      L = utils.stitchInstances2Dto3D(V, opt);
+%      L = utils.instances.stitch2Dto3D(V, opt);
 %
 %   Specks that sit *inside* a real object should be given back to it rather than
 %   deleted, which would leave a hole:
@@ -185,7 +185,7 @@ function [labelVol, stats] = stitchInstances2Dto3D(inputVol, options, wb)
 %   .. code-block:: matlab
 %
 %      opt.absorbFragmentVoxels = 4;   % <=4-voxel objects join their neighbour
-%      [L, stats] = utils.stitchInstances2Dto3D(V, opt);
+%      [L, stats] = utils.instances.stitch2Dto3D(V, opt);
 %      fprintf('%d fragments absorbed (%d voxels)\n', ...
 %          stats.numAbsorbedFragments, stats.numAbsorbedVoxels);
 %
@@ -196,7 +196,7 @@ function [labelVol, stats] = stitchInstances2Dto3D(inputVol, options, wb)
 %
 %      opt.zLookback = 2;          % test slices z-1 and z-2 against z
 %      opt.ioaThreshold = 0.4;     % looser containment test for thin bridges
-%      L = utils.stitchInstances2Dto3D(V, opt);
+%      L = utils.instances.stitch2Dto3D(V, opt);
 %
 % **Example 5** - faithful empanada-style pipeline (1-to-1 Hungarian matching
 % + IoA merge-in, forward and reverse passes) for comparison against ``'graph'``:
@@ -205,7 +205,7 @@ function [labelVol, stats] = stitchInstances2Dto3D(inputVol, options, wb)
 %
 %      opt = struct('method', 'hungarian', 'bidirectional', true, ...
 %                   'iouThreshold', 0.25, 'ioaThreshold', 0.5);
-%      Lh = utils.stitchInstances2Dto3D(V, opt);
+%      Lh = utils.instances.stitch2Dto3D(V, opt);
 %
 % **Example 6** - apply to the active MIB dataset's labels layer (once wired
 % into MIB, this is the intended call site):
@@ -214,7 +214,7 @@ function [labelVol, stats] = stitchInstances2Dto3D(inputVol, options, wb)
 %
 %      id = obj.mibModel.getActiveId();
 %      V  = obj.mibModel.getData3D('labels', [], 3, NaN, struct('id', id));
-%      L  = utils.stitchInstances2Dto3D(V{1});
+%      L  = utils.instances.stitch2Dto3D(V{1});
 %      obj.mibModel.setData3D({L}, 'labels', [], 3, NaN, struct('id', id));
 %      notify(obj.mibModel, 'ShowImage');
 %
@@ -225,7 +225,7 @@ function [labelVol, stats] = stitchInstances2Dto3D(inputVol, options, wb)
 %
 %      opt = struct('iouThreshold', 0.5, 'ioaThreshold', 1.01, ...
 %                   'minOverlapPixels', 20);   % ioaThreshold>1 disables IoA links
-%      L = utils.stitchInstances2Dto3D(V, opt);
+%      L = utils.instances.stitch2Dto3D(V, opt);
 %
 % **Example 8** - report progress and let the user stop a long stitch:
 %
@@ -233,7 +233,7 @@ function [labelVol, stats] = stitchInstances2Dto3D(inputVol, options, wb)
 %
 %      wb = uiprogressdlg(parentFigure, 'Title', 'Stitch 2D instances to 3D', ...
 %          'Indeterminate', 'on', 'Cancelable', 'on');
-%      [L, stats] = utils.stitchInstances2Dto3D(V, opt, wb);
+%      [L, stats] = utils.instances.stitch2Dto3D(V, opt, wb);
 %      delete(wb);
 %      if stats.cancelled; return; end   % L is empty, nothing was produced
 
@@ -334,7 +334,7 @@ switch lower(options.method)
             end
         end
     otherwise
-        error('utils:stitchInstances2Dto3D:badMethod', ...
+        error('utils:instances:stitch2Dto3D:badMethod', ...
             'Unknown method "%s" (use "graph" or "hungarian")', options.method);
 end
 localReport(wb, 'Building the 3D instance volume...');
@@ -364,65 +364,32 @@ end
 
 objectVoxelCounts = accumarray(labelVol(labelVol>0), 1, [numObjects 1]);
 
-% -- Optional absorption of dust fragments into the object around them.
-% Runs before the size filters below so that a speck lying inside a real object
-% is given back to it, while a speck floating in the background - which has no
-% neighbour to join - is still left for minObjectVoxels to delete.
-numAbsorbedFragments = 0;
-numAbsorbedVoxels = 0;
-if options.absorbFragmentVoxels > 0
-    localReport(wb,'Absorbing fragments into their neighbours...');
-    [labelVol, objectVoxelCounts, numAbsorbedFragments, numAbsorbedVoxels, cancelled] = ...
-        localAbsorbFragments(labelVol, objectVoxelCounts, options.absorbFragmentVoxels, wb);
-    if cancelled; [labelVol, stats] = localCancelledResult(options); return; end
-end
-
-% -- Optional noise removal (too few voxels and/or too few slices) + relabel
-objectSliceCounts = [];
-keep = objectVoxelCounts > 0;   % a fully absorbed fragment has no voxels left
-if options.minObjectVoxels > 0
-    keep = keep & objectVoxelCounts >= options.minObjectVoxels;
-end
-if options.minObjectSlices > 0
-    % Slices actually occupied, counted per object. A large in-plane false
-    % detection that never propagates is invisible to the voxel threshold.
-    localReport(wb,'Removing objects that span too few slices...');
-    objectSliceCounts = zeros(numObjects, 1);
-    for z = 1:depth
-        if localCancelled(wb); [labelVol, stats] = localCancelledResult(options); return; end
-        plane = labelVol(:,:,z);
-        present = unique(plane(plane > 0));
-        objectSliceCounts(present) = objectSliceCounts(present) + 1;
-    end
-    keep = keep & objectSliceCounts > options.minObjectSlices;
-end
-if ~all(keep)
-    remap = zeros(numObjects, 1);
-    remap(keep) = 1:nnz(keep);
-    nzAll = labelVol > 0;
-    newVals = remap(labelVol(nzAll));
-    labelVol(nzAll) = newVals;
-    numObjects = nnz(keep);
-    objectVoxelCounts = objectVoxelCounts(keep);
-    if ~isempty(objectSliceCounts); objectSliceCounts = objectSliceCounts(keep); end
-    if numObjects <= 65535 && ~isa(labelVol, 'uint16')
-        labelVol = uint16(labelVol);
-    end
-end
+% -- Fragment absorption plus the two size filters, then a relabel to a
+% contiguous 1..K. Shared with the instance editor, which offers the same
+% cleanup on an already-stitched model, so the thresholds behave identically
+% whether they are applied during stitching or afterwards.
+cleanupOptions.absorbFragmentVoxels = options.absorbFragmentVoxels;
+cleanupOptions.minObjectVoxels = options.minObjectVoxels;
+cleanupOptions.minObjectSlices = options.minObjectSlices;
+cleanupOptions.compact = true;
+cleanupOptions.objectVoxelCounts = objectVoxelCounts;
+[labelVol, cleanupStats, cancelled] = utils.instances.cleanup(labelVol, cleanupOptions, wb);
+if cancelled; [labelVol, stats] = localCancelledResult(options); return; end
+numObjects = cleanupStats.numObjects;
 
 stats = struct();
 stats.numInput2DObjects = totalNodes;
 stats.numOutput3DObjects = numObjects;
-stats.objectVoxelCounts = objectVoxelCounts;
-stats.objectSliceCounts = objectSliceCounts;   % empty unless minObjectSlices was used
-stats.numAbsorbedFragments = numAbsorbedFragments;
-stats.numAbsorbedVoxels = numAbsorbedVoxels;
+stats.objectVoxelCounts = cleanupStats.objectVoxelCounts;
+stats.objectSliceCounts = cleanupStats.objectSliceCounts;   % empty unless minObjectSlices was used
+stats.numAbsorbedFragments = cleanupStats.numAbsorbedFragments;
+stats.numAbsorbedVoxels = cleanupStats.numAbsorbedVoxels;
 stats.cancelled = false;
 stats.method = options.method;
 stats.options = options;
 
 if options.verbose
-    fprintf('stitchInstances2Dto3D: %d 2D objects across %d slices -> %d 3D instances (method=%s)\n', ...
+    fprintf('stitch2Dto3D: %d 2D objects across %d slices -> %d 3D instances (method=%s)\n', ...
         totalNodes, depth, numObjects, options.method);
 end
 end
@@ -491,73 +458,6 @@ for k = 1:n
 end
 compact = split;
 n = next;
-end
-
-% =====================================================================
-function [labelVol, voxelCounts, numFragments, numVoxels, cancelled] = localAbsorbFragments(labelVol, voxelCounts, maxFragmentVoxels, wb)
-% Give the voxels of dust objects to the object surrounding them in-plane.
-%
-% Deliberately a *voxel* operation, run after the union-find is finished, not
-% another link rule: a 2-voxel speck that lies over object A on one slice and
-% under object B on the next would, as a graph link, weld A and B into one
-% object. Reassigning its voxels instead cannot join anything - each group of
-% voxels is decided on its own slice, by its own neighbours.
-%
-% A fragment is absorbed into the majority label among its 8-neighbours on that
-% slice, counting only objects that are not themselves fragments, so absorption
-% never chains from one speck to the next. A fragment with no such neighbour
-% (floating in the background) keeps its voxels and stays an object.
-
-numFragments = 0;
-numVoxels = 0;
-cancelled = false;
-isFragment = voxelCounts > 0 & voxelCounts <= maxFragmentVoxels;
-if ~any(isFragment); return; end
-
-[height, width, ~] = size(labelVol);
-sliceStride = height * width;
-
-nonZeroIdx = find(labelVol > 0);
-nonZeroLabels = double(labelVol(nonZeroIdx));
-isSelected = isFragment(nonZeroLabels);
-fragmentIdx = nonZeroIdx(isSelected);
-fragmentLabels = nonZeroLabels(isSelected);
-clear nonZeroIdx nonZeroLabels isSelected;
-
-% one group per (fragment, slice): a fragment may occupy more than one slice and
-% each slice has its own neighbourhood to decide against
-fragmentSlices = ceil(fragmentIdx / sliceStride);
-[groups, ~, groupIndex] = unique([fragmentLabels, fragmentSlices], 'rows');
-[groupIndex, order] = sort(groupIndex);
-fragmentIdx = fragmentIdx(order);
-groupStart = [1; find(diff(groupIndex)) + 1];
-groupEnd = [groupStart(2:end) - 1; numel(groupIndex)];
-
-absorbedPerObject = zeros(numel(voxelCounts), 1);
-% Unlike the per-slice loops, one iteration here is a few dozen pixels, so a
-% cancel poll every iteration would cost more than the absorption itself.
-numGroups = size(groups, 1);
-cancelStep = max(1, floor(numGroups/100));
-for g = 1:numGroups
-    if mod(g, cancelStep) == 0 && localCancelled(wb); cancelled = true; return; end
-    fragmentLabel = groups(g, 1);
-    z = groups(g, 2);
-    voxels = fragmentIdx(groupStart(g):groupEnd(g));
-    [rows, cols] = ind2sub([height, width], voxels - (z - 1) * sliceStride);
-    row1 = max(1, min(rows) - 1);   row2 = min(height, max(rows) + 1);
-    col1 = max(1, min(cols) - 1);   col2 = min(width, max(cols) + 1);
-    patch = labelVol(row1:row2, col1:col2, z);
-    neighbours = double(patch(patch > 0 & patch ~= fragmentLabel));
-    neighbours = neighbours(~isFragment(neighbours));
-    if isempty(neighbours); continue; end
-    target = mode(neighbours);
-    labelVol(voxels) = target;
-    absorbedPerObject(fragmentLabel) = absorbedPerObject(fragmentLabel) + numel(voxels);
-    voxelCounts(target) = voxelCounts(target) + numel(voxels);
-    numVoxels = numVoxels + numel(voxels);
-end
-voxelCounts = voxelCounts - absorbedPerObject;
-numFragments = nnz(absorbedPerObject > 0 & voxelCounts == 0);
 end
 
 % =====================================================================

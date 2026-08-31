@@ -592,6 +592,9 @@ classdef MibDeep < handle
                 obj.OverlapInstancesOpt.MergeIoU = 0.5;
                 obj.OverlapInstancesOpt.MergeIoA = 0.8;
             end
+            if ~isfield(obj.OverlapInstancesOpt, 'MinSplitArea')   % preferences saved before this field existed
+                obj.OverlapInstancesOpt.MinSplitArea = 100;
+            end
 
             % two-phase "frozen then trainable" schedule
             % All four were calibrated by replaying the rule over recorded DeepMIB loss

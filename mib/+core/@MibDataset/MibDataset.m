@@ -58,7 +58,17 @@ classdef MibDataset < matlab.mixin.Copyable
         % a switch to indicate presence of the 'Mask' layer. Can be 0 (no mask) or 1 (mask exist)
         maskStats
         % Statistics for the 'Mask' layer with the 'PixelList' info returned by 'regionprops' Matlab function
-        modelExist 
+        instanceIndex
+        % Cached per-object index of an instance model (65535/4294967295 types),
+        % built by obj.buildInstanceIndex() and used by controllers.InstanceEditor
+        % so that split/merge/connect touch only one object's bounding box
+        % instead of scanning the whole volume. See utils.instances.objectIndex for
+        % the fields. Empty when not built.
+        % @note it goes STALE on any edit made outside the editor (brush, undo,
+        % a new model). The editor watches the SetData and Undo events and marks
+        % it; acting on a stale bounding box writes the wrong voxels, so a stale
+        % index must be rebuilt rather than used.
+        modelExist
         % a switch to indicate presence of the 'Model' layer. Can be 0 (no model) or 1 (model exist)
         orientation
         % Orientation of the currently shown dataset,
@@ -123,6 +133,7 @@ classdef MibDataset < matlab.mixin.Copyable
         PixelIdxList = convertPixelIdxListCrop2Full(obj, PixelIdxListCrop, options) % Convert PixelIdxList of a cropped sub-volume to the full dataset
         convertModel(obj, newType, wb)        % convert the segmentation model to a different storage type (63/255/65535/4294967295 or indexed objects)
         stats = stitchModelInstances(obj, options, wb)        % stitch per-slice 2D instance labels into a consistent 3D instance model
+        [index, cancelled] = buildInstanceIndex(obj, options, wb)  % build or refresh obj.instanceIndex, the per-object bounding box cache of an instance model
         snapshot = copyModelLayers(obj)        % take independent copies of the labels, selection and mask layer objects (model type travels with them)
         restoreModelLayers(obj, snapshot)      % put back layer objects taken with copyModelLayers
         result = copySlice(obj, sliceFrom, sliceTo, orient)      % Copy a slice from one position to another across all layers

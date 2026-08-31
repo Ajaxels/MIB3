@@ -346,7 +346,7 @@ objects for manual review, and informing `absOverlapPixels` / threshold choices.
 
 ### 3b. Score-guided gap bridging, and why a dense score map is the wrong tool
 
-Motivating idea: when `utils.stitchInstances2Dto3D` sees a strong overlap across a one-slice gap,
+Motivating idea: when `utils.instances.stitch2Dto3D` sees a strong overlap across a one-slice gap,
 consult a score map on the skipped slice to decide whether the gap is a dropout or a genuine object
 end.
 
@@ -407,7 +407,7 @@ Note that the MitoNet benchmark data is off this machine and the Phase C numbers
 - Export: `mib/+controllers/@MibDeep/startPredictionInstances.m`,
   `mib/+deepmib/segmentBlockedImageInstances.m`, `mib/+deepmib/segmentImageInstancesIoUMerge.m`;
   dropdown gating in `mib/+controllers/@MibDeep/updateWidgets.m`.
-- Bridging: `mib/+utils/stitchInstances2Dto3D.m`, with any new stitching parameter going into
+- Bridging: `mib/+utils/+instances/stitch2Dto3D.m`, with any new stitching parameter going into
   `mib/+utils/+dlgs/stitchInstancesSettingsDlg.m` rather than into the two callers.
 
 ---
