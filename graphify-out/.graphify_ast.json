@@ -4280,6 +4280,457 @@
       "contributor": null
     },
     {
+      "id": "controllers_instanceeditor_instanceeditor_m",
+      "label": "InstanceEditor.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_instanceeditor_addcallbacks_m",
+      "label": "addCallbacks.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@InstanceEditor\\addCallbacks.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_instanceeditor_closewindow_m",
+      "label": "closeWindow.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@InstanceEditor\\closeWindow.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_instanceeditor_currentslicestats_m",
+      "label": "currentSliceStats.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@InstanceEditor\\currentSliceStats.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_instanceeditor_highlightobjects_m",
+      "label": "highlightObjects.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@InstanceEditor\\highlightObjects.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_instanceeditor_imagebuttondown_m",
+      "label": "imageButtonDown.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@InstanceEditor\\imageButtonDown.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_instanceeditor_objecttable_selectionchanged_m",
+      "label": "objectTable_SelectionChanged.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@InstanceEditor\\objectTable_SelectionChanged.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_instanceeditor_pickmode_callback_m",
+      "label": "pickMode_Callback.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@InstanceEditor\\pickMode_Callback.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_instanceeditor_rebuildindex_m",
+      "label": "rebuildIndex.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@InstanceEditor\\rebuildIndex.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_instanceeditor_runoperation_m",
+      "label": "runOperation.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@InstanceEditor\\runOperation.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_instanceeditor_setpickmode_m",
+      "label": "setPickMode.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@InstanceEditor\\setPickMode.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_instanceeditor_updateobjecttable_m",
+      "label": "updateObjectTable.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@InstanceEditor\\updateObjectTable.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_instanceeditor_updatestatusline_m",
+      "label": "updateStatusLine.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@InstanceEditor\\updateStatusLine.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_instanceeditor_updatewidgets_m",
+      "label": "updateWidgets.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@InstanceEditor\\updateWidgets.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_instanceeditor_instanceeditor_viewlistner_callback2",
+      "label": "ViewListner_Callback2",
+      "file_type": "code",
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_instanceeditor_instanceeditor_instanceeditor",
+      "label": "InstanceEditor",
+      "file_type": "code",
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_instanceeditor_instanceeditor_configurewidgets",
+      "label": "configureWidgets",
+      "file_type": "code",
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_instanceeditor_instanceeditor_applymodetowidgets",
+      "label": "applyModeToWidgets",
+      "file_type": "code",
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_instanceeditor_instanceeditor_attachdatasetlistener",
+      "label": "attachDatasetListener",
+      "file_type": "code",
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_instanceeditor_instanceeditor_datachangedelsewhere",
+      "label": "dataChangedElsewhere",
+      "file_type": "code",
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_instanceeditor_instanceeditor_markindexstale",
+      "label": "markIndexStale",
+      "file_type": "code",
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_instanceeditor_instanceeditor_indexisusable",
+      "label": "indexIsUsable",
+      "file_type": "code",
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_instanceeditor_instanceeditor_modeliseditable",
+      "label": "modelIsEditable",
+      "file_type": "code",
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_instanceeditor_instanceeditor_helpbutton_callback",
+      "label": "helpButton_Callback",
+      "file_type": "code",
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_instanceeditor_instanceeditor_figurekeypress",
+      "label": "figureKeyPress",
+      "file_type": "code",
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_instanceeditor_instanceeditor_imagedocument",
+      "label": "imageDocument",
+      "file_type": "code",
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_instanceeditor_instanceeditor_reassertpickmode",
+      "label": "reassertPickMode",
+      "file_type": "code",
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_instanceeditor_instanceeditor_clearinternaleditflag",
+      "label": "clearInternalEditFlag",
+      "file_type": "code",
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_instanceeditor_instanceeditor_updatebatchoptfromgui",
+      "label": "updateBatchOptFromGUI",
+      "file_type": "code",
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_instanceeditor_instanceeditor_mode3d_callback",
+      "label": "mode3D_Callback",
+      "file_type": "code",
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_instanceeditor_instanceeditor_objectlist_callback",
+      "label": "objectList_Callback",
+      "file_type": "code",
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_instanceeditor_instanceeditor_autoupdatetable_callback",
+      "label": "autoUpdateTable_Callback",
+      "file_type": "code",
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_instanceeditor_instanceeditor_invalidateslicestats",
+      "label": "invalidateSliceStats",
+      "file_type": "code",
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_instanceeditor_instanceeditor_slicechanged",
+      "label": "sliceChanged",
+      "file_type": "code",
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_instanceeditor_instanceeditor_updatetable_callback",
+      "label": "updateTable_Callback",
+      "file_type": "code",
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_instanceeditor_instanceeditor_refreshslicelist",
+      "label": "refreshSliceList",
+      "file_type": "code",
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_instanceeditor_instanceeditor_updateselectedlist",
+      "label": "updateSelectedList",
+      "file_type": "code",
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_instanceeditor_instanceeditor_selectedlist_contextmenu",
+      "label": "selectedList_ContextMenu",
+      "file_type": "code",
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_instanceeditor_instanceeditor_restoretableselection",
+      "label": "restoreTableSelection",
+      "file_type": "code",
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_instanceeditor_instanceeditor_jumptoindex_callback",
+      "label": "jumpToIndex_Callback",
+      "file_type": "code",
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_instanceeditor_instanceeditor_gotoobject",
+      "label": "goToObject",
+      "file_type": "code",
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "controllers_lines3ddialog_lines3ddialog_m",
       "label": "Lines3dDialog.m",
       "file_type": "code",
@@ -15115,6 +15566,17 @@
       "contributor": null
     },
     {
+      "id": "core_mibdataset_buildinstanceindex_m",
+      "label": "buildInstanceIndex.m",
+      "file_type": "code",
+      "source_file": "+core\\@MibDataset\\buildInstanceIndex.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "core_mibdataset_clearlayer_m",
       "label": "clearLayer.m",
       "file_type": "code",
@@ -17099,6 +17561,17 @@
       "label": "dilateImage.m",
       "file_type": "code",
       "source_file": "+models\\@MibModel\\dilateImage.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "models_mibmodel_editinstanceobjects_m",
+      "label": "editInstanceObjects.m",
+      "file_type": "code",
+      "source_file": "+models\\@MibModel\\editInstanceObjects.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -33306,6 +33779,406 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_instanceeditor_instanceeditor_m",
+      "target": "controllers_instanceeditor_addcallbacks_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_instanceeditor_m",
+      "target": "controllers_instanceeditor_closewindow_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_instanceeditor_m",
+      "target": "controllers_instanceeditor_currentslicestats_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_instanceeditor_m",
+      "target": "controllers_instanceeditor_highlightobjects_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_instanceeditor_m",
+      "target": "controllers_instanceeditor_imagebuttondown_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_instanceeditor_m",
+      "target": "controllers_instanceeditor_objecttable_selectionchanged_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_instanceeditor_m",
+      "target": "controllers_instanceeditor_pickmode_callback_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_instanceeditor_m",
+      "target": "controllers_instanceeditor_rebuildindex_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_instanceeditor_m",
+      "target": "controllers_instanceeditor_runoperation_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_instanceeditor_m",
+      "target": "controllers_instanceeditor_setpickmode_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_instanceeditor_m",
+      "target": "controllers_instanceeditor_updateobjecttable_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_instanceeditor_m",
+      "target": "controllers_instanceeditor_updatestatusline_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_instanceeditor_m",
+      "target": "controllers_instanceeditor_updatewidgets_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_instanceeditor_m",
+      "target": "controllers_instanceeditor_instanceeditor_viewlistner_callback2",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_instanceeditor_m",
+      "target": "controllers_instanceeditor_instanceeditor_instanceeditor",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_instanceeditor_m",
+      "target": "controllers_instanceeditor_instanceeditor_configurewidgets",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_instanceeditor_m",
+      "target": "controllers_instanceeditor_instanceeditor_applymodetowidgets",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_instanceeditor_m",
+      "target": "controllers_instanceeditor_instanceeditor_attachdatasetlistener",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_instanceeditor_m",
+      "target": "controllers_instanceeditor_instanceeditor_datachangedelsewhere",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_instanceeditor_m",
+      "target": "controllers_instanceeditor_instanceeditor_markindexstale",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_instanceeditor_m",
+      "target": "controllers_instanceeditor_instanceeditor_indexisusable",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_instanceeditor_m",
+      "target": "controllers_instanceeditor_instanceeditor_modeliseditable",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_instanceeditor_m",
+      "target": "controllers_instanceeditor_instanceeditor_helpbutton_callback",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_instanceeditor_m",
+      "target": "controllers_instanceeditor_instanceeditor_figurekeypress",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_instanceeditor_m",
+      "target": "controllers_instanceeditor_instanceeditor_imagedocument",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_instanceeditor_m",
+      "target": "controllers_instanceeditor_instanceeditor_reassertpickmode",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_instanceeditor_m",
+      "target": "controllers_instanceeditor_instanceeditor_clearinternaleditflag",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_instanceeditor_m",
+      "target": "controllers_instanceeditor_instanceeditor_updatebatchoptfromgui",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_instanceeditor_m",
+      "target": "controllers_instanceeditor_instanceeditor_mode3d_callback",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_instanceeditor_m",
+      "target": "controllers_instanceeditor_instanceeditor_objectlist_callback",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_instanceeditor_m",
+      "target": "controllers_instanceeditor_instanceeditor_autoupdatetable_callback",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_instanceeditor_m",
+      "target": "controllers_instanceeditor_instanceeditor_invalidateslicestats",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_instanceeditor_m",
+      "target": "controllers_instanceeditor_instanceeditor_slicechanged",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_instanceeditor_m",
+      "target": "controllers_instanceeditor_instanceeditor_updatetable_callback",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_instanceeditor_m",
+      "target": "controllers_instanceeditor_instanceeditor_refreshslicelist",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_instanceeditor_m",
+      "target": "controllers_instanceeditor_instanceeditor_updateselectedlist",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_instanceeditor_m",
+      "target": "controllers_instanceeditor_instanceeditor_selectedlist_contextmenu",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_instanceeditor_m",
+      "target": "controllers_instanceeditor_instanceeditor_restoretableselection",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_instanceeditor_m",
+      "target": "controllers_instanceeditor_instanceeditor_jumptoindex_callback",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_instanceeditor_m",
+      "target": "controllers_instanceeditor_instanceeditor_gotoobject",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_lines3ddialog_lines3ddialog_m",
       "target": "controllers_lines3ddialog_lines3ddialog_viewlistner_callback2",
       "relation": "contains",
@@ -42707,6 +43580,16 @@
     },
     {
       "source": "core_mibdataset_mibdataset_m",
+      "target": "core_mibdataset_buildinstanceindex_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibDataset\\MibDataset.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibdataset_mibdataset_m",
       "target": "core_mibdataset_clearlayer_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -44418,6 +45301,16 @@
     {
       "source": "models_mibmodel_mibmodel_m",
       "target": "models_mibmodel_dilateimage_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+models\\@MibModel\\MibModel.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_mibmodel_m",
+      "target": "models_mibmodel_editinstanceobjects_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -56856,6 +57749,556 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_instanceeditor_addcallbacks_m",
+      "target": "controllers_instanceeditor_closewindow_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\addCallbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_addcallbacks_m",
+      "target": "controllers_instanceeditor_instanceeditor_figurekeypress",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\addCallbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_addcallbacks_m",
+      "target": "controllers_instanceeditor_objecttable_selectionchanged_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\addCallbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_addcallbacks_m",
+      "target": "controllers_instanceeditor_instanceeditor_objectlist_callback",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\addCallbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_addcallbacks_m",
+      "target": "controllers_instanceeditor_instanceeditor_jumptoindex_callback",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\addCallbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_addcallbacks_m",
+      "target": "controllers_instanceeditor_instanceeditor_updatetable_callback",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\addCallbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_addcallbacks_m",
+      "target": "controllers_instanceeditor_instanceeditor_autoupdatetable_callback",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\addCallbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_addcallbacks_m",
+      "target": "controllers_instanceeditor_pickmode_callback_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\addCallbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_addcallbacks_m",
+      "target": "controllers_instanceeditor_instanceeditor_selectedlist_contextmenu",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\addCallbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_addcallbacks_m",
+      "target": "controllers_instanceeditor_instanceeditor_mode3d_callback",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\addCallbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_addcallbacks_m",
+      "target": "controllers_instanceeditor_instanceeditor_updatebatchoptfromgui",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\addCallbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_addcallbacks_m",
+      "target": "controllers_instanceeditor_runoperation_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\addCallbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_addcallbacks_m",
+      "target": "controllers_instanceeditor_rebuildindex_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\addCallbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_addcallbacks_m",
+      "target": "controllers_instanceeditor_instanceeditor_helpbutton_callback",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\addCallbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_closewindow_m",
+      "target": "controllers_instanceeditor_setpickmode_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\closeWindow.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_highlightobjects_m",
+      "target": "controllers_instanceeditor_instanceeditor_modeliseditable",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\highlightObjects.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_highlightobjects_m",
+      "target": "controllers_instanceeditor_instanceeditor_indexisusable",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\highlightObjects.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_highlightobjects_m",
+      "target": "controllers_instanceeditor_instanceeditor_clearinternaleditflag",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\highlightObjects.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_imagebuttondown_m",
+      "target": "controllers_instanceeditor_instanceeditor_imagedocument",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\imageButtonDown.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_imagebuttondown_m",
+      "target": "controllers_instanceeditor_instanceeditor_modeliseditable",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\imageButtonDown.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_imagebuttondown_m",
+      "target": "controllers_instanceeditor_instanceeditor_updateselectedlist",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\imageButtonDown.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_imagebuttondown_m",
+      "target": "controllers_instanceeditor_updateobjecttable_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\imageButtonDown.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_imagebuttondown_m",
+      "target": "controllers_instanceeditor_highlightobjects_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\imageButtonDown.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_imagebuttondown_m",
+      "target": "controllers_instanceeditor_instanceeditor_reassertpickmode",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\imageButtonDown.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_instanceeditor_m",
+      "target": "core_childview_childview_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_instanceeditor_m",
+      "target": "core_toggleeventdata_toggleeventdata_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_objecttable_selectionchanged_m",
+      "target": "controllers_instanceeditor_instanceeditor_updateselectedlist",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\objectTable_SelectionChanged.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_objecttable_selectionchanged_m",
+      "target": "controllers_instanceeditor_highlightobjects_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\objectTable_SelectionChanged.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_objecttable_selectionchanged_m",
+      "target": "controllers_instanceeditor_instanceeditor_gotoobject",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\objectTable_SelectionChanged.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_pickmode_callback_m",
+      "target": "controllers_instanceeditor_setpickmode_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\pickMode_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_rebuildindex_m",
+      "target": "controllers_instanceeditor_instanceeditor_modeliseditable",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\rebuildIndex.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_rebuildindex_m",
+      "target": "controllers_instanceeditor_updatestatusline_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\rebuildIndex.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_rebuildindex_m",
+      "target": "controllers_instanceeditor_updatewidgets_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\rebuildIndex.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_runoperation_m",
+      "target": "controllers_instanceeditor_instanceeditor_modeliseditable",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\runOperation.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_runoperation_m",
+      "target": "controllers_instanceeditor_instanceeditor_updatebatchoptfromgui",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\runOperation.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_runoperation_m",
+      "target": "controllers_instanceeditor_instanceeditor_clearinternaleditflag",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\runOperation.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_runoperation_m",
+      "target": "controllers_instanceeditor_instanceeditor_invalidateslicestats",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\runOperation.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_runoperation_m",
+      "target": "controllers_instanceeditor_updatewidgets_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\runOperation.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_runoperation_m",
+      "target": "controllers_instanceeditor_highlightobjects_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\runOperation.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_runoperation_m",
+      "target": "controllers_instanceeditor_instanceeditor_reassertpickmode",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\runOperation.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_setpickmode_m",
+      "target": "controllers_instanceeditor_instanceeditor_imagedocument",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\setPickMode.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_setpickmode_m",
+      "target": "controllers_instanceeditor_imagebuttondown_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\setPickMode.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_updateobjecttable_m",
+      "target": "controllers_instanceeditor_instanceeditor_modeliseditable",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\updateObjectTable.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_updateobjecttable_m",
+      "target": "controllers_instanceeditor_instanceeditor_restoretableselection",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\updateObjectTable.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_updateobjecttable_m",
+      "target": "controllers_instanceeditor_currentslicestats_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\updateObjectTable.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_updatestatusline_m",
+      "target": "controllers_instanceeditor_instanceeditor_modeliseditable",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\updateStatusLine.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_updatestatusline_m",
+      "target": "controllers_instanceeditor_instanceeditor_indexisusable",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\updateStatusLine.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_updatestatusline_m",
+      "target": "controllers_instanceeditor_currentslicestats_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\updateStatusLine.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_updatewidgets_m",
+      "target": "controllers_instanceeditor_instanceeditor_modeliseditable",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\updateWidgets.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_updatewidgets_m",
+      "target": "controllers_instanceeditor_setpickmode_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\updateWidgets.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_updatewidgets_m",
+      "target": "controllers_instanceeditor_instanceeditor_applymodetowidgets",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\updateWidgets.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_updatewidgets_m",
+      "target": "controllers_instanceeditor_instanceeditor_indexisusable",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\updateWidgets.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_updatewidgets_m",
+      "target": "controllers_instanceeditor_updateobjecttable_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\updateWidgets.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_updatewidgets_m",
+      "target": "controllers_instanceeditor_instanceeditor_updateselectedlist",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\updateWidgets.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_updatewidgets_m",
+      "target": "controllers_instanceeditor_updatestatusline_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\updateWidgets.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_lines3ddialog_lines3ddialog_m",
       "target": "core_childview_childview_m",
       "relation": "calls",
@@ -64536,6 +65979,26 @@
       "weight": 1.0
     },
     {
+      "source": "core_mibdataset_buildinstanceindex_m",
+      "target": "core_mibdataset_getcurrenttimepoint_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+core\\@MibDataset\\buildInstanceIndex.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibdataset_buildinstanceindex_m",
+      "target": "core_mibdataset_getdata3d_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+core\\@MibDataset\\buildInstanceIndex.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "core_mibdataset_convertmodel_m",
       "target": "core_miblabels_miblabels_m",
       "relation": "calls",
@@ -66102,6 +67565,76 @@
       "confidence": "INFERRED",
       "confidence_score": 0.75,
       "source_file": "+models\\@MibModel\\dilateImage.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_editinstanceobjects_m",
+      "target": "core_toggleeventdata_toggleeventdata_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+models\\@MibModel\\editInstanceObjects.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_editinstanceobjects_m",
+      "target": "controllers_preferences_preferences_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+models\\@MibModel\\editInstanceObjects.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_editinstanceobjects_m",
+      "target": "models_mibmodel_getactiveid_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\editInstanceObjects.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_editinstanceobjects_m",
+      "target": "models_mibmodel_getprogressbarparent_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\editInstanceObjects.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_editinstanceobjects_m",
+      "target": "models_mibmodel_getdata3d_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\editInstanceObjects.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_editinstanceobjects_m",
+      "target": "models_mibmodel_backup_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\editInstanceObjects.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_editinstanceobjects_m",
+      "target": "models_mibmodel_setdata3d_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\editInstanceObjects.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -71046,6 +72579,36 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_instanceeditor_instanceeditor_m",
+      "target": "utils_movewindowoutside_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_instanceeditor_m",
+      "target": "utils_fontsizeupdate_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_instanceeditor_m",
+      "target": "utils_openhelppage_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_lines3ddialog_lines3ddialog_m",
       "target": "utils_fontsizeupdate_m",
       "relation": "calls",
@@ -72237,7 +73800,7 @@
     },
     {
       "source": "controllers_mibdeep_mergeinstancesto3d_m",
-      "target": "utils_stitchinstances2dto3d_m",
+      "target": "utils_instances_stitch2dto3d_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -72878,6 +74441,16 @@
     {
       "source": "controllers_mibdeep_startpredictioninstances_m",
       "target": "deepmib_segmentblockedimageinstances_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\startPredictionInstances.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_startpredictioninstances_m",
+      "target": "utils_instances_splitdisconnected_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -76736,6 +78309,16 @@
       "weight": 1.0
     },
     {
+      "source": "core_mibdataset_buildinstanceindex_m",
+      "target": "utils_instances_objectindex_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibDataset\\buildInstanceIndex.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "core_mibdataset_croptobigdata_m",
       "target": "utils_dlgs_showerrordialog_m",
       "relation": "calls",
@@ -76877,7 +78460,7 @@
     },
     {
       "source": "core_mibdataset_stitchmodelinstances_m",
-      "target": "utils_stitchinstances2dto3d_m",
+      "target": "utils_instances_stitch2dto3d_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -77892,6 +79475,46 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "+models\\@MibModel\\dilateImage.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_editinstanceobjects_m",
+      "target": "utils_updatebatchoptcombinefields_shared_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+models\\@MibModel\\editInstanceObjects.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_editinstanceobjects_m",
+      "target": "utils_dlgs_inputuniversaldlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+models\\@MibModel\\editInstanceObjects.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_editinstanceobjects_m",
+      "target": "utils_interpolateshapes_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+models\\@MibModel\\editInstanceObjects.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_editinstanceobjects_m",
+      "target": "utils_instances_cleanup_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+models\\@MibModel\\editInstanceObjects.m",
       "source_location": null,
       "weight": 1.0
     },
