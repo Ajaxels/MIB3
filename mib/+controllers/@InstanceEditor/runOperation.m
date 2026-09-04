@@ -28,14 +28,25 @@ end
 
 if ~obj.modelIsEditable(); return; end
 
-wholeModelAction = ismember(action, {'Cleanup', 'Compact'});
-if ~wholeModelAction && isempty(obj.selectedObjects)
+% Merge and Split by selection need no pick: the drawing says which objects are
+% meant and the model works them out from it. Picking objects anyway restricts
+% the action to them, which is what a line clipping a neighbour needs.
+needsObjects = ~ismember(action, {'Cleanup', 'Compact', 'Merge', 'SplitBySelection'});
+if needsObjects && isempty(obj.selectedObjects)
     uialert(obj.view.gui, 'Pick the objects to work on first, in the list or by clicking them in the image.', ...
         'Nothing selected', 'Icon', 'warning');
     return;
 end
 
 obj.updateBatchOptFromGUI();
+
+% The Selection layer is the user's drawing surface and the editor's highlight
+% at once, and two of the operations read it as their input. The highlight is
+% handed back before the model looks at it: it covers the whole of the picked
+% object, so a Split by selection would otherwise be told that the cut covers
+% everything and there is nothing left to keep. The model clears what it
+% consumed afterwards, so a drawing cannot be applied twice.
+obj.releaseHighlight();
 
 % MaxRows only governs how much of the list is rendered, so it has no business
 % in the model's options or in the SyncBatch payload they are published as.

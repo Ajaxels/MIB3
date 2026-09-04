@@ -26,12 +26,16 @@ function applied = editInstanceObjects(obj, BatchOptIn)
 %     - ``.Action`` - cell, the operation:
 %
 %       - ``'Merge'`` - the selected objects become one, taking the **smallest**
-%         of their indices; the others are freed
+%         of their indices; the others are freed. With ``ObjectIndices`` empty
+%         the objects are taken from the Selection layer - draw one shape across
+%         them all
 %       - ``'SplitComponents'`` - each object is broken into its connected
 %         components; the largest keeps the index, the rest get new ones
 %       - ``'SplitBySelection'`` - the voxels of the Selection layer are cleared
 %         from the object first, then it is split into connected components. One
-%         undo step for the brush workflow: draw the break, interpolate it, split
+%         undo step for the brush workflow: draw the break, interpolate it, split.
+%         With ``ObjectIndices`` empty the objects are taken from the drawing
+%         itself - everything it covers is split
 %       - ``'CutAtSlice'`` - voxels at or beyond the shown slice take a new index
 %       - ``'Connect'`` - bridge the Z gap between two objects and merge them
 %       - ``'Delete'`` - remove the objects
@@ -39,7 +43,10 @@ function applied = editInstanceObjects(obj, BatchOptIn)
 %       - ``'Compact'`` - renumber every object to a contiguous 1..N
 %
 %     - ``.ObjectIndices`` - char, comma-separated object indices to act on, e.g.
-%       ``'7, 12'``. Ignored by ``Cleanup`` and ``Compact``
+%       ``'7, 12'``. Ignored by ``Cleanup`` and ``Compact``. Empty is an error
+%       everywhere except ``Merge`` and ``SplitBySelection``, where it means
+%       "whatever the Selection layer covers"; the drawing is cleared afterwards,
+%       having been used
 %     - ``.Mode3D`` - logical, operate on the whole volume (default) or only on
 %       the shown slice
 %     - ``.Connectivity`` - cell, ``'26'``/``'6'`` in 3D, ``'8'``/``'4'`` in 2D. A
@@ -70,7 +77,8 @@ function applied = editInstanceObjects(obj, BatchOptIn)
 %    instance model at all.
 %
 % Usage:
-%   **Example 1** - merge objects 12 and 7; the result is object 7
+%   **Example 1** - merge objects 12 and 7; the result is object 7. Without
+%   ``ObjectIndices`` everything the Selection layer covers is merged instead
 %
 %   .. code-block:: matlab
 %
@@ -78,11 +86,15 @@ function applied = editInstanceObjects(obj, BatchOptIn)
 %      BatchOpt.ObjectIndices = '7, 12';
 %      obj.mibModel.editInstanceObjects(BatchOpt);
 %
-%   **Example 2** - the brush workflow: break drawn into the Selection layer
+%   **Example 2** - the brush workflow: break drawn into the Selection layer.
+%   Without ``ObjectIndices`` the drawing says what to cut; naming an object
+%   restricts the cut to it, for a line that clips a neighbour
 %
 %   .. code-block:: matlab
 %
 %      BatchOpt.Action = {'SplitBySelection'};
+%      obj.mibModel.editInstanceObjects(BatchOpt);
+%
 %      BatchOpt.ObjectIndices = '537';
 %      obj.mibModel.editInstanceObjects(BatchOpt);
 %
@@ -116,7 +128,7 @@ BatchOpt.mibBatchSectionName = 'Ribbon -> Model';
 BatchOpt.mibBatchActionName  = 'Instance editor';
 
 BatchOpt.mibBatchTooltip.Action = 'Operation to apply. Merge: the selected objects become one and take the smallest of their indices. Split into components: each object is broken into its connected pieces, the largest keeping the index. Split by selection: clear the Selection layer out of the object first, then split - use after brushing a break. Cut at slice: everything from the shown slice onwards becomes a new object. Connect: fill the Z gap between two objects and join them. Delete: remove the objects. Cleanup: apply the noise filters to the whole model. Compact: renumber every object to 1..N';
-BatchOpt.mibBatchTooltip.ObjectIndices = 'Comma-separated indices of the objects to act on, for example "7, 12". Not used by Cleanup and Compact';
+BatchOpt.mibBatchTooltip.ObjectIndices = 'Comma-separated indices of the objects to act on, for example "7, 12". Not used by Cleanup and Compact. Leave it empty with "Merge" or "Split by selection" to act on whatever the Selection layer covers';
 BatchOpt.mibBatchTooltip.Mode3D = 'Act on the whole 3D object. When off, only the shown slice is affected - splitting then gives every slice of the object its own index';
 BatchOpt.mibBatchTooltip.Connectivity = 'Voxel connectivity used when splitting into components: 26 or 6 in 3D, 8 or 4 in 2D. The lower value keeps pieces apart that touch only at a corner or an edge';
 BatchOpt.mibBatchTooltip.ConnectMode = 'How Connect fills the gap between two objects. "interpolate": morph between the two facing cross-sections. "selection": use whatever is currently in the Selection layer as the bridge, for a gap whose shape cannot be guessed. Either way only background voxels are written, so a third object in the way is never overwritten';
@@ -174,8 +186,30 @@ end
 %% Objects to act on
 wholeModelAction = ismember(action, {'Cleanup', 'Compact'});
 objectIds = [];
+derivedFromDrawing = false;
 if ~wholeModelAction
     objectIds = iParseIndices(BatchOpt.ObjectIndices);
+    % Both of these are gestures over a region, and the region already says
+    % which objects it means: the drawing is the cut for Split by selection and
+    % the choice of objects for Merge. So with nothing named, the drawing
+    % decides. Naming objects anyway restricts the action to them, which is what
+    % a line clipping a neighbour needs. Add an action here to give it the same
+    % form; every one of them is validated the same way below.
+    if isempty(objectIds) && ismember(action, {'Merge', 'SplitBySelection'})
+        [objectIds, problem] = iObjectsUnderSelection(obj, id, dataset, timePoint, BatchOpt.Mode3D);
+        if isempty(problem) && strcmp(action, 'Merge') && isscalar(objectIds)
+            % "Merge needs at least two objects" is true but unhelpful when the
+            % objects were never typed in: it is the drawing that is too small.
+            problem = sprintf('The Selection layer covers only object %d.', objectIds);
+            details = {'Draw over every object to be merged, or pick them from the list.'};
+        end
+        if ~isempty(problem)
+            iComplain(obj, problem, 'Instance editor', details);
+            notify(obj, 'StopProtocol');
+            return;
+        end
+        derivedFromDrawing = true;
+    end
     [objectIds, problem] = iValidateIndices(objectIds, index, action);
     if ~isempty(problem)
         iComplain(obj, problem, 'Instance editor');
@@ -185,12 +219,17 @@ if ~wholeModelAction
 end
 
 %% Dispatch
+% The drawing is used up whenever the operation used it: as the cut, as the
+% bridge, or to say which objects were meant.
+consumesSelection = derivedFromDrawing || strcmp(action, 'SplitBySelection') || ...
+    (strcmp(action, 'Connect') && strcmp(BatchOpt.ConnectMode{1}, 'selection'));
+
 switch action
     case {'Cleanup', 'Compact'}
         done = iWholeModelAction(obj, id, action, BatchOpt, batchModeSwitch);
     otherwise
         done = iObjectAction(obj, id, action, objectIds, index, timePoint, ...
-            BatchOpt, batchModeSwitch);
+            BatchOpt, batchModeSwitch, consumesSelection);
 end
 if ~done; notify(obj, 'StopProtocol'); return; end
 applied = true;
@@ -277,6 +316,54 @@ function indices = iParseIndices(text)
 if isnumeric(text); indices = double(text(:))'; return; end
 indices = str2double(strsplit(strtrim(text), {',', ';', ' '}));
 indices = indices(~isnan(indices));
+end
+
+% =====================================================================
+function [objectIds, problem] = iObjectsUnderSelection(obj, id, dataset, timePoint, use3D)
+% Which objects the current drawing sits on.
+%
+% The only read in this file that is not confined to a bounding box, and it is
+% affordable because the slices carrying the drawing are found first: on a
+% 1078x1380x101 stack any() over the layer costs 3 ms, against 83 ms for a
+% find() across the whole volume, and the labels are then read for those slices
+% alone. The Z range is left off the selection read so it keeps the
+% copy-on-write fast path of getData3D instead of duplicating the layer.
+%
+% Input Arguments:
+%   - **use3D** - logical, whole volume or the shown slice only
+%
+% Output Arguments:
+%   - **objectIds** - indices of the objects the drawing covers
+%   - **problem** - char, why nothing can be done; empty when there is no problem
+objectIds = [];
+problem = '';
+
+readOptions = struct('blockModeSwitch', 0, 'id', id);
+zOffset = 0;
+if ~use3D
+    sliceNumber = dataset.getCurrentSliceNumber();
+    readOptions.z = [sliceNumber, sliceNumber];
+    zOffset = sliceNumber - 1;
+end
+
+selectionVolume = cell2mat(obj.getData3D('selection', timePoint, 3, NaN, readOptions));
+carrying = find(any(any(selectionVolume, 1), 2));
+if isempty(carrying)
+    problem = sprintf(['The Selection layer is empty.\n' ...
+        'Draw the break into it first, or pick the objects to split from the list.']);
+    return;
+end
+
+readOptions.z = zOffset + [carrying(1), carrying(end)];
+labelsBlock = cell2mat(obj.getData3D('labels', timePoint, 3, NaN, readOptions));
+drawnHere = selectionVolume(:, :, carrying(1):carrying(end)) > 0;
+objectIds = double(unique(labelsBlock(drawnHere)))';
+objectIds = objectIds(objectIds > 0);
+
+if isempty(objectIds)
+    problem = sprintf(['The Selection layer does not cover any object.\n' ...
+        'Draw the break across the object to be split, not beside it.']);
+end
 end
 
 % =====================================================================
@@ -417,9 +504,13 @@ obj.I{id}.labels.materialsCount = max(obj.I{id}.labels.materialsCount, highest);
 end
 
 % =====================================================================
-function done = iObjectAction(obj, id, action, objectIds, index, timePoint, BatchOpt, batchModeSwitch)
+function done = iObjectAction(obj, id, action, objectIds, index, timePoint, BatchOpt, batchModeSwitch, consumesSelection)
 % The per-object operations. All of them read, back up, write and rescan inside
 % one bounding box, which is what keeps them interactive on a large model.
+%
+% Input Arguments:
+%   - **consumesSelection** - logical, clear the Selection layer afterwards
+%     because the operation took its input from it
 done = false;
 dataset = obj.I{id};
 use3D = BatchOpt.Mode3D;
@@ -483,6 +574,16 @@ end
 %% Repair the index over the same region
 refresh = struct('timePoint', timePoint, 'objectIds', unique(touchedIds), 'bbox', box);
 dataset.buildInstanceIndex(refresh);
+
+% The drawing has done its job, so it is used up. Leaving it would let a shape
+% drawn for this object be applied to the next one: with no objects named, the
+% next drawing-driven action reads the whole layer to find out what it means.
+% Deliberately not backed up - the undo step belongs to the change in the model,
+% and a second one would mean two Ctrl+Z presses to reverse a single action.
+if consumesSelection
+    if use3D; dataset.clearLayer('selection', '3D'); else; dataset.clearLayer('selection', '2D'); end
+end
+
 done = true;
 end
 

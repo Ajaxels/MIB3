@@ -36,6 +36,13 @@ classdef MibController < handle
         % UIFigure.CurrentModifier inside button callbacks - UIFigure.CurrentModifier
         % is only updated by keyboard events on that specific sub-figure, so it
         % returns {} when a Selection-panel button is clicked with a modifier held.
+        keyPressOverride = []
+        % optional takeover of a few keyboard shortcuts by a child controller:
+        % struct with .owner (the controller handle, checked with isvalid so a
+        % window that has gone cannot keep the keys) and .fcn, called as
+        % fcn(key, modifier) and returning true when it has consumed the key.
+        % Set by controllers.InstanceEditor.setShortcutMode; empty otherwise,
+        % and then gui_WindowKeyPressFcn behaves exactly as it always did.
         fastPanningMode = false
         % use the fast panning mode, defined in qab by pressing on obj.view.handles.qab.fastpan
         propagatingLinkedView = false

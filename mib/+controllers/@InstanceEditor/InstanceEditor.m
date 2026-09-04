@@ -48,9 +48,15 @@ classdef InstanceEditor < handle
         savedMouseState = []
         % what was taken over when pick mode was switched on, so it can be given
         % back exactly as it was
+        shortcutModeActive = false
+        % true while the editor owns the a / s / Ctrl+F keys; see setShortcutMode
         internalEdit = false
         % true while this controller is applying an edit, so its own writes do
         % not mark the index it has just refreshed as stale
+        highlightState = []
+        % what the highlight borrowed from the Selection layer: the box it was
+        % painted into, what the user had there beforehand and what was painted
+        % over it, so the layer can be handed back untouched; see releaseHighlight
         sliceStats = []
         % cached per-object measurements of one slice, for the 2D object list;
         % see currentSliceStats
@@ -74,8 +80,11 @@ classdef InstanceEditor < handle
         pickMode_Callback(obj)                         % toggle "pick objects by clicking" from the checkbox
         setPickMode(obj, enable)                       % take over, or hand back, the mouse on the image document
         imageButtonDown(obj)                           % click on the image: select the object under the cursor
+        pickObjectUnderCursor(obj, action)             % move the object under the mouse into or out of the selection
+        setShortcutMode(obj, enable)                   % take over, or hand back, the a / s / Ctrl+F keys
         runOperation(obj, action)                      % hand an operation to models.MibModel.editInstanceObjects
         highlightObjects(obj)                          % show the picked objects in the Selection layer
+        releaseHighlight(obj)                          % take the highlight back out of the Selection layer
         updateStatusLine(obj)                          % report the object count and the state of the index cache
         rebuildIndex(obj)                              % rebuild the per-object index of the active instance model
         closeWindow(obj)                               % close the window and give back everything it took over
@@ -93,6 +102,11 @@ classdef InstanceEditor < handle
                     % A different dataset: the object list and everything picked
                     % from the old one are meaningless.
                     obj.selectedObjects = [];
+                    % The highlight is forgotten rather than given back: the
+                    % buffer it was painted into may hold different data now, and
+                    % restoring an old drawing into a freshly loaded dataset is
+                    % worse than leaving a selection the user can clear.
+                    obj.highlightState = [];
                     obj.attachDatasetListener();
                     obj.updateWidgets();
                 case 'UpdateGuiWidgets'
@@ -135,9 +149,14 @@ classdef InstanceEditor < handle
             % Mirrors models.MibModel.editInstanceObjects, which is where these
             % values are actually consumed; the widgets are named to match.
             obj.BatchOpt = struct();
-            obj.BatchOpt.Mode3D = true;
-            obj.BatchOpt.Connectivity = {'26'};
-            obj.BatchOpt.Connectivity{2} = {'26', '6'};
+            % Opens in 2D: the list then describes the shown slice, which is the
+            % only thing it can describe on a model that has not been stitched
+            % into 3D yet - and that is what the editor is usually opened on.
+            % The connectivity has to start in the same mode, or the dropdown
+            % offers 26/6 while the operations run per slice.
+            obj.BatchOpt.Mode3D = false;
+            obj.BatchOpt.Connectivity = {'8'};
+            obj.BatchOpt.Connectivity{2} = {'8', '4'};
             obj.BatchOpt.ConnectMode = {'interpolate'};
             obj.BatchOpt.ConnectMode{2} = {'interpolate', 'selection'};
             obj.BatchOpt.MinObjectVoxels = {0, [0, 1e9], 'on'};
@@ -206,6 +225,10 @@ classdef InstanceEditor < handle
             h.filterMaxSlices.Value = 0;
             h.jumpToIndex.Value = 0;
             h.autoUpdateTable.Value = true;
+            % Both takeovers start off and are owned by the controller state, so
+            % neither can begin out of step with what the checkbox shows.
+            h.pickByClick.Value = false;
+            h.useShortcuts.Value = false;
 
             obj.applyModeToWidgets();
         end
@@ -249,6 +272,14 @@ classdef InstanceEditor < handle
             if isprop(evnt, 'Parameters') && isstruct(evnt.Parameters) && isfield(evnt.Parameters, 'type')
                 changedType = evnt.Parameters.type;
             end
+            % The user has started drawing in the layer the highlight borrowed.
+            % It goes back to them now, while the highlight and the drawing can
+            % still be told apart - and because the drawing is very likely the
+            % cut for the next Split by selection.
+            if ismember(changedType, {'selection', 'everything'})
+                obj.releaseHighlight();
+            end
+
             % Only the model layer invalidates the index; a selection or mask
             % write leaves the objects exactly where they were.
             if isempty(changedType) || ismember(changedType, {'labels', 'model', 'everything'})
@@ -300,10 +331,36 @@ classdef InstanceEditor < handle
         % -----------------------------------------------------------
         function figureKeyPress(obj, eventData)
             % FIGUREKEYPRESS - Forward key presses to MIB so its shortcuts keep working.
+            %
+            % Everything goes through, so ++ctrl+z++, ++i++ and the rest behave
+            % in this window as they do over the image. The one exception is a
+            % key typed into a field of this window: the re-broadcast reaches
+            % ``MibController.gui_WindowKeyPressFcn`` with no ``CurrentObject``
+            % to look at, so its own guard against that cannot fire and the
+            % check has to happen here instead.
+            focused = obj.view.gui.CurrentObject;
+            if ~isempty(focused) && isprop(focused, 'Type') && ...
+                    ismember(focused.Type, {'uieditfield', 'uinumericeditfield', 'uitextarea', 'uispinner'})
+                return;
+            end
+
+            % A modifier on its own is not a shortcut and there is nothing at
+            % the other end to do with it.
+            if ismember(eventData.Key, {'control', 'shift', 'alt'}); return; end
+
             if obj.mibModel.preferences.System.DeveloperMode
                 fprintf('controllers.InstanceEditor.figureKeyPress(%s): triggered\n', eventData.Key);
             end
-            notify(obj.mibModel, 'KeyPressEvent', core.ToggleEventData(eventData));
+
+            % The payload is a struct carrying the event under .eventdata, which
+            % is what MibController.listner_ModelEvent unpacks
+            % (``evnt.Parameters.eventdata``). Handing it the KeyData object
+            % directly - as this did - throws inside the listener for every key
+            % pressed in this window, which is silent enough that the window
+            % simply looked deaf to MIB's shortcuts.
+            payload = struct();
+            payload.eventdata = eventData;
+            notify(obj.mibModel, 'KeyPressEvent', core.ToggleEventData(payload));
         end
 
         % -----------------------------------------------------------
@@ -355,6 +412,60 @@ classdef InstanceEditor < handle
 
             saved.imageDocument.UIFigure.WindowButtonDownFcn = @(~, ~) obj.imageButtonDown();
             saved.imageDocument.UIFigure.Pointer = 'crosshair';
+        end
+
+        % -----------------------------------------------------------
+        function shortcutMode_Callback(obj)
+            % SHORTCUTMODE_CALLBACK - Toggle the keyboard shortcuts from the checkbox.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.InstanceEditor.shortcutMode_Callback: triggered\n');
+            end
+            obj.setShortcutMode(logical(obj.view.handles.useShortcuts.Value));
+        end
+
+        % -----------------------------------------------------------
+        function consumed = handleShortcut(obj, key, modifier)
+            % HANDLESHORTCUT - Answer a key offered by MibController.gui_WindowKeyPressFcn.
+            %
+            % Returns whether the key was used. Anything this declines carries
+            % on to MIB's own shortcuts, which is what makes the takeover safe:
+            % with no instance model in front of the user, ``a`` and ``s`` go on
+            % adding to and subtracting from the material as they always did.
+            %
+            % Input Arguments:
+            %   - **key** - char, lowercase key name from the event
+            %   - **modifier** - cell array of modifier names held at the time
+            %
+            % Output Arguments:
+            %   - **consumed** - logical, true when the editor acted on the key
+            consumed = false;
+            if ~obj.shortcutModeActive; return; end
+            if isempty(obj.view) || ~isvalid(obj.view.gui); return; end
+            if ~obj.modelIsEditable(); return; end
+
+            hasControl = any(strcmp(modifier, 'control'));
+            hasAlt     = any(strcmp(modifier, 'alt'));
+
+            switch key
+                case 'a'
+                    % ctrl and alt variants belong to MIB; shift does not,
+                    % because shift+a is the same shortcut there as a.
+                    if hasControl || hasAlt; return; end
+                    obj.runOperation('Merge');
+                case 's'
+                    if hasControl || hasAlt; return; end
+                    obj.runOperation('SplitBySelection');
+                case 'f'
+                    if ~hasControl || hasAlt; return; end
+                    % Adds rather than replaces: the point of picking objects
+                    % from the keyboard is to collect the two that a Merge
+                    % needs. "Clear the selection" is on the right-click menu of
+                    % the Selected objects list.
+                    obj.pickObjectUnderCursor('add');
+                otherwise
+                    return;
+            end
+            consumed = true;
         end
 
         % -----------------------------------------------------------

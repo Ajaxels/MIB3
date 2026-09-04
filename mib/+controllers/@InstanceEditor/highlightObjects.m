@@ -16,14 +16,25 @@ function highlightObjects(obj)
 % than what the dataset costs. In 2D mode only the shown slice is highlighted,
 % matching what the operations act on there.
 %
+% The layer is only **borrowed**. Whatever the user has drawn in the box is kept
+% and put back by ``releaseHighlight``, which runs before every operation and
+% whenever the user draws. Without that, picking an object would erase the cut
+% drawn for it and ``SplitBySelection`` could never be given anything to work
+% with - the highlight covers the whole object it was about to split.
+%
 % Input Arguments:
 %   (none)
 %
 % Output Arguments:
 %   (none)
+%
+% See also: controllers.InstanceEditor.releaseHighlight
 
 % Updates
 %
+
+% Whatever the previous highlight covered goes back before this one is painted.
+obj.releaseHighlight();
 
 if ~obj.modelIsEditable(); return; end
 
@@ -31,10 +42,6 @@ id = obj.mibModel.getActiveId();
 dataset = obj.mibModel.I{id};
 timePoint = dataset.getCurrentTimePoint();
 use3D = logical(obj.view.handles.Mode3D.Value);
-
-% Any previous highlight has to go, or the selection accumulates every object
-% that has ever been picked.
-obj.mibModel.clearSelection('4D, Dataset', struct('showWaitbar', false, 'id', id));
 
 objectIds = obj.selectedObjects;
 objectIds = objectIds(objectIds > 0);
@@ -73,8 +80,22 @@ end
 readOptions = struct('blockModeSwitch', 0, 'id', id, ...
     'y', box(1:2), 'x', box(3:4), 'z', box(5:6));
 
+% What the user already has in this box, kept so that painting over it is
+% reversible. Everything needed to undo the highlight is recorded before the
+% write, so an error in it cannot leave the layer stranded.
+stash = cell2mat(obj.mibModel.getData3D('selection', timePoint, 3, NaN, readOptions));
+
 labelsInBox = cell2mat(obj.mibModel.getData3D('labels', timePoint, 3, NaN, readOptions));
-selection = uint8(ismember(labelsInBox, cast(objectIds, 'like', labelsInBox)));
+painted = ismember(labelsInBox, cast(objectIds, 'like', labelsInBox));
+
+% The user's drawing stays visible: a bridge drawn for Connect sits in the gap
+% between the two objects, which is exactly the part of the box the highlight
+% does not cover.
+selection = uint8(painted);
+selection(stash > 0) = 1;
+
+obj.highlightState = struct('id', id, 'timePoint', timePoint, 'box', box, ...
+    'stash', stash, 'painted', painted);
 
 % internalEdit keeps the SetData listener from treating this as an outside edit;
 % it writes the selection layer, which does not move any object, but the guard

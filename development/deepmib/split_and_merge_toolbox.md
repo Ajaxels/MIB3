@@ -242,7 +242,8 @@ Widgets the controller expects, by name:
 | `updateTable` | button | re-read the list now |
 | `jumpToIndex` | numeric + button | scroll to a given object |
 | `pickByClick` | checkbox | take over the image mouse |
-| `Mode3D` | checkbox | 3D or current-slice operation |
+| `useShortcuts` | checkbox | take over the `a` / `s` / ++ctrl+f++ keys (added 2026-09-02) |
+| `Mode3D` | checkbox | 3D or current-slice operation; the window opens with it **off** |
 | `Connectivity` | dropdown | 6/26 in 3D, 4/8 in 2D |
 | `selectedList` | listbox or label | currently selected objects |
 | `mergeButton`, `splitComponentsButton`, `splitBySelectionButton`, `cutAtSliceButton`, `connectButton`, `deleteButton` | buttons | the operations |
@@ -259,6 +260,7 @@ not repeated here:
 |---|---|
 | `Mode3D` | `3D (whole object)` |
 | `pickByClick` | `Pick objects by clicking` |
+| `useShortcuts` | `Shortcuts` - the mapping goes in the tooltip, not the label |
 | `autoUpdateTable` | `Update the list on slice change` |
 | `updateTable` | `Update list` |
 | `MaxRowsLabel` | `Max rows:` |
@@ -438,7 +440,7 @@ notes below are the places where reality differed from the plan.
 | `mib/+views/InstanceEditorGUI.mlapp` | **author-built**; the controller only assigns callbacks |
 | `tests/utils/InstanceObjectIndexTest.m` | 18 cases |
 | `tests/utils/InstanceCleanupTest.m` | 15 cases |
-| `tests/models/EditInstanceObjectsTest.m` | 19 cases |
+| `tests/models/EditInstanceObjectsTest.m` | 27 cases (20 at first build, 7 added 2026-09-01) |
 
 Edited: `+instances/stitch2Dto3D.m` (now calls `utils.instances.cleanup`), `MibDataset.m` (+`instanceIndex`),
 `MibDataset/stitchModelInstances.m` (sets `materialsCount`, clears the index),
@@ -547,9 +549,162 @@ The modifiers changed at the same time: plain click now replaces the selection, 
 `shift`+click is `SelectionType` `extend` and `control`+click is `alt`, exactly the two the document
 treats as selecting gestures.
 
+### Fixed on the third real run (2026-09-01)
+
+**The highlight ate the input of the operation it was there to help.** `Split by selection` reads the
+Selection layer as the cut; `highlightObjects` *wrote* the picked objects into that same layer, after
+`clearSelection('4D, Dataset')` had emptied it. So the workflow the tool exists for could not
+complete: brush the break, pick the object, and the brush was gone and the layer held the whole
+object, so `objectMask & ~selection` was empty and the operation reported *"The Selection layer
+covers the whole of object N - nothing would be left."* `Connect` in `selection` mode had it too -
+the bridge was wiped and the highlight sat where the bridge should be. Reproduced headlessly before
+fixing (scratch script, not committed): with the highlight in place the split leaves 1 object, after
+the fix 2.
+
+The layer is now **borrowed, not taken**:
+
+- `highlightObjects` stashes what is in the box before painting - `highlightState` carries
+  `{id, timePoint, box, stash, painted}` - and no longer clears anything outside it. The
+  whole-dataset clear was also a full-layer backup plus copy on *every* pick, which is what
+  `clearSelection` does; it is gone.
+- `releaseHighlight` puts back `stash | (current & ~painted)` over the same box, in the dataset and
+  time point it was painted from. Storing the painted mask rather than recomputing it from the
+  labels is what makes the restore exact after the labels have changed underneath.
+- It runs before every operation (so the model never sees the highlight), on any outside write to
+  the selection layer (the user has started drawing - `SetData` carries `type`), and on close.
+- After an applied `SplitBySelection` or `Connect`/`selection`, the drawing that was consumed is
+  cleared - in `editInstanceObjects`, so it holds for batch protocols too. Otherwise a cut drawn for
+  one object would silently be applied to the next. That clear is deliberately **not** backed up:
+  undo brings the object back but not the drawing, which is the price of ++ctrl+z++ staying one step
+  for the whole operation.
+
+**The one case that cannot work** is drawing *inside* an already-highlighted object: those voxels are
+indistinguishable from the highlight. Nothing is silently lost - the highlight disappears on the
+first stroke, so what is on screen is what the operation will use - but the order in the workflow
+(draw first, pick second) is now the documented one rather than an accident.
+
+### The drawing chooses the objects (2026-09-01)
+
+Asked by the author straight after the fix above: why does the user have to pick the object at all,
+when the drawing already says which one it is? Nothing prevented it. The reasons it was built the
+other way were `ObjectIndices` being the one entry point all eight operations share, and the rule
+that no read escapes a bounding box - and the second one measured smaller than it looked:
+
+| On a 1078x1380x101 stack | |
+|---|---|
+| `find` over the whole Selection layer + label lookup + `unique` | 83 ms |
+| `any(any(sel,1),2)` to find the slices carrying the drawing | 3 ms |
+| the same lookup over those slices alone | ~10 ms total |
+
+So `iObjectsUnderSelection` narrows first and reads the labels only for the slices that carry
+something. The Z range is deliberately left off the selection read so `getData3D` keeps its
+copy-on-write fast path instead of duplicating the layer.
+
+The rule is **the drawing decides, unless you have said otherwise**: `ObjectIndices` empty means
+"everything the drawing covers", and naming objects restricts the action to them, which is what a
+line clipping a neighbour needs. Empty stays an error for every other action. Two rejection paths of
+its own - nothing drawn, and a drawing that lies only on background - both leaving the layer alone so
+the user can move the drawing rather than make it again.
+
+**Merge takes the same form** (asked for in the same conversation): draw one shape across the objects
+that belong together and press Merge. Both are gestures over a region, and a region says which
+objects it means; the whitelist in the "Objects to act on" block is where a third action would be
+added. Merge's own rejection - a shape covering one object - says so rather than repeating "Merge
+needs at least two objects", which is true but unhelpful when nothing was typed in. The merge itself
+is unchanged: the whole of every object the shape touches is joined, not the part under the shape.
+
+This is also why the consume step moved from the controller into the model: with no pick there is no
+highlight box to clear it by, and a leftover drawing is now the input to the *next* action rather
+than a harmless smudge. The condition is "the operation used the layer" - as the cut, as the bridge,
+or to choose the objects - passed into `iObjectAction` rather than worked out there.
+
+### Keyboard shortcuts (2026-09-02)
+
+Proofreading is two-handed: the mouse stays on the object, and the other hand should not have to
+travel to a button. `useShortcuts` puts three keys on the editor for as long as it is ticked:
+
+| Key | Normally (`generateKeyShortcuts`) | While the checkbox is on |
+|---|---|---|
+| `a`, `shift+a` | Add selection to material | **Merge** |
+| `s`, `shift+s` | Subtract from material | **Split by selection** |
+| ++ctrl+f++ | Find material under cursor | **Add the object under the cursor to the selection** |
+
+Both `a` and `shift+a` have to be swallowed: MIB treats them as *one* shortcut with two scopes
+(`overrideShift`), so leaving the shift variant through would let it write to the material. Here they
+do the same thing - the 2D/3D scope is the `Mode3D` checkbox, not the modifier. `ctrl`+ and `alt`+
+variants of `a` and `s` are declined and reach MIB untouched, as does every key when the checkbox is
+off or when the dataset in front of the user is not an instance model.
+
+++ctrl+f++ **adds** rather than replaces, which is the opposite of a plain click. Picking from the
+keyboard exists to collect the two objects a Merge needs; replacing would make that impossible.
+Clearing is the right-click menu on the *Selected objects* list.
+
+**The takeover is a hook, not a callback swap.** `MibController.keyPressOverride` holds
+`{owner, fcn}`; `gui_WindowKeyPressFcn` offers the key to `fcn` before looking it up in the shortcut
+table and returns if it says it used it, and drops the claim by itself when `owner` is no longer
+valid. Replacing the figure's `WindowKeyPressFcn` instead - the way pick mode replaces
+`WindowButtonDownFcn` - would not survive: `@MibImageDocument` reinstalls that handle from five
+places (after every pan, brush stroke and drag-and-drop), which is the same trap that killed pick
+mode before `reassertPickMode`. The hook is empty for everyone else, so MIB's key handling is
+unchanged until a child asks for it, and the next tool that needs a key can use the same door.
+
+`closeWindow` gives the keys back, for the reason pick mode does: three keys held off their normal
+duty across the whole application is not something the user can diagnose from the screen. The
+checkbox follows `shortcutModeActive` rather than the other way round, so a takeover dropped from
+anywhere cannot leave it claiming the editor still owns the keys.
+
+The label is just `Shortcuts`; the mapping belongs in the tooltip, which is the .mlapp's:
+
+> `a` = Merge, `s` = Split by selection, `Ctrl+F` = pick the object under the cursor. While ticked
+> these keys no longer add to or subtract from the material.
+
+**Found while wiring it: the window was deaf to MIB's own shortcuts - twice over.**
+
+The first fault was the payload. `MibController.listner_ModelEvent` unpacks the re-broadcast as
+`evnt.Parameters.eventdata`, so what goes into `core.ToggleEventData` has to be a **struct carrying
+the event under `.eventdata`** - which is what `DebrisRemoval`, `ImageFrame`, `ContentAwareFill` and
+the rest all build by hand. `figureKeyPress` passed the `KeyData` object itself, so the listener
+threw `MATLAB:nonExistentField` for *every* key pressed in this window, from the day it was written.
+An error inside a listener is quiet enough that the window simply looked like it had no shortcuts.
+
+The second was the callback. Keys were forwarded from `KeyPressFcn`, which on a `uifigure` fires only
+while the figure *itself* has the focus, so even with the payload right it would have gone dead after
+the first click on a button or a row. It is `WindowKeyPressFcn` now, and `figureKeyPress` gained the
+edit-field guard that
+`gui_WindowKeyPressFcn` cannot apply for a re-broadcast (it is handed no `CurrentObject` to look at),
+so typing into `Go to object` no longer fires shortcuts. A key that is only a modifier is dropped,
+but `Character` is **not** tested the way the other controllers test it: that would throw away the
+arrow keys, and stepping through slices from this window is exactly what 2D mode is for. The
+alternative, `utils.childWindowKeyPressFcn`, was not used: it whitelists Undo and Escape only, and
+this window wants the whole set - ++i++ to interpolate the brushed break is half of the workflow it
+exists for.
+
+Reading the object under the cursor moved into `pickObjectUnderCursor`, now shared by the click and
+the key - two call sites, so it earns its own file; `imageButtonDown` keeps only the part that works
+out what the click *is*.
+
+### The window opens in 2D (2026-09-02)
+
+`Mode3D` now starts **off** in the controller, with `Connectivity` starting at 8/4 to match - the
+dropdown otherwise offers 26/6 while the operations run per slice. Only the editor's default moved;
+`editInstanceObjects` still defaults to 3D, which is right for a programmatic caller ("act on the
+whole object unless told otherwise") and is what every headless test and batch protocol assumes.
+
+It exposed one thing in `updateStatusLine`: it refused to say anything without a usable index, in
+either mode. The index is a whole-volume pass and is never built behind the user's back, so the
+window would now open reading *"Objects not indexed yet"* while a perfectly good 2D list sat under
+it. The 2D branch is measured from the slice and needs no index, so it now reports the slice either
+way and appends the model total only when the index is there - and says so, in amber, when it is not,
+which keeps the staleness signal of group **F** visible in this mode too.
+
+Untested by the suite: `InstanceEditor` has no view-less construction path (`tests/CLAUDE.md`
+pattern 1), so none of the controller is reachable headlessly. Adding one means a `createView` opt-out
+plus `hasWidget` guards on every widget read - a change worth making deliberately, not while fixing
+this.
+
 ### Verification
 
-`buildtool check` clean; `buildtool test` green including the 52 new cases. The stitcher's own 25
+`buildtool check` clean; `buildtool test` green including the 60 new cases (18 + 15 + 27). The stitcher's own 25
 cases pass unchanged after the cleanup extraction, which is what pins the extraction as
 behaviour-preserving. Driven end to end through the controller on a synthetic 65535 model: split,
 merge, connect, delete, cleanup, compact, jump-to-object, highlight, stale detection and rebuild.
@@ -585,10 +740,10 @@ prediction stack. A small model will not show the things worth checking.
 
 | # | Do | Expect |
 |---|----|--------|
-| A1 | *Ribbon -> Model -> Model tools -> Instance editor* | Window opens to the left of MIB |
-| A2 | Look at the status line | `N objects, highest index M`, green |
-| A3 | Compare N with the object count the stitcher reported | Same number |
-| A4 | Note how long the first open took | The index build is one pass over the volume; a few seconds on a 100-slice stack. **If it is much worse than that, say so** - the whole design rests on this being affordable |
+| A1 | *Ribbon -> Model -> Model tools -> Instance editor* | Window opens to the left of MIB, in **2D** mode: `3D (whole object)` unticked, connectivity 8/4 |
+| A2 | Look at the status line | `Slice N: K objects...` - the list is the shown slice, and it says so without an index having been built |
+| A3 | Tick **3D (whole object)**, press **Rebuild**, look again | `N objects, highest index M`, green. Compare N with the object count the stitcher reported: same number |
+| A4 | Note how long that Rebuild took | The index build is one pass over the volume; a few seconds on a 100-slice stack. **If it is much worse than that, say so** - the whole design rests on this being affordable |
 
 Guards, each expecting a message and no change (open the editor with the wrong thing loaded):
 
@@ -638,6 +793,8 @@ Undo (++ctrl+z++) after **every** one of these and confirm the model returns exa
 |---|----|--------|
 | D0 | After any applied operation | The selection and its highlight are empty, ready for the next pick. A rejected operation leaves the selection alone |
 | D1 | Select two objects, **Merge** | One object, carrying the **smaller** of the two indices |
+| D1b | Brush one shape across two objects, pick nothing, **Merge** | Same result. The whole of both objects is joined, not just the part under the shape, and the shape is gone afterwards |
+| D1c | Brush a shape over one object only, **Merge** | *"The Selection layer covers only object N"*, and the shape is still there |
 | D2 | Merge three at once | All take the smallest index |
 | D3 | Find an object whose index covers two separate blobs, **Split components** | Largest piece keeps the index; the other gets a new one. Both listed |
 | D4 | **Split components** on a normal object | Nothing happens, no error |
@@ -655,11 +812,27 @@ The reason the tool exists. On a false merge - one index covering two mitochondr
 
 1. Brush the break into the **Selection** layer where the two should separate.
 2. In 3D, brush it on a few slices and press ++i++ to interpolate between them.
-3. Select the object, press **Split by selection**.
+3. Press **Split by selection**. Nothing needs to be picked - the drawing says what to cut. Pick an
+   object only to keep the cut off a neighbour the line also crosses.
 
 Expect: the brushed voxels are cleared out of the object and the two halves become separate objects,
 in **one** ++ctrl+z++ step. Compare against doing it by hand (++shift+s++ to subtract, then
 **Split components**) - the result should be the same.
+
+The editor borrows the Selection layer for its highlight, so the drawing and the highlight share it.
+What that has to look like:
+
+| # | Do | Expect |
+|---|----|--------|
+| E0 | Brush a break, pick nothing, **Split by selection** | The object under the drawing is split. No *"pick the objects to work on first"* |
+| E0b | Brush a line that crosses two objects, pick nothing, split | Both are cut. Then pick one of them first and repeat: only that one is cut |
+| E0c | Brush somewhere on background only, split | *"The Selection layer does not cover any object"*, and the drawing is still there to be moved |
+| E1 | Brush a break, then pick the object | The object lights up. The break is underneath it and the split below still works - this is the sequence that used to fail with *"the Selection layer covers the whole of object N"* |
+| E2 | Draw somewhere else in the dataset, then pick an object | The drawing is still there. Picking used to clear the whole layer, on every click |
+| E3 | Split by selection, then look at the Selection layer | The drawing that was used is gone; the rest of the layer is untouched |
+| E4 | Pick an object, then start brushing on it | The highlight disappears at the first stroke and drawing behaves normally from then on. The stroke that cleared it is not kept - draw first, pick second |
+| E5 | Pick an object, close the editor | The Selection layer is what you drew, not the object that was highlighted |
+| E6 | Brush a bridge in a Z gap, pick two objects, **Connect** (`selection`) | The bridge is used, not the highlight. Same failure as E1 before the fix |
 
 ### F. Staleness - the correctness one
 
@@ -714,6 +887,24 @@ restarts on every slice. Untick **3D (whole object)** first.
 | I12 | **jumpToIndex** with a number that is on another slice but not this one | *"There is no object N on slice M"* |
 | I13 | Split or delete an object, without moving slice | The list re-reads by itself and shows the result |
 | I14 | Switch **3D (whole object)** back on | The list becomes the whole model again, with all four columns |
+
+### J. The keyboard shortcuts
+
+Group **C** is the same set of hazards for the mouse; this is the one for the keys.
+
+| # | Do | Expect |
+|---|----|--------|
+| J0 | With the editor focused, press ++ctrl+z++ after any edit | It undoes, checkbox or no checkbox. Then click a button or a table row and try again. Also ++i++ and the arrow keys: **no** key at all used to reach MIB from this window |
+| J1 | Tick **Shortcuts**, hover an object, ++ctrl+f++ | It is selected and highlighted |
+| J2 | Hover a second object, ++ctrl+f++ | Both are selected - it adds, unlike a plain click |
+| J3 | Press ++a++ | They merge, exactly as the button does |
+| J4 | Brush a break, press ++s++ | The object under the drawing splits |
+| J5 | Press ++shift+a++ and ++shift+s++ | Same as without shift. **Nothing is added to or subtracted from the material** - that is the failure to watch for, and it is silent |
+| J6 | Press ++ctrl+a++, ++alt+s++, ++i++, ++c++ | MIB's own behaviour, untouched |
+| J7 | Untick the checkbox, press ++a++ and ++s++ over a selection | Add to material and subtract from material are back |
+| J8 | Tick it, then **close the window** | Same as J7. **This is the one that makes MIB confusing if it is broken** |
+| J9 | Tick it, then switch to a dataset with no model (or a 63-material one), press ++a++ | MIB's own shortcut runs. The editor declines keys it cannot act on rather than swallowing them |
+| J10 | Tick it and type into **Go to object** | The number goes in; the keys are not stolen from the field |
 
 ### What to report back
 

@@ -24,7 +24,11 @@ function addCallbacks(obj)
 h = obj.view.handles;
 
 obj.view.gui.CloseRequestFcn = @(~, ~) obj.closeWindow();
-obj.view.gui.KeyPressFcn = @(~, e) obj.figureKeyPress(e);
+
+% WindowKeyPressFcn, not KeyPressFcn: the latter fires only while the figure
+% itself has the focus, so every MIB shortcut - Ctrl+Z above all - went dead as
+% soon as the user had clicked a button or a row in this window.
+obj.view.gui.WindowKeyPressFcn = @(~, e) obj.figureKeyPress(e);
 
 % object list
 %
@@ -42,6 +46,8 @@ h.autoUpdateTable.ValueChangedFcn = @(~, ~) obj.autoUpdateTable_Callback();
 
 % picking
 h.pickByClick.ValueChangedFcn = @(~, ~) obj.pickMode_Callback();
+
+h.useShortcuts.ValueChangedFcn = @(~, ~) obj.shortcutMode_Callback();
 
 % A context menu rather than a button, so that a way of un-picking an object can
 % be added without another widget in the .mlapp. Highlight the entries in the

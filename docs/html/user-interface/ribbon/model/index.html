@@ -6414,7 +6414,7 @@ one object that breaks in two far apart in Z stays two - and those are repaired 
 <div class="h4-like">2D and 3D</div>
 
 <p><span class="widget widget-checkbox">3D (whole object)</span> decides what an operation reaches. With it off, everything is confined to the shown slice, and the list follows: it names the objects on that slice and gives their area on it.</p>
-<p>This is the mode for a model that has not been stitched into 3D yet. There the numbering starts again from 1 on every slice, so the same number is a different object on each one - which is why the list cannot describe the whole stack at once, and why objects picked on one slice are dropped when the list moves to another.</p>
+<p>The editor opens with it off. This is the mode for a model that has not been stitched into 3D yet. There the numbering starts again from 1 on every slice, so the same number is a different object on each one - which is why the list cannot describe the whole stack at once, and why objects picked on one slice are dropped when the list moves to another.</p>
 <p>Moving to another slice re-reads the list. On a large stack, turn <span class="widget widget-checkbox">Update the list on slice change</span> off and press <span class="widget widget-button">Update list</span> when you need it; until then the status line says which slice the list is describing.</p>
 <div class="h4-like">Choosing the objects to work on</div>
 
@@ -6423,7 +6423,39 @@ one object that breaks in two far apart in Z stays two - and those are repaired 
 directly in the Image View panel. While clicking, a plain <mouse class="left"></mouse> starts a new
 selection, <span class="keys"><kbd class="key-shift">Shift</kbd></span> adds an object to it and <span class="keys"><kbd class="key-control">Ctrl</kbd></span> takes one out. Panning with
 <mouse class="right"></mouse> keeps working as usual. Whatever is picked is shown in the Selection
-layer, so you can see what you are about to change before you change it.</p>
+layer, so you can see what you are about to change before you change it; anything you have drawn
+there yourself is kept, and comes back as soon as you start drawing again.</p>
+<p><strong>Merge</strong> and <strong>Split by selection</strong> need no picking at all: draw a shape in the Selection layer and
+they act on whatever it covers. Picking objects first restricts them to those objects.</p>
+<div class="h4-like">Working from the keyboard</div>
+
+<p><span class="widget widget-checkbox">Shortcuts</span> puts the two operations on the keys the hand is
+already resting on, so that proofreading needs one hand for the mouse and nothing else:</p>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="keys"><kbd class="key-a">A</kbd></span></td>
+<td>Merge</td>
+</tr>
+<tr>
+<td><span class="keys"><kbd class="key-s">S</kbd></span></td>
+<td>Split by selection</td>
+</tr>
+<tr>
+<td><span class="keys"><kbd class="key-control">Ctrl</kbd><span>+</span><kbd class="key-f">F</kbd></span></td>
+<td>Add the object under the cursor to the selection</td>
+</tr>
+</tbody>
+</table>
+<p>While the checkbox is ticked these three keys do <strong>not</strong> add to or subtract from the material as they
+normally do - that is what it is for. Untick it, or close the editor, and they are back. Everything
+else, <span class="keys"><kbd class="key-i">I</kbd></span> and <span class="keys"><kbd class="key-control">Ctrl</kbd><span>+</span><kbd class="key-z">Z</kbd></span> included, keeps working throughout.</p>
 <p>To take an object back out of the list of selected objects, highlight it there and right-click for
 <span class="widget widget-button">Remove highlighted from selection</span>. The selection is emptied
 by itself after an operation, ready for the next one.</p>
@@ -6442,7 +6474,7 @@ that the list does not currently show.</p>
 <tbody>
 <tr>
 <td><strong>Merge</strong></td>
-<td>Joins the selected objects into one. The result takes the <strong>smallest</strong> of their indices; the others become free.</td>
+<td>Joins the selected objects into one. The result takes the <strong>smallest</strong> of their indices; the others become free. Needs nothing picked either: draw one shape across everything that belongs together and press Merge - the whole of every object the shape touches is joined, not only the part under it.</td>
 </tr>
 <tr>
 <td><strong>Split components</strong></td>
@@ -6450,7 +6482,7 @@ that the list does not currently show.</p>
 </tr>
 <tr>
 <td><strong>Split by selection</strong></td>
-<td>Removes whatever is in the Selection layer from the object, then splits what is left. This is the one to use after drawing a break with the brush - see below.</td>
+<td>Removes whatever is in the Selection layer from the object, then splits what is left. Needs no object picked: the drawing decides what to cut, and everything it covers is split. Picking objects first restricts the cut to them, for a line that clips a neighbour. This is the one to use after drawing a break with the brush - see below.</td>
 </tr>
 <tr>
 <td><strong>Cut at slice</strong></td>
@@ -6483,8 +6515,13 @@ that the list does not currently show.</p>
    few slices and press <span class="keys"><kbd class="key-i">I</kbd></span> to interpolate between them.</li>
 <li>Press <span class="widget widget-button">Split by selection</span>.</li>
 </ol>
-<p>The brushed area is cleared out of the object and the two halves become separate objects, in a
-single undoable step.</p>
+<p>There is no need to pick the object: whatever the drawing lies on is what gets cut. The brushed
+area is cleared out of the object and the two halves become separate objects, in a single
+undoable step, and the drawing is used up.</p>
+<p>Pick the object first only when the break also crosses a neighbour you want left alone - then
+the cut is kept to what you picked. Do the picking after the drawing: picking covers the object
+in the Selection layer, and drawing on top of that clears the highlight out of the way but does
+not keep the stroke that cleared it.</p>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Rebuilding the list</p>

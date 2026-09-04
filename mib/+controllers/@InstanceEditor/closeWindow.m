@@ -10,7 +10,13 @@ function closeWindow(obj)
 % ``WindowButtonDownFcn`` with a callback into this controller and sets
 % ``mibModel.disableSegmentation``; closing the window without undoing that
 % leaves the main application unable to segment, with a mouse handler pointing
-% at a deleted object and no clue on screen as to why.
+% at a deleted object and no clue on screen as to why. Shortcut mode goes the
+% same way and for the same reason: it holds ``a``, ``s`` and ++ctrl+f++ off
+% their normal duty for the whole application.
+%
+% The Selection layer is given back for the same reason: the editor borrows it
+% to highlight the picked objects, and closing the window has to leave the user
+% with what they drew rather than with the last object painted over it.
 %
 % Input Arguments:
 %   (none)
@@ -26,6 +32,8 @@ if obj.mibModel.preferences.System.DeveloperMode
 end
 
 obj.setPickMode(false);
+obj.setShortcutMode(false);
+obj.releaseHighlight();
 
 if ~isempty(obj.datasetListener) && isvalid(obj.datasetListener)
     delete(obj.datasetListener);

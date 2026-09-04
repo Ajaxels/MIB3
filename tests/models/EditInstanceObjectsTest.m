@@ -135,6 +135,50 @@ classdef EditInstanceObjectsTest < matlab.unittest.TestCase
                 'a rejected action must not change the model');
         end
 
+        function mergeTakesTheObjectsFromTheDrawing(testCase)
+            % One shape drawn across objects 1 and 5, nothing named: the whole
+            % of both objects is merged, not just the part under the shape.
+            mibModel = EditInstanceObjectsTest.buildInstanceModel();
+            before = EditInstanceObjectsTest.readLabels(mibModel);
+            selection = zeros(32, 32, 10, 'uint8');
+            selection(4:10, 4:20, 2) = 1;        % slice 2 carries both objects
+            mibModel.setData3D(selection, 'selection', 1, 3, [], ...
+                struct('id', 1, 'blockModeSwitch', 0));
+
+            EditInstanceObjectsTest.runAction(mibModel, 'Merge', '');
+
+            after = EditInstanceObjectsTest.readLabels(mibModel);
+            testCase.verifyEqual(nnz(after == 5), 0, 'the larger index is gone');
+            testCase.verifyEqual(nnz(after == 1), nnz(before == 1) + nnz(before == 5), ...
+                'both objects became object 1, in full');
+            testCase.verifyEqual(nnz(after == 2), nnz(before == 2), ...
+                'the object the shape does not touch is untouched');
+            remaining = cell2mat(mibModel.getData3D('selection', 1, 3, NaN, ...
+                struct('id', 1, 'blockModeSwitch', 0)));
+            testCase.verifyEqual(nnz(remaining), 0, 'the shape is used up');
+            EditInstanceObjectsTest.verifyIndexAgreesWithVolume(testCase, mibModel, 'merge, auto');
+        end
+
+        function mergeFromADrawingOverOneObjectIsRejected(testCase)
+            % The complaint has to name the drawing, not repeat "Merge needs two
+            % objects": nothing was typed in, so it is the shape that is short.
+            mibModel = EditInstanceObjectsTest.buildInstanceModel();
+            before = EditInstanceObjectsTest.readLabels(mibModel);
+            selection = zeros(32, 32, 10, 'uint8');
+            selection(4:10, 4:10, 5) = 1;        % object 1 alone
+            mibModel.setData3D(selection, 'selection', 1, 3, [], ...
+                struct('id', 1, 'blockModeSwitch', 0));
+
+            applied = mibModel.editInstanceObjects(struct( ...
+                'Action', {{'Merge'}}, 'ObjectIndices', '', 'showWaitbar', false));
+
+            testCase.verifyFalse(applied);
+            testCase.verifyEqual(EditInstanceObjectsTest.readLabels(mibModel), before, 'model untouched');
+            remaining = cell2mat(mibModel.getData3D('selection', 1, 3, NaN, ...
+                struct('id', 1, 'blockModeSwitch', 0)));
+            testCase.verifyEqual(nnz(remaining), nnz(selection), 'the drawing is left for the user');
+        end
+
         % -----------------------------------------------------------------
         % split
         % -----------------------------------------------------------------
@@ -217,6 +261,102 @@ classdef EditInstanceObjectsTest < matlab.unittest.TestCase
             testCase.verifyNotEqual(newIndex, uint16(1), 'the far side got a new index');
             testCase.verifyEqual(nnz(after == 1), 7 * 7 * 3, 'slices 2:4 keep index 1');
             EditInstanceObjectsTest.verifyIndexAgreesWithVolume(testCase, mibModel, 'splitBySelection');
+        end
+
+        function splitBySelectionFindsTheObjectFromTheDrawing(testCase)
+            % With no object named, the drawing says what to cut. Same break as
+            % the test above, so the result has to be the same.
+            mibModel = EditInstanceObjectsTest.buildInstanceModel();
+            selection = zeros(32, 32, 10, 'uint8');
+            selection(4:10, 4:10, 5) = 1;
+            mibModel.setData3D(selection, 'selection', 1, 3, [], ...
+                struct('id', 1, 'blockModeSwitch', 0));
+
+            EditInstanceObjectsTest.runAction(mibModel, 'SplitBySelection', '');
+
+            after = EditInstanceObjectsTest.readLabels(mibModel);
+            testCase.verifyEqual(nnz(after(:, :, 5) == 1), 0, 'the break was cleared');
+            newIndex = unique(after(4:10, 4:10, 6:7));
+            testCase.verifyNumElements(newIndex, 1);
+            testCase.verifyNotEqual(newIndex, uint16(1), 'the far side got a new index');
+            testCase.verifyEqual(nnz(after == 1), 7 * 7 * 3, 'slices 2:4 keep index 1');
+            EditInstanceObjectsTest.verifyIndexAgreesWithVolume(testCase, mibModel, 'splitBySelection, auto');
+        end
+
+        function splitBySelectionCutsEveryObjectTheDrawingCovers(testCase)
+            % A drawing crossing two objects cuts both. Naming one of them is
+            % how a line that clips a neighbour is kept to its target.
+            mibModel = mibtest.helpers.buildSyntheticModel( ...
+                'modelType', 'labels65535', 'dims', [32 32 10]);
+            volume = zeros(32, 32, 10, 'uint16');
+            volume(4:10,  4:10, 2:7) = 1;
+            volume(20:26, 4:10, 2:7) = 2;
+            mibModel.setData3D(volume, 'labels', 1, 3, [], ...
+                struct('id', 1, 'blockModeSwitch', 0));
+            mibModel.I{1}.labels.materialsCount = 2;
+            mibModel.I{1}.buildInstanceIndex();
+
+            selection = zeros(32, 32, 10, 'uint8');
+            selection(:, :, 5) = 1;              % one plane, across both objects
+            mibModel.setData3D(selection, 'selection', 1, 3, [], ...
+                struct('id', 1, 'blockModeSwitch', 0));
+
+            EditInstanceObjectsTest.runAction(mibModel, 'SplitBySelection', '');
+
+            after = EditInstanceObjectsTest.readLabels(mibModel);
+            testCase.verifyEqual(nnz(after(:, :, 5)), 0, 'the plane was cleared from both');
+            testCase.verifyNumElements(setdiff(unique(after(:)), 0), 4, 'two objects became four');
+            EditInstanceObjectsTest.verifyIndexAgreesWithVolume(testCase, mibModel, 'splitBySelection, two objects');
+        end
+
+        function splitBySelectionConsumesTheDrawing(testCase)
+            % The drawing has been applied to the model, so it goes. Otherwise
+            % the next Split by selection - which reads the whole layer when no
+            % object is named - would cut with a line drawn for something else.
+            mibModel = EditInstanceObjectsTest.buildInstanceModel();
+            selection = zeros(32, 32, 10, 'uint8');
+            selection(4:10, 4:10, 5) = 1;
+            mibModel.setData3D(selection, 'selection', 1, 3, [], ...
+                struct('id', 1, 'blockModeSwitch', 0));
+
+            EditInstanceObjectsTest.runAction(mibModel, 'SplitBySelection', '');
+
+            remaining = cell2mat(mibModel.getData3D('selection', 1, 3, NaN, ...
+                struct('id', 1, 'blockModeSwitch', 0)));
+            testCase.verifyEqual(nnz(remaining), 0, 'the Selection layer is emptied');
+        end
+
+        function splitBySelectionOnBackgroundIsRejected(testCase)
+            % A drawing lying on nothing names no object. The layer is left as
+            % it is, so the drawing can be moved rather than made again.
+            mibModel = EditInstanceObjectsTest.buildInstanceModel();
+            selection = zeros(32, 32, 10, 'uint8');
+            selection(30:32, 1:3, 9) = 1;        % an empty corner of the volume
+            mibModel.setData3D(selection, 'selection', 1, 3, [], ...
+                struct('id', 1, 'blockModeSwitch', 0));
+            before = EditInstanceObjectsTest.readLabels(mibModel);
+
+            applied = mibModel.editInstanceObjects(struct( ...
+                'Action', {{'SplitBySelection'}}, 'ObjectIndices', '', 'showWaitbar', false));
+
+            testCase.verifyFalse(applied);
+            testCase.verifyEqual(EditInstanceObjectsTest.readLabels(mibModel), before, 'model untouched');
+            remaining = cell2mat(mibModel.getData3D('selection', 1, 3, NaN, ...
+                struct('id', 1, 'blockModeSwitch', 0)));
+            testCase.verifyEqual(nnz(remaining), nnz(selection), 'the drawing is left for the user');
+        end
+
+        function splitBySelectionWithNothingDrawnIsRejected(testCase)
+            mibModel = EditInstanceObjectsTest.buildInstanceModel();
+            mibModel.setData3D(zeros(32, 32, 10, 'uint8'), 'selection', 1, 3, [], ...
+                struct('id', 1, 'blockModeSwitch', 0));
+            before = EditInstanceObjectsTest.readLabels(mibModel);
+
+            applied = mibModel.editInstanceObjects(struct( ...
+                'Action', {{'SplitBySelection'}}, 'ObjectIndices', '', 'showWaitbar', false));
+
+            testCase.verifyFalse(applied);
+            testCase.verifyEqual(EditInstanceObjectsTest.readLabels(mibModel), before, 'model untouched');
         end
 
         % -----------------------------------------------------------------

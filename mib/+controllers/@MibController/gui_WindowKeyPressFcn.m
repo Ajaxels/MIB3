@@ -40,6 +40,18 @@ end
 % return when Alt is pressed
 if strcmp(char, 'alt'); return; end %#ok<STCI>
 
+% A child controller may have taken a few keys over - the Instance editor does,
+% so that 'a' and 's' drive its own operations instead of adding to and
+% subtracting from the material. It is offered the key first and says whether it
+% used it; anything it declines carries on to the shortcuts below unchanged.
+if ~isempty(obj.keyPressOverride)
+    if ~isvalid(obj.keyPressOverride.owner)
+        obj.keyPressOverride = [];      % the window that took the keys has gone
+    elseif obj.keyPressOverride.fcn(char, modifier)
+        return;
+    end
+end
+
 % find a shortcut action
 KeyShortcuts = obj.mibModel.preferences.KeyShortcuts;
 dataset = obj.mibModel.I{obj.mibModel.id};

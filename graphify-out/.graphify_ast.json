@@ -4368,10 +4368,32 @@
       "contributor": null
     },
     {
+      "id": "controllers_instanceeditor_pickobjectundercursor_m",
+      "label": "pickObjectUnderCursor.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@InstanceEditor\\pickObjectUnderCursor.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "controllers_instanceeditor_rebuildindex_m",
       "label": "rebuildIndex.m",
       "file_type": "code",
       "source_file": "+controllers\\@InstanceEditor\\rebuildIndex.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_instanceeditor_releasehighlight_m",
+      "label": "releaseHighlight.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@InstanceEditor\\releaseHighlight.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -4394,6 +4416,17 @@
       "label": "setPickMode.m",
       "file_type": "code",
       "source_file": "+controllers\\@InstanceEditor\\setPickMode.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_instanceeditor_setshortcutmode_m",
+      "label": "setShortcutMode.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@InstanceEditor\\setShortcutMode.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -4568,6 +4601,28 @@
     {
       "id": "controllers_instanceeditor_instanceeditor_reassertpickmode",
       "label": "reassertPickMode",
+      "file_type": "code",
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_instanceeditor_instanceeditor_shortcutmode_callback",
+      "label": "shortcutMode_Callback",
+      "file_type": "code",
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_instanceeditor_instanceeditor_handleshortcut",
+      "label": "handleShortcut",
       "file_type": "code",
       "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
       "source_location": null,
@@ -33850,7 +33905,27 @@
     },
     {
       "source": "controllers_instanceeditor_instanceeditor_m",
+      "target": "controllers_instanceeditor_pickobjectundercursor_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_instanceeditor_m",
       "target": "controllers_instanceeditor_rebuildindex_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_instanceeditor_m",
+      "target": "controllers_instanceeditor_releasehighlight_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -33871,6 +33946,16 @@
     {
       "source": "controllers_instanceeditor_instanceeditor_m",
       "target": "controllers_instanceeditor_setpickmode_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_instanceeditor_m",
+      "target": "controllers_instanceeditor_setshortcutmode_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -34031,6 +34116,26 @@
     {
       "source": "controllers_instanceeditor_instanceeditor_m",
       "target": "controllers_instanceeditor_instanceeditor_reassertpickmode",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_instanceeditor_m",
+      "target": "controllers_instanceeditor_instanceeditor_shortcutmode_callback",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_instanceeditor_m",
+      "target": "controllers_instanceeditor_instanceeditor_handleshortcut",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -57830,6 +57935,16 @@
     },
     {
       "source": "controllers_instanceeditor_addcallbacks_m",
+      "target": "controllers_instanceeditor_instanceeditor_shortcutmode_callback",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\addCallbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_addcallbacks_m",
       "target": "controllers_instanceeditor_instanceeditor_selectedlist_contextmenu",
       "relation": "calls",
       "confidence": "INFERRED",
@@ -57899,6 +58014,36 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_instanceeditor_closewindow_m",
+      "target": "controllers_instanceeditor_setshortcutmode_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\closeWindow.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_closewindow_m",
+      "target": "controllers_instanceeditor_releasehighlight_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\closeWindow.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_highlightobjects_m",
+      "target": "controllers_instanceeditor_releasehighlight_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\highlightObjects.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_instanceeditor_highlightobjects_m",
       "target": "controllers_instanceeditor_instanceeditor_modeliseditable",
       "relation": "calls",
@@ -57950,27 +58095,7 @@
     },
     {
       "source": "controllers_instanceeditor_imagebuttondown_m",
-      "target": "controllers_instanceeditor_instanceeditor_updateselectedlist",
-      "relation": "calls",
-      "confidence": "INFERRED",
-      "confidence_score": 0.75,
-      "source_file": "+controllers\\@InstanceEditor\\imageButtonDown.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "controllers_instanceeditor_imagebuttondown_m",
-      "target": "controllers_instanceeditor_updateobjecttable_m",
-      "relation": "calls",
-      "confidence": "INFERRED",
-      "confidence_score": 0.75,
-      "source_file": "+controllers\\@InstanceEditor\\imageButtonDown.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "controllers_instanceeditor_imagebuttondown_m",
-      "target": "controllers_instanceeditor_highlightobjects_m",
+      "target": "controllers_instanceeditor_pickobjectundercursor_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -58049,6 +58174,46 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_instanceeditor_pickobjectundercursor_m",
+      "target": "controllers_instanceeditor_instanceeditor_imagedocument",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\pickObjectUnderCursor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_pickobjectundercursor_m",
+      "target": "controllers_instanceeditor_instanceeditor_updateselectedlist",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\pickObjectUnderCursor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_pickobjectundercursor_m",
+      "target": "controllers_instanceeditor_updateobjecttable_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\pickObjectUnderCursor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_pickobjectundercursor_m",
+      "target": "controllers_instanceeditor_highlightobjects_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\pickObjectUnderCursor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_instanceeditor_rebuildindex_m",
       "target": "controllers_instanceeditor_instanceeditor_modeliseditable",
       "relation": "calls",
@@ -58079,6 +58244,16 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_instanceeditor_releasehighlight_m",
+      "target": "controllers_instanceeditor_instanceeditor_clearinternaleditflag",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\releaseHighlight.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_instanceeditor_runoperation_m",
       "target": "controllers_instanceeditor_instanceeditor_modeliseditable",
       "relation": "calls",
@@ -58091,6 +58266,16 @@
     {
       "source": "controllers_instanceeditor_runoperation_m",
       "target": "controllers_instanceeditor_instanceeditor_updatebatchoptfromgui",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\runOperation.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_runoperation_m",
+      "target": "controllers_instanceeditor_releasehighlight_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -58165,6 +58350,16 @@
       "confidence": "INFERRED",
       "confidence_score": 0.75,
       "source_file": "+controllers\\@InstanceEditor\\setPickMode.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_setshortcutmode_m",
+      "target": "controllers_instanceeditor_instanceeditor_handleshortcut",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\setShortcutMode.m",
       "source_location": null,
       "weight": 1.0
     },
