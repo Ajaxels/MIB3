@@ -196,7 +196,7 @@ if ~wholeModelAction
     % a line clipping a neighbour needs. Add an action here to give it the same
     % form; every one of them is validated the same way below.
     if isempty(objectIds) && ismember(action, {'Merge', 'SplitBySelection'})
-        [objectIds, problem] = iObjectsUnderSelection(obj, id, dataset, timePoint, BatchOpt.Mode3D);
+        [objectIds, problem, details] = iObjectsUnderSelection(obj, id, dataset, timePoint, BatchOpt.Mode3D);
         if isempty(problem) && strcmp(action, 'Merge') && isscalar(objectIds)
             % "Merge needs at least two objects" is true but unhelpful when the
             % objects were never typed in: it is the drawing that is too small.
@@ -319,7 +319,7 @@ indices = indices(~isnan(indices));
 end
 
 % =====================================================================
-function [objectIds, problem] = iObjectsUnderSelection(obj, id, dataset, timePoint, use3D)
+function [objectIds, problem, details] = iObjectsUnderSelection(obj, id, dataset, timePoint, use3D)
 % Which objects the current drawing sits on.
 %
 % The only read in this file that is not confined to a bounding box, and it is
@@ -335,8 +335,11 @@ function [objectIds, problem] = iObjectsUnderSelection(obj, id, dataset, timePoi
 % Output Arguments:
 %   - **objectIds** - indices of the objects the drawing covers
 %   - **problem** - char, why nothing can be done; empty when there is no problem
+%   - **details** - cell array of extra lines for the message box, in the shape
+%     ``iComplain`` takes them
 objectIds = [];
 problem = '';
+details = {};
 
 readOptions = struct('blockModeSwitch', 0, 'id', id);
 zOffset = 0;
@@ -349,8 +352,8 @@ end
 selectionVolume = cell2mat(obj.getData3D('selection', timePoint, 3, NaN, readOptions));
 carrying = find(any(any(selectionVolume, 1), 2));
 if isempty(carrying)
-    problem = sprintf(['The Selection layer is empty.\n' ...
-        'Draw the break into it first, or pick the objects to split from the list.']);
+    problem = 'The Selection layer is empty.';
+    details = {'Draw the break into it first, or pick the objects from the list.'};
     return;
 end
 
@@ -361,8 +364,8 @@ objectIds = double(unique(labelsBlock(drawnHere)))';
 objectIds = objectIds(objectIds > 0);
 
 if isempty(objectIds)
-    problem = sprintf(['The Selection layer does not cover any object.\n' ...
-        'Draw the break across the object to be split, not beside it.']);
+    problem = 'The Selection layer does not cover any object.';
+    details = {'Draw across the objects to act on, not beside them.'};
 end
 end
 

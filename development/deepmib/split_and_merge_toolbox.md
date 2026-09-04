@@ -627,7 +627,13 @@ travel to a button. `useShortcuts` puts three keys on the editor for as long as 
 |---|---|---|
 | `a`, `shift+a` | Add selection to material | **Merge** |
 | `s`, `shift+s` | Subtract from material | **Split by selection** |
+| `c`, `shift+c` | Clear selection | **Clear list** - empties the picked objects |
 | ++ctrl+f++ | Find material under cursor | **Add the object under the cursor to the selection** |
+
+`c` empties the **list**, not the Selection layer: a shape drawn for the next Merge survives it. That
+is a real difference from MIB's own `c`, which is the one thing the checkbox takes away with no
+equivalent inside the editor - the drawing goes when an operation consumes it, or with the layer's
+own controls.
 
 Both `a` and `shift+a` have to be swallowed: MIB treats them as *one* shortcut with two scopes
 (`overrideShift`), so leaving the shift variant through would let it write to the material. Here they
@@ -655,8 +661,8 @@ anywhere cannot leave it claiming the editor still owns the keys.
 
 The label is just `Shortcuts`; the mapping belongs in the tooltip, which is the .mlapp's:
 
-> `a` = Merge, `s` = Split by selection, `Ctrl+F` = pick the object under the cursor. While ticked
-> these keys no longer add to or subtract from the material.
+> `a` = Merge, `s` = Split by selection, `c` = clear the list, `Ctrl+F` = pick the object under the
+> cursor. While ticked these keys no longer add to or subtract from the material.
 
 **Found while wiring it: the window was deaf to MIB's own shortcuts - twice over.**
 
@@ -766,7 +772,7 @@ In 3D mode; the 2D list is a different thing and has its own group, [I](#i-2d-mo
 | B7 | Type an index that does not exist | *"There is no object N in this model"*, nothing selected |
 | B8 | Click one row | View centres on the object, slice jumps to it, object appears in the Selection layer |
 | B9 | Ctrl-click / shift-click several rows | All of them highlighted together |
-| B10 | Highlight one entry in **Selected objects**, right-click, *Remove highlighted from selection* | Only that object leaves the selection and the highlight; *Clear the selection* empties it |
+| B10 | Highlight one entry in **Selected objects**, right-click, *Remove highlighted from selection* | Only that object leaves the selection and the highlight; *Clear list* empties it |
 
 ### C. Picking by clicking - the part no test covers
 
@@ -898,10 +904,11 @@ Group **C** is the same set of hazards for the mouse; this is the one for the ke
 | J1 | Tick **Shortcuts**, hover an object, ++ctrl+f++ | It is selected and highlighted |
 | J2 | Hover a second object, ++ctrl+f++ | Both are selected - it adds, unlike a plain click |
 | J3 | Press ++a++ | They merge, exactly as the button does |
+| J3b | Pick two objects with ++ctrl+f++, press ++c++ | The list and the highlight are empty. A shape drawn in the Selection layer is **still there** - `c` clears the list, not the layer |
 | J4 | Brush a break, press ++s++ | The object under the drawing splits |
 | J5 | Press ++shift+a++ and ++shift+s++ | Same as without shift. **Nothing is added to or subtracted from the material** - that is the failure to watch for, and it is silent |
 | J6 | Press ++ctrl+a++, ++alt+s++, ++i++, ++c++ | MIB's own behaviour, untouched |
-| J7 | Untick the checkbox, press ++a++ and ++s++ over a selection | Add to material and subtract from material are back |
+| J7 | Untick the checkbox, press ++a++, ++s++ and ++c++ over a selection | Add to material, subtract from material and clear selection are back |
 | J8 | Tick it, then **close the window** | Same as J7. **This is the one that makes MIB confusing if it is broken** |
 | J9 | Tick it, then switch to a dataset with no model (or a 63-material one), press ++a++ | MIB's own shortcut runs. The editor declines keys it cannot act on rather than swallowing them |
 | J10 | Tick it and type into **Go to object** | The number goes in; the keys are not stolen from the field |

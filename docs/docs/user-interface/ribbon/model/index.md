@@ -578,15 +578,19 @@ already resting on, so that proofreading needs one hand for the mouse and nothin
 |-----|------|
 | ++a++ | Merge |
 | ++s++ | Split by selection |
+| ++c++ | Empty the list of picked objects |
 | ++ctrl+f++ | Add the object under the cursor to the selection |
 
-While the checkbox is ticked these three keys do **not** add to or subtract from the material as they
-normally do - that is what it is for. Untick it, or close the editor, and they are back. Everything
-else, ++i++ and ++ctrl+z++ included, keeps working throughout.
+While the checkbox is ticked these keys do **not** add to the material, subtract from it or clear the
+Selection layer as they normally do - that is what it is for. ++c++ in particular empties the list of
+picked objects and leaves anything you have drawn where it is. Untick the checkbox, or close the
+editor, and the usual meanings are back. Everything else, ++i++ and ++ctrl+z++ included, keeps
+working throughout.
 
 To take an object back out of the list of selected objects, highlight it there and right-click for
-<span class="widget widget-button">Remove highlighted from selection</span>. The selection is emptied
-by itself after an operation, ready for the next one.
+<span class="widget widget-button">Remove highlighted from selection</span>;
+<span class="widget widget-button">Clear list</span> in the same menu empties it altogether. The list
+is emptied by itself after an operation, ready for the next one.
 
 Selecting a single object in the list also moves the view to it, so an object can be found from its
 number alone; in 2D the view stays on the current slice. Use **jump to index** to reach an object

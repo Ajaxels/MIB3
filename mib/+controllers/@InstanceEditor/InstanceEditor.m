@@ -455,6 +455,12 @@ classdef InstanceEditor < handle
                 case 's'
                     if hasControl || hasAlt; return; end
                     obj.runOperation('SplitBySelection');
+                case 'c'
+                    % Empties the list of picked objects, not the Selection
+                    % layer as MIB's own 'c' does. Collecting objects with
+                    % Ctrl+F is only comfortable if starting again is one key.
+                    if hasControl || hasAlt; return; end
+                    obj.selectedList_ContextMenu('clear');
                 case 'f'
                     if ~hasControl || hasAlt; return; end
                     % Adds rather than replaces: the point of picking objects
@@ -464,6 +470,13 @@ classdef InstanceEditor < handle
                     obj.pickObjectUnderCursor('add');
                 otherwise
                     return;
+            end
+
+            % Printed only when the key was actually taken, so silence in the
+            % trace means the takeover is not reaching this window - the failure
+            % that killed pick mode twice.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.InstanceEditor.handleShortcut(%s): triggered\n', key);
             end
             consumed = true;
         end
@@ -644,6 +657,10 @@ classdef InstanceEditor < handle
             % click too many otherwise means starting the whole pick again.
             % Ctrl-clicking the object in the image removes it too, but only if
             % it is still findable there; this works from the list alone.
+            %
+            % ``'clear'`` is also the ``c`` key while shortcut mode is on, and it
+            % empties the **list**, not the Selection layer - a drawing made for
+            % the next operation survives it.
             %
             % Input Arguments:
             %   - **action** - char, ``'remove'`` or ``'clear'``
