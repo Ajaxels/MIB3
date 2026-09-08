@@ -38,6 +38,12 @@ if needsObjects && isempty(obj.selectedObjects)
     return;
 end
 
+% Cleanup is the only operation with settings of its own and no widgets for
+% them: they are asked for here, seeded with the last answer of the session.
+% Cancelling the dialog cancels the operation, rather than running it on
+% thresholds the user was in the middle of changing.
+if strcmp(action, 'Cleanup') && ~obj.askCleanupSettings(true); return; end
+
 obj.updateBatchOptFromGUI();
 
 % The Selection layer is the user's drawing surface and the editor's highlight
@@ -48,9 +54,7 @@ obj.updateBatchOptFromGUI();
 % consumed afterwards, so a drawing cannot be applied twice.
 obj.releaseHighlight();
 
-% MaxRows only governs how much of the list is rendered, so it has no business
-% in the model's options or in the SyncBatch payload they are published as.
-BatchOpt = rmfield(obj.BatchOpt, 'MaxRows');
+BatchOpt = obj.BatchOpt;
 BatchOpt.Action = {action};
 BatchOpt.ObjectIndices = strjoin(arrayfun(@num2str, obj.selectedObjects, 'UniformOutput', false), ', ');
 BatchOpt.id = obj.mibModel.getActiveId();

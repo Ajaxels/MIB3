@@ -540,99 +540,14 @@ The rendered material is specified in the Materials list of the [Segmentation Pa
 
 Corrects individual objects of an instance model by hand: splitting one object into two, merging
 several into one, bridging a gap between two halves of the same object, and deleting false
-detections.
+detections. Objects are picked from a list, by clicking them in the image, or by drawing over them
+in the Selection layer.
 
-It is the proofreading step after **Stitch 2D instances to 3D**. Automatic stitching leaves errors
-that no threshold can remove - two objects that genuinely overlap across many slices are fused, and
-one object that breaks in two far apart in Z stays two - and those are repaired here.
+It is the proofreading step after **Stitch 2D instances to 3D**, which leaves errors that no
+threshold can remove. Requires an instance model (65535 or 4294967295 materials), where every object
+has its own index.
 
-Requires an instance model (65535 or 4294967295 materials), where every object has its own index.
-
-<div class="h4-like">2D and 3D</div>
-
-<span class="widget widget-checkbox">3D (whole object)</span> decides what an operation reaches. With it off, everything is confined to the shown slice, and the list follows: it names the objects on that slice and gives their area on it.
-
-The editor opens with it off. This is the mode for a model that has not been stitched into 3D yet. There the numbering starts again from 1 on every slice, so the same number is a different object on each one - which is why the list cannot describe the whole stack at once, and why objects picked on one slice are dropped when the list moves to another.
-
-Moving to another slice re-reads the list. On a large stack, turn <span class="widget widget-checkbox">Update the list on slice change</span> off and press <span class="widget widget-button">Update list</span> when you need it; until then the status line says which slice the list is describing.
-
-<div class="h4-like">Choosing the objects to work on</div>
-
-Objects can be picked from the list, or with
-<span class="widget widget-checkbox">Pick objects by clicking</span>, which lets you click them
-directly in the Image View panel. While clicking, a plain <mouse class="left"></mouse> starts a new
-selection, ++shift++ adds an object to it and ++ctrl++ takes one out. Panning with
-<mouse class="right"></mouse> keeps working as usual. Whatever is picked is shown in the Selection
-layer, so you can see what you are about to change before you change it; anything you have drawn
-there yourself is kept, and comes back as soon as you start drawing again.
-
-**Merge** and **Split by selection** need no picking at all: draw a shape in the Selection layer and
-they act on whatever it covers. Picking objects first restricts them to those objects.
-
-<div class="h4-like">Working from the keyboard</div>
-
-<span class="widget widget-checkbox">Shortcuts</span> puts the two operations on the keys the hand is
-already resting on, so that proofreading needs one hand for the mouse and nothing else:
-
-| Key | Does |
-|-----|------|
-| ++a++ | Merge |
-| ++s++ | Split by selection |
-| ++c++ | Empty the list of picked objects |
-| ++ctrl+f++ | Add the object under the cursor to the selection |
-
-While the checkbox is ticked these keys do **not** add to the material, subtract from it or clear the
-Selection layer as they normally do - that is what it is for. ++c++ in particular empties the list of
-picked objects and leaves anything you have drawn where it is. Untick the checkbox, or close the
-editor, and the usual meanings are back. Everything else, ++i++ and ++ctrl+z++ included, keeps
-working throughout.
-
-To take an object back out of the list of selected objects, highlight it there and right-click for
-<span class="widget widget-button">Remove highlighted from selection</span>;
-<span class="widget widget-button">Clear list</span> in the same menu empties it altogether. The list
-is emptied by itself after an operation, ready for the next one.
-
-Selecting a single object in the list also moves the view to it, so an object can be found from its
-number alone; in 2D the view stays on the current slice. Use **jump to index** to reach an object
-that the list does not currently show.
-
-<div class="h4-like">Operations</div>
-
-| Operation | Description |
-|-----------|-------------|
-| **Merge** | Joins the selected objects into one. The result takes the **smallest** of their indices; the others become free. Needs nothing picked either: draw one shape across everything that belongs together and press Merge - the whole of every object the shape touches is joined, not only the part under it. |
-| **Split components** | Breaks each selected object into its separate pieces. The largest piece keeps the index, every other piece gets a new one. Use it when one index covers two things that do not touch. |
-| **Split by selection** | Removes whatever is in the Selection layer from the object, then splits what is left. Needs no object picked: the drawing decides what to cut, and everything it covers is split. Picking objects first restricts the cut to them, for a line that clips a neighbour. This is the one to use after drawing a break with the brush - see below. |
-| **Cut at slice** | Splits the object along Z: everything from the shown slice onwards becomes a new object. Use it on an object that runs correctly for a while and then continues into a neighbour. |
-| **Connect** | Joins two objects that belong together but are separated by a gap in Z, filling the gap between them. `interpolate` morphs between their two facing cross-sections; `selection` uses whatever is in the Selection layer instead, for a gap whose shape cannot be guessed. Only empty space is filled, so an object lying between the two is never overwritten. |
-| **Delete** | Removes the selected objects. |
-| **Cleanup** | Applies the same noise filters as the stitching dialog to the whole model, without re-stitching it. Object numbers are left alone. |
-| **Compact** | Renumbers every object to a continuous 1, 2, 3... after deletes and splits have left gaps. **All object numbers change.** |
-
-Every operation can be undone with ++ctrl+z++.
-
-!!! tip "Splitting an object with the brush"
-    The most direct way to split an object is to draw the break yourself:
-
-    1. Brush the break into the Selection layer where the object should be cut. In 3D, brush it on a
-       few slices and press ++i++ to interpolate between them.
-    2. Press <span class="widget widget-button">Split by selection</span>.
-
-    There is no need to pick the object: whatever the drawing lies on is what gets cut. The brushed
-    area is cleared out of the object and the two halves become separate objects, in a single
-    undoable step, and the drawing is used up.
-
-    Pick the object first only when the break also crosses a neighbour you want left alone - then
-    the cut is kept to what you picked. Do the picking after the drawing: picking covers the object
-    in the Selection layer, and drawing on top of that clears the highlight out of the way but does
-    not keep the stroke that cleared it.
-
-!!! note "Rebuilding the list"
-    The object list is built once and then kept up to date as you edit, which is what keeps the tool
-    responsive on models with thousands of objects. Changing the model with another tool - a brush
-    stroke, an undo - leaves it out of date, and the status line says so. The next operation rebuilds
-    it before doing anything, so nothing can be applied to stale information; press
-    <span class="widget widget-button">Rebuild</span> to refresh the list without waiting for that.
+See [Instance editor](model-instance-editor.md) for details.
 
 <div class="clear-float"></div>
 

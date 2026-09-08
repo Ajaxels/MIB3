@@ -28,7 +28,18 @@ function applied = editInstanceObjects(obj, BatchOptIn)
 %       - ``'Merge'`` - the selected objects become one, taking the **smallest**
 %         of their indices; the others are freed. With ``ObjectIndices`` empty
 %         the objects are taken from the Selection layer - draw one shape across
-%         them all
+%         them all, and the background under that shape joins the survivor too,
+%         so the stroke closes the gap it was drawn across. A drawing that names
+%         fewer than two objects is not a failed merge but the same gesture over
+%         a smaller region, so it falls through to the two below: over nothing it
+%         becomes an object, over one object it joins that object. The rule is
+%         one rule - *the drawing belongs to the surviving object* - whatever it
+%         happens to cover
+%       - ``'AddObject'`` - the voxels of the Selection layer take the next free
+%         index, so the drawing becomes a new object. ``ObjectIndices`` is not
+%         used
+%       - ``'AddToObject'`` - the voxels of the Selection layer are given to the
+%         one object in ``ObjectIndices``, which grows by the drawing
 %       - ``'SplitComponents'`` - each object is broken into its connected
 %         components; the largest keeps the index, the rest get new ones
 %       - ``'SplitBySelection'`` - the voxels of the Selection layer are cleared
@@ -37,28 +48,36 @@ function applied = editInstanceObjects(obj, BatchOptIn)
 %         With ``ObjectIndices`` empty the objects are taken from the drawing
 %         itself - everything it covers is split
 %       - ``'CutAtSlice'`` - voxels at or beyond the shown slice take a new index
-%       - ``'Connect'`` - bridge the Z gap between two objects and merge them
+%       - ``'Connect'`` - bridge between two objects and merge them. Needs
+%         ``Mode3D``; the merge is the same one ``Merge`` performs
 %       - ``'Delete'`` - remove the objects
 %       - ``'Cleanup'`` - apply the noise filters to the whole model
 %       - ``'Compact'`` - renumber every object to a contiguous 1..N
 %
 %     - ``.ObjectIndices`` - char, comma-separated object indices to act on, e.g.
-%       ``'7, 12'``. Ignored by ``Cleanup`` and ``Compact``. Empty is an error
-%       everywhere except ``Merge`` and ``SplitBySelection``, where it means
-%       "whatever the Selection layer covers"; the drawing is cleared afterwards,
-%       having been used
+%       ``'7, 12'``. Ignored by ``Cleanup``, ``Compact`` and ``AddObject``, and
+%       exactly one index for ``AddToObject``. Empty is an error everywhere except
+%       ``Merge`` and ``SplitBySelection``, where it means "whatever the Selection
+%       layer covers"; the drawing is cleared afterwards, having been used
 %     - ``.Mode3D`` - logical, operate on the whole volume (default) or only on
 %       the shown slice
 %     - ``.Connectivity`` - cell, ``'26'``/``'6'`` in 3D, ``'8'``/``'4'`` in 2D. A
 %       value belonging to the other mode is translated rather than rejected
-%     - ``.ConnectMode`` - cell, how ``Connect`` fills the gap:
+%     - ``.ConnectMode`` - cell, how ``Connect`` builds the bridge:
 %
 %       - ``'interpolate'`` - shape-interpolate between the two facing
-%         cross-sections (``utils.interpolateShapes``)
-%       - ``'selection'`` - use the current Selection layer as the bridge
+%         cross-sections (``utils.interpolateShapes``). Needs a gap in Z, having
+%         to have two faces to morph between
+%       - ``'selection'`` - use the current Selection layer as the bridge. Takes
+%         the same path as a drawing-driven ``Merge`` and needs no gap, so it
+%         also joins two objects that share a Z range but never touch
 %
-%     - ``.MinObjectVoxels`` / ``.MinObjectSlices`` / ``.AbsorbFragmentVoxels`` -
-%       thresholds for ``Cleanup``; see ``utils.instances.cleanup``
+%     - ``.cleanupMinObjectVoxels`` / ``.cleanupMinObjectSlices`` /
+%       ``.cleanupAbsorbFragmentVoxels`` - thresholds for ``Cleanup``, which is
+%       the only action that reads them; see ``utils.instances.cleanup``. The
+%       prefix keeps them apart from the identically-purposed
+%       ``MinObjectVoxels`` of ``models.MibModel.stitchModelInstances``, which
+%       are that method's own and are set in its own dialog
 %     - ``.showWaitbar`` - logical, show a progress dialog for the two whole-volume
 %       actions. The per-object actions are sub-second by design and never show one
 %     - ``.id`` - *(optional)* dataset index 1-9; default = active dataset
@@ -110,31 +129,31 @@ applied = false;   % stays false on every rejection path below
 %% Declaration of the BatchOpt structure
 BatchOpt = struct();
 BatchOpt.Action = {'Merge'};
-BatchOpt.Action{2} = {'Merge', 'SplitComponents', 'SplitBySelection', 'CutAtSlice', ...
-    'Connect', 'Delete', 'Cleanup', 'Compact'};
+BatchOpt.Action{2} = {'Merge', 'AddObject', 'AddToObject', 'SplitComponents', 'SplitBySelection', ...
+    'CutAtSlice', 'Connect', 'Delete', 'Cleanup', 'Compact'};
 BatchOpt.ObjectIndices = '';
 BatchOpt.Mode3D = true;
 BatchOpt.Connectivity = {'26'};
 BatchOpt.Connectivity{2} = {'26', '6', '8', '4'};
 BatchOpt.ConnectMode = {'interpolate'};
 BatchOpt.ConnectMode{2} = {'interpolate', 'selection'};
-BatchOpt.MinObjectVoxels = {0, [0, 1e9], 'on'};
-BatchOpt.MinObjectSlices = {0, [0, 1e6], 'on'};
-BatchOpt.AbsorbFragmentVoxels = {5, [0, 1e6], 'on'};
+BatchOpt.cleanupMinObjectVoxels = {0, [0, 1e9], 'on'};
+BatchOpt.cleanupMinObjectSlices = {0, [0, 1e6], 'on'};
+BatchOpt.cleanupAbsorbFragmentVoxels = {5, [0, 1e6], 'on'};
 BatchOpt.showWaitbar = true;
 BatchOpt.id = obj.getActiveId();
 
 BatchOpt.mibBatchSectionName = 'Ribbon -> Model';
 BatchOpt.mibBatchActionName  = 'Instance editor';
 
-BatchOpt.mibBatchTooltip.Action = 'Operation to apply. Merge: the selected objects become one and take the smallest of their indices. Split into components: each object is broken into its connected pieces, the largest keeping the index. Split by selection: clear the Selection layer out of the object first, then split - use after brushing a break. Cut at slice: everything from the shown slice onwards becomes a new object. Connect: fill the Z gap between two objects and join them. Delete: remove the objects. Cleanup: apply the noise filters to the whole model. Compact: renumber every object to 1..N';
+BatchOpt.mibBatchTooltip.Action = 'Operation to apply. Merge: the selected objects become one and take the smallest of their indices; with nothing selected the drawing decides, and the background under it joins the survivor - over one object it grows that object, over none it becomes a new one. Add object: the drawing in the Selection layer takes the next free index. Add to object: the drawing is given to the single object in Object indices. Split into components: each object is broken into its connected pieces, the largest keeping the index. Split by selection: clear the Selection layer out of the object first, then split - use after brushing a break. Cut at slice: everything from the shown slice onwards becomes a new object. Connect: fill the Z gap between two objects and join them. Delete: remove the objects. Cleanup: apply the noise filters to the whole model. Compact: renumber every object to 1..N';
 BatchOpt.mibBatchTooltip.ObjectIndices = 'Comma-separated indices of the objects to act on, for example "7, 12". Not used by Cleanup and Compact. Leave it empty with "Merge" or "Split by selection" to act on whatever the Selection layer covers';
 BatchOpt.mibBatchTooltip.Mode3D = 'Act on the whole 3D object. When off, only the shown slice is affected - splitting then gives every slice of the object its own index';
 BatchOpt.mibBatchTooltip.Connectivity = 'Voxel connectivity used when splitting into components: 26 or 6 in 3D, 8 or 4 in 2D. The lower value keeps pieces apart that touch only at a corner or an edge';
-BatchOpt.mibBatchTooltip.ConnectMode = 'How Connect fills the gap between two objects. "interpolate": morph between the two facing cross-sections. "selection": use whatever is currently in the Selection layer as the bridge, for a gap whose shape cannot be guessed. Either way only background voxels are written, so a third object in the way is never overwritten';
-BatchOpt.mibBatchTooltip.MinObjectVoxels = 'Cleanup: delete objects smaller than this many voxels. 0 = keep all';
-BatchOpt.mibBatchTooltip.MinObjectSlices = 'Cleanup: delete objects occupying this many Z-slices or fewer. 0 = keep all, 1 = drop single-slice objects. Catches large in-plane false detections that a voxel threshold cannot reach';
-BatchOpt.mibBatchTooltip.AbsorbFragmentVoxels = 'Cleanup: hand any object of this size or smaller to the object surrounding it in-plane. 0 = off. This moves voxels rather than deleting them, so it fills the holes that stray predictor pixels punch into otherwise solid objects';
+BatchOpt.mibBatchTooltip.ConnectMode = 'How Connect bridges two objects. "interpolate": morph between the two facing cross-sections, which needs a gap in Z to have two faces to work from. "selection": use whatever is currently in the Selection layer as the bridge, for a gap whose shape cannot be guessed, or for two objects that share a Z range but never touch. Either way only background voxels are written, so a third object in the way is never overwritten';
+BatchOpt.mibBatchTooltip.cleanupMinObjectVoxels = 'Cleanup: delete objects smaller than this many voxels. 0 = keep all';
+BatchOpt.mibBatchTooltip.cleanupMinObjectSlices = 'Cleanup: delete objects occupying this many Z-slices or fewer. 0 = keep all, 1 = drop single-slice objects. Catches large in-plane false detections that a voxel threshold cannot reach';
+BatchOpt.mibBatchTooltip.cleanupAbsorbFragmentVoxels = 'Cleanup: hand any object of this size or smaller to the object surrounding it in-plane. 0 = off. This moves voxels rather than deleting them, so it fills the holes that stray predictor pixels punch into otherwise solid objects';
 BatchOpt.mibBatchTooltip.showWaitbar = 'Show or not the progress bar during Cleanup and Compact';
 
 %% Batch mode check actions
@@ -187,7 +206,7 @@ end
 wholeModelAction = ismember(action, {'Cleanup', 'Compact'});
 objectIds = [];
 derivedFromDrawing = false;
-if ~wholeModelAction
+if ~wholeModelAction && ~strcmp(action, 'AddObject')
     objectIds = iParseIndices(BatchOpt.ObjectIndices);
     % Both of these are gestures over a region, and the region already says
     % which objects it means: the drawing is the cut for Split by selection and
@@ -197,11 +216,24 @@ if ~wholeModelAction
     % form; every one of them is validated the same way below.
     if isempty(objectIds) && ismember(action, {'Merge', 'SplitBySelection'})
         [objectIds, problem, details] = iObjectsUnderSelection(obj, id, dataset, timePoint, BatchOpt.Mode3D);
+
+        % Something was drawn, but on nothing. What that means depends on the
+        % action: there is nothing to cut, but "make this one object" still
+        % reads perfectly well when the region is empty - and that is what MIB's
+        % own 'a' does to a material, so the key keeps its meaning here.
+        if isempty(problem) && isempty(objectIds)
+            if strcmp(action, 'Merge')
+                action = 'AddObject';
+            else
+                problem = 'The Selection layer does not cover any object.';
+                details = {'Draw across the object to be split, not beside it.'};
+            end
+        end
         if isempty(problem) && strcmp(action, 'Merge') && isscalar(objectIds)
-            % "Merge needs at least two objects" is true but unhelpful when the
-            % objects were never typed in: it is the drawing that is too small.
-            problem = sprintf('The Selection layer covers only object %d.', objectIds);
-            details = {'Draw over every object to be merged, or pick them from the list.'};
+            % One object under the drawing is not a merge that came up short: it
+            % is the same gesture again, "this region belongs to that object",
+            % so the drawn voxels join it.
+            action = 'AddToObject';
         end
         if ~isempty(problem)
             iComplain(obj, problem, 'Instance editor', details);
@@ -210,23 +242,32 @@ if ~wholeModelAction
         end
         derivedFromDrawing = true;
     end
-    [objectIds, problem] = iValidateIndices(objectIds, index, action);
-    if ~isempty(problem)
-        iComplain(obj, problem, 'Instance editor');
-        notify(obj, 'StopProtocol');
-        return;
+    if ~strcmp(action, 'AddObject')
+        [objectIds, problem] = iValidateIndices(objectIds, index, action);
+        if ~isempty(problem)
+            iComplain(obj, problem, 'Instance editor');
+            notify(obj, 'StopProtocol');
+            return;
+        end
     end
 end
 
 %% Dispatch
 % The drawing is used up whenever the operation used it: as the cut, as the
-% bridge, or to say which objects were meant.
-consumesSelection = derivedFromDrawing || strcmp(action, 'SplitBySelection') || ...
+% bridge, to say which objects were meant, or as the new object itself.
+consumesSelection = derivedFromDrawing || ...
+    ismember(action, {'SplitBySelection', 'AddObject', 'AddToObject'}) || ...
     (strcmp(action, 'Connect') && strcmp(BatchOpt.ConnectMode{1}, 'selection'));
 
 switch action
     case {'Cleanup', 'Compact'}
         done = iWholeModelAction(obj, id, action, BatchOpt, batchModeSwitch);
+    case {'AddObject', 'AddToObject'}
+        % An empty target means "a new index"; the two differ in nothing else.
+        target = [];
+        if strcmp(action, 'AddToObject'); target = objectIds; end
+        done = iDrawingToObject(obj, id, dataset, index, timePoint, BatchOpt, ...
+            batchModeSwitch, consumesSelection, target);
     otherwise
         done = iObjectAction(obj, id, action, objectIds, index, timePoint, ...
             BatchOpt, batchModeSwitch, consumesSelection);
@@ -319,27 +360,32 @@ indices = indices(~isnan(indices));
 end
 
 % =====================================================================
-function [objectIds, problem, details] = iObjectsUnderSelection(obj, id, dataset, timePoint, use3D)
-% Which objects the current drawing sits on.
+function [box, drawn] = iDrawingExtent(obj, id, dataset, timePoint, use3D)
+% Where the drawing is, and what it is.
+%
+% The single definition of "the region the user drew", shared by everything that
+% takes the Selection layer as input: which objects it covers
+% (``iObjectsUnderSelection``), the object it becomes (``iDrawingToObject``) and
+% the background it hands to a merge or a bridge (``iAbsorbDrawing``). Each of
+% those had its own copy, and they had already drifted - one narrowed to the
+% slices carrying the drawing, the other to its full box.
 %
 % The only read in this file that is not confined to a bounding box, and it is
-% affordable because the slices carrying the drawing are found first: on a
-% 1078x1380x101 stack any() over the layer costs 3 ms, against 83 ms for a
-% find() across the whole volume, and the labels are then read for those slices
-% alone. The Z range is left off the selection read so it keeps the
-% copy-on-write fast path of getData3D instead of duplicating the layer.
+% affordable because the extent is found by reduction rather than by find(): on
+% a 1078x1380x101 stack the any() passes cost 3 ms against 83 ms for a find()
+% across the whole volume, and everything downstream is then proportional to the
+% box. The Z range is left off the read so it keeps the copy-on-write fast path
+% of getData3D instead of duplicating the layer.
 %
 % Input Arguments:
 %   - **use3D** - logical, whole volume or the shown slice only
 %
 % Output Arguments:
-%   - **objectIds** - indices of the objects the drawing covers
-%   - **problem** - char, why nothing can be done; empty when there is no problem
-%   - **details** - cell array of extra lines for the message box, in the shape
-%     ``iComplain`` takes them
-objectIds = [];
-problem = '';
-details = {};
+%   - **box** - ``[y1 y2 x1 x2 z1 z2]`` of the drawn voxels, or ``[]`` when
+%     nothing is drawn
+%   - **drawn** - logical array, the drawing cropped to ``box``
+box = [];
+drawn = [];
 
 readOptions = struct('blockModeSwitch', 0, 'id', id);
 zOffset = 0;
@@ -348,25 +394,139 @@ if ~use3D
     readOptions.z = [sliceNumber, sliceNumber];
     zOffset = sliceNumber - 1;
 end
-
 selectionVolume = cell2mat(obj.getData3D('selection', timePoint, 3, NaN, readOptions));
-carrying = find(any(any(selectionVolume, 1), 2));
-if isempty(carrying)
+
+rowsUsed = find(any(any(selectionVolume, 2), 3));
+if isempty(rowsUsed); return; end
+colsUsed   = find(any(any(selectionVolume, 1), 3));
+planesUsed = find(any(any(selectionVolume, 1), 2));
+
+box = [rowsUsed(1), rowsUsed(end), colsUsed(1), colsUsed(end), ...
+       zOffset + planesUsed(1), zOffset + planesUsed(end)];
+drawn = selectionVolume(rowsUsed(1):rowsUsed(end), colsUsed(1):colsUsed(end), ...
+    planesUsed(1):planesUsed(end)) > 0;
+end
+
+% =====================================================================
+function [writes, box] = iAbsorbDrawing(obj, id, dataset, timePoint, use3D, value)
+% Give the drawn background voxels to an object.
+%
+% The shared half of two gestures that used to be written out twice: a Merge
+% whose objects came from the drawing closes the gap it was drawn across, and
+% Connect in ``selection`` mode bridges with a shape drawn by hand. Both are
+% "this background belongs to that object", and they now differ only in how the
+% object was chosen.
+%
+% **Background only.** A voxel already carrying a label is left alone, so
+% neither gesture can carve through an object lying under the stroke. For Merge
+% that costs nothing - everything labelled under the drawing is being merged
+% anyway - and for Connect it is the guard that makes it safe in a crowded
+% volume.
+%
+% Output Arguments:
+%   - **writes** - one entry, or none when there is no background to give
+%   - **box** - extent of the drawing, ``[]`` when nothing is drawn. Returned
+%     whether or not anything is written, so the caller can tell "nothing was
+%     drawn" from "everything drawn is already an object"
+writes = struct('pixelIdxList', {}, 'value', {});
+[box, drawn] = iDrawingExtent(obj, id, dataset, timePoint, use3D);
+if isempty(box); return; end
+
+free = drawn & (iReadBox(obj, id, 'labels', timePoint, box) == 0);
+if ~any(free, 'all'); return; end
+
+writes(end+1) = struct(...
+    'pixelIdxList', iCropToFull(obj, id, box, find(free), timePoint), ...
+    'value', value);
+end
+
+% =====================================================================
+function [objectIds, problem, details] = iObjectsUnderSelection(obj, id, dataset, timePoint, use3D)
+% Which objects the current drawing sits on.
+%
+% Input Arguments:
+%   - **use3D** - logical, whole volume or the shown slice only
+%
+% Output Arguments:
+%   - **objectIds** - indices of the objects the drawing covers. Empty with no
+%     ``problem`` means something was drawn but it lies entirely on background,
+%     which is a finding rather than a fault: what to do about it belongs to the
+%     action, and Merge turns it into a new object
+%   - **problem** - char, why nothing can be done; empty when there is no problem
+%   - **details** - cell array of extra lines for the message box, in the shape
+%     ``iComplain`` takes them
+objectIds = [];
+problem = '';
+details = {};
+
+[box, drawn] = iDrawingExtent(obj, id, dataset, timePoint, use3D);
+if isempty(box)
     problem = 'The Selection layer is empty.';
     details = {'Draw the break into it first, or pick the objects from the list.'};
     return;
 end
 
-readOptions.z = zOffset + [carrying(1), carrying(end)];
-labelsBlock = cell2mat(obj.getData3D('labels', timePoint, 3, NaN, readOptions));
-drawnHere = selectionVolume(:, :, carrying(1):carrying(end)) > 0;
-objectIds = double(unique(labelsBlock(drawnHere)))';
+labelsBlock = iReadBox(obj, id, 'labels', timePoint, box);
+objectIds = double(unique(labelsBlock(drawn)))';
 objectIds = objectIds(objectIds > 0);
-
-if isempty(objectIds)
-    problem = 'The Selection layer does not cover any object.';
-    details = {'Draw across the objects to act on, not beside them.'};
 end
+
+% =====================================================================
+function done = iDrawingToObject(obj, id, dataset, index, timePoint, BatchOpt, batchModeSwitch, consumesSelection, targetId)
+% Write the drawing into the model as an object, new or existing.
+%
+% What MIB's own ``a`` does to a material, done to an instance model. Reached
+% from Merge whenever the drawing does not name two objects to join: over
+% background it becomes a new object, over one object it joins that object. Both
+% are the same gesture - "this region is that object" - and both are available to
+% batch protocols by name, as ``AddObject`` and ``AddToObject``.
+%
+% Nothing else can be overwritten on either path, because they are only taken
+% when the drawing covers no other object. Asked for by name, the drawing is
+% written over whatever lies under it, which is the caller's choice to make.
+%
+% Input Arguments:
+%   - **consumesSelection** - logical, clear the Selection layer afterwards
+%   - **targetId** - index of the object to grow, or ``[]`` to take the next
+%     free index
+%
+% Output Arguments:
+%   - **done** - logical, true when the drawing was written
+done = false;
+use3D = BatchOpt.Mode3D;
+
+[box, drawn] = iDrawingExtent(obj, id, dataset, timePoint, use3D);
+if isempty(box)
+    iComplain(obj, 'The Selection layer is empty.', 'Instance editor', ...
+        {'Draw the new object into it first.'});
+    return;
+end
+
+% The rescan has to cover the object as it will then be, which for an existing
+% one is more than the drawing: its stats are recomputed from the box it is
+% given, so a box holding only the new part would report only the new part.
+refreshBox = box;
+if isempty(targetId)
+    [targetId, problem] = iAllocateIndices(obj, id, index, 1);
+    if ~isempty(problem); iComplain(obj, problem, 'Instance editor'); return; end
+else
+    refreshBox = iCoverBox(iUnionBox(index, targetId), box);
+end
+
+% Only the drawn voxels change, so the undo step covers the drawing alone.
+if ~batchModeSwitch
+    obj.backup('labels', 1, iBoxOptions(box, id));
+end
+
+iWriteLabels(obj, id, iCropToFull(obj, id, box, find(drawn), timePoint), targetId);
+
+refresh = struct('timePoint', timePoint, 'objectIds', targetId, 'bbox', refreshBox);
+dataset.buildInstanceIndex(refresh);
+
+if consumesSelection
+    if use3D; dataset.clearLayer('selection', '3D'); else; dataset.clearLayer('selection', '2D'); end
+end
+done = true;
 end
 
 % =====================================================================
@@ -391,6 +551,10 @@ if ~isempty(missing)
 end
 if ismember(action, {'Merge', 'Connect'}) && numel(objectIds) < 2
     problem = sprintf('%s needs at least two objects.', action);
+    return;
+end
+if strcmp(action, 'AddToObject') && numel(objectIds) > 1
+    problem = 'The drawing can be given to one object at a time.';
     return;
 end
 if strcmp(action, 'Connect') && numel(objectIds) > 2
@@ -424,6 +588,26 @@ boxes = double(index.bbox(objectIds, :));
 box = [min(boxes(:, 1)), max(boxes(:, 2)), ...
        min(boxes(:, 3)), max(boxes(:, 4)), ...
        min(boxes(:, 5)), max(boxes(:, 6))];
+end
+
+% =====================================================================
+function box = iCoverBox(box, other)
+% Smallest box containing both
+box([1 3 5]) = min(box([1 3 5]), other([1 3 5]));
+box([2 4 6]) = max(box([2 4 6]), other([2 4 6]));
+end
+
+% =====================================================================
+function tf = iBoxesCanTouch(boxA, boxB)
+% Could two objects with these boxes be in contact at all?
+%
+% One-way: ``false`` means they are certainly apart, ``true`` only that the
+% boxes are near enough that they might meet. Enough to tell the user when a
+% Connect has produced one index in two pieces, and it costs nothing - the boxes
+% are already in hand.
+tf = boxA(1) <= boxB(2) + 1 && boxB(1) <= boxA(2) + 1 && ...
+     boxA(3) <= boxB(4) + 1 && boxB(3) <= boxA(4) + 1 && ...
+     boxA(5) <= boxB(6) + 1 && boxB(5) <= boxA(6) + 1;
 end
 
 % =====================================================================
@@ -534,13 +718,24 @@ end
 % problem is reported without half an edit having been applied.
 writes = struct('pixelIdxList', {}, 'value', {});
 
+bridged = false;
+
 switch action
     case 'Merge'
-        % The smallest index wins, by definition of the operation.
-        survivor = min(objectIds);
-        for objectId = setdiff(objectIds, survivor)
-            pixels = iObjectPixels(obj, id, index, objectId, timePoint, sliceNumber, use3D);
-            writes(end+1) = struct('pixelIdxList', pixels, 'value', survivor); %#ok<AGROW>
+        [writes, survivor] = iMergeWrites(obj, id, index, objectIds, timePoint, sliceNumber, use3D);
+
+        % The drawing chose these objects, so it is part of the gesture and not
+        % merely the thing that pointed at them: the background under it joins
+        % the survivor, and the gap the stroke was drawn across closes. This is
+        % what a drawing over a **single** object has always done - the object
+        % grows by it - so the rule no longer changes with how many objects
+        % happen to lie under the stroke.
+        if consumesSelection
+            [absorbed, drawingBox] = iAbsorbDrawing(obj, id, dataset, timePoint, use3D, survivor);
+            if ~isempty(absorbed)
+                writes = [writes, absorbed];
+                box = iCoverBox(box, drawingBox);
+            end
         end
 
     case {'SplitComponents', 'SplitBySelection', 'CutAtSlice'}
@@ -549,8 +744,12 @@ switch action
         if ~isempty(problem); iComplain(obj, problem, 'Instance editor'); return; end
 
     case 'Connect'
-        [writes, box, problem] = iPlanConnect(obj, id, objectIds, index, timePoint, BatchOpt);
+        % Connect is a bridge followed by a merge, and the merge is the same one
+        % Merge does - it used to carry its own copy, with use3D hardcoded true.
+        [writes, box, bridged, problem] = iPlanConnect(obj, id, dataset, objectIds, ...
+            index, timePoint, BatchOpt);
         if ~isempty(problem); iComplain(obj, problem, 'Instance editor'); return; end
+        writes = [writes, iMergeWrites(obj, id, index, objectIds, timePoint, sliceNumber, use3D)];
 
     case 'Delete'
         for objectId = objectIds
@@ -587,7 +786,35 @@ if consumesSelection
     if use3D; dataset.clearLayer('selection', '3D'); else; dataset.clearLayer('selection', '2D'); end
 end
 
+% Connect promises one connected object. When the two overlap in Z there is
+% nothing for "interpolate" to fill, and if their boxes are too far apart to
+% meet, the result is one index in two pieces - the very thing the user opened
+% the editor to repair. Doing that in silence was the defect: it looked like a
+% Connect and was a Merge.
+if strcmp(action, 'Connect') && ~bridged && ...
+        ~iBoxesCanTouch(double(index.bbox(objectIds(1), :)), double(index.bbox(objectIds(2), :)))
+    iComplain(obj, sprintf('Objects %d and %d were joined, but nothing was bridged.', ...
+        objectIds(1), objectIds(2)), 'Connect', ...
+        {'They overlap in Z, so "interpolate" had no gap to fill, and they are too far apart to be touching.', ...
+         'The result is one index in two separate pieces. To join them properly, draw the bridge and use the "selection" mode.'});
+end
+
 done = true;
+end
+
+% =====================================================================
+function [writes, survivor] = iMergeWrites(obj, id, index, objectIds, timePoint, sliceNumber, use3D)
+% Relabel every object but one to the smallest index among them.
+%
+% The whole of Merge, and the last step of Connect. The smallest index wins by
+% definition of the operation, and both callers need that to be the same rule.
+writes = struct('pixelIdxList', {}, 'value', {});
+survivor = min(objectIds);
+for objectId = setdiff(objectIds, survivor)
+    writes(end+1) = struct(...
+        'pixelIdxList', iObjectPixels(obj, id, index, objectId, timePoint, sliceNumber, use3D), ...
+        'value', survivor); %#ok<AGROW>
+end
 end
 
 % =====================================================================
@@ -712,63 +939,85 @@ end
 end
 
 % =====================================================================
-function [writes, box, problem] = iPlanConnect(obj, id, objectIds, index, timePoint, BatchOpt)
-% Bridge the gap between two objects and merge them.
+function [writes, box, bridged, problem] = iPlanConnect(obj, id, dataset, objectIds, index, timePoint, BatchOpt)
+% Plan the **bridge** between two objects. The merge that follows is the
+% caller's, and is the same ``iMergeWrites`` that Merge uses.
 %
-% The bridge is written only where the model is currently background, so a third
-% object lying between the two is never overwritten. The survivor is the smaller
-% index, as for a plain merge.
+% The two modes ask for different things, and only one of them needs a gap:
+%
+% - ``selection`` - the bridge is whatever was drawn, handled by
+%   ``iAbsorbDrawing`` exactly as a drawing-driven Merge is. It makes sense with
+%   or without a gap in Z, so this mode asks nothing about how the two lie: two
+%   objects that share a Z range but never touch are joined by it just as well.
+% - ``interpolate`` - the bridge is morphed between the two facing
+%   cross-sections, so it needs a gap to have two faces to morph between.
+%
+% Output Arguments:
+%   - **bridged** - logical, whether anything was actually written between them.
+%     ``false`` means the caller is about to perform a plain merge, which the
+%     user is told about when the two cannot be touching.
 writes = struct('pixelIdxList', {}, 'value', {});
 problem = '';
+bridged = false;
 survivor = min(objectIds);
-other = max(objectIds);
 box = iUnionBox(index, objectIds);
+
+% Same refusal as CutAtSlice, and for the same reason: this is an operation
+% along Z. Without it Connect ran anyway and merged the whole of both objects
+% through the stack while the mode said one slice.
+if ~BatchOpt.Mode3D
+    problem = 'Connect needs 3D mode - a gap along Z cannot be bridged inside a single slice.';
+    return;
+end
+
+if strcmp(BatchOpt.ConnectMode{1}, 'selection')
+    [writes, drawingBox] = iAbsorbDrawing(obj, id, dataset, timePoint, true, survivor);
+    if isempty(drawingBox)
+        problem = 'The Selection layer is empty - draw the bridging area first, or use the "interpolate" mode.';
+        return;
+    end
+    if isempty(writes)
+        problem = 'Everything drawn already belongs to an object, so there is no bridge to build.';
+        return;
+    end
+    box = iCoverBox(box, drawingBox);
+    bridged = true;
+    return;
+end
 
 boxA = double(index.bbox(objectIds(1), :));
 boxB = double(index.bbox(objectIds(2), :));
-overlapInZ = boxA(5) <= boxB(6) && boxB(5) <= boxA(6);
-
-if ~overlapInZ
-    if boxA(6) < boxB(5)
-        lower = objectIds(1); upper = objectIds(2);
-        zLower = boxA(6);     zUpper = boxB(5);
-    else
-        lower = objectIds(2); upper = objectIds(1);
-        zLower = boxB(6);     zUpper = boxA(5);
-    end
-    bridgeBox = [box(1:4), zLower, zUpper];
-    labelsInBridge = iReadBox(obj, id, 'labels', timePoint, bridgeBox);
-
-    switch BatchOpt.ConnectMode{1}
-        case 'selection'
-            selection = iReadBox(obj, id, 'selection', timePoint, bridgeBox);
-            bridge = selection > 0;
-            if ~any(bridge, 'all')
-                problem = 'The Selection layer is empty - draw the bridging area first, or use the "interpolate" mode.';
-                return;
-            end
-
-        otherwise   % interpolate
-            bridge = false(size(labelsInBridge));
-            bridge(:, :, 1)   = labelsInBridge(:, :, 1) == lower;
-            bridge(:, :, end) = labelsInBridge(:, :, end) == upper;
-            % utils.interpolateShapes morphs between the two annotated planes and
-            % fills everything in between.
-            bridge = utils.interpolateShapes(uint8(bridge)) > 0;
-    end
-
-    % Background only. This is the guard that makes Connect safe to use in a
-    % crowded volume - without it the interpolated tube would carve through
-    % whatever happens to lie between the two objects.
-    bridge = bridge & (labelsInBridge == 0);
-    writes(end+1) = struct(...
-        'pixelIdxList', iCropToFull(obj, id, bridgeBox, find(bridge), timePoint), ...
-        'value', survivor);
+if boxA(5) <= boxB(6) && boxB(5) <= boxA(6)
+    return;     % they overlap in Z: no two faces, nothing to interpolate between
 end
 
-% Whether or not a bridge was needed, the two objects become one.
-pixels = iObjectPixels(obj, id, index, other, timePoint, 0, true);
-writes(end+1) = struct('pixelIdxList', pixels, 'value', survivor);
+if boxA(6) < boxB(5)
+    lower = objectIds(1); upper = objectIds(2);
+    zLower = boxA(6);     zUpper = boxB(5);
+else
+    lower = objectIds(2); upper = objectIds(1);
+    zLower = boxB(6);     zUpper = boxA(5);
+end
+bridgeBox = [box(1:4), zLower, zUpper];
+labelsInBridge = iReadBox(obj, id, 'labels', timePoint, bridgeBox);
+
+bridge = false(size(labelsInBridge));
+bridge(:, :, 1)   = labelsInBridge(:, :, 1) == lower;
+bridge(:, :, end) = labelsInBridge(:, :, end) == upper;
+% utils.interpolateShapes morphs between the two annotated planes and fills
+% everything in between.
+bridge = utils.interpolateShapes(uint8(bridge)) > 0;
+
+% Background only, the same guard iAbsorbDrawing applies to the drawn bridge:
+% without it the interpolated tube would carve through whatever happens to lie
+% between the two objects.
+bridge = bridge & (labelsInBridge == 0);
+if ~any(bridge, 'all'); return; end
+
+writes(end+1) = struct(...
+    'pixelIdxList', iCropToFull(obj, id, bridgeBox, find(bridge), timePoint), ...
+    'value', survivor);
+bridged = true;
 end
 
 % =====================================================================
@@ -795,9 +1044,9 @@ switch action
         readOptions = struct('blockModeSwitch', 0, 'id', id);
         volume = cell2mat(obj.getData3D('labels', timePoint, 3, NaN, readOptions));
 
-        cleanupOptions.absorbFragmentVoxels = BatchOpt.AbsorbFragmentVoxels{1};
-        cleanupOptions.minObjectVoxels = BatchOpt.MinObjectVoxels{1};
-        cleanupOptions.minObjectSlices = BatchOpt.MinObjectSlices{1};
+        cleanupOptions.absorbFragmentVoxels = BatchOpt.cleanupAbsorbFragmentVoxels{1};
+        cleanupOptions.minObjectVoxels = BatchOpt.cleanupMinObjectVoxels{1};
+        cleanupOptions.minObjectSlices = BatchOpt.cleanupMinObjectSlices{1};
         % compact = false: a user who has been working with object 1299 must
         % still find it under that number afterwards. Renumbering is a separate,
         % explicit action.

@@ -31,18 +31,11 @@ obj.view.gui.CloseRequestFcn = @(~, ~) obj.closeWindow();
 obj.view.gui.WindowKeyPressFcn = @(~, e) obj.figureKeyPress(e);
 
 % object list
-%
-% The three list widgets go through objectList_Callback rather than straight to
-% updateObjectTable: the table is repainted from a dozen places internally, and a
-% DeveloperMode marker on it would report a user action every time. The dedicated
-% callback is the only one a widget can fire, so its marker means what it says.
 h.objectTable.SelectionChangedFcn = @(~, e) obj.objectTable_SelectionChanged(e);
-h.MaxRows.ValueChangedFcn         = @(src, ~) obj.objectList_Callback(src);
-h.filterMaxVoxels.ValueChangedFcn = @(src, ~) obj.objectList_Callback(src);
-h.filterMaxSlices.ValueChangedFcn = @(src, ~) obj.objectList_Callback(src);
 h.jumpToIndex.ValueChangedFcn     = @(~, ~) obj.jumpToIndex_Callback();
 h.updateTable.ButtonPushedFcn     = @(~, ~) obj.updateTable_Callback();
 h.autoUpdateTable.ValueChangedFcn = @(~, ~) obj.autoUpdateTable_Callback();
+h.detectionSettings.ButtonPushedFcn = @(~, ~) obj.askDetectionSettings();
 
 % picking
 h.pickByClick.ValueChangedFcn = @(~, ~) obj.pickMode_Callback();
@@ -60,12 +53,8 @@ uimenu(selectionMenu, 'Text', 'Clear list', ...
 h.selectedList.ContextMenu = selectionMenu;
 
 % operation settings
-h.Mode3D.ValueChangedFcn       = @(~, ~) obj.mode3D_Callback();
-h.Connectivity.ValueChangedFcn = @(src, ~) obj.updateBatchOptFromGUI(src);
-h.ConnectMode.ValueChangedFcn  = @(src, ~) obj.updateBatchOptFromGUI(src);
-for spinner = {'MinObjectVoxels', 'MinObjectSlices', 'AbsorbFragmentVoxels'}
-    h.(spinner{1}).ValueChangedFcn = @(src, ~) obj.updateBatchOptFromGUI(src);
-end
+h.Mode3D.ValueChangedFcn      = @(~, ~) obj.mode3D_Callback();
+h.ConnectMode.ValueChangedFcn = @(src, ~) obj.updateBatchOptFromGUI(src);
 
 % operations
 h.mergeButton.ButtonPushedFcn            = @(~, ~) obj.runOperation('Merge');
@@ -76,6 +65,10 @@ h.connectButton.ButtonPushedFcn          = @(~, ~) obj.runOperation('Connect');
 h.deleteButton.ButtonPushedFcn           = @(~, ~) obj.runOperation('Delete');
 h.cleanupButton.ButtonPushedFcn          = @(~, ~) obj.runOperation('Cleanup');
 h.compactButton.ButtonPushedFcn          = @(~, ~) obj.runOperation('Compact');
+
+% The same dialog the Cleanup button opens, without the cleanup that follows it,
+% so the thresholds can be set and looked at while deciding.
+h.cleanupOptions.ButtonPushedFcn = @(~, ~) obj.askCleanupSettings(false);
 
 % housekeeping
 h.rebuildButton.ButtonPushedFcn = @(~, ~) obj.rebuildIndex();

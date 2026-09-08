@@ -26,7 +26,8 @@ h = obj.view.handles;
 editable = obj.modelIsEditable();
 operationWidgets = {'mergeButton', 'splitComponentsButton', 'splitBySelectionButton', ...
     'cutAtSliceButton', 'connectButton', 'deleteButton', 'cleanupButton', ...
-    'compactButton', 'rebuildButton', 'pickByClick', 'updateTable', 'autoUpdateTable'};
+    'cleanupOptions', 'compactButton', 'rebuildButton', 'pickByClick', ...
+    'updateTable', 'autoUpdateTable', 'detectionSettings'};
 for widget = operationWidgets
     h.(widget{1}).Enable = editable;
 end

@@ -63,6 +63,11 @@ classdef InstanceEditor < handle
         tableSlice = []
         % slice the 2D object list was last painted from, so a list that no
         % longer describes the shown slice can say so
+        listOptions = struct('MaxRows', 1000, 'MaxVoxels', 0, 'MaxSlices', 0)
+        % how much of the object list is drawn and what is left out of it: the
+        % row cap and the two size filters (0 = no filter). They govern the
+        % rendering of the list alone and are never sent to the model, which is
+        % why they live here rather than in BatchOpt; see askDetectionSettings
     end
 
     events
@@ -83,6 +88,8 @@ classdef InstanceEditor < handle
         pickObjectUnderCursor(obj, action)             % move the object under the mouse into or out of the selection
         setShortcutMode(obj, enable)                   % take over, or hand back, the a / s / Ctrl+F keys
         runOperation(obj, action)                      % hand an operation to models.MibModel.editInstanceObjects
+        accepted = askCleanupSettings(obj, applyNow)   % ask for the three Cleanup thresholds
+        askDetectionSettings(obj)                      % ask for the list settings and the connectivity
         highlightObjects(obj)                          % show the picked objects in the Selection layer
         releaseHighlight(obj)                          % take the highlight back out of the Selection layer
         updateStatusLine(obj)                          % report the object count and the state of the index cache
@@ -147,23 +154,51 @@ classdef InstanceEditor < handle
             if ~isempty(varargin); obj.mibController = varargin{1}; end
 
             % Mirrors models.MibModel.editInstanceObjects, which is where these
-            % values are actually consumed; the widgets are named to match.
+            % values are actually consumed. Only Mode3D and ConnectMode are
+            % carried by a widget named after their field; the rest are set in
+            % the two settings dialogs - askDetectionSettings and
+            % askCleanupSettings - and kept here between them.
             obj.BatchOpt = struct();
             % Opens in 2D: the list then describes the shown slice, which is the
             % only thing it can describe on a model that has not been stitched
             % into 3D yet - and that is what the editor is usually opened on.
-            % The connectivity has to start in the same mode, or the dropdown
+            % The connectivity has to start in the same mode, or the dialog
             % offers 26/6 while the operations run per slice.
             obj.BatchOpt.Mode3D = false;
             obj.BatchOpt.Connectivity = {'8'};
             obj.BatchOpt.Connectivity{2} = {'8', '4'};
             obj.BatchOpt.ConnectMode = {'interpolate'};
             obj.BatchOpt.ConnectMode{2} = {'interpolate', 'selection'};
-            obj.BatchOpt.MinObjectVoxels = {0, [0, 1e9], 'on'};
-            obj.BatchOpt.MinObjectSlices = {0, [0, 1e6], 'on'};
-            obj.BatchOpt.AbsorbFragmentVoxels = {5, [0, 1e6], 'on'};
-            obj.BatchOpt.MaxRows = {1000, [10, 1e5], 'on'};
+            obj.BatchOpt.cleanupMinObjectVoxels = {0, [0, 1e9], 'on'};
+            obj.BatchOpt.cleanupMinObjectSlices = {0, [0, 1e6], 'on'};
+            obj.BatchOpt.cleanupAbsorbFragmentVoxels = {5, [0, 1e6], 'on'};
             obj.BatchOpt.showWaitbar = true;
+
+            % Neither settings dialog has widgets standing behind it, so what was
+            % last answered is what the window knows. It is kept for the session:
+            % settings that are chosen once for a whole proofreading run do not
+            % earn permanent space in a window that is mostly a list, but they
+            % must not be forgotten between two presses of the button either.
+            if isfield(obj.mibModel.sessionSettings, 'instanceEditor')
+                stored = obj.mibModel.sessionSettings.instanceEditor;
+                for name = {'cleanupMinObjectVoxels', 'cleanupMinObjectSlices', 'cleanupAbsorbFragmentVoxels'}
+                    if isfield(stored, name{1}); obj.BatchOpt.(name{1}){1} = stored.(name{1}); end
+                end
+                for name = {'MaxRows', 'MaxVoxels', 'MaxSlices'}
+                    if isfield(stored, name{1}); obj.listOptions.(name{1}) = stored.(name{1}); end
+                end
+                % The stored connectivity may belong to the other mode - the
+                % window always opens in 2D - so only the stance survives:
+                % the full neighbourhood or the minimal one.
+                if isfield(stored, 'Connectivity')
+                    items = obj.BatchOpt.Connectivity{2};
+                    if ismember(stored.Connectivity, {'26', '8'})
+                        obj.BatchOpt.Connectivity{1} = items{1};
+                    else
+                        obj.BatchOpt.Connectivity{1} = items{2};
+                    end
+                end
+            end
 
             %% GUI mode
             obj.view = core.ChildView(obj, 'views.InstanceEditorGUI');
@@ -193,9 +228,10 @@ classdef InstanceEditor < handle
             %
             % The .mlapp owns the layout **and the widget labels**; what is set
             % here is only what has to agree with the code - dropdown items,
-            % spinner limits, table behaviour - so that the two cannot drift
-            % apart silently. The object table's column names are the exception
-            % and belong to updateObjectTable, because they follow the mode.
+            % table behaviour, opening values, tooltips - so that the two cannot
+            % drift apart silently. The object table's column names are the
+            % exception and belong to updateObjectTable, because they follow the
+            % mode.
             h = obj.view.handles;
 
             h.objectTable.ColumnSortable = true;
@@ -203,26 +239,10 @@ classdef InstanceEditor < handle
             h.objectTable.Multiselect = 'on';
             h.selectedList.Multiselect = 'on';
 
-            h.MaxRows.Limits = obj.BatchOpt.MaxRows{2};
-            h.MaxRows.RoundFractionalValues = 'on';
-            h.MaxRows.Value = obj.BatchOpt.MaxRows{1};
-
-            h.Connectivity.Items = obj.BatchOpt.Connectivity{2};
-            h.Connectivity.Value = obj.BatchOpt.Connectivity{1};
             h.ConnectMode.Items = obj.BatchOpt.ConnectMode{2};
             h.ConnectMode.Value = obj.BatchOpt.ConnectMode{1};
             h.Mode3D.Value = obj.BatchOpt.Mode3D;
 
-            for spinner = {'MinObjectVoxels', 'MinObjectSlices', 'AbsorbFragmentVoxels'}
-                name = spinner{1};
-                h.(name).Limits = obj.BatchOpt.(name){2};
-                h.(name).RoundFractionalValues = 'on';
-                h.(name).Value = obj.BatchOpt.(name){1};
-            end
-
-            % 0 means "no filter" for the two list filters
-            h.filterMaxVoxels.Value = 0;
-            h.filterMaxSlices.Value = 0;
             h.jumpToIndex.Value = 0;
             h.autoUpdateTable.Value = true;
             % Both takeovers start off and are owned by the controller state, so
@@ -230,20 +250,131 @@ classdef InstanceEditor < handle
             h.pickByClick.Value = false;
             h.useShortcuts.Value = false;
 
+            obj.applyTooltips();
             obj.applyModeToWidgets();
         end
 
         % -----------------------------------------------------------
-        function applyModeToWidgets(obj)
-            % APPLYMODETOWIDGETS - Enable only the widgets the current mode uses.
+        function applyTooltips(obj)
+            % APPLYTOOLTIPS - Explain every widget in one hover.
             %
-            % In 2D mode the list describes one slice, so it has a slice to
-            % follow and no slice-count column to filter on; in 3D mode it
-            % describes the whole model and neither applies.
+            % The .mlapp carries the labels and this carries the explanations,
+            % so that a widget cannot promise something the code stopped doing.
+            % Each row names the widgets that share a text: a setting and its
+            % label are one row, because the label is what the eye lands on and
+            % a tooltip that only answers over the spinner is half a tooltip.
+            %
+            % One reminder line each. What an operation does in full belongs in
+            % the help page, not here.
+            h = obj.view.handles;
+
+            tooltips = {
+                {'detectionSettings'}, ...
+                    ['How long the list is, which objects it leaves out, and what counts as one ' ...
+                     'connected piece when an object is split. Kept for the rest of the session.']
+                {'jumpToIndex', 'GotoobjectLabel'}, ...
+                    'Pick an object by its number and move the view to it. Reaches objects the filters and the row limit keep off the list.'
+                {'updateTable'}, ...
+                    'Re-read the shown slice and repaint the list. 2D mode only.'
+                {'autoUpdateTable'}, ...
+                    ['Repaint the list every time the shown slice changes. Turn it off on a large ' ...
+                     'stack and press "Update list" when you need it. 2D mode only.']
+                {'pickByClick'}, ...
+                    ['Pick objects by clicking them in the image: a click starts a new selection, ' ...
+                     'shift adds an object and ctrl takes one out. Right click still pans.']
+                {'useShortcuts'}, ...
+                    ['Give these keys to the editor while it is open:' newline ...
+                     '   a - commit the drawing: merge what it covers, grow one object, or create a new one' newline ...
+                     '   s - split by the drawing' newline ...
+                     '   c - empty the list of picked objects (the drawing is kept)' newline ...
+                     '   ctrl+f - add the object under the mouse to the selection' newline ...
+                     'Their usual meanings come back when this is unticked. Everything else, ctrl+z included, keeps working.']
+                {'selectedList', 'SelectedobjectsLabel'}, ...
+                    'Objects the next operation will act on. Right click to drop the highlighted ones or to clear the list.'
+                {'Mode3D'}, ...
+                    ['On: the list and the operations cover whole objects through the stack.' newline ...
+                     'Off: everything is kept to the shown slice, which is the mode for a model not yet stitched to 3D.']
+                {'ConnectMode', 'ConnectModeDropDownLabel'}, ...
+                    ['How Connect bridges: interpolate morphs between the two facing cross-sections and ' ...
+                     'needs a gap in Z; selection uses the shape drawn in the Selection layer and does ' ...
+                     'not. 3D mode only.']
+                {'mergeButton'}, ...
+                    ['Join the picked objects into one, which keeps the smallest of their indices. ' ...
+                     'With nothing picked the drawing decides what to join, and the background under it ' ...
+                     'joins too: several objects become one connected piece, a single object grows by the ' ...
+                     'drawing, and a drawing on empty space becomes a new object.']
+                {'splitComponentsButton'}, ...
+                    'Break each picked object into its separate pieces. The largest keeps the index, the rest get new ones.'
+                {'splitBySelectionButton'}, ...
+                    ['Cut the drawing out of the objects underneath it and split what is left. ' ...
+                     'Nothing needs to be picked; picking first keeps the cut to those objects.']
+                {'cutAtSliceButton'}, ...
+                    'Split the picked object along Z: from the shown slice onwards becomes a new object. 3D mode only.'
+                {'connectButton'}, ...
+                    ['Bridge exactly two picked objects and join them. Only empty space is filled, ' ...
+                     'so an object lying between them is never overwritten. 3D mode only.']
+                {'deleteButton'}, ...
+                    'Delete the picked objects.'
+                {'cleanupButton'}, ...
+                    ['Delete or absorb the noise of the whole model, without re-stitching it. ' ...
+                     'Asks for the three filters first; object numbers are left alone.']
+                {'cleanupOptions'}, ...
+                    'Set the three Cleanup filters without running anything. They are kept for the rest of the session.'
+                {'compactButton'}, ...
+                    'Renumber the objects to a continuous 1, 2, 3... after deletes and splits have left gaps. All numbers change.'
+                {'indexStatusLabel'}, ...
+                    'What the list is currently describing, and whether it still matches the model.'
+                {'rebuildButton'}, ...
+                    'Re-read the whole model and rebuild the object list. Needed after another tool has changed the model.'
+                {'helpButton'}, ...
+                    'Open the help page for the Instance editor.'
+                {'closeButton'}, ...
+                    'Close the editor and give back the mouse and the keys it has taken over.'
+                };
+
+            for row = 1:size(tooltips, 1)
+                for widget = tooltips{row, 1}
+                    h.(widget{1}).Tooltip = tooltips{row, 2};
+                end
+            end
+        end
+
+        % -----------------------------------------------------------
+        function applyModeToWidgets(obj)
+            % APPLYMODETOWIDGETS - Enable only the widgets the current mode can use.
+            %
+            % Each name below is something the other mode cannot do at all,
+            % rather than something it does differently:
+            %
+            % - **Volume only.** *Cut at slice* refuses a single slice outright.
+            %   *Connect* bridges a gap along Z and then merges the **whole** of
+            %   both objects - ``iPlanConnect`` passes ``use3D`` as ``true``
+            %   whatever the mode says - so on one slice it would quietly reach
+            %   through the entire stack, which is the worst of the three
+            %   outcomes: an operation that appears to obey the mode and does
+            %   not. *Connect mode* belongs to it and greys out with it. The
+            %   slice-count filter has no such column to filter on in 2D, and is
+            %   left out of the settings dialog there rather than greyed out.
+            % - **Slice only.** The 2D list follows the shown slice, so the
+            %   automatic refresh and the button that forces it exist for that
+            %   mode alone. In 3D the list is painted from the cached index and
+            %   *Rebuild* is what renews it.
+            %
+            % The whole-model operations stay on in both modes on purpose:
+            % *Cleanup* and *Compact* read the whole volume whatever the mode
+            % says, and someone working slice by slice on a stitched model still
+            % has every reason to reach for them. The labels are switched with
+            % their widgets, so a disabled setting does not keep a live-looking
+            % caption next to it.
             h = obj.view.handles;
             use3D = logical(h.Mode3D.Value);
-            h.filterMaxSlices.Enable = use3D;
-            h.autoUpdateTable.Enable = ~use3D;
+
+            volumeOnly = {'cutAtSliceButton', 'connectButton', ...
+                'ConnectMode', 'ConnectModeDropDownLabel'};
+            sliceOnly = {'autoUpdateTable', 'updateTable'};
+
+            for widget = volumeOnly; h.(widget{1}).Enable = use3D;  end
+            for widget = sliceOnly;  h.(widget{1}).Enable = ~use3D; end
         end
 
         % -----------------------------------------------------------
@@ -504,33 +635,34 @@ classdef InstanceEditor < handle
 
             h = obj.view.handles;
             obj.BatchOpt.Mode3D = logical(h.Mode3D.Value);
-            obj.BatchOpt.Connectivity{1} = h.Connectivity.Value;
-            obj.BatchOpt.ConnectMode{1}  = h.ConnectMode.Value;
-            for spinner = {'MinObjectVoxels', 'MinObjectSlices', 'AbsorbFragmentVoxels', 'MaxRows'}
-                obj.BatchOpt.(spinner{1}){1} = h.(spinner{1}).Value;
-            end
+            obj.BatchOpt.ConnectMode{1} = h.ConnectMode.Value;
         end
 
         % -----------------------------------------------------------
         function mode3D_Callback(obj)
-            % MODE3D_CALLBACK - Offer the connectivity values that belong to the mode.
+            % MODE3D_CALLBACK - Move the connectivity to the values that belong to the mode.
             %
-            % 26/6 are the 3-D neighbourhoods and 8/4 the 2-D ones; showing all
-            % four at once would let the user pick a meaningless combination.
+            % 26/6 are the 3-D neighbourhoods and 8/4 the 2-D ones, and only the
+            % pair of the current mode is ever offered - a meaningless
+            % combination should not be reachable. What survives the switch is
+            % the stance rather than the number: the full neighbourhood stays
+            % full and the minimal one stays minimal.
             if obj.mibModel.preferences.System.DeveloperMode
                 fprintf('controllers.InstanceEditor.mode3D_Callback: triggered\n');
             end
 
-            h = obj.view.handles;
-            wasFull = ismember(h.Connectivity.Value, {'26', '8'});
-            if h.Mode3D.Value
+            wasFull = ismember(obj.BatchOpt.Connectivity{1}, {'26', '8'});
+            if obj.view.handles.Mode3D.Value
                 items = {'26', '6'};
             else
                 items = {'8', '4'};
             end
-            h.Connectivity.Items = items;
-            if wasFull; h.Connectivity.Value = items{1}; else; h.Connectivity.Value = items{2}; end
             obj.BatchOpt.Connectivity{2} = items;
+            if wasFull
+                obj.BatchOpt.Connectivity{1} = items{1};
+            else
+                obj.BatchOpt.Connectivity{1} = items{2};
+            end
             obj.updateBatchOptFromGUI();
 
             % The two modes list different things, so the list has to be
@@ -538,18 +670,6 @@ classdef InstanceEditor < handle
             obj.applyModeToWidgets();
             obj.updateObjectTable();
             obj.updateStatusLine();
-        end
-
-        % -----------------------------------------------------------
-        function objectList_Callback(obj, hObject)
-            % OBJECTLIST_CALLBACK - A list filter or the row cap changed.
-            %
-            % Input Arguments:
-            %   - **hObject** - handle to the widget that changed
-            if obj.mibModel.preferences.System.DeveloperMode
-                fprintf('controllers.InstanceEditor.objectList_Callback(%s): triggered\n', hObject.Tag);
-            end
-            obj.updateObjectTable();
         end
 
         % -----------------------------------------------------------

@@ -54,7 +54,7 @@ end
 % Always keep the picked objects visible, even when a filter excludes them.
 picked = obj.selectedObjects(:);
 picked = picked(ismember(picked, objectIds));
-[objectIds, keptRows] = iApplyFilters(h, objectIds, columns, picked);
+[objectIds, keptRows] = iApplyFilters(obj, objectIds, columns, picked);
 columns = structfun(@(v) v(keptRows, :), columns, 'UniformOutput', false);
 
 obj.displayedIds = objectIds;
@@ -108,17 +108,19 @@ obj.tableSlice = stats.slice;
 end
 
 % =====================================================================
-function [objectIds, keptRows] = iApplyFilters(h, objectIds, columns, picked)
-% Size filters, then the row cap. 0 means "off" for both filters, and the slice
-% filter is skipped in 2D mode where a slice count is not a property of a row.
+function [objectIds, keptRows] = iApplyFilters(obj, objectIds, columns, picked)
+% Size filters, then the row cap, all three from obj.listOptions - they are set
+% in askDetectionSettings and have no widget to read them from. 0 means "off"
+% for both filters, and the slice filter is skipped in 2D mode where a slice
+% count is not a property of a row.
 keptRows = (1:numel(objectIds))';
 
-maxVoxels = h.filterMaxVoxels.Value;
+maxVoxels = obj.listOptions.MaxVoxels;
 if maxVoxels > 0
     keptRows = keptRows(columns.voxels(keptRows) <= maxVoxels);
 end
-if h.Mode3D.Value
-    maxSlices = h.filterMaxSlices.Value;
+if obj.view.handles.Mode3D.Value
+    maxSlices = obj.listOptions.MaxSlices;
     if maxSlices > 0
         keptRows = keptRows(columns.slices(keptRows) <= maxSlices);
     end
@@ -127,7 +129,7 @@ end
 pickedRows = find(ismember(objectIds, picked));
 keptRows = unique([keptRows; pickedRows], 'stable');
 
-maxRows = h.MaxRows.Value;
+maxRows = obj.listOptions.MaxRows;
 if numel(keptRows) > maxRows
     keptRows = unique([pickedRows; keptRows(1:maxRows)], 'stable');
     keptRows = keptRows(1:min(numel(keptRows), max(maxRows, numel(pickedRows))));

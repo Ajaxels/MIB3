@@ -69,6 +69,31 @@ extra_css:    # location for additional css styles
   padding-bottom: .08rem;
 }
 
+/* Bullet list inside a table cell: used where one row covers several cases
+   (see the Operations table of the Instance editor). The default list margins
+   are sized for body text and leave the last bullet floating away from the row
+   border, so they are tightened here. Colour and theme are inherited from the
+   cell, so this works in both schemes. */
+.md-typeset td > ul {
+  margin: 0.35em 0 0;
+  padding-left: 1.1em;
+}
+.md-typeset td > ul > li {
+  margin-bottom: 0.1em;
+}
+.md-typeset td > ul > li:last-child {
+  margin-bottom: 0;
+}
+
+/* Admonition inside a table cell: the default vertical margin is sized for a
+   standalone box between paragraphs and pushes the row out of shape. */
+.md-typeset td > .admonition {
+  margin: 0.5em 0 0.1em;
+}
+.md-typeset td > .admonition > p:last-child {
+  margin-bottom: 0.4rem;
+}
+
 /* ============= DEFINE LIGHT DEFAULT THEME ============= */
 [data-md-color-scheme="default"] {
   /* Primary color (green #006633) — controls links, nav active states, header */

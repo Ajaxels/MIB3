@@ -149,8 +149,6 @@ classdef EditInstanceObjectsTest < matlab.unittest.TestCase
 
             after = EditInstanceObjectsTest.readLabels(mibModel);
             testCase.verifyEqual(nnz(after == 5), 0, 'the larger index is gone');
-            testCase.verifyEqual(nnz(after == 1), nnz(before == 1) + nnz(before == 5), ...
-                'both objects became object 1, in full');
             testCase.verifyEqual(nnz(after == 2), nnz(before == 2), ...
                 'the object the shape does not touch is untouched');
             remaining = cell2mat(mibModel.getData3D('selection', 1, 3, NaN, ...
@@ -159,24 +157,165 @@ classdef EditInstanceObjectsTest < matlab.unittest.TestCase
             EditInstanceObjectsTest.verifyIndexAgreesWithVolume(testCase, mibModel, 'merge, auto');
         end
 
-        function mergeFromADrawingOverOneObjectIsRejected(testCase)
-            % The complaint has to name the drawing, not repeat "Merge needs two
-            % objects": nothing was typed in, so it is the shape that is short.
+        function mergeFromADrawingClosesTheGapItWasDrawnAcross(testCase)
+            % The rule that used to change with the number of objects: a drawing
+            % over ONE object joined it, a drawing over two did not. Now the
+            % background under the stroke joins the survivor either way, so the
+            % two halves come out as one connected piece rather than one index
+            % in two pieces.
             mibModel = EditInstanceObjectsTest.buildInstanceModel();
             before = EditInstanceObjectsTest.readLabels(mibModel);
             selection = zeros(32, 32, 10, 'uint8');
-            selection(4:10, 4:10, 5) = 1;        % object 1 alone
+            selection(4:10, 4:20, 2) = 1;        % columns 11:15 are background
+            mibModel.setData3D(selection, 'selection', 1, 3, [], ...
+                struct('id', 1, 'blockModeSwitch', 0));
+            drawnOnBackground = nnz(selection > 0 & before == 0);
+            testCase.assumeGreaterThan(drawnOnBackground, 0, 'the fixture must leave a gap');
+
+            EditInstanceObjectsTest.runAction(mibModel, 'Merge', '');
+
+            after = EditInstanceObjectsTest.readLabels(mibModel);
+            testCase.verifyEqual(nnz(after == 1), ...
+                nnz(before == 1) + nnz(before == 5) + drawnOnBackground, ...
+                'both objects and the background the stroke crossed');
+            testCase.verifyEqual(bwconncomp(after == 1, 26).NumObjects, 1, ...
+                'the survivor is one connected piece, not one index in two');
+            EditInstanceObjectsTest.verifyIndexAgreesWithVolume(testCase, mibModel, 'merge, gap closed');
+        end
+
+        function mergeWithNamedObjectsLeavesTheDrawingAlone(testCase)
+            % Absorption follows the input, not the layer: objects picked by
+            % name are a different gesture, and a drawing left over from an
+            % earlier one must not be written into the model behind the user.
+            mibModel = EditInstanceObjectsTest.buildInstanceModel();
+            before = EditInstanceObjectsTest.readLabels(mibModel);
+            selection = zeros(32, 32, 10, 'uint8');
+            selection(4:10, 4:20, 2) = 1;
+            mibModel.setData3D(selection, 'selection', 1, 3, [], ...
+                struct('id', 1, 'blockModeSwitch', 0));
+
+            EditInstanceObjectsTest.runAction(mibModel, 'Merge', '1, 5');
+
+            after = EditInstanceObjectsTest.readLabels(mibModel);
+            testCase.verifyEqual(nnz(after == 1), nnz(before == 1) + nnz(before == 5), ...
+                'the two objects, and nothing the stroke crossed');
+            remaining = cell2mat(mibModel.getData3D('selection', 1, 3, NaN, ...
+                struct('id', 1, 'blockModeSwitch', 0)));
+            testCase.verifyEqual(nnz(remaining), nnz(selection), 'the drawing is left where it was');
+            EditInstanceObjectsTest.verifyIndexAgreesWithVolume(testCase, mibModel, 'merge, named');
+        end
+
+        function mergeOverBackgroundCreatesANewObject(testCase)
+            % "Make this one object" reads just as well over empty space, which
+            % is what MIB's own 'a' does to a material.
+            mibModel = EditInstanceObjectsTest.buildInstanceModel();
+            before = EditInstanceObjectsTest.readLabels(mibModel);
+            selection = zeros(32, 32, 10, 'uint8');
+            selection(28:31, 2:6, 8:9) = 1;      % an empty corner of the volume
+            mibModel.setData3D(selection, 'selection', 1, 3, [], ...
+                struct('id', 1, 'blockModeSwitch', 0));
+
+            EditInstanceObjectsTest.runAction(mibModel, 'Merge', '');
+
+            after = EditInstanceObjectsTest.readLabels(mibModel);
+            newIndex = unique(after(28:31, 2:6, 8:9));
+            testCase.verifyNumElements(newIndex, 1, 'the drawing became one object');
+            testCase.verifyEqual(double(newIndex), 3, 'it took the lowest free index');
+            testCase.verifyEqual(nnz(after == newIndex), nnz(selection), 'exactly the drawn voxels');
+            testCase.verifyEqual(nnz(after > 0), nnz(before > 0) + nnz(selection), ...
+                'nothing that was there before was touched');
+            remaining = cell2mat(mibModel.getData3D('selection', 1, 3, NaN, ...
+                struct('id', 1, 'blockModeSwitch', 0)));
+            testCase.verifyEqual(nnz(remaining), 0, 'the drawing is used up');
+            EditInstanceObjectsTest.verifyIndexAgreesWithVolume(testCase, mibModel, 'merge, new object');
+        end
+
+        function addObjectCanBeAskedForByName(testCase)
+            % The same thing as a named action, for a batch protocol.
+            mibModel = EditInstanceObjectsTest.buildInstanceModel();
+            selection = zeros(32, 32, 10, 'uint8');
+            selection(28:31, 2:6, 8:9) = 1;
             mibModel.setData3D(selection, 'selection', 1, 3, [], ...
                 struct('id', 1, 'blockModeSwitch', 0));
 
             applied = mibModel.editInstanceObjects(struct( ...
-                'Action', {{'Merge'}}, 'ObjectIndices', '', 'showWaitbar', false));
+                'Action', {{'AddObject'}}, 'ObjectIndices', '', 'showWaitbar', false));
+
+            testCase.verifyTrue(applied);
+            after = EditInstanceObjectsTest.readLabels(mibModel);
+            testCase.verifyEqual(nnz(after == 3), nnz(selection));
+            EditInstanceObjectsTest.verifyIndexAgreesWithVolume(testCase, mibModel, 'addObject');
+        end
+
+        function addObjectWithNothingDrawnIsRejected(testCase)
+            mibModel = EditInstanceObjectsTest.buildInstanceModel();
+            mibModel.setData3D(zeros(32, 32, 10, 'uint8'), 'selection', 1, 3, [], ...
+                struct('id', 1, 'blockModeSwitch', 0));
+            before = EditInstanceObjectsTest.readLabels(mibModel);
+
+            applied = mibModel.editInstanceObjects(struct( ...
+                'Action', {{'AddObject'}}, 'ObjectIndices', '', 'showWaitbar', false));
 
             testCase.verifyFalse(applied);
             testCase.verifyEqual(EditInstanceObjectsTest.readLabels(mibModel), before, 'model untouched');
+        end
+
+        function mergeOverOneObjectGivesItTheDrawing(testCase)
+            % One object under the drawing is the same gesture over a smaller
+            % region, not a merge that came up short: the object grows by it.
+            mibModel = EditInstanceObjectsTest.buildInstanceModel();
+            before = EditInstanceObjectsTest.readLabels(mibModel);
+            selection = zeros(32, 32, 10, 'uint8');
+            selection(4:10, 4:10, 5) = 1;        % on object 1
+            selection(11:13, 4:10, 5) = 1;       % and out into the background
+            mibModel.setData3D(selection, 'selection', 1, 3, [], ...
+                struct('id', 1, 'blockModeSwitch', 0));
+
+            EditInstanceObjectsTest.runAction(mibModel, 'Merge', '');
+
+            after = EditInstanceObjectsTest.readLabels(mibModel);
+            grownBy = 3 * 7;                     % the part that was background
+            testCase.verifyEqual(nnz(after == 1), nnz(before == 1) + grownBy, ...
+                'object 1 grew by exactly the new part of the drawing');
+            testCase.verifyEqual(numel(setdiff(unique(after(:)), 0)), ...
+                numel(setdiff(unique(before(:)), 0)), 'no new index was handed out');
+            testCase.verifyTrue(all(after(11:13, 4:10, 5) == 1, 'all'), 'the drawn area joined it');
             remaining = cell2mat(mibModel.getData3D('selection', 1, 3, NaN, ...
                 struct('id', 1, 'blockModeSwitch', 0)));
-            testCase.verifyEqual(nnz(remaining), nnz(selection), 'the drawing is left for the user');
+            testCase.verifyEqual(nnz(remaining), 0, 'the drawing is used up');
+            EditInstanceObjectsTest.verifyIndexAgreesWithVolume(testCase, mibModel, 'merge, grow');
+        end
+
+        function addToObjectCanBeAskedForByName(testCase)
+            mibModel = EditInstanceObjectsTest.buildInstanceModel();
+            before = EditInstanceObjectsTest.readLabels(mibModel);
+            selection = zeros(32, 32, 10, 'uint8');
+            selection(11:13, 4:10, 5) = 1;       % background beside object 1
+            mibModel.setData3D(selection, 'selection', 1, 3, [], ...
+                struct('id', 1, 'blockModeSwitch', 0));
+
+            applied = mibModel.editInstanceObjects(struct( ...
+                'Action', {{'AddToObject'}}, 'ObjectIndices', '1', 'showWaitbar', false));
+
+            testCase.verifyTrue(applied);
+            after = EditInstanceObjectsTest.readLabels(mibModel);
+            testCase.verifyEqual(nnz(after == 1), nnz(before == 1) + nnz(selection));
+            EditInstanceObjectsTest.verifyIndexAgreesWithVolume(testCase, mibModel, 'addToObject');
+        end
+
+        function addToObjectTakesOneObjectOnly(testCase)
+            mibModel = EditInstanceObjectsTest.buildInstanceModel();
+            before = EditInstanceObjectsTest.readLabels(mibModel);
+            selection = zeros(32, 32, 10, 'uint8');
+            selection(11:13, 4:10, 5) = 1;
+            mibModel.setData3D(selection, 'selection', 1, 3, [], ...
+                struct('id', 1, 'blockModeSwitch', 0));
+
+            applied = mibModel.editInstanceObjects(struct( ...
+                'Action', {{'AddToObject'}}, 'ObjectIndices', '1, 2', 'showWaitbar', false));
+
+            testCase.verifyFalse(applied);
+            testCase.verifyEqual(EditInstanceObjectsTest.readLabels(mibModel), before, 'model untouched');
         end
 
         % -----------------------------------------------------------------
@@ -364,8 +503,13 @@ classdef EditInstanceObjectsTest < matlab.unittest.TestCase
         % -----------------------------------------------------------------
 
         function connectBridgesTheGapAndMerges(testCase)
-            % Object 5 ends at slice 2, object 1 starts at slice 2 - they touch
-            % in Z, so this is the degenerate case: merge with no bridge.
+            % Object 5 ends at slice 2, object 1 starts at slice 2 - they overlap
+            % in Z, so this is the degenerate case: merge with no bridge. It is
+            % still allowed, because two objects that genuinely touch have no gap
+            % to fill and joining them is the right answer; these two do not
+            % touch, so the operation also says so. See
+            % connectWithSelectionNeedsNoZGap for the way to join this pair
+            % properly.
             mibModel = EditInstanceObjectsTest.buildInstanceModel();
 
             EditInstanceObjectsTest.runAction(mibModel, 'Connect', '1, 5');
@@ -415,6 +559,93 @@ classdef EditInstanceObjectsTest < matlab.unittest.TestCase
             EditInstanceObjectsTest.verifyIndexAgreesWithVolume(testCase, mibModel, 'connect bystander');
         end
 
+        function connectWithSelectionBridgesWithTheDrawing(testCase)
+            % The 'selection' mode now takes the same path as a drawing-driven
+            % Merge: the drawn background becomes part of the survivor.
+            mibModel = mibtest.helpers.buildSyntheticModel( ...
+                'modelType', 'labels65535', 'dims', [32 32 10]);
+            volume = zeros(32, 32, 10, 'uint16');
+            volume(10:16, 10:16, 1:3) = 1;
+            volume(10:16, 10:16, 7:9) = 4;      % same footprint, gap on 4:6
+            mibModel.setData3D(volume, 'labels', 1, 3, [], ...
+                struct('id', 1, 'blockModeSwitch', 0));
+            mibModel.I{1}.buildInstanceIndex();
+            selection = zeros(32, 32, 10, 'uint8');
+            selection(12:14, 12:14, 4:6) = 1;   % a hand-drawn bridge, narrower
+            mibModel.setData3D(selection, 'selection', 1, 3, [], ...
+                struct('id', 1, 'blockModeSwitch', 0));
+
+            EditInstanceObjectsTest.runAction(mibModel, 'Connect', '1, 4', ...
+                struct('ConnectMode', {{'selection'}}));
+
+            after = EditInstanceObjectsTest.readLabels(mibModel);
+            testCase.verifyEqual(nnz(after == 4), 0, 'the two became one object');
+            testCase.verifyEqual(nnz(after(:, :, 5) == 1), 3 * 3, ...
+                'exactly the drawn bridge, not the interpolated one');
+            testCase.verifyEqual(bwconncomp(after == 1, 26).NumObjects, 1, ...
+                'one connected piece');
+            EditInstanceObjectsTest.verifyIndexAgreesWithVolume(testCase, mibModel, 'connect, drawn');
+        end
+
+        function connectWithSelectionNeedsNoZGap(testCase)
+            % 'interpolate' needs two facing cross-sections and therefore a gap;
+            % a drawn bridge needs neither, so this pair - overlapping in Z but
+            % never touching - is reachable only through the drawing.
+            mibModel = mibtest.helpers.buildSyntheticModel( ...
+                'modelType', 'labels65535', 'dims', [32 32 10]);
+            volume = zeros(32, 32, 10, 'uint16');
+            volume(4:10,  4:10,  2:7) = 1;
+            volume(20:26, 20:26, 3:6) = 4;      % overlaps in Z, far away in XY
+            mibModel.setData3D(volume, 'labels', 1, 3, [], ...
+                struct('id', 1, 'blockModeSwitch', 0));
+            mibModel.I{1}.buildInstanceIndex();
+            selection = zeros(32, 32, 10, 'uint8');
+            selection(10:20, 10:20, 4) = 1;     % drawn across the space between
+            mibModel.setData3D(selection, 'selection', 1, 3, [], ...
+                struct('id', 1, 'blockModeSwitch', 0));
+
+            applied = mibModel.editInstanceObjects(struct( ...
+                'Action', {{'Connect'}}, 'ObjectIndices', '1, 4', ...
+                'ConnectMode', {{'selection'}}, 'showWaitbar', false));
+
+            testCase.verifyTrue(applied);
+            after = EditInstanceObjectsTest.readLabels(mibModel);
+            testCase.verifyEqual(nnz(after == 4), 0);
+            testCase.verifyEqual(bwconncomp(after == 1, 26).NumObjects, 1, ...
+                'the drawn bridge joined them into one piece');
+            EditInstanceObjectsTest.verifyIndexAgreesWithVolume(testCase, mibModel, 'connect, no gap');
+        end
+
+        function connectNeeds3DMode(testCase)
+            % The same refusal CutAtSlice makes, for the same reason. Without it
+            % Connect ran in 2D and merged the whole of both objects through the
+            % stack while the mode said one slice.
+            mibModel = EditInstanceObjectsTest.buildInstanceModel();
+            before = EditInstanceObjectsTest.readLabels(mibModel);
+
+            applied = mibModel.editInstanceObjects(struct( ...
+                'Action', {{'Connect'}}, 'ObjectIndices', '1, 5', ...
+                'Mode3D', false, 'showWaitbar', false));
+
+            testCase.verifyFalse(applied);
+            testCase.verifyEqual(EditInstanceObjectsTest.readLabels(mibModel), before, 'model untouched');
+        end
+
+        function connectOverAZOverlapIsAPlainMerge(testCase)
+            % Nothing for 'interpolate' to fill, so the operation is Merge - and
+            % the two paths must agree exactly, being the same code now.
+            mibModel = EditInstanceObjectsTest.buildInstanceModel();
+            EditInstanceObjectsTest.runAction(mibModel, 'Connect', '1, 5');
+            afterConnect = EditInstanceObjectsTest.readLabels(mibModel);
+
+            other = EditInstanceObjectsTest.buildInstanceModel();
+            EditInstanceObjectsTest.runAction(other, 'Merge', '1, 5');
+            afterMerge = EditInstanceObjectsTest.readLabels(other);
+
+            testCase.verifyEqual(afterConnect, afterMerge, ...
+                'Connect with no gap to bridge is Merge, voxel for voxel');
+        end
+
         function connectRejectsMoreThanTwoObjects(testCase)
             mibModel = EditInstanceObjectsTest.buildInstanceModel();
             before = EditInstanceObjectsTest.readLabels(mibModel);
@@ -445,8 +676,8 @@ classdef EditInstanceObjectsTest < matlab.unittest.TestCase
             % Object sizes in the fixture: 1 -> 294 voxels, 2 -> 180, 5 -> 70.
             % A threshold of 100 removes only object 5.
             mibModel = EditInstanceObjectsTest.buildInstanceModel();
-            extra.MinObjectVoxels = {100, [0, 1e9], 'on'};
-            extra.AbsorbFragmentVoxels = {0, [0, 1e6], 'on'};
+            extra.cleanupMinObjectVoxels = {100, [0, 1e9], 'on'};
+            extra.cleanupAbsorbFragmentVoxels = {0, [0, 1e6], 'on'};
 
             EditInstanceObjectsTest.runAction(mibModel, 'Cleanup', '', extra);
 
@@ -539,8 +770,8 @@ classdef EditInstanceObjectsTest < matlab.unittest.TestCase
             testCase.verifyNotEmpty(captured, 'the SyncBatch event must fire');
             testCase.verifyTrue(isfield(captured, 'Action'));
             testCase.verifyEqual(captured.Action{2}, ...
-                {'Merge', 'SplitComponents', 'SplitBySelection', 'CutAtSlice', ...
-                 'Connect', 'Delete', 'Cleanup', 'Compact'});
+                {'Merge', 'AddObject', 'AddToObject', 'SplitComponents', 'SplitBySelection', ...
+                 'CutAtSlice', 'Connect', 'Delete', 'Cleanup', 'Compact'});
             testCase.verifyFalse(isfield(captured, 'id'), ...
                 'the dataset index is not part of the published options');
             testCase.verifyEqual(EditInstanceObjectsTest.readLabels(mibModel), before);

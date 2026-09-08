@@ -1,5 +1,5 @@
 function setShortcutMode(obj, enable)
-% SETSHORTCUTMODE - Take over, or hand back, the a / s / Ctrl+F keyboard shortcuts.
+% SETSHORTCUTMODE - Take over, or hand back, the a / s / c / Ctrl+F keyboard shortcuts.
 %
 % Syntax:
 %   .. code-block:: matlab
@@ -16,6 +16,7 @@ function setShortcutMode(obj, enable)
 % ===================  ==================================  ==========================
 % ``a`` / ``shift+a``  Add selection to material           **Merge**
 % ``s`` / ``shift+s``  Subtract from material              **Split by selection**
+% ``c`` / ``shift+c``  Clear selection                     **Empty the list of picked objects**
 % ``ctrl+f``           Find material under cursor          **Add the object under the cursor to the selection**
 % ===================  ==================================  ==========================
 %

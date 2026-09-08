@@ -109,7 +109,9 @@ behind a button.)*
 
 `BatchOpt.Action` = `Merge` | `SplitComponents` | `SplitBySelection` | `CutAtSlice` | `Connect` |
 `Delete` | `Cleanup` | `Compact`; plus `ObjectIndices` (string), `Mode3D`, `Connectivity`,
-`ConnectMode`, the three cleanup thresholds, `showWaitbar`, `id` (from `obj.getActiveId()`).
+`ConnectMode`, the three cleanup thresholds (`cleanupMinObjectVoxels`, `cleanupMinObjectSlices`,
+`cleanupAbsorbFragmentVoxels` - prefixed since 2026-09-08 so they cannot be read as the
+same-named-but-unrelated stitching options), `showWaitbar`, `id` (from `obj.getActiveId()`).
 
 Every action: `obj.backup('labels', 1, opts)` restricted to the union bounding box, write through
 `setPixelIdxList` / `setData3D(..., options.PixelIdxList)`, update the index over that box,
@@ -236,25 +238,24 @@ Widgets the controller expects, by name:
 | Name | Type | Purpose |
 |---|---|---|
 | `objectTable` | uitable | index / voxels / slices / z-range, sortable |
-| `MaxRows` | spinner | rows rendered, default 1000 |
-| `filterMaxVoxels`, `filterMaxSlices` | numeric | list filters |
+| `detectionSettings` | button | row cap, list filters and connectivity (2026-09-08) |
 | `autoUpdateTable` | checkbox | 2D mode: re-read the list when the slice changes |
 | `updateTable` | button | re-read the list now |
 | `jumpToIndex` | numeric + button | scroll to a given object |
 | `pickByClick` | checkbox | take over the image mouse |
 | `useShortcuts` | checkbox | take over the `a` / `s` / ++ctrl+f++ keys (added 2026-09-02) |
 | `Mode3D` | checkbox | 3D or current-slice operation; the window opens with it **off** |
-| `Connectivity` | dropdown | 6/26 in 3D, 4/8 in 2D |
 | `selectedList` | listbox or label | currently selected objects |
 | `mergeButton`, `splitComponentsButton`, `splitBySelectionButton`, `cutAtSliceButton`, `connectButton`, `deleteButton` | buttons | the operations |
 | `ConnectMode` | dropdown | `interpolate` / `selection` |
-| `MinObjectVoxels`, `MinObjectSlices`, `AbsorbFragmentVoxels`, `cleanupButton` | spinners + button | cleanup filters |
+| `cleanupButton`, `cleanupOptions` | buttons | clean the model; set the filters (2026-09-08) |
 | `compactButton` | button | renumber indices |
 | `indexStatusLabel`, `rebuildButton` | label + button | cache state and rebuild |
 | `helpButton`, `closeButton` | buttons | standard |
 
-Labels as set in the `.mlapp` (2026-08-30). The buttons whose label is simply the operation name are
-not repeated here:
+Labels as set in the `.mlapp`, read out of the app on 2026-09-04 (the names below are the real
+component names, not the App Designer defaults an earlier version of this table guessed at). The
+buttons whose label is simply the operation name are not repeated here:
 
 | Widget | Label |
 |---|---|
@@ -263,25 +264,55 @@ not repeated here:
 | `useShortcuts` | `Shortcuts` - the mapping goes in the tooltip, not the label |
 | `autoUpdateTable` | `Update the list on slice change` |
 | `updateTable` | `Update list` |
-| `MaxRowsLabel` | `Max rows:` |
-| `filterMaxVoxelsEditFieldLabel` | `Max size:` - the column is voxels in 3D and pixels in 2D, so the label names neither |
-| `filterMaxSlicesEditFieldLabel` | `Max slices:` |
-| `jumpToIndexEditFieldLabel` | `Go to object:` |
-| `selectedListListBoxLabel` | `Selected objects:` |
-| `ConnectivityDropDownLabel` | `Connectivity:` |
-| `ConnectModeDropDownLabel` | `Connect mode:` |
-| `MinObjectVoxelsSpinnerLabel` | `Min object size:` - same wording as the stitching dialog |
-| `MinObjectSlicesSpinnerLabel` | `Min object depth:` - same wording as the stitching dialog |
-| `AbsorbFragmentVoxelsLabel` | `Absorb fragments:` - same wording as the stitching dialog |
+| `GotoobjectLabel` | `Go to object:` |
+| `SelectedobjectsLabel` | `Selected objects:` |
+| `ConnectModeDropDownLabel` | `Connect Mode` |
+| `detectionSettings` | *(no text in the `.mlapp` as of 2026-09-08 - it needs an icon, like `cleanupOptions`)* |
+| `cleanupOptions` | *(no text; a `settings_16px` icon beside `cleanupButton`)* |
 | `indexStatusLabel` | *(empty; written at runtime)* |
 
+**Tooltips are set in code, in `configureWidgets` via `applyTooltips` (2026-09-04).** The `.mlapp`
+carries none, so the explanation of a widget sits next to the code that gives it its behaviour and
+cannot promise something the controller stopped doing. A setting and its label share one text -
+hovering a spinner is not what a user does when the label is what they are reading - which is why the
+table there is `{widgets}, text` rather than one row per widget. Every component of the app is
+covered; a name that stops matching errors at construction rather than leaving a silent gap.
+
+**The cleanup filters left the window (2026-09-08).** `MinObjectVoxels`, `MinObjectSlices` and
+`AbsorbFragmentVoxels` were three permanent spinners serving the operation used least in a session -
+a few hundred merges and splits, and perhaps one cleanup at the end. They are now asked for by
+`askCleanupSettings`, a `utils.dlgs.inputUniversalDlg` with the same three prompts the stitching
+dialog uses, opened by `cleanupButton` (cancelling cancels the operation) and by `cleanupOptions`,
+the gear beside it, which only stores the answer. Sticky through
+`MibModel.sessionSettings.instanceEditor`, read back by the constructor, so a reopened editor starts
+where the last one left off; deliberately **not** in the preferences file, since a threshold that
+suits one model is a poor opening offer for the next dataset. The `BatchOpt` fields carry a
+`cleanup` prefix (`cleanupMinObjectVoxels`, ...): they no longer name widgets, so the prefix is what
+says which action reads them, and it keeps them apart from `stitchModelInstances`'s identically
+named and entirely separate options.
+
+**The list settings followed them (2026-09-08).** `MaxRows`, `filterMaxVoxels`, `filterMaxSlices` and
+`Connectivity` are now `askDetectionSettings`, behind the `detectionSettings` button. Same reasoning
+and the same `sessionSettings.instanceEditor` key, plus three things worth knowing:
+
+- The row cap and the two filters became `obj.listOptions` (a plain struct property), **not**
+  `BatchOpt` fields. Only `updateObjectTable` reads them; they change what is drawn and never what is
+  edited. That also retires `rmfield(obj.BatchOpt, 'MaxRows')` in `runOperation`, which existed only
+  to keep a rendering setting out of the model's options and the `SyncBatch` payload. `Connectivity`
+  stays in `BatchOpt` - the split actions genuinely consume it.
+- The dialog follows the mode: in 2D the slice filter is **left out** rather than shown and ignored
+  (a slice count is not a property of a row there), so the answers are read by position with the
+  connectivity taken from `answer{end}`. `filterMaxSlices` left `applyModeToWidgets` with it.
+- Connectivity is stored across sessions as its literal value but restored as a **stance**: the
+  window always opens in 2D, so a stored `26` comes back as `8` and a `6` as `4`. `mode3D_Callback`
+  does the same translation on every switch, now against `BatchOpt` instead of the dropdown.
+
 Callbacks carry DeveloperMode markers per
-[developer_mode_callback_markers.md](../guides/developer_mode_callback_markers.md). Two of them
-exist only to hold a marker honestly: `objectList_Callback` fronts the three list widgets because
-`updateObjectTable` is repainted from a dozen places internally and would report a user action every
-time, and `autoUpdateTable_Callback` fronts `sliceChanged`, which is otherwise listener-driven.
-`updateBatchOptFromGUI` takes an optional widget handle and prints only when it was given one, for
-the same reason.
+[developer_mode_callback_markers.md](../guides/developer_mode_callback_markers.md).
+`autoUpdateTable_Callback` exists only to hold one honestly: it fronts `sliceChanged`, which is
+otherwise listener-driven. (`objectList_Callback` did the same for the three list widgets and went
+with them.) `updateBatchOptFromGUI` takes an optional widget handle and prints only when it was given
+one, for the same reason.
 
 Standard child-controller shape, copying `controllers.DebrisRemoval`: `core.ChildView(obj,
 'views.InstanceEditorGUI')`, `utils.moveWindowOutside`, `utils.fontSizeUpdate`, `addCallbacks`,
@@ -378,7 +409,9 @@ built at startup, so the button only appears after a MIB restart.
   full-volume rescan. Small fix, found while planning, in the same area.
 - `mib/+views/@MibView/addRibbonModel.m`, `mib/+controllers/@MibRibbon/MibRibbon.m`,
   `mib/+controllers/@MibRibbon/model_Callbacks.m`
-- Docs: user page under `docs/docs/.../ribbon/model/`, RST docblocks per
+- Docs: `docs/docs/user-interface/ribbon/model/model-instance-editor.md` - its own page since
+  2026-09-04, which is the file `helpButton_Callback` has always pointed at; the ribbon page keeps a
+  short entry linking to it. Registered in the `nav` of `docs/zensical.toml`. Plus RST docblocks per
   [`../guides/docs_api_sphinx.md`](../guides/docs_api_sphinx.md), a status entry in
   [`instance_3d_plan.md`](instance_3d_plan.md), and a line for this file in
   [`../INDEX.md`](../INDEX.md).
@@ -440,7 +473,7 @@ notes below are the places where reality differed from the plan.
 | `mib/+views/InstanceEditorGUI.mlapp` | **author-built**; the controller only assigns callbacks |
 | `tests/utils/InstanceObjectIndexTest.m` | 18 cases |
 | `tests/utils/InstanceCleanupTest.m` | 15 cases |
-| `tests/models/EditInstanceObjectsTest.m` | 27 cases (20 at first build, 7 added 2026-09-01) |
+| `tests/models/EditInstanceObjectsTest.m` | 38 cases (20 at first build, 7 added 2026-09-01, 5 + 6 on 2026-09-04) |
 
 Edited: `+instances/stitch2Dto3D.m` (now calls `utils.instances.cleanup`), `MibDataset.m` (+`instanceIndex`),
 `MibDataset/stitchModelInstances.m` (sets `materialsCount`, clears the index),
@@ -606,6 +639,31 @@ line clipping a neighbour needs. Empty stays an error for every other action. Tw
 its own - nothing drawn, and a drawing that lies only on background - both leaving the layer alone so
 the user can move the drawing rather than make it again.
 
+**`a` commits the drawing, whatever it covers** (2026-09-04). `a` in MIB means "add the Selection
+layer to the material", and that reading survives here in full. What the drawing covers decides:
+
+| Objects under the drawing | Action | Result |
+|---|---|---|
+| two or more | `Merge` | they become one, smallest index wins |
+| exactly one | `AddToObject` | the object grows by the drawing |
+| none | `AddObject` | the drawing becomes an object, next free index |
+| nothing drawn | - | *"The Selection layer is empty"* |
+
+Neither of the last two is a merge that came up short, which is how they were first written
+(*"The Selection layer covers only object N"*); they are the same gesture over a smaller region.
+`iObjectsUnderSelection` therefore reports "drawn, but on background" as a **finding** - empty
+`objectIds`, no problem - and the policy sits with the action: Merge falls through, Split by selection
+still refuses, because there is nothing there to cut.
+
+Both are named actions as well, so a batch protocol can ask for either directly. They share
+`iDrawingToObject`, the only writer here that does not start from a bounding box in the index: the box
+comes from three `any()` reductions over the drawn layer, which keeps the backup and the rescan
+proportional to the drawing without ever building a full-volume index list. Two boxes, not one -
+**the undo covers the drawing, the rescan covers the drawing united with the object's existing
+extent**, because `buildInstanceIndex` recomputes an object's statistics from the box it is given and
+a box holding only the new part would report only the new part. On the Merge path nothing else can be
+overwritten, since it is only reached when the drawing covers no *other* object.
+
 **Merge takes the same form** (asked for in the same conversation): draw one shape across the objects
 that belong together and press Merge. Both are gestures over a region, and a region says which
 objects it means; the whitelist in the "Objects to act on" block is where a third action would be
@@ -625,7 +683,7 @@ travel to a button. `useShortcuts` puts three keys on the editor for as long as 
 
 | Key | Normally (`generateKeyShortcuts`) | While the checkbox is on |
 |---|---|---|
-| `a`, `shift+a` | Add selection to material | **Merge** |
+| `a`, `shift+a` | Add selection to material | **Merge** / **AddToObject** / **AddObject**, by what the drawing covers |
 | `s`, `shift+s` | Subtract from material | **Split by selection** |
 | `c`, `shift+c` | Clear selection | **Clear list** - empties the picked objects |
 | ++ctrl+f++ | Find material under cursor | **Add the object under the cursor to the selection** |
@@ -708,9 +766,98 @@ pattern 1), so none of the controller is reachable headlessly. Adding one means 
 plus `hasWidget` guards on every widget read - a change worth making deliberately, not while fixing
 this.
 
+### Widgets follow the mode (2026-09-04)
+
+`applyModeToWidgets` grew from two lines to two lists. The test for membership is *"the other mode
+cannot do this at all"*, not *"the other mode does it differently"*:
+
+| Group | Widgets | Why |
+|---|---|---|
+| volume only | `cutAtSliceButton`, `connectButton`, `ConnectMode` (+ label) | Cut at slice refuses a single slice outright; Connect works along Z |
+| slice only | `autoUpdateTable`, `updateTable` | the 2D list follows the shown slice; in 3D the list comes from the index and `Rebuild` is what renews it |
+
+**Connect was the one that mattered.** It was not merely useless in 2D - it was actively dishonest.
+`iPlanConnect` ends with `iObjectPixels(obj, id, index, other, timePoint, 0, true)`: `use3D` is
+hardcoded `true`, so the merge takes the **whole** of both objects through the entire stack whatever
+the checkbox says. An operation that appears to obey the mode and does not is worse than one that
+refuses, and unlike `CutAtSlice` there was no guard in `editInstanceObjects` to catch it. Disabling
+the button is the fix at the level the user meets it; a guard in the model would be the belt to that
+brace, and is not there.
+
+`Cleanup` and `Compact` deliberately stay on in both modes. They read the whole volume regardless of
+`Mode3D` - that is what they are - and someone working slice by slice on a stitched model still has
+every reason to reach for them. Their filters are asked for in full in both modes for the same
+reason: `minObjectSlices` is a Z-span filter, and Cleanup is always a Z operation.
+
+Labels are switched with their widgets (`ConnectModeDropDownLabel`), so a greyed setting no longer
+keeps a live-looking caption beside it. `filterMaxSlices` had that fault since it was written; it has
+since left the window altogether, and the 2D list settings dialog simply does not ask the question.
+
+### Are Connect and Cut at slice redundant in 3D? (2026-09-04)
+
+Asked by the author: does `Merge` already cover `Connect`, and `SplitBySelection` already cover
+`CutAtSlice`, once `Mode3D` is on? Measured on synthetic models rather than argued:
+
+| Case | Result |
+|---|---|
+| Connect vs Merge, two objects **overlapping in Z** | **identical volumes**. `overlapInZ` is true, the whole bridge block is skipped, and the only write left is `other -> survivor` - which is Merge's write exactly |
+| Connect vs Merge, two objects with a **real Z gap** | different: 294 -> **441** voxels vs 294 -> 294. Connect leaves **one** connected piece, Merge leaves **two** sharing an index |
+| CutAtSlice vs SplitBySelection over one slice | different: 294 -> **294** voxels vs 294 -> **245**. The cut is lossless; the split destroys the drawn voxels by design |
+| CutAtSlice on a tail that is two disconnected lobes | the tail keeps **one** index. `CutAtSlice` cuts by Z position (`componentMasks = {objectMask & tail}`); `SplitBySelection` runs connected components and would give the lobes separate indices |
+
+So both buttons earn their place - but the question found something. **`Connect` degenerated into
+`Merge` whenever the two bounding boxes overlapped in Z, and said nothing about it.** The test at the
+top of `iPlanConnect` is a bounding-box test, not a proximity test, so two objects in opposite corners
+of the volume that merely share a Z range took the degenerate path: measured, 490 -> 490 voxels,
+index 4 gone, and object 1 left as **two disconnected pieces**. That is the one outcome the operation
+exists to prevent, produced silently under the name "Connect".
+
+### The unification (2026-09-04)
+
+Author's call after the measurements above: share the code, and fix the one place where the same
+gesture had two rules.
+
+**One definition of "the drawing".** `iDrawingExtent` replaces three copies of "read the Selection
+layer, find its extent". They had already drifted - `iObjectsUnderSelection` narrowed to the slices
+carrying the drawing and read labels across the full XY plane, `iDrawingToObject` computed the whole
+box. Now both take the box, so the labels read is narrower than it was, and there is one place where
+the copy-on-write fast path of `getData3D` has to be preserved instead of three.
+
+**One rule for what a drawing means.** `iAbsorbDrawing` writes the drawn **background** to an object,
+and both gestures that need it now call it:
+
+| Gesture | Before | After |
+|---|---|---|
+| Merge over one object, from a drawing | drawn background joined the object | unchanged |
+| Merge over 2+ objects, from a drawing | drawn background stayed background - one index, two pieces | joins the survivor |
+| Connect, `selection` mode | its own read of the layer, restricted to the Z-gap band | the same call, no band restriction |
+| Merge over objects picked **by name** | drawing untouched | unchanged - absorption follows the *input*, not the layer |
+
+That last row is the line: the drawing is absorbed when it is what chose the objects, never when it
+merely happens to be lying there. `consumesSelection` already means exactly that, and for `Merge` it
+is `true` precisely when `derivedFromDrawing` is - so no new argument was needed to say it.
+
+**One merge.** `iMergeWrites` is Merge's whole body and Connect's last step. Connect had its own copy
+with `use3D` hardcoded `true`, which is what made it ignore `Mode3D`; it now takes the parameter, and
+`iPlanConnect` refuses 2D outright with the same message shape `CutAtSlice` uses.
+
+**Consequences worth knowing:**
+
+- `selection` mode no longer needs a gap in Z. Its bridge is what the user drew, so nothing about how
+  the two objects lie is asked; the pair that overlaps in Z but lies side by side is now reachable,
+  and it is the answer to the defect above. `interpolate` still needs a gap - it has to have two
+  faces to morph between.
+- The drawing is read twice on a drawing-driven Merge: once to find the objects, once to absorb it.
+  Both are the 3 ms reduction, not the 83 ms `find()`, and the alternative was threading the box
+  through the dispatch as a tenth argument.
+- `iPlanConnect` returns `bridged`. When it is false and the two boxes cannot touch
+  (`iBoxesCanTouch`, a one-way test that never cries wolf), the user is told the objects were joined
+  but nothing was bridged. Not a refusal: two objects that genuinely touch have no gap to fill and
+  joining them is the right answer.
+
 ### Verification
 
-`buildtool check` clean; `buildtool test` green including the 60 new cases (18 + 15 + 27). The stitcher's own 25
+`buildtool check` clean; `buildtool test` green including the 71 new cases (18 + 15 + 38). The stitcher's own 25
 cases pass unchanged after the cleanup extraction, which is what pins the extraction as
 behaviour-preserving. Driven end to end through the controller on a synthetic 65535 model: split,
 merge, connect, delete, cleanup, compact, jump-to-object, highlight, stale detection and rebuild.
@@ -766,8 +913,10 @@ In 3D mode; the 2D list is a different thing and has its own group, [I](#i-2d-mo
 | B1 | Click a column header | Sorts by it; clicking again reverses |
 | B2 | Sort by *Voxels* ascending | The dust is at the top - this is how you find noise objects |
 | B3 | Sort by *Slices* ascending | Single-slice objects first |
-| B4 | Set **filterMaxVoxels** to 50 | Only objects that small are listed; `0` restores all |
-| B5 | Set **Max rows** to 50 on a model with thousands | Only 50 rows; the tool stays responsive |
+| B4 | **Max size** 50 in the settings dialog | Only objects that small are listed as soon as it is accepted; `0` restores all |
+| B5 | **Max rows** 50 on a model with thousands | Only 50 rows; the tool stays responsive |
+| B5a | Reopen the dialog | It opens on the values just entered, and again after closing and reopening the editor |
+| B5b | Open it in 2D mode | No **Max slices** question, and the connectivity offers 8/4 rather than 26/6 |
 | B6 | Type a known index into **jumpToIndex** | That object is selected and the view moves to it |
 | B7 | Type an index that does not exist | *"There is no object N in this model"*, nothing selected |
 | B8 | Click one row | View centres on the object, slice jumps to it, object appears in the Selection layer |
@@ -800,7 +949,8 @@ Undo (++ctrl+z++) after **every** one of these and confirm the model returns exa
 | D0 | After any applied operation | The selection and its highlight are empty, ready for the next pick. A rejected operation leaves the selection alone |
 | D1 | Select two objects, **Merge** | One object, carrying the **smaller** of the two indices |
 | D1b | Brush one shape across two objects, pick nothing, **Merge** | Same result. The whole of both objects is joined, not just the part under the shape, and the shape is gone afterwards |
-| D1c | Brush a shape over one object only, **Merge** | *"The Selection layer covers only object N"*, and the shape is still there |
+| D1c | Brush a shape half over one object and half onto background, pick nothing, **Merge** | The object grows by the new part, keeps its index, and no new index is handed out. Check its voxel count in the list before and after |
+| D1d | Brush a shape on empty background, pick nothing, **Merge** | It becomes a new object with the next free index, listed with exactly the drawn voxels, and the shape is used up. ++ctrl+z++ removes it |
 | D2 | Merge three at once | All take the smallest index |
 | D3 | Find an object whose index covers two separate blobs, **Split components** | Largest piece keeps the index; the other gets a new one. Both listed |
 | D4 | **Split components** on a normal object | Nothing happens, no error |
@@ -857,9 +1007,13 @@ is what a stale bounding box does, and it is silent.
 
 | # | Do | Expect |
 |---|----|--------|
-| G1 | **Min object size** 50, **Cleanup** | Small objects gone; **the survivors keep their numbers** |
-| G2 | **Min object depth** 1, **Cleanup** | Single-slice objects gone |
-| G3 | **Absorb fragments** 5, **Cleanup** | Object count drops but the labelled voxel total barely moves - specks are handed to their neighbours, not deleted |
+| G1 | **Cleanup**, **Min object size** 50 in the dialog | Small objects gone; **the survivors keep their numbers** |
+| G2 | **Cleanup**, **Min object depth** 1 | Single-slice objects gone |
+| G3 | **Cleanup**, **Absorb fragments** 5 | Object count drops but the labelled voxel total barely moves - specks are handed to their neighbours, not deleted |
+| G3a | Press **Cleanup** again | The dialog opens on the values just used |
+| G3b | Cancel the dialog | Nothing runs, and the previous values survive |
+| G3c | Set values through the gear button, then press **Cleanup** | The dialog opens on them; accepting cleans with them |
+| G3d | Close and reopen the editor | The dialog still opens on the last values - they live in `sessionSettings`, not in the window |
 | G4 | Press Cancel on the progress dialog mid-run | Model unchanged |
 | G5 | **Compact** | Numbering becomes 1..N with no gaps |
 | G6 | ++ctrl+z++ after Cleanup and after Compact | Both restore fully |
@@ -881,7 +1035,10 @@ restarts on every slice. Untick **3D (whole object)** first.
 |---|----|--------|
 | I1 | Look at the list | Two columns, *Index* and *Pixels*. No *Slices*, no *Z range* - those describe the whole stack and mean nothing here |
 | I2 | Compare the row count with what is on screen | The list is the objects **on this slice**, not the whole model. This is the bug that prompted the group: it used to report every object as spanning slices 1-501 |
-| I3 | **filterMaxSlices** | Greyed out |
+| I3 | Open the detection settings | No slice filter is offered at all - there is no slice count to filter on here |
+| I3a | **Cut at slice**, **Connect**, **Connect Mode** | All greyed out - both operations work along Z. Connect in particular used to stay live and merge the whole of both objects through the stack, ignoring the mode |
+| I3b | **Cleanup**, **Compact**, the gear button | Still live. They read the whole volume whatever the mode says, which is intended |
+| I3c | **Update list**, **Update the list on slice change** | Both live here; both greyed out in 3D mode |
 | I4 | Status line | *"Slice N: K objects; M in the whole model"* |
 | I5 | Move one slice with **Update the list on slice change** ticked | The list re-reads, and the status line names the new slice |
 | I6 | Time how long a slice step takes on the full-size stack | Should be unnoticeable. **If scrolling has become sluggish, say so** - that is exactly what the checkbox is there to switch off |
@@ -904,6 +1061,7 @@ Group **C** is the same set of hazards for the mouse; this is the one for the ke
 | J1 | Tick **Shortcuts**, hover an object, ++ctrl+f++ | It is selected and highlighted |
 | J2 | Hover a second object, ++ctrl+f++ | Both are selected - it adds, unlike a plain click |
 | J3 | Press ++a++ | They merge, exactly as the button does |
+| J3a | Brush on empty background and press ++a++; then brush onto an existing object and press ++a++ again | A new object, then that object grown - D1d and D1c from the keyboard. This is the whole point of the key: paint what the prediction missed and commit it without leaving the brush |
 | J3b | Pick two objects with ++ctrl+f++, press ++c++ | The list and the highlight are empty. A shape drawn in the Selection layer is **still there** - `c` clears the list, not the layer |
 | J4 | Brush a break, press ++s++ | The object under the drawing splits |
 | J5 | Press ++shift+a++ and ++shift+s++ | Same as without shift. **Nothing is added to or subtracted from the material** - that is the failure to watch for, and it is silent |

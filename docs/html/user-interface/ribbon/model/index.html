@@ -18,7 +18,7 @@
         <link rel="prev" href="../image/image-morphops.html">
       
       
-        <link rel="next" href="../mask/mask-stats.html">
+        <link rel="next" href="./model-instance-editor.html">
       
       
         
@@ -2210,6 +2210,8 @@
       
         
       
+        
+      
     
     
     
@@ -2255,6 +2257,33 @@
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
             
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="./model-instance-editor.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Instance editor
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
               
             
               
@@ -5784,6 +5813,8 @@
       
         
       
+        
+      
     
     
     
@@ -6406,131 +6437,12 @@ Requires Fiji installation (see <a href="https://mib.helsinki.fi/downloads_syste
 <h3 id="instance-editor">Instance editor<a class="headerlink" href="#instance-editor" title="Permanent link">&para;</a></h3>
 <p>Corrects individual objects of an instance model by hand: splitting one object into two, merging
 several into one, bridging a gap between two halves of the same object, and deleting false
-detections.</p>
-<p>It is the proofreading step after <strong>Stitch 2D instances to 3D</strong>. Automatic stitching leaves errors
-that no threshold can remove - two objects that genuinely overlap across many slices are fused, and
-one object that breaks in two far apart in Z stays two - and those are repaired here.</p>
-<p>Requires an instance model (65535 or 4294967295 materials), where every object has its own index.</p>
-<div class="h4-like">2D and 3D</div>
-
-<p><span class="widget widget-checkbox">3D (whole object)</span> decides what an operation reaches. With it off, everything is confined to the shown slice, and the list follows: it names the objects on that slice and gives their area on it.</p>
-<p>The editor opens with it off. This is the mode for a model that has not been stitched into 3D yet. There the numbering starts again from 1 on every slice, so the same number is a different object on each one - which is why the list cannot describe the whole stack at once, and why objects picked on one slice are dropped when the list moves to another.</p>
-<p>Moving to another slice re-reads the list. On a large stack, turn <span class="widget widget-checkbox">Update the list on slice change</span> off and press <span class="widget widget-button">Update list</span> when you need it; until then the status line says which slice the list is describing.</p>
-<div class="h4-like">Choosing the objects to work on</div>
-
-<p>Objects can be picked from the list, or with
-<span class="widget widget-checkbox">Pick objects by clicking</span>, which lets you click them
-directly in the Image View panel. While clicking, a plain <mouse class="left"></mouse> starts a new
-selection, <span class="keys"><kbd class="key-shift">Shift</kbd></span> adds an object to it and <span class="keys"><kbd class="key-control">Ctrl</kbd></span> takes one out. Panning with
-<mouse class="right"></mouse> keeps working as usual. Whatever is picked is shown in the Selection
-layer, so you can see what you are about to change before you change it; anything you have drawn
-there yourself is kept, and comes back as soon as you start drawing again.</p>
-<p><strong>Merge</strong> and <strong>Split by selection</strong> need no picking at all: draw a shape in the Selection layer and
-they act on whatever it covers. Picking objects first restricts them to those objects.</p>
-<div class="h4-like">Working from the keyboard</div>
-
-<p><span class="widget widget-checkbox">Shortcuts</span> puts the two operations on the keys the hand is
-already resting on, so that proofreading needs one hand for the mouse and nothing else:</p>
-<table>
-<thead>
-<tr>
-<th>Key</th>
-<th>Does</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><span class="keys"><kbd class="key-a">A</kbd></span></td>
-<td>Merge</td>
-</tr>
-<tr>
-<td><span class="keys"><kbd class="key-s">S</kbd></span></td>
-<td>Split by selection</td>
-</tr>
-<tr>
-<td><span class="keys"><kbd class="key-control">Ctrl</kbd><span>+</span><kbd class="key-f">F</kbd></span></td>
-<td>Add the object under the cursor to the selection</td>
-</tr>
-</tbody>
-</table>
-<p>While the checkbox is ticked these three keys do <strong>not</strong> add to or subtract from the material as they
-normally do - that is what it is for. Untick it, or close the editor, and they are back. Everything
-else, <span class="keys"><kbd class="key-i">I</kbd></span> and <span class="keys"><kbd class="key-control">Ctrl</kbd><span>+</span><kbd class="key-z">Z</kbd></span> included, keeps working throughout.</p>
-<p>To take an object back out of the list of selected objects, highlight it there and right-click for
-<span class="widget widget-button">Remove highlighted from selection</span>. The selection is emptied
-by itself after an operation, ready for the next one.</p>
-<p>Selecting a single object in the list also moves the view to it, so an object can be found from its
-number alone; in 2D the view stays on the current slice. Use <strong>jump to index</strong> to reach an object
-that the list does not currently show.</p>
-<div class="h4-like">Operations</div>
-
-<table>
-<thead>
-<tr>
-<th>Operation</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>Merge</strong></td>
-<td>Joins the selected objects into one. The result takes the <strong>smallest</strong> of their indices; the others become free. Needs nothing picked either: draw one shape across everything that belongs together and press Merge - the whole of every object the shape touches is joined, not only the part under it.</td>
-</tr>
-<tr>
-<td><strong>Split components</strong></td>
-<td>Breaks each selected object into its separate pieces. The largest piece keeps the index, every other piece gets a new one. Use it when one index covers two things that do not touch.</td>
-</tr>
-<tr>
-<td><strong>Split by selection</strong></td>
-<td>Removes whatever is in the Selection layer from the object, then splits what is left. Needs no object picked: the drawing decides what to cut, and everything it covers is split. Picking objects first restricts the cut to them, for a line that clips a neighbour. This is the one to use after drawing a break with the brush - see below.</td>
-</tr>
-<tr>
-<td><strong>Cut at slice</strong></td>
-<td>Splits the object along Z: everything from the shown slice onwards becomes a new object. Use it on an object that runs correctly for a while and then continues into a neighbour.</td>
-</tr>
-<tr>
-<td><strong>Connect</strong></td>
-<td>Joins two objects that belong together but are separated by a gap in Z, filling the gap between them. <code>interpolate</code> morphs between their two facing cross-sections; <code>selection</code> uses whatever is in the Selection layer instead, for a gap whose shape cannot be guessed. Only empty space is filled, so an object lying between the two is never overwritten.</td>
-</tr>
-<tr>
-<td><strong>Delete</strong></td>
-<td>Removes the selected objects.</td>
-</tr>
-<tr>
-<td><strong>Cleanup</strong></td>
-<td>Applies the same noise filters as the stitching dialog to the whole model, without re-stitching it. Object numbers are left alone.</td>
-</tr>
-<tr>
-<td><strong>Compact</strong></td>
-<td>Renumbers every object to a continuous 1, 2, 3... after deletes and splits have left gaps. <strong>All object numbers change.</strong></td>
-</tr>
-</tbody>
-</table>
-<p>Every operation can be undone with <span class="keys"><kbd class="key-control">Ctrl</kbd><span>+</span><kbd class="key-z">Z</kbd></span>.</p>
-<div class="admonition tip">
-<p class="admonition-title">Splitting an object with the brush</p>
-<p>The most direct way to split an object is to draw the break yourself:</p>
-<ol>
-<li>Brush the break into the Selection layer where the object should be cut. In 3D, brush it on a
-   few slices and press <span class="keys"><kbd class="key-i">I</kbd></span> to interpolate between them.</li>
-<li>Press <span class="widget widget-button">Split by selection</span>.</li>
-</ol>
-<p>There is no need to pick the object: whatever the drawing lies on is what gets cut. The brushed
-area is cleared out of the object and the two halves become separate objects, in a single
-undoable step, and the drawing is used up.</p>
-<p>Pick the object first only when the break also crosses a neighbour you want left alone - then
-the cut is kept to what you picked. Do the picking after the drawing: picking covers the object
-in the Selection layer, and drawing on top of that clears the highlight out of the way but does
-not keep the stroke that cleared it.</p>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Rebuilding the list</p>
-<p>The object list is built once and then kept up to date as you edit, which is what keeps the tool
-responsive on models with thousands of objects. Changing the model with another tool - a brush
-stroke, an undo - leaves it out of date, and the status line says so. The next operation rebuilds
-it before doing anything, so nothing can be applied to stale information; press
-<span class="widget widget-button">Rebuild</span> to refresh the list without waiting for that.</p>
-</div>
+detections. Objects are picked from a list, by clicking them in the image, or by drawing over them
+in the Selection layer.</p>
+<p>It is the proofreading step after <strong>Stitch 2D instances to 3D</strong>, which leaves errors that no
+threshold can remove. Requires an instance model (65535 or 4294967295 materials), where every object
+has its own index.</p>
+<p>See <a href="model-instance-editor.html">Instance editor</a> for details.</p>
 <div class="clear-float"></div>
 
 <hr />
@@ -6600,13 +6512,13 @@ it before doing anything, so nothing can be applied to stale information; press
         
         
           
-          <a href="../mask/mask-stats.html" class="md-footer__link md-footer__link--next" aria-label="Next: Quantification">
+          <a href="./model-instance-editor.html" class="md-footer__link md-footer__link--next" aria-label="Next: Instance editor">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Quantification
+                Instance editor
               </div>
             </div>
             <div class="md-footer__button md-icon">
