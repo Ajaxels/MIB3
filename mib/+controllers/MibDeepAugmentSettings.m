@@ -352,7 +352,6 @@ classdef MibDeepAugmentSettings < handle
             %     be rendered.
             %
             
-            global mibPath;
             global mibDeepTrainingProgressStruct
             if nargin < 2; selectedAugmentation = []; end
             
@@ -410,7 +409,8 @@ classdef MibDeepAugmentSettings < handle
                         prompts = {'Select label class to show'};
                         defAns = {{fileList.name}'};
                         dlgTitle = 'Label selection';
-                        [answer, selIndex] = mibInputMultiDlg({mibPath}, prompts, defAns, dlgTitle);
+                        dlgOptions.mibPath = obj.mibModel.mibPath;
+                        [answer, selIndex] = utils.dlgs.inputUniversalDlg(obj.view.gui, '', prompts, defAns, dlgTitle, dlgOptions);
                         if isempty(answer); return; end
                         inputPath = fullfile(obj.mibDeep.BatchOpt.OriginalTrainingImagesDir, 'TrainImages', fileList(selIndex).name);
                     else
@@ -425,7 +425,7 @@ classdef MibDeepAugmentSettings < handle
                         'FileExtensions', '.mibImg', 'IncludeSubfolders', false, 'ReadFcn', @deepmib.storeLoadImages);
                 end
             catch err
-                mibShowErrorDialog(obj.view.gui, err, 'Missing files');
+                utils.dlgs.showErrorDialog(obj.view.gui, err, 'Missing files');
                 if obj.mibDeep.BatchOpt.showWaitbar; delete(obj.mibDeep.wb); end
                 return;
             end

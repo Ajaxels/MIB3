@@ -7,6 +7,8 @@ Standalone utility functions
 
 .. autofunction:: attachFileDnD
 
+.. autofunction:: calcCurveLength
+
 .. autofunction:: calculatePixSizes
 
 .. autofunction:: calculateResolution

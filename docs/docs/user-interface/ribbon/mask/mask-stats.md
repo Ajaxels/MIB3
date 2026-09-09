@@ -188,12 +188,34 @@ Use <mouse class="left"></mouse> / <mouse class="right"></mouse> on the histogra
 - **Extent**: ratio of object voxels to bounding-box voxels.
 - **FilledArea**: total voxels within the filled (hole-free) 3D object.
 - **HolesArea**: total voxels of internal cavities within 3D objects.
-- **MajorAxisLength**: length of the major principal axis in pixels.
+- **MajorAxisLength**: length of the major principal axis in pixels *(see the note below the list)*.
 - **MeridionalEccentricity**: eccentricity of the cross-section through the longest and shortest axes.
-- **SecondAxisLength**: length of the second principal axis in pixels.
+- **SecondAxisLength**: length of the second principal axis in pixels *(see the note below the list)*.
 - **Solidity**: proportion of convex-hull voxels occupied by the object (Volume / ConvexVolume).
 - **SurfaceArea**: surface area of the 3D object (requires isotropic voxels for physical units).
-- **ThirdAxisLength**: length of the minor (third) principal axis in pixels.
+- **ThirdAxisLength**: length of the minor (third) principal axis in pixels *(see the note below the list)*.
+
+??? info "What MajorAxisLength, SecondAxisLength and ThirdAxisLength measure"
+    The object's own longest direction is found first (the direction along which its voxels are most
+    spread out), then the object is measured along that direction, from the centre of one extreme voxel
+    to the centre of the other. *SecondAxisLength* and *ThirdAxisLength* are the same measurement along
+    the two remaining perpendicular directions.
+
+    A solid 10 × 4 × 4 voxel cuboid gives **MajorAxisLength = 9**, with *SecondAxisLength* =
+    *ThirdAxisLength* = 3: a run of N voxels measures N-1, because that is the distance between the
+    extreme voxel centres. Rotating the cuboid does not change the result, the axis follows the object.
+
+    This is a direct measurement of the object rather than a fitted shape. MATLAB `regionprops3`
+    reports 12.91 for the same cuboid, because its *PrincipalAxisLength* is the axis of an equivalent
+    ellipsoid. The 2D *MajorAxisLength* listed below is an ellipse fit as well; the 3D property is not.
+
+    Worth knowing:
+
+    - A near-spherical or near-cubic object has no dominant direction, so the axis that gets picked,
+      and with it the reported length, is arbitrary.
+    - For a bent object the value is the straight-line spread, not the length measured along the
+      object. Use *EndpointsLength* for that.
+    - A single-voxel object gives 0.
 
 ---
 
@@ -210,14 +232,41 @@ Use <mouse class="left"></mouse> / <mouse class="right"></mouse> on the histogra
 - **EulerNumber**: number of objects minus number of holes (e.g., 1 hole → 0, 2 holes → -1).
 - **Extent**: ratio of object pixels to bounding-box pixels (Area / bounding-box area).
 - **FilledArea**: total pixels of the filled (hole-free) object.
-- **FirstAxisLength**: actual length of the major 2D axis (cf. *MajorAxisLength* which fits an ellipse).
+- **FirstAxisLength**: actual length of the major 2D axis, measured on the object *(see the note below the list)*.
 - **HolesArea**: total pixels within holes.
-- **MajorAxisLength**: length of the major axis of the equivalent-second-moment ellipse (pixels).
-- **MinorAxisLength**: length of the minor axis of the equivalent-second-moment ellipse (pixels).
+- **MajorAxisLength**: length of the major axis of the equivalent-second-moment ellipse (pixels) *(see the note below the list)*.
+- **MinorAxisLength**: length of the minor axis of the equivalent-second-moment ellipse (pixels) *(see the note below the list)*.
 - **Orientation**: angle (−90° to +90°) between the x-axis and the major axis of the equivalent ellipse.
 - **Perimeter**: boundary length (sum of distances between adjacent border pixels).
-- **SecondAxisLength**: actual length of the minor 2D axis (cf. *MinorAxisLength* which fits an ellipse).
+- **SecondAxisLength**: actual length of the minor 2D axis, measured on the object *(see the note below the list)*.
 - **Solidity**: proportion of convex-hull pixels occupied by the object (Area / ConvexArea).
+
+??? info "MajorAxisLength / MinorAxisLength vs FirstAxisLength / SecondAxisLength"
+    Both pairs describe the long and the short extent of a 2D object, but they are measured differently.
+
+    *MajorAxisLength* and *MinorAxisLength* are the axes of the **equivalent ellipse**, the ellipse that
+    has the same second moments as the object. They describe an idealised stand-in for the object rather
+    than the object itself, and they are the basis of *Eccentricity* and *Orientation*.
+
+    *FirstAxisLength* and *SecondAxisLength* are **measured on the object**: the direction along which
+    its pixels are most spread out is found first, then the object is measured along that direction from
+    the centre of one extreme pixel to the centre of the other, and the same is done perpendicular to it.
+    The 3D *MajorAxisLength* above uses this definition too.
+
+    For a solid 10 × 4 pixel rectangle:
+
+    | | long axis | short axis |
+    |---|---|---|
+    | *MajorAxisLength* / *MinorAxisLength* (ellipse) | 11.55 | 4.62 |
+    | *FirstAxisLength* / *SecondAxisLength* (measured) | 9 | 3 |
+
+    The ellipse overshoots a rectangle by about 15%, while the measured pair reports N-1 for a run of
+    N pixels, since it goes from pixel centre to pixel centre. For genuinely elliptical objects the two
+    agree closely: a disk 21 pixels across gives 20.1 and 20.
+
+    Use the ellipse pair to compare elongation across objects of a similar shape, and the measured pair
+    when the value should match the size seen on the screen. For a bent object neither reports the length
+    along the object, use *EndpointsLength* or *CurveLength* instead.
 
 ---
 

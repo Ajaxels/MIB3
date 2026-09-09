@@ -6,19 +6,18 @@ function trainingStructUpdateAxes(hMenu, actionData, parameter)
 %
 %      trainingStructUpdateAxes(hMenu, actionData, parameter)
 %
-global mibPath;
 global mibDeepTrainingProgressStruct
 
 prompts = {'Define value for Y max:', 'Define value for Y min:'};
-defAns = {num2str(mibDeepTrainingProgressStruct.UILossAxes.YLim(2)), 
-    num2str(mibDeepTrainingProgressStruct.UILossAxes.YLim(1))};
+defAns = {mibDeepTrainingProgressStruct.UILossAxes.YLim(2), ...
+    mibDeepTrainingProgressStruct.UILossAxes.YLim(1)};
 dlgTitle = 'Update Y limits';
 options.WindowStyle = 'normal';
-answer = mibInputMultiDlg({mibPath}, prompts, defAns, dlgTitle, options);
+answer = utils.dlgs.inputUniversalDlg(mibDeepTrainingProgressStruct.UIFigure, '', prompts, defAns, dlgTitle, options);
 if isempty(answer); return; end
-ymax = str2double(answer{1});
-ymin = str2double(answer{2});
-if isnan(ymin) || isnan(ymax); return; end
+ymax = answer{1};
+ymin = answer{2};
+if isempty(ymin) || isempty(ymax) || isnan(ymin) || isnan(ymax) || ymin >= ymax; return; end
 
 mibDeepTrainingProgressStruct.UILossAxes.YLim = [ymin, ymax];
 end

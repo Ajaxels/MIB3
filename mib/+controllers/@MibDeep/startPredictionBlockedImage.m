@@ -511,7 +511,7 @@ function startPredictionBlockedImage(obj)
                     smoothOptions.filters3DCheck = 0;
                     smoothOptions.hSize = obj.BatchOpt.P_ImageDownsamplingFactor{1}*2+1;
                 end
-                outputLabels = mibDoImageFiltering(outputLabels, smoothOptions);
+                outputLabels = utils.doImageFiltering(outputLabels, smoothOptions);
             end
 
             if generateScoreFiles > 0

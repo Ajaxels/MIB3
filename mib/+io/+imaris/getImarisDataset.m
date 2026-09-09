@@ -34,7 +34,6 @@ function [img, img_info, viewPort, lutColors, connImaris] = getImarisDataset(con
 % Updates
 % 
 
-global mibPath;
 if nargin < 1; connImaris = []; end
 
 img = NaN;
@@ -50,9 +49,9 @@ if isempty(connImaris); return; end
 [vSizeX, vSizeY, vSizeZ, vSizeC, vSizeT] = connImaris.getSizes();
 if vSizeZ > 1 && vSizeT > 1
     %answer = inputdlg(sprintf('!!! Warning !!!\n\nMIB can''t open 5D datasets!\nPlease enter a time point to open (starting from 0)'), 'Time point', 1, cellstr('0'));
-    answer = mibInputDlg({mibPath}, sprintf('!!! Warning !!!\nA 5D dataset is opened in Imaris!\nPlease enter a time point to open (starting from 1) or type 0 to obtain the 5D dataset completely'), 'Time point', '1');
+    answer = utils.dlgs.inputSingleDlg([], sprintf('!!! Warning !!!\nA 5D dataset is opened in Imaris!\nPlease enter a time point to open (starting from 1) or type 0 to obtain the 5D dataset completely'), '1', 'Time point');
     if isempty(answer);         return;    end
-    timePoint = str2double(answer{1});    % frame number to open for 5D datasets
+    timePoint = str2double(answer);    % frame number to open for 5D datasets
 end
 
 % the block size defined in the getByBlocks function below

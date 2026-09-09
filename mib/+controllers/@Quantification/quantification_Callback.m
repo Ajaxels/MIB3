@@ -541,7 +541,7 @@ for t = t1:t2
 
             % CurveLength (2D)
             if ~isempty(property(ismember(property, 'CurveLength')))
-                STATS2 = mibCalcCurveLength(CC);
+                STATS2 = utils.calcCurveLength(CC);
                 if isstruct(STATS2)
                     [STATS.CurveLength] = deal(STATS2.CurveLengthInPixels);
                 end

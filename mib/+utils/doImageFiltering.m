@@ -249,9 +249,9 @@ if BatchOpt.Mode3D  % perform the 3D filters
                 if colCh==1
                     logText = sprintf('%s 3D, ScalingFactor: %d, HSize: %s, Sigma: %.1f', logText, BatchOpt.ScalingFactor{1}, BatchOpt.HSize, BatchOpt.Sigma{1});
                     randomSeed = 0;     % define random seed
-                    [img(:,:,:,colCh), DisplacementField] = mibElasticDistortionFilter(img(:,:,:,colCh), BatchOpt, randomSeed);
+                    [img(:,:,:,colCh), DisplacementField] = utils.elasticDistortionFilter(img(:,:,:,colCh), BatchOpt, randomSeed);
                 else
-                    img(:,:,:,colCh) = mibElasticDistortionFilter(img(:,:,:,colCh), BatchOpt, randomSeed, DisplacementField);
+                    img(:,:,:,colCh) = utils.elasticDistortionFilter(img(:,:,:,colCh), BatchOpt, randomSeed, DisplacementField);
                 end
 
         end

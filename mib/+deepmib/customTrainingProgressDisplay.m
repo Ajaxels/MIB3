@@ -341,7 +341,7 @@ if (isempty(progressStruct.Iteration) || progressStruct.Iteration == 0 || ...
     mibDeepTrainingProgressStruct.UILossAxes_cm = uicontextmenu(mibDeepTrainingProgressStruct.UIFigure);
     % define menu entries
     mibDeepTrainingProgressStruct.UILossAxes_cm_setYmin = uimenu(mibDeepTrainingProgressStruct.UILossAxes_cm);
-    mibDeepTrainingProgressStruct.UILossAxes_cm_setYmin.MenuSelectedFcn = @(src, evnt)mibDeepTrainingProgressStructUpdateAxesLimits(src, evnt, 'setYlimits');
+    mibDeepTrainingProgressStruct.UILossAxes_cm_setYmin.MenuSelectedFcn = @(src, evnt)deepmib.trainingStructUpdateAxes(src, evnt, 'setYlimits');
     mibDeepTrainingProgressStruct.UILossAxes_cm_setYmin.Text = 'Set Y limits';
     % Assign app.ContextMenu
     mibDeepTrainingProgressStruct.UILossAxes.ContextMenu = mibDeepTrainingProgressStruct.UILossAxes_cm;

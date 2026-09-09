@@ -190,7 +190,7 @@ else
             img_info{'YResolution'} = str2double(img_info{'YResolution'}); 
         end
         if isempty(img_info{'XResolution'}) || img_info{'XResolution'} == 0 || img_info{'YResolution'} == 0
-            resolution = mibCalculateResolution(pixSize);
+            resolution = utils.calculateResolution(pixSize);
         else
             pixSize_temp = utils.calculatePixSizes([img_info{'XResolution'} img_info{'YResolution'}], img_info{'ResolutionUnit'}, 'um');
             pixSize.x = pixSize_temp.x;

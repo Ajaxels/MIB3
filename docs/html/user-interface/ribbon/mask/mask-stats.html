@@ -5980,13 +5980,34 @@ and <strong>SurfaceArea</strong> for 3D objects in physical units require isotro
 <li><strong>Extent</strong>: ratio of object voxels to bounding-box voxels.</li>
 <li><strong>FilledArea</strong>: total voxels within the filled (hole-free) 3D object.</li>
 <li><strong>HolesArea</strong>: total voxels of internal cavities within 3D objects.</li>
-<li><strong>MajorAxisLength</strong>: length of the major principal axis in pixels.</li>
+<li><strong>MajorAxisLength</strong>: length of the major principal axis in pixels <em>(see the note below the list)</em>.</li>
 <li><strong>MeridionalEccentricity</strong>: eccentricity of the cross-section through the longest and shortest axes.</li>
-<li><strong>SecondAxisLength</strong>: length of the second principal axis in pixels.</li>
+<li><strong>SecondAxisLength</strong>: length of the second principal axis in pixels <em>(see the note below the list)</em>.</li>
 <li><strong>Solidity</strong>: proportion of convex-hull voxels occupied by the object (Volume / ConvexVolume).</li>
 <li><strong>SurfaceArea</strong>: surface area of the 3D object (requires isotropic voxels for physical units).</li>
-<li><strong>ThirdAxisLength</strong>: length of the minor (third) principal axis in pixels.</li>
+<li><strong>ThirdAxisLength</strong>: length of the minor (third) principal axis in pixels <em>(see the note below the list)</em>.</li>
 </ul>
+<details class="info">
+<summary>What MajorAxisLength, SecondAxisLength and ThirdAxisLength measure</summary>
+<p>The object's own longest direction is found first (the direction along which its voxels are most
+spread out), then the object is measured along that direction, from the centre of one extreme voxel
+to the centre of the other. <em>SecondAxisLength</em> and <em>ThirdAxisLength</em> are the same measurement along
+the two remaining perpendicular directions.</p>
+<p>A solid 10 × 4 × 4 voxel cuboid gives <strong>MajorAxisLength = 9</strong>, with <em>SecondAxisLength</em> =
+<em>ThirdAxisLength</em> = 3: a run of N voxels measures N-1, because that is the distance between the
+extreme voxel centres. Rotating the cuboid does not change the result, the axis follows the object.</p>
+<p>This is a direct measurement of the object rather than a fitted shape. MATLAB <code>regionprops3</code>
+reports 12.91 for the same cuboid, because its <em>PrincipalAxisLength</em> is the axis of an equivalent
+ellipsoid. The 2D <em>MajorAxisLength</em> listed below is an ellipse fit as well; the 3D property is not.</p>
+<p>Worth knowing:</p>
+<ul>
+<li>A near-spherical or near-cubic object has no dominant direction, so the axis that gets picked,
+  and with it the reported length, is arbitrary.</li>
+<li>For a bent object the value is the straight-line spread, not the length measured along the
+  object. Use <em>EndpointsLength</em> for that.</li>
+<li>A single-voxel object gives 0.</li>
+</ul>
+</details>
 <hr />
 <h2 id="quantification-properties-of-2d-objects">Quantification properties of 2D objects<a class="headerlink" href="#quantification-properties-of-2d-objects" title="Permanent link">&para;</a></h2>
 <p><img align="left" alt="2D object properties" src="images/menuMaskStats-properties2D.png" /></p>
@@ -6000,15 +6021,54 @@ and <strong>SurfaceArea</strong> for 3D objects in physical units require isotro
 <li><strong>EulerNumber</strong>: number of objects minus number of holes (e.g., 1 hole → 0, 2 holes → -1).</li>
 <li><strong>Extent</strong>: ratio of object pixels to bounding-box pixels (Area / bounding-box area).</li>
 <li><strong>FilledArea</strong>: total pixels of the filled (hole-free) object.</li>
-<li><strong>FirstAxisLength</strong>: actual length of the major 2D axis (cf. <em>MajorAxisLength</em> which fits an ellipse).</li>
+<li><strong>FirstAxisLength</strong>: actual length of the major 2D axis, measured on the object <em>(see the note below the list)</em>.</li>
 <li><strong>HolesArea</strong>: total pixels within holes.</li>
-<li><strong>MajorAxisLength</strong>: length of the major axis of the equivalent-second-moment ellipse (pixels).</li>
-<li><strong>MinorAxisLength</strong>: length of the minor axis of the equivalent-second-moment ellipse (pixels).</li>
+<li><strong>MajorAxisLength</strong>: length of the major axis of the equivalent-second-moment ellipse (pixels) <em>(see the note below the list)</em>.</li>
+<li><strong>MinorAxisLength</strong>: length of the minor axis of the equivalent-second-moment ellipse (pixels) <em>(see the note below the list)</em>.</li>
 <li><strong>Orientation</strong>: angle (−90° to +90°) between the x-axis and the major axis of the equivalent ellipse.</li>
 <li><strong>Perimeter</strong>: boundary length (sum of distances between adjacent border pixels).</li>
-<li><strong>SecondAxisLength</strong>: actual length of the minor 2D axis (cf. <em>MinorAxisLength</em> which fits an ellipse).</li>
+<li><strong>SecondAxisLength</strong>: actual length of the minor 2D axis, measured on the object <em>(see the note below the list)</em>.</li>
 <li><strong>Solidity</strong>: proportion of convex-hull pixels occupied by the object (Area / ConvexArea).</li>
 </ul>
+<details class="info">
+<summary>MajorAxisLength / MinorAxisLength vs FirstAxisLength / SecondAxisLength</summary>
+<p>Both pairs describe the long and the short extent of a 2D object, but they are measured differently.</p>
+<p><em>MajorAxisLength</em> and <em>MinorAxisLength</em> are the axes of the <strong>equivalent ellipse</strong>, the ellipse that
+has the same second moments as the object. They describe an idealised stand-in for the object rather
+than the object itself, and they are the basis of <em>Eccentricity</em> and <em>Orientation</em>.</p>
+<p><em>FirstAxisLength</em> and <em>SecondAxisLength</em> are <strong>measured on the object</strong>: the direction along which
+its pixels are most spread out is found first, then the object is measured along that direction from
+the centre of one extreme pixel to the centre of the other, and the same is done perpendicular to it.
+The 3D <em>MajorAxisLength</em> above uses this definition too.</p>
+<p>For a solid 10 × 4 pixel rectangle:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>long axis</th>
+<th>short axis</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><em>MajorAxisLength</em> / <em>MinorAxisLength</em> (ellipse)</td>
+<td>11.55</td>
+<td>4.62</td>
+</tr>
+<tr>
+<td><em>FirstAxisLength</em> / <em>SecondAxisLength</em> (measured)</td>
+<td>9</td>
+<td>3</td>
+</tr>
+</tbody>
+</table>
+<p>The ellipse overshoots a rectangle by about 15%, while the measured pair reports N-1 for a run of
+N pixels, since it goes from pixel centre to pixel centre. For genuinely elliptical objects the two
+agree closely: a disk 21 pixels across gives 20.1 and 20.</p>
+<p>Use the ellipse pair to compare elongation across objects of a similar shape, and the measured pair
+when the value should match the size seen on the screen. For a bent object neither reports the length
+along the object, use <em>EndpointsLength</em> or <em>CurveLength</em> instead.</p>
+</details>
 <hr />
 <h2 id="quantification-properties-of-intensities-of-2d3d-objects">Quantification properties of intensities of 2D/3D objects<a class="headerlink" href="#quantification-properties-of-intensities-of-2d3d-objects" title="Permanent link">&para;</a></h2>
 <p>Calculated when <em>Intensity</em> is selected in the <strong>Detection type</strong> section.</p>

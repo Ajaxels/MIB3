@@ -187,11 +187,11 @@ switch options.format
                         extraEdgeFieldsLocal};
                 end
                 dlgTitle = 'Export to Amira';
-                options.WindowStyle = 'normal';
-                options.Title = sprintf('Select fields to export\n(only numerical fields can be exported)');
-                options.TitleLines = 2;
-                options.Focus = 1;
-                [answer, selIndex] = mibInputMultiDlg({mibPath}, prompts, defAns, dlgTitle, options);
+                dlgOptions.WindowStyle = 'normal';
+                dlgOptions.HeaderLines = 2;
+                dlgOptions.Focus = 1;
+                dlgHeader = sprintf('Select fields to export\n(only numerical fields can be exported)');
+                [answer, selIndex] = utils.dlgs.inputUniversalDlg([], dlgHeader, prompts, defAns, dlgTitle, dlgOptions);
                 if isempty(answer); return; end
                 if numel(extraNodeFieldsLocal) < 2
                     outputFieldNode = extraNodeFieldsLocal(selIndex(1));

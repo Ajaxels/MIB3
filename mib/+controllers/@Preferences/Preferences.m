@@ -763,6 +763,11 @@ classdef Preferences < handle
         function RescaleGUIButtonPushed(obj)
             % RESCALEGUIBUTTONPUSHED - rescale user interface of MIB.
             %
+            % Updates the ``scalingGUI`` global from the System preferences. The
+            % widgets of the already open AppDesigner windows are not rescaled
+            % live - the new scaling is applied to the windows created after the
+            % change; MIB has to be restarted to rescale the main window.
+            %
             % Syntax:
             %   .. code-block:: matlab
             %
@@ -774,9 +779,8 @@ classdef Preferences < handle
             %
             %      obj.RescaleGUIButtonPushed();
             global scalingGUI;
-            
+
             scalingGUI = obj.preferences.System.GUI;   % update scalingGUI
-            mibRescaleWidgets(obj.mibController.view.gui);   % rescale main GUI
             drawnow;
             figure(obj.view.gui);   % set focus to main preference window and move it in front
         end
@@ -1484,8 +1488,8 @@ classdef Preferences < handle
                     prompts = {sprintf('Input a variable that contains the colormap\n\nIt should be a matrix [colorNumber, [R,G,B]]:')};
                     defAns = {Vars};
                     title = 'Import colormap';
-                    mibInputMultiDlgOptions.PromptLines = 3;
-                    answer = mibInputMultiDlg({mibPath}, prompts, defAns, title, mibInputMultiDlgOptions);
+                    dlgOptions.mibPath = obj.mibModel.mibPath;
+                    answer = utils.dlgs.inputUniversalDlg(obj.view.gui, '', prompts, defAns, title, dlgOptions);
                     if isempty(answer); return; end
                     
                     try
@@ -1512,11 +1516,11 @@ classdef Preferences < handle
                     title = 'Export colormap';
                     prompt = sprintf('Input a destination variable for export\nA matrix containing the current colormap [colorNumber, [R,G,B]] will be assigned to this variable');
                     %answer = inputdlg(prompt,title,[1 30],{'colormap'},'on');
-                    answer = mibInputDlg({mibPath}, prompt, title, 'colormap');
-                    if size(answer) == 0; return; end
-                    
-                    assignin('base',answer{1}, obj.preferences.Colors.ModelMaterialColors);
-                    fprintf('Colormap export: created variable %s in the Matlab workspace\n', answer{1});
+                    answer = utils.dlgs.inputSingleDlg(obj.view.gui, prompt, 'colormap', title);
+                    if isempty(answer); return; end
+
+                    assignin('base', answer, obj.preferences.Colors.ModelMaterialColors);
+                    fprintf('Colormap export: created variable %s in the Matlab workspace\n', answer);
                 case 'LoadFromFileMenu'
                     [fileName, pathName] = utils.dlgs.mibUiGetFile({'*.cmap';'*.mat';'*.*'}, 'Load colormap',...
                         fileparts(obj.mibModel.I{obj.mibModel.id}.meta('Filename')));

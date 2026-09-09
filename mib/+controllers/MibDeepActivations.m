@@ -628,7 +628,7 @@ classdef MibDeepActivations < handle
                     obj.view.handles.(fieldName).Text = sprintf('%s: %.3f', propName, propValue);
                 end
             catch err
-                mibShowErrorDialog(obj.view.gui, err, 'Error to show weights image');
+                utils.dlgs.showErrorDialog(obj.view.gui, err, 'Error to show weights image');
                 return;
             end
         end

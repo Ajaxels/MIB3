@@ -31,6 +31,9 @@ h.export.ButtonPushedFcn    = @(~,~) obj.exportButton_Callback();
 h.closeBtn.ButtonPushedFcn        = @(~,~) obj.closeWindow();
 h.defineProperties.ButtonPushedFcn     = @(~,~) obj.multipleBtn_Callback();
 h.updateBtn.ButtonPushedFcn       = @(~,~) obj.updateWidgets();
+h.help.ButtonPushedFcn = @(~,~) utils.openHelpPage(...
+    fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'html', 'user-interface', 'ribbon', 'mask', 'mask-stats.html'), ...
+    'http://mib.helsinki.fi/help/main3/user-interface/ribbon/mask/mask-stats.html');
 
 % dropdowns
 h.Material.ValueChangedFcn    = @(~,~) obj.material_Callback();
