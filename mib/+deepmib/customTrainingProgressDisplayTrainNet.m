@@ -429,7 +429,10 @@ else
     deepmib.updateGpuMemoryStatus(progressStruct.Iteration, elapsedSeconds);
     mibDeepTrainingProgressStruct.Epoch.Text = sprintf('Epoch: %d of %d', progressStruct.Epoch, trainingProgressOptions.TrainingOpt.MaxEpochs);
     mibDeepTrainingProgressStruct.IterationNumberValue.Text = sprintf('%d of %d', progressStruct.Iteration, round(mibDeepTrainingProgressStruct.maxIter));
-    mibDeepTrainingProgressStruct.ProgressGauge.Value = progressStruct.Iteration/mibDeepTrainingProgressStruct.maxIter*100;
+    % maxIter is an estimate (iterations per epoch x epochs), so clamp: the gauge limits
+    % are [0 100] and a needle drawn past the edge looks like a fault rather than an
+    % off-by-one in the estimate
+    mibDeepTrainingProgressStruct.ProgressGauge.Value = min(100, progressStruct.Iteration/mibDeepTrainingProgressStruct.maxIter*100);
     
 
     if ~isempty(progressStruct.ValidationLoss)

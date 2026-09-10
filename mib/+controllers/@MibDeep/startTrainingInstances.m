@@ -74,12 +74,39 @@ obj.selectGPUDevice();
 inputPatchSize = str2num(obj.BatchOpt.T_InputPatchSize); %#ok<ST2NM>
 if numel(inputPatchSize) ~= 4
     mgsOpt.MsgBoxOnly = true;
-    header = sprintf(['Please provide the "Input patch size" (BatchOpt.T_InputPatchSize) as 4 numbers that define\n' ...
+    mgsOpt.HeaderLines = 2;
+    mgsOpt.WindowWidth = 500;
+    mgsOpt.WindowHeight = 280;
+    msgText = sprintf(['Use 4 numbers that define\n' ...
         'height, width, depth, colors\n\nFor example:\n' ...
         '"800, 800, 1, 3" for SOLOv2 of 3 color channel images\n' ...
         '"1280, 800, 1, 1" for SOLOv2 of 1 color channel images\n\n' ...
-        'Please note that the width and height should be multiples of 32 and color are 1 or 3']);
-    utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Wrong patch size', mgsOpt);
+        'The height and the width should be multiples of 32 and colors 1 or 3']);
+    utils.dlgs.inputUniversalDlg(obj.view.gui, ...
+        'Please provide the input patch size (BatchOpt.T_InputPatchSize)', ...
+        {''}, {msgText}, 'Wrong patch size', mgsOpt);
+    return;
+end
+
+% solov2() rejects a height or width that is not a multiple of 32 - its backbone
+% downsamples by 32 at the deepest FPN level, so any other size leaves that feature map
+% with a fractional extent. Caught here rather than at the solov2() call further down,
+% where it arrives as vision:solov2:incorrectInputSize inside a generic dialog that names
+% neither the offending value nor a usable replacement.
+if any(mod(inputPatchSize(1:2), 32) ~= 0)
+    nearestBelow = max(32, floor(inputPatchSize(1:2)/32)*32);
+    nearestAbove = ceil(inputPatchSize(1:2)/32)*32;
+    mgsOpt.MsgBoxOnly = true;
+    mgsOpt.HeaderLines = 2;     % the header wraps to two lines at this window width
+    mgsOpt.WindowWidth = 500;
+    mgsOpt.WindowHeight = 220;
+    header = 'SOLOv2 requires the height and the width of the "Input patch size" to be multiples of 32';
+    msgText = sprintf(['Current: %d x %d\n' ...
+        'Nearest allowed: %d x %d (smaller) or %d x %d (larger)\n\n' ...
+        'Set "Input patch size" to one of these and start training again.'], ...
+        inputPatchSize(1), inputPatchSize(2), ...
+        nearestBelow(1), nearestBelow(2), nearestAbove(1), nearestAbove(2));
+    utils.dlgs.inputUniversalDlg(obj.view.gui, header, {''}, {msgText}, 'Wrong patch size', mgsOpt);
     return;
 end
 
@@ -87,13 +114,17 @@ end
 if inputPatchSize(1)~=inputPatchSize(2) && obj.BatchOpt.T_augmentation
     if (strcmp(obj.BatchOpt.Workflow{1}(1:2), '2D') && obj.AugOpt2D.Rotation90.Enable )
         mgsOpt.MsgBoxOnly = true;
-        header = sprintf(['Rotation augmentations are only implemented for input patches that have a square shape!\n\n' ...
+        mgsOpt.HeaderLines = 1;
+        mgsOpt.WindowHeight = 260;
+        mgsOpt.WindowWidth = 580;
+        msgText = sprintf(['Rotation augmentations are only implemented for input patches that have a square shape!\n\n' ...
             'How to fix (one of these options):\n   a) set probability of Rotation90 augmentations to 0\n' ...
                 '   b) make sure that the input patch size has a square shape as "%d %d %d %d"\n' ...
                 '   c)   if Rotation90 is required rotate the original dataset (images and labels) and save it as ' ...
                 'additional files to be used for training'], ...
                 inputPatchSize(1), inputPatchSize(1), inputPatchSize(3), inputPatchSize(4));
-        utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Rotation90 is not available', mgsOpt);
+        utils.dlgs.inputUniversalDlg(obj.view.gui, 'Rotation90 is not available', ...
+            {''}, {msgText}, 'Rotation90 is not available', mgsOpt);
         return;
     end
 end
@@ -513,11 +544,16 @@ try
     % end
 
     % calculate max number of iterations
-    mibDeepTrainingProgressStruct.maxNoIter = ...        % as noImages*PatchesPerImage*MaxEpochs/Minibatch
-        ceil((noFiles-mod(noFiles, obj.BatchOpt.T_MiniBatchSize{1}))/obj.BatchOpt.T_MiniBatchSize{1}) * obj.TrainingOpt.MaxEpochs;
-
-    mibDeepTrainingProgressStruct.iterPerEpoch = ...
-        mibDeepTrainingProgressStruct.maxNoIter / obj.TrainingOpt.MaxEpochs;
+    % Unlike trainNetwork, which drops the observations that do not fill the last complete
+    % mini-batch of an epoch, images.dltrain (the trainer behind trainSOLOV2) runs that
+    % partial mini-batch as one more iteration - so the count rounds up, not down.
+    % Measured: 9 images x 4 patches = 36 observations at a mini-batch of 8 gives 5
+    % iterations per epoch, not 4; the floor form used by the semantic workflow made the
+    % progress gauge overshoot 100% by the end of every phase.
+    mibDeepTrainingProgressStruct.iterPerEpoch = ...    % as noImages*PatchesPerImage/Minibatch
+        ceil(noFiles / obj.BatchOpt.T_MiniBatchSize{1});
+    mibDeepTrainingProgressStruct.maxNoIter = ...
+        mibDeepTrainingProgressStruct.iterPerEpoch * obj.TrainingOpt.MaxEpochs;
 
     % generate training options structure
     
@@ -860,9 +896,10 @@ if twoPhaseSchedule && ~emergencyBrakeUsed
         mibDeepTrainingProgressStruct.plateauLoss = [];     % phase 2 has no plateau detector
         mibDeepStopTraining = false;
 
+        % rounds up for the same reason as the first-phase estimate above
+        mibDeepTrainingProgressStruct.iterPerEpoch = ceil(noFiles / obj.BatchOpt.T_MiniBatchSize{1});
         mibDeepTrainingProgressStruct.maxNoIter = ...
-            ceil((noFiles - mod(noFiles, obj.BatchOpt.T_MiniBatchSize{1}))/obj.BatchOpt.T_MiniBatchSize{1}) * trainablePhaseEpochs;
-        mibDeepTrainingProgressStruct.iterPerEpoch = mibDeepTrainingProgressStruct.maxNoIter / trainablePhaseEpochs;
+            mibDeepTrainingProgressStruct.iterPerEpoch * trainablePhaseEpochs;
 
         try
             TrainingOptions = obj.preprareTrainingOptionsInstances(valLabelsDS, ...

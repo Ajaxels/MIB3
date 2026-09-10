@@ -11,6 +11,11 @@ function startPredictionInstances(obj)
 % instead of being downscaled to the network input). For each image, every detected object
 % instance is saved as a unique integer index in a MIB model (background 0).
 %
+% An image that is no larger than the network input (``inputPatchSize``) is passed to
+% ``segmentObjects`` **whole**: it needs no tiles, so no stitching mode is applied and the
+% tiling settings (P_OverlappingTiles / P_OverlappingTilesPercentage) are neither used nor
+% validated for it.
+%
 % Both 2D images and z-stacks are accepted, as in the 2D Semantic workflow:
 %
 %   - a 2D file is predicted directly and saved as a 2D model;
@@ -138,12 +143,12 @@ end
 % define the tile (block) size and overlap for the blockedImage strategy
 stitchingMode = obj.BatchOpt.P_OverlapInstancesMode{1};     % 'Centroid in core' or 'IoU merge'
 overlapPercentage = obj.BatchOpt.P_OverlappingTilesPercentage{1};
+overlapDefaulted = false;
 if ~obj.BatchOpt.P_OverlappingTiles
     if strcmp(stitchingMode, 'IoU merge')
         % IoU merge needs an overlap band to compare detections across seams
         overlapPercentage = 5;
-        warning('MibDeep:startPredictionInstances:noOverlap', ...
-            'The "IoU merge" stitching requires overlapping tiles; a default %d%% overlap will be used', overlapPercentage);
+        overlapDefaulted = true;
     else
         overlapPercentage = 0;
     end
@@ -151,15 +156,11 @@ end
 blockSize = [inputPatchSize(1), inputPatchSize(2)];
 padShift = ceil(blockSize * overlapPercentage / 100);
 blockSize = blockSize - padShift*2;     % core size (apply adds the border back)
-if any(blockSize < 16)
-    utils.dlgs.showErrorDialog(obj.view.gui, ...
-        sprintf(['The selected overlap percentage (%d%%) leaves a tile core of only [%d x %d] pixels\n' ...
-        'for the input patch size [%d x %d].\n\nPlease decrease the overlap percentage!'], ...
-        overlapPercentage, blockSize(1), blockSize(2), inputPatchSize(1), inputPatchSize(2)), ...
-        'Overlap too large');
-    if obj.BatchOpt.showWaitbar; close(pwb); end
-    return;
-end
+% Neither the defaulted-overlap warning nor the core-too-small error may fire for a run
+% whose images all fit the network input: such images are segmented whole and the tiling
+% settings are never used, so complaining about them is noise (and the error would refuse
+% a run that has nothing to refuse). Both are deferred to the first slice actually tiled.
+tilingSettingsChecked = false;
 predictionThreshold = obj.OverlapInstancesOpt.DetectionThreshold;
 
 t1 = tic;
@@ -178,6 +179,11 @@ while hasdata(imgDS)
             '%s contains %d time points, only the first one is predicted', fn, noTimePoints);
     end
 
+    % an image no larger than the network input is passed to segmentObjects whole: tiling
+    % it would only invent seams to stitch back together, and the tile grid would pad the
+    % image up to the core size, feeding the network context that is not in the data
+    fitsInOnePatch = imgHeight <= inputPatchSize(1) && imgWidth <= inputPatchSize(2);
+
     outputLabels = zeros([imgHeight, imgWidth, imgDepth], 'uint32');
     maxInstancesPerSlice = 0;
     totalInstances = 0;
@@ -190,39 +196,80 @@ while hasdata(imgDS)
 
         % tile the slice and segment each tile, stitching instances across the seams
         try
-            switch stitchingMode
-                case 'IoU merge'
-                    % keep all per-tile detections and merge those agreeing in the overlap band
-                    mergeOptions.coreSize = blockSize;
-                    mergeOptions.borderSize = padShift;
-                    mergeOptions.threshold = predictionThreshold;
-                    mergeOptions.executionEnvironment = executionEnvironment;
-                    mergeOptions.iouThreshold = obj.OverlapInstancesOpt.MergeIoU;
-                    mergeOptions.ioaThreshold = obj.OverlapInstancesOpt.MergeIoA;
-                    mergeOptions.minSplitArea = obj.OverlapInstancesOpt.MinSplitArea;
-                    sliceLabels = deepmib.segmentImageInstancesIoUMerge(sliceImg, net, mergeOptions);
-                otherwise   % 'Centroid in core'
-                    mibInstanceIdCounter = 0;   % reset the global unique-instance-ID counter for this slice
-                    bim = blockedImage(sliceImg, 'Adapter', images.blocked.InMemory);
-                    labelBim = apply(bim, ...
-                        @(block, blockInfo) deepmib.segmentBlockedImageInstances(block, net, predictionThreshold, executionEnvironment), ...
-                        'Adapter', images.blocked.InMemory, ...
-                        'Level', 1, ...
-                        'PadPartialBlocks', true, ...
-                        'BlockSize', blockSize, ...
-                        'BorderSize', padShift, ...
-                        'PadMethod', 'symmetric', ...
-                        'UseParallel', false, ...
-                        'DisplayWaitbar', false);
-                    sliceLabels = gather(labelBim, 'Level', 1);
-                    % crop away the padding added for partial blocks
-                    sliceLabels = sliceLabels(1:imgHeight, 1:imgWidth);
-                    % same repair as pass 4 of the IoU merge: a single segmentObjects
-                    % detection whose mask covers two neighbouring objects is emitted by
-                    % the tile owning "its" centroid and would otherwise give both objects
-                    % one index
-                    sliceLabels = utils.instances.splitDisconnected(sliceLabels, ...
-                        struct('connectivity', 8, 'minObjectPixels', obj.OverlapInstancesOpt.MinSplitArea));
+            if fitsInOnePatch
+                % no tiles, no seams, no stitching: one segmentObjects call on the slice
+                [masks, ~, scores] = segmentObjects(net, sliceImg, ...
+                    'Threshold', predictionThreshold, ...
+                    'SelectStrongest', true, ...
+                    'ExecutionEnvironment', executionEnvironment);
+                sliceLabels = zeros([imgHeight, imgWidth], 'uint32');
+                if ~isempty(scores)
+                    % paint low scores first so higher-scored instances win on overlap,
+                    % as deepmib.segmentBlockedImageInstances does
+                    [~, paintOrder] = sort(scores, 'ascend');
+                    instanceId = 0;
+                    for maskId = paintOrder(:)'
+                        instanceId = instanceId + 1;
+                        sliceLabels(masks(:, :, maskId)) = instanceId;
+                    end
+                end
+                % the repair both stitching modes end with, needed here too: a single
+                % detection whose mask covers two separate objects must not give them
+                % one index
+                sliceLabels = utils.instances.splitDisconnected(sliceLabels, ...
+                    struct('connectivity', 8, 'minObjectPixels', obj.OverlapInstancesOpt.MinSplitArea));
+            else
+                if ~tilingSettingsChecked
+                    % first slice that is genuinely tiled - only now do the tiling settings matter
+                    if any(blockSize < 16)
+                        utils.dlgs.showErrorDialog(obj.view.gui, ...
+                            sprintf(['The selected overlap percentage (%d%%) leaves a tile core of only [%d x %d] pixels\n' ...
+                            'for the input patch size [%d x %d].\n\nPlease decrease the overlap percentage!'], ...
+                            overlapPercentage, blockSize(1), blockSize(2), inputPatchSize(1), inputPatchSize(2)), ...
+                            'Overlap too large');
+                        if obj.BatchOpt.showWaitbar; close(pwb); end
+                        return;
+                    end
+                    if overlapDefaulted
+                        warning('MibDeep:startPredictionInstances:noOverlap', ...
+                            'The "IoU merge" stitching requires overlapping tiles; a default %d%% overlap will be used', overlapPercentage);
+                    end
+                    tilingSettingsChecked = true;
+                end
+                switch stitchingMode
+                    case 'IoU merge'
+                        % keep all per-tile detections and merge those agreeing in the overlap band
+                        mergeOptions.coreSize = blockSize;
+                        mergeOptions.borderSize = padShift;
+                        mergeOptions.threshold = predictionThreshold;
+                        mergeOptions.executionEnvironment = executionEnvironment;
+                        mergeOptions.iouThreshold = obj.OverlapInstancesOpt.MergeIoU;
+                        mergeOptions.ioaThreshold = obj.OverlapInstancesOpt.MergeIoA;
+                        mergeOptions.minSplitArea = obj.OverlapInstancesOpt.MinSplitArea;
+                        sliceLabels = deepmib.segmentImageInstancesIoUMerge(sliceImg, net, mergeOptions);
+                    otherwise   % 'Centroid in core'
+                        mibInstanceIdCounter = 0;   % reset the global unique-instance-ID counter for this slice
+                        bim = blockedImage(sliceImg, 'Adapter', images.blocked.InMemory);
+                        labelBim = apply(bim, ...
+                            @(block, blockInfo) deepmib.segmentBlockedImageInstances(block, net, predictionThreshold, executionEnvironment), ...
+                            'Adapter', images.blocked.InMemory, ...
+                            'Level', 1, ...
+                            'PadPartialBlocks', true, ...
+                            'BlockSize', blockSize, ...
+                            'BorderSize', padShift, ...
+                            'PadMethod', 'symmetric', ...
+                            'UseParallel', false, ...
+                            'DisplayWaitbar', false);
+                        sliceLabels = gather(labelBim, 'Level', 1);
+                        % crop away the padding added for partial blocks
+                        sliceLabels = sliceLabels(1:imgHeight, 1:imgWidth);
+                        % same repair as pass 4 of the IoU merge: a single segmentObjects
+                        % detection whose mask covers two neighbouring objects is emitted by
+                        % the tile owning "its" centroid and would otherwise give both objects
+                        % one index
+                        sliceLabels = utils.instances.splitDisconnected(sliceLabels, ...
+                            struct('connectivity', 8, 'minObjectPixels', obj.OverlapInstancesOpt.MinSplitArea));
+                end
             end
         catch err
             utils.dlgs.showErrorDialog(obj.view.gui, err, 'Instance prediction error');

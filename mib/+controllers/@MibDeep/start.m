@@ -10,6 +10,15 @@ function start(obj, event)
 
     global mibDeepStopTraining     % variable to define stop of training (when true)
 
+    % Every branch below blocks MATLAB behind a modal dialog, a progress bar or a long
+    % training / prediction run. A key release in the main MIB window is not delivered
+    % while that is going on, so mibController.currentModifier (and the brush radius
+    % enlarged by the Ctrl eraser mode) can still claim Ctrl is held long after the user
+    % let go - and the next scroll over the image then resizes the brush instead of
+    % changing the slice. gui_WindowKeyReleaseFcn is exactly the "no key is held any
+    % more" cleanup, so call it on every exit path, error paths included.
+    clearStaleModifier = onCleanup(@() iReleaseModifierKeys(obj));
+
     switch event.Source.Tag
         case 'PreprocessButton'
             obj.startPreprocessing();
@@ -105,5 +114,15 @@ function start(obj, event)
     % for batch need to generate an event and send the BatchOptLoc
     % structure with it to the macro recorder / mibBatchController
     %obj.returnBatchOpt();
+end
+
+function iReleaseModifierKeys(obj)
+% never let a cleanup failure surface as the outcome of a finished training run
+try
+    if isvalid(obj) && ~isempty(obj.mibController) && isvalid(obj.mibController)
+        obj.mibController.gui_WindowKeyReleaseFcn([], []);
+    end
+catch
+end
 end
 

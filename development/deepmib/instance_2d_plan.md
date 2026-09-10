@@ -215,7 +215,16 @@ for training and prediction.
   - Because the border supplies context, each object is fully seen by exactly the tile owning its
     centroid → no duplicates and no seam-splitting. After `gather`, relabel IDs to a contiguous
     `1..N` uint16/uint32 MIB model.
-- Whole-image (resize) path retained only for images ≤ input patch size.
+- Whole-image (resize) path retained only for images <= input patch size. **Implemented
+  2026-09-10** (it had been specified here but never written): `startPredictionInstances`
+  computes `fitsInOnePatch` per image and, when true, calls `segmentObjects` on the whole slice
+  and skips the tiling machinery entirely. Tiling such an image is not merely wasteful - the
+  tile grid pads it up to the core size, so the network is fed context that is not in the data,
+  and the stitcher then has seams to repair that only tiling created. The two tiling
+  diagnostics (the "IoU merge needs an overlap" warning and the "overlap too large" error) are
+  deferred to the first slice actually tiled, so a run whose images all fit reports neither;
+  previously the warning fired unconditionally at the top of every IoU-merge run, including
+  ones that never tiled anything.
 
 ### Limitations & possible future improvements
 - **Centroid-in-core requires `overlap ≥ largest object radius`.** Objects larger than the overlap

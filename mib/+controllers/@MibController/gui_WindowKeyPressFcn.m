@@ -157,6 +157,9 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
         case 'Interpolate selection'            % default 'i'
             obj.mibModel.interpolateImage('selection');
         case 'Invert image'                     % default 'Ctrl + i'
+            % same as 'Save image as...' below: invertImage puts up a uiprogressdlg that
+            % steals the Ctrl release
+            obj.gui_WindowKeyReleaseFcn([], []);
             obj.mibModel.invertImage('4D, Dataset');
         case {'Add to selection to material', 'Subtract from material', 'Replace material with current selection'}
             % default 'a'/'Shift+a', 's'/'Shift+s', 'r'/'Shift+r'
@@ -289,6 +292,11 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
             cSegmentation.restrictMaterial_Callback();
 
         case 'Save image as...'                         % default 'Ctrl + s'
+            % uiputfile is a native OS modal: the Ctrl release goes to it and never
+            % reaches gui_WindowKeyReleaseFcn, leaving both currentModifier and the
+            % Ctrl-enlarged brush radius stale - the scroll wheel then resizes the brush
+            % instead of changing the slice. Release the keys before handing over.
+            obj.gui_WindowKeyReleaseFcn([], []);
             obj.mibModel.saveImage('image');
 
         case 'Copy to buffer selection from the current slice'  % default 'Ctrl + c'

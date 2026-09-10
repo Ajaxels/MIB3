@@ -446,6 +446,23 @@ The **List of annotations** dropdown contains:
 
 ---
 
+### Instance editor
+
+Corrects individual objects of an instance model by hand: splitting one object into two, merging
+several into one, bridging a gap between two halves of the same object, and deleting false
+detections. Objects are picked from a list, by clicking them in the image, or by drawing over them
+in the Selection layer.
+
+It is the proofreading step after **Stitch 2D instances to 3D**, which leaves errors that no
+threshold can remove. Requires an instance model (65535 or 4294967295 materials), where every object
+has its own index.
+
+See [Instance editor](model-instance-editor.md) for details.
+
+<div class="clear-float"></div>
+
+---
+
 ### Render
 
 ![Render options](images/menuModelsRenderMenu.png){.on-glb align=left width="190"}
@@ -531,23 +548,6 @@ Renders the model in Imaris. Requires Imaris and ImarisXT (see [System Requireme
 - [:fontawesome-brands-youtube:{.red-color} With ImarisXT](https://youtu.be/yODGYJUzTr0)
 
 The rendered material is specified in the Materials list of the [Segmentation Panel](../../panels/segm/index.md).
-
-<div class="clear-float"></div>
-
----
-
-### Instance editor
-
-Corrects individual objects of an instance model by hand: splitting one object into two, merging
-several into one, bridging a gap between two halves of the same object, and deleting false
-detections. Objects are picked from a list, by clicking them in the image, or by drawing over them
-in the Selection layer.
-
-It is the proofreading step after **Stitch 2D instances to 3D**, which leaves errors that no
-threshold can remove. Requires an instance model (65535 or 4294967295 materials), where every object
-has its own index.
-
-See [Instance editor](model-instance-editor.md) for details.
 
 <div class="clear-float"></div>
 

@@ -5816,6 +5816,10 @@ This area defines the region to be cropped.</p>
 <h3 id="manual-mode">Manual mode<a class="headerlink" href="#manual-mode" title="Permanent link">&para;</a></h3>
 <p>Alternatively, enable the <label class="widget widget-checkbox">Manual</label> 
 mode to enter specific cropping coordinates directly in the dialog. </p>
+<p>The <img alt="select area" src="images/select_area_16px.png" /> button takes those coordinates from the 
+image: draw a rectangle exactly as in the Interactive mode and, instead of cropping, 
+its coordinates are placed into the edit boxes. The dialog switches to the Manual mode, 
+so that the area can be adjusted before cropping.</p>
 <h3 id="roi-based-cropping">ROI-based cropping<a class="headerlink" href="#roi-based-cropping" title="Permanent link">&para;</a></h3>
 <p>You can also crop based on a selected region of interest by enabling the 
 <label class="widget widget-checkbox">from ROI</label> mode, 
@@ -5856,7 +5860,7 @@ format the cropped data is saved in. It is enabled only when the source dataset 
 <p>The cropped region is loaded from the selected pyramid level into memory as a 
 <strong>Standard</strong> (in-memory) dataset. The resulting dataset resides entirely in RAM and 
 can be worked on with all standard MIB tools.</p>
-<p>The voxel size of the output reflects the selected pyramid level — cropping at s1 
+<p>The voxel size of the output reflects the selected pyramid level - cropping at s1 
 doubles the voxel size relative to s0.</p>
 <h4 id="bigdata">BigData<a class="headerlink" href="#bigdata" title="Permanent link">&para;</a></h4>
 <p>The cropped region is written to a <strong>new OME-Zarr v3 pyramid</strong> on disk. A file-save 
@@ -5881,7 +5885,7 @@ a new pyramid to disk and replaces the dataset in the destination buffer.</p>
 </tr>
 <tr>
 <td><code>Labels_&lt;name&gt;.zarr3</code></td>
-<td>Packed segmentation model pyramid — only created when a BigData model exists in the source dataset</td>
+<td>Packed segmentation model pyramid - only created when a BigData model exists in the source dataset</td>
 </tr>
 </tbody>
 </table>
@@ -5889,7 +5893,7 @@ a new pyramid to disk and replaces the dataset in the destination buffer.</p>
 coarser levels are derived automatically. Material names, colors, and material count 
 are copied from the source model.</p>
 <p>After writing, the cropped BigData dataset is loaded into the destination buffer 
-automatically. If a model was written, it is attached to the buffer immediately — 
+automatically. If a model was written, it is attached to the buffer immediately - 
 no manual model loading is required.</p>
 <p>The output zarr3 file is highlighted in the <strong>Directory Contents</strong> panel after the 
 operation completes.</p>

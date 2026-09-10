@@ -294,6 +294,38 @@ The settings dialog that configures the threshold is only enabled for the two-ph
 single-phase user could not turn the check off. Wiring that up is the obvious next step if the
 detector proves itself.
 
+### Progress gauge overshot in every instance run (fixed 2026-09-10)
+
+The iteration estimate behind the progress gauge was copied from the semantic workflow, where
+`trainNetwork` **discards** the observations that do not fill the last complete mini-batch of an
+epoch - hence the floor form `ceil((n - mod(n, mb))/mb)`. `trainSOLOV2` trains through
+`images.dltrain`, which instead **runs that partial mini-batch as one more iteration**, so the real
+count rounds up.
+
+Measured on `SOLOv2_mitos.mibCfg` (9 training images x 4 patches per image = 36 observations,
+mini-batch 8, `MaxEpochs` 200, `MaxFrozenFraction` 0.25 -> a 50-epoch frozen phase):
+
+| | iterations per epoch | frozen phase total |
+|---|---|---|
+| estimate (floor) | 4 | 200 |
+| actual | 5 | **250** |
+
+Confirmed from that run's artefacts: the exported `*_Epoch.csv` repeats each epoch number five
+times, and the phase-1 checkpoint is named `net_checkpoint__frozenPhaseEnd_250__*`. The gauge is
+limited to `[0 100]`, so the needle was drawn 25% past the edge for the last quarter of every phase.
+
+The error is `mb/n` of the total, so it is invisible on large training sets and worst on the small
+ones - which is exactly where the two-phase schedule is aimed.
+
+Fixed in `startTrainingInstances.m` (both the phase-1 estimate and the phase-2 one) by computing
+`iterPerEpoch = ceil(noFiles/miniBatchSize)` and deriving `maxNoIter` from it. `iterPerEpoch` also
+feeds `ValidationFrequencyInIterations` and the plateau detector's `MinIterations`, so both were
+off by the same fraction and are now correct too. `findBestMinibatchSize` rounds by workflow for its
+"epochs per hour" column. Both progress displays now clamp the gauge to 100 - the estimate stays an
+estimate, and a needle past the edge reads as a fault.
+
+**The semantic path was deliberately left on floor**: it is right for `trainNetwork`.
+
 ### Still open
 
 Compare the two-phase network against the frozen one on held-out data (object counts and

@@ -94,6 +94,9 @@ Settings of the *Instance segmentation* subpanel are only available for the
 * **Centroid in core** — each object is emitted by the tile owning its centroid; the tile overlap must exceed the largest object  
 * **IoU merge** — detections of neighbouring tiles are merged when their masks agree in the overlap band; works for objects larger than the overlap  
 
+An image that is no larger than the network input patch is segmented in one piece, so the overlap
+mode and the tile overlap settings have no effect on it.
+
 The ![Settings button](images/DeepLearningTrainSettingsBtn.png){.inline-image} button configures the stitching parameters:
 
 * <span class="widget widget-edit">Detection confidence threshold (0-1)</span> — minimal confidence score for a detected instance to be kept (both overlap modes); decrease to detect more (weaker) objects, increase to keep only confident detections (default: `0.5`)  

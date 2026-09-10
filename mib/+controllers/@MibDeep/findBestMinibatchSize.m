@@ -274,17 +274,24 @@ end
 recommendedSize = results(bestIdx,1);
 
 % Epochs per hour, so the table answers "how long will the run take" and not only "which
-% size is fastest". An epoch is floor(observations/miniBatchSize) iterations - the same
-% expression startTraining uses for maxNoIter - so it shrinks as the mini-batch grows and
-% the two columns do not simply track each other.
+% size is fastest". An epoch is observations/miniBatchSize iterations - the same expression
+% startTraining / startTrainingInstances use for maxNoIter - so it shrinks as the mini-batch
+% grows and the two columns do not simply track each other. The rounding differs by
+% workflow: trainNetwork drops the observations that do not fill the last mini-batch,
+% images.dltrain (behind trainSOLOV2) runs them as one more iteration.
 trainingObservations = iCountTrainingObservations(obj);
+if isInstanceWorkflow
+    roundIterations = @ceil;
+else
+    roundIterations = @floor;
+end
 
 reportLines = cell(size(results,1), 1);
 for rowIdx = 1:size(results,1)
     marker = '';
     if rowIdx == bestIdx; marker = '   <-- best'; end
     if trainingObservations > 0
-        iterationsPerEpoch = max(1, floor(trainingObservations / results(rowIdx,1)));
+        iterationsPerEpoch = max(1, roundIterations(trainingObservations / results(rowIdx,1)));
         epochsPerHour = 3600 / (iterationsPerEpoch * results(rowIdx,2));
         reportLines{rowIdx} = sprintf('%6d %14.3f %16.2f %14.1f%s', ...
             results(rowIdx,1), results(rowIdx,2), results(rowIdx,3), epochsPerHour, marker);

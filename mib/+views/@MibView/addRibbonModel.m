@@ -268,6 +268,14 @@ widgetHandles.annotations.Popup = popupList;
 % add the dropdown button to the column
 column.add(widgetHandles.annotations);
 
+%% Instance editor
+% Proofreading of instance models: split, merge, connect and delete individual
+% objects of a 65535/4294967295 model, typically after 2D-to-3D stitching.
+column = section.addColumn();
+widgetHandles.instanceEditor = Button(sprintf('Instance\neditor'), Icon(fullfile(iconPath, 'instance_editor_24px.png')));
+widgetHandles.instanceEditor.Description = 'Split, merge, connect and delete objects of an instance model';
+column.add(widgetHandles.instanceEditor);
+
 %% Model render
 column = section.addColumn();
 widgetHandles.render =  SplitButton('Render', Icon(fullfile(iconPath, 'model_render_24px.png')));
@@ -302,13 +310,6 @@ widgetHandles.render.Popup = popupList;
 % add the dropdown button to the column
 column.add(widgetHandles.render);
 
-%% Instance editor
-% Proofreading of instance models: split, merge, connect and delete individual
-% objects of a 65535/4294967295 model, typically after 2D-to-3D stitching.
-column = section.addColumn();
-widgetHandles.instanceEditor = Button(sprintf('Instance\neditor'), Icon(fullfile(iconPath, 'model_materials_swap_24px.png')));
-widgetHandles.instanceEditor.Description = 'Split, merge, connect and delete objects of an instance model';
-column.add(widgetHandles.instanceEditor);
 
 %% ============= Make "Quantification" section =============
 section = obj.handles.ribbon.model.addSection("Quantification");

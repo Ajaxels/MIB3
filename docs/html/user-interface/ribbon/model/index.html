@@ -5562,6 +5562,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#instance-editor" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Instance editor
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#render" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -5630,17 +5641,6 @@
         
       </ul>
     </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#instance-editor" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        Instance editor
-      </span>
-    </span>
-  </a>
   
 </li>
         
@@ -6367,6 +6367,18 @@ open dataset dimensions (WSI vs. 3-D volumetric).</p>
 <div class="clear-float"></div>
 
 <hr />
+<h3 id="instance-editor">Instance editor<a class="headerlink" href="#instance-editor" title="Permanent link">&para;</a></h3>
+<p>Corrects individual objects of an instance model by hand: splitting one object into two, merging
+several into one, bridging a gap between two halves of the same object, and deleting false
+detections. Objects are picked from a list, by clicking them in the image, or by drawing over them
+in the Selection layer.</p>
+<p>It is the proofreading step after <strong>Stitch 2D instances to 3D</strong>, which leaves errors that no
+threshold can remove. Requires an instance model (65535 or 4294967295 materials), where every object
+has its own index.</p>
+<p>See <a href="model-instance-editor.html">Instance editor</a> for details.</p>
+<div class="clear-float"></div>
+
+<hr />
 <h3 id="render">Render<a class="headerlink" href="#render" title="Permanent link">&para;</a></h3>
 <p><a class="glightbox" data-title="Render options" data-type="image" href="images/menuModelsRenderMenu.png"><img align="left" alt="Render options" class="on-glb" src="images/menuModelsRenderMenu.png" width="190" /></a></p>
 <p>Renders segmented models using various methods. The <strong>Render</strong> dropdown contains:</p>
@@ -6431,18 +6443,6 @@ Requires Fiji installation (see <a href="https://mib.helsinki.fi/downloads_syste
 <li><a href="https://youtu.be/yODGYJUzTr0"><span class="twemoji red-color"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 7.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2026 Fonticons, Inc.--><path fill="currentColor" d="M549.7 124.1c-6.2-23.7-24.8-42.3-48.3-48.6C458.9 64 288.1 64 288.1 64S117.3 64 74.7 75.5c-23.5 6.3-42 24.9-48.3 48.6C15 167 15 256.4 15 256.4s0 89.4 11.4 132.3c6.3 23.6 24.8 41.5 48.3 47.8C117.3 448 288.1 448 288.1 448s170.8 0 213.4-11.5c23.5-6.3 42-24.2 48.3-47.8 11.4-42.9 11.4-132.3 11.4-132.3s0-89.4-11.4-132.3zM232.2 337.6V175.2l142.7 81.2z"/></svg></span> With ImarisXT</a></li>
 </ul>
 <p>The rendered material is specified in the Materials list of the <a href="../../panels/segm/index.html">Segmentation Panel</a>.</p>
-<div class="clear-float"></div>
-
-<hr />
-<h3 id="instance-editor">Instance editor<a class="headerlink" href="#instance-editor" title="Permanent link">&para;</a></h3>
-<p>Corrects individual objects of an instance model by hand: splitting one object into two, merging
-several into one, bridging a gap between two halves of the same object, and deleting false
-detections. Objects are picked from a list, by clicking them in the image, or by drawing over them
-in the Selection layer.</p>
-<p>It is the proofreading step after <strong>Stitch 2D instances to 3D</strong>, which leaves errors that no
-threshold can remove. Requires an instance model (65535 or 4294967295 materials), where every object
-has its own index.</p>
-<p>See <a href="model-instance-editor.html">Instance editor</a> for details.</p>
 <div class="clear-float"></div>
 
 <hr />

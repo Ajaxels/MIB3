@@ -5729,6 +5729,8 @@ minimize edge artefacts and improve segmentation. Define overlap percentage in <
 <li><strong>Centroid in core</strong> — each object is emitted by the tile owning its centroid; the tile overlap must exceed the largest object  </li>
 <li><strong>IoU merge</strong> — detections of neighbouring tiles are merged when their masks agree in the overlap band; works for objects larger than the overlap  </li>
 </ul>
+<p>An image that is no larger than the network input patch is segmented in one piece, so the overlap
+mode and the tile overlap settings have no effect on it.</p>
 <p>The <img alt="Settings button" class="inline-image" src="images/DeepLearningTrainSettingsBtn.png" /> button configures the stitching parameters:</p>
 <ul>
 <li><span class="widget widget-edit">Detection confidence threshold (0-1)</span> — minimal confidence score for a detected instance to be kept (both overlap modes); decrease to detect more (weaker) objects, increase to keep only confident detections (default: <code>0.5</code>)  </li>
