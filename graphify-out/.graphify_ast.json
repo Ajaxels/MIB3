@@ -2190,6 +2190,17 @@
       "contributor": null
     },
     {
+      "id": "controllers_cropdataset_cropdataset_selectareabtn_callback",
+      "label": "selectAreaBtn_Callback",
+      "file_type": "code",
+      "source_file": "+controllers\\@CropDataset\\CropDataset.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "controllers_cropdataset_cropdataset_selectzarrlevel",
       "label": "selectZarrLevel",
       "file_type": "code",
@@ -2247,6 +2258,17 @@
     {
       "id": "controllers_cropdataset_cropdataset_helpbutton_callback",
       "label": "helpButton_Callback",
+      "file_type": "code",
+      "source_file": "+controllers\\@CropDataset\\CropDataset.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_cropdataset_cropdataset_drawcroparea",
+      "label": "drawCropArea",
       "file_type": "code",
       "source_file": "+controllers\\@CropDataset\\CropDataset.m",
       "source_location": null,
@@ -4302,6 +4324,28 @@
       "contributor": null
     },
     {
+      "id": "controllers_instanceeditor_askcleanupsettings_m",
+      "label": "askCleanupSettings.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@InstanceEditor\\askCleanupSettings.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_instanceeditor_askdetectionsettings_m",
+      "label": "askDetectionSettings.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@InstanceEditor\\askDetectionSettings.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "controllers_instanceeditor_closewindow_m",
       "label": "closeWindow.m",
       "file_type": "code",
@@ -4500,6 +4544,17 @@
       "contributor": null
     },
     {
+      "id": "controllers_instanceeditor_instanceeditor_applytooltips",
+      "label": "applyTooltips",
+      "file_type": "code",
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "controllers_instanceeditor_instanceeditor_applymodetowidgets",
       "label": "applyModeToWidgets",
       "file_type": "code",
@@ -4656,17 +4711,6 @@
     {
       "id": "controllers_instanceeditor_instanceeditor_mode3d_callback",
       "label": "mode3D_Callback",
-      "file_type": "code",
-      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null
-    },
-    {
-      "id": "controllers_instanceeditor_instanceeditor_objectlist_callback",
-      "label": "objectList_Callback",
       "file_type": "code",
       "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
       "source_location": null,
@@ -32025,6 +32069,16 @@
     },
     {
       "source": "controllers_cropdataset_cropdataset_m",
+      "target": "controllers_cropdataset_cropdataset_selectareabtn_callback",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@CropDataset\\CropDataset.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_cropdataset_cropdataset_m",
       "target": "controllers_cropdataset_cropdataset_selectzarrlevel",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -32076,6 +32130,16 @@
     {
       "source": "controllers_cropdataset_cropdataset_m",
       "target": "controllers_cropdataset_cropdataset_helpbutton_callback",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@CropDataset\\CropDataset.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_cropdataset_cropdataset_m",
+      "target": "controllers_cropdataset_cropdataset_drawcroparea",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -33845,6 +33909,26 @@
     },
     {
       "source": "controllers_instanceeditor_instanceeditor_m",
+      "target": "controllers_instanceeditor_askcleanupsettings_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_instanceeditor_m",
+      "target": "controllers_instanceeditor_askdetectionsettings_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_instanceeditor_m",
       "target": "controllers_instanceeditor_closewindow_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -34025,6 +34109,16 @@
     },
     {
       "source": "controllers_instanceeditor_instanceeditor_m",
+      "target": "controllers_instanceeditor_instanceeditor_applytooltips",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_instanceeditor_m",
       "target": "controllers_instanceeditor_instanceeditor_applymodetowidgets",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -34166,16 +34260,6 @@
     {
       "source": "controllers_instanceeditor_instanceeditor_m",
       "target": "controllers_instanceeditor_instanceeditor_mode3d_callback",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "controllers_instanceeditor_instanceeditor_m",
-      "target": "controllers_instanceeditor_instanceeditor_objectlist_callback",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -57885,16 +57969,6 @@
     },
     {
       "source": "controllers_instanceeditor_addcallbacks_m",
-      "target": "controllers_instanceeditor_instanceeditor_objectlist_callback",
-      "relation": "calls",
-      "confidence": "INFERRED",
-      "confidence_score": 0.75,
-      "source_file": "+controllers\\@InstanceEditor\\addCallbacks.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "controllers_instanceeditor_addcallbacks_m",
       "target": "controllers_instanceeditor_instanceeditor_jumptoindex_callback",
       "relation": "calls",
       "confidence": "INFERRED",
@@ -57916,6 +57990,16 @@
     {
       "source": "controllers_instanceeditor_addcallbacks_m",
       "target": "controllers_instanceeditor_instanceeditor_autoupdatetable_callback",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\addCallbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_addcallbacks_m",
+      "target": "controllers_instanceeditor_askdetectionsettings_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -57985,6 +58069,16 @@
     },
     {
       "source": "controllers_instanceeditor_addcallbacks_m",
+      "target": "controllers_instanceeditor_askcleanupsettings_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\addCallbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_addcallbacks_m",
       "target": "controllers_instanceeditor_rebuildindex_m",
       "relation": "calls",
       "confidence": "INFERRED",
@@ -58000,6 +58094,16 @@
       "confidence": "INFERRED",
       "confidence_score": 0.75,
       "source_file": "+controllers\\@InstanceEditor\\addCallbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_askdetectionsettings_m",
+      "target": "controllers_instanceeditor_updateobjecttable_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\askDetectionSettings.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -58256,6 +58360,16 @@
     {
       "source": "controllers_instanceeditor_runoperation_m",
       "target": "controllers_instanceeditor_instanceeditor_modeliseditable",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\runOperation.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_runoperation_m",
+      "target": "controllers_instanceeditor_askcleanupsettings_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -59539,6 +59653,16 @@
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.7,
+      "source_file": "+controllers\\@MibController\\gui_WindowKeyPressFcn.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibcontroller_gui_windowkeypressfcn_m",
+      "target": "controllers_mibcontroller_gui_windowkeyreleasefcn_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
       "source_file": "+controllers\\@MibController\\gui_WindowKeyPressFcn.m",
       "source_location": null,
       "weight": 1.0
@@ -72774,6 +72898,26 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_instanceeditor_askcleanupsettings_m",
+      "target": "utils_dlgs_inputuniversaldlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@InstanceEditor\\askCleanupSettings.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_askdetectionsettings_m",
+      "target": "utils_dlgs_inputuniversaldlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@InstanceEditor\\askDetectionSettings.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_instanceeditor_instanceeditor_m",
       "target": "utils_movewindowoutside_m",
       "relation": "calls",
@@ -74585,6 +74729,16 @@
     },
     {
       "source": "controllers_mibdeep_startpredictionblockedimage_m",
+      "target": "utils_doimagefiltering_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\startPredictionBlockedImage.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_startpredictionblockedimage_m",
       "target": "io_amiramesh_bitmap2amiramesh_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
@@ -74625,6 +74779,16 @@
     },
     {
       "source": "controllers_mibdeep_startpredictioninstances_m",
+      "target": "utils_instances_splitdisconnected_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\startPredictionInstances.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_startpredictioninstances_m",
       "target": "deepmib_segmentimageinstancesioumerge_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
@@ -74636,16 +74800,6 @@
     {
       "source": "controllers_mibdeep_startpredictioninstances_m",
       "target": "deepmib_segmentblockedimageinstances_m",
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "+controllers\\@MibDeep\\startPredictionInstances.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "controllers_mibdeep_startpredictioninstances_m",
-      "target": "utils_instances_splitdisconnected_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -75066,6 +75220,16 @@
     {
       "source": "controllers_mibimagedocument_gui_windowbuttondownfcn_m",
       "target": "utils_sam_blockbox_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibImageDocument\\gui_WindowButtonDownFcn.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibimagedocument_gui_windowbuttondownfcn_m",
+      "target": "utils_truemodifierkeys_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -76455,6 +76619,16 @@
     },
     {
       "source": "controllers_quantification_addcallbacks_m",
+      "target": "utils_openhelppage_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@Quantification\\addCallbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_quantification_addcallbacks_m",
       "target": "utils_childwindowkeypressfcn_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
@@ -76596,6 +76770,16 @@
     {
       "source": "controllers_quantification_quantification_callback_m",
       "target": "utils_dlgs_inputuniversaldlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@Quantification\\quantification_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_quantification_quantification_callback_m",
+      "target": "utils_calccurvelength_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -78375,6 +78559,16 @@
     },
     {
       "source": "controllers_mibdeepaugmentsettings_m",
+      "target": "utils_dlgs_showerrordialog_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\MibDeepAugmentSettings.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeepaugmentsettings_m",
       "target": "deepmib_augmentandcrop2dpatchmultigpu_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
@@ -78460,6 +78654,16 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "+core\\@Annotations\\Annotations.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_lines3d_savetofile_m",
+      "target": "utils_dlgs_inputuniversaldlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@Lines3D\\saveToFile.m",
       "source_location": null,
       "weight": 1.0
     },

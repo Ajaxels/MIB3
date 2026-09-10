@@ -40,6 +40,7 @@ Read before starting a task of the matching type. All in `development/guides/`.
 | [how_to_make_input_dialog.md](guides/how_to_make_input_dialog.md) | Building input dialogs; focus handling without Java Robot (see also `../notes/focusExample.m`) |
 | [uiprogressdlg_to_PoolWaitbar.md](guides/uiprogressdlg_to_PoolWaitbar.md) | When and how to convert `uiprogressdlg` → `core.PoolWaitbar` (Cancel button, parfor) |
 | [startController.md](guides/startController.md) | `utils.startController` — launching child controllers from anywhere (interactive, batch, already-open) |
+| [ctrl_stale.md](guides/ctrl_stale.md) | **Read before touching modifier-key state or adding a blocking dialog**: why MIB tracks `currentModifier` itself, the two ways a key release goes missing, every site that resets it, and what is still open on macOS/Linux |
 | [drag-and-drop.md](guides/drag-and-drop.md) | OS file drag-and-drop into uifigure/AppContainer apps; `utils.attachFileDnD` helper |
 | [mouse_recentering_screen.md](guides/mouse_recentering_screen.md) | Moving the OS cursor after zoom/moveView; docked vs undocked, multi-monitor, DPI scaling |
 | [performance_for_loop_tweak.md](guides/performance_for_loop_tweak.md) | Copy-on-write fix for per-slice loops — full background behind the root-CLAUDE.md caching rule |

@@ -564,8 +564,9 @@ elseif strcmp(operation, 'select')
             % execution are queued but never delivered, so both figure properties
             % may still show {'shift'} long after the user released the key.
             % currentModifier is maintained by KeyPressFcn/KeyReleaseFcn and is
-            % explicitly reset to {} after every SAM segmentation call, so it always
-            % reflects the true keyboard state.
+            % re-synchronised against the real keyboard state after every SAM
+            % segmentation call (see the utils.trueModifierKeys block below), so it
+            % always reflects the true keyboard state.
             modifier = obj.mibController.currentModifier;
             
             samVersion = obj.mibController.cSegmentation.handles.samVersion.Value; 
@@ -799,18 +800,35 @@ elseif strcmp(operation, 'select')
                 else
                     % use newer version SAM2
                     obj.segmentationSAM2(extraOptions);
-                    
-                    if samMethodVal == 2 && ~isempty(obj.mibController.currentModifier) && strcmp(obj.mibController.currentModifier, 'shift')  % 'Interactive 3D'
-                        % Key-release events fired during the blocking Python call are
-                        % lost in some MATLAB versions, leaving currentModifier stale.
-                        % Reset it explicitly so scroll wheel and other callbacks see
-                        % the correct (no-modifier) state after SAM completes.
-                        obj.mibController.currentModifier = {};
-                    end
-
                 end
 
-                
+                % Re-synchronise the modifier state with the keyboard.
+                % A key release during the blocking Python call is never delivered, so
+                % currentModifier (and the Ctrl-enlarged brush radius) would keep claiming
+                % the key is down and the scroll wheel would resize the brush instead of
+                % changing the slice. Simply clearing them is not an option here: Ctrl and
+                % Shift are SAM's own refinement modifiers (see the marker-value branch
+                % above), so a cleared state would turn the next held-key refinement click
+                % into a new object. Ask the OS what is actually held instead.
+                [realModifier, modifierIsKnown] = utils.trueModifierKeys();
+                if modifierIsKnown
+                    if ~any(strcmp(realModifier, 'control'))
+                        % Ctrl really is up: run the full release cleanup, which also undoes
+                        % the eraser-mode brush growth only gui_WindowKeyReleaseFcn restores
+                        obj.mibController.gui_WindowKeyReleaseFcn([], []);
+                    end
+                    obj.mibController.currentModifier = realModifier;
+                elseif samMethodVal == 2 && isequal(obj.mibController.currentModifier, {'shift'})
+                    % macOS / Linux: utils.trueModifierKeys is Windows-only, so the keyboard
+                    % cannot be read and any wider reset would be a guess that could turn the
+                    % next held-key refinement click into a new object. Fall back to the
+                    % long-standing narrow rule ('Interactive 3D' + Shift alone), which leaves
+                    % these platforms exactly as they were rather than trading one bug for
+                    % another. They keep the stale-modifier problem until a portable way to
+                    % read the keyboard exists.
+                    obj.mibController.currentModifier = {};
+                end
+
                 return;
 
             elseif samMethodVal == 3    % 'Landmarks'

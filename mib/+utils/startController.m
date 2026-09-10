@@ -110,6 +110,26 @@ parentObj.childControllers = [parentObj.childControllers(1:id-1), {childObj}, ..
 % Wire CloseEvent for lifecycle management
 addlistener(childObj, 'CloseEvent', @(src, ~) utils.purgeChildController(parentObj, src));
 
+% Make the child window report key releases back to MIB.
+%
+% MIB tracks the modifier keys through key press / key release events on the main window
+% (MibController.currentModifier, plus the Ctrl-enlarged brush radius in view.ctrlPressed).
+% A child window opened while a modifier is held takes the keyboard focus, so the release
+% is delivered to *it* - and a child that registers no WindowKeyReleaseFcn simply drops it.
+% MIB is then left believing the key is still down: the scroll wheel resizes the brush
+% instead of changing the slice until Ctrl is tapped again. Reproducible with any dialog,
+% e.g. hold Ctrl and click "Display" in the Selection panel to open DisplayAdjust.
+%
+% Routing the child's release to gui_WindowKeyReleaseFcn fixes it for every child at once
+% and works on every platform, unlike reading the keyboard from the OS
+% (utils.trueModifierKeys, Windows only). It does not help when MATLAB is *blocked* and no
+% event is delivered at all - a pyrun call into SAM, a native file dialog - which is what
+% the targeted resets in gui_WindowKeyPressFcn / MibDeep.start / the SAM click handler are for.
+%
+% An existing handler is never overwritten: a child that manages key releases itself is
+% assumed to know better.
+iWireKeyReleaseToMib(parentObj, childObj);
+
 % In batch mode the child fires CloseEvent during its constructor, before
 % the listener above is wired.  The view property stays empty in that case,
 % so re-fire CloseEvent here so the listener can perform cleanup.
@@ -120,4 +140,28 @@ elseif isempty(childObj.view)
     notify(childObj, 'CloseEvent');
 end
 
+end
+
+function iWireKeyReleaseToMib(parentObj, childObj)
+% best effort: a window that cannot be wired must never stop the controller from opening
+try
+    if isa(parentObj, 'controllers.MibController')
+        mibControllerHandle = parentObj;    % the usual case, MIB opening its own dialog
+    elseif isprop(parentObj, 'mibController')
+        mibControllerHandle = parentObj.mibController;   % a plugin or child opening a grandchild
+    else
+        return;
+    end
+    if isempty(mibControllerHandle) || ~isvalid(mibControllerHandle); return; end
+    if isempty(childObj.view) || ~isprop(childObj.view, 'gui'); return; end
+
+    childFigure = childObj.view.gui;
+    % only plain uifigures carry the callback; AppContainer-based views do not
+    if ~isa(childFigure, 'matlab.ui.Figure') || ~isvalid(childFigure); return; end
+    if ~isempty(childFigure.WindowKeyReleaseFcn); return; end
+
+    childFigure.WindowKeyReleaseFcn = ...
+        @(hWidget, hData) mibControllerHandle.gui_WindowKeyReleaseFcn(hWidget, hData);
+catch
+end
 end
