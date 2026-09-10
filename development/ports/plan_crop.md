@@ -517,3 +517,32 @@ GLOBAL buffer id (1…N). With `datasetsInSet = 10`, only buffer 1 of set 1 ever
 **Fix:** Changed to `obj.mibModel.Sets.selectedSet ~= obj.setOfDatasetsIndex` — the same
 comparison used by `gui_ScrollWheelFcn` and `gui_WindowButtonDownFcn`.
 
+---
+
+## selectAreaBtn — pick the crop area without cropping
+
+**Status:** Implemented 10.09.2026
+
+New icon button in `settingsGridLayout` (row 6, column 2, next to `resetBtn`), added to
+the mlapp by the author. Draws the same rectangle as the Interactive mode but writes the
+result into the Width/Height/Depth edit boxes instead of cropping.
+
+- The ~90-line rectangle-drawing block was moved out of `cropBtn_Callback` into a new
+  private method `drawCropArea()` (two real call sites: Interactive crop and
+  `selectAreaBtn_Callback`). It returns `[x1 y1 x2 y2]` in data pixels of the shown
+  plane, already clamped and validated, or `[]` on cancel / too-small area.
+  `cropBtn_Callback` keeps its orientation → `crop_factor` switch unchanged.
+- Added guard `isempty(obj.mibController) || ~isvalid(obj.mibController)` before touching
+  `obj.mibController.cImageDoc{…}` — the legacy axes-only construction style would
+  otherwise error instead of showing the "use Manual or ROI mode" dialog.
+- `selectAreaBtn_Callback` maps the rectangle per orientation, writing only the two
+  dimensions the rectangle actually defines (XY → Width+Height, ZX → Depth+Width,
+  ZY → Depth+Height); the third field is left as the user set it.
+- `'Multi'` left over from ROI mode with "All" selected is replaced with the full range
+  of that dimension, otherwise `str2num('Multi')` returns `[]` and the crop fails.
+- Finishes by switching the button group to Manual and calling `radio_Callback`, which
+  runs `editboxes_Callback` and syncs `BatchOpt` + `roiPos`.
+- Docs: [`dataset-crop.md`](../../docs/docs/user-interface/ribbon/dataset/dataset-crop.md)
+  Manual mode section; icon copied to that page's `images/` folder. The dialog screenshot
+  `menuDatasetCrop.png` still predates the button and needs regeneration.
+

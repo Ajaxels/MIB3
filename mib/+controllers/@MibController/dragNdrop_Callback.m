@@ -49,7 +49,10 @@ extLower = lower(ext);
 % .mibcfg is a DeepMIB config file - always handled here, never falls through
 if strcmpi(extLower, '.mibcfg')
     deepMibIdx = find(strcmp(obj.childControllersIds, 'controllers.MibDeep'), 1);
-    if ~isempty(deepMibIdx) && isvalid(obj.childControllers{deepMibIdx})
+    % deepMibIdx may point at a reservation made by utils.startController while
+    % the DeepMIB constructor is still running, i.e. past the end of childControllers
+    if ~isempty(deepMibIdx) && deepMibIdx <= numel(obj.childControllers) && ...
+            isvalid(obj.childControllers{deepMibIdx})
         obj.childControllers{deepMibIdx}.loadConfig(filenameList{1});
         status = true;
     else

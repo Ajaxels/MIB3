@@ -29,6 +29,11 @@ This area defines the region to be cropped.
 Alternatively, enable the <label class="widget widget-checkbox">Manual</label> 
 mode to enter specific cropping coordinates directly in the dialog. 
 
+The ![select area](images/select_area_16px.png) button takes those coordinates from the 
+image: draw a rectangle exactly as in the Interactive mode and, instead of cropping, 
+its coordinates are placed into the edit boxes. The dialog switches to the Manual mode, 
+so that the area can be adjusted before cropping.
+
 ### ROI-based cropping
 
 You can also crop based on a selected region of interest by enabling the 
@@ -81,7 +86,7 @@ The cropped region is loaded from the selected pyramid level into memory as a
 **Standard** (in-memory) dataset. The resulting dataset resides entirely in RAM and 
 can be worked on with all standard MIB tools.
 
-The voxel size of the output reflects the selected pyramid level — cropping at s1 
+The voxel size of the output reflects the selected pyramid level - cropping at s1 
 doubles the voxel size relative to s0.
 
 #### BigData
@@ -98,14 +103,14 @@ dialog appears to choose the destination `.zarr3` folder.
 | File | Contents |
 |------|----------|
 | `<name>.zarr3` | OME-Zarr v3 image pyramid (always written) |
-| `Labels_<name>.zarr3` | Packed segmentation model pyramid — only created when a BigData model exists in the source dataset |
+| `Labels_<name>.zarr3` | Packed segmentation model pyramid - only created when a BigData model exists in the source dataset |
 
 The model pyramid (`Labels_<name>.zarr3`) is written at full resolution (s0) and all 
 coarser levels are derived automatically. Material names, colors, and material count 
 are copied from the source model.
 
 After writing, the cropped BigData dataset is loaded into the destination buffer 
-automatically. If a model was written, it is attached to the buffer immediately — 
+automatically. If a model was written, it is attached to the buffer immediately - 
 no manual model loading is required.
 
 The output zarr3 file is highlighted in the **Directory Contents** panel after the 

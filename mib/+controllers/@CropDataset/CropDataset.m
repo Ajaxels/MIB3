@@ -308,6 +308,7 @@ classdef CropDataset < handle
             h.OutputType.ValueChangedFcn       = @(src,~) obj.OutputType_Callback(src);
 
             % buttons
+            h.selectAreaBtn.ButtonPushedFcn = @(~,~) obj.selectAreaBtn_Callback();
             h.resetBtn.ButtonPushedFcn  = @(~,~) obj.resetBtn_Callback();
             h.cropBtn.ButtonPushedFcn   = @(src,~) obj.cropBtn_Callback(src);
             h.croptoBtn.ButtonPushedFcn = @(~,~) obj.cropToBtn_Callback();
@@ -586,6 +587,63 @@ classdef CropDataset < handle
             obj.radio_Callback(obj.view.handles.Manual);
         end
 
+        function selectAreaBtn_Callback(obj)
+            % SELECTAREABTN_CALLBACK - pick the crop area on the image and put it into the edit boxes.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %       obj.selectAreaBtn_Callback()
+            %
+            % Uses the same rectangle drawing tool as the Interactive crop mode
+            % (obj.drawCropArea), but instead of cropping fills the Width, Height
+            % and Depth edit boxes with the coordinates of the drawn rectangle.
+            % Only the two dimensions defined by the shown orientation are
+            % updated, the third one is left untouched. After a successful
+            % selection the dialog is switched to the Manual mode, so that the
+            % Crop and Crop to... buttons use the new coordinates.
+            %
+
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.CropDataset.selectAreaBtn_Callback: triggered\n');
+            end
+
+            position = obj.drawCropArea();   % [x1, y1, x2, y2] in data pixels of the shown plane
+            if isempty(position); return; end
+
+            id = obj.mibModel.id;
+            dataset = obj.mibModel.I{id};
+
+            switch dataset.orientation
+                case 3      % XY plane: the rectangle defines Width and Height
+                    obj.view.handles.Width.Value  = sprintf('%d:%d', position(1), position(3));
+                    obj.view.handles.Height.Value = sprintf('%d:%d', position(2), position(4));
+                case 1      % ZX plane: the rectangle defines Depth and Width
+                    obj.view.handles.Depth.Value = sprintf('%d:%d', position(1), position(3));
+                    obj.view.handles.Width.Value = sprintf('%d:%d', position(2), position(4));
+                case 2      % ZY plane: the rectangle defines Depth and Height
+                    obj.view.handles.Depth.Value  = sprintf('%d:%d', position(1), position(3));
+                    obj.view.handles.Height.Value = sprintf('%d:%d', position(2), position(4));
+            end
+
+            % the ROI mode with "All" selected leaves 'Multi' in the edit boxes;
+            % restore the full range for the dimension the rectangle does not define
+            if strcmp(obj.view.handles.Width.Value,  'Multi')
+                obj.view.handles.Width.Value  = sprintf('1:%d', dataset.image.width);
+            end
+            if strcmp(obj.view.handles.Height.Value, 'Multi')
+                obj.view.handles.Height.Value = sprintf('1:%d', dataset.image.height);
+            end
+            if strcmp(obj.view.handles.Depth.Value,  'Multi')
+                obj.view.handles.Depth.Value  = sprintf('1:%d', dataset.image.depth);
+            end
+
+            % switch to the Manual mode; radio_Callback calls editboxes_Callback
+            % which syncs obj.BatchOpt and obj.roiPos with the new values
+            obj.view.handles.cropMode.SelectedObject = obj.view.handles.Manual;
+            obj.radio_Callback(obj.view.handles.Manual);
+        end
+
         function selectZarrLevel(obj)
             % SELECTZARRLEVEL - update Zarr downsampling info label based on the selected pyramid level.
             %
@@ -741,111 +799,8 @@ classdef CropDataset < handle
 
             if strcmp(BatchOptLoc.cropMode{1}, 'Interactive')
                 % --- Interactive mode: draw a rectangle on the image axes ---
-                % Resolve axes, cImageDoc and cRoi from mibController (split-panel safe).
-                % Falls back to obj.mibImageAxes when mibController is absent.
-                
-                selectedSet = obj.mibModel.Sets.selectedSet;
-                cImageDoc = obj.mibController.cImageDoc{selectedSet};
-                imViewAxes = cImageDoc.handles.imViewAxes;
-                cRoi = obj.mibController.cRoi;
-
-                if isempty(imViewAxes) || ~isgraphics(imViewAxes)
-                    utils.dlgs.showErrorDialog(obj.view.gui, ...
-                        sprintf('!!! Error !!!\n\nImage axes handle is not available.\nPlease use Manual or ROI mode instead.'), ...
-                        'Interactive crop error');
-                    return;
-                end
-
-                % Prepare drawing state
-                obj.view.gui.Visible = 'off';
-                obj.mibModel.disableSegmentation = true;
-
-                if ~isempty(cImageDoc) && isvalid(cImageDoc)
-                    cImageDoc.UIFigure.Pointer = 'cross';
-                end
-
-                if ~isempty(cRoi)
-                    cRoi.drawingROI.type          = 'Rectangle';
-                    cRoi.drawingROI.dataPos       = [];
-                    cRoi.drawingROI.repositioning  = false;
-                    cRoi.drawingROI.active         = false;
-                end
-
-                % Draw rectangle and wait for confirmation (single try-catch).
-                % Zoom-stable repositioning via cRoi.drawingROI / repositionDrawingROI
-                % is activated after drawrectangle creates the ROI object.
-                roi = [];  movingLsn = [];  movedLsn = [];
-                drawOk = false;
-                try
-                    roi = drawrectangle(imViewAxes);
-                    if isvalid(roi)
-                        captureF  = @() controllers.CropDataset.captureCropDataPos(roi, cRoi, obj.mibModel);
-                        movingLsn = addlistener(roi, 'MovingROI', @(~,~) captureF());
-                        movedLsn  = addlistener(roi, 'ROIMoved',  @(~,~) captureF());
-                        captureF();
-                        if ~isempty(cRoi)
-                            cRoi.drawingROI.roi    = roi;
-                            cRoi.drawingROI.active = true;
-                        end
-                        wait(roi);
-                        % Escape clears roi.Position without deleting the object;
-                        % deletion (e.g. clicking X) makes isvalid false - check both.
-                        drawOk = isvalid(roi) && ~isempty(roi.Position);
-                    end
-                catch
-                end
-
-                % Cleanup: listeners, drawing state, cursor, dialog visibility
-                if ~isempty(movingLsn); delete(movingLsn); end
-                if ~isempty(movedLsn);  delete(movedLsn);  end
-                if ~isempty(cRoi); cRoi.drawingROI.active = false; end
-                obj.mibModel.disableSegmentation = false;
-
-                if ~isempty(cImageDoc) && isvalid(cImageDoc)
-                    cImageDoc.UIFigure.Pointer = 'cross';
-                end
-                obj.view.gui.Visible = true;
-
-                if ~drawOk
-                    if ~isempty(roi) && isvalid(roi); delete(roi); end
-                    return;
-                end
-
-                % Extract final position in data-pixel coordinates.
-                % Prefer coords cached by captureF (already in data pixels, zoom-corrected).
-                % Fall back to converting roi.Position when cRoi was unavailable.
-                if ~isempty(cRoi) && ~isempty(cRoi.drawingROI.dataPos)
-                    dp = cRoi.drawingROI.dataPos;   % 2×2: [xmin ymin; xmax ymax]
-                    delete(roi);
-                    position = ceil([dp(1,1), dp(1,2), dp(2,1), dp(2,2)]);
-                else
-                    new_position = roi.Position;   % [xmin ymin w h]
-                    delete(roi);
-                    if isempty(new_position) || any(~isfinite(new_position)); return; end
-                    new_position(3) = new_position(3) + new_position(1);
-                    new_position(4) = new_position(4) + new_position(2);
-                    new_position(1) = max(new_position(1), 0.5);
-                    new_position(2) = max(new_position(2), 0.5);
-                    [position(1), position(2)] = obj.mibModel.convertMouseToDataCoordinates(new_position(1), new_position(2), 'shown');
-                    [position(3), position(4)] = obj.mibModel.convertMouseToDataCoordinates(new_position(3), new_position(4), 'shown');
-                    position = ceil(position);
-                end
-
-                % Clamp to image bounds
-                opts.blockModeSwitch = 0;
-                [height, width] = obj.mibModel.I{id}.getDatasetDimensions('selection', [], opts);
-                position(1) = max(position(1), 1);
-                position(2) = max(position(2), 1);
-                position(3) = min(position(3), width);
-                position(4) = min(position(4), height);
-
-                % Validate crop area
-                if position(3) <= position(1) || position(4) <= position(2)
-                    utils.dlgs.showErrorDialog(obj.view.gui, ...
-                        sprintf('!!! Error !!!\n\nThe defined area is too small!\nTo select the area for crop press the left mouse button and drag the mouse while having the left mouse button pressed. To confirm selection, double click inside the selected area'), ...
-                        'Crop error');
-                    return;
-                end
+                position = obj.drawCropArea();
+                if isempty(position); return; end
 
                 switch obj.mibModel.I{id}.orientation
                     case 3   % XY plane
@@ -1092,6 +1047,159 @@ classdef CropDataset < handle
 
         end
 
+    end
+
+    methods (Access = private)
+        function position = drawCropArea(obj)
+            % DRAWCROPAREA - draw a rectangle over the image and return its position in data pixels.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %       position = obj.drawCropArea()
+            %
+            % Shared by the Interactive crop mode (cropBtn_Callback) and by the
+            % select area button (selectAreaBtn_Callback). The crop window is
+            % hidden while the rectangle is drawn and segmentation is disabled,
+            % so that dragging over the image does not modify the layers.
+            %
+            % The axes, image document and ROI controller are resolved from
+            % obj.mibController at call time, which keeps the tool split-panel
+            % safe - the rectangle is always drawn on the currently active panel.
+            % Zoom and pan stability during drawing comes from registering the
+            % rectangle in cRoi.drawingROI: showImage calls
+            % cRoi.repositionDrawingROI on every redraw, while the
+            % MovingROI/ROIMoved listeners keep cRoi.drawingROI.dataPos in
+            % data pixel coordinates.
+            %
+            % Return values:
+            %   **position** - ``[x1, y1, x2, y2]`` of the drawn rectangle in data
+            %   pixels of the currently shown orientation, clamped to the dataset
+            %   dimensions. Empty when the user cancelled the drawing (Escape) or
+            %   when the resulting area was too small
+            %
+
+            position = [];
+            id = obj.mibModel.id;
+
+            % Resolve axes, cImageDoc and cRoi from mibController (split-panel safe)
+            if isempty(obj.mibController) || ~isvalid(obj.mibController)
+                utils.dlgs.showErrorDialog(obj.view.gui, ...
+                    sprintf('!!! Error !!!\n\nImage axes handle is not available.\nPlease use Manual or ROI mode instead.'), ...
+                    'Interactive crop error');
+                return;
+            end
+
+            selectedSet = obj.mibModel.Sets.selectedSet;
+            cImageDoc = obj.mibController.cImageDoc{selectedSet};
+            imViewAxes = cImageDoc.handles.imViewAxes;
+            cRoi = obj.mibController.cRoi;
+
+            if isempty(imViewAxes) || ~isgraphics(imViewAxes)
+                utils.dlgs.showErrorDialog(obj.view.gui, ...
+                    sprintf('!!! Error !!!\n\nImage axes handle is not available.\nPlease use Manual or ROI mode instead.'), ...
+                    'Interactive crop error');
+                return;
+            end
+
+            % Prepare drawing state
+            obj.view.gui.Visible = 'off';
+            obj.mibModel.disableSegmentation = true;
+
+            if ~isempty(cImageDoc) && isvalid(cImageDoc)
+                cImageDoc.UIFigure.Pointer = 'cross';
+            end
+
+            if ~isempty(cRoi)
+                cRoi.drawingROI.type          = 'Rectangle';
+                cRoi.drawingROI.dataPos       = [];
+                cRoi.drawingROI.repositioning = false;
+                cRoi.drawingROI.active        = false;
+            end
+
+            % Draw rectangle and wait for confirmation (single try-catch).
+            % Zoom-stable repositioning via cRoi.drawingROI / repositionDrawingROI
+            % is activated after drawrectangle creates the ROI object.
+            roi = [];  movingLsn = [];  movedLsn = [];
+            drawOk = false;
+            try
+                roi = drawrectangle(imViewAxes);
+                if isvalid(roi)
+                    captureF  = @() controllers.CropDataset.captureCropDataPos(roi, cRoi, obj.mibModel);
+                    movingLsn = addlistener(roi, 'MovingROI', @(~,~) captureF());
+                    movedLsn  = addlistener(roi, 'ROIMoved',  @(~,~) captureF());
+                    captureF();
+                    if ~isempty(cRoi)
+                        cRoi.drawingROI.roi    = roi;
+                        cRoi.drawingROI.active = true;
+                    end
+                    wait(roi);
+                    % Escape clears roi.Position without deleting the object;
+                    % deletion (e.g. clicking X) makes isvalid false - check both.
+                    drawOk = isvalid(roi) && ~isempty(roi.Position);
+                end
+            catch
+            end
+
+            % Cleanup: listeners, drawing state, cursor, dialog visibility
+            if ~isempty(movingLsn); delete(movingLsn); end
+            if ~isempty(movedLsn);  delete(movedLsn);  end
+            if ~isempty(cRoi); cRoi.drawingROI.active = false; end
+            obj.mibModel.disableSegmentation = false;
+
+            if ~isempty(cImageDoc) && isvalid(cImageDoc)
+                cImageDoc.UIFigure.Pointer = 'cross';
+            end
+            % Restore the crop window and realize it before returning: the caller
+            % parents its progress dialog to obj.view.gui, and a figure that has
+            % only been switched back on is not yet rendered, so the dialog would
+            % never appear (visible with slow sources such as remote Zarr)
+            obj.view.gui.Visible = 'on';
+            figure(obj.view.gui);   % bring the window in front of the image document
+            drawnow;
+
+            if ~drawOk
+                if ~isempty(roi) && isvalid(roi); delete(roi); end
+                return;
+            end
+
+            % Extract final position in data-pixel coordinates.
+            % Prefer coords cached by captureF (already in data pixels, zoom-corrected).
+            % Fall back to converting roi.Position when cRoi was unavailable.
+            if ~isempty(cRoi) && ~isempty(cRoi.drawingROI.dataPos)
+                dp = cRoi.drawingROI.dataPos;   % 2x2: [xmin ymin; xmax ymax]
+                delete(roi);
+                position = ceil([dp(1,1), dp(1,2), dp(2,1), dp(2,2)]);
+            else
+                new_position = roi.Position;   % [xmin ymin w h]
+                delete(roi);
+                if isempty(new_position) || any(~isfinite(new_position)); return; end
+                new_position(3) = new_position(3) + new_position(1);
+                new_position(4) = new_position(4) + new_position(2);
+                new_position(1) = max(new_position(1), 0.5);
+                new_position(2) = max(new_position(2), 0.5);
+                [position(1), position(2)] = obj.mibModel.convertMouseToDataCoordinates(new_position(1), new_position(2), 'shown');
+                [position(3), position(4)] = obj.mibModel.convertMouseToDataCoordinates(new_position(3), new_position(4), 'shown');
+                position = ceil(position);
+            end
+
+            % Clamp to image bounds
+            opts.blockModeSwitch = 0;
+            [height, width] = obj.mibModel.I{id}.getDatasetDimensions('selection', [], opts);
+            position(1) = max(position(1), 1);
+            position(2) = max(position(2), 1);
+            position(3) = min(position(3), width);
+            position(4) = min(position(4), height);
+
+            % Validate the selected area
+            if position(3) <= position(1) || position(4) <= position(2)
+                utils.dlgs.showErrorDialog(obj.view.gui, ...
+                    sprintf('!!! Error !!!\n\nThe defined area is too small!\nTo select the area for crop press the left mouse button and drag the mouse while having the left mouse button pressed. To confirm selection, double click inside the selected area'), ...
+                    'Crop error');
+                position = [];
+                return;
+            end
+        end
     end
 
     methods (Static, Access = private)

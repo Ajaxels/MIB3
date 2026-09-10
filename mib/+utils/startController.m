@@ -54,52 +54,70 @@ if ~isempty(existingId)
         fh = str2func(controllerName);
         fh(parentObj.mibModel, varargin{1:numel(varargin)});
         return;
+    elseif existingId > numel(parentObj.childControllers)
+        % The entry is a reservation with no handle behind it yet: the
+        % controller is still inside its constructor, which yielded to the
+        % event queue (drawnow, progress dialog) - that is how this second
+        % call got here, typically a double click on the ribbon button.  Its
+        % window is on its way, so do nothing rather than start a duplicate.
+        return;
     else
         try
             figure(parentObj.childControllers{existingId}.view.gui);
             parentObj.childControllers{existingId}.updateWidgets();
             return;
         catch
-            % Stale entry (e.g. closed via debugger without firing CloseEvent,
-            % or arrays de-synced by a previous failed constructor).
-            % Guard against childControllers being shorter than childControllersIds.
-            if existingId <= numel(parentObj.childControllers)
-                parentObj.childControllers(existingId) = [];
-            end
+            % Stale entry (e.g. closed via debugger without firing CloseEvent).
+            parentObj.childControllers(existingId)    = [];
             parentObj.childControllersIds(existingId) = [];
         end
     end
 end
 
-% Allocate a new slot and instantiate the controller.
-% Write the name first so the slot is reserved, then roll it back if the
-% constructor throws (keeps both tracking arrays in sync).
-id = numel(parentObj.childControllersIds) + 1;
-parentObj.childControllersIds{id} = controllerName;
+% Reserve the slot by name, so that a re-entrant call - a second click on the
+% ribbon button, or a timer callback firing while the constructor below sits in
+% a drawnow - sees the controller as already open.
+parentObj.childControllersIds{end+1} = controllerName;
 
 fh = str2func(controllerName);
 try
     if nargin > 2
-        parentObj.childControllers{id} = fh(parentObj.mibModel, varargin{1:numel(varargin)});
+        childObj = fh(parentObj.mibModel, varargin{1:numel(varargin)});
     else
-        parentObj.childControllers{id} = fh(parentObj.mibModel);
+        childObj = fh(parentObj.mibModel);
     end
 catch constructorErr
-    parentObj.childControllersIds(id) = [];   % roll back the pre-written slot
+    id = find(strcmp(parentObj.childControllersIds, controllerName), 1);
+    if ~isempty(id); parentObj.childControllersIds(id) = []; end   % roll back the reservation
     rethrow(constructorErr);
 end
 
+% The constructor yields to the event queue (drawnow, progress dialogs, timer
+% callbacks) and utils.purgeChildController shifts both tracking arrays when
+% another child window closes meanwhile.  An index taken before the constructor
+% ran is therefore stale, and writing the handle to it pads childControllers
+% with an empty double - locate the reservation again by name instead.  The
+% early return above guarantees at most one entry per controllerName.
+id = find(strcmp(parentObj.childControllersIds, controllerName), 1);
+if isempty(id)      % the reservation itself was purged while the constructor ran
+    parentObj.childControllersIds{end+1} = controllerName;
+    id = numel(parentObj.childControllersIds);
+end
+id = min(id, numel(parentObj.childControllers) + 1);    % never write past the end
+parentObj.childControllers = [parentObj.childControllers(1:id-1), {childObj}, ...
+                              parentObj.childControllers(id:end)];
+
 % Wire CloseEvent for lifecycle management
-addlistener(parentObj.childControllers{id}, 'CloseEvent', @(src, ~) utils.purgeChildController(parentObj, src));
+addlistener(childObj, 'CloseEvent', @(src, ~) utils.purgeChildController(parentObj, src));
 
 % In batch mode the child fires CloseEvent during its constructor, before
 % the listener above is wired.  The view property stays empty in that case,
 % so re-fire CloseEvent here so the listener can perform cleanup.
-childProperties = fieldnames(parentObj.childControllers{id});
+childProperties = fieldnames(childObj);
 if ismember('noGui', childProperties)
-    notify(parentObj.childControllers{id}, 'CloseEvent');
-elseif isempty(parentObj.childControllers{id}.view)
-    notify(parentObj.childControllers{id}, 'CloseEvent');
+    notify(childObj, 'CloseEvent');
+elseif isempty(childObj.view)
+    notify(childObj, 'CloseEvent');
 end
 
 end

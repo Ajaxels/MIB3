@@ -31,10 +31,16 @@ controllerName = class(src);
 id = find(strcmp(parentObj.childControllersIds, controllerName), 1);
 if isempty(id); return; end
 
-if isvalid(parentObj.childControllers{id})
-    delete(parentObj.childControllers{id});
+% the slot may be missing or hold something other than a live handle when a
+% controller is still inside its constructor - childControllersIds carries the
+% reservation before the handle is known (see utils.startController)
+if id <= numel(parentObj.childControllers)
+    child = parentObj.childControllers{id};
+    if isa(child, 'handle') && isvalid(child)
+        delete(child);
+    end
+    parentObj.childControllers(id) = [];
 end
-parentObj.childControllers(id)    = [];
 parentObj.childControllersIds(id) = [];
 
 end
