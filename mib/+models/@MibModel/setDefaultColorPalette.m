@@ -72,7 +72,8 @@ switch paletteName
     case 'default2current'
         palette = obj.preferences.Colors.ModelMaterialColors;
     otherwise
-        palette = utils.defaults.generateDefaultPalette(paletteName, colorsNo, randomSeed);
+        [palette, cancelled] = utils.defaults.generateDefaultPalette(paletteName, colorsNo, randomSeed);
+        if cancelled; return; end     % the random seed dialog was dismissed, leave the colors as they are
         if isempty(palette)
             utils.dlgs.showErrorDialog(obj.getProgressBarParent(), ...
                 'Most likely number of materials in the model is larger than the number of colors in the selected color scheme!', ...

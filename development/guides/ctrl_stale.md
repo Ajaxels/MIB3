@@ -18,6 +18,14 @@ tracked from the key events:
 Both are read all over MIB: `gui_ScrollWheelFcn.m:46`, `gui_WindowButtonDownFcn.m:30` and
 `:570`, `MibSelection/*`, `MibRoi/roiToSelection`, `InstanceEditor/imageButtonDown`, etc.
 
+**`CurrentModifier` also fails in a second, non-stale way**, and it is the one that gets
+written by accident: for a `ButtonPushedFcn` on a widget inside a panel it is simply `{}`,
+because it is only updated by keyboard events delivered to that sub-figure. Ctrl+click
+detection written against it never fires at all - the modifier is not stale, it was never
+recorded. Always `obj.mibController.currentModifier`. Known remaining offenders:
+`MibSelection/gui_Callbacks.m:83, 89, 95` (Shift+click on the tool presets), `VolRenApp.m:426`,
+`ImageFilters.m:417`, `Quantification/statTable_CellSelectionCallback.m:47`.
+
 **The whole bug is that the "key released" message sometimes never arrives, so the note is
 never erased.** MIB then acts on a key the user let go of minutes ago.
 `gui_WindowKeyReleaseFcn` is the only code that undoes *both* pieces of state - clearing
@@ -55,7 +63,7 @@ itself on the way out, or it asks the operating system what is really held.
 
 ### Mode A - one fix, all platforms, every dialog
 
-`utils/startController.m:131` (`iWireKeyReleaseToMib`, `:145`). Every child window in MIB is
+`utils/startController.m:131` (`localWireKeyReleaseToMib`, `:145`). Every child window in MIB is
 constructed through this one funnel, so wiring the child figure's `WindowKeyReleaseFcn` back
 to `mibController.gui_WindowKeyReleaseFcn` there covers all of them at once - including
 plugin windows, which reach it through the same `parentObj.mibController` path.
@@ -74,8 +82,9 @@ present where it was empty before, and firing it clears both `currentModifier` a
 |------|------|--------------|
 | Ctrl+S "Save image as..." | `gui_WindowKeyPressFcn.m:299` | calls `gui_WindowKeyReleaseFcn` before `uiputfile` |
 | Ctrl+I "Invert image" | `gui_WindowKeyPressFcn.m:162` | same, before the progress dialog |
-| DeepMIB preprocess / train / predict | `MibDeep/start.m:20` | `onCleanup` -> `iReleaseModifierKeys` (`:119`), so every exit path including errors |
+| DeepMIB preprocess / train / predict | `MibDeep/start.m:20` | `onCleanup` -> `localReleaseModifierKeys` (`:119`), so every exit path including errors |
 | SAM click | `gui_WindowButtonDownFcn.m:813` | re-synchronises against the real keyboard, see below |
+| Segmentation panel buttons (colour wheel, create/load model, view settings) | `MibSegmentation/gui_Callbacks.m:43` | calls `gui_WindowKeyReleaseFcn` before dispatching, since every branch can open a dialog (`utils.dlgs.inputSingleDlg` / `inputUniversalDlg`, which are not built through `startController`) |
 | add-to-material, Ctrl+V, Ctrl+Shift+V, Ctrl+Z | `gui_WindowKeyPressFcn.m:210, 306, 310, 368` | pre-existing, clear `currentModifier` only |
 | keypress from a panel with no release handler | `gui_WindowKeyPressFcn.m:491` | pre-existing fallback |
 

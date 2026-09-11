@@ -17,7 +17,7 @@ function findBestMinibatchSize(obj)
 % candidate mini-batch size and reports patches per second. The project images are never read
 % and nothing is ever written to the project; the 2D Instance workflow does read a sample of
 % the label maps, to match the object count of the synthetic patches to the real ones (see
-% :func:`iSampleInstancesPerPatch`).
+% :func:`localSampleInstancesPerPatch`).
 %
 % **Why throughput and not a memory reading.** MATLAB's ``gpuDevice().AvailableMemory``
 % saturates: in a calibration sweep on a 12 GB card it read 10.91 GB used both in the last
@@ -57,7 +57,7 @@ function findBestMinibatchSize(obj)
 % the probe came out **2.1x too fast** (17.4 epochs/hour predicted against 8.3 recorded) while
 % modelling a mask tensor six times smaller than the real one - 11.8 MB per iteration against
 % 74 MB. Understating the memory is the worse half of that, because it lets the probe
-% recommend a size that then pages in the real run. :func:`iSampleInstancesPerPatch` therefore
+% recommend a size that then pages in the real run. :func:`localSampleInstancesPerPatch` therefore
 % reads a sample of the project's own label maps first. Only the label maps are read, never
 % the images, and a project that is not preprocessed yet falls back to the old constant.
 %
@@ -175,12 +175,12 @@ obj.wb = uiprogressdlg(obj.view.gui, 'Message', 'Building the network...', ...
 rngState = rng();
 cleanupRng = onCleanup(@() rng(rngState));
 
-% measured from the project's own label maps, see iSampleInstancesPerPatch; unused by the
+% measured from the project's own label maps, see localSampleInstancesPerPatch; unused by the
 % semantic workflows, whose cost does not depend on an object count
 objectsPerPatch = 0;
 if isInstanceWorkflow
     obj.wb.Message = 'Sampling the label maps...';
-    objectsPerPatch = iSampleInstancesPerPatch(obj, inputPatchSize(1:2));
+    objectsPerPatch = localSampleInstancesPerPatch(obj, inputPatchSize(1:2));
 end
 
 try
@@ -215,7 +215,7 @@ bestThroughput = 0;
 % out at 21 patches/second against 41 once the session was warm.
 obj.wb.Message = 'Warming up...';
 try
-    iTimeCandidate(obj, probeNetwork, inputPatchSize, outputPatchSize, ...
+    localTimeCandidate(obj, probeNetwork, inputPatchSize, outputPatchSize, ...
         candidateSizes(1), 3, isInstanceWorkflow, objectsPerPatch);
 catch
     % if the start size does not even fit, the loop below reports it properly
@@ -228,11 +228,11 @@ for candidateIdx = 1:numel(candidateSizes)
     obj.wb.Message = sprintf('Measuring mini-batch size %d...', miniBatchSize);
 
     try
-        secondsPerIteration = iTimeCandidate(obj, probeNetwork, inputPatchSize, outputPatchSize, ...
+        secondsPerIteration = localTimeCandidate(obj, probeNetwork, inputPatchSize, outputPatchSize, ...
             miniBatchSize, probeIterationsInitial, isInstanceWorkflow, objectsPerPatch);
         if ~isnan(secondsPerIteration) && secondsPerIteration < shortIterationSeconds
             % too fast to time reliably over so few iterations, measure again with more
-            secondsPerIteration = iTimeCandidate(obj, probeNetwork, inputPatchSize, outputPatchSize, ...
+            secondsPerIteration = localTimeCandidate(obj, probeNetwork, inputPatchSize, outputPatchSize, ...
                 miniBatchSize, probeIterationsRefined, isInstanceWorkflow, objectsPerPatch);
         end
     catch err
@@ -279,7 +279,7 @@ recommendedSize = results(bestIdx,1);
 % grows and the two columns do not simply track each other. The rounding differs by
 % workflow: trainNetwork drops the observations that do not fill the last mini-batch,
 % images.dltrain (behind trainSOLOV2) runs them as one more iteration.
-trainingObservations = iCountTrainingObservations(obj);
+trainingObservations = localCountTrainingObservations(obj);
 if isInstanceWorkflow
     roundIterations = @ceil;
 else
@@ -330,7 +330,7 @@ if trainingObservations > 0
         'At the recommended size, the %d epochs currently configured would take about %s.'], ...
         trainingObservations, round(trainingObservations/obj.BatchOpt.T_PatchesPerImage{1}), ...
         obj.BatchOpt.T_PatchesPerImage{1}, obj.TrainingOpt.MaxEpochs, ...
-        iFormatDuration(obj.TrainingOpt.MaxEpochs * ...
+        localFormatDuration(obj.TrainingOpt.MaxEpochs * ...
         max(1, floor(trainingObservations/recommendedSize)) * results(bestIdx,2)));
 else
     epochsNote = sprintf(['\n\nepochs/hour could not be estimated: no training patches were found. ' ...
@@ -363,7 +363,7 @@ fprintf('DeepMIB: mini-batch size set to %d (%.2f patches/sec on synthetic %s pa
 end
 
 % -------------------------------------------------------------------------------------
-function secondsPerIteration = iTimeCandidate(obj, probeNetwork, inputPatchSize, outputPatchSize, ...
+function secondsPerIteration = localTimeCandidate(obj, probeNetwork, inputPatchSize, outputPatchSize, ...
     miniBatchSize, numIterations, isInstanceWorkflow, objectsPerPatch)
 % train on synthetic patches and return the median time of one iteration
 %
@@ -394,14 +394,14 @@ trainingOptions_ = trainingOptions('adam', ...
     'OutputFcn', @recordIteration);
 
 if isInstanceWorkflow
-    probeDatastore = iSyntheticInstanceDatastore(inputPatchSize, numObservations, objectsPerPatch);
+    probeDatastore = localSyntheticInstanceDatastore(inputPatchSize, numObservations, objectsPerPatch);
     trainSOLOV2(probeDatastore, probeNetwork, trainingOptions_, 'FreezeSubNetwork', 'none');
 else
     % trainNetwork cannot consume a dlnetwork, and from R2026a the network builders return
     % one (unet, unet3d), so the engine follows what createNetwork actually produced rather
     % than obj.TrainEngine alone
     useTrainnet = isa(probeNetwork, 'dlnetwork') || strcmp(obj.TrainEngine, 'trainnet');
-    probeDatastore = iSyntheticSemanticDatastore(obj, inputPatchSize, outputPatchSize, ...
+    probeDatastore = localSyntheticSemanticDatastore(obj, inputPatchSize, outputPatchSize, ...
         numObservations, probeNetwork, useTrainnet);
     if useTrainnet
         if isa(probeNetwork, 'dlnetwork')
@@ -448,7 +448,7 @@ end
 end
 
 % -------------------------------------------------------------------------------------
-function objectsPerPatch = iSampleInstancesPerPatch(obj, patchSize)
+function objectsPerPatch = localSampleInstancesPerPatch(obj, patchSize)
 % median number of ground-truth instances a patch of this project actually contains
 %
 % Windows are placed the way deepmib.readInstancePatch places them - object-seeded 90% of
@@ -533,11 +533,11 @@ end
 end
 
 % -------------------------------------------------------------------------------------
-function probeDatastore = iSyntheticInstanceDatastore(inputPatchSize, numObservations, objectsPerPatch)
+function probeDatastore = localSyntheticInstanceDatastore(inputPatchSize, numObservations, objectsPerPatch)
 % random images with square objects, in the 4-column layout trainSOLOV2 wants
 % (image, boxes, labels, masks), matching what deepmib.readInstancePatch produces
 %
-% objectsPerPatch comes from the project's own label maps (see iSampleInstancesPerPatch)
+% objectsPerPatch comes from the project's own label maps (see localSampleInstancesPerPatch)
 % because it, not the patch size, is what drives SOLOv2's cost and its target tensor size
 
 objectSide = max(16, round(min(inputPatchSize(1:2))/8));
@@ -564,7 +564,7 @@ probeDatastore = combine(arrayDatastore(images, 'OutputType', 'same'), ...
 end
 
 % -------------------------------------------------------------------------------------
-function probeDatastore = iSyntheticSemanticDatastore(obj, inputPatchSize, outputPatchSize, ...
+function probeDatastore = localSyntheticSemanticDatastore(obj, inputPatchSize, outputPatchSize, ...
     numObservations, probeNetwork, useOneHot)
 % random image patches paired with random labels of the size the network outputs
 %
@@ -635,7 +635,7 @@ probeDatastore = combine(arrayDatastore(images, 'OutputType', 'same'), ...
 end
 
 % -------------------------------------------------------------------------------------
-function trainingObservations = iCountTrainingObservations(obj)
+function trainingObservations = localCountTrainingObservations(obj)
 % how many patches one epoch draws, for the epochs/hour column
 %
 % Counting files rather than building a datastore, so pressing the button stays cheap. The
@@ -665,7 +665,7 @@ end
 end
 
 % -------------------------------------------------------------------------------------
-function durationText = iFormatDuration(totalSeconds)
+function durationText = localFormatDuration(totalSeconds)
 % seconds as a short human-readable span, e.g. "3 days 4 h" or "18 min"
 
 if totalSeconds >= 86400

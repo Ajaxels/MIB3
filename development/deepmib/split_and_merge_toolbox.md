@@ -492,7 +492,7 @@ Edited: `+instances/stitch2Dto3D.m` (now calls `utils.instances.cleanup`), `MibD
 - **`PixelIdxList` is time-point-blind.** `MibImage.setPixelIdxList` writes into `obj.data`, which is
   `[H W Z 1 T]`, while `convertPixelIdxListCrop2Full` produces indices into `[H W Z]`. Anything past
   the first time point therefore needs the frame offset added, which `editInstanceObjects` does in
-  `iCropToFull`. The pre-existing `segmentationObjectPicker` has the same latent issue.
+  `localCropToFull`. The pre-existing `segmentationObjectPicker` has the same latent issue.
 - **A stale index is rebuilt automatically** before an operation runs, rather than the operation
   being refused as originally planned. Equally safe - the rebuild happens before any bounding box is
   read - and it does not strand the user behind a button.
@@ -513,7 +513,7 @@ Edited: `+instances/stitch2Dto3D.m` (now calls `utils.instances.cleanup`), `MibD
   through `utils.dlgs.inputUniversalDlg` unconditionally, copying `stitchModelInstances`. With no
   parent figure - a batch protocol, or the test suite - it still builds a modal dialog and nothing is
   there to dismiss it. Measured: `EditInstanceObjectsTest` took **250 s instead of 1 s**, and one run
-  wedged MATLAB until the dialogs were closed by hand. `iComplain` now checks for a usable parent and
+  wedged MATLAB until the dialogs were closed by hand. `localComplain` now checks for a usable parent and
   writes to the console (stderr) when there is none. The message still has to go *somewhere* - a
   silent return would report success for work that never happened - but it must not block.
   `MibModel.stitchModelInstances` has the same pattern and the same latent hang; its tests simply do
@@ -567,7 +567,7 @@ so replacing it took panning with it - and panning is how the user reaches the n
 `imageButtonDown` now classifies the click first and hands back anything that is not one of the three
 picking gestures. Two things make that work:
 
-- The pan/select rule is restated in `iClickAction`, `System.LeftMouseButton` preference included.
+- The pan/select rule is restated in `localClickAction`, `System.LeftMouseButton` preference included.
   `gui_WindowButtonDownFcn` decides and acts in one pass, with no way to ask it the question alone,
   so the two have to be kept in step by hand. Extracting the decision out of that 580-line handler
   would be the better fix and is a change to shared mouse behaviour, not something to do while
@@ -629,7 +629,7 @@ that no read escapes a bounding box - and the second one measured smaller than i
 | `any(any(sel,1),2)` to find the slices carrying the drawing | 3 ms |
 | the same lookup over those slices alone | ~10 ms total |
 
-So `iObjectsUnderSelection` narrows first and reads the labels only for the slices that carry
+So `localObjectsUnderSelection` narrows first and reads the labels only for the slices that carry
 something. The Z range is deliberately left off the selection read so `getData3D` keeps its
 copy-on-write fast path instead of duplicating the layer.
 
@@ -651,12 +651,12 @@ layer to the material", and that reading survives here in full. What the drawing
 
 Neither of the last two is a merge that came up short, which is how they were first written
 (*"The Selection layer covers only object N"*); they are the same gesture over a smaller region.
-`iObjectsUnderSelection` therefore reports "drawn, but on background" as a **finding** - empty
+`localObjectsUnderSelection` therefore reports "drawn, but on background" as a **finding** - empty
 `objectIds`, no problem - and the policy sits with the action: Merge falls through, Split by selection
 still refuses, because there is nothing there to cut.
 
 Both are named actions as well, so a batch protocol can ask for either directly. They share
-`iDrawingToObject`, the only writer here that does not start from a bounding box in the index: the box
+`localDrawingToObject`, the only writer here that does not start from a bounding box in the index: the box
 comes from three `any()` reductions over the drawn layer, which keeps the backup and the rescan
 proportional to the drawing without ever building a full-volume index list. Two boxes, not one -
 **the undo covers the drawing, the rescan covers the drawing united with the object's existing
@@ -674,7 +674,7 @@ is unchanged: the whole of every object the shape touches is joined, not the par
 This is also why the consume step moved from the controller into the model: with no pick there is no
 highlight box to clear it by, and a leftover drawing is now the input to the *next* action rather
 than a harmless smudge. The condition is "the operation used the layer" - as the cut, as the bridge,
-or to choose the objects - passed into `iObjectAction` rather than worked out there.
+or to choose the objects - passed into `localObjectAction` rather than worked out there.
 
 ### Keyboard shortcuts (2026-09-02)
 
@@ -684,14 +684,20 @@ travel to a button. `useShortcuts` puts three keys on the editor for as long as 
 | Key | Normally (`generateKeyShortcuts`) | While the checkbox is on |
 |---|---|---|
 | `a`, `shift+a` | Add selection to material | **Merge** / **AddToObject** / **AddObject**, by what the drawing covers |
-| `s`, `shift+s` | Subtract from material | **Split by selection** |
-| `c`, `shift+c` | Clear selection | **Clear list** - empties the picked objects |
+| `s`, `shift+s` | Subtract from material | **Split by selection** - and when the drawing covers a whole object, that object is removed |
+| `c`, `shift+c` | Clear selection | **Clear list and selection** - empties the picked objects, then clears the layer as usual |
 | ++ctrl+f++ | Find material under cursor | **Add the object under the cursor to the selection** |
 
-`c` empties the **list**, not the Selection layer: a shape drawn for the next Merge survives it. That
-is a real difference from MIB's own `c`, which is the one thing the checkbox takes away with no
-equivalent inside the editor - the drawing goes when an operation consumes it, or with the layer's
-own controls.
+`c` empties the **list** and then clears the Selection layer through
+`mibController.cSelection.clearSelection()`, so it is a superset of MIB's own `c` rather than a
+replacement for it - including the scope rule, plain for the slice and `shift` for the stack.
+
+*(Reversed on 2026-09-11. It first cleared the list only, on the reasoning that a shape drawn for the
+next Merge should survive it. In use that is the wrong way round: once the drawing chooses the
+objects, a drawing that picked the wrong ones is exactly what needs taking back, and the key that
+looks like "start again" left half the state behind. The list is cleared first so the borrowed
+highlight is released before the layer is cleared, or `releaseHighlight` would put its stash back
+into a layer that had just been emptied.)*
 
 Both `a` and `shift+a` have to be swallowed: MIB treats them as *one* shortcut with two scopes
 (`overrideShift`), so leaving the shift variant through would let it write to the material. Here they
@@ -747,7 +753,322 @@ Reading the object under the cursor moved into `pickObjectUnderCursor`, now shar
 the key - two call sites, so it earns its own file; `imageButtonDown` keeps only the part that works
 out what the click *is*.
 
+### Undo no longer throws the index away (2026-09-11)
+
+Reported in use: ++ctrl+z++ after an edit turned the index red, and the next operation paid a
+whole-volume rebuild. On the 624x1380x501 test model that is 1.5 s; on real data it is the one cost
+in this tool that scales with the **dataset** rather than with the edit, which is exactly what the
+bounding-box design exists to avoid everywhere else.
+
+It never needed to. An edit here backs up **one bounding box**, `MibModel.undo` restores exactly that
+box, and `buildInstanceIndex` already takes a box and a list of objects. Both halves existed; what
+was missing was the region at undo time.
+
+**The note rides with the undo entry.** `MibBackup.store` keeps the caller's options struct beside
+the stored data, so an extra field put there by `localUndoRepairOptions` travels with the entry - through
+the shifts of the ring buffer, and into the redo slot, because `MibModel.undo` passes the *same*
+options to `replaceItem` when it fills it. `repairIndexAfterUndo` reads it back from
+`Backup.undoList(Backup.undoIndex).options`.
+
+Three things fall out of that choice, and they are why it beats the two obvious alternatives:
+
+- **No parallel stack in the controller.** A shadow stack would have to stay aligned with an undo
+  history the editor does not own - brush strokes, other tools, the ring buffer dropping its oldest
+  entry, undoing past the editor's first operation - and misalignment fails by repairing the *wrong*
+  box, which is the one failure this whole design exists to prevent. Nothing to align here: the note
+  is attached to the thing it describes.
+- **No change to `undo.m`, `backup.m` or `MibBackup`.** The first sketch added the region to the
+  `Undo` event payload, which would have been wrong twice over: `Lines3dDialog` does
+  `strcmp(evnt.Parameters, 'lines3d')` on that event, so a struct payload would have silently
+  returned false and killed its refresh.
+- **One note serves both directions.** Re-measuring a region is direction-agnostic. Storing a copy
+  of the index rows instead - the cheaper option on paper, needing no volume read at all - would have
+  had to know whether it was undoing or redoing, and MIB's undo is a swap that toggles.
+
+The box carried is the **rescan** box, not always the backed-up one: growing an object writes only
+the drawing but has to be measured over the whole of the object, which `localDrawingToObject` already
+knew and now shares with the undo path.
+
+Failure is always towards a full rebuild: no note, a note from another dataset or time point, or an
+index already stale for some other reason, and `repairIndexAfterUndo` returns false. `Cleanup` and
+`Compact` deliberately leave no note - no box describes them - and a brush stroke on the model layer
+never had one. Being slow is acceptable; acting on a region that does not describe what was restored
+is not.
+
+**The first version of that last guard defeated the whole thing.** It refused to repair a stale
+index, on the reasoning that staleness from an unrelated earlier change is not covered by one box.
+Correct in itself, and wrong here: `MibModel.undo` writes the restored voxels **before** it fires its
+`Undo` event, so `dataChangedElsewhere` has already marked the index stale by the time the handler
+runs - marked it for the very write the handler is there to account for. Every repair therefore
+refused, and the status went red exactly as before. Measured rather than reasoned about, since the
+ordering is the whole point:
+
+```
+event order during undo:   SetData(labels) -> Undo
+```
+
+So `markIndexStale` now records the **fresh-to-stale transition** in `indexFreshBeforeWrite`, and the
+handler repairs a stale index only when that transition is the one this undo caused. Writes arriving
+while the index is already stale leave the flag alone, so a burst still describes the first
+transition. The flag is cleared by the Undo handler whatever it decides, which is what closes the
+hole the guard was written for: an undo that could not be repaired leaves the index stale *and*
+unclaimed, so stepping further back onto an entry that does carry a note cannot mistake that older
+staleness for its own.
+
+`undoWritesTheVoxelsBeforeAnnouncingItself` pins the ordering, because the handler cannot check it
+for itself and the failure is silent in both directions - a reversal would either strand the repair
+again or, worse, let it run against staleness it does not cover.
+
+### Compact says what it did (2026-09-11)
+
+Asked for after a run: `Compact` changed every number in the list and said nothing. It is the one
+action that rewrites what the user has been navigating by while changing nothing they can see, so it
+now reports what it did.
+
+**In a message box, not the command window.** It first went to `fprintf` like `Cleanup`, and the
+answer from the first use was *"ohh, I see it is in the terminal"* - which is the whole objection:
+MIB runs in an AppContainer and the command window is behind it, so a line there is a line nobody
+reads at the moment it matters. `localReport` is the counterpart of `localComplain` for a result rather than
+a refusal, and differs from it in exactly two ways:
+
+- the no-parent fallback goes to **stdout**, not stderr. Work done is not an error, and the tests
+  read the figures from there
+- callers pass `allowDialog`, which `Compact` sets from `~batchModeSwitch`, so a protocol looping
+  over datasets is not stopped by a box per iteration
+
+```
+3D  Renumbered 1 of 3 objects.
+        2 objects already had their final number.
+        Highest index: 5 -> 3
+        2 unused indices reclaimed.
+
+2D  Renumbered 2 of 3 slices with objects.
+        1 slices were already numbered 1, 2, 3...
+        4 slices in the stack.
+        Highest index: 6 -> 3
+        Each slice is numbered on its own, so one index means a different object on each.
+```
+
+The headline carries the figure that answers *"did it do anything"*; everything else sits under it.
+
+**`Cleanup` followed immediately**, through the same helper:
+
+```
+    1 objects removed, 0 fragments absorbed.
+        0 voxels were handed to neighbouring objects.
+        2 objects left in the model.
+        Object numbers are unchanged - use Compact to renumber.
+```
+
+Its report moved out of the `switch` to sit beside Compact's, after `delete(wb)`: a modal box raised
+while the progress dialog is still up goes *behind* it. That the last line repeats what
+`askCleanupSettings` already says is deliberate - the two are read minutes apart, and the question
+after a cleanup is whether the numbers in the list still mean what they did.
+
+Both **cancel** paths stay on `fprintf`. Cancelling is the user's own action and the box would be a
+second click to dismiss something they already know; what matters there - that the model was not
+changed - is true of every cancel in this file.
+
+Everything reported is derived from the index **taken before** the renumbering: the new number of an
+object is its rank among the values in use, so `oldIds == 1:n` is exactly the set that kept its
+number, and `oldMax - newMax` is the reclaimed space. No extra pass over the volume.
+
+**Compact follows the mode** (asked for straight after, and the reason the first answer asked for a
+count of slices). `squeezeMaterialLabels` is one `unique()` pass over the whole label space, which is
+right for a stitched model and does nothing useful on an unstitched one: there the numbering restarts
+on every slice, so every value is in use *somewhere* and a global squeeze closes no gap at all. The
+gaps on such a model are per-slice gaps. So in 2D each slice is now tightened on its own - a slice
+holding 1, 3, 5 becomes 1, 2, 3, independently of what its neighbours hold - which leaves the model
+exactly as it already was in kind, one numbering per slice.
+
+The loop is the only place in this file that walks the volume slice by slice, so it carries the
+obligations that go with it: a determinate cancelable progress bar, mutation of a **local copy** with
+a single `setData3D` at the end, and therefore no partial write on cancel. A slice already at 1..n is
+skipped, which is what makes "slices renumbered" a real number rather than the depth of the stack.
+
+The reported figures differ with the mode, because the quantity differs. Per slice there is no single
+object count - the same index is a different object on each slice, which is the whole reason this
+mode exists - so what is counted is slices with gaps and the drop in the highest index. The 3D branch
+keeps the object-level figures and the count assertion below.
+
+**The denominator is slices carrying objects, not the depth of the stack.** An empty slice is not a
+slice that was already in place; there is nothing on it to number. Counting it as one would report
+*"renumbered 2 of 501"* on a stack whose objects sit on forty slices - a ratio that describes the
+dataset rather than the work. The stack depth is still given, in brackets, because the difference
+between the two numbers is itself worth seeing. The test keeps one slice deliberately empty for this.
+
+Two things fall out of writing it:
+
+- **The object count is asserted, not assumed.** Renumbering must not add or remove objects, so a
+  disagreement between the old count and the rebuilt index goes to stderr. Nothing has produced it;
+  it is there because this is the operation whose damage would be hardest to recognise.
+- **`squeezeMaterialLabels` renumbers each time point independently** - its `unique()` runs inside
+  the `for t` loop - so on a 4D instance model whose time points hold different label sets, object 7
+  at t=1 and object 7 at t=2 can map to different new numbers. The message says which time point its
+  figures describe when there is more than one, but the underlying behaviour is left alone: instance
+  models are single-time-point in every path that reaches here today, and fixing it means deciding
+  what object identity across time should mean. Worth knowing before that decision is made.
+
+### `s` over a whole object removes it (2026-09-11)
+
+Found in use: a drawing covering the whole of object 51 was refused with *"The Selection layer covers
+the whole of object 51 - nothing would be left"*, when what the user meant was plainly "remove this".
+
+The refusal came from reading the action as a *split*, which has to leave two pieces. But `s` is
+`Subtract from material` - that is the key it takes over and the sense it keeps - and subtracting a
+drawing that covers everything leaves nothing. It is the same shape of decision as the `a` table
+above: the gesture is fixed and **what the drawing covers** decides the outcome. Refusing the
+degenerate case made the one gesture meaning "delete this" unreachable from the key the user already
+had a hand on, with **Delete** and a pick as the only way round.
+
+Deleting the guard is the whole change. `localComponentMasks` returns `{}` for an empty mask, so the
+removal write that was already queued below it becomes the entire operation, and the index refresh
+does the rest: in 3D the object loses every voxel and its index is freed for the next split; in 2D
+the box is clipped to the shown slice, but `utils.instances.objectIndex` unions the refresh region
+with the object's **previous** bounding box, so what survives on the other slices is recounted rather
+than forgotten. That union was written for a different reason and is what makes the 2D case correct
+for free.
+
+Two cases pinned in `EditInstanceObjectsTest`: the object gone and its index free in 3D, and the
+object still present with one slice cleared in 2D.
+
+**The pick is the selection when nothing is drawn.** Reported straight after: picking an object by
+click and pressing `s` left it there. It fell through to a split that found nothing to cut, queued an
+empty write, and reported success - the worst of the possible answers, since it also spent an undo
+step. The reading that was missing is the one the screen was already showing: `highlightObjects`
+paints the picked objects **into the Selection layer**, so a pick and a drawing covering the whole
+object are the same picture, and the case above had just made the second of them remove the object.
+The refusal message for the empty case had been promising this all along - *"Draw the break into it
+first, or pick the objects from the list"* - and picking alone did nothing.
+
+So `SplitBySelection` with objects named and **nothing drawn anywhere** becomes `Delete`, decided
+once at dispatch rather than per object:
+
+```matlab
+if strcmp(action, 'SplitBySelection') && ~derivedFromDrawing && ...
+        isempty(localDrawingExtent(obj, id, dataset, timePoint, BatchOpt.Mode3D))
+    action = 'Delete';
+end
+```
+
+Three things make this the right shape:
+
+- **The test is "is anything drawn at all", not "is anything drawn over this object".** Per object it
+  would delete a picked object merely because the drawing lies on a different one, which is a
+  reading nobody asked for. `localDrawingExtent` answers the question for the whole layer in 3 ms.
+- **`Delete` already does the 2D case**, clipping to the shown slice through `localObjectPixels`, so the
+  mode is respected without new code.
+- **`consumesSelection` becomes false**, which is correct: no drawing was used, so there is none to
+  use up. It follows from the action name alone and needed no extra condition.
+
+A drawing plus a pick is untouched: that is still "cut this object and leave the neighbour the line
+also crosses alone", and it has its own test so the two readings cannot drift.
+
+### The drawing reaches the next slice (2026-09-11)
+
+First real 3D use case, reported by the author: brush the gap, then join the object on `z-1` to the
+object on `z+1`. That was already possible - `Connect` in `selection` mode - but it cost **three**
+manual steps where the drawing had already answered two of them: pick A, pick B, press the button.
+
+The gesture was already there - it is the 2D one. A stroke drawn across two objects and committed
+with ++a++ joins them, and has done since [the drawing chose the objects](#the-drawing-chooses-the-objects-2026-09-01).
+What broke in a volume is not the gesture but the **question asked of the stroke**:
+`localObjectsUnderSelection` reads the labels at the drawn voxels, and the object being joined to is
+on the next slice, where nothing is drawn at all. A same-slice test, in a mode whose whole subject is
+3D objects.
+
+So the reach changed, not the gesture. `localObjectsToJoin` is the counterpart of
+`localObjectsUnderSelection`, and the difference between the two is the whole of it:
+
+| | asked by | reads |
+|---|---|---|
+| a **cut** | `SplitBySelection` | what the drawing covers - voxels it merely lies against are not being taken out of anything |
+| a **join** | `Merge`, `Connect` | what the drawing covers, and failing that what lies one slice beyond either end of it |
+
+In 2D the second half is skipped and the two are identical, which is right: there is no next slice in
+a single-slice mode.
+
+**What you can see, you get all of; what you cannot see, you get one of.** Contact on a slice the
+user drew on is deliberate and on screen, so every object there counts, as it always has. The slice
+beyond the stroke is neither drawn nor visible: a stroke clipping the corner of a neighbour there is
+the ordinary case, and silently swallowing that neighbour is the one outcome this must not produce.
+Each end therefore contributes at most one object, by footprint under the stroke - not by total size,
+which would let something large elsewhere in the box beat the one being pointed at. Two details
+follow: the overlap is measured against the **drawn mask** on the outermost plane rather than its
+bounding box, which a diagonal stroke would make far too generous; and it is exactly one slice, never
+two, so the drawing has to abut what it joins and the choice stays something the user can see before
+pressing anything.
+
+**`Connect` with nothing picked is now the same code.** Joining two objects and giving them the
+background drawn between them is a drawing-driven `Merge` exactly - `localMergeWrites` +
+`localAbsorbDrawing` against `localAbsorbDrawing` + `localMergeWrites`, the same two writes in the
+other order over disjoint voxel sets. So the action becomes `Merge` at dispatch and
+`localPlanConnect` is never reached, which is what keeps `ConnectMode` out of it: the alternative was
+forcing the dropdown to `selection`, which would either have gone out on `SyncBatch` and silently
+changed what the user was looking at, or needed a tenth argument threaded through the dispatch to say
+so. The `BatchOpt` still says `Connect`, so a protocol replaying it lands here again. The two buttons
+differ only when objects are named - which is where `interpolate` lives, and it is the one form that
+needs no drawing at all.
+
+The three-way outcome needed no new branch, `Merge`'s existing one already reading it: two objects
+join, one object grows by the drawing (`AddToObject`), none makes the drawing a new object
+(`AddObject`).
+
+**The argument against putting it on ++a++, and why it lost.** `a` also means *"paint what the
+prediction missed and commit it"* (D1d, J3a), so a lookahead risks gluing a newly painted object to
+whatever sits above or below it - which the user cannot see, those slices not being drawn. The reason
+that is weak: in an instance model an object at the same XY one slice away is usually the *same*
+object continuing. `stitch2Dto3D` is built on precisely that premise - overlap between adjacent
+slices **is** its definition of one object - so gluing is right far more often than it is wrong, and
+where it is wrong the object count moves in the list and ++ctrl+z++ is one step. Against that, the
+cost of keeping it off `a` was a second gesture for the same intention, and a mode in which the key
+already under the user's hand quietly did the wrong thing.
+
+*(This section first recorded the opposite decision - `Connect` only - on that risk. The author's
+objection was that the 2D and 3D cases are one gesture and should not be two buttons.)*
+
+**No report on success.** Unlike `Compact`, this is a per-object action pressed hundreds of times in
+a session, and a modal box per press is what the cleanup filters were moved out of the window to
+avoid. The result is on screen and ++ctrl+z++ is one step. Reconsider if the automatic choice turns
+out to surprise in use; the refusals already speak through `localComplain`.
+
+Nine cases in `EditInstanceObjectsTest`. The two that pin the shape of it:
+`connectFromADrawingUsesWhatItCoversFirst`, a stroke laid across two objects in-plane with a third
+straddling it in Z, asserting the third is untouched; and `mergeFromADrawingIn2DStaysOnTheSlice`, the
+same stroke in 2D asserting it becomes a new object instead. Neither reading can drift into the other.
+
+### The window reopens as it was left (2026-09-11)
+
+`Mode3D`, `autoUpdateTable`, `pickByClick` and `useShortcuts` now live in
+`sessionSettings.instanceEditor` beside the cleanup and list settings, read back by
+`storedWindowState` and written by `rememberWindowState`. The defaults below are unchanged, so the
+first opening on a machine is exactly what [the section after this one](#the-window-opens-in-2d-2026-09-02)
+describes; it is the second that differs.
+
+Three things decide whether this is right or merely convenient:
+
+- **The takeovers are restored through `setPickMode` / `setShortcutMode`, never by writing the
+  checkbox.** The mouse and the keys are owned by controller state and the checkbox follows it. A
+  restored `pickByClick` that found no image document has to come back **off**, and only the method
+  knows that. It also means opening the window can set `disableSegmentation` and swap the image
+  document's `WindowButtonDownFcn` as a side effect of construction - accepted deliberately, because
+  the alternative is a checkbox that says the editor owns the mouse when it does not.
+- **The state is saved from the four callbacks, not from `closeWindow`.** What is kept is what the
+  user *chose*. `reassertPickMode` drops the takeover when a different document becomes active, and
+  that is not a decision to stop picking; saving at close would record it as one. It also survives a
+  window that goes away without closing cleanly.
+- **`Connectivity` is still restored as a stance, but now against the restored mode** rather than
+  against a window that always opened in 2D. The mode is read first, the item list follows it, and a
+  stored `26` comes back as `26` when the editor reopens in 3D and as `8` when it reopens in 2D.
+  This is the rule `mode3D_Callback` applies on every switch; it now runs once more, at construction.
+
+Deliberately **not** in the preferences file, for the reason the cleanup thresholds are not: these
+are how one proofreading run is being done, and a poor opening offer for the next dataset.
+
 ### The window opens in 2D (2026-09-02)
+
+*(Still the first-opening default; from 2026-09-11 a later opening restores the mode it was left in -
+see the section above.)*
 
 `Mode3D` now starts **off** in the controller, with `Connectivity` starting at 8/4 to match - the
 dropdown otherwise offers 26/6 while the operations run per slice. Only the editor's default moved;
@@ -777,7 +1098,7 @@ cannot do this at all"*, not *"the other mode does it differently"*:
 | slice only | `autoUpdateTable`, `updateTable` | the 2D list follows the shown slice; in 3D the list comes from the index and `Rebuild` is what renews it |
 
 **Connect was the one that mattered.** It was not merely useless in 2D - it was actively dishonest.
-`iPlanConnect` ends with `iObjectPixels(obj, id, index, other, timePoint, 0, true)`: `use3D` is
+`localPlanConnect` ends with `localObjectPixels(obj, id, index, other, timePoint, 0, true)`: `use3D` is
 hardcoded `true`, so the merge takes the **whole** of both objects through the entire stack whatever
 the checkbox says. An operation that appears to obey the mode and does not is worse than one that
 refuses, and unlike `CutAtSlice` there was no guard in `editInstanceObjects` to catch it. Disabling
@@ -807,7 +1128,7 @@ Asked by the author: does `Merge` already cover `Connect`, and `SplitBySelection
 
 So both buttons earn their place - but the question found something. **`Connect` degenerated into
 `Merge` whenever the two bounding boxes overlapped in Z, and said nothing about it.** The test at the
-top of `iPlanConnect` is a bounding-box test, not a proximity test, so two objects in opposite corners
+top of `localPlanConnect` is a bounding-box test, not a proximity test, so two objects in opposite corners
 of the volume that merely share a Z range took the degenerate path: measured, 490 -> 490 voxels,
 index 4 gone, and object 1 left as **two disconnected pieces**. That is the one outcome the operation
 exists to prevent, produced silently under the name "Connect".
@@ -817,13 +1138,13 @@ exists to prevent, produced silently under the name "Connect".
 Author's call after the measurements above: share the code, and fix the one place where the same
 gesture had two rules.
 
-**One definition of "the drawing".** `iDrawingExtent` replaces three copies of "read the Selection
-layer, find its extent". They had already drifted - `iObjectsUnderSelection` narrowed to the slices
-carrying the drawing and read labels across the full XY plane, `iDrawingToObject` computed the whole
+**One definition of "the drawing".** `localDrawingExtent` replaces three copies of "read the Selection
+layer, find its extent". They had already drifted - `localObjectsUnderSelection` narrowed to the slices
+carrying the drawing and read labels across the full XY plane, `localDrawingToObject` computed the whole
 box. Now both take the box, so the labels read is narrower than it was, and there is one place where
 the copy-on-write fast path of `getData3D` has to be preserved instead of three.
 
-**One rule for what a drawing means.** `iAbsorbDrawing` writes the drawn **background** to an object,
+**One rule for what a drawing means.** `localAbsorbDrawing` writes the drawn **background** to an object,
 and both gestures that need it now call it:
 
 | Gesture | Before | After |
@@ -837,9 +1158,9 @@ That last row is the line: the drawing is absorbed when it is what chose the obj
 merely happens to be lying there. `consumesSelection` already means exactly that, and for `Merge` it
 is `true` precisely when `derivedFromDrawing` is - so no new argument was needed to say it.
 
-**One merge.** `iMergeWrites` is Merge's whole body and Connect's last step. Connect had its own copy
+**One merge.** `localMergeWrites` is Merge's whole body and Connect's last step. Connect had its own copy
 with `use3D` hardcoded `true`, which is what made it ignore `Mode3D`; it now takes the parameter, and
-`iPlanConnect` refuses 2D outright with the same message shape `CutAtSlice` uses.
+`localPlanConnect` refuses 2D outright with the same message shape `CutAtSlice` uses.
 
 **Consequences worth knowing:**
 
@@ -850,8 +1171,8 @@ with `use3D` hardcoded `true`, which is what made it ignore `Mode3D`; it now tak
 - The drawing is read twice on a drawing-driven Merge: once to find the objects, once to absorb it.
   Both are the 3 ms reduction, not the 83 ms `find()`, and the alternative was threading the box
   through the dispatch as a tenth argument.
-- `iPlanConnect` returns `bridged`. When it is false and the two boxes cannot touch
-  (`iBoxesCanTouch`, a one-way test that never cries wolf), the user is told the objects were joined
+- `localPlanConnect` returns `bridged`. When it is false and the two boxes cannot touch
+  (`localBoxesCanTouch`, a one-way test that never cries wolf), the user is told the objects were joined
   but nothing was bridged. Not a refusal: two objects that genuinely touch have no gap to fill and
   joining them is the right answer.
 
@@ -893,7 +1214,10 @@ prediction stack. A small model will not show the things worth checking.
 
 | # | Do | Expect |
 |---|----|--------|
-| A1 | *Ribbon -> Model -> Model tools -> Instance editor* | Window opens to the left of MIB, in **2D** mode: `3D (whole object)` unticked, connectivity 8/4 |
+| A1 | *Ribbon -> Model -> Model tools -> Instance editor*, first time in this MIB session | Window opens to the left of MIB, in **2D** mode: `3D (whole object)` unticked, connectivity 8/4 |
+| A1a | Tick `3D (whole object)`, `Shortcuts` and `Pick objects by clicking`, untick the automatic list refresh, close the editor, reopen it | All four come back as they were. Then check the two takeovers really are live, not just ticked: press ++a++ over a selection and click an object. A checkbox that is on while the mouse or the keys are not actually held is the failure to watch for |
+| A1b | Reopen it with the image document closed, or on a buffer with no model | `Pick objects by clicking` comes back **off** rather than ticked-but-dead |
+| A1c | Set connectivity to the full neighbourhood in 3D, close, reopen | Still 3D and still full - `26`. Untick 3D, close, reopen: 2D and `8`, the same stance in the other mode's numbers |
 | A2 | Look at the status line | `Slice N: K objects...` - the list is the shown slice, and it says so without an index having been built |
 | A3 | Tick **3D (whole object)**, press **Rebuild**, look again | `N objects, highest index M`, green. Compare N with the object count the stitcher reported: same number |
 | A4 | Note how long that Rebuild took | The index build is one pass over the volume; a few seconds on a 100-slice stack. **If it is much worse than that, say so** - the whole design rests on this being affordable |
@@ -957,6 +1281,12 @@ Undo (++ctrl+z++) after **every** one of these and confirm the model returns exa
 | D5 | Move to a slice in the middle of an object, **Cut at slice** | Everything from that slice onwards becomes a new object |
 | D6 | **Cut at slice** on the object's first slice, and on a slice outside it | Refused with a message naming the object's slice range |
 | D7 | Two objects with a Z gap, **Connect** (`interpolate`) | Gap filled, both now one object with the smaller index |
+| D7a | In 3D, brush the gap between an object on z-1 and one on z+1, pick nothing, press ++a++ (or **Merge**) | The two are joined and the brushed area is part of them - one connected object with the smaller index. The same gesture as D1b, one slice further |
+| D7b | The same with the stroke slightly too wide, clipping the corner of a neighbour on z-1 | Only the object it mostly lands on is taken. Check the neighbour's voxel count in the list before and after |
+| D7c | Brush a shape whose far end reaches nothing, pick nothing, ++a++ | The object at the near end grows by the shape and keeps its index - no new index handed out. On empty space at both ends it becomes a new object instead (D1d) |
+| D7d | Brush a stroke straight across two objects **on the same slice**, pick nothing, ++a++ | Those two are joined, not whatever lies above and below the stroke. What the drawing covers is asked first |
+| D7e | The **same drawing as D7a**, but in 2D mode | It becomes a new object on that slice. The reach is a property of 3D mode, not of the gesture |
+| D7f | Repeat D7a with **Connect** instead of ++a++, nothing picked | Identical result - the two are the same code once nothing is picked, and `Connect Mode` is not consulted. Pick the two objects and it becomes the `interpolate`/`selection` operation again |
 | D8 | **Connect** across a gap that has a *third* object sitting in it | The third object is untouched. Check its voxel count in the list before and after |
 | D9 | Brush a bridge into the Selection layer, **Connect** (`selection`) | Only the brushed area is used |
 | D10 | **Connect** on three objects | Refused |
@@ -983,6 +1313,10 @@ What that has to look like:
 | E0 | Brush a break, pick nothing, **Split by selection** | The object under the drawing is split. No *"pick the objects to work on first"* |
 | E0b | Brush a line that crosses two objects, pick nothing, split | Both are cut. Then pick one of them first and repeat: only that one is cut |
 | E0c | Brush somewhere on background only, split | *"The Selection layer does not cover any object"*, and the drawing is still there to be moved |
+| E0d | Brush over the **whole** of one object, pick nothing, split | The object is removed and its index freed - no *"nothing would be left"*. ++ctrl+z++ brings it back |
+| E0e | The same in 2D, on an object spanning several slices | It goes from the shown slice only; the list still has it on the others, under the same number |
+| E0f | Pick an object by clicking, draw **nothing**, press ++s++ | The object is removed - the highlight in the Selection layer is what the key subtracts. It used to sit there unchanged while the operation reported success |
+| E0g | Pick an object, brush a break across it and a neighbour, press ++s++ | Only the picked one is cut, and it is **cut**, not removed. The pick stands in for the drawing only when there is no drawing |
 | E1 | Brush a break, then pick the object | The object lights up. The break is underneath it and the split below still works - this is the sequence that used to fail with *"the Selection layer covers the whole of object N"* |
 | E2 | Draw somewhere else in the dataset, then pick an object | The drawing is still there. Picking used to clear the whole layer, on every click |
 | E3 | Split by selection, then look at the Selection layer | The drawing that was used is gone; the rest of the layer is untouched |
@@ -996,7 +1330,9 @@ What that has to look like:
 |---|----|--------|
 | F1 | With the editor open, brush on the model in the main window | Status line turns red: *"Index is out of date"* |
 | F2 | Now run any operation | It rebuilds the index first, then acts - and acts on the **right** voxels |
-| F3 | Press ++ctrl+z++ | Status goes red again |
+| F3 | Press ++ctrl+z++ after a **brush stroke on the model** | Status goes red - a stroke leaves no repair note |
+| F3a | Press ++ctrl+z++ after an **editor operation** | Status stays green and the object count follows the undo. No rebuild, no pause: the undo entry carried the region. Press it again to redo - still green |
+| F3b | Time F3a on the largest model you have | Should be instant whatever the size. If it pauses, the note was not recognised and it fell back to a rebuild - the DeveloperMode line `repairIndexAfterUndo: index repaired over [...]` is what says which happened |
 | F4 | Press **Rebuild** | Green, with the object count matching the model |
 | F5 | Change time point on a 4D dataset | The list follows the shown time point |
 
@@ -1014,8 +1350,11 @@ is what a stale bounding box does, and it is silent.
 | G3b | Cancel the dialog | Nothing runs, and the previous values survive |
 | G3c | Set values through the gear button, then press **Cleanup** | The dialog opens on them; accepting cleans with them |
 | G3d | Close and reopen the editor | The dialog still opens on the last values - they live in `sessionSettings`, not in the window |
-| G4 | Press Cancel on the progress dialog mid-run | Model unchanged |
+| G3e | Let a cleanup finish | A box reports what was removed, what was absorbed and what is left, and reminds you that the numbers did not change |
+| G4 | Press Cancel on the progress dialog mid-run | Model unchanged, and the note goes to the command window rather than a box - you already know you cancelled |
 | G5 | **Compact** | Numbering becomes 1..N with no gaps |
+| G5a | Read the box it puts up | How many objects were renumbered, how many kept their number, and the highest index before and after. On a model with gaps the reclaimed count should equal the drop in the highest index |
+| G5b | **Compact** in 2D mode, then press Cancel on the progress dialog part way | The model is unchanged - the slice loop writes into a copy and only commits at the end |
 | G6 | ++ctrl+z++ after Cleanup and after Compact | Both restore fully |
 
 ### H. Persistence and batch
@@ -1038,6 +1377,7 @@ restarts on every slice. Untick **3D (whole object)** first.
 | I3 | Open the detection settings | No slice filter is offered at all - there is no slice count to filter on here |
 | I3a | **Cut at slice**, **Connect**, **Connect Mode** | All greyed out - both operations work along Z. Connect in particular used to stay live and merge the whole of both objects through the stack, ignoring the mode |
 | I3b | **Cleanup**, **Compact**, the gear button | Still live. They read the whole volume whatever the mode says, which is intended |
+| I3d | **Compact** here, on an unstitched model | Each slice is renumbered on its own: a slice holding 1, 3, 5 becomes 1, 2, 3. Check two slices with different gaps. The same press in 3D mode closes nothing on such a model, every value being in use somewhere - that is the difference the mode makes |
 | I3c | **Update list**, **Update the list on slice change** | Both live here; both greyed out in 3D mode |
 | I4 | Status line | *"Slice N: K objects; M in the whole model"* |
 | I5 | Move one slice with **Update the list on slice change** ticked | The list re-reads, and the status line names the new slice |
@@ -1062,7 +1402,7 @@ Group **C** is the same set of hazards for the mouse; this is the one for the ke
 | J2 | Hover a second object, ++ctrl+f++ | Both are selected - it adds, unlike a plain click |
 | J3 | Press ++a++ | They merge, exactly as the button does |
 | J3a | Brush on empty background and press ++a++; then brush onto an existing object and press ++a++ again | A new object, then that object grown - D1d and D1c from the keyboard. This is the whole point of the key: paint what the prediction missed and commit it without leaving the brush |
-| J3b | Pick two objects with ++ctrl+f++, press ++c++ | The list and the highlight are empty. A shape drawn in the Selection layer is **still there** - `c` clears the list, not the layer |
+| J3b | Pick two objects with ++ctrl+f++, draw a shape, press ++c++ | The list, the highlight **and** the drawing are all gone - `c` clears the list and the layer. ++shift+c++ clears the layer through the stack, as it does in MIB |
 | J4 | Brush a break, press ++s++ | The object under the drawing splits |
 | J5 | Press ++shift+a++ and ++shift+s++ | Same as without shift. **Nothing is added to or subtracted from the material** - that is the failure to watch for, and it is silent |
 | J6 | Press ++ctrl+a++, ++alt+s++, ++i++, ++c++ | MIB's own behaviour, untouched |

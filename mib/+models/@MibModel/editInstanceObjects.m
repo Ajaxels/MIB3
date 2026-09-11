@@ -29,12 +29,14 @@ function applied = editInstanceObjects(obj, BatchOptIn)
 %         of their indices; the others are freed. With ``ObjectIndices`` empty
 %         the objects are taken from the Selection layer - draw one shape across
 %         them all, and the background under that shape joins the survivor too,
-%         so the stroke closes the gap it was drawn across. A drawing that names
-%         fewer than two objects is not a failed merge but the same gesture over
-%         a smaller region, so it falls through to the two below: over nothing it
-%         becomes an object, over one object it joins that object. The rule is
-%         one rule - *the drawing belongs to the surviving object* - whatever it
-%         happens to cover
+%         so the stroke closes the gap it was drawn across. In ``Mode3D`` a
+%         shape covering nothing reaches one slice beyond either end of itself,
+%         which is how a gap along Z is closed: see ``localObjectsToJoin``. A drawing
+%         that reaches fewer than two objects is not a failed merge but the same
+%         gesture over a smaller region, so it falls through to the two below:
+%         over nothing it becomes an object, over one object it joins that
+%         object. The rule is one rule - *the drawing belongs to the surviving
+%         object* - whatever it happens to reach
 %       - ``'AddObject'`` - the voxels of the Selection layer take the next free
 %         index, so the drawing becomes a new object. ``ObjectIndices`` is not
 %         used
@@ -49,7 +51,10 @@ function applied = editInstanceObjects(obj, BatchOptIn)
 %         itself - everything it covers is split
 %       - ``'CutAtSlice'`` - voxels at or beyond the shown slice take a new index
 %       - ``'Connect'`` - bridge between two objects and merge them. Needs
-%         ``Mode3D``; the merge is the same one ``Merge`` performs
+%         ``Mode3D``; the merge is the same one ``Merge`` performs. With
+%         ``ObjectIndices`` empty it *is* a drawing-driven ``Merge``, down to the
+%         same code - ``ConnectMode`` is not consulted, the drawing being the
+%         bridge already. The two buttons differ only when objects are named
 %       - ``'Delete'`` - remove the objects
 %       - ``'Cleanup'`` - apply the noise filters to the whole model
 %       - ``'Compact'`` - renumber every object to a contiguous 1..N
@@ -57,8 +62,9 @@ function applied = editInstanceObjects(obj, BatchOptIn)
 %     - ``.ObjectIndices`` - char, comma-separated object indices to act on, e.g.
 %       ``'7, 12'``. Ignored by ``Cleanup``, ``Compact`` and ``AddObject``, and
 %       exactly one index for ``AddToObject``. Empty is an error everywhere except
-%       ``Merge`` and ``SplitBySelection``, where it means "whatever the Selection
-%       layer covers"; the drawing is cleared afterwards, having been used
+%       ``Merge``, ``SplitBySelection`` and ``Connect``, where it means "whatever
+%       the Selection layer covers" - and for ``Connect``, what it lies between;
+%       the drawing is cleared afterwards, having been used
 %     - ``.Mode3D`` - logical, operate on the whole volume (default) or only on
 %       the shown slice
 %     - ``.Connectivity`` - cell, ``'26'``/``'6'`` in 3D, ``'8'``/``'4'`` in 2D. A
@@ -180,7 +186,7 @@ dataset = obj.I{id};
 action = BatchOpt.Action{1};
 
 %% Guards
-if ~iGuard(obj, dataset)
+if ~localGuard(obj, dataset)
     return;
 end
 
@@ -207,15 +213,36 @@ wholeModelAction = ismember(action, {'Cleanup', 'Compact'});
 objectIds = [];
 derivedFromDrawing = false;
 if ~wholeModelAction && ~strcmp(action, 'AddObject')
-    objectIds = iParseIndices(BatchOpt.ObjectIndices);
-    % Both of these are gestures over a region, and the region already says
-    % which objects it means: the drawing is the cut for Split by selection and
-    % the choice of objects for Merge. So with nothing named, the drawing
-    % decides. Naming objects anyway restricts the action to them, which is what
-    % a line clipping a neighbour needs. Add an action here to give it the same
-    % form; every one of them is validated the same way below.
-    if isempty(objectIds) && ismember(action, {'Merge', 'SplitBySelection'})
-        [objectIds, problem, details] = iObjectsUnderSelection(obj, id, dataset, timePoint, BatchOpt.Mode3D);
+    objectIds = localParseIndices(BatchOpt.ObjectIndices);
+    % All three of these are gestures over a region, and the region already says
+    % which objects it means: the drawing is the cut for Split by selection, the
+    % choice of objects for Merge, and the bridge for Connect. So with nothing
+    % named, the drawing decides. Naming objects anyway restricts the action to
+    % them, which is what a line clipping a neighbour needs. Add an action here
+    % to give it the same form; every one of them is validated the same way below.
+    if isempty(objectIds) && ismember(action, {'Merge', 'SplitBySelection', 'Connect'})
+        if strcmp(action, 'SplitBySelection')
+            % A cut is what the drawing *covers*, and nothing else: voxels it
+            % merely lies against are not being removed from anything.
+            [objectIds, problem, details] = localObjectsUnderSelection(obj, id, dataset, timePoint, BatchOpt.Mode3D);
+        elseif strcmp(action, 'Connect') && ~BatchOpt.Mode3D
+            problem = 'Connect needs 3D mode - a gap along Z cannot be bridged inside a single slice.';
+            details = {};
+        else
+            % Joining is what the drawing *reaches*, which in 3D includes the
+            % slice beyond either end of it - see localObjectsToJoin.
+            [objectIds, problem, details] = localObjectsToJoin(obj, id, dataset, timePoint, BatchOpt.Mode3D);
+
+            % With the objects in hand there is nothing of Connect's own left to
+            % do: joining them and giving them the background drawn between them
+            % is a drawing-driven Merge exactly - the same two writes in the
+            % other order - so it takes that path rather than localPlanConnect, and
+            % the ConnectMode dropdown is left alone instead of being switched
+            % to 'selection' behind the user. The BatchOpt that goes out on
+            % SyncBatch still says Connect, so replaying the protocol lands here
+            % again and produces the same thing.
+            action = 'Merge';
+        end
 
         % Something was drawn, but on nothing. What that means depends on the
         % action: there is nothing to cut, but "make this one object" still
@@ -236,20 +263,34 @@ if ~wholeModelAction && ~strcmp(action, 'AddObject')
             action = 'AddToObject';
         end
         if ~isempty(problem)
-            iComplain(obj, problem, 'Instance editor', details);
+            localComplain(obj, problem, 'Instance editor', details);
             notify(obj, 'StopProtocol');
             return;
         end
         derivedFromDrawing = true;
     end
     if ~strcmp(action, 'AddObject')
-        [objectIds, problem] = iValidateIndices(objectIds, index, action);
+        [objectIds, problem] = localValidateIndices(objectIds, index, action);
         if ~isempty(problem)
-            iComplain(obj, problem, 'Instance editor');
+            localComplain(obj, problem, 'Instance editor');
             notify(obj, 'StopProtocol');
             return;
         end
     end
+end
+
+% Objects named and nothing drawn anywhere: the pick *is* the selection. The
+% editor paints the picked objects into the Selection layer to highlight them, so
+% what is on screen is the same picture as a drawing covering the whole of an
+% object - which subtracts the whole of it. Leaving this case to fall through to
+% a split that finds nothing to cut was the one reading that matched neither the
+% screen nor the meaning 's' carries, and it already contradicted the refusal
+% message for the empty case, which offers picking as the alternative to drawing.
+% The highlight is released before any operation runs, so the layer really is
+% empty here rather than holding the objects being asked about.
+if strcmp(action, 'SplitBySelection') && ~derivedFromDrawing && ...
+        isempty(localDrawingExtent(obj, id, dataset, timePoint, BatchOpt.Mode3D))
+    action = 'Delete';
 end
 
 %% Dispatch
@@ -261,15 +302,15 @@ consumesSelection = derivedFromDrawing || ...
 
 switch action
     case {'Cleanup', 'Compact'}
-        done = iWholeModelAction(obj, id, action, BatchOpt, batchModeSwitch);
+        done = localWholeModelAction(obj, id, action, BatchOpt, batchModeSwitch);
     case {'AddObject', 'AddToObject'}
         % An empty target means "a new index"; the two differ in nothing else.
         target = [];
         if strcmp(action, 'AddToObject'); target = objectIds; end
-        done = iDrawingToObject(obj, id, dataset, index, timePoint, BatchOpt, ...
+        done = localDrawingToObject(obj, id, dataset, index, timePoint, BatchOpt, ...
             batchModeSwitch, consumesSelection, target);
     otherwise
-        done = iObjectAction(obj, id, action, objectIds, index, timePoint, ...
+        done = localObjectAction(obj, id, action, objectIds, index, timePoint, ...
             BatchOpt, batchModeSwitch, consumesSelection);
 end
 if ~done; notify(obj, 'StopProtocol'); return; end
@@ -282,38 +323,38 @@ notify(obj, 'SyncBatch', core.ToggleEventData(rmfield(BatchOpt, 'id')));
 end
 
 % =====================================================================
-function ok = iGuard(obj, dataset)
+function ok = localGuard(obj, dataset)
 % Reject the dataset and model types this editor cannot work on, each with a
 % message saying what to do instead. A silent return would report success for
 % work that never happened.
 ok = false;
 
 if strcmp(dataset.datasetType, 'Virtual')
-    iComplain(obj, 'Not available in virtual stacking mode!', 'Virtual mode', ...
+    localComplain(obj, 'Not available in virtual stacking mode!', 'Virtual mode', ...
         {'Instance editing requires memory-resident mode. Please switch to standard mode and try again.'});
     notify(obj, 'StopProtocol');
     return;
 end
 if dataset.datasetType(1) == 'B'
-    iComplain(obj, 'Not available for BigData datasets!', 'BigData mode', ...
+    localComplain(obj, 'Not available for BigData datasets!', 'BigData mode', ...
         {'BigData models are bit-packed at 63 materials and cannot hold an instance model.'});
     notify(obj, 'StopProtocol');
     return;
 end
 if dataset.enableSelection == 0
-    iComplain(obj, 'The models are switched off!', 'Models are disabled', ...
+    localComplain(obj, 'The models are switched off!', 'Models are disabled', ...
         {'Please enable the "Enable selection" option in Preferences (Ribbon -> Home -> Preferences) and try again.'});
     notify(obj, 'StopProtocol');
     return;
 end
 if ~dataset.modelExist
-    iComplain(obj, 'No model exists!', 'No model', ...
+    localComplain(obj, 'No model exists!', 'No model', ...
         {'Please load or create an instance model first.'});
     notify(obj, 'StopProtocol');
     return;
 end
 if dataset.labels.maxMaterials < 65535
-    iComplain(obj, 'Not an instance model!', 'Wrong model type', ...
+    localComplain(obj, 'Not an instance model!', 'Wrong model type', ...
         {'The instance editor works on 65535 and 4294967295 model types, where every object has its own index.', ...
          'Convert the model first: Ribbon -> Model -> Convert type.'});
     notify(obj, 'StopProtocol');
@@ -323,7 +364,7 @@ ok = true;
 end
 
 % =====================================================================
-function iComplain(obj, message, title, details)
+function localComplain(obj, message, title, details)
 % Tell the user why nothing happened.
 %
 % A message box needs a window to sit on. With none - a batch protocol, or a
@@ -346,13 +387,54 @@ end
 if isempty(details); details = {''}; end
 dlgOpt.MsgBoxOnly  = true;
 dlgOpt.Icon        = 'puffin_warning';
+dlgOpt.HeaderLines = 2;
+dlgOpt.mibPath     = obj.mibPath;
+utils.dlgs.inputUniversalDlg(parent, message, {''}, details, title, dlgOpt);
+end
+
+% =====================================================================
+function localReport(obj, message, title, details, allowDialog)
+% Tell the user what an operation did.
+%
+% The counterpart of localComplain for a result rather than a refusal. Compact is
+% the reason it exists: it rewrites every number the user has been navigating by
+% and changes nothing they can see, so a line in the command window behind the
+% application window is not where that belongs.
+%
+% It carries the same parent guard, for the same reason - with no window, a
+% batch protocol or the test suite would get a modal dialog and nothing to
+% dismiss it - and two differences from localComplain:
+%
+% - the fallback goes to **stdout**, not stderr: work done is not an error, and
+%   the tests read the figures from there
+% - a caller running under a batch protocol passes ``allowDialog`` false, so a
+%   protocol looping over datasets is not stopped by a box per iteration
+%
+% Input Arguments:
+%   - **allowDialog** - logical, false forces the console even when a parent
+%     window exists
+if nargin < 5; allowDialog = true; end
+if nargin < 4; details = {}; end
+
+parent = obj.getProgressBarParent();
+if ~allowDialog || isempty(parent) || ~all(isvalid(parent))
+    fprintf('Instance editor: %s\n', message);
+    for k = 1:numel(details)
+        fprintf('    %s\n', details{k});
+    end
+    return;
+end
+
+if isempty(details); details = {''}; end
+dlgOpt.MsgBoxOnly  = true;
+dlgOpt.Icon        = 'puffin_info';
 dlgOpt.HeaderLines = 1;
 dlgOpt.mibPath     = obj.mibPath;
 utils.dlgs.inputUniversalDlg(parent, message, {''}, details, title, dlgOpt);
 end
 
 % =====================================================================
-function indices = iParseIndices(text)
+function indices = localParseIndices(text)
 % '7, 12' -> [7 12]. Accepts commas, semicolons and whitespace.
 if isnumeric(text); indices = double(text(:))'; return; end
 indices = str2double(strsplit(strtrim(text), {',', ';', ' '}));
@@ -360,13 +442,13 @@ indices = indices(~isnan(indices));
 end
 
 % =====================================================================
-function [box, drawn] = iDrawingExtent(obj, id, dataset, timePoint, use3D)
+function [box, drawn] = localDrawingExtent(obj, id, dataset, timePoint, use3D)
 % Where the drawing is, and what it is.
 %
 % The single definition of "the region the user drew", shared by everything that
 % takes the Selection layer as input: which objects it covers
-% (``iObjectsUnderSelection``), the object it becomes (``iDrawingToObject``) and
-% the background it hands to a merge or a bridge (``iAbsorbDrawing``). Each of
+% (``localObjectsUnderSelection``), the object it becomes (``localDrawingToObject``) and
+% the background it hands to a merge or a bridge (``localAbsorbDrawing``). Each of
 % those had its own copy, and they had already drifted - one narrowed to the
 % slices carrying the drawing, the other to its full box.
 %
@@ -408,7 +490,7 @@ drawn = selectionVolume(rowsUsed(1):rowsUsed(end), colsUsed(1):colsUsed(end), ..
 end
 
 % =====================================================================
-function [writes, box] = iAbsorbDrawing(obj, id, dataset, timePoint, use3D, value)
+function [writes, box] = localAbsorbDrawing(obj, id, dataset, timePoint, use3D, value)
 % Give the drawn background voxels to an object.
 %
 % The shared half of two gestures that used to be written out twice: a Merge
@@ -429,19 +511,19 @@ function [writes, box] = iAbsorbDrawing(obj, id, dataset, timePoint, use3D, valu
 %     whether or not anything is written, so the caller can tell "nothing was
 %     drawn" from "everything drawn is already an object"
 writes = struct('pixelIdxList', {}, 'value', {});
-[box, drawn] = iDrawingExtent(obj, id, dataset, timePoint, use3D);
+[box, drawn] = localDrawingExtent(obj, id, dataset, timePoint, use3D);
 if isempty(box); return; end
 
-free = drawn & (iReadBox(obj, id, 'labels', timePoint, box) == 0);
+free = drawn & (localReadBox(obj, id, 'labels', timePoint, box) == 0);
 if ~any(free, 'all'); return; end
 
 writes(end+1) = struct(...
-    'pixelIdxList', iCropToFull(obj, id, box, find(free), timePoint), ...
+    'pixelIdxList', localCropToFull(obj, id, box, find(free), timePoint), ...
     'value', value);
 end
 
 % =====================================================================
-function [objectIds, problem, details] = iObjectsUnderSelection(obj, id, dataset, timePoint, use3D)
+function [objectIds, problem, details] = localObjectsUnderSelection(obj, id, dataset, timePoint, use3D)
 % Which objects the current drawing sits on.
 %
 % Input Arguments:
@@ -454,25 +536,104 @@ function [objectIds, problem, details] = iObjectsUnderSelection(obj, id, dataset
 %     action, and Merge turns it into a new object
 %   - **problem** - char, why nothing can be done; empty when there is no problem
 %   - **details** - cell array of extra lines for the message box, in the shape
-%     ``iComplain`` takes them
+%     ``localComplain`` takes them
 objectIds = [];
 problem = '';
 details = {};
 
-[box, drawn] = iDrawingExtent(obj, id, dataset, timePoint, use3D);
+[box, drawn] = localDrawingExtent(obj, id, dataset, timePoint, use3D);
 if isempty(box)
     problem = 'The Selection layer is empty.';
     details = {'Draw the break into it first, or pick the objects from the list.'};
     return;
 end
 
-labelsBlock = iReadBox(obj, id, 'labels', timePoint, box);
+labelsBlock = localReadBox(obj, id, 'labels', timePoint, box);
 objectIds = double(unique(labelsBlock(drawn)))';
 objectIds = objectIds(objectIds > 0);
 end
 
 % =====================================================================
-function done = iDrawingToObject(obj, id, dataset, index, timePoint, BatchOpt, batchModeSwitch, consumesSelection, targetId)
+function [objectIds, problem, details] = localObjectsToJoin(obj, id, dataset, timePoint, use3D)
+% Which objects the current drawing joins.
+%
+% The counterpart of ``localObjectsUnderSelection``, and the difference between them
+% is the whole of this function. A **cut** is what the drawing covers: voxels it
+% merely lies against are not being taken out of anything. A **join** is what the
+% drawing reaches, and in a volume a stroke reaches further than the voxels it
+% sits on - the object it was drawn to connect to is on the next slice, where
+% there is nothing painted at all.
+%
+% So: what it covers, and failing that, what lies one slice beyond either end of
+% it. In 2D the second half is skipped and this is ``localObjectsUnderSelection``
+% exactly, which is right - there is no next slice in a single-slice mode.
+%
+% **What you can see, you get all of; what you cannot see, you get one of.**
+% Contact on a slice the user drew on is deliberate and visible on screen, so
+% every object there counts, as it always has. The slice beyond the stroke is
+% not drawn and not on screen: a stroke clipping the corner of a neighbour there
+% is the ordinary case, and silently swallowing that neighbour is the one
+% outcome this must not produce. Each end therefore contributes at most one
+% object, the one with the largest footprint under the stroke - not the largest
+% object, which would let something big elsewhere in the box beat the one
+% actually being pointed at.
+%
+% Exactly one slice beyond, never two. The drawing has to abut what it joins,
+% which keeps the choice something the user can see before pressing the button
+% rather than a search reaching for the nearest candidate.
+%
+% Output Arguments:
+%   - **objectIds** - the objects to join, or empty when the drawing reaches
+%     none. Empty without a ``problem`` is a finding rather than a fault, as in
+%     ``localObjectsUnderSelection`` - the caller turns it into a new object
+objectIds = [];
+problem = '';
+details = {};
+
+[box, drawn] = localDrawingExtent(obj, id, dataset, timePoint, use3D);
+if isempty(box)
+    problem = 'The Selection layer is empty.';
+    details = {'Draw over the objects to join, or between them, first.'};
+    return;
+end
+
+labelsBlock = localReadBox(obj, id, 'labels', timePoint, box);
+objectIds = double(unique(labelsBlock(drawn)))';
+objectIds = objectIds(objectIds > 0);
+if ~isempty(objectIds) || ~use3D; return; end
+
+% Nothing under it, so look past either end: two single-slice reads over the
+% drawing's own in-plane box. What they are tested against is the drawn mask on
+% the outermost plane, not that box - a box would reach objects a diagonal
+% stroke never came near.
+depth = dataset.image.depth;
+below = localDominantNeighbour(obj, id, timePoint, box, drawn(:, :, 1),   box(5) - 1, depth);
+above = localDominantNeighbour(obj, id, timePoint, box, drawn(:, :, end), box(6) + 1, depth);
+objectIds = unique([below, above]);
+end
+
+% =====================================================================
+function objectId = localDominantNeighbour(obj, id, timePoint, box, footprint, sliceNumber, depth)
+% The object with the most voxels under ``footprint`` on slice ``sliceNumber``.
+%
+% Empty when that slice is outside the stack or carries nothing under the
+% stroke. Ties go to the lowest index, so the answer cannot depend on the order
+% the values happened to come back in.
+objectId = [];
+if sliceNumber < 1 || sliceNumber > depth; return; end
+
+slice = localReadBox(obj, id, 'labels', timePoint, [box(1:4), sliceNumber, sliceNumber]);
+values = double(slice(footprint));
+values = values(values > 0);
+if isempty(values); return; end
+
+[counts, candidates] = groupcounts(values);
+[~, winner] = max(counts);      % groupcounts sorts its groups, so a tie takes the lowest
+objectId = candidates(winner);
+end
+
+% =====================================================================
+function done = localDrawingToObject(obj, id, dataset, index, timePoint, BatchOpt, batchModeSwitch, consumesSelection, targetId)
 % Write the drawing into the model as an object, new or existing.
 %
 % What MIB's own ``a`` does to a material, done to an instance model. Reached
@@ -495,9 +656,9 @@ function done = iDrawingToObject(obj, id, dataset, index, timePoint, BatchOpt, b
 done = false;
 use3D = BatchOpt.Mode3D;
 
-[box, drawn] = iDrawingExtent(obj, id, dataset, timePoint, use3D);
+[box, drawn] = localDrawingExtent(obj, id, dataset, timePoint, use3D);
 if isempty(box)
-    iComplain(obj, 'The Selection layer is empty.', 'Instance editor', ...
+    localComplain(obj, 'The Selection layer is empty.', 'Instance editor', ...
         {'Draw the new object into it first.'});
     return;
 end
@@ -507,20 +668,22 @@ end
 % given, so a box holding only the new part would report only the new part.
 refreshBox = box;
 if isempty(targetId)
-    [targetId, problem] = iAllocateIndices(obj, id, index, 1);
-    if ~isempty(problem); iComplain(obj, problem, 'Instance editor'); return; end
+    [targetId, problem] = localAllocateIndices(obj, id, index, 1);
+    if ~isempty(problem); localComplain(obj, problem, 'Instance editor'); return; end
 else
-    refreshBox = iCoverBox(iUnionBox(index, targetId), box);
+    refreshBox = localCoverBox(localUnionBox(index, targetId), box);
 end
 
-% Only the drawn voxels change, so the undo step covers the drawing alone.
-if ~batchModeSwitch
-    obj.backup('labels', 1, iBoxOptions(box, id));
-end
-
-iWriteLabels(obj, id, iCropToFull(obj, id, box, find(drawn), timePoint), targetId);
-
+% Only the drawn voxels change, so the undo step covers the drawing alone. The
+% rescan box is the one that travels with it, for the reason above: it is what
+% the object's statistics have to be recomputed from, in either direction.
 refresh = struct('timePoint', timePoint, 'objectIds', targetId, 'bbox', refreshBox);
+if ~batchModeSwitch
+    obj.backup('labels', 1, localUndoRepairOptions(box, id, refresh));
+end
+
+localWriteLabels(obj, id, localCropToFull(obj, id, box, find(drawn), timePoint), targetId);
+
 dataset.buildInstanceIndex(refresh);
 
 if consumesSelection
@@ -530,7 +693,7 @@ done = true;
 end
 
 % =====================================================================
-function [objectIds, problem] = iValidateIndices(objectIds, index, action)
+function [objectIds, problem] = localValidateIndices(objectIds, index, action)
 % Every action has a minimum number of objects it can act on, and no action can
 % act on an index that is not in the model.
 problem = '';
@@ -564,7 +727,7 @@ end
 end
 
 % =====================================================================
-function connectivity = iConnectivity(BatchOpt)
+function connectivity = localConnectivity(BatchOpt)
 % One dropdown serves both modes, so a value belonging to the other one is
 % translated rather than rejected: 26 <-> 8 (full) and 6 <-> 4 (face only).
 value = str2double(BatchOpt.Connectivity{1});
@@ -582,7 +745,7 @@ end
 end
 
 % =====================================================================
-function box = iUnionBox(index, objectIds)
+function box = localUnionBox(index, objectIds)
 % Smallest box containing all of the given objects
 boxes = double(index.bbox(objectIds, :));
 box = [min(boxes(:, 1)), max(boxes(:, 2)), ...
@@ -591,14 +754,14 @@ box = [min(boxes(:, 1)), max(boxes(:, 2)), ...
 end
 
 % =====================================================================
-function box = iCoverBox(box, other)
+function box = localCoverBox(box, other)
 % Smallest box containing both
 box([1 3 5]) = min(box([1 3 5]), other([1 3 5]));
 box([2 4 6]) = max(box([2 4 6]), other([2 4 6]));
 end
 
 % =====================================================================
-function tf = iBoxesCanTouch(boxA, boxB)
+function tf = localBoxesCanTouch(boxA, boxB)
 % Could two objects with these boxes be in contact at all?
 %
 % One-way: ``false`` means they are certainly apart, ``true`` only that the
@@ -611,7 +774,7 @@ tf = boxA(1) <= boxB(2) + 1 && boxB(1) <= boxA(2) + 1 && ...
 end
 
 % =====================================================================
-function box = iClipToSlice(box, sliceNumber, use3D)
+function box = localClipToSlice(box, sliceNumber, use3D)
 % In 2-D mode every read, write, backup and rescan is confined to one slice
 if ~use3D
     box(5:6) = [sliceNumber, sliceNumber];
@@ -619,18 +782,60 @@ end
 end
 
 % =====================================================================
-function options = iBoxOptions(box, id)
+function options = localBoxOptions(box, id)
 options = struct('blockModeSwitch', 0, 'id', id, ...
     'y', box(1:2), 'x', box(3:4), 'z', box(5:6));
 end
 
 % =====================================================================
-function sub = iReadBox(obj, id, layer, timePoint, box)
-sub = cell2mat(obj.getData3D(layer, timePoint, 3, NaN, iBoxOptions(box, id)));
+function options = localUndoRepairOptions(box, id, refresh)
+% Backup options carrying the note that lets an Undo repair the object index
+% instead of invalidating it.
+%
+% Undoing an edit rewinds voxels without telling ``MibDataset.instanceIndex``,
+% so the index has to be treated as stale - and rebuilding it is a pass over the
+% whole volume, which is the one cost in this tool that grows with the dataset
+% rather than with the edit. But an edit here backs up **one bounding box**, and
+% ``MibModel.undo`` restores exactly that box, so the undo is as local as the
+% operation was and the index could be repaired over the same region for the
+% same cost as the forward edit.
+%
+% What was missing was the region at undo time. It travels here: ``MibBackup``
+% keeps the options struct alongside the stored data, so the note follows its
+% entry through the shifts of the ring buffer, and ``MibModel.undo`` hands the
+% *same* options to ``replaceItem`` when it fills the redo slot. Two consequences
+% worth having:
+%
+% - no parallel stack in the controller to drift out of step with an undo
+%   history it does not own - which would fail by repairing the wrong box, the
+%   one failure this whole design exists to prevent
+% - re-measuring a region is direction-agnostic, so undo and redo both work
+%   from one note. Restoring a saved copy of the index rows instead would have
+%   had to know which way it went
+%
+% ``controllers.InstanceEditor.repairIndexAfterUndo`` reads it back and falls
+% through to a full rebuild whenever it is absent or does not describe the
+% dataset in front of the user.
+%
+% Input Arguments:
+%   - **box** - ``[y1 y2 x1 x2 z1 z2]`` region to back up
+%   - **id** - dataset index
+%   - **refresh** - the ``buildInstanceIndex`` options of the forward edit,
+%     ``.timePoint`` / ``.objectIds`` / ``.bbox``. Its bbox is the region the
+%     statistics must be recomputed from, which is not always the backed-up box:
+%     growing an object writes only the drawing but has to be measured over the
+%     whole of it.
+options = localBoxOptions(box, id);
+options.instanceIndexRepair = refresh;
 end
 
 % =====================================================================
-function pixelIdxList = iCropToFull(obj, id, box, cropIndices, timePoint)
+function sub = localReadBox(obj, id, layer, timePoint, box)
+sub = cell2mat(obj.getData3D(layer, timePoint, 3, NaN, localBoxOptions(box, id)));
+end
+
+% =====================================================================
+function pixelIdxList = localCropToFull(obj, id, box, cropIndices, timePoint)
 % Crop-local linear indices to indices into MibImage.data.
 %
 % convertPixelIdxListCrop2Full maps into the [height width depth] volume of one
@@ -645,7 +850,7 @@ pixelIdxList = pixelIdxList + (timePoint - 1) * frameStride;
 end
 
 % =====================================================================
-function iWriteLabels(obj, id, pixelIdxList, value)
+function localWriteLabels(obj, id, pixelIdxList, value)
 % Write one label value at a list of full-volume linear indices
 if isempty(pixelIdxList); return; end
 labelValues = zeros(numel(pixelIdxList), 1, obj.I{id}.labels.dataClass) + value;
@@ -653,7 +858,7 @@ obj.I{id}.setPixelIdxList('labels', labelValues, pixelIdxList);
 end
 
 % =====================================================================
-function [newIds, problem] = iAllocateIndices(obj, id, index, count)
+function [newIds, problem] = localAllocateIndices(obj, id, index, count)
 % Hand out unused label values, reusing gaps before extending the range.
 %
 % Deliberately not core.MibDataset.addMaterial: its large-model branch calls
@@ -691,7 +896,7 @@ obj.I{id}.labels.materialsCount = max(obj.I{id}.labels.materialsCount, highest);
 end
 
 % =====================================================================
-function done = iObjectAction(obj, id, action, objectIds, index, timePoint, BatchOpt, batchModeSwitch, consumesSelection)
+function done = localObjectAction(obj, id, action, objectIds, index, timePoint, BatchOpt, batchModeSwitch, consumesSelection)
 % The per-object operations. All of them read, back up, write and rescan inside
 % one bounding box, which is what keeps them interactive on a large model.
 %
@@ -706,11 +911,11 @@ sliceNumber = dataset.getCurrentSliceNumber();
 % Objects whose extent may change, and the region in which voxels change. Both
 % start from the selection and are widened by the individual actions.
 touchedIds = objectIds;
-box = iClipToSlice(iUnionBox(index, objectIds), sliceNumber, use3D);
+box = localClipToSlice(localUnionBox(index, objectIds), sliceNumber, use3D);
 
 if use3D == false && (sliceNumber < min(index.bbox(objectIds, 5)) || ...
         sliceNumber > max(index.bbox(objectIds, 6)))
-    iComplain(obj, 'None of the selected objects is present on the shown slice.', 'Instance editor');
+    localComplain(obj, 'None of the selected objects is present on the shown slice.', 'Instance editor');
     return;
 end
 
@@ -722,7 +927,7 @@ bridged = false;
 
 switch action
     case 'Merge'
-        [writes, survivor] = iMergeWrites(obj, id, index, objectIds, timePoint, sliceNumber, use3D);
+        [writes, survivor] = localMergeWrites(obj, id, index, objectIds, timePoint, sliceNumber, use3D);
 
         % The drawing chose these objects, so it is part of the gesture and not
         % merely the thing that pointed at them: the background under it joins
@@ -731,50 +936,52 @@ switch action
         % grows by it - so the rule no longer changes with how many objects
         % happen to lie under the stroke.
         if consumesSelection
-            [absorbed, drawingBox] = iAbsorbDrawing(obj, id, dataset, timePoint, use3D, survivor);
+            [absorbed, drawingBox] = localAbsorbDrawing(obj, id, dataset, timePoint, use3D, survivor);
             if ~isempty(absorbed)
                 writes = [writes, absorbed];
-                box = iCoverBox(box, drawingBox);
+                box = localCoverBox(box, drawingBox);
             end
         end
 
     case {'SplitComponents', 'SplitBySelection', 'CutAtSlice'}
-        [writes, touchedIds, problem] = iPlanSplit(obj, id, action, objectIds, index, ...
+        [writes, touchedIds, problem] = localPlanSplit(obj, id, action, objectIds, index, ...
             timePoint, sliceNumber, use3D, BatchOpt);
-        if ~isempty(problem); iComplain(obj, problem, 'Instance editor'); return; end
+        if ~isempty(problem); localComplain(obj, problem, 'Instance editor'); return; end
 
     case 'Connect'
         % Connect is a bridge followed by a merge, and the merge is the same one
         % Merge does - it used to carry its own copy, with use3D hardcoded true.
-        [writes, box, bridged, problem] = iPlanConnect(obj, id, dataset, objectIds, ...
+        [writes, box, bridged, problem] = localPlanConnect(obj, id, dataset, objectIds, ...
             index, timePoint, BatchOpt);
-        if ~isempty(problem); iComplain(obj, problem, 'Instance editor'); return; end
-        writes = [writes, iMergeWrites(obj, id, index, objectIds, timePoint, sliceNumber, use3D)];
+        if ~isempty(problem); localComplain(obj, problem, 'Instance editor'); return; end
+        writes = [writes, localMergeWrites(obj, id, index, objectIds, timePoint, sliceNumber, use3D)];
 
     case 'Delete'
         for objectId = objectIds
-            pixels = iObjectPixels(obj, id, index, objectId, timePoint, sliceNumber, use3D);
+            pixels = localObjectPixels(obj, id, index, objectId, timePoint, sliceNumber, use3D);
             writes(end+1) = struct('pixelIdxList', pixels, 'value', 0); %#ok<AGROW>
         end
 end
 
 if isempty(writes)
-    iComplain(obj, 'There is nothing to change for this selection.', 'Instance editor');
+    localComplain(obj, 'There is nothing to change for this selection.', 'Instance editor');
     return;
 end
 
 %% Apply
 % Undo covers only the affected box. A whole-volume snapshot would exhaust
-% MibBackup's 3D step budget within a few clicks and stall each of them.
+% MibBackup's 3D step budget within a few clicks and stall each of them. The
+% same region is attached to the undo entry, so that undoing this operation
+% repairs the index over it instead of invalidating the whole thing.
+refresh = struct('timePoint', timePoint, 'objectIds', unique(touchedIds), 'bbox', box);
 if ~batchModeSwitch
-    obj.backup('labels', 1, iBoxOptions(box, id));
+    obj.backup('labels', 1, localUndoRepairOptions(box, id, refresh));
 end
 for w = 1:numel(writes)
-    iWriteLabels(obj, id, writes(w).pixelIdxList, writes(w).value);
+    localWriteLabels(obj, id, writes(w).pixelIdxList, writes(w).value);
 end
 
 %% Repair the index over the same region
-refresh = struct('timePoint', timePoint, 'objectIds', unique(touchedIds), 'bbox', box);
 dataset.buildInstanceIndex(refresh);
 
 % The drawing has done its job, so it is used up. Leaving it would let a shape
@@ -792,8 +999,8 @@ end
 % the editor to repair. Doing that in silence was the defect: it looked like a
 % Connect and was a Merge.
 if strcmp(action, 'Connect') && ~bridged && ...
-        ~iBoxesCanTouch(double(index.bbox(objectIds(1), :)), double(index.bbox(objectIds(2), :)))
-    iComplain(obj, sprintf('Objects %d and %d were joined, but nothing was bridged.', ...
+        ~localBoxesCanTouch(double(index.bbox(objectIds(1), :)), double(index.bbox(objectIds(2), :)))
+    localComplain(obj, sprintf('Objects %d and %d were joined, but nothing was bridged.', ...
         objectIds(1), objectIds(2)), 'Connect', ...
         {'They overlap in Z, so "interpolate" had no gap to fill, and they are too far apart to be touching.', ...
          'The result is one index in two separate pieces. To join them properly, draw the bridge and use the "selection" mode.'});
@@ -803,7 +1010,7 @@ done = true;
 end
 
 % =====================================================================
-function [writes, survivor] = iMergeWrites(obj, id, index, objectIds, timePoint, sliceNumber, use3D)
+function [writes, survivor] = localMergeWrites(obj, id, index, objectIds, timePoint, sliceNumber, use3D)
 % Relabel every object but one to the smallest index among them.
 %
 % The whole of Merge, and the last step of Connect. The smallest index wins by
@@ -812,35 +1019,35 @@ writes = struct('pixelIdxList', {}, 'value', {});
 survivor = min(objectIds);
 for objectId = setdiff(objectIds, survivor)
     writes(end+1) = struct(...
-        'pixelIdxList', iObjectPixels(obj, id, index, objectId, timePoint, sliceNumber, use3D), ...
+        'pixelIdxList', localObjectPixels(obj, id, index, objectId, timePoint, sliceNumber, use3D), ...
         'value', survivor); %#ok<AGROW>
 end
 end
 
 % =====================================================================
-function pixels = iObjectPixels(obj, id, index, objectId, timePoint, sliceNumber, use3D)
+function pixels = localObjectPixels(obj, id, index, objectId, timePoint, sliceNumber, use3D)
 % Full-volume linear indices of one object, found inside its own bounding box
-box = iClipToSlice(double(index.bbox(objectId, :)), sliceNumber, use3D);
-sub = iReadBox(obj, id, 'labels', timePoint, box);
-pixels = iCropToFull(obj, id, box, find(sub == objectId), timePoint);
+box = localClipToSlice(double(index.bbox(objectId, :)), sliceNumber, use3D);
+sub = localReadBox(obj, id, 'labels', timePoint, box);
+pixels = localCropToFull(obj, id, box, find(sub == objectId), timePoint);
 end
 
 % =====================================================================
-function [writes, touchedIds, problem] = iPlanSplit(obj, id, action, objectIds, index, timePoint, sliceNumber, use3D, BatchOpt)
+function [writes, touchedIds, problem] = localPlanSplit(obj, id, action, objectIds, index, timePoint, sliceNumber, use3D, BatchOpt)
 % Plan the three splitting actions. They differ only in how the object is cut;
 % the allocation of new indices is common.
 writes = struct('pixelIdxList', {}, 'value', {});
 touchedIds = objectIds;
 problem = '';
-connectivity = iConnectivity(BatchOpt);
+connectivity = localConnectivity(BatchOpt);
 
 % A split cannot reuse an index it is about to free, so allocation walks a
 % working copy of the index that is updated as pieces are handed out.
 workingIndex = index;
 
 for objectId = objectIds
-    box = iClipToSlice(double(index.bbox(objectId, :)), sliceNumber, use3D);
-    sub = iReadBox(obj, id, 'labels', timePoint, box);
+    box = localClipToSlice(double(index.bbox(objectId, :)), sliceNumber, use3D);
+    sub = localReadBox(obj, id, 'labels', timePoint, box);
     objectMask = (sub == objectId);
     if ~any(objectMask, 'all'); continue; end
 
@@ -861,35 +1068,42 @@ for objectId = objectIds
             componentMasks = {objectMask & tail};
 
         case 'SplitBySelection'
-            selection = iReadBox(obj, id, 'selection', timePoint, box);
+            selection = localReadBox(obj, id, 'selection', timePoint, box);
             objectMask = objectMask & ~(selection > 0);
-            if ~any(objectMask, 'all')
-                problem = sprintf('The Selection layer covers the whole of object %d - nothing would be left.', objectId);
-                return;
-            end
-            componentMasks = iComponentMasks(objectMask, connectivity, use3D);
+            % Nothing left is an outcome, not a refusal. 's' means "subtract the
+            % Selection from the material" here exactly as it does everywhere
+            % else in MIB, so a drawing that covers the whole object subtracts
+            % the whole object - the same way 'a' grows an object or creates one
+            % according to what its drawing covers, rather than insisting the
+            % gesture be a merge. It needs no code of its own: localComponentMasks
+            % returns {} for an empty mask, so the removal queued just below is
+            % then the whole operation, and the index refresh frees the index in
+            % 3D. In 2D it searches the object's previous box as well, so an
+            % object cleared from the shown slice keeps its index and its voxels
+            % on the others.
+            componentMasks = localComponentMasks(objectMask, connectivity, use3D);
             % the voxels taken out by the Selection go back to background
             removed = (sub == objectId) & ~objectMask;
             writes(end+1) = struct(...
-                'pixelIdxList', iCropToFull(obj, id, box, find(removed), timePoint), ...
+                'pixelIdxList', localCropToFull(obj, id, box, find(removed), timePoint), ...
                 'value', 0); %#ok<AGROW>
 
         otherwise   % SplitComponents
-            componentMasks = iComponentMasks(objectMask, connectivity, use3D);
+            componentMasks = localComponentMasks(objectMask, connectivity, use3D);
     end
 
-    % iComponentMasks returns every component except the largest, which keeps
+    % localComponentMasks returns every component except the largest, which keeps
     % the original index and needs no write. Empty therefore means the object is
     % already a single piece and there is nothing to split. For SplitBySelection
     % the removal write queued above still stands.
     if isempty(componentMasks); continue; end
 
-    [newIds, problem] = iAllocateIndices(obj, id, workingIndex, numel(componentMasks));
+    [newIds, problem] = localAllocateIndices(obj, id, workingIndex, numel(componentMasks));
     if ~isempty(problem); return; end
 
     for k = 1:numel(componentMasks)
         writes(end+1) = struct(...
-            'pixelIdxList', iCropToFull(obj, id, box, find(componentMasks{k}), timePoint), ...
+            'pixelIdxList', localCropToFull(obj, id, box, find(componentMasks{k}), timePoint), ...
             'value', newIds(k)); %#ok<AGROW>
     end
     touchedIds = [touchedIds, newIds]; %#ok<AGROW>
@@ -905,7 +1119,7 @@ end
 end
 
 % =====================================================================
-function componentMasks = iComponentMasks(objectMask, connectivity, use3D)
+function componentMasks = localComponentMasks(objectMask, connectivity, use3D)
 % Connected components of an object, minus the largest one - which keeps the
 % original index and therefore needs no write at all.
 %
@@ -939,14 +1153,14 @@ end
 end
 
 % =====================================================================
-function [writes, box, bridged, problem] = iPlanConnect(obj, id, dataset, objectIds, index, timePoint, BatchOpt)
+function [writes, box, bridged, problem] = localPlanConnect(obj, id, dataset, objectIds, index, timePoint, BatchOpt)
 % Plan the **bridge** between two objects. The merge that follows is the
-% caller's, and is the same ``iMergeWrites`` that Merge uses.
+% caller's, and is the same ``localMergeWrites`` that Merge uses.
 %
 % The two modes ask for different things, and only one of them needs a gap:
 %
 % - ``selection`` - the bridge is whatever was drawn, handled by
-%   ``iAbsorbDrawing`` exactly as a drawing-driven Merge is. It makes sense with
+%   ``localAbsorbDrawing`` exactly as a drawing-driven Merge is. It makes sense with
 %   or without a gap in Z, so this mode asks nothing about how the two lie: two
 %   objects that share a Z range but never touch are joined by it just as well.
 % - ``interpolate`` - the bridge is morphed between the two facing
@@ -960,7 +1174,7 @@ writes = struct('pixelIdxList', {}, 'value', {});
 problem = '';
 bridged = false;
 survivor = min(objectIds);
-box = iUnionBox(index, objectIds);
+box = localUnionBox(index, objectIds);
 
 % Same refusal as CutAtSlice, and for the same reason: this is an operation
 % along Z. Without it Connect ran anyway and merged the whole of both objects
@@ -971,7 +1185,7 @@ if ~BatchOpt.Mode3D
 end
 
 if strcmp(BatchOpt.ConnectMode{1}, 'selection')
-    [writes, drawingBox] = iAbsorbDrawing(obj, id, dataset, timePoint, true, survivor);
+    [writes, drawingBox] = localAbsorbDrawing(obj, id, dataset, timePoint, true, survivor);
     if isempty(drawingBox)
         problem = 'The Selection layer is empty - draw the bridging area first, or use the "interpolate" mode.';
         return;
@@ -980,7 +1194,7 @@ if strcmp(BatchOpt.ConnectMode{1}, 'selection')
         problem = 'Everything drawn already belongs to an object, so there is no bridge to build.';
         return;
     end
-    box = iCoverBox(box, drawingBox);
+    box = localCoverBox(box, drawingBox);
     bridged = true;
     return;
 end
@@ -999,7 +1213,7 @@ else
     zLower = boxB(6);     zUpper = boxA(5);
 end
 bridgeBox = [box(1:4), zLower, zUpper];
-labelsInBridge = iReadBox(obj, id, 'labels', timePoint, bridgeBox);
+labelsInBridge = localReadBox(obj, id, 'labels', timePoint, bridgeBox);
 
 bridge = false(size(labelsInBridge));
 bridge(:, :, 1)   = labelsInBridge(:, :, 1) == lower;
@@ -1008,20 +1222,20 @@ bridge(:, :, end) = labelsInBridge(:, :, end) == upper;
 % everything in between.
 bridge = utils.interpolateShapes(uint8(bridge)) > 0;
 
-% Background only, the same guard iAbsorbDrawing applies to the drawn bridge:
+% Background only, the same guard localAbsorbDrawing applies to the drawn bridge:
 % without it the interpolated tube would carve through whatever happens to lie
 % between the two objects.
 bridge = bridge & (labelsInBridge == 0);
 if ~any(bridge, 'all'); return; end
 
 writes(end+1) = struct(...
-    'pixelIdxList', iCropToFull(obj, id, bridgeBox, find(bridge), timePoint), ...
+    'pixelIdxList', localCropToFull(obj, id, bridgeBox, find(bridge), timePoint), ...
     'value', survivor);
 bridged = true;
 end
 
 % =====================================================================
-function done = iWholeModelAction(obj, id, action, BatchOpt, batchModeSwitch)
+function done = localWholeModelAction(obj, id, action, BatchOpt, batchModeSwitch)
 % Cleanup and Compact rewrite the whole volume, so unlike the per-object actions
 % they get a cancelable progress dialog and a full index rebuild.
 done = false;
@@ -1058,11 +1272,76 @@ switch action
             return;
         end
         obj.setData3D(cast(cleaned, 'like', volume), 'labels', timePoint, 3, [], readOptions);
-        fprintf('Instance editor: cleanup removed %d objects, absorbed %d fragments (%d voxels); %d objects left\n', ...
-            stats.numRemoved, stats.numAbsorbedFragments, stats.numAbsorbedVoxels, stats.numObjects);
+        % Reported below rather than here, so the box goes up after the progress
+        % dialog has been taken down and not behind it.
+        cleanupStats = stats;
 
     case 'Compact'
-        dataset.labels.squeezeMaterialLabels(wb);
+        % Captured before the renumbering, because afterwards there is nothing
+        % left to compare against: both branches below map the sorted label
+        % values onto 1..n, so an object's new number is its rank among the
+        % values in use and everything reported follows from the old index. The
+        % index is guaranteed fresh here - the caller rebuilds a stale one
+        % before dispatching.
+        previous = dataset.instanceIndex;
+        compactStats = struct('oldIds', find(previous.exists)', ...
+            'oldMax', double(previous.maxIndex), ...
+            'perSlice', ~BatchOpt.Mode3D, 'slicesChanged', 0, ...
+            'slicesWithObjects', 0, 'depth', 0);
+
+        if BatchOpt.Mode3D
+            dataset.labels.squeezeMaterialLabels(wb);
+        else
+            % Per slice, because that is what the numbering means in this mode.
+            % An unstitched model numbers from 1 again on every slice, so its
+            % gaps are per-slice gaps and a single global squeeze would not
+            % close them: a slice holding 1, 3, 5 keeps 3 and 5 as long as some
+            % other slice uses those values, which on such a model it always
+            % does. Here each slice is tightened on its own - 1, 3, 5 becomes
+            % 1, 2, 3 - and the slices are independent, so the same number
+            % meaning a different object on each of them is unchanged, that
+            % being what the model already is.
+            readOptions = struct('blockModeSwitch', 0, 'id', id);
+            volume = cell2mat(obj.getData3D('labels', timePoint, 3, NaN, readOptions));
+            compactStats.depth = size(volume, 3);
+            if ~isempty(wb)
+                wb.Indeterminate = 'off';
+                wb.Message = 'Renumbering the objects of each slice...';
+            end
+
+            for z = 1:compactStats.depth
+                if ~isempty(wb)
+                    if wb.CancelRequested
+                        % Nothing has reached the model yet - the loop writes
+                        % into a local copy - so cancelling leaves it untouched.
+                        delete(wb);
+                        fprintf('Instance editor: compact cancelled, the model was not changed\n');
+                        return;
+                    end
+                    wb.Value = z / compactStats.depth;
+                end
+
+                slice = volume(:, :, z);
+                [values, ~, ranks] = unique(slice);
+                present = values(values > 0);
+
+                % An empty slice is not a slice that was "already in place" -
+                % there is nothing on it to number. Counting it as one would
+                % make the report read "renumbered 2 of 501" on a stack whose
+                % objects sit on forty slices, which says nothing about the
+                % work. The denominator is therefore slices carrying objects.
+                if isempty(present); continue; end
+                compactStats.slicesWithObjects = compactStats.slicesWithObjects + 1;
+
+                if isequal(double(present(:))', 1:numel(present)); continue; end
+                if values(1) == 0; ranks = ranks - 1; end    % background stays 0
+                volume(:, :, z) = reshape(cast(ranks, 'like', slice), size(slice));
+                compactStats.slicesChanged = compactStats.slicesChanged + 1;
+            end
+
+            obj.setData3D(volume, 'labels', timePoint, 3, [], readOptions);
+            dataset.labels.materialsCount = double(max(volume, [], 'all'));
+        end
 end
 
 if ~isempty(wb); delete(wb); end
@@ -1070,5 +1349,62 @@ if ~isempty(wb); delete(wb); end
 % The whole label space has moved; nothing of the old index survives.
 dataset.instanceIndex = [];
 dataset.buildInstanceIndex(struct('timePoint', timePoint));
+
+% Both whole-model actions report through localReport, in the application rather than
+% the command window behind it: Compact changes every number the user has been
+% navigating by while changing nothing they can see, and Cleanup removes objects
+% that were on the list a moment ago. The headline carries the figure that
+% answers "did it do anything"; the rest goes underneath it.
+if strcmp(action, 'Cleanup')
+    message = sprintf('%d objects removed, %d fragments absorbed.', ...
+        cleanupStats.numRemoved, cleanupStats.numAbsorbedFragments);
+    details = {
+        sprintf('%d voxels were handed to neighbouring objects.', cleanupStats.numAbsorbedVoxels)
+        sprintf('%d objects left in the model.', cleanupStats.numObjects)
+        'Object numbers are unchanged - use Compact to renumber.'};
+    localReport(obj, message, 'Cleanup', details, ~batchModeSwitch);
+end
+
+if strcmp(action, 'Compact')
+    newIndex = dataset.instanceIndex;
+    scope = '';
+    if dataset.labels.time > 1
+        % The 3D branch renumbers every time point, each from its own unique()
+        % pass; the 2D branch touches the shown one only. Either way the figures
+        % below are measured on the shown time point, so it is named.
+        scope = sprintf(' (time point %d)', timePoint);
+    end
+
+    if compactStats.perSlice
+        % Per slice the object count is not a single number - the same index is
+        % a different object on each slice - so what is reported is how many
+        % slices had gaps, and how far the numbering came down.
+        message = sprintf('Renumbered %d of %d slices with objects%s.', ...
+            compactStats.slicesChanged, compactStats.slicesWithObjects, scope);
+        details = {
+            sprintf('%d slices were already numbered 1, 2, 3...', ...
+                compactStats.slicesWithObjects - compactStats.slicesChanged)
+            sprintf('%d slices in the stack.', compactStats.depth)
+            sprintf('Highest index: %d -> %d', compactStats.oldMax, double(newIndex.maxIndex))
+            'Each slice is numbered on its own, so one index means a different object on each.'};
+    else
+        oldIds = compactStats.oldIds;
+        kept = nnz(oldIds == 1:numel(oldIds));
+        message = sprintf('Renumbered %d of %d objects%s.', ...
+            numel(oldIds) - kept, numel(oldIds), scope);
+        details = {
+            sprintf('%d objects already had their final number.', kept)
+            sprintf('Highest index: %d -> %d', compactStats.oldMax, double(newIndex.maxIndex))
+            sprintf('%d unused indices reclaimed.', ...
+                compactStats.oldMax - double(newIndex.maxIndex))};
+        if double(newIndex.numObjects) ~= numel(oldIds)
+            % Renumbering must not add or remove objects. Nothing has produced
+            % this; it is here because it is the damage hardest to recognise.
+            details{end+1} = sprintf(['WARNING: the object count changed from %d to %d, ' ...
+                'which renumbering must never do.'], numel(oldIds), double(newIndex.numObjects));
+        end
+    end
+    localReport(obj, message, 'Compact', details, ~batchModeSwitch);
+end
 done = true;
 end

@@ -58,9 +58,27 @@ classdef EditInstanceObjectsTest < matlab.unittest.TestCase
             mibModel.I{1}.buildInstanceIndex();
         end
 
+        function note(recorder, label)
+            % Append an event name to a handle recorder, so the order of two
+            % events fired inside one call can be asserted afterwards.
+            recorder.Text = strtrim([recorder.Text ' ' label]);
+        end
+
         function volume = readLabels(mibModel)
             volume = cell2mat(mibModel.getData3D('labels', 1, 3, NaN, ...
                 struct('id', 1, 'blockModeSwitch', 0)));
+        end
+
+        function volume = readSelection(mibModel)
+            volume = cell2mat(mibModel.getData3D('selection', 1, 3, NaN, ...
+                struct('id', 1, 'blockModeSwitch', 0)));
+        end
+
+        function drawIntoSelection(mibModel, dims, y, x, z)
+            selection = zeros(dims, 'uint8');
+            selection(y, x, z) = 1;
+            mibModel.setData3D(selection, 'selection', 1, 3, [], ...
+                struct('id', 1, 'blockModeSwitch', 0));
         end
 
         function runAction(mibModel, action, indices, extra)
@@ -465,6 +483,88 @@ classdef EditInstanceObjectsTest < matlab.unittest.TestCase
             testCase.verifyEqual(nnz(remaining), 0, 'the Selection layer is emptied');
         end
 
+        function splitBySelectionCoveringTheWholeObjectRemovesIt(testCase)
+            % 's' is "subtract the Selection from the material" here as it is
+            % everywhere in MIB, so a drawing over the whole object subtracts
+            % the whole object. It used to refuse with "nothing would be left",
+            % which made the one gesture that means "delete this" unavailable
+            % from the key the user already had a hand on.
+            mibModel = EditInstanceObjectsTest.buildInstanceModel();
+            selection = zeros(32, 32, 10, 'uint8');
+            selection(4:10, 16:20, 1:2) = 1;     % exactly object 5
+            mibModel.setData3D(selection, 'selection', 1, 3, [], ...
+                struct('id', 1, 'blockModeSwitch', 0));
+
+            EditInstanceObjectsTest.runAction(mibModel, 'SplitBySelection', '');
+
+            after = EditInstanceObjectsTest.readLabels(mibModel);
+            testCase.verifyEqual(nnz(after == 5), 0, 'object 5 is gone');
+            testCase.verifyEqual(nnz(after == 1), 7 * 7 * 6, 'object 1 untouched');
+            testCase.verifyEqual(nnz(after == 2), 5 * 5 * 4 + 5 * 4 * 4, 'object 2 untouched');
+            testCase.verifyFalse(mibModel.I{1}.instanceIndex.exists(5), 'the index is freed');
+            EditInstanceObjectsTest.verifyIndexAgreesWithVolume(testCase, mibModel, 'splitBySelection, whole object');
+        end
+
+        function splitBySelectionClearingASliceKeepsTheObjectIn2D(testCase)
+            % The same gesture in 2D reaches one slice only, so an object
+            % cleared from the shown slice keeps its index and its voxels on the
+            % others. The index refresh is what has to get this right: its box
+            % is clipped to the slice, and only because it unions in the
+            % object's previous box does the rest of the object survive the
+            % recount.
+            mibModel = EditInstanceObjectsTest.buildInstanceModel();
+            mibModel.I{1}.slices{3} = [5, 5];    % object 1 spans slices 2:7
+            selection = zeros(32, 32, 10, 'uint8');
+            selection(4:10, 4:10, 5) = 1;        % the whole of object 1 on that slice
+            mibModel.setData3D(selection, 'selection', 1, 3, [], ...
+                struct('id', 1, 'blockModeSwitch', 0));
+
+            EditInstanceObjectsTest.runAction(mibModel, 'SplitBySelection', '', ...
+                struct('Mode3D', false));
+
+            after = EditInstanceObjectsTest.readLabels(mibModel);
+            testCase.verifyEqual(nnz(after(:, :, 5) == 1), 0, 'the slice was cleared');
+            testCase.verifyEqual(nnz(after == 1), 7 * 7 * 5, 'the other five slices keep index 1');
+            testCase.verifyTrue(mibModel.I{1}.instanceIndex.exists(1), 'the object still exists');
+            EditInstanceObjectsTest.verifyIndexAgreesWithVolume(testCase, mibModel, 'splitBySelection, slice cleared');
+        end
+
+        function splitBySelectionWithPickedObjectsAndNoDrawingRemovesThem(testCase)
+            % Picking an object paints it into the Selection layer as the
+            % highlight, so on screen a pick is indistinguishable from a drawing
+            % covering the whole object - and that subtracts the whole object.
+            % The pick therefore is the selection when nothing has been drawn.
+            mibModel = EditInstanceObjectsTest.buildInstanceModel();
+            mibModel.setData3D(zeros(32, 32, 10, 'uint8'), 'selection', 1, 3, [], ...
+                struct('id', 1, 'blockModeSwitch', 0));
+
+            EditInstanceObjectsTest.runAction(mibModel, 'SplitBySelection', '1, 5');
+
+            after = EditInstanceObjectsTest.readLabels(mibModel);
+            testCase.verifyEqual(nnz(after == 1), 0, 'object 1 is gone');
+            testCase.verifyEqual(nnz(after == 5), 0, 'object 5 is gone');
+            testCase.verifyEqual(nnz(after == 2), 5 * 5 * 4 + 5 * 4 * 4, 'object 2 untouched');
+            EditInstanceObjectsTest.verifyIndexAgreesWithVolume(testCase, mibModel, 'splitBySelection, picked only');
+        end
+
+        function splitBySelectionWithPickedObjectsStillCutsWhenSomethingIsDrawn(testCase)
+            % The pick only stands in for the drawing when there is no drawing.
+            % With a break drawn, naming an object keeps its old meaning: cut
+            % that object and leave the neighbour the line also crosses alone.
+            mibModel = EditInstanceObjectsTest.buildInstanceModel();
+            selection = zeros(32, 32, 10, 'uint8');
+            selection(4:10, 4:10, 5) = 1;        % a break through object 1
+            mibModel.setData3D(selection, 'selection', 1, 3, [], ...
+                struct('id', 1, 'blockModeSwitch', 0));
+
+            EditInstanceObjectsTest.runAction(mibModel, 'SplitBySelection', '1');
+
+            after = EditInstanceObjectsTest.readLabels(mibModel);
+            testCase.verifyEqual(nnz(after == 1), 7 * 7 * 3, 'object 1 was cut, not removed');
+            testCase.verifyEqual(nnz(after == 5), 7 * 5 * 2, 'object 5 untouched');
+            EditInstanceObjectsTest.verifyIndexAgreesWithVolume(testCase, mibModel, 'splitBySelection, picked and drawn');
+        end
+
         function splitBySelectionOnBackgroundIsRejected(testCase)
             % A drawing lying on nothing names no object. The layer is left as
             % it is, so the drawing can be moved rather than made again.
@@ -656,6 +756,211 @@ classdef EditInstanceObjectsTest < matlab.unittest.TestCase
         end
 
         % -----------------------------------------------------------------
+        % nothing picked: the drawing chooses the objects, and in 3D it
+        % reaches one slice beyond either end of itself
+        % -----------------------------------------------------------------
+
+        function mergeFromADrawingReachesTheNextSliceInZ(testCase)
+            % The headline case, on the key the hand is already on: two halves
+            % of one object a slice apart, brush the gap, press 'a'. The same
+            % stroke in 2D joins two objects side by side; this is that gesture
+            % in a volume, where the thing being joined to is on the next slice
+            % and there is nothing painted on it.
+            mibModel = mibtest.helpers.buildSyntheticModel( ...
+                'modelType', 'labels65535', 'dims', [32 32 10]);
+            volume = zeros(32, 32, 10, 'uint16');
+            volume(10:16, 10:16, 1:4) = 6;
+            volume(10:16, 10:16, 6:9) = 2;      % same footprint, slice 5 empty
+            mibModel.setData3D(volume, 'labels', 1, 3, [], ...
+                struct('id', 1, 'blockModeSwitch', 0));
+            mibModel.I{1}.buildInstanceIndex();
+            EditInstanceObjectsTest.drawIntoSelection(mibModel, [32 32 10], 11:15, 11:15, 5);
+
+            EditInstanceObjectsTest.runAction(mibModel, 'Merge', '');
+
+            after = EditInstanceObjectsTest.readLabels(mibModel);
+            testCase.verifyEqual(nnz(after == 6), 0, 'the larger index was absorbed');
+            testCase.verifyEqual(bwconncomp(after == 2, 26).NumObjects, 1, ...
+                'one connected piece, closed by the drawing');
+            EditInstanceObjectsTest.verifyIndexAgreesWithVolume(testCase, mibModel, 'merge across Z');
+        end
+
+        function mergeFromADrawingIn2DStaysOnTheSlice(testCase)
+            % The reach is a property of 3D mode, not of the gesture. In 2D
+            % there is no next slice to look at, so the same drawing is a new
+            % object - which is what 'a' has always done over background.
+            mibModel = mibtest.helpers.buildSyntheticModel( ...
+                'modelType', 'labels65535', 'dims', [32 32 10]);
+            volume = zeros(32, 32, 10, 'uint16');
+            volume(10:16, 10:16, 1:4) = 6;
+            volume(10:16, 10:16, 6:9) = 2;
+            mibModel.setData3D(volume, 'labels', 1, 3, [], ...
+                struct('id', 1, 'blockModeSwitch', 0));
+            mibModel.I{1}.buildInstanceIndex();
+            mibModel.I{1}.slices{3} = [5, 5];   % the shown slice is the empty one
+            EditInstanceObjectsTest.drawIntoSelection(mibModel, [32 32 10], 11:15, 11:15, 5);
+
+            EditInstanceObjectsTest.runAction(mibModel, 'Merge', '', struct('Mode3D', false));
+
+            after = EditInstanceObjectsTest.readLabels(mibModel);
+            testCase.verifyEqual(nnz(after == 6), nnz(volume == 6), 'object 6 untouched');
+            testCase.verifyEqual(nnz(after == 2), nnz(volume == 2), 'object 2 untouched');
+            testCase.verifyEqual(nnz(after(:, :, 5) > 0), 5 * 5, 'the drawing became its own object');
+            EditInstanceObjectsTest.verifyIndexAgreesWithVolume(testCase, mibModel, 'merge, 2D');
+        end
+
+        function connectFromADrawingJoinsWhatItLiesBetween(testCase)
+            % The same gesture on the Connect button, which with nothing picked
+            % is the same code: brush the gap, press it, and the objects one
+            % slice beyond each end of the stroke are the ones joined. No pick
+            % at all, where it used to take two.
+            mibModel = mibtest.helpers.buildSyntheticModel( ...
+                'modelType', 'labels65535', 'dims', [32 32 10]);
+            volume = zeros(32, 32, 10, 'uint16');
+            volume(10:16, 10:16, 1:4) = 6;
+            volume(10:16, 10:16, 6:9) = 2;      % same footprint, slice 5 empty
+            mibModel.setData3D(volume, 'labels', 1, 3, [], ...
+                struct('id', 1, 'blockModeSwitch', 0));
+            mibModel.I{1}.buildInstanceIndex();
+            EditInstanceObjectsTest.drawIntoSelection(mibModel, [32 32 10], 11:15, 11:15, 5);
+
+            EditInstanceObjectsTest.runAction(mibModel, 'Connect', '');
+
+            after = EditInstanceObjectsTest.readLabels(mibModel);
+            testCase.verifyEqual(nnz(after == 6), 0, 'the larger index was absorbed');
+            testCase.verifyEqual(bwconncomp(after == 2, 26).NumObjects, 1, ...
+                'one connected piece, bridged by the drawing');
+            testCase.verifyEqual(nnz(after(:, :, 5) == 2), 5 * 5, ...
+                'exactly what was drawn, nothing interpolated');
+            testCase.verifyEqual(nnz(EditInstanceObjectsTest.readSelection(mibModel)), 0, ...
+                'the drawing was used up');
+            EditInstanceObjectsTest.verifyIndexAgreesWithVolume(testCase, mibModel, 'connect from drawing');
+        end
+
+        function connectFromADrawingTakesTheLargestAtEachEnd(testCase)
+            % A bridge clipping the corner of a neighbour is the ordinary case,
+            % so each end contributes one object - the one it mostly lands on.
+            % Everywhere else a drawing joins everything it touches; this is the
+            % one place that rule is deliberately not followed.
+            mibModel = mibtest.helpers.buildSyntheticModel( ...
+                'modelType', 'labels65535', 'dims', [32 32 10]);
+            volume = zeros(32, 32, 10, 'uint16');
+            volume(10:16, 10:16, 1:4) = 6;      % 49 voxels under the stroke
+            volume(16:18, 16:18, 1:4) = 3;      % 1 voxel: the clipped neighbour
+            volume(10:16, 10:16, 6:9) = 2;
+            mibModel.setData3D(volume, 'labels', 1, 3, [], ...
+                struct('id', 1, 'blockModeSwitch', 0));
+            mibModel.I{1}.buildInstanceIndex();
+            EditInstanceObjectsTest.drawIntoSelection(mibModel, [32 32 10], 10:16, 10:16, 5);
+
+            EditInstanceObjectsTest.runAction(mibModel, 'Connect', '');
+
+            after = EditInstanceObjectsTest.readLabels(mibModel);
+            testCase.verifyEqual(nnz(after == 6), 0, 'the dominant neighbour was joined');
+            testCase.verifyEqual(nnz(after == 3), nnz(volume == 3), ...
+                'the clipped neighbour was left alone');
+            testCase.verifyTrue(mibModel.I{1}.instanceIndex.exists(3));
+            EditInstanceObjectsTest.verifyIndexAgreesWithVolume(testCase, mibModel, 'connect, largest');
+        end
+
+        function connectFromADrawingWithOneEndGrowsThatObject(testCase)
+            % Nothing above, so there is nothing to join and the stroke is given
+            % to the one object it lands on - the same reading a Merge stroke
+            % over a single object gets. No new index is handed out.
+            mibModel = mibtest.helpers.buildSyntheticModel( ...
+                'modelType', 'labels65535', 'dims', [32 32 10]);
+            volume = zeros(32, 32, 10, 'uint16');
+            volume(10:16, 10:16, 1:4) = 6;
+            mibModel.setData3D(volume, 'labels', 1, 3, [], ...
+                struct('id', 1, 'blockModeSwitch', 0));
+            mibModel.I{1}.buildInstanceIndex();
+            EditInstanceObjectsTest.drawIntoSelection(mibModel, [32 32 10], 11:15, 11:15, 5);
+
+            EditInstanceObjectsTest.runAction(mibModel, 'Connect', '');
+
+            after = EditInstanceObjectsTest.readLabels(mibModel);
+            testCase.verifyEqual(nnz(after == 6), nnz(volume == 6) + 5 * 5, ...
+                'the object grew by exactly the drawing');
+            testCase.verifyEqual(numel(unique(after(after > 0))), 1, 'no new object');
+            EditInstanceObjectsTest.verifyIndexAgreesWithVolume(testCase, mibModel, 'connect, one end');
+        end
+
+        function connectFromADrawingOnEmptySpaceBecomesANewObject(testCase)
+            % Neither end lands on anything, so the stroke is a new object -
+            % again the same answer the Merge gesture gives over background.
+            mibModel = mibtest.helpers.buildSyntheticModel( ...
+                'modelType', 'labels65535', 'dims', [32 32 10]);
+            volume = zeros(32, 32, 10, 'uint16');
+            volume(25:30, 25:30, 1:3) = 1;      % somewhere else entirely
+            mibModel.setData3D(volume, 'labels', 1, 3, [], ...
+                struct('id', 1, 'blockModeSwitch', 0));
+            mibModel.I{1}.buildInstanceIndex();
+            EditInstanceObjectsTest.drawIntoSelection(mibModel, [32 32 10], 5:9, 5:9, 5);
+
+            EditInstanceObjectsTest.runAction(mibModel, 'Connect', '');
+
+            after = EditInstanceObjectsTest.readLabels(mibModel);
+            testCase.verifyEqual(nnz(after == 2), 5 * 5, 'the drawing took the next free index');
+            testCase.verifyEqual(nnz(after == 1), nnz(volume == 1), 'the other object is untouched');
+            EditInstanceObjectsTest.verifyIndexAgreesWithVolume(testCase, mibModel, 'connect, background');
+        end
+
+        function connectFromADrawingUsesWhatItCoversFirst(testCase)
+            % The stroke is asked what it covers before anything else, so a
+            % drawing laid across two objects in-plane means those two. The
+            % lookahead is only for a bridge, which lies on background by
+            % construction - object 9, directly above and below the stroke, is
+            % what it would have found and must not touch.
+            mibModel = mibtest.helpers.buildSyntheticModel( ...
+                'modelType', 'labels65535', 'dims', [32 32 10]);
+            volume = zeros(32, 32, 10, 'uint16');
+            volume(4:10,  10:14, 4) = 1;
+            volume(20:26, 10:14, 4) = 6;
+            volume(12:18, 10:14, [3 5]) = 9;    % straddling the stroke in Z
+            mibModel.setData3D(volume, 'labels', 1, 3, [], ...
+                struct('id', 1, 'blockModeSwitch', 0));
+            mibModel.I{1}.buildInstanceIndex();
+            EditInstanceObjectsTest.drawIntoSelection(mibModel, [32 32 10], 4:26, 10:14, 4);
+
+            EditInstanceObjectsTest.runAction(mibModel, 'Connect', '');
+
+            after = EditInstanceObjectsTest.readLabels(mibModel);
+            testCase.verifyEqual(nnz(after == 6), 0, 'the two the stroke covers were joined');
+            testCase.verifyEqual(nnz(after == 9), nnz(volume == 9), ...
+                'the object the lookahead would have found is untouched');
+            EditInstanceObjectsTest.verifyIndexAgreesWithVolume(testCase, mibModel, 'connect, covered');
+        end
+
+        function connectFromADrawingNeedsSomethingDrawn(testCase)
+            mibModel = EditInstanceObjectsTest.buildInstanceModel();
+            % buildSyntheticModel seeds a random Selection layer, and "nothing
+            % drawn" is the whole of what this asserts.
+            EditInstanceObjectsTest.drawIntoSelection(mibModel, [32 32 10], [], [], []);
+            before = EditInstanceObjectsTest.readLabels(mibModel);
+
+            EditInstanceObjectsTest.runAction(mibModel, 'Connect', '');
+
+            testCase.verifyEqual(EditInstanceObjectsTest.readLabels(mibModel), before, 'model untouched');
+        end
+
+        function connectFromADrawingNeeds3DMode(testCase)
+            % The lookahead is a step along Z, so it is refused in 2D for the
+            % reason the picked form is - and before the drawing is consumed.
+            mibModel = EditInstanceObjectsTest.buildInstanceModel();
+            EditInstanceObjectsTest.drawIntoSelection(mibModel, [32 32 10], 11:15, 11:15, 5);
+            before = EditInstanceObjectsTest.readLabels(mibModel);
+
+            applied = mibModel.editInstanceObjects(struct( ...
+                'Action', {{'Connect'}}, 'ObjectIndices', '', ...
+                'Mode3D', false, 'showWaitbar', false));
+
+            testCase.verifyFalse(applied);
+            testCase.verifyEqual(EditInstanceObjectsTest.readLabels(mibModel), before, 'model untouched');
+            testCase.verifyEqual(nnz(EditInstanceObjectsTest.readSelection(mibModel)), 5 * 5, ...
+                'the drawing survives a refusal, so it can be moved rather than made again');
+        end
+
+        % -----------------------------------------------------------------
         % delete, cleanup, compact
         % -----------------------------------------------------------------
 
@@ -679,13 +984,18 @@ classdef EditInstanceObjectsTest < matlab.unittest.TestCase
             extra.cleanupMinObjectVoxels = {100, [0, 1e9], 'on'};
             extra.cleanupAbsorbFragmentVoxels = {0, [0, 1e6], 'on'};
 
-            EditInstanceObjectsTest.runAction(mibModel, 'Cleanup', '', extra);
+            output = evalc("EditInstanceObjectsTest.runAction(mibModel, 'Cleanup', '', extra)");
 
             after = EditInstanceObjectsTest.readLabels(mibModel);
             testCase.verifyEqual(nnz(after == 5), 0, 'object 5 has 70 voxels and goes');
             testCase.verifyGreaterThan(nnz(after == 1), 0, 'object 1 keeps its number');
             testCase.verifyGreaterThan(nnz(after == 2), 0, 'object 2 keeps its number');
             EditInstanceObjectsTest.verifyIndexAgreesWithVolume(testCase, mibModel, 'cleanup');
+            % Headless there is no window to put a dialog on, so localReport falls
+            % back to stdout and the figures are readable from there.
+            testCase.verifySubstring(output, '1 objects removed, 0 fragments absorbed.');
+            testCase.verifySubstring(output, '2 objects left in the model.');
+            testCase.verifySubstring(output, 'use Compact to renumber');
         end
 
         function compactRenumbersToContiguousIndices(testCase)
@@ -702,6 +1012,169 @@ classdef EditInstanceObjectsTest < matlab.unittest.TestCase
         % -----------------------------------------------------------------
         % undo and guards
         % -----------------------------------------------------------------
+
+        function compactReportsWhatItRenumbered(testCase)
+            % Compact changes every number the user has been working with and
+            % nothing they can see, so what it did has to be said out loud.
+            % The fixture uses 1, 2 and 5, so 1 and 2 stay put and 5 becomes 3.
+            mibModel = EditInstanceObjectsTest.buildInstanceModel();
+
+            output = evalc("EditInstanceObjectsTest.runAction(mibModel, 'Compact', '')");
+
+            % Headless there is no window to put a dialog on, so localReport falls
+            % back to stdout and the figures are readable from there.
+            testCase.verifySubstring(output, 'Renumbered 1 of 3 objects.');
+            testCase.verifySubstring(output, '2 objects already had their final number.');
+            testCase.verifySubstring(output, 'Highest index: 5 -> 3');
+            testCase.verifySubstring(output, '2 unused indices reclaimed.');
+            after = EditInstanceObjectsTest.readLabels(mibModel);
+            testCase.verifyEqual(double(max(after(:))), 3, 'the numbering is now 1..3');
+        end
+
+        function compactIn2DRenumbersEachSliceOnItsOwn(testCase)
+            % An unstitched model numbers from 1 again on every slice, so its
+            % gaps are per-slice gaps. A global squeeze cannot close them: every
+            % value is in use on some slice, so nothing moves anywhere.
+            % Slice 4 is left empty on purpose: it must not be counted as a
+            % slice that was "already in place", or the report would read
+            % "2 of 501" on any real stack whose objects sit on a few slices.
+            mibModel = mibtest.helpers.buildSyntheticModel( ...
+                'modelType', 'labels65535', 'dims', [32 32 4]);
+            volume = zeros(32, 32, 4, 'uint16');
+            volume(1:4,   1:4, 1) = 1;   volume(1:4,  10:13, 1) = 3;   volume(1:4, 20:23, 1) = 5;
+            volume(10:13, 1:4, 2) = 3;   volume(10:13, 10:13, 2) = 5;  volume(10:13, 20:23, 2) = 6;
+            volume(20:23, 1:4, 3) = 1;   volume(20:23, 10:13, 3) = 2;  % already tight
+            mibModel.setData3D(volume, 'labels', 1, 3, [], ...
+                struct('id', 1, 'blockModeSwitch', 0));
+            mibModel.I{1}.labels.materialsCount = 6;
+            mibModel.I{1}.buildInstanceIndex();
+
+            output = evalc(['EditInstanceObjectsTest.runAction(mibModel, ''Compact'', '''', ' ...
+                'struct(''Mode3D'', false))']);
+
+            after = EditInstanceObjectsTest.readLabels(mibModel);
+            testCase.verifyEqual(double(unique(after(:, :, 1))'), [0 1 2 3], 'slice 1: 1,3,5 -> 1,2,3');
+            testCase.verifyEqual(double(unique(after(:, :, 2))'), [0 1 2 3], 'slice 2: 3,5,6 -> 1,2,3');
+            testCase.verifyEqual(double(unique(after(:, :, 3))'), [0 1 2], 'slice 3 was already tight');
+            testCase.verifyEqual(double(unique(after(:, :, 4))'), 0, 'slice 4 is still empty');
+            % the objects themselves must not move, only their numbers
+            testCase.verifyEqual(after(1:4, 20:23, 1), repmat(uint16(3), 4, 4), 'the third blob kept its pixels');
+            testCase.verifySubstring(output, 'Renumbered 2 of 3 slices with objects.');
+            testCase.verifySubstring(output, '1 slices were already numbered 1, 2, 3...');
+            testCase.verifySubstring(output, '4 slices in the stack.');
+            testCase.verifySubstring(output, 'Highest index: 6 -> 3');
+        end
+
+        function compactIn3DLeavesThePerSliceNumberingAlone(testCase)
+            % The same model through the 3D branch: every value 1..6 is in use
+            % somewhere, so a global squeeze finds nothing to close. This is the
+            % behaviour that made per-slice compaction necessary, and it is
+            % still what 3D mode should do on a stitched model.
+            mibModel = mibtest.helpers.buildSyntheticModel( ...
+                'modelType', 'labels65535', 'dims', [32 32 3]);
+            volume = zeros(32, 32, 3, 'uint16');
+            volume(1:4,   1:4, 1) = 1;   volume(1:4,  10:13, 1) = 3;   volume(1:4, 20:23, 1) = 5;
+            volume(10:13, 1:4, 2) = 3;   volume(10:13, 10:13, 2) = 5;  volume(10:13, 20:23, 2) = 6;
+            mibModel.setData3D(volume, 'labels', 1, 3, [], ...
+                struct('id', 1, 'blockModeSwitch', 0));
+            mibModel.I{1}.labels.materialsCount = 6;
+            mibModel.I{1}.buildInstanceIndex();
+
+            EditInstanceObjectsTest.runAction(mibModel, 'Compact', '', struct('Mode3D', true));
+
+            after = EditInstanceObjectsTest.readLabels(mibModel);
+            testCase.verifyEqual(double(unique(after(after > 0))'), [1 2 3 4], ...
+                'the four values in use became 1..4 across the whole volume');
+            testCase.verifyEqual(double(unique(after(:, :, 1))'), [0 1 2 3], ...
+                'slice 1 keeps three distinct numbers, but they are not renumbered per slice');
+        end
+
+        function undoCarriesAnIndexRepairNote(testCase)
+            % Rebuilding the index is the one cost here that grows with the
+            % dataset rather than with the edit, so an undo must not force one.
+            % The note attached to the undo entry has to be enough on its own:
+            % re-indexing that region alone must leave the index identical to a
+            % full rebuild from the volume.
+            %
+            % The lookup below is the one repairIndexAfterUndo performs. It is
+            % done here rather than through the controller because a view-less
+            % InstanceEditor has no construction path (tests/CLAUDE.md).
+            mibModel = EditInstanceObjectsTest.buildInstanceModel();
+            selection = zeros(32, 32, 10, 'uint8');
+            selection(4:10, 4:10, 5) = 1;        % the brush workflow: a break through object 1
+            mibModel.setData3D(selection, 'selection', 1, 3, [], ...
+                struct('id', 1, 'blockModeSwitch', 0));
+
+            EditInstanceObjectsTest.runAction(mibModel, 'SplitBySelection', '');
+            mibModel.undo();
+
+            backup = mibModel.Backup;
+            options = backup.undoList(backup.undoIndex).options;
+            testCase.assertTrue(isfield(options, 'instanceIndexRepair'), ...
+                'the undo entry carries no repair note');
+
+            note = options.instanceIndexRepair;
+            testCase.verifyEqual(note.timePoint, 1);
+            testCase.verifyTrue(ismember(1, note.objectIds), 'the split object is named');
+            testCase.verifyNumElements(note.bbox, 6);
+
+            % Refreshing that region alone must agree with a full rebuild.
+            mibModel.I{1}.buildInstanceIndex(note);
+            EditInstanceObjectsTest.verifyIndexAgreesWithVolume(testCase, mibModel, 'undo repair');
+        end
+
+        function undoWritesTheVoxelsBeforeAnnouncingItself(testCase)
+            % The premise controllers.InstanceEditor.repairIndexAfterUndo rests
+            % on, and cannot check for itself: MibModel.undo calls setData
+            % before it fires Undo, so the editor's SetData listener has
+            % already marked the index stale by the time the Undo handler runs.
+            % That is why the handler distinguishes staleness this undo caused
+            % from staleness that was already there, rather than refusing to
+            % repair a stale index outright - the bug this test exists to stop
+            % coming back.
+            mibModel = EditInstanceObjectsTest.buildInstanceModel();
+            recorder = mibtest.helpers.FakeWidget();   % a handle: a struct would take a copy
+            setListener = addlistener(mibModel.I{1}, 'SetData', ...
+                @(~, ~) EditInstanceObjectsTest.note(recorder, 'setData'));
+            undoListener = addlistener(mibModel, 'Undo', ...
+                @(~, ~) EditInstanceObjectsTest.note(recorder, 'undo'));
+            cleanup = onCleanup(@() delete([setListener, undoListener])); %#ok<NASGU>
+
+            EditInstanceObjectsTest.runAction(mibModel, 'Delete', '5');
+            recorder.Text = '';
+            mibModel.undo();
+
+            testCase.verifySubstring(recorder.Text, 'setData undo', ...
+                'undo must write the voxels before it fires its event');
+        end
+
+        function undoRepairCostsOnlyTheEditedRegion(testCase)
+            % The point of the note is that it names a region, not the volume.
+            % A box covering the whole dataset would be correct and useless.
+            mibModel = EditInstanceObjectsTest.buildInstanceModel();
+
+            EditInstanceObjectsTest.runAction(mibModel, 'Delete', '5');
+
+            backup = mibModel.Backup;
+            note = backup.undoList(backup.undoIndex - 1).options.instanceIndexRepair;
+            volumeSize = size(EditInstanceObjectsTest.readLabels(mibModel));
+            boxVoxels = prod(double(note.bbox([2 4 6])) - double(note.bbox([1 3 5])) + 1);
+            testCase.verifyLessThan(boxVoxels, prod(volumeSize) / 4, ...
+                'the repair box should be the object, not the dataset');
+        end
+
+        function wholeModelActionsCarryNoRepairNote(testCase)
+            % Cleanup and Compact rewrite everything, so no box can describe
+            % them. They must not leave a note that would be acted on.
+            mibModel = EditInstanceObjectsTest.buildInstanceModel();
+
+            EditInstanceObjectsTest.runAction(mibModel, 'Compact', '');
+
+            backup = mibModel.Backup;
+            options = backup.undoList(backup.undoIndex - 1).options;
+            testCase.verifyFalse(isfield(options, 'instanceIndexRepair'), ...
+                'Compact must fall back to a full rebuild');
+        end
 
         function undoRestoresTheExactPriorVolume(testCase)
             mibModel = EditInstanceObjectsTest.buildInstanceModel();

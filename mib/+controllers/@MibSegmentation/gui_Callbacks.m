@@ -34,10 +34,17 @@ end
 
 mode = hWidget.Tag;
 
-% read the modifier before utils.unFocus below: its drawnow yields to the event
-% queue, after which the key release may already have cleared CurrentModifier
-modifier = obj.UIFigure.CurrentModifier;
+% obj.UIFigure.CurrentModifier is NOT used here: it is only updated by keyboard
+% events on that sub-figure and stays {} for button clicks originating from the
+% Segmentation panel, so a Ctrl+click would never be recognised
+modifier = obj.mibController.currentModifier;
 ctrlPressed = any(strcmp(modifier, 'control'));
+
+% every branch below can open a blocking dialog; the key release would land on
+% that dialog and never reach MIB, leaving the modifier state stuck
+if ~isempty(modifier)
+    obj.mibController.gui_WindowKeyReleaseFcn([], []);
+end
 
 if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.MibSegmentation.gui_Callbacks: clicked on "obj.view.handles.panels.segmentation.handles.%s"\n', mode);

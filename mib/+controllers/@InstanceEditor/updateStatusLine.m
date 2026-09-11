@@ -9,8 +9,10 @@ function updateStatusLine(obj)
 % The stale state has to be visible. Every operation reads bounding boxes out of
 % the cached index, so if the model has been changed by something else - a brush
 % stroke, an undo, another tool - the boxes describe a model that is gone, and
-% an edit made against them would write the wrong voxels. The operations refuse
-% to run in that state; the status line is what explains why.
+% an edit made against them would write the wrong voxels. An operation started
+% in that state rebuilds the index before it reads a single box, so nothing is
+% lost; the status line is what explains the pause, and what tells the user the
+% list in front of them is describing a model that has moved on.
 %
 % Input Arguments:
 %   (none)
@@ -68,13 +70,25 @@ end
 % index is still worth showing, because the operations take their bounding boxes
 % from it and rebuild it before they act.
 stats = obj.currentSliceStats();
+sliceText = sprintf('Slice %d: %d objects', shownSlice, numel(stats.objectIds));
+
 if indexReady
-    label.Text = sprintf('Slice %d: %d objects; %d in the whole model', ...
-        shownSlice, numel(stats.objectIds), index.numObjects);
+    % numObjects is nnz(exists) - the count of distinct label values in the
+    % volume, not a count of objects. On an unstitched model the numbering
+    % restarts on every slice, so one index is a different object on each of
+    % them and this total sits far below the number of blobs in the stack.
+    % Calling it "in the whole model" reads as the latter; name what it counts.
+    label.Text = sprintf('%s; %d object indices in the stack', sliceText, index.numObjects);
     label.FontColor = [0.0 0.5 0.0];
-else
-    label.Text = sprintf('Slice %d: %d objects; whole-model index out of date', ...
-        shownSlice, numel(stats.objectIds));
+elseif isempty(index) || ~isstruct(index)
+    % Never built, which is the normal state on opening: this mode is measured
+    % from the slice and needs no index. Harmless, so it must not borrow the
+    % words used for a cache that disagrees with the model.
+    label.Text = sprintf('%s; no whole-model index yet', sliceText);
     label.FontColor = [0.6 0.4 0.0];
+else
+    % Built, then invalidated. This one is the correctness alarm.
+    label.Text = sprintf('%s; whole-model index out of date', sliceText);
+    label.FontColor = [0.7 0.0 0.0];
 end
 end

@@ -189,7 +189,7 @@ frozen run and a dead network for the single-phase trainable one. Validation los
   network and `'FreezeSubNetwork', 'none'`. `preprareTrainingOptionsInstances` gained an optional
   `trainingOptOverrides` argument so each phase gets its own `MaxEpochs` and `InitialLearnRate`
   without touching `obj.TrainingOpt`.
-- **Reporting:** `iNormalizeTrainingInfo` and `iConcatenateTrainingInfo` (local to
+- **Reporting:** `localNormalizeTrainingInfo` and `localConcatenateTrainingInfo` (local to
   `startTrainingInstances.m`) join the two phases into one continuous `info`, shifting `Iteration`
   and `Epoch` and dropping fields that only one phase produced. Each phase still draws its own
   progress window - unifying the plot across phases was judged not worth the OutputFcn surgery.

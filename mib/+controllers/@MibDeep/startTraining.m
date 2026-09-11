@@ -732,7 +732,7 @@ try
     % so there is nothing to freeze there.
     if ~isempty(valDS) && obj.BatchOpt.T_RandomGeneratorValSeed{1} ~= 0 && ...
             ~strcmp(obj.BatchOpt.Workflow{1}, '2D Patch-wise')
-        valDS = iFreezeValidationPatches(valDS, obj.BatchOpt.T_RandomGeneratorValSeed{1}, ...
+        valDS = localFreezeValidationPatches(valDS, obj.BatchOpt.T_RandomGeneratorValSeed{1}, ...
             obj.BatchOpt.T_MiniBatchSize{1});
     end
 
@@ -1116,7 +1116,7 @@ fprintf('Training is finished, elapsed time: %f\n', toc(trainTimer));
 end
 
 % -------------------------------------------------------------------------------------
-function frozenDS = iFreezeValidationPatches(valDS, seedValue, miniBatchSize)
+function frozenDS = localFreezeValidationPatches(valDS, seedValue, miniBatchSize)
 % read the validation datastore once and replay those exact batches at every evaluation
 %
 % randomPatchExtractionDatastore picks its crops lazily from the global random stream, so a

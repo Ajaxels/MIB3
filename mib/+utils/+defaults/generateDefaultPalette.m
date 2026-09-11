@@ -1,4 +1,4 @@
-function palette = generateDefaultPalette(paletteName, colorsNo, randomSeed)
+function [palette, cancelled] = generateDefaultPalette(paletteName, colorsNo, randomSeed)
 % GENERATEDEFAULTPALETTE - Generate a colour palette by name and number of colours.
 %
 % Syntax:
@@ -6,6 +6,7 @@ function palette = generateDefaultPalette(paletteName, colorsNo, randomSeed)
 %
 %      palette = generateDefaultPalette(paletteName, colorsNo)
 %      palette = generateDefaultPalette(paletteName, colorsNo, randomSeed)
+%      [palette, cancelled] = generateDefaultPalette(paletteName, colorsNo, randomSeed)
 %
 % Input Arguments:
 %   - **paletteName** - [char] name of the palette to generate; supported values:
@@ -24,7 +25,12 @@ function palette = generateDefaultPalette(paletteName, colorsNo, randomSeed)
 %     the system clock without showing the dialog
 %
 % Output Arguments:
-%   - **palette** - [numeric] matrix ``[colorId, [R G B]]`` with values in range 0-1
+%   - **palette** - [numeric] matrix ``[colorId, [R G B]]`` with values in range 0-1;
+%     empty when the palette could not be generated, i.e. when ``colorsNo`` exceeds
+%     what the named scheme provides, or when the seed dialog was cancelled
+%   - **cancelled** - [logical] true only when the user dismissed the random seed
+%     dialog. Callers must test this before reporting an empty ``palette`` as a
+%     failure, otherwise a plain cancel is shown as an error
 %
 % Usage:
 %
@@ -46,6 +52,7 @@ if nargin < 2; colorsNo = 6; end
 if nargin < 1; paletteName = 'Default, 6 colors'; end
 
 palette = [];
+cancelled = false;
 
 switch paletteName
     case 'Default, 6 colors'
@@ -186,7 +193,7 @@ switch paletteName
             answer = utils.dlgs.inputSingleDlg([], 'Random seed number', ...
                 struct('Value', randomSeed, 'Limits', [1 Inf], 'Step', 1, 'Round', true), ...
                 'Specify random seed', options);
-            if isempty(answer); return; end
+            if isempty(answer); cancelled = true; return; end
             randomSeed = answer;
         end
 

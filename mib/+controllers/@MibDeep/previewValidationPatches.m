@@ -51,7 +51,7 @@ validationSeed = obj.BatchOpt.T_RandomGeneratorValSeed{1};
 patchesPerImage = obj.BatchOpt.T_PatchesPerImage{1};
 
 % how many validation observations there are, so the dialog can state it
-noValidationImages = iCountValidationImages(obj);
+noValidationImages = localCountValidationImages(obj);
 if noValidationImages == 0
     mgsOpt.MsgBoxOnly = true;
     mgsOpt.Icon = 'puffin_warning';
@@ -101,9 +101,9 @@ wb = uiprogressdlg(obj.view.gui, 'Message', 'Collecting validation patches...', 
 
 try
     if strcmp(obj.BatchOpt.Workflow{1}, '2D Instance')
-        patchSet = iCollectInstancePatches(obj, validationSeed, patchesPerImage, maxPatches, wb);
+        patchSet = localCollectInstancePatches(obj, validationSeed, patchesPerImage, maxPatches, wb);
     else
-        patchSet = iCollectSemanticPatches(obj, validationSeed, patchesPerImage, maxPatches, wb);
+        patchSet = localCollectSemanticPatches(obj, validationSeed, patchesPerImage, maxPatches, wb);
     end
 catch err
     delete(wb);
@@ -131,7 +131,7 @@ if exportMode
     wb.Value = 0;
     wb.Message = sprintf('Writing %d patches to disk...', numel(patchSet));
     try
-        noExported = iExportPatches(obj, patchSet, exportDir, wb);
+        noExported = localExportPatches(obj, patchSet, exportDir, wb);
     catch err
         delete(wb);
         utils.dlgs.showErrorDialog(obj.view.gui, err, 'Could not export the validation patches');
@@ -159,12 +159,12 @@ if exportMode
     return;
 end
 
-iShowCollage(obj, patchSet, validationSeed);
+localShowCollage(obj, patchSet, validationSeed);
 delete(wb);
 end
 
 % -------------------------------------------------------------------------------------
-function iShowCollage(obj, patchSet, validationSeed)
+function localShowCollage(obj, patchSet, validationSeed)
 % montage of the collected patches, styled like the augmentation preview
 
 collage = cell(numel(patchSet), 1);
@@ -200,7 +200,7 @@ figure(hFig);
 end
 
 % -------------------------------------------------------------------------------------
-function noExported = iExportPatches(obj, patchSet, exportDir, wb)
+function noExported = localExportPatches(obj, patchSet, exportDir, wb)
 % write each patch at full resolution as an image plus a MIB model of its labels
 %
 % Output Arguments:
@@ -238,19 +238,19 @@ end
 end
 
 % -------------------------------------------------------------------------------------
-function noValidationImages = iCountValidationImages(obj)
+function noValidationImages = localCountValidationImages(obj)
 % number of files in the validation set, without building any datastore
 
 if strcmp(obj.BatchOpt.Workflow{1}, '2D Instance')
     noValidationImages = numel(dir(fullfile(obj.BatchOpt.OriginalTrainingImagesDir, 'ValidationLabels', '*.mat')));
 else
-    [validationDir, fileExtension] = iValidationImageSource(obj);
+    [validationDir, fileExtension] = localValidationImageSource(obj);
     noValidationImages = numel(dir(fullfile(validationDir, ['*' fileExtension])));
 end
 end
 
 % -------------------------------------------------------------------------------------
-function [validationDir, fileExtension, readFcn] = iValidationImageSource(obj)
+function [validationDir, fileExtension, readFcn] = localValidationImageSource(obj)
 % where the validation images live, following the same rule as startTraining
 
 mibDeepStoreLoadImagesOpt.mibBioformatsCheck = obj.BatchOpt.BioformatsTraining;
@@ -270,14 +270,14 @@ end
 end
 
 % -------------------------------------------------------------------------------------
-function patchSet = iCollectSemanticPatches(obj, validationSeed, patchesPerImage, maxPatches, wb)
+function patchSet = localCollectSemanticPatches(obj, validationSeed, patchesPerImage, maxPatches, wb)
 % draw validation patches the way the semantic workflows do
 
 patchSet = struct('image', {}, 'labels', {}, 'materialNames', {}, 'modelType', {}, ...
     'caption', {}, 'sourceName', {});
 
 inputPatchSize = str2num(obj.BatchOpt.T_InputPatchSize); %#ok<ST2NM>
-[validationDir, fileExtension, readFcn] = iValidationImageSource(obj);
+[validationDir, fileExtension, readFcn] = localValidationImageSource(obj);
 if isempty(dir(fullfile(validationDir, ['*' fileExtension]))); return; end
 
 valImgDS = imageDatastore(validationDir, 'FileExtensions', fileExtension, ...
@@ -289,7 +289,7 @@ classNames = arrayfun(@(x) sprintf('Class%.2d', x), 1:obj.BatchOpt.T_NumberOfCla
 classNames = [{'Exterior'}; classNames'];
 pixelLabelIDs = 1:numel(classNames);
 
-valLabelsDS = iValidationLabelDatastore(obj, classNames, pixelLabelIDs);
+valLabelsDS = localValidationLabelDatastore(obj, classNames, pixelLabelIDs);
 if isempty(valLabelsDS)
     % without labels the positions can still be drawn, the image stands in as its own
     % response exactly as the augmentation preview does
@@ -323,10 +323,10 @@ while hasdata(patchDS) && patchId < maxPatches && ~wb.CancelRequested
     for rowId = 1:height(patchBatch)
         patchId = patchId + 1;
         if patchId > maxPatches; break; end
-        patchSet(patchId).image = iMiddleSlice(patchBatch.InputImage{rowId}, randomStoreInputPatchSize);
+        patchSet(patchId).image = localMiddleSlice(patchBatch.InputImage{rowId}, randomStoreInputPatchSize);
         if labelsAvailable
             labelPatch = patchBatch.(responseField){rowId};
-            labelPatch = iMiddleSlice(labelPatch, randomStoreInputPatchSize);
+            labelPatch = localMiddleSlice(labelPatch, randomStoreInputPatchSize);
             if iscategorical(labelPatch)
                 labelPatch = uint8(labelPatch) - 1;     % MIB models count Exterior as 0
             end
@@ -346,7 +346,7 @@ rng(rngState);
 end
 
 % -------------------------------------------------------------------------------------
-function valLabelsDS = iValidationLabelDatastore(obj, classNames, pixelLabelIDs)
+function valLabelsDS = localValidationLabelDatastore(obj, classNames, pixelLabelIDs)
 % build the validation label datastore, or return empty when it cannot be built
 
 valLabelsDS = [];
@@ -376,7 +376,7 @@ end
 end
 
 % -------------------------------------------------------------------------------------
-function patchImage = iMiddleSlice(patchImage, randomStoreInputPatchSize)
+function patchImage = localMiddleSlice(patchImage, randomStoreInputPatchSize)
 % for a 3D patch show its middle slice, as the augmentation preview does
 
 if numel(randomStoreInputPatchSize) == 3 && randomStoreInputPatchSize(3) > 1 && ~ismatrix(patchImage)
@@ -385,7 +385,7 @@ end
 end
 
 % -------------------------------------------------------------------------------------
-function patchSet = iCollectInstancePatches(obj, validationSeed, patchesPerImage, maxPatches, wb)
+function patchSet = localCollectInstancePatches(obj, validationSeed, patchesPerImage, maxPatches, wb)
 % draw validation patches exactly as controllers.MibDeep/startTrainingInstances does
 
 patchSet = struct('image', {}, 'labels', {}, 'materialNames', {}, 'modelType', {}, ...

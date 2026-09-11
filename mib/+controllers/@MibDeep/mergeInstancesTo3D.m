@@ -56,13 +56,13 @@ numFiles = numel(modelFiles);
 % peek at the first file to detect the layout of the prediction results; only
 % its dimensions are needed, so read the header rather than the pixels
 try
-    firstLabelsSize = iPeekLabelsSize(fullfile(resultsModelsDir, modelFiles(1).name));
+    firstLabelsSize = localPeekLabelsSize(fullfile(resultsModelsDir, modelFiles(1).name));
 catch err
     utils.dlgs.showErrorDialog(obj.view.gui, err, 'Merge instances to 3D');
     return;
 end
 % more than one plane in the file, counting past any trailing singleton
-% dimensions, which iLoadLabels squeezes away
+% dimensions, which localLoadLabels squeezes away
 stackPerFile = numel(firstLabelsSize) >= 3 && prod(firstLabelsSize(3:end)) > 1;
 
 if stackPerFile
@@ -186,7 +186,7 @@ totalOutput3DObjects = 0;
 for jobId = 1:numJobs
     if wb.CancelRequested
         delete(wb);
-        iReportCancelled(obj, jobId, numJobs, outputFilenames);
+        localReportCancelled(obj, jobId, numJobs, outputFilenames);
         return;
     end
     jobProgressBase = (jobId-1)/numJobs;
@@ -195,7 +195,7 @@ for jobId = 1:numJobs
     try
         if stackPerFile
             wb.Message = sprintf('Loading %s (%d of %d)...', modelFiles(jobId).name, jobId, numJobs);
-            inputVol = iLoadLabels(fullfile(resultsModelsDir, modelFiles(jobId).name));
+            inputVol = localLoadLabels(fullfile(resultsModelsDir, modelFiles(jobId).name));
             [~, inputBase] = fileparts(modelFiles(jobId).name);
             numSlices = size(inputVol, 3);
             if numSlices == 1
@@ -215,13 +215,13 @@ for jobId = 1:numJobs
             for sliceId = 1:numSlices
                 if wb.CancelRequested
                     delete(wb);
-                    iReportCancelled(obj, jobId, numJobs, outputFilenames);
+                    localReportCancelled(obj, jobId, numJobs, outputFilenames);
                     return;
                 end
                 if mod(sliceId, 10) == 0
                     wb.Message = sprintf('Loading instance models: %d of %d...', sliceId, numSlices);
                 end
-                sliceLabels = iLoadLabels(fullfile(resultsModelsDir, modelFiles(sliceId).name));
+                sliceLabels = localLoadLabels(fullfile(resultsModelsDir, modelFiles(sliceId).name));
                 if size(sliceLabels, 3) > 1
                     error('MibDeep:mergeInstancesTo3D:mixedDimensions', ...
                         ['%s is a 3D model (%d slices) while the first model file is 2D.\n\n' ...
@@ -262,7 +262,7 @@ for jobId = 1:numJobs
     % --- stitch ---
     if wb.CancelRequested
         delete(wb);
-        iReportCancelled(obj, jobId, numJobs, outputFilenames);
+        localReportCancelled(obj, jobId, numJobs, outputFilenames);
         return;
     end
     wb.Indeterminate = 'on';
@@ -278,7 +278,7 @@ for jobId = 1:numJobs
     % and the jobs already finished keep the files they saved (reported below).
     if stats.cancelled
         delete(wb);
-        iReportCancelled(obj, jobId, numJobs, outputFilenames);
+        localReportCancelled(obj, jobId, numJobs, outputFilenames);
         return;
     end
     clear inputVol;
@@ -365,7 +365,7 @@ utils.dlgs.inputUniversalDlg(obj.view.gui, 'The merge is complete!', {''}, {resu
     'Merge 2D instances to 3D', dlgOpt);
 end
 
-function iReportCancelled(obj, jobId, numJobs, outputFilenames)
+function localReportCancelled(obj, jobId, numJobs, outputFilenames)
 % Tell the user where the merge stopped. The jobs that finished before the
 % cancel have already written their files and those stay on disk, so saying
 % only "cancelled" would leave the output folder in an unexplained state.
@@ -387,7 +387,7 @@ utils.dlgs.inputUniversalDlg(obj.view.gui, 'The merge was cancelled', {''}, {res
     'Merge 2D instances to 3D', dlgOpt);
 end
 
-function labelsSize = iPeekLabelsSize(filename)
+function labelsSize = localPeekLabelsSize(filename)
 % Dimensions of the labels array in a *.model file, taken from the MAT-file
 % header instead of loading it. Only the layout (2D slices vs 3D stacks) is
 % needed before the settings dialog opens, and a prediction stack can be
@@ -400,7 +400,7 @@ if isempty(info)
 end
 names = {info.name};
 
-% mirrors the variable resolution of iLoadLabels below; modelVariable is a short
+% mirrors the variable resolution of localLoadLabels below; modelVariable is a short
 % char array, so loading that one variable to learn the name is still cheap
 labelsName = '';
 if ismember('modelVariable', names)
@@ -422,7 +422,7 @@ end
 labelsSize = info(strcmp(names, labelsName)).size;
 end
 
-function labels = iLoadLabels(filename)
+function labels = localLoadLabels(filename)
 % load the label array out of a MIB *.model file saved by the instance prediction
 modelStruct = load(filename, '-mat');
 if isfield(modelStruct, 'modelVariable') && isfield(modelStruct, modelStruct.modelVariable)

@@ -5716,7 +5716,8 @@ here.</p>
 <hr />
 <h2 id="2d-and-3d">2D and 3D<a class="headerlink" href="#2d-and-3d" title="Permanent link">&para;</a></h2>
 <p><span class="widget widget-checkbox">3D (whole object)</span> decides what an operation reaches. With it off, everything is confined to the shown slice, and the list follows: it names the objects on that slice and gives their area on it. <strong>Cut at slice</strong> and <strong>Connect</strong> are unavailable there, both being operations along Z.</p>
-<p>The editor opens with it off. This is the mode for a model that has not been stitched into 3D yet. There the numbering starts again from 1 on every slice, so the same number is a different object on each one - which is why the list cannot describe the whole stack at once, and why objects picked on one slice are dropped when the list moves to another.</p>
+<p>The editor opens with it off the first time. This is the mode for a model that has not been stitched into 3D yet. There the numbering starts again from 1 on every slice, so the same number is a different object on each one - which is why the list cannot describe the whole stack at once, and why objects picked on one slice are dropped when the list moves to another.</p>
+<p>After that it reopens the way you left it: the mode, the automatic list refresh, <span class="widget widget-checkbox">Pick objects by clicking</span> and <span class="widget widget-checkbox">Shortcuts</span> all carry over, along with the cleanup and list settings. They are remembered until MIB is closed, so a proofreading run survives closing the window without following you to the next session.</p>
 <p>Moving to another slice re-reads the list. On a large stack, turn <span class="widget widget-checkbox">Update the list on slice change</span> off and press <span class="widget widget-button">Update list</span> when you need it; until then the status line says which slice the list is describing.</p>
 <hr />
 <h2 id="choosing-the-objects-to-work-on">Choosing the objects to work on<a class="headerlink" href="#choosing-the-objects-to-work-on" title="Permanent link">&para;</a></h2>
@@ -5760,11 +5761,11 @@ already resting on, so that proofreading needs one hand for the mouse and nothin
 </tr>
 <tr>
 <td><span class="keys"><kbd class="key-s">S</kbd></span></td>
-<td>Split by selection</td>
+<td>Subtract the drawing: split what it cuts through, remove what it covers entirely</td>
 </tr>
 <tr>
 <td><span class="keys"><kbd class="key-c">C</kbd></span></td>
-<td>Empty the list of picked objects</td>
+<td>Empty the list of picked objects and clear the Selection layer</td>
 </tr>
 <tr>
 <td><span class="keys"><kbd class="key-control">Ctrl</kbd><span>+</span><kbd class="key-f">F</kbd></span></td>
@@ -5777,10 +5778,10 @@ what you drew becomes part of the object, and what the drawing covers only decid
 is. Several objects become one, a single object grows by what you drew, and a drawing on empty space
 becomes an object of its own. So an object can be painted, extended or joined without leaving the
 brush - and a stroke bridging two halves joins them and fills the join in one press.</p>
-<p>While the checkbox is ticked these keys do <strong>not</strong> add to the material, subtract from it or clear the
-Selection layer as they normally do - that is what it is for. <span class="keys"><kbd class="key-c">C</kbd></span> in particular empties the list of
-picked objects and leaves anything you have drawn where it is. Untick the checkbox, or close the
-editor, and the usual meanings are back. Everything else, <span class="keys"><kbd class="key-i">I</kbd></span> and <span class="keys"><kbd class="key-control">Ctrl</kbd><span>+</span><kbd class="key-z">Z</kbd></span> included, keeps
+<p>While the checkbox is ticked <span class="keys"><kbd class="key-a">A</kbd></span> and <span class="keys"><kbd class="key-s">S</kbd></span> do <strong>not</strong> add to or subtract from the material as they
+normally do - that is what it is for. <span class="keys"><kbd class="key-c">C</kbd></span> still clears the Selection layer as it does elsewhere,
+and empties the list of picked objects with it, so one key starts the next object again from nothing.
+Untick the checkbox, or close the editor, and the usual meanings are back. Everything else, <span class="keys"><kbd class="key-i">I</kbd></span> and <span class="keys"><kbd class="key-control">Ctrl</kbd><span>+</span><kbd class="key-z">Z</kbd></span> included, keeps
 working throughout.</p>
 <hr />
 <h2 id="operations">Operations<a class="headerlink" href="#operations" title="Permanent link">&para;</a></h2>
@@ -5794,7 +5795,7 @@ working throughout.</p>
 <tbody>
 <tr>
 <td><strong>Merge</strong></td>
-<td>Joins objects into one, which keeps the <strong>smallest</strong> of their indices. What it joins depends on what you give it:<ul><li><strong>Objects picked</strong> - those objects, in full. Anything drawn is left alone.</li><li><strong>Nothing picked, shape over several objects</strong> - all of them, plus the empty space the shape crossed, so the result is one connected object.</li><li><strong>Nothing picked, shape over one object</strong> - that object grows by the shape.</li><li><strong>Nothing picked, shape over empty space</strong> - the shape becomes a new object.</li></ul><div class="admonition info"><p class="admonition-title">Also on the keyboard</p><p>With <span class="widget widget-checkbox">Shortcuts</span> ticked, <span class="keys"><kbd class="key-a">A</kbd></span> does the same as this button, so an object can be joined or grown without leaving the brush.</p></div></td>
+<td>Joins objects into one, which keeps the <strong>smallest</strong> of their indices. What it joins depends on what you give it:<ul><li><strong>Objects picked</strong> - those objects, in full. Anything drawn is left alone.</li><li><strong>Nothing picked, shape over several objects</strong> - all of them, plus the empty space the shape crossed, so the result is one connected object.</li><li><strong>Nothing picked, shape over one object</strong> - that object grows by the shape.</li><li><strong>Nothing picked, shape over empty space</strong> - the shape becomes a new object. In 3D, if there are objects on the slices immediately above and below the shape, those are joined instead - draw the gap between two halves of one object and they become one.</li></ul><div class="admonition info"><p class="admonition-title">Also on the keyboard</p><p>With <span class="widget widget-checkbox">Shortcuts</span> ticked, <span class="keys"><kbd class="key-a">A</kbd></span> does the same as this button, so an object can be joined or grown without leaving the brush.</p></div></td>
 </tr>
 <tr>
 <td><strong>Split components</strong></td>
@@ -5802,7 +5803,7 @@ working throughout.</p>
 </tr>
 <tr>
 <td><strong>Split by selection</strong></td>
-<td>Cuts the drawn shape out of the objects under it, then splits what is left. The one to use after brushing a break.<ul><li><strong>Nothing picked</strong> - everything the shape covers is split.</li><li><strong>Objects picked</strong> - only those are cut, for a break that also crosses a neighbour you want left alone.</li></ul><div class="admonition info"><p class="admonition-title">Also on the keyboard</p><p>With <span class="widget widget-checkbox">Shortcuts</span> ticked, <span class="keys"><kbd class="key-s">S</kbd></span> does the same as this button, so a break can be brushed and cut without putting the brush down.</p></div></td>
+<td>Cuts the drawn shape out of the objects under it, then splits what is left. The one to use after brushing a break.<ul><li><strong>Nothing picked</strong> - everything the shape covers is split.</li><li><strong>Objects picked</strong> - only those are cut, for a break that also crosses a neighbour you want left alone.</li><li><strong>Shape over a whole object</strong> - nothing is left of it, so the object goes. In 2D it goes from the shown slice only.</li><li><strong>Objects picked, nothing drawn</strong> - the picked objects go, for the same reason: they are what is in the Selection layer.</li></ul><div class="admonition info"><p class="admonition-title">Also on the keyboard</p><p>With <span class="widget widget-checkbox">Shortcuts</span> ticked, <span class="keys"><kbd class="key-s">S</kbd></span> does the same as this button, so a break can be brushed and cut without putting the brush down.</p></div></td>
 </tr>
 <tr>
 <td><strong>Cut at slice</strong></td>
@@ -5810,7 +5811,7 @@ working throughout.</p>
 </tr>
 <tr>
 <td><strong>Connect</strong></td>
-<td>Joins exactly two picked objects that belong together but do not touch, filling the space between them. Only empty space is filled, so an object in the way is never overwritten. Needs 3D.<ul><li><span class="widget widget-dropdown">interpolate</span> - shapes the bridge from the two facing ends of the objects. Needs a gap in Z to work from.</li><li><span class="widget widget-dropdown">selection</span> - uses the shape you drew as the bridge. Also joins two objects lying side by side.</li></ul></td>
+<td>Joins two objects that belong together but do not touch, filling the space between them. Only empty space is filled, so an object in the way is never overwritten. Needs 3D.<ul><li><strong>Two objects picked</strong> - <span class="widget widget-dropdown">interpolate</span> shapes the bridge from their two facing ends, so nothing needs to be drawn, but it needs a gap in Z to work from; <span class="widget widget-dropdown">selection</span> uses the shape you drew instead, and also joins two objects lying side by side.</li><li><strong>Nothing picked</strong> - the same as <strong>Merge</strong>: the shape you drew is the bridge and chooses the objects, and <span class="widget widget-dropdown">Connect Mode</span> is not used.</li></ul></td>
 </tr>
 <tr>
 <td><strong>Delete</strong></td>
@@ -5822,7 +5823,7 @@ working throughout.</p>
 </tr>
 <tr>
 <td><strong>Compact</strong></td>
-<td>Renumbers every object to a continuous 1, 2, 3... after deletes and splits have left gaps. <strong>All object numbers change.</strong></td>
+<td>Renumbers every object to a continuous 1, 2, 3... after deletes and splits have left gaps. <strong>All object numbers change.</strong><ul><li><strong>3D</strong> - one numbering across the whole model.</li><li><strong>2D</strong> - each slice is renumbered on its own, which is where the gaps are on a model that has not been stitched: a slice holding 1, 3, 5 becomes 1, 2, 3.</li></ul></td>
 </tr>
 </tbody>
 </table>
@@ -5842,6 +5843,25 @@ undoable step, and the drawing is used up.</p>
 the cut is kept to what you picked. Do the picking after the drawing: picking covers the object
 in the Selection layer, and drawing on top of that clears the highlight out of the way but does
 not keep the stroke that cleared it.</p>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Joining two objects with the brush</p>
+<p>The same gesture the other way round, for one object wrongly broken into two:</p>
+<ol>
+<li>Brush the gap between them into the Selection layer.</li>
+<li>Press <span class="widget widget-button">Merge</span>, or <span class="keys"><kbd class="key-a">A</kbd></span> with
+   <span class="widget widget-checkbox">Shortcuts</span> ticked.</li>
+</ol>
+<p>Nothing needs to be picked. In 2D this is a stroke laid across both objects; in 3D the shape can
+sit on the empty slice between them instead, and the objects on the slices immediately above and
+below it are the ones joined. Either way they keep the smaller of their two numbers and the
+brushed area becomes part of them, so the result is one connected object.</p>
+<p>Where the shape also clips the corner of a neighbour on the slice above or below, only the object
+it mostly lands on is taken, so a stroke that is slightly too wide does not swallow the object
+next door.</p>
+<p><span class="widget widget-button">Connect</span> does the same thing when nothing is picked. Its
+own behaviour - <span class="widget widget-dropdown">interpolate</span>, which needs no drawing at
+all - starts when you pick the two objects yourself.</p>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Rebuilding the list</p>

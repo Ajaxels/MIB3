@@ -14,4 +14,5 @@ if obj.mibModel.preferences.System.DeveloperMode
 end
 
 obj.setPickMode(obj.view.handles.pickByClick.Value);
+obj.rememberWindowState();
 end

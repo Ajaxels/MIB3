@@ -75,9 +75,9 @@ switch action
         candidatePath = suspendedCheckpointPath;
         originalCheckpointPath = '';
         suspendedCheckpointPath = '';
-        iRestoreWarningState(previousWarningState);
+        localRestoreWarningState(previousWarningState);
         previousWarningState = [];
-        iMoveFolderBack(candidatePath, checkpointPath);
+        localMoveFolderBack(candidatePath, checkpointPath);
     case 'restoreOrphaned'
         % Ctrl+C, a crash or a MATLAB restart can leave the renamed folder behind, because
         % the 'restore' call at the end of the run never happened and the persistent state
@@ -90,12 +90,12 @@ switch action
         candidatePath = [checkpointPath '_stopping'];
         if ~isfolder(candidatePath); return; end
         fprintf('DeepMIB: recovering checkpoints left in "%s" by an interrupted run\n', candidatePath);
-        iMoveFolderBack(candidatePath, checkpointPath);
+        localMoveFolderBack(candidatePath, checkpointPath);
         originalCheckpointPath = '';
         suspendedCheckpointPath = '';
         % a run killed during the spin-down left warnings switched off; a Ctrl+C also
         % skips this, so warnings stay off until the next training run starts
-        iRestoreWarningState(previousWarningState);
+        localRestoreWarningState(previousWarningState);
         previousWarningState = [];
     otherwise
         error('deepmib:suspendCheckpointSaving:unknownAction', ...
@@ -105,7 +105,7 @@ end
 end
 
 % -------------------------------------------------------------------------------------
-function iRestoreWarningState(previousWarningState)
+function localRestoreWarningState(previousWarningState)
 % put the warning configuration back the way it was before the spin-down
 
 if isempty(previousWarningState); return; end
@@ -114,7 +114,7 @@ warning(previousWarningState);
 end
 
 % -------------------------------------------------------------------------------------
-function iMoveFolderBack(candidatePath, checkpointPath)
+function localMoveFolderBack(candidatePath, checkpointPath)
 % move the renamed folder back under its original name
 %
 % Housekeeping only: a failure here must never stop the caller from training, so problems

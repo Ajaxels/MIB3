@@ -50,9 +50,9 @@ if isempty(imageDocument); return; end
 % Work out what the click is before anything else: a pan has to be passed on
 % even when there is no model to pick from and even when the cursor is outside
 % the image, which the picking guards below would both reject.
-action = iClickAction(obj, imageDocument.UIFigure);
+action = localClickAction(obj, imageDocument.UIFigure);
 if strcmp(action, 'delegate') || ~obj.modelIsEditable()
-    iDelegateToImageDocument(obj, imageDocument);
+    localDelegateToImageDocument(obj, imageDocument);
     return;
 end
 
@@ -60,7 +60,7 @@ obj.pickObjectUnderCursor(action);
 end
 
 % =====================================================================
-function action = iClickAction(obj, hFig)
+function action = localClickAction(obj, hFig)
 % Which picking gesture this click is, or 'delegate' when it belongs to the
 % image document - panning above all.
 %
@@ -100,7 +100,7 @@ end
 end
 
 % =====================================================================
-function iDelegateToImageDocument(obj, imageDocument)
+function localDelegateToImageDocument(obj, imageDocument)
 % Hand the click back to the image document, then take the mouse again.
 %
 % The pan gesture clears WindowButtonDownFcn while it runs, and the
@@ -117,11 +117,11 @@ if isempty(panUpFcn)
     obj.reassertPickMode();
     return;
 end
-hFig.WindowButtonUpFcn = @(src, evnt) iGestureFinished(obj, panUpFcn, src, evnt);
+hFig.WindowButtonUpFcn = @(src, evnt) localGestureFinished(obj, panUpFcn, src, evnt);
 end
 
 % =====================================================================
-function iGestureFinished(obj, originalFcn, src, evnt)
+function localGestureFinished(obj, originalFcn, src, evnt)
 % Let the gesture end exactly as it would have, then take the mouse back.
 originalFcn(src, evnt);
 if isvalid(obj); obj.reassertPickMode(); end

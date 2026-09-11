@@ -28,10 +28,13 @@ end
 
 if ~obj.modelIsEditable(); return; end
 
-% Merge and Split by selection need no pick: the drawing says which objects are
-% meant and the model works them out from it. Picking objects anyway restricts
-% the action to them, which is what a line clipping a neighbour needs.
-needsObjects = ~ismember(action, {'Cleanup', 'Compact', 'Merge', 'SplitBySelection'});
+% Merge, Split by selection and Connect need no pick: the drawing says which
+% objects are meant and the model works them out from it - for Connect, the
+% objects at either end of the bridge. Picking objects anyway restricts the
+% action to them, which is what a line clipping a neighbour needs. With nothing
+% picked *and* nothing drawn the model says so, in words that name what to draw;
+% the generic warning below would be a worse answer.
+needsObjects = ~ismember(action, {'Cleanup', 'Compact', 'Merge', 'SplitBySelection', 'Connect'});
 if needsObjects && isempty(obj.selectedObjects)
     uialert(obj.view.gui, 'Pick the objects to work on first, in the list or by clicking them in the image.', ...
         'Nothing selected', 'Icon', 'warning');

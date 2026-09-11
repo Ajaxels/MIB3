@@ -128,7 +128,7 @@ addlistener(childObj, 'CloseEvent', @(src, ~) utils.purgeChildController(parentO
 %
 % An existing handler is never overwritten: a child that manages key releases itself is
 % assumed to know better.
-iWireKeyReleaseToMib(parentObj, childObj);
+localWireKeyReleaseToMib(parentObj, childObj);
 
 % In batch mode the child fires CloseEvent during its constructor, before
 % the listener above is wired.  The view property stays empty in that case,
@@ -142,7 +142,7 @@ end
 
 end
 
-function iWireKeyReleaseToMib(parentObj, childObj)
+function localWireKeyReleaseToMib(parentObj, childObj)
 % best effort: a window that cannot be wired must never stop the controller from opening
 try
     if isa(parentObj, 'controllers.MibController')

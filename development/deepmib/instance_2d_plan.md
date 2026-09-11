@@ -380,7 +380,7 @@ stop flag would feed that real iteration placeholder data and silently corrupt t
 
 Raised from `deepmib.readInstancePatch` as `error('DeepMIB:userEmergencyStop', …)`, caught
 in `startTrainingInstances.m`, which rebuilds the network from the newest checkpoint via the
-local `iRecoverNetworkFromCheckpoint` (synthesising `info` from the progress window's curve).
+local `localRecoverNetworkFromCheckpoint` (synthesising `info` from the progress window's curve).
 
 **Critical gotcha:** it cannot be raised from the training `OutputFcn`. `images.dltrain`
 invokes the `OutputFcn` from a `notify()` listener, and **`notify` catches listener errors
@@ -471,11 +471,11 @@ matching the `2D Semantic` behaviour:
   both directions (`MibDeep:mergeInstancesTo3D:mixedDimensions`). Multi-output runs ask for a
   folder + a format dropdown (instead of `uiputfile`) and save with `silent = true` so the
   TIF/model savers do not ask the 3D-stack/2D-sequence question once per file; outputs are named
-  `<inputModelName>_stitched3D.<ext>`. Loading a model file moved into a local `iLoadLabels`
+  `<inputModelName>_stitched3D.<ext>`. Loading a model file moved into a local `localLoadLabels`
   subfunction (used by both the layout peek and the two loading paths).
 - Verified in MATLAB against real files: 2D grayscale → `[64 48 1 1 1]`, 2D RGB → `[64 48 1 3 1]`,
   5-page TIF → `[64 48 5 1 1]`, per-slice extraction always yields `[H W 3]`, slice order
-  preserved, and a synthetic 3D instance model round-trips through save → `iLoadLabels` → stitch
+  preserved, and a synthetic 3D instance model round-trips through save → `localLoadLabels` → stitch
   (10 2D objects → 2 3D instances).
 
 ### What is still open

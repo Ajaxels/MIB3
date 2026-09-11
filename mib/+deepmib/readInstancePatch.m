@@ -66,7 +66,7 @@ end
 % spinDownActive is only set once the OutputFcn has actually requested the stop, which
 % guarantees no real iteration is ever fed a placeholder.
 if isfield(mibDeepTrainingProgressStruct, 'spinDownActive') && mibDeepTrainingProgressStruct.spinDownActive
-    out = iPlaceholderObservation(options.patchSize);
+    out = localPlaceholderObservation(options.patchSize);
     return;
 end
 
@@ -145,7 +145,7 @@ out = {imagePatch, boxes, labels, masks};
 end
 
 % -------------------------------------------------------------------------------------
-function out = iPlaceholderObservation(patchSize)
+function out = localPlaceholderObservation(patchSize)
 % minimal correctly shaped observation, handed to the prefetches of a stopping trainer
 %
 % Shape and categories must still match what trainSOLOV2 expects - the categories in

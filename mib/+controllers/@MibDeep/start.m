@@ -17,7 +17,7 @@ function start(obj, event)
     % let go - and the next scroll over the image then resizes the brush instead of
     % changing the slice. gui_WindowKeyReleaseFcn is exactly the "no key is held any
     % more" cleanup, so call it on every exit path, error paths included.
-    clearStaleModifier = onCleanup(@() iReleaseModifierKeys(obj));
+    clearStaleModifier = onCleanup(@() localReleaseModifierKeys(obj));
 
     switch event.Source.Tag
         case 'PreprocessButton'
@@ -116,7 +116,7 @@ function start(obj, event)
     %obj.returnBatchOpt();
 end
 
-function iReleaseModifierKeys(obj)
+function localReleaseModifierKeys(obj)
 % never let a cleanup failure surface as the outcome of a finished training run
 try
     if isvalid(obj) && ~isempty(obj.mibController) && isvalid(obj.mibController)

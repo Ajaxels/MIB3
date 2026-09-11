@@ -38,10 +38,10 @@ h = obj.view.handles;
 if ~obj.modelIsEditable(); return; end
 
 if h.Mode3D.Value
-    [objectIds, columns] = iVolumeRows(obj);
+    [objectIds, columns] = localVolumeRows(obj);
     h.objectTable.ColumnName = {'Index', 'Voxels', 'Slices', 'Z range'};
 else
-    [objectIds, columns] = iSliceRows(obj);
+    [objectIds, columns] = localSliceRows(obj);
     h.objectTable.ColumnName = {'Index', 'Pixels'};
 end
 
@@ -54,7 +54,7 @@ end
 % Always keep the picked objects visible, even when a filter excludes them.
 picked = obj.selectedObjects(:);
 picked = picked(ismember(picked, objectIds));
-[objectIds, keptRows] = iApplyFilters(obj, objectIds, columns, picked);
+[objectIds, keptRows] = localApplyFilters(obj, objectIds, columns, picked);
 columns = structfun(@(v) v(keptRows, :), columns, 'UniformOutput', false);
 
 obj.displayedIds = objectIds;
@@ -77,7 +77,7 @@ obj.restoreTableSelection();
 end
 
 % =====================================================================
-function [objectIds, columns] = iVolumeRows(obj)
+function [objectIds, columns] = localVolumeRows(obj)
 % 3D mode: every object of the model, straight out of the cached index.
 objectIds = [];
 columns = struct('voxels', [], 'slices', [], 'zMin', [], 'zMax', []);
@@ -98,7 +98,7 @@ columns.zMax = double(index.bbox(objectIds, 6));
 end
 
 % =====================================================================
-function [objectIds, columns] = iSliceRows(obj)
+function [objectIds, columns] = localSliceRows(obj)
 % 2D mode: the objects of the shown slice, measured from it. Note that this
 % needs no index at all, so the list stays usable while the index is stale.
 stats = obj.currentSliceStats();
@@ -108,7 +108,7 @@ obj.tableSlice = stats.slice;
 end
 
 % =====================================================================
-function [objectIds, keptRows] = iApplyFilters(obj, objectIds, columns, picked)
+function [objectIds, keptRows] = localApplyFilters(obj, objectIds, columns, picked)
 % Size filters, then the row cap, all three from obj.listOptions - they are set
 % in askDetectionSettings and have no widget to read them from. 0 means "off"
 % for both filters, and the slice filter is skipped in 2D mode where a slice

@@ -53,6 +53,14 @@ classdef InstanceEditor < handle
         internalEdit = false
         % true while this controller is applying an edit, so its own writes do
         % not mark the index it has just refreshed as stale
+        indexFreshBeforeWrite = false
+        % true when the most recent invalidation took the index from fresh to
+        % stale and no Undo has yet decided what to do about it. MibModel.undo
+        % writes the restored voxels **before** it fires its Undo event, so by
+        % the time repairIndexAfterUndo runs the index is already marked stale
+        % by that write; this is what tells it apart from an index that was
+        % stale before the undo began, where repairing one box would leave the
+        % rest wrong. Always cleared by the Undo handler, whatever it decides
         highlightState = []
         % what the highlight borrowed from the Selection layer: the box it was
         % painted into, what the user had there beforehand and what was painted
@@ -128,7 +136,14 @@ classdef InstanceEditor < handle
                 case 'Undo'
                     % Undo rewinds voxels without telling the index, so its
                     % bounding boxes may now describe a model that is gone.
-                    obj.markIndexStale();
+                    % An edit made here backed up one box and left a note of it
+                    % on the undo entry, so that box can be re-indexed instead;
+                    % anything else - a brush stroke on the model, another
+                    % tool, Cleanup, Compact - has no note and falls back to
+                    % invalidating the whole index.
+                    if ~obj.repairIndexAfterUndo()
+                        obj.markIndexStale();
+                    end
                     obj.invalidateSliceStats();
                     obj.updateWidgets();
             end
@@ -159,11 +174,13 @@ classdef InstanceEditor < handle
             % the two settings dialogs - askDetectionSettings and
             % askCleanupSettings - and kept here between them.
             obj.BatchOpt = struct();
-            % Opens in 2D: the list then describes the shown slice, which is the
-            % only thing it can describe on a model that has not been stitched
-            % into 3D yet - and that is what the editor is usually opened on.
-            % The connectivity has to start in the same mode, or the dialog
-            % offers 26/6 while the operations run per slice.
+            % Opens in 2D on a machine that has never had the editor open: the
+            % list then describes the shown slice, which is the only thing it
+            % can describe on a model that has not been stitched into 3D yet -
+            % and that is what the editor is usually opened on first. After
+            % that the mode is whatever it was last left in, restored below.
+            % The connectivity has to start in the same mode, or the settings
+            % dialog offers 26/6 while the operations run per slice.
             obj.BatchOpt.Mode3D = false;
             obj.BatchOpt.Connectivity = {'8'};
             obj.BatchOpt.Connectivity{2} = {'8', '4'};
@@ -187,16 +204,24 @@ classdef InstanceEditor < handle
                 for name = {'MaxRows', 'MaxVoxels', 'MaxSlices'}
                     if isfield(stored, name{1}); obj.listOptions.(name{1}) = stored.(name{1}); end
                 end
-                % The stored connectivity may belong to the other mode - the
-                % window always opens in 2D - so only the stance survives:
-                % the full neighbourhood or the minimal one.
+                % The mode is restored before the connectivity, because the
+                % connectivity belongs to it: 26/6 are the 3-D neighbourhoods
+                % and 8/4 the 2-D ones, and a number from the other mode means
+                % nothing here. So only the stance survives the trip - the full
+                % neighbourhood stays full and the minimal one stays minimal -
+                % which is the rule mode3D_Callback applies on every switch.
+                obj.BatchOpt.Mode3D = obj.storedWindowState().Mode3D;
+                items = {'8', '4'};
+                if obj.BatchOpt.Mode3D; items = {'26', '6'}; end
+                obj.BatchOpt.Connectivity{2} = items;
+                wasFull = true;    % the opening stance set above
                 if isfield(stored, 'Connectivity')
-                    items = obj.BatchOpt.Connectivity{2};
-                    if ismember(stored.Connectivity, {'26', '8'})
-                        obj.BatchOpt.Connectivity{1} = items{1};
-                    else
-                        obj.BatchOpt.Connectivity{1} = items{2};
-                    end
+                    wasFull = ismember(stored.Connectivity, {'26', '8'});
+                end
+                if wasFull
+                    obj.BatchOpt.Connectivity{1} = items{1};
+                else
+                    obj.BatchOpt.Connectivity{1} = items{2};
                 end
             end
 
@@ -213,6 +238,17 @@ classdef InstanceEditor < handle
             obj.configureWidgets();
             obj.addCallbacks();
             obj.updateWidgets();
+
+            % The two takeovers are restored through the same methods the
+            % checkboxes call, never by setting the checkbox: the mouse and the
+            % keys are owned by controller state, and a value written straight
+            % into the widget would claim a takeover that never happened. Both
+            % refuse gracefully - no image document, no live MibController -
+            % and put the checkbox back to what they actually managed to do.
+            state = obj.storedWindowState();
+            if state.pickByClick;  obj.setPickMode(true);     end
+            if state.useShortcuts; obj.setShortcutMode(true); end
+
             obj.view.gui.Visible = 'on';
 
             obj.listener{1} = addlistener(obj.mibModel, 'UpdateGuiWidgets', @(src, evnt) obj.ViewListner_Callback2(obj, src, evnt));
@@ -244,9 +280,12 @@ classdef InstanceEditor < handle
             h.Mode3D.Value = obj.BatchOpt.Mode3D;
 
             h.jumpToIndex.Value = 0;
-            h.autoUpdateTable.Value = true;
-            % Both takeovers start off and are owned by the controller state, so
-            % neither can begin out of step with what the checkbox shows.
+            h.autoUpdateTable.Value = obj.storedWindowState().autoUpdateTable;
+            % Both takeovers are owned by the controller state, so neither can
+            % begin out of step with what the checkbox shows. They start off
+            % here even when they are about to be restored: the constructor
+            % turns them on through setPickMode / setShortcutMode, and those
+            % write the checkbox from the state they reached.
             h.pickByClick.Value = false;
             h.useShortcuts.Value = false;
 
@@ -287,7 +326,7 @@ classdef InstanceEditor < handle
                     ['Give these keys to the editor while it is open:' newline ...
                      '    - a: commit the drawing: merge what it covers, grow one object, or create a new one' newline ...
                      '    - s: split by the drawing' newline ...
-                     '    - c: empty the list of picked objects (the drawing is kept)' newline ...
+                     '    - c: empty the list of picked objects and clear the Selection layer' newline ...
                      '   - ctrl+f: add the object under the mouse to the selection' newline ...
                      'Their usual meanings come back when this is unticked.']
                 {'selectedList', 'SelectedobjectsLabel'}, ...
@@ -296,14 +335,16 @@ classdef InstanceEditor < handle
                     ['On: work with 3D objects' newline ...
                      'Off: work with 2D objects']
                 {'ConnectMode', 'ConnectModeDropDownLabel'}, ...
-                    ['How Connect bridges: interpolate morphs between the two facing cross-sections and ' ...
-                     'needs a gap in Z; selection uses the shape drawn in the Selection layer and does ' ...
-                     'not. 3D mode only.']
+                    ['How Connect bridges two picked objects: interpolate morphs between the two facing ' ...
+                     'cross-sections and needs a gap in Z; selection uses the shape drawn in the ' ...
+                     'Selection layer and does not. Not used when nothing is picked - the drawing is ' ...
+                     'then the bridge already. 3D mode only.']
                 {'mergeButton'}, ...
                     ['Join the picked objects into one, which keeps the smallest of their indices. ' ...
-                     'With nothing picked the selection later decides what to join, and the background under it ' ...
+                     'With nothing picked the selection layer decides what to join, and the background under it ' ...
                      'joins too: several objects become one connected piece, a single object grows by the ' ...
-                     'drawing, and a drawing on empty space becomes a new object.']
+                     'drawing, and a drawing on empty space becomes a new object. In 3D the drawing also ' ...
+                     'reaches the slice above and below itself, so a gap along Z is closed by brushing it.']
                 {'splitComponentsButton'}, ...
                     'Break each picked object into its separate pieces. The largest keeps the index, the rest get new ones.'
                 {'splitBySelectionButton'}, ...
@@ -312,8 +353,10 @@ classdef InstanceEditor < handle
                 {'cutAtSliceButton'}, ...
                     'Split the picked object along Z: from the shown slice onwards becomes a new object. 3D mode only.'
                 {'connectButton'}, ...
-                    ['Bridge exactly two picked objects and join them. Only empty space is filled, ' ...
-                     'so an object lying between them is never overwritten. 3D mode only.']
+                    ['Bridge two picked objects and join them. Only empty space is filled, so an object ' ...
+                     'lying between them is never overwritten. With nothing picked it does what Merge ' ...
+                     'does: the drawing is the bridge, and the objects it reaches are the ones joined. ' ...
+                     '3D mode only.']
                 {'deleteButton'}, ...
                     'Delete the picked objects.'
                 {'cleanupButton'}, ...
@@ -322,7 +365,8 @@ classdef InstanceEditor < handle
                 {'cleanupOptions'}, ...
                     'Defone options used for cleanup of the model'
                 {'compactButton'}, ...
-                    'Renumber the objects to a continuous 1, 2, 3... after deletes and splits have left gaps. All numbers change.'
+                    ['Renumber the objects to a continuous 1, 2, 3... after deletes and splits have left gaps. ' ...
+                     'All numbers change. In 3D across the whole model, in 2D within each slice on its own.']
                 {'rebuildButton'}, ...
                     'Re-read the whole model and rebuild the object list. Needed after another tool has changed the model.'
                 {'helpButton'}, ...
@@ -360,9 +404,11 @@ classdef InstanceEditor < handle
             %   *Rebuild* is what renews it.
             %
             % The whole-model operations stay on in both modes on purpose:
-            % *Cleanup* and *Compact* read the whole volume whatever the mode
-            % says, and someone working slice by slice on a stitched model still
-            % has every reason to reach for them. The labels are switched with
+            % *Cleanup* reads the whole volume whatever the mode says, and
+            % *Compact* reads it in both but renumbers differently - globally in
+            % 3D, within each slice in 2D, because that is what the numbering
+            % means in each. Someone working slice by slice on a stitched model
+            % still has every reason to reach for them. The labels are switched with
             % their widgets, so a disabled setting does not keep a live-looking
             % caption next to it.
             h = obj.view.handles;
@@ -422,9 +468,87 @@ classdef InstanceEditor < handle
         % -----------------------------------------------------------
         function markIndexStale(obj)
             % MARKINDEXSTALE - Flag the cached object index as out of date.
+            %
+            % The fresh-to-stale transition is recorded as well, because an
+            % undo marks the index stale through its own write before it
+            % announces itself and repairIndexAfterUndo has to be able to tell
+            % that apart from staleness that was already there. Writes that
+            % arrive while the index is already stale leave the flag alone, so
+            % a burst of them still describes the first transition.
             dataset = obj.mibModel.I{obj.mibModel.getActiveId()};
             if ~isempty(dataset.instanceIndex) && isstruct(dataset.instanceIndex)
+                if isfield(dataset.instanceIndex, 'stale') && ~dataset.instanceIndex.stale
+                    obj.indexFreshBeforeWrite = true;
+                end
                 dataset.instanceIndex.stale = true;
+            end
+        end
+
+        % -----------------------------------------------------------
+        function repaired = repairIndexAfterUndo(obj)
+            % REPAIRINDEXAFTERUNDO - Re-index the region an Undo restored, rather than all of it.
+            %
+            % Rebuilding the index is a pass over the whole volume - the one
+            % cost in this tool that grows with the dataset instead of with the
+            % edit - and an undo of an edit made here does not need it: the edit
+            % backed up a single bounding box, ``MibModel.undo`` restored
+            % exactly that box, and ``editInstanceObjects`` attached the region
+            % and the objects involved to the undo entry through
+            % ``iUndoRepairOptions``. ``MibBackup`` keeps that note with the
+            % entry, so it survives the shifts of the ring buffer, and
+            % ``MibModel.undo`` copies the same options into the redo slot,
+            % which is why one note serves both directions.
+            %
+            % Every way of failing to recognise the note ends in ``false`` and a
+            % full rebuild. Acting on a region that does not describe what was
+            % restored would write the wrong voxels on the next edit, which is
+            % the failure this design exists to prevent; being slow is not.
+            %
+            % Output Arguments:
+            %   - **repaired** - logical, true when the index now describes the
+            %     model and needs no rebuild
+            repaired = false;
+
+            % Read and clear in one go. Clearing here whatever is decided below
+            % is what keeps the flag honest: an undo that could not be repaired
+            % leaves the index stale *and* unclaimed, so a later step back onto
+            % an entry that does carry a note cannot mistake that older
+            % staleness for its own.
+            freshBeforeWrite = obj.indexFreshBeforeWrite;
+            obj.indexFreshBeforeWrite = false;
+
+            dataset = obj.mibModel.I{obj.mibModel.getActiveId()};
+            index = dataset.instanceIndex;
+            if isempty(index) || ~isstruct(index) || ~isfield(index, 'stale'); return; end
+
+            % MibModel.undo restores the voxels before it fires the Undo event,
+            % so the index is normally stale by now - marked by that very write.
+            % Only staleness this undo caused can be repaired by it; anything
+            % older describes changes no note covers.
+            if index.stale && ~freshBeforeWrite; return; end
+
+            backup = obj.mibModel.Backup;
+            if isempty(backup) || ~isvalid(backup); return; end
+            entry = backup.undoIndex;
+            if entry < 1 || entry > numel(backup.undoList); return; end
+
+            options = backup.undoList(entry).options;
+            if ~isstruct(options) || ~isfield(options, 'instanceIndexRepair'); return; end
+            note = options.instanceIndexRepair;
+
+            % The note has to describe the dataset and the time point in front
+            % of the user, and the index has to be the one it was written for.
+            if isfield(options, 'id') && ~isequal(options.id, obj.mibModel.getActiveId()); return; end
+            if ~isequal(note.timePoint, dataset.getCurrentTimePoint()); return; end
+            if ~isequal(index.timePoint, note.timePoint); return; end
+
+            dataset.buildInstanceIndex(note);
+            repaired = true;
+
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf(['controllers.InstanceEditor.repairIndexAfterUndo: ' ...
+                    'index repaired over [%s] for objects [%s]\n'], ...
+                    num2str(double(note.bbox)), num2str(double(note.objectIds(:)')));
             end
         end
 
@@ -551,6 +675,7 @@ classdef InstanceEditor < handle
                 fprintf('controllers.InstanceEditor.shortcutMode_Callback: triggered\n');
             end
             obj.setShortcutMode(logical(obj.view.handles.useShortcuts.Value));
+            obj.rememberWindowState();
         end
 
         % -----------------------------------------------------------
@@ -586,11 +711,24 @@ classdef InstanceEditor < handle
                     if hasControl || hasAlt; return; end
                     obj.runOperation('SplitBySelection');
                 case 'c'
-                    % Empties the list of picked objects, not the Selection
-                    % layer as MIB's own 'c' does. Collecting objects with
-                    % Ctrl+F is only comfortable if starting again is one key.
+                    % Empties the list of picked objects *and* the Selection
+                    % layer, so the key stays a superset of MIB's own 'c'
+                    % rather than quietly doing less than it while the takeover
+                    % is on. Collecting objects with Ctrl+F is only comfortable
+                    % if starting again is one key, and a drawing that chose the
+                    % wrong objects wants the same one.
+                    %
+                    % The list goes first: emptying it releases the borrowed
+                    % highlight, so what clearSelection then clears is the
+                    % user's own drawing and not a highlight it would otherwise
+                    % put back afterwards. The clear itself is delegated, which
+                    % is what carries MIB's scope rule across - plain 'c' is the
+                    % shown slice, shift+c the stack.
                     if hasControl || hasAlt; return; end
                     obj.selectedList_ContextMenu('clear');
+                    if ~isempty(obj.mibController) && isvalid(obj.mibController)
+                        obj.mibController.cSelection.clearSelection();
+                    end
                 case 'f'
                     if ~hasControl || hasAlt; return; end
                     % Adds rather than replaces: the point of picking objects
@@ -669,6 +807,7 @@ classdef InstanceEditor < handle
             obj.applyModeToWidgets();
             obj.updateObjectTable();
             obj.updateStatusLine();
+            obj.rememberWindowState();
         end
 
         % -----------------------------------------------------------
@@ -681,6 +820,58 @@ classdef InstanceEditor < handle
                 fprintf('controllers.InstanceEditor.autoUpdateTable_Callback: triggered\n');
             end
             obj.sliceChanged();
+            obj.rememberWindowState();
+        end
+
+        % -----------------------------------------------------------
+        function state = storedWindowState(obj)
+            % STOREDWINDOWSTATE - The four window states carried between openings.
+            %
+            % Mode, list refresh, and the two takeovers. They live in
+            % ``MibModel.sessionSettings.instanceEditor`` beside the cleanup and
+            % list settings, and for the same reason: a proofreading run is one
+            % way of working that outlives a single opening of the window, but
+            % it is a poor opening offer for the next dataset, so it is kept for
+            % the session rather than written to the preferences file.
+            %
+            % The defaults below are what a machine that has never opened the
+            % editor gets, and they are the answer to anything stored that is
+            % missing - a session that predates one of these fields must still
+            % open.
+            %
+            % Output Arguments:
+            %   - **state** - struct with logical fields ``Mode3D``,
+            %     ``autoUpdateTable``, ``pickByClick``, ``useShortcuts``
+            state = struct('Mode3D', false, 'autoUpdateTable', true, ...
+                'pickByClick', false, 'useShortcuts', false);
+            if ~isfield(obj.mibModel.sessionSettings, 'instanceEditor'); return; end
+
+            stored = obj.mibModel.sessionSettings.instanceEditor;
+            for name = fieldnames(state)'
+                if isfield(stored, name{1}); state.(name{1}) = logical(stored.(name{1})); end
+            end
+        end
+
+        % -----------------------------------------------------------
+        function rememberWindowState(obj)
+            % REMEMBERWINDOWSTATE - Store the four window states for the next opening.
+            %
+            % Called from the four callbacks rather than from ``closeWindow``,
+            % so that what is kept is what the user *chose*. A takeover dropped
+            % from elsewhere - ``reassertPickMode`` hands the mouse back when a
+            % different document becomes active - is not a decision to stop
+            % picking, and saving at close would record it as one. It also means
+            % the state survives a window that goes away without closing
+            % cleanly.
+            %
+            % The takeovers are read from the controller state and not from the
+            % checkbox, because the checkbox follows the state and a takeover
+            % that was refused must not be stored as though it succeeded.
+            if isempty(obj.view) || ~isvalid(obj.view.gui); return; end
+            obj.mibModel.sessionSettings.instanceEditor.Mode3D = logical(obj.view.handles.Mode3D.Value);
+            obj.mibModel.sessionSettings.instanceEditor.autoUpdateTable = logical(obj.view.handles.autoUpdateTable.Value);
+            obj.mibModel.sessionSettings.instanceEditor.pickByClick = obj.pickModeActive;
+            obj.mibModel.sessionSettings.instanceEditor.useShortcuts = obj.shortcutModeActive;
         end
 
         % -----------------------------------------------------------
@@ -777,9 +968,9 @@ classdef InstanceEditor < handle
             % Ctrl-clicking the object in the image removes it too, but only if
             % it is still findable there; this works from the list alone.
             %
-            % ``'clear'`` is also the ``c`` key while shortcut mode is on, and it
-            % empties the **list**, not the Selection layer - a drawing made for
-            % the next operation survives it.
+            % ``'clear'`` empties the **list** only, which is what the menu entry
+            % beside it says. The ``c`` key calls this and then clears the
+            % Selection layer as well - see ``handleShortcut``.
             %
             % Input Arguments:
             %   - **action** - char, ``'remove'`` or ``'clear'``

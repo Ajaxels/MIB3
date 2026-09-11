@@ -305,7 +305,7 @@ try
         % a distinct patch
         valLabelsDS = transform(...
             arrayDatastore((1:noValidationObservations)', 'ReadSize', 1), ...
-            @(observationIndex) iReadValidationPatch(observationIndex, valModelFiles, valObservationSeeds, valPatchOpt));
+            @(observationIndex) localReadValidationPatch(observationIndex, valModelFiles, valObservationSeeds, valPatchOpt));
     else    % do not use validation
         valLabelsDS = [];
     end
@@ -691,7 +691,7 @@ catch err
     % The flag is trusted ahead of the identifier because the error travels out through
     % minibatchqueue, which may wrap it and replace the identifier on the way
     if mibDeepTrainingProgressStruct.emergencyBrake || strcmp(err.identifier, 'DeepMIB:userEmergencyStop')
-        [net, info] = iRecoverNetworkFromCheckpoint(...
+        [net, info] = localRecoverNetworkFromCheckpoint(...
             fullfile(obj.BatchOpt.ResultingImagesDir, 'ScoreNetwork'), mibDeepTrainingProgressStruct);
         if isempty(net)
             mgsOpt.MsgBoxOnly = true;
@@ -763,9 +763,9 @@ end
 % graceful stop leaves it renamed (see deepmib.suspendCheckpointSaving)
 deepmib.suspendCheckpointSaving('restore');
 
-% iRecoverNetworkFromCheckpoint already produces info in the normalised shape
+% localRecoverNetworkFromCheckpoint already produces info in the normalised shape
 if ~emergencyBrakeUsed
-    info = iNormalizeTrainingInfo(info);
+    info = localNormalizeTrainingInfo(info);
 end
 % The progress window that is on screen belongs to whichever phase ran last and counts its
 % own iterations from 1, while "info" may be the concatenation of both phases. Keep the
@@ -818,8 +818,8 @@ if twoPhaseSchedule && ~emergencyBrakeUsed
         % the run has hung. Retire the buttons first: they are also live wires from this
         % point on, since deepmib.stopTrainingCallback sets the global stop flag and would
         % take phase 2 down with it.
-        iRetireProgressButton(mibDeepTrainingProgressStruct, 'StopTrainingButton', 'Phase 1 done');
-        iRetireProgressButton(mibDeepTrainingProgressStruct, 'EmergencyBrakeButton', 'Phase 1 done');
+        localRetireProgressButton(mibDeepTrainingProgressStruct, 'StopTrainingButton', 'Phase 1 done');
+        localRetireProgressButton(mibDeepTrainingProgressStruct, 'EmergencyBrakeButton', 'Phase 1 done');
 
         frozenInfo = info;
         frozenNet = net;
@@ -849,7 +849,7 @@ if twoPhaseSchedule && ~emergencyBrakeUsed
         % different kind exists, it is what the trainable phase is compared against, and
         % without it a failure in phase 2 would leave nothing to fall back on. The
         % "frozenPhaseEnd" suffix names it; the "net_checkpoint__" prefix is kept so the
-        % resume dialog and iRecoverNetworkFromCheckpoint both find it.
+        % resume dialog and localRecoverNetworkFromCheckpoint both find it.
         try
             checkpointDir = fullfile(obj.BatchOpt.ResultingImagesDir, 'ScoreNetwork');
             if ~isfolder(checkpointDir); mkdir(checkpointDir); end
@@ -869,7 +869,7 @@ if twoPhaseSchedule && ~emergencyBrakeUsed
         % The phase 1 window is about to be destroyed, so its plot has to be captured now
         % or it is gone for good - unlike the curve itself, which survives in the
         % concatenated info and the exported CSVs.
-        frozenSnapshotOk = iSaveProgressSnapshot(obj, mibDeepTrainingProgressStruct, '_frozenPhase');
+        frozenSnapshotOk = localSaveProgressSnapshot(obj, mibDeepTrainingProgressStruct, '_frozenPhase');
 
         % the trainer restarts its iteration counter, so give the progress display a clean
         % window rather than letting phase 2 draw on top of the phase 1 curve; the missing
@@ -906,13 +906,13 @@ if twoPhaseSchedule && ~emergencyBrakeUsed
                 struct('MaxEpochs', trainablePhaseEpochs, 'InitialLearnRate', trainableLearnRate));
             [net, info] = trainSOLOV2(labelsDS, frozenNet, TrainingOptions, 'FreezeSubNetwork', 'none');
             deepmib.suspendCheckpointSaving('restore');
-            info = iNormalizeTrainingInfo(info);
+            info = localNormalizeTrainingInfo(info);
             lastPhaseInfo = info;   % what the on-screen phase-2 window is showing
-            info = iConcatenateTrainingInfo(frozenInfo, info, frozenIterationsUsed);
+            info = localConcatenateTrainingInfo(frozenInfo, info, frozenIterationsUsed);
         catch err
             deepmib.suspendCheckpointSaving('restore');
             if mibDeepTrainingProgressStruct.emergencyBrake || strcmp(err.identifier, 'DeepMIB:userEmergencyStop')
-                [recoveredNet, recoveredInfo] = iRecoverNetworkFromCheckpoint(...
+                [recoveredNet, recoveredInfo] = localRecoverNetworkFromCheckpoint(...
                     fullfile(obj.BatchOpt.ResultingImagesDir, 'ScoreNetwork'), mibDeepTrainingProgressStruct);
                 if isempty(recoveredNet)
                     % nothing to restore, keep what the frozen phase produced rather than
@@ -925,7 +925,7 @@ if twoPhaseSchedule && ~emergencyBrakeUsed
                 else
                     net = recoveredNet;
                     lastPhaseInfo = recoveredInfo;
-                    info = iConcatenateTrainingInfo(frozenInfo, recoveredInfo, frozenIterationsUsed);
+                    info = localConcatenateTrainingInfo(frozenInfo, recoveredInfo, frozenIterationsUsed);
                     emergencyBrakeUsed = true;
                 end
             else
@@ -1036,7 +1036,7 @@ if obj.BatchOpt.T_ExportTrainingPlots
     end
     % snapshot of the finished progress window, as the semantic workflow does at the end of
     % controllers.MibDeep/startTraining
-    iSaveProgressSnapshot(obj, mibDeepTrainingProgressStruct, '');
+    localSaveProgressSnapshot(obj, mibDeepTrainingProgressStruct, '');
 end
 if showWaitbarLocal
     obj.wb.Value = 1;
@@ -1062,7 +1062,7 @@ if obj.SendReports.T_SendReports && obj.SendReports.sendWhenFinished && ...
     [~, fn] = fileparts(obj.BatchOpt.NetworkFilename);
     % SOLOv2 info has fewer fields than semantic training (no accuracy/validation
     % metrics); fetch each metric defensively so the report never errors
-    infoVal = @(fieldName) iInfoLastValue(info, fieldName);
+    infoVal = @(fieldName) localInfoLastValue(info, fieldName);
     if isfield(mibDeepTrainingProgressStruct, 'useCustomProgressPlot') && mibDeepTrainingProgressStruct.useCustomProgressPlot
         mgsText = sprintf(['DeepMIB training of "%s" network\n' ...
             '%s\n' ...
@@ -1111,7 +1111,7 @@ obj.view.handles.TrainButton.BackgroundColor = [0.7686    0.9020    0.9882];
 fprintf('Training is finished, elapsed time: %f\n', toc(trainTimer));
 end
 
-function snapshotOk = iSaveProgressSnapshot(obj, progressStruct, nameSuffix)
+function snapshotOk = localSaveProgressSnapshot(obj, progressStruct, nameSuffix)
 % write a PNG (and a .fig) of the custom training progress window
 %
 % Mirrors what controllers.MibDeep/startTraining does for the semantic workflows, and is
@@ -1177,7 +1177,7 @@ end
 end
 
 % -------------------------------------------------------------------------------------
-function info = iNormalizeTrainingInfo(info)
+function info = localNormalizeTrainingInfo(info)
 % reshape trainSOLOV2 training info into the scalar-struct/vector-field form used elsewhere
 %
 % trainSOLOV2 (dltrain-based) returns info as a STRUCT ARRAY with one row per logged
@@ -1209,7 +1209,7 @@ end
 end
 
 % -------------------------------------------------------------------------------------
-function info = iConcatenateTrainingInfo(firstInfo, secondInfo, iterationOffset)
+function info = localConcatenateTrainingInfo(firstInfo, secondInfo, iterationOffset)
 % join the training info of the two phases into one continuous record
 %
 % The trainer restarts its Iteration and Epoch counters for the second phase, so both are
@@ -1258,7 +1258,7 @@ end
 end
 
 % -------------------------------------------------------------------------------------
-function out = iReadValidationPatch(observationIndex, valModelFiles, valObservationSeeds, valPatchOpt)
+function out = localReadValidationPatch(observationIndex, valModelFiles, valObservationSeeds, valPatchOpt)
 % read one validation observation, cropping the same window on every evaluation
 %
 % arrayDatastore hands the index over wrapped in a cell; a seed of 0 means the user asked
@@ -1272,7 +1272,7 @@ end
 out = deepmib.readInstancePatch(valModelFiles{observationIndex}, valPatchOpt);
 end
 
-function [net, info] = iRecoverNetworkFromCheckpoint(checkpointDir, progressStruct)
+function [net, info] = localRecoverNetworkFromCheckpoint(checkpointDir, progressStruct)
 % rebuild the network and a minimal training-info struct after an Emergency brake
 %
 % trainSOLOV2 never returns when the OutputFcn throws, so the network is taken from the
@@ -1315,7 +1315,7 @@ info.OutputNetworkIteration = [];   % no "picked iteration" marker for a recover
 fprintf('DeepMIB: Emergency brake, the network was restored from "%s"\n', checkpointFilename);
 end
 
-function value = iInfoLastValue(info, fieldName)
+function value = localInfoLastValue(info, fieldName)
 % return the last element of an info field, or NaN when the field is absent
 % (SOLOv2 training info does not include accuracy/validation metrics)
 if isfield(info, fieldName) && ~isempty(info.(fieldName))
@@ -1325,7 +1325,7 @@ else
 end
 end
 
-function iRetireProgressButton(progressStruct, buttonField, labelText)
+function localRetireProgressButton(progressStruct, buttonField, labelText)
 % grey out and relabel one of the progress window buttons once its phase is over, so that a
 % finished curve is not left sitting under a button that still offers to stop the training
 if ~isfield(progressStruct, 'useCustomProgressPlot') || ~progressStruct.useCustomProgressPlot; return; end

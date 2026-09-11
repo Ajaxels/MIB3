@@ -143,7 +143,7 @@ obj.labels = core.MibLabels(newModel, meta);
 obj.labels.maxMaterials   = newModelType;
 obj.labels.materialNames  = {'1'; '2'};
 obj.labels.materialColors = rand(65535, 3);
-obj.labels.filename       = iSuffixFilename(existingFilename, options.filenameSuffix);
+obj.labels.filename       = localSuffixFilename(existingFilename, options.filenameSuffix);
 obj.labels.labelsVariable = existingLabelsVariable;
 obj.labels.materialsCount = highestInstanceIndex;
 obj.selectedMaterial = 3;
@@ -153,7 +153,7 @@ obj.selectedAddToMaterial = 3;
 obj.instanceIndex = [];
 end
 
-function newFilename = iSuffixFilename(filename, suffix)
+function newFilename = localSuffixFilename(filename, suffix)
 % Insert the suffix before the extension: Labels_stack.model -> Labels_stack_3d.model.
 %
 % Left alone in three cases. An empty name is a model created in MIB and never
