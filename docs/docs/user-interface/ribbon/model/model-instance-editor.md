@@ -10,7 +10,7 @@ Corrects individual objects of an instance model by hand: splitting one object i
 several into one, bridging a gap between two halves of the same object, and deleting false
 detections.
 
-It is the proofreading step after [Stitch 2D instances to 3D](index.md#convert-type). Automatic
+It is the proofreading step after [Stitch 2D instances to 3D](instance-stitching.md). Automatic
 stitching leaves errors that no threshold can remove - two objects that genuinely overlap across many
 slices are fused, and one object that breaks in two far apart in Z stays two - and those are repaired
 here.

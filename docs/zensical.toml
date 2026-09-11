@@ -121,6 +121,7 @@ nav = [
       ]},
       { "Model" = [
         "user-interface/ribbon/model/index.md",
+        { "Stitch 2D instances to 3D" = "user-interface/ribbon/model/instance-stitching.md" },
         { "Instance editor" = "user-interface/ribbon/model/model-instance-editor.md" },
         { "Quantification" = "user-interface/ribbon/mask/mask-stats.md" },
       ]},

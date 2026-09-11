@@ -2206,6 +2206,8 @@
       
         
       
+        
+      
     
     
     
@@ -2251,6 +2253,33 @@
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
             
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-interface/ribbon/model/instance-stitching.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Stitch 2D instances to 3D
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
               
             
               
@@ -5966,47 +5995,15 @@ from the depth of the first <code>*.model</code> file:</p>
 ambiguous (are the 2D files slices of their own stack, or strays?) and is rejected with an
 error. Empty the folder before re-running a prediction on a different kind of input.</p>
 </div>
-<p>The stitching settings dialog offers the same options as the
-<em>Ribbon → Model → Stitch 2D instances to 3D</em> tool:</p>
-<ul>
-<li><span class="widget widget-dropdown">Method</span> — <em>graph</em> (default) links every overlapping
-  pair of objects and groups them by connected components; <em>hungarian</em> uses strict one-to-one
-  matching per slice pair</li>
-<li><strong>Split disconnected 2D objects</strong> — enabled by default; treats each separate blob of a per-slice
-  index as its own 2D object. A SOLOv2 mask that fires at several locations gives one index to
-  unconnected blobs, which otherwise welds their 3D objects together and cascades across slices
-  into a single giant instance. Uncheck only if the per-slice indices are trusted</li>
-<li><strong>IoU threshold</strong> — join two objects when their overlap-over-union exceeds this value; higher =
-  stricter (more, smaller 3D objects)</li>
-<li><strong>Merge split objects (IoA)</strong> — also join when a smaller object is mostly contained in a
-  neighbour, reconnecting an object that breaks into pieces on one slice</li>
-<li><strong>Min overlap (pixels)</strong> — minimal number of overlapping pixels before two objects may be linked</li>
-<li><strong>Absolute overlap to link (pixels)</strong> — link two objects sharing at least this many pixels
-  whatever their IoU and IoA (<code>0</code> = off). Both ratios are relative to object area, so a wide
-  cross-section meeting a much narrower one fails them even on a large shared area. Opposite role
-  to <em>Min overlap</em>: that one blocks links, this one creates them</li>
-<li><strong>Z lookback (slices)</strong> — also compare slices further apart to bridge an object that briefly
-  vanishes</li>
-<li><strong>Min object size (voxels)</strong> — remove 3D objects smaller than this after stitching; values of
-  <code>50-200</code> are recommended to suppress small noise fragments</li>
-<li><strong>Min object depth (slices)</strong> — remove 3D objects seen on this many slices or fewer (<code>0</code> = keep
-  all, <code>1</code> = drop single-slice objects). Catches what the size threshold cannot: a false detection
-  can be large in-plane yet never propagate through the stack</li>
-<li><strong>Absorb fragments (voxels)</strong> - give 3D objects of this size or smaller to the object surrounding
-  them in-plane instead of leaving them as separate specks (<code>5</code> by default, matching <em>Min overlap</em>;
-  <code>0</code> = off). Stray pixels left inside a neighbouring mask are too small to ever be linked, and
-  deleting them by size would leave a hole. A fragment with no labelled neighbour is left for the
-  two thresholds above</li>
-<li><strong>Z anisotropy ratio</strong> — for thick sections, lower the IoU threshold by the voxel Z/XY aspect
-  ratio so a real but displaced continuation still links (<code>1</code> = isotropic, off)</li>
-<li><strong>Max centroid shift</strong> and <strong>Centroid link radius</strong> — advanced gates/bridging for anisotropic or
-  gappy data (<code>0</code> = off)</li>
-</ul>
-<p>The dialog reopens on the values used last for as long as MIB is running, and each accepted run
-prints one line to the MATLAB console listing exactly what was used - handy when trialling
-thresholds over several runs. The values are per session and are not written to preferences.</p>
-<p><em>Ribbon → Model → Stitch 2D instances to 3D</em> shares them, so a threshold tried there is offered here
-and the other way round.</p>
+<p>The stitching settings dialog is the same one used by
+<a href="../user-interface/ribbon/model/instance-stitching.html">Ribbon → Model → Stitch 2D instances to 3D</a>,
+where every option is described and illustrated. One option differs here: <strong>Z anisotropy ratio</strong> is
+a number to type in rather than a checkbox, because raw prediction images carry no pixel size for it
+to be taken from (<code>1</code> = isotropic, off).</p>
+<p>The dialog reopens on the values used last for as long as MIB is running, and the two entry points
+share them, so a threshold tried in one is offered in the other. Each accepted run also prints one
+line to the MATLAB console listing exactly what was used - handy when trialling thresholds over
+several runs. The values are per session and are not written to preferences.</p>
 <p>After the settings, the destination is requested. When a <strong>single</strong> merged model is produced, a
 file dialog asks for the directory, filename and file format. When <strong>several</strong> stacks are stitched
 (one per 3D input model), a folder is requested instead, followed by a format dropdown; each output

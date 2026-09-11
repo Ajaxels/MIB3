@@ -47,7 +47,11 @@ function [answer, selectedIndices, dontShowAgain] = inputUniversalDlg(ParentFigu
 %     - ``.Header`` - [char] text above widgets; superseded by the ``header`` parameter
 %     - ``.HeaderLines`` - [integer] number of lines reserved for the header
 %     - ``.HelpBtnText`` - [char] Help button label (default: ``'Help'``)
-%     - ``.HelpUrl`` - [char] URL or command; when provided, the Help button is shown
+%     - ``.HelpUrl`` - URL, base-workspace command, or function handle taking no
+%       arguments; when provided, the Help button is shown. Use a handle such as
+%       ``@() utils.openHelpPage(localPage, onlineUrl)`` for a page that is also
+%       shipped with MIB - the ``web`` call used for a plain address opens
+%       ``file:///`` links unreliably on Windows
 %     - ``.Icon`` - [char] icon identifier (default: ``'puffin_question'``):
 %       ``'puffin_question'``, ``'puffin_warning'``, ``'puffin_info'``,
 %       ``'puffin_error'``, ``'puffin_measure'``, ``'puffin_waiting'``,
@@ -733,6 +737,14 @@ uiwait(fig);
 % Callbacks
     function onHelp()
         H = options.HelpUrl;
+        if isa(H, 'function_handle')
+            try
+                H();
+            catch err
+                utils.dlgs.showErrorDialog(ParentFigure, err);
+            end
+            return;
+        end
         if ischar(H) || isstring(H)
             H = char(H);
             if strncmpi(H,'http',4) || contains(H,'.html')
