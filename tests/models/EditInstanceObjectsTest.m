@@ -761,16 +761,21 @@ classdef EditInstanceObjectsTest < matlab.unittest.TestCase
         % -----------------------------------------------------------------
 
         function mergeFromADrawingReachesTheNextSliceInZ(testCase)
-            % The headline case, on the key the hand is already on: two halves
-            % of one object a slice apart, brush the gap, press 'a'. The same
-            % stroke in 2D joins two objects side by side; this is that gesture
-            % in a volume, where the thing being joined to is on the next slice
-            % and there is nothing painted on it.
+            % The headline case, on the key the hand is already on: brush the
+            % slice an object is missing from and press 'a'. The stroke is given
+            % to the object it covers most of, one slice away - the gesture that
+            % grows an object in 2D, working in a volume where the thing being
+            % grown is on the next slice with nothing painted on it.
+            %
+            % The two ends are NOT joined to each other. Object 6 is better
+            % covered than object 2 here, so it takes the drawing and object 2
+            % is left as it was, now touching it - a Connect away, which is the
+            % step the user asked to keep for themselves.
             mibModel = mibtest.helpers.buildSyntheticModel( ...
                 'modelType', 'labels65535', 'dims', [32 32 10]);
             volume = zeros(32, 32, 10, 'uint16');
-            volume(10:16, 10:16, 1:4) = 6;
-            volume(10:16, 10:16, 6:9) = 2;      % same footprint, slice 5 empty
+            volume(10:16, 10:16, 1:4) = 6;      % 25 of the 25 drawn voxels below
+            volume(11:14, 11:14, 6:9) = 2;      % 16 of them above
             mibModel.setData3D(volume, 'labels', 1, 3, [], ...
                 struct('id', 1, 'blockModeSwitch', 0));
             mibModel.I{1}.buildInstanceIndex();
@@ -779,9 +784,12 @@ classdef EditInstanceObjectsTest < matlab.unittest.TestCase
             EditInstanceObjectsTest.runAction(mibModel, 'Merge', '');
 
             after = EditInstanceObjectsTest.readLabels(mibModel);
-            testCase.verifyEqual(nnz(after == 6), 0, 'the larger index was absorbed');
-            testCase.verifyEqual(bwconncomp(after == 2, 26).NumObjects, 1, ...
-                'one connected piece, closed by the drawing');
+            testCase.verifyEqual(nnz(after == 6), nnz(volume == 6) + 5 * 5, ...
+                'the better covered end grew by the drawing');
+            testCase.verifyEqual(nnz(after == 2), nnz(volume == 2), ...
+                'the other end is untouched, and still its own object');
+            testCase.verifyEqual(bwconncomp(after == 6, 26).NumObjects, 1, ...
+                'one connected piece');
             EditInstanceObjectsTest.verifyIndexAgreesWithVolume(testCase, mibModel, 'merge across Z');
         end
 
@@ -809,16 +817,16 @@ classdef EditInstanceObjectsTest < matlab.unittest.TestCase
             EditInstanceObjectsTest.verifyIndexAgreesWithVolume(testCase, mibModel, 'merge, 2D');
         end
 
-        function connectFromADrawingJoinsWhatItLiesBetween(testCase)
-            % The same gesture on the Connect button, which with nothing picked
-            % is the same code: brush the gap, press it, and the objects one
-            % slice beyond each end of the stroke are the ones joined. No pick
-            % at all, where it used to take two.
+        function connectFromADrawingGrowsWhatItMostlyReaches(testCase)
+            % Connect with nothing picked is the same code as the key above, so
+            % it gives the same answer: the drawing joins one object, the better
+            % covered of the two ends, and nothing is bridged to anything.
+            % Joining the two is what picking them both is for.
             mibModel = mibtest.helpers.buildSyntheticModel( ...
                 'modelType', 'labels65535', 'dims', [32 32 10]);
             volume = zeros(32, 32, 10, 'uint16');
             volume(10:16, 10:16, 1:4) = 6;
-            volume(10:16, 10:16, 6:9) = 2;      % same footprint, slice 5 empty
+            volume(11:14, 11:14, 6:9) = 2;
             mibModel.setData3D(volume, 'labels', 1, 3, [], ...
                 struct('id', 1, 'blockModeSwitch', 0));
             mibModel.I{1}.buildInstanceIndex();
@@ -827,27 +835,26 @@ classdef EditInstanceObjectsTest < matlab.unittest.TestCase
             EditInstanceObjectsTest.runAction(mibModel, 'Connect', '');
 
             after = EditInstanceObjectsTest.readLabels(mibModel);
-            testCase.verifyEqual(nnz(after == 6), 0, 'the larger index was absorbed');
-            testCase.verifyEqual(bwconncomp(after == 2, 26).NumObjects, 1, ...
-                'one connected piece, bridged by the drawing');
-            testCase.verifyEqual(nnz(after(:, :, 5) == 2), 5 * 5, ...
+            testCase.verifyEqual(nnz(after(:, :, 5) == 6), 5 * 5, ...
                 'exactly what was drawn, nothing interpolated');
+            testCase.verifyEqual(nnz(after == 2), nnz(volume == 2), 'the other end is untouched');
             testCase.verifyEqual(nnz(EditInstanceObjectsTest.readSelection(mibModel)), 0, ...
                 'the drawing was used up');
             EditInstanceObjectsTest.verifyIndexAgreesWithVolume(testCase, mibModel, 'connect from drawing');
         end
 
         function connectFromADrawingTakesTheLargestAtEachEnd(testCase)
-            % A bridge clipping the corner of a neighbour is the ordinary case,
-            % so each end contributes one object - the one it mostly lands on.
-            % Everywhere else a drawing joins everything it touches; this is the
-            % one place that rule is deliberately not followed.
+            % A stroke clipping the corner of a neighbour is the ordinary case,
+            % so an end offers only the object it mostly lands on - never two -
+            % and the best of the two ends is then the one object taken. Object
+            % 3 is clipped by a voxel and 2 is the poorer end; neither is
+            % touched, and the whole point is that this is silent if it is wrong.
             mibModel = mibtest.helpers.buildSyntheticModel( ...
                 'modelType', 'labels65535', 'dims', [32 32 10]);
             volume = zeros(32, 32, 10, 'uint16');
             volume(10:16, 10:16, 1:4) = 6;      % 49 voxels under the stroke
             volume(16:18, 16:18, 1:4) = 3;      % 1 voxel: the clipped neighbour
-            volume(10:16, 10:16, 6:9) = 2;
+            volume(12:14, 12:14, 6:9) = 2;      % the poorer end, 9 voxels
             mibModel.setData3D(volume, 'labels', 1, 3, [], ...
                 struct('id', 1, 'blockModeSwitch', 0));
             mibModel.I{1}.buildInstanceIndex();
@@ -856,9 +863,12 @@ classdef EditInstanceObjectsTest < matlab.unittest.TestCase
             EditInstanceObjectsTest.runAction(mibModel, 'Connect', '');
 
             after = EditInstanceObjectsTest.readLabels(mibModel);
-            testCase.verifyEqual(nnz(after == 6), 0, 'the dominant neighbour was joined');
+            testCase.verifyEqual(nnz(after == 6), nnz(volume == 6) + 7 * 7, ...
+                'the dominant end took the drawing');
             testCase.verifyEqual(nnz(after == 3), nnz(volume == 3), ...
                 'the clipped neighbour was left alone');
+            testCase.verifyEqual(nnz(after == 2), nnz(volume == 2), ...
+                'the poorer end was left alone');
             testCase.verifyTrue(mibModel.I{1}.instanceIndex.exists(3));
             EditInstanceObjectsTest.verifyIndexAgreesWithVolume(testCase, mibModel, 'connect, largest');
         end
@@ -929,6 +939,82 @@ classdef EditInstanceObjectsTest < matlab.unittest.TestCase
             testCase.verifyEqual(nnz(after == 9), nnz(volume == 9), ...
                 'the object the lookahead would have found is untouched');
             EditInstanceObjectsTest.verifyIndexAgreesWithVolume(testCase, mibModel, 'connect, covered');
+        end
+
+        function mergeFromADrawingPrefersTheObjectAboveToAClippedNeighbour(testCase)
+            % Painting the slice an object is missing from means drawing into
+            % the space between its neighbours, and clipping one of them by a
+            % column is what a brush does. The stroke covers 7 voxels of the
+            % neighbour and 49 of what object 1 occupies above and below it -
+            % 0.125 against 0.875 - so it belongs to object 1.
+            mibModel = mibtest.helpers.buildSyntheticModel( ...
+                'modelType', 'labels65535', 'dims', [32 32 10]);
+            volume = zeros(32, 32, 10, 'uint16');
+            volume(4:10, 4:10,  [4 6]) = 1;     % the same object, slice 5 missing
+            volume(4:10, 11:16, 5)     = 2;     % the neighbour the stroke clips
+            mibModel.setData3D(volume, 'labels', 1, 3, [], ...
+                struct('id', 1, 'blockModeSwitch', 0));
+            mibModel.I{1}.buildInstanceIndex();
+            EditInstanceObjectsTest.drawIntoSelection(mibModel, [32 32 10], 4:10, 4:11, 5);
+
+            EditInstanceObjectsTest.runAction(mibModel, 'Merge', '');
+
+            after = EditInstanceObjectsTest.readLabels(mibModel);
+            testCase.verifyEqual(nnz(after == 1), nnz(volume == 1) + 7 * 7, ...
+                'the gap was given to the object above and below it');
+            testCase.verifyEqual(nnz(after == 2), nnz(volume == 2), ...
+                'the clipped neighbour is untouched');
+            testCase.verifyEqual(numel(unique(after(after > 0))), 2, 'no new object');
+            EditInstanceObjectsTest.verifyIndexAgreesWithVolume(testCase, mibModel, 'merge, gap filled');
+        end
+
+        function mergeFromADrawingKeepsTheNeighbourTheStrokeLiesOn(testCase)
+            % The other side of the same comparison, and the reason it needs no
+            % threshold: a stroke lying mostly ON an object scores 0.692 against
+            % 0.066 for the sliver beneath it, so covering still beats abutting.
+            mibModel = mibtest.helpers.buildSyntheticModel( ...
+                'modelType', 'labels65535', 'dims', [32 32 10]);
+            volume = zeros(32, 32, 10, 'uint16');
+            volume(4:10, 8:16, 5) = 2;          % the stroke sits on 63 of its voxels
+            volume(4:6,  4:5,  4) = 1;          % a sliver under one corner of it
+            mibModel.setData3D(volume, 'labels', 1, 3, [], ...
+                struct('id', 1, 'blockModeSwitch', 0));
+            mibModel.I{1}.buildInstanceIndex();
+            EditInstanceObjectsTest.drawIntoSelection(mibModel, [32 32 10], 4:10, 4:16, 5);
+
+            EditInstanceObjectsTest.runAction(mibModel, 'Merge', '');
+
+            after = EditInstanceObjectsTest.readLabels(mibModel);
+            testCase.verifyEqual(nnz(after == 2), 7 * 13, 'the object the stroke lies on grew by it');
+            testCase.verifyEqual(nnz(after == 1), nnz(volume == 1), 'the sliver below is untouched');
+            EditInstanceObjectsTest.verifyIndexAgreesWithVolume(testCase, mibModel, 'merge, lies on');
+        end
+
+        function mergeFromADrawingKeepsBothObjectsItWasDrawnAcross(testCase)
+            % Two objects in-plane are never put up against the slice beyond:
+            % a stroke laid across them is the deliberate gesture for joining
+            % them, and object 3 below covers the whole of it - the highest
+            % score anything can have, and still not a vote.
+            mibModel = mibtest.helpers.buildSyntheticModel( ...
+                'modelType', 'labels65535', 'dims', [32 32 10]);
+            volume = zeros(32, 32, 10, 'uint16');
+            volume(4:10, 4:8,   5) = 1;
+            volume(4:10, 14:18, 5) = 2;
+            volume(4:10, 4:18,  4) = 3;         % the whole stroke, one slice down
+            mibModel.setData3D(volume, 'labels', 1, 3, [], ...
+                struct('id', 1, 'blockModeSwitch', 0));
+            mibModel.I{1}.buildInstanceIndex();
+            EditInstanceObjectsTest.drawIntoSelection(mibModel, [32 32 10], 4:10, 4:18, 5);
+
+            EditInstanceObjectsTest.runAction(mibModel, 'Merge', '');
+
+            after = EditInstanceObjectsTest.readLabels(mibModel);
+            testCase.verifyEqual(nnz(after == 2), 0, 'the two the stroke covers were joined');
+            testCase.verifyEqual(nnz(after(:, :, 5) == 1), 7 * 15, ...
+                'one connected piece, closed by the drawing');
+            testCase.verifyEqual(nnz(after == 3), nnz(volume == 3), ...
+                'the object under the whole stroke is untouched');
+            EditInstanceObjectsTest.verifyIndexAgreesWithVolume(testCase, mibModel, 'merge, drawn across');
         end
 
         function connectFromADrawingNeedsSomethingDrawn(testCase)

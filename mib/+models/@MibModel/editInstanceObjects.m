@@ -30,8 +30,10 @@ function applied = editInstanceObjects(obj, BatchOptIn)
 %         the objects are taken from the Selection layer - draw one shape across
 %         them all, and the background under that shape joins the survivor too,
 %         so the stroke closes the gap it was drawn across. In ``Mode3D`` a
-%         shape covering nothing reaches one slice beyond either end of itself,
-%         which is how a gap along Z is closed: see ``localObjectsToJoin``. A drawing
+%         shape also reaches one slice beyond either end of itself, which is how
+%         a gap along Z is closed; where that competes with a single object the
+%         shape merely clips in-plane, the larger share of the drawing decides:
+%         see ``localObjectsToJoin``. A drawing
 %         that reaches fewer than two objects is not a failed merge but the same
 %         gesture over a smaller region, so it falls through to the two below:
 %         over nothing it becomes an object, over one object it joins that
@@ -212,6 +214,7 @@ end
 wholeModelAction = ismember(action, {'Cleanup', 'Compact'});
 objectIds = [];
 derivedFromDrawing = false;
+coversOthers = false;
 if ~wholeModelAction && ~strcmp(action, 'AddObject')
     objectIds = localParseIndices(BatchOpt.ObjectIndices);
     % All three of these are gestures over a region, and the region already says
@@ -231,7 +234,7 @@ if ~wholeModelAction && ~strcmp(action, 'AddObject')
         else
             % Joining is what the drawing *reaches*, which in 3D includes the
             % slice beyond either end of it - see localObjectsToJoin.
-            [objectIds, problem, details] = localObjectsToJoin(obj, id, dataset, timePoint, BatchOpt.Mode3D);
+            [objectIds, problem, details, coversOthers] = localObjectsToJoin(obj, id, dataset, timePoint, BatchOpt.Mode3D);
 
             % With the objects in hand there is nothing of Connect's own left to
             % do: joining them and giving them the background drawn between them
@@ -308,7 +311,7 @@ switch action
         target = [];
         if strcmp(action, 'AddToObject'); target = objectIds; end
         done = localDrawingToObject(obj, id, dataset, index, timePoint, BatchOpt, ...
-            batchModeSwitch, consumesSelection, target);
+            batchModeSwitch, consumesSelection, target, coversOthers);
     otherwise
         done = localObjectAction(obj, id, action, objectIds, index, timePoint, ...
             BatchOpt, batchModeSwitch, consumesSelection);
@@ -554,7 +557,7 @@ objectIds = objectIds(objectIds > 0);
 end
 
 % =====================================================================
-function [objectIds, problem, details] = localObjectsToJoin(obj, id, dataset, timePoint, use3D)
+function [objectIds, problem, details, coversOthers] = localObjectsToJoin(obj, id, dataset, timePoint, use3D)
 % Which objects the current drawing joins.
 %
 % The counterpart of ``localObjectsUnderSelection``, and the difference between them
@@ -564,31 +567,60 @@ function [objectIds, problem, details] = localObjectsToJoin(obj, id, dataset, ti
 % sits on - the object it was drawn to connect to is on the next slice, where
 % there is nothing painted at all.
 %
-% So: what it covers, and failing that, what lies one slice beyond either end of
-% it. In 2D the second half is skipped and this is ``localObjectsUnderSelection``
-% exactly, which is right - there is no next slice in a single-slice mode.
+% So: what it covers, and what lies one slice beyond either end of it. In 2D the
+% second half is skipped and this is ``localObjectsUnderSelection`` exactly,
+% which is right - there is no next slice in a single-slice mode.
 %
 % **What you can see, you get all of; what you cannot see, you get one of.**
 % Contact on a slice the user drew on is deliberate and visible on screen, so
-% every object there counts, as it always has. The slice beyond the stroke is
-% not drawn and not on screen: a stroke clipping the corner of a neighbour there
-% is the ordinary case, and silently swallowing that neighbour is the one
-% outcome this must not produce. Each end therefore contributes at most one
-% object, the one with the largest footprint under the stroke - not the largest
-% object, which would let something big elsewhere in the box beat the one
-% actually being pointed at.
+% every object there counts. The slice beyond the stroke is not drawn and not on
+% screen: a stroke clipping the corner of a neighbour there is the ordinary
+% case, and silently swallowing that neighbour is the one outcome this must not
+% produce. The lookahead therefore names **one object in total** - the best
+% covered of the two ends, lowest index on a tie - and not one object per end.
+%
+% One in total, because the two ends are usually a different object each and
+% joining them is not what a drawing says. Extending an object into the slice
+% next to it is; joining two of them is ``Connect``, or picking both and
+% pressing Merge, and a drawing that has already been given to one of them
+% leaves the two touching, so that is one press away. This retired the reverse
+% reading, where a stroke brushed into a gap joined the halves on either side of
+% it: on real data the object below a stroke is routinely something other than
+% the object above it, and the merge it produced was silent.
 %
 % Exactly one slice beyond, never two. The drawing has to abut what it joins,
 % which keeps the choice something the user can see before pressing the button
 % rather than a search reaching for the nearest candidate.
 %
+% **In-plane contact does not win by existing.** Painting the slice an object is
+% missing from means drawing into the space between its neighbours, and a stroke
+% that clips one of them by a column was going to that neighbour rather than to
+% the object it was plainly filling in. So a single object in-plane is a
+% *candidate*, measured against the ends the same way: each is scored by the
+% fraction of the drawing it covers, and the larger takes it. Measured on the
+% reported case, the clipped neighbour scores 0.125 against 0.875 for the object
+% above and below - not a close call, which is why there is no threshold here.
+%
+% Two limits keep the old readings intact:
+%
+% - **Two or more objects in-plane are left alone.** A stroke laid across
+%   several is the deliberate gesture for joining them, and nothing beyond the
+%   drawing can outvote what the user drew over.
+% - **A stroke lying mostly on its neighbour keeps it** by the same comparison,
+%   with no special case: covering an object scores far higher than abutting one.
+%
 % Output Arguments:
 %   - **objectIds** - the objects to join, or empty when the drawing reaches
 %     none. Empty without a ``problem`` is a finding rather than a fault, as in
 %     ``localObjectsUnderSelection`` - the caller turns it into a new object
+%   - **coversOthers** - logical, the drawing lies on an object that is *not*
+%     among ``objectIds``, which only the comparison below can produce. The
+%     caller must then write background voxels alone, or the stroke would take
+%     the neighbour it clipped away from it
 objectIds = [];
 problem = '';
 details = {};
+coversOthers = false;
 
 [box, drawn] = localDrawingExtent(obj, id, dataset, timePoint, use3D);
 if isempty(box)
@@ -598,28 +630,59 @@ if isempty(box)
 end
 
 labelsBlock = localReadBox(obj, id, 'labels', timePoint, box);
-objectIds = double(unique(labelsBlock(drawn)))';
-objectIds = objectIds(objectIds > 0);
-if ~isempty(objectIds) || ~use3D; return; end
+drawnValues = double(labelsBlock(drawn));
+objectIds = unique(drawnValues(drawnValues > 0))';
+if ~use3D || numel(objectIds) > 1; return; end
 
-% Nothing under it, so look past either end: two single-slice reads over the
-% drawing's own in-plane box. What they are tested against is the drawn mask on
-% the outermost plane, not that box - a box would reach objects a diagonal
-% stroke never came near.
+% Look past either end: two single-slice reads over the drawing's own in-plane
+% box. What they are tested against is the drawn mask on the outermost plane,
+% not that box - a box would reach objects a diagonal stroke never came near.
 depth = dataset.image.depth;
-below = localDominantNeighbour(obj, id, timePoint, box, drawn(:, :, 1),   box(5) - 1, depth);
-above = localDominantNeighbour(obj, id, timePoint, box, drawn(:, :, end), box(6) + 1, depth);
-objectIds = unique([below, above]);
+ends = zeros(1, 0);
+endScores = zeros(1, 0);
+[below, belowScore] = localDominantNeighbour(obj, id, timePoint, box, drawn(:, :, 1),   box(5) - 1, depth);
+[above, aboveScore] = localDominantNeighbour(obj, id, timePoint, box, drawn(:, :, end), box(6) + 1, depth);
+if ~isempty(below); ends(end+1) = below; endScores(end+1) = belowScore; end
+if ~isempty(above); ends(end+1) = above; endScores(end+1) = aboveScore; end
+if isempty(ends); return; end
+
+% The better end, lowest index when they are equally covered, so the answer
+% cannot depend on which one happened to be read first.
+best = sortrows([-endScores(:), ends(:)]);
+reachId = best(1, 2);
+reachScore = -best(1, 1);
+
+if isempty(objectIds)
+    objectIds = reachId;
+    return;
+end
+
+% One object in-plane, so the two readings are in competition. The in-plane
+% share is of the whole drawing while an end is scored on the plane it touches,
+% which is the only footing they have in common: an end meets the drawing on one
+% plane by definition, and a drawing spanning several slices that covers an
+% object on all of them scores 1 and cannot be outbid. Ties go to what is on
+% screen.
+inPlaneScore = nnz(drawnValues == objectIds) / nnz(drawn);
+if reachScore > inPlaneScore
+    objectIds = reachId;
+    coversOthers = true;
+end
 end
 
 % =====================================================================
-function objectId = localDominantNeighbour(obj, id, timePoint, box, footprint, sliceNumber, depth)
+function [objectId, score] = localDominantNeighbour(obj, id, timePoint, box, footprint, sliceNumber, depth)
 % The object with the most voxels under ``footprint`` on slice ``sliceNumber``.
 %
 % Empty when that slice is outside the stack or carries nothing under the
 % stroke. Ties go to the lowest index, so the answer cannot depend on the order
 % the values happened to come back in.
+%
+% Output Arguments:
+%   - **score** - how much of ``footprint`` that object covers, 0 to 1. What the
+%     caller weighs an object under the drawing against; zero when there is none
 objectId = [];
+score = 0;
 if sliceNumber < 1 || sliceNumber > depth; return; end
 
 slice = localReadBox(obj, id, 'labels', timePoint, [box(1:4), sliceNumber, sliceNumber]);
@@ -630,10 +693,11 @@ if isempty(values); return; end
 [counts, candidates] = groupcounts(values);
 [~, winner] = max(counts);      % groupcounts sorts its groups, so a tie takes the lowest
 objectId = candidates(winner);
+score = counts(winner) / nnz(footprint);
 end
 
 % =====================================================================
-function done = localDrawingToObject(obj, id, dataset, index, timePoint, BatchOpt, batchModeSwitch, consumesSelection, targetId)
+function done = localDrawingToObject(obj, id, dataset, index, timePoint, BatchOpt, batchModeSwitch, consumesSelection, targetId, backgroundOnly)
 % Write the drawing into the model as an object, new or existing.
 %
 % What MIB's own ``a`` does to a material, done to an instance model. Reached
@@ -642,14 +706,17 @@ function done = localDrawingToObject(obj, id, dataset, index, timePoint, BatchOp
 % are the same gesture - "this region is that object" - and both are available to
 % batch protocols by name, as ``AddObject`` and ``AddToObject``.
 %
-% Nothing else can be overwritten on either path, because they are only taken
-% when the drawing covers no other object. Asked for by name, the drawing is
-% written over whatever lies under it, which is the caller's choice to make.
+% Asked for by name, the drawing is written over whatever lies under it, which is
+% the caller's choice to make. It is the one thing ``backgroundOnly`` is for: a
+% target chosen by the lookahead is not the object the drawing sits on, so
+% writing every drawn voxel would carve into the neighbour the stroke clipped -
+% the one outcome the lookahead exists to avoid.
 %
 % Input Arguments:
 %   - **consumesSelection** - logical, clear the Selection layer afterwards
 %   - **targetId** - index of the object to grow, or ``[]`` to take the next
 %     free index
+%   - **backgroundOnly** - logical, leave voxels that already carry a label
 %
 % Output Arguments:
 %   - **done** - logical, true when the drawing was written
@@ -661,6 +728,15 @@ if isempty(box)
     localComplain(obj, 'The Selection layer is empty.', 'Instance editor', ...
         {'Draw the new object into it first.'});
     return;
+end
+
+if backgroundOnly
+    drawn = drawn & (localReadBox(obj, id, 'labels', timePoint, box) == 0);
+    if ~any(drawn, 'all')
+        localComplain(obj, 'There is nothing to add - every voxel drawn already belongs to an object.', ...
+            'Instance editor');
+        return;
+    end
 end
 
 % The rescan has to cover the object as it will then be, which for an existing

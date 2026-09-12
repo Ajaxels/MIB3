@@ -966,6 +966,10 @@ also crosses alone", and it has its own test so the two readings cannot drift.
 
 ### The drawing reaches the next slice (2026-09-11)
 
+> Superseded in part on 2026-09-12: the reach stayed, but it now names **one** object rather than one
+> per end, so a stroke no longer joins what lies above it to what lies below it. See
+> [A drawing names one object](#a-drawing-names-one-object-2026-09-12).
+
 First real 3D use case, reported by the author: brush the gap, then join the object on `z-1` to the
 object on `z+1`. That was already possible - `Connect` in `selection` mode - but it cost **three**
 manual steps where the drawing had already answered two of them: pick A, pick B, press the button.
@@ -1064,6 +1068,152 @@ Three things decide whether this is right or merely convenient:
 
 Deliberately **not** in the preferences file, for the reason the cleanup thresholds are not: these
 are how one proofreading run is being done, and a poor opening offer for the next dataset.
+
+### In-plane contact stops winning by existing (2026-09-12)
+
+Reported from the first 3D use of ++a++ on real data: painting the slice an object is missing from
+means drawing into the space **between** that object's neighbours, and a stroke that catches one of
+them by a column went to that neighbour - not to the object it was plainly filling in, which sat
+directly above and below it.
+
+The reach was already there; what decided was the order.
+[The drawing reaches the next slice](#the-drawing-reaches-the-next-slice-2026-09-11) made the
+lookahead a fallback - *what it covers, and failing that what lies beyond either end* - on the
+reasoning that contact on a drawn slice is deliberate and on screen. True of a stroke laid **across**
+an object. Not true of one that grazes it, and the difference between the two is a quantity, not a
+kind.
+
+**Measured before deciding**, since the whole question is whether a score separates the readings that
+have to stay apart. Five synthetic cases, each scored by the fraction of the drawing a candidate
+covers (IoA; IoU differs only in the union term and ranks them identically here):
+
+| Case | in-plane | in Z | outcome |
+|---|---|---|---|
+| the reported one - gap in object 1, stroke clips neighbour 2 | 0.125 | **0.875** both sides | Z, **changed** |
+| the same stroke with nothing above or below | 0.125 | - | in-plane |
+| a deliberate in-plane grow with an *unrelated* object below | 0.125 | **0.875** one side | Z, **changed** |
+| a stroke drawn across two objects, a third straddling it in Z | 0.333 x2 | 1.000 | in-plane |
+| a stroke lying mostly *on* its neighbour, a sliver below | **0.692** | 0.066 | in-plane |
+
+So: **the larger share of the drawing takes it**, strictly greater, no threshold. The gap in the
+reported case is 0.125 against 0.875 - a margin would be a number to tune with nothing to tune it
+against, and the two readings that must not move are held by the comparison itself rather than by a
+cut-off. The scores are not on quite the same footing - the in-plane share is of the whole drawing
+while an end is scored on the plane it touches - and that is the only footing they have in common: an
+end meets the drawing on one plane by definition, and a drawing that covers an object on every slice
+it spans scores 1 and cannot be outbid.
+
+**Two or more objects in-plane are still left alone**, before any of this is reached. A stroke laid
+across several is the gesture for joining them, and nothing outside the drawing can outvote what the
+user drew over. That is the row above with a third object scoring 1.000 and not taking it, and it is
+what keeps `connectFromADrawingUsesWhatItCoversFirst` passing unchanged.
+
+**This alone did not fix the reported case** - see the section below, written after the first run on
+real data. The comparison worked; what merged the two objects was the rule underneath it.
+
+**Row three is the cost, and it was the author's call.** It is geometrically identical to row one -
+the only thing telling them apart is whether the object in Z lies on *both* sides, which is the
+drawing filling a hole in something that continues through it. Restricting the change to that case
+was the alternative offered; the choice was the general rule, on the grounds that in an instance
+model an object at the same XY one slice away is usually the same object continuing -
+`stitch2Dto3D`'s own premise - and that ++ctrl+z++ is one step.
+
+**It exposed a latent assumption in `localDrawingToObject`.** Its comment read *"nothing else can be
+overwritten on either path, because they are only taken when the drawing covers no other object"* -
+an invariant that held only because the target was, until now, always the object under the drawing.
+With the target chosen in Z, writing every drawn voxel took the clipped neighbour's voxels away from
+it: measured, object 2 losing exactly the 7 voxels the stroke grazed, which is the one outcome the
+lookahead exists to prevent. `localObjectsToJoin` now reports `coversOthers`, and
+`localDrawingToObject` takes `backgroundOnly` and applies the guard `localAbsorbDrawing` has always
+had. Asked for by name, `AddToObject` still writes over whatever lies under it - that is the caller's
+choice and is untouched.
+
+Three cases in `EditInstanceObjectsTest`, one per row that had to hold: the gap filled with the
+neighbour's voxel count unchanged, the stroke lying on its neighbour keeping it, and two objects
+in-plane beating an object below that covers the whole stroke.
+
+*(The first run of the new tests appeared to fail against the fix. It was a stale class: MIB was open
+in the MCP session, so `models.MibModel` could not be cleared and the method never reloaded. Running
+the suite in a separate `matlab -batch` process is the way to check a model method while the
+application is up.)*
+
+### A drawing names one object (2026-09-12)
+
+Straight from the first run of the section above on real data, and the reason it is worth measuring a
+live scene rather than reasoning from a synthetic one. The author painted the slice an object was
+missing from; the stroke clipped a neighbour in-plane; and ++a++ still produced a merge of two
+objects. Read off the live session:
+
+```
+drawing: 55 voxels, slice 184 only
+
+in-plane  (z=184)   object 2714   0.036   (2 voxels)    <- the accidental touch
+below     (z=183)   object 2714   0.291   (16 voxels)   <- dominant at that end
+above     (z=185)   object 3053   0.964   (53 voxels)   <- dominant at that end
+```
+
+The in-plane comparison did its job - 0.036 lost. What merged 2714 with 3053 was the older rule
+underneath it: **each end contributed its own object and both were joined**. The stroke was read as a
+bridge, because an object happened to continue below it.
+
+That reading came from [the drawing reaches the next
+slice](#the-drawing-reaches-the-next-slice-2026-09-11), where it was the whole point: *brush the gap,
+join the halves on either side*. What the live scene shows is that "the object below" and "the object
+above" being two halves of one thing is the special case, not the ordinary one. In a dense model
+something is usually below a stroke, and a merge it did not ask for is expensive to notice - two
+objects with one index, which is what the whole tool exists to undo.
+
+So the lookahead now names **one object in total**: the better covered of the two ends, lowest index
+on a tie, then weighed against the in-plane candidate exactly as before. Author's call, and the
+principle is theirs: *"keep the objects separate and when `a` is used extend 3053 with the new area.
+I can always make connect later."* Painting a piece in is one gesture; joining two objects is
+another, and once the piece is painted the two are touching, so `Connect` or a pick-and-Merge is one
+press.
+
+**What it cost.** D7a as a one-press join is retired, and with it three test cases, rewritten rather
+than deleted because the geometry they set up is still exactly what has to be checked - only the
+expected answer moved:
+
+| Test | Was | Is |
+|---|---|---|
+| `mergeFromADrawingReachesTheNextSliceInZ` | the two ends merged into one object | the better covered end grows, the other is untouched |
+| `connectFromADrawingJoinsWhatItLiesBetween` -> `...GrowsWhatItMostlyReaches` | the drawing bridged them | the drawing joins one of them, nothing is bridged |
+| `connectFromADrawingTakesTheLargestAtEachEnd` | one object per end, each the dominant there | still one per end, and then the better of the two takes it alone |
+
+The clipped-neighbour guard inside `localDominantNeighbour` is untouched and matters more than before:
+an end offers one object, and now only one end is taken, so a stroke reaches at most a single object
+it cannot see.
+
+`interpolate` with two objects picked is now the only form that joins two objects in one press, which
+is the form that was always explicit about it.
+
+### The Selected objects list navigates too (2026-09-12)
+
+Reported against the documentation, which had been claiming it for some time: *"Selecting a single
+object in the list also moves the view to it"* was true of `objectTable` only. `selectedList` carried
+a context menu and no `ValueChangedFcn` at all, so clicking an entry did nothing.
+
+It is not a duplicate of the table's navigation, which is why the doc sentence read as a promise
+rather than a repetition. The two lists hold different things: a pick made by clicking in the image
+or with ++ctrl+f++ never passed through the table, and the table draws at most `MaxRows` rows after
+filtering while this list draws every picked object. Stepping through what is about to be operated on
+- the check before pressing Merge on three objects - is a thing only this list can do.
+
+Two limits, both deliberate:
+
+- **It selects nothing.** What is picked is decided by the image, the table and the context menu;
+  clicking through the list to look at each member must not change the input of the operation about
+  to run. That also keeps the `'remove'` menu entry meaning what it says.
+- **Several entries highlighted name no single place to go to**, so a multi-selection is left alone
+  rather than navigating to the first of them.
+
+Safe against the repaint that would otherwise undo it: `goToObject` in 3D fires `SliceChanged`, and
+`sliceChanged` returns immediately in 3D mode, so `updateSelectedList` - which clears `Value` - is not
+reached and the highlight the user just made survives for the context menu. In 2D the object is on
+the shown slice by definition and only `ShowImage` is fired.
+
+The documentation's other fault in the same sentence was the name: it called the edit box *"jump to
+index"*, which is the widget's `Tag`. The label is `Go to object:`.
 
 ### The window opens in 2D (2026-09-02)
 
@@ -1246,6 +1396,7 @@ In 3D mode; the 2D list is a different thing and has its own group, [I](#i-2d-mo
 | B8 | Click one row | View centres on the object, slice jumps to it, object appears in the Selection layer |
 | B9 | Ctrl-click / shift-click several rows | All of them highlighted together |
 | B10 | Highlight one entry in **Selected objects**, right-click, *Remove highlighted from selection* | Only that object leaves the selection and the highlight; *Clear list* empties it |
+| B10a | Pick two objects by clicking in the image, then click each entry in **Selected objects** in turn | The view moves to each, and the selection still holds both - clicking there looks, it does not pick. The entry stays highlighted, so the right-click menu above still has something to act on |
 
 ### C. Picking by clicking - the part no test covers
 
@@ -1281,12 +1432,15 @@ Undo (++ctrl+z++) after **every** one of these and confirm the model returns exa
 | D5 | Move to a slice in the middle of an object, **Cut at slice** | Everything from that slice onwards becomes a new object |
 | D6 | **Cut at slice** on the object's first slice, and on a slice outside it | Refused with a message naming the object's slice range |
 | D7 | Two objects with a Z gap, **Connect** (`interpolate`) | Gap filled, both now one object with the smaller index |
-| D7a | In 3D, brush the gap between an object on z-1 and one on z+1, pick nothing, press ++a++ (or **Merge**) | The two are joined and the brushed area is part of them - one connected object with the smaller index. The same gesture as D1b, one slice further |
+| D7a | In 3D, brush the slice an object is missing from, pick nothing, press ++a++ (or **Merge**) | The object above and below takes the brushed area and keeps its index. The same gesture as D1c, one slice further |
+| D7a1 | Do it where the object below the stroke is a **different** object from the one above | Only the better covered one takes it; the other keeps every voxel and its own index. They are now touching, so **Connect** joins them if that is what you wanted. Joining both automatically is what this used to do |
 | D7b | The same with the stroke slightly too wide, clipping the corner of a neighbour on z-1 | Only the object it mostly lands on is taken. Check the neighbour's voxel count in the list before and after |
+| D7b1 | In 3D, find an object missing from one slice. Brush the gap so the stroke also catches the neighbour beside it by a few pixels, pick nothing, ++a++ | The gap goes to the object above and below, and the neighbour keeps every voxel it had - check its count in the list before and after. This used to hand the whole stroke to the neighbour |
+| D7b2 | The same, but brush the shape squarely over the neighbour instead | It goes to the neighbour, which is how an object is grown in-plane. Covering beats clipping, and nothing was set to say so |
 | D7c | Brush a shape whose far end reaches nothing, pick nothing, ++a++ | The object at the near end grows by the shape and keeps its index - no new index handed out. On empty space at both ends it becomes a new object instead (D1d) |
 | D7d | Brush a stroke straight across two objects **on the same slice**, pick nothing, ++a++ | Those two are joined, not whatever lies above and below the stroke. What the drawing covers is asked first |
 | D7e | The **same drawing as D7a**, but in 2D mode | It becomes a new object on that slice. The reach is a property of 3D mode, not of the gesture |
-| D7f | Repeat D7a with **Connect** instead of ++a++, nothing picked | Identical result - the two are the same code once nothing is picked, and `Connect Mode` is not consulted. Pick the two objects and it becomes the `interpolate`/`selection` operation again |
+| D7f | Repeat D7a with **Connect** instead of ++a++, nothing picked | Identical result - the two are the same code once nothing is picked, and `Connect Mode` is not consulted. Pick the two objects and it becomes the `interpolate`/`selection` operation again, which is the only form that still joins two objects from one press |
 | D8 | **Connect** across a gap that has a *third* object sitting in it | The third object is untouched. Check its voxel count in the list before and after |
 | D9 | Brush a bridge into the Selection layer, **Connect** (`selection`) | Only the brushed area is used |
 | D10 | **Connect** on three objects | Refused |

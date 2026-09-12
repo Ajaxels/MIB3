@@ -330,7 +330,8 @@ classdef InstanceEditor < handle
                      '   - ctrl+f: add the object under the mouse to the selection' newline ...
                      'Their usual meanings come back when this is unticked.']
                 {'selectedList', 'SelectedobjectsLabel'}, ...
-                    'Objects the next operation will act on. Right click to drop the highlighted ones or to clear the list.'
+                    ['Objects the next operation will act on. Click one to move the view to it. ' ...
+                     'Right click to drop the highlighted ones or to clear the list.']
                 {'Mode3D'}, ...
                     ['On: work with 3D objects' newline ...
                      'Off: work with 2D objects']
@@ -344,7 +345,8 @@ classdef InstanceEditor < handle
                      'With nothing picked the selection layer decides what to join, and the background under it ' ...
                      'joins too: several objects become one connected piece, a single object grows by the ' ...
                      'drawing, and a drawing on empty space becomes a new object. In 3D the drawing also ' ...
-                     'reaches the slice above and below itself, so a gap along Z is closed by brushing it.']
+                     'reaches the slice above and below itself, so it can grow an object it only touches ' ...
+                     'there - the one it covers most of takes it, and the others are left alone.']
                 {'splitComponentsButton'}, ...
                     'Break each picked object into its separate pieces. The largest keeps the index, the rest get new ones.'
                 {'splitBySelectionButton'}, ...
@@ -355,8 +357,8 @@ classdef InstanceEditor < handle
                 {'connectButton'}, ...
                     ['Bridge two picked objects and join them. Only empty space is filled, so an object ' ...
                      'lying between them is never overwritten. With nothing picked it does what Merge ' ...
-                     'does: the drawing is the bridge, and the objects it reaches are the ones joined. ' ...
-                     '3D mode only.']
+                     'does: the drawing goes to the object it covers most of, and joining two of them ' ...
+                     'stays a matter of picking both. 3D mode only.']
                 {'deleteButton'}, ...
                     'Delete the picked objects.'
                 {'cleanupButton'}, ...
@@ -957,6 +959,30 @@ classdef InstanceEditor < handle
                 'UniformOutput', false);
             h.ItemsData = obj.selectedObjects;
             h.Value = [];          % nothing highlighted until the user says so
+        end
+
+        % -----------------------------------------------------------
+        function selectedList_Callback(obj)
+            % SELECTEDLIST_CALLBACK - Highlighting one entry moves the view to it.
+            %
+            % The same navigation a row in the object table gives, for the same
+            % reason: a list that names an object is of little use while finding
+            % it in the image is a manual hunt. It is needed here in its own
+            % right, because a pick made by clicking in the image or with ctrl+f
+            % never passed through the table at all, and because the table shows
+            % at most MaxRows rows while this list shows every picked object.
+            %
+            % Nothing is selected or deselected by it - what is picked is decided
+            % by the image, the table and the context menu. Several entries
+            % highlighted at once name no single place to go to, so that is left
+            % alone as well.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.InstanceEditor.selectedList_Callback: triggered\n');
+            end
+
+            highlighted = obj.view.handles.selectedList.Value;
+            if ~isscalar(highlighted); return; end
+            obj.goToObject(double(highlighted));
         end
 
         % -----------------------------------------------------------

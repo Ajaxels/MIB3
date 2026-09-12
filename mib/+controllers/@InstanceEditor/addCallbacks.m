@@ -42,6 +42,12 @@ h.pickByClick.ValueChangedFcn = @(~, ~) obj.pickMode_Callback();
 
 h.useShortcuts.ValueChangedFcn = @(~, ~) obj.shortcutMode_Callback();
 
+% Highlighting one entry moves the view to that object, the way a row in the
+% object table does. The picked set is not touched here - this list is what has
+% already been chosen, and clicking through it to look at each member must not
+% change the input of the operation about to run.
+h.selectedList.ValueChangedFcn = @(~, ~) obj.selectedList_Callback();
+
 % A context menu rather than a button, so that a way of un-picking an object can
 % be added without another widget in the .mlapp. Highlight the entries in the
 % list first - a right-click does not select what is under it.
