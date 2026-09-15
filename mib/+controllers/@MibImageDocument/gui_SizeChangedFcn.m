@@ -6,10 +6,19 @@ function gui_SizeChangedFcn(obj)
 %
 %      obj.gui_SizeChangedFcn()
 %
-% This function handles window resize events for MibImageDocument using a debounced timer
-% approach. When the window is resized, a global timer is created or reset. The actual resize
-% operations (updating axes and redrawing images) only execute after 100ms of no resize activity,
-% preventing performance issues and aspect ratio glitches during continuous resizing.
+% This function handles window resize events for MibImageDocument in two stages.
+%
+% The expensive stage - recomputing the field of view of every dataset and re-rendering the
+% images - is debounced: a global timer is created or reset on each resize event and only
+% fires after 100ms of no resize activity, which keeps continuous dragging responsive.
+%
+% The cheap stage runs immediately, because the debounce alone leaves the image visibly
+% distorted in the meantime. The image axes is kept in stretch-to-fill mode
+% (``DataAspectRatioMode = 'auto'``), so an undistorted image requires the ``XLim``/``YLim``
+% spans to stay numerically equal to the width/height of the axes in pixels. A resize changes
+% the pixel box while the limits still hold their old values, and maximizing the window turns
+% that into a 2-3x stretch held for several hundred milliseconds. The limits are therefore
+% rewritten for the new size right away, before the stretched frame can be presented.
 %
 % When any document in an AppContainer is resized (including divider dragging),
 % all visible documents are updated to ensure proper display.
@@ -25,6 +34,10 @@ function gui_SizeChangedFcn(obj)
 %   - Timer delay: 100ms (adjustable via ``StartDelay`` property)
 %   - Prevents callback re-entrance using persistent variables
 %   - Handles AppContainer divider dragging by updating all documents
+%   - ``imViewAxes.InnerPosition`` is still the pre-resize value while this callback runs;
+%     only ``UIFigure.Position`` is already current, hence the predicted axes size based on
+%     ``obj.axesDecorationSize``. Calling ``drawnow`` here to refresh InnerPosition is not an
+%     option - it would present the stretched frame that this stage exists to avoid
 %
 % **Example 1** - automatically triggered when window is resized:
 %
@@ -41,6 +54,51 @@ function gui_SizeChangedFcn(obj)
 % See also:
 %   ``listener_updateDatasetAxes``, ``showImage``, ``updateBrushCursor``
 %
+
+% Rewrite the axes limits for the new size straight away, so that the image is never
+% presented stretched while the debounced update below is pending. The maths mirrors the
+% 'resize' mode of controllers.MibController.listener_updateDatasetAxes (keep magFactor,
+% keep the centre of the field of view, expand or contract it to the new axes size) and the
+% limits that controllers.MibController.showImage derives from it. Nothing is written back
+% to the model and no image is regenerated here - the timer below remains authoritative.
+if ~isempty(obj.axesDecorationSize) && isvalid(obj.handles.imViewAxes) && ...
+        obj.setOfDatasetsIndex <= numel(obj.mibModel.Sets.selectedDataset)
+    newAxesSize = obj.UIFigure.Position(3:4) - obj.axesDecorationSize;
+    datasetId = obj.mibModel.Sets.selectedDataset(obj.setOfDatasetsIndex) + ...
+        obj.mibModel.Sets.datasetsInSet * (obj.setOfDatasetsIndex - 1);
+
+    if all(newAxesSize > 1) && datasetId <= numel(obj.mibModel.I)
+        dataset = obj.mibModel.I{datasetId};
+        [axesX, axesY] = dataset.getAxesLimits();
+
+        % NaN limits mean the dataset has not been shown yet; the deferred update fits it
+        % to the screen and computes a magFactor, there is nothing to preserve here
+        if ~isnan(axesX(1))
+            switch dataset.orientation
+                case 3      % xy
+                    coefZ = dataset.image.pixSize.x / dataset.image.pixSize.y;
+                case 1      % zx
+                    coefZ = dataset.image.pixSize.z / dataset.image.pixSize.x;
+                case 2      % zy
+                    coefZ = dataset.image.pixSize.z / dataset.image.pixSize.y;
+            end
+            magFactor = dataset.magFactor;
+
+            % field of view for the new axes size, centred as before
+            xCenter = (axesX(1) + axesX(2)) / 2;
+            yCenter = (axesY(1) + axesY(2)) / 2;
+            axesX = xCenter + [-1, 1] * newAxesSize(1) * magFactor / (2 * coefZ);
+            axesY = yCenter + [-1, 1] * newAxesSize(2) * magFactor / 2;
+
+            % the part of the field of view that lies outside the image becomes the empty
+            % margin on the left/top; the rest of the span is the axes size in pixels
+            xLimLeft = min(axesX(1), 0) * coefZ / magFactor;
+            yLimTop = min(axesY(1), 0) / magFactor;
+            obj.handles.imViewAxes.XLim = [xLimLeft, xLimLeft + newAxesSize(1)];
+            obj.handles.imViewAxes.YLim = [yLimTop, yLimTop + newAxesSize(2)];
+        end
+    end
+end
 
 % Check if global resize timer property exists in MibController
 if ~isprop(obj.mibController, 'globalResizeTimer')

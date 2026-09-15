@@ -67,7 +67,8 @@ classdef MibImageDocument < handle
         gui                     % views.components.ImageViewDocument, the ImageViewDocument component
         handles                 % struct with ImageDocument component handles (axes, buttons, etc.)
         UIFigure                % handle to underlying UIFigure
-        
+        axesDecorationSize = [] % [width, height] in pixels, fixed margin between UIFigure.Position(3:4) and imViewAxes.InnerPosition(3:4); cached in controllers.MibController.listener_updateDatasetAxes and used by obj.gui_SizeChangedFcn
+
         figureDoc               % matlab.ui.internal.FigureDocument, the document container
         setOfDatasetsIndex      % double, index of this document in the Sets
         brushCursor             % matlab.graphics.chart.primitive.Line, handle to brush cursor plot

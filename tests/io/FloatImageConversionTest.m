@@ -2,14 +2,16 @@ classdef FloatImageConversionTest < matlab.unittest.TestCase
 % Unit tests for io.loaders.BaseImageLoader.convertFloatImage.
 %
 % MIB operates with integer images, so floating point data coming from a loader
-% is converted to uint16 during loading. Two modes exist and picking the wrong
-% one is silent: stretching a detector that stores integer counts as floats
+% is converted to uint16 or uint32 during loading. Two modes exist and picking the
+% wrong one is silent: stretching a detector that stores integer counts as floats
 % (TEM cameras) rewrites every intensity, while truncating normalized 0-1 data
 % collapses the image to a 0/1 bitmap.
 %
 % The tests run with ``silentMode`` on, i.e. they assert on the mode that
 % convertFloatImage *suggests* - which is what a user loading a dataset sees
-% preselected in the conversion dialog.
+% preselected in the conversion dialog. The uint32 container that the drop mode
+% falls back to above 65535 is never suggested, so it is only reachable through
+% the dialog and stays outside these tests.
 
     methods (TestClassSetup)
         function addPaths(testCase)
@@ -69,9 +71,13 @@ classdef FloatImageConversionTest < matlab.unittest.TestCase
         end
 
         function rangeWiderThanUint16_isStretched(testCase)
+            % counts above 65535 (Hitachi TEM dm4 frames reach ~2.5e5) are still
+            % suggested for stretching - keeping them needs the uint32 container, which
+            % is only used when the user picks the drop mode in the dialog
             floatImage = single(70000) * rand(16, 24, 'single');
             [img, ~] = testCase.convertSilently(floatImage);
 
+            testCase.verifyClass(img, 'uint16');
             testCase.verifyEqual(max(img(:)), uint16(65535));
             testCase.verifyGreaterThan(numel(unique(img(:))), 100);
         end

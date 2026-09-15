@@ -92,6 +92,14 @@ if numel(obj.cImageDoc) < selectedSet; selectedSet = selectedSet - 1; end
 %drawnow;
 axSize = obj.cImageDoc{selectedSet}.handles.imViewAxes.InnerPosition;
 
+% Cache the pixel margin between the figure and the axes drawing box. The widgets
+% and decorations around the axes keep a fixed pixel size, so this margin does not
+% change with the window size; MibImageDocument.gui_SizeChangedFcn uses it to derive
+% the new axes size from the new figure size at a moment when the axes InnerPosition
+% has not yet caught up with the resize.
+obj.cImageDoc{selectedSet}.axesDecorationSize = ...
+    obj.cImageDoc{selectedSet}.UIFigure.Position(3:4) - axSize(3:4);
+
 [axesX, axesY] = obj.mibModel.I{index}.getAxesLimits();
 magFactor = obj.mibModel.I{index}.magFactor;
 if isnan(axesX(1)) || strcmp(mode, 'fitToScreen')

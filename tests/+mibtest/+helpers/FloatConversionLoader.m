@@ -1,5 +1,5 @@
 classdef FloatConversionLoader < io.loaders.BaseImageLoader
-% FLOATCONVERSIONLOADER - Minimal loader exposing the protected float-to-uint16 conversion.
+% FLOATCONVERSIONLOADER - Minimal loader exposing the protected float-to-integer conversion.
 %
 % ``io.loaders.BaseImageLoader`` is abstract and its conversion helpers are
 % protected, so a concrete subclass is the only way to exercise them without a
