@@ -11,7 +11,11 @@ function openBtn_Callback(obj, batchModeSwitch)
 % recover from:
 %
 %   * not a zarr store  -> the original ``imread`` import;
-%   * ``LoadAs = Labels`` -> ``MibModel.loadModel`` onto the open dataset;
+%   * ``LoadAs = Labels`` -> ``MibModel.loadModel`` onto the open dataset, or
+%     :meth:`openLabelCrop` when the group is a sub-volume needing its own image
+%     region. ``loadModel`` picks between an in-place model and a read-only
+%     overlay itself, from whether the store's finest level matches the image, so
+%     the ``model`` and ``overlay`` routes arrive here the same way;
 %   * otherwise         -> switch the buffer to the requested dataset mode and
 %     call ``MibModel.loadImages``.
 %

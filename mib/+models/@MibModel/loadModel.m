@@ -203,30 +203,49 @@ if strcmp(obj.I{id}.datasetType, 'BigData') && isempty(model)
     else
         newLabels = core.MibBigDataLabels([], bigMeta);
     end
+    % Both classes above assume the store's finest level IS the image's full
+    % resolution, because both number their levels from the store's own level 0.
+    % A pyramid published from a coarse level down breaks that assumption rather
+    % than failing on it: jrc_mus-kidney's nuc starts at 128 nm over an 8 nm EM,
+    % so its own level 0 is the EM's s4 and calling it scale 1 would place every
+    % label at one-sixteenth of its true size. Such a store gets the read-only
+    % overlay (core.MibBigDataLabelsIndex), which registers against the image's
+    % scale space instead.
+    %
+    % The mismatch is DISCOVERED by opening rather than predicted from metadata,
+    % so the wasted level walk is paid only on the path that then needs the
+    % overlay - and never on the common case where the store does match.
+    mismatchReason = '';
     try
         newLabels.openStore(storePath);
+        if newLabels.height ~= ds.image.height || newLabels.width ~= ds.image.width || ...
+                newLabels.depth ~= ds.image.depth
+            mismatchReason = sprintf(['Model size [%d x %d x %d] does not match the image ' ...
+                '[%d x %d x %d].'], ...
+                newLabels.height, newLabels.width, newLabels.depth, ...
+                ds.image.height, ds.image.width, ds.image.depth);
+        end
     catch ME
-        closeProgressDialog(bigDataProgress);   % modal, and would sit in front of the message
-        ErrorDlgOpt.winTitle = 'Invalid model store';
-        ErrorDlgOpt.err = sprintf('"%s" is not a valid BigData model store:\n%s', storePath, ME.message);
-        notify(obj, 'ShowErrorDialog', core.ToggleEventData(ErrorDlgOpt));
-        notify(obj, 'StopProtocol');
-        return;
+        % Not necessarily a dead end: a FOREIGN v3 label store lands on
+        % core.MibBigDataLabels above, which expects MIB's own packed layout and
+        % throws, while the overlay reads either format.
+        mismatchReason = sprintf('"%s" is not a BigData model store for this dataset:\n%s', ...
+            storePath, ME.message);
     end
 
-    % the model's finest level must match the image's full resolution
-    if newLabels.height ~= ds.image.height || newLabels.width ~= ds.image.width || ...
-            newLabels.depth ~= ds.image.depth
-        closeProgressDialog(bigDataProgress);
-        ErrorDlgOpt.winTitle = 'Dimension mismatch';
-        ErrorDlgOpt.err = sprintf(['Model size [%d x %d x %d] does not match the image ' ...
-            '[%d x %d x %d]. The model belongs to a different dataset.'], ...
-            newLabels.height, newLabels.width, newLabels.depth, ...
-            ds.image.height, ds.image.width, ds.image.depth);
-        notify(obj, 'ShowErrorDialog', core.ToggleEventData(ErrorDlgOpt));
-        notify(obj, 'StopProtocol');
-        return;
+    if ~isempty(mismatchReason)
+        [overlayLabels, registrationReason] = attachLabelOverlay(ds, bigMeta, storePath);
+        if isempty(overlayLabels)
+            closeProgressDialog(bigDataProgress);   % modal, and would sit in front of the message
+            ErrorDlgOpt.winTitle = 'Model does not match the image';
+            ErrorDlgOpt.err = sprintf('%s\n\n%s', mismatchReason, registrationReason);
+            notify(obj, 'ShowErrorDialog', core.ToggleEventData(ErrorDlgOpt));
+            notify(obj, 'StopProtocol');
+            return;
+        end
+        newLabels = overlayLabels;
     end
+    isReadOnlyOverlay = isa(newLabels, 'core.MibBigDataLabelsIndex');
 
     ds.labels = newLabels;
     % openStore restores material names/colours from the store when present;
@@ -257,7 +276,13 @@ if strcmp(obj.I{id}.datasetType, 'BigData') && isempty(model)
     if isempty(ds.labels.materialNames)
         ds.labels.materialNames = arrayfun(@(x) sprintf('mat%d', x), (1:ds.labels.maxMaterials)', 'UniformOutput', false);
     end
-    ds.labels.materialsCount = numel(ds.labels.materialNames);
+    % A read-only overlay counted its own objects at open time (from the coarsest
+    % level, one request). Its materialNames holds the TWO index-carrying slots the
+    % >255-material convention uses, so numel() here would overwrite a real count
+    % with 2.
+    if ~isReadOnlyOverlay
+        ds.labels.materialsCount = numel(ds.labels.materialNames);
+    end
     ds.labels.labelsVariable  = 'mibModel';
     ds.labels.filename        = storePath;
     % MibLabels63's constructor hardcodes maskFilename to 'Mask_none.mask' - re-derive
@@ -265,7 +290,17 @@ if strcmp(obj.I{id}.datasetType, 'BigData') && isempty(model)
     % does for Standard datasets, so "Save mask" defaults to the dataset's own name.
     ds.labels.maskFilename    = ds.image.maskFilename;
     ds.modelExist             = true;
-    ds.enableSelection        = true;   % browse-only BigData becomes segmentable
+    if isReadOnlyOverlay
+        % ``enableSelection`` is what every segmentation tool tests before
+        % touching a layer (the rule in CLAUDE.md) and what getRGBimage:248 tests
+        % before reading the selection, so leaving it false keeps the dataset
+        % browse-only in one place instead of a class check per tool. The model
+        % still DISPLAYS: the overlay at getRGBimage:216 needs only modelExist
+        % and showModel.
+        ds.enableSelection    = false;
+    else
+        ds.enableSelection    = true;   % browse-only BigData becomes segmentable
+    end
     ds.selectedMaterial       = 2;
     ds.selectedAddToMaterial  = 2;
     ds.lastSegmSelection      = [2 1];
@@ -508,6 +543,36 @@ if batchModeSwitch
     eventdata = core.ToggleEventData(BatchOpt);
     notify(obj, 'SyncBatch', eventdata);
 end
+end
+
+% =========================================================================
+function [overlayLabels, reason] = attachLabelOverlay(ds, bigMeta, storePath)
+% ATTACHLABELOVERLAY - Try to serve a non-matching label pyramid as a view-only overlay.
+%
+% Hands the store to ``core.MibBigDataLabelsIndex``, described against the open
+% image by that class's own ``imageReference`` - shared with
+% ``controllers.SelectFromUrl.resolveLabelRoute``, so the route the info panel
+% promises before Open and the one taken here cannot diverge. Returns ``[]`` plus
+% the reason when the pyramid cannot be placed, which the caller reports beside
+% whatever went wrong on the direct route.
+
+overlayLabels = [];
+
+imageReference = core.MibBigDataLabelsIndex.imageReference(ds.image);
+if ~imageReference.ok
+    reason = imageReference.reason;
+    return;
+end
+reason = '';
+
+candidate = core.MibBigDataLabelsIndex([], bigMeta);
+try
+    candidate.openStore(storePath, imageReference);
+catch ME
+    reason = ME.message;
+    return;
+end
+overlayLabels = candidate;
 end
 
 % =========================================================================

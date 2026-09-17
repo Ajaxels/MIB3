@@ -166,6 +166,32 @@ if ~isfield(options,'pixSize') || isempty(options.pixSize)
     options.pixSize = struct('x',1,'y',1,'z',1,'t',1,'units','um','tunits','s');
 end
 
+% --- pyramid level selection (a label pyramid served from a store) --------
+% Same mechanism ``core.MibLabels63.save`` uses for a disk-backed BigData model,
+% and it matters MORE here: a ``core.MibBigDataLabelsIndex`` overlay has no
+% full-resolution level at all (``nuc`` starts at 128 nm over an 8 nm EM), so
+% exporting "the whole model" is not a question with a default answer - writing
+% what the image is showing would mean upsampling the entire volume to a
+% resolution the labels never had. The chosen level is streamed slice by slice,
+% so the file may be large but memory never is.
+%
+% The level's voxel size is pixSize scaled by that level's scale factors; the
+% physical bounding box is the same at every level and is left alone.
+isPyramidalModel = isa(obj, 'core.MibBigDataLabelsIndex') && obj.exists && ...
+    ~isempty(obj.modelLevelNames);
+exportLevel = 1;
+if isfield(options, 'PyramidLevel') && ~isempty(options.PyramidLevel)
+    exportLevel = round(options.PyramidLevel);
+end
+if isPyramidalModel
+    nLevels = numel(obj.modelLevelNames);
+    exportLevel = max(1, min(exportLevel, nLevels));
+    levelScale = obj.modelScaleFactors(exportLevel, :);   % [yScale xScale zScale]
+    options.pixSize.y = options.pixSize.y * levelScale(1);
+    options.pixSize.x = options.pixSize.x * levelScale(2);
+    options.pixSize.z = options.pixSize.z * levelScale(3);
+end
+
 % Show indeterminate progress dialog immediately so the user sees feedback
 % while the (potentially slow) data-extraction step runs.
 earlyWb = [];
@@ -240,14 +266,8 @@ else
 end
 options.FilenamePrefix = 'Labels_';
 
-% --- get data [H, W, D, C, T] ---
-% When a specific material is requested getData returns a binary volume
-if isempty(selMaterial)
-    data = obj.getData('labels', 3, []);   % all materials → multi-valued
-else
-    data = obj.getData('labels', 3, selMaterial);  % binary: 1 where == selMaterial
-
-    % Trim metadata to single material
+% --- trim metadata to a single material when requested (both paths) ---
+if ~isempty(selMaterial)
     nMat = numel(metadata.materialNames);
     if selMaterial >= 1 && selMaterial <= nMat
         metadata.materialNames  = metadata.materialNames(selMaterial);
@@ -255,15 +275,36 @@ else
     end
 end
 
-% Check if user cancelled during data extraction
-if ~isempty(earlyWb) && isvalid(earlyWb) && earlyWb.CancelRequested
-    delete(earlyWb);
-    fnOut = [];
-    return;
-end
-
 % --- dispatch ---
 saver = io.SaverFactory.create(options.Format, options);
-fnOut = saver.save(data, metadata, filename, options);
+
+if isPyramidalModel
+    % Stream the chosen level slice-by-slice: memory is bounded to one slice,
+    % and a non-streaming saver gathers only that level. The provider reads
+    % through getData(..., options.pyramidLevel) and names no backend, so it
+    % works for any pyramid satisfying that contract.
+    numSlices = obj.modelLevelSizes(exportLevel, 3);
+    zScale    = obj.modelScaleFactors(exportLevel, 3);
+    provider  = io.savers.MibImageSliceProvider(obj, 'labels', exportLevel, ...
+        selMaterial, numSlices, 1, zScale);
+    fnOut = saver.saveStream(provider, metadata, filename, options);
+else
+    % --- get data [H, W, D, C, T] ---
+    % When a specific material is requested getData returns a binary volume
+    if isempty(selMaterial)
+        data = obj.getData('labels', 3, []);   % all materials → multi-valued
+    else
+        data = obj.getData('labels', 3, selMaterial);  % binary: 1 where == selMaterial
+    end
+
+    % Check if user cancelled during data extraction
+    if ~isempty(earlyWb) && isvalid(earlyWb) && earlyWb.CancelRequested
+        delete(earlyWb);
+        fnOut = [];
+        return;
+    end
+
+    fnOut = saver.save(data, metadata, filename, options);
+end
 end
 

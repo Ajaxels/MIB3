@@ -1338,6 +1338,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#choosing-the-level" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Choosing the level
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#selecting-classes" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -1364,6 +1375,28 @@
     <span class="md-ellipsis">
       <span class="md-typeset">
         What MIB reports after loading
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#labels-published-only-at-coarse-resolution" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Labels published only at coarse resolution
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#saving-an-overlay" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Saving an overlay
       </span>
     </span>
   </a>
@@ -5665,6 +5698,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#choosing-the-level" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Choosing the level
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#selecting-classes" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -5691,6 +5735,28 @@
     <span class="md-ellipsis">
       <span class="md-typeset">
         What MIB reports after loading
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#labels-published-only-at-coarse-resolution" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Labels published only at coarse resolution
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#saving-an-overlay" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Saving an overlay
       </span>
     </span>
   </a>
@@ -6050,13 +6116,19 @@ opens it right away as a Standard dataset and closes the dialog - paste, <span c
 <p><span class="widget widget-button">Connect</span> stops short of that: it reports what the file
 is and waits for <span class="widget widget-button">Open</span>. Use it when you would rather
 check the URL before anything is downloaded.</p>
+<p><span class="widget widget-combobox">Dataset mode</span> does not apply here and is set to Standard
+for you: a plain image is one array in memory, with no pyramid to stream. This holds even when the
+buffer you import into was BigData.</p>
 <h3 id="load-as">Load as<a class="headerlink" href="#load-as" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>Image</strong> - open the group as the dataset.</li>
-<li><strong>Labels</strong> - load it as a segmentation model. Two things can happen, and the dialog tells you
+<li><strong>Labels</strong> - load it as a segmentation model. Three things can happen, and the dialog tells you
   which before you press Open:<ul>
-<li>the group covers exactly the same extent as the open image, and it is loaded straight on
-  top of it;</li>
+<li>the group matches the open image voxel for voxel, and it is loaded straight on top of it;</li>
+<li>the group covers the same volume at a <strong>coarser</strong> resolution, and with
+  <span class="widget widget-combobox">Dataset mode</span> on BigData it is drawn over the open
+  dataset as each slice is read. See
+  <a href="#labels-published-only-at-coarse-resolution">Labels published only at coarse resolution</a>;</li>
 <li>the group is a <strong>ground-truth crop</strong> - a small annotated cube carved out of a much larger
   volume - in which case MIB opens the matching <em>image region</em> as well and puts the labels on
   that. See <a href="#label-crops">Label crops</a>.</li>
@@ -6143,6 +6215,27 @@ volume of 12000 x 1600 x 6368. So MIB does not try. Selecting a crop's class gro
 Open <strong>fetches the matching image region too</strong>, cutting the EM volume down to exactly the crop's
 extent, and puts the labels on that. Image and labels then have identical dimensions and sit on the
 same voxel grid.</p>
+<div class="admonition warning">
+<p class="admonition-title">This route reads everything into memory, so it needs Standard mode</p>
+<p>Both the image region and the model are held in RAM, which is a <strong>Standard</strong> dataset. Selecting
+a crop with <span class="widget widget-combobox">Dataset mode</span> set to BigData or Virtual is
+therefore refused rather than silently overridden: the info panel names the size and level you
+would get, and you set Dataset mode to Standard and press Open again.</p>
+<p>A crop is a <em>part</em> of the volume, which is why it has to be opened with its own image region. A
+segmentation covering the <strong>whole</strong> volume does not, and in BigData mode it is shown over the
+open dataset instead - see
+<a href="#labels-published-only-at-coarse-resolution">Labels published only at coarse resolution</a>.</p>
+</div>
+<h3 id="choosing-the-level">Choosing the level<a class="headerlink" href="#choosing-the-level" title="Permanent link">&para;</a></h3>
+<p>The labels and the image do not line up at every resolution - only at the levels where their voxel
+sizes match. Open asks which of those to read, with the dimensions and the memory cost of each:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>s4: 767 x 498 x 1387 px at 128 nm - 1010 MB
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>s5: 383 x 249 x 693 px at 256 nm - 126 MB
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>s6: 191 x 124 x 346 px at 512 nm - 16 MB
+</span></code></pre></div>
+<p>Levels with no matching label level are not offered at all; MIB will not resample one pyramid to fit
+the other. The finest level that fits in memory is preselected. When only one level pair matches
+there is nothing to choose and the question is skipped.</p>
 <h3 id="selecting-classes">Selecting classes<a class="headerlink" href="#selecting-classes" title="Permanent link">&para;</a></h3>
 <p>The tree takes a <strong>multiple selection</strong> - <span class="keys"><kbd class="key-control">Ctrl</kbd></span> or <span class="keys"><kbd class="key-shift">Shift</kbd></span> click - because a useful model
 usually blends several classes. <strong>The order you click in matters:</strong> where two classes cover the same
@@ -6179,17 +6272,55 @@ region.</p>
   extracellular space, entirely nucleus). Said explicitly, so a solid-colour model does not look
   like a failure.</li>
 </ul>
+<h3 id="labels-published-only-at-coarse-resolution">Labels published only at coarse resolution<a class="headerlink" href="#labels-published-only-at-coarse-resolution" title="Permanent link">&para;</a></h3>
+<p>A segmentation may carry fewer pyramid levels than the image it belongs to, starting at a coarser
+resolution. In <code>jrc_ctl-id8-1</code>, <code>recon-1/labels/inference/segmentations/nuc</code> begins at 64 nm while
+the EM goes down to 4 nm.</p>
+<p>These load either way, and <span class="widget widget-combobox">Dataset mode</span> chooses between
+two different results. The info panel says which one you will get before you press Open.</p>
+<p><strong>BigData - an overlay over the dataset you are browsing.</strong> The labels are drawn over the open image
+as each slice is read, upsampled where the image is finer, and the image keeps every level it had.
+Nothing is downloaded in bulk, so the size of the segmentation does not matter. The labels cannot be
+edited: they are displayed from a store that belongs to another tool. To save them to a file, see
+<a href="#saving-an-overlay">Saving an overlay</a>.</p>
+<p><strong>Standard - the labels and their matching image region, in memory.</strong> MIB opens the image at the
+level that matches the labels and puts them on that, so the two sit on the same voxel grid, and the
+model is an ordinary editable one. The dataset you get cannot be zoomed to the resolution of the
+volume you were just browsing, because its finer levels are not in that buffer; open the image group
+on its own to go back to full resolution.</p>
+<p>Pick BigData to look at a segmentation, Standard to correct one.</p>
+<h3 id="saving-an-overlay">Saving an overlay<a class="headerlink" href="#saving-an-overlay" title="Permanent link">&para;</a></h3>
+<p>A segmentation shown as an overlay is written out one <strong>pyramid level</strong> at a time:
+<span class="widget widget-button">Save model as...</span> asks which level, then writes it in any of
+MIB's model formats.</p>
+<p>The question has to be asked because these labels have no full-resolution level - that is what makes
+them an overlay - so there is no level MIB could pick for you. The list gives each level's dimensions
+and how much coarser than the image voxel it is. The result is a normal model file that can be opened
+on its own, and writing it does not need enough memory to hold it.</p>
 <h3 id="what-cannot-be-blended">What cannot be blended<a class="headerlink" href="#what-cannot-be-blended" title="Permanent link">&para;</a></h3>
+<p>Nothing, as of this version - but one kind of group needs a decision.</p>
 <p><strong>Instance segmentations.</strong> A handful of groups - <code>mito</code>, <code>nuc</code>, <code>ves</code>, <code>endo</code>, <code>lyso</code>, <code>ld</code>,
-<code>perox</code>, <code>np</code>, <code>mt</code>, <code>cell</code> - store an object <strong>id</strong> per voxel rather than a class, so merging one
-into a material index map would collapse every object into a single material. MIB refuses and says
-so. Open such a group with <strong>Load as: Image</strong> instead.</p>
+<code>perox</code>, <code>np</code>, <code>mt</code>, <code>cell</code> - store an object <strong>id</strong> per voxel rather than a class. The info panel
+says so when you select one, and Open asks how to take it:</p>
+<ul>
+<li><strong>Keep objects</strong> (default) - one material per object, named by the store's id (<code>nuc_1</code>, <code>nuc_2</code>,
+  ...). The objects stay separable and MIB's instance tools apply. Up to 65535 of them.</li>
+<li><strong>Merge into one material</strong> - a single material covering all of them: a mask of where they are,
+  which is easier to work with when there are hundreds. Which voxel belonged to which object is
+  then gone.</li>
+</ul>
+<p>Either way the object count is reported after loading, since the model itself cannot show it.</p>
 <p><strong>Segmentations of a whole volume.</strong> Published containers also carry <em>inference</em> results - for
 example <code>recon-1/labels/inference/segmentations/er</code> - which look exactly like a ground-truth crop
-in the metadata but cover the entire volume. Loading one as Labels would read the matching image
-region and the model into memory, and for <code>jrc_mus-liver-6</code> that is <code>8050 x 8000 x 8500</code> voxels, or
-about a terabyte. The info panel says so and Open stays disabled; open the group with
-<strong>Load as: Image</strong> instead, where you can pick a pyramid level.</p>
+in the metadata but cover the entire volume. With
+<span class="widget widget-combobox">Dataset mode</span> set to <strong>BigData</strong> these open as an overlay
+over the dataset you are browsing, at any size: for <code>jrc_mus-liver-6</code> that is <code>8050 x 8000 x 8500</code>
+voxels, about a terabyte, and nothing is downloaded in bulk. See
+<a href="#labels-published-only-at-coarse-resolution">Labels published only at coarse resolution</a>.</p>
+<p>In <strong>Standard</strong> mode the same group would be read into memory together with its image region, which
+the info panel refuses with the size it would need. Either lower
+<span class="widget widget-combobox">Dataset mode</span> back to BigData, or open the group with
+<strong>Load as: Image</strong> to pick a pyramid level.</p>
 <h3 id="worked-example">Worked example<a class="headerlink" href="#worked-example" title="Permanent link">&para;</a></h3>
 <p>Paste the container URL, expand <code>recon-1</code> -&gt; <code>labels</code> -&gt; <code>groundtruth</code> -&gt; <code>crop1</code>, then
 <span class="keys"><kbd class="key-control">Ctrl</kbd></span> click <code>mito_mem</code>, <code>mito_lum</code> and <code>er_mem</code>. The info panel confirms which image group the
@@ -6212,8 +6343,8 @@ be installed.</p>
 <a href="home-preferences.html#zarr-library">Preferences -&gt; Input/output -&gt; Zarr library</a> to <code>python</code>. That
 engine reaches the network through fsspec and then needs two extra packages in the interpreter set
 at <a href="home-preferences.html#external-directories">Preferences -&gt; External directories -&gt; Python installation path</a>:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="s2">&quot;&lt;path-to-python.exe&gt;&quot;</span><span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>zarr
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="s2">&quot;&lt;path-to-python.exe&gt;&quot;</span><span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>aiohttp<span class="w"> </span>requests
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="s2">&quot;&lt;path-to-python.exe&gt;&quot;</span><span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>zarr
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="s2">&quot;&lt;path-to-python.exe&gt;&quot;</span><span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>aiohttp<span class="w"> </span>requests
 </span></code></pre></div>
 <p>MIB checks for them when you press Open and tells you the exact command if they are missing.</p>
 <div class="admonition note">
@@ -6270,11 +6401,13 @@ what is open with the crop's image region plus its labels (<a href="#label-crops
 not paint the annotation onto the parent volume you were browsing. Drawing a small, finely sampled
 annotation over a multi-terabyte volume it is a tiny part of is a separate feature and does not
 exist yet.</p>
-<p>Crops are opened in <strong>Standard</strong> mode, fully in memory, whatever
-<span class="widget widget-combobox">Dataset mode</span> says - MIB tells you when it overrides
-your choice. That is deliberate: an existing remote label store is read-only in MIB, so a BigData
-crop could be viewed but never corrected, which is the main reason to open one. Every crop in the
-reference container fits comfortably - the largest is 64 MB.</p>
+<p>Crops therefore need <span class="widget widget-combobox">Dataset mode</span> set to <strong>Standard</strong>,
+and MIB refuses the others rather than overriding your choice. That a crop is read fully into memory
+is not the limitation it sounds like: a remote label store is read-only, so correcting a crop - the
+main reason to open one - needs the in-memory copy anyway. Every crop in the reference container
+fits comfortably; the largest is 64 MB.</p>
+<p>A segmentation covering the whole volume <em>is</em> shown as an overlay, because it needs no image region
+of its own. It is read-only, as any remote store is.</p>
 <p><strong>Browsing needs the S3 listing API - but not Amazon.</strong> Any endpoint that answers
 <code>ListObjectsV2</code> can be browsed, including institutional MinIO and Ceph servers hosted on their own
 domain. MIB does not check the host name: it simply tries, and a server that does not
@@ -6284,9 +6417,9 @@ speak the API costs one request. When that happens the dialog says so and you ty
 <h2 id="batch-mode">Batch mode<a class="headerlink" href="#batch-mode" title="Permanent link">&para;</a></h2>
 <p>The dialog is available in <a href="home-batchprocessing.html">Batch processing</a> as
 <strong>Ribbon -&gt; Home -&gt; Import from URL / Zarr</strong>, with <code>Url</code>, <code>GroupPath</code>, <code>LabelGroups</code>, <code>ImageGroupPath</code>,
-<code>LoadAs</code>, <code>DatasetMode</code> and <code>showWaitbar</code>. A recorded protocol replays without browsing, so
-<code>GroupPath</code> should be filled in.</p>
-<p>Three parameters have no control in the dialog and exist only for protocols:</p>
+<code>LoadAs</code>, <code>DatasetMode</code>, <code>MergeInstanceObjects</code>, <code>ZarrLevel</code> and <code>showWaitbar</code>. A recorded protocol
+replays without browsing, so <code>GroupPath</code> should be filled in.</p>
+<p>Five parameters have no control in the dialog and exist only for protocols:</p>
 <table>
 <thead>
 <tr>
@@ -6307,11 +6440,19 @@ speak the API costs one request. When that happens the dialog says so and you ty
 <td><code>ImageGroupPath</code></td>
 <td>Overrides the image group a crop is loaded onto. Empty means "find it by coordinates".</td>
 </tr>
+<tr>
+<td><code>MergeInstanceObjects</code></td>
+<td>Takes an instance segmentation as one merged material instead of one per object. Off by default, so a protocol keeps the objects - the dialog asks instead.</td>
+</tr>
+<tr>
+<td><code>ZarrLevel</code></td>
+<td>[Load as = Labels] 1-based image pyramid level to read the region at. Must be a level that has a matching label level; empty means the dialog asks.</td>
+</tr>
 </tbody>
 </table>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>Url            = https://janelia-cosem-datasets.s3.amazonaws.com/jrc_hela-2/jrc_hela-2.zarr
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>LabelGroups    = recon-1/labels/groundtruth/crop1/mito_mem;recon-1/labels/groundtruth/crop1/mito_lum
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>LoadAs         = Labels
+<div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>Url            = https://janelia-cosem-datasets.s3.amazonaws.com/jrc_hela-2/jrc_hela-2.zarr
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>LabelGroups    = recon-1/labels/groundtruth/crop1/mito_mem;recon-1/labels/groundtruth/crop1/mito_lum
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>LoadAs         = Labels
 </span></code></pre></div>
 <p><code>MibModel.loadImages</code> gained two matching parameters that are useful on their own, for local stores
 as much as remote ones:</p>

@@ -598,8 +598,13 @@ classdef SelectFromUrlTest < matlab.unittest.TestCase
             controller.BatchOpt.DatasetMode{1} = 'BigData';
             [labelsFit, reason] = controller.resolveLabelRoute(labelUrl, groupSummary);
             testCase.verifyFalse(labelsFit, 'BigData cannot be delivered by this route');
-            testCase.verifySubstring(reason, 'Cannot add labels to a BigData dataset');
-            testCase.verifySubstring(reason, 'Standard dataset');
+            % BigData is no longer impossible for a label group - a pyramid over
+            % the same volume is served as an overlay - so the refusal has to say
+            % why THIS store cannot be, and a sub-volume crop cannot because it
+            % does not cover the open image.
+            testCase.verifySubstring(reason, 'cannot be shown over the open dataset');
+            testCase.verifySubstring(reason, 'do not describe the same volume');
+            testCase.verifySubstring(reason, 'standard dataset type');
             % The instructions are the point of the message, not a decoration:
             % the first version ran cause and remedy together and was reported
             % as hard to follow.
@@ -613,6 +618,93 @@ classdef SelectFromUrlTest < matlab.unittest.TestCase
             testCase.verifyTrue(controller.resolveLabelRoute(labelUrl, groupSummary));
             testCase.verifyEqual(controller.labelLoadRoute, 'crop');
             testCase.assertNotEmpty(imageUrl);
+        end
+
+        function aCoarseWholeVolumePyramidTakesTheOverlayRoute(testCase)
+            % The route that did not exist: labels covering the SAME volume as
+            % the open image but only from a coarse level down. Reading them into
+            % memory is what the crop route would do, and for a whole-volume
+            % segmentation that is hundreds of megabytes at best; instead they are
+            % served over the open BigData dataset as each slice is read.
+            [controller, ~, mibModel] = testCase.newViewLessController();
+            labelUrl = testCase.stageOverlayPyramids(controller, mibModel, 128);
+
+            controller.BatchOpt.DatasetMode{1} = 'BigData';
+            groupSummary = struct('sizeYXZ', [16 16 4], 'annotationType', '');
+            [labelsFit, reason] = controller.resolveLabelRoute(labelUrl, groupSummary);
+
+            testCase.verifyTrue(labelsFit, reason);
+            testCase.verifyEqual(controller.labelLoadRoute, 'overlay', ...
+                'neither model nor crop: the dimensions differ but the volume is the same');
+            testCase.verifySubstring(reason, 'Label overlay');
+            testCase.verifySubstring(reason, '128 nm');
+            testCase.verifySubstring(reason, 'cannot be edited');
+        end
+
+        function theOverlayIsRefusedForAFractionalScale(testCase)
+            % 12 nm labels over an 8 nm image register perfectly well at 1.5x -
+            % nothing in the read path breaks. They are refused anyway: a label
+            % would be split across an image voxel with no way to say which side
+            % it belongs to, and the crop route gives an exact answer instead.
+            [controller, ~, mibModel] = testCase.newViewLessController();
+            testCase.stageOverlayPyramids(controller, mibModel, 12);
+            labelPyramid = controller.probeCache{"pyramid:" + string([testCase.ZarrTwin '/nuc'])};
+
+            openImage = mibModel.I{mibModel.getActiveId()}.image;
+            [overlayFits, reason] = controller.resolveOverlayRoute(labelPyramid, openImage);
+
+            testCase.verifyFalse(overlayFits);
+            testCase.verifySubstring(reason, 'whole number of image voxels');
+        end
+
+        function theOverlayRefusesAPyramidOverADifferentVolume(testCase)
+            % Two pyramids can share a voxel size and still not be the same
+            % volume, and a scale factor alone cannot tell them apart. Nothing in
+            % the overlay carries an origin offset, so placing one anyway would
+            % put it at the origin at the wrong extent - the exact bug the crop
+            % route exists to avoid.
+            [controller, ~, mibModel] = testCase.newViewLessController();
+            testCase.stageOverlayPyramids(controller, mibModel, 128);
+            labelPyramid = controller.probeCache{"pyramid:" + string([testCase.ZarrTwin '/nuc'])};
+            labelPyramid.levelWorldBoxes(1, :) = labelPyramid.levelWorldBoxes(1, :) / 2;
+
+            openImage = mibModel.I{mibModel.getActiveId()}.image;
+            [overlayFits, reason] = controller.resolveOverlayRoute(labelPyramid, openImage);
+
+            testCase.verifyFalse(overlayFits);
+            testCase.verifySubstring(reason, 'same volume');
+        end
+
+        function theOverlayNeedsAnImagePyramidToPlaceLabelsIn(testCase)
+            % A Standard buffer has no pyramid and no scale space, so there is
+            % nothing to register against. Reported rather than assumed, because
+            % the route is offered from the same dropdown either way.
+            [controller, ~, mibModel] = testCase.newViewLessController();
+            testCase.stageOverlayPyramids(controller, mibModel, 128);
+            labelPyramid = controller.probeCache{"pyramid:" + string([testCase.ZarrTwin '/nuc'])};
+
+            openImage = mibModel.I{mibModel.getActiveId()}.image;
+            openImage.pyramid = [];
+            [overlayFits, reason] = controller.resolveOverlayRoute(labelPyramid, openImage);
+
+            testCase.verifyFalse(overlayFits);
+            testCase.verifySubstring(reason, 'no pyramid');
+        end
+
+        function anInstanceOverlayIsNamedAsOneMaterialBeforeOpen(testCase)
+            % The overlay draws object ids as a single material by default, and
+            % that is a decision the user should read before pressing Open rather
+            % than infer from the result.
+            [controller, ~, mibModel] = testCase.newViewLessController();
+            testCase.stageOverlayPyramids(controller, mibModel, 128);
+            labelPyramid = controller.probeCache{"pyramid:" + string([testCase.ZarrTwin '/nuc'])};
+            labelPyramid.annotationType = 'instance_segmentation';
+
+            openImage = mibModel.I{mibModel.getActiveId()}.image;
+            [overlayFits, reason] = controller.resolveOverlayRoute(labelPyramid, openImage);
+
+            testCase.verifyTrue(overlayFits, reason);
+            testCase.verifySubstring(reason, 'single material');
         end
 
         function theLevelPickerOffersOnlyPairsThatLineUp(testCase)
@@ -1067,6 +1159,11 @@ classdef SelectFromUrlTest < matlab.unittest.TestCase
                 @(className) [testCase.CropGroup '/' className], ...
                 {'mito_mem', 'mito_lum'}, 'UniformOutput', false), ';');
             BatchOpt.LoadAs = {'Labels'};
+            % The crop route reads a region into memory, so it is Standard-only
+            % and now says so rather than overriding the mode silently. The
+            % BatchOpt default is BigData, so a protocol taking this route has to
+            % name Standard - which is the whole point of the refusal.
+            BatchOpt.DatasetMode = {'Standard'};
             BatchOpt.showWaitbar = false;
             controllers.SelectFromUrl(mibModel, [], BatchOpt);
 
@@ -1113,6 +1210,7 @@ classdef SelectFromUrlTest < matlab.unittest.TestCase
             BatchOpt.Url = testCase.LiverStore;
             BatchOpt.LabelGroups = testCase.LiverCropAll;
             BatchOpt.LoadAs = {'Labels'};
+            BatchOpt.DatasetMode = {'Standard'};   % crop route, see the test above
             BatchOpt.showWaitbar = false;
             controllers.SelectFromUrl(mibModel, [], BatchOpt);
 
@@ -1368,6 +1466,41 @@ classdef SelectFromUrlTest < matlab.unittest.TestCase
             imagePyramid.levelWorldBoxes    = [0 7996 0 7996 0 7996];
             imagePyramid.dataType           = 'uint8';
             controller.probeCache{"pyramid:" + string(imageUrl)} = imagePyramid;
+        end
+
+        function labelUrl = stageOverlayPyramids(testCase, controller, mibModel, labelVoxelNm)
+            % STAGEOVERLAYPYRAMIDS - An open 8 nm BigData image plus a coarse
+            % label pyramid over the SAME volume, both offline.
+            %
+            % The jrc_mus-kidney shape: 256 voxels of 8 nm against labels at
+            % ``labelVoxelNm``, so the label pyramid's own level 0 is one of the
+            % image's middle levels. World boxes are centre-based in nm, which is
+            % the unit the zarr loaders leave pixSize in.
+            labelUrl = [testCase.ZarrTwin '/nuc'];
+            % readGroupPyramid returns an empty result without a format, so the
+            % seeded cache would never be consulted and the route would be
+            % decided on a pyramid that was never read.
+            controller.zarrFormat = 'zarr2';
+
+            openImage = mibModel.I{mibModel.getActiveId()}.image;
+            openImage.height = 256;
+            openImage.width  = 256;
+            openImage.depth  = 64;
+            pixSize = openImage.pixSize;
+            pixSize.x = 8; pixSize.y = 8; pixSize.z = 8; pixSize.units = 'nm';
+            openImage.pixSize = pixSize;
+            openImage.boundingBox = [0 255*8 0 255*8 0 63*8];
+            openImage.pyramid = struct('levelScaleFactors', 2 .^ (0:5)' * [1 1 1]);
+
+            labelShape = [256 256 64] * 8 / labelVoxelNm;
+            labelPyramid = testCase.fakePyramid( ...
+                [0 (labelShape(2)-1)*labelVoxelNm, 0 (labelShape(1)-1)*labelVoxelNm, ...
+                 0 (labelShape(3)-1)*labelVoxelNm], repmat(labelVoxelNm, 1, 3), 'nm');
+            labelPyramid.levelNames         = {'s0', 's1', 's2'};
+            labelPyramid.levelShapesYXZ     = round(labelShape ./ 2 .^ ((0:2)'));
+            labelPyramid.levelVoxelSizesXYZ = repmat(labelVoxelNm, 3, 3) .* 2 .^ ((0:2)');
+            labelPyramid.levelWorldBoxes    = repmat(labelPyramid.levelWorldBoxes(1, :), 3, 1);
+            controller.probeCache{"pyramid:" + string(labelUrl)} = labelPyramid;
         end
 
         function pyramidInfo = fakePyramid(~, worldBox, voxelSizeXYZ, unit)

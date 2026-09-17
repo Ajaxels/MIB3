@@ -112,10 +112,13 @@ buffer you import into was BigData.
 ### Load as
 
 - **Image** - open the group as the dataset.
-- **Labels** - load it as a segmentation model. Two things can happen, and the dialog tells you
+- **Labels** - load it as a segmentation model. Three things can happen, and the dialog tells you
   which before you press Open:
-    - the group covers exactly the same extent as the open image, and it is loaded straight on
-      top of it;
+    - the group matches the open image voxel for voxel, and it is loaded straight on top of it;
+    - the group covers the same volume at a **coarser** resolution, and with
+      <span class="widget widget-combobox">Dataset mode</span> on BigData it is drawn over the open
+      dataset as each slice is read. See
+      [Labels published only at coarse resolution](#labels-published-only-at-coarse-resolution);
     - the group is a **ground-truth crop** - a small annotated cube carved out of a much larger
       volume - in which case MIB opens the matching *image region* as well and puts the labels on
       that. See [Label crops](#label-crops).
@@ -210,9 +213,14 @@ same voxel grid.
 
 !!! warning "This route reads everything into memory, so it needs Standard mode"
     Both the image region and the model are held in RAM, which is a **Standard** dataset. Selecting
-    labels with <span class="widget widget-combobox">Dataset mode</span> set to BigData or Virtual is
+    a crop with <span class="widget widget-combobox">Dataset mode</span> set to BigData or Virtual is
     therefore refused rather than silently overridden: the info panel names the size and level you
     would get, and you set Dataset mode to Standard and press Open again.
+
+    A crop is a *part* of the volume, which is why it has to be opened with its own image region. A
+    segmentation covering the **whole** volume does not, and in BigData mode it is shown over the
+    open dataset instead - see
+    [Labels published only at coarse resolution](#labels-published-only-at-coarse-resolution).
 
 ### Choosing the level
 
@@ -277,10 +285,33 @@ A segmentation may carry fewer pyramid levels than the image it belongs to, star
 resolution. In `jrc_ctl-id8-1`, `recon-1/labels/inference/segmentations/nuc` begins at 64 nm while
 the EM goes down to 4 nm.
 
-These load. MIB opens the image at the level that matches the labels and puts them on that, so the
-two sit on the same voxel grid. The info panel names the level before you press Open: the dataset
-you get cannot be zoomed to the resolution of the volume you were just browsing, because its finer
-levels are not in that buffer. Open the image group on its own to go back to full resolution.
+These load either way, and <span class="widget widget-combobox">Dataset mode</span> chooses between
+two different results. The info panel says which one you will get before you press Open.
+
+**BigData - an overlay over the dataset you are browsing.** The labels are drawn over the open image
+as each slice is read, upsampled where the image is finer, and the image keeps every level it had.
+Nothing is downloaded in bulk, so the size of the segmentation does not matter. The labels cannot be
+edited: they are displayed from a store that belongs to another tool. To save them to a file, see
+[Saving an overlay](#saving-an-overlay).
+
+**Standard - the labels and their matching image region, in memory.** MIB opens the image at the
+level that matches the labels and puts them on that, so the two sit on the same voxel grid, and the
+model is an ordinary editable one. The dataset you get cannot be zoomed to the resolution of the
+volume you were just browsing, because its finer levels are not in that buffer; open the image group
+on its own to go back to full resolution.
+
+Pick BigData to look at a segmentation, Standard to correct one.
+
+### Saving an overlay
+
+A segmentation shown as an overlay is written out one **pyramid level** at a time:
+<span class="widget widget-button">Save model as...</span> asks which level, then writes it in any of
+MIB's model formats.
+
+The question has to be asked because these labels have no full-resolution level - that is what makes
+them an overlay - so there is no level MIB could pick for you. The list gives each level's dimensions
+and how much coarser than the image voxel it is. The result is a normal model file that can be opened
+on its own, and writing it does not need enough memory to hold it.
 
 ### What cannot be blended
 
@@ -300,11 +331,16 @@ Either way the object count is reported after loading, since the model itself ca
 
 **Segmentations of a whole volume.** Published containers also carry *inference* results - for
 example `recon-1/labels/inference/segmentations/er` - which look exactly like a ground-truth crop
-in the metadata but cover the entire volume. Loading one as Labels would read the matching image
-region and the model into memory, and for `jrc_mus-liver-6` that is `8050 x 8000 x 8500` voxels, or
-about a terabyte. The info panel says so and Open stays disabled; open the group with
-**Load as: Image** instead, where you can pick a pyramid level. This is a limit on size, not on
-whole-volume segmentations as such - one published only at coarse levels loads, as above.
+in the metadata but cover the entire volume. With
+<span class="widget widget-combobox">Dataset mode</span> set to **BigData** these open as an overlay
+over the dataset you are browsing, at any size: for `jrc_mus-liver-6` that is `8050 x 8000 x 8500`
+voxels, about a terabyte, and nothing is downloaded in bulk. See
+[Labels published only at coarse resolution](#labels-published-only-at-coarse-resolution).
+
+In **Standard** mode the same group would be read into memory together with its image region, which
+the info panel refuses with the size it would need. Either lower
+<span class="widget widget-combobox">Dataset mode</span> back to BigData, or open the group with
+**Load as: Image** to pick a pyramid level.
 
 ### Worked example
 
@@ -385,11 +421,14 @@ not paint the annotation onto the parent volume you were browsing. Drawing a sma
 annotation over a multi-terabyte volume it is a tiny part of is a separate feature and does not
 exist yet.
 
-Crops are opened in **Standard** mode, fully in memory, whatever
-<span class="widget widget-combobox">Dataset mode</span> says - MIB tells you when it overrides
-your choice. That is deliberate: an existing remote label store is read-only in MIB, so a BigData
-crop could be viewed but never corrected, which is the main reason to open one. Every crop in the
-reference container fits comfortably - the largest is 64 MB.
+Crops therefore need <span class="widget widget-combobox">Dataset mode</span> set to **Standard**,
+and MIB refuses the others rather than overriding your choice. That a crop is read fully into memory
+is not the limitation it sounds like: a remote label store is read-only, so correcting a crop - the
+main reason to open one - needs the in-memory copy anyway. Every crop in the reference container
+fits comfortably; the largest is 64 MB.
+
+A segmentation covering the whole volume *is* shown as an overlay, because it needs no image region
+of its own. It is read-only, as any remote store is.
 
 **Browsing needs the S3 listing API - but not Amazon.** Any endpoint that answers
 `ListObjectsV2` can be browsed, including institutional MinIO and Ceph servers hosted on their own

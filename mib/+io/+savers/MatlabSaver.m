@@ -391,8 +391,28 @@ classdef MatlabSaver < io.savers.BaseSaver
             % op, not a full in-memory allocation), then fill slice by slice.
             m.(labVar)(H, W, D) = cast(0, dataClass);
             for z = 1:D
-                if ~isempty(wb) && wb.CancelRequested; delete(wb); return; end
-                m.(labVar)(:, :, z) = cast(reshape(provider.getSlice(z, 1), H, W), dataClass);
+                if ~isempty(wb) && wb.CancelRequested
+                    delete(wb);
+                    % A cancelled save must leave nothing behind. The file at this
+                    % point holds the slices written so far and none of the
+                    % metadata variables, so it would open as a valid model of the
+                    % wrong extent - worse than no file at all. Dropping the
+                    % matfile handle first is what lets Windows remove it.
+                    m = [];   %#ok<NASGU> - closes the writable matfile
+                    if exist(filename, 'file'); delete(filename); end
+                    return;
+                end
+                slice = cast(reshape(provider.getSlice(z, 1), H, W), dataClass);
+                if D == 1
+                    % matfile drops a trailing singleton, so the pre-allocation
+                    % above created a 2-D variable and a 3-subscript write into it
+                    % errors on the dimension count. Reachable for any pyramid
+                    % level whose Z has been downsampled to a single slice, which
+                    % the coarsest level of a deep pyramid usually is.
+                    m.(labVar) = slice;
+                else
+                    m.(labVar)(:, :, z) = slice;
+                end
                 if ~isempty(wb); wb.Value = z / D; end
             end
 

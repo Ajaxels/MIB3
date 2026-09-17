@@ -83,6 +83,15 @@ if ~obj.modelExist || ~obj.labels.exists
     return;
 end
 
+% A read-only label overlay is served slice by slice from a remote pyramid; the
+% getData3D below would pull the whole registered volume across the network to
+% index objects that cannot be edited anyway. jrc_mus-liver-6's er segmentation is
+% 510 GiB, so this is a refusal rather than a slow path.
+if isa(obj.labels, 'core.MibBigDataLabelsIndex')
+    obj.instanceIndex = [];
+    return;
+end
+
 % Whole labels volume of this time point. NaN as the colour channel asks for the
 % raw index map rather than one material as a binary mask, which is what makes
 % the zero-copy fast path apply.

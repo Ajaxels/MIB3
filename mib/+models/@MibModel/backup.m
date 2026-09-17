@@ -168,6 +168,15 @@ if nargin < 3; switch3d = 1; end
 if ~isfield(getDataOptions, 'id'); getDataOptions.id = obj.getActiveId(); end
 id = getDataOptions.id;
 
+% A read-only label overlay (core.MibBigDataLabelsIndex) has nothing to undo, and
+% capturing it would be actively harmful: the branch below applies only to
+% core.MibBigDataLabels, so an overlay would fall through with no magFactor and
+% getData2D would read the whole registered volume off the network to snapshot it.
+if ismember(type, {'mask', 'selection', 'model', 'labels', 'everything'}) && ...
+        isa(obj.I{id}.labels, 'core.MibBigDataLabelsIndex')
+    return;
+end
+
 % Pyramidal datasets: choose the capture level so undo restores at the same
 % resolution the edit was written.
 %

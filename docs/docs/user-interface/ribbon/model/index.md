@@ -283,6 +283,8 @@ Prompts for a filename and format to save the model.
 
     For a disk-backed **BigData** model, the *Save model as...* dialog adds a <span class="widget widget-dropdown">Pyramid level</span> selector (`s0` = full resolution … `sN` = coarsest). The chosen level is **streamed to disk one slice at a time**, so the full model is never loaded into memory. Per-slice streaming is available for **TIFF**, the native **MODEL** (`*.model`), **HDF5** and **OME-Zarr v3**; other formats write the selected level as a whole.
 
+    The same selector appears for a segmentation [imported from a URL](../home/home-importfromurl.md#saving-an-overlay) as an overlay, with one difference: the levels listed are the *segmentation's* own, which start coarser than the image, so each is labelled with how much coarser than the image voxel it is. There is no full-resolution level to default to, which is why the level has to be chosen.
+
 ??? info "BigData models - format compatibility & memory use"
 
     **All** formats above can save a **BigData** model at the chosen pyramid level. They differ only in how much memory the write needs:

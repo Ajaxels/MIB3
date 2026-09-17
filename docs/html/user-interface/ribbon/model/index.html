@@ -6170,6 +6170,7 @@ open dataset dimensions (WSI vs. 3-D volumetric).</p>
 <div class="admonition tip">
 <p class="admonition-title">Exporting a pyramid level (BigData models)</p>
 <p>For a disk-backed <strong>BigData</strong> model, the <em>Save model as...</em> dialog adds a <span class="widget widget-dropdown">Pyramid level</span> selector (<code>s0</code> = full resolution … <code>sN</code> = coarsest). The chosen level is <strong>streamed to disk one slice at a time</strong>, so the full model is never loaded into memory. Per-slice streaming is available for <strong>TIFF</strong>, the native <strong>MODEL</strong> (<code>*.model</code>), <strong>HDF5</strong> and <strong>OME-Zarr v3</strong>; other formats write the selected level as a whole.</p>
+<p>The same selector appears for a segmentation <a href="../home/home-importfromurl.html#saving-an-overlay">imported from a URL</a> as an overlay, with one difference: the levels listed are the <em>segmentation's</em> own, which start coarser than the image, so each is labelled with how much coarser than the image voxel it is. There is no full-resolution level to default to, which is why the level has to be chosen.</p>
 </div>
 <details class="info">
 <summary>BigData models - format compatibility &amp; memory use</summary>

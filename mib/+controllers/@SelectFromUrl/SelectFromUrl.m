@@ -859,11 +859,17 @@ classdef SelectFromUrl < handle
         function [labelsFit, reason] = resolveLabelRoute(obj, groupUrl, groupSummary)
             % RESOLVELABELROUTE - Decide how this group can be loaded as a model.
             %
-            % Two routes exist and they are not interchangeable:
+            % Three routes exist and they are not interchangeable:
             %
             %   * **model** - the group's finest level already matches the open
             %     image, so ``MibModel.loadModel`` puts it straight on top. This
             %     is what a label store published beside its own volume looks like.
+            %   * **overlay** - the group covers the same volume as the open image
+            %     but at a coarser resolution, which a whole-volume inference
+            %     segmentation published from a coarse level down looks like. With
+            %     ``Dataset mode = BigData`` it is served over the open dataset
+            %     slice by slice, read-only, nothing downloaded in bulk. See
+            %     :meth:`resolveOverlayRoute`.
             %   * **crop** - the group is a sub-volume of a larger image, an
             %     OpenOrganelle ground-truth crop being the case this was built
             %     for. Placing it on the open parent volume is impossible -
@@ -912,9 +918,25 @@ classdef SelectFromUrl < handle
                 return;
             end
 
-            % Dimensions differ - the crop route, if the store's coordinates
-            % support it.
+            % Dimensions differ - the overlay route if the pyramid registers
+            % against the open image, otherwise the crop route if the store's
+            % coordinates support it.
             labelPyramid = obj.readGroupPyramid(groupUrl);
+
+            % ---- BigData: serve the labels over the open image -------------
+            % Tried before the crop route because it needs nothing further from
+            % the network - the label pyramid is already in hand - while the crop
+            % route has to go and find a sibling image group first.
+            overlayReason = '';
+            if strcmp(obj.BatchOpt.DatasetMode{1}, 'BigData')
+                [overlayFits, overlayReason] = obj.resolveOverlayRoute(labelPyramid, openImage);
+                if overlayFits
+                    obj.labelLoadRoute = 'overlay';
+                    labelsFit          = true;
+                    reason             = overlayReason;
+                    return;
+                end
+            end
 
             if ~isempty(obj.BatchOpt.ImageGroupPath)
                 imagePyramid = obj.readGroupPyramid( ...
@@ -955,8 +977,20 @@ classdef SelectFromUrl < handle
                 % It states the OUTCOME rather than the cause: naming a
                 % resolution gap reads as nonsense whenever the two agree, which
                 % a sub-volume crop at full resolution does.
+                %
+                % The first block is conditional because BigData became a real
+                % answer for a label pyramid that registers against the open
+                % image: this one did not, so the refusal has to say why THIS
+                % store cannot be shown rather than implying none can.
+                if isempty(overlayReason)
+                    firstBlock = sprintf(['The labels do not completely match the %s dataset ' ...
+                        'dimensions and can not be opened!'], obj.BatchOpt.DatasetMode{1});
+                else
+                    firstBlock = sprintf(['These labels cannot be shown over the open dataset:\n' ...
+                        '    %s'], overlayReason);
+                end
                 reason = sprintf([ ...
-                    'The labels do not completely match the %s dataset dimensions and can not be opened!\n ' ...
+                    '%s\n ' ...
                     '\n' ...
                     'It is possible to load labels using the standard dataset type resulting in\n' ...
                     '    %d x %d x %d px at %g nm\n' ...
@@ -966,7 +1000,7 @@ classdef SelectFromUrl < handle
                     '    1. set "Dataset mode" to Standard\n' ...
                     '    2. press Open\n' ...
                     '    3. pick the pyramid level when asked'], ...
-                    obj.BatchOpt.DatasetMode{1}, ...
+                    firstBlock, ...
                     plan.shapeYXZ(2), plan.shapeYXZ(1), plan.shapeYXZ(3), ...
                     plan.voxelSizeUm(1) * 1000, plan.imageLevelName, ...
                     plan.requiredBytes / 1024^2);
@@ -1016,6 +1050,77 @@ classdef SelectFromUrl < handle
                     'object ids, not a class. Open will ask whether to keep one material per ' ...
                     'object or merge them all into a single mask.\n%s'], ...
                     obj.labelGroupName(groupUrl, labelPyramid), reason);
+            end
+        end
+
+        function [overlayFits, reason] = resolveOverlayRoute(~, labelPyramid, openImage)
+            % RESOLVEOVERLAYROUTE - Can these labels be shown over the open BigData image?
+            %
+            % The third route out of :meth:`resolveLabelRoute`, and the only one
+            % that leaves the open dataset alone: the labels are served slice by
+            % slice from their own store as the view is read, upsampled where the
+            % image is finer, with nothing downloaded in bulk. It applies when the
+            % label pyramid registers against the open image's scale space - see
+            % ``io.loaders.OmeZarrMetadataUtils.registerLevelScales``, which is
+            % what refuses a pyramid describing a different volume.
+            %
+            % A **fractional** scale is refused even though it registers. Nothing
+            % in the read path breaks on it; a label would simply be split across
+            % an image voxel with no way to say which side it belongs to, and
+            % refusing is honest where the crop route would give an exact answer.
+            %
+            % Deciding here rather than at Open is what lets the info panel say
+            % which of the three things Open will do. It costs no further network
+            % traffic: the label pyramid is already in hand and the image is open.
+            %
+            % Input Arguments:
+            %   - **labelPyramid** - [struct] from :meth:`readGroupPyramid`
+            %   - **openImage** - [core.MibImage] the open dataset's image layer
+            %
+            % Output Arguments:
+            %   - **overlayFits** - [logical] whether the overlay route applies
+            %   - **reason** - [char] what Open will do when it fits, or why it
+            %     does not
+
+            overlayFits = false;
+
+            if isempty(labelPyramid) || ~labelPyramid.ok
+                reason = 'This group has no usable image pyramid.';
+                return;
+            end
+
+            reference = core.MibBigDataLabelsIndex.imageReference(openImage);
+            if ~reference.ok; reason = reference.reason; return; end
+
+            labelToUm = io.loaders.OmeZarrMetadataUtils.unitToMicrometreFactor(labelPyramid.unit);
+            labelOuterBoxUm = io.loaders.OmeZarrMetadataUtils.outerBoundingBox( ...
+                labelPyramid.levelWorldBoxes(1, :), ...
+                labelPyramid.levelVoxelSizesXYZ(1, :)) * labelToUm;
+
+            registration = io.loaders.OmeZarrMetadataUtils.registerLevelScales( ...
+                labelPyramid.levelVoxelSizesXYZ * labelToUm, labelOuterBoxUm, ...
+                reference.voxelSizesXYZ, reference.outerBoxUm);
+            if ~registration.ok; reason = registration.reason; return; end
+
+            finestScale = registration.scaleFactorsYXZ(1, 1);
+            if ~registration.isIntegerScale
+                reason = sprintf(['these labels are %g x the image''s voxel size, which is not ' ...
+                    'a whole number of image voxels, so they cannot be laid on its grid without ' ...
+                    'splitting a label across one.'], finestScale);
+                return;
+            end
+
+            overlayFits = true;
+
+            finestVoxelNm = labelPyramid.levelVoxelSizesXYZ(1, 1) * labelToUm * 1000;
+            reason = sprintf(['Label overlay: these labels start at %g nm, %g x the open ' ...
+                'image''s voxel, and will be drawn over it as each slice is read - upsampled ' ...
+                'where the image is finer. Nothing is downloaded in bulk, and they cannot ' ...
+                'be edited.'], finestVoxelNm, finestScale);
+
+            if strcmp(labelPyramid.annotationType, 'instance_segmentation')
+                reason = sprintf(['%s\nNote: this is an instance segmentation - its values are ' ...
+                    'object ids, and they are drawn as a single material.'], reason);
             end
         end
 

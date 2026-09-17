@@ -768,6 +768,311 @@ methods (Static)
         end
     end
 
+    function registration = registerLevelScales(levelVoxelSizesXYZ, levelOuterBox, ...
+            referenceVoxelSizesXYZ, referenceOuterBox)
+        % REGISTERLEVELSCALES - Express one pyramid's levels in another pyramid's scale space.
+        %
+        % Syntax:
+        %   .. code-block:: matlab
+        %
+        %      registration = io.loaders.OmeZarrMetadataUtils.registerLevelScales(levelVoxelSizesXYZ, levelOuterBox, referenceVoxelSizesXYZ, referenceOuterBox)
+        %
+        % A pyramid normally numbers its own levels from its own level 0, which is
+        % what ``core.MibBigDataLabelsZarr2.openStore`` does: level 0 becomes scale
+        % 1, the next 2, and so on. That is correct only while the two pyramids
+        % start at the same resolution. A whole-volume inference segmentation does
+        % not: ``jrc_mus-kidney``'s ``nuc`` has 5 levels from 128 nm while the EM it
+        % segments has 12 from 8 nm, so ``nuc``'s own level 0 is the EM's ``s4``.
+        % Calling it scale 1 is a silent 16x error - the labels land at
+        % one-sixteenth of their true size with no warning anywhere.
+        %
+        % This returns the same ``[nLevels x 3]`` table of scale factors those
+        % classes already hold, but measured in the **reference** pyramid's level-0
+        % voxels, so ``nuc`` registers as ``[16 32 64 128 256]`` inside the EM's own
+        % ``[1 2 4 ... 4096]`` magnification space and every level picker, read
+        % window and resize downstream keeps working unchanged.
+        %
+        % **The extents are checked, not assumed.** Two pyramids can share a voxel
+        % size and still describe different volumes, and a scale factor alone cannot
+        % tell them apart. Both outer boxes must agree per axis within a tolerance
+        % of half a reference voxel or one whole level-0 voxel of the registered
+        % pyramid, whichever is larger: a pyramid published as a downsample rounds
+        % its shape UP, so its declared extent legitimately overshoots by up to one
+        % of its own voxels (``jrc_ctl-id8-1``'s ``nuc`` claims ``1157 * 64 =
+        % 74048 nm`` against the EM's ``18500 * 4 = 74000 nm``). This is the same
+        % pair of roundings ``controllers.SelectFromUrl.imageBoxContains`` tolerates,
+        % and for the same reason.
+        %
+        % A registration is therefore a pure scale: the two volumes coincide, so
+        % voxel 1 of one is voxel 1 of the other. A pyramid covering a **sub-volume**
+        % is refused rather than placed, because nothing here carries an origin
+        % offset - that case is a crop, and crops are read into memory instead.
+        %
+        % Input Arguments:
+        %   - **levelVoxelSizesXYZ** - [nLevels x 3 numeric] voxel size ``[x y z]``
+        %     per level of the pyramid being registered, in micrometres
+        %   - **levelOuterBox** - [1x6 numeric] that pyramid's outer extent
+        %     ``[xmin xmax ymin ymax zmin zmax]`` in micrometres, edge-based, i.e.
+        %     as returned by :meth:`outerBoundingBox`
+        %   - **referenceVoxelSizesXYZ** - [nRefLevels x 3 numeric] voxel size
+        %     ``[x y z]`` per level of the reference pyramid, in micrometres; row 1
+        %     is the full-resolution level that defines scale 1
+        %   - **referenceOuterBox** - [1x6 numeric] the reference pyramid's outer
+        %     extent, micrometres, edge-based
+        %
+        % Output Arguments:
+        %   - **registration** - [struct] with fields:
+        %
+        %     - ``.ok`` - [logical] false when the two do not describe the same
+        %       volume, or the metadata is unusable
+        %     - ``.reason`` - [char] what disagreed, naming both extents; ``''``
+        %       when ``ok``
+        %     - ``.scaleFactorsYXZ`` - [nLevels x 3] each level as a scale factor in
+        %       the reference's level-0 voxels, ``[y x z]`` - the order
+        %       ``modelScaleFactors`` and ``levelScaleFactors`` already use
+        %     - ``.referenceScaleFactorsYXZ`` - [nRefLevels x 3] the reference's own
+        %       levels in that same space, i.e. its magnification axis
+        %     - ``.isIntegerScale`` - [logical] every registered level is a whole
+        %       number of reference voxels. A fractional scale still reads
+        %       correctly, but only an integer one can be served without
+        %       resampling a label across a voxel boundary
+
+        registration = struct('ok', false, 'reason', '', 'scaleFactorsYXZ', [], ...
+            'referenceScaleFactorsYXZ', [], 'isIntegerScale', false);
+
+        levelVoxelSizesXYZ     = double(levelVoxelSizesXYZ);
+        referenceVoxelSizesXYZ = double(referenceVoxelSizesXYZ);
+        if isempty(levelVoxelSizesXYZ) || isempty(referenceVoxelSizesXYZ) || ...
+                size(levelVoxelSizesXYZ, 2) ~= 3 || size(referenceVoxelSizesXYZ, 2) ~= 3
+            registration.reason = 'One of the two pyramids declares no usable levels.';
+            return;
+        end
+
+        referenceVoxelSize = referenceVoxelSizesXYZ(1, :);
+        if any(referenceVoxelSize <= 0) || any(levelVoxelSizesXYZ(:) <= 0)
+            registration.reason = 'A pyramid level declares a zero or negative voxel size.';
+            return;
+        end
+
+        % ---- do the two describe the same volume? --------------------------
+        registeredBox = reshape(double(levelOuterBox), 1, 6);
+        referenceBox  = reshape(double(referenceOuterBox), 1, 6);
+        tolerance = max(referenceVoxelSize / 2, levelVoxelSizesXYZ(1, :));
+
+        lowerGap = abs(registeredBox([1 3 5]) - referenceBox([1 3 5]));
+        upperGap = abs(registeredBox([2 4 6]) - referenceBox([2 4 6]));
+        if any(lowerGap > tolerance) || any(upperGap > tolerance)
+            registeredExtent = registeredBox([2 4 6]) - registeredBox([1 3 5]);
+            referenceExtent  = referenceBox([2 4 6]) - referenceBox([1 3 5]);
+            registration.reason = sprintf(['These two pyramids do not describe the same ' ...
+                'volume: one spans %g x %g x %g um and the other %g x %g x %g um (X x Y x Z). ' ...
+                'Levels can only be paired across a volume they both cover in full.'], ...
+                registeredExtent(1), registeredExtent(2), registeredExtent(3), ...
+                referenceExtent(1), referenceExtent(2), referenceExtent(3));
+            return;
+        end
+
+        % ---- every level as a scale factor in the reference's level-0 space --
+        [registration.scaleFactorsYXZ, isIntegerScale] = ...
+            io.loaders.OmeZarrMetadataUtils.scalesAgainstVoxelSize( ...
+                levelVoxelSizesXYZ, referenceVoxelSize);
+        registration.referenceScaleFactorsYXZ = ...
+            io.loaders.OmeZarrMetadataUtils.scalesAgainstVoxelSize( ...
+                referenceVoxelSizesXYZ, referenceVoxelSize);
+        registration.isIntegerScale = all(isIntegerScale(:));
+        registration.ok = true;
+    end
+
+    function [scaleFactorsYXZ, isIntegerScale] = scalesAgainstVoxelSize(levelVoxelSizesXYZ, referenceVoxelSize)
+        % SCALESAGAINSTVOXELSIZE - Voxel sizes as scale factors, snapped to whole numbers.
+        %
+        % Syntax:
+        %   .. code-block:: matlab
+        %
+        %      [scaleFactorsYXZ, isIntegerScale] = io.loaders.OmeZarrMetadataUtils.scalesAgainstVoxelSize(levelVoxelSizesXYZ, referenceVoxelSize)
+        %
+        % Shared by both halves of :meth:`registerLevelScales` - the registered
+        % pyramid and the reference's own magnification axis are the same division.
+        %
+        % **The snap is load-bearing.** A store writes its scales as rounded
+        % decimals, so ``5.24 / 2.62`` comes back as ``1.9999999...`` rather than 2,
+        % and every ``ceil`` downstream then reads one voxel too far at exactly the
+        % level boundaries. Snapping inside one part in a thousand is far more slack
+        % than a decimal rounding needs and nowhere near enough to accept a genuinely
+        % fractional scale as a whole one.
+        %
+        % Input Arguments:
+        %   - **levelVoxelSizesXYZ** - [nLevels x 3 numeric] voxel size ``[x y z]``
+        %     per level, any unit
+        %   - **referenceVoxelSize** - [1x3 numeric] the voxel size that means scale
+        %     1, same unit
+        %
+        % Output Arguments:
+        %   - **scaleFactorsYXZ** - [nLevels x 3] scale factors reordered to
+        %     ``[y x z]``
+        %   - **isIntegerScale** - [nLevels x 3 logical] which entries snapped
+
+        scaleTolerance = 1e-3;
+
+        scalesXYZ = double(levelVoxelSizesXYZ) ./ reshape(double(referenceVoxelSize), 1, 3);
+        rounded   = round(scalesXYZ);
+        isIntegerScale = rounded > 0 & abs(scalesXYZ - rounded) <= scaleTolerance * rounded;
+        scalesXYZ(isIntegerScale) = rounded(isIntegerScale);
+
+        scaleFactorsYXZ = scalesXYZ(:, [2 1 3]);
+    end
+
+    function screenGrid = screenGridForRange(fullRange, levelScaleFactor, magFactor)
+        % SCREENGRIDFORRANGE - Where a displayed slice's pixels land in full-resolution space.
+        %
+        % Syntax:
+        %   .. code-block:: matlab
+        %
+        %      screenGrid = io.loaders.OmeZarrMetadataUtils.screenGridForRange(fullRange, levelScaleFactor, magFactor)
+        %
+        % Reproduces, as arithmetic, what ``core.MibVirtualImage.getDataZarr`` does
+        % to one axis: round the requested full-resolution range outward onto the
+        % level it is reading, then ``imresize`` the result by ``magFactor /
+        % levelScaleFactor``. The answer is needed by anything that has to produce a
+        % **second** layer over the same view, because the two arrays are composited
+        % by ``labeloverlay`` (``models.MibModel.getRGBimage``) and that requires
+        % them to be the same size exactly - one row out is an error, not a shift.
+        %
+        % Two things come out of it, and the second is the one that is easy to miss:
+        %
+        %   * ``.size`` - how many screen pixels the image layer produced.
+        %   * ``.origin`` - the full-resolution coordinate where screen pixel 1
+        %     starts. This is **not** ``fullRange(1)``: the image snapped the request
+        %     outward onto its own level's grid first, so it starts up to
+        %     ``levelScaleFactor`` voxels earlier. For the image itself that is
+        %     sub-pixel slop, because it always has a level near the requested
+        %     magnification; for a second pyramid that does not, sampling from
+        %     ``fullRange(1)`` instead puts every label up to one screen pixel off.
+        %
+        % **The level range is not clamped** to the level's own dimensions, unlike
+        % ``getDataZarr``, which clamps and then finds the clamp never fires: a level
+        % holds ``ceil(dim / scale)`` voxels, so a request inside the dataset can
+        % never round outward past the end of it.
+        %
+        % Input Arguments:
+        %   - **fullRange** - [1x2 numeric] requested range in full-resolution
+        %     voxels, 1-based inclusive
+        %   - **levelScaleFactor** - [numeric] full-resolution voxels per voxel of
+        %     the level actually read, on this axis
+        %   - **magFactor** - [numeric] full-resolution voxels per screen pixel,
+        %     i.e. ``dataset.magFactor``. Pass ``levelScaleFactor`` for an axis that
+        %     is never magnified, such as z, which gives one screen pixel per level
+        %     voxel
+        %
+        % Output Arguments:
+        %   - **screenGrid** - [struct] with fields:
+        %
+        %     - ``.levelRange`` - [1x2] level voxels the image layer read
+        %     - ``.size`` - [numeric] screen pixels produced
+        %     - ``.origin`` - [numeric] full-resolution coordinate, 1-based, that
+        %       screen pixel 1 starts at
+        %     - ``.step`` - [numeric] full-resolution voxels per screen pixel, as
+        %       actually delivered. Close to ``magFactor``, but derived from the
+        %       rounded ``.size`` rather than assumed, so it stays exact at both
+        %       ends of the range
+
+        fullRange        = double(fullRange);
+        levelScaleFactor = double(levelScaleFactor);
+        magFactor        = double(magFactor);
+        if ~(levelScaleFactor > 0); levelScaleFactor = 1; end
+        if ~(magFactor > 0);        magFactor = 1; end
+
+        firstLevelVoxel = max(1, ceil(fullRange(1) / levelScaleFactor));
+        lastLevelVoxel  = max(firstLevelVoxel, ceil(fullRange(2) / levelScaleFactor));
+        levelVoxelCount = lastLevelVoxel - firstLevelVoxel + 1;
+
+        % Same test getDataZarr:215 applies before resizing at all, so a level
+        % already at the requested magnification returns its own voxel count.
+        resizeFactor = magFactor / levelScaleFactor;
+        if abs(resizeFactor - 1) > 1e-3
+            screenSize = max(1, round(levelVoxelCount / resizeFactor));
+        else
+            screenSize = levelVoxelCount;
+        end
+
+        screenGrid = struct();
+        screenGrid.levelRange = [firstLevelVoxel, lastLevelVoxel];
+        screenGrid.size       = screenSize;
+        screenGrid.origin     = (firstLevelVoxel - 1) * levelScaleFactor + 1;
+        screenGrid.step       = levelVoxelCount * levelScaleFactor / screenSize;
+    end
+
+    function window = levelReadWindow(screenGrid, scaleFactor, levelSize)
+        % LEVELREADWINDOW - Which voxels of a coarser level each screen pixel comes from.
+        %
+        % Syntax:
+        %   .. code-block:: matlab
+        %
+        %      window = io.loaders.OmeZarrMetadataUtils.levelReadWindow(screenGrid, scaleFactor, levelSize)
+        %
+        % The other half of :meth:`screenGridForRange`, and the piece that makes an
+        % offset label pyramid land where it belongs. Serving a view from a level
+        % much coarser than the one requested is **not a resize**: the coarse block
+        % covering the view does not start where the view starts, so scaling it to
+        % the viewport gives both the wrong size and a shifted origin. At scale 16, a
+        % request for columns 3-34 (32 wide) covers coarse voxels 1-3, and resizing
+        % those three returns 48 columns beginning at column 1 - plausible-looking
+        % labels, 2 pixels to the left, 50% too large.
+        %
+        % Rather than resize and then crop back, this returns the **gather** the two
+        % steps amount to: one source voxel per screen pixel. That removes the
+        % intermediate array (which in full-resolution space is unbounded - at
+        % ``magFactor`` 32 the requested window is some 36000 voxels wide), removes
+        % the second rounding a resize-then-crop performs, and makes the result exact
+        % rather than within a pixel. Applying it is an indexed read:
+        %
+        %   .. code-block:: matlab
+        %
+        %      block = obj.readLevel(levelIdx, windowY.levelRange, windowX.levelRange, zRange);
+        %      slice = block(windowY.sourceIndex, windowX.sourceIndex, :);
+        %
+        % Each screen pixel takes the level voxel holding its **centre**, which is
+        % also what ``imresize(..., 'nearest')`` does and is why the two agree
+        % wherever the naive path was already right. The half-pixel offset that
+        % follows from sampling centres keeps the arithmetic clear of exact voxel
+        % boundaries, so no tolerance is needed against a ``ceil`` landing on the
+        % wrong side of one.
+        %
+        % Input Arguments:
+        %   - **screenGrid** - [struct] from :meth:`screenGridForRange`, describing
+        %     the pixels that have to be filled
+        %   - **scaleFactor** - [numeric] full-resolution voxels per voxel of the
+        %     level being read, on this axis, in the **same** scale space the grid
+        %     was built in (see :meth:`registerLevelScales`)
+        %   - **levelSize** - [numeric] voxels this level holds on this axis; the
+        %     window is clamped to it, so a pyramid whose rounded-up shape overshoots
+        %     repeats its last voxel instead of reading past the end
+        %
+        % Output Arguments:
+        %   - **window** - [struct] with fields:
+        %
+        %     - ``.levelRange`` - [1x2] 1-based inclusive voxels to read, the
+        %       smallest range covering the view
+        %     - ``.sourceIndex`` - [1 x screenGrid.size] index into that block, one
+        %       per screen pixel. Always exactly as long as the image layer is wide,
+        %       which is what ``labeloverlay`` requires
+
+        scaleFactor = double(scaleFactor);
+        if ~(scaleFactor > 0); scaleFactor = 1; end
+        levelSize = max(1, floor(double(levelSize)));
+
+        % Edge space, where voxel j spans (j-1, j] - the centre of screen pixel p
+        % is then simply ceil()-ed onto the level's own grid, with no separate
+        % full-resolution index in between to round twice.
+        pixelCentres = (screenGrid.origin - 1) + ((1:screenGrid.size) - 0.5) * screenGrid.step;
+        sourceVoxels = ceil(pixelCentres / scaleFactor);
+        sourceVoxels = min(max(sourceVoxels, 1), levelSize);
+
+        window = struct();
+        window.levelRange  = [min(sourceVoxels), max(sourceVoxels)];
+        window.sourceIndex = sourceVoxels - window.levelRange(1) + 1;
+    end
+
     function bbox = buildZarrBbox(axisOrder, axisRanges)
         % BUILDZARRBBOX - Turn per-axis MIB ranges into a zarr C-order read box.
         %

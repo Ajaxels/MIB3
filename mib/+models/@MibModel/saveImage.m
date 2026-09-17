@@ -187,10 +187,29 @@ BatchOpt.FilenameGenerator{2} = {'Use original filename', 'Use sequential filena
 BatchOpt.Saving3DPolicy    = {'3D stack'};   % --- 3D policy ---
 BatchOpt.Saving3DPolicy{2} = {'3D stack', '2D sequence'};
 % --- pyramid level (Virtual / BigData only): 1 = full resolution (s0) ---
-saveImageNumLevels = 1;
+% The list comes from the IMAGE pyramid, which is right for every layer a
+% Standard or BigData dataset holds: a MIB-written BigData model mirrors the
+% image pyramid level for level, and so does the mask packed into it. A
+% read-only label overlay does not - jrc_mus-kidney's nuc has 5 levels from
+% 128 nm where the EM has 12 from 8 nm - so offering the image's levels there
+% would offer four resolutions the labels never had, and picking one of them
+% would mean upsampling the whole volume to write it.
+saveImageNumLevels  = 1;
+saveImageLevelSizes = [];
+saveImageLevelNames = {};
+saveImageLevelScales = [];   % non-empty only for a label overlay, see the dialog
 saveImageImgObj = obj.I{BatchOpt.id}.image;
-if isa(saveImageImgObj, 'core.MibVirtualImage') && ~isempty(saveImageImgObj.pyramid.levelNames)
-    saveImageNumLevels = numel(saveImageImgObj.pyramid.levelNames);
+saveImageLabelsObj = obj.I{BatchOpt.id}.labels;
+if strcmpi(layerType, 'labels') && isa(saveImageLabelsObj, 'core.MibBigDataLabelsIndex') && ...
+        ~isempty(saveImageLabelsObj.modelLevelNames)
+    saveImageNumLevels   = numel(saveImageLabelsObj.modelLevelNames);
+    saveImageLevelSizes  = saveImageLabelsObj.modelLevelSizes;
+    saveImageLevelNames  = saveImageLabelsObj.modelLevelNames;
+    saveImageLevelScales = saveImageLabelsObj.modelScaleFactors;
+elseif isa(saveImageImgObj, 'core.MibVirtualImage') && ~isempty(saveImageImgObj.pyramid.levelNames)
+    saveImageNumLevels  = numel(saveImageImgObj.pyramid.levelNames);
+    saveImageLevelSizes = saveImageImgObj.pyramid.levelImageSizes;
+    saveImageLevelNames = saveImageImgObj.pyramid.levelNames;
 end
 BatchOpt.PyramidLevel = {1, [1, max(saveImageNumLevels, 1)], 'on'};
 BatchOpt.MaterialIndex = '';   % % --- material index (labels only):'= all, 'NaN' = currently selected
@@ -342,11 +361,25 @@ else
             ~isempty(saveImageImgObj.pyramid.levelNames);
         saveOpts.PyramidLevel = 1;
         if saveImageNumLevels > 1
-            levelSizes = saveImageImgObj.pyramid.levelImageSizes;   % [nLev x 3] [Y X Z]
+            levelSizes = saveImageLevelSizes;   % [nLev x 3] [Y X Z]
             levelItems = cell(1, saveImageNumLevels);
             for levelId = 1:saveImageNumLevels
-                levelItems{levelId} = sprintf('s%d - %d×%d×%d (W×H×Z)', levelId-1, ...
+                % The pyramid's own level name, not 's<index>': a store names its
+                % levels itself, and for a label overlay those names belong to a
+                % different pyramid than the image's.
+                levelName = sprintf('s%d', levelId-1);
+                if levelId <= numel(saveImageLevelNames) && ~isempty(saveImageLevelNames{levelId})
+                    levelName = char(saveImageLevelNames{levelId});
+                end
+                levelItems{levelId} = sprintf('%s - %d×%d×%d (W×H×Z)', levelName, ...
                     levelSizes(levelId,2), levelSizes(levelId,1), levelSizes(levelId,3));
+                if ~isempty(saveImageLevelScales)
+                    % For a label overlay the level names say nothing about
+                    % resolution - the labels' own s0 is already a downsample of
+                    % the image - so name the factor, which needs no units.
+                    levelItems{levelId} = sprintf('%s, %g x the image voxel', ...
+                        levelItems{levelId}, saveImageLevelScales(levelId, 1));
+                end
             end
             dlgLevelOpts.mibPath     = obj.mibPath;
             dlgLevelOpts.WindowStyle = 'modal';
