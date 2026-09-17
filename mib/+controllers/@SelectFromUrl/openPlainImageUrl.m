@@ -64,9 +64,28 @@ imageFilename = fullfile(obj.mibModel.currentDirectory, [imageName, imageExt]);
 imageMeta = core.MibImage.initializeImgInfo('Filename', imageFilename, 'Colormap', colorMap);
 
 datasetId = obj.mibModel.getActiveId();
+
+% An ordinary image is a single array in memory - there is no pyramid to stream,
+% so Standard is the only mode it can be and the setting does not apply. The
+% initialize below has always forced it; what was missing is telling the Datasets
+% panel, whose dropdown reads the Sets.datasetTypes cache rather than the
+% dataset. Importing a JPEG over an open BigData buffer therefore left the panel
+% claiming BigData for a plain image.
+%
+% Through ensureDatasetMode rather than by writing the cache here, so there is
+% one place that knows how to put a buffer in a mode. Deliberately after the
+% download: it re-initialises the buffer, and doing that before a fetch that then
+% fails would discard the open dataset for nothing.
+obj.BatchOpt.DatasetMode{1} = 'Standard';
+if obj.hasView(); obj.view.handles.DatasetMode.Value = 'Standard'; end
+if ~obj.ensureDatasetMode(datasetId, 'Standard'); return; end
+
 obj.mibModel.I{datasetId}.initialize(imageData, imageMeta, 'Standard', 'imageOnly', ...
     obj.mibModel.preferences.System.EnableSelection);
 
+% Safe here and not inside ensureDatasetMode: the buffer now holds the image
+% rather than the mode-switch placeholder. See ensureDatasetMode's header.
+notify(obj.mibModel, 'DatasetsPanelUpdate');
 notify(obj.mibModel, 'NewDataset');
 notify(obj.mibModel, 'ShowImage');
 end

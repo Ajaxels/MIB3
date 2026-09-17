@@ -236,6 +236,47 @@ classdef ZarrRegionReadTest < matlab.unittest.TestCase
             testCase.verifyEqual(size(squeeze(image)), [30 40 20]);
         end
 
+        function anExplicitLevelCarriesItsOwnVoxelSizeAndBox(testCase)
+            % Standard mode materialises one level, so pixSize and BoundingBox
+            % are THAT level's. Both loaders used to update only the dimensions
+            % and leave the geometry at level 0, which makes the two contradict
+            % each other: level 1 here is 40 voxels across a 4 nm grid, and the
+            % level-0 box over 40 voxels implies 4 nm while pixSize still said 2.
+            % Everything physical reads pixSize - scale bar, measurements, the
+            % box a model is saved with - so the error is silent, not cosmetic.
+            options = struct('datasetMode', 'Standard', 'ParentFigure', [], 'ZarrLevel', 2);
+            [imginfo, files] = testCase.loadMetadata(options);
+            loader = io.loaders.Zarr2VirtualSetupLoader(options);
+            [~, imginfo] = loader.loadImages(files, imginfo, options);
+
+            pixSize = imginfo{"pixSize"};
+            testCase.verifyEqual([pixSize.x, pixSize.y, pixSize.z], [4 4 4], ...
+                'the voxel size must follow the level actually read');
+            % centre of first voxel to centre of last, on level 1's own grid
+            testCase.verifyEqual(imginfo{"BoundingBox"}, ...
+                [301, 301+39*4, 201, 201+29*4, 101, 101+19*4], 'AbsTol', 1e-9);
+
+            % and the two must agree with each other over the dimensions loaded
+            extentX = imginfo{"BoundingBox"}(2) - imginfo{"BoundingBox"}(1);
+            testCase.verifyEqual(extentX / (double(imginfo{"Width"}) - 1), pixSize.x, ...
+                'AbsTol', 1e-9, 'the box and the voxel size must imply each other');
+        end
+
+        function theFinestLevelKeepsItsGeometryUntouched(testCase)
+            % Level 1 was already correct, and a store MIB wrote carries its own
+            % mibBoundingBox that loadMetadata puts in place - so the level-aware
+            % branch must not fire there at all.
+            options = struct('datasetMode', 'Standard', 'ParentFigure', [], 'ZarrLevel', 1);
+            [imginfo, files] = testCase.loadMetadata(options);
+            loader = io.loaders.Zarr2VirtualSetupLoader(options);
+            [~, afterLoad] = loader.loadImages(files, imginfo, options);
+
+            pixSize = afterLoad{"pixSize"};
+            testCase.verifyEqual([pixSize.x, pixSize.y, pixSize.z], [2 2 2]);
+            testCase.verifyEqual(afterLoad{"BoundingBox"}, imginfo{"BoundingBox"}, ...
+                'AbsTol', 1e-9);
+        end
+
         function anOutOfRangeLevelIsIgnoredRatherThanClamped(testCase)
             % A stale batch protocol must fall back to asking, not silently open
             % a different resolution than it names.

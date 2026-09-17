@@ -1450,6 +1450,152 @@ Files: `+core/@MibBigDataLabelsZarr2/MibBigDataLabelsZarr2.m` (`valueRemap`, `re
 
 ---
 
+### Step 21 - a label pyramid that starts where the image's ends (**DONE 2026-09-17**)
+
+Reported against `jrc_ctl-id8-1`: the EM has 6 levels from 4 nm, and
+`recon-1/labels/inference/segmentations/nuc` has 4. Selecting it as Labels said *"No sibling image
+pyramid could be found for this crop"*, which is wrong three times over.
+
+**Measured first, and the framing in the report needed correcting.** `nuc` is not the image pyramid
+truncated. It is the image pyramid **shifted down four levels**: `nuc/s0` is
+`[200 1157 750]` at `[64 64 55.68]` nm with translation `[26.1 30 30]` - byte-for-byte the same
+grid as EM `s4` - and `nuc/s2`, `s3` are coarser than anything the EM publishes. So the finest
+labels are at 64 nm while the image goes to 4 nm.
+
+Three separate faults, in the order they fired:
+
+1. `resolveSiblingImageGroup` never found the EM. `imageBoxContains` tolerates half of the
+   *candidate's* voxel (2 nm), but a label pyramid published as a rounded-up downsample overshoots
+   its image: `18500/16` rounds to 1157, so `nuc` claims `1157 x 64 = 74048 nm` against the EM's
+   `74000`. **48 nm of overshoot rejected by a 2 nm tolerance.** The excess is bounded by one
+   *label* voxel, which is now the second tolerance and is passed in rather than derived.
+2. `planLabelCrop` pinned `imageLevel = 1` and looked for a 4 nm label level. Image levels are now
+   searched from the finest, so a ground-truth crop still pairs at image `s0` exactly as before
+   (pinned by `theCropPlanStillPrefersTheFinestImageLevel`) and a coarse label pyramid falls
+   through to the level that matches - here EM `s4`, giving `[200 1157 750]` at **331 MB**, well
+   inside the step-19 memory guard.
+3. **`pixSize` did not follow `ZarrLevel`** - the one that would have been dangerous to ship. Both
+   setup loaders updated `Height`/`Width`/`Depth` for the selected level and left `pixSize` and
+   `BoundingBox` at level 0, so the dataset came back as 1157 voxels across a 73996 nm box while
+   `pixSize.x` said 4 nm. The box and the voxel size contradicted each other by 16x, and everything
+   physical reads `pixSize`: scale bar, measurements, the box a model is saved with. **Pre-existing
+   since the interactive level picker**, not introduced here - step 16 never reached it because
+   `imageLevel` was always 1. Fixed in `OmeZarrMetadataUtils.applySelectedLevelGeometry`, which is
+   a deliberate no-op at level 1 so a store carrying `mibBoundingBox` keeps winning.
+
+Verified against the live store: the loaded region's world box, shape and voxel size come back
+**bit-identical** to the label array's (`[30 74014 30 12766 26.1 41730.42]`, `[200 1157 750]`,
+`[64 64 55.68]`). That identity is the verification - alignment here is exact by construction, not
+by correlation.
+
+> **A content check was attempted and is recorded because it failed to discriminate.** Mean EM
+> intensity inside `nuc` (198.2) against outside (228.1) looks like confirmation until the mask is
+> shifted: at 10, 30, 60 and 120 px the separation stays 28.7-29.4. The labelled blobs are large
+> relative to any shift that stays on screen, so the statistic cannot see misregistration at all. A
+> prevalence-matched Dice against a thresholded EM peaks cleanly at zero y-shift
+> (0.462 vs 0.439 / 0.309 / 0.091) but is non-decisive in x, where the nuclei repeat. **Do not use
+> an intensity contrast to verify alignment on this kind of data** - compare the declared geometry.
+
+#### Correction (same day): the merge was never necessary
+
+**Reported after a GUI run against `jrc_mus-kidney`** - EM 12 levels from 8 nm, `nuc` 5 levels from
+128 nm (= EM `s4`), 864 objects. Two things were wrong with what the first version of this step
+shipped, and the second was a design error, not a bug:
+
+1. **The override note still called it "a crop".** *"A crop is small enough to hold in memory"* is
+   true of the ground-truth crops step 16 was built for and false of what actually happened: the
+   **whole volume** at 128 nm, 505 MB of image plus its model, in RAM. The text now names the size,
+   the level and the fact that the finer levels are not in the buffer. The summary line names the
+   level too.
+
+2. **Merging the objects was forced, and did not need to be.** The rule "an instance group must
+   never be blended into a material index map" was written about the **BigData packed 63-material**
+   model, where there genuinely is no room. This route builds an **ordinary in-memory model**, and
+   `createModel` takes 63 / 255 / 65535 / 4294967295 - 864 objects fit with room to spare, and MIB
+   has first-class instance support (`MibDataset.instanceIndex`, `buildInstanceIndex`, the instance
+   editor). Carrying the BigData rule across without checking what the Standard model could hold
+   was the mistake.
+
+   Keeping the objects is now the **default**: one material per object, named by the store's id.
+   The merge is offered as the alternative view, since hundreds of entries in the Segmentation panel
+   are their own problem. `openLabelCrop` also capped `modelType` at 255, which 864 materials would
+   have overflowed; it now goes to 65535, and `composeLabelModel` errors past that naming the merge
+   as the way out rather than wrapping a uint16 accumulator.
+
+   Because keeping is lossless it needs no consent, so headless and batch take it silently -
+   `chooseInstanceHandling` only asks where there is a window, and only about the merge.
+
+**Two things the fix itself then exposed, both measured on the live store:**
+
+- **Keeping the objects made composition O(classes x volume).** `composeLabelModel` built one mask
+  per class (`block == classValues(k)`), which is invisible at 3 classes and **375 s** at 864 over
+  530 Mvoxels - against 12 s for the image read it sits behind. Replaced with a value -> material
+  lookup applied one slice at a time: **53 s**, and the remainder is now the 530 MB label download,
+  which is inherent to a route that reads everything. The overlap bookkeeping was rewritten with it
+  (a sparse later x earlier accumulation), and `overlapBetweenGroupsIsCountedPerPairInPickOrder`
+  pins it, because attributing overlap to the wrong earlier material is exactly the kind of error
+  that looks fine.
+- **`createModel` ignores material names above type 255.** Its own docblock says so and line 204
+  sets `{'1';'2'}`; a 65535-material model is numeric by MIB's design, which is what the instance
+  tooling expects. So `nuc_1..nuc_864` are discarded and the report had to stop promising them. The
+  **values** are correct - verified 865 distinct, `0..864`, uint16.
+  Note the materials are numbered 1..N in the store's id order, **not** by the store's own ids,
+  which need not be contiguous. Preserving the ids would be more faithful and is a reasonable
+  follow-up; it was not bundled because ids from two instance groups would collide and the material
+  accounting is per-index throughout.
+
+**What this does not address**, and what the report was really about: the user's intent is to keep
+the EM as **BigData at 8 nm** and have the labels remapped per slice as they are read - no bulk
+download at all. That is Route B, below; the remap half of it already exists as
+`MibBigDataLabelsZarr2.valueRemap` (step 20), and only the level registration is missing.
+
+#### The instance-segmentation refusal became a question
+
+`openLabelCrop` has always refused an instance segmentation at step 1, and until now nothing reached
+that guard from the info panel because the sibling lookup failed first. `nuc` *is* one, so the panel
+would have promised a load that Open then turned down.
+
+The refusal is now **offered instead**. The original rationale - "an instance group must never be
+blended into a material index map, it would silently collapse every instance into one material" -
+turns entirely on **silently**; a mask of where the nuclei are is a useful thing to want. So:
+
+- `resolveLabelRoute` warns in the info panel and leaves Open enabled.
+- `openLabelCrop` calls `confirmInstanceMerge`, which asks *Merge into one material* / *Cancel*.
+- `composeLabelModel` gained a third branch: an instance group's ids all map to one material named
+  after the class, `unknown` still reaching background. Without it the index-map branch would have
+  made one material per object - thousands, on a real volume.
+- `BatchOpt.MergeInstanceObjects` defaults **false**, so a protocol recorded before this could not
+  have consented and still refuses. Headless with the flag off errors rather than merging: consent
+  is not inferable from silence.
+
+The merged object count is reported after loading, because it is the one thing the result cannot
+show and one material over 900 objects reads nothing like one over 3. It is also only knowable
+after the pixels are read, so the question asked before Open cannot name it.
+
+`anInstanceGroupBecomesOneMaterialOverEveryObject` asserts the same block **without** the instance
+declaration splits into four materials, so the merge assertions cannot pass on an unrelated path.
+That check was first run by temporarily breaking the branch in the source; the MCP connection
+dropped mid-run and left the file broken. **Vary the fixture, not the source under test.**
+
+So for this store the end state is: `nuc` loads as a single `nuc` material if you accept the merge,
+opens as Image if you want the object ids, and the coarse-pyramid pairing it motivated works for
+any segmentation published the same way.
+
+Files: `@SelectFromUrl/imageBoxContains.m`, `resolveSiblingImageGroup.m`, `planLabelCrop.m`,
+`SelectFromUrl.m`; `+io/+loaders/OmeZarrMetadataUtils.m` (`applySelectedLevelGeometry`),
+`Zarr2VirtualSetupLoader.m`, `Zarr3VirtualSetupLoader.m`; `tests/controllers/SelectFromUrlTest.m`
+(+4 Unit), `tests/io/ZarrRegionReadTest.m` (+2 Unit); `home-importfromurl.md`.
+
+**Not done: Route B**, the other way to serve this case - keep the 4 nm BigData pyramid and
+upsample the coarse labels per view. It needs `MibBigDataLabelsZarr2` to normalise
+`modelScaleFactors` against the *image's* level 0 rather than its own, and `getData63` to crop the
+upsampled block to the requested window rather than only resizing it. The second is the real work:
+at a 16x offset the existing resize returns the wrong size **and** a shifted origin (a request for
+full-res columns 3-34 comes back as 48 columns starting at column 1), and the arithmetic must be
+done in screen space or the intermediate is unbounded when zoomed out.
+
+---
+
 ## Risks, ranked
 
 1. ~~**Step 0 is load-bearing.**~~ **Retired 2026-08-10** - zarr-python reads this store over

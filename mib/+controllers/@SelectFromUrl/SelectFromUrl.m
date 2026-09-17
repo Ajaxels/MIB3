@@ -127,6 +127,13 @@ classdef SelectFromUrl < handle
             obj.BatchOpt.LoadAs{2}     = {'Image', 'Labels'};
             obj.BatchOpt.DatasetMode   = {'BigData'};
             obj.BatchOpt.DatasetMode{2} = {'BigData', 'Virtual', 'Standard'};
+            % Default false so a protocol written before this existed keeps
+            % refusing an instance group rather than quietly merging it. The GUI
+            % sets it from the question openLabelCrop asks.
+            obj.BatchOpt.MergeInstanceObjects = false;
+            % Empty means "ask"; a protocol names the image pyramid level it
+            % wants so it never stops for the level dialog.
+            obj.BatchOpt.ZarrLevel     = [];
             obj.BatchOpt.showWaitbar   = true;
             obj.BatchOpt.id            = obj.mibModel.getActiveId();
 
@@ -151,6 +158,13 @@ classdef SelectFromUrl < handle
                 'or, for a ground-truth crop, open its image region and put the labels on that']);
             obj.BatchOpt.mibBatchTooltip.DatasetMode = sprintf(['BigData: browse and segment, model stored locally\n' ...
                 'Virtual: browse only\nStandard: read one pyramid level fully into memory']);
+            obj.BatchOpt.mibBatchTooltip.MergeInstanceObjects = sprintf([ ...
+                '[Load as = Labels] merge an instance segmentation into one material per group\n' ...
+                'its values are object ids, so every object becomes the same material\n' ...
+                'leave off to refuse such a group instead']);
+            obj.BatchOpt.mibBatchTooltip.ZarrLevel = sprintf([ ...
+                '[Load as = Labels] 1-based image pyramid level to read the region at\n' ...
+                'must be a level that has a matching label level; leave empty to be asked']);
             obj.BatchOpt.mibBatchTooltip.showWaitbar = sprintf('Show or not the progress bar during execution');
 
             %% Batch / headless mode
@@ -450,6 +464,158 @@ classdef SelectFromUrl < handle
             end
         end
 
+        function [cropPlan, proceed] = chooseCropLevel(obj, cropPlan)
+            % CHOOSECROPLEVEL - Ask which pyramid level pair to read.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      [cropPlan, proceed] = obj.chooseCropLevel(cropPlan)
+            %
+            % The pairing settles which label level goes with which image level,
+            % but not **which pair** - and the difference is the resolution of
+            % the dataset the user ends up with, plus how much memory it costs.
+            % For jrc_mus-kidney the choice runs from 128 nm / 1010 MB to
+            % 2048 nm / a few MB, and nothing on screen would otherwise say so.
+            %
+            % **Only pairs that line up are offered.** Image levels with no
+            % matching label level are not choices at all - offering them would
+            % mean resampling one pyramid to fit the other, which
+            % :meth:`planLabelCrop` refuses to do. For jrc_mus-kidney that is EM
+            % ``s4..s8``; ``s0..s3`` have no counterpart.
+            %
+            % A single candidate is not a question, and is taken silently.
+            % ``BatchOpt.ZarrLevel`` answers it for a protocol, which must never
+            % stop for a dialog; an unusable value there is reported rather than
+            % quietly replaced, so a stale protocol does not open a different
+            % resolution than it names.
+            %
+            % Input Arguments:
+            %   - **cropPlan** - [struct] from :meth:`planLabelCrop`
+            %
+            % Output Arguments:
+            %   - **cropPlan** - [struct] with the chosen pair promoted
+            %   - **proceed** - [logical] false when the user cancelled
+
+            proceed    = true;
+            candidates = cropPlan.candidatePairs;
+            if isempty(candidates); return; end
+
+            % ---- a protocol states it outright ----------------------------
+            if ~isempty(obj.BatchOpt.ZarrLevel)
+                wanted = find([candidates.imageLevel] == obj.BatchOpt.ZarrLevel, 1);
+                if isempty(wanted)
+                    proceed = false;
+                    obj.stopProgress();
+                    utils.dlgs.showErrorDialog(obj.guiFigure(), sprintf( ...
+                        ['ZarrLevel %d has no matching label level, so it cannot be read with ' ...
+                         'these labels. Levels that do line up: %s.'], ...
+                        obj.BatchOpt.ZarrLevel, strjoin(arrayfun(@(c) num2str(c.imageLevel), ...
+                        candidates, 'UniformOutput', false), ', ')), 'Import label crop');
+                    return;
+                end
+                cropPlan = applyChosenPair(cropPlan, candidates(wanted));
+                return;
+            end
+
+            if isscalar(candidates) || ~obj.hasView(); return; end
+
+            obj.stopProgress();   % the bar is modal and would sit in front of the question
+
+            rowLabels = cell(1, numel(candidates));
+            for candidateIndex = 1:numel(candidates)
+                candidate = candidates(candidateIndex);
+                note = '';
+                if ~candidate.fits; note = '  [too large for this machine]'; end
+                rowLabels{candidateIndex} = sprintf('%s: %d x %d x %d px at %g nm - %s%s', ...
+                    candidate.imageLevelName, ...
+                    candidate.shapeYXZ(2), candidate.shapeYXZ(1), candidate.shapeYXZ(3), ...
+                    candidate.voxelSizeUm(1) * 1000, ...
+                    formatMegabytes(candidate.requiredBytes), note);
+            end
+            defaultIndex = find([candidates.imageLevel] == cropPlan.imageLevel, 1);
+
+            dialogOptions = struct('WindowWidth', 560, 'WindowHeight', 200, ...
+                'LabelPosition', 'top');
+            [answer, selectedIndices] = utils.dlgs.inputUniversalDlg(obj.guiFigure(), '', ...
+                {sprintf(['The labels and the image share these resolutions.\n' ...
+                          'Both are read into memory, so the level decides the detail and ' ...
+                          'the cost:'])}, ...
+                {rowLabels, {defaultIndex}}, 'Select the level to read', dialogOptions);
+            if isempty(answer); proceed = false; return; end
+
+            chosen = candidates(selectedIndices(1));
+            if ~chosen.fits
+                proceed = false;
+                utils.dlgs.showErrorDialog(obj.guiFigure(), sprintf( ...
+                    ['Level %s needs about %s, which does not fit in memory here. Pick a ' ...
+                     'coarser level.'], chosen.imageLevelName, ...
+                    formatMegabytes(chosen.requiredBytes)), 'Import label crop');
+                return;
+            end
+            cropPlan = applyChosenPair(cropPlan, chosen);
+            obj.startProgress('Reading crop metadata...');
+        end
+
+        function proceed = chooseInstanceHandling(obj, instanceNames)
+            % CHOOSEINSTANCEHANDLING - Keep an instance segmentation's objects, or merge them.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      proceed = obj.chooseInstanceHandling(instanceNames)
+            %
+            % This route builds an **ordinary in-memory model**, which holds up
+            % to 65535 materials, so an instance segmentation's objects can
+            % simply be kept - one material each - and that is the default.
+            % Merging them all into a single material is a view, not a necessity:
+            % useful when the question is "where are the nuclei" and the 864
+            % separate entries would only be in the way.
+            %
+            % **Keeping is lossless, so it needs no consent** - headless and
+            % batch take it silently. Only the merge is asked about, and only
+            % where there is a window; a protocol states it outright with
+            % ``BatchOpt.MergeInstanceObjects``.
+            %
+            % Input Arguments:
+            %   - **instanceNames** - {1xN cell} the selected groups that are
+            %     instance segmentations
+            %
+            % Output Arguments:
+            %   - **proceed** - [logical] false only when the user cancelled;
+            %     :attr:`BatchOpt`.``MergeInstanceObjects`` carries the choice
+
+            proceed = true;
+            if ~obj.hasView(); return; end   % keep the objects, nothing to ask
+
+            nameList = strjoin(instanceNames, ', ');
+            obj.stopProgress();   % the bar is modal and would sit in front of the question
+
+            questionOptions.WindowWidth  = 640;
+            questionOptions.WindowHeight = 320;
+            questionOptions.Icon         = 'puffin_question';
+            choice = utils.dlgs.inputQuestDlg(obj.guiFigure(), ...
+                sprintf(['"%s" is an instance segmentation: every voxel carries the id of the ' ...
+                         'object it belongs to.\n\nKeep objects: one material per object, so ' ...
+                         'they stay separable and the instance tools apply.\n\nMerge: a single ' ...
+                         'material covering all of them - a mask of where they are, which is ' ...
+                         'easier to look at when there are hundreds. Which voxel belonged to ' ...
+                         'which object is then lost.'], nameList), ...
+                'Instance segmentation', 'Keep objects', 'Merge into one material', 'Cancel', ...
+                'Keep objects', questionOptions);
+
+            switch choice
+                case 'Keep objects'
+                    obj.BatchOpt.MergeInstanceObjects = false;
+                case 'Merge into one material'
+                    obj.BatchOpt.MergeInstanceObjects = true;
+                otherwise   % Cancel, or the dialog was closed
+                    proceed = false;
+                    return;
+            end
+            obj.startProgress('Reading crop metadata...');
+        end
+
         function setStatus(obj, message)
             % SETSTATUS - Show a one-line status message, no-op without a view.
             if obj.hasView(); obj.view.handles.statusLabel.Text = message; end
@@ -519,6 +685,16 @@ classdef SelectFromUrl < handle
                 fprintf('controllers.SelectFromUrl.updateBatchOptFromGUI(%s): triggered\n', event.Source.Tag);
             end
             obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, event.Source);
+
+            % Load as and Dataset mode both change the VERDICT on the selected
+            % group - whether it can be loaded at all, and what it would produce.
+            % Without this the panel keeps the answer for the old setting and
+            % Open stays disabled (or enabled) against the wrong question. The
+            % probe is cached per URL for the session, so this is free.
+            if ismember(event.Source.Tag, {'LoadAs', 'DatasetMode'}) && ...
+                    ~isempty(obj.rootUrl) && ~isempty(obj.BatchOpt.GroupPath)
+                obj.probeGroup(io.RemoteStore.join(obj.rootUrl, obj.BatchOpt.GroupPath));
+            end
         end
 
         function urlValueChanged(obj, event)
@@ -642,10 +818,16 @@ classdef SelectFromUrl < handle
 
             if canOpen && strcmp(obj.BatchOpt.LoadAs{1}, 'Labels')
                 [labelsFit, reason] = obj.resolveLabelRoute(groupUrl, groupSummary);
-                % Split on newline: a reason may be several sentences (the
-                % memory refusal is), and a text area shows one cell per row.
+                % Split on newline: a reason may be several sentences (the mode
+                % refusal is a paragraph plus numbered steps), and a text area
+                % shows one cell per row.
+                %
+                % CollapseDelimiters off, or a blank line between paragraphs is
+                % swallowed and the whole message arrives as one dense block -
+                % which is what made the first mode refusal hard to read.
                 if ~isempty(reason)
-                    infoLines = [infoLines, {''}, strsplit(reason, newline)];
+                    infoLines = [infoLines, {''}, ...
+                        strsplit(reason, newline, 'CollapseDelimiters', false)];
                 end
                 canOpen = labelsFit;
             else
@@ -713,12 +895,27 @@ classdef SelectFromUrl < handle
             if isequal(imageSize, groupSummary.sizeYXZ)
                 obj.labelLoadRoute = 'model';
                 labelsFit = true;
+                % The model route goes through core.MibBigDataLabelsZarr2, which
+                % decides from the pixels whether the values are an index map or
+                % a mask - so an instance group comes out as one material per
+                % object where the ids fit MIB's 63, and as a single merged mask
+                % where they do not. Both are defensible; neither is obvious from
+                % the result, so the kind of store is named here. Unlike the crop
+                % route there is nothing to confirm: no information is discarded
+                % that reloading would not recover.
+                if isfield(groupSummary, 'annotationType') && ...
+                        strcmp(groupSummary.annotationType, 'instance_segmentation')
+                    reason = ['Note: this is an instance segmentation - its values are object ' ...
+                        'ids. Objects numbered within MIB''s 63 materials become one material ' ...
+                        'each; beyond that they all merge into a single material.'];
+                end
                 return;
             end
 
             % Dimensions differ - the crop route, if the store's coordinates
             % support it.
             labelPyramid = obj.readGroupPyramid(groupUrl);
+
             if ~isempty(obj.BatchOpt.ImageGroupPath)
                 imagePyramid = obj.readGroupPyramid( ...
                     io.RemoteStore.join(obj.rootUrl, obj.BatchOpt.ImageGroupPath));
@@ -737,8 +934,46 @@ classdef SelectFromUrl < handle
                 return;
             end
 
+            obj.cropPlan = plan;
+
+            % ---- the crop route is Standard-mode, and says so --------------
+            % It reads the image region and the model into memory, so it cannot
+            % honour BigData or Virtual. Overriding the choice silently is what
+            % this used to do, and it left the user with a buffer they had not
+            % asked for - reported against jrc_mus-kidney, where "a crop" was in
+            % fact the whole volume at 128 nm and 505 MB. Refusing here instead
+            % keeps Dataset mode meaning exactly what it says, and the message
+            % names the mode to pick rather than just the problem.
+            if ~strcmp(obj.BatchOpt.DatasetMode{1}, 'Standard')
+                labelsFit = false;
+                obj.labelLoadRoute = '';
+                % Three separate things, each on its own line, because running
+                % them together is what made the first version unreadable: what
+                % is wrong, what you would get, and what to do about it. The
+                % steps are numbered so there is nothing to work out.
+                %
+                % It states the OUTCOME rather than the cause: naming a
+                % resolution gap reads as nonsense whenever the two agree, which
+                % a sub-volume crop at full resolution does.
+                reason = sprintf([ ...
+                    'The labels do not completely match the %s dataset dimensions and can not be opened!\n ' ...
+                    '\n' ...
+                    'It is possible to load labels using the standard dataset type resulting in\n' ...
+                    '    %d x %d x %d px at %g nm\n' ...
+                    '   (image level %s), about %.0f MB\n' ...
+                    '\n' ...
+                    'To continue:\n' ...
+                    '    1. set "Dataset mode" to Standard\n' ...
+                    '    2. press Open\n' ...
+                    '    3. pick the pyramid level when asked'], ...
+                    obj.BatchOpt.DatasetMode{1}, ...
+                    plan.shapeYXZ(2), plan.shapeYXZ(1), plan.shapeYXZ(3), ...
+                    plan.voxelSizeUm(1) * 1000, plan.imageLevelName, ...
+                    plan.requiredBytes / 1024^2);
+                return;
+            end
+
             obj.labelLoadRoute = 'crop';
-            obj.cropPlan       = plan;
             labelsFit          = true;
 
             % ImageGroupPath has no widget on the canvas, so the resolved group
@@ -748,10 +983,40 @@ classdef SelectFromUrl < handle
                 obj.BatchOpt.ImageGroupPath = io.RemoteStore.relativePath(obj.rootUrl, imageGroupUrl);
             end
 
-            reason = sprintf(['Sub-volume crop: Open will load the matching image region ' ...
-                '(%d x %d x %d at %g nm) from %s and put these labels on it.'], ...
-                plan.shapeYXZ(1), plan.shapeYXZ(2), plan.shapeYXZ(3), ...
-                plan.voxelSizeUm(1) * 1000, obj.BatchOpt.ImageGroupPath);
+            if plan.imageLevel > 1
+                % The labels are published only from a coarse level down, so the
+                % image gives up its finer ones. Saying so before Open matters:
+                % the buffer that comes back cannot be zoomed to the resolution
+                % the currently open dataset is showing, and nothing on screen
+                % afterwards reveals that the finer levels were dropped.
+                reason = sprintf(['Coarse label pyramid: these labels start at %g nm, so the ' ...
+                    'image is read at %s level %s (%d x %d x %d) - its finer levels are not ' ...
+                    'available in that buffer.'], ...
+                    plan.voxelSizeUm(1) * 1000, obj.BatchOpt.ImageGroupPath, plan.imageLevelName, ...
+                    plan.shapeYXZ(1), plan.shapeYXZ(2), plan.shapeYXZ(3));
+            else
+                reason = sprintf(['Sub-volume crop: Open will load the matching image region ' ...
+                    '(%d x %d x %d at %g nm) from %s and put these labels on it.'], ...
+                    plan.shapeYXZ(1), plan.shapeYXZ(2), plan.shapeYXZ(3), ...
+                    plan.voxelSizeUm(1) * 1000, obj.BatchOpt.ImageGroupPath);
+            end
+
+            % The level above is only the default once there is more than one
+            % pair to choose from, so do not let the panel promise it.
+            if numel(plan.candidatePairs) > 1
+                reason = sprintf('%s\nOpen will ask which of the %d matching levels to read.', ...
+                    reason, numel(plan.candidatePairs));
+            end
+
+            % Which of the two outcomes you get is a question Open asks, so name
+            % it here - the info panel is where the user decides whether to press
+            % Open at all.
+            if strcmp(labelPyramid.annotationType, 'instance_segmentation')
+                reason = sprintf(['Note: "%s" is an instance segmentation - its values are ' ...
+                    'object ids, not a class. Open will ask whether to keep one material per ' ...
+                    'object or merge them all into a single mask.\n%s'], ...
+                    obj.labelGroupName(groupUrl, labelPyramid), reason);
+            end
         end
 
         function returnBatchOpt(obj, BatchOptOut)
@@ -761,4 +1026,30 @@ classdef SelectFromUrl < handle
             notify(obj.mibModel, 'SyncBatch', core.ToggleEventData(BatchOptOut));
         end
     end
+end
+
+% =========================================================================
+function cropPlan = applyChosenPair(cropPlan, candidate)
+% APPLYCHOSENPAIR - Promote one candidate level pair to the plan's chosen pair.
+% Mirrors the same step inside planLabelCrop, which picks the default.
+cropPlan.labelLevel     = candidate.labelLevel;
+cropPlan.imageLevel     = candidate.imageLevel;
+cropPlan.imageLevelName = candidate.imageLevelName;
+cropPlan.shapeYXZ       = candidate.shapeYXZ;
+cropPlan.voxelSizeUm    = candidate.voxelSizeUm;
+cropPlan.requiredBytes  = candidate.requiredBytes;
+end
+
+% =========================================================================
+function text = formatMegabytes(nBytes)
+% FORMATMEGABYTES - Size for a level row. The coarsest levels of a deep pyramid
+% are well under a megabyte, and "0 MB" reads like a broken row rather than a
+% cheap one, so those get KB.
+if nBytes >= 1024^3
+    text = sprintf('%.1f GB', nBytes / 1024^3);
+elseif nBytes >= 1024^2
+    text = sprintf('%.0f MB', nBytes / 1024^2);
+else
+    text = sprintf('%.0f KB', nBytes / 1024);
+end
 end

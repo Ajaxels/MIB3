@@ -22,10 +22,18 @@ function groupSummary = probeGroup(obj, groupUrl)
 %
 % Output Arguments:
 %   - **groupSummary** - [struct] with ``.hasMultiscales``, ``.sizeYXZ``,
-%     ``.levelCount``, ``.dataType``, ``.voxelSize``, ``.units``, ``.lines``
+%     ``.levelCount``, ``.dataType``, ``.voxelSize``, ``.units``,
+%     ``.annotationType``, ``.lines``
+%
+% ``annotationType`` is carried here rather than left to
+% :meth:`readGroupPyramid` because the attributes are already in hand and
+% :meth:`resolveLabelRoute` needs it on the path where the dimensions already
+% match - which returns before any pyramid is read, and would otherwise pay a
+% request per level on the common working case just to ask one question.
 
 groupSummary = struct('hasMultiscales', false, 'sizeYXZ', [0 0 0], ...
-    'levelCount', 0, 'dataType', '', 'voxelSize', [0 0 0], 'units', '', 'lines', {{''}});
+    'levelCount', 0, 'dataType', '', 'voxelSize', [0 0 0], 'units', '', ...
+    'annotationType', '', 'lines', {{''}});
 
 if isempty(groupUrl) || isempty(obj.zarrFormat); return; end
 
@@ -49,6 +57,16 @@ if isempty(multiscales)
     obj.probeCache{cacheKey} = groupSummary;
     obj.applySummary(groupUrl, groupSummary);
     return;
+end
+
+if isfield(attributes, 'cellmap') && isstruct(attributes.cellmap) && ...
+        isfield(attributes.cellmap, 'annotation') && ...
+        isstruct(attributes.cellmap.annotation) && ...
+        isfield(attributes.cellmap.annotation, 'annotation_type') && ...
+        isstruct(attributes.cellmap.annotation.annotation_type) && ...
+        isfield(attributes.cellmap.annotation.annotation_type, 'type')
+    groupSummary.annotationType = ...
+        char(string(attributes.cellmap.annotation.annotation_type.type));
 end
 
 multiscale = multiscales(1);

@@ -633,6 +633,56 @@ methods (Static)
         end
     end
 
+    function imginfo = applySelectedLevelGeometry(imginfo, files, selectedLevel)
+        % APPLYSELECTEDLEVELGEOMETRY - Put a Standard-mode read on its own level's grid.
+        %
+        % Syntax:
+        %   .. code-block:: matlab
+        %
+        %      imginfo = io.loaders.OmeZarrMetadataUtils.applySelectedLevelGeometry(imginfo, files, selectedLevel)
+        %
+        % Standard mode materialises exactly **one** pyramid level, so that
+        % level's voxel size and world box are the dataset's - not level 0's.
+        % Both setup loaders used to update only ``Height``/``Width``/``Depth``
+        % for the chosen level and leave ``pixSize`` and ``BoundingBox`` at level
+        % 0, which makes the two disagree: opening ``jrc_ctl-id8-1``'s EM at
+        % ``s4`` gave 1157 voxels across a 73996 nm box (64 nm each) while
+        % ``pixSize.x`` still said 4 nm. Everything physical reads ``pixSize`` -
+        % the scale bar, measurements, the box a model is saved with - so this is
+        % a silent 16x error in the recorded voxel size, not a cosmetic one.
+        %
+        % **Level 1 is deliberately left untouched.** It was already correct, and
+        % a store MIB wrote carries its own ``mibBoundingBox``, which
+        % ``loadMetadata`` puts into ``imginfo`` and which must keep winning.
+        %
+        % Input Arguments:
+        %   - **imginfo** - [dictionary] the metadata being filled in
+        %   - **files** - [struct] the setup loader's files struct, carrying
+        %     ``pixSize``, ``levelVoxelSizes`` ``[y x z]`` and ``levelWorldBoxes``
+        %   - **selectedLevel** - [numeric] 1-based level actually read
+        %
+        % Output Arguments:
+        %   - **imginfo** - [dictionary] with ``pixSize`` and ``BoundingBox`` of
+        %     that level (``dictionary`` is a value type, so this must be assigned
+        %     back by the caller)
+
+        if selectedLevel <= 1; return; end
+        if ~isfield(files, 'levelVoxelSizes') || ...
+                selectedLevel > size(files.levelVoxelSizes, 1)
+            return;
+        end
+
+        levelPixSize   = files.pixSize;
+        levelPixSize.y = files.levelVoxelSizes(selectedLevel, 1);
+        levelPixSize.x = files.levelVoxelSizes(selectedLevel, 2);
+        levelPixSize.z = files.levelVoxelSizes(selectedLevel, 3);
+        imginfo{"pixSize"} = levelPixSize;
+
+        if isfield(files, 'levelWorldBoxes') && selectedLevel <= size(files.levelWorldBoxes, 1)
+            imginfo{"BoundingBox"} = files.levelWorldBoxes(selectedLevel, :);
+        end
+    end
+
     function [levelImageSizes, levelRegionOrigins, levelWorldBoxes, regionReport] = ...
             applyRequestedRegion(requestedRegion, levelImageSizes, levelVoxelSizes, levelWorldBoxes, storeUnits)
         % APPLYREQUESTEDREGION - Crop the pyramid to a world region, or leave it alone.

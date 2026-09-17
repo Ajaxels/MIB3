@@ -18,9 +18,16 @@ function reportCropResult(obj, imageGroupPath, cropPlan, materialNames, composit
 %   - **materialNames** - {1xN cell} composed materials
 %   - **compositionReport** - [struct] from :meth:`composeLabelModel`
 
-summaryLine = sprintf('Loaded %d x %d x %d voxels at %g nm from %s, with %d material(s).', ...
+% The level is named because the pairing, not the user, chose it - and when the
+% labels are coarser than the image that level is not the full resolution the
+% user was browsing a moment ago.
+levelNote = '';
+if ~isempty(cropPlan.imageLevelName)
+    levelNote = sprintf(' level %s', cropPlan.imageLevelName);
+end
+summaryLine = sprintf('Loaded %d x %d x %d voxels at %g nm from %s%s, with %d material(s).', ...
     cropPlan.shapeYXZ(2), cropPlan.shapeYXZ(1), cropPlan.shapeYXZ(3), ...
-    cropPlan.voxelSizeUm(1) * 1000, imageGroupPath, numel(materialNames));
+    cropPlan.voxelSizeUm(1) * 1000, imageGroupPath, levelNote, numel(materialNames));
 
 if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.SelectFromUrl.openLabelCrop: %s\n', summaryLine);

@@ -861,6 +861,10 @@ methods (Access = private)
         imginfo{"Width"}    = sz(2);
         imginfo{"Depth"}    = sz(3);
         imginfo{"viewPort"} = io.loaders.OmeZarrMetadataUtils.buildViewPort(files.color, imginfo{"MaxInt"});
+        % The voxel size and world box follow the level actually read; a no-op
+        % at level 1, which is the only level this used to reach.
+        imginfo = io.loaders.OmeZarrMetadataUtils.applySelectedLevelGeometry( ...
+            imginfo, files, selectedLevel);
 
         img = data; % bare numeric array; MibImage.initialize wraps it as obj.data
     end

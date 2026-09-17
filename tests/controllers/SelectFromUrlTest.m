@@ -292,15 +292,33 @@ classdef SelectFromUrlTest < matlab.unittest.TestCase
             % directly with the crop's; the nm conversion is covered separately
             % by OmeZarrWorldGeometryTest.
             enclosing = testCase.fakePyramid([0 100 0 100 0 100], [1 1 1], 'um');
-            testCase.verifyTrue(controller.imageBoxContains(enclosing, cropBoxUm));
+            testCase.verifyTrue(controller.imageBoxContains(enclosing, cropBoxUm, [1 1 1]));
 
             tooSmall = testCase.fakePyramid([0 15 0 15 0 15], [1 1 1], 'um');
-            testCase.verifyFalse(controller.imageBoxContains(tooSmall, cropBoxUm));
+            testCase.verifyFalse(controller.imageBoxContains(tooSmall, cropBoxUm, [1 1 1]));
 
             annotated = enclosing;
             annotated.annotation = struct('class_name', 'mito');
-            testCase.verifyFalse(controller.imageBoxContains(annotated, cropBoxUm), ...
+            testCase.verifyFalse(controller.imageBoxContains(annotated, cropBoxUm, [1 1 1]), ...
                 'a group carrying a cellmap annotation is never the image');
+        end
+
+        function containmentToleratesACropGridThatRoundsUp(testCase)
+            % jrc_ctl-id8-1: the nuc segmentation is the EM downsampled 16x, and
+            % 18500/16 rounds UP to 1157, so its declared extent overshoots the
+            % EM's by 1157*64 - 18500*4 = 48 nm. Half an image voxel is 2 nm and
+            % rejects that outright, which used to report the EM as "no sibling
+            % image pyramid" for a segmentation published beside it.
+            controller = testCase.newViewLessController();
+
+            imagePyramid = testCase.fakePyramid( ...
+                [0 73.996 0 12.796 0 41.74956], [0.004 0.004 0.00348], 'um');
+            cropBoxUm = [-0.002 74.046 -0.002 12.798 -0.00174 41.75826];
+
+            testCase.verifyFalse(controller.imageBoxContains(imagePyramid, cropBoxUm, [0 0 0]), ...
+                'the candidate''s own half-voxel is not enough for a 48 nm overshoot');
+            testCase.verifyTrue(controller.imageBoxContains(imagePyramid, cropBoxUm, ...
+                [0.064 0.064 0.05568]), 'one label voxel bounds the overshoot');
         end
 
         function theCropPlanPicksTheLevelThatMatchesTheImageScale(testCase)
@@ -330,6 +348,84 @@ classdef SelectFromUrlTest < matlab.unittest.TestCase
             testCase.verifyEqual(plan.imageLevel, 1);
             testCase.verifyEqual(plan.shapeYXZ, [500 500 100]);
             testCase.verifyEqual(plan.voxelSizeUm, [0.004 0.004 0.00524], 'AbsTol', 1e-12);
+        end
+
+        function theCropPlanPairsACoarseLabelPyramidWithAReducedImageLevel(testCase)
+            % The other direction from the COSEM crops: jrc_ctl-id8-1's nuc
+            % inference segmentation is published only from 64 nm down, which is
+            % the EM's s4 exactly. Pinning the image to its finest level refused
+            % this pair for sharing no common resolution; the image is the
+            % pyramid that has to give up levels here.
+            controller = testCase.newViewLessController();
+
+            emShapes = [3200 18500 11998; 1600 9250 5999; 800 4625 3000; ...
+                        400 2313 1500;    200 1157 750;   100 579 375];
+            emVoxels = [4 4 3.48] .* 2.^((0:5)');
+            % [x y z], as published: half the level's own voxel past the origin
+            emTranslations = [0 0 0; 2 2 1.74; 6 6 5.22; 14 14 12.18; ...
+                              30 30 26.1; 62 62 53.94];
+            emBoxes = zeros(6, 6);
+            for levelIndex = 1:6
+                shapeXYZ = emShapes(levelIndex, [2 1 3]);
+                % column-major read of [xmin ymin zmin; xmax ymax zmax] gives
+                % the [xmin xmax ymin ymax zmin zmax] order the planner expects
+                emBoxes(levelIndex, :) = reshape([emTranslations(levelIndex, :); ...
+                    emTranslations(levelIndex, :) + (shapeXYZ - 1) .* emVoxels(levelIndex, :)], 1, 6);
+            end
+
+            imagePyramid = testCase.fakePyramid(emBoxes(1, :), emVoxels(1, :), 'nm');
+            imagePyramid.levelNames         = {'s0', 's1', 's2', 's3', 's4', 's5'};
+            imagePyramid.levelShapesYXZ     = emShapes;
+            imagePyramid.levelVoxelSizesXYZ = emVoxels;
+            imagePyramid.levelWorldBoxes    = emBoxes;
+
+            % nuc s0 is byte-for-byte the same grid as EM s4
+            labelPyramid = testCase.fakePyramid(emBoxes(5, :), emVoxels(5, :), 'nm');
+            labelPyramid.levelNames         = {'s0'};
+            labelPyramid.levelShapesYXZ     = emShapes(5, :);
+            labelPyramid.levelVoxelSizesXYZ = emVoxels(5, :);
+            labelPyramid.levelWorldBoxes    = emBoxes(5, :);
+
+            plan = controller.planLabelCrop(labelPyramid, imagePyramid, 8 * 1024^3);
+
+            testCase.verifyTrue(plan.ok, plan.reason);
+            testCase.verifyEqual(plan.labelLevel, 1);
+            testCase.verifyEqual(plan.imageLevel, 5, 'the EM s4 is the 64 nm level');
+            testCase.verifyEqual(plan.imageLevelName, 's4');
+            testCase.verifyEqual(plan.shapeYXZ, [200 1157 750]);
+            testCase.verifyEqual(plan.voxelSizeUm, [0.064 0.064 0.05568], 'AbsTol', 1e-12);
+            testCase.verifyEqual(plan.requiredBytes, 200 * 1157 * 750 * 2);
+        end
+
+        function theCropPlanStillPrefersTheFinestImageLevel(testCase)
+            % Searching image levels must not quietly demote a ground-truth crop:
+            % where several pairs match, the finest image level has to win. Both
+            % image s0/label s1 (4 nm) and image s1/label s2 (8 nm) are valid
+            % pairings of this pyramid, and only the first keeps full resolution.
+            controller = testCase.newViewLessController();
+
+            labelPyramid = testCase.fakePyramid([0 1998 0 1998 0 398], [2 2 2], 'nm');
+            labelPyramid.levelNames         = {'s0', 's1', 's2'};
+            labelPyramid.levelShapesYXZ     = [1000 1000 200; 500 500 100; 250 250 50];
+            labelPyramid.levelVoxelSizesXYZ = [2 2 2; 4 4 4; 8 8 8];
+            labelPyramid.levelWorldBoxes    = [0 1998 0 1998 0 398; ...
+                                               1 1997 1 1997 1 397; ...
+                                               3 1995 3 1995 3 395];
+            labelPyramid.dataType = 'uint8';
+
+            imagePyramid = testCase.fakePyramid([0 1996 0 1996 0 396], [4 4 4], 'nm');
+            imagePyramid.levelNames         = {'s0', 's1'};
+            imagePyramid.levelShapesYXZ     = [500 500 100; 250 250 50];
+            imagePyramid.levelVoxelSizesXYZ = [4 4 4; 8 8 8];
+            imagePyramid.levelWorldBoxes    = [0 1996 0 1996 0 396; 2 1994 2 1994 2 394];
+            imagePyramid.dataType = 'uint8';
+
+            plan = controller.planLabelCrop(labelPyramid, imagePyramid, 8 * 1024^3);
+
+            testCase.verifyTrue(plan.ok, plan.reason);
+            testCase.verifyEqual(plan.imageLevel, 1, 'the finest matching image level wins');
+            testCase.verifyEqual(plan.labelLevel, 2);
+            testCase.verifyEqual(plan.shapeYXZ, [500 500 100]);
         end
 
         function theCropPlanRefusesToResampleAScaleMismatch(testCase)
@@ -412,6 +508,298 @@ classdef SelectFromUrlTest < matlab.unittest.TestCase
             testCase.verifyFalse(stingy.ok);
         end
 
+        function anInstanceSegmentationIsWarnedAboutBeforeOpen(testCase)
+            % An instance group can be loaded, as one material over every object,
+            % but that loss has to be stated while the user is still choosing -
+            % nothing in the resulting model shows that objects were merged.
+            % jrc_ctl-id8-1's nuc is the case: a 4-level instance segmentation
+            % over a 6-level EM, which nothing reached from the info panel until
+            % coarse label pyramids started pairing.
+            controller = testCase.newViewLessController();
+            controller.rootUrl = testCase.ZarrTwin;
+            controller.zarrFormat = 'zarr2';
+            % The crop route is Standard-only, and the mode refusal now comes
+            % first - so the instance note is only reachable once the mode is
+            % the one this route can actually deliver.
+            controller.BatchOpt.DatasetMode{1} = 'Standard';
+
+            labelPyramid = testCase.fakePyramid([0 3996 0 3996 0 3996], [4 4 4], 'nm');
+            labelPyramid.levelShapesYXZ     = [1000 1000 1000];
+            labelPyramid.levelVoxelSizesXYZ = [4 4 4];
+            labelPyramid.levelWorldBoxes    = [0 3996 0 3996 0 3996];
+            labelPyramid.annotationType = 'instance_segmentation';
+            labelPyramid.className      = 'nuc';
+            labelPyramid.dataType       = 'uint8';
+            controller.probeCache{"pyramid:" + string([testCase.ZarrTwin '/nuc'])} = labelPyramid;
+
+            imagePyramid = testCase.fakePyramid([0 7996 0 7996 0 7996], [4 4 4], 'nm');
+            imagePyramid.levelShapesYXZ     = [2000 2000 2000];
+            imagePyramid.levelVoxelSizesXYZ = [4 4 4];
+            imagePyramid.levelWorldBoxes    = [0 7996 0 7996 0 7996];
+            imagePyramid.dataType           = 'uint8';
+            controller.probeCache{"pyramid:" + string([testCase.ZarrTwin '/em'])} = imagePyramid;
+            controller.BatchOpt.ImageGroupPath = 'em';
+
+            groupSummary = struct('sizeYXZ', [2000 2000 2000]);
+            [labelsFit, reason] = controller.resolveLabelRoute([testCase.ZarrTwin '/nuc'], groupSummary);
+
+            testCase.verifyTrue(labelsFit, 'the group can be loaded');
+            testCase.verifySubstring(reason, 'instance segmentation');
+            testCase.verifySubstring(reason, 'nuc');
+            testCase.verifySubstring(reason, 'one material per object');
+            testCase.verifySubstring(reason, 'merge');
+        end
+
+        function aPlainImageImportForcesStandardAndSaysSo(testCase)
+            % An ordinary image is one array in memory, so Standard is the only
+            % mode it can be - initialize has always forced it. What was missing
+            % is the Sets.datasetTypes cache the Datasets panel actually reads,
+            % so importing a JPEG over an open BigData buffer left the panel
+            % claiming BigData for a plain image.
+            controller = testCase.newViewLessController();
+            mibModel   = controller.mibModel;
+            datasetId  = mibModel.getActiveId();
+
+            placeholder = {fullfile(mibModel.mibPath, 'assets', 'images', 'default.h5')};
+            testCase.assumeTrue(isfile(placeholder{1}), ...
+                'skipped: the placeholder dataset is missing from this checkout');
+
+            datasetsInSet = mibModel.Sets.datasetsInSet;
+            targetSet     = floor((datasetId - 1) / datasetsInSet) + 1;
+            targetLocalId = mod(datasetId - 1, datasetsInSet) + 1;
+
+            % start from a BigData buffer, as the report did
+            testCase.assertTrue(controller.ensureDatasetMode(datasetId, 'BigData'));
+            testCase.assertEqual(mibModel.I{datasetId}.datasetType, 'BigData');
+
+            % the mode the import needs, applied the same way the import applies it
+            controller.BatchOpt.DatasetMode{1} = 'Standard';
+            testCase.verifyTrue(controller.ensureDatasetMode(datasetId, 'Standard'));
+            testCase.verifyEqual(mibModel.I{datasetId}.datasetType, 'Standard');
+            testCase.verifyEqual(mibModel.Sets.datasetTypes{targetSet, targetLocalId}, 'Standard', ...
+                'the panel cache must follow, or the dropdown keeps saying BigData');
+        end
+
+        function theCropRouteRefusesAModeItCannotDeliver(testCase)
+            % The crop route reads the region and the model into memory, so it
+            % can only produce a Standard buffer. It used to override Dataset
+            % mode silently, leaving the user with something they had not asked
+            % for and the Datasets panel showing the mode they had. Refusing
+            % keeps the control meaning what it says - and the message has to
+            % name both the mode to pick and what it will produce.
+            controller = testCase.newViewLessController();
+            controller.rootUrl = testCase.ZarrTwin;
+            controller.zarrFormat = 'zarr2';
+            controller.BatchOpt.ImageGroupPath = 'em';
+            [labelUrl, imageUrl] = testCase.stageCropPyramids(controller);
+
+            groupSummary = struct('sizeYXZ', [2000 2000 2000], 'annotationType', '');
+
+            controller.BatchOpt.DatasetMode{1} = 'BigData';
+            [labelsFit, reason] = controller.resolveLabelRoute(labelUrl, groupSummary);
+            testCase.verifyFalse(labelsFit, 'BigData cannot be delivered by this route');
+            testCase.verifySubstring(reason, 'Cannot add labels to a BigData dataset');
+            testCase.verifySubstring(reason, 'Standard dataset');
+            % The instructions are the point of the message, not a decoration:
+            % the first version ran cause and remedy together and was reported
+            % as hard to follow.
+            testCase.verifySubstring(reason, 'To continue:');
+            testCase.verifySubstring(reason, 'set "Dataset mode" to Standard');
+            testCase.verifyEmpty(controller.labelLoadRoute, ...
+                'a refused mode must leave no route for Open to follow');
+
+            % and the same group is accepted once the mode can deliver it
+            controller.BatchOpt.DatasetMode{1} = 'Standard';
+            testCase.verifyTrue(controller.resolveLabelRoute(labelUrl, groupSummary));
+            testCase.verifyEqual(controller.labelLoadRoute, 'crop');
+            testCase.assertNotEmpty(imageUrl);
+        end
+
+        function theLevelPickerOffersOnlyPairsThatLineUp(testCase)
+            % Image levels with no matching label level are not choices: offering
+            % one would mean resampling a pyramid to fit the other, which
+            % planLabelCrop refuses. For a 3-level image against 1 coarse label
+            % level there is exactly one pair, and the finest that fits is the
+            % default so the preselected row is always openable.
+            controller = testCase.newViewLessController();
+
+            imageShapes = [800 800 800; 400 400 400; 200 200 200];
+            imageVoxels = [4 4 4] .* 2.^((0:2)');
+            imageBoxes  = zeros(3, 6);
+            for levelIndex = 1:3
+                extent = (imageShapes(levelIndex, [2 1 3]) - 1) .* imageVoxels(levelIndex, :);
+                imageBoxes(levelIndex, :) = reshape([zeros(1, 3); extent], 1, 6);
+            end
+
+            imagePyramid = testCase.fakePyramid(imageBoxes(1, :), imageVoxels(1, :), 'nm');
+            imagePyramid.levelNames         = {'s0', 's1', 's2'};
+            imagePyramid.levelShapesYXZ     = imageShapes;
+            imagePyramid.levelVoxelSizesXYZ = imageVoxels;
+            imagePyramid.levelWorldBoxes    = imageBoxes;
+            imagePyramid.dataType           = 'uint8';
+
+            % labels only at 16 nm - the image's s2
+            labelPyramid = testCase.fakePyramid(imageBoxes(3, :), imageVoxels(3, :), 'nm');
+            labelPyramid.levelNames         = {'s0'};
+            labelPyramid.levelShapesYXZ     = imageShapes(3, :);
+            labelPyramid.levelVoxelSizesXYZ = imageVoxels(3, :);
+            labelPyramid.levelWorldBoxes    = imageBoxes(3, :);
+            labelPyramid.dataType           = 'uint8';
+
+            plan = controller.planLabelCrop(labelPyramid, imagePyramid, 8 * 1024^3);
+
+            testCase.verifyTrue(plan.ok, plan.reason);
+            testCase.assertNumElements(plan.candidatePairs, 1, ...
+                'only the level pair that shares a resolution is a choice');
+            testCase.verifyEqual(plan.candidatePairs.imageLevel, 3);
+            testCase.verifyEqual(plan.candidatePairs.imageLevelName, 's2');
+            testCase.verifyTrue(plan.candidatePairs.fits);
+            testCase.verifyEqual(plan.imageLevel, 3, 'the single pair is also the chosen one');
+        end
+
+        function theLevelPickerFallsBackToACoarserPairThatFits(testCase)
+            % Two pairs line up but the finer one is far too big. The default
+            % must be the finest that FITS, so the preselected row can actually
+            % be opened - previously the plan took the finest outright and
+            % refused, even though a usable pair existed.
+            controller = testCase.newViewLessController();
+
+            imageShapes = [4000 4000 4000; 2000 2000 2000];
+            imageVoxels = [4 4 4; 8 8 8];
+            imageBoxes  = [0 (4000-1)*4 0 (4000-1)*4 0 (4000-1)*4; ...
+                           0 (2000-1)*8 0 (2000-1)*8 0 (2000-1)*8];
+
+            imagePyramid = testCase.fakePyramid(imageBoxes(1, :), imageVoxels(1, :), 'nm');
+            imagePyramid.levelNames         = {'s0', 's1'};
+            imagePyramid.levelShapesYXZ     = imageShapes;
+            imagePyramid.levelVoxelSizesXYZ = imageVoxels;
+            imagePyramid.levelWorldBoxes    = imageBoxes;
+            imagePyramid.dataType           = 'uint8';
+
+            labelPyramid = testCase.fakePyramid(imageBoxes(1, :), imageVoxels(1, :), 'nm');
+            labelPyramid.levelNames         = {'s0', 's1'};
+            labelPyramid.levelShapesYXZ     = imageShapes;
+            labelPyramid.levelVoxelSizesXYZ = imageVoxels;
+            labelPyramid.levelWorldBoxes    = imageBoxes;
+            labelPyramid.dataType           = 'uint8';
+
+            % 4000^3 x 2 bytes = 119 GiB; 2000^3 x 2 = 14.9 GiB
+            plan = controller.planLabelCrop(labelPyramid, imagePyramid, 30 * 1024^3);
+
+            testCase.verifyTrue(plan.ok, plan.reason);
+            testCase.assertNumElements(plan.candidatePairs, 2);
+            testCase.verifyFalse(plan.candidatePairs(1).fits, 's0 is too large here');
+            testCase.verifyTrue(plan.candidatePairs(2).fits);
+            testCase.verifyEqual(plan.imageLevel, 2, ...
+                'the default must be the finest pair that fits, not the finest pair');
+        end
+
+        function instanceObjectsAreKeptWithoutAWindowToAskIn(testCase)
+            % Keeping every object is lossless and is what an in-memory model can
+            % hold, so it needs no consent - headless and batch take it silently.
+            % Only the merge is a choice, and only a protocol may state it.
+            controller = testCase.newViewLessController();
+            testCase.verifyFalse(controller.BatchOpt.MergeInstanceObjects, ...
+                'keeping the objects is the default');
+            testCase.verifyTrue(controller.chooseInstanceHandling({'nuc'}), ...
+                'no window means keep them and carry on, not refuse');
+            testCase.verifyFalse(controller.BatchOpt.MergeInstanceObjects);
+        end
+
+        function instanceObjectsAreKeptAsOneMaterialEachByDefault(testCase)
+            % The correction to the first version of this: an in-memory model
+            % holds up to 65535 materials, so there was never a reason to flatten
+            % 864 nuclei into one. Ids become one material each, named by the id.
+            controller = testCase.newViewLessController();
+            controller.rootUrl = testCase.ZarrTwin;
+
+            % 4 objects with ids 1, 2, 7, 9 plus a voxel of "unknown" (255)
+            block = zeros(4, 5, 2, 'uint8');
+            block(1, 1, 1) = 1;  block(2, 2, 1) = 2;
+            block(3, 3, 2) = 7;  block(4, 4, 2) = 9;
+            block(1, 5, 1) = 255;
+            instanceGroup = struct('annotationType', 'instance_segmentation', 'className', 'nuc');
+
+            [modelData, materialNames, report] = testCase.composeFromBlock( ...
+                controller, block, instanceGroup);
+
+            testCase.verifyEqual(unique(modelData(:))', uint8(0:4), ...
+                'each object id keeps a material of its own');
+            testCase.verifyEqual(materialNames, {'nuc_1', 'nuc_2', 'nuc_7', 'nuc_9'});
+            testCase.verifyEqual(modelData(1, 5, 1), uint8(0), ...
+                '"unknown" is not annotated, so it stays background');
+            testCase.verifyEqual(report.instanceObjectCounts, 4);
+            testCase.verifyTrue(any(contains(report.lines, 'kept as one material each')));
+        end
+
+        function overlapBetweenGroupsIsCountedPerPairInPickOrder(testCase)
+            % The lookup-table rewrite (a per-class mask loop was O(classes x
+            % volume) and took 375 s on 864 objects) also rewrote the overlap
+            % bookkeeping, which is the part that can be wrong without looking
+            % wrong: a later pick must win, and the voxels it took must be
+            % attributed to the exact material it took them from.
+            controller = testCase.newViewLessController();
+            controller.rootUrl = testCase.ZarrTwin;
+
+            % first group: an index map, values 1 and 2 on two separate rows
+            first = zeros(3, 4, 1, 'uint8');
+            first(1, :, 1) = 1;
+            first(2, :, 1) = 2;
+
+            % second group: a declared single class covering row 2 and row 3, so
+            % it takes all 4 voxels of material 2 and none of material 1
+            second = zeros(3, 4, 1, 'uint8');
+            second(2:3, :, 1) = 1;
+
+            annotations = struct( ...
+                'annotationType', {'', 'semantic_segmentation'}, ...
+                'className', {'idx', 'later'}, ...
+                'encoding', {[], struct('present', 1, 'unknown', 255)});
+
+            [modelData, materialNames, report] = testCase.composeFromBlock( ...
+                controller, {first, second}, annotations);
+
+            testCase.verifyEqual(materialNames, {'idx_1', 'idx_2', 'later'});
+            testCase.verifyEqual(modelData(1, :, 1), uint8([1 1 1 1]), 'row 1 is untouched');
+            testCase.verifyEqual(modelData(2, :, 1), uint8([3 3 3 3]), 'the later pick wins');
+            testCase.verifyEqual(modelData(3, :, 1), uint8([3 3 3 3]));
+
+            testCase.assertNumElements(report.overlaps, 1, ...
+                'exactly one pair overlaps, and only one must be reported');
+            testCase.verifyEqual(report.overlaps(1).later, 3);
+            testCase.verifyEqual(report.overlaps(1).earlier, 2, ...
+                'the voxels came from idx_2, not idx_1');
+            testCase.verifyEqual(report.overlaps(1).voxels, 4);
+
+            % voxelCounts is what each group contributed, before being overwritten
+            testCase.verifyEqual(report.voxelCounts, [4 4 8]);
+        end
+
+        function mergingAnInstanceGroupIsOptedInto(testCase)
+            % The merge is a view, taken only when asked for: every object id
+            % becomes one material and the count is reported, because nothing in
+            % the model afterwards shows that 4 objects went into it.
+            controller = testCase.newViewLessController();
+            controller.rootUrl = testCase.ZarrTwin;
+            controller.BatchOpt.MergeInstanceObjects = true;
+
+            block = zeros(4, 5, 2, 'uint8');
+            block(1, 1, 1) = 1;  block(2, 2, 1) = 2;
+            block(3, 3, 2) = 7;  block(4, 4, 2) = 9;
+            block(1, 5, 1) = 255;
+
+            [modelData, materialNames, report] = testCase.composeFromBlock(controller, block, ...
+                struct('annotationType', 'instance_segmentation', 'className', 'nuc'));
+
+            testCase.verifyEqual(unique(modelData(:))', uint8([0 1]), ...
+                'every object id must land in the same material');
+            testCase.verifyEqual(nnz(modelData), 4, 'all four objects, and only those');
+            testCase.verifyEqual(materialNames, {'nuc'});
+            testCase.verifyEqual(report.instanceObjectCounts, 4);
+            testCase.verifyTrue(any(contains(report.lines, '4 object(s) were merged')), ...
+                'the object count is invisible in the model, so it must be reported');
+        end
+
         function theCropPlanReportsAMissingImagePyramid(testCase)
             controller = testCase.newViewLessController();
             labelPyramid = testCase.fakePyramid([0 6 0 6 0 6], [2 2 2], 'nm');
@@ -476,6 +864,53 @@ classdef SelectFromUrlTest < matlab.unittest.TestCase
             testCase.verifyTrue(ismember(mibModel.I{datasetId}.image.dataClass, ...
                 {'uint8','uint16','uint32','uint64','int8','int16','int32','int64'}), ...
                 'the Standard placeholder must be an integer image, not a path');
+        end
+
+        function switchingTheModeUpdatesTheDatasetsPanelCache(testCase)
+            % The panel's type dropdown reads Sets.datasetTypes, NOT
+            % I{id}.datasetType, and nothing repaints it when a buffer is loaded
+            % into in place. So a programmatic switch left the panel showing
+            % BigData over a buffer that had become Standard - reported against a
+            % remote label crop, where the mode change is invisible otherwise.
+            controller = testCase.newViewLessController();
+            mibModel   = controller.mibModel;
+            datasetId  = mibModel.getActiveId();
+
+            datasetsInSet = mibModel.Sets.datasetsInSet;
+            targetSet     = floor((datasetId - 1) / datasetsInSet) + 1;
+            targetLocalId = mod(datasetId - 1, datasetsInSet) + 1;
+
+            placeholder = {fullfile(mibModel.mibPath, 'assets', 'images', 'default.h5')};
+            testCase.assumeTrue(isfile(placeholder{1}), ...
+                'skipped: the placeholder dataset is missing from this checkout');
+
+            testCase.PanelUpdateCount = 0;
+            panelListener = addlistener(mibModel, 'DatasetsPanelUpdate', ...
+                @(source, event) testCase.recordPanelUpdate());
+            cleanup = onCleanup(@() delete(panelListener));
+
+            % stale on purpose, as the reported case had it
+            mibModel.Sets.datasetTypes{targetSet, targetLocalId} = 'BigData';
+
+            testCase.assertTrue(controller.ensureDatasetMode(datasetId, 'Virtual'));
+            testCase.verifyEqual(mibModel.Sets.datasetTypes{targetSet, targetLocalId}, ...
+                'Virtual', 'the cache must follow the buffer');
+
+            % ...and the repaint must NOT be fired from here. DatasetsPanelUpdate
+            % reaches buffers_Callback -> ShowImage, and at this point the buffer
+            % holds only the mode-switch placeholder: for Virtual/BigData that is
+            % a path to default.h5 with no reader, and the repaint dies inside
+            % MibVirtualImage.getDataVirt. Firing it here crashed every BigData
+            % import until it was moved back after the load.
+            testCase.verifyEqual(testCase.PanelUpdateCount, 0, ...
+                'the buffer is not paintable yet - the caller notifies after loading');
+
+            % A no-op for the mode still corrects the cache: the value can be
+            % stale from anywhere, and this is the one place that knows.
+            mibModel.Sets.datasetTypes{targetSet, targetLocalId} = 'Standard';
+            testCase.assertTrue(controller.ensureDatasetMode(datasetId, 'Virtual'));
+            testCase.verifyEqual(mibModel.Sets.datasetTypes{targetSet, targetLocalId}, 'Virtual');
+            testCase.verifyEqual(testCase.PanelUpdateCount, 0);
         end
 
         function ensuringTheModeAlreadySetIsANoOp(testCase)
@@ -862,6 +1297,79 @@ classdef SelectFromUrlTest < matlab.unittest.TestCase
             testCase.SyncedBatchOpt = event.Parameters;
         end
 
+        function recordPanelUpdate(testCase)
+            testCase.PanelUpdateCount = testCase.PanelUpdateCount + 1;
+        end
+
+        function [modelData, materialNames, report] = composeFromBlock(testCase, controller, blocks, annotations)
+            % COMPOSEFROMBLOCK - Run composeLabelModel over real local zarr arrays.
+            %
+            % The composer reads pixels through io.zarr.Array, so a stub cannot
+            % reach it - and the value handling is exactly what needs asserting.
+            % One-array v2 stores built here keep that offline, the same way
+            % ZarrRegionReadTest drives the loaders.
+            %
+            % ``blocks`` is one [y x z] array, or a cell of them for a
+            % multi-group composition; ``annotations`` matches element for
+            % element.
+            import matlab.unittest.fixtures.TemporaryFolderFixture
+            if ~iscell(blocks); blocks = {blocks}; end
+            tempFixture = testCase.applyFixture(TemporaryFolderFixture);
+
+            originalLibrary = io.zarr.Config.library();
+            io.zarr.Config.setLibrary('native');
+            testCase.addTeardown(@() io.zarr.Config.setLibrary(originalLibrary));
+
+            storePaths   = cell(1, numel(blocks));
+            pyramidInfos = cell(1, numel(blocks));
+            for blockIndex = 1:numel(blocks)
+                block = blocks{blockIndex};
+                storePaths{blockIndex} = fullfile(tempFixture.Folder, ...
+                    sprintf('labels%d.zarr2', blockIndex));
+                group = io.zarr.Group.create(storePaths{blockIndex}, 'zarrFormat', 2);
+                % the store's own C-order is [z y x]; the caller writes [y x z]
+                raw = permute(block, [3 1 2]);
+                levelArray = group.createArray('s0', size(raw), class(block), ...
+                    'chunkShape', size(raw), 'fillValue', 0);
+                levelArray.write(raw);
+
+                pyramidInfo = testCase.fakePyramid([0 1 0 1 0 1], [1 1 1], 'nm');
+                pyramidInfo.axisOrder      = 'zyx';
+                pyramidInfo.levelNames     = {'s0'};
+                pyramidInfo.annotationType = annotations(blockIndex).annotationType;
+                pyramidInfo.className      = annotations(blockIndex).className;
+                if isfield(annotations, 'encoding')
+                    pyramidInfo.encoding = annotations(blockIndex).encoding;
+                end
+                pyramidInfos{blockIndex} = pyramidInfo;
+            end
+
+            cropPlan = struct('labelLevel', 1, 'shapeYXZ', size(blocks{1}));
+            [modelData, materialNames, report] = controller.composeLabelModel( ...
+                storePaths, pyramidInfos, cropPlan, []);
+        end
+
+        function [labelUrl, imageUrl] = stageCropPyramids(testCase, controller)
+            % STAGECROPPYRAMIDS - Seed the probe cache with a label/image pair
+            % that lines up, so resolveLabelRoute runs with no network.
+            labelUrl = [testCase.ZarrTwin '/nuc'];
+            imageUrl = [testCase.ZarrTwin '/em'];
+
+            labelPyramid = testCase.fakePyramid([0 3996 0 3996 0 3996], [4 4 4], 'nm');
+            labelPyramid.levelShapesYXZ     = [1000 1000 1000];
+            labelPyramid.levelVoxelSizesXYZ = [4 4 4];
+            labelPyramid.levelWorldBoxes    = [0 3996 0 3996 0 3996];
+            labelPyramid.dataType           = 'uint8';
+            controller.probeCache{"pyramid:" + string(labelUrl)} = labelPyramid;
+
+            imagePyramid = testCase.fakePyramid([0 7996 0 7996 0 7996], [4 4 4], 'nm');
+            imagePyramid.levelShapesYXZ     = [2000 2000 2000];
+            imagePyramid.levelVoxelSizesXYZ = [4 4 4];
+            imagePyramid.levelWorldBoxes    = [0 7996 0 7996 0 7996];
+            imagePyramid.dataType           = 'uint8';
+            controller.probeCache{"pyramid:" + string(imageUrl)} = imagePyramid;
+        end
+
         function pyramidInfo = fakePyramid(~, worldBox, voxelSizeXYZ, unit)
             % FAKEPYRAMID - A minimal readGroupPyramid result for offline tests.
             %
@@ -880,5 +1388,7 @@ classdef SelectFromUrlTest < matlab.unittest.TestCase
     properties (Access = private)
         SyncedBatchOpt
         % last BatchOpt seen on the SyncBatch event
+        PanelUpdateCount = 0
+        % DatasetsPanelUpdate notifications seen since the counter was reset
     end
 end

@@ -49,6 +49,10 @@ if ~labelPyramid.ok || isempty(obj.rootUrl); return; end
 labelToUm = io.loaders.OmeZarrMetadataUtils.unitToMicrometreFactor(labelPyramid.unit);
 cropBoxUm = io.loaders.OmeZarrMetadataUtils.outerBoundingBox( ...
     labelPyramid.levelWorldBoxes(1, :), labelPyramid.levelVoxelSizesXYZ(1, :)) * labelToUm;
+% Carried alongside the box because a label pyramid that is a rounded-up
+% downsample of the image overshoots it by up to one label voxel; see
+% imageBoxContains.
+cropVoxelUm = labelPyramid.levelVoxelSizesXYZ(1, :) * labelToUm;
 
 relativePath = io.RemoteStore.relativePath(obj.rootUrl, labelGroupUrl);
 parts = split(string(relativePath), '/');
@@ -74,7 +78,7 @@ for depth = numel(parts)-1 : -1 : 0
 
         candidate = obj.readGroupPyramid(childUrl);
         if candidate.ok
-            if obj.imageBoxContains(candidate, cropBoxUm)
+            if obj.imageBoxContains(candidate, cropBoxUm, cropVoxelUm)
                 imageGroupUrl = childUrl;
                 imagePyramid  = candidate;
                 return;
@@ -88,7 +92,7 @@ for depth = numel(parts)-1 : -1 : 0
         for grandIndex = 1:numel(grandUrls)
             if obj.isAnnotationPath(grandUrls{grandIndex}); continue; end
             grandCandidate = obj.readGroupPyramid(grandUrls{grandIndex});
-            if obj.imageBoxContains(grandCandidate, cropBoxUm)
+            if obj.imageBoxContains(grandCandidate, cropBoxUm, cropVoxelUm)
                 imageGroupUrl = grandUrls{grandIndex};
                 imagePyramid  = grandCandidate;
                 return;

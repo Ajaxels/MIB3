@@ -15,7 +15,7 @@ function openLabelCrop(obj, batchModeSwitch)
 %
 % Sequence:
 %
-%   1. read every selected label group's pyramid, and refuse instance groups
+%   1. read every selected label group's pyramid, confirming any instance group
 %   2. resolve the image pyramid the crop came from (or take the override)
 %   3. plan the pairing - which level of each, and assert the shapes agree
 %   4. open the image region through ``MibModel.loadImages`` with ``Region``
@@ -58,19 +58,17 @@ for groupIndex = 1:numel(labelGroupUrls)
             'Import label crop');
         return;
     end
-    if strcmp(pyramidInfo.annotationType, 'instance_segmentation')
-        % Instance ids are 1..N per object, so blending one into a material
-        % index map would collapse every object into a single material without
-        % anything looking wrong afterwards.
-        obj.stopProgress();
-        utils.dlgs.showErrorDialog(parentFigure, sprintf( ...
-            ['"%s" is an instance segmentation: its values are object ids, not a class.\n' ...
-             'Blending it into a model would merge every object into one material. ' ...
-             'Open it with Load as = Image instead.'], pyramidInfo.className), ...
-            'Import label crop');
-        return;
-    end
     labelPyramids{groupIndex} = pyramidInfo;
+end
+
+% An instance group's objects are kept by default - this builds an ordinary
+% in-memory model, so there is room for them - and merging them into one mask is
+% offered as the alternative. Skipped when a protocol already stated the choice.
+isInstance = cellfun(@(info) strcmp(info.annotationType, 'instance_segmentation'), labelPyramids);
+if any(isInstance) && ~obj.BatchOpt.MergeInstanceObjects
+    instanceNames = cellfun(@(url, info) obj.labelGroupName(url, info), ...
+        labelGroupUrls(isInstance), labelPyramids(isInstance), 'UniformOutput', false);
+    if ~obj.chooseInstanceHandling(instanceNames); return; end
 end
 
 % ---- 2. the image it was cut from --------------------------------------
@@ -90,6 +88,27 @@ if ~cropPlan.ok
     return;
 end
 
+% This route reads the image region and the model into memory, so it cannot
+% honour BigData or Virtual. resolveLabelRoute says so in the info panel and
+% disables Open; repeated here because batch mode never runs that, and because
+% silently overriding the mode is exactly what this used to do.
+if ~strcmp(obj.BatchOpt.DatasetMode{1}, 'Standard')
+    obj.stopProgress();
+    utils.dlgs.showErrorDialog(parentFigure, sprintf( ...
+        ['Cannot add labels to a %s dataset.\n\n' ...
+         'Labels are always read into memory together with their image region, so the result ' ...
+         'is a Standard dataset.\n\n' ...
+         'To continue: set "Dataset mode" to Standard and press Open again.'], ...
+        obj.BatchOpt.DatasetMode{1}), 'Import label crop');
+    return;
+end
+
+% Which pair of levels, now that more than one may line up. Silent for a single
+% candidate and for a protocol that named ZarrLevel.
+[cropPlan, levelChosen] = obj.chooseCropLevel(cropPlan);
+if ~levelChosen; return; end
+obj.cropPlan = cropPlan;
+
 imageGroupPath = io.RemoteStore.relativePath(obj.rootUrl, imageGroupUrl);
 
 % ---- 4. the image region ------------------------------------------------
@@ -101,20 +120,8 @@ end
 
 datasetId = obj.mibModel.getActiveId();
 obj.BatchOpt.id = datasetId;
-% Standard mode: every crop in the reference store fits in memory (the largest
-% is 64 MB) and core.MibBigDataLabelsZarr2 is read-only by construction, so a
-% BigData crop could be viewed but never proofread - which is the whole point.
-%
-% The Dataset mode control does not apply to a crop, so say so rather than
-% appear to ignore it - a user who picked BigData deliberately is owed the
-% reason, not a buffer that quietly comes back Standard.
-modeNote = '';
-if ~strcmp(obj.BatchOpt.DatasetMode{1}, 'Standard')
-    modeNote = sprintf(['Dataset mode %s does not apply to a label crop; it was opened as ' ...
-        'Standard. A crop is small enough to hold in memory, and a remote label store is ' ...
-        'read-only in BigData mode, so it could be viewed but never corrected.'], ...
-        obj.BatchOpt.DatasetMode{1});
-end
+% The mode was checked above, so this only has to put the buffer there - which
+% also brings the Datasets panel cache along (see ensureDatasetMode).
 if ~obj.ensureDatasetMode(datasetId, 'Standard'); return; end
 
 loadOptions               = obj.buildLoadImagesBatchOpt();
@@ -149,7 +156,12 @@ end
 % Derived, not asked: 63 materials always suffice for COSEM (the most classes
 % any of the 26 reference crops declares is 63), and labels63 gives up mask and
 % selection as separate layers, so the larger scheme is used only when needed.
-if numel(materialNames) > 63
+% An instance segmentation kept whole is what reaches past 255 - jrc_mus-kidney's
+% nuc holds 864 objects - and composeLabelModel refuses past 65535 rather than
+% overflow, naming the merge as the way out.
+if numel(materialNames) > 255
+    modelType = 65535;
+elseif numel(materialNames) > 63
     modelType = 255;
 else
     modelType = 63;
@@ -168,13 +180,22 @@ if isempty(labelsLayer.materialColors)
 end
 obj.mibModel.showModel = true;   % createModel already set modelExist
 
-if ~isempty(modeNote)
-    compositionReport.lines = [{modeNote}, compositionReport.lines];
+% The buffer is Standard by construction here and the user chose that, so there
+% is no override left to explain - only the consequence they cannot see: the
+% image's finer levels are not in this buffer.
+if cropPlan.imageLevel > 1
+    compositionReport.lines = [{sprintf(['Read at %s (%g nm). The image''s finer levels are ' ...
+        'not in this buffer; reopen the image group on its own for those.'], ...
+        cropPlan.imageLevelName, cropPlan.voxelSizeUm(1) * 1000)}, compositionReport.lines];
 end
 
 delete(cleanupProgress);
 obj.reportCropResult(imageGroupPath, cropPlan, materialNames, compositionReport);
 
+% ensureDatasetMode wrote the Sets.datasetTypes cache; the repaint waits until
+% here, because DatasetsPanelUpdate ends up calling ShowImage and the buffer is
+% only paintable once the region and its model are in place.
+notify(obj.mibModel, 'DatasetsPanelUpdate');
 notify(obj.mibModel, 'UpdateGuiWidgets');
 notify(obj.mibModel, 'ShowImage');
 

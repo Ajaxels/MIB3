@@ -105,6 +105,10 @@ opens it right away as a Standard dataset and closes the dialog - paste, ++enter
 is and waits for <span class="widget widget-button">Open</span>. Use it when you would rather
 check the URL before anything is downloaded.
 
+<span class="widget widget-combobox">Dataset mode</span> does not apply here and is set to Standard
+for you: a plain image is one array in memory, with no pyramid to stream. This holds even when the
+buffer you import into was BigData.
+
 ### Load as
 
 - **Image** - open the group as the dataset.
@@ -204,6 +208,27 @@ Open **fetches the matching image region too**, cutting the EM volume down to ex
 extent, and puts the labels on that. Image and labels then have identical dimensions and sit on the
 same voxel grid.
 
+!!! warning "This route reads everything into memory, so it needs Standard mode"
+    Both the image region and the model are held in RAM, which is a **Standard** dataset. Selecting
+    labels with <span class="widget widget-combobox">Dataset mode</span> set to BigData or Virtual is
+    therefore refused rather than silently overridden: the info panel names the size and level you
+    would get, and you set Dataset mode to Standard and press Open again.
+
+### Choosing the level
+
+The labels and the image do not line up at every resolution - only at the levels where their voxel
+sizes match. Open asks which of those to read, with the dimensions and the memory cost of each:
+
+```
+s4: 767 x 498 x 1387 px at 128 nm - 1010 MB
+s5: 383 x 249 x 693 px at 256 nm - 126 MB
+s6: 191 x 124 x 346 px at 512 nm - 16 MB
+```
+
+Levels with no matching label level are not offered at all; MIB will not resample one pyramid to fit
+the other. The finest level that fits in memory is preselected. When only one level pair matches
+there is nothing to choose and the question is skipped.
+
 ### Selecting classes
 
 The tree takes a **multiple selection** - ++ctrl++ or ++shift++ click - because a useful model
@@ -246,19 +271,40 @@ A summary appears whenever there is something the model itself cannot show you:
   extracellular space, entirely nucleus). Said explicitly, so a solid-colour model does not look
   like a failure.
 
+### Labels published only at coarse resolution
+
+A segmentation may carry fewer pyramid levels than the image it belongs to, starting at a coarser
+resolution. In `jrc_ctl-id8-1`, `recon-1/labels/inference/segmentations/nuc` begins at 64 nm while
+the EM goes down to 4 nm.
+
+These load. MIB opens the image at the level that matches the labels and puts them on that, so the
+two sit on the same voxel grid. The info panel names the level before you press Open: the dataset
+you get cannot be zoomed to the resolution of the volume you were just browsing, because its finer
+levels are not in that buffer. Open the image group on its own to go back to full resolution.
+
 ### What cannot be blended
 
+Nothing, as of this version - but one kind of group needs a decision.
+
 **Instance segmentations.** A handful of groups - `mito`, `nuc`, `ves`, `endo`, `lyso`, `ld`,
-`perox`, `np`, `mt`, `cell` - store an object **id** per voxel rather than a class, so merging one
-into a material index map would collapse every object into a single material. MIB refuses and says
-so. Open such a group with **Load as: Image** instead.
+`perox`, `np`, `mt`, `cell` - store an object **id** per voxel rather than a class. The info panel
+says so when you select one, and Open asks how to take it:
+
+- **Keep objects** (default) - one material per object, named by the store's id (`nuc_1`, `nuc_2`,
+  ...). The objects stay separable and MIB's instance tools apply. Up to 65535 of them.
+- **Merge into one material** - a single material covering all of them: a mask of where they are,
+  which is easier to work with when there are hundreds. Which voxel belonged to which object is
+  then gone.
+
+Either way the object count is reported after loading, since the model itself cannot show it.
 
 **Segmentations of a whole volume.** Published containers also carry *inference* results - for
 example `recon-1/labels/inference/segmentations/er` - which look exactly like a ground-truth crop
 in the metadata but cover the entire volume. Loading one as Labels would read the matching image
 region and the model into memory, and for `jrc_mus-liver-6` that is `8050 x 8000 x 8500` voxels, or
 about a terabyte. The info panel says so and Open stays disabled; open the group with
-**Load as: Image** instead, where you can pick a pyramid level.
+**Load as: Image** instead, where you can pick a pyramid level. This is a limit on size, not on
+whole-volume segmentations as such - one published only at coarse levels loads, as above.
 
 ### Worked example
 
@@ -357,16 +403,18 @@ speak the API costs one request. When that happens the dialog says so and you ty
 
 The dialog is available in [Batch processing](home-batchprocessing.md) as
 **Ribbon -> Home -> Import from URL / Zarr**, with `Url`, `GroupPath`, `LabelGroups`, `ImageGroupPath`,
-`LoadAs`, `DatasetMode` and `showWaitbar`. A recorded protocol replays without browsing, so
-`GroupPath` should be filled in.
+`LoadAs`, `DatasetMode`, `MergeInstanceObjects`, `ZarrLevel` and `showWaitbar`. A recorded protocol
+replays without browsing, so `GroupPath` should be filled in.
 
-Three parameters have no control in the dialog and exist only for protocols:
+Five parameters have no control in the dialog and exist only for protocols:
 
 | Parameter | Purpose |
 |---|---|
 | `showWaitbar` | The dialog always shows progress; a protocol can suppress it. |
 | `LabelGroups` | Semicolon-separated label groups to blend, relative to `Url`, **in pick order**. Empty means "just `GroupPath`". |
 | `ImageGroupPath` | Overrides the image group a crop is loaded onto. Empty means "find it by coordinates". |
+| `MergeInstanceObjects` | Takes an instance segmentation as one merged material instead of one per object. Off by default, so a protocol keeps the objects - the dialog asks instead. |
+| `ZarrLevel` | [Load as = Labels] 1-based image pyramid level to read the region at. Must be a level that has a matching label level; empty means the dialog asks. |
 
 ```
 Url            = https://janelia-cosem-datasets.s3.amazonaws.com/jrc_hela-2/jrc_hela-2.zarr

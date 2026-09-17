@@ -137,22 +137,9 @@ if ~obj.ensureDatasetMode(datasetId, obj.BatchOpt.DatasetMode{1}); return; end
 loadOptions = obj.buildLoadImagesBatchOpt();
 obj.mibModel.loadImages('Combine datasets', loadOptions);
 
-% Keep the Datasets panel honest about the mode this buffer is now in. Two
-% separate things are needed, and neither happens on its own:
-%
-%   * the panel's type dropdown reads the Sets.datasetTypes cache rather than
-%     I{id}.datasetType, so switchDatasetMode above leaves the cache stale;
-%   * NewDataset repaints that dropdown only when the active *set* changes
-%     (MibController.listener_newDataset), and opening into the current buffer
-%     never does - hence the explicit DatasetsPanelUpdate.
-%
-% Same pattern as Stitching.stitchBtn_Callback and CropDataset. The cache is
-% indexed [set, buffer-within-set], NOT by the global dataset id.
-datasetsInSet = obj.mibModel.Sets.datasetsInSet;
-targetSet     = floor((datasetId - 1) / datasetsInSet) + 1;
-targetLocalId = mod(datasetId - 1, datasetsInSet) + 1;
-obj.mibModel.Sets.datasetTypes{targetSet, targetLocalId} = ...
-    obj.mibModel.I{datasetId}.datasetType;
+% ensureDatasetMode wrote the Sets.datasetTypes cache; the repaint has to wait
+% until here, because DatasetsPanelUpdate ends up calling ShowImage and between
+% the mode switch and this line the buffer holds only the placeholder.
 notify(obj.mibModel, 'DatasetsPanelUpdate');
 
 obj.stopProgress();
