@@ -1120,7 +1120,8 @@ classdef SelectFromUrl < handle
 
             if strcmp(labelPyramid.annotationType, 'instance_segmentation')
                 reason = sprintf(['%s\nNote: this is an instance segmentation - its values are ' ...
-                    'object ids, and they are drawn as a single material.'], reason);
+                    'object ids, and each object is drawn in its own colour. Right-click ' ...
+                    '"Show model" to show them as a single material instead.'], reason);
             end
         end
 

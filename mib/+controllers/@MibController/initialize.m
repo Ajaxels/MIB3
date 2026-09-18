@@ -123,7 +123,7 @@ if isfield(obj.mibModel.sessionSettings, 'PreferencesDowngradeMessage')
     try
         dlgOptions.MsgBoxOnly = true;
         dlgOptions.Icon = 'puffin_warning';
-        dlgOptions.HeaderLines = 3;
+        dlgOptions.HeaderLines = 4;
         utils.dlgs.inputUniversalDlg(obj.view.gui, downgradeMsg, {}, {}, ...
             'Preferences from a newer MIB', dlgOptions);
     catch err

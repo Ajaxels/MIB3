@@ -140,6 +140,18 @@ if options.showWaitbar && ~isempty(wb); wb.Value = 0.95; end
 % --- commit the deep-copied dataset to the destination slot
 if ~isempty(toId)
     obj.I{toId} = newDataset;
+
+    % Keep the Datasets panel's type cache in step with the slot just filled.
+    % The panel's type dropdown reads Sets.datasetTypes (buffers_Callback.m:64)
+    % rather than I{id}.datasetType, so a copy of a BigData buffer lands with the
+    % destination's old type still cached and the panel calls it Standard. The
+    % write lives here, next to the assignment it describes, because this is the
+    % only place a deep copy is installed into a slot - callers doing it
+    % themselves is what left 'duplicate' out. It is inert on its own: nothing
+    % reads the cache until something repaints, which stays the caller's call.
+    targetSet     = floor((toId - 1) / obj.Sets.datasetsInSet) + 1;
+    targetLocalId = mod(toId - 1, obj.Sets.datasetsInSet) + 1;
+    obj.Sets.datasetTypes{targetSet, targetLocalId} = newDataset.datasetType;
 end
 
 if options.showWaitbar && ~isempty(wb); wb.Value = 1; delete(wb); end

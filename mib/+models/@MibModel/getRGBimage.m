@@ -425,7 +425,18 @@ if ~isempty(sOver1) && ~isnan(sOver1(1,1,1))
         % Convert to contour if needed
         if obj.preferences.Styles.Labels.ShowAsContours
             if dataset.showAllMaterials
-                if strcmp(obj.preferences.Styles.Contour.ThicknessRendering, 'quality')
+                if dataset.labels.maxMaterials >= 256
+                    % Neither branch below can serve a 65535/4294967295 model: the
+                    % per-material loop walks sList, which holds only two slots for
+                    % those types (updateMaterialsTable.m:81-83), and both it and the
+                    % subtraction saturate or wrap once an index passes 255. A
+                    % grayscale erosion does the whole slice in one pass instead - a
+                    % pixel survives only where every neighbour carries its own index,
+                    % so what is left is each object's outline in that object's colour.
+                    % Where two objects touch, the shared edge is kept by the higher
+                    % index only.
+                    M(M == imerode(M, strel('disk', obj.preferences.Styles.Contour.ThicknessModels))) = 0;
+                elseif strcmp(obj.preferences.Styles.Contour.ThicknessRendering, 'quality')
                     M2 = zeros(size(M), 'uint8');
                     for ind = 1:numel(sList)
                         M3 = zeros(size(M2), 'uint8');
@@ -439,7 +450,10 @@ if ~isempty(sOver1) && ~isnan(sOver1(1,1,1))
                 end
             elseif selectedObject > 0
                 ind = selectedObject;
-                M2 = zeros(size(M), 'uint8');
+                % 'like' rather than 'uint8': a single selected object of a 65535+
+                % model has an index that a uint8 accumulator would wrap onto an
+                % unrelated colour
+                M2 = zeros(size(M), 'like', M);
                 M2(M == ind) = ind;
                 M = M2 - imerode(M2, strel('disk', obj.preferences.Styles.Contour.ThicknessModels));
             end

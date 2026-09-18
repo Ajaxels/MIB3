@@ -184,6 +184,25 @@ classdef MibBigDataLabelsIndexTest < matlab.unittest.TestCase
             end
         end
 
+        function aWholeVolumeReadComesBackAtTheImageLevelsDimensions(testCase)
+            % What the 3D renderer needs, and the read it gets wrong if it treats the
+            % level picked from the IMAGE pyramid as an index into this one: the two
+            % lists have different lengths (6 against 3 here), so image level 5 would
+            % clamp to the labels' coarsest and arrive 4x too coarse. Asking by
+            % magnification instead is level-list agnostic, and z is included because
+            % a volume read is the only caller that magnifies all three axes.
+            labels = testCase.attachLabels();
+            for imageLevel = 1:size(labels.imageScaleFactors, 1)
+                magFactor = labels.imageScaleFactors(imageLevel, 1);
+                volume = labels.getData('labels', 3, [], struct('magFactor', magFactor));
+
+                expectedSize = ceil(testCase.ImageShapeYXZ ./ ...
+                    labels.imageScaleFactors(imageLevel, :));
+                testCase.verifySize(volume, expectedSize, ...
+                    sprintf('at image level %d (magFactor %g)', imageLevel, magFactor));
+            end
+        end
+
         function anXZSliceReadsTheSameVoxelsTransposed(testCase)
             % The orientation mapping is shared with getDataZarr and easy to get
             % subtly wrong - the slice axis becomes a physical axis that is NOT the
@@ -226,10 +245,27 @@ classdef MibBigDataLabelsIndexTest < matlab.unittest.TestCase
                 'every id in this store is above the packed-byte ceiling');
         end
 
-        function theDefaultCollapsesEveryObjectToOneMaterial(testCase)
-            % An instance segmentation is 864 unrelated objects; showing it as one
-            % material is the default because that is what a user looking at a
-            % segmentation usually wants, and per-object is the opt-in.
+        function theDefaultShowsEachObjectSeparately(testCase)
+            % Per-object is the default: the object ids are what the store actually
+            % carries, and merging them is the lossy view. Constructed here rather than
+            % through attachLabels, which sets the field explicitly - the point of this
+            % test is the value nobody set.
+            labels = core.MibBigDataLabelsIndex();
+            testCase.verifyTrue(labels.renderPerObject, ...
+                'a freshly constructed overlay renders per object');
+
+            labels.openStore(testCase.StorePath, testCase.imageReference());
+            slice = labels.getData('labels', 3, [], struct( ...
+                'magFactor', 16, 'y', [1 256], 'x', [1 256], 'z', [17 17]));
+
+            testCase.verifyGreaterThan(numel(unique(slice(:))), 1, ...
+                'the ids survive to the display without being asked to');
+        end
+
+        function collapsingToOneMaterialFusesEveryObject(testCase)
+            % The opt-out: 864 unrelated objects read as one structure, which is what
+            % is wanted when the question is "where are the nuclei" rather than "which
+            % nucleus is this".
             labels = testCase.attachLabels();
             labels.renderPerObject = false;
             slice = labels.getData('labels', 3, [], struct( ...
@@ -252,14 +288,77 @@ classdef MibBigDataLabelsIndexTest < matlab.unittest.TestCase
             testCase.verifyEqual(slice(5, 7), uint8(1));
         end
 
-        function theObjectCountComesFromMetadataNotAVolumeScan(testCase)
-            % core.MibLabels.countMaterials scans every voxel for maxMaterials >= 256,
-            % which here is a remote volume. The count is taken from the coarsest
-            % level at open time instead - one small request.
+        function askingForOneObjectIgnoresTheSingleMaterialCollapse(testCase)
+            % renderPerObject is a DISPLAY setting, so it must not decide what a
+            % caller naming an object id gets back. Collapsing first makes id 1 match
+            % every object in the volume and every other id match nothing - which is
+            % what "Generate surface by index..." and a MaterialIndex export both ran
+            % into: one merged surface over 2165 nuclei instead of one nucleus.
             labels = testCase.attachLabels();
-            testCase.verifyEqual(labels.materialsCount, 60000, ...
-                'the coarsest level of this store is filled with id 60000');
-            testCase.verifyEqual(labels.countMaterials(), 60000);
+            labels.renderPerObject = false;
+            objectId = double(testCase.RawLevel0(5, 7, 2));
+            readOptions = struct('magFactor', 16, 'y', [1 256], 'x', [1 256], 'z', [17 17]);
+
+            slice = labels.getData('labels', 3, objectId, readOptions);
+            testCase.verifyEqual(sum(slice(:)), 1, ...
+                'still exactly one voxel, not the union of the whole store');
+            testCase.verifyEqual(slice(5, 7), uint8(1));
+
+            merged = labels.getData('labels', 3, 1, readOptions);
+            testCase.verifyEqual(sum(merged(:)), 0, ...
+                'id 1 belongs to no object here, so it must match nothing');
+
+            testCase.verifyEqual(unique(labels.getData('labels', 3, [], readOptions))', ...
+                uint16(1), 'and the display read still collapses');
+        end
+
+        function reportingOneMaterialDoesNotDestroyTheStoredCount(testCase)
+            % countMaterials reports 1 while the objects are fused, but the fusing is
+            % a display setting the user can switch off again. Writing the 1 into
+            % materialsCount lost the store's own count for good - and the count is
+            % what tells the user how many objects a merged surface would span.
+            labels = testCase.attachLabels();
+            highestId = double(max(testCase.RawLevel0(:)));
+            labels.renderPerObject = false;
+
+            testCase.verifyEqual(labels.countMaterials(), 1, ...
+                'the fused layer reports a single material');
+            testCase.verifyEqual(labels.materialsCount, highestId, ...
+                'but the measured object count survives the report');
+
+            labels.renderPerObject = true;
+            testCase.verifyEqual(labels.countMaterials(), highestId, ...
+                'so switching per-object back on recovers it');
+        end
+
+        function theObjectCountComesFromAProbeNotAVolumeScan(testCase)
+            % core.MibLabels.countMaterials scans every voxel for maxMaterials >= 256,
+            % which here is a remote volume. openStore reads a single small level
+            % instead - the finest one inside its voxel budget, which for this
+            % three-level store is s0.
+            labels = testCase.attachLabels();
+            highestId = double(max(testCase.RawLevel0(:)));
+
+            testCase.verifyEqual(labels.materialsCount, highestId);
+            testCase.verifyEqual(labels.countMaterials(), highestId);
+        end
+
+        function theCountIsNotTakenFromTheCoarsestLevel(testCase)
+            % The regression this store is shaped to catch. Probing only the coarsest
+            % level is what jrc_mus-kidney-2's nuc breaks: its bottom level is 3x3x3,
+            % every nucleus has been downsampled out of existence by then, and the
+            % count came back as 1. Here the coarsest level is filled with a single
+            % id 60000 that appears nowhere else, so reading it instead of a finer
+            % level is visible rather than merely inaccurate.
+            labels = testCase.attachLabels();
+            coarsest = labels.modelArrays{end}.read();
+
+            testCase.verifyEqual(double(max(coarsest(:))), 60000, ...
+                'the fixture still marks its coarsest level');
+            testCase.verifyNotEqual(labels.materialsCount, 60000, ...
+                'and the reported count does not come from there');
+            testCase.verifyEqual(labels.materialsCount, double(max(testCase.RawLevel0(:))), ...
+                'it comes from the finest level the budget allows');
         end
 
         % ---- 4. read-only, and nothing in memory ----------------------------
@@ -494,7 +593,8 @@ classdef MibBigDataLabelsIndexTest < matlab.unittest.TestCase
         function labels = attachLabels(testCase)
             labels = core.MibBigDataLabelsIndex();
             labels.openStore(testCase.StorePath, testCase.imageReference());
-            % Per-object for the value tests; the collapse has its own test.
+            % Stated rather than inherited: the value tests need the ids, and they
+            % should keep passing if the default is ever reconsidered again.
             labels.renderPerObject = true;
         end
     end

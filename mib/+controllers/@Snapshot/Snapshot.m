@@ -721,7 +721,7 @@ classdef Snapshot < handle
                 newWidth = round(newHeight / ratio);
                 obj.view.handles.Width.Value = newWidth;
             else
-                if strcmp(obj.extraController.view.gui.Name, '3D onFlyImageStretch')
+                if strcmp(obj.extraController.view.gui.Name, '3D onFlyImageStretch') || strcmp(obj.extraController.view.gui.Name, '3D Controls')
                     screensize = get(groot, 'Screensize');
                     if screensize(4) < newHeight
                         utils.dlgs.showErrorDialog(obj.view.gui, ...
@@ -1000,7 +1000,15 @@ classdef Snapshot < handle
                 end
             else
                 if strcmp(obj.extraController.view.gui.Name, '3D onFlyImageStretch') || strcmp(obj.extraController.view.gui.Name, '3D Controls')
-                    imgOut = obj.extraController.grabFrame(newWidth, newHeight);
+                    try
+                        imgOut = obj.extraController.grabFrame(newWidth, newHeight);
+                    catch err
+                        progressBar.deletePoolWaitbar();
+                        if useBatchMode == 0; obj.view.handles.snapshotBtn.BackgroundColor = [0.149 0.902 0.1804]; end
+                        utils.dlgs.showErrorDialog(obj.view.gui, err, 'Snapshot error', ...
+                            'The snapshot was not generated', '', struct('Icon', 'puffin_warning'));
+                        return;
+                    end
                 end
                 progressBar.increment();
             end

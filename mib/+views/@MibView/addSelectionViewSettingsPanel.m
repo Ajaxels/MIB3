@@ -63,6 +63,21 @@ panelHandles.handles.lutTableContextSetLUT = uimenu(panelHandles.handles.lutTabl
 % Add the context menu to lutTable
 panelHandles.handles.lutTable.ContextMenu = panelHandles.handles.lutTableContext;
 
+% ---------------------- Add context menu for showModel ----------------------
+% An imported label overlay (core.MibBigDataLabelsIndex) carries an object id per
+% voxel and draws them all as a single material unless told otherwise. That is a
+% display choice rather than a property of the data, so it belongs beside the
+% checkbox that shows the layer; the entry is disabled for every other model type
+% and the state is refreshed when the menu opens, in
+% controllers.MibSelection.showModel_ContextMenuOpening.
+panelHandles.handles.showModelContext = uicontextmenu(obj.handles.panels.selectionPanel.Figure);
+
+panelHandles.handles.showModelContextPerObject = uimenu(panelHandles.handles.showModelContext, ...
+    'Text', 'Render instances per object', 'Tag', 'showModelContextPerObject');
+
+% Add the context menu to the showModel checkbox
+panelHandles.handles.showModel.ContextMenu = panelHandles.handles.showModelContext;
+
 obj.handles.panels.selection = panelHandles;
 
 % add the panel to GUI

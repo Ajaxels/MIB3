@@ -869,48 +869,64 @@ classdef MakeMovie < handle
                 % dialog is updated on every frame and carries a time estimate
                 frameTimer = tic;
 
-                switch obj.extraOptions.mode
-                    case 'animation'
-                        positions   = obj.extraController.generatePositionsForKeyFramesAnimation(noFrames, extraOpts);
-                        noFrames    = size(positions.CameraPosition, 1);
-                        hasTarget   = ~isempty(positions.CameraTarget);   % hoist out of loop
-                        obj.extraController.prepareWindowForGrabFrame(newWidth, newHeight);
-                        if hasTarget
-                            for frameId = 1:noFrames
-                                if progressDialog.CancelRequested; break; end
-                                obj.extraController.(cameraObject).CameraPosition = positions.CameraPosition(frameId, :);
-                                obj.extraController.(cameraObject).CameraUpVector = positions.CameraUpVector(frameId, :);
-                                obj.extraController.(cameraObject).CameraTarget   = positions.CameraTarget(frameId, :);
-                                writeVideo(writerObj, obj.extraController.grabFrame(newWidth, newHeight, grabOpts));
-                                framesWritten = frameId;
-                                obj.updateMovieProgress(progressDialog, frameId, noFrames, frameTimer);
+                % grabFrame throws when the requested frame does not fit on the screen;
+                % the viewer window is left resized for capture at that moment, so it has
+                % to be restored here before the error reaches the user
+                try
+                    switch obj.extraOptions.mode
+                        case 'animation'
+                            positions   = obj.extraController.generatePositionsForKeyFramesAnimation(noFrames, extraOpts);
+                            noFrames    = size(positions.CameraPosition, 1);
+                            hasTarget   = ~isempty(positions.CameraTarget);   % hoist out of loop
+                            obj.extraController.prepareWindowForGrabFrame(newWidth, newHeight);
+                            if hasTarget
+                                for frameId = 1:noFrames
+                                    if progressDialog.CancelRequested; break; end
+                                    obj.extraController.(cameraObject).CameraPosition = positions.CameraPosition(frameId, :);
+                                    obj.extraController.(cameraObject).CameraUpVector = positions.CameraUpVector(frameId, :);
+                                    obj.extraController.(cameraObject).CameraTarget   = positions.CameraTarget(frameId, :);
+                                    writeVideo(writerObj, obj.extraController.grabFrame(newWidth, newHeight, grabOpts));
+                                    framesWritten = frameId;
+                                    obj.updateMovieProgress(progressDialog, frameId, noFrames, frameTimer);
+                                end
+                            else
+                                for frameId = 1:noFrames
+                                    if progressDialog.CancelRequested; break; end
+                                    obj.extraController.(cameraObject).CameraPosition = positions.CameraPosition(frameId, :);
+                                    obj.extraController.(cameraObject).CameraUpVector = positions.CameraUpVector(frameId, :);
+                                    writeVideo(writerObj, obj.extraController.grabFrame(newWidth, newHeight, grabOpts));
+                                    framesWritten = frameId;
+                                    obj.updateMovieProgress(progressDialog, frameId, noFrames, frameTimer);
+                                end
                             end
-                        else
-                            for frameId = 1:noFrames
-                                if progressDialog.CancelRequested; break; end
-                                obj.extraController.(cameraObject).CameraPosition = positions.CameraPosition(frameId, :);
-                                obj.extraController.(cameraObject).CameraUpVector = positions.CameraUpVector(frameId, :);
-                                writeVideo(writerObj, obj.extraController.grabFrame(newWidth, newHeight, grabOpts));
-                                framesWritten = frameId;
-                                obj.updateMovieProgress(progressDialog, frameId, noFrames, frameTimer);
-                            end
-                        end
-                        obj.extraController.restoreWindowAfterGrabFrame();
+                            obj.extraController.restoreWindowAfterGrabFrame();
 
-                    case 'spin'
-                        positions   = obj.extraController.generatePositionsForSpinAnimation(noFrames, extraOpts);
-                        noFrames    = size(positions.CameraPosition, 1);
-                        obj.extraController.prepareWindowForGrabFrame(newWidth, newHeight);
-                        obj.extraController.(cameraObject).CameraUpVector = positions.CameraUpVector;
-                        obj.extraController.(cameraObject).CameraTarget   = positions.CameraTarget;
-                        for frameId = 1:noFrames
-                            if progressDialog.CancelRequested; break; end
-                            obj.extraController.(cameraObject).CameraPosition = positions.CameraPosition(frameId, :);
-                            writeVideo(writerObj, obj.extraController.grabFrame(newWidth, newHeight, grabOpts));
-                            framesWritten = frameId;
-                            obj.updateMovieProgress(progressDialog, frameId, noFrames, frameTimer);
-                        end
+                        case 'spin'
+                            positions   = obj.extraController.generatePositionsForSpinAnimation(noFrames, extraOpts);
+                            noFrames    = size(positions.CameraPosition, 1);
+                            obj.extraController.prepareWindowForGrabFrame(newWidth, newHeight);
+                            obj.extraController.(cameraObject).CameraUpVector = positions.CameraUpVector;
+                            obj.extraController.(cameraObject).CameraTarget   = positions.CameraTarget;
+                            for frameId = 1:noFrames
+                                if progressDialog.CancelRequested; break; end
+                                obj.extraController.(cameraObject).CameraPosition = positions.CameraPosition(frameId, :);
+                                writeVideo(writerObj, obj.extraController.grabFrame(newWidth, newHeight, grabOpts));
+                                framesWritten = frameId;
+                                obj.updateMovieProgress(progressDialog, frameId, noFrames, frameTimer);
+                            end
+                            obj.extraController.restoreWindowAfterGrabFrame();
+                    end
+                catch err
+                    if isstruct(obj.extraController.figPosStored) && ~isempty(obj.extraController.figPosStored.mibVolRenAppFigure)
                         obj.extraController.restoreWindowAfterGrabFrame();
+                    end
+                    close(writerObj);
+                    close(progressDialog);
+                    utils.dlgs.showErrorDialog(obj.view.gui, err, 'Movie error', ...
+                        sprintf('The movie was stopped after %d frames', framesWritten), '', ...
+                        struct('Icon', 'puffin_warning'));
+                    h.continueBtn.BackgroundColor = [0.149 0.902 0.1804];
+                    return;
                 end
             end
 

@@ -5881,7 +5881,7 @@ to show volumes using volume rendering techniques, models as overlays and genera
 <h2 id="downsampling-of-datasets">Downsampling of datasets<a class="headerlink" href="#downsampling-of-datasets" title="Permanent link">&para;</a></h2>
 <p>Whenever 3D volume rendering is selected, the current image volume is transferred into the 3D viewer. 
 During the transfer, it is possible to select color channels or downsample the dataset to improve rendering performance:</p>
-<p><a class="glightbox" data-title="Downsampling Dialog" data-type="image" href="images/menuFileRenderingMIB_downsample.png"><img align="left" alt="Downsampling Dialog" class="on-glb" src="images/menuFileRenderingMIB_downsample.png" /></a></p>
+<p><a class="glightbox" data-title="Downsampling Dialog" data-type="image" href="images/menuFileRenderingMIB_downsample.png"><img align="left" alt="Downsampling Dialog" class="on-glb" src="images/menuFileRenderingMIB_downsample.png" width="300" /></a></p>
 <div class="clear-float"></div>
 
 <hr />
@@ -6068,8 +6068,12 @@ to modify position of the camera.</p>
 
 <ul>
 <li><strong>Table with materials</strong>: list of model materials; each can be shown/hidden and assigned a transparency value (<strong>Alpha</strong>, 0-1). Right-click for a menu with:<ul>
-<li><strong>Generate surface(s)</strong>: create surfaces for the selected rows in the <em>Surfaces</em> tab.</li>
-<li><strong>Generate surface by index...</strong>: create a surface for any material by typing its index.</li>
+<li><strong>Generate surface(s)</strong>: create surfaces for the selected rows in the <em>Surfaces</em> tab. In the
+  <em>All materials</em> mode the single row covers the whole model, so this builds one surface per
+  object; it asks first, because that is one surface per object rather than one per row.</li>
+<li><strong>Generate surface by index...</strong>: create a surface for any material by typing its index.
+  For an imported overlay this reads the object ids from the store, so it works even when the
+  objects are shown fused together.</li>
 <li><strong>Remove selected materials</strong>: drop the selected rows from the rendered list (<em>Selected materials</em> mode only).</li>
 </ul>
 </li>
@@ -6084,24 +6088,27 @@ to modify position of the camera.</p>
 <p class="admonition-title">Tip</p>
 <p>Use <span class="widget widget-button">Update overlay</span> for these models. Showing the model as the volume itself gives a gradient rather than separate objects.</p>
 </div>
+<p>An <a href="home-importfromurl.html#labels-published-only-at-coarse-resolution">imported overlay</a> shows its
+objects fused into one material. <strong>Generate surface(s)</strong> on such a model builds a single surface
+covering all of them, after asking; objects that touch end up as one connected surface. Use
+<strong>Generate surface by index...</strong> for one object on its own.</p>
 <hr />
 <h2 id="3d-controls-surfaces">3D Controls -&gt; Surfaces<a class="headerlink" href="#3d-controls-surfaces" title="Permanent link">&para;</a></h2>
 <p>Surfaces generated from the <em>Model</em> tab’s material table (via right-click) are visualized using settings in this tab.</p>
-<p><img align="left" alt="3D Controls -&gt; Surfaces Tab" src="images/menuFileRenderingMIB_R2022b_3DControls_Surfaces.png" /></p>
+<p><a class="glightbox" data-title="3D Controls -&gt; Surfaces Tab" data-type="image" href="images/menuFileRenderingMIB_R2022b_3DControls_Surfaces.png"><img align="left" alt="3D Controls -&gt; Surfaces Tab" class="on-glb" src="images/menuFileRenderingMIB_R2022b_3DControls_Surfaces.png" width="300" /></a></p>
 <p>List of widgets for tweaking visualization settings:</p>
+<p><strong>Table</strong>:</p>
 <ul>
-<li><strong>Table</strong>:</li>
 <li><strong>C</strong>: click to set color for the selected surface.</li>
 <li><strong>Name</strong>: double-click to change the surface name.</li>
 <li><strong>Alpha</strong>: tweak transparency (0-1).</li>
 <li><label class="widget widget-checkbox">Show</label>: toggle show/hide the selected surface.</li>
 <li><label class="widget widget-checkbox">Wire</label>: toggle wireframe visualization.</li>
-<li><span class="widget widget-dropdown">Additional settings via right mouse click</span>:<ul>
+<li><span class="widget widget-dropdown">Additional settings via right mouse click</span>:</li>
 <li><strong>Save surface(s)</strong>: export selected surface(s) to SLT format.</li>
 <li><strong>Remove surface(s)</strong>: remove the selected surface from the 3D viewer.</li>
 </ul>
-</li>
-</ul>
+<p><label class="widget widget-checkbox">Hide all</label>: toggle show/hide all surfaces from the view</p>
 <div class="clear-float"></div>
 
 <hr />

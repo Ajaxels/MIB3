@@ -116,6 +116,13 @@ classdef VolRenApp < handle
         % a cell array of generated surfaces
         surfListAlpha
         % an array of alpha values for the generated surfaces
+        surfListShown
+        % [logical] per-surface show/hide intent, one entry per :attr:`surfList`
+        % surface. Kept beside the surfaces rather than read back from their
+        % ``Visible`` property, because "hide all" has to be able to turn every
+        % surface off and then put each one back the way the user left it -
+        % ``Visible`` can only hold one of those two answers at a time. Same split
+        % as ``overlayShownMaterials`` against the model's hide-all checkbox.
         surfaceTableIndex
         % index of the selected row in the surfaceTable
         viewer
@@ -264,6 +271,7 @@ classdef VolRenApp < handle
             obj.overlayMaterialsSelection = [];
             obj.surfList = {};  % cell array with the generated surface
             obj.surfListAlpha = []; % array of alpha values for the generated surfaces
+            obj.surfListShown = logical([]); % per-surface show/hide intent
 
             % check for the virtual stacking mode and close the controller
             % BigData ('B') is supported via pyramid-level reads (see grabVolume);
@@ -1177,12 +1185,19 @@ classdef VolRenApp < handle
                     rowIds = obj.modelTableIndex;     % get indices of the selected rows
                     if isempty(rowIds); return; end
                     if isempty(obj.overlayRowMaterials)
-                        dlgOpt.MsgBoxOnly  = true;
-                        dlgOpt.Icon        = 'puffin_warning';
-                        dlgOpt.HeaderLines = 2;
-                        utils.dlgs.inputUniversalDlg(obj.view.gui, 'A table row stands for 255 materials in this mode!', ...
-                            {''}, {'Use "Generate surface by index..." or switch to the Selected materials mode'}, ...
-                            'Cycled colors', dlgOpt);
+                        if obj.overlayIsFusedInstances()
+                            % The objects were fused on read, so the displayed layer
+                            % genuinely has one material and a single merged surface is
+                            % the only thing this row can mean. Offer it rather than
+                            % refusing - refusing would be advising the user to switch
+                            % to a mode that this layer is deliberately not in.
+                            if obj.generateFusedInstancesSurface(); obj.updateSurfaceTable(); end
+                            return;
+                        end
+                        % In the cycled-colour mode the single row stands for every
+                        % material, so the row's own meaning is "all of them" - one
+                        % surface per object.
+                        if obj.generateAllObjectSurfaces(); obj.updateSurfaceTable(); end
                         return;
                     end
 
@@ -1270,6 +1285,7 @@ classdef VolRenApp < handle
                     obj.viewer.Children(obj.surfaceTableIndex+1).delete();
                     obj.surfList(obj.surfaceTableIndex) = [];
                     obj.surfListAlpha(obj.surfaceTableIndex) = [];
+                    obj.surfListShown(obj.surfaceTableIndex) = [];
                     obj.surfaceTableIndex = [];
                     if isempty(obj.surfList)
                         obj.view.handles.surfaceTable.Data = [];
@@ -1485,6 +1501,14 @@ classdef VolRenApp < handle
             % Output Arguments:
             %   - **imgOut** - [uint8] ``[height x width x 3]`` RGB image array
             %
+            % Errors:
+            %   - ``MIB:VolRenApp:grabFrame:frameTooLarge`` - the requested width/height
+            %     exceeds the visible area of the screen, so the viewer window cannot be
+            %     resized to fit the frame. The window is restored before the error is
+            %     thrown; callers are expected to catch it and show
+            %     ``utils.dlgs.showErrorDialog``. When ``options.resizeWindow`` is ``0``
+            %     restoring the window is left to the caller.
+            %
             % **Example 1** - capture frames inside an animation loop:
             %
             %   .. code-block:: matlab
@@ -1531,6 +1555,27 @@ classdef VolRenApp < handle
             panelPosition(2) = panelPosition(2)-1;
             panelPosition(3) = width;
             panelPosition(4) = height;
+
+            % the window cannot grow past the desktop, so a frame larger than the screen
+            % (minus taskbar and title bar) leaves the panel smaller than requested and
+            % getframe fails with "the specified rectangle is not fully contained within
+            % the figure". Detect it here and report the largest frame that can be grabbed
+            figurePosition = obj.childControllers{1}.view.gui.Position;
+            if panelPosition(1) < 0 || panelPosition(2) < 0 || ...
+                    panelPosition(1) + panelPosition(3) > figurePosition(3) || ...
+                    panelPosition(2) + panelPosition(4) > figurePosition(4)
+                maxWidth = floor(obj.childControllers{1}.view.handles.volumeViewerPanel.Position(3));
+                maxHeight = floor(obj.childControllers{1}.view.handles.volumeViewerPanel.Position(4));
+                if options.resizeWindow == 1; obj.restoreWindowAfterGrabFrame(); end
+                if deleteWaitbar; delete(options.hWaitbar); end
+                error('MIB:VolRenApp:grabFrame:frameTooLarge', ...
+                    ['The requested frame (%d x %d px) does not fit on the screen.\n\n' ...
+                     'Frames of the volume rendering are grabbed from the viewer window, so they ' ...
+                     'cannot be larger than the visible area of the screen.\n\n' ...
+                     'The largest frame that can be grabbed now is %d x %d px.'], ...
+                    width, height, maxWidth, maxHeight);
+            end
+
             I = getframe(obj.childControllers{1}.view.gui, panelPosition);
 
             imgOut = I.cdata;
@@ -1631,6 +1676,58 @@ classdef VolRenApp < handle
         end
 
 
+        function getOptions = levelReadOptions(obj, layerType)
+            % LEVELREADOPTIONS - ``getData3D`` options that read one layer at the level picked in the dialog.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      getOptions = obj.levelReadOptions(layerType)
+            %
+            % ``obj.pyramidLevel`` indexes the **image** pyramid, which is the only
+            % list the level dialog shows. Passing it straight through as
+            % ``options.pyramidLevel`` is right for every layer served from that same
+            % pyramid, and wrong for a ``core.MibBigDataLabelsIndex`` overlay, which
+            % is served from a pyramid of its own that starts coarser and has fewer
+            % levels: ``jrc_mus-kidney``'s ``nuc`` has 5 levels from 128 nm where the
+            % EM has 12 from 8 nm, so image level 5 means the labels' level 5 - two
+            % levels past the end of the store, clamped to its coarsest - and the
+            % overlay arrives 16x too coarse, then stretched onto the volume by the
+            % ``imresize3`` fallback.
+            %
+            % For that layer the level is therefore expressed as a **magnification**
+            % instead: the scale factor of the chosen image level, in the shared
+            % scale space :attr:`core.MibBigDataLabelsIndex.imageScaleFactors`
+            % registers both pyramids into. ``getData`` then picks the nearest label
+            % level itself and gathers it onto the image level's grid, so the overlay
+            % comes back at the image level's dimensions - aligned rather than
+            % resized, which is the distinction the class exists for.
+            %
+            % Input Arguments:
+            %   - **layerType** - [char] layer about to be read: ``'image'``,
+            %     ``'labels'``, ``'mask'`` or ``'selection'``
+            %
+            % Output Arguments:
+            %   - **getOptions** - [struct] options for ``getData3D``; empty for a
+            %     Standard dataset, which downsamples with ``obj.volumeScaleFactor``
+            %     after the read instead
+
+            getOptions = struct();
+            id = obj.mibModel.getActiveId();
+            if obj.mibModel.I{id}.datasetType(1) ~= 'B'; return; end
+
+            getOptions.blockModeSwitch = 0;   % render the whole level, not the shown block
+
+            labels = obj.mibModel.I{id}.labels;
+            if strcmp(layerType, 'labels') && isa(labels, 'core.MibBigDataLabelsIndex') && ...
+                    ~isempty(labels.imageScaleFactors)
+                levelIndex = max(1, min(obj.pyramidLevel, size(labels.imageScaleFactors, 1)));
+                getOptions.magFactor = labels.imageScaleFactors(levelIndex, 1);
+            else
+                getOptions.pyramidLevel = obj.pyramidLevel;
+            end
+        end
+
         function status = grabVolume(obj, volumeType, colorChannel)
             % GRABVOLUME - Fetch the current MIB dataset volume into the 3D viewer.
             %
@@ -1643,9 +1740,10 @@ classdef VolRenApp < handle
             % For **BigData** datasets a pyramid-level picker dialog is shown rather than the
             % downsample-factor dialog.  Each entry lists the spatial dimensions of that level
             % and an estimated in-memory footprint (budget cap: 512 MB).  The selected level is
-            % stored in ``obj.pyramidLevel``; data is fetched with ``options.pyramidLevel`` and
-            % ``options.blockModeSwitch=0`` to retrieve the full pyramid level rather than just
-            % the current viewport block.  ``obj.volumeScaleFactor`` is set to ``1`` because the
+            % stored in ``obj.pyramidLevel``; the read options come from
+            % :func:`levelReadOptions`, which retrieves the full pyramid level rather than just
+            % the current viewport block - and translates the level for a label pyramid that is
+            % not the image's own.  ``obj.volumeScaleFactor`` is set to ``1`` because the
             % pyramid already provides the downsampling.  The voxel size at the chosen level is
             % taken from ``image.pyramid.levelVoxelSizes`` (``[y x z]``) - directly when that
             % array holds a per-level row, otherwise the full-resolution base row scaled by
@@ -1806,11 +1904,7 @@ classdef VolRenApp < handle
             timePnt = obj.mibModel.I{id}.getCurrentTimePoint();
             pixSize = obj.mibModel.I{id}.image.pixSize;
 
-            getOptions = struct();
-            if isBigData
-                getOptions.pyramidLevel = obj.pyramidLevel;
-                getOptions.blockModeSwitch = 0;   % render the whole level, not the shown block
-            end
+            getOptions = obj.levelReadOptions(volumeType);
             img = obj.mibModel.getData3D(volumeType, timePnt, 3, colorChannel, getOptions);
 
             if numel(img) > 1
@@ -2199,10 +2293,11 @@ classdef VolRenApp < handle
             %      obj.modelUpdateOverlay()
             %      obj.modelUpdateOverlay(overlayType, materialId)
             %
-            % For **BigData** datasets the overlay is read at ``obj.pyramidLevel`` by passing
-            % ``options.pyramidLevel`` and ``options.blockModeSwitch=0`` to ``getData3D`` so the
-            % full pyramid level is returned rather than only the viewport block.  If the returned
-            % overlay dimensions differ from the in-memory image volume (``obj.volume.Data``), a
+            % For **BigData** datasets the overlay is read at the level chosen in the
+            % ``grabVolume`` dialog, through :func:`levelReadOptions` - which is also what keeps a
+            % ``core.MibBigDataLabelsIndex`` overlay at the right resolution, since its pyramid is
+            % not the image's and the level indices do not correspond.  If the returned overlay
+            % dimensions still differ from the in-memory image volume (``obj.volume.Data``), a
             % nearest-neighbour ``imresize3`` is applied so the overlay aligns pixel-for-pixel with
             % the rendered volume.  For **Standard** datasets the same downsample path as
             % ``grabVolume`` is used (``obj.volumeScaleFactor`` resize via ``imresize3``).
@@ -2247,11 +2342,7 @@ classdef VolRenApp < handle
                 return;
             end
 
-            getOptions = struct();
-            if isBigData
-                getOptions.pyramidLevel = obj.pyramidLevel;
-                getOptions.blockModeSwitch = 0;
-            end
+            getOptions = obj.levelReadOptions(overlayType);
             overlay = cell2mat(obj.mibModel.getData3D(overlayType, [], 3, materialId, getOptions));
             % resize the volume
             if ~isBigData && obj.volumeScaleFactor ~= 1
@@ -2528,28 +2619,348 @@ classdef VolRenApp < handle
             obj.updateSurfaceTable();
         end
 
-        function addSurfaceFromMask(obj, mask, surfaceName, surfaceColor)
+        function isFused = overlayIsFusedInstances(obj)
+            % OVERLAYISFUSEDINSTANCES - Is the shown overlay an instance model collapsed to one material?
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      isFused = obj.overlayIsFusedInstances()
+            %
+            % True for a ``core.MibBigDataLabelsIndex`` overlay read with
+            % :attr:`core.MibBigDataLabelsIndex.renderPerObject` off. That layer
+            % declares ``maxMaterials = 65535``, so the material table takes the
+            % cycled-colour branch and calls the single row "255 materials" - but the
+            % values were fused to 1 on read, so the row really is one material. The
+            % two disagree, and every per-material action has to ask which is true.
+            %
+            % Only meaningful for the ``'labels'`` source; a mask or selection overlay
+            % is a single material already and never reaches the cycled branch.
+            %
+            % Output Arguments:
+            %   - **isFused** - [logical] true when the row stands for every object
+            %     fused into one material rather than for 255 cycled ones
+
+            isFused = false;
+            if ~strcmp(obj.view.handles.overlaySourceDropDown.Value, 'labels'); return; end
+            id = obj.mibModel.getActiveId();
+            labels = obj.mibModel.I{id}.labels;
+            isFused = isa(labels, 'core.MibBigDataLabelsIndex') && ~labels.renderPerObject;
+        end
+
+        function generated = generateAllObjectSurfaces(obj)
+            % GENERATEALLOBJECTSURFACES - One surface per object, for the cycled-colour mode.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      generated = obj.generateAllObjectSurfaces()
+            %
+            % In the ``'All materials'`` mode a large model has a single table row
+            % standing for every material, because the overlay colours cycle through
+            % 255 slots. Generating from that row used to be refused; it now means
+            % what it says, one surface for each object present.
+            %
+            % The prompt comes first and names the count, because this is the one
+            % action in the table whose cost scales with the model rather than with
+            % the selection: each object is meshed separately and each becomes its
+            % own :class:`images.ui.graphics3d.Surface`, so a few hundred objects is
+            % a wait and several thousand is a long one. Cancelling stops at the
+            % object in progress and keeps the surfaces already made - they are
+            % complete in themselves, unlike a half-read volume.
+            %
+            % Output Arguments:
+            %   - **generated** - [logical] true when at least one surface was added
+
+            generated = false;
+            id = obj.mibModel.getActiveId();
+            overlayType = obj.view.handles.overlaySourceDropDown.Value;
+            highestId = obj.mibModel.I{id}.labels.materialsCount;
+
+            dlgOpt.Icon         = 'puffin_warning';
+            dlgOpt.WindowHeight = 280;
+            dlgOpt.WindowWidth  = 540;
+            question = sprintf(['In this mode the table row stands for every material in the ' ...
+                'model, not for one, because the overlay colours repeat every 255 objects.\n\n' ...
+                'Generating from it builds a separate surface for each object - about %d of ' ...
+                'them here. This can take several minutes, and the viewer has to draw every ' ...
+                'surface afterwards, which slows down rotating and zooming.\n\n' ...
+                'To surface one object instead, cancel and use "Generate surface by index...", ' ...
+                'or switch the Materials to show dropdown to "Selected materials".'], highestId);
+            answer = utils.dlgs.inputQuestDlg(obj.view.gui, question, ...
+                'Generate a surface for every object', 'Continue', 'Cancel', 'Cancel', dlgOpt);
+            if ~strcmp(answer, 'Continue'); return; end
+
+            wb = uiprogressdlg(obj.view.gui, 'Title', 'Generate surfaces', ...
+                'Message', 'Reading the model...', 'Indeterminate', 'on', 'Cancelable', 'on');
+            % The rendered overlay carries cycled bin numbers rather than material
+            % indices, so the object ids have to come from the layer itself.
+            labelVolume = obj.fetchOverlayMask(overlayType, NaN);
+            if wb.CancelRequested || isempty(labelVolume); delete(wb); return; end
+
+            objectIds = unique(labelVolume(labelVolume > 0));
+            if isempty(objectIds)
+                delete(wb);
+                utils.dlgs.showErrorDialog(obj.view.gui, ...
+                    'The model has no objects at the rendered pyramid level.', 'Nothing to surface');
+                return;
+            end
+
+            % Every bounding box in one pass. Letting addSurfaceFromMask find each
+            % box itself would mean building a full-size mask per object and
+            % reducing it - 0.52 s each against 0.015 s, four minutes against eight
+            % seconds here - because the search costs more than the meshing it saves.
+            wb.Message = 'Locating objects...';
+            objectBoxes = regionprops3(labelVolume, 'BoundingBox');
+            if wb.CancelRequested; delete(wb); return; end
+
+            volumeSize = size(labelVolume);
+            palette = obj.mibModel.I{id}.labels.materialColors;
+            wb.Indeterminate = 'off';
+            addedCount = 0;
+            totalVertices = 0;
+            totalFaces = 0;
+            for objectIndex = 1:numel(objectIds)
+                if wb.CancelRequested; break; end
+                wb.Value   = objectIndex / numel(objectIds);
+                wb.Message = sprintf('Generating surface %d of %d...', objectIndex, numel(objectIds));
+
+                objectId = double(objectIds(objectIndex));
+                % regionprops3 gives [xMin yMin zMin xLen yLen zLen] with the corner
+                % at a half-voxel, so +0.5 is the first voxel. The one-voxel margin
+                % is what keeps the mesh closed - see addSurfaceFromMask.
+                box = objectBoxes.BoundingBox(objectId, :);
+                firstYXZ = round(box([2 1 3]) + 0.5);
+                lastYXZ  = firstYXZ + round(box([5 4 6])) - 1;
+                rowRange  = max(1, firstYXZ(1)-1) : min(volumeSize(1), lastYXZ(1)+1);
+                colRange  = max(1, firstYXZ(2)-1) : min(volumeSize(2), lastYXZ(2)+1);
+                pageRange = max(1, firstYXZ(3)-1) : min(volumeSize(3), lastYXZ(3)+1);
+
+                objectMask = labelVolume(rowRange, colRange, pageRange) == objectIds(objectIndex);
+                surfaceColor = palette(mod(objectId-1, size(palette, 1)) + 1, :);
+                obj.addSurfaceFromMask(objectMask, sprintf('%d', objectId), surfaceColor, ...
+                    [rowRange(1), colRange(1), pageRange(1)]);
+                addedCount = addedCount + 1;
+                totalVertices = totalVertices + obj.surfList{end}.NumVertices;
+                totalFaces    = totalFaces    + obj.surfList{end}.NumFaces;
+            end
+            cancelled = wb.CancelRequested;
+            delete(wb);
+
+            generated = addedCount > 0;
+            if ~generated; return; end
+
+            % Edges are not a property of the surface, but a triangle mesh with no
+            % boundary has exactly 3/2 as many edges as faces - every edge is shared
+            % by two triangles. Marching cubes leaves a boundary only where an object
+            % runs into the edge of the volume, so this is exact for anything fully
+            % inside it and a slight undercount for anything clipped.
+            totalEdges = round(totalFaces * 3 / 2);
+            summary = sprintf('Surfaces: %s\nVertices: %s\nFaces: %s\nEdges: %s', ...
+                obj.groupDigits(addedCount), obj.groupDigits(totalVertices), ...
+                obj.groupDigits(totalFaces), obj.groupDigits(totalEdges));
+            if cancelled
+                summary = sprintf('Cancelled after %s of %s objects.\n\n%s', ...
+                    obj.groupDigits(addedCount), obj.groupDigits(numel(objectIds)), summary);
+            end
+            fprintf('controllers.VolRenApp.generateAllObjectSurfaces: %s\n', ...
+                regexprep(summary, '\n', '  '));
+
+            dlgOpt.MsgBoxOnly  = true;
+            dlgOpt.Icon        = 'puffin_info';
+            dlgOpt.HeaderLines = 1;
+            dlgOpt.WindowHeight = 180;
+            utils.dlgs.inputUniversalDlg(obj.view.gui, 'Surfaces stats:', {''}, {summary}, ...
+                'Surfaces generated', dlgOpt);
+        end
+
+        function text = groupDigits(~, value)
+            % GROUPDIGITS - Thousands separators, so a seven-digit face count can be read at a glance.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      text = obj.groupDigits(value)
+            %
+            % Input Arguments:
+            %   - **value** - [numeric] non-negative integer
+            %
+            % Output Arguments:
+            %   - **text** - [char] the number with a space every three digits
+            text = regexprep(fliplr(sprintf('%d', round(value))), '(\d{3})(?=\d)', '$1 ');
+            text = fliplr(text);
+        end
+
+        function generated = generateFusedInstancesSurface(obj)
+            % GENERATEFUSEDINSTANCESSURFACE - One surface over every object of a fused instance model.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      generated = obj.generateFusedInstancesSurface()
+            %
+            % Confirms first, because the result is not what "generate surface" means
+            % anywhere else in this table: one mesh spanning every object, with
+            % touching objects joined into single connected components and no way to
+            % pick one of them apart afterwards. The count is named in the prompt so
+            % the scale of that is visible before the wait, and the alternative is
+            % named too, since "Generate surface by index..." reads the store's own
+            % ids and is unaffected by the fusing.
+            %
+            % Output Arguments:
+            %   - **generated** - [logical] false when cancelled or when nothing was
+            %     found to surface; the caller refreshes the table only on true
+
+            generated = false;
+            id = obj.mibModel.getActiveId();
+            objectCount = obj.mibModel.I{id}.labels.materialsCount;
+
+            dlgOpt.Icon         = 'puffin_warning';
+            dlgOpt.WindowHeight = 260;
+            dlgOpt.WindowWidth  = 520;
+            question = sprintf(['This model is shown with all of its objects fused into a single ' ...
+                'material, so a surface generated here covers %d objects at once.\n\n' ...
+                'Objects that touch become one connected surface, and the result cannot be ' ...
+                'separated back into individual objects afterwards.\n\n' ...
+                'To surface one object on its own, cancel and use "Generate surface by index...", ' ...
+                'which reads the object ids from the store.'], objectCount);
+            answer = utils.dlgs.inputQuestDlg(obj.view.gui, question, ...
+                'Objects are fused', 'Continue', 'Cancel', 'Cancel', dlgOpt);
+            if ~strcmp(answer, 'Continue'); return; end
+
+            wb = uiprogressdlg(obj.view.gui, 'Message', sprintf('Generating the merged surface\nPlease wait...'), ...
+                'Title', 'Generate surface', 'Cancelable', 'on');
+            % Every object already carries the same value, so the fusing IS the mask;
+            % taking every non-zero voxel is the merge the dialog just described.
+            mask = obj.volume.OverlayData ~= 0;
+            if wb.CancelRequested || ~any(mask(:))
+                delete(wb);
+                return;
+            end
+
+            % The colour the fused objects are actually drawn in: index 1 of the
+            % overlay maps to row 2 of the colormap (see buildOverlayIndexVolume).
+            surfaceColor = obj.volume.OverlayColormap(2, :);
+            obj.addSurfaceFromMask(mask, sprintf('all objects (%d fused)', objectCount), surfaceColor);
+            delete(wb);
+            generated = true;
+        end
+
+        function [croppedMask, cropOriginYXZ] = cropMaskToObject(~, mask)
+            % CROPMASKTOOBJECT - Tight bounding box of a binary mask, with a one-voxel margin.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      [croppedMask, cropOriginYXZ] = obj.cropMaskToObject(mask)
+            %
+            % The margin is what keeps the mesh identical to one built from the
+            % full array: marching cubes needs a ring of background around the
+            % object to close the surface, and a box cut exactly at the object
+            % would leave it open wherever it touched the edge. Where the object
+            % already reaches the array border there is no margin to add and the
+            % surface is open there either way, so nothing changes.
+            %
+            % Input Arguments:
+            %   - **mask** - [logical] 3-D binary mask
+            %
+            % Output Arguments:
+            %   - **croppedMask** - [logical] the bounding box plus margin; the
+            %     input itself when the mask is empty, so a caller still gets an
+            %     array of the expected rank
+            %   - **cropOriginYXZ** - [1x3 numeric] 1-based ``[row col page]`` the
+            %     crop starts at; ``[1 1 1]`` when nothing was cropped
+
+            cropOriginYXZ = [1 1 1];
+            croppedMask = mask;
+            if ~any(mask(:)); return; end
+
+            % any() along the other two axes is what makes this cheap: three
+            % reductions over the array rather than ind2sub over every set voxel.
+            rowsUsed  = find(any(any(mask, 2), 3));
+            colsUsed  = find(any(any(mask, 1), 3));
+            pagesUsed = find(any(any(mask, 1), 2));
+
+            rowRange  = max(1, rowsUsed(1)-1)  : min(size(mask, 1), rowsUsed(end)+1);
+            colRange  = max(1, colsUsed(1)-1)  : min(size(mask, 2), colsUsed(end)+1);
+            pageRange = max(1, pagesUsed(1)-1) : min(size(mask, 3), pagesUsed(end)+1);
+
+            croppedMask   = mask(rowRange, colRange, pageRange);
+            cropOriginYXZ = [rowRange(1), colRange(1), pageRange(1)];
+        end
+
+        function addSurfaceFromMask(obj, mask, surfaceName, surfaceColor, cropOriginYXZ)
             % ADDSURFACEFROMMASK - Append a surface generated from a binary mask to the viewer.
             %
             % Syntax:
             %   .. code-block:: matlab
             %
             %      obj.addSurfaceFromMask(mask, surfaceName, surfaceColor)
+            %      obj.addSurfaceFromMask(croppedMask, surfaceName, surfaceColor, cropOriginYXZ)
+            %
+            % **The mask is cropped to the object before meshing.** Marching cubes
+            % costs the whole array it is handed, while one object of an instance
+            % segmentation occupies a thousandth of it: on a 792x804x863 model the
+            % median object fills 0.03% of the volume, and the ``Surface`` call
+            % drops from 0.60 s to 0.038 s once the box is all it sees.
+            %
+            % **Finding that box is the expensive half**, which is why the fourth
+            % argument exists. Reducing a full-size mask with ``any`` costs 0.44 s -
+            % it eats almost the whole saving, leaving the crop worth only about
+            % 1.2x. A caller with many objects should instead compute every box in
+            % one pass over the label volume (``regionprops3``, ~1 s for the lot),
+            % cut each object straight out of its box and pass the origin here:
+            % 0.015 s per object rather than 0.52 s, which is 4 minutes against
+            % 8 seconds over 489 objects. :func:`generateAllObjectSurfaces` does that.
+            %
+            % Cropping moves the vertices into the crop's own coordinates, so the
+            % offset is put back through the transform rather than the data: the
+            % viewer's ``scalingTransform`` is a pure diagonal scale, and the same
+            % matrix with the crop origin in its translation column lands the
+            % surface exactly where the uncropped one sat. ``isosurface`` orders
+            % vertices ``(x, y, z) = (column, row, page)``, which is why the
+            % translation is built in that order and not in MIB's ``[y x z]``.
             %
             % Input Arguments:
-            %   - **mask** - [logical] 3-D binary mask of the object
+            %   - **mask** - [logical] 3-D binary mask of the object; the whole
+            %     dataset unless ``cropOriginYXZ`` says otherwise
             %   - **surfaceName** - [char] name shown in the surface table
             %   - **surfaceColor** - [numeric] ``[R G B]`` color of the surface
+            %   - **cropOriginYXZ** *(optional)* - [1x3 numeric] 1-based
+            %     ``[row col page]`` that ``mask`` was already cut at. Supplying it
+            %     skips the search. The block must keep a one-voxel background
+            %     margin wherever the object does not reach the dataset edge, or the
+            %     surface is left open on that side.
+
+            if nargin >= 5 && ~isempty(cropOriginYXZ)
+                croppedMask = mask;
+            else
+                [croppedMask, cropOriginYXZ] = obj.cropMaskToObject(mask);
+            end
+            surfaceTransform = obj.scalingTransform;
+            if any(cropOriginYXZ > 1)
+                scaleMatrix = surfaceTransform.A;
+                % column 4 is the translation, in world units, ordered (x, y, z)
+                scaleMatrix(1, 4) = scaleMatrix(1, 4) + (cropOriginYXZ(2) - 1) * scaleMatrix(1, 1);
+                scaleMatrix(2, 4) = scaleMatrix(2, 4) + (cropOriginYXZ(1) - 1) * scaleMatrix(2, 2);
+                scaleMatrix(3, 4) = scaleMatrix(3, 4) + (cropOriginYXZ(3) - 1) * scaleMatrix(3, 3);
+                surfaceTransform = affinetform3d(scaleMatrix);
+            end
 
             surfId = numel(obj.surfList) + 1;
             obj.surfList{surfId} = images.ui.graphics3d.Surface(obj.viewer, ...
                 'Color', surfaceColor, ...
-                'Data', mask, ...
-                'Transformation', obj.scalingTransform, ...
+                'Data', croppedMask, ...
+                'Transformation', surfaceTransform, ...
                 'Visible', true);
             obj.surfList{surfId}.UserData.Name = surfaceName;
             obj.surfListAlpha(surfId) = 1;
+            obj.surfListShown(surfId) = true;
             obj.surfList{surfId}.Alpha = 1;
+            % A surface made while "hide all" is ticked must not appear: the
+            % checkbox describes the view, not the surfaces that existed when it
+            % was ticked.
+            obj.surfList{surfId}.Visible = ~obj.surfacesHiddenAll();
         end
 
         function overlayMask = fetchOverlayMask(obj, overlayType, materialIndex)
@@ -2565,19 +2976,20 @@ classdef VolRenApp < handle
             %
             % Input Arguments:
             %   - **overlayType** - [char] layer type, normally ``'labels'``
-            %   - **materialIndex** - [numeric] material index to fetch
+            %   - **materialIndex** - [numeric] material index to fetch, or ``NaN``
+            %     for every material at once - which returns the layer's own values
+            %     rather than a binary map, and is how :func:`generateAllObjectSurfaces`
+            %     gets at the object ids (the rendered overlay holds cycled bin
+            %     numbers, not indices)
             %
             % Output Arguments:
-            %   - **overlayMask** - [uint8] binary mask of the requested material
+            %   - **overlayMask** - binary ``uint8`` map of the requested material,
+            %     or the label volume itself when ``materialIndex`` is ``NaN``
 
             id = obj.mibModel.getActiveId();
             isBigData = obj.mibModel.I{id}.datasetType(1) == 'B';
 
-            getOptions = struct();
-            if isBigData
-                getOptions.pyramidLevel = obj.pyramidLevel;
-                getOptions.blockModeSwitch = 0;
-            end
+            getOptions = obj.levelReadOptions(overlayType);
             overlayMask = cell2mat(obj.mibModel.getData3D(overlayType, [], 3, materialIndex, getOptions));
 
             if ~isBigData && obj.volumeScaleFactor ~= 1
@@ -2789,11 +3201,7 @@ classdef VolRenApp < handle
             materialId = obj.overlayMaterialId;
             if isempty(materialId); materialId = NaN; end
 
-            getOptions = struct();
-            if isBigData
-                getOptions.pyramidLevel = obj.pyramidLevel;
-                getOptions.blockModeSwitch = 0;
-            end
+            getOptions = obj.levelReadOptions(overlayType);
             overlay = cell2mat(obj.mibModel.getData3D(overlayType, [], 3, materialId, getOptions));
 
             if ~isBigData && obj.volumeScaleFactor ~= 1
@@ -2837,7 +3245,15 @@ classdef VolRenApp < handle
             noSurfaces = numel(obj.surfList);
             data = cell([noSurfaces, 5]);
             materialNames = cellfun(@(x) x.UserData.Name, obj.surfList, 'UniformOutput', false)';
-            surfaceShown = cellfun(@(x) strcmp(x.Visible, 'on'), obj.surfList)';
+            % The row shows the surface's own state, not whether it happens to be on
+            % screen: with "hide all" ticked every Visible is off, and reading them
+            % back would silently untick every row.
+            if numel(obj.surfListShown) < noSurfaces
+                obj.surfListShown(numel(obj.surfListShown)+1:noSurfaces) = true;
+            end
+            % reshape rather than transpose: the column the table wants does not
+            % depend on how the array happened to grow.
+            surfaceShown = reshape(obj.surfListShown(1:noSurfaces), [], 1);
             surfaceColors = cellfun(@(x) x.Color, obj.surfList, 'UniformOutput', false)';
             wireframeShown = cellfun(@(x) strcmp(x.Wireframe, 'on'), obj.surfList)';
             data(:,2) = materialNames;
@@ -2884,6 +3300,81 @@ classdef VolRenApp < handle
             obj.applyOverlayAlphamap();
         end
 
+
+        function modelHideAllSurfaces(obj, hideSurfacesSwitch)
+            % MODELHIDEALLSURFACES - Hide every surface at once, or restore them individually.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.modelHideAllSurfaces()
+            %      obj.modelHideAllSurfaces(hideSurfacesSwitch)
+            %
+            % Callback of the ``surfacesHideAll`` checkbox. ``true`` hides every
+            % surface; ``false`` puts each one back to its **own** show state from
+            % the surface table rather than turning all of them on, so a surface the
+            % user had unticked stays unticked.
+            %
+            % That is only possible because the per-surface intent lives in
+            % :attr:`surfListShown`. Reading it back from each surface's ``Visible``
+            % would not work: hiding everything overwrites exactly the answer that
+            % would have to be restored.
+            %
+            % Input Arguments:
+            %   - **hideSurfacesSwitch** *(optional)* - [logical] ``true`` to hide
+            %     all, ``false`` to restore (default: reads the checkbox)
+
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.VolRenApp.modelHideAllSurfaces: triggered\n');
+            end
+            if nargin < 2; hideSurfacesSwitch = obj.surfacesHiddenAll(); end
+
+            if isfield(obj.view.handles, 'surfacesHideAll')
+                obj.view.handles.surfacesHideAll.Value = hideSurfacesSwitch;
+            end
+            obj.applySurfaceVisibility();
+        end
+
+        function hideAll = surfacesHiddenAll(obj)
+            % SURFACESHIDDENALL - State of the "hide all surfaces" checkbox.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      hideAll = obj.surfacesHiddenAll()
+            %
+            % Behind an accessor because the checkbox is the newest widget on the
+            % Surfaces tab: a view built before it was added has no such handle, and
+            % every surface would then be invisible rather than the feature simply
+            % being absent.
+            %
+            % Output Arguments:
+            %   - **hideAll** - [logical] false when the checkbox does not exist
+
+            hideAll = false;
+            if isfield(obj.view.handles, 'surfacesHideAll')
+                hideAll = logical(obj.view.handles.surfacesHideAll.Value);
+            end
+        end
+
+        function applySurfaceVisibility(obj)
+            % APPLYSURFACEVISIBILITY - Push show state onto the surfaces.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.applySurfaceVisibility()
+            %
+            % A surface is visible when its own row is ticked **and** "hide all" is
+            % off. The two are kept apart so that either can change without losing
+            % the other; this is the single place they are combined.
+
+            hideAll = obj.surfacesHiddenAll();
+            for surfId = 1:numel(obj.surfList)
+                if surfId > numel(obj.surfListShown); obj.surfListShown(surfId) = true; end
+                obj.surfList{surfId}.Visible = obj.surfListShown(surfId) && ~hideAll;
+            end
+        end
 
         function updateModelTable(obj)
             % UPDATEMODELTABLE - Refresh the model/overlay material table widget.
@@ -2940,11 +3431,11 @@ classdef VolRenApp < handle
                 end
                 obj.surfList{surfaceId}.Alpha = newData;
             elseif indices(2) == 4  % show / hide surface
-                if newData == 0     % hide surface
-                    obj.surfList{surfaceId}.Visible = false;
-                else                % show surface
-                    obj.surfList{surfaceId}.Visible = true;
-                end
+                % Recorded as intent and then applied, so that ticking a row while
+                % "hide all" is on is remembered for when it is switched off rather
+                % than making this one surface reappear on its own.
+                obj.surfListShown(surfaceId) = logical(newData);
+                obj.applySurfaceVisibility();
             elseif indices(2) == 5  % show / hide wireframe
                 if newData == 0     % hide wireframe
                     obj.surfList{surfaceId}.Wireframe = false;

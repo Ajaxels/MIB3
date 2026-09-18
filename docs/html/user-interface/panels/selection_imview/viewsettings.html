@@ -5738,6 +5738,20 @@ to select a single channel exclusively.</p>
 <p><img align="left" alt="Checkboxes" src="images/PanelsViewSettings-checkboxes.png" /></p>
 <p><span class="widget widget-checkbox">Show Model</span> checkbox, toggles the Model layer on/off.<br>
 Shortcut: <span class="widget widget-button">Space</span></p>
+<details class="info" open="open">
+<summary>Right-click actions for the model layer</summary>
+<p><mouse class="right"></mouse> the <span class="widget widget-checkbox">Show Model</span> checkbox for:</p>
+<ul>
+<li><strong>Render instances per object</strong>: gives every object of an
+<a href="../../ribbon/home/home-importfromurl.html#labels-published-only-at-coarse-resolution">imported label overlay</a>
+its own colour. On by default. Switch it off to show the objects as a single material, which
+is easier to read when a segmentation holds hundreds of them and you only need to see where
+they are.</li>
+</ul>
+<p>The option is available for imported overlays only, and applies to a whole overlay rather than
+to a selected object. Either way the stored data is untouched, so it can be switched as often
+as you like.</p>
+</details>
 <p><span class="widget widget-checkbox">Show Mask</span> checkbox, toggles the Mask layer on/off.<br>
 Shortcut: <span class="widget widget-button">Ctrl</span> + <span class="widget widget-button">Space</span>.</p>
 <p><span class="widget widget-checkbox">Ann/Measure</span> checkbox, toggles visibility of the <a href="../segm/segm-annotations.html">Annotation layer</a> 

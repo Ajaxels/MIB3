@@ -4599,6 +4599,17 @@
       "contributor": null
     },
     {
+      "id": "controllers_instanceeditor_instanceeditor_repairindexafterundo",
+      "label": "repairIndexAfterUndo",
+      "file_type": "code",
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "controllers_instanceeditor_instanceeditor_indexisusable",
       "label": "indexIsUsable",
       "file_type": "code",
@@ -4731,6 +4742,28 @@
       "contributor": null
     },
     {
+      "id": "controllers_instanceeditor_instanceeditor_storedwindowstate",
+      "label": "storedWindowState",
+      "file_type": "code",
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_instanceeditor_instanceeditor_rememberwindowstate",
+      "label": "rememberWindowState",
+      "file_type": "code",
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "controllers_instanceeditor_instanceeditor_invalidateslicestats",
       "label": "invalidateSliceStats",
       "file_type": "code",
@@ -4777,6 +4810,17 @@
     {
       "id": "controllers_instanceeditor_instanceeditor_updateselectedlist",
       "label": "updateSelectedList",
+      "file_type": "code",
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_instanceeditor_instanceeditor_selectedlist_callback",
+      "label": "selectedList_Callback",
       "file_type": "code",
       "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
       "source_location": null,
@@ -8944,6 +8988,28 @@
       "contributor": null
     },
     {
+      "id": "controllers_mibselection_showmodel_contextmenu_m",
+      "label": "showModel_ContextMenu.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@MibSelection\\showModel_ContextMenu.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_mibselection_showmodel_contextmenuopening_m",
+      "label": "showModel_ContextMenuOpening.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@MibSelection\\showModel_ContextMenuOpening.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "controllers_mibselection_updatesegmentationpreset_m",
       "label": "updateSegmentationPreset.m",
       "file_type": "code",
@@ -11375,6 +11441,28 @@
       "contributor": null
     },
     {
+      "id": "controllers_selectfromurl_selectfromurl_choosecroplevel",
+      "label": "chooseCropLevel",
+      "file_type": "code",
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_selectfromurl_selectfromurl_chooseinstancehandling",
+      "label": "chooseInstanceHandling",
+      "file_type": "code",
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "controllers_selectfromurl_selectfromurl_setstatus",
       "label": "setStatus",
       "file_type": "code",
@@ -11507,8 +11595,41 @@
       "contributor": null
     },
     {
+      "id": "controllers_selectfromurl_selectfromurl_resolveoverlayroute",
+      "label": "resolveOverlayRoute",
+      "file_type": "code",
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "controllers_selectfromurl_selectfromurl_returnbatchopt",
       "label": "returnBatchOpt",
+      "file_type": "code",
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_selectfromurl_selectfromurl_applychosenpair",
+      "label": "applyChosenPair",
+      "file_type": "code",
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_selectfromurl_selectfromurl_formatmegabytes",
+      "label": "formatMegabytes",
       "file_type": "code",
       "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
       "source_location": null,
@@ -13443,6 +13564,17 @@
       "contributor": null
     },
     {
+      "id": "controllers_volrenapp_volrenapp_levelreadoptions",
+      "label": "levelReadOptions",
+      "file_type": "code",
+      "source_file": "+controllers\\@VolRenApp\\VolRenApp.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "controllers_volrenapp_volrenapp_grabvolume",
       "label": "grabVolume",
       "file_type": "code",
@@ -13586,6 +13718,61 @@
       "contributor": null
     },
     {
+      "id": "controllers_volrenapp_volrenapp_overlayisfusedinstances",
+      "label": "overlayIsFusedInstances",
+      "file_type": "code",
+      "source_file": "+controllers\\@VolRenApp\\VolRenApp.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_volrenapp_volrenapp_generateallobjectsurfaces",
+      "label": "generateAllObjectSurfaces",
+      "file_type": "code",
+      "source_file": "+controllers\\@VolRenApp\\VolRenApp.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_volrenapp_volrenapp_groupdigits",
+      "label": "groupDigits",
+      "file_type": "code",
+      "source_file": "+controllers\\@VolRenApp\\VolRenApp.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_volrenapp_volrenapp_generatefusedinstancessurface",
+      "label": "generateFusedInstancesSurface",
+      "file_type": "code",
+      "source_file": "+controllers\\@VolRenApp\\VolRenApp.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_volrenapp_volrenapp_cropmasktoobject",
+      "label": "cropMaskToObject",
+      "file_type": "code",
+      "source_file": "+controllers\\@VolRenApp\\VolRenApp.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "controllers_volrenapp_volrenapp_addsurfacefrommask",
       "label": "addSurfaceFromMask",
       "file_type": "code",
@@ -13720,6 +13907,39 @@
     {
       "id": "controllers_volrenapp_volrenapp_modelhideallmaterials",
       "label": "modelHideAllMaterials",
+      "file_type": "code",
+      "source_file": "+controllers\\@VolRenApp\\VolRenApp.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_volrenapp_volrenapp_modelhideallsurfaces",
+      "label": "modelHideAllSurfaces",
+      "file_type": "code",
+      "source_file": "+controllers\\@VolRenApp\\VolRenApp.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_volrenapp_volrenapp_surfaceshiddenall",
+      "label": "surfacesHiddenAll",
+      "file_type": "code",
+      "source_file": "+controllers\\@VolRenApp\\VolRenApp.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_volrenapp_volrenapp_applysurfacevisibility",
+      "label": "applySurfaceVisibility",
       "file_type": "code",
       "source_file": "+controllers\\@VolRenApp\\VolRenApp.m",
       "source_location": null,
@@ -15482,6 +15702,138 @@
       "label": "clampRange",
       "file_type": "code",
       "source_file": "+core\\@MibBigDataLabels\\MibBigDataLabels.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "core_mibbigdatalabelsindex_mibbigdatalabelsindex_m",
+      "label": "MibBigDataLabelsIndex.m",
+      "file_type": "code",
+      "source_file": "+core\\@MibBigDataLabelsIndex\\MibBigDataLabelsIndex.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "core_mibbigdatalabelsindex_getdata_m",
+      "label": "getData.m",
+      "file_type": "code",
+      "source_file": "+core\\@MibBigDataLabelsIndex\\getData.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "core_mibbigdatalabelsindex_openstore_m",
+      "label": "openStore.m",
+      "file_type": "code",
+      "source_file": "+core\\@MibBigDataLabelsIndex\\openStore.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "core_mibbigdatalabelsindex_mibbigdatalabelsindex_mibbigdatalabelsindex",
+      "label": "MibBigDataLabelsIndex",
+      "file_type": "code",
+      "source_file": "+core\\@MibBigDataLabelsIndex\\MibBigDataLabelsIndex.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "core_mibbigdatalabelsindex_mibbigdatalabelsindex_picklevel",
+      "label": "pickLevel",
+      "file_type": "code",
+      "source_file": "+core\\@MibBigDataLabelsIndex\\MibBigDataLabelsIndex.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "core_mibbigdatalabelsindex_mibbigdatalabelsindex_imagescaleformagfactor",
+      "label": "imageScaleForMagFactor",
+      "file_type": "code",
+      "source_file": "+core\\@MibBigDataLabelsIndex\\MibBigDataLabelsIndex.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "core_mibbigdatalabelsindex_mibbigdatalabelsindex_readlevel",
+      "label": "readLevel",
+      "file_type": "code",
+      "source_file": "+core\\@MibBigDataLabelsIndex\\MibBigDataLabelsIndex.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "core_mibbigdatalabelsindex_mibbigdatalabelsindex_countmaterials",
+      "label": "countMaterials",
+      "file_type": "code",
+      "source_file": "+core\\@MibBigDataLabelsIndex\\MibBigDataLabelsIndex.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "core_mibbigdatalabelsindex_mibbigdatalabelsindex_setdata",
+      "label": "setData",
+      "file_type": "code",
+      "source_file": "+core\\@MibBigDataLabelsIndex\\MibBigDataLabelsIndex.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "core_mibbigdatalabelsindex_mibbigdatalabelsindex_setdatafast",
+      "label": "setDataFast",
+      "file_type": "code",
+      "source_file": "+core\\@MibBigDataLabelsIndex\\MibBigDataLabelsIndex.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "core_mibbigdatalabelsindex_mibbigdatalabelsindex_imagereference",
+      "label": "imageReference",
+      "file_type": "code",
+      "source_file": "+core\\@MibBigDataLabelsIndex\\MibBigDataLabelsIndex.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "core_mibbigdatalabelsindex_mibbigdatalabelsindex_showreadonlynotice",
+      "label": "showReadOnlyNotice",
+      "file_type": "code",
+      "source_file": "+core\\@MibBigDataLabelsIndex\\MibBigDataLabelsIndex.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -21750,6 +22102,61 @@
     {
       "id": "io_loaders_omezarrmetadatautils_resolveleveloption",
       "label": "resolveLevelOption",
+      "file_type": "code",
+      "source_file": "+io\\+loaders\\OmeZarrMetadataUtils.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_loaders_omezarrmetadatautils_applyselectedlevelgeometry",
+      "label": "applySelectedLevelGeometry",
+      "file_type": "code",
+      "source_file": "+io\\+loaders\\OmeZarrMetadataUtils.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_loaders_omezarrmetadatautils_registerlevelscales",
+      "label": "registerLevelScales",
+      "file_type": "code",
+      "source_file": "+io\\+loaders\\OmeZarrMetadataUtils.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_loaders_omezarrmetadatautils_scalesagainstvoxelsize",
+      "label": "scalesAgainstVoxelSize",
+      "file_type": "code",
+      "source_file": "+io\\+loaders\\OmeZarrMetadataUtils.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_loaders_omezarrmetadatautils_screengridforrange",
+      "label": "screenGridForRange",
+      "file_type": "code",
+      "source_file": "+io\\+loaders\\OmeZarrMetadataUtils.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_loaders_omezarrmetadatautils_levelreadwindow",
+      "label": "levelReadWindow",
       "file_type": "code",
       "source_file": "+io\\+loaders\\OmeZarrMetadataUtils.m",
       "source_location": null,
@@ -34159,6 +34566,16 @@
     },
     {
       "source": "controllers_instanceeditor_instanceeditor_m",
+      "target": "controllers_instanceeditor_instanceeditor_repairindexafterundo",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_instanceeditor_m",
       "target": "controllers_instanceeditor_instanceeditor_indexisusable",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -34279,6 +34696,26 @@
     },
     {
       "source": "controllers_instanceeditor_instanceeditor_m",
+      "target": "controllers_instanceeditor_instanceeditor_storedwindowstate",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_instanceeditor_m",
+      "target": "controllers_instanceeditor_instanceeditor_rememberwindowstate",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_instanceeditor_m",
       "target": "controllers_instanceeditor_instanceeditor_invalidateslicestats",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -34320,6 +34757,16 @@
     {
       "source": "controllers_instanceeditor_instanceeditor_m",
       "target": "controllers_instanceeditor_instanceeditor_updateselectedlist",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@InstanceEditor\\InstanceEditor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_instanceeditor_m",
+      "target": "controllers_instanceeditor_instanceeditor_selectedlist_callback",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -37959,6 +38406,26 @@
     },
     {
       "source": "controllers_mibselection_mibselection_m",
+      "target": "controllers_mibselection_showmodel_contextmenu_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibSelection\\MibSelection.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibselection_mibselection_m",
+      "target": "controllers_mibselection_showmodel_contextmenuopening_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibSelection\\MibSelection.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibselection_mibselection_m",
       "target": "controllers_mibselection_updatesegmentationpreset_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -40059,6 +40526,26 @@
     },
     {
       "source": "controllers_selectfromurl_selectfromurl_m",
+      "target": "controllers_selectfromurl_selectfromurl_choosecroplevel",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_selectfromurl_m",
+      "target": "controllers_selectfromurl_selectfromurl_chooseinstancehandling",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_selectfromurl_m",
       "target": "controllers_selectfromurl_selectfromurl_setstatus",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -40179,7 +40666,37 @@
     },
     {
       "source": "controllers_selectfromurl_selectfromurl_m",
+      "target": "controllers_selectfromurl_selectfromurl_resolveoverlayroute",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_selectfromurl_m",
       "target": "controllers_selectfromurl_selectfromurl_returnbatchopt",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_selectfromurl_m",
+      "target": "controllers_selectfromurl_selectfromurl_applychosenpair",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_selectfromurl_m",
+      "target": "controllers_selectfromurl_selectfromurl_formatmegabytes",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -41879,6 +42396,16 @@
     },
     {
       "source": "controllers_volrenapp_volrenapp_m",
+      "target": "controllers_volrenapp_volrenapp_levelreadoptions",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@VolRenApp\\VolRenApp.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_volrenapp_volrenapp_m",
       "target": "controllers_volrenapp_volrenapp_grabvolume",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -42009,6 +42536,56 @@
     },
     {
       "source": "controllers_volrenapp_volrenapp_m",
+      "target": "controllers_volrenapp_volrenapp_overlayisfusedinstances",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@VolRenApp\\VolRenApp.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_volrenapp_volrenapp_m",
+      "target": "controllers_volrenapp_volrenapp_generateallobjectsurfaces",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@VolRenApp\\VolRenApp.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_volrenapp_volrenapp_m",
+      "target": "controllers_volrenapp_volrenapp_groupdigits",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@VolRenApp\\VolRenApp.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_volrenapp_volrenapp_m",
+      "target": "controllers_volrenapp_volrenapp_generatefusedinstancessurface",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@VolRenApp\\VolRenApp.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_volrenapp_volrenapp_m",
+      "target": "controllers_volrenapp_volrenapp_cropmasktoobject",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@VolRenApp\\VolRenApp.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_volrenapp_volrenapp_m",
       "target": "controllers_volrenapp_volrenapp_addsurfacefrommask",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -42130,6 +42707,36 @@
     {
       "source": "controllers_volrenapp_volrenapp_m",
       "target": "controllers_volrenapp_volrenapp_modelhideallmaterials",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@VolRenApp\\VolRenApp.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_volrenapp_volrenapp_m",
+      "target": "controllers_volrenapp_volrenapp_modelhideallsurfaces",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@VolRenApp\\VolRenApp.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_volrenapp_volrenapp_m",
+      "target": "controllers_volrenapp_volrenapp_surfaceshiddenall",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@VolRenApp\\VolRenApp.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_volrenapp_volrenapp_m",
+      "target": "controllers_volrenapp_volrenapp_applysurfacevisibility",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -43624,6 +44231,116 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "+core\\@MibBigDataLabels\\MibBigDataLabels.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibbigdatalabelsindex_mibbigdatalabelsindex_m",
+      "target": "core_mibbigdatalabelsindex_getdata_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibBigDataLabelsIndex\\MibBigDataLabelsIndex.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibbigdatalabelsindex_mibbigdatalabelsindex_m",
+      "target": "core_mibbigdatalabelsindex_openstore_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibBigDataLabelsIndex\\MibBigDataLabelsIndex.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibbigdatalabelsindex_mibbigdatalabelsindex_m",
+      "target": "core_mibbigdatalabelsindex_mibbigdatalabelsindex_mibbigdatalabelsindex",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibBigDataLabelsIndex\\MibBigDataLabelsIndex.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibbigdatalabelsindex_mibbigdatalabelsindex_m",
+      "target": "core_mibbigdatalabelsindex_mibbigdatalabelsindex_picklevel",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibBigDataLabelsIndex\\MibBigDataLabelsIndex.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibbigdatalabelsindex_mibbigdatalabelsindex_m",
+      "target": "core_mibbigdatalabelsindex_mibbigdatalabelsindex_imagescaleformagfactor",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibBigDataLabelsIndex\\MibBigDataLabelsIndex.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibbigdatalabelsindex_mibbigdatalabelsindex_m",
+      "target": "core_mibbigdatalabelsindex_mibbigdatalabelsindex_readlevel",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibBigDataLabelsIndex\\MibBigDataLabelsIndex.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibbigdatalabelsindex_mibbigdatalabelsindex_m",
+      "target": "core_mibbigdatalabelsindex_mibbigdatalabelsindex_countmaterials",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibBigDataLabelsIndex\\MibBigDataLabelsIndex.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibbigdatalabelsindex_mibbigdatalabelsindex_m",
+      "target": "core_mibbigdatalabelsindex_mibbigdatalabelsindex_setdata",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibBigDataLabelsIndex\\MibBigDataLabelsIndex.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibbigdatalabelsindex_mibbigdatalabelsindex_m",
+      "target": "core_mibbigdatalabelsindex_mibbigdatalabelsindex_setdatafast",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibBigDataLabelsIndex\\MibBigDataLabelsIndex.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibbigdatalabelsindex_mibbigdatalabelsindex_m",
+      "target": "core_mibbigdatalabelsindex_mibbigdatalabelsindex_imagereference",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibBigDataLabelsIndex\\MibBigDataLabelsIndex.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibbigdatalabelsindex_mibbigdatalabelsindex_m",
+      "target": "core_mibbigdatalabelsindex_mibbigdatalabelsindex_showreadonlynotice",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibBigDataLabelsIndex\\MibBigDataLabelsIndex.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -48940,6 +49657,56 @@
     {
       "source": "io_loaders_omezarrmetadatautils_m",
       "target": "io_loaders_omezarrmetadatautils_resolveleveloption",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+loaders\\OmeZarrMetadataUtils.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_loaders_omezarrmetadatautils_m",
+      "target": "io_loaders_omezarrmetadatautils_applyselectedlevelgeometry",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+loaders\\OmeZarrMetadataUtils.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_loaders_omezarrmetadatautils_m",
+      "target": "io_loaders_omezarrmetadatautils_registerlevelscales",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+loaders\\OmeZarrMetadataUtils.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_loaders_omezarrmetadatautils_m",
+      "target": "io_loaders_omezarrmetadatautils_scalesagainstvoxelsize",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+loaders\\OmeZarrMetadataUtils.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_loaders_omezarrmetadatautils_m",
+      "target": "io_loaders_omezarrmetadatautils_screengridforrange",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+loaders\\OmeZarrMetadataUtils.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_loaders_omezarrmetadatautils_m",
+      "target": "io_loaders_omezarrmetadatautils_levelreadwindow",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -58029,6 +58796,16 @@
     },
     {
       "source": "controllers_instanceeditor_addcallbacks_m",
+      "target": "controllers_instanceeditor_instanceeditor_selectedlist_callback",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\addCallbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_addcallbacks_m",
       "target": "controllers_instanceeditor_instanceeditor_selectedlist_contextmenu",
       "relation": "calls",
       "confidence": "INFERRED",
@@ -58270,6 +59047,16 @@
     {
       "source": "controllers_instanceeditor_pickmode_callback_m",
       "target": "controllers_instanceeditor_setpickmode_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@InstanceEditor\\pickMode_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_instanceeditor_pickmode_callback_m",
+      "target": "controllers_instanceeditor_instanceeditor_rememberwindowstate",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -59480,6 +60267,16 @@
     {
       "source": "controllers_mibactivedataset_datasettypechange_callback_m",
       "target": "io_loaders_zarr3virtualsetuploader_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+controllers\\@MibActiveDataset\\datasetTypeChange_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibactivedataset_datasettypechange_callback_m",
+      "target": "io_loaders_zarr2virtualsetuploader_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.7,
@@ -63259,6 +64056,26 @@
     },
     {
       "source": "controllers_selectfromurl_openlabelcrop_m",
+      "target": "controllers_selectfromurl_labelgroupname_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@SelectFromUrl\\openLabelCrop.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_openlabelcrop_m",
+      "target": "controllers_selectfromurl_selectfromurl_chooseinstancehandling",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@SelectFromUrl\\openLabelCrop.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_openlabelcrop_m",
       "target": "controllers_selectfromurl_resolvesiblingimagegroup_m",
       "relation": "calls",
       "confidence": "INFERRED",
@@ -63270,6 +64087,16 @@
     {
       "source": "controllers_selectfromurl_openlabelcrop_m",
       "target": "controllers_selectfromurl_planlabelcrop_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@SelectFromUrl\\openLabelCrop.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_openlabelcrop_m",
+      "target": "controllers_selectfromurl_selectfromurl_choosecroplevel",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -63340,6 +64167,26 @@
     {
       "source": "controllers_selectfromurl_openplainimageurl_m",
       "target": "controllers_selectfromurl_selectfromurl_guifigure",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@SelectFromUrl\\openPlainImageUrl.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_openplainimageurl_m",
+      "target": "controllers_selectfromurl_selectfromurl_hasview",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@SelectFromUrl\\openPlainImageUrl.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_openplainimageurl_m",
+      "target": "controllers_selectfromurl_ensuredatasetmode_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -65818,6 +66665,16 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_volrenapp_volrenapp_m",
+      "target": "controllers_boundingbox_boundingbox_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+controllers\\@VolRenApp\\VolRenApp.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_volrenappviewer_volrenappviewer_m",
       "target": "core_childview_childview_m",
       "relation": "calls",
@@ -66234,6 +67091,56 @@
       "confidence": "INFERRED",
       "confidence_score": 0.75,
       "source_file": "+core\\@MibBigDataLabels\\setData63.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibbigdatalabelsindex_getdata_m",
+      "target": "core_mibbigdatalabelsindex_mibbigdatalabelsindex_picklevel",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+core\\@MibBigDataLabelsIndex\\getData.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibbigdatalabelsindex_getdata_m",
+      "target": "core_mibbigdatalabelsindex_mibbigdatalabelsindex_imagescaleformagfactor",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+core\\@MibBigDataLabelsIndex\\getData.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibbigdatalabelsindex_getdata_m",
+      "target": "core_mibbigdatalabelsindex_mibbigdatalabelsindex_readlevel",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+core\\@MibBigDataLabelsIndex\\getData.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibbigdatalabelsindex_mibbigdatalabelsindex_m",
+      "target": "core_miblabels_miblabels_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+core\\@MibBigDataLabelsIndex\\MibBigDataLabelsIndex.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibbigdatalabelsindex_openstore_m",
+      "target": "io_zarr_array_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+core\\@MibBigDataLabelsIndex\\openStore.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -67134,6 +68041,16 @@
       "confidence": "INFERRED",
       "confidence_score": 0.7,
       "source_file": "+core\\@MibLabels\\MibLabels.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_miblabels_save_m",
+      "target": "io_savers_mibimagesliceprovider_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+core\\@MibLabels\\save.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -68870,6 +69787,16 @@
     {
       "source": "models_mibmodel_loadmodel_m",
       "target": "core_mibbigdatalabels_mibbigdatalabels_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+models\\@MibModel\\loadModel.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_loadmodel_m",
+      "target": "core_mibbigdatalabelsindex_mibbigdatalabelsindex_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.7,
@@ -77199,6 +78126,16 @@
     },
     {
       "source": "controllers_selectfromurl_selectfromurl_m",
+      "target": "utils_dlgs_inputuniversaldlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_selectfromurl_m",
       "target": "utils_updateguifrombatchopt_shared_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
@@ -78219,6 +79156,16 @@
     },
     {
       "source": "controllers_volrenapp_volrenapp_m",
+      "target": "utils_dlgs_inputquestdlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@VolRenApp\\VolRenApp.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_volrenapp_volrenapp_m",
       "target": "utils_openhelppage_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
@@ -78684,6 +79631,16 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "+core\\@Measurements\\Measurements.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibbigdatalabelsindex_mibbigdatalabelsindex_m",
+      "target": "utils_dlgs_inputuniversaldlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibBigDataLabelsIndex\\MibBigDataLabelsIndex.m",
       "source_location": null,
       "weight": 1.0
     },

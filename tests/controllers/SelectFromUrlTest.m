@@ -691,10 +691,11 @@ classdef SelectFromUrlTest < matlab.unittest.TestCase
             testCase.verifySubstring(reason, 'no pyramid');
         end
 
-        function anInstanceOverlayIsNamedAsOneMaterialBeforeOpen(testCase)
-            % The overlay draws object ids as a single material by default, and
-            % that is a decision the user should read before pressing Open rather
-            % than infer from the result.
+        function anInstanceOverlayNamesItsRenderingBeforeOpen(testCase)
+            % The overlay draws one colour per object by default, and says so before
+            % Open rather than leaving the user to infer it from the result - along
+            % with where to switch it, since the merged view is the useful one when
+            % there are hundreds of objects.
             [controller, ~, mibModel] = testCase.newViewLessController();
             testCase.stageOverlayPyramids(controller, mibModel, 128);
             labelPyramid = controller.probeCache{"pyramid:" + string([testCase.ZarrTwin '/nuc'])};
@@ -704,7 +705,9 @@ classdef SelectFromUrlTest < matlab.unittest.TestCase
             [overlayFits, reason] = controller.resolveOverlayRoute(labelPyramid, openImage);
 
             testCase.verifyTrue(overlayFits, reason);
-            testCase.verifySubstring(reason, 'single material');
+            testCase.verifySubstring(reason, 'its own colour');
+            testCase.verifySubstring(reason, 'Show model', ...
+                'and names the control that changes it');
         end
 
         function theLevelPickerOffersOnlyPairsThatLineUp(testCase)

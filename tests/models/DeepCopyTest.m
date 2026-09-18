@@ -85,5 +85,44 @@ classdef DeepCopyTest < matlab.unittest.TestCase
                 'installed copy must be accessible via I{2} with correct depth');
         end
 
+        function deepCopy_installIntoSlot_syncsDatasetsPanelTypeCache(testCase)
+            % The Datasets panel's type dropdown reads Sets.datasetTypes
+            % (buffers_Callback.m:64), not I{id}.datasetType, so installing a copy
+            % without refreshing that entry makes the panel describe the destination
+            % by whatever it held before. Duplicating a BigData buffer showed
+            % "Standard" for a buffer that really was BigData.
+            [mibModel, ~] = mibtest.helpers.buildSyntheticModel( ...
+                'modelType', 'labels255', 'dims', [12 12 3]);
+
+            mibModel.I{1}.datasetType = 'BigData';
+            targetSet     = floor((2 - 1) / mibModel.Sets.datasetsInSet) + 1;
+            targetLocalId = mod(2 - 1, mibModel.Sets.datasetsInSet) + 1;
+            mibModel.Sets.datasetTypes{targetSet, targetLocalId} = 'Standard';
+
+            opts.showWaitbar = false;
+            opts.UIFigure    = [];
+            mibModel.deepCopyDataset(1, 2, opts);
+
+            testCase.verifyEqual(mibModel.I{2}.datasetType, 'BigData', ...
+                'the copy carries the source type');
+            testCase.verifyEqual(mibModel.Sets.datasetTypes{targetSet, targetLocalId}, ...
+                'BigData', 'and the panel cache has to say the same thing');
+        end
+
+        function deepCopy_withoutSlot_leavesTypeCacheAlone(testCase)
+            % undo/backup take a free-standing copy with toId = []; nothing was
+            % installed, so no slot's cache may move.
+            [mibModel, ~] = mibtest.helpers.buildSyntheticModel( ...
+                'modelType', 'labels255', 'dims', [12 12 3]);
+            mibModel.I{1}.datasetType = 'BigData';
+            cacheBefore = mibModel.Sets.datasetTypes;
+
+            opts.showWaitbar = false;
+            opts.UIFigure    = [];
+            mibModel.deepCopyDataset(1, [], opts);
+
+            testCase.verifyEqual(mibModel.Sets.datasetTypes, cacheBefore);
+        end
+
     end
 end

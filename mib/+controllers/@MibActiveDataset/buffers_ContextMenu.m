@@ -316,6 +316,14 @@ switch parameter
         EventDataOpt.index = destGlobalId;
         notify(obj.mibModel, 'NewDataset', core.ToggleEventData(EventDataOpt));
 
+        % deepCopyDataset wrote the destination's Sets.datasetTypes entry; the
+        % repaint has to be asked for separately, because listener_newDataset only
+        % fires DatasetsPanelUpdate when the active SET changes and duplicating into
+        % a buffer of the same set never does (stitchBtn_Callback.m:355-361). Without
+        % it the dropdown keeps showing the destination's previous type until the
+        % buffer button is clicked.
+        notify(obj.mibModel, 'DatasetsPanelUpdate');
+
         % notify batch
         eventdata = core.ToggleEventData(BatchOpt);
         notify(obj.mibModel, 'SyncBatch', eventdata);

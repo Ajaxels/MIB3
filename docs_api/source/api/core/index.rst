@@ -21,12 +21,23 @@ Dataset and image layers
 Label layers
 ------------
 
+Two branches, and which one a store lands on decides what it can hold.
+:class:`core.MibLabels63` packs material, mask and selection into one byte, so its
+descendants top out at 63 materials but are editable; :class:`core.MibLabels` keeps
+the layers separate and reaches 65535 or more::
+
+    MibImage
+    +-- MibLabels63 -- MibBigDataLabels -- MibBigDataLabelsZarr2   (packed byte, editable store)
+    +-- MibLabels    -- MibBigDataLabelsIndex                      (separate layers, read-only)
+
 .. toctree::
    :maxdepth: 1
 
    MibLabels
    MibLabels63
    MibBigDataLabels
+   MibBigDataLabelsZarr2
+   MibBigDataLabelsIndex
 
 Overlays and annotations
 ------------------------

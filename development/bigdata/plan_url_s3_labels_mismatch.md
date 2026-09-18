@@ -1,7 +1,8 @@
 # Plan: label pyramids that do not match the image - honest dataset mode, and a view-only BigData overlay
 
-**Status:** Stages A, B and C done. Stage D (the rendering toggle) planned; the class already carries
-`renderPerObject`, so D is UI only. Written 2026-09-17.
+**Status:** Stages A, B, C and D done. Written 2026-09-17, D landed 2026-09-18. What remains is the
+manual in-a-running-MIB checklist under [Verification](#verification), most of which no offline test
+can reach.
 
 > **A2/A3 were pulled forward** from their planned position after Stage C. Reported from the GUI:
 > with `Dataset mode = BigData` selected, Open went straight to the instance question - asking how
@@ -38,6 +39,7 @@ Two problems, and they are different in kind:
   `Dataset mode = Standard` and try again. `ensureDatasetMode`'s silent override is removed, so the
   control always means what it says and there is no hidden special case left to document.
 - **Instances render as a single material by default**, with per-object as an opt-in.
+  *Reversed when Stage D landed* - see "What Stage D actually changed".
 - **Both routes are kept.** Standard = an editable in-memory copy (the right thing for a ground-truth
   crop, since remote label stores are read-only). BigData = the view-only overlay. `Dataset mode`
   selects between them.
@@ -289,9 +291,9 @@ Members are as planned. Four things the plan did not name:
   beside `modelScaleFactors`. It is not redundant: the overlay has to come back the size the image
   layer came back, and that size follows from the level the **image** is showing, not the one the
   labels are read from. This is the `screenGridForRange` finding from Stage B surfacing as state.
-- **`renderPerObject` lives on the class** (default `false`, i.e. single material), applied in
-  `readLevel` after the chunk cache. That makes Stage D a pure UI task - a toggle over an existing
-  field - rather than anything touching the read path. `countMaterials` reports 1 while it is off.
+- **`renderPerObject` lives on the class**, applied in `readLevel` after the chunk cache. That makes
+  Stage D a pure UI task - a toggle over an existing field - rather than anything touching the read
+  path. `countMaterials` reports 1 while it is off. (Default was `false` here; Stage D reversed it.)
 - **`setDataFast` is blocked too**, which the plan's list did not include. `MibDataset`'s fast paths
   gate on `datasetType == 'Standard'` so they never reach a BigData buffer, but the inherited version
   writes straight into `obj.data` - empty here - so a stray call would silently **grow** a
@@ -423,10 +425,77 @@ one - which is the substantive improvement over what ships today.
 
 - **Default: single material.** `valueRemap` (any non-zero -> 1) already exists in
   `MibBigDataLabelsZarr2:resolveValueRemap` and applies per block read, after the chunk cache.
+  **This was reversed on landing** - per object is the default and the merge is the opt-out.
 - **Opt-in: per object**, ids passed through. Safe to offer because compositing is O(pixels).
 - Gate `getRGBimage.m:426-436`'s per-material contour loop on `maxMaterials < 256` while here.
 
 Surface it next to *Show model* rather than in the import dialog, so it can be toggled after loading.
+
+### What Stage D actually changed
+
+`+views/@MibView/addSelectionViewSettingsPanel.m`, `@MibSelection/MibSelection.m`, two new callback
+files, and the contour gate in `getRGBimage.m`. No read-path change, as predicted.
+
+- **The default is reversed: per object, with the merge as the opt-out.** The plan had it the other
+  way on the reasoning that a user looking at a segmentation wants to see the structure. Seeing it
+  running says otherwise: the object ids are what the store actually holds, the merge is the lossy
+  view, and compositing costs the same either way - so defaulting to the merge threw away
+  information for nothing and left the feature invisible unless the user happened to right-click.
+  `resolveOverlayRoute`'s info-panel note changed with it and now names the control, so the merged
+  view is still one gesture away and discoverable before Open.
+
+- **It is a context menu on the `showModel` checkbox, not a checkbox beside it.**
+  `SelectionViewSettings.mlapp` is an App Designer binary that cannot gain a widget from a text edit -
+  the same constraint that left `ImageGroupPath` batch-only and made `chooseCropLevel` a runtime
+  dialog. The panel already builds its `lutTable` context menu programmatically in
+  `addSelectionViewSettingsPanel.m`, so the menu joins that block and the controller wires the
+  callbacks, keeping the view/controller split the file already has.
+
+- **State is read in `ContextMenuOpeningFcn`, not kept in step by listeners.** The entry is enabled
+  and checked from `getActiveId()` at the moment the menu opens, so a buffer switch, a mode change or
+  a model being closed reach it without notifying anything. A listener would have been a fourth place
+  to keep synchronised for a control that is invisible 99% of the time.
+
+- **The contour gate turned out to need more than a gate.** The plan said "gate
+  `getRGBimage.m:426-436` on `maxMaterials < 256`", but falling through to the existing `else` arm
+  (`M - imerode(M)`) is wrong for a label matrix: at a boundary between objects 5 and 9 it paints the
+  difference, `4`, so contours come out in unrelated colours. The `>= 256` case gets its own arm,
+  `M(M == imerode(M, ...)) = 0`, which keeps each object's own index on the pixels the erosion
+  removed. Verified live at 486 objects: ids preserved, max id kept 486. The `< 256` arms are
+  untouched, so no existing model changes appearance.
+
+  `elseif selectedObject > 0` had the same uint8 bug one line down (`zeros(size(M), 'uint8')` wraps a
+  selected object past 255) and is now `'like', M`.
+
+- **Live-verified against `jrc_mus-kidney-2`'s `nuc`** in a running MIB rather than by unit test,
+  since both halves need either a window or the network. Registration `[16 32 64 ... 4096]` against
+  the image's `[1 2 ... 4096]`; merged gives `unique == [0 1]`, per-object gives 30 distinct ids in
+  one view with `max == 486`; the footprints are identical either way; `obj.data` stays empty.
+
+**One thing the live check found, since fixed.** `materialsCount` came back as **1** for this store.
+`openStore` probed the **coarsest** level for the highest id, and `nuc`'s coarsest is `3 x 3 x 3` -
+by which point every nucleus has been downsampled out of existence. The documented "lower bound"
+degenerates to useless on a deep pyramid, which only a 9-level store reveals; the 3-level test
+fixture could not.
+
+It now probes the **finest level inside a 2e6-voxel budget** (about 4 MB at uint16) instead of the
+last one. Measured against the live store:
+
+| level | voxels | read | max id |
+|---|---|---|---|
+| `s5` | 15 600 | 0.26 s | 480 |
+| `s4` | 129 850 | 0.25 s | 486 |
+| `s3` | 1 059 300 | 0.49 s | **489** (chosen) |
+| `s8` | 27 | - | 0 (what it used to read) |
+
+So the fix costs about a quarter of a second against `s4`, inside an attach that already takes ~6.6 s
+opening nine remote arrays and their metadata - the probe was never the expensive part. The count is
+still a lower bound, and still far cheaper than `core.MibLabels.countMaterials` scanning a 510 GiB
+volume. The walk towards coarser levels survives as the fallback when a read throws.
+
+`theCountIsNotTakenFromTheCoarsestLevel` is the regression guard: the fixture's coarsest level is
+filled with a single id `60000` that appears nowhere else, so reading it instead of a finer level
+shows up as a wrong value rather than merely a pessimistic one.
 
 ---
 
@@ -476,15 +545,56 @@ Surface it next to *Show model* rather than in the import dialog, so it can be t
 (`nuc`, 5 levels from 128 nm, 864 objects, EM 12 levels from 8 nm) and
 `jrc_ctl-id8-1` (`nuc`, 4 levels from 64 nm, EM 6 from 4 nm):
 
-- the EM stays `datasetType = BigData` with all 12 levels and **no bulk download** - assert
-  `numel(image.data) == 0`;
-- a slice read at 128 nm returns pixels identical to a direct `io.zarr.Array` read of the same bbox;
-- a slice read at 8 nm returns the correctly cropped upsample of that same data;
-- time a slice change with the overlay on versus off, to confirm the chunk cache is doing its job.
+**All four done 2026-09-18** against a live `jrc_mus-kidney-2` buffer (`nuc`, 9 levels from 128 nm,
+EM 13 from 8 nm), driven from the MATLAB console rather than the window:
 
-**Manual, in a running MIB** - the part never yet exercised, and open item 10 in
-[`plan_url_s3.md`](plan_url_s3.md). Nothing below is covered by the suite, because each item needs
-either the real network or a window.
+- the EM stays `datasetType = BigData` with **no bulk download** - `numel(image.data) == 0`
+  confirmed, and `modelScaleFactors(:,1)'` is `[16 32 64 ... 4096]` against the image's
+  `[1 2 ... 4096]`;
+- a slice read at 128 nm is **byte-identical** to a direct `io.zarr.Array` read of the same bbox;
+- a slice read at 8 nm is the **exact** upsample of that same data
+  (`direct(repelem(1:100,16), repelem(1:100,16))`, equal element for element), and an off-origin
+  window at `[801 1600]` matches the same grid - the pan-drift check, row 7 below;
+- **z alignment is exact**: all sixteen full-resolution slices of label voxel 375 return that
+  voxel, and both neighbouring slices across the boundary return a different one. This is row 5,
+  the one place a z off-by-one would show;
+- the overlay is the size the image layer returns at **seven** magnifications, including the ones
+  that round (`188`, `94`, `48`);
+- a slice change costs **2.7 ms for the overlay against 4.6 ms for the image itself** with chunks
+  warm, so the chunk cache is doing its job.
+
+Between them these close Risk 1's residual - `pickLevel` and `levelReadWindow` demonstrably share a
+scale space, since a 16x error could not survive a byte-identical read at one level and an exact
+upsample at another.
+
+**Manual, in a running MIB** - open item 10 in [`plan_url_s3.md`](plan_url_s3.md). Nothing below is
+covered by the suite, because each item needs either the real network or a window.
+
+**All but three rows are now closed.** Rows 1, 4, 5, 6, 7 and 14 were settled from the console by
+the live checks above; 11 and 11b were confirmed at the window. A second pass against a live
+`jrc_mus-kidney-2` buffer closed the rest:
+
+| Row | How it was settled |
+|---|---|
+| 2, 3 | `resolveOverlayRoute` returns `overlayFits = 1` and the exact two-paragraph note, read back verbatim |
+| 8 | `enableSelection == 0` on the attached buffer - the flag every segmentation tool returns on |
+| 9 | `backup('labels')` and `backup('everything', 3D)` return in **5 ms and 0.9 ms** leaving `undoList` unchanged; `buildInstanceIndex` refuses in 4.5 ms. A missing guard would have been a full-volume network read, so the timing *is* the assertion |
+| 10 | the level dialog lists the **labels'** 9 levels with their factor against the image voxel, not the EM's 13 |
+| 10b | `s5` exported from the **remote** store in 0.93 s, reopened standalone, identical to the store's own level; `obj.data` empty throughout |
+
+`materialsCount` reads 489 and `renderPerObject` is true on a buffer opened through the real UI, so
+both of this session's changes are confirmed end to end rather than only in the fixture.
+
+**What is genuinely left**, and why the console cannot reach it:
+
+- **Row 10c** - cancelling a long save must leave no partial file. The cancel is a
+  `uiprogressdlg` button; there is nothing to press headlessly.
+- **Row 12** - the Standard crop route. Its level picker is a modal dialog, and the check is that
+  the buffer *becomes* Standard and the panel agrees, which is a repaint.
+- **Row 13** - the ground-truth crop refusal. It needs `jrc_mus-kidney`'s **own** EM open:
+  `jrc_mus-kidney-2` publishes no `groundtruth` group at all, and pointing at another container's
+  crop fires a different and earlier branch ("No sibling image pyramid could be found"), not the
+  world-box refusal this row is about.
 
 Container: `https://janelia-cosem-datasets.s3.amazonaws.com/jrc_mus-kidney/jrc_mus-kidney.zarr`
 (EM `recon-1/em/fibsem-uint8`, 12 levels from 8 nm; labels
@@ -505,7 +615,8 @@ Container: `https://janelia-cosem-datasets.s3.amazonaws.com/jrc_mus-kidney/jrc_m
 | 10 | Save model as ... | A level list appears, showing the **labels'** 5 levels (not the EM's 12), each with its factor against the image voxel |
 | 10b | Pick `s2`, save as `.model`, then open that file on its own | The saved model is that level's own dimensions and values; the write does not need memory to hold it |
 | 10c | Pick `s0` on `jrc_mus-liver-6`'s `er` and start the save | It streams; a coarse level finishes quickly. Cancel must leave no partial file behind |
-| 11 | `mibModel.I{1}.labels.renderPerObject = true`, then redraw | Objects get individual colours; default was one material |
+| 11 | Right-click *Show model*, clear **Render instances per object** | Objects fuse into one material; ticking it again restores the individual colours. The entry is greyed for any other model type |
+| 11b | Turn on *Show as contours* with per-object on | Each object outlined in its own colour, not in a colour computed from its neighbour's index |
 | 12 | Repeat 2 with `Dataset mode = Standard` | The old crop route: level picker appears, region read into memory, buffer becomes Standard and the panel says so |
 | 13 | A ground-truth crop group (`recon-1/labels/groundtruth/...`) in BigData mode | Refused, leading with "cannot be shown over the open dataset ... do not describe the same volume", then the numbered Standard steps |
 | 14 | Time a slice change with the overlay on versus off | The difference is one small ranged request, not a visible stall - the chunk cache doing its job |
@@ -523,7 +634,7 @@ return nothing.
 | 2 | A2/A3 refusal + level picker | - | **Done**, pulled forward - see the note at the top |
 | 3 | B registration + alignment tests | - | **Done.** The risky piece; proved before anything is built on it |
 | 4 | C the class + routing | B | **Done** - class, routing and the blocked-path guards |
-| 5 | D rendering choice | C | Next; a toggle over `renderPerObject`, no read-path work |
+| 5 | D rendering choice | C | **Done** - context menu on `showModel`, plus the contour gate |
 
 **Carried into Stage C:** the A2 refusal currently says BigData is impossible for a label group.
 Once the overlay route exists that is only true when the pyramid does not register, so the message

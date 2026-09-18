@@ -18,7 +18,7 @@ to show volumes using volume rendering techniques, models as overlays and genera
 Whenever 3D volume rendering is selected, the current image volume is transferred into the 3D viewer. 
 During the transfer, it is possible to select color channels or downsample the dataset to improve rendering performance:
 
-![Downsampling Dialog](images/menuFileRenderingMIB_downsample.png){.on-glb align=left}
+![Downsampling Dialog](images/menuFileRenderingMIB_downsample.png){.on-glb align=left width="300"}
 <div class="clear-float"></div>
 
 ---
@@ -149,8 +149,12 @@ List of widgets for tweaking visualization settings:
 <div class="clear-float"></div>
 
 - **Table with materials**: list of model materials; each can be shown/hidden and assigned a transparency value (**Alpha**, 0-1). Right-click for a menu with:
-    - **Generate surface(s)**: create surfaces for the selected rows in the *Surfaces* tab.
+    - **Generate surface(s)**: create surfaces for the selected rows in the *Surfaces* tab. In the
+      *All materials* mode the single row covers the whole model, so this builds one surface per
+      object; it asks first, because that is one surface per object rather than one per row.
     - **Generate surface by index...**: create a surface for any material by typing its index.
+      For an imported overlay this reads the object ids from the store, so it works even when the
+      objects are shown fused together.
     - **Remove selected materials**: drop the selected rows from the rendered list (*Selected materials* mode only).
 
 ### Models with many materials
@@ -163,25 +167,33 @@ Instance segmentation produces models with thousands of materials (the 65535 and
 !!! tip
     Use <span class="widget widget-button">Update overlay</span> for these models. Showing the model as the volume itself gives a gradient rather than separate objects.
 
+An [imported overlay](home-importfromurl.md#labels-published-only-at-coarse-resolution) shows its
+objects fused into one material. **Generate surface(s)** on such a model builds a single surface
+covering all of them, after asking; objects that touch end up as one connected surface. Use
+**Generate surface by index...** for one object on its own.
+
 ---
 
 ## 3D Controls -> Surfaces
 
 Surfaces generated from the *Model* tab’s material table (via right-click) are visualized using settings in this tab.
 
-![3D Controls -> Surfaces Tab](images/menuFileRenderingMIB_R2022b_3DControls_Surfaces.png){align=left }
+![3D Controls -> Surfaces Tab](images/menuFileRenderingMIB_R2022b_3DControls_Surfaces.png){.on-glb align=left width="300"}
 
 List of widgets for tweaking visualization settings:
 
-- **Table**:
-  - **C**: click to set color for the selected surface.
-  - **Name**: double-click to change the surface name.
-  - **Alpha**: tweak transparency (0-1).
-  - <label class="widget widget-checkbox">Show</label>: toggle show/hide the selected surface.
-  - <label class="widget widget-checkbox">Wire</label>: toggle wireframe visualization.
-  - <span class="widget widget-dropdown">Additional settings via right mouse click</span>:
-    - **Save surface(s)**: export selected surface(s) to SLT format.
-    - **Remove surface(s)**: remove the selected surface from the 3D viewer.
+**Table**:
+
+- **C**: click to set color for the selected surface.
+- **Name**: double-click to change the surface name.
+- **Alpha**: tweak transparency (0-1).
+- <label class="widget widget-checkbox">Show</label>: toggle show/hide the selected surface.
+- <label class="widget widget-checkbox">Wire</label>: toggle wireframe visualization.
+- <span class="widget widget-dropdown">Additional settings via right mouse click</span>:
+  - **Save surface(s)**: export selected surface(s) to SLT format.
+  - **Remove surface(s)**: remove the selected surface from the 3D viewer.
+
+<label class="widget widget-checkbox">Hide all</label>: toggle show/hide all surfaces from the view
 
 <div class="clear-float"></div>
 

@@ -294,6 +294,12 @@ Nothing is downloaded in bulk, so the size of the segmentation does not matter. 
 edited: they are displayed from a store that belongs to another tool. To save them to a file, see
 [Saving an overlay](#saving-an-overlay).
 
+An instance segmentation arrives with each object in its own colour. To show them as a single
+structure instead - easier to read when there are hundreds - <mouse class="right"></mouse> the
+<span class="widget widget-checkbox">Show Model</span> checkbox in the
+[View Settings panel](../../panels/selection_imview/viewsettings.md#checkboxes-to-toggle-visibility-of-layers)
+and clear **Render instances per object**. It can be switched at any time.
+
 **Standard - the labels and their matching image region, in memory.** MIB opens the image at the
 level that matches the labels and puts them on that, so the two sit on the same voxel grid, and the
 model is an ordinary editable one. The dataset you get cannot be zoomed to the resolution of the
@@ -319,7 +325,7 @@ Nothing, as of this version - but one kind of group needs a decision.
 
 **Instance segmentations.** A handful of groups - `mito`, `nuc`, `ves`, `endo`, `lyso`, `ld`,
 `perox`, `np`, `mt`, `cell` - store an object **id** per voxel rather than a class. The info panel
-says so when you select one, and Open asks how to take it:
+says so when you select one, and in **Standard** mode Open asks how to take it:
 
 - **Keep objects** (default) - one material per object, named by the store's id (`nuc_1`, `nuc_2`,
   ...). The objects stay separable and MIB's instance tools apply. Up to 65535 of them.
@@ -328,6 +334,10 @@ says so when you select one, and Open asks how to take it:
   then gone.
 
 Either way the object count is reported after loading, since the model itself cannot show it.
+
+In **BigData** mode the question is not asked: the overlay keeps the objects, and merging them is a
+right-click on <span class="widget widget-checkbox">Show Model</span> that can be undone as often as
+you like. See [Labels published only at coarse resolution](#labels-published-only-at-coarse-resolution).
 
 **Segmentations of a whole volume.** Published containers also carry *inference* results - for
 example `recon-1/labels/inference/segmentations/er` - which look exactly like a ground-truth crop

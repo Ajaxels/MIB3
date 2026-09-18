@@ -54,6 +54,20 @@ The <span class="widget widget-checkbox">LUT</span> checkbox determines how the 
 <span class="widget widget-checkbox">Show Model</span> checkbox, toggles the Model layer on/off.<br>
 Shortcut: <span class="widget widget-button">Space</span>
 
+???+ info "Right-click actions for the model layer"
+
+    <mouse class="right"></mouse> the <span class="widget widget-checkbox">Show Model</span> checkbox for:
+
+    - **Render instances per object**: gives every object of an
+    [imported label overlay](../../ribbon/home/home-importfromurl.md#labels-published-only-at-coarse-resolution)
+    its own colour. On by default. Switch it off to show the objects as a single material, which
+    is easier to read when a segmentation holds hundreds of them and you only need to see where
+    they are.
+
+    The option is available for imported overlays only, and applies to a whole overlay rather than
+    to a selected object. Either way the stored data is untouched, so it can be switched as often
+    as you like.
+
 <span class="widget widget-checkbox">Show Mask</span> checkbox, toggles the Mask layer on/off.<br>
 Shortcut: <span class="widget widget-button">Ctrl</span> + <span class="widget widget-button">Space</span>.
 

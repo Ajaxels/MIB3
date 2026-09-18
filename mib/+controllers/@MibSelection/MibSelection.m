@@ -29,6 +29,8 @@ classdef MibSelection
         lutTable_CellEditCallback(obj, hWidget, hData, keyModifier)        % callbacks for cell edit in the LUT table (obj.view.handles.panels.selection.handles.lutTable) of the Selection and Image View panel
         lutTable_CellSelection(obj, hWidget, hData)        % callbacks for cell selection in the LUT table (obj.view.handles.panels.selection.handles.lutTable) of the Selection and Image View panel
         lutTable_update_fromModel(obj)        % Update obj.view.handles.panels.selection.handles.lutTable table and obj.view.handles.panels.selection.handles.colChannel color dropdown from obj.mibModel
+        showModel_ContextMenu(obj, menuEntry, selectedData)        % callbacks for the context menu of the "Show model" checkbox (obj.view.handles.panels.selection.handles.showModel)
+        showModel_ContextMenuOpening(obj, hContextMenu, openingData)        % refresh the "Show model" context menu from the active dataset as it opens
         selectionPanelCheckboxes(obj, BatchOptIn)        % batch-compatible method to read or modify the state of checkboxes and the colour-channel dropdown of the Selection and View Settings panel
         updateSegmentationPreset(obj, presetId)        % update preset from the current settings of the selected segmentation tool; callback on Shift+click of preset buttons or Shift+1/2/3 shortcuts
         updateSettingsFromPreset(obj, presetId)        % update settings of the selected segmentation tool from a stored preset; callback on click of preset buttons or 1/2/3 shortcuts
@@ -69,6 +71,11 @@ classdef MibSelection
             obj.handles.lutTableContextSwap.MenuSelectedFcn = @obj.lutTable_ContextMenu;
             obj.handles.lutTableContextDelete.MenuSelectedFcn = @obj.lutTable_ContextMenu;
             obj.handles.lutTableContextSetLUT.MenuSelectedFcn = @obj.lutTable_ContextMenu;
+
+            % the entries are enabled and checked from the active dataset as the menu
+            % opens, so no listener is needed to keep them in step with the buffer
+            obj.handles.showModelContext.ContextMenuOpeningFcn = @obj.showModel_ContextMenuOpening;
+            obj.handles.showModelContextPerObject.MenuSelectedFcn = @obj.showModel_ContextMenu;
 
             %% ---------------------- Add CALLBACKS to widgets ----------------------
             % example call using lambda functions

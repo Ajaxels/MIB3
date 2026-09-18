@@ -137,7 +137,26 @@ if strcmp(hWidget.Value, 'Standard') && strcmp(convDs.datasetType, 'BigData') &&
             zarrPath = convDs.image.filename;
             lo = struct('datasetMode', 'Standard', 'ParentFigure', obj.view.gui, ...
                 'showWaitbar', true, 'mibPath', obj.mibModel.mibPath);
-            loader = io.loaders.Zarr3VirtualSetupLoader(lo);
+            % The store was opened by whichever loader its format needed, so the
+            % buffer may hold either version and the conversion has to probe rather
+            % than assume. Hardcoding the v3 loader here sent every zarr v2 store
+            % (the OME-Zarr / OpenOrganelle default) looking for a zarr.json that
+            % does not exist. resolveLoader cannot be used: it refuses zarr in
+            % Standard mode, which is exactly what this path is doing on purpose.
+            if strcmp(io.ExtensionRegistryLoad.detectZarrFormatExtension(zarrPath), 'zarr2')
+                loader = io.loaders.Zarr2VirtualSetupLoader(lo);
+            else
+                loader = io.loaders.Zarr3VirtualSetupLoader(lo);
+            end
+            % A BigData label overlay is a view onto a second pyramid rather than
+            % pixels in this buffer, and the initialize() below replaces obj.labels
+            % with an empty placeholder. Take the handle now so the model can be
+            % read into memory beside the image; the store stays open on it.
+            overlayLabels = [];
+            if convDs.modelExist && isa(convDs.labels, 'core.MibBigDataLabelsIndex')
+                overlayLabels = convDs.labels;
+            end
+
             try
                 [imginfo, files] = loader.loadMetadata({zarrPath}, lo);
                 [img, imginfo]   = loader.loadImages(files, imginfo, lo);
@@ -151,6 +170,80 @@ if strcmp(hWidget.Value, 'Standard') && strcmp(convDs.datasetType, 'BigData') &&
                 return;
             end
             obj.mibModel.I{convId}.initialize(img, imginfo, 'Standard', [], true);
+
+            % ---- bring the label overlay across as an ordinary model ---------
+            % The model type follows the overlay's own (65535 / 4294967295) and is
+            % never the packed 63-material one: an instance segmentation's ids run
+            % into the thousands and packing would fold every one of them onto a
+            % material below 64, with the mask and selection bits set as a bonus.
+            if ~isempty(overlayLabels)
+                % The loader picks the level in its own dialog and does not report
+                % which, but the level is identifiable from the dimensions it
+                % returned - and the labels have to be read at that same level.
+                loadedDims = double([imginfo{"Height"}, imginfo{"Width"}, imginfo{"Depth"}]);
+                levelIndex = find(all(files.levelImageSizes == loadedDims, 2), 1);
+                if isempty(levelIndex); levelIndex = 1; end
+                levelIndex = min(levelIndex, size(overlayLabels.imageScaleFactors, 1));
+                magFactor  = overlayLabels.imageScaleFactors(levelIndex, 1);
+                scaleZ     = overlayLabels.imageScaleFactors(levelIndex, 3);
+
+                % renderPerObject decides how the overlay is DRAWN; a conversion
+                % wants the ids themselves, so it is lifted for the read.
+                previousRenderPerObject = overlayLabels.renderPerObject;
+                overlayLabels.renderPerObject = true;
+
+                wbModel = uiprogressdlg(obj.view.gui, 'Title', 'Convert to Standard', ...
+                    'Message', sprintf('Reading the model into memory\n%d x %d x %d, please wait...', ...
+                        loadedDims(2), loadedDims(1), loadedDims(3)), 'Cancelable', 'on');
+                labelVolume = zeros(loadedDims, overlayLabels.dataClass);
+                modelFailure = '';
+                try
+                    for z = 1:loadedDims(3)
+                        if wbModel.CancelRequested
+                            modelFailure = 'cancelled';
+                            break;
+                        end
+                        wbModel.Value = z / loadedDims(3);
+                        % getData takes full-resolution coordinates, so one output
+                        % plane is the span of full-res slices that level plane covers -
+                        % the same span the image's own plane z covers, which is what
+                        % lines the two up index for index.
+                        slice = overlayLabels.getData('labels', 3, [], ...
+                            struct('magFactor', magFactor, 'z', [(z-1)*scaleZ + 1, z*scaleZ]));
+                        % The gather sizes a level as ceil(fullDim/scale) while a store
+                        % may have written floor, so the read can be one row, column or
+                        % plane larger than the image it has to match. The overhang is
+                        % at the far edge, so the model takes the leading block; sizes
+                        % that disagree anywhere else would be a registration fault.
+                        labelVolume(:, :, z) = slice(1:loadedDims(1), 1:loadedDims(2));
+                    end
+                catch ME
+                    modelFailure = ME.message;
+                end
+                overlayLabels.renderPerObject = previousRenderPerObject;
+                delete(wbModel);
+
+                if isempty(modelFailure)
+                    ds = obj.mibModel.I{convId};
+                    ds.createModel(overlayLabels.maxMaterials);
+                    obj.mibModel.setData3D(labelVolume, 'labels', 1, 3, [], ...
+                        struct('id', convId, 'blockModeSwitch', 0));
+                    ds.labels.materialsCount = double(max(labelVolume(:)));
+                else
+                    % No partial model: a half-read one looks like a segmentation
+                    % that lost its objects rather than one that was interrupted.
+                    if strcmp(modelFailure, 'cancelled')
+                        modelNote = 'reading the model was cancelled';
+                    else
+                        modelNote = sprintf('the model could not be read:\n%s', modelFailure);
+                    end
+                    utils.dlgs.showErrorDialog(obj.view.gui, sprintf( ...
+                        ['The image was loaded into memory, but %s.\n\n' ...
+                         'The dataset is now Standard and holds the image only.'], modelNote), ...
+                        'Model not converted');
+                end
+            end
+
             obj.mibModel.Sets.datasetTypes{obj.mibModel.Sets.selectedSet, ...
                 obj.mibModel.Sets.selectedDataset(obj.mibModel.Sets.selectedSet)} = 'Standard';
             notify(obj.mibModel, 'NewDataset');

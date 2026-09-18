@@ -43,6 +43,9 @@ Define the destination for the rendered snapshot:
 - <span class="widget widget-edit">Height</span>: modifies height of the snapshot, or the height of a single panel when <label class="widget widget-checkbox">Split channels</label> mode is enabled.
 - <span class="widget widget-dropdown">Resizing method</span>: select one of the possible resizing methods.
 
+!!! note
+    Snapshots of the volume rendering are grabbed from the viewer window and therefore cannot be larger than the visible area of the screen. When the requested size does not fit, MIB reports the largest size that can be captured.
+
 ??? info "List of image resizing methods"
     - ***nearest***: nearest-neighbor interpolation; the output pixel is assigned the value of the pixel that the point falls within. No other pixels are considered; best for upsampling of the images.
     - ***bilinear***: bilinear interpolation; the output pixel value is a weighted average of pixels in the nearest 2-by-2 neighborhood.

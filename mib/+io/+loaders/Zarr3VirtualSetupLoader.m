@@ -155,8 +155,25 @@ methods
                 rawMeta = jsondecode(fileread(fullfile(rootPath, 'zarr.json')));
             end
         catch ME
-            errorMessage = sprintf('Zarr3VirtualSetupLoader: cannot read zarr.json at\n %s\n%s', rootPath, ME.message);
+            if ~isHttp || ~isempty(regexp(ME.message, 'xmldom|404', 'once'))
+                % A remote store answering with something other than JSON is
+                % almost always a v2 store: S3 returns an XML "no such key" page
+                % for the missing zarr.json, and webread then complains about
+                % xmldom rather than about the file being absent. Say what is
+                % actually wrong instead of passing that on.
+                versionHint = sprintf(['\n\nThis path may hold a zarr v2 store ' ...
+                    '(.zattrs / .zgroup rather than zarr.json), which is read by ' ...
+                    'io.loaders.Zarr2VirtualSetupLoader.']);
+            else
+                versionHint = '';
+            end
+            errorMessage = sprintf('Zarr3VirtualSetupLoader: cannot read zarr.json at\n %s\n%s%s', ...
+                rootPath, ME.message, versionHint);
             utils.dlgs.showErrorDialog(obj.Options.ParentFigure, errorMessage, 'io:Zarr3VirtualSetupLoader:openFailed', '', '');
+            % Abort. Without this the read carries on to rawMeta below, which was
+            % never assigned, and the real cause is buried under an
+            % "Unrecognized function or variable 'rawMeta'" raised 15 lines later.
+            error('io:Zarr3VirtualSetupLoader:openFailed', '%s', errorMessage);
         end
 
         % Keep ZarrGroup open for listContents() (local paths only)
@@ -398,6 +415,9 @@ methods (Access = private)
             catch ME
                 errorMessage = sprintf('Zarr3VirtualSetupLoader: cannot open level "%s":\n %s', ds.path, ME.message);
                 utils.dlgs.showErrorDialog(obj.Options.ParentFigure, errorMessage, 'io:Zarr3VirtualSetupLoader:arrayOpenFailed', '', '');
+                % Abort: arrInfo is unset below, so continuing reports an
+                % undefined-variable error instead of the real one.
+                error('io:Zarr3VirtualSetupLoader:arrayOpenFailed', '%s', errorMessage);
             end
 
             % shape is declared in C-order (Python): index matches axisLabels
@@ -682,6 +702,9 @@ methods (Access = private)
 
             errorMessage = sprintf('Zarr3VirtualSetupLoader: no multiscales metadata found and cannot open as ZarrArray at\n %s\n%s%s', rootPath, ME.message, hint);
             utils.dlgs.showErrorDialog(obj.Options.ParentFigure, errorMessage, 'io:Zarr3VirtualSetupLoader:arrayOpenFailed', '', '');
+            % Abort: arrInfo is unset below, so continuing reports an
+            % undefined-variable error instead of the real one.
+            error('io:Zarr3VirtualSetupLoader:arrayOpenFailed', '%s', errorMessage);
         end
 
         shape = arrInfo.shape;

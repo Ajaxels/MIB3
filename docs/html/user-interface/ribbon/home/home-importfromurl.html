@@ -6283,6 +6283,11 @@ as each slice is read, upsampled where the image is finer, and the image keeps e
 Nothing is downloaded in bulk, so the size of the segmentation does not matter. The labels cannot be
 edited: they are displayed from a store that belongs to another tool. To save them to a file, see
 <a href="#saving-an-overlay">Saving an overlay</a>.</p>
+<p>An instance segmentation arrives with each object in its own colour. To show them as a single
+structure instead - easier to read when there are hundreds - <mouse class="right"></mouse> the
+<span class="widget widget-checkbox">Show Model</span> checkbox in the
+<a href="../../panels/selection_imview/viewsettings.html#checkboxes-to-toggle-visibility-of-layers">View Settings panel</a>
+and clear <strong>Render instances per object</strong>. It can be switched at any time.</p>
 <p><strong>Standard - the labels and their matching image region, in memory.</strong> MIB opens the image at the
 level that matches the labels and puts them on that, so the two sit on the same voxel grid, and the
 model is an ordinary editable one. The dataset you get cannot be zoomed to the resolution of the
@@ -6301,7 +6306,7 @@ on its own, and writing it does not need enough memory to hold it.</p>
 <p>Nothing, as of this version - but one kind of group needs a decision.</p>
 <p><strong>Instance segmentations.</strong> A handful of groups - <code>mito</code>, <code>nuc</code>, <code>ves</code>, <code>endo</code>, <code>lyso</code>, <code>ld</code>,
 <code>perox</code>, <code>np</code>, <code>mt</code>, <code>cell</code> - store an object <strong>id</strong> per voxel rather than a class. The info panel
-says so when you select one, and Open asks how to take it:</p>
+says so when you select one, and in <strong>Standard</strong> mode Open asks how to take it:</p>
 <ul>
 <li><strong>Keep objects</strong> (default) - one material per object, named by the store's id (<code>nuc_1</code>, <code>nuc_2</code>,
   ...). The objects stay separable and MIB's instance tools apply. Up to 65535 of them.</li>
@@ -6310,6 +6315,9 @@ says so when you select one, and Open asks how to take it:</p>
   then gone.</li>
 </ul>
 <p>Either way the object count is reported after loading, since the model itself cannot show it.</p>
+<p>In <strong>BigData</strong> mode the question is not asked: the overlay keeps the objects, and merging them is a
+right-click on <span class="widget widget-checkbox">Show Model</span> that can be undone as often as
+you like. See <a href="#labels-published-only-at-coarse-resolution">Labels published only at coarse resolution</a>.</p>
 <p><strong>Segmentations of a whole volume.</strong> Published containers also carry <em>inference</em> results - for
 example <code>recon-1/labels/inference/segmentations/er</code> - which look exactly like a ground-truth crop
 in the metadata but cover the entire volume. With

@@ -586,7 +586,29 @@ methods (Access = private)
         fullPath = obj.buildLevelPath(files.filename, files.levelNames{selectedLevel});
         sz       = files.levelImageSizes(selectedLevel, :);
 
-        raw = obj.readLevelRegionV2(fullPath, files, selectedLevel);
+        % Reading a whole level is the long part of this method - a remote level
+        % is a multi-gigabyte download - and it ran with no feedback at all, so
+        % the window simply froze. Placed after the level dialog, which is modal
+        % and would otherwise be fighting this one for the front.
+        %
+        % Indeterminate and not cancelable, deliberately: the read below is a
+        % single library call with no loop to check a flag in, so a Cancel button
+        % here could not do anything and would only misrepresent that.
+        readWaitbar = [];
+        showReadWaitbar = ~isfield(options, 'showWaitbar') || options.showWaitbar;
+        if showReadWaitbar && isfield(options, 'ParentFigure') && ~isempty(options.ParentFigure)
+            readWaitbar = uiprogressdlg(options.ParentFigure, 'Indeterminate', 'on', ...
+                'Title', 'Loading into memory', ...
+                'Message', sprintf('Reading level %d (%d x %d x %d px)\nplease wait...', ...
+                    selectedLevel-1, sz(2), sz(1), sz(3)));
+        end
+        try
+            raw = obj.readLevelRegionV2(fullPath, files, selectedLevel);
+        catch readError
+            if ~isempty(readWaitbar); delete(readWaitbar); end
+            rethrow(readError);
+        end
+        if ~isempty(readWaitbar); delete(readWaitbar); end
 
         % permute from zarr C-order to MIB3 [y,x,z,c,t]
         perm = io.loaders.OmeZarrMetadataUtils.computePermutation(files.axisOrder);
