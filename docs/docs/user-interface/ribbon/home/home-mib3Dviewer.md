@@ -140,11 +140,11 @@ The Model tab contains tools for visualizing the model loaded into MIB.
 
 List of widgets for tweaking visualization settings:
 
-- <span class="widget widget-button">Update overlay</span>: grab the layer specified in <span class="widget widget-dropdown">Overlay source</span> and visualize it in the 3D Viewer.
 - <span class="widget widget-dropdown">Overlay source</span>: specify the layer type for visualization as a model.
+- <span class="widget widget-button">Update overlay</span>: grab the layer specified in <span class="widget widget-dropdown">Overlay source</span> and visualize it in the 3D Viewer.
+- <span class="widget widget-dropdown">Materials to show</span>, <span class="widget widget-edit">material list</span> and <span class="widget widget-button">Add current</span>: choose which materials to render, see [Models with many materials](#models-with-many-materials) below.
 - <label class="widget widget-checkbox">Hide all</label>: toggle show/hide all selected materials in the table.
 - <span class="widget widget-button">Refresh view</span>: pull the latest segmentation into the overlay on demand. The first use initialises the overlay (same as <span class="widget widget-button">Update overlay</span>); afterwards it performs a lightweight refresh that updates only the overlay data while preserving per-material visibility and display settings. This is also the action invoked automatically by <label class="widget widget-checkbox">Live update</label>.
-- <span class="widget widget-dropdown">Materials to show</span>, <span class="widget widget-edit">material list</span> and <span class="widget widget-button">Add current</span>: choose which materials to render, see [Models with many materials](#models-with-many-materials) below.
 
 <div class="clear-float"></div>
 

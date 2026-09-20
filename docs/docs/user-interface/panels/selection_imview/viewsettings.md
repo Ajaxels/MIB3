@@ -51,10 +51,12 @@ The <span class="widget widget-checkbox">LUT</span> checkbox determines how the 
 
 ![Checkboxes](images/PanelsViewSettings-checkboxes.png){align=left}
 
+<div class="clear-float"></div>
+
 <span class="widget widget-checkbox">Show Model</span> checkbox, toggles the Model layer on/off.<br>
 Shortcut: <span class="widget widget-button">Space</span>
 
-???+ info "Right-click actions for the model layer"
+??? info "Right-click actions for the model layer"
 
     <mouse class="right"></mouse> the <span class="widget widget-checkbox">Show Model</span> checkbox for:
 
