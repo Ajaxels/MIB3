@@ -38,10 +38,14 @@ function startFiji(mibGUI)
 
 if nargin < 1; mibGUI = []; end
 
+% link the Fiji libraries before probing for Miji: they are added lazily on
+% the first use, so Fiji.app/scripts is not yet on the Matlab path here
+utils.ensureJavaLibraries({'mij.jar', 'fiji'});
+
 if ~isdeployed
     if isempty(which('Miji'))
         utils.dlgs.showErrorDialog(mibGUI, ...
-            sprintf('Miji was not found!\n\nTo fix:\n1. Install Fiji (http://fiji.sc/Fiji)\n2. Add Fiji.app/Scripts to MATLAB path'), ...
+            sprintf('Miji was not found!\n\nTo fix:\n1. Install Fiji (http://fiji.sc/Fiji)\n2. Add the Fiji.app location to MIB Preferences->External directories'), ...
             'Missing Miji!');
         return;
     end

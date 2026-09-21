@@ -7,34 +7,31 @@
     "centerExpanded": false,
     "centerCollapsed": false,
     "left": {
-      "freeDimension": 306,
+      "freeDimension": 350,
       "collapsed": false,
       "expanded": false,
-      "portion": 0.21857142857142858,
+      "portion": 0.25,
       "children": [
         {
           "id": "panel1",
-          "collapsed": false,
-          "portion": 0.091383812010443863
+          "collapsed": false
         },
         {
           "id": "panel2",
-          "collapsed": false,
-          "portion": 0.29895561357702349
+          "collapsed": false
         },
         {
           "id": "panel3",
-          "collapsed": false,
-          "portion": 0.60966057441253263
+          "collapsed": false
         }
       ],
       "showingContextSetId": "global"
     },
     "bottom": {
-      "freeDimension": 171,
+      "freeDimension": 184,
       "collapsed": false,
       "expanded": false,
-      "portion": 0.20430107526881722,
+      "portion": 0.21983273596176822,
       "children": [
         {
           "id": "panel4",
@@ -56,17 +53,17 @@
     },
     "tileCount": 1,
     "tileCoverage": 0,
-    "referenceWidth": 1093,
-    "referenceHeight": 665,
+    "referenceWidth": 1049,
+    "referenceHeight": 652,
     "columnWeights": 1,
     "rowWeights": 1,
     "columnLeft": [
       0,
-      1093
+      1049
     ],
     "rowTop": [
       0,
-      665
+      652
     ],
     "tileOccupancy": {
       "children": {
@@ -85,10 +82,10 @@
     "lastSelectedDocumentId": "document1"
   },
   "windowBounds": {
-    "x": 1791,
-    "y": 102,
-    "w": 1416,
-    "h": 1019
+    "x": 260,
+    "y": 110,
+    "w": 1400,
+    "h": 980
   },
   "toolstripCollapsed": false,
   "tools": {

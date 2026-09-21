@@ -42,6 +42,10 @@ if ~isa(Volume, 'uint8')
     return;
 end
 
+% link the Fiji libraries before probing for Miji: they are added lazily on
+% the first use, so Fiji.app/scripts is not yet on the Matlab path here
+utils.ensureJavaLibraries({'mij.jar', 'fiji'});
+
 % check for installed Miji
 if ~isdeployed
     if isempty(which('Miji'))
