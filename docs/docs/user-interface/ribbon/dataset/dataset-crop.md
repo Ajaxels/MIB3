@@ -61,6 +61,14 @@ the [Datasets panel](../../panels/datasets/index.md).
 When the active dataset is a **BigData** (OME-Zarr v3 pyramidal) dataset, additional 
 controls become available in the **Settings** panel of the Crop dialog.
 
+Only the requested region is read, so cropping a small area of a very large or remote 
+dataset costs no more than the area itself.
+
+!!! note
+    Cropping a BigData or Virtual dataset cannot be undone. Crop into another 
+    container from the <span class="widget widget-dropdown">Destination</span> dropdown 
+    to keep the original.
+
 ### Zarr pyramid level
 
 The <span class="widget widget-dropdown">Zarr pyramid level</span> dropdown selects which 

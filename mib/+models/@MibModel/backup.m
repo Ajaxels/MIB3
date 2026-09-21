@@ -17,6 +17,11 @@ function backup(obj, type, switch3d, getDataOptions)
 %     **objects** instead of a pixel snapshot, so the model type is restored
 %     together with the data. Use it before operations that replace the labels
 %     layer with a different model type (Standard datasets only)
+%
+%     ``'image'`` is stored only for **Standard** datasets. On a Virtual or BigData
+%     dataset the call is a no-op: the snapshot has no coordinate ranges, so it
+%     would read the whole disk- or network-resident volume, and undo could not
+%     write it back into an image layer that holds file paths rather than pixels
 %   - **switch3d** - a switch to define a 2D or 3D mode to store the dataset
 %
 %     - ``0`` - 2D slice
@@ -174,6 +179,18 @@ id = getDataOptions.id;
 % getData2D would read the whole registered volume off the network to snapshot it.
 if ismember(type, {'mask', 'selection', 'model', 'labels', 'everything'}) && ...
         isa(obj.I{id}.labels, 'core.MibBigDataLabelsIndex')
+    return;
+end
+
+% An image snapshot of a Virtual or BigData dataset is both unaffordable and
+% unusable, so it is never taken. Unaffordable: getData3D has no coordinate
+% ranges here, so it reads the entire disk- or network-resident volume into RAM
+% - on a remote S3 store MIB simply appears to hang, which is what cropping a
+% small region used to do. Unusable: MibVirtualImage keeps file-path strings in
+% obj.data{}, and undo restores through MibImage.setData, so writing a pixel
+% snapshot back would overwrite the path list rather than restore anything.
+% The label layers are excluded above for the same reason.
+if strcmp(type, 'image') && obj.I{id}.datasetType(1) ~= 'S'
     return;
 end
 

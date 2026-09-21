@@ -30,6 +30,12 @@ function result = cropToBigData(obj, cropF, options)
 %     - ``.showWaitbar`` - logical, show a progress dialog (default: **true**)
 %     - ``.UIFigure`` - handle to the parent UIFigure for the progress dialog
 %
+%   The progress dialog is cancelable up to the point where the output store
+%   starts being written; past that the operation runs to the end rather than
+%   leaving a partial pyramid on disk. The region read is a single
+%   uninterruptible call, so a cancel pressed during it takes effect when it
+%   returns.
+%
 % Output Arguments:
 %   - **result** - **1** on success, **0** on cancel or error
 %
@@ -63,10 +69,14 @@ y1 = cropF(2);  dy = cropF(4);
 z1 = cropF(5);  dz = cropF(6);
 t1 = cropF(7);  dt = cropF(8);
 
+% Cancel is honoured only before the output store is written; once Zarr3Saver
+% has started writing, the operation runs to the end rather than leaving a
+% partial pyramid on disk.
 wb = [];
 if options.showWaitbar && ~isempty(options.UIFigure)
     wb = uiprogressdlg(options.UIFigure, ...
-        'Value', 0.05, 'Message', 'Reading image crop...', 'Title', 'Crop to BigData');
+        'Value', 0.05, 'Message', 'Reading image crop...', 'Title', 'Crop to BigData', ...
+        'Cancelable', 'on');
 end
 
 % =========================================================================
@@ -78,7 +88,15 @@ readOpts.z            = [z1, z1+dz-1];
 readOpts.t            = [t1, t1+dt-1];
 readOpts.pyramidLevel = 1;
 
+% Only the requested region is read - a remote store serves just the chunks it
+% touches - but that single call cannot be interrupted, so the cancel check
+% below fires when it returns.
+if ~isempty(wb) && wb.CancelRequested; delete(wb); return; end
+if ~isempty(wb)
+    wb.Message = sprintf('Reading a %d x %d x %d region from the dataset...', dx, dy, dz);
+end
 imageData = obj.image.getData('image', 3, [], readOpts);
+if ~isempty(wb) && wb.CancelRequested; delete(wb); return; end
 % imageData is [dy, dx, dz, colors, dt]
 
 if isempty(imageData)

@@ -28,6 +28,12 @@ function result = cropDataset(obj, cropF, options)
 %     - ``.pyramidLevel`` - numeric, OME-Zarr pyramid level for virtual datasets
 %       (default: **1)**
 %
+%   The progress dialog is cancelable. Cancel is honoured up to the point where
+%   the Virtual/BigData buffer starts being rebuilt; past that the operation runs
+%   to the end rather than leaving a half-cropped dataset. The region read itself
+%   is a single uninterruptible call, so a cancel pressed during it takes effect
+%   when it returns.
+%
 % Output Arguments:
 %   - **result** - **1** on success, **0** on cancel or error
 %
@@ -65,11 +71,15 @@ y1 = cropF(2);  dy = cropF(4);
 z1 = cropF(5);  dz = cropF(6);
 t1 = cropF(7);  dt = cropF(8);
 
-% Optional progress dialog - only possible when a UIFigure is provided
+% Optional progress dialog - only possible when a UIFigure is provided.
+% Cancel is honoured only at the points marked below, i.e. while the dataset
+% is still untouched; once the layers start being replaced the operation runs
+% to the end rather than leaving a half-cropped buffer.
 wb = [];
 if options.showWaitbar && ~isempty(options.UIFigure)
     wb = uiprogressdlg(options.UIFigure, ...
-        'Value', 0.05, 'Message', 'Please wait...', 'Title', 'Cropping...');
+        'Value', 0.05, 'Message', 'Please wait...', 'Title', 'Cropping...', ...
+        'Cancelable', 'on');
 end
 
 bbUpdated = false;   % set true inside Virtual/BigData path once BB is handled there
@@ -79,7 +89,10 @@ bbUpdated = false;   % set true inside Virtual/BigData path once BB is handled t
 % =========================================================================
 if strcmp(obj.datasetType(1), 'S')
 
+    if ~isempty(wb) && wb.CancelRequested; delete(wb); return; end
+
     % --- image layer -----------------------------------------------------
+    if ~isempty(wb); wb.Message = 'Cropping the image layer...'; end
     obj.image.crop(cropF);
     if ~isempty(wb); wb.Value = 0.4; end
 
@@ -114,8 +127,17 @@ else
     loadOpts.pyramidLevel = options.pyramidLevel;
 
     % Load the subvolume from the virtual source (MibVirtualImage.getData
-    % handles both BioFormats-style virtual stacks and OME-Zarr pyramids)
+    % handles both BioFormats-style virtual stacks and OME-Zarr pyramids).
+    % Only the requested region is read - a remote store serves just the
+    % chunks the region touches - but that single call cannot be interrupted,
+    % so the cancel check below fires when it returns.
+    if ~isempty(wb) && wb.CancelRequested; delete(wb); return; end
+    if ~isempty(wb)
+        wb.Message = sprintf('Reading a %d x %d x %d region from the dataset...', dx, dy, dz);
+        wb.Value   = 0.1;
+    end
     img = obj.image.getData('image', 3, [], loadOpts);
+    if ~isempty(wb) && wb.CancelRequested; delete(wb); return; end
 
     % Save image metadata before switchDatasetMode/initialize resets them to defaults.
     % xyzShiftBB uses s0 voxel size because x1/y1/z1 are always in s0 pixel coords.
@@ -146,7 +168,9 @@ else
         modelReadOpts.y            = loadOpts.y;
         modelReadOpts.z            = loadOpts.z;
         modelReadOpts.pyramidLevel = options.pyramidLevel;
+        if ~isempty(wb); wb.Message = 'Reading the model over the same region...'; wb.Value = 0.5; end
         packedBigDataModel   = obj.labels.getData63('everything', 3, [], modelReadOpts);
+        if ~isempty(wb) && wb.CancelRequested; delete(wb); return; end
         savedMaterialNames   = obj.labels.materialNames;
         savedMaterialsCount  = obj.labels.materialsCount;
         savedLabelsFilename  = obj.labels.filename;
@@ -154,7 +178,10 @@ else
     end
 
     % Switch from virtual to memory-resident mode; returns [] on cancel
-    % switchDatasetMode uses 1=Standard, 2=Virtual, 3=BigData
+    % switchDatasetMode uses 1=Standard, 2=Virtual, 3=BigData.
+    % Last cancel point: from here on the buffer is being rebuilt.
+    if ~isempty(wb) && wb.CancelRequested; delete(wb); return; end
+    if ~isempty(wb); wb.Message = 'Converting the buffer to Standard...'; wb.Value = 0.6; end
     newMode = obj.switchDatasetMode(1, true);
     if isempty(newMode)
         if ~isempty(wb); delete(wb); end
