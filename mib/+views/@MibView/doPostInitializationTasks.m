@@ -13,14 +13,21 @@ end
 
 drawnow nocallbacks;
 
-% restore the default layout; wait until the AppContainer reaches the RUNNING
-% state so that PanelLayout can be applied (bounded poll instead of a fixed pause)
+% restore the default layout (bounded poll instead of a fixed pause).
+% Two conditions have to hold, not one: the AppContainer reports RUNNING about
+% half a second before it publishes its PanelLayout, and until that publication
+% PanelLayout is a struct with no fields. Applying the saved layout in that
+% window is silently lost - loadLayout sees an empty current layout, its
+% panel-id guard finds no ids to match against and bails out with status false,
+% and the AppContainer then installs its own default, which is what left the
+% bottom panels shorter than the saved layout on every startup.
 layoutWaitTimer = tic;
-while obj.gui.State ~= matlab.ui.container.internal.appcontainer.AppState.RUNNING ...
-        && toc(layoutWaitTimer) < 5
+while toc(layoutWaitTimer) < 10 && ...
+        (obj.gui.State ~= matlab.ui.container.internal.appcontainer.AppState.RUNNING || ...
+         isempty(fieldnames(obj.gui.PanelLayout)))
     pause(0.05);
 end
-status = obj.controller.loadLayout('localDefault');
+status = obj.controller.loadLayout('localDefault'); %#ok<NASGU>
 drawnow nocallbacks;
 
 % update all widgets of the Datasets panel

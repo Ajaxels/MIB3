@@ -6,6 +6,7 @@
 
 - **Radhakrishna Achanta**, Ecole Polytechnique Federale de Lausanne (EPFL), for the mex code for SLIC supervoxels and superpixels
 - **Tom Boissonnet** (EMBL) and **Elena Bertseva** (University of Copenhagen), for extensive testing
+- **Ken Deeley**, the MathWorks for support with implementation of AppContainers GUI framework for MIB3
 - **John Heumann**, The Boulder Laboratory For 3-D Electron Microscopy of Cells, for help with Mattomo
 - **Konstantin Kogan**, University of Helsinki, for assistance with Mac OS
 - **David Legland**, INRA, France, for modification of the [Region Adjacency Graph (imRAG)](http://www.mathworks.com/matlabcentral/fileexchange/16938-region-adjacency-graph--rag-) function for detection of indices between watershed regions and help with few other functions
