@@ -70,6 +70,23 @@ else
     selectedSet = ceil(index/obj.mibModel.Sets.datasetsInSet);  % Calculate from index
 end
 
+% Decide here, before the block below may decrement selectedSet for a set whose
+% document does not exist yet, whether the AxesLimitsChanged notification at the
+% end of this function is worth firing. Its only listeners (controllers.Snapshot,
+% controllers.MakeMovie) recompute the crop dimensions of the dataset that is
+% currently displayed, so an update of any other container of the set repeats the
+% same calculation for nothing - and the bulk loops over every container of a set
+% (MibImageDocument.gui_SizeChangedFcn -> executeResizeAll on each window resize,
+% MibView.doPostInitializationTasks at startup) would do that datasetsInSet times
+% in a row. Both the set's selected dataset and obj.mibModel.id are accepted: they
+% name the same container in a consistent state, and taking either keeps the
+% notification alive if the two have drifted apart in split-panel mode.
+axesLimitsChangedNeeded = index == obj.mibModel.id;
+if ~axesLimitsChangedNeeded && selectedSet <= numel(obj.mibModel.Sets.selectedDataset)
+    axesLimitsChangedNeeded = index == obj.mibModel.Sets.selectedDataset(selectedSet) + ...
+        (selectedSet-1)*obj.mibModel.Sets.datasetsInSet;
+end
+
 % get the scaling coefficient
 if obj.mibModel.I{index}.orientation == 3     % xy
     coef_z = obj.mibModel.I{index}.image.pixSize.x/obj.mibModel.I{index}.image.pixSize.y;
@@ -206,6 +223,8 @@ obj.cImageDoc{selectedSet}.brushCursorOffset = [];
 %sprintf('axes: %d-%d %d-%d\n', axesX(1), axesX(2), axesY(1), axesY(2))
 
 % notify listeners that the image axes were changed -> Snapshot controller
-notify(obj.mibModel, 'AxesLimitsChanged');
+if axesLimitsChangedNeeded
+    notify(obj.mibModel, 'AxesLimitsChanged');
+end
 
 end
