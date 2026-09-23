@@ -123,6 +123,10 @@ Prefs.Colors.SelectionColor = [0 1 0];
 % color for the mask layer
 Prefs.Colors.MaskColor = [1 0 1];    % color for the mask layer
 
+% when true, the brush cursor is drawn in the color of the material the brush
+% stroke is added to; when false, in the default dark green
+Prefs.Colors.CursorMaterialColor = true;
+
 % color for annotations, see below in the preferences.SegmTools.Annotations
 
 % Transparency

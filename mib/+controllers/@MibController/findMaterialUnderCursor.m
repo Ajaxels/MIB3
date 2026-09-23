@@ -88,4 +88,8 @@ else
     dataset.labels.materialNames{dataset.selectedAddToMaterial - 2} = num2str(materialIndex);
 end
 obj.cSegmentation.updateMaterialsTable();  % re-render names/colours and reapply selection
+% the picked material may have a different colour, and with
+% preferences.Colors.CursorMaterialColor on the brush cursor carries it - the
+% mouse is standing still over the image here, so repaint it explicitly
+cImageDoc.updateBrushCursor();
 end

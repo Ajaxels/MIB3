@@ -10,6 +10,19 @@ function updateBrushCursor(obj, xyCoordinate, lineStyle, resetOffset)
 % the current brush size. The cursor follows the mouse and
 % changes style based on painting state.
 %
+% With ``preferences.Colors.CursorMaterialColor`` on (the default), the cursor is
+% drawn in the color of the target of the brush stroke, i.e. the ``'AddTo'``
+% column of the materials table: a material takes its color from
+% ``labels.materialColors``, Mask from ``preferences.Colors.MaskColor``.
+% It falls back to dark green (``[0, 0.5, 0]``) when the preference is off, when
+% Exterior is selected, when no model exists, or when the material index falls
+% outside the palette.
+%
+% The color is re-evaluated on every call, so the cursor follows a change of the
+% selected material. Because the call is normally driven by mouse motion, a
+% change made from the keyboard or from the materials table has to trigger it -
+% see ``MibSegmentation.materialsTable_CellSelectionCallback``.
+%
 % Input Arguments:
 %   - **xyCoordinate** *(optional)* - [double] ``[x, y]`` cursor position in axes coordinates; if empty, uses ``CurrentPoint``
 %   - **lineStyle** *(optional)* - [char] line style for cursor (default: ``':'``):
@@ -73,13 +86,41 @@ if shouldShow
         obj.updateBrushCursorOffset();
     end
 
+    % Cursor color: the color of the material the brush stroke is added to while
+    % Preferences -> Colors -> "cursor matching selected material" is on,
+    % otherwise the dark green fallback below.
+    % isfield: a preferences file written by this version before the setting
+    % existed has no such field - fall back to the default, which is on.
+    cursorColor = [0, 0.5, 0];
+    colorPrefs = obj.mibModel.preferences.Colors;
+    if ~isfield(colorPrefs, 'CursorMaterialColor') || colorPrefs.CursorMaterialColor
+        % 'AddTo' is the destination of the stroke; it follows the Material
+        % column unless the two are unlinked in the Segmentation panel.
+        % double(): Line.Color rejects a single/integer triplet, and the
+        % isequal() check below compares against the double it stores
+        materialIndex = dsLocal.getSelectedMaterialIndex('AddTo');
+        if materialIndex == -1      % Mask row of the materials table
+            cursorColor = double(colorPrefs.MaskColor);
+        elseif materialIndex > 0    % Exterior (0) keeps the default color
+            materialColors = dsLocal.labels.materialColors;
+            if dsLocal.labels.maxMaterials > 65535
+                % same wrap as MibModel.getRGBimage: the palette repeats every 65535 materials
+                materialIndex = mod(materialIndex - 1, 65535) + 1;
+            end
+            % an index past the end of the palette keeps the default color
+            if materialIndex <= size(materialColors, 1)
+                cursorColor = double(materialColors(materialIndex, :));
+            end
+        end
+    end
+
     % Create or update cursor plot
     if isempty(obj.brushCursor) || ~isvalid(obj.brushCursor)
         % Create cursor line once
         obj.brushCursor = plot(obj.handles.imViewAxes, ...
             xy(1) + obj.brushCursorOffset(1,:), ...
             xy(2) + obj.brushCursorOffset(2,:), ...
-            'Color', [0, 0.5, 0], 'LineWidth', 2, ...
+            'Color', cursorColor, 'LineWidth', 2, ...
             'LineStyle', lineStyle, 'PickableParts', 'none');
     else
         % Fast update: only change position data
@@ -89,6 +130,11 @@ if shouldShow
         % Update line style if changed
         if ~strcmp(obj.brushCursor.LineStyle, lineStyle)
             obj.brushCursor.LineStyle = lineStyle;
+        end
+
+        % Update color if the selected material or the preference changed
+        if ~isequal(obj.brushCursor.Color, cursorColor)
+            obj.brushCursor.Color = cursorColor;
         end
 
         % Ensure visibility (guard against unnecessary graphics invalidation)

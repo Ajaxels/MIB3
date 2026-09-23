@@ -242,6 +242,8 @@ these colors are used.
 <span class="widget widget-button">Mask</span>: a button to specify color to be used for rendering of the [Mask](../../../getting-started/image-layers.md) layer
 <br>
 <span class="widget widget-button">Annotations</span> a button to specify color to be used for rendering of [annotations](../../panels/segm/segm-annotations.md)
+<br>
+<span class="widget widget-checkbox">cursor matching selected material</span>: when checked, the brush cursor takes the color of the material or Mask it paints into; otherwise it stays dark green
 
 ### Contours
 

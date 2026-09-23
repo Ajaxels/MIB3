@@ -407,6 +407,18 @@ classdef Preferences < handle
                 handles.MaskColorButton.BackgroundColor = colorPrefs.MaskColor;
                 handles.AnnotationsColorButton.BackgroundColor = obj.preferences.SegmTools.Annotations.Color;
 
+                % The other widgets of this panel get their callback in App
+                % Designer; this one is wired here because the checkbox was added
+                % to the .mlapp without one. Assigning it replaces rather than
+                % adds, so wiring it in the designer later cannot double-fire.
+                handles.cursorMaterialColor.ValueChangedFcn = @(~, event) obj.ColorPanelCallbacks(event);
+                % isfield: a preferences file written by the same version before this
+                % setting existed has no such field (see MibModel.initializePreferences),
+                % fall back to the default of generatePreferences, which is on
+                handles.cursorMaterialColor.Value = ~isfield(colorPrefs, 'CursorMaterialColor') || colorPrefs.CursorMaterialColor;
+                handles.cursorMaterialColor.Tooltip = sprintf(['Draw the brush cursor in the color of the material ' ...
+                    'the stroke is added to.\nWhen unchecked, the cursor is dark green regardless of the material.']);
+
                 % updating options for color palettes
                 if activeDataset.labels.maxMaterials < 256
                     materialsNumber = numel(activeDataset.labels.materialNames);
@@ -876,6 +888,8 @@ classdef Preferences < handle
                     if length(c) == 1; return; end
                     obj.preferences.Colors.MaskColor = c;
                     obj.view.handles.MaskColorButton.BackgroundColor = c;
+                case 'cursorMaterialColor'      % brush cursor follows the material color
+                    obj.preferences.Colors.CursorMaterialColor = obj.view.handles.cursorMaterialColor.Value;
                 case {'AnnotationsColorButton', 'AnnotationsColorButton2'}   % update annotations color
                     sel_color = obj.preferences.SegmTools.Annotations.Color;
                     c = uisetcolor(sel_color, 'Annotations color');

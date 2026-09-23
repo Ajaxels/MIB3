@@ -187,7 +187,13 @@ elseif Indices(2) == 1
     end
     obj.updateMaterialsTable([]);
     notify(obj.mibModel, 'ShowImage');
-    return;
 end
+
+% With preferences.Colors.CursorMaterialColor on, the brush cursor is drawn in
+% the color of the selected material, but it is repainted on mouse motion only.
+% Refresh it here so the color follows a selection made from the table or from
+% the "Toggle between the selected material and exterior" ("e") shortcut, which
+% both leave the mouse standing still over the image.
+obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}.updateBrushCursor();
 
 end
