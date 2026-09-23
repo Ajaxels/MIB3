@@ -28,7 +28,7 @@ URL rather than asking you:
 
     <div class="clear-float"></div>
 
-    - Paste it to MIB->Import from URL::
+    - Paste it to MIB->Import from URL:
     ![Image title](images/open_organelle_img2.png){.on-glb align=right width="300"}
 
     <div class="clear-float"></div>

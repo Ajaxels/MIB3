@@ -103,20 +103,12 @@ if nargin == 4  % batch mode
     end
 end
 
-%% define parameters
-switch BatchOpt.Dimension{1}
-    case 'height'; orientation = 1;
-    case 'width';  orientation = 2;
-    case 'depth';  orientation = 3;
-end
-maxSlice = obj.I{BatchOpt.id}.dim_yxzct(orientation);
-
 %% interactive dialog
 if nargin < 4
     dlgOpt.WindowHeight = 212;
     dlgOpt.HeaderLines = 2;
     answer = utils.dlgs.inputUniversalDlg(obj.getProgressBarParent(), ...
-        sprintf('Slice range: 1:%d\n(all others will be deleted)', maxSlice), ...
+        sprintf('Slice range: 1:%d\n(all others will be deleted)', obj.I{BatchOpt.id}.dim_yxzct(orientation)), ...
         {'Dimension:', 'Slice index(es) to keep (e.g. 1, 5, 10, 20:30, 50:5:end):'}, ...
         {[BatchOpt.Dimension{2}, find(ismember(BatchOpt.Dimension{2}, BatchOpt.Dimension{1}), 1)], ...
          BatchOpt.SliceNumbers}, ...
@@ -126,6 +118,14 @@ if nargin < 4
     BatchOpt.Dimension(1) = answer(1);
     BatchOpt.SliceNumbers = answer{2};
 end
+
+%% define parameters - after the dialog, which may change the dimension
+switch BatchOpt.Dimension{1}
+    case 'height'; orientation = 1;
+    case 'width';  orientation = 2;
+    case 'depth';  orientation = 3;
+end
+maxSlice = obj.I{BatchOpt.id}.dim_yxzct(orientation);
 
 %%
 sliceStr = strrep(BatchOpt.SliceNumbers, 'end', num2str(maxSlice));
@@ -143,6 +143,7 @@ if result == 0; notify(obj, 'StopProtocol'); return; end
 
 BatchOpt = rmfield(BatchOpt, 'id');
 notify(obj, 'SyncBatch', core.ToggleEventData(BatchOpt));
-notify(obj, 'NewDataset', core.ToggleEventData(struct('index', obj.getActiveId(), 'keepBackup', true)));
+% no keepBackup: the dimensions changed and no snapshot was stored, so older undo entries must be cleared
+notify(obj, 'NewDataset', core.ToggleEventData(struct('index', obj.getActiveId())));
 notify(obj, 'ShowImage');
 end

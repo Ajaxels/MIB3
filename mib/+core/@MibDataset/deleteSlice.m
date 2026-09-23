@@ -71,7 +71,7 @@ if options.showWaitbar; wb.Value = 0.3; end
 
 if obj.datasetType(1) ~= 'V'
     if obj.labels.maxMaterials == 63   % labels63: model+mask+selection packed together
-        if obj.modelExist
+        if obj.labels.exists   % any of model, mask or selection may be in use
             obj.labels.deleteSlice(sliceNumbers, orient);
         end
     else   % separate model / mask / selection layers

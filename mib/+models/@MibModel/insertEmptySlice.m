@@ -143,6 +143,7 @@ obj.I{BatchOpt.id}.insertSlice(img, BatchOpt.InsertPosition{1}, [], insertOpts);
 
 BatchOpt = rmfield(BatchOpt, 'id');
 notify(obj, 'SyncBatch', core.ToggleEventData(BatchOpt));
-notify(obj, 'NewDataset', core.ToggleEventData(struct('index', obj.getActiveId(), 'keepBackup', true)));
+% no keepBackup: the dimensions changed and no snapshot was stored, so older undo entries must be cleared
+notify(obj, 'NewDataset', core.ToggleEventData(struct('index', obj.getActiveId())));
 notify(obj, 'ShowImage');
 end

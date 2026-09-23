@@ -224,7 +224,8 @@ switch BatchOpt.Mode{1}
         datasetId = BatchOpt.id;
         BatchOpt = rmfield(BatchOpt, 'id');
         notify(obj, 'SyncBatch', core.ToggleEventData(BatchOpt));
-        notify(obj, 'NewDataset', core.ToggleEventData(struct('index', datasetId, 'keepBackup', true)));
+        % no keepBackup: the dimensions changed and no snapshot was stored, so older undo entries must be cleared
+        notify(obj, 'NewDataset', core.ToggleEventData(struct('index', datasetId)));
         notify(obj, 'ShowImage');
         return;
 
