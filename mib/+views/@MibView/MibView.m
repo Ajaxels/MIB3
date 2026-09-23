@@ -12,8 +12,11 @@ classdef MibView < handle
         handles
         % list of handles for the gui
         
-        brushCursorShow
-        % logical identifier whether or not to show the brush cursor
+        brushCursorShow = false
+        % logical identifier whether or not to show the brush cursor;
+        % false until MibController.initialize picks the value up from the
+        % selected segmentation tool - the segmentation panel is built before
+        % that and already triggers updateBrushCursor, which needs a logical here
         brushCursorOffset
         % [x y] offsets for drawing of the brush cursor
         brushSizeNumbers
