@@ -13,6 +13,41 @@ URL rather than asking you:
 - **any ordinary image URL** (`.png`, `.tif`, `.jpg`), downloaded and opened as a Standard
   dataset. This is what this menu item always did, and it is unchanged.
 
+??? info "Zarr open data repositories"
+    
+    These are some of the publicly available repositories that can be opened from MIB.
+    
+    <div class="h3-like">Janelia OpenOrganelle</div>
+    
+    Click to browse Janelia OpenOrganelle: [take me to Janelia](https://openorganelle.janelia.org/datasets)
+
+    Example link: [s3://janelia-cosem-datasets/jrc_mus-liver-6/jrc_mus-liver-6.zarr](s3://janelia-cosem-datasets/jrc_mus-liver-6/jrc_mus-liver-6.zarr)
+
+    - Select the dataset of interest:
+    ![Select the dataset of interest:](images/open_organelle_img1.png){.on-glb align=right width="300"}
+
+    <div class="clear-float"></div>
+
+    - Paste it to MIB->Import from URL::
+    ![Image title](images/open_organelle_img2.png){.on-glb align=right width="300"}
+
+    <div class="clear-float"></div>
+
+    <div class="h3-like">BioImage Archive</div>
+    
+    Click to browse BioImage Archive: [take me to BioImage Archive](https://beta.bioimagearchive.org/bioimage-archive/galleries/volumeem)
+
+    Example link: [https://livingobjects.ebi.ac.uk/bioimaging-integrator-data/EMPIAR-10442/1acbf84b-5f05-4746-b85f-c70d140b6440/e50f6f32-c2f3-46a8-b8e0-eea6fe9e2379.ome.zarr/0](https://livingobjects.ebi.ac.uk/bioimaging-integrator-data/EMPIAR-10442/1acbf84b-5f05-4746-b85f-c70d140b6440/e50f6f32-c2f3-46a8-b8e0-eea6fe9e2379.ome.zarr/0)
+
+    - Select the dataset of interest:
+    ![Select the dataset of interest:](images/bioimagearchive_img1.png){.on-glb align=right width="300"}
+
+    <div class="clear-float"></div>
+
+    - Click the ++Copy S3 URL++ button:
+    ![Image title](images/bioimagearchive_img2.png){.on-glb align=right width="300"}
+
+
 ---
 
 ??? info "Accepted URL forms and formats"
