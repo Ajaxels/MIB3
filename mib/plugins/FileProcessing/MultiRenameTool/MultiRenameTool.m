@@ -196,7 +196,12 @@ classdef MultiRenameTool < handle
                     || ~strcmp(obj.view.handles.PathToFiles.FontName, Font.FontName)
                 utils.fontSizeUpdate(obj.view.gui, Font);
             end
-            
+
+            % the info page (written by updateWidgets) and the Rename/Close buttons carry
+            % colors of the current theme; set them now and again on a theme switch
+            obj.view.gui.ThemeChangedFcn = @(src, evnt) multiRenameToolThemeChanged(obj);
+            utils.applyThemeColors(obj.view.gui);
+
 			obj.updateWidgets();
 			% update widgets from the BatchOpt structure
             obj.view = utils.updateGUIFromBatchOpt_Shared(obj.view, obj.BatchOpt);
@@ -242,7 +247,9 @@ classdef MultiRenameTool < handle
                 '<b>[N]</b> - add filename<br>' ...
                 '<b>[P]</b> - add parent folder<br>'];
 
-            obj.view.handles.infoHTML1.HTMLSource = sprintf('<p style="font-family: Sans-serif; font-size: 9pt;">%s</p>', infoText);
+            hInfo = obj.view.handles.infoHTML1;
+            hInfo.HTMLSource = [utils.themeHtmlStyle(obj.view.gui, hInfo.Parent.BackgroundColor), ...
+                sprintf('<p style="font-family: Sans-serif; font-size: 9pt;">%s</p>', infoText)];
 
             obj.view.handles.autoPreview.Value = obj.autoPreview;
 
@@ -580,4 +587,12 @@ classdef MultiRenameTool < handle
         
         
     end
+end
+
+function multiRenameToolThemeChanged(obj)
+% MULTIRENAMETOOLTHEMECHANGED - ThemeChangedFcn of the MultiRenameTool window: remap the
+% standard dialog colors (Rename, Close) and rewrite the info page via updateWidgets, whose
+% colors are set for the theme at the time it is written (see utils.themeHtmlStyle).
+utils.applyThemeColors(obj.view.gui);
+obj.updateWidgets();
 end

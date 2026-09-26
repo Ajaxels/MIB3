@@ -43,6 +43,27 @@ function palette = themeColors(themeSource)
 %       a model), light ``[1 0 0]``
 %     - ``.tabHighlight``     - background of a tab or panel that is set apart from the
 %       rest of the window (e.g. the Animation tab of VolRenApp), light ``[0.8 0.8 0.8]``
+%     - ``.panelYellow``, ``.panelBlue``, ``.panelGreen`` - tinted background of a tab,
+%       panel or label that color-codes a part of a window (e.g. the Preprocess, Train and
+%       Predict tabs of DeepMIB), light ``[1 0.9804 0.7686]``, ``[0.7686 0.902 0.9882]``,
+%       ``[0.8588 0.9294 0.7804]``. The dark versions keep the hue (amber-brown instead
+%       of olive for yellow) at a brightness slightly above the dark theme background,
+%       7.4-8.1:1 with the auto text
+%     - ``.widgetYellow``, ``.widgetBlue``, ``.widgetGreen`` - buttons and input fields
+%       placed on the matching ``panel...`` color, light ``[1 0.9882 0.9098]``,
+%       ``[0.8784 0.9608 1]``, ``[0.9098 0.9608 0.9098]``. Light: paler than the panel;
+%       dark: darker than the panel (10.4-10.6:1), following the dark theme, where
+%       input fields are darker than the background they sit on
+%     - ``.fieldYellow``, ``.fieldBlue`` - input fields on the plain window background
+%       tinted to tell two kinds of values apart (e.g. the probability and the Min/Max
+%       spinners of the DeepMIB augmentation settings), light ``[0.9804 0.9765 0.8235]``,
+%       ``[0.8314 0.9333 1]``. Dark: **lighter** than the background (6.7:1 and 7.6:1),
+%       because at the brightness of the theme's own fields (darker than the background)
+%       the hue is no longer recognizable
+%     - ``.background``       - the theme's own default background of figures, panels
+%       and buttons (light ``[0.9608 0.9608 0.9608]``, dark ``[0.1294 0.1294 0.1294]``);
+%       used to recognize a default color that was copied from another widget and
+%       therefore no longer follows the theme
 %     - ``.tableCell``        - background of table cells painted explicitly with a
 %       ``uistyle`` (e.g. the value columns of the Preferences color tables), light
 %       ``[1 1 1]``, dark the theme's field background; the table's own
@@ -94,6 +115,15 @@ if strcmp(themeSource, 'dark')
     palette.dialogStop       = [0.6 0.1 0.1];
     palette.fieldError       = palette.dialogStop;
     palette.tabHighlight     = [0.25 0.25 0.25];
+    palette.panelYellow      = [0.28 0.245 0.14];
+    palette.panelBlue        = [0.144 0.238 0.3];
+    palette.panelGreen       = [0.199 0.27 0.149];
+    palette.widgetYellow     = [0.17 0.153 0.102];
+    palette.widgetBlue       = [0.11 0.158 0.19];
+    palette.widgetGreen      = [0.12 0.17 0.111];
+    palette.fieldYellow      = [0.3 0.278 0.135];
+    palette.fieldBlue        = [0.17 0.249 0.34];
+    palette.background       = [0.1294 0.1294 0.1294];
     palette.tableCell        = [0.0706 0.0706 0.0706];
     palette.tableHighlight   = [0.10 0.33 0.62];
     palette.text             = [0.851 0.851 0.851];
@@ -110,6 +140,15 @@ else
     palette.dialogStop       = [1 0 0];
     palette.fieldError       = palette.dialogStop;
     palette.tabHighlight     = [0.8 0.8 0.8];
+    palette.panelYellow      = [1 0.9804 0.7686];
+    palette.panelBlue        = [0.7686 0.902 0.9882];
+    palette.panelGreen       = [0.8588 0.9294 0.7804];
+    palette.widgetYellow     = [1 0.9882 0.9098];
+    palette.widgetBlue       = [0.8784 0.9608 1];
+    palette.widgetGreen      = [0.9098 0.9608 0.9098];
+    palette.fieldYellow      = [0.9804 0.9765 0.8235];
+    palette.fieldBlue        = [0.8314 0.9333 1];
+    palette.background       = [0.9608 0.9608 0.9608];
     palette.tableCell        = [1 1 1];
     palette.tableHighlight   = [0.2 0.6 1];
     palette.text             = [0.129 0.129 0.129];

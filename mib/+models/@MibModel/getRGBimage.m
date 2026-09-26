@@ -367,7 +367,22 @@ switch colortype
             end
         else
             % Standard RGB display
-            if numel(slices{4}) > 3
+            if customImgProvided
+                % A custom image (e.g. the ImageFilters preview) is already
+                % rendered for display and its viewport is the identity built
+                % above, so the stretch is a no-op. The coefficients must not
+                % come from dataset.image.getImAdjustStretchCoef: that reads the
+                % dataset viewPort, which has fewer channels than an RGB preview
+                % of a grayscale dataset, and would re-apply the dataset contrast
+                % to an already-adjusted image.
+                R = sImg(:,:,1);
+                G = sImg(:,:,2);
+                if size(sImg, 3) > 2
+                    B = sImg(:,:,3);
+                else
+                    B = zeros(size(sImg,1), size(sImg,2), 'like', sImg);
+                end
+            elseif numel(slices{4}) > 3
                 % More than 3 channels - use first 3, batched imadjust
                 [lowIn, highIn, lowOut, highOut] = dataset.image.getImAdjustStretchCoef(1:3);
                 adjRGB = imadjust(sImg(:,:,1:3), [lowIn(:)'; highIn(:)'], [lowOut(:)'; highOut(:)'], currViewPort.gamma(1:3));

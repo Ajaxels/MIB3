@@ -500,17 +500,16 @@ function startPredictionBlockedImage(obj)
 
             % % smooth models for 2 classes outputs
             if numClasses == 2
-                smoothOptions.dataType = '3D';
-                smoothOptions.fitType = 'Gaussian';
+                % utils.doImageFiltering takes the ImageFilters BatchOpt format
+                smoothOptions.SourceLayer = {'labels'};
+                smoothOptions.FilterName = {'Gaussian'};
+                smoothOptions.Mode3D = dataDimension == 3;
+                smoothOptions.Sigma = {obj.BatchOpt.P_ImageDownsamplingFactor{1}+1};
+                smoothOptions.HSize = num2str(obj.BatchOpt.P_ImageDownsamplingFactor{1}*2+1);
+                smoothOptions.Padding = {'replicate'};
+                smoothOptions.PaddingValue = {0};
+                smoothOptions.FilterDomain = {'auto'};
                 smoothOptions.showWaitbar = false;
-                smoothOptions.sigma = obj.BatchOpt.P_ImageDownsamplingFactor{1}+1;
-                if dataDimension == 3
-                    smoothOptions.filters3DCheck = 1;
-                    smoothOptions.hSize = [obj.BatchOpt.P_ImageDownsamplingFactor{1}*2+1 obj.BatchOpt.P_ImageDownsamplingFactor{1}*2+1];
-                else
-                    smoothOptions.filters3DCheck = 0;
-                    smoothOptions.hSize = obj.BatchOpt.P_ImageDownsamplingFactor{1}*2+1;
-                end
                 outputLabels = utils.doImageFiltering(outputLabels, smoothOptions);
             end
 

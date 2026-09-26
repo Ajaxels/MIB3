@@ -85,6 +85,7 @@ classdef GuiTutorial < handle
             % then collects all named UI component properties into obj.view.handles
             % so the controller can address them as obj.view.handles.<propertyName>.
             obj.view = core.ChildView(obj, 'GuiTutorialGUI');
+            utils.applyThemeColors(obj.view.gui);   % adapt the standard dialog button colors to the light/dark theme
 
             % Place the plugin window to the left of the main MIB app window
             % so it does not overlap the image canvas.

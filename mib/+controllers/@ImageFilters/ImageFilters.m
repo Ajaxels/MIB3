@@ -286,14 +286,7 @@ classdef ImageFilters < handle
             % uihtml is a web page with a white background and black text regardless
             % of the MATLAB theme: in the dark theme give it the colors of the window.
             % A theme switch calls this function again (ThemeChangedFcn in the constructor)
-            themeStyle = '';
-            hFig = obj.view.gui;
-            if isprop(hFig, 'Theme') && ~isempty(hFig.Theme) && strcmp(hFig.Theme.BaseColorStyle, 'dark')
-                palette = utils.themeColors('dark');
-                rgbCss = @(color) sprintf('rgb(%d,%d,%d)', round(255 * color));
-                themeStyle = sprintf('<style>html,body{background-color:%s;color:%s} a{color:%s}</style>', ...
-                    rgbCss(obj.view.handles.InfoHTML.Parent.BackgroundColor), rgbCss(palette.text), rgbCss(palette.htmlLink));
-            end
+            themeStyle = utils.themeHtmlStyle(obj.view.gui, obj.view.handles.InfoHTML.Parent.BackgroundColor);
             htmlContent = sprintf([...
                 '<!DOCTYPE html><html><head>%s<script>\n' ...
                 'function setup(htmlComponent) {\n' ...
@@ -726,33 +719,37 @@ classdef ImageFilters < handle
             getRGBimageOptions.resizeToMagnification = false;
 
             switch SourceLayer
-                case 'selection'
-                    currTransparency = obj.mibModel.preferences.Colors.SelectionTransparency;
-                    obj.mibModel.preferences.Colors.SelectionTransparency = 1;
+                case {'selection', 'mask', 'labels'}
+                    % Paint the result opaque in the colour of the layer it will
+                    % replace. The layer stays hidden until the preview is drawn:
+                    % showImage overlays the current selection on a custom image
+                    % too, which would cover the result
+                    colors = obj.mibModel.preferences.Colors;
+                    switch SourceLayer
+                        case 'selection'
+                            transparencyField = 'SelectionTransparency';
+                            layerColor = colors.SelectionColor;
+                        case 'mask'
+                            transparencyField = 'MaskTransparency';
+                            layerColor = colors.MaskColor;
+                        case 'labels'
+                            transparencyField = 'ModelTransparency';
+                            materialColors = dataset.labels.materialColors;
+                            layerColor = materialColors(min(str2double(obj.BatchOpt.MaterialIndex), size(materialColors, 1)), :);
+                    end
+                    currTransparency = colors.(transparencyField);
+                    obj.mibModel.preferences.Colors.(transparencyField) = 1;
                     I = obj.mibModel.getRGBimage(getRGBimageOptions);
-                    obj.mibModel.preferences.Colors.SelectionTransparency = currTransparency;
-                    I(img==1) = 255;
+                    resultPixels = img == 1;
+                    for colCh = 1:3
+                        channel = I(:,:,colCh);
+                        channel(resultPixels) = layerColor(colCh) * 255;
+                        I(:,:,colCh) = channel;
+                    end
                     showSettings.resizeToMagnification = true;
                     showSettings.sImgIn = I;
                     notify(obj.mibModel, 'ShowImage', core.ToggleEventData(showSettings));
-                case 'mask'
-                    currTransparency = obj.mibModel.preferences.Colors.MaskTransparency;
-                    obj.mibModel.preferences.Colors.MaskTransparency = 1;
-                    I = obj.mibModel.getRGBimage(getRGBimageOptions);
-                    obj.mibModel.preferences.Colors.MaskTransparency = currTransparency;
-                    I(img==1) = 255;
-                    showSettings.resizeToMagnification = true;
-                    showSettings.sImgIn = I;
-                    notify(obj.mibModel, 'ShowImage', core.ToggleEventData(showSettings));
-                case 'labels'
-                    currTransparency = obj.mibModel.preferences.Colors.ModelTransparency;
-                    obj.mibModel.preferences.Colors.ModelTransparency = 1;
-                    I = obj.mibModel.getRGBimage(getRGBimageOptions);
-                    obj.mibModel.preferences.Colors.ModelTransparency = currTransparency;
-                    I(img==1) = 255;
-                    showSettings.resizeToMagnification = true;
-                    showSettings.sImgIn = I;
-                    notify(obj.mibModel, 'ShowImage', core.ToggleEventData(showSettings));
+                    obj.mibModel.preferences.Colors.(transparencyField) = currTransparency;
                 otherwise
                     % convert to 8-bit for display if needed
                     if ~isa(img, 'uint8')

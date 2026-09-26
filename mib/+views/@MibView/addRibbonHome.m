@@ -281,6 +281,10 @@ popupList.add(homeHandles.chunk);
 homeHandles.stitch = ListItem( 'Stitch dataset', Icon(fullfile(iconPath, 'restore_24px.png')));
 homeHandles.stitch.Description = 'Reassemble previously chunked subvolumes back into the full image';
 popupList.add(homeHandles.stitch);
+homeHandles.fuse = ListItem( 'Fuse into dataset', Icon(fullfile(iconPath, 'fuse_into_24px.png')));
+homeHandles.fuse.Description = 'Fuse previously cropped subvolumes back into the full image';
+popupList.add(homeHandles.fuse);
+
 homeHandles.chunking.Popup = popupList;
 column.add(homeHandles.chunking);
 % % --------- Image shuffling ---------

@@ -69,6 +69,8 @@ Standalone utility functions
 
 .. autofunction:: themeColors
 
+.. autofunction:: themeHtmlStyle
+
 .. autofunction:: traceCurve
 
 .. autofunction:: unFocus

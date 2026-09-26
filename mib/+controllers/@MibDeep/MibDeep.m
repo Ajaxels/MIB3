@@ -704,14 +704,9 @@ classdef MibDeep < handle
             guiName = 'views.MibDeepGUI';
             obj.view = core.ChildView(obj, guiName); % initialize the view
 
-            % panels and widgets of this window use hard-coded pastel background colors, while
-            % the font color is left on "auto" and follows the desktop theme. Under the dark
-            % theme MATLAB switches the text to near-white, which is unreadable on those light
-            % backgrounds. Pin this window to the light theme so the text stays dark;
-            % explicitly assigned background colors are preserved by the theme switch
-            if isprop(obj.view.gui, 'Theme')    % the Theme property requires R2025a or newer
-                theme(obj.view.gui, 'light');
-            end
+            % the Preprocess, Train and Predict tabs are color-coded with the panel/widget
+            % tints of utils.themeColors; repaint them for the current theme and on a switch
+            utils.applyThemeColors(obj.view.gui);
 
             % update font and size
             % you may need to replace "obj.view.handles.text1" with tag of any text field of your own GUI

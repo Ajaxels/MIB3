@@ -77,6 +77,7 @@ classdef SurfaceArea3d < handle
             end
 
             obj.view = core.ChildView(obj, 'SurfaceArea3dGUI');
+            utils.applyThemeColors(obj.view.gui);   % adapt the standard dialog button colors to the light/dark theme
             obj.view.gui = utils.moveWindowOutside(obj.view.gui, obj.mibModel.mibGUI, 'left');
 
             % Window icon - use plugin icon if present, fall back to MIB default

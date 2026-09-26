@@ -275,6 +275,7 @@ classdef DemoPlugin < handle
             %   After construction: obj.view.gui  = uifigure handle
             %                       obj.view.Figure = AppDesigner app
             obj.view = core.ChildView(obj, 'DemoPluginGUI');
+            utils.applyThemeColors(obj.view.gui);   % adapt the standard dialog button colors to the light/dark theme
 
             % Window title-bar icon.
             % Use a plugin-specific 16 px PNG when present next to this

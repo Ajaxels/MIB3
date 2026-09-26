@@ -881,7 +881,11 @@ classdef ImageConverter < handle
                 '<li><em>Output directory</em> is directing to the parent folder of the one selected as the <em>Input directory</em></li>' ...
                 '<li>add prefix or suffix</li>' ...
                 '</ul>'];
-            obj.view.handles.infoText.HTMLSource = sprintf('<p style="font-family: Sans-serif; font-size: 9pt;">%s</p>', infoText);
+            infoHtml = sprintf('<p style="font-family: Sans-serif; font-size: 9pt;">%s</p>', infoText);
+            % the info page and the Convert/Close buttons carry colors of the current theme;
+            % set them now and again on a theme switch
+            obj.view.gui.ThemeChangedFcn = @(src, evnt) imageConverterThemeChanged(obj, infoHtml);
+            imageConverterThemeChanged(obj, infoHtml);
 			obj.updateWidgets();
 
 			% update widgets from the BatchOpt structure
@@ -1606,4 +1610,13 @@ classdef ImageConverter < handle
         end
         
     end
+end
+
+function imageConverterThemeChanged(obj, infoHtml)
+% IMAGECONVERTERTHEMECHANGED - ThemeChangedFcn of the ImageConverter window: remap the
+% standard dialog colors (Convert, Close) and rewrite the info page, whose colors are set
+% for the theme at the time it is written (see utils.themeHtmlStyle).
+utils.applyThemeColors(obj.view.gui);
+hInfo = obj.view.handles.infoText;
+hInfo.HTMLSource = [utils.themeHtmlStyle(obj.view.gui, hInfo.Parent.BackgroundColor), infoHtml];
 end

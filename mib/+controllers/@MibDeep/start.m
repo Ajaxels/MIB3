@@ -30,11 +30,11 @@ function start(obj, event)
 
                     mibDeepStopTraining = true;
                     obj.view.handles.TrainButton.Text = 'Stopping...';
-                    obj.view.handles.TrainButton.BackgroundColor = [1 .5 0];
+                    obj.view.handles.TrainButton.BackgroundColor = utils.themeColors(obj.view.gui).dialogClose;
                     return;
                 case 'Stopping...'
                     obj.view.handles.TrainButton.Text = 'Train';
-                    obj.view.handles.TrainButton.BackgroundColor = [0.7686    0.9020    0.9882];
+                    obj.view.handles.TrainButton.BackgroundColor = utils.themeColors(obj.view.gui).panelBlue;
                     return;
             end
 

@@ -453,11 +453,8 @@ if options.MsgBoxOnly
                 % uihtml is a web page with a white background and black text
                 % regardless of the MATLAB theme: in the dark theme give it the
                 % dialog colors. Inserted first, so styles of the caller still win
-                if isprop(fig, 'Theme') && ~isempty(fig.Theme) && strcmp(fig.Theme.BaseColorStyle, 'dark')
-                    palette = utils.themeColors('dark');
-                    rgbCss = @(color) sprintf('rgb(%d,%d,%d)', round(255 * color));
-                    themeStyle = sprintf('<style>html,body{background-color:%s;color:%s} a{color:%s}</style>', ...
-                        rgbCss(fig.Color), rgbCss(palette.text), rgbCss(palette.htmlLink));
+                themeStyle = utils.themeHtmlStyle(fig, fig.Color);
+                if ~isempty(themeStyle)
                     if contains(lower(htmlContent), '<head>')
                         htmlContent = regexprep(htmlContent, '<head>', ['<head>' themeStyle], 'once', 'ignorecase');
                     else

@@ -155,6 +155,9 @@ function obj = GuiTutorial(mibModel, varargin)
 
     % Build the view — calls GuiTutorialGUI(obj) and populates obj.view.handles
     obj.view = core.ChildView(obj, 'GuiTutorialGUI');
+    % Adapt the standard button colors (action green [0.149 0.902 0.1804],
+    % Close orange [1 0.5294 0.102]) to the light/dark theme, also on a switch
+    utils.applyThemeColors(obj.view.gui);
 
     % Position the window to the left of the main MIB window
     obj.view.gui = utils.moveWindowOutside(obj.view.gui, obj.mibModel.mibGUI, 'left');
@@ -177,6 +180,9 @@ function obj = GuiTutorial(mibModel, varargin)
         @(src, evnt) obj.ViewListner_Callback2(obj, src, evnt));
 end
 ```
+
+The `utils.applyThemeColors` line makes the window readable in the MATLAB Dark theme; see
+[Light and dark theme](#light-and-dark-theme) for colors beyond the two standard buttons.
 
 ### `closeWindow`
 
@@ -412,6 +418,111 @@ notify(obj.mibModel, 'ShowImage');        % redraw the image
 notify(obj.mibModel, 'UpdateGuiWidgets'); % refresh MIB toolbar/menus
 ```
 
+### Light and dark theme
+
+MIB follows the MATLAB theme (**Preferences > MATLAB > Appearance**, R2025a+). Widgets whose colors
+are left on *auto* in AppDesigner follow it by themselves. A color **assigned explicitly** - in
+AppDesigner or from code - is kept as it is, while the auto text on top of it turns near-white
+(`[0.851 0.851 0.851]`) in the Dark theme. Any pastel background therefore becomes unreadable
+(contrast about 1:1) unless the plugin adapts it.
+
+**1. Standard buttons - one line in the constructor.** Paint the main action button green
+`[0.149 0.902 0.1804]` and Close/Cancel orange `[1 0.5294 0.102]` in AppDesigner, leave the font
+color on auto, and call right after `core.ChildView`:
+
+```matlab
+obj.view = core.ChildView(obj, 'MyPluginGUI');
+utils.applyThemeColors(obj.view.gui);   % adapt the standard dialog button colors to the light/dark theme
+```
+
+`applyThemeColors` finds widgets by their color, not by name, and repaints them with the palette of
+the current theme. It also installs itself as `obj.view.gui.ThemeChangedFcn`, so a theme switch while
+the window is open is handled too. The colors it recognizes (light value in AppDesigner):
+
+| Palette name | Light | Recognized on | Use for |
+|-|-|-|-|
+| `dialogAction` | `[0.149 0.902 0.1804]` | buttons | main action (Calculate, Convert, Continue) |
+| `dialogClose` | `[1 0.5294 0.102]` | buttons | Close / Cancel |
+| `dialogSecondary` | `[0.6314 0.9412 0.6471]` | buttons | secondary action, weaker than `dialogAction` |
+| `dialogStop` | `[1 0 0]` | buttons | a running action that can be stopped |
+| `fieldError` | `[1 0 0]` | dropdowns, edit fields, spinners | missing or invalid input |
+| `tabHighlight` | `[0.8 0.8 0.8]` | tabs, panels | a tab or panel set apart from the rest |
+| `panelYellow` / `panelBlue` / `panelGreen` | see `utils.themeColors` | tabs, panels, labels, buttons | color-coding parts of a window |
+| `widgetYellow` / `widgetBlue` / `widgetGreen` | see `utils.themeColors` | buttons, input fields | controls placed on the matching `panel...` |
+| `fieldYellow` / `fieldBlue` | see `utils.themeColors` | input fields | tinted fields on the plain window background |
+
+Any other fixed color in the `.mlapp` is **not** adapted. Prefer a color from this table, or leave the
+widget on auto; a new one-off pastel needs its own dark version in `mib/+utils/themeColors.m`
+(and in the matcher of `mib/+utils/applyThemeColors.m`), never a local workaround.
+
+**2. Colors set from code.** `applyThemeColors` runs once at construction; a color assigned later
+must come from the palette of the window, never a literal:
+
+```matlab
+palette = utils.themeColors(obj.view.gui);                 % palette of the current theme
+obj.view.handles.startBtn.BackgroundColor = palette.dialogStop;          % busy
+obj.view.handles.materialPopup.BackgroundColor = palette.fieldError;     % invalid input
+
+% back to the default look: auto mode, NOT a remembered or hard-coded color
+obj.view.handles.startBtn.BackgroundColorMode = 'auto';
+obj.view.handles.materialPopup.BackgroundColorMode = 'auto';
+```
+
+Do not "restore" with `[1 1 1]`, `[0.94 0.94 0.94]` or a color copied from another widget
+(`btnA.BackgroundColor = btnB.BackgroundColor`): such a value is correct only for the theme that was
+active when it was read.
+
+**3. `uihtml` content.** A `uihtml` component is a web page with a white background and black text
+whatever the theme. Prepend `utils.themeHtmlStyle` (returns `''` in the light theme) and rewrite
+the page from the window's `ThemeChangedFcn`. Set your own handler **before** calling
+`applyThemeColors`, which installs itself only when the property is empty, and call it from the
+handler:
+
+```matlab
+% constructor
+infoHtml = '<p style="font-family: Sans-serif; font-size: 9pt;">Plugin description</p>';
+obj.view.gui.ThemeChangedFcn = @(src, evnt) myPluginThemeChanged(obj, infoHtml);
+myPluginThemeChanged(obj, infoHtml);
+
+% local function after the classdef block
+function myPluginThemeChanged(obj, infoHtml)
+utils.applyThemeColors(obj.view.gui);
+hInfo = obj.view.handles.infoText;
+hInfo.HTMLSource = [utils.themeHtmlStyle(obj.view.gui, hInfo.Parent.BackgroundColor), infoHtml];
+end
+```
+
+If the page is written in `updateWidgets`, prepend the style there and let the handler call
+`applyThemeColors` + `obj.updateWidgets()` (see `MultiRenameTool`).
+
+**4. Tables.** A `uitable` ignores its own `ForegroundColor` in the Dark theme. When a `uistyle`
+paints cell backgrounds, set the text color in the same style:
+
+```matlab
+palette = utils.themeColors(obj.view.gui);
+cellStyle = uistyle('BackgroundColor', palette.tableCell, 'FontColor', palette.text);
+addStyle(obj.view.handles.resultsTable, cellStyle, 'column', 2:3);
+```
+
+and redraw the table from the `ThemeChangedFcn`. Exceptions: a cell whose color *is* the information
+(e.g. a material color) keeps it, with the text pinned black (`[0 0 0]`) or chosen from the color's
+brightness.
+
+**Not worth adapting?** Pin the window to the light theme instead:
+`theme(obj.view.gui, 'light')` (guard with `isprop(obj.view.gui, 'Theme')`); explicit colors are
+then kept and the text stays dark.
+
+**Test in both themes.** Switch temporarily, check the window, switch back:
+
+```matlab
+s = settings;
+s.matlab.appearance.MATLABTheme.TemporaryValue = 'Dark';   % or 'Light'
+s.matlab.appearance.MATLABTheme.clearTemporaryValue;       % back to the user's setting
+```
+
+Check with the window open across a switch as well; `exportapp` does not capture `uihtml` content
+and is unreliable for table text, so look at those on screen.
+
 ### Widget value access
 
 | Widget type | Get value | Set value |
@@ -460,6 +571,9 @@ notify(obj.mibModel, 'UpdateGuiWidgets'); % refresh MIB toolbar/menus
    - Modify the constructor to accept `varargin` and call `runStartupFcn`  
    - Add `startupFcn(app, winController)` that stores `app.winController = winController`  
    - Wire all component callbacks to `app.winController.<method>()`
+   - Paint the main action button `[0.149 0.902 0.1804]` and Close `[1 0.5294 0.102]`; leave
+     other colors and all font colors on auto unless a palette color fits
+     (see [Light and dark theme](#light-and-dark-theme))
 
 4. **Create the controller**  
    Copy `GuiTutorial.m` as a template. Rename the class and update:  
@@ -467,6 +581,7 @@ notify(obj.mibModel, 'UpdateGuiWidgets'); % refresh MIB toolbar/menus
    - `guiName` string in the constructor  
    - Add your own action methods  
    - Adjust which MibModel events to listen to
+   - Keep `utils.applyThemeColors(obj.view.gui)` right after `core.ChildView`
 
 5. **Register the plugin (automatic)**  
    MIB3 scans `mib/plugins/` at startup via `addRibbonPlugins.m`.  
@@ -479,6 +594,8 @@ notify(obj.mibModel, 'UpdateGuiWidgets'); % refresh MIB toolbar/menus
    mib3
    ```
    The plugin appears under Plugins → `<Section>` in the ribbon.
+   Open it in both the Light and the Dark theme (see
+   [Light and dark theme](#light-and-dark-theme)).
 
 ---
 
@@ -491,5 +608,9 @@ notify(obj.mibModel, 'UpdateGuiWidgets'); % refresh MIB toolbar/menus
 | MIB2 → MIB3 plugin conversion cheat sheet | `mib/plugins/Tutorials/GuiTutorial/conversion_MIB2_to_MIB3_cheat_sheet.md` |
 | A full-featured plugin controller | `mib/plugins/FileProcessing/ImageConverter/ImageConverter.m` |
 | The view base class | `mib/+core/@ChildView/ChildView.m` |
+| Theme palette (all color names, light and dark values) | `mib/+utils/themeColors.m` |
+| Theme adaptation of a window | `mib/+utils/applyThemeColors.m` |
+| `uihtml` page colors | `mib/+utils/themeHtmlStyle.m` |
+| Plugin with a themed `uihtml` page | `mib/plugins/FileProcessing/ImageConverter/ImageConverter.m` |
 | Dataset crop API | `mib/+core/@MibDataset/cropDataset.m` |
 | Dataset resize reference | `mib/+controllers/@ResampleDataset/ResampleDataset.m` |

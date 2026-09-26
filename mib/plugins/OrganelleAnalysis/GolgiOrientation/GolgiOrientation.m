@@ -172,6 +172,7 @@ classdef GolgiOrientation < handle
 
             %% GUI mode
             obj.view = core.ChildView(obj, 'GolgiOrientationGUI');
+            utils.applyThemeColors(obj.view.gui);   % adapt the standard dialog button colors to the light/dark theme
             obj.addCallbacks();
 
             % window icon

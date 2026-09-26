@@ -280,6 +280,7 @@ classdef GuiTutorialBatch < handle
             % startupFcn(app, obj) to store the controller reference, and
             % collects all named component properties into obj.view.handles.
             obj.view = core.ChildView(obj, 'GuiTutorialBatchGUI');
+            utils.applyThemeColors(obj.view.gui);   % adapt the standard dialog button colors to the light/dark theme
 
             % Window title-bar icon - use a plugin-specific 16 px icon when
             % present next to this file; otherwise fall back to the shared MIB

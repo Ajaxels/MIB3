@@ -607,7 +607,7 @@ catch err
 end
 
 obj.view.handles.TrainButton.Text = 'Stop training';
-obj.view.handles.TrainButton.BackgroundColor = 'g'; %[1 .5 0]; % 0.7686    0.9020    0.9882
+obj.view.handles.TrainButton.BackgroundColor = utils.themeColors(obj.view.gui).dialogAction;
 drawnow;
 fprintf('Preparation for training is finished, elapsed time: %f\n', toc(trainTimer));
 
@@ -707,7 +707,7 @@ catch err
                 mibDeepTrainingProgressStruct.StopTrainingButton.BackgroundColor = [0.7686    0.9020    0.9882];
             end
             obj.view.handles.TrainButton.Text = 'Train';
-            obj.view.handles.TrainButton.BackgroundColor = [0.7686    0.9020    0.9882];
+            obj.view.handles.TrainButton.BackgroundColor = utils.themeColors(obj.view.gui).panelBlue;
             return;
         end
         emergencyBrakeUsed = true;
@@ -1106,7 +1106,7 @@ notify(obj.mibModel, 'UpdateUserScore', eventdata);
 
 mibDeepTrainingProgressStruct =  struct();
 obj.view.handles.TrainButton.Text = 'Train';
-obj.view.handles.TrainButton.BackgroundColor = [0.7686    0.9020    0.9882];
+obj.view.handles.TrainButton.BackgroundColor = utils.themeColors(obj.view.gui).panelBlue;
 
 fprintf('Training is finished, elapsed time: %f\n', toc(trainTimer));
 end

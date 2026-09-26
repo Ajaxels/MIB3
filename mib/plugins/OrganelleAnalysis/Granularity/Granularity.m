@@ -73,6 +73,7 @@ classdef Granularity < handle
             obj.matlabExportVariable = 'Granularity';
 
             obj.view = core.ChildView(obj, 'GranularityGUI');
+            utils.applyThemeColors(obj.view.gui);   % adapt the standard dialog button colors to the light/dark theme
             obj.addCallbacks();
 
             % window icon
@@ -275,13 +276,13 @@ classdef Granularity < handle
             end
             if isempty(typedValue) || min(typedValue) < 1 || max(typedValue) > maxVal
                 hObject.Value = sprintf('%d:%d', obj.subarea.(fieldName)(1), obj.subarea.(fieldName)(2));
-                hObject.BackgroundColor = [1 0 0];
+                hObject.BackgroundColor = utils.themeColors(obj.view.gui).fieldError;
                 utils.dlgs.showErrorDialog(obj.view.gui, 'Please check the values!', 'Wrong dimensions!');
                 return;
             end
             obj.subarea.(fieldName)(1) = min(typedValue);
             obj.subarea.(fieldName)(2) = max(typedValue);
-            hObject.BackgroundColor = [1 1 1];
+            hObject.BackgroundColorMode = 'auto';
         end
 
         % -----------------------------------------------------------------
@@ -299,8 +300,7 @@ classdef Granularity < handle
         function subAreaFromSelectionBtn_Callback(obj)
         % subAreaFromSelectionBtn_Callback  Derive subarea bounding box from Selection layer.
             id = obj.mibModel.getActiveId();
-            bgColor = obj.view.handles.subAreaFromSelectionBtn.BackgroundColor;
-            obj.view.handles.subAreaFromSelectionBtn.BackgroundColor = [1 0 0];
+            obj.view.handles.subAreaFromSelectionBtn.BackgroundColor = utils.themeColors(obj.view.gui).dialogStop;   % busy
             drawnow;
 
             if strcmp(obj.mode, 'image2D')
@@ -312,7 +312,7 @@ classdef Granularity < handle
                         sprintf('Selection layer was not found!\nPlease make sure that the Selection layer\nis shown in the Image View panel'), ...
                         'Missing Selection');
                     obj.resetSubarea();
-                    obj.view.handles.subAreaFromSelectionBtn.BackgroundColor = bgColor;
+                    obj.view.handles.subAreaFromSelectionBtn.BackgroundColorMode = 'auto';
                     return;
                 end
                 xStart = ceil(STATS(1).BoundingBox(1));
@@ -330,7 +330,7 @@ classdef Granularity < handle
                         sprintf('Selection layer was not found!\nPlease make sure that the Selection layer\nis shown in the Image View panel'), ...
                         'Missing Selection');
                     obj.resetSubarea();
-                    obj.view.handles.subAreaFromSelectionBtn.BackgroundColor = bgColor;
+                    obj.view.handles.subAreaFromSelectionBtn.BackgroundColorMode = 'auto';
                     return;
                 end
                 xStart = ceil(STATS(1).BoundingBox(1));
@@ -343,7 +343,7 @@ classdef Granularity < handle
                 obj.subarea.y = [yStart, yStart + STATS(1).BoundingBox(5) - 1];
                 obj.subarea.z = [zStart, zStart + STATS(1).BoundingBox(6) - 1];
             end
-            obj.view.handles.subAreaFromSelectionBtn.BackgroundColor = bgColor;
+            obj.view.handles.subAreaFromSelectionBtn.BackgroundColorMode = 'auto';
         end
 
         % -----------------------------------------------------------------
@@ -357,11 +357,11 @@ classdef Granularity < handle
             if isempty(materialList)
                 obj.view.handles.sourceMaterialPopup.Items           = {'Please create a model or a mask'};
                 obj.view.handles.sourceMaterialPopup.Value           = 'Please create a model or a mask';
-                obj.view.handles.sourceMaterialPopup.BackgroundColor = [1 0 0];
+                obj.view.handles.sourceMaterialPopup.BackgroundColor = utils.themeColors(obj.view.gui).fieldError;
             else
                 obj.view.handles.sourceMaterialPopup.Items           = materialList;
                 obj.view.handles.sourceMaterialPopup.Value           = materialList{1};
-                obj.view.handles.sourceMaterialPopup.BackgroundColor = [1 1 1];
+                obj.view.handles.sourceMaterialPopup.BackgroundColorMode = 'auto';
             end
         end
 

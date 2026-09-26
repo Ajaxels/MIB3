@@ -2,7 +2,9 @@
 
 **Status (2026-09-24, not committed at time of writing):** implemented for the Datasets panel,
 the standard buttons of 48 dialogs, StitchingInspector, message/error dialogs, BatchProcessing,
-VolRenApp, Preferences and the Segmentation panel materials table. Remaining: one-off colors in other dialogs, plugins. Start with the rules
+VolRenApp, Preferences, the Segmentation panel materials table, DeepMIB and its augmentation
+settings, the standard buttons of all plugins, ImageConverter, MultiRenameTool and Granularity
+(2026-09-26). Remaining: one-off colors in other dialogs, GolgiOrientation. Start with the rules
 and the recipe at the end.
 
 ## Problem
@@ -70,7 +72,7 @@ selected 1.0 (target is 4.5:1).
   `obj.view = core.ChildView(...)`, plus 4 dialogs in `+utils/+dlgs` built directly
   (`AmiraImportDlg`, `selectModelTypeDlg` pass `obj.view.Figure`; `SelectHDFSeries`,
   `SelectLociSeriesDlg` pass `obj.view.gui`).
-- Deliberately not done: `MibDeep` (pinned to light with `theme(fig, 'light')`), dialogs without the
+- Deliberately not done: `MibDeep` (pinned to light at the time; adapted on 2026-09-26, see below), dialogs without the
   standard colors (DisplayAdjust, VolRenApp, VolRenAppViewer, MibDeepActivations,
   MibDeepAugmentSettings), and plugins (their `.mlapp` files live under `plugins/`, not surveyed yet).
 - Still open: one-off colors in single dialogs (light blues, creams, the `[0 1 0]` in 3 files) are not
@@ -98,8 +100,8 @@ Used where the colors carry meaning and a dark version would blur it (traffic-li
 - `ImageFilters` `InfoHTML` (filter description): same `<style>` in `setInfoHtml`, background =
   the parent panel color. The page is written to a temp file per filter change, so the window's
   `ThemeChangedFcn` (local `imageFiltersThemeChanged`: `applyThemeColors` + rewrite the page for the
-  current `FilterName`) keeps it in sync. The snippet now exists in two places; a shared helper would
-  be justified if a third `uihtml` needs it.
+  current `FilterName`) keeps it in sync. The snippet became the shared `utils.themeHtmlStyle` when
+  a third `uihtml` needed it (ImageConverter, below).
 - `showErrorDialog`: the error text area lost its fixed white background and is fully on auto
   (dark `[0.071]` field with `[0.851]` text, 13.3:1). The suffix label uses `themeColors.dimmedText`
   (light `[0.4 0.4 0.4]` 5.3:1, dark `[0.65 0.65 0.65]` 6.6:1).
@@ -197,12 +199,103 @@ Used where the colors carry meaning and a dark version would blur it (traffic-li
   invisible `uifigure`: dark `[0.0706]` / `[0.851]`, light `[1 1 1]` / `[0.129]`), so no
   `ThemeChangedFcn` is needed.
 
+## DeepMIB (2026-09-26)
+- Was pinned to light with `theme(obj.view.gui, 'light')` in the `MibDeep` constructor; replaced by
+  `utils.applyThemeColors(obj.view.gui)`.
+- The `.mlapp` color-codes the workflow tabs, two shades per hue: tab/panel background (the stronger
+  tint) and the buttons/fields on it (paler). Surveyed from `matlab/document.xml` inside the `.mlapp`:
+
+  | hue | where | light panel | light widgets | dark panel | dark widgets |
+  |-|-|-|-|-|-|
+  | yellow | Directories and Preprocessing | `[1 0.9804 0.7686]` | `[1 0.9882 0.9098]` | `[0.28 0.245 0.14]` 7.5:1 | `[0.17 0.153 0.102]` 10.6:1 |
+  | blue | Train | `[0.7686 0.902 0.9882]` | `[0.8784 0.9608 1]` | `[0.144 0.238 0.3]` 8.1:1 | `[0.11 0.158 0.19]` 10.6:1 |
+  | green | Predict | `[0.8588 0.9294 0.7804]` | `[0.9098 0.9608 0.9098]` | `[0.199 0.27 0.149]` 7.4:1 | `[0.12 0.17 0.111]` 10.4:1 |
+
+  Palette entries `panelYellow/Blue/Green` and `widgetYellow/Blue/Green`; `applyThemeColors` matches
+  panel tints on `uitab`, `uipanel`, `uilabel` (two labels carry the Predict tint) and buttons (the
+  active action button carries its tab color), widget tints on buttons and input fields. No other
+  `.mlapp` uses these six colors.
+- Choice of the dark tints, prototyped side by side in a dark `uifigure` (dark defaults measured:
+  containers and buttons `[0.1294]`, edit fields `[0.0706]`):
+  - hue kept from the light color, HSV value 0.27-0.30 for panels, just above the theme background so
+    the tint is visible without glowing;
+  - widgets **darker** than the panel (V 0.17), rejected alternative: lighter (V 0.36-0.40, 5.2-5.5:1).
+    Darker follows the dark theme's own convention (fields darker than their background), mirroring
+    light mode where the widgets are paler than the panel, and keeps the higher contrast;
+  - yellow moved from hue 52 to 45 (amber-brown): at hue 52 the dark tint read as muddy olive.
+- The `.mlapp` callback `ModeSelectionChanged` disables the inactive action buttons with
+  `btn.BackgroundColor = app.NetworkPanel.BackgroundColor`, a copied theme default that stays stale
+  after a theme switch. Not fixed in the `.mlapp`; instead `applyThemeColors` puts any button whose
+  manual background equals `themeColors.background` (either theme) back on `'auto'`. Only three other
+  `.mlapp` files hold `[0.9608]`, all on text areas, so the rule touches only DeepMIB today.
+- Runtime repaints of `TrainButton` (`start.m`, `startTraining.m`, `startTrainingInstances.m`): idle
+  `panelBlue`, running `dialogAction` (was `'g'`), stopping `dialogClose` (was `[1 .5 0]`). All three
+  are matched by `applyThemeColors`, so a theme switch during training also repaints the button.
+- Not done: the custom training progress window (`deepmib.customTrainingProgressDisplay*`, a separate
+  figure) still repaints `StopTrainingButton` with literals (`[0 1 0]`, the Train blue, grey
+  `[0.85]`); the `MibDeepActivations` sub-dialog was not surveyed.
+- Verified live on R2026a: open in dark, the three tabs by `exportapp`, Dark -> Light -> Dark switch with the
+  window open, both directions (tints and the borrowed-default buttons follow).
+
+## DeepMIB augmentation settings (2026-09-26)
+- `MibDeepAugmentSettingsGUI.mlapp`: probability spinners yellow `[0.9804 0.9765 0.8235]` (19),
+  Min/Max spinners blue `[0.8314 0.9333 1]` (24); the info text of the dialog refers to "yellow boxes"
+  and "blue boxes", so the hues must stay recognizable. OK `[0 1 0]`, Close `[1 0 0]` (= `dialogStop`).
+- Palette `fieldYellow` / `fieldBlue`; `applyThemeColors` now also collects `uispinner` into the field
+  group. Dark tints tried on the live dialog:
+  - darker than the background (V 0.13-0.15, like the theme's own fields): 11.8-12.4:1, but the hue is
+    gone, yellow and blue both read as near-black - rejected;
+  - lighter than the background (V 0.30-0.34): `[0.3 0.278 0.135]` 6.7:1, `[0.17 0.249 0.34]` 7.6:1 -
+    chosen. Unlike the DeepMIB tabs, these fields sit on the plain background, not on a tinted panel.
+- Two `.mlapp` colors off the palette are normalized in the constructor before `applyThemeColors`:
+  `RandScale_Probability` (`[0.9804 0.9804 0.8196]`, a stray variant of the yellow) -> `fieldYellow`,
+  `OK` (`[0 1 0]`) -> `dialogAction` (light `[0.149 0.902 0.1804]`, visually the same). Fixing both in
+  App Designer would make these two lines unnecessary.
+- Verified live: dark at open, enabled/disabled spinners, Dark -> Light -> Dark with the dialog open.
+- Testing gotcha: DeepMIB without a CUDA GPU shows a modal Warning (`inputUniversalDlg`) from the
+  constructor, which blocks a scripted start. Press its OK from a timer
+  (`feval(findobj(fig, 'Type', 'uibutton', 'Text', 'OK').ButtonPushedFcn, [], [])`); deleting the
+  figure breaks the cached dialog, and interrupting the constructor with Ctrl+C leaves a
+  `'controllers.MibDeep'` reservation in `mib.childControllersIds` that makes every later start return
+  silently until it is removed.
+
+## ImageConverter and MultiRenameTool plugins, shared uihtml style (2026-09-26)
+- First plugin adapted (`plugins/FileProcessing/ImageConverter`). Convert/Close carry the standard
+  `dialogAction`/`dialogClose`, handled by `applyThemeColors`.
+- `infoText` is a third `uihtml`, so the `<style>` snippet became `utils.themeHtmlStyle(hFig,
+  backgroundColor)` (`''` in light); `inputUniversalDlg` and `ImageFilters.setInfoHtml` now call it,
+  output verified identical. The plugin prepends it to its `HTMLSource` fragment (a `<style>` element
+  at the start of a fragment is applied), background = `infoText.Parent.BackgroundColor`.
+- `ThemeChangedFcn` = local `imageConverterThemeChanged` (`applyThemeColors` + rewrite `HTMLSource`),
+  set before the first call so `applyThemeColors` does not install itself.
+- MultiRenameTool plugin, same recipe: Rename/Close standard colors; `infoHTML1` (on
+  `FilenameTemplatePanel`) is written in `updateWidgets`, which now prepends `themeHtmlStyle`, so the
+  local `multiRenameToolThemeChanged` is `applyThemeColors` + `obj.updateWidgets()`.
+- Survey of all 13 plugins (2026-09-26): 11 `.mlapp` files use the standard action/close colors.
+  `utils.applyThemeColors(obj.view.gui)` added after `core.ChildView` in the other 9
+  (TripleAreaIntensity, GolgiOrientation, Granularity, MCcalc, SurfaceArea3d, ThreshAnalysisForObjects,
+  DemoPlugin, GuiTutorial, GuiTutorialBatch) and to the constructor template in
+  `plugins_instructions.md`, which also got a short paragraph on runtime colors and `uihtml`.
+  SurfaceMeasurements has no fixed colors, PluginWithoutGUI no window.
+- Granularity runtime colors, same fix as Graphcut: invalid subarea field and the material dropdown
+  without a model -> `fieldError`, valid -> `BackgroundColorMode = 'auto'` (was `[1 1 1]`);
+  `subAreaFromSelectionBtn` busy -> `dialogStop`, restored with `'auto'` (was a remembered color).
+- Verified live in dark: buttons of all plugins except MCcalc, which does not open at all: its
+  `.mlapp` file is `McCalcGUI.mlapp` while the class inside and `core.ChildView(obj, 'MCcalcGUI')` say
+  `MCcalcGUI` ("Undefined function 'MCcalcGUI'"), a mismatch that predates this work.
+- Still open: GolgiOrientation has many one-off pastels on tabs, grid layouts, buttons and edit
+  fields (`[0.9882 1 0.9882]`, `[0.8196 0.9294 0.9686]`, `[0.9098 0.9882 0.902]`, a yellow tab
+  `[1 1 0.0667]`, ...) and a `uihtml` `infoHTML`; only its Calculate/Close buttons are adapted.
+- Checking `uihtml` by eye without `exportapp`: `java.awt.Robot().createScreenCapture` over the
+  figure `Position` (y flipped against `groot.ScreenSize`) captures the real rendering.
+
 ## Rules
 Which approach, by what the color does:
 
 | the color is... | example | approach |
 |-|-|-|
 | a decorative state | dialog buttons, buffer buttons, highlighted tab | dark version of the hue from `themeColors`, text on auto |
+| color-coding of window parts | DeepMIB Preprocess/Train/Predict tabs | `panel...` / `widget...` tints: dark hue, widgets darker than the panel |
 | a plain background for values | Preferences color tables (value cells), materials table names, text areas | follow the theme: `...ColorMode = 'auto'`, or for `uistyle` cells `tableCell` + explicit `FontColor = text` (selected cell: `tableHighlight`, greyed out: `disabledText`) |
 | the information itself | seam-quality table and minimap | keep the pale color, pin the text black |
 | chosen by the user | Selection/Mask/Annotations color buttons | text black or white from the color's luminance (0.179), theme-independent |
@@ -229,4 +322,4 @@ Which approach, by what the color does:
    model listeners behind.
 
 Alternative for windows where adapting is not worth it: pin the window to light with
-`theme(fig, 'light')` (as `MibDeep.m` does); explicit background colors are preserved.
+`theme(fig, 'light')` (as `MibDeep.m` did until 2026-09-26); explicit background colors are preserved.

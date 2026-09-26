@@ -72,6 +72,7 @@ classdef ThreshAnalysisForObjects < handle
             obj.matlabVarName = 'ThreshAnalysis';
 
             obj.view = core.ChildView(obj, 'ThreshAnalysisForObjectsGUI');
+            utils.applyThemeColors(obj.view.gui);   % adapt the standard dialog button colors to the light/dark theme
             obj.addCallbacks();
 
             % window icon

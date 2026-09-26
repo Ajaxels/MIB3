@@ -53,6 +53,7 @@ classdef MCcalc < handle
             obj.matlabExportVariable = 'MCcalc';
 
             obj.view = core.ChildView(obj, 'MCcalcGUI');
+            utils.applyThemeColors(obj.view.gui);   % adapt the standard dialog button colors to the light/dark theme
             obj.addCallbacks();
 
             % window icon

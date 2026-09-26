@@ -92,7 +92,15 @@ classdef MibDeepAugmentSettings < handle
 
             guiName = 'views.MibDeepAugmentSettingsGUI';
             obj.view = core.ChildView(obj, guiName); % initialize the view
-            
+
+            % the .mlapp paints RandScale_Probability a slightly different yellow than the other
+            % probability spinners and OK a pure green; set both to the palette colors so that
+            % utils.applyThemeColors recognizes them
+            lightPalette = utils.themeColors('light');
+            obj.view.handles.RandScale_Probability.BackgroundColor = lightPalette.fieldYellow;
+            obj.view.handles.OK.BackgroundColor = lightPalette.dialogAction;
+            utils.applyThemeColors(obj.view.gui);
+
             % disable widgets that are not for 2D
             if strcmp(obj.augmentationMode, '2D')
                 obj.view.handles.RandZReflection_Enable.Value = false;
