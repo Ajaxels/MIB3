@@ -50,6 +50,7 @@ classdef SelectHDFSeries < handle
             
             obj.ParentFigure = ParentFigure;
             obj.view = views.SelectHDFSeriesGUI;
+            utils.applyThemeColors(obj.view.gui);   % adapt the standard dialog button colors to the light/dark theme
             % update font size
             if obj.view.handles.selectdatasettoloadLabel.FontSize ~= Font.FontSize ...
                     || ~strcmp(obj.view.handles.selectdatasettoloadLabel.FontName, Font.FontName)

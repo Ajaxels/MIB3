@@ -12,7 +12,7 @@ function materialsTable_applyRowStyle(obj, rowIndex, isHighlighted, columnIndex,
 %   isHighlighted - true to highlight, false to restore original color
 %   columnIndex - specific column(s) to style
 %   fontColor - Font color to use
-%   highlightColor - Background color for highlighting (empty for white)
+%   highlightColor - Background color for highlighting (empty for the plain cell color)
 %
 
 tableHandle = obj.handles.materialsTable;
@@ -21,8 +21,8 @@ tableHandle = obj.handles.materialsTable;
 if isHighlighted && ~isempty(highlightColor)
     bgColor = highlightColor;
 else
-    % Restore original background - white for columns 2-3
-    bgColor = [1, 1, 1];
+    % Restore original background of columns 2-3, white or dark depending on the theme
+    bgColor = utils.themeColors(obj.UIFigure).tableCell;
 end
 
 % Create and apply style

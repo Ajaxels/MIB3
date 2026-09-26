@@ -104,6 +104,7 @@ classdef DebrisRemoval < handle
 
             %% GUI mode
             obj.view = core.ChildView(obj, 'views.DebrisRemovalGUI');
+            utils.applyThemeColors(obj.view.gui);   % adapt the standard dialog button colors to the light/dark theme
             obj.view.gui = utils.moveWindowOutside(obj.view.gui, obj.mibGUI, 'left');
             
             % update font and size

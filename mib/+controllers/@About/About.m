@@ -56,6 +56,8 @@ classdef About < handle
             mathworksString = sprintf('Powered by MATLAB(r).\n(c) 1984 - %s The MathWorks, Inc.', matlabYear);
 
             obj.view = core.ChildView(obj, 'views.AboutGUI');
+            utils.applyThemeColors(obj.view.gui);   % adapt the standard dialog button colors to the light/dark theme
+            obj.view.handles.descriptionText.BackgroundColorMode = 'auto';   % the mlapp light grey is unreadable with the dark theme font
 
             % load splash image and overlay version date text
             %mibPath = obj.mibModel.mibPath;

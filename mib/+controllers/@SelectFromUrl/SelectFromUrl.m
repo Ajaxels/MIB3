@@ -210,6 +210,7 @@ classdef SelectFromUrl < handle
             end
 
             obj.view = core.ChildView(obj, 'views.SelectFromUrlGUI');
+            utils.applyThemeColors(obj.view.gui);   % adapt the standard dialog button colors to the light/dark theme
             % Guarded so the dialog can also be built in a test session, where
             % there is no main MIB window to position against.
             if ~isempty(obj.mibGUI) && isvalid(obj.mibGUI)

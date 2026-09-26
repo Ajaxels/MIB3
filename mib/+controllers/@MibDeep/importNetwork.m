@@ -25,7 +25,7 @@ else
 end
 if strcmp(selection, 'Cancel'); return; end
 
-fileFilters = {'*.mat;', 'Matlab format (*.mat)';
+fileFilters = {'*.mat', 'Matlab format (*.mat)';
     '*.*', 'All files (*.*)'};
 [filenameIn, pathIn, selectedIndx] = utils.dlgs.mibUiGetFile(fileFilters, 'Select network file', obj.mibModel.currentDirectory);
 if isequal(filenameIn, 0); return; end

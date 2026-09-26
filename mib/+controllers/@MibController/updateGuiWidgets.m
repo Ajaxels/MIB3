@@ -404,8 +404,11 @@ if isempty(updatePanels) || ismember('activeDataset', updatePanels)
     else
         activeDataset.handles.(bufferId).Tooltip = dataset.image.filename;
     end
-    activeDataset.handles.(bufferId).BackgroundColor = [0 1 0];
-    
+    % during startup the Datasets controller may not exist yet; its constructor paints the buttons itself
+    if isa(obj.cActiveDataset, 'controllers.MibActiveDataset')
+        obj.cActiveDataset.paintBufferButton(activeDataset.handles.(bufferId), 'selected');
+    end
+
     % add DeveloperMode tag
     if obj.mibModel.preferences.System.DeveloperMode
         activeDataset.handles.(bufferId).Tooltip = sprintf('obj.view.handles.panels.activeDataset.handles.%s:\n%s', ...

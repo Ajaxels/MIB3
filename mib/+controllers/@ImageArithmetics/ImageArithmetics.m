@@ -146,6 +146,7 @@ classdef ImageArithmetics < handle
 
             %% GUI mode
             obj.view = core.ChildView(obj, 'views.ImageArithmeticsGUI');
+            utils.applyThemeColors(obj.view.gui);   % adapt the standard dialog button colors to the light/dark theme
             obj.addCallbacks();
 
             % Populate editable widgets

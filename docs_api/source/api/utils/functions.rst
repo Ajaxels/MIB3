@@ -5,6 +5,8 @@ Standalone utility functions
 
 .. autofunction:: addText2Img
 
+.. autofunction:: applyThemeColors
+
 .. autofunction:: attachFileDnD
 
 .. autofunction:: calcCurveLength
@@ -64,6 +66,8 @@ Standalone utility functions
 .. autofunction:: startController
 
 .. autofunction:: struct2array
+
+.. autofunction:: themeColors
 
 .. autofunction:: traceCurve
 

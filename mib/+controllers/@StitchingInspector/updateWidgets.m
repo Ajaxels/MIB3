@@ -59,12 +59,14 @@ if obj.hasWidget('seamTable')
     seamTable.ColumnWidth = {80, 'auto', 'auto', 'auto', 'auto', 'auto'};
 
     % Score-coloured row backgrounds (best-effort; harmless if unsupported).
+    % The pale colours are kept in both themes, because they match the mini-map tiles;
+    % the font is pinned to black, as the dark theme's auto font is near-white
     try
         removeStyle(seamTable);
         for rankPos = 1:numEdges
             k = visibleRanking(rankPos);
-            addStyle(seamTable, uistyle('BackgroundColor', scoreColor(edges(k).seamScore, edges(k).valid)), ...
-                'row', rankPos);
+            addStyle(seamTable, uistyle('BackgroundColor', scoreColor(edges(k).seamScore, edges(k).valid), ...
+                'FontColor', [0 0 0]), 'row', rankPos);
         end
     catch
         % row styling is cosmetic only

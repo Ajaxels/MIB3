@@ -72,6 +72,7 @@ classdef QuantificationProperties < handle
 
             guiName = 'views.QuantificationPropertiesGUI';
             obj.view = core.ChildView(obj, guiName); % initialize the view
+            utils.applyThemeColors(obj.view.gui);   % adapt the standard dialog button colors to the light/dark theme
 
             obj.addCallbacks();
 

@@ -55,6 +55,7 @@ classdef WelcomeTips < handle
             
             guiName = 'views.TipsAppGUI';
             obj.view = core.ChildView(obj, guiName); % initialize the view
+            utils.applyThemeColors(obj.view.gui);   % adapt the standard dialog button colors to the light/dark theme
             
             obj.view.handles.showTipsCheck.Value = obj.mibModel.preferences.Tips.ShowTips;
 

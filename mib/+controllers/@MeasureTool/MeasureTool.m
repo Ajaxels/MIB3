@@ -98,6 +98,7 @@ classdef MeasureTool < handle
             obj.indices = [];
 
             obj.view = core.ChildView(obj, 'views.MeasureToolGUI');
+            utils.applyThemeColors(obj.view.gui);   % adapt the standard dialog button colors to the light/dark theme
             Font = obj.mibModel.preferences.System.Font;
             if obj.view.handles.voxelSizeTxt.FontSize ~= Font.FontSize ...
                     || ~strcmp(obj.view.handles.voxelSizeTxt.FontName, Font.FontName)

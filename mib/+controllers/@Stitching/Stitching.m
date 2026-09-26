@@ -522,7 +522,8 @@ classdef Stitching < handle
             end
 
             obj.view = core.ChildView(obj, 'views.StitchingGUI');
-            
+            utils.applyThemeColors(obj.view.gui);   % dark-theme colors for the Stitch/Inspect/Close buttons
+
             Font = obj.mibModel.preferences.System.Font;
             if obj.view.handles.closeButton.FontSize ~= Font.FontSize ...
                     || ~strcmp(obj.view.handles.closeButton.FontName, Font.FontName)

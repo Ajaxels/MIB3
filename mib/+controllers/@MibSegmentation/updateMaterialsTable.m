@@ -60,11 +60,13 @@ end
 % get dataset alias
 dataset = obj.mibModel.I{obj.mibModel.id};
 
-% Determine font color based on selection restriction
+% Determine font color based on selection restriction; the colors follow the
+% MATLAB theme, obj.UIFigure.ThemeChangedFcn calls this function again
+palette = utils.themeColors(obj.UIFigure);
 if dataset.restrictSelectionToMaterial
-    fontColor = [0.78, 0.78, 0.78];  % Gray for restricted mode
+    fontColor = palette.disabledText;  % Gray for restricted mode
 else
-    fontColor = [0, 0, 0];  % Black for normal mode
+    fontColor = palette.text;  % Normal mode
 end
 
 % update material names
@@ -149,7 +151,7 @@ for i = 1:numRows
     if i == 1  % Mask
         bgColor = obj.mibModel.preferences.Colors.MaskColor;
     elseif i == 2  % Exterior
-        bgColor = [1, 1, 1];  % White
+        bgColor = palette.tableCell;  % no color, plain cell
     else  % Materials
         matIdx = i - 2;
         if dataset.labels.maxMaterials < 256
@@ -160,7 +162,7 @@ for i = 1:numRows
                 colorId = mod(str2double(dataset.labels.materialNames{matIdx}) - 1, 65535) + 1;
                 bgColor = dataset.labels.materialColors(colorId, :);
             else
-                bgColor = [1, 1, 1];
+                bgColor = palette.tableCell;
             end
         end
     end

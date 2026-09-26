@@ -70,6 +70,7 @@ classdef RenameRestore < handle
 
             guiName = 'views.RenameRestoreGUI';
             obj.view = core.ChildView(obj, guiName);
+            utils.applyThemeColors(obj.view.gui);   % adapt the standard dialog button colors to the light/dark theme
 
             obj.view.handles.projectFilenameEdit.Value   = obj.inputFilename;
             obj.view.handles.projectFilenameEdit.Tooltip = obj.inputFilename;

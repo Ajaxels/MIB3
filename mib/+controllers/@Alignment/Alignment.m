@@ -280,6 +280,7 @@ classdef Alignment < handle
             % ---- GUI mode ----
             obj.varname = 'I';
             obj.view = core.ChildView(obj, 'views.AlignmentGUI');
+            utils.applyThemeColors(obj.view.gui);   % adapt the standard dialog button colors to the light/dark theme
             obj.addCallbacks();
 
             Font = obj.mibModel.preferences.System.Font;

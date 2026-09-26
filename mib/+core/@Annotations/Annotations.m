@@ -870,8 +870,8 @@ classdef Annotations < matlab.mixin.Copyable
                 Filters = {'*.ann',  'Matlab format (*.ann)';...
                            '*.csv',   'Comma-separated value (*.csv)';...
                            '*.landmarkAscii',   'Amira landmarks ASCII (*.landmarkAscii)';...
-                           '*.landmarkBin',   'Amira landmarks BINARY(*.landmarkBin)';...
-                           '*.psi',   'PSI format ASCII(*.psi)';...
+                           '*.landmarkBin',   'Amira landmarks BINARY (*.landmarkBin)';...
+                           '*.psi',   'PSI format ASCII (*.psi)';...
                            '*.xls',   'Excel format (*.xls)'; };
                 
                 [filename, path, FilterIndex] = uiputfile(Filters, 'Save annotations...', options.outputDir); %...
@@ -886,9 +886,9 @@ classdef Annotations < matlab.mixin.Copyable
                         options.format = 'csv';
                     case 'Amira landmarks ASCII (*.landmarkAscii)'
                         options.format = 'landmarkAscii';
-                    case 'Amira landmarks BINARY(*.landmarkBin)'
+                    case 'Amira landmarks BINARY (*.landmarkBin)'
                         options.format = 'landmarkBin';
-                    case 'PSI format ASCII(*.psi)'
+                    case 'PSI format ASCII (*.psi)'
                          options.format = 'psi';
                     case 'Excel format (*.xls)'
                         options.format = 'xls';
@@ -1092,26 +1092,38 @@ classdef Annotations < matlab.mixin.Copyable
 
             if isempty(filename)
                 [fn, path, indx] = utils.dlgs.mibUiGetFile( ...
-                    {'*.ann;',  'Matlab format (*.ann)'; ...
-                     '*.csv;',  'CSV format (*.csv)'; ...
-                     '*.landmarkAscii;', 'landmarkAscii Amira format (*.landmarkAscii)'; ...
-                     '*.landmarkBin;',   'landmarkBin Amira format (*.landmarkBin)'; ...
+                    {'*.ann',  'Matlab format (*.ann)'; ...
+                     '*.csv',  'CSV format (*.csv)'; ...
+                     '*.landmarkAscii', 'landmarkAscii Amira format (*.landmarkAscii)'; ...
+                     '*.landmarkBin',   'landmarkBin Amira format (*.landmarkBin)'; ...
                      '*.*',     'All Files (*.*)'}, ...
                     'Load annotations...', options.currentDirectory);
                 if isequal(fn, 0); return; end
                 filename = fullfile(path, fn{1});
             else
-                [~, ~, ext] = fileparts(filename);
-                switch lower(ext)
-                    case '.ann';            indx = 1;
-                    case '.csv';            indx = 2;
-                    case '.landmarkascii';  indx = 3;
-                    case '.landmarkbin';    indx = 4;
-                    otherwise;              indx = 1;
-                end
+                indx = [];
             end
 
-            switch indx
+            % detect the format from the extension; the dialog filter index is not
+            % reliable: it points to "All Files" when that filter was used, and the
+            % Qt file dialog (compiled R2026a) returns it empty when a filter label
+            % is not exactly 'Text (pattern)'
+            [~, ~, ext] = fileparts(filename);
+            switch lower(ext)
+                case '.ann';            fileFormat = 1;
+                case '.csv';            fileFormat = 2;
+                case '.landmarkascii';  fileFormat = 3;
+                case '.landmarkbin';    fileFormat = 4;
+                otherwise
+                    % unknown extension: trust the filter selected in the dialog
+                    if isscalar(indx) && ismember(indx, 2:4)
+                        fileFormat = indx;
+                    else
+                        fileFormat = 1;
+                    end
+            end
+
+            switch fileFormat
                 case 1  % .ann (MATLAB)
                     res = load(filename, '-mat');
                     % compatibility with old variable names

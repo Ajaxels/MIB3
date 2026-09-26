@@ -150,6 +150,10 @@ classdef WoundHealing < handle
 
             %% GUI mode
             obj.view = core.ChildView(obj, 'views.WoundHealingGUI');
+            utils.applyThemeColors(obj.view.gui);   % adapt the standard dialog button colors to the light/dark theme
+            % the mlapp light grey and dark text are unreadable with the dark theme; follow the theme instead
+            obj.view.handles.AboutTextArea.BackgroundColorMode = 'auto';
+            obj.view.handles.AboutTextArea.FontColorMode = 'auto';
             obj.view.gui = utils.moveWindowOutside(obj.view.gui, obj.mibGUI, 'left');
 
             Font = obj.mibModel.preferences.System.Font;

@@ -107,6 +107,7 @@ classdef ContentAwareFill < handle
 
             %% GUI mode
             obj.view = core.ChildView(obj, 'views.ContentAwareFillGUI');
+            utils.applyThemeColors(obj.view.gui);   % adapt the standard dialog button colors to the light/dark theme
             obj.view.gui = utils.moveWindowOutside(obj.view.gui, obj.mibGUI, 'left');
             utils.fontSizeUpdate(obj.view.gui, obj.mibModel.preferences.System.Font);
 

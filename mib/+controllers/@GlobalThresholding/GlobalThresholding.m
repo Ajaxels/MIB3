@@ -134,6 +134,7 @@ classdef GlobalThresholding < handle
 
             %% GUI mode
             obj.view = core.ChildView(obj, 'views.GlobalThresholdingGUI');
+            utils.applyThemeColors(obj.view.gui);   % adapt the standard dialog button colors to the light/dark theme
             obj.view.gui = utils.moveWindowOutside(obj.view.gui, obj.mibGUI, 'left');
 
             Font = obj.mibModel.preferences.System.Font;

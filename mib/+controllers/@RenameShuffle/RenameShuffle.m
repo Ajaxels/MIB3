@@ -72,6 +72,7 @@ classdef RenameShuffle < handle
 
             guiName = 'views.RenameShuffleGUI';
             obj.view = core.ChildView(obj, guiName);
+            utils.applyThemeColors(obj.view.gui);   % adapt the standard dialog button colors to the light/dark theme
 
             obj.view.handles.dirEdit.Value = obj.outputDir;
             obj.view.handles.randomSeed.Value = mod(round(posixtime(datetime('now'))), 1e6);

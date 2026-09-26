@@ -46,10 +46,15 @@ isRestricted = dataset.restrictSelectionToMaterial == 1;
 userData.selectedIndices = cellIndices;
 tableHandle.UserData = userData;
 
-% Define colors
-highlightColor = [0.2, 0.6, 1];
-greyFontColor = [0.78, 0.78, 0.78];
-blackFontColor = [0, 0, 0];
+% Define cell styles; the colors follow the MATLAB theme (utils.themeColors),
+% grey text only when selection is restricted to material
+palette = utils.themeColors(obj.UIFigure);
+if isRestricted
+    resetStyle = uistyle('BackgroundColor', palette.tableCell, 'FontColor', palette.disabledText);
+else
+    resetStyle = uistyle('BackgroundColor', palette.tableCell, 'FontColor', palette.text);
+end
+highlightStyle = uistyle('BackgroundColor', palette.tableHighlight, 'FontColor', palette.text);
 
 % Get total number of rows
 numRows = size(tableHandle.Data, 1);
@@ -79,33 +84,20 @@ if Indices(2) == 2
     end
     
     % Clear all column 2 highlights, then apply the new one
-    % Grey text only when selection is restricted to material
-    if isRestricted
-        resetStyle = uistyle('BackgroundColor', [1, 1, 1], 'FontColor', greyFontColor);
-    else
-        resetStyle = uistyle('BackgroundColor', [1, 1, 1], 'FontColor', blackFontColor);
-    end
     for i = 1:numRows
         addStyle(tableHandle, resetStyle, 'cell', [i, 2]);
     end
 
-    % Highlight selected material in column 2 (black font, blue background)
-    highlightStyle = uistyle('BackgroundColor', highlightColor, 'FontColor', blackFontColor);
+    % Highlight selected material in column 2
     addStyle(tableHandle, highlightStyle, 'cell', [selectedMaterial, 2]);
 
     % Style column 3 (Add To) based on restriction mode
-    if isRestricted
-        resetCol3Style = uistyle('BackgroundColor', [1, 1, 1], 'FontColor', greyFontColor);
-    else
-        resetCol3Style = uistyle('BackgroundColor', [1, 1, 1], 'FontColor', blackFontColor);
-    end
     for i = 1:numRows
-        addStyle(tableHandle, resetCol3Style, 'cell', [i, 3]);
+        addStyle(tableHandle, resetStyle, 'cell', [i, 3]);
     end
     % Highlight the active Add To row in column 3
     if unlink
-        addToHighlight = uistyle('BackgroundColor', highlightColor, 'FontColor', blackFontColor);
-        addStyle(tableHandle, addToHighlight, 'cell', [dataset.selectedAddToMaterial, 3]);
+        addStyle(tableHandle, highlightStyle, 'cell', [dataset.selectedAddToMaterial, 3]);
     end
     
     % Update plot if showAllMaterials is off
@@ -126,18 +118,12 @@ elseif Indices(2) == 3
     tableHandle.Data = currentData;
     
     % Style column 3 based on restriction mode
-    if isRestricted
-        resetCol3Style = uistyle('BackgroundColor', [1, 1, 1], 'FontColor', greyFontColor);
-    else
-        resetCol3Style = uistyle('BackgroundColor', [1, 1, 1], 'FontColor', blackFontColor);
-    end
     for i = 1:numRows
-        addStyle(tableHandle, resetCol3Style, 'cell', [i, 3]);
+        addStyle(tableHandle, resetStyle, 'cell', [i, 3]);
     end
     % Highlight the selected Add To row when unlinked
     if unlink
-        addToHighlight = uistyle('BackgroundColor', highlightColor, 'FontColor', blackFontColor);
-        addStyle(tableHandle, addToHighlight, 'cell', [selectedAddTo, 3]);
+        addStyle(tableHandle, highlightStyle, 'cell', [selectedAddTo, 3]);
     end
     
     % If linked, also update selectedMaterial and highlight
@@ -151,17 +137,11 @@ elseif Indices(2) == 3
         end
         
         % Clear all column 2 highlights, then apply the new one
-        if isRestricted
-            resetStyle = uistyle('BackgroundColor', [1, 1, 1], 'FontColor', greyFontColor);
-        else
-            resetStyle = uistyle('BackgroundColor', [1, 1, 1], 'FontColor', blackFontColor);
-        end
         for i = 1:numRows
             addStyle(tableHandle, resetStyle, 'cell', [i, 2]);
         end
 
         % Highlight selected row in column 2
-        highlightStyle = uistyle('BackgroundColor', highlightColor, 'FontColor', blackFontColor);
         addStyle(tableHandle, highlightStyle, 'cell', [selectedAddTo, 2]);
     end
 

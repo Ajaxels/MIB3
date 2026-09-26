@@ -65,10 +65,6 @@ classdef StitchingInspector < handle
         % ensureTileThumbs ({} until then, {} forever if tiles are too big)
         thumbScale
         % full-res pixels per thumbnail pixel (NaN until thumbs are built)
-        excludeBtnDefaultColor
-        % BackgroundColor the exclude button had when the window opened, so the
-        % "included" look can be restored without hardcoding a theme colour
-        % ([] until addCallbacks captures it)
         viewSlice
         % browsed z-slices of the pair view: struct .edgeIdx, .sliceA
         % (tile-i slice), .sliceB (tile-j slice), .depthA, .depthB (stack
@@ -141,7 +137,6 @@ classdef StitchingInspector < handle
             obj.tileThumbs = {};
             obj.thumbScale = NaN;
             obj.viewSlice = [];
-            obj.excludeBtnDefaultColor = [];
 
             createView = true;
             if nargin > 2 && isstruct(options) && isfield(options, 'createView')
@@ -173,6 +168,7 @@ classdef StitchingInspector < handle
 
             % ---- GUI
             obj.view = core.ChildView(obj, 'views.StitchingInspectorGUI');
+            utils.applyThemeColors(obj.view.gui);   % adapt the standard dialog button colors to the light/dark theme
 
             Font = obj.mibModel.preferences.System.Font;
             if obj.view.handles.closeButton.FontSize ~= Font.FontSize ...
@@ -389,10 +385,6 @@ classdef StitchingInspector < handle
             excludeBtn = obj.view.handles.excludeBtn;
             if ~isvalid(excludeBtn); return; end
 
-            if isempty(obj.excludeBtnDefaultColor)
-                obj.excludeBtnDefaultColor = excludeBtn.BackgroundColor;
-            end
-
             isExcluded = false;
             if obj.dataValid() && ~isempty(obj.currentEdgeIdx)
                 isExcluded = ~obj.stitching.edges(obj.currentEdgeIdx).valid;
@@ -401,11 +393,16 @@ classdef StitchingInspector < handle
             if isprop(excludeBtn, 'Value')      % state button: pressed while excluded
                 excludeBtn.Value = isExcluded;
             end
+            % Excluded: pink with black text in both themes (the dark theme's auto
+            % font is near-white). Included: both colors back on auto, so the
+            % button follows the current theme, also after a theme switch
             if isExcluded
                 excludeBtn.BackgroundColor = [1.0 0.72 0.72];
+                excludeBtn.FontColor = [0 0 0];
                 excludeBtn.Text = 'Excluded (X)';
             else
-                excludeBtn.BackgroundColor = obj.excludeBtnDefaultColor;
+                excludeBtn.BackgroundColorMode = 'auto';
+                excludeBtn.FontColorMode = 'auto';
                 excludeBtn.Text = 'Exclude (X)';
             end
         end

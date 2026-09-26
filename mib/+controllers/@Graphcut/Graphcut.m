@@ -147,6 +147,7 @@ classdef Graphcut < handle
             obj.mode = 'mode2dCurrentRadio';
 
             obj.view = core.ChildView(obj, 'views.GraphcutGUI');
+            utils.applyThemeColors(obj.view.gui);   % adapt the standard dialog button colors to the light/dark theme
             obj.addCallbacks();
             obj.updateWidgets();
 
@@ -258,19 +259,21 @@ classdef Graphcut < handle
             list = obj.mibModel.I{id}.labels.materialNames;
             if obj.mibModel.I{id}.modelExist == 0 || isempty(list)
                 warningMsg = 'Please create a model with 2 materials: background and object and restart the watershed tool';
+                % red in the colors of the current theme; utils.applyThemeColors remaps it on a theme switch
+                errorColor = utils.themeColors(obj.view.gui).fieldError;
                 obj.view.handles.backgroundMaterialPopup.Items = {warningMsg};
                 obj.view.handles.backgroundMaterialPopup.Value = warningMsg;
-                obj.view.handles.backgroundMaterialPopup.BackgroundColor = [1 0 0];
+                obj.view.handles.backgroundMaterialPopup.BackgroundColor = errorColor;
                 obj.view.handles.signalMaterialPopup.Items = {warningMsg};
                 obj.view.handles.signalMaterialPopup.Value = warningMsg;
-                obj.view.handles.signalMaterialPopup.BackgroundColor = [1 0 0];
+                obj.view.handles.signalMaterialPopup.BackgroundColor = errorColor;
             else
                 obj.view.handles.backgroundMaterialPopup.Items = list;
                 obj.view.handles.backgroundMaterialPopup.Value = list{1};
-                obj.view.handles.backgroundMaterialPopup.BackgroundColor = [1 1 1];
+                obj.view.handles.backgroundMaterialPopup.BackgroundColorMode = 'auto';
                 obj.view.handles.signalMaterialPopup.Items = list;
                 obj.view.handles.signalMaterialPopup.Value = list{end};
-                obj.view.handles.signalMaterialPopup.BackgroundColor = [1 1 1];
+                obj.view.handles.signalMaterialPopup.BackgroundColorMode = 'auto';
             end
         end
 
@@ -376,9 +379,8 @@ classdef Graphcut < handle
                 obj.seedBg        = cell(1);
             end
 
-            defaultBgColor = obj.view.handles.resetDimsBtn.BackgroundColor;
-            obj.view.handles.preprocessBtn.BackgroundColor  = defaultBgColor;
-            obj.view.handles.superpixelsBtn.BackgroundColor = defaultBgColor;
+            obj.view.handles.preprocessBtn.BackgroundColorMode  = 'auto';     % default color of the theme
+            obj.view.handles.superpixelsBtn.BackgroundColorMode = 'auto';
             obj.view.handles.superpixelsCountText.Text = 'Superpixels count: 0';
 
             binVal = str2num(obj.view.handles.binSubareaEdit.Value); %#ok<ST2NM>
@@ -486,8 +488,8 @@ classdef Graphcut < handle
             if obj.mibModel.preferences.System.DeveloperMode
                 fprintf('controllers.Graphcut.subAreaFromSelectionBtn_Callback: triggered\n');
             end
-            bgColor = obj.view.handles.subAreaFromSelectionBtn.BackgroundColor;
-            obj.view.handles.subAreaFromSelectionBtn.BackgroundColor = [1 0 0];
+            % red while busy; BackgroundColorMode = 'auto' below restores the default color of the theme
+            obj.view.handles.subAreaFromSelectionBtn.BackgroundColor = utils.themeColors(obj.view.gui).dialogStop;
             drawnow;
             if strcmp(obj.mode, 'mode2dCurrentRadio')
                 img = cell2mat(obj.mibModel.getData2D('selection'));
@@ -497,7 +499,7 @@ classdef Graphcut < handle
                         sprintf('Selection layer was not found!\nPlease make sure that the Selection layer is shown in the Image View panel'), ...
                         'Missing Selection');
                     obj.resetDimsBtn_Callback();
-                    obj.view.handles.subAreaFromSelectionBtn.BackgroundColor = bgColor;
+                    obj.view.handles.subAreaFromSelectionBtn.BackgroundColorMode = 'auto';
                     return;
                 end
                 obj.view.handles.xSubareaEdit.Value = sprintf('%d:%d', ceil(STATS(1).BoundingBox(1)), ceil(STATS(1).BoundingBox(1))+STATS(1).BoundingBox(3)-1);
@@ -510,7 +512,7 @@ classdef Graphcut < handle
                         sprintf('Selection layer was not found!\nPlease make sure that the Selection layer is shown in the Image View panel'), ...
                         'Missing Selection');
                     obj.resetDimsBtn_Callback();
-                    obj.view.handles.subAreaFromSelectionBtn.BackgroundColor = bgColor;
+                    obj.view.handles.subAreaFromSelectionBtn.BackgroundColorMode = 'auto';
                     return;
                 end
                 obj.view.handles.xSubareaEdit.Value = sprintf('%d:%d', ceil(STATS(1).BoundingBox(1)), ceil(STATS(1).BoundingBox(1))+STATS(1).BoundingBox(4)-1);
@@ -518,7 +520,7 @@ classdef Graphcut < handle
                 obj.view.handles.zSubareaEdit.Value = sprintf('%d:%d', ceil(STATS(1).BoundingBox(3)), ceil(STATS(1).BoundingBox(3))+STATS(1).BoundingBox(6)-1);
             end
             obj.clearPreprocessBtn_Callback();
-            obj.view.handles.subAreaFromSelectionBtn.BackgroundColor = bgColor;
+            obj.view.handles.subAreaFromSelectionBtn.BackgroundColorMode = 'auto';
         end
 
         function binSubareaEdit_Callback(obj, hObject)
@@ -1349,7 +1351,7 @@ classdef Graphcut < handle
             end
 
             progressBar.Value = 1; progressBar.Message = 'Done!';
-            obj.view.handles.superpixelsBtn.BackgroundColor = [0.149 0.902 0.1804];
+            obj.view.handles.superpixelsBtn.BackgroundColor = utils.themeColors(obj.view.gui).dialogAction;
             obj.view.handles.superpixelsCountText.Text = sprintf('Superpixels count: %d', sum([obj.graphcut(:).noPix]));
             obj.view.handles.superpixelsCountText.Tooltip = sprintf('Superpixels count: %d', sum([obj.graphcut(:).noPix]));
             delete(progressBar);
@@ -1796,7 +1798,7 @@ classdef Graphcut < handle
                 obj.view.handles.chopZedit.Value = 1;
             end
 
-            obj.view.handles.superpixelsBtn.BackgroundColor = [0.149 0.902 0.1804];
+            obj.view.handles.superpixelsBtn.BackgroundColor = utils.themeColors(obj.view.gui).dialogAction;
             obj.view.handles.superpixelsCountText.Text = sprintf('Superpixels count: %d', sum([obj.graphcut.noPix]));
             obj.superpixTypePopup_Callback('keep');
         end

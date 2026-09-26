@@ -63,6 +63,7 @@ classdef selectModelTypeDlg < handle
 
             % Instantiate the App Designer view
             obj.view = views.SelectModelTypeGUI;
+            utils.applyThemeColors(obj.view.Figure);   % adapt the standard dialog button colors to the light/dark theme
 
             % Wire up all widget callbacks and set initial state
             obj.initView();

@@ -78,6 +78,7 @@ classdef SelectLociSeriesDlg < handle
             
             % Initialize the App Designer view
             obj.view = views.SelectLociSeriesGUI();
+            utils.applyThemeColors(obj.view.gui);   % adapt the standard dialog button colors to the light/dark theme
             
             % Update font size
             if ~isempty(Font) && isstruct(Font)

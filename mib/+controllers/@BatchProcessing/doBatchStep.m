@@ -45,7 +45,7 @@ if nargin < 3; stepOptions = struct; end
 
 if obj.stopProtocolSwitch == true
     obj.view.handles.runProtocol.Text = 'Run protocol';
-    obj.view.handles.runProtocol.BackgroundColor = [0.149 0.902 0.1804];
+    obj.view.handles.runProtocol.BackgroundColor = utils.themeColors(obj.view.gui).dialogAction;
     return;
 end    % stop protocol
 

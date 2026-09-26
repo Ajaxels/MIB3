@@ -308,7 +308,7 @@ switch parameter
         % update destination button appearance
         destLocalId = mod(destGlobalId-1, obj.mibModel.Sets.datasetsInSet) + 1;
         dstBufferStr = sprintf('buffer%d', destLocalId);
-        obj.handles.(dstBufferStr).BackgroundColor = [0.7 1 0.7];
+        obj.paintBufferButton(obj.handles.(dstBufferStr), 'fileBacked');
         obj.handles.(dstBufferStr).Tooltip = obj.mibModel.I{destGlobalId}.image.filename;
 
         % notify: triggers axes initialisation, GUI update, and image redraw
@@ -468,8 +468,7 @@ switch parameter
         end
 
         % reset button appearance
-        defaultColor = obj.view.handles.panels.dirContents.handles.updateFileList.BackgroundColor;
-        obj.handles.(targetBufferStr).BackgroundColor = defaultColor;
+        obj.paintBufferButton(obj.handles.(targetBufferStr), 'empty');
         obj.handles.(targetBufferStr).Tooltip = 'use RMB for a context menu with additional options';
 
         % notify: triggers axes initialisation, GUI update, and image redraw
@@ -510,7 +509,6 @@ switch parameter
         fn = fullfile(obj.mibModel.mibPath, 'assets', 'images', 'default.png');
         imgData = imread(fn);
         firstGlobalId = (targetSet-1)*obj.mibModel.Sets.datasetsInSet + 1;
-        defaultColor = obj.view.handles.panels.dirContents.handles.updateFileList.BackgroundColor;
 
         for iButton = 1:obj.mibModel.Sets.datasetsInSet
             globalI = firstGlobalId + iButton - 1;
@@ -541,7 +539,7 @@ switch parameter
             % reset buffer buttons only when closing the currently visible set
             if targetSet == selectedSet
                 bufBtn = sprintf('buffer%d', iButton);
-                obj.handles.(bufBtn).BackgroundColor = defaultColor;
+                obj.paintBufferButton(obj.handles.(bufBtn), 'empty');
                 obj.handles.(bufBtn).Tooltip = 'use RMB for a context menu with additional options';
             end
 
@@ -562,7 +560,7 @@ switch parameter
         obj.mibModel.Sets.selectedDataset(targetSet) = 1;
         if targetSet == selectedSet
             obj.mibModel.id = firstGlobalId;
-            obj.handles.buffer1.BackgroundColor = [0 1 0];  % mark buffer 1 as active
+            obj.paintBufferButton(obj.handles.buffer1, 'selected');  % mark buffer 1 as active
         end
 
         if ~isempty(pwb); pwb.deletePoolWaitbar(); end

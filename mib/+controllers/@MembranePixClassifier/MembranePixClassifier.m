@@ -125,6 +125,7 @@ classdef MembranePixClassifier < handle
 
             %% GUI mode
             obj.view = core.ChildView(obj, 'views.MembranePixClassifierGUI');
+            utils.applyThemeColors(obj.view.gui);   % adapt the standard dialog button colors to the light/dark theme
             obj.updateWidgets();
             utils.updateGUIFromBatchOpt_Shared(obj.view, obj.BatchOpt);
             obj.addCallbacks();

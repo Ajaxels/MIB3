@@ -154,6 +154,7 @@ classdef ResampleDataset < handle
             % ---- GUI path
             guiName = 'views.ResampleDatasetGUI';
             obj.view = core.ChildView(obj, guiName);
+            utils.applyThemeColors(obj.view.gui);   % adapt the standard dialog button colors to the light/dark theme
             obj.addCallbacks();
 
             Font = obj.mibModel.preferences.System.Font;

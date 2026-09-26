@@ -33,7 +33,6 @@ if isprop(handles.excludeBtn, 'Value')
 else
     handles.excludeBtn.ButtonPushedFcn = @(~, ~) obj.excludeSeam_Callback();
 end
-obj.excludeBtnDefaultColor = handles.excludeBtn.BackgroundColor;
 
 handles.resolveBtn.ButtonPushedFcn = @(~, ~) obj.resolveBtn_Callback();
 handles.twoClickBtn.ButtonPushedFcn = @(~, ~) obj.twoClickBtn_Callback();

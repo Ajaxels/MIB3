@@ -196,6 +196,9 @@ classdef ImageFilters < handle
 
             %% GUI mode
             obj.view = core.ChildView(obj, 'views.ImageFiltersGUI');
+            utils.applyThemeColors(obj.view.gui);   % adapt the standard dialog button colors to the light/dark theme
+            % the filter info is a web page colored for the theme at the time it is written
+            obj.view.gui.ThemeChangedFcn = @(src, evnt) imageFiltersThemeChanged(obj, src);
 
             % add thumbnail image
             imshow(obj.mibModel.sessionSettings.ImageFilters.TestImg, 'Parent', obj.view.handles.ThumbnailView1);
@@ -280,8 +283,19 @@ classdef ImageFilters < handle
             % Inline HTMLSource strings block <script> in R2026a (CSP); a file path
             % allows scripts. tempname() gives a unique path each call so uihtml
             % always detects a change and reloads (same path = no reload).
+            % uihtml is a web page with a white background and black text regardless
+            % of the MATLAB theme: in the dark theme give it the colors of the window.
+            % A theme switch calls this function again (ThemeChangedFcn in the constructor)
+            themeStyle = '';
+            hFig = obj.view.gui;
+            if isprop(hFig, 'Theme') && ~isempty(hFig.Theme) && strcmp(hFig.Theme.BaseColorStyle, 'dark')
+                palette = utils.themeColors('dark');
+                rgbCss = @(color) sprintf('rgb(%d,%d,%d)', round(255 * color));
+                themeStyle = sprintf('<style>html,body{background-color:%s;color:%s} a{color:%s}</style>', ...
+                    rgbCss(obj.view.handles.InfoHTML.Parent.BackgroundColor), rgbCss(palette.text), rgbCss(palette.htmlLink));
+            end
             htmlContent = sprintf([...
-                '<!DOCTYPE html><html><head><script>\n' ...
+                '<!DOCTYPE html><html><head>%s<script>\n' ...
                 'function setup(htmlComponent) {\n' ...
                 '  document.addEventListener("click", function(e) {\n' ...
                 '    var t = e.target;\n' ...
@@ -294,7 +308,7 @@ classdef ImageFilters < handle
                 '}\n' ...
                 '</script></head><body>\n' ...
                 '<p style="font-family: Sans-serif; font-size: small;">%s</p>\n' ...
-                '</body></html>'], infoText);
+                '</body></html>'], themeStyle, infoText);
 
             if ~isempty(obj.infoHtmlTempFile) && isfile(obj.infoHtmlTempFile)
                 delete(obj.infoHtmlTempFile);
@@ -768,4 +782,14 @@ classdef ImageFilters < handle
         end
 
     end
+end
+
+
+function imageFiltersThemeChanged(obj, hFig)
+% IMAGEFILTERSTHEMECHANGED - ThemeChangedFcn of the ImageFilters window: remap the
+% standard dialog colors and rewrite the filter info page, whose colors are set
+% for the theme at the time it is written (see setInfoHtml).
+utils.applyThemeColors(hFig);
+filterName = obj.view.handles.FilterName.Value;
+obj.setInfoHtml(obj.mibModel.sessionSettings.ImageFilters.(filterName).mibBatchTooltip.Info);
 end

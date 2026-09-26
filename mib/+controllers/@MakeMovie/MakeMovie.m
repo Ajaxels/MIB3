@@ -107,6 +107,7 @@ classdef MakeMovie < handle
             end
 
             obj.view = core.ChildView(obj, 'views.MakeMovieGUI');
+            utils.applyThemeColors(obj.view.gui);   % adapt the standard dialog button colors to the light/dark theme
             obj.addCallbacks();
             obj.updateWidgets();
 

@@ -105,7 +105,7 @@ end
 % update the button background, when buttons in the sets are different
 if newSelectedDatasetIndex ~= prevSelectedDatasetIndex
     prevBufferStringId = sprintf('buffer%d', prevSelectedDatasetIndex);
-    obj.handles.(prevBufferStringId).BackgroundColor = obj.view.handles.panels.dirContents.handles.updateFileList.BackgroundColor;
+    obj.paintBufferButton(obj.handles.(prevBufferStringId), 'empty');
 
     % update description of the set tab
     obj.mibController.cImageDoc{selectedSet}.setDescription( ...
@@ -115,7 +115,6 @@ end
 % Always repaint all buffer buttons for the current set so that any buffer
 % that just received data (e.g. crop-to a different buffer) turns green
 % without requiring a set change.
-defaultBackgroundColor = obj.view.handles.panels.activeDataset.handles.addSet.BackgroundColor;
 for datasetId = 1:Sets.datasetsInSet
     bufferId = sprintf('buffer%d', datasetId);
     buttonHandle = obj.handles.(bufferId);
@@ -124,15 +123,15 @@ for datasetId = 1:Sets.datasetsInSet
     img = obj.mibModel.I{globalIndex}.image;
     if strcmp(img.filename, 'none.tif') && img.height == 512 && img.width == 512 && img.depth == 1 && img.time == 1
         % Empty placeholder buffer - no data loaded
-        buttonHandle.BackgroundColor = defaultBackgroundColor;
+        obj.paintBufferButton(buttonHandle, 'empty');
         buttonHandle.Tooltip = 'use RMB for a context menu with additional options';
     elseif strcmp(img.filename, 'none.tif')
         % In-memory dataset - data present but no file on disk (e.g. loaded from Examples)
-        buttonHandle.BackgroundColor = [1 0.85 0.6];
+        obj.paintBufferButton(buttonHandle, 'inMemory');
         buttonHandle.Tooltip = sprintf('In-memory dataset (%dx%dx%d); use File -> Save to save', img.width, img.height, img.depth);
     else
         % File-backed dataset
-        buttonHandle.BackgroundColor = [0.6 1 0.6];
+        obj.paintBufferButton(buttonHandle, 'fileBacked');
         buttonHandle.Tooltip = img.filename;
     end
 

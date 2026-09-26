@@ -243,7 +243,10 @@ classdef Preferences < handle
             
             guiName = 'views.PreferencesGUI';
             obj.view = core.ChildView(obj, guiName); % initialize the view
-            
+            utils.applyThemeColors(obj.view.gui);   % adapt the standard dialog button colors to the light/dark theme
+            % the color tables paint their value cells with a uistyle, which a theme switch does not remap
+            obj.view.gui.ThemeChangedFcn = @(src, evnt) preferencesThemeChanged(obj, src);
+
             % init the widgets
             obj.shownPanelTag = 'UserInterfacePanel';
             obj.preferences = mibModel.preferences;
@@ -403,9 +406,9 @@ classdef Preferences < handle
                 contourStyles = obj.preferences.Styles.Contour;
                 activeDataset = obj.mibModel.I{obj.mibModel.id};
 
-                handles.SelectionColorButton.BackgroundColor = colorPrefs.SelectionColor;
-                handles.MaskColorButton.BackgroundColor = colorPrefs.MaskColor;
-                handles.AnnotationsColorButton.BackgroundColor = obj.preferences.SegmTools.Annotations.Color;
+                setColorButton(handles.SelectionColorButton, colorPrefs.SelectionColor);
+                setColorButton(handles.MaskColorButton, colorPrefs.MaskColor);
+                setColorButton(handles.AnnotationsColorButton, obj.preferences.SegmTools.Annotations.Color);
 
                 % The other widgets of this panel get their callback in App
                 % Designer; this one is wired here because the checkbox was added
@@ -545,7 +548,7 @@ classdef Preferences < handle
 
                 handles.annotationFontSize.Value = handles.annotationFontSize.Items{segmToolsPrefs.Annotations.FontSize};
                 handles.annotationShownExtraDepth.Value = segmToolsPrefs.Annotations.ShownExtraDepth;
-                handles.AnnotationsColorButton2.BackgroundColor = segmToolsPrefs.Annotations.Color;
+                setColorButton(handles.AnnotationsColorButton2, segmToolsPrefs.Annotations.Color);
 
                 handles.InterpolationType.Value = segmToolsPrefs.Interpolation.Type;
                 handles.InterpolationNumberOfPoints.Value = segmToolsPrefs.Interpolation.NoPoints;
@@ -881,13 +884,13 @@ classdef Preferences < handle
                     c = uisetcolor(sel_color, 'Selection color');
                     if length(c) == 1; return; end
                     obj.preferences.Colors.SelectionColor = c;
-                    obj.view.handles.SelectionColorButton.BackgroundColor = c;
+                    setColorButton(obj.view.handles.SelectionColorButton, c);
                 case 'MaskColorButton'          % update mask color
                     sel_color = obj.preferences.Colors.MaskColor;
                     c = uisetcolor(sel_color, 'Mask color');
                     if length(c) == 1; return; end
                     obj.preferences.Colors.MaskColor = c;
-                    obj.view.handles.MaskColorButton.BackgroundColor = c;
+                    setColorButton(obj.view.handles.MaskColorButton, c);
                 case 'cursorMaterialColor'      % brush cursor follows the material color
                     obj.preferences.Colors.CursorMaterialColor = obj.view.handles.cursorMaterialColor.Value;
                 case {'AnnotationsColorButton', 'AnnotationsColorButton2'}   % update annotations color
@@ -895,8 +898,8 @@ classdef Preferences < handle
                     c = uisetcolor(sel_color, 'Annotations color');
                     if length(c) == 1; return; end
                     obj.preferences.SegmTools.Annotations.Color = c;
-                    obj.view.handles.AnnotationsColorButton.BackgroundColor = c;
-                    obj.view.handles.AnnotationsColorButton2.BackgroundColor = c;
+                    setColorButton(obj.view.handles.AnnotationsColorButton, c);
+                    setColorButton(obj.view.handles.AnnotationsColorButton2, c);
                 case 'PaletteGeneratorDropDown'     % generate palette
                     materialsNumber = numel(obj.mibModel.I{obj.mibModel.id}.labels.materialNames);
                     
@@ -1366,16 +1369,18 @@ classdef Preferences < handle
             obj.view.handles.(ColorTableTag).Data = data;
             
             if ~options.updateDataOnly
-                % define color styles
-                origColors = [1 1 1; 0.94 0.94 0.94];
+                % define color styles: the row colors are shown in the Preview column,
+                % the value columns get the plain cell color of the current theme
                 if ~isempty(obj.preferences.Colors.(prefStruct))
                     obj.view.handles.(ColorTableTag).BackgroundColor = obj.preferences.Colors.(prefStruct);
                 end
 
                 removeStyle(obj.view.handles.(ColorTableTag));    % remove current styles
 
+                palette = utils.themeColors(obj.view.gui);
                 s1 = uistyle;
-                s1.BackgroundColor = origColors(1, :);
+                s1.BackgroundColor = palette.tableCell;
+                s1.FontColor = palette.text;    % explicit: the auto cell text is not reliably the theme text color
                 addStyle(obj.view.handles.(ColorTableTag), s1, 'column', 1:3);
             end
             tableWidth = obj.view.handles.(ColorTableTag).Position(3);
@@ -1829,4 +1834,33 @@ classdef Preferences < handle
         
         
     end
+end
+
+% =====================================================================
+function setColorButton(buttonHandle, color)
+% SETCOLORBUTTON - paint a color-picker button with the chosen color and a
+% readable text on it: black on light colors, white on dark ones, independent of
+% the light/dark theme (the auto font is near-white in the dark theme and
+% unreadable on the usual bright layer colors). The threshold 0.179 is the
+% relative luminance at which black and white text have equal WCAG contrast.
+buttonHandle.BackgroundColor = color;
+linearColor = color;
+isLowValue = linearColor <= 0.03928;
+linearColor(isLowValue) = linearColor(isLowValue) / 12.92;
+linearColor(~isLowValue) = ((linearColor(~isLowValue) + 0.055) / 1.055) .^ 2.4;
+if sum([0.2126 0.7152 0.0722] .* linearColor) > 0.179
+    buttonHandle.FontColor = [0 0 0];
+else
+    buttonHandle.FontColor = [1 1 1];
+end
+end
+
+% =====================================================================
+function preferencesThemeChanged(obj, hFig)
+% PREFERENCESTHEMECHANGED - ThemeChangedFcn of the Preferences window: remap the
+% standard dialog colors and redraw the color tables, whose value cells are painted
+% with a uistyle in the color of the current theme (utils.themeColors tableCell).
+utils.applyThemeColors(hFig);
+obj.updateColorsTables('ModelsColorsTable');
+obj.updateColorsTables('LUTColorsTable');
 end

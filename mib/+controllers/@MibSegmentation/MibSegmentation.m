@@ -80,6 +80,7 @@ classdef MibSegmentation
             %   10. Wires callbacks for rendering operations (MIB, Fiji)
             %   11. Wires callbacks for segmentation tools (brush, 3D ball, spot, lasso, magic wand, threshold, drag-and-drop, membrane, SAM, annotations, 3D lines)
             %   12. Adds listener for panel region changes (left, right, bottom docking)
+            %   13. Sets ``ThemeChangedFcn`` of the panel figure to repaint the materials table
             %
             % **Supported segmentation tools:**
             %   - Brush, 3D Ball, Spot (radius, eraser factor, clustering)
@@ -218,6 +219,13 @@ classdef MibSegmentation
             %% ---------------------- Key press callback ----------------------
             obj.UIFigure.WindowKeyPressFcn   = @(hWidget, hData)obj.mibController.gui_WindowKeyPressFcn(hWidget, hData);
             obj.UIFigure.WindowKeyReleaseFcn = @(hWidget, hData)obj.mibController.gui_WindowKeyReleaseFcn(hWidget, hData);
+
+            %% ---------------------- Theme change callback ----------------------
+            % the materials table cells are painted with uistyle colors, which are
+            % not remapped when the MATLAB theme changes
+            if isprop(obj.UIFigure, 'ThemeChangedFcn')    % R2025a or newer
+                obj.UIFigure.ThemeChangedFcn = @(src, evnt) obj.updateMaterialsTable([]);
+            end
 
             %% 3D ball, brush, spot panels
             obj.handles.brushRadius.ValueChangedFcn = @obj.brushPanel_Callback;

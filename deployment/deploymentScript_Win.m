@@ -1,7 +1,7 @@
 %% UPDATE THE VERSION!
 %% UPDATE THE PATH!
 
-VERSION = "2026.09";   % <-- UPDATE THE VERSION!
+VERSION = "2026.0924";   % <-- UPDATE THE VERSION!
 PROJECT_ROOT = "c:\Matlab\MIB3\";  % <-- UPDATE THE PATH
 OS_ID = 'win';  % win, mac, linux
 SHOW_TERMINAL = true;

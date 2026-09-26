@@ -288,6 +288,9 @@ classdef VolRenApp < handle
 
             guiName = 'views.VolRenAppGUI';
             obj.view = core.ChildView(obj, guiName); % initialize the view
+            utils.applyThemeColors(obj.view.gui);   % adapt the standard dialog button colors to the light/dark theme
+            % the model and surface tables paint their text cells with a uistyle, which a theme switch does not remap
+            obj.view.gui.ThemeChangedFcn = @(src, evnt) volRenAppThemeChanged(obj, src);
 
             % update font and size
             Font = obj.mibModel.preferences.System.Font;
@@ -1037,7 +1040,7 @@ classdef VolRenApp < handle
             end
             obj.animationPreviewRunning = true;
             obj.view.handles.previewAnimationButton.Text = 'Stop animation';
-            obj.view.handles.previewAnimationButton.BackgroundColor = 'r';
+            obj.view.handles.previewAnimationButton.BackgroundColor = utils.themeColors(obj.view.gui).dialogStop;
 
             positions = obj.generatePositionsForKeyFramesAnimation(noFrames);
 
@@ -1046,7 +1049,7 @@ classdef VolRenApp < handle
                 if ~obj.animationPreviewRunning
                     % stop animation
                     obj.view.handles.previewAnimationButton.Text = 'Preview';
-                    obj.view.handles.previewAnimationButton.BackgroundColor = [0 1 0];
+                    obj.view.handles.previewAnimationButton.BackgroundColor = utils.themeColors(obj.view.gui).dialogAction;
                     return
                 end
                 obj.viewer.CameraPosition = positions.CameraPosition(idx, :);
@@ -1059,7 +1062,7 @@ classdef VolRenApp < handle
                 pause(1/framerate);
             end
             obj.view.handles.previewAnimationButton.Text = 'Preview';
-            obj.view.handles.previewAnimationButton.BackgroundColor = [0 1 0];
+            obj.view.handles.previewAnimationButton.BackgroundColor = utils.themeColors(obj.view.gui).dialogAction;
             obj.animationPreviewRunning = false;
         end
 
@@ -3263,14 +3266,13 @@ classdef VolRenApp < handle
             
             obj.view.handles.surfaceTable.Data = data;
 
-            % Update colors for the table
-            % define color styles
-            origColors = [1 1 1; 0.94 0.94 0.94];
+            % Update colors for the table: the row colors show the surface colors in
+            % column 1, the other columns are plain cells in the colors of the theme
+            palette = utils.themeColors(obj.view.gui);
             bgColorsList = cell2mat(surfaceColors);
             obj.view.handles.surfaceTable.BackgroundColor = bgColorsList;
             removeStyle(obj.view.handles.surfaceTable);    % remove current styles
-            s1 = uistyle;
-            s1.BackgroundColor = origColors(1, :);
+            s1 = uistyle('BackgroundColor', palette.tableCell, 'FontColor', palette.text);
             addStyle(obj.view.handles.surfaceTable, s1, 'column', 2:5);
             
             % set current object to volume to make sure that orthoslices
@@ -3400,12 +3402,11 @@ classdef VolRenApp < handle
             data(:,4) = num2cell(obj.overlayShownMaterials);
             obj.view.handles.modelTable.Data = data;
 
-            % Update colors for the table
-            % define color styles
-            origColors = [1 1 1; 0.94 0.94 0.94];
+            % Update colors for the table: the row colors show the material colors in
+            % column 1, the other columns are plain cells in the colors of the theme
+            palette = utils.themeColors(obj.view.gui);
             obj.view.handles.modelTable.BackgroundColor = obj.overlayRowColors;
-            s1 = uistyle;
-            s1.BackgroundColor = origColors(1, :);
+            s1 = uistyle('BackgroundColor', palette.tableCell, 'FontColor', palette.text);
             addStyle(obj.view.handles.modelTable, s1, 'column', 2:4);
         end
 
@@ -3615,4 +3616,17 @@ classdef VolRenApp < handle
         end
 
     end
+end
+
+function volRenAppThemeChanged(obj, hFig)
+% VOLRENAPPTHEMECHANGED - ThemeChangedFcn of the VolRenApp window: remap the
+% standard dialog colors and redraw the model and surface tables, whose text cells
+% are painted with a uistyle in the colors of the current theme (utils.themeColors
+% tableCell and text). updateSurfaceTable is skipped without surfaces: it also
+% makes the first viewer child current, which needs a rendered scene.
+utils.applyThemeColors(hFig);
+obj.updateModelTable();
+if ~isempty(obj.surfList)
+    obj.updateSurfaceTable();
+end
 end

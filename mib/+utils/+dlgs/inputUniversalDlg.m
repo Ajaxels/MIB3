@@ -450,6 +450,20 @@ if options.MsgBoxOnly
                     % Add sans-serif font style if DOCTYPE exists but no font specified
                     htmlContent = strrep(htmlContent, '<html>', '<html><head><style>body{font-family: sans-serif;}</style></head>');
                 end
+                % uihtml is a web page with a white background and black text
+                % regardless of the MATLAB theme: in the dark theme give it the
+                % dialog colors. Inserted first, so styles of the caller still win
+                if isprop(fig, 'Theme') && ~isempty(fig.Theme) && strcmp(fig.Theme.BaseColorStyle, 'dark')
+                    palette = utils.themeColors('dark');
+                    rgbCss = @(color) sprintf('rgb(%d,%d,%d)', round(255 * color));
+                    themeStyle = sprintf('<style>html,body{background-color:%s;color:%s} a{color:%s}</style>', ...
+                        rgbCss(fig.Color), rgbCss(palette.text), rgbCss(palette.htmlLink));
+                    if contains(lower(htmlContent), '<head>')
+                        htmlContent = regexprep(htmlContent, '<head>', ['<head>' themeStyle], 'once', 'ignorecase');
+                    else
+                        htmlContent = regexprep(htmlContent, '(<html[^>]*>)', ['$1' themeStyle], 'once', 'ignorecase');
+                    end
+                end
                 html = uihtml(htmlGrid, 'HTMLSource', htmlContent);
                 isHtml(1) = true;
                 widgets(1) = html;

@@ -34,6 +34,8 @@ classdef MibActiveDataset
         buffers_ContextMenu(obj, parameter, buttonID, BatchOptIn)        % callbacks for the context menu of the buffers (obj.handles.panels.activeDataset.handles.buffer1) buttons; batch-compatible
         setsOps_Callbacks(obj, hWidget, hData, mode)        % callbacks for press of sets-related widgets in obj.view.handles.panels.activeDataset.handles
         datasetTypeChange_Callback(obj, hWidget, hData)        % callback for selection of entry in Datasets.datasetType dropdown to choose the type of the dataset stored in the selected buffer/container
+
+        paintBufferButton(obj, buttonHandle, state)        % set the background color of a buffer button of the Datasets panel, theme-aware
         update_fromModel(obj, src, evtData)        % update widgets of the Datasets panel from obj.mibModel
 
         function obj = MibActiveDataset(mainCtrl, view, guiHandles, model)
@@ -66,6 +68,8 @@ classdef MibActiveDataset
             %   6. Wires callbacks for dataset type dropdown
             %   7. Wires context menus for buffer operations (duplicate, sync, link, close)
             %   8. Adds listener for ``DatasetsPanelUpdate`` events from model
+            %   9. Sets ``ThemeChangedFcn`` of the panel figure to repaint the buffer buttons
+            %      after a light/dark theme switch (R2025a or newer), see ``paintBufferButton``
             %
             % **Supported buffer operations:**
             %   - ``'duplicate'`` - duplicate selected buffer
@@ -127,6 +131,11 @@ classdef MibActiveDataset
             obj.UIFigure.WindowKeyReleaseFcn  = @(hWidget, hData)obj.mibController.gui_WindowKeyReleaseFcn(hWidget, hData);
 
             obj.listeners{1} = addlistener(obj.mibModel, 'DatasetsPanelUpdate', @(src, evnt) obj.update_fromModel(src, evnt)); % update GUI from the model
+
+            % explicitly set buffer button colors are not remapped by a light/dark theme switch, repaint them
+            if isprop(obj.UIFigure, 'ThemeChangedFcn')    % R2025a or newer
+                obj.UIFigure.ThemeChangedFcn = @(src, evnt) obj.update_fromModel();
+            end
 
         end
     end

@@ -49,6 +49,7 @@ classdef AmiraImportDlg < handle
             % Initialize the App Designer view
             % Assuming the view class is named views.AmiraImportGUI
             obj.view = views.AmiraImportGUI();
+            utils.applyThemeColors(obj.view.Figure);   % adapt the standard dialog button colors to the light/dark theme
             
             % Update font size if Font structure is provided
             if obj.view.handles.firstLabel.FontSize ~= Font.FontSize ...

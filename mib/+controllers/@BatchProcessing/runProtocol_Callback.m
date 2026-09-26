@@ -64,7 +64,7 @@ switch parameter
         startStep = 1;
         finishStep = numel(obj.Protocol);
         obj.view.handles.runProtocol.Text = 'Stop protocol';
-        obj.view.handles.runProtocol.BackgroundColor = [1 0 0];
+        obj.view.handles.runProtocol.BackgroundColor = utils.themeColors(obj.view.gui).dialogStop;
 
         % count user's points
         obj.mibModel.preferences.Users.Tiers.numberOfBatchProcessings = obj.mibModel.preferences.Users.Tiers.numberOfBatchProcessings+1;
@@ -78,7 +78,7 @@ switch parameter
         end
         finishStep = numel(obj.Protocol);
         obj.view.handles.runProtocol.Text = 'Stop protocol';
-        obj.view.handles.runProtocol.BackgroundColor = [1 0 0];
+        obj.view.handles.runProtocol.BackgroundColor = utils.themeColors(obj.view.gui).dialogStop;
     case {'step', 'stepadvance'}
         startStep = obj.protocolListIndex;
         finishStep = obj.protocolListIndex;
@@ -220,7 +220,7 @@ end
 obj.view.handles.autoAddToProtocol.Value = autoAddSwitch;
 
 obj.view.handles.runProtocol.Text = 'Run protocol';
-obj.view.handles.runProtocol.BackgroundColor = [0.149 0.902 0.1804];
+obj.view.handles.runProtocol.BackgroundColor = utils.themeColors(obj.view.gui).dialogAction;
 if strcmp(parameter, 'complete')
     fprintf('Protocol finished; elapsed time: %f seconds\n', toc(timerProtocolStart));
 end

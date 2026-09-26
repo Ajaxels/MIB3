@@ -64,6 +64,7 @@ classdef Stereology < handle
             id = obj.mibModel.id;
 
             obj.view = core.ChildView(obj, 'views.StereologyGUI');
+            utils.applyThemeColors(obj.view.gui);   % adapt the standard dialog button colors to the light/dark theme
 
             % check for the virtual stacking mode and close the controller
             if isprop(obj.mibModel.I{id}, 'Virtual') && obj.mibModel.I{id}.Virtual.virtual == 1

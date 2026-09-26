@@ -46,6 +46,7 @@ classdef UpdateCheck < handle
             obj.mibVersion = utils.getMibVersionNumberic(obj.mibModel.mibVersion);
 
             obj.view = core.ChildView(obj, 'views.UpdateCheckGUI');
+            utils.applyThemeColors(obj.view.gui);   % adapt the standard dialog button colors to the light/dark theme
 
             obj.updateWidgets();
             obj.addCallbacks();

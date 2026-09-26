@@ -42,23 +42,23 @@ obj.mibModel.id = buttonId + (obj.mibModel.Sets.selectedSet-1)*obj.mibModel.Sets
 % update the background color for the selected buffer
 if ~strcmp(prevBufferStringId, newBufferStringId)
     prevImg = obj.mibModel.I{prevDatasetId}.image;
+    prevButtonHandle = obj.view.handles.panels.activeDataset.handles.(prevBufferStringId);
     if strcmp(prevImg.filename, 'none.tif') && prevImg.height == 512 && prevImg.width == 512 && prevImg.depth == 1 && prevImg.time == 1
         % Empty placeholder buffer
-        obj.view.handles.panels.activeDataset.handles.(prevBufferStringId).BackgroundColor = ...
-            obj.view.handles.panels.dirContents.handles.updateFileList.BackgroundColor;
+        obj.paintBufferButton(prevButtonHandle, 'empty');
     elseif strcmp(prevImg.filename, 'none.tif')
         % In-memory dataset - data present but no file on disk
-        obj.view.handles.panels.activeDataset.handles.(prevBufferStringId).BackgroundColor = [1 0.85 0.6];
+        obj.paintBufferButton(prevButtonHandle, 'inMemory');
     else
         % File-backed dataset
-        obj.view.handles.panels.activeDataset.handles.(prevBufferStringId).BackgroundColor = [0.7 1 0.7];
+        obj.paintBufferButton(prevButtonHandle, 'fileBacked');
     end
 
     % update description of the set tab
     obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}.setDescription(...
         sprintf('Buffer %d:\n%s', buttonId, obj.mibModel.I{obj.mibModel.id}.image.filename));
 end
-obj.view.handles.panels.activeDataset.handles.(newBufferStringId).BackgroundColor = [0 1 0];
+obj.paintBufferButton(obj.view.handles.panels.activeDataset.handles.(newBufferStringId), 'selected');
 
 % update Dataset Type dropdown in the Datasets panel
 obj.view.handles.panels.activeDataset.handles.datasetType.Value = obj.mibModel.Sets.datasetTypes{obj.mibModel.Sets.selectedSet, obj.mibModel.Sets.selectedDataset(obj.mibModel.Sets.selectedSet)};

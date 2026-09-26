@@ -111,6 +111,8 @@ classdef BatchProcessing < handle
 
             guiName = 'views.BatchProcessingGUI';
             obj.view = core.ChildView(obj, guiName); % initialize the view
+            utils.applyThemeColors(obj.view.gui);   % adapt the standard dialog button colors to the light/dark theme
+            obj.view.handles.protocolComments.BackgroundColorMode = 'auto';   % the mlapp light grey is unreadable with the dark theme font
 
             % update font and size
             Font = obj.mibModel.preferences.System.Font;
@@ -207,7 +209,7 @@ classdef BatchProcessing < handle
                 case 'StopProtocol'
                     obj.stopProtocolSwitch = true;
                     obj.view.handles.runProtocol.Text = 'Run protocol';
-                    obj.view.handles.runProtocol.BackgroundColor = [0.149 0.902 0.1804];
+                    obj.view.handles.runProtocol.BackgroundColor = utils.themeColors(obj.view.gui).dialogAction;
             end
         end
 

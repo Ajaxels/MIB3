@@ -155,6 +155,7 @@ classdef Snapshot < handle
             % GUI mode
             utils.ensureJavaLibraries({'imageselection'});  % no-op if already loaded at startup; fallback if not
             obj.view = core.ChildView(obj, 'views.SnapshotGUI');
+            utils.applyThemeColors(obj.view.gui);   % adapt the standard dialog button colors to the light/dark theme
             obj.addCallbacks();
             obj.updateWidgets();
 
