@@ -28,7 +28,7 @@ function [Graphcut, cancelled] = calcSupervoxels(Graphcut, img, parLoopOptions, 
 %     - ``.cancelProgressBar``  - ``uiprogressdlg`` handle or ``[]``; checked at phase
 %       boundaries so the user can cancel without disrupting the progress display
 %     - ``.viewPort``           - struct with ``.min``, ``.max``, ``.gamma`` for contrast mapping
-%     - ``.mibLiveStretchCheck``- [logical] use auto-stretch instead of viewPort limits
+%     - ``.onFlyImageStretch``  - [logical] use auto-stretch instead of viewPort limits
 %     - ``.superPixType``       - [char] ``'SLIC'`` or ``'Watershed'``
 %     - ``.blackOnWhite``       - [logical] invert image before watershed
 %     - ``.superpixelSize``     - [numeric] target supervoxel volume (SLIC) or h-minima depth (Watershed)
@@ -68,7 +68,7 @@ end
 % convert to 8-bit
 currViewPort = parLoopOptions.viewPort;
 if isa(img, 'uint16')
-    if parLoopOptions.mibLiveStretchCheck
+    if parLoopOptions.onFlyImageStretch
         for sliceId = 1:size(img, 3)
             img(:,:,sliceId) = imadjust(img(:,:,sliceId), stretchlim(img(:,:,sliceId),[0 1]), []);
         end
