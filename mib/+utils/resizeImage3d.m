@@ -159,7 +159,9 @@ end
 % ---------------------------------------------------------------------------
 
 if strcmp(options.algorithm, 'imresize')
-    if ~isempty(which('imresize3')) && (depth > 1 || newZ > 1)   % imresize3 (R2017a+); per-channel on [y,x,z]
+    % imresize3 (R2017a+), per-channel on [y,x,z]; it rejects a single-slice (2D) input
+    % even when newZ > 1, so depth == 1 goes to the imresize branch, which also resizes Z
+    if ~isempty(which('imresize3')) && depth > 1
         imgOut = zeros([newH, newW, newZ, colors], class(img));   %#ok<ZEROLIKE> % allocate space
         % imresize3 uses 'cubic' for what imresize calls 'bicubic'
         imresize3Method = options.method;

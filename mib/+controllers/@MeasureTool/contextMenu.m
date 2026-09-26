@@ -49,7 +49,7 @@ colChSelected = obj.view.handles.imageColChDropdown.Value;
 colChIndex    = find(strcmp(colChItems, colChSelected), 1);
 colCh         = colChIndex - 1;
 
-integrationWidth = str2double(obj.view.handles.integrationWidth.Value);
+integrationWidth = obj.view.handles.integrationWidth.Value;
 calcIntensity    = obj.view.handles.calcIntensityCheck.Value;
 
 switch parameter

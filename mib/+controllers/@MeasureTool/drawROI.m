@@ -28,7 +28,12 @@ function [pixelX, pixelY, wasCancelled] = drawROI(obj, roiType, finetuneCheck, m
 %     Default: ``true``.
 %   - **maxVertices** - *(optional)* [double] maximum number of vertices for
 %     ``'polyline'`` drawings; drawing ends automatically when this count is
-%     reached.  Default: ``Inf`` (unlimited).
+%     reached.  Default: ``Inf`` (unlimited, finish with a double-click).
+%     ``drawpolyline`` has no vertex limit, so with a finite count the
+%     drawing is ended from a ``WindowMouseRelease`` listener once that many
+%     vertices are placed, and an ``images.roi.Polyline`` is rebuilt from
+%     them; with ``finetuneCheck = true`` that polyline is then adjustable
+%     until a double-click, otherwise it is accepted at once.
 %
 % Output Arguments:
 %   - **pixelX** - [double column] X coordinates in data pixel space.
@@ -68,7 +73,11 @@ try
             case 'line'
                 roiObject = drawline(axesHandle);
             case 'polyline'
-                roiObject = drawpolyline(axesHandle);
+                if isfinite(maxVertices)
+                    roiObject = drawPolylineWithVertexLimit(maxVertices);
+                else
+                    roiObject = drawpolyline(axesHandle);
+                end
             case 'ellipse'
                 roiObject = drawellipse(axesHandle, 'FixedAspectRatio', true, 'AspectRatio', 1);
             case 'point'
@@ -178,21 +187,10 @@ movedLsn  = addlistener(roiObject, 'ROIMoved',  @(~,~) onRoiUpdate());
 onRoiUpdate();
 
 % when fine-tune is on, wait for the user to double-click to confirm;
-% when off, drawline already returned after placing all points so no wait needed.
-% when maxVertices is finite and we are drawing from scratch, poll until that
-% many vertices are placed (MATLAB ROI objects have no MaxVertices property).
-% When editing a pre-positioned ROI the target vertex count is already met, so
-% always use wait() to let the user adjust handles and double-click to confirm.
+% when off, the draw call already returned after placing all points so no wait needed.
 if finetuneCheck
     try
-        if isfinite(maxVertices) && isempty(initialDataPos)
-            while isvalid(roiObject) && size(roiObject.Position, 1) < maxVertices
-                drawnow;
-                pause(0.05);
-            end
-        else
-            wait(roiObject);
-        end
+        wait(roiObject);
     catch
         cleanupDrawingROI();
         if isvalid(roiObject); delete(roiObject); end
@@ -292,6 +290,54 @@ wasCancelled = false;
                     cRoi.drawingROI.dataPos = [X(:), Y(:)];
             end
         catch
+        end
+    end
+
+    function polylineObject = drawPolylineWithVertexLimit(nVertices)
+        % Interactive polyline drawing (as drawpolyline) that finishes by
+        % itself once nVertices vertices are placed. images.roi.Polyline has
+        % no vertex-limit option and fires no ROI event while being drawn, but
+        % its Position grows by one row per click and the figure's
+        % WindowMouseRelease event still fires. On the release that places
+        % the last vertex the vertices are copied, the drawing ROI is deleted
+        % and the figure's uiwait is resumed so draw() returns; a fresh
+        % Polyline is then built from the copied vertices. Escape, or a
+        % double-click before the limit, ends draw() as usual; the short ROI
+        % is deleted and the caller treats the deleted handle as cancelled.
+        % The listener is deleted explicitly as soon as draw() returns: an
+        % onCleanup here never fires, because the listener's callback keeps
+        % this workspace alive, and a surviving listener would delete the
+        % rebuilt polyline on the first vertex drag during fine-tuning.
+        drawingPolyline = images.roi.Polyline(axesHandle);
+        limitedPosition = [];
+        releaseListener = addlistener(cImageDoc.UIFigure, 'WindowMouseRelease', ...
+            @(~,~) finishAtVertexLimit());
+        try
+            draw(drawingPolyline);
+        catch drawError
+            delete(releaseListener);
+            rethrow(drawError);
+        end
+        delete(releaseListener);
+        if isempty(limitedPosition)
+            % Escape or a double-click before the limit: an incomplete
+            % polyline is useless for a fixed vertex count, so cancel instead
+            % of offering it for fine-tuning
+            if isvalid(drawingPolyline); delete(drawingPolyline); end
+            polylineObject = drawingPolyline;
+        else
+            polylineObject = images.roi.Polyline(axesHandle, 'Position', limitedPosition);
+        end
+
+        function finishAtVertexLimit()
+            if isvalid(drawingPolyline) && size(drawingPolyline.Position, 1) >= nVertices
+                limitedPosition = drawingPolyline.Position(1:nVertices, :);
+                delete(drawingPolyline);
+                % draw() blocks in uiwait on the axes' figure; deleting the ROI
+                % alone does not always release it (it did in a bare uifigure,
+                % not in the MIB image document), so resume explicitly
+                uiresume(ancestor(axesHandle, 'figure'));
+            end
         end
     end
 

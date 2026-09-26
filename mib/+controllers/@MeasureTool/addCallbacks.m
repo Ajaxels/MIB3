@@ -49,8 +49,8 @@ h.closeBtn.ButtonPushedFcn            = @obj.gui_Callbacks;
 % Context menu attached to measureTable
 contextMenuHandle = uicontextmenu(viewGui);
 uimenu(contextMenuHandle, 'Text', 'Modify info...', 'MenuSelectedFcn', @(~,~) obj.contextMenu('ModifyInfo'));
-uimenu(contextMenuHandle, 'Text', 'Jump to measurement', 'MenuSelectedFcn', @(~,~) obj.contextMenu('Jump'), 'Separator','on');
 uimenu(contextMenuHandle, 'Text', 'Modify measurement...', 'MenuSelectedFcn', @(~,~) obj.contextMenu('Modify'));
+uimenu(contextMenuHandle, 'Text', 'Jump to measurement', 'MenuSelectedFcn', @(~,~) obj.contextMenu('Jump'), 'Separator','on');
 uimenu(contextMenuHandle, 'Text', 'Recalculate selected...', 'MenuSelectedFcn', @(~,~) obj.contextMenu('Recalculate'));
 uimenu(contextMenuHandle, 'Text', 'Duplicate measurement', 'MenuSelectedFcn', @(~,~) obj.contextMenu('Duplicate'));
 uimenu(contextMenuHandle, 'Text', 'Generate kymograph (line, polyline)', 'MenuSelectedFcn', @(~,~) obj.contextMenu('Kymograph'), 'Separator','on');

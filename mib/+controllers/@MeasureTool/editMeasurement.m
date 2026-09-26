@@ -57,7 +57,10 @@ try
         case 'Point'
             obj.measurePoint(datasetId, colCh, finetuneCheck, calcIntensity, false, measurementIndex);
     end
-catch
+catch measureError
+    if ~strcmp(measureError.identifier, 'MeasureTool:Cancelled')
+        utils.dlgs.showErrorDialog(obj.view.gui, measureError, 'MeasureTool.editMeasurement: Measurement error');
+    end
 end
 
 obj.mibModel.disableSegmentation = false;

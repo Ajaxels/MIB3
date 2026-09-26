@@ -53,9 +53,9 @@ classdef MeasureTool < handle
         annotationText = measureAngle(obj, datasetId, colCh, finetuneCheck, calcIntensity, showInfoDlg, insertIndex)
         annotationText = measureCaliper(obj, datasetId, colCh, finetuneCheck, calcIntensity, showInfoDlg, insertIndex)
         annotationText = measureCircle(obj, datasetId, colCh, finetuneCheck, calcIntensity, showInfoDlg, insertIndex)
-        annotationText = measureDistance(obj, datasetId, colCh, finetuneCheck, integrationWidth, calcIntensity, insertIndex)
-        annotationText = measureDistancePoly(obj, datasetId, colCh, finetuneCheck, calcIntensity, insertIndex)
-        annotationText = measureDistanceFree(obj, datasetId, colCh, finetuneCheck, calcIntensity, insertIndex)
+        annotationText = measureDistance(obj, datasetId, colCh, finetuneCheck, integrationWidth, calcIntensity, showInfoDlg, insertIndex)
+        annotationText = measureDistancePoly(obj, datasetId, colCh, finetuneCheck, calcIntensity, showInfoDlg, insertIndex)
+        annotationText = measureDistanceFree(obj, datasetId, colCh, finetuneCheck, calcIntensity, showInfoDlg, insertIndex)
         annotationText = measurePoint(obj, datasetId, colCh, finetuneCheck, calcIntensity, showInfoDlg, insertIndex)
         [pixelX, pixelY, wasCancelled] = drawROI(obj, roiType, finetuneCheck, maxVertices, initialDataPos)
         generateKymograph(obj, datasetId, measurementIndex)
@@ -112,6 +112,8 @@ classdef MeasureTool < handle
             obj.listener{2} = addlistener(obj.mibModel, 'NewDataset', ...
                 @(source, event) controllers.MeasureTool.ViewListner_Callback2(obj, source, event));
             obj.listener{3} = addlistener(obj.mibModel, 'AddMeasurement', @(~, ~) obj.addMeasurement);
+            obj.listener{4} = addlistener(obj.mibModel, 'Undo', ...
+                @(source, event) controllers.MeasureTool.ViewListner_Callback2(obj, source, event));
 
             % initialise per-type annotation defaults on first launch; preserve on reopen
             if ~isfield(obj.mibModel.sessionSettings, 'measureTool')
@@ -192,6 +194,13 @@ classdef MeasureTool < handle
             switch event.EventName
                 case {'UpdateGuiWidgets', 'NewDataset'}
                     obj.updateWidgets();
+                case 'Undo'
+                    % undo/redo restores hMeasure.Data wholesale; only redraw the
+                    % table when the restored entry was a measurements backup
+                    if strcmp(event.Parameters, 'measurements')
+                        obj.indices = [];
+                        obj.updateTable();
+                    end
             end
         end
 

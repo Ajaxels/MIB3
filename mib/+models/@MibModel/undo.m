@@ -270,6 +270,7 @@ if storeOptions.switch3d     % 3D case
                     annotData = data{cellId};
                     obj.I{id}.annotations.replaceLabels(annotData.labelText, annotData.labelPosition, annotData.labelValue);
                 case 'measurements'
+                    eventdata = core.ToggleEventData('measurements');
                     obj.I{id}.measure.Data = data{cellId};
             end
         end
@@ -314,6 +315,7 @@ else        % 2D case
                 eventdata = core.ToggleEventData('lines3d');
                 obj.I{id}.lines3D = copy(data{cellId});
             case 'measurements'
+                eventdata = core.ToggleEventData('measurements');
                 obj.I{id}.measure.Data = data{cellId};
         end
     end
