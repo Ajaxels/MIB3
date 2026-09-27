@@ -39,8 +39,9 @@ classdef MibBigDataLabelsZarr2 < core.MibBigDataLabels
 %     up-propagation for a read-only, externally-complete source).
 %   - ``readPackedLevel`` - permutes from the store's own declared axis order,
 %     which the native path never has to do. Reads go through
-%     ``io.zarr.ChunkCache`` like the image loaders; the cache needs no
-%     invalidation here because the store is read-only.
+%     ``io.zarr.ChunkCache`` like the image loaders; MIB never writes this
+%     store, and a store replaced on disk gets a new key from
+%     ``io.zarr.ChunkCache.storeKey``, so cached chunks never go stale.
 %   - ``setData63`` / ``writePackedLevel`` - writes are blocked; the first
 %     write attempt per session shows a one-time "read-only" notice (NOT
 %     shown on every call, since ``setData63`` fires on every mouse-move
@@ -385,9 +386,15 @@ classdef MibBigDataLabelsZarr2 < core.MibBigDataLabels
             % the image loaders do. Safe here precisely because this store is
             % read-only (writePackedLevel errors), so a cached chunk can never
             % go stale behind an edit.
+            % once per opened level: the cache key carries the store version (see
+            % io.zarr.ChunkCache.storeKey) - "read-only" covers MIB's own writes,
+            % not a store replaced on disk at the same path
+            if ~isfield(obj.modelArrayMeta{levelIdx}, 'cacheKey')
+                obj.modelArrayMeta{levelIdx}.cacheKey = io.zarr.ChunkCache.storeKey(obj.modelLevelPaths{levelIdx});
+            end
             meta       = obj.modelArrayMeta{levelIdx};
             levelArray = obj.modelArrays{levelIdx};
-            raw  = io.zarr.ChunkCache.read(obj.modelLevelPaths{levelIdx}, bbox, ...
+            raw  = io.zarr.ChunkCache.read(meta.cacheKey, bbox, ...
                 meta.chunkShape, meta.shape, ...
                 @(alignedBbox) levelArray.read(alignedBbox));
             perm = io.loaders.OmeZarrMetadataUtils.computePermutation(axisOrder); % -> [y,x,z,*,*]

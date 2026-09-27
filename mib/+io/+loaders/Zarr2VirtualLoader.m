@@ -141,11 +141,16 @@ methods
             obj.cachedInfo      = obj.cachedArray.info();
             obj.cachedLevelPath = fullPath;
         end
+        % once per opened level: the cache key carries the store version, so a store
+        % rewritten at this path is never served from the old one's chunks
+        if ~isfield(obj.cachedInfo, 'cacheKey')
+            obj.cachedInfo.cacheKey = io.zarr.ChunkCache.storeKey(fullPath);
+        end
         % Serve whole decoded chunks from memory where possible. Chunks are the
         % smallest unit the store will hand over and are usually many slices
         % deep, so without this every z-step re-fetches the same chunks and
         % throws away all but one plane of each.
-        raw = io.zarr.ChunkCache.read(fullPath, bbox, obj.cachedInfo.chunkShape, ...
+        raw = io.zarr.ChunkCache.read(obj.cachedInfo.cacheKey, bbox, obj.cachedInfo.chunkShape, ...
             obj.cachedInfo.shape, @(alignedBbox) obj.cachedArray.read(alignedBbox));
 
         % Permute to MIB3 [y, x, z, c, t] and cast to the requested class

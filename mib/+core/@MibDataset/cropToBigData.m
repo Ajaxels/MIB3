@@ -8,7 +8,9 @@ function result = cropToBigData(obj, cropF, options)
 %
 % Reads the cropped image region from the source BigData (on-demand, only
 % the crop footprint is loaded into memory), writes it as a new OME-Zarr v3
-% pyramid at ``options.outputPath`` via ``io.savers.Zarr3Saver``, and copies
+% pyramid at ``options.outputPath`` via ``io.savers.Zarr3Saver`` (its bounding
+% box is the source bounding box shifted to the crop origin, so the crop keeps
+% its physical position), and copies
 % the BigData model pyramid (if one exists) to a sibling file whose name is
 % the same as the image output but with a ``Labels_`` prefix:
 %
@@ -112,6 +114,15 @@ if ~isempty(wb); wb.Value = 0.3; wb.Message = 'Writing image pyramid...'; end
 %  2. Write the cropped image as a new Zarr pyramid
 % =========================================================================
 meta = struct('pixSize', obj.image.pixSize);
+% the crop keeps its position in the source: shift the origin by the crop offset
+% (bounding boxes span voxel centres, so max = min + (n-1)*voxel)
+sourceBB = obj.image.boundingBox;
+if numel(sourceBB) == 6
+    pixSize = obj.image.pixSize;
+    meta.boundingBox = [sourceBB(1) + (x1-1)*pixSize.x, sourceBB(1) + (x1+dx-2)*pixSize.x, ...
+                        sourceBB(3) + (y1-1)*pixSize.y, sourceBB(3) + (y1+dy-2)*pixSize.y, ...
+                        sourceBB(5) + (z1-1)*pixSize.z, sourceBB(5) + (z1+dz-2)*pixSize.z];
+end
 saverOpts.silent    = true;   % bypass the interactive export-settings dialog
 saverOpts.ChunkSize = [256, 256, 16];
 

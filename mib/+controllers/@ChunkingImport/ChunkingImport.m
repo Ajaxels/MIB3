@@ -50,12 +50,16 @@ classdef ChunkingImport < handle
             %   .. code-block:: matlab
             %
             %       obj = ChunkingImport(mibModel)
-            %       obj = ChunkingImport(mibModel, mibController, BatchOpt)
-            %       obj = ChunkingImport(mibModel, mibController, NaN)
+            %       obj = ChunkingImport(mibModel, modeName)
+            %       obj = ChunkingImport(mibModel, [], BatchOpt)
+            %       obj = ChunkingImport(mibModel, [], NaN)
             %
             % Input Arguments:
             %   - **mibModel** - handle to MibModel
-            %   - **varargin{1}** - *(optional)* handle to MibController
+            %   - **varargin{1}** - *(optional)* char, mode the dialog opens in:
+            %     ``'New Stack'`` or ``'Fuse to Existing'``; empty keeps the
+            %     default (``'Fuse to Existing'``). Used only by the GUI path;
+            %     batch mode takes the mode from ``BatchOpt.Mode``
             %   - **varargin{2}** - *(optional)* BatchOpt struct or NaN (batch mode)
             %
             % For batch mode, supply ``BatchOpt.InputDirectory`` and
@@ -63,9 +67,13 @@ classdef ChunkingImport < handle
             % selecting them interactively.
             %
             % Usage:
-            %   Example 1::
+            %   Example 1 - open the dialog in the default mode::
             %
             %     obj.mibController.startController('controllers.ChunkingImport');
+            %
+            %   Example 2 - open the dialog in the New Stack mode::
+            %
+            %     obj.mibController.startController('controllers.ChunkingImport', 'New Stack');
             %
 
             obj.mibModel = mibModel;
@@ -130,6 +138,9 @@ classdef ChunkingImport < handle
             end
 
             % ---- GUI path
+            if nargin > 1 && ~isempty(varargin{1})
+                obj.BatchOpt.Mode{1} = char(varargin{1});
+            end
             guiName = 'views.ChunkingImportGUI';
             obj.view = core.ChildView(obj, guiName);
             utils.applyThemeColors(obj.view.gui);   % adapt the standard dialog button colors to the light/dark theme
@@ -731,16 +742,24 @@ classdef ChunkingImport < handle
                 yOffset = obj.BatchOpt.OffsetY{1};
                 zOffset = obj.BatchOpt.OffsetZ{1};
 
+                if importLabels && ~obj.mibModel.I{id}.modelExist
+                    if strcmp(obj.mibModel.I{id}.datasetType, 'BigData')
+                        % a BigData model is a disk store: go through MibModel.createModel,
+                        % which asks where to keep it; the direct MibDataset call would
+                        % silently place it in the temp folder
+                        obj.mibModel.createModel(63);
+                        if ~obj.mibModel.I{id}.modelExist; return; end   % store location cancelled
+                    else
+                        obj.mibModel.I{id}.createModel();
+                    end
+                end
+
                 if importLabels && ~importImages
                     backupOpts.id = id;
                     obj.mibModel.backup('labels', 1, backupOpts);
                 else
                     backupOpts.id = id;
                     obj.mibModel.backup('image', 1, backupOpts);
-                end
-
-                if importLabels && ~obj.mibModel.I{id}.modelExist
-                    obj.mibModel.I{id}.createModel();
                 end
 
                 materialNames  = obj.mibModel.I{id}.labels.materialNames;
@@ -855,11 +874,14 @@ classdef ChunkingImport < handle
                             end
 
                             R = obj.loadModels(modelFn);
+                            % the colours belong to the adopted material list; the dataset
+                            % colour table is usually the longer preferences palette, so
+                            % overwrite its leading rows rather than compare lengths
                             if isfield(R, 'materialNames') && numel(R.materialNames) > numel(materialNames)
                                 materialNames = R.materialNames;
-                            end
-                            if isfield(R, 'materialColors') && size(R.materialColors, 1) > size(materialColors, 1)
-                                materialColors = R.materialColors;
+                                if isfield(R, 'materialColors')
+                                    materialColors(1:size(R.materialColors, 1), :) = R.materialColors;
+                                end
                             end
 
                             obj.mibModel.setData3D(R.imOut(1:(y2-y1+1), 1:(x2-x1+1), 1:(z2-z1+1)), ...
@@ -891,60 +913,134 @@ classdef ChunkingImport < handle
                             return;
                         end
 
+                        % the colours belong to the adopted material list (see the
+                        % image+labels branch above)
                         if isfield(R, 'materialNames') && numel(R.materialNames) > numel(materialNames)
                             materialNames = R.materialNames;
-                        end
-                        if isfield(R, 'materialColors') && size(R.materialColors, 1) > size(materialColors, 1)
-                            materialColors = R.materialColors;
+                            if isfield(R, 'materialColors')
+                                materialColors(1:size(R.materialColors, 1), :) = R.materialColors;
+                            end
                         end
 
                         tilesBB = R.BoundingBox;
                         modelData = R.imOut;
+                        modelSize = [size(modelData, 1), size(modelData, 2), size(modelData, 3)];   % [y x z]
 
-                        if tilesBB(1) < currBB(1) || tilesBB(2) > currBB(2) || ...
-                                tilesBB(3) < currBB(3) || tilesBB(4) > currBB(4) || ...
-                                tilesBB(5) < currBB(5) || tilesBB(6) > currBB(6)
-                            % Model is larger - crop from left then paste at origin
-                            cx1 = max(1, round((currBB(1)-tilesBB(1))/pixSize.x) + 1 + xOffset);
-                            cy1 = max(1, round((currBB(3)-tilesBB(3))/pixSize.y) + 1 + yOffset);
-                            cz1 = max(1, round((currBB(5)-tilesBB(5))/pixSize.z) + 1 + zOffset);
-                            modelData = modelData(cy1:end, cx1:end, cz1:end);
-                            modelData = modelData( ...
-                                1:min(size(modelData,1), obj.mibModel.I{id}.image.height), ...
-                                1:min(size(modelData,2), obj.mibModel.I{id}.image.width), ...
-                                1:min(size(modelData,3), obj.mibModel.I{id}.image.depth));
-                            x1 = 1; y1 = 1; z1 = 1;
-                        else
-                            x1 = max(1, round((tilesBB(1)-currBB(1))/pixSize.x) + 1 + xOffset);
-                            y1 = max(1, round((tilesBB(3)-currBB(3))/pixSize.y) + 1 + yOffset);
-                            z1 = max(1, round((tilesBB(5)-currBB(5))/pixSize.z) + 1 + zOffset);
+                        % The model is pasted on the voxel grid it was saved at. A Standard
+                        % dataset has one grid (full resolution). A BigData model is a
+                        % pyramid, so the grid is the level whose voxel size matches the
+                        % file (e.g. a model cropped from level s1 goes into s1, not s0).
+                        % The file carries no voxel size, but MIB bounding boxes span voxel
+                        % centres (max = min + (n-1)*voxel), so it follows from the box and
+                        % the array size; an axis one voxel thick carries no voxel size and
+                        % is not compared. The level is written directly and the model
+                        % pyramid propagates it to the other levels.
+                        % gridScale / gridSize are [y x z]; offsets stay in full-res voxels.
+                        fullVoxel = [pixSize.y, pixSize.x, pixSize.z];
+                        gridScale = [1 1 1];
+                        gridSize = [obj.mibModel.I{id}.image.height, obj.mibModel.I{id}.image.width, obj.mibModel.I{id}.image.depth];
+                        setOpts = struct();
+                        if obj.mibModel.I{id}.datasetType(1) == 'B' && isa(obj.mibModel.I{id}.labels, 'core.MibBigDataLabels')
+                            measuredAxes = modelSize > 1;
+                            bbSpan = [tilesBB(4)-tilesBB(3), tilesBB(2)-tilesBB(1), tilesBB(6)-tilesBB(5)];
+                            modelVoxel = bbSpan(measuredAxes) ./ (modelSize(measuredAxes) - 1);
+                            levelScaleFactors = obj.mibModel.I{id}.labels.modelScaleFactors;
+                            levelIdx = [];
+                            for levelId = 1:size(levelScaleFactors, 1)
+                                levelVoxel = fullVoxel .* levelScaleFactors(levelId, :);
+                                if all(abs(modelVoxel - levelVoxel(measuredAxes)) ./ levelVoxel(measuredAxes) < 0.01)
+                                    levelIdx = levelId;
+                                    break;
+                                end
+                            end
+                            if isempty(levelIdx)
+                                levelVoxelText = sprintf('  level %d: %.6g x %.6g x %.6g\n', ...
+                                    [(1:size(levelScaleFactors, 1))', fullVoxel(2)*levelScaleFactors(:, 2), ...
+                                    fullVoxel(1)*levelScaleFactors(:, 1), fullVoxel(3)*levelScaleFactors(:, 3)]');
+                                modelVoxelFull = NaN(1, 3);
+                                modelVoxelFull(measuredAxes) = modelVoxel;
+                                utils.dlgs.showErrorDialog(obj.mibModel.getProgressBarParent(), ...
+                                    sprintf(['The voxel size of the model (x, y, z: %.6g x %.6g x %.6g %s), ' ...
+                                    'estimated from its bounding box, does not match any level of the dataset pyramid:\n%s\nFile: %s'], ...
+                                    modelVoxelFull(2), modelVoxelFull(1), modelVoxelFull(3), pixSize.units, ...
+                                    levelVoxelText, filenames{fileId}), 'Voxel size mismatch');
+                                if obj.BatchOpt.showWaitbar; delete(waitbar); end
+                                return;
+                            end
+                            gridScale = levelScaleFactors(levelIdx, :);
+                            gridSize = obj.mibModel.I{id}.labels.modelLevelSizes(levelIdx, :);
+                            setOpts.pyramidLevel = levelIdx;
+                        end
+                        gridVoxel = fullVoxel .* gridScale;
+
+                        % first grid voxel of the model, then clip it to the dataset
+                        modelStart = round(([tilesBB(3), tilesBB(1), tilesBB(5)] - [currBB(3), currBB(1), currBB(5)]) ./ gridVoxel ...
+                            + [yOffset, xOffset, zOffset] ./ gridScale) + 1;
+                        pasteFirst = max(modelStart, 1);
+                        pasteLast = min(modelStart + modelSize - 1, gridSize);
+
+                        % A model sticking out of the dataset is either a genuine partial
+                        % overlap or the same volume whose origin was lost on one side (e.g.
+                        % a format conversion that dropped the bounding box offset). The
+                        % metadata cannot tell these apart, so ask; batch mode keeps the
+                        % bounding box, as a modal dialog would stall the protocol.
+                        if ~batchModeSwitch && (any(pasteFirst ~= modelStart) || any(pasteLast ~= modelStart + modelSize - 1))
+                            labelledInside = 0;
+                            if all(pasteLast >= pasteFirst)
+                                cropFirst = pasteFirst - modelStart + 1;
+                                cropLast = pasteLast - modelStart + 1;
+                                labelledInside = nnz(modelData(cropFirst(1):cropLast(1), cropFirst(2):cropLast(2), cropFirst(3):cropLast(3)));
+                            end
+                            labelledTotal = nnz(modelData);
+                            questOpt = struct('WindowStyle', 'modal', 'mibPath', obj.mibModel.mibPath, ...
+                                'Icon', 'puffin_warning', 'WindowWidth', 520, 'WindowHeight', 260);
+                            answer = utils.dlgs.inputQuestDlg(obj.mibModel.getProgressBarParent(), ...
+                                sprintf(['The bounding box places the model partly outside the dataset.\n\n' ...
+                                'Model origin (x, y, z): %.4g, %.4g, %.4g %s\nDataset origin (x, y, z): %.4g, %.4g, %.4g %s\n' ...
+                                'Labelled voxels inside the dataset: %d of %d (%.0f%%)\n\n' ...
+                                'If the model and the dataset are the same volume, align the model to the dataset origin.\n\nFile: %s'], ...
+                                tilesBB(1), tilesBB(3), tilesBB(5), pixSize.units, currBB(1), currBB(3), currBB(5), pixSize.units, ...
+                                labelledInside, labelledTotal, 100*labelledInside/max(labelledTotal, 1), filenames{fileId}), ...
+                                'Model outside the dataset', 'Use bounding box', 'Align to origin', 'Cancel', 'Cancel', questOpt);
+                            switch answer
+                                case 'Use bounding box'
+                                    % keep the clipped placement
+                                case 'Align to origin'
+                                    modelStart = round([yOffset, xOffset, zOffset] ./ gridScale) + 1;
+                                    pasteFirst = max(modelStart, 1);
+                                    pasteLast = min(modelStart + modelSize - 1, gridSize);
+                                otherwise   % Cancel or dialog closed
+                                    if obj.BatchOpt.showWaitbar; delete(waitbar); end
+                                    return;
+                            end
                         end
 
-                        x2 = x1 + size(modelData, 2) - 1;
-                        y2 = y1 + size(modelData, 1) - 1;
-                        z2 = z1 + size(modelData, 3) - 1;
-
-                        if x2 > obj.mibModel.I{id}.image.width || ...
-                                y2 > obj.mibModel.I{id}.image.height || ...
-                                z2 > obj.mibModel.I{id}.image.depth
+                        if any(pasteLast < pasteFirst)
                             utils.dlgs.showErrorDialog(obj.mibModel.getProgressBarParent(), ...
-                                sprintf('Bounding box exceeds dataset bounds!\n\nFile: %s', filenames{fileId}), ...
+                                sprintf('The model does not overlap the dataset!\n\nFile: %s', filenames{fileId}), ...
                                 'Wrong bounding box!');
                             if obj.BatchOpt.showWaitbar; delete(waitbar); end
                             return;
                         end
+                        cropFirst = pasteFirst - modelStart + 1;
+                        cropLast = pasteLast - modelStart + 1;
+                        modelData = modelData(cropFirst(1):cropLast(1), cropFirst(2):cropLast(2), cropFirst(3):cropLast(3));
 
-                        setOpts.x = [x1, x2];
-                        setOpts.y = [y1, y2];
-                        setOpts.z = [z1, z2];
+                        % setData3D takes full-res coordinates; on BigData they select
+                        % exactly the grid voxels pasteFirst:pasteLast of pyramidLevel
+                        setOpts.y = [(pasteFirst(1)-1)*gridScale(1)+1, pasteLast(1)*gridScale(1)];
+                        setOpts.x = [(pasteFirst(2)-1)*gridScale(2)+1, pasteLast(2)*gridScale(2)];
+                        setOpts.z = [(pasteFirst(3)-1)*gridScale(3)+1, pasteLast(3)*gridScale(3)];
                         setOpts.blockModeSwitch = 0;
                         obj.mibModel.setData3D(modelData, 'labels', NaN, 3, NaN, setOpts);
 
-                        % Add point annotations with position offset
+                        % Add point annotations, converted from model grid voxels to
+                        % full-res dataset voxels (grid voxel g covers full-res voxels
+                        % (g-1)*scale+1 .. g*scale)
                         if isfield(R, 'labelText')
-                            R.labelPosition(:,1) = R.labelPosition(:,1) + z1 - 1;
-                            R.labelPosition(:,2) = R.labelPosition(:,2) + x1 - 1;
-                            R.labelPosition(:,3) = R.labelPosition(:,3) + y1 - 1;
+                            R.labelPosition(:,1) = (R.labelPosition(:,1) + modelStart(3) - 1.5) * gridScale(3) + 0.5;
+                            R.labelPosition(:,2) = (R.labelPosition(:,2) + modelStart(2) - 1.5) * gridScale(2) + 0.5;
+                            R.labelPosition(:,3) = (R.labelPosition(:,3) + modelStart(1) - 1.5) * gridScale(1) + 0.5;
                             if isfield(R, 'labelValues'); R.labelValue = R.labelValues; end
                             if isfield(R, 'labelValue')
                                 obj.mibModel.I{id}.annotations.addLabels(R.labelText, R.labelPosition, R.labelValue);
@@ -962,6 +1058,9 @@ classdef ChunkingImport < handle
             if importLabels
                 obj.mibModel.I{id}.labels.materialNames  = materialNames;
                 obj.mibModel.I{id}.labels.materialColors = materialColors;
+                if isa(obj.mibModel.I{id}.labels, 'core.MibBigDataLabels')
+                    obj.mibModel.I{id}.labels.writeMaterialMetadata();   % persist names/colours into the store
+                end
                 obj.mibModel.showModel = true;
             end
             if importMasks

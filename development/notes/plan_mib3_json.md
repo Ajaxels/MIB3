@@ -6,8 +6,9 @@ defaults. Neither can be read, checked, diffed or authored without a MATLAB lice
 the override file in particular awkward to deploy - `mib/mib3_override_params.md` today instructs
 an administrator to *run MIB, configure it by hand, exit, then copy and rename the binary*.
 
-This note records what was measured before deciding whether JSON can replace it. Nothing here is
-implemented yet.
+This note records what was measured before deciding whether JSON can replace it. **Phase 1 is
+implemented (2026-09-27)**, see [Phase 1 - as implemented](#phase-1---as-implemented) at the end;
+phase 2 is not.
 
 Measured on R2026a Update 2, Windows 11, against the real `mib3.mat` of this workstation.
 
@@ -181,3 +182,50 @@ a single machine's first startup.
 `tests/models/PreferencesVersionTest.m` already redirects `USERPROFILE`/`APPDATA` to a sandbox and
 writes preference files of a chosen version, so it is the natural home for round-trip and
 coercion tests.
+
+## Phase 1 - as implemented
+
+- **Writer:** `MibModel.saveOverridePreferences(filename)`, started from **Home -> Preferences ->
+  Make override default settings file** (`home_Callbacks`, case `'Make override default settings
+  file'`). It asks all computers / this computer only, then `uiputfile` defaulting to `mibPath`.
+- **Diff-only, not a full dump.** Only leaves that differ (`isequaln`) from
+  `generatePreferences()` are written - the "partial override" above. A full dump would pin
+  every default of the generating version (later default changes never reach users of the file)
+  and carry machine-specific values such as `DeepMIBDir = tempdir` of the admin.
+- **Always excluded** (personal state or secrets, not workstation settings): `Users`,
+  `System.Dirs.LastPath/RecentDirs`, `System.Update.SinceLastCheck`,
+  `System.UserStatsProfile/UserStatsPromptShown`, `Tips.Files/CurrentTipIndex`,
+  `ImageArithmetic.Actions/InputVars/OutputVars`, `VolRen.Animation.animationPath`,
+  `Deep.Original*ImagesDir/ResultingImagesDir`, `Deep.SendReports.SMTP_password`.
+  `UserStatsProfile` was caught by a round trip of the real preferences: without the exclusion
+  every new user of the workstation would write into the admin's statistics folder.
+- **`_comment`:** each struct gets a `"_comment"` object keyed by its own written field names;
+  the texts are a `dictionary` in the local function `preferenceComments`. A struct field cannot
+  start with `_`, so it is built as `x_comment` and renamed in the encoded text; `jsondecode`
+  reads it back as `x_comment` (verified) and the reader drops it. A missing description is
+  harmless, so this table does not have the silent-failure problem of a type table.
+- **Inf/NaN** as the strings `"Inf"`, `"-Inf"`, `"NaN"` for scalars and vectors (vectors become a
+  mixed cell). Not handled inside 2-D matrices; no preference has them.
+- **Readability:** numeric/logical vectors collapsed onto one line after `jsonencode`. A nested
+  `regexprep` inside a `${...}` dynamic expression returned the token unchanged, so this is done
+  with `regexp(..., 'split', 'match')` and a join.
+- **Reader:** `initializePreferences` looks for `_<COMPUTERNAME>.json`, `_<COMPUTERNAME>.mat`,
+  `.json`, `.mat`, first found wins. The coercion pass is a local function there, as planned;
+  unknown settings are dropped with a `MIB:preferencesOverride` warning (except below a default
+  `struct()` such as `DoNotShowDialogs`), and a malformed file is ignored with the same warning.
+  Nested cells take the orientation of the outer default (`Deep.ImageFilenameExtension`).
+- **KeyShortcuts guard changed:** the old guard (`numel(Action) < default`) replaced the whole
+  block; a partial file usually has no `Action`, so the new guard drops `KeyShortcuts` unless
+  every array in it has exactly as many elements as this version has actions.
+- **Tests:** `tests/models/PreferencesOverrideTest.m` - round trip of vectors, matrices, key
+  shortcuts, Inf, nested cells, `{}` and `DoNotShowDialogs`; exclusions; computer-specific file
+  priority; unknown setting; malformed file. The model is built with a sandbox `mibPath`, so no
+  file is ever written next to the real `mib3.m`.
+- **Measured on the real preferences of this workstation:** 49 settings written, all 49 read back
+  identical in class, size and value. The file was first 4.7 MB, almost all of it
+  `Colors.ModelMaterialColors` at 65535x3: the Preferences callback copies
+  `labels.materialColors` of the current dataset into preferences before opening the dialog, and
+  a 63-material-bit model carries 65535 random rows.
+- **Colors:** rounded to 3 decimals (below one 8-bit step, 1/255) - 4.7 MB -> 2.0 MB; then
+  `ModelMaterialColors` capped at 255 rows, the rows the Preferences dialog shows and edits -
+  2.0 MB -> 14 KB. `mib3.mat` itself still stores the full 65535 rows.

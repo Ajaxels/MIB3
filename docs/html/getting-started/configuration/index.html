@@ -5785,8 +5785,14 @@ This page is reference material - you do not need it to start using MIB.</p>
 <p>The points you collected in MIB2 are taken over the first time MIB3 runs on that computer. MIB2 keeps its own file and goes on using it, so both programs remain usable - but the handover happens once, and points earned in MIB2 afterwards are not added to MIB3.</p>
 <hr />
 <h2 id="overriding-default-settings">Overriding default settings<a class="headerlink" href="#overriding-default-settings" title="Permanent link">&para;</a></h2>
-<p>Administrators can preconfigure MIB with custom default settings by placing an <em>override file</em> into the MIB program directory (the folder that contains <code>mib3.m</code>, or the installation folder of the standalone version). This is useful for deploying the same configuration to multiple workstations, for example in a core facility.</p>
-<p>Two kinds of override files are supported:</p>
+<p>Administrators can give the new users of a workstation a starting configuration that differs from the MIB defaults, for example in a core facility.</p>
+<h3 id="creating-an-override-file">Creating an override file<a class="headerlink" href="#creating-an-override-file" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Start MIB and change the settings that new users should start with</li>
+<li>Press <strong>Home → Preferences ▾ → Make override default settings file</strong></li>
+<li>Choose whether the file is for all computers that use this MIB installation or only for this computer</li>
+<li>Save the file into the MIB program directory: the folder that contains <code>mib3.m</code>, or the installation folder of the standalone version</li>
+</ol>
 <table>
 <thead>
 <tr>
@@ -5796,29 +5802,24 @@ This page is reference material - you do not need it to start using MIB.</p>
 </thead>
 <tbody>
 <tr>
-<td><code>mib3_prefs_override.mat</code></td>
-<td><strong>Global</strong> - applies to every workstation</td>
+<td><code>mib3_prefs_override.json</code></td>
+<td><strong>Global</strong> - every computer that uses this MIB installation</td>
 </tr>
 <tr>
-<td><code>mib3_prefs_override_COMPUTERNAME.mat</code></td>
-<td><strong>Workstation-specific</strong> - applies only to the computer with the matching name</td>
+<td><code>mib3_prefs_override_COMPUTERNAME.json</code></td>
+<td><strong>Workstation-specific</strong> - only the computer with the matching name, shown in <strong>Home → Help → About MIB</strong></td>
 </tr>
 </tbody>
 </table>
-<h3 id="creating-an-override-file">Creating an override file<a class="headerlink" href="#creating-an-override-file" title="Permanent link">&para;</a></h3>
-<ol>
-<li>Start MIB and configure all required settings</li>
-<li><em>For a workstation-specific override:</em> open <strong>Home → Help → About MIB</strong> and note the <strong>Computer name</strong> shown at the bottom of the dialog</li>
-<li>Close MIB - this saves <code>mib3.mat</code> to the user directory (the location is reported in the MATLAB command window upon MIB startup)</li>
-<li>Copy <code>mib3.mat</code> to the MIB program directory</li>
-<li>Rename the copy to <code>mib3_prefs_override.mat</code> (global) or <code>mib3_prefs_override_COMPUTERNAME.mat</code> (workstation-specific), replacing <code>COMPUTERNAME</code> with the name from step 2</li>
-</ol>
+<p>The file lists only the settings that differ from the MIB defaults; all other settings keep their default values. Recent directories, user statistics and the email password of DeepMIB reports are never written to it.</p>
+<p>The file is plain text and can be edited: delete a setting to return it to the default. The <code>_comment</code> entries describe the settings next to them and their allowed values.</p>
+<p>Override files created in earlier versions of MIB by copying <code>mib3.mat</code> and renaming it to <code>mib3_prefs_override.mat</code> or <code>mib3_prefs_override_COMPUTERNAME.mat</code> still work.</p>
 <h3 id="load-priority-at-startup">Load priority at startup<a class="headerlink" href="#load-priority-at-startup" title="Permanent link">&para;</a></h3>
 <p>When MIB starts, it looks for a configuration file in this order:</p>
 <ol>
 <li><code>mib3.mat</code> in the user directory - <strong>used immediately if found</strong></li>
-<li><code>mib3_prefs_override_COMPUTERNAME.mat</code> - workstation-specific override</li>
-<li><code>mib3_prefs_override.mat</code> - global override</li>
+<li><code>mib3_prefs_override_COMPUTERNAME.json</code>, then <code>mib3_prefs_override_COMPUTERNAME.mat</code> - workstation-specific override</li>
+<li><code>mib3_prefs_override.json</code>, then <code>mib3_prefs_override.mat</code> - global override</li>
 <li>Built-in defaults - used if none of the above are found</li>
 </ol>
 <div class="admonition note">

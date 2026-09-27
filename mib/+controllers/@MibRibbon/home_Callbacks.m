@@ -112,8 +112,19 @@ switch mode
         obj.mibController.startController('controllers.BatchProcessing', obj.mibController);  
     case 'Chunk dataset'                % obj.handles.ribbonHome.chunk
         obj.mibController.startController('controllers.ChunkingExport');  
-    case 'Stitch dataset'               % obj.handles.ribbonHome.stitch
-        obj.mibController.startController('controllers.ChunkingImport');  
+    case {'Stitch dataset', 'Fuse into dataset'}    % obj.handles.ribbonHome.stitch & obj.handles.ribbonHome.fuse
+        if strcmp(mode, 'Stitch dataset')
+            combineMode = 'New Stack';
+        else
+            combineMode = 'Fuse to Existing';
+        end
+        % when the dialog is already open, startController only brings it to
+        % the front and refreshes it from BatchOpt, so switch its mode here
+        childId = obj.mibController.findChildId('controllers.ChunkingImport');
+        if ~isempty(childId) && childId <= numel(obj.mibController.childControllers)
+            obj.mibController.childControllers{childId}.BatchOpt.Mode{1} = combineMode;
+        end
+        obj.mibController.startController('controllers.ChunkingImport', combineMode);
     case 'Shuffle images'               % obj.handles.ribbonHome.shuffle
         obj.mibController.startController('controllers.RenameShuffle');  
     case 'Restore order'                % obj.handles.ribbonHome.reshuffle
@@ -154,12 +165,68 @@ switch mode
     case 'Save the current layout as MIB default'               % obj.handles.ribbonHome.saveLayoutMibDefault
         obj.mibController.saveLayout('globalDefault');
 
-    case 'Preferences'                  % obj.handles.ribbonHome.preferences
+    case {'Follow the system theme', 'Light theme', 'Dark theme'}  % obj.handles.ribbonHome.systemTheme, lightTheme, darkTheme
+        themeNames = dictionary(["Follow the system theme", "Light theme", "Dark theme"], ["System", "Light", "Dark"]);
+        themeName = char(themeNames(string(mode)));
+        if ~utils.setMibTheme(themeName)
+            dlgOpt = struct('MsgBoxOnly', true, 'Icon', 'puffin_error', 'HeaderLines', 1, 'WindowType', 'modal');
+            utils.dlgs.inputUniversalDlg(obj.view.gui, ...
+                'The theme could not be changed!', ...
+                {}, {'Selection of the theme requires MATLAB R2025a or newer'}, 'Theme', dlgOpt);
+            return;
+        end
+        obj.mibModel.preferences.Colors.Theme = themeName;
+
+    case {'Preferences', 'Open MIB preferences'}    % obj.handles.ribbonHome.preferences & obj.handles.ribbonHome.preferencesMenu
         % update obj.mibModel.preferences.Colors from the current dataset
         % otherwise the materials color table won't be properly populated
         id = obj.mibModel.getActiveId;
         obj.mibModel.preferences.Colors.ModelMaterialColors = obj.mibModel.I{id}.labels.materialColors;
         obj.mibController.startController('controllers.Preferences', obj.mibController);  % a new appdesigner version
+
+    case 'Make override default settings file'     % obj.handles.ribbonHome.prefOverrideMenu
+        % the settings of this session that differ from the MIB defaults become the
+        % starting preferences of every new user, see MibModel.saveOverridePreferences
+        computerName = utils.identifyComputerName();
+        thisComputerButton = sprintf('Only %s', computerName);
+        answer = utils.dlgs.inputQuestDlg(obj.view.gui, ...
+            sprintf(['Save the settings that differ from the MIB defaults as the starting settings of new users.\n\n' ...
+            'Users who already have their own preferences file (mib3.mat) are not affected.\n\n' ...
+            'Which computers should use the file?']), ...
+            'Preferences override file', 'All computers', thisComputerButton, 'Cancel', 'All computers');
+        switch answer
+            case 'All computers'
+                overrideFilename = 'mib3_prefs_override.json';
+            case thisComputerButton
+                overrideFilename = sprintf('mib3_prefs_override_%s.json', computerName);
+            otherwise
+                return;
+        end
+        [overrideFilename, overridePath] = uiputfile({'*.json', 'JSON files (*.json)'}, ...
+            'Save preferences override file', fullfile(obj.mibModel.mibPath, overrideFilename));
+        if isequal(overrideFilename, 0); return; end
+        overrideFilename = fullfile(overridePath, overrideFilename);
+
+        try
+            numberOfSettings = obj.mibModel.saveOverridePreferences(overrideFilename);
+        catch err
+            utils.dlgs.showErrorDialog(obj.view.gui, sprintf(['%s\n\nIf the MIB folder is write-protected, ' ...
+                'save the file elsewhere and copy it into\n%s'], err.message, obj.mibModel.mibPath), ...
+                'Preferences override file');
+            return;
+        end
+
+        dlgOpt = struct('MsgBoxOnly', true, 'Icon', 'puffin_info', 'HeaderLines', 1);
+        if numberOfSettings == 0
+            infoText = {'The current settings match the MIB defaults, the file lists no settings'};
+        else
+            infoText = {sprintf('%d settings that differ from the MIB defaults were saved to:\n%s', numberOfSettings, overrideFilename)};
+        end
+        if ~strcmpi(strip(overridePath, 'right', filesep), strip(obj.mibModel.mibPath, 'right', filesep))
+            infoText{1} = sprintf('%s\n\nMIB reads the file only from\n%s', infoText{1}, obj.mibModel.mibPath);
+        end
+        utils.dlgs.inputUniversalDlg(obj.view.gui, 'Preferences override file saved', ...
+            {}, infoText, 'Preferences override file', dlgOpt);
     case 'Help'                         % obj.handles.ribbonHome.help
         helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'html', 'index.html');
         utils.openHelpPage(helpFilPath, 'http://mib.helsinki.fi/help/main3/index.html');

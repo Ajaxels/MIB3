@@ -5861,7 +5861,7 @@ large datasets across multiple workstations.</p>
 <hr />
 <h2 id="dataset-chunking-stitch-dataset">Dataset Chunking -&gt; Stitch dataset<a class="headerlink" href="#dataset-chunking-stitch-dataset" title="Permanent link">&para;</a></h2>
 <p><a class="glightbox" data-title="Chopped images -&gt; Import Dialog" data-type="image" href="images/menuFileChopImport.png"><img align="left" alt="Chopped images -&gt; Import Dialog" class="on-glb" src="images/menuFileChopImport.png" width="300" /></a></p>
-<p>The <em>Stitch dataset</em> command restores previously chopped dataset or fuse the cropped dataset into the currently open dataset.</p>
+<p>The <em>Stitch dataset</em> command restores a previously chopped dataset, while <em>Fuse into dataset</em> fuses cropped datasets into the currently open dataset. Both open the same dialog, preset to the <em>Generate new stack</em> or <em>Fuse into existing</em> mode respectively.</p>
 <div class="clear-float"></div>
 
 <h3 id="modes">Modes<a class="headerlink" href="#modes" title="Permanent link">&para;</a></h3>
@@ -5879,7 +5879,7 @@ large datasets across multiple workstations.</p>
 </tr>
 <tr>
 <td><strong>Fuse into existing</strong></td>
-<td>Merges selected datasets into the current one using BoundingBox data from the ImageDescription field. Useful for cropped datasets; includes X/Y/Z offset fields (in pixels).</td>
+<td>Merges selected datasets into the current one using BoundingBox data from the ImageDescription field. Useful for cropped datasets; includes X/Y/Z offset fields (in pixels). On a BigData dataset, a model saved at a lower resolution is fused into the matching pyramid level; the offsets remain in full-resolution pixels.</td>
 </tr>
 </tbody>
 </table>

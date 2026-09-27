@@ -180,6 +180,34 @@ classdef ZarrChunkCacheTest < matlab.unittest.TestCase
             testCase.verifyEqual(actual, testCase.directRead(bbox));
             testCase.verifyEqual(testCase.CallCount, 1);
         end
+
+        function storeRewrittenAtTheSamePathIsNotServedStaleChunks(testCase)
+            % Regression: the key was the level path alone and the cache outlives
+            % datasets, so exporting to BigData over a store viewed earlier in the
+            % session showed a level assembled from the old store's chunks (mostly
+            % empty when the chunk shape changed). The key now carries the store
+            % version, so a new loader on the rewritten store reads the new pixels.
+            tmp = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            storePath = fullfile(tmp.Folder, 'same.zarr3');
+            saverOpts = struct('silent', true, 'showWaitbar', false, 'Levels', 1);
+            pixSize = struct('x', 1, 'y', 1, 'z', 1);
+
+            oldVolume = zeros(60, 50, 6, 'uint8');
+            io.savers.Zarr3Saver().save(oldVolume, struct('pixSize', pixSize), storePath, ...
+                setfield(saverOpts, 'ChunkSize', [16 16 2])); %#ok<SFLD>
+            oldLoader = io.loaders.Zarr3VirtualLoader(storePath, 'yxz');
+            oldLoader.readRegion('0', [1 60], [1 50], [1 6], [1 1], [1 1], 'uint8');   % fills the cache
+
+            pause(1.1);   % the version is the metadata file's modification time; keep the two writes apart
+            newVolume = uint8(reshape(mod(0:60*50*6-1, 250) + 1, [60 50 6]));
+            io.savers.Zarr3Saver().save(newVolume, struct('pixSize', pixSize), storePath, ...
+                setfield(saverOpts, 'ChunkSize', [32 32 4])); %#ok<SFLD>
+            newLoader = io.loaders.Zarr3VirtualLoader(storePath, 'yxz');
+            block = newLoader.readRegion('0', [1 60], [1 50], [1 6], [1 1], [1 1], 'uint8');
+
+            testCase.verifyEqual(block, newVolume, ...
+                'a store rewritten at the same path must be read from disk, not from the old chunks');
+        end
     end
 
     methods (Access = private)

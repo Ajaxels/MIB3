@@ -5624,6 +5624,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#theme" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Theme
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#preferences" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -6411,6 +6422,7 @@ Use the <strong>Dataset chunking</strong> dropdown to access:</p>
 <ul>
 <li><strong>Chunk dataset</strong>: Split the image into smaller chunks for block-based or parallel processing</li>
 <li><strong>Stitch dataset</strong>: Reassemble previously chunked subvolumes back into the full image</li>
+<li><strong>Fuse into dataset</strong>: Insert previously cropped subvolumes back into the currently open dataset</li>
 </ul>
 <p>See <a href="home-choppedimages.html">Dataset Chunking</a> for details.</p>
 <div class="clear-float"></div>
@@ -6443,10 +6455,19 @@ Use the <strong>Image shuffling</strong> dropdown to access:</p>
 <li><strong>Save the current layout in a custom file</strong>: Save to a custom file for sharing or backup</li>
 <li><strong>Save the current layout as MIB default</strong>: Override the factory default layout (affects all users of this MIB installation)</li>
 </ul>
+<h3 id="theme">Theme<a class="headerlink" href="#theme" title="Permanent link">&para;</a></h3>
+<p>Switch MIB between the light and dark color themes. <strong>Follow the system theme</strong> uses the theme set in MATLAB. The choice is remembered for the next MIB session.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>When MIB runs from MATLAB, the MATLAB desktop switches together with MIB and returns to its own theme when MIB is closed.</p>
+</div>
 <h3 id="preferences">Preferences<a class="headerlink" href="#preferences" title="Permanent link">&para;</a></h3>
 <p><a class="glightbox" data-title="MIB Preferences dialog" data-type="image" href="images/menuFilePreferences_UI.png"><img align="left" alt="MIB Preferences dialog" class="on-glb" src="images/menuFilePreferences_UI.png" width="350" /></a></p>
 <p>Edit MIB preferences, including colors for <strong>Selection</strong>, <strong>Model</strong>, and <strong>Mask</strong> layers, mouse wheel behavior, key settings, and Undo options.<br />
 See <a href="home-preferences.html">Preferences</a> for details.</p>
+<ul>
+<li><strong>Make override default settings file</strong>: Save your changes to the default settings as the starting settings of new users of this computer or of this MIB installation, see <a href="../../../getting-started/configuration/index.html#overriding-default-settings">Overriding default settings</a></li>
+</ul>
 <div class="clear-float"></div>
 
 <p>MIB saves configuration in a file generated upon closing:</p>

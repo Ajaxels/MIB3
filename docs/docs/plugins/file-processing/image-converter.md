@@ -212,6 +212,11 @@ Useful when aligning multiple datasets into a common coordinate system.
     - 'millimeters'
     - 'pixels' (unitless)
 
+When the source files were saved by MIB (TIF, AM, or HDF5), the voxel size, bounding box shift, and
+units are filled in from their bounding box as soon as the input or the Zarr output is selected,
+so the converted dataset keeps its original position. Check them before converting a subset of a
+saved stack.
+
 ### Buttons
 
 ![Image converter -> Buttons](images/image-converter-butons.png)

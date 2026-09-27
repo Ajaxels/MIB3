@@ -589,15 +589,98 @@ classdef ImageConverter < handle
             end
         end
 
+        function geometry = readSourceGeometry(filenames, loaderOptions)
+            % READSOURCEGEOMETRY - Voxel size, origin and units of a source stack from its MIB bounding box.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      geometry = ImageConverter.readSourceGeometry(filenames)
+            %      geometry = ImageConverter.readSourceGeometry(filenames, loaderOptions)
+            %
+            % Reads the metadata (not the pixels) of the first file, and of the last one
+            % for a sequence of 2D files, through MIB's standard loaders. The bounding box
+            % is taken from a numeric ``BoundingBox`` metadata key or parsed from the
+            % ``BoundingBox`` entry MIB writes into ``ImageDescription``: TIF description
+            % tag, AmiraMesh header, HDF5 XML header. Bounding boxes span voxel centres
+            % (``max = min + (n-1)*voxel``), so:
+            %
+            %   - **X/Y voxel** - box extent / (width-1) of the first file; the loader
+            %     ``pixSize`` when the axis is 1 voxel wide
+            %   - **Z voxel**, first file is a volume - its box Z extent / (depth-1)
+            %   - **Z voxel**, sequence of 2D files (one Z slice per file, as the zarr
+            %     output treats them):
+            %
+            %     - the last file starts at a different Z (a box per slice) -
+            %       (last zmin - first zmin) / (numberOfFiles-1)
+            %     - every file repeats one box spanning the stack (what MIB writes when
+            %       it saves a stack as a 2D sequence) - its Z extent / (numberOfFiles-1)
+            %     - otherwise, or for a single file, the loader ``pixSize.z``
+            %
+            %   - **origin** - the first file's ``[xmin ymin zmin]``
+            %
+            % A file without a MIB bounding box (e.g. a TIF from another program) gives
+            % an empty result, so callers keep what the user typed.
+            %
+            % Input Arguments:
+            %   - **filenames** - cellstr of source files in conversion order
+            %   - **loaderOptions** - *(optional)* struct passed to the loader;
+            %     default: silent, no waitbar
+            %
+            % Output Arguments:
+            %   - **geometry** - struct, or ``[]`` when the first file has no bounding box:
+            %
+            %     - ``.voxelSizeXYZ`` - [1x3 double]
+            %     - ``.originXYZ`` - [1x3 double]
+            %     - ``.units`` - [char] ``pixSize.units`` of the first file, e.g. ``'um'``
+            %
+            % Example:
+            %   .. code-block:: matlab
+            %
+            %      files = {'C:\data\slice_001.tif', 'C:\data\slice_002.tif'};
+            %      geometry = ImageConverter.readSourceGeometry(files);
+
+            geometry = [];
+            if nargin < 2 || isempty(loaderOptions)
+                loaderOptions = struct('waitbar', false, 'silentMode', true, 'verbose', false);
+            end
+            if ~isfield(loaderOptions, 'ParentFigure'); loaderOptions.ParentFigure = []; end
+            if isempty(filenames); return; end
+
+            firstFile = sourceFileGeometry(filenames{1}, loaderOptions);
+            if isempty(firstFile) || isempty(firstFile.boundingBox); return; end
+            boundingBox = firstFile.boundingBox;
+
+            voxelSize = [firstFile.pixSize.x, firstFile.pixSize.y, firstFile.pixSize.z];
+            if firstFile.width > 1; voxelSize(1) = (boundingBox(2) - boundingBox(1)) / (firstFile.width - 1); end
+            if firstFile.height > 1; voxelSize(2) = (boundingBox(4) - boundingBox(3)) / (firstFile.height - 1); end
+
+            numberOfFiles = numel(filenames);
+            if firstFile.depth > 1
+                voxelSize(3) = (boundingBox(6) - boundingBox(5)) / (firstFile.depth - 1);
+            elseif numberOfFiles > 1
+                lastFile = sourceFileGeometry(filenames{end}, loaderOptions);
+                if ~isempty(lastFile) && ~isempty(lastFile.boundingBox) && lastFile.boundingBox(5) ~= boundingBox(5)
+                    voxelSize(3) = (lastFile.boundingBox(5) - boundingBox(5)) / (numberOfFiles - 1);
+                elseif boundingBox(6) > boundingBox(5)
+                    voxelSize(3) = (boundingBox(6) - boundingBox(5)) / (numberOfFiles - 1);
+                end
+            end
+
+            geometry = struct('voxelSizeXYZ', voxelSize, ...
+                'originXYZ', boundingBox([1 3 5]), ...
+                'units', firstFile.pixSize.units);
+        end
+
         function fnOut = convertToZarr3Native(imgDS, BatchOpt, options)
             % CONVERTTOZARR3NATIVE - Convert a folder of image files to a native OME-Zarr pyramid.
             %
             % Streams the image stack in ``imgDS`` (one file per Z-slice) to an OME-Zarr
             % pyramid through ``io.savers.Zarr3Saver.saveStream`` - the same native (zarrMex)
             % writer, level/chunk/shard logic and bounding-box handling used by MIB's in-app
-            % "Convert to BigData" and Export. No Python, in either zarr format. After
-            % streaming, the voxel size and bounding box are written with
-            % ``io.savers.Zarr3Saver.patchMetadata``.
+            % "Convert to BigData" and Export. No Python, in either zarr format. The voxel
+            % size and the bounding box (from ``ZarrVoxelSizeXYZ`` and ``ZarrBBShiftsXYZ``)
+            % go to the saver in its metadata, which writes them for v2 and v3 alike.
             %
             % ``BatchOpt.ZarrVersion`` selects the format; the output folder carries no
             % ``.zarr2``/``.zarr3`` extension to infer it from. Sharding is a v3 feature and
@@ -710,21 +793,18 @@ classdef ImageConverter < handle
             end
 
             % --- stream to disk ---
+            % MIB boundingBox [xmin xmax ymin ymax zmin zmax]; physical extent =
+            % (dim-1)*voxel, origin shifted by bbShift. Passed in the metadata rather
+            % than patched afterwards: patchMetadata reads zarr.json and so skips v2.
+            boundingBox = [bbShift(1), bbShift(1) + (W-1)*voxel(1), ...
+                           bbShift(2), bbShift(2) + (H-1)*voxel(2), ...
+                           bbShift(3), bbShift(3) + (D-1)*voxel(3)];
             saver = io.savers.Zarr3Saver(struct('ParentFigure', parentFig, 'mibPath', mibPath));
-            metadata = struct('pixSize', pixSize);
+            metadata = struct('pixSize', pixSize, 'boundingBox', boundingBox);
             if ~isempty(materialNames)
                 metadata.materialNames = materialNames;
             end
             fnOut = saver.saveStream(provider, metadata, zarrPath, saverOpts);
-            if isempty(fnOut); return; end   % cancelled
-
-            % --- write bounding box + per-level voxel translation ---
-            % MIB boundingBox [xmin xmax ymin ymax zmin zmax]; physical extent =
-            % (dim-1)*voxel, origin shifted by bbShift.
-            boundingBox = [bbShift(1), bbShift(1) + (W-1)*voxel(1), ...
-                           bbShift(2), bbShift(2) + (H-1)*voxel(2), ...
-                           bbShift(3), bbShift(3) + (D-1)*voxel(3)];
-            io.savers.Zarr3Saver.patchMetadata(fnOut, pixSize, boundingBox);
         end
 
     end
@@ -886,6 +966,11 @@ classdef ImageConverter < handle
             % set them now and again on a theme switch
             obj.view.gui.ThemeChangedFcn = @(src, evnt) imageConverterThemeChanged(obj, infoHtml);
             imageConverterThemeChanged(obj, infoHtml);
+            % a new source refills the Zarr voxel size / shifts / units from its
+            % bounding box (the .mlapp wires these widgets to updateBatchOptFromGUI only)
+            obj.view.handles.InputDirectory.ValueChangedFcn = @(src, evnt) obj.inputSourceChanged(evnt);
+            obj.view.handles.InputImageFormatExtension.ValueChangedFcn = @(src, evnt) obj.inputSourceChanged(evnt);
+            obj.view.handles.IncludeSubfolders.ValueChangedFcn = @(src, evnt) obj.inputSourceChanged(evnt);
 			obj.updateWidgets();
 
 			% update widgets from the BatchOpt structure
@@ -953,11 +1038,65 @@ classdef ImageConverter < handle
             if strcmp(obj.BatchOpt.OutputImageFormatExtension{1}, 'zarr')
                 obj.view.handles.ExportSettingsPanel.Visible = 'off';
                 obj.view.handles.ZarrSettingsPanel.Visible = 'on';
+                if nargin > 1; obj.prefillZarrGeometry(); end   % switched to zarr by the user
             else
                 obj.view.handles.ZarrSettingsPanel.Visible = 'off';
                 obj.view.handles.ExportSettingsPanel.Visible = 'on';
             end
-            
+
+        end
+
+        function inputSourceChanged(obj, event)
+            % INPUTSOURCECHANGED - Callback for the input directory, extension and
+            % subfolder widgets: store the value, then refill the Zarr voxel size,
+            % bounding box shift and units from the new source.
+            obj.updateBatchOptFromGUI(event);
+            obj.prefillZarrGeometry();
+        end
+
+        function prefillZarrGeometry(obj)
+            % PREFILLZARRGEOMETRY - Fill the Zarr voxel size, bounding box shift and
+            % units from the MIB bounding box of the source files.
+            %
+            % Runs only for the Zarr output with MIB's standard reader. The files are
+            % listed exactly as ``Convert`` lists them (``InputDirectory``,
+            % ``InputImageFormatExtension``, ``IncludeSubfolders``) and measured by
+            % ``ImageConverter.readSourceGeometry``, which reads the metadata of at
+            % most two files. Sources without a MIB bounding box leave the fields as
+            % they are, so values typed for such data are kept. Units other than
+            % nm/um/mm/px leave the units field unchanged.
+            if ~strcmp(obj.BatchOpt.OutputImageFormatExtension{1}, 'zarr') || obj.BatchOpt.BioFormatsReader
+                return;
+            end
+            try
+                fileStore = imageDatastore(obj.BatchOpt.InputDirectory, ...
+                    'FileExtensions', lower(['.' obj.BatchOpt.InputImageFormatExtension{1}]), ...
+                    'IncludeSubfolders', obj.BatchOpt.IncludeSubfolders);
+                filenames = fileStore.Files;
+            catch
+                return;   % no matching files (yet)
+            end
+            loaderOptions = struct('waitbar', false, 'silentMode', true, 'verbose', false, ...
+                'mibPath', obj.mibModel.mibPath, 'ParentFigure', obj.view.gui);
+            geometry = ImageConverter.readSourceGeometry(filenames, loaderOptions);
+            if isempty(geometry); return; end
+
+            obj.view.handles.ZarrVoxelSizeXYZ.Value = sprintf('%.6g, %.6g, %.6g', geometry.voxelSizeXYZ);
+            obj.updateBatchOptFromGUI(struct('Source', obj.view.handles.ZarrVoxelSizeXYZ));
+            obj.view.handles.ZarrBBShiftsXYZ.Value = sprintf('%.6g, %.6g, %.6g', geometry.originXYZ);
+            obj.updateBatchOptFromGUI(struct('Source', obj.view.handles.ZarrBBShiftsXYZ));
+
+            switch lower(strrep(geometry.units, char(181), 'u'))   % 'µm' -> 'um'
+                case {'nm', 'nanometers'};                   unitsName = 'nanometers';
+                case {'um', 'micrometers', 'micron', 'microns'}; unitsName = 'micrometers';
+                case {'mm', 'millimeters'};                  unitsName = 'millimeters';
+                case {'px', 'pixel', 'pixels'};              unitsName = 'pixels';
+                otherwise;                                   unitsName = '';
+            end
+            if ~isempty(unitsName)
+                obj.view.handles.ZarrUnits.Value = unitsName;
+                obj.updateBatchOptFromGUI(struct('Source', obj.view.handles.ZarrUnits));
+            end
         end
         
         function returnBatchOpt(obj, BatchOptOut)
@@ -989,6 +1128,7 @@ classdef ImageConverter < handle
                     obj.view.handles.OutputDirectory.Value = fullfile(selpath, 'FileConvert');
                     event2.Source = obj.view.handles.OutputDirectory;
                     obj.updateBatchOptFromGUI(event2);
+                    obj.prefillZarrGeometry();
                 case 'SelectOutputDirectory'
                     if exist(obj.BatchOpt.OutputDirectory, 'dir') == 7
                         defDir = obj.BatchOpt.OutputDirectory;
@@ -1463,7 +1603,7 @@ classdef ImageConverter < handle
             %% CREATE DATASETS + TOP LEVEL METADATA
             Options.voxelSize = voxelSize;
             Options.voxelUnits = voxelUnits;
-            Options.levelImageTranslations = levelImageTranslations;
+            Options.levelTranslations = levelImageTranslations;   % the field createMultiscaleDataset reads
             Options.customAttributes = struct();
             ImageConverter.createMultiscaleDataset(zarrPath, imageSize, imageType, levelNames, scaleZYX, Options);
 
@@ -1619,4 +1759,40 @@ function imageConverterThemeChanged(obj, infoHtml)
 utils.applyThemeColors(obj.view.gui);
 hInfo = obj.view.handles.infoText;
 hInfo.HTMLSource = [utils.themeHtmlStyle(obj.view.gui, hInfo.Parent.BackgroundColor), infoHtml];
+end
+
+function fileGeometry = sourceFileGeometry(filename, loaderOptions)
+% SOURCEFILEGEOMETRY - Bounding box, size and pixel size of one file from its metadata only.
+% Used by ImageConverter.readSourceGeometry for the first and last file of a stack.
+% Returns [] when the file cannot be read; .boundingBox is [] when the file has no MIB
+% bounding box (a numeric BoundingBox key, or a "BoundingBox" entry in ImageDescription).
+% A prefill runs from widget callbacks, so any failure (unreadable file, a loader that
+% returns an empty dictionary, missing keys) means "no geometry", never an error.
+fileGeometry = [];
+try
+    extReg = io.ExtensionRegistryLoad();
+    loader = io.LoaderFactory.create(extReg.resolveLoader(filename, 'Standard', 'Default'), loaderOptions);
+    imgInfo = loader.loadMetadata({filename}, loaderOptions);
+    if ~isa(imgInfo, 'dictionary') || ~isConfigured(imgInfo) || ...
+            ~all(isKey(imgInfo, ["Width", "Height", "Depth", "pixSize"]))
+        return;
+    end
+
+    boundingBox = [];
+    if isKey(imgInfo, 'BoundingBox')
+        bbValue = imgInfo{'BoundingBox'};
+        if isnumeric(bbValue) && numel(bbValue) == 6; boundingBox = double(bbValue(:)'); end
+    end
+    if isempty(boundingBox) && isKey(imgInfo, 'ImageDescription')
+        [bbPart, ~] = core.MibImage.splitImageDescription(char(imgInfo{'ImageDescription'}));
+        coords = sscanf(bbPart, 'BoundingBox %f %f %f %f %f %f');
+        if numel(coords) == 6; boundingBox = coords(:)'; end
+    end
+
+    fileGeometry = struct('boundingBox', boundingBox, ...
+        'width', imgInfo{'Width'}, 'height', imgInfo{'Height'}, 'depth', imgInfo{'Depth'}, ...
+        'pixSize', imgInfo{'pixSize'});
+catch
+    fileGeometry = [];
+end
 end

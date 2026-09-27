@@ -90,6 +90,7 @@ classdef MibRibbon
             obj.handles.ribbonHome.batch.ButtonPushedFcn = @obj.home_Callbacks;
             obj.handles.ribbonHome.chunk.ItemPushedFcn = @obj.home_Callbacks;
             obj.handles.ribbonHome.stitch.ItemPushedFcn = @obj.home_Callbacks;
+            obj.handles.ribbonHome.fuse.ItemPushedFcn = @obj.home_Callbacks;
             obj.handles.ribbonHome.shuffle.ItemPushedFcn = @obj.home_Callbacks;
             obj.handles.ribbonHome.reshuffle.ItemPushedFcn = @obj.home_Callbacks;
 
@@ -102,7 +103,12 @@ classdef MibRibbon
             obj.handles.ribbonHome.saveLayoutLocalDefault.ItemPushedFcn = @obj.home_Callbacks;
             obj.handles.ribbonHome.saveLayoutCustom.ItemPushedFcn = @obj.home_Callbacks;
             obj.handles.ribbonHome.saveLayoutMibDefault.ItemPushedFcn = @obj.home_Callbacks;
+            obj.handles.ribbonHome.systemTheme.ItemPushedFcn = @obj.home_Callbacks;
+            obj.handles.ribbonHome.lightTheme.ItemPushedFcn = @obj.home_Callbacks;
+            obj.handles.ribbonHome.darkTheme.ItemPushedFcn = @obj.home_Callbacks;
             obj.handles.ribbonHome.preferences.ButtonPushedFcn = @obj.home_Callbacks;
+            obj.handles.ribbonHome.preferencesMenu.ItemPushedFcn = @obj.home_Callbacks;
+            obj.handles.ribbonHome.prefOverrideMenu.ItemPushedFcn = @obj.home_Callbacks;
             obj.handles.ribbonHome.help.ButtonPushedFcn = @obj.home_Callbacks;
             obj.handles.ribbonHome.helpMenu.ItemPushedFcn = @obj.home_Callbacks;
             obj.handles.ribbonHome.tipOfDay.ItemPushedFcn = @obj.home_Callbacks;

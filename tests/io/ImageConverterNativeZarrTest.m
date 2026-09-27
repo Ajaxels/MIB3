@@ -3,10 +3,11 @@ classdef ImageConverterNativeZarrTest < matlab.unittest.TestCase
 %
 % When io.zarr.Config = native and the output is Zarr v3, ImageConverter routes a
 % folder of image files through io.savers.Zarr3Saver.saveStream (shared in-app
-% pyramid logic) instead of its legacy Python pipeline, then writes the bounding
-% box + voxel size via Zarr3Saver.patchMetadata. This verifies the harmonized
-% output: correct pixels, dimensions, voxel scale and mibBoundingBox, reopenable
-% by MIB's own zarr reader.
+% pyramid logic) instead of its legacy Python pipeline, passing the bounding box +
+% voxel size in the saver metadata. This verifies the harmonized output: correct
+% pixels, dimensions, voxel scale and mibBoundingBox, reopenable by MIB's own zarr
+% reader. The Unit block covers ImageConverter.readSourceGeometry, which prefills the
+% Zarr voxel size / shift fields from the bounding box MIB stored in the source files.
 
     properties (Access = private)
         OrigZarrLib
@@ -232,6 +233,105 @@ classdef ImageConverterNativeZarrTest < matlab.unittest.TestCase
             labels.openStore(fnOut);
             testCase.verifyEqual(labels.materialsCount, 3);
             testCase.verifyEqual(labels.materialNames, {'Material 1'; 'Material 2'; 'Material 3'});
+        end
+
+        function nativeZarr2_keepsBoundingBox(testCase)
+            % Regression: the bounding box was written with patchMetadata, which read
+            % zarr.json and so returned silently on a v2 store - a Zarr v2 conversion
+            % reopened at origin 0 whatever ZarrBBShiftsXYZ said.
+            inDir  = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            outDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            for z = 1:4
+                imwrite(uint8(randi(255, 16, 12)), fullfile(inDir.Folder, sprintf('s_%02d.tif', z)));
+            end
+            ds = imageDatastore(inDir.Folder, 'FileExtensions', '.tif');
+
+            BatchOpt = struct();
+            BatchOpt.OutputDirectory        = fullfile(outDir.Folder, 'out_v2');
+            BatchOpt.ZarrVersion            = {'Zarr v2'};
+            BatchOpt.ZarrImageType          = {'image'};
+            BatchOpt.ZarrChunkSizes         = '8, 8, 4, 1, 1';
+            BatchOpt.ZarrUseSharding        = false;
+            BatchOpt.ZarrShardXFactorsXYZ   = '2, 2, 1, 1, 1';
+            BatchOpt.ZarrCompression        = {'blosc'};
+            BatchOpt.ZarrVoxelSizeXYZ       = '0.01, 0.02, 0.03';
+            BatchOpt.ZarrUnits              = {'micrometers'};
+            BatchOpt.ZarrBBShiftsXYZ        = '4.5, 6.5, 1.2';
+            BatchOpt.ZarrDownsampleLimitXYZ = '8, 8, 4';
+
+            fnOut = ImageConverter.convertToZarr3Native(ds, BatchOpt, struct());
+
+            attrs = io.zarr.Group(fnOut).getAttributes();
+            testCase.verifyEqual(attrs.mibBoundingBox(:)', ...
+                [4.5, 4.5 + 11*0.01, 6.5, 6.5 + 15*0.02, 1.2, 1.2 + 3*0.03], 'AbsTol', 1e-9);
+        end
+
+    end
+
+    methods (Test, TestTags = {'Unit'})
+
+        function readSourceGeometry_tifSequenceRepeatingStackBox(testCase)
+            % MIB saving a stack as a 2D TIF sequence writes the whole stack's box into
+            % every file: Z voxel = box Z extent / (numberOfFiles - 1)
+            inDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            boundingBox = [4.61, 4.61 + 11*0.014, 6.95, 6.95 + 15*0.015, 4.47, 4.47 + 4*0.03];
+            description = core.MibImage.buildImageDescription(boundingBox, {});
+            files = cell(5, 1);
+            for z = 1:5
+                files{z} = fullfile(inDir.Folder, sprintf('s_%02d.tif', z));
+                imwrite(uint8(randi(255, 16, 12)), files{z}, 'Description', description);
+            end
+
+            geometry = ImageConverter.readSourceGeometry(files);
+
+            testCase.verifyEqual(geometry.voxelSizeXYZ, [0.014, 0.015, 0.03], 'AbsTol', 1e-6);
+            testCase.verifyEqual(geometry.originXYZ, [4.61, 6.95, 4.47], 'AbsTol', 1e-6);
+        end
+
+        function readSourceGeometry_tifSequencePerSliceBox(testCase)
+            % one box per slice: Z voxel = (last zmin - first zmin) / (numberOfFiles - 1)
+            inDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            files = cell(4, 1);
+            for z = 1:4
+                zPosition = 2 + (z - 1)*0.05;
+                boundingBox = [1, 1 + 11*0.01, 3, 3 + 15*0.01, zPosition, zPosition];
+                files{z} = fullfile(inDir.Folder, sprintf('s_%02d.tif', z));
+                imwrite(uint8(randi(255, 16, 12)), files{z}, ...
+                    'Description', core.MibImage.buildImageDescription(boundingBox, {}));
+            end
+
+            geometry = ImageConverter.readSourceGeometry(files);
+
+            testCase.verifyEqual(geometry.voxelSizeXYZ, [0.01, 0.01, 0.05], 'AbsTol', 1e-6);
+            testCase.verifyEqual(geometry.originXYZ, [1, 3, 2], 'AbsTol', 1e-6);
+        end
+
+        function readSourceGeometry_noMibBoundingBox_returnsEmpty(testCase)
+            % a TIF from another program must leave the typed values alone
+            inDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            files = {fullfile(inDir.Folder, 's_01.tif'); fullfile(inDir.Folder, 's_02.tif')};
+            imwrite(uint8(randi(255, 16, 12)), files{1}, 'Description', 'acquired elsewhere');
+            imwrite(uint8(randi(255, 16, 12)), files{2});
+
+            testCase.verifyEmpty(ImageConverter.readSourceGeometry(files));
+        end
+
+        function readSourceGeometry_amiraVolume(testCase)
+            % a single AmiraMesh volume: every axis from its own box and size
+            inDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            pixSize = struct('x', 0.014, 'y', 0.015, 'z', 0.03, 'units', 'um', 't', 1, 'tunits', 's');
+            boundingBox = [4.61, 4.61 + 11*0.014, 6.95, 6.95 + 15*0.015, 4.47, 4.47 + 5*0.03];
+            meta = struct('pixSize', pixSize, 'boundingBox', boundingBox, ...
+                'imageDescription', core.MibImage.buildImageDescription(boundingBox, {}), ...
+                'colorType', 'grayscale', 'dataClass', 'uint8', 'maxInt', 255, 'lutColors', [1 1 1]);
+            amFile = io.savers.AmiraMeshSaver().save(uint8(randi(255, 16, 12, 6)), meta, ...
+                fullfile(inDir.Folder, 'volume.am'), struct('silent', true, 'showWaitbar', false, 'overwrite', true));
+            if iscell(amFile); amFile = amFile{1}; end
+
+            geometry = ImageConverter.readSourceGeometry({amFile});
+
+            testCase.verifyEqual(geometry.voxelSizeXYZ, [0.014, 0.015, 0.03], 'AbsTol', 1e-5);
+            testCase.verifyEqual(geometry.originXYZ, [4.61, 6.95, 4.47], 'AbsTol', 1e-5);
         end
 
     end

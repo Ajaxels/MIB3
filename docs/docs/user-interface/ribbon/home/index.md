@@ -376,6 +376,7 @@ Use the **Dataset chunking** dropdown to access:
 
 - **Chunk dataset**: Split the image into smaller chunks for block-based or parallel processing
 - **Stitch dataset**: Reassemble previously chunked subvolumes back into the full image
+- **Fuse into dataset**: Insert previously cropped subvolumes back into the currently open dataset
 
 See [Dataset Chunking](home-choppedimages.md) for details.
 
@@ -416,12 +417,21 @@ Save and restore the arrangement of MIB panels using the **Load layout** and **S
 - **Save the current layout in a custom file**: Save to a custom file for sharing or backup
 - **Save the current layout as MIB default**: Override the factory default layout (affects all users of this MIB installation)
 
+### Theme
+
+Switch MIB between the light and dark color themes. **Follow the system theme** uses the theme set in MATLAB. The choice is remembered for the next MIB session.
+
+!!! note
+    When MIB runs from MATLAB, the MATLAB desktop switches together with MIB and returns to its own theme when MIB is closed.
+
 ### Preferences
 
 ![MIB Preferences dialog](images/menuFilePreferences_UI.png){.on-glb align=left width="350"}
 
 Edit MIB preferences, including colors for **Selection**, **Model**, and **Mask** layers, mouse wheel behavior, key settings, and Undo options.  
 See [Preferences](home-preferences.md) for details.
+
+- **Make override default settings file**: Save your changes to the default settings as the starting settings of new users of this computer or of this MIB installation, see [Overriding default settings](../../../getting-started/configuration/index.md#overriding-default-settings)
 
 <div class="clear-float"></div>
 

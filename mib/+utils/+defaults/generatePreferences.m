@@ -9,6 +9,13 @@ function Prefs = generatePreferences()
 % Output Arguments:
 %   - **Prefs** - struct containing all MIB application preferences
 %
+% These defaults are also the reference for the JSON override file: its values are
+% coerced back to the class and shape of the default here, see
+% :func:`models.MibModel.initializePreferences`. When adding a setting with a
+% restricted set of values, describe it in ``preferenceComments`` of
+% :func:`models.MibModel.saveOverridePreferences`, which writes the ``_comment``
+% entries of that file.
+%
 % Usage:
 %
 %   **Example 1** - initialise preferences at startup
@@ -128,6 +135,10 @@ Prefs.Colors.MaskColor = [1 0 1];    % color for the mask layer
 Prefs.Colors.CursorMaterialColor = true;
 
 % color for annotations, see below in the preferences.SegmTools.Annotations
+
+% theme of MIB: 'System' - follow the MATLAB theme, 'Light', 'Dark'; set from
+% Home ribbon -> Theme and applied with utils.setMibTheme
+Prefs.Colors.Theme = 'System';
 
 % Transparency
 Prefs.Colors.SelectionTransparency = 0.75;  % Selection layer transparency

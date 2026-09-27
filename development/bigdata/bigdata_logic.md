@@ -310,8 +310,10 @@ Translation/affine callers **bake the origin offset into the tforms** and use a 
 `imref2d`; landmark callers (raw `affine2d`/`projective2d`) instead pass a **world-limited `imref2d`
 OutputView** — `applyAlignmentBigData` builds ONE `ref0` used for both image and labels.
 
-**Metadata & switch-over.** `saveStream` writes only per-level scale; the bounding box + per-level
-translation are added by `Zarr3Saver.patchMetadata`. The buffer swap mirrors `CropDataset`: capture
+**Metadata & switch-over.** `save`/`saveStream` write the per-level scale, plus `mibBoundingBox` and
+a per-level translation whenever `metadata.boundingBox` is given (v2 and v3; before 2026-09-27 they
+ignored it, so every conversion to BigData reopened with its origin at 0). `Zarr3Saver.patchMetadata`
+rewrites both on an existing v2 or v3 store. The buffer swap mirrors `CropDataset`: capture
 source material names/colors/count → `Zarr3VirtualSetupLoader` → `I{id}.initialize(img, imgInfo,
 'BigData')` → **reset `slices` to the new full extent + seed `axesX/axesY` if NaN** (initialize leaves
 them at `[1 1]`/`NaN`; the display crashes otherwise) → reattach labels via `openStore` + restore

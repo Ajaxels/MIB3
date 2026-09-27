@@ -66,30 +66,33 @@ The points you collected in MIB2 are taken over the first time MIB3 runs on that
 
 ## Overriding default settings
 
-Administrators can preconfigure MIB with custom default settings by placing an *override file* into the MIB program directory (the folder that contains `mib3.m`, or the installation folder of the standalone version). This is useful for deploying the same configuration to multiple workstations, for example in a core facility.
-
-Two kinds of override files are supported:
-
-| File | Scope |
-|------|-------|
-| `mib3_prefs_override.mat` | **Global** - applies to every workstation |
-| `mib3_prefs_override_COMPUTERNAME.mat` | **Workstation-specific** - applies only to the computer with the matching name |
+Administrators can give the new users of a workstation a starting configuration that differs from the MIB defaults, for example in a core facility.
 
 ### Creating an override file
 
-1. Start MIB and configure all required settings
-2. *For a workstation-specific override:* open **Home → Help → About MIB** and note the **Computer name** shown at the bottom of the dialog
-3. Close MIB - this saves `mib3.mat` to the user directory (the location is reported in the MATLAB command window upon MIB startup)
-4. Copy `mib3.mat` to the MIB program directory
-5. Rename the copy to `mib3_prefs_override.mat` (global) or `mib3_prefs_override_COMPUTERNAME.mat` (workstation-specific), replacing `COMPUTERNAME` with the name from step 2
+1. Start MIB and change the settings that new users should start with
+2. Press **Home → Preferences ▾ → Make override default settings file**
+3. Choose whether the file is for all computers that use this MIB installation or only for this computer
+4. Save the file into the MIB program directory: the folder that contains `mib3.m`, or the installation folder of the standalone version
+
+| File | Scope |
+|------|-------|
+| `mib3_prefs_override.json` | **Global** - every computer that uses this MIB installation |
+| `mib3_prefs_override_COMPUTERNAME.json` | **Workstation-specific** - only the computer with the matching name, shown in **Home → Help → About MIB** |
+
+The file lists only the settings that differ from the MIB defaults; all other settings keep their default values. Recent directories, user statistics and the email password of DeepMIB reports are never written to it.
+
+The file is plain text and can be edited: delete a setting to return it to the default. The `_comment` entries describe the settings next to them and their allowed values.
+
+Override files created in earlier versions of MIB by copying `mib3.mat` and renaming it to `mib3_prefs_override.mat` or `mib3_prefs_override_COMPUTERNAME.mat` still work.
 
 ### Load priority at startup
 
 When MIB starts, it looks for a configuration file in this order:
 
 1. `mib3.mat` in the user directory - **used immediately if found**
-2. `mib3_prefs_override_COMPUTERNAME.mat` - workstation-specific override
-3. `mib3_prefs_override.mat` - global override
+2. `mib3_prefs_override_COMPUTERNAME.json`, then `mib3_prefs_override_COMPUTERNAME.mat` - workstation-specific override
+3. `mib3_prefs_override.json`, then `mib3_prefs_override.mat` - global override
 4. Built-in defaults - used if none of the above are found
 
 !!! note

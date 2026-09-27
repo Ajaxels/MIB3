@@ -63,6 +63,8 @@ Standalone utility functions
 
 .. autofunction:: saveUserStats
 
+.. autofunction:: setMibTheme
+
 .. autofunction:: startController
 
 .. autofunction:: struct2array

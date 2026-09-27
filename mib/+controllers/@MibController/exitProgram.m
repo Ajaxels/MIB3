@@ -83,6 +83,20 @@ catch err
         errorOpts);
 end
 
+% return MATLAB to the theme of the user, when MIB forced its own. The panel
+% figures are destroyed after this function returns, so a ThemeChangedFcn left on
+% them would run on deleted widgets: detach the handlers first
+if ~strcmp(obj.mibModel.preferences.Colors.Theme, 'System')
+    panelNames = fieldnames(obj.view.handles.panels);
+    for i = 1:numel(panelNames)
+        panel = obj.view.handles.panels.(panelNames{i});
+        if isa(panel, 'matlab.ui.internal.FigurePanel') && isvalid(panel) && isvalid(panel.Figure)
+            panel.Figure.ThemeChangedFcn = '';
+        end
+    end
+    utils.setMibTheme('System');
+end
+
 result = true;
 
 end

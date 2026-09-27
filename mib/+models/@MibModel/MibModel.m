@@ -217,6 +217,7 @@ classdef MibModel < handle
         fnOut = save(obj, layerType, filename, BatchOptIn)        % Unified BatchOpt-compatible save: writes 'image', 'mask', or 'labels' layer. Handles directory/filename policies, [F] template expansion, SyncBatch event, and StopProtocol notification. See models.MibModel.save for full documentation and usage examples.
         fnOut = saveImage(obj, layerType, filename, BatchOptIn)        % Save image, mask, or labels layer; top-level BatchOpt-compatible wrapper.
         fnOut = saveLabels(obj, filename, BatchOptIn)        % Save the segmentation model (labels layer); thin wrapper around saveImage('labels', ...).
+        numberOfSettings = saveOverridePreferences(obj, filename)        % save the settings that differ from the MIB defaults as a JSON override file for new users
         saveBigDataModel(obj, id, mode)  % Persist a BigData model: 'full' materializes all pyramid levels + side-file; 'sidecar' writes only the level-map side-file (fast crash checkpoint).
         fnOut = saveMask(obj, filename, BatchOptIn)  % Save the binary mask layer for the current dataset
         setAxesLimits(obj, axesX, axesY, id)        % set axes limits for the currently shown or id dataset

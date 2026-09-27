@@ -20,7 +20,9 @@ classdef ChunkCache
 % for 64 times over.
 %
 % **What is cached.** Whole chunks, decoded, keyed by array identity plus chunk
-% index. Caching whole chunks rather than whole requests is what makes panning
+% index. The identity comes from :meth:`storeKey` - the level path plus the
+% version of its metadata file - so a store rewritten at the same path starts cold
+% instead of being assembled from the replaced store's chunks. Caching whole chunks rather than whole requests is what makes panning
 % cheap: a viewport shifted by less than a chunk re-uses everything but the new
 % edge. Chunks at the far edge of an array are stored at their true (clipped)
 % size, not padded.
@@ -53,8 +55,9 @@ classdef ChunkCache
             %      raw = io.zarr.ChunkCache.read(cacheKey, bbox, chunkShape, arrayShape, readFcn)
             %
             % Input Arguments:
-            %   - **cacheKey** - [char] identity of the array, normally the full
-            %     path or URL of the pyramid level
+            %   - **cacheKey** - [char|string] identity of the array; use
+            %     :meth:`storeKey` of the pyramid level path, so a store rewritten
+            %     at the same path is not served from the old one's chunks
             %   - **bbox** - [nDims x 2] requested region in Zarr C-order, as
             %     ``[start_1based, end_exclusive]`` - the same form the loaders
             %     already build for the engines
@@ -114,6 +117,45 @@ classdef ChunkCache
                 bbox, chunkShape, nDims);
             store = io.zarr.ChunkCache.evict(store);
             io.zarr.ChunkCache.storeAccess(store);
+        end
+
+        function key = storeKey(arrayPath)
+            % STOREKEY - Cache identity of one zarr array: its path plus a version of the store.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      key = io.zarr.ChunkCache.storeKey(arrayPath)
+            %
+            % The cache is process-wide and outlives the datasets that fill it, so a
+            % key made of the path alone serves the chunks of a store that has since
+            % been replaced at that path - e.g. exporting or converting to BigData
+            % over a store opened earlier in the session. When the chunk layout
+            % differs the old chunks are assembled into the wrong places and the
+            % level shows mostly empty or scrambled tiles.
+            %
+            % A local array therefore also carries the modification time and size of
+            % its metadata file (``zarr.json`` for v3, ``.zarray`` for v2), which every
+            % writer rewrites when it creates the array. Only one ``dir`` call, so
+            % callers compute it once per opened level, not per read. A remote array
+            % (URL) keeps its bare path: a published store is not rewritten under a
+            % reader, and probing it would cost a round trip.
+            %
+            % Input Arguments:
+            %   - **arrayPath** - [char|string] full path or URL of the level array
+            %
+            % Output Arguments:
+            %   - **key** - [string] ``arrayPath`` for a remote array or when no
+            %     metadata file is found, otherwise ``"<path>@<datenum>:<bytes>"``
+            key = string(arrayPath);
+            if io.RemoteStore.isRemote(char(arrayPath)); return; end
+            for metadataName = {'zarr.json', '.zarray'}
+                listing = dir(fullfile(char(arrayPath), metadataName{1}));
+                if ~isempty(listing)
+                    key = key + "@" + sprintf('%.12g', listing(1).datenum) + ":" + listing(1).bytes;
+                    return;
+                end
+            end
         end
 
         function clear()

@@ -51,9 +51,10 @@ classdef MibBigDataLabelsIndex < core.MibLabels
 % upsampling the entire volume to a resolution the labels never had.
 %
 % **Store access follows ``MibBigDataLabelsZarr2``, not ``MibVirtualImage``.**
-% Reads go through ``io.zarr.ChunkCache`` keyed on the level path, so a store
-% opened both as an image and as labels shares decoded chunks, and the cache needs
-% no invalidation because nothing here writes. ``MibVirtualImage.getDataZarr``
+% Reads go through ``io.zarr.ChunkCache`` keyed on the level path plus the store
+% version (``io.zarr.ChunkCache.storeKey``), so a store opened both as an image
+% and as labels shares decoded chunks, nothing here writes, and a store replaced
+% on disk is never served from the old one's chunks. ``MibVirtualImage.getDataZarr``
 % would have been the other candidate, but its defaults assume
 % ``levelImageSizes(1,:)`` is the full-resolution extent, which is untrue for an
 % offset pyramid.
@@ -243,9 +244,15 @@ classdef MibBigDataLabelsIndex < core.MibLabels
             axisRanges.z = Zlim;
             bbox = io.loaders.OmeZarrMetadataUtils.buildZarrBbox(obj.modelAxisOrder, axisRanges);
 
+            % once per opened level: the cache key carries the store version (see
+            % io.zarr.ChunkCache.storeKey); it matches the image loaders' key, so a
+            % store opened as image and as labels still shares its chunks
+            if ~isfield(obj.modelArrayMeta{levelIndex}, 'cacheKey')
+                obj.modelArrayMeta{levelIndex}.cacheKey = io.zarr.ChunkCache.storeKey(obj.modelLevelPaths{levelIndex});
+            end
             levelMeta  = obj.modelArrayMeta{levelIndex};
             levelArray = obj.modelArrays{levelIndex};
-            raw = io.zarr.ChunkCache.read(obj.modelLevelPaths{levelIndex}, bbox, ...
+            raw = io.zarr.ChunkCache.read(levelMeta.cacheKey, bbox, ...
                 levelMeta.chunkShape, levelMeta.shape, ...
                 @(alignedBbox) levelArray.read(alignedBbox));
 

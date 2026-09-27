@@ -3,10 +3,9 @@
 **Status (2026-09-24, not committed at time of writing):** implemented for the Datasets panel,
 the standard buttons of 48 dialogs, StitchingInspector, message/error dialogs, BatchProcessing,
 VolRenApp, Preferences, the Segmentation panel materials table, DeepMIB and its augmentation
-settings, all plugins (2026-09-26). Remaining: one-off colors in other dialogs. Open: a theme choice
-in MIB Preferences (`preferences.Colors.Theme`; the dropdown exists, the logic is not implemented), see
-[Choosing the theme from MIB](#choosing-the-theme-from-mib-investigated-2026-09-26-not-implemented).
-Start with the rules and the recipe at the end.
+settings, all plugins (2026-09-26); theme choice from Home ribbon -> Theme (2026-09-27), see
+[Choosing the theme from MIB](#choosing-the-theme-from-mib-implemented-2026-09-27).
+Remaining: one-off colors in other dialogs. Start with the rules and the recipe at the end.
 
 ## Problem
 Widgets with hard-coded pastel `BackgroundColor` and `FontColor` left on auto become unreadable under
@@ -306,17 +305,15 @@ Used where the colors carry meaning and a dark version would blur it (traffic-li
 - Checking `uihtml` by eye without `exportapp`: `java.awt.Robot().createScreenCapture` over the
   figure `Position` (y flipped against `groot.ScreenSize`) captures the real rendering.
 
-## Choosing the theme from MIB (investigated 2026-09-26, not implemented)
-Idea: a Preferences dropdown so users can pick the MIB theme. Checked on R2026a in MATLAB (not in a
-compiled build).
+## Choosing the theme from MIB (implemented 2026-09-27)
+Investigated 2026-09-26 on R2026a in MATLAB (not in a compiled build); route 1 below was implemented.
 
 **Route 1 - the MATLAB setting (preferred).**
 - `s = settings; s.matlab.appearance.MATLABTheme` has `ActiveValue`, `TemporaryValue`,
   `PersonalValue`, `InstallationValue`, `FactoryValue`. On the test machine: `PersonalValue = 'Dark'`,
   `FactoryValue = 'System'` (follow the OS). Values: `'Light'`, `'Dark'`, `'System'`.
 - `TemporaryValue = 'Light'|'Dark'` switches everything at once: the main window (`AppContainer`,
-  created with `EnableTheming = true` in `initializeMibView.m`, where a commented-out
-  `TemporaryValue` line already sits), its panels and every dialog. All `ThemeChangedFcn` handlers run,
+  created with `EnableTheming = true` in `initializeMibView.m`), its panels and every dialog. All `ThemeChangedFcn` handlers run,
   which is how every change in this note was tested. `clearTemporaryValue` returns to the user's own
   setting.
 - `TemporaryValue` lasts for the MATLAB session only and does not touch the saved preference;
@@ -343,30 +340,34 @@ in MATLAB Runtime. Commit `9f27a830` ("dark theme ... compiled version") suggest
 show the dark theme. To check in a compiled build: read
 `settings().matlab.appearance.MATLABTheme.ActiveValue` and try setting `TemporaryValue`.
 
-**Proposed design (for later).**
-- Preference field: **`preferences.Colors.Theme`** = `'System' | 'Light' | 'Dark'` (the author's
-  choice, next to the other color preferences).
-- GUI, already in place (2026-09-27): dropdown `Theme` (label `ThemeDropDownLabel`, "Theme:") on
-  `ColorsPanel` of `PreferencesGUI.mlapp`, `Items = {'System', 'Light', 'Dark'}`, `Value = 'System'`.
-  It has no callback yet.
-- Still to do:
-  - default `Prefs.Colors.Theme = 'System';` in `mib/+utils/+defaults/generatePreferences.m`; check
-    that preferences loaded from an older `mib3.mat` without this field get the default;
-  - `Preferences` controller: show the stored value in the dropdown and write the choice back
-    (value-changed callback). The rest of the Preferences dialog edits a copy (`obj.preferences`)
-    that is applied on OK/Apply, so decide whether the theme switches at once as a preview or only
-    on apply;
-  - apply the value at MIB startup (after preferences are loaded, before or right after the main
-    window is built; `initializeMibView.m` has the commented-out `TemporaryValue` line) and when it
-    changes: `'System'` -> `MATLABTheme.clearTemporaryValue`, `'Light'`/`'Dark'` ->
-    `MATLABTheme.TemporaryValue = value`;
-  - on MIB close, `clearTemporaryValue` so MATLAB returns to the user's own setting (only if MIB set
-    a value);
-  - guard for releases without the setting (before R2025a): check that
-    `settings().matlab.appearance` has `MATLABTheme`, otherwise hide or disable the dropdown;
-  - document the option in `docs/` (Preferences page) once implemented.
-- If `settings` is not available in the compiled version, fall back to route 2 there and accept the
-  mismatched ribbon.
+**Implementation (2026-09-27).**
+- Preference **`preferences.Colors.Theme`** = `'System' | 'Light' | 'Dark'`, default `'System'` in
+  `generatePreferences.m`. `initializePreferences.m` backfills it (and replaces an unknown value),
+  because a `mib3.mat` of the same MIB version replaces the defaults wholesale instead of merging.
+- Chosen in the Home ribbon, Preferences section: `homeHandles.themeButton` (DropDownButton) with
+  the list items `systemTheme`, `lightTheme`, `darkTheme` (`addRibbonHome.m`), handled in
+  `MibRibbon/home_Callbacks.m` by their text. The switch is immediate. The earlier `Theme` dropdown on
+  `ColorsPanel` of `PreferencesGUI.mlapp` is not wired.
+- `utils.setMibTheme(themeName)` - the one place that touches the setting: `'System'` ->
+  `clearTemporaryValue` (only when a temporary value exists), `'Light'`/`'Dark'` -> `TemporaryValue`.
+  Returns `false` without an error when the setting does not exist (before R2025a) or the settings
+  API throws (possibly the compiled runtime); the ribbon callback then shows a message and does not
+  store the choice.
+- Startup: `initializeMibView.m` calls it **before** the `AppContainer` is created, so the window is
+  built in the chosen theme; `'System'` is not applied at startup (nothing to undo).
+- Exit: `exitProgram.m` calls `utils.setMibTheme('System')` when the preference is not `'System'`.
+  The panel figures are destroyed only after `exitProgram` returns, so it first clears
+  `ThemeChangedFcn` on every `FigurePanel` in `obj.view.handles.panels` (Datasets and Segmentation
+  have one). Without that, closing with the window's X button raised "Invalid or deleted object" in
+  `MibSegmentation.materialsTable_CellSelectionCallback` ("Error while evaluating DestroyedObject
+  ThemeChangedFcn"). Closing with `mib.view.gui.close()` from the command line did not show the
+  error, so that is not a valid test for this path.
+- `Preferences` apply writes its whole copy of `preferences` back to the model; it now keeps
+  `Colors.Theme` from the model first, otherwise a copy made before a ribbon switch (or reset by the
+  Defaults button) would store the wrong theme.
+- Verified live on R2026a (desktop Light): Dark, Light, System from the ribbon; Dark saved on exit
+  and applied at the next start; MATLAB back to Light after exit.
+- Still unverified: the compiled version.
 
 References: MathWorks, [Graphics and App Themes](https://www.mathworks.com/help/matlab/creating_plots/graphics-and-app-themes.html),
 [Change Desktop Theme and Colors](https://www.mathworks.com/help/matlab/matlab_env/change-desktop-colors-and-select-dark-theme.html),

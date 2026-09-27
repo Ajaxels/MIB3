@@ -176,9 +176,14 @@ methods
             obj.cachedInfo      = obj.cachedArray.info();
             obj.cachedLevelPath = fullPath;
         end
+        % once per opened level: the cache key carries the store version, so a store
+        % rewritten at this path is never served from the old one's chunks
+        if ~isfield(obj.cachedInfo, 'cacheKey')
+            obj.cachedInfo.cacheKey = io.zarr.ChunkCache.storeKey(fullPath);
+        end
         % Serve whole decoded chunks from memory where possible; see
         % io.zarr.ChunkCache for why a per-request read is so wasteful without it.
-        raw = io.zarr.ChunkCache.read(fullPath, bbox, obj.cachedInfo.chunkShape, ...
+        raw = io.zarr.ChunkCache.read(obj.cachedInfo.cacheKey, bbox, obj.cachedInfo.chunkShape, ...
             obj.cachedInfo.shape, @(alignedBbox) obj.cachedArray.read(alignedBbox));
 
         % Permute to MIB3 [y, x, z, c, t]

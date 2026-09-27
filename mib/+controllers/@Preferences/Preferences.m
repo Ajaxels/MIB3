@@ -730,6 +730,9 @@ classdef Preferences < handle
             end
             activeDataset.enableSelection = systemPrefs.EnableSelection;
 
+            % the theme is set from the Home ribbon, not here: keep the current
+            % value over the copy, which is stale or reset by the Defaults button
+            obj.preferences.Colors.Theme = obj.mibModel.preferences.Colors.Theme;
             obj.mibModel.preferences = obj.preferences;
 
             % activate the selected OME-Zarr v3 backend so open/save of zarr3

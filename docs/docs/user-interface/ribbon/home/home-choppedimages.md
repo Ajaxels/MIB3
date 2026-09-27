@@ -52,7 +52,7 @@ Masks are saved in MATLAB format with the template `Mask_[FN].mask`, where `[FN]
 
 ![Chopped images -> Import Dialog](images/menuFileChopImport.png){.on-glb align=left width="300"}
 
-The *Stitch dataset* command restores previously chopped dataset or fuse the cropped dataset into the currently open dataset.
+The *Stitch dataset* command restores a previously chopped dataset, while *Fuse into dataset* fuses cropped datasets into the currently open dataset. Both open the same dialog, preset to the *Generate new stack* or *Fuse into existing* mode respectively.
 
 <div class="clear-float"></div>
 
@@ -61,7 +61,7 @@ The *Stitch dataset* command restores previously chopped dataset or fuse the cro
 | Mode                | Description                                                                                   |
 |---------------------|-----------------------------------------------------------------------------------------------|
 | **Generate new stack** | Combines images, models, or masks into a new stack. Requires filenames with `_Znn_Xnn_Ynn` tags for images and `Labels_` prefixes for models (default for chopped exports). |
-| **Fuse into existing** | Merges selected datasets into the current one using BoundingBox data from the ImageDescription field. Useful for cropped datasets; includes X/Y/Z offset fields (in pixels). |
+| **Fuse into existing** | Merges selected datasets into the current one using BoundingBox data from the ImageDescription field. Useful for cropped datasets; includes X/Y/Z offset fields (in pixels). On a BigData dataset, a model saved at a lower resolution is fused into the matching pyramid level; the offsets remain in full-resolution pixels. |
 
 <div class="clear-float"></div>
 

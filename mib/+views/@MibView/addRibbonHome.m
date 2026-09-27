@@ -347,13 +347,50 @@ popupList.add(homeHandles.saveLayoutMibDefault);
 
 homeHandles.saveLayout.Popup = popupList;
 column.add(homeHandles.saveLayout);
+
 % Empty
-column.addEmptyControl();
+%column.addEmptyControl();
+
+% --------- Theme definition ---------
+homeHandles.themeButton =  DropDownButton("Theme", Icon(fullfile(iconPath, 'theme_system_16px.png')));
+homeHandles.themeButton.Description = 'Define theme for MIB';
+
+popupList = PopupList();
+header1 = PopupListHeader('List of available themes');
+popupList.add(header1);
+homeHandles.systemTheme =  ListItem( 'Follow the system theme', Icon(fullfile(iconPath, 'theme_system_24px.png')));
+homeHandles.systemTheme.Description = sprintf('MIB will follow the globally defined system theme');
+popupList.add(homeHandles.systemTheme);
+homeHandles.lightTheme =  ListItem( 'Light theme', Icon(fullfile(iconPath, 'theme_light_24px.png')));
+homeHandles.lightTheme.Description = sprintf('Use the light theme'); 
+popupList.add(homeHandles.lightTheme);
+homeHandles.darkTheme =  ListItem( 'Dark theme', Icon(fullfile(iconPath, 'theme_dark_24px.png')));
+homeHandles.darkTheme.Description = sprintf('Use the dark theme');
+popupList.add(homeHandles.darkTheme);
+
+homeHandles.themeButton.Popup = popupList;
+column.add(homeHandles.themeButton);
 
 % % --------- Preferences ---------
 column = section.addColumn();
-homeHandles.preferences = Button(sprintf("Preferences"),  Icon(fullfile(iconPath, 'preferences_24px.png')));
-homeHandles.preferences.Description = 'Start the batch processing tool';
+homeHandles.preferences = SplitButton("Preferences", Icon(fullfile(iconPath, 'preferences_24px.png')));
+homeHandles.preferences.Description = "Open preferences dialog";
+
+% make a popup list for the dropdown button
+popupList = PopupList();
+header1 = PopupListHeader('Preferences');
+popupList.add(header1);
+% MIB preferences
+homeHandles.preferencesMenu = ListItem('Open MIB preferences', Icon(fullfile(iconPath, 'preferences_24px.png')));
+homeHandles.preferencesMenu.Description = 'Open preferences dialog';
+popupList.add(homeHandles.preferencesMenu);
+header2 = PopupListHeader('Preferences tools');
+popupList.add(header2);
+% Save override settings file
+homeHandles.prefOverrideMenu = ListItem('Make override default settings file', Icon(fullfile(iconPath, 'preferences_24px.png')));
+homeHandles.prefOverrideMenu.Description = 'Save the settings that differ from the MIB defaults as the starting settings of new users';
+popupList.add(homeHandles.prefOverrideMenu);
+homeHandles.preferences.Popup = popupList;
 column.add(homeHandles.preferences);
 
 % --------- Help ---------

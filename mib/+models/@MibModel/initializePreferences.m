@@ -11,6 +11,19 @@ function initializePreferences(obj)
 % version changes occur, applies override settings when available,
 % and restores user statistics.
 %
+% When the user has no ``mib3.mat`` yet, the first override file found in
+% ``obj.mibPath`` is merged over the defaults, in this order:
+% ``mib3_prefs_override_<COMPUTERNAME>.json``, ``mib3_prefs_override_<COMPUTERNAME>.mat``,
+% ``mib3_prefs_override.json``, ``mib3_prefs_override.mat``. A JSON file, written by
+% :func:`models.MibModel.saveOverridePreferences`, may list any subset of the settings;
+% the rest keep their defaults. Its values are coerced back to the class and shape of
+% the defaults - ``jsondecode`` returns every vector as a column, ``{}`` as ``[]`` and
+% cannot hold ``Inf``/``NaN``, which the file stores as the strings ``"Inf"``,
+% ``"-Inf"``, ``"NaN"``. ``"_comment"`` keys are dropped, unknown settings are dropped
+% with a ``MIB:preferencesOverride`` warning, and a file that cannot be read is ignored
+% with the same warning. ``Users`` is never taken from an override file, and
+% ``KeyShortcuts`` only when the file has at least as many actions as this version.
+%
 % The files that were picked up are reported to the command window unless the
 % model was constructed with ``Verbose = false`` (``obj.verboseStartup``);
 % warnings raised by a failed handover of the MIB2 statistics are printed either way.
@@ -62,31 +75,58 @@ if restoreSavedPreferences && exist(prefsFn, 'file') ~= 0
     if obj.verboseStartup; fprintf('MIB parameters file: %s\n', prefsFn); end
 elseif restoreSavedPreferences
     % ------------ check for preference override file ------------
-    % Override file allows system-wide preference defaults
-    % get computer name:
+    % Override file allows system-wide preference defaults. The first file found
+    % wins: the one for this computer before the one for all computers, and JSON
+    % (written by MibModel.saveOverridePreferences) before the legacy MAT copy of mib3.mat
     computerName = utils.identifyComputerName();
-    overridePreferencesFile = fullfile(obj.mibPath, sprintf('mib3_prefs_override_%s.mat', computerName));
-    if ~isfile(overridePreferencesFile)
-        overridePreferencesFile = fullfile(obj.mibPath, 'mib3_prefs_override.mat');
-    end
+    overrideCandidates = fullfile(obj.mibPath, { ...
+        sprintf('mib3_prefs_override_%s.json', computerName), ...
+        sprintf('mib3_prefs_override_%s.mat', computerName), ...
+        'mib3_prefs_override.json', ...
+        'mib3_prefs_override.mat'});
+    overridePreferencesFile = overrideCandidates(isfile(overrideCandidates));
 
-    if isfile(overridePreferencesFile)
-        overridePrefs = load(overridePreferencesFile); %#ok<LOAD>
-        if obj.verboseStartup; fprintf('MIB override global parameters file: %s\n', overridePreferencesFile); end
-
-        % Remove fields that should not be overridden
-        if isfield(overridePrefs.mib_pars.preferences, 'Users')
-            % Users.Tiers structure tracks user movements and should not be overridden
-            overridePrefs.mib_pars.preferences = rmfield(overridePrefs.mib_pars.preferences, 'Users');
+    if ~isempty(overridePreferencesFile)
+        overridePreferencesFile = overridePreferencesFile{1};
+        overridePreferences = [];
+        try
+            [~, ~, overrideExt] = fileparts(overridePreferencesFile);
+            if strcmpi(overrideExt, '.json')
+                overrideJson = jsondecode(fileread(overridePreferencesFile));
+                overridePreferences = coercePreferences(overrideJson.preferences, obj.preferences, '');
+            else
+                overrideMat = load(overridePreferencesFile);
+                overridePreferences = overrideMat.mib_pars.preferences;
+            end
+            if obj.verboseStartup; fprintf('MIB override global parameters file: %s\n', overridePreferencesFile); end
+        catch overrideErr
+            % a hand-edited file may be malformed: start from the defaults instead
+            warning('MIB:preferencesOverride', 'The preferences override file was ignored: %s\n%s', ...
+                overridePreferencesFile, overrideErr.message);
         end
 
-        % Ensure key shortcuts are complete
-        if numel(overridePrefs.mib_pars.preferences.KeyShortcuts.Action) < numel(obj.preferences.KeyShortcuts.Action)
-            overridePrefs.mib_pars.preferences.KeyShortcuts = obj.preferences.KeyShortcuts;
-        end
+        if ~isempty(overridePreferences)
+            % Remove fields that should not be overridden
+            if isfield(overridePreferences, 'Users')
+                % Users.Tiers structure tracks user movements and should not be overridden
+                overridePreferences = rmfield(overridePreferences, 'Users');
+            end
 
-        % Merge override preferences with defaults
-        obj.preferences = utils.concatenateStructures(obj.preferences, overridePrefs.mib_pars.preferences);
+            % Ensure key shortcuts are complete: the arrays are matched by index to
+            % KeyShortcuts.Action, so a file written by a MIB with a different number
+            % of actions would shift the shortcuts onto the wrong actions. A JSON
+            % file may hold only some of the arrays, each of them has to fit
+            if isfield(overridePreferences, 'KeyShortcuts')
+                numberOfActions = numel(obj.preferences.KeyShortcuts.Action);
+                shortcutArrays = struct2cell(overridePreferences.KeyShortcuts);
+                if ~all(cellfun(@(shortcutArray) numel(shortcutArray) == numberOfActions, shortcutArrays))
+                    overridePreferences = rmfield(overridePreferences, 'KeyShortcuts');
+                end
+            end
+
+            % Merge override preferences with defaults
+            obj.preferences = utils.concatenateStructures(obj.preferences, overridePreferences);
+        end
     end
 end
 
@@ -264,6 +304,11 @@ end
 if ~isfield(obj.preferences.IO.Zarr, 'ChunkCacheMB')
     obj.preferences.IO.Zarr.ChunkCacheMB = 512;
 end
+% backfill the theme for preferences saved before this field existed
+if ~isfield(obj.preferences.Colors, 'Theme') || ...
+        ~any(strcmp(obj.preferences.Colors.Theme, {'System', 'Light', 'Dark'}))
+    obj.preferences.Colors.Theme = 'System';
+end
 % backfill the pyenv execution mode for preferences saved before this field existed
 if ~isfield(obj.preferences.ExternalDirs, 'PythonExecutionMode') || ...
         isempty(obj.preferences.ExternalDirs.PythonExecutionMode)
@@ -305,4 +350,85 @@ for i=1:numel(tipsFiles)
     obj.preferences.Tips.Files{i} = fullfile(fullfile(obj.mibPath, 'assets', 'tips'), tipsFiles(i).name);
 end
 
+end
+
+%% ------------------------------------------------------------------------
+function decoded = coercePreferences(decoded, defaults, parentPath)
+% Restore the MATLAB class and shape that jsondecode loses, using the defaults as
+% the reference, so no per-setting type table is needed:
+%   - 1-D arrays come back as columns: turned into rows when the default is a row
+%     (or empty, as an array grown with end+1 is a row)
+%   - {} comes back as []: turned back into an empty cell
+%   - "Inf", "-Inf" and "NaN", written for numbers that JSON cannot hold, become numbers
+% The "_comment" objects, read by jsondecode as x_comment, are dropped. A setting the
+% defaults do not have is dropped with a warning, it is most likely misspelled; a
+% struct whose default has no fields (DoNotShowDialogs) takes any field.
+if isfield(decoded, 'x_comment'); decoded = rmfield(decoded, 'x_comment'); end
+if isempty(fieldnames(defaults)); return; end
+
+decodedFields = fieldnames(decoded);
+for fieldId = 1:numel(decodedFields)
+    fieldName = decodedFields{fieldId};
+    settingPath = fieldName;
+    if ~isempty(parentPath); settingPath = [parentPath '.' fieldName]; end
+    if ~isfield(defaults, fieldName)
+        warning('MIB:preferencesOverride', 'Unknown setting in the preferences override file was ignored: %s', settingPath);
+        decoded = rmfield(decoded, fieldName);
+        continue;
+    end
+
+    value = decoded.(fieldName);
+    defaultValue = defaults.(fieldName);
+    if isstruct(defaultValue) && isscalar(defaultValue)
+        if isstruct(value) && isscalar(value)
+            value = coercePreferences(value, defaultValue, settingPath);
+        end
+    elseif isnumeric(defaultValue) || islogical(defaultValue)
+        if ischar(value) || iscell(value)
+            % "Inf"/"-Inf"/"NaN" of a scalar, or a vector mixing them with numbers
+            nonFiniteNames = {'Inf', '-Inf', 'NaN'};
+            if ischar(value) && any(strcmp(value, nonFiniteNames))
+                value = str2double(value);
+            elseif iscell(value) && all(cellfun(@(element) (isnumeric(element) && isscalar(element)) || ...
+                    (ischar(element) && any(strcmp(element, nonFiniteNames))), value))
+                isText = cellfun(@ischar, value);
+                value(isText) = cellfun(@str2double, value(isText), 'UniformOutput', false);
+                value = cell2mat(value);
+            end
+        end
+        if (isnumeric(value) || islogical(value)) && ~isempty(defaultValue)
+            % keep the class of the default: 0/1 of a logical switch, true/false of a
+            % numeric one; an empty default ([] for "not set") says nothing about it
+            value = cast(value, 'like', defaultValue);
+        end
+        value = orientLikeDefault(value, defaultValue);
+    elseif iscell(defaultValue)
+        if isnumeric(value) && isempty(value)
+            value = {};
+        elseif ischar(value)
+            value = {value};
+        end
+        value = orientLikeDefault(value, defaultValue);
+    end
+    decoded.(fieldName) = value;
+end
+end
+
+%% ------------------------------------------------------------------------
+function value = orientLikeDefault(value, defaultValue)
+% turn a vector that jsondecode returned as a column into the orientation of the
+% default; an empty default is treated as a row, the shape end+1 grows it into.
+% Cells nested in a cell have no default of their own and get the orientation of
+% the outer default, e.g. {{'AM'}, 'TIF'}
+if iscell(value)
+    for elementId = 1:numel(value)
+        if iscell(value{elementId}); value{elementId} = orientLikeDefault(value{elementId}, defaultValue); end
+    end
+end
+if ~isvector(value) || isscalar(value) || ischar(value); return; end
+if isempty(defaultValue) || isrow(defaultValue)
+    value = reshape(value, 1, []);
+elseif iscolumn(defaultValue)
+    value = reshape(value, [], 1);
+end
 end

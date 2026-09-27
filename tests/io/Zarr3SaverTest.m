@@ -1,5 +1,6 @@
 classdef Zarr3SaverTest < matlab.unittest.TestCase
-% ZARR3SAVERTEST - Unit tests for io.savers.Zarr3Saver.computeLevelPlan.
+% ZARR3SAVERTEST - Unit tests for io.savers.Zarr3Saver: computeLevelPlan,
+% saveStream batching and the bounding box round trip.
 %
 % saveStream buffers cumZFactor source slices per output slice at each
 % Z-downsampled pyramid level and always flushes a trailing partial group
@@ -117,6 +118,54 @@ classdef Zarr3SaverTest < matlab.unittest.TestCase
                 testCase.verifyEqual(unique(vol2(:, :, z)), expected, ...
                     sprintf('level2 z=%d must equal round(mean(source z=%d,%d)), unscrambled by batching', z, 2*z-1, 2*z));
             end
+        end
+
+        function boundingBox_roundTrips_saveAndStream_v2AndV3(testCase)
+            % Regression: save and saveStream ignored metadata.boundingBox, so every
+            % conversion to BigData reopened with its origin at 0 and a model saved
+            % against the original dataset landed offset. Both writers must store
+            % it for both zarr formats, and the loaders must return it unchanged.
+            tmp = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            volume = uint8(randi(255, 90, 80, 5));
+            pixSize = struct('x', 0.014, 'y', 0.014, 'z', 0.03, 'units', 'um');
+            boundingBox = [4.61235, 4.61235 + 79*0.014, 6.95358, 6.95358 + 89*0.014, 4.47, 4.47 + 4*0.03];
+            meta = struct('pixSize', pixSize, 'boundingBox', boundingBox);
+            saverOpts = struct('silent', true, 'showWaitbar', false, 'MinLevelSize', 32);
+            loaderOpts = struct('waitbar', 0, 'silentMode', true);
+
+            for extension = {'zarr3', 'zarr2'}
+                savePath = io.savers.Zarr3Saver().save(volume, meta, ...
+                    fullfile(tmp.Folder, ['save.' extension{1}]), saverOpts);
+                streamPath = io.savers.Zarr3Saver().saveStream(io.savers.InMemorySliceProvider(volume), meta, ...
+                    fullfile(tmp.Folder, ['stream.' extension{1}]), saverOpts);
+                for storePath = {savePath, streamPath}
+                    if strcmp(extension{1}, 'zarr2')
+                        loader = io.loaders.Zarr2VirtualSetupLoader(loaderOpts);
+                    else
+                        loader = io.loaders.Zarr3VirtualSetupLoader(loaderOpts);
+                    end
+                    imgInfo = loader.loadMetadata(storePath, loaderOpts);
+                    testCase.verifyEqual(imgInfo{"BoundingBox"}, boundingBox, 'AbsTol', 1e-9, ...
+                        sprintf('%s must reopen with the bounding box it was saved with', storePath{1}));
+                end
+            end
+        end
+
+        function patchMetadata_updatesV2Store(testCase)
+            % Regression: patchMetadata read zarr.json directly and returned silently
+            % on a v2 store, so editing the bounding box of an open zarr2 BigData
+            % dataset was lost on reopen.
+            tmp = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            pixSize = struct('x', 0.014, 'y', 0.014, 'z', 0.03, 'units', 'um');
+            storePath = io.savers.Zarr3Saver().save(uint8(randi(255, 90, 80, 5)), struct('pixSize', pixSize), ...
+                fullfile(tmp.Folder, 'patch.zarr2'), struct('silent', true, 'MinLevelSize', 32));
+            boundingBox = [1, 1 + 79*0.014, 2, 2 + 89*0.014, 3, 3 + 4*0.03];
+
+            io.savers.Zarr3Saver.patchMetadata(storePath, pixSize, boundingBox);
+
+            loaderOpts = struct('waitbar', 0, 'silentMode', true);
+            imgInfo = io.loaders.Zarr2VirtualSetupLoader(loaderOpts).loadMetadata({storePath}, loaderOpts);
+            testCase.verifyEqual(imgInfo{"BoundingBox"}, boundingBox, 'AbsTol', 1e-9);
         end
 
     end

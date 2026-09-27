@@ -118,7 +118,10 @@ classdef Zarr3Saver < io.savers.BaseSaver
             %
             % Input Arguments:
             %   - **data** - [y x z c t] numeric image array (full resolution).
-            %   - **metadata** - struct; uses ``.pixSize`` (``.x .y .z``) when present.
+            %   - **metadata** - struct; uses ``.pixSize`` (``.x .y .z``) when present, and
+            %     ``.boundingBox`` (``[xmin xmax ymin ymax zmin zmax]``) when it has 6 values,
+            %     stored as ``mibBoundingBox`` plus a per-level ``translation``. Without
+            %     it the store opens with its origin at 0.
             %   - **filename** - [char] output ``.zarr3``/``.zarr2`` group path
             %     (overwritten if it exists).
             %   - **options** - *(optional)* struct:
@@ -280,6 +283,7 @@ classdef Zarr3Saver < io.savers.BaseSaver
                 end
                 attrStruct.mibMaterials = mm;
             end
+            attrStruct = io.savers.Zarr3Saver.addBoundingBox(attrStruct, metadata);
             grp.setAttributes(attrStruct);
 
             fnOut = filename;
@@ -482,6 +486,7 @@ classdef Zarr3Saver < io.savers.BaseSaver
                 end
                 attrStruct.mibMaterials = mm;
             end
+            attrStruct = io.savers.Zarr3Saver.addBoundingBox(attrStruct, metadata);
             grp.setAttributes(attrStruct);
 
             fnOut = filename;
@@ -556,7 +561,7 @@ classdef Zarr3Saver < io.savers.BaseSaver
             ds = mibModel.I{datasetId};
             data = ds.getData4D('image', 3, NaN);   % full [y x z c t]; returns a cell
             if iscell(data); data = data{1}; end
-            meta = struct('pixSize', ds.image.pixSize);
+            meta = struct('pixSize', ds.image.pixSize, 'boundingBox', ds.image.boundingBox);
             fnOut = io.savers.Zarr3Saver().save(data, meta, filename, options);
         end
 
@@ -584,7 +589,7 @@ classdef Zarr3Saver < io.savers.BaseSaver
             if ~isfield(options, 'DownsampleMethod') || ~ismember(options.DownsampleMethod, {'nearest', 'mode'})
                 options.DownsampleMethod = 'nearest';   % default for categorical data
             end
-            meta = struct('pixSize', ds.image.pixSize);
+            meta = struct('pixSize', ds.image.pixSize, 'boundingBox', ds.image.boundingBox);
             fnOut = io.savers.Zarr3Saver().save(data, meta, filename, options);
 
             % persist material names/colours alongside the pyramid (best-effort)
@@ -914,20 +919,21 @@ classdef Zarr3Saver < io.savers.BaseSaver
         end
 
         function patchMetadata(zarrPath, pixSize, boundingBox)
-            % PATCHMETADATA - Update bounding box and pixel sizes in a zarr3 file on disk.
+            % PATCHMETADATA - Update bounding box and pixel sizes in a zarr v2/v3 group on disk.
             %
             % Syntax:
             %   .. code-block:: matlab
             %
             %      io.savers.Zarr3Saver.patchMetadata(zarrPath, pixSize, boundingBox)
             %
-            % Writes to the zarr.json attributes:
+            % Writes to the group attributes (``zarr.json`` for v3, ``.zattrs`` for v2):
             %   - ``mibBoundingBox`` [xmin xmax ymin ymax zmin zmax] (MIB-specific round-trip)
             %   - ``translation`` coordinateTransformation per pyramid level (OME-NGFF 0.5)
             %   - Updated ``scale`` per pyramid level from new ``pixSize``
             %
             % Input Arguments:
-            %   - **zarrPath** - [char] local path to the zarr3 root folder
+            %   - **zarrPath** - [char] local path to the zarr v2/v3 group folder; a
+            %     remote URL or a folder that is not a zarr group is skipped silently
             %   - **pixSize** - [struct] with fields ``.x``, ``.y``, ``.z``
             %   - **boundingBox** - [1x6 double] ``[xmin xmax ymin ymax zmin zmax]``
             %
@@ -937,16 +943,14 @@ classdef Zarr3Saver < io.savers.BaseSaver
 
             if isempty(zarrPath) || ~isfolder(zarrPath); return; end
             if startsWith(zarrPath, 'http://') || startsWith(zarrPath, 'https://'); return; end
-            jsonPath = fullfile(zarrPath, 'zarr.json');
-            if ~isfile(jsonPath); return; end
+            % a v3 group keeps its attributes in zarr.json, a v2 group in .zattrs
+            % next to .zgroup; ZarrGroup reads and writes either
+            if ~isfile(fullfile(zarrPath, 'zarr.json')) && ~isfile(fullfile(zarrPath, '.zgroup')); return; end
 
             try
-                rawMeta = jsondecode(fileread(jsonPath));
-                if isfield(rawMeta, 'attributes') && isstruct(rawMeta.attributes)
-                    attrs = rawMeta.attributes;
-                else
-                    attrs = struct();
-                end
+                grp = ZarrGroup(zarrPath);
+                attrs = grp.getAttributes();
+                if ~isstruct(attrs); attrs = struct(); end
 
                 % ---- locate multiscales -----------------------------------------
                 ms = [];
@@ -1024,7 +1028,6 @@ classdef Zarr3Saver < io.savers.BaseSaver
                 end
                 attrs.mibBoundingBox = reshape(double(boundingBox), 1, 6);
 
-                grp = ZarrGroup(zarrPath);
                 grp.setAttributes(attrs);
 
             catch ME
@@ -1035,6 +1038,54 @@ classdef Zarr3Saver < io.savers.BaseSaver
     end
 
     methods (Static, Access = private)
+        function attrStruct = addBoundingBox(attrStruct, metadata)
+            % ADDBOUNDINGBOX - add the dataset bounding box to freshly built group attributes.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      attrStruct = io.savers.Zarr3Saver.addBoundingBox(attrStruct, metadata)
+            %
+            % Shared by ``save`` and ``saveStream`` so every store MIB writes keeps
+            % the source bounding box, whatever the caller and zarr format.
+            % ``patchMetadata`` does the same for an existing store, but reads
+            % ``zarr.json`` directly and so cannot reach a v2 store.
+            % Writes the same two entries as ``patchMetadata``:
+            %
+            %   - ``mibBoundingBox`` - ``[xmin xmax ymin ymax zmin zmax]``, the MIB
+            %     round-trip value the zarr loaders apply over anything derived
+            %     from the transforms
+            %   - a ``translation`` transform appended to every pyramid level, with
+            %     the bounding-box origin on the y/x/z axes and 0 on c/t, for
+            %     other OME-Zarr readers. As in ``patchMetadata`` the translation
+            %     is the same for all levels.
+            %
+            % Input Arguments:
+            %   - **attrStruct** - struct with ``.multiscales = {ms}``, ``ms.axes``
+            %     starting ``y, x, z`` and ``ms.datasets`` a cell of structs whose
+            %     ``coordinateTransformations`` is a cell holding the scale
+            %   - **metadata** - saver metadata; nothing is added unless
+            %     ``metadata.boundingBox`` has 6 finite values
+            %
+            % Output Arguments:
+            %   - **attrStruct** - the input with the translations and
+            %     ``mibBoundingBox`` added
+            if ~isstruct(metadata) || ~isfield(metadata, 'boundingBox') || ...
+                    numel(metadata.boundingBox) ~= 6 || ~all(isfinite(metadata.boundingBox))
+                return;
+            end
+            boundingBox = reshape(double(metadata.boundingBox), 1, 6);
+            ms = attrStruct.multiscales{1};
+            translationVec = zeros(1, numel(ms.axes));
+            translationVec(1:3) = [boundingBox(3), boundingBox(1), boundingBox(5)];   % axes y, x, z (, c, t)
+            translationSt = struct('type', 'translation', 'translation', translationVec);
+            for levelIdx = 1:numel(ms.datasets)
+                ms.datasets{levelIdx}.coordinateTransformations{end+1} = translationSt;
+            end
+            attrStruct.multiscales = {ms};
+            attrStruct.mibBoundingBox = boundingBox;
+        end
+
         function writeStreamBatch(arr, batchCell, zStart, tPos, C, T, Yl, Xl, imgClass)
             % WRITESTREAMBATCH - write a run of consecutive Z-slices to a zarr array in one region write.
             %
