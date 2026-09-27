@@ -172,7 +172,12 @@ classdef GolgiOrientation < handle
 
             %% GUI mode
             obj.view = core.ChildView(obj, 'GolgiOrientationGUI');
-            utils.applyThemeColors(obj.view.gui);   % adapt the standard dialog button colors to the light/dark theme
+            % the tab tints, the buttons and the info page (written by addInfo) carry colors
+            % of the current theme; set them now and again on a theme switch
+            obj.view.gui.ThemeChangedFcn = @(src, evnt) golgiOrientationThemeChanged(obj);
+            utils.applyThemeColors(obj.view.gui);
+            % the .mlapp paints this grid the pre-R2025a default grey; let it follow the theme
+            obj.view.handles.filenameExtensionGridLayout.BackgroundColorMode = 'auto';
             obj.addCallbacks();
 
             % window icon
@@ -318,7 +323,8 @@ classdef GolgiOrientation < handle
                         '</ul>' ...
                         '</p>'];
             end
-            obj.view.handles.infoHTML.HTMLSource = infoText;
+            hInfo = obj.view.handles.infoHTML;
+            hInfo.HTMLSource = [utils.themeHtmlStyle(obj.view.gui, hInfo.Parent.BackgroundColor), infoText];
         end
 
         function selectOutputFilename(obj, sourceTag)
@@ -924,4 +930,12 @@ classdef GolgiOrientation < handle
         end
 
     end
+end
+
+function golgiOrientationThemeChanged(obj)
+% GOLGIORIENTATIONTHEMECHANGED - ThemeChangedFcn of the GolgiOrientation window: remap the
+% tab tints and standard dialog colors, and rewrite the info page via addInfo, whose colors are
+% set for the theme at the time it is written (see utils.themeHtmlStyle).
+utils.applyThemeColors(obj.view.gui);
+obj.addInfo();
 end

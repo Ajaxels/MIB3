@@ -18,9 +18,11 @@ function applyThemeColors(hFig)
 % background of every ``uitab`` and ``uipanel`` painted ``tabHighlight``, of every
 % ``uidropdown``, ``uieditfield``, numeric ``uieditfield`` and ``uispinner`` painted
 % ``fieldError``, ``fieldYellow`` or ``fieldBlue``, and for the
-% color-coded parts of a window: ``uitab``, ``uipanel``, ``uilabel`` and buttons painted one
-% of the ``panel...`` tints (``panelYellow``, ``panelBlue``, ``panelGreen``), buttons and
-% input fields painted one of the ``widget...`` tints. A button whose background was set
+% color-coded parts of a window: ``uitab``, ``uipanel``, ``uigridlayout``, ``uilabel`` and
+% buttons painted one of the ``panel...`` tints (``panelYellow``, ``panelBlue``,
+% ``panelGreen``, ``panelRed``, ``panelMint``, ``panelSky``), buttons and input fields
+% painted one of the ``widget...`` tints. Grid layouts are included because a grid that
+% fills a tab hides the tab's own background, so the grid carries the visible color. A button whose background was set
 % explicitly to the theme default (``background`` of either theme, typically copied from
 % another widget with ``btn.BackgroundColor = panel.BackgroundColor``) is switched back
 % to ``BackgroundColorMode = 'auto'``, because the copied value no longer follows the
@@ -60,12 +62,13 @@ currentPalette = utils.themeColors(hFig);
 
 % widget groups and the palette colors each group may carry
 buttonList = [findall(hFig, 'Type', 'uibutton'); findall(hFig, 'Type', 'uistatebutton')];
-containerList = [findall(hFig, 'Type', 'uitab'); findall(hFig, 'Type', 'uipanel')];
+containerList = [findall(hFig, 'Type', 'uitab'); findall(hFig, 'Type', 'uipanel'); ...
+                 findall(hFig, 'Type', 'uigridlayout')];
 fieldList = [findall(hFig, 'Type', 'uidropdown'); findall(hFig, 'Type', 'uieditfield'); ...
              findall(hFig, 'Type', 'uinumericeditfield'); findall(hFig, 'Type', 'uispinner')];
 labelList = findall(hFig, 'Type', 'uilabel');
-panelTints = {'panelYellow', 'panelBlue', 'panelGreen'};
-widgetTints = {'widgetYellow', 'widgetBlue', 'widgetGreen'};
+panelTints = {'panelYellow', 'panelBlue', 'panelGreen', 'panelRed', 'panelMint', 'panelSky'};
+widgetTints = {'widgetYellow', 'widgetBlue', 'widgetGreen', 'widgetMint'};
 widgetGroups = {buttonList, [{'dialogAction', 'dialogClose', 'dialogSecondary', 'dialogStop'}, panelTints, widgetTints]; ...
                 containerList, [{'tabHighlight'}, panelTints]; ...
                 fieldList, [{'fieldError', 'fieldYellow', 'fieldBlue'}, widgetTints]; ...

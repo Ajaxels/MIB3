@@ -447,8 +447,8 @@ the window is open is handled too. The colors it recognizes (light value in AppD
 | `dialogStop` | `[1 0 0]` | buttons | a running action that can be stopped |
 | `fieldError` | `[1 0 0]` | dropdowns, edit fields, spinners | missing or invalid input |
 | `tabHighlight` | `[0.8 0.8 0.8]` | tabs, panels | a tab or panel set apart from the rest |
-| `panelYellow` / `panelBlue` / `panelGreen` | see `utils.themeColors` | tabs, panels, labels, buttons | color-coding parts of a window |
-| `widgetYellow` / `widgetBlue` / `widgetGreen` | see `utils.themeColors` | buttons, input fields | controls placed on the matching `panel...` |
+| `panelYellow` / `panelBlue` / `panelGreen` / `panelRed` / `panelMint` / `panelSky` | see `utils.themeColors` | tabs, panels, grid layouts, labels, buttons | color-coding parts of a window |
+| `widgetYellow` / `widgetBlue` / `widgetGreen` / `widgetMint` | see `utils.themeColors` | buttons, input fields | controls placed on a `panel...` tint |
 | `fieldYellow` / `fieldBlue` | see `utils.themeColors` | input fields | tinted fields on the plain window background |
 
 Any other fixed color in the `.mlapp` is **not** adapted. Prefer a color from this table, or leave the

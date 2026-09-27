@@ -3,9 +3,10 @@
 **Status (2026-09-24, not committed at time of writing):** implemented for the Datasets panel,
 the standard buttons of 48 dialogs, StitchingInspector, message/error dialogs, BatchProcessing,
 VolRenApp, Preferences, the Segmentation panel materials table, DeepMIB and its augmentation
-settings, the standard buttons of all plugins, ImageConverter, MultiRenameTool and Granularity
-(2026-09-26). Remaining: one-off colors in other dialogs, GolgiOrientation. Start with the rules
-and the recipe at the end.
+settings, all plugins (2026-09-26). Remaining: one-off colors in other dialogs. Open: a theme choice
+in MIB Preferences (`preferences.Colors.Theme`; the dropdown exists, the logic is not implemented), see
+[Choosing the theme from MIB](#choosing-the-theme-from-mib-investigated-2026-09-26-not-implemented).
+Start with the rules and the recipe at the end.
 
 ## Problem
 Widgets with hard-coded pastel `BackgroundColor` and `FontColor` left on auto become unreadable under
@@ -280,14 +281,96 @@ Used where the colors carry meaning and a dark version would blur it (traffic-li
 - Granularity runtime colors, same fix as Graphcut: invalid subarea field and the material dropdown
   without a model -> `fieldError`, valid -> `BackgroundColorMode = 'auto'` (was `[1 1 1]`);
   `subAreaFromSelectionBtn` busy -> `dialogStop`, restored with `'auto'` (was a remembered color).
-- Verified live in dark: buttons of all plugins except MCcalc, which does not open at all: its
-  `.mlapp` file is `McCalcGUI.mlapp` while the class inside and `core.ChildView(obj, 'MCcalcGUI')` say
-  `MCcalcGUI` ("Undefined function 'MCcalcGUI'"), a mismatch that predates this work.
-- Still open: GolgiOrientation has many one-off pastels on tabs, grid layouts, buttons and edit
-  fields (`[0.9882 1 0.9882]`, `[0.8196 0.9294 0.9686]`, `[0.9098 0.9882 0.902]`, a yellow tab
-  `[1 1 0.0667]`, ...) and a `uihtml` `infoHTML`; only its Calculate/Close buttons are adapted.
+- Verified live in dark: buttons of all plugins. MCcalc first failed to open ("Undefined function
+  'MCcalcGUI'"): the file was `McCalcGUI.mlapp` while the class inside is `MCcalcGUI`. Renamed to
+  `MCcalcGUI.mlapp`; with `core.ignorecase = true` git saw only a content change, so the rename was
+  recorded with `git mv -f`, otherwise case-sensitive clones (Linux, macOS) keep the old name.
+- GolgiOrientation: three color-coded tabs whose visible color sits on the grid layout filling each
+  tab (the tabs' own colors, yellow `[1 1 0.0667]` and `[0.8627 0.9333 0.9608]`, are hidden by the
+  grids in both themes and left alone). New palette entries, dark tints tried on the live window:
+
+  | entry | light | dark | contrast |
+  |-|-|-|-|
+  | `panelRed` (Complete model files) | `[0.9882 0.9216 0.9216]` | `[0.27 0.176 0.176]` | 8.9:1 |
+  | `panelMint` (Cropped cells dirs) | `[0.9098 0.9882 0.902]` | `[0.153 0.25 0.15]` | 8.1:1 |
+  | `panelSky` (Settings) | `[0.8196 0.9294 0.9686]` | `[0.15 0.26 0.3]` | 7.5:1 |
+  | `widgetMint` (buttons/fields on red and mint) | `[0.9882 1 0.9882]` | `[0.102 0.12 0.102]` | 11.9:1 |
+
+  First try for the red, S 0.42 (`[0.28 0.162 0.162]`), read as an error red; desaturated to S 0.35.
+  `applyThemeColors` now also collects `uigridlayout` into the container group (no other `.mlapp`
+  has a grid in a matched tint). `filenameExtensionGridLayout` carries the pre-R2025a default grey
+  `[0.9412]` (the only use in any `.mlapp`): set to auto in the constructor, a local line.
+  `infoHTML` is written in `addInfo` (on each mode change), which prepends `themeHtmlStyle`; the
+  local `golgiOrientationThemeChanged` = `applyThemeColors` + `addInfo`. Verified live: 3 tabs in
+  dark, Dark -> Light -> Dark with the window open.
 - Checking `uihtml` by eye without `exportapp`: `java.awt.Robot().createScreenCapture` over the
   figure `Position` (y flipped against `groot.ScreenSize`) captures the real rendering.
+
+## Choosing the theme from MIB (investigated 2026-09-26, not implemented)
+Idea: a Preferences dropdown so users can pick the MIB theme. Checked on R2026a in MATLAB (not in a
+compiled build).
+
+**Route 1 - the MATLAB setting (preferred).**
+- `s = settings; s.matlab.appearance.MATLABTheme` has `ActiveValue`, `TemporaryValue`,
+  `PersonalValue`, `InstallationValue`, `FactoryValue`. On the test machine: `PersonalValue = 'Dark'`,
+  `FactoryValue = 'System'` (follow the OS). Values: `'Light'`, `'Dark'`, `'System'`.
+- `TemporaryValue = 'Light'|'Dark'` switches everything at once: the main window (`AppContainer`,
+  created with `EnableTheming = true` in `initializeMibView.m`, where a commented-out
+  `TemporaryValue` line already sits), its panels and every dialog. All `ThemeChangedFcn` handlers run,
+  which is how every change in this note was tested. `clearTemporaryValue` returns to the user's own
+  setting.
+- `TemporaryValue` lasts for the MATLAB session only and does not touch the saved preference;
+  `PersonalValue` would persist in the user's MATLAB settings - too intrusive for a MIB option.
+- Side effect in MATLAB: the setting is global, so the whole MATLAB desktop and all other figures
+  switch with MIB while the session runs.
+
+**Route 2 - per window (MIB only, but incomplete).**
+- `theme(fig, 'light'|'dark')` sets one figure and switches its `ThemeMode` from `'auto'` to
+  `'manual'`; `fig.ThemeMode = 'auto'` makes it follow MATLAB again.
+- Works for `AppContainer` panel figures too: in a throwaway `AppContainer` on a dark desktop, a
+  `FigurePanel` forced to light rendered light next to a dark panel.
+- But the `AppContainer` chrome (ribbon, panel title bars, document area) follows only the MATLAB
+  setting: the class has no theme property, only `EnableTheming` and an internal
+  `handleThemeSupport` method. Forcing light on a dark desktop gives light panels inside a dark ribbon.
+- No default for new figures: `set(groot, 'defaultFigureTheme', ...)` fails with "SET or GET of
+  default values is not permitted on the Theme property of the Figure class". Every window would need
+  the theme applied at creation (`core.ChildView` would cover the `+views` dialogs; `utils.dlgs`
+  dialogs, progress dialogs and plain `figure`/`uifigure` windows would each need it).
+
+**Not verified - compiled version.** `isdeployed` was 0 in this session, and the MathWorks
+documentation does not say how standalone apps pick their theme or whether the `settings` API works
+in MATLAB Runtime. Commit `9f27a830` ("dark theme ... compiled version") suggests the compiled app does
+show the dark theme. To check in a compiled build: read
+`settings().matlab.appearance.MATLABTheme.ActiveValue` and try setting `TemporaryValue`.
+
+**Proposed design (for later).**
+- Preference field: **`preferences.Colors.Theme`** = `'System' | 'Light' | 'Dark'` (the author's
+  choice, next to the other color preferences).
+- GUI, already in place (2026-09-27): dropdown `Theme` (label `ThemeDropDownLabel`, "Theme:") on
+  `ColorsPanel` of `PreferencesGUI.mlapp`, `Items = {'System', 'Light', 'Dark'}`, `Value = 'System'`.
+  It has no callback yet.
+- Still to do:
+  - default `Prefs.Colors.Theme = 'System';` in `mib/+utils/+defaults/generatePreferences.m`; check
+    that preferences loaded from an older `mib3.mat` without this field get the default;
+  - `Preferences` controller: show the stored value in the dropdown and write the choice back
+    (value-changed callback). The rest of the Preferences dialog edits a copy (`obj.preferences`)
+    that is applied on OK/Apply, so decide whether the theme switches at once as a preview or only
+    on apply;
+  - apply the value at MIB startup (after preferences are loaded, before or right after the main
+    window is built; `initializeMibView.m` has the commented-out `TemporaryValue` line) and when it
+    changes: `'System'` -> `MATLABTheme.clearTemporaryValue`, `'Light'`/`'Dark'` ->
+    `MATLABTheme.TemporaryValue = value`;
+  - on MIB close, `clearTemporaryValue` so MATLAB returns to the user's own setting (only if MIB set
+    a value);
+  - guard for releases without the setting (before R2025a): check that
+    `settings().matlab.appearance` has `MATLABTheme`, otherwise hide or disable the dropdown;
+  - document the option in `docs/` (Preferences page) once implemented.
+- If `settings` is not available in the compiled version, fall back to route 2 there and accept the
+  mismatched ribbon.
+
+References: MathWorks, [Graphics and App Themes](https://www.mathworks.com/help/matlab/creating_plots/graphics-and-app-themes.html),
+[Change Desktop Theme and Colors](https://www.mathworks.com/help/matlab/matlab_env/change-desktop-colors-and-select-dark-theme.html),
+[Design Graphics and Apps for Different Themes](https://www.mathworks.com/help/matlab/creating_plots/design-graphics-and-apps-for-different-themes.html).
 
 ## Rules
 Which approach, by what the color does:

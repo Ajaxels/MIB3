@@ -49,6 +49,12 @@ function palette = themeColors(themeSource)
 %       ``[0.8588 0.9294 0.7804]``. The dark versions keep the hue (amber-brown instead
 %       of olive for yellow) at a brightness slightly above the dark theme background,
 %       7.4-8.1:1 with the auto text
+%     - ``.panelRed``, ``.panelMint``, ``.panelSky`` - further tab/panel tints (e.g. the
+%       three tabs of the GolgiOrientation plugin), light ``[0.9882 0.9216 0.9216]`` (pink),
+%       ``[0.9098 0.9882 0.902]``, ``[0.8196 0.9294 0.9686]``; dark 7.5-8.9:1. The pink is
+%       kept desaturated in dark so that it does not read as an error red
+%     - ``.widgetMint``       - near-white buttons and input fields on those tints, light
+%       ``[0.9882 1 0.9882]``, dark a near-neutral field color (11.9:1)
 %     - ``.widgetYellow``, ``.widgetBlue``, ``.widgetGreen`` - buttons and input fields
 %       placed on the matching ``panel...`` color, light ``[1 0.9882 0.9098]``,
 %       ``[0.8784 0.9608 1]``, ``[0.9098 0.9608 0.9098]``. Light: paler than the panel;
@@ -121,6 +127,10 @@ if strcmp(themeSource, 'dark')
     palette.widgetYellow     = [0.17 0.153 0.102];
     palette.widgetBlue       = [0.11 0.158 0.19];
     palette.widgetGreen      = [0.12 0.17 0.111];
+    palette.panelRed         = [0.27 0.176 0.176];
+    palette.panelMint        = [0.153 0.25 0.15];
+    palette.panelSky         = [0.15 0.26 0.3];
+    palette.widgetMint       = [0.102 0.12 0.102];
     palette.fieldYellow      = [0.3 0.278 0.135];
     palette.fieldBlue        = [0.17 0.249 0.34];
     palette.background       = [0.1294 0.1294 0.1294];
@@ -146,6 +156,10 @@ else
     palette.widgetYellow     = [1 0.9882 0.9098];
     palette.widgetBlue       = [0.8784 0.9608 1];
     palette.widgetGreen      = [0.9098 0.9608 0.9098];
+    palette.panelRed         = [0.9882 0.9216 0.9216];
+    palette.panelMint        = [0.9098 0.9882 0.902];
+    palette.panelSky         = [0.8196 0.9294 0.9686];
+    palette.widgetMint       = [0.9882 1 0.9882];
     palette.fieldYellow      = [0.9804 0.9765 0.8235];
     palette.fieldBlue        = [0.8314 0.9333 1];
     palette.background       = [0.9608 0.9608 0.9608];
