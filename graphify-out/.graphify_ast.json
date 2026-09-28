@@ -12662,6 +12662,17 @@
       "contributor": null
     },
     {
+      "id": "controllers_stitchinginspector_filltileordermenu_m",
+      "label": "fillTileOrderMenu.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@StitchingInspector\\fillTileOrderMenu.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "controllers_stitchinginspector_fitview_callback_m",
       "label": "fitView_Callback.m",
       "file_type": "code",
@@ -12838,6 +12849,17 @@
       "contributor": null
     },
     {
+      "id": "controllers_stitchinginspector_tileorder_callback_m",
+      "label": "tileOrder_Callback.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@StitchingInspector\\tileOrder_Callback.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "controllers_stitchinginspector_twoclickbtn_callback_m",
       "label": "twoClickBtn_Callback.m",
       "file_type": "code",
@@ -12893,8 +12915,41 @@
       "contributor": null
     },
     {
+      "id": "controllers_stitchinginspector_stitchinginspector_storesessionsettings",
+      "label": "storeSessionSettings",
+      "file_type": "code",
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_stitchinginspector_stitchinginspector_restoresessionsettings",
+      "label": "restoreSessionSettings",
+      "file_type": "code",
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "controllers_stitchinginspector_stitchinginspector_tilereader",
       "label": "tileReader",
+      "file_type": "code",
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_stitchinginspector_stitchinginspector_currenttilestack",
+      "label": "currentTileStack",
       "file_type": "code",
       "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
       "source_location": null,
@@ -13093,6 +13148,17 @@
     {
       "id": "controllers_stitchinginspector_stitchinginspector_setstatus",
       "label": "setStatus",
+      "file_type": "code",
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_stitchinginspector_stitchinginspector_inspectorsessionfields",
+      "label": "inspectorSessionFields",
       "file_type": "code",
       "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
       "source_location": null,
@@ -41761,6 +41827,16 @@
     },
     {
       "source": "controllers_stitchinginspector_stitchinginspector_m",
+      "target": "controllers_stitchinginspector_filltileordermenu_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_stitchinginspector_m",
       "target": "controllers_stitchinginspector_fitview_callback_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -41921,6 +41997,16 @@
     },
     {
       "source": "controllers_stitchinginspector_stitchinginspector_m",
+      "target": "controllers_stitchinginspector_tileorder_callback_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_stitchinginspector_m",
       "target": "controllers_stitchinginspector_twoclickbtn_callback_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -41971,7 +42057,37 @@
     },
     {
       "source": "controllers_stitchinginspector_stitchinginspector_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_storesessionsettings",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_stitchinginspector_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_restoresessionsettings",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_stitchinginspector_m",
       "target": "controllers_stitchinginspector_stitchinginspector_tilereader",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_stitchinginspector_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_currenttilestack",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -42152,6 +42268,16 @@
     {
       "source": "controllers_stitchinginspector_stitchinginspector_m",
       "target": "controllers_stitchinginspector_stitchinginspector_setstatus",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_stitchinginspector_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_inspectorsessionfields",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -65591,6 +65717,16 @@
     },
     {
       "source": "controllers_stitchinginspector_addcallbacks_m",
+      "target": "controllers_stitchinginspector_filltileordermenu_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\addCallbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_addcallbacks_m",
       "target": "controllers_stitchinginspector_confirmseam_callback_m",
       "relation": "calls",
       "confidence": "INFERRED",
@@ -65850,6 +65986,16 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_stitchinginspector_closewindow_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_storesessionsettings",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\closeWindow.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_stitchinginspector_confirmseam_callback_m",
       "target": "controllers_stitchinginspector_stitchinginspector_datavalid",
       "relation": "calls",
@@ -66016,6 +66162,46 @@
       "confidence": "INFERRED",
       "confidence_score": 0.75,
       "source_file": "+controllers\\@StitchingInspector\\excludeSeam_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_filltileordermenu_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_datavalid",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\fillTileOrderMenu.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_filltileordermenu_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_boundarymodeactive",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\fillTileOrderMenu.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_filltileordermenu_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_currenttilestack",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\fillTileOrderMenu.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_filltileordermenu_m",
+      "target": "controllers_stitchinginspector_tileorder_callback_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\fillTileOrderMenu.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -66491,6 +66677,16 @@
     },
     {
       "source": "controllers_stitchinginspector_renderpairview_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_currenttilestack",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\renderPairView.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_renderpairview_m",
       "target": "controllers_stitchinginspector_stitchinginspector_pairhasdepth",
       "relation": "calls",
       "confidence": "INFERRED",
@@ -66746,6 +66942,36 @@
       "confidence": "INFERRED",
       "confidence_score": 0.7,
       "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_tileorder_callback_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_currenttilestack",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\tileOrder_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_tileorder_callback_m",
+      "target": "controllers_stitchinginspector_renderpairview_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\tileOrder_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_tileorder_callback_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_setstatus",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\tileOrder_Callback.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -68145,6 +68371,16 @@
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.7,
+      "source_file": "+core\\@MibDataset\\setData4D.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibdataset_setdata4d_m",
+      "target": "core_mibdataset_allocatemask_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
       "source_file": "+core\\@MibDataset\\setData4D.m",
       "source_location": null,
       "weight": 1.0
@@ -79870,6 +80106,16 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_stitchinginspector_filltileordermenu_m",
+      "target": "utils_stitch_moveintilestack_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@StitchingInspector\\fillTileOrderMenu.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_stitchinginspector_helpbtn_callback_m",
       "target": "utils_openhelppage_m",
       "relation": "calls",
@@ -79886,6 +80132,16 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "+controllers\\@StitchingInspector\\keyShortcutsBtn_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_renderpairview_m",
+      "target": "utils_stitch_blendweights_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@StitchingInspector\\renderPairView.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -79946,6 +80202,26 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_stitchinginspector_m",
+      "target": "utils_stitch_tiledraworder_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_tileorder_callback_m",
+      "target": "utils_stitch_moveintilestack_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@StitchingInspector\\tileOrder_Callback.m",
       "source_location": null,
       "weight": 1.0
     },

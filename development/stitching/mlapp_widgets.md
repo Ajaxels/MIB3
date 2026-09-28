@@ -246,9 +246,9 @@ wording identical to the tooltip and the docs (`worst-first` everywhere) so it r
 
 | Handle | Class | Properties |
 |------|-------|------------|
-| `overlayModeDropdown` | `uidropdown` | Items: `{'Falsecolor','Flicker','Checkerboard','Difference'}` Default: `'Falsecolor'` |
+| `overlayModeDropdown` | `uidropdown` | **Items are placeholders** - `addCallbacks` overwrites them with `{'Preview final','Falsecolor (cyan/magenta)','Falsecolor (green/red)','Flicker','Checkerboard','Difference'}` (renderPairView compares against those exact strings). `Preview final` is set apart by a bold-italic item style (`addStyle(..., uistyle('FontAngle','italic','FontWeight','bold'), 'item', 1)`) rather than a divider: uidropdown has no `Separator` property (checked on R2026a; that is a `uimenu` property), and a divider item was selectable. Default Value is `'Falsecolor (cyan/magenta)'`, NOT the first item; an old `'Falsecolor'` value maps to it. |
 | `offsetLabel` | `uilabel` | Default: `''` — current vs measured offset + scores readout (next to the dropdown). |
-| `pairAxes` | `uiaxes` | The seam composite; controller manages everything (`YDir`, ticks, limits). Pixels stay 1:1, but the controller widens the short side of the view so it fills the whole cell instead of drawing a letterboxed column - see `plan_inspector.md`, "The pair view fills its grid cell". |
+| `pairAxes` | `uiaxes` | The seam composite; controller manages everything (`YDir`, ticks, limits). **No `ContextMenu` in the mlapp**: the tile-order menu is created in code (`addCallbacks`) and filled when it opens; it stays empty - and closed - after a right-drag pan (see `plan_inspector.md`, "Tile order"). Pixels stay 1:1, but the controller widens the short side of the view so it fills the whole cell instead of drawing a letterboxed column - see `plan_inspector.md`, "The pair view fills its grid cell". |
 
 ### Action buttons (bottom row of the right area)
 

@@ -6,6 +6,11 @@ function exploreActivations(obj)
 %
 %       obj.exploreActivations()
 %
+
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibDeep.exploreActivations: triggered\n');
+end
+
 utils.startController(obj, 'controllers.MibDeepActivations', obj);
 end
 

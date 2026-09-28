@@ -79,6 +79,7 @@ if isLayoutWidget && ~isempty(obj.BatchOpt.InputPath)
             obj.tforms    = {};
             obj.canvas    = [];
             obj.zSliceFixes = [];
+            obj.tileStack   = [];
             obj.solverInfo  = struct();
             obj.layoutFromProject = false;   % buildLayoutFromBatchOpt threw before clearing it
             % Tear down edit-mode ROIs (same cleanup as previewLayoutBtn_Callback)

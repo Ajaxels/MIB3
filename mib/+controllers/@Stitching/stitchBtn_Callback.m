@@ -158,6 +158,8 @@ end
 % The same correction the seams were measured and scored with - fusing without
 % it would produce a mosaic the alignment chip never actually rated.
 fuseOptions.correction   = obj.ensureIntensityCorrection();
+% The Overwrite drawing order set in the seam inspector ([] = default order).
+fuseOptions.tileStack    = obj.tileStack;
 % Fill for whatever no tile covers. Derived from the OUTPUT class, so "white" is
 % 255 on 8-bit tiles and 65535 on 16-bit ones rather than a fixed number that
 % would read as mid-grey on one of them.
@@ -383,7 +385,7 @@ if obj.BatchOpt.SaveProject
         % produced with, so Load project can restore the dialog or reuse them.
         utils.stitch.saveProject(projectPath, obj.layout, obj.edges, ...
             obj.positions, obj.solverInfo, outputInfo, obj.tforms, ...
-            obj.zSliceFixes, obj.collectProjectSettings());
+            obj.zSliceFixes, obj.collectProjectSettings(), obj.tileStack);
     catch saveError
         if ~batchModeSwitch
             utils.dlgs.showErrorDialog(fuseOptions.parentFigure, ...

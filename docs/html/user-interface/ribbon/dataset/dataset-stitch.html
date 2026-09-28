@@ -6893,7 +6893,7 @@ the overlap is mixed - it can neither improve a bad alignment nor even out uneve
 <tbody>
 <tr>
 <td><strong>Overwrite</strong> <em>(default)</em></td>
-<td>The last tile written wins; no mixing at all.</td>
+<td>The last tile written wins; no mixing at all. With <strong>Re-exposure damage</strong> correction, the tile imaged first wins. Either can be changed per tile in the <a href="dataset-stitch-inspector.html#tile-order">seam inspector</a>.</td>
 <td><strong>Almost always.</strong> It is the only mode that keeps the overlap as sharp as the tiles themselves - see below - and every misalignment stays visible as a hard broken edge. The price is that the changeover may show as a line.</td>
 </tr>
 <tr>
@@ -6960,6 +6960,9 @@ a zero background would beat every real value under <strong>Min</strong>.</p>
 <li><strong>Match tile means</strong> - scale each tile so they all share one mean. For a <strong>detector or stain that
   drifts</strong> over a long acquisition, where the tiles really do differ by a flat factor. It does <em>not</em>
   fix uneven illumination.</li>
+<li><strong>Re-exposure damage</strong> - for <strong>beam-sensitive samples</strong>, where an area imaged a second time comes
+  out darker. Removes that darkening from the tile acquired later, including the darker line just
+  past the earlier tile's edge.</li>
 </ul>
 <p>The correction is applied wherever the tool reads a tile, so the seams are measured, scored and
 fused on the same pixels - the alignment rating always describes the mosaic you actually get. It is
@@ -7064,6 +7067,23 @@ This is free: it uses the one direction seam measurements genuinely cannot see, 
 residual is unchanged to the last digit. A <em>genuine</em> broad trend across the specimen is levelled
 too - nothing can distinguish the two, and a montage shading from one side to the other reads as
 an artefact either way.</p>
+</details>
+<details class="tip">
+<summary>Recognising re-exposure damage</summary>
+<p>The tile acquired second shows a <strong>darker band exactly as wide as the overlap</strong>, often with an
+even darker line just beyond it, and grid corners imaged three or four times are darkest of all.
+The tile acquired first looks normal in the same place. The flat-field methods cannot remove
+this: it is a sharp-edged patch in one tile, not shading shared by all of them.</p>
+<p>Choose <strong>Re-exposure damage</strong>. MIB works out from the images which tile of each overlap was
+imaged second, so the acquisition order does not need to be entered. The correction is placed
+at the solved positions: <span class="widget widget-button">Measure overlaps</span> still sees
+the raw pixels, and the seams are rated and fused on corrected ones. If no overlap is darker on
+one side, the tiles are left unchanged.</p>
+<p>Keep <span class="widget widget-dropdown">Blend mode</span> = <strong>Overwrite</strong>. With this correction
+it puts the tile imaged <strong>first</strong> on top, so every overlap shows the undamaged copy of the
+specimen; the <a href="dataset-stitch-inspector.html#tile-order">seam inspector</a> can change that per tile. The correction evens out the brightness of the damaged copy, but it cannot restore
+detail the beam destroyed. Only the darker line just past the edge is taken from the damaged
+tile, because no other tile covers it.</p>
 </details>
 <details class="failure">
 <summary>If you see a grid of darker bands along the seams</summary>

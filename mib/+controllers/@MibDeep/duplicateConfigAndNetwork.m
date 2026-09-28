@@ -7,6 +7,10 @@ function duplicateConfigAndNetwork(obj)
 %       obj.duplicateConfigAndNetwork()
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibDeep.duplicateConfigAndNetwork: triggered\n');
+end
+
     currPath = fileparts(obj.BatchOpt.NetworkFilename);
     [currFile, currPath] = utils.dlgs.mibUiGetFile({'*.mibDeep', 'mibDeep Files (*.mibDeep)'}, ...
         'Select source network', currPath);

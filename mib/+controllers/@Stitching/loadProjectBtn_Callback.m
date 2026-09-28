@@ -52,7 +52,7 @@ projectPath = fullfile(selectedFolder, selectedFile);
 % Decode into locals first - the "settings only" branch discards the state.
 try
     [loadedLayout, loadedEdges, loadedPositions, solverInfo, outputInfo, ...
-        loadedTforms, loadedZFixes, settings] = utils.stitch.loadProject(projectPath);
+        loadedTforms, loadedZFixes, settings, loadedTileStack] = utils.stitch.loadProject(projectPath);
 catch loadError
     utils.dlgs.showErrorDialog(obj.view.gui, loadError.message, 'Load failed');
     return;
@@ -75,6 +75,7 @@ if ~settingsOnly
     obj.positions   = loadedPositions;
     obj.tforms      = loadedTforms;
     obj.zSliceFixes = loadedZFixes;
+    obj.tileStack   = loadedTileStack;
     % These are DIFFERENT tiles, so any cached intensity correction describes the
     % previous job. It is re-estimated on first use rather than being saved: the
     % estimate is a deterministic function of the tiles, and an [H W] float field
@@ -236,6 +237,7 @@ obj.positions   = [];
 obj.tforms      = {};
 obj.canvas      = [];
 obj.zSliceFixes = [];
+obj.tileStack   = [];
 obj.solverInfo  = struct();
 obj.layoutFromProject = false;
 

@@ -7,6 +7,10 @@ function setSegmentationLayer(obj)
 %       obj.setSegmentationLayer()
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibDeep.setSegmentationLayer: triggered\n');
+end
+
     switch obj.view.handles.T_SegmentationLayer.Value
         case {'focalLossLayer', 'dicePixelCustomClassificationLayer'}
             obj.view.handles.T_SegmentationLayerSettings.Enable = 'on';

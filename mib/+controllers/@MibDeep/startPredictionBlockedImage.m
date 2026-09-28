@@ -202,6 +202,31 @@ function startPredictionBlockedImage(obj)
     % 'inputPatchSize', 'outputPatchSize', 'BatchOpt' variables
     load(obj.BatchOpt.NetworkFilename, '-mat');
 
+    % make sure that the network matches the selected workflow,
+    % otherwise blockedImage/apply fails with a cryptic BlockSize error
+    workflowErrorText = '';
+    if exist('BatchOpt', 'var') && isfield(BatchOpt, 'Workflow') && ~strcmp(BatchOpt.Workflow{1}, obj.BatchOpt.Workflow{1})
+        workflowErrorText = sprintf(['The network was trained for the "%s" workflow,' ...
+            'but the "%s" workflow is currently selected.\n\n' ...
+            'Please select the "%s" workflow and start prediction again'], ...
+            BatchOpt.Workflow{1}, obj.BatchOpt.Workflow{1}, BatchOpt.Workflow{1});
+    elseif strcmp(obj.BatchOpt.Workflow{1}, '2.5D Semantic') && inputPatchSize(3) < 2
+        workflowErrorText = sprintf(['The "2.5D Semantic" workflow is selected, but the network input patch' ...
+            'has only one slice in depth (%s), i.e. it is a 2D network.\n\n' ...
+            'Please select the "2D Semantic" workflow, or retrain the network' ...
+            'with an odd depth of 3 or more (for example, "%d %d 3 %d")'], ...
+            strtrim(num2str(inputPatchSize, '%d ')), inputPatchSize(1), inputPatchSize(2), inputPatchSize(4));
+    end
+    if ~isempty(workflowErrorText)
+        if obj.BatchOpt.showWaitbar; close(pwb); end
+        mgsOpt.MsgBoxOnly = true;
+        mgsOpt.headerLines = 1;
+        mgsOpt.WindowHeight = 240;
+        mgsOpt.WindowWidth = 500;
+        utils.dlgs.inputUniversalDlg(obj.view.gui, 'Network does not match the selected workflow', {}, {workflowErrorText}, 'Wrong workflow', mgsOpt);
+        return;
+    end
+
     numClasses = numel(classNames); %#ok<USENS>
     if exist('classColors', 'var')
         modelMaterialColors = classColors;  %#ok<PROP> % loaded from network file

@@ -25,6 +25,8 @@ function imgOut = fuseInMemory(layout, canvas, options)
 %     - ``.marginPx`` - [double] feather margin (default: derived from tile size)
 %     - ``.cacheSizeBytes`` - [double] LRU tile-cache budget (default: ``2*1024^3``)
 %     - ``.readerFcn`` - [function_handle] reuse an existing tile reader (optional)
+%     - ``.tileStack`` - [1 x N] drawing order for ``'Overwrite'``, bottom first
+%       (default: ``[]``, see :func:`utils.stitch.tileDrawOrder`)
 %     - ``.showWaitbar`` - [logical] show progress (default: ``false``)
 %     - ``.parentFigure`` - [handle] progress-dialog parent (default: ``[]``)
 %

@@ -27,16 +27,29 @@ function renderPairView(obj)
 %
 % Overlay modes:
 %
-% - **Falsecolor** - tile *i* cyan, tile *j* magenta: aligned structures add
-%   up to WHITE, misaligned ones split into cyan/magenta ghosts
+% - **Falsecolor (cyan/magenta)** - the tile on top (the one ``'Overwrite'``
+%   keeps, per :meth:`currentTileStack`) magenta, the other cyan: aligned
+%   structures add up to WHITE, misaligned ones split into cyan/magenta ghosts
+% - **Falsecolor (green/red)** - the same with the tile on top red and the other
+%   green; aligned structures come out YELLOW
+% - **Preview final** - the pair as Stitch will fuse it, in grey: the Stitching
+%   window's blend mode and canvas colour, the drawing order, the corrected
+%   pixels (``previewFusedPair`` mirrors ``utils.stitch.fuseSliceComposite`` at
+%   display scale). The way to judge which tile should be on top
 % - **Flicker** - both tiles stacked; spacebar toggles which is visible
 % - **Checkerboard** / **Difference** - ``imfuse`` composites on the union
 %   canvas
 %
-% The title is a plain colour legend (*Cyan: tile 2; Magenta: tile 4*) with,
-% on 3D pairs, a second line naming the shown slices; the offset label shows
-% the current solved ``[dy dx]`` vs the measured one, the seam score and the
-% measurement quality.
+% The colour follows the DRAWING ORDER, not the tile's role in the edge: before
+% the order became editable magenta was always tile *j*, the one a drag moves.
+% A drag still moves tile *j*, so the title says which tile that is. In the Fix Z
+% boundary view slice ``z`` (the one a fix moves) takes the top colour.
+%
+% The title is a plain colour legend (*Cyan: tile 2; Magenta: tile 4 (on top)*)
+% with, on 3D pairs, a second line naming the shown slices; the offset label
+% shows the current solved ``[dy dx]`` vs the measured one, the seam score and
+% the measurement quality. The drawing order itself is edited from the
+% right-click menu (``pairViewButtonDown`` -> :meth:`tileOrder_Callback`).
 %
 
 if ~obj.dataValid() || isempty(obj.currentEdgeIdx); return; end
@@ -132,29 +145,55 @@ unionW = max(sizeI(2), sizeJ(2) + deltaYX(2)) - colMin + 1;
 maxDisplayPx = 1400;
 scale = max(1, ceil(max(unionH, unionW) / maxDisplayPx));
 
-overlayMode = 'Falsecolor';
+overlayMode = 'Falsecolor (cyan/magenta)';
 if obj.hasWidget('overlayModeDropdown')
     overlayMode = obj.view.handles.overlayModeDropdown.Value;
 end
+isFalsecolor = startsWith(overlayMode, 'Falsecolor');
+if strcmp(overlayMode, 'Falsecolor (green/red)')
+    topColour = 'Red';     bottomColour = 'Green';
+else
+    topColour = 'Magenta'; bottomColour = 'Cyan';
+end
+
+% Which image is ON TOP: in a seam view, the tile Overwrite keeps (the same
+% utils.stitch.tileDrawOrder the fusers use); in the boundary view, slice z -
+% the one a fix moves. The top one always takes the magenta / red colour.
+if isempty(boundaryTile)
+    stack = obj.currentTileStack();
+    jOnTop = find(stack == edge.j, 1) > find(stack == edge.i, 1);
+else
+    jOnTop = true;
+end
+if jOnTop
+    colourI = bottomColour; colourJ = topColour;
+else
+    colourI = topColour;    colourJ = bottomColour;
+end
+
 % Names the title uses for the two overlaid images: the colours in falsecolor
-% mode (where they ARE the legend), plain identities in the other modes.
+% mode (where they ARE the legend), plain identities in the other modes. The
+% tile Overwrite keeps is marked in every mode.
 if ~isempty(boundaryTile)
-    if strcmp(overlayMode, 'Falsecolor')
-        nameI = sprintf('Cyan: slice %d', sliceA);
-        nameJ = sprintf('Magenta: slice %d', sliceB);
+    if isFalsecolor
+        nameI = sprintf('%s: slice %d', colourI, sliceA);
+        nameJ = sprintf('%s: slice %d', colourJ, sliceB);
     else
         nameI = sprintf('slice %d', sliceA);
         nameJ = sprintf('slice %d', sliceB);
     end
-elseif strcmp(overlayMode, 'Falsecolor')
-    nameI = sprintf('Cyan: tile %d', edge.i);
-    nameJ = sprintf('Magenta: tile %d', edge.j);
-    sliceNameI = 'Cyan'; sliceNameJ = 'Magenta';
 else
-    nameI = sprintf('tile %d', edge.i);
-    nameJ = sprintf('tile %d', edge.j);
-    sliceNameI = sprintf('Tile %d', edge.i);
-    sliceNameJ = sprintf('Tile %d', edge.j);
+    topMark = {'', ' (on top)'};
+    if isFalsecolor
+        nameI = sprintf('%s: tile %d%s', colourI, edge.i, topMark{1 + ~jOnTop});
+        nameJ = sprintf('%s: tile %d%s', colourJ, edge.j, topMark{1 + jOnTop});
+        sliceNameI = colourI; sliceNameJ = colourJ;
+    else
+        nameI = sprintf('tile %d%s', edge.i, topMark{1 + ~jOnTop});
+        nameJ = sprintf('tile %d%s', edge.j, topMark{1 + jOnTop});
+        sliceNameI = sprintf('Tile %d', edge.i);
+        sliceNameJ = sprintf('Tile %d', edge.j);
+    end
 end
 
 sliceNote = '';
@@ -258,13 +297,55 @@ switch overlayMode
         end
         image(pairAxes, 'XData', canvasExtent{1}, 'YData', canvasExtent{2}, ...
             'CData', composite);
-    otherwise   % Falsecolor: i = cyan, j = magenta, aligned structures = white
+    case 'Preview final'
+        % The pair as Stitch will fuse it: the Stitching window's blend mode,
+        % the drawing order (Overwrite keeps the tile on top), the tiles as the
+        % intensity correction reads them, uncovered pixels in the canvas colour.
         [canvasI, canvasJ, canvasExtent] = unionCanvases(imageI, imageJ, ...
             deltaYX, rowMin, colMin, scale);
-        composite = cat(3, canvasJ, canvasI, max(canvasI, canvasJ));
+        [coverI, coverJ] = unionCanvases(ones(size(imageI), 'single'), ...
+            ones(size(imageJ), 'single'), deltaYX, rowMin, colMin, scale);
+        blendMode = obj.stitching.BatchOpt.BlendMode{1};
+        if strcmp(blendMode, 'Feather')
+            [weightI, weightJ] = unionCanvases(utils.stitch.blendWeights(size(imageI)), ...
+                utils.stitch.blendWeights(size(imageJ)), deltaYX, rowMin, colMin, scale);
+        else
+            weightI = coverI; weightJ = coverJ;
+        end
+        background = single(strcmp(obj.stitching.BatchOpt.CanvasColor{1}, 'white'));
+        if jOnTop
+            fused = previewFusedPair(canvasJ, canvasI, coverJ > 0, coverI > 0, ...
+                weightJ, weightI, blendMode, background);
+        else
+            fused = previewFusedPair(canvasI, canvasJ, coverI > 0, coverJ > 0, ...
+                weightI, weightJ, blendMode, background);
+        end
+        image(pairAxes, 'XData', canvasExtent{1}, 'YData', canvasExtent{2}, ...
+            'CData', repmat(fused, 1, 1, 3));
+        titleLine = sprintf('Preview final (%s) - %s; %s', blendMode, nameI, nameJ);
+    otherwise   % Falsecolor: the image on top red (+blue = magenta), the other green (+blue = cyan)
+        [canvasI, canvasJ, canvasExtent] = unionCanvases(imageI, imageJ, ...
+            deltaYX, rowMin, colMin, scale);
+        if jOnTop
+            canvasTop = canvasJ; canvasBottom = canvasI;
+        else
+            canvasTop = canvasI; canvasBottom = canvasJ;
+        end
+        if strcmp(topColour, 'Red')
+            % Aligned structures come out yellow.
+            composite = cat(3, canvasTop, canvasBottom, zeros(size(canvasTop), 'like', canvasTop));
+        else
+            % Aligned structures come out white.
+            composite = cat(3, canvasTop, canvasBottom, max(canvasTop, canvasBottom));
+        end
         image(pairAxes, 'XData', canvasExtent{1}, 'YData', canvasExtent{2}, ...
             'CData', composite);
         titleLine = sprintf('%s; %s', nameI, nameJ);
+end
+% A drag always moves tile j; once the colours follow the drawing order that
+% is no longer "the magenta one", so say so.
+if isempty(boundaryTile)
+    titleLine = sprintf('%s | drag moves tile %d', titleLine, edge.j);
 end
 if isempty(sliceNote)
     title(pairAxes, titleLine);
@@ -306,8 +387,39 @@ end
 % Phase C interactions: click = correlate at that spot, drag = move tile j.
 set(findobj(pairAxes, 'Type', 'image'), ...
     'ButtonDownFcn', @(~, evnt) obj.pairViewButtonDown(evnt));
+% Right-click (without dragging) = tile-order menu; images do not inherit the
+% axes' ContextMenu, and they cover most of the axes.
+if ~isempty(obj.tileOrderMenu) && isvalid(obj.tileOrderMenu)
+    set(findobj(pairAxes, 'Type', 'image'), 'ContextMenu', obj.tileOrderMenu);
+end
 
 updateOffsetLabel(obj, edge, deltaYX);
+end
+
+% =====================================================================
+function fused = previewFusedPair(canvasTop, canvasBottom, coverTop, coverBottom, ...
+    weightTop, weightBottom, blendMode, background)
+% PREVIEWFUSEDPAIR - Blend the two union canvases the way the fusers do.
+%
+% A display-scale mirror of utils.stitch.fuseSliceComposite for exactly two
+% tiles: Overwrite keeps the tile on top, Max/Min only compare pixels a tile
+% actually covers (an empty canvas never wins), Average/Feather divide the
+% weighted sum by the summed weights. Pixels neither tile covers take the
+% background (canvas colour, on the 0..1 display scale).
+switch blendMode
+    case 'Overwrite'
+        fused = canvasBottom;
+        fused(coverTop) = canvasTop(coverTop);
+    case {'Max', 'Min'}
+        if strcmp(blendMode, 'Max'); emptyValue = -Inf; else; emptyValue = Inf; end
+        top = canvasTop;       top(~coverTop) = emptyValue;
+        bottom = canvasBottom; bottom(~coverBottom) = emptyValue;
+        if strcmp(blendMode, 'Max'); fused = max(top, bottom); else; fused = min(top, bottom); end
+    otherwise   % Average / Feather: weights are the coverage or the feather ramps
+        weightSum = weightTop + weightBottom;
+        fused = (canvasTop .* weightTop + canvasBottom .* weightBottom) ./ max(weightSum, eps('single'));
+end
+fused(~(coverTop | coverBottom)) = background;
 end
 
 % =====================================================================

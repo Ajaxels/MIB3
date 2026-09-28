@@ -6,6 +6,11 @@ function setTrainingSettings(obj)
 %
 %       obj.setTrainingSettings()
 %
+
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibDeep.setTrainingSettings: triggered\n');
+end
+
     prompts = {'solverName, solver for training network'; ...
         'MaxEpochs, maximum number of epochs to use for training [30]'; ...
         'Shuffle, options for data shuffling [once]'; ...

@@ -10,6 +10,10 @@ function saveConfig(obj, configName)
 %   - **configName** - [optional] string, full filename to the config file
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibDeep.saveConfig: triggered\n');
+end
+
     if nargin < 2
         [projectPath, file] = fileparts(obj.BatchOpt.NetworkFilename);
         [file, projectPath]  = uiputfile({'*.mibCfg', 'mibDeep config files (*.mibCfg)';

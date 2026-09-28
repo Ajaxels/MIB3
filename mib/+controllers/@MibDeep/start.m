@@ -8,6 +8,10 @@ function start(obj, event)
 %
 % preprocessing, training, or prediction is initialized
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibDeep.start(%s): triggered\n', event.Source.Tag);
+end
+
     global mibDeepStopTraining     % variable to define stop of training (when true)
 
     % Every branch below blocks MATLAB behind a modal dialog, a progress bar or a long

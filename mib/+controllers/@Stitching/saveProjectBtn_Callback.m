@@ -54,7 +54,7 @@ try
     % or reuse just these parameters on a different set of tiles.
     utils.stitch.saveProject(projectPath, obj.layout, obj.edges, ...
         obj.positions, obj.solverInfo, outputInfo, obj.tforms, ...
-        obj.zSliceFixes, obj.collectProjectSettings());
+        obj.zSliceFixes, obj.collectProjectSettings(), obj.tileStack);
 catch saveError
     utils.dlgs.showErrorDialog(obj.view.gui, saveError.message, 'Save failed');
 end

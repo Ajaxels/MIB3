@@ -13,6 +13,10 @@ function updateBatchOptFromGUI(obj, event)
 %   - **event** - event from the callback
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibDeep.updateBatchOptFromGUI(%s): triggered\n', event.Source.Tag);
+end
+
     obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, event.Source);
 
     switch event.Source.Tag

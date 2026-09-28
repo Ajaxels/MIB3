@@ -6,6 +6,11 @@ function setActivationLayerOptions(obj)
 %
 %       obj.setActivationLayerOptions()
 %
+
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibDeep.setActivationLayerOptions: triggered\n');
+end
+
     switch obj.BatchOpt.T_ActivationLayer{1}
         case 'clippedReluLayer'
             prompts = {'Ceiling for input clipping, positive scalar [default=10]'};

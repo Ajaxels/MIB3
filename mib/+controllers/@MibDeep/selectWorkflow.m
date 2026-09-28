@@ -6,6 +6,11 @@ function selectWorkflow(obj, event)
 %
 %       obj.selectWorkflow(event)
 %
+
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibDeep.selectWorkflow: triggered\n');
+end
+
     if nargin < 2; event.Source = obj.view.handles.Workflow; end
     obj.updateBatchOptFromGUI(event);
 

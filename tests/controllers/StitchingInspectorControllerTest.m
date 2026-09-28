@@ -332,6 +332,30 @@ classdef StitchingInspectorControllerTest < matlab.unittest.TestCase
             testCase.verifyEqual(inspector.visibleRanking(), crossLayerEdge);
         end
 
+        function tileOrderMovesEditTheParentsDrawingOrder(testCase)
+            % The pair view's tile-order menu edits the parent's tileStack - what
+            % Stitch fuses with and the project saves - starting from the order
+            % in force.
+            [inspector, stitching] = testCase.openGrid2x2Inspector(3);
+            testCase.assertEmpty(stitching.tileStack);
+            testCase.verifyEqual(inspector.currentTileStack(), 1:4, ...
+                'no correction and no user order: the highest index is on top');
+
+            positionsBefore = stitching.positions;
+            inspector.tileOrder_Callback(4, 'down');
+            testCase.verifyEqual(stitching.tileStack, [1 2 4 3], ...
+                'tile 4 steps below its nearest overlapping neighbour underneath');
+            inspector.tileOrder_Callback(1, 'top');
+            testCase.verifyEqual(inspector.currentTileStack(), [2 4 3 1]);
+            testCase.verifyEqual(stitching.tileStack, [2 4 3 1]);
+            testCase.verifyEqual(stitching.positions, positionsBefore, ...
+                'reordering must not move any tile');
+
+            stitching.buildLayoutFromBatchOpt();
+            testCase.verifyEmpty(stitching.tileStack, ...
+                'a rebuilt layout must drop the order chosen for the old one');
+        end
+
         function zBoundaryFixRecordsAndRemovesAPerSliceMosaicCorrection(testCase)
             % Fix Z edits the MOSAIC, not a seam: every output slice >= z
             % shifts in-plane, slices below stay put. Tile positions and the

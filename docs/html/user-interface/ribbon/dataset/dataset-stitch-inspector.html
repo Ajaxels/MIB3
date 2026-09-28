@@ -1748,6 +1748,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#tile-order" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Tile order
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#the-readout" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -5733,6 +5744,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#tile-order" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Tile order
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#the-readout" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -6096,7 +6118,8 @@ worst-first, and gives you the tools to correct the ones the automatic pass got 
 a landmark, dragging the overlay, or matching two points.</p>
 <p>Open it with <span class="widget widget-button">Inspect and fix...</span> in the
 <a href="dataset-stitch.html">Stitching</a> window - enabled once <em>Measure overlaps</em> and <em>Optimize positions</em>
-have run. Both windows stay open and usable side by side.</p>
+have run. Both windows stay open and usable side by side. The overlay mode, Fix mode, ROI size,
+search radius and Auto re-solve are remembered until MIB is closed.</p>
 <div class="clear-float"></div>
 
 <hr />
@@ -6108,7 +6131,7 @@ have run. Both windows stay open and usable side by side.</p>
    → <a href="#the-seam-table">The seam table</a></p>
 </li>
 <li>
-<p><strong>Judge it in the pair view.</strong> In the default <em>Falsecolor</em> overlay, aligned structures come out
+<p><strong>Judge it in the pair view.</strong> In the default <em>Falsecolor (cyan/magenta)</em> overlay, aligned structures come out
    <strong>white</strong>; a misalignment splits into cyan and magenta ghosts. <span class="keys"><kbd class="key-space">Space</kbd></span> (in <em>Flicker</em> mode) is
    the fastest way to see a small shift.
    → <a href="#the-pair-view">The pair view</a></p>
@@ -6262,8 +6285,10 @@ Selecting a seam in another layer moves the map with it.</p>
 <p>The <strong>complete tile pair</strong> composited at the solved offset - not just the overlap strip, so a tile
 that is badly out of place is still visible and still fixable. Large tiles are downsampled for
 display only; every fix is computed at full resolution.</p>
-<p>Which tile is which colour is stated in the axes title (<em>e.g. Cyan: tile 2; Magenta: tile 4</em>), along
-with the browsed slices on 3D pairs.</p>
+<p>Which tile is which colour is stated in the axes title (<em>e.g. Cyan: tile 2; Magenta: tile 4 (on
+top)</em>), along with the browsed slices on 3D pairs. The tile on top - the one
+<strong>Overwrite</strong> blend mode keeps in the mosaic, see
+<a href="#tile-order">Tile order</a> - is always the magenta (or red) one.</p>
 <h3 id="overlay-modes">Overlay modes<a class="headerlink" href="#overlay-modes" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
@@ -6275,9 +6300,19 @@ with the browsed slices on 3D pairs.</p>
 </thead>
 <tbody>
 <tr>
-<td><strong>Falsecolor</strong> <em>(default)</em></td>
-<td>tile <em>i</em> in <strong>cyan</strong>, tile <em>j</em> in <strong>magenta</strong> - aligned structure adds up to <strong>white</strong>, misaligned structure splits into coloured ghosts</td>
+<td><strong>Preview final</strong></td>
+<td>the pair as <span class="widget widget-button">Stitch</span> will produce it, with the current <a href="dataset-stitch.html#blend-modes">blend mode</a>, <a href="#tile-order">tile order</a> and intensity correction</td>
+<td>deciding which tile should be on top</td>
+</tr>
+<tr>
+<td><strong>Falsecolor (cyan/magenta)</strong> <em>(default)</em></td>
+<td>the tile on top in <strong>magenta</strong>, the other in <strong>cyan</strong> - aligned structure adds up to <strong>white</strong>, misaligned structure splits into coloured ghosts</td>
 <td>judging alignment at a glance; the mode to work in</td>
+</tr>
+<tr>
+<td><strong>Falsecolor (green/red)</strong></td>
+<td>the tile on top in <strong>red</strong>, the other in <strong>green</strong> - aligned structure comes out <strong>yellow</strong></td>
+<td>the same, in the colour pair some eyes separate better</td>
 </tr>
 <tr>
 <td><strong>Flicker</strong></td>
@@ -6296,6 +6331,20 @@ with the browsed slices on 3D pairs.</p>
 </tr>
 </tbody>
 </table>
+<h3 id="tile-order">Tile order<a class="headerlink" href="#tile-order" title="Permanent link">&para;</a></h3>
+<p>Where tiles overlap, the <a href="dataset-stitch.html#blend-modes">Overwrite</a> blend mode keeps only one of them.
+<mouse class="right"></mouse> click the pair view (without dragging) to choose which: the menu has
+one entry for each tile of the seam on screen, each with <strong>Move to top</strong>, <strong>Move up</strong>, <strong>Move down</strong>
+and <strong>Move to bottom</strong>. The colours swap as soon as the tile on top changes; switch
+<span class="widget widget-dropdown">Overlay mode</span> to <strong>Preview final</strong> to see the result as
+it will be stitched.</p>
+<p><strong>Move up</strong> and <strong>move down</strong> step past the nearest tile the moved tile actually overlaps, so every
+choice changes something visible; moves that would change nothing are greyed out. The order is used by
+<span class="widget widget-button">Stitch</span> and saved with the project; it moves no tile and
+changes no seam score. It has no effect with the other blend modes, which mix the tiles.</p>
+<p>Until you change it, the tile imaged <strong>first</strong> is on top when
+<a href="dataset-stitch.html#intensity-correction">Re-exposure damage</a> correction is selected, so overlaps
+show the undamaged copy; otherwise the tile with the higher number is.</p>
 <details class="tip" open="open">
 <summary>Zooming and panning</summary>
 <ul>
@@ -6391,8 +6440,8 @@ confident peak snaps the pair to sub-pixel alignment.</p>
 tool declines rather than guessing, so a snap that happens is one you can trust. If it keeps
 declining, aim at a distinctive feature rather than flat background, or enlarge the ROI.</p>
 <h3 id="drag-the-overlay">Drag the overlay<a class="headerlink" href="#drag-the-overlay" title="Permanent link">&para;</a></h3>
-<p><mouse class="left"></mouse> drag moves the second tile live at 50% opacity; release applies the
-shift. Use it to get within a few pixels when the offset is too far out for the search radius, then
+<p><mouse class="left"></mouse> drag moves the second tile of the seam live at 50% opacity - the axes
+title names it (<em>drag moves tile 4</em>), whichever colour it has; release applies the shift. Use it to get within a few pixels when the offset is too far out for the search radius, then
 finish with <span class="keys"><kbd class="key-shift">Shift</kbd></span> + click.</p>
 <p>A click that does not move is deliberately a <strong>no-op</strong> - stray clicks never move a tile.</p>
 <h3 id="two-click-match">Two-click match<a class="headerlink" href="#two-click-match" title="Permanent link">&para;</a></h3>
@@ -6496,6 +6545,10 @@ registration use the <a href="dataset-alignment.html">Alignment tool</a> on the 
 <tr>
 <td><mouse class="right"></mouse> drag</td>
 <td>Pans the view (no zoom change); clamped to the rendered tile extent</td>
+</tr>
+<tr>
+<td><mouse class="right"></mouse> click, no movement</td>
+<td>Opens the <a href="#tile-order">tile order</a> menu (not in the Fix Z view)</td>
 </tr>
 <tr>
 <td><mouse class="left"></mouse> click <em>(two-click match armed)</em></td>

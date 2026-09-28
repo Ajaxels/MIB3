@@ -107,6 +107,13 @@ if nargin < 5; col_channel = NaN; end
 if nargin < 4; orient = NaN; end
 if nargin < 3; type = 'image'; end
 
+% the mask of a fresh dataset is an empty placeholder; allocate it before either
+% path, otherwise the fast path size test fails and MibImage.setData divides by
+% zero colors. setData2D/setData3D do the same.
+if strcmp(type, 'mask') && strcmp(obj.datasetType, 'Standard') && ~obj.mask.exists
+    obj.allocateMask();
+end
+
 % === FAST PATH ===
 % Standard in-memory, YX orient (3), no ROI, no blockMode, no x/y/z/t subregion.
 % Routes through MibImage.setDataFast (single handle hop, in-place / O(1) full-array

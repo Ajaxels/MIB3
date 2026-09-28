@@ -861,6 +861,42 @@ classdef StitchingControllerTest < matlab.unittest.TestCase
                 'mean matching is per-tile scalars, not a field');
         end
 
+        function reexposureCorrectionFollowsThePlacement(testCase)
+            % Re-exposure damage is placed at the solved positions: neutral before
+            % a solve (nominal positions can be far off, and the edges it corrects
+            % are sharp), estimated once positions exist, and re-placed - not
+            % re-estimated - when they move a little.
+            [controller, ~] = testCase.mdocController();
+            controller.BatchOpt.LayoutImport{1} = 'Nominal grid only';
+            controller.BatchOpt.IntensityCorrection{1} = 'Re-exposure damage';
+            controller.buildLayoutFromBatchOpt();
+            testCase.assertEmpty(controller.positions);
+
+            beforeSolve = controller.ensureIntensityCorrection();
+            testCase.verifyEqual(beforeSolve.method, 'Re-exposure damage');
+            testCase.verifyEmpty(beforeSolve.damage, 'nothing may be corrected before a solve');
+            testCase.verifyEqual(controller.ensureIntensityCorrection(), beforeSolve, ...
+                'the stages before the solve must reuse the placeholder, not retry');
+
+            % The synthetic montage has no damage (and tiles too small for the
+            % default reach), so the estimate reports finding nothing - what
+            % matters here is WHERE it was placed.
+            testCase.applyFixture(matlab.unittest.fixtures.SuppressedWarningsFixture({ ...
+                'utils:stitch:estimateIntensityCorrection:noReexposureDamage', ...
+                'utils:stitch:estimateIntensityCorrection:noCleanPlateau'}));
+            controller.positions = reshape([controller.layout.nomOrigin], 3, []).';
+            solved = controller.ensureIntensityCorrection();
+            testCase.verifyEqual(solved.method, 'Re-exposure damage');
+            testCase.verifyEqual(solved.damage.positions, controller.positions(:, 1:2));
+
+            % With the tiles gone, any pixel read fails and the controller warns.
+            [controller.layout.filename] = deal(fullfile(tempdir, 'no-such-montage.mrc'));
+            controller.positions(2, 1:2) = controller.positions(2, 1:2) + [1 -2];
+            moved = testCase.verifyWarningFree(@() controller.ensureIntensityCorrection(), ...
+                'a small move re-places the footprints; it must not re-estimate');
+            testCase.verifyEqual(moved.damage.positions, controller.positions(:, 1:2));
+        end
+
         function intensityCorrectionNoneCostsNothingAndChangesNoPixels(testCase)
             % The default must be free: no tile reads, and pixels identical to a
             % reader built with no correction at all.

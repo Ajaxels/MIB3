@@ -37,6 +37,21 @@ function outSlice = fuseSliceComposite(layout, canvas, zGlobal, ~, readerFcn, op
 %     - ``.blendMode`` - [char] ``'Feather'`` | ``'Average'`` | ``'Max'`` | ``'Min'`` | ``'Overwrite'``
 %     - ``.background`` - [double] background fill value
 %     - ``.marginPx`` - [double] feather margin (Feather mode; default derived from tile size)
+%     - ``.correction`` - [struct] *(optional)* the intensity correction the tiles
+%       are read with (see :func:`utils.stitch.estimateIntensityCorrection`). Only
+%       its ``.damage.order`` is used here, and only by ``'Overwrite'``: see below.
+%     - ``.tileStack`` - [1 x N] *(optional)* explicit drawing order, bottom
+%       first, set in the seam inspector. ``'Overwrite'`` only.
+%
+% .. note::
+%    **Which tile wins an ``'Overwrite'`` overlap is decided by
+%    :func:`utils.stitch.tileDrawOrder`**: an explicit ``tileStack`` if set,
+%    otherwise - with a re-exposure damage model - the tile imaged FIRST (the
+%    later one shows specimen the beam had already hit; the correction evens its
+%    brightness but cannot give back destroyed structure), otherwise the highest
+%    index. The seam inspector colours the winning tile magenta from the same
+%    function. Max/Min/Feather/Average do not depend on the drawing order and are
+%    left alone.
 %
 % Output Arguments:
 %   - **outSlice** - [H x W x C] fused slice of class ``canvas.dataClass``.
@@ -67,6 +82,19 @@ tileDepth = tileSizes(:, 3);
 zStart = placement(:, 3);
 zEnd   = placement(:, 3) + tileDepth - 1;
 contributing = find(zGlobal >= zStart & zGlobal <= zEnd);
+
+% Overwrite: the last tile drawn wins, so draw in the stacking order (see the
+% note above).
+if strcmp(blendMode, 'Overwrite')
+    correction = [];
+    tileStack  = [];
+    if isfield(options, 'correction'); correction = options.correction; end
+    if isfield(options, 'tileStack');  tileStack  = options.tileStack;  end
+    stack = utils.stitch.tileDrawOrder(nTiles, correction, tileStack);
+    [~, stackPosition] = ismember(contributing, stack);
+    [~, drawOrder] = sort(stackPosition);
+    contributing = contributing(drawOrder);
+end
 
 useAccumulator = ismember(blendMode, {'Feather', 'Average'});
 if useAccumulator

@@ -15,6 +15,10 @@ function net = selectNetwork(obj, networkName)
 %   - **net** - trained network
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibDeep.selectNetwork: triggered\n');
+end
+
     if nargin < 2; networkName = '';  end
     net = [];
 

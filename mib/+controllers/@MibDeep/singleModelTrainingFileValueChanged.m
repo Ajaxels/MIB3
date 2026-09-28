@@ -7,6 +7,10 @@ function singleModelTrainingFileValueChanged(obj, event)
 %       obj.singleModelTrainingFileValueChanged(event)
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibDeep.singleModelTrainingFileValueChanged: triggered\n');
+end
+
     if nargin < 2; event.Source = obj.view.handles.SingleModelTrainingFile; end
 
     obj.updateBatchOptFromGUI(event);

@@ -621,6 +621,89 @@ classdef StitchCoreTest < matlab.unittest.TestCase
             testCase.verifyLessThan(w(1, 1), w(50, 50));
             testCase.verifyGreaterThan(w(1, 1), 0);   % never zero
         end
+
+        % -----------------------------------------------------------------
+        % Overwrite drawing order (tileDrawOrder / moveInTileStack)
+        % -----------------------------------------------------------------
+
+        function tileDrawOrder_explicitStackThenDamageThenIndex(testCase)
+            % One function decides which tile Overwrite keeps, for the fusers
+            % and the inspector alike; its three sources in priority order.
+            testCase.verifyEqual(utils.stitch.tileDrawOrder(4), 1:4, ...
+                'no correction, no stack: the highest index is on top');
+
+            damaged.damage = struct('footprints', [2 1 10 1 10], 'order', [0.1; 1.1; 1.2; NaN]);
+            testCase.verifyEqual(utils.stitch.tileDrawOrder(4, damaged), [4 3 2 1], ...
+                'damage model: first imaged on top, unplaced tiles at the bottom');
+
+            testCase.verifyEqual(utils.stitch.tileDrawOrder(4, damaged, [3 1 4 2]), [3 1 4 2], ...
+                'an explicit stack overrides every default');
+            testCase.verifyEqual(utils.stitch.tileDrawOrder(4, damaged, [3 1 2]), [4 3 2 1], ...
+                'a stack from another layout (wrong length) must be ignored');
+            testCase.verifyEqual(utils.stitch.tileDrawOrder(4, [], [1 1 2 3]), 1:4, ...
+                'a stack that is not a permutation must be ignored');
+        end
+
+        function moveInTileStack_stepsPastOverlappingTilesOnly(testCase)
+            % A 1x3 chain plus a fourth tile far away: "up"/"down" skip the tile
+            % that does not overlap, because stepping past it changes no pixel.
+            positions = [1 1 1; 1 81 1; 1 161 1; 1 1001 1];
+            tileSizes = repmat([100 100 1 1], 4, 1);
+            stack = [1 4 2 3];   % 4 sits between 1 and 2 but touches nobody
+
+            testCase.verifyEqual(utils.stitch.moveInTileStack(stack, 1, 'up', positions, tileSizes), ...
+                [4 2 1 3], 'tile 1 must step past tile 2 - its overlapping neighbour - not tile 4');
+            testCase.verifyEqual(utils.stitch.moveInTileStack(stack, 3, 'down', positions, tileSizes), ...
+                [1 4 3 2]);
+            testCase.verifyEqual(utils.stitch.moveInTileStack(stack, 2, 'top', positions, tileSizes), ...
+                [1 4 3 2]);
+            testCase.verifyEqual(utils.stitch.moveInTileStack(stack, 3, 'bottom', positions, tileSizes), ...
+                [3 1 4 2]);
+            % No-ops come back unchanged - that is how the inspector hides them.
+            testCase.verifyEqual(utils.stitch.moveInTileStack(stack, 3, 'up', positions, tileSizes), stack);
+            testCase.verifyEqual(utils.stitch.moveInTileStack(stack, 4, 'down', positions, tileSizes), stack, ...
+                'a tile overlapping nothing below it cannot step down');
+        end
+
+        function overwriteFollowsTheTileStack(testCase)
+            % Two flat tiles of different values overlapping by 20 px: whichever
+            % is on top of the stack owns the overlap, in memory and streamed.
+            tempDir = tempname; mkdir(tempDir);
+            testCase.addTeardown(@() rmdir(tempDir, 's'));
+            layout = testCase.emptyLayout(2);
+            values = [50 200];
+            for k = 1:2
+                layout(k).index    = k;
+                layout(k).filename = fullfile(tempDir, sprintf('flat_%d.tif', k));
+                layout(k).tileSize = [40 60 1 1];
+                layout(k).dataClass = 'uint8';
+                imwrite(uint8(values(k) * ones(40, 60)), layout(k).filename);
+            end
+            positions = [1 1 1; 1 41 1];
+            canvas = utils.stitch.planCanvas(layout, positions);
+            overlapCols = 41:60;
+
+            defaultMosaic = utils.stitch.fuseInMemory(layout, canvas, struct('blendMode', 'Overwrite'));
+            testCase.verifyTrue(all(defaultMosaic(:, overlapCols) == 200, 'all'), ...
+                'default: the highest index wins');
+
+            flipped = utils.stitch.fuseInMemory(layout, canvas, ...
+                struct('blendMode', 'Overwrite', 'tileStack', [2 1]));
+            testCase.verifyTrue(all(flipped(:, overlapCols) == 50, 'all'), ...
+                'tile 1 on top of the stack must own the overlap');
+
+            filesOut = utils.stitch.fuseToFiles(layout, canvas, fullfile(tempDir, 'out.tif'), ...
+                struct('blendMode', 'Overwrite', 'tileStack', [2 1]));
+            if iscell(filesOut); filesOut = filesOut{1}; end
+            testCase.verifyEqual(imread(filesOut), flipped, ...
+                'the streamed output must honour the stack like the in-memory one');
+
+            % The stack survives a project round-trip.
+            sidecarPath = fullfile(tempDir, 'order.mibstitch.json');
+            utils.stitch.saveProject(sidecarPath, layout, [], positions, [], [], {}, [], struct(), [2 1]);
+            [~, ~, ~, ~, ~, ~, ~, ~, loadedStack] = utils.stitch.loadProject(sidecarPath);
+            testCase.verifyEqual(loadedStack, [2 1]);
+        end
     end
 
     % =================================================================

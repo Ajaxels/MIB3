@@ -8,6 +8,11 @@ function countLabels(obj)
 %
 % callback for press of the "Count labels" in the Options panel
 % define directory with label files
+
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibDeep.countLabels: triggered\n');
+end
+
 if ~isfield(obj.sessionSettings, 'countLabelsDir')
     obj.sessionSettings.countLabelsDir = obj.BatchOpt.OriginalTrainingImagesDir;
 end

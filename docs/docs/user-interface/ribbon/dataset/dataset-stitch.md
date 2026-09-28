@@ -692,7 +692,7 @@ the overlap is mixed - it can neither improve a bad alignment nor even out uneve
 
 | Mode | What it does | Use it when |
 |------|--------------|-------------|
-| **Overwrite** *(default)* | The last tile written wins; no mixing at all. | **Almost always.** It is the only mode that keeps the overlap as sharp as the tiles themselves - see below - and every misalignment stays visible as a hard broken edge. The price is that the changeover may show as a line. |
+| **Overwrite** *(default)* | The last tile written wins; no mixing at all. With **Re-exposure damage** correction, the tile imaged first wins. Either can be changed per tile in the [seam inspector](dataset-stitch-inspector.md#tile-order). | **Almost always.** It is the only mode that keeps the overlap as sharp as the tiles themselves - see below - and every misalignment stays visible as a hard broken edge. The price is that the changeover may show as a line. |
 | **Feather** | Weighted average, each tile's weight fading to zero at its own border, so one tile takes over gradually. | A seam **line** bothers you more than a soft band does - typically when tile brightness still disagrees. It is the only mode that spreads a residual brightness step out instead of drawing it. |
 | **Average** | Plain mean of every tile covering the pixel. | You want the overlap's noise averaged down and the tiles already match in brightness. Costs the same sharpness Feather does, and any brightness step shows as a hard line at the overlap *edges* rather than being spread out. |
 | **Max** | The brightest tile wins. | Dark artefacts sit in one tile only - a shadow, a beam-damaged corner, debris. |
@@ -742,6 +742,9 @@ Blending hides a seam; it cannot remove one. This dropdown fixes the cause inste
 - **Match tile means** - scale each tile so they all share one mean. For a **detector or stain that
   drifts** over a long acquisition, where the tiles really do differ by a flat factor. It does *not*
   fix uneven illumination.
+- **Re-exposure damage** - for **beam-sensitive samples**, where an area imaged a second time comes
+  out darker. Removes that darkening from the tile acquired later, including the darker line just
+  past the earlier tile's edge.
 
 The correction is applied wherever the tool reads a tile, so the seams are measured, scored and
 fused on the same pixels - the alignment rating always describes the mosaic you actually get. It is
@@ -801,6 +804,24 @@ computed once and reused for the rest of the run.
     residual is unchanged to the last digit. A *genuine* broad trend across the specimen is levelled
     too - nothing can distinguish the two, and a montage shading from one side to the other reads as
     an artefact either way.
+
+??? tip "Recognising re-exposure damage"
+    The tile acquired second shows a **darker band exactly as wide as the overlap**, often with an
+    even darker line just beyond it, and grid corners imaged three or four times are darkest of all.
+    The tile acquired first looks normal in the same place. The flat-field methods cannot remove
+    this: it is a sharp-edged patch in one tile, not shading shared by all of them.
+
+    Choose **Re-exposure damage**. MIB works out from the images which tile of each overlap was
+    imaged second, so the acquisition order does not need to be entered. The correction is placed
+    at the solved positions: <span class="widget widget-button">Measure overlaps</span> still sees
+    the raw pixels, and the seams are rated and fused on corrected ones. If no overlap is darker on
+    one side, the tiles are left unchanged.
+
+    Keep <span class="widget widget-dropdown">Blend mode</span> = **Overwrite**. With this correction
+    it puts the tile imaged **first** on top, so every overlap shows the undamaged copy of the
+    specimen; the [seam inspector](dataset-stitch-inspector.md#tile-order) can change that per tile. The correction evens out the brightness of the damaged copy, but it cannot restore
+    detail the beam destroyed. Only the darker line just past the edge is taken from the damaged
+    tile, because no other tile covers it.
 
 ??? failure "If you see a grid of darker bands along the seams"
     That is the tile *centres* being brightened too much, not the seams being darkened - the

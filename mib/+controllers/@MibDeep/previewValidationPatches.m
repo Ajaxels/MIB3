@@ -37,6 +37,10 @@ function previewValidationPatches(obj)
 %   (none)
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibDeep.previewValidationPatches: triggered\n');
+end
+
 if strcmp(obj.BatchOpt.Workflow{1}, '2D Patch-wise')
     mgsOpt.MsgBoxOnly = true;
     mgsOpt.Icon = 'puffin_info';

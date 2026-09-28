@@ -6,6 +6,11 @@ function selectDirerctories(obj, event)
 %
 %       obj.selectDirerctories(event)
 %
+
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibDeep.selectDirerctories(%s): triggered\n', event.Source.Tag);
+end
+
     switch event.Source.Tag
         case 'SelectOriginalTrainingImagesDir'
             fieldName = 'OriginalTrainingImagesDir';

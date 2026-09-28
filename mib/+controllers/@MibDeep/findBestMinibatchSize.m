@@ -89,6 +89,10 @@ function findBestMinibatchSize(obj)
 % looks entirely different: with Resnet50 at 768x768 on the same card, an iteration went
 % from around 2 s at mini-batch 4 to 63 s at mini-batch 8.
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibDeep.findBestMinibatchSize: triggered\n');
+end
+
 % Iterations run per candidate; the first two are discarded as warm-up. Fast networks are
 % measured again with more of them: on a 256x256 U-net, where an iteration costs under
 % 0.1 s, 6 iterations gave readings that varied by up to 17% between repeats and put the

@@ -11,6 +11,9 @@ if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.StitchingInspector.closeWindow: triggered\n');
 end
 
+% Reopen on the same settings later in this session (restoreSessionSettings).
+obj.storeSessionSettings();
+
 if ~isempty(obj.view) && isvalid(obj.view.gui)
     delete(obj.view.gui);
 end

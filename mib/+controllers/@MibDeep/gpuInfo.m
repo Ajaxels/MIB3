@@ -7,6 +7,10 @@ function gpuInfo(obj)
 %       obj.gpuInfo()
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibDeep.gpuInfo: triggered\n');
+end
+
     selectedIndex = find(ismember(obj.view.Figure.GPUDropDown.Items, obj.view.Figure.GPUDropDown.Value));
     switch obj.view.Figure.GPUDropDown.Value
         case 'CPU only'

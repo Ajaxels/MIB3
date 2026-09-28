@@ -51,7 +51,10 @@ function [readerFcn, isCachedFcn] = makeTileReader(layout, options)
 %       :func:`utils.stitch.estimateIntensityCorrection`, applied to every tile as it is
 %       read (default: none). Building the reader with it is what makes the
 %       correction reach measurement, seam scoring and fusion identically - there
-%       is no second place pixels enter the pipeline.
+%       is no second place pixels enter the pipeline. A ``.damage`` model
+%       (``'Re-exposure damage'``) is inverted first, per tile, from that tile's
+%       own footprint list; the strength map is built for exactly the region read,
+%       so a cropped read and a crop of a full read agree.
 %
 % Output Arguments:
 %   - **readerFcn** - [function_handle] ``img = readerFcn(tileIndex)`` returns the
@@ -94,7 +97,28 @@ if ~isempty(options.correction) && isstruct(options.correction)
         correctionField = []; correctionGain = []; correctionOffset = [];
     end
 end
-hasCorrection = ~isempty(correctionField) || ~isempty(correctionGain) || ~isempty(correctionOffset);
+
+% Re-exposure damage: split the footprint table per tile once, so a read only
+% touches its own rows. A model with no footprints (nothing damaged, or not yet
+% placed) is neutral and skipped like any other.
+damageFootprints = {};
+damageGain = 1; damageOffset = 0; damageDistance = []; damageProfiles = [];
+if ~isempty(options.correction) && isstruct(options.correction) && ...
+        isfield(options.correction, 'damage') && isstruct(options.correction.damage) && ...
+        ~isempty(options.correction.damage.footprints)
+    damageModel = options.correction.damage;
+    damageGain     = damageModel.gain;
+    damageOffset   = damageModel.offset;
+    damageDistance = double(damageModel.distance);
+    damageProfiles = double(damageModel.profiles);
+    damageFootprints = cell(numel(layout), 1);
+    for tileIdx = 1:numel(layout)
+        damageFootprints{tileIdx} = damageModel.footprints(damageModel.footprints(:, 1) == tileIdx, 2:5);
+    end
+end
+hasDamage = ~isempty(damageFootprints);
+hasCorrection = ~isempty(correctionField) || ~isempty(correctionGain) || ...
+    ~isempty(correctionOffset) || hasDamage;
 
 % LRU cache state kept in closure-captured variables (no containers.Map).
 cacheIndices = zeros(1, 0);      % tile index stored in each cache slot
@@ -164,6 +188,10 @@ isCachedFcn = @cacheHas;
         pixelClass = class(img);
         value = single(img);
 
+        if hasDamage && ~isempty(damageFootprints{tileIndex})
+            value = removeDamage(value, tileIndex, pixelRegion);
+        end
+
         if ~isempty(correctionField)
             if isempty(pixelRegion)
                 fieldPatch = correctionField;
@@ -189,6 +217,44 @@ isCachedFcn = @cacheHas;
         end
 
         img = cast(value, pixelClass);   % integer casts round and SATURATE
+    end
+
+    function value = removeDamage(value, tileIndex, pixelRegion)
+        % REMOVEDAMAGE - Invert observed = truth + S * ((gain - 1) * truth + offset).
+        % S is the sum over this tile's earlier footprints of a separable product
+        % of the across-side profiles - see estimateIntensityCorrection.
+        if isempty(pixelRegion)
+            rows = (1:size(value, 1))';
+            cols = 1:size(value, 2);
+        else
+            rows = (pixelRegion(1, 1):pixelRegion(1, 2))';
+            cols = pixelRegion(2, 1):pixelRegion(2, 2);
+        end
+        footprints = damageFootprints{tileIndex};
+        strength = zeros(numel(rows), numel(cols), 'single');
+        for footprintIdx = 1:size(footprints, 1)
+            fp = footprints(footprintIdx, :);
+            colStrength = sideStrength(cols, fp(3), fp(4), damageProfiles(1, :), damageProfiles(2, :));
+            if ~any(colStrength); continue; end
+            rowStrength = sideStrength(rows, fp(1), fp(2), damageProfiles(3, :), damageProfiles(4, :));
+            if ~any(rowStrength); continue; end
+            strength = strength + single(rowStrength(:) * colStrength(:)');
+        end
+        denominator = max(0.05, 1 + strength * single(damageGain - 1));
+        value = (value - strength * single(damageOffset)) ./ denominator;   % [H W] broadcasts
+    end
+
+    function strength = sideStrength(coords, lowEdge, highEdge, lowProfile, highProfile)
+        % SIDESTRENGTH - One axis of a footprint's strength: the profile of
+        % whichever of its two sides is nearer, at the signed outward distance.
+        distanceLow  = (lowEdge - 0.5) - coords;
+        distanceHigh = coords - (highEdge + 0.5);
+        useHigh = distanceHigh >= distanceLow;
+        distance = max(distanceLow, distanceHigh);
+        distance = max(distance, damageDistance(1));   % deep inside: the plateau
+        strength = zeros(size(coords));
+        strength(useHigh)  = interp1(damageDistance, highProfile, distance(useHigh), 'linear', 0);
+        strength(~useHigh) = interp1(damageDistance, lowProfile, distance(~useHigh), 'linear', 0);
     end
 
     function fullTile = loadTileFromDisk(tileIndex)

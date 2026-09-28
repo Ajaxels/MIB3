@@ -29,7 +29,7 @@ isolate/show-only rendering, 63/255-material models, mask-layer objects.
 | `mib/+models/@MibModel/editInstanceObjects.m` | all ten actions, BatchOpt-driven. Undo, progress, notifications, incremental index update |
 | `mib/+controllers/@InstanceEditor/` (14 files) | window, object list, click picking, highlighting |
 | `mib/+views/InstanceEditorGUI.mlapp` | **author-built - never edit it** |
-| `tests/utils/InstanceObjectIndexTest.m` (18) · `tests/utils/InstanceCleanupTest.m` (15) · `tests/models/EditInstanceObjectsTest.m` (38) | 71 cases |
+| `tests/utils/InstanceObjectIndexTest.m` (18) · `tests/utils/InstanceCleanupTest.m` (15) · `tests/models/EditInstanceObjectsTest.m` (62) | 95 cases |
 
 Wired into the ribbon from `addRibbonModel.m` (`"Model tools"` section) -> `MibRibbon.m` ->
 `model_Callbacks.m` -> `startController('controllers.InstanceEditor')`. The ribbon is built at
@@ -339,6 +339,15 @@ used consistently.
    most `MaxRows` rows reach the `uitable`.
 8. **Cancelable progress only where it is real** - index build, Cleanup, Compact. Everything else is
    fast enough that the progress bar would be the slowest part.
+9. **The one full-volume read runs along dimension 1.** "Where is the drawing" and "clear the used
+   drawing" are the only two steps that cannot start from an index box. On a 1636x2556x1250 stack
+   (5.2 GB Selection layer, measured 2026-09-28) they had grown to most of an operation's cost:
+   `any(any(sel, 2), 3)` alone took 4.5 s, because reducing along dimension 2 is strided, against
+   0.1 s for `any(sel, 1)` - and ++a++ ran it twice. Zeroing the whole layer afterwards took another
+   2.2-2.6 s. `localDrawingExtent` now takes columns and planes from one `any(sel, 1)` pass and rows
+   from the block they bound, and `localClearDrawing` clears only the drawing's box. Estimated from
+   the parts, ++a++ goes from about 11.5 s to about 0.3 s, most of it the one pass that has to ask
+   whether anything is drawn at all. Keep any new whole-layer reduction to `any(v, 1)` first.
 
 **Known ceiling.** Instance models are memory-only, so "large" means a large in-RAM `uint16`/`uint32`
 array. Because every access is already bbox-scoped, the same index and `PixelIdxList` structure would

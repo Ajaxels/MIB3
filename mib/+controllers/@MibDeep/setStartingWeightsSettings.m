@@ -17,6 +17,10 @@ function setStartingWeightsSettings(obj)
 %   (none)
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibDeep.setStartingWeightsSettings: triggered\n');
+end
+
 prompts = {'Smallest share of the total epochs the frozen phase must use, no switch happens before this [0.07]'; ...
     'Largest share of the total epochs the frozen phase may use, the switch happens no later than this [0.15]'; ...
     'Window used to decide the loss is flat, in epochs; the mean loss of the last window is compared with the window before it [25]'; ...

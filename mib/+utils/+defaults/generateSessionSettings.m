@@ -45,6 +45,11 @@ sessionSettings.contentAwareFill.FillOrder   = 'gradient';
 % writes it on close and reads it on open (controllers.Stitching), so seeding
 % defaults here would duplicate its BatchOpt defaults and the two would drift.
 
+% NOTE: sessionSettings.stitchingInspector is absent for the same reason - the
+% seam inspector writes it on close and reads it on open
+% (controllers.StitchingInspector.storeSessionSettings / restoreSessionSettings);
+% its defaults are the mlapp's and addCallbacks'.
+
 % NOTE: sessionSettings.stitchInstances2Dto3D is absent for the same reason - the
 % 2D-to-3D instance stitching dialog owns it, writing it after a run and reading
 % it back to reopen on the last values. One key, shared by both entry points

@@ -41,6 +41,8 @@ function fnOut = fuseToFiles(layout, canvas, outputPath, options)
 %     - ``.marginPx`` - [double] feather margin (default: derived from tile size)
 %     - ``.correction`` - [struct] intensity correction from
 %       :func:`utils.stitch.estimateIntensityCorrection` (default: ``[]``)
+%     - ``.tileStack`` - [1 x N] drawing order for ``'Overwrite'``, bottom first
+%       (default: ``[]``, see :func:`utils.stitch.tileDrawOrder`)
 %     - ``.cacheSizeBytes`` - [double] LRU tile-cache budget (default: ``2*1024^3``)
 %     - ``.readerFcn`` - [function_handle] reuse an existing tile reader (optional)
 %     - ``.pixSize`` - [struct] override ``canvas.pixSize`` for the file metadata
@@ -90,6 +92,7 @@ providerOptions = struct('blendMode', options.blendMode, ...
     'correction', options.correction);
 if isfield(options, 'marginPx');  providerOptions.marginPx  = options.marginPx; end
 if isfield(options, 'readerFcn'); providerOptions.readerFcn = options.readerFcn; end
+if isfield(options, 'tileStack'); providerOptions.tileStack = options.tileStack; end
 
 provider = io.savers.StitchSliceProvider(layout, canvas, providerOptions);
 

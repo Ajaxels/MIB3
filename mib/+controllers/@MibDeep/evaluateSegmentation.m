@@ -8,6 +8,11 @@ function evaluateSegmentation(obj)
 %
 % with the ground truth models
 % check for evaluation of patches in the patch-wise mode
+
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibDeep.evaluateSegmentation: triggered\n');
+end
+
 if exist(fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages', 'ResultsModels', 'patchPredictionResults.mat'), 'file') == 2
     obj.evaluateSegmentationPatches();
     return;

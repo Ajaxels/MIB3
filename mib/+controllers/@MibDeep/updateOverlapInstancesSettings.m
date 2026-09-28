@@ -16,6 +16,10 @@ function updateOverlapInstancesSettings(obj)
 %   - `.MinSplitArea` - min area, px, of a component kept when a stitched label is split into
 %     one index per connected object [both overlap modes]
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibDeep.updateOverlapInstancesSettings: triggered\n');
+end
+
 % lazy init to cover instances created before this property was introduced
 if isempty(obj.OverlapInstancesOpt)
     obj.OverlapInstancesOpt = struct('DetectionThreshold', 0.5, 'MergeIoU', 0.5, 'MergeIoA', 0.8, 'MinSplitArea', 100);

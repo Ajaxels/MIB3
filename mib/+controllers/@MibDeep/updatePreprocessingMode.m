@@ -7,6 +7,10 @@ function updatePreprocessingMode(obj)
 %       obj.updatePreprocessingMode()
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibDeep.updatePreprocessingMode: triggered\n');
+end
+
     obj.BatchOpt.PreprocessingMode{1} = obj.view.handles.PreprocessingMode.Value;
     % if strcmp(obj.view.handles.PreprocessingMode.Value, 'Preprocessing is not required') || strcmp(obj.view.handles.PreprocessingMode.Value, 'Split files for training/validation')
     %     obj.BatchOpt.MaskAway = false;

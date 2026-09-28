@@ -6,6 +6,11 @@ function saveCheckpointNetworkCheck(obj)
 %
 %       obj.saveCheckpointNetworkCheck()
 %
+
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibDeep.saveCheckpointNetworkCheck: triggered\n');
+end
+
     obj.BatchOpt.T_SaveProgress = obj.view.handles.T_SaveProgress.Value;
     if obj.BatchOpt.T_SaveProgress
         prompts = {'Frequency of saving checkpoint networks, once in N epochs:'};

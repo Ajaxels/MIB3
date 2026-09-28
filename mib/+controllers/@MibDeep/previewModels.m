@@ -13,6 +13,10 @@ function previewModels(obj, loadImagesSwitch)
 %     loaded
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibDeep.previewModels: triggered\n');
+end
+
 imgDir = 0;
 if loadImagesSwitch
     imagesSubfolder = 'Images';

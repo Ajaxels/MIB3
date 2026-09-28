@@ -13,7 +13,7 @@ function bioformatsCallback(obj, event)
 %
 
 if obj.mibModel.preferences.System.DeveloperMode
-    fprintf('controllers.MibDeep.bioformatsCallback: triggered\n');
+    fprintf('controllers.MibDeep.bioformatsCallback(%s): triggered\n', event.Source.Tag);
 end
     extensionFieldName = 'ImageFilenameExtension';
     bioformatsFileName = 'Bioformats';

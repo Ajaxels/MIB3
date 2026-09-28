@@ -1,4 +1,4 @@
-function [layout, edges, positions, solverInfo, outputInfo, tforms, zSliceFixes, settings] = loadProject(filePath)
+function [layout, edges, positions, solverInfo, outputInfo, tforms, zSliceFixes, settings, tileStack] = loadProject(filePath)
 % LOADPROJECT - Load a stitching project from a JSON sidecar file.
 %
 % Syntax:
@@ -29,6 +29,8 @@ function [layout, edges, positions, solverInfo, outputInfo, tforms, zSliceFixes,
 %     from the seam inspector's Fix Z (``[]`` when none were saved)
 %   - **settings** - struct of flattened tool settings (schema v3 and newer);
 %     an empty struct for older files that carry no ``settings`` block
+%   - **tileStack** - [1 x N] ``'Overwrite'`` drawing order, bottom first, as set
+%     in the seam inspector; ``[]`` when none was saved (default order)
 %
 % **Example** - round-trip save / load:
 %
@@ -122,6 +124,13 @@ settings = struct();
 if isfield(project, 'settings') && isstruct(project.settings) && ...
         ~isempty(fieldnames(project.settings))
     settings = project.settings;
+end
+
+% Overwrite drawing order (seam inspector). Validity against the layout is
+% checked where it is used (utils.stitch.tileDrawOrder), not here.
+tileStack = [];
+if isfield(project, 'tileStack') && ~isempty(project.tileStack)
+    tileStack = double(project.tileStack(:))';
 end
 
 end

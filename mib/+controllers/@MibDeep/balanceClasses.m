@@ -8,6 +8,11 @@ function balanceClasses(obj)
 %
 % see example from here:
 % https://se.mathworks.com/help/vision/ref/balancepixellabels.html
+
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibDeep.balanceClasses: triggered\n');
+end
+
     if ~isfield(obj.sessionSettings, 'numBalanceObservations'); obj.sessionSettings.numBalanceObservations = 200; end
     if ~isfield(obj.sessionSettings, 'balanceObservationsParallel'); obj.sessionSettings.balanceObservationsParallel = false; end
 

@@ -19,6 +19,12 @@ function pairViewButtonDown(obj, evnt)
 % every mode (including two-click and Fix Z) and is never mistaken for a
 % tile fix.
 %
+% A **right-click released without moving** opens the tile-order menu
+% (``obj.tileOrderMenu``, the pair view's ``ContextMenu``, filled by
+% :meth:`fillTileOrderMenu`). All this function does for it is record whether
+% the right press turned into a pan (``obj.rightDragMoved``, >= 3 screen
+% pixels), so the menu can stay empty - and therefore closed - after one.
+%
 % Input Arguments:
 %   - **evnt** - hit event from an image ``ButtonDownFcn``
 %     (``IntersectionPoint`` in pairAxes data coordinates)
@@ -33,6 +39,7 @@ startPoint = evnt.IntersectionPoint(1:2);   % [x y] in axes data coords
 figureHandle = obj.view.gui;
 pairAxes = obj.view.handles.pairAxes;
 panPoint = []; panXFull = []; panYFull = [];
+pressPixel = [];
 
 if strcmp(figureHandle.SelectionType, 'alt')   % right-click = pan, never a tile fix
     beginPan();
@@ -76,6 +83,8 @@ figureHandle.WindowButtonUpFcn = @(~, ~) onRelease();
         % (same border clamp as the mouse-wheel zoom in scrollWheel_Callback)
         % so the view cannot be dragged into empty space.
         panPoint = axesPoint();
+        pressPixel = figureHandle.CurrentPoint;
+        obj.rightDragMoved = false;   % a still right-click opens the tile-order menu
         imageHandles = findobj(pairAxes, 'Type', 'image');
         if ~isempty(imageHandles)
             panXFull = [min(cellfun(@(x) min(x), {imageHandles.XData})), ...
@@ -93,6 +102,9 @@ figureHandle.WindowButtonUpFcn = @(~, ~) onRelease();
 
     % -----------------------------------------------------------------
     function onPanMotion()
+        if ~obj.rightDragMoved && max(abs(figureHandle.CurrentPoint - pressPixel)) >= 3
+            obj.rightDragMoved = true;
+        end
         point = axesPoint();
         shift = point - panPoint;
         if all(shift == 0); return; end
@@ -219,3 +231,4 @@ function slice = takeSlice(tile, sliceIdx)
 tile = single(tile(:, :, :, 1));
 slice = tile(:, :, min(max(sliceIdx, 1), size(tile, 3)));
 end
+

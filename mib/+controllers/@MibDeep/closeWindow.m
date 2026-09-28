@@ -7,6 +7,10 @@ function closeWindow(obj)
 %       obj.closeWindow()
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibDeep.closeWindow: triggered\n');
+end
+
 % update preferences structure
 obj.mibModel.preferences.Deep.OriginalTrainingImagesDir = obj.BatchOpt.OriginalTrainingImagesDir;
 obj.mibModel.preferences.Deep.OriginalPredictionImagesDir = obj.BatchOpt.OriginalPredictionImagesDir;

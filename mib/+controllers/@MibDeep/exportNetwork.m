@@ -7,6 +7,10 @@ function exportNetwork(obj)
 %       obj.exportNetwork()
 %
     
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibDeep.exportNetwork: triggered\n');
+end
+
     if exist(obj.BatchOpt.NetworkFilename, 'file') ~= 2
         mgsOpt.MsgBoxOnly = true;
         mgsOpt.Header = sprintf('The network file:\n%s\ncan not be found!', obj.BatchOpt.NetworkFilename);

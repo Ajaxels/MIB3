@@ -10,6 +10,10 @@ function loadConfig(obj, configName)
 %   - **configName** - full filename for the config file to load
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibDeep.loadConfig: triggered\n');
+end
+
 if nargin < 2
     [file, projectPath] = utils.dlgs.mibUiGetFile({'*.mibCfg;', 'Deep MIB config files (*.mibCfg)';
         '*.mat', 'Mat files (*.mat)'}, 'Open network file', ...

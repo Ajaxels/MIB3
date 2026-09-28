@@ -33,6 +33,18 @@ classdef StitchingInspector < handle
         readerCachedFcn
         % companion predicate of readerFcn: is that tile resident? Used to put a
         % progress dialog around the reads that will actually stall on disk
+        tileOrderMenu
+        % uicontextmenu of the pair view (tile order) - created in addCallbacks,
+        % set as the ContextMenu of pairAxes and of every pair image, and refilled
+        % by fillTileOrderMenu each time it opens
+        rightDragMoved = false
+        % true once the current right-button press has moved >= 3 screen px, i.e.
+        % turned into a pan (pairViewButtonDown); fillTileOrderMenu then leaves the
+        % menu empty so a pan does not end with a menu popping up
+        readerCorrectionStamp
+        % what the correction readerFcn was built with looked like - method and,
+        % for 'Re-exposure damage', the positions its footprints were placed at;
+        % tileReader rebuilds the reader when the live correction no longer matches
         pairImageHandles
         % [2x1] image handles on pairAxes for the flicker overlay ([] otherwise)
         flickerState
@@ -178,14 +190,108 @@ classdef StitchingInspector < handle
             obj.view.gui = utils.moveWindowOutside(obj.view.gui, stitchController.view.gui, 'right');
 
             obj.addCallbacks();
+            % Before the first ranking: the restored Fix mode decides which
+            % seams the table lists and therefore where the review starts.
+            obj.restoreSessionSettings();
             obj.scoreAndRank();
             obj.updateWidgets();
             initialRanking = obj.visibleRanking();
             if ~isempty(initialRanking)
                 obj.selectSeam(initialRanking(1));
             end
+            % A restored Fix Z goes through the dropdown's own handler, which
+            % knows where the boundary view can start (a single-layer Z-stack has
+            % no cross-layer seam to list).
+            if strcmp(obj.fixMode(), 'z') && obj.hasWidget('fixModeDropdown')
+                obj.view.handles.fixModeDropdown.ValueChangedFcn([], []);
+            end
 
             obj.view.gui.Visible = 'on';
+        end
+
+        % ---------------------------------------------------------------
+        function storeSessionSettings(obj)
+            % STORESESSIONSETTINGS - Remember the dialog's settings for its next opening.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.storeSessionSettings()
+            %
+            % Written by :meth:`closeWindow` into
+            % ``mibModel.sessionSettings.stitchingInspector`` and read back by
+            % :meth:`restoreSessionSettings`, like the Stitching dialog's own
+            % ``sessionSettings.stitching``. On close rather than per change:
+            % sessionSettings lives in RAM, so an earlier write survives nothing
+            % this one does not. Covers overlay mode, fix mode, ROI size, search
+            % radius and auto re-solve; the seam, zoom and slice are properties of
+            % the mosaic being reviewed, not settings, and are not carried over.
+            %
+            if isempty(obj.view) || ~isvalid(obj.view.gui); return; end
+            widgetFields = inspectorSessionFields();
+            stored = struct();
+            for fieldIdx = 1:size(widgetFields, 1)
+                widgetName = widgetFields{fieldIdx, 2};
+                if obj.hasWidget(widgetName)
+                    stored.(widgetFields{fieldIdx, 1}) = obj.view.handles.(widgetName).Value;
+                end
+            end
+            obj.mibModel.sessionSettings.stitchingInspector = stored;
+        end
+
+        % ---------------------------------------------------------------
+        function restoreSessionSettings(obj)
+            % RESTORESESSIONSETTINGS - Reopen the dialog on the settings it was closed with.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.restoreSessionSettings()
+            %
+            % Reads ``mibModel.sessionSettings.stitchingInspector`` (see
+            % :meth:`storeSessionSettings`). Nothing stored - the first opening
+            % of the session - leaves the mlapp / addCallbacks defaults, so the
+            % overlay starts on ``Falsecolor (cyan/magenta)``. Each value is
+            % applied only if the widget would accept it (a dropdown item that
+            % exists, a spinner value inside its limits), so a setting from an
+            % older build cannot break the window. **Fix Z is restored only when
+            % some tile has Z slices**: on a 2D mosaic that mode cannot engage,
+            % and restoring it would open the window on the "Fix Z needs Z
+            % slices" dialog.
+            %
+            if isempty(obj.view) || ~isstruct(obj.mibModel.sessionSettings) || ...
+                    ~isfield(obj.mibModel.sessionSettings, 'stitchingInspector')
+                return;
+            end
+            stored = obj.mibModel.sessionSettings.stitchingInspector;
+            if ~isstruct(stored); return; end
+            layout = obj.stitching.layout;
+            tileSizes = reshape([layout.tileSize], 4, []).';
+            hasDepth = any(tileSizes(:, 3) > 1);
+
+            widgetFields = inspectorSessionFields();
+            for fieldIdx = 1:size(widgetFields, 1)
+                fieldName = widgetFields{fieldIdx, 1};
+                widgetName = widgetFields{fieldIdx, 2};
+                if ~isfield(stored, fieldName) || ~obj.hasWidget(widgetName); continue; end
+                widget = obj.view.handles.(widgetName);
+                value = stored.(fieldName);
+                if isprop(widget, 'Items')
+                    if ~ischar(value) || ~ismember(value, widget.Items); continue; end
+                    if strcmp(widgetName, 'fixModeDropdown') && ~hasDepth && ...
+                            ~strcmp(value, widget.Items{1})
+                        continue;   % Fix Z on a 2D mosaic
+                    end
+                elseif isprop(widget, 'Limits')
+                    if ~isnumeric(value) || ~isscalar(value) || ...
+                            value < widget.Limits(1) || value > widget.Limits(2)
+                        continue;
+                    end
+                elseif ~islogical(value) && ~isnumeric(value)
+                    continue;
+                end
+                widget.Value = value;
+            end
         end
 
         % ---------------------------------------------------------------
@@ -223,15 +329,51 @@ classdef StitchingInspector < handle
             % the mosaic is measured and fused on. That is exactly the split
             % ``utils.stitch.makeTileReader`` exists to prevent.
             %
+            % **It is rebuilt when that correction changes.** Every other method
+            % is fixed for the session, but ``'Re-exposure damage'`` is placed at
+            % the solved positions, so a re-solve moves it. A reader kept from
+            % before would review the mosaic with the damage patches where the
+            % tiles used to be. The rebuild drops the tile cache, so with that
+            % method the first read after a re-solve decodes from disk again.
+            %
             % Output Arguments:
             %   - **readerFcn** - [function_handle] see :func:`utils.stitch.makeTileReader`
             %
-            if isempty(obj.readerFcn)
+            correction = obj.stitching.ensureIntensityCorrection();
+            correctionStamp = {[], []};
+            if isstruct(correction)
+                correctionStamp{1} = correction.method;
+                if isfield(correction, 'damage') && isstruct(correction.damage)
+                    correctionStamp{2} = correction.damage.positions;
+                end
+            end
+            if isempty(obj.readerFcn) || ~isequal(correctionStamp, obj.readerCorrectionStamp)
                 [obj.readerFcn, obj.readerCachedFcn] = utils.stitch.makeTileReader( ...
-                    obj.stitching.layout, ...
-                    struct('correction', obj.stitching.ensureIntensityCorrection()));
+                    obj.stitching.layout, struct('correction', correction));
+                obj.readerCorrectionStamp = correctionStamp;
             end
             readerFcn = obj.readerFcn;
+        end
+
+        % ---------------------------------------------------------------
+        function stack = currentTileStack(obj)
+            % CURRENTTILESTACK - The Overwrite drawing order in force, bottom first.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      stack = obj.currentTileStack()
+            %
+            % The user's explicit order (``stitching.tileStack``) if one was set
+            % here, otherwise the default :func:`utils.stitch.tileDrawOrder`
+            % derives - the SAME function the fusers use, so the tile the pair
+            % view colours as "on top" is the one Stitch keeps.
+            %
+            % Output Arguments:
+            %   - **stack** - [1 x N double] tile indices, bottom first
+            %
+            stack = utils.stitch.tileDrawOrder(numel(obj.stitching.layout), ...
+                obj.stitching.ensureIntensityCorrection(), obj.stitching.tileStack);
         end
 
         % ---------------------------------------------------------------
@@ -599,4 +741,16 @@ classdef StitchingInspector < handle
             end
         end
     end
+end
+
+% =========================================================================
+function widgetFields = inspectorSessionFields()
+% INSPECTORSESSIONFIELDS - {sessionSettings field, widget handle} of the sticky
+% settings; one list shared by storeSessionSettings and restoreSessionSettings.
+widgetFields = {
+    'overlayMode',  'overlayModeDropdown'
+    'fixMode',      'fixModeDropdown'
+    'roiSize',      'ROIsizeSpinner'
+    'searchRadius', 'SearchradiusSpinner'
+    'autoResolve',  'autoResolveCheckbox'};
 end

@@ -14,6 +14,11 @@ function importNetwork(obj)
 % % save network to a file
 % save('myNewNetwork.mat', 'net', '-mat');
 % % use Import opetation to load and adapt the network for use with DeepMIB
+
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibDeep.importNetwork: triggered\n');
+end
+
 if obj.mibController.matlabVersion < 9.11 % 'Interpreter' is available only from R2021b
     selection = uiconfirm(obj.view.gui,...
         sprintf('[BETA] The following operation is allowing to import a network designed or trained externally\nResult of the operation is generation of "mibCfg" and "mibDeep" files that can be used with DeepMIB\n\nBefore proceeding please make sure that the most closest architecture is selected in DeepMIB settings and all other relevant parameter (e.g. directories) are specified. Check <a href="http://mib.helsinki.fi/help/main2/ug_gui_menu_tools_deeplearning.html#6">Help</a> for details.\n\nSupported formats:\n-Matlab'),...

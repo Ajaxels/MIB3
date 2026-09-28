@@ -5667,6 +5667,7 @@ adjust the default settings to your project’s needs and ensure the output netw
 <li><span class="widget widget-edit">Input patch size...</span> defines the dimensions of image blocks 
 (<code>height, width, depth, colors</code>) for training (e.g., "572 572 1 2" for a 572x572x1 patch with 2 color channels), 
 Define the input patch size based on available GPU memory, desired field of view, dataset size, and channels. 
+For 2.5D networks the depth is the number of neighbouring slices and must be an odd number of 3 or more (e.g., "256 256 3 1"). 
 Patches are randomly sampled, with the count set in <span class="widget widget-edit">Patches per image...</span>  </li>
 <li><span class="widget widget-dropdown">Encoder network</span> selects the encoder for supported architectures, 
 sorted from lightweight to more complex  </li>

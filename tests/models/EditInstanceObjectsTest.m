@@ -565,6 +565,28 @@ classdef EditInstanceObjectsTest < matlab.unittest.TestCase
             EditInstanceObjectsTest.verifyIndexAgreesWithVolume(testCase, mibModel, 'splitBySelection, picked and drawn');
         end
 
+        function aConsumedDrawingIsClearedBeyondThePickedObject(testCase)
+            % The used-up drawing is cleared over its own extent, not the whole
+            % layer and not the edited object's box. A stroke lying partly
+            % outside the object that was cut - here a second piece far off in
+            % another row, column and slice - must go with the rest, or it
+            % becomes the input of the next action.
+            mibModel = EditInstanceObjectsTest.buildInstanceModel();
+            selection = zeros(32, 32, 10, 'uint8');
+            selection(4:10, 4:10, 5) = 1;        % a break through object 1
+            selection(30:32, 1:3, 9) = 1;        % an empty corner of the volume
+            mibModel.setData3D(selection, 'selection', 1, 3, [], ...
+                struct('id', 1, 'blockModeSwitch', 0));
+
+            EditInstanceObjectsTest.runAction(mibModel, 'SplitBySelection', '1');
+
+            after = EditInstanceObjectsTest.readLabels(mibModel);
+            testCase.verifyEqual(nnz(after == 1), 7 * 7 * 3, 'object 1 was cut as before');
+            remaining = cell2mat(mibModel.getData3D('selection', 1, 3, NaN, ...
+                struct('id', 1, 'blockModeSwitch', 0)));
+            testCase.verifyEqual(nnz(remaining), 0, 'the whole drawing is used up');
+        end
+
         function splitBySelectionOnBackgroundIsRejected(testCase)
             % A drawing lying on nothing names no object. The layer is left as
             % it is, so the drawing can be moved rather than made again.

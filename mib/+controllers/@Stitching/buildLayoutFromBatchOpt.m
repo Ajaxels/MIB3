@@ -108,6 +108,7 @@ obj.positions = [];
 obj.tforms    = {};
 obj.canvas    = [];
 obj.zSliceFixes = [];
+obj.tileStack   = [];
 obj.solverInfo  = struct();
 % Estimated from the OLD tiles, so it cannot describe these ones.
 obj.intensityCorrection = [];

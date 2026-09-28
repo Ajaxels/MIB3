@@ -9,6 +9,10 @@ function setAugmentationSettings(obj, mode)
     
     if nargin < 2; mode = '2D'; end
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibDeep.setAugmentationSettings(%s): triggered\n', mode);
+end
+
     switch mode
         case '2D'
             if ~isstruct(obj.AugOpt2D.RandScale)

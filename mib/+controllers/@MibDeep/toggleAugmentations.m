@@ -6,6 +6,11 @@ function toggleAugmentations(obj)
 %
 %       obj.toggleAugmentations()
 %
+
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibDeep.toggleAugmentations: triggered\n');
+end
+
     if obj.view.handles.T_augmentation.Value == 1
         obj.view.handles.Augmentation2DSettings.Enable = 'on';
         obj.view.handles.Augmentation3DSettings.Enable = 'on';

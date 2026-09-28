@@ -57,7 +57,8 @@ child-controller set + workflow callbacks (`selectInputBtn`, `previewLayoutBtn`,
 see "The uncovered frame" below.
 
 Sidecar `<name>.mibstitch.json` (schema v3): tiles (+`solvedOrigin`/`solvedTform`), edges, solver
-settings+RMSE, blend, output, `zSliceFixes`, optional `project.settings` block (dialog state — see
+settings+RMSE, blend, output, `zSliceFixes`, optional `tileStack` (Overwrite drawing order set in the
+seam inspector - see `plan_inspector.md`), optional `project.settings` block (dialog state - see
 "Project files" below). `loadProject`/`saveProject` round-trip all of it; v1/v2 files load with
 defaulted fields.
 
@@ -394,7 +395,8 @@ carries an in-tile shading gradient from the beam profile (left edge +0.6…+3.0
 −0.7…−3.9 % on the reference data), so at an X seam a tile's dark right edge meets its neighbour's
 bright left edge and they disagree by 4–5 % even when the two tiles' overall means agree to 0.16 %.
 
-`BatchOpt.IntensityCorrection` {None *(default)*, Flat-field (shared), Match tile means}. Measured on
+`BatchOpt.IntensityCorrection` {None *(default)*, Flat-field (shared), Flat-field (overlap-solved),
+Match tile means, Re-exposure damage - the last one is a different fault, see its own section below}. Measured on
 `Cell1.mrc`, rms mismatch across the 12 seams:
 
 | correction | rms | note |
@@ -517,6 +519,84 @@ it is right for a *different* fault: a detector or stain drifting over a long ac
   `imgaussfilt`, and `Flat-field (overlap-solved)` fits a polynomial. Do not "unify" them - the
   overlap-solved model has no per-image smoothing step to unify with.
 
+## Re-exposure damage (`solveReexposureDamage`)
+
+`IntensityCorrection = 'Re-exposure damage'`. For beam-sensitive specimens: the area an EARLIER tile
+already scanned comes out darker when the next tile images it. Reference data: 2 SEM tiles, 4096x6144
+uint8, 587 px overlap in X, dy -117 (`Mara_stitching dataset`, 2026-09-28). What was measured there:
+
+- **The plateau is affine, not a gain**: `B = 1.12*A - 33` (TLS on 16 px block means) - -21 grey at
+  100, -9 at 200. Uniform across the whole overlap (per-column `B - A` within ±1.5 of -15).
+- **It extends ~50 px OUTSIDE the recorded footprint**, with a ridge ~1.7x the plateau 5-15 px out
+  (the beam overscans past the saved field). That ridge is the darkest line in the raw mosaic (-27).
+- **The earlier tile has no step at the later tile's edge**, so which tile is damaged is readable
+  from pixels. The 60 rows of tile 2 above tile 1's footprint are undamaged.
+- **Every tile also has its own border roll-off** (~-10 grey over the last 40 columns, row 1 dark),
+  damaged or not. Used as a reference, that reads as WEAKER damage at the edge and painted a one-row
+  dark line in the first prototype -> `edgeGuard` (25 px) excludes tile borders from every reference
+  and the profile is bridged linearly across the gap.
+- **`Flat-field (overlap-solved)` cannot model it** (smooth shared field + per-tile gain): it closed
+  the step AT the seam line (-16 -> -0.9) but left the band (-10) and the ridge (-28).
+
+| (grey levels, Overwrite fuse) | raw | overlap-solved | re-exposure |
+|---|---|---|---|
+| overlap band vs surroundings | -15.1 | -8.0 | **0.0** |
+| ridge past the footprint edge | -26.1 | -27.6 | **-1.9** |
+| step at the seam line | -16.1 | -1.3 | **-0.3** |
+
+Estimation takes 0.4 s on that pair (TIF sub-region reads). **Held-out check** (fit on the upper
+half of the edge, score on the lower): overlap mismatch -15.4 -> 0.24, band -17.7 -> -2.0, ridge
+-27.5 -> -3.4, but ±4 grey of ripple at the ridge - the ridge shape itself shifts ~10 px between
+row quarters of the edge.
+
+**Model** (per later tile `j`, earlier footprints `k`):
+`observed = truth + S*((gain-1)*truth + offset)`, `S = sum_k px_k(dx)*py_k(dy)`, four 1-D profiles
+(the footprint's left/right/top/bottom side - line start/end and frame start/end need not match), 1
+on the plateau. Reader inverts `truth = (observed - S*offset)/(1 + S*(gain-1))`.
+
+- **Stored compactly, applied per read**: `correction.damage` holds `gain/offset`, the `[4 K]`
+  profiles and an `[M 5]` footprint table; `makeTileReader` builds `S` for exactly the region read
+  (outer product per footprint), so the struct stays plain numerics (parfor, crops = full-read crops).
+  A per-tile `[H W]` map would be N x 100 MB on real tiles.
+- **Direction per seam = the darker side** (`minDarkening` 2 %). Diagonal pairs are too small and
+  confounded to judge; they take the order a least-squares rank of the decided seams implies, with a
+  weak pull to layout order to break ties (the two off-diagonal tiles of a 2x2). A judged seam that
+  shows no darkening stays undamaged whatever the rank says.
+- **Inside the footprint** the profile is `(B - A)/dI(A)` per distance, pooled over seams. **Outside**
+  there is no second tile: the damaged tile's mean along the edge vs a baseline interpolated from the
+  reference's content just inside the edge to the damaged tile's far strip (`damageReach` 150 px +
+  `damageFarWidth` 50 px). This is the weak point - specimen leaks in; on the 200 px unit-test tiles
+  the ridge comes out ~0.25 too high at the edge. Hence forced non-negative and non-increasing after
+  its peak (a negative lobe would BRIGHTEN undamaged pixels), and pooled across all seams of a side.
+- **Sampling stays clear of every other footprint** (`damageReach` margin) in both tiles, so the
+  plateau and profiles are measured on single exposures only. A side no seam observed borrows its
+  opposite, then the best-observed side, else a plain step.
+- **Corner accumulation is assumed LINEAR** (S = 2 under two footprints; a ridge x ridge corner ~2.9).
+  NOT yet verified on real data - no grid was available. Check first when a 3x3 turns up.
+
+**Overwrite draws in REVERSE acquisition order** when a damage model is active and the user has not
+set an explicit order (`utils.stitch.tileDrawOrder`, sorted by `-correction.damage.order`, stable;
+unranked tiles drawn first; the seam inspector's tile-order dropdown overrides it), so
+the first-imaged tile ends on top and every overlap shows the undamaged copy. Asked for by the user
+after seeing the corrected pair: the correction evens the brightness but cannot restore structure
+the beam destroyed. Only the ridge band past the footprint edge still comes from the damaged tile -
+nothing else covers it. `fuseStreaming`'s chunk path did not pass `correction` to the kernel; it
+does now (`fuseInMemory` and `StitchSliceProvider` already passed their whole options). The other
+blend modes are order-independent and untouched.
+
+**Placement-dependent, unlike every other method** - the edge is sharp, so a few px matter:
+
+- `ensureIntensityCorrection` returns a **neutral placeholder before the first solve** (nominal
+  positions were 117 px off on the reference pair), so Measure overlaps / overlap estimation run on
+  raw pixels. Phase correlation registered the raw pair fine. The damage is estimated once
+  `obj.positions` exist, i.e. before seam scoring and fusion.
+- The correction records `damage.positions`; when `obj.positions` differ it is re-estimated with
+  `previous` = the old one. **A move of <= `maxReuseShift` (20 px) only re-places footprints - no pixel
+  read (7 ms)**; the controller test pins that by deleting the tiles first.
+- The inspector keeps one reader per session; it now **rebuilds it when the correction's
+  `{method, damage.positions}` stamp changes**, otherwise after a re-solve it would review the damage
+  patches where the tiles used to be. Cost: that reader's tile cache is dropped once per re-solve.
+
 ## The stitched dataset's identity (name + pixel size)
 
 - **Name** (`Stitching.stitchedFilename`): `<source>_stitch.tif`, in the SOURCE folder. The source
@@ -603,6 +683,13 @@ raising (an old project must load into a newer dialog).
   `io.SaverFactory` really offers, the export leaving the active buffer untouched while carrying
   the mdoc's pixel size into the file, and a batch run with no destination stopping rather than
   guessing one).
+- **Re-exposure damage**: `StitchLayoutTest` (6 tests - the sixth pins Overwrite putting the
+  first-imaged tile on top in every overlap, the 4-tile corner included - on a synthetic 2x2 raster cut from one texture
+  with known affine damage, ridge and a triple-exposed corner: plateau recovered to 1.1200 / -30.01,
+  every pair incl. diagonals oriented correctly, damaged tiles' error cut 5-8x, crop = full-read crop,
+  undamaged tiles left bit-identical, no positions -> refused, small move -> model kept and nothing
+  read) and `StitchingControllerTest` (1 test: neutral before a solve, placed at the solved positions,
+  re-placed without a read after a small move).
 - **Canvas frame**: `StitchCoreTest` (6 tests: the class ceilings, the fill in all five blend modes,
   the crop vs an exhaustive largest-rectangle search on a real mask, the multi-layer intersection,
   identity-tform equivalence, warped tiles leaving no background) and `StitchingControllerTest`

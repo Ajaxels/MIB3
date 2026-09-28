@@ -18,7 +18,8 @@ a landmark, dragging the overlay, or matching two points.
 
 Open it with <span class="widget widget-button">Inspect and fix...</span> in the
 [Stitching](dataset-stitch.md) window - enabled once *Measure overlaps* and *Optimize positions*
-have run. Both windows stay open and usable side by side.
+have run. Both windows stay open and usable side by side. The overlay mode, Fix mode, ROI size,
+search radius and Auto re-solve are remembered until MIB is closed.
 
 <div class="clear-float"></div>
 
@@ -31,7 +32,7 @@ The inspector is built around one repeated cycle: **look at the worst seam, deci
 1. **Read the top of the table.** It is the seam whose pixels agree least at the solved placement.
    → [The seam table](#the-seam-table)
 
-2. **Judge it in the pair view.** In the default *Falsecolor* overlay, aligned structures come out
+2. **Judge it in the pair view.** In the default *Falsecolor (cyan/magenta)* overlay, aligned structures come out
    **white**; a misalignment splits into cyan and magenta ghosts. ++space++ (in *Flicker* mode) is
    the fastest way to see a small shift.
    → [The pair view](#the-pair-view)
@@ -170,17 +171,39 @@ The **complete tile pair** composited at the solved offset - not just the overla
 that is badly out of place is still visible and still fixable. Large tiles are downsampled for
 display only; every fix is computed at full resolution.
 
-Which tile is which colour is stated in the axes title (*e.g. Cyan: tile 2; Magenta: tile 4*), along
-with the browsed slices on 3D pairs.
+Which tile is which colour is stated in the axes title (*e.g. Cyan: tile 2; Magenta: tile 4 (on
+top)*), along with the browsed slices on 3D pairs. The tile on top - the one
+**Overwrite** blend mode keeps in the mosaic, see
+[Tile order](#tile-order) - is always the magenta (or red) one.
 
 ### Overlay modes
 
 | <span class="widget widget-dropdown">Overlay mode</span> | Shows | Best for |
 |---|---|---|
-| **Falsecolor** *(default)* | tile *i* in **cyan**, tile *j* in **magenta** - aligned structure adds up to **white**, misaligned structure splits into coloured ghosts | judging alignment at a glance; the mode to work in |
+| **Preview final** | the pair as <span class="widget widget-button">Stitch</span> will produce it, with the current [blend mode](dataset-stitch.md#blend-modes), [tile order](#tile-order) and intensity correction | deciding which tile should be on top |
+| **Falsecolor (cyan/magenta)** *(default)* | the tile on top in **magenta**, the other in **cyan** - aligned structure adds up to **white**, misaligned structure splits into coloured ghosts | judging alignment at a glance; the mode to work in |
+| **Falsecolor (green/red)** | the tile on top in **red**, the other in **green** - aligned structure comes out **yellow** | the same, in the colour pair some eyes separate better |
 | **Flicker** | one tile at a time, ++space++ toggles | small shifts - the eye catches a 2 px jump between two flickering images far better than a colour fringe |
 | **Checkerboard** | alternating squares from each tile | whether structures **continue** across the changeover |
 | **Difference** | the intensity difference of the two | a quick look at brightness disagreement as well as misalignment |
+
+### Tile order
+
+Where tiles overlap, the [Overwrite](dataset-stitch.md#blend-modes) blend mode keeps only one of them.
+<mouse class="right"></mouse> click the pair view (without dragging) to choose which: the menu has
+one entry for each tile of the seam on screen, each with **Move to top**, **Move up**, **Move down**
+and **Move to bottom**. The colours swap as soon as the tile on top changes; switch
+<span class="widget widget-dropdown">Overlay mode</span> to **Preview final** to see the result as
+it will be stitched.
+
+**Move up** and **move down** step past the nearest tile the moved tile actually overlaps, so every
+choice changes something visible; moves that would change nothing are greyed out. The order is used by
+<span class="widget widget-button">Stitch</span> and saved with the project; it moves no tile and
+changes no seam score. It has no effect with the other blend modes, which mix the tiles.
+
+Until you change it, the tile imaged **first** is on top when
+[Re-exposure damage](dataset-stitch.md#intensity-correction) correction is selected, so overlaps
+show the undamaged copy; otherwise the tile with the higher number is.
 
 ???+ tip "Zooming and panning"
     - **Mouse wheel** zooms at the cursor. The zoom is **kept** through nudges, drags and fixes of
@@ -289,8 +312,8 @@ declining, aim at a distinctive feature rather than flat background, or enlarge 
 
 ### Drag the overlay
 
-<mouse class="left"></mouse> drag moves the second tile live at 50% opacity; release applies the
-shift. Use it to get within a few pixels when the offset is too far out for the search radius, then
+<mouse class="left"></mouse> drag moves the second tile of the seam live at 50% opacity - the axes
+title names it (*drag moves tile 4*), whichever colour it has; release applies the shift. Use it to get within a few pixels when the offset is too far out for the search radius, then
 finish with ++shift++ + click.
 
 A click that does not move is deliberately a **no-op** - stray clicks never move a tile.
@@ -380,6 +403,7 @@ The <span class="widget widget-dropdown">Fix mode</span> dropdown decides what a
 | ++shift++ + wheel | Resizes the correlation ROI box |
 | Wheel | Zooms the pair view at the cursor |
 | <mouse class="right"></mouse> drag | Pans the view (no zoom change); clamped to the rendered tile extent |
+| <mouse class="right"></mouse> click, no movement | Opens the [tile order](#tile-order) menu (not in the Fix Z view) |
 | <mouse class="left"></mouse> click *(two-click match armed)* | Sets a landmark point on whichever tile was clicked |
 
 Elsewhere in the window:

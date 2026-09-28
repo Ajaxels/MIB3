@@ -7,6 +7,10 @@ function previewDynamicMask(obj)
 %       obj.previewDynamicMask()
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibDeep.previewDynamicMask: triggered\n');
+end
+
     wb = uiprogressdlg(obj.view.gui, 'Message', 'Please wait...', 'Title', 'Generating blocks');
 
     % get current image

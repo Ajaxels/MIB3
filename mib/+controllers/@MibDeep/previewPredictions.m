@@ -7,6 +7,10 @@ function previewPredictions(obj)
 %       obj.previewPredictions()
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibDeep.previewPredictions: triggered\n');
+end
+
 scoreDir = fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages', 'ResultsScores');
 
 switch obj.BatchOpt.P_ScoreFiles{1}

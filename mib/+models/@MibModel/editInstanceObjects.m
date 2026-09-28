@@ -456,11 +456,15 @@ function [box, drawn] = localDrawingExtent(obj, id, dataset, timePoint, use3D)
 % slices carrying the drawing, the other to its full box.
 %
 % The only read in this file that is not confined to a bounding box, and it is
-% affordable because the extent is found by reduction rather than by find(): on
-% a 1078x1380x101 stack the any() passes cost 3 ms against 83 ms for a find()
-% across the whole volume, and everything downstream is then proportional to the
-% box. The Z range is left off the read so it keeps the copy-on-write fast path
-% of getData3D instead of duplicating the layer.
+% affordable because the extent is found by reduction rather than by find(), and
+% the one full-volume reduction runs along dimension 1, which is contiguous in
+% memory. Reducing along dimension 2 first is strided and scales far worse than
+% the volume: on a 1636x2556x1250 stack any(any(v, 2), 3) costs 4.5 s against
+% 0.1 s for any(v, 1). So columns and planes come from the one contiguous pass,
+% and rows from the block those two bound, which holds every drawn voxel and so
+% gives the same rows. Everything downstream is then proportional to the box.
+% The Z range is left off the read so it keeps the copy-on-write fast path of
+% getData3D instead of duplicating the layer.
 %
 % Input Arguments:
 %   - **use3D** - logical, whole volume or the shown slice only
@@ -481,10 +485,12 @@ if ~use3D
 end
 selectionVolume = cell2mat(obj.getData3D('selection', timePoint, 3, NaN, readOptions));
 
-rowsUsed = find(any(any(selectionVolume, 2), 3));
-if isempty(rowsUsed); return; end
-colsUsed   = find(any(any(selectionVolume, 1), 3));
-planesUsed = find(any(any(selectionVolume, 1), 2));
+columnsAndPlanes = any(selectionVolume, 1);     % 1 x width x depth
+planesUsed = find(any(columnsAndPlanes, 2));
+if isempty(planesUsed); return; end
+colsUsed = find(any(columnsAndPlanes, 3));
+rowsUsed = find(any(any(selectionVolume(:, colsUsed(1):colsUsed(end), ...
+    planesUsed(1):planesUsed(end)), 2), 3));
 
 box = [rowsUsed(1), rowsUsed(end), colsUsed(1), colsUsed(end), ...
        zOffset + planesUsed(1), zOffset + planesUsed(end)];
@@ -763,9 +769,36 @@ localWriteLabels(obj, id, localCropToFull(obj, id, box, find(drawn), timePoint),
 dataset.buildInstanceIndex(refresh);
 
 if consumesSelection
-    if use3D; dataset.clearLayer('selection', '3D'); else; dataset.clearLayer('selection', '2D'); end
+    localClearDrawing(obj, id, dataset, timePoint, use3D, box);
 end
 done = true;
+end
+
+% =====================================================================
+function localClearDrawing(obj, id, dataset, timePoint, use3D, box)
+% Clear the drawing an operation has used up.
+%
+% Clears the drawing's own bounding box rather than the layer: the box holds
+% every drawn voxel, so the result is the same, while zeroing the whole layer is
+% a full write of it - 2.2 s for a 1636x2556x1250 stack, on every press. The
+% picked objects' highlight is released before any operation runs, so nothing
+% else is in the layer to be kept or lost.
+%
+% Block mode is passed off explicitly: with it on, ``MibDataset.clearLayer``
+% replaces x and y by the visible area, which would leave any part of the
+% drawing scrolled out of view behind.
+%
+% Input Arguments:
+%   - **use3D** - logical, whole volume or the shown slice only, as for
+%     ``localDrawingExtent``
+%   - **box** - ``[y1 y2 x1 x2 z1 z2]`` of the drawing when the caller already
+%     has it from ``localDrawingExtent``, and nothing has been drawn since; ``[]``
+%     to find it here, which costs one pass over the layer
+if isempty(box)
+    box = localDrawingExtent(obj, id, dataset, timePoint, use3D);
+    if isempty(box); return; end
+end
+dataset.clearLayer('selection', box(1:2), box(3:4), box(5:6), [timePoint, timePoint], 0);
 end
 
 % =====================================================================
@@ -1066,7 +1099,7 @@ dataset.buildInstanceIndex(refresh);
 % Deliberately not backed up - the undo step belongs to the change in the model,
 % and a second one would mean two Ctrl+Z presses to reverse a single action.
 if consumesSelection
-    if use3D; dataset.clearLayer('selection', '3D'); else; dataset.clearLayer('selection', '2D'); end
+    localClearDrawing(obj, id, dataset, timePoint, use3D, []);
 end
 
 % Connect promises one connected object. When the two overlap in Z there is

@@ -80,6 +80,21 @@ if numel(inputPatchSize) ~= 4
     return;
 end
 
+% 2.5D networks predict the central slice of a symmetric Z-stack, the
+% depth of 1 gives a 2D network and even depths do not have the central slice
+if strcmp(obj.BatchOpt.Workflow{1}, '2.5D Semantic') && (inputPatchSize(3) < 3 || mod(inputPatchSize(3), 2) == 0)
+    mgsOpt.MsgBoxOnly = true;
+    mgsOpt.headerLines = 2;
+    mgsOpt.WindowHeight = 240;
+    mgsOpt.WindowWidth = 500;
+    msgText = sprintf(['The depth of the input patch for the "2.5D Semantic" workflow\n' ...
+        'should be an odd number of 3 or more, for example "%d %d 3 %d"\n\n' ...
+        'For the depth of 1, please use the "2D Semantic" workflow'], ...
+        inputPatchSize(1), inputPatchSize(2), inputPatchSize(4));
+    utils.dlgs.inputUniversalDlg(obj.view.gui, sprintf('Wrong depth of the input patch size\n(BatchOpt.T_InputPatchSize = "%s")', strtrim(num2str(inputPatchSize, '%d '))), {}, {msgText}, 'Wrong patch size', mgsOpt);
+    return;
+end
+
 %   check for rectangular shape of the input patch
 if inputPatchSize(1)~=inputPatchSize(2) && obj.BatchOpt.T_augmentation
     if (strcmp(obj.BatchOpt.Workflow{1}(1:2), '2D') && obj.AugOpt2D.Rotation90.Enable ) || ...

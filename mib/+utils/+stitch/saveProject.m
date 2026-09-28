@@ -1,4 +1,4 @@
-function saveProject(filePath, layout, edges, positions, solverInfo, outputInfo, tforms, zSliceFixes, settings)
+function saveProject(filePath, layout, edges, positions, solverInfo, outputInfo, tforms, zSliceFixes, settings, tileStack)
 % SAVEPROJECT - Save a stitching project to a JSON sidecar file.
 %
 % Syntax:
@@ -32,6 +32,10 @@ function saveProject(filePath, layout, edges, positions, solverInfo, outputInfo,
 %     as produced by :meth:`controllers.Stitching.collectProjectSettings`. Stored
 %     under ``project.settings`` so *Load project* can restore the whole dialog,
 %     or reuse the parameters alone on a different set of tiles. Omit for none.
+%   - **tileStack** *(optional)* - [1 x N] the ``'Overwrite'`` drawing order set
+%     in the seam inspector, bottom first (see :func:`utils.stitch.tileDrawOrder`);
+%     stored as ``project.tileStack``. ``[]``/omit when the user never set one - the
+%     default order is then re-derived on load rather than frozen into the file.
 %
 % **Example** - save after solving:
 %
@@ -51,6 +55,7 @@ arguments
     tforms      cell = {}
     zSliceFixes double = []
     settings    struct = struct()
+    tileStack   double = []
 end
 
 % Ensure correct extension
@@ -103,6 +108,11 @@ end
 % Tool settings (flattened BatchOpt + feature-detector options)
 if ~isempty(fieldnames(settings))
     project.settings = settings;
+end
+
+% Overwrite drawing order chosen in the seam inspector, bottom first
+if ~isempty(tileStack)
+    project.tileStack = tileStack(:)';
 end
 
 % Encode and write

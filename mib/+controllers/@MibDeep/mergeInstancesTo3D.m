@@ -35,6 +35,10 @@ function mergeInstancesTo3D(obj)
 %   (none)
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibDeep.mergeInstancesTo3D: triggered\n');
+end
+
 % ------------------------------------------------------------------ %
 %  Locate the predicted instance models                               %
 % ------------------------------------------------------------------ %

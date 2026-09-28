@@ -10,6 +10,24 @@ function checkNetwork(obj, fn)
 %   - **fn** - optional string with filename (``*.mibDeep``) to preview its
 %     configuration
 %
+% In MATLAB the network is opened in ``analyzeNetwork``. The deployed version
+% has no ``analyzeNetwork``, so the layers are listed in a table (index, name,
+% type, patch size, details) and the layer graph is plotted in a separate
+% figure. The patch size is the size of the activations a layer outputs,
+% height x width (x depth) x channels. It comes from ``deep.internal.sdk.forwardDataAttributes``,
+% which propagates the size of the input layer through the network without
+% computing any activations, so it is fast and needs no memory for the data. It
+% accepts a layerGraph, DAGNetwork or dlnetwork. The batch dimension is not shown,
+% and for a layer with several outputs only its first output is listed. Custom
+% layers without an ``OutputNames`` property (e.g. ``dicePixelCustomClassificationLayer``)
+% are addressed by their name. Being an
+% internal function it may change between MATLAB releases; if it fails the column
+% shows ``-`` and, in DeveloperMode, the error is printed to the command window.
+%
+
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibDeep.checkNetwork: triggered\n');
+end
 
     if nargin < 2; fn = []; end
     if ~isempty(fn) && exist(fn, 'file') == 0
@@ -94,9 +112,9 @@ function checkNetwork(obj, fn)
     else
         uiFig = uifigure('Visible', 'off');
         ScreenSize = get(0, 'ScreenSize');
-        FigPos(1) = 1/2*(ScreenSize(3)-800);
+        FigPos(1) = 1/2*(ScreenSize(3)-950);
         FigPos(2) = 2/3*(ScreenSize(4)-900);
-        uiFig.Position = [FigPos(1), FigPos(2), 800, 900];
+        uiFig.Position = [FigPos(1), FigPos(2), 950, 900];
         uiFig.Name = sprintf('Preview network (%s)', architecture);
 
         uiFigGridLayout = uigridlayout(uiFig);
@@ -105,7 +123,7 @@ function checkNetwork(obj, fn)
 
         % Create previewTable
         previewTable = uitable(uiFigGridLayout);
-        previewTable.ColumnName = {'Index'; 'Layer name'; 'Layer type'; 'Details'};
+        previewTable.ColumnName = {'Index'; 'Layer name'; 'Layer type'; 'Patch size'; 'Details'};
         previewTable.RowName = {};
         previewTable.Layout.Row = 2;
         previewTable.Layout.Column = 1;
@@ -122,17 +140,47 @@ function checkNetwork(obj, fn)
         % clip the header
         layerLines = layerLines(3:end);
         % allocate space for the table
-        tableData = cell([numel(lgraph.Layers), 4]);
+        tableData = cell([numel(lgraph.Layers), 5]);
         for rowId=1:numel(layerLines)
             if numel(layerLines{rowId}) > 1
                 % split line using more than 2 spaces
                 rowStr = strsplit(layerLines(rowId), '[ ]{3,}', 'DelimiterType', 'RegularExpression');
-                % populate the table data without the first empty entry
-                tableData(rowId,:) = rowStr(2:end).cellstr;
+                % populate the table data without the first empty entry,
+                % column 4 is filled with the patch sizes below
+                tableData(rowId, [1 2 3 5]) = rowStr(2:end).cellstr;
             end
         end
+
+        % patch sizes (layer activation sizes), propagated from the size of the input layer
+        % without running the network; for layers with several outputs
+        % (e.g. max pooling with unpooling outputs in SegNet) only the first
+        % output is shown. forwardDataAttributes is an internal
+        % Deep Learning Toolbox function, so any failure only blanks the column
+        try
+            layerOutputNames = cell([numel(lgraph.Layers), 1]);
+            for layerId = 1:numel(lgraph.Layers)
+                layerOutputNames{layerId} = lgraph.Layers(layerId).Name;
+                % custom layers, e.g. dicePixelCustomClassificationLayer, may have no OutputNames
+                if isprop(lgraph.Layers(layerId), 'OutputNames') && numel(lgraph.Layers(layerId).OutputNames) > 1
+                    layerOutputNames{layerId} = [lgraph.Layers(layerId).Name '/' lgraph.Layers(layerId).OutputNames{1}];
+                end
+            end
+            [activationSizes, activationFormats] = deep.internal.sdk.forwardDataAttributes(lgraph, 'Outputs', layerOutputNames);
+            for layerId = 1:numel(activationSizes)
+                % drop the batch dimension and the absent (NaN) dimensions
+                activationSize = activationSizes{layerId}(char(activationFormats{layerId}) ~= 'B');
+                activationSize = activationSize(~isnan(activationSize));
+                tableData{layerId, 4} = char(strjoin(string(activationSize), char(215)));  % char(215) is the multiplication sign, as in the Details column
+            end
+        catch err
+            tableData(:, 4) = {'-'};
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.MibDeep.checkNetwork: activation sizes are not available: %s\n', err.message);
+            end
+        end
+
         previewTable.Data = tableData;
-        previewTable.ColumnWidth = {50, 'fit', 'fit','auto'};
+        previewTable.ColumnWidth = {50, 'fit', 'fit', 'fit', 'auto'};
 
         % add header
         textArea.Value = [  {sprintf('Architecture: %s', architecture)}; ...

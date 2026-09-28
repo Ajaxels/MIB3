@@ -7,6 +7,10 @@ function selectArchitecture(obj, event)
 %       obj.selectArchitecture(event)
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibDeep.selectArchitecture: triggered\n');
+end
+
 if nargin < 2; event.Source = obj.view.handles.Architecture; end
 obj.updateBatchOptFromGUI(event);
 

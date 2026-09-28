@@ -138,6 +138,62 @@ and not to this window: while it was stored on the inspector, closing that windo
 chip went quiet and Stitch fused the pre-fix placement) BEFORE fusing, or it
 silently fuses stale positions. Inspector bottom row: Confirm / Exclude / Re-solve / Close.
 
+## Tile order (Overwrite drawing order) and the falsecolor colours
+
+Added 2026-09-28 at the user's request, after re-exposure damage made "which tile wins an overlap" a
+real choice. `Stitching.tileStack` ([1 x N], bottom first, `[]` = default) is edited from the pair
+view's **right-click menu** (a submenu per tile of the seam on screen, each with move to top / up /
+down / to bottom - the entries name the tile, so nothing is implicit; `tileOrder_Callback`), used by
+every fuser, saved as `project.tileStack`, and cleared with the layout.
+
+- **It is a real `ContextMenu`** (`obj.tileOrderMenu`, created in `addCallbacks`, set on `pairAxes`
+  AND on every image `renderPairView` draws - images do not inherit it), filled by
+  `fillTileOrderMenu` in its `ContextMenuOpeningFcn`. **Opening it by hand does not work**: the first
+  version called `open(menu, x, y)` from the right-button-up callback; verified with real OS mouse
+  events (java.awt.Robot + screen capture) that the menu is built and opened but never appears -
+  the window's own right-click handling dismisses it. A synthetic call of the callbacks passed,
+  which is why it shipped broken once: only a real click exercises this.
+- **Right DRAG still pans.** The native menu opens on the right button RELEASE (Windows), after the
+  pan; `pairViewButtonDown` sets `rightDragMoved` once the press moved >= 3 screen px, and
+  `fillTileOrderMenu` then leaves the menu EMPTY, which keeps it closed. The flag is reset on read
+  (a right-click on the axes background never reaches `pairViewButtonDown`). Unverified on a real
+  pan: an empty menu might flash; if it does, that is the place to look.
+- First built as a dropdown above `pairAxes` (would have needed an mlapp edit); the menu needs none.
+- **`Preview final` overlay**: the pair fused the way Stitch will (`previewFusedPair` mirrors
+  `fuseSliceComposite` at display scale: the Stitching window's `BlendMode` - Feather weights from
+  `blendWeights` on the downsampled tiles - the drawing order, `CanvasColor` for the uncovered
+  frame). The way to judge which tile belongs on top.
+
+- **One function decides the order**: `utils.stitch.tileDrawOrder` (explicit stack > re-exposure
+  damage default [first imaged on top] > index order). Both `fuseSliceComposite` and
+  `StitchingInspector.currentTileStack` call it, so the tile coloured "on top" is the tile Stitch keeps.
+- **The first move freezes the order in force**, then edits it - the damage default can no longer
+  shift under a choice the user made.
+- **Up/down step past the nearest tile that OVERLAPS the moved one** (`utils.stitch.moveInTileStack`);
+  stepping past a non-overlapping tile changes no pixel. Moves that would change nothing are greyed
+  out (moveInTileStack returns the stack unchanged for them).
+- **Magenta (or red) = the tile on top**, no longer "tile j". A drag still moves tile *j*, so the
+  title now ends `| drag moves tile N`. Fix Z boundary view: slice z takes the top colour; the menu
+  does not open there (both images are one tile), nor while a two-click match is armed.
+- `Falsecolor (green/red)`: R = top, G = bottom, B = 0 -> aligned structure yellow. The cyan/magenta
+  composite is R = top, G = bottom, B = max(both) -> white.
+- The fusers' option structs are built by hand in three places (`fuseStreaming` chunk path and its
+  `streamViaSaver`, `fuseToFiles`), each of which had to be taught `tileStack` - `fuseInMemory` and
+  `StitchSliceProvider` pass their whole options through.
+
+## Sticky dialog settings (`sessionSettings.stitchingInspector`)
+
+Overlay mode, Fix mode, ROI size, search radius and Auto re-solve are written on close
+(`storeSessionSettings`, from `closeWindow`) and restored on open (`restoreSessionSettings`, BEFORE
+the first ranking - the Fix mode decides which seams the table lists), mirroring the Stitching
+dialog's `sessionSettings.stitching`. One field table (`inspectorSessionFields`, local to the
+classdef) serves both. First opening of a session = mlapp/addCallbacks defaults, i.e. overlay
+`Falsecolor (cyan/magenta)`. Values the widget would reject (unknown item, spinner out of limits) are
+skipped. **Fix Z is restored only when a tile has Z slices** - on a 2D mosaic it would open on the
+"Fix Z needs Z slices" dialog; when restored, the constructor runs the dropdown's own handler so a
+single-layer Z-stack still lands on a usable seam. Seam, zoom and browsed slice are review state, not
+settings, and are not carried over.
+
 ## mlapp widgets
 
 Full spec (handles, classes, defaults, Phase C additions) in
@@ -149,6 +205,9 @@ controller drives its pressed/color/text state from the edge, never reads it bac
 
 `tests\utils\StitchInspectorTest.m` (scoreSeams/localCorrelate/solver weighting/sidecar v2
 round-trip) + `tests\controllers\StitchingInspectorControllerTest.m` (headless controller:
-ranking, applyUserFix, undo, exclude/re-solve, Fix-Z per-slice corrections). GUI smoke:
+ranking, applyUserFix, undo, exclude/re-solve, Fix-Z per-slice corrections, tile-order moves).
+Tile order core: `StitchCoreTest` (tileDrawOrder priority + rejection of foreign stacks,
+moveInTileStack skipping non-overlapping tiles, Overwrite following the stack in memory AND
+streamed, sidecar round-trip). GUI smoke:
 [`smoke_tests.md`](smoke_tests.md) test 12 (sabotaged chain — full worst-first workflow) and
 test 3 (Fix Z on a 3D dataset).

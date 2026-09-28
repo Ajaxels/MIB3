@@ -37,6 +37,8 @@ function fuseStreaming(layout, canvas, outputZarrPath, options)
 %     - ``.DownsampleMethod`` - [char] pyramid downsampling method (default: ``'bilinear'``)
 %     - ``.DownsampleStrategy`` - [char] ``'XY only'`` (default) | ``'Anisotropy-preserving'``
 %     - ``.cacheSizeBytes`` - [double] LRU tile-cache budget (default: ``2*1024^3``)
+%     - ``.tileStack`` - [1 x N] drawing order for ``'Overwrite'``, bottom first
+%       (default: ``[]``, see :func:`utils.stitch.tileDrawOrder`)
 %     - ``.showWaitbar`` - [logical] show progress (default: ``false``)
 %     - ``.parentFigure`` - [handle] progress-dialog parent (default: ``[]``)
 %     - ``.pixSize`` - [struct] override ``canvas.pixSize`` for metadata (optional)
@@ -95,7 +97,8 @@ function streamViaSaver(layout, canvas, outputZarrPath, options, pixSize)
 providerOptions = struct('blendMode', options.blendMode, ...
     'background', options.background, 'cacheSizeBytes', options.cacheSizeBytes, ...
     'correction', options.correction);
-if isfield(options, 'marginPx'); providerOptions.marginPx = options.marginPx; end
+if isfield(options, 'marginPx');  providerOptions.marginPx  = options.marginPx; end
+if isfield(options, 'tileStack'); providerOptions.tileStack = options.tileStack; end
 
 provider = io.savers.StitchSliceProvider(layout, canvas, providerOptions);
 
@@ -186,7 +189,11 @@ end
 
 readerFcn = utils.stitch.makeTileReader(layout, ...
     struct('cacheSizeBytes', options.cacheSizeBytes, 'correction', options.correction));
-fuseOptions = struct('blendMode', options.blendMode, 'background', options.background);
+% The correction and the tile stack ride along to the kernel too: Overwrite takes
+% its drawing order from them (see utils.stitch.tileDrawOrder).
+fuseOptions = struct('blendMode', options.blendMode, 'background', options.background, ...
+    'correction', options.correction);
+if isfield(options, 'tileStack'); fuseOptions.tileStack = options.tileStack; end
 if isfield(options, 'marginPx'); fuseOptions.marginPx = options.marginPx; end
 
 progressDialog = [];

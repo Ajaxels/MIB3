@@ -9,6 +9,10 @@ function updateDynamicMaskSettings(obj)
 % prediction using blockedimage mode
 % the settings are stored in obj.DynamicMaskOpt
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibDeep.updateDynamicMaskSettings: triggered\n');
+end
+
     % 'Keep above threshold' or 'Keep below threshold'
     prompts = {...
         sprintf('Masking method:\n"Keep above threshold"\n\t - threshold the image and process only the areas that are above the specified threshold\n"Keep below threshold"\n\t - threshold the image and process only the areas that are below the specified threshold'); ...

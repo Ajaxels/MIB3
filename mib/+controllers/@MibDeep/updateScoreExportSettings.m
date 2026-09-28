@@ -7,6 +7,10 @@ function updateScoreExportSettings(obj)
 %       obj.updateScoreExportSettings()
 %
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibDeep.updateScoreExportSettings: triggered\n');
+end
+
     prompts = {sprintf('Export exterior material')};
     defAns = {obj.ScoreExportOpt.IncludeExterior};
     dlgTitle = 'Export scores settings';

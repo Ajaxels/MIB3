@@ -8,6 +8,10 @@ function transferLearning(obj)
 %
 % number of classes
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibDeep.transferLearning: triggered\n');
+end
+
     obj.BatchOpt.Mode{1} = 'Predict';   % change the mode, so that selectNetwork function loads the network
     net = obj.selectNetwork();
     if isempty(net); return; end

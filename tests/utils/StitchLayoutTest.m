@@ -1479,6 +1479,162 @@ classdef StitchLayoutTest < matlab.unittest.TestCase
                 'utils:stitch:makeTileReader:correctionSizeMismatch');
         end
 
+        function reexposure_recoversAndRemovesKnownDamage(testCase)
+            % A 2x2 raster cut from ONE texture, each tile darkened where the
+            % tiles imaged before it had already scanned - including a ridge past
+            % every footprint edge and a corner hit twice. The estimator has to
+            % find the order from the pixels, recover the plateau, and give back
+            % the undamaged texture.
+            tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            truthGain = 1.12; truthOffset = -30;
+            [tileFiles, truePositions, truthTiles] = writeReexposedTiles(tmpDir.Folder, ...
+                200, 150, truthGain, truthOffset);
+            layout = utils.stitch.buildLayoutGrid(tileFiles, ...
+                struct('rows', 2, 'cols', 2, 'tileOrder', 'Horizontal', ...
+                       'overlapX', 25, 'overlapY', 25));
+
+            correction = utils.stitch.estimateIntensityCorrection(layout, ...
+                reexposureOptions(truePositions));
+
+            testCase.verifyEqual(correction.method, 'Re-exposure damage');
+            damage = correction.damage;
+            testCase.verifyEqual(damage.gain, truthGain, 'AbsTol', 0.03);
+            testCase.verifyEqual(damage.offset, truthOffset, 'AbsTol', 4);
+            % Every pair, the two diagonals included, points from the tile imaged
+            % first to the one imaged after it.
+            testCase.verifyEqual(sortrows(damage.pairs), ...
+                [1 2 1; 1 3 1; 1 4 1; 2 3 1; 2 4 1; 3 4 1]);
+            % The ridge outside the edge was seen, not just the plateau.
+            rightSide = damage.profiles(2, :);
+            testCase.verifyGreaterThan(interp1(damage.distance, rightSide, 1.5), 1.2);
+            testCase.verifyEqual(interp1(damage.distance, rightSide, 28.5), 0, 'AbsTol', 0.1);
+
+            readerFcn = utils.stitch.makeTileReader(layout, struct('correction', correction));
+            for tileIdx = 2:4
+                raw = double(imread(tileFiles{tileIdx}));
+                fixed = double(readerFcn(tileIdx));
+                rawError   = mean(abs(raw - truthTiles{tileIdx}), 'all');
+                fixedError = mean(abs(fixed - truthTiles{tileIdx}), 'all');
+                testCase.verifyLessThan(fixedError, 0.25 * rawError, sprintf( ...
+                    'tile %d: the damage was not removed (%.2f -> %.2f grey levels)', ...
+                    tileIdx, rawError, fixedError));
+            end
+            testCase.verifyEqual(readerFcn(1), imread(tileFiles{1}), ...
+                'the tile imaged first carries no damage and must not be touched');
+        end
+
+        function reexposure_overwriteKeepsTheUndamagedTileOnTop(testCase)
+            % Overwrite normally lets the highest index win. With a damage model
+            % the FIRST-imaged tile must win instead: the correction evens out the
+            % later tile's brightness but cannot restore structure the beam hit,
+            % and the earlier tile shows the same area undamaged.
+            tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            [tileFiles, truePositions] = writeReexposedTiles(tmpDir.Folder, 200, 150, 1.12, -30);
+            layout = utils.stitch.buildLayoutGrid(tileFiles, ...
+                struct('rows', 2, 'cols', 2, 'tileOrder', 'Horizontal', ...
+                       'overlapX', 25, 'overlapY', 25));
+            correction = utils.stitch.estimateIntensityCorrection(layout, ...
+                reexposureOptions(truePositions));
+            canvas = utils.stitch.planCanvas(layout, [truePositions, ones(4, 1)]);
+
+            mosaic = utils.stitch.fuseInMemory(layout, canvas, ...
+                struct('blendMode', 'Overwrite', 'correction', correction));
+            tileOne = imread(tileFiles{1});
+            % The whole of tile 1 - every overlap included - comes out as tile 1.
+            testCase.verifyEqual(mosaic(1:200, 1:200), tileOne);
+
+            % Where tile 4 overlaps only one earlier neighbour, that neighbour
+            % wins - as the corrected pixels the whole pipeline reads.
+            correctedReader = utils.stitch.makeTileReader(layout, struct('correction', correction));
+            tileTwo   = correctedReader(2);
+            tileThree = correctedReader(3);
+            testCase.verifyEqual(mosaic(201:350, 151:200), tileThree(51:200, 151:200), ...
+                'tiles 3 and 4 only: tile 3 was imaged first');
+            testCase.verifyEqual(mosaic(151:200, 201:350), tileTwo(151:200, 51:200), ...
+                'tiles 2 and 4 only: tile 2 was imaged first');
+        end
+
+        function reexposure_cropMatchesTheFullTile(testCase)
+            % A cropped read builds the strength map for its own region only; it
+            % has to agree with the same pixels taken from a full read.
+            tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            [tileFiles, truePositions] = writeReexposedTiles(tmpDir.Folder, 200, 150, 1.12, -30);
+            layout = utils.stitch.buildLayoutGrid(tileFiles, ...
+                struct('rows', 2, 'cols', 2, 'tileOrder', 'Horizontal', ...
+                       'overlapX', 25, 'overlapY', 25));
+            correction = utils.stitch.estimateIntensityCorrection(layout, ...
+                reexposureOptions(truePositions));
+
+            fullReader = utils.stitch.makeTileReader(layout, struct('correction', correction));
+            fullTile = fullReader(4);
+            pixelRegion = [20 90; 30 120];   % straddles two footprint edges and the corner
+            cropReader = utils.stitch.makeTileReader(layout, struct('correction', correction));
+            testCase.verifyEqual(cropReader(4, pixelRegion), ...
+                fullTile(pixelRegion(1,1):pixelRegion(1,2), pixelRegion(2,1):pixelRegion(2,2), :, :));
+        end
+
+        function reexposure_undamagedTilesAreLeftAlone(testCase)
+            % Without any darkening there is nothing to correct: the method must
+            % say so and change no pixel, rather than fit noise.
+            tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            [tileFiles, truePositions] = writeReexposedTiles(tmpDir.Folder, 200, 150, 1, 0);
+            layout = utils.stitch.buildLayoutGrid(tileFiles, ...
+                struct('rows', 2, 'cols', 2, 'tileOrder', 'Horizontal', ...
+                       'overlapX', 25, 'overlapY', 25));
+
+            correction = testCase.verifyWarning(@() utils.stitch.estimateIntensityCorrection( ...
+                layout, reexposureOptions(truePositions)), ...
+                'utils:stitch:estimateIntensityCorrection:noReexposureDamage');
+            testCase.verifyEmpty(correction.damage.footprints);
+            plainReader = utils.stitch.makeTileReader(layout);
+            neutralReader = utils.stitch.makeTileReader(layout, struct('correction', correction));
+            testCase.verifyEqual(neutralReader(4), plainReader(4));
+        end
+
+        function reexposure_needsPositions(testCase)
+            % Nominal positions can be off by many pixels, and the edges this
+            % corrects are sharp - so it refuses rather than guess.
+            tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            tileFiles = writeReexposedTiles(tmpDir.Folder, 200, 150, 1.12, -30);
+            layout = utils.stitch.buildLayoutGrid(tileFiles, ...
+                struct('rows', 2, 'cols', 2, 'tileOrder', 'Horizontal', ...
+                       'overlapX', 25, 'overlapY', 25));
+            correction = testCase.verifyWarning(@() utils.stitch.estimateIntensityCorrection( ...
+                layout, struct('method', 'Re-exposure damage')), ...
+                'utils:stitch:estimateIntensityCorrection:needsPositions');
+            testCase.verifyEqual(correction.method, 'None');
+        end
+
+        function reexposure_smallMoveKeepsTheModel(testCase)
+            % A re-solve moves tiles by a pixel or two; the fitted model stays
+            % and only the footprints follow - no pixel is read for it.
+            tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            [tileFiles, truePositions] = writeReexposedTiles(tmpDir.Folder, 200, 150, 1.12, -30);
+            layout = utils.stitch.buildLayoutGrid(tileFiles, ...
+                struct('rows', 2, 'cols', 2, 'tileOrder', 'Horizontal', ...
+                       'overlapX', 25, 'overlapY', 25));
+            first = utils.stitch.estimateIntensityCorrection(layout, reexposureOptions(truePositions));
+
+            moved = truePositions;
+            moved(4, :) = moved(4, :) + [2 -1];
+            options = reexposureOptions(moved);
+            options.previous = first;
+            % Point the layout at files that do not exist: a pixel read would fail.
+            missingLayout = layout;
+            for tileIdx = 1:numel(missingLayout)
+                missingLayout(tileIdx).filename = fullfile(tmpDir.Folder, 'gone', sprintf('%d.png', tileIdx));
+            end
+            second = utils.stitch.estimateIntensityCorrection(missingLayout, options);
+
+            testCase.verifyEqual(second.damage.profiles, first.damage.profiles);
+            testCase.verifyEqual(second.damage.gain, first.damage.gain);
+            testCase.verifyEqual(second.damage.positions, moved);
+            firstRow  = first.damage.footprints(first.damage.footprints(:, 1) == 4, :);
+            secondRow = second.damage.footprints(second.damage.footprints(:, 1) == 4, :);
+            testCase.verifyEqual(sortrows(secondRow), sortrows(firstRow - [0 2 2 -1 -1]), ...
+                'moving tile 4 must shift every earlier footprint the opposite way in its frame');
+        end
+
         function mdocMissingContainerIsReported(testCase)
             % A montage is two files; without the image there is nothing to read.
             tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
@@ -1607,6 +1763,58 @@ for rowIdx = 1:gridSize
         tileFiles{tileIdx} = fullfile(folderPath, sprintf('overlap_%02d.png', tileIdx));
         imwrite(uint8(min(255, max(0, patch .* truthField))), tileFiles{tileIdx});
     end
+end
+end
+
+% =========================================================================
+function options = reexposureOptions(positions)
+% REEXPOSUREOPTIONS - Re-exposure estimator settings scaled to 200 px test tiles.
+% The defaults (150 px reach, 25 px guard) are sized for real 4k - 24k tiles.
+options = struct('method', 'Re-exposure damage', 'positions', positions, ...
+    'damageReach', 30, 'damageFarWidth', 10, 'edgeGuard', 4);
+end
+
+% =========================================================================
+function [tileFiles, truePositions, truthTiles] = writeReexposedTiles(folderPath, ...
+    tileSize, stepPx, damageGain, damageOffset)
+% WRITEREEXPOSEDTILES - A 2x2 raster whose later tiles are darkened where the
+% earlier ones already scanned.
+%
+% Tiles are cut from ONE texture, so the undamaged truth of every pixel is known.
+% Acquisition order is the raster order 1, 2, 3, 4; tile t is damaged by every
+% earlier tile whose footprint touches it, diagonals included, so tile 4's corner
+% under tiles 1, 2 and 3 carries three exposures. Each footprint contributes a
+% separable strength - 1 inside, a ridge of 1.5 decaying over ~6 px outside -
+% and the damage is ``truth + S * ((gain - 1) * truth + offset)``. With gain 1
+% and offset 0 the tiles are clean.
+canvasSize = tileSize + stepPx;
+rng(5150, 'twister');
+content = imfilter(randn(canvasSize), fspecial('gaussian', [15 15], 3), 'replicate');
+[rampXX, rampYY] = meshgrid(linspace(-1, 1, canvasSize));
+canvas = 125 + 25 * content / std(content(:)) + 8 * (rampXX - 0.5 * rampYY);
+% Kept well inside uint8 even after the damage, so the truth is representable.
+canvas = min(220, max(30, canvas));
+
+truePositions = [1 1; 1 1 + stepPx; 1 + stepPx 1; 1 + stepPx 1 + stepPx];
+profile = @(d) (d < 0) + (d >= 0) .* 1.5 .* exp(-d / 6);
+tileFiles  = cell(4, 1);
+truthTiles = cell(4, 1);
+coords = (1:tileSize)';
+for tileIdx = 1:4
+    truth = canvas(truePositions(tileIdx, 1) + (0:tileSize - 1), ...
+                   truePositions(tileIdx, 2) + (0:tileSize - 1));
+    strength = zeros(tileSize);
+    for earlierIdx = 1:tileIdx - 1
+        rowMin = truePositions(earlierIdx, 1) - truePositions(tileIdx, 1) + 1;
+        colMin = truePositions(earlierIdx, 2) - truePositions(tileIdx, 2) + 1;
+        rowDistance = max((rowMin - 0.5) - coords, coords - (rowMin + tileSize - 1 + 0.5));
+        colDistance = max((colMin - 0.5) - coords, coords - (colMin + tileSize - 1 + 0.5));
+        strength = strength + profile(rowDistance) * profile(colDistance)';
+    end
+    observed = truth + strength .* ((damageGain - 1) * truth + damageOffset);
+    truthTiles{tileIdx} = truth;
+    tileFiles{tileIdx} = fullfile(folderPath, sprintf('reexposed_%02d.png', tileIdx));
+    imwrite(uint8(min(255, max(0, observed))), tileFiles{tileIdx});
 end
 end
 
