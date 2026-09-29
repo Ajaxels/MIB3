@@ -94,14 +94,14 @@ classdef UpdateCheck < handle
             if isdeployed
                 obj.view.handles.updateBtn.Enable = 'off';
                 if ismac
-                    link = 'http://mib.helsinki.fi/web-update/mib3_mac.txt';
+                    link = 'http://mib.helsinki.fi/web-update3/mib3_mac.txt';
                 elseif isunix
-                    link = 'http://mib.helsinki.fi/web-update/mib3_linux.txt';
+                    link = 'http://mib.helsinki.fi/web-update3/mib3_linux.txt';
                 else
-                    link = 'http://mib.helsinki.fi/web-update/mib3_win.txt';
+                    link = 'http://mib.helsinki.fi/web-update3/mib3_win.txt';
                 end
             else
-                link = 'http://mib.helsinki.fi/web-update/mib3_matlab.txt';
+                link = 'http://mib.helsinki.fi/web-update3/mib3_matlab.txt';
             end
 
             try
@@ -170,7 +170,7 @@ classdef UpdateCheck < handle
             progressDialog = uiprogressdlg(obj.view.gui, 'Title', 'Updating...', ...
                 'Message', sprintf('Updating Microscopy Image Browser...\nMay take a few minutes.\n\nPlease wait...'), ...
                 'Value', 0.05);
-            unzip('http://mib.helsinki.fi/web-update/MIB3_Matlab.zip', destination);
+            unzip('http://mib.helsinki.fi/web-update3/MIB3_Matlab.zip', destination);
             progressDialog.Value = 0.9;
             if ~isempty(obj.mibController)
                 obj.mibController.exitProgram();
