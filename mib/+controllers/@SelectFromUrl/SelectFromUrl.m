@@ -268,6 +268,10 @@ classdef SelectFromUrl < handle
             obj.view.handles.GroupPath.ValueChangedFcn      = @(h,e) obj.groupPathValueChanged(e);
             obj.view.handles.LoadAs.ValueChangedFcn         = @(h,e) obj.loadAsValueChanged(e);
             obj.view.handles.DatasetMode.ValueChangedFcn    = @(h,e) obj.updateBatchOptFromGUI(e);
+            obj.view.handles.chunkCacheMB.ValueChangedFcn   = @(h,e) obj.chunkCacheMBValueChanged(e);
+            obj.view.handles.chunkCacheMB.Tooltip = sprintf(['Memory held for decoded zarr chunks, ' ...
+                'shared with Preferences -> Input/output.\nA chunk is often tens of slices deep, so ' ...
+                'caching it makes the next slice change and small pans instant.\n0 turns the cache off.']);
             obj.view.handles.groupTree.NodeExpandedFcn      = @(~,e) obj.treeNodeExpanded_Callback(e);
             obj.view.handles.groupTree.SelectionChangedFcn  = @(~,e) obj.treeSelectionChanged_Callback(e);
             obj.view.handles.openButton.ButtonPushedFcn     = @(~,~) obj.openBtn_Callback();
@@ -678,6 +682,33 @@ classdef SelectFromUrl < handle
             if ~obj.hasView(); return; end
             obj.BatchOpt.id = obj.mibModel.getActiveId();
             utils.updateGUIFromBatchOpt_Shared(obj.view, obj.BatchOpt);
+
+            % The chunk cache budget is the IO.Zarr.ChunkCacheMB preference,
+            % shared with Preferences -> Input/output, so it is read back on every
+            % refresh rather than held in BatchOpt. The canvas range starts at 1;
+            % widen it before assigning, because 0 is the documented way to turn
+            % the cache off and a stored 0 would otherwise be rejected.
+            obj.view.handles.chunkCacheMB.Limits = [0 Inf];
+            obj.view.handles.chunkCacheMB.Value  = obj.mibModel.preferences.IO.Zarr.ChunkCacheMB;
+        end
+
+        function chunkCacheMBValueChanged(obj, event)
+            % CHUNKCACHEMBVALUECHANGED - Apply a new chunk cache budget at once.
+            %
+            % Writes the ``IO.Zarr.ChunkCacheMB`` preference - the same one
+            % Preferences -> Input/output edits, so the two dialogs never
+            % disagree and the value persists with the other preferences - and
+            % hands it to ``io.zarr.ChunkCache.setBudgetMB`` straight away.
+            % Shrinking the budget evicts immediately; 0 turns caching off.
+            %
+            % Deliberately not a BatchOpt field: the cache is process-wide, so a
+            % protocol that resized it would change the behaviour of every other
+            % zarr dataset open in the session.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.SelectFromUrl.chunkCacheMBValueChanged: %g MB\n', event.Value);
+            end
+            obj.mibModel.preferences.IO.Zarr.ChunkCacheMB = event.Value;
+            io.zarr.ChunkCache.setBudgetMB(event.Value);
         end
 
         function updateBatchOptFromGUI(obj, event)

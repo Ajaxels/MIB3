@@ -453,9 +453,11 @@ the next 63 slices of it, and MIB now keeps them instead of discarding them:
 | Without the cache | ~2 s | ~2 s |
 | With the cache | ~2 s | **~0.01 s** |
 
-The memory budget is **Preferences -> Input/output -> Zarr library -> Chunk Cache**, 512 MB by
-default. That holds roughly eight full-resolution screenfuls of the store above; when it is full the
-least recently used chunks are dropped. Setting it to 0 turns the cache off.
+The memory budget is <span class="widget widget-edit">Chunk Cache</span> in this dialog, 512 MB by
+default. It is the same setting as **Preferences -> Input/output -> Zarr library -> Chunk Cache**,
+and a change here takes effect immediately, including for datasets already open. That holds
+roughly eight full-resolution screenfuls of the store above; when it is full the least recently
+used chunks are dropped. Setting it to 0 turns the cache off.
 
 The image pyramid does the rest: zoomed out, MIB reads a small downsampled level rather than the
 full-resolution one, so a whole-volume overview costs far less than a full-resolution screenful.

@@ -42,6 +42,46 @@ classdef DatasetInfo < handle
                     obj.updateWidgets();
             end
         end
+
+        function shapeText = formatBlockShape(blockShape, pyramid)
+            % FORMATBLOCKSHAPE - Chunk or shard shape as ``Y×X×Z`` text for the pyramid rows.
+            %
+            % The level rows print image sizes as width x height, but a block
+            % shape is printed Y, X, Z so its depth is visible - that depth is
+            % what a single-slice read over-fetches.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      pyramid = obj.mibModel.I{id}.image.pyramid;
+            %      shapeText = controllers.DatasetInfo.formatBlockShape(pyramid.chunkSizes{1}, pyramid)
+            %      % returns '128×128×128' for a 'zyx' store chunked [128 128 128]
+            %
+            % Input Arguments:
+            %   - **blockShape** - [numeric vector] one entry of
+            %     ``pyramid.chunkSizes`` or ``pyramid.shardSizes``, in the
+            %     store's own axis order
+            %   - **pyramid** - [struct] ``MibImage.pyramid``; its ``axisOrder``
+            %     (e.g. ``'zyx'``, ``'tczyx'``, or ``'yxz'`` for BigData stores
+            %     written by MIB) maps the shape. Not every pyramid carries the
+            %     field; when it is missing, empty or not the same length as
+            %     ``blockShape``, the axes are taken as the trailing axes of
+            %     ``'tczyx'``, the OME-Zarr order
+            %
+            % Output Arguments:
+            %   - **shapeText** - [char] ``'Y×X×Z'``, or ``'Y×X'`` when the store
+            %     has no z axis
+            blockShape = double(blockShape(:)');
+            axisOrder = '';
+            if isfield(pyramid, 'axisOrder'); axisOrder = lower(char(pyramid.axisOrder)); end
+            if numel(axisOrder) ~= numel(blockShape)
+                fallbackOrder = 'tczyx';
+                axisOrder = fallbackOrder(max(1, end-numel(blockShape)+1):end);
+            end
+            axisIndex = [find(axisOrder == 'y', 1), find(axisOrder == 'x', 1), find(axisOrder == 'z', 1)];
+            axisIndex = axisIndex(axisIndex <= numel(blockShape));
+            shapeText = char(strjoin(string(blockShape(axisIndex)), char(215)));
+        end
     end
 
     methods
@@ -1367,18 +1407,16 @@ classdef DatasetInfo < handle
                             && ~isempty(pyramid.chunkSizes{levelIdx})
                         chunkShape = pyramid.chunkSizes{levelIdx};
                         if numel(chunkShape) >= 2
-                            chunkYX = chunkShape(end-1:end);
-                            levelText = [levelText, sprintf('  chunk %d%c%d', ...
-                                chunkYX(1), char(215), chunkYX(2))];
+                            levelText = [levelText, '  chunk ', ...
+                                controllers.DatasetInfo.formatBlockShape(chunkShape, pyramid)];
                         end
                     end
                     if iscell(pyramid.shardSizes) && levelIdx <= numel(pyramid.shardSizes) ...
                             && ~isempty(pyramid.shardSizes{levelIdx})
                         shardShape = pyramid.shardSizes{levelIdx};
                         if numel(shardShape) >= 2
-                            shardYX = shardShape(end-1:end);
-                            levelText = [levelText, sprintf('  shard %d%c%d', ...
-                                shardYX(1), char(215), shardYX(2))];
+                            levelText = [levelText, '  shard ', ...
+                                controllers.DatasetInfo.formatBlockShape(shardShape, pyramid)];
                         end
                     end
                     if ~isempty(pyramid.levelVoxelSizes)

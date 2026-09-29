@@ -48,7 +48,11 @@ the old `imfinfo`/`imread` route moved verbatim into `openPlainImageUrl`.
 name into its `Tag`, and it recurses into `uitree`. BatchOpt-mapped widgets must be named exactly as
 their field (`Url`, `GroupPath`, `LoadAs`, `DatasetMode`, `showWaitbar`); non-BatchOpt widgets use
 descriptive lowerCamel (`connectButton`, `groupTree`, `infoTextArea`, `statusLabel`, `openButton`,
-`closeButton`, `helpButton`). `SelectFromUrl.resetDialog` clears the placeholder tree nodes App
+`closeButton`, `helpButton`, `chunkCacheMB`). `chunkCacheMB` edits the `IO.Zarr.ChunkCacheMB`
+preference directly and calls `io.zarr.ChunkCache.setBudgetMB` at once - the same preference as
+Preferences -> Input/output, and deliberately not BatchOpt, since the cache is process-wide.
+`updateWidgets` widens its canvas `Limits = [1 Inf]` to `[0 Inf]` before assigning, as
+`Preferences.updateWidgets` does, so a stored 0 (cache off) does not throw. `SelectFromUrl.resetDialog` clears the placeholder tree nodes App
 Designer stores with the canvas (`Node`, `Node2..4`) and disables Open at startup - they are useful
 for laying the dialog out, so they are cleared in code rather than deleted in the designer. The tree
 fills lazily through the deferred-node pattern of `@DatasetInfo/treeNodeExpanded_Callback`: children

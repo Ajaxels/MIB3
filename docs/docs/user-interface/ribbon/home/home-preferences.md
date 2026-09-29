@@ -509,6 +509,9 @@ the budget is reached the least recently used chunks are dropped, so the figure 
 allocation. Lowering it releases the memory as soon as
 <span class="widget widget-button">Apply</span> is pressed.
 
+The same value can also be changed in the [Import from URL / Zarr](home-importfromurl.md) dialog,
+where it takes effect without pressing Apply.
+
 !!! tip
     512 MB holds roughly eight full-resolution screenfuls of a `64 x 128 x 128` store. Raise it if
     you work at full resolution on a remote dataset and have the RAM; there is no benefit in setting

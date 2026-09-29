@@ -72,25 +72,23 @@ switch nodeData.populationType
             levelText = sprintf('Level %d (%c%g): %d %c %d px', ...
                 levelIdx, char(215), scale, dims(2), char(215), dims(1));
 
-            % chunk dimensions (last 2 elements of TCZYX shape = Y, X)
+            % chunk dimensions as Y x X x Z, mapped through the store's axis order
             if iscell(pyramid.chunkSizes) && levelIdx <= numel(pyramid.chunkSizes) ...
                     && ~isempty(pyramid.chunkSizes{levelIdx})
                 chunkShape = pyramid.chunkSizes{levelIdx};
                 if numel(chunkShape) >= 2
-                    chunkYX = chunkShape(end-1:end);
-                    levelText = [levelText, sprintf('  chunk %d%c%d', ...
-                        chunkYX(1), char(215), chunkYX(2))]; %#ok<AGROW>
+                    levelText = [levelText, '  chunk ', ...
+                        controllers.DatasetInfo.formatBlockShape(chunkShape, pyramid)]; %#ok<AGROW>
                 end
             end
 
-            % shard dimensions (same TCZYX convention)
+            % shard dimensions (same convention)
             if iscell(pyramid.shardSizes) && levelIdx <= numel(pyramid.shardSizes) ...
                     && ~isempty(pyramid.shardSizes{levelIdx})
                 shardShape = pyramid.shardSizes{levelIdx};
                 if numel(shardShape) >= 2
-                    shardYX = shardShape(end-1:end);
-                    levelText = [levelText, sprintf('  shard %d%c%d', ...
-                        shardYX(1), char(215), shardYX(2))]; %#ok<AGROW>
+                    levelText = [levelText, '  shard ', ...
+                        controllers.DatasetInfo.formatBlockShape(shardShape, pyramid)]; %#ok<AGROW>
                 end
             end
 

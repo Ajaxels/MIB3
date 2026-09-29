@@ -6428,9 +6428,11 @@ the next 63 slices of it, and MIB now keeps them instead of discarding them:</p>
 </tr>
 </tbody>
 </table>
-<p>The memory budget is <strong>Preferences -&gt; Input/output -&gt; Zarr library -&gt; Chunk Cache</strong>, 512 MB by
-default. That holds roughly eight full-resolution screenfuls of the store above; when it is full the
-least recently used chunks are dropped. Setting it to 0 turns the cache off.</p>
+<p>The memory budget is <span class="widget widget-edit">Chunk Cache</span> in this dialog, 512 MB by
+default. It is the same setting as <strong>Preferences -&gt; Input/output -&gt; Zarr library -&gt; Chunk Cache</strong>,
+and a change here takes effect immediately, including for datasets already open. That holds
+roughly eight full-resolution screenfuls of the store above; when it is full the least recently
+used chunks are dropped. Setting it to 0 turns the cache off.</p>
 <p>The image pyramid does the rest: zoomed out, MIB reads a small downsampled level rather than the
 full-resolution one, so a whole-volume overview costs far less than a full-resolution screenful.</p>
 <p><strong>A crop is opened as its own dataset, not as an overlay.</strong> Selecting a ground-truth crop replaces
