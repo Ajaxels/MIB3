@@ -24,6 +24,9 @@ classdef Preferences < handle
         duplicateEntries  
         % array with duplicate key shortcut entries
         renderedPanels     % indices of panels that are already rendered, for faster change upon press on new tree node
+        javaAppliedPath
+        % Java folder that MATLAB / MATLAB Runtime is already set to; Apply connects the
+        % ExternalDirs.JavaInstallationPath only when it differs from this one
     end
     
     events
@@ -278,6 +281,18 @@ classdef Preferences < handle
             end
 
             obj.duplicateEntries = [];
+
+            % Java row of External directories (MATLAB R2026b and newer come without
+            % Java). The field shows the stored folder, or the Java MATLAB actually
+            % uses when none is stored; both buttons have no callback in the mlapp
+            if ~isfield(obj.preferences.ExternalDirs, 'JavaInstallationPath') || ...
+                    isempty(obj.preferences.ExternalDirs.JavaInstallationPath)
+                obj.preferences.ExternalDirs.JavaInstallationPath = utils.JavaSetup.configuredHome();
+            end
+            obj.javaAppliedPath = char(obj.preferences.ExternalDirs.JavaInstallationPath);
+            obj.view.handles.JavaFindBtn.ButtonPushedFcn = @(~, ~) obj.JavaFindBtnPushed();
+            obj.view.handles.JavaConfigureBtn.ButtonPushedFcn = @(~, ~) obj.JavaConfigureBtnPushed();
+
             obj.updateWidgets();
            
             % show the gui
@@ -498,6 +513,7 @@ classdef Preferences < handle
                 handles.bm4dInstallationPath.Value = char(externalDirPrefs.bm4dInstallationPath);
                 handles.BioFormatsMemoizerMemoDir.Value = char(externalDirPrefs.BioFormatsMemoizerMemoDir);
                 handles.PythonInstallationPath.Value = char(externalDirPrefs.PythonInstallationPath);
+                handles.JavaInstallationPath.Value = char(externalDirPrefs.JavaInstallationPath);
                 handles.DeepMIBDir.Value = char(externalDirPrefs.DeepMIBDir);
                 % Python execution mode dropdown (guard preferences saved before
                 % this field existed); Items are {'OutOfProcess','InProcess'}
@@ -734,6 +750,16 @@ classdef Preferences < handle
             % value over the copy, which is stale or reset by the Defaults button
             obj.preferences.Colors.Theme = obj.mibModel.preferences.Colors.Theme;
             obj.mibModel.preferences = obj.preferences;
+
+            % a Java folder typed or selected without pressing "Configure Java..."
+            % is connected here, so it cannot be forgotten. Attempted once per
+            % change: after a cancel or an error (shown in a dialog) OK does not
+            % ask again; the stored path is kept either way
+            javaPath = char(obj.preferences.ExternalDirs.JavaInstallationPath);
+            if ~isempty(javaPath) && ~strcmpi(javaPath, obj.javaAppliedPath)
+                obj.javaAppliedPath = javaPath;
+                utils.JavaSetup.apply(obj.view.gui, javaPath, obj.mibModel.mibPath);
+            end
 
             % activate the selected OME-Zarr v3 backend so open/save of zarr3
             % uses it without restarting MIB (io.zarr.Array / io.zarr.Group)
@@ -1641,6 +1667,19 @@ classdef Preferences < handle
             %
             %      obj.ExternalDirSelect(event);
         
+            % Java: the folder is validated and resolved (the "bin" folder or a
+            % vendor folder with one Java inside are accepted), see utils.JavaSetup
+            if strcmp(event.Source.Tag, 'JavaDirSelectBtn')
+                javaInfo = utils.JavaSetup.browseForJava(obj.view.gui, obj.mibModel.mibPath, ...
+                    char(obj.preferences.ExternalDirs.JavaInstallationPath));
+                drawnow;
+                figure(obj.view.gui);
+                if isempty(javaInfo); return; end
+                obj.preferences.ExternalDirs.JavaInstallationPath = javaInfo.home;
+                obj.view.handles.JavaInstallationPath.Value = javaInfo.home;
+                return;
+            end
+
             switch event.Source.Tag
                 case 'FijiDirSelectBtn'
                     field_name = 'FijiInstallationPath';
@@ -1709,7 +1748,25 @@ classdef Preferences < handle
             %   .. code-block:: matlab
             %
             %      obj.ExternalDirPathChange(event);
-            
+
+            % Java: validate and resolve to the Java folder, see utils.JavaSetup.inspectFolder
+            if strcmp(event.Source.Tag, 'JavaInstallationPath')
+                typedPath = strtrim(obj.view.handles.JavaInstallationPath.Value);
+                if isempty(typedPath)
+                    obj.preferences.ExternalDirs.JavaInstallationPath = [];
+                    return;
+                end
+                javaInfo = utils.JavaSetup.inspectFolder(typedPath);
+                if isempty(javaInfo)
+                    uialert(obj.view.gui, utils.JavaSetup.notJavaMessage(typedPath), 'This is not a Java folder');
+                    obj.view.handles.JavaInstallationPath.Value = char(obj.preferences.ExternalDirs.JavaInstallationPath);
+                    return;
+                end
+                obj.preferences.ExternalDirs.JavaInstallationPath = javaInfo.home;
+                obj.view.handles.JavaInstallationPath.Value = javaInfo.home;
+                return;
+            end
+
             if ~isempty(obj.view.handles.(event.Source.Tag).Value)
                 if ~ismember(exist(obj.view.handles.(event.Source.Tag).Value), [2, 7]) %#ok<EXIST> % keep exists function here, for correct work with /Applications/Fiji.app 
                     uialert(obj.view.gui, ...
@@ -1731,7 +1788,55 @@ classdef Preferences < handle
                 obj.preferences.ExternalDirs.(event.Source.Tag) = [];
             end
         end
-        
+
+        function JavaFindBtnPushed(obj)
+            % JAVAFINDBTNPUSHED - search for installed Java and put the chosen folder into the Java field.
+            %
+            % Opens ``utils.JavaSetup.selectJava`` (list of the Java installations
+            % found in the usual folders, **Download Java**, manual selection).
+            % Nothing is written to MATLAB here: that happens with
+            % **Configure Java...** or, for a changed path, on Apply/OK.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.JavaFindBtnPushed()
+            %
+            javaInfo = utils.JavaSetup.selectJava(obj.view.gui, obj.mibModel.mibPath);
+            drawnow;
+            figure(obj.view.gui);
+            if isempty(javaInfo); return; end
+            obj.preferences.ExternalDirs.JavaInstallationPath = javaInfo.home;
+            obj.view.handles.JavaInstallationPath.Value = javaInfo.home;
+        end
+
+        function JavaConfigureBtnPushed(obj)
+            % JAVACONFIGUREBTNPUSHED - connect MATLAB / MATLAB Runtime to the Java in the Java field.
+            %
+            % With an empty field the search dialog (``JavaFindBtnPushed``) is shown
+            % first. The folder is written with ``utils.JavaSetup.apply`` (``jenv`` in
+            % MATLAB, ``matlab_jenv`` of MATLAB Runtime in the standalone) and, on
+            % success, also stored in the MIB preferences right away, so it is kept
+            % even when the Preferences dialog is then closed with Cancel.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.JavaConfigureBtnPushed()
+            %
+            if isempty(obj.preferences.ExternalDirs.JavaInstallationPath)
+                obj.JavaFindBtnPushed();
+                if isempty(obj.preferences.ExternalDirs.JavaInstallationPath); return; end
+            end
+            javaPath = char(obj.preferences.ExternalDirs.JavaInstallationPath);
+            status = utils.JavaSetup.apply(obj.view.gui, javaPath, obj.mibModel.mibPath);
+            drawnow;
+            figure(obj.view.gui);
+            if ~status; return; end
+            obj.javaAppliedPath = javaPath;
+            obj.mibModel.preferences.ExternalDirs.JavaInstallationPath = javaPath;
+        end
+
         function updateKeyShortcut(obj, eventdata)
             % UPDATEKEYSHORTCUT - callback for change of key shortcuts in the table.
             %

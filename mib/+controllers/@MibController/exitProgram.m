@@ -47,8 +47,9 @@ end
 % (used by SAM/SAM2) cannot be terminated and end together with MATLAB
 if ~isempty(obj.mibModel.pythonEnv); utils.terminatePythonEnv(); end
 
-% unload OMERO
-if ~isdeployed
+% unload OMERO; unloadOmero calls javarmpath, which throws without a Java
+% runtime (MATLAB R2026b+) and would abort the exit before preferences are saved
+if ~isdeployed && usejava('jvm')
     if exist('unloadOmero.m','file') == 2
         % preserve Omero path
         omeroPath = findOmero;

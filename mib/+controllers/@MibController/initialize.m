@@ -132,6 +132,69 @@ if isfield(obj.mibModel.sessionSettings, 'PreferencesDowngradeMessage')
     end
 end
 
+% MATLAB R2026b and newer no longer bundle a Java runtime. MIB starts without
+% it (utils.ensureJavaLibraries skips the Java libraries), but Bio-Formats,
+% Fiji, Imaris, OMERO and, outside Windows, the image clipboard need Java, so
+% explain what is missing and offer utils.JavaSetup, which finds an installed
+% Java (or links to the download) and writes the MATLAB / MATLAB Runtime
+% setting. On Windows imclipboard falls back to .NET. Three cases:
+% - the MATLAB Java setting already points to a folder: only the restart is missing
+% - preferences.ExternalDirs.JavaInstallationPath holds a Java folder: MIB was set
+%   up before, typically a new MATLAB release or MATLAB Runtime lost the setting
+%   (mib3.mat is shared between releases, the MATLAB setting is not); re-apply it
+% - otherwise: search for Java
+if ~usejava('jvm')
+    storedJavaPath = '';
+    if isfield(obj.mibModel.preferences.ExternalDirs, 'JavaInstallationPath')
+        storedJavaPath = char(obj.mibModel.preferences.ExternalDirs.JavaInstallationPath);
+        if isempty(utils.JavaSetup.inspectFolder(storedJavaPath)); storedJavaPath = ''; end
+    end
+    pendingJavaPath = utils.JavaSetup.configuredHome();
+
+    % plain text in a placeholder (NaN) row: inputUniversalDlg renders <html>
+    % only in MsgBoxOnly mode, and this dialog needs OK + Cancel
+    clipboardItem = '';
+    if ~ispc; clipboardItem = sprintf('\n  - copying images to and from the system clipboard'); end
+    javaMsg = sprintf(['MIB works without Java, but these features need it:\n' ...
+        '  - Bio-Formats readers (CZI, LIF, ND2, ZVI and many other microscope formats) and saving OME-TIFF\n' ...
+        '  - Fiji, Imaris and OMERO connections%s\n\n'], clipboardItem);
+    okButtonText = 'Configure Java';
+    if ~isempty(pendingJavaPath)
+        javaMsg = [javaMsg sprintf(['Java is already set to\n%s\nbut becomes available only after a restart: ' ...
+            'please %s.'], pendingJavaPath, utils.JavaSetup.restartText())];
+        okButtonText = 'OK';
+    elseif ~isempty(storedJavaPath)
+        javaMsg = [javaMsg sprintf(['MIB was set up to use Java from\n%s\nbut this MATLAB is not connected ' ...
+            'to it, which happens after installing a new MATLAB version.\n\n' ...
+            'Press "Configure Java" to connect it again.'], storedJavaPath)];
+    else
+        javaMsg = [javaMsg sprintf(['Press "Configure Java": MIB looks for an installed Java and helps you ' ...
+            'download one when there is none.\n\n' ...
+            'The same settings are in Home -> Preferences -> External directories -> Java.'])];
+    end
+    try
+        dlgOptions = struct();
+        dlgOptions.Icon = 'puffin_warning';
+        dlgOptions.HeaderLines = 1;
+        dlgOptions.OkBtnText = okButtonText;
+        dlgOptions.HelpBtnText = 'Instructions';
+        dlgOptions.HelpUrl = @() utils.openHelpPage( ...
+            fullfile(fileparts(obj.mibPath), 'docs', 'html', 'getting-started', 'installation', 'java.html'), ...
+            'http://mib.helsinki.fi/help/main3/getting-started/installation/java.html');
+        dlgOptions.WindowWidth = 520;
+        dlgOptions.mibPath = obj.mibPath;
+        answer = utils.dlgs.inputUniversalDlg(obj.view.gui, 'Java was not found', {javaMsg}, {NaN}, ...
+            'Java is missing', dlgOptions);
+        if ~isempty(answer) && isempty(pendingJavaPath)
+            [javaStatus, javaHome] = utils.JavaSetup.configure(obj.view.gui, obj.mibPath, storedJavaPath);
+            if javaStatus; obj.mibModel.preferences.ExternalDirs.JavaInstallationPath = javaHome; end
+        end
+    catch err
+        warning('MIB:javaNotFound', ['Java was not found (%s); Bio-Formats, Fiji, Imaris and OMERO ' ...
+            'are unavailable. Use Home -> Preferences -> External directories -> Java'], err.message);
+    end
+end
+
 % ask once per workstation where the user statistics should be kept.
 % The default folder is machine-local: on Windows %APPDATA% only travels
 % between computers when an administrator configured a roaming profile, which

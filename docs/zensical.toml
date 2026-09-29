@@ -50,7 +50,10 @@ nav = [
   { "Microscopy Image Browser" = "index.md" },
   { "Getting Started" = [
     "getting-started/index.md",
-    { "Installation" = "getting-started/installation/index.md" },
+    { "Installation" = [
+      "getting-started/installation/index.md",
+      { "Enable Java" = "getting-started/installation/java.md" },
+    ]},
     { "Starting MIB" = "getting-started/starting-mib/index.md" },
     { "First dataset" = "getting-started/first-dataset/index.md" },
     { "Basic concepts" = "getting-started/basic-concepts/index.md" },

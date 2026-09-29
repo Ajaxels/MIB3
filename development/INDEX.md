@@ -129,6 +129,7 @@ debugging a regression in it, or looking for a precedent pattern. One line each:
 | [volren_movie_capture_speed.md](notes/volren_movie_capture_speed.md) | Why 3D viewer animations record at ~1 fps — measured capture routes, what was ruled out, and why it was not "fixed" |
 | [plan_mib3_json.md](notes/plan_mib3_json.md) | **Evaluation (not implemented)**: replacing binary `mib3.mat` preferences with JSON - what the file holds, measured load times (JSON is faster), the 24 leaves that break on round trip, why `writestruct` is disqualified, two-phase plan starting with the override file |
 | [dark_light_scheme.md](notes/dark_light_scheme.md) | Dark/light theme adaptation: theme detection, what a theme switch does to explicit colors, measured palettes (option A rejected, B chosen), Datasets panel implementation and a recipe for the other panels |
+| [java_installation.md](notes/java_installation.md) | Running MIB on MATLAB R2026b+ without bundled Java: what breaks, the Java gateway, .NET clipboard fallback, `utils.JavaSetup` + Preferences Java row (jenv / matlab_jenv automation), what was verified and what still needs testing |
 | [sync_memory.md](notes/sync_memory.md) | One-time Claude memory-sync junction setup for a new workstation |
 | [doc_template.md](notes/doc_template.md) | **Legacy** Doxygen doc template — superseded by `guides/docs_api_sphinx.md` |
 | [focusExample.m](notes/focusExample.m) | Proof that `focus()` works on visible uifigures (basis of dialog focus handling) |

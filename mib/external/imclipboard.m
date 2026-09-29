@@ -22,7 +22,8 @@ function varargout = imclipboard(clipmode, varargin)
 %   must be a name to one of the following image formats: JPG, GIF, BMP,
 %   PNG, TIF.
 %
-%   Note: IMCLIPBOARD requires Java on all platforms.
+%   Note: IMCLIPBOARD requires Java on all platforms. MIB modification: on
+%   Windows without Java the .NET clipboard is used instead.
 %
 %   Example:
 %       im = imread('peppers.png');
@@ -41,15 +42,19 @@ function varargout = imclipboard(clipmode, varargin)
 % Jan 2017 - fixed java getDefaultToolkit error.
 
 narginchk(1, 3);
-error(javachk('awt', 'IMCLIPBOARD'));
+
+% MIB modification: MATLAB R2026b and newer come without Java; on Windows
+% fall back to the .NET clipboard (System.Windows.Forms.Clipboard), which
+% needs no Java. Other platforms without Java still get the javachk error
+useDotNet = ~usejava('awt') && ispc;
+if ~useDotNet
+    error(javachk('awt', 'IMCLIPBOARD'));
+end
 
 % Import necessary Java classes
 import java.awt.Toolkit
 import java.awt.image.BufferedImage
 import java.awt.datatransfer.DataFlavor
-
-% Get System Clipboard object (java.awt.Toolkit)
-cb = Toolkit.getDefaultToolkit.getSystemClipboard();
 
 clipmode = validatestring(clipmode, {'copy', 'paste'}, mfilename, 'CLIPMODE');
 
@@ -57,13 +62,20 @@ switch clipmode
     case 'copy'
         nargoutchk(0, 0);
 
+        data = validateCopyInput(varargin{:});
+        if useDotNet
+            dotNetCopy(data);
+            return;
+        end
+
         % Add java class (ImageSelection) to the path
         if ~exist('ImageSelection', 'class')
             javaaddpath(fileparts(which(mfilename)), '-end');
         end
 
-        data = validateCopyInput(varargin{:});
-        
+        % Get System Clipboard object (java.awt.Toolkit)
+        cb = Toolkit.getDefaultToolkit.getSystemClipboard();
+
         % Get image size
         ht = size(data, 1); wd = size(data, 2);
         
@@ -91,17 +103,25 @@ switch clipmode
         nargoutchk(0, 2);
 
         filename = validatePasteInput(varargin{:});
-        
-        try
-            % Attempt to retrieve image data from system clipboard. If there is no
-            % image data, it will throw an exception.
-            imBuffer = cb.getData(DataFlavor.imageFlavor);
-        catch %#ok<CTCH>
-            disp('No image data in clipboard');
-            imBuffer = [];
+
+        if useDotNet
+            im = dotNetPaste();
+        else
+            % Get System Clipboard object (java.awt.Toolkit)
+            cb = Toolkit.getDefaultToolkit.getSystemClipboard();
+            try
+                % Attempt to retrieve image data from system clipboard. If there is no
+                % image data, it will throw an exception.
+                imBuffer = cb.getData(DataFlavor.imageFlavor);
+            catch %#ok<CTCH>
+                disp('No image data in clipboard');
+                imBuffer = [];
+            end
         end
-        
-        if isempty(imBuffer)
+
+        if useDotNet
+            % im is already HxWx3 uint8, or [] when the clipboard has no image
+        elseif isempty(imBuffer)
             im = [];
         else
             im = imBuffer.getRGB(0, 0, imBuffer.getWidth, imBuffer.getHeight, [], 0, imBuffer.getWidth);
@@ -153,6 +173,52 @@ switch clipmode
         
 end
 
+end
+
+%% MIB modification: .NET clipboard for Windows without Java
+function dotNetCopy(data)
+% put an HxWx3 uint8 image to the Windows clipboard; the image travels
+% through a temporary lossless PNG, as .NET has no direct constructor from a
+% MATLAB array. Clipboard.SetImage copies the pixels, so the bitmap and the
+% file can be released right after
+NET.addAssembly('System.Windows.Forms');
+NET.addAssembly('System.Drawing');
+tempFilename = [tempname '.png'];
+cleanupFile = onCleanup(@() deleteIfExists(tempFilename));
+imwrite(data, tempFilename);
+bitmap = System.Drawing.Bitmap(tempFilename);   % locks the file until disposed
+try
+    System.Windows.Forms.Clipboard.SetImage(bitmap);
+catch err
+    bitmap.Dispose();
+    rethrow(err);
+end
+bitmap.Dispose();   % before cleanupFile deletes the file at exit
+end
+
+function im = dotNetPaste()
+% get the clipboard image as HxWx3 uint8, [] when there is none; indexed,
+% grayscale, 16-bit and 1-bit clipboard images are converted, alpha is dropped
+NET.addAssembly('System.Windows.Forms');
+NET.addAssembly('System.Drawing');
+if ~System.Windows.Forms.Clipboard.ContainsImage()
+    disp('No image data in clipboard');
+    im = [];
+    return;
+end
+clipboardImage = System.Windows.Forms.Clipboard.GetImage();
+tempFilename = [tempname '.png'];
+cleanupFile = onCleanup(@() deleteIfExists(tempFilename));
+clipboardImage.Save(tempFilename, System.Drawing.Imaging.ImageFormat.Png);
+clipboardImage.Dispose();
+[im, map] = imread(tempFilename);
+if ~isempty(map); im = ind2rgb(im, map); end
+im = im2uint8(im);
+if size(im, 3) == 1; im = repmat(im, [1 1 3]); end
+end
+
+function deleteIfExists(filename)
+if isfile(filename); delete(filename); end
 end
 
 %% Helper Function

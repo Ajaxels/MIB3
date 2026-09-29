@@ -179,9 +179,8 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
                         numSeries = filesTemp.hDataset.getSeriesCount();
                     catch err
                         if ~isempty(pwb); pwb.deletePoolWaitbar(); end
-                        utils.dlgs.showErrorDialog(options.ParentFigure, ...
-                            sprintf('Error in io.loaders.BioFormatsStdLoader!\n\nMemoizer can not be initialized for :\n%s', filenames{fnIndex}), ...
-                            'BioFormats memoizer', 'Error in io.loaders.BioFormatsStdLoader');
+                        utils.dlgs.showErrorDialog(options.ParentFigure, err, 'BioFormats memoizer', ...
+                            sprintf('Error in io.loaders.BioFormatsStdLoader!\n\nMemoizer can not be initialized for :\n%s', filenames{fnIndex}));
                         imginfo = dictionary();
                         return;
                     end

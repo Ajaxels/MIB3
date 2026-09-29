@@ -108,8 +108,7 @@ classdef MibRibbon
             obj.handles.ribbonHome.darkTheme.ItemPushedFcn = @obj.home_Callbacks;
             obj.handles.ribbonHome.preferences.ButtonPushedFcn = @obj.home_Callbacks;
             obj.handles.ribbonHome.preferencesMenu.ItemPushedFcn = @obj.home_Callbacks;
-            obj.handles.ribbonHome.prefOverrideMenu.ItemPushedFcn = @obj.home_Callbacks;
-            obj.handles.ribbonHome.help.ButtonPushedFcn = @obj.home_Callbacks;
+            obj.handles.ribbonHome.prefOverrideMenu.ItemPushedFcn = @obj.home_Callbacks;            obj.handles.ribbonHome.help.ButtonPushedFcn = @obj.home_Callbacks;
             obj.handles.ribbonHome.helpMenu.ItemPushedFcn = @obj.home_Callbacks;
             obj.handles.ribbonHome.tipOfDay.ItemPushedFcn = @obj.home_Callbacks;
             obj.handles.ribbonHome.support.ItemPushedFcn = @obj.home_Callbacks;

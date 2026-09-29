@@ -322,14 +322,8 @@ Specify paths for external tools and packages that integrate with MIB. Leave fie
 
 <div class="clear-float"></div>
 
-<span class="widget widget-edit">Fiji installation directory</span>: a text field and <span class="widget widget-button">...</span> to set the path 
-to [Fiji](https://imagej.net/software/fiji/), see more in the [System requirements](https://mib.helsinki.fi/downloads_systemreq.html#fiji) section.
-<br><br>
-<span class="widget widget-edit">OMERO installation directory</span>: a text field and <span class="widget widget-button">...</span> to set 
-the path to [OMERO](https://omero.readthedocs.io/en/stable/developers/Matlab.html), see more in the [System requirements](https://mib.helsinki.fi/downloads_systemreq.html#omero) section.
-<br><br>
-<span class="widget widget-edit">Imaris installation directory</span>: a text field and <span class="widget widget-button">...</span> 
-to set the path to [Imaris](https://imaris.oxinst.com/), see more in the [System requirements](https://mib.helsinki.fi/downloads_systemreq.html#imaris) section.
+<span class="widget widget-edit">Bioformats Memoizer temporary directory</span>: a text field and <span class="widget widget-button">...</span> to set the temporary directory for Bioformats Memoizer. 
+Use any temporary directory available on your system. The created files can be removed any moment.
 <br><br>
 <span class="widget widget-edit">BM3D installation directory</span>: a text field and <span class="widget widget-button">...</span> 
 to set the path to [BM3D](https://webpages.tuni.fi/foi/GCF-BM3D/index.html), see more in the [System requirements](https://mib.helsinki.fi/downloads_systemreq.html#BMxD) section.
@@ -337,11 +331,25 @@ to set the path to [BM3D](https://webpages.tuni.fi/foi/GCF-BM3D/index.html), see
 <span class="widget widget-edit">BM4D installation directory</span>: a text field and <span class="widget widget-button">...</span> 
 to set the path to [BM4D](https://webpages.tuni.fi/foi/GCF-BM3D/index.html), see more in the [System requirements](https://mib.helsinki.fi/downloads_systemreq.html#BMxD) section.
 <br><br>
-<span class="widget widget-edit">Bioformats Memoizer temporary directory</span>: a text field and <span class="widget widget-button">...</span> to set the temporary directory for Bioformats Memoizer. 
-Use any temporary directory available on your system. The created files can be removed any moment.
-<br><br>
 <span class="widget widget-edit">Directory to store network architectures for DeepMIB</span>: a text field and 
 <span class="widget widget-button">...</span> to set the [DeepMIB](../../../deepmib/index.md) and [SAM](../../panels/segm/segm-sam.md) network storage paths.
+<br><br>
+<span class="widget widget-edit">Fiji installation directory</span>: a text field and <span class="widget widget-button">...</span> to set the path 
+to [Fiji](https://imagej.net/software/fiji/), see more in the [System requirements](https://mib.helsinki.fi/downloads_systemreq.html#fiji) section.
+<br><br>
+<span class="widget widget-edit">Imaris installation directory</span>: a text field and <span class="widget widget-button">...</span> 
+to set the path to [Imaris](https://imaris.oxinst.com/), see more in the [System requirements](https://mib.helsinki.fi/downloads_systemreq.html#imaris) section.
+<br><br>
+<span class="widget widget-edit">Java path (R2026b or newer)</span>: the Java that MIB uses for Bio-Formats,
+Fiji, Imaris and OMERO; MATLAB R2026b and newer come without Java.
+<span class="widget widget-button">Find Java...</span> lists the Java installations found on the computer,
+<span class="widget widget-button">Configure Java...</span> connects MATLAB to the selected Java, which takes
+effect after restarting MATLAB and MIB. A path changed without pressing
+<span class="widget widget-button">Configure Java...</span> is connected when pressing **OK** or **Apply**.
+See [Enable Java](../../../getting-started/installation/java.md) for step-by-step instructions.
+<br><br>
+<span class="widget widget-edit">OMERO installation directory</span>: a text field and <span class="widget widget-button">...</span> to set 
+the path to [OMERO](https://omero.readthedocs.io/en/stable/developers/Matlab.html), see more in the [System requirements](https://mib.helsinki.fi/downloads_systemreq.html#omero) section.
 <br><br>
 <span class="widget widget-edit">Python installation path</span>: a text field and <span class="widget widget-button">...</span> 
 button to set the path to Python, required for [SAM](../../panels/segm/segm-sam.md), see more in the [System requirements](https://mib.helsinki.fi/downloads_systemreq_sam2.html) section.

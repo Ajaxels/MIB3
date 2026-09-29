@@ -2531,6 +2531,17 @@
       "contributor": null
     },
     {
+      "id": "controllers_datasetinfo_datasetinfo_formatblockshape",
+      "label": "formatBlockShape",
+      "file_type": "code",
+      "source_file": "+controllers\\@DatasetInfo\\DatasetInfo.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "controllers_datasetinfo_datasetinfo_datasetinfo",
       "label": "DatasetInfo",
       "file_type": "code",
@@ -10253,6 +10264,28 @@
       "contributor": null
     },
     {
+      "id": "controllers_preferences_preferences_javafindbtnpushed",
+      "label": "JavaFindBtnPushed",
+      "file_type": "code",
+      "source_file": "+controllers\\@Preferences\\Preferences.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_preferences_preferences_javaconfigurebtnpushed",
+      "label": "JavaConfigureBtnPushed",
+      "file_type": "code",
+      "source_file": "+controllers\\@Preferences\\Preferences.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "controllers_preferences_preferences_updatekeyshortcut",
       "label": "updateKeyShortcut",
       "file_type": "code",
@@ -11542,6 +11575,17 @@
     {
       "id": "controllers_selectfromurl_selectfromurl_updatewidgets",
       "label": "updateWidgets",
+      "file_type": "code",
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_selectfromurl_selectfromurl_chunkcachembvaluechanged",
+      "label": "chunkCacheMBValueChanged",
       "file_type": "code",
       "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
       "source_location": null,
@@ -25917,6 +25961,193 @@
       "contributor": null
     },
     {
+      "id": "utils_javasetup_m",
+      "label": "JavaSetup.m",
+      "file_type": "code",
+      "source_file": "+utils\\JavaSetup.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "utils_javasetup_configure",
+      "label": "configure",
+      "file_type": "code",
+      "source_file": "+utils\\JavaSetup.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "utils_javasetup_selectjava",
+      "label": "selectJava",
+      "file_type": "code",
+      "source_file": "+utils\\JavaSetup.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "utils_javasetup_browseforjava",
+      "label": "browseForJava",
+      "file_type": "code",
+      "source_file": "+utils\\JavaSetup.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "utils_javasetup_apply",
+      "label": "apply",
+      "file_type": "code",
+      "source_file": "+utils\\JavaSetup.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "utils_javasetup_inspectfolder",
+      "label": "inspectFolder",
+      "file_type": "code",
+      "source_file": "+utils\\JavaSetup.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "utils_javasetup_findinstallations",
+      "label": "findInstallations",
+      "file_type": "code",
+      "source_file": "+utils\\JavaSetup.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "utils_javasetup_configuredhome",
+      "label": "configuredHome",
+      "file_type": "code",
+      "source_file": "+utils\\JavaSetup.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "utils_javasetup_restarttext",
+      "label": "restartText",
+      "file_type": "code",
+      "source_file": "+utils\\JavaSetup.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "utils_javasetup_notjavamessage",
+      "label": "notJavaMessage",
+      "file_type": "code",
+      "source_file": "+utils\\JavaSetup.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "utils_javasetup_hasjavaexecutable",
+      "label": "hasJavaExecutable",
+      "file_type": "code",
+      "source_file": "+utils\\JavaSetup.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "utils_javasetup_majorversion",
+      "label": "majorVersion",
+      "file_type": "code",
+      "source_file": "+utils\\JavaSetup.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "utils_javasetup_subfolders",
+      "label": "subfolders",
+      "file_type": "code",
+      "source_file": "+utils\\JavaSetup.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "utils_javasetup_defaultbrowsefolder",
+      "label": "defaultBrowseFolder",
+      "file_type": "code",
+      "source_file": "+utils\\JavaSetup.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "utils_javasetup_javadownloadurl",
+      "label": "javaDownloadUrl",
+      "file_type": "code",
+      "source_file": "+utils\\JavaSetup.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "utils_javasetup_applytomatlabruntime",
+      "label": "applyToMatlabRuntime",
+      "file_type": "code",
+      "source_file": "+utils\\JavaSetup.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "utils_javasetup_showmessage",
+      "label": "showMessage",
+      "file_type": "code",
+      "source_file": "+utils\\JavaSetup.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "external_zarr_matlab_tests_zarrarraytest_m",
       "label": "ZarrArrayTest.m",
       "file_type": "code",
@@ -32997,6 +33228,16 @@
     },
     {
       "source": "controllers_datasetinfo_datasetinfo_m",
+      "target": "controllers_datasetinfo_datasetinfo_formatblockshape",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@DatasetInfo\\DatasetInfo.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_datasetinfo_datasetinfo_m",
       "target": "controllers_datasetinfo_datasetinfo_datasetinfo",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -39737,6 +39978,26 @@
     },
     {
       "source": "controllers_preferences_preferences_m",
+      "target": "controllers_preferences_preferences_javafindbtnpushed",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@Preferences\\Preferences.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_preferences_preferences_m",
+      "target": "controllers_preferences_preferences_javaconfigurebtnpushed",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@Preferences\\Preferences.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_preferences_preferences_m",
       "target": "controllers_preferences_preferences_updatekeyshortcut",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -40848,6 +41109,16 @@
     {
       "source": "controllers_selectfromurl_selectfromurl_m",
       "target": "controllers_selectfromurl_selectfromurl_updatewidgets",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@SelectFromUrl\\SelectFromUrl.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_selectfromurl_selectfromurl_m",
+      "target": "controllers_selectfromurl_selectfromurl_chunkcachembvaluechanged",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -52992,6 +53263,166 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "+utils\\+dlgs\\selectModelTypeDlg.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "utils_javasetup_m",
+      "target": "utils_javasetup_configure",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+utils\\JavaSetup.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "utils_javasetup_m",
+      "target": "utils_javasetup_selectjava",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+utils\\JavaSetup.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "utils_javasetup_m",
+      "target": "utils_javasetup_browseforjava",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+utils\\JavaSetup.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "utils_javasetup_m",
+      "target": "utils_javasetup_apply",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+utils\\JavaSetup.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "utils_javasetup_m",
+      "target": "utils_javasetup_inspectfolder",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+utils\\JavaSetup.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "utils_javasetup_m",
+      "target": "utils_javasetup_findinstallations",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+utils\\JavaSetup.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "utils_javasetup_m",
+      "target": "utils_javasetup_configuredhome",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+utils\\JavaSetup.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "utils_javasetup_m",
+      "target": "utils_javasetup_restarttext",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+utils\\JavaSetup.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "utils_javasetup_m",
+      "target": "utils_javasetup_notjavamessage",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+utils\\JavaSetup.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "utils_javasetup_m",
+      "target": "utils_javasetup_hasjavaexecutable",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+utils\\JavaSetup.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "utils_javasetup_m",
+      "target": "utils_javasetup_majorversion",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+utils\\JavaSetup.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "utils_javasetup_m",
+      "target": "utils_javasetup_subfolders",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+utils\\JavaSetup.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "utils_javasetup_m",
+      "target": "utils_javasetup_defaultbrowsefolder",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+utils\\JavaSetup.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "utils_javasetup_m",
+      "target": "utils_javasetup_javadownloadurl",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+utils\\JavaSetup.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "utils_javasetup_m",
+      "target": "utils_javasetup_applytomatlabruntime",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+utils\\JavaSetup.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "utils_javasetup_m",
+      "target": "utils_javasetup_showmessage",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+utils\\JavaSetup.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -75487,6 +75918,16 @@
     },
     {
       "source": "controllers_mibcontroller_initialize_m",
+      "target": "utils_openhelppage_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibController\\initialize.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibcontroller_initialize_m",
       "target": "utils_dlgs_chooseuserstatslocation_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
@@ -82697,6 +83138,16 @@
     },
     {
       "source": "models_mibmodel_loadimages_m",
+      "target": "utils_ensurejavalibraries_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+models\\@MibModel\\loadImages.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_loadimages_m",
       "target": "utils_dlgs_inputuniversaldlg_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
@@ -83322,6 +83773,26 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "+utils\\+dlgs\\selectModelTypeDlg.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "utils_javasetup_m",
+      "target": "utils_dlgs_inputuniversaldlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+utils\\JavaSetup.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "utils_javasetup_m",
+      "target": "utils_dlgs_inputquestdlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+utils\\JavaSetup.m",
       "source_location": null,
       "weight": 1.0
     },

@@ -321,6 +321,22 @@ if ischar(loaderInfo)
     return;
 end
 
+% Bio-Formats readers need Java, which MATLAB R2026b and newer do not bundle;
+% check it before the loader is created, as its constructor would otherwise
+% throw into the UI callback
+if startsWith(string(loaderInfo.loaderId), "BioFormats")
+    try
+        utils.ensureJavaLibraries({'bioformats'});
+    catch err
+        ErrorDlgOpt.winTitle = 'Java is missing';
+        ErrorDlgOpt.err = err.message;
+        ErrorDlgOpt.WindowHeight = 300;
+        notify(obj, 'ShowErrorDialog', core.ToggleEventData(ErrorDlgOpt));
+        notify(obj, 'StopProtocol');
+        return;
+    end
+end
+
 %% Main loading loop -------------
 
 switch BatchOpt.Mode{1}

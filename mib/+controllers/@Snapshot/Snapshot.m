@@ -1062,7 +1062,15 @@ classdef Snapshot < handle
                 utils.mibImWrite(imgOut, dataset.snapshotFilename, parameters);
             elseif obj.view.handles.Clipboard.Value  % copy to Clipboard
                 progressBar.updateText('Exporting to clipboard, please wait...');
-                imclipboard('copy', imgOut);
+                try     % fails without Java on macOS/Linux
+                    imclipboard('copy', imgOut);
+                catch err
+                    progressBar.deletePoolWaitbar();
+                    if useBatchMode == 0; obj.view.handles.snapshotBtn.BackgroundColor = [0.149 0.902 0.1804]; end
+                    utils.dlgs.showErrorDialog(obj.view.gui, err, 'Snapshot error', ...
+                        'The snapshot was not copied to the clipboard', '', struct('Icon', 'puffin_warning'));
+                    return;
+                end
             end
             progressBar.deletePoolWaitbar();
 

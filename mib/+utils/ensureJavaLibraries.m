@@ -15,6 +15,17 @@ function ensureJavaLibraries(libList, mibPath, externalDirs)
 % variable clearing side effect of ``javaaddpath`` until a library is
 % actually needed.
 %
+% When MATLAB runs without a Java runtime (``usejava('jvm')`` is false, the
+% default from MATLAB R2026b, which no longer bundles Java), only the non-Java
+% ``'bm3d'`` entry is processed and ``'imageselection'`` is skipped silently
+% (it is requested at startup, and ``imclipboard`` falls back to the .NET
+% clipboard on Windows). Any other requested library throws ``MIB:javaNotFound``
+% with a message that names the feature (Bio-Formats, Fiji, ...) and points to
+% Preferences -> External directories -> Java (``utils.JavaSetup``), which works
+% both in MATLAB and in the compiled standalone, followed by a restart. Callers
+% that catch errors should show ``err.message`` rather than a generic text, so
+% the reason reaches the user.
+%
 % ``mibPath`` and ``externalDirs`` are cached in persistent variables on the
 % first configured call (done from ``MibController.initializeLibraries``
 % during startup), so later calls may provide only ``libList``.
@@ -61,13 +72,8 @@ externalDirs = cachedExternalDirs;
 libList = libList(~ismember(libList, initializedLibs));
 if isempty(libList); return; end
 
-% Store and disable warnings during initialization
-warningState = warning('off');
-
-% Get the Java classpath for checking existing libraries
-javapath = javaclasspath('-all');
-
 % ------------ add BM3D/BM4D to Matlab path ------------
+% plain MATLAB code, does not need Java
 if ismember('bm3d', libList)
     if ~isdeployed && ~isempty(externalDirs)
         % Add BM3D path if available
@@ -82,6 +88,36 @@ if ismember('bm3d', libList)
     end
     initializedLibs{end+1} = 'bm3d';
 end
+
+% MATLAB R2026b and newer no longer bundle a Java runtime; without one every
+% call below (starting with javaclasspath) throws MATLAB:Java:JavaNotFound.
+% A Java runtime can only be attached (utils.JavaSetup) before MATLAB starts.
+% 'imageselection' is skipped silently: it is requested at startup, and
+% imclipboard falls back to the .NET clipboard on Windows. Any other Java
+% library means the user started a Java feature, so stop it with an error
+% that names the feature and the fix; without it the feature fails later
+% with an error that its caller may replace by a misleading message
+if ~usejava('jvm')
+    libList = setdiff(libList, {'bm3d', 'imageselection'}, 'stable');
+    if isempty(libList); return; end
+    featureNames = dictionary(["omero", "mij.jar", "bioformats", "fiji", "poi", "imaris"], ...
+        ["OMERO", "Fiji", "Bio-Formats", "Fiji", "Excel export", "Imaris"]);
+    libList = string(libList);
+    knownLibs = libList(isKey(featureNames, libList));
+    featureList = strjoin(unique(featureNames(knownLibs), 'stable'), ', ');
+    if strlength(featureList) == 0; featureList = "This feature"; end
+    error('MIB:javaNotFound', ['%s needs Java, which is not available ' ...
+        '(MATLAB R2026b and newer come without Java).\n\n' ...
+        'To enable Java: Home -> Preferences -> External directories -> Java, press "Configure Java...", then restart MIB.\n\n' ...
+        'Step-by-step instructions:\n' ...
+        'http://mib.helsinki.fi/help/main3/getting-started/installation/java.html'], featureList);
+end
+
+% Store and disable warnings during initialization
+warningState = warning('off');
+
+% Get the Java classpath for checking existing libraries
+javapath = javaclasspath('-all');
 
 % ------------ add OMERO ------------
 if ismember('omero', libList)

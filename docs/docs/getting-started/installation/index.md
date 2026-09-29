@@ -14,6 +14,7 @@ or from [GitHub](https://github.com/Ajaxels/MIB3).
 Follow straightforward steps to install MIB on your system, whether you're using MATLAB or the standalone version.
 
 - **Details**: [https://mib.helsinki.fi/downloads_installation.html](https://mib.helsinki.fi/downloads_installation.html)
+- **Java** (MATLAB R2026b and newer): [Enable Java](java.md) - needed for Bio-Formats, Fiji, Imaris and OMERO
 
 ## System Requirements
 
@@ -22,6 +23,7 @@ Find information about useful add-ons such as the [Segment Anything Model](https
 [OMERO](https://www.openmicroscopy.org/omero/downloads/), [BM3D filter](https://webpages.tuni.fi/foi/GCF-BM3D/index.html), and others to improve your image processing tasks.
 
 - **Details**: [https://mib.helsinki.fi/downloads_systemreq.html](https://mib.helsinki.fi/downloads_systemreq.html)
+
 
 ## Archive
 

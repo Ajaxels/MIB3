@@ -176,6 +176,7 @@ Prefs.ExternalDirs.bm3dInstallationPath = [];       % BM3D
 Prefs.ExternalDirs.bm4dInstallationPath = [];       % BM4D
 Prefs.ExternalDirs.DeepMIBDir = tempdir;            % DeepMIB network architectures
 Prefs.ExternalDirs.PythonInstallationPath = [];     % Python environment
+Prefs.ExternalDirs.JavaInstallationPath = [];       % Java (MATLAB R2026b+ come without it), see utils.JavaSetup
 Prefs.ExternalDirs.PythonExecutionMode = 'OutOfProcess';  % type Execution Mode for pyenv
 Prefs.ExternalDirs.BioFormatsMemoizerMemoDir = [];  % Bioformats Memoizer
 % setting up directory for memoizer

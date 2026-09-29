@@ -319,9 +319,29 @@
   
   
   
-    <li class="md-nav__item">
-      <a href="../../../getting-started/installation/index.html" class="md-nav__link">
+    
+    
+      
         
+          
+        
+      
+        
+      
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_2" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../getting-started/installation/index.html" class="md-nav__link ">
+              
   
   
   <span class="md-ellipsis">
@@ -334,7 +354,57 @@
   
   
 
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2_2" id="__nav_2_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+  Installation
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../getting-started/installation/java.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Enable Java
+
+    
+  </span>
+  
+  
+
       </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
     </li>
   
 
@@ -6967,63 +7037,40 @@ a zero background would beat every real value under <strong>Min</strong>.</p>
 <p>The correction is applied wherever the tool reads a tile, so the seams are measured, scored and
 fused on the same pixels - the alignment rating always describes the mosaic you actually get. It is
 computed once and reused for the rest of the run.</p>
+<details class="example">
+<summary>Examples of intensity correction</summary>
+<figure>
+<p><a class="glightbox" data-title="Stitching of 5x5 tiles imaged using TEM" data-type="image" href="images/stitching_example_tem.jpg"><img align="left" alt="Stitching of 5x5 tiles imaged using TEM" class="on-glb" src="images/stitching_example_tem.jpg" width="600" /></a></p>
+<figcaption>
+<p>Example of stitching tiled 5x5 TEM dataset</p>
+</figcaption>
+</figure>
+<p><div class="clear-float"></div></p>
+<figure>
+<p><a class="glightbox" data-title="Stitching of 4x4 tiles imaged using SEM" data-type="image" href="images/stitching_example_sem.jpg"><img align="left" alt="Stitching of 4x4 tiles imaged using SEM" class="on-glb" src="images/stitching_example_sem.jpg" width="600" /></a></p>
+<figcaption>
+<p>Example of stitching tiled 4x4 SEM dataset of a mouse astrocyte using the re-exposure damage correction. 
+The dataset is courtesy of Mara-Camelia Rusu and Séverine Kunz, <a href="https://www.mdc-berlin.de/electron-microscopy">Max Delbrück Center, Berlin</a></p>
+</figcaption>
+</figure>
+<p><div class="clear-float"></div></p>
 <details class="tip">
-<summary>Which one to pick</summary>
-<p>Measured on a 3×3 TEM montage, as average brightness mismatch across the 12 seams (lower is
-better):</p>
-<table>
-<thead>
-<tr>
-<th></th>
-<th>mismatch</th>
-<th>worst seam</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>None</td>
-<td>7.50 %</td>
-<td>11.00 %</td>
-</tr>
-<tr>
-<td>Match tile means</td>
-<td>6.73 %</td>
-<td>11.31 %</td>
-</tr>
-<tr>
-<td>Flat-field (shared)</td>
-<td>2.31 %</td>
-<td>4.35 %</td>
-</tr>
-<tr>
-<td><strong>Flat-field (overlap-solved)</strong></td>
-<td><strong>1.01 %</strong></td>
-<td><strong>1.40 %</strong></td>
-</tr>
-</tbody>
-</table>
-<p>Start with <strong>Flat-field (overlap-solved)</strong>. <strong>Match tile means</strong> barely helped here because the
-tiles' <em>overall</em> brightnesses already agreed to 0.16 % - the gradient lives <strong>inside</strong> each
-tile, so at a vertical seam one tile's dark right edge meets its neighbour's bright left edge.</p>
-<p>Do <strong>not</strong> stack them: flat-field plus mean matching came out <em>worse</em> than flat-field alone,
-because tiles genuinely contain different amounts of material and forcing their means together
-fights real signal.</p>
+<summary>Recognising re-exposure damage</summary>
+<p>The tile acquired second shows a <strong>darker band exactly as wide as the overlap</strong>, often with an
+even darker line just beyond it, and grid corners imaged three or four times are darkest of all.
+The tile acquired first looks normal in the same place. The flat-field methods cannot remove
+this: it is a sharp-edged patch in one tile, not shading shared by all of them.</p>
+<p>Choose <strong>Re-exposure damage</strong>. MIB works out from the images which tile of each overlap was
+imaged second, so the acquisition order does not need to be entered. The correction is placed
+at the solved positions: <span class="widget widget-button">Measure overlaps</span> still sees
+the raw pixels, and the seams are rated and fused on corrected ones. If no overlap is darker on
+one side, the tiles are left unchanged.</p>
+<p>Keep <span class="widget widget-dropdown">Blend mode</span> = <strong>Overwrite</strong>. With this correction
+it puts the tile imaged <strong>first</strong> on top, so every overlap shows the undamaged copy of the
+specimen; the <a href="dataset-stitch-inspector.html#tile-order">seam inspector</a> can change that per tile. The correction evens out the brightness of the damaged copy, but it cannot restore
+detail the beam destroyed. Only the darker line just past the edge is taken from the damaged
+tile, because no other tile covers it.</p>
 </details>
-<details class="note">
-<summary>Why overlap-solved is the more reliable of the two flat-fields</summary>
-<p><strong>Shared</strong> works out what the tiles have in common and calls that illumination - sound only when
-there are many tiles at modest overlap, each showing different specimen. If your sample has a
-broad brightness trend of its own, the method cannot tell that from the beam, so it removes some
-of your sample and leaves some of the beam. With few, heavily-overlapping tiles it can come out
-<em>worse</em> than uncorrected (a 3×3 at 10 % overlap is fine; a 2×2 at 33 % is not).</p>
-<p><strong>Overlap-solved</strong> has no such failure: where two tiles overlap they image the <em>same</em> specimen,
-so anything that differs there is the instrument - the sample cancels out exactly, whatever it
-looks like. It reads only the overlap strips.</p>
-<p><strong>How flexible a shape to fit is decided from your data, not fixed in advance.</strong> MIB tries
-several and keeps the simplest one that predicts seams it was not fitted on, then checks that
-the tile centre still agrees with the borders, and declines to correct at all rather than guess
-if it cannot vouch for the result. Nothing here needs tuning, which is why this method is
-recommended: it has no hand-set shape parameter, unlike <strong>Flat-field (shared)</strong>.</p>
 </details>
 <details class="note">
 <summary>The mosaic is levelled as well as the tiles</summary>
@@ -7067,23 +7114,6 @@ This is free: it uses the one direction seam measurements genuinely cannot see, 
 residual is unchanged to the last digit. A <em>genuine</em> broad trend across the specimen is levelled
 too - nothing can distinguish the two, and a montage shading from one side to the other reads as
 an artefact either way.</p>
-</details>
-<details class="tip">
-<summary>Recognising re-exposure damage</summary>
-<p>The tile acquired second shows a <strong>darker band exactly as wide as the overlap</strong>, often with an
-even darker line just beyond it, and grid corners imaged three or four times are darkest of all.
-The tile acquired first looks normal in the same place. The flat-field methods cannot remove
-this: it is a sharp-edged patch in one tile, not shading shared by all of them.</p>
-<p>Choose <strong>Re-exposure damage</strong>. MIB works out from the images which tile of each overlap was
-imaged second, so the acquisition order does not need to be entered. The correction is placed
-at the solved positions: <span class="widget widget-button">Measure overlaps</span> still sees
-the raw pixels, and the seams are rated and fused on corrected ones. If no overlap is darker on
-one side, the tiles are left unchanged.</p>
-<p>Keep <span class="widget widget-dropdown">Blend mode</span> = <strong>Overwrite</strong>. With this correction
-it puts the tile imaged <strong>first</strong> on top, so every overlap shows the undamaged copy of the
-specimen; the <a href="dataset-stitch-inspector.html#tile-order">seam inspector</a> can change that per tile. The correction evens out the brightness of the damaged copy, but it cannot restore
-detail the beam destroyed. Only the darker line just past the edge is taken from the damaged
-tile, because no other tile covers it.</p>
 </details>
 <details class="failure">
 <summary>If you see a grid of darker bands along the seams</summary>
