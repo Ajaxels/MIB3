@@ -31,7 +31,7 @@ colorChannelIndex = str2double(strrep(obj.BatchOpt.ColorChannel{1}, 'Ch ', ''));
 
 invertImage  = strcmp(obj.BatchOpt.InvertImage{1}, 'black-on-white, signal is dark');
 useSeeds     = obj.BatchOpt.UseSeeds;
-isIntensity  = strcmp(obj.BatchOpt.WatershedSource{1}, 'intensityRadio');
+isIntensity  = strcmp(obj.BatchOpt.WatershedSource{1}, 'Intensity');
 is3D         = strcmp(obj.BatchOpt.Mode{1}, 'mode3dRadio');
 reduceOverseg = obj.BatchOpt.ReduceOversegmentation;
 
@@ -76,13 +76,13 @@ needsBinning = (binXY ~= 1 || binZ ~= 1);
 
 %% --- Object source (type + material index) ---
 switch obj.BatchOpt.ObjectSource{1}
-    case 'selectionRadio'
+    case 'Selection'
         inputType          = 'selection';
         objectMaterialIndex = [];
-    case 'maskRadio'
+    case 'Mask'
         inputType          = 'mask';
         objectMaterialIndex = [];
-    case 'modelRadio'
+    case 'Model'
         inputType          = 'labels';
         materialNames      = obj.mibModel.I{id}.labels.materialNames;
         objectMaterialIndex = find(strcmp(materialNames, obj.BatchOpt.ObjectMaterial{1}), 1);
@@ -91,13 +91,13 @@ end
 
 %% --- Seed source (type + material index) ---
 switch obj.BatchOpt.SeedSource{1}
-    case 'seedsSelectionRadio'
+    case 'seedsSelection'
         seedType          = 'selection';
         seedMaterialIndex = [];
-    case 'seedsMaskRadio'
+    case 'seedsMask'
         seedType          = 'mask';
         seedMaterialIndex = [];
-    case 'seedsModelRadio'
+    case 'seedsModel'
         seedType          = 'labels';
         materialNames     = obj.mibModel.I{id}.labels.materialNames;
         seedMaterialIndex = find(strcmp(materialNames, obj.BatchOpt.SeedMaterial{1}), 1);

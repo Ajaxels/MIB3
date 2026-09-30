@@ -33,32 +33,21 @@ if dataset.modelExist == 0; return; end
 cImageDoc = obj.cImageDoc{obj.mibModel.Sets.selectedSet};
 if isnan(cImageDoc.isInsideImage) || ~cImageDoc.isInsideImage; return; end
 
-% cursor coordinates from the status-bar pixel label ("x:y (...)")
+% cursor coordinates from the status-bar pixel label ("x:y (...)"); these are
+% the column and row of the shown slice in the current orientation, which is
+% also the frame getData2D reads options.x/.y in, so no remapping to the
+% dataset xyz is needed (remapping reads outside the slice in ZX/ZY and
+% returns an empty result)
 xyString = obj.cStatus.handles.pixelLabel.Text;
 xy = sscanf(xyString, '%f:%f', 2);
 if numel(xy) < 2 || any(isnan(xy)); return; end
-x1 = xy(1);
-y1 = xy(2);
 
-z = dataset.getCurrentSliceNumber();
-switch dataset.orientation
-    case 3  % yx
-        x = x1;
-        y = y1;
-    case 1  % xz
-        y = z;
-        x = y1;
-        z = x1;
-    case 2  % yz
-        x = z;
-        y = y1;
-        z = x1;
-end
 options.id = id;   % pin to the active dataset; the wrapper default obj.id may be stale
 options.blockModeSwitch = 0;
-options.y = [y y];
-options.x = [x x];
-materialIndex = cell2mat(obj.mibModel.getData2D('labels', z, [], [], options));
+options.x = [xy(1) xy(1)];
+options.y = [xy(2) xy(2)];
+materialIndex = cell2mat(obj.mibModel.getData2D('labels', dataset.getCurrentSliceNumber(), [], [], options));
+if isempty(materialIndex); return; end   % cursor outside the slice bounds
 
 if dataset.labels.maxMaterials < 256
     % palette model (63/255): every material has its own table row, just select it
