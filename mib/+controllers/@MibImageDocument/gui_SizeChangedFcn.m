@@ -74,26 +74,19 @@ if ~isempty(obj.axesDecorationSize) && isvalid(obj.handles.imViewAxes) && ...
         % NaN limits mean the dataset has not been shown yet; the deferred update fits it
         % to the screen and computes a magFactor, there is nothing to preserve here
         if ~isnan(axesX(1))
-            switch dataset.orientation
-                case 3      % xy
-                    coefZ = dataset.image.pixSize.x / dataset.image.pixSize.y;
-                case 1      % zx
-                    coefZ = dataset.image.pixSize.z / dataset.image.pixSize.x;
-                case 2      % zy
-                    coefZ = dataset.image.pixSize.z / dataset.image.pixSize.y;
-            end
+            [coefX, coefY] = dataset.getDisplayStretch();
             magFactor = dataset.magFactor;
 
             % field of view for the new axes size, centred as before
             xCenter = (axesX(1) + axesX(2)) / 2;
             yCenter = (axesY(1) + axesY(2)) / 2;
-            axesX = xCenter + [-1, 1] * newAxesSize(1) * magFactor / (2 * coefZ);
-            axesY = yCenter + [-1, 1] * newAxesSize(2) * magFactor / 2;
+            axesX = xCenter + [-1, 1] * newAxesSize(1) * magFactor / (2 * coefX);
+            axesY = yCenter + [-1, 1] * newAxesSize(2) * magFactor / (2 * coefY);
 
             % the part of the field of view that lies outside the image becomes the empty
             % margin on the left/top; the rest of the span is the axes size in pixels
-            xLimLeft = min(axesX(1), 0) * coefZ / magFactor;
-            yLimTop = min(axesY(1), 0) / magFactor;
+            xLimLeft = min(axesX(1), 0) * coefX / magFactor;
+            yLimTop = min(axesY(1), 0) * coefY / magFactor;
             obj.handles.imViewAxes.XLim = [xLimLeft, xLimLeft + newAxesSize(1)];
             obj.handles.imViewAxes.YLim = [yLimTop, yLimTop + newAxesSize(2)];
         end

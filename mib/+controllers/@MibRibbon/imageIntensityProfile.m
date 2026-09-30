@@ -124,7 +124,7 @@ switch mode
 end
 
 % ---- Convert axes coordinates to full-dataset pixel coordinates ----
-% roi.Position is in imViewAxes data space, which is stretched by coef_z in X
+% roi.Position is in imViewAxes data space, which is stretched by coefX/coefY
 % and scaled by the current zoom (magFactor). 'shown' mode undoes both.
 [posXdataset, posYdataset] = obj.mibModel.convertMouseToDataCoordinates(posX(:), posY(:), 'shown');
 posXdataset = round(posXdataset);

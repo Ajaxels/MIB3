@@ -236,9 +236,9 @@ if isfield(getDataOptions, 'blockModeSwitch') && getDataOptions.blockModeSwitch 
     if obj.I{id}.orientation == 3       % yx
         getDataOptions.x = ceil(axesX);
         getDataOptions.y = ceil(axesY);
-    elseif obj.I{id}.orientation == 1   % zx
-        getDataOptions.z = ceil(axesX);
-        getDataOptions.x = ceil(axesY);
+    elseif obj.I{id}.orientation == 1   % zx: horizontal = X, vertical = Z
+        getDataOptions.x = ceil(axesX);
+        getDataOptions.z = ceil(axesY);
     elseif obj.I{id}.orientation == 2   % zy
         getDataOptions.z = ceil(axesX);
         getDataOptions.y = ceil(axesY);
@@ -356,12 +356,12 @@ end
 % when the block mode is enabled store only information inside the shown block
 if blockModeSwitch
     if switch3d
-        if orientation == 1         % zx
+        if orientation == 1         % zx: horizontal = X, vertical = Z
             if ~isfield(getDataOptions, 'x')
-                getDataOptions.z = ceil(axesX);
+                getDataOptions.x = ceil(axesX);
             end
             if ~isfield(getDataOptions, 'y')
-                getDataOptions.x = ceil(axesY);
+                getDataOptions.z = ceil(axesY);
             end
         elseif orientation == 2     % zy
             if ~isfield(getDataOptions, 'x')

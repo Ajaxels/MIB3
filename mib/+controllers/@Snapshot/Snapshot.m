@@ -22,6 +22,9 @@ classdef Snapshot < handle
         % original width of the image area
         resizedWidth
         % width adjusted for aspect ratio
+        dimsPixSize
+        % pixSize the Width/Height fields were last computed from; a voxel-size change
+        % alters the aspect ratio of the output, so axesLimitsChanged_Callback recomputes them
         BatchOpt
         % BatchOpt structure for batch processing
     end
@@ -352,8 +355,9 @@ classdef Snapshot < handle
                 obj.origWidth = width;
                 orientation = dataset.orientation;
                 pixSize = dataset.image.pixSize;
-                if orientation == 1
-                    width = width * pixSize.z / pixSize.x;
+                obj.dimsPixSize = pixSize;
+                if orientation == 1     % zx: Z runs vertically
+                    height = ceil(height * pixSize.z / pixSize.x);
                 elseif orientation == 2
                     width = width * pixSize.z / pixSize.y;
                 elseif orientation == 3
@@ -381,8 +385,18 @@ classdef Snapshot < handle
         end
 
         function axesLimitsChanged_Callback(obj)
-            % AXESLIMITSCHANGED_CALLBACK - Update dimensions when shown area changes.
-            if obj.view.handles.ShownArea.Value
+            % AXESLIMITSCHANGED_CALLBACK - Update dimensions when the shown area or the voxel size changes.
+            %
+            % Fired by MibController.listener_updateDatasetAxes after zoom, resize and
+            % fit, and also after a voxel-size change (MibRibbon.updateVoxelSizes,
+            % scalebar_Callback). With the shown area the output size follows the
+            % view; otherwise it is recomputed only when the voxel size differs from
+            % the one the fields were computed from, so a size typed by the user is
+            % not reset by every zoom.
+            if ~isempty(obj.extraController); return; end
+            activeId = obj.mibModel.getActiveId();
+            voxelSizeChanged = ~isequal(obj.dimsPixSize, obj.mibModel.I{activeId}.image.pixSize);
+            if obj.view.handles.ShownArea.Value || voxelSizeChanged
                 obj.crop_Callback();
             end
         end
@@ -572,7 +586,13 @@ classdef Snapshot < handle
                 dlgOpts.mibPath      = obj.mibModel.mibPath;
                 dlgOpts.WindowStyle = 'modal';
                 [~, newPixSize, dlgResult] = utils.updatePixSizeAndResolution([], dataset.image.pixSize, dlgOpts);
-                if dlgResult; dataset.setPixSize(newPixSize); end
+                if dlgResult
+                    dataset.setPixSize(newPixSize);
+                    % a new voxel size changes the aspect ratio: refresh the view, which
+                    % also recomputes Width/Height via axesLimitsChanged_Callback
+                    notify(obj.mibModel, 'UpdateDatasetAxes', core.ToggleEventData(struct('mode', 'resize')));
+                    notify(obj.mibModel, 'ShowImage');
+                end
             end
             obj.updateBatchOptFromGUI(obj.view.handles.Scalebar);
         end
@@ -602,16 +622,17 @@ classdef Snapshot < handle
             end
 
             obj.origWidth = width;
-            obj.view.handles.Height.Value = height;
             orientation = obj.mibModel.I{activeId}.orientation;
             pixSize = obj.mibModel.I{activeId}.image.pixSize;
-            if orientation == 1
-                width = width * pixSize.z / pixSize.x;
+            obj.dimsPixSize = pixSize;
+            if orientation == 1     % zx: Z runs vertically
+                height = ceil(height * pixSize.z / pixSize.x);
             elseif orientation == 2
                 width = width * pixSize.z / pixSize.y;
             elseif orientation == 3
                 width = width * pixSize.x / pixSize.y;
             end
+            obj.view.handles.Height.Value = height;
             obj.view.handles.Width.Value = width;
             obj.origHeight = height;
             obj.resizedWidth = width;

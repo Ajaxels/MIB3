@@ -115,9 +115,9 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
             % BigData supports orientation switching (getData63/getDataZarr handle
             % orient); Virtual stays gated (browse-only, may use non-zarr backends).
             if dataset.orientation == 3 || isnan(cImageDoc.isInsideImage) || ~cImageDoc.isInsideImage || dataset.datasetType(1) == 'V'; return; end
-            if dataset.orientation == 1
-                dataset.current_yxz(2) = xy(2);
-                dataset.current_yxz(3) = xy(1);
+            if dataset.orientation == 1     % zx: horizontal X, vertical Z
+                dataset.current_yxz(2) = xy(1);
+                dataset.current_yxz(3) = xy(2);
             elseif dataset.orientation == 2
                 dataset.current_yxz(1) = xy(2);
                 dataset.current_yxz(3) = xy(1);
@@ -130,10 +130,10 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
             cImageDoc.gui_WinMouseMotionFcn();
         case 'Switch dataset to ZY orientation'         % default 'Alt + 2'
             if dataset.orientation == 2 || isnan(cImageDoc.isInsideImage) || ~cImageDoc.isInsideImage || dataset.datasetType(1) == 'V'; return; end
-            if dataset.orientation == 1
+            if dataset.orientation == 1     % zx: horizontal X, vertical Z
                 dataset.current_yxz(1) = dataset.slices{1}(1);
-                dataset.current_yxz(2) = xy(2);
-                dataset.current_yxz(3) = xy(1);
+                dataset.current_yxz(2) = xy(1);
+                dataset.current_yxz(3) = xy(2);
             elseif dataset.orientation == 3
                 dataset.current_yxz(1) = xy(2);
                 dataset.current_yxz(2) = xy(1);

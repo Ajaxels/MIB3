@@ -22,6 +22,9 @@ classdef MakeMovie < handle
         % original width of the image area in pixels
         resizedWidth
         % pixel width adjusted for anisotropic pixel size
+        dimsPixSize
+        % pixSize the width/height fields were last computed from; a voxel-size change
+        % alters the aspect ratio of the output, so AxesLimitsChanged recomputes them
     end
 
     events
@@ -40,7 +43,12 @@ classdef MakeMovie < handle
                 case {'UpdateGuiWidgets', 'NewDataset'}
                     obj.updateWidgets();
                 case 'AxesLimitsChanged'
-                    if obj.view.handles.shownAreaRadio.Value
+                    % follow the view for the shown area; otherwise recompute only after a
+                    % voxel-size change (new aspect ratio), so a typed size survives zooming
+                    if ~isempty(obj.extraController); return; end
+                    voxelSizeChanged = ~isequal(obj.dimsPixSize, ...
+                        obj.mibModel.I{obj.mibModel.getActiveId()}.image.pixSize);
+                    if obj.view.handles.shownAreaRadio.Value || voxelSizeChanged
                         obj.crop_Callback();
                     end
             end
@@ -297,8 +305,9 @@ classdef MakeMovie < handle
 
                 orientation = dataset.orientation;
                 pixSize     = dataset.image.pixSize;
-                if orientation == 1
-                    width = width * pixSize.z / pixSize.x;
+                obj.dimsPixSize = pixSize;
+                if orientation == 1     % zx: Z runs vertically
+                    height = ceil(height * pixSize.z / pixSize.x);
                 elseif orientation == 2
                     width = width * pixSize.z / pixSize.y;
                 elseif orientation == 3
@@ -385,17 +394,18 @@ classdef MakeMovie < handle
             end
 
             obj.origWidth      = width;
-            h.heightEdit.Value = height;
 
             orientation = obj.mibModel.I{activeId}.orientation;
             pixSize     = obj.mibModel.I{activeId}.image.pixSize;
-            if orientation == 1
-                width = width * pixSize.z / pixSize.x;
+            obj.dimsPixSize = pixSize;
+            if orientation == 1     % zx: Z runs vertically
+                height = ceil(height * pixSize.z / pixSize.x);
             elseif orientation == 2
                 width = width * pixSize.z / pixSize.y;
             elseif orientation == 3
                 width = width * pixSize.x / pixSize.y;
             end
+            h.heightEdit.Value = height;
 
             h.widthEdit.Value = ceil(width);
             obj.origHeight    = height;
@@ -412,7 +422,13 @@ classdef MakeMovie < handle
                 dlgOpts.mibPath      = obj.mibModel.mibPath;
                 dlgOpts.WindowStyle  = 'modal';
                 [~, newPixSize, dlgResult] = utils.updatePixSizeAndResolution([], dataset.image.pixSize, dlgOpts);
-                if dlgResult; dataset.setPixSize(newPixSize); end
+                if dlgResult
+                    dataset.setPixSize(newPixSize);
+                    % a new voxel size changes the aspect ratio: refresh the view, which
+                    % also recomputes width/height through the AxesLimitsChanged listener
+                    notify(obj.mibModel, 'UpdateDatasetAxes', core.ToggleEventData(struct('mode', 'resize')));
+                    notify(obj.mibModel, 'ShowImage');
+                end
             end
         end
 

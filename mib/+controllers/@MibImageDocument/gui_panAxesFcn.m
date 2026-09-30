@@ -49,7 +49,8 @@ if ~outSwitch
     % In slow pan (full-image) mode, clamp to 1 when zoomed in (magFactor < 1)
     % because the padded image is displayed at 1:1 data pixels (no downscale).
     % When magFactor >= 1, both padded+downscaled and full-image paths use
-    % the same display coordinate system (data * coef_z / magFactor).
+    % the same display coordinate system (data * coefX / magFactor horizontally,
+    % data * coefY / magFactor vertically).
     if obj.mibController.fastPanningMode
         magFactorFixed = magFactor;
     else
@@ -60,15 +61,10 @@ if ~outSwitch
         end
     end
 
-    % Aspect ratio correction for X axis: XData is in physical space where
-    % 1 data pixel = coef_z XData units. Divide the XData-space delta by
-    % coef_z to convert it to data-pixel coordinates before updating axesX.
-    dataset = obj.mibModel.I{obj.mibModel.id};
-    switch dataset.orientation
-        case 3;  coef_z = dataset.image.pixSize.x / dataset.image.pixSize.y;
-        case 1;  coef_z = dataset.image.pixSize.z / dataset.image.pixSize.x;
-        otherwise; coef_z = dataset.image.pixSize.z / dataset.image.pixSize.y;
-    end
+    % Aspect ratio correction: XData/YData are in physical space where
+    % 1 data pixel = coefX XData units and coefY YData units. Divide the
+    % axes-space delta by them to convert it to data-pixel coordinates.
+    [coefX, coefY] = obj.mibModel.I{obj.mibModel.id}.getDisplayStretch();
 
     % Move the axes display limits immediately for smooth visual feedback
     obj.handles.imViewAxes.XLim = newXLim;
@@ -76,11 +72,10 @@ if ~outSwitch
 
     % Sync the model's stored axes limits so that showImage() renders at the
     % correct position after the pan is released (gui_WindowButtonUpFcn).
-    % delta is in physical (XData) space: divide by coef_z to get data pixels.
-    % Y axis has coef_z == 1 so no correction needed there.
+    % delta is in physical (XData/YData) space: divide by coefX/coefY to get data pixels.
     [axesX, axesY] = obj.mibModel.getAxesLimits();
-    axesX = axesX + (xy(1) - (pt(1,1)+pt(2,1))/2) * magFactorFixed / coef_z;
-    axesY = axesY + (xy(2) - (pt(1,2)+pt(2,2))/2) * magFactorFixed;
+    axesX = axesX + (xy(1) - (pt(1,1)+pt(2,1))/2) * magFactorFixed / coefX;
+    axesY = axesY + (xy(2) - (pt(1,2)+pt(2,2))/2) * magFactorFixed / coefY;
     obj.mibModel.setAxesLimits(axesX, axesY);
 end
 end

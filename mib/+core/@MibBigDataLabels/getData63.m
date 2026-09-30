@@ -33,7 +33,7 @@ function dataset = getData63(obj, type, orient, materialIndex, options)
 %
 %   - **orient** *(optional)* - [numeric] viewing orientation:
 %
-%     - ``1`` - XZ (vertical = X, horizontal = Z, slice = Y)
+%     - ``1`` - ZX (vertical = Z, horizontal = X, slice = Y)
 %     - ``2`` - YZ (vertical = Y, horizontal = Z, slice = X)
 %     - ``3`` - YX (standard XY; vertical = Y, horizontal = X, slice = Z)
 %
@@ -109,8 +109,8 @@ packed = reshape(packed, size(packed, 1), size(packed, 2), size(packed, 3), 1, 1
 
 % --- permute [y,x,z] to the requested screen orientation (mirror getDataZarr)
 switch orient
-    case 1  % xz: [y,x,z] -> [x, z, y]
-        packed = permute(packed, [2 3 1 4 5]);
+    case 1  % zx: [y,x,z] -> [z, x, y]
+        packed = permute(packed, [3 2 1 4 5]);
     case 2  % yz: [y,x,z] -> [y, z, x]
         packed = permute(packed, [1 3 2 4 5]);
 end

@@ -46,20 +46,15 @@ magFactor = obj.getMagFactor();
 [axesX, axesY] = obj.getAxesLimits();
 
 if mode(1) == 's' % shown
-    % XData is in physical space: 1 data pixel = coef_z XData units for X.
-    % Compute coef_z from the current orientation.
-    ds = obj.I{obj.id};
-    switch ds.orientation
-        case 3;  coef_z = ds.image.pixSize.x / ds.image.pixSize.y;
-        case 1;  coef_z = ds.image.pixSize.z / ds.image.pixSize.x;
-        otherwise; coef_z = ds.image.pixSize.z / ds.image.pixSize.y;
-    end
+    % XData/YData are in physical space: 1 data pixel = coefX XData units
+    % horizontally and coefY YData units vertically (see MibDataset.getDisplayStretch)
+    [coefX, coefY] = obj.I{obj.id}.getDisplayStretch();
 
     if magFactor >= 1 && axesX(1) <= 1 && axesY(1) <= 1
         % Full-image mode (zoomed out, view at dataset origin):
         % XLim starts near 0 and x directly encodes absolute data position.
-        xOut = x * magFactor / coef_z;
-        yOut = y * magFactor;
+        xOut = x * magFactor / coefX;
+        yOut = y * magFactor / coefY;
     else
         % Block/crop mode: view is panned away from the dataset origin
         % (axesX(1) > 1) OR zoomed in (magFactor < 1).
@@ -67,8 +62,8 @@ if mode(1) == 's' % shown
         % added to convert from viewport-relative to absolute dataset coords.
         % This also covers Zarr pyramid datasets, which always load a crop
         % even at magFactor >= 1 (e.g. 100% view of a large dataset).
-        xOut = x * magFactor / coef_z + max([0 floor(axesX(1))]);
-        yOut = y * magFactor           + max([0 floor(axesY(1))]);
+        xOut = x * magFactor / coefX + max([0 floor(axesX(1))]);
+        yOut = y * magFactor / coefY + max([0 floor(axesY(1))]);
     end
 elseif mode(1) == 'b' % blockmode
     xOut = x*magFactor;
@@ -85,10 +80,10 @@ if permuteSw == 0
     tempX = xOut;
     tempY = yOut;
     tempZ = zOut;
-    if obj.I{obj.id}.orientation == 1    % zx
-        xOut = tempY;
+    if obj.I{obj.id}.orientation == 1    % zx: horizontal = X, vertical = Z, slice = Y
+        xOut = tempX;
         yOut = tempZ;
-        zOut = tempX;
+        zOut = tempY;
     elseif obj.I{obj.id}.orientation == 2 % zy
         xOut = tempZ;
         yOut = tempY;

@@ -70,26 +70,24 @@ switch hWidget.Description
 end
 
 % Keep the saved magnification across the orientation change.
-% Compute the new image dimensions and coef_z after transpose, then
-% centre the view on the image at the saved magFactor.
+% Compute the new image dimensions and the aspect-ratio stretch after
+% transpose, then centre the view on the image at the saved magFactor.
+[coefX, coefY] = dataset.getDisplayStretch();
 if dataset.orientation == 3
-    coef_z_new = dataset.image.pixSize.x / dataset.image.pixSize.y;
     newH = dataset.dim_yxzct(1);
     newW = dataset.dim_yxzct(2);
-elseif dataset.orientation == 1
-    coef_z_new = dataset.image.pixSize.z / dataset.image.pixSize.x;
-    newH = dataset.dim_yxzct(2);
-    newW = dataset.dim_yxzct(3);
+elseif dataset.orientation == 1     % zx: rows = Z, columns = X
+    newH = dataset.dim_yxzct(3);
+    newW = dataset.dim_yxzct(2);
 else  % orientation == 2
-    coef_z_new = dataset.image.pixSize.z / dataset.image.pixSize.y;
     newH = dataset.dim_yxzct(1);
     newW = dataset.dim_yxzct(3);
 end
 
 cImageDoc = obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet};
 axSize = cImageDoc.handles.imViewAxes.InnerPosition;
-halfW  = axSize(3) * savedMag / (2 * coef_z_new);
-halfH  = axSize(4) * savedMag / 2;
+halfW  = axSize(3) * savedMag / (2 * coefX);
+halfH  = axSize(4) * savedMag / (2 * coefY);
 dataset.setAxesLimits([newW/2 - halfW, newW/2 + halfW], ...
                       [newH/2 - halfH, newH/2 + halfH]);
 dataset.magFactor = savedMag;
@@ -102,7 +100,7 @@ notify(obj.mibModel, 'UpdateDatasetAxes', eventdata);
 % Update all GUI widgets (ribbon controls, spinners, etc.)
 obj.mibController.updateGuiWidgets({'depthSlider'}); % only depth slider needs to be updated
 
-% Orientation switch changes coef_z (pixel aspect ratio); magFactor itself is
+% Orientation switch changes the display stretch (pixel aspect ratio); magFactor itself is
 % restored to its pre-switch value, so updateBrushCursor's own magFactor-change
 % check will not catch this. Clear the stored offset before rendering, so the
 % showImage() call below recomputes the ellipse from fresh data immediately
@@ -121,9 +119,9 @@ if moveMouseSw
         case 'Switch dataset to the YX orientation'
             x = dataset.current_yxz(2);
             y = dataset.current_yxz(1);
-        case 'Switch dataset to the XZ orientation'
-            x = dataset.current_yxz(3);
-            y = dataset.current_yxz(2);
+        case 'Switch dataset to the XZ orientation'   % horizontal X, vertical Z
+            x = dataset.current_yxz(2);
+            y = dataset.current_yxz(3);
         case 'Switch dataset to the YZ orientation'
             x = dataset.current_yxz(3);
             y = dataset.current_yxz(1);

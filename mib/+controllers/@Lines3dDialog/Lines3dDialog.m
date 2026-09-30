@@ -1146,10 +1146,10 @@ classdef Lines3dDialog < handle
                         z = rowText{3};
                         x = rowText{4};
                         y = rowText{5};
-                    elseif orientation == 1  % zx
+                    elseif orientation == 1  % zx: horizontal X, vertical Z, slice Y
                         z = rowText{5};
-                        x = rowText{3};
-                        y = rowText{4};
+                        x = rowText{4};
+                        y = rowText{3};
                     elseif orientation == 2  % zy
                         z = rowText{4};
                         x = rowText{3};
@@ -1206,8 +1206,8 @@ classdef Lines3dDialog < handle
 
                     if orientation == 3      % xy
                         z = z1; x = x1; y = y1;
-                    elseif orientation == 1  % zx
-                        z = y1; x = z1; y = x1;
+                    elseif orientation == 1  % zx: horizontal X, vertical Z, slice Y
+                        z = y1; x = x1; y = z1;
                     elseif orientation == 2  % zy
                         z = x1; x = z1; y = y1;
                     end

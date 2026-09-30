@@ -153,9 +153,9 @@ orientation = obj.mibModel.I{id}.orientation;
 if orientation == 3      % XY
     backupOptions.y = [ceil(bb(2)) ceil(bb(2))+floor(bb(4))-1];
     backupOptions.x = [ceil(bb(1)) ceil(bb(1))+floor(bb(3))-1];
-elseif orientation == 1  % ZX
-    backupOptions.x = [ceil(bb(2)) ceil(bb(2))+floor(bb(4))-1];
-    backupOptions.z = [ceil(bb(1)) ceil(bb(1))+floor(bb(3))-1];
+elseif orientation == 1  % ZX: horizontal X, vertical Z
+    backupOptions.x = [ceil(bb(1)) ceil(bb(1))+floor(bb(3))-1];
+    backupOptions.z = [ceil(bb(2)) ceil(bb(2))+floor(bb(4))-1];
 elseif orientation == 2  % ZY
     backupOptions.y = [ceil(bb(2)) ceil(bb(2))+floor(bb(4))-1];
     backupOptions.z = [ceil(bb(1)) ceil(bb(1))+floor(bb(3))-1];

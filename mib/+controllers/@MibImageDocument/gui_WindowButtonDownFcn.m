@@ -149,11 +149,7 @@ if strcmp(operation, 'pan') %& strcmp(modifier,'alt')
         overlayObjs = findobj(obj.handles.imViewAxes, 'tag', 'roi', '-or', 'tag', 'measurements');
         if ~isempty(overlayObjs); delete(overlayObjs); end
         if isempty(obj.imageHandle) || ~isvalid(obj.imageHandle); return; end
-        switch dataset.orientation
-            case 3;  coef_z = dataset.image.pixSize.x / dataset.image.pixSize.y;
-            case 1;  coef_z = dataset.image.pixSize.z / dataset.image.pixSize.x;
-            otherwise; coef_z = dataset.image.pixSize.z / dataset.image.pixSize.y;
-        end
+        [coefX, coefY] = dataset.getDisplayStretch();
 
         % Determine full image dimensions to decide between padded or full load.
         % Use padded loading whenever the viewport shows a sub-region of the
@@ -185,13 +181,13 @@ if strcmp(operation, 'pan') %& strcmp(modifier,'alt')
                 obj.imageHandle.CData = [];
                 obj.imageHandle.CData = imgRGB;
                 % Map padded image: first pixel → paddedX(1), one data-unit per pixel
-                obj.imageHandle.XData = [paddedX(1), paddedX(1) + (size(imgRGB, 2) - 1) * coef_z];
-                obj.imageHandle.YData = [paddedY(1), paddedY(1) + size(imgRGB, 1) - 1];
+                obj.imageHandle.XData = [paddedX(1), paddedX(1) + (size(imgRGB, 2) - 1) * coefX];
+                obj.imageHandle.YData = [paddedY(1), paddedY(1) + (size(imgRGB, 1) - 1) * coefY];
 
-                % Set XLim in physical (XData) space so coordinate systems are
-                % consistent with showImage and gui_panAxesFcn.
-                obj.handles.imViewAxes.XLim = paddedX(1) + (axesX - paddedX(1)) * coef_z;
-                obj.handles.imViewAxes.YLim = axesY;  % Y: coef_z == 1
+                % Set XLim/YLim in physical (XData/YData) space so coordinate systems
+                % are consistent with showImage and gui_panAxesFcn.
+                obj.handles.imViewAxes.XLim = paddedX(1) + (axesX - paddedX(1)) * coefX;
+                obj.handles.imViewAxes.YLim = paddedY(1) + (axesY - paddedY(1)) * coefY;
             else
                 % Zoomed out but partial view (large image): load padded
                 % region downscaled by magFactor - same coordinate system
@@ -201,11 +197,11 @@ if strcmp(operation, 'pan') %& strcmp(modifier,'alt')
 
                 obj.imageHandle.CData = [];
                 obj.imageHandle.CData = imgRGB;
-                obj.imageHandle.XData = paddedX * coef_z / magFactor;
-                obj.imageHandle.YData = paddedY / magFactor;
+                obj.imageHandle.XData = paddedX * coefX / magFactor;
+                obj.imageHandle.YData = paddedY * coefY / magFactor;
 
-                obj.handles.imViewAxes.XLim = axesX * coef_z / magFactor;
-                obj.handles.imViewAxes.YLim = axesY / magFactor;
+                obj.handles.imViewAxes.XLim = axesX * coefX / magFactor;
+                obj.handles.imViewAxes.YLim = axesY * coefY / magFactor;
             end
 
             % Re-read CurrentPoint after XLim change so xy2 is in the new
@@ -229,11 +225,11 @@ if strcmp(operation, 'pan') %& strcmp(modifier,'alt')
                 obj.imageHandle.CData = [];
                 obj.imageHandle.CData = imgRGB;
                 % 1:1 data-pixel mapping (same as padded path)
-                obj.imageHandle.XData = [1, 1 + (size(imgRGB, 2) - 1) * coef_z];
-                obj.imageHandle.YData = [1, size(imgRGB, 1)];
-                % XLim shows the viewport region within the 1:1 image
-                obj.handles.imViewAxes.XLim = 1 + (axesX - 1) * coef_z;
-                obj.handles.imViewAxes.YLim = axesY;
+                obj.imageHandle.XData = [1, 1 + (size(imgRGB, 2) - 1) * coefX];
+                obj.imageHandle.YData = [1, 1 + (size(imgRGB, 1) - 1) * coefY];
+                % XLim/YLim show the viewport region within the 1:1 image
+                obj.handles.imViewAxes.XLim = 1 + (axesX - 1) * coefX;
+                obj.handles.imViewAxes.YLim = 1 + (axesY - 1) * coefY;
             else
                 % Zoomed out: blockModeSwitch=0 loads the full image and
                 % getRGBimage downsamples it correctly (panModeException=0
@@ -242,10 +238,10 @@ if strcmp(operation, 'pan') %& strcmp(modifier,'alt')
                 imgRGB = obj.mibModel.getRGBimage(rgbOptions);
                 obj.imageHandle.CData = [];
                 obj.imageHandle.CData = imgRGB;
-                obj.imageHandle.XData = [1, size(imgRGB, 2) * coef_z];
-                obj.imageHandle.YData = [1, size(imgRGB, 1)];
-                obj.handles.imViewAxes.XLim = axesX * coef_z / magFactor;
-                obj.handles.imViewAxes.YLim = axesY / magFactor;
+                obj.imageHandle.XData = [1, size(imgRGB, 2) * coefX];
+                obj.imageHandle.YData = [1, size(imgRGB, 1) * coefY];
+                obj.handles.imViewAxes.XLim = axesX * coefX / magFactor;
+                obj.handles.imViewAxes.YLim = axesY * coefY / magFactor;
             end
             % Re-read CurrentPoint after XLim change so xy2 is in the new
             % coordinate system (avoids manual coordinate conversion).
@@ -278,15 +274,16 @@ if strcmp(operation, 'pan') %& strcmp(modifier,'alt')
             obj.mibController.cRoi.drawingROI.repositioning = true;
             try
                 if magFactor < 1
-                    % 1:1 data-pixel mapping with coef_z stretch on X.
-                    % imgXLim(1) is both the axes origin and the data-pixel origin.
+                    % 1:1 data-pixel mapping with the coefX/coefY stretch.
+                    % imgXLim(1)/imgYLim(1) are both the axes origin and the data-pixel origin.
                     xO = imgXLim(1);
-                    toX = @(x) xO + (x - xO) .* coef_z;
-                    toY = @(y) y;
+                    yO = imgYLim(1);
+                    toX = @(x) xO + (x - xO) .* coefX;
+                    toY = @(y) yO + (y - yO) .* coefY;
                 else
-                    % Downsampled image: axes = data * coef_z / magFactor
-                    toX = @(x) x .* coef_z ./ magFactor;
-                    toY = @(y) y ./ magFactor;
+                    % Downsampled image: axes = data * coefX|coefY / magFactor
+                    toX = @(x) x .* coefX ./ magFactor;
+                    toY = @(y) y .* coefY ./ magFactor;
                 end
 
                 if hasStandardROI

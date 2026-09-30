@@ -59,7 +59,7 @@ interpY = interp1(arcCum, knotY(:), denseArc, splineMethod, 'extrap');
 
 % physical cumulative distance
 switch orientation
-    case 1;    pxX = pixSize.z;  pxY = pixSize.x;
+    case 1;    pxX = pixSize.x;  pxY = pixSize.z;   % zx: horizontal X, vertical Z
     case 2;    pxX = pixSize.z;  pxY = pixSize.y;
     otherwise; pxX = pixSize.x;  pxY = pixSize.y;
 end

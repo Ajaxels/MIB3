@@ -32,8 +32,10 @@ hMeasure  = obj.mibModel.I{datasetId}.measure;
 obj.mibModel.backup('measurements');
 hMeasure.clearData();
 
-for recordIdx = 1:numel(loadedStruct.Data)
-    hMeasure.storeMeasurement(loadedStruct.Data(recordIdx));
+% ZX measurements are stored in the legacy MIB2 frame, see core.Measurements.swapZXAxes
+loadedData = core.Measurements.swapZXAxes(loadedStruct.Data);
+for recordIdx = 1:numel(loadedData)
+    hMeasure.storeMeasurement(loadedData(recordIdx));
 end
 
 obj.updateTable();

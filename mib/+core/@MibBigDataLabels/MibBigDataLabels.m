@@ -609,11 +609,11 @@ classdef MibBigDataLabels < core.MibLabels63
             % own pyramid factor, and clamped to that physical dimension.
             fullSize = obj.modelLevelSizes(1, :);   % [Y X Z]
             switch orient
-                case 1  % xz: vertical = X, horizontal = Z, slice = Y
-                    if ~isfield(options, 'y') || isempty(options.y); options.y = [1, fullSize(2)]; end
-                    if ~isfield(options, 'x') || isempty(options.x); options.x = [1, fullSize(3)]; end
+                case 1  % zx: vertical = Z, horizontal = X, slice = Y
+                    if ~isfield(options, 'y') || isempty(options.y); options.y = [1, fullSize(3)]; end
+                    if ~isfield(options, 'x') || isempty(options.x); options.x = [1, fullSize(2)]; end
                     if ~isfield(options, 'z') || isempty(options.z); options.z = [1, fullSize(1)]; end
-                    physYfull = options.z; physXfull = options.y; physZfull = options.x;
+                    physYfull = options.z; physXfull = options.x; physZfull = options.y;
                 case 2  % yz: vertical = Y, horizontal = Z, slice = X
                     if ~isfield(options, 'y') || isempty(options.y); options.y = [1, fullSize(1)]; end
                     if ~isfield(options, 'x') || isempty(options.x); options.x = [1, fullSize(3)]; end

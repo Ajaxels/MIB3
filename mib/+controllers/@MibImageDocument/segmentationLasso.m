@@ -275,9 +275,9 @@ else
     CC = regionprops(selected_mask, 'BoundingBox');
     if isempty(CC); return; end
     bb = CC.BoundingBox;
-    if orientation == 1      % ZX
-        backupOptions.x = [ceil(bb(2)) ceil(bb(2))+floor(bb(4))-1];
-        backupOptions.z = [ceil(bb(1)) ceil(bb(1))+floor(bb(3))-1];
+    if orientation == 1      % ZX: horizontal X, vertical Z
+        backupOptions.x = [ceil(bb(1)) ceil(bb(1))+floor(bb(3))-1];
+        backupOptions.z = [ceil(bb(2)) ceil(bb(2))+floor(bb(4))-1];
     elseif orientation == 2  % ZY
         backupOptions.y = [ceil(bb(2)) ceil(bb(2))+floor(bb(4))-1];
         backupOptions.z = [ceil(bb(1)) ceil(bb(1))+floor(bb(3))-1];

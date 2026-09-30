@@ -18,7 +18,8 @@ function dataset = getData4D(obj, type, orient, col_channel, options)
 %   - **orient** - [*optional,* can be []]
 %
 %     - ``[]`` - returns transposed dataset in the currently shown orientation *(default)*
-%     - ``1`` - returns transposed dataset in the zx configuration: [y,x,z,c,t] → [x,z,y,c,t]
+%     - ``1`` - returns transposed dataset in the zx configuration: [y,x,z,c,t] → [z,x,y,c,t]
+%       (rows = Z, columns = X: X stays horizontal as in the yx view)
 %     - ``2`` - returns transposed dataset in the zy configuration: [y,x,z,c,t] → [y,z,x,c,t]
 %     - ``3`` - returns the original dataset in the yx configuration: [y,x,z,c,t]
 %

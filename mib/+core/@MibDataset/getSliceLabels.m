@@ -54,9 +54,9 @@ if isfield(options, 'blockModeSwitch') && options.blockModeSwitch
     if obj.orientation == 3     % get ids of the correct vectors in the matrix, depending on orientation
         xId = 2;
         yId = 3;
-    elseif obj.orientation == 1
-        xId = 1;
-        yId = 2;
+    elseif obj.orientation == 1     % zx: horizontal = X, vertical = Z
+        xId = 2;
+        yId = 1;
     elseif obj.orientation == 2
         xId = 1;
         yId = 3;

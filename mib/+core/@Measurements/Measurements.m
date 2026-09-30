@@ -798,9 +798,9 @@ classdef Measurements < matlab.mixin.Copyable
                     case 3  % yx
                         ratioX = resampledRatio(1);
                         ratioY = resampledRatio(2);
-                    case 1  % zx
-                        ratioX = resampledRatio(3);
-                        ratioY = resampledRatio(1);
+                    case 1  % zx: horizontal = X, vertical = Z
+                        ratioX = resampledRatio(1);
+                        ratioY = resampledRatio(3);
                     case 2  % zy
                         ratioX = resampledRatio(3);
                         ratioY = resampledRatio(2);
@@ -877,9 +877,9 @@ classdef Measurements < matlab.mixin.Copyable
                     case 3  % yx
                         shiftX = cropF(1) - 1;
                         shiftY = cropF(2) - 1;
-                    case 1  % zx
-                        shiftX = cropF(5) - 1;
-                        shiftY = cropF(1) - 1;
+                    case 1  % zx: horizontal = X, vertical = Z
+                        shiftX = cropF(1) - 1;
+                        shiftY = cropF(5) - 1;
                     case 2  % zy
                         shiftX = cropF(5) - 1;
                         shiftY = cropF(2) - 1;
@@ -911,6 +911,55 @@ classdef Measurements < matlab.mixin.Copyable
     %  Static computation methods - call as core.Measurements.methodName()
     % =====================================================================
     methods (Static)
+
+        function Data = swapZXAxes(Data)
+            % SWAPZXAXES - Swap the horizontal/vertical axes of measurements made in the ZX orientation.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %       Data = core.Measurements.swapZXAxes(Data)
+            %
+            % ZX slices are ``[z, x]`` (rows = Z, columns = X, see
+            % :meth:`core.MibImage.getData`), so in memory a ZX measurement keeps
+            % dataset X in ``.X`` and Z in ``.Y``. MIB2 and earlier MIB3 versions
+            % showed ZX transposed (rows = X, columns = Z), and ``.measure`` files
+            % store ZX measurements in that legacy frame. This conversion is its own
+            % inverse: it is applied to the data read from a ``.measure`` file
+            % (``controllers.MeasureTool.loadMeasurements``) and to the data written to
+            % one (``controllers.MeasureTool.saveMeasurements``), so files stay
+            % compatible in both directions. Only entries with ``.orientation == 1``
+            % change: ``.X``/``.Y``, ``.circ.xc``/``.circ.yc`` and
+            % ``.spline.x``/``.spline.y`` are swapped.
+            %
+            % Input Arguments:
+            %   - **Data** - [struct array] measurement data, see the class header
+            %
+            % Output Arguments:
+            %   - **Data** - [struct array] the same measurements, ZX entries swapped
+            %
+            % Usage:
+            %   **Example 1** - load a .measure file:
+            %
+            %   .. code-block:: matlab
+            %
+            %      loadedStruct = load(filename, '-mat');
+            %      Data = core.Measurements.swapZXAxes(loadedStruct.Data);
+            %
+
+            for measureIdx = 1:numel(Data)
+                if ~isequal(Data(measureIdx).orientation, 1); continue; end
+                [Data(measureIdx).X, Data(measureIdx).Y] = deal(Data(measureIdx).Y, Data(measureIdx).X);
+                if isfield(Data, 'circ') && isstruct(Data(measureIdx).circ) && isfield(Data(measureIdx).circ, 'xc')
+                    [Data(measureIdx).circ.xc, Data(measureIdx).circ.yc] = ...
+                        deal(Data(measureIdx).circ.yc, Data(measureIdx).circ.xc);
+                end
+                if isfield(Data, 'spline') && isstruct(Data(measureIdx).spline) && isfield(Data(measureIdx).spline, 'x')
+                    [Data(measureIdx).spline.x, Data(measureIdx).spline.y] = ...
+                        deal(Data(measureIdx).spline.y, Data(measureIdx).spline.x);
+                end
+            end
+        end
 
         function angleValue = computeAngle(X, Y, pixSize, orientation)
             % COMPUTEANGLE - Compute the angle in degrees formed by three points.
@@ -946,7 +995,7 @@ classdef Measurements < matlab.mixin.Copyable
 
             if nargin < 4; orientation = 3; end
             switch orientation
-                case 1;   aspectRatio = pixSize.z / pixSize.x;
+                case 1;   aspectRatio = pixSize.x / pixSize.z;   % zx: horizontal X, vertical Z
                 case 2;   aspectRatio = pixSize.z / pixSize.y;
                 otherwise; aspectRatio = pixSize.x / pixSize.y;
             end
@@ -987,7 +1036,7 @@ classdef Measurements < matlab.mixin.Copyable
 
             if nargin < 4; orientation = 3; end
             switch orientation
-                case 1;    dx = diff(X) * pixSize.z;  dy = diff(Y) * pixSize.x;
+                case 1;    dx = diff(X) * pixSize.x;  dy = diff(Y) * pixSize.z;   % zx: horizontal X, vertical Z
                 case 2;    dx = diff(X) * pixSize.z;  dy = diff(Y) * pixSize.y;
                 otherwise; dx = diff(X) * pixSize.x;  dy = diff(Y) * pixSize.y;
             end

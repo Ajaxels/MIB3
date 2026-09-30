@@ -39,7 +39,7 @@ end
 
 % ---- recalculate brush cursor positions (data-space delta) ----
 % brushPrevXY and pos are both in axes/data coords, so diffX/Y correctly
-% drives the cursor even when coef_z != 1 (anisotropic ZX/ZY orientations).
+% drives the cursor even when the display is stretched (anisotropic ZX/ZY orientations).
 diffX = pos(1,1) - obj.brushPrevXY(1);
 diffY = pos(1,2) - obj.brushPrevXY(2);
 if ~isempty(obj.brushCursor) && isvalid(obj.brushCursor)
@@ -52,8 +52,9 @@ obj.brushSelection{1}.travelPathInPixels = ...
     obj.brushSelection{1}.travelPathInPixels + sqrt(diffX^2 + diffY^2);
 
 % ---- convert data coords to CData pixel indices ----
-% imageHandle.XData = [1, shownW * coef_z]; for ZX/ZY orientations coef_z
-% can be >> 1, so axes data coords are a stretched version of CData indices.
+% imageHandle.XData = [1, shownW * coefX], YData = [1, shownH * coefY]; for ZY/ZX
+% orientations coefX/coefY can be >> 1, so axes data coords are a stretched
+% version of CData indices (MibDataset.getDisplayStretch).
 % Scale factors are pre-computed once and applied inline to all 4 points,
 % avoiding anonymous-function closure allocation on every call.
 XData = obj.imageHandle.XData;

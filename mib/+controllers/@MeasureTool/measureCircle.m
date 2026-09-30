@@ -50,7 +50,7 @@ if ~isfinite(circ.R) || circ.R <= 0; return; end
 
 % physical radius
 switch orientation
-    case 1;    radiusValue = circ.R * pixSize.z;
+    case 1;    radiusValue = circ.R * pixSize.x;   % zx: horizontal X
     case 2;    radiusValue = circ.R * pixSize.z;
     otherwise; radiusValue = circ.R * pixSize.x;
 end

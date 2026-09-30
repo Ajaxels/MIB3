@@ -42,7 +42,8 @@ end
 if isequal(filename, 0); return; end
 
 fn_out = fullfile(path, filename);
-Data = dataset.hROI.Data; %#ok<NASGU>
+% keep ZX ROIs in the legacy MIB2 frame, see core.RoiRegion.swapZXAxes
+Data = core.RoiRegion.swapZXAxes(dataset.hROI.Data); %#ok<NASGU>
 save(fn_out, 'Data', '-mat', '-v7.3');
 
 % show dialog

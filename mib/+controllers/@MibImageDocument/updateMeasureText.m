@@ -57,23 +57,19 @@ magFactor   = dataset.magFactor;
 pixSize     = dataset.image.pixSize;
 orientation = dataset.orientation;
 
-switch orientation
-    case 3;  coef_z = pixSize.x / pixSize.y;
-    case 1;  coef_z = pixSize.z / pixSize.x;
-    otherwise; coef_z = pixSize.z / pixSize.y;
-end
+[coefX, coefY] = dataset.getDisplayStretch();
 
-% Convert physical (XData) coords to data-pixel coords for distance calc
+% Convert physical (XData/YData) coords to data-pixel coords for distance calc
 if magFactor >= 1
-    px = pos(:,1) * magFactor / coef_z;
-    py = pos(:,2) * magFactor;
+    px = pos(:,1) * magFactor / coefX;
+    py = pos(:,2) * magFactor / coefY;
 else
-    px = pos(:,1) * magFactor / coef_z + max([0 floor(axesX(1))]);
-    py = pos(:,2) * magFactor           + max([0 floor(axesY(1))]);
+    px = pos(:,1) * magFactor / coefX + max([0 floor(axesX(1))]);
+    py = pos(:,2) * magFactor / coefY + max([0 floor(axesY(1))]);
 end
 
 if orientation == 3;      xSz = pixSize.x; ySz = pixSize.y;
-elseif orientation == 1;  xSz = pixSize.z; ySz = pixSize.x;
+elseif orientation == 1;  xSz = pixSize.x; ySz = pixSize.z;   % zx: horizontal X, vertical Z
 else;                     xSz = pixSize.z; ySz = pixSize.y;
 end
 

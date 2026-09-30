@@ -35,8 +35,8 @@ scaleBarHeight = Options.scaleBarHeight;
 
 if Options.orientation == 3
     pixelSize = pixSize.x / scale;
-elseif Options.orientation == 1
-    pixelSize = pixSize.z / scale;
+elseif Options.orientation == 1     % zx: horizontal X
+    pixelSize = pixSize.x / scale;
 elseif Options.orientation == 2
     pixelSize = pixSize.z / scale;
 end

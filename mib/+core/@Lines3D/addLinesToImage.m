@@ -43,11 +43,11 @@ if options.orientation == 3
     Box = [Box(1:4) Box(5)-pixSize.z*obj.clipExtraThickness Box(6)+pixSize.z*obj.clipExtraThickness];           % transposed box to xy
     unitsPerPixelX = (TransBox(2)-TransBox(1)+pixSize.x)/imgWidth;    % magnification of the image
     unitsPerPixelY = (TransBox(4)-TransBox(3)+pixSize.y)/imgHeight;    % magnification of the image
-elseif options.orientation == 1
-    TransBox = [Box(1:4) Box(5)-pixSize.y*obj.clipExtraThickness Box(6)+pixSize.y*obj.clipExtraThickness];     % transposed box to xz
-    Box = [Box(3:4) Box(5)-pixSize.y*obj.clipExtraThickness Box(6)+pixSize.y*obj.clipExtraThickness Box(1:2)];  % transposed box to xy
-    unitsPerPixelX = (TransBox(2)-TransBox(1)+pixSize.z)/imgWidth;    % magnification of the image
-    unitsPerPixelY = (TransBox(4)-TransBox(3)+pixSize.x)/imgHeight;    % magnification of the image
+elseif options.orientation == 1     % zx: Box(1:2) = X (horizontal), Box(3:4) = Z (vertical)
+    TransBox = [Box(1:4) Box(5)-pixSize.y*obj.clipExtraThickness Box(6)+pixSize.y*obj.clipExtraThickness];     % transposed box to zx
+    Box = [Box(1:2) Box(5)-pixSize.y*obj.clipExtraThickness Box(6)+pixSize.y*obj.clipExtraThickness Box(3:4)];  % transposed box to xy
+    unitsPerPixelX = (TransBox(2)-TransBox(1)+pixSize.x)/imgWidth;    % magnification of the image
+    unitsPerPixelY = (TransBox(4)-TransBox(3)+pixSize.z)/imgHeight;    % magnification of the image
 elseif options.orientation == 2
     TransBox = [Box(1:4) Box(5)-pixSize.x*obj.clipExtraThickness Box(6)+pixSize.x*obj.clipExtraThickness];     % transposed box to yz
     Box = [Box(5)-pixSize.x*obj.clipExtraThickness Box(6)+pixSize.x*obj.clipExtraThickness Box(3:4) Box(1:2)];  % transposed box to xy
@@ -72,7 +72,7 @@ if noEdges > 0
     if options.orientation == 3
         edgePnts = edgePnts(:,[1 2 4 5]);   % [x1 y1 x2 y2], remove Z
     elseif options.orientation == 1
-        edgePnts = edgePnts(:,[3 1 6 4]);   % [x1 y1 x2 y2 z1 z2], remove Y
+        edgePnts = edgePnts(:,[1 3 4 6]);   % zx: [x1 z1 x2 z2], remove Y
     elseif options.orientation == 2
         edgePnts = edgePnts(:,[3 2 6 5]);   % [x1 y1 x2 y2 z1 z2], remove X
     end
@@ -154,8 +154,8 @@ sliceId = mean([TransBox(5), TransBox(6)]);
 [nodes, nodeIds] = obj.findSliceNodes(sliceId, options.orientation);   % [x, y, z]
 
 % transpose coordinates
-if options.orientation == 1
-    nodes = [nodes(:,3) nodes(:,1)];
+if options.orientation == 1     % zx: horizontal = X, vertical = Z
+    nodes = [nodes(:,1) nodes(:,3)];
 elseif options.orientation == 2
     nodes = [nodes(:,3) nodes(:,2)];
 end

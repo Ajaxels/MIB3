@@ -41,11 +41,11 @@ Xlim = ceil(obj.axesX);
 Ylim = ceil(obj.axesY);
 
 if ~transposeTo3
-    if obj.orientation==1     % xz
+    if obj.orientation==1     % zx: rows = Z, columns = X
         yMin = max([Ylim(1) 1]);
-        yMax = min([Ylim(2) obj.image.width]);
+        yMax = min([Ylim(2) obj.image.depth]);
         xMin = max([Xlim(1) 1]);
-        xMax = min([Xlim(2) obj.image.depth]);
+        xMax = min([Xlim(2) obj.image.width]);
         zMin = 1;
         zMax = obj.image.height;
     elseif obj.orientation==2 % yz
@@ -64,11 +64,11 @@ if ~transposeTo3
         zMax = obj.image.depth;
     end
 else    % transpose to XY
-    if obj.orientation==1     % xz
-        xMin = max([Ylim(1) 1]);
-        xMax = min([Ylim(2) obj.image.width]);
-        zMin = max([Xlim(1) 1]);
-        zMax = min([Xlim(2) obj.image.depth]);
+    if obj.orientation==1     % zx: rows = Z, columns = X
+        xMin = max([Xlim(1) 1]);
+        xMax = min([Xlim(2) obj.image.width]);
+        zMin = max([Ylim(1) 1]);
+        zMax = min([Ylim(2) obj.image.depth]);
         yMin = 1;
         yMax = obj.image.height;
     elseif obj.orientation==2 % yz

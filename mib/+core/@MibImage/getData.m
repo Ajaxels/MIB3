@@ -12,7 +12,8 @@ function dataset = getData(obj, layerType, orient, colChannel, options) % get co
 %     layers at once, *default* = 'image'
 %   - **orient** - *(optional)*, can be ``[]``; when ``[]`` orient defaults to ``3``:
 %
-%     - ``1`` - returns transposed dataset in ZX configuration: ``[y,x,z,c,t]`` → ``[x,z,y,c,t]``
+%     - ``1`` - returns transposed dataset in ZX configuration: ``[y,x,z,c,t]`` → ``[z,x,y,c,t]``
+%       (rows = Z, columns = X, so X stays horizontal as in the YX view)
 %     - ``2`` - returns transposed dataset in ZY configuration: ``[y,x,z,c,t]`` → ``[y,z,x,c,t]``
 %     - ``3`` - returns original dataset in YX configuration: ``[y,x,z,c,t]``
 %
@@ -103,8 +104,8 @@ if blockModeSwitchLocal == 0  % return the full dataset
         dataset = uint8(obj.data == materialIndex);
     end
 
-    if orient==1    % xz; get permuted dataset
-        dataset = permute(dataset, [2 3 1 4 5]);
+    if orient==1    % zx; get permuted dataset [z,x,y,c,t]
+        dataset = permute(dataset, [3 2 1 4 5]);
     elseif orient==2    % yz; get permuted dataset
         dataset = permute(dataset, [1 3 2 4 5]);
     end
@@ -116,10 +117,10 @@ else  % return a subvolume of the full dataset
     Tlim = [1 size(obj.data, 5)];
 
     % convert coordinates to the original dataset
-    if orient==1     % xz
-        if isfield(options, 'x'); Zlim = [options.x(1) options.x(numel(options.x))]; end
+    if orient==1     % zx: rows = Z, columns = X, slice = Y
+        if isfield(options, 'x'); Xlim = floor([options.x(1) options.x(numel(options.x))]); end
+        if isfield(options, 'y'); Zlim = [options.y(1) options.y(numel(options.y))]; end
         if isfield(options, 'z'); Ylim = floor([options.z(1) options.z(numel(options.z))]); end
-        if isfield(options, 'y'); Xlim = floor([options.y(1) options.y(numel(options.y))]); end
     elseif orient==2 % yz
         if isfield(options, 'x'); Zlim = [options.x(1) options.x(numel(options.x))]; end
         if isfield(options, 'y'); Ylim = floor([options.y(1) options.y(numel(options.y))]); end
@@ -149,8 +150,8 @@ else  % return a subvolume of the full dataset
         dataset = uint8((obj.data(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2)) == materialIndex));
     end
 
-    if orient==1     % permute to xz
-        dataset = permute(dataset,[2 3 1 4 5]);
+    if orient==1     % permute to zx [z,x,y,c,t]
+        dataset = permute(dataset,[3 2 1 4 5]);
     elseif orient==2 % permute to yz
         dataset = permute(dataset,[1 3 2 4 5]);
     end

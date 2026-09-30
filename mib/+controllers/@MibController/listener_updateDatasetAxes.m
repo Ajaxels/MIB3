@@ -87,17 +87,16 @@ if ~axesLimitsChangedNeeded && selectedSet <= numel(obj.mibModel.Sets.selectedDa
         (selectedSet-1)*obj.mibModel.Sets.datasetsInSet;
 end
 
-% get the scaling coefficient
+% get the aspect-ratio stretch (Z is horizontal in ZY, vertical in ZX) and the
+% size of the shown slice in data pixels
+[coefX, coefY] = obj.mibModel.I{index}.getDisplayStretch();
 if obj.mibModel.I{index}.orientation == 3     % xy
-    coef_z = obj.mibModel.I{index}.image.pixSize.x/obj.mibModel.I{index}.image.pixSize.y;
     height = obj.mibModel.I{index}.dim_yxzct(1); % height
     width = obj.mibModel.I{index}.dim_yxzct(2);  % width
-elseif obj.mibModel.I{index}.orientation == 1     % ---- xz
-    coef_z = obj.mibModel.I{index}.image.pixSize.z/obj.mibModel.I{index}.image.pixSize.x;
-    height = obj.mibModel.I{index}.dim_yxzct(2); % width
-    width = obj.mibModel.I{index}.dim_yxzct(3);  % depth
-elseif obj.mibModel.I{index}.orientation == 2    % ---- yz
-    coef_z = obj.mibModel.I{index}.image.pixSize.z/obj.mibModel.I{index}.image.pixSize.y;
+elseif obj.mibModel.I{index}.orientation == 1     % ---- zx: rows = Z, columns = X
+    height = obj.mibModel.I{index}.dim_yxzct(3); % depth
+    width = obj.mibModel.I{index}.dim_yxzct(2);  % width
+elseif obj.mibModel.I{index}.orientation == 2    % ---- zy
     height = obj.mibModel.I{index}.dim_yxzct(1); % height
     width = obj.mibModel.I{index}.dim_yxzct(3);  % depth
 end
@@ -122,21 +121,21 @@ magFactor = obj.mibModel.I{index}.magFactor;
 if isnan(axesX(1)) || strcmp(mode, 'fitToScreen')
     % First load (NaN axes) OR explicit "Fit to screen" request:
     % scale image to fill the axes, adjusting magFactor accordingly.
-    imageAR = (width * coef_z) / height;  % Image aspect ratio (physical)
+    imageAR = (width * coefX) / (height * coefY);  % Image aspect ratio (physical)
     axesAR = axSize(3) / axSize(4);       % Axes aspect ratio
 
     if imageAR > axesAR
         % Image wider than axes: fit to width
-        magFactor = (width * coef_z) / axSize(3);
+        magFactor = (width * coefX) / axSize(3);
         axesX = [1, width];
-        axesY = [height/2 - (axSize(4) * magFactor)/2, ...
-            height/2 + (axSize(4) * magFactor)/2];
+        axesY = [height/2 - (axSize(4) * magFactor)/(2 * coefY), ...
+            height/2 + (axSize(4) * magFactor)/(2 * coefY)];
     else
         % Image taller/narrower than axes: fit to height
-        magFactor = height / axSize(4);
+        magFactor = (height * coefY) / axSize(4);
         axesY = [1, height];
-        axesX = [width/2 - (axSize(3) * magFactor)/(2 * coef_z), ...
-            width/2 + (axSize(3) * magFactor)/(2 * coef_z)];
+        axesX = [width/2 - (axSize(3) * magFactor)/(2 * coefX), ...
+            width/2 + (axSize(3) * magFactor)/(2 * coefX)];
     end
 elseif strcmp(mode, 'resize')
     % Window/panel resize with an already-initialized dataset:
@@ -144,8 +143,8 @@ elseif strcmp(mode, 'resize')
     % the displayed field-of-view to fill the new axes pixel dimensions.
     xCenter = (axesX(1) + axesX(2)) / 2;
     yCenter = (axesY(1) + axesY(2)) / 2;
-    halfW   = axSize(3) * magFactor / (2 * coef_z);
-    halfH   = axSize(4) * magFactor / 2;
+    halfW   = axSize(3) * magFactor / (2 * coefX);
+    halfH   = axSize(4) * magFactor / (2 * coefY);
     axesX   = [xCenter - halfW, xCenter + halfW];
     axesY   = [yCenter - halfH, yCenter + halfH];
     % magFactor is intentionally left unchanged

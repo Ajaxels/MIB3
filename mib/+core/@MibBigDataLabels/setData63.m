@@ -91,8 +91,8 @@ if islogical(dataset(1)); dataset = uint8(dataset); end
 % --- incoming data into native [y, x, z] order ----------------------------
 % getData63 permutes physical [y x z] -> screen orientation; invert that here
 % so the incoming screen-oriented block returns to native [y x z].
-if orient == 1
-    dataset = ipermute(dataset, [2 3 1 4 5]);
+if orient == 1     % zx [z,x,y]
+    dataset = ipermute(dataset, [3 2 1 4 5]);
 elseif orient == 2
     dataset = ipermute(dataset, [1 3 2 4 5]);
 end

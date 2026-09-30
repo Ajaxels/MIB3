@@ -10,7 +10,7 @@ function dataset = getDataZarr(obj, type, orient, colChannel, options)
 %   - **type** - type of layer - only 'image' is functional in virtual mode
 %   - **orient** - *(optional)*, orientation of returned dataset; default ``3``:
 %
-%     - ``1`` - XZ: output ``[x, z, y, c, t]``
+%     - ``1`` - ZX: output ``[z, x, y, c, t]`` (rows = Z, columns = X)
 %     - ``2`` - YZ: output ``[y, z, x, c, t]``
 %     - ``3`` - YX: output ``[y, x, z, c, t]`` *(default)*
 %   - **colChannel** - *(optional)*, vector of 1-based colour channel indices;
@@ -26,7 +26,7 @@ function dataset = getDataZarr(obj, type, orient, colChannel, options)
 %
 % Output Arguments:
 %   - **dataset** - 5D array [y, x, z, c, t] for orient==3;
-%     [x, z, y, c, t] for orient==1;
+%     [z, x, y, c, t] for orient==1 (rows = Z, columns = X);
 %     [y, z, x, c, t] for orient==2
 %
 % Usage:
@@ -78,11 +78,11 @@ end
 % is unchanged, so only the region selection is corrected; YX is identical.)
 fullSize = obj.pyramid.levelImageSizes(1, :);   % [Y X Z]
 switch orient
-    case 1  % xz: vertical = X, horizontal = Z, slice = Y
-        if ~isfield(options, 'y') || isempty(options.y); options.y = [1, fullSize(2)]; end
-        if ~isfield(options, 'x') || isempty(options.x); options.x = [1, fullSize(3)]; end
+    case 1  % zx: vertical = Z, horizontal = X, slice = Y
+        if ~isfield(options, 'y') || isempty(options.y); options.y = [1, fullSize(3)]; end
+        if ~isfield(options, 'x') || isempty(options.x); options.x = [1, fullSize(2)]; end
         if ~isfield(options, 'z') || isempty(options.z); options.z = [1, fullSize(1)]; end
-        physYfull = options.z; physXfull = options.y; physZfull = options.x;
+        physYfull = options.z; physXfull = options.x; physZfull = options.y;
     case 2  % yz: vertical = Y, horizontal = Z, slice = X
         if ~isfield(options, 'y') || isempty(options.y); options.y = [1, fullSize(1)]; end
         if ~isfield(options, 'x') || isempty(options.x); options.x = [1, fullSize(3)]; end
@@ -199,8 +199,8 @@ end
 
 % --- permute [y,x,z,c,t] to the requested screen orientation -------------
 switch orient
-    case 1  % xz: [y,x,z,c,t] -> [x, z, y, c, t]
-        dataset = permute(block, [2, 3, 1, 4, 5]);
+    case 1  % zx: [y,x,z,c,t] -> [z, x, y, c, t]
+        dataset = permute(block, [3, 2, 1, 4, 5]);
     case 2  % yz: [y,x,z,c,t] -> [y, z, x, c, t]
         dataset = permute(block, [1, 3, 2, 4, 5]);
     case 3  % yx: [y,x,z,c,t] - already in MIB3 order

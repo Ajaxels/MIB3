@@ -181,10 +181,10 @@ function [fullRanges, magnified] = orientFullRanges(orient, options, fullSizeYXZ
 % by ``magFactor``, the third is the slice axis and is not.
 
 switch orient
-    case 1  % xz: vertical = X, horizontal = Z, slice = Y
+    case 1  % zx: vertical = Z, horizontal = X, slice = Y
         rangeY    = axisRange(options, 'z', fullSizeYXZ(1));
-        rangeX    = axisRange(options, 'y', fullSizeYXZ(2));
-        rangeZ    = axisRange(options, 'x', fullSizeYXZ(3));
+        rangeX    = axisRange(options, 'x', fullSizeYXZ(2));
+        rangeZ    = axisRange(options, 'y', fullSizeYXZ(3));
         magnified = [false true true];
     case 2  % yz: vertical = Y, horizontal = Z, slice = X
         rangeY    = axisRange(options, 'y', fullSizeYXZ(1));
@@ -219,8 +219,8 @@ end
 function dataset = orientPermute(dataset, orient)
 % ORIENTPERMUTE - [y,x,z] to the requested screen arrangement (mirror of getData63).
 switch orient
-    case 1  % xz: [y,x,z] -> [x, z, y]
-        dataset = permute(dataset, [2 3 1]);
+    case 1  % zx: [y,x,z] -> [z, x, y]
+        dataset = permute(dataset, [3 2 1]);
     case 2  % yz: [y,x,z] -> [y, z, x]
         dataset = permute(dataset, [1 3 2]);
 end

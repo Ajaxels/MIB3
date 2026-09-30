@@ -63,9 +63,9 @@ bb = CC.BoundingBox;
 if dataset.orientation == 3         % XY plane (default)
     backupOptions.y = [ceil(bb(2)) ceil(bb(2))+floor(bb(4))-1];
     backupOptions.x = [ceil(bb(1)) ceil(bb(1))+floor(bb(3))-1];
-elseif dataset.orientation == 1     % ZX plane
-    backupOptions.x = [ceil(bb(2)) ceil(bb(2))+floor(bb(4))-1];
-    backupOptions.z = [ceil(bb(1)) ceil(bb(1))+floor(bb(3))-1];
+elseif dataset.orientation == 1     % ZX plane: horizontal X, vertical Z
+    backupOptions.x = [ceil(bb(1)) ceil(bb(1))+floor(bb(3))-1];
+    backupOptions.z = [ceil(bb(2)) ceil(bb(2))+floor(bb(4))-1];
 elseif dataset.orientation == 2     % ZY plane
     backupOptions.y = [ceil(bb(2)) ceil(bb(2))+floor(bb(4))-1];
     backupOptions.z = [ceil(bb(1)) ceil(bb(1))+floor(bb(3))-1];

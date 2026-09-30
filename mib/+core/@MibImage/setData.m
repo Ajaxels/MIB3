@@ -13,7 +13,8 @@ function result = setData(obj, dataset, layerType, orient, colChannel, options)
 %     layers at once, *default* = 'image'
 %   - **orient** - *(optional)*, can be ``[]``; default ``3``:
 %
-%     - ``1`` - updates transposed dataset from ZX configuration: ``[x,z,y,c,t]`` → ``[y,x,z,c,t]``
+%     - ``1`` - updates transposed dataset from ZX configuration: ``[z,x,y,c,t]`` → ``[y,x,z,c,t]``
+%       (rows = Z, columns = X)
 %     - ``2`` - updates transposed dataset from ZY configuration: ``[y,z,x,c,t]`` → ``[y,x,z,c,t]``
 %     - ``3`` - updates original dataset from YX configuration: ``[y,x,z,c,t]``
 %
@@ -96,8 +97,8 @@ if islogical(dataset(1)); dataset = uint8(dataset); end
 % split the operations for better performance
 if blockModeSwitchLocal == 0  % set the full dataset
     % permute to the target orientation
-    if orient==1    % xz; get permuted dataset
-        dataset = ipermute(dataset, [2 3 1 4 5]);
+    if orient==1    % zx [z,x,y,c,t]; permute back
+        dataset = ipermute(dataset, [3 2 1 4 5]);
     elseif orient==2    % yz; get permuted dataset
         dataset = ipermute(dataset, [1 3 2 4 5]);
     end
@@ -141,10 +142,10 @@ else  % set a part of the dataset
     Tlim = [1 obj.time];
 
     % convert coordinates to the original dataset
-    if orient==1     % xz
-        if isfield(options, 'x'); Zlim = [options.x(1) options.x(numel(options.x))]; end
+    if orient==1     % zx: rows = Z, columns = X, slice = Y
+        if isfield(options, 'x'); Xlim = floor([options.x(1) options.x(numel(options.x))]); end
+        if isfield(options, 'y'); Zlim = [options.y(1) options.y(numel(options.y))]; end
         if isfield(options, 'z'); Ylim = floor([options.z(1) options.z(numel(options.z))]); end
-        if isfield(options, 'y'); Xlim = floor([options.y(1) options.y(numel(options.y))]); end
     elseif orient==2 % yz
         if isfield(options, 'x'); Zlim = [options.x(1) options.x(numel(options.x))]; end
         if isfield(options, 'y'); Ylim = floor([options.y(1) options.y(numel(options.y))]); end
@@ -167,8 +168,8 @@ else  % set a part of the dataset
     Tlim = [max([Tlim(1) 1]) min([Tlim(2) obj.time])];
 
     % permute to the target orientation
-    if orient==1    % xz; get permuted dataset
-        dataset = ipermute(dataset, [2 3 1 4 5]);
+    if orient==1    % zx [z,x,y,c,t]; permute back
+        dataset = ipermute(dataset, [3 2 1 4 5]);
     elseif orient==2    % yz; get permuted dataset
         dataset = ipermute(dataset, [1 3 2 4 5]);
     end

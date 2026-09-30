@@ -19,7 +19,10 @@ classdef RoiRegion < matlab.mixin.Copyable
     % - ``.type`` - [char] ROI type: ``'rectangle'``, ``'ellipse'``, ``'polygon'``, or ``'freehand'``
     % - ``.X`` - [numeric vector] X-coordinates of vertices
     % - ``.Y`` - [numeric vector] Y-coordinates of vertices
-    % - ``.orientation`` - [numeric] orientation when created: ``1`` = zx, ``2`` = zy, ``3`` = yx
+    % - ``.orientation`` - [numeric] orientation when created: ``1`` = zx, ``2`` = zy, ``3`` = yx;
+    %   ``.X``/``.Y`` are the horizontal/vertical axes of that view: X/Z for zx, Z/Y for zy.
+    %   ``.roi`` files keep zx ROIs in the legacy MIB2 frame (X = Z, Y = X), see
+    %   :meth:`core.RoiRegion.swapZXAxes`
     % - ``.BoundingBox`` - [struct] bounding box with subfields ``.x`` = ``[xmin, xmax]`` and ``.y`` = ``[ymin, ymax]`` 
 
     properties (SetAccess = public, GetAccess = public)
@@ -832,13 +835,13 @@ classdef RoiRegion < matlab.mixin.Copyable
                         obj.Data(i).BoundingBox.x(2) = ceil(obj.Data(i).BoundingBox.x(2) * resampledRatio(1));
                         obj.Data(i).BoundingBox.y(1) = floor(obj.Data(i).BoundingBox.y(1) * resampledRatio(2));
                         obj.Data(i).BoundingBox.y(2) = ceil(obj.Data(i).BoundingBox.y(2) * resampledRatio(2));
-                    case 1  % zx
-                        obj.Data(i).X = obj.Data(i).X * resampledRatio(3);
-                        obj.Data(i).Y = obj.Data(i).Y * resampledRatio(1);
-                        obj.Data(i).BoundingBox.x(1) = floor(obj.Data(i).BoundingBox.x(1) * resampledRatio(3));
-                        obj.Data(i).BoundingBox.x(2) = ceil(obj.Data(i).BoundingBox.x(2) * resampledRatio(3));
-                        obj.Data(i).BoundingBox.y(1) = floor(obj.Data(i).BoundingBox.y(1) * resampledRatio(1));
-                        obj.Data(i).BoundingBox.y(2) = ceil(obj.Data(i).BoundingBox.y(2) * resampledRatio(1));
+                    case 1  % zx: ROI X = dataset X, ROI Y = Z
+                        obj.Data(i).X = obj.Data(i).X * resampledRatio(1);
+                        obj.Data(i).Y = obj.Data(i).Y * resampledRatio(3);
+                        obj.Data(i).BoundingBox.x(1) = floor(obj.Data(i).BoundingBox.x(1) * resampledRatio(1));
+                        obj.Data(i).BoundingBox.x(2) = ceil(obj.Data(i).BoundingBox.x(2) * resampledRatio(1));
+                        obj.Data(i).BoundingBox.y(1) = floor(obj.Data(i).BoundingBox.y(1) * resampledRatio(3));
+                        obj.Data(i).BoundingBox.y(2) = ceil(obj.Data(i).BoundingBox.y(2) * resampledRatio(3));
                     case 2  % zy
                         obj.Data(i).X = obj.Data(i).X * resampledRatio(3);
                         obj.Data(i).Y = obj.Data(i).Y * resampledRatio(2);
@@ -901,11 +904,11 @@ classdef RoiRegion < matlab.mixin.Copyable
                         obj.Data(i).Y = obj.Data(i).Y - cropF(2) + 1;
                         obj.Data(i).BoundingBox.x = obj.Data(i).BoundingBox.x - cropF(1) + 1;
                         obj.Data(i).BoundingBox.y = obj.Data(i).BoundingBox.y - cropF(2) + 1;
-                    case 1  % zx
-                        obj.Data(i).X = obj.Data(i).X - cropF(5) + 1;
-                        obj.Data(i).Y = obj.Data(i).Y - cropF(1) + 1;
-                        obj.Data(i).BoundingBox.x = obj.Data(i).BoundingBox.x - cropF(5) + 1;
-                        obj.Data(i).BoundingBox.y = obj.Data(i).BoundingBox.y - cropF(1) + 1;
+                    case 1  % zx: ROI X = dataset X, ROI Y = Z
+                        obj.Data(i).X = obj.Data(i).X - cropF(1) + 1;
+                        obj.Data(i).Y = obj.Data(i).Y - cropF(5) + 1;
+                        obj.Data(i).BoundingBox.x = obj.Data(i).BoundingBox.x - cropF(1) + 1;
+                        obj.Data(i).BoundingBox.y = obj.Data(i).BoundingBox.y - cropF(5) + 1;
                     case 2  % zy
                         obj.Data(i).X = obj.Data(i).X - cropF(5) + 1;
                         obj.Data(i).Y = obj.Data(i).Y - cropF(2) + 1;
@@ -1139,5 +1142,50 @@ classdef RoiRegion < matlab.mixin.Copyable
             end
         end
 
+    end
+
+    methods (Static)
+        function Data = swapZXAxes(Data)
+            % SWAPZXAXES - Swap the X/Y axes of ROIs drawn in the ZX orientation.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %       Data = core.RoiRegion.swapZXAxes(Data)
+            %
+            % ZX slices are ``[z, x]`` (rows = Z, columns = X, see
+            % :meth:`core.MibImage.getData`), so in memory a ZX ROI keeps dataset X in
+            % ``.X`` and Z in ``.Y``. MIB2 and earlier MIB3 versions showed ZX transposed
+            % (rows = X, columns = Z), and ``.roi`` files store ZX ROIs in that legacy
+            % frame. This conversion is its own inverse: it is applied to the data read
+            % from a ``.roi`` file (``controllers.MibRoi.roiLoad``) and to the data
+            % written to one (``controllers.MibRoi.roiSave``), so files stay compatible
+            % in both directions. Only entries with ``.orientation == 1`` change.
+            %
+            % Input Arguments:
+            %   - **Data** - [struct array] ROI data, see the class header for fields
+            %
+            % Output Arguments:
+            %   - **Data** - [struct array] the same ROIs with ``.X``/``.Y`` and
+            %     ``.BoundingBox.x``/``.BoundingBox.y`` swapped for ZX entries
+            %
+            % Usage:
+            %   **Example 1** - load a .roi file:
+            %
+            %   .. code-block:: matlab
+            %
+            %      res = load(filename, '-mat');
+            %      obj.mibModel.I{obj.mibModel.id}.hROI.Data = core.RoiRegion.swapZXAxes(res.Data);
+            %
+
+            for i = 1:numel(Data)
+                if ~isequal(Data(i).orientation, 1); continue; end
+                [Data(i).X, Data(i).Y] = deal(Data(i).Y, Data(i).X);
+                if isstruct(Data(i).BoundingBox) && isfield(Data(i).BoundingBox, 'x')
+                    [Data(i).BoundingBox.x, Data(i).BoundingBox.y] = ...
+                        deal(Data(i).BoundingBox.y, Data(i).BoundingBox.x);
+                end
+            end
+        end
     end
 end

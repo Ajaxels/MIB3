@@ -9,7 +9,7 @@ function varargout = getDatasetDimensions(obj, orient, splitDims, blockModeSwitc
 % Input Arguments:
 %   - **orient** - *(optional)*, can be ``[]``; default ``3``:
 %
-%     - ``1`` - returns dimensions in ZX configuration: ``[y,x,z,c,t]`` → ``[x,z,y,c,t]``
+%     - ``1`` - returns dimensions in ZX configuration: ``[y,x,z,c,t]`` → ``[z,x,y,c,t]``
 %     - ``2`` - returns dimensions in ZY configuration: ``[y,x,z,c,t]`` → ``[y,z,x,c,t]``
 %     - ``3`` - returns dimensions of the original YX dataset: ``[y,x,z,c,t]``
 %
@@ -79,9 +79,9 @@ switch orient
         height = dim_yxz(1);
         width = dim_yxz(2);
         depth = dim_yxz(3);
-    case 1 % xz
-        height = dim_yxz(2);
-        width = dim_yxz(3);
+    case 1 % zx: rows = Z, columns = X
+        height = dim_yxz(3);
+        width = dim_yxz(2);
         depth = dim_yxz(1);
     case 2 % yz
         height = dim_yxz(1);

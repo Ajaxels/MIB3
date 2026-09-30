@@ -209,10 +209,11 @@ classdef MibBigDataLabelsIndexTest < matlab.unittest.TestCase
             % one the caller named.
             labels = testCase.attachLabels();
             slice = labels.getData('labels', 1, [], struct( ...
-                'magFactor', 16, 'z', [17 17], 'y', [1 256], 'x', [1 64]));
+                'magFactor', 16, 'z', [17 17], 'y', [1 64], 'x', [1 256]));
 
-            % orient 1 slices at physical y (label voxel 2) and lays out [x, z]
-            expected = squeeze(testCase.RawLevel0(2, :, :));
+            % orient 1 slices at physical y (label voxel 2) and lays out [z, x]:
+            % options.x is the horizontal range (X), options.y the vertical one (Z)
+            expected = squeeze(testCase.RawLevel0(2, :, :)).';
             testCase.verifyEqual(slice, expected);
         end
 

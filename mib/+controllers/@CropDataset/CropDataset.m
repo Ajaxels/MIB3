@@ -619,9 +619,9 @@ classdef CropDataset < handle
                 case 3      % XY plane: the rectangle defines Width and Height
                     obj.view.handles.Width.Value  = sprintf('%d:%d', position(1), position(3));
                     obj.view.handles.Height.Value = sprintf('%d:%d', position(2), position(4));
-                case 1      % ZX plane: the rectangle defines Depth and Width
-                    obj.view.handles.Depth.Value = sprintf('%d:%d', position(1), position(3));
-                    obj.view.handles.Width.Value = sprintf('%d:%d', position(2), position(4));
+                case 1      % ZX plane: the rectangle defines Width (horizontal) and Depth (vertical)
+                    obj.view.handles.Width.Value = sprintf('%d:%d', position(1), position(3));
+                    obj.view.handles.Depth.Value = sprintf('%d:%d', position(2), position(4));
                 case 2      % ZY plane: the rectangle defines Depth and Height
                     obj.view.handles.Depth.Value  = sprintf('%d:%d', position(1), position(3));
                     obj.view.handles.Height.Value = sprintf('%d:%d', position(2), position(4));
@@ -807,9 +807,9 @@ classdef CropDataset < handle
                     case 3   % XY plane
                         crop_factor = [position(1:2), position(3)-position(1)+1, position(4)-position(2)+1, ...
                             1, obj.mibModel.I{id}.image.depth];
-                    case 1   % XZ plane
-                        crop_factor = [position(2), 1, position(4)-position(2)+1, obj.mibModel.I{id}.image.height, ...
-                            position(1), position(3)-position(1)+1];
+                    case 1   % ZX plane: horizontal X, vertical Z
+                        crop_factor = [position(1), 1, position(3)-position(1)+1, obj.mibModel.I{id}.image.height, ...
+                            position(2), position(4)-position(2)+1];
                     case 2   % YZ plane
                         crop_factor = [1, position(2), obj.mibModel.I{id}.image.width, position(4)-position(2)+1, ...
                             position(1), position(3)-position(1)+1];

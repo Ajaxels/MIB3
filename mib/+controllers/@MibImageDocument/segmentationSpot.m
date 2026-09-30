@@ -244,9 +244,9 @@ for index = 1:numel(xVec)
                                  % and a YX 3D spot backed up the WHOLE layer)
             backupOptions.y = options.y;
             backupOptions.x = options.x;
-        elseif orientation == 1  % XZ
-            backupOptions.x = options.y;
-            backupOptions.z = options.x;
+        elseif orientation == 1  % ZX: horizontal X, vertical Z
+            backupOptions.x = options.x;
+            backupOptions.z = options.y;
         elseif orientation == 2  % YZ
             backupOptions.y = options.y;
             backupOptions.z = options.x;

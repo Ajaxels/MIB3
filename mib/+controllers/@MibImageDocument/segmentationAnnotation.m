@@ -130,9 +130,9 @@ elseif isCtrl   % ---- remove closest annotation ----
     if orientation == 3        % XY (default)
         X1 = [x, y];
         X2 = labelPositions(:, 2:3);
-    elseif orientation == 1    % ZX
-        X1 = [z, x];
-        X2 = labelPositions(:, 1:2);
+    elseif orientation == 1    % ZX: horizontal X, vertical Z
+        X1 = [x, z];
+        X2 = labelPositions(:, [2 1]);
     elseif orientation == 2    % ZY
         X1 = [z, y];
         X2 = labelPositions(:, [1, 3]);

@@ -219,10 +219,10 @@ if strcmp(BatchOpt.Mode{1}, '3D, Stack') || strcmp(BatchOpt.Mode{1}, '4D, Datase
 
             if BatchOpt.FixSelectionToMaterial && model_id >= 0
                 if obj.mibModel.I{BatchOpt.id}.blockModeSwitch
-                    if orientation == 1     % ZX
-                        shiftX = max([ceil(axesY(1)) 0]);
+                    if orientation == 1     % ZX: horizontal X, vertical Z
+                        shiftX = max([ceil(axesX(1)) 0]);
                         shiftY = 0;
-                        shiftZ = max([ceil(axesX(1)) 0]);
+                        shiftZ = max([ceil(axesY(1)) 0]);
                     elseif orientation == 2 % ZY
                         shiftX = 0;
                         shiftY = max([ceil(axesY(1)) 0]);

@@ -134,9 +134,9 @@ try
         obj.mibModel.sessionSettings.prevCursorCoordinate = [xMouse, yMouse];
 
         % Check if inside image boundaries.
-        % xMouse/yMouse are in XData/YData (physical) coordinates where the X axis
-        % is stretched by coef_z. Use imageHandle.XData(2)/YData(2) as boundaries
-        % since those already incorporate the coef_z scaling set in showImage.
+        % xMouse/yMouse are in XData/YData (physical) coordinates where the axes are
+        % stretched by coefX/coefY. Use imageHandle.XData(2)/YData(2) as boundaries
+        % since those already incorporate the scaling set in showImage.
         if ~isempty(obj.imageHandle) && isvalid(obj.imageHandle)
             obj.isInsideImage = xMouse > 0 && yMouse > 0 && ...
                 xMouse <= obj.imageHandle.XData(2) && ...
@@ -165,12 +165,8 @@ try
             if numel(axesX) < 2 || isnan(axesX(1)); axesX = [1, dataset.dim_yxzct(2)]; end
             if numel(axesY) < 2 || isnan(axesY(1)); axesY = [1, dataset.dim_yxzct(1)]; end
 
-            % coef_z for anisotropic voxel stretching
-            switch orientation
-                case 3;  coef_z = dataset.image.pixSize.x / dataset.image.pixSize.y;
-                case 1;  coef_z = dataset.image.pixSize.z / dataset.image.pixSize.x;
-                otherwise; coef_z = dataset.image.pixSize.z / dataset.image.pixSize.y;
-            end
+            % aspect-ratio stretch for anisotropic voxels (MibDataset.getDisplayStretch)
+            [coefX, coefY] = dataset.getDisplayStretch();
 
             % Handle Virtual / BigData mode (on-demand readers; pixel readout
             % comes from the rendered Iraw, never from dataset.image.data which
@@ -198,20 +194,20 @@ try
 
                 % Dataset-absolute coordinates for the status bar (shown mode, inline)
                 if magFactor >= 1 && axesX(1) <= 1 && axesY(1) <= 1
-                    xStatus = ceil(xMouse * magFactor / coef_z);
-                    yStatus = ceil(yMouse * magFactor);
+                    xStatus = ceil(xMouse * magFactor / coefX);
+                    yStatus = ceil(yMouse * magFactor / coefY);
                 else
-                    xStatus = ceil(xMouse * magFactor / coef_z + max([0 floor(axesX(1))]));
-                    yStatus = ceil(yMouse * magFactor           + max([0 floor(axesY(1))]));
+                    xStatus = ceil(xMouse * magFactor / coefX + max([0 floor(axesX(1))]));
+                    yStatus = ceil(yMouse * magFactor / coefY + max([0 floor(axesY(1))]));
                 end
             else
                 % Convert mouse coordinates to dataset coordinates (shown mode, inline)
                 if magFactor >= 1 && axesX(1) <= 1 && axesY(1) <= 1
-                    xImage = ceil(xMouse * magFactor / coef_z);
-                    yImage = ceil(yMouse * magFactor);
+                    xImage = ceil(xMouse * magFactor / coefX);
+                    yImage = ceil(yMouse * magFactor / coefY);
                 else
-                    xImage = ceil(xMouse * magFactor / coef_z + max([0 floor(axesX(1))]));
-                    yImage = ceil(yMouse * magFactor           + max([0 floor(axesY(1))]));
+                    xImage = ceil(xMouse * magFactor / coefX + max([0 floor(axesX(1))]));
+                    yImage = ceil(yMouse * magFactor / coefY + max([0 floor(axesY(1))]));
                 end
                 sliceNo = dataset.getCurrentSliceNumber();
 
@@ -255,10 +251,10 @@ try
                         modelValues = obj.mibModel.IrawModel(mYImage, mXImage);
                     end
                 end
-            elseif orientation == 1 && ~any(dataset.datasetType(1) == ['V' 'B'])  % ZX orientation
-                colorValues = squeeze(dataset.image.data(sliceNo, yImage, xImage, cImage, tImage));
+            elseif orientation == 1 && ~any(dataset.datasetType(1) == ['V' 'B'])  % ZX orientation: columns = X, rows = Z
+                colorValues = squeeze(dataset.image.data(sliceNo, xImage, yImage, cImage, tImage));
                 if dataset.modelExist
-                    modelValues = dataset.labels.data(sliceNo, yImage, xImage, tImage);
+                    modelValues = dataset.labels.data(sliceNo, xImage, yImage, tImage);
                 end
             elseif orientation == 2 && ~any(dataset.datasetType(1) == ['V' 'B'])  % ZY orientation
                 colorValues = squeeze(dataset.image.data(yImage, sliceNo, xImage, cImage, tImage));

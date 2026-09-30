@@ -186,10 +186,10 @@ if strcmp(BatchOpt.InterpolationType{1}, 'shape')   % shape interpolation
     % bb = [xMin, xMax, yMin, yMax, zMin, zMax] in the view coordinate system.
     % Map to dataset (x,y,z) depending on the current orientation.
     orient = obj.I{BatchOpt.id}.orientation;
-    if orient == 1          % ZX plane
+    if orient == 1          % ZX plane: columns = X, rows = Z, slices = Y
         storeOptions.y = [bb(5)+yShift, bb(6)+yShift];
-        storeOptions.z = [bb(1)+zShift, bb(2)+zShift];
-        storeOptions.x = [bb(3)+xShift, bb(4)+xShift];
+        storeOptions.z = [bb(3)+zShift, bb(4)+zShift];
+        storeOptions.x = [bb(1)+xShift, bb(2)+xShift];
     elseif orient == 2      % ZY plane
         storeOptions.y = [bb(3)+yShift, bb(4)+yShift];
         storeOptions.z = [bb(1)+zShift, bb(2)+zShift];

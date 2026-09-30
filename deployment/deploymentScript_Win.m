@@ -35,6 +35,31 @@ stagedDocs = fullfile(tempdir, "MIB3_build_staging", "docs");
 if isfolder(stagedDocs); rmdir(stagedDocs, "s"); end
 copyfile(docsSource, fullfile(stagedDocs, "html"));
 
+% Licenses of the third-party code sit next to that code in mib/external,
+% which is compiled into the archive and not shipped as a folder, so they
+% are gathered into licenses/external of a staged copy of mib/licenses.
+% The file naming is not uniform (*_license.txt, LICENSE, license.txt,
+% license_matGeom.txt, ...), so every file with "license" in its name is
+% taken, and its subfolder under mib/external is kept so that, e.g.,
+% export_fig/LICENSE and HistThresh/LICENSE do not overwrite each other.
+externalRoot = fullfile(PROJECT_ROOT, "mib", "external");
+stagedLicenses = fullfile(tempdir, "MIB3_build_staging", "licenses");
+if isfolder(stagedLicenses); rmdir(stagedLicenses, "s"); end
+copyfile(fullfile(PROJECT_ROOT, "mib", "licenses"), stagedLicenses);
+licenseFiles = dir(fullfile(externalRoot, "**", "*"));
+licenseFiles = licenseFiles(~[licenseFiles.isdir] & ...
+    contains({licenseFiles.name}, "license", "IgnoreCase", true));
+if isempty(licenseFiles)
+    error('deploymentScript:noExternalLicenses', ...
+        'No license files of external packages found in %s', externalRoot);
+end
+for fileIndex = 1:numel(licenseFiles)
+    relativeFolder = extractAfter(string(licenseFiles(fileIndex).folder), strlength(externalRoot));
+    targetFolder = fullfile(stagedLicenses, "external", relativeFolder);
+    if ~isfolder(targetFolder); mkdir(targetFolder); end
+    copyfile(fullfile(licenseFiles(fileIndex).folder, licenseFiles(fileIndex).name), targetFolder);
+end
+
 % Create target build options object, set build properties and build.
 %buildOpts = compiler.build.StandaloneApplicationOptions(fullfile(PROJECT_ROOT, "mib", "mib3.m"));
 buildOpts = compiler.build.StandaloneApplicationOptions(fullfile(PROJECT_ROOT, "mib", "mib3_deploy.m"));
@@ -106,13 +131,14 @@ AdditionalFolders = [...
     "plugins", ...
     "docs"];
 
-% sources for the folders above; plugins and docs are taken from the staged
-% copies so that EXCLUDE_PLUGINS are missing from the installer as well and
-% the documentation keeps its docs/html nesting
+% sources for the folders above; licenses, plugins and docs are taken from
+% the staged copies so that the external licenses are included,
+% EXCLUDE_PLUGINS are missing from the installer as well and the
+% documentation keeps its docs/html nesting
 AdditionalFolderSources = [...
     fullfile(PROJECT_ROOT, "mib", "assets"), ...
     fullfile(PROJECT_ROOT, "mib", "jars"), ...
-    fullfile(PROJECT_ROOT, "mib", "licenses"), ...
+    stagedLicenses, ...
     stagedPlugins, ...
     stagedDocs];
 

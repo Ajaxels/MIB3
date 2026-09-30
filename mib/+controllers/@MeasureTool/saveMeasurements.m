@@ -35,7 +35,8 @@ fullPath = fullfile(pathname, filename);
 [~, ~, fileExt] = fileparts(filename);
 
 if strcmp(fileExt, '.measure')
-    Data = hMeasure.Data; %#ok<NASGU>
+    % keep ZX measurements in the legacy MIB2 frame, see core.Measurements.swapZXAxes
+    Data = core.Measurements.swapZXAxes(hMeasure.Data); %#ok<NASGU>
     save(fullPath, 'Data', '-mat', '-v7.3');
     fprintf('MIB: saving measurements to %s -> done!\n', filename);
     return;

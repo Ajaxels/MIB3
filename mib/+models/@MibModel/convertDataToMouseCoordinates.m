@@ -39,21 +39,17 @@ magFactor = obj.getMagFactor();
 [axesX, axesY] = obj.getAxesLimits();
 
 if mode(1) == 's' % shown
-    ds = obj.I{obj.id};
-    switch ds.orientation
-        case 3;    coef_z = ds.image.pixSize.x / ds.image.pixSize.y;
-        case 1;    coef_z = ds.image.pixSize.z / ds.image.pixSize.x;
-        otherwise; coef_z = ds.image.pixSize.z / ds.image.pixSize.y;
-    end
+    % see MibDataset.getDisplayStretch
+    [coefX, coefY] = obj.I{obj.id}.getDisplayStretch();
 
     if magFactor >= 1 && axesX(1) <= 1 && axesY(1) <= 1
-        % Full-image mode: inverse of xData = xMouse * magFactor / coef_z
-        xOut = x * coef_z / magFactor;
-        yOut = y / magFactor;
+        % Full-image mode: inverse of xData = xMouse * magFactor / coefX
+        xOut = x * coefX / magFactor;
+        yOut = y * coefY / magFactor;
     else
-        % Block/crop mode: inverse of xData = xMouse * magFactor / coef_z + offset
-        xOut = (x - max([0 floor(axesX(1))])) * coef_z / magFactor;
-        yOut = (y - max([0 floor(axesY(1))])) / magFactor;
+        % Block/crop mode: inverse of xData = xMouse * magFactor / coefX + offset
+        xOut = (x - max([0 floor(axesX(1))])) * coefX / magFactor;
+        yOut = (y - max([0 floor(axesY(1))])) * coefY / magFactor;
     end
 else  % full
     xOut = x / max([1 magFactor]);

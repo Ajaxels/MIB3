@@ -599,9 +599,9 @@ if obj.showLines3D && dataset.lines3D.noTrees > 0
         BoxOut(1:2) = pixBox(1:2) * dataset.image.pixSize.x + bb(1) - dataset.image.pixSize.x;
         BoxOut(3:4) = pixBox(3:4) * dataset.image.pixSize.y + bb(3) - dataset.image.pixSize.y;
         BoxOut(5:6) = pixBox(5:6) * dataset.image.pixSize.z + bb(5) - dataset.image.pixSize.z;
-    elseif dataset.orientation == 1 % zx
-        BoxOut(1:2) = pixBox(1:2) * dataset.image.pixSize.z + bb(5) - dataset.image.pixSize.z;
-        BoxOut(3:4) = pixBox(3:4) * dataset.image.pixSize.x + bb(1) - dataset.image.pixSize.x;
+    elseif dataset.orientation == 1 % zx: horizontal = X, vertical = Z
+        BoxOut(1:2) = pixBox(1:2) * dataset.image.pixSize.x + bb(1) - dataset.image.pixSize.x;
+        BoxOut(3:4) = pixBox(3:4) * dataset.image.pixSize.z + bb(5) - dataset.image.pixSize.z;
         BoxOut(5:6) = pixBox(5:6) * dataset.image.pixSize.y + bb(3) - dataset.image.pixSize.y;
     elseif dataset.orientation == 2 % zy
         BoxOut(1:2) = pixBox(1:2) * dataset.image.pixSize.z + bb(5) - dataset.image.pixSize.z;
@@ -633,9 +633,9 @@ if obj.showAnnotations
         if orientation == 3 % xy
             xId = 2;
             yId = 3;
-        elseif orientation == 1 % zx
-            xId = 1;
-            yId = 2;
+        elseif orientation == 1 % zx: horizontal = X, vertical = Z
+            xId = 2;
+            yId = 1;
         elseif orientation == 2 % zy
             xId = 1;
             yId = 3;

@@ -59,7 +59,7 @@ MIB3 is optimised for smooth panning — holding <mouse class="right"></mouse> a
 
 ![Plane orientation](images/toolbar_xyz.png){align=left}
 
-Switch the viewing plane between XY, ZX, and ZY orientations.
+Switch the viewing plane between XY, ZX, and ZY orientations. X always runs horizontally and Y vertically, so Z is vertical in ZX and horizontal in ZY.
 
 [:fontawesome-brands-youtube:{.red-color} Demo](https://youtu.be/4NXSEkrhnts)
 
@@ -68,8 +68,9 @@ Switch the viewing plane between XY, ZX, and ZY orientations.
 | Button / Shortcut | Plane |
 |-------------------|-------|
 | **YX** / ++alt+1++ | XY plane (default) |
-| **XZ** / ++alt+2++ | ZX plane |
-| **YZ** / ++alt+3++ | ZY plane |
+| **YZ** / ++alt+2++ | YZ plane |
+| **ZX** / ++alt+3++ | ZX plane |
+
 
 !!! tip "Keyboard shortcuts rotate around the cursor"
     When using ++alt+1++, ++alt+2++, or ++alt+3++ with the mouse cursor positioned over the image, the view rotates around the point under the cursor, keeping that location centred in the panel.

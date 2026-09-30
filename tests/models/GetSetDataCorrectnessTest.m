@@ -82,11 +82,12 @@ classdef GetSetDataCorrectnessTest < matlab.unittest.TestCase
         end
 
         function get3DImageOrient1(testCase, modelType)
-            % Orient 1 (ZX): row=Y, col=Z, depth=X -> permute([h w z c t], [2 3 1 4 5])
+            % Orient 1 (ZX): row=Z, col=X, depth=Y -> permute([h w z c t], [3 2 1 4 5]),
+            % so X stays horizontal as in the YX view
             [mibModel, gt] = mibtest.helpers.buildSyntheticModel(modelType=modelType);
             opt      = struct('id', 1, 'blockModeSwitch', 0);
             result   = mibModel.getData3D('image', 1, 1, NaN, opt);
-            expected = permute(gt.image(:, :, :, :, 1), [2 3 1 4 5]);
+            expected = permute(gt.image(:, :, :, :, 1), [3 2 1 4 5]);
             testCase.verifyEqual(result{1}, expected);
         end
 

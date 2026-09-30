@@ -155,22 +155,18 @@ function doFinalize(pos, datasetId, obj, cImageDoc)
     orientation = dataset.orientation;
 
     % Convert physical (XData) coords to data-pixel coords
-    switch orientation
-        case 3;  coef_z = pixSize.x / pixSize.y;
-        case 1;  coef_z = pixSize.z / pixSize.x;
-        otherwise; coef_z = pixSize.z / pixSize.y;
-    end
+    [coefX, coefY] = dataset.getDisplayStretch();
     if magFactor >= 1
-        pos(:,1) = pos(:,1) * magFactor / coef_z;
-        pos(:,2) = pos(:,2) * magFactor;
+        pos(:,1) = pos(:,1) * magFactor / coefX;
+        pos(:,2) = pos(:,2) * magFactor / coefY;
     else
-        pos(:,1) = pos(:,1) * magFactor / coef_z + max([0 floor(axesX(1))]);
-        pos(:,2) = pos(:,2) * magFactor           + max([0 floor(axesY(1))]);
+        pos(:,1) = pos(:,1) * magFactor / coefX + max([0 floor(axesX(1))]);
+        pos(:,2) = pos(:,2) * magFactor / coefY + max([0 floor(axesY(1))]);
     end
 
     % Physical pixel sizes along the displayed axes
     if orientation == 3;       xSz = pixSize.x; ySz = pixSize.y;
-    elseif orientation == 1;   xSz = pixSize.z; ySz = pixSize.x;
+    elseif orientation == 1;   xSz = pixSize.x; ySz = pixSize.z;   % zx: horizontal X, vertical Z
     else;                      xSz = pixSize.z; ySz = pixSize.y;
     end
 

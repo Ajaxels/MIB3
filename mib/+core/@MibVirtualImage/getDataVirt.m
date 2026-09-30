@@ -10,7 +10,7 @@ function dataset = getDataVirt(obj, type, orient, colChannel, options)
 %   - **type** - [char] layer type to retrieve; only ``'image'`` is supported
 %   - **orient** - *(optional)* [numeric] orientation of returned dataset:
 %
-%     - ``1`` - ``xz`` plane: output ``[x, z, y, c, t]``
+%     - ``1`` - ``zx`` plane: output ``[z, x, y, c, t]`` (rows = Z, columns = X)
 %     - ``2`` - ``yz`` plane: output ``[y, z, x, c, t]``
 %     - ``3`` - ``yx`` plane: output ``[y, x, z, c, t]`` (default)
 %
@@ -29,7 +29,7 @@ function dataset = getDataVirt(obj, type, orient, colChannel, options)
 %   - **dataset** - [numeric array] 5D data in MIB3 order:
 %
 %     - ``[y, x, z, c, t]`` for ``orient==3`` (default)
-%     - ``[x, z, y, c, t]`` for ``orient==1``
+%     - ``[z, x, y, c, t]`` for ``orient==1`` (rows = Z, columns = X)
 %     - ``[y, z, x, c, t]`` for ``orient==2``
 %
 % **Example 1** - read full YX dataset:
@@ -68,10 +68,10 @@ Ylim = [1  floor(obj.height / level)];
 Zlim = [1  obj.depth];
 Tlim = [1  obj.time];
 
-if orient == 1       % xz
-    if isfield(options, 'x'); Zlim = options.x(1, :); end
+if orient == 1       % zx: rows = Z, columns = X, slice = Y
+    if isfield(options, 'x'); Xlim = floor(options.x(1, :) / level); end
+    if isfield(options, 'y'); Zlim = options.y(1, :); end
     if isfield(options, 'z'); Ylim = floor(options.z(1, :) / level); end
-    if isfield(options, 'y'); Xlim = floor(options.y(1, :) / level); end
 elseif orient == 2   % yz
     if isfield(options, 'x'); Zlim = options.x(1, :); end
     if isfield(options, 'y'); Ylim = floor(options.y(1, :) / level); end
@@ -180,8 +180,8 @@ end
 
 % --- apply orientation permutation ----------------------------------------
 % dataset is in MIB3 order [y, x, z, c, t] at this point
-if orient == 1       % xz: [y,x,z,c,t] -> [x,z,y,c,t]
-    dataset = permute(dataset, [2 3 1 4 5]);
+if orient == 1       % zx: [y,x,z,c,t] -> [z,x,y,c,t]
+    dataset = permute(dataset, [3 2 1 4 5]);
 elseif orient == 2   % yz: [y,x,z,c,t] -> [y,z,x,c,t]
     dataset = permute(dataset, [1 3 2 4 5]);
 % orient == 3 (yx): no permutation needed

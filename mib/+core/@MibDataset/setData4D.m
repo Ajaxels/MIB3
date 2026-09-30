@@ -26,7 +26,8 @@ function result = setData4D(obj, dataset, type, orient, col_channel, options)
 %   - **orient** - [*optional,* can be []]
 %
 %     - ``[]`` - updates transposed dataset in the currently shown orientation *(default)*
-%     - ``1`` - updates transposed dataset in the zx configuration: [y,x,z,c,t] → [x,z,y,c,t]
+%     - ``1`` - updates transposed dataset in the zx configuration: [y,x,z,c,t] → [z,x,y,c,t]
+%       (rows = Z, columns = X: X stays horizontal as in the yx view)
 %     - ``2`` - updates transposed dataset in the zy configuration: [y,x,z,c,t] → [y,z,x,c,t]
 %     - ``3`` - updates the original dataset in the yx configuration: [y,x,z,c,t]
 %

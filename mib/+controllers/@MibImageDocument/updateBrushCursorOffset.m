@@ -47,23 +47,30 @@ else
     end
 end
 
-% Derive coef_z from imageHandle XData so the cursor is stretched to match
-% the displayed image for anisotropic orientations (ZX/ZY).
-% XData = [1, shownW * coef_z]; YData = [1, shownH] (no Y stretch).
-coef_z = 1;
+% Derive the stretch from imageHandle XData/YData so the cursor matches the
+% displayed image for anisotropic orientations: Z is stretched horizontally in
+% ZY and vertically in ZX (MibDataset.getDisplayStretch).
+% XData = [1, shownW * coefX]; YData = [1, shownH * coefY].
+coefX = 1;
+coefY = 1;
 if ~isempty(obj.imageHandle) && isvalid(obj.imageHandle)
     XData  = obj.imageHandle.XData;
+    YData  = obj.imageHandle.YData;
     shownW = size(obj.imageHandle.CData, 2);   % use this panel's CData, not global Ishown
+    shownH = size(obj.imageHandle.CData, 1);
     if numel(XData) >= 2 && shownW > 1
-        coef_z = (XData(end) - XData(1)) / (shownW - 1);
+        coefX = (XData(end) - XData(1)) / (shownW - 1);
+    end
+    if numel(YData) >= 2 && shownH > 1
+        coefY = (YData(end) - YData(1)) / (shownH - 1);
     end
 end
 
 % Generate ellipse points (17 points for smooth appearance):
-%   X radius scaled by coef_z, Y radius unscaled.
+%   X radius scaled by coefX, Y radius by coefY.
 theta = linspace(0, 2*pi, 17);
-obj.brushCursorOffset(1, :) = cos(theta) * se_size * coef_z;  % X offsets
-obj.brushCursorOffset(2, :) = sin(theta) * se_size;           % Y offsets
+obj.brushCursorOffset(1, :) = cos(theta) * se_size * coefX;  % X offsets
+obj.brushCursorOffset(2, :) = sin(theta) * se_size * coefY;  % Y offsets
 
 % Remember which magFactor produced this offset so updateBrushCursor can
 % detect when the magnification has changed (e.g. after switching panels).

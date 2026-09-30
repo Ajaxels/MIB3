@@ -822,10 +822,10 @@ classdef Annotations < handle
                         z = str2double(data{rowId, 3});
                         x = str2double(data{rowId, 4});
                         y = str2double(data{rowId, 5});
-                    elseif orientation == 1  % ZX
+                    elseif orientation == 1  % ZX: horizontal X, vertical Z, slice Y
                         z = str2double(data{rowId, 5});
-                        x = str2double(data{rowId, 3});
-                        y = str2double(data{rowId, 4});
+                        x = str2double(data{rowId, 4});
+                        y = str2double(data{rowId, 3});
                     elseif orientation == 2  % ZY
                         z = str2double(data{rowId, 4});
                         x = str2double(data{rowId, 3});

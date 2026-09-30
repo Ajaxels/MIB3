@@ -32,7 +32,8 @@ if isequal(filename, 0); return; end
 filename = filename{1};
 
 res = load(fullfile(path, filename), '-mat');
-dataset.hROI.Data = res.Data;
+% ZX ROIs are stored in the legacy MIB2 frame, see core.RoiRegion.swapZXAxes
+dataset.hROI.Data = core.RoiRegion.swapZXAxes(res.Data);
 dataset.hROI.convertLegacyTypes();  % convert MIB2 type names to MIB3
 
 % enable ROI display

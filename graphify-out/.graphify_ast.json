@@ -15291,6 +15291,17 @@
       "contributor": null
     },
     {
+      "id": "core_measurements_measurements_swapzxaxes",
+      "label": "swapZXAxes",
+      "file_type": "code",
+      "source_file": "+core\\@Measurements\\Measurements.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "core_measurements_measurements_computeangle",
       "label": "computeAngle",
       "file_type": "code",
@@ -16417,6 +16428,17 @@
       "label": "getDatasetDimensions.m",
       "file_type": "code",
       "source_file": "+core\\@MibDataset\\getDatasetDimensions.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "core_mibdataset_getdisplaystretch_m",
+      "label": "getDisplayStretch.m",
+      "file_type": "code",
+      "source_file": "+core\\@MibDataset\\getDisplayStretch.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -17955,6 +17977,17 @@
     {
       "id": "core_roiregion_roiregion_convertlegacytypes",
       "label": "convertLegacyTypes",
+      "file_type": "code",
+      "source_file": "+core\\@RoiRegion\\RoiRegion.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "core_roiregion_roiregion_swapzxaxes",
+      "label": "swapZXAxes",
       "file_type": "code",
       "source_file": "+core\\@RoiRegion\\RoiRegion.m",
       "source_location": null,
@@ -44348,6 +44381,16 @@
     },
     {
       "source": "core_measurements_measurements_m",
+      "target": "core_measurements_measurements_swapzxaxes",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@Measurements\\Measurements.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_measurements_measurements_m",
       "target": "core_measurements_measurements_computeangle",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -45309,6 +45352,16 @@
     {
       "source": "core_mibdataset_mibdataset_m",
       "target": "core_mibdataset_getdatasetdimensions_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibDataset\\MibDataset.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibdataset_mibdataset_m",
+      "target": "core_mibdataset_getdisplaystretch_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -46639,6 +46692,16 @@
     {
       "source": "core_roiregion_roiregion_m",
       "target": "core_roiregion_roiregion_convertlegacytypes",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@RoiRegion\\RoiRegion.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_roiregion_roiregion_m",
+      "target": "core_roiregion_roiregion_swapzxaxes",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,

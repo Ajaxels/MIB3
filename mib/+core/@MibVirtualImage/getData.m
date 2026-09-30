@@ -18,7 +18,7 @@ function dataset = getData(obj, layerType, orient, colChannel, options)
 %     'labels', 'mask', 'selection', 'everything' return zeros
 %   - **orient** - *(optional)*, can be ``[]``; default ``3`` (YX):
 %
-%     - ``1`` - XZ view: ``[y,x,z,c,t]`` → ``[x,z,y,c,t]``
+%     - ``1`` - ZX view: ``[y,x,z,c,t]`` → ``[z,x,y,c,t]`` (rows = Z, columns = X)
 %     - ``2`` - YZ view: ``[y,x,z,c,t]`` → ``[y,z,x,c,t]``
 %     - ``3`` - YX view: ``[y,x,z,c,t]`` *(default, no permutation)*
 %   - **colChannel** - [*optional,* can be []], vector of colour indices;

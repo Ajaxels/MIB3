@@ -107,6 +107,7 @@ debugging a regression in it, or looking for a precedent pattern. One line each:
 | File | Covers |
 |------|--------|
 | [audit_get-setdata.md](ports/audit_get-setdata.md) | getData/setData pipeline audit + benchmarks (hottest code path) |
+| [plan_switch_XZ_to_ZX.md](ports/plan_switch_XZ_to_ZX.md) | ZX view as `[z, x]` (X horizontal): new get/setData frame, `getDisplayStretch`, legacy `.roi`/`.measure` frame, rejected camera-rotation approach |
 | [optimize_getRGBimage.md](ports/optimize_getRGBimage.md) | `getRGBimage` per-step optimization log |
 | [plan_startup.md](ports/plan_startup.md) | Startup speed-up 13.35 → 6.34 s: lazy Java gateway, deferred update check |
 | [plan_inputUniversalDlg.md](ports/plan_inputUniversalDlg.md) | Dialog audit/refactor (done): shared helpers, 10 bug fixes, auto-height formula |

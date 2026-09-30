@@ -75,7 +75,7 @@ interpX = interp1(arcCumKnot, knotX(:), denseArc, splineMethod, 'extrap');
 interpY = interp1(arcCumKnot, knotY(:), denseArc, splineMethod, 'extrap');
 
 switch orientation
-    case 1;    pxX = pixSize.z;  pxY = pixSize.x;
+    case 1;    pxX = pixSize.x;  pxY = pixSize.z;   % zx: horizontal X, vertical Z
     case 2;    pxX = pixSize.z;  pxY = pixSize.y;
     otherwise; pxX = pixSize.x;  pxY = pixSize.y;
 end

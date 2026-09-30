@@ -274,9 +274,9 @@ switch ds.orientation
         maxZshift = maxXshift * ds.image.pixSize.z;
         maxYshift = maxYshift * ds.image.pixSize.y;
         maxXshift = 0;
-    case 1
-        maxZshift = maxXshift * ds.image.pixSize.z;
-        maxXshift = maxYshift * ds.image.pixSize.x;
+    case 1   % ZX: horizontal X, vertical Z
+        maxZshift = maxYshift * ds.image.pixSize.z;
+        maxXshift = maxXshift * ds.image.pixSize.x;
         maxYshift = 0;
 end
 obj.mibModel.I{id}.updateBoundingBox([], [maxXshift, maxYshift, maxZshift]);

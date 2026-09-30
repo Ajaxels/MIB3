@@ -34,7 +34,8 @@ function result = setData2D(obj, dataset, type, slice_no, orient, col_channel, o
 %   - **orient** *(optional)* - [numeric or ``[]``] orientation for dataset update:
 %
 %     - ``[]`` - use currently shown orientation (default)
-%     - ``1`` - ``ZX`` plane: transpose ``[y,x,z,c,t]`` → ``[x,z,y,c,t]``
+%     - ``1`` - ``ZX`` plane: transpose ``[y,x,z,c,t]`` → ``[z,x,y,c,t]``
+%       (rows = Z, columns = X: X stays horizontal as in the yx view)
 %     - ``2`` - ``ZY`` plane: transpose ``[y,x,z,c,t]`` → ``[y,z,x,c,t]``
 %     - ``3`` - ``YX`` plane: native orientation ``[y,x,z,c,t]``
 %

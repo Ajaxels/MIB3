@@ -11,7 +11,7 @@ function varargout = getDatasetDimensions(obj, type, orient, options)
 %   - **orient** - *(optional)*, orientation of the returned dimensions:
 %
 %     - ``[]`` - return dimensions in the current orientation *(default)*
-%     - ``1`` - dimensions transposed to the zx configuration: [y,x,z,c,t] → [x,z,y,c,t]
+%     - ``1`` - dimensions transposed to the zx configuration: [y,x,z,c,t] → [z,x,y,c,t]
 %     - ``2`` - dimensions transposed to the zy configuration: [y,x,z,c,t] → [y,z,x,c,t]
 %     - ``3`` - dimensions of the original yx configuration: [y,x,z,c,t]
 %
@@ -95,9 +95,9 @@ else        % get the shown block
             height = obj.slices{1}(2)-obj.slices{1}(1)+1;
             width = obj.slices{3}(2)-obj.slices{3}(1)+1;
             depth = obj.width;
-        case 1  % xz configuration: [y,x,z,c,t] -> [x,z,y,c,t]
-            height = obj.slices{2}(2)-obj.slices{2}(1)+1;
-            width = obj.slices{3}(2)-obj.slices{3}(1)+1;
+        case 1  % zx configuration: [y,x,z,c,t] -> [z,x,y,c,t]
+            height = obj.slices{3}(2)-obj.slices{3}(1)+1;
+            width = obj.slices{2}(2)-obj.slices{2}(1)+1;
             depth = obj.height;
     end
     if strcmp(type, 'image')

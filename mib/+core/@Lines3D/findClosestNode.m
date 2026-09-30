@@ -16,9 +16,9 @@ function nodeId = findClosestNode(obj, x, y, z, orientation)
 if nargin < 5; orientation = 3; end
 
 % transpose points from xy to
-if orientation == 1         % zx
-    x1 = x; y1 = y; z1 = z;
-    x = z1; y = x1; z = y1;
+if orientation == 1         % zx: horizontal = X, vertical = Z, slice = Y
+    y1 = y; z1 = z;
+    y = z1; z = y1;
 elseif orientation == 2     % zy
     x1 = x; y1 = y; z1 = z;
     x = z1; y = y1; z = x1;
@@ -27,7 +27,7 @@ end
 % find all points of the existing graph that are shown on the slice of the first point of the branch
 [nodes, nodeIds] = obj.findSliceNodes(z, orientation);
 if orientation == 1         % zx
-    nodes = nodes(:,[3 1]);
+    nodes = nodes(:,[1 3]);
 elseif orientation == 2     % zy
     nodes = nodes(:,[3 2]);
 end

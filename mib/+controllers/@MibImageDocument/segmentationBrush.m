@@ -93,9 +93,9 @@ obj.brushSelection{1}.selection = false(shownH, shownW);
 obj.brushPrevXY = [x, y];
 
 % Convert (x, y) from data/axes space to CData pixel indices for the
-% initial dot. imageHandle.XData = [1, shownW * coef_z], so for ZX/ZY
-% orientations (coef_z >> 1) a simple clamp would place the dot at the
-% wrong column; the linear mapping below handles any coef_z correctly.
+% initial dot. imageHandle.XData = [1, shownW * coefX] and YData = [1, shownH * coefY],
+% so for ZY/ZX orientations (stretch >> 1) a simple clamp would place the dot at the
+% wrong pixel; the linear mapping below handles any stretch correctly.
 XData = obj.imageHandle.XData;
 YData = obj.imageHandle.YData;
 if XData(end) > XData(1) && shownW > 1

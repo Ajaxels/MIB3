@@ -83,14 +83,9 @@ else
     obj.mibModel.Ishown = obj.mibModel.getRGBimage(rgbOptions, datasetId, sImgIn);
 end
 
-%% Calculate aspect ratio coefficient based on orientation
-if dataset.orientation == 3 % xy
-    coef_z = dataset.image.pixSize.x / (dataset.image.pixSize.y);
-elseif dataset.orientation == 1 % zx
-    coef_z = dataset.image.pixSize.z / dataset.image.pixSize.x;
-elseif dataset.orientation == 2 % zy
-    coef_z = dataset.image.pixSize.z / dataset.image.pixSize.y;
-end
+%% Aspect-ratio stretch of the shown slice
+% Z is stretched horizontally in ZY and vertically in ZX (MibDataset.getDisplayStretch)
+[coefX, coefY] = dataset.getDisplayStretch();
 
 %% Update image in axes
 if isempty(obj.cImageDoc{selectedSet}.imageHandle) || ...
@@ -102,8 +97,8 @@ if isempty(obj.cImageDoc{selectedSet}.imageHandle) || ...
 
     obj.cImageDoc{selectedSet}.imageHandle = ...
         image(obj.mibModel.Ishown, ...
-              'XData', [1 imgWidth * coef_z], ...
-              'YData', [1 imgHeight], ...
+              'XData', [1 imgWidth * coefX], ...
+              'YData', [1 imgHeight * coefY], ...
               'parent', imViewAxes);
     
     % Configure image object
@@ -120,8 +115,8 @@ else
     
     obj.cImageDoc{selectedSet}.imageHandle.CData = [];
     obj.cImageDoc{selectedSet}.imageHandle.CData = obj.mibModel.Ishown;
-    obj.cImageDoc{selectedSet}.imageHandle.XData = [1 imgWidth * coef_z];
-    obj.cImageDoc{selectedSet}.imageHandle.YData = [1 imgHeight];
+    obj.cImageDoc{selectedSet}.imageHandle.XData = [1 imgWidth * coefX];
+    obj.cImageDoc{selectedSet}.imageHandle.YData = [1 imgHeight * coefY];
     
     % Remove old measurements and ROI overlays
     lineObj = findobj(imViewAxes, 'tag', 'measurements', '-or', 'tag', 'roi');
@@ -151,37 +146,36 @@ if true
 
     if ~resizeToMagnification 
         % Full-resolution mode: axesX/axesY are in data-pixel coords.
-        % XLim must be in physical (XData) coords: multiply X by coef_z.
-        % Y has no aspect-ratio correction.
-        imViewAxes.YLim = [axesY(1)/magFactor axesY(2)/magFactor];
-        imViewAxes.XLim = [axesX(1)*coef_z/magFactor axesX(2)*coef_z/magFactor];
+        % XLim/YLim must be in physical (XData/YData) coords: multiply by coefX/coefY.
+        imViewAxes.YLim = [axesY(1)*coefY/magFactor axesY(2)*coefY/magFactor];
+        imViewAxes.XLim = [axesX(1)*coefX/magFactor axesX(2)*coefX/magFactor];
     else
-        % Standard mode: XData = [1, imgWidth*coef_z], so XLim must be in
-        % the same physical space: axesX (data pixels) * coef_z / magFactor.
-        % Y is unscaled (YData = [1, imgHeight], coef_z applies to X only).
+        % Standard mode: XData = [1, imgWidth*coefX] and YData = [1, imgHeight*coefY],
+        % so XLim/YLim must be in the same physical space:
+        % axesX (data pixels) * coefX / magFactor, axesY * coefY / magFactor.
 
         % Calculate X limits
-        xl(1) = min([axesX(1)*coef_z/magFactor, 0]);
+        xl(1) = min([axesX(1)*coefX/magFactor, 0]);
         if axesX(2) > size(obj.mibModel.Ishown, 2) * magFactor
             if axesX(1) < 0
-                xl(2) = axesX(2)*coef_z/magFactor;
+                xl(2) = axesX(2)*coefX/magFactor;
             else
-                xl(2) = (axesX(2) - axesX(1))*coef_z/magFactor;
+                xl(2) = (axesX(2) - axesX(1))*coefX/magFactor;
             end
         else
-            xl(2) = size(obj.mibModel.Ishown, 2) * coef_z;
+            xl(2) = size(obj.mibModel.Ishown, 2) * coefX;
         end
 
-        % Calculate Y limits (no coef_z for Y axis)
-        yl(1) = min([axesY(1)/magFactor 0]);
+        % Calculate Y limits
+        yl(1) = min([axesY(1)*coefY/magFactor 0]);
         if axesY(2) > size(obj.mibModel.Ishown, 1) * magFactor
             if axesY(1) < 0
-                yl(2) = axesY(2)/magFactor;
+                yl(2) = axesY(2)*coefY/magFactor;
             else
-                yl(2) = axesY(2)/magFactor - axesY(1)/magFactor;
+                yl(2) = (axesY(2) - axesY(1))*coefY/magFactor;
             end
         else
-            yl(2) = size(obj.mibModel.Ishown, 1);
+            yl(2) = size(obj.mibModel.Ishown, 1) * coefY;
         end
 
         imViewAxes.YLim = yl;

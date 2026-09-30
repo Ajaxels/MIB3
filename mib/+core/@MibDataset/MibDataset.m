@@ -143,6 +143,7 @@ classdef MibDataset < matlab.mixin.Copyable
         flipDataset(obj, mode, parentFigure, showWaitbar)       % flip dataset horizontally, vertically, along Z or T
         [axesX, axesY] = getAxesLimits(obj)  % get axes limits for the dataset
         [yMin, yMax, xMin, xMax, zMin, zMax] = getCoordinatesOfShownImage(obj, transposeTo3) % Return minimal and maximal coordinates (XY) of the image that is currently shown.
+        [stretchX, stretchY] = getDisplayStretch(obj, orient) % Aspect-ratio stretch of the shown slice along the horizontal and vertical screen axes
         slice_no = getCurrentSliceNumber(obj)        % get slice number of the currently shown image
         timePnt = getCurrentTimePoint(obj)        % Get time point of the currently shown image.
         dataset = getData2D(obj, type, slice_no, orient, col_channel, options)        % Get the a 2D slice with colors: height:width:colors
