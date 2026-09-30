@@ -275,7 +275,7 @@ switch mode
         web('https://mib.helsinki.fi/help/api3/index.html', '-browser');
 
     case 'Check for update'             % obj.handles.ribbonHome.checkUpdate
-        obj.mibController.startController('controllers.UpdateCheck');
+        obj.mibController.startController('controllers.UpdateCheck', obj.mibController);
 
     case 'Your stats'          % obj.handles.ribbonHome.personalStats
         newStatsFolder = utils.dlgs.showMilestoneDialog( ...

@@ -146,7 +146,7 @@ if exist('mib_pars', 'var') && isfield(mib_pars, 'mibVersion')  %#ok<NODEF>
         % Restore them as the base and let the values the older session changed
         % win on top, so neither the settings unknown to the older MIB nor the
         % edits made while on it are lost.
-        parkedFn = fullfile(prefdir, sprintf('mib3_%.2f.mat', mibVersionNumeric));
+        parkedFn = fullfile(prefdir, sprintf('mib3_%s.mat', versionToText(mibVersionNumeric)));
         if isfile(parkedFn)
             try
                 parked = load(parkedFn);   %#ok<LOAD> holds a mib_pars structure
@@ -169,7 +169,7 @@ if exist('mib_pars', 'var') && isfield(mib_pars, 'mibVersion')  %#ok<NODEF>
         % overwrite the newer settings with the defaults of this version.
         % 1. park a copy under the version that wrote it, to be picked up by the
         %    branch above when that version runs again
-        parkedFn = fullfile(prefdir, sprintf('mib3_%.2f.mat', mib_pars.mibVersion));
+        parkedFn = fullfile(prefdir, sprintf('mib3_%s.mat', versionToText(mib_pars.mibVersion)));
         try
             copyfile(prefsFn, parkedFn);   % always refreshed: mib3.mat is the newest state of that version
         catch parkErr
@@ -183,12 +183,12 @@ if exist('mib_pars', 'var') && isfield(mib_pars, 'mibVersion')  %#ok<NODEF>
         %    written back on exit without ever being used
         obj.preferences = utils.concatenateStructures(obj.preferences, mib_pars.preferences, true);
 
-        downgradeMsg = sprintf(['The preferences file was written by MIB %.2f, ' ...
-            'while this is MIB %.2f.\n\nOnly the settings known to this version were ' ...
-            'restored; the newer ones were left out.'], mib_pars.mibVersion, mibVersionNumeric);
+        downgradeMsg = sprintf(['The preferences file was written by MIB %s, ' ...
+            'while this is MIB %s.\n\nOnly the settings known to this version were ' ...
+            'restored; the newer ones were left out.'], versionToText(mib_pars.mibVersion), versionToText(mibVersionNumeric));
         if ~isempty(parkedFn)
-            downgradeMsg = sprintf('%s\n\nA copy of the newer preferences is kept in:\n%s\nand is restored automatically when MIB %.2f is started again.', ...
-                downgradeMsg, parkedFn, mib_pars.mibVersion);
+            downgradeMsg = sprintf('%s\n\nA copy of the newer preferences is kept in:\n%s\nand is restored automatically when MIB %s is started again.', ...
+                downgradeMsg, parkedFn, versionToText(mib_pars.mibVersion));
         end
         warning('MIB:preferencesFromNewerVersion', '%s', downgradeMsg);
         % shown once by controllers.MibController.initialize, when there is a window to parent it to
@@ -431,4 +431,15 @@ if isempty(defaultValue) || isrow(defaultValue)
 elseif iscolumn(defaultValue)
     value = reshape(value, [], 1);
 end
+end
+
+%% ------------------------------------------------------------------------
+function versionText = versionToText(versionNumeric)
+% numeric MIB version as text, for messages and for the parked preferences file
+% name. Releases are YYYY.MM and previews YYYY.MMDD, so %.2f would print every
+% preview of a month as the same version and give them one shared parked file.
+% Four decimals keep them apart; the trailing "00" of a release is dropped, so
+% 2026.10 stays "2026.10" and its file name matches the one older MIB wrote
+versionText = sprintf('%.4f', versionNumeric);
+if endsWith(versionText, '00'); versionText = versionText(1:end-2); end
 end

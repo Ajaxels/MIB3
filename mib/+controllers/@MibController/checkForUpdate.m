@@ -51,14 +51,16 @@ catch
 end
 linefeedPositions = strfind(urlText, sprintf('\n'));
 if ~isempty(linefeedPositions)
-    availableVersion = str2double(urlText(1:linefeedPositions(1)));
+    availableVersionText = strtrim(urlText(1:linefeedPositions(1)));
 else
-    availableVersion = str2double(urlText);
+    availableVersionText = strtrim(urlText);
 end
+% keep the text for display: str2double('2026.10') is 2026.1
+availableVersion = str2double(availableVersionText);
 mibVersionNumeric = utils.getMibVersionNumberic(obj.mibModel.mibVersion);
 if availableVersion - mibVersionNumeric > 0
     answer = utils.dlgs.inputQuestDlg(obj.mibModel.getProgressBarParent(), ...
-        sprintf('A new version %g of MIB is available!\nWould you like to download/install it?\n\nYou can always do that later via Help \x2192 Check for Update.', availableVersion), ...
+        sprintf('A new version %s of MIB is available!\nWould you like to download/install it?\n\nYou can always do that later via Help \x2192 Check for Update.', availableVersionText), ...
         'New version available', 'Update now', 'Later', 'Update now');
     if strcmp(answer, 'Update now')
         obj.startController('controllers.UpdateCheck', obj);
