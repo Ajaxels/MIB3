@@ -272,7 +272,7 @@ else
 end
 
 % re-show the center marker if it was hidden
-if ~isempty(obj.centralMarker)
+if ~isempty(obj.centralMarker) && isvalid(obj.centralMarker)
     obj.centralMarker.Visible = 'on';
 end
 

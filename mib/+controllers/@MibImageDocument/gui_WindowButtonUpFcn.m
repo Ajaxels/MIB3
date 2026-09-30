@@ -145,7 +145,7 @@ hFig.WindowScrollWheelFcn = @(~, eventdata)obj.gui_ScrollWheelFcn(eventdata);
 hFig.WindowButtonMotionFcn = @(~, ~)obj.gui_WinMouseMotionFcn();
 
 % Re-show the center spot marker if it was hidden during pan
-if ~isempty(obj.centralMarker)
+if ~isempty(obj.centralMarker) && isvalid(obj.centralMarker)
     obj.centralMarker.Visible = true;
 end
 % Re-show quick measure ROI and label now that axes limits are stable

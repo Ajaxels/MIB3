@@ -122,7 +122,7 @@ if strcmp(operation, 'pan') %& strcmp(modifier,'alt')
     hFig.WindowScrollWheelFcn = [];  % turn off callback for the mouse wheel during the pan mode
 
     % Hide center spot marker
-    if ~isempty(obj.centralMarker); obj.centralMarker.Visible = false; end
+    if ~isempty(obj.centralMarker) && isvalid(obj.centralMarker); obj.centralMarker.Visible = false; end
     % Hide brush/segmentation cursor if it exists
     if ~isempty(obj.brushCursor) && isvalid(obj.brushCursor); obj.brushCursor.Visible = false; end
     % Hide quick measure ROI and label during pan to avoid mis-positioned rendering
