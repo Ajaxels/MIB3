@@ -46,7 +46,7 @@ Install Zensical:
 pip install zensical
 ```
 
-Install Sphinx and the MATLAB domain (used for the API reference — see
+Install Sphinx and the MATLAB domain (used for the API reference, see
 [`docs_api/install.md`](../docs_api/install.md)):
 
 ```
@@ -104,7 +104,7 @@ From the `docs/` directory:
 d:\Python\Miniforge3\envs\Zensical\Scripts\zensical build
 ```
 
-Output is written to `docs/site/`.  Do **not** edit files there — regenerate
+Output is written to `docs/html/`.  Do **not** edit files there, regenerate
 as needed.
 
 Shorthand if Zensical is on `PATH`:

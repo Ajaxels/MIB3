@@ -182,9 +182,20 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
                 files(fnIndex).extension = ext;
                 files(fnIndex).filename = cell2mat(filenames(fnIndex));
 
+                % silence harmless warnings about malformed EXIF/XMP metadata
+                % written by some cameras (e.g. JPGs with TIFF_SSHORT tags,
+                % zero resolution denominators or a broken XMP packet);
+                % pixel data and the top-level image info are not affected
+                prevWarn = warning();   % full state, restored after imfinfo
+                warning('off', 'imageio:tifftagsread:expectedTagDataFormat');
+                warning('off', 'imageio:tifftagsread:expectedTagDataFormatMultiple');
+                warning('off', 'imageio:tifftagsread:badTagValueDivisionByZero');
+                warning('off', 'MATLAB:imagesci:imfinfo:unknownXMPpacket');
                 try
                     info = imfinfo(files(fnIndex).filename);
+                    warning(prevWarn);
                 catch err
+                    warning(prevWarn);
                     if ~isempty(pwb); pwb.deletePoolWaitbar(); end
                     return;
                     %rethrow(err);

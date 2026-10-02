@@ -5439,6 +5439,67 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Installation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-install-miniforge" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        1. Install Miniforge
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-create-the-zensical-environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        2. Create the Zensical environment
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-install-packages" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        3. Install packages
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-pycharm-configuration-optional" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        4. PyCharm configuration (optional)
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-generate-the-documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        5. Generate the documentation
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -5566,6 +5627,67 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Installation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-install-miniforge" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        1. Install Miniforge
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-create-the-zensical-environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        2. Create the Zensical environment
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-install-packages" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        3. Install packages
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-pycharm-configuration-optional" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        4. PyCharm configuration (optional)
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-generate-the-documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        5. Generate the documentation
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -5661,7 +5783,7 @@
 <ul>
 <li><code>zensical serve</code> - Start the live-reloading docs server (localhost:8000)</li>
 <li><code>zensical serve -o</code> - Start server and open browser automatically</li>
-<li><code>zensical build</code> - Build the documentation site to <code>site/</code></li>
+<li><code>zensical build</code> - Build the documentation site to <code>html/</code></li>
 <li><code>zensical -h</code> - Print help message and exit</li>
 </ul>
 <details class="example">
@@ -5682,13 +5804,47 @@
 <li><a href="https://squidfunk.github.io/mkdocs-material/reference/icons-emojis">Icons search</a></li>
 </ul>
 <h2 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h2>
-<ul>
-<li>Create a new virtual environment</li>
-<li>Install Zensical, type in the console:
-<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>    &gt;&gt; pip install zensical
-</span></code></pre></div></li>
-<li>Start the live-reloading docs server: <code>zensical serve</code></li>
-</ul>
+<h3 id="1-install-miniforge">1. Install Miniforge<a class="headerlink" href="#1-install-miniforge" title="Permanent link">&para;</a></h3>
+<p>Download and install <a href="https://github.com/conda-forge/miniforge/releases">Miniforge</a> (tested with
+<code>Mambaforge-24.11.0-0-Windows-x86_64.exe</code>, base Python 3.12) and accept the default settings.</p>
+<h3 id="2-create-the-zensical-environment">2. Create the Zensical environment<a class="headerlink" href="#2-create-the-zensical-environment" title="Permanent link">&para;</a></h3>
+<p>Open <strong>Miniforge Prompt</strong> (Start → Miniforge3 → Miniforge Prompt) and create a new environment,
+replacing the path with your preferred location:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>conda create --prefix d:\Python\Miniforge3\envs\Zensical python=3.12
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>activate Zensical
+</span></code></pre></div>
+<h3 id="3-install-packages">3. Install packages<a class="headerlink" href="#3-install-packages" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>pip install zensical
+</span></code></pre></div>
+<p>Optionally, install Sphinx and the MATLAB domain, which are used to build the API reference
+(<code>docs_api/</code>, see <a href="api.html#installation">API reference installation</a>):</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>pip install sphinx sphinxcontrib-matlabdomain sphinx-rtd-theme sphinx-immaterial
+</span></code></pre></div>
+<p>To update Zensical later:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>d:\Python\Miniforge3\envs\Zensical\Scripts\python.exe -m pip install --upgrade zensical
+</span></code></pre></div>
+<h3 id="4-pycharm-configuration-optional">4. PyCharm configuration (optional)<a class="headerlink" href="#4-pycharm-configuration-optional" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Settings → Project → Python Interpreter → Add Interpreter</strong> and point it to
+   <code>d:\Python\Miniforge3\envs\Zensical\python.exe</code></li>
+<li>If the terminal does not pick up the environment: close the terminal, open
+   <strong>Settings → Tools → Terminal</strong>, enable <strong>Activate virtualenv</strong>, set <strong>Shell path</strong> to
+   <code>powershell.exe</code> and open a new terminal</li>
+</ol>
+<p>Check which Python is active with <code>where.exe python</code></p>
+<h3 id="5-generate-the-documentation">5. Generate the documentation<a class="headerlink" href="#5-generate-the-documentation" title="Permanent link">&para;</a></h3>
+<p>Run the commands from the <code>docs</code> subfolder of the MIB project, replacing the path with the location
+of your Zensical environment.</p>
+<p>Build the static site into <code>docs/html/</code>:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>d:\Python\Miniforge3\envs\Zensical\Scripts\zensical build
+</span></code></pre></div>
+<p>Start the live-reloading preview at <a href="http://localhost:8000">http://localhost:8000</a>:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>d:\Python\Miniforge3\envs\Zensical\Scripts\zensical serve
+</span></code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Do not edit files in <code>docs/html/</code>, they are overwritten on every build.</p>
+</div>
 <h2 id="project-layout">Project layout<a class="headerlink" href="#project-layout" title="Permanent link">&para;</a></h2>
 <div class="language-text highlight"><pre><span></span><code>zensical.toml    # The configuration file (TOML format).
 docs

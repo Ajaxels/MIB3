@@ -6,7 +6,7 @@ For full documentation visit [zensical.org](https://zensical.org).
 
 * `zensical serve` - Start the live-reloading docs server (localhost:8000)
 * `zensical serve -o` - Start server and open browser automatically
-* `zensical build` - Build the documentation site to `site/`
+* `zensical build` - Build the documentation site to `html/`
 * `zensical -h` - Print help message and exit
 
 ??? example "Run example"
@@ -26,12 +26,70 @@ For full documentation visit [zensical.org](https://zensical.org).
 
 ## Installation
 
-* Create a new virtual environment
-* Install Zensical, type in the console:
+### 1. Install Miniforge
+
+Download and install [Miniforge](https://github.com/conda-forge/miniforge/releases) (tested with
+`Mambaforge-24.11.0-0-Windows-x86_64.exe`, base Python 3.12) and accept the default settings.
+
+### 2. Create the Zensical environment
+
+Open **Miniforge Prompt** (Start → Miniforge3 → Miniforge Prompt) and create a new environment,
+replacing the path with your preferred location:
+
 ```
-    >> pip install zensical
+conda create --prefix d:\Python\Miniforge3\envs\Zensical python=3.12
+activate Zensical
 ```
-* Start the live-reloading docs server: `zensical serve`
+
+### 3. Install packages
+
+```
+pip install zensical
+```
+
+Optionally, install Sphinx and the MATLAB domain, which are used to build the API reference
+(`docs_api/`, see [API reference installation](api.md#installation)):
+
+```
+pip install sphinx sphinxcontrib-matlabdomain sphinx-rtd-theme sphinx-immaterial
+```
+
+To update Zensical later:
+
+```
+d:\Python\Miniforge3\envs\Zensical\Scripts\python.exe -m pip install --upgrade zensical
+```
+
+### 4. PyCharm configuration (optional)
+
+1. **Settings → Project → Python Interpreter → Add Interpreter** and point it to
+   `d:\Python\Miniforge3\envs\Zensical\python.exe`
+2. If the terminal does not pick up the environment: close the terminal, open
+   **Settings → Tools → Terminal**, enable **Activate virtualenv**, set **Shell path** to
+   `powershell.exe` and open a new terminal
+
+Check which Python is active with `where.exe python`
+
+### 5. Generate the documentation
+
+Run the commands from the `docs` subfolder of the MIB project, replacing the path with the location
+of your Zensical environment.
+
+Build the static site into `docs/html/`:
+
+```
+d:\Python\Miniforge3\envs\Zensical\Scripts\zensical build
+```
+
+Start the live-reloading preview at [http://localhost:8000](http://localhost:8000):
+
+```
+d:\Python\Miniforge3\envs\Zensical\Scripts\zensical serve
+```
+
+!!! note
+
+    Do not edit files in `docs/html/`, they are overwritten on every build.
 
 ## Project layout
 

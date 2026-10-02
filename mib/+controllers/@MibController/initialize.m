@@ -19,7 +19,7 @@ showSplashScreen = true;
 
 % ---- show splash screen
 if showSplashScreen
-    [hSplashScreen, hSplashAxes, hLabel] = obj.showSplashScreen(sprintf('MIB %s', obj.mibVersion), sprintf('Staring MIB\n%s\nPlease wait...', obj.mibVersion));
+    [hSplashScreen, hSplashAxes, hLabel] = obj.showSplashScreen(sprintf('MIB %s', obj.mibVersion), sprintf('Starting MIB\n%s\nPlease wait...', obj.mibVersion));
     %hLabel.String = 'adding something else';
 end
 

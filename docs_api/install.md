@@ -12,7 +12,7 @@ if you followed those steps.
 
 ## 1. Install Miniforge and create the environment
 
-Follow **steps 1–3** in [`docs/install.md`](../docs/install.md).  The
+Follow **steps 1-3** in [`docs/install.md`](../docs/install.md).  The
 `pip install sphinx sphinxcontrib-matlabdomain sphinx-rtd-theme sphinx-immaterial`
 command in that guide installs everything needed here as well.
 
@@ -47,7 +47,7 @@ copy docs_api\sphinx\mat_types.py       <library_path>\mat_types.py
 copy docs_api\sphinx\mat_documenters.py <library_path>\mat_documenters.py
 ```
 
-### Patch 1 — `mat_types.py`: `+package` name-resolution fallback
+### Patch 1 - `mat_types.py`: `+package` name-resolution fallback
 
 **Problem:** MATLAB `+package` directories are stored in `entities_table` with a
 leading `+` key (e.g. `+controllers`), but RST directives reference the bare name
@@ -84,7 +84,7 @@ def try_get_module_entity_or_default(entity_name):
     return maybe_mod
 ```
 
-### Patch 2 — `mat_documenters.py`: non-fatal analyzer failure for `+package` modules
+### Patch 2 - `mat_documenters.py`: non-fatal analyzer failure for `+package` modules
 
 **Problem 1:** `generate()` catches only `PycodeError`, but MATLAB module analysis
 raises `MatcodeError` for `+package` modules.  The unhandled exception aborts
@@ -126,7 +126,7 @@ To:
             self.analyzer = None
 ```
 
-### Patch 3 — `mat_documenters.py`: null-guard in `get_object_members`
+### Patch 3 - `mat_documenters.py`: null-guard in `get_object_members`
 
 **Problem:** When a module fails to load, `self.object` is `None`, causing
 `AttributeError: 'NoneType' object has no attribute 'safe_getmembers'` for every
@@ -153,16 +153,16 @@ def get_object_members(self, want_all):
 From `C:\Matlab\MIB3\docs_api\`:
 
 ```
-d:\Python\Miniforge3\envs\Zensical\Scripts\sphinx-build.exe -b html source build\html
+d:\Python\Miniforge3\envs\Zensical\Scripts\sphinx-build.exe -b html source html
 ```
 
 If `sphinx-build` is on `PATH`:
 
 ```
-sphinx-build -b html source build\html
+sphinx-build -b html source html
 ```
 
-Open `build\html\index.html` in a browser to view the result.
+Open `html\index.html` in a browser to view the result.
 
 ---
 
@@ -171,18 +171,17 @@ Open `build\html\index.html` in a browser to view the result.
 ```
 docs_api/
   source/
-    conf.py              — Sphinx config (MATLAB src path, theme, extensions)
-    index.rst            — top-level navigation
+    conf.py              - Sphinx config (MATLAB src path, theme, extensions)
+    index.rst            - top-level navigation
     _static/
-      custom.css         — MIB3 brand colours (#006633 green + #F28C38 orange)
-    api/                 — RST pages, one per package and class
-  build/
-    html/                — generated HTML output (excluded from git)
+      custom.css         - MIB3 brand colours (#006633 green + #F28C38 orange)
+    api/                 - RST pages, one per package and class
+  html/                  - generated HTML output
   sphinx/
-    mat_types.py         — patched copy (Patch 1 applied)
-    mat_documenters.py   — patched copy (Patches 2 and 3 applied)
-  install.md             — this file
-  README.md              — overview and patch details
+    mat_types.py         - patched copy (Patch 1 applied)
+    mat_documenters.py   - patched copy (Patches 2 and 3 applied)
+  install.md             - this file
+  README.md              - overview and patch details
 ```
 
 ---
