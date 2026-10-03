@@ -43,12 +43,10 @@ else
     % Large models (65535+): materialNames has only placeholder entries,
     % scan pixel data for the highest occupied index
     if obj.exists && ~isempty(obj.data)
-        maxVal = 0;
-        for t = 1:obj.time
-            img = obj.data(:,:,:,1,t);
-            maxVal = max(maxVal, double(max(img(:))));
-        end
-        obj.materialsCount = maxVal;
+        % One reduction over the whole array covers every time point. Indexing
+        % a time point out first, obj.data(:,:,:,1,t), copies it: 4.1 s against
+        % 0.17 s for a 1636x2556x1250 uint16 model (2026-10-02)
+        obj.materialsCount = double(max(obj.data, [], 'all'));
     else
         obj.materialsCount = 0;
     end

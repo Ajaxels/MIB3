@@ -508,10 +508,10 @@ classdef EditInstanceObjectsTest < matlab.unittest.TestCase
         function splitBySelectionClearingASliceKeepsTheObjectIn2D(testCase)
             % The same gesture in 2D reaches one slice only, so an object
             % cleared from the shown slice keeps its index and its voxels on the
-            % others. The index refresh is what has to get this right: its box
-            % is clipped to the slice, and only because it unions in the
-            % object's previous box does the rest of the object survive the
-            % recount.
+            % others. The index refresh is what has to get this right: it reads
+            % the slice alone and corrects the object's entry by the
+            % difference, so the rest of the object has to survive in what the
+            % entry already held.
             mibModel = EditInstanceObjectsTest.buildInstanceModel();
             mibModel.I{1}.slices{3} = [5, 5];    % object 1 spans slices 2:7
             selection = zeros(32, 32, 10, 'uint8');
@@ -1229,6 +1229,62 @@ classdef EditInstanceObjectsTest < matlab.unittest.TestCase
             % Refreshing that region alone must agree with a full rebuild.
             mibModel.I{1}.buildInstanceIndex(note);
             EditInstanceObjectsTest.verifyIndexAgreesWithVolume(testCase, mibModel, 'undo repair');
+        end
+
+        function undoIn2DRepairsFromTheSliceAlone(testCase)
+            % A 2-D note names the edited slice only, so rescanning its box
+            % would forget the object on every other slice. The repair is a
+            % difference over the slice, and what the slice held before the undo
+            % is the crop MibModel.undo stored in the entry it stepped away
+            % from. The lookup is the one repairIndexAfterUndo performs.
+            mibModel = EditInstanceObjectsTest.buildInstanceModel();
+            mibModel.I{1}.slices{3} = [5, 5];    % object 1 spans slices 2:7
+            selection = zeros(32, 32, 10, 'uint8');
+            selection(4:10, 7, 5) = 1;           % a line through object 1 on this slice
+            mibModel.setData3D(selection, 'selection', 1, 3, [], ...
+                struct('id', 1, 'blockModeSwitch', 0));
+
+            EditInstanceObjectsTest.runAction(mibModel, 'SplitBySelection', '', ...
+                struct('Mode3D', false));
+            mibModel.undo();
+
+            backup = mibModel.Backup;
+            note = backup.undoList(backup.undoIndex).options.instanceIndexRepair;
+            testCase.verifyTrue(note.sliceDelta, 'a 2-D note asks for the slice difference');
+            testCase.verifyEqual(double(note.bbox(5:6)), [5 5], 'the note names the slice');
+
+            crop = backup.undoList(backup.prevUndoIndex).data{1};
+            note.previousCrop = crop;
+            mibModel.I{1}.buildInstanceIndex(note);
+            EditInstanceObjectsTest.verifyIndexAgreesWithVolume(testCase, mibModel, '2-D undo repair');
+        end
+
+        function aTwoDimensionalEditLeavesTheBoxAtWorstTooLarge(testCase)
+            % Clearing object 1 from its first slice moves its zMin, which only
+            % a scan of the other slices could find - exactly the scan 2-D mode
+            % does not do. The box may stay larger than the object, never
+            % smaller; everything else agrees with a rebuild.
+            mibModel = EditInstanceObjectsTest.buildInstanceModel();
+            mibModel.I{1}.slices{3} = [2, 2];    % object 1 spans slices 2:7
+            selection = zeros(32, 32, 10, 'uint8');
+            selection(4:10, 4:10, 2) = 1;
+            mibModel.setData3D(selection, 'selection', 1, 3, [], ...
+                struct('id', 1, 'blockModeSwitch', 0));
+
+            EditInstanceObjectsTest.runAction(mibModel, 'SplitBySelection', '1', ...
+                struct('Mode3D', false));
+
+            actual = mibModel.I{1}.instanceIndex;
+            expected = utils.instances.objectIndex(EditInstanceObjectsTest.readLabels(mibModel));
+            testCase.verifyEqual(double(expected.bbox(1, 5:6)), [3 7], 'object 1 now starts on slice 3');
+            box = double(actual.bbox(1, :));
+            truth = double(expected.bbox(1, :));
+            testCase.verifyTrue(all(box([1 3 5]) <= truth([1 3 5])) && all(box([2 4 6]) >= truth([2 4 6])), ...
+                'the box must still contain the object');
+            for field = {'exists', 'voxels', 'centroid', 'sliceCount'}
+                testCase.verifyEqual(actual.(field{1})(1:expected.maxIndex, :), ...
+                    expected.(field{1})(1:expected.maxIndex, :), sprintf('field %s', field{1}));
+            end
         end
 
         function undoWritesTheVoxelsBeforeAnnouncingItself(testCase)

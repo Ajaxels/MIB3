@@ -30,6 +30,12 @@ function convertModel(obj, newType, wb)
 %     - ``3.6``        - 3D connected components, connectivity 6
 %     - ``3.26``       - 3D connected components, connectivity 26
 %
+%     The result records how its objects are numbered in
+%     ``labels.objects3D``: false for ``2.4``/``2.8`` (the labelling restarts
+%     on every slice), true for ``3.6``/``3.26`` and for 63/255 converted to
+%     65535 or 4294967295 (a material spans the volume), and kept as it was
+%     between 65535 and 4294967295
+%
 %   - **wb** *(optional)* - ``uiprogressdlg`` handle; pass ``[]`` to skip
 %     progress reporting
 %
@@ -75,6 +81,8 @@ existingMaterialNames  = obj.labels.materialNames;
 % them on the new layer object - conversion does not change where the model came from
 existingFilename       = obj.labels.filename;
 existingLabelsVariable = obj.labels.labelsVariable;
+% Instance models only (see core.MibLabels.objects3D); a 63-type layer has no such property
+existingObjects3D      = isprop(obj.labels, 'objects3D') && obj.labels.objects3D;
 
 %% Indexed-object detection (types 2.4, 2.8, 3.6, 3.26)
 if newType < 4
@@ -154,6 +162,7 @@ if newType < 4
     obj.labels.materialColors = rand(65535, 3);
     obj.labels.filename       = existingFilename;
     obj.labels.labelsVariable = existingLabelsVariable;
+    obj.labels.objects3D      = newType >= 3;    % per-slice components restart their numbering on every slice
     obj.selectedMaterial = 3;
     obj.selectedAddToMaterial = 3;
     return;
@@ -238,6 +247,9 @@ if ~isempty(wb); wb.Value = 0.7; end
 
 obj.labels = core.MibLabels(newData, meta);
 obj.labels.maxMaterials = newType;
+% A material is numbered through the volume, so materials upgraded to an
+% instance type are 3D objects; between instance types the numbering is kept
+obj.labels.objects3D = currentType < 256 || existingObjects3D;
 obj.labels.filename       = existingFilename;
 obj.labels.labelsVariable = existingLabelsVariable;
 obj.maskExist = 1;

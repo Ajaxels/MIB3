@@ -241,6 +241,11 @@ classdef MatModelLoader < io.loaders.BaseImageLoader
                         imginfo{"modelType"} = res.modelType;
                     end
 
+                    % Instance models: objects numbered through the volume or per slice
+                    if isfield(res, 'modelObjects3D')
+                        imginfo{"modelObjects3D"} = logical(res.modelObjects3D);
+                    end
+
                     % Bounding box
                     if isfield(res, 'BoundingBox')
                         imginfo{"BoundingBox"} = res.BoundingBox;

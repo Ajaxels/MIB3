@@ -174,16 +174,26 @@ classdef InstanceEditor < handle
             % the two settings dialogs - askDetectionSettings and
             % askCleanupSettings - and kept here between them.
             obj.BatchOpt = struct();
-            % Opens in 2D on a machine that has never had the editor open: the
-            % list then describes the shown slice, which is the only thing it
-            % can describe on a model that has not been stitched into 3D yet -
-            % and that is what the editor is usually opened on first. After
-            % that the mode is whatever it was last left in, restored below.
-            % The connectivity has to start in the same mode, or the settings
-            % dialog offers 26/6 while the operations run per slice.
-            obj.BatchOpt.Mode3D = false;
+            % Opens in the mode the model is numbered in - labels.objects3D, the
+            % "3D" checkbox of the Segmentation panel. On a model whose
+            % numbering restarts on every slice only the 2D list describes
+            % anything, and on a stitched one the objects are what 3D edits act
+            % on. Without an instance model to ask, the mode is whatever it was
+            % last left in, and 2D on a machine that has never had the editor
+            % open. The connectivity has to start in the same mode, or the
+            % settings dialog offers 26/6 while the operations run per slice.
+            dataset = obj.mibModel.I{obj.mibModel.getActiveId()};
+            if dataset.modelExist && dataset.labels.maxMaterials > 255 && isprop(dataset.labels, 'objects3D')
+                obj.BatchOpt.Mode3D = logical(dataset.labels.objects3D);
+            else
+                obj.BatchOpt.Mode3D = obj.storedWindowState().Mode3D;
+            end
             obj.BatchOpt.Connectivity = {'8'};
             obj.BatchOpt.Connectivity{2} = {'8', '4'};
+            if obj.BatchOpt.Mode3D
+                obj.BatchOpt.Connectivity = {'26'};
+                obj.BatchOpt.Connectivity{2} = {'26', '6'};
+            end
             obj.BatchOpt.ConnectMode = {'interpolate'};
             obj.BatchOpt.ConnectMode{2} = {'interpolate', 'selection'};
             obj.BatchOpt.cleanupMinObjectVoxels = {0, [0, 1e9], 'on'};
@@ -204,24 +214,14 @@ classdef InstanceEditor < handle
                 for name = {'MaxRows', 'MaxVoxels', 'MaxSlices'}
                     if isfield(stored, name{1}); obj.listOptions.(name{1}) = stored.(name{1}); end
                 end
-                % The mode is restored before the connectivity, because the
-                % connectivity belongs to it: 26/6 are the 3-D neighbourhoods
-                % and 8/4 the 2-D ones, and a number from the other mode means
-                % nothing here. So only the stance survives the trip - the full
-                % neighbourhood stays full and the minimal one stays minimal -
-                % which is the rule mode3D_Callback applies on every switch.
-                obj.BatchOpt.Mode3D = obj.storedWindowState().Mode3D;
-                items = {'8', '4'};
-                if obj.BatchOpt.Mode3D; items = {'26', '6'}; end
-                obj.BatchOpt.Connectivity{2} = items;
-                wasFull = true;    % the opening stance set above
-                if isfield(stored, 'Connectivity')
-                    wasFull = ismember(stored.Connectivity, {'26', '8'});
-                end
-                if wasFull
-                    obj.BatchOpt.Connectivity{1} = items{1};
-                else
-                    obj.BatchOpt.Connectivity{1} = items{2};
+                % The connectivity belongs to the mode chosen above: 26/6 are
+                % the 3-D neighbourhoods and 8/4 the 2-D ones, and a number
+                % from the other mode means nothing here. So only the stance
+                % survives the trip - the full neighbourhood stays full and the
+                % minimal one stays minimal - which is the rule mode3D_Callback
+                % applies on every switch.
+                if isfield(stored, 'Connectivity') && ~ismember(stored.Connectivity, {'26', '8'})
+                    obj.BatchOpt.Connectivity{1} = obj.BatchOpt.Connectivity{2}{2};
                 end
             end
 
@@ -544,6 +544,21 @@ classdef InstanceEditor < handle
             if isfield(options, 'id') && ~isequal(options.id, obj.mibModel.getActiveId()); return; end
             if ~isequal(note.timePoint, dataset.getCurrentTimePoint()); return; end
             if ~isequal(index.timePoint, note.timePoint); return; end
+
+            if isfield(note, 'sliceDelta') && note.sliceDelta
+                % A 2-D edit is repaired as a difference over its slice, which
+                % needs the box as it was before this undo rewrote it.
+                % MibModel.undo has just stored exactly that in the entry it
+                % stepped away from - the same in both directions.
+                replaced = backup.prevUndoIndex;
+                if replaced < 1 || replaced > numel(backup.undoList); return; end
+                crop = backup.undoList(replaced).data;
+                if ~iscell(crop) || numel(crop) ~= 1; return; end
+                crop = crop{1};
+                box = double(note.bbox);
+                if ~isequal(size(crop, 1, 2, 3), box([2 4 6]) - box([1 3 5]) + 1); return; end
+                note.previousCrop = crop;
+            end
 
             dataset.buildInstanceIndex(note);
             repaired = true;

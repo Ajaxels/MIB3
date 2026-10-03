@@ -64,8 +64,19 @@ rebuild sizes its arrays to the new maximum while a refresh keeps the old one an
 entry free. Those gaps are what the next split allocates from. Tests assert "equal over the shared
 range, with the refreshed tail free", **not** element-for-element equality against a rebuild.
 
-**A refresh unions its region with the object's previous bounding box**, so what survives outside the
-refreshed box is recounted rather than forgotten. This is what makes 2D deletion correct.
+**A 3D refresh unions its region with the object's previous bounding box**, so what survives outside
+the refreshed box is recounted rather than forgotten.
+
+**A 2D refresh never reads beyond the edited slice.** On an unstitched model every low index spans the
+stack, so the union rule rescanned nearly the whole volume on every 2D edit - 8.8 s of a 9.6 s ++s++
+on 1636x2556x1250 uint16 (measured 2026-10-02; 0.9 s after). Instead the edit passes
+`refresh.previousCrop` (its box before the write) and `objectIndex` corrects each entry by the
+difference over the whole slice: what the object had there is taken out, what it has now is put in.
+Voxels, centroid and slice count stay exact; **the bounding box only grows** - an object still present
+on other slices keeps its old box, so clearing its edge slice leaves the box too large until the next
+full build. Safe (every reader uses the box as a search bound), but such an entry is not equal to a
+rebuild, and the 2D tests assert containment, not equality, for the box. If an entry cannot have been
+right (it would lose more voxels than it had) the refresh falls back to the exact union rescan.
 
 **A widget backing a BatchOpt field must be named exactly as the field** -
 `utils.updateBatchOptFromGUI_Shared` writes `BatchOpt.(hObject.Tag)`.
@@ -388,6 +399,11 @@ caused. Writes arriving while already stale leave the flag alone. The flag is cl
 handler whatever it decides, so an unrepairable undo cannot leave older staleness for a later undo to
 mistake as its own. `undoWritesTheVoxelsBeforeAnnouncingItself` pins the ordering.
 
+**A 2D note carries `sliceDelta = true`** and its box is the edited slice alone, so rescanning that
+box would forget the object everywhere else. `repairIndexAfterUndo` supplies `previousCrop` from
+`Backup.undoList(Backup.prevUndoIndex).data{1}` - the content `MibModel.undo` just overwrote, stored
+in the entry it stepped away from, in either direction. `undoIn2DRepairsFromTheSliceAlone` pins it.
+
 Failure is always towards a full rebuild: no note, a note from another dataset or time point, or an
 index stale for another reason. `Cleanup` and `Compact` deliberately leave no note - no box describes
 them - and a brush stroke never had one.
@@ -456,9 +472,14 @@ and by the `cleanupOptions` gear which only stores), the list settings (`askDete
   back as `8` in 2D and `26` in 3D. `mode3D_Callback` does the same translation on every switch, and
   it runs once more at construction.
 
-**First opening is 2D**, `Connectivity` 8/4 to match. Only the editor's default -
-`editInstanceObjects` still defaults to 3D, which is right for a programmatic caller and is what
-every headless test assumes.
+**The editor opens in the model's mode** - `labels.objects3D`, the "3D" checkbox of the
+Segmentation panel (`MibSegmentation.objects3D_Callback`; saved in `.model` as `modelObjects3D`,
+asked for on loading a 65535+ model without it, set to 3D by stitching). `Connectivity` starts at
+26/6 or 8/4 to match, keeping the stored stance. The stored `Mode3D` is the fallback only when the
+active dataset has no instance model, and 2D on a machine that never opened the editor. The mode is
+taken at opening only; ticking the panel's box while the editor is open does not switch it. Only the
+editor's default - `editInstanceObjects` still defaults to 3D, which is right for a programmatic
+caller and is what every headless test assumes.
 
 `applyModeToWidgets` switches widgets whose other mode **cannot do this at all**, not those that do
 it differently - `cutAtSliceButton`, `connectButton`, `ConnectMode` (+ label) are volume-only;

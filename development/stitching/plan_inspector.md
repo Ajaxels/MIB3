@@ -69,6 +69,19 @@ every pair; a carried span at least as wide as the new union in both directions 
 `AutoResizeChildren` is `'on'`, and with it off the callback reads a stale `InnerPosition` - the
 grid has not relaid out yet). The next render, wheel zoom or `F` picks the new shape up.
 
+## Shift+click: raw match first, blurred fallback
+
+`localCorrelate` matches the raw template and search crop first; only when that is not confident does
+it repeat the match on both crops blurred (`smoothSigma`, default 1; `debugInfo.smoothSigma` reports
+which match was used). Raw first because the tiles are usually prealigned and clean data should keep
+its unblurred peak. Measured 2026-10-03 on a real uint8 EM pair (4096x6144 tiles, ~624 px overlap,
+ROI 256, search 64): on raw pixels the true offset peaked at NCC 0.27-0.41 at seven spots along the
+seam - all agreeing on the same correction (~[-23 -2.5] px, spread < 1 px), all refused by
+`minPeak` 0.5 as `weak-peak`, so Shift+click did nothing but post a status line. Sigma 1 gave
+0.84-0.89 and the same offset; sigma 2/3 gave 0.94-0.98. A larger search radius did not help (same
+peak at 64, 160, 200, 320). Lowering `minPeak` instead was rejected: on raw noisy pixels the gap to
+the second peak is only ~0.07-0.1, so a weaker floor would also pass genuinely ambiguous spots.
+
 ## Trust model (how user fixes steer the global solve)
 
 Edge fields: `.source` (`'auto'`|`'user'`|`'confirmed'`), `.seamScore`. Solver option

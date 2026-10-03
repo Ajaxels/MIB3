@@ -37,6 +37,15 @@ function [newOffsetYX, score, confident, debugInfo] = localCorrelate(tileA, tile
 %     - ``.minPeak`` - [double] minimum peak NCC for confidence (default: ``0.5``)
 %     - ``.minProminence`` - [double] minimum peak − second-peak separation
 %       (second peak sampled outside a 5-px exclusion zone; default: ``0.05``)
+%     - ``.smoothSigma`` - [double] sigma of the Gaussian blur of the fallback
+%       match; ``0`` disables the fallback (default: ``1``). The raw template
+%       and search crop are matched first; only when that match is not
+%       confident is it repeated on both crops blurred with this sigma (the
+%       tiles themselves are never blurred). Pixel noise caps the NCC of
+%       correctly aligned raw tiles: on a noisy uint8 EM pair the true offset
+%       peaked at 0.27-0.41, under ``minPeak``, and never snapped; with sigma 1
+%       the same spots gave 0.84-0.89 and the same offset. The
+%       ``'flat-template'`` test runs on the raw template.
 %
 % Output Arguments:
 %   - **newOffsetYX** - [1x2 double] corrected ``[dy dx]``; equals
@@ -46,7 +55,10 @@ function [newOffsetYX, score, confident, debugInfo] = localCorrelate(tileA, tile
 %   - **debugInfo** - [struct] ``.secondPeak``, ``.templateBBox`` /
 %     ``.searchBBox`` (``[rowStart rowEnd; colStart colEnd]``), ``.reason``
 %     (why not confident: ``''`` | ``'roi-too-small'`` | ``'flat-template'`` |
-%     ``'search-too-small'`` | ``'weak-peak'``).
+%     ``'search-too-small'`` | ``'weak-peak'``), ``.smoothSigma`` (sigma of the
+%     reported match: ``0`` = raw crops, ``options.smoothSigma`` = the blurred
+%     fallback, ``NaN`` = no match ran). When neither match is confident, the
+%     reported ``score``/``.secondPeak`` are those of the last attempt.
 %
 % **Example** - snap a seam from a click at a landmark:
 %
@@ -62,11 +74,12 @@ if ~isfield(options, 'colorChannel');  options.colorChannel = 1; end
 if ~isfield(options, 'subpixel');      options.subpixel = true; end
 if ~isfield(options, 'minPeak');       options.minPeak = 0.5; end
 if ~isfield(options, 'minProminence'); options.minProminence = 0.05; end
+if ~isfield(options, 'smoothSigma');   options.smoothSigma = 1; end
 
 newOffsetYX = currentOffsetYX(1:2);
 score = 0;
 confident = false;
-debugInfo = struct('secondPeak', NaN, 'templateBBox', [], 'searchBBox', [], 'reason', '');
+debugInfo = struct('secondPeak', NaN, 'templateBBox', [], 'searchBBox', [], 'reason', '', 'smoothSigma', NaN);
 
 imageA = flattenTile(tileA, options.colorChannel);
 imageB = flattenTile(tileB, options.colorChannel);
@@ -109,22 +122,36 @@ searchImage = imageB(searchRows, searchCols);
 debugInfo.searchBBox = [searchRows(1), searchRows(end); searchCols(1), searchCols(end)];
 
 % ---- NCC: peak restricted to full-overlap placements ---------------------------
-crossCorr = normxcorr2(template, searchImage);
-validMap = crossCorr(templateH:numel(searchRows), templateW:numel(searchCols));
-[peak, peakIdx] = max(validMap(:));
-[peakRow, peakCol] = ind2sub(size(validMap), peakIdx);
-score = double(peak);
+% The raw crops are matched first; when that is not confident the match is
+% repeated on blurred crops (never the tiles): pixel noise can cap the NCC of
+% correctly aligned raw EM tiles below minPeak, and a light blur restores it
+sigmaList = 0;
+if options.smoothSigma > 0; sigmaList = [0, options.smoothSigma]; end
+for sigma = sigmaList
+    if sigma > 0
+        crossCorr = normxcorr2(imgaussfilt(template, sigma), imgaussfilt(searchImage, sigma));
+    else
+        crossCorr = normxcorr2(template, searchImage);
+    end
+    validMap = crossCorr(templateH:numel(searchRows), templateW:numel(searchCols));
+    [peak, peakIdx] = max(validMap(:));
+    [peakRow, peakCol] = ind2sub(size(validMap), peakIdx);
+    score = double(peak);
 
-% Second peak outside a 5-px exclusion zone - ambiguity guard against
-% repetitive content (the very failure mode the inspector exists to fix).
-exclusion = 5;
-maskedMap = validMap;
-maskedRows = max(1, peakRow - exclusion):min(size(validMap, 1), peakRow + exclusion);
-maskedCols = max(1, peakCol - exclusion):min(size(validMap, 2), peakCol + exclusion);
-maskedMap(maskedRows, maskedCols) = -Inf;
-secondPeak = max(maskedMap(:));
-if ~isfinite(secondPeak); secondPeak = -1; end
-debugInfo.secondPeak = double(secondPeak);
+    % Second peak outside a 5-px exclusion zone - ambiguity guard against
+    % repetitive content (the very failure mode the inspector exists to fix).
+    exclusion = 5;
+    maskedMap = validMap;
+    maskedRows = max(1, peakRow - exclusion):min(size(validMap, 1), peakRow + exclusion);
+    maskedCols = max(1, peakCol - exclusion):min(size(validMap, 2), peakCol + exclusion);
+    maskedMap(maskedRows, maskedCols) = -Inf;
+    secondPeak = max(maskedMap(:));
+    if ~isfinite(secondPeak); secondPeak = -1; end
+    debugInfo.secondPeak = double(secondPeak);
+    debugInfo.smoothSigma = sigma;
+
+    if score >= options.minPeak && (score - secondPeak) >= options.minProminence; break; end
+end
 
 if score < options.minPeak || (score - secondPeak) < options.minProminence
     debugInfo.reason = 'weak-peak';

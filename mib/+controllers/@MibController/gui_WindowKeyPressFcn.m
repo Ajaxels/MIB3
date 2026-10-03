@@ -254,12 +254,14 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
                 end
             else
                 % Zoom in/out: apply to the panel the mouse is hovering over.
-                % Sync mibModel state so zoomEdit_Callback uses the correct
-                % dataset/panel for axis reads and cursor repositioning.
+                % Make that set active so zoomEdit_Callback uses the correct
+                % dataset/panel for axis reads and cursor repositioning. Use the
+                % full setsOps_Callbacks path (as gui_WindowButtonDownFcn does):
+                % changing only Sets.selectedSet/id leaves the Sets dropdown on the
+                % previous set, and the next document-selection event re-activates it
                 if hoverDocIdx ~= obj.mibModel.Sets.selectedSet
-                    obj.mibModel.Sets.selectedSet = hoverDocIdx;
-                    obj.mibModel.id = obj.mibModel.Sets.selectedDataset(hoverDocIdx) + ...
-                        (hoverDocIdx-1)*obj.mibModel.Sets.datasetsInSet;
+                    obj.view.handles.panels.activeDataset.handles.sets.Value = obj.mibModel.Sets.names{hoverDocIdx};
+                    obj.cActiveDataset.setsOps_Callbacks([], [], 'sets');
                 end
                 if isNext
                     BatchOpt.Mode = 'Zoom in';

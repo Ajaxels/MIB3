@@ -20,6 +20,20 @@ function status = loadLayout(obj, mode, layoutFilename)
 % Output Arguments:
 %   - **status** - logical; ``true`` on success, ``false`` if layout could not be restored
 %
+% **Important note:**
+%   Setting ``PanelLayout`` moves the panels but does not update their ``Region``
+%   property and does not fire ``PropertyChanged``. After the layout is applied, ``Region``
+%   of each docked panel (``matlab.ui.internal.FigurePanel`` in ``obj.view.handles.panels``,
+%   matched to the layout by ``Tag``) is set to its side in the loaded layout whenever the
+%   two differ. That assignment fires ``PropertyChanged``, so ``listener_updatePanelPosition``
+%   of the panel controllers rearranges their grids for the new side.
+%
+%   ``PanelLayout`` also does not restore which panel of a stacked (tabbed) group is on top:
+%   the last panel of the group ends up showing. Panels whose layout entry has
+%   ``"showing": true`` get ``Showing = true`` after the ``Region`` sync. ``Showing`` is set to
+%   ``false`` first: the property is not synced after ``PanelLayout`` either, and when it still
+%   holds ``true`` from before, assigning ``true`` again does not reach the window.
+%
 % **Example 1** - restore the default layout:
 %
 %   .. code-block:: matlab
@@ -105,13 +119,48 @@ end
 % Restore the layout using the loaded data
 obj.view.gui.PanelLayout = layoutData.panelLayout;
 
+% Setting PanelLayout moves the panels on screen but leaves their Region
+% property stale and fires no PropertyChanged event, so the panel
+% controllers keep the grid arrangement of the previous side (e.g. the
+% vertical layout of the right side squeezed into the bottom area).
+% Assign Region from the loaded layout: the assignment fires PropertyChanged,
+% which runs listener_updatePanelPosition of the panel controller
+[loadedIds, loadedRegions, loadedShowing] = getPanelIds(layoutData.panelLayout);
+panelNames = fieldnames(obj.view.handles.panels);
+for panelIndex = 1:numel(panelNames)
+    panel = obj.view.handles.panels.(panelNames{panelIndex});
+    if ~isa(panel, 'matlab.ui.internal.FigurePanel'); continue; end
+    layoutIndex = find(strcmp(loadedIds, panel.Tag), 1);
+    if isempty(layoutIndex) || strcmp(panel.Region, loadedRegions{layoutIndex}); continue; end
+    panel.Region = loadedRegions{layoutIndex};
+end
+
+% PanelLayout does not restore which panel of a stacked (tabbed) group is
+% on top either; the last panel of the group ends up showing. Bring the
+% panels marked with "showing" in the loaded layout to the top. The Showing
+% property itself is not synced after PanelLayout: when it still holds true
+% from before, assigning true again does not reach the window, so it is
+% reset to false first
+for panelIndex = 1:numel(panelNames)
+    panel = obj.view.handles.panels.(panelNames{panelIndex});
+    if ~isa(panel, 'matlab.ui.internal.FigurePanel'); continue; end
+    layoutIndex = find(strcmp(loadedIds, panel.Tag), 1);
+    if isempty(layoutIndex) || ~loadedShowing(layoutIndex); continue; end
+    panel.Showing = false;
+    panel.Showing = true;
+end
+
 status = true;
 end
 
-function panelIds = getPanelIds(panelLayout)
+function [panelIds, panelRegions, panelShowing] = getPanelIds(panelLayout)
 % collect panel ids across all docking sides (left/right/bottom/top, ...)
-% of a PanelLayout structure, irrespective of which side each is docked to
+% of a PanelLayout structure, irrespective of which side each is docked to;
+% panelRegions holds the side name of each panel and panelShowing whether
+% the panel is the one on top of its stacked group
 panelIds = {};
+panelRegions = {};
+panelShowing = false(0, 1);
 sideNames = fieldnames(panelLayout);
 for sideIndex = 1:numel(sideNames)
     side = panelLayout.(sideNames{sideIndex});
@@ -120,11 +169,10 @@ for sideIndex = 1:numel(sideNames)
         % jsondecode returns a struct array when all children share the
         % same fields, but falls back to a cell array of structs when they
         % do not (e.g. only some panels have a "showing" field)
-        if iscell(children)
-            panelIds = [panelIds; cellfun(@(child) child.id, children, 'UniformOutput', false)]; %#ok<AGROW>
-        else
-            panelIds = [panelIds; {children.id}']; %#ok<AGROW>
-        end
+        if ~iscell(children); children = num2cell(children); end
+        panelIds = [panelIds; cellfun(@(child) child.id, children(:), 'UniformOutput', false)]; %#ok<AGROW>
+        panelRegions(end+1:numel(panelIds), 1) = sideNames(sideIndex);
+        panelShowing = [panelShowing; cellfun(@(child) isfield(child, 'showing') && child.showing, children(:))]; %#ok<AGROW>
     end
 end
 end

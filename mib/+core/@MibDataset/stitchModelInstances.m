@@ -146,6 +146,7 @@ obj.labels.materialColors = rand(65535, 3);
 obj.labels.filename       = localSuffixFilename(existingFilename, options.filenameSuffix);
 obj.labels.labelsVariable = existingLabelsVariable;
 obj.labels.materialsCount = highestInstanceIndex;
+obj.labels.objects3D      = true;     % stitching is what makes the objects 3D
 obj.selectedMaterial = 3;
 obj.selectedAddToMaterial = 3;
 

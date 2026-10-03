@@ -5471,10 +5471,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#create-button" class="md-nav__link">
+  <a href="#new-button" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Create button
+        New button
       </span>
     </span>
   </a>
@@ -5770,7 +5770,7 @@ In this example, the shown matrix represents a model with 2 materials encrypted 
 Index <em>0</em> encodes background (Exterior).</p>
 </details>
 <hr />
-<h2 id="create-button">Create button<a class="headerlink" href="#create-button" title="Permanent link">&para;</a></h2>
+<h2 id="new-button">New button<a class="headerlink" href="#new-button" title="Permanent link">&para;</a></h2>
 <p><a class="glightbox" data-title="Create Model Dialog" data-type="image" href="images/PanelsSegmentation_Create.png"><img align="left" alt="Create Model Dialog" class="on-glb" src="images/PanelsSegmentation_Create.png" width="250" /></a></p>
 <p>The <span class="widget widget-button">Create</span> button is used to start a new model. 
 When clicked, the existing model layer will be removed.</p>
@@ -5807,8 +5807,13 @@ do different operations.</p>
 <ul>
 <li><span class="widget widget-button">+</span> add a new material to the model (<em>only for models with 63 and 255 materials</em>).</li>
 <li><span class="widget widget-button">-</span> delete the selected material(s) from the model (<em>only for models with 63 and 255 materials</em>).</li>
-<li><img src="images/PanelsSegmentation_next_empty_button.png"> find and select the next empty index in the model (<em>only for models with more than 255 materials</em>).</li>
-<li><img src="images/PanelsSegmentation_squeeze_button.png"> squeeze the model—remove all empty indices and select the next available empty index (<em>only for models with more than 255 materials</em>).</li>
+<li><img src="images/PanelsSegmentation_next_empty_button.png"> find and select the next empty index in the model (<em>only for models with more than 255 materials</em>).
+  With <span class="widget widget-checkbox">3D</span> unchecked, the index is the next one free on the shown slice.</li>
+<li><img src="images/PanelsSegmentation_squeeze_button.png"> squeeze the model—remove all empty indices and select the next available empty index (<em>only for models with more than 255 materials</em>).
+  With <span class="widget widget-checkbox">3D</span> unchecked, only the shown slice is renumbered.</li>
+<li><span class="widget widget-checkbox">3D</span> tick when each index is one object through the whole volume, as after
+  stitching; untick when the numbering restarts on every slice (<em>only for models with more than 255 materials</em>). The
+  setting is saved with the model; when a model saved without it is opened, MIB asks.</li>
 <li><img src="images/PanelsSegmentation_recolor_button.png"> regenerate colors of materials: <mouse class="left"></mouse> for random colors (prompts for the
 random seed), <span class="keys"><kbd class="key-control">Ctrl</kbd></span> + <mouse class="left"></mouse> for random colors without the prompt, 
 <mouse class="right"></mouse> for a context menu with additional settings:</li>

@@ -32,6 +32,7 @@ classdef MibSegmentation
         materialsTable_ContextMenu(obj, menuEntry, selectedData)    % callbacks for the context menu of the segmentation table widget (obj.handles.panels.segmentation.handles.materialsTable)
         materialsTable_moveLayers(obj, obj_type_from, obj_type_to, layers_id, action_type)  % callbacks for the context menu of the segmentation table to move layers
         membranePanel_Callback(obj, hWidget, hData)        % callbacks for widgets in the Segmentation panel->Membrane click tracker tool
+        objects3D_Callback(obj)        % callback of obj.handles.objects3D: objects of an instance model are 3D (numbered through the volume) or 2D (numbered per slice)
         renderIsosurface(obj) % Render the currently selected material(s) as MATLAB isosurfaces
         restrictMask_Callback(obj)        % callbacks for press of obj.handles.panels.segmentation.handles.restrictMask in obj.handles.panels.segmentation panel. Restrict selection to the mask layer
         restrictMaterial_Callback(obj, hWidget, hData)        % callbacks for press of obj.handles.panels.segmentation.handles.restrictMaterial in obj.handles.panels.segmentation panel
@@ -212,6 +213,9 @@ classdef MibSegmentation
             obj.handles.brushFixToScreen.ValueChangedFcn = @obj.brushPanel_Callback;
             obj.handles.restrictMaterial.ValueChangedFcn = @(~,~)obj.restrictMaterial_Callback;
             obj.handles.restrictMask.ValueChangedFcn = @(~,~)obj.restrictMask_Callback;
+            obj.handles.objects3D.ValueChangedFcn = @(~,~)obj.objects3D_Callback;
+            obj.handles.objects3D.Tooltip = sprintf(['Instance models (65535+): checked - each index is one object through the volume (stitched);\n' ...
+                'unchecked - the numbering restarts on every slice; Next empty index and Squeeze work on the shown slice']);
             obj.handles.favoriteTool.ValueChangedFcn = @obj.favTool_Callback;
 
             obj.handles.segmTool.ValueChangedFcn = @(~,~)obj.segmentationTool_Callback;

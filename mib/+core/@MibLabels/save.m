@@ -228,6 +228,7 @@ metadata.materialNames  = obj.materialNames;
 metadata.materialColors = obj.materialColors;
 metadata.labelsVariable = strrep(obj.labelsVariable, '-', '_');
 metadata.layerType      = options.layerType;
+metadata.objects3D      = obj.objects3D;
 
 if isfield(options,'boundingBox')
     metadata.boundingBox = options.boundingBox;

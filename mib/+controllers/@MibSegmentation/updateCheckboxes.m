@@ -15,6 +15,8 @@ function updateCheckboxes(obj, BatchOptIn)
 %     - ``.MaskedArea`` - [cell] restrict selection to masked area: ``'Unchanged'``, ``'Checked'``, ``'Unchecked'``
 %     - ``.BrushWatershed`` - [cell] use brush with watershed clustering: ``'Unchanged'``, ``'Checked'``, ``'Unchecked'``
 %     - ``.BrushSlic`` - [cell] use brush with SLIC clustering: ``'Unchanged'``, ``'Checked'``, ``'Unchecked'``
+%     - ``.Objects3D`` - [cell] the "3D objects" checkbox, ``'Unchanged'``, ``'Checked'``, ``'Unchecked'``;
+%       sets ``labels.objects3D`` of 65535/4294967295 models and is ignored for smaller types
 %     - ``.SelectedMaterial`` - [string] index of the selected material; ``'-1'`` = mask, ``'0'`` = exterior, ``'1'``/``'2'``... = model materials; leave empty to keep unchanged
 %     - ``.SelectedAddToMaterial`` - [string] index of the add-to material; same conventions as ``.SelectedMaterial``
 %     - ``.UnlinkMaterialFromAddTo`` - [logical] unlink selected material from the AddTo material
@@ -40,6 +42,8 @@ BatchOpt.BrushWatershed = {'Unchanged'};
 BatchOpt.BrushWatershed{2} = availableOptions;
 BatchOpt.BrushSlic = {'Unchanged'};
 BatchOpt.BrushSlic{2} = availableOptions;
+BatchOpt.Objects3D = {'Unchanged'};
+BatchOpt.Objects3D{2} = availableOptions;
 BatchOpt.SelectedMaterial = '';
 BatchOpt.SelectedAddToMaterial = '';
 BatchOpt.UnlinkMaterialFromAddTo = obj.mibModel.I{obj.mibModel.getActiveId()}.unlinkMaterials;
@@ -51,6 +55,7 @@ BatchOpt.mibBatchTooltip.FixSelectionToMaterial = 'Tweak the status of the "Fix 
 BatchOpt.mibBatchTooltip.MaskedArea = 'Tweak the status of the "Masked area" checkbox';
 BatchOpt.mibBatchTooltip.BrushWatershed = 'Use brush with watershed clustering';
 BatchOpt.mibBatchTooltip.BrushSlic = 'Use brush with SLIC clustering';
+BatchOpt.mibBatchTooltip.Objects3D = '[65535+ models only] Tweak the status of the "3D objects" checkbox: checked - objects numbered through the volume, unchecked - numbered per slice';
 BatchOpt.mibBatchTooltip.SelectedMaterial = '[Not compatible with 65535 models] index of the selected material; keep empty to not change the state; -1 for mask, 0 for exterior, 1,2,3 for model materials';
 BatchOpt.mibBatchTooltip.SelectedAddToMaterial = '[Not compatible with 65535 models] index of the material to be added to; keep empty to not change the state; -1 for mask, 0 for exterior, 1,2,3 for model materials';
 BatchOpt.mibBatchTooltip.UnlinkMaterialFromAddTo = 'Unlink selected material from the AddTo material';
@@ -104,6 +109,11 @@ for fieldIndex = 1:numel(fieldNames)
                     obj.handles.brushUseClustering.SelectedObject = obj.handles.noClusters;
                 end
                 obj.brushPanel_Callback([], [], 'brushUseClustering');
+            case 'Objects3D'
+                labels = obj.mibModel.I{BatchOpt.id}.labels;
+                if labels.maxMaterials > 255 && isprop(labels, 'objects3D')
+                    labels.objects3D = state;    % the checkbox follows in updateMaterialsTable below
+                end
         end
     elseif ischar(batchOpt2.(fieldNames{fieldIndex}))
         if isempty(batchOpt2.(fieldNames{fieldIndex})); continue; end

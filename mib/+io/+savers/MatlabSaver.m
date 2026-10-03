@@ -305,6 +305,9 @@ classdef MatlabSaver < io.savers.BaseSaver
             % - ``BoundingBox`` - [xmin xmax ymin ymax zmin zmax]
             % - ``modelVariable`` - char (= labelsVariable)
             % - ``modelType`` - integer (255 for uint8 model)
+            % - ``modelObjects3D`` - logical, instance models (``modelType`` above
+            %   255) only, from ``metadata.objects3D``: objects numbered through
+            %   the volume (true) or per slice (false). Absent from older files
             % - ``labelText``, ``labelValue``, ``labelPosition`` - if ``.annotations`` present
             %
             % Input Arguments:
@@ -332,6 +335,9 @@ classdef MatlabSaver < io.savers.BaseSaver
             vars.BoundingBox            = obj.getBoundingBox(metadata);
             vars.modelVariable          = labVar;
             vars.modelType              = obj.getModelType(metadata);
+            if vars.modelType > 255 && isfield(metadata, 'objects3D')
+                vars.modelObjects3D     = logical(metadata.objects3D);
+            end
 
             if ~isempty(wb); wb.Value = 0.4; end
 

@@ -23,6 +23,13 @@ classdef MibLabels < core.MibImage
         % squeezeMaterialLabels (recount), and createModel (initial value).
         maxMaterials = 255;   % can also be 127 (with negative part), 32767 (with negative part), 65535
         % maximal number of materials available in this model type
+        objects3D = false
+        % instance models (65535/4294967295) only: true when one index names one
+        % object through the whole volume (a stitched model), false when the
+        % numbering restarts on every slice (2D objects). Decides where
+        % MibDataset.addMaterial looks for the next free index and what
+        % MibModel.removeMaterial renumbers. Saved with the model as
+        % modelObjects3D; a model loaded without it asks the user
     end
 
     methods

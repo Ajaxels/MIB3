@@ -5790,7 +5790,9 @@ here.</p>
 <h2 id="2d-and-3d">2D and 3D<a class="headerlink" href="#2d-and-3d" title="Permanent link">&para;</a></h2>
 <p><span class="widget widget-checkbox">3D objects</span> decides what an operation reaches. With it off, everything is 
 confined to the shown slice, and the list follows: it names the objects on that slice and gives their area on it. 
-<strong>Cut at slice</strong> and <strong>Connect</strong> are unavailable there, both being operations along Z.</p>
+<strong>Cut at slice</strong> and <strong>Connect</strong> are unavailable there, both being operations along Z. The editor opens matching
+the <a href="../../panels/segm/index.html"><span class="widget widget-checkbox">3D</span> checkbox of the Segmentation panel</a>,
+which records whether the objects of the model are 2D or 3D.</p>
 <p>This is the mode for a model that has not been stitched into 3D yet. There the numbering starts again from 1 on every slice, so the same number is a different object on each one - which is why the list cannot describe the whole stack at once, and why objects picked on one slice are dropped when the list moves to another.</p>
 <p>Moving to another slice re-reads the list. On a large stack, turn <span class="widget widget-checkbox">Update the list on slice change</span> off and press <span class="widget widget-button">Update list</span> when you need it; until then the status line says which slice the list is describing.</p>
 <hr />

@@ -85,6 +85,7 @@ if ~isfield(options, 'modelType');         options.modelType = []; end
 if ~isfield(options, 'labelText');         options.labelText = []; end
 if ~isfield(options, 'labelPosition');     options.labelPosition = []; end
 if ~isfield(options, 'labelValue');        options.labelValue = []; end
+if ~isfield(options, 'objects3D');         options.objects3D = []; end
 
 %% Get raw array and metadata
 
@@ -97,6 +98,7 @@ labelText        = options.labelText;
 labelPosition    = options.labelPosition;
 labelValue       = options.labelValue;
 boundingBox      = [];
+objects3D        = options.objects3D;
 
 if ~isempty(options.model)
     % ---- IMPORT PATH --------------------------------------------------------
@@ -175,6 +177,9 @@ else
     end
     if isKey(imginfo, 'labelValue') && ~isempty(imginfo{"labelValue"})
         labelValue = imginfo{"labelValue"};
+    end
+    if isKey(imginfo, 'modelObjects3D') && ~isempty(imginfo{"modelObjects3D"})
+        objects3D = imginfo{"modelObjects3D"};
     end
     if isKey(imginfo, 'BoundingBox') && ~isempty(imginfo{"BoundingBox"})
         boundingBox = imginfo{"BoundingBox"};
@@ -409,6 +414,31 @@ obj.labels.materialNames  = materialNames;
 obj.labels.materialColors = materialColors;
 obj.labels.labelsVariable = labelsVariable;
 obj.labels.countMaterials();
+
+% An instance model numbers its objects either through the volume or afresh on
+% every slice, and nothing in the array tells the two apart. Files written
+% before the flag existed, and every format other than .model, do not carry it,
+% so the user is asked. Without a dialog - batch mode or no parent - the answer
+% is 3D: its next free index is unused on every slice, while a per-slice one can
+% repeat the number of an object elsewhere in a stitched model.
+if modelType > 255
+    if isempty(objects3D)
+        objects3D = true;
+        if ~options.batchModeSwitch && isfield(options, 'ParentFigure') && ~isempty(options.ParentFigure)
+            dlgOpt = struct('HeaderLines', 1, 'Icon', 'puffin_question', 'WindowHeight', 200);
+            if isfield(options, 'mibPath'); dlgOpt.mibPath = options.mibPath; end
+            answer = utils.dlgs.inputUniversalDlg(options.ParentFigure, ...
+                'Are the objects of this model 2D or 3D?', ...
+                {sprintf(['3D: each index is one object through the whole volume (a stitched model)\n' ...
+                          '2D: the numbering restarts on every slice'])}, ...
+                {{'3D objects', '2D objects', 1}}, 'Instance model', dlgOpt);
+            if ~isempty(answer)
+                objects3D = strcmp(answer{1}, '3D objects');
+            end
+        end
+    end
+    obj.labels.objects3D = logical(objects3D);
+end
 
 % Set model filename (first file or empty for import)
 if ~isempty(filenames) && iscell(filenames) && ~isempty(filenames{1})

@@ -26,6 +26,13 @@ function gui_Callbacks(obj, hWidget, hData, mode)
 %     - ``'nextFrame'`` - go to the next frame
 %     - ``'lastFrame'`` - go to the last frame
 %
+% **Important note:**
+%   In split-panel mode the active set is switched to this document's set
+%   (``setOfDatasetsIndex``, via ``cActiveDataset.setsOps_Callbacks``) before the
+%   widget is handled. The slice/frame callbacks act on ``mibModel.id``; without the
+%   switch, a slider of one document would change the slice of the dataset shown in
+%   the other document and its ``SliceChanged`` listener would fail on the slider limits.
+%
 
 arguments (Input)
     obj controllers.MibImageDocument
@@ -41,6 +48,15 @@ if obj.mibModel.preferences.System.DeveloperMode
         fprintf('controllers.MibImageDocument.gui_Callbacks: "obj.cImageDoc{%d}.handles.%s" -> changed/pressed (obj.mibModel.Sets.selectedSet)\n', obj.mibModel.Sets.selectedSet, mode);
     end
     % see also sliceNumber_Callback and sliceNumberSlider_Callback
+end
+
+% Split-panel guard: the widgets act on mibModel.id, which belongs to the active set;
+% a click on a slider or button of another document does not pass through
+% gui_WindowButtonDownFcn (outside the axes), so switch to this document's set here
+if obj.mibModel.Sets.selectedSet ~= obj.setOfDatasetsIndex
+    setName = obj.mibModel.Sets.names{obj.setOfDatasetsIndex};
+    obj.mibController.view.handles.panels.activeDataset.handles.sets.Value = setName;
+    obj.mibController.cActiveDataset.setsOps_Callbacks([], [], 'sets');
 end
 
 switch mode

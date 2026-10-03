@@ -300,6 +300,122 @@ classdef InstanceObjectIndexTest < matlab.unittest.TestCase
         end
 
         % -----------------------------------------------------------------
+        % refresh from whole slices (a 2-D edit)
+        % -----------------------------------------------------------------
+
+        function sliceRefreshMatchesRebuild(testCase)
+            % Part of object 1 on one slice becomes object 9. No box edge of
+            % object 1 moves, so the difference over the slice must give exactly
+            % what a rebuild gives - and object 9, which lives on that slice
+            % only, its exact box.
+            volume = InstanceObjectIndexTest.makeVolume();
+            index = utils.instances.objectIndex(volume);
+
+            edited = volume;
+            edited(20:26, 30:33, 7) = 9;
+
+            refreshed = utils.instances.objectIndex(edited, struct('index', index, ...
+                'objectIds', [1 9], 'bbox', [20 26 30 33 7 7], ...
+                'previousSlices', volume(:, :, 7)));
+            rebuilt = utils.instances.objectIndex(edited);
+
+            InstanceObjectIndexTest.verifySameIndex(testCase, refreshed, rebuilt, 'slice split');
+        end
+
+        function sliceRefreshReadsNothingOutsideTheSlices(testCase)
+            % The point of the slice refresh: the rest of the object is taken on
+            % trust from the index. Wiping object 1 from every other slice
+            % behind its back must therefore not show up in the result.
+            volume = InstanceObjectIndexTest.makeVolume();
+            index = utils.instances.objectIndex(volume);
+
+            edited = volume;
+            edited(20:26, 30:33, 7) = 9;
+            tampered = edited;
+            tampered(:, :, [1:6, 8:end]) = 0;
+
+            refreshed = utils.instances.objectIndex(tampered, struct('index', index, ...
+                'objectIds', [1 9], 'bbox', [20 26 30 33 7 7], ...
+                'previousSlices', volume(:, :, 7)));
+            honest = utils.instances.objectIndex(edited);
+
+            InstanceObjectIndexTest.verifySameIndex(testCase, refreshed, honest, 'slices outside the edit');
+        end
+
+        function sliceRefreshNeverNarrowsTheBox(testCase)
+            % Clearing object 1 from its first slice moves its zMin, which only
+            % a scan of the other slices could find. The box stays as it was -
+            % larger than the object, never smaller - while everything that is
+            % a sum over voxels stays exact.
+            volume = InstanceObjectIndexTest.makeVolume();
+            index = utils.instances.objectIndex(volume);
+
+            edited = volume;
+            page = edited(:, :, 4);
+            page(page == 1) = 0;
+            edited(:, :, 4) = page;
+            refreshed = utils.instances.objectIndex(edited, struct('index', index, ...
+                'objectIds', 1, 'bbox', [20 26 30 38 4 4], ...
+                'previousSlices', volume(:, :, 4)));
+            rebuilt = utils.instances.objectIndex(edited);
+
+            testCase.verifyEqual(refreshed.bbox(1, :), index.bbox(1, :), 'the box is not narrowed');
+            testCase.verifyEqual(double(rebuilt.bbox(1, 5)), 5, 'the object now starts on slice 5');
+            for field = {'exists', 'voxels', 'centroid', 'sliceCount', 'numObjects'}
+                testCase.verifyEqual(refreshed.(field{1}), rebuilt.(field{1}), ...
+                    sprintf('field %s', field{1}));
+            end
+        end
+
+        function sliceRefreshTakingAllOfAnObjectClearsTheEntry(testCase)
+            volume = InstanceObjectIndexTest.makeVolume();
+            volume(2:3, 2:3, 9) = 4;             % an object on a single slice
+            index = utils.instances.objectIndex(volume);
+
+            edited = volume;
+            edited(2:3, 2:3, 9) = 0;
+            refreshed = utils.instances.objectIndex(edited, struct('index', index, ...
+                'objectIds', 4, 'bbox', [2 3 2 3 9 9], ...
+                'previousSlices', volume(:, :, 9)));
+
+            testCase.verifyFalse(refreshed.exists(4));
+            testCase.verifyEqual(refreshed.voxels(4), uint32(0));
+            testCase.verifyEqual(refreshed.bbox(4, :), zeros(1, 6, 'int32'));
+            testCase.verifyEqual(refreshed.centroid(4, :), zeros(1, 3, 'single'));
+            testCase.verifyEqual(refreshed.sliceCount(4), uint32(0));
+            testCase.verifyEqual(refreshed.numObjects, index.numObjects - 1);
+        end
+
+        function sliceRefreshFallsBackWhenTheIndexCannotBeRight(testCase)
+            % Slices claiming more of an object than the index says it has mean
+            % the index does not describe the volume. Correcting it would write
+            % a wrong entry, so the exact rescan is done instead.
+            volume = InstanceObjectIndexTest.makeVolume();
+            index = utils.instances.objectIndex(volume);
+
+            edited = volume;
+            edited(20:26, 30:33, 7) = 9;
+            impossible = ones(size(volume, 1), size(volume, 2), 'uint16');
+
+            refreshed = utils.instances.objectIndex(edited, struct('index', index, ...
+                'objectIds', [1 9], 'bbox', [20 26 30 33 7 7], ...
+                'previousSlices', impossible));
+            rebuilt = utils.instances.objectIndex(edited);
+
+            InstanceObjectIndexTest.verifySameIndex(testCase, refreshed, rebuilt, 'fallback');
+        end
+
+        function sliceRefreshRejectsSlicesOfTheWrongSize(testCase)
+            volume = InstanceObjectIndexTest.makeVolume();
+            index = utils.instances.objectIndex(volume);
+
+            testCase.verifyError(@() utils.instances.objectIndex(volume, struct('index', index, ...
+                'objectIds', 1, 'bbox', [20 26 30 33 7 7], ...
+                'previousSlices', volume(20:26, 30:33, 7))), ...
+                'utils:instances:objectIndex:previousSlicesSize');
+        end
+
+        % -----------------------------------------------------------------
         % cancellation
         % -----------------------------------------------------------------
 

@@ -13,8 +13,11 @@ function removeMaterial(obj, BatchOptIn)
 % For models with 65535 or 4294967295 materials in interactive (non-batch)
 % mode: squeezes all label indices to a contiguous range starting at 1 by
 % renumbering every unique value, then calls addMaterial to re-register the
-% next available index.  In batch mode, the specified material pixel values
-% are zeroed out without renumbering.
+% next available index.  With 2D objects (``labels.objects3D`` false) only
+% the shown XY slice is renumbered, since the numbering of such a model
+% restarts on every slice; the slice is backed up first, so one Ctrl+Z
+% restores it.  In batch mode, the specified material pixel values are
+% zeroed out without renumbering.
 %
 % In all cases the operation aborts when no model exists.  After a
 % successful removal, UpdateGuiWidgets and ShowImage events are fired so
@@ -126,6 +129,28 @@ end
 modelType = obj.I{BatchOpt.id}.labels.maxMaterials;
 
 %% Large models in interactive mode: squeeze labels to contiguous range
+if nargin < 2 && modelType >= 256 && ~obj.I{BatchOpt.id}.labels.objects3D
+    % 2D objects: the numbering restarts on every slice, so a squeeze over the
+    % volume closes almost nothing - every low index is in use on some slice.
+    % The shown XY slice is renumbered on its own instead: its values in use
+    % map onto 1..n in order, background staying 0. One slice, so one undo step.
+    sliceNumber = obj.I{BatchOpt.id}.slices{3}(1);
+    sliceOptions = struct('blockModeSwitch', 0, 'id', BatchOpt.id);
+    slice = cell2mat(obj.getData2D('labels', sliceNumber, 3, NaN, sliceOptions));
+    [values, ~, ranks] = unique(slice);
+    if values(1) == 0; ranks = ranks - 1; end
+    renumbered = reshape(cast(ranks, 'like', slice), size(slice));
+    if ~isequal(renumbered, slice)
+        obj.backup('labels', 1, struct('z', [sliceNumber, sliceNumber], ...
+            'blockModeSwitch', 0, 'id', BatchOpt.id));
+        obj.setData2D(renumbered, 'labels', sliceNumber, 3, NaN, sliceOptions);
+    end
+
+    % Re-register the next available material index on this slice; also redraws
+    obj.addMaterial();
+    return;
+end
+
 if nargin < 2 && modelType >= 256
     wb = [];
     if BatchOpt.showWaitbar

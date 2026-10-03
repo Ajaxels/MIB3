@@ -8,6 +8,9 @@ function listener_appStateChanged(obj, src, evtData)
 %
 % Listener for property change in obj.view.handles.imageViewDocGroup.
 % At the moment used to catch selection of the figure-document in the Image View panel.
+% The selected document is taken from ``src.LastSelected`` (the document group), because
+% ``AppContainer.LastSelectedDocument`` is not updated for undocked documents and can name
+% a different set when an undocked document is docked back.
 %
 % Input Arguments:
 %   - **src** - ``matlab.ui.internal.FigureDocumentGroup`` handle to the document group
@@ -41,12 +44,16 @@ switch evtData.PropertyName
             end
         end
 
-        if ~isempty(obj.view.gui.LastSelectedDocument)
+        % Read the selection from the document group that raised the event, not from
+        % obj.view.gui.LastSelectedDocument: the AppContainer value is not updated while
+        % a document is undocked, so after docking it back it may still name another set
+        % and the wrong set would be activated
+        if ~isempty(src.LastSelected)
             if obj.mibModel.preferences.System.DeveloperMode
                 fprintf('MibController.listener_appStateChanged -> selection of a set\n');
             end
 
-            selectedDoc = obj.view.gui.getDocument(obj.view.gui.LastSelectedDocument.documentGroupTag, obj.view.gui.LastSelectedDocument.tag);
+            selectedDoc = obj.view.gui.getDocument(src.Tag, src.LastSelected.tag);
             if isprop(selectedDoc, 'Title')
                 obj.view.handles.panels.activeDataset.handles.sets.Value = selectedDoc.Title;
 

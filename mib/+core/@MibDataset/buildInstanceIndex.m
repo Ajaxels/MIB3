@@ -30,6 +30,14 @@ function [index, cancelled] = buildInstanceIndex(obj, options, wb)
 %       different time point, in which case a full build is done instead
 %     - ``.bbox`` - ``[yMin yMax xMin xMax zMin zMax]`` region the edit changed,
 %       passed through to ``utils.instances.objectIndex``
+%     - ``.previousCrop`` - labels of ``.bbox`` as they were **before** the edit
+%       (default: ``[]``). Makes the refresh a difference over the whole slices
+%       ``bbox(5):bbox(6)``, which never reads the rest of the volume - see
+%       ``previousSlices`` of ``utils.instances.objectIndex``, built here by
+%       putting this crop back into the current slices. The edit must not have
+%       changed anything outside ``.bbox``. This is how a 2-D edit stays at the
+%       cost of one slice when its objects span the stack, as they do on an
+%       unstitched model; such a refresh never narrows a bounding box
 %     - ``.computeSliceCount`` - fill ``.sliceCount`` (default: ``true``)
 %
 %   - **wb** - *(optional)* handle of a caller-owned cancelable ``uiprogressdlg``,
@@ -73,6 +81,7 @@ if nargin < 2 || isempty(options); options = struct(); end
 if ~isfield(options, 'timePoint');         options.timePoint = obj.getCurrentTimePoint(); end
 if ~isfield(options, 'objectIds');         options.objectIds = []; end
 if ~isfield(options, 'bbox');              options.bbox = []; end
+if ~isfield(options, 'previousCrop');      options.previousCrop = []; end
 if ~isfield(options, 'computeSliceCount'); options.computeSliceCount = true; end
 
 cancelled = false;
@@ -108,6 +117,18 @@ canRefresh = ~isempty(options.objectIds) && ~isempty(obj.instanceIndex) && ...
 if canRefresh
     indexOptions.index = obj.instanceIndex;
     indexOptions.objectIds = options.objectIds;
+
+    if ~isempty(options.previousCrop)
+        box = double(options.bbox);
+        if ~isequal(size(options.previousCrop, 1, 2, 3), box([2 4 6]) - box([1 3 5]) + 1)
+            error('MibDataset:buildInstanceIndex:previousCropSize', ...
+                'previousCrop is [%s] but bbox [%s] describes a different region', ...
+                num2str(size(options.previousCrop)), num2str(box));
+        end
+        previousSlices = volume(:, :, box(5):box(6));
+        previousSlices(box(1):box(2), box(3):box(4), :) = options.previousCrop;
+        indexOptions.previousSlices = previousSlices;
+    end
 end
 
 [index, cancelled] = utils.instances.objectIndex(volume, indexOptions, wb);

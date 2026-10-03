@@ -6,7 +6,7 @@ function listener_updatePanelPosition(obj, src, evtData)
 %
 %      obj.listener_updatePanelPosition(src, evtData)
 %
-% The Fiji Connect panel uses a mainGridLayout with sub-grids for list/buttons and manual-coordinate areas.
+% The Fiji Connect panel uses a mainGridLayout with three sub-grids (export/import/macro, start/stop Fiji, and an empty right grid) separated by two divider panels.
 % Layout is transposed when the panel moves:
 %
 % - **Bottom** - horizontal 5-column layout:
@@ -20,8 +20,8 @@ function listener_updatePanelPosition(obj, src, evtData)
 % Each child grid's ``Layout.Column`` (bottom) becomes ``Layout.Row`` (vertical) and vice-versa.
 %
 % Input Arguments:
-%   - **obj** - [MibRoi] this controller instance
-%   - **src** - [uipanel] the panel whose property changed (``obj.view.handles.panels.roiPanel``)
+%   - **obj** - [MibFijiConnect] this controller instance
+%   - **src** - [matlab.ui.internal.FigurePanel] the panel whose property changed (``obj.view.handles.panels.fijiPanel``)
 %   - **evtData** - [PropertyChangedData] event data; ``.PropertyName`` checked for ``'Region'``
 %
 

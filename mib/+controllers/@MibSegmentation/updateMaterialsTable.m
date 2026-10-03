@@ -74,6 +74,13 @@ if dataset.labels.exists == 0
     dataset.labels.materialNames = {};
 end
 
+% "3D objects" describes instance models only; 63/255 models have no such
+% property (core.MibLabels.objects3D), so the checkbox is off and unchecked
+isInstanceModel = dataset.modelExist && dataset.labels.maxMaterials > 255 && ...
+    isprop(dataset.labels, 'objects3D');
+obj.handles.objects3D.Enable = isInstanceModel;
+obj.handles.objects3D.Value = isInstanceModel && dataset.labels.objects3D;
+
 % Determine max colors; no column is editable in place - typing into a cell would
 % start inline editing and swallow the single-key segmentation shortcuts ('a', 's', ...).
 % Materials are renamed via the context menu / F2 (models.MibModel.renameMaterial),

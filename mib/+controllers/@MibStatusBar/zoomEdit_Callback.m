@@ -83,10 +83,11 @@ if recenterSwitch
                 break;
             end
         end
+        % switch through setsOps_Callbacks so the Sets dropdown follows; changing
+        % only Sets.selectedSet/id leaves the dropdown on the previous set
         if detectedDocIdx ~= obj.mibModel.Sets.selectedSet
-            obj.mibModel.Sets.selectedSet = detectedDocIdx;
-            obj.mibModel.id = obj.mibModel.Sets.selectedDataset(detectedDocIdx) + ...
-                (detectedDocIdx - 1) * obj.mibModel.Sets.datasetsInSet;
+            obj.view.handles.panels.activeDataset.handles.sets.Value = obj.mibModel.Sets.names{detectedDocIdx};
+            obj.mibController.cActiveDataset.setsOps_Callbacks([], [], 'sets');
         end
     end
 

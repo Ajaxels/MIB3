@@ -27,7 +27,9 @@ Requires an instance model (65535 or 4294967295 materials), where every object h
 
 <span class="widget widget-checkbox">3D objects</span> decides what an operation reaches. With it off, everything is 
 confined to the shown slice, and the list follows: it names the objects on that slice and gives their area on it. 
-**Cut at slice** and **Connect** are unavailable there, both being operations along Z.
+**Cut at slice** and **Connect** are unavailable there, both being operations along Z. The editor opens matching
+the [<span class="widget widget-checkbox">3D</span> checkbox of the Segmentation panel](../../panels/segm/index.md),
+which records whether the objects of the model are 2D or 3D.
 
 This is the mode for a model that has not been stitched into 3D yet. There the numbering starts again from 1 on every slice, so the same number is a different object on each one - which is why the list cannot describe the whole stack at once, and why objects picked on one slice are dropped when the list moves to another.
 

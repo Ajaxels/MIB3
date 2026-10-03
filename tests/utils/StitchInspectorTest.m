@@ -179,6 +179,37 @@ classdef StitchInspectorTest < matlab.unittest.TestCase
                 'click-to-correlate did not recover the true offset');
         end
 
+        function localCorrelate_rawFirstBlurredFallback(testCase)
+            % Clean content matches on the raw crops (no blur used); with
+            % pixel noise the raw NCC falls under minPeak and the blurred
+            % fallback must snap to the true offset instead.
+            stream = RandStream('twister', 'Seed', 1);
+            base = imgaussfilt(rand(stream, 400, 400, 'single'), 2);
+            base = (base - min(base(:))) / (max(base(:)) - min(base(:)));
+            trueOffsetYX = [40, 130];
+            wrongOffsetYX = trueOffsetYX + [6, -5];
+            clickXY = [200, 150];
+
+            [~, ~, confident, debugInfo] = utils.stitch.localCorrelate( ...
+                base(1:260, 1:260), base(41:300, 131:390), clickXY, wrongOffsetYX);
+            testCase.verifyTrue(confident);
+            testCase.verifyEqual(debugInfo.smoothSigma, 0, ...
+                'clean content must match on the raw crops');
+
+            noisyA = base + 0.15 * randn(stream, 400, 400, 'single');
+            noisyB = base + 0.15 * randn(stream, 400, 400, 'single');
+            tileA = noisyA(1:260, 1:260);
+            tileB = noisyB(41:300, 131:390);
+            [~, ~, rawConfident] = utils.stitch.localCorrelate( ...
+                tileA, tileB, clickXY, wrongOffsetYX, struct('smoothSigma', 0));
+            testCase.assertFalse(rawConfident, 'the noise level must defeat the raw match');
+            [newOffsetYX, ~, confident, debugInfo] = utils.stitch.localCorrelate( ...
+                tileA, tileB, clickXY, wrongOffsetYX);
+            testCase.verifyTrue(confident, sprintf('the blurred fallback must snap (reason: %s)', debugInfo.reason));
+            testCase.verifyEqual(debugInfo.smoothSigma, 1);
+            testCase.verifyEqual(newOffsetYX, trueOffsetYX, 'AbsTol', 0.5);
+        end
+
         function localCorrelate_flatTextureNotConfident(testCase)
             % Featureless ROI: never a confident (silent) move.
             flat = 100 * ones(300, 300, 'single');

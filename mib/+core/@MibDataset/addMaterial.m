@@ -25,7 +25,9 @@ function [result, newMaterialIndex] = addMaterial(obj, materialName, newMaterial
 %
 %   - **newMaterialIndex** *(optional)* - [double] next unused 1-based material index; when empty
 %     the method uses ``obj.labels.countMaterials() + 1``, i.e. one above the highest label
-%     present in the data; ignored for types 63/255
+%     present in the data. With 2D objects (``obj.labels.objects3D`` false) it is one above
+%     the highest label on the shown XY slice instead, and only that slice is read - the
+%     numbering of such a model restarts on every slice. Ignored for types 63/255
 %   - **wb** *(optional)* - [uiprogressdlg] handle to a progress dialog for displaying progress;
 %     when empty no progress is reported
 %
@@ -101,11 +103,22 @@ else  %% Types 65535 and 4294967295 -------------------------------------------
     % loaded. countMaterials() rescans all time points for the highest label
     % in use (same as MIB2 did here), so pressing the button repeatedly keeps
     % offering the same free index until it is actually used.
+    %
+    % With 2D objects (labels.objects3D false) the numbering restarts on every
+    % slice, so "free" means free on the shown XY slice and only that slice is
+    % read. The cached count is then only ever raised: it stands for the highest
+    % index in the whole model, which a slice cannot lower.
     if isempty(newMaterialIndex)
         if ~isempty(wb) && isvalid(wb)
             wb.Message = 'Looking for the next empty material, please wait...';
         end
-        newMaterialIndex = obj.labels.countMaterials() + 1;
+        if obj.labels.objects3D
+            newMaterialIndex = obj.labels.countMaterials() + 1;
+        else
+            slice = cell2mat(obj.getData2D('labels', obj.slices{3}(1), 3, NaN, ...
+                struct('blockModeSwitch', 0)));
+            newMaterialIndex = double(max(slice, [], 'all')) + 1;
+        end
 
         if newMaterialIndex > modelType
             result = false;
@@ -134,7 +147,11 @@ else  %% Types 65535 and 4294967295 -------------------------------------------
     end
     obj.labels.materialNames{matIdx} = materialName;
 
-    obj.labels.materialsCount = newMaterialIndex;
+    if obj.labels.objects3D
+        obj.labels.materialsCount = newMaterialIndex;
+    else
+        obj.labels.materialsCount = max(obj.labels.materialsCount, newMaterialIndex);
+    end
     obj.selectedMaterial      = matIdx + 2;
     obj.selectedAddToMaterial = matIdx + 2;
 end

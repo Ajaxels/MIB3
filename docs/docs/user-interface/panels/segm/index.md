@@ -38,7 +38,7 @@ several materials overlapping above the same pixel of the image.
 
 ---
 
-## Create button
+## New button
 
 ![Create Model Dialog](images/PanelsSegmentation_Create.png){.on-glb align=left width="250"}
 
@@ -84,7 +84,12 @@ do different operations.
 - <span class="widget widget-button">+</span> add a new material to the model (*only for models with 63 and 255 materials*).
 - <span class="widget widget-button">-</span> delete the selected material(s) from the model (*only for models with 63 and 255 materials*).
 - <img src="images/PanelsSegmentation_next_empty_button.png"> find and select the next empty index in the model (*only for models with more than 255 materials*).
+  With <span class="widget widget-checkbox">3D</span> unchecked, the index is the next one free on the shown slice.
 - <img src="images/PanelsSegmentation_squeeze_button.png"> squeeze the model—remove all empty indices and select the next available empty index (*only for models with more than 255 materials*).
+  With <span class="widget widget-checkbox">3D</span> unchecked, only the shown slice is renumbered.
+- <span class="widget widget-checkbox">3D</span> tick when each index is one object through the whole volume, as after
+  stitching; untick when the numbering restarts on every slice (*only for models with more than 255 materials*). The
+  setting is saved with the model; when a model saved without it is opened, MIB asks.
 - <img src="images/PanelsSegmentation_recolor_button.png"> regenerate colors of materials: <mouse class="left"></mouse> for random colors (prompts for the
 random seed), ++ctrl++ + <mouse class="left"></mouse> for random colors without the prompt, 
 <mouse class="right"></mouse> for a context menu with additional settings:

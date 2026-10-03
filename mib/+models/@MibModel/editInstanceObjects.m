@@ -748,11 +748,13 @@ end
 % The rescan has to cover the object as it will then be, which for an existing
 % one is more than the drawing: its stats are recomputed from the box it is
 % given, so a box holding only the new part would report only the new part.
+% In 2D the slice is enough whatever the object: the rescan is a difference over
+% it, and the object's box in the index spans the stack on an unstitched model.
 refreshBox = box;
 if isempty(targetId)
     [targetId, problem] = localAllocateIndices(obj, id, index, 1);
     if ~isempty(problem); localComplain(obj, problem, 'Instance editor'); return; end
-else
+elseif use3D
     refreshBox = localCoverBox(localUnionBox(index, targetId), box);
 end
 
@@ -760,8 +762,12 @@ end
 % rescan box is the one that travels with it, for the reason above: it is what
 % the object's statistics have to be recomputed from, in either direction.
 refresh = struct('timePoint', timePoint, 'objectIds', targetId, 'bbox', refreshBox);
+if ~use3D; refresh.sliceDelta = true; end
 if ~batchModeSwitch
     obj.backup('labels', 1, localUndoRepairOptions(box, id, refresh));
+end
+if ~use3D
+    refresh.previousCrop = localReadBox(obj, id, 'labels', timePoint, box);
 end
 
 localWriteLabels(obj, id, localCropToFull(obj, id, box, find(drawn), timePoint), targetId);
@@ -933,7 +939,11 @@ function options = localUndoRepairOptions(box, id, refresh)
 %     ``.timePoint`` / ``.objectIds`` / ``.bbox``. Its bbox is the region the
 %     statistics must be recomputed from, which is not always the backed-up box:
 %     growing an object writes only the drawing but has to be measured over the
-%     whole of it.
+%     whole of it. A 2-D edit adds ``.sliceDelta = true``: its box is the edited
+%     slice alone and the repair must be a difference over that slice, so
+%     ``repairIndexAfterUndo`` hands ``buildInstanceIndex`` the crop the undo
+%     replaced as ``.previousCrop``. Without it a rescan of that box would
+%     forget the object on every other slice.
 options = localBoxOptions(box, id);
 options.instanceIndexRepair = refresh;
 end
@@ -1083,8 +1093,15 @@ end
 % same region is attached to the undo entry, so that undoing this operation
 % repairs the index over it instead of invalidating the whole thing.
 refresh = struct('timePoint', timePoint, 'objectIds', unique(touchedIds), 'bbox', box);
+if ~use3D; refresh.sliceDelta = true; end
 if ~batchModeSwitch
     obj.backup('labels', 1, localUndoRepairOptions(box, id, refresh));
+end
+if ~use3D
+    % In 2D the objects are rescanned as a difference over the slice, not over
+    % their boxes - on an unstitched model those span the stack. Taken after the
+    % backup so the undo note stays free of it.
+    refresh.previousCrop = localReadBox(obj, id, 'labels', timePoint, box);
 end
 for w = 1:numel(writes)
     localWriteLabels(obj, id, writes(w).pixelIdxList, writes(w).value);
