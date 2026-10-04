@@ -1,5 +1,17 @@
 function plan = buildfile
-% Build tasks for MIB3.
+% Build tasks for MIB3 - code checks and automated tests.
+%
+% This file is the plan for MATLAB's build tool: typing "buildtool" in the
+% repository root reads it and runs the tasks defined below. It is a
+% development aid only - it does not compile or package MIB (the standalone
+% app is built by the scripts in deployment\) and it is not needed to run MIB.
+%
+% Tasks:
+%   check   - Code Analyzer scan of mib\ (warnings do not fail the build)
+%   test    - Unit-tagged tests from tests\
+%   testAll - Unit, Integration and Performance tests from tests\
+%   perf    - Performance tests compared against the baseline stored in
+%             tests\baselines for this machine and MATLAB release
 %
 % Usage:
 %   buildtool            % default: check + Unit tests
@@ -10,7 +22,7 @@ function plan = buildfile
 %                        %   set MIB3_UPDATE_PERF_BASELINE=1 to write/update baseline:
                          
 % >> setenv('MIB3_UPDATE_PERF_BASELINE', '1');
-% run to generate baseline performance scores to tests\baseline
+% run to generate baseline performance scores to tests\baselines
 % >> buildtool perf
 % remove the baseline recording:
 % >> setenv('MIB3_UPDATE_PERF_BASELINE', '');
