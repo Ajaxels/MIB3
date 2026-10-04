@@ -3,7 +3,6 @@
 .buildtool/
 .claude/
 .git/
-.github/
 deployed/
 development/
 docs/

@@ -11,6 +11,8 @@ features and understanding its licensing.
 
 1. :warning: **R2026a or newer is recommended**
 
+:fontawesome-brands-youtube:{.red-color} [MIB3: What's new?](https://youtu.be/gO4tTp4O7hg])
+
 ![A model of a human macrophage cell](images/demoImageMacrophage.png){.on-glb }
 
 ### New to MIB? Follow this path:

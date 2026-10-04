@@ -25,8 +25,10 @@ mib3
 
 ## Documentation
 
-- User documentation: `docs/` (built with Zensical, also published at https://mib.helsinki.fi)
-- API reference: `docs_api/` (built with Sphinx)
+- User documentation: `docs/` (built with Zensical, also published at
+  https://mib.helsinki.fi/help/main3/index.html)
+- API reference: `docs_api/` (built with Sphinx, also published at
+  https://mib.helsinki.fi/help/api3/index.html)
 - Developer notes: `development/INDEX.md`
 
 ## Licence
