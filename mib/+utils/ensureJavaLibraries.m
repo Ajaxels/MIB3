@@ -15,8 +15,9 @@ function ensureJavaLibraries(libList, mibPath, externalDirs)
 % variable clearing side effect of ``javaaddpath`` until a library is
 % actually needed.
 %
-% When MATLAB runs without a Java runtime (``usejava('jvm')`` is false, the
-% default from MATLAB R2026b, which no longer bundles Java), only the non-Java
+% When MATLAB runs without a Java runtime (``utils.JavaSetup.isAvailable`` is
+% false, the default from MATLAB R2026b, which no longer bundles Java; also when
+% the ``jenv`` setting points to an uninstalled Java), only the non-Java
 % ``'bm3d'`` entry is processed and ``'imageselection'`` is skipped silently
 % (it is requested at startup, and ``imclipboard`` falls back to the .NET
 % clipboard on Windows). Any other requested library throws ``MIB:javaNotFound``
@@ -97,7 +98,7 @@ end
 % library means the user started a Java feature, so stop it with an error
 % that names the feature and the fix; without it the feature fails later
 % with an error that its caller may replace by a misleading message
-if ~usejava('jvm')
+if ~utils.JavaSetup.isAvailable()
     libList = setdiff(libList, {'bm3d', 'imageselection'}, 'stable');
     if isempty(libList); return; end
     featureNames = dictionary(["omero", "mij.jar", "bioformats", "fiji", "poi", "imaris"], ...

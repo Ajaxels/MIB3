@@ -143,7 +143,8 @@ end
 %   up before, typically a new MATLAB release or MATLAB Runtime lost the setting
 %   (mib3.mat is shared between releases, the MATLAB setting is not); re-apply it
 % - otherwise: search for Java
-if ~usejava('jvm')
+% Not usejava('jvm'): it is also true when jenv points to an uninstalled Java
+if ~utils.JavaSetup.isAvailable()
     storedJavaPath = '';
     if isfield(obj.mibModel.preferences.ExternalDirs, 'JavaInstallationPath')
         storedJavaPath = char(obj.mibModel.preferences.ExternalDirs.JavaInstallationPath);

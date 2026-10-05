@@ -31,6 +31,7 @@ classdef JavaSetup
     %   - ``apply`` - validate a folder, confirm its version and write the setting
     %   - ``inspectFolder`` - check a folder and read its Java version
     %   - ``findInstallations`` - list Java installations in the usual folders
+    %   - ``isAvailable`` - true when Java calls work (use instead of ``usejava('jvm')``)
     %   - ``configuredHome`` - folder of the Java MATLAB uses or is set to use
     %
     % **Example 1** - full workflow from a callback:
@@ -371,26 +372,61 @@ classdef JavaSetup
             end
         end
 
+        function tf = isAvailable()
+            % ISAVAILABLE - True when Java calls work in this MATLAB session.
+            %
+            % Use this instead of ``usejava('jvm')``. In R2026b ``usejava('jvm')``
+            % (and ``usejava('awt')``) also return true when the ``jenv`` setting
+            % points to a folder that no longer holds Java, e.g. after Java was
+            % uninstalled: ``jenv().Status`` is then ``notloaded`` and every Java
+            % call, ``javaclasspath`` included, throws
+            % ``MATLAB:Java:JavaNotFoundFromJREPath``. This method therefore makes
+            % one real Java call. A JVM cannot be attached to a running session,
+            % so the result is kept for the session.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      tf = utils.JavaSetup.isAvailable()
+            %
+            % Output Arguments:
+            %   - **tf** - logical, ``true`` when Java is loaded and usable
+            persistent javaAvailable
+            if isempty(javaAvailable)
+                javaAvailable = usejava('jvm');
+                if javaAvailable
+                    try
+                        java.lang.System.getProperty('java.version');
+                    catch
+                        javaAvailable = false;
+                    end
+                end
+            end
+            tf = javaAvailable;
+        end
+
         function javaHome = configuredHome()
             % CONFIGUREDHOME - Folder of the Java that MATLAB uses or is set to use.
             %
-            % With a loaded JVM: the ``java.home`` system property (for a Java 8
-            % JDK this is its ``jre`` subfolder). Without one, in MATLAB: the
-            % ``jenv`` configuration when it is a folder (i.e. set but MATLAB not
-            % restarted yet). Without one in the compiled standalone: ``''``, as
-            % the MATLAB Runtime setting is not read back.
+            % With working Java (``isAvailable``): the ``java.home`` system
+            % property (for a Java 8 JDK this is its ``jre`` subfolder). Without
+            % it, in MATLAB: the ``jenv`` configuration when it is a Java folder
+            % (``inspectFolder``), i.e. set but MATLAB not restarted yet; a
+            % configuration that points to a deleted Java (uninstalled after
+            % ``jenv`` was set) gives ``''``. Without Java in the compiled
+            % standalone: ``''``, as the MATLAB Runtime setting is not read back.
             %
             % Syntax:
             %   .. code-block:: matlab
             %
             %      javaHome = utils.JavaSetup.configuredHome()
             javaHome = '';
-            if usejava('jvm')
+            if utils.JavaSetup.isAvailable()
                 javaHome = char(java.lang.System.getProperty('java.home'));
             elseif ~isdeployed
                 try
                     configuration = char(jenv().Configuration);
-                    if isfolder(configuration); javaHome = configuration; end
+                    if ~isempty(utils.JavaSetup.inspectFolder(configuration)); javaHome = configuration; end
                 catch
                 end
             end

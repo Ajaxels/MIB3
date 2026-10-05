@@ -45,8 +45,10 @@ narginchk(1, 3);
 
 % MIB modification: MATLAB R2026b and newer come without Java; on Windows
 % fall back to the .NET clipboard (System.Windows.Forms.Clipboard), which
-% needs no Java. Other platforms without Java still get the javachk error
-useDotNet = ~usejava('awt') && ispc;
+% needs no Java. Other platforms without Java still get the javachk error.
+% utils.JavaSetup.isAvailable, not usejava('awt') alone: usejava is also true
+% when jenv points to an uninstalled Java
+useDotNet = ~(usejava('awt') && utils.JavaSetup.isAvailable()) && ispc;
 if ~useDotNet
     error(javachk('awt', 'IMCLIPBOARD'));
 end

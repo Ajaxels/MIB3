@@ -48,14 +48,17 @@ classdef UpdateCheck < handle
             obj.view = core.ChildView(obj, 'views.UpdateCheckGUI');
             utils.applyThemeColors(obj.view.gui);   % adapt the standard dialog button colors to the light/dark theme
 
-            obj.updateWidgets();
-            obj.addCallbacks();
-
+            % before updateWidgets, which enlarges the font of informationText
+            % when a new version is available
             Font = obj.mibModel.preferences.System.Font;
             if obj.view.handles.informationText.FontSize ~= Font.FontSize ...
                     || ~strcmp(obj.view.handles.informationText.FontName, Font.FontName)
                 utils.fontSizeUpdate(obj.view.gui, Font);
             end
+
+            obj.updateWidgets();
+            obj.addCallbacks();
+
             obj.view.gui = utils.moveWindowOutside(obj.view.gui, obj.mibModel.mibGUI, 'center', 'center');
             %obj.view.gui.WindowStyle = 'modal';
             obj.view.gui.Visible = true;
@@ -90,6 +93,13 @@ classdef UpdateCheck < handle
         % Selects the appropriate URL by platform, fetches the text file, parses the
         % version number and HTML sections, then updates ``informationText`` and the
         % ``informationEdit`` HTML pane.
+        %
+        % When a newer version is available, ``informationText`` is emphasized: bold,
+        % 4 points larger than the MIB font, word-wrapped, centered next to the
+        % image and painted ``panelGreen`` of ``utils.themeColors``, which
+        % ``utils.applyThemeColors`` (the ``ThemeChangedFcn`` of the dialog) remaps on
+        % a light/dark theme switch. Must run after ``utils.fontSizeUpdate``, which
+        % would reset the font size.
 
             if isdeployed
                 obj.view.handles.updateBtn.Enable = 'off';
@@ -127,8 +137,15 @@ classdef UpdateCheck < handle
             obj.view.handles.recheckPeriodSpinner.Value = obj.mibModel.preferences.System.Update.RecheckPeriod;
 
             if availableVersion - obj.mibVersion > 0
-                obj.view.handles.informationText.Text = ...
-                    sprintf('New version (%s) of Microscopy Image Browser is available!', availableVersionText);
+                informationText = obj.view.handles.informationText;
+                informationText.Text = ...
+                    sprintf('Microscopy Image Browser\nnew version (%s) is available!', availableVersionText);
+                informationText.FontWeight = 'bold';
+                informationText.FontSize = obj.mibModel.preferences.System.Font.FontSize + 4;
+                informationText.WordWrap = 'on';
+                informationText.VerticalAlignment = 'center';
+                informationText.HorizontalAlignment = 'center';
+                informationText.BackgroundColor = utils.themeColors(obj.view.gui).panelGreen;
                 obj.view.handles.informationEdit.HTMLSource = releaseComments;
             else
                 obj.view.handles.informationText.Text = ...

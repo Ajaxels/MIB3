@@ -23,6 +23,20 @@ MATLAB (or Runtime) session reads. No in-session fix exists.
 | `imclipboard` (image copy/paste) | Windows: no (.NET fallback); macOS/Linux: yes | javachk error, caught and shown |
 | BM3D/BM4D, HistThresh | no (plain MATLAB path) | works |
 
+### `usejava('jvm')` is not a Java check
+
+Observed 2026-10-04: after Java was uninstalled while `jenv` still pointed to its folder,
+`usejava('jvm')`, `usejava('awt')` and `usejava('desktop')` all return **1**, `jenv().Status` is
+`notloaded`, and every Java call (`javaclasspath` included) throws
+`MATLAB:Java:JavaNotFoundFromJREPath`. MIB crashed at startup in `ensureJavaLibraries`. All checks
+now go through `utils.JavaSetup.isAvailable()`, which makes one real Java call
+(`java.lang.System.getProperty`, 0.016 s when it fails) and caches the result for the session.
+`configuredHome` returns the `jenv` folder only if `inspectFolder` accepts it, so a deleted folder
+leads to the search dialog, not to the "restart" message. `usejava` is still the first test in
+`isAvailable`.
+
+To reproduce a clean first start (`Configuration="system"`), run `jenv("-clear")` and restart MATLAB.
+
 ## Changes
 
 ### Java gateway - `mib/+utils/ensureJavaLibraries.m`
@@ -57,7 +71,7 @@ not decided).
   would fail before preferences are saved when OMERO is on the MATLAB path.
 
 **Not yet covered**: stitching from Bio-Formats files, OME-TIFF save, batch series loop,
-Fiji/Imaris/OMERO buttons. They throw `MIB:javaNotFound` with the clear message, but their callers
+Fiji/Imaris/OMERO buttons, DeepMIB send reports (`sendReportsCallback`, `java.lang.System`). They throw `MIB:javaNotFound` with the clear message, but their callers
 do not catch it, so it lands in the command window as a callback error (invisible in the compiled
 app).
 

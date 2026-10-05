@@ -49,7 +49,7 @@ if ~isempty(obj.mibModel.pythonEnv); utils.terminatePythonEnv(); end
 
 % unload OMERO; unloadOmero calls javarmpath, which throws without a Java
 % runtime (MATLAB R2026b+) and would abort the exit before preferences are saved
-if ~isdeployed && usejava('jvm')
+if ~isdeployed && utils.JavaSetup.isAvailable()
     if exist('unloadOmero.m','file') == 2
         % preserve Omero path
         omeroPath = findOmero;

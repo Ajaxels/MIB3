@@ -1,10 +1,20 @@
 %% UPDATE THE VERSION!
 %% UPDATE THE PATH!
+%% OPTIONALLY: UPDATE BMxD PATH or COMMENT IT! Note: non-profit education and scientific research only license
 
 VERSION = "2026.10";   % <-- UPDATE THE VERSION!
 PROJECT_ROOT = "c:\Matlab\MIB3\";  % <-- UPDATE THE PATH
 OS_ID = 'win';  % win, mac, linux
 SHOW_TERMINAL = true;
+
+% BM3D is compiled into the archive, but is not shipped as a folder: the
+% BMxD filter is activated only after the user downloads the package from
+% the website and selects its location in Preferences -> External
+% directories. BM4D is not used by MIB3 and is not included. Commenting the
+% second line out builds MIB without BMxD; the first line keeps a stale
+% value from the workspace from being used in that case.
+BM3D_ROOT = ""; %#ok<NASGU>
+BM3D_ROOT = "c:\MATLAB\BMxD\BM3D";  % <-- OPTIONALLY: UPDATE BMxD PATH or COMMENT IT!
 
 % Plugin folders under mib/plugins that must not be shipped, e.g. personal
 % or unreleased plugins. compiler.build.StandaloneApplicationOptions has no
@@ -78,6 +88,15 @@ buildOpts.AdditionalFiles = [
     fullfile(PROJECT_ROOT, "mib", "legacy"), ...
     stagedPlugins, ...
     ];
+
+if strlength(BM3D_ROOT) > 0
+    if ~isfolder(BM3D_ROOT)
+        error('deploymentScript:noBMxD', ...
+            'BM3D folder is missing: %s, update BM3D_ROOT or comment it out', BM3D_ROOT);
+    end
+    % AdditionalFiles is stored as a column cell array of char
+    buildOpts.AdditionalFiles{end+1} = char(BM3D_ROOT);
+end
 
 buildOpts.AutoDetectDataFiles = true;
 buildOpts.OutputDir = fullfile(PROJECT_ROOT, "deployed", OS_ID, "files");

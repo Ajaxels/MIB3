@@ -6,12 +6,12 @@
 
 - **Radhakrishna Achanta**, Ecole Polytechnique Federale de Lausanne (EPFL), for the mex code for SLIC supervoxels and superpixels
 - **Tom Boissonnet** (EMBL) and **Elena Bertseva** (University of Copenhagen), for extensive testing
-- **Ken Deeley**, the MathWorks for support with implementation of AppContainers GUI framework for MIB3
+- **Ken Deeley**, The MathWorks, for support with implementation of AppContainers GUI framework for MIB3
 - **John Heumann**, The Boulder Laboratory For 3-D Electron Microscopy of Cells, for help with Mattomo
 - **Konstantin Kogan**, University of Helsinki, for assistance with Mac OS
-- **David Legland**, INRA, France, for modification of the [Region Adjacency Graph (imRAG)](http://www.mathworks.com/matlabcentral/fileexchange/16938-region-adjacency-graph--rag-) function for detection of indices between watershed regions and help with few other functions
+- **David Legland**, INRA, France, for modification of the [Region Adjacency Graph (imRAG)](http://www.mathworks.com/matlabcentral/fileexchange/16938-region-adjacency-graph--rag-) function for detection of indices between watershed regions and help with a few other functions
 - **Vladimir Moltchanov**, for discussions on software architectures
-- **Norman Rzepka**, Scalable Minds GmbH for implementation of Zarr2/3 libraries for MATLAB
+- **Norman Rzepka**, Scalable Minds GmbH, for implementation of Zarr2/3 libraries for MATLAB
 - **Henrik P Sahlin Pettersen**, Norwegian University of Science and Technology/St. Olavs hospital, Trondheim, for driving DeepMIB for pathology
 - **František Kitzberger** (Inst. of Parasitology, Biology Centre CAS) and **Leonhard Breitsprecher** (University of Osnabrueck) for beta testing of MIB3
 - **Anthropic Claude** for help with MIB2 conversion to MIB3 and implementation of new tools in MIB3
@@ -25,7 +25,7 @@ Microscopy Image Browser team would like to acknowledge [the User Community of M
     including functions that were only used in earlier releases (noted in the list below). See
     [Licenses → External licenses](licenses/licenses-ext.md) to check the exact versions.
 
-Microscopy Image Browser adapts partially or completely codes from the following sources
+Microscopy Image Browser adapts, partially or completely, code from the following sources
 (listed alphabetically):
 
 - Inspired by [**IMAGEVIEWER**](http://www.mathworks.com/matlabcentral/fileexchange/13000-imageviewer) by Jiro Doke, MathWorks, 2010
@@ -40,7 +40,7 @@ Microscopy Image Browser adapts partially or completely codes from the following
 - [**DIPLIB**](http://www.diplib.org/) is a platform-independent scientific image processing library written in C, developed by Quantitative Imaging Group at the Faculty of Applied Sciences, Delft University of Technology. When installed, Microscopy Image Browser can use several additional methods for anisotropic diffusion filtering available from DipLib (used in MIB 0.x and 1.x)
 - [**DnD_uifigure: drag & drop functionality for AppDesigner components**](https://se.mathworks.com/matlabcentral/fileexchange/80656-uifilednd) written by Xiangrui Li (The Ohio State University), 2020-2023
 - [**Drag & Drop functionality for JAVA GUI components**](https://se.mathworks.com/matlabcentral/fileexchange/53511-drag-drop-functionality-for-java-gui-components) written by Maarten van der Seijs, Delft University of Technology, the Netherlands, 2015
-- [**DRAWREGIONBOUNDARIES**](http://www.peterkovesi.com/projects/segmentation/) a function to draw boundaries of labeled regions in an image when working with brush, written by Peter Kovesi (Centre for Exploration Targeting, School of Earth and Environment, The University of Western Australia, 2013)
+- [**DRAWREGIONBOUNDARIES**](http://www.peterkovesi.com/projects/segmentation/), a function to draw boundaries of labeled regions in an image when working with brush, written by Peter Kovesi (Centre for Exploration Targeting, School of Earth and Environment, The University of Western Australia, 2013)
 - [**DRIFTY_SHIFTY_DELUXE**](https://se.mathworks.com/matlabcentral/fileexchange/45453-drifty-shifty-deluxe-m) written by Joshua D. Sugar (Sandia National Laboratories, Livermore, CA, 2014); part of code from this function was adopted in `mibCalcShifts.m`
 - **Elastic Distortion filter** is based on [**Elastic Distortion Transformation on an image**](https://se.mathworks.com/matlabcentral/fileexchange/66663-elastic-distortion-transformation-on-an-image) by David Franco (Catholic University of Parana)
 - [**EXPORT_FIG**](http://www.mathworks.com/matlabcentral/fileexchange/23629-export-fig) function to add measurements to snapshots is written by Oliver Woodford and Yair Altman
@@ -58,21 +58,21 @@ Microscopy Image Browser adapts partially or completely codes from the following
 - [**IceImarisConnector**](http://www.scs2.net/next/index.php?id=110) written by Aaron C. Ponti (ETH Zurich) is used for connection to Imaris
 - [**IMGAUSSIAN**](http://www.mathworks.com/matlabcentral/fileexchange/25397-imgaussian) by Dirk-Jan Kroon (University of Twente), implementation 2009, is used in the 3D Gaussian filter
 - [**Local normalization**](http://www.mathworks.com/matlabcentral/fileexchange/8303-local-normalization) by Guanglei Xiong (xgl99@mails.tsinghua.edu.cn) at Tsinghua University, Beijing, China, 2005 (used in MIB 0.x and 1.x)
-- [**MATGEOM**](https://github.com/mattools/matGeom/), a MATLAB geometry toolbox for 2D/3D geometric computing, is written by David Legland (INRA, France, 2013) is used in some functions
+- [**MATGEOM**](https://github.com/mattools/matGeom/), a MATLAB geometry toolbox for 2D/3D geometric computing, written by David Legland (INRA, France, 2013), is used in some functions
 - [**MATTOMO**](http://bio3d.colorado.edu/PEET/index.html) is a part of PEET (Particle Estimation for Electron Tomography) package, developed at Boulder Laboratory for 3-D Electron Microscopy of Cells, is used for export of models to IMOD format
 - [**MAXFLOW/MINCUT algorithm, v2.22**](http://pub.ist.ac.at/~vnk/software.html) written by Yuri Boykov (University of Western Ontario) and Vladimir Kolmogorov (Microsoft Research, Cambridge) is used in the Graphcut tool
-- [**MAXFLOW/MINCUT MATLAB wrapper**](http://www.mathworks.com/matlabcentral/fileexchange/21310-maxflow) is written by Michael Rubinstein (Google) is used in the Graphcut tool
+- [**MAXFLOW/MINCUT MATLAB wrapper**](http://www.mathworks.com/matlabcentral/fileexchange/21310-maxflow) written by Michael Rubinstein (Google) is used in the Graphcut tool
 - [**MkDocs**](https://www.mkdocs.org) is acknowledged for documentation generation for MIB 2.91
 - [**NUM2CLIP**](https://se.mathworks.com/matlabcentral/fileexchange/8472-num2clip-copy-numerical-arrays-to-clipboard) function by Grigor Browning, 2005, is used to copy column items to the system clipboard
 - NRRD, Nearly Raw Raster Data format is implemented using [**Projects:MATLABSlicerExampleModule**](http://www.na-mic.org/Wiki/index.php/Projects:MATLABSlicerExampleModule) written by John Melonakos for NRRD reading using [TEEM](http://teem.sourceforge.net/) and [**VTKPNG.DLL**](https://vtk.org/about/) by Ken Martin, Will Schroeder, and Bill Lorensen; and a custom function for reading metadata based on [NRRD Format File Reader](http://www.mathworks.com/matlabcentral/fileexchange/34653-nrrd-format-file-reader) written by Jeff Mather, 2012
 - [**OMERO MATLAB bindings**](http://www.openmicroscopy.org/site/products/omero/downloads) (included into the compiled version, but should be downloaded separately for the MATLAB version) are used for connection to OMERO servers
-- [**P_JSON**](http://www.mathworks.com/matlabcentral/fileexchange/25713-highly-portable-json-input-parser), highly portable JSON parser function, is written by Nedialko, 2009, is used for work with HDF5 files
+- [**P_JSON**](http://www.mathworks.com/matlabcentral/fileexchange/25713-highly-portable-json-input-parser), highly portable JSON parser function, written by Nedialko, 2009, is used for work with HDF5 files
 - [**PATCHNORMALS**](https://se.mathworks.com/matlabcentral/fileexchange/24330-patch-normals), by Dirk-Jan Kroon (University of Twente), implementation 2009, is used for calculation of normals during export of surfaces to Imaris
 - [**POOLWAITBAR**](https://se.mathworks.com/matlabcentral/answers/465911-parfor-waitbar-how-to-do-this-more-cleanly) class is based on the code submitted by Edric Ellis
 - [**Prettify MATLAB html**](https://se.mathworks.com/matlabcentral/fileexchange/78059-prettify-matlab-html) by Harry Dymond, University of Bristol, is used to prettify MIB documentation until MIB 2.91
 - Random Forest Classifier is based on [**Verena Kaynig implementation**](http://www.kaynig.de/demos.html) with utilization of [randomforest-matlab](https://code.google.com/p/randomforest-matlab/) by Abhishek Jaiantilal
-- [**Region Adjacency Graph (RAG)**](http://www.mathworks.com/matlabcentral/fileexchange/16938-region-adjacency-graph--rag-) function is written by David Legland (INRA, France, 2013) is used in the Graphcut tool
-- [**REGIONPROPS3**](http://www.mathworks.com/matlabcentral/fileexchange/47578-regionprops3) function is written by Chaoyuan Yeh (University of Southern California, 2014) is used for quantifying some object properties in 3D
+- [**Region Adjacency Graph (RAG)**](http://www.mathworks.com/matlabcentral/fileexchange/16938-region-adjacency-graph--rag-) function written by David Legland (INRA, France, 2013) is used in the Graphcut tool
+- [**REGIONPROPS3**](http://www.mathworks.com/matlabcentral/fileexchange/47578-regionprops3) function written by Chaoyuan Yeh (University of Southern California, 2014) is used for quantifying some object properties in 3D
 - [**RENDERTEXT**](http://www.mathworks.com/matlabcentral/fileexchange/26940-render-rgb-text-over-rgb-or-grayscale-image) function by Davide Di Gloria (Università di Genova, 2010) is utilized for addition of text to image
 - Rendering with Fiji is based on [**Hardware accelerated 3D viewer for MATLAB**](http://www.mathworks.com/matlabcentral/fileexchange/32344-hardware-accelerated-3d-viewer-for-matlab) written by Jean-Yves Tinevez (Institut Pasteur, 2011)
 - Rendering with MATLAB is using [**VIEW3D**](http://www.mathworks.com/matlabcentral/fileexchange/334-view3d-m) function written by Torsten Vogel, 1999
@@ -95,7 +95,7 @@ Microscopy Image Browser adapts partially or completely codes from the following
 
 Color palettes are generated with help of: 
 
-- [Yasuyo G. Ichihara, Masataka Okabe, Koichi Iga, Yosuke Tanaka, Kohei Musha, Kei Ito](http://jfly.iam.u-tokyo.ac.jp/color/). Color Universal Design - The selection of four easily distinguishable colors for all color vision types. Proc Spie 6807 (2008)
+- [Yasuyo G. Ichihara, Masataka Okabe, Koichi Iga, Yosuke Tanaka, Kohei Musha, Kei Ito](http://jfly.iam.u-tokyo.ac.jp/color/). Color Universal Design - The selection of four easily distinguishable colors for all color vision types. Proc. SPIE 6807 (2008)
 - [Cynthia Brewer, Mark Harrower, Ben Sheesley, Andy Woodruff, David Heyman](http://colorbrewer2.org/). ColorBrewer 2.0
 - [Sasha Trubetskoy](https://sashat.me/2017/01/11/list-of-20-simple-distinct-colors). List of 20 Simple, Distinct Colors
 
@@ -103,7 +103,7 @@ Color palettes are generated with help of:
 
 - Some icons used in MIB were provided by [Icons8.com](https://icons8.com), [license information](https://icons8.com/license)
 - Some images were generated using [stable-diffusion image generative AI](https://stability.ai/blog/stable-diffusion-public-release)
-- Puffin-pirate is a collabroration with Nano Banana 2 by [Google](https://labs.google)
+- Puffin-pirate is a collaboration with Nano Banana 2 by [Google](https://labs.google)
 
 ---
 
