@@ -1,7 +1,7 @@
 %% UPDATE THE VERSION!
 %% UPDATE THE PATH!
 
-VERSION = "2026.06"; % <-- UPDATE THE VERSION!
+VERSION = "2026.10"; % <-- UPDATE THE VERSION!
 PROJECT_ROOT = "/users/belevich/Desktop/MIB3";   % <-- UPDATE THE PATH
 OS_ID = 'linux';
 SHOW_TERMINAL = true;

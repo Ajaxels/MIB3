@@ -24,6 +24,7 @@ end
 % The built user documentation ships next to the executable so that the Help
 % buttons open local pages instead of mib.helsinki.fi. Both the installer and
 % the copy loop at the end of this script name the destination folder after
+% (
 % the basename of the source, so docs/html cannot be listed directly - a
 % staged folder called "docs" holding "html" gives the wanted docs/html layout.
 docsSource = fullfile(PROJECT_ROOT, "docs", "html");
