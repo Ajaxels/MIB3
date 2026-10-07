@@ -21,7 +21,7 @@ MATLAB (or Runtime) session reads. No in-session fix exists.
 | Fiji (MIJ), Imaris (ImarisLib.jar), OMERO | yes | `MIB:javaNotFound` |
 | xlwrite / Apache POI (non-Windows Excel export) | yes | `MIB:javaNotFound` |
 | `imclipboard` (image copy/paste) | Windows: no (.NET fallback); macOS/Linux: yes | javachk error, caught and shown |
-| BM3D/BM4D, HistThresh | no (plain MATLAB path) | works |
+| BM3D, HistThresh | no (plain MATLAB path) | works |
 
 ### `usejava('jvm')` is not a Java check
 

@@ -42,7 +42,7 @@ several materials overlapping above the same pixel of the image.
 
 ![Create Model Dialog](images/PanelsSegmentation_Create.png){.on-glb align=left width="250"}
 
-The <span class="widget widget-button">Create</span> button is used to start a new model. 
+The <span class="widget widget-button">New</span> button is used to start a new model. 
 When clicked, the existing model layer will be removed.
 
 Whenever possible, it is recommended to use models with **63** materials. 

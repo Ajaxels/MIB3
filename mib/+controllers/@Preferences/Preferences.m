@@ -510,7 +510,15 @@ classdef Preferences < handle
                 handles.OmeroInstallationPath.Value = char(externalDirPrefs.OmeroInstallationPath);
                 handles.ImarisInstallationPath.Value  = char(externalDirPrefs.ImarisInstallationPath);
                 handles.bm3dInstallationPath.Value = char(externalDirPrefs.bm3dInstallationPath);
-                handles.bm4dInstallationPath.Value = char(externalDirPrefs.bm4dInstallationPath);
+                % BM3D is not compiled into the standalone MIB (license),
+                % so its folder cannot be used there
+                if isdeployed
+                    bmxdTooltip = 'The BM3D filter is available only in MIB for MATLAB';
+                    for widgetName = {'bm3dInstallationPath', 'BM3DDirSelectBtn'}
+                        handles.(widgetName{1}).Enable = 'off';
+                        handles.(widgetName{1}).Tooltip = bmxdTooltip;
+                    end
+                end
                 handles.BioFormatsMemoizerMemoDir.Value = char(externalDirPrefs.BioFormatsMemoizerMemoDir);
                 handles.PythonInstallationPath.Value = char(externalDirPrefs.PythonInstallationPath);
                 handles.JavaInstallationPath.Value = char(externalDirPrefs.JavaInstallationPath);
@@ -749,6 +757,14 @@ classdef Preferences < handle
             % the theme is set from the Home ribbon, not here: keep the current
             % value over the copy, which is stale or reset by the Defaults button
             obj.preferences.Colors.Theme = obj.mibModel.preferences.Colors.Theme;
+            % the user statistics are not edited here either and keep counting while
+            % the dialog is open: the copy would drop the points earned since it was
+            % opened and, after Your stats -> Set stats folder..., point back to the
+            % old folder while the session baselines already belong to the new one,
+            % so that the shard written on exit would be wrong
+            obj.preferences.Users.Tiers = obj.mibModel.preferences.Users.Tiers;
+            obj.preferences.System.UserStatsProfile = obj.mibModel.preferences.System.UserStatsProfile;
+            obj.preferences.System.UserStatsPromptShown = obj.mibModel.preferences.System.UserStatsPromptShown;
             obj.mibModel.preferences = obj.preferences;
 
             % a Java folder typed or selected without pressing "Configure Java..."
@@ -1689,8 +1705,6 @@ classdef Preferences < handle
                     field_name = 'ImarisInstallationPath';
                 case 'BM3DDirSelectBtn'
                     field_name = 'bm3dInstallationPath';
-                case 'BM4DDirSelectBtn'
-                    field_name = 'bm4dInstallationPath';
                 case 'MemoizerDirSelectBtn'
                     field_name = 'BioFormatsMemoizerMemoDir';
                 case 'DeepMIBDirSelectBtn'
@@ -1719,10 +1733,13 @@ classdef Preferences < handle
             % window behind main MIB window
             drawnow;
             figure(obj.view.gui);
-            
-            if strcmp(field_name, 'bm3dInstallationPath') || strcmp(field_name, 'bm4dInstallationPath')
+
+            if strcmp(field_name, 'bm3dInstallationPath')
+                folder_name = obj.checkBm3dFolder(folder_name);
+                if isempty(folder_name); return; end
+
                 answer = uiconfirm(obj.view.gui, ...
-                    sprintf('!!! Warning !!!\n\nPlease note that any unauthorized use of BM3D and BM4D filters for industrial or profit-oriented activities is expressively prohibited!'), ...
+                    sprintf('!!! Warning !!!\n\nPlease note that any unauthorized use of the BM3D filter for industrial or profit-oriented activities is expressively prohibited!'), ...
                     'License warning', 'Options', {'Acknowledge', 'Cancel'}, 'Icon', 'warning', 'DefaultOption', 1);
                 if strcmp(answer, 'Cancel')
                     folder_name = '';
@@ -1774,18 +1791,71 @@ classdef Preferences < handle
                         'Wrong directory/filename');
                     obj.view.handles.(event.Source.Tag).Value = char(obj.preferences.ExternalDirs.(event.Source.Tag));
                 else
-                    if strcmp(event.Source.Tag, 'bm3dInstallationPath') || strcmp(event.Source.Tag, 'bm4dInstallationPath')
+                    if strcmp(event.Source.Tag, 'bm3dInstallationPath')
+                        bm3dFolder = obj.checkBm3dFolder(obj.view.handles.bm3dInstallationPath.Value);
+                        if isempty(bm3dFolder)
+                            obj.view.handles.bm3dInstallationPath.Value = char(obj.preferences.ExternalDirs.bm3dInstallationPath);
+                            return;
+                        end
+                        obj.view.handles.bm3dInstallationPath.Value = bm3dFolder;
+
                         answer = uiconfirm(obj.view.gui, ...
-                            sprintf('!!! Warning !!!\n\nPlease note that any unauthorized use of BM3D and BM4D filters for industrial or profit-oriented activities is expressively prohibited!'), ...
+                            sprintf('!!! Warning !!!\n\nPlease note that any unauthorized use of the BM3D filter for industrial or profit-oriented activities is expressively prohibited!'), ...
                             'License warning', 'Options', {'Acknowledge', 'Cancel'}, 'Icon', 'warning', 'DefaultOption', 1);
                         if strcmp(answer, 'Cancel')
-                            obj.view.handles.(event.Source.Tag).Value = '';
+                            obj.view.handles.bm3dInstallationPath.Value = '';
                         end
                     end
                     obj.preferences.ExternalDirs.(event.Source.Tag) = obj.view.handles.(event.Source.Tag).Value;
                 end
             else
                 obj.preferences.ExternalDirs.(event.Source.Tag) = [];
+            end
+        end
+
+        function folderName = checkBm3dFolder(obj, folderName)
+            % CHECKBM3DFOLDER - resolve and validate the folder selected for BM3D.
+            %
+            % The BMxD filter (``utils.doImageFiltering``) calls BM3D 4.x as
+            % ``BM3D(z, sigma, profile)``. In the downloaded package
+            % (``bm3d_4.x.x``) the MATLAB files sit in its ``bm3d`` subfolder,
+            % so when the package root is given, that subfolder is returned.
+            % Versions 1-3 have an incompatible ``BM3D(y, z, sigma, profile)``
+            % syntax and no ``BM3DProfile.m``; for them, and for a folder
+            % without BM3D, an alert is shown and empty is returned, so the
+            % caller keeps the previous value. The same ``BM3DProfile.m`` test
+            % decides whether the filter is listed in Image Filters and Batch
+            % processing.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      folderName = obj.checkBm3dFolder(folderName)
+            %
+            % Input Arguments:
+            %   - **folderName** - [char] folder selected or typed by the user
+            %
+            % Output Arguments:
+            %   - **folderName** - [char] folder with ``BM3D.m`` of BM3D 4.x,
+            %     or ``''`` when it was not found
+            %
+            % **Example** - validate a selected folder:
+            %
+            %   .. code-block:: matlab
+            %
+            %      folderName = obj.checkBm3dFolder('C:\BM3D\bm3d_4.0.3');
+            %      % returns 'C:\BM3D\bm3d_4.0.3\bm3d'
+
+            packageSubfolder = fullfile(folderName, 'bm3d');
+            if isfile(fullfile(packageSubfolder, 'BM3D.m'))
+                folderName = packageSubfolder;
+            end
+            if ~isfile(fullfile(folderName, 'BM3D.m')) || ~isfile(fullfile(folderName, 'BM3DProfile.m'))
+                uialert(obj.view.gui, ...
+                    sprintf(['BM3D 4.0 or newer was not found in\n%s\n\n' ...
+                    'Older BM3D versions are not supported, download the MATLAB version of BM3D and select its folder'], folderName), ...
+                    'Wrong BM3D folder');
+                folderName = '';
             end
         end
 

@@ -185,19 +185,17 @@ Remove noise while preserving object edges using one of the following filters.
 
 **BMxD filter**  
   ![BMxD Filter](images/image_filters_BMxD.jpg){.on-glb align=left width="300"}  
-  Uses block-matching (BM3D v2.01) and 3D collaborative ((BM4D v3.2)) filtering. Licensed for non-profit use only. 
+  Uses block-matching and 3D collaborative filtering (BM3D 4.0 or newer), *MATLAB version only*. Licensed for non-profit use only. 
   See installation details in [System requirements](https://mib.helsinki.fi/downloads_systemreq.html#BMxD).  
   *Supports*: 2D  
   <div class="clear-float"></div>
-!!! info "BM3D and BM4D References"
+!!! info "BM3D References"
 
+    * \[**BM3D**\] Y. Mäkinen, L. Azzari, A. Foi, "Collaborative Filtering of Correlated Noise: Exact Transform-Domain Variance
+      for Improved Shrinkage and Patch Matching", IEEE Transactions on Image Processing, vol. 29, pp. 8339-8354, 2020.
     * \[**BM3D**\] K. Dabov, A. Foi, V. Katkovnik, and K. Egiazarian, Image Denoising by Sparse 3D Transform-Domain Collaborative Filtering, 
       [IEEE Transactions on Image Processing](https://ieeexplore.ieee.org/document/4271520), vol. 16, no. 8, August, 2007.
       preprint at [http://www.cs.tut.fi/~foi/GCF-BM3D](http://www.cs.tut.fi/~foi/GCF-BM3D).
-    * \[**BM4D**\] M. Maggioni, V. Katkovnik, K. Egiazarian, A. Foi, "A Nonlocal Transform-Domain Filter for Volumetric Data Denoising and
-      Reconstruction", IEEE Trans. Image Process., vol. 22, no. 1, pp. 119-133, January 2013.  [doi:10.1109/TIP.2012.2210725](https://ieeexplore.ieee.org/document/6253256)
-    * \[**BM4D**\] M. Maggioni, A. Foi, "Nonlocal Transform-Domain Denoising ofVolumetric Data With Groupwise Adaptive Variance Estimation", 
-      [Proc. SPIE Electronic Imaging](https://www.spiedigitallibrary.org/conference-proceedings-of-spie/8296/1/Nonlocal-transform-domain-denoising-of-volumetric-data-with-groupwise-adaptive/10.1117/12.912109.short) 2012, San Francisco, CA, USA, Jan. 2012.
 
 ---
 

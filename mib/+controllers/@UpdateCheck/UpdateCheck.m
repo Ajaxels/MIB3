@@ -49,7 +49,6 @@ classdef UpdateCheck < handle
             utils.applyThemeColors(obj.view.gui);   % adapt the standard dialog button colors to the light/dark theme
 
             % before updateWidgets, which enlarges the font of informationText
-            % when a new version is available
             Font = obj.mibModel.preferences.System.Font;
             if obj.view.handles.informationText.FontSize ~= Font.FontSize ...
                     || ~strcmp(obj.view.handles.informationText.FontName, Font.FontName)
@@ -70,8 +69,8 @@ classdef UpdateCheck < handle
             handles = obj.view.handles;
 
             handles.closeButton.ButtonPushedFcn      = @(~,~) obj.closeWindow();
-            handles.websiteBtn.ButtonPushedFcn       = @(~,~) web('http://mib.helsinki.fi', '-browser');
-            handles.listofchangesBtn.ButtonPushedFcn = @(~,~) web('http://mib.helsinki.fi/downloads.html', '-browser');
+            handles.websiteBtn.ButtonPushedFcn       = @(~,~) web('https://mib.helsinki.fi', '-browser');
+            handles.listofchangesBtn.ButtonPushedFcn = @(~,~) web('https://mib.helsinki.fi/downloads.html', '-browser');
             handles.downloadBtn.ButtonPushedFcn      = @(~,~) obj.downloadBtn_Callback();
             handles.updateBtn.ButtonPushedFcn        = @(~,~) obj.updateBtn_Callback();
 
@@ -92,32 +91,49 @@ classdef UpdateCheck < handle
         %
         % Selects the appropriate URL by platform, fetches the text file, parses the
         % version number and HTML sections, then updates ``informationText`` and the
-        % ``informationEdit`` HTML pane.
+        % ``informationEdit`` HTML pane. The version file is read over HTTPS; when that
+        % fails (e.g. a proxy or an old Java without the server's certificate chain) it
+        % is read again over plain HTTP, so an unreachable server costs up to two
+        % 4 s timeouts.
         %
-        % When a newer version is available, ``informationText`` is emphasized: bold,
-        % 4 points larger than the MIB font, word-wrapped, centered next to the
-        % image and painted ``panelGreen`` of ``utils.themeColors``, which
-        % ``utils.applyThemeColors`` (the ``ThemeChangedFcn`` of the dialog) remaps on
-        % a light/dark theme switch. Must run after ``utils.fontSizeUpdate``, which
-        % would reset the font size.
+        % ``informationText`` is emphasized: bold, 4 points larger than the MIB font,
+        % word-wrapped and centered next to the image. Its background tells the
+        % outcome apart, using the tints of ``utils.themeColors``:
+        %
+        %   - ``panelGreen`` - a newer version is available; the release notes are shown
+        %   - ``panelBlue`` - the running version is the latest; the general
+        %     information section is shown
+        %   - ``panelYellow`` - the version could not be determined (server not
+        %     reachable, or no number before the first ``<html>`` of the version file);
+        %     the release notes section, which for an unreachable server is the local
+        %     "not detected" message, is shown. Without this case the ``NaN`` version
+        %     would fall through to "latest version"
+        %
+        % ``utils.applyThemeColors`` (the ``ThemeChangedFcn`` of the dialog) remaps
+        % these tints on a light/dark theme switch. Must run after
+        % ``utils.fontSizeUpdate``, which would reset the font size.
 
             if isdeployed
                 obj.view.handles.updateBtn.Enable = 'off';
                 if ismac
-                    link = 'http://mib.helsinki.fi/web-update3/mib3_mac.txt';
+                    link = 'mib.helsinki.fi/web-update3/mib3_mac.txt';
                 elseif isunix
-                    link = 'http://mib.helsinki.fi/web-update3/mib3_linux.txt';
+                    link = 'mib.helsinki.fi/web-update3/mib3_linux.txt';
                 else
-                    link = 'http://mib.helsinki.fi/web-update3/mib3_win.txt';
+                    link = 'mib.helsinki.fi/web-update3/mib3_win.txt';
                 end
             else
-                link = 'http://mib.helsinki.fi/web-update3/mib3_matlab.txt';
+                link = 'mib.helsinki.fi/web-update3/mib3_matlab.txt';
             end
 
             try
-                urlText = urlread(link, 'Timeout', 4);  %#ok<URLRD>
+                urlText = urlread(['https://' link], 'Timeout', 4);  %#ok<URLRD>
             catch
-                urlText = sprintf('<html>\n<div style="font-family:arial;">\n<b>The update file has not been detected...</b>\n</div>\n</html>\n---Info---\n<html></html>');
+                try
+                    urlText = urlread(['http://' link], 'Timeout', 4);  %#ok<URLRD>
+                catch
+                    urlText = sprintf('<html>\n<div style="font-family:arial;">\n<b>The update file has not been detected...</b>\n</div>\n</html>\n---Info---\n<html></html>');
+                end
             end
 
             htmlStartPositions = strfind(urlText, '<html>');
@@ -136,39 +152,51 @@ classdef UpdateCheck < handle
 
             obj.view.handles.recheckPeriodSpinner.Value = obj.mibModel.preferences.System.Update.RecheckPeriod;
 
-            if availableVersion - obj.mibVersion > 0
-                informationText = obj.view.handles.informationText;
+            informationText = obj.view.handles.informationText;
+            informationText.FontWeight = 'bold';
+            informationText.FontSize = obj.mibModel.preferences.System.Font.FontSize + 4;
+            informationText.WordWrap = 'on';
+            informationText.VerticalAlignment = 'center';
+            informationText.HorizontalAlignment = 'center';
+            palette = utils.themeColors(obj.view.gui);
+            if isnan(availableVersion)
+                % the server was not reached or the version file is malformed
+                informationText.Text = ...
+                    sprintf('Microscopy Image Browser\nthe update information is not available!');
+                informationText.BackgroundColor = palette.panelYellow;
+                obj.view.handles.informationEdit.HTMLSource = releaseComments;
+            elseif availableVersion - obj.mibVersion > 0
                 informationText.Text = ...
                     sprintf('Microscopy Image Browser\nnew version (%s) is available!', availableVersionText);
-                informationText.FontWeight = 'bold';
-                informationText.FontSize = obj.mibModel.preferences.System.Font.FontSize + 4;
-                informationText.WordWrap = 'on';
-                informationText.VerticalAlignment = 'center';
-                informationText.HorizontalAlignment = 'center';
-                informationText.BackgroundColor = utils.themeColors(obj.view.gui).panelGreen;
+                informationText.BackgroundColor = palette.panelGreen;
                 obj.view.handles.informationEdit.HTMLSource = releaseComments;
             else
-                obj.view.handles.informationText.Text = ...
-                    'You are running the latest version of Microscopy Image Browser!';
+                informationText.Text = ...
+                    sprintf('Microscopy Image Browser\nyou are running the latest version!');
+                informationText.BackgroundColor = palette.panelBlue;
                 obj.view.handles.informationEdit.HTMLSource = infoText;
             end
         end
 
         function downloadBtn_Callback(obj)
-        % DOWNLOADBTN_CALLBACK - Open the platform-specific MIB download page in a browser.
+        % DOWNLOADBTN_CALLBACK - Open the platform-specific MIB download link in a browser.
+        %
+        % HTTPS only, without a fallback to HTTP: browsers (Chrome: "Insecure download
+        % blocked") refuse downloads over plain HTTP, and ``web`` does not report such
+        % a refusal, so a fallback could never be triggered.
             if obj.mibModel.preferences.System.DeveloperMode
                 fprintf('controllers.UpdateCheck.downloadBtn_Callback: triggered\n');
             end
             if isdeployed
                 if ismac
-                    web('http://mib.helsinki.fi/web-update3/MIB3_Mac.zip', '-browser');
+                    web('https://mib.helsinki.fi/web-update3/MIB3_Mac.zip', '-browser');
                 elseif isunix
-                    web('http://mib.helsinki.fi/web-update3/MIB3_Linux.zip', '-browser');
+                    web('https://mib.helsinki.fi/web-update3/MIB3_Linux.zip', '-browser');
                 else
-                    web('http://mib.helsinki.fi/web-update3/MIB3_Win.zip', '-browser');
+                    web('https://mib.helsinki.fi/web-update3/MIB3_Win.zip', '-browser');
                 end
             else
-                web('http://mib.helsinki.fi/web-update3/MIB3_Matlab.zip', '-browser');
+                web('https://mib.helsinki.fi/web-update3/MIB3_Matlab.zip', '-browser');
             end
         end
 
@@ -176,7 +204,9 @@ classdef UpdateCheck < handle
         % UPDATEBTN_CALLBACK - Download and install a MIB update in-place (MATLAB mode only).
         %
         % Prompts for the installation directory, downloads ``MIB3_Matlab.zip`` to
-        % a temporary file and unzips it into the destination.
+        % a temporary file and unzips it into the destination. The download goes over
+        % HTTPS; when that fails it is retried once over plain HTTP, and only the
+        % error of the HTTP attempt is shown.
         %
         % The zip contains the whole distribution with ``mib\`` at its top level,
         % so the suggested destination is the parent of ``mibModel.mibPath``;
@@ -232,13 +262,19 @@ classdef UpdateCheck < handle
                 'Indeterminate', 'on', 'Cancelable', 'on');
             zipFilename = [tempname '.zip'];
             try
-                websave(zipFilename, 'http://mib.helsinki.fi/web-update3/MIB3_Matlab.zip', weboptions('Timeout', 60));
-            catch err
-                delete(progressDialog);
+                websave(zipFilename, 'https://mib.helsinki.fi/web-update3/MIB3_Matlab.zip', weboptions('Timeout', 60));
+            catch
+                % fall back to plain HTTP; remove a partial file of the failed attempt first
                 if isfile(zipFilename); delete(zipFilename); end
-                utils.dlgs.showErrorDialog(obj.view.gui, err, 'Update MIB', ...
-                    'The update could not be downloaded. Nothing was changed.');
-                return;
+                try
+                    websave(zipFilename, 'http://mib.helsinki.fi/web-update3/MIB3_Matlab.zip', weboptions('Timeout', 60));
+                catch err
+                    delete(progressDialog);
+                    if isfile(zipFilename); delete(zipFilename); end
+                    utils.dlgs.showErrorDialog(obj.view.gui, err, 'Update MIB', ...
+                        'The update could not be downloaded. Nothing was changed.');
+                    return;
+                end
             end
             if progressDialog.CancelRequested
                 delete(progressDialog);

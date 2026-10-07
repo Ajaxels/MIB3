@@ -326,10 +326,7 @@ Specify paths for external tools and packages that integrate with MIB. Leave fie
 Use any temporary directory available on your system. The created files can be removed any moment.
 <br><br>
 <span class="widget widget-edit">BM3D installation directory</span>: a text field and <span class="widget widget-button">...</span> 
-to set the path to [BM3D](https://webpages.tuni.fi/foi/GCF-BM3D/index.html), see more in the [System requirements](https://mib.helsinki.fi/downloads_systemreq.html#BMxD) section.
-<br><br>
-<span class="widget widget-edit">BM4D installation directory</span>: a text field and <span class="widget widget-button">...</span> 
-to set the path to [BM4D](https://webpages.tuni.fi/foi/GCF-BM3D/index.html), see more in the [System requirements](https://mib.helsinki.fi/downloads_systemreq.html#BMxD) section.
+to set the path to [BM3D](https://webpages.tuni.fi/foi/GCF-BM3D/index.html) 4.0 or newer (*MATLAB version only*), see more in the [System requirements](https://mib.helsinki.fi/downloads_systemreq.html#BMxD) section.
 <br><br>
 <span class="widget widget-edit">Directory to store network architectures for DeepMIB</span>: a text field and 
 <span class="widget widget-button">...</span> to set the [DeepMIB](../../../deepmib/index.md) and [SAM](../../panels/segm/segm-sam.md) network storage paths.

@@ -20,7 +20,14 @@ function plan = buildfile
 %   buildtool testAll    % Unit + Integration + Performance tests
 %   buildtool perf       % Performance tests vs committed baseline
 %                        %   set MIB3_UPDATE_PERF_BASELINE=1 to write/update baseline:
-                         
+
+% Record only in a freshly restarted MATLAB, and only after one normal
+% "buildtool perf" run there:
+%  - a session where a data-layer classdef (MibImage, MibLabels, ...) was
+%    edited copies the whole layer on every slice write, so set2D_* records
+%    ~10x too slow (1.5 ms instead of 0.16 ms) and the gate stops guarding them
+%  - the first run after MATLAB starts is cold: labels63 image rows measured
+%    up to 30x their warm value
 % >> setenv('MIB3_UPDATE_PERF_BASELINE', '1');
 % run to generate baseline performance scores to tests\baselines
 % >> buildtool perf

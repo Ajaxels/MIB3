@@ -26,6 +26,7 @@ classdef SaveLoadImageTest < matlab.unittest.TestCase
                 'modelType', 'labels63', 'dims', [16 24 4]);
 
             saveOpts.showWaitbar = false;
+            saveOpts.silent      = true;   % no "TIF saving settings" dialog - it blocks a headless run
             mibModel.saveImage('image', outFile, saveOpts);
             testCase.assumeTrue(isfile(outFile), 'saveImage must write image.tif to temp folder');
 
@@ -50,6 +51,7 @@ classdef SaveLoadImageTest < matlab.unittest.TestCase
                 'modelType', 'labels63', 'dims', [16 24 4]);
 
             saveOpts.showWaitbar = false;
+            saveOpts.silent      = true;   % no "TIF saving settings" dialog - it blocks a headless run
             mibModel.saveImage('image', outFile, saveOpts);
             testCase.assumeTrue(isfile(outFile), 'saveImage must write image.tif to temp folder');
 

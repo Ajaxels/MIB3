@@ -89,7 +89,7 @@ are cleaned up.
 ![Create a new model and select the appropriate type](images/menuModelNewModel.png){align=left}
 
 Allocates space for a new model. Use this to start a new model or delete the existing one.<br>
-Alternatively, use the <span class="widget widget-button">Create</span> button in the [Segmentation Panel](../../panels/segm/index.md).<br>
+Alternatively, use the <span class="widget widget-button">New</span> button in the [Segmentation Panel](../../panels/segm/index.md).<br>
 <br>
 For model types see [Convert type](#convert-type) above.
 

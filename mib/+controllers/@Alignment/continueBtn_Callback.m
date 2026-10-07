@@ -107,6 +107,7 @@ if parameters.isBigData
     if isempty(parameters.outputPath)
         utils.dlgs.showErrorDialog(parentFig, ...
             'BigData alignment requires an output store path (BigData_OutputPath).', 'Alignment');
+        notify(obj.mibModel, 'StopProtocol');
         return;
     end
 end

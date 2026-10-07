@@ -81,7 +81,7 @@ if islogical(dataset(1)); dataset = uint8(dataset); end
 if blockModeSwitchLocal == 0  % set the full dataset
     % permute to the target orientation
     if orient==1    % zx [z,x,y,c,t]; permute back
-        dataset = ipermute(dataset, [3 2 1 4 5]);
+        dataset = pagetranspose(permute(dataset, [2 3 1 4 5]));   % == ipermute(dataset, [3 2 1 4 5]), but faster
     elseif orient==2    % yz; get permuted dataset
         dataset = ipermute(dataset, [1 3 2 4 5]);
     end
@@ -143,7 +143,7 @@ else  % set a part of the dataset
 
     % permute to the target orientation
     if orient==1    % zx [z,x,y,c,t]; permute back
-        dataset = ipermute(dataset, [3 2 1 4 5]);
+        dataset = pagetranspose(permute(dataset, [2 3 1 4 5]));   % == ipermute(dataset, [3 2 1 4 5]), but faster
     elseif orient==2    % yz; get permuted dataset
         dataset = ipermute(dataset, [1 3 2 4 5]);
     end

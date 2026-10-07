@@ -359,14 +359,10 @@ else    % perform 2D filters
             logText = sprintf('%s, Sigma:%.3f, Profile:%s', logText, BatchOpt.Sigma{1}, BatchOpt.Profile{1});
             for colCh=1:size(img, 4)
                 parfor (z = 1:size(img, 3), parforArg)
-                    if maxVal == 255
-                        [~, I] = BM3D(1, img(:,:,z,colCh), BatchOpt.Sigma{1}/100*255, BatchOpt.Profile{1});
-                        img(:,:,z,colCh) = uint8(I*maxVal);
-                    else
-                        I = double(img(:,:,z,colCh))/maxVal;
-                        [~, I] = BM3D(1, I, BatchOpt.Sigma{1}/100*255, BatchOpt.Profile{1});
-                        img(:,:,z,colCh) = I*maxVal;
-                    end
+                    % BM3D 4.x: intensities and noise STD (Sigma, % of the max) on the [0, 1] scale;
+                    % the output slightly overshoots [0, 1], which the integer cast saturates
+                    I = BM3D(double(img(:,:,z,colCh))/maxVal, BatchOpt.Sigma{1}/100, BatchOpt.Profile{1});
+                    img(:,:,z,colCh) = I*maxVal;
                     if showWaitbar; pwb.increment(); end
                 end
             end

@@ -14,6 +14,10 @@ classdef AlignmentBigDataTest < matlab.unittest.TestCase
 %
 % See also: controllers.Alignment, io.savers.Zarr3Saver, core.MibBigDataLabels
 
+    properties
+        StopProtocolCount = 0   % StopProtocol events seen during a test
+    end
+
     methods (TestClassSetup)
         function addPaths(testCase)
             % Ensure tests/ is on the path (so mibtest.* resolves) when this file
@@ -243,14 +247,28 @@ classdef AlignmentBigDataTest < matlab.unittest.TestCase
         end
 
         function missingOutputPathAborts(testCase)
-            % Empty BigData_OutputPath aborts without swapping the buffer.
+            % Empty BigData_OutputPath aborts without swapping the buffer, and
+            % stops a running batch protocol instead of letting it continue as if
+            % the step had succeeded.
             [mibModel, ~, N, ~] = testCase.buildBigData('shift');
+
+            testCase.StopProtocolCount = 0;
+            stopListener = addlistener(mibModel, 'StopProtocol', ...
+                @(~, ~) testCase.countStopProtocol());
+            testCase.addTeardown(@() delete(stopListener));
+            % Headless, the error is reported through a non-modal errordlg that
+            % would stay open after the run - close whatever figure this test adds.
+            figuresBefore = findall(groot, 'Type', 'figure');
+            testCase.addTeardown(@() testCase.closeNewFigures(figuresBefore));
+
             B = testCase.batch('Drift correction', 'extended', '');   % empty output path
             testCase.runAlign(mibModel, B);
             d = mibModel.I{1};
             % Unchanged: still original canvas, still pointing at the source store.
             testCase.verifyEqual([d.image.height, d.image.width], [N, N]);
             testCase.verifyFalse(contains(d.image.filename, 'aligned'));
+            testCase.verifyGreaterThanOrEqual(testCase.StopProtocolCount, 1, ...
+                'a missing output path must stop the batch protocol');
         end
 
     end
@@ -348,6 +366,17 @@ classdef AlignmentBigDataTest < matlab.unittest.TestCase
             for k = 1:35; cx=randi(N); cy=randi(N); s=10+randi(18); base=base+0.6*exp(-((xx-cx).^2+(yy-cy).^2)/(2*s^2)); end
             for k = 1:110; s=3+randi(6); r=randi(N-s); c=randi(N-s); base(r:r+s,c:c+s)=0.4+0.6*rand; end
             base = uint8(255*mat2gray(base));
+        end
+
+        function countStopProtocol(testCase)
+            % COUNTSTOPPROTOCOL - StopProtocol listener; the TestCase is a handle.
+            testCase.StopProtocolCount = testCase.StopProtocolCount + 1;
+        end
+
+        function closeNewFigures(~, figuresBefore)
+            % CLOSENEWFIGURES - Delete figures opened since figuresBefore was taken.
+            figuresNow = findall(groot, 'Type', 'figure');
+            delete(figuresNow(~ismember(figuresNow, figuresBefore)));
         end
 
         function runAlign(~, mibModel, BatchOpt)

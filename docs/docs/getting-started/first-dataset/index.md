@@ -93,14 +93,14 @@ Painting becomes a result only once it is stored in a **model**, so create one b
 
 ![Create model dialog](../../user-interface/panels/segm/images/PanelsSegmentation_Create.png){.on-glb align=right width="250"}
 
-- Press <span class="widget widget-button">Create</span> in the
-  [Segmentation panel](../../user-interface/panels/segm/index.md#create-button) and choose how many
+- Press <span class="widget widget-button">New</span> in the
+  [Segmentation panel](../../user-interface/panels/segm/index.md#new-button) and choose how many
   materials the model may hold. **63** is the default and the right choice for most work.
 - Press <span class="widget widget-button">+</span> above the segmentation table to
   [add a material](../../user-interface/panels/segm/index.md#-squeeze-recolor-buttons) - one per
   structure you intend to segment. Double-click a material in the table to rename it.
 
-:octicons-info-16:{.orange-color} If a model is already open, <span class="widget widget-button">Create</span>
+:octicons-info-16:{.orange-color} If a model is already open, <span class="widget widget-button">New</span>
 asks before replacing it - the existing model is deleted, so save it first if you want to keep it.
 
 <div class="clear-float"></div>

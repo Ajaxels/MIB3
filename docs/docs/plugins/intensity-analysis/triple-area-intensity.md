@@ -32,7 +32,7 @@ Access the plugin via: `Ribbon → Plugins → Intensity Analysis → TripleArea
 
 **Create Model**
 
-- Click <span class="widget widget-button">Create</span> in the [Segmentation](../../user-interface/panels/segm/index.md) panel to start a new model.
+- Click <span class="widget widget-button">New</span> in the [Segmentation](../../user-interface/panels/segm/index.md) panel to start a new model.
 
 ![Image title](images/triple-area-intensity-02.png){align=right}
 **Add Nucleus Material**

@@ -214,12 +214,20 @@ if ~obj.mibModel.preferences.System.UserStatsPromptShown
             struct('mibPath', obj.mibModel.mibPath, ...
                    'tierPointsCoef', obj.mibModel.preferences.Users.tierPointsCoef, ...
                    'firstRun', true));
-        if ~isempty(chosenStatsFolder) && ~strcmp(chosenStatsFolder, currentStatsFolder)
-            obj.mibModel.relocateUserStats(chosenStatsFolder);
-        end
     catch err
+        chosenStatsFolder = '';
         warning('MIB:userStatsPrompt', ...
             'Could not show the statistics location dialog: %s', err.message);
+    end
+    if ~isempty(chosenStatsFolder) && ~strcmp(chosenStatsFolder, currentStatsFolder)
+        try
+            obj.mibModel.relocateUserStats(chosenStatsFolder);
+        catch err
+            % nothing was changed; the message is written for the user
+            utils.dlgs.showErrorDialog(obj.view.gui, err.message, 'Statistics folder', '', ...
+                'You can choose the folder again later from Home -> Help -> Your stats.', ...
+                struct('mibPath', obj.mibModel.mibPath, 'Icon', 'puffin_warning'));
+        end
     end
 end
 

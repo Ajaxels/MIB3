@@ -73,18 +73,13 @@ externalDirs = cachedExternalDirs;
 libList = libList(~ismember(libList, initializedLibs));
 if isempty(libList); return; end
 
-% ------------ add BM3D/BM4D to Matlab path ------------
+% ------------ add BM3D to Matlab path ------------
 % plain MATLAB code, does not need Java
 if ismember('bm3d', libList)
     if ~isdeployed && ~isempty(externalDirs)
         % Add BM3D path if available
         if isdir(externalDirs.bm3dInstallationPath) %#ok<*ISDIR>
             addpath(externalDirs.bm3dInstallationPath);
-        end
-
-        % Add BM4D path if available
-        if isdir(externalDirs.bm4dInstallationPath)
-            addpath(externalDirs.bm4dInstallationPath);
         end
     end
     initializedLibs{end+1} = 'bm3d';

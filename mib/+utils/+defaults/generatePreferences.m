@@ -173,7 +173,6 @@ Prefs.ExternalDirs.FijiInstallationPath = [];       % Fiji
 Prefs.ExternalDirs.OmeroInstallationPath = [];      % Omero
 Prefs.ExternalDirs.ImarisInstallationPath = [];     % Imaris
 Prefs.ExternalDirs.bm3dInstallationPath = [];       % BM3D
-Prefs.ExternalDirs.bm4dInstallationPath = [];       % BM4D
 Prefs.ExternalDirs.DeepMIBDir = tempdir;            % DeepMIB network architectures
 Prefs.ExternalDirs.PythonInstallationPath = [];     % Python environment
 Prefs.ExternalDirs.JavaInstallationPath = [];       % Java (MATLAB R2026b+ come without it), see utils.JavaSetup

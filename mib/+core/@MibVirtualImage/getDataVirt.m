@@ -181,7 +181,7 @@ end
 % --- apply orientation permutation ----------------------------------------
 % dataset is in MIB3 order [y, x, z, c, t] at this point
 if orient == 1       % zx: [y,x,z,c,t] -> [z,x,y,c,t]
-    dataset = permute(dataset, [3 2 1 4 5]);
+    dataset = pagetranspose(permute(dataset, [2 3 1 4 5]));   % == permute(dataset, [3 2 1 4 5]), but faster
 elseif orient == 2   % yz: [y,x,z,c,t] -> [y,z,x,c,t]
     dataset = permute(dataset, [1 3 2 4 5]);
 % orient == 3 (yx): no permutation needed

@@ -12,8 +12,9 @@ function checkForUpdate(obj)
 % ``preferences.System.Update.RecheckPeriod`` have passed since the last check.
 %
 % Executed from the single-shot ``obj.updateCheckTimer`` started at the end of
-% ``MibController.initialize``, so the network request (up to 4 s timeout)
-% never blocks the GUI during startup.
+% ``MibController.initialize``, so the network request never blocks the GUI during
+% startup. The version file is read over HTTPS and, when that fails, once more over
+% plain HTTP; each attempt has a 4 s timeout.
 %
 % Output Arguments:
 %   (none)
@@ -35,19 +36,23 @@ obj.mibModel.preferences.System.Update.SinceLastCheck = currentDate;
 
 if isdeployed
     if ismac
-        link = 'http://mib.helsinki.fi/web-update3/mib3_mac.txt';
+        link = 'mib.helsinki.fi/web-update3/mib3_mac.txt';
     elseif isunix
-        link = 'http://mib.helsinki.fi/web-update3/mib3_linux.txt';
+        link = 'mib.helsinki.fi/web-update3/mib3_linux.txt';
     else
-        link = 'http://mib.helsinki.fi/web-update3/mib3_win.txt';
+        link = 'mib.helsinki.fi/web-update3/mib3_win.txt';
     end
 else
-    link = 'http://mib.helsinki.fi/web-update3/mib3_matlab.txt';
+    link = 'mib.helsinki.fi/web-update3/mib3_matlab.txt';
 end
 try
-    urlText = webread(link, weboptions('Timeout', 4, 'ContentType', 'text'));
+    urlText = webread(['https://' link], weboptions('Timeout', 4, 'ContentType', 'text'));
 catch
-    urlText = '0';
+    try
+        urlText = webread(['http://' link], weboptions('Timeout', 4, 'ContentType', 'text'));
+    catch
+        urlText = '0';
+    end
 end
 linefeedPositions = strfind(urlText, sprintf('\n'));
 if ~isempty(linefeedPositions)

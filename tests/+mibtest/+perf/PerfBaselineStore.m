@@ -23,6 +23,12 @@ classdef PerfBaselineStore
         % cheapest measurement that does scale with the code (get2D_labels, ~0.14 ms).
         % Gating resumes as soon as either side crosses the floor, so an accessor that
         % started copying - jumping to milliseconds - still fails the build.
+        % The floor is compared with the FASTEST sample (minSeconds), not the mean. One
+        % stalled call among the 5 3D iterations lifts the mean over the floor on its own:
+        % set3D_mask/labels255 measured 0.028 ms median over 10 fresh models, with one
+        % run at 0.288 ms (2026-10-06), which failed buildtool perf at 1.84x. A real
+        % regression slows every call, so it still raises the minimum. The ratio itself
+        % stays on the mean.
         MinGatedSeconds    = 120e-6;
         DefaultIterations2D = 100;
         DefaultIterations3D = 5;
@@ -74,9 +80,10 @@ classdef PerfBaselineStore
                 return
             end
 
-            % Below the floor on BOTH sides the ratio is noise - report only.
+            % Below the floor on BOTH sides the ratio is noise - report only. Tested on
+            % the fastest sample, not the mean: see MinGatedSeconds.
             floorSeconds = mibtest.perf.PerfBaselineStore.MinGatedSeconds;
-            if mean(secondsSamples) < floorSeconds && refEntry.meanSeconds < floorSeconds
+            if min(secondsSamples) < floorSeconds && refEntry.minSeconds < floorSeconds
                 return
             end
 
@@ -216,7 +223,7 @@ classdef PerfBaselineStore
                     ratio = entry.meanSeconds / refEntry.meanSeconds;
                     baseMs = refEntry.meanSeconds * 1000;
                     floorSeconds = mibtest.perf.PerfBaselineStore.MinGatedSeconds;
-                    if entry.meanSeconds < floorSeconds && refEntry.meanSeconds < floorSeconds
+                    if entry.minSeconds < floorSeconds && refEntry.minSeconds < floorSeconds
                         status = 'not gated';   % see MinGatedSeconds
                     elseif ratio > mibtest.perf.PerfBaselineStore.FailRatio
                         status = 'FAIL';

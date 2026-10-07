@@ -84,7 +84,7 @@ global thresholding is ineffective due to background intensity gradients.
 
 ### 1 — Label training areas
 
-- Start a new model in the [Segmentation panel](../../panels/segm/index.md) with <span class="widget widget-button">Create</span>
+- Start a new model in the [Segmentation panel](../../panels/segm/index.md) with <span class="widget widget-button">New</span>
 - Add two materials with <span class="widget widget-button">+</span> and rename them *Object* and *Background*
 
 ??? abstract "Snapshot"

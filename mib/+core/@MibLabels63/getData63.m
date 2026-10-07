@@ -83,7 +83,7 @@ if blockModeSwitchLocal == 0  % return the full dataset
     if orient==3 % yx orientation
         dataset = obj.data;
     elseif orient==1    % zx; get permuted dataset [z,x,y,c,t]
-        dataset = permute(obj.data, [3 2 1 4 5]);
+        dataset = pagetranspose(permute(obj.data, [2 3 1 4 5]));   % == permute(obj.data, [3 2 1 4 5]), but faster
     elseif orient==2    % yz; get permuted dataset
         dataset = permute(obj.data, [1 3 2 4 5]);
     end
@@ -138,7 +138,7 @@ else  % return a subvolume of the full dataset
 
     dataset = obj.data(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2));
     if orient==1     % permute to zx [z,x,y,c,t]
-        dataset = permute(dataset,[3 2 1 4 5]);
+        dataset = pagetranspose(permute(dataset, [2 3 1 4 5]));   % == permute(dataset, [3 2 1 4 5]), but faster
     elseif orient==2 % permute to yz
         dataset = permute(dataset,[1 3 2 4 5]);
     end

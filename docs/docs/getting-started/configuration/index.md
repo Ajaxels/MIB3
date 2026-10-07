@@ -56,7 +56,7 @@ To make your statistics follow you, put them in a folder that all your computers
 Each computer writes its own file into that folder and MIB adds them all up, so nothing is ever overwritten and no points are lost when you use two computers on the same day. A computer that is temporarily offline simply does not contribute until its file syncs again.
 
 !!! note
-    Choosing a shared folder brings the statistics of that computer with it and picks up whatever your other computers have already stored there. Files left in the previous folder are not deleted.
+    Choosing a shared folder brings the statistics of that computer with it and picks up whatever your other computers have already stored there. If the folder already holds a file of this computer, for example after switching back to a folder used before, that file is kept and updated rather than replaced. Files left in the previous folder are not deleted.
 
 ### Coming from MIB2
 

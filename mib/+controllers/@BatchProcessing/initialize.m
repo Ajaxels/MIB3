@@ -141,9 +141,12 @@ FiltersList = {'Average', 'Disk', 'DistanceMap', 'ElasticDistortion', 'Entropy',
     'AnisotropicDiffusion', 'Bilateral', 'DNNdenoise', 'Median', 'NonLocalMeans', 'Wiener',...
     'AddNoise', 'FastLocalLaplacian', 'FlatfieldCorrection', 'LocalBrighten', 'LocalContrast', 'ReduceHaze', 'UnsharpMask',...
     'Edge', 'SlicClustering', 'WatershedClustering'};
-% add BMxD filter if available
-if ~isempty(obj.mibModel.preferences.ExternalDirs.bm3dInstallationPath)
-    if exist(fullfile(obj.mibModel.preferences.ExternalDirs.bm3dInstallationPath, 'BM3D.m'), 'file') == 2
+% add BMxD filter if available; BM3DProfile.m exists only in BM3D 4.x,
+% older versions have an incompatible BM3D() syntax. MATLAB version only:
+% BM3D is not compiled into the standalone MIB (license)
+bm3dPath = obj.mibModel.preferences.ExternalDirs.bm3dInstallationPath;
+if ~isdeployed && ~isempty(bm3dPath)
+    if isfile(fullfile(bm3dPath, 'BM3D.m')) && isfile(fullfile(bm3dPath, 'BM3DProfile.m'))
         FiltersList{end+1} = 'BMxD';
     end
 end

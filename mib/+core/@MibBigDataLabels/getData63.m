@@ -110,7 +110,7 @@ packed = reshape(packed, size(packed, 1), size(packed, 2), size(packed, 3), 1, 1
 % --- permute [y,x,z] to the requested screen orientation (mirror getDataZarr)
 switch orient
     case 1  % zx: [y,x,z] -> [z, x, y]
-        packed = permute(packed, [3 2 1 4 5]);
+        packed = pagetranspose(permute(packed, [2 3 1 4 5]));   % == permute(packed, [3 2 1 4 5]), but faster
     case 2  % yz: [y,x,z] -> [y, z, x]
         packed = permute(packed, [1 3 2 4 5]);
 end

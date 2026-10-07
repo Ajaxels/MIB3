@@ -13,7 +13,11 @@ function [result, newMaterialIndex] = addMaterial(obj, materialName, newMaterial
 % row is generated.  For large model types (65535/4294967295) the next
 % unused index is found by rescanning the pixel data for the highest label
 % currently in use (unless the caller supplies it via newMaterialIndex),
-% capacity is verified, and the new index is registered.
+% capacity is verified, and the new index is registered. It is written into
+% the "Add to" row when selection is restricted to material, otherwise into
+% the selected material row; only that row's selection moves, unless the
+% Material and Add to columns are linked (``unlinkMaterials`` false), in which
+% case the other selection follows it.
 %
 % In all cases obj.labels.materialsCount is incremented by 1 on success.
 %
@@ -152,7 +156,17 @@ else  %% Types 65535 and 4294967295 -------------------------------------------
     else
         obj.labels.materialsCount = max(obj.labels.materialsCount, newMaterialIndex);
     end
-    obj.selectedMaterial      = matIdx + 2;
-    obj.selectedAddToMaterial = matIdx + 2;
+
+    % Move only the selection whose row received the new index; the other one
+    % follows it only while the Material and Add to columns are linked. With
+    % restrict-to-material on and the columns unlinked, the selected material is
+    % the one selection is restricted to and must stay where it is (as in MIB2)
+    if obj.restrictSelectionToMaterial
+        obj.selectedAddToMaterial = matIdx + 2;
+        if ~obj.unlinkMaterials; obj.selectedMaterial = matIdx + 2; end
+    else
+        obj.selectedMaterial = matIdx + 2;
+        if ~obj.unlinkMaterials; obj.selectedAddToMaterial = matIdx + 2; end
+    end
 end
 end

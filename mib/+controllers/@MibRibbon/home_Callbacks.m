@@ -289,7 +289,13 @@ switch mode
                 ~strcmp(newStatsFolder, fileparts(obj.mibModel.preferences.System.UserStatsProfile))
             % carries this machine's points over and sums in the statistics
             % other workstations already left in the chosen folder
-            obj.mibModel.relocateUserStats(newStatsFolder);
+            try
+                obj.mibModel.relocateUserStats(newStatsFolder);
+            catch err
+                % nothing was changed; the message is written for the user
+                utils.dlgs.showErrorDialog(obj.mibController.view.gui, err.message, 'Statistics folder', '', '', ...
+                    struct('mibPath', obj.mibModel.mibPath, 'Icon', 'puffin_warning'));
+            end
         end
 
     case 'Licenses'                     % obj.handles.ribbonHome.licenses

@@ -220,7 +220,7 @@ function dataset = orientPermute(dataset, orient)
 % ORIENTPERMUTE - [y,x,z] to the requested screen arrangement (mirror of getData63).
 switch orient
     case 1  % zx: [y,x,z] -> [z, x, y]
-        dataset = permute(dataset, [3 2 1]);
+        dataset = pagetranspose(permute(dataset, [2 3 1]));   % == permute(dataset, [3 2 1]), but faster
     case 2  % yz: [y,x,z] -> [y, z, x]
         dataset = permute(dataset, [1 3 2]);
 end
