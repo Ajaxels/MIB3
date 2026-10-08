@@ -8,12 +8,12 @@
 - **Tom Boissonnet** (EMBL) and **Elena Bertseva** (University of Copenhagen), for extensive testing
 - **Ken Deeley**, The MathWorks, for support with implementation of AppContainers GUI framework for MIB3
 - **John Heumann**, The Boulder Laboratory For 3-D Electron Microscopy of Cells, for help with Mattomo
-- **Konstantin Kogan**, University of Helsinki, for assistance with Mac OS
+- **František Kitzberger** (Inst. of Parasitology, Biology Centre CAS) and **Leonhard Breitsprecher** (University of Osnabrueck) for beta testing of MIB3
+- **Konstantin Kogan**, University of Helsinki and **Lucrezia Scandella**, University of Milanfor assistance with Mac OS
 - **David Legland**, INRA, France, for modification of the [Region Adjacency Graph (imRAG)](http://www.mathworks.com/matlabcentral/fileexchange/16938-region-adjacency-graph--rag-) function for detection of indices between watershed regions and help with a few other functions
 - **Vladimir Moltchanov**, for discussions on software architectures
 - **Norman Rzepka**, Scalable Minds GmbH, for implementation of Zarr2/3 libraries for MATLAB
 - **Henrik P Sahlin Pettersen**, Norwegian University of Science and Technology/St. Olavs hospital, Trondheim, for driving DeepMIB for pathology
-- **František Kitzberger** (Inst. of Parasitology, Biology Centre CAS) and **Leonhard Breitsprecher** (University of Osnabrueck) for beta testing of MIB3
 - **Anthropic Claude** for help with MIB2 conversion to MIB3 and implementation of new tools in MIB3
 
 Microscopy Image Browser team would like to acknowledge [the User Community of MATLAB-Central](https://se.mathworks.com/matlabcentral/) and the authors whose code was used during MIB development (see below).
