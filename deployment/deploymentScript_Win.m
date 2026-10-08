@@ -1,5 +1,9 @@
 %% UPDATE THE VERSION!
 %% UPDATE THE PATH!
+%% ADDONS:
+% - Computer Vision Toolbox Model for SOLOv2 Instance Segmentation
+% - Deep Learning Toolbox Converter for ONNX Model Format
+% - Deep Learning Toolbox Converter for TensorFlow Models
 
 VERSION = "2026.10";   % <-- UPDATE THE VERSION!
 PROJECT_ROOT = "c:\Matlab\MIB3\";  % <-- UPDATE THE PATH
