@@ -13,6 +13,12 @@ function homeExamples_Callback(obj, BatchOptIn)
 %     .DirectoryName [cell] output directory, only for DeepMIB projects
 %     .showWaitbar [logical] show or not the waitbar
 %
+% .. note::
+%    With the waitbar shown, every download can be cancelled while it runs
+%    (``core.DownloadProgressMonitor``). A cancel returns before anything is
+%    unzipped or the active dataset is replaced. Unzipping itself is not
+%    cancelable, so the Cancel button is removed for that step.
+%
 
 BatchOpt = struct();
 BatchOpt.Dataset = {'Huh7 and model'};
@@ -66,14 +72,26 @@ if obj.mibModel.preferences.System.DeveloperMode
 end
 
 
+wb = [];    % stays empty without the waitbar: downloads then run without progress or cancel
 if BatchOpt.showWaitbar
     wb = uiprogressdlg(obj.mibModel.getProgressBarParent(), 'Value', 0, ...
         'Message', sprintf('Importing %s dataset\nPlease wait...', BatchOpt.Dataset{1}), ...
-        'Title', 'Example dataset', 'Indeterminate', 'on');
+        'Title', 'Example dataset', 'Indeterminate', 'on', 'Cancelable', 'on');
 end
 
 id = obj.mibModel.getActiveId();
 
+% All downloads below go through core.DownloadProgressMonitor.download instead of
+% webread / unzip(url): the bytes are streamed while wb shows the received /
+% total MB and the speed, and its Cancel button stops the transfer at once.
+%   - raw datasets: [bytes, cancelled] = download(url, wb, message) returns the
+%     file as a uint8 column, the same as webread(url, weboptions('ContentType', 'raw'))
+%   - zip projects: download(url, wb, message, zipFilename) writes a temporary file
+% After each call:
+%   - Cancel pressed: cancelled = true and no error; close the dialog and return
+%     before the active dataset is replaced or anything is unzipped
+%   - download failed: an error is thrown, as webread / unzip(url) did before
+% Huh7 and Trypanosoma download two files (image, model); each is checked.
 switch BatchOpt.Dataset{1}
     case {'Synthetic 2D Large spots', 'Synthetic 2D small spots', 'Synthetic 2.5D large spots', 'Synthetic 2D patch-wise', ...
             '2D EM membranes', '2D LM nuclei', '3D EM mitochondria', '3D LM hair cells'}
@@ -95,17 +113,28 @@ switch BatchOpt.Dataset{1}
             case '3D LM hair cells'
                 url = 'http://mib.helsinki.fi/tutorials/deepmib/4_3DLM_Files.zip';
         end
-        if BatchOpt.showWaitbar; wb.Value = 0.1; end
-        unzip(url, BatchOpt.DirectoryName{1});
-        if BatchOpt.showWaitbar; wb.Value = 0.9; end
+        % download to a temporary file first and unzip it only after a complete
+        % download, so a cancel leaves nothing in the output directory
+        zipFilename = [tempname '.zip'];
+        [~, cancelled] = core.DownloadProgressMonitor.download(url, wb, ...
+            sprintf('Downloading %s...', BatchOpt.Dataset{1}), zipFilename);
+        if cancelled; delete(wb); return; end
+        if ~isempty(wb)
+            wb.Cancelable = 'off';      % unzip cannot be interrupted
+            wb.Indeterminate = 'on';    % and reports no progress
+            wb.Message = sprintf('Unzipping to\n%s', BatchOpt.DirectoryName{1});
+        end
+        unzip(zipFilename, BatchOpt.DirectoryName{1});
+        delete(zipFilename);
         obj.mibModel.currentDirectory = BatchOpt.DirectoryName{1};
         
         % update list of files
         obj.mibController.cDirContents.updateFileList_Callback();
 
     case 'LM 3D SIM ER'
-        webOpts = weboptions('ContentType', 'raw');
-        vol = webread('http://mib.helsinki.fi/tutorials/datasets/LM_SIM_ER.raw', webOpts);
+        [vol, cancelled] = core.DownloadProgressMonitor.download( ...
+            'http://mib.helsinki.fi/tutorials/datasets/LM_SIM_ER.raw', wb, 'Downloading LM 3D SIM ER...');
+        if cancelled; delete(wb); return; end
         vol = reshape(vol, [1024 1024 20 1]);
         obj.mibModel.I{id} = core.MibDataset(vol, dictionary(), 'Standard', 'labels63');
         obj.mibModel.I{id}.image.sliceName = {fullfile(obj.mibModel.currentDirectory, 'LM_SIM_ER.tif')};
@@ -119,8 +148,9 @@ switch BatchOpt.Dataset{1}
         notify(obj.mibModel, 'ShowImage');
 
     case 'LM 3D STED'
-        webOpts = weboptions('ContentType', 'raw');
-        vol = webread('http://mib.helsinki.fi/tutorials/datasets/LM_STED.raw', webOpts);
+        [vol, cancelled] = core.DownloadProgressMonitor.download( ...
+            'http://mib.helsinki.fi/tutorials/datasets/LM_STED.raw', wb, 'Downloading LM 3D STED...');
+        if cancelled; delete(wb); return; end
         vol = reshape(vol, [1024 1024 2 13]);
         vol = permute(vol, [1 2 4 3]);
         obj.mibModel.I{id} = core.MibDataset(vol, dictionary(), 'Standard', 'labels63');
@@ -135,8 +165,10 @@ switch BatchOpt.Dataset{1}
         notify(obj.mibModel, 'ShowImage');
 
     case 'LM WF ER photobleaching'
-        webOpts = weboptions('ContentType', 'raw');
-        vol = webread('http://mib.helsinki.fi/tutorials/datasets/LM_WF_timelapse_ER_Photobleaching.raw', webOpts);
+        [vol, cancelled] = core.DownloadProgressMonitor.download( ...
+            'http://mib.helsinki.fi/tutorials/datasets/LM_WF_timelapse_ER_Photobleaching.raw', wb, ...
+            'Downloading LM WF ER photobleaching...');
+        if cancelled; delete(wb); return; end
         vol = typecast(vol, 'uint16');
         vol = reshape(vol, [301 383 250 1]);
         obj.mibModel.I{id} = core.MibDataset(vol, dictionary(), 'Standard', 'labels63');
@@ -159,10 +191,13 @@ switch BatchOpt.Dataset{1}
                                0.2784 0.6980 0.4941;
                                0.1020 0.2000 0.4353;
                                0.5882 0.6627 0.8353];
-        webOpts = weboptions('ContentType', 'raw');
-        vol = webread('http://mib.helsinki.fi/tutorials/datasets/SBEM_Huh7.raw', webOpts);
+        [vol, cancelled] = core.DownloadProgressMonitor.download( ...
+            'http://mib.helsinki.fi/tutorials/datasets/SBEM_Huh7.raw', wb, 'Downloading Huh7 image (1/2)...');
+        if cancelled; delete(wb); return; end
         vol = reshape(vol, [372 521 75 1]);
-        label = webread('http://mib.helsinki.fi/tutorials/datasets/Labels_SBEM_Huh7.raw', webOpts);
+        [label, cancelled] = core.DownloadProgressMonitor.download( ...
+            'http://mib.helsinki.fi/tutorials/datasets/Labels_SBEM_Huh7.raw', wb, 'Downloading Huh7 model (2/2)...');
+        if cancelled; delete(wb); return; end
         label = reshape(label, [372 521 75]);
         obj.mibModel.I{id} = core.MibDataset(vol, dictionary(), 'Standard', 'labels63');
         obj.mibModel.I{id}.image.sliceName = {fullfile(obj.mibModel.currentDirectory, 'SBEM_Huh7.tif')};
@@ -186,10 +221,13 @@ switch BatchOpt.Dataset{1}
                                0.4902 0.1804 0.5608;
                                1.0000 0.8000 0.4000;
                                0.9686 0.9176 0.7961];
-        webOpts = weboptions('ContentType', 'raw');
-        vol = webread('http://mib.helsinki.fi/tutorials/datasets/SBEM_Trypanosoma.raw', webOpts);
+        [vol, cancelled] = core.DownloadProgressMonitor.download( ...
+            'http://mib.helsinki.fi/tutorials/datasets/SBEM_Trypanosoma.raw', wb, 'Downloading Trypanosoma image (1/2)...');
+        if cancelled; delete(wb); return; end
         vol = reshape(vol, [887 813 171 1]);
-        label = webread('http://mib.helsinki.fi/tutorials/datasets/Labels_SBEM_Trypanosoma.raw', webOpts);
+        [label, cancelled] = core.DownloadProgressMonitor.download( ...
+            'http://mib.helsinki.fi/tutorials/datasets/Labels_SBEM_Trypanosoma.raw', wb, 'Downloading Trypanosoma model (2/2)...');
+        if cancelled; delete(wb); return; end
         label = reshape(label, [887 813 171]);
         obj.mibModel.I{id} = core.MibDataset(vol, dictionary(), 'Standard', 'labels63');
         obj.mibModel.I{id}.image.sliceName = {fullfile(obj.mibModel.currentDirectory, 'SBEM_Trypanosoma.tif')};
@@ -208,6 +246,7 @@ switch BatchOpt.Dataset{1}
 
     case 'MATLAB Brain and model'
         if isdeployed
+            delete(wb);
             utils.dlgs.showErrorDialog(obj.mibModel.getProgressBarParent(), ...
                 'MATLAB brain dataset is only available in MIB for MATLAB!', 'Not available');
             return;
@@ -230,7 +269,7 @@ switch BatchOpt.Dataset{1}
         notify(obj.mibModel, 'ShowImage');
 end
 
-if BatchOpt.showWaitbar; delete(wb); end
+delete(wb);
 
 eventdata = core.ToggleEventData(BatchOpt);
 notify(obj.mibModel, 'SyncBatch', eventdata);

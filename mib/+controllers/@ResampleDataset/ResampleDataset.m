@@ -502,6 +502,18 @@ classdef ResampleDataset < handle
             % Input Arguments:
             %   - **batchModeSwitch** - *(optional)* logical; true when called headlessly
             %
+            % .. note::
+            %    **Cancel.** The progress dialog (GUI path with ``showWaitbar``) is
+            %    cancelable while the image and the labels are being resampled. Both
+            %    are computed into new arrays before anything is written back, so a
+            %    cancel discards them and leaves the dataset, the undo history and the
+            %    BatchOpt unchanged. Cancel is polled per time point and per material;
+            %    a single ``resizeImage3d`` call (one 3D volume) cannot be interrupted,
+            %    so the request takes effect when the current volume finishes. Once
+            %    write-back starts (backup, image, labels, annotations, ROIs) the
+            %    dialog's ``Cancelable`` is switched off, because stopping part-way
+            %    would leave layers at different sizes.
+            %
 
             if obj.mibModel.preferences.System.DeveloperMode
                 fprintf('controllers.ResampleDataset.resampleBtn_Callback: triggered\n');
@@ -518,13 +530,8 @@ classdef ResampleDataset < handle
             if BatchOptLoc.showWaitbar && ~batchModeSwitch
                 wb = uiprogressdlg(obj.view.gui, ...
                     'Value', 0, ...
-                    'Message', sprintf('Resampling image...\ndoing backup...'), ...
-                    'Title', 'Resampling...', 'Cancelable', 'off');
-            end
-            
-            % backup before destructive operation (GUI path only)
-            if ~batchModeSwitch
-                obj.mibModel.backup('image', 1);
+                    'Message', 'Resampling image...', ...
+                    'Title', 'Resampling...', 'Cancelable', 'on');
             end
 
             % resolve target pixel dimensions from the selected mode
@@ -610,6 +617,7 @@ classdef ResampleDataset < handle
             opts.imgType = '4D';
 
             for t = 1:maxT
+                if ~isempty(wb) && wb.CancelRequested; break; end
                 % getData3D returns [h,w,d,c] in MIB3; resizeImage3d accepts [h,w,d,c] natively
                 img = cell2mat(obj.mibModel.getData3D('image', t, 3, NaN, opts));
                 if ~isempty(wb); wb.Value = 0.05; end
@@ -620,7 +628,100 @@ classdef ResampleDataset < handle
                 imgOut(:,:,:,:,t) = utils.resizeImage3d(img, [], resizeOpts);
             end
             clear img;
-            if ~isempty(wb); wb.Value = 0.5; end
+            if ~isempty(wb) && ~wb.CancelRequested; wb.Value = 0.5; end
+
+            % ----- resample labels + mask -----
+            % computed before anything is written back, so Cancel can still
+            % abandon the whole operation with the dataset untouched
+            labelsOpts         = opts;
+            labelsOpts.method  = methodLabels;
+            labelsOpts.imgType = '3D';
+            isLabels63 = isa(obj.mibModel.I{id}.labels, 'core.MibLabels63');
+
+            % Only resample the model when a real model exists. modelExist is the
+            % authoritative flag (false by default, set true by createModel/loadModel/
+            % setData*/moveLayers). Using labels.exists here would be wrong for the
+            % 63-material packed container: it always "exists" (it also holds the
+            % selection layer), so an EMPTY model would be needlessly resampled -
+            % which is what made MIB3 slower than MIB2 (MIB2 gates on modelExist and
+            % skips an absent model). An empty model falls through to the cheap
+            % zeros-reallocation branch below instead.
+            labelsExist = obj.mibModel.I{id}.modelExist;
+            resampleLabels = labelsExist || (isLabels63 && obj.mibModel.I{id}.maskExist);
+
+            modelDataType = 'labels';
+            if resampleLabels && (isempty(wb) || ~wb.CancelRequested)
+                if ~isempty(wb)
+                    wb.Message = sprintf('Resampling labels...\n[%d %d %d] -> [%d %d %d]', ...
+                        obj.height, obj.width, obj.depth, newH, newW, newZ);
+                    wb.Value = 0.75;
+                end
+
+                if isLabels63 && strcmp(methodLabels, 'nearest')
+                    modelDataType = 'everything';
+                end
+
+                % getData4D returns [h,w,d,1,t] for MibLabels63 but [h,w,d,t] for MibLabels;
+                % fold both to [h,w,d,t] (reshape does not copy) so model4D(:,:,:,t) is one time point
+                model4D = cell2mat(obj.mibModel.getData4D(modelDataType, 3, NaN, labelsOpts));
+                model4D = reshape(model4D, size(model4D, 1), size(model4D, 2), size(model4D, 3), []);
+                materialsNumber = numel(obj.mibModel.I{id}.labels.materialNames);
+
+                imgOutModel = zeros([newH, newW, newZ, maxT], class(model4D));
+                for t = 1:maxT
+                    if ~isempty(wb) && wb.CancelRequested; break; end
+                    if maxT == 1
+                        modelSlice = model4D;   % single time point: skip the indexing copy
+                    else
+                        modelSlice = model4D(:,:,:,t);  % [h,w,d]
+                    end
+                    resizeLabOpts              = labelsOpts;
+                    resizeLabOpts.showWaitbar  = 0;
+                    resizeLabOpts.algorithm    = resamplingFn;
+                    if strcmp(resamplingFn, 'interpn') && ~strcmp(methodLabels, 'nearest')
+                        % per-material interpolation for non-nearest methods
+                        modelTemp = zeros([newH, newW, newZ], 'uint8');
+                        for matId = 1:materialsNumber
+                            if ~isempty(wb) && wb.CancelRequested; break; end
+                            matMask    = uint8(modelSlice == matId);
+                            matResized = utils.resizeImage3d(matMask, [], resizeLabOpts);
+                            modelTemp(matResized > 0.33) = matId;
+                        end
+                        imgOutModel(:,:,:,t) = modelTemp;
+                    else
+                        imgOutModel(:,:,:,t) = utils.resizeImage3d(modelSlice, [], resizeLabOpts);
+                    end
+                end
+                clear model4D modelSlice;
+                % hand the result back in the layout getData4D gave: setData63 replaces a full
+                % [h,w,d,1,t] container by bitor/assignment, so a [h,w,d,t] input would
+                % implicit-expand to [h,w,d,t,t] (labels) or drop the time dim (everything)
+                if isLabels63
+                    imgOutModel = reshape(imgOutModel, [newH, newW, newZ, 1, maxT]);
+                end
+            end
+
+            % last point where Cancel is honoured: nothing has been modified yet,
+            % so dropping the resampled arrays leaves the dataset exactly as it was
+            if ~isempty(wb) && wb.CancelRequested
+                delete(wb);
+                fprintf('Resample: cancelled by user, the dataset was not changed\n');
+                notify(obj.mibModel, 'StopProtocol');
+                return;
+            end
+
+            % from here on the dataset is modified step by step; stopping part-way
+            % would leave the image and labels at different sizes, so Cancel is removed
+            if ~isempty(wb)
+                wb.Cancelable = 'off';
+                wb.Message = sprintf('Applying the resampled dataset...\ndoing backup...');
+                wb.Value = 0.8;
+            end
+
+            % backup before destructive operation (GUI path only)
+            if ~batchModeSwitch
+                obj.mibModel.backup('image', 1);
+            end
 
             % write image back - replace the data container directly (setData4D
             % writes into the existing fixed-size array and would error on a size change)
@@ -631,7 +732,7 @@ classdef ResampleDataset < handle
             img5D.width     = newW;
             img5D.depth     = newZ;
             img5D.dim_yxzct = [newH, newW, newZ, img5D.colors, img5D.time];
-            if ~isempty(wb); wb.Value = 0.55; end
+            if ~isempty(wb); wb.Value = 0.85; end
 
             % update bounding box (preserve physical extent, recompute voxel sizes from new dims)
             % updateBoundingBox reads height/width/depth from img5D (already updated) and
@@ -650,69 +751,14 @@ classdef ResampleDataset < handle
             ds.slices{3}  = [1, newZ];
             ds.slices{ds.orientation} = repmat(min(ds.dim_yxzct(ds.orientation), current_layer), 1, 2);
 
-            % ----- resample labels + mask -----
-            labelsOpts         = opts;
-            labelsOpts.method  = methodLabels;
-            labelsOpts.imgType = '3D';
-            isLabels63 = isa(obj.mibModel.I{id}.labels, 'core.MibLabels63');
-
-            % Only resample the model when a real model exists. modelExist is the
-            % authoritative flag (false by default, set true by createModel/loadModel/
-            % setData*/moveLayers). Using labels.exists here would be wrong for the
-            % 63-material packed container: it always "exists" (it also holds the
-            % selection layer), so an EMPTY model would be needlessly resampled -
-            % which is what made MIB3 slower than MIB2 (MIB2 gates on modelExist and
-            % skips an absent model). An empty model falls through to the cheap
-            % zeros-reallocation branch below instead.
-            labelsExist = obj.mibModel.I{id}.modelExist;
-
-            modelDataType = 'labels';
-            if labelsExist || (isLabels63 && obj.mibModel.I{id}.maskExist)
-                if ~isempty(wb)
-                    wb.Message = sprintf('Resampling labels...\n[%d %d %d] -> [%d %d %d]', ...
-                        obj.height, obj.width, obj.depth, newH, newW, newZ);
-                    wb.Value = 0.75;
-                end
-
-                if isLabels63 && strcmp(methodLabels, 'nearest')
-                    modelDataType = 'everything';
-                end
-
-                % getData4D returns [h,w,d,t] for labels (no colour dim)
-                model4D = cell2mat(obj.mibModel.getData4D(modelDataType, 3, NaN, labelsOpts));
-                materialsNumber = numel(obj.mibModel.I{id}.labels.materialNames);
-
-                imgOutModel = zeros([newH, newW, newZ, maxT], class(model4D));
-                for t = 1:maxT
-                    if t==maxT 
-                        modelSlice = model4D; % faster this way
-                    else
-                        modelSlice = model4D(:,:,:,t);  % [h,w,d]
-                    end
-                    resizeLabOpts              = labelsOpts;
-                    resizeLabOpts.showWaitbar  = 0;
-                    resizeLabOpts.algorithm    = resamplingFn;
-                    if strcmp(resamplingFn, 'interpn') && ~strcmp(methodLabels, 'nearest')
-                        % per-material interpolation for non-nearest methods
-                        modelTemp = zeros([newH, newW, newZ], 'uint8');
-                        for matId = 1:materialsNumber
-                            matMask    = uint8(modelSlice == matId);
-                            matResized = utils.resizeImage3d(matMask, [], resizeLabOpts);
-                            modelTemp(matResized > 0.33) = matId;
-                        end
-                        imgOutModel(:,:,:,t) = modelTemp;
-                    else
-                        imgOutModel(:,:,:,t) = utils.resizeImage3d(modelSlice, [], resizeLabOpts);
-                    end
-                end
-                if ~isempty(wb); wb.Value = 0.95; end
-
-                % MibLabels63 stores everything in a fixed-size data{1}; pre-allocate
-                % the container at the new dimensions before setData63 fills it.
+            % ----- write labels + mask back -----
+            if resampleLabels
+                % MibLabels63 stores everything in a fixed-size [h,w,d,1,t] data array;
+                % pre-allocate it at the new dimensions before setData63 fills it.
                 % Regular MibLabels is handled generically by MibImage.setData
                 % which auto-resizes data{1} on full-container replacement.
                 if isLabels63
-                    obj.mibModel.I{id}.labels.data    = zeros([newH, newW, newZ, maxT], 'uint8');
+                    obj.mibModel.I{id}.labels.data    = zeros([newH, newW, newZ, 1, maxT], 'uint8');
                     obj.mibModel.I{id}.labels.height      = newH;
                     obj.mibModel.I{id}.labels.width       = newW;
                     obj.mibModel.I{id}.labels.depth       = newZ;
@@ -722,7 +768,7 @@ classdef ResampleDataset < handle
 
             elseif isLabels63
                 % no model data - reset packed container to new size
-                newDims = [newH, newW, newZ, maxT];
+                newDims = [newH, newW, newZ, 1, maxT];
                 obj.mibModel.I{id}.labels.data = zeros(newDims, 'uint8');
                 obj.mibModel.I{id}.labels.height   = newH;
                 obj.mibModel.I{id}.labels.width    = newW;
@@ -730,6 +776,7 @@ classdef ResampleDataset < handle
                 obj.mibModel.I{id}.labels.time     = maxT;
                 obj.mibModel.I{id}.labels.dim_yxzct = [newH, newW, newZ, 1, maxT];
             end
+            if ~isempty(wb); wb.Value = 0.95; end
 
             % ----- shift annotations -----
             labelsNumber = obj.mibModel.I{id}.annotations.getLabelsNumber();

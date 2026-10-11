@@ -71,11 +71,19 @@ Single-file controller at `mib/+controllers/@ResampleDataset/ResampleDataset.m`.
 - After replacing `data{1}`, update `height/width/depth/dim_yxzct` on the `MibImage` handle
 - Call `obj.mibModel.I{id}.updateBoundingBox(oldBB)` to preserve physical extent and recompute voxel sizes — this propagates new `pixSize` to all layers via `setPixSize`
 - Sync `MibDataset.dim_yxzct`, `current_yxz`, and `slices` (same pattern as `cropDataset.m`)
-- Labels: `getData4D(modelDataType, 3, NaN, labelsOpts)` returns `[h,w,d,t]` (no colour dim); index as `model4D(:,:,:,t)`
+- Labels: `getData4D(modelDataType, 3, NaN, labelsOpts)` returns `[h,w,d,1,t]` for `MibLabels63` but `[h,w,d,t]` for
+  `MibLabels`; reshaped to `[h,w,d,t]` for the loop, and handed back to `setData4D` in the class's own layout
+  (`setData63` full replacement needs `[h,w,d,1,t]` - a 4D input implicit-expands via `bitor` or drops time)
 - Labels write via `setData4D(imgOutModel, modelDataType, 3, NaN, labelsOpts)` — labels container matches new size because it's cleared/re-created
 - Annotations: shift positions by `newZ/depth`, `newW/width`, `newH/height` ratios
 - ROIs: `hROI.resample(resampledRatio)` with `[newW/width, newH/height, newZ/depth]`
 - Fires `NewDataset` + `ShowImage`
+- **Cancel (2026-10-11):** progress dialog is `'Cancelable','on'`. Image *and* labels are resampled
+  into new arrays first; Cancel is polled per time point / per material and honoured up to that point
+  (dataset, undo history and BatchOpt untouched). Backup moved to just before write-back. At
+  write-back `wb.Cancelable = 'off'` - a part-way stop would leave layers at different sizes. A single
+  `resizeImage3d` call (one 3D volume) is not interruptible. Verified at runtime with a
+  `uiprogressdlg` shim that sets `CancelRequested` per phase (start / labels / write-back / none).
 
 ### Task 8 — Ribbon wiring
 
@@ -90,6 +98,7 @@ Single-file controller at `mib/+controllers/@ResampleDataset/ResampleDataset.m`.
 | 1 | `'Value' must be an element defined in the 'Items' property` (updateWidgets line 243) | AppDesigner DropDown requires `Items` to be populated before setting `Value` | Set `.Items` before `.Value` for all three dropdowns in `updateWidgets` |
 | 2 | `Index in position 4 is invalid` in `core.MibImage/getData` | `getData3D(..., 0, ...)` — MIB2 used `0` for "all channels", MIB3 requires `NaN` | Changed `0` → `NaN` in `getData3D` and `setData4D` calls |
 | 3 | `left side is 887×813×171, right side is 443×406×171` (setData4D) | `setData4D` writes into existing fixed-size container; cannot resize | Replaced with direct `image.data{1} = imgOut` + dimension/boundingBox update pattern from `cropDataset.m` |
+| 4 | Time-lapse labels lost/swapped: last time point resized as a whole (t2 empty or got t1's labels); `setData63` error `Index in position 5 exceeds array bounds` | `if t==maxT; modelSlice = model4D` shortcut passed all time points; `MibLabels63` container pre-allocated `[h,w,d,t]` instead of `[h,w,d,1,t]`; result handed to `setData63` as 4D | Shortcut only when `maxT == 1`; reshape `getData4D` output to `[h,w,d,t]`; pre-allocate `[h,w,d,1,t]`; reshape result back to `[h,w,d,1,t]` for `MibLabels63`. Verified T=1/T=2 x 63/255 x nearest/interpn-linear (2026-10-11) |
 
 ---
 
@@ -99,7 +108,7 @@ Single-file controller at `mib/+controllers/@ResampleDataset/ResampleDataset.m`.
 |-------|------|------|
 | All colour channels | `0` | `NaN` |
 | Data layout | `getData3D` → `[h,w,c,d]` | `getData3D` → `[h,w,d,c]` |
-| Labels getData4D shape | `[h,w,c,d,t]` | `[h,w,d,t]` (no colour dim for labels) |
+| Labels getData4D shape | `[h,w,c,d,t]` | `MibLabels63`: `[h,w,d,1,t]`; `MibLabels`: `[h,w,d,t]` (both store `[h,w,d,1,t]`) |
 | Resize write-back | `setData4D` (same-size write) | Direct `data{1} = newArray` + dim update |
 | BoundingBox/pixSize update | direct field assignment | `MibDataset.updateBoundingBox(oldBB)` → reads new h/w/d from MibImage → recalculates pixSize → calls `setPixSize` to propagate |
 | `MibDataset.dim_yxzct` | — | Must be synced manually after image resize: `ds.dim_yxzct = img5D.dim_yxzct` |

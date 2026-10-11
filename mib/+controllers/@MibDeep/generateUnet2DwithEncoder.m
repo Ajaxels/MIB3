@@ -33,8 +33,18 @@ function [net, outputSize] = generateUnet2DwithEncoder(obj, imageSize, encoderNe
 %     'Resnet50' - Resnet50 network
 %
 % Output Arguments:
-%   - **net** - Unet dlnetwork, with softmax (Name: 'FinalNetworkSoftmax-Layer') as the final layer
-%   - **outputSize** - output size of the network returned as [height, width, number of classes]
+%   - **net** - Unet dlnetwork, with softmax (Name: 'FinalNetworkSoftmax-Layer') as the final layer;
+%     ``[]`` when the encoder download was cancelled
+%   - **outputSize** - output size of the network returned as [height, width, number of classes];
+%     ``[]`` when the encoder download was cancelled
+%
+% .. note::
+%    A missing encoder ``.mat`` is downloaded to a temporary zip with
+%    ``core.DownloadProgressMonitor`` (size and speed in ``obj.wb``; Cancel
+%    aborts the transfer at once), from the HTTP address first and the HTTPS one
+%    when that fails (a cancel never starts the second address), and only then
+%    unzipped into
+%    ``preferences.ExternalDirs.DeepMIBDir``, so a cancel leaves nothing there.
 %
 
 if nargin < 3; encoderNetwork = 'Classic'; end
@@ -59,15 +69,26 @@ switch encoderNetwork
         [~, fnTemplate] = fileparts(encoderFilename);
 
         if exist(fullfile(obj.mibModel.preferences.ExternalDirs.DeepMIBDir, encoderFilename), 'file') == 0
-            if obj.BatchOpt.showWaitbar
-                obj.wb.Value = 0.3;
-                obj.wb.Message = 'Downloading network...';
-            end
-            try
-                unzip(sprintf('http://mib.helsinki.fi/web-update/encoders/%s.zip', fnTemplate), obj.mibModel.preferences.ExternalDirs.DeepMIBDir);
-            catch err
-                unzip(sprintf('https://mib.helsinki.fi/web-update/encoders/%s.zip', fnTemplate), obj.mibModel.preferences.ExternalDirs.DeepMIBDir);
-            end
+            % Download the encoder zip with core.DownloadProgressMonitor: obj.wb shows
+            % the received / total MB and the speed, and its Cancel button stops the
+            % transfer at once. The two addresses are tried in order - HTTPS only when
+            % HTTP fails with an error. The zip goes to a temporary file and is unzipped
+            % only after a complete download, so a cancel leaves nothing in DeepMIBDir.
+            % Outcomes:
+            %   - Cancel pressed: cancelled = true, no error; return an empty network,
+            %     which createNetwork and its callers treat as "stop"
+            %   - both addresses failed: the error of the HTTPS attempt is thrown
+            wb = [];
+            if obj.BatchOpt.showWaitbar; wb = obj.wb; end
+            zipFilename = [tempname '.zip'];
+            [~, cancelled] = core.DownloadProgressMonitor.download( ...
+                {sprintf('http://mib.helsinki.fi/web-update/encoders/%s.zip', fnTemplate), ...
+                 sprintf('https://mib.helsinki.fi/web-update/encoders/%s.zip', fnTemplate)}, ...
+                wb, sprintf('Downloading encoder %s...', fnTemplate), zipFilename);
+            if cancelled; net = []; outputSize = []; return; end
+            unzip(zipFilename, obj.mibModel.preferences.ExternalDirs.DeepMIBDir);
+            delete(zipFilename);
+            if obj.BatchOpt.showWaitbar; obj.wb.Indeterminate = 'off'; obj.wb.Message = 'Generating network...'; end
         end
         if obj.BatchOpt.showWaitbar; obj.wb.Value = 0.3; end
         load(fullfile(obj.mibModel.preferences.ExternalDirs.DeepMIBDir, encoderFilename), 'encoder');

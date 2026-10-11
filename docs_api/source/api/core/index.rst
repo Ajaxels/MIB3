@@ -60,4 +60,5 @@ Supporting classes
    ChildView
    MibIconCache
    PoolWaitbar
+   DownloadProgressMonitor
    ToggleEventData

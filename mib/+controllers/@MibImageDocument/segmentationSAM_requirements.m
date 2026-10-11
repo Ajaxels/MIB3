@@ -19,6 +19,17 @@ function status = segmentationSAM_requirements(obj, samVersionName)
 % Output Arguments:
 %   - **status** - [logical] indicates success of the function
 %
+% .. note::
+%    Missing files are downloaded into ``preferences.ExternalDirs.DeepMIBDir``
+%    in one progress dialog that shows the size, speed and step, and can be
+%    cancelled while a file downloads (``core.DownloadProgressMonitor``). A cancel
+%    returns ``status = false`` without updating
+%    ``sessionSettings.SAMsegmenter.Links``; a file cancelled part-way is deleted,
+%    files already completed are kept and are not downloaded again. The
+%    checkpoint and model config are tried from ``*_url_2`` when ``*_url_1``
+%    fails; a cancel never falls through to the second link. The SAM1 onnx zip
+%    goes to a temporary file first, and Cancel is off while it is unzipped.
+%
 % **Example** - check SAM requirements:
 %
 %   .. code-block:: matlab
@@ -31,8 +42,11 @@ function status = segmentationSAM_requirements(obj, samVersionName)
 if nargin < 2; samVersionName = 'SAM2'; end
 if ~ischar(samVersionName)
     % define proper field name in obj.mibModel.preferences.SegmTools structure
-    samVersionName = 'SAM1';
-    if samVersionName==2; samVersionName = 'SAM2'; end
+    if samVersionName == 2
+        samVersionName = 'SAM2';
+    else
+        samVersionName = 'SAM1';
+    end
 end
 
 status = false;
@@ -112,8 +126,7 @@ while checkpointIsMissing
                 '  - yaml (SAM2):   %s\n\n' ...
                 'The destination directory is\n' ...
                 '%s\n\n' ...
-                'Before download, you can update the destination directory\n\n' ...
-                'Please note that the progress bar won''t be updated during the process and it may take a while...'], ...
+                'Before download, you can update the destination directory'], ...
                 checkpointFilename, onnxFilename, modelCfgFilename, obj.mibModel.preferences.ExternalDirs.DeepMIBDir), ...
             'Download checkpoint', ...
             'Continue with download', 'Update directory', 'Cancel', 'Cancel',questDlgOpt);
@@ -135,47 +148,68 @@ while checkpointIsMissing
     end
 end
 
-% download checkpoint file
-if checkpointExists == 0
-    wb = uiprogressdlg(obj.mibModel.getProgressBarParent(), 'Value', 0, 'Message', ...
-        sprintf('Downloading checkpoint %s...\nNote that the progress bar won''t be updated', obj.mibModel.preferences.SegmTools.(samVersionName).backbone), ...
-        'Title', 'Downloading checkpoint file', 'Indeterminate', true);
-    drawnow;
-    try
-        websave(fullfile(obj.mibModel.preferences.ExternalDirs.DeepMIBDir, checkpointFilename), checkpointLink);
-    catch err
-        websave(fullfile(obj.mibModel.preferences.ExternalDirs.DeepMIBDir, checkpointFilename), checkpointLink2);
-    end
-    wb.Value = 1;
-    fprintf('The checkpoint file %s was downloaded to %s\n', checkpointFilename, obj.mibModel.preferences.ExternalDirs.DeepMIBDir);
-    close(wb);
+% ---- download the missing files ----
+% core.DownloadProgressMonitor.download streams each file into one cancelable
+% progress dialog that shows the step, the received / total MB and the speed.
+% How its outcomes are handled here:
+%   - {link, link2}: link2 (mirror) is tried only when link fails with an error
+%   - Cancel pressed: it returns cancelled = true WITHOUT an error and has already
+%     deleted the partly written file, so the isfile() checks above stay reliable:
+%     files completed before the cancel are kept and the next call downloads only
+%     what is still missing. status stays false and sessionSettings is not updated.
+%   - every address of a file failed: it throws; the catch below closes the
+%     dialog and passes the error on to the caller
+deepMibDir = obj.mibModel.preferences.ExternalDirs.DeepMIBDir;
+backbone = obj.mibModel.preferences.SegmTools.(samVersionName).backbone;
+numFiles = nnz(~[checkpointExists, onnxExists, modelCfgExists]);
+stepIndex = 0;
+wb = [];
+if numFiles > 0
+    wb = uiprogressdlg(obj.mibModel.getProgressBarParent(), 'Message', 'Connecting...', ...
+        'Title', sprintf('Downloading %s', backbone), 'Indeterminate', 'on', 'Cancelable', 'on');
 end
 
-if onnxExists == 0
-    wb = uiprogressdlg(obj.mibModel.getProgressBarParent(), 'Value', 0, 'Message', ...
-        sprintf('Downloading onnx %s...\nNote that the progress bar won''t be updated', obj.mibModel.preferences.SegmTools.(samVersionName).backbone), ...
-        'Title', 'Downloading onnx file', 'Indeterminate', true);
-    drawnow;
-    unzip(onnxLink, obj.mibModel.preferences.ExternalDirs.DeepMIBDir);
-    wb.Value = 1;
-    fprintf('The onnx file %s was downloaded to %s\n', onnxFilename, obj.mibModel.preferences.ExternalDirs.DeepMIBDir);
-    close(wb);
-end
-
-if modelCfgExists == 0
-    wb = uiprogressdlg(obj.mibModel.getProgressBarParent(), 'Value', 0, 'Message', ...
-        sprintf('Downloading model config for "%s"\nNote that the progress bar won''t be updated', obj.mibModel.preferences.SegmTools.(samVersionName).backbone), ...
-        'Title', 'Downloading yaml file', 'Indeterminate', true);
-    drawnow;
-    try
-        websave(fullfile(obj.mibModel.preferences.ExternalDirs.DeepMIBDir, modelCfgFilename), modelCfgLink);
-    catch err
-        websave(fullfile(obj.mibModel.preferences.ExternalDirs.DeepMIBDir, modelCfgFilename), modelCfgLink2);
+try
+    if checkpointExists == 0
+        stepIndex = stepIndex + 1;
+        message = sprintf('Checkpoint %s (%d/%d)', checkpointFilename, stepIndex, numFiles);
+        [~, cancelled] = core.DownloadProgressMonitor.download({checkpointLink, checkpointLink2}, wb, message, ...
+            fullfile(deepMibDir, checkpointFilename));
+        if cancelled; delete(wb); return; end
+        fprintf('The checkpoint file %s was downloaded to %s\n', checkpointFilename, deepMibDir);
     end
-    wb.Value = 1;
-    fprintf('The model config file %s was downloaded to %s\n', modelCfgFilename, obj.mibModel.preferences.ExternalDirs.DeepMIBDir);
-    close(wb);
+
+    if onnxExists == 0
+        stepIndex = stepIndex + 1;
+        message = sprintf('Onnx for %s (%d/%d)', backbone, stepIndex, numFiles);
+        % the onnx comes zipped: download it to a temporary file, so a cancel leaves
+        % nothing in deepMibDir, and unzip it only after a complete download
+        zipFilename = [tempname '.zip'];
+        [~, cancelled] = core.DownloadProgressMonitor.download(onnxLink, wb, message, zipFilename);
+        if cancelled; delete(wb); return; end
+        wb.Cancelable = 'off';      % unzip cannot be interrupted
+        wb.Message = sprintf('Unzipping onnx for %s...', backbone);
+        unzip(zipFilename, deepMibDir);
+        delete(zipFilename);
+        wb.Cancelable = 'on';
+        fprintf('The onnx file %s was downloaded to %s\n', onnxFilename, deepMibDir);
+    end
+
+    if modelCfgExists == 0
+        stepIndex = stepIndex + 1;
+        message = sprintf('Model config %s (%d/%d)', modelCfgFilename, stepIndex, numFiles);
+        [~, cancelled] = core.DownloadProgressMonitor.download({modelCfgLink, modelCfgLink2}, wb, message, ...
+            fullfile(deepMibDir, modelCfgFilename));
+        if cancelled; delete(wb); return; end
+        fprintf('The model config file %s was downloaded to %s\n', modelCfgFilename, deepMibDir);
+    end
+catch err
+    % every address of a file failed (or the unzip failed): close the dialog and
+    % pass the error on; nothing partial is left in deepMibDir
+    if ~isempty(wb) && isvalid(wb); delete(wb); end
+    rethrow(err);
 end
+delete(wb);
 
 % update sessionSettings with the selected backbone
 obj.mibModel.sessionSettings.SAMsegmenter.Links.checkpointFilename = checkpointFilename;

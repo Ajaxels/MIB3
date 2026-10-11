@@ -34,6 +34,16 @@ function net = generateDeepLabV3Network(obj, imageSize, numClasses, targetNetwor
 %     'xception' - xception network (requires matlab)
 %     'inceptionresnetv2' - inceptionresnetv2 network (required matlab)
 %
+% Output Arguments:
+%   - **net** - layer graph of the network; ``[]`` when the user closed the
+%     template dialog or cancelled the template download
+%
+% .. note::
+%    A missing template ``.mat`` is downloaded to a temporary zip with
+%    ``core.DownloadProgressMonitor`` (size and speed in ``obj.wb``; Cancel
+%    aborts the transfer at once) and only then unzipped into
+%    ``preferences.ExternalDirs.DeepMIBDir``, so a cancel leaves nothing there.
+%
 
 % Updates
 % 
@@ -91,12 +101,24 @@ else
                 fnTemplate = [fnTemplate '_pathology'];
         end
 
-        if obj.BatchOpt.showWaitbar
-            obj.wb.Value = 0;
-            obj.wb.Message = 'Downloading network...'; 
-        end
-        unzip(sprintf('http://mib.helsinki.fi/tutorials/deepmib/%s.zip', fnTemplate), obj.mibModel.preferences.ExternalDirs.DeepMIBDir);
-        if obj.BatchOpt.showWaitbar; obj.wb.Message = 'Generating network...'; obj.wb.Value = 0.5; end
+        % Download the template zip with core.DownloadProgressMonitor: obj.wb shows
+        % the received / total MB and the speed, and its Cancel button stops the
+        % transfer at once. The zip goes to a temporary file and is unzipped only
+        % after a complete download, so a cancel leaves nothing in DeepMIBDir.
+        % Outcomes:
+        %   - Cancel pressed: cancelled = true, no error; return an empty network,
+        %     which createNetwork and its callers treat as "stop"
+        %   - download failed: the error is thrown, as unzip(url) did before
+        wb = [];
+        if obj.BatchOpt.showWaitbar; wb = obj.wb; end
+        zipFilename = [tempname '.zip'];
+        [~, cancelled] = core.DownloadProgressMonitor.download( ...
+            sprintf('http://mib.helsinki.fi/tutorials/deepmib/%s.zip', fnTemplate), wb, ...
+            sprintf('Downloading template %s...', fnTemplate), zipFilename);
+        if cancelled; net = []; return; end
+        unzip(zipFilename, obj.mibModel.preferences.ExternalDirs.DeepMIBDir);
+        delete(zipFilename);
+        if obj.BatchOpt.showWaitbar; obj.wb.Indeterminate = 'off'; obj.wb.Message = 'Generating network...'; obj.wb.Value = 0.5; end
     end
     load(fullfile(obj.mibModel.preferences.ExternalDirs.DeepMIBDir, netName), 'lgraph');
 end

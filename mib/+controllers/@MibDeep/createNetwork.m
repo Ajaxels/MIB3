@@ -60,6 +60,7 @@ try
                     outputPatchSize = [outputPatchSize(1), outputPatchSize(2), 1, outputPatchSize(3)];  % reformat to [height, width, depth, numClasses]
                 case 'U-net +Encoder'
                     [lgraph, outputPatchSize] = obj.generateUnet2DwithEncoder(inputPatchSize([1 2 colorDimension]), obj.BatchOpt.T_EncoderNetwork{1});
+                    if isempty(lgraph); return; end
                     outputPatchSize = [outputPatchSize(1), outputPatchSize(2), 1, outputPatchSize(3)];  % reformat to [height, width, depth, numClasses]
                 case 'SegNet'
                     % segnetLayers was removed in R2026a with no replacement function, so
@@ -117,6 +118,7 @@ try
                         end
                     case 'U-net +Encoder'
                         [lgraph, outputPatchSize] = obj.generateUnet2DwithEncoder(inputPatchSize([1 2 colorDimension]), obj.BatchOpt.T_EncoderNetwork{1});
+                        if isempty(lgraph); return; end
                         outputPatchSize = [outputPatchSize(1) outputPatchSize(2) 1]; % [height, width, depth]
                         % remove the skip connection from the first layer
                         lgraph = layerGraph(lgraph);

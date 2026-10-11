@@ -213,9 +213,11 @@ classdef UpdateCheck < handle
         % unzipping into ``mibPath`` itself would create ``mib\mib\`` and leave
         % the running installation untouched.
         %
-        % Cancel is honoured after the download, before the unzip, which is the
-        % only irreversible step; the download and the unzip themselves cannot be
-        % interrupted, so the dialog stops being cancelable once the unzip starts.
+        % The download goes through ``core.DownloadProgressMonitor``: the dialog
+        % shows the size and speed, and Cancel aborts the transfer at once (a
+        % cancel never falls through to the HTTP retry; a partial file is deleted).
+        % The unzip is the only irreversible step and cannot be interrupted, so the
+        % dialog stops being cancelable once it starts.
         %
         % Files held open by MATLAB cannot be replaced; ``unzip`` skips them with
         % the ``MATLAB:io:archive:extractArchive:OverwriteOpenFile`` warning and
@@ -257,34 +259,36 @@ classdef UpdateCheck < handle
                 return;
             end
 
+            downloadMessage = 'Downloading Microscopy Image Browser...';
             progressDialog = uiprogressdlg(obj.view.gui, 'Title', 'Update MIB', ...
-                'Message', sprintf('Downloading Microscopy Image Browser...\nMay take a few minutes.'), ...
-                'Indeterminate', 'on', 'Cancelable', 'on');
+                'Message', downloadMessage, 'Indeterminate', 'on', 'Cancelable', 'on');
+            % Download the zip to a temporary file with core.DownloadProgressMonitor:
+            % the dialog shows the received / total MB and the speed, and Cancel stops
+            % the transfer at once. The two addresses are tried in order - plain HTTP
+            % only when HTTPS fails with an error. Outcomes:
+            %   - Cancel pressed: cancelled = true, no error, the partial zip is deleted
+            %   - both addresses failed: error from the HTTP attempt, partial zip deleted
             zipFilename = [tempname '.zip'];
             try
-                websave(zipFilename, 'https://mib.helsinki.fi/web-update3/MIB3_Matlab.zip', weboptions('Timeout', 60));
-            catch
-                % fall back to plain HTTP; remove a partial file of the failed attempt first
-                if isfile(zipFilename); delete(zipFilename); end
-                try
-                    websave(zipFilename, 'http://mib.helsinki.fi/web-update3/MIB3_Matlab.zip', weboptions('Timeout', 60));
-                catch err
-                    delete(progressDialog);
-                    if isfile(zipFilename); delete(zipFilename); end
-                    utils.dlgs.showErrorDialog(obj.view.gui, err, 'Update MIB', ...
-                        'The update could not be downloaded. Nothing was changed.');
-                    return;
-                end
-            end
-            if progressDialog.CancelRequested
+                [~, cancelled] = core.DownloadProgressMonitor.download( ...
+                    {'https://mib.helsinki.fi/web-update3/MIB3_Matlab.zip', ...
+                     'http://mib.helsinki.fi/web-update3/MIB3_Matlab.zip'}, ...
+                    progressDialog, downloadMessage, zipFilename);
+            catch err
                 delete(progressDialog);
-                delete(zipFilename);
+                utils.dlgs.showErrorDialog(obj.view.gui, err, 'Update MIB', ...
+                    'The update could not be downloaded. Nothing was changed.');
+                return;
+            end
+            if cancelled
+                delete(progressDialog);
                 uialert(obj.view.gui, 'The update was canceled. Nothing was changed.', 'Update MIB', 'Icon', 'info');
                 return;
             end
 
             progressDialog.Message = sprintf('Installing to\n%s\n\nPlease wait...', destination);
             progressDialog.Cancelable = 'off';
+            progressDialog.Indeterminate = 'on';    % unzip reports no progress
             lastwarn('');
             try
                 extractedFiles = unzip(zipFilename, destination);
