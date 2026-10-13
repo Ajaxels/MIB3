@@ -102,6 +102,52 @@ if isLayoutWidget && ~isempty(obj.BatchOpt.InputPath)
     end
 end
 
+% Slices of stack tiles (controllers.Stitching.sectionMode). Register slices and
+% a change to or from Prealigned decide whether a tile is ONE block or one
+% piece per slice, and which pairs exist, so the layout is rebuilt at once - a
+% set of folders that cannot be split (unequal image counts, single-file
+% stacks) is reported and the settings return to Prealigned, rather than
+% failing later at Measure. Between the two aligning modes only the solve
+% changes: the measurements stand, the positions do not.
+isRegisterSlicesWidget = isfield(obj.view.handles, 'RegisterSlices') && ...
+    isequal(hObject, obj.view.handles.RegisterSlices);
+isSectionAlignmentWidget = isfield(obj.view.handles, 'SectionAlignment') && ...
+    isequal(hObject, obj.view.handles.SectionAlignment);
+% Without folder tiles nothing can be split: only Prealigned is possible.
+if ~obj.registerSlicesAvailable()
+    obj.BatchOpt.RegisterSlices = true;
+    obj.BatchOpt.SectionAlignment{1} = 'Prealigned';
+end
+if isRegisterSlicesWidget || isSectionAlignmentWidget
+    layoutIsSplit = ~isempty(obj.layout) && isfield(obj.layout, 'stageTile') && ...
+        ~any(arrayfun(@(piece) isempty(piece.stageTile), obj.layout));
+    needsSplit = ~strcmp(obj.sectionMode(), 'prealigned');
+    if (isRegisterSlicesWidget || layoutIsSplit ~= needsSplit) && ~isempty(obj.BatchOpt.InputPath)
+        try
+            obj.buildLayoutFromBatchOpt();
+            if ~isempty(obj.view.handles.previewAxes.Children)
+                obj.previewLayoutBtn_Callback();
+            end
+        catch splitError
+            obj.BatchOpt.RegisterSlices = true;
+            obj.BatchOpt.SectionAlignment{1} = 'Prealigned';
+            % The block layout may fail for reasons of its own; the dialog explains the first.
+            try %#ok<TRYNC>
+                obj.buildLayoutFromBatchOpt();
+            end
+            utils.dlgs.showErrorDialog(obj.view.gui, splitError.message, 'Slices of the tiles');
+        end
+    else
+        obj.positions  = [];
+        obj.canvas     = [];
+        obj.solverInfo = struct();
+    end
+end
+if isRegisterSlicesWidget || isSectionAlignmentWidget || ...
+        isequal(hObject, obj.view.handles.SubfolderMode) || isequal(hObject, obj.view.handles.LayoutSource)
+    obj.updateWidgets();
+end
+
 % When the registration method or the transform model changes, refresh the
 % dependent enable states: the feature-detector selector + Settings button run
 % whenever the feature-based estimator will (Feature-based method, or any

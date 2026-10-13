@@ -20,7 +20,7 @@ obj.currentEdgeIdx = edgeIdx;
 % empty when the seam is filtered out of the current fix mode's table, which
 % clears the selection - the pair view still shows the seam.
 if obj.hasWidget('seamTable')
-    rankPos = find(obj.visibleRanking() == edgeIdx, 1);
+    rankPos = obj.rowOfEdge(edgeIdx);
     try %#ok<TRYNC>
         obj.view.handles.seamTable.Selection = rankPos;
         % Selection alone does not bring an out-of-view row into the visible

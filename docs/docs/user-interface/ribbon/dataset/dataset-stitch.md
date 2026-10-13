@@ -468,6 +468,12 @@ Select the image files or folders to stitch.
   **Grid** and **Filename pattern**, and is disabled for the other sources, which already know:
   a position file detects folders per entry, an Atlas `.ve-mif` names its tile files, a SerialEM
   `.mdoc` reads slices out of one stack, and Bio-Formats series carry their own stacks.
+- <label class="widget widget-checkbox">Register slices</label> *(folder tiles only)*: whether the
+  slices of the tile folders belong together. **Untick** it when they are unrelated - every slice is
+  then stitched on its own and the slices are not aligned to each other. Ticked (*default*),
+  <span class="widget widget-dropdown">Section alignment</span> on the
+  [Registration tab](#registration-tab) says how they are aligned. Every mode except *Prealigned*
+  needs all folders to hold the same number of images.
 - <span class="widget widget-edit">Input tiles</span>: the selection, **one path per row** - tile
   files, tile folders, the position file / `.ve-mif` / `.mdoc`, or the Bio-Formats file(s). It is
   only a display of what *Pick tiles* selected; selection order does not matter, since tiles are
@@ -607,6 +613,29 @@ the existing measurements, so re-run both afterwards.
 - <span class="widget widget-edit">Nominal position weight</span>: how strongly tiles with weak or
   rejected measurements are pulled back toward their nominal positions (0-1, default 0.10). With `0`
   such tiles are positioned only through their other, valid measurements.
+- <span class="widget widget-dropdown">Section alignment</span> *(Register slices ticked)*: how the
+  slices of each tile are aligned to each other
+    - **Prealigned** (*default*): each tile's stack is already aligned, so it is placed as one
+      block - for Z-stacks from a confocal or FIB-SEM, or tiles aligned beforehand.
+    - **Follow image content**: every slice is stitched and registered to the next by its pixels.
+      Right when the sample can drift between sections (FIB-SEM montages, physical serial
+      sections). Structures running obliquely through Z can make the stack lean slightly.
+    - **Trust stage positions**: every slice is stitched and stays near its tile's stage position;
+      only the stage jitter (backlash) is corrected. Right when the sample cannot move (serial
+      block-face imaging of a fixed block).
+
+    The two last ones work with *Translation* only.
+
+??? note "Drift or backlash?"
+    After *Optimize positions* the status line reports how far whole sections move over the stack,
+    and the alignment chip's tooltip compares it with what the stage jitter alone explains.
+
+    - **Within the stage jitter**: backlash - choose *Trust stage positions*.
+    - **Beyond it**: sample drift, or structures running obliquely through Z - the measurements
+      cannot tell these apart. Choose *Follow image content* if your sample can drift, *Trust stage
+      positions* if it cannot. If unsure, run both and scroll through Z: whole sections sliding
+      sideways means drift; the whole stack slowly leaning means oblique structures.
+
 - <label class="widget widget-checkbox">Sub-pixel placement</label>: refine each pairwise
   **measurement** to sub-pixel precision with a parabolic fit to the correlation peak. Off by
   default.

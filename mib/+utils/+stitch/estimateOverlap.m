@@ -81,13 +81,18 @@ cancelled = false;
 if numel(layout) < 2 || ~isfield(layout, 'gridRC'); return; end
 
 % ---- collect grid-adjacent pairs from gridRC (nominal-independent) --------
+% Within ONE Z-layer: every layer repeats the same gridRC values (a section
+% layout has one layer per section), and a neighbour taken from another layer
+% would correlate two different planes.
 gridRows = reshape([layout.gridRC], 2, [])';
+zLayers = [layout.zLayer]';
 xPairs = zeros(0, 2);   % [i j]: same row, col+1
 yPairs = zeros(0, 2);   % [i j]: same col, row+1
 for i = 1:numel(layout)
-    jx = find(gridRows(:, 1) == gridRows(i, 1) & gridRows(:, 2) == gridRows(i, 2) + 1, 1);
+    sameLayer = zLayers == zLayers(i);
+    jx = find(sameLayer & gridRows(:, 1) == gridRows(i, 1) & gridRows(:, 2) == gridRows(i, 2) + 1, 1);
     if ~isempty(jx); xPairs(end+1, :) = [i, jx]; end %#ok<AGROW>
-    jy = find(gridRows(:, 1) == gridRows(i, 1) + 1 & gridRows(:, 2) == gridRows(i, 2), 1);
+    jy = find(sameLayer & gridRows(:, 1) == gridRows(i, 1) + 1 & gridRows(:, 2) == gridRows(i, 2), 1);
     if ~isempty(jy); yPairs(end+1, :) = [i, jy]; end %#ok<AGROW>
 end
 xPairs = samplePairs(xPairs, options.maxPairsPerDirection);

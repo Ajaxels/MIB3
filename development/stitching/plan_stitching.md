@@ -6,7 +6,8 @@ fusion, interactive rough placement, the seam inspector (manual QC), and the Fib
 layout sources with optional import of the vendor's own stitch. See companion docs:
 [`plan_transforms.md`](plan_transforms.md) (transform models), [`plan_inspector.md`](plan_inspector.md)
 (seam inspector), [`mlapp_widgets.md`](mlapp_widgets.md) (widget spec, needed if the GUI is extended),
-[`smoke_tests.md`](smoke_tests.md) (GUI regression checklist).
+[`smoke_tests.md`](smoke_tests.md) (GUI regression checklist), [`plan_serial_sections.md`](plan_serial_sections.md)
+(PLANNED: one folder per tile of serial sections, stitched and Z-registered in one pass).
 
 ## What it does
 
@@ -34,6 +35,7 @@ slice fits in RAM) / `fuseToFiles` (the same provider handed to any `io.SaverFac
 `saveStream`). Plus `estimateOverlap`, `resolveTileEntry`, `blendWeights`, `canvasBackground`, `tileCacheLRU`,
 `synthesizeEdgesFromPositions` (shared by every source that imports a placement),
 `layoutPixSize` (the acquisition scale, or `[]` when the source does not know it),
+`splitLayoutIntoSections` (folder tiles -> one piece per serial section, see `plan_serial_sections.md`),
 `saveProject`/`loadProject` (sidecar JSON), `scoreSeams`/`rankSeams`/`localCorrelate` (inspector core),
 `tileCacheBudget` (the reader's cache size).
 
@@ -66,7 +68,12 @@ defaulted fields.
 metadata}; `InputPath`; `LayoutImport` {Nominal grid only, Vendor seam measurements, Vendor seams +
 solved positions — widget-less, set by the import dialog, consulted only when InputPath is a
 `.ve-mif` or a `.mdoc`; the retired `AtlasImport` name/values are still accepted on input via
-`Stitching.renameLegacyFields`}; `SubfolderMode` (tiles are folders/Z-stacks); `GridRows`/`GridCols` (0=auto);
+`Stitching.renameLegacyFields`}; `SubfolderMode` (tiles are folders/Z-stacks); `RegisterSlices` + `SectionAlignment` {Prealigned *(default)*, Follow image content, Trust stage
+positions} - how the slices of stack tiles relate, turned into `Stitching.sectionMode`
+(`unrelated` = RegisterSlices off, each slice stitched alone / `prealigned` = one block per stack,
+the pre-2026-10 behaviour / `aligned` = split + section-to-section seams), see
+`plan_serial_sections.md`;
+`GridRows`/`GridCols` (0=auto);
 `TileOrder`; `OverlapX/Y`; `EstimateOverlap`; `TransformType` {Translation, Rigid, Similarity, Affine};
 `AllowRotation`; `RegistrationMethod` {Phase correlation, Feature-based}; `FeatureDetectorType`;
 `QualityThreshold`; `NominalPositionWeight`; `SubpixelPlacement`; `OutputMode` {In memory, OME-Zarr3
@@ -99,6 +106,17 @@ misalignment is not softened before it has been judged}; `IntensityCorrection`;
   dims) — thin-strip/corner cross-layer overlaps give unreliable dz and are redundant; dropping them
   took a 3D smoke solve from 33 px error to 0.03 px. Within-layer tiles share one focal plane (dz
   constrained to 0); only cross-layer pairs measure dz.
+- **Two SINGLE-slice tiles never scan dz** (`measureZShift`): dz = 0 is the only offset at which
+  they share a slice, so the scan always returned 0 and a series of 2D sections collapsed onto one
+  plane (24 sections -> 5 slices on smoke test 19). dz stays at nominal; XY is measured between the
+  two images. Only when BOTH are single - a slice against a stack still scans. The matching rule in
+  `scoreSeams`: tiles that TOUCH in Z at the solved dz are scored on their facing slices, not `NaN`.
+  See `plan_serial_sections.md`.
+- **Section-to-section registration shears; only the stage prior stops it.** Oblique structures
+  bias every section-to-section seam the same way, so the chained error grows linearly with depth
+  and leaves no residual for any robust loss to find. The stage prior holds it, but holds real
+  sample drift just as firmly - so `SectionAlignment` is a user choice between the two, not a
+  weight to tune. Numbers and the rejected alternatives: `plan_serial_sections.md` step 3.
 - **Affine solver:** L-rows (linear-part residuals) must be weighted by `linearScale²`, not
   `linearScale¹` — a residual `r` in `L` costs `linearScale·r` PIXELS; underweighting lets the solver
   trade measurement-exactness for spring satisfaction (0.6 px bias vs ~5e-3 px correctly weighted).

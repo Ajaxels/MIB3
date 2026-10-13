@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../../../assets/mib_icon.png">
-      <meta name="generator" content="zensical-0.0.46">
+      <meta name="generator" content="zensical-0.0.44">
     
     
       
@@ -36,7 +36,7 @@
       
         
       
-      <link rel="stylesheet" href="../../../assets/stylesheets/modern/main.19d3147f.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/modern/main.fba56155.min.css">
       
         
           
@@ -6697,6 +6697,12 @@ that - <a href="#intensity-correction">Intensity correction</a> does.</p>
   <strong>Grid</strong> and <strong>Filename pattern</strong>, and is disabled for the other sources, which already know:
   a position file detects folders per entry, an Atlas <code>.ve-mif</code> names its tile files, a SerialEM
   <code>.mdoc</code> reads slices out of one stack, and Bio-Formats series carry their own stacks.</li>
+<li><label class="widget widget-checkbox">Register slices</label> <em>(folder tiles only)</em>: whether the
+  slices of the tile folders belong together. <strong>Untick</strong> it when they are unrelated - every slice is
+  then stitched on its own and the slices are not aligned to each other. Ticked (<em>default</em>),
+  <span class="widget widget-dropdown">Section alignment</span> on the
+  <a href="#registration-tab">Registration tab</a> says how they are aligned. Every mode except <em>Prealigned</em>
+  needs all folders to hold the same number of images.</li>
 <li><span class="widget widget-edit">Input tiles</span>: the selection, <strong>one path per row</strong> - tile
   files, tile folders, the position file / <code>.ve-mif</code> / <code>.mdoc</code>, or the Bio-Formats file(s). It is
   only a display of what <em>Pick tiles</em> selected; selection order does not matter, since tiles are
@@ -6868,6 +6874,35 @@ their nominal positions.</p>
 <li><span class="widget widget-edit">Nominal position weight</span>: how strongly tiles with weak or
   rejected measurements are pulled back toward their nominal positions (0-1, default 0.10). With <code>0</code>
   such tiles are positioned only through their other, valid measurements.</li>
+<li>
+<p><span class="widget widget-dropdown">Section alignment</span> <em>(Register slices ticked)</em>: how the
+  slices of each tile are aligned to each other</p>
+<ul>
+<li><strong>Prealigned</strong> (<em>default</em>): each tile's stack is already aligned, so it is placed as one
+  block - for Z-stacks from a confocal or FIB-SEM, or tiles aligned beforehand.</li>
+<li><strong>Follow image content</strong>: every slice is stitched and registered to the next by its pixels.
+  Right when the sample can drift between sections (FIB-SEM montages, physical serial
+  sections). Structures running obliquely through Z can make the stack lean slightly.</li>
+<li><strong>Trust stage positions</strong>: every slice is stitched and stays near its tile's stage position;
+  only the stage jitter (backlash) is corrected. Right when the sample cannot move (serial
+  block-face imaging of a fixed block).</li>
+</ul>
+<p>The two last ones work with <em>Translation</em> only.</p>
+</li>
+</ul>
+<details class="note">
+<summary>Drift or backlash?</summary>
+<p>After <em>Optimize positions</em> the status line reports how far whole sections move over the stack,
+and the alignment chip's tooltip compares it with what the stage jitter alone explains.</p>
+<ul>
+<li><strong>Within the stage jitter</strong>: backlash - choose <em>Trust stage positions</em>.</li>
+<li><strong>Beyond it</strong>: sample drift, or structures running obliquely through Z - the measurements
+  cannot tell these apart. Choose <em>Follow image content</em> if your sample can drift, <em>Trust stage
+  positions</em> if it cannot. If unsure, run both and scroll through Z: whole sections sliding
+  sideways means drift; the whole stack slowly leaning means oblique structures.</li>
+</ul>
+</details>
+<ul>
 <li>
 <p><label class="widget widget-checkbox">Sub-pixel placement</label>: refine each pairwise
   <strong>measurement</strong> to sub-pixel precision with a parabolic fit to the correlation peak. Off by
@@ -7461,10 +7496,10 @@ shown.</p>
     
       
       
-      <script id="__config" type="application/json">{"annotate":null,"base":"../../..","features":["announce.dismiss","content.code.annotate","content.code.copy","content.code.select","content.footnote.tooltips","content.tabs.link","content.tooltips","header.autohide","navigation.footer","navigation.indexes","navigation.path","navigation.top","navigation.tracking","search.highlight","search.suggest"],"search":"../../../assets/javascripts/workers/search.b6b7e04f.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
+      <script id="__config" type="application/json">{"annotate":null,"base":"../../..","features":["announce.dismiss","content.code.annotate","content.code.copy","content.code.select","content.footnote.tooltips","content.tabs.link","content.tooltips","header.autohide","navigation.footer","navigation.indexes","navigation.path","navigation.top","navigation.tracking","search.highlight","search.suggest"],"search":"../../../assets/javascripts/workers/search.e2d2d235.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.ee611ef6.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.6e5f0216.min.js"></script>
       
         <script src="../../../css/extra.js"></script>
       

@@ -32,6 +32,11 @@ function cancelled = ensureSeamScores(obj, options)
 %   - the edge count is unchanged - a re-measure produces a different set;
 %   - ``BatchOpt.IntensityCorrection`` is unchanged - the scores are correlations
 %     of CORRECTED pixels, so changing the method changes them;
+%   - ``zSliceFixes`` is unchanged - the seams are scored where the mosaic puts
+%     the tiles (:meth:`scoringPositions`: solved positions plus each tile's
+%     Fix Z correction), so a corrected boundary is rated on what Stitch will
+%     write. When ONLY the corrections changed, just the links across the
+%     changed boundaries are re-scored;
 %   - and every edge actually carries a score, so a partially-scored set (a
 %     cancelled pass, or a project saved before scoring existed) is redone.
 %
@@ -75,9 +80,30 @@ if isfield(options, 'readerFcn') && ~isempty(options.readerFcn)
     scoreOptions.readerFcn = options.readerFcn;
 end
 
+% Only the Fix Z corrections changed since the last pass (a boundary moved or
+% its correction removed in the inspector): just the links whose two tiles now
+% sit differently relative to each other need new pixels - the links across
+% that boundary, 4 of 188 on smoke test 19 - not every overlap.
+toScore = 1:numel(obj.edges);
+stamp = obj.seamScoresStamp;
+if ~isempty(stamp) && isfield(stamp, 'zSliceFixes') && isequal(stamp.positions, obj.positions) && ...
+        stamp.numEdges == numel(obj.edges) && ...
+        strcmp(stamp.correctionMethod, obj.BatchOpt.IntensityCorrection{1}) && ...
+        isfield(obj.edges, 'seamScore') && ~any(cellfun(@isempty, {obj.edges.seamScore}))
+    shiftsBefore = obj.zFixTileShifts(stamp.zSliceFixes);
+    shiftsNow = obj.zFixTileShifts(obj.zSliceFixes);
+    relativeBefore = shiftsBefore([obj.edges.j], :) - shiftsBefore([obj.edges.i], :);
+    relativeNow = shiftsNow([obj.edges.j], :) - shiftsNow([obj.edges.i], :);
+    toScore = find(any(relativeBefore ~= relativeNow, 2))';
+end
+
 try
-    [obj.edges, ~, cancelled] = utils.stitch.scoreSeams( ...
-        obj.layout, obj.edges, obj.positions, scoreOptions);
+    if ~isempty(toScore)
+        [scored, ~, cancelled] = utils.stitch.scoreSeams( ...
+            obj.layout, obj.edges(toScore), obj.scoringPositions(), scoreOptions);
+        [obj.edges(toScore).seamScore] = scored.seamScore;
+        [obj.edges(toScore).dzHint] = scored.dzHint;
+    end
 catch
     % Pixel verification is advisory - never block a solve or an import on it.
     % The stamp stays unset, so the next consumer retries rather than trusting

@@ -506,6 +506,230 @@ classdef StitchCoreTest < matlab.unittest.TestCase
                 sprintf('fused 3D interior RMSE too high: %.3f', rmse));
         end
 
+        function fullChain_singleSliceSectionsKeepTheirDepth(testCase)
+            % A series of 2D sections, one single-slice image per tile per layer
+            % (a 1x2 row over 4 layers). The cross-layer dz scan used to return
+            % 0 for every such pair - dz = 0 is the only offset at which two
+            % single slices share a slice - so all sections collapsed onto one
+            % plane. dz must stay at nominal (1), the XY offset between
+            % sections must still be measured, and the touching sections must
+            % get a real seam score instead of NaN ("no overlap").
+            numSections = 4;
+            tileH = 160; tileW = 160; stepX = 110; sectionJitter = 3;
+            volume = uint8(testCase.texturedVolume(tileH + 2 * sectionJitter, ...
+                stepX + tileW + 2 * sectionJitter, numSections, 91));
+
+            tempDir = tempname; mkdir(tempDir);
+            testCase.addTeardown(@() rmdir(tempDir, 's'));
+
+            rng(5, 'twister');
+            layout = testCase.emptyLayout(2 * numSections);
+            trueOrigins = zeros(2 * numSections, 3);
+            tileIdx = 0;
+            for section = 1:numSections
+                % every section imaged a few px off (stage backlash), both tiles alike
+                sectionOffset = randi([-sectionJitter sectionJitter], 1, 2);
+                for col = 1:2
+                    tileIdx = tileIdx + 1;
+                    oy = 1 + sectionJitter + sectionOffset(1);
+                    ox = 1 + sectionJitter + (col - 1) * stepX + sectionOffset(2);
+                    trueOrigins(tileIdx, :) = [oy, ox, section];
+                    tileFilename = fullfile(tempDir, sprintf('section%02d_tile%d.tif', section, col));
+                    imwrite(volume(oy:oy + tileH - 1, ox:ox + tileW - 1, section), tileFilename);
+                    layout(tileIdx).index     = tileIdx;
+                    layout(tileIdx).filename  = tileFilename;
+                    layout(tileIdx).zLayer    = section;
+                    layout(tileIdx).gridRC    = [1 col];
+                    layout(tileIdx).nomOrigin = [1, 1 + (col - 1) * stepX, section];
+                    layout(tileIdx).tileSize  = [tileH, tileW, 1, 1];
+                end
+            end
+
+            edges = utils.stitch.measureAllPairs(layout, utils.stitch.findNeighborPairs(layout));
+            zEdges = edges(strcmp({edges.direction}, 'z'));
+            testCase.assertNumElements(zEdges, 2 * (numSections - 1), ...
+                'expected one cross-layer pair per tile per section boundary');
+            for e = edges
+                trueDelta = trueOrigins(e.j, :) - trueOrigins(e.i, :);
+                testCase.verifyEqual(double(e.measured(3)), trueDelta(3), ...
+                    sprintf('edge (%d,%d,%s): dz %g, sections are %g apart', ...
+                    e.i, e.j, e.direction, e.measured(3), trueDelta(3)));
+                testCase.verifyLessThan(max(abs(e.measured(1:2) - trueDelta(1:2))), 0.5, ...
+                    sprintf('edge (%d,%d,%s) XY %s, truth %s', e.i, e.j, e.direction, ...
+                    mat2str(round(e.measured(1:2), 2)), mat2str(trueDelta(1:2))));
+            end
+
+            positions = utils.stitch.solveGlobalLeastSquares(layout, edges);
+            residual = positions - trueOrigins;
+            residual = residual - mean(residual, 1);
+            testCase.verifyLessThan(max(abs(residual(:))), 0.5, ...
+                'single-slice sections not placed at their true [y x z]');
+            canvas = utils.stitch.planCanvas(layout, positions);
+            testCase.verifyEqual(canvas.size(3), numSections, ...
+                'the stitched stack must keep one slice per section');
+
+            scored = utils.stitch.scoreSeams(layout, edges, positions);
+            zScores = [scored(strcmp({scored.direction}, 'z')).seamScore];
+            testCase.verifyFalse(any(isnan(zScores)), ...
+                'touching sections must be scored on their facing slices, not as "no overlap"');
+            testCase.verifyGreaterThan(min(zScores), 0.5, ...
+                'facing slices of correctly placed sections must correlate');
+        end
+
+        function measureAllPairs_rejectedSectionSeamIsRemeasuredFromItsSiblings(testCase)
+            % Serial sections: the same two folders meet in every section, so
+            % an in-plane seam the first pass rejects is re-measured in a narrow
+            % window around what the same folder pair measured in the other
+            % sections. Forced here by starting one seam 30 px off: its own
+            % search misses the true peak, the guided one does not.
+            numSections = 4;
+            [tileFolders, trueWindows, parentFolder] = mibtest.helpers.writeSerialSectionFolders(numSections, 64);
+            testCase.addTeardown(@() rmdir(parentFolder, 's'));
+            layout = utils.stitch.splitLayoutIntoSections(utils.stitch.buildLayoutGrid(tileFolders, ...
+                struct('rows', 2, 'cols', 2, 'tileOrder', 'Horizontal', 'overlapX', 25, 'overlapY', 25)));
+            pairs = utils.stitch.findNeighborPairs(layout);
+            stageTiles = [layout.stageTile];
+            target = find(stageTiles([pairs.i]) == 1 & stageTiles([pairs.j]) == 2 & ...
+                [layout([pairs.i]).zLayer] == 2, 1);
+            testCase.assertNotEmpty(target);
+            pairs(target).nominal = pairs(target).nominal + [0 30 0];
+            pieceI = layout(pairs(target).i); pieceJ = layout(pairs(target).j);
+            trueShift = squeeze(trueWindows(pieceJ.stageTile, pieceJ.zLayer, :) - ...
+                trueWindows(pieceI.stageTile, pieceI.zLayer, :))';
+
+            unguided = utils.stitch.measureAllPairs(layout, pairs, struct('guidedRemeasure', false));
+            testCase.assertFalse(unguided(target).valid && ...
+                max(abs(unguided(target).measured(1:2) - trueShift)) < 1, ...
+                'precondition: the 30 px wrong start must defeat the first pass');
+
+            guided = utils.stitch.measureAllPairs(layout, pairs);
+            testCase.verifyTrue(guided(target).valid, 'the guided pass must recover the seam');
+            testCase.verifyLessThan(max(abs(guided(target).measured(1:2) - trueShift)), 0.5);
+            testCase.verifyEqual(guided(target).nominal, pairs(target).nominal, ...
+                'the nominal stays what the layout said (the solver''s springs use it)');
+            others = setdiff(1:numel(pairs), target);
+            testCase.verifyEqual([guided(others).measured], [unguided(others).measured], ...
+                'seams that passed the first time are left untouched');
+        end
+
+        function solver_stagePriorStopsAConsistentSectionBiasAccumulating(testCase)
+            % Serial sections: 2 stage tiles x 12 sections, every slice off its
+            % stage position by independent backlash. The in-plane seams are
+            % exact; every section-to-section seam carries the SAME small bias
+            % (what oblique structures do to image registration). Chained, the
+            % bias accumulates; the stage prior - repeatability estimated from
+            % those very seams - holds every slice near its stage position.
+            numSections = 12; backlashSigma = 1.5;
+            [layout, edges, truth] = testCase.sectionChainCase(numSections, backlashSigma, [0.3 0.2]);
+            placementError = @(positions) max(max(abs((positions(:, 1:2) - positions(1, 1:2)) - ...
+                (truth(:, 1:2) - truth(1, 1:2)))));
+
+            plain = utils.stitch.solveGlobalLeastSquares(layout, edges);
+            [withPrior, stats] = utils.stitch.solveGlobalLeastSquares(layout, edges, ...
+                struct('stagePriorSigma', 0, 'seamSigma', 1.0));
+
+            testCase.verifyGreaterThan(placementError(plain), 2.5, ...
+                'without the prior the bias accumulates over 11 section boundaries');
+            testCase.verifyLessThan(placementError(withPrior), 0.6 * placementError(plain), ...
+                'the stage prior must hold the slices near their stage positions');
+            testCase.verifyEqual(stats.stagePriorSigma, backlashSigma, 'RelTol', 0.5, ...
+                'the repeatability is estimated from the section-to-section seams');
+            testCase.verifyEqual(withPrior(:, 3) - withPrior(1, 3), truth(:, 3) - truth(1, 3), ...
+                'AbsTol', 1e-6, 'the prior must not move anything in Z');
+
+            testCase.verifyEqual(stats.sectionDrift.numBoundaries, numSections - 1);
+            testCase.verifyTrue(stats.sectionDrift.withinStageJitter, ...
+                'a 0.36 px/section bias over 11 boundaries stays within the backlash bound');
+        end
+
+        function solver_sectionDriftCheckFlagsWholeSectionMovement(testCase)
+            % The same stack, but every section-to-section seam now says the
+            % whole section moved 1.2 px: 11 boundaries add up to ~13 px,
+            % far beyond what +-1.5 px of stage jitter on 2 tiles explains.
+            % The check reads the seams, not the solve - the same verdict with
+            % or without the stage prior.
+            [layout, edges] = testCase.sectionChainCase(12, 1.5, [1.0 0.6]);
+            [~, plainStats] = utils.stitch.solveGlobalLeastSquares(layout, edges);
+            [~, priorStats] = utils.stitch.solveGlobalLeastSquares(layout, edges, ...
+                struct('stagePriorSigma', 0, 'seamSigma', 1.0));
+
+            check = plainStats.sectionDrift;
+            testCase.verifyFalse(check.withinStageJitter);
+            testCase.verifyEqual(check.wholeSectionShift, 11 * hypot(1.0, 0.6), 'AbsTol', 2.5);
+            testCase.verifyGreaterThan(check.wholeSectionShift, check.backlashBound);
+            testCase.verifyEqual(priorStats.sectionDrift, check, ...
+                'the check describes the measurements, not the chosen solve');
+
+            [~, gridStats] = utils.stitch.solveGlobalLeastSquares(testCase.makeGrid(2, 2, [100 120 1 1], 80), ...
+                struct('i', 1, 'j', 2, 'direction', 'x', 'nominal', [0 80 0], 'measured', [0 80 0], ...
+                'quality', 1, 'valid', true, 'source', 'auto'));
+            testCase.verifyFalse(isfield(gridStats, 'sectionDrift'), 'no check outside section layouts');
+        end
+
+        function solver_disconnectedGroupKeepsItsOwnGeometry(testCase)
+            % Two groups the valid edges never join (unrelated sections, or an
+            % island of tiles): the second gets ONE bridge spring, on its first
+            % tile, so it is pulled into the frame as a whole and its tiles
+            % keep exactly the offsets their own seams measured - a spring on
+            % every tile would bend it towards the (wrong) nominal grid.
+            layout = testCase.emptyLayout(4);
+            nominal = [1 1 1; 1 101 1; 1 1 2; 1 101 2];
+            truth   = [1 1 1; 3 104 1; 1 1 2; -2 97 2];   % off the nominal grid
+            for k = 1:4
+                layout(k).index = k;
+                layout(k).zLayer = nominal(k, 3);
+                layout(k).nomOrigin = nominal(k, :);
+                layout(k).tileSize = [100 120 1 1];
+            end
+            edges = struct('i', {1, 3}, 'j', {2, 4}, 'direction', 'x', ...
+                'nominal', {nominal(2, :) - nominal(1, :), nominal(4, :) - nominal(3, :)}, ...
+                'measured', {truth(2, :) - truth(1, :), truth(4, :) - truth(3, :)}, ...
+                'quality', 1, 'valid', true, 'source', 'auto');
+
+            [positions, stats] = utils.stitch.solveGlobalLeastSquares(layout, edges);
+
+            testCase.verifyEqual(stats.nComponents, 2);
+            testCase.verifyEqual(positions(4, :) - positions(3, :), truth(4, :) - truth(3, :), ...
+                'AbsTol', 0.01, 'the disconnected group keeps the offset its seam measured (up to the 0.001 rank springs)');
+            testCase.verifyEqual(positions(3, :), nominal(3, :), 'AbsTol', 0.05, ...
+                'its first tile is bridged to its nominal position');
+        end
+
+        function solver_robustLossDownweightsAConfidentlyWrongSeam(testCase)
+            % A 3x3 grid with loops, one seam wrong by 4 px at full quality.
+            % Least squares spreads that error over its neighbours; the Huber
+            % solve singles the seam out and limits the damage. Huber bounds
+            % the outlier's influence rather than rejecting it, so the tiles
+            % move by much less - not by nothing.
+            % The seam must be an INTERIOR one (shared by two loops): in a
+            % single loop every distribution of the error costs the same, so
+            % no loss function can tell which of its seams is the wrong one.
+            [layout, truth] = testCase.makeGrid(3, 3, [100 120 1 1], 80);
+            pairs = utils.stitch.findNeighborPairs(layout);
+            edges = repmat(struct('i', 0, 'j', 0, 'direction', 'x', 'nominal', [0 0 0], ...
+                'measured', [0 0 0], 'quality', 1, 'valid', true, 'source', 'auto'), 1, numel(pairs));
+            for k = 1:numel(pairs)
+                edges(k).i = pairs(k).i; edges(k).j = pairs(k).j;
+                edges(k).direction = pairs(k).direction; edges(k).nominal = pairs(k).nominal;
+                edges(k).measured = truth(pairs(k).j, :) - truth(pairs(k).i, :);
+            end
+            badEdge = find([edges.i] == 2 & [edges.j] == 5, 1);   % top-centre to centre
+            testCase.assertNotEmpty(badEdge);
+            edges(badEdge).measured = edges(badEdge).measured + [0 4 0];
+            placementError = @(positions) max(max(abs((positions - positions(1, :)) - ...
+                (truth - truth(1, :)))));
+
+            plain = utils.stitch.solveGlobalLeastSquares(layout, edges);
+            [robust, stats] = utils.stitch.solveGlobalLeastSquares(layout, edges, ...
+                struct('robustLoss', true));
+
+            testCase.verifyGreaterThan(placementError(plain), 1.0);
+            testCase.verifyLessThan(placementError(robust), 0.3 * placementError(plain), ...
+                'the robust solve must cut the damage the wrong seam does');
+            [~, lightest] = min(stats.robustWeights);
+            testCase.verifyEqual(lightest, badEdge, 'the wrong seam must be the one down-weighted most');
+        end
+
         function solver_prunesCorruptedEdgeAndSpringHolds(testCase)
             [layout, truthOrigins] = testCase.makeGrid(2, 2, [100 100 1 1], 80);
             trueOrigins = truthOrigins;   % no jitter -> nominal == truth
@@ -1193,6 +1417,41 @@ classdef StitchCoreTest < matlab.unittest.TestCase
             testCase.verifyTrue(isfield(warpCanvas, 'tforms') && isfield(warpCanvas, 'tileBounds'));
         end
 
+        function fuseSliceRegion_equalsTheCropOfAFullFuse(testCase)
+            % The seam inspector's Fix Z view composes only a crop of two mosaic
+            % slices. It must be exactly the crop of what Stitch would fuse: in
+            % every blend mode, with per-slice Z corrections, and with warped
+            % (affine) tiles - and only the tiles under the crop are read.
+            layout = testCase.buildTwoLayerFusionCase();
+            canvas = utils.stitch.planCanvas(layout, reshape([layout.nomOrigin], 3, [])', ...
+                struct('zSliceFixes', [2 3 -2]));
+            region = [20 70; 30 80];
+            for blendMode = {'Overwrite', 'Feather', 'Average', 'Max', 'Min'}
+                fuseOptions = struct('blendMode', blendMode{1}, 'background', 0);
+                full = utils.stitch.fuseInMemory(layout, canvas, fuseOptions);
+                reader = utils.stitch.makeTileReader(layout);
+                for z = 1:canvas.size(3)
+                    crop = utils.stitch.fuseSliceRegion(layout, canvas, z, region, reader, fuseOptions);
+                    testCase.verifyEqual(crop, full(region(1, 1):region(1, 2), region(2, 1):region(2, 2), z, :, 1), ...
+                        sprintf('%s, slice %d: region fuse differs from the full fuse', blendMode{1}, z));
+                end
+            end
+            [~, usedTiles] = utils.stitch.fuseSliceRegion(layout, canvas, 1, [1 10; 1 10], ...
+                utils.stitch.makeTileReader(layout), struct('blendMode', 'Overwrite', 'background', 0));
+            testCase.verifyEqual(usedTiles, 1, 'a corner crop reads only the corner tile');
+
+            [affineLayout, G] = testCase.buildAffineChoppedCase(43);
+            affineCanvas = utils.stitch.planCanvas(affineLayout, vertcat(affineLayout.nomOrigin), ...
+                struct('tforms', {G}));
+            fuseOptions = struct('blendMode', 'Feather', 'background', 0);
+            full = utils.stitch.fuseInMemory(affineLayout, affineCanvas, fuseOptions);
+            affineRegion = round([0.3 0.7; 0.25 0.75] .* affineCanvas.size([1 1; 2 2]));
+            crop = utils.stitch.fuseSliceRegion(affineLayout, affineCanvas, 1, affineRegion, ...
+                utils.stitch.makeTileReader(affineLayout), fuseOptions);
+            testCase.verifyEqual(crop, full(affineRegion(1, 1):affineRegion(1, 2), ...
+                affineRegion(2, 1):affineRegion(2, 2), 1, :, 1), 'warped tiles: region fuse differs');
+        end
+
         function fuseWarp_reconstructsAffineChoppedImage(testCase)
             % Milestone (plan_transforms.md phase 1): chop a known image with an
             % affine warp per tile; planning + warp fusion with the GROUND-TRUTH
@@ -1854,6 +2113,46 @@ classdef StitchCoreTest < matlab.unittest.TestCase
                 layout(t).nomOrigin = [nomXY(gridSlot, :), 1 + (zLayer - 1) * stepZ];
                 layout(t).tileSize  = [tileH, tileW, tileDepth, 1];
                 layout(t).dataClass = 'uint8';
+            end
+        end
+
+        function [layout, edges, truth] = sectionChainCase(testCase, numSections, backlashSigma, bias)
+            % Serial-section stack WITHOUT pixels: 2 stage tiles x numSections,
+            % every slice off its stage position by independent backlash
+            % (sigma backlashSigma). In-plane seams exact; every section-to-
+            % section seam = truth + bias (oblique content, or drift).
+            rng(8, 'twister');
+            layout = testCase.emptyLayout(2 * numSections);
+            truth = zeros(2 * numSections, 3);
+            for section = 1:numSections
+                for stage = 1:2
+                    piece = (section - 1) * 2 + stage;
+                    layout(piece).index = piece;
+                    layout(piece).zLayer = section;
+                    layout(piece).nomOrigin = [1, 1 + (stage - 1) * 100, section];
+                    layout(piece).tileSize = [100 120 1 1];
+                    layout(piece).stageTile = stage;
+                    truth(piece, :) = [layout(piece).nomOrigin(1:2) + backlashSigma * randn(1, 2), section];
+                end
+            end
+            edges = repmat(struct('i', 0, 'j', 0, 'direction', 'x', 'nominal', [0 0 0], ...
+                'measured', [0 0 0], 'quality', 1, 'valid', true, 'source', 'auto'), 1, 0);
+            for section = 1:numSections
+                pieceA = (section - 1) * 2 + 1;
+                edges(end + 1) = makeEdge(pieceA, pieceA + 1, 'x', [0 0]); %#ok<AGROW>
+                if section < numSections
+                    for stage = 1:2
+                        piece = pieceA + stage - 1;
+                        edges(end + 1) = makeEdge(piece, piece + 2, 'z', bias); %#ok<AGROW>
+                    end
+                end
+            end
+
+            function edge = makeEdge(i, j, direction, edgeBias)
+                edge = struct('i', i, 'j', j, 'direction', direction, ...
+                    'nominal', layout(j).nomOrigin - layout(i).nomOrigin, ...
+                    'measured', truth(j, :) - truth(i, :) + [edgeBias 0], ...
+                    'quality', 1, 'valid', true, 'source', 'auto');
             end
         end
 

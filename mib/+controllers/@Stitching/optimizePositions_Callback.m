@@ -36,7 +36,7 @@ end
 
 % Solve positions: translation -> per-axis scalar solve; anything richer -> the
 % affine block solve, which returns per-tile transforms for the warp fuser.
-solverOptions.springWeight = obj.BatchOpt.NominalPositionWeight{1};
+solverOptions = obj.translationSolverOptions();
 
 try
     if strcmp(obj.BatchOpt.TransformType{1}, 'Translation')

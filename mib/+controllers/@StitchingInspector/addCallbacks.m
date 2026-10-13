@@ -77,14 +77,18 @@ setTooltip(handles, 'seamTable', sprintf( ...
     ['Seams ranked worst-first by how well the pixels agree at the solved positions.\n' ...
      'The Seam column reads axis + the two tiles joined: X/Y (n-m) are in-plane\n' ...
      'seams, Z (n-m) cross-layer. Fix XY lists the in-plane seams, Fix Z the\n' ...
-     'cross-layer ones. Click a row to review it.']));
+     'cross-layer ones - or, when all tiles are on one layer, the slice\n' ...
+     'boundaries (Z 1-2, Z 2-3, ...). Serial sections (Register slices): tiles\n' ...
+     'are named by folder, and Fix Z shows one row per section boundary, opening\n' ...
+     'its worst tile link. Click a row to review it.']));
 setTooltip(handles, 'miniMapAxes', ...
-    'Layout of the current seam''s Z-layer, tiles coloured by their worst seam (green = good, red = bad). Click to jump to the review - selects whichever seam is nearest the click point.');
+    'Layout of the current seam''s Z-layer, tiles coloured by their worst seam of the current Fix mode (green = good, red = bad). Click to jump to the review - selects whichever seam is nearest the click point; in Fix Z, shows the stitched mosaic around the clicked point at the same Z boundary.');
 setTooltip(handles, 'pairAxes', sprintf( ...
     ['Both tiles composited at the current offset.\n' ...
-     'Wheel: zoom at cursor - the level carries to the next seam (F fits) | drag: move tile j | Space: flicker\n' ...
+     'Wheel: zoom at cursor - the level carries to the next seam (F fits) | drag: move tile j (Esc cancels) | Space: flicker\n' ...
      'Right-click drag: pan the view | Right-click: tile order (which tile Overwrite keeps)\n' ...
      'Shift+hover: correlation box (Shift+wheel resizes it) | Shift+click: auto fine-tune\n' ...
+     'Ctrl+Shift+click (Fix Z): auto fine-tune every Z boundary of the stack at that spot\n' ...
      'Q/W: browse Z like the main MIB, always view-only | Up/Down: previous/next seam\n' ...
      '(Fix XY: the aligned slice pair; Fix Z: the mosaic Z boundary)']));
 setTooltip(handles, 'overlayModeDropdown', sprintf([ ...
@@ -98,11 +102,12 @@ setTooltip(handles, 'fixModeDropdown', sprintf( ...
     ['What a fix edits:\n' ...
      'Fix XY - the in-plane TILE offset of the current seam; Q/W browse the\n' ...
      'Z-aligned slices.\n' ...
-     'Fix Z - align consecutive MOSAIC slices: one tile at slice z-1 (cyan)\n' ...
-     'vs slice z (magenta), mostly white when aligned. Q/W moves the\n' ...
-     'boundary; drag or Shift+click aligns slice z - the fix shifts that\n' ...
-     'slice AND every slice above it across the whole mosaic (applied by\n' ...
-     'Stitch in the main window, saved in the project; Z removes it).']));
+     'Fix Z - align consecutive MOSAIC slices: the stitched mosaic at slice\n' ...
+     'z-1 (cyan) vs slice z (magenta), mostly white when aligned. A mini-map\n' ...
+     'click picks where to look, Q/W moves the boundary; drag or Shift+click\n' ...
+     'aligns slice z - the fix shifts that slice AND every slice above it as\n' ...
+     'one block (applied by Stitch in the main window, saved in the project;\n' ...
+     'Z removes it).']));
 setTooltip(handles, 'offsetLabel', ...
     'Current pair offset vs the measured one, plus seam score, measurement quality and provenance.');
 setTooltip(handles, 'confirmBtn', ...
@@ -141,63 +146,66 @@ end
 
 % =====================================================================
 function fixModeChanged(obj)
-% FIXMODECHANGED - Fix Z is the mosaic Z-BOUNDARY view: one tile at
-% consecutive slices z-1 (cyan) vs z (magenta), fully overlapping - mostly
-% white when the mosaic is Z-aligned; a fix shifts every mosaic slice >= z.
-% It needs a tile with Z slices: when the current seam is between 2D tiles
-% it jumps to a seam that has one (worst-first); a fully-2D dataset flips
-% the dropdown back to Fix XY - announced with a DIALOG, since the status
-% line alone proved too easy to miss in live testing. Each mode starts
-% from a fitted view, hence the pairZoom reset.
+% FIXMODECHANGED - Fix Z is the mosaic Z-BOUNDARY view: a crop of the FUSED
+% mosaic at consecutive slices z-1 (cyan) vs z (magenta) - mostly white when
+% the mosaic is Z-aligned; a fix shifts every mosaic slice >= z as one block
+% (the tiles are taken as correctly stitched). It needs a mosaic with more
+% than one slice and slices that belong together: a 2D mosaic, or unrelated
+% slices (Register slices off - stitched one by one on purpose), flips the
+% dropdown back to Fix XY - announced with a DIALOG, since the status line
+% alone proved too easy to miss in live testing. Each mode starts from a
+% fitted view, hence the pairZoom reset.
 %
 % Switching mode also re-filters the seam table (updateWidgets): Fix XY lists
 % the in-plane x/y seams, Fix Z the cross-layer z seams (see
 % StitchingInspector.visibleRanking) - so entering Fix Z lands on a z seam
-% when one exists, keeping the table highlight and the boundary view in step.
+% (its boundary) when one exists, keeping the table highlight and the view in
+% step. Z-stacks on one layer have none; their table lists the slice
+% boundaries instead (listsSliceBoundaries).
 obj.viewSlice = [];
 obj.pairZoom = [];
 if strcmp(obj.fixMode(), 'z')
     edges = obj.stitching.edges;
-    layout = obj.stitching.layout;
-    hasDepthTile = @(k) layout(edges(k).i).tileSize(3) > 1 || ...
-                        layout(edges(k).j).tileSize(3) > 1;
-    % Land on a cross-layer z seam (a visible Fix Z table row) when any exist,
-    % so the table highlight matches the boundary view. Single-layer Z-stacks
-    % (depth>1 but no z edges) have an empty Fix Z table - fall back to any
-    % seam touching a Z-stack tile so the boundary view still engages.
-    zRanked = obj.visibleRanking();
-    if isempty(zRanked)
-        candidateRanked = obj.ranking(arrayfun(hasDepthTile, obj.ranking));
-    else
-        candidateRanked = zRanked;
-    end
-    currentOk = ~isempty(obj.currentEdgeIdx) && hasDepthTile(obj.currentEdgeIdx) && ...
-        (isempty(zRanked) || any(zRanked == obj.currentEdgeIdx));
-    if ~currentOk
-        if isempty(candidateRanked)
-            handles = obj.view.handles;
-            if isfield(handles, 'fixModeDropdown')
-                handles.fixModeDropdown.Value = handles.fixModeDropdown.Items{1};
-            end
-            obj.renderPairView();
-            obj.updateWidgets();
-            obj.setStatus('2D dataset - no Z slices to align. Staying in Fix XY.');
-            dlgOpt.MsgBoxOnly = true;
-            dlgOpt.Icon = 'puffin_info';
-            dlgOpt.HeaderLines = 1;
-            dlgOpt.WindowHeight = 180;
-            utils.dlgs.inputUniversalDlg(obj.view.gui, 'Fix Z needs Z slices', {''}, ...
-                {sprintf('This dataset is 2D - there are no Z slices to align, so the mode stays at Fix XY.\nFix Z aligns mosaic slice z to slice z-1 and shifts everything above it.')}, ...
-                'Fix Z', dlgOpt);
-            return;
+    mosaicDepth = obj.zViewCanvas().size(3);
+    unrelatedSlices = obj.isSectionLayout() && ~any(strcmp({edges.direction}, 'z'));
+    if mosaicDepth < 2 || unrelatedSlices
+        handles = obj.view.handles;
+        if isfield(handles, 'fixModeDropdown')
+            handles.fixModeDropdown.Value = handles.fixModeDropdown.Items{1};
         end
-        obj.selectSeam(candidateRanked(1));
+        obj.renderPairView();
+        obj.updateWidgets();
+        % Unrelated slices are split into sections with NO section-to-section
+        % seams: there is Z, but nothing to align in it - say that rather than
+        % call the dataset 2D.
+        if unrelatedSlices
+            statusText = 'Slices stitched independently - no Z alignment to fix. Staying in Fix XY.';
+            dialogText = sprintf(['The slices were stitched independently (Register slices is off), so they\n' ...
+                'are not aligned to each other and there is no Z alignment to fix. The mode\n' ...
+                'stays at Fix XY. Tick Register slices to align them.']);
+        else
+            statusText = '2D dataset - no Z slices to align. Staying in Fix XY.';
+            dialogText = sprintf(['This dataset is 2D - there are no Z slices to align, so the mode stays at Fix XY.\n' ...
+                'Fix Z aligns mosaic slice z to slice z-1 and shifts everything above it.']);
+        end
+        obj.setStatus(statusText);
+        dlgOpt.MsgBoxOnly = true;
+        dlgOpt.Icon = 'puffin_info';
+        dlgOpt.HeaderLines = 1;
+        dlgOpt.WindowHeight = 180;
+        utils.dlgs.inputUniversalDlg(obj.view.gui, 'Fix Z needs Z slices', {''}, ...
+            {dialogText}, 'Fix Z', dlgOpt);
+        return;
+    end
+    zRanked = obj.visibleRanking();
+    if ~isempty(zRanked) && (isempty(obj.currentEdgeIdx) || ~any(zRanked == obj.currentEdgeIdx))
+        obj.selectSeam(zRanked(1));
     else
         obj.renderPairView();
     end
-    obj.setStatus(['Fix Z: slice z-1 (cyan) vs slice z (magenta) of one tile - mostly ' ...
-        'white when the mosaic is Z-aligned. Q/W moves the boundary; drag or ' ...
-        'Shift+click aligns slice z, shifting it AND every slice above; Z removes ' ...
+    obj.setStatus(['Fix Z: the stitched mosaic at slice z-1 (cyan) vs slice z (magenta) - mostly ' ...
+        'white when aligned. Click the mini-map to look elsewhere, Q/W moves the boundary; ' ...
+        'drag or Shift+click aligns slice z, shifting it AND every slice above; Z removes ' ...
         'the correction.']);
 else
     obj.renderPairView();
@@ -209,10 +217,11 @@ end
 % highlight on the current seam (cleared automatically if it is not a row of
 % the newly shown set).
 obj.updateWidgets();
-if obj.hasWidget('seamTable')
+% A slice-boundary table set its own highlight in updateWidgets.
+if obj.hasWidget('seamTable') && ~obj.listsSliceBoundaries()
     rankPos = [];
     if ~isempty(obj.currentEdgeIdx)
-        rankPos = find(obj.visibleRanking() == obj.currentEdgeIdx, 1);
+        rankPos = obj.rowOfEdge(obj.currentEdgeIdx);
     end
     try %#ok<TRYNC>
         obj.view.handles.seamTable.Selection = rankPos;

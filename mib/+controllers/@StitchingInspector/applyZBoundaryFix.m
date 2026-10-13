@@ -13,7 +13,11 @@ function applyZBoundaryFix(obj, deltaYX, description)
 % Stored in the parent's ``zSliceFixes`` (one row per boundary, replaced on
 % re-fix, dropped when the correction returns to zero), applied by
 % ``planCanvas``/the fusers at the next fuse, and saved in the project
-% sidecar. The solver is NOT involved - tile positions are untouched.
+% sidecar. The solver is NOT involved - tile positions are untouched. The
+% links across the boundary are re-scored at the corrected placement
+% (:meth:`rescoreAfterZFix`), so the table rates and ranks what Stitch will
+% now write. The corrections as they were before are pushed to
+% ``zFixHistory``: Ctrl+Z returns this boundary to its PREVIOUS value.
 %
 % Input Arguments:
 %   - **deltaYX** - [1x2 double] ``[dy dx]`` shift of slices ``>= z`` relative
@@ -24,6 +28,7 @@ function applyZBoundaryFix(obj, deltaYX, description)
 if ~obj.boundaryModeActive(); return; end
 
 zBoundary = obj.viewSlice.sliceB;
+obj.pushZFixHistory(sprintf('%s at Z boundary %d', description, zBoundary));   % Ctrl+Z: previous value back
 fixes = obj.stitching.zSliceFixes;
 if isempty(fixes); fixes = zeros(0, 3); end
 
@@ -40,7 +45,8 @@ obj.stitching.zSliceFixes = fixes;
 obj.stitching.canvas = [];   % re-plan with the new per-slice shifts on the next fuse
 
 obj.renderPairView();
+obj.rescoreAfterZFix();   % rate the boundary on the corrected mosaic, re-rank the table
 obj.setStatus(sprintf(['Z boundary %d: mosaic slices %d..end shifted by [%.1f %.1f] (%s) - ' ...
-    'Stitch applies it; Z removes it. Saved with the project.'], ...
+    'Stitch applies it; Ctrl+Z returns the previous value, Z removes it. Saved with the project.'], ...
     zBoundary, zBoundary, deltaYX(1), deltaYX(2), description));
 end

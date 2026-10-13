@@ -82,6 +82,7 @@ file ever read.
 |------|-------|--------------------------|-----------------|
 | `selectInputBtn` | `uibutton` | Text: `'Pick tiles'`, Icon `open_16px.png` | `selectInputBtn_Callback` |
 | `SubfolderMode` | `uicheckbox` | Text: `'Tiles are folders (Z-stacks)'` Default: `false` | `updateBatchOptFromGUI` |
+| `RegisterSlices` | `uicheckbox` | Text: `'Register slices'` Default: `true`. Below `SubfolderMode` (built 2026-10-12). Unticked = unrelated slices, each stitched on its own; ticked = `SectionAlignment` decides (`Stitching.sectionMode`). Enabled for folder tiles only (`Stitching.registerSlicesAvailable`); without them the settings are held at ticked + Prealigned. Toggling rebuilds the layout; a folder set that cannot be split is reported and the settings return to Prealigned. | `updateBatchOptFromGUI` |
 | `InputPathLabel` | `uilabel` | Text: `'Input tiles'`, right-aligned, top | — |
 | `InputPath` | `uilistbox` (built) or `uieditfield` (text) | Default: empty. As a **listbox** it displays one selected path per row (best for multi-folder input) and is populated by *Pick tiles* — `refreshInputPathWidget` detects the type (`isprop(...,'Items')`) and keeps `BatchOpt.InputPath` as the newline-joined string either way. A listbox is display-only, so `addCallbacks` wires **no** `ValueChangedFcn` for it; an editfield keeps the typed-path sync. | `updateBatchOptFromGUI` (editfield only) |
 
@@ -118,6 +119,7 @@ Labels (not interactive; `uilabel` — App Designer auto-names, kept as built):
 | `QualityThreshold` | `uispinner` | Limits: `[0 1]` Step: `0.05` Default: `0.30` | `updateBatchOptFromGUI` |
 | `NominalPositionWeight` | `uispinner` | Limits: `[0 1]` Step: `0.01` Default: `0.10` | `updateBatchOptFromGUI` |
 | `SubpixelPlacement` | `uicheckbox` | Text: `'Sub-pixel placement'` Default: `false` | `updateBatchOptFromGUI` |
+| `SectionAlignment` | `uidropdown` | Items: `{'Prealigned','Follow image content','Trust stage positions'}` Default: `'Prealigned'` (set from BatchOpt by `updateWidgets`). With a `uilabel` `'Section alignment'`, after `NominalPositionWeight` (built 2026-10-12). Enabled with `RegisterSlices`. A change to or from Prealigned rebuilds the layout (block vs one piece per slice); between the other two only the positions are cleared. | `updateBatchOptFromGUI` |
 | `measureOverlaps` | `uibutton` | Text: `'Measure overlaps'` — **pipeline step 1**, lives on this tab because it consumes these settings | `measureOverlaps_Callback` |
 | `optimizePositions` | `uibutton` | Text: `'Optimize positions'` — **pipeline step 2**, same reason | `optimizePositions_Callback` |
 

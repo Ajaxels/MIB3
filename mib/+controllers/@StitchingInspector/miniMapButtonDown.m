@@ -14,8 +14,12 @@ function miniMapButtonDown(obj)
 % (unlike the image objects the pair view uses) and about which patch - of
 % possibly several overlapping ones - would receive it.
 %
-% The nearest seam to that point (:meth:`edgeAtMiniMapPoint`) is selected
-% directly; nothing here falls back to "the clicked tile's worst seam".
+% Fix XY: the nearest seam to that point (:meth:`edgeAtMiniMapPoint`) is
+% selected directly; nothing here falls back to "the clicked tile's worst
+% seam". Fix Z (the mosaic boundary view): the click picks the PLACE to look
+% at - :func:`fixZSelectPoint` re-composes the mosaic crops around it. Fix Z
+% rows are slice boundaries or section-to-section links, none of which lies
+% inside the drawn layer, so the nearest-seam rule found nothing there anyway.
 %
 
 if obj.mibModel.preferences.System.DeveloperMode
@@ -26,6 +30,10 @@ if ~obj.dataValid() || ~obj.hasWidget('miniMapAxes'); return; end
 mapAxes = obj.view.handles.miniMapAxes;
 point = mapAxes.CurrentPoint(1, 1:2);
 
+if obj.boundaryModeActive()
+    obj.fixZSelectPoint(point);
+    return;
+end
 k = obj.edgeAtMiniMapPoint(point);
 if ~isempty(k)
     obj.selectSeam(k);

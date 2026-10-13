@@ -15,11 +15,27 @@ function pairs = findNeighborPairs(layout, options)
 % Pairs with overlap smaller than ``options.minOverlapPx`` pixels in both
 % dimensions are excluded.
 %
+% **Section layouts** (from :func:`utils.stitch.splitLayoutIntoSections`, every
+% entry carrying ``.stageTile``): testing every pair of pieces is
+% ``O(N^2)`` - 2.5e9 tests for 100 tiles x 500 sections - so the pairs are
+% BUILT instead. The in-plane pairs of the first section are found as above and
+% repeated for every section, and each piece is paired with the same tile's
+% piece in the next section (``'z'``). The result equals the all-pairs search
+% on the same layout (pinned by a test) whenever neighbouring tiles overlap by
+% less than half a tile, i.e. for any real montage; at half or more the search
+% would also pair DIFFERENT tiles across sections, which the builder leaves out
+% on purpose - the section-to-section link is the same stage position. A section
+% layout with a piece missing falls back to the all-pairs search.
+%
 % Input Arguments:
 %   - **layout** - struct array as returned by ``buildLayoutGrid`` etc.
 %   - **options** *(optional)* - struct with fields:
 %
 %     - ``.minOverlapPx`` - [double] minimum overlap in pixels (default: ``16``)
+%     - ``.linkSections`` - [logical] section layouts only: pair each piece with
+%       the same tile's piece in the next section (default: ``true``). ``false``
+%       for slices unrelated to each other - in-plane pairs only, every section
+%       stitched on its own.
 %
 % Output Arguments:
 %   - **pairs** - struct array with fields:
@@ -44,12 +60,18 @@ arguments
     options struct = struct()
 end
 if ~isfield(options, 'minOverlapPx'); options.minOverlapPx = 16; end
+if ~isfield(options, 'linkSections'); options.linkSections = true; end
 
 minOverlapPixels = options.minOverlapPx;
 
 if numel(layout) < 2
     pairs = struct('i', {}, 'j', {}, 'direction', {}, 'nominal', {});
     return;
+end
+
+if isfield(layout, 'stageTile') && ~any(arrayfun(@(piece) isempty(piece.stageTile), layout))
+    [pairs, isCompleteGrid] = sectionPairs(layout, options);
+    if isCompleteGrid; return; end
 end
 
 numTiles = numel(layout);
@@ -135,6 +157,60 @@ end
 
 pairs = pairList;
 
+end
+
+% =========================================================================
+function [pairs, isCompleteGrid] = sectionPairs(layout, options)
+% SECTIONPAIRS - Pairs of a section layout, built from (stage tile, section).
+% isCompleteGrid is false - and the caller falls back to the all-pairs search -
+% unless every stage tile has exactly one piece in every section.
+pairs = struct('i', {}, 'j', {}, 'direction', {}, 'nominal', {});
+isCompleteGrid = false;
+stageTiles = [layout.stageTile];
+sections = [layout.zLayer];
+stageIds = unique(stageTiles);
+sectionIds = unique(sections);
+% pieceAt(t, s) = layout index of stage tile stageIds(t) in section sectionIds(s)
+[~, stageRow] = ismember(stageTiles, stageIds);
+[~, sectionCol] = ismember(sections, sectionIds);
+pieceAt = zeros(numel(stageIds), numel(sectionIds));
+pieceAt(sub2ind(size(pieceAt), stageRow, sectionCol)) = 1:numel(layout);
+if any(pieceAt(:) == 0) || numel(layout) ~= numel(pieceAt); return; end
+isCompleteGrid = true;
+
+% In-plane template: the all-pairs search on the first section alone.
+firstSection = pieceAt(:, 1)';
+template = utils.stitch.findNeighborPairs(rmfield(layout(firstSection), 'stageTile'), options);
+templateI = stageRow(firstSection([template.i]));
+templateJ = stageRow(firstSection([template.j]));
+
+numSections = numel(sectionIds);
+numPairs = numel(template) * numSections + options.linkSections * numel(stageIds) * (numSections - 1);
+if numPairs == 0; return; end
+pairs(numPairs).i = [];   % preallocate
+pairCount = 0;
+for sectionIdx = 1:numSections
+    for templateIdx = 1:numel(template)
+        pieceI = pieceAt(templateI(templateIdx), sectionIdx);
+        pieceJ = pieceAt(templateJ(templateIdx), sectionIdx);
+        pairCount = pairCount + 1;
+        pairs(pairCount).i = pieceI;
+        pairs(pairCount).j = pieceJ;
+        pairs(pairCount).direction = template(templateIdx).direction;
+        pairs(pairCount).nominal = layout(pieceJ).nomOrigin - layout(pieceI).nomOrigin;
+    end
+end
+for stageIdx = 1:numel(stageIds) * options.linkSections
+    for sectionIdx = 1:numSections - 1
+        pieceI = pieceAt(stageIdx, sectionIdx);
+        pieceJ = pieceAt(stageIdx, sectionIdx + 1);
+        pairCount = pairCount + 1;
+        pairs(pairCount).i = pieceI;
+        pairs(pairCount).j = pieceJ;
+        pairs(pairCount).direction = 'z';
+        pairs(pairCount).nominal = layout(pieceJ).nomOrigin - layout(pieceI).nomOrigin;
+    end
+end
 end
 
 % =========================================================================

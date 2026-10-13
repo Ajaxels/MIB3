@@ -10,8 +10,8 @@ function correlateAtPoint(obj, stripPointXY)
 % pair-view strip back to tile-*i* pixels and runs
 % :func:`utils.stitch.localCorrelate` (ROI ``normxcorr2`` around the click,
 % searched in tile *j* near the current offset). A confident peak is applied
-% as a user fix - or, in the Fix-Z boundary view (both layers = the SAME tile
-% at slices z-1 / z), as the per-slice mosaic correction via
+% as a user fix - or, in the Fix-Z boundary view (the fused mosaic crops of
+% slices z-1 / z), as the per-slice mosaic correction via
 % :meth:`applyZBoundaryFix`. A weak/ambiguous match only reports why and
 % never moves anything. ROI size and search radius come from
 % ``ROIsizeSpinner`` / ``SearchradiusSpinner`` when present (defaults 128 / 64 px).
@@ -44,14 +44,14 @@ obj.setStatus(sprintf('Correlating a %dx%d px ROI around the click...', ...
     options.roiSize, options.roiSize));
 drawnow;
 
-% Correlate exactly the DISPLAYED slice pair. In the Fix-Z boundary view both
-% "tiles" are the SAME tile at consecutive slices z-1 / z, and a confident
-% match becomes the per-slice mosaic correction instead of a seam fix.
+% Correlate exactly the DISPLAYED slice pair. In the Fix-Z boundary view the
+% two "tiles" are the fused mosaic crops of slices z-1 / z (buildZMosaicCrops),
+% and a confident match becomes the per-slice mosaic correction instead of a
+% seam fix.
 boundaryMode = obj.boundaryModeActive();
 if boundaryMode
-    boundaryFull = obj.readerFcn(obj.viewSlice.boundaryTile);
-    tileA = boundaryFull(:, :, obj.viewSlice.sliceA, :);
-    tileB = boundaryFull(:, :, obj.viewSlice.sliceB, :);
+    tileA = obj.zMosaicCrops.sliceA;
+    tileB = obj.zMosaicCrops.sliceB;
     baseOffsetYX = obj.pairStrip.deltaYX;
 else
     tileA = obj.readerFcn(edge.i);

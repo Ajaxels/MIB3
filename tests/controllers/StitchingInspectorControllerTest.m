@@ -400,6 +400,267 @@ classdef StitchingInspectorControllerTest < matlab.unittest.TestCase
             testCase.verifyEqual(stitching.zSliceFixes, [4 2 2], 'AbsTol', 1e-9, ...
                 'undo must remove only the boundary on screen');
         end
+
+        function fixZTableListsSliceBoundariesWhenAllStacksShareOneLayer(testCase)
+            % Z-stack tiles on ONE layer (e.g. one folder of serial sections per
+            % tile) have no cross-layer seam, so Fix Z used to show an empty
+            % table although its per-slice fixes work. It now lists the slice
+            % boundaries: a row selects the boundary view, Up/Down step it, and
+            % the Shift column reports the correction stored at each boundary.
+            [inspector, stitching] = testCase.openStackChainInspector(57, 6);
+            seamTable = mibtest.helpers.FakeWidget();
+            inspector.view = struct('handles', struct( ...
+                'fixModeDropdown', struct('Value', 'Fix Z (match slices)'), ...
+                'seamTable', seamTable), 'gui', []);
+
+            testCase.assertEmpty(inspector.visibleRanking(), 'one layer: no cross-layer seam');
+            testCase.verifyTrue(inspector.listsSliceBoundaries());
+            inspector.updateWidgets();
+            testCase.verifySize(seamTable.Data, [5 3], 'one row per boundary of a 6-slice stack');
+            testCase.verifyEqual(seamTable.Data(:, 1)', {'Z 1-2', 'Z 2-3', 'Z 3-4', 'Z 4-5', 'Z 5-6'});
+
+            inspector.seamTableSelection_Callback(struct('Selection', 3));
+            testCase.verifyTrue(inspector.boundaryModeActive(), 'a row must open the boundary view');
+            testCase.verifyEqual([inspector.viewSlice.sliceA, inspector.viewSlice.sliceB], [3 4], ...
+                'row 3 is the boundary between slices 3 and 4');
+
+            inspector.applyZBoundaryFix([2 -1], 'test');
+            testCase.verifyEqual(stitching.zSliceFixes, [4 2 -1], 'AbsTol', 1e-9);
+            inspector.updateWidgets();
+            testCase.verifyEqual(seamTable.Data(3, :), {'Z 3-4', '2.0 -1.0', 'fixed'});
+            testCase.verifyEqual(seamTable.Selection, 3, 'the boundary on screen stays highlighted');
+
+            inspector.keyPress_Callback(struct('Key', 'downarrow', 'Modifier', {{}}));
+            testCase.verifyEqual(inspector.viewSlice.sliceB, 5, 'Down steps to the next boundary row');
+            inspector.keyPress_Callback(struct('Key', 'uparrow', 'Modifier', {{}}));
+            inspector.keyPress_Callback(struct('Key', 'uparrow', 'Modifier', {{}}));
+            testCase.verifyEqual(inspector.viewSlice.sliceB, 3, 'Up steps back');
+            testCase.verifyEqual(stitching.zSliceFixes, [4 2 -1], 'AbsTol', 1e-9, ...
+                'browsing must never change a correction');
+
+            inspector.view.handles.fixModeDropdown.Value = 'Fix XY (move tile)';
+            testCase.verifyFalse(inspector.listsSliceBoundaries(), 'Fix XY lists seams');
+        end
+
+        function fixZViewIsTheStitchedMosaicAroundTheChosenPoint(testCase)
+            % Fix Z treats the tiles as stitched: the view is a crop of the
+            % FUSED mosaic at slices z-1 / z around the mini-map point - the
+            % pixels Stitch would write there - and drag / click-correlate work
+            % on exactly that crop. Stored corrections do not change what is
+            % compared (the boundary's own is applied as the offset of z).
+            [inspector, stitching] = testCase.openStackChainInspector(58, 6);
+            inspector.view = struct('handles', struct( ...
+                'fixModeDropdown', struct('Value', 'Fix Z (match slices)'), ...
+                'seamTable', mibtest.helpers.FakeWidget()), 'gui', []);
+            inspector.seamTableSelection_Callback(struct('Selection', 2));   % boundary 2|3
+            testCase.verifyTrue(inspector.boundaryModeActive());
+            testCase.verifyEqual(inspector.viewSlice.sliceB, 3);
+
+            point = [stitching.positions(3, 2) + 100, stitching.positions(3, 1) + 70];   % [x y]
+            inspector.fixZSelectPoint(point);
+            testCase.verifyEqual(inspector.zMosaicCenter, [point(2), point(1)]);
+            crops = inspector.buildZMosaicCrops(3);
+
+            viewCanvas = utils.stitch.planCanvas(stitching.layout, stitching.positions);
+            mosaic = utils.stitch.fuseInMemory(stitching.layout, viewCanvas, ...
+                struct('blendMode', stitching.BatchOpt.BlendMode{1}, 'background', 0));
+            rows = crops.region(1, 1):crops.region(1, 2);
+            cols = crops.region(2, 1):crops.region(2, 2);
+            testCase.verifyEqual(crops.sliceA, single(mosaic(rows, cols, 2, 1)), 'slice z-1 is the stitched mosaic');
+            testCase.verifyEqual(crops.sliceB, single(mosaic(rows, cols, 3, 1)), 'slice z is the stitched mosaic');
+            testCase.verifyTrue(point(2) >= crops.regionPositions(1, 1) && point(2) <= crops.regionPositions(1, 2) && ...
+                point(1) >= crops.regionPositions(2, 1) && point(1) <= crops.regionPositions(2, 2), ...
+                'the crop contains the chosen point');
+
+            inspector.applyZBoundaryFix([2 -3], 'test');
+            testCase.verifyEqual(inspector.buildZMosaicCrops(3).sliceB, crops.sliceB, ...
+                'the correction is shown as the offset of slice z, not baked into the crop');
+            testCase.verifyEqual(inspector.boundaryDelta(3), [2 -3], 'AbsTol', 1e-9);
+        end
+
+        function fixZCorrectionReratesItsBoundaryOnTheCorrectedMosaic(testCase)
+            % A boundary moved off by hand must be rated on the pixels the
+            % mosaic now shows: its links are re-scored at the corrected
+            % placement (and ONLY its links), its row climbs to the top of
+            % the worst-first table and shows the correction; removing the
+            % correction gives the original scores back.
+            numSections = 4;
+            [inspector, stitching] = testCase.openSectionInspector(numSections, 68);
+            seamTable = mibtest.helpers.FakeWidget();
+            inspector.view = struct('handles', struct( ...
+                'fixModeDropdown', struct('Value', 'Fix Z (match slices)'), ...
+                'seamTable', seamTable), 'gui', []);
+            inspector.updateWidgets();
+            rows = inspector.visibleRanking();
+            lastRowEdge = rows(end);   % the best-rated boundary
+            inspector.selectSeam(lastRowEdge);
+            viewCanvas = inspector.zViewCanvas();
+            zBoundary = inspector.zBoundaryOfEdge(lastRowEdge, viewCanvas);
+            inspector.viewSlice = struct('edgeIdx', lastRowEdge, 'sliceA', zBoundary - 1, 'sliceB', zBoundary, ...
+                'depthA', numSections, 'depthB', numSections, 'mosaic', true);
+            isLink = strcmp({stitching.edges.direction}, 'z') & ...
+                arrayfun(@(k) isequal(inspector.zBoundaryOfEdge(k, viewCanvas), zBoundary), 1:numel(stitching.edges));
+            scoresBefore = [stitching.edges.seamScore];
+
+            inspector.applyZBoundaryFix([9 -9], 'test');
+            scoresAfter = [stitching.edges.seamScore];
+            testCase.verifyLessThan(max(scoresAfter(isLink)), min(scoresBefore(isLink)) - 0.2, ...
+                'the boundary''s links are rated on the corrected (now misaligned) mosaic');
+            testCase.verifyEqual(scoresAfter(~isLink), scoresBefore(~isLink), ...
+                'no other seam is re-read or changes');
+            testCase.verifyEqual(inspector.rowOfEdge(inspector.currentEdgeIdx), 1, ...
+                'the moved boundary is now the worst row');
+            testCase.verifyEqual(seamTable.Data{1, 3}, '9.0 -9.0', 'the row shows its correction');
+            testCase.verifyEqual(seamTable.Selection, 1, 'and stays the selected row');
+
+            inspector.undoFix_Callback();
+            testCase.verifyEqual([stitching.edges.seamScore], scoresBefore, 'AbsTol', 1e-12, ...
+                'removing the correction restores the original rating');
+        end
+
+        function ctrlShiftClickCorrelatesEveryZBoundaryOfTheStack(testCase)
+            % Ctrl+Shift+click in Fix Z: one click measures EVERY boundary at
+            % that spot. A stack whose content jumps at slices 4 and 6 gets
+            % exactly the two corrections that undo the jumps; a stale
+            % correction on an aligned boundary is measured away; nothing
+            % else is stored.
+            jumps = zeros(6, 2);           % content offset of each slice
+            jumps(4:5, :) = repmat([4 -6], 2, 1);
+            jumps(6, :) = [1 -1];
+            [inspector, stitching] = testCase.openJumpingStackInspector(jumps);
+            inspector.view = struct('handles', struct( ...
+                'fixModeDropdown', struct('Value', 'Fix Z (match slices)'), ...
+                'seamTable', mibtest.helpers.FakeWidget()), 'gui', []);
+            stitching.zSliceFixes = [2 5 5];   % stale: boundary 2 is aligned
+            inspector.viewSlice = struct('edgeIdx', inspector.currentEdgeIdx, 'sliceA', 3, ...
+                'sliceB', 4, 'depthA', 6, 'depthB', 6, 'mosaic', true);
+            crops = inspector.buildZMosaicCrops(4);
+
+            inspector.ctrlDown = true; inspector.shiftDown = true;   % what the key handlers record
+            inspector.correlateStackAtPoint(fliplr(round(size(crops.sliceA) / 2)));
+
+            fixes = stitching.zSliceFixes;
+            testCase.verifyEqual(fixes(:, 1)', [4 6], 'only the two jumping boundaries carry a correction');
+            testCase.verifyEqual(fixes(1, 2:3), -(jumps(4, :) - jumps(3, :)), 'AbsTol', 0.5);
+            testCase.verifyEqual(fixes(2, 2:3), -(jumps(6, :) - jumps(5, :)), 'AbsTol', 0.5);
+
+            % Ctrl+Z undoes the whole run in one step; nothing earlier was an action.
+            ctrlZ = struct('Key', 'z', 'Modifier', {{'control'}});
+            inspector.keyPress_Callback(ctrlZ);
+            testCase.verifyEqual(stitching.zSliceFixes, [2 5 5], 'every boundary back as before the run');
+            inspector.keyPress_Callback(ctrlZ);
+            testCase.verifyEqual(stitching.zSliceFixes, [2 5 5], 'one run, one undo');
+
+            % Run, then a single fix: Ctrl+Z steps back through them in order.
+            inspector.correlateStackAtPoint(fliplr(round(size(crops.sliceA) / 2)));
+            fixesAfterRun = stitching.zSliceFixes;
+            inspector.viewSlice = struct('edgeIdx', inspector.currentEdgeIdx, 'sliceA', 2, ...
+                'sliceB', 3, 'depthA', 6, 'depthB', 6, 'mosaic', true);
+            inspector.applyZBoundaryFix([1 1], 'manual after the run');
+            inspector.keyPress_Callback(ctrlZ);
+            testCase.verifyEqual(stitching.zSliceFixes, fixesAfterRun, ...
+                'the first Ctrl+Z takes back only the single fix');
+            inspector.keyPress_Callback(ctrlZ);
+            testCase.verifyEqual(stitching.zSliceFixes, [2 5 5], 'the second one the whole run');
+        end
+
+        function ctrlZReturnsABoundaryToItsPreviousCorrection(testCase)
+            % After a drag / Shift+click, Ctrl+Z gives the boundary its
+            % PREVIOUS correction back - not none; after Z (remove), it
+            % brings the removed correction back. Other boundaries untouched.
+            [inspector, stitching] = testCase.openInspector(57);
+            testCase.attachFixModeDropdown(inspector, 'Fix Z (match slices)');
+            ctrlZ = struct('Key', 'z', 'Modifier', {{'control'}});
+            testCase.enterBoundaryView(inspector, 8);
+            inspector.applyZBoundaryFix([1 1], 'other boundary');
+            testCase.enterBoundaryView(inspector, 5);
+            inspector.applyZBoundaryFix([3 -2], 'first');
+            inspector.applyZBoundaryFix([6 4], 'second');
+
+            inspector.keyPress_Callback(ctrlZ);
+            testCase.verifyEqual(inspector.boundaryDelta(5), [3 -2], 'AbsTol', 1e-9, 'back to the previous value');
+            testCase.verifyEqual(inspector.boundaryDelta(8), [1 1], 'AbsTol', 1e-9);
+
+            inspector.keyPress_Callback(struct('Key', 'z', 'Modifier', {{}}));   % Z: remove
+            testCase.verifyEqual(inspector.boundaryDelta(5), [0 0]);
+            inspector.keyPress_Callback(ctrlZ);
+            testCase.verifyEqual(inspector.boundaryDelta(5), [3 -2], 'AbsTol', 1e-9, 'Ctrl+Z undoes the removal');
+
+            inspector.keyPress_Callback(ctrlZ);
+            testCase.verifyEqual(inspector.boundaryDelta(5), [0 0], 'and the first fix');
+            testCase.verifyEqual(stitching.zSliceFixes, [8 1 1], 'AbsTol', 1e-9);
+        end
+
+        function fixZBrowsingSectionsKeepsTheBoundaryRowInStep(testCase)
+            % Serial sections: Fix Z rows are section boundaries; browsing the
+            % boundary with Q/W moves the current row with it, and a mini-map
+            % point changes where the view looks, not which boundary.
+            numSections = 4;
+            [inspector, stitching] = testCase.openSectionInspector(numSections, 67);
+            seamTable = mibtest.helpers.FakeWidget();
+            inspector.view = struct('handles', struct( ...
+                'fixModeDropdown', struct('Value', 'Fix Z (match slices)'), ...
+                'seamTable', seamTable), 'gui', []);
+            viewCanvas = inspector.zViewCanvas();
+            testCase.assertEqual(viewCanvas.size(3), numSections);
+            ranking = inspector.visibleRanking();
+            startEdge = ranking(1);
+            inspector.selectSeam(startEdge);
+            zStart = inspector.zBoundaryOfEdge(startEdge, viewCanvas);
+            inspector.viewSlice = struct('edgeIdx', startEdge, 'sliceA', zStart - 1, 'sliceB', zStart, ...
+                'depthA', numSections, 'depthB', numSections, 'mosaic', true);   % as renderPairView leaves it
+
+            inspector.fixZSelectPoint([100, 100]);
+            testCase.verifyEqual(inspector.viewSlice.sliceB, zStart, 'a mini-map point keeps the boundary');
+
+            step = 1 - 2 * (zStart == numSections);   % stay inside 2..numSections
+            if step > 0; key = 'w'; else; key = 'q'; end
+            inspector.keyPress_Callback(struct('Key', key, 'Modifier', {{}}));
+            testCase.verifyEqual(inspector.viewSlice.sliceB, zStart + step);
+            testCase.verifyEqual(inspector.zBoundaryOfEdge(inspector.currentEdgeIdx, viewCanvas), zStart + step, ...
+                'the current row follows the browsed boundary');
+            testCase.verifyEqual(seamTable.Selection, inspector.rowOfEdge(inspector.currentEdgeIdx));
+            testCase.verifyEqual(stitching.edges(inspector.currentEdgeIdx).direction, 'z');
+        end
+
+        function sectionLayoutTablesNameFoldersAndGroupBoundaries(testCase)
+            % Serial sections (RegisterSlices): Fix XY lists every in-plane seam
+            % with its section, tiles named by FOLDER; Fix Z collapses the 4
+            % tile links of each section boundary into one row, landing on
+            % that boundary's worst link.
+            numSections = 4;
+            [inspector, stitching] = testCase.openSectionInspector(numSections, 63);
+            seamTable = mibtest.helpers.FakeWidget();
+            inspector.view = struct('handles', struct( ...
+                'fixModeDropdown', struct('Value', 'Fix XY (move tile)'), ...
+                'seamTable', seamTable), 'gui', []);
+
+            inspector.updateWidgets();
+            testCase.verifySize(seamTable.Data, [4 * numSections, 7], ...
+                '4 in-plane seams of a 2x2 grid in every section');
+            testCase.verifyEqual(seamTable.ColumnName{2}, 'Section');
+            testCase.verifyEqual(unique(seamTable.Data(:, 1)), {'X (1-2)'; 'X (3-4)'; 'Y (1-3)'; 'Y (2-4)'}, ...
+                'tiles are named by their folder, the same in every section');
+
+            inspector.view.handles.fixModeDropdown.Value = 'Fix Z (match slices)';
+            testCase.verifyFalse(inspector.listsSliceBoundaries(), ...
+                'a section layout has real section-to-section seams to list');
+            ranking = inspector.visibleRanking();
+            testCase.verifyNumElements(ranking, numSections - 1, 'one row per section boundary');
+            inspector.updateWidgets();
+            testCase.verifySize(seamTable.Data, [numSections - 1, 6]);
+            testCase.verifyEqual(sort(seamTable.Data(:, 1)), {'Z 1-2'; 'Z 2-3'; 'Z 3-4'});
+            testCase.verifyEqual(cell2mat(seamTable.Data(:, 5))', repmat(4, 1, numSections - 1), ...
+                'each boundary row covers the 4 tile links');
+            for rowIdx = 1:numel(ranking)
+                rowEdge = stitching.edges(ranking(rowIdx));
+                section = stitching.layout(rowEdge.i).zLayer;
+                boundaryEdges = stitching.edges(strcmp({stitching.edges.direction}, 'z') & ...
+                    arrayfun(@(edge) stitching.layout(edge.i).zLayer == section, stitching.edges));
+                testCase.verifyEqual(rowEdge.seamScore, min([boundaryEdges.seamScore]), 'AbsTol', 1e-12, ...
+                    'the row lands on the boundary''s worst tile link');
+            end
+        end
     end
 
     % =================================================================
@@ -442,6 +703,91 @@ classdef StitchingInspectorControllerTest < matlab.unittest.TestCase
             controller.BatchOpt.OverlapX{1}     = 25;
             controller.BatchOpt.OverlapY{1}     = 0;
             controller.BatchOpt.EstimateOverlap = false;
+        end
+
+        function [inspector, stitching] = openSectionInspector(testCase, numSections, seed)
+            % Measured + solved 2x2 serial-section montage (RegisterSlices on,
+            % mibtest.helpers.writeSerialSectionFolders) in a headless inspector.
+            [tileFolders, ~, parentFolder] = mibtest.helpers.writeSerialSectionFolders(numSections, seed);
+            testCase.addTeardown(@() rmdir(parentFolder, 's'));
+            repoRoot = fileparts(fileparts(fileparts(mfilename('fullpath'))));
+            mibModel = models.MibModel(1, fullfile(repoRoot, 'mib'), Verbose = false, Preferences = 'defaults');
+            mibModel.preferences.System.DeveloperMode = false;
+            stitching = controllers.Stitching(mibModel, [], NaN);
+            stitching.BatchOpt.showWaitbar     = false;
+            stitching.BatchOpt.LayoutSource{1} = 'Grid';
+            stitching.BatchOpt.InputPath       = strjoin(tileFolders, newline);
+            stitching.BatchOpt.SubfolderMode   = true;
+            stitching.BatchOpt.RegisterSlices  = true;
+            stitching.BatchOpt.SectionAlignment{1} = 'Follow image content';
+            stitching.BatchOpt.GridRows{1}     = 2;
+            stitching.BatchOpt.GridCols{1}     = 2;
+            stitching.BatchOpt.OverlapX{1}     = 25;
+            stitching.BatchOpt.OverlapY{1}     = 25;
+            stitching.BatchOpt.EstimateOverlap = false;
+            stitching.buildLayoutFromBatchOpt();
+            stitching.measureOverlaps_Callback();
+            stitching.optimizePositions_Callback();
+
+            inspector = controllers.StitchingInspector(stitching.mibModel, stitching, ...
+                struct('createView', false));
+            stitching.inspector = inspector;
+            testCase.addTeardown(@() delete(inspector));
+        end
+
+        function [inspector, stitching] = openJumpingStackInspector(testCase, jumps)
+            % Solved 1x3 chain of Z-stack tiles (Prealigned) cut from one
+            % texture, where slice s of EVERY tile shows the content moved by
+            % jumps(s, :) = [dy dx] - a mosaic whose slices are mutually
+            % misaligned while every seam within a slice is exact.
+            stitching = testCase.chainController(59);
+            original = mibtest.helpers.stitchTextureImage(200, 480, 59);
+            tileDir = stitching.BatchOpt.InputPath;
+            for k = 1:3
+                x0 = 1 + (k - 1) * 120 + 10; y0 = 11;
+                tileFilename = fullfile(tileDir, sprintf('tile_%02d.tif', k));
+                for slice = 1:size(jumps, 1)
+                    d = jumps(slice, :);
+                    sliceImage = original(y0 - d(1):y0 - d(1) + 159, x0 - d(2):x0 - d(2) + 159);
+                    if slice == 1
+                        imwrite(sliceImage, tileFilename);
+                    else
+                        imwrite(sliceImage, tileFilename, 'WriteMode', 'append');
+                    end
+                end
+            end
+            stitching.buildLayoutFromBatchOpt();
+            stitching.measureOverlaps_Callback();
+            stitching.optimizePositions_Callback();
+            inspector = controllers.StitchingInspector(stitching.mibModel, stitching, ...
+                struct('createView', false));
+            stitching.inspector = inspector;
+            testCase.addTeardown(@() delete(inspector));
+        end
+
+        function [inspector, stitching] = openStackChainInspector(testCase, seed, depth)
+            % Solved 1x3 chain whose tiles are multi-page TIFF Z-stacks of
+            % `depth` slices, all on one layer - opened in a headless inspector.
+            stitching = testCase.chainController(seed);
+            original = mibtest.helpers.stitchTextureImage(180, 460, seed);
+            tileDir = stitching.BatchOpt.InputPath;
+            for k = 1:3
+                originX = 1 + (k - 1) * 120;
+                tileFilename = fullfile(tileDir, sprintf('tile_%02d.tif', k));
+                imwrite(original(1:160, originX:originX + 159), tileFilename);
+                for slice = 2:depth
+                    imwrite(original(1:160, originX:originX + 159), tileFilename, 'WriteMode', 'append');
+                end
+            end
+            stitching.buildLayoutFromBatchOpt();
+            testCase.assertEqual(stitching.layout(1).tileSize(3), depth);
+            stitching.measureOverlaps_Callback();
+            stitching.optimizePositions_Callback();
+
+            inspector = controllers.StitchingInspector(stitching.mibModel, stitching, ...
+                struct('createView', false));
+            stitching.inspector = inspector;
+            testCase.addTeardown(@() delete(inspector));
         end
 
         function tileDir = chopChain(testCase, seed)
@@ -513,11 +859,11 @@ classdef StitchingInspectorControllerTest < matlab.unittest.TestCase
 
         function enterBoundaryView(~, inspector, zBoundary)
             % Put the pair view into the mosaic Z-BOUNDARY state that
-            % renderPairView establishes in Fix Z mode: one tile shown at
+            % renderPairView establishes in Fix Z mode: the mosaic shown at
             % slices z-1 (cyan) vs z (magenta).
             inspector.viewSlice = struct('edgeIdx', inspector.currentEdgeIdx, ...
                 'sliceA', zBoundary - 1, 'sliceB', zBoundary, ...
-                'depthA', 12, 'depthB', 12, 'boundaryTile', 1);
+                'depthA', 12, 'depthB', 12, 'mosaic', true);
         end
     end
 end

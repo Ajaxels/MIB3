@@ -165,7 +165,7 @@ classdef Stitching < handle
             %   - **fieldNames** - [cell] BatchOpt field names, in dialog order
             %
             fieldNames = { ...
-                'LayoutSource', 'InputPath', 'SubfolderMode', 'LayoutImport', ...
+                'LayoutSource', 'InputPath', 'SubfolderMode', 'RegisterSlices', 'SectionAlignment', 'LayoutImport', ...
                 'GridRows', 'GridCols', 'TileOrder', 'OverlapX', 'OverlapY', 'EstimateOverlap', ...
                 'TransformType', 'AllowRotation', 'RegistrationMethod', 'FeatureDetectorType', ...
                 'QualityThreshold', 'NominalPositionWeight', 'SubpixelPlacement', ...
@@ -310,6 +310,19 @@ classdef Stitching < handle
 
             obj.BatchOpt.InputPath       = '';
             obj.BatchOpt.SubfolderMode   = false;
+            % What the slices of a stack tile are to each other - see sectionMode:
+            %   RegisterSlices off              - unrelated slices: every slice
+            %                                     stitched on its own, no Z alignment
+            %   on + SectionAlignment Prealigned - the stack is already aligned:
+            %                                     placed as ONE block (default; how
+            %                                     every 3D stitch ran before 2026-10)
+            %   on + Follow image content /
+            %        Trust stage positions      - serial sections: every slice
+            %                                     stitched AND aligned to the next
+            % Only stack tiles are affected; a 2D mosaic stitches the same in all.
+            obj.BatchOpt.RegisterSlices  = true;
+            obj.BatchOpt.SectionAlignment    = {'Prealigned'};
+            obj.BatchOpt.SectionAlignment{2} = {'Prealigned', 'Follow image content', 'Trust stage positions'};
 
             % How much of an acquisition's OWN stitch to take. Consulted only
             % when the Position file source is pointed at a file that can carry
@@ -411,6 +424,12 @@ classdef Stitching < handle
                 '  - Bio-Formats metadata: stage coordinates embedded in the image files']);
             obj.BatchOpt.mibBatchTooltip.InputPath       = 'Path to the tile folder, position file, Atlas .ve-mif mosaic, SerialEM .mdoc/.mrc montage, or folder of tile files';
             obj.BatchOpt.mibBatchTooltip.SubfolderMode   = 'Each tile is a folder of slice images (a Z-stack) instead of a single image file - works with any layout source';
+            obj.BatchOpt.mibBatchTooltip.SectionAlignment = sprintf([ ...
+                'How the slices of each tile are aligned to each other:\n' ...
+                '  - Prealigned: the stacks are already aligned; each is placed as one block\n' ...
+                '  - Follow image content: every slice is stitched and registered to the next by its pixels; keeps real drift, but oblique structures can shear the stack slightly\n' ...
+                '  - Trust stage positions: every slice is stitched and kept near its tile''s stage position, correcting only the stage jitter; for acquisitions without sample drift']);
+            obj.BatchOpt.mibBatchTooltip.RegisterSlices  = 'Untick when the slices are unrelated to each other: every slice is then stitched on its own and the slices are not aligned in Z. Needs folder tiles, every folder with the same number of images';
             obj.BatchOpt.mibBatchTooltip.LayoutImport    = sprintf([ ...
                 'How much of the acquisition''s own stitch to reuse. Applies to a Fibics Atlas ".ve-mif" or SerialEM ".mdoc"; ignored for a plain position text file:\n' ...
                 '  - Nominal grid only: ignore it, register everything from scratch\n' ...
@@ -606,6 +625,119 @@ classdef Stitching < handle
         end
 
         % ---------------------------------------------------------------
+        function tf = registerSlicesAvailable(obj)
+            % REGISTERSLICESAVAILABLE - Can the current layout source yield folder tiles?
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      tf = obj.registerSlicesAvailable()
+            %
+            % Every section mode except ``prealigned`` splits FOLDER tiles, so it
+            % needs Grid or Filename pattern with ``SubfolderMode``, or a Position
+            % file (whose entries may name folders). Shared by
+            % :meth:`updateWidgets` (enable state) and
+            % :meth:`updateBatchOptFromGUI` (falls back to Prealigned when the
+            % source stops offering folders).
+            %
+            tf = strcmp(obj.BatchOpt.LayoutSource{1}, 'Position file') || ...
+                (ismember(obj.BatchOpt.LayoutSource{1}, {'Grid', 'Filename pattern'}) && ...
+                obj.BatchOpt.SubfolderMode);
+        end
+
+        % ---------------------------------------------------------------
+        function mode = sectionMode(obj)
+            % SECTIONMODE - How the slices of stack tiles relate, from BatchOpt.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      mode = obj.sectionMode()
+            %
+            % The one place ``RegisterSlices`` + ``SectionAlignment`` are turned
+            % into behaviour, so the layout build, the pairing and the solve
+            % cannot disagree:
+            %
+            % - ``'unrelated'`` (RegisterSlices off) - every slice stitched on its
+            %   own: tiles split into one piece per slice
+            %   (:func:`utils.stitch.splitLayoutIntoSections`), only in-plane
+            %   pairs, each section solved as its own component.
+            % - ``'prealigned'`` (on, ``Prealigned``) - a stack tile is one block,
+            %   its slices already aligned: no split (the pre-2026-10 behaviour,
+            %   including Z-stacks overlapping across layers).
+            % - ``'aligned'`` (on, ``Follow image content`` / ``Trust stage
+            %   positions``) - split, plus section-to-section pairs, solved as
+            %   :meth:`translationSolverOptions` says.
+            %
+            % Output Arguments:
+            %   - **mode** - [char] ``'unrelated'``, ``'prealigned'`` or ``'aligned'``
+            %
+            if ~obj.BatchOpt.RegisterSlices
+                mode = 'unrelated';
+            elseif strcmp(obj.BatchOpt.SectionAlignment{1}, 'Prealigned')
+                mode = 'prealigned';
+            else
+                mode = 'aligned';
+            end
+        end
+
+        % ---------------------------------------------------------------
+        function pairOptions = neighborPairOptions(obj)
+            % NEIGHBORPAIROPTIONS - Options for utils.stitch.findNeighborPairs.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      pairOptions = obj.neighborPairOptions()
+            %
+            % Shared by :meth:`measureOverlaps_Callback` and
+            % :meth:`stitchBtn_Callback`. Unrelated slices get no
+            % section-to-section pairs (``linkSections = false``).
+            %
+            pairOptions = struct('minOverlapPx', 16, ...
+                'linkSections', ~strcmp(obj.sectionMode(), 'unrelated'));
+        end
+
+        % ---------------------------------------------------------------
+        function solverOptions = translationSolverOptions(obj)
+            % TRANSLATIONSOLVEROPTIONS - Options for utils.stitch.solveGlobalLeastSquares.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      solverOptions = obj.translationSolverOptions()
+            %
+            % Shared by :meth:`optimizePositions_Callback` and
+            % :meth:`stitchBtn_Callback` so both solve identically. For serial
+            % sections (:meth:`sectionMode` ``'aligned'``) the section-to-section
+            % placement follows ``BatchOpt.SectionAlignment``; the other modes
+            % solve plainly (unrelated sections are disconnected components,
+            % each anchored by the solver's one bridge spring):
+            %
+            % - ``Follow image content`` - Huber-robust solve, no stage prior:
+            %   sections are registered by their pixels, real drift included,
+            %   and the few seams that disagree are down-weighted.
+            % - ``Trust stage positions`` - stage prior with the repeatability
+            %   estimated from the seams and ``seamSigma = 1`` px: every slice
+            %   stays near its tile's stage position, so a consistent bias in
+            %   the section-to-section registration (oblique structures) cannot
+            %   accumulate - but neither can real sample drift.
+            %
+            % Measured on smoke test 19 and a drift variant, max / rms per-slice
+            % error: content 0.61 / 0.06 and 1.55 / 0.67 px; stage 0.57 / 0.26
+            % and 3.13 / 1.28 px (see plan_serial_sections.md).
+            %
+            solverOptions.springWeight = obj.BatchOpt.NominalPositionWeight{1};
+            if ~strcmp(obj.sectionMode(), 'aligned'); return; end
+            if strcmp(obj.BatchOpt.SectionAlignment{1}, 'Trust stage positions')
+                solverOptions.stagePriorSigma = 0;
+                solverOptions.seamSigma = 1.0;
+            else
+                solverOptions.robustLoss = true;
+            end
+        end
+
+        % ---------------------------------------------------------------
         function figureHandle = guiFigure(obj)
             % GUIFIGURE - Handle of the tool window, or ``[]`` without a view.
             %
@@ -647,12 +779,65 @@ classdef Stitching < handle
             %
             % Output Arguments:
             %   - **stamp** - [struct] ``.positions``, ``.numEdges``,
-            %     ``.correctionMethod``
+            %     ``.correctionMethod``, ``.zSliceFixes``
             %
             stamp = struct( ...
                 'positions',        obj.positions, ...
                 'numEdges',         numel(obj.edges), ...
-                'correctionMethod', obj.BatchOpt.IntensityCorrection{1});
+                'correctionMethod', obj.BatchOpt.IntensityCorrection{1}, ...
+                'zSliceFixes',      {obj.zSliceFixes});
+        end
+
+        % ---------------------------------------------------------------
+        function shifts = zFixTileShifts(obj, zSliceFixes)
+            % ZFIXTILESHIFTS - In-plane shift the Fix Z corrections give each tile.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      shifts = obj.zFixTileShifts(zSliceFixes)
+            %
+            % A correction row ``[z dy dx]`` moves every mosaic slice ``>= z``
+            % (:func:`utils.stitch.planCanvas`), so a tile moves by the sum of
+            % the rows at or below the output slice it STARTS on. Exact for
+            % single-slice pieces (serial sections) and for stacks that start at
+            % a corrected boundary; a stack that spans a boundary is shifted by
+            % its first slice - the part seam scoring compares across layers.
+            %
+            % Input Arguments:
+            %   - **zSliceFixes** - [K x 3] ``[z dy dx]`` rows (``[]`` = none)
+            %
+            % Output Arguments:
+            %   - **shifts** - [N x 2] ``[dy dx]`` per tile
+            %
+            shifts = zeros(size(obj.positions, 1), 2);
+            if isempty(zSliceFixes); return; end
+            startSlice = round(obj.positions(:, 3) - min(obj.positions(:, 3)) + 1);
+            for row = 1:size(zSliceFixes, 1)
+                moved = startSlice >= round(zSliceFixes(row, 1));
+                shifts(moved, :) = shifts(moved, :) + zSliceFixes(row, 2:3);
+            end
+        end
+
+        % ---------------------------------------------------------------
+        function positions = scoringPositions(obj)
+            % SCORINGPOSITIONS - Where the seams are scored: the solved
+            % positions plus each tile's Fix Z correction (zFixTileShifts).
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      positions = obj.scoringPositions()
+            %
+            % A Fix Z correction is applied on top of the solve, when the
+            % mosaic is fused; scoring at the bare solved positions would rate
+            % a section-to-section link on pixels the mosaic no longer shows -
+            % a boundary moved away by hand stayed scored as it was before.
+            % In-plane seams are unaffected (both tiles move alike).
+            %
+            positions = obj.positions;
+            if isempty(positions); return; end
+            positions(:, 1:2) = positions(:, 1:2) + obj.zFixTileShifts(obj.zSliceFixes);
         end
 
         % ---------------------------------------------------------------
@@ -680,6 +865,11 @@ classdef Stitching < handle
             if ~isequal(stamp.positions, obj.positions); return; end
             if stamp.numEdges ~= numel(obj.edges); return; end
             if ~strcmp(stamp.correctionMethod, obj.BatchOpt.IntensityCorrection{1}); return; end
+            if ~isfield(stamp, 'zSliceFixes') || ...
+                    ~(isequal(stamp.zSliceFixes, obj.zSliceFixes) || ...
+                      (isempty(stamp.zSliceFixes) && isempty(obj.zSliceFixes)))
+                return;
+            end
             if ~isfield(obj.edges, 'seamScore'); return; end
             if any(cellfun(@isempty, {obj.edges.seamScore})); return; end
             tf = true;

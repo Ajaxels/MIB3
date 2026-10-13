@@ -41,6 +41,11 @@ classdef StitchingInspector < handle
         % true once the current right-button press has moved >= 3 screen px, i.e.
         % turned into a pan (pairViewButtonDown); fillTileOrderMenu then leaves the
         % menu empty so a pan does not end with a menu popping up
+        dragCancelFcn = []
+        % while a LEFT press in the pair view is in progress (pairViewButtonDown,
+        % from press to release): a handle that abandons it - restores the view,
+        % detaches the release handler so nothing is applied. Esc calls it
+        % (keyPress_Callback). [] = no drag in progress
         readerCorrectionStamp
         % what the correction readerFcn was built with looked like - method and,
         % for 'Re-exposure damage', the positions its footprints were placed at;
@@ -59,6 +64,21 @@ classdef StitchingInspector < handle
         twoClick
         % two-click landmark match state: .active, .stage (1|2), .scale,
         % .leftWidth, .gap, .clickA ([x y] in tile-i full-res pixels)
+        zFixHistory = {}
+        % Fix Z undo history, oldest first: one struct per Fix Z action -
+        % .fixes = obj.stitching.zSliceFixes just BEFORE it, .label = what
+        % the action was. Pushed by pushZFixHistory (applyZBoundaryFix: drag /
+        % Shift+click; undoFix_Callback: Z removing a boundary's correction;
+        % correlateStackAtPoint: Ctrl+Shift+click over the whole stack).
+        % Ctrl+Z (keyPress_Callback) pops the last entry and restores its
+        % .fixes - every boundary of a stack run at once, the one boundary of
+        % a single fix back to its PREVIOUS correction. LIFO restores of
+        % whole states, so any mix of actions undoes consistently
+        ctrlDown = false
+        % true while Ctrl is held over the inspector (keyPress / keyRelease):
+        % with Shift, a pair-view click correlates every Z boundary of the
+        % stack (correlateStackAtPoint). Tracked here like shiftDown because a
+        % Ctrl+click reports the same SelectionType ('alt') as a right-click
         shiftDown
         % true while Shift is held over the inspector - the pair-view cursor
         % becomes the correlation ROI box and a click runs click-to-correlate
@@ -80,11 +100,20 @@ classdef StitchingInspector < handle
         viewSlice
         % browsed z-slices of the pair view: struct .edgeIdx, .sliceA
         % (tile-i slice), .sliceB (tile-j slice), .depthA, .depthB (stack
-        % depths) and .boundaryTile - [] in Fix XY (sliceA/sliceB are the
-        % dz-aligned pair of the seam's tiles), or the tile index in Fix Z,
-        % where the view is the mosaic Z BOUNDARY: that ONE tile at slices
-        % z-1 (sliceA, cyan) vs z (sliceB, magenta). Browsing is VIEW ONLY.
-        % [] = defaults (central slice)
+        % depths) and .mosaic - false in Fix XY (sliceA/sliceB are the
+        % dz-aligned pair of the seam's tiles), true in Fix Z, where the view
+        % is the mosaic Z BOUNDARY: a crop of the FUSED mosaic at slices z-1
+        % (sliceA, cyan) vs z (sliceB, magenta; depths = mosaic depth).
+        % Browsing is VIEW ONLY. [] = defaults (central slice)
+        zMosaicCenter
+        % Fix Z: [y x] point (solved-position frame, as the mini-map draws)
+        % the mosaic crops are centred on - set by a mini-map click
+        % (fixZSelectPoint). [] = the current seam's tile centre
+        zMosaicCrops
+        % Fix Z: the crops on screen (buildZMosaicCrops) - struct .zBoundary,
+        % .region / .regionPositions ([r0 r1; c0 c1] in canvas / solved-position
+        % pixels), .sliceA / .sliceB (fused single images). Drag and
+        % click-to-correlate work on exactly these pixels. [] outside Fix Z
     end
 
     properties (Dependent)
@@ -149,6 +178,8 @@ classdef StitchingInspector < handle
             obj.tileThumbs = {};
             obj.thumbScale = NaN;
             obj.viewSlice = [];
+            obj.zMosaicCenter = [];
+            obj.zMosaicCrops = [];
 
             createView = true;
             if nargin > 2 && isstruct(options) && isfield(options, 'createView')
@@ -608,14 +639,232 @@ classdef StitchingInspector < handle
             % mini-map jump, the initial pick) follow this subset, so the table
             % never mixes in-plane and cross-layer rows - they read on different
             % axes and made the combined list confusing. A 2D dataset has only
-            % in-plane seams, so Fix XY shows them all and Fix Z is empty.
+            % in-plane seams, so Fix XY shows them all and Fix Z is empty. So
+            % is Fix Z for Z-stack tiles that all sit on one layer - the table
+            % then lists slice boundaries instead (listsSliceBoundaries).
             r = obj.ranking;
             if isempty(r); return; end
             isZ = strcmp({obj.stitching.edges(r).direction}, 'z');
             if strcmp(obj.fixMode(), 'z')
                 r = r(isZ);
+                if obj.isSectionLayout() && ~isempty(r)
+                    % Serial sections: ONE row per section boundary - its worst
+                    % tile link (the ranking is worst-first, so the first edge
+                    % met per boundary). 92 tile links on smoke test 19 read as
+                    % 23 boundaries, and every navigation still lands on a seam.
+                    layout = obj.stitching.layout;
+                    boundaries = arrayfun(@(k) layout(obj.stitching.edges(k).i).zLayer, r);
+                    [~, firstOfBoundary] = unique(boundaries, 'stable');
+                    r = r(sort(firstOfBoundary));
+                end
             else
                 r = r(~isZ);
+            end
+        end
+
+        % ---------------------------------------------------------------
+        function tf = isSectionLayout(obj)
+            % ISSECTIONLAYOUT - True for a serial-section layout (every piece
+            % carries .stageTile, see utils.stitch.splitLayoutIntoSections):
+            % the tables then name tiles by their FOLDER and show the section.
+            layout = obj.stitching.layout;
+            tf = isfield(layout, 'stageTile') && ~isempty(layout) && ...
+                ~any(arrayfun(@(piece) isempty(piece.stageTile), layout));
+        end
+
+        % ---------------------------------------------------------------
+        function tf = listsSliceBoundaries(obj)
+            % LISTSSLICEBOUNDARIES - True when the seam table lists mosaic
+            % SLICE BOUNDARIES instead of seams: Fix Z on a mosaic that has
+            % Z-stack tiles but no cross-layer seam (all tiles on one layer,
+            % e.g. one folder of serial sections per tile). Fix Z edits slice
+            % boundaries anyway, so the table offers those rather than
+            % staying empty - one row per boundary z-1 | z, z = 2..depth.
+            tf = strcmp(obj.fixMode(), 'z') && isempty(obj.visibleRanking()) && ...
+                obj.sliceBoundaryDepth() > 1;
+        end
+
+        % ---------------------------------------------------------------
+        function depth = sliceBoundaryDepth(obj)
+            % SLICEBOUNDARYDEPTH - Number of slices the boundary rows cover:
+            % the depth of the tile shown in the boundary view, or the
+            % deepest tile of the layout before the view is engaged.
+            if obj.boundaryModeActive()
+                depth = obj.viewSlice.depthB;
+            else
+                layoutSizes = reshape([obj.stitching.layout.tileSize], 4, [])';
+                depth = max(layoutSizes(:, 3));
+            end
+        end
+
+        % ---------------------------------------------------------------
+        function pushZFixHistory(obj, label)
+            % PUSHZFIXHISTORY - Record the Fix Z corrections as they are NOW,
+            % before an action changes them, so Ctrl+Z can restore them
+            % (zFixHistory). Kept to the last 100 actions.
+            obj.zFixHistory{end + 1} = struct('fixes', {obj.stitching.zSliceFixes}, 'label', label);
+            if numel(obj.zFixHistory) > 100
+                obj.zFixHistory(1) = [];
+            end
+        end
+
+        % ---------------------------------------------------------------
+        function undoLastZFix(obj)
+            % UNDOLASTZFIX - Ctrl+Z in Fix Z: take back the last Fix Z action.
+            %
+            % Restores the corrections recorded just before it
+            % (zFixHistory): after a whole-stack correlation every boundary
+            % gets its previous correction back, after a drag / Shift+click /
+            % Z the one boundary it touched does. Repeat to step further back.
+            if isempty(obj.zFixHistory)
+                obj.setStatus('Nothing to undo in Fix Z.');
+                return;
+            end
+            entry = obj.zFixHistory{end};
+            obj.zFixHistory(end) = [];
+            obj.stitching.zSliceFixes = entry.fixes;
+            obj.stitching.canvas = [];
+            obj.renderPairView();
+            obj.rescoreAfterZFix();
+            obj.setStatus(sprintf('Undone: %s (%d more step(s) to undo).', entry.label, numel(obj.zFixHistory)));
+        end
+
+        % ---------------------------------------------------------------
+        function rescoreAfterZFix(obj)
+            % RESCOREAFTERZFIX - Re-rate the review after a Fix Z correction
+            % was set or removed.
+            %
+            % A correction moves every mosaic slice >= z, so the links across
+            % that boundary now compare different pixels:
+            % controllers.Stitching.ensureSeamScores re-scores just those (at
+            % scoringPositions - the solved positions plus the corrections),
+            % the ranking is re-derived, the table redrawn with the row kept
+            % on the current boundary, and the parent told (its chip reads the
+            % same scores). A boundary moved off by hand therefore drops to
+            % the top of the worst-first table in red, as its pixels say.
+            obj.scoreAndRank();
+            obj.updateWidgets();
+            if obj.hasWidget('seamTable') && ~obj.listsSliceBoundaries()
+                rankPos = obj.rowOfEdge(obj.currentEdgeIdx);
+                try %#ok<TRYNC>
+                    obj.view.handles.seamTable.Selection = rankPos;
+                    if ~isempty(rankPos)
+                        scroll(obj.view.handles.seamTable, 'row', rankPos);
+                    end
+                end
+            end
+            notify(obj, 'SeamsUpdated');
+        end
+
+        % ---------------------------------------------------------------
+        function slice = fuseZMosaicSlice(obj, zSlice, region, viewCanvas)
+            % FUSEZMOSAICSLICE - One mosaic slice of the Fix Z view, cropped.
+            %
+            % The rectangle ``region`` ([r0 r1; c0 c1], canvas pixels) of
+            % output slice ``zSlice`` of ``viewCanvas`` (zViewCanvas), fused as
+            % Stitch would (blend mode, drawing order, corrected tiles of the
+            % inspector's reader) by utils.stitch.fuseSliceRegion; channel 1,
+            % single. Shared by buildZMosaicCrops (the two slices on screen)
+            % and correlateStackAtPoint (every slice of the stack).
+            obj.tileReader();   % builds obj.readerFcn (intensity-corrected, cached)
+            fuseOptions = struct('blendMode', obj.stitching.BatchOpt.BlendMode{1}, ...
+                'background', 0, 'tileStack', obj.currentTileStack());
+            fused = utils.stitch.fuseSliceRegion(obj.stitching.layout, viewCanvas, zSlice, ...
+                region, obj.readerFcn, fuseOptions);
+            slice = single(fused(:, :, 1));
+        end
+
+        % ---------------------------------------------------------------
+        function viewCanvas = zViewCanvas(obj)
+            % ZVIEWCANVAS - The canvas plan the Fix Z mosaic view composes
+            % from: the solved placement (with any per-tile transforms) but
+            % WITHOUT the per-slice Z corrections. The view applies the
+            % correction of the boundary on screen itself (boundaryDelta, as
+            % the offset of slice z), so dragging and click-correlating start
+            % from the uncorrected pair exactly as they always did; the
+            % corrections of lower boundaries move z-1 and z alike and do not
+            % change how the two compare. Planning reads no pixels.
+            canvasOptions = struct();
+            if ~isempty(obj.stitching.tforms)
+                canvasOptions.tforms = obj.stitching.tforms;
+            end
+            viewCanvas = utils.stitch.planCanvas(obj.stitching.layout, ...
+                obj.stitching.positions, canvasOptions);
+        end
+
+        % ---------------------------------------------------------------
+        function zBoundary = zBoundaryOfEdge(obj, edgeIdx, viewCanvas)
+            % ZBOUNDARYOFEDGE - The mosaic Z boundary a cross-layer seam stands
+            % for: the output slice its upper tile starts on (for serial
+            % sections, the section a section-to-section link leads to). []
+            % for an in-plane seam, which belongs to no boundary.
+            zBoundary = [];
+            if isempty(edgeIdx); return; end
+            edge = obj.stitching.edges(edgeIdx);
+            if ~strcmp(edge.direction, 'z'); return; end
+            zBoundary = viewCanvas.tilePlacement(edge.j, 3);
+        end
+
+        % ---------------------------------------------------------------
+        function rankPos = rowOfEdge(obj, edgeIdx)
+            % ROWOFEDGE - Seam-table row that shows a seam: its position in
+            % visibleRanking. Serial sections in Fix Z list one row per
+            % section BOUNDARY (its worst tile link), so a link that is not
+            % the worst - reached by Q/W browsing - maps to its boundary's
+            % row. [] when the seam is not listed in the current fix mode.
+            visibleRanking = obj.visibleRanking();
+            rankPos = find(visibleRanking == edgeIdx, 1);
+            if ~isempty(rankPos) || isempty(edgeIdx) || ~obj.isSectionLayout() || ...
+                    ~strcmp(obj.fixMode(), 'z')
+                return;
+            end
+            edges = obj.stitching.edges;
+            layout = obj.stitching.layout;
+            if ~strcmp(edges(edgeIdx).direction, 'z'); return; end
+            boundary = layout(edges(edgeIdx).i).zLayer;
+            rowBoundaries = arrayfun(@(k) layout(edges(k).i).zLayer, visibleRanking);
+            rankPos = find(rowBoundaries == boundary, 1);
+        end
+
+        % ---------------------------------------------------------------
+        function syncSliceBoundaryTable(obj)
+            % SYNCSLICEBOUNDARYTABLE - Fill the seam table with the slice
+            % boundaries (see :meth:`listsSliceBoundaries`) and highlight the
+            % one on screen. Row r is boundary z = r + 1. Rewritten on every
+            % boundary-view render, which is what keeps the Shift column
+            % current after a fix or an undo and the highlight in step with
+            % Q/W browsing. No-op when the table lists seams.
+            if ~obj.hasWidget('seamTable') || ~obj.listsSliceBoundaries(); return; end
+            seamTable = obj.view.handles.seamTable;
+            numRows = obj.sliceBoundaryDepth() - 1;
+            tableData = cell(numRows, 3);
+            for row = 1:numRows
+                zBoundary = row + 1;
+                tableData{row, 1} = sprintf('Z %d-%d', zBoundary - 1, zBoundary);
+                delta = obj.boundaryDelta(zBoundary);
+                if any(delta ~= 0)
+                    tableData{row, 2} = sprintf('%.1f %.1f', delta(1), delta(2));
+                    tableData{row, 3} = 'fixed';
+                else
+                    tableData{row, 2} = '';
+                    tableData{row, 3} = '';
+                end
+            end
+            seamTable.Data = tableData;
+            seamTable.ColumnName = {'Slices', 'Shift [dy dx]', 'Status'};
+            seamTable.ColumnWidth = {80, 'auto', 'auto'};
+            try %#ok<TRYNC>
+                removeStyle(seamTable);   % seam-score colours do not apply here
+            end
+            selectedRow = [];
+            if obj.boundaryModeActive()
+                selectedRow = obj.viewSlice.sliceB - 1;
+            end
+            try %#ok<TRYNC>
+                seamTable.Selection = selectedRow;
+                if ~isempty(selectedRow)
+                    scroll(seamTable, 'row', selectedRow);
+                end
             end
         end
 
@@ -690,14 +939,13 @@ classdef StitchingInspector < handle
         % ---------------------------------------------------------------
         function tf = boundaryModeActive(obj)
             % BOUNDARYMODEACTIVE - True when the pair view shows a mosaic
-            % Z BOUNDARY (Fix Z): the same tile at consecutive slices z-1
-            % (cyan) vs z (magenta), fully overlapping - mostly white when
-            % the mosaic is Z-aligned. Fixes then edit the per-slice mosaic
+            % Z BOUNDARY (Fix Z): a crop of the fused mosaic at consecutive
+            % slices z-1 (cyan) vs z (magenta) - mostly white when the
+            % mosaic is Z-aligned. Fixes then edit the per-slice mosaic
             % correction (applyZBoundaryFix), not a seam. renderPairView
-            % engages it by storing viewSlice.boundaryTile.
+            % engages it by storing viewSlice.mosaic = true.
             tf = strcmp(obj.fixMode(), 'z') && ~isempty(obj.viewSlice) && ...
-                isfield(obj.viewSlice, 'boundaryTile') && ...
-                ~isempty(obj.viewSlice.boundaryTile) && ...
+                isfield(obj.viewSlice, 'mosaic') && obj.viewSlice.mosaic && ...
                 isequal(obj.viewSlice.edgeIdx, obj.currentEdgeIdx);
         end
 

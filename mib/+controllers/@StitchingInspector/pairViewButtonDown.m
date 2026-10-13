@@ -8,7 +8,9 @@ function pairViewButtonDown(obj, evnt)
 %
 % A **Shift+click** (``SelectionType = 'extend'``; the hover ROI box from
 % :func:`pairViewMotion` previews the region) triggers click-to-correlate at
-% that spot (:meth:`correlateAtPoint`) - the automated fine-tune. A plain
+% that spot (:meth:`correlateAtPoint`) - the automated fine-tune. A
+% **Ctrl+Shift+click** (Fix Z) runs the same at EVERY Z boundary of the stack
+% (:meth:`correlateStackAtPoint`). A plain
 % DRAG switches the axes to a live two-layer overlay - tile *i* as a grey
 % background, tile *j* at 50% alpha following the pointer (per the plan, no
 % ``imfuse`` recompute per mouse event) - and applies the released delta as a
@@ -18,6 +20,11 @@ function pairViewButtonDown(obj, evnt)
 % 'alt'``) pans the view instead - it never edits alignment, so it works in
 % every mode (including two-click and Fix Z) and is never mistaken for a
 % tile fix.
+%
+% **Esc** during a left drag abandons it (``obj.dragCancelFcn``, called from
+% :func:`keyPress_Callback`): the pair view is re-rendered at the offset it had
+% before the press and the release applies nothing - the button may still be
+% held, so the release handler is detached rather than told to skip.
 %
 % A **right-click released without moving** opens the tile-order menu
 % (``obj.tileOrderMenu``, the pair view's ``ContextMenu``, filled by
@@ -41,6 +48,13 @@ pairAxes = obj.view.handles.pairAxes;
 panPoint = []; panXFull = []; panYFull = [];
 pressPixel = [];
 
+% Ctrl+Shift+click: correlate every Z boundary of the stack at this spot. Read
+% from the inspector's own key state, BEFORE SelectionType: a Ctrl+click
+% reports 'alt', exactly like the right-click pan below.
+if obj.ctrlDown && obj.shiftDown && ~obj.twoClick.active
+    obj.correlateStackAtPoint(startPoint);
+    return;
+end
 if strcmp(figureHandle.SelectionType, 'alt')   % right-click = pan, never a tile fix
     beginPan();
     return;
@@ -70,6 +84,7 @@ baseX = []; baseY = [];
 
 figureHandle.WindowButtonMotionFcn = @(~, ~) onMotion();
 figureHandle.WindowButtonUpFcn = @(~, ~) onRelease();
+obj.dragCancelFcn = @cancelDrag;
 
     % -----------------------------------------------------------------
     function point = axesPoint()
@@ -143,10 +158,25 @@ figureHandle.WindowButtonUpFcn = @(~, ~) onRelease();
     end
 
     % -----------------------------------------------------------------
+    function cancelDrag()
+        % Esc: drop the press as if it never happened. Nothing was applied yet
+        % (fixes are applied on release only), so re-rendering restores the
+        % pre-drag view exactly.
+        figureHandle.WindowButtonMotionFcn = @(~, ~) obj.pairViewMotion();
+        figureHandle.WindowButtonUpFcn = '';
+        obj.dragCancelFcn = [];
+        if dragActive
+            obj.renderPairView();
+            obj.setStatus('Drag cancelled - nothing changed.');
+        end
+    end
+
+    % -----------------------------------------------------------------
     function onRelease()
         % Restore the persistent hover handler (the Shift ROI box).
         figureHandle.WindowButtonMotionFcn = @(~, ~) obj.pairViewMotion();
         figureHandle.WindowButtonUpFcn = '';
+        obj.dragCancelFcn = [];
         if ~dragActive
             return;   % plain click without movement: intentionally a no-op
         end
@@ -175,10 +205,10 @@ figureHandle.WindowButtonUpFcn = @(~, ~) onRelease();
             sliceB = obj.viewSlice.sliceB;
         end
         if obj.boundaryModeActive()
-            % Fix Z boundary view: both layers are the SAME tile (z-1 and z).
-            boundaryFull = obj.readerFcn(obj.viewSlice.boundaryTile);
-            tileI = takeSlice(boundaryFull, sliceA);
-            tileJ = takeSlice(boundaryFull, sliceB);
+            % Fix Z boundary view: the fused mosaic crops of slices z-1 and z
+            % on screen (buildZMosaicCrops) - exactly the pixels shown.
+            tileI = obj.zMosaicCrops.sliceA;
+            tileJ = obj.zMosaicCrops.sliceB;
         else
             tileI = takeSlice(obj.readerFcn(edge.i), sliceA);
             tileJ = takeSlice(obj.readerFcn(edge.j), sliceB);
@@ -217,9 +247,9 @@ figureHandle.WindowButtonUpFcn = @(~, ~) onRelease();
         end
         if obj.boundaryModeActive()
             title(pairAxes, sprintf(['Dragging slice %d (50%% alpha) over slice %d - ' ...
-                'release to shift the mosaic above'], sliceB, sliceA));
+                'release to shift the mosaic above, Esc to cancel'], sliceB, sliceA));
         else
-            title(pairAxes, sprintf('Dragging tile %d (50%% alpha) over tile %d - release to fix', ...
+            title(pairAxes, sprintf('Dragging tile %d (50%% alpha) over tile %d - release to fix, Esc to cancel', ...
                 edge.j, edge.i));
         end
     end

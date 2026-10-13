@@ -23,6 +23,19 @@ handles.SubfolderMode.Value = obj.BatchOpt.SubfolderMode;
 % Filename pattern only; a position file names folders directly and Bio-Formats
 % reads whole series, so it is n/a for those two sources.
 handles.SubfolderMode.Enable = ismember(obj.BatchOpt.LayoutSource{1}, {'Grid', 'Filename pattern'});
+% How the slices of stack tiles relate (sectionMode). Anything but Prealigned
+% splits FOLDER tiles: SubfolderMode for Grid / Filename pattern, while a
+% position file may name folders itself. Unticked, the slices are unrelated
+% and Section alignment has nothing to decide.
+if isfield(handles, 'RegisterSlices')
+    handles.RegisterSlices.Value  = obj.BatchOpt.RegisterSlices;
+    handles.RegisterSlices.Enable = obj.registerSlicesAvailable();
+end
+if isfield(handles, 'SectionAlignment')
+    handles.SectionAlignment.Items  = obj.BatchOpt.SectionAlignment{2};
+    handles.SectionAlignment.Value  = obj.BatchOpt.SectionAlignment{1};
+    handles.SectionAlignment.Enable = obj.BatchOpt.RegisterSlices && obj.registerSlicesAvailable();
+end
 
 % ---- Grid group ----
 % Rows/Cols/TileOrder apply only to the Grid source; Overlap X/Y + Estimate
@@ -133,6 +146,14 @@ numTiles = numel(obj.layout);
 numEdges = numel(obj.edges);
 handles.statusLabel.Text = sprintf('%d tiles | %d edges measured | solved: %s', ...
     numTiles, numEdges, ternary(~isempty(obj.positions), 'yes', 'no'));
+% Serial sections: the drift vs backlash check, short - the chip tooltip
+% explains it and names the SectionAlignment choice it supports.
+if ~isempty(obj.positions) && isfield(obj.solverInfo, 'sectionDrift') && ...
+        ~isnan(obj.solverInfo.sectionDrift.wholeSectionShift)
+    check = obj.solverInfo.sectionDrift;
+    handles.statusLabel.Text = sprintf('%s | sections move %.1f px (%s)', handles.statusLabel.Text, ...
+        check.wholeSectionShift, ternary(check.withinStageJitter, 'stage jitter', 'drift or oblique content'));
+end
 
 % Alignment-quality chip. Rendered here rather than only after a solve, so it
 % follows every change to the edge set - excluding a seam in the inspector

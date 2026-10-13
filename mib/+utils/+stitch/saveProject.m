@@ -142,6 +142,13 @@ for tileIdx = 1:numTiles
     tileStruct.nomOrigin  = layout(tileIdx).nomOrigin;
     tileStruct.tileSize   = layout(tileIdx).tileSize;
     tileStruct.dataClass  = layout(tileIdx).dataClass;
+    % Section layouts (utils.stitch.splitLayoutIntoSections) only; assigned on
+    % every tile because tileStruct is reused across iterations.
+    if isfield(layout, 'stageTile')
+        tileStruct.stageTile = layout(tileIdx).stageTile;
+    else
+        tileStruct.stageTile = [];
+    end
 
     if ~isempty(positions) && size(positions, 1) >= tileIdx
         tileStruct.solvedOrigin = positions(tileIdx, :);

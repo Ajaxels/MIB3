@@ -23,6 +23,10 @@ function buildLayoutFromBatchOpt(obj)
 % measurements / the measurements and the solved placement). Importing here
 % rather than in the GUI callback keeps batch runs and the dialog on one path.
 %
+% Stack tiles are then split into one piece per slice
+% (:func:`utils.stitch.splitLayoutIntoSections`) unless :meth:`sectionMode` is
+% ``'prealigned'``, whatever the source.
+%
 
 layoutSource = obj.BatchOpt.LayoutSource{1};
 inputPath = obj.BatchOpt.InputPath;
@@ -100,6 +104,16 @@ else
         patternOpts.overlapY = obj.BatchOpt.OverlapY{1};
         obj.layout = utils.stitch.buildLayoutFilenamePattern(tileEntries, patternOpts);
     end
+end
+
+% Stack tiles that are not prealigned blocks (sectionMode 'unrelated' or
+% 'aligned') become one piece per slice, so every slice is stitched on its own.
+% A 2D mosaic has nothing to split and stitches the same in every mode. The
+% split refuses what it cannot do (single-file stacks, several layers, unequal
+% slice counts) rather than falling back to a block silently.
+if ~strcmp(obj.sectionMode(), 'prealigned') && ...
+        any(arrayfun(@(tile) tile.tileSize(3) > 1, obj.layout))
+    obj.layout = utils.stitch.splitLayoutIntoSections(obj.layout);
 end
 
 % Reset downstream state

@@ -17,13 +17,14 @@ function renderPairView(obj)
 % - **Fix XY** (default) - tile *i* against tile *j*, aligned by the current
 %   dz (slice ``a`` vs ``a − dz``); ``Q``/``W`` browse ``a`` through the
 %   overlap slab (view-only). A Z misalignment ghosts exactly like an XY one.
-% - **Fix Z** - the mosaic Z-BOUNDARY view: ONE tile (the seam's tile with Z
-%   slices) at consecutive slices ``z-1`` (cyan) vs ``z`` (magenta), fully
-%   overlapping - mostly WHITE when the mosaic is Z-aligned, and the magenta
-%   slice is drawn at the boundary's current correction. ``Q``/``W`` move the
+% - **Fix Z** - the mosaic Z-BOUNDARY view: a crop of the FUSED mosaic
+%   (:func:`buildZMosaicCrops`, centred on the last mini-map click) at
+%   consecutive slices ``z-1`` (cyan) vs ``z`` (magenta) - mostly WHITE when
+%   the mosaic is Z-aligned, the magenta slice drawn at the boundary's current
+%   correction. The tiles are taken as correctly stitched: ``Q``/``W`` move the
 %   boundary; drag / Shift+click align slice ``z`` to slice ``z-1`` and hand
 %   the offset to :meth:`applyZBoundaryFix`, which shifts EVERY mosaic slice
-%   ``>= z``. Browsing alone never changes anything.
+%   ``>= z`` as one block. Browsing alone never changes anything.
 %
 % Overlay modes:
 %
@@ -59,18 +60,16 @@ pairAxes = obj.view.handles.pairAxes;
 edge = obj.stitching.edges(obj.currentEdgeIdx);
 layout = obj.stitching.layout;
 
-% Fix Z = the mosaic Z-boundary view: the SAME tile at consecutive slices
-% z-1 (cyan) vs z (magenta) - full overlap, mostly white when the mosaic is
-% Z-aligned; a fix (applyZBoundaryFix) shifts every mosaic slice >= z. It
-% uses the current seam's tile with Z slices (tile i preferred); with 2D
-% tiles only the mode never engages (fixModeChanged flips the dropdown back).
-boundaryTile = [];
+% Fix Z = the mosaic Z-boundary view: a crop of the FUSED mosaic at
+% consecutive slices z-1 (cyan) vs z (magenta) around the mini-map point -
+% mostly white when the mosaic is Z-aligned; a fix (applyZBoundaryFix) shifts
+% every mosaic slice >= z as one block. Engages whenever the mosaic has more
+% than one slice; a 2D mosaic never gets here (fixModeChanged flips the
+% dropdown back).
+mosaicMode = false;
 if strcmp(obj.fixMode(), 'z')
-    if layout(edge.i).tileSize(3) > 1
-        boundaryTile = edge.i;
-    elseif layout(edge.j).tileSize(3) > 1
-        boundaryTile = edge.j;
-    end
+    viewCanvas = obj.zViewCanvas();
+    mosaicMode = viewCanvas.size(3) >= 2;
 end
 
 cla(pairAxes);
@@ -85,44 +84,45 @@ obj.tileReader();
 % The pair view needs WHOLE tiles, and on a large mosaic one decode is several
 % seconds - the window would otherwise sit there doing nothing visible while it
 % reads. Gated on the cache: navigating back to a pair that is still resident
-% must not flash a dialog, and Q/W slice browsing re-renders constantly.
-if ~isempty(boundaryTile)
-    tilesNeeded = boundaryTile;
-else
-    tilesNeeded = [edge.i, edge.j];
-end
+% must not flash a dialog, and Q/W slice browsing re-renders constantly. (The
+% Fix Z crops read only the tiles under the crop, through the same cache.)
 loadDialog = [];
-if ~obj.tilesAreResident(tilesNeeded) && ~isempty(obj.progressParent()) && ...
+if ~mosaicMode && ~obj.tilesAreResident([edge.i, edge.j]) && ~isempty(obj.progressParent()) && ...
         strcmp(obj.progressParent().Visible, 'on')
     loadDialog = uiprogressdlg(obj.progressParent(), 'Indeterminate', 'on', ...
-        'Message', sprintf('Reading tile %s...', strjoin(string(tilesNeeded), ' and ')), ...
+        'Message', sprintf('Reading tile %d and %d...', edge.i, edge.j), ...
         'Title', 'Seam inspector');
 end
 loadDialogCleanup = onCleanup(@() closeIfValid(loadDialog));
 
-if ~isempty(boundaryTile)
-    % ---- boundary view: ONE tile, slices z-1 vs z ----------------------------
-    tileFullI = obj.readerFcn(boundaryTile);
-    tileFullJ = tileFullI;
-    depthI = size(tileFullI, 3);
-    depthJ = depthI;
-    sizeI = layout(boundaryTile).tileSize;
-    sizeJ = sizeI;
-    % The browsed boundary is a property of the MOSAIC, not of the seam: it
-    % is kept when the user switches tiles, so the same boundary - and the
-    % correction stored at it - stays on screen everywhere (that is how the
-    % global nature of a fix is visible on the other tiles).
+if mosaicMode
+    % ---- boundary view: fused mosaic crops, slices z-1 vs z -------------------
+    % The boundary is a property of the MOSAIC: kept while browsing (Q/W) and
+    % when the view moves (mini-map point); a newly selected cross-layer seam
+    % (a Fix Z row) brings its own boundary.
+    mosaicDepth = viewCanvas.size(3);
+    keepBoundary = ~isempty(obj.viewSlice) && isfield(obj.viewSlice, 'mosaic') && obj.viewSlice.mosaic;
+    seamBoundary = obj.zBoundaryOfEdge(obj.currentEdgeIdx, viewCanvas);
     zBoundary = [];
-    if ~isempty(obj.viewSlice) && isfield(obj.viewSlice, 'boundaryTile') && ...
-            ~isempty(obj.viewSlice.boundaryTile)
+    if keepBoundary && (isempty(seamBoundary) || isequal(obj.viewSlice.edgeIdx, obj.currentEdgeIdx))
         zBoundary = obj.viewSlice.sliceB;
+    elseif ~isempty(seamBoundary)
+        zBoundary = seamBoundary;
     end
-    if isempty(zBoundary); zBoundary = ceil((depthI + 1) / 2); end
-    zBoundary = min(max(round(zBoundary), 2), depthI);
+    if isempty(zBoundary); zBoundary = ceil((mosaicDepth + 1) / 2); end
+    zBoundary = min(max(round(zBoundary), 2), mosaicDepth);
+    crops = obj.buildZMosaicCrops(zBoundary, viewCanvas);
+    tileFullI = crops.sliceA;
+    tileFullJ = crops.sliceB;
+    depthI = mosaicDepth;
+    depthJ = mosaicDepth;
+    sizeI = size(crops.sliceA);
+    sizeJ = sizeI;
     sliceA = zBoundary - 1;
     sliceB = zBoundary;
     deltaYX = round(obj.boundaryDelta(zBoundary));
 else
+    obj.zMosaicCrops = [];
     % ---- seam view: the pair's full tiles at the current offset --------------
     deltaYX = round(obj.currentOffsetYX(obj.currentEdgeIdx));
     sizeI = layout(edge.i).tileSize;
@@ -159,7 +159,7 @@ end
 % Which image is ON TOP: in a seam view, the tile Overwrite keeps (the same
 % utils.stitch.tileDrawOrder the fusers use); in the boundary view, slice z -
 % the one a fix moves. The top one always takes the magenta / red colour.
-if isempty(boundaryTile)
+if ~mosaicMode
     stack = obj.currentTileStack();
     jOnTop = find(stack == edge.j, 1) > find(stack == edge.i, 1);
 else
@@ -174,7 +174,7 @@ end
 % Names the title uses for the two overlaid images: the colours in falsecolor
 % mode (where they ARE the legend), plain identities in the other modes. The
 % tile Overwrite keeps is marked in every mode.
-if ~isempty(boundaryTile)
+if mosaicMode
     if isFalsecolor
         nameI = sprintf('%s: slice %d', colourI, sliceA);
         nameJ = sprintf('%s: slice %d', colourJ, sliceB);
@@ -197,15 +197,16 @@ else
 end
 
 sliceNote = '';
-if ~isempty(boundaryTile)
+if mosaicMode
     shiftText = '';
     if any(deltaYX ~= 0)
         shiftText = sprintf(' - current shift [%d %d]', deltaYX(1), deltaYX(2));
     end
-    sliceNote = sprintf('Tile %d, Z boundary %d/%d - a fix shifts mosaic slices %d..%d%s', ...
-        boundaryTile, sliceB, depthI, sliceB, depthI, shiftText);
+    sliceNote = sprintf(['Mosaic, Z boundary %d/%d - a fix shifts mosaic slices %d..%d%s ' ...
+        '(mini-map click: look elsewhere)'], sliceB, depthI, sliceB, depthI, shiftText);
     obj.viewSlice = struct('edgeIdx', obj.currentEdgeIdx, 'sliceA', sliceA, ...
-        'sliceB', sliceB, 'depthA', depthI, 'depthB', depthJ, 'boundaryTile', boundaryTile);
+        'sliceB', sliceB, 'depthA', depthI, 'depthB', depthJ, 'mosaic', true);
+    obj.syncSliceBoundaryTable();   % row highlight + Shift column follow the boundary
 elseif depthI == 1 && depthJ == 1
     obj.viewSlice = [];
     sliceA = 1; sliceB = 1;
@@ -242,7 +243,7 @@ else
         end
     end
     obj.viewSlice = struct('edgeIdx', obj.currentEdgeIdx, 'sliceA', sliceA, ...
-        'sliceB', sliceB, 'depthA', depthI, 'depthB', depthJ, 'boundaryTile', []);
+        'sliceB', sliceB, 'depthA', depthI, 'depthB', depthJ, 'mosaic', false);
 end
 imageI = takeSlice(tileFullI, sliceA);
 imageJ = takeSlice(tileFullJ, sliceB);
@@ -279,7 +280,7 @@ switch overlayMode
             'CData', repmat(imageJ, 1, 1, 3));
         imageB.Visible = 'off';
         obj.pairImageHandles = [imageA, imageB];
-        if ~isempty(boundaryTile)
+        if mosaicMode
             titleLine = sprintf('Flicker - showing slice %d (Space toggles)', sliceA);
         else
             titleLine = sprintf('Flicker - showing tile %d (Space toggles)', edge.i);
@@ -344,7 +345,7 @@ switch overlayMode
 end
 % A drag always moves tile j; once the colours follow the drawing order that
 % is no longer "the magenta one", so say so.
-if isempty(boundaryTile)
+if ~mosaicMode
     titleLine = sprintf('%s | drag moves tile %d', titleLine, edge.j);
 end
 if isempty(sliceNote)
@@ -494,16 +495,14 @@ function updateOffsetLabel(obj, edge, deltaYX)
 % Fix-Z boundary view, the boundary position and the mosaic shift above it.
 if ~obj.hasWidget('offsetLabel'); return; end
 if obj.boundaryModeActive()
-    storedText = 'none stored';
-    fixes = obj.stitching.zSliceFixes;
-    if ~isempty(fixes)
-        storedText = sprintf('stored at z: %s', strjoin( ...
-            arrayfun(@(z) sprintf('%d', z), sort(round(fixes(:, 1)))', ...
-            'UniformOutput', false), ', '));
-    end
+    % A COUNT, not the list: a stack of 1000 sections can carry hundreds of
+    % corrections. The boundary on screen shows its own shift just before, and
+    % the Fix Z table lists the corrections per boundary.
+    storedText = sprintf('%d of %d boundaries', size(obj.stitching.zSliceFixes, 1), ...
+        obj.viewSlice.depthB - 1);
     obj.view.handles.offsetLabel.Text = sprintf( ...
-        'Z boundary %d/%d (tile %d)  |  shift of slices above [dy dx] = [%d %d]  |  corrections: %s  |  Q/W moves the boundary', ...
-        obj.viewSlice.sliceB, obj.viewSlice.depthB, obj.viewSlice.boundaryTile, ...
+        'Z boundary %d/%d (mosaic)  |  shift of slices above [dy dx] = [%d %d]  |  corrections: %s  |  Q/W moves the boundary', ...
+        obj.viewSlice.sliceB, obj.viewSlice.depthB, ...
         deltaYX(1), deltaYX(2), storedText);
     return;
 end

@@ -19,7 +19,7 @@ function fillTileOrderMenu(obj)
 % - the right press became a PAN (``obj.rightDragMoved``, set by
 %   ``pairViewButtonDown``). The menu opens when the right button is RELEASED,
 %   so without this every pan would end with a menu popping up;
-% - the Fix Z boundary view, whose two images are one tile;
+% - the Fix Z boundary view, whose two images are mosaic slices, not tiles;
 % - a two-click match in progress, or no seam to act on.
 %
 % .. note::

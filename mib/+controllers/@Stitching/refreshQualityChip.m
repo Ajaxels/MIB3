@@ -44,6 +44,7 @@ end
 % Pixel seam check over the edges that are CURRENTLY in the solve.
 worstSeamScore  = NaN;
 dzMismatchCount = 0;
+validEdges      = [];
 if ~isempty(obj.edges) && isfield(obj.edges, 'seamScore')
     validEdges = obj.edges(logical([obj.edges.valid]));
     validScores = [validEdges.seamScore];
@@ -56,11 +57,39 @@ if ~isempty(obj.edges) && isfield(obj.edges, 'seamScore')
     end
 end
 
+% Serial sections: the in-plane seams rate the STITCH, the section-to-section
+% seams the Z REGISTRATION - two different failures, so they are quoted apart.
+% The verdict follows the stitch score ALONE: a section-to-section seam
+% compares two different physical sections, whose content genuinely differs,
+% so its score runs far below an in-plane overlap of the same quality (0.27
+% at worst on smoke test 19, every section correctly placed) and the
+% 0.4 / 0.7 thresholds below, set for in-plane seams, would turn every
+% serial-section chip red.
+seamText = seamMatchText(worstSeamScore);
+isSectionLayout = isfield(obj.layout, 'stageTile') && ...
+    ~any(arrayfun(@(piece) isempty(piece.stageTile), obj.layout));
+if isSectionLayout && ~isempty(validEdges)
+    isZ = strcmp({validEdges.direction}, 'z');
+    worstSeamScore = worstScoreOf(validEdges(~isZ));
+    if any(isZ)
+        seamText = sprintf('stitch %s, Z %s', ...
+            seamMatchText(worstSeamScore), seamMatchText(worstScoreOf(validEdges(isZ))));
+    else
+        seamText = seamMatchText(worstSeamScore);   % unrelated slices: no Z to rate
+    end
+end
+
 [ratingText, ratingColor] = qualityRating(obj.solverInfo.rmseTotal);
 
 nDisconnected = 0;
 if isfield(obj.solverInfo, 'disconnectedTiles')
     nDisconnected = numel(obj.solverInfo.disconnectedTiles);
+end
+% Unrelated slices: every section is its own group BY DESIGN, so the tiles of
+% sections 2..N are always "disconnected from the anchor". Only groups beyond
+% one per section mean a tile (or island) went unmeasured.
+if isSectionLayout && strcmp(obj.sectionMode(), 'unrelated') && isfield(obj.solverInfo, 'nComponents')
+    nDisconnected = max(0, obj.solverInfo.nComponents - numel(unique([obj.layout.zLayer])));
 end
 nPruned = 0;
 if isfield(obj.solverInfo, 'nPruned'); nPruned = obj.solverInfo.nPruned; end
@@ -89,12 +118,12 @@ elseif worstSeamScore < 0.4   % NaN compares false: no scores -> RMSE rating
     % orientation or a confidently-wrong measurement. The residual alone
     % would read "Excellent" here (chain graphs have nothing to
     % contradict) - that is the lie this branch exists to stop.
-    rmseLabel.Text = sprintf('Seams disagree, fix needed\nSolver error: %.2f px\nSeam match: %.2f', ...
-        obj.solverInfo.rmseTotal, worstSeamScore);
+    rmseLabel.Text = sprintf('Seams disagree, fix needed\nSolver error: %.2f px\nSeam match: %s', ...
+        obj.solverInfo.rmseTotal, seamText);
     rmseLabel.BackgroundColor = [0.75 0.20 0.20];   % red
 elseif worstSeamScore < 0.7
-    rmseLabel.Text = sprintf('Check seams\nSolver error: %.2f px\nSeam match: %.2f', ...
-        obj.solverInfo.rmseTotal, worstSeamScore);
+    rmseLabel.Text = sprintf('Check seams\nSolver error: %.2f px\nSeam match: %s', ...
+        obj.solverInfo.rmseTotal, seamText);
     rmseLabel.BackgroundColor = [0.85 0.50 0.05];   % orange
 elseif dzMismatchCount > 0
     % The XY seams look fine but the pixels prefer a DIFFERENT Z offset on
@@ -110,7 +139,7 @@ elseif nPruned > 0
     rmseLabel.BackgroundColor = ratingColor;
 else
     rmseLabel.Text = sprintf('%s\nSolver error: %.2f px\nSeam match: %s', ...
-        ratingText, obj.solverInfo.rmseTotal, seamMatchText(worstSeamScore));
+        ratingText, obj.solverInfo.rmseTotal, seamText);
     rmseLabel.BackgroundColor = ratingColor;
 end
 rmseLabel.FontColor = [1 1 1];
@@ -127,10 +156,47 @@ else
         '- Solver error: %.2f px (avg. mismatch between tiles; <1 great, >10 poor)\n' ...
         '- Seam match: %s (pixel overlap at seams; 0.7+ good, <0.4 bad)\n' ...
         'Tiles with no measurement stay at their nominal spot, unchecked.\n' ...
-        'Use Inspect & fix to correct problem seams.'], ...
-        obj.solverInfo.rmseTotal, seamMatchText(worstSeamScore));
+        'Use Inspect & fix to correct problem seams.%s'], ...
+        obj.solverInfo.rmseTotal, seamText, sectionDriftText(obj));
 end
 
+end
+
+% =========================================================================
+function text = sectionDriftText(obj)
+% SECTIONDRIFTTEXT - The drift vs backlash check of a serial-section solve
+% (solverInfo.sectionDrift, see utils.stitch.solveGlobalLeastSquares), as a
+% tooltip paragraph naming the SectionAlignment choice it supports; '' for any
+% other layout. Never claims drift outright: oblique structures move whole
+% sections in the measurements just the same.
+text = '';
+if ~isfield(obj.solverInfo, 'sectionDrift') || isnan(obj.solverInfo.sectionDrift.wholeSectionShift)
+    return;
+end
+check = obj.solverInfo.sectionDrift;
+if check.withinStageJitter
+    verdict = sprintf(['within what stage jitter (+-%.1f px per slice) explains: backlash,\n' ...
+        'so Trust stage positions fits.'], check.stageSigma);
+else
+    verdict = sprintf(['more than stage jitter (+-%.1f px per slice) explains (up to %.1f px).\n' ...
+        'That is sample drift, or structures running obliquely through Z:\n' ...
+        'Follow image content if the sample can drift, Trust stage positions if it cannot.'], ...
+        check.stageSigma, check.backlashBound);
+end
+text = sprintf('\n\nSections: whole sections move %.1f px over the stack -\n%s\nNow: %s.', ...
+    check.wholeSectionShift, verdict, obj.BatchOpt.SectionAlignment{1});
+end
+
+% =========================================================================
+function score = worstScoreOf(edges)
+% WORSTSCOREOF - Lowest seam score of a set of edges (NaN = broken, ranks
+% lowest); NaN when the set is empty or nothing in it is scored.
+score = NaN;
+if isempty(edges); return; end
+scores = [edges.seamScore];
+if isempty(scores); return; end
+scores(isnan(scores)) = -1;
+score = min(scores);
 end
 
 % =========================================================================

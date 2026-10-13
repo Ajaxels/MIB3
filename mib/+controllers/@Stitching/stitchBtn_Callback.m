@@ -74,7 +74,7 @@ try
                 return;
             end
         end
-        nominalPairs = utils.stitch.findNeighborPairs(obj.layout, struct('minOverlapPx', 16));
+        nominalPairs = utils.stitch.findNeighborPairs(obj.layout, obj.neighborPairOptions());
         measureOptions.qualityThreshold   = obj.BatchOpt.QualityThreshold{1};
         measureOptions.subpixel           = obj.BatchOpt.SubpixelPlacement;
         measureOptions.registrationMethod = obj.BatchOpt.RegistrationMethod{1};
@@ -100,7 +100,7 @@ try
     end
 
     if isempty(obj.positions)
-        solverOptions.springWeight = obj.BatchOpt.NominalPositionWeight{1};
+        solverOptions = obj.translationSolverOptions();
         if strcmp(obj.BatchOpt.TransformType{1}, 'Translation')
             obj.positions = utils.stitch.solveGlobalLeastSquares(obj.layout, obj.edges, solverOptions);
             obj.tforms = {};

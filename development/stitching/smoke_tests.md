@@ -28,6 +28,7 @@ run('development\stitching\11_stitch_smoke_affine\generateSmokeAffineTiles.m')
 run('development\stitching\12_stitch_smoke_sabotage\generateSmokeSabotageTiles.m')  % needs mib on path (measures + saves a project)
 run('development\stitching\13_stitch_smoke_affine3d\generateSmokeAffine3DTiles.m')
 run('development\stitching\15_stitch_smoke_atlas\generateSmokeAtlasTiles.m')
+run('development\stitching\19_stitch_smoke_z_dirs_displacement\generateSmokeZDirsDisplacement.m')
 ```
 
 Or regenerate everything at once, in test order (run from the repo root):
@@ -58,7 +59,7 @@ FILES, not a folder. Pasting the folder path into the Input path field still wor
 |---|--------------------|---------------|----------|----------------|
 | 1 | `01_stitch_smoke\tiles` | Grid | Rows 3, Cols 3, tick **Estimate overlap** | Baseline 2D grid + overlap auto-estimation. |
 | 2 | `01_stitch_smoke\tiles` | Grid | Rows 3, Cols 3, untick Estimate, Overlap X/Y = 15 | Grid with a manually entered overlap. |
-| 3 | `03_stitch_smoke_3d\positions.txt` | Position file | — | 3D joint solve from a position file (scroll Z; planes must line up across layers). Since 2026-07-17 the seam check is Z-aware: the chip verifies per-slice at the solved dz and cross-layer seams are dz-scanned — a Z misalignment shows as orange "Check Z alignment"; in the inspector the offset readout shows dz + any "pixels prefer dz±k" hint (diagnostic — re-measure or exclude the seam if the Z overlap is wrong). `Q`/`W` browse slices like the main MIB — ALWAYS view-only (verify a few presses never change dz or the chip). A cross-layer XY misalignment is fixed on the z-edge seam itself in Fix XY (Shift+click / drag): the re-solve shifts the whole upper stack AND every layer above it (verified by `zBoundaryFix_shiftsAllLayersAbove`). **Fix mode = Fix Z (match slices)** is the PER-SLICE mosaic check: one tile at slice z-1 (cyan) vs slice z (magenta), fully overlapping, mostly white when aligned; `Q`/`W` moves the boundary, drag or Shift+click aligns slice z — the fix shifts that slice AND every mosaic slice above it (no re-solve; applied at Re-fuse/Stitch; `Z` removes it; persisted in the sidecar — core verified by `planCanvas_zSliceFixesShiftMosaicAboveBoundary`). On a 2D dataset Fix Z flips back to Fix XY with an explaining dialog. Since 2026-07-19 the **seam table is split by fix mode**: Fix XY lists the in-plane `x`/`y` seams, Fix Z lists the cross-layer `z` seams (the old combined list was confusing). Switching the Fix-mode dropdown re-filters the table and lands on a seam of that kind; the table highlight, `Up`/`Down`, mini-map jumps and the initial pick all stay within the shown set. The cross-layer XY fix is therefore reached from the **Fix Z** table (that is where the `z` seam now appears) — select it, then use Fix XY to Shift+click/drag its in-plane offset. |
+| 3 | `03_stitch_smoke_3d\positions.txt` | Position file | — | 3D joint solve from a position file (scroll Z; planes must line up across layers). Since 2026-07-17 the seam check is Z-aware: the chip verifies per-slice at the solved dz and cross-layer seams are dz-scanned — a Z misalignment shows as orange "Check Z alignment"; in the inspector the offset readout shows dz + any "pixels prefer dz±k" hint (diagnostic — re-measure or exclude the seam if the Z overlap is wrong). `Q`/`W` browse slices like the main MIB — ALWAYS view-only (verify a few presses never change dz or the chip). A cross-layer XY misalignment is fixed on the z-edge seam itself in Fix XY (Shift+click / drag): the re-solve shifts the whole upper stack AND every layer above it (verified by `zBoundaryFix_shiftsAllLayersAbove`). **Fix mode = Fix Z (match slices)** is the PER-SLICE mosaic check: the STITCHED MOSAIC (a crop around the last mini-map click) at slice z-1 (cyan) vs slice z (magenta), mostly white when aligned; `Q`/`W` moves the boundary, drag or Shift+click aligns slice z — the fix shifts that slice AND every mosaic slice above it (no re-solve; applied at Re-fuse/Stitch; `Z` removes it; persisted in the sidecar — core verified by `planCanvas_zSliceFixesShiftMosaicAboveBoundary`). On a 2D dataset Fix Z flips back to Fix XY with an explaining dialog. Since 2026-07-19 the **seam table is split by fix mode**: Fix XY lists the in-plane `x`/`y` seams, Fix Z lists the cross-layer `z` seams (the old combined list was confusing). Switching the Fix-mode dropdown re-filters the table and lands on a seam of that kind; the table highlight, `Up`/`Down`, mini-map jumps and the initial pick all stay within the shown set. The cross-layer XY fix is therefore reached from the **Fix Z** table (that is where the `z` seam now appears) — select it, then use Fix XY to Shift+click/drag its in-plane offset. |
 | 4 | `04_stitch_smoke_folders` (4 folders / parent) | Grid | tick **Tiles are folders (Z-stacks)**, Rows 2, Cols 2 | Folder-Z-stack tiles with the Grid source. |
 | 5 | `05_stitch_smoke_pattern_folders` (4 folders / parent) | Filename pattern | tick **Tiles are folders**, Overlap X/Y ≈ 22 (or Estimate) | Filename-pattern `_Z##-X##-Y##` + folder tiles + overlap. |
 | 6 | `06_stitch_smoke_feature\tiles` | Grid | Rows 3, Cols 3, Overlap 25, **untick Estimate** | **Method comparison** — run twice (see below). |
@@ -73,6 +74,7 @@ FILES, not a folder. Pasting the folder path into the Input path field still wor
 | 15 | `15_stitch_smoke_atlas\MosaicInfo_SMOKE.ve-mif` | Position file | pick the `.ve-mif`, answer the import dialog | **Fibics Atlas** — an Atlas mosaic under the Position file source; the three import modes (see below). |
 | 16 | `16_stitch_smoke_mdoc\Montage_SMOKE.mrc.mdoc` | Position file | pick the `.mdoc` (or the `.mrc`), answer the import dialog | **SerialEM** — tiles are SLICES of one MRC stack; the three import modes and the float rescale (see below). |
 | 17 | `01_stitch_smoke\tiles` | Grid | Rows 3, Cols 3, Estimate on; then **Canvas color** / **Autocrop** | **The uncovered frame** — see below. Needs no new data. |
+| 19 | `19_stitch_smoke_z_dirs_displacement` (4 folders / parent) | Filename pattern | tick **Tiles are folders**, Overlap X/Y = 22 | **Serial-section stacks with stage backlash** - slices jittered 1-3 px inside every folder; a known failure today (see below). |
 
 ### Test 6 — phase correlation vs feature-based (the key comparison)
 
@@ -174,7 +176,8 @@ correlation/RANSAC resist deterministic image-level sabotage) and saves everythi
    → the pair snaps, the edge turns `user`, auto re-solve fires and the seam score jumps
    to ≈ 1.0 — sub-pixel, unlike the exclusion route.
 5. Try the other fixing tools on the same seam: **drag** the overlay (tile j follows at
-   50% alpha, release applies), **Two-click match** (click the same landmark in the
+   50% alpha, release applies; press `Esc` mid-drag, button still held - the view snaps back,
+   the status says *Drag cancelled*, and releasing then changes nothing), **Two-click match** (click the same landmark in the
    side-by-side tiles). The keyboard never moves a tile — arrows and Q/W are slice
    navigation (on this 2D set they only report "no Z slices"). `Z` undoes back to the
    corrupted automatic edge — handy for repeating the exercise.
@@ -420,6 +423,56 @@ numbering observable at all. Measure → Optimize, then set Output mode = **Imag
 7. **The format survives a project round-trip.** Save project, change the format, Load project
    (*Restore everything*) — the restored format must be the saved one, and the tooltip must say so.
 
+### Test 19 - serial-section folder stacks with stage-backlash jitter
+
+2x2 tiles in ONE layer (`stack_Z01-X##-Y##`), each folder the full series of 24 sections at that
+stage position. The slices inside a folder are not registered: stage backlash puts every slice 1-3 px
+off per axis, independently. Details, the truth file and where the measurement breaks: the folder's
+`README.md`.
+
+**Known failure today** - the tool places each folder rigidly and measures seams on the average of
+all its slices. Until per-slice stitching exists, check that it fails visibly rather than silently:
+
+1. *Measure overlaps* rejects all 4 seams (quality ≤ 0.08).
+2. *Optimize positions* leaves the tiles on the nominal grid, and the **alignment chip does NOT read
+   Excellent** even though the RMSE is 0.000 px.
+3. After *Stitch* (In memory), scrolling Z shows seams breaking by a few px, differently on every
+   slice.
+With *Register slices* ticked and *Section alignment* = *Follow image content* or *Trust stage
+positions*, every slice is placed on its own: 96 pieces, a 24-slice mosaic, all 96 in-plane seams valid (21 of them only
+after the guided re-measure). Per-slice error with `SectionAlignment` = *Follow image content*
+(default) max 0.61 / rms 0.06 px, *Trust stage positions* max 0.57 / rms 0.26 px.
+See `plan_serial_sections.md`.
+
+4. With *Section alignment* = *Prealigned* (the default): in the seam inspector, *Fix Z* lists the 23 slice boundaries
+   (`Z 1-2` ... `Z 23-24`), not an empty table. A row click and ++down++ / ++up++ move the boundary view and the highlight together;
+   a drag fix fills that row's *Shift* column, ++z++ clears it.
+5. With *Register slices* ticked and *Section alignment* = *Follow image content*: the status line reads
+   `96 tiles | 188 edges measured | solved: yes | sections move 12.2 px (drift or oblique content)`;
+   the chip reads `Seam match: stitch ..., Z ...` and is NOT red for the low Z score alone; its
+   tooltip explains the drift check. *Fix XY* shows a *Section* column with tiles named 1-4; *Fix Z*
+   shows 23 rows `Z 1-2` ... `Z 23-24`, each with 4 tiles. *Section alignment* = *Trust stage
+   positions* then *Optimize*: both modes place every slice within ~0.6 px (headless). Before the
+   guided re-measure, the bottom-left tile (`X01-Y02`) was up to 4.5 px off - check it is not.
+6. *Register slices* unticked (unrelated slices): every section is stitched on its own - seams
+   continuous within each slice, slices NOT aligned to each other (a structure jumps by the stage
+   jitter between slices). The chip quotes no Z score and does not read "incomplete"; *Fix Z*
+   explains that there is no Z alignment to fix and stays in *Fix XY*.
+7. *Fix Z* + mini-map (both Prealigned and Follow image content): the view is the STITCHED mosaic
+   around a point, slice z-1 cyan vs z magenta (title `Mosaic, Z boundary b/24`), and a blue box
+   marks the crop on the mini-map. Click another spot of the mini-map - the crop moves there at the
+   SAME boundary; Q/W change the boundary (with serial sections the table row follows). Shift+click a
+   distinctive spot or drag: the correction shifts slice z and everything above as one block - no
+   tile moves against another, no re-solve (`Z` removes it). Tile labels in the mini-map are the
+   folder numbers 1-4.
+8. *Fix Z* + **Ctrl+Shift+click** on a structure that runs through the stack: a progress dialog runs
+   over all 23 boundaries (Cancel stores nothing); afterwards the status line says how many got a
+   correction and lists the ones without a confident match, and the corrected boundaries show their
+   value in the table. Scroll the Stitch result in Z: the structure stays put.
+   `Ctrl+Z` puts every boundary back as before the run in one step. Then Shift+click one boundary
+   twice: `Ctrl+Z` returns it to the FIRST value (not to none), the next `Ctrl+Z` removes it; `Z`
+   followed by `Ctrl+Z` brings a removed correction back. The status line names each undone step.
+
 ## Expected numbers (from headless validation)
 
 | Dataset | Recovered origin error |
@@ -435,3 +488,5 @@ numbering observable at all. Measure → Optimize, then set Output mode = **Imag
 | `15_stitch_smoke_atlas` | nominal grid 16 px off; solve on imported `.ve-tie` → 0.07 px; imported `.ve-updates` → 0.00 px, seam scores 1.00 |
 | `16_stitch_smoke_mdoc` | nominal grid 12 px off (seam scores 0.09–0.64); solve on imported edge shifts → 0.05 px; imported `AlignedPieceCoords` → 0.00 px, seam scores 1.00; MIB's own measure+solve from the images → 0.04 px |
 | `16_stitch_smoke_mdoc` (Intensity correction) | rms seam brightness mismatch: None 3.29 %, Match tile means 3.31 %, Flat-field (shared) 1.24 %. Real `Cell1.mrc` for comparison: 3.50 / 3.13 / 1.04 % |
+| `19_stitch_smoke_z_dirs_displacement` | all 4 seams rejected (quality ≤ 0.08), tiles left on the nominal grid (≤ 5 px off), RMSE 0.000 px, seam scores 0.14-0.32; per-slice seam break median 6.3 px, max 12.1 px |
+| `19_stitch_smoke_z_dirs_displacement` (RegisterSlices) | 96 pieces, depth 24, in-plane 96/96 valid; per-slice max / rms: Follow image content 0.61 / 0.06 px, Trust stage positions 0.57 / 0.26 px (no handling: 5.6 / 1.6) |

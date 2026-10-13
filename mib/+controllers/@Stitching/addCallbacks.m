@@ -26,6 +26,13 @@ if ~isprop(handles.InputPath, 'Items')
 end
 handles.selectInputBtn.ButtonPushedFcn = @(~, ~) obj.selectInputBtn_Callback();
 handles.SubfolderMode.ValueChangedFcn = @(src, ~) obj.updateBatchOptFromGUI(src);
+% Serial sections (plan_serial_sections.md); guarded until the mlapp carries them.
+if isfield(handles, 'RegisterSlices')
+    handles.RegisterSlices.ValueChangedFcn = @(src, ~) obj.updateBatchOptFromGUI(src);
+end
+if isfield(handles, 'SectionAlignment')
+    handles.SectionAlignment.ValueChangedFcn = @(src, ~) obj.updateBatchOptFromGUI(src);
+end
 
 % ---- Grid group ----
 handles.GridRows.ValueChangedFcn      = @(src, ~) obj.updateBatchOptFromGUI(src);

@@ -9,7 +9,8 @@ function updateWidgets(obj)
 % Table rows follow ``obj.visibleRanking`` (worst first, filtered to the
 % current fix mode: in-plane x/y seams in Fix XY, cross-layer z seams in Fix
 % Z). Row background colour encodes the seam score (red → green); the mini-map
-% is redrawn to match.
+% is redrawn to match. In Fix Z without any cross-layer seam the table lists
+% the mosaic slice boundaries instead (:meth:`syncSliceBoundaryTable`).
 %
 
 if ~obj.dataValid()
@@ -25,7 +26,11 @@ edges = obj.stitching.edges;
 positions = obj.stitching.positions;
 
 % ---- seam table -----------------------------------------------------------
-if obj.hasWidget('seamTable')
+if obj.listsSliceBoundaries()
+    obj.syncSliceBoundaryTable();
+elseif obj.hasWidget('seamTable') && obj.isSectionLayout()
+    fillSectionTable(obj, edges, positions);
+elseif obj.hasWidget('seamTable')
     seamTable = obj.view.handles.seamTable;
     visibleRanking = obj.visibleRanking();
     numEdges = numel(visibleRanking);
@@ -98,6 +103,97 @@ obj.refreshExcludeButton();
 
 obj.renderMiniMap();
 
+end
+
+% =====================================================================
+function fillSectionTable(obj, edges, positions)
+% FILLSECTIONTABLE - Seam table of a serial-section layout. Tiles are named by
+% their FOLDER (stageTile), not by piece index, and every row says which
+% section it is in:
+%   Fix XY - one row per in-plane seam, plus a Section column;
+%   Fix Z  - one row per SECTION BOUNDARY (visibleRanking keeps its worst tile
+%            link): worst score (scored where the mosaic puts the tiles, Fix Z
+%            corrections included), the Fix Z correction stored at the boundary,
+%            lowest quality, and how many of its links are used.
+layout = obj.stitching.layout;
+seamTable = obj.view.handles.seamTable;
+visibleRanking = obj.visibleRanking();
+numRows = numel(visibleRanking);
+isFixZ = strcmp(obj.fixMode(), 'z');
+if isFixZ
+    tableData = cell(numRows, 6);
+    allSections = arrayfun(@(edge) layout(edge.i).zLayer, edges);
+    isZEdge = strcmp({edges.direction}, 'z');
+    viewCanvas = obj.zViewCanvas();
+    for rankPos = 1:numRows
+        e = edges(visibleRanking(rankPos));
+        section = layout(e.i).zLayer;
+        group = edges(isZEdge & allSections == section);
+        tableData{rankPos, 1} = sprintf('Z %d-%d', section, section + 1);
+        tableData{rankPos, 2} = displayScore(e.seamScore);
+        % The Fix Z correction stored at this boundary - what was done to it by
+        % hand. (The links' measured offsets are stage jitter, not an error, and
+        % read as one when shown here.)
+        correction = obj.boundaryDelta(obj.zBoundaryOfEdge(visibleRanking(rankPos), viewCanvas));
+        if any(correction ~= 0)
+            tableData{rankPos, 3} = sprintf('%.1f %.1f', correction(1), correction(2));
+        else
+            tableData{rankPos, 3} = '';
+        end
+        tableData{rankPos, 4} = round(min([group.quality]), 2);
+        tableData{rankPos, 5} = numel(group);
+        numExcluded = nnz(~[group.valid]);
+        if numExcluded == 0
+            tableData{rankPos, 6} = 'yes';
+        else
+            tableData{rankPos, 6} = sprintf('%d EXCLUDED', numExcluded);
+        end
+    end
+    seamTable.Data = tableData;
+    seamTable.ColumnName = {'Sections', 'Worst score', 'Correction [dy dx]', 'Min quality', 'Tiles', 'Used'};
+    seamTable.ColumnWidth = {70, 'auto', 'auto', 'auto', 'auto', 'auto'};
+else
+    tableData = cell(numRows, 7);
+    for rankPos = 1:numRows
+        e = edges(visibleRanking(rankPos));
+        residual = (positions(e.j, 1:2) - positions(e.i, 1:2)) - e.measured(1:2);
+        tableData{rankPos, 1} = sprintf('%s (%d-%d)', upper(e.direction), ...
+            layout(e.i).stageTile, layout(e.j).stageTile);
+        tableData{rankPos, 2} = layout(e.i).zLayer;
+        tableData{rankPos, 3} = displayScore(e.seamScore);
+        tableData{rankPos, 4} = round(norm(residual), 2);
+        tableData{rankPos, 5} = round(e.quality, 2);
+        tableData{rankPos, 6} = char(e.source);
+        if e.valid
+            tableData{rankPos, 7} = 'yes';
+        else
+            tableData{rankPos, 7} = 'EXCLUDED';
+        end
+    end
+    seamTable.Data = tableData;
+    seamTable.ColumnName = {'Seam', 'Section', 'Seam score', 'Residual px', 'Quality', 'Source', 'Used'};
+    seamTable.ColumnWidth = {80, 'auto', 'auto', 'auto', 'auto', 'auto', 'auto'};
+end
+try
+    removeStyle(seamTable);
+    for rankPos = 1:numRows
+        k = visibleRanking(rankPos);
+        addStyle(seamTable, uistyle('BackgroundColor', scoreColor(edges(k).seamScore, edges(k).valid), ...
+            'FontColor', [0 0 0]), 'row', rankPos);
+    end
+catch
+    % row styling is cosmetic only
+end
+end
+
+% =====================================================================
+function value = displayScore(seamScore)
+% DISPLAYSCORE - Seam score for a table cell: rounded, NaN when unscored.
+if isempty(seamScore) || isnan(seamScore)
+    value = NaN;
+else
+    value = round(seamScore, 3);
+end
 end
 
 % =====================================================================

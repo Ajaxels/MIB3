@@ -40,10 +40,22 @@ edges = obj.stitching.edges;
 positions = obj.stitching.positions;
 numTiles = numel(layout);
 
-% Worst incident VALID seam score per tile.
+% Worst incident VALID seam score per tile - over the seams the TABLE lists in
+% the current fix mode (in-plane in Fix XY, cross-layer / section-to-section in
+% Fix Z), so a tile's tint and its rows agree. Counting every seam made a tile
+% amber in Fix XY over a section-to-section link the table does not show (and
+% which scores low by nature: it compares two different sections). A mode with
+% no such seam on the drawn layer (Z-stacks on one layer, Fix Z) falls back to
+% all seams rather than leave the map grey.
+isCrossLayer = strcmp({edges.direction}, 'z');
+countedSeams = isCrossLayer == strcmp(obj.fixMode(), 'z');
+drawnTiles = obj.currentLayerTiles();
+if ~any(countedSeams & (ismember([edges.i], drawnTiles) | ismember([edges.j], drawnTiles)))
+    countedSeams = true(size(isCrossLayer));
+end
 worstScore = nan(numTiles, 1);
 for k = 1:numel(edges)
-    if ~edges(k).valid; continue; end
+    if ~edges(k).valid || ~countedSeams(k); continue; end
     s = edges(k).seamScore;
     if isempty(s); s = NaN; end
     for tileIdx = [edges(k).i, edges(k).j]
@@ -54,10 +66,15 @@ for k = 1:numel(edges)
     end
 end
 
+% Fix Z shows a crop of the MOSAIC, not a tile pair: no tile is outlined, the
+% crop's rectangle is drawn instead (below the tiles loop).
 currentTiles = [];
-if ~isempty(obj.currentEdgeIdx)
+showsMosaicCrop = obj.boundaryModeActive() && ~isempty(obj.zMosaicCrops);
+if ~showsMosaicCrop && ~isempty(obj.currentEdgeIdx)
     currentTiles = [edges(obj.currentEdgeIdx).i, edges(obj.currentEdgeIdx).j];
 end
+% Serial sections: label tiles by their folder, as the seam table names them.
+isSectionLayout = obj.isSectionLayout();
 
 % Draw a single Z-layer: the current seam's layer (its lower tile for a
 % cross-layer pair), else the first layer. Layers stack at the same XY, so
@@ -129,9 +146,17 @@ for tileIdx = drawTiles(:)'
         'EdgeColor', edgeColor, 'LineWidth', lineWidth, ...
         'HitTest', 'off', 'PickableParts', 'none');
     % black in both themes: the label sits on the pale tile colour, not on the axes background
-    text(mapAxes, x0 + w/2, y0 + h/2, sprintf('%d', tileIdx), ...
+    tileLabel = tileIdx;
+    if isSectionLayout; tileLabel = layout(tileIdx).stageTile; end
+    text(mapAxes, x0 + w/2, y0 + h/2, sprintf('%d', tileLabel), ...
         'Color', [0 0 0], 'HorizontalAlignment', 'center', 'FontSize', 9, 'HitTest', 'off', ...
         'PickableParts', 'none');
+end
+if showsMosaicCrop
+    cropBox = obj.zMosaicCrops.regionPositions;   % [r0 r1; c0 c1], solved-position frame
+    patch(mapAxes, 'XData', cropBox(2, [1 2 2 1]), 'YData', cropBox(1, [1 1 2 2]), ...
+        'FaceColor', 'none', 'EdgeColor', [0.10 0.35 0.95], 'LineWidth', 2.5, ...
+        'HitTest', 'off', 'PickableParts', 'none');
 end
 hold(mapAxes, 'off');
 set(mapAxes, 'YDir', 'reverse', 'XTick', [], 'YTick', []);

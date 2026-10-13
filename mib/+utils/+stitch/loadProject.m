@@ -142,7 +142,7 @@ function layout = cellToLayout(tilesData)
 if isempty(tilesData)
     layout = struct('index', {}, 'filename', {}, 'sliceFiles', {}, 'zLayer', {}, ...
         'gridRC', {}, 'nomOrigin', {}, 'tileSize', {}, 'dataClass', {}, ...
-        'solvedOrigin', {}, 'solvedTform', {});
+        'solvedOrigin', {}, 'solvedTform', {}, 'stageTile', {});
     return;
 end
 
@@ -151,7 +151,7 @@ if iscell(tilesData)
     numTiles = numel(tilesData);
     layout(numTiles) = struct('index', 0, 'filename', '', 'sliceFiles', {{}}, 'zLayer', 1, ...
         'gridRC', [0 0], 'nomOrigin', [0 0 0], 'tileSize', [0 0 0 0], 'dataClass', '', ...
-        'solvedOrigin', [], 'solvedTform', []);
+        'solvedOrigin', [], 'solvedTform', [], 'stageTile', []);
     for tileIdx = 1:numTiles
         layout(tileIdx) = copyTileFields(tilesData{tileIdx}, layout(tileIdx));
     end
@@ -169,7 +169,7 @@ end
 function targetTile = copyTileFields(sourceTile, targetTile)
 % Copy decoded tile fields, coercing types as needed.
 fieldList = {'index', 'filename', 'sliceFiles', 'zLayer', 'gridRC', ...
-             'nomOrigin', 'tileSize', 'dataClass', 'solvedOrigin', 'solvedTform'};
+             'nomOrigin', 'tileSize', 'dataClass', 'solvedOrigin', 'solvedTform', 'stageTile'};
 for fieldIdx = 1:numel(fieldList)
     fieldName = fieldList{fieldIdx};
     if isfield(sourceTile, fieldName)

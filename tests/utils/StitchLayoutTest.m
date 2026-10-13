@@ -112,6 +112,88 @@ classdef StitchLayoutTest < matlab.unittest.TestCase
             testCase.verifyEqual(layout(3).nomOrigin(1), 1 + 40, 'AbsTol', 0.5);
         end
 
+        function splitIntoSections_onePiecePerSliceSectionMajor(testCase)
+            % Serial sections: each folder tile becomes one single-slice piece
+            % per section, ordered section by section, keeping the folder as
+            % its source entry and recording which folder it came from.
+            [layout, folderPaths, numSlices] = testCase.folderGridLayout(3);
+            sections = utils.stitch.splitLayoutIntoSections(layout);
+
+            testCase.verifyNumElements(sections, 4 * numSlices);
+            testCase.verifyEqual([sections.index], 1:4 * numSlices);
+            testCase.verifyEqual([sections.zLayer], repelem(1:numSlices, 4), 'section-major order');
+            testCase.verifyEqual([sections.stageTile], repmat(1:4, 1, numSlices));
+            piece = sections(4 + 2);   % section 2, folder 2
+            testCase.verifyEqual(piece.filename, folderPaths{2}, 'the folder stays the source entry');
+            testCase.verifyEqual(piece.sliceFiles, layout(2).sliceFiles(2));
+            testCase.verifyEqual(piece.tileSize, [40 60 1 1]);
+            testCase.verifyEqual(piece.nomOrigin, [layout(2).nomOrigin(1:2), 2]);
+            testCase.verifyEqual(piece.gridRC, layout(2).gridRC);
+        end
+
+        function splitIntoSections_refusesWhatIsNotOneLayerOfEqualFolders(testCase)
+            [layout, folderPaths] = testCase.folderGridLayout(3);
+
+            unequal = layout;
+            unequal(3).sliceFiles(end) = [];
+            unequal(3).tileSize(3) = 2;
+            testCase.verifyError(@() utils.stitch.splitLayoutIntoSections(unequal), ...
+                'utils:stitch:splitLayoutIntoSections:unequalSliceCounts');
+            try
+                utils.stitch.splitLayoutIntoSections(unequal);
+            catch err
+                testCase.verifySubstring(err.message, sprintf('%s: 2', folderPaths{3}), ...
+                    'the message must name the odd folder and its count');
+            end
+
+            singleFile = layout;
+            singleFile(2).sliceFiles = {};
+            testCase.verifyError(@() utils.stitch.splitLayoutIntoSections(singleFile), ...
+                'utils:stitch:splitLayoutIntoSections:notFolders');
+
+            twoLayers = layout;
+            twoLayers(4).zLayer = 2;
+            testCase.verifyError(@() utils.stitch.splitLayoutIntoSections(twoLayers), ...
+                'utils:stitch:splitLayoutIntoSections:severalLayers');
+        end
+
+        function findNeighborPairs_sectionLayoutBuildsTheAllPairsResult(testCase)
+            % The pairs of a section layout are BUILT from (folder, section)
+            % rather than searched over every pair of pieces - and must come out
+            % identical to that search: in-plane seams within each section, a
+            % 'z' pair from every piece to the same folder's next section.
+            layout = testCase.folderGridLayout(4);
+            for tileIdx = 1:4   % give the folders a real 16 px overlap (40 % / 27 %)
+                layout(tileIdx).nomOrigin(1:2) = [1 + (layout(tileIdx).gridRC(1) - 1) * 24, ...
+                                                  1 + (layout(tileIdx).gridRC(2) - 1) * 44];
+            end
+            sections = utils.stitch.splitLayoutIntoSections(layout);
+
+            built = utils.stitch.findNeighborPairs(sections);
+            searched = utils.stitch.findNeighborPairs(rmfield(sections, 'stageTile'));
+            pairKey = @(pairs) sortrows([[pairs.i]', [pairs.j]', double([pairs.direction]'), ...
+                reshape([pairs.nominal], 3, [])']);
+            testCase.verifyEqual(pairKey(built), pairKey(searched));
+            testCase.verifyEqual(nnz([built.direction] == 'z'), 4 * 3, ...
+                'one z pair per folder per section boundary');
+            testCase.verifyEqual(nnz([built.direction] ~= 'z'), 4 * 4, ...
+                'the 4 in-plane seams of a 2x2 grid, in each of 4 sections');
+        end
+
+        function splitIntoSections_survivesAProjectRoundTrip(testCase)
+            % A restored project must still know which folder each piece came
+            % from - the pair builder (and the stage prior) depend on it.
+            sections = utils.stitch.splitLayoutIntoSections(testCase.folderGridLayout(2));
+            tmpFixture = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            projectFile = fullfile(tmpFixture.Folder, 'sections.mibstitch.json');
+            utils.stitch.saveProject(projectFile, sections, [], [], struct(), struct());
+            restored = utils.stitch.loadProject(projectFile);
+
+            testCase.verifyEqual([restored.stageTile], [sections.stageTile]);
+            testCase.verifyEqual(restored(5).sliceFiles, sections(5).sliceFiles);
+            testCase.verifyEqual(restored(5).filename, sections(5).filename);
+        end
+
         function buildGrid_horizontalSnake_rowsAlternate(testCase)
             % Snake: row 0 goes L→R, row 1 goes R→L
             tileFolder = testCase.makeSyntheticTiles(4, [40 60]);
@@ -1674,6 +1756,25 @@ classdef StitchLayoutTest < matlab.unittest.TestCase
 
             tileData.folder = folderPath;
             tileData.files  = files;
+        end
+
+        function [layout, folderPaths, numSlices] = folderGridLayout(testCase, numSlices)
+            % A 2x2 grid of FOLDER tiles, numSlices 40x60 PNG slices each, no
+            % overlap - the serial-section input splitLayoutIntoSections takes.
+            tmpFixture = testCase.applyFixture( ...
+                matlab.unittest.fixtures.TemporaryFolderFixture);
+            folderPaths = cell(1, 4);
+            for tileIdx = 1:4
+                folderPaths{tileIdx} = fullfile(tmpFixture.Folder, sprintf('tile_%02d', tileIdx));
+                mkdir(folderPaths{tileIdx});
+                for slice = 1:numSlices
+                    imwrite(uint8(ones(40, 60) * (10 * tileIdx + slice)), ...
+                        fullfile(folderPaths{tileIdx}, sprintf('s%02d.png', slice)));
+                end
+            end
+            gridOptions = struct('rows', 2, 'cols', 2, 'tileOrder', 'Horizontal', ...
+                'overlapX', 0, 'overlapY', 0);
+            layout = utils.stitch.buildLayoutGrid(folderPaths, gridOptions);
         end
 
     end % methods (Access = private)

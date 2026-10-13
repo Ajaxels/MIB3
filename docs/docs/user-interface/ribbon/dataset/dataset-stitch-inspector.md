@@ -114,10 +114,16 @@ Each row of the **Seams (worst first)** table is one measured seam (tile pair), 
     Every navigation - ++down++ / ++up++, *Confirm and advance*, a mini-map click, a re-solve - stays 
     inside the shown subset.
 
-    A 2D mosaic has only in-plane seams, so its *Fix Z* table is empty. So is that of a mosaic of
-    Z-stacks that all sit on **one** layer: there are no cross-layer seams to list, but the
-    [Fix Z boundary view](#3d-browsing-slices-and-the-fix-mode) still works, because it aligns mosaic *slices* rather
-    than seams.
+    With <label class="widget widget-checkbox">Register slices</label>, tiles are named by their
+    folder, *Fix XY* adds a *Section* column, and *Fix Z* lists one row per **section boundary**
+    (`Z 4-5`): its worst score, the Fix Z correction stored there, and how many tile links it has.
+    A row opens the boundary's worst tile link.
+
+    A 2D mosaic has only in-plane seams, so its *Fix Z* table is empty. A mosaic of Z-stacks that
+    all sit on **one** layer has no cross-layer seams either; its *Fix Z* table lists the slice
+    boundaries instead (`Z 1-2`, `Z 2-3`, ...), with the shift stored at each. Click a row, or use
+    ++down++ / ++up++, to open that boundary in the
+    [Fix Z boundary view](#3d-browsing-slices-and-the-fix-mode).
 
 ??? note "What the status line reports"
     Between the table and the mini-map: `12 seams | 0 reviewed | 0 excluded | worst score 0.69`.
@@ -139,8 +145,9 @@ Each row of the **Seams (worst first)** table is one measured seam (tile pair), 
 
 ![Minimap](images/stitching_inspector_minimap.png){.on-glb align=right width="200"}
 
-The layout drawn at the **solved** positions, each tile tinted by its worst seam (green → red, grey
-when all its seams are excluded), with the current pair outlined in blue.
+The layout drawn at the **solved** positions, each tile tinted by its worst seam among those the
+table lists in the current *Fix mode* (green → red, grey when all its seams are excluded), with the
+current pair outlined in blue.
 
 <div class="clear-float"></div>
 
@@ -148,6 +155,9 @@ when all its seams are excluded), with the current pair outlined in blue.
 point**, not simply the clicked tile's worst one. Clicking near a tile's right edge opens its seam
 with the tile on that side; clicking near its bottom edge opens the seam below. This matters because
 a grid tile usually touches three or four seams.
+
+In *Fix Z* a click picks **where to look** instead: the stitched mosaic around the clicked point is
+shown at the same Z boundary, and a blue box marks it on the mini-map.
 
 ??? tip "The fused preview is the cheapest sanity check there is"
     Unless the tiles are very large, a low-res **fused preview** is composited behind the colouring
@@ -362,19 +372,25 @@ The <span class="widget widget-dropdown">Fix mode</span> dropdown decides what a
 
 === "Fix Z (match slices)"
 
-    For checking that each mosaic slice **continues** the slice below it.
+    For checking that each mosaic slice **continues** the slice below it. The tiles are taken as
+    correctly stitched; only the slices are aligned to each other.
 
-    The view shows **one tile** at two consecutive slices - slice *z-1* in **cyan** and slice *z* in
-    **magenta**, fully overlapping, so the image is mostly **white** when the mosaic is aligned in
-    Z. ++q++ / ++w++ moves the boundary through the stack.
+    The view shows the **stitched mosaic** at two consecutive slices - slice *z-1* in **cyan** and
+    slice *z* in **magenta** - so the image is mostly **white** when the mosaic is aligned in Z.
+    <mouse class="left"></mouse> click the mini-map to look at another part of the mosaic, for
+    example a spot with distinctive structure; ++q++ / ++w++ moves the boundary through the stack.
 
     Where the two slices jump apart (cyan/magenta ghosting), **drag** the magenta slice onto the
     cyan one, or hold ++shift++ and **click a landmark** for the same sub-pixel correlation as in
-    XY.
+    XY. ++ctrl++ + ++shift++ + click does it for **every boundary of the stack** at once, at the
+    clicked spot - pick a structure that runs through the whole stack.
 
-    **The fix shifts that slice and every slice above it, across the whole mosaic** - the slices
-    below stay put. The readout names the boundary, the shift, and which boundaries already carry a
-    correction.
+    **The fix shifts that slice and every slice above it, across the whole mosaic, as one block** -
+    the slices below stay put, and no tile moves against another. The readout names the boundary,
+    its shift, and how many boundaries carry a correction.
+
+    The table then rates that boundary on the corrected mosaic, so a boundary moved the wrong way
+    climbs to the top of the list.
 
 ??? note "Fix Z is not a seam fix, and does not re-solve"
     Fix XY edits a **seam** between two tiles, so it feeds the global solve and the tiles move. Fix
@@ -400,6 +416,7 @@ The <span class="widget widget-dropdown">Fix mode</span> dropdown decides what a
 | <mouse class="left"></mouse> click, no movement | Nothing - stray clicks never move a tile |
 | ++shift++ + hover | Shows the correlation ROI box at the cursor (no click needed) |
 | ++shift++ + <mouse class="left"></mouse> click | Click-to-correlate: cuts the ROI box and auto-snaps to a confident sub-pixel match |
+| ++ctrl++ + ++shift++ + <mouse class="left"></mouse> click | *Fix Z*: click-to-correlate at every Z boundary of the stack at that spot; boundaries without a confident match keep their correction |
 | ++shift++ + wheel | Resizes the correlation ROI box |
 | Wheel | Zooms the pair view at the cursor |
 | <mouse class="right"></mouse> drag | Pans the view (no zoom change); clamped to the rendered tile extent |
@@ -410,7 +427,7 @@ Elsewhere in the window:
 
 | Control | Effect |
 |---------|--------|
-| <mouse class="left"></mouse> click on the mini-map | Jumps to review the seam nearest the click point |
+| <mouse class="left"></mouse> click on the mini-map | Jumps to review the seam nearest the click point (Fix Z: shows the stitched mosaic around the clicked point, same Z boundary) |
 | <mouse class="left"></mouse> click on a seam table row | Selects that seam for review |
 
 ---
@@ -424,7 +441,9 @@ Elsewhere in the window:
 | ++down++ / ++up++ | Next / previous seam in the ranking - one row down / up the seam table |
 | ++q++ / ++w++ | Browse Z slices (++shift++ = 5); always view-only, in both Fix XY and Fix Z |
 | ++z++ | Undo the fix on the current seam, restoring the original automatic measurement (Fix Z: removes the boundary correction on screen) |
+| ++ctrl+z++ | *Fix Z*: step back one action - after ++ctrl++ + ++shift++ + click every boundary gets its previous correction back, after a drag or ++shift++ + click the one boundary does; press again to go further back |
 | ++f++ | Fit the pair view, resetting the mouse-wheel zoom |
+| ++esc++ | While dragging a tile: cancel the drag - nothing is changed |
 | ++space++ | Flicker A/B (*Flicker* overlay mode) |
 
 ??? info "The keyboard never moves a tile"

@@ -27,11 +27,13 @@ if obj.boundaryModeActive()
         obj.setStatus(sprintf('No correction at Z boundary %d to remove', zBoundary));
         return;
     end
+    obj.pushZFixHistory(sprintf('removing the correction at Z boundary %d', zBoundary));   % Ctrl+Z brings it back
     fixes(round(fixes(:, 1)) == zBoundary, :) = [];
     obj.stitching.zSliceFixes = fixes;
     obj.stitching.canvas = [];
     obj.renderPairView();
-    obj.setStatus(sprintf('Z boundary %d correction removed', zBoundary));
+    obj.rescoreAfterZFix();
+    obj.setStatus(sprintf('Z boundary %d correction removed (Ctrl+Z brings it back)', zBoundary));
     return;
 end
 

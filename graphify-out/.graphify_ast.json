@@ -1,6 +1,30 @@
 {
   "nodes": [
     {
+      "id": "utils_getexelocation",
+      "label": "GetExeLocation.c",
+      "file_type": "code",
+      "source_file": "+utils/GetExeLocation.c",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "utils_getexelocation_mexfunction",
+      "label": "mexFunction()",
+      "file_type": "code",
+      "source_file": "+utils/GetExeLocation.c",
+      "source_location": "L13",
+      "_origin": "ast"
+    },
+    {
+      "id": "mxarray",
+      "label": "mxArray",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast"
+    },
+    {
       "id": "controllers_about_about_m",
       "label": "About.m",
       "file_type": "code",
@@ -8702,6 +8726,17 @@
       "contributor": null
     },
     {
+      "id": "controllers_mibsegmentation_objects3d_callback_m",
+      "label": "objects3D_Callback.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@MibSegmentation\\objects3D_Callback.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "controllers_mibsegmentation_refreshthresholdsliderupdatemode_m",
       "label": "refreshThresholdSliderUpdateMode.m",
       "file_type": "code",
@@ -10255,6 +10290,17 @@
     {
       "id": "controllers_preferences_preferences_externaldirpathchange",
       "label": "ExternalDirPathChange",
+      "file_type": "code",
+      "source_file": "+controllers\\@Preferences\\Preferences.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_preferences_preferences_checkbm3dfolder",
+      "label": "checkBm3dFolder",
       "file_type": "code",
       "source_file": "+controllers\\@Preferences\\Preferences.m",
       "source_location": null,
@@ -12530,6 +12576,50 @@
       "contributor": null
     },
     {
+      "id": "controllers_stitching_stitching_registerslicesavailable",
+      "label": "registerSlicesAvailable",
+      "file_type": "code",
+      "source_file": "+controllers\\@Stitching\\Stitching.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_stitching_stitching_sectionmode",
+      "label": "sectionMode",
+      "file_type": "code",
+      "source_file": "+controllers\\@Stitching\\Stitching.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_stitching_stitching_neighborpairoptions",
+      "label": "neighborPairOptions",
+      "file_type": "code",
+      "source_file": "+controllers\\@Stitching\\Stitching.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_stitching_stitching_translationsolveroptions",
+      "label": "translationSolverOptions",
+      "file_type": "code",
+      "source_file": "+controllers\\@Stitching\\Stitching.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "controllers_stitching_stitching_guifigure",
       "label": "guiFigure",
       "file_type": "code",
@@ -12543,6 +12633,28 @@
     {
       "id": "controllers_stitching_stitching_currentseamscorestamp",
       "label": "currentSeamScoreStamp",
+      "file_type": "code",
+      "source_file": "+controllers\\@Stitching\\Stitching.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_stitching_stitching_zfixtileshifts",
+      "label": "zFixTileShifts",
+      "file_type": "code",
+      "source_file": "+controllers\\@Stitching\\Stitching.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_stitching_stitching_scoringpositions",
+      "label": "scoringPositions",
       "file_type": "code",
       "source_file": "+controllers\\@Stitching\\Stitching.m",
       "source_location": null,
@@ -12651,6 +12763,17 @@
       "contributor": null
     },
     {
+      "id": "controllers_stitchinginspector_buildzmosaiccrops_m",
+      "label": "buildZMosaicCrops.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@StitchingInspector\\buildZMosaicCrops.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "controllers_stitchinginspector_closewindow_m",
       "label": "closeWindow.m",
       "file_type": "code",
@@ -12677,6 +12800,17 @@
       "label": "correlateAtPoint.m",
       "file_type": "code",
       "source_file": "+controllers\\@StitchingInspector\\correlateAtPoint.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_stitchinginspector_correlatestackatpoint_m",
+      "label": "correlateStackAtPoint.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@StitchingInspector\\correlateStackAtPoint.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -12721,6 +12855,17 @@
       "label": "fitView_Callback.m",
       "file_type": "code",
       "source_file": "+controllers\\@StitchingInspector\\fitView_Callback.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_stitchinginspector_fixzselectpoint_m",
+      "label": "fixZSelectPoint.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@StitchingInspector\\fixZSelectPoint.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -13115,6 +13260,127 @@
     {
       "id": "controllers_stitchinginspector_stitchinginspector_visibleranking",
       "label": "visibleRanking",
+      "file_type": "code",
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_stitchinginspector_stitchinginspector_issectionlayout",
+      "label": "isSectionLayout",
+      "file_type": "code",
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_stitchinginspector_stitchinginspector_listssliceboundaries",
+      "label": "listsSliceBoundaries",
+      "file_type": "code",
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_stitchinginspector_stitchinginspector_sliceboundarydepth",
+      "label": "sliceBoundaryDepth",
+      "file_type": "code",
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_stitchinginspector_stitchinginspector_pushzfixhistory",
+      "label": "pushZFixHistory",
+      "file_type": "code",
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_stitchinginspector_stitchinginspector_undolastzfix",
+      "label": "undoLastZFix",
+      "file_type": "code",
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_stitchinginspector_stitchinginspector_rescoreafterzfix",
+      "label": "rescoreAfterZFix",
+      "file_type": "code",
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_stitchinginspector_stitchinginspector_fusezmosaicslice",
+      "label": "fuseZMosaicSlice",
+      "file_type": "code",
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_stitchinginspector_stitchinginspector_zviewcanvas",
+      "label": "zViewCanvas",
+      "file_type": "code",
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_stitchinginspector_stitchinginspector_zboundaryofedge",
+      "label": "zBoundaryOfEdge",
+      "file_type": "code",
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_stitchinginspector_stitchinginspector_rowofedge",
+      "label": "rowOfEdge",
+      "file_type": "code",
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_stitchinginspector_stitchinginspector_syncsliceboundarytable",
+      "label": "syncSliceBoundaryTable",
       "file_type": "code",
       "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
       "source_location": null,
@@ -14866,6 +15132,72 @@
       "label": "getChildren",
       "file_type": "code",
       "source_file": "+core\\@ChildView\\ChildView.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "core_downloadprogressmonitor_downloadprogressmonitor_m",
+      "label": "DownloadProgressMonitor.m",
+      "file_type": "code",
+      "source_file": "+core\\@DownloadProgressMonitor\\DownloadProgressMonitor.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "core_downloadprogressmonitor_downloadprogressmonitor_downloadprogressmonitor",
+      "label": "DownloadProgressMonitor",
+      "file_type": "code",
+      "source_file": "+core\\@DownloadProgressMonitor\\DownloadProgressMonitor.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "core_downloadprogressmonitor_downloadprogressmonitor_done",
+      "label": "done",
+      "file_type": "code",
+      "source_file": "+core\\@DownloadProgressMonitor\\DownloadProgressMonitor.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "core_downloadprogressmonitor_downloadprogressmonitor_update",
+      "label": "update",
+      "file_type": "code",
+      "source_file": "+core\\@DownloadProgressMonitor\\DownloadProgressMonitor.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "core_downloadprogressmonitor_downloadprogressmonitor_download",
+      "label": "download",
+      "file_type": "code",
+      "source_file": "+core\\@DownloadProgressMonitor\\DownloadProgressMonitor.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "core_downloadprogressmonitor_downloadprogressmonitor_downloadoneurl",
+      "label": "downloadOneUrl",
+      "file_type": "code",
+      "source_file": "+core\\@DownloadProgressMonitor\\DownloadProgressMonitor.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -26071,6 +26403,17 @@
       "contributor": null
     },
     {
+      "id": "utils_javasetup_isavailable",
+      "label": "isAvailable",
+      "file_type": "code",
+      "source_file": "+utils\\JavaSetup.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "utils_javasetup_configuredhome",
       "label": "configuredHome",
       "file_type": "code",
@@ -29151,358 +29494,6 @@
       "contributor": null
     },
     {
-      "id": "plugins_myplugins_mccalc2_mccalc2_m",
-      "label": "MCcalc2.m",
-      "file_type": "code",
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null
-    },
-    {
-      "id": "plugins_myplugins_mccalc2_mccalc2_viewlistner_callback",
-      "label": "ViewListner_Callback",
-      "file_type": "code",
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null
-    },
-    {
-      "id": "plugins_myplugins_mccalc2_mccalc2_mccalc2",
-      "label": "MCcalc2",
-      "file_type": "code",
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null
-    },
-    {
-      "id": "plugins_myplugins_mccalc2_mccalc2_restorethresholdlists",
-      "label": "restoreThresholdLists",
-      "file_type": "code",
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null
-    },
-    {
-      "id": "plugins_myplugins_mccalc2_mccalc2_syncthresholdselection",
-      "label": "syncThresholdSelection",
-      "file_type": "code",
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null
-    },
-    {
-      "id": "plugins_myplugins_mccalc2_mccalc2_closewindow",
-      "label": "closeWindow",
-      "file_type": "code",
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null
-    },
-    {
-      "id": "plugins_myplugins_mccalc2_mccalc2_updatewidgets",
-      "label": "updateWidgets",
-      "file_type": "code",
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null
-    },
-    {
-      "id": "plugins_myplugins_mccalc2_mccalc2_updatebatchoptfromgui",
-      "label": "updateBatchOptFromGUI",
-      "file_type": "code",
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null
-    },
-    {
-      "id": "plugins_myplugins_mccalc2_mccalc2_returnbatchopt",
-      "label": "returnBatchOpt",
-      "file_type": "code",
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null
-    },
-    {
-      "id": "plugins_myplugins_mccalc2_mccalc2_dnd_files_callback",
-      "label": "dnd_files_callback",
-      "file_type": "code",
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null
-    },
-    {
-      "id": "plugins_myplugins_mccalc2_mccalc2_calculateinpixels_clicked",
-      "label": "calculateInPixels_clicked",
-      "file_type": "code",
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null
-    },
-    {
-      "id": "plugins_myplugins_mccalc2_mccalc2_scalelocalminimawithdistance_clicked",
-      "label": "scaleLocalMinimaWithDistance_clicked",
-      "file_type": "code",
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null
-    },
-    {
-      "id": "plugins_myplugins_mccalc2_mccalc2_contactthrestable_cellselection",
-      "label": "contactThresTable_cellselection",
-      "file_type": "code",
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null
-    },
-    {
-      "id": "plugins_myplugins_mccalc2_mccalc2_contactthrestable_update",
-      "label": "contactThresTable_update",
-      "file_type": "code",
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null
-    },
-    {
-      "id": "plugins_myplugins_mccalc2_mccalc2_analysislistbox_clicked",
-      "label": "analysisListbox_clicked",
-      "file_type": "code",
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null
-    },
-    {
-      "id": "plugins_myplugins_mccalc2_mccalc2_analysiscontacts_menuclicked",
-      "label": "analysisContacts_MenuClicked",
-      "file_type": "code",
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null
-    },
-    {
-      "id": "plugins_myplugins_mccalc2_mccalc2_analysisfilelist_menuclicked",
-      "label": "AnalysisFilelist_MenuClicked",
-      "file_type": "code",
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null
-    },
-    {
-      "id": "plugins_myplugins_mccalc2_mccalc2_analysiscondition_menuclicked",
-      "label": "AnalysisCondition_MenuClicked",
-      "file_type": "code",
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null
-    },
-    {
-      "id": "plugins_myplugins_mccalc2_mccalc2_saveconfig",
-      "label": "saveConfig",
-      "file_type": "code",
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null
-    },
-    {
-      "id": "plugins_myplugins_mccalc2_mccalc2_loadconfig",
-      "label": "loadConfig",
-      "file_type": "code",
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null
-    },
-    {
-      "id": "plugins_myplugins_mccalc2_mccalc2_updategenerateimagesrendercutoffs",
-      "label": "updateGenerateImagesRenderCutoffs",
-      "file_type": "code",
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null
-    },
-    {
-      "id": "plugins_myplugins_mccalc2_mccalc2_extendedrays_clicked",
-      "label": "ExtendedRays_clicked",
-      "file_type": "code",
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null
-    },
-    {
-      "id": "plugins_myplugins_mccalc2_mccalc2_generateimages_clicked",
-      "label": "GenerateImages_clicked",
-      "file_type": "code",
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null
-    },
-    {
-      "id": "plugins_myplugins_mccalc2_mccalc2_exportresultstomatlab_clicked",
-      "label": "ExportResultsToMatlab_clicked",
-      "file_type": "code",
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null
-    },
-    {
-      "id": "plugins_myplugins_mccalc2_mccalc2_highlightcontacts_clicked",
-      "label": "highlightContacts_clicked",
-      "file_type": "code",
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null
-    },
-    {
-      "id": "plugins_myplugins_mccalc2_mccalc2_showhelp",
-      "label": "showHelp",
-      "file_type": "code",
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null
-    },
-    {
-      "id": "plugins_myplugins_mccalc2_mccalc2_raytraceobject",
-      "label": "raytraceObject",
-      "file_type": "code",
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null
-    },
-    {
-      "id": "plugins_myplugins_mccalc2_mccalc2_selectoutputdirectory",
-      "label": "selectOutputDirectory",
-      "file_type": "code",
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null
-    },
-    {
-      "id": "plugins_myplugins_mccalc2_mccalc2_savetoexcel",
-      "label": "saveToExcel",
-      "file_type": "code",
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null
-    },
-    {
-      "id": "plugins_myplugins_mccalc2_mccalc2_calculate",
-      "label": "Calculate",
-      "file_type": "code",
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null
-    },
-    {
-      "id": "plugins_myplugins_mccalc2_mccalc2_closeallfigures",
-      "label": "closeAllFigures",
-      "file_type": "code",
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null
-    },
-    {
-      "id": "plugins_myplugins_mccalc2_mccalc2_analysecontacts",
-      "label": "analyseContacts",
-      "file_type": "code",
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null
-    },
-    {
       "id": "plugins_organelleanalysis_golgiorientation_golgiorientation_m",
       "label": "GolgiOrientation.m",
       "file_type": "code",
@@ -31099,6 +31090,75 @@
     }
   ],
   "edges": [
+    {
+      "source": "utils_getexelocation",
+      "target": "mex",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "+utils/GetExeLocation.c",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "utils_getexelocation",
+      "target": "windows",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "+utils/GetExeLocation.c",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "utils_getexelocation",
+      "target": "dyld",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "+utils/GetExeLocation.c",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "utils_getexelocation",
+      "target": "unistd",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "+utils/GetExeLocation.c",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "utils_getexelocation",
+      "target": "utils_getexelocation_mexfunction",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "+utils/GetExeLocation.c",
+      "source_location": "L13",
+      "weight": 1.0
+    },
+    {
+      "source": "utils_getexelocation_mexfunction",
+      "target": "mxarray",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "+utils/GetExeLocation.c",
+      "source_location": "L13",
+      "weight": 1.0,
+      "context": "parameter_type"
+    },
+    {
+      "source": "utils_getexelocation_mexfunction",
+      "target": "mxarray",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "+utils/GetExeLocation.c",
+      "source_location": "L13",
+      "weight": 1.0,
+      "context": "parameter_type"
+    },
     {
       "source": "controllers_about_about_m",
       "target": "controllers_about_about_about",
@@ -38651,6 +38711,16 @@
     },
     {
       "source": "controllers_mibsegmentation_mibsegmentation_m",
+      "target": "controllers_mibsegmentation_objects3d_callback_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibSegmentation\\MibSegmentation.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibsegmentation_mibsegmentation_m",
       "target": "controllers_mibsegmentation_refreshthresholdsliderupdatemode_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -40002,6 +40072,16 @@
     {
       "source": "controllers_preferences_preferences_m",
       "target": "controllers_preferences_preferences_externaldirpathchange",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@Preferences\\Preferences.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_preferences_preferences_m",
+      "target": "controllers_preferences_preferences_checkbm3dfolder",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -41981,6 +42061,46 @@
     },
     {
       "source": "controllers_stitching_stitching_m",
+      "target": "controllers_stitching_stitching_registerslicesavailable",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@Stitching\\Stitching.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_stitching_m",
+      "target": "controllers_stitching_stitching_sectionmode",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@Stitching\\Stitching.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_stitching_m",
+      "target": "controllers_stitching_stitching_neighborpairoptions",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@Stitching\\Stitching.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_stitching_m",
+      "target": "controllers_stitching_stitching_translationsolveroptions",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@Stitching\\Stitching.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_stitching_m",
       "target": "controllers_stitching_stitching_guifigure",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -41992,6 +42112,26 @@
     {
       "source": "controllers_stitching_stitching_m",
       "target": "controllers_stitching_stitching_currentseamscorestamp",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@Stitching\\Stitching.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_stitching_m",
+      "target": "controllers_stitching_stitching_zfixtileshifts",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@Stitching\\Stitching.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_stitching_m",
+      "target": "controllers_stitching_stitching_scoringpositions",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -42081,6 +42221,16 @@
     },
     {
       "source": "controllers_stitchinginspector_stitchinginspector_m",
+      "target": "controllers_stitchinginspector_buildzmosaiccrops_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_stitchinginspector_m",
       "target": "controllers_stitchinginspector_closewindow_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -42102,6 +42252,16 @@
     {
       "source": "controllers_stitchinginspector_stitchinginspector_m",
       "target": "controllers_stitchinginspector_correlateatpoint_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_stitchinginspector_m",
+      "target": "controllers_stitchinginspector_correlatestackatpoint_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -42142,6 +42302,16 @@
     {
       "source": "controllers_stitchinginspector_stitchinginspector_m",
       "target": "controllers_stitchinginspector_fitview_callback_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_stitchinginspector_m",
+      "target": "controllers_stitchinginspector_fixzselectpoint_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -42502,6 +42672,116 @@
     {
       "source": "controllers_stitchinginspector_stitchinginspector_m",
       "target": "controllers_stitchinginspector_stitchinginspector_visibleranking",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_stitchinginspector_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_issectionlayout",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_stitchinginspector_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_listssliceboundaries",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_stitchinginspector_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_sliceboundarydepth",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_stitchinginspector_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_pushzfixhistory",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_stitchinginspector_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_undolastzfix",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_stitchinginspector_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_rescoreafterzfix",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_stitchinginspector_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_fusezmosaicslice",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_stitchinginspector_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_zviewcanvas",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_stitchinginspector_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_zboundaryofedge",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_stitchinginspector_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_rowofedge",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_stitchinginspector_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_syncsliceboundarytable",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -44016,6 +44296,56 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "+core\\@ChildView\\ChildView.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_downloadprogressmonitor_downloadprogressmonitor_m",
+      "target": "core_downloadprogressmonitor_downloadprogressmonitor_downloadprogressmonitor",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@DownloadProgressMonitor\\DownloadProgressMonitor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_downloadprogressmonitor_downloadprogressmonitor_m",
+      "target": "core_downloadprogressmonitor_downloadprogressmonitor_done",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@DownloadProgressMonitor\\DownloadProgressMonitor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_downloadprogressmonitor_downloadprogressmonitor_m",
+      "target": "core_downloadprogressmonitor_downloadprogressmonitor_update",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@DownloadProgressMonitor\\DownloadProgressMonitor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_downloadprogressmonitor_downloadprogressmonitor_m",
+      "target": "core_downloadprogressmonitor_downloadprogressmonitor_download",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@DownloadProgressMonitor\\DownloadProgressMonitor.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_downloadprogressmonitor_downloadprogressmonitor_m",
+      "target": "core_downloadprogressmonitor_downloadprogressmonitor_downloadoneurl",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@DownloadProgressMonitor\\DownloadProgressMonitor.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -53391,6 +53721,16 @@
     },
     {
       "source": "utils_javasetup_m",
+      "target": "utils_javasetup_isavailable",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+utils\\JavaSetup.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "utils_javasetup_m",
       "target": "utils_javasetup_configuredhome",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -56076,316 +56416,6 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "plugins\\IntensityAnalysis\\TripleAreaIntensity\\TripleAreaIntensity.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "plugins_myplugins_mccalc2_mccalc2_m",
-      "target": "plugins_myplugins_mccalc2_mccalc2_viewlistner_callback",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "plugins_myplugins_mccalc2_mccalc2_m",
-      "target": "plugins_myplugins_mccalc2_mccalc2_mccalc2",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "plugins_myplugins_mccalc2_mccalc2_m",
-      "target": "plugins_myplugins_mccalc2_mccalc2_restorethresholdlists",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "plugins_myplugins_mccalc2_mccalc2_m",
-      "target": "plugins_myplugins_mccalc2_mccalc2_syncthresholdselection",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "plugins_myplugins_mccalc2_mccalc2_m",
-      "target": "plugins_myplugins_mccalc2_mccalc2_closewindow",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "plugins_myplugins_mccalc2_mccalc2_m",
-      "target": "plugins_myplugins_mccalc2_mccalc2_updatewidgets",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "plugins_myplugins_mccalc2_mccalc2_m",
-      "target": "plugins_myplugins_mccalc2_mccalc2_updatebatchoptfromgui",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "plugins_myplugins_mccalc2_mccalc2_m",
-      "target": "plugins_myplugins_mccalc2_mccalc2_returnbatchopt",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "plugins_myplugins_mccalc2_mccalc2_m",
-      "target": "plugins_myplugins_mccalc2_mccalc2_dnd_files_callback",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "plugins_myplugins_mccalc2_mccalc2_m",
-      "target": "plugins_myplugins_mccalc2_mccalc2_calculateinpixels_clicked",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "plugins_myplugins_mccalc2_mccalc2_m",
-      "target": "plugins_myplugins_mccalc2_mccalc2_scalelocalminimawithdistance_clicked",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "plugins_myplugins_mccalc2_mccalc2_m",
-      "target": "plugins_myplugins_mccalc2_mccalc2_contactthrestable_cellselection",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "plugins_myplugins_mccalc2_mccalc2_m",
-      "target": "plugins_myplugins_mccalc2_mccalc2_contactthrestable_update",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "plugins_myplugins_mccalc2_mccalc2_m",
-      "target": "plugins_myplugins_mccalc2_mccalc2_analysislistbox_clicked",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "plugins_myplugins_mccalc2_mccalc2_m",
-      "target": "plugins_myplugins_mccalc2_mccalc2_analysiscontacts_menuclicked",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "plugins_myplugins_mccalc2_mccalc2_m",
-      "target": "plugins_myplugins_mccalc2_mccalc2_analysisfilelist_menuclicked",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "plugins_myplugins_mccalc2_mccalc2_m",
-      "target": "plugins_myplugins_mccalc2_mccalc2_analysiscondition_menuclicked",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "plugins_myplugins_mccalc2_mccalc2_m",
-      "target": "plugins_myplugins_mccalc2_mccalc2_saveconfig",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "plugins_myplugins_mccalc2_mccalc2_m",
-      "target": "plugins_myplugins_mccalc2_mccalc2_loadconfig",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "plugins_myplugins_mccalc2_mccalc2_m",
-      "target": "plugins_myplugins_mccalc2_mccalc2_updategenerateimagesrendercutoffs",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "plugins_myplugins_mccalc2_mccalc2_m",
-      "target": "plugins_myplugins_mccalc2_mccalc2_extendedrays_clicked",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "plugins_myplugins_mccalc2_mccalc2_m",
-      "target": "plugins_myplugins_mccalc2_mccalc2_generateimages_clicked",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "plugins_myplugins_mccalc2_mccalc2_m",
-      "target": "plugins_myplugins_mccalc2_mccalc2_exportresultstomatlab_clicked",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "plugins_myplugins_mccalc2_mccalc2_m",
-      "target": "plugins_myplugins_mccalc2_mccalc2_highlightcontacts_clicked",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "plugins_myplugins_mccalc2_mccalc2_m",
-      "target": "plugins_myplugins_mccalc2_mccalc2_showhelp",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "plugins_myplugins_mccalc2_mccalc2_m",
-      "target": "plugins_myplugins_mccalc2_mccalc2_raytraceobject",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "plugins_myplugins_mccalc2_mccalc2_m",
-      "target": "plugins_myplugins_mccalc2_mccalc2_selectoutputdirectory",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "plugins_myplugins_mccalc2_mccalc2_m",
-      "target": "plugins_myplugins_mccalc2_mccalc2_savetoexcel",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "plugins_myplugins_mccalc2_mccalc2_m",
-      "target": "plugins_myplugins_mccalc2_mccalc2_calculate",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "plugins_myplugins_mccalc2_mccalc2_m",
-      "target": "plugins_myplugins_mccalc2_mccalc2_closeallfigures",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "plugins_myplugins_mccalc2_mccalc2_m",
-      "target": "plugins_myplugins_mccalc2_mccalc2_analysecontacts",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -65481,6 +65511,16 @@
     },
     {
       "source": "controllers_stitching_buildlayoutfrombatchopt_m",
+      "target": "controllers_stitching_stitching_sectionmode",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@Stitching\\buildLayoutFromBatchOpt.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_buildlayoutfrombatchopt_m",
       "target": "controllers_stitching_ensureseamscores_m",
       "relation": "calls",
       "confidence": "INFERRED",
@@ -65552,6 +65592,26 @@
     {
       "source": "controllers_stitching_ensureseamscores_m",
       "target": "controllers_stitching_ensureintensitycorrection_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@Stitching\\ensureSeamScores.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_ensureseamscores_m",
+      "target": "controllers_stitching_stitching_zfixtileshifts",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@Stitching\\ensureSeamScores.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_ensureseamscores_m",
+      "target": "controllers_stitching_stitching_scoringpositions",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -65681,6 +65741,16 @@
     },
     {
       "source": "controllers_stitching_measureoverlaps_callback_m",
+      "target": "controllers_stitching_stitching_neighborpairoptions",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@Stitching\\measureOverlaps_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_measureoverlaps_callback_m",
       "target": "controllers_stitching_stitching_buildfeatureoptions",
       "relation": "calls",
       "confidence": "INFERRED",
@@ -65732,6 +65802,16 @@
     {
       "source": "controllers_stitching_optimizepositions_callback_m",
       "target": "controllers_stitching_stitching_guifigure",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@Stitching\\optimizePositions_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_optimizepositions_callback_m",
+      "target": "controllers_stitching_stitching_translationsolveroptions",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -65796,6 +65876,16 @@
       "confidence": "INFERRED",
       "confidence_score": 0.75,
       "source_file": "+controllers\\@Stitching\\previewLayoutBtn_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_refreshqualitychip_m",
+      "target": "controllers_stitching_stitching_sectionmode",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@Stitching\\refreshQualityChip.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -65991,6 +66081,16 @@
     },
     {
       "source": "controllers_stitching_stitchbtn_callback_m",
+      "target": "controllers_stitching_stitching_neighborpairoptions",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@Stitching\\stitchBtn_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_stitchbtn_callback_m",
       "target": "controllers_stitching_stitching_buildfeatureoptions",
       "relation": "calls",
       "confidence": "INFERRED",
@@ -66002,6 +66102,16 @@
     {
       "source": "controllers_stitching_stitchbtn_callback_m",
       "target": "controllers_stitching_ensureintensitycorrection_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@Stitching\\stitchBtn_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_stitchbtn_callback_m",
+      "target": "controllers_stitching_stitching_translationsolveroptions",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -66110,6 +66220,26 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_stitching_updatebatchoptfromgui_m",
+      "target": "controllers_stitching_stitching_registerslicesavailable",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@Stitching\\updateBatchOptFromGUI.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_updatebatchoptfromgui_m",
+      "target": "controllers_stitching_stitching_sectionmode",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@Stitching\\updateBatchOptFromGUI.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_stitching_updatewidgets_m",
       "target": "controllers_stitching_stitching_updateinfolabel",
       "relation": "calls",
@@ -66122,6 +66252,16 @@
     {
       "source": "controllers_stitching_updatewidgets_m",
       "target": "controllers_stitching_stitching_refreshinputpathwidget",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@Stitching\\updateWidgets.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitching_updatewidgets_m",
+      "target": "controllers_stitching_stitching_registerslicesavailable",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -66311,7 +66451,17 @@
     },
     {
       "source": "controllers_stitchinginspector_addcallbacks_m",
-      "target": "controllers_stitchinginspector_stitchinginspector_visibleranking",
+      "target": "controllers_stitchinginspector_stitchinginspector_zviewcanvas",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\addCallbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_addcallbacks_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_issectionlayout",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -66341,6 +66491,16 @@
     },
     {
       "source": "controllers_stitchinginspector_addcallbacks_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_visibleranking",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\addCallbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_addcallbacks_m",
       "target": "controllers_stitchinginspector_selectseam_m",
       "relation": "calls",
       "confidence": "INFERRED",
@@ -66352,6 +66512,26 @@
     {
       "source": "controllers_stitchinginspector_addcallbacks_m",
       "target": "controllers_stitchinginspector_stitchinginspector_haswidget",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\addCallbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_addcallbacks_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_listssliceboundaries",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\addCallbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_addcallbacks_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_rowofedge",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -66461,7 +66641,27 @@
     },
     {
       "source": "controllers_stitchinginspector_applyzboundaryfix_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_pushzfixhistory",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\applyZBoundaryFix.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_applyzboundaryfix_m",
       "target": "controllers_stitchinginspector_renderpairview_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\applyZBoundaryFix.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_applyzboundaryfix_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_rescoreafterzfix",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -66476,6 +66676,26 @@
       "confidence": "INFERRED",
       "confidence_score": 0.75,
       "source_file": "+controllers\\@StitchingInspector\\applyZBoundaryFix.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_buildzmosaiccrops_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_zviewcanvas",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\buildZMosaicCrops.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_buildzmosaiccrops_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_fusezmosaicslice",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\buildZMosaicCrops.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -66600,6 +66820,116 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_stitchinginspector_correlatestackatpoint_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_datavalid",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\correlateStackAtPoint.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_correlatestackatpoint_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_boundarymodeactive",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\correlateStackAtPoint.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_correlatestackatpoint_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_setstatus",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\correlateStackAtPoint.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_correlatestackatpoint_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_zviewcanvas",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\correlateStackAtPoint.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_correlatestackatpoint_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_haswidget",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\correlateStackAtPoint.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_correlatestackatpoint_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_progressparent",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\correlateStackAtPoint.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_correlatestackatpoint_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_fusezmosaicslice",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\correlateStackAtPoint.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_correlatestackatpoint_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_boundarydelta",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\correlateStackAtPoint.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_correlatestackatpoint_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_pushzfixhistory",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\correlateStackAtPoint.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_correlatestackatpoint_m",
+      "target": "controllers_stitchinginspector_renderpairview_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\correlateStackAtPoint.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_correlatestackatpoint_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_rescoreafterzfix",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\correlateStackAtPoint.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_stitchinginspector_ensuretilethumbs_m",
       "target": "controllers_stitchinginspector_stitchinginspector_datavalid",
       "relation": "calls",
@@ -66720,6 +67050,46 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_stitchinginspector_fixzselectpoint_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_datavalid",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\fixZSelectPoint.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_fixzselectpoint_m",
+      "target": "controllers_stitchinginspector_renderpairview_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\fixZSelectPoint.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_fixzselectpoint_m",
+      "target": "controllers_stitchinginspector_renderminimap_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\fixZSelectPoint.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_fixzselectpoint_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_setstatus",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\fixZSelectPoint.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_stitchinginspector_jumptotile_m",
       "target": "controllers_stitchinginspector_stitchinginspector_datavalid",
       "relation": "calls",
@@ -66801,6 +67171,16 @@
     },
     {
       "source": "controllers_stitchinginspector_keypress_callback_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_listssliceboundaries",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\keyPress_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_keypress_callback_m",
       "target": "controllers_stitchinginspector_stitchinginspector_visibleranking",
       "relation": "calls",
       "confidence": "INFERRED",
@@ -66811,7 +67191,37 @@
     },
     {
       "source": "controllers_stitchinginspector_keypress_callback_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_rowofedge",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\keyPress_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_keypress_callback_m",
       "target": "controllers_stitchinginspector_selectseam_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\keyPress_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_keypress_callback_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_fixmode",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\keyPress_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_keypress_callback_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_undolastzfix",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -66880,6 +67290,36 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_stitchinginspector_keypress_callback_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_issectionlayout",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\keyPress_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_keypress_callback_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_zviewcanvas",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\keyPress_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_keypress_callback_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_zboundaryofedge",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\keyPress_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_stitchinginspector_keyrelease_callback_m",
       "target": "controllers_stitchinginspector_pairviewmotion_m",
       "relation": "calls",
@@ -66902,6 +67342,26 @@
     {
       "source": "controllers_stitchinginspector_minimapbuttondown_m",
       "target": "controllers_stitchinginspector_stitchinginspector_haswidget",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\miniMapButtonDown.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_minimapbuttondown_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_boundarymodeactive",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\miniMapButtonDown.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_minimapbuttondown_m",
+      "target": "controllers_stitchinginspector_fixzselectpoint_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -66941,6 +67401,16 @@
     },
     {
       "source": "controllers_stitchinginspector_pairviewbuttondown_m",
+      "target": "controllers_stitchinginspector_correlatestackatpoint_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\pairViewButtonDown.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_pairviewbuttondown_m",
       "target": "controllers_stitchinginspector_twoclickhandlepoint_m",
       "relation": "calls",
       "confidence": "INFERRED",
@@ -66962,6 +67432,26 @@
     {
       "source": "controllers_stitchinginspector_pairviewbuttondown_m",
       "target": "controllers_stitchinginspector_pairviewmotion_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\pairViewButtonDown.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_pairviewbuttondown_m",
+      "target": "controllers_stitchinginspector_renderpairview_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\pairViewButtonDown.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_pairviewbuttondown_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_setstatus",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -67071,7 +67561,37 @@
     },
     {
       "source": "controllers_stitchinginspector_renderminimap_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_fixmode",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\renderMiniMap.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_renderminimap_m",
       "target": "controllers_stitchinginspector_stitchinginspector_currentlayertiles",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\renderMiniMap.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_renderminimap_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_boundarymodeactive",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\renderMiniMap.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_renderminimap_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_issectionlayout",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -67121,6 +67641,16 @@
     },
     {
       "source": "controllers_stitchinginspector_renderpairview_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_zviewcanvas",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\renderPairView.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_renderpairview_m",
       "target": "controllers_stitchinginspector_stitchinginspector_tilereader",
       "relation": "calls",
       "confidence": "INFERRED",
@@ -67151,6 +67681,26 @@
     },
     {
       "source": "controllers_stitchinginspector_renderpairview_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_zboundaryofedge",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\renderPairView.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_renderpairview_m",
+      "target": "controllers_stitchinginspector_buildzmosaiccrops_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\renderPairView.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_renderpairview_m",
       "target": "controllers_stitchinginspector_stitchinginspector_boundarydelta",
       "relation": "calls",
       "confidence": "INFERRED",
@@ -67172,6 +67722,16 @@
     {
       "source": "controllers_stitchinginspector_renderpairview_m",
       "target": "controllers_stitchinginspector_stitchinginspector_currenttilestack",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\renderPairView.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_renderpairview_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_syncsliceboundarytable",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -67351,6 +67911,36 @@
     },
     {
       "source": "controllers_stitchinginspector_seamtableselection_callback_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_listssliceboundaries",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\seamTableSelection_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_seamtableselection_callback_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_sliceboundarydepth",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\seamTableSelection_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_seamtableselection_callback_m",
+      "target": "controllers_stitchinginspector_renderpairview_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\seamTableSelection_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_seamtableselection_callback_m",
       "target": "controllers_stitchinginspector_stitchinginspector_visibleranking",
       "relation": "calls",
       "confidence": "INFERRED",
@@ -67391,7 +67981,7 @@
     },
     {
       "source": "controllers_stitchinginspector_selectseam_m",
-      "target": "controllers_stitchinginspector_stitchinginspector_visibleranking",
+      "target": "controllers_stitchinginspector_stitchinginspector_rowofedge",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -67611,7 +68201,27 @@
     },
     {
       "source": "controllers_stitchinginspector_undofix_callback_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_pushzfixhistory",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\undoFix_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_undofix_callback_m",
       "target": "controllers_stitchinginspector_renderpairview_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\undoFix_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_undofix_callback_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_rescoreafterzfix",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -67671,6 +68281,36 @@
     },
     {
       "source": "controllers_stitchinginspector_updatewidgets_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_listssliceboundaries",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\updateWidgets.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_updatewidgets_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_syncsliceboundarytable",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\updateWidgets.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_updatewidgets_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_issectionlayout",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\updateWidgets.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_updatewidgets_m",
       "target": "controllers_stitchinginspector_stitchinginspector_visibleranking",
       "relation": "calls",
       "confidence": "INFERRED",
@@ -67692,6 +68332,46 @@
     {
       "source": "controllers_stitchinginspector_updatewidgets_m",
       "target": "controllers_stitchinginspector_renderminimap_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\updateWidgets.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_updatewidgets_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_fixmode",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\updateWidgets.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_updatewidgets_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_zviewcanvas",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\updateWidgets.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_updatewidgets_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_boundarydelta",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@StitchingInspector\\updateWidgets.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_updatewidgets_m",
+      "target": "controllers_stitchinginspector_stitchinginspector_zboundaryofedge",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -68252,6 +68932,16 @@
     {
       "source": "core_mibdataset_addmaterial_m",
       "target": "core_mibdataset_createmodel_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+core\\@MibDataset\\addMaterial.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibdataset_addmaterial_m",
+      "target": "core_mibdataset_getdata2d_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -71081,6 +71771,36 @@
     },
     {
       "source": "models_mibmodel_removematerial_m",
+      "target": "models_mibmodel_getdata2d_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\removeMaterial.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_removematerial_m",
+      "target": "models_mibmodel_backup_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\removeMaterial.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_removematerial_m",
+      "target": "models_mibmodel_setdata2d_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\removeMaterial.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_removematerial_m",
       "target": "models_mibmodel_addmaterial_m",
       "relation": "calls",
       "confidence": "INFERRED",
@@ -72256,46 +72976,6 @@
       "confidence": "INFERRED",
       "confidence_score": 0.7,
       "source_file": "plugins\\IntensityAnalysis\\TripleAreaIntensity\\TripleAreaIntensity.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "plugins_myplugins_mccalc2_mccalc2_m",
-      "target": "core_childview_childview_m",
-      "relation": "calls",
-      "confidence": "INFERRED",
-      "confidence_score": 0.7,
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "plugins_myplugins_mccalc2_mccalc2_m",
-      "target": "core_toggleeventdata_toggleeventdata_m",
-      "relation": "calls",
-      "confidence": "INFERRED",
-      "confidence_score": 0.7,
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "plugins_myplugins_mccalc2_mccalc2_m",
-      "target": "core_poolwaitbar_poolwaitbar_m",
-      "relation": "calls",
-      "confidence": "INFERRED",
-      "confidence_score": 0.7,
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "plugins_myplugins_mccalc2_mccalc2_m",
-      "target": "controllers_boundingbox_boundingbox_m",
-      "relation": "calls",
-      "confidence": "INFERRED",
-      "confidence_score": 0.7,
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -75992,6 +76672,16 @@
     {
       "source": "controllers_mibcontroller_initialize_m",
       "target": "utils_dlgs_chooseuserstatslocation_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibController\\initialize.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibcontroller_initialize_m",
+      "target": "utils_dlgs_showerrordialog_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -80120,6 +80810,16 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_stitching_buildlayoutfrombatchopt_m",
+      "target": "utils_stitch_splitlayoutintosections_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@Stitching\\buildLayoutFromBatchOpt.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_stitching_configurefeaturesbtn_callback_m",
       "target": "utils_align_detectorsettingsdlg_m",
       "relation": "calls",
@@ -80610,6 +81310,16 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_stitchinginspector_correlatestackatpoint_m",
+      "target": "utils_stitch_localcorrelate_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@StitchingInspector\\correlateStackAtPoint.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_stitchinginspector_filltileordermenu_m",
       "target": "utils_stitch_moveintilestack_m",
       "relation": "calls",
@@ -80720,6 +81430,26 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_stitchinginspector_stitchinginspector_m",
+      "target": "utils_stitch_fusesliceregion_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stitchinginspector_stitchinginspector_m",
+      "target": "utils_stitch_plancanvas_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@StitchingInspector\\StitchingInspector.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_stitchinginspector_tileorder_callback_m",
       "target": "utils_stitch_moveintilestack_m",
       "relation": "calls",
@@ -80781,7 +81511,27 @@
     },
     {
       "source": "controllers_updatecheck_updatecheck_m",
+      "target": "utils_themecolors_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@UpdateCheck\\UpdateCheck.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_updatecheck_updatecheck_m",
       "target": "utils_dlgs_inputuniversaldlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@UpdateCheck\\UpdateCheck.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_updatecheck_updatecheck_m",
+      "target": "utils_dlgs_showerrordialog_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -83351,16 +84101,6 @@
     },
     {
       "source": "models_mibmodel_relocateuserstats_m",
-      "target": "utils_saveuserstats_m",
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "+models\\@MibModel\\relocateUserStats.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "models_mibmodel_relocateuserstats_m",
       "target": "utils_identifycomputername_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
@@ -83372,6 +84112,16 @@
     {
       "source": "models_mibmodel_relocateuserstats_m",
       "target": "utils_loaduserstats_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+models\\@MibModel\\relocateUserStats.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_relocateuserstats_m",
+      "target": "utils_saveuserstats_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -84256,116 +85006,6 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "plugins\\IntensityAnalysis\\TripleAreaIntensity\\TripleAreaIntensity.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "plugins_myplugins_mccalc2_mccalc2_m",
-      "target": "utils_updatebatchoptcombinefields_shared_m",
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "plugins_myplugins_mccalc2_mccalc2_m",
-      "target": "utils_dlgs_showerrordialog_m",
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "plugins_myplugins_mccalc2_mccalc2_m",
-      "target": "utils_movewindowoutside_m",
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "plugins_myplugins_mccalc2_mccalc2_m",
-      "target": "utils_fontsizeupdate_m",
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "plugins_myplugins_mccalc2_mccalc2_m",
-      "target": "utils_updateguifrombatchopt_shared_m",
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "plugins_myplugins_mccalc2_mccalc2_m",
-      "target": "utils_attachfilednd_m",
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "plugins_myplugins_mccalc2_mccalc2_m",
-      "target": "utils_updatebatchoptfromgui_shared_m",
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "plugins_myplugins_mccalc2_mccalc2_m",
-      "target": "utils_dlgs_inputuniversaldlg_m",
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "plugins_myplugins_mccalc2_mccalc2_m",
-      "target": "utils_dlgs_mibuigetfile_m",
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "plugins_myplugins_mccalc2_mccalc2_m",
-      "target": "utils_concatenatestructures_m",
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "plugins_myplugins_mccalc2_mccalc2_m",
-      "target": "utils_align_windv_m",
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
       "source_location": null,
       "weight": 1.0
     },

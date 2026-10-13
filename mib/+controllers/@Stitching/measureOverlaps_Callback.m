@@ -50,8 +50,7 @@ if obj.BatchOpt.EstimateOverlap
 end
 
 % Find neighbour pairs from nominal layout
-pairOptions.minOverlapPx = 16;
-nominalPairs = utils.stitch.findNeighborPairs(obj.layout, pairOptions);
+nominalPairs = utils.stitch.findNeighborPairs(obj.layout, obj.neighborPairOptions());
 
 if isempty(nominalPairs)
     if isempty(obj.view)

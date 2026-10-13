@@ -196,6 +196,138 @@ classdef StitchingControllerTest < matlab.unittest.TestCase
                 'optimize must score the seams by re-reading the pixels');
         end
 
+        function registerSlicesStitchesAndRegistersEverySection(testCase)
+            % Serial sections, one folder per tile: the stage lands every
+            % section a few px off, independently per tile. RegisterSlices
+            % splits the folders into one piece per slice, so every slice is
+            % stitched within its section and registered to the next one -
+            % one dataset, stitched AND aligned in Z.
+            numSections = 6;
+            [controller, trueWindows] = testCase.serialSectionController(numSections, 61);
+            testCase.assertNumElements(controller.layout, 4 * numSections, ...
+                'one piece per slice of every tile folder');
+            controller.measureOverlaps_Callback();
+            testCase.verifyEqual(nnz(strcmp({controller.edges.direction}, 'z')), 4 * (numSections - 1), ...
+                'one section-to-section seam per tile per boundary');
+            controller.optimizePositions_Callback();
+
+            % Every piece placed where its slice was imaged, up to one global shift.
+            pieceTruth = zeros(numel(controller.layout), 2);
+            for pieceIdx = 1:numel(controller.layout)
+                piece = controller.layout(pieceIdx);
+                pieceTruth(pieceIdx, :) = trueWindows(piece.stageTile, piece.zLayer, :);
+            end
+            residual = controller.positions(:, 1:2) - pieceTruth;
+            residual = residual - mean(residual, 1);
+            testCase.verifyLessThan(max(abs(residual(:))), 1.0, ...
+                'every slice of every tile must be placed at its own imaged position');
+            testCase.verifyEqual(controller.positions(:, 3) - min(controller.positions(:, 3)) + 1, ...
+                [controller.layout.zLayer]', 'AbsTol', 1e-6, 'one plane per section');
+            testCase.verifyEqual(controller.canvas.size(3), numSections);
+            testCase.verifyFalse(any(isnan([controller.edges.seamScore])), ...
+                'every seam, in-plane and section-to-section, must be scored');
+
+            % The other section alignment: slices held near their stage
+            % positions, with the repeatability estimated from the seams
+            % (true +-2 px uniform jitter: sigma 1.41 px).
+            controller.BatchOpt.SectionAlignment{1} = 'Trust stage positions';
+            controller.optimizePositions_Callback();
+            residual = controller.positions(:, 1:2) - pieceTruth;
+            residual = residual - mean(residual, 1);
+            testCase.verifyLessThan(max(abs(residual(:))), 1.0, ...
+                'Trust stage positions must place every slice too');
+            testCase.verifyEqual(controller.solverInfo.stagePriorSigma, sqrt(2), 'RelTol', 0.5);
+        end
+
+        function unrelatedSlicesAreStitchedOneByOne(testCase)
+            % Register slices OFF: the slices have nothing to do with each
+            % other. Every slice is stitched within its own section, no
+            % section-to-section seam is measured, and each section is placed
+            % on its own - one group per section, which the chip must not
+            % mistake for unmeasured tiles.
+            numSections = 4;
+            [controller, trueWindows] = testCase.serialSectionController(numSections, 65, false);
+            testCase.verifyEqual(controller.sectionMode(), 'unrelated');
+            testCase.assertNumElements(controller.layout, 4 * numSections, 'one piece per slice');
+            controller.measureOverlaps_Callback();
+            testCase.verifyFalse(any(strcmp({controller.edges.direction}, 'z')), ...
+                'unrelated slices get no section-to-section seams');
+            testCase.verifyNumElements(controller.edges, 4 * numSections, ...
+                'the 4 in-plane seams of a 2x2 grid, in every section');
+            controller.optimizePositions_Callback();
+            testCase.verifyEqual(controller.solverInfo.nComponents, numSections, ...
+                'every section is its own group');
+            testCase.verifyEqual(controller.canvas.size(3), numSections);
+
+            % Within each section the tiles sit exactly where they were imaged
+            % (relative to each other); between sections nothing is claimed.
+            for section = 1:numSections
+                pieces = find([controller.layout.zLayer] == section);
+                truth = squeeze(trueWindows([controller.layout(pieces).stageTile], section, :));
+                residual = controller.positions(pieces, 1:2) - truth;
+                residual = residual - mean(residual, 1);
+                testCase.verifyLessThan(max(abs(residual(:))), 0.5, ...
+                    sprintf('section %d must be stitched on its own', section));
+            end
+
+            chip = mibtest.helpers.FakeWidget();
+            controller.view = struct('handles', struct('rmseLabel', chip), 'gui', []);
+            controller.refreshQualityChip();
+            testCase.verifyFalse(contains(chip.Text, 'incomplete'), ...
+                'one group per section is the design, not unmeasured tiles');
+            testCase.verifyFalse(contains(chip.Text, ', Z '), 'no Z to rate');
+        end
+
+        function prealignedFoldersStayOneBlockEach(testCase)
+            % Register slices on + Prealigned (the default): each folder is an
+            % already-aligned Z-stack, stitched as ONE block - how every 3D
+            % stitch ran before the section modes existed.
+            controller = testCase.newController();
+            testCase.verifyTrue(controller.BatchOpt.RegisterSlices);
+            testCase.verifyEqual(controller.BatchOpt.SectionAlignment{1}, 'Prealigned');
+            controller = testCase.serialSectionController(3, 66, true, 'Prealigned');
+            testCase.verifyEqual(controller.sectionMode(), 'prealigned');
+            testCase.verifyNumElements(controller.layout, 4, 'one block per folder');
+            testCase.verifyEqual(controller.layout(1).tileSize(3), 3);
+            testCase.verifyFalse(isfield(controller.layout, 'stageTile'), 'not split');
+        end
+
+        function sectionDriftCheckReachesTheChip(testCase)
+            % The drift vs backlash check rides on the solve and is reported
+            % where the user decides SectionAlignment: the chip quotes the
+            % stitch and the Z seams apart, and its tooltip explains the check
+            % and names the choice it supports.
+            numSections = 5;
+            controller = testCase.serialSectionController(numSections, 62);
+            controller.measureOverlaps_Callback();
+            controller.optimizePositions_Callback();
+
+            check = controller.solverInfo.sectionDrift;
+            testCase.verifyEqual(check.numBoundaries, numSections - 1);
+            testCase.verifyEqual(check.stageSigma, sqrt(2), 'RelTol', 0.5, ...
+                'the +-2 px uniform backlash has sigma 1.41 px');
+            testCase.verifyTrue(check.withinStageJitter, ...
+                'backlash alone must not be reported as drift');
+
+            chip = mibtest.helpers.FakeWidget();
+            controller.view = struct('handles', struct('rmseLabel', chip), 'gui', []);
+            controller.refreshQualityChip();
+            testCase.verifySubstring(chip.Text, 'Seam match: stitch');
+            testCase.verifySubstring(chip.Text, ', Z ');
+            testCase.verifySubstring(chip.Tooltip, 'whole sections move');
+            testCase.verifySubstring(chip.Tooltip, 'Trust stage positions fits');
+            testCase.verifySubstring(chip.Tooltip, 'Now: Follow image content');
+
+            % Adjacent sections are different images: their low match must not
+            % turn the chip red when every in-plane seam is fine.
+            isZ = strcmp({controller.edges.direction}, 'z');
+            [controller.edges(isZ).seamScore] = deal(0.2);
+            controller.refreshQualityChip();
+            testCase.verifyFalse(contains(chip.Text, 'Seams disagree'), ...
+                'the verdict follows the in-plane (stitch) seams');
+            testCase.verifySubstring(chip.Text, 'Z 0.20');
+        end
+
         function optimizeWithoutMeasurementsRaisesPrecondition(testCase)
             % With a window this is a message box and a return; headless there
             % is nobody to read it, so the same condition is an error rather
@@ -1218,6 +1350,29 @@ classdef StitchingControllerTest < matlab.unittest.TestCase
             % Give the controller just the one widget the chip writes to.
             rmseLabel = mibtest.helpers.FakeWidget();
             controller.view = struct('handles', struct('rmseLabel', rmseLabel), 'gui', []);
+        end
+
+        function [controller, trueWindows] = serialSectionController(testCase, numSections, seed, registerSlices, sectionAlignment)
+            % Headless controller on a 2x2 serial-section montage, one folder
+            % per tile (mibtest.helpers.writeSerialSectionFolders), layout
+            % built. Defaults: slices registered by image content (sectionMode
+            % 'aligned').
+            if nargin < 4; registerSlices = true; end
+            if nargin < 5; sectionAlignment = 'Follow image content'; end
+            [tileFolders, trueWindows, parentFolder] = mibtest.helpers.writeSerialSectionFolders(numSections, seed);
+            testCase.addTeardown(@() rmdir(parentFolder, 's'));
+            controller = testCase.newController();
+            controller.BatchOpt.LayoutSource{1} = 'Grid';
+            controller.BatchOpt.InputPath       = strjoin(tileFolders, newline);
+            controller.BatchOpt.SubfolderMode   = true;
+            controller.BatchOpt.RegisterSlices  = registerSlices;
+            controller.BatchOpt.SectionAlignment{1} = sectionAlignment;
+            controller.BatchOpt.GridRows{1}     = 2;
+            controller.BatchOpt.GridCols{1}     = 2;
+            controller.BatchOpt.OverlapX{1}     = 25;
+            controller.BatchOpt.OverlapY{1}     = 25;
+            controller.BatchOpt.EstimateOverlap = false;
+            controller.buildLayoutFromBatchOpt();
         end
 
         function tileDir = chopChain(testCase, seed)

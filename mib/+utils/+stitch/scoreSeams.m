@@ -22,8 +22,13 @@ function [edges, ranking, cancelled] = scoreSeams(layout, edges, positions, opti
 % **3D (z-stack tiles):** the strips are aligned in depth by the solved ``dz``
 % and scored as the MEAN of per-slice 2D NCCs over the overlapping slab (the
 % same metric ``measureAllPairs`` uses to choose ``dz`` - a volumetric NCC
-% would inherit the thick-slab bias and stay high at wrong offsets). No slab
-% overlap at the solved ``dz`` scores ``NaN``. Cross-layer (``direction ==
+% would inherit the thick-slab bias and stay high at wrong offsets). A
+% cross-layer edge whose tiles TOUCH at the solved ``dz`` (the upper tile starts
+% on the slice right after the lower one ends - always the case for a series of
+% single-slice sections) is scored on the two facing slices instead, the same
+% fallback ``measureAllPairs`` measures it with; adjacent sections differ, so
+% such a score runs lower than a true overlap of the same quality. Any other
+% lack of slab overlap at the solved ``dz`` scores ``NaN``. Cross-layer (``direction ==
 % 'z'``) edges are additionally re-scored at ``dz ± dzScanRadius``: when a
 % neighbouring offset beats the solved one by ``dzHintMargin`` the difference
 % is stored in ``edges(k).dzHint`` (e.g. ``+2`` = the pixels prefer ``dz + 2``);
@@ -180,10 +185,13 @@ if longestSide > options.maxStripPx
 end
 
 seamScore = slabScore(stripA, stripB, solvedDz, options.maxScoreSlices);
+isZEdge = isfield(edge, 'direction') && strcmp(edge.direction, 'z');
+if isnan(seamScore) && isZEdge
+    seamScore = facingSliceScore(stripA, stripB, solvedDz);
+end
 
 % Cross-layer edges: scan dz ± radius so a Z misalignment becomes an
 % actionable hint ("the pixels prefer dz+2"), not just a low score.
-isZEdge = isfield(edge, 'direction') && strcmp(edge.direction, 'z');
 if isZEdge && options.dzScanRadius > 0 && max(size(stripA, 3), size(stripB, 3)) > 1
     bestScore = seamScore;
     if isnan(bestScore); bestScore = -Inf; end
@@ -228,6 +236,25 @@ for idx = 1:numel(aSlices)
         stripB(:, :, aSlices(idx) - dz));
 end
 score = mean(sliceScores);
+end
+
+% =====================================================================
+function score = facingSliceScore(stripA, stripB, dz)
+% FACINGSLICESCORE - NCC of the two slices that face each other across a Z
+% boundary, for tiles that touch at offset dz without sharing a slice. Same
+% depth convention as slabScore: tile-i slice ``a`` is tile-j slice ``a - dz``,
+% so dz = depthA puts tile j's first slice right above tile i's last, and
+% dz = -depthB puts tile j's last slice right below tile i's first. NaN for
+% any other dz - the tiles are then genuinely apart in Z.
+depthA = size(stripA, 3);
+depthB = size(stripB, 3);
+if dz == depthA
+    score = zeroMeanNcc(stripA(:, :, depthA), stripB(:, :, 1));
+elseif dz == -depthB
+    score = zeroMeanNcc(stripA(:, :, 1), stripB(:, :, depthB));
+else
+    score = NaN;
+end
 end
 
 % =====================================================================

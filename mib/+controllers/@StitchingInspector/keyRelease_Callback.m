@@ -15,6 +15,9 @@ function keyRelease_Callback(obj, evnt)
 if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.StitchingInspector.keyRelease_Callback: triggered\n');
 end
+if strcmp(evnt.Key, 'control')
+    obj.ctrlDown = false;
+end
 if strcmp(evnt.Key, 'shift')
     obj.shiftDown = false;
     if ~isempty(obj.view) && isvalid(obj.view.gui)

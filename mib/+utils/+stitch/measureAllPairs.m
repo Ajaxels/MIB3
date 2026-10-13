@@ -18,6 +18,14 @@ function [edges, cancelled] = measureAllPairs(layout, pairs, options)
 %
 %      edge.measured = edge.nominal + shiftYXZ
 %
+% Cross-layer (``'z'``) pairs measure ``dz`` as well: ``dy, dx`` on the depth
+% mean-projections, then ``dz`` by scanning slice offsets within
+% ``options.zSearchRadius`` of nominal. When BOTH tiles are a single slice (a
+% series of 2D sections, one per layer) no scan is run and ``dz`` stays at
+% nominal: the only offset at which two single slices share a slice is
+% ``dz = 0``, so the scan would always pick it and stack every section onto
+% one plane. ``dy, dx`` are then measured between the two images directly.
+%
 % Multi-channel tiles are registered on a single channel (``options.colorChannel``)
 % or their max-projection (``options.colorChannel = 'max'``).
 %
@@ -51,6 +59,15 @@ function [edges, cancelled] = measureAllPairs(layout, pairs, options)
 %       ``(i, j)`` pair matches a preserved user edge is replaced by it.
 %       Without this, one re-measure silently discards a QC session. Preserved
 %       user edges whose pair no longer exists in ``pairs`` are dropped.
+%     - ``.guidedRemeasure`` - [logical] section layouts only (pieces with
+%       ``.stageTile``): re-measure every REJECTED in-plane seam in a narrow
+%       window centred on the median offset the same two folders measured in
+%       the other sections (default: ``true``). Their offset differs between
+%       sections only by stage jitter, so the narrow search avoids the wrong
+%       peaks of e.g. a straight structure running along the seam. Replaces
+%       the original only when the re-measurement passes ``qualityThreshold``.
+%     - ``.guidedExpandPx`` - [double] ``expandPx`` of that second pass
+%       (default: ``10``, i.e. a +-18 px search around the sibling median)
 %     - ``.featureOptions`` - [struct] detector settings forwarded to
 %       :func:`utils.stitch.featureShift` when ``registrationMethod`` is
 %       ``'Feature-based'`` (detector type, per-detector params, downsampling,
@@ -111,6 +128,8 @@ if ~isfield(options, 'transformType') || isempty(options.transformType)
 end
 if ~isfield(options, 'allowRotation'); options.allowRotation = true; end
 if ~isfield(options, 'preserveEdges'); options.preserveEdges = []; end
+if ~isfield(options, 'guidedRemeasure'); options.guidedRemeasure = true; end
+if ~isfield(options, 'guidedExpandPx');  options.guidedExpandPx = 10; end
 
 nPairs = numel(pairs);
 edges = repmat(struct('i', [], 'j', [], 'direction', '', 'nominal', [0 0 0], ...
@@ -198,7 +217,62 @@ end
 
 if cancelled; return; end
 
+if options.guidedRemeasure && isSectionLayout(layout)
+    [edges, cancelled] = remeasureFromSiblingSections(layout, edges, options);
+    if cancelled; return; end
+end
+
 edges = mergePreservedUserEdges(edges, options.preserveEdges);
+end
+
+% =====================================================================
+function [edges, cancelled] = remeasureFromSiblingSections(layout, edges, options)
+% REMEASUREFROMSIBLINGSECTIONS - Second pass over the in-plane seams of a
+% section layout that the first pass rejected. The same two folders meet in
+% every section, and their offset changes between sections only by stage
+% jitter - so the median of the seams that DID pass is a far better centre
+% than the nominal grid, and a narrow window (options.guidedExpandPx) around
+% it removes the ambiguity that sank the first measurement: a straight
+% structure running along the seam correlates along its own length, which
+% the wide search reads as a second peak (smoke test 19: 21 such seams,
+% quality 0.00-0.20, some 44 px off; re-measured all within 0.02 px at
+% quality 1.00). A re-measurement replaces the original only when it passes
+% the quality threshold; a folder pair with no passing seam is left alone.
+cancelled = false;
+stageTiles = [layout.stageTile];
+isInPlane = ~strcmp({edges.direction}, 'z');
+isValid = [edges.valid];
+pairKey = stageTiles([edges.i]) * (max(stageTiles) + 1) + stageTiles([edges.j]);
+guidedPairs = struct('i', {}, 'j', {}, 'direction', {}, 'nominal', {});
+targets = [];
+for k = find(isInPlane & ~isValid)
+    siblings = isInPlane & isValid & pairKey == pairKey(k);
+    if ~any(siblings); continue; end
+    siblingShifts = reshape([edges(siblings).measured], 3, []);   % one column per sibling seam
+    guidedPairs(end + 1) = struct('i', edges(k).i, 'j', edges(k).j, ...
+        'direction', edges(k).direction, 'nominal', median(siblingShifts, 2)'); %#ok<AGROW>
+    targets(end + 1) = k; %#ok<AGROW>
+end
+if isempty(targets); return; end
+
+guidedOptions = options;
+guidedOptions.guidedRemeasure = false;
+guidedOptions.preserveEdges = [];
+guidedOptions.expandPx = options.guidedExpandPx;
+[remeasured, cancelled] = utils.stitch.measureAllPairs(layout, guidedPairs, guidedOptions);
+if cancelled; return; end
+for n = 1:numel(targets)
+    if ~remeasured(n).valid; continue; end
+    nominal = edges(targets(n)).nominal;   % keep the grid nominal: the solver's springs use it
+    edges(targets(n)) = remeasured(n);
+    edges(targets(n)).nominal = nominal;
+end
+end
+
+% =====================================================================
+function tf = isSectionLayout(layout)
+% ISSECTIONLAYOUT - Every piece carries .stageTile (utils.stitch.splitLayoutIntoSections).
+tf = isfield(layout, 'stageTile') && ~any(arrayfun(@(piece) isempty(piece.stageTile), layout));
 end
 
 % =====================================================================
@@ -333,6 +407,13 @@ function [shiftYXZ, quality, measuredDz] = measureZShift(cropA, cropB, nominalDz
 %
 % When no candidate yields any Z-overlap (serial stacks that merely abut), falls
 % back to the facing-slice correlation for [dy dx] and keeps dz at nominal.
+% Two SINGLE-slice tiles are handled the same way, before any scan (their one
+% slice IS the facing slice and the projection): for them dz = 0 is the only
+% candidate with any overlap, so the scan would always return 0 - collapsing
+% a series of 2D sections onto one plane - however far apart the sections are.
+% Stacks of different depths, or one single slice against a stack, still scan:
+% there the offset that matches a slice to its place inside the stack is real
+% information.
 %
 % dz convention matches the solver: dz = P_j(3) - P_i(3) in slices; A-local
 % slice ``a`` corresponds to B-local slice ``a - dz``. XY convention matches
@@ -340,6 +421,13 @@ function [shiftYXZ, quality, measuredDz] = measureZShift(cropA, cropB, nominalDz
 if nargin < 6 || isempty(shiftFcn); shiftFcn = @(a, b, o) utils.stitch.pairwiseShift(a, b, o); end
 Da = size(cropA, 3);
 Db = size(cropB, 3);
+
+if Da == 1 && Db == 1
+    % Two sections: no scan (see above) - measure XY between the two images.
+    [shiftYXZ, quality] = shiftFcn(single(cropA), single(cropB), shiftOptions);
+    measuredDz = nominalDz;
+    return;
+end
 
 projA = mean(single(cropA), 3);
 projB = mean(single(cropB), 3);
