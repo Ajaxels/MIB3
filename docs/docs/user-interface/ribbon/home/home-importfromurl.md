@@ -500,7 +500,7 @@ Five parameters have no control in the dialog and exist only for protocols:
 | `LabelGroups` | Semicolon-separated label groups to blend, relative to `Url`, **in pick order**. Empty means "just `GroupPath`". |
 | `ImageGroupPath` | Overrides the image group a crop is loaded onto. Empty means "find it by coordinates". |
 | `MergeInstanceObjects` | Takes an instance segmentation as one merged material instead of one per object. Off by default, so a protocol keeps the objects - the dialog asks instead. |
-| `ZarrLevel` | [Load as = Labels] 1-based image pyramid level to read the region at. Must be a level that has a matching label level; empty means the dialog asks. |
+| `ZarrLevel` | With `LoadAs` = Labels only: 1-based image pyramid level to read the region at. Must be a level that has a matching label level; empty means the dialog asks. |
 
 ```
 Url            = https://janelia-cosem-datasets.s3.amazonaws.com/jrc_hela-2/jrc_hela-2.zarr

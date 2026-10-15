@@ -672,7 +672,50 @@ classdef ImageConverter < handle
                 'units', firstFile.pixSize.units);
         end
 
-        function fnOut = convertToZarr3Native(imgDS, BatchOpt, options)
+        function proceed = confirmZarrMemory(parentFig, requiredBytes, details)
+            % CONFIRMZARRMEMORY - Check the estimated peak memory of a Zarr conversion before it starts.
+            %
+            % Both Zarr pipelines hold a slab of full-resolution slices (chunk or
+            % shard Z deep) in memory, so the requirement grows with the slice size
+            % and nothing else bounds it. A conversion that does not fit swaps for
+            % days or fails part way, which is how a week-long run ended truncated
+            % (development/bigdata/plan_imageconverter_zarr.md).
+            %
+            % When ``requiredBytes`` exceeds the memory available to MATLAB, the user
+            % is asked to continue or cancel; without a window (batch mode) a warning
+            % is printed and the conversion goes ahead, because the estimate is
+            % approximate and swapping is slow, not wrong. Platforms without
+            % ``memory`` (Linux, macOS) are not checked.
+            %
+            % Input Arguments:
+            %   - **parentFig** - figure for the question, ``[]`` in batch mode
+            %   - **requiredBytes** - [double] estimated peak memory, bytes
+            %   - **details** - [char] what the estimate is made of, shown to the user
+            %
+            % Output Arguments:
+            %   - **proceed** - [logical] ``false`` when the user cancelled
+            proceed = true;
+            try
+                memoryInfo = memory;
+                availableBytes = memoryInfo.MemAvailableAllArrays;
+            catch
+                return;   % memory() exists on Windows only
+            end
+            if requiredBytes <= availableBytes; return; end
+
+            messageText = sprintf(['The conversion needs about %.1f GB of memory, but only %.1f GB is available ' ...
+                '(%s).\n\nIt will be very slow and may fail. Reduce the Z chunk size (and the Z shard factor), ' ...
+                'or the number of parallel workers, to need less.'], requiredBytes/1e9, availableBytes/1e9, details);
+            if isempty(parentFig)
+                warning('ImageConverter:notEnoughMemory', '%s', messageText);
+                return;
+            end
+            choice = uiconfirm(parentFig, messageText, 'Not enough memory', ...
+                'Options', {'Continue anyway', 'Cancel'}, 'DefaultOption', 2, 'CancelOption', 2, 'Icon', 'warning');
+            proceed = strcmp(choice, 'Continue anyway');
+        end
+
+        function [fnOut, writeStarted] = convertToZarr3Native(imgDS, BatchOpt, options)
             % CONVERTTOZARR3NATIVE - Convert a folder of image files to a native OME-Zarr pyramid.
             %
             % Streams the image stack in ``imgDS`` (one file per Z-slice) to an OME-Zarr
@@ -686,22 +729,60 @@ classdef ImageConverter < handle
             % ``.zarr2``/``.zarr3`` extension to infer it from. Sharding is a v3 feature and
             % is refused when v2 is selected, rather than silently dropped.
             %
+            % The store is written by ``Zarr3Saver.saveStreamResumable`` in
+            % chunk-aligned Z-slab tasks: level 0 (plus the levels that keep the full
+            % Z) slab by slab, then the Z-downsampled levels from the level above.
+            % With a pool every worker reads and writes its own slabs, so no slice
+            % is sent between processes; without one the tasks run on the client.
+            % Every finished task is recorded in the store, so an interrupted
+            % conversion can be resumed (``options.resume``) with the same source
+            % and settings. The source is identified by the number, the first and
+            % last name, the total size and the latest modification time of its
+            % files.
+            %
+            % Memory: a task holds ``2.5 x writeDepth + 2`` rows per row it covers
+            % (the slab of every full-Z level and the zarrMex copy), per process,
+            % ``writeDepth`` being the chunk Z or, when sharded, the shard Z. When
+            % whole slices need more than 80% of the free memory (``memory``,
+            % Windows only) and the source can be read in rows (TIFF,
+            % ``ImageDatastoreSliceProvider.SupportsRowReads``), the conversion runs
+            % in bands of whole chunk (shard) rows of level 0 that fit
+            % (``BandHeight``, see ``Zarr3Saver.saveStreamResumable``) - at least one
+            % chunk row. The estimate for the chosen slab or band is then checked
+            % with ``ImageConverter.confirmZarrMemory``, which still warns when one
+            % chunk row is too much, or when the source cannot be read in rows.
+            %
+            % For labels the material names ``Material 1..N`` come from the largest
+            % label value, found while streaming (``MaterialNamesFromData``) rather
+            % than in a separate pass over every file.
+            %
             % Input Arguments:
             %   - **imgDS** - a ``matlab.io.datastore.ImageDatastore`` of ordered Z-slices.
             %   - **BatchOpt** - the ImageConverter batch struct; reads the ``Zarr*`` fields
             %     (``ZarrVersion``, ``ZarrImageType``, ``ZarrChunkSizes``, ``ZarrUseSharding``,
-            %     ``ZarrShardXFactorsXYZ``, ``ZarrCompression``, ``ZarrVoxelSizeXYZ``,
-            %     ``ZarrUnits``, ``ZarrBBShiftsXYZ``, ``ZarrDownsampleLimitXYZ``) and
-            %     ``OutputDirectory``. ``ZarrVersion`` may be absent, meaning v3.
-            %   - **options** - *(optional)* struct with ``.ParentFigure`` (progress parent)
-            %     and ``.mibPath``.
+            %     ``ZarrShardXFactorsXYZ``, ``ZarrCompression``, ``ZarrCompressionLevel``,
+            %     ``ZarrVoxelSizeXYZ``, ``ZarrUnits``, ``ZarrBBShiftsXYZ``,
+            %     ``ZarrDownsampleLimitXYZ``) and ``OutputDirectory``. ``ZarrVersion`` may
+            %     be absent, meaning v3; ``ZarrCompressionLevel`` may be absent, meaning
+            %     the codec default.
+            %   - **options** - *(optional)* struct with ``.ParentFigure`` (progress and
+            %     dialog parent), ``.mibPath``, ``.pool`` (process-based
+            %     ``parallel.Pool`` whose workers write the store, ``[]`` = write on
+            %     the client) and ``.resume`` (logical, continue the interrupted
+            %     conversion in ``OutputDirectory``; raises
+            %     ``io:Zarr3Saver:cannotResume`` when it cannot be continued).
             %
             % Output Arguments:
-            %   - **fnOut** - [char] the written group path, or ``[]`` if cancelled.
+            %   - **fnOut** - [char] the written group path, or ``[]`` if not completed.
+            %   - **writeStarted** - [logical] ``false`` when nothing was written (the
+            %     memory check was declined), ``true`` once the store was created - an
+            %     empty ``fnOut`` then means it was cancelled and is left incomplete.
             if nargin < 3; options = struct(); end
-            parentFig = []; mibPath = '';
+            parentFig = []; mibPath = ''; pool = [];
+            writeStarted = false;
             if isfield(options, 'ParentFigure'); parentFig = options.ParentFigure; end
             if isfield(options, 'mibPath');      mibPath   = options.mibPath;      end
+            if isfield(options, 'pool');         pool      = options.pool;         end
 
             zarrPath = BatchOpt.OutputDirectory;
             dataType = BatchOpt.ZarrImageType{1};   % 'image' | 'labels'
@@ -734,30 +815,25 @@ classdef ImageConverter < handle
                 case 'gzip';  compressors = 'gzip';
                 otherwise;    compressors = 'none';
             end
+            if ~strcmp(compressors, 'none') && isfield(BatchOpt, 'ZarrCompressionLevel') && ...
+                    ~isempty(BatchOpt.ZarrCompressionLevel)
+                compressors = struct('name', compressors, 'configuration', ...
+                    struct('level', BatchOpt.ZarrCompressionLevel{1}));
+            end
+
+            % --- slices per write: the chunk Z, or the shard Z when sharded ---
+            shardYXZ = [];
+            if BatchOpt.ZarrUseSharding
+                shard = str2num(BatchOpt.ZarrShardXFactorsXYZ); %#ok<ST2NM>
+                if numel(shard) >= 3; shardYXZ = [shard(2) shard(1) shard(3)]; end
+            end
+            writeDepth = min(chunkYXZ(3), numel(imgDS.Files));
+            if ~isempty(shardYXZ); writeDepth = min(writeDepth * max(1, round(shardYXZ(3))), numel(imgDS.Files)); end
 
             % --- provider over the file stack (one file per Z-slice) ---
             provider = io.savers.ImageDatastoreSliceProvider(imgDS);
             sz = provider.OutputSize;   % [H W D C T]
             H = sz(1); W = sz(2); D = sz(3);
-
-            % --- labels: derive material names from the values actually present ---
-            % ImageConverter has no external material-name source (a folder of raw
-            % label slices, no accompanying .model) - MIB's Materials table only
-            % ever shows dataset.labels.materialNames, so leaving it empty means
-            % the panel shows no materials at all even though the data has labels.
-            % Generate "Material 1".."Material N" from the highest label value
-            % found, matching the numbering convention used elsewhere (e.g.
-            % io.savers.StlSaver).
-            materialNames = {};
-            if strcmp(dataType, 'labels')
-                maxLabel = 0;
-                for i = 1:numel(imgDS.Files)
-                    maxLabel = max(maxLabel, double(max(imgDS.readimage(i), [], 'all')));
-                end
-                if maxLabel > 0
-                    materialNames = arrayfun(@(k) sprintf('Material %d', k), 1:maxLabel, 'UniformOutput', false)';
-                end
-            end
 
             % --- Zarr3Saver options (silent: ImageConverter already collected settings) ---
             saverOpts = struct();
@@ -773,15 +849,13 @@ classdef ImageConverter < handle
             if strcmp(dataType, 'labels')
                 saverOpts.DownsampleMethod = 'nearest';
                 saverOpts.layerType        = 'labels';
+                % a folder of raw label slices has no material names; without them
+                % the Materials panel would show none - name them Material 1..N
+                saverOpts.MaterialNamesFromData = true;
             else
                 saverOpts.DownsampleMethod = 'bilinear';
             end
-            if BatchOpt.ZarrUseSharding
-                shard = str2num(BatchOpt.ZarrShardXFactorsXYZ); %#ok<ST2NM>
-                if numel(shard) >= 3
-                    saverOpts.ShardSize = [shard(2) shard(1) shard(3)];
-                end
-            end
+            if ~isempty(shardYXZ); saverOpts.ShardSize = shardYXZ; end
 
             % The output folder carries no .zarr2/.zarr3 extension, so the format
             % has to be stated rather than inferred from the path. Absent field
@@ -799,12 +873,60 @@ classdef ImageConverter < handle
             boundingBox = [bbShift(1), bbShift(1) + (W-1)*voxel(1), ...
                            bbShift(2), bbShift(2) + (H-1)*voxel(2), ...
                            bbShift(3), bbShift(3) + (D-1)*voxel(3)];
+            % --- whole slices, or bands of rows when they do not fit; see the help above ---
+            sampleValue = cast(0, provider.DataClass);
+            if islogical(sampleValue); bytesPerValue = 1; else; bytesPerValue = numel(typecast(sampleValue, 'uint8')); end
+            rowBytes = W * sz(4) * bytesPerValue;
+            numberOfProcesses = 1;
+            if ~isempty(pool); numberOfProcesses = pool.NumWorkers; end
+            bytesPerRow = rowBytes * (2.5 * writeDepth + 2) * numberOfProcesses;   % per row of a slab or band
+            rowsPerTask = H;
+            try
+                memoryInfo = memory;
+                availableBytes = memoryInfo.MemAvailableAllArrays;
+            catch
+                availableBytes = Inf;   % memory() exists on Windows only
+            end
+            if H * bytesPerRow > 0.8 * availableBytes && provider.SupportsRowReads
+                % bands of whole chunk (shard) rows of level 0 that fit in 80% of the free memory
+                rowAlign = chunkYXZ(1);
+                if ~isempty(shardYXZ); rowAlign = rowAlign * max(1, round(shardYXZ(1))); end
+                rowsPerTask = max(rowAlign, floor(0.8 * availableBytes / bytesPerRow / rowAlign) * rowAlign);
+                if rowsPerTask < H; saverOpts.BandHeight = rowsPerTask; end
+            end
+            requiredBytes = rowsPerTask * bytesPerRow;
+            memoryDetails = sprintf('slice %d x %d x %d (%s), %d slices per write, %d process(es)', ...
+                H, W, sz(4), provider.DataClass, writeDepth, numberOfProcesses);
+            if rowsPerTask < H
+                memoryDetails = sprintf('%s, bands of %d rows', memoryDetails, rowsPerTask);
+            end
+            if ~ImageConverter.confirmZarrMemory(parentFig, requiredBytes, memoryDetails)
+                fnOut = [];
+                return;
+            end
+
+            % the source as a resume has to find it again: a changed, added or
+            % removed file refuses the resume
+            sourceFiles = imgDS.Files;
+            totalBytes = 0;
+            latestModification = 0;
+            for fileIndex = 1:numel(sourceFiles)
+                fileInfo = dir(sourceFiles{fileIndex});
+                if isempty(fileInfo)
+                    error('ImageConverter:missingSourceFile', 'The source file is missing:\n%s', sourceFiles{fileIndex});
+                end
+                totalBytes = totalBytes + fileInfo.bytes;
+                latestModification = max(latestModification, fileInfo.datenum);
+            end
+            saverOpts.SourceFingerprint = struct('numberOfFiles', numel(sourceFiles), ...
+                'firstFile', sourceFiles{1}, 'lastFile', sourceFiles{end}, ...
+                'totalBytes', totalBytes, 'latestModification', latestModification);
+            saverOpts.Resume = isfield(options, 'resume') && options.resume;
+
+            writeStarted = true;
             saver = io.savers.Zarr3Saver(struct('ParentFigure', parentFig, 'mibPath', mibPath));
             metadata = struct('pixSize', pixSize, 'boundingBox', boundingBox);
-            if ~isempty(materialNames)
-                metadata.materialNames = materialNames;
-            end
-            fnOut = saver.saveStream(provider, metadata, zarrPath, saverOpts);
+            fnOut = saver.saveStreamResumable(provider, metadata, zarrPath, saverOpts, pool);
         end
 
     end
@@ -850,9 +972,12 @@ classdef ImageConverter < handle
             obj.BatchOpt.ZarrVersion{2} = {'Zarr v2', 'Zarr v3'};
             obj.BatchOpt.ZarrImageType = {'image'};
             obj.BatchOpt.ZarrImageType{2} = {'image', 'labels'};
-            obj.BatchOpt.ZarrChunkSizes = '128, 128, 64, 1, 1';
+            % chunk Z 16: memory of the conversion grows with chunk Z x full slice,
+            % and 256x256x16 uint8 = 1 MiB chunks; shard Z factor 1 keeps every
+            % write shard-aligned (development/bigdata/plan_imageconverter_zarr.md)
+            obj.BatchOpt.ZarrChunkSizes = '256, 256, 16, 1, 1';
             obj.BatchOpt.ZarrUseSharding = false;
-            obj.BatchOpt.ZarrShardXFactorsXYZ = '4, 4, 4, 1, 1';
+            obj.BatchOpt.ZarrShardXFactorsXYZ = '4, 4, 1, 1, 1';
             obj.BatchOpt.ZarrDownsampleLimitXYZ = '512, 512, 256';
             obj.BatchOpt.ZarrCompression = {'blosc'};
             obj.BatchOpt.ZarrCompression{2} = {'blosc','gzip','none'};
@@ -984,6 +1109,10 @@ classdef ImageConverter < handle
         
         function closeWindow(obj)
             % closing ImageConverter window
+
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('ImageConverter.closeWindow: triggered\n');
+            end
             % store the current settings
             obj.mibModel.sessionSettings.ImageConverter = obj.BatchOpt;
             % closing
@@ -1023,13 +1152,20 @@ classdef ImageConverter < handle
             %
             % Parameters:
             % event: event from the callback
-            
+
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('ImageConverter.updateBatchOptFromGUI(%s): triggered\n', event.Source.Tag);
+            end
             obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, event.Source);
         end
 
         function updateOutputFormat(obj, event)
             % function updateOutputFormat(obj, event)
             % callback for change of the output format dropdown
+
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('ImageConverter.updateOutputFormat: triggered\n');
+            end
             if nargin > 1
                 obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, event.Source);
             end
@@ -1050,6 +1186,10 @@ classdef ImageConverter < handle
             % INPUTSOURCECHANGED - Callback for the input directory, extension and
             % subfolder widgets: store the value, then refill the Zarr voxel size,
             % bounding box shift and units from the new source.
+
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('ImageConverter.inputSourceChanged(%s): triggered\n', event.Source.Tag);
+            end
             obj.updateBatchOptFromGUI(event);
             obj.prefillZarrGeometry();
         end
@@ -1117,7 +1257,11 @@ classdef ImageConverter < handle
         
         function selectDirectory(obj, event)
             % function selectDirectory(obj, event)
-            % select input/output directory 
+            % select input/output directory
+
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('ImageConverter.selectDirectory(%s): triggered\n', event.Source.Tag);
+            end
             switch event.Source.Tag
                 case 'SelectInputDirectory'
                     selpath = uigetdir(obj.BatchOpt.InputDirectory, 'Select input directory');
@@ -1152,7 +1296,10 @@ classdef ImageConverter < handle
             % function BioFormatsReader_ValueChanged(obj, event)
             % callback for press of BioFormats reader checkbox
             % toggles between standard and BioFormats readers
-            
+
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('ImageConverter.BioFormatsReader_ValueChanged: triggered\n');
+            end
             obj.updateBatchOptFromGUI(event);
             if obj.view.handles.BioFormatsReader.Value     % use BioFormats reader
                 obj.view.handles.InputImageFormatExtension.Enable = 'off';
@@ -1168,6 +1315,10 @@ classdef ImageConverter < handle
         function parallelProcessingCallback(obj, event)
             % function parallelProcessingCallback(obj, event)
             % callback on press of the parallel processing checkbox
+
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('ImageConverter.parallelProcessingCallback: triggered\n');
+            end
             obj.BatchOpt.ParallelProcessing = obj.view.handles.ParallelProcessing.Value;
             if obj.BatchOpt.ParallelProcessing % enable parallel processing
                 obj.view.handles.ParallelWorkersNumber.Enable = 'on';
@@ -1179,7 +1330,10 @@ classdef ImageConverter < handle
         function zarrVersionValueChanged(obj, event)
             % function zarrVersionValueChanged(obj, event)
             % callback on change of the zarr version
-            
+
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('ImageConverter.zarrVersionValueChanged: triggered\n');
+            end
             if strcmp(obj.view.handles.ZarrVersion.Value, 'Zarr v2')
                 obj.view.handles.ZarrUseSharding.Value = false;
             else
@@ -1196,6 +1350,9 @@ classdef ImageConverter < handle
             
             if nargin < 2; event = []; end
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('ImageConverter.useShardingCallback: triggered\n');
+            end
             if obj.view.handles.ZarrUseSharding.Value
                 if ~strcmp(obj.view.handles.ZarrVersion.Value, 'Zarr v3')
                     obj.view.handles.ZarrUseSharding.Value = false;
@@ -1217,6 +1374,9 @@ classdef ImageConverter < handle
         % % Additional functions and callbacks
         function helpButton_Callback(obj)
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('ImageConverter.helpButton_Callback: triggered\n');
+            end
             helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'html', 'plugins', 'file-processing', 'image-converter.html');
             utils.openHelpPage(helpFilPath, 'http://mib.helsinki.fi/help/main3/plugins/file-processing/image-converter.html');
 
@@ -1224,6 +1384,10 @@ classdef ImageConverter < handle
         
         function Convert(obj)
             % start main calculation of the plugin
+
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('ImageConverter.Convert: triggered\n');
+            end
             if strcmp(obj.BatchOpt.OutputImageFormatExtension{1}, 'xml')
                 selection = uiconfirm(obj.view.gui, ...
                     sprintf('!!! Warning !!!\n\nThis mode is only implemented for extraction of metadata from Zeiss Atlas Fibics TIF files to XML documents!'), ...
@@ -1236,28 +1400,60 @@ classdef ImageConverter < handle
                 obj.view.handles.ParallelProcessing.Value = false;
             end
             
-            % check for existence of zarr dataset at destination
+            % check for existence of zarr dataset at destination: the output
+            % directory IS the zarr store, and the native writer replaces the whole
+            % folder, so a folder holding anything else must never be used.
+            % An interrupted native conversion (it leaves .mib_resume.json, see
+            % io.savers.Zarr3Saver.saveStreamResumable) can be resumed instead; in
+            % batch mode it is resumed whenever possible.
+            resumeConversion = false;
             if strcmp(obj.BatchOpt.OutputImageFormatExtension{1}, 'zarr')
+                parentFig = [];
+                if ~isempty(obj.view) && isvalid(obj.view.gui); parentFig = obj.view.gui; end
                 zarrPath = obj.BatchOpt.OutputDirectory;
                 zarrPath = strrep(zarrPath, '\', '/');
-                zarrFilename1 = fullfile(zarrPath, '.zattrs');
-                zarrFilename2 = fullfile(zarrPath, 's0');
-                if isfile(zarrFilename1) || isfolder(zarrFilename2)
-                    choice = uiconfirm(obj.view.gui, ...
-                        sprintf('!!! Warning !!!\n\nThe provided file already exist!\n\n%s\n%s\nWould you like to overwrite it?', zarrFilename1, zarrFilename2), ...
-                        'Zarr file exists!', ...
-                        'Options',{'Overwrite', 'Cancel'}, ...
-                        'DefaultOption',2,'CancelOption', 2, 'Icon', 'warning');
-                    if strcmp(choice, 'Cancel')
-                        return;
+                % v3 / v2 group metadata, v2 attributes, level folders (native '0', python 's0')
+                isZarrStore = isfile(fullfile(zarrPath, 'zarr.json')) || isfile(fullfile(zarrPath, '.zgroup')) || ...
+                    isfile(fullfile(zarrPath, '.zattrs')) || isfolder(fullfile(zarrPath, '0')) || ...
+                    isfolder(fullfile(zarrPath, 's0'));
+                isResumable = isZarrStore && isfile(fullfile(zarrPath, '.mib_resume.json')) && ~io.zarr.Config.isPython();
+                if isZarrStore
+                    if isempty(parentFig)
+                        resumeConversion = isResumable;
+                    elseif isResumable
+                        choice = uiconfirm(parentFig, ...
+                            sprintf(['The output directory holds an interrupted Zarr conversion:\n%s\n\n' ...
+                            'Resume it, or overwrite it and start again?'], zarrPath), ...
+                            'Interrupted conversion', ...
+                            'Options', {'Resume', 'Overwrite', 'Cancel'}, ...
+                            'DefaultOption', 1, 'CancelOption', 3, 'Icon', 'question');
+                        if strcmp(choice, 'Cancel'); return; end
+                        resumeConversion = strcmp(choice, 'Resume');
+                    else
+                        choice = uiconfirm(parentFig, ...
+                            sprintf('!!! Warning !!!\n\nA Zarr dataset already exists in\n%s\n\nWould you like to overwrite it?', zarrPath), ...
+                            'Zarr file exists!', ...
+                            'Options',{'Overwrite', 'Cancel'}, ...
+                            'DefaultOption',2,'CancelOption', 2, 'Icon', 'warning');
+                        if strcmp(choice, 'Cancel')
+                            return;
+                        end
                     end
-                    if obj.BatchOpt.showWaitbar
-                        wb = uiprogressdlg(obj.view.gui, 'Title','Removing files',...
-                            'Message', 'Please wait...');
+                end
+                if isZarrStore && ~resumeConversion
+                    if obj.BatchOpt.showWaitbar && ~isempty(parentFig)
+                        wb = uiprogressdlg(parentFig, 'Title','Removing files',...
+                            'Message', 'Please wait...', 'Indeterminate', 'on');
                     end
                     rmdir(zarrPath, 's');
                     mkdir(zarrPath);
-                    if obj.BatchOpt.showWaitbar; wb.Value = 1; delete(wb); end
+                    if obj.BatchOpt.showWaitbar && ~isempty(parentFig); delete(wb); end
+                elseif ~isZarrStore && isfolder(zarrPath) && numel(dir(zarrPath)) > 2   % more than '.' and '..'
+                    utils.dlgs.showErrorDialog(parentFig, ...
+                        sprintf(['The output directory is not empty:\n%s\n\nThe Zarr dataset is written into the ' ...
+                        'output directory itself and replaces its content. Please select an empty or a new directory.'], zarrPath), ...
+                        'Output directory is not empty');
+                    return;
                 end
             end
 
@@ -1361,7 +1557,7 @@ classdef ImageConverter < handle
                 end
             elseif strcmp(obj.BatchOpt.OutputImageFormatExtension{1}, 'zarr')
                 if ~obj.BatchOpt.showWaitbar; wb = []; end
-                obj.generateZarr(imgDS, wb);
+                obj.generateZarr(imgDS, wb, resumeConversion);
                 obj.returnBatchOpt();
                 return;
             elseif obj.BatchOpt.PyramidalTIFgenerate
@@ -1418,23 +1614,72 @@ classdef ImageConverter < handle
             obj.returnBatchOpt();
         end
         
-        function generateZarrNative(obj, imgDS, wb)
-            % function generateZarrNative(obj, imgDS, wb)
-            % Native (zarrMex) Zarr generation via io.savers.Zarr3Saver - the same
-            % in-app pyramid/bounding-box/voxel logic, streaming one source file at a
-            % time (no Python). Used whenever io.zarr.Config = native, for Zarr v2 and
-            % v3 alike; only the python backend takes the legacy pipeline.
+        function generateZarrNative(obj, imgDS, wb, resumeConversion)
+            % GENERATEZARRNATIVE - Native (zarrMex) Zarr generation via io.savers.Zarr3Saver.
+            %
+            % The same in-app pyramid/bounding-box/voxel logic (no Python), used
+            % whenever io.zarr.Config = native, for Zarr v2 and v3 alike; only the
+            % python backend takes the legacy pipeline. The store is written in
+            % resumable slab tasks (``Zarr3Saver.saveStreamResumable``), by the pool
+            % workers with Parallel processing.
+            %
+            % ``resumeConversion`` continues the interrupted conversion in the
+            % output directory. When it cannot be continued (source or settings
+            % changed) the GUI explains why and stops, so the user can choose
+            % Overwrite; in batch mode the conversion starts again from scratch.
+            %
+            % Input Arguments:
+            %   - **imgDS** - ``matlab.io.datastore.ImageDatastore``, one file per Z-slice
+            %   - **wb** - ``core.PoolWaitbar`` or ``[]``
+            %   - **resumeConversion** - *(optional)* [logical], default false
+            if nargin < 4; resumeConversion = false; end
             parentFig = [];
             if ~isempty(obj.view) && isvalid(obj.view.gui); parentFig = obj.view.gui; end
 
+            pool = [];
+            if obj.BatchOpt.ParallelProcessing
+                pool = obj.getParallelPool(wb);
+            end
             % Zarr3Saver shows its own progress dialog - release the plugin's first
             if ~isempty(wb); delete(wb); end
 
             t2 = tic;
-            fnOut = ImageConverter.convertToZarr3Native(imgDS, obj.BatchOpt, ...
-                struct('ParentFigure', parentFig, 'mibPath', obj.mibModel.mibPath));
+            converterOptions = struct('ParentFigure', parentFig, 'mibPath', obj.mibModel.mibPath, ...
+                'pool', pool, 'resume', resumeConversion);
+            try
+                try
+                    [fnOut, writeStarted] = ImageConverter.convertToZarr3Native(imgDS, obj.BatchOpt, converterOptions);
+                catch err
+                    if ~strcmp(err.identifier, 'io:Zarr3Saver:cannotResume') || ~isempty(parentFig); rethrow(err); end
+                    fprintf('%s\nStarting the conversion again.\n', err.message);
+                    converterOptions.resume = false;
+                    [fnOut, writeStarted] = ImageConverter.convertToZarr3Native(imgDS, obj.BatchOpt, converterOptions);
+                end
+            catch err
+                if strcmp(err.identifier, 'io:Zarr3Saver:cannotResume')
+                    % nothing was changed; the user can still overwrite
+                    utils.dlgs.showErrorDialog(parentFig, sprintf('%s\n\nUse Overwrite to convert again from the start.', ...
+                        err.message), 'Cannot resume');
+                    return;
+                end
+                % the store is left flagged incomplete (mibIncomplete); never report success
+                utils.dlgs.showErrorDialog(parentFig, ...
+                    sprintf(['The Zarr conversion failed:\n%s\n\nThe dataset in\n%s\nis incomplete; ' ...
+                    'MIB warns about it when it is opened. After fixing the cause, run Convert again and ' ...
+                    'choose Resume to continue it.'], err.message, obj.BatchOpt.OutputDirectory), ...
+                    'Zarr conversion failed');
+                return;
+            end
             t2 = toc(t2);
-            if isempty(fnOut); return; end   % cancelled
+            if isempty(fnOut)
+                if writeStarted
+                    cancelText = sprintf(['Zarr conversion cancelled.\n\nThe incomplete dataset is left in\n%s\n' ...
+                        'Run Convert again and choose Resume to continue it.'], obj.BatchOpt.OutputDirectory);
+                    fprintf('%s\n', cancelText);
+                    if ~isempty(parentFig); uialert(parentFig, cancelText, 'Cancelled', 'Icon', 'warning'); end
+                end
+                return;
+            end
 
             zarrVersion = obj.BatchOpt.ZarrVersion{1};   % e.g. 'Zarr v3'
             fprintf('Native %s written to: %s\nElapsed time is %f seconds\n', zarrVersion, fnOut, t2);
@@ -1444,40 +1689,66 @@ classdef ImageConverter < handle
             end
         end
 
-        function generateZarr(obj, imgDS, wb)
-            % function generateZarr(obj, imgDS, wb);
-            % convert image stack in imgDS to Zarr format
+        function pool = getParallelPool(obj, wb)
+            % GETPARALLELPOOL - Parallel pool with ``BatchOpt.ParallelWorkersNumber`` workers.
+            %
+            % Reuses the current pool when it has that many workers, otherwise
+            % (re)starts it, showing the progress in ``wb`` (a ``core.PoolWaitbar`` or
+            % ``[]``). Returns ``[]`` for fewer than one worker, meaning: no pool.
+            pool = [];
+            numberOfWorkers = obj.BatchOpt.ParallelWorkersNumber{1};
+            if numberOfWorkers < 1; return; end
+            pool = gcp('nocreate');
+            if ~isempty(pool) && pool.NumWorkers == numberOfWorkers; return; end
+
+            if ~isempty(wb)
+                wbText = wb.getText();
+                wb.updateText(sprintf('Starting the parallel pool\nPlease wait...'));
+            end
+            if ~isempty(pool); delete(pool); end
+            pool = parpool(numberOfWorkers);
+            if ~isempty(wb); wb.updateText(wbText); end
+        end
+
+        function generateZarr(obj, imgDS, wb, resumeConversion)
+            % GENERATEZARR - Convert the image stack in ``imgDS`` to an OME-Zarr pyramid.
+            %
+            % With the native backend (default) the work is done by
+            % ``generateZarrNative``, which can resume an interrupted conversion
+            % (``resumeConversion``); the python backend runs the pipeline below,
+            % which cannot resume:
+            % ``createMultiscaleDataset`` declares every level, then Z-slabs of
+            % ``zChunk`` slices (the shard depth when parallel and sharded) are
+            % read, downsampled and written by ``processZChunk``, serially or as
+            % ``parfeval`` jobs.
+            %
+            % The root attributes carry ``mibIncomplete = true`` until every slab is
+            % written, so an interrupted store is recognised by the Zarr loaders. A
+            % failed slab (in the serial loop, or any ``parfeval`` job, e.g. a worker
+            % killed for lack of memory) ends the conversion with an error that names
+            % the failed Z ranges; success is reported only when every slab was
+            % written. The peak memory is checked first with
+            % ``ImageConverter.confirmZarrMemory``.
+            %
+            % Input Arguments:
+            %   - **imgDS** - ``matlab.io.datastore.ImageDatastore``, one file per Z-slice
+            %   - **wb** - ``core.PoolWaitbar`` or ``[]``
+            %   - **resumeConversion** - *(optional)* [logical], native backend only, default false
+            if nargin < 4; resumeConversion = false; end
 
             % Native (zarrMex) backend writes both Zarr formats directly via
             % io.savers.Zarr3Saver (shared pyramid + bounding box + voxel logic).
             % Only the python backend falls through to the legacy pipeline below.
             if ~io.zarr.Config.isPython()
-                obj.generateZarrNative(imgDS, wb);
+                obj.generateZarrNative(imgDS, wb, resumeConversion);
                 return;
             end
 
             % define usage of parallel computing
+            parforArg = 0;      % number of workers, 0 = a single core without parallel
             if obj.BatchOpt.ParallelProcessing
-                parforArg = obj.BatchOpt.ParallelWorkersNumber{1};    % Maximum number of workers running in parallel
-                pool = gcp('nocreate');
-                if isempty(pool)
-                    if ~isempty(wb)
-                        wbText = wb.getText();
-                        wb.updateText(sprintf('Starting the parallel pool\nPlease wait...'));
-                    end
-                    pool = parpool(parforArg);
-                    if ~isempty(wb); wb.updateText(wbText); end
-                elseif pool.NumWorkers ~= parforArg
-                    if ~isempty(wb)
-                        wbText = wb.getText();
-                        wb.updateText(sprintf('Restrating the parallel pool\nPlease wait...'));
-                    end
-                    delete(pool);
-                    pool = parpool(parforArg);
-                    if ~isempty(wb); wb.updateText(wbText); end
-                end % create parpool
-            else
-                parforArg = 0;      % Maximum number of workers running in parallel, when 0 a single core used without parallel
+                pool = obj.getParallelPool(wb);
+                if ~isempty(pool); parforArg = pool.NumWorkers; end
             end
 
             zarrPath = obj.BatchOpt.OutputDirectory;
@@ -1592,6 +1863,7 @@ classdef ImageConverter < handle
             [obj.mibModel.pythonEnv, pythonErrorMessage] = utils.initPythonEnv( ...
                 obj.mibModel.preferences.ExternalDirs.PythonInstallationPath, pythonExecutionMode);
             if ~isempty(pythonErrorMessage)
+                if ~isempty(wb); delete(wb); end
                 utils.dlgs.showErrorDialog(obj.view.gui, pythonErrorMessage, 'Image converter');
                 return;
             end
@@ -1600,22 +1872,39 @@ classdef ImageConverter < handle
                 "import json", ...
                 "import numpy as np"]);
 
+            maxZ = imageSize(end-2);
+            maxT = imageSize(1);
+            % Z is 3rd from the end: chunks are [t c z y x] for images, [t z y x] for labels
+            zChunk = Options.chunks(end-2);
+            % for parallel processing the whole depth of a shard should be
+            % read for processing
+            if parforArg > 0 && ~isempty(Options.shards)
+                zChunk = Options.shards(end-2);
+            end
+
+            % memory check: each process holds a zChunk-deep slab of full slices
+            % about 4 times (the slab, permute copies, the copy passed to Python,
+            % the downsampling intermediates)
+            firstImageInfo = whos('I');
+            sliceBytes = firstImageInfo.bytes;
+            numberOfProcesses = max(parforArg, 1);
+            parentFig = [];
+            if ~isempty(obj.view) && isvalid(obj.view.gui); parentFig = obj.view.gui; end
+            memoryDetails = sprintf('slice %s (%s), %d slices per slab, %d process(es)', ...
+                strjoin(string(currentImageSize), ' x '), imageType, zChunk, numberOfProcesses);
+            if ~ImageConverter.confirmZarrMemory(parentFig, 4 * min(zChunk, maxZ) * sliceBytes * numberOfProcesses, memoryDetails)
+                if ~isempty(wb); delete(wb); end
+                return;
+            end
+            clear I;
+
             %% CREATE DATASETS + TOP LEVEL METADATA
             Options.voxelSize = voxelSize;
             Options.voxelUnits = voxelUnits;
             Options.levelTranslations = levelImageTranslations;   % the field createMultiscaleDataset reads
-            Options.customAttributes = struct();
+            % flag removed after the last slab; the Zarr loaders warn while it is set
+            Options.customAttributes = struct('mibIncomplete', true);
             ImageConverter.createMultiscaleDataset(zarrPath, imageSize, imageType, levelNames, scaleZYX, Options);
-
-            maxZ = imageSize(end-2);
-            maxT = imageSize(1);
-            zChunk = Options.chunks(3);
-            % for parallel processing the whole depth of a shard should be
-            % read for processing
-            if parforArg > 0 && ~isempty(Options.shards)
-                zChunk = Options.shards(3);
-            end
-            %dataType = Options.dataType;
 
             %% Implementation with parfor loop
             % for tIdx = 1:maxT
@@ -1681,13 +1970,24 @@ classdef ImageConverter < handle
             %     pool = parpool(parforArg); %#ok<NASGU>
             % end
             zStarts = 1:zChunk:maxZ;
+            failedSlabs = {};    % 'Z z1-z2: message' of the slab that failed
+            isCancelled = false;
             for tIdx = 1:maxT
+                if isCancelled; break; end
                 if ~isempty(wb); wb.updateMaxNumberOfIterations(numel(zStarts)); end
                 if parforArg == 0 % standard for-loop
                     for idx = 1:numel(zStarts)
-                        ImageConverter.processZChunk(idx, zStarts, zChunk, maxZ, imageSwitch, ...
-                            imageSize, imageType, imgDS, ...
-                            levelNames, scaleZYX, zarrPath);
+                        try
+                            ImageConverter.processZChunk(idx, zStarts, zChunk, maxZ, imageSwitch, ...
+                                imageSize, imageType, imgDS, ...
+                                levelNames, scaleZYX, zarrPath);
+                        catch err
+                            % a failed slab ends the run: the next one would most
+                            % likely fail the same way (e.g. out of memory)
+                            failedSlabs{end+1} = sprintf('Z %d-%d: %s', zStarts(idx), ...
+                                min(zStarts(idx) + zChunk - 1, maxZ), err.message); %#ok<AGROW>
+                            break;
+                        end
                         if ~isempty(wb)
                             wb.increment();
                             % PoolWaitbar.increment() only updates the dialog's Value
@@ -1698,10 +1998,12 @@ classdef ImageConverter < handle
                             % that finishes in a second or two.
                             drawnow limitrate;
                             if wb.getCancelState()
+                                isCancelled = true;
                                 break;
                             end
                         end
                     end
+                    if ~isempty(failedSlabs); break; end
                 else  % parallel processing loop
                     % submit jobs
                     futures = parallel.FevalFuture.empty(numel(zStarts),0);
@@ -1712,30 +2014,63 @@ classdef ImageConverter < handle
                             levelNames, scaleZYX, zarrPath);
                     end
 
+                    % collect in submission order (the jobs run concurrently anyway),
+                    % so a failure is tied to its Z range; poll to keep Cancel responsive
                     for idx = 1:numel(futures)
-                        try
-                            fetchNext(futures);   % wait for next job to complete
-                        catch err
-                            disp(err.getReport());  % show the real error
+                        while ~wait(futures(idx), 'finished', 1)
+                            drawnow limitrate;
+                            if ~isempty(wb) && wb.getCancelState(); break; end
+                        end
+                        if ~isempty(wb) && wb.getCancelState()
+                            cancel(futures);   % cancel remaining futures
+                            isCancelled = true;
+                            break;
+                        end
+                        if ~isempty(futures(idx).Error)
+                            % e.g. a worker killed for lack of memory: stop, the
+                            % remaining slabs would most likely fail the same way
+                            failedSlabs{end+1} = sprintf('Z %d-%d: %s', zStarts(idx), ...
+                                min(zStarts(idx) + zChunk - 1, maxZ), futures(idx).Error.message); %#ok<AGROW>
+                            disp(getReport(futures(idx).Error));  % show the real error
+                            break;
                         end
                         if ~isempty(wb)
                             wb.increment();        % update progress bar safely here
                             drawnow limitrate;
-                            if wb.getCancelState()
-                                cancel(futures);   % cancel remaining futures
-                                break;
-                            end
                         end
                     end
+                    if ~isempty(failedSlabs); break; end
                 end
 
             end
 
-            if ~isempty(wb) && wb.getCancelState
-                delete(wb);
-                uialert(obj.view.gui, 'Zarr conversion cancelled!', 'Cancelled', 'Icon', 'warning');
+            parentFig = [];
+            if ~isempty(obj.view) && isvalid(obj.view.gui); parentFig = obj.view.gui; end
+            if ~isempty(failedSlabs)
+                % the incomplete flag stays set: never report success after a failure
+                if ~isempty(wb); delete(wb); end
+                if parforArg > 0; cancel(futures); end
+                failureText = sprintf(['The Zarr conversion failed at\n%s\n\n' ...
+                    'The dataset in\n%s\nis incomplete; MIB warns about it when it is opened.'], ...
+                    strjoin(failedSlabs, newline), zarrPath);
+                fprintf('%s\n', failureText);
+                utils.dlgs.showErrorDialog(parentFig, failureText, 'Zarr conversion failed');
                 return;
             end
+            if isCancelled
+                delete(wb);
+                cancelText = sprintf(['Zarr conversion cancelled.\n\nThe incomplete dataset is left in\n%s\n' ...
+                    'MIB warns about it when it is opened.'], zarrPath);
+                fprintf('%s\n', cancelText);
+                if ~isempty(parentFig); uialert(parentFig, cancelText, 'Cancelled', 'Icon', 'warning'); end
+                return;
+            end
+
+            % every slab written: drop the incomplete flag from the root attributes
+            pyrun(["root = zarr.open_group(storePath, mode='a')", ...
+                "attrs = dict(root.attrs)", ...
+                "attrs.pop('mibIncomplete', None)", ...
+                "root.attrs.put(attrs)"], storePath=zarrPath);
 
             t2 = toc(t2);
             if ~isempty(wb); delete(wb); end
@@ -1744,7 +2079,7 @@ classdef ImageConverter < handle
                 scalesText = sprintf('%s\n%s     -> %d x %d x %d       ->  %d %d %d', scalesText, levelNames{scaleId}, scaleZYX(scaleId, :), levelImageSizes(scaleId, :));
             end
             reportText = sprintf('Multiscale Zarr written to: %s\n\n%s\n\nElapsed time is %f seconds', zarrPath, scalesText, t2);
-            uialert(obj.view.gui, reportText, 'Zarr conversion done!', 'Icon', 'success');
+            if ~isempty(parentFig); uialert(parentFig, reportText, 'Zarr conversion done!', 'Icon', 'success'); end
             
             fprintf('Multiscale Zarr written to: %s\nElapsed time is %f seconds\n', zarrPath, t2);
         end

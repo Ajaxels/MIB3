@@ -168,5 +168,145 @@ classdef Zarr3SaverTest < matlab.unittest.TestCase
             testCase.verifyEqual(imgInfo{"BoundingBox"}, boundingBox, 'AbsTol', 1e-9);
         end
 
+        function saveAndStream_cOrderChunks_noTransposeCodec_roundTrip(testCase)
+            % Arrays are written in C byte order without the transpose codec (2.5x
+            % faster zarrMex writes); the logical [y x z] array must be unchanged.
+            tmp = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            volume = uint16(randi(4000, 70, 90, 9));
+            meta = struct('pixSize', struct('x', 1, 'y', 1, 'z', 1));
+            saverOpts = struct('silent', true, 'showWaitbar', false, 'ChunkSize', [32 32 4], 'MinLevelSize', 32);
+
+            savePath = io.savers.Zarr3Saver().save(volume, meta, fullfile(tmp.Folder, 'save.zarr3'), saverOpts);
+            streamPath = io.savers.Zarr3Saver().saveStream(io.savers.InMemorySliceProvider(volume), meta, ...
+                fullfile(tmp.Folder, 'stream.zarr3'), saverOpts);
+            for storePath = {savePath, streamPath}
+                arrayMetadata = jsondecode(fileread(fullfile(storePath{1}, '0', 'zarr.json')));
+                codecs = arrayMetadata.codecs;
+                if iscell(codecs); codecNames = cellfun(@(codec) codec.name, codecs, 'UniformOutput', false);
+                else; codecNames = {codecs.name}; end
+                testCase.verifyFalse(ismember('transpose', codecNames), ...
+                    sprintf('%s: level 0 must not carry the transpose codec', storePath{1}));
+                testCase.verifyEqual(io.zarr.Group(storePath{1}).openArray('0').read(), volume, ...
+                    sprintf('%s: level 0 must read back unchanged', storePath{1}));
+            end
+        end
+
+        function allWriters_samePyramid(testCase)
+            % save (in memory), saveStream and saveStreamResumable all build each
+            % level from the level above - XY by exactly 0.5, Z by the mean of
+            % slice pairs; the same data must give the same store from each. Odd
+            % sizes (where resizing to [Yl Xl] would stretch), Z halved once and
+            % twice (cumulative Z factor 4) with odd Z, several channels.
+            tmp = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            cases = struct( ...
+                'volume', {uint16(randi(4000, 301, 275, 9)), uint8(randi(255, 257, 250, 21)), ...
+                    uint8(randi(255, 190, 170, 7, 3)), uint16(randi(4000, 520, 300, 23))}, ...
+                'pixSize', {struct('x', 1, 'y', 1, 'z', 1), struct('x', 0.013, 'y', 0.013, 'z', 0.03), ...
+                    struct('x', 1, 'y', 1, 'z', 1), struct('x', 0.013, 'y', 0.013, 'z', 0.1)}, ...
+                'strategy', {'XY only', 'Anisotropy-preserving', 'XY only', 'Anisotropy-preserving'}, ...
+                'method', {'bilinear', 'bicubic', 'bilinear', 'bilinear'});
+            for caseIndex = 1:numel(cases)
+                volume = cases(caseIndex).volume;   % [y x z] or [y x z c]
+                saverOpts = struct('silent', true, 'showWaitbar', false, 'ChunkSize', [32 32 4], 'MinLevelSize', 16, ...
+                    'DownsampleStrategy', cases(caseIndex).strategy, 'DownsampleMethod', cases(caseIndex).method);
+                metadata = struct('pixSize', cases(caseIndex).pixSize);
+                plan = io.savers.Zarr3Saver.computeLevelPlan(size(volume, 1), size(volume, 2), size(volume, 3), ...
+                    metadata.pixSize, saverOpts);
+                testCase.assertGreaterThan(numel(plan), 2);
+                if caseIndex == 2; testCase.assertTrue(any([plan.cumZFactor] > 1), 'case 2 must halve Z'); end
+                if caseIndex == 4; testCase.assertTrue(any([plan.cumZFactor] >= 4), 'case 4 must halve Z twice'); end
+
+                savePath = io.savers.Zarr3Saver().save(volume, metadata, ...
+                    fullfile(tmp.Folder, sprintf('save%d.zarr3', caseIndex)), saverOpts);
+                streamPath = io.savers.Zarr3Saver().saveStream(io.savers.InMemorySliceProvider(volume), ...
+                    metadata, fullfile(tmp.Folder, sprintf('stream%d.zarr3', caseIndex)), saverOpts);
+                resumablePath = io.savers.Zarr3Saver().saveStreamResumable(io.savers.InMemorySliceProvider(volume), ...
+                    metadata, fullfile(tmp.Folder, sprintf('resumable%d.zarr3', caseIndex)), saverOpts);
+                for L = 1:numel(plan)
+                    name = num2str(L - 1);
+                    resumableLevel = io.zarr.Group(resumablePath).openArray(name).read();
+                    testCase.verifyEqual(io.zarr.Group(savePath).openArray(name).read(), resumableLevel, ...
+                        sprintf('case %d, level %s: save must equal saveStreamResumable', caseIndex, name));
+                    testCase.verifyEqual(io.zarr.Group(streamPath).openArray(name).read(), resumableLevel, ...
+                        sprintf('case %d, level %s: saveStream must equal saveStreamResumable', caseIndex, name));
+                end
+            end
+        end
+
+        function saveStream_modeLabels_samePyramidAsResumable(testCase)
+            % 'mode' reduces blocks of the full slice while a level keeps the full
+            % Z and of the level above after - in both streaming writers (save
+            % reduces blocks of the full-resolution volume and is not compared)
+            tmp = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            labels = uint8(randi([0 5], 256, 200, 19));
+            saverOpts = struct('silent', true, 'showWaitbar', false, 'ChunkSize', [32 32 4], 'MinLevelSize', 16, ...
+                'DownsampleStrategy', 'Anisotropy-preserving', 'DownsampleMethod', 'mode', 'layerType', 'labels');
+            metadata = struct('pixSize', struct('x', 0.013, 'y', 0.013, 'z', 0.03));
+            streamPath = io.savers.Zarr3Saver().saveStream(io.savers.InMemorySliceProvider(labels), ...
+                metadata, fullfile(tmp.Folder, 'stream.zarr3'), saverOpts);
+            resumablePath = io.savers.Zarr3Saver().saveStreamResumable(io.savers.InMemorySliceProvider(labels), ...
+                metadata, fullfile(tmp.Folder, 'resumable.zarr3'), saverOpts);
+            plan = io.savers.Zarr3Saver.computeLevelPlan(256, 200, 19, metadata.pixSize, saverOpts);
+            testCase.assertTrue(any([plan.cumZFactor] > 1));
+            for L = 1:numel(plan)
+                name = num2str(L - 1);
+                testCase.verifyEqual(io.zarr.Group(streamPath).openArray(name).read(), ...
+                    io.zarr.Group(resumablePath).openArray(name).read(), sprintf('level %s', name));
+            end
+        end
+
+        function saveStream_sharded_writesWholeShards_roundTrips(testCase)
+            % With sharding the write depth is the shard Z (a partial-shard write
+            % re-reads and rewrites the shard); shard Z 12 does not divide Z 30, so
+            % the trailing partial shard is flushed too.
+            tmp = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            Z = 30;
+            volume = zeros(64, 64, Z, 'uint8');
+            for z = 1:Z; volume(:, :, z) = uint8(z); end
+            storePath = io.savers.Zarr3Saver().saveStream(io.savers.InMemorySliceProvider(volume), ...
+                struct('pixSize', struct('x', 1, 'y', 1, 'z', 1)), fullfile(tmp.Folder, 'shard.zarr3'), ...
+                struct('silent', true, 'showWaitbar', false, 'ChunkSize', [16 16 4], 'ShardSize', [2 2 3], ...
+                'MinLevelSize', 16, 'DownsampleMethod', 'nearest'));
+
+            level0 = io.zarr.Group(storePath).openArray('0').read();
+            testCase.verifyEqual(level0, volume, 'sharded level 0 must read back unchanged');
+        end
+
+        function saveStream_interrupted_leavesIncompleteFlag_loaderWarns(testCase)
+            % The attributes are declared before the first slice with mibIncomplete
+            % = true and rewritten without it after the last one. A stream that
+            % fails part way (here: a source file vanishes) leaves the flag, and the
+            % loader warns; a finished stream has no flag.
+            tmp = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            sourceFolder = fullfile(tmp.Folder, 'slices');
+            mkdir(sourceFolder);
+            for z = 1:6
+                imwrite(uint8(randi(255, 40, 50)), fullfile(sourceFolder, sprintf('s_%02d.tif', z)));
+            end
+            saverOpts = struct('silent', true, 'showWaitbar', false, 'ChunkSize', [32 32 2], 'MinLevelSize', 16);
+            meta = struct('pixSize', struct('x', 1, 'y', 1, 'z', 1));
+            loaderOpts = struct('waitbar', 0, 'silentMode', true);
+
+            finishedPath = io.savers.Zarr3Saver().saveStream(io.savers.ImageDatastoreSliceProvider( ...
+                imageDatastore(sourceFolder, 'FileExtensions', '.tif')), meta, fullfile(tmp.Folder, 'done.zarr3'), saverOpts);
+            finishedMetadata = jsondecode(fileread(fullfile(finishedPath, 'zarr.json')));
+            finishedAttrs = finishedMetadata.attributes;
+            testCase.verifyFalse(isfield(finishedAttrs, 'mibIncomplete'), 'a finished store must not be flagged');
+            testCase.verifyWarningFree(@() io.loaders.Zarr3VirtualSetupLoader(loaderOpts).loadMetadata({finishedPath}, loaderOpts));
+
+            provider = io.savers.ImageDatastoreSliceProvider(imageDatastore(sourceFolder, 'FileExtensions', '.tif'));
+            delete(fullfile(sourceFolder, 's_05.tif'));   % slice 5 fails to read
+            brokenPath = fullfile(tmp.Folder, 'broken.zarr3');
+            testCase.verifyError(@() io.savers.Zarr3Saver().saveStream(provider, meta, brokenPath, saverOpts), ?MException);
+            brokenMetadata = jsondecode(fileread(fullfile(brokenPath, 'zarr.json')));
+            brokenAttrs = brokenMetadata.attributes;
+            testCase.verifyTrue(isfield(brokenAttrs, 'mibIncomplete') && brokenAttrs.mibIncomplete, ...
+                'an interrupted store must keep the mibIncomplete flag');
+            testCase.verifyTrue(isfield(brokenAttrs, 'multiscales'), ...
+                'an interrupted store must still declare its pyramid, so it can be opened');
+            testCase.verifyWarning(@() io.loaders.Zarr3VirtualSetupLoader(loaderOpts).loadMetadata({brokenPath}, loaderOpts), ...
+                'io:Zarr3VirtualSetupLoader:incompleteStore');
+        end
+
     end
 end

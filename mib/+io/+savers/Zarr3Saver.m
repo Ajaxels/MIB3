@@ -12,17 +12,31 @@ classdef Zarr3Saver < io.savers.BaseSaver
 % BigData segmentation workflow. (A non-zarr Virtual/BioFormats source must
 % first be gathered to memory or streamed level-by-level - future.)
 %
-% **Axis order.** Arrays are created with the zarr-matlab transpose codec, so
-% they store/return in native MATLAB ``[y, x, z, c, t]`` order. The
+% **Axis order.** Arrays are declared with the shape of the native MATLAB
+% ``[y, x, z, c, t]`` array, and read/write return that order. The
 % ``multiscales.axes`` are declared to match (``y, x, z`` plus ``c`` and/or
 % ``t`` only when those dimensions are > 1). ``Zarr3VirtualSetupLoader`` reads
 % ``axes.name`` to recover this order, and ``Zarr3VirtualLoader`` applies the
 % (identity) permutation - so the round-trip is exact.
 %
+% **Chunk byte order.** Arrays are created with ``'filters', 'none'``: chunks
+% hold their bytes in C order (v3 codecs ``bytes`` + compressor, v2
+% ``order: C``), without the zarr-matlab default transpose codec. The logical
+% array is the same either way - only the byte layout inside a chunk differs -
+% and every zarr reader decodes both. C order is chosen for speed: zarrMex
+% writes it ~2.5x faster than through the transpose codec (measured,
+% development/bigdata/plan_imageconverter_zarr.md), and it is the layout other
+% tools expect. Stores written earlier with the transpose codec stay readable.
+%
 % **Pyramid.** Level 0 = full resolution; each further level halves Y and X
-% (Z is kept - XY-only downsampling). The per-level ``scale`` coordinate
-% transformation encodes the physical voxel size (``pixSize`` × 2^level in XY),
-% which the loader turns into the magnification→level mapping.
+% by resizing the level above by exactly 0.5, and halves Z too (mean of each
+% pair of slices) when ``DownsampleStrategy`` is ``'Anisotropy-preserving'`` and
+% the voxels have become coarser in XY than in Z (``computeLevelPlan``). All
+% writers - ``save``, ``saveStream``, ``saveStreamResumable`` - produce the same
+% pyramid from the same data (interpolating methods). The per-level
+% ``scale`` coordinate transformation encodes the physical voxel size
+% (``pixSize`` × 2^level in XY), which the loader turns into the
+% magnification→level mapping.
 %
 % **Examples**
 %
@@ -116,6 +130,16 @@ classdef Zarr3Saver < io.savers.BaseSaver
             % ``.zarr2``; the pyramid, chunking and metadata are otherwise
             % identical. Sharding is v3-only and is refused for a v2 output.
             %
+            % **Pyramid.** For the interpolating methods each level is computed
+            % from the level above: XY by exactly 0.5 (``imresize(..., 0.5)``, the
+            % ``2^k`` scale written in the metadata; resizing to ``[Yl Xl]`` would
+            % stretch an odd size by ``size/Yl``), and where the level halves Z,
+            % the mean of each pair of slices (``reduceZBuffer``; a trailing
+            % single slice is kept). This is the pyramid ``saveStreamResumable``
+            % writes, so the same data gives the same store from memory and by
+            % streaming. ``'mode'``/``'median'`` reduce blocks of the
+            % full-resolution data (``blockReduce2D``/``blockReduce3D``).
+            %
             % Input Arguments:
             %   - **data** - [y x z c t] numeric image array (full resolution).
             %   - **metadata** - struct; uses ``.pixSize`` (``.x .y .z``) when present, and
@@ -205,41 +229,52 @@ classdef Zarr3Saver < io.savers.BaseSaver
 
                 if L == 1
                     lvl = data;
-                else
+                elseif ismember(options.DownsampleMethod, {'mode', 'median'})
+                    % block reduction from the full-resolution data
+                    reduceFcn = str2func(options.DownsampleMethod);
                     lvl = zeros(Yl, Xl, Zl, C, T, imgClass);
                     for t = 1:T
                         for c = 1:C
-                            blockMethods = {'mode', 'median'};
                             if Zl == Z
-                                % XY-only: slice-by-slice resize
-                                if ismember(options.DownsampleMethod, blockMethods)
-                                    reduceFcn = str2func(options.DownsampleMethod);
-                                    for z = 1:Z
-                                        lvl(:,:,z,c,t) = io.savers.Zarr3Saver.blockReduce2D( ...
-                                            data(:,:,z,c,t), Yl, Xl, reduceFcn);
-                                    end
-                                else
-                                    for z = 1:Z
-                                        lvl(:,:,z,c,t) = imresize(data(:,:,z,c,t), [Yl Xl], ...
-                                            options.DownsampleMethod);
-                                    end
+                                for z = 1:Z
+                                    lvl(:,:,z,c,t) = io.savers.Zarr3Saver.blockReduce2D( ...
+                                        data(:,:,z,c,t), Yl, Xl, reduceFcn);
                                 end
                             else
-                                % XY + Z: volumetric resize
-                                if ismember(options.DownsampleMethod, blockMethods)
-                                    reduceFcn = str2func(options.DownsampleMethod);
-                                    lvl(:,:,:,c,t) = io.savers.Zarr3Saver.blockReduce3D( ...
-                                        data(:,:,:,c,t), Yl, Xl, Zl, reduceFcn);
-                                else
-                                    method3d = options.DownsampleMethod;
-                                    if strcmp(method3d, 'bilinear'); method3d = 'linear'; end
-                                    if strcmp(method3d, 'bicubic');  method3d = 'cubic';  end
-                                    lvl(:,:,:,c,t) = cast(imresize3(data(:,:,:,c,t), [Yl Xl Zl], method3d), imgClass);
+                                lvl(:,:,:,c,t) = io.savers.Zarr3Saver.blockReduce3D( ...
+                                    data(:,:,:,c,t), Yl, Xl, Zl, reduceFcn);
+                            end
+                        end
+                    end
+                else
+                    % From the level above: XY by exactly 0.5 - the 2x scale of the
+                    % metadata - and, where the level halves Z, the mean of each
+                    % pair of slices (reduceZBuffer, a trailing single slice kept).
+                    % The same pyramid as saveStreamResumable (buildLevelBand), so
+                    % a dataset saved from memory equals one converted by streaming.
+                    zFactor = round(plan(L).cumZFactor / plan(L-1).cumZFactor);
+                    previousDepth = size(previousLevel, 3);
+                    lvl = zeros(Yl, Xl, Zl, C, T, imgClass);
+                    for t = 1:T
+                        for c = 1:C
+                            resized = zeros(Yl, Xl, previousDepth, imgClass);
+                            for z = 1:previousDepth
+                                resized(:,:,z) = imresize(previousLevel(:,:,z,c,t), 0.5, options.DownsampleMethod);
+                            end
+                            if zFactor == 1
+                                lvl(:,:,:,c,t) = resized;
+                            else
+                                for outputIndex = 1:Zl
+                                    groupSlices = (outputIndex-1)*zFactor+1 : min(outputIndex*zFactor, previousDepth);
+                                    group = arrayfun(@(z) resized(:,:,z), groupSlices, 'UniformOutput', false);
+                                    lvl(:,:,outputIndex,c,t) = io.savers.Zarr3Saver.reduceZBuffer( ...
+                                        group, options.DownsampleMethod, imgClass, Yl, Xl, 1);
                                 end
                             end
                         end
                     end
                 end
+                previousLevel = lvl;   % [y x z c t], before the singleton c/t are dropped
 
                 % drop trailing singleton c/t to match the declared axes
                 keepShape = [Yl, Xl, Zl];
@@ -253,7 +288,8 @@ classdef Zarr3Saver < io.savers.BaseSaver
                 if numel(keepShape) > 3; chunk = [chunk, keepShape(4:end)]; end %#ok<AGROW>
 
                 name = num2str(L - 1);
-                createArgs = {'chunkShape', chunk, 'compressors', options.Compressors};
+                % C byte order, no transpose codec - see "Chunk byte order" in the class help
+                createArgs = {'chunkShape', chunk, 'compressors', options.Compressors, 'filters', 'none'};
                 if ~isempty(options.ShardSize)
                     createArgs = [createArgs, {'shardShape', io.savers.Zarr3Saver.computeShard(chunk, options.ShardSize)}]; %#ok<AGROW>
                 end
@@ -299,7 +335,39 @@ classdef Zarr3Saver < io.savers.BaseSaver
             % resident. This is the out-of-core ingest path (e.g. a large source → zarr).
             %
             % Chooses the zarr format exactly as ``save`` does: from the output
-            % extension, or from ``options.ZarrFormat`` when given.
+            % extension, or from ``options.ZarrFormat`` when given. Takes the options
+            % of ``save``, plus:
+            %
+            %   - ``.MaterialNamesFromData`` - *(label layers only, default false)*
+            %     when ``metadata`` carries no ``materialNames``, name materials
+            %     ``Material 1..N`` from the largest label value met while
+            %     streaming, so the source is read only once. Opt-in: a stream of
+            %     instance ids would otherwise get one material per instance.
+            %
+            % **Memory.** Output slices are buffered per level up to the depth of
+            % one write: the chunk Z-thickness, or the shard Z-thickness when
+            % sharded (a partial-shard write re-reads and rewrites the whole shard,
+            % measured 3.4x slower). Peak memory is therefore about
+            % ``3 x writeDepth`` full-resolution slices (the buffer, the
+            % concatenated write array and the copy zarrMex makes while encoding)
+            % plus the coarser levels' smaller buffers -
+            % callers converting very large slices should check it first (see
+            % ``ImageConverter.confirmZarrMemory``).
+            %
+            % **Interrupted writes.** The group attributes are written before the
+            % first slice with ``mibIncomplete = true`` and rewritten without it after
+            % the last one, so a store left by a cancel, an error or a crash opens
+            % with the full pyramid declared and the Zarr loaders warn that it is
+            % incomplete. A cancel returns ``[]`` and leaves that partial store.
+            %
+            % Each level is computed from the output slices of the level above
+            % (cascaded, ~2.6x cheaper than resizing the full slice for every
+            % level): XY by exactly 0.5 for the interpolating methods, and where
+            % the level halves Z, the mean of each pair of those slices.
+            % ``'mode'``/``'median'`` reduce blocks of the full slice while the
+            % level keeps the full Z, and of the level above after (see
+            % ``reduceSliceXY``). This is the pyramid of ``save`` and
+            % ``saveStreamResumable``, so the three writers produce the same store.
             %
             % See ``io.savers.BaseSaver.saveStream``.
             %
@@ -320,76 +388,33 @@ classdef Zarr3Saver < io.savers.BaseSaver
             [options, cancelled] = obj.resolveExportOptions(options, metadata, provider.OutputSize(1:3));
             if cancelled; fnOut = []; return; end
 
-            if ~isfield(options, 'Levels');             options.Levels = []; end
-            if ~isfield(options, 'MinLevelSize');       options.MinLevelSize = 256; end
-            if ~isfield(options, 'MaxLevels');          options.MaxLevels = 8; end
-            if ~isfield(options, 'ChunkSize');          options.ChunkSize = [256 256 16]; end
-            if ~isfield(options, 'ShardSize');          options.ShardSize = []; end
-            if ~isfield(options, 'Compressors');        options.Compressors = 'zstd'; end
-            if ~isfield(options, 'DownsampleMethod');   options.DownsampleMethod = 'bilinear'; end
-            if ~isfield(options, 'DownsampleStrategy'); options.DownsampleStrategy = 'XY only'; end
-
-            isLabelLayer = (isfield(options,'layerType') && strcmp(options.layerType,'labels')) || ...
-                (isstruct(metadata) && isfield(metadata,'materialNames') && ~isempty(metadata.materialNames));
-            if isLabelLayer && ~ismember(options.DownsampleMethod, {'nearest', 'mode'})
-                options.DownsampleMethod = 'nearest';
-            end
-
-            pixSize = struct('x', 1, 'y', 1, 'z', 1);
-            if isstruct(metadata) && isfield(metadata, 'pixSize') && ~isempty(metadata.pixSize)
-                ps = metadata.pixSize;
-                if isfield(ps,'x'); pixSize.x = ps.x; end
-                if isfield(ps,'y'); pixSize.y = ps.y; end
-                if isfield(ps,'z'); pixSize.z = ps.z; end
-            end
+            [options, isLabelLayer, pixSize] = io.savers.Zarr3Saver.streamDefaults(options, metadata);
 
             sz = provider.OutputSize;
             Y = sz(1); X = sz(2); Z = sz(3); C = sz(4); T = sz(5);
             imgClass = provider.DataClass;
 
-            axesNames = {'y','x','z'}; axesTypes = {'space','space','space'};
-            if C > 1; axesNames{end+1} = 'c'; axesTypes{end+1} = 'channel'; end
-            if T > 1; axesNames{end+1} = 't'; axesTypes{end+1} = 'time'; end
-            nKeep = numel(axesNames);
-
             % build per-level size/scale plan (honours DownsampleStrategy)
             plan    = io.savers.Zarr3Saver.computeLevelPlan(Y, X, Z, pixSize, options);
             nLevels = numel(plan);
 
+            % every level array created up front, attributes flagged mibIncomplete
             filename = char(filename);
-            zarrFormat = io.savers.Zarr3Saver.resolveZarrFormat(filename, options);
-            if isfolder(filename); rmdir(filename, 's'); end
-            grp = io.zarr.Group.create(filename, 'zarrFormat', zarrFormat);
+            [grp, levelInfo, attrStruct] = io.savers.Zarr3Saver.createStreamStore( ...
+                filename, plan, C, T, imgClass, options, metadata, isLabelLayer);
 
-            % --- create every level array up front ---
-            levelInfo = repmat(struct('Yl', Y, 'Xl', X, 'Zl', Z, 'arr', [], 'name', '', 'chunkZ', 1), 1, nLevels);
-            datasets  = cell(1, nLevels);
-            for L = 1:nLevels
-                Yl = plan(L).Yl; Xl = plan(L).Xl; Zl = plan(L).Zl;
-                keepShape = [Yl, Xl, Zl];
-                if C > 1; keepShape(end+1) = C; end %#ok<AGROW>
-                if T > 1; keepShape(end+1) = T; end %#ok<AGROW>
-                chunk = min(options.ChunkSize(1:3), keepShape(1:3));
-                chunk = max(chunk, [1 1 1]);
-                if numel(keepShape) > 3; chunk = [chunk, keepShape(4:end)]; end %#ok<AGROW>
-                name = num2str(L - 1);
-                levelInfo(L).Yl = Yl; levelInfo(L).Xl = Xl; levelInfo(L).Zl = Zl; levelInfo(L).name = name;
-                levelInfo(L).chunkZ = chunk(3);
-                createArgs = {'chunkShape', chunk, 'compressors', options.Compressors};
-                if ~isempty(options.ShardSize)
-                    createArgs = [createArgs, {'shardShape', io.savers.Zarr3Saver.computeShard(chunk, options.ShardSize)}]; %#ok<AGROW>
-                end
-                levelInfo(L).arr = grp.createArray(name, keepShape, imgClass, createArgs{:});
-                scaleVec = [plan(L).physScaleY, plan(L).physScaleX, plan(L).physScaleZ];
-                if C > 1; scaleVec(end+1) = 1; end %#ok<AGROW>
-                if T > 1; scaleVec(end+1) = 1; end %#ok<AGROW>
-                datasets{L} = struct('path', name, ...
-                    'coordinateTransformations', {{struct('type', 'scale', 'scale', scaleVec)}});
-            end
+            % label stores without names: track the largest label while streaming
+            trackMaxLabel = isLabelLayer && ~isfield(attrStruct, 'mibMaterials') && ...
+                isfield(options, 'MaterialNamesFromData') && options.MaterialNamesFromData;
+            maxLabel = 0;
 
             % --- stream slices: write each (z,t) to every level ---
-            % Levels with cumZFactor > 1 require Z accumulation: buffer groupSize
-            % source slices, average them, to produce one output Z-slice.
+            % The levels form a cascade: level L takes the output slices of level
+            % L-1, reduces each in XY and averages every group of zFactor(L) of
+            % them in Z (zFactor = cumZFactor(L) / cumZFactor(L-1), 1 or 2) into
+            % one output slice - the pyramid of save and saveStreamResumable
+            % (buildLevelBand). A level that produced no output for this source
+            % slice (its Z group is still filling) leaves the deeper levels idle.
             %
             % Output slices are NOT written to disk one at a time: a zarr chunk is
             % compressed as a unit, so a 1-slice-thick region write forces a full
@@ -399,8 +424,9 @@ classdef Zarr3Saver < io.savers.BaseSaver
             % level's chunk Z-thickness (``levelInfo(L).chunkZ``) and flushed as one
             % region write per full chunk, mirroring how the legacy Python pipeline
             % (ImageConverter.processZChunk) always writes whole Z-chunks.
-            zGroupSizes = arrayfun(@(p) p.cumZFactor, plan);
-            zBuffers    = cell(1, nLevels);   % {Yl×Xl×C} source slices pending Z-downsampling, per level
+            cumZFactors = [plan.cumZFactor];
+            zFactors    = [1, round(cumZFactors(2:end) ./ cumZFactors(1:end-1))];   % per level, from the level above
+            zBuffers    = cell(1, nLevels);   % {Yl×Xl×C} XY-reduced slices of level L-1 pending Z-averaging, per level
             writeBatch  = cell(1, nLevels);   % {Yl×Xl×C} output slices pending a chunk-aligned write, per level
             writeStart  = ones(1, nLevels);   % 1-based Z index where the pending writeBatch{L} begins
 
@@ -413,34 +439,31 @@ classdef Zarr3Saver < io.savers.BaseSaver
                 for z = 1:Z
                     if ~isempty(wb) && wb.CancelRequested; delete(wb); fnOut = []; return; end
                     slice = provider.getSlice(z, t);   % [Y X C]
+                    if trackMaxLabel; maxLabel = max(maxLabel, double(max(slice, [], 'all'))); end
 
+                    levelOutput = [];   % output slice of the level above, [] when it produced none
                     for L = 1:nLevels
                         Yl = levelInfo(L).Yl; Xl = levelInfo(L).Xl;
-                        groupSize = zGroupSizes(L);
-
                         if L == 1
-                            xySlice = slice;
-                        elseif ismember(options.DownsampleMethod, {'mode', 'median'})
-                            xySlice = io.savers.Zarr3Saver.blockReduce2D( ...
-                                slice, Yl, Xl, str2func(options.DownsampleMethod));
+                            outputSlice = slice;
                         else
-                            xySlice = imresize(slice, [Yl Xl], options.DownsampleMethod);
-                        end
-
-                        if groupSize == 1
-                            outputSlice = xySlice;
-                            haveOutputSlice = true;
-                        else
-                            zBuffers{L}{end+1} = xySlice;
-                            haveOutputSlice = numel(zBuffers{L}) == groupSize;
-                            if haveOutputSlice
-                                outputSlice = io.savers.Zarr3Saver.reduceZBuffer( ...
-                                    zBuffers{L}, options.DownsampleMethod, imgClass, Yl, Xl, C);
-                                zBuffers{L} = {};
+                            if isempty(levelOutput); break; end   % level L-1 is still filling a Z group
+                            xySlice = io.savers.Zarr3Saver.reduceSliceXY(levelOutput, slice, Yl, Xl, ...
+                                cumZFactors(L), options.DownsampleMethod);
+                            if zFactors(L) == 1
+                                outputSlice = xySlice;
+                            else
+                                zBuffers{L}{end+1} = xySlice;
+                                outputSlice = [];
+                                if numel(zBuffers{L}) == zFactors(L)
+                                    outputSlice = io.savers.Zarr3Saver.reduceZBuffer( ...
+                                        zBuffers{L}, options.DownsampleMethod, imgClass, Yl, Xl, C);
+                                    zBuffers{L} = {};
+                                end
                             end
                         end
 
-                        if haveOutputSlice
+                        if ~isempty(outputSlice)
                             writeBatch{L}{end+1} = outputSlice;
                             if numel(writeBatch{L}) == levelInfo(L).chunkZ
                                 io.savers.Zarr3Saver.writeStreamBatch( ...
@@ -449,48 +472,355 @@ classdef Zarr3Saver < io.savers.BaseSaver
                                 writeBatch{L} = {};
                             end
                         end
+                        levelOutput = outputSlice;
                     end
 
                     done = done + 1;
                     if ~isempty(wb); wb.Value = done/total; end
                 end
 
-                % fold in the trailing partial Z-downsampling group (edge case: Z not
-                % divisible by groupSize), then flush any remaining partial write batch
-                % (edge case: number of output slices not divisible by chunkZ).
+                % Trailing partial Z groups, level by level down the cascade: the
+                % last output of level L-1 (if its group was partial) joins the
+                % buffer of level L before that buffer is averaged in turn; then
+                % flush the remaining partial write batch (number of output slices
+                % not divisible by chunkZ).
+                levelOutput = [];
                 for L = 1:nLevels
-                    if ~isempty(zBuffers{L})
-                        outputSlice = io.savers.Zarr3Saver.reduceZBuffer( ...
-                            zBuffers{L}, options.DownsampleMethod, imgClass, ...
-                            levelInfo(L).Yl, levelInfo(L).Xl, C);
-                        writeBatch{L}{end+1} = outputSlice;
+                    Yl = levelInfo(L).Yl; Xl = levelInfo(L).Xl;
+                    outputSlice = [];
+                    if L > 1
+                        if ~isempty(levelOutput)
+                            xySlice = io.savers.Zarr3Saver.reduceSliceXY(levelOutput, [], Yl, Xl, ...
+                                cumZFactors(L), options.DownsampleMethod);
+                            if zFactors(L) == 1
+                                outputSlice = xySlice;
+                            else
+                                zBuffers{L}{end+1} = xySlice;
+                            end
+                        end
+                        if ~isempty(zBuffers{L})
+                            outputSlice = io.savers.Zarr3Saver.reduceZBuffer( ...
+                                zBuffers{L}, options.DownsampleMethod, imgClass, Yl, Xl, C);
+                            zBuffers{L} = {};
+                        end
+                        if ~isempty(outputSlice); writeBatch{L}{end+1} = outputSlice; end
                     end
                     if ~isempty(writeBatch{L})
                         io.savers.Zarr3Saver.writeStreamBatch( ...
-                            levelInfo(L).arr, writeBatch{L}, writeStart(L), t, C, T, ...
-                            levelInfo(L).Yl, levelInfo(L).Xl, imgClass);
+                            levelInfo(L).arr, writeBatch{L}, writeStart(L), t, C, T, Yl, Xl, imgClass);
                     end
+                    levelOutput = outputSlice;
                 end
             end
             if ~isempty(wb); delete(wb); end
 
-            % --- OME-NGFF multiscales (+ materials for labels) ---
-            axesCells = cell(1, nKeep);
-            for a = 1:nKeep; axesCells{a} = struct('name', axesNames{a}, 'type', axesTypes{a}); end
-            ms = struct('version', '0.4', 'axes', {axesCells}, 'datasets', {datasets});
-            attrStruct = struct('multiscales', {{ms}});
-            if isLabelLayer && isstruct(metadata) && isfield(metadata,'materialNames') && ~isempty(metadata.materialNames)
-                mm = struct('materialNames', {metadata.materialNames});
-                if isfield(metadata,'materialColors') && ~isempty(metadata.materialColors)
-                    mm.materialColors = metadata.materialColors;
-                end
-                attrStruct.mibMaterials = mm;
+            if trackMaxLabel && maxLabel > 0
+                attrStruct.mibMaterials = struct('materialNames', ...
+                    {arrayfun(@(k) sprintf('Material %d', k), (1:maxLabel)', 'UniformOutput', false)});
             end
-            attrStruct = io.savers.Zarr3Saver.addBoundingBox(attrStruct, metadata);
-            grp.setAttributes(attrStruct);
+            grp.setAttributes(attrStruct);   % replaces the attributes: drops mibIncomplete
 
             fnOut = filename;
             fprintf('Zarr3Saver: streamed → %s\n', filename);
+        end
+
+        function fnOut = saveStreamResumable(obj, provider, metadata, filename, options, pool)
+            % SAVESTREAMRESUMABLE - write an OME-Zarr pyramid in independent slab tasks that can be resumed.
+            %
+            % Twin of ``saveStream`` with the same options and the same store
+            % (``createStreamStore``), but the work is split into tasks, run on the
+            % workers of ``pool`` or, without a pool, one after the other on the
+            % client. Every finished task is recorded in the store, so a
+            % conversion that was cancelled, failed or crashed continues where it
+            % stopped (``options.Resume``):
+            %
+            %   1. **Level-0 slabs.** Each task reads its Z-slab of source slices
+            %      (on a worker the provider arrives once, through
+            %      ``parallel.pool.Constant``), writes it to level 0 and to every
+            %      further level that keeps the full Z (``cumZFactor == 1``),
+            %      downsampling XY per slice. The slab depth is the level-0 write
+            %      depth (chunk Z, or shard Z when sharded), so every task writes
+            %      whole chunks/shards and no two tasks touch the same one.
+            %   2. **Z-downsampled levels**, one after the other: each task reads a
+            %      chunk-aligned block of the level above back from the store,
+            %      downsamples it in XY and Z, and writes one write depth of the
+            %      level. Level ``L`` needs level ``L-1`` complete, hence the order.
+            %
+            % No pixel crosses a process boundary with a pool.
+            %
+            % **Bands of rows** (``options.BandHeight > 0``, smaller than the slice
+            % height). For slices whose slab does not fit in memory: level 0 is
+            % written in tasks of one Z-slab x one band of ``BandHeight`` rows
+            % (rounded down to whole chunk - or shard - rows of level 0, at least
+            % one), read with ``provider.getSliceRows``; then every coarser level
+            % is built band by band from the level above (``buildLevelBand``),
+            % each band reading about as much as a level-0 band. Memory per task
+            % no longer depends on the slice height. Bands need a provider that
+            % reads rows (``getSliceRows``, and ``SupportsRowReads`` when it has
+            % that property) and an interpolating downsampling method; otherwise
+            % ``io:Zarr3Saver:bandsUnsupported``. A banded store equals an
+            % unbanded one: every resize is by exactly 0.5 and a band reads enough
+            % rows around it to resize exactly like the whole slice.
+            %
+            % **XY downsampling** is by exactly 0.5 per level (``imresize(...,
+            % 0.5)``), matching the ``2^k`` scale in the metadata; for an odd size
+            % this differs from resizing to ``[Yl Xl]``, which stretches by
+            % ``size/Yl``.
+            %
+            % **Resume.** Two files in the store root drive it, both removed when
+            % the conversion completes:
+            %
+            %   - ``.mib_resume.json`` - written once at the start: what the store
+            %     is (source and pyramid sizes, level plan, chunk, shard, codec,
+            %     zarr format, downsampling method) plus
+            %     ``options.SourceFingerprint``, which the caller sets to identify
+            %     its source (e.g. names, sizes and dates of the source files), and
+            %     the band height. A resume compares the first part and takes the
+            %     band height from the record, whatever ``BandHeight`` it is given:
+            %     the task keys depend on it, and a caller that sizes bands from the
+            %     free memory would otherwise refuse its own resume
+            %   - ``.mib_progress.log`` - one line ``<task key> <largest value>``
+            %     appended on the client after each finished task
+            %
+            % With ``options.Resume = true`` the existing store is reopened
+            % instead of replaced; the recorded tasks are skipped, the others run
+            % (a task interrupted while writing rewrites its whole chunks, so a
+            % half-written slab is harmless). The store must carry both files and
+            % a ``.mib_resume.json`` equal to the one this call would write -
+            % otherwise ``io:Zarr3Saver:cannotResume`` is raised with the reason,
+            % and nothing is changed. Tasks are recorded in submission order, so
+            % with a pool a few finished tasks may be redone after a crash.
+            %
+            % The store equals the one ``saveStream`` writes: both build each
+            % level from the level above. Only one time point (``T == 1``) is
+            % supported. With a pool
+            % ``provider`` is serialised, so it must not hold a pool or open file
+            % handles (e.g. ``ImageDatastoreSliceProvider``). Progress and Cancel
+            % act between tasks, i.e. per slab.
+            %
+            % **Memory.** Per worker (or on the client without a pool), phase 1
+            % holds the slab of every full-Z level (~1.33 x writeDepth full slices)
+            % plus the copy zarrMex makes while writing; phase 2 a block of
+            % ``writeDepth x factor`` slices of the level above.
+            %
+            % Cancel and errors as in ``saveStream``: the store keeps
+            % ``mibIncomplete`` and the resume files; cancel returns ``[]``, a
+            % failed task cancels the remaining ones and raises
+            % ``io:Zarr3Saver:taskFailed`` naming the level and Z range.
+            %
+            % Input Arguments:
+            %   - **provider** - ``io.savers.SliceProvider``
+            %   - **metadata**, **filename** - as for ``saveStream``
+            %   - **options** - as for ``saveStream``, plus:
+            %
+            %     - ``.Resume`` - [logical] continue an interrupted conversion, default false
+            %     - ``.SourceFingerprint`` - struct or char identifying the source,
+            %       compared on resume; default empty
+            %     - ``.BandHeight`` - rows of a level-0 band, ``0`` (default) or at
+            %       least the slice height for whole slices
+            %
+            %   - **pool** - *(optional)* process-based ``parallel.Pool``; ``[]`` runs
+            %     the tasks on the client
+            %
+            % Output Arguments:
+            %   - **fnOut** - [char] the written group path, ``[]`` if cancelled
+            %
+            % **Example** - a folder of TIFFs, written by 4 workers, then resumed:
+            %
+            %   .. code-block:: matlab
+            %
+            %      provider = io.savers.ImageDatastoreSliceProvider(imageDatastore('C:\slices'));
+            %      meta = struct('pixSize', struct('x',0.01,'y',0.01,'z',0.03));
+            %      saver = io.savers.Zarr3Saver(struct());
+            %      saver.saveStreamResumable(provider, meta, 'C:\out\stack.zarr3', struct('silent', true), parpool(4));
+            %      % ... interrupted; later, with the same settings:
+            %      saver.saveStreamResumable(provider, meta, 'C:\out\stack.zarr3', ...
+            %          struct('silent', true, 'Resume', true), gcp);
+            if nargin < 5 || isempty(options); options = struct(); end
+            if nargin < 6; pool = []; end
+            if nargin < 4 || isempty(filename); error('io:Zarr3Saver:noFilename', 'Output filename is required'); end
+            resumeConversion = isfield(options, 'Resume') && options.Resume;
+            sourceFingerprint = '';
+            if isfield(options, 'SourceFingerprint'); sourceFingerprint = options.SourceFingerprint; end
+
+            [options, cancelled] = obj.resolveExportOptions(options, metadata, provider.OutputSize(1:3));
+            if cancelled; fnOut = []; return; end
+            [options, isLabelLayer, pixSize] = io.savers.Zarr3Saver.streamDefaults(options, metadata);
+
+            sz = provider.OutputSize;
+            Y = sz(1); X = sz(2); Z = sz(3); C = sz(4); T = sz(5);
+            if T > 1
+                error('io:Zarr3Saver:resumableTimeSeries', ...
+                    'saveStreamResumable writes a single time point; use saveStream for time series.');
+            end
+            imgClass = provider.DataClass;
+
+            plan = io.savers.Zarr3Saver.computeLevelPlan(Y, X, Z, pixSize, options);
+            nLevels = numel(plan);
+            filename = char(filename);
+            resumeFile = fullfile(filename, '.mib_resume.json');
+            progressFile = fullfile(filename, '.mib_progress.log');
+
+            % what the store is: a resume must find exactly this
+            resumeInfo = struct('sizeYXZC', [Y X Z C], 'dataClass', imgClass, ...
+                'levelsYXZ', [[plan.Yl]', [plan.Xl]', [plan.Zl]'], 'cumZFactor', [plan.cumZFactor], ...
+                'chunkSize', options.ChunkSize, 'shardSize', options.ShardSize, ...
+                'compressors', options.Compressors, 'downsampleMethod', options.DownsampleMethod, ...
+                'zarrFormat', io.savers.Zarr3Saver.resolveZarrFormat(filename, options), ...
+                'source', sourceFingerprint);
+            resumeText = jsonencode(resumeInfo);
+
+            bandHeight = 0;
+            if isfield(options, 'BandHeight') && ~isempty(options.BandHeight); bandHeight = options.BandHeight; end
+            finishedTasks = dictionary(string.empty, double.empty);   % task key -> largest value of the task
+            if resumeConversion
+                if ~isfile(resumeFile) || ~isfile(progressFile)
+                    error('io:Zarr3Saver:cannotResume', ...
+                        'Cannot resume %s: it holds no record of an interrupted conversion.', filename);
+                end
+                recorded = jsondecode(fileread(resumeFile));
+                if ~isfield(recorded, 'conversion') || ~isequal(recorded.conversion, jsondecode(resumeText))
+                    error('io:Zarr3Saver:cannotResume', ['Cannot resume %s: the source or the settings ' ...
+                        'differ from those of the interrupted conversion.'], filename);
+                end
+                % the recorded bands, whatever this call asks for: the task keys depend on them
+                bandHeight = recorded.bandHeight;
+                progressLines = splitlines(strtrim(fileread(progressFile)));
+                for lineIndex = 1:numel(progressLines)
+                    parts = split(strtrim(progressLines{lineIndex}));
+                    if numel(parts) == 2; finishedTasks(parts(1)) = str2double(parts(2)); end
+                end
+                [grp, levelInfo, attrStruct] = io.savers.Zarr3Saver.createStreamStore( ...
+                    filename, plan, C, T, imgClass, options, metadata, isLabelLayer, false);
+            else
+                [grp, levelInfo, attrStruct] = io.savers.Zarr3Saver.createStreamStore( ...
+                    filename, plan, C, T, imgClass, options, metadata, isLabelLayer);
+            end
+
+            % --- bands of rows: level-0 band height in whole chunk (shard) rows ---
+            useBands = bandHeight > 0 && bandHeight < Y;
+            if useBands
+                if ~ismethod(provider, 'getSliceRows') || ...
+                        (isprop(provider, 'SupportsRowReads') && ~provider.SupportsRowReads)
+                    error('io:Zarr3Saver:bandsUnsupported', ...
+                        'The source cannot be read in bands of rows; use BandHeight = 0.');
+                end
+                if ismember(options.DownsampleMethod, {'mode', 'median'})
+                    error('io:Zarr3Saver:bandsUnsupported', ...
+                        'Bands of rows support the interpolating downsampling methods only, not ''%s''.', options.DownsampleMethod);
+                end
+                bandHeight = max(1, floor(bandHeight / levelInfo(1).rowAlign)) * levelInfo(1).rowAlign;
+                useBands = bandHeight < Y;
+            end
+            if ~useBands; bandHeight = 0; end
+            if ~resumeConversion
+                resumeRecord = struct('conversion', resumeInfo, 'bandHeight', bandHeight);
+                fileId = fopen(resumeFile, 'w'); fwrite(fileId, jsonencode(resumeRecord), 'char'); fclose(fileId);
+                fileId = fopen(progressFile, 'w'); fclose(fileId);
+            end
+            trackMaxLabel = isLabelLayer && ~isfield(attrStruct, 'mibMaterials') && ...
+                isfield(options, 'MaterialNamesFromData') && options.MaterialNamesFromData;
+
+            levelNames = {levelInfo.name};
+            levelSizes = [[levelInfo.Yl]', [levelInfo.Xl]'];
+            if isempty(pool)
+                providerArgument = struct('Value', provider);   % same .Value access as a pool Constant
+            else
+                providerArgument = parallel.pool.Constant(provider);
+            end
+            slabDepth = levelInfo(1).chunkZ;
+            zFirsts = 1:slabDepth:Z;
+            zLasts = min(zFirsts + slabDepth - 1, Z);
+
+            % --- task list: level 0, then one group per level built from the level above ---
+            if useBands
+                % level 0 slab by slab and band by band; every coarser level is
+                % then built from the level above, in bands as well
+                numberOfDirectLevels = 1;
+                yFirsts = 1:bandHeight:Y;
+                yLasts = min(yFirsts + bandHeight - 1, Y);
+                [slabIndex, bandIndex] = ndgrid(1:numel(zFirsts), 1:numel(yFirsts));
+                slabIndex = slabIndex(:)'; bandIndex = bandIndex(:)';
+                taskGroups = {struct( ...
+                    'key', arrayfun(@(s, b) sprintf('L0_Z%d_Y%d', zFirsts(s), yFirsts(b)), slabIndex, bandIndex, 'UniformOutput', false), ...
+                    'label', arrayfun(@(s, b) sprintf('level 0, Z %d-%d, Y %d-%d', zFirsts(s), zLasts(s), yFirsts(b), yLasts(b)), ...
+                        slabIndex, bandIndex, 'UniformOutput', false), ...
+                    'function', @io.savers.Zarr3Saver.writeLevel0Band, 'numberOfOutputs', 1, ...
+                    'arguments', arrayfun(@(s, b) {filename, levelNames{1}, providerArgument, ...
+                        zFirsts(s), zLasts(s), yFirsts(b), yLasts(b), trackMaxLabel}, slabIndex, bandIndex, 'UniformOutput', false))};
+            else
+                % levels keeping the full Z are written with level 0; the others are
+                % built from the level above (cumZFactor never decreases with L)
+                numberOfDirectLevels = find([plan.cumZFactor] > 1, 1) - 1;
+                if isempty(numberOfDirectLevels); numberOfDirectLevels = nLevels; end
+                taskGroups = {struct('key', arrayfun(@(first) sprintf('L0_Z%d', first), zFirsts, 'UniformOutput', false), ...
+                    'label', arrayfun(@(first, last) sprintf('level 0, Z %d-%d', first, last), zFirsts, zLasts, 'UniformOutput', false), ...
+                    'function', @io.savers.Zarr3Saver.writeDirectSlab, 'numberOfOutputs', 1, ...
+                    'arguments', arrayfun(@(first, last) {filename, levelNames(1:numberOfDirectLevels), ...
+                        levelSizes(1:numberOfDirectLevels, :), providerArgument, first, last, C, imgClass, ...
+                        options.DownsampleMethod, trackMaxLabel}, zFirsts, zLasts, 'UniformOutput', false))};
+            end
+            for L = numberOfDirectLevels+1:nLevels
+                zFactor = round(plan(L).cumZFactor / plan(L-1).cumZFactor);
+                if useBands
+                    % the source block of a band (2 rows per output row at the width
+                    % of the level above, writeDepth x zFactor deep) stays about the
+                    % size of a level-0 band
+                    rowsPerBand = floor(bandHeight * X * slabDepth / ...
+                        (2 * levelSizes(L-1, 2) * levelInfo(L).chunkZ * zFactor));
+                    rowsPerBand = max(1, floor(rowsPerBand / levelInfo(L).rowAlign)) * levelInfo(L).rowAlign;
+                    rowsPerBand = min(rowsPerBand, levelInfo(L).Yl);
+                else
+                    rowsPerBand = levelInfo(L).Yl;
+                end
+                outFirsts = 1:levelInfo(L).chunkZ:levelInfo(L).Zl;
+                outLasts = min(outFirsts + levelInfo(L).chunkZ - 1, levelInfo(L).Zl);
+                rowFirsts = 1:rowsPerBand:levelInfo(L).Yl;
+                rowLasts = min(rowFirsts + rowsPerBand - 1, levelInfo(L).Yl);
+                [slabIndex, bandIndex] = ndgrid(1:numel(outFirsts), 1:numel(rowFirsts));
+                slabIndex = slabIndex(:)'; bandIndex = bandIndex(:)';
+                if useBands
+                    keys = arrayfun(@(s, b) sprintf('L%d_Z%d_Y%d', L - 1, outFirsts(s), rowFirsts(b)), slabIndex, bandIndex, 'UniformOutput', false);
+                    labels = arrayfun(@(s, b) sprintf('level %d, Z %d-%d, Y %d-%d', L - 1, outFirsts(s), outLasts(s), ...
+                        rowFirsts(b), rowLasts(b)), slabIndex, bandIndex, 'UniformOutput', false);
+                else
+                    keys = arrayfun(@(s) sprintf('L%d_Z%d', L - 1, outFirsts(s)), slabIndex, 'UniformOutput', false);
+                    labels = arrayfun(@(s) sprintf('level %d, Z %d-%d', L - 1, outFirsts(s), outLasts(s)), slabIndex, 'UniformOutput', false);
+                end
+                taskGroups{end+1} = struct('key', keys, 'label', labels, ...
+                    'function', @io.savers.Zarr3Saver.buildLevelBand, 'numberOfOutputs', 0, ...
+                    'arguments', arrayfun(@(s, b) {filename, levelNames{L-1}, levelNames{L}, ...
+                        levelSizes(L-1, :), levelSizes(L, :), outFirsts(s), outLasts(s), rowFirsts(b), rowLasts(b), ...
+                        zFactor, levelInfo(L-1).Zl, C, imgClass, options.DownsampleMethod}, ...
+                        slabIndex, bandIndex, 'UniformOutput', false)); %#ok<AGROW>
+            end
+            numberOfTasks = sum(cellfun(@numel, taskGroups));
+            doneTasks = numEntries(finishedTasks);
+
+            if isempty(pool); workerText = 'on this computer'; else; workerText = sprintf('on %d workers', pool.NumWorkers); end
+            wb = obj.createProgressDialog('Saving Zarr...', sprintf('Writing %s\n%s', filename, workerText), true);
+            if ~isempty(wb); wb.Value = doneTasks / numberOfTasks; end
+
+            for groupIndex = 1:numel(taskGroups)
+                tasks = taskGroups{groupIndex};
+                tasks = tasks(~isKey(finishedTasks, string({tasks.key})));
+                [finishedTasks, doneTasks, cancelled] = io.savers.Zarr3Saver.runTasks( ...
+                    tasks, pool, wb, doneTasks, numberOfTasks, finishedTasks, progressFile);
+                if cancelled; if ~isempty(wb); delete(wb); end; fnOut = []; return; end
+            end
+            if ~isempty(wb); delete(wb); end
+
+            maxLabel = max([0; values(finishedTasks)]);
+            if trackMaxLabel && maxLabel > 0
+                attrStruct.mibMaterials = struct('materialNames', ...
+                    {arrayfun(@(k) sprintf('Material %d', k), (1:maxLabel)', 'UniformOutput', false)});
+            end
+            grp.setAttributes(attrStruct);   % replaces the attributes: drops mibIncomplete
+            delete(resumeFile);
+            delete(progressFile);
+
+            fnOut = filename;
+            fprintf('Zarr3Saver: written %s → %s\n', workerText, filename);
         end
     end
 
@@ -1037,7 +1367,404 @@ classdef Zarr3Saver < io.savers.BaseSaver
         end
     end
 
+    methods (Static, Hidden)
+        % Tasks of saveStreamResumable. Public only so that parfeval can
+        % call them on a pool worker; not meant to be called directly.
+
+        function maxLabel = writeDirectSlab(storePath, levelNames, levelSizes, providerConstant, ...
+                zFirst, zLast, C, imgClass, downsampleMethod, trackMaxLabel)
+            % WRITEDIRECTSLAB - Read source slices zFirst..zLast and write them to every full-Z level.
+            %
+            % Runs on a pool worker. Reads each slice from the provider in
+            % ``providerConstant.Value``, downsamples it in XY for the coarser
+            % levels (cascaded from the previous level by exactly 0.5 for the
+            % interpolating methods, see ``buildLevelBand``; from the full slice
+            % for ``'mode'``/``'median'``), collects the slab per level and writes
+            % each level with one region write.
+            %
+            % Input Arguments:
+            %   - **storePath** - [char] zarr group path
+            %   - **levelNames** - cellstr, array names of the full-Z levels
+            %   - **levelSizes** - ``[nLevels x 2]`` ``[Y X]`` of those levels
+            %   - **providerConstant** - ``parallel.pool.Constant`` of the slice provider
+            %   - **zFirst**, **zLast** - 1-based source slice range of the slab
+            %   - **C** - number of channels
+            %   - **imgClass** - [char] data class
+            %   - **downsampleMethod** - [char] ``imresize`` method, ``'mode'`` or ``'median'``
+            %   - **trackMaxLabel** - [logical] return the largest value of the slab
+            %
+            % Output Arguments:
+            %   - **maxLabel** - [double] the largest value read, ``0`` unless tracked
+            provider = providerConstant.Value;
+            numberOfLevels = numel(levelNames);
+            depth = zLast - zFirst + 1;
+            cascadeDownsampling = ~ismember(downsampleMethod, {'mode', 'median'});
+            slabs = cell(1, numberOfLevels);
+            for L = 1:numberOfLevels
+                slabs{L} = zeros(levelSizes(L, 1), levelSizes(L, 2), depth, C, imgClass);
+            end
+
+            maxLabel = 0;
+            for z = zFirst:zLast
+                slice = provider.getSlice(z, 1);   % [Y X C]
+                if trackMaxLabel; maxLabel = max(maxLabel, double(max(slice, [], 'all'))); end
+                xySlice = slice;
+                for L = 1:numberOfLevels
+                    Yl = levelSizes(L, 1); Xl = levelSizes(L, 2);
+                    if L > 1
+                        if cascadeDownsampling
+                            xySlice = imresize(xySlice, 0.5, downsampleMethod);   % from level L-1, [Yl Xl]
+                        else
+                            xySlice = io.savers.Zarr3Saver.blockReduce2D(slice, Yl, Xl, str2func(downsampleMethod));
+                        end
+                    end
+                    slabs{L}(:, :, z - zFirst + 1, :) = reshape(cast(xySlice, imgClass), Yl, Xl, 1, C);
+                end
+            end
+
+            for L = 1:numberOfLevels
+                io.savers.Zarr3Saver.writeRegion(fullfile(storePath, levelNames{L}), slabs{L}, 1, zFirst, C);
+                slabs{L} = [];
+            end
+        end
+
+        function maxLabel = writeLevel0Band(storePath, levelName, providerConstant, zFirst, zLast, yFirst, yLast, trackMaxLabel)
+            % WRITELEVEL0BAND - Read rows yFirst..yLast of source slices zFirst..zLast and write them to level 0.
+            %
+            % Runs on a pool worker. Memory is one band - ``(yLast-yFirst+1) x
+            % width x slab depth`` - however large the slices are; the provider
+            % must read rows (``getSliceRows``, e.g. a TIFF through ``imread``
+            % with ``PixelRegion``). The coarser levels are built afterwards from
+            % level 0 by ``buildLevelBand``.
+            %
+            % Input Arguments:
+            %   - **storePath** - [char] zarr group path
+            %   - **levelName** - [char] array name of level 0
+            %   - **providerConstant** - ``parallel.pool.Constant`` (or struct with ``.Value``) of the provider
+            %   - **zFirst**, **zLast** - 1-based source slice range
+            %   - **yFirst**, **yLast** - 1-based row range, whole chunks (shards) of level 0
+            %   - **trackMaxLabel** - [logical] return the largest value of the band
+            %
+            % Output Arguments:
+            %   - **maxLabel** - [double] the largest value read, ``0`` unless tracked
+            provider = providerConstant.Value;
+            C = provider.NumChannels;
+            band = zeros(yLast - yFirst + 1, provider.SliceSize(2), zLast - zFirst + 1, C, provider.DataClass);
+            maxLabel = 0;
+            for z = zFirst:zLast
+                rows = provider.getSliceRows(z, yFirst, yLast);   % [rows X C]
+                if trackMaxLabel; maxLabel = max(maxLabel, double(max(rows, [], 'all'))); end
+                band(:, :, z - zFirst + 1, :) = reshape(rows, size(band, 1), size(band, 2), 1, C);
+            end
+            io.savers.Zarr3Saver.writeRegion(fullfile(storePath, levelName), band, yFirst, zFirst, C);
+        end
+
+        function buildLevelBand(storePath, sourceName, targetName, sourceSize, targetSize, ...
+                zOutFirst, zOutLast, yOutFirst, yOutLast, zFactor, sourceDepth, C, imgClass, downsampleMethod)
+            % BUILDLEVELBAND - Build rows yOutFirst..yOutLast of slices zOutFirst..zOutLast of a level from the level above.
+            %
+            % Runs on a pool worker. Every level halves XY (``computeLevelPlan``),
+            % so the interpolating methods resize by exactly 0.5 (``imresize(...,
+            % 0.5, method)``): output row ``u`` is centred on source row
+            % ``2u - 0.5``, the same mapping as the ``2^k`` scale written in the
+            % metadata, and ``ceil(rows/2)`` rows come out - the level size. A band
+            % reads the source rows it needs plus ``halo`` rows on either side
+            % (the bicubic antialiasing kernel reaches 4 source rows at 0.5) and
+            % starts on an odd source row, so its resize equals the whole-slice
+            % resize exactly (measured, bilinear/bicubic/nearest, odd and even
+            % sizes) and bands join without seams. ``'mode'``/``'median'`` reduce
+            % blocks with ``blockReduce2D`` and need the whole slice
+            % (``yOutFirst = 1``, ``yOutLast = targetSize(1)``).
+            %
+            % The source block is ``zFactor``-times deeper than the output; each
+            % group of ``zFactor`` resized slices is reduced in Z with
+            % ``reduceZBuffer`` (a trailing group may be shorter) and the result
+            % written with one region write.
+            %
+            % Input Arguments:
+            %   - **storePath** - [char] zarr group path
+            %   - **sourceName**, **targetName** - array names of the level above and of this level
+            %   - **sourceSize**, **targetSize** - ``[Y X]`` of the two levels
+            %   - **zOutFirst**, **zOutLast** - 1-based output slice range
+            %   - **yOutFirst**, **yOutLast** - 1-based output row range, whole chunks (shards)
+            %   - **zFactor** - Z downsampling factor from the source level (1 or 2)
+            %   - **sourceDepth** - Z size of the source level
+            %   - **C** - number of channels
+            %   - **imgClass** - [char] data class
+            %   - **downsampleMethod** - [char] as for ``writeDirectSlab``
+            halo = 8;   % even, so the band starts on an odd source row
+            cascadeDownsampling = ~ismember(downsampleMethod, {'mode', 'median'});
+            if cascadeDownsampling
+                rowFirst = max(1, 2 * yOutFirst - 1 - halo);
+                rowLast = min(sourceSize(1), 2 * yOutLast + halo);
+            else
+                rowFirst = 1;
+                rowLast = sourceSize(1);
+            end
+            rowOffset = (rowFirst - 1) / 2;   % output rows before the block's first one
+
+            source = io.zarr.Array(fullfile(storePath, sourceName));
+            zInFirst = (zOutFirst - 1) * zFactor + 1;
+            zInLast = min(zOutLast * zFactor, sourceDepth);
+            bbox = [rowFirst rowLast+1; 1 sourceSize(2)+1; zInFirst zInLast+1];
+            if C > 1; bbox = [bbox; 1 C+1]; end
+            inputRows = rowLast - rowFirst + 1;
+            inputDepth = zInLast - zInFirst + 1;
+            block = reshape(source.read(bbox), inputRows, sourceSize(2), inputDepth, C);
+
+            outputRows = yOutLast - yOutFirst + 1;
+            Xl = targetSize(2);
+            outputDepth = zOutLast - zOutFirst + 1;
+            output = zeros(outputRows, Xl, outputDepth, C, imgClass);
+            for outputIndex = 1:outputDepth
+                firstInput = (outputIndex - 1) * zFactor + 1;
+                lastInput = min(outputIndex * zFactor, inputDepth);
+                group = cell(1, lastInput - firstInput + 1);
+                for inputIndex = firstInput:lastInput
+                    sourceSlice = reshape(block(:, :, inputIndex, :), inputRows, sourceSize(2), C);
+                    if cascadeDownsampling
+                        resized = imresize(sourceSlice, 0.5, downsampleMethod);
+                        group{inputIndex - firstInput + 1} = resized(yOutFirst - rowOffset : yOutLast - rowOffset, :, :);
+                    else
+                        group{inputIndex - firstInput + 1} = io.savers.Zarr3Saver.blockReduce2D( ...
+                            sourceSlice, targetSize(1), Xl, str2func(downsampleMethod));
+                    end
+                end
+                output(:, :, outputIndex, :) = reshape(io.savers.Zarr3Saver.reduceZBuffer( ...
+                    group, downsampleMethod, imgClass, outputRows, Xl, C), outputRows, Xl, 1, C);
+            end
+            io.savers.Zarr3Saver.writeRegion(fullfile(storePath, targetName), output, yOutFirst, zOutFirst, C);
+        end
+    end
+
     methods (Static, Access = private)
+        function [options, isLabelLayer, pixSize] = streamDefaults(options, metadata)
+            % STREAMDEFAULTS - Fill the saveStream / saveStreamResumable option defaults.
+            %
+            % Also decides whether this is a label layer (``options.layerType`` is
+            % ``'labels'`` or ``metadata.materialNames`` is set) and then forces a
+            % categorical downsampling method (``'nearest'`` unless ``'mode'``), and
+            % takes the voxel size from ``metadata.pixSize`` (default 1).
+            if ~isfield(options, 'Levels');             options.Levels = []; end
+            if ~isfield(options, 'MinLevelSize');       options.MinLevelSize = 256; end
+            if ~isfield(options, 'MaxLevels');          options.MaxLevels = 8; end
+            if ~isfield(options, 'ChunkSize');          options.ChunkSize = [256 256 16]; end
+            if ~isfield(options, 'ShardSize');          options.ShardSize = []; end
+            if ~isfield(options, 'Compressors');        options.Compressors = 'zstd'; end
+            if ~isfield(options, 'DownsampleMethod');   options.DownsampleMethod = 'bilinear'; end
+            if ~isfield(options, 'DownsampleStrategy'); options.DownsampleStrategy = 'XY only'; end
+
+            isLabelLayer = (isfield(options,'layerType') && strcmp(options.layerType,'labels')) || ...
+                (isstruct(metadata) && isfield(metadata,'materialNames') && ~isempty(metadata.materialNames));
+            if isLabelLayer && ~ismember(options.DownsampleMethod, {'nearest', 'mode'})
+                options.DownsampleMethod = 'nearest';
+            end
+
+            pixSize = struct('x', 1, 'y', 1, 'z', 1);
+            if isstruct(metadata) && isfield(metadata, 'pixSize') && ~isempty(metadata.pixSize)
+                ps = metadata.pixSize;
+                if isfield(ps,'x'); pixSize.x = ps.x; end
+                if isfield(ps,'y'); pixSize.y = ps.y; end
+                if isfield(ps,'z'); pixSize.z = ps.z; end
+            end
+        end
+
+        function [grp, levelInfo, attrStruct] = createStreamStore(filename, plan, C, T, imgClass, options, metadata, isLabelLayer, createNew)
+            % CREATESTREAMSTORE - Create the zarr group and every level array of a streamed pyramid.
+            %
+            % Replaces an existing folder at ``filename``. Each level gets its
+            % chunk (clamped to the level) and shard shape, C byte order (no
+            % transpose codec). The group attributes - OME-NGFF multiscales,
+            % materials of a label layer, bounding box - are written at once with
+            % ``mibIncomplete = true``; the caller rewrites them with ``attrStruct``
+            % (which has no flag) after the last write.
+            %
+            % With ``createNew = false`` (resume, default true) the existing store
+            % is opened instead: nothing is deleted or written, the level arrays
+            % are opened, and ``levelInfo``/``attrStruct`` are computed as for a
+            % new store.
+            %
+            % Output Arguments:
+            %   - **grp** - ``io.zarr.Group``
+            %   - **levelInfo** - struct array per level: ``Yl Xl Zl arr name chunkZ
+            %     rowAlign``, where ``chunkZ`` is the Z depth of one write and
+            %     ``rowAlign`` the Y step of a band write (chunk Z / Y, or shard Z / Y
+            %     when sharded)
+            %   - **attrStruct** - the final group attributes
+            nLevels = numel(plan);
+            axesNames = {'y','x','z'}; axesTypes = {'space','space','space'};
+            if C > 1; axesNames{end+1} = 'c'; axesTypes{end+1} = 'channel'; end
+            if T > 1; axesNames{end+1} = 't'; axesTypes{end+1} = 'time'; end
+
+            if nargin < 9; createNew = true; end
+            filename = char(filename);
+            if createNew
+                zarrFormat = io.savers.Zarr3Saver.resolveZarrFormat(filename, options);
+                if isfolder(filename); rmdir(filename, 's'); end
+                grp = io.zarr.Group.create(filename, 'zarrFormat', zarrFormat);
+            else
+                grp = io.zarr.Group(filename);
+            end
+
+            levelInfo = repmat(struct('Yl', 1, 'Xl', 1, 'Zl', 1, 'arr', [], 'name', '', 'chunkZ', 1, 'rowAlign', 1), 1, nLevels);
+            datasets  = cell(1, nLevels);
+            for L = 1:nLevels
+                Yl = plan(L).Yl; Xl = plan(L).Xl; Zl = plan(L).Zl;
+                keepShape = [Yl, Xl, Zl];
+                if C > 1; keepShape(end+1) = C; end %#ok<AGROW>
+                if T > 1; keepShape(end+1) = T; end %#ok<AGROW>
+                chunk = min(options.ChunkSize(1:3), keepShape(1:3));
+                chunk = max(chunk, [1 1 1]);
+                if numel(keepShape) > 3; chunk = [chunk, keepShape(4:end)]; end %#ok<AGROW>
+                name = num2str(L - 1);
+                levelInfo(L).Yl = Yl; levelInfo(L).Xl = Xl; levelInfo(L).Zl = Zl; levelInfo(L).name = name;
+                levelInfo(L).chunkZ = chunk(3);     % Z depth of one write
+                levelInfo(L).rowAlign = chunk(1);   % Y step of a band write
+                % C byte order, no transpose codec - see "Chunk byte order" in the class help
+                createArgs = {'chunkShape', chunk, 'compressors', options.Compressors, 'filters', 'none'};
+                if ~isempty(options.ShardSize)
+                    shard = io.savers.Zarr3Saver.computeShard(chunk, options.ShardSize);
+                    createArgs = [createArgs, {'shardShape', shard}]; %#ok<AGROW>
+                    % a write must cover whole shards, or each partial write
+                    % re-reads and rewrites the shard (see Memory in saveStream)
+                    levelInfo(L).chunkZ = shard(3);
+                    levelInfo(L).rowAlign = shard(1);
+                end
+                if createNew
+                    levelInfo(L).arr = grp.createArray(name, keepShape, imgClass, createArgs{:});
+                else
+                    levelInfo(L).arr = grp.openArray(name);
+                end
+                scaleVec = [plan(L).physScaleY, plan(L).physScaleX, plan(L).physScaleZ];
+                if C > 1; scaleVec(end+1) = 1; end %#ok<AGROW>
+                if T > 1; scaleVec(end+1) = 1; end %#ok<AGROW>
+                datasets{L} = struct('path', name, ...
+                    'coordinateTransformations', {{struct('type', 'scale', 'scale', scaleVec)}});
+            end
+
+            % --- OME-NGFF multiscales (+ materials for labels) ---
+            axesCells = cell(1, numel(axesNames));
+            for a = 1:numel(axesNames); axesCells{a} = struct('name', axesNames{a}, 'type', axesTypes{a}); end
+            ms = struct('version', '0.4', 'axes', {axesCells}, 'datasets', {datasets});
+            attrStruct = struct('multiscales', {{ms}});
+            if isLabelLayer && isstruct(metadata) && isfield(metadata,'materialNames') && ~isempty(metadata.materialNames)
+                mm = struct('materialNames', {metadata.materialNames});
+                if isfield(metadata,'materialColors') && ~isempty(metadata.materialColors)
+                    mm.materialColors = metadata.materialColors;
+                end
+                attrStruct.mibMaterials = mm;
+            end
+            attrStruct = io.savers.Zarr3Saver.addBoundingBox(attrStruct, metadata);
+            if createNew
+                % declared up front and flagged, so an interrupted store is recognisable
+                incompleteAttrs = attrStruct;
+                incompleteAttrs.mibIncomplete = true;
+                grp.setAttributes(incompleteAttrs);
+            end
+        end
+
+        function [finishedTasks, doneTasks, cancelled] = runTasks(tasks, pool, wb, doneTasks, totalTasks, finishedTasks, progressFile)
+            % RUNTASKS - Run saveStreamResumable's tasks, record each finished one, show progress, honour Cancel.
+            %
+            % ``tasks`` is a struct array with ``key``, ``label``, ``function``,
+            % ``numberOfOutputs`` and ``arguments``. With a pool all tasks are
+            % submitted at once and collected in order, each future polled so
+            % Cancel stays responsive; without a pool they run one by one on the
+            % client, Cancel checked between them. A finished task goes into
+            % ``finishedTasks`` (key -> largest value returned, 0 when the task
+            % returns nothing) and is appended to ``progressFile`` as
+            % ``<key> <value>`` - recorded only after it finished, so a resume
+            % never skips unwritten data. On Cancel the remaining futures are
+            % cancelled and ``cancelled`` is true. A failed task cancels the rest,
+            % closes ``wb`` and raises ``io:Zarr3Saver:taskFailed`` with its label
+            % (level, Z range).
+            cancelled = false;
+            if isempty(tasks); return; end
+            futures = parallel.FevalFuture.empty;
+            if ~isempty(pool)
+                for taskIndex = 1:numel(tasks)
+                    futures(taskIndex) = parfeval(pool, tasks(taskIndex).function, ...
+                        tasks(taskIndex).numberOfOutputs, tasks(taskIndex).arguments{:});
+                end
+            end
+
+            for taskIndex = 1:numel(tasks)
+                task = tasks(taskIndex);
+                largestValue = 0;
+                if isempty(pool)
+                    drawnow limitrate;
+                    if ~isempty(wb) && wb.CancelRequested; cancelled = true; return; end
+                    try
+                        if task.numberOfOutputs > 0
+                            largestValue = task.function(task.arguments{:});
+                        else
+                            task.function(task.arguments{:});
+                        end
+                    catch err
+                        if ~isempty(wb); delete(wb); end
+                        error('io:Zarr3Saver:taskFailed', 'Writing %s failed: %s', task.label, err.message);
+                    end
+                else
+                    while ~wait(futures(taskIndex), 'finished', 0.5)
+                        drawnow limitrate;
+                        if ~isempty(wb) && wb.CancelRequested; break; end
+                    end
+                    if ~isempty(wb) && wb.CancelRequested
+                        cancel(futures);
+                        cancelled = true;
+                        return;
+                    end
+                    if ~isempty(futures(taskIndex).Error)
+                        cancel(futures);
+                        if ~isempty(wb); delete(wb); end
+                        error('io:Zarr3Saver:taskFailed', 'Writing %s failed: %s', ...
+                            task.label, futures(taskIndex).Error.message);
+                    end
+                    if task.numberOfOutputs > 0; largestValue = fetchOutputs(futures(taskIndex)); end
+                end
+
+                finishedTasks(string(task.key)) = largestValue;
+                fileId = fopen(progressFile, 'a');
+                fprintf(fileId, '%s %.17g\n', task.key, largestValue);
+                fclose(fileId);
+                doneTasks = doneTasks + 1;
+                if ~isempty(wb); wb.Value = doneTasks / totalTasks; end
+            end
+        end
+
+        function xySlice = reduceSliceXY(previousOutput, sourceSlice, Yl, Xl, cumZFactor, downsampleMethod)
+            % REDUCESLICEXY - XY step of saveStream's level cascade: one output slice of level L-1 to level L.
+            %
+            % The interpolating methods resize ``previousOutput`` (an output slice
+            % of the level above) by exactly 0.5 - the ``2^k`` scale of the
+            % metadata, see ``buildLevelBand``. ``'mode'``/``'median'`` reduce
+            % blocks of ``sourceSlice`` (the full-resolution slice) while the
+            % level keeps the full Z (``cumZFactor == 1``, as ``writeDirectSlab``)
+            % and of ``previousOutput`` once Z was halved (as ``buildLevelBand``).
+            if ~ismember(downsampleMethod, {'mode', 'median'})
+                xySlice = imresize(previousOutput, 0.5, downsampleMethod);
+            elseif cumZFactor == 1
+                xySlice = io.savers.Zarr3Saver.blockReduce2D(sourceSlice, Yl, Xl, str2func(downsampleMethod));
+            else
+                xySlice = io.savers.Zarr3Saver.blockReduce2D(previousOutput, Yl, Xl, str2func(downsampleMethod));
+            end
+        end
+
+        function writeRegion(arrayPath, region, yFirst, zFirst, C)
+            % WRITEREGION - Write a ``[rows X depth C]`` region at row ``yFirst``, Z ``zFirst`` with one region write.
+            %
+            % The region spans the full width; ``yFirst = 1`` and all rows write a
+            % whole slab.
+            [rows, columns, depth, ~] = size(region);
+            bbox = [yFirst yFirst+rows; 1 columns+1; zFirst zFirst+depth];
+            if C > 1
+                bbox = [bbox; 1 C+1];
+            else
+                region = reshape(region, rows, columns, depth);
+            end
+            io.zarr.Array(arrayPath).write(region, bbox);
+        end
+
         function attrStruct = addBoundingBox(attrStruct, metadata)
             % ADDBOUNDINGBOX - add the dataset bounding box to freshly built group attributes.
             %

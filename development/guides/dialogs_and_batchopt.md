@@ -62,14 +62,24 @@ delete(wb);
 ```
 
 ```matlab
-% parfor: the 5th argument is Cancelable and defaults to FALSE - always pass true
+% parfor: the 5th argument is Cancelable and defaults to FALSE - always pass true.
+% getCancelState only works on the client (on a pool worker the dialog handle is
+% invalid and it returns false), so run the loop in batches and poll between them.
 pwb = core.PoolWaitbar(n, 'Processing...', obj.mibGUI, 'Title', true);
-parfor (i=1:n, parforArg)
-    if pwb.getCancelState(); continue; end   % parfor cannot break, so skip the remainder
-    pwb.increment();
+batchSize = max(1, 4 * parforArg);   % parforArg = 0: parfor runs on the client, one item per batch
+for batchStart = 1:batchSize:n
+    drawnow limitrate;                     % deliver the increments and the Cancel click
+    if pwb.getCancelState(); break; end
+    parfor (i = batchStart:min(batchStart + batchSize - 1, n), parforArg)
+        pwb.increment();
+    end
 end
 pwb.deletePoolWaitbar();
 ```
+
+A `pwb` used inside `parfor` must exist even when no waitbar is shown (`pwb = []`): it is a
+broadcast variable, and on a running pool `parfor` refuses an undefined one. Worked example:
+`MibModel.fillSelectionOrMask` / `dilateImage` / `erodeImage`.
 
 `core.PoolWaitbar` rejects an empty parent - it needs a UIFigure or an existing `uiprogressdlg`
 handle. A pure utility function with no figure of its own should therefore **take a `uiprogressdlg`

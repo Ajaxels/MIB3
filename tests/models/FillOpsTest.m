@@ -93,6 +93,41 @@ classdef FillOpsTest < matlab.unittest.TestCase
 
     end
 
+    methods (Test, TestTags = {'Integration'})
+
+        function fillSelection_restrictedToMaterial_parallelMatchesSequential(testCase)
+            % The parallel path used to index the material model inside parfor,
+            % which failed on a running pool when the model was empty (no
+            % restriction - covered by the Unit tests above whenever a pool is
+            % open). The restriction now runs after the loop; this guards that
+            % move: parallel and sequential must agree, and the filled hole must
+            % be clipped to the material. Starts a pool when none is running,
+            % hence Integration.
+            results = cell(1, 2);
+            useParallel = [false, true];
+            for runIndex = 1:2
+                [mibModel, ~] = mibtest.helpers.buildSyntheticModel( ...
+                    'modelType', 'labels255', 'dims', [32 32 4]);
+                opt = struct('id', 1, 'blockModeSwitch', 0);
+                FillOpsTest.setRingLayer(mibModel, 'selection');
+                labels = zeros(32, 32, 4, 'uint8');
+                labels(1:15, :, :) = 1;   % material 1: top rows, half of the hole
+                mibModel.setData3D(labels, 'labels', 1, 3, NaN, opt);
+
+                batchOpt = FillOpsTest.fillOpt('selection');
+                batchOpt.SelectedMaterial = '1';
+                batchOpt.restrictSelectionToMaterial = true;
+                batchOpt.Use2DParallelComputing = useParallel(runIndex);
+                mibModel.fillSelectionOrMask('selection', batchOpt);
+                selection = mibModel.getData3D('selection', 1, 3, NaN, opt);
+                results{runIndex} = selection{1};
+            end
+            testCase.verifyEqual(results{2}, results{1}, 'parallel and sequential fill must agree');
+            testCase.verifyEqual(double(results{1}(12, 15, 1)), 1, 'the hole inside material 1 must be filled');
+            testCase.verifyEqual(double(results{1}(18, 15, 1)), 0, 'outside material 1 the fill must be clipped');
+        end
+    end
+
     % =====================================================================
     % Private helpers
     % =====================================================================

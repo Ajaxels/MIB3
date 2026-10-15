@@ -5509,6 +5509,25 @@
 For the latest updates, visit <a href="https://mib.helsinki.fi/downloads.html">MIB website</a> or check the <a href="index.html">Current release notes</a>.
 For the downloads visit <a href="https://mib.helsinki.fi/downloads.html">MIB website</a> for the development history click <a href="release-notes-history.html">here</a>.</p>
 <details class="info" open="open">
+<summary>NEXT RELEASE (in development)</summary>
+<ul>
+<li><strong>OME-Zarr pyramids</strong>: every coarser level is now exactly half the size of the level above, so
+  all levels line up with the full-resolution image, also in other OME-Zarr viewers. The same
+  data gives the same pyramid whether it is converted to BigData, saved as OME-Zarr, or written
+  by the Image converter. Pyramids written by earlier versions can differ slightly at the coarser
+  levels when the image width or height is an odd number.</li>
+<li><strong>Image converter, OME-Zarr output</strong>:<ul>
+<li>faster; with <strong>Parallel processing</strong> the workers share the conversion</li>
+<li>an interrupted or cancelled conversion can be resumed with the same settings</li>
+<li>TIF images too large for the memory are converted in parts</li>
+<li>the memory needed is checked before the conversion starts</li>
+<li>a failed conversion is reported as failed, and MIB warns when an incomplete dataset is opened</li>
+<li>the output directory must be empty or hold a previous Zarr dataset</li>
+</ul>
+</li>
+</ul>
+</details>
+<details class="info" open="open">
 <summary>RELEASE 2026.09 / 03.06.2025 (MIB3 release)</summary>
 <ul>
 <li>Release</li>

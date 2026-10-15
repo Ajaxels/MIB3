@@ -252,6 +252,19 @@ methods
             imginfo{"BoundingBox"} = reshape(double(attrs.mibBoundingBox), 1, 6);
         end
 
+        % ---- a store whose writer did not finish ----------------------------
+        % MIB writers set mibIncomplete before the first slice and drop it after
+        % the last (io.savers.Zarr3Saver.saveStream, ImageConverter.generateZarr)
+        if isfield(attrs, 'mibIncomplete') && isequal(attrs.mibIncomplete, true)
+            warningText = sprintf(['%s\n\nwas not written completely: the conversion that created it ' ...
+                'was cancelled or interrupted, so part of the image is missing.'], rootPath);
+            warning('io:Zarr3VirtualSetupLoader:incompleteStore', '%s', warningText);
+            if ~(isfield(options, 'silentMode') && options.silentMode) && ...
+                    ~isempty(obj.ParentFigure) && isvalid(obj.ParentFigure)
+                uialert(obj.ParentFigure, warningText, 'Incomplete Zarr store', 'Icon', 'warning');
+            end
+        end
+
         % Every loader sets numEntries in loadMetadata (not loadImages) - it's
         % checked by core.MibDataset.loadModel right after loadMetadata returns,
         % before loadImages is ever called.

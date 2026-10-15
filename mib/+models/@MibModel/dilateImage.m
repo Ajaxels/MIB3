@@ -19,6 +19,20 @@ function dilateImage(obj, BatchOptIn)
 % Parallel 2D dilation is supported via parfor when the Parallel Computing
 % Toolbox is available; use core.PoolWaitbar for thread-safe progress.
 %
+% **Cancel.** The progress dialog is cancelable. Each time point is computed
+% into a local array and written only when it is complete, so Cancel discards
+% the time point in progress and a 3D stack is left unchanged. 2D slice-by-slice
+% dilation polls Cancel between batches of slices (one slice sequentially, 4 per
+% worker in parallel - workers cannot see the dialog); 3D dilation is one
+% operation per time point, so Cancel acts before and after it. When earlier
+% time points of a 4D dataset were already written, a dialog says which; the
+% Undo backup holds only the current time point and cannot revert them. In
+% batch mode a Cancel also stops the protocol (``StopProtocol``).
+%
+% **Memory.** 2D slice-by-slice dilation holds one time point of the layer
+% (plus the material and mask volumes when clipping) in a local array, in the
+% sequential mode too.
+%
 % Performance: for a radius above ``bwdistRadiusThreshold`` (5 px) with a
 % spherical/circular element (equal XY and Z / X and Y radii) the operation is
 % computed as ``bwdist(BW) <= R`` (see utils.morphBallOp), which is O(N)
@@ -103,6 +117,8 @@ function dilateImage(obj, BatchOptIn)
 % 22.07.2026 - added bwdist fast path for large isotropic elements (radius > 5)
 %              via utils.morphBallOp; added AnisotropicMethod option + warning
 %              dialog (utils.morphAnisotropicMethod) for large anisotropic 3D
+% 15.10.2026 - cancelable progress dialogs; 2D stack dilation runs in batches
+%              that write each time point once (sequential path merged into it)
 
 if nargin < 2; BatchOptIn = struct(); end
 
@@ -188,6 +204,7 @@ else
     t1 = obj.I{BatchOpt.id}.slices{5}(1);
     t2 = obj.I{BatchOpt.id}.slices{5}(2);
 end
+cancelledAt = [];   % time point at which Cancel was pressed
 
 %% Parse StrelSize
 se_size = utils.parseStrelSize(BatchOpt.StrelSize, strcmp(BatchOpt.DilateMode{1}, '3D'), ...
@@ -235,7 +252,7 @@ if strcmp(BatchOpt.DilateMode{1}, '3D')
         wb = uiprogressdlg(obj.getProgressBarParent(), 'Value', 0, ...
             'Message', sprintf('Dilating %s...\nStrel: XY=%d px  Z=%d px', ...
                 BatchOpt.TargetLayer{1}, se_size(1)*2+1, zStrelPx), ...
-            'Title', 'Dilating (3D)...');
+            'Title', 'Dilating (3D)...', 'Cancelable', 'on');
     end
 
     % Build ball-shaped 3D structuring element (only needed for the imdilate path)
@@ -255,7 +272,10 @@ if strcmp(BatchOpt.DilateMode{1}, '3D')
     tMax = t2 - t1 + 1;
     for idx = 1:tMax
         t = t1 + idx - 1;
-        if BatchOpt.showWaitbar; wb.Value = (idx-1) / tMax; end
+        if BatchOpt.showWaitbar
+            if wb.CancelRequested; cancelledAt = t; break; end
+            wb.Value = (idx-1) / tMax;
+        end
 
         % Always use XY orientation (3) for volumetric strel
         original = cell2mat(obj.getData3D(BatchOpt.TargetLayer{1}, t, 3, materialIndex, getDataOptions));
@@ -276,6 +296,8 @@ if strcmp(BatchOpt.DilateMode{1}, '3D')
             dilated = dilated & mask3d;
         end
 
+        % the volume is one operation: a Cancel pressed meanwhile discards it
+        if BatchOpt.showWaitbar && wb.CancelRequested; cancelledAt = t; break; end
         obj.I{BatchOpt.id}.setData3D(dilated, BatchOpt.TargetLayer{1}, t, 3, materialIndex, getDataOptions);
     end
 
@@ -331,77 +353,76 @@ else
         max_size  = obj.I{BatchOpt.id}.dim_yxzct(orient);
         max_size2 = max_size * (t2 - t1 + 1);
         restrictToMask = BatchOpt.restrictSelectionToMask && ~strcmp(BatchOpt.TargetLayer{1}, 'mask');
+        take_difference = BatchOpt.Difference;
+        showWaitbar     = BatchOpt.showWaitbar;
 
-        if BatchOpt.Use2DParallelComputing
-            % Parallel: use core.PoolWaitbar for thread-safe progress
-            if BatchOpt.showWaitbar
-                pwb = core.PoolWaitbar(max_size2, ...
-                    sprintf('Dilating %s...\nStrel: %dx%d px', BatchOpt.TargetLayer{1}, se_size(1), se_size(2)), ...
-                    obj.getProgressBarParent(), 'Dilating (2D parallel)...');
-                pwb.setIncrement(10);
+        % Sequential and parallel alike, the slices of a time point are
+        % dilated into a local stack in batches (parfor with parforArg = 0
+        % runs on the client) and the stack is written once the time point is
+        % complete. Cancel is polled between batches - pool workers cannot
+        % see the dialog - so a cancelled time point stays unchanged. A batch
+        % is one slice sequentially, 4 per worker in parallel.
+        if parforArg > 0; batchSize = 4 * parforArg; else; batchSize = 1; end
+
+        % pwb must exist even without a waitbar: it is a parfor broadcast
+        % variable, and on a running pool parfor refuses an undefined one
+        pwb = [];
+        if showWaitbar
+            pwb = core.PoolWaitbar(max_size2, ...
+                sprintf('Dilating %s...\nStrel: %dx%d px', BatchOpt.TargetLayer{1}, se_size(1), se_size(2)), ...
+                obj.getProgressBarParent(), 'Dilating (2D)...', true);
+            pwb.setIncrement(10);
+        end
+
+        for t = t1:t2
+            getDataOptions.t = [t, t];
+            stack   = cell2mat(obj.getData3D(BatchOpt.TargetLayer{1}, t, orient, materialIndex, getDataOptions));
+            model3d = []; mask3d = [];
+            if ~isnan(restrictSelectionToMaterial)
+                model3d = cell2mat(obj.getData3D('labels', t, orient, restrictSelectionToMaterial, getDataOptions));
+            end
+            if restrictToMask
+                mask3d = cell2mat(obj.getData3D('mask', t, orient, [], getDataOptions));
             end
 
-            take_difference = BatchOpt.Difference;
-            showWaitbar     = BatchOpt.showWaitbar;
-
-            for t = t1:t2
-                getDataOptions.t = [t, t];
-                stack   = cell2mat(obj.getData3D(BatchOpt.TargetLayer{1}, t, orient, materialIndex, getDataOptions));
-                model3d = []; mask3d = [];
-                if ~isnan(restrictSelectionToMaterial)
-                    model3d = cell2mat(obj.getData3D('labels', t, orient, restrictSelectionToMaterial, getDataOptions));
+            for batchStart = 1:batchSize:max_size
+                if showWaitbar
+                    drawnow limitrate;   % deliver the progress updates and the Cancel click
+                    if pwb.getCancelState(); cancelledAt = t; break; end
                 end
-                if restrictToMask
-                    mask3d = cell2mat(obj.getData3D('mask', t, orient, [], getDataOptions));
-                end
-
-                parfor (layer_id = 1:max_size, parforArg) %#ok<PFBNS>
+                batchEnd = min(batchStart + batchSize - 1, max_size);
+                parfor (layer_id = batchStart:batchEnd, parforArg)
                     if showWaitbar && mod(layer_id, 10) == 0; pwb.increment(); end %#ok<PFBNS>
                     sliceIn = stack(:, :, layer_id);
                     if max(sliceIn(:)) < 1; continue; end
                     modelSlice = []; maskSlice = [];
-                    if ~isempty(model3d); modelSlice = model3d(:,:,layer_id); end %#ok<PFBNS>
-                    if ~isempty(mask3d);  maskSlice  = mask3d(:,:,layer_id);  end %#ok<PFBNS>
+                    if ~isempty(model3d); modelSlice = model3d(:,:,layer_id); end
+                    if ~isempty(mask3d);  maskSlice  = mask3d(:,:,layer_id);  end
                     stack(:, :, layer_id) = do_dilate(sliceIn, modelSlice, maskSlice, take_difference, se, useBwdist, se_size(1)); %#ok<PFBNS>
                 end
-
-                obj.I{BatchOpt.id}.setData3D(stack, BatchOpt.TargetLayer{1}, t, orient, materialIndex, getDataOptions);
             end
+            if ~isempty(cancelledAt); break; end
 
-            if BatchOpt.showWaitbar; pwb.deletePoolWaitbar(); end
-
-        else
-            % Sequential: plain uiprogressdlg updated per slice
-            if BatchOpt.showWaitbar
-                wb = uiprogressdlg(obj.getProgressBarParent(), 'Value', 0, ...
-                    'Message', sprintf('Dilating %s...\nStrel: %dx%d px', ...
-                        BatchOpt.TargetLayer{1}, se_size(1), se_size(2)), ...
-                    'Title', 'Dilating (2D)...');
-            end
-
-            for t = t1:t2
-                getDataOptions.t = [t, t];
-                for layer_id = 1:max_size
-                    if BatchOpt.showWaitbar
-                        wb.Value = ((t - t1) * max_size + layer_id) / max_size2;
-                    end
-                    sliceIn = cell2mat(obj.getData2D(BatchOpt.TargetLayer{1}, layer_id, orient, materialIndex, getDataOptions));
-                    if max(sliceIn(:)) < 1; continue; end
-                    model2d = []; mask2d = [];
-                    if ~isnan(restrictSelectionToMaterial)
-                        model2d = cell2mat(obj.getData2D('labels', layer_id, orient, restrictSelectionToMaterial, getDataOptions));
-                    end
-                    if restrictToMask
-                        mask2d = cell2mat(obj.getData2D('mask', layer_id, orient, [], getDataOptions));
-                    end
-                    sliceOut = do_dilate(sliceIn, model2d, mask2d, BatchOpt.Difference, se, useBwdist, se_size(1));
-                    obj.I{BatchOpt.id}.setData2D(sliceOut, BatchOpt.TargetLayer{1}, layer_id, orient, materialIndex, getDataOptions);
-                end
-            end
-
-            if BatchOpt.showWaitbar; delete(wb); end
+            obj.I{BatchOpt.id}.setData3D(stack, BatchOpt.TargetLayer{1}, t, orient, materialIndex, getDataOptions);
         end
+
+        if showWaitbar; pwb.deletePoolWaitbar(); end
     end
+end
+
+%% Cancelled: the time point in progress was discarded
+if ~isempty(cancelledAt)
+    if cancelledAt > t1
+        % earlier time points of a 4D dataset were already written
+        ErrorDlgOpt.winTitle       = 'Dilation cancelled';
+        ErrorDlgOpt.optionalPrefix = '';
+        ErrorDlgOpt.err            = sprintf(['Dilation was cancelled: time points %d-%d were dilated, ' ...
+            'time points %d-%d are unchanged.'], t1, cancelledAt - 1, cancelledAt, t2);
+        notify(obj, 'ShowErrorDialog', core.ToggleEventData(ErrorDlgOpt));
+        notify(obj, 'ShowImage');
+    end
+    if batchModeSwitch; notify(obj, 'StopProtocol'); end
+    return;
 end
 
 if ~strcmp(BatchOpt.DatasetType{1}, '2D, Slice'); toc; end

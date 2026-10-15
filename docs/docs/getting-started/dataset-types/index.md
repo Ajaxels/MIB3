@@ -186,6 +186,14 @@ A BigData image is a **pyramid**: the same picture stored at several resolutions
 current magnification; when you pan, it reads only the chunks under the viewport. Nothing else is
 loaded, so memory use stays tied to the size of the *window on screen*, not the size of the slide.
 
+Each level is exactly half the width and height of the level above it, so every level lines up with
+the full-resolution image - also in other OME-Zarr viewers. For a stack whose sections are much
+thicker than its pixels, the coarser levels can also halve the number of sections (pairs of sections
+are averaged) once the pixels have become as coarse as the sections; the downsampling setting chosen
+when the pyramid is written decides this. A pyramid comes out the same whichever way it was made -
+converting a dataset to BigData, saving as OME-Zarr, or the
+[Image converter](../../plugins/file-processing/image-converter.md) plugin.
+
 At a magnification that falls **between** two levels, the block read from the chosen level is then
 resampled to the exact scale on screen. Because the nearest level is taken, this goes **either way**:
 you may be seeing a finer level scaled **down**, or a coarser level scaled **up**, whichever level's

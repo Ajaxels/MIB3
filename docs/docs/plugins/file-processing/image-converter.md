@@ -134,11 +134,21 @@ for resulting images:
 
 In this mode, MIB can convert files from variety formats into [OME-Zarr](https://zarr.readthedocs.io/en/stable/).
 
+The output directory becomes the Zarr dataset: select an empty or a new directory. An existing Zarr
+dataset there is overwritten after confirmation.
+
 ??? note "Requirements and limitations"
     - MIB version 2.92 (beta 7) or newer
-    - installed Python environment with [zarr-python](https://mib.helsinki.fi/downloads_systemreq.html#zarr)
-    - the processing requires enough memory to load a sub-volume that is defined by `zChank` or `zChunk x zShard` value
-    - for parallel processing mode, make sure that you have enough memory to load as many `zChunks` as many parallel processing workers defined  
+    - memory grows with the image width × height and the Z of <span class="widget widget-edit">Chunk sizes</span>
+      (times the Z of <span class="widget widget-edit">Shard X factors</span> when sharding).
+      TIF images too large for the memory are converted in bands of rows automatically; for other
+      formats MIB warns before starting - reduce these Z values for very large images
+    - with <span class="widget widget-checkbox">Parallel processing</span> every worker converts its
+      own part of the stack, so the memory need is multiplied by the number of workers
+    - a cancelled, failed or interrupted conversion leaves an incomplete dataset; MIB warns when it
+      is opened. Press <span class="widget widget-button">Convert</span> again with the same settings
+      and choose **Resume** to continue where it stopped. A changed source file or Zarr setting
+      requires converting again from the start
 
 ??? note "Loading of OME-Zarr in MIB"
     It is possible to open OME-Zarr version 2 or version 3 (MIB version 2.92 beta 8 or newer). 
@@ -168,16 +178,16 @@ the smaller chunks give faster random access, while the larger chunks give faste
 
 ??? note "Example"
 
-    Example: '128, 128, 64, 1, 1' - chunks of 128×128×64 voxels per channel per timepoint.
+    Example: '256, 256, 16, 1, 1' (default) - chunks of 256×256×16 voxels per channel per timepoint.
 
 <span class="widget widget-edit">Shard X factors</span>, sharding factor for Zarr v3 (how many chunks are grouped together into a shard). Written as \[X, Y, Z, C, T\].
 Reduces overhead when dealing with many small chunks, improves cloud performance.
 
 ??? note "Example"
 
-    Example: '4, 4, 4, 1, 1' - each shard groups 4×4×4 chunks in XYZ per color channel and timepoint
+    Example: '4, 4, 1, 1, 1' (default) - each shard groups 4×4×1 chunks in XYZ per color channel and timepoint
 
-    **Note:** Only relevant if Zarr version = 3.
+    **Note:** Only relevant if Zarr version = 3. A Z factor above 1 makes the conversion need more memory.
 
 <span class="widget widget-edit">Downsample limit</span>, definition of the smallest volume size until which the dataset is downsampled. 
 For anisotropic datasets, the downsampling procedure brings the volume first to the isotropic voxels and after that downsamples all dimensions evenly.

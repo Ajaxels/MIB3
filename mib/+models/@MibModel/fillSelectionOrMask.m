@@ -13,6 +13,18 @@ function fillSelectionOrMask(obj, targetLayer, BatchOptIn)
 % Parallel 2D filling is supported via parfor when the Parallel Computing
 % Toolbox is available; use core.PoolWaitbar for thread-safe progress.
 %
+% **Cancel.** The progress dialog is cancelable. The slices of a time point are
+% filled into a local array in batches (one slice sequentially, 4 per worker in
+% parallel - workers cannot see the dialog, so Cancel is polled between batches)
+% and written only when the time point is complete: Cancel discards the time
+% point in progress and a 3D stack is left unchanged. When earlier time points
+% of a 4D dataset were already written, a dialog says which; the Undo backup
+% holds only the current time point and cannot revert them. In batch mode a
+% Cancel also stops the protocol (``StopProtocol``).
+%
+% **Memory.** A 3D/4D fill holds one time point of the layer (and of the
+% material when clipping) in a local array, in the sequential mode too.
+%
 % Input Arguments:
 %   - **targetLayer** - *(optional)* char with the targer layer, 'mask', or 'selection',
 %     when [] - 'selection'
@@ -60,7 +72,9 @@ function fillSelectionOrMask(obj, targetLayer, BatchOptIn)
 %
 
 % Updates
-% 
+% 15.10.2026 - cancelable progress dialog; the slice loop runs in batches that
+%              write each time point once (sequential path merged into it); the
+%              material clip moved after the loop
 
 if nargin < 3; BatchOptIn = struct(); end
 
@@ -160,13 +174,18 @@ if ~strcmp(BatchOpt.DatasetType{1}, '2D, Slice')
         parforArg = 0;
     end
 
+    % pwb must exist even without a waitbar: it is a parfor broadcast variable,
+    % and on a running pool parfor refuses an undefined one
+    pwb = [];
     if BatchOpt.showWaitbar
         pwb = core.PoolWaitbar(max_size2, ...
             sprintf('Filling holes in %s\nPlease wait...', BatchOpt.TargetLayer{1}), ...
-            obj.getProgressBarParent(), 'Filling holes...');
+            obj.getProgressBarParent(), 'Filling holes...', true);
+        pwb.setIncrement(10);
     end
     showWaitbar = BatchOpt.showWaitbar;
 end
+cancelledAt = [];   % time point at which Cancel was pressed
 
 %% Backup (skipped in batch mode)
 if ~batchModeSwitch
@@ -190,52 +209,60 @@ if strcmp(BatchOpt.DatasetType{1}, '2D, Slice')
 %  3D / 4D - slice-by-slice loop (parallel or sequential)
 %% ================================================================
 else
-    if BatchOpt.Use2DParallelComputing
-        %% ---- Parallel path -------------------------
-        if showWaitbar; pwb.setIncrement(10); end
-        for t = t1:t2
-            getDataOptions.t = [t, t];
-            stack = cell2mat(obj.getData3D(BatchOpt.TargetLayer{1}, t, orient, [], getDataOptions));
-            model = [];
-            if selectedOnly
-                model = cell2mat(obj.getData3D('labels', t, orient, selcontour, getDataOptions));
-            end
+    % Sequential and parallel alike, the slices of a time point are filled
+    % into a local stack in batches (parfor with parforArg = 0 runs on the
+    % client) and the stack is written once the time point is complete.
+    % Cancel is polled between batches - pool workers cannot see the dialog -
+    % so a cancelled time point stays unchanged. A batch is one slice
+    % sequentially, 4 per worker in parallel.
+    if parforArg > 0; batchSize = 4 * parforArg; else; batchSize = 1; end
 
-            parfor (layer_id = 1:max_size, parforArg) %#ok<PFBNS>
+    for t = t1:t2
+        getDataOptions.t = [t, t];
+        stack = cell2mat(obj.getData3D(BatchOpt.TargetLayer{1}, t, orient, [], getDataOptions));
+
+        for batchStart = 1:batchSize:max_size
+            if showWaitbar
+                drawnow limitrate;   % deliver the progress updates and the Cancel click
+                if pwb.getCancelState(); cancelledAt = t; break; end
+            end
+            batchEnd = min(batchStart + batchSize - 1, max_size);
+            parfor (layer_id = batchStart:batchEnd, parforArg)
                 if showWaitbar && mod(layer_id, 10) == 0; pwb.increment(); end %#ok<PFBNS>
                 slice = stack(:, :, layer_id);
                 if max(slice(:)) < 1; continue; end
-                slice = imfill(slice, 'holes');
-                if selectedOnly %#ok<PFBNS>
-                    slice = slice & model(:, :, layer_id); %#ok<PFBNS>
-                end
-                stack(:, :, layer_id) = slice;
-            end
-
-            obj.I{BatchOpt.id}.setData3D(stack, BatchOpt.TargetLayer{1}, t, orient, [], getDataOptions);
-        end
-
-        if showWaitbar; pwb.deletePoolWaitbar(); end
-
-    else
-        %% ---- Sequential path -------------------------
-        for t = t1:t2
-            getDataOptions.t = [t, t];
-            for layer_id = 1:max_size
-                if showWaitbar; pwb.increment(); end
-                slice = cell2mat(obj.getData2D(BatchOpt.TargetLayer{1}, layer_id, orient, [], getDataOptions));
-                if max(slice(:)) < 1; continue; end
-                slice = imfill(slice, 'holes');
-                if selectedOnly
-                    clip = cell2mat(obj.getData2D('labels', layer_id, orient, selcontour, getDataOptions));
-                    slice = slice & clip;
-                end
-                obj.I{BatchOpt.id}.setData2D(slice, BatchOpt.TargetLayer{1}, layer_id, orient, [], getDataOptions);
+                stack(:, :, layer_id) = imfill(slice, 'holes');
             end
         end
+        if ~isempty(cancelledAt); break; end
 
-        if showWaitbar; pwb.deletePoolWaitbar(); end
+        % restrict to the material after the loop: indexed inside parfor, an
+        % empty model ([] when not restricting) is a sliced variable that the
+        % pool fails to slice, even when the branch never runs
+        if selectedOnly
+            model = cell2mat(obj.getData3D('labels', t, orient, selcontour, getDataOptions));
+            stack(~model) = 0;
+        end
+
+        obj.I{BatchOpt.id}.setData3D(stack, BatchOpt.TargetLayer{1}, t, orient, [], getDataOptions);
     end
+
+    if showWaitbar; pwb.deletePoolWaitbar(); end
+end
+
+%% Cancelled: the time point in progress was discarded
+if ~isempty(cancelledAt)
+    if cancelledAt > t1
+        % earlier time points of a 4D dataset were already written
+        ErrorDlgOpt.winTitle       = 'Filling cancelled';
+        ErrorDlgOpt.optionalPrefix = '';
+        ErrorDlgOpt.err            = sprintf(['Filling was cancelled: time points %d-%d were filled, ' ...
+            'time points %d-%d are unchanged.'], t1, cancelledAt - 1, cancelledAt, t2);
+        notify(obj, 'ShowErrorDialog', core.ToggleEventData(ErrorDlgOpt));
+        notify(obj, 'ShowImage');
+    end
+    if batchModeSwitch; notify(obj, 'StopProtocol'); end
+    return;
 end
 
 if ~strcmp(BatchOpt.DatasetType{1}, '2D, Slice'); toc; end
