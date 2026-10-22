@@ -392,19 +392,13 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
                 img = zeros(height, width, maxZ, color, time, imgClass);
             end
 
-            % Calculate waitbar update frequency
-            pixPerSlice = size(img, 1) * size(img, 2);
-            waitbarUpdateFrequency = max(1, round(4096^2 / pixPerSlice));
-
             layerId = 1;
             noFiles = numel(files);
 
             % Initialize waitbar
             pwb = [];
             if options.waitbar && ~isempty(obj.ParentFigure)
-                pwb = core.PoolWaitbar(maxZ, 'Please wait...', obj.ParentFigure, 'Loading Amira Mesh images...', true);
-                if ~isempty(pwb); pwb.setIncrement(waitbarUpdateFrequency); end
-            end
+                pwb = core.PoolWaitbar(maxZ, 'Please wait...', obj.ParentFigure, 'Loading Amira Mesh images...', true);            end
 
             for fnIndex = 1:noFiles
                 % Check for cancel button
@@ -422,6 +416,8 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
                 if ~isempty(pwb)
                     options.hWaitbar = pwb.getWaitbarHandle();
                     options.maxZ = maxZ;
+                    % amiraMesh2bitmap sets the waitbar directly, offset by the slices of the previous files
+                    options.zOffset = layerId - 1;
                 else
                     options.hWaitbar = [];
                 end
@@ -495,9 +491,10 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
                     end
                 end
 
-                % Update waitbar
-                if ~isempty(pwb) && mod(layerId, waitbarUpdateFrequency) == 0
-                    pwb.increment();
+                % Update waitbar; set directly from the slice counter, the same
+                % scale amiraMesh2bitmap uses, so the bar never steps backwards
+                if ~isempty(pwb)
+                    options.hWaitbar.Value = min((layerId + files(fnIndex).noLayers - 1) / maxZ, 1);
                 end
 
                 layerId = layerId + files(fnIndex).noLayers;

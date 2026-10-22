@@ -15,6 +15,9 @@ function [bitmap, par, status] = amiraMesh2bitmap(filename, options)
 %
 %     - ``.hWaitbar`` - handle to an existing progress dialog
 %     - ``.maxZ`` - [numeric] total number of z-slices (used to scale the waitbar)
+%     - ``.zOffset`` - [numeric] number of z-slices already loaded before this
+%       file, when one waitbar spans a sequence of files; the waitbar is set to
+%       ``(zOffset + zIndex)/maxZ`` (default: ``0``)
 %     - ``.depth_start`` - [numeric] first z-slice to load (default: ``1``)
 %     - ``.depth_end`` - [numeric] last z-slice to load
 %     - ``.depth_step`` - [numeric] z-step (default: ``1``, load every slice)
@@ -50,6 +53,7 @@ bitmap = NaN;
 status = false; 
 if nargin < 2; options = struct(); end
 if ~isfield(options, 'hWaitbar');    options.hWaitbar = []; end
+if ~isfield(options, 'zOffset');    options.zOffset = 0; end
 if ~isfield(options, 'getMeta');    options.getMeta = true; end
 if ~isfield(options, 'verbose');    options.verbose = true; end
 
@@ -286,7 +290,7 @@ for dataBlock = 1:dataIndex - 1
                 bitmap = NaN;
                 return;
             end
-            options.hWaitbar.Value = zIndex/maxZ;
+            options.hWaitbar.Value = min((options.zOffset + zIndex)/maxZ, 1);
         end
 
         zIndex = zIndex + 1;

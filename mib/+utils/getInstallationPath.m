@@ -37,11 +37,13 @@ try
         path = fileparts(utils.GetExeLocation());
         
         if ismac
-            % fix  path = '/Applications/MIB/application/MIB.app/Contents/MacOS'
-            % for some macos versions
-            posIndex = strfind(path, [softwareName '.app']);
+            % fix  path = '/Applications/MIB3/application/MIB3.app/Contents/MacOS'
+            % for some macos versions; case-insensitive because the bundle
+            % is named after the executable (MIB3.app) while softwareName
+            % is the entry-point m-file name ('mib3')
+            posIndex = strfind(lower(path), lower([softwareName '.app']));
             if ~isempty(posIndex)
-                path = path(1:posIndex-2);    % clip the path to '/Applications/MIB/application'
+                path = path(1:posIndex-2);    % clip the path to '/Applications/MIB3/application'
             end
         end
     else
@@ -58,14 +60,15 @@ if isempty(path)
         if isunix()
             if ismac()
                 NameOfDeployedApp = softwareName; % do not include the '.app' extension
-                [~, result] = system(['top -n100 -l1 | grep ' NameOfDeployedApp ' | awk ''{print $1}''']);
+                [~, result] = system(['top -n100 -l1 | grep -i ' NameOfDeployedApp ' | awk ''{print $1}''']);
                 result = strtrim(result);
                 [status, result] = system(['ps xuwww -p ' result ' | tail -n1 | awk ''{print $NF}''']);
                 if status == 0
-                    diridx = strfind(result, [NameOfDeployedApp '.app']);
+                    diridx = strfind(lower(result), lower([NameOfDeployedApp '.app']));
                     path = result(1:diridx-2);
                 else
-                    path = sprintf('/Applications/%s/application/', softwareName);
+                    % DefaultInstallationDir of deployment/deploymentScript_Mac.m
+                    path = sprintf('/Applications/%s/application/', upper(softwareName));
                 end
             else
                 % the code below does not work on Mac OS X Yosemite and R2016a
