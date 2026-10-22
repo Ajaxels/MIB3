@@ -562,8 +562,11 @@ classdef ImageConverter < handle
         end
 
         function img = readWithLoader(loader, filename, options)
-            % Read a single image file via a MIB3 loader instance
-            % Returns image squeezed from MIB5D [H,W,Z,C,T] to remove singletons
+            % Read an image file via a MIB3 loader instance
+            % Returns [H,W,C] for a single image, [H,W,C,Z] for a volume and
+            % [H,W,C,Z,T] for a time series, from the loader's [H,W,Z,C,T]: the
+            % image dimensions come first, so a single image reads as imread would
+            % return it and Z is never mistaken for colors
             [imginfo, files] = loader.loadMetadata({filename}, options);
             if ~isa(imginfo, 'dictionary') || ~isKey(imginfo, 'Height')
                 img = zeros(1, 1, 'uint8');
@@ -572,7 +575,17 @@ classdef ImageConverter < handle
             loadOptions = options;
             loadOptions.waitbar = false;
             [img, ~] = loader.loadImages(files, imginfo, loadOptions);
-            img = squeeze(img);
+            img = permute(img, [1 2 4 3 5]);
+        end
+
+        function depth = readDepthWithLoader(loader, filename, options)
+            % Number of Z-slices in an image file from the metadata of a MIB3
+            % loader instance, without reading the pixels
+            [imginfo, ~] = loader.loadMetadata({filename}, options);
+            depth = 1;   % as readWithLoader, which reads such a file as one 1x1 image
+            if ~isa(imginfo, 'dictionary') || ~isKey(imginfo, 'Depth'); return; end
+            depth = imginfo('Depth');
+            if iscell(depth); depth = depth{1}; end
         end
 
         function writeImageWithProgress(data, writeInfo, outputFormat, wb)
@@ -751,13 +764,21 @@ classdef ImageConverter < handle
             % chunk row. The estimate for the chosen slab or band is then checked
             % with ``ImageConverter.confirmZarrMemory``, which still warns when one
             % chunk row is too much, or when the source cannot be read in rows.
+            % Files that are volumes (``.am``, ``.mrc``, multi-page TIFF read by a
+            % MIB loader...) are converted slice by slice into one Z axis, in file
+            % order; each is held whole while its slices are written, which adds
+            % two copies of the deepest file per process to the estimate (the
+            % loader's array and the reordered copy, briefly, while it is read).
+            % Volumes are never read in bands.
             %
             % For labels the material names ``Material 1..N`` come from the largest
             % label value, found while streaming (``MaterialNamesFromData``) rather
             % than in a separate pass over every file.
             %
             % Input Arguments:
-            %   - **imgDS** - a ``matlab.io.datastore.ImageDatastore`` of ordered Z-slices.
+            %   - **imgDS** - a ``matlab.io.datastore.ImageDatastore`` of single images
+            %     (one Z-slice each) or volumes, in Z order; its reader returns
+            %     ``[H W C]`` or ``[H W C Z]`` (``ImageConverter.readWithLoader``).
             %   - **BatchOpt** - the ImageConverter batch struct; reads the ``Zarr*`` fields
             %     (``ZarrVersion``, ``ZarrImageType``, ``ZarrChunkSizes``, ``ZarrUseSharding``,
             %     ``ZarrShardXFactorsXYZ``, ``ZarrCompression``, ``ZarrCompressionLevel``,
@@ -770,7 +791,11 @@ classdef ImageConverter < handle
             %     ``parallel.Pool`` whose workers write the store, ``[]`` = write on
             %     the client) and ``.resume`` (logical, continue the interrupted
             %     conversion in ``OutputDirectory``; raises
-            %     ``io:Zarr3Saver:cannotResume`` when it cannot be continued).
+            %     ``io:Zarr3Saver:cannotResume`` when it cannot be continued) and
+            %     ``.fileDepthFcn`` (the number of Z-slices of a file from its
+            %     metadata, used when the first file is a volume, see
+            %     ``io.savers.ImageDatastoreSliceProvider``; absent or ``[]`` = read
+            %     the files to count).
             %
             % Output Arguments:
             %   - **fnOut** - [char] the written group path, or ``[]`` if not completed.
@@ -827,13 +852,15 @@ classdef ImageConverter < handle
                 shard = str2num(BatchOpt.ZarrShardXFactorsXYZ); %#ok<ST2NM>
                 if numel(shard) >= 3; shardYXZ = [shard(2) shard(1) shard(3)]; end
             end
-            writeDepth = min(chunkYXZ(3), numel(imgDS.Files));
-            if ~isempty(shardYXZ); writeDepth = min(writeDepth * max(1, round(shardYXZ(3))), numel(imgDS.Files)); end
-
-            % --- provider over the file stack (one file per Z-slice) ---
-            provider = io.savers.ImageDatastoreSliceProvider(imgDS);
+            % --- provider over the files (single images or volumes) ---
+            fileDepthFcn = [];
+            if isfield(options, 'fileDepthFcn'); fileDepthFcn = options.fileDepthFcn; end
+            provider = io.savers.ImageDatastoreSliceProvider(imgDS, fileDepthFcn);
             sz = provider.OutputSize;   % [H W D C T]
             H = sz(1); W = sz(2); D = sz(3);
+
+            writeDepth = min(chunkYXZ(3), D);
+            if ~isempty(shardYXZ); writeDepth = min(writeDepth * max(1, round(shardYXZ(3))), D); end
 
             % --- Zarr3Saver options (silent: ImageConverter already collected settings) ---
             saverOpts = struct();
@@ -899,6 +926,12 @@ classdef ImageConverter < handle
                 H, W, sz(4), provider.DataClass, writeDepth, numberOfProcesses);
             if rowsPerTask < H
                 memoryDetails = sprintf('%s, bands of %d rows', memoryDetails, rowsPerTask);
+            end
+            if provider.LargestFileDepth > 1
+                % a volume is held whole while its slices are written; reading it
+                % briefly takes two copies (the loader's array and its permuted copy)
+                requiredBytes = requiredBytes + 2 * provider.LargestFileDepth * H * rowBytes * numberOfProcesses;
+                memoryDetails = sprintf('%s, files of up to %d slices', memoryDetails, provider.LargestFileDepth);
             end
             if ~ImageConverter.confirmZarrMemory(parentFig, requiredBytes, memoryDetails)
                 fnOut = [];
@@ -1489,6 +1522,7 @@ classdef ImageConverter < handle
                 mkdir(obj.BatchOpt.OutputDirectory);
             end
             
+            fileDepthFcn = [];   % slices in a file from its metadata, set for the loader-based readers
             try
                 if ~obj.BatchOpt.BioFormatsReader    % standard reader
                     if strcmp(obj.BatchOpt.OutputImageFormatExtension{1}, 'xml')
@@ -1516,6 +1550,7 @@ classdef ImageConverter < handle
                                 'FileExtensions', lower(['.' obj.BatchOpt.InputImageFormatExtension{1}]), ...
                                 'IncludeSubfolders', obj.BatchOpt.IncludeSubfolders, ...
                                 'ReadFcn', @(fn) ImageConverter.readWithLoader(standardLoader, fn, standardLoaderOptions));
+                            fileDepthFcn = @(fn) ImageConverter.readDepthWithLoader(standardLoader, fn, standardLoaderOptions);
                         end
                     end
                 else    % BioFormats reader
@@ -1529,6 +1564,7 @@ classdef ImageConverter < handle
                         'FileExtensions', lower(['.' obj.BatchOpt.BioFormatsInputImageFormatExtension{1}]), ...
                         'IncludeSubfolders', obj.BatchOpt.IncludeSubfolders, ...
                         'ReadFcn', @(fn) ImageConverter.readWithLoader(bioFormatsLoader, fn, bioFormatsLoaderOptions));
+                    fileDepthFcn = @(fn) ImageConverter.readDepthWithLoader(bioFormatsLoader, fn, bioFormatsLoaderOptions);
                 end
             catch err
                 if obj.BatchOpt.showWaitbar; delete(wb); end
@@ -1557,7 +1593,7 @@ classdef ImageConverter < handle
                 end
             elseif strcmp(obj.BatchOpt.OutputImageFormatExtension{1}, 'zarr')
                 if ~obj.BatchOpt.showWaitbar; wb = []; end
-                obj.generateZarr(imgDS, wb, resumeConversion);
+                obj.generateZarr(imgDS, wb, resumeConversion, fileDepthFcn);
                 obj.returnBatchOpt();
                 return;
             elseif obj.BatchOpt.PyramidalTIFgenerate
@@ -1614,7 +1650,7 @@ classdef ImageConverter < handle
             obj.returnBatchOpt();
         end
         
-        function generateZarrNative(obj, imgDS, wb, resumeConversion)
+        function generateZarrNative(obj, imgDS, wb, resumeConversion, fileDepthFcn)
             % GENERATEZARRNATIVE - Native (zarrMex) Zarr generation via io.savers.Zarr3Saver.
             %
             % The same in-app pyramid/bounding-box/voxel logic (no Python), used
@@ -1629,10 +1665,15 @@ classdef ImageConverter < handle
             % Overwrite; in batch mode the conversion starts again from scratch.
             %
             % Input Arguments:
-            %   - **imgDS** - ``matlab.io.datastore.ImageDatastore``, one file per Z-slice
+            %   - **imgDS** - ``matlab.io.datastore.ImageDatastore`` of single images
+            %     (one Z-slice each) or volumes, in Z order
             %   - **wb** - ``core.PoolWaitbar`` or ``[]``
             %   - **resumeConversion** - *(optional)* [logical], default false
+            %   - **fileDepthFcn** - *(optional)* function handle, the number of
+            %     Z-slices of a file from its metadata, see
+            %     ``io.savers.ImageDatastoreSliceProvider``; default ``[]``
             if nargin < 4; resumeConversion = false; end
+            if nargin < 5; fileDepthFcn = []; end
             parentFig = [];
             if ~isempty(obj.view) && isvalid(obj.view.gui); parentFig = obj.view.gui; end
 
@@ -1645,7 +1686,7 @@ classdef ImageConverter < handle
 
             t2 = tic;
             converterOptions = struct('ParentFigure', parentFig, 'mibPath', obj.mibModel.mibPath, ...
-                'pool', pool, 'resume', resumeConversion);
+                'pool', pool, 'resume', resumeConversion, 'fileDepthFcn', fileDepthFcn);
             try
                 try
                     [fnOut, writeStarted] = ImageConverter.convertToZarr3Native(imgDS, obj.BatchOpt, converterOptions);
@@ -1710,7 +1751,7 @@ classdef ImageConverter < handle
             if ~isempty(wb); wb.updateText(wbText); end
         end
 
-        function generateZarr(obj, imgDS, wb, resumeConversion)
+        function generateZarr(obj, imgDS, wb, resumeConversion, fileDepthFcn)
             % GENERATEZARR - Convert the image stack in ``imgDS`` to an OME-Zarr pyramid.
             %
             % With the native backend (default) the work is done by
@@ -1730,17 +1771,24 @@ classdef ImageConverter < handle
             % written. The peak memory is checked first with
             % ``ImageConverter.confirmZarrMemory``.
             %
+            % The native backend takes files of single images or volumes; the
+            % python pipeline takes single images only and refuses a volume.
+            %
             % Input Arguments:
-            %   - **imgDS** - ``matlab.io.datastore.ImageDatastore``, one file per Z-slice
+            %   - **imgDS** - ``matlab.io.datastore.ImageDatastore`` of single images
+            %     (one Z-slice each) or, native backend only, volumes, in Z order
             %   - **wb** - ``core.PoolWaitbar`` or ``[]``
             %   - **resumeConversion** - *(optional)* [logical], native backend only, default false
+            %   - **fileDepthFcn** - *(optional)* function handle, native backend only,
+            %     see ``generateZarrNative``; default ``[]``
             if nargin < 4; resumeConversion = false; end
+            if nargin < 5; fileDepthFcn = []; end
 
             % Native (zarrMex) backend writes both Zarr formats directly via
             % io.savers.Zarr3Saver (shared pyramid + bounding box + voxel logic).
             % Only the python backend falls through to the legacy pipeline below.
             if ~io.zarr.Config.isPython()
-                obj.generateZarrNative(imgDS, wb, resumeConversion);
+                obj.generateZarrNative(imgDS, wb, resumeConversion, fileDepthFcn);
                 return;
             end
 
@@ -1821,8 +1869,15 @@ classdef ImageConverter < handle
             t2 = tic;
             % read the first image to get image class and image size
             I = imgDS.readimage(1);
+            if size(I, 4) > 1 || size(I, 5) > 1
+                if ~isempty(wb); delete(wb); end
+                uialert(obj.view.gui, sprintf(['!!! Error !!!\nThe python Zarr backend converts files that hold one image each, ' ...
+                    'but this file holds %d slices:\n%s\n\nSelect the native Zarr backend in Preferences -> External directories to convert volumes.'], ...
+                    size(I, 4) * size(I, 5), imgDS.Files{1}), 'Volumes are not supported');
+                return;
+            end
             imageType = class(I);
-            currentImageSize = size(I); % [y, x, c] 
+            currentImageSize = size(I); % [y, x, c]
 
             imageSwitch = true;
             if strcmp(Options.dataType, 'image')

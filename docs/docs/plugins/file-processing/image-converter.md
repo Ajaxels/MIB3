@@ -139,6 +139,8 @@ dataset there is overwritten after confirmation.
 
 ??? note "Requirements and limitations"
     - MIB version 2.92 (beta 7) or newer
+    - each input file may hold one image or a whole volume (e.g. `.am`, `.mrc`); the files are
+      stacked along Z in name order, and each volume must fit into memory
     - memory grows with the image width × height and the Z of <span class="widget widget-edit">Chunk sizes</span>
       (times the Z of <span class="widget widget-edit">Shard X factors</span> when sharding).
       TIF images too large for the memory are converted in bands of rows automatically; for other

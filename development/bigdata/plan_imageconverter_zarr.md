@@ -5,6 +5,14 @@ B8 and resume implemented; B7 open; C decided - the python pipeline stays.** Dev
 defaults: chunk `256, 256, 16`, shard factors `4, 4, 1`. Tests: `tests/io/Zarr3SaverTest.m`
 (C-order codecs, sharded round trip, incomplete flag + loader warning).
 
+**2026-10-22: volume files as input.** A `.am` volume (1773 x 1626 x 342) came out as one slice
+with 342 channels: `readWithLoader` squeezed the loader's `[H W Z C T]` and
+`ImageDatastoreSliceProvider` read dimension 3 as channels. `readWithLoader` now returns
+`[H W C Z]`; the provider stacks the slices of every file along Z (volume counts from the
+loader's metadata), holds one volume at a time, and never uses bands for volumes. Verified on
+that file: level 0 identical to the source, 13 s. The python pipeline refuses volumes. Tests in
+`tests/io/ImageDatastoreSliceProviderTest.m`.
+
 ### Result, measured end to end
 
 48 LZW TIFFs of 4096 x 4096 uint8 (805 MB), native v3, chunk `256 256 16`, zstd level 1, 10-core
