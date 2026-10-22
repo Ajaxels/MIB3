@@ -198,9 +198,9 @@ For anisotropic datasets, the downsampling procedure brings the volume first to 
 
     Example: '512, 512, 256' - if dataset is larger than this, downsampled levels will be generated until each axis fits within the limit.
 
-<span class="widget widget-dropdown">Compression</span>, compression algorithm used to store chunk data. 
+<span class="widget widget-dropdown">Compression</span>, compression algorithm used to store chunk data: **zstd**, **gzip** or **none**. 
 
-<span class="widget widget-edit">Compression level</span>, compression level settings: **1..9** - compression levels, the higher the value the more compression output is expected, but with the slowest computation times.
+<span class="widget widget-edit">Compression level</span>, compression level settings: **1..9** - compression levels, the higher the value the more compression output is expected, but with the slowest computation times; **0** - the default level of the algorithm.
 
 <span class="widget widget-edit">Voxel size</span>, physical voxel size of the dataset in order \[X, Y, Z\], given in the specified units. 
 

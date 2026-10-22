@@ -1131,7 +1131,7 @@ classdef ChunkingImport < handle
                     if isfield(R, 'modelMaterialColors') && ~isfield(R, 'materialColors')
                         R.materialColors = R.modelMaterialColors;
                     end
-                    % Normalise BoundingBox field name (ChunkingExport saves as lowercase 'boundingBox')
+                    % Normalise BoundingBox field name (ChunkingExport before 2026.10 saved lowercase 'boundingBox')
                     if isfield(R, 'boundingBox') && ~isfield(R, 'BoundingBox')
                         R.BoundingBox = R.boundingBox;
                     end

@@ -100,7 +100,10 @@ doubles the voxel size relative to s0.
 #### BigData
 
 The cropped region is written to a **new OME-Zarr v3 pyramid** on disk. A file-save 
-dialog appears to choose the destination `.zarr3` folder.
+dialog appears to choose the destination `.zarr3` folder, followed by the Zarr settings 
+dialog filled in with the settings of the source pyramid (pyramid levels, chunk size, 
+sharding, downsampling strategy). Keep them so that each level of the crop has the scale 
+of the same level of the source, or change them before writing.
 
 !!! warning
     A confirmation dialog is shown before the file picker because this operation writes 

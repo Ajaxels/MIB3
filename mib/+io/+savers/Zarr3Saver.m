@@ -953,7 +953,7 @@ classdef Zarr3Saver < io.savers.BaseSaver
             % **datasetInfo** (optional struct, fields ``Y``, ``X``, ``Z``, ``pixSize``)
             % drives smart defaults for chunk size, sharding, and downsampling strategy:
             %   - WSI  (Z <= 2 or max(Y,X) >= 8000): chunk 512×512×1, shard factors 4×4×1
-            %   - 3-D anisotropic (vxZ >= 2× vxXY):  chunk 256×256×16, strategy 'Anisotropy-preserving'
+            %   - 3-D anisotropic (vxZ >= 2× vxXY):  chunk 256×256×4, strategy 'Anisotropy-preserving'
             %   - 3-D isotropic   (vxZ <  2× vxXY):  chunk 128×128×64, strategy 'XY only'
             %
             % **Downsampling strategy:**
@@ -970,18 +970,30 @@ classdef Zarr3Saver < io.savers.BaseSaver
             % sharding codec). Shard size 0 = no sharding; otherwise each axis is rounded
             % up to a whole multiple of the chunk size.
             %
+            % **Compression level:** 0 keeps the codec default of the zarr engine
+            % (zstd 3, gzip 5; ``ZarrArray.getDefaultCodecConfig``), so a dialog
+            % accepted unchanged writes exactly what ``Compressors = 'zstd'`` always
+            % wrote. zstd takes 1..22, gzip 1..9; a gzip level above 9 is written as 9
+            % (the header says so). The level is ignored for ``'none'``.
+            %
             % **presetDefaults** (optional struct) pre-fills the dialog fields with an
             % existing dataset's actual settings (used by BigData alignment to seed the
             % dialog from the open dataset instead of the dimension heuristics). Any of
             % ``Levels``, ``ChunkSize`` [y x z], ``ShardSize`` [y x z] (empty/absent = off),
             % ``Compressors``, ``DownsampleMethod``, ``DownsampleStrategy`` overrides the
-            % corresponding heuristic default.
+            % corresponding heuristic default. ``Compressors`` takes the same forms the
+            % dialog returns: a codec name, or a struct whose ``configuration.level``
+            % pre-fills the compression level.
             %
             % Output Arguments:
             %   - **options** - struct with fields ``Levels`` (omitted when auto),
             %     ``ChunkSize`` [y x z], ``ShardSize`` [y x z] (omitted when no sharding),
             %     ``Compressors``, ``DownsampleMethod``, ``DownsampleStrategy``;
-            %     ``[]`` when cancelled.
+            %     ``[]`` when cancelled. ``Compressors`` is the codec name
+            %     (``'zstd'``, ``'gzip'``, ``'none'``) when the level is the codec
+            %     default, otherwise ``struct('name', codec, 'configuration',
+            %     struct('level', level))``; both forms go straight to
+            %     ``ZarrArray.create``.
             if nargin < 5; presetDefaults = []; end
             if nargin < 4; datasetInfo = []; end
             if nargin < 3; isModel = false; end
@@ -1009,7 +1021,7 @@ classdef Zarr3Saver < io.savers.BaseSaver
                 defaultShard    = '4, 4, 1';
                 defaultStrategy = 'XY only';
             else
-                defaultChunk    = '256, 256, 16';
+                defaultChunk    = '256, 256, 4';
                 defaultShard    = '4, 4, 1';
                 if vxRatio >= 1.5
                     defaultStrategy = 'Anisotropy-preserving';
@@ -1050,11 +1062,15 @@ classdef Zarr3Saver < io.savers.BaseSaver
                     'same strategy as the paired image export so the level shapes match.'; ...
                     ''; ...
                     'Shard X-factors [Y,X,Z]: how many chunks to bundle per axis into'; ...
-                    'one shard file (e.g. 4,4,1 = 16 chunks/file in XY). 0 = off.'}];
+                    'one shard file (e.g. 4,4,1 = 16 chunks/file in XY). 0 = off.'; ...
+                    ''; ...
+                    'Compression level: zstd 1-22, gzip 1-9 (higher is written as 9);'; ...
+                    'higher = smaller files, slower writes. 0 = default (zstd 3, gzip 5).'}];
             header = strjoin(headerLines, newline);
 
             prompts = {'Pyramid levels (0 = auto):'; 'Chunk size [Y, X, Z]:'; ...
                        'Shard X-factors [Y, X, Z] (0 = off):'; 'Compression:'; ...
+                       'Compression level (0 = default):'; ...
                        'Downsampling method:'; 'Downsampling strategy:'};
             strategyItems   = {'XY only', 'Anisotropy-preserving'};
             compressorItems = {'zstd', 'gzip', 'none'};
@@ -1062,6 +1078,7 @@ classdef Zarr3Saver < io.savers.BaseSaver
             % --- override the heuristic defaults with an existing dataset's settings ---
             levelDefault      = 0;   % 0 = auto
             compressorDefault = 1;
+            compressionLevelDefault = 0;   % 0 = codec default
             methodDefault     = 1;
             if ~isempty(presetDefaults) && isstruct(presetDefaults)
                 if isfield(presetDefaults, 'Levels') && ~isempty(presetDefaults.Levels)
@@ -1078,7 +1095,14 @@ classdef Zarr3Saver < io.savers.BaseSaver
                     if ~isempty(mi); methodDefault = mi; end
                 end
                 if isfield(presetDefaults, 'Compressors') && ~isempty(presetDefaults.Compressors)
-                    ci = find(strcmp(compressorItems, presetDefaults.Compressors), 1);
+                    presetCodec = presetDefaults.Compressors;
+                    if isstruct(presetCodec)
+                        if isfield(presetCodec, 'configuration') && isfield(presetCodec.configuration, 'level')
+                            compressionLevelDefault = presetCodec.configuration.level;
+                        end
+                        presetCodec = presetCodec.name;
+                    end
+                    ci = find(strcmp(compressorItems, presetCodec), 1);
                     if ~isempty(ci); compressorDefault = ci; end
                 end
                 % shard is entered as per-axis chunk multipliers; convert from absolute
@@ -1098,6 +1122,7 @@ classdef Zarr3Saver < io.savers.BaseSaver
                        defaultChunk; ...
                        defaultShard; ...
                        [compressorItems, {compressorDefault}]; ...
+                       struct('Spinner', true, 'Value', compressionLevelDefault, 'Limits', [0 22], 'Step', 1, 'Round', true); ...
                        [methodItems, {methodDefault}]; ...
                        [strategyItems, {defaultStrategyIdx}]};
 
@@ -1115,9 +1140,182 @@ classdef Zarr3Saver < io.savers.BaseSaver
             shard = str2num(answer{3}); %#ok<ST2NM>
             if numel(shard) == 3 && all(shard > 0); options.ShardSize = shard; end   % 0 = no sharding
             options.Compressors = answer{4};
+            compressionLevel = answer{5};
+            if strcmp(options.Compressors, 'gzip'); compressionLevel = min(compressionLevel, 9); end
+            if compressionLevel > 0 && ~strcmp(options.Compressors, 'none')
+                options.Compressors = struct('name', options.Compressors, ...
+                    'configuration', struct('level', compressionLevel));
+            end
             % strip the parenthetical note from method items (e.g. 'nearest (fast)' → 'nearest')
-            options.DownsampleMethod = strtok(answer{5}, ' ');
-            options.DownsampleStrategy = answer{6};
+            options.DownsampleMethod = strtok(answer{6}, ' ');
+            options.DownsampleStrategy = answer{7};
+        end
+
+        function saverOptions = optionsFromPyramid(pyramid)
+            % OPTIONSFROMPYRAMID - Saver options that rebuild a store the way an existing pyramid was built.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %       saverOptions = io.savers.Zarr3Saver.optionsFromPyramid(pyramid)
+            %
+            % A store derived from a BigData dataset (aligned, cropped) keeps the
+            % chunking, level count, downsampling strategy and sharding of its
+            % source, so level ``sN`` of the result has the scale of level ``sN``
+            % of the source. Used by ``Alignment.applyAlignmentBigData`` and
+            % ``MibDataset.cropToBigData``; ``reviewOptionsDialog`` lets the user
+            % change the result before writing.
+            %
+            % - **Chunk** - level 0 chunk of the source, ``[256 256 16]`` when the
+            %   pyramid records none.
+            % - **Levels** - the source level count, explicit, so the automatic
+            %   ``MinLevelSize`` stop does not shorten a small crop.
+            % - **Strategy** - ``'Anisotropy-preserving'`` when any source level
+            %   halves Z, otherwise ``'XY only'``.
+            % - **Shard** - only when the source shard spans more than one chunk,
+            %   and as chunks per shard (``ShardSize`` is a multiplier everywhere in
+            %   this saver; the source records it in voxels).
+            % - **Method** - ``'bilinear'``; the source does not record it.
+            %
+            % Input Arguments:
+            %   - **pyramid** - ``MibVirtualImage.pyramid`` struct of the source;
+            %     reads ``axisOrder``, ``chunkSizes``, ``shardSizes``,
+            %     ``levelImageSizes``, ``levelScaleFactors`` when present
+            %
+            % Output Arguments:
+            %   - **saverOptions** - struct with ``silent`` (true), ``ChunkSize``
+            %     ``[y x z]``, ``Levels``, ``DownsampleStrategy``,
+            %     ``DownsampleMethod`` and, when the source is sharded,
+            %     ``ShardSize`` ``[y x z]`` in chunks
+
+            axisOrder = 'yxz';
+            if isfield(pyramid, 'axisOrder') && ~isempty(pyramid.axisOrder)
+                axisOrder = char(pyramid.axisOrder);
+            end
+
+            chunkYXZ = [256 256 16];
+            if isfield(pyramid, 'chunkSizes') && ~isempty(pyramid.chunkSizes) && ~isempty(pyramid.chunkSizes{1})
+                chunkYXZ = io.savers.Zarr3Saver.mapAxisVector(double(pyramid.chunkSizes{1}), axisOrder, chunkYXZ);
+            end
+
+            sourceLevels = 1;
+            if isfield(pyramid, 'levelImageSizes') && ~isempty(pyramid.levelImageSizes)
+                sourceLevels = size(pyramid.levelImageSizes, 1);
+            end
+
+            downsampleStrategy = 'XY only';
+            if isfield(pyramid, 'levelScaleFactors') && size(pyramid.levelScaleFactors, 1) >= 2 ...
+                    && any(diff(pyramid.levelScaleFactors(:, 3)) > 0)
+                downsampleStrategy = 'Anisotropy-preserving';
+            end
+
+            saverOptions = struct();
+            saverOptions.silent             = true;   % skip the dialog inside save/saveStream
+            saverOptions.ChunkSize          = chunkYXZ;
+            saverOptions.DownsampleStrategy = downsampleStrategy;
+            saverOptions.DownsampleMethod   = 'bilinear';
+            saverOptions.Levels             = sourceLevels;
+
+            if isfield(pyramid, 'shardSizes') && ~isempty(pyramid.shardSizes) && ~isempty(pyramid.shardSizes{1})
+                shardYXZ = io.savers.Zarr3Saver.mapAxisVector(double(pyramid.shardSizes{1}), axisOrder, chunkYXZ);
+                if any(shardYXZ > chunkYXZ)
+                    saverOptions.ShardSize = max(1, round(shardYXZ ./ chunkYXZ));
+                end
+            end
+        end
+
+        function saverOptions = reviewOptionsDialog(saverOptions, parentFig, mibPath, datasetInfo)
+            % REVIEWOPTIONSDIALOG - Show the Zarr settings dialog pre-filled with ``saverOptions`` and merge the answer.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %       saverOptions = io.savers.Zarr3Saver.reviewOptionsDialog(saverOptions, parentFig, mibPath, datasetInfo)
+            %
+            % Opens ``optionsDialog`` with ``saverOptions`` as its preset (typically
+            % from ``optionsFromPyramid``) and returns the options to write with.
+            % The dialog omits ``Levels`` for auto and ``ShardSize`` for no
+            % sharding, so those two are dropped from the base before the merge;
+            % ``MinLevelSize`` 256 and ``MaxLevels`` 8 are set for the auto case.
+            % Fields the dialog does not set (``silent``) are kept.
+            %
+            % Input Arguments:
+            %   - **saverOptions** - struct with ``ChunkSize``, ``Levels``,
+            %     ``DownsampleStrategy``, ``DownsampleMethod`` and optional
+            %     ``ShardSize`` (chunks per shard) and ``Compressors``
+            %   - **parentFig** - figure the dialog is placed over
+            %   - **mibPath** - MIB installation path, for the dialog icons
+            %   - **datasetInfo** - struct with ``Y``, ``X``, ``Z``, ``pixSize`` of
+            %     the store to write, see ``optionsDialog``
+            %
+            % Output Arguments:
+            %   - **saverOptions** - merged options, ``[]`` when the dialog was cancelled
+
+            preset = struct('ChunkSize', saverOptions.ChunkSize, ...
+                'DownsampleStrategy', saverOptions.DownsampleStrategy, ...
+                'DownsampleMethod', saverOptions.DownsampleMethod);
+            if isfield(saverOptions, 'Levels'); preset.Levels = saverOptions.Levels; end
+            if isfield(saverOptions, 'Compressors'); preset.Compressors = saverOptions.Compressors; end
+            preset.ShardSize = [];   % optionsDialog takes the shard in voxels, empty = off
+            if isfield(saverOptions, 'ShardSize') && ~isempty(saverOptions.ShardSize)
+                preset.ShardSize = saverOptions.ShardSize(:)' .* saverOptions.ChunkSize(:)';
+            end
+
+            dialogOptions = io.savers.Zarr3Saver.optionsDialog(parentFig, mibPath, false, datasetInfo, preset);
+            if isempty(dialogOptions); saverOptions = []; return; end
+
+            saverOptions = rmfield(saverOptions, intersect(fieldnames(saverOptions), {'Levels', 'ShardSize'}));
+            saverOptions.MinLevelSize = 256;   % used only when the dialog left Levels on auto
+            saverOptions.MaxLevels    = 8;
+            dialogFields = fieldnames(dialogOptions);
+            for fieldId = 1:numel(dialogFields)
+                saverOptions.(dialogFields{fieldId}) = dialogOptions.(dialogFields{fieldId});
+            end
+        end
+
+        function pyramid = pyramidFromPlan(plan, chunkYXZ, axisOrder)
+            % PYRAMIDFROMPLAN - Pyramid struct for ``MibBigDataLabels.createStore`` that mirrors an image level plan.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %       pyramid = io.savers.Zarr3Saver.pyramidFromPlan(plan, chunkYXZ, axisOrder)
+            %
+            % A model store written next to an image store must have the image's
+            % level sizes and scale factors, or the overlay and the level matching
+            % (``ChunkingImport``, ``ChunkingExport``) disagree between the two.
+            % Building both from one ``computeLevelPlan`` result guarantees it.
+            %
+            % Input Arguments:
+            %   - **plan** - struct array from ``computeLevelPlan``
+            %   - **chunkYXZ** - ``[y x z]`` chunk of the image; ``createStore``
+            %     clamps it to each level's size
+            %   - **axisOrder** - axis order of the store, e.g. ``'yxz'``
+            %
+            % Output Arguments:
+            %   - **pyramid** - struct with ``levelImageSizes`` ``[nLevels x 3]``,
+            %     ``levelScaleFactors`` ``[nLevels x 3]`` (``[y x z]``), ``axisOrder``
+            %     and ``chunkSizes`` (one chunk per level, in ``axisOrder``)
+
+            nLevels = numel(plan);
+            levelSizes   = zeros(nLevels, 3);
+            scaleFactors = zeros(nLevels, 3);
+            for levelId = 1:nLevels
+                levelSizes(levelId, :)   = [plan(levelId).Yl, plan(levelId).Xl, plan(levelId).Zl];
+                scaleFactors(levelId, :) = [plan(levelId).cumXYFactor, plan(levelId).cumXYFactor, plan(levelId).cumZFactor];
+            end
+
+            chunkAxis = zeros(1, numel(axisOrder));
+            yIndex = strfind(axisOrder, 'y');  xIndex = strfind(axisOrder, 'x');  zIndex = strfind(axisOrder, 'z');
+            if ~isempty(yIndex); chunkAxis(yIndex) = chunkYXZ(1); end
+            if ~isempty(xIndex); chunkAxis(xIndex) = chunkYXZ(2); end
+            if ~isempty(zIndex); chunkAxis(zIndex) = chunkYXZ(3); end
+
+            pyramid = struct();
+            pyramid.levelImageSizes   = levelSizes;
+            pyramid.levelScaleFactors = scaleFactors;
+            pyramid.axisOrder         = axisOrder;
+            pyramid.chunkSizes        = repmat({chunkAxis}, nLevels, 1);
         end
 
         function zarrFormat = resolveZarrFormat(filename, options)
@@ -1538,6 +1736,20 @@ classdef Zarr3Saver < io.savers.BaseSaver
     end
 
     methods (Static, Access = private)
+        function outYXZ = mapAxisVector(vector, axisOrder, defaultYXZ)
+            % MAPAXISVECTOR - Reorder a per-axis vector given in ``axisOrder`` (e.g. ``'tczyx'``) to ``[y x z]``.
+            %
+            % An axis missing from ``axisOrder`` or beyond the end of ``vector``
+            % keeps its value from ``defaultYXZ``.
+            outYXZ = defaultYXZ;
+            yIndex = strfind(axisOrder, 'y');
+            xIndex = strfind(axisOrder, 'x');
+            zIndex = strfind(axisOrder, 'z');
+            if ~isempty(yIndex) && yIndex <= numel(vector); outYXZ(1) = vector(yIndex); end
+            if ~isempty(xIndex) && xIndex <= numel(vector); outYXZ(2) = vector(xIndex); end
+            if ~isempty(zIndex) && zIndex <= numel(vector); outYXZ(3) = vector(zIndex); end
+        end
+
         function [options, isLabelLayer, pixSize] = streamDefaults(options, metadata)
             % STREAMDEFAULTS - Fill the saveStream / saveStreamResumable option defaults.
             %

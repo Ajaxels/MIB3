@@ -39,8 +39,11 @@ The *Chunk dataset* command chops a large dataset into smaller pieces.
     - [x] NRRD 
     - [x] 3D-TIF
     - [x] HDF5 with XML header
+    - [x] OME-Zarr v3
   
-- <span class="widget widget-dropdown">Output format for models</span>: options include MATLAB, Amira Mesh, NRRD, TIF, or HDF5; saved with a `Labels_` prefix.
+- <span class="widget widget-dropdown">Output format for models</span>: options include MATLAB, Amira Mesh, NRRD, TIF, HDF5, or OME-Zarr v3; saved with a `Labels_` prefix.
+- <span class="widget widget-dropdown">Zarr pyramid level</span>: for a dataset with a resolution pyramid (BigData, or OME-Zarr opened as Virtual), chunk a downsampled level instead of the full resolution `s0`. The number of tiles applies to the selected level. A model segmented on these tiles goes back into the matching level of the BigData model with *Fuse into existing*.
+- :octicons-gear-16: (next to the level): pyramid, chunk, sharding and compression settings of OME-Zarr tiles.
 
 Masks are saved in MATLAB format with the template `Mask_[FN].mask`, where `[FN]` matches the corresponding image filename.
 

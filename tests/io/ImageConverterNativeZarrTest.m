@@ -57,7 +57,7 @@ classdef ImageConverterNativeZarrTest < matlab.unittest.TestCase
             BatchOpt.ZarrChunkSizes         = '8, 8, 4, 1, 1';   % x,y,z,c,t
             BatchOpt.ZarrUseSharding        = false;
             BatchOpt.ZarrShardXFactorsXYZ   = '2, 2, 1, 1, 1';
-            BatchOpt.ZarrCompression        = {'blosc'};
+            BatchOpt.ZarrCompression        = {'zstd'};
             BatchOpt.ZarrVoxelSizeXYZ       = '0.01, 0.02, 0.03';   % x,y,z
             BatchOpt.ZarrUnits              = {'micrometers'};
             BatchOpt.ZarrBBShiftsXYZ        = '1, 2, 3';            % x,y,z shift
@@ -105,7 +105,7 @@ classdef ImageConverterNativeZarrTest < matlab.unittest.TestCase
             BatchOpt.ZarrChunkSizes         = '8, 8, 4, 1, 1';   % x,y,z,c,t
             BatchOpt.ZarrUseSharding        = false;
             BatchOpt.ZarrShardXFactorsXYZ   = '2, 2, 1, 1, 1';
-            BatchOpt.ZarrCompression        = {'blosc'};
+            BatchOpt.ZarrCompression        = {'zstd'};
             BatchOpt.ZarrVoxelSizeXYZ       = '0.01, 0.02, 0.03';   % x,y,z
             BatchOpt.ZarrUnits              = {'micrometers'};
             BatchOpt.ZarrBBShiftsXYZ        = '0, 0, 0';
@@ -140,7 +140,7 @@ classdef ImageConverterNativeZarrTest < matlab.unittest.TestCase
             BatchOpt.ZarrChunkSizes         = '8, 8, 4, 1, 1';
             BatchOpt.ZarrUseSharding        = true;
             BatchOpt.ZarrShardXFactorsXYZ   = '2, 2, 1, 1, 1';
-            BatchOpt.ZarrCompression        = {'blosc'};
+            BatchOpt.ZarrCompression        = {'zstd'};
             BatchOpt.ZarrVoxelSizeXYZ       = '0.01, 0.02, 0.03';
             BatchOpt.ZarrUnits              = {'micrometers'};
             BatchOpt.ZarrBBShiftsXYZ        = '0, 0, 0';
@@ -175,7 +175,7 @@ classdef ImageConverterNativeZarrTest < matlab.unittest.TestCase
             BatchOpt.ZarrChunkSizes         = '4, 4, 2, 1, 1';   % x,y,z,c,t
             BatchOpt.ZarrUseSharding        = false;
             BatchOpt.ZarrShardXFactorsXYZ   = '2, 2, 1, 1, 1';
-            BatchOpt.ZarrCompression        = {'blosc'};
+            BatchOpt.ZarrCompression        = {'zstd'};
             BatchOpt.ZarrVoxelSizeXYZ       = '0.013, 0.013, 0.030';   % x,y,z anisotropic
             BatchOpt.ZarrUnits              = {'micrometers'};
             BatchOpt.ZarrBBShiftsXYZ        = '0, 0, 0';
@@ -215,7 +215,7 @@ classdef ImageConverterNativeZarrTest < matlab.unittest.TestCase
             BatchOpt.ZarrChunkSizes         = '8, 8, 4, 1';
             BatchOpt.ZarrUseSharding        = false;
             BatchOpt.ZarrShardXFactorsXYZ   = '2, 2, 1, 1, 1';
-            BatchOpt.ZarrCompression        = {'blosc'};
+            BatchOpt.ZarrCompression        = {'zstd'};
             BatchOpt.ZarrVoxelSizeXYZ       = '0.01, 0.01, 0.03';
             BatchOpt.ZarrUnits              = {'micrometers'};
             BatchOpt.ZarrBBShiftsXYZ        = '0, 0, 0';
@@ -253,7 +253,7 @@ classdef ImageConverterNativeZarrTest < matlab.unittest.TestCase
             BatchOpt.ZarrChunkSizes         = '8, 8, 4, 1, 1';
             BatchOpt.ZarrUseSharding        = false;
             BatchOpt.ZarrShardXFactorsXYZ   = '2, 2, 1, 1, 1';
-            BatchOpt.ZarrCompression        = {'blosc'};
+            BatchOpt.ZarrCompression        = {'zstd'};
             BatchOpt.ZarrVoxelSizeXYZ       = '0.01, 0.02, 0.03';
             BatchOpt.ZarrUnits              = {'micrometers'};
             BatchOpt.ZarrBBShiftsXYZ        = '4.5, 6.5, 1.2';
@@ -264,6 +264,54 @@ classdef ImageConverterNativeZarrTest < matlab.unittest.TestCase
             attrs = io.zarr.Group(fnOut).getAttributes();
             testCase.verifyEqual(attrs.mibBoundingBox(:)', ...
                 [4.5, 4.5 + 11*0.01, 6.5, 6.5 + 15*0.02, 1.2, 1.2 + 3*0.03], 'AbsTol', 1e-9);
+        end
+
+        function nativeZarr3_compressionNameAndLevelReachTheStore(testCase)
+            % The option was called 'blosc' before 2026.10 although the native
+            % backend wrote plain zstd; recorded protocols still say 'blosc'.
+            % Level 0 = the codec default (zstd 3), any other level is written as is.
+            inDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            for z = 1:4
+                imwrite(uint8(randi(255, 16, 12)), fullfile(inDir.Folder, sprintf('s_%02d.tif', z)));
+            end
+            ds = imageDatastore(inDir.Folder, 'FileExtensions', '.tif');
+
+            cases = { ...   % compression, level, expected codec, expected level
+                'zstd',  0, 'zstd', 3; ...
+                'zstd',  7, 'zstd', 7; ...
+                'blosc', 0, 'zstd', 3; ...
+                'gzip',  2, 'gzip', 2};
+            for caseId = 1:size(cases, 1)
+                outDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+                BatchOpt = struct();
+                BatchOpt.OutputDirectory        = fullfile(outDir.Folder, 'out');
+                BatchOpt.ZarrImageType          = {'image'};
+                BatchOpt.ZarrChunkSizes         = '8, 8, 4, 1, 1';
+                BatchOpt.ZarrUseSharding        = false;
+                BatchOpt.ZarrShardXFactorsXYZ   = '2, 2, 1, 1, 1';
+                BatchOpt.ZarrCompression        = cases(caseId, 1);
+                BatchOpt.ZarrCompressionLevel   = cases(caseId, 2);
+                BatchOpt.ZarrVoxelSizeXYZ       = '1, 1, 1';
+                BatchOpt.ZarrUnits              = {'micrometers'};
+                BatchOpt.ZarrBBShiftsXYZ        = '0, 0, 0';
+                BatchOpt.ZarrDownsampleLimitXYZ = '8, 8, 4';
+
+                fnOut = ImageConverter.convertToZarr3Native(ds, BatchOpt, struct());
+
+                arrayMeta = jsondecode(fileread(fullfile(fnOut, '0', 'zarr.json')));
+                codecs = arrayMeta.codecs;
+                if ~iscell(codecs); codecs = num2cell(codecs); end
+                % a codec without configuration is written as a bare name ("bytes")
+                isNamedStruct = cellfun(@(codec) isstruct(codec) && isfield(codec, 'name'), codecs);
+                codecNames = repmat({''}, size(codecs));
+                codecNames(isNamedStruct) = cellfun(@(codec) codec.name, codecs(isNamedStruct), 'UniformOutput', false);
+                compressorId = find(strcmp(codecNames, cases{caseId, 3}), 1);
+                testCase.verifyNotEmpty(compressorId, sprintf('%s/%d: codec %s missing', ...
+                    cases{caseId, 1}, cases{caseId, 2}, cases{caseId, 3}));
+                if isempty(compressorId); continue; end
+                testCase.verifyEqual(codecs{compressorId}.configuration.level, cases{caseId, 4}, ...
+                    sprintf('%s/%d: wrong compression level', cases{caseId, 1}, cases{caseId, 2}));
+            end
         end
 
     end

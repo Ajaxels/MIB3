@@ -139,6 +139,41 @@ classdef AlignmentBigDataTest < matlab.unittest.TestCase
                 'aligned store chunk shape must match the source');
         end
 
+        function shardedSourceKeepsShardShape(testCase)
+            % Regression: the batch path passed the source shard in voxels as
+            % ShardSize, which the saver reads as chunks per shard, so the aligned
+            % store got shards one chunk size times larger than the source.
+            import matlab.unittest.fixtures.TemporaryFolderFixture
+            tf = testCase.applyFixture(TemporaryFolderFixture);
+            scratch = tf.Folder;
+            N = 320; Z = 4;
+            rng(9); base = uint8(255 * mat2gray(conv2(randn(N+40), ones(6), 'same')));
+            dx = [0 8 16 5]; dy = [0 -6 4 10];
+            vol = zeros(N, N, Z, 'uint8');
+            for z = 1:Z; vol(:,:,z) = imtranslate(base(21:20+N, 21:20+N), [dx(z) dy(z)]); end
+            srcImg = fullfile(scratch, 'src.zarr3');
+            meta = struct('pixSize', struct('x', 0.02, 'y', 0.02, 'z', 0.05, 'units', 'um'));
+            io.savers.Zarr3Saver(struct()).save(reshape(vol, N, N, Z, 1, 1), meta, srcImg, ...
+                struct('silent', true, 'showWaitbar', false, ...
+                       'ChunkSize', [64 64 2], 'ShardSize', [2 2 1], 'Levels', 2, 'DownsampleStrategy', 'XY only'));
+
+            mibFolder = fullfile(fileparts(fileparts(fileparts(mfilename('fullpath')))), 'mib');
+            mibModel = models.MibModel(1, mibFolder, Verbose = false, Preferences = 'defaults');
+            lo = struct('datasetMode', 'BigData');
+            loader = io.loaders.Zarr3VirtualSetupLoader(lo);
+            [imgInfo, files] = loader.loadMetadata({srcImg}, lo);
+            [imgRaw, imgInfo] = loader.loadImages(files, imgInfo, lo);
+            mibModel.I{1}.initialize(imgRaw, imgInfo, 'BigData');
+            mibModel.I{1}.enableSelection = true;
+            srcShard = mibModel.I{1}.image.pyramid.shardSizes{1};
+            testCase.assertNotEmpty(srcShard, 'the source must be sharded');
+
+            outPath = fullfile(scratch, 'aligned.zarr3');
+            testCase.runAlign(mibModel, testCase.batch('Drift correction', 'extended', outPath));
+            testCase.verifyEqual(mibModel.I{1}.image.pyramid.shardSizes{1}, srcShard, ...
+                'aligned store shard shape must match the source');
+        end
+
         function boundingBoxAndPixSizePropagate(testCase)
             % pixSize survives; the new store has a bounding box set.
             [mibModel, ~, ~, outPath] = testCase.buildBigData('shift');

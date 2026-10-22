@@ -834,14 +834,16 @@ classdef ImageConverter < handle
             dsLimit = str2num(BatchOpt.ZarrDownsampleLimitXYZ); %#ok<ST2NM>
             if numel(dsLimit) >= 2; minLevelSize = min(dsLimit(1), dsLimit(2)); else; minLevelSize = 256; end
 
-            % compression: blosc -> zstd (native), gzip -> gzip, none -> none
+            % compression: zstd, gzip or none; 'blosc' is the name of zstd before
+            % 2026.10, kept for recorded protocols. Level 0 = the codec default
+            % (zstd 3, gzip 5), as in Zarr3Saver.optionsDialog
             switch lower(BatchOpt.ZarrCompression{1})
-                case 'blosc'; compressors = 'zstd';
-                case 'gzip';  compressors = 'gzip';
-                otherwise;    compressors = 'none';
+                case {'zstd', 'blosc'}; compressors = 'zstd';
+                case 'gzip';            compressors = 'gzip';
+                otherwise;              compressors = 'none';
             end
             if ~strcmp(compressors, 'none') && isfield(BatchOpt, 'ZarrCompressionLevel') && ...
-                    ~isempty(BatchOpt.ZarrCompressionLevel)
+                    ~isempty(BatchOpt.ZarrCompressionLevel) && BatchOpt.ZarrCompressionLevel{1} > 0
                 compressors = struct('name', compressors, 'configuration', ...
                     struct('level', BatchOpt.ZarrCompressionLevel{1}));
             end
@@ -1012,8 +1014,8 @@ classdef ImageConverter < handle
             obj.BatchOpt.ZarrUseSharding = false;
             obj.BatchOpt.ZarrShardXFactorsXYZ = '4, 4, 1, 1, 1';
             obj.BatchOpt.ZarrDownsampleLimitXYZ = '512, 512, 256';
-            obj.BatchOpt.ZarrCompression = {'blosc'};
-            obj.BatchOpt.ZarrCompression{2} = {'blosc','gzip','none'};
+            obj.BatchOpt.ZarrCompression = {'zstd'};
+            obj.BatchOpt.ZarrCompression{2} = {'zstd','gzip','none'};
             obj.BatchOpt.ZarrCompressionLevel{1} = 1;
             obj.BatchOpt.ZarrCompressionLevel{2} = [0 9];
             obj.BatchOpt.ZarrCompressionLevel{3} = 'on';
@@ -1052,7 +1054,7 @@ classdef ImageConverter < handle
             obj.BatchOpt.mibBatchTooltip.ZarrShardXFactorsXYZ = 'Vector of shard x-factors defining how many chunks are merged into a single shard file, 5 values (x,y,z,c,d) for images and 4 values (x,y,z,t) for models';
             obj.BatchOpt.mibBatchTooltip.ZarrDownsampleLimitXYZ = 'Target size for image downsampling during calculation of pyramid of magnifications, the scale factors are calculated automatically';
             obj.BatchOpt.mibBatchTooltip.ZarrCompression = 'Compression algorithm or do not use compression, when none';
-            obj.BatchOpt.mibBatchTooltip.ZarrCompressionLevel{1} = 'Compression level from 0 (no compression), 1 (fastest, least compression) to 9 (slowest, best compression)';
+            obj.BatchOpt.mibBatchTooltip.ZarrCompressionLevel{1} = 'Compression level from 1 (fastest, least compression) to 9 (slowest, best compression); 0 = codec default (zstd 3, gzip 5)';
             obj.BatchOpt.mibBatchTooltip.ZarrVoxelSizeXYZ = 'Image voxel sizes as X, Y, Z';
             obj.BatchOpt.mibBatchTooltip.ZarrBBShiftsXYZ = 'Translate the image by providing image shifts for each dimension, as X, Y, Z';
             obj.BatchOpt.mibBatchTooltip.ZarrUnits = 'Image units';
@@ -1840,11 +1842,18 @@ classdef ImageConverter < handle
             end
             downsampleImageLimit = flip(downsampleImageLimit); % convert from (x,y,z) to (z,y,x)
             % compression settings
-            Options.compressionType = lower(obj.BatchOpt.ZarrCompression{1}); % none, gzip, blosc
+            % zstd is written here as a Blosc container compressing with zstd
+            % (createMultiscaleDataset names it 'blosc'); 'blosc' itself is the
+            % pre-2026.10 name of this option, kept for recorded protocols
+            Options.compressionType = lower(obj.BatchOpt.ZarrCompression{1}); % none, gzip, zstd
+            if strcmp(Options.compressionType, 'zstd'); Options.compressionType = 'blosc'; end
             Options.compressionLevel = obj.BatchOpt.ZarrCompressionLevel{1};  % compression level
+            if Options.compressionLevel == 0   % codec default, the levels the native backend uses
+                if strcmp(Options.compressionType, 'gzip'); Options.compressionLevel = 5; else; Options.compressionLevel = 3; end
+            end
             if Options.zarrFormat == 3 && strcmp(Options.compressionType, 'gzip')
                 if ~isempty(wb); delete(wb); end
-                uialert(obj.view.gui, sprintf('!!! Error !!!\nUnfortunately, GZip compression is not implemented for Zarr version 3.\nUse Blosc compression instead!'), 'Wrong compression');
+                uialert(obj.view.gui, sprintf('!!! Error !!!\nUnfortunately, GZip compression is not implemented for Zarr version 3 with the Python backend.\nUse zstd compression instead!'), 'Wrong compression');
                 return;
             end
 

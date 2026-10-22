@@ -899,6 +899,17 @@ classdef CropDataset < handle
                 if isequal(outputFilename, 0); return; end
                 outputPath = fullfile(outputFolder, outputFilename);
 
+                % the crop is written like its source; the settings dialog shows
+                % those settings and lets them be changed (batch keeps them)
+                cropOpts.saverOptions = io.savers.Zarr3Saver.optionsFromPyramid(obj.mibModel.I{id}.image.pyramid);
+                if ~obj.batchProcessingSwitch
+                    datasetInfo = struct('Y', crop_factor(4), 'X', crop_factor(3), 'Z', crop_factor(6), ...
+                        'pixSize', obj.mibModel.I{id}.image.pixSize);
+                    cropOpts.saverOptions = io.savers.Zarr3Saver.reviewOptionsDialog(cropOpts.saverOptions, ...
+                        progressParent, obj.mibModel.mibPath, datasetInfo);
+                    if isempty(cropOpts.saverOptions); return; end   % settings dialog cancelled
+                end
+
                 cropOpts.showWaitbar = BatchOptLoc.showWaitbar;
                 cropOpts.UIFigure    = progressParent;
                 cropOpts.outputPath  = outputPath;

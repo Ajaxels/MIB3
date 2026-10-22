@@ -17,6 +17,13 @@ function result = cropToBigData(obj, cropF, options)
 %   - image  → ``options.outputPath``          (e.g. ``crop.zarr3``)
 %   - model  → ``<dir>/Labels_<stem><ext>``    (e.g. ``Labels_crop.zarr3``)
 %
+% **Pyramid.** Without ``options.saverOptions`` the crop is written like its
+% source (``Zarr3Saver.optionsFromPyramid``: chunk, level count, downsampling
+% strategy, sharding), so level ``sN`` of the crop has the scale of level ``sN``
+% of the source. The model store is built from the same level plan as the
+% image (``Zarr3Saver.computeLevelPlan`` + ``pyramidFromPlan``), so the two
+% pyramids always have the same level sizes and scale factors.
+%
 % Input Arguments:
 %   - **cropF** - a vector ``[x1, y1, dx, dy, z1, dz, t1, dt]`` in pixels
 %
@@ -31,6 +38,10 @@ function result = cropToBigData(obj, cropF, options)
 %     - ``.outputPath`` - [char] path to the destination zarr folder (required)
 %     - ``.showWaitbar`` - logical, show a progress dialog (default: **true**)
 %     - ``.UIFigure`` - handle to the parent UIFigure for the progress dialog
+%     - ``.saverOptions`` - *(optional)* ``Zarr3Saver`` options for the image
+%       store, e.g. the source-matched options after
+%       ``Zarr3Saver.reviewOptionsDialog``; default
+%       ``Zarr3Saver.optionsFromPyramid(obj.image.pyramid)``
 %
 %   The progress dialog is cancelable up to the point where the output store
 %   starts being written; past that the operation runs to the end rather than
@@ -123,8 +134,22 @@ if numel(sourceBB) == 6
                         sourceBB(3) + (y1-1)*pixSize.y, sourceBB(3) + (y1+dy-2)*pixSize.y, ...
                         sourceBB(5) + (z1-1)*pixSize.z, sourceBB(5) + (z1+dz-2)*pixSize.z];
 end
-saverOpts.silent    = true;   % bypass the interactive export-settings dialog
-saverOpts.ChunkSize = [256, 256, 16];
+if isfield(options, 'saverOptions') && ~isempty(options.saverOptions)
+    saverOpts = options.saverOptions;
+else
+    saverOpts = io.savers.Zarr3Saver.optionsFromPyramid(obj.image.pyramid);
+end
+saverOpts.silent = true;   % bypass the interactive export-settings dialog
+
+% The level plan save builds for the image, computed here with the same inputs
+% (save's voxel size defaults to 1 per axis) so the model store can mirror it
+planPixSize = struct('x', 1, 'y', 1, 'z', 1);
+if isstruct(meta.pixSize)
+    for axisName = {'x', 'y', 'z'}
+        if isfield(meta.pixSize, axisName{1}); planPixSize.(axisName{1}) = meta.pixSize.(axisName{1}); end
+    end
+end
+plan = io.savers.Zarr3Saver.computeLevelPlan(dy, dx, dz, planPixSize, saverOpts);
 
 fnOut = io.savers.Zarr3Saver().save(imageData, meta, options.outputPath, saverOpts);
 if isempty(fnOut)
@@ -143,22 +168,12 @@ if isa(obj.labels, 'core.MibBigDataLabels') && obj.labels.exists
     [parentDir, stem, ext] = fileparts(options.outputPath);
     modelStorePath = fullfile(parentDir, ['Labels_' stem ext]);
 
-    % Build a pyramid struct for the new model store.
-    % Level sizes are the crop dimensions divided by the source scale factors.
-    % Scale factors come from the source image pyramid (unchanged by the crop).
-    srcSF    = obj.image.pyramid.levelScaleFactors;   % [nLevels x 3] [sfY sfX sfZ]
-    nLevels  = size(srcSF, 1);
-    newLevelSizes = zeros(nLevels, 3);
-    for levelIdx = 1:nLevels
-        sf = srcSF(levelIdx, :);
-        newLevelSizes(levelIdx, :) = max(1, round([dy, dx, dz] ./ sf));
+    % The model pyramid mirrors the image just written: same plan, same chunk
+    axisOrder = 'yxz';
+    if isfield(obj.image.pyramid, 'axisOrder') && ~isempty(obj.image.pyramid.axisOrder)
+        axisOrder = char(obj.image.pyramid.axisOrder);
     end
-
-    newPyramid = struct();
-    newPyramid.levelImageSizes   = newLevelSizes;
-    newPyramid.levelScaleFactors = srcSF;
-    newPyramid.chunkSizes        = obj.image.pyramid.chunkSizes;
-    newPyramid.axisOrder         = obj.image.pyramid.axisOrder;
+    newPyramid = io.savers.Zarr3Saver.pyramidFromPlan(plan, saverOpts.ChunkSize, axisOrder);
 
     % Create the new disk-backed model store
     newLabels = core.MibBigDataLabels([], core.MibImage.initializeImgInfo());

@@ -125,66 +125,22 @@ if isfield(srcPyr, 'axisOrder') && ~isempty(srcPyr.axisOrder)
     axisOrder = char(srcPyr.axisOrder);
 end
 
-% level-0 chunk shape as [y x z]
-chunkYXZ = [256 256 16];
-if isfield(srcPyr, 'chunkSizes') && ~isempty(srcPyr.chunkSizes) && ~isempty(srcPyr.chunkSizes{1})
-    chunkYXZ = mapAxisVec(double(srcPyr.chunkSizes{1}), axisOrder, chunkYXZ);
-end
-
-% same number of pyramid levels as the source (explicit → no auto MinLevelSize cut)
-srcLevels = 1;
-if isfield(srcPyr, 'levelImageSizes') && ~isempty(srcPyr.levelImageSizes)
-    srcLevels = size(srcPyr.levelImageSizes, 1);
-end
-
-% downsample strategy: 'Anisotropy-preserving' if the source pyramid ever halves Z
-downsampleStrategy = 'XY only';
-if isfield(srcPyr, 'levelScaleFactors') && size(srcPyr.levelScaleFactors, 1) >= 2 ...
-        && any(diff(srcPyr.levelScaleFactors(:, 3)) > 0)
-    downsampleStrategy = 'Anisotropy-preserving';
-end
-
-saverOpts = struct();
-saverOpts.silent             = true;             % skip the interactive export dialog
-saverOpts.ChunkSize          = chunkYXZ;
-saverOpts.DownsampleStrategy = downsampleStrategy;
-saverOpts.DownsampleMethod   = 'bilinear';
-saverOpts.Levels             = srcLevels;        % reproduce the source level count exactly
-
-% sharding: only when the source shard genuinely spans more than one chunk
-if isfield(srcPyr, 'shardSizes') && ~isempty(srcPyr.shardSizes) && ~isempty(srcPyr.shardSizes{1})
-    shardYXZ = mapAxisVec(double(srcPyr.shardSizes{1}), axisOrder, chunkYXZ);
-    if any(shardYXZ > chunkYXZ)
-        saverOpts.ShardSize = shardYXZ;
-    end
-end
+% chunk, level count, downsampling strategy and sharding of the source
+saverOpts = io.savers.Zarr3Saver.optionsFromPyramid(srcPyr);
 
 % GUI mode: offer the export-to-zarr3 options dialog, PRE-FILLED with the source
 % settings above (silent/batch runs keep the source-matched defaults directly).
 if ~parameters.useBatchMode
-    preset = struct('Levels', srcLevels, 'ChunkSize', chunkYXZ, ...
-        'DownsampleStrategy', downsampleStrategy, 'DownsampleMethod', 'bilinear');
-    if isfield(saverOpts, 'ShardSize'); preset.ShardSize = saverOpts.ShardSize; end
     datasetInfo = struct('Y', newH0, 'X', newW0, 'Z', depth, 'pixSize', pixSize);
-    dlg = io.savers.Zarr3Saver.optionsDialog(parentFig, obj.mibModel.mibPath, false, datasetInfo, preset);
-    if isempty(dlg)                                   % cancelled → abort, nothing written
+    saverOpts = io.savers.Zarr3Saver.reviewOptionsDialog(saverOpts, parentFig, obj.mibModel.mibPath, datasetInfo);
+    if isempty(saverOpts)                             % cancelled → abort, nothing written
         notify(obj.mibModel, 'StopProtocol');
         return;
     end
-    % Merge the user's choices over the source-matched base. The dialog omits
-    % Levels when 'auto' (0) and ShardSize when 'off', so drop those first to let
-    % auto / no-sharding take effect; silent + method stay ours where not set.
-    saverOpts = rmfield(saverOpts, intersect(fieldnames(saverOpts), {'Levels', 'ShardSize'}));
-    saverOpts.MinLevelSize = 256;   % auto fallbacks used only when Levels is absent
-    saverOpts.MaxLevels    = 8;
-    for f = reshape(fieldnames(dlg), 1, [])
-        saverOpts.(f{1}) = dlg.(f{1});
-    end
-    chunkYXZ = saverOpts.ChunkSize;   % labels follow the (possibly changed) chunk
 end
+chunkYXZ = saverOpts.ChunkSize;   % labels follow the (possibly changed) chunk
 
 plan    = io.savers.Zarr3Saver.computeLevelPlan(newH0, newW0, depth, pixSize, saverOpts);
-nLevels = numel(plan);
 
 outputImagePath = char(parameters.outputPath);
 
@@ -227,26 +183,9 @@ if hasModel
     [parentDir, stem, ext] = fileparts(outputImagePath);
     modelStorePath = fullfile(parentDir, ['Labels_' stem ext]);
 
-    % Build the labels pyramid from the shared plan so it mirrors the image.
-    newLevelSizes   = zeros(nLevels, 3);
-    newScaleFactors = zeros(nLevels, 3);
-    for L = 1:nLevels
-        newLevelSizes(L, :)   = [plan(L).Yl, plan(L).Xl, plan(L).Zl];
-        newScaleFactors(L, :) = [plan(L).cumXYFactor, plan(L).cumXYFactor, plan(L).cumZFactor];
-    end
-    newPyramid = struct();
-    newPyramid.levelImageSizes   = newLevelSizes;
-    newPyramid.levelScaleFactors = newScaleFactors;
-    newPyramid.axisOrder = axisOrder;
-    % Chunk the labels pyramid like the image (final chunkYXZ - source-matched or
-    % dialog-adjusted), laid out in axisOrder for every level. createStore clamps
-    % each level's chunk to that level's size.
-    chunkAxis = zeros(1, numel(axisOrder));
-    yIdx = strfind(axisOrder, 'y');  xIdx = strfind(axisOrder, 'x');  zIdx = strfind(axisOrder, 'z');
-    if ~isempty(yIdx); chunkAxis(yIdx) = chunkYXZ(1); end
-    if ~isempty(xIdx); chunkAxis(xIdx) = chunkYXZ(2); end
-    if ~isempty(zIdx); chunkAxis(zIdx) = chunkYXZ(3); end
-    newPyramid.chunkSizes = repmat({chunkAxis}, nLevels, 1);
+    % Build the labels pyramid from the shared plan so it mirrors the image,
+    % chunked like the image (final chunkYXZ - source-matched or dialog-adjusted)
+    newPyramid = io.savers.Zarr3Saver.pyramidFromPlan(plan, chunkYXZ, axisOrder);
 
     newLabels = core.MibBigDataLabels([], core.MibImage.initializeImgInfo());
     newLabels.createStore([newH0 newW0 depth], modelStorePath, newPyramid);
@@ -423,17 +362,4 @@ result = 1;
 notify(obj.mibModel, 'NewDataset');
 notify(obj.mibModel, 'ShowImage');
 notify(obj.mibModel, 'UpdateFileList');
-end
-
-% =============================================================================
-function outYXZ = mapAxisVec(vec, axisOrder, defaultYXZ)
-% Map a per-axis vector (in axisOrder, e.g. 'yxz' or 'tczyx') to [y x z],
-% falling back to defaultYXZ for any axis not present in the vector.
-outYXZ = defaultYXZ;
-yIdx = strfind(axisOrder, 'y');
-xIdx = strfind(axisOrder, 'x');
-zIdx = strfind(axisOrder, 'z');
-if ~isempty(yIdx) && yIdx <= numel(vec); outYXZ(1) = vec(yIdx); end
-if ~isempty(xIdx) && xIdx <= numel(vec); outYXZ(2) = vec(xIdx); end
-if ~isempty(zIdx) && zIdx <= numel(vec); outYXZ(3) = vec(zIdx); end
 end

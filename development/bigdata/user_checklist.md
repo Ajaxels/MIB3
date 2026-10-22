@@ -77,7 +77,7 @@ or any `.zarr3`).*
       starts), writes v2, reopens. (Confirms native didn't break v2.)
 - [ ] **D6 Python backend:** Preferences → Zarr library = **python**, output **Zarr v3** → uses the
       Python path, not native.
-- [ ] **D7** Compression blosc / gzip / none each convert without error.
+- [ ] **D7** Compression zstd / gzip / none each convert without error; a protocol recorded with the old name `blosc` still converts (as zstd).
 
 ## E. BioFormats → MATLAB reader warning
 

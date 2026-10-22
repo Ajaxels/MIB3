@@ -5971,7 +5971,10 @@ can be worked on with all standard MIB tools.</p>
 doubles the voxel size relative to s0.</p>
 <h4 id="bigdata">BigData<a class="headerlink" href="#bigdata" title="Permanent link">&para;</a></h4>
 <p>The cropped region is written to a <strong>new OME-Zarr v3 pyramid</strong> on disk. A file-save 
-dialog appears to choose the destination <code>.zarr3</code> folder.</p>
+dialog appears to choose the destination <code>.zarr3</code> folder, followed by the Zarr settings 
+dialog filled in with the settings of the source pyramid (pyramid levels, chunk size, 
+sharding, downsampling strategy). Keep them so that each level of the crop has the scale 
+of the same level of the source, or change them before writing.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>A confirmation dialog is shown before the file picker because this operation writes 

@@ -6978,7 +6978,7 @@ rather than invented.</p>
 the same <strong>Export to Zarr3</strong> dialog as the standard dataset→OME-Zarr export, so the streamed
 mosaic is written as a proper multi-resolution pyramid: <strong>pyramid levels</strong> (<code>0</code> = auto: add
 levels while <code>min(Y,X)/2 ≥ 256 px</code>, up to 8), <strong>chunk size</strong> and <strong>shard factors</strong> <code>[Y, X, Z]</code>,
-<strong>compression</strong> (<code>zstd</code> / <code>gzip</code> / <code>none</code>), and the <strong>downsampling</strong> method and strategy
+<strong>compression</strong> (<code>zstd</code> / <code>gzip</code> / <code>none</code>) and its level, and the <strong>downsampling</strong> method and strategy
 (<code>XY only</code>, or <code>Anisotropy-preserving</code> for anisotropic 3D stacks).</p>
 <p>Defaults are seeded from the mosaic's dimensions and voxel size, and the choice is remembered
 for the current output path, so re-fusing after a

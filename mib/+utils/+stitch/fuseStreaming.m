@@ -30,7 +30,9 @@ function fuseStreaming(layout, canvas, outputZarrPath, options)
 %     - ``.marginPx`` - [double] feather margin (default: derived from tile size)
 %     - ``.maxSliceBytes`` - [double] slice-fits threshold in bytes (default: ``4*1024^3``)
 %     - ``.ChunkSize`` - [1x3 double] level-0 chunk shape (default: ``[256 256 16]``)
-%     - ``.Compressors`` - [char] codec name (default: ``'zstd'``)
+%     - ``.Compressors`` - [char | struct] codec name, or ``struct('name', codec,
+%       'configuration', struct('level', n))`` as ``Zarr3Saver.optionsDialog``
+%       returns it (default: ``'zstd'``)
 %     - ``.Levels`` - [double] explicit pyramid level count (default: auto)
 %     - ``.ShardSize`` - [1x3 double] per-axis chunk multipliers for zarr v3 sharding
 %       (``[]`` = no sharding)

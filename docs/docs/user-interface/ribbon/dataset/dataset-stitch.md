@@ -707,7 +707,7 @@ through the pipeline you are, and the [alignment-quality chip](#alignment-qualit
     the same **Export to Zarr3** dialog as the standard dataset→OME-Zarr export, so the streamed
     mosaic is written as a proper multi-resolution pyramid: **pyramid levels** (`0` = auto: add
     levels while `min(Y,X)/2 ≥ 256 px`, up to 8), **chunk size** and **shard factors** `[Y, X, Z]`,
-    **compression** (`zstd` / `gzip` / `none`), and the **downsampling** method and strategy
+    **compression** (`zstd` / `gzip` / `none`) and its level, and the **downsampling** method and strategy
     (`XY only`, or `Anisotropy-preserving` for anisotropic 3D stacks).
 
     Defaults are seeded from the mosaic's dimensions and voxel size, and the choice is remembered
