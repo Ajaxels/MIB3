@@ -13,9 +13,9 @@ end
 
     if exist(obj.BatchOpt.NetworkFilename, 'file') ~= 2
         mgsOpt.MsgBoxOnly = true;
-        mgsOpt.Header = sprintf('The network file:\n%s\ncan not be found!', obj.BatchOpt.NetworkFilename);
         mgsOpt.Icon = 'puffin_error';
-        utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Missing file', mgsOpt);
+        header = sprintf('The network file:\n%s\ncan not be found!', obj.BatchOpt.NetworkFilename);
+        utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Missing file', mgsOpt);
         return;
     end
 
