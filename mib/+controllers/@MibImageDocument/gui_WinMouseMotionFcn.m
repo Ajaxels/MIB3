@@ -262,6 +262,13 @@ try
                     modelValues = dataset.labels.data(yImage, sliceNo, xImage, tImage);
                 end
             end
+            % a packed model (63 or 16383) also carries the mask and selection bits.
+            % Without a model modelValues is still the NaN placeholder, which
+            % bitand rejects - on every mouse move over the image
+            if dataset.modelExist && isa(dataset.labels, 'core.MibLabels63') && ...
+                    ~any(dataset.datasetType(1) == ['V' 'B']) && isinteger(modelValues)
+                modelValues = bitand(modelValues, dataset.labels.materialMask);
+            end
 
             % Update status label with pixel coordinates and values
             % xStatus/yStatus are dataset-absolute; xImage/yImage index into Iraw

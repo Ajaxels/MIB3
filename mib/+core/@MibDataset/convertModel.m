@@ -7,21 +7,32 @@ function convertModel(obj, newType, wb)
 %       obj.convertModel(newType)
 %       obj.convertModel(newType, wb)
 %
-% Converts the pixel data and layer objects between the packed type-63
-% representation (``core.MibLabels63``) and the separate-layer
+% Converts the pixel data and layer objects between the packed types 63 and
+% 16383 (``core.MibLabels63``, uint8 and uint16 layouts) and the separate-layer
 % representations (``core.MibLabels``, types 255 / 65535 / 4294967295).
 % Also performs connected-component labelling to generate indexed-object
 % models (types 2.4, 2.8, 3.6, 3.26).
 %
-% Type-63 models store material, mask, and selection in a single uint8
-% array (bits 1-6 = material index 0-63, bit 7 = mask, bit 8 = selection).
+% Packed models store material, mask, and selection in a single array:
+% type 63 in uint8 (bits 1-6 = material index 0-63, bit 7 = mask, bit 8 =
+% selection), type 16383 in uint16 (bits 1-14 = instance index, bit 15 = mask,
+% bit 16 = selection). Type 16383 is an instance model like 65535: two
+% material-name slots and generated colours.
 % Converting to a higher type unpacks these bits into separate layer
 % objects.  Converting back packs them again.
+%
+% A conversion to a type that cannot hold the largest index in use clips the
+% larger indices onto the top index of the target (a packed target clamps them
+% explicitly, so they cannot spill into the mask/selection bits). Undo relies
+% on this when it brings a layer back to the type a snapshot was taken at.
+% The user-facing ``models.MibModel.convertModel`` refuses such a conversion
+% before it reaches this method.
 %
 % Input Arguments:
 %   - **newType** - numeric target model type:
 %
 %     - ``63``         - packed uint8 (``core.MibLabels63``)
+%     - ``16383``      - packed uint16 instance model (``core.MibLabels63``)
 %     - ``255``        - separate uint8 labels (``core.MibLabels``)
 %     - ``65535``      - separate uint16 labels (``core.MibLabels``)
 %     - ``4294967295`` - separate uint32 labels (``core.MibLabels``)
@@ -33,8 +44,8 @@ function convertModel(obj, newType, wb)
 %     The result records how its objects are numbered in
 %     ``labels.objects3D``: false for ``2.4``/``2.8`` (the labelling restarts
 %     on every slice), true for ``3.6``/``3.26`` and for 63/255 converted to
-%     65535 or 4294967295 (a material spans the volume), and kept as it was
-%     between 65535 and 4294967295
+%     16383, 65535 or 4294967295 (a material spans the volume), and kept as it
+%     was between the instance types 16383, 65535 and 4294967295
 %
 %   - **wb** *(optional)* - ``uiprogressdlg`` handle; pass ``[]`` to skip
 %     progress reporting
@@ -168,65 +179,96 @@ if newType < 4
     return;
 end
 
-%% Convert TO type 63 (pack selection and mask bits into uint8 model)
-if newType == 63
-    if obj.labels.exists
-        modelData = uint8(obj.labels.data);
+%% Convert TO a packed type (63 = uint8, 16383 = uint16): pack selection and mask bits
+if newType == 63 || newType == 16383
+    if newType == 63; targetClass = 'uint8'; else; targetClass = 'uint16'; end
+    % the constructor selects the layout from the class of the data
+    newLabels = core.MibLabels63(zeros(dims, targetClass), meta);
+
+    % material indices and the two flags, from the packed bits or the separate layers
+    modelData = [];
+    selectionData = [];
+    maskData = [];
+    if isa(obj.labels, 'core.MibLabels63')
+        if obj.labels.exists
+            modelData     = bitand(obj.labels.data, obj.labels.materialMask);
+            selectionData = bitget(obj.labels.data, obj.labels.selectionBit);
+            maskData      = bitget(obj.labels.data, obj.labels.maskBit);
+        end
     else
-        modelData = zeros(dims, 'uint8');
+        if obj.labels.exists; modelData = obj.labels.data; end
+        if obj.selection.exists; selectionData = obj.selection.data; end
+        if obj.maskExist && obj.mask.exists; maskData = obj.mask.data; end
     end
     if ~isempty(wb); wb.Value = 0.2; end
 
-    if obj.selection.exists
-        selectionData = obj.selection.data;
-        modelData(selectionData == 1) = bitset(modelData(selectionData == 1), 8, 1);
+    packedData = newLabels.data;
+    maxIndex = 0;
+    if ~isempty(modelData)
+        maxIndex = min(double(max(modelData, [], 'all')), newLabels.materialMask);
+        % clamp onto the top index: a larger value would spill into the flag bits
+        packedData = cast(min(modelData, newLabels.materialMask), targetClass);
+    end
+    if ~isempty(selectionData)
+        packedData = bitor(packedData, cast(selectionData, targetClass) * cast(newLabels.selectionValue, targetClass));
     end
     if ~isempty(wb); wb.Value = 0.5; end
-
-    if obj.maskExist && obj.mask.exists
-        maskData = obj.mask.data;
-        modelData(maskData == 1) = bitset(modelData(maskData == 1), 7, 1);
+    if ~isempty(maskData)
+        packedData = bitor(packedData, cast(maskData, targetClass) * cast(newLabels.maskValue, targetClass));
     end
+    newLabels.data = packedData;
+    clear packedData modelData selectionData maskData;
     if ~isempty(wb); wb.Value = 0.8; end
 
-    % When downgrading from a large type, rebuild material names from actual pixel values
-    if currentType > 255
-        maxMaterialIndex = max(bitand(modelData(:), uint8(63)));
-        if maxMaterialIndex > 0
-            existingMaterialNames  = arrayfun(@num2str, (1:maxMaterialIndex)', 'UniformOutput', false);
-        end
-    end
-
-    obj.labels    = core.MibLabels63(modelData, meta);
+    obj.labels    = newLabels;
     obj.selection = core.MibLabels([], meta);
     obj.mask      = core.MibLabels([], meta);
-
     obj.labels.filename       = existingFilename;
     obj.labels.labelsVariable = existingLabelsVariable;
-    obj.labels.materialNames = existingMaterialNames;
-    if ~isempty(existingMaterialColors) && size(existingMaterialColors, 2) == 3
-        obj.labels.materialColors = existingMaterialColors;
-    else
-        obj.labels.materialColors = rand(max(63, numel(existingMaterialNames)), 3);
-    end
 
-    obj.selectedMaterial = 2;
-    obj.selectedAddToMaterial = 2;
+    if newType == 63
+        % When downgrading from a large type, rebuild material names from the indices in use
+        if currentType > 255 && maxIndex > 0
+            existingMaterialNames = arrayfun(@num2str, (1:maxIndex)', 'UniformOutput', false);
+        end
+        obj.labels.materialNames = existingMaterialNames;
+        if ~isempty(existingMaterialColors) && size(existingMaterialColors, 2) == 3
+            obj.labels.materialColors = existingMaterialColors;
+        else
+            obj.labels.materialColors = rand(max(63, numel(existingMaterialNames)), 3);
+        end
+        obj.selectedMaterial = 2;
+        obj.selectedAddToMaterial = 2;
+    else
+        % 16383 is an instance model: two name slots and generated colours, like 65535
+        if currentType < 256
+            obj.labels.materialNames  = {'1'; '2'};
+            obj.labels.materialColors = rand(65535, 3);
+            obj.labels.objects3D      = true;     % a material is numbered through the volume
+        else
+            obj.labels.materialNames  = existingMaterialNames;
+            obj.labels.materialColors = existingMaterialColors;
+            obj.labels.objects3D      = existingObjects3D;
+        end
+        obj.labels.materialsCount = maxIndex;
+        obj.selectedMaterial = 3;
+        obj.selectedAddToMaterial = 3;
+    end
     return;
 end
 
-%% Convert FROM type 63 or between high types (target: 255 / 65535 / 4294967295)
+%% Convert FROM a packed type or between high types (target: 255 / 65535 / 4294967295)
 
-% Unpack selection and mask from packed bits when coming from type 63
-if currentType == 63 && obj.labels.exists
+% Unpack selection and mask from the packed bits when coming from type 63 or 16383
+if isa(obj.labels, 'core.MibLabels63') && obj.labels.exists
     rawData = obj.labels.data;
-    selectionData = uint8(bitand(rawData, uint8(128)) / 128);
+    selectionData = uint8(bitget(rawData, obj.labels.selectionBit));
     obj.selection = core.MibLabels(selectionData, meta);
     if obj.maskExist
-        maskData = uint8(bitand(rawData, uint8(64)) / 64);
+        maskData = uint8(bitget(rawData, obj.labels.maskBit));
         obj.mask = core.MibLabels(maskData, meta);
     end
-    rawModel = bitand(rawData, uint8(63));
+    rawModel = bitand(rawData, obj.labels.materialMask);
 else
     rawModel = obj.labels.data;
 end
@@ -255,7 +297,7 @@ obj.labels.labelsVariable = existingLabelsVariable;
 obj.maskExist = 1;
 
 % Adjust material names and colors for type boundary crossings
-if currentType < 256 && newType >= 65535
+if currentType < 256 && newType > 255
     % Upgrading to large type: reset to generic indexed names
     obj.labels.materialNames  = {'1'; '2'};
     obj.labels.materialColors = rand(65535, 3);

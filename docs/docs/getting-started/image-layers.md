@@ -9,12 +9,13 @@ You can toggle each layer on or off, adjust transparency, and change colors (see
 
 ![Schematic of data layers combined into the final image](images/dataLayersToFinalImage.jpg)
 
-By default, the **Model**, **Mask**, and **Selection** layers share a single memory container, limiting materials to 63 but minimising memory use. MIB supports four model types with increasing material limits and memory costs:
+By default, the **Model**, **Mask**, and **Selection** layers share a single memory container, limiting materials to 63 but minimising memory use. MIB supports five model types with increasing material limits and memory costs:
 
 | Model type | Max materials | Memory (relative) |
 |-----------|:-------------:|:-----------------:|
 | **63 materials** *(default)* | 63 | lowest |
 | **255 materials** | 255 | ~2× default |
+| **16383 materials** | 16 383 | ~2× default |
 | **65535 materials** | 65 535 | ~2.5× default |
 | **4294967295 materials** | ~4.3 billion | ~5× default |
 
@@ -23,7 +24,7 @@ Choose the organization type in the [Ribbon → Model → Convert type](../user-
 ??? example "Image Example"
     ![Example of data layers](images/dataLayers.jpg)
 
-    When working with **65535** or **4294967295** material models, the [Segmentation Panel](../user-interface/panels/segm/index.md) layout changes: the **+** / **−** material buttons are replaced by controls to find the next empty index and squeeze the index space.
+    When working with **16383**, **65535** or **4294967295** material models, the [Segmentation Panel](../user-interface/panels/segm/index.md) layout changes: the **+** / **−** material buttons are replaced by controls to find the next empty index and squeeze the index space.
     Materials should be named with numbers representing the target material index (e.g., `11555` means the selection is assigned to index 11555 when added to the model).
     The `Variable 2` in the image example has `uint16` or `uint32` class
 

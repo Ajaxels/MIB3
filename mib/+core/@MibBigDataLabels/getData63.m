@@ -14,7 +14,8 @@ function dataset = getData63(obj, type, orient, materialIndex, options)
 % (``MibVirtualImage.getDataZarr``) so the model overlay lines up pixel-for-pixel
 % with the image in every orientation.
 %
-% **Bit packing** (packed uint8, same as ``core.MibLabels63``):
+% **Bit packing** (same as ``core.MibLabels63``; uint8 layout shown, the uint16
+% layout uses bits 1-14 for the index, 15 for the mask and 16 for the selection):
 %
 %   - bits 1-6 - material index 0-63 (``type='labels'``)
 %   - bit 7     - mask flag (``type='mask'``)
@@ -24,10 +25,10 @@ function dataset = getData63(obj, type, orient, materialIndex, options)
 % Input Arguments:
 %   - **type** *(optional)* - [char] layer to unpack:
 %
-%     - ``'labels'``    - material indices 0-63 (or a binary map when ``materialIndex`` set)
-%     - ``'mask'``      - binary mask (bit 7)
-%     - ``'selection'`` - binary selection (bit 8)
-%     - ``'everything'``- raw packed uint8 (all 3 layers)
+%     - ``'labels'``    - material indices 0-63 or 0-16383 (or a binary map when ``materialIndex`` set)
+%     - ``'mask'``      - binary uint8 mask (bit 7 or 15)
+%     - ``'selection'`` - binary uint8 selection (bit 8 or 16)
+%     - ``'everything'``- raw packed uint8 or uint16 (all 3 layers)
 %
 %     Default: ``'labels'``.
 %
@@ -41,7 +42,8 @@ function dataset = getData63(obj, type, orient, materialIndex, options)
 %
 %   - **materialIndex** *(optional)* - [numeric scalar | empty] when non-empty and
 %     ``type='labels'``, returns a binary ``uint8`` mask that is 1 where the label equals
-%     ``materialIndex``.  Pass ``[]`` to return all material indices (0-63).
+%     ``materialIndex``.  Pass ``[]`` to return all material indices (0-63, or
+%     0-16383 in the uint16 layout).
 %
 %   - **options** *(optional)* - [struct] with fields:
 %
@@ -57,7 +59,8 @@ function dataset = getData63(obj, type, orient, materialIndex, options)
 %       level. Default: full depth of the selected level.
 %
 % Output Arguments:
-%   - **dataset** - [uint8] unpacked layer at display resolution.  Shape is
+%   - **dataset** - [uint8|uint16] unpacked layer at display resolution (uint16 only
+%     for ``labels`` of the uint16 layout).  Shape is
 %     ``[ny, nx, nz]`` for orientation 3 (YX), with ``ny/nx/nz`` determined by the
 %     ``options.y/x/z`` ranges after level-scale division and display resize.  Returns
 %     ``[]`` when the store is closed (``obj.exists == false``).
@@ -125,7 +128,7 @@ if ~explicitLevel && abs(resizeFactor - 1) > 1e-3
     newY = max(1, round(size(packed, 1) / resizeFactor));
     newX = max(1, round(size(packed, 2) / resizeFactor));
     if ~isequal([newY newX], [size(packed, 1), size(packed, 2)])
-        resized = zeros(newY, newX, size(packed, 3), 'uint8');
+        resized = zeros(newY, newX, size(packed, 3), 'like', packed);
         for z = 1:size(packed, 3)
             resized(:, :, z) = imresize(packed(:, :, z), [newY newX], 'nearest');
         end
@@ -137,14 +140,14 @@ end
 switch type
     case 'labels'
         if ~isempty(materialIndex)
-            dataset = uint8(bitand(packed, 63) == materialIndex(1));
+            dataset = uint8(bitand(packed, obj.materialMask) == materialIndex(1));
         else
-            dataset = bitand(packed, 63);
+            dataset = bitand(packed, obj.materialMask);
         end
     case 'mask'
-        dataset = bitget(packed, 7);
+        dataset = uint8(bitget(packed, obj.maskBit));
     case 'selection'
-        dataset = bitget(packed, 8);
+        dataset = uint8(bitget(packed, obj.selectionBit));
     case 'everything'
         dataset = packed;
 end

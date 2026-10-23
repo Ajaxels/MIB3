@@ -98,10 +98,33 @@ function applied = editInstanceObjects(obj, BatchOptIn)
 %     of assuming the edit went through and updating its own state to match.
 %
 % .. note::
-%    Only 65535 and 4294967295 model types on ``Standard`` datasets are handled.
-%    A model with 63 or 255 materials has no per-object identity to edit, and
-%    ``BigData`` labels are bit-packed at 63 materials so they cannot hold an
-%    instance model at all.
+%    Only 16383, 65535 and 4294967295 model types are handled. A model with 63 or
+%    255 materials has no per-object identity to edit. ``Virtual`` datasets are
+%    refused.
+%
+% .. note::
+%    **BigData** (a 16383 store, ``core.MibBigDataLabels``) works with the same
+%    actions, with these differences:
+%
+%    - every read, write and backup is made at full resolution (level 1), so an
+%      edit is exact at every zoom. A write at the display zoom would make that
+%      level authoritative for whole coarse tiles and wipe the full-resolution
+%      detail around the object on the next zoom-in
+%    - writes are read-modify-write of each object's bounding box through
+%      ``setData3D``; ``setPixelIdxList`` writes ``obj.data``, which a disk-backed
+%      model does not have
+%    - the drawing is found from ``labels.selectionBBoxFull`` rather than a scan
+%      of the selection layer. That box is kept for the current session only, so
+%      a selection left in the store by an earlier session is not seen until it
+%      is drawn over again
+%    - the index is always passed through ``buildInstanceIndex`` first, which is
+%      free when nothing changed and re-measures only the changed box otherwise -
+%      the dataset's own ``.stale`` flag is set only by an open editor window and
+%      would miss an edit made by a batch protocol
+%    - ``Cleanup`` is refused (its filters read the whole volume). ``Compact``
+%      relabels object by object through the index, cannot be undone, and in 2D
+%      mode is refused on a stack (it renumbers every slice). A read-only BigData
+%      overlay is refused
 %
 % Usage:
 %   **Example 1** - merge objects 12 and 7; the result is object 7. Without
@@ -191,16 +214,38 @@ action = BatchOpt.Action{1};
 if ~localGuard(obj, dataset)
     return;
 end
+if localIsBigData(dataset)
+    % The two whole-model actions that read the volume as one array
+    problem = '';
+    if strcmp(action, 'Cleanup')
+        problem = 'Cleanup is not available for BigData datasets.';
+        details = {'Its filters read the whole model at once. Delete small objects from the list instead.'};
+    elseif strcmp(action, 'Compact') && ~BatchOpt.Mode3D && dataset.labels.depth > 1
+        problem = 'Compact in 2D mode is not available for a BigData stack.';
+        details = {'It renumbers every slice of the stack separately. Switch on 3D mode to renumber the model as a whole.'};
+    end
+    if ~isempty(problem)
+        localComplain(obj, problem, 'BigData mode', details);
+        notify(obj, 'StopProtocol');
+        return;
+    end
+end
 
 %% Object index cache
 % Every per-object action reads a bounding box out of it, so a missing or stale
 % index has to be rebuilt first - acting on a stale box edits the wrong voxels.
 timePoint = dataset.getCurrentTimePoint();
 index = dataset.instanceIndex;
-if isempty(index) || ~isfield(index, 'stale') || index.stale || ...
+% BigData always asks: the labels object knows what changed since its index was
+% synced, including edits no editor window was open to see, and answering
+% costs nothing when the answer is "nothing". The dialog is for the case that
+% does read the store.
+bigDataNeedsWork = localIsBigData(dataset) && ...
+    (isempty(dataset.labels.syncedInstanceIndex) || ~isempty(dataset.labels.indexDirtyBox));
+if localIsBigData(dataset) || isempty(index) || ~isfield(index, 'stale') || index.stale || ...
         ~isequal(index.timePoint, timePoint)
     wbIndex = [];
-    if BatchOpt.showWaitbar
+    if BatchOpt.showWaitbar && (~localIsBigData(dataset) || bigDataNeedsWork)
         wbIndex = uiprogressdlg(obj.getProgressBarParent(), 'Indeterminate', 'on', ...
             'Message', 'Indexing the objects of the model, please wait...', ...
             'Title', 'Instance editor', 'Cancelable', 'on');
@@ -338,12 +383,6 @@ if strcmp(dataset.datasetType, 'Virtual')
     notify(obj, 'StopProtocol');
     return;
 end
-if dataset.datasetType(1) == 'B'
-    localComplain(obj, 'Not available for BigData datasets!', 'BigData mode', ...
-        {'BigData models are bit-packed at 63 materials and cannot hold an instance model.'});
-    notify(obj, 'StopProtocol');
-    return;
-end
 if dataset.enableSelection == 0
     localComplain(obj, 'The models are switched off!', 'Models are disabled', ...
         {'Please enable the "Enable selection" option in Preferences (Ribbon -> Home -> Preferences) and try again.'});
@@ -356,14 +395,28 @@ if ~dataset.modelExist
     notify(obj, 'StopProtocol');
     return;
 end
-if dataset.labels.maxMaterials < 65535
+if dataset.labels.maxMaterials < 256
     localComplain(obj, 'Not an instance model!', 'Wrong model type', ...
-        {'The instance editor works on 65535 and 4294967295 model types, where every object has its own index.', ...
+        {'The instance editor works on 16383, 65535 and 4294967295 model types, where every object has its own index.', ...
          'Convert the model first: Ribbon -> Model -> Convert type.'});
     notify(obj, 'StopProtocol');
     return;
 end
+if localIsBigData(dataset) && (~isa(dataset.labels, 'core.MibBigDataLabels') || ...
+        isa(dataset.labels, 'core.MibBigDataLabelsZarr2'))
+    localComplain(obj, 'This BigData model is read-only!', 'BigData mode', ...
+        {'Instance editing needs a model store created by MIB. Create or load an editable 16383 model first.'});
+    notify(obj, 'StopProtocol');
+    return;
+end
 ok = true;
+end
+
+% =====================================================================
+function tf = localIsBigData(dataset)
+% true for a BigData dataset, whose model is a disk-backed store: every read,
+% write and backup of this file then goes through boxes at full resolution
+tf = dataset.datasetType(1) == 'B';
 end
 
 % =====================================================================
@@ -478,10 +531,26 @@ drawn = [];
 
 readOptions = struct('blockModeSwitch', 0, 'id', id);
 zOffset = 0;
+yOffset = 0;
+xOffset = 0;
 if ~use3D
     sliceNumber = dataset.getCurrentSliceNumber();
     readOptions.z = [sliceNumber, sliceNumber];
     zOffset = sliceNumber - 1;
+end
+if localIsBigData(dataset)
+    % No layer to reduce: the store is read only where setData63 recorded
+    % selection writes this session, and at full resolution.
+    searchBox = dataset.labels.selectionBBoxFull;
+    if isempty(searchBox); return; end
+    if ~use3D
+        if sliceNumber < searchBox(5) || sliceNumber > searchBox(6); return; end
+        searchBox(5:6) = sliceNumber;
+    end
+    readOptions = localBoxOptions(dataset, searchBox, id);
+    yOffset = searchBox(1) - 1;
+    xOffset = searchBox(3) - 1;
+    zOffset = searchBox(5) - 1;
 end
 selectionVolume = cell2mat(obj.getData3D('selection', timePoint, 3, NaN, readOptions));
 
@@ -492,7 +561,8 @@ colsUsed = find(any(columnsAndPlanes, 3));
 rowsUsed = find(any(any(selectionVolume(:, colsUsed(1):colsUsed(end), ...
     planesUsed(1):planesUsed(end)), 2), 3));
 
-box = [rowsUsed(1), rowsUsed(end), colsUsed(1), colsUsed(end), ...
+box = [yOffset + rowsUsed(1), yOffset + rowsUsed(end), ...
+       xOffset + colsUsed(1), xOffset + colsUsed(end), ...
        zOffset + planesUsed(1), zOffset + planesUsed(end)];
 drawn = selectionVolume(rowsUsed(1):rowsUsed(end), colsUsed(1):colsUsed(end), ...
     planesUsed(1):planesUsed(end)) > 0;
@@ -764,7 +834,7 @@ end
 refresh = struct('timePoint', timePoint, 'objectIds', targetId, 'bbox', refreshBox);
 if ~use3D; refresh.sliceDelta = true; end
 if ~batchModeSwitch
-    obj.backup('labels', 1, localUndoRepairOptions(box, id, refresh));
+    obj.backup('labels', 1, localUndoRepairOptions(obj.I{id}, box, id, refresh));
 end
 if ~use3D
     refresh.previousCrop = localReadBox(obj, id, 'labels', timePoint, box);
@@ -803,6 +873,15 @@ function localClearDrawing(obj, id, dataset, timePoint, use3D, box)
 if isempty(box)
     box = localDrawingExtent(obj, id, dataset, timePoint, use3D);
     if isempty(box); return; end
+end
+if localIsBigData(dataset)
+    % MibDataset.clearLayer clears a disk-backed model at the display zoom, which
+    % makes that zoom level authoritative for whole coarse tiles: the next
+    % full-resolution read would re-create the objects just edited there from
+    % the coarse copy. Cleared at full resolution instead, like every other write
+    % of this file.
+    dataset.labels.clearLayer('selection', box(1:2), box(3:4), box(5:6), [timePoint, timePoint], 1);
+    return;
 end
 dataset.clearLayer('selection', box(1:2), box(3:4), box(5:6), [timePoint, timePoint], 0);
 end
@@ -897,13 +976,20 @@ end
 end
 
 % =====================================================================
-function options = localBoxOptions(box, id)
+function options = localBoxOptions(dataset, box, id)
+% getData3D / setData3D / backup options for one box of the volume.
+%
+% BigData is pinned to full resolution. getData3D and setData3D already default
+% to it, but MibModel.backup does not: without a magFactor it snapshots at the
+% display zoom, and the undo would then write that coarse copy back over the
+% full-resolution edit.
 options = struct('blockModeSwitch', 0, 'id', id, ...
     'y', box(1:2), 'x', box(3:4), 'z', box(5:6));
+if localIsBigData(dataset); options.magFactor = 1; end
 end
 
 % =====================================================================
-function options = localUndoRepairOptions(box, id, refresh)
+function options = localUndoRepairOptions(dataset, box, id, refresh)
 % Backup options carrying the note that lets an Undo repair the object index
 % instead of invalidating it.
 %
@@ -933,6 +1019,7 @@ function options = localUndoRepairOptions(box, id, refresh)
 % dataset in front of the user.
 %
 % Input Arguments:
+%   - **dataset** - the ``core.MibDataset`` edited, see ``localBoxOptions``
 %   - **box** - ``[y1 y2 x1 x2 z1 z2]`` region to back up
 %   - **id** - dataset index
 %   - **refresh** - the ``buildInstanceIndex`` options of the forward edit,
@@ -944,13 +1031,13 @@ function options = localUndoRepairOptions(box, id, refresh)
 %     ``repairIndexAfterUndo`` hands ``buildInstanceIndex`` the crop the undo
 %     replaced as ``.previousCrop``. Without it a rescan of that box would
 %     forget the object on every other slice.
-options = localBoxOptions(box, id);
+options = localBoxOptions(dataset, box, id);
 options.instanceIndexRepair = refresh;
 end
 
 % =====================================================================
 function sub = localReadBox(obj, id, layer, timePoint, box)
-sub = cell2mat(obj.getData3D(layer, timePoint, 3, NaN, localBoxOptions(box, id)));
+sub = cell2mat(obj.getData3D(layer, timePoint, 3, NaN, localBoxOptions(obj.I{id}, box, id)));
 end
 
 % =====================================================================
@@ -972,6 +1059,18 @@ end
 function localWriteLabels(obj, id, pixelIdxList, value)
 % Write one label value at a list of full-volume linear indices
 if isempty(pixelIdxList); return; end
+dataset = obj.I{id};
+if localIsBigData(dataset)
+    % A disk-backed model has no obj.data for setPixelIdxList to index, so the
+    % box the voxels lie in is read, changed and written back as a whole.
+    [rows, cols, planes, frames] = ind2sub([dataset.image.height, dataset.image.width, ...
+        dataset.image.depth, dataset.image.time], pixelIdxList);
+    box = [min(rows), max(rows), min(cols), max(cols), min(planes), max(planes)];
+    crop = localReadBox(obj, id, 'labels', frames(1), box);
+    crop(sub2ind(size(crop, 1, 2, 3), rows - box(1) + 1, cols - box(3) + 1, planes - box(5) + 1)) = value;
+    obj.setData3D(crop, 'labels', frames(1), 3, [], localBoxOptions(dataset, box, id));
+    return;
+end
 labelValues = zeros(numel(pixelIdxList), 1, obj.I{id}.labels.dataClass) + value;
 obj.I{id}.setPixelIdxList('labels', labelValues, pixelIdxList);
 end
@@ -1095,7 +1194,7 @@ end
 refresh = struct('timePoint', timePoint, 'objectIds', unique(touchedIds), 'bbox', box);
 if ~use3D; refresh.sliceDelta = true; end
 if ~batchModeSwitch
-    obj.backup('labels', 1, localUndoRepairOptions(box, id, refresh));
+    obj.backup('labels', 1, localUndoRepairOptions(obj.I{id}, box, id, refresh));
 end
 if ~use3D
     % In 2D the objects are rescanned as a difference over the slice, not over
@@ -1367,6 +1466,22 @@ function done = localWholeModelAction(obj, id, action, BatchOpt, batchModeSwitch
 done = false;
 dataset = obj.I{id};
 timePoint = dataset.getCurrentTimePoint();
+isBigData = localIsBigData(dataset);
+
+if isBigData && ~batchModeSwitch
+    % Nothing can be backed up for the undo here - see localCompactBigData - so
+    % the user decides first. Only Compact reaches this on BigData.
+    oldIds = find(dataset.instanceIndex.exists)';
+    moving = nnz(oldIds ~= 1:numel(oldIds));
+    parent = obj.getProgressBarParent();
+    if moving > 0 && ~isempty(parent) && all(isvalid(parent))
+        answer = uiconfirm(parent, sprintf(['%d of %d objects will get a new number.\n\n' ...
+            'Compact of a BigData model cannot be undone.'], moving, numel(oldIds)), ...
+            'Compact', 'Options', {'Renumber', 'Cancel'}, 'DefaultOption', 2, ...
+            'CancelOption', 2, 'Icon', 'warning');
+        if ~strcmp(answer, 'Renumber'); return; end
+    end
+end
 
 wb = [];
 if BatchOpt.showWaitbar
@@ -1375,7 +1490,7 @@ if BatchOpt.showWaitbar
         'Title', sprintf('Instance editor - %s', action), 'Cancelable', 'on');
 end
 
-if ~batchModeSwitch
+if ~batchModeSwitch && ~isBigData
     obj.backup('labels', 1, struct('id', id));
 end
 
@@ -1413,9 +1528,14 @@ switch action
         compactStats = struct('oldIds', find(previous.exists)', ...
             'oldMax', double(previous.maxIndex), ...
             'perSlice', ~BatchOpt.Mode3D, 'slicesChanged', 0, ...
-            'slicesWithObjects', 0, 'depth', 0);
+            'slicesWithObjects', 0, 'depth', 0, 'notReached', 0);
 
-        if BatchOpt.Mode3D
+        if isBigData
+            % 2D mode on a single plane is the same renumbering; on a stack it
+            % was refused before getting here
+            compactStats.perSlice = false;
+            compactStats.notReached = localCompactBigData(obj, id, timePoint, wb);
+        elseif BatchOpt.Mode3D
             dataset.labels.squeezeMaterialLabels(wb);
         else
             % Per slice, because that is what the numbering means in this mode.
@@ -1472,9 +1592,13 @@ end
 
 if ~isempty(wb); delete(wb); end
 
-% The whole label space has moved; nothing of the old index survives.
-dataset.instanceIndex = [];
-dataset.buildInstanceIndex(struct('timePoint', timePoint));
+% The whole label space has moved; nothing of the old index survives. On
+% BigData localCompactBigData has moved its rows along with the objects
+% instead, which needs no scan.
+if ~isBigData
+    dataset.instanceIndex = [];
+    dataset.buildInstanceIndex(struct('timePoint', timePoint));
+end
 
 % Both whole-model actions report through localReport, in the application rather than
 % the command window behind it: Compact changes every number the user has been
@@ -1523,6 +1647,15 @@ if strcmp(action, 'Compact')
             sprintf('Highest index: %d -> %d', compactStats.oldMax, double(newIndex.maxIndex))
             sprintf('%d unused indices reclaimed.', ...
                 compactStats.oldMax - double(newIndex.maxIndex))};
+        if compactStats.notReached > 0
+            % Cancelled half way. Every object still has a number of its own and
+            % the index matches the model, so it is a shorter Compact rather
+            % than a broken one - but the user has to know it is unfinished.
+            message = sprintf('Compact cancelled: renumbered %d of %d objects%s.', ...
+                numel(oldIds) - kept - compactStats.notReached, numel(oldIds), scope);
+            details{end+1} = sprintf(['%d objects keep their old number. The model is consistent; ' ...
+                'run Compact again to finish.'], compactStats.notReached);
+        end
         if double(newIndex.numObjects) ~= numel(oldIds)
             % Renumbering must not add or remove objects. Nothing has produced
             % this; it is here because it is the damage hardest to recognise.
@@ -1533,4 +1666,78 @@ if strcmp(action, 'Compact')
     localReport(obj, message, 'Compact', details, ~batchModeSwitch);
 end
 done = true;
+end
+
+% =====================================================================
+function notReached = localCompactBigData(obj, id, timePoint, wb)
+% Compact of a disk-backed model: renumber object by object through the index.
+%
+% The Standard route squeezes the whole label volume in memory, which a
+% BigData store does not fit. Here every object whose number changes is
+% relabelled inside its own bounding box, in ascending order of index. That order
+% is what makes it safe without a scratch value: the k-th object in use moves to
+% k, and k is free by then - either never used, or the old number of an object
+% of lower rank, which has already moved. The index rows move with the objects,
+% so no rescan follows; the voxels of an object do not change, only its number.
+%
+% There is no backup: the Standard route backs up the whole model, which a
+% disk-backed one is too large for, so the caller asks the user first. Cancel
+% stops between two objects and leaves a consistently numbered model, with the
+% index synced to it.
+%
+% Input Arguments:
+%   - **wb** - the caller's cancelable ``uiprogressdlg``, or ``[]``
+%
+% Output Arguments:
+%   - **notReached** - number of objects that still had to move when Cancel was
+%     pressed; 0 when the renumbering is complete
+dataset = obj.I{id};
+index = dataset.instanceIndex;   % fresh: editInstanceObjects synced it before dispatching
+oldIds = find(index.exists)';
+moves = find(oldIds ~= 1:numel(oldIds));
+notReached = 0;
+
+if ~isempty(wb)
+    wb.Indeterminate = 'off';
+    wb.Message = 'Renumbering the objects...';
+end
+for step = 1:numel(moves)
+    if ~isempty(wb) && wb.CancelRequested
+        notReached = numel(moves) - step + 1;
+        break;
+    end
+    newId = moves(step);
+    oldId = oldIds(newId);
+    localWriteLabels(obj, id, localObjectPixels(obj, id, index, oldId, timePoint, [], true), newId);
+
+    index.exists(newId) = true;
+    index.voxels(newId) = index.voxels(oldId);
+    index.bbox(newId, :) = index.bbox(oldId, :);
+    index.centroid(newId, :) = index.centroid(oldId, :);
+    index.sliceCount(newId) = index.sliceCount(oldId);
+    index.exists(oldId) = false;
+    index.voxels(oldId) = 0;
+    index.bbox(oldId, :) = 0;
+    index.centroid(oldId, :) = 0;
+    index.sliceCount(oldId) = 0;
+    if ~isempty(wb); wb.Value = step / numel(moves); end
+end
+
+% Unlike a refresh, Compact is meant to bring the highest index down
+highest = find(index.exists, 1, 'last');
+if isempty(highest); highest = 0; end
+index.exists = index.exists(1:highest);
+index.voxels = index.voxels(1:highest);
+index.bbox = index.bbox(1:highest, :);
+index.centroid = index.centroid(1:highest, :);
+index.sliceCount = index.sliceCount(1:highest);
+index.maxIndex = highest;
+index.numObjects = nnz(index.exists);
+
+% The writes above grew the dirty box, but every change in it is the move just
+% recorded in the rows, so the index describes the store exactly.
+dataset.labels.syncInstanceIndex(index);
+dataset.instanceIndex = index;
+dataset.labels.maxIndexUsed = highest;
+dataset.labels.materialsCount = highest;
 end

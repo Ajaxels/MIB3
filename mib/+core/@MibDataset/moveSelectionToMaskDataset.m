@@ -57,20 +57,24 @@ useFiltered = false;
 filteredImg = [];
 if isType63
     D = obj.labels.data;
+    % packed bit layout: uint8 (63 materials) or uint16 (16383 instances)
+    materialMask   = obj.labels.materialMask;
+    maskValue      = obj.labels.maskValue;
+    selectionValue = obj.labels.selectionValue;
     if options.selected_sw && obj.modelExist && options.maskedAreaSw == 0
         useFiltered = true;
-        filteredImg = bitand(uint8(bitand(D, 63) == options.contSelIndex), bitand(D, 128)/128);
+        filteredImg = bitand(cast(bitand(D, materialMask) == options.contSelIndex, 'like', D), bitand(D, selectionValue)/selectionValue);
     elseif options.maskedAreaSw && options.selected_sw == 0
         if strcmp(action_type, 'add'); return; end
         if strcmp(action_type, 'replace')
             useFiltered = true;
-            filteredImg = bitand(bitand(D, 64)/64, bitand(D, 128)/128);
+            filteredImg = bitand(bitand(D, maskValue)/maskValue, bitand(D, selectionValue)/selectionValue);
         end
     elseif options.selected_sw && obj.modelExist && options.maskedAreaSw == 1
         if strcmp(action_type, 'add'); return; end
         useFiltered = true;
-        filteredImg = bitand(uint8(bitand(D, 63) == options.contSelIndex), bitand(D, 128)/128);
-        filteredImg = bitand(filteredImg, bitand(D, 64)/64);
+        filteredImg = bitand(cast(bitand(D, materialMask) == options.contSelIndex, 'like', D), bitand(D, selectionValue)/selectionValue);
+        filteredImg = bitand(filteredImg, bitand(D, maskValue)/maskValue);
     end
 else
     if options.selected_sw && obj.modelExist && options.maskedAreaSw == 0
@@ -97,11 +101,11 @@ switch action_type
     case 'add'
         if isType63
             if ~useFiltered
-                D = bitor(D, bitand(D, 128)/2);      % copy selection to mask
+                D = bitor(D, bitand(D, selectionValue)/2);      % copy selection to mask
             else
-                D = bitor(D, filteredImg * 64);
+                D = bitor(D, filteredImg * cast(maskValue, 'like', D));
             end
-            D = bitand(D, 127);                       % clear selection
+            D = bitand(D, selectionValue - 1);                  % clear selection
             obj.labels.data = D;
         else
             maskD = obj.mask.data;
@@ -119,14 +123,14 @@ switch action_type
     case 'remove'
         if isType63
             if ~useFiltered
-                msk = bitget(D, 7);
-                msk = msk - bitget(D, 8);             % mask - selection
-                D = bitand(D, 63);                     % clear selection and mask
-                D = bitor(D, msk * 64);                % set mask
+                msk = bitget(D, obj.labels.maskBit);
+                msk = msk - bitget(D, obj.labels.selectionBit);   % mask - selection
+                D = bitand(D, materialMask);           % clear selection and mask
+                D = bitor(D, msk * cast(maskValue, 'like', D));         % set mask
             else
-                filteredImg = bitand(D, 64)/64 - filteredImg;
-                D = bitand(D, 63);                     % clear selection and mask
-                D = bitor(D, filteredImg * 64);        % set mask
+                filteredImg = bitand(D, maskValue)/maskValue - filteredImg;
+                D = bitand(D, materialMask);           % clear selection and mask
+                D = bitor(D, filteredImg * cast(maskValue, 'like', D)); % set mask
             end
             obj.labels.data = D;
         else
@@ -143,12 +147,12 @@ switch action_type
     case 'replace'
         if isType63
             if ~useFiltered
-                sel = bitget(D, 8);
-                D = bitand(D, 63);                     % clear selection and mask
-                D = bitor(D, sel * 64);                % set mask from selection
+                sel = bitget(D, obj.labels.selectionBit);
+                D = bitand(D, materialMask);           % clear selection and mask
+                D = bitor(D, sel * cast(maskValue, 'like', D));         % set mask from selection
             else
-                D = bitand(D, 63);                     % clear selection and mask
-                D = bitor(D, filteredImg * 64);        % set mask
+                D = bitand(D, materialMask);           % clear selection and mask
+                D = bitor(D, filteredImg * cast(maskValue, 'like', D)); % set mask
             end
             obj.labels.data = D;
         else

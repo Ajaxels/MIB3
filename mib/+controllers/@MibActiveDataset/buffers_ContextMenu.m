@@ -18,6 +18,15 @@ function buffers_ContextMenu(obj, parameter, buttonID, BatchOptIn)
 %     - ``'sync_xyz'`` - synchronize XYZ view parameters across buffers
 %     - ``'sync_xyzt'`` - synchronize all dimensions and time across buffers
 %     - ``'link_views'`` - link or unlink views between two buffers
+%     - ``'closeModel'`` - close the model of the dataset in the buffer and keep the
+%       dataset. An in-memory model (Standard, Virtual) becomes an empty
+%       63-material layer with the mask and selection kept, undoable with
+%       Ctrl+Z when the buffer is the active one. A disk-backed BigData model is
+%       closed as a store (``closeStore`` persists its level map and instance
+%       index), stays on disk, and takes its mask and selection with it - they
+%       are bits of the store; the dataset becomes browse-only and the undo
+%       history is cleared. Interactively a confirmation names the model first;
+%       a dataset without a model is reported and left alone
 %     - ``'close'`` - close the current dataset in the buffer
 %     - ``'closeSet'`` - close all datasets in the current set
 %
@@ -61,7 +70,6 @@ if isnan(buttonID)
 else
     globalDatasetIndex = buttonID + (selectedSet-1)*obj.mibModel.Sets.datasetsInSet;
 end
-bufferStringId = sprintf('buffer%d', buttonID);
 
 if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.MibActiveDataset.buffers_ContextMenu: button %d (global %d), action: %s\n', ...
@@ -86,7 +94,7 @@ switch parameter
         BatchOpt.ContainerB = {sprintf('Container %d', destinationGlobalId)};
         BatchOpt.ContainerB{2} = arrayfun(@(x) sprintf('Container %d', x), 1:maxId, 'UniformOutput', false);
         % default: toggle current link state (linked → unlink, unlinked → link)
-        linked = obj.handles.(bufferStringId).UIContextMenu.Children(3).Text(1) == '['; % check for "[Linked..."
+        linked = obj.handles.buffersContextLink.Text(1) == '['; % check for "[Linked..."
         BatchOpt.Linked = ~linked;
         BatchOpt.mibBatchTooltip.ContainerA = 'Index of the first container to link the views';
         BatchOpt.mibBatchTooltip.ContainerB = 'Index of the second container to link the views';
@@ -114,6 +122,12 @@ switch parameter
         BatchOpt.mibBatchTooltip.Destination = 'Index of the destination container to copy the current dataset';
         BatchOpt.mibBatchTooltip.showWaitbar = 'Show or not the progress bar during execution';
         BatchOpt.mibBatchActionName = 'Duplicate dataset';
+
+    case 'closeModel'
+        BatchOpt.Target = {sprintf('Container %d', globalDatasetIndex)};
+        BatchOpt.Target{2} = [{'Current'}, arrayfun(@(x) sprintf('Container %d', x), 1:maxId, 'UniformOutput', false)];
+        BatchOpt.mibBatchTooltip.Target = 'Index of the target container with a model to close; the dataset stays open';
+        BatchOpt.mibBatchActionName = 'Close model';
 
     case 'close'
         BatchOpt.Target = {sprintf('Container %d', globalDatasetIndex)};
@@ -176,15 +190,14 @@ switch parameter
             buttonGlobalA = str2double(BatchOpt.ContainerA{1}(10:end));
         end
         buttonLocalA = mod(buttonGlobalA-1, obj.mibModel.Sets.datasetsInSet) + 1;
-        bufferStrA = sprintf('buffer%d', buttonLocalA);
 
         if BatchOpt.Linked == false  % unlink the two containers
-            linkText = obj.handles.(bufferStrA).UIContextMenu.Children(3).Text;
+            linkText = obj.handles.buffersContextLink.Text;
             ids = sscanf(linkText, '[Linked: %d <-> %d]');
             if numel(ids) >= 2
-                bufferStrB = sprintf('buffer%d', ids(2));
-                obj.handles.(bufferStrA).UIContextMenu.Children(3).Text = 'Link view with... [Unlinked]';
-                obj.handles.(bufferStrB).UIContextMenu.Children(3).Text = 'Link view with... [Unlinked]';
+                % one context menu serves every buffer button, so this one item
+                % holds the link state for both containers
+                obj.handles.buffersContextLink.Text = 'Link view with... [Unlinked]';
             end
             % remove from linkedPairs
             obj.mibModel.linkedPairs = obj.mibModel.linkedPairs( ...
@@ -234,10 +247,9 @@ switch parameter
             end
 
             buttonLocalB = mod(buttonGlobalB-1, obj.mibModel.Sets.datasetsInSet) + 1;
-            bufferStrB = sprintf('buffer%d', buttonLocalB);
 
             % check that the destination is not already linked
-            if obj.handles.(bufferStrB).UIContextMenu.Children(3).Text(1) == '['
+            if obj.handles.buffersContextLink.Text(1) == '['
                 dlgOpt.MsgBoxOnly = true;
                 dlgOpt.Icon = 'puffin_warning';
                 dlgOpt.HeaderLines = 1;
@@ -249,10 +261,11 @@ switch parameter
                 return;
             end
 
-            % store link state as context menu text (per-button, local IDs)
-            obj.handles.(bufferStrA).UIContextMenu.Children(3).Text = ...
-                sprintf('[Linked: %d <-> %d] press to unlink', buttonLocalA, buttonLocalB);
-            obj.handles.(bufferStrB).UIContextMenu.Children(3).Text = ...
+            % store link state as context menu text (local IDs). One context menu
+            % serves every buffer button, so there is a single item to write; it
+            % has always ended up holding this, the second of the two writes the
+            % code used to make per button
+            obj.handles.buffersContextLink.Text = ...
                 sprintf('[Linked: %d <-> %d] press to unlink', buttonLocalB, buttonLocalA);
 
             % register in model's linkedPairs (global IDs, order: smaller first)
@@ -309,7 +322,7 @@ switch parameter
         destLocalId = mod(destGlobalId-1, obj.mibModel.Sets.datasetsInSet) + 1;
         dstBufferStr = sprintf('buffer%d', destLocalId);
         obj.paintBufferButton(obj.handles.(dstBufferStr), 'fileBacked');
-        obj.handles.(dstBufferStr).Tooltip = obj.mibModel.I{destGlobalId}.image.filename;
+        obj.handles.(dstBufferStr).Tooltip = utils.bufferTooltip(obj.mibModel.I{destGlobalId});
 
         % notify: triggers axes initialisation, GUI update, and image redraw
         EventDataOpt.mode = 'resize';
@@ -410,6 +423,91 @@ switch parameter
         notify(obj.mibModel, 'ShowImage');
         % note: sync does not notify SyncBatch - matches MIB2 behaviour
 
+    case 'closeModel'
+        % Close the model and keep the dataset. In-memory models (Standard,
+        % Virtual) go back to an empty 63-material layer with the mask and the
+        % selection kept, and the step can be undone. A disk-backed BigData
+        % model is closed as a store - it stays on disk to be loaded again, and
+        % its mask and selection, being bits of that store, close with it - and
+        % the dataset becomes browse-only, as it was when it was opened.
+        if strcmp(BatchOpt.Target{1}, 'Current')
+            targetGlobalId = obj.mibModel.getActiveId();
+        else
+            targetGlobalId = str2double(BatchOpt.Target{1}(10:end));
+        end
+        targetLocalId = mod(targetGlobalId-1, obj.mibModel.Sets.datasetsInSet) + 1;
+        dataset = obj.mibModel.I{targetGlobalId};
+        if ~dataset.modelExist
+            if interactiveMode
+                uialert(obj.view.gui, sprintf('The dataset in container %d has no model to close.', targetLocalId), ...
+                    'Close model', 'Icon', 'info');
+            end
+            return;
+        end
+
+        isDiskBacked = isa(dataset.labels, 'core.MibBigDataLabels') || isa(dataset.labels, 'core.MibBigDataLabelsIndex');
+        if interactiveMode
+            [~, modelText] = utils.bufferTooltip(dataset);
+            if isDiskBacked
+                note = ['The model store stays on disk and can be loaded again. ' ...
+                    'Its mask and selection are part of the store and are closed with it.'];
+            else
+                note = 'The mask and selection layers stay. Changes to the model that were not saved are closed with it.';
+            end
+            answer = uiconfirm(obj.view.gui, sprintf('Close the model of the dataset in container %d?\n\nModel: %s\n\n%s', ...
+                targetLocalId, modelText, note), 'Close model', ...
+                'Options', {'Close model', 'Cancel'}, 'DefaultOption', 1, 'CancelOption', 2, 'Icon', 'question');
+            if ~strcmp(answer, 'Close model'); return; end
+        end
+
+        isActive = targetGlobalId == obj.mibModel.getActiveId();
+        if isDiskBacked
+            if isa(dataset.labels, 'core.MibBigDataLabels') && dataset.labels.exists
+                dataset.labels.closeStore();   % persists its level map and instance index
+            end
+            labelsMeta = core.MibImage.initializeImgInfo('pixSize', dataset.image.pixSize, ...
+                'Height', dataset.image.height, 'Width', dataset.image.width, ...
+                'Depth', dataset.image.depth, 'Time', dataset.image.time, 'Colors', 1);
+            % the placeholder layers of a BigData dataset that has no model (MibDataset.initialize)
+            dataset.labels = core.MibLabels63(zeros([], 'uint8'), labelsMeta);
+            dataset.mask = core.MibLabels([], labelsMeta);
+            dataset.selection = core.MibLabels([], labelsMeta);
+            dataset.enableSelection = false;
+            dataset.maskExist = false;
+            % undo entries are snapshots of the closed store; one written back
+            % now would land in the placeholder
+            if isActive; obj.mibModel.Backup.clearContents(); end
+        else
+            if isActive
+                % keeps the layer objects, so Ctrl+Z brings the model back as it was
+                obj.mibModel.backup('modelLayers', 1, struct('id', targetGlobalId));
+            end
+            if dataset.labels.maxMaterials ~= 63 && strcmp(dataset.datasetType, 'Standard')
+                % back to the default container; mask and selection are moved into it
+                dataset.convertModel(63, []);
+            end
+            if isa(dataset.labels, 'core.MibLabels63') && ~isempty(dataset.labels.data)
+                dataset.labels.data = bitand(dataset.labels.data, dataset.labels.flagsMask);
+            end
+        end
+        dataset.labels.materialNames = {};
+        dataset.labels.materialsCount = 0;
+        dataset.labels.materialColors = obj.mibModel.preferences.Colors.ModelMaterialColors;
+        dataset.labels.filename = '';
+        dataset.modelExist = false;
+        dataset.instanceIndex = [];
+        dataset.selectedMaterial = 1;
+        dataset.selectedAddToMaterial = 1;
+        dataset.lastSegmSelection = [2 1];
+
+        if isActive
+            notify(obj.mibModel, 'UpdateGuiWidgets');
+            notify(obj.mibModel, 'ShowImage');
+        elseif floor((targetGlobalId - 1) / obj.mibModel.Sets.datasetsInSet) + 1 == selectedSet
+            obj.handles.(sprintf('buffer%d', targetLocalId)).Tooltip = utils.bufferTooltip(dataset);
+        end
+        notify(obj.mibModel, 'SyncBatch', core.ToggleEventData(BatchOpt));
+
     case 'close'
         if strcmp(BatchOpt.Target{1}, 'Current')
             targetGlobalId = obj.mibModel.id;
@@ -460,9 +558,7 @@ switch parameter
         % unlink this dataset: reset partner's context menu text and remove from linkedPairs
         partnerOfTarget = obj.mibModel.getLinkedDataset(targetGlobalId);
         if ~isempty(partnerOfTarget)
-            partnerLocalId = mod(partnerOfTarget-1, obj.mibModel.Sets.datasetsInSet) + 1;
-            partnerBufStr  = sprintf('buffer%d', partnerLocalId);
-            obj.handles.(partnerBufStr).UIContextMenu.Children(3).Text = 'Link view with... [Unlinked]';
+            obj.handles.buffersContextLink.Text = 'Link view with... [Unlinked]';
             obj.mibModel.linkedPairs = obj.mibModel.linkedPairs( ...
                 ~any(obj.mibModel.linkedPairs == targetGlobalId, 2), :);
         end
@@ -516,9 +612,7 @@ switch parameter
             % reset partner's context menu text before closing
             partnerI = obj.mibModel.getLinkedDataset(globalI);
             if ~isempty(partnerI)
-                partnerLocalId = mod(partnerI-1, obj.mibModel.Sets.datasetsInSet) + 1;
-                partnerBufStr  = sprintf('buffer%d', partnerLocalId);
-                obj.handles.(partnerBufStr).UIContextMenu.Children(3).Text = 'Link view with... [Unlinked]';
+                obj.handles.buffersContextLink.Text = 'Link view with... [Unlinked]';
             end
 
             obj.mibModel.I{globalI}.closeVirtualDataset();

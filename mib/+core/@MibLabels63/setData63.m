@@ -76,6 +76,9 @@ end
 if isempty(dataset); return; end
 % convert from optional logical
 if islogical(dataset(1)); dataset = uint8(dataset); end
+% match the container class (uint8 or uint16 layout): bitor needs equal classes
+% and a uint8 flag times 16384/32768 would saturate
+if ~isa(dataset, obj.containerClass); dataset = cast(dataset, obj.containerClass); end
 
 % split the operations for better performance
 if blockModeSwitchLocal == 0  % set the full dataset
@@ -91,20 +94,20 @@ if blockModeSwitchLocal == 0  % set the full dataset
             if ~isempty(materialIndex)      % take only specific material
                 % stream arithmetic over the full array instead of logical-index
                 % scatter writes into obj.data (~25% faster: avoids gather/scatter)
-                lowBits = bitand(obj.data, 63);
-                lowBits = lowBits .* uint8(lowBits ~= materialIndex);   % remove Material from the model
+                lowBits = bitand(obj.data, obj.materialMask);
+                lowBits = lowBits .* cast(lowBits ~= materialIndex, 'like', lowBits);   % remove Material from the model
                 lowBits(dataset == 1) = materialIndex;                  % write new material
-                obj.data = bitor(bitand(obj.data, 192), lowBits);       % 192 = 11000000, keep mask+selection bits
+                obj.data = bitor(bitand(obj.data, obj.flagsMask), lowBits);   % keep mask+selection bits
             else
-                obj.data = bitand(obj.data, 192); % clear current model
+                obj.data = bitand(obj.data, obj.flagsMask); % clear current model
                 obj.data = bitor(obj.data, dataset);
             end
         case 'mask'
-            obj.data = bitset(obj.data, 7, 0);    % clear current mask
-            obj.data = bitor(obj.data, dataset*64);
+            obj.data = bitset(obj.data, obj.maskBit, 0);    % clear current mask
+            obj.data = bitor(obj.data, dataset*cast(obj.maskValue, 'like', dataset));
         case 'selection'
-            obj.data = bitset(obj.data, 8, 0);    % clear existing selection
-            obj.data = bitor(obj.data, dataset*128);
+            obj.data = bitset(obj.data, obj.selectionBit, 0);    % clear existing selection
+            obj.data = bitor(obj.data, dataset*cast(obj.selectionValue, 'like', dataset));
         case 'everything'
             obj.data = dataset;
     end
@@ -153,24 +156,24 @@ else  % set a part of the dataset
             if ~isempty(materialIndex)      % take only specific material
                 currentDataset = obj.data(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2));
                 % stream arithmetic instead of logical-index scatter writes
-                lowBits = bitand(currentDataset, 63);
-                lowBits = lowBits .* uint8(lowBits ~= materialIndex);   % remove Material from the model
+                lowBits = bitand(currentDataset, obj.materialMask);
+                lowBits = lowBits .* cast(lowBits ~= materialIndex, 'like', lowBits);   % remove Material from the model
                 lowBits(dataset == 1) = materialIndex;                  % write new material
-                currentDataset = bitor(bitand(currentDataset, 192), lowBits);  % 192 = 11000000, keep mask+selection bits
+                currentDataset = bitor(bitand(currentDataset, obj.flagsMask), lowBits);  % keep mask+selection bits
                 obj.data(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2)) = currentDataset;
             else
-                currentDataset = bitand(obj.data(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2)), 192); % clear current model    
+                currentDataset = bitand(obj.data(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2)), obj.flagsMask); % clear current model    
                 obj.data(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2)) = bitor(currentDataset, dataset);
             end
         case 'mask'
             currentDataset = obj.data(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2));
-            currentDataset = bitset(currentDataset, 7, 0);    % clear mask
-            currentDataset = bitor(currentDataset, dataset*64);
+            currentDataset = bitset(currentDataset, obj.maskBit, 0);    % clear mask
+            currentDataset = bitor(currentDataset, dataset*cast(obj.maskValue, 'like', dataset));
             obj.data(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2)) = currentDataset;
         case 'selection'
             currentDataset = obj.data(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2));
-            currentDataset = bitset(currentDataset, 8, 0);    % clear selection
-            currentDataset = bitor(currentDataset, dataset*128);
+            currentDataset = bitset(currentDataset, obj.selectionBit, 0);    % clear selection
+            currentDataset = bitor(currentDataset, dataset*cast(obj.selectionValue, 'like', dataset));
             obj.data(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2)) = currentDataset;
         case 'everything'
             obj.data(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2)) = dataset;

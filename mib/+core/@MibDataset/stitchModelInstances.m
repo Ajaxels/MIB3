@@ -123,17 +123,18 @@ for timePoint = 1:obj.image.time
     if ~isempty(wb); wb.Value = timePoint / obj.image.time; end
 end
 
-% In a type-63 model the selection and mask layers are packed into bits 7-8
+% In a packed model (core.MibLabels63, uint8 or uint16 layout) the selection and
+% mask layers are packed into the two top bits
 % of obj.labels and obj.selection/obj.mask are empty placeholders. Unpack
 % them into standalone layers before the labels object is replaced with the
 % large-type model, otherwise they stay empty and every later
 % getData2D('selection', ...) call errors out (mirrors createModel and
 % convertModel).
-if obj.labels.maxMaterials == 63 && obj.labels.exists
+if isa(obj.labels, 'core.MibLabels63') && obj.labels.exists
     packedData = obj.labels.data;
-    obj.selection = core.MibLabels(uint8(bitand(packedData, uint8(128)) / 128), meta);
+    obj.selection = core.MibLabels(uint8(bitget(packedData, obj.labels.selectionBit)), meta);
     if obj.maskExist
-        obj.mask = core.MibLabels(uint8(bitand(packedData, uint8(64)) / 64), meta);
+        obj.mask = core.MibLabels(uint8(bitget(packedData, obj.labels.maskBit)), meta);
     end
 end
 

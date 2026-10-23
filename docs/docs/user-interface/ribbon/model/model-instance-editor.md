@@ -17,7 +17,9 @@ stitching leaves errors that no threshold can remove - two objects that genuinel
 slices are fused, and one object that breaks in two far apart in Z stays two - and those are repaired
 here.
 
-Requires an instance model (65535 or 4294967295 materials), where every object has its own index.
+Requires an instance model (16383, 65535 or 4294967295 materials) in a Standard dataset, or a 16383
+model in a [BigData](../../../getting-started/dataset-types/index.md) dataset, where every object has
+its own index.
 
 <div class="clear-float"></div>
 
@@ -167,6 +169,13 @@ Every operation can be undone with ++ctrl+z++.
     stroke, an undo - leaves it out of date, and the status line says so. The next operation rebuilds
     it before doing anything, so nothing can be applied to stale information; press
     <span class="widget widget-button">Rebuild</span> to refresh the list without waiting for that.
+
+!!! note "BigData"
+    - The editor works in 3D mode only.
+    - The first time a model is indexed, the whole model is read once. That can take a while on a
+      large slide. The index is saved with the model, so the next time the model is opened it is
+      ready at once. After that, only the area that changed is read again.
+    - **Cleanup** is not available. **Compact** cannot be undone, so it asks first.
 
 ---
 

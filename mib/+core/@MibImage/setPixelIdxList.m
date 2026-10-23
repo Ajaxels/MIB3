@@ -8,11 +8,12 @@ function result = setPixelIdxList(obj, type, dataset, PixelIdxList)
 %
 % For standard MibImage and MibLabels the raw data are written directly to
 % obj.data.  For MibLabels63 (bit-packed) the values are packed into the
-% appropriate bits:
-% - 'labels'    - bits 1-6: clear old label (bitand 192) then bitor new value
-% - 'mask'      - bit 7:   bitset position 7
-% - 'selection' - bit 8:   bitset position 8
-% - 'everything'- overwrite raw byte without any masking
+% appropriate bits of the layout (core.MibLabels63.setLayout); dataset is
+% cast to the container class first:
+% - 'labels'    - clear old label (bitand obj.flagsMask) then bitor new value
+% - 'mask'      - bitset position obj.maskBit (7 or 15)
+% - 'selection' - bitset position obj.selectionBit (8 or 16)
+% - 'everything'- overwrite the raw packed value without any masking
 %
 % Input Arguments:
 %   - **type** - char, layer type to write:
@@ -55,15 +56,17 @@ result = false;
 if nargin < 4; error('setPixelIdxList: PixelIdxList is required'); end
 
 if isa(obj, 'core.MibLabels63')
-    % bit-packed container: labels in bits 1-6, mask in bit 7, selection in bit 8
+    % bit-packed container, layout from core.MibLabels63.setLayout: labels in bits
+    % 1-6, mask in bit 7, selection in bit 8 (uint8), or 1-14 / 15 / 16 (uint16)
+    if ~isa(dataset, obj.containerClass); dataset = cast(dataset, obj.containerClass); end
     switch type
         case 'labels'
-            obj.data(PixelIdxList) = bitand(obj.data(PixelIdxList), uint8(192)); % clear bits 1-6
+            obj.data(PixelIdxList) = bitand(obj.data(PixelIdxList), obj.flagsMask); % clear the material bits
             obj.data(PixelIdxList) = bitor(obj.data(PixelIdxList), dataset);
         case 'mask'
-            obj.data(PixelIdxList) = bitset(obj.data(PixelIdxList), 7, dataset);
+            obj.data(PixelIdxList) = bitset(obj.data(PixelIdxList), obj.maskBit, dataset);
         case 'selection'
-            obj.data(PixelIdxList) = bitset(obj.data(PixelIdxList), 8, dataset);
+            obj.data(PixelIdxList) = bitset(obj.data(PixelIdxList), obj.selectionBit, dataset);
         case 'everything'
             obj.data(PixelIdxList) = dataset;
         otherwise

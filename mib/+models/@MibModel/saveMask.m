@@ -62,7 +62,7 @@ function fnOut = saveMask(obj, filename, BatchOptIn)
 
 if nargin < 2
     id = obj.getActiveId();
-    if obj.I{id}.labels.maxMaterials < 64
+    if isa(obj.I{id}.labels, 'core.MibLabels63')
         filename = obj.I{id}.labels.maskFilename;
     else
         filename = obj.I{id}.mask.filename;

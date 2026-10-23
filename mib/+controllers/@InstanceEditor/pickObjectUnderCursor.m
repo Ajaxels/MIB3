@@ -45,7 +45,9 @@ dataset = obj.mibModel.I{id};
 [height, width] = dataset.getDatasetDimensions('image', [], struct('blockModeSwitch', 0));
 if x < 1 || y < 1 || x > width || y > height; return; end
 
-readOptions = struct('blockModeSwitch', 0, 'id', id, 'x', [x, x], 'y', [y, y]);
+% magFactor 1: getData2D otherwise reads BigData at the display zoom, where a
+% small object can be missing or carry its neighbour's index
+readOptions = struct('blockModeSwitch', 0, 'id', id, 'x', [x, x], 'y', [y, y], 'magFactor', 1);
 objectId = double(cell2mat(obj.mibModel.getData2D('labels', z, [], [], readOptions)));
 
 % Background is not an object, but a plain click there is still a request to

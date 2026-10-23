@@ -80,7 +80,8 @@ a color channel.
 - **Add as a new color channel**: add images as a new color channel to the existing dataset. 
 Select channels in the [View Settings panel](../selection_imview/viewsettings.md).
 - **Add each N-th dataset as a new color channel**: add images with an N-step as a new color channel to the existing dataset.
-- **Rename selected file**: rename the selected file.
+- **Rename selected file**: rename the selected file or folder. Renaming a BigData model store also
+  renames the files MIB keeps next to it, so the model reopens as it was.
 - **Delete selected files**: permanently delete selected files from the disk.
 - **File properties**: show file details like date/time and size in bytes.
 

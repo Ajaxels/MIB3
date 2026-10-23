@@ -10,13 +10,16 @@ function createModel(obj, ModelType, ModelMaterialNames, BatchOptIn)
 %   - **ModelType** - *(optional)*, can be empty: []; a number with the model type:
 %   - 63 - 63 material model
 %   - 255 - 255 material model
+%   - 16383 - 16383 object instance model, packed in uint16 with mask and selection;
+%     the instance model for BigData datasets
 %   - 65535 - 65535 material model
 %   - 4294967295 - 4294967295 material model
 %   - **ModelMaterialNames** - *(optional)* can be empty: []; a cell array with
 %     names of materials; not used for ModelType > 255
 %   - **BatchOptIn** - a structure for batch processing mode; when NaN, returns a
 %     structure with default options via "SyncBatch" event
-%   - .ModelType - cell string, {'63', '255', '65535', '4294967295'}
+%   - .ModelType - cell string, {'63', '255', '16383', '65535', '4294967295'};
+%     BigData accepts '63' and '16383' only, any other value creates a 63 model
 %   - .ModelMaterialNames - string with semicolon-separated material names
 %   - .showWaitbar - logical, show or not the waitbar
 %   - .id *(optional)*, dataset index from 1 to 9, default = obj.id
@@ -44,7 +47,7 @@ if ~isempty(ModelType)
 else
     BatchOpt.ModelType = {'63'};
 end
-BatchOpt.ModelType{2} = {'63', '255', '65535', '4294967295'};
+BatchOpt.ModelType{2} = {'63', '255', '16383', '65535', '4294967295'};
 if ~isempty(ModelMaterialNames)
     BatchOpt.ModelMaterialNames = sprintf('%s;', ModelMaterialNames{:});
     BatchOpt.ModelMaterialNames(end) = [];
@@ -88,12 +91,11 @@ if nargin == 4  % batch mode
 end
 
 %% Initial checks
-% BigData: only the packed 63-material disk-backed model is supported; force
-% the type and skip the type-selection dialog below.
+% BigData: only the packed disk-backed models are supported - 63 materials
+% (uint8 store) or 16383 instances (uint16 store); anything else becomes 63.
 isBigData = strcmp(obj.I{BatchOpt.id}.datasetType, 'BigData');
-if isBigData
+if isBigData && ~ismember(BatchOpt.ModelType{1}, {'63', '16383'})
     BatchOpt.ModelType{1} = '63';
-    ModelType = 63;
 end
 
 % Check for virtual stacking mode
@@ -133,9 +135,13 @@ if obj.I{BatchOpt.id}.modelExist && nargin < 4
 end
 
 % Show model-type selection dialog when the type was not provided
-% (skipped for BigData, which forced the type to 63 above)
-if isempty(ModelType) && nargin < 4 && ~isBigData
-    dlg = utils.dlgs.selectModelTypeDlg(obj.getProgressBarParent(), obj.mibPath);
+% (BigData offers only the two packed types)
+if isempty(ModelType) && nargin < 4
+    if isBigData
+        dlg = utils.dlgs.selectModelTypeDlg(obj.getProgressBarParent(), obj.mibPath, [63 16383]);
+    else
+        dlg = utils.dlgs.selectModelTypeDlg(obj.getProgressBarParent(), obj.mibPath);
+    end
     drawnow;
     selectedType = dlg.run();
     if isempty(selectedType); return; end
@@ -202,6 +208,8 @@ if isBigData
         'Time',    ds.image.time,   ...
         'Colors',  1);
     ds.labels = core.MibBigDataLabels([], bigMeta);
+    isInstanceModel = strcmp(BatchOpt.ModelType{1}, '16383');
+    if isInstanceModel; ds.labels.setLayout('uint16'); end   % uint16 store, set before createStore
     ds.labels.createStore([ds.image.height, ds.image.width, ds.image.depth], ...
         BatchOpt.ModelStorePath, ds.image.pyramid);   % mirror the image pyramid levels
     ds.labels.materialColors  = obj.preferences.Colors.ModelMaterialColors;
@@ -212,7 +220,13 @@ if isBigData
     % does for Standard datasets, so "Save mask" defaults to the dataset's own name.
     ds.labels.maskFilename    = ds.image.maskFilename;
     bigNames = BatchOpt.ModelMaterialNames;
-    if ~isempty(bigNames)
+    if isInstanceModel
+        % instance model: two name slots and generated colours, as for 65535
+        ds.labels.materialNames  = {'1'; '2'};
+        ds.labels.materialColors = rand(65535, 3);
+        ds.labels.materialsCount = 0;
+        ds.labels.objects3D      = true;   % one index per object through the volume
+    elseif ~isempty(bigNames)
         splitCells = regexp(bigNames, '([^ ;,]*)', 'tokens');
         bigNames = cat(2, splitCells{:});
         bigNames = bigNames(~cellfun(@isempty, bigNames));
@@ -224,8 +238,8 @@ if isBigData
     end
     ds.modelExist          = true;
     ds.enableSelection     = true;   % browse-only BigData becomes segmentable
-    ds.selectedMaterial    = 2;
-    ds.selectedAddToMaterial = 2;
+    ds.selectedMaterial    = 2 + isInstanceModel;      % instance models start at slot 3
+    ds.selectedAddToMaterial = 2 + isInstanceModel;
     ds.lastSegmSelection   = [2 1];
     ds.annotations.clearContents();
     ds.labels.writeMaterialMetadata();   % persist names/colours into the store
@@ -274,6 +288,8 @@ else
             obj.I{BatchOpt.id}.createModel(str2double(BatchOpt.ModelType{1}), ModelMaterialNames);
             % Update material colors from preferences
             obj.I{BatchOpt.id}.labels.materialColors = obj.preferences.Colors.ModelMaterialColors;
+        case '16383'
+            obj.I{BatchOpt.id}.createModel(16383);
         case '65535'
             obj.I{BatchOpt.id}.createModel(65535);
         case '4294967295'

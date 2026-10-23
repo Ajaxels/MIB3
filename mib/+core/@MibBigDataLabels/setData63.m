@@ -23,19 +23,22 @@ function result = setData63(obj, dataset, type, orient, materialIndex, options)
 %      full-resolution write.
 %
 % **Bit packing** - same scheme as ``getData63``:
-% bits 1-6 = material, bit 7 = mask, bit 8 = selection.
+% bits 1-6 = material, bit 7 = mask, bit 8 = selection (uint8 layout), or bits
+% 1-14 = index, bit 15 = mask, bit 16 = selection (uint16 layout). Index values
+% above ``obj.materialMask`` are not clamped and would spill into the flag bits.
 %
 % Input Arguments:
-%   - **dataset** - [uint8] layer data at display resolution, in screen orientation.
+%   - **dataset** - [uint8|uint16|logical] layer data at display resolution, in screen
+%     orientation; cast to the container class before merging.
 %     Shape ``[ny, nx, nz]`` matching what ``getData63`` would return for the same
 %     ``orient``/``options``.
 %   - **type** *(optional)* - [char] layer to write:
 %
 %     - ``'labels'``    - write material index; ``materialIndex`` controls single-material
 %       vs full-map mode (see below)
-%     - ``'mask'``      - write binary mask (bit 7)
-%     - ``'selection'`` - write binary selection (bit 8)
-%     - ``'everything'``- overwrite raw packed uint8 (undo / restore; no smoothing)
+%     - ``'mask'``      - write binary mask (bit 7 or 15)
+%     - ``'selection'`` - write binary selection (bit 8 or 16)
+%     - ``'everything'``- overwrite raw packed values (undo / restore; no smoothing)
 %
 %     Default: ``'labels'``.
 %
@@ -71,7 +74,8 @@ function result = setData63(obj, dataset, type, orient, materialIndex, options)
 %   .. code-block:: matlab
 %
 %      packed = obj.mibModel.I{1}.labels.getData63('everything', 3, [], opts);
-%      packed = bitset(packed, 8, 0);   % clear selection bit
+%      lb = obj.mibModel.I{1}.labels;
+%      packed = bitset(packed, lb.selectionBit, 0);   % clear selection bit
 %      obj.mibModel.I{1}.labels.setData63(packed, 'everything', 3, [], opts);
 
 result = false;
@@ -126,7 +130,7 @@ smoothOn = io.zarr.Config.smoothing();
 useSmooth = smoothOn && ~strcmp(type, 'everything');
 
 dataNear = core.MibBigDataLabels.resizeBlockNearest(dataset, wSize);
-packed = mergePacked(before, dataNear, type, materialIndex);
+packed = mergePacked(obj, before, dataNear, type, materialIndex);
 diff = packed ~= before;
 if ~any(diff(:)); result = true; return; end   % nothing changed → no disk I/O
 
@@ -160,18 +164,60 @@ if useSmooth && (fy > 1 || fx > 1)
     subSize = [wcY1 - wcY0 + 1, wcX1 - wcX0 + 1, wSize(3)];
     smoothCrop = core.MibBigDataLabels.resizeLayerSmooth(dispCrop, subSize, isLabelMap);
     beforeWin = before(wcY0:wcY1, wcX0:wcX1, :);
-    subPacked = mergePacked(beforeWin, smoothCrop, type, materialIndex);
+    subPacked = mergePacked(obj, beforeWin, smoothCrop, type, materialIndex);
     wY = [Yl(1) + wcY0 - 1, Yl(1) + wcY1 - 1];
     wX = [Xl(1) + wcX0 - 1, Xl(1) + wcX1 - 1];
     wZ = [Zl(1), Zl(2)];
 end
 
 obj.writePackedLevel(levelIdx, subPacked, wY, wX, wZ);
+if strcmp(type, 'labels') || strcmp(type, 'everything')
+    % upper bound of the indices in use, for "next empty material" without a scan
+    obj.maxIndexUsed = max(obj.maxIndexUsed, double(max(bitand(subPacked, obj.materialMask), [], 'all')));
+end
 
 % full-resolution region of the changed sub-region (for cross-level propagation)
 pfY = [(wY(1)-1)*sf(1)+1, min(wY(2)*sf(1), obj.height)];
 pfX = [(wX(1)-1)*sf(2)+1, min(wX(2)*sf(2), obj.width)];
 pfZ = [(wZ(1)-1)*sf(3)+1, min(wZ(2)*sf(3), obj.depth)];
+
+% --- tell the instance index where the labels changed ----------------------
+% Only while an index is synced (markLabelsChanged is a no-op otherwise, but the
+% diff below is not free). A 'labels' write changes labels over the written
+% window by definition; an 'everything' write - undo, selection->material moves -
+% may have changed only the selection or mask bits, so its labels bits are
+% compared to find the real box, and a write that left them alone marks nothing.
+% Above level 1 every write counts, a selection or mask stroke included: markTiles
+% below makes this level authoritative for the touched tiles, and the next
+% level-1 read rebuilds ALL their bits from here, labels too - measured, a
+% selection stroke at level 4 over a one-pixel checkerboard of two objects
+% changed 512 of its 1024 full-resolution label voxels.
+if ~isempty(obj.syncedInstanceIndex) && (strcmp(type, 'labels') || strcmp(type, 'everything') || levelIdx > 1)
+    labelsBox = [pfY, pfX, pfZ];
+    if strcmp(type, 'everything') && levelIdx == 1
+        labelsDiff = bitand(packed, obj.materialMask) ~= bitand(before, obj.materialMask);
+        if any(labelsDiff(:))
+            rowsChanged = find(any(any(labelsDiff, 2), 3));
+            colsChanged = find(any(any(labelsDiff, 1), 3));
+            planesChanged = find(any(any(labelsDiff, 1), 2));
+            labelsBox = [(Yl(1)+rowsChanged(1)-2)*sf(1)+1,   min((Yl(1)+rowsChanged(end)-1)*sf(1), obj.height), ...
+                         (Xl(1)+colsChanged(1)-2)*sf(2)+1,   min((Xl(1)+colsChanged(end)-1)*sf(2), obj.width), ...
+                         (Zl(1)+planesChanged(1)-2)*sf(3)+1, min((Zl(1)+planesChanged(end)-1)*sf(3), obj.depth)];
+        else
+            labelsBox = [];
+        end
+    end
+    if levelIdx > 1
+        % ...and it does so for whole coarsest tiles, so at full resolution the
+        % whole tiles can change
+        [tileY, tileX, tileZ] = obj.tilesForFullRegion(labelsBox(1:2), labelsBox(3:4), labelsBox(5:6));
+        tileSize = obj.modelScaleFactors(end, :);
+        labelsBox = [(tileY(1)-1)*tileSize(1)+1, min(tileY(2)*tileSize(1), obj.height), ...
+                     (tileX(1)-1)*tileSize(2)+1, min(tileX(2)*tileSize(2), obj.width), ...
+                     (tileZ(1)-1)*tileSize(3)+1, min(tileZ(2)*tileSize(3), obj.depth)];
+    end
+    if ~isempty(labelsBox); obj.markLabelsChanged(labelsBox); end
+end
 
 % --- propagate the changed region to COARSER levels only -----------------
 % Each edit is stored at the resolution it was drawn (the working level) plus all
@@ -199,23 +245,23 @@ result = true;
 end
 
 % ------------------------------------------------------------------------
-function packed = mergePacked(packed, data, type, materialIndex)
-% merge a layer into the packed uint8 block using the MibLabels63 bit scheme
-data = reshape(uint8(data), size(packed));
+function packed = mergePacked(obj, packed, data, type, materialIndex)
+% merge a layer into the packed block using the bit layout of obj (core.MibLabels63.setLayout)
+data = reshape(cast(data, obj.containerClass), size(packed));
 switch type
     case 'labels'
         if ~isempty(materialIndex)
-            lowBits = bitand(packed, 63);
-            lowBits = lowBits .* uint8(lowBits ~= materialIndex);   % remove material
+            lowBits = bitand(packed, obj.materialMask);
+            lowBits = lowBits .* cast(lowBits ~= materialIndex, 'like', lowBits);   % remove material
             lowBits(data == 1) = materialIndex;                     % write new material
-            packed = bitor(bitand(packed, 192), lowBits);           % keep mask+selection
+            packed = bitor(bitand(packed, obj.flagsMask), lowBits);   % keep mask+selection
         else
-            packed = bitor(bitand(packed, 192), data);              % replace all materials
+            packed = bitor(bitand(packed, obj.flagsMask), data);      % replace all materials
         end
     case 'mask'
-        packed = bitor(bitset(packed, 7, 0), data * 64);
+        packed = bitor(bitset(packed, obj.maskBit, 0), data * cast(obj.maskValue, 'like', data));
     case 'selection'
-        packed = bitor(bitset(packed, 8, 0), data * 128);
+        packed = bitor(bitset(packed, obj.selectionBit, 0), data * cast(obj.selectionValue, 'like', data));
     case 'everything'
         packed = data;
 end

@@ -49,16 +49,21 @@ Button color indicates the state of each buffer:
 
 <div class="clear-float"></div>
 
+<div class="table-first-col-third" markdown>
+
 | Menu item | Action |
 |-----------|--------|
-| **Duplicate** | Copy this dataset to another buffer (prompts for destination set and buffer) |
-| **Sync XY** | Copy view position and zoom from another buffer |
-| **Sync XYZ** | Copy view position, zoom, and current Z-slice from another buffer |
-| **Sync XYZT** | Copy view position, zoom, Z-slice, and time frame from another buffer |
-| **Link view with… \[Unlinked\]** | Link this buffer's view to another buffer — scrolling one updates the other |
-| **\[Linked: A ↔ B\] press to unlink** | Unlink the currently linked pair |
-| **Close** | Close the dataset in this buffer (resets it to an empty placeholder) |
-| **Close Set** | Close all datasets in the entire current set |
+| **Duplicate dataset** | Copy this dataset to another buffer (prompts for destination set and buffer) |
+| **Sync view (x,y) with...** | Copy view position and zoom from another buffer |
+| **Sync view (x,y,z) with...** | Copy view position, zoom, and current Z-slice from another buffer |
+| **Sync view (x,y,z,t) with...** | Copy view position, zoom, Z-slice, and time frame from another buffer |
+| **Link view with... \[Unlinked\]** | Link this buffer's view to another buffer - scrolling one updates the other |
+| **\[Linked: A <-> B\] press to unlink** | Unlink the currently linked pair |
+| **Close model** | Close the model of the dataset in this buffer and keep the dataset open. The mask and selection stay, and ++ctrl+z++ brings the model back. For a BigData model the model store stays on disk to be loaded again, and its mask and selection close with it |
+| **Close dataset** | Close the dataset in this buffer (resets it to an empty placeholder) |
+| **Close all datasets of the set** | Close all datasets in the entire current set |
+
+</div>
 
 #### Duplicate
 
@@ -78,9 +83,9 @@ All three sync modes align the view of one buffer to match another:
 
 | Mode | Dimensions synced |
 |------|------------------|
-| **Sync XY** | Pan position + zoom |
-| **Sync XYZ** | Pan + zoom + Z slice |
-| **Sync XYZT** | Pan + zoom + Z slice + time frame |
+| **Sync view (x,y) with...** | Pan position + zoom |
+| **Sync view (x,y,z) with...** | Pan + zoom + Z slice |
+| **Sync view (x,y,z,t) with...** | Pan + zoom + Z slice + time frame |
 
 !!! warning 
     Both datasets must be in the same orientation (XY, ZX, or ZY) for sync to work.
@@ -116,18 +121,18 @@ Selects the active set. Switching sets also switches the visible Image Document 
 
 | Menu item | Action |
 |-----------|--------|
-| **Add set** | Create a new set (prompts for a name) |
-| **Rename set** | Rename the currently active set |
+| **Add set...** | Create a new set (prompts for a name) |
+| **Rename set...** | Rename the currently active set |
 | **Sort sets** | Sort all sets alphabetically |
-| **Remove set** | Close all datasets in the set and remove it |
+| **Remove set...** | Close all datasets in the set and remove it |
 
 !!! warning
-    **Remove set** closes all datasets in that set without additional confirmation per buffer.
+    **Remove set...** closes all datasets in that set without additional confirmation per buffer.
 
 ### Add set button
 
 <span class="widget widget-button">+</span>
-Shortcut to add a new set, equivalent to *Sets context menu → Add set*.
+Shortcut to add a new set, equivalent to *Sets context menu → Add set...*.
 
 ---
 

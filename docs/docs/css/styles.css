@@ -85,6 +85,20 @@ extra_css:    # location for additional css styles
   margin-bottom: 0;
 }
 
+/* Table whose first column takes a third of the width, for menu-item tables
+   where long item names would otherwise wrap. Wrap the Markdown table in
+   <div class="table-first-col-third" markdown> ... </div>. The theme renders
+   tables as inline-block sized to their content, so the table is made a
+   full-width block first - a percentage column width needs that to hold. */
+.md-typeset .table-first-col-third table:not([class]) {
+  display: table;
+  width: 100%;
+}
+.md-typeset .table-first-col-third th:first-child,
+.md-typeset .table-first-col-third td:first-child {
+  width: 33%;
+}
+
 /* Admonition inside a table cell: the default vertical margin is sized for a
    standalone box between paragraphs and pushes the row out of shape. */
 .md-typeset td > .admonition {

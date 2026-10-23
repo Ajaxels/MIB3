@@ -115,6 +115,47 @@ classdef EditInstanceObjectsTest < matlab.unittest.TestCase
     methods (Test, TestTags = {'Unit'})
 
         % -----------------------------------------------------------------
+        % packed 16383 instance model (uint16: index, mask and selection share
+        % one array; the edits go through the layout-aware accessors)
+        % -----------------------------------------------------------------
+
+        function packed16383MergeAndSplitKeepMask(testCase)
+            dims = [32 32 10];
+            [mibModel, groundTruth] = mibtest.helpers.buildSyntheticModel( ...
+                'modelType', 'labels16383', 'dims', dims);
+            volume = zeros(dims, 'uint16');
+            volume(4:10,  4:10,  2:7) = 300;
+            volume(20:24, 20:24, 3:6) = 16383;
+            volume(20:24, 28:31, 3:6) = 16383;   % second, disconnected blob
+            volume(4:10,  16:20, 1:2) = 5000;
+            opt = struct('id', 1, 'blockModeSwitch', 0);
+            mibModel.setData3D(volume, 'labels', 1, 3, [], opt);
+            mibModel.I{1}.labels.materialsCount = 16383;
+            mibModel.I{1}.buildInstanceIndex();
+
+            EditInstanceObjectsTest.runAction(mibModel, 'Merge', '300, 5000');
+            after = EditInstanceObjectsTest.readLabels(mibModel);
+            testCase.verifyEqual(nnz(after == 5000), 0, 'the larger index is gone');
+            testCase.verifyEqual(nnz(after == 300), nnz(volume == 300) + nnz(volume == 5000), ...
+                'its voxels moved to the smaller index');
+            EditInstanceObjectsTest.verifyIndexAgreesWithVolume(testCase, mibModel, 'packed merge');
+
+            EditInstanceObjectsTest.runAction(mibModel, 'SplitComponents', '16383');
+            after = EditInstanceObjectsTest.readLabels(mibModel);
+            % blob sizes: 5x5x4 = 100 and 5x4x4 = 80 voxels
+            testCase.verifyTrue(ismember(nnz(after == 16383), [100 80]), ...
+                'one blob keeps 16383');
+            blobVoxels = after(volume == 16383);
+            newIndex = setdiff(unique(blobVoxels), uint16(16383));
+            testCase.verifyNumElements(newIndex, 1, 'the other blob gets one new index');
+            testCase.verifyEqual(nnz(blobVoxels == newIndex), 180 - nnz(after == 16383));
+            EditInstanceObjectsTest.verifyIndexAgreesWithVolume(testCase, mibModel, 'packed split');
+
+            mask = squeeze(cell2mat(mibModel.getData3D('mask', 1, 3, [], opt)));
+            testCase.verifyEqual(mask, groundTruth.mask, 'instance edits must not touch the mask bits');
+        end
+
+        % -----------------------------------------------------------------
         % merge
         % -----------------------------------------------------------------
 

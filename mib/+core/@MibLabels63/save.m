@@ -161,7 +161,7 @@ end
 metadata.filename       = obj.filename;
 metadata.colorType      = obj.colorType;
 metadata.lutColors      = obj.lutColors;
-metadata.dataClass      = 'uint8';   % MibLabels63 always stores uint8
+metadata.dataClass      = obj.containerClass;   % uint8 (63 layout) or uint16 (16383 layout)
 metadata.maxInt         = obj.maxInt;
 metadata.pixSize        = options.pixSize;
 metadata.materialNames  = obj.materialNames;
@@ -170,7 +170,7 @@ labelsVar = obj.labelsVariable;
 if ~(ischar(labelsVar) || isstring(labelsVar)); labelsVar = ''; end   % opened models may leave this empty
 metadata.labelsVariable = strrep(char(labelsVar), '-', '_');
 metadata.layerType      = options.layerType;
-metadata.modelType      = obj.maxMaterials;   % 63
+metadata.modelType      = obj.maxMaterials;   % 63 or 16383
 
 if isfield(options,'boundingBox')
     metadata.boundingBox = options.boundingBox;
@@ -209,7 +209,8 @@ if ~isempty(selMaterial)
 end
 
 % --- dispatch ---
-% getData63 with type='labels' returns unpacked uint8 material indices (0..63),
+% getData63 with type='labels' returns unpacked material indices (uint8 0..63 or
+% uint16 0..16383),
 % or a binary 0/1 volume when a single material is requested.
 saver = io.SaverFactory.create(options.Format, options);
 
@@ -222,7 +223,7 @@ if isPyramidalModel
     fnOut = saver.saveStream(provider, metadata, filename, options);
 else
     if isempty(selMaterial)
-        data = obj.getData63('labels', 3, []);   % all materials → multi-valued uint8
+        data = obj.getData63('labels', 3, []);   % all materials → multi-valued index map
     else
         data = obj.getData63('labels', 3, selMaterial);  % binary: 1 where == selMaterial
     end

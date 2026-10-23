@@ -9,10 +9,10 @@ function dataset = getPixelIdxList(obj, type, PixelIdxList)
 % For standard MibImage and MibLabels the raw data are read directly from
 % obj.data.  For MibLabels63 (bit-packed) the values are unpacked
 % according to the layer type:
-% - 'labels'    - lower 6 bits  (bitand with 63)
-% - 'mask'      - bit 7         (bitget position 7)
-% - 'selection' - bit 8         (bitget position 8)
-% - 'everything'- raw byte      (no unpacking)
+% - 'labels'    - material bits (bitand with obj.materialMask: 63 or 16383)
+% - 'mask'      - mask bit as uint8 0/1 (bitget obj.maskBit: 7 or 15)
+% - 'selection' - selection bit as uint8 0/1 (bitget obj.selectionBit: 8 or 16)
+% - 'everything'- raw packed value (no unpacking)
 %
 % Input Arguments:
 %   - **type** - char, layer type to read:
@@ -55,14 +55,15 @@ if nargin < 3; error('getPixelIdxList: PixelIdxList is required'); end
 if nargin < 2; type = 'image'; end
 
 if isa(obj, 'core.MibLabels63')
-    % bit-packed container: labels in bits 1-6, mask in bit 7, selection in bit 8
+    % bit-packed container, layout from core.MibLabels63.setLayout: labels in bits
+    % 1-6, mask in bit 7, selection in bit 8 (uint8), or 1-14 / 15 / 16 (uint16)
     switch type
         case 'labels'
-            dataset = bitand(obj.data(PixelIdxList), 63);
+            dataset = bitand(obj.data(PixelIdxList), obj.materialMask);
         case 'mask'
-            dataset = bitget(obj.data(PixelIdxList), 7);
+            dataset = uint8(bitget(obj.data(PixelIdxList), obj.maskBit));
         case 'selection'
-            dataset = bitget(obj.data(PixelIdxList), 8);
+            dataset = uint8(bitget(obj.data(PixelIdxList), obj.selectionBit));
         case 'everything'
             dataset = obj.data(PixelIdxList);
         otherwise

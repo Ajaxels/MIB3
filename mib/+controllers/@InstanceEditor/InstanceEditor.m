@@ -1,7 +1,7 @@
 classdef InstanceEditor < handle
 % INSTANCEEDITOR - Controller for the Instance editor window.
 %
-% Proofreading tool for instance models: lists the objects of a 65535 or
+% Proofreading tool for instance models: lists the objects of a 16383, 65535 or
 % 4294967295 model and applies split, merge, connect and delete to the ones the
 % user picks, either from the table or by clicking them in the image.
 %
@@ -188,6 +188,8 @@ classdef InstanceEditor < handle
             else
                 obj.BatchOpt.Mode3D = obj.storedWindowState().Mode3D;
             end
+            % BigData is edited in 3D mode only, see applyModeToWidgets
+            if strcmp(dataset.datasetType, 'BigData'); obj.BatchOpt.Mode3D = true; end
             obj.BatchOpt.Connectivity = {'8'};
             obj.BatchOpt.Connectivity{2} = {'8', '4'};
             if obj.BatchOpt.Mode3D
@@ -414,7 +416,22 @@ classdef InstanceEditor < handle
             % still has every reason to reach for them. The labels are switched with
             % their widgets, so a disabled setting does not keep a live-looking
             % caption next to it.
+            %
+            % **BigData is 3D only**, and the checkbox is locked. The 2D list
+            % measures the whole shown slice at full resolution, which on a
+            % slide is the whole slide, and on every slice change; the 3D list
+            % comes from the index. On a single-plane slide the two modes are
+            % the same anyway. Batch protocols can still pass ``Mode3D = false``
+            % to ``editInstanceObjects``.
             h = obj.view.handles;
+            dataset = obj.mibModel.I{obj.mibModel.getActiveId()};
+            isBigData = strcmp(dataset.datasetType, 'BigData');
+            if isBigData && ~h.Mode3D.Value
+                h.Mode3D.Value = true;
+                obj.mode3D_Callback();   % switches the connectivity list, then comes back here
+                return;
+            end
+            h.Mode3D.Enable = ~isBigData;
             use3D = logical(h.Mode3D.Value);
 
             volumeOnly = {'cutAtSliceButton', 'connectButton', ...
@@ -582,10 +599,16 @@ classdef InstanceEditor < handle
         % -----------------------------------------------------------
         function tf = modelIsEditable(obj)
             % MODELISEDITABLE - true when the active dataset holds an instance model.
+            %
+            % A BigData dataset qualifies when its model is an editable store
+            % (core.MibBigDataLabels; the read-only overlays do not).
             dataset = obj.mibModel.I{obj.mibModel.getActiveId()};
+            editableBigData = strcmp(dataset.datasetType, 'BigData') && ...
+                isa(dataset.labels, 'core.MibBigDataLabels') && ...
+                ~isa(dataset.labels, 'core.MibBigDataLabelsZarr2');
             tf = dataset.modelExist && dataset.enableSelection ~= 0 && ...
-                dataset.labels.maxMaterials >= 65535 && ...
-                strcmp(dataset.datasetType, 'Standard');
+                dataset.labels.maxMaterials > 255 && ...
+                (strcmp(dataset.datasetType, 'Standard') || editableBigData);
         end
 
         % -----------------------------------------------------------

@@ -10,9 +10,13 @@ function createModel(obj, modelType, modelMaterialNames)
 %
 % This function reinitializes the labels layer (obj.labels) with a
 % zero-filled matrix of the appropriate class and dimensions.
-% When switching between the packed type-63 model (core.MibLabels63) and
-% the separate-layer models (core.MibLabels, types 255/65535/4294967295),
-% the selection and mask layers are converted automatically.
+% When switching between the packed models (core.MibLabels63: type 63 in
+% uint8, type 16383 in uint16) and the separate-layer models (core.MibLabels,
+% types 255/65535/4294967295), the selection and mask layers are converted
+% automatically.
+%
+% For a BigData dataset the model is a disk store of type 63; the interactive
+% path (models.MibModel.createModel) also builds type 16383 stores.
 %
 % Input Arguments:
 %   - **modelType** *(optional)* - [numeric] model type (default: current model type):
@@ -20,6 +24,8 @@ function createModel(obj, modelType, modelMaterialNames)
 %     - ``63`` - packed type-63 model with up to 63 materials; 'Labels', 'Mask', and
 %       'Selection' layers packed in single uint8 matrix (``core.MibLabels63``) to reduce memory
 %     - ``255`` - separate-layer type-255 model with up to 255 materials (``core.MibLabels``)
+%     - ``16383`` - packed instance model with up to 16383 objects; index, 'Mask' and
+%       'Selection' packed in a single uint16 matrix (``core.MibLabels63``, uint16 layout)
 %     - ``65535`` - large-capacity type-65535 model with up to 65535 materials
 %     - ``4294967295`` - very-large-capacity type-4294967295 model with up to 4294967295 materials
 %
@@ -54,8 +60,9 @@ if nargin < 3; modelMaterialNames = []; end
 if nargin < 2; modelType = NaN; end
 
 % BigData: the model is kept on disk as a packed pyramidal zarr (not in
-% memory). Only the 63-material packed type is supported. Creating the model
-% allocates the disk store and enables segmentation for the browse-only set.
+% memory). Only the packed types are supported: 16383 (uint16 store) when asked
+% for, otherwise 63. Creating the model allocates the disk store and enables
+% segmentation for the browse-only set.
 if strcmp(obj.datasetType, 'BigData')
     meta = core.MibImage.initializeImgInfo( ...
         'pixSize', obj.image.pixSize, ...
@@ -68,10 +75,25 @@ if strcmp(obj.datasetType, 'BigData')
     % (MibModel.createModel) builds the store at a user-chosen location instead.
     % Either way the model mirrors the image pyramid levels.
     obj.labels = core.MibBigDataLabels([], meta);
+    if modelType == 16383; obj.labels.setLayout('uint16'); end
     obj.labels.createStore([obj.image.height, obj.image.width, obj.image.depth], ...
         '', obj.image.pyramid);
     obj.labels.labelsVariable = 'mibModel';
     obj.labels.filename = '';   % not saved yet; Phase 3 "save as" suggests the name
+    if modelType == 16383
+        % instance model: two name slots and generated colours, as for 65535
+        obj.labels.materialNames  = {'1'; '2'};
+        obj.labels.materialColors = rand(65535, 3);
+        obj.labels.materialsCount = 0;
+        obj.labels.objects3D      = true;   % one index per object through the volume
+        obj.modelExist = true;
+        obj.enableSelection = true;
+        obj.selectedMaterial = 3;
+        obj.selectedAddToMaterial = 3;
+        obj.lastSegmSelection = [2 1];
+        obj.annotations.clearContents();
+        return;
+    end
     if ~isempty(modelMaterialNames)
         if size(modelMaterialNames, 1) < size(modelMaterialNames, 2)
             obj.labels.materialNames = modelMaterialNames';
@@ -108,12 +130,14 @@ meta = core.MibImage.initializeImgInfo( ...
 
 dims = [obj.image.height, obj.image.width, obj.image.depth, 1, obj.image.time];
 
-if modelType == 63
-    if currentModelType == 63
-        % Already type 63: clear model bits (bits 1-6), preserve mask (bit 7)
-        % and selection (bit 8)
+if modelType == 63 || modelType == 16383
+    % packed types: 63 in uint8, 16383 in uint16 (core.MibLabels63.setLayout)
+    if modelType == 63; containerClass = 'uint8'; else; containerClass = 'uint16'; end
+    if currentModelType == modelType
+        % Already this packed type: clear the model bits, preserve the mask and
+        % selection bits
         if obj.labels.exists
-            obj.labels.data = bitand(obj.labels.data, uint8(192));
+            obj.labels.data = bitand(obj.labels.data, obj.labels.flagsMask);
             [h, w, d, ~, t] = size(obj.labels.data);
             obj.labels.height    = h;
             obj.labels.width     = w;
@@ -122,32 +146,43 @@ if modelType == 63
             obj.labels.time      = t;
             obj.labels.dim_yxzct = [h, w, d, 1, t];
         else
-            obj.labels = core.MibLabels63(zeros(dims, 'uint8'), meta);
+            obj.labels = core.MibLabels63(zeros(dims, containerClass), meta);
         end
     else
-        % Was type 255+: pack existing selection/mask into a single uint8 matrix
-        newData = zeros(dims, 'uint8');
-        if obj.selection.exists
-            selData = obj.selection.data;
-            newData(selData == 1) = bitset(newData(selData == 1), 8, 1);
+        % Was another type: pack the existing selection/mask into a single matrix
+        newLabels = core.MibLabels63(zeros(dims, containerClass), meta);
+        newData = newLabels.data;
+        if isa(obj.labels, 'core.MibLabels63')
+            % the other packed type: move the two flags to this layout's bits
+            if obj.labels.exists
+                newData = bitor(newData, cast(bitget(obj.labels.data, obj.labels.selectionBit), containerClass) * cast(newLabels.selectionValue, containerClass));
+                newData = bitor(newData, cast(bitget(obj.labels.data, obj.labels.maskBit), containerClass) * cast(newLabels.maskValue, containerClass));
+            end
+        else
+            if obj.selection.exists
+                newData = bitor(newData, cast(obj.selection.data, containerClass) * cast(newLabels.selectionValue, containerClass));
+            end
+            if obj.maskExist && obj.mask.exists
+                newData = bitor(newData, cast(obj.mask.data, containerClass) * cast(newLabels.maskValue, containerClass));
+            end
         end
-        if obj.maskExist && obj.mask.exists
-            maskData = obj.mask.data;
-            newData(maskData == 1) = bitset(newData(maskData == 1), 7, 1);
-        end
-        obj.labels    = core.MibLabels63(newData, meta);
+        newLabels.data = newData;
+        obj.labels    = newLabels;
         % Clear the now-redundant separate layers
         obj.selection = core.MibLabels([], meta);
         obj.mask      = core.MibLabels([], meta);
     end
+    if modelType == 16383
+        obj.labels.materialColors = rand(65535, 3);   % instance model: generated colours
+    end
 else
     % Switching to type 255, 65535, or 4294967295
-    if currentModelType == 63 && obj.labels.exists
+    if isa(obj.labels, 'core.MibLabels63') && obj.labels.exists
         % Extract selection and mask from packed bits before replacing the labels
-        selData = uint8(bitand(obj.labels.data, uint8(128)) / 128);
+        selData = uint8(bitget(obj.labels.data, obj.labels.selectionBit));
         obj.selection = core.MibLabels(selData, meta);
         if obj.maskExist
-            maskData = uint8(bitand(obj.labels.data, uint8(64)) / 64);
+            maskData = uint8(bitget(obj.labels.data, obj.labels.maskBit));
             obj.mask = core.MibLabels(maskData, meta);
         end
     end

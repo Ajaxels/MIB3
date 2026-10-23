@@ -52,10 +52,10 @@ else
     numT = obj.time;
     for t = 1:numT
         packed = obj.data(:,:,:,1,t);
-        modelData = bitand(packed, uint8(63));          % bits 1-6
-        otherBits = bitand(packed, uint8(192));          % bits 7-8 (mask + selection)
+        modelData = bitand(packed, obj.materialMask);    % material bits
+        otherBits = bitand(packed, obj.flagsMask);       % mask + selection bits
 
-        mask = modelData >= uint8(index);
+        mask = modelData >= index;
         modelData(mask) = modelData(mask) + 1;
 
         obj.data(:,:,:,1,t) = bitor(otherBits, modelData);

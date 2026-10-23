@@ -59,9 +59,13 @@ useFiltered = false;
 filteredImg = [];
 if isType63
     D = obj.labels.data;
+    % packed bit layout: uint8 (63 materials) or uint16 (16383 instances)
+    materialMask = obj.labels.materialMask;
+    maskValue    = obj.labels.maskValue;
+    flagsMask    = obj.labels.flagsMask;
     if options.selected_sw && obj.modelExist
         useFiltered = true;
-        filteredImg = bitand(uint8(bitand(D, 63) == options.contSelIndex), bitand(D, 64)/64);
+        filteredImg = bitand(cast(bitand(D, materialMask) == options.contSelIndex, 'like', D), bitand(D, maskValue)/maskValue);
     end
 else
     if options.selected_sw && obj.modelExist
@@ -75,11 +79,11 @@ switch action_type
     case 'add'
         if isType63
             if ~useFiltered
-                maskIdx = bitand(D, 64) == 64;
-                D(maskIdx) = bitand(D(maskIdx), 192);                % clear model bits where mask
+                maskIdx = bitand(D, maskValue) == maskValue;
+                D(maskIdx) = bitand(D(maskIdx), flagsMask);          % clear model bits where mask
                 D(maskIdx) = bitor(D(maskIdx), options.contAddIndex); % set material
             else
-                D(filteredImg == 1) = bitand(D(filteredImg == 1), 192);
+                D(filteredImg == 1) = bitand(D(filteredImg == 1), flagsMask);
                 D(filteredImg == 1) = bitor(D(filteredImg == 1), options.contAddIndex);
             end
             obj.labels.data = D;
@@ -96,10 +100,10 @@ switch action_type
     case 'remove'
         if isType63
             if ~useFiltered
-                maskIdx = bitand(D, 64) == 64;
-                D(maskIdx) = bitand(D(maskIdx), 192);    % clear model bits where mask (192 = 11000000)
+                maskIdx = bitand(D, maskValue) == maskValue;
+                D(maskIdx) = bitand(D(maskIdx), flagsMask);    % clear model bits where mask
             else
-                D(filteredImg == 1) = bitand(D(filteredImg == 1), 192);
+                D(filteredImg == 1) = bitand(D(filteredImg == 1), flagsMask);
             end
             obj.labels.data = D;
         else
@@ -115,15 +119,15 @@ switch action_type
     case 'replace'
         if isType63
             if ~useFiltered
-                M = bitshift(bitshift(D, -6), 6);     % store mask and selection bits
-                D(bitand(D, 63) == options.contAddIndex) = ...
-                    bitand(D(bitand(D, 63) == options.contAddIndex), 192);  % clear destination material
-                D(bitand(M, 64) == 64) = options.contAddIndex;              % set material where mask
+                M = bitand(D, flagsMask);              % store mask and selection bits
+                D(bitand(D, materialMask) == options.contAddIndex) = ...
+                    bitand(D(bitand(D, materialMask) == options.contAddIndex), flagsMask);  % clear destination material
+                D(bitand(M, maskValue) == maskValue) = options.contAddIndex;    % set material where mask
                 D = bitor(D, M);                                             % restore mask and selection
             else
-                M = bitshift(bitshift(D, -6), 6);     % store mask and selection bits
-                D(bitand(D, options.contAddIndex) == options.contAddIndex) = ...
-                    bitand(D(bitand(D, options.contAddIndex) == options.contAddIndex), 192);
+                M = bitand(D, flagsMask);              % store mask and selection bits
+                D(bitand(D, materialMask) == options.contAddIndex) = ...
+                    bitand(D(bitand(D, materialMask) == options.contAddIndex), flagsMask);   % clear destination material
                 D(filteredImg == 1) = options.contAddIndex;
                 D = bitor(D, M);
             end

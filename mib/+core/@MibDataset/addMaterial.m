@@ -116,7 +116,10 @@ else  %% Types 65535 and 4294967295 -------------------------------------------
         if ~isempty(wb) && isvalid(wb)
             wb.Message = 'Looking for the next empty material, please wait...';
         end
-        if obj.labels.objects3D
+        % BigData always takes the volume-wide count (core.MibBigDataLabels keeps it
+        % without a scan): its slice read below returns the displayed pyramid level,
+        % where objects smaller than a coarse pixel are missing
+        if obj.labels.objects3D || obj.datasetType(1) == 'B'
             newMaterialIndex = obj.labels.countMaterials() + 1;
         else
             slice = cell2mat(obj.getData2D('labels', obj.slices{3}(1), 3, NaN, ...

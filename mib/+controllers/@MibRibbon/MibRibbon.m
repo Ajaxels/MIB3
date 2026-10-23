@@ -258,6 +258,7 @@ classdef MibRibbon
             %% Add Callbacks for the MODEL ribbon -> Convert type
             obj.handles.ribbonModel.mat63.ValueChangedFcn = @obj.model_Callbacks;
             obj.handles.ribbonModel.mat255.ValueChangedFcn = @obj.model_Callbacks;
+            obj.handles.ribbonModel.mat16383.ValueChangedFcn = @obj.model_Callbacks;
             obj.handles.ribbonModel.mat65535.ValueChangedFcn = @obj.model_Callbacks;
             obj.handles.ribbonModel.mat4294967295.ValueChangedFcn = @obj.model_Callbacks;
             obj.handles.ribbonModel.indexed2dconn4.ItemPushedFcn = @obj.model_Callbacks;

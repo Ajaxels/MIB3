@@ -214,11 +214,11 @@ end
 dlgOpt.mibPath = obj.mibPath;
 
 %% Virtual stacking guard
-if strcmp(obj.I{BatchOpt.id}.datasetType, 'Virtual')
+if any(obj.I{BatchOpt.id}.datasetType(1) == ['V' 'B'])
     dlgOpt.MsgBoxOnly  = true;
     dlgOpt.Icon        = 'puffin_warning';
     dlgOpt.HeaderLines = 1;
-    utils.dlgs.inputUniversalDlg(obj.getProgressBarParent(), 'Not available in virtual stacking mode!', {''}, ...
+    utils.dlgs.inputUniversalDlg(obj.getProgressBarParent(), 'Not available in Virtual or BigData mode!', {''}, ...
         {'Instance stitching requires memory-resident mode. Please switch to standard mode and try again.'}, ...
         'Virtual mode', dlgOpt);
     notify(obj, 'StopProtocol');

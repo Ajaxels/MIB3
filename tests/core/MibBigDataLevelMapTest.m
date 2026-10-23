@@ -190,7 +190,91 @@ classdef MibBigDataLevelMapTest < matlab.unittest.TestCase
 
     end
 
+    methods (Test, TestTags = {'Unit'})
+        % -----------------------------------------------------------------
+        % uint16 instance layout (16383): bits 1-14 index, 15 mask, 16 selection
+        % -----------------------------------------------------------------
+
+        function testUint8StoreIsDefault(testCase)
+            lb = testCase.Lb;
+            testCase.verifyEqual(lb.containerClass, 'uint8');
+            testCase.verifyEqual(lb.maxMaterials, 63);
+            testCase.verifyEqual(class(lb.readPackedLevel(1, [1 4], [1 4], [1 1])), 'uint8');
+        end
+
+        function testUint16StoreKeepsLargeIndicesAndFlags(testCase)
+            lb = testCase.buildUint16Store();
+            o = testCase.opts(2);
+            % two objects with indices whose high bits sit next to the flag bits
+            objects = zeros(128, 128, 'uint16');
+            objects(20:60, 20:60)   = 300;
+            objects(70:110, 70:110) = 16383;
+            lb.setData63(objects, 'labels', 3, [], o);
+            mask = zeros(128, 128, 'uint8'); mask(1:64, :) = 1;
+            lb.setData63(mask, 'mask', 3, [], o);
+            selection = zeros(128, 128, 'uint8'); selection(:, 1:64) = 1;
+            lb.setData63(selection, 'selection', 3, [], o);
+
+            testCase.verifyEqual(squeeze(lb.getData63('labels', 3, [], o)), objects, ...
+                'mask/selection writes must keep 14-bit indices');
+            testCase.verifyEqual(squeeze(lb.getData63('mask', 3, [], o)), mask);
+            testCase.verifyEqual(squeeze(lb.getData63('selection', 3, [], o)), selection);
+            testCase.verifyEqual(lb.maxIndexUsed, 16383, 'the written maximum is tracked');
+
+            % full resolution is materialized from the working level on read
+            full = squeeze(lb.getData63('labels', 3, [], testCase.opts(1)));
+            testCase.verifyEqual(class(full), 'uint16');
+            testCase.verifyEqual(full(90*2, 90*2), uint16(16383), 'finer level keeps the index');
+            testCase.verifyEqual(full(40*2, 40*2), uint16(300));
+        end
+
+        function testUint16StoreReopens(testCase)
+            lb = testCase.buildUint16Store();
+            storePath = char(lb.modelStorePath);
+            objects = zeros(128, 128, 'uint16'); objects(10:20, 10:20) = 12345;
+            lb.setData63(objects, 'labels', 3, [], testCase.opts(2));
+            lb.closeStore();
+
+            meta = core.MibImage.initializeImgInfo('Height', 256, 'Width', 256, ...
+                'Depth', 1, 'Time', 1, 'Colors', 1);
+            reopened = core.MibBigDataLabels([], meta);
+            reopened.openStore(storePath);
+            testCase.addTeardown(@() reopened.closeStore());
+            testCase.verifyEqual(reopened.containerClass, 'uint16', 'layout follows the array type');
+            testCase.verifyEqual(reopened.maxMaterials, 16383);
+            testCase.verifyEqual(reopened.maxIndexUsed, 12345, 'maxIndexUsed is persisted');
+            testCase.verifyEqual(reopened.countMaterials(), 12345, 'count answers without a scan');
+            testCase.verifyEqual(squeeze(reopened.getData63('labels', 3, [], testCase.opts(2))), objects);
+        end
+
+        function testSmoothUpsampleFallsBackForManyLabels(testCase)
+            % above 64 distinct labels the per-label SDF is replaced by nearest
+            labels = uint16(reshape(1:100, 10, 10));
+            upsampled = core.MibBigDataLabels.smoothLabelUpsampleYX(labels, [20 20]);
+            testCase.verifyEqual(class(upsampled), 'uint16');
+            testCase.verifyEqual(upsampled, imresize(labels, [20 20], 'nearest'));
+        end
+
+    end
+
     methods (Access = private)
+        function lb = buildUint16Store(testCase)
+            % same 4-level pyramid as buildStore, as a uint16 (16383) store
+            pyramid = struct();
+            pyramid.axisOrder         = 'yxz';
+            pyramid.levelImageSizes   = [256 256 1; 128 128 1; 64 64 1; 32 32 1];
+            pyramid.levelScaleFactors = [1 1 1; 2 2 1; 4 4 1; 8 8 1];
+            pyramid.chunkSizes        = {[64 64 1], [64 64 1], [64 64 1], [32 32 1]};
+            meta = core.MibImage.initializeImgInfo('Height', 256, 'Width', 256, ...
+                'Depth', 1, 'Time', 1, 'Colors', 1);
+            storePath = [tempname '_levelmap16.zarr3'];
+            lb = core.MibBigDataLabels([], meta);
+            lb.setLayout('uint16');
+            lb.createStore([256 256 1], storePath, pyramid);
+            testCase.addTeardown(@() MibBigDataLevelMapTest.removeStore(storePath));
+            testCase.addTeardown(@() MibBigDataLevelMapTest.closeQuietly(lb));   % runs first (LIFO)
+        end
+
         function o = opts(testCase, magFactor)
             o = struct('magFactor', magFactor, 'x', [1 testCase.W], 'y', [1 testCase.H], ...
                 'z', [1 1], 't', [1 1]);
@@ -200,6 +284,20 @@ classdef MibBigDataLevelMapTest < matlab.unittest.TestCase
             dy = round(testCase.H/magFactor); dx = round(testCase.W/magFactor);
             [xx, yy] = meshgrid(1:dx, 1:dy);
             d = uint8((xx - dx/2).^2 + (yy - dy/2).^2 <= radius^2);
+        end
+    end
+
+    methods (Static, Access = private)
+        function closeQuietly(labels)
+            if isvalid(labels) && labels.exists
+                try labels.closeStore(); catch; end %#ok<CTCH>
+            end
+        end
+
+        function removeStore(storePath)
+            if isfolder(storePath); rmdir(storePath, 's'); end
+            levelMapPath = core.MibBigDataLabels.levelMapPathFor(storePath);
+            if isfile(levelMapPath); delete(levelMapPath); end
         end
     end
 end

@@ -197,7 +197,7 @@ maskArray = reshape(uint8(maskArray > 0), [imgH, imgW, imgD, 1, 1]);
 
 %% Store mask
 
-if obj.labels.maxMaterials < 64
+if isa(obj.labels, 'core.MibLabels63')
     % MibLabels63: mask bits are packed inside obj.labels - write via setData3D
     % so the packing logic inside MibLabels63 is applied correctly.
     obj.setData3D(squeeze(maskArray), 'mask', [], 3, NaN);

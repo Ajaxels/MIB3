@@ -415,6 +415,13 @@ classdef MibBigDataLabelsZarr2 < core.MibBigDataLabels
                 'MibBigDataLabelsZarr2 is read-only - writePackedLevel must never be called.');
         end
 
+        function writeMaterialMetadata(~)
+            % WRITEMATERIALMETADATA - no-op: the store belongs to another tool.
+            % The parent writes a ``mibMaterials`` attribute into the group, which
+            % would modify the foreign store; material names and colours of a
+            % read-only overlay live only in memory for the session.
+        end
+
         function result = setData63(obj, dataset, type, orient, materialIndex, options) %#ok<INUSD>
             % SETDATA63 - blocked: zarr v2 BigData models are read-only.
             %

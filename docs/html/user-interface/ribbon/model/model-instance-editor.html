@@ -5783,7 +5783,9 @@ detections.</p>
 stitching leaves errors that no threshold can remove - two objects that genuinely overlap across many
 slices are fused, and one object that breaks in two far apart in Z stays two - and those are repaired
 here.</p>
-<p>Requires an instance model (65535 or 4294967295 materials), where every object has its own index.</p>
+<p>Requires an instance model (16383, 65535 or 4294967295 materials) in a Standard dataset, or a 16383
+model in a <a href="../../../getting-started/dataset-types/index.html">BigData</a> dataset, where every object has
+its own index.</p>
 <div class="clear-float"></div>
 
 <hr />
@@ -5959,6 +5961,16 @@ responsive on models with thousands of objects. Changing the model with another 
 stroke, an undo - leaves it out of date, and the status line says so. The next operation rebuilds
 it before doing anything, so nothing can be applied to stale information; press
 <span class="widget widget-button">Rebuild</span> to refresh the list without waiting for that.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">BigData</p>
+<ul>
+<li>The editor works in 3D mode only.</li>
+<li>The first time a model is indexed, the whole model is read once. That can take a while on a
+  large slide. The index is saved with the model, so the next time the model is opened it is
+  ready at once. After that, only the area that changed is read again.</li>
+<li><strong>Cleanup</strong> is not available. <strong>Compact</strong> cannot be undone, so it asks first.</li>
+</ul>
 </div>
 <hr />
 <p><em>Back to <a href="../../../index.html">MIB</a> | <a href="../../index.html">User interface</a> | <a href="../index.html">Ribbon</a> | <a href="index.html">Model</a></em></p>

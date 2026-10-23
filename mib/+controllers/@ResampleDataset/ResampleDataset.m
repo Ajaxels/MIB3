@@ -666,6 +666,10 @@ classdef ResampleDataset < handle
                 model4D = cell2mat(obj.mibModel.getData4D(modelDataType, 3, NaN, labelsOpts));
                 model4D = reshape(model4D, size(model4D, 1), size(model4D, 2), size(model4D, 3), []);
                 materialsNumber = numel(obj.mibModel.I{id}.labels.materialNames);
+                if obj.mibModel.I{id}.labels.maxMaterials > 255
+                    % instance models keep only two name slots; the indices in use come from the data
+                    materialsNumber = double(max(model4D, [], 'all'));
+                end
 
                 imgOutModel = zeros([newH, newW, newZ, maxT], class(model4D));
                 for t = 1:maxT
@@ -680,7 +684,7 @@ classdef ResampleDataset < handle
                     resizeLabOpts.algorithm    = resamplingFn;
                     if strcmp(resamplingFn, 'interpn') && ~strcmp(methodLabels, 'nearest')
                         % per-material interpolation for non-nearest methods
-                        modelTemp = zeros([newH, newW, newZ], 'uint8');
+                        modelTemp = zeros([newH, newW, newZ], class(model4D));
                         for matId = 1:materialsNumber
                             if ~isempty(wb) && wb.CancelRequested; break; end
                             matMask    = uint8(modelSlice == matId);
@@ -758,7 +762,7 @@ classdef ResampleDataset < handle
                 % Regular MibLabels is handled generically by MibImage.setData
                 % which auto-resizes data{1} on full-container replacement.
                 if isLabels63
-                    obj.mibModel.I{id}.labels.data    = zeros([newH, newW, newZ, 1, maxT], 'uint8');
+                    obj.mibModel.I{id}.labels.data    = zeros([newH, newW, newZ, 1, maxT], obj.mibModel.I{id}.labels.containerClass);
                     obj.mibModel.I{id}.labels.height      = newH;
                     obj.mibModel.I{id}.labels.width       = newW;
                     obj.mibModel.I{id}.labels.depth       = newZ;
@@ -769,7 +773,7 @@ classdef ResampleDataset < handle
             elseif isLabels63
                 % no model data - reset packed container to new size
                 newDims = [newH, newW, newZ, 1, maxT];
-                obj.mibModel.I{id}.labels.data = zeros(newDims, 'uint8');
+                obj.mibModel.I{id}.labels.data = zeros(newDims, obj.mibModel.I{id}.labels.containerClass);
                 obj.mibModel.I{id}.labels.height   = newH;
                 obj.mibModel.I{id}.labels.width    = newW;
                 obj.mibModel.I{id}.labels.depth    = newZ;

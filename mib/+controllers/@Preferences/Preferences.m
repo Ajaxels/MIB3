@@ -160,7 +160,7 @@ classdef Preferences < handle
                 'Time',      labelsDims(5), ...
                 'Colors',    1, ...
                 'SliceSize', dataset.image.sliceSize);
-            dataset.labels.initialize(zeros(labelsDims, 'uint8'), labelsMeta);
+            dataset.labels.initialize(zeros(labelsDims, dataset.labels.containerClass), labelsMeta);
         end
 
         function releaseSegmentationLayers(dataset)
@@ -742,10 +742,10 @@ classdef Preferences < handle
             % the enableSelection flag for those - same rule as OKButtonPushedCallback
             if ~any(activeDataset.datasetType(1) == ['V' 'B'])
                 if systemPrefs.EnableSelection   % turn ON the Selection
-                    if activeDataset.labels.maxMaterials >= 255 && ~activeDataset.selection.exists
-                        obj.mibController.mibModel.clearLayer('selection');
-                    elseif activeDataset.labels.maxMaterials == 63 && ~activeDataset.labels.exists
+                    if isa(activeDataset.labels, 'core.MibLabels63') && ~activeDataset.labels.exists
                         obj.allocateLabelsLayer(activeDataset);
+                    elseif ~isa(activeDataset.labels, 'core.MibLabels63') && ~activeDataset.selection.exists
+                        obj.mibController.mibModel.clearLayer('selection');
                     end
                 else         % turn OFF the Selection, Mask, Model
                     obj.releaseSegmentationLayers(activeDataset);
@@ -890,10 +890,10 @@ classdef Preferences < handle
                     % the preference was off has data = [], and data(1) errors on it.
                     % Both spellings of "not allocated" (NaN below, [] from
                     % core.MibDataset.initialize) set exists = false
-                    if activeDataset.labels.maxMaterials >= 255 && ~activeDataset.selection.exists
-                        obj.mibController.mibModel.clearLayer('selection');
-                    elseif activeDataset.labels.maxMaterials == 63 && ~activeDataset.labels.exists
+                    if isa(activeDataset.labels, 'core.MibLabels63') && ~activeDataset.labels.exists
                         obj.allocateLabelsLayer(activeDataset);
+                    elseif ~isa(activeDataset.labels, 'core.MibLabels63') && ~activeDataset.selection.exists
+                        obj.mibController.mibModel.clearLayer('selection');
                     end
                 else         % turn OFF the Selection, Mask, Model
                     obj.releaseSegmentationLayers(activeDataset);

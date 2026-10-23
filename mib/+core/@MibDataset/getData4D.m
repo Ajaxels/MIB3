@@ -13,7 +13,7 @@ function dataset = getData4D(obj, type, orient, col_channel, options)
 %     - ``'labels'`` - labels layer with segmentation
 %     - ``'mask'`` - mask layer, supporting segmentation
 %     - ``'selection'`` - selection layer, a temporary layer for segmentation
-%     - ``'everything'`` - (``'model'``, ``'mask'`` and ``'selection'`` for ``obj.labels.maxMaterials == 63`` only)
+%     - ``'everything'`` - (``'model'``, ``'mask'`` and ``'selection'`` for packed ``core.MibLabels63`` models only)
 %
 %   - **orient** - [*optional,* can be []]
 %
@@ -108,7 +108,7 @@ if strcmp(obj.datasetType, 'Standard') && ~strcmp(type, 'everything')
         noROI = ~isfield(options, 'roiId') || (isscalar(options.roiId) && options.roiId < 0);
         skipLabelsIdx = strcmp(type, 'labels') && ~isempty(col_channel) && ...
                         isnumeric(col_channel) && ~any(isnan(col_channel(:)));
-        skipPacked63  = (obj.labels.maxMaterials == 63) && ~strcmp(type, 'image');
+        skipPacked63  = isa(obj.labels, 'core.MibLabels63') && ~strcmp(type, 'image');
 
         if blockIsOff && noROI && ~skipLabelsIdx && ~skipPacked63
             if strcmp(type, 'image')
@@ -133,7 +133,7 @@ end
 
 % define datasetVariable for obj.(datasetVariable).getData
 datasetVariable = type;
-if obj.labels.maxMaterials == 63 
+if isa(obj.labels, 'core.MibLabels63') 
     if ismember(type, {'selection', 'mask', 'everything'}) 
         datasetVariable = 'labels';
     end
@@ -207,7 +207,7 @@ if options.roiId >= 0
         roiId2 = roiId2 + 1;
     end
 else
-    if obj.labels.maxMaterials ~= 63 && strcmp(type, 'everything')
+    if ~isa(obj.labels, 'core.MibLabels63') && strcmp(type, 'everything')
         errorText = sprintf('!!! Error !!!\n\nType = "everything" available only for the models with 63 materials!');
         utils.dlgs.showErrorDialog([], errorText, 'MibDataset.getData4D');
         dataset = [];

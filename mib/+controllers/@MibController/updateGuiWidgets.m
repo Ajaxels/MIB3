@@ -175,12 +175,15 @@ if isempty(updatePanels) || ismember('ribbonModel', updatePanels)
 
     ribbonModel.mat63.Value = false;
     ribbonModel.mat255.Value = false;
+    ribbonModel.mat16383.Value = false;
     ribbonModel.mat65535.Value = false;
     ribbonModel.mat4294967295.Value = false;
     if dataset.labels.maxMaterials == 63
         ribbonModel.mat63.Value = true;
     elseif dataset.labels.maxMaterials == 255 
         ribbonModel.mat255.Value = true;
+    elseif dataset.labels.maxMaterials == 16383
+        ribbonModel.mat16383.Value = true;
     elseif dataset.labels.maxMaterials == 65535
         ribbonModel.mat65535.Value = true;
     elseif dataset.labels.maxMaterials == 4294967295 
@@ -189,7 +192,23 @@ if isempty(updatePanels) || ismember('ribbonModel', updatePanels)
     
     % update buttons of the segmentation panel if needed
     segmHandles = obj.view.handles.panels.segmentation.handles;
-    if dataset.labels.maxMaterials < 256 && ... 
+
+    % Create / Load model: name the model the dataset holds now, and so does
+    % the tooltip of its buffer button. This section runs after a model is
+    % created, loaded, converted or saved (MibModel.saveImage), which the
+    % activeDataset section below does not
+    [~, modelText] = utils.bufferTooltip(dataset);
+    [~, modelStem, modelExtension] = fileparts(modelText);
+    modelName = [modelStem modelExtension];   % the placeholders 'none' / 'not saved yet' pass through
+    localUpdateBufferTooltip(obj, dataset, selectedSet);
+    segmHandles.createModel.Tooltip = sprintf('Create a new, empty model\nCurrent model: %s', modelName);
+    segmHandles.loadModel.Tooltip = sprintf('Load a model from a file\nCurrent model: %s', modelName);
+    if obj.mibModel.preferences.System.DeveloperMode
+        segmHandles.createModel.Tooltip = sprintf('obj.view.handles.panels.segmentation.handles.createModel:\n%s', segmHandles.createModel.Tooltip);
+        segmHandles.loadModel.Tooltip = sprintf('obj.view.handles.panels.segmentation.handles.loadModel:\n%s', segmHandles.loadModel.Tooltip);
+    end
+
+    if dataset.labels.maxMaterials < 256 && ...
             (isempty(segmHandles.addMaterial.Icon) || ~strcmp(segmHandles.addMaterial.Tooltip, 'Add a new material to the model'))
         % update the buttons in the panel to match the model type with less than 256 materials
 
@@ -398,21 +417,10 @@ if isempty(updatePanels) || ismember('activeDataset', updatePanels)
 
     % update buffer buttons in the Datasets panel
     bufferId = sprintf('buffer%d', obj.mibModel.Sets.selectedDataset(selectedSet));  % generate handle for the buffer button
-    
-    if strcmp(dataset.image.filename, 'none.tif')  % no dataset loaded
-        activeDataset.handles.(bufferId).Tooltip = 'use RMB for a context menu with additional options';
-    else
-        activeDataset.handles.(bufferId).Tooltip = dataset.image.filename;
-    end
+    localUpdateBufferTooltip(obj, dataset, selectedSet);
     % during startup the Datasets controller may not exist yet; its constructor paints the buttons itself
     if isa(obj.cActiveDataset, 'controllers.MibActiveDataset')
         obj.cActiveDataset.paintBufferButton(activeDataset.handles.(bufferId), 'selected');
-    end
-
-    % add DeveloperMode tag
-    if obj.mibModel.preferences.System.DeveloperMode
-        activeDataset.handles.(bufferId).Tooltip = sprintf('obj.view.handles.panels.activeDataset.handles.%s:\n%s', ...
-            bufferId, activeDataset.handles.(bufferId).Tooltip);
     end
 end
 
@@ -637,4 +645,18 @@ end
 % obj.mibView.gui.WindowKeyPressFcn = (@(hObject, eventdata, handles) obj.mibGUI_WindowKeyPressFcn(hObject, eventdata));
  
 
+end
+
+% =====================================================================
+function localUpdateBufferTooltip(obj, dataset, selectedSet)
+% Tooltip of the active buffer button: the dataset and its model, see
+% utils.bufferTooltip. Called from both the model and the activeDataset
+% sections, because the model can change without the buffer changing.
+bufferId = sprintf('buffer%d', obj.mibModel.Sets.selectedDataset(selectedSet));
+bufferButton = obj.view.handles.panels.activeDataset.handles.(bufferId);
+bufferButton.Tooltip = utils.bufferTooltip(dataset);
+if obj.mibModel.preferences.System.DeveloperMode
+    bufferButton.Tooltip = sprintf('obj.view.handles.panels.activeDataset.handles.%s:\n%s', ...
+        bufferId, bufferButton.Tooltip);
+end
 end

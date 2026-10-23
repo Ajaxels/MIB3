@@ -144,7 +144,7 @@ end
 
 % determine which layers to process (ElasticDistortion can distort all)
 if strcmp(BatchOptOut.FilterName{1}, 'ElasticDistortion') && BatchOptOut.DistortAllLAyers
-    if obj.mibModel.I{obj.BatchOpt.id}.labels.maxMaterials == 63
+    if isa(obj.mibModel.I{obj.BatchOpt.id}.labels, 'core.MibLabels63')
         sourceLayersList = {'image', 'everything'};
     else
         sourceLayersList = {'image', 'labels', 'mask'};

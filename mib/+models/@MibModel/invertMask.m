@@ -176,9 +176,9 @@ end
 isPacked = isa(obj.I{BatchOpt.id}.labels, 'core.MibLabels63');
 if isPacked
     if strcmp(BatchOpt.Target{1}, 'mask')
-        bitxorValue = uint8(64);    % bit 7: mask
+        bitxorValue = cast(obj.I{BatchOpt.id}.labels.maskValue, obj.I{BatchOpt.id}.labels.containerClass);        % mask bit
     else
-        bitxorValue = uint8(128);   % bit 8: selection
+        bitxorValue = cast(obj.I{BatchOpt.id}.labels.selectionValue, obj.I{BatchOpt.id}.labels.containerClass);   % selection bit
     end
 end
 

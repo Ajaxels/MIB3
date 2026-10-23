@@ -29,10 +29,13 @@ Every change ends with `check_matlab_code` clean + an MCP verification snippet o
 | **Live in-GUI validation** of WSI open + segmentation + export | ✅ DONE (2026-06-30, see §4) |
 | **Alignment for BigData** (new-store output + buffer swap): drift, feature-v2 affine, landmarks (annotation-driven), packed-63 warp | ✅ DONE (headless + e2e; see `alignment_plan.md`, `bigdata_logic.md` §13); live-GUI acceptance still open |
 | Streaming export plan — remaining per-format deep streaming + mask path | ⏳ OPEN (see §2) |
+| **16383-object instance model** (packed uint16 store, chosen at New model; `maxIndexUsed` instead of scans) | ✅ DONE (2026-10-22, unit tests); live-GUI check open, see §5.9 |
+| **Instance index + Instance editor on BigData** (streamed scan, dirty-box repair, side-file; per-object edits, undo, Compact) | ✅ DONE (2026-10-22, integration tests); live-GUI check open, see §5.8 |
 | Backlog (T>1, removeMaterial renumber, remote zarr, etc.) | ⏳ DEFERRED (see §5) |
 | Audit findings — correctness/perf/tool-coverage gaps not yet acted on | ⏳ OPEN (see §9) |
 
-Tests: `tests/core/MibBigDataLevelMapTest.m` — 9/9 pass; `tests/controllers/AlignmentBigDataTest.m` — 9/9 pass.
+Tests: `tests/core/MibBigDataLevelMapTest.m` - 13/13 pass; `tests/controllers/AlignmentBigDataTest.m` - 14/14 pass;
+`tests/models/EditInstanceObjectsBigDataTest.m` - 10/10 pass (2026-10-23, incl. 63 -> 16383 conversion).
 
 ---
 
@@ -134,8 +137,27 @@ export a BigData level → reopen with matching dims/voxel size.
 6. **Interop nicety:** `createStore.writeMultiscales` writes relative factors as the NGFF `scale`; for
    strict OME-NGFF it should write physical voxel sizes. MIB round-trips either way (openStore
    normalises), so cosmetic.
-7. **Copy-or-modify image edits** — prompt to modify the underlying zarr in place vs save a Standard
+7. **Copy-or-modify image edits** - prompt to modify the underlying zarr in place vs save a Standard
    copy (models never touch the source image).
+8. **BigData instance index** - ✅ code DONE (2026-10-22): streamed full scan, dirty-box repair kept
+   by `setData63`, `<store>.instanceindex` side-file; Instance editor per-object actions, undo repair
+   and Compact on the 16383 store (design and numbers: `bigdata_logic.md` §8). **Still open:**
+   - live-GUI check: open the editor on a WSI 16383 model, Rebuild (first scan), pick / merge / split /
+     delete at several zooms, undo, brush outside the editor then operate (repair), Save model,
+     reopen (index ready without a scan), Compact (confirmation)
+   - *Convert type* 63 -> 16383 on BigData - ✅ code DONE (2026-10-23, test); live-GUI check open:
+     convert a WSI 63 model from the ribbon (explanation, store dialog, progress, Cancel), look at it at
+     several zooms, then open the Instance editor. Other BigData conversions stay refused
+   - *Stitch 2D instances to 3D* stays blocked on BigData (needs a slice-pair streaming stitcher)
+   - Cleanup is refused (its filters read the whole volume; a per-object version through the index
+     could do the size filters, absorb-fragments needs neighbours)
+   - the editor is 3D-only on BigData: 2D mode's slice list reads a whole full-res slice
+   - `selectionBBoxFull` is session-only, so the editor does not see a selection left in the store by
+     an earlier session
+   - `removeMaterial` renumbering (item 1) applies to the uint16 store too
+9. **Live-GUI check of the 16383 store** - create one on a WSI, brush indices above 255 at several
+   zooms, mask/selection on top, undo, *Save model*, reopen; confirm no halo and no index loss. Only
+   unit tests cover it so far (`MibBigDataLevelMapTest`, `MoveLayersTest`, `MaterialsTest`).
 
 ---
 
@@ -244,6 +266,13 @@ possible**. **Nothing here is committed yet — this is the backlog for the next
    entire tiles authoritative-at-coarse; the next zoom-in upsamples coarse data over those tiles
    and **overwrites pre-existing fine detail in the untouched margin around the stroke.** Options:
    document the warning, or use a finer `matLevel` grid than the coarsest level.
+   *2026-10-22, measured:* this applies to **selection and mask writes too**, not only labels - a
+   selection drawn or cleared at a coarse zoom marks its tiles coarse-authoritative and the next
+   level-1 read rebuilds their labels from the coarse copy. A selection stroke at level 4 over a
+   one-pixel checkerboard of two objects changed 512 of its 1024 full-resolution label voxels. So an
+   ordinary zoomed-out brush stroke degrades the fine labels under it. The Instance editor avoids it
+   for its own writes (all at level 1), and the instance index tracks it (setData63 marks every
+   write above level 1 dirty); the brush and `c` themselves are unchanged.
 3. **`removeMaterial` on-disk renumbering (backlog §5.1) is a *correctness* bug, not a nicety** —
    promote above the cosmetic backlog items.
 4. SAM v1's BigData block is intentional (performance — SAM2 covers the same modes faster), already

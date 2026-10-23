@@ -183,9 +183,9 @@ if strcmp(options.dim, 'depth')
 
     if obj.datasetType(1) ~= 'V'
         % ---- label layers (insert zeros at the same position) ----
-        if obj.labels.maxMaterials == 63   % labels63: model+mask+selection packed together
+        if isa(obj.labels, 'core.MibLabels63')   % labels63: model+mask+selection packed together
             if obj.modelExist || obj.maskExist || obj.selection.exists
-                emptyLayer = zeros([D2_y, D2_x, D2_z, 1, D2_t], 'uint8');
+                emptyLayer = zeros([D2_y, D2_x, D2_z, 1, D2_t], obj.labels.containerClass);
                 obj.labels.insertSlice(emptyLayer, insertPosition, 'depth');
             end
         else   % separate model / mask / selection layers
@@ -232,9 +232,9 @@ else  % insert a new time point
     if options.showWaitbar; wb.Value = 0.3; end
 
     % ---- label layers ----
-    if obj.labels.maxMaterials == 63   % labels63
+    if isa(obj.labels, 'core.MibLabels63')   % labels63
         if obj.modelExist || obj.maskExist || obj.selection.exists
-            emptyLayer = zeros([D2_y, D2_x, D2_z, 1, D2_t], 'uint8');
+            emptyLayer = zeros([D2_y, D2_x, D2_z, 1, D2_t], obj.labels.containerClass);
             obj.labels.insertSlice(emptyLayer, insertPosition, 'time');
         end
     else

@@ -82,7 +82,7 @@ if showWaitbar; waitbar.Value = 0.5; end
 if isa(obj.labels, 'core.MibLabels63') && obj.enableSelection
     if showWaitbar; waitbar.Value = 0.6; waitbar.Message = sprintf('Rotating other layers\nPlease wait...'); end
     layerData = obj.labels.data;    % [H,W,Z,1,T]
-    layerOut = zeros([width, height, depth, 1, timePoints], 'uint8');
+    layerOut = zeros([width, height, depth, 1, timePoints], 'like', layerData);
     for t = 1:timePoints
         for z = 1:depth
             layerOut(:,:,z,1,t) = rot90(layerData(:,:,z,1,t), k);
@@ -95,7 +95,7 @@ if isa(obj.labels, 'core.MibLabels63') && obj.enableSelection
 elseif obj.enableSelection
     % Selection layer
     layerData = obj.selection.data;
-    layerOut = zeros([width, height, depth, 1, timePoints], 'uint8');
+    layerOut = zeros([width, height, depth, 1, timePoints], 'like', layerData);
     for t = 1:timePoints
         for z = 1:depth
             layerOut(:,:,z,1,t) = rot90(layerData(:,:,z,1,t), k);
@@ -108,7 +108,7 @@ elseif obj.enableSelection
 
     if obj.maskExist
         layerData = obj.mask.data;
-        layerOut = zeros([width, height, depth, 1, timePoints], 'uint8');
+        layerOut = zeros([width, height, depth, 1, timePoints], 'like', layerData);
         for t = 1:timePoints
             for z = 1:depth
                 layerOut(:,:,z,1,t) = rot90(layerData(:,:,z,1,t), k);
@@ -122,7 +122,7 @@ elseif obj.enableSelection
 
     if obj.modelExist
         layerData = obj.labels.data;
-        layerOut = zeros([width, height, depth, 1, timePoints], 'uint8');
+        layerOut = zeros([width, height, depth, 1, timePoints], 'like', layerData);
         for t = 1:timePoints
             for z = 1:depth
                 layerOut(:,:,z,1,t) = rot90(layerData(:,:,z,1,t), k);

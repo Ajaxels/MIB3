@@ -102,7 +102,7 @@ if isLabels63
     everythingOut = assembleServiceCanvas(obj, 'everything', tformMatrix, ...
         rbMatrix, xmin, ymin, dx, dy, newH, newW, depth, 0);
     if isempty(everythingOut); return; end
-    obj.mibModel.I{id}.labels.data  = zeros([newH, newW, depth, nTime], 'uint8');
+    obj.mibModel.I{id}.labels.data  = zeros([newH, newW, depth, nTime], obj.mibModel.I{id}.labels.containerClass);
     obj.mibModel.I{id}.labels.height    = newH;
     obj.mibModel.I{id}.labels.width     = newW;
     obj.mibModel.I{id}.labels.depth     = depth;

@@ -110,6 +110,11 @@ if nargin < 2
     error('MibModel:saveImage:missingLayerType', ...
         'layerType must be provided: ''image'', ''labels'', or ''mask''.');
 end
+if ismember(layerType, {'labels', 'model'})
+    % Saving can rename the model, and the Segmentation panel's Create / Load
+    % buttons name it in their tooltips; refreshed on every way out of here
+    refreshModelName = onCleanup(@() notify(obj, 'UpdateGuiWidgets', core.ToggleEventData({'ribbonModel'})));
+end
 
 % ================================================================== %
 %  SECTION 1 - Declare default BatchOpt structure                    %
@@ -136,7 +141,7 @@ else
     switch lower(layerType)
         case 'image';  BatchOpt.Filename = [inputFilenameName inputFilenameExt];
         case 'mask'
-            if obj.I{BatchOpt.id}.labels.maxMaterials < 64 % mask included into the labels with selection
+            if isa(obj.I{BatchOpt.id}.labels, 'core.MibLabels63') % mask included into the labels with selection
                 mask_fn = obj.I{BatchOpt.id}.labels.maskFilename;
             else
                 mask_fn = obj.I{BatchOpt.id}.mask.filename;

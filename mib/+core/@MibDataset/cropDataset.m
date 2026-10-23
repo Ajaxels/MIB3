@@ -163,6 +163,7 @@ else
     savedMaterialsCount = 0;
     savedLabelsFilename = '';
     savedMaterialColors = [];
+    savedObjects3D      = false;
     if isa(obj.labels, 'core.MibBigDataLabels') && obj.labels.exists
         modelReadOpts.x            = loadOpts.x;
         modelReadOpts.y            = loadOpts.y;
@@ -175,6 +176,7 @@ else
         savedMaterialsCount  = obj.labels.materialsCount;
         savedLabelsFilename  = obj.labels.filename;
         savedMaterialColors  = obj.labels.materialColors;
+        savedObjects3D       = obj.labels.objects3D;
     end
 
     % Switch from virtual to memory-resident mode; returns [] on cancel
@@ -202,6 +204,10 @@ else
         if isa(obj.labels, 'core.MibLabels63')
             % Populate with cropped BigData model if available; else blank
             if ~isempty(packedBigDataModel)
+                % the Standard labels object is created with the uint8 layout;
+                % a uint16 (16383) BigData model keeps its own layout
+                obj.labels.setLayout(class(packedBigDataModel));
+                obj.labels.objects3D = savedObjects3D;
                 obj.labels.data = packedBigDataModel;
                 obj.modelExist  = true;
                 obj.labels.materialNames  = savedMaterialNames;
@@ -211,7 +217,7 @@ else
                     obj.labels.materialColors = savedMaterialColors;
                 end
             else
-                obj.labels.data = zeros(emptyDims, 'uint8');
+                obj.labels.data = zeros(emptyDims, obj.labels.containerClass);
             end
             obj.labels.height    = emptyDims(1);
             obj.labels.width     = emptyDims(2);

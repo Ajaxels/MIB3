@@ -7,13 +7,15 @@ function [mibModel, groundTruth] = buildSyntheticModel(options)
 % not be shared between test methods.
 %
 % Options:
-%   modelType : 'labels63' (default) | 'labels255' | 'labels65535'
+%   modelType : 'labels63' (default) | 'labels255' | 'labels16383' | 'labels65535'
 %   dims      : [h w z]  (default [64 64 16])
 %   numColors : number of color channels (default 1)
 %
 % groundTruth fields:
 %   .image     [h w z numColors] uint8
-%   .labels    [h w z]   uint8 (labels63/labels255) | uint16 (labels65535)
+%   .labels    [h w z]   uint8 (labels63/labels255) | uint16 (labels16383/labels65535);
+%              labels16383 remaps index 5 to 300 and 6 to 16383, so a lost high byte
+%              or a spill into the mask/selection bits shows up
 %   .mask      [h w z]   uint8 binary
 %   .selection [h w z]   uint8 binary
 
@@ -56,6 +58,11 @@ mibModel.I{1}.updateBoundingBox([], [0 0 0]);
 switch options.modelType
     case 'labels255'
         mibModel.I{1}.createModel(255);
+    case 'labels16383'
+        mibModel.I{1}.createModel(16383);
+        groundTruth.labels = uint16(groundTruth.labels);
+        groundTruth.labels(groundTruth.labels == 5) = 300;
+        groundTruth.labels(groundTruth.labels == 6) = 16383;
     case 'labels65535'
         mibModel.I{1}.createModel(65535);
         groundTruth.labels = uint16(groundTruth.labels);   % must match accessor return class

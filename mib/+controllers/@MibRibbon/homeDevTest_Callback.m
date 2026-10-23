@@ -68,7 +68,7 @@ checks = struct('name', {}, 'passed', {}, 'info', {});
 
 for id = datasetIds
     ds = mibModel.I{id};
-    is63 = (ds.labels.maxMaterials == 63);
+    is63 = isa(ds.labels, 'core.MibLabels63');   % packed: uint8 (63) or uint16 (16383) layout
     dsTag = sprintf('ds%d', id);
     opt = struct('id', id, 'blockModeSwitch', 0);
     midSlice = max(1, round(ds.image.depth/2));
@@ -77,9 +77,9 @@ for id = datasetIds
     rawImage = ds.image.data;
     if is63
         rawPacked = ds.labels.data;
-        gtLabels = bitand(rawPacked, 63);
-        gtMask = bitand(rawPacked, 64)/64;
-        gtSelection = bitand(rawPacked, 128)/128;
+        gtLabels = bitand(rawPacked, ds.labels.materialMask);
+        gtMask = bitand(rawPacked, ds.labels.maskValue)/ds.labels.maskValue;
+        gtSelection = bitand(rawPacked, ds.labels.selectionValue)/ds.labels.selectionValue;
     else
         gtLabels = ds.labels.data;
         gtMask = ds.mask.data;

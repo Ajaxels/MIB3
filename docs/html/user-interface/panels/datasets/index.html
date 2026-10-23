@@ -5788,6 +5788,7 @@ and a dataset-type selector that controls how each dataset is stored in memory.<
 <p><mouse class="right"></mouse> any buffer button for per-buffer operations:</p>
 <div class="clear-float"></div>
 
+<div class="table-first-col-third">
 <table>
 <thead>
 <tr>
@@ -5797,39 +5798,44 @@ and a dataset-type selector that controls how each dataset is stored in memory.<
 </thead>
 <tbody>
 <tr>
-<td><strong>Duplicate</strong></td>
+<td><strong>Duplicate dataset</strong></td>
 <td>Copy this dataset to another buffer (prompts for destination set and buffer)</td>
 </tr>
 <tr>
-<td><strong>Sync XY</strong></td>
+<td><strong>Sync view (x,y) with...</strong></td>
 <td>Copy view position and zoom from another buffer</td>
 </tr>
 <tr>
-<td><strong>Sync XYZ</strong></td>
+<td><strong>Sync view (x,y,z) with...</strong></td>
 <td>Copy view position, zoom, and current Z-slice from another buffer</td>
 </tr>
 <tr>
-<td><strong>Sync XYZT</strong></td>
+<td><strong>Sync view (x,y,z,t) with...</strong></td>
 <td>Copy view position, zoom, Z-slice, and time frame from another buffer</td>
 </tr>
 <tr>
-<td><strong>Link view with… [Unlinked]</strong></td>
-<td>Link this buffer's view to another buffer — scrolling one updates the other</td>
+<td><strong>Link view with... [Unlinked]</strong></td>
+<td>Link this buffer's view to another buffer - scrolling one updates the other</td>
 </tr>
 <tr>
-<td><strong>[Linked: A ↔ B] press to unlink</strong></td>
+<td><strong>[Linked: A &lt;-&gt; B] press to unlink</strong></td>
 <td>Unlink the currently linked pair</td>
 </tr>
 <tr>
-<td><strong>Close</strong></td>
+<td><strong>Close model</strong></td>
+<td>Close the model of the dataset in this buffer and keep the dataset open. The mask and selection stay, and <span class="keys"><kbd class="key-control">Ctrl</kbd><span>+</span><kbd class="key-z">Z</kbd></span> brings the model back. For a BigData model the model store stays on disk to be loaded again, and its mask and selection close with it</td>
+</tr>
+<tr>
+<td><strong>Close dataset</strong></td>
 <td>Close the dataset in this buffer (resets it to an empty placeholder)</td>
 </tr>
 <tr>
-<td><strong>Close Set</strong></td>
+<td><strong>Close all datasets of the set</strong></td>
 <td>Close all datasets in the entire current set</td>
 </tr>
 </tbody>
 </table>
+</div>
 <h4 id="duplicate">Duplicate<a class="headerlink" href="#duplicate" title="Permanent link">&para;</a></h4>
 <p><a class="glightbox" data-title="Buffer duplicate" data-type="image" href="images/datasets_buffers_duplicate.png"><img align="right" alt="Buffer duplicate" class="on-glb" src="images/datasets_buffers_duplicate.png" width="300" /></a></p>
 <p>Copies the full dataset (image, labels, mask, selection, annotations) to a destination buffer.
@@ -5851,15 +5857,15 @@ A dialog lets you choose the destination set and buffer number.</p>
 </thead>
 <tbody>
 <tr>
-<td><strong>Sync XY</strong></td>
+<td><strong>Sync view (x,y) with...</strong></td>
 <td>Pan position + zoom</td>
 </tr>
 <tr>
-<td><strong>Sync XYZ</strong></td>
+<td><strong>Sync view (x,y,z) with...</strong></td>
 <td>Pan + zoom + Z slice</td>
 </tr>
 <tr>
-<td><strong>Sync XYZT</strong></td>
+<td><strong>Sync view (x,y,z,t) with...</strong></td>
 <td>Pan + zoom + Z slice + time frame</td>
 </tr>
 </tbody>
@@ -5897,11 +5903,11 @@ Selects the active set. Switching sets also switches the visible Image Document 
 </thead>
 <tbody>
 <tr>
-<td><strong>Add set</strong></td>
+<td><strong>Add set...</strong></td>
 <td>Create a new set (prompts for a name)</td>
 </tr>
 <tr>
-<td><strong>Rename set</strong></td>
+<td><strong>Rename set...</strong></td>
 <td>Rename the currently active set</td>
 </tr>
 <tr>
@@ -5909,18 +5915,18 @@ Selects the active set. Switching sets also switches the visible Image Document 
 <td>Sort all sets alphabetically</td>
 </tr>
 <tr>
-<td><strong>Remove set</strong></td>
+<td><strong>Remove set...</strong></td>
 <td>Close all datasets in the set and remove it</td>
 </tr>
 </tbody>
 </table>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
-<p><strong>Remove set</strong> closes all datasets in that set without additional confirmation per buffer.</p>
+<p><strong>Remove set...</strong> closes all datasets in that set without additional confirmation per buffer.</p>
 </div>
 <h3 id="add-set-button">Add set button<a class="headerlink" href="#add-set-button" title="Permanent link">&para;</a></h3>
 <p><span class="widget widget-button">+</span>
-Shortcut to add a new set, equivalent to <em>Sets context menu → Add set</em>.</p>
+Shortcut to add a new set, equivalent to <em>Sets context menu → Add set...</em>.</p>
 <hr />
 <h2 id="dataset-types">Dataset types<a class="headerlink" href="#dataset-types" title="Permanent link">&para;</a></h2>
 <p><img align="left" alt="Dataset types" src="images/datasets_type.png" /></p>

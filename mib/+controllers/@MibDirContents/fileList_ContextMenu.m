@@ -68,12 +68,66 @@ switch menuEntry.Tag
             utils.dlgs.inputUniversalDlg(obj.mibModel.getProgressBarParent(), header, {}, {}, 'Rename file', dlgOpts);
             return;
         end
-        [filePath, filename, ext] = fileparts(fullfile(obj.mibModel.currentDirectory, obj.mibModel.selectedFiles{1}));
+        % folders are listed as [name] (see updateFileList_Callback); the
+        % brackets belong to the list, not to the folder
+        selectedName = obj.mibModel.selectedFiles{1};
+        isFolder = numel(selectedName) > 2 && selectedName(1) == '[' && selectedName(end) == ']';
+        if isFolder; selectedName = selectedName(2:end-1); end
         dlgOpts.mibPath = obj.mibModel.mibPath;
-        answer = utils.dlgs.inputSingleDlg(obj.mibModel.getProgressBarParent(), 'Please enter new file name', [filename, ext], 'Rename file', dlgOpts);
+        answer = utils.dlgs.inputSingleDlg(obj.mibModel.getProgressBarParent(), 'Please enter new name', selectedName, 'Rename', dlgOpts);
         if isempty(answer); return; end
-        movefile(fullfile(filePath, [filename, ext]), fullfile(filePath, answer));
-        obj.updateFileList_Callback(answer);
+        answer = strtrim(answer);
+        if isFolder && numel(answer) > 2 && answer(1) == '[' && answer(end) == ']'; answer = answer(2:end-1); end
+        if isempty(answer) || strcmp(answer, selectedName); return; end
+        sourcePath = fullfile(obj.mibModel.currentDirectory, selectedName);
+        targetPath = fullfile(obj.mibModel.currentDirectory, answer);
+        inUseBy = localDatasetReadingFrom(obj.mibModel, sourcePath);
+        if ~isempty(inUseBy)
+            % a Virtual or BigData dataset reads its image, or its model store,
+            % from here on demand; after a rename every read and write would go
+            % to a path that no longer exists
+            utils.dlgs.showErrorDialog(obj.mibModel.getProgressBarParent(), ...
+                sprintf(['"%s" is in use by dataset %d, which reads %s from it.\n\n' ...
+                'Close that dataset, or open another one in its place, and rename then.'], ...
+                selectedName, inUseBy.id, inUseBy.what), 'Rename');
+            return;
+        end
+        if isfile(targetPath) || isfolder(targetPath)
+            % movefile would replace a file, and move a folder INTO an existing one
+            utils.dlgs.showErrorDialog(obj.mibModel.getProgressBarParent(), ...
+                sprintf('"%s" already exists in this folder. Choose another name.', answer), 'Rename');
+            return;
+        end
+        % A BigData model store keeps side files next to its folder, found by the
+        % store's name: without its level map a reopened store treats every level
+        % as up to date and shows stale detail where edits were made zoomed out
+        sideFiles = {};
+        if isFolder
+            sideFiles = {core.MibBigDataLabels.levelMapPathFor(sourcePath), core.MibBigDataLabels.levelMapPathFor(targetPath); ...
+                core.MibBigDataLabels.instanceIndexPathFor(sourcePath), core.MibBigDataLabels.instanceIndexPathFor(targetPath)};
+            sideFiles = sideFiles(isfile(sideFiles(:, 1)), :);
+            if any(isfile(sideFiles(:, 2)))
+                utils.dlgs.showErrorDialog(obj.mibModel.getProgressBarParent(), ...
+                    sprintf('The model store side file "%s" already exists. Choose another name.', sideFiles{find(isfile(sideFiles(:, 2)), 1), 2}), 'Rename');
+                return;
+            end
+        end
+        try
+            movefile(sourcePath, targetPath);
+            for k = 1:size(sideFiles, 1)
+                movefile(sideFiles{k, 1}, sideFiles{k, 2});
+            end
+        catch err
+            utils.dlgs.showErrorDialog(obj.mibModel.getProgressBarParent(), ...
+                sprintf('%s\n\nThe file or folder is probably open in another application, or MATLAB lacks permission.', err.message), ...
+                'Rename failed');
+            return;
+        end
+        if isFolder
+            obj.updateFileList_Callback(['[' answer ']']);
+        else
+            obj.updateFileList_Callback(answer);
+        end
 
     case 'fileListContextDelete'
         filenames = cellfun(@(f) fullfile(obj.mibModel.currentDirectory, f), obj.mibModel.selectedFiles, 'UniformOutput', false);
@@ -115,4 +169,57 @@ switch menuEntry.Tag
 
 end
 
+end
+
+% =====================================================================
+function inUseBy = localDatasetReadingFrom(mibModel, sourcePath)
+% The first open dataset that reads from sourcePath on demand, or [] when none.
+%
+% Only on-demand readers count: a Standard dataset holds its image in memory, so
+% renaming the file it came from changes nothing for it. What is checked:
+%   - the image files of a Virtual or BigData dataset (image.Virtual.filenames,
+%     plus image.filename)
+%   - the model store of a disk-backed model (labels.modelStorePath)
+% sourcePath matches when it is one of those paths, or a folder holding one -
+% renaming the folder a store sits in breaks it just the same.
+%
+% Output Arguments:
+%   - **inUseBy** - struct with ``.id`` (dataset index) and ``.what`` (text for the
+%     message), or ``[]``
+inUseBy = [];
+normalise = @(p) lower(regexprep(strrep(char(p), '/', '\'), '\\+$', ''));
+source = normalise(sourcePath);
+for id = 1:numel(mibModel.I)
+    dataset = mibModel.I{id};
+    if isempty(dataset) || ~isvalid(dataset); continue; end
+
+    usedPaths = {};
+    usedFor = {};
+    if any(dataset.datasetType(1) == ['V' 'B'])
+        imagePaths = {dataset.image.filename};
+        if isprop(dataset.image, 'Virtual') && isstruct(dataset.image.Virtual) && ...
+                isfield(dataset.image.Virtual, 'filenames')
+            readerFiles = dataset.image.Virtual.filenames;
+            if isstring(readerFiles); readerFiles = cellstr(readerFiles); end
+            if iscell(readerFiles)
+                imagePaths = [imagePaths, reshape(readerFiles, 1, [])]; %#ok<AGROW>
+            end
+        end
+        usedPaths = [usedPaths, imagePaths]; %#ok<AGROW>
+        usedFor = [usedFor, repmat({'its image'}, 1, numel(imagePaths))]; %#ok<AGROW>
+    end
+    if isprop(dataset.labels, 'modelStorePath') && strlength(dataset.labels.modelStorePath) > 0
+        usedPaths{end+1} = char(dataset.labels.modelStorePath); %#ok<AGROW>
+        usedFor{end+1} = 'its model'; %#ok<AGROW>
+    end
+
+    for k = 1:numel(usedPaths)
+        if isempty(usedPaths{k}) || ~ischar(usedPaths{k}); continue; end
+        used = normalise(usedPaths{k});
+        if strcmp(used, source) || startsWith(used, [source '\'])
+            inUseBy = struct('id', id, 'what', usedFor{k});
+            return;
+        end
+    end
+end
 end

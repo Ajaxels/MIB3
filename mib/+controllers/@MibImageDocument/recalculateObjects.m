@@ -62,7 +62,7 @@ end
 
 switch type
     case 'labels'
-        if obj.mibModel.I{id}.labels.maxMaterials < 65535
+        if obj.mibModel.I{id}.labels.maxMaterials < 256   % named materials; instance models (16383+) below
             % generate label matrix and bounding boxes
             obj.mibModel.I{id}.maskStats = bwconncomp( ...
                 cell2mat(obj.mibModel.getData3D(type, [], 3, colchannel, getDataOptions)), connectionType);

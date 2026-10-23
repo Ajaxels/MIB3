@@ -5965,10 +5965,18 @@ The Labels, Selection and Mask layers are backed up before the conversion, so it
 <li><strong>63 materials</strong> (<em>default</em>): Stores Labels, Selection, and Mask layers in a single memory container, 
 reducing memory requirements with some performance costs and limiting materials to 63.</li>
 <li><strong>255 materials</strong>: Allows up to 255 materials, requiring additional memory for Selection and Mask layers (doubles memory usage).</li>
+<li><strong>16383 materials</strong>: An instance model for up to 16383 objects. As with 63 materials, the Labels, Selection and Mask layers share one memory container, so it needs about half the memory of 65535 materials. The Segmentation panel changes as for 65535 materials. This is the instance model available for <a href="../../../getting-started/dataset-types/index.html">BigData</a> datasets.</li>
 <li><strong>65535 materials</strong>: Allows up to 65535 materials, requiring ~1.25× more memory than 255 materials. The <a href="../../panels/segm/index.html">Segmentation panel</a> appearance changes in this mode.<br />
 <a href="https://youtu.be/r3lpmWyvrJU"><span class="twemoji red-color"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 7.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2026 Fonticons, Inc.--><path fill="currentColor" d="M549.7 124.1c-6.2-23.7-24.8-42.3-48.3-48.6C458.9 64 288.1 64 288.1 64S117.3 64 74.7 75.5c-23.5 6.3-42 24.9-48.3 48.6C15 167 15 256.4 15 256.4s0 89.4 11.4 132.3c6.3 23.6 24.8 41.5 48.3 47.8C117.3 448 288.1 448 288.1 448s170.8 0 213.4-11.5c23.5-6.3 42-24.2 48.3-47.8 11.4-42.9 11.4-132.3 11.4-132.3s0-89.4-11.4-132.3zM232.2 337.6V175.2l142.7 81.2z"/></svg></span> Short demonstration</a></li>
 <li><strong>4294967295 materials</strong>: Allows up to 4294967295 materials, requiring twice the memory of 65535 materials.</li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">BigData</p>
+<p>A BigData model converts from <strong>63 materials</strong> to <strong>16383 materials</strong> only. The model is copied
+into a new model store, which you choose; the 63-material store stays on disk unchanged, so you
+can go back to it by loading it again. Each material becomes one object with the same number and
+colour.</p>
+</div>
 <div class="h4-like">Indexed objects</div>
 
 <p>Detects objects in all materials and generates a new model where each object has a unique index:</p>
@@ -6323,8 +6331,8 @@ several into one, bridging a gap between two halves of the same object, and dele
 detections. Objects are picked from a list, by clicking them in the image, or by drawing over them
 in the Selection layer.</p>
 <p>It is the proofreading step after <strong>Stitch 2D instances to 3D</strong>, which leaves errors that no
-threshold can remove. Requires an instance model (65535 or 4294967295 materials), where every object
-has its own index.</p>
+threshold can remove. Requires an instance model (16383, 65535 or 4294967295 materials), where every object
+has its own index; on BigData datasets, a 16383 model.</p>
 <p>See <a href="model-instance-editor.html">Instance editor</a> for details.</p>
 <div class="clear-float"></div>
 

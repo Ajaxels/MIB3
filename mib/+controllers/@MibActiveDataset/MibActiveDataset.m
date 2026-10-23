@@ -101,6 +101,7 @@ classdef MibActiveDataset
             obj.handles.buffersContextSyncXYZ.MenuSelectedFcn    = @(src,evtData) obj.buffers_ContextMenu('sync_xyz',    str2double(evtData.ContextObject.Text));
             obj.handles.buffersContextSyncXYZT.MenuSelectedFcn   = @(src,evtData) obj.buffers_ContextMenu('sync_xyzt',   str2double(evtData.ContextObject.Text));
             obj.handles.buffersContextLink.MenuSelectedFcn       = @(src,evtData) obj.buffers_ContextMenu('link_views',  str2double(evtData.ContextObject.Text));
+            obj.handles.buffersContextCloseModel.MenuSelectedFcn = @(src,evtData) obj.buffers_ContextMenu('closeModel',  str2double(evtData.ContextObject.Text));
             obj.handles.buffersContextClose.MenuSelectedFcn      = @(src,evtData) obj.buffers_ContextMenu('close',       str2double(evtData.ContextObject.Text));
             obj.handles.buffersContextCloseSet.MenuSelectedFcn   = @(src,evtData) obj.buffers_ContextMenu('closeSet',    str2double(evtData.ContextObject.Text));
             

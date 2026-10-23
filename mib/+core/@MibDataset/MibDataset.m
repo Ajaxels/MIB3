@@ -229,6 +229,7 @@ classdef MibDataset < matlab.mixin.Copyable
             %     - ``'imageOnly'`` - initialize with image only; other layers are ``NaN``
             %     - ``'labels'`` - initialize model with 255 materials; ``mask`` and ``selection`` same dimensions as ``labels``
             %     - ``'labels63'`` - initialize model with 63 materials; ``mask`` and ``selection`` are ``NaN``
+            %     - ``'labels16383'`` - initialize the packed uint16 instance model (16383 objects); ``mask`` and ``selection`` are ``NaN``
             %
             % Output Arguments:
             %   - **obj** - [core.MibDataset] initialized dataset instance

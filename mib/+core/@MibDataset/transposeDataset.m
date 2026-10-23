@@ -141,7 +141,9 @@ if strcmp(mode, 'Transpose Z<->C')
     clear imageData imageOut;
 
     % Clear labels/mask/selection - dimensions are now inconsistent with new Z
-    obj.labels.data = zeros([height, width, depthNew, 1, timePoints], 'uint8');
+    labelsClass = 'uint8';
+    if isa(obj.labels, 'core.MibLabels63'); labelsClass = obj.labels.containerClass; end
+    obj.labels.data = zeros([height, width, depthNew, 1, timePoints], labelsClass);
     updateLayerDims(obj.labels, height, width, depthNew, timePoints);
     obj.modelExist = false;
     if ~isa(obj.labels, 'core.MibLabels63')

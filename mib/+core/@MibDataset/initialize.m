@@ -40,6 +40,7 @@ function initialize(obj, img, meta, datasetType, modelType, enableSelection)
     %     - ``'imageOnly'`` - *(default)* init with the provided image, keep other layers as NaN
     %     - ``'labels'`` - init with model with 255 materials; ``obj.mask``, ``obj.selection`` have the same dimensions as labels
     %     - ``'labels63'`` - init with model with 63 materials; ``obj.mask``, ``obj.selection`` are NaN
+    %     - ``'labels16383'`` - init with the packed uint16 instance model (16383 objects); ``obj.mask``, ``obj.selection`` are NaN
     %
     %   - **enableSelection** - a logical (true/false) switch to enable/disable
     %     the selection layer; when ``false`` the labels container is left empty
@@ -116,6 +117,12 @@ function initialize(obj, img, meta, datasetType, modelType, enableSelection)
                     newLabels = core.MibLabels(labelsData255, meta);
                 case 'labels63'
                     newLabels = core.MibLabels63(labelsData, labelsMeta);
+                case 'labels16383'
+                    % packed uint16 instance model; an empty container still gets the layout
+                    newLabels = core.MibLabels63(cast(labelsData, 'uint16'), labelsMeta);
+                    newLabels.setLayout('uint16');
+                    newLabels.materialNames  = {'1'; '2'};
+                    newLabels.materialColors = rand(65535, 3);
             end
         case 'Virtual'
             newImage = core.MibVirtualImage(img, meta);

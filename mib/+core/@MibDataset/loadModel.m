@@ -29,7 +29,7 @@ function result = loadModel(obj, filenames, options)
 %     - ``.model`` - raw array to import (import path only)
 %     - ``.modelMaterialNames`` - cell array of names for the import path
 %     - ``.modelMaterialColors`` - Nx3 RGB matrix for the import path
-%     - ``.modelType`` - numeric model type (63/255/65535/4294967295)
+%     - ``.modelType`` - numeric model type (63/255/16383/65535/4294967295)
 %     - ``.labelText`` - annotation text cell array (or [])
 %     - ``.labelPosition`` - annotation positions (or [])
 %     - ``.labelValue`` - annotation values (or [])
@@ -315,6 +315,14 @@ end
 % Ensure 5D: [H W D 1 T]
 rawModel = reshape(rawModel, [modelH, modelW, modelD, 1, modelT]);
 
+% A 16383 model is saved as its unpacked index map; the packed uint16 layout
+% takes it as is (mask and selection bits zero) when every index fits in 14 bits.
+% An index above that would land in the flag bits, so such a file opens as 65535.
+if modelType == 16383
+    if max(rawModel, [], 'all') > 16383; modelType = 65535; end
+    rawModel = uint16(rawModel);
+end
+
 %% Preserve existing labels on non-imported slices
 
 % When a sub-stack is imported into an existing same-type model, save the
@@ -340,7 +348,8 @@ obj.createModel(modelType);
 modelMeta = core.MibImage.initializeImgInfo( ...
     'pixSize', obj.image.pixSize, ...
     'Height',  modelH, 'Width', modelW, 'Depth', modelD, 'Time', modelT, 'Colors', 1);
-if modelType == 63
+if modelType == 63 || modelType == 16383
+    % packed; the constructor picks the uint16 layout for the uint16 index map of 16383
     obj.labels = core.MibLabels63(rawModel, modelMeta);
     obj.labels.maskFilename = obj.image.maskFilename;
 else

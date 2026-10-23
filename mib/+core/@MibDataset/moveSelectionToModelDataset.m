@@ -54,16 +54,20 @@ useFiltered = false;
 filteredImg = [];
 if isType63
     D = obj.labels.data;
+    % packed bit layout: uint8 (63 materials) or uint16 (16383 instances)
+    materialMask   = obj.labels.materialMask;
+    maskValue      = obj.labels.maskValue;
+    selectionValue = obj.labels.selectionValue;
     if options.selected_sw && obj.modelExist && options.maskedAreaSw == 0
         useFiltered = true;
-        filteredImg = bitand(uint8(bitand(D, 63) == options.contSelIndex), bitand(D, 128)/128);
+        filteredImg = bitand(cast(bitand(D, materialMask) == options.contSelIndex, 'like', D), bitand(D, selectionValue)/selectionValue);
     elseif options.maskedAreaSw && options.selected_sw == 0
         useFiltered = true;
-        filteredImg = bitand(bitand(D, 128)/128, bitand(D, 64)/64);   % intersection of selection and mask
+        filteredImg = bitand(bitand(D, selectionValue)/selectionValue, bitand(D, maskValue)/maskValue);   % intersection of selection and mask
     elseif options.selected_sw && obj.modelExist && options.maskedAreaSw == 1
         useFiltered = true;
-        filteredImg = bitand(uint8(bitand(D, 63) == options.contSelIndex), bitand(D, 128)/128);
-        filteredImg = bitand(filteredImg, bitand(D, 64)/64);
+        filteredImg = bitand(cast(bitand(D, materialMask) == options.contSelIndex, 'like', D), bitand(D, selectionValue)/selectionValue);
+        filteredImg = bitand(filteredImg, bitand(D, maskValue)/maskValue);
     end
 else
     selD = obj.selection.data;
@@ -84,14 +88,14 @@ switch action_type
     case 'add'
         if isType63
             if ~useFiltered
-                M = bitand(D, 64);                     % save mask bits
-                selMask = D > 127;                     % find selected voxels (bit 8)
-                D = bitand(D, 63);                     % clear selection and mask
+                M = bitand(D, maskValue);                     % save mask bits
+                selMask = D >= selectionValue;                 % find selected voxels (selection bit)
+                D = bitand(D, materialMask);                  % clear selection and mask
                 D(selMask) = contAddIndex;             % set material where selected
                 D = bitor(D, M);                       % restore mask
             else
-                M = bitand(D, 64);
-                D = bitset(D, 8, 0);                   % clear selection
+                M = bitand(D, maskValue);
+                D = bitset(D, obj.labels.selectionBit, 0);                   % clear selection
                 D(filteredImg == 1) = contAddIndex;
                 D = bitor(D, M);
             end
@@ -106,14 +110,14 @@ switch action_type
     case 'remove'
         if isType63
             if ~useFiltered
-                M = bitand(D, 64);                     % save mask bits
-                selMask = D > 127;                     % find selected voxels
-                D = bitand(D, 63);                     % clear selection and mask
+                M = bitand(D, maskValue);                     % save mask bits
+                selMask = D >= selectionValue;                 % find selected voxels
+                D = bitand(D, materialMask);                  % clear selection and mask
                 D(selMask) = 0;                        % remove material where selected
                 D = bitor(D, M);                       % restore mask
             else
-                M = bitand(D, 64);
-                D = bitset(D, 8, 0);
+                M = bitand(D, maskValue);
+                D = bitset(D, obj.labels.selectionBit, 0);
                 D(filteredImg == 1) = 0;
                 D = bitor(D, M);
             end
@@ -128,15 +132,15 @@ switch action_type
     case 'replace'
         if isType63
             if ~useFiltered
-                M = bitand(D, 64);                     % save mask bits
-                imgTemp = bitand(D, 63);               % get model only (clear mask+sel)
-                selMask = D > 127;                     % find selected voxels
+                M = bitand(D, maskValue);                     % save mask bits
+                imgTemp = bitand(D, materialMask);             % get model only (clear mask+sel)
+                selMask = D >= selectionValue;                 % find selected voxels
                 imgTemp(imgTemp == contAddIndex) = 0;  % clear destination material
                 imgTemp(selMask) = contAddIndex;       % populate destination material
                 D = bitor(imgTemp, M);                 % restore mask
             else
-                M = bitand(D, 64);
-                D = bitand(D, 63);                     % clear selection and mask
+                M = bitand(D, maskValue);
+                D = bitand(D, materialMask);                  % clear selection and mask
                 D(D == contAddIndex) = 0;              % clear destination material
                 D(filteredImg == 1) = contAddIndex;    % populate destination material
                 D = bitor(D, M);

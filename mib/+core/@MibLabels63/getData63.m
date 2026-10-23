@@ -92,14 +92,16 @@ if blockModeSwitchLocal == 0  % return the full dataset
     switch type
         case 'labels'
             if ~isempty(materialIndex)      % take only specific material
-                dataset = uint8(bitand(dataset, 63) == materialIndex(1));
+                dataset = uint8(bitand(dataset, obj.materialMask) == materialIndex(1));
             else                            % get all labels objects
-                dataset = bitand(dataset, 63);
+                dataset = bitand(dataset, obj.materialMask);
             end
         case 'mask'
-            dataset = bitget(dataset, 7);   % bit 7 = 64 = 01000000
+            % bit 7 (uint8 layout) or 15 (uint16); always returned as uint8 0/1
+            dataset = uint8(bitget(dataset, obj.maskBit));
         case 'selection'
-            dataset = bitget(dataset, 8);   % bit 8 = 128 = 10000000
+            % bit 8 (uint8 layout) or 16 (uint16); always returned as uint8 0/1
+            dataset = uint8(bitget(dataset, obj.selectionBit));
         case 'everything'
             % do nothing - orient 3 returns a copy-on-write alias of obj.data
     end
@@ -146,14 +148,14 @@ else  % return a subvolume of the full dataset
     switch type
         case 'labels'
             if ~isempty(materialIndex)      % take only specific material
-                dataset = uint8(bitand(dataset, 63) == materialIndex(1));
+                dataset = uint8(bitand(dataset, obj.materialMask) == materialIndex(1));
             else
-                dataset = bitand(dataset, 63);     % get all model objects
+                dataset = bitand(dataset, obj.materialMask);     % get all model objects
             end
         case 'mask'
-            dataset = bitget(dataset, 7);   % bit 7 = 64 = 01000000
+            dataset = uint8(bitget(dataset, obj.maskBit));
         case 'selection'
-            dataset = bitget(dataset, 8);   % bit 8 = 128 = 10000000
+            dataset = uint8(bitget(dataset, obj.selectionBit));
         case 'everything'
             % do nothing
     end

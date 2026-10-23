@@ -26,7 +26,8 @@ demand (zoom picks the resolution level; pan reads only the visible chunks). The
 model** is a separate disk-backed pyramidal packed-63 store that mirrors the image pyramid, written
 live as you edit. Cost of every operation scales with the **size of the edit**, not the slide.
 
-**Single time point only** (T=1). 63 materials max (packed model). Source image is read-only — you
+**Single time point only** (T=1). 63 materials max, or 16383 objects in the instance model (packed
+uint16 store, chosen at *New model*; see §4). Source image is read-only — you
 edit the model, never the image pixels.
 
 ---
@@ -40,7 +41,8 @@ core.MibDataset (datasetType = 'BigData')
   │              backend chosen by pyramid.sourceType: 'zarr3' | 'bioformats' | 'openslide'
   │              obj.data is EMPTY (on-demand); dims from height/width/depth/pixSize
   └── labels : core.MibBigDataLabels   < core.MibLabels63
-                 packed-63 model in a writable OME-Zarr v3 group (one array per pyramid level)
+                 packed model in a writable OME-Zarr v3 group (one array per pyramid level):
+                 uint8 = 63 materials, uint16 = 16383-object instance model (MibLabels63.setLayout)
                  obj.data EMPTY; getData63/setData63 read/modify/write the store block-wise
 ```
 
@@ -89,6 +91,24 @@ BioFormats and OpenSlide all drive the same path.
   a Save finalizes is the deferred finer levels + the level map (see §6/§9).
 - Material names/colours persist in a `mibMaterials` zarr attribute (`writeMaterialMetadata`),
   restored by `openStore`; rewritten on every add/rename/remove material.
+- **uint16 layout (16383-object instance model, 2026-10-22).** Same scheme in 16 bits:
+  `bitand(x,16383)` = object index, bit 15 = mask, bit 16 = selection. The layout is a set of
+  instance properties on `core.MibLabels63` (`containerClass`, `materialMask`, `maskBit`,
+  `selectionBit`, `maskValue`, `selectionValue`, `flagsMask`), set together by `setLayout`. Every
+  packed read/write takes its constants from them, so `isa(labels,'core.MibLabels63')` means
+  "packed", not "63 materials". `createStore` creates arrays of `obj.containerClass` (call
+  `setLayout('uint16')` first - a property, not an argument, so the signature stays stable for live
+  instances); `openStore` picks the layout from the level-0 data type (`uint16` / `<u2`), so old
+  stores open as uint8 unchanged. The static resize helpers (`resizeBlockNearest/Smooth`,
+  `resizeLayerSmooth`) take the layout from the block's class.
+- **Instance semantics on disk.** `maxIndexUsed` (persisted in `mibMaterials`) is raised by
+  `setData63` from each written block's max - cost scales with the edit - and answers
+  `countMaterials` / "next empty material" without a scan. A crash-closed store falls back to the
+  coarsest level's max, which can miss objects smaller than one coarse pixel. The 65535 generated
+  colours are not persisted (multi-MB JSON); `openStore` regenerates them.
+- **Smoothing cap.** `smoothLabelUpsampleYX` runs one `bwdist` per distinct label; above 64 labels in
+  a slice it falls back to nearest (a 63-material slice never exceeds 64 values, so uint8 behaviour
+  is unchanged).
 
 ---
 
@@ -187,7 +207,69 @@ slice. Per-tool status:
 - **Guarded (warn, never block):** Magic Wand / Region Growing **radius=0** flood — the only remaining
   whole-slice read; `utils.warnLargeFullResRead(h, w[, budgetMP])` (default 256 MP, throttled once).
 - **Blocked on BigData:** Object Picker, Black-and-White Thresholding, SAM *Automatic everything*
-  (generates 65535 materials; packed store holds 63).
+  (generates 65535 materials; the largest BigData store holds 16383).
+- **Instance editor on the 16383 store (2026-10-22):** per-object actions, picking, highlight, undo
+  repair and Compact work; Cleanup is refused; the editor is locked to 3D mode. *Stitch 2D instances
+  to 3D* stays blocked. Mechanism below.
+
+### Instance index on a disk-backed store
+
+`MibDataset.buildInstanceIndex` never reads the store whole. `MibBigDataLabels` keeps the index it
+was last synced with (`syncedInstanceIndex`) and `indexDirtyBox`, the full-resolution box of every
+labels change since. `setData63` grows that box through `markLabelsChanged`: the written window for
+`'labels'`, the labels-bit diff for `'everything'` at level 1 (so a selection-only undo marks
+nothing). **Above level 1 every write counts, selection and mask strokes included**, widened to whole
+coarsest tiles: `markTiles` makes that level authoritative for them and the next level-1 read
+rebuilds all their bits, labels too (measured: a level-4 selection stroke changed 512 of 1024
+full-res label voxels of a checkerboard). A build is then the least work that gives an exact index:
+
+| State | Work |
+|-------|------|
+| synced, box empty | none (1 ms) |
+| synced, box set | scan the box, take objects on it now or whose old box reached into it, re-measure them over box ∪ old boxes |
+| refresh (`objectIds` + `bbox`, the editor after each edit) | same union rule over `bbox`; a dirty box inside `bbox` is cleared (the caller vouches for it), one reaching outside is kept |
+| nothing synced | full scan |
+
+All reads go through `getData3D` boxes at level 1 in strips of whole rows (~32 M voxels), each measured
+by `utils.instances.objectIndex` and merged. `previousCrop` is ignored on BigData (the union rule is
+exact; the whole-slice difference would read whole full-res slices).
+
+**Side-file `<store>.instanceindex`** holds `{instanceIndex, indexDirtyBox, storeSize}`. It is written
+right after a full scan and by `saveLevelMap` (Save model, closeStore), restored by `openStore`, and
+**deleted by the first labels change after it was written**, so a crash never leaves a side-file
+describing a different store - the worst case is a rescan. `createStore` deletes a leftover one.
+
+**Editor writes on BigData** (`editInstanceObjects`): `setPixelIdxList` writes `obj.data`, which a
+disk-backed model does not have, so each write is a read-modify-write of its bbox through `setData3D`.
+Everything is pinned to level 1 - reads and writes default to it, but `MibModel.backup` does not (it
+snapshots at the display level), so `localBoxOptions` sets `magFactor = 1`. The drawing is clamped by
+`selectionBBoxFull` (session-only: a selection left from an earlier session is invisible to the
+editor). The drawing is cleared with `labels.clearLayer(..., magFactor 1)`: `MibDataset.clearLayer`
+clears at the display level, and that would mark whole tiles coarse-authoritative and wipe the
+full-res edit on the next zoom-in (§9.1.2 of the plan). Compact relabels object by object in
+ascending order (the target index is always free by then), moves the index rows, has no undo, and
+asks first.
+
+Measured (12288 × 12288 × 2, 10 000 objects, local NVMe): full scan 3.2 s; build with nothing dirty
+1 ms; repair after a 64 × 64 stroke 92 ms; editor Delete including refresh 72 ms.
+
+### Converting a 63 store to 16383 (2026-10-23)
+
+`MibModel.convertModel` on BigData accepts 63 -> 16383 only (`localConvertBigData`). A store's array
+type is fixed at `createStore`, so it writes a **new** uint16 store (default
+`<name>_16383<ext>` next to the old one, `BatchOpt.ModelStorePath` or `uiputfile` otherwise) and swaps
+`dataset.labels`. The new store copies the **old store's** geometry (level sizes, scale factors,
+chunk shapes), not `image.pyramid`: a model store can have fewer levels than its image (a real one
+had 3 against 4), and building from the image refused that store. Every level is remapped voxel for
+voxel in chunk-aligned strips (`info().chunkShape` is `[y x z]` in both zarr formats): index kept,
+bit 7 -> 15, bit 8 -> 16. The remap is per voxel, so
+it commutes with the nearest downsampling that built the coarser levels, and **`matLevel` is copied
+as is** - deferred levels stay deferred, nothing is materialized. `maxIndexUsed` is the maximum over
+all levels (a deferred level-1 tile would hide a coarse-only stroke). Material colours carry over to
+object rows 1..63. The old store is closed and left untouched (reloading it is the way back), so
+the dialog before the store dialog explains rather than warns - no "cannot be undone" wording;
+`Backup.clearContents()` because the undo entries are 63-type snapshots. Cancel deletes the partial store and keeps the 63 model.
+Test: `EditInstanceObjectsBigDataTest/convert63To16383CopiesEveryLevel`.
 
 Undo-backups for Brush / ClickTracker use block mode; Wand / Region Growing back up *after* the radius
 window is built; Lasso / Drag&Drop back up their bbox/window.
@@ -265,6 +347,10 @@ drawn at — for crisp boundaries, draw at higher zoom.
   colours. Fine for T=1 (the norm); tied to the deferred T>1 work.
 - **Save model never deletes the sidecar.** It is the only durable record distinguishing a
   fully-materialized model from one closed mid-edit with deferred finer levels.
+- **Every labels change to a store with a synced instance index must reach `markLabelsChanged`.**
+  `setData63` does it; a new path that calls `writePackedLevel` directly on an *existing* store
+  (today only new stores do: alignment, crop) must call it too, or the index and its side-file
+  silently describe a different store.
 
 ---
 
@@ -343,5 +429,6 @@ is empty). Tests: `tests/controllers/AlignmentBigDataTest.m`.
 | Zarr facade (native/python) | `+io/+zarr/{Config,Array,Group,PyBackend}.m` |
 | Zarr3 writer / ingest | `+io/+savers/Zarr3Saver.m`, `+io/+adapters/ZarrBlockedAdapter.m` |
 | Streaming export | `+io/+savers/{SliceProvider,InMemorySliceProvider,MibImageSliceProvider,BaseSaver}.m` + per-format savers |
-| Tests | `tests/core/MibBigDataLevelMapTest.m` |
+| Instance index / editor | `+core/@MibDataset/buildInstanceIndex.m` (BigData branch), `+models/@MibModel/editInstanceObjects.m`, `+controllers/@InstanceEditor/` |
+| Tests | `tests/core/MibBigDataLevelMapTest.m`, `tests/models/EditInstanceObjectsBigDataTest.m` |
 | User docs | `docs/docs/getting-started/dataset-types/index.md` |

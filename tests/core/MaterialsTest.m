@@ -187,6 +187,76 @@ classdef MaterialsTest < matlab.unittest.TestCase
             testCase.verifyEqual(sum(double(imgResult{1}(:))), imageChecksumBefore);
         end
 
+        % -----------------------------------------------------------------
+        % convertModel / createModel - packed uint16 instance model (16383)
+        % -----------------------------------------------------------------
+
+        function convertModel_labels63To16383_keepsLayers(testCase)
+            [mibModel, gt] = mibtest.helpers.buildSyntheticModel('modelType', 'labels63');
+
+            mibModel.I{1}.convertModel(16383, []);
+
+            labels = mibModel.I{1}.labels;
+            testCase.verifyClass(labels, 'core.MibLabels63');
+            testCase.verifyEqual(labels.containerClass, 'uint16');
+            testCase.verifyEqual(labels.maxMaterials, 16383);
+            testCase.verifyTrue(labels.objects3D, 'materials upgraded to instances span the volume');
+            MaterialsTest.verifyLayers(testCase, mibModel, uint16(gt.labels), gt.mask, gt.selection);
+        end
+
+        function convertModel_labels16383To65535AndBack_keepsLayers(testCase)
+            [mibModel, gt] = mibtest.helpers.buildSyntheticModel('modelType', 'labels16383');
+
+            mibModel.I{1}.convertModel(65535, []);
+            testCase.verifyClass(mibModel.I{1}.labels, 'core.MibLabels');
+            MaterialsTest.verifyLayers(testCase, mibModel, gt.labels, gt.mask, gt.selection);
+
+            mibModel.I{1}.convertModel(16383, []);
+            testCase.verifyEqual(mibModel.I{1}.labels.containerClass, 'uint16');
+            MaterialsTest.verifyLayers(testCase, mibModel, gt.labels, gt.mask, gt.selection);
+        end
+
+        function convertModel_labels16383To63_clipsAboveTopIndex(testCase)
+            % MibDataset.convertModel clips (undo relies on it); indices above 63
+            % land on 63 and must not spill into the mask/selection bits
+            [mibModel, gt] = mibtest.helpers.buildSyntheticModel('modelType', 'labels16383');
+
+            mibModel.I{1}.convertModel(63, []);
+
+            testCase.verifyEqual(mibModel.I{1}.labels.containerClass, 'uint8');
+            MaterialsTest.verifyLayers(testCase, mibModel, uint8(min(gt.labels, 63)), gt.mask, gt.selection);
+        end
+
+        function createModel_16383FromLabels63_keepsMaskAndSelection(testCase)
+            [mibModel, gt] = mibtest.helpers.buildSyntheticModel('modelType', 'labels63');
+
+            mibModel.I{1}.createModel(16383);
+
+            testCase.verifyEqual(mibModel.I{1}.labels.containerClass, 'uint16');
+            testCase.verifyEqual(mibModel.I{1}.labels.materialNames, {'1'; '2'});
+            MaterialsTest.verifyLayers(testCase, mibModel, zeros(size(gt.labels), 'uint16'), gt.mask, gt.selection);
+        end
+
+        function countMaterials_labels16383_scansIndices(testCase)
+            % an instance model keeps two name slots; the count is the highest index
+            [mibModel, ~] = mibtest.helpers.buildSyntheticModel('modelType', 'labels16383');
+
+            testCase.verifyEqual(mibModel.I{1}.labels.countMaterials(), 16383);
+        end
+
+    end
+
+    methods (Static, Access = private)
+        function verifyLayers(testCase, mibModel, labels, mask, selection)
+            % compare the three segmentation layers with their expected arrays
+            opt = struct('id', 1, 'blockModeSwitch', 0);
+            labelsResult    = squeeze(cell2mat(mibModel.getData3D('labels', 1, 3, [], opt)));
+            maskResult      = squeeze(cell2mat(mibModel.getData3D('mask', 1, 3, [], opt)));
+            selectionResult = squeeze(cell2mat(mibModel.getData3D('selection', 1, 3, [], opt)));
+            testCase.verifyEqual(labelsResult, labels, 'labels differ');
+            testCase.verifyEqual(maskResult, mask, 'mask differs');
+            testCase.verifyEqual(selectionResult, selection, 'selection differs');
+        end
     end
 
     methods (Static, Access = private)

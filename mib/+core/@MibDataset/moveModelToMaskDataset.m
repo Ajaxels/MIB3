@@ -51,7 +51,7 @@ switch action_type
     case 'add'
         if isType63
             D = obj.labels.data;
-            matMask = uint8(bitand(D, 63) == options.contSelIndex) * 64;
+            matMask = cast(bitand(D, obj.labels.materialMask) == options.contSelIndex, 'like', D) * cast(obj.labels.maskValue, 'like', D);
             D = bitor(D, matMask);
             obj.labels.data = D;
         else
@@ -63,7 +63,7 @@ switch action_type
     case 'remove'
         if isType63
             D = obj.labels.data;
-            matMask = uint8(bitand(D, 63) == options.contSelIndex) * 64;
+            matMask = cast(bitand(D, obj.labels.materialMask) == options.contSelIndex, 'like', D) * cast(obj.labels.maskValue, 'like', D);
             D = D - bitand(D, matMask);
             obj.labels.data = D;
         else
@@ -75,8 +75,8 @@ switch action_type
     case 'replace'
         if isType63
             D = obj.labels.data;
-            D = bitset(D, 7, 0);                     % clear mask
-            matMask = uint8(bitand(D, 63) == options.contSelIndex) * 64;
+            D = bitset(D, obj.labels.maskBit, 0);    % clear mask
+            matMask = cast(bitand(D, obj.labels.materialMask) == options.contSelIndex, 'like', D) * cast(obj.labels.maskValue, 'like', D);
             D = bitor(D, matMask);
             obj.labels.data = D;
         else

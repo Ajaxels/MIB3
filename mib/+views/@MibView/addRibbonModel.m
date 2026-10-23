@@ -60,6 +60,10 @@ popupList.add(widgetHandles.mat63);
 % % Convert to 255 materials
 widgetHandles.mat255 =  matlab.ui.internal.toolstrip.ListItemWithCheckBox('255 materials', false);
 popupList.add(widgetHandles.mat255);
+% % Convert to 16383 materials (packed uint16 instance model)
+widgetHandles.mat16383 =  matlab.ui.internal.toolstrip.ListItemWithCheckBox('16383 materials', false);
+widgetHandles.mat16383.Description = "Instance model: index, mask and selection packed in 16 bits; also available for BigData";
+popupList.add(widgetHandles.mat16383);
 % % Convert to 65535 materials
 widgetHandles.mat65535 =  matlab.ui.internal.toolstrip.ListItemWithCheckBox('65535 materials', false);
 popupList.add(widgetHandles.mat65535);

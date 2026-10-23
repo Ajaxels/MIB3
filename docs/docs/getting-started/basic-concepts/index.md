@@ -35,8 +35,8 @@ MIB can hold an image in one of three memory/access modes, switchable in the
 ## Models and materials
 
 A **model** is a set of labelled **materials**. To save memory, layers are packed together by
-default, which limits the model to **63 materials**. Larger models (255, 65535, or 4294967295
-materials) trade memory for capacity, and the 65535+ types change the Segmentation panel layout.
+default, which limits the model to **63 materials**. Larger models (255, 16383, 65535, or 4294967295
+materials) trade memory for capacity, and the 16383+ types change the Segmentation panel layout.
 
 → Full details: [Ribbon → Model → Convert type](../../user-interface/ribbon/model/index.md#convert-type).
 

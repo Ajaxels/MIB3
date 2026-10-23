@@ -119,7 +119,7 @@ if isa(obj.labels, 'core.MibLabels63') && obj.enableSelection
     % For MibLabels63 mask+selection+labels are packed in obj.labels.data
     if ~isnan(obj.labels.data(1))
         layerData = obj.labels.data;
-        newLayerData = zeros([newHeight, newWidth, depth, 1, timePoints], 'uint8');
+        newLayerData = zeros([newHeight, newWidth, depth, 1, timePoints], 'like', layerData);
         newLayerData(y1:y2, x1:x2, :, :, :) = layerData;
         obj.labels.data = newLayerData;
         updateLayerDims(obj.labels, newHeight, newWidth, depth, timePoints);
@@ -128,7 +128,7 @@ if isa(obj.labels, 'core.MibLabels63') && obj.enableSelection
 else
     if obj.modelExist
         layerData = obj.labels.data;
-        newLayerData = zeros([newHeight, newWidth, depth, 1, timePoints], 'uint8');
+        newLayerData = zeros([newHeight, newWidth, depth, 1, timePoints], 'like', layerData);
         newLayerData(y1:y2, x1:x2, :, :, :) = layerData;
         obj.labels.data = newLayerData;
         updateLayerDims(obj.labels, newHeight, newWidth, depth, timePoints);
@@ -137,7 +137,7 @@ else
     
     if obj.maskExist
         layerData = obj.mask.data;
-        newLayerData = zeros([newHeight, newWidth, depth, 1, timePoints], 'uint8');
+        newLayerData = zeros([newHeight, newWidth, depth, 1, timePoints], 'like', layerData);
         newLayerData(y1:y2, x1:x2, :, :, :) = layerData;
         obj.mask.data = newLayerData;
         updateLayerDims(obj.mask, newHeight, newWidth, depth, timePoints);
@@ -146,7 +146,7 @@ else
 
     if obj.enableSelection
         layerData = obj.selection.data;
-        newLayerData = zeros([newHeight, newWidth, depth, 1, timePoints], 'uint8');
+        newLayerData = zeros([newHeight, newWidth, depth, 1, timePoints], 'like', layerData);
         newLayerData(y1:y2, x1:x2, :, :, :) = layerData;
         obj.selection.data = newLayerData;
         updateLayerDims(obj.selection, newHeight, newWidth, depth, timePoints);

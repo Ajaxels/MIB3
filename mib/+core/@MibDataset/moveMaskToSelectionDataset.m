@@ -64,11 +64,14 @@ useFiltered = false;
 filteredImg = [];
 if isType63
     D = obj.labels.data;
+    % packed bit layout: uint8 (63 materials) or uint16 (16383 instances)
+    materialMask   = obj.labels.materialMask;
+    maskValue      = obj.labels.maskValue;
+    selectionValue = obj.labels.selectionValue;
     if options.selected_sw && obj.modelExist
         useFiltered = true;
-        id = bitset(options.contSelIndex, 7, 1);    % generate id with bit 7 = 1 (mask)
-        filteredImg = bitset(D, 8, 0);               % model without selection
-        filteredImg(filteredImg == id) = 128;          % selection = intersection of material and mask
+        % binary 0/1: intersection of the material and the mask
+        filteredImg = bitand(cast(bitand(D, materialMask) == options.contSelIndex, 'like', D), bitand(D, maskValue)/maskValue);
     end
 else
     if options.selected_sw && obj.modelExist
@@ -82,9 +85,9 @@ switch action_type
     case 'add'
         if isType63
             if ~useFiltered
-                D = bitor(D, bitand(D, 64)*2);         % copy mask bit to selection bit
+                D = bitor(D, bitand(D, maskValue)*2);  % copy mask bit to selection bit
             else
-                D = bitor(D, filteredImg);
+                D = bitor(D, filteredImg* cast(selectionValue, 'like', D));
             end
             obj.labels.data = D;
         else
@@ -100,14 +103,14 @@ switch action_type
     case 'remove'
         if isType63
             if ~useFiltered
-                sel = bitget(D, 8);
-                sel = sel - bitget(D, 7);               % selection - mask
-                D = bitand(D, 127);                      % clear selection
-                D = bitor(D, sel*128);                   % set selection
+                sel = bitget(D, obj.labels.selectionBit);
+                sel = sel - bitget(D, obj.labels.maskBit);   % selection - mask
+                D = bitand(D, selectionValue - 1);            % clear selection
+                D = bitor(D, sel* cast(selectionValue, 'like', D));             % set selection
             else
-                filteredImg = bitand(D, 128) - filteredImg;
-                D = bitand(D, 127);                      % clear selection
-                D = bitor(D, filteredImg*128);            % set selection
+                filteredImg = bitand(D, selectionValue)/selectionValue - filteredImg;
+                D = bitand(D, selectionValue - 1);            % clear selection
+                D = bitor(D, filteredImg* cast(selectionValue, 'like', D));     % set selection
             end
             obj.labels.data = D;
         else
@@ -123,12 +126,12 @@ switch action_type
     case 'replace'
         if isType63
             if ~useFiltered
-                sel = bitget(D, 7);                      % get mask
-                D = bitand(D, 127);                      % clear selection
-                D = bitor(D, sel*128);                   % set selection from mask
+                sel = bitget(D, obj.labels.maskBit);          % get mask
+                D = bitand(D, selectionValue - 1);            % clear selection
+                D = bitor(D, sel* cast(selectionValue, 'like', D));             % set selection from mask
             else
-                D = bitand(D, 127);                      % clear selection
-                D = bitor(D, filteredImg);               % set selection
+                D = bitand(D, selectionValue - 1);            % clear selection
+                D = bitor(D, filteredImg* cast(selectionValue, 'like', D));     % set selection
             end
             obj.labels.data = D;
         else

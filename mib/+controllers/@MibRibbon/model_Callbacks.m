@@ -25,9 +25,13 @@ end
 BatchOpt = struct();
 switch mode
     % -------------- Convert model section --------------
-    case {'63 materials', '255 materials', '65535 materials', '4294967295 materials'}
+    case {'63 materials', '255 materials', '16383 materials', '65535 materials', '4294967295 materials'}
         BatchOpt.ModelType = {strrep(mode, ' materials', '')};
         obj.mibModel.convertModel([], BatchOpt);
+        % Clicking a type has already checked it. When the conversion does not
+        % happen - cancelled, or refused - the old type must be the one checked
+        % again, so the toggles are redrawn from the model whatever the outcome.
+        notify(obj.mibModel, 'UpdateGuiWidgets', core.ToggleEventData({'ribbonModel'}));
     case '2D objects conn4'
         BatchOpt.ModelType = {'indexed objects 2D/4'};
         obj.mibModel.convertModel([], BatchOpt);

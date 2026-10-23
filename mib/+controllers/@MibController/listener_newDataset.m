@@ -87,15 +87,10 @@ end
 obj.mibModel.I{Parameters.index}.bioFormatsMemoizerMemoDir = obj.mibModel.preferences.ExternalDirs.BioFormatsMemoizerMemoDir;
 
 % uncheck the linked views state
-currentButtonHandle = sprintf('buffer%i', mod(Parameters.index-1, obj.mibModel.Sets.datasetsInSet)+1); % handle of the current dataset button
-if obj.cActiveDataset.handles.(currentButtonHandle).UIContextMenu.Children(3).Text(1) == '[' % check for "[Linked ..."
-    % exampleStr = '[Linked: 12 <-> 15] press to unlink';
-    % get ids of the linked buttons
-    ids = sscanf(obj.cActiveDataset.handles.(currentButtonHandle).UIContextMenu.Children(3).Text, '[Linked: %d <-> %d]');
-    secondButtonHandle = sprintf('buffer%i', ids(2));
-    % unlink the buttons
-    obj.cActiveDataset.handles.(currentButtonHandle).UIContextMenu.Children(3).Text = 'Link view with... [Unlinked]';
-    obj.cActiveDataset.handles.(secondButtonHandle).UIContextMenu.Children(3).Text = 'Link view with... [Unlinked]';
+% one context menu serves every buffer button, so its Link item holds the state
+if obj.cActiveDataset.handles.buffersContextLink.Text(1) == '[' % check for "[Linked ..."
+    % exampleStr = '[Linked: 12 <-> 15] press to unlink'
+    obj.cActiveDataset.handles.buffersContextLink.Text = 'Link view with... [Unlinked]';
 end
 
 % update widgets of the MIB view

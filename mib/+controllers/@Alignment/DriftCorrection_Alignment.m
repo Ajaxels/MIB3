@@ -149,7 +149,7 @@ if isLabels63
     shifted = utils.align.crossShiftStack(layer, obj.shiftsX, obj.shiftsY, serviceShiftOpts);
     if isempty(shifted); return; end
     % pre-resize the packed labels container before setData4D
-    obj.mibModel.I{id}.labels.data  = zeros([newH, newW, img5D.depth, img5D.time], 'uint8');
+    obj.mibModel.I{id}.labels.data  = zeros([newH, newW, img5D.depth, img5D.time], obj.mibModel.I{id}.labels.containerClass);
     obj.mibModel.I{id}.labels.height    = newH;
     obj.mibModel.I{id}.labels.width     = newW;
     obj.mibModel.I{id}.labels.depth     = img5D.depth;

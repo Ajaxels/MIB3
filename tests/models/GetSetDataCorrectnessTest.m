@@ -8,12 +8,13 @@ classdef GetSetDataCorrectnessTest < matlab.unittest.TestCase
     % Ground-truth: raw numeric arrays from buildSyntheticModel, compared against
     % the accessor results using verifyEqual.
     %
-    % Labels63 bit layout: bits 1-6 = material (bitand(x,63)),
+    % Packed layouts (core.MibLabels63): labels63 in uint8 - bits 1-6 = material (bitand(x,63)),
     %                      bit 7 = mask (bitand(x,64)/64),
-    %                      bit 8 = selection (bitand(x,128)/128).
+    %                      bit 8 = selection (bitand(x,128)/128); labels16383 in uint16 -
+    %                      bits 1-14 = index, bit 15 = mask, bit 16 = selection.
 
     properties (TestParameter)
-        modelType = {'labels63', 'labels255', 'labels65535'};
+        modelType = {'labels63', 'labels255', 'labels16383', 'labels65535'};
     end
 
     methods (TestClassSetup)
@@ -115,9 +116,9 @@ classdef GetSetDataCorrectnessTest < matlab.unittest.TestCase
         end
 
         function get3DEverythingMatchesRaw(testCase, modelType)
-            % 'everything' returns the raw packed uint8 array - labels63 only.
-            testCase.assumeTrue(strcmp(modelType, 'labels63'), ...
-                'everything type only applies to labels63 datasets');
+            % 'everything' returns the raw packed array - packed models (63, 16383) only.
+            testCase.assumeTrue(ismember(modelType, {'labels63', 'labels16383'}), ...
+                'everything type only applies to packed datasets');
             [mibModel, ~] = mibtest.helpers.buildSyntheticModel(modelType=modelType);
             opt         = struct('id', 1, 'blockModeSwitch', 0);
             rawPacked   = mibModel.I{1}.labels.data;
@@ -231,15 +232,32 @@ classdef GetSetDataCorrectnessTest < matlab.unittest.TestCase
         end
 
         function set3DEverythingRoundtrip(testCase, modelType)
-            % Write a modified packed array and verify the accessor returns it.
-            testCase.assumeTrue(strcmp(modelType, 'labels63'), ...
-                'everything type only applies to labels63 datasets');
+            % Write a modified packed array and verify the accessor returns it (63, 16383).
+            testCase.assumeTrue(ismember(modelType, {'labels63', 'labels16383'}), ...
+                'everything type only applies to packed datasets');
             [mibModel, ~] = mibtest.helpers.buildSyntheticModel(modelType=modelType);
             opt    = struct('id', 1, 'blockModeSwitch', 0);
-            newVol = zeros(size(mibModel.I{1}.labels.data), 'uint8');
+            newVol = zeros(size(mibModel.I{1}.labels.data), 'like', mibModel.I{1}.labels.data);
             mibModel.setData3D(newVol, 'everything', 1, 3, [], opt);
             result = mibModel.getData3D('everything', 1, 3, [], opt);
             testCase.verifyEqual(squeeze(result{1}), newVol);
+        end
+
+        function setMaskAndSelectionKeepLabels(testCase, modelType)
+            % Mask and selection share the packed array with the labels; writing
+            % them must leave every index intact, including 300 and 16383 of the
+            % uint16 layout, whose high bits sit right below the two flag bits.
+            [mibModel, gt] = mibtest.helpers.buildSyntheticModel(modelType=modelType);
+            opt = struct('id', 1, 'blockModeSwitch', 0);
+            mibModel.setData3D(ones(size(gt.mask), 'uint8'), 'mask', 1, 3, [], opt);
+            mibModel.setData3D(ones(size(gt.selection), 'uint8'), 'selection', 1, 3, [], opt);
+            mibModel.setData3D(zeros(size(gt.mask), 'uint8'), 'mask', 1, 3, [], opt);
+            result = mibModel.getData3D('labels', 1, 3, [], opt);
+            testCase.verifyEqual(squeeze(result{1}), gt.labels, ...
+                'mask/selection writes must not change the labels');
+            selection = mibModel.getData3D('selection', 1, 3, [], opt);
+            testCase.verifyEqual(squeeze(selection{1}), ones(size(gt.selection), 'uint8'), ...
+                'clearing the mask must not clear the selection');
         end
 
         function set4DImageRoundtrip(testCase, modelType)
@@ -339,7 +357,7 @@ classdef GetSetDataCorrectnessTest < matlab.unittest.TestCase
             % the per-layer checksums must be identical to before.
             [mibModel, ~]  = mibtest.helpers.buildSyntheticModel(modelType=modelType);
             opt            = struct('id', 1, 'blockModeSwitch', 0);
-            is63           = strcmp(modelType, 'labels63');
+            is63           = ismember(modelType, {'labels63', 'labels16383'});   % packed
             checksumBefore = GetSetDataCorrectnessTest.stateChecksum(mibModel, 1, is63);
 
             % Pure roundtrips for all non-'everything' paths

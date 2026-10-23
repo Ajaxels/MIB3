@@ -350,7 +350,7 @@ end
 
 if isLabels63
     warpAndWriteServiceCanvas(obj, id, 'everything', cumulativeTforms, refImgSize, ...
-        canvasChanged, Depth, nTime, 'uint8', 0);
+        canvasChanged, Depth, nTime, ds.labels.containerClass, 0);
 else
     if ds.modelExist
         warpAndWriteServiceCanvas(obj, id, 'labels', cumulativeTforms, refImgSize, ...

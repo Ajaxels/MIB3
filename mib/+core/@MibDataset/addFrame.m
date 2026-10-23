@@ -101,7 +101,7 @@ if isa(obj.labels, 'core.MibLabels63') && obj.enableSelection
     if ~isempty(waitbar); waitbar.Value = 0.5; waitbar.Message = sprintf('Adding a frame to other layers\nPlease wait...'); end
     if ~isnan(obj.labels.data(1))
         layerData = obj.labels.data;
-        layerOut  = zeros([newH, newW, depth, 1, timePoints], 'uint8');
+        layerOut  = zeros([newH, newW, depth, 1, timePoints], 'like', layerData);
         for t = 1:timePoints
             slice = layerData(:,:,:,1,t);   % [H,W,Z]
             if extW >= 0 && extH >= 0
@@ -123,7 +123,7 @@ else
     if obj.enableSelection
         if ~isempty(waitbar); waitbar.Value = 0.55; waitbar.Message = sprintf('Adding a frame to the selection layer\nPlease wait...'); end
         layerData = obj.selection.data;
-        layerOut  = zeros([newH, newW, depth, 1, timePoints], 'uint8');
+        layerOut  = zeros([newH, newW, depth, 1, timePoints], 'like', layerData);
         for t = 1:timePoints
             slice = layerData(:,:,:,1,t);
             if extW >= 0 && extH >= 0
@@ -145,7 +145,7 @@ else
     if obj.maskExist
         if ~isempty(waitbar); waitbar.Value = 0.65; waitbar.Message = sprintf('Adding a frame to the mask layer\nPlease wait...'); end
         layerData = obj.mask.data;
-        layerOut  = zeros([newH, newW, depth, 1, timePoints], 'uint8');
+        layerOut  = zeros([newH, newW, depth, 1, timePoints], 'like', layerData);
         for t = 1:timePoints
             slice = layerData(:,:,:,1,t);
             if extW >= 0 && extH >= 0
@@ -167,7 +167,7 @@ else
     if obj.modelExist
         if ~isempty(waitbar); waitbar.Value = 0.8; waitbar.Message = sprintf('Adding a frame to the labels layer\nPlease wait...'); end
         layerData = obj.labels.data;
-        layerOut  = zeros([newH, newW, depth, 1, timePoints], 'uint8');
+        layerOut  = zeros([newH, newW, depth, 1, timePoints], 'like', layerData);
         for t = 1:timePoints
             slice = layerData(:,:,:,1,t);
             if extW >= 0 && extH >= 0

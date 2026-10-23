@@ -24,7 +24,7 @@ function result = setData3D(obj, dataset, type, time, orient, col_channel, optio
 %     - ``'labels'`` - labels layer with segmentation
 %     - ``'mask'`` - mask layer for segmentation support
 %     - ``'selection'`` - selection layer (temporary segmentation layer)
-%     - ``'everything'`` - packed data (``'labels'``, ``'mask'``, ``'selection'`` for ``maxMaterials==63`` only)
+%     - ``'everything'`` - packed data (``'labels'``, ``'mask'``, ``'selection'`` for packed ``core.MibLabels63`` models only)
 %
 %   - **time** *(optional)* - [numeric or ``[]``] time point index to set:
 %
@@ -136,7 +136,7 @@ if strcmp(obj.datasetType, 'Standard') && ~strcmp(type, 'everything')
         noROI = ~isfield(options, 'roiId') || (isscalar(options.roiId) && options.roiId < 0);
         skipLabelsIdx = strcmp(type, 'labels') && ~isempty(col_channel) && ...
                         isnumeric(col_channel) && ~any(isnan(col_channel(:)));
-        skipPacked63  = (obj.labels.maxMaterials == 63) && ~strcmp(type, 'image');
+        skipPacked63  = isa(obj.labels, 'core.MibLabels63') && ~strcmp(type, 'image');
 
         if blockIsOff && noROI && ~skipLabelsIdx && ~skipPacked63
             if isempty(time); time = obj.slices{5}(1); end
@@ -168,7 +168,7 @@ if isempty(options.roiId); options.roiId = obj.selectedROI; end
 
 % define datasetVariable for obj.(datasetVariable).getData
 datasetVariable = type;
-if obj.labels.maxMaterials == 63 
+if isa(obj.labels, 'core.MibLabels63') 
     if ismember(type, {'selection', 'mask', 'everything'}) 
         datasetVariable = 'labels';
     end
@@ -262,7 +262,7 @@ if options.roiId >= 0
         roiId2 = roiId2 + 1;
     end
 else
-    if obj.labels.maxMaterials == 63 && ~strcmp(type, 'image')
+    if isa(obj.labels, 'core.MibLabels63') && ~strcmp(type, 'image')
         % labels -> contains selection, mask, and labels == everything
         if iscell(dataset)
             result = obj.labels.setData(dataset{1}, type, orient, col_channel, options);
@@ -270,7 +270,7 @@ else
             result = obj.labels.setData(dataset, type, orient, col_channel, options);
         end
     else
-        if obj.labels.maxMaterials ~= 63 && strcmp(type, 'everything')
+        if ~isa(obj.labels, 'core.MibLabels63') && strcmp(type, 'everything')
             errorText = sprintf('!!! Error !!!\n\nType = "everything" available only for the models with 63 materials!');
             utils.dlgs.showErrorDialog([], errorText, 'MibDataset.setData3D');
             return;

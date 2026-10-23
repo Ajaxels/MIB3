@@ -519,8 +519,10 @@ classdef ChunkingImport < handle
 
                     if obj.BatchOpt.showWaitbar; delete(waitbar); end
 
-                    % Replace current dataset - preserve existing model type (63 or 255 materials)
-                    if obj.mibModel.I{id}.labels.maxMaterials == 63
+                    % Replace current dataset - preserve existing model type (63, 16383 or 255 materials)
+                    if obj.mibModel.I{id}.labels.maxMaterials == 16383
+                        newModelType = 'labels16383';
+                    elseif obj.mibModel.I{id}.labels.maxMaterials == 63
                         newModelType = 'labels63';
                     else
                         newModelType = 'labels';

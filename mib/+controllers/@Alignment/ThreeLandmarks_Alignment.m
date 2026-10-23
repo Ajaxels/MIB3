@@ -162,7 +162,7 @@ if isLabels63
     if ~isempty(pwb); pwb.updateText('Warping selection / mask / labels...'); end
     everythingWarped = warpAndStackServiceLayer(obj, 'everything', tform, headOpts, tailOpts, serviceOpts);
     if isempty(everythingWarped); return; end
-    obj.mibModel.I{id}.labels.data  = zeros([newH, newW, depth, nTime], 'uint8');
+    obj.mibModel.I{id}.labels.data  = zeros([newH, newW, depth, nTime], obj.mibModel.I{id}.labels.containerClass);
     obj.mibModel.I{id}.labels.height    = newH;
     obj.mibModel.I{id}.labels.width     = newW;
     obj.mibModel.I{id}.labels.depth     = depth;

@@ -283,6 +283,8 @@ obj.Sections(secIndex).Name = 'Panel -> Datasets';
 % obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.mibBufferToggle_Callback([], Batch);'; actionId = actionId + 1;
 obj.Sections(secIndex).Actions(actionId).Name = 'Duplicate dataset';
 obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.cActiveDataset.buffers_ContextMenu(''duplicate'', [], Batch);'; actionId = actionId + 1;
+obj.Sections(secIndex).Actions(actionId).Name = 'Close model';
+obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.cActiveDataset.buffers_ContextMenu(''closeModel'', [], Batch);'; actionId = actionId + 1;
 obj.Sections(secIndex).Actions(actionId).Name = 'Close dataset';
 obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.cActiveDataset.buffers_ContextMenu(''close'', [], Batch);'; actionId = actionId + 1;
 obj.Sections(secIndex).Actions(actionId).Name = 'Close all datasets in set';
