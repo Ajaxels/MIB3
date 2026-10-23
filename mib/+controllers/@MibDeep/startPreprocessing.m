@@ -16,6 +16,16 @@ function startPreprocessing(obj)
         end
     end
 
+    % zarr images are predicted directly from the selected pyramid level
+    if strcmp(obj.BatchOpt.ImageFilenameExtension{1}, 'ZARR') && ...
+            ismember(obj.BatchOpt.PreprocessingMode{1}, {'Training and Prediction', 'Prediction'})
+        mgsOpt.MsgBoxOnly = true;
+        header = sprintf('ZARR images for prediction can not be preprocessed\n\nSet "Preprocess for" to "Training" or "Preprocessing is not required"');
+        mgsOpt.headerLines = 3;
+        utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Not available', mgsOpt);
+        return;
+    end
+
     switch obj.BatchOpt.PreprocessingMode{1}
         case 'Training and Prediction'
             t1 = tic;   % init the timer

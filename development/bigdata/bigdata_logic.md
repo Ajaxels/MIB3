@@ -85,6 +85,9 @@ BioFormats and OpenSlide all drive the same path.
 - Stored as an OME-Zarr v3 **group**, one packed array per image level (`modelArrays{L}`,
   `modelLevelSizes`, `modelScaleFactors` — normalised to level-0-relative factors on open). Native
   MATLAB axis order (transpose codec → no permute for MIB-written stores).
+- Unsharded by default; `ShardFactors` (chunks per shard `[y x z]`, zarr v3 only) shards a store
+  created by `createStore` - used by the DeepMIB prediction output, never by New model, because
+  every edit of a sharded store rewrites whole shards.
 - Created on demand (browse-only until a model exists). Default store name `Labels_<imageStem>.zarr3`
   next to the image; the user is prompted for the location (`uiputfile`).
 - Written **live**: every `setData63` writes to disk, so "save" happens continuously — the only thing

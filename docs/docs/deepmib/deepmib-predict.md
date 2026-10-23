@@ -68,12 +68,18 @@ minimize edge artefacts and improve segmentation. Define overlap percentage in <
 <span class="widget widget-edit">Downsample factor for images</span> downsamples prediction images to match training 
 (if applicable), upsampling results to original size and in case of networks with 2 classes are also smoothed  
 <span class="widget widget-edit">Batch size for prediction...</span> sets the number of patches processed by GPU simultaneously, limited by GPU memory  
-<span class="widget widget-dropdown">Model files</span> selects output format for models (CSV for patch-wise)  
+<span class="widget widget-dropdown">Model files</span> selects output format for models (CSV for patch-wise), configured via the ![Settings button](images/DeepLearningTrainSettingsBtn.png){.inline-image} button  
 ??? abstract "list of available image formats for the model files"
 
       - **MIB Model format**: `.model` files, loadable in MIB or MATLAB (`model = load('filename.model', '-mat');`)  
       - **TIF compressed format**: LZW-compressed TIF, pixels encode classes (1, 2, 3, etc.)  
       - **TIF uncompressed format**: uncompressed TIF, pixels encode classes  
+      - **Zarr3 (BigData model)**: only for ZARR images, in the semantic and 2D Instance workflows. Writes 
+        `Labels_<image name>.zarr3` next to the images (the folder is confirmed when prediction starts). 
+        **Load images and models** opens the image in the BigData mode with this model, ready 
+        for editing. Before exporting the model, save it with **Finalize & save**.  
+
+      With ZARR images, the other formats are saved at the resolution of the predicted level.  
 <span class="widget widget-dropdown">Score files</span> selects output format for prediction score maps, configured via the ![Settings button](images/DeepLearningTrainSettingsBtn.png){.inline-image} button  
 ??? abstract "list of available image formats for the score files"
 
@@ -148,6 +154,7 @@ shifts the patch across the image. Update activations with <span class="widget w
 <span class="widget widget-button">Load images and models</span> loads original images and segmentations 
 into MIB’s active buffer post-prediction  
 <br><span class="widget widget-button">Load models</span> loads segmentations over the current MIB image. Requires that the image is already preloaded. 
+<br>With ZARR images, one image is loaded at a time; when several were predicted, you choose which one.  
 <br><span class="widget widget-button">Load prediction scores</span> loads score images (probabilities) into the active buffer  
 <br><span class="widget widget-button">Evaluate segmentation</span> calculates precision metrics if 
 ground truth labels exist in `Labels` under `PredictionImages`. Material names must match training data  

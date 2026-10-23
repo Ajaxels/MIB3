@@ -5901,6 +5901,10 @@ Optionally, include ground truth labels in a <code>Labels</code> subfolder.</p>
 <p><span class="widget widget-dropdown">extension</span>: specifies the image file extension<br><br />
 <label class="widget widget-checkbox">Bio</label>: toggles between standard and Bio-Formats readers. 
 For Bio-Formats collections, use <span class="widget widget-edit">Index</span> to specify the file index.</p>
+<p>Select <span class="widget widget-dropdown">ZARR</span> to predict OME-Zarr images (v2 or v3) without converting 
+them. The field then becomes <span class="widget widget-edit">Level</span>: the pyramid level to segment, 
+where <code>1</code> is full resolution. The selected level of each image is loaded into memory, so choose a level 
+that fits; DeepMIB warns before starting when it may not.</p>
 <div class="clear-float"></div>
 
 <hr />

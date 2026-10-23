@@ -13,6 +13,14 @@ if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.MibDeep.evaluateSegmentation: triggered\n');
 end
 
+if strcmp(obj.BatchOpt.P_ModelFiles{1}, 'Zarr3 (BigData model)')
+    mgsOpt.MsgBoxOnly = true;
+    utils.dlgs.inputUniversalDlg(obj.view.gui, ...
+        sprintf('Evaluation is not available for the "Zarr3 (BigData model)" output\n\nTo evaluate, predict with "Model files" set to a MIB or TIF format'), ...
+        {}, {}, 'Not available', mgsOpt);
+    return;
+end
+
 if exist(fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages', 'ResultsModels', 'patchPredictionResults.mat'), 'file') == 2
     obj.evaluateSegmentationPatches();
     return;

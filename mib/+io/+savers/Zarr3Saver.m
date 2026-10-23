@@ -294,7 +294,14 @@ classdef Zarr3Saver < io.savers.BaseSaver
                     createArgs = [createArgs, {'shardShape', io.savers.Zarr3Saver.computeShard(chunk, options.ShardSize)}]; %#ok<AGROW>
                 end
                 arr = grp.createArray(name, keepShape, imgClass, createArgs{:});
-                arr.write(lvl);
+                if ndims(lvl) < numel(keepShape)
+                    % a single slice: the array is declared [Y X 1] but MATLAB drops
+                    % the trailing singleton of lvl, and zarrMex refuses a 2-D block
+                    % for a 3-D array unless the region is given explicitly
+                    arr.write(lvl, [ones(numel(keepShape), 1), keepShape(:) + 1]);
+                else
+                    arr.write(lvl);
+                end
 
                 % per-level physical scale (actual values from the plan, not 2^(L-1))
                 scaleVec = [plan(L).physScaleY, plan(L).physScaleX, plan(L).physScaleZ];
@@ -1733,6 +1740,75 @@ classdef Zarr3Saver < io.savers.BaseSaver
             end
             io.savers.Zarr3Saver.writeRegion(fullfile(storePath, targetName), output, yOutFirst, zOutFirst, C);
         end
+
+        function out = blockReduce2D(inputSlice, Yl, Xl, reduceFcn)
+            % BLOCKREDDUCE2D - downsample a 2-D (or [H W C]) slice using a per-block reduction.
+            %
+            % ``reduceFcn`` is a function handle compatible with ``f(matrix, dim)``,
+            % e.g. ``@mode`` (majority vote, for labels) or ``@median`` (noise-robust, for images).
+            % Fast vectorised reshape for integer scale factors; block-boundary loop otherwise.
+            [H, W, C] = size(inputSlice, 1, 2, 3);
+            fy = H / Yl;  fx = W / Xl;
+            out = zeros(Yl, Xl, C, class(inputSlice));
+            if abs(fy - round(fy)) < 1e-9 && abs(fx - round(fx)) < 1e-9
+                % Integer factors: fast vectorised path
+                fy = round(fy);  fx = round(fx);
+                for c = 1:C
+                    blk = reshape(inputSlice(:,:,c), fy, Yl, fx, Xl);
+                    blk = permute(blk, [1 3 2 4]);          % [fy fx Yl Xl]
+                    blk = reshape(blk, fy*fx, Yl*Xl);
+                    out(:,:,c) = reshape(reduceFcn(blk, 1), Yl, Xl);
+                end
+            else
+                % Non-integer factors: block-boundary loop
+                yBounds = round(linspace(0, H, Yl+1));
+                xBounds = round(linspace(0, W, Xl+1));
+                for c = 1:C
+                    plane = inputSlice(:,:,c);
+                    for yi = 1:Yl
+                        rows = yBounds(yi)+1 : yBounds(yi+1);
+                        for xi = 1:Xl
+                            cols = xBounds(xi)+1 : xBounds(xi+1);
+                            block = plane(rows, cols);
+                            out(yi, xi, c) = reduceFcn(block(:));
+                        end
+                    end
+                end
+            end
+            if C == 1; out = reshape(out, Yl, Xl); end
+        end
+
+        function out = blockReduce3D(inputVol, Yl, Xl, Zl, reduceFcn)
+            % BLOCKREDUCE3D - downsample a [H W D] volume by a 3-D per-block reduction.
+            %
+            % Used for the anisotropy-preserving path where Z is also halved.
+            % Fast vectorised reshape for integer scale factors; loop fallback otherwise.
+            [H, W, D] = size(inputVol);
+            fy = H / Yl;  fx = W / Xl;  fz = D / Zl;
+            if abs(fy-round(fy))<1e-9 && abs(fx-round(fx))<1e-9 && abs(fz-round(fz))<1e-9
+                fy = round(fy);  fx = round(fx);  fz = round(fz);
+                vol = reshape(inputVol, fy, Yl, fx, Xl, fz, Zl);
+                vol = permute(vol, [1 3 5 2 4 6]);          % [fy fx fz Yl Xl Zl]
+                vol = reshape(vol, fy*fx*fz, Yl*Xl*Zl);
+                out = cast(reshape(reduceFcn(vol, 1), Yl, Xl, Zl), class(inputVol));
+            else
+                yBounds = round(linspace(0, H, Yl+1));
+                xBounds = round(linspace(0, W, Xl+1));
+                zBounds = round(linspace(0, D, Zl+1));
+                out = zeros(Yl, Xl, Zl, class(inputVol));
+                for zi = 1:Zl
+                    zIdx = zBounds(zi)+1 : zBounds(zi+1);
+                    for yi = 1:Yl
+                        rows = yBounds(yi)+1 : yBounds(yi+1);
+                        for xi = 1:Xl
+                            cols = xBounds(xi)+1 : xBounds(xi+1);
+                            block = inputVol(rows, cols, zIdx);
+                            out(yi, xi, zi) = reduceFcn(block(:));
+                        end
+                    end
+                end
+            end
+        end
     end
 
     methods (Static, Access = private)
@@ -2045,75 +2121,6 @@ classdef Zarr3Saver < io.savers.BaseSaver
             if C > 1; bbox = [bbox; 1 C+1]; end
             if T > 1; bbox = [bbox; tPos tPos+1]; end
             arr.write(batchData, bbox);
-        end
-
-        function out = blockReduce2D(inputSlice, Yl, Xl, reduceFcn)
-            % BLOCKREDDUCE2D - downsample a 2-D (or [H W C]) slice using a per-block reduction.
-            %
-            % ``reduceFcn`` is a function handle compatible with ``f(matrix, dim)``,
-            % e.g. ``@mode`` (majority vote, for labels) or ``@median`` (noise-robust, for images).
-            % Fast vectorised reshape for integer scale factors; block-boundary loop otherwise.
-            [H, W, C] = size(inputSlice, 1, 2, 3);
-            fy = H / Yl;  fx = W / Xl;
-            out = zeros(Yl, Xl, C, class(inputSlice));
-            if abs(fy - round(fy)) < 1e-9 && abs(fx - round(fx)) < 1e-9
-                % Integer factors: fast vectorised path
-                fy = round(fy);  fx = round(fx);
-                for c = 1:C
-                    blk = reshape(inputSlice(:,:,c), fy, Yl, fx, Xl);
-                    blk = permute(blk, [1 3 2 4]);          % [fy fx Yl Xl]
-                    blk = reshape(blk, fy*fx, Yl*Xl);
-                    out(:,:,c) = reshape(reduceFcn(blk, 1), Yl, Xl);
-                end
-            else
-                % Non-integer factors: block-boundary loop
-                yBounds = round(linspace(0, H, Yl+1));
-                xBounds = round(linspace(0, W, Xl+1));
-                for c = 1:C
-                    plane = inputSlice(:,:,c);
-                    for yi = 1:Yl
-                        rows = yBounds(yi)+1 : yBounds(yi+1);
-                        for xi = 1:Xl
-                            cols = xBounds(xi)+1 : xBounds(xi+1);
-                            block = plane(rows, cols);
-                            out(yi, xi, c) = reduceFcn(block(:));
-                        end
-                    end
-                end
-            end
-            if C == 1; out = reshape(out, Yl, Xl); end
-        end
-
-        function out = blockReduce3D(inputVol, Yl, Xl, Zl, reduceFcn)
-            % BLOCKREDUCE3D - downsample a [H W D] volume by a 3-D per-block reduction.
-            %
-            % Used for the anisotropy-preserving path where Z is also halved.
-            % Fast vectorised reshape for integer scale factors; loop fallback otherwise.
-            [H, W, D] = size(inputVol);
-            fy = H / Yl;  fx = W / Xl;  fz = D / Zl;
-            if abs(fy-round(fy))<1e-9 && abs(fx-round(fx))<1e-9 && abs(fz-round(fz))<1e-9
-                fy = round(fy);  fx = round(fx);  fz = round(fz);
-                vol = reshape(inputVol, fy, Yl, fx, Xl, fz, Zl);
-                vol = permute(vol, [1 3 5 2 4 6]);          % [fy fx fz Yl Xl Zl]
-                vol = reshape(vol, fy*fx*fz, Yl*Xl*Zl);
-                out = cast(reshape(reduceFcn(vol, 1), Yl, Xl, Zl), class(inputVol));
-            else
-                yBounds = round(linspace(0, H, Yl+1));
-                xBounds = round(linspace(0, W, Xl+1));
-                zBounds = round(linspace(0, D, Zl+1));
-                out = zeros(Yl, Xl, Zl, class(inputVol));
-                for zi = 1:Zl
-                    zIdx = zBounds(zi)+1 : zBounds(zi+1);
-                    for yi = 1:Yl
-                        rows = yBounds(yi)+1 : yBounds(yi+1);
-                        for xi = 1:Xl
-                            cols = xBounds(xi)+1 : xBounds(xi+1);
-                            block = inputVol(rows, cols, zIdx);
-                            out(yi, xi, zi) = reduceFcn(block(:));
-                        end
-                    end
-                end
-            end
         end
 
         function result = reduceZBuffer(bufferCell, method, imgClass, Yl, Xl, C)

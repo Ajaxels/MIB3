@@ -7,6 +7,30 @@ function startPredictionBlockedImage(obj)
 %       obj.startPredictionBlockedImage()
 %
 % requires R2021a or newer
+%
+% **OME-Zarr images** (``BatchOpt.ImageFilenameExtension = 'ZARR'``). Each zarr
+% store (v2 or v3, detected per store) is predicted from one pyramid level,
+% ``BatchOpt.BioformatsIndex`` (1 = full resolution), which is loaded whole into
+% memory through ``deepmib.storeLoadImages`` with ``ZarrLevel``. The stores are
+% listed and checked by ``checkZarrStores`` before any output
+% is deleted or the network is loaded (level present in every store, integer
+% pixels, memory estimate). Stores are folders, so the datastore is an
+% ``arrayDatastore`` of store indices transformed by ``storeLoadImages``, and
+% ``predictionFiles`` replaces ``imgDS.Files`` for the file names. Preprocessing
+% for prediction is not available for zarr images.
+%
+% With the standard model formats the result is saved at the resolution of the
+% predicted level.
+%
+% **BigData model output** (``BatchOpt.P_ModelFiles = 'Zarr3 (BigData model)'``,
+% zarr images only; here the semantic workflows, 2D Instance is in
+% ``startPredictionInstances``). For each image ``writeModelStore`` creates a
+% ``core.MibBigDataLabels`` store that mirrors the pyramid of the source store,
+% so it opens as an editable model of the image in BigData mode; the finer levels
+% are left to the level map, so no full-resolution array is built. The
+% destination (``Labels_<image name>.zarr3`` next to the images by default, see
+% ``obj.ZarrModelOpt``) and the overwriting of existing stores are confirmed by
+% ``selectModelStoreDestination`` before the run.
 
     % detect 2D or 3D architecture
     if ismember(obj.BatchOpt.Workflow{1}, {'3D Semantic'})
@@ -62,6 +86,28 @@ function startPredictionBlockedImage(obj)
         patchwiseWorkflowSwitch = true;
     end
 
+    % OME-Zarr images: each store is predicted from one pyramid level loaded into
+    % memory; check every store before anything is deleted or the network is loaded
+    zarrInput = strcmp(obj.BatchOpt.ImageFilenameExtension{1}, 'ZARR');
+    zarrOutput = strcmp(obj.BatchOpt.P_ModelFiles{1}, 'Zarr3 (BigData model)');
+    if zarrInput
+        if preprocessedSwitch
+            mgsOpt.MsgBoxOnly = true;
+            utils.dlgs.inputUniversalDlg(obj.view.gui, ...
+                sprintf('ZARR images are predicted without preprocessing\n\nSet "Preprocess for" to "Training" or "Preprocessing is not required"'), ...
+                {}, {}, 'Not available', mgsOpt);
+            return;
+        end
+        [zarrList, zarrStores, cancelled] = checkZarrStores(obj);
+        if cancelled; return; end
+
+        if zarrOutput
+            [storePaths, zarrFormat, cancelled] = selectModelStoreDestination(obj, zarrList);
+            if cancelled; return; end
+            writtenStores = {};
+        end
+    end
+
     % get settings for export of score files
     % {'Do not generate', 'Use AM format', 'Use Matlab non-compressed format', 'Use Matlab compressed format', 'Use Matlab non-compressed format (range 0-1)'};
     if strcmp(obj.BatchOpt.P_ScoreFiles{1}, 'Do not generate')
@@ -93,9 +139,13 @@ function startPredictionBlockedImage(obj)
     % some files in there
     noOutputModelFiles = 0;
     noOutputScoreFiles = 0;
+    outputModelStores = {};     % zarr model stores are folders, delete(*) does not remove them
     if isfolder(fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages', 'ResultsModels'))
         outputList = dir(fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages', 'ResultsModels'));
         noOutputModelFiles = abs(sum([outputList.isdir]-1));
+        storeList = outputList([outputList.isdir] & ~cellfun(@isempty, regexpi({outputList.name}, '\.zarr[23]?$', 'once')));
+        outputModelStores = fullfile({storeList.folder}, {storeList.name});
+        noOutputModelFiles = noOutputModelFiles + numel(outputModelStores);
     end
     if isfolder(fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages', 'ResultsScores'))
         outputList = dir(fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages', 'ResultsScores'));
@@ -111,6 +161,9 @@ function startPredictionBlockedImage(obj)
         if strcmp(selection, 'Cancel'); if obj.BatchOpt.showWaitbar; close(pwb); end; return; end
         if noOutputModelFiles > 0
             delete(fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages', 'ResultsModels', '*'));
+            for storeId = 1:numel(outputModelStores)
+                rmdir(outputModelStores{storeId}, 's');
+            end
         end
         if noOutputScoreFiles > 0
             delete(fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages', 'ResultsScores', '*'));
@@ -125,10 +178,24 @@ function startPredictionBlockedImage(obj)
     mibDeepStoreLoadImagesOpt.mibBioformatsCheck = obj.BatchOpt.Bioformats;
     mibDeepStoreLoadImagesOpt.BioFormatsIndices = obj.BatchOpt.BioformatsIndex{1};
     mibDeepStoreLoadImagesOpt.Workflow = obj.BatchOpt.Workflow{1};
+    if zarrInput
+        % per-store options: the level, and the image group resolved by the check
+        % above, so a container holding several images does not ask again
+        mibDeepStoreLoadImagesOpt.ZarrLevel = obj.BatchOpt.BioformatsIndex{1};
+        zarrReadOptions = repmat(mibDeepStoreLoadImagesOpt, [numel(zarrList), 1]);
+        for fileId = 1:numel(zarrList)
+            if ~strcmp(zarrStores(fileId).groupPath, zarrList{fileId})
+                zarrReadOptions(fileId).ZarrGroupPath = zarrStores(fileId).groupPath;
+            end
+        end
+    end
 
     % make a datastore for images
     try
-        if preprocessedSwitch   % with preprocessing
+        if zarrInput    % zarr stores are folders, imageDatastore can not list them
+            imgDS = transform(arrayDatastore((1:numel(zarrList))', 'OutputType', 'same'), ...
+                @(fileId) deepmib.storeLoadImages(zarrList{fileId}, zarrReadOptions(fileId)));
+        elseif preprocessedSwitch   % with preprocessing
             imgDS = imageDatastore(fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages'), ...
                 'FileExtensions', '.mibImg', 'ReadFcn', @deepmib.storeLoadImages);
         else    % without preprocessing
@@ -191,6 +258,11 @@ function startPredictionBlockedImage(obj)
         if obj.BatchOpt.showWaitbar; close(pwb); end
         return;
     end
+    if zarrInput
+        predictionFiles = zarrList;
+    else
+        predictionFiles = imgDS.Files;
+    end
 
     if obj.BatchOpt.showWaitbar
         if pwb.CancelRequested; close(pwb); return; end
@@ -249,7 +321,7 @@ function startPredictionBlockedImage(obj)
     % The overlap-tile algorithm selects overlapping patches, predicts the labels
     % for each patch by using the semanticseg function, and then recombines the patches.
 
-    noFiles = numel(imgDS.Files);
+    noFiles = numel(predictionFiles);
     if obj.BatchOpt.showWaitbar
         if pwb.CancelRequested; close(pwb); return; end
         pwb.Message = sprintf('Starting prediction%s\nPlease wait...', extraWaitbarInfo);
@@ -346,7 +418,8 @@ function startPredictionBlockedImage(obj)
 
         % read image
         vol = read(imgDS);
-        [~, fn] = fileparts(imgDS.Files{id});
+        [~, fn] = fileparts(predictionFiles{id});
+        if zarrInput; fn = regexprep(fn, '\.ome$', '', 'ignorecase'); end   % 'name.ome.zarr' -> 'name'
 
         % downsample the input image corresponding to the
         % downsampling factor
@@ -576,6 +649,24 @@ function startPredictionBlockedImage(obj)
                             imwrite(outputLabels(:,:,sliceId), filename, 'tif', 'WriteMode', 'append', 'Compression', tifCompression);
                         end
                     end
+                case 'Zarr3 (BigData model)'
+                    % a BigData model store that mirrors the pyramid of the source
+                    % store, see writeModelStore
+                    if obj.BatchOpt.showWaitbar && pwb.CancelRequested; close(pwb); return; end
+                    modelMaterialNames = classNames(2:end);     % remove Exterior
+                    modelMaterialColors = [modelMaterialColors; obj.modelMaterialColors];
+                    try
+                        obj.writeModelStore(outputLabels, storePaths{id}, zarrStores(id).pyramid, zarrFormat, ...
+                            modelMaterialNames, modelMaterialColors);
+                    catch err
+                        if obj.BatchOpt.showWaitbar; close(pwb); end
+                        if ~isempty(writtenStores)
+                            fprintf('DeepMIB: model stores written before the error:\n%s\n', strjoin(writtenStores, newline));
+                        end
+                        rethrow(err);
+                    end
+                    writtenStores{end+1} = storePaths{id}; %#ok<AGROW>
+                    fprintf('DeepMIB: model store written: %s\n', storePaths{id});
             end
             %
             %                     % save score map
@@ -621,5 +712,14 @@ function startPredictionBlockedImage(obj)
     eventdata = core.ToggleEventData(4);    % scale scoring by factor 5
     notify(obj.mibModel, 'UpdateUserScore', eventdata);
     if obj.BatchOpt.showWaitbar; close(pwb); end
-end
 
+    if zarrInput && zarrOutput && obj.BatchOpt.showWaitbar
+        mgsOpt.MsgBoxOnly = true;
+        mgsOpt.Icon = 'puffin_info';
+        mgsOpt.WindowWidth = 560;
+        mgsOpt.WindowHeight = 260;
+        utils.dlgs.inputUniversalDlg(obj.view.gui, ...
+            sprintf('%d model store(s) were written.\nOpen the image in the BigData mode and load its model store: Model -> Load model', numel(writtenStores)), ...
+            {}, {strjoin(writtenStores, newline)}, 'Prediction finished', mgsOpt);
+    end
+end

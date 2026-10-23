@@ -542,6 +542,7 @@ classdef MorphOpsImages < handle
             getDataOptions.id = obj.BatchOpt.id;
 
             colorChannelIndex = find(ismember(obj.BatchOpt.ColorChannel{2}, obj.BatchOpt.ColorChannel(1))) - 1;
+            if colorChannelIndex == 0; colorChannelIndex = NaN; end     % 'All' -> NaN, all color channels
             originalImage = cell2mat(obj.mibModel.getData2D('image', [], [], colorChannelIndex, getDataOptions));
 
             processedImage = obj.applyOperation2D(originalImage);

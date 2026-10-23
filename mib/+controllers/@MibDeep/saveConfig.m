@@ -46,6 +46,7 @@ end
     ScoreExportOpt = obj.ScoreExportOpt;
     OverlapInstancesOpt = obj.OverlapInstancesOpt;
     StartingWeightsOpt = obj.StartingWeightsOpt;
+    ZarrModelOpt = obj.ZarrModelOpt;
 
     % try to export path as relatives
     BatchOpt.NetworkFilename = deepmib.convertAbsoluteToRelativePath(BatchOpt.NetworkFilename, projectPath, '[RELATIVE]');
@@ -61,7 +62,7 @@ end
     save(configName, ...
         'TrainingOptStruct', 'AugOpt2DStruct', 'AugOpt3DStruct', ...
         'SegmentationLayerOpt', 'ActivationLayerOpt', 'DynamicMaskOpt', 'ScoreExportOpt', ...
-        'OverlapInstancesOpt', 'StartingWeightsOpt', ...
+        'OverlapInstancesOpt', 'StartingWeightsOpt', 'ZarrModelOpt', ...
         'InputLayerOpt', 'BatchOpt', 'mibVersion', '-mat', '-v7.3');
 end
 

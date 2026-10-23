@@ -176,6 +176,9 @@ try
             obj.StartingWeightsOpt = rmfield(obj.StartingWeightsOpt, 'TrainableLearnRateFactor');
         end
     end
+    if isfield(res, 'ZarrModelOpt') && isstruct(res.ZarrModelOpt)   % new in MIB3, BigData model output of prediction
+        obj.ZarrModelOpt = utils.concatenateStructures(obj.ZarrModelOpt, res.ZarrModelOpt);
+    end
 catch err
     % when the training was stopped before finish,
     % those structures are not stored

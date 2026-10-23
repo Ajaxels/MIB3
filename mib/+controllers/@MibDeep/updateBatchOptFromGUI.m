@@ -20,6 +20,8 @@ end
     obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, event.Source);
 
     switch event.Source.Tag
+        case 'ImageFilenameExtension'
+            obj.bioformatsCallback(event);     % relabel Index as Level for ZARR
         case 'P_PredictionMode'
             switch event.Source.Value
                 case 'Blocked-image'

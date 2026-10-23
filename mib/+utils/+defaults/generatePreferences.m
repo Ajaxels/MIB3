@@ -530,6 +530,16 @@ Prefs.Deep.AugOpt3D = deepmib.generateDefaultAugmentations('3D');
 Prefs.Deep.ScoreExportOpt.Precision = 8;   % define precision for the output scores, '8' or '16' bit
 Prefs.Deep.ScoreExportOpt.IncludeExterior = true;  % when false scores for exterior material are excluded from file output
 
+% settings of the "Zarr3 (BigData model)" output of prediction from zarr images
+Prefs.Deep.ZarrModelOpt.ZarrFormat = 'v3';   % 'v3' or 'v2', zarr format of the model stores
+Prefs.Deep.ZarrModelOpt.Location = 'Next to images';  % destination: 'Next to images', 'ResultsModels' or 'Ask' (folder asked at Predict)
+Prefs.Deep.ZarrModelOpt.Levels = 0;   % number of pyramid levels, 0 = as many as the image
+Prefs.Deep.ZarrModelOpt.ChunkSize = [0 0 0];   % chunk [y x z], 0s = the chunks of the image
+Prefs.Deep.ZarrModelOpt.ShardSize = [0 0 0];   % chunks per shard [y x z], 0s = no sharding (zarr v3 only)
+Prefs.Deep.ZarrModelOpt.DownsampleMethod = 'nearest';   % coarser levels: 'nearest' or 'mode' (majority vote)
+Prefs.Deep.ZarrModelOpt.Compressors = 'zstd';   % 'zstd', 'gzip' or 'none'
+Prefs.Deep.ZarrModelOpt.CompressionLevel = 7;   % zstd 1-22, gzip 1-9; 7 compresses labels 15-25% better than the zstd default 3 at similar speed
+
 Prefs.Deep.DynamicMaskOpt.Method = 'Keep above threshold';  % 'Keep above threshold' or 'Keep below threshold'
 Prefs.Deep.DynamicMaskOpt.ThresholdValue = 0;
 Prefs.Deep.DynamicMaskOpt.InclusionThreshold = 0;     % Inclusion threshold for mask blocks

@@ -26,6 +26,7 @@ else
 end
 
 colorChannelIndex = find(ismember(obj.BatchOpt.ColorChannel{2}, obj.BatchOpt.ColorChannel(1))) - 1;
+if colorChannelIndex == 0; colorChannelIndex = NaN; end     % 'All' -> NaN, all color channels in get/setData
 se             = obj.getStrelElement();
 hValue         = str2num(obj.BatchOpt.StrelSize); %#ok<ST2NM>
 conn           = str2double(obj.BatchOpt.Connectivity{1});

@@ -42,6 +42,17 @@ function startPredictionInstances(obj)
 % The detection confidence threshold, the merge IoU/IoA thresholds and the minimal object
 % area are taken from obj.OverlapInstancesOpt (updateOverlapInstancesSettings).
 % Instance prediction does not require preprocessing: images are read directly.
+%
+% **OME-Zarr images** (``BatchOpt.ImageFilenameExtension = 'ZARR'``) are predicted
+% from one pyramid level, ``BatchOpt.BioformatsIndex`` (1 = full resolution),
+% loaded whole into memory; the stores are listed and checked by
+% ``checkZarrStores`` before the run, as in ``startPredictionBlockedImage``.
+% With the "MIB Model format" output the ``.model`` file has the size of that
+% level. With "Zarr3 (BigData model)" each image gets a uint16 BigData instance
+% model store (``writeModelStore``, at most 16383 objects per slice) that mirrors
+% the pyramid of the source store, at the destination confirmed by
+% ``selectModelStoreDestination``. Its objects keep the per-slice numbering
+% (``objects3D = false``); "Merge 2D to 3D" reads only ``.model`` files.
 
 global mibInstanceIdCounter
 
@@ -69,6 +80,20 @@ if exist(obj.BatchOpt.NetworkFilename, 'file') ~= 2
         sprintf('The network file was not found:\n\n%s', obj.BatchOpt.NetworkFilename), ...
         'Missing network');
     return;
+end
+
+% OME-Zarr images: each store is predicted from one pyramid level loaded into
+% memory; check every store before anything is deleted or the network is loaded
+zarrInput = strcmp(obj.BatchOpt.ImageFilenameExtension{1}, 'ZARR');
+zarrOutput = strcmp(obj.BatchOpt.P_ModelFiles{1}, 'Zarr3 (BigData model)');
+if zarrInput
+    [zarrList, zarrStores, cancelled] = obj.checkZarrStores();
+    if cancelled; return; end
+    if zarrOutput
+        [storePaths, zarrFormat, cancelled] = obj.selectModelStoreDestination(zarrList);
+        if cancelled; return; end
+        writtenStores = {};
+    end
 end
 
 if obj.BatchOpt.showWaitbar
@@ -101,15 +126,31 @@ mibDeepStoreLoadImagesOpt.Workflow = obj.BatchOpt.Workflow{1};
 
 % make a datastore for the prediction images (read raw images directly)
 try
-    predictionImagesDir = fullfile(obj.BatchOpt.OriginalPredictionImagesDir, 'Images');
-    if ~isfolder(predictionImagesDir)
-        predictionImagesDir = obj.BatchOpt.OriginalPredictionImagesDir;
+    if zarrInput
+        % zarr stores are folders, imageDatastore can not list them; each store is
+        % read at the selected level, from the image group resolved by checkZarrStores
+        mibDeepStoreLoadImagesOpt.ZarrLevel = obj.BatchOpt.BioformatsIndex{1};
+        zarrReadOptions = repmat(mibDeepStoreLoadImagesOpt, [numel(zarrList), 1]);
+        for fileId = 1:numel(zarrList)
+            if ~strcmp(zarrStores(fileId).groupPath, zarrList{fileId})
+                zarrReadOptions(fileId).ZarrGroupPath = zarrStores(fileId).groupPath;
+            end
+        end
+        imgDS = transform(arrayDatastore((1:numel(zarrList))', 'OutputType', 'same'), ...
+            @(fileId) deepmib.storeLoadImages(zarrList{fileId}, zarrReadOptions(fileId)));
+        predictionFiles = zarrList;
+    else
+        predictionImagesDir = fullfile(obj.BatchOpt.OriginalPredictionImagesDir, 'Images');
+        if ~isfolder(predictionImagesDir)
+            predictionImagesDir = obj.BatchOpt.OriginalPredictionImagesDir;
+        end
+        fnExtension = lower(['.' obj.BatchOpt.ImageFilenameExtension{1}]);
+        imgDS = imageDatastore(predictionImagesDir, ...
+            'FileExtensions', fnExtension, ...
+            'IncludeSubfolders', false, ...
+            'ReadFcn', @(fn)deepmib.storeLoadImages(fn, mibDeepStoreLoadImagesOpt));
+        predictionFiles = imgDS.Files;
     end
-    fnExtension = lower(['.' obj.BatchOpt.ImageFilenameExtension{1}]);
-    imgDS = imageDatastore(predictionImagesDir, ...
-        'FileExtensions', fnExtension, ...
-        'IncludeSubfolders', false, ...
-        'ReadFcn', @(fn)deepmib.storeLoadImages(fn, mibDeepStoreLoadImagesOpt));
 catch err
     utils.dlgs.showErrorDialog(obj.view.gui, err, 'Missing files');
     if obj.BatchOpt.showWaitbar; close(pwb); end
@@ -164,7 +205,7 @@ tilingSettingsChecked = false;
 predictionThreshold = obj.OverlapInstancesOpt.DetectionThreshold;
 
 t1 = tic;
-noFiles = numel(imgDS.Files);
+noFiles = numel(predictionFiles);
 id = 1;
 while hasdata(imgDS)
     if obj.BatchOpt.showWaitbar && pwb.CancelRequested; close(pwb); return; end
@@ -173,7 +214,8 @@ while hasdata(imgDS)
     % grayscale z-stack and an RGB 2D image are indistinguishable)
     vol = read(imgDS);
     [imgHeight, imgWidth, imgDepth, ~, noTimePoints] = size(vol, 1:5);
-    [~, fn] = fileparts(imgDS.Files{id});
+    [~, fn] = fileparts(predictionFiles{id});
+    if zarrInput; fn = regexprep(fn, '\.ome$', '', 'ignorecase'); end   % 'name.ome.zarr' -> 'name'
     if noTimePoints > 1
         warning('MibDeep:startPredictionInstances:timePointsIgnored', ...
             '%s contains %d time points, only the first one is predicted', fn, noTimePoints);
@@ -299,6 +341,27 @@ while hasdata(imgDS)
     end
     if imgDepth == 1; outputLabels = outputLabels(:, :, 1); end   % 2D file -> 2D model
 
+    if zarrOutput
+        % a uint16 BigData instance model store (up to 16383 objects per slice)
+        % mirroring the pyramid of the source store, see writeModelStore
+        if obj.BatchOpt.showWaitbar && pwb.CancelRequested; close(pwb); return; end
+        try
+            obj.writeModelStore(outputLabels, storePaths{id}, zarrStores(id).pyramid, zarrFormat, {}, []);
+        catch err
+            if obj.BatchOpt.showWaitbar; close(pwb); end
+            if ~isempty(writtenStores)
+                fprintf('DeepMIB: model stores written before the error:\n%s\n', strjoin(writtenStores, newline));
+            end
+            utils.dlgs.showErrorDialog(obj.view.gui, err, 'Instance prediction error');
+            return;
+        end
+        writtenStores{end+1} = storePaths{id}; %#ok<AGROW>
+        fprintf('DeepMIB: model store written: %s\n', storePaths{id});
+        id = id + 1;
+        if obj.BatchOpt.showWaitbar; pwb.Value = min(1, (id-1)/noFiles); end
+        continue;
+    end
+
     % Instance models always use a large model type (>= 65535). Never type 63/255: the
     % packed small-material schemes (MibLabels63) cap materials/colours, which makes the
     % display colormap smaller than the label values and crashes labeloverlay in getRGBimage.
@@ -345,4 +408,15 @@ eventdata = core.ToggleEventData(4);
 notify(obj.mibModel, 'UpdateUserScore', eventdata);
 
 if obj.BatchOpt.showWaitbar; close(pwb); end
+
+if zarrInput && zarrOutput && obj.BatchOpt.showWaitbar
+    mgsOpt.MsgBoxOnly = true;
+    mgsOpt.Icon = 'puffin_info';
+    mgsOpt.WindowWidth = 560;
+    mgsOpt.WindowHeight = 260;
+    utils.dlgs.inputUniversalDlg(obj.view.gui, ...
+        sprintf(['%d model store(s) were written; in z-stacks the objects are numbered per slice.\n' ...
+        'Open the image in the BigData mode and load its model store: Model -> Load model'], numel(writtenStores)), ...
+        {}, {strjoin(writtenStores, newline)}, 'Prediction finished', mgsOpt);
+end
 end

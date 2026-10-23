@@ -225,6 +225,12 @@ between slices - an object continuing through several slices carries a different
 them. Linking them into true 3D objects is done afterwards with
 [Merge 2D to 3D](#merging-2d-predictions-into-a-3d-model), which ignores the input indices.
 
+OME-Zarr images can be predicted directly at a chosen pyramid level (see
+[Directories](deepmib-dirs.md)). With **Model files** set to **Zarr3 (BigData model)**, each image gets 
+an instance model that is opened on the image in the BigData mode, with up to 16383 objects per 
+slice. **Merge 2D to 3D** does not work with these models, so in a z-stack the objects stay 
+numbered per slice.
+
 !!! warning "Overlap size vs stitching mode"
 
     With **Centroid in core**, the **tile overlap must be at least as large as the biggest

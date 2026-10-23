@@ -76,6 +76,30 @@ end
                 obj.startTraining(); % do semantic segmentation
             end
         case 'PredictButton'
+            % zarr images and the BigData model output are implemented in the
+            % Blocked-image engine (semantic workflows; patch-wise for input only)
+            % and in the 2D Instance workflow, which has its own engine
+            zarrInput = strcmp(obj.BatchOpt.ImageFilenameExtension{1}, 'ZARR');
+            zarrOutput = strcmp(obj.BatchOpt.P_ModelFiles{1}, 'Zarr3 (BigData model)');
+            isInstanceWorkflow = strcmp(obj.BatchOpt.Workflow{1}, '2D Instance');
+            zarrErrorText = '';
+            if zarrInput && ~isInstanceWorkflow && ~strcmp(obj.BatchOpt.P_PredictionMode{1}, 'Blocked-image')
+                zarrErrorText = sprintf('ZARR images can only be predicted using the Blocked-image prediction engine\n\nSwitch the Prediction engine:\n    "Legacy" -> "Blocked-image"');
+            elseif zarrOutput && ~zarrInput
+                zarrErrorText = sprintf('"Zarr3 (BigData model)" output requires ZARR images for prediction\n\nSelect ZARR as the extension of images for prediction, or select another format of model files');
+            elseif zarrOutput && ~ismember(obj.BatchOpt.Workflow{1}, {'2D Semantic', '2.5D Semantic', '3D Semantic', '2D Instance'})
+                zarrErrorText = sprintf('"Zarr3 (BigData model)" output is not available for the %s workflow', obj.BatchOpt.Workflow{1});
+            end
+            if ~isempty(zarrErrorText)
+                mgsOpt.MsgBoxOnly = true;
+                mgsOpt.headerLines = 1;
+                mgsOpt.WindowHeight = 200;
+                mgsOpt.WindowWidth = 480;
+                mgsOpt.Icon = 'puffin_error';
+                utils.dlgs.inputUniversalDlg(obj.view.gui, 'Not available', {}, {zarrErrorText}, 'Not available', mgsOpt);
+                return;
+            end
+
             if strcmp(obj.BatchOpt.Workflow{1}, '2D Instance')
                 % instance segmentation prediction has its own dedicated path,
                 % independent of the Blocked-image / Legacy prediction engines

@@ -147,6 +147,16 @@ classdef MibDeep < handle
         % structure with settings to export score files
         % .Precision = 8;   % define precision for the output scores, '8' or '16' bit
         % .IncludeExterior = false;  % when false the scores will also have probability for the background material
+        ZarrModelOpt
+        % structure with settings for the "Zarr3 (BigData model)" output of prediction
+        % .ZarrFormat = 'v3';   % 'v3' or 'v2', zarr format of the model store (.zarr3 / .zarr2)
+        % .Location = 'Next to images';  % destination: 'Next to images', 'ResultsModels' or 'Ask' (folder asked at Predict)
+        % .Levels = 0;   % number of pyramid levels, 0 = as many as the image
+        % .ChunkSize = [0 0 0];   % chunk [y x z], 0s = the chunks of the image
+        % .ShardSize = [0 0 0];   % chunks per shard [y x z], 0s = no sharding (zarr v3 only)
+        % .DownsampleMethod = 'nearest';   % coarser levels: 'nearest' or 'mode' (majority vote)
+        % .Compressors = 'zstd';   % 'zstd', 'gzip' or 'none'
+        % .CompressionLevel = 7;   % zstd 1-22, gzip 1-9 (higher is written as 9)
         SendReports
         % send email reports with progress of the training process
         % .T_SendReports = false;
@@ -191,6 +201,7 @@ classdef MibDeep < handle
         sessionSettings
         % structure for the session settings
         % .countLabelsDir - directory with labels to count, used in count labels function
+        % .lastModelStoreFolder - folder of the BigData model stores of the last prediction, used by previewModels
         TrainEngine
         % temp property to test trainnet function for training: can be
         % 'trainnet' or 'trainNetwork'
@@ -238,6 +249,7 @@ classdef MibDeep < handle
         bioformatsCallback(obj, event) % update available filename extensions upon press of the BioFormats checkbox
         imgOut = channelWisePreProcess(obj, imgIn)        % function imgOut = channelWisePreProcess(obj, imgIn)
         checkNetwork(obj, fn)        % generate and check network using settings in the Train tab
+        [zarrList, zarrStores, cancelled] = checkZarrStores(obj)        % list the zarr stores for prediction and check them before the run
         closeWindow(obj)        % callback on closing of DeepMIB window
         res = correctBatchOpt(obj, res)        % correct loaded BatchOpt structure if it is not compatible with the current version of DeepMIB
         countLabels(obj)        % count occurrences of labels in model files callback for press of the "Count labels" in the Options panel
@@ -272,6 +284,7 @@ classdef MibDeep < handle
         selectArchitecture(obj, event)        % select the target architecture
         selectDirerctories(obj, event)        % select directories containing images for training and prediction
         selectGPUDevice(obj)        % select environment for computations
+        [storePaths, zarrFormat, cancelled] = selectModelStoreDestination(obj, zarrList)        % confirm where the BigData model stores of prediction are written
         net = selectNetwork(obj, networkName)        % select a filename for a new network in the Train mode, or select a network to use for the Predict mode
         selectWorkflow(obj, event)        % select deep learning workflow to perform
         sendReportsCallback(obj)        % define parameters for sending progress report to the user's email address
@@ -296,6 +309,7 @@ classdef MibDeep < handle
         lgraph = updateActivationLayers(obj, lgraph)        % update the activation layers depending on settings in obj.BatchOpt.T_ActivationLayer and obj.ActivationLayerOpt
         updateBatchOptFromGUI(obj, event)       % update obj.BatchOpt from widgets of GUI
         lgraph = updateConvolutionLayers(obj, lgraph)        % update the convolution layers by providing new set of weight initializers
+        updateModelOutputSettings(obj)        % update settings for the "Zarr3 (BigData model)" output of prediction, the settings are stored in obj.ZarrModelOpt
         updateDynamicMaskSettings(obj)        % update settings for calculation of dynamic masks during prediction using blockedimage mode the settings are stored in obj.DynamicMaskOpt
         updateOverlapInstancesSettings(obj)        % update settings for stitching of instances across tiles during 2D Instance prediction, the settings are stored in obj.OverlapInstancesOpt
         setStartingWeightsSettings(obj)        % update settings for the two-phase "COCO, frozen then trainable" schedule, the settings are stored in obj.StartingWeightsOpt
@@ -309,6 +323,7 @@ classdef MibDeep < handle
         updateStartingWeightsList(obj)        % refresh the "Starting weights" dropdown for the current workflow/architecture/encoder
         lgraph = updateSegmentationLayer(obj, lgraph, classNames)        % redefine the segmentation layer of lgraph based on obj.BatchOpt settings
         updateWidgets(obj)        % update widgets of this window
+        writeModelStore(obj, outputLabels, storePath, pyramid, zarrFormat, materialNames, materialColors)        % write a prediction of one pyramid level as a BigData model store
        
         function obj = MibDeep(mibModel, varargin)
             obj.mibModel = mibModel;    % assign model
@@ -432,10 +447,17 @@ classdef MibDeep < handle
                 obj.BatchOpt.OriginalPredictionImagesDir = obj.mibModel.preferences.Deep.OriginalPredictionImagesDir;
                 obj.BatchOpt.ResultingImagesDir = obj.mibModel.preferences.Deep.ResultingImagesDir;
             end
+            % zarr stores are folders: prediction takes them as a single 'ZARR' entry
+            % (the reader detects v2/v3 per store), training does not take them at all
+            standardExtensions = upper(obj.mibModel.extensionRegistryLoad.getAllowedExtensions('Standard', 'Default', false)); % {'AM', 'PNG', 'TIF'};
+            standardExtensions = standardExtensions(~ismember(standardExtensions, {'ZARR2', 'ZARR3'}));
             obj.BatchOpt.ImageFilenameExtension = obj.mibModel.preferences.Deep.ImageFilenameExtension;
-            obj.BatchOpt.ImageFilenameExtension{2} = upper(obj.mibModel.extensionRegistryLoad.getAllowedExtensions('Standard', 'Default', false)); % {'AM', 'PNG', 'TIF'};
+            obj.BatchOpt.ImageFilenameExtension{2} = sort([standardExtensions, {'ZARR'}]);
             obj.BatchOpt.ImageFilenameExtensionTraining = obj.mibModel.preferences.Deep.ImageFilenameExtension;
-            obj.BatchOpt.ImageFilenameExtensionTraining{2} = upper(obj.mibModel.extensionRegistryLoad.getAllowedExtensions('Standard', 'Default', false)); % {'AM', 'PNG', 'TIF'};
+            obj.BatchOpt.ImageFilenameExtensionTraining{2} = standardExtensions;
+            if ~ismember(obj.BatchOpt.ImageFilenameExtensionTraining{1}, standardExtensions)
+                obj.BatchOpt.ImageFilenameExtensionTraining{1} = standardExtensions{1};
+            end
 
             obj.BatchOpt.PreprocessingMode = {'Preprocessing is not required'};
             obj.BatchOpt.PreprocessingMode{2} = {'Training', 'Prediction', 'Training and Prediction', 'Preprocessing is not required', 'Split files for training/validation'};
@@ -458,7 +480,7 @@ classdef MibDeep < handle
             obj.BatchOpt.P_PredictionMode = {'Blocked-image'};
             obj.BatchOpt.P_PredictionMode{2} = {'Blocked-image', 'Legacy'};
             obj.BatchOpt.P_ModelFiles = {'MIB Model format'};
-            obj.BatchOpt.P_ModelFiles{2} = {'MIB Model format', 'TIF compressed format', 'TIF uncompressed format'};
+            obj.BatchOpt.P_ModelFiles{2} = {'MIB Model format', 'TIF compressed format', 'TIF uncompressed format', 'Zarr3 (BigData model)'};
             obj.BatchOpt.P_ScoreFiles = {'Use AM format'};
             obj.BatchOpt.P_ScoreFiles{2} = {'Do not generate', 'Use AM format', 'Use Matlab non-compressed format', 'Use Matlab compressed format', 'Use Matlab non-compressed format (range 0-1)'};
             obj.BatchOpt.P_ExtraPaddingPercentage{1} = 0;
@@ -521,7 +543,7 @@ classdef MibDeep < handle
             obj.BatchOpt.mibBatchTooltip.BioformatsTraining = 'Use Bioformats file reader for training images';
             obj.BatchOpt.mibBatchTooltip.BioformatsTrainingIndex = 'Index of a serie to be used with bio-formats reader or with TIFs for training';
             obj.BatchOpt.mibBatchTooltip.Bioformats = 'Use Bioformats file reader for prediction images';
-            obj.BatchOpt.mibBatchTooltip.BioformatsIndex = 'Index of a serie to be used with bio-formats reader or with TIFs for prediction';
+            obj.BatchOpt.mibBatchTooltip.BioformatsIndex = 'Index of a serie to be used with bio-formats reader or with TIFs for prediction; for ZARR it is the pyramid level (1 = full resolution)';
             obj.BatchOpt.mibBatchTooltip.ResultingImagesDir = 'Specify directory for resulting images for preprocessing and prediction, the following subfolders are used: TrainImages, TrainLabels, ValidationImages, ValidationLabels, PredictionImages';
             obj.BatchOpt.mibBatchTooltip.NormalizeImages = 'Normalize images during preprocessing, or use original images';
             obj.BatchOpt.mibBatchTooltip.CompressProcessedImages = 'Compression of images slows down performance but saves space';
@@ -543,7 +565,7 @@ classdef MibDeep < handle
             obj.BatchOpt.mibBatchTooltip.P_DynamicMasking = 'When enabled, the images for predictions are thresholded to detect masked areas where segmentation occurs';
             obj.BatchOpt.mibBatchTooltip.P_PredictionMode = 'Main processing mode for prediction, the blocked image mode is recommended';
             obj.BatchOpt.mibBatchTooltip.P_ScoreFiles = 'tweak generation of score files showing probability of each class';
-            obj.BatchOpt.mibBatchTooltip.P_ModelFiles = 'define output type for generated model files during prediction';
+            obj.BatchOpt.mibBatchTooltip.P_ModelFiles = 'define output type for generated model files during prediction; "Zarr3 (BigData model)" (ZARR images only) writes an editable model for the image opened in BigData mode';
             obj.BatchOpt.mibBatchTooltip.P_PatchWiseUpsample = 'upsample generated patch predictions to match resolution of underlying images for direct comparison';
             obj.BatchOpt.mibBatchTooltip.P_OverlapInstancesMode = 'stitching of instances across tiles during 2D Instance prediction: "Centroid in core" - each object is emitted by the tile owning its centroid (overlap must exceed the largest object); "IoU merge" - detections of neighboring tiles are merged when their masks agree in the overlap band (works for objects larger than the overlap)';
             obj.BatchOpt.mibBatchTooltip.O_CustomTrainingProgressWindow = 'When checked the custom progress plot is displayed during training, instead of Matlab default plot';
@@ -583,6 +605,26 @@ classdef MibDeep < handle
             % dynamic masking and score export properties
             obj.DynamicMaskOpt = obj.mibModel.preferences.Deep.DynamicMaskOpt;
             obj.ScoreExportOpt = obj.mibModel.preferences.Deep.ScoreExportOpt;
+
+            % settings of the BigData model output of prediction
+            obj.ZarrModelOpt.ZarrFormat = 'v3';
+            obj.ZarrModelOpt.Location = 'Next to images';
+            obj.ZarrModelOpt.Levels = 0;
+            obj.ZarrModelOpt.ChunkSize = [0 0 0];
+            obj.ZarrModelOpt.ShardSize = [0 0 0];
+            obj.ZarrModelOpt.DownsampleMethod = 'nearest';
+            obj.ZarrModelOpt.Compressors = 'zstd';
+            % labels compress well: zstd 7 measured 15-25% smaller than the codec
+            % default 3 for 5-15% more write time (development/deepmib/plan_zarr_implementation.md)
+            obj.ZarrModelOpt.CompressionLevel = 7;
+            % isstruct: a window opened before this property existed saves [] on close
+            if isfield(obj.mibModel.preferences.Deep, 'ZarrModelOpt') && isstruct(obj.mibModel.preferences.Deep.ZarrModelOpt)
+                obj.ZarrModelOpt = utils.concatenateStructures(obj.ZarrModelOpt, ...
+                    obj.mibModel.preferences.Deep.ZarrModelOpt);
+            end
+            if obj.ZarrModelOpt.CompressionLevel < 1     % 0 = "codec default" in earlier versions
+                obj.ZarrModelOpt.CompressionLevel = 7;
+            end
 
             % instance stitching properties
             if isfield(obj.mibModel.preferences.Deep, 'OverlapInstancesOpt')

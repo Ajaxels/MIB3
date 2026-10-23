@@ -16,6 +16,14 @@ function imOut = storeLoadImages(fn, getDataOptions)
 %       index within a TIF file (default: ``1``)
 %     - ``.Workflow`` - [char] active workflow (``obj.BatchOpt.Workflow{1}``)
 %     - ``.randomCrop`` - ``[cropH cropW]`` for random cropping; ``[0 0]`` to disable
+%     - ``.ZarrLevel`` - *(optional)* [numeric] 1-based pyramid level read from a
+%       zarr store (``fn`` is then the store folder); passed on to the zarr
+%       loader by ``io.loadImagesWrapper``. A level the store does not have is
+%       ignored by the loader, which then asks for the level in a dialog, so
+%       callers check it beforehand
+%     - ``.ZarrGroupPath`` - *(optional)* [char] image group inside a zarr
+%       container, so a container holding several images is read without the
+%       group picker
 %
 % Output Arguments:
 %   - **imOut** - loaded image array

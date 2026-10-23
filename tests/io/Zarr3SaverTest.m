@@ -191,6 +191,40 @@ classdef Zarr3SaverTest < matlab.unittest.TestCase
             end
         end
 
+        function save_singleSlice2D_roundTrips(testCase)
+            % A [y x] image has no trailing Z for MATLAB, while the array is declared
+            % [Y X 1]; save used to fail in zarrMex with "array subset [0..70, 0..90]
+            % is not compatible with array shape [70, 90, 1]". Every level must be
+            % written, for the interpolating and the block-reduction ('mode') paths,
+            % and an RGB slice ([Y X 1 3], singleton in the middle) must still work.
+            tmp = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            meta = struct('pixSize', struct('x', 1, 'y', 1, 'z', 1));
+            saverOpts = struct('silent', true, 'showWaitbar', false, 'ChunkSize', [32 32 1], 'Levels', 3);
+
+            image2D = uint8(randi(255, 70, 90));
+            labels2D = uint8(kron(reshape(mod(0:62, 4), 7, 9), ones(10, 10)));
+            imageRGB = uint8(randi(255, 70, 90, 1, 3));
+            cases = {'gray', image2D, struct(); ...
+                'labelsMode', labels2D, struct('DownsampleMethod', 'mode'); ...
+                'rgb', imageRGB, struct()};
+            for caseId = 1:size(cases, 1)
+                options = utils.concatenateStructures(saverOpts, cases{caseId, 3});
+                storePath = io.savers.Zarr3Saver().save(cases{caseId, 2}, meta, ...
+                    fullfile(tmp.Folder, [cases{caseId, 1} '.zarr3']), options);
+                group = io.zarr.Group(storePath);
+                testCase.verifyEqual(squeeze(group.openArray('0').read()), squeeze(cases{caseId, 2}), ...
+                    sprintf('%s: level 0 must read back unchanged', cases{caseId, 1}));
+                level2 = group.openArray('2').read();
+                testCase.verifyEqual(size(level2, 1:2), [18 23], ...
+                    sprintf('%s: level 2 must be written at 1/4 size', cases{caseId, 1}));
+            end
+            % mode keeps 10x10 label squares intact down to 1/4 scale (blocks of 4x4
+            % mostly inside one square)
+            labelsLevel2 = io.zarr.Group(fullfile(tmp.Folder, 'labelsMode.zarr3')).openArray('2').read();
+            testCase.verifyEqual(unique(labelsLevel2(:))', uint8(0:3), ...
+                'mode-downsampled labels must keep every label value');
+        end
+
         function allWriters_samePyramid(testCase)
             % save (in memory), saveStream and saveStreamResumable all build each
             % level from the level above - XY by exactly 0.5, Z by the mean of

@@ -1036,7 +1036,7 @@ classdef Graphcut < handle
                 case 'mode2dCurrentRadio'
                     progressBar = uiprogressdlg(obj.view.gui, 'Value', 0, 'Message', 'Initiating...', 'Title', titleStr, 'Indeterminate', true, 'Cancelable', true);
 
-                    getDataOptions.z = dataset.slices{3}(1);
+                    getDataOptions.z = [dataset.slices{3}(1), dataset.slices{3}(1)];   % a pair: stored in graphcut(1).bb(5:6)
                     img = cell2mat(obj.mibModel.getData2D('image', [], [], col_channel, getDataOptions));
                     if binVal(1) ~= 1
                         img = imresize(img, [binHeight binWidth], 'bicubic');

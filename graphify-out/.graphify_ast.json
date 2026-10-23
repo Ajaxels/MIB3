@@ -1,30 +1,6 @@
 {
   "nodes": [
     {
-      "id": "utils_getexelocation",
-      "label": "GetExeLocation.c",
-      "file_type": "code",
-      "source_file": "+utils/GetExeLocation.c",
-      "source_location": "L1",
-      "_origin": "ast"
-    },
-    {
-      "id": "utils_getexelocation_mexfunction",
-      "label": "mexFunction()",
-      "file_type": "code",
-      "source_file": "+utils/GetExeLocation.c",
-      "source_location": "L13",
-      "_origin": "ast"
-    },
-    {
-      "id": "mxarray",
-      "label": "mxArray",
-      "file_type": "code",
-      "source_file": "",
-      "source_location": "",
-      "_origin": "ast"
-    },
-    {
       "id": "controllers_about_about_m",
       "label": "About.m",
       "file_type": "code",
@@ -1358,6 +1334,61 @@
     {
       "id": "controllers_chunkingexport_chunkingexport_updatewidgets",
       "label": "updateWidgets",
+      "file_type": "code",
+      "source_file": "+controllers\\@ChunkingExport\\ChunkingExport.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_chunkingexport_chunkingexport_updatelevelinfo",
+      "label": "updateLevelInfo",
+      "file_type": "code",
+      "source_file": "+controllers\\@ChunkingExport\\ChunkingExport.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_chunkingexport_chunkingexport_getlevelgeometry",
+      "label": "getLevelGeometry",
+      "file_type": "code",
+      "source_file": "+controllers\\@ChunkingExport\\ChunkingExport.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_chunkingexport_chunkingexport_format_callback",
+      "label": "format_Callback",
+      "file_type": "code",
+      "source_file": "+controllers\\@ChunkingExport\\ChunkingExport.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_chunkingexport_chunkingexport_zarrpyramidlevel_callback",
+      "label": "ZarrPyramidLevel_Callback",
+      "file_type": "code",
+      "source_file": "+controllers\\@ChunkingExport\\ChunkingExport.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_chunkingexport_chunkingexport_zarrsettingsbutton_callback",
+      "label": "zarrSettingsButton_Callback",
       "file_type": "code",
       "source_file": "+controllers\\@ChunkingExport\\ChunkingExport.m",
       "source_location": null,
@@ -6493,6 +6524,17 @@
       "contributor": null
     },
     {
+      "id": "controllers_mibdeep_checkzarrstores_m",
+      "label": "checkZarrStores.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@MibDeep\\checkZarrStores.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "controllers_mibdeep_closewindow_m",
       "label": "closeWindow.m",
       "file_type": "code",
@@ -6889,6 +6931,17 @@
       "contributor": null
     },
     {
+      "id": "controllers_mibdeep_selectmodelstoredestination_m",
+      "label": "selectModelStoreDestination.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@MibDeep\\selectModelStoreDestination.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "controllers_mibdeep_selectnetwork_m",
       "label": "selectNetwork.m",
       "file_type": "code",
@@ -7208,6 +7261,17 @@
       "contributor": null
     },
     {
+      "id": "controllers_mibdeep_updatemodeloutputsettings_m",
+      "label": "updateModelOutputSettings.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@MibDeep\\updateModelOutputSettings.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "controllers_mibdeep_updatenetworkinputlayer_m",
       "label": "updateNetworkInputLayer.m",
       "file_type": "code",
@@ -7278,6 +7342,17 @@
       "label": "updateWidgets.m",
       "file_type": "code",
       "source_file": "+controllers\\@MibDeep\\updateWidgets.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_mibdeep_writemodelstore_m",
+      "label": "writeModelStore.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@MibDeep\\writeModelStore.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -15898,6 +15973,17 @@
       "contributor": null
     },
     {
+      "id": "core_mibbigdatalabels_mibbigdatalabels_countmaterials",
+      "label": "countMaterials",
+      "file_type": "code",
+      "source_file": "+core\\@MibBigDataLabels\\MibBigDataLabels.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "core_mibbigdatalabels_mibbigdatalabels_writematerialmetadata",
       "label": "writeMaterialMetadata",
       "file_type": "code",
@@ -16041,6 +16127,61 @@
       "contributor": null
     },
     {
+      "id": "core_mibbigdatalabels_mibbigdatalabels_syncinstanceindex",
+      "label": "syncInstanceIndex",
+      "file_type": "code",
+      "source_file": "+core\\@MibBigDataLabels\\MibBigDataLabels.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "core_mibbigdatalabels_mibbigdatalabels_marklabelschanged",
+      "label": "markLabelsChanged",
+      "file_type": "code",
+      "source_file": "+core\\@MibBigDataLabels\\MibBigDataLabels.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "core_mibbigdatalabels_mibbigdatalabels_saveinstanceindex",
+      "label": "saveInstanceIndex",
+      "file_type": "code",
+      "source_file": "+core\\@MibBigDataLabels\\MibBigDataLabels.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "core_mibbigdatalabels_mibbigdatalabels_loadinstanceindex",
+      "label": "loadInstanceIndex",
+      "file_type": "code",
+      "source_file": "+core\\@MibBigDataLabels\\MibBigDataLabels.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "core_mibbigdatalabels_mibbigdatalabels_resetinstanceindexstate",
+      "label": "resetInstanceIndexState",
+      "file_type": "code",
+      "source_file": "+core\\@MibBigDataLabels\\MibBigDataLabels.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "core_mibbigdatalabels_mibbigdatalabels_orientphysranges",
       "label": "orientPhysRanges",
       "file_type": "code",
@@ -16120,6 +16261,17 @@
     {
       "id": "core_mibbigdatalabels_mibbigdatalabels_levelmappathfor",
       "label": "levelMapPathFor",
+      "file_type": "code",
+      "source_file": "+core\\@MibBigDataLabels\\MibBigDataLabels.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "core_mibbigdatalabels_mibbigdatalabels_instanceindexpathfor",
+      "label": "instanceIndexPathFor",
       "file_type": "code",
       "source_file": "+core\\@MibBigDataLabels\\MibBigDataLabels.m",
       "source_location": null,
@@ -16406,6 +16558,17 @@
     {
       "id": "core_mibbigdatalabelszarr2_mibbigdatalabelszarr2_writepackedlevel",
       "label": "writePackedLevel",
+      "file_type": "code",
+      "source_file": "+core\\@MibBigDataLabelsZarr2\\MibBigDataLabelsZarr2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "core_mibbigdatalabelszarr2_mibbigdatalabelszarr2_writematerialmetadata",
+      "label": "writeMaterialMetadata",
       "file_type": "code",
       "source_file": "+core\\@MibBigDataLabelsZarr2\\MibBigDataLabelsZarr2.m",
       "source_location": null,
@@ -17847,6 +18010,17 @@
     {
       "id": "core_miblabels63_miblabels63_miblabels63",
       "label": "MibLabels63",
+      "file_type": "code",
+      "source_file": "+core\\@MibLabels63\\MibLabels63.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "core_miblabels63_miblabels63_setlayout",
+      "label": "setLayout",
       "file_type": "code",
       "source_file": "+core\\@MibLabels63\\MibLabels63.m",
       "source_location": null,
@@ -23587,8 +23761,30 @@
       "contributor": null
     },
     {
+      "id": "io_savers_imagedatastoresliceprovider_getslicerows",
+      "label": "getSliceRows",
+      "file_type": "code",
+      "source_file": "+io\\+savers\\ImageDatastoreSliceProvider.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "io_savers_imagedatastoresliceprovider_readfile",
       "label": "readFile",
+      "file_type": "code",
+      "source_file": "+io\\+savers\\ImageDatastoreSliceProvider.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_savers_imagedatastoresliceprovider_verifydepth",
+      "label": "verifyDepth",
       "file_type": "code",
       "source_file": "+io\\+savers\\ImageDatastoreSliceProvider.m",
       "source_location": null,
@@ -24412,6 +24608,17 @@
       "contributor": null
     },
     {
+      "id": "io_savers_zarr3saver_savestreamresumable",
+      "label": "saveStreamResumable",
+      "file_type": "code",
+      "source_file": "+io\\+savers\\Zarr3Saver.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "io_savers_zarr3saver_resolveexportoptions",
       "label": "resolveExportOptions",
       "file_type": "code",
@@ -24447,6 +24654,39 @@
     {
       "id": "io_savers_zarr3saver_optionsdialog",
       "label": "optionsDialog",
+      "file_type": "code",
+      "source_file": "+io\\+savers\\Zarr3Saver.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_savers_zarr3saver_optionsfrompyramid",
+      "label": "optionsFromPyramid",
+      "file_type": "code",
+      "source_file": "+io\\+savers\\Zarr3Saver.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_savers_zarr3saver_reviewoptionsdialog",
+      "label": "reviewOptionsDialog",
+      "file_type": "code",
+      "source_file": "+io\\+savers\\Zarr3Saver.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_savers_zarr3saver_pyramidfromplan",
+      "label": "pyramidFromPlan",
       "file_type": "code",
       "source_file": "+io\\+savers\\Zarr3Saver.m",
       "source_location": null,
@@ -24500,8 +24740,8 @@
       "contributor": null
     },
     {
-      "id": "io_savers_zarr3saver_addboundingbox",
-      "label": "addBoundingBox",
+      "id": "io_savers_zarr3saver_writedirectslab",
+      "label": "writeDirectSlab",
       "file_type": "code",
       "source_file": "+io\\+savers\\Zarr3Saver.m",
       "source_location": null,
@@ -24511,8 +24751,19 @@
       "contributor": null
     },
     {
-      "id": "io_savers_zarr3saver_writestreambatch",
-      "label": "writeStreamBatch",
+      "id": "io_savers_zarr3saver_writelevel0band",
+      "label": "writeLevel0Band",
+      "file_type": "code",
+      "source_file": "+io\\+savers\\Zarr3Saver.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_savers_zarr3saver_buildlevelband",
+      "label": "buildLevelBand",
       "file_type": "code",
       "source_file": "+io\\+savers\\Zarr3Saver.m",
       "source_location": null,
@@ -24535,6 +24786,94 @@
     {
       "id": "io_savers_zarr3saver_blockreduce3d",
       "label": "blockReduce3D",
+      "file_type": "code",
+      "source_file": "+io\\+savers\\Zarr3Saver.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_savers_zarr3saver_mapaxisvector",
+      "label": "mapAxisVector",
+      "file_type": "code",
+      "source_file": "+io\\+savers\\Zarr3Saver.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_savers_zarr3saver_streamdefaults",
+      "label": "streamDefaults",
+      "file_type": "code",
+      "source_file": "+io\\+savers\\Zarr3Saver.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_savers_zarr3saver_createstreamstore",
+      "label": "createStreamStore",
+      "file_type": "code",
+      "source_file": "+io\\+savers\\Zarr3Saver.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_savers_zarr3saver_runtasks",
+      "label": "runTasks",
+      "file_type": "code",
+      "source_file": "+io\\+savers\\Zarr3Saver.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_savers_zarr3saver_reduceslicexy",
+      "label": "reduceSliceXY",
+      "file_type": "code",
+      "source_file": "+io\\+savers\\Zarr3Saver.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_savers_zarr3saver_writeregion",
+      "label": "writeRegion",
+      "file_type": "code",
+      "source_file": "+io\\+savers\\Zarr3Saver.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_savers_zarr3saver_addboundingbox",
+      "label": "addBoundingBox",
+      "file_type": "code",
+      "source_file": "+io\\+savers\\Zarr3Saver.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_savers_zarr3saver_writestreambatch",
+      "label": "writeStreamBatch",
       "file_type": "code",
       "source_file": "+io\\+savers\\Zarr3Saver.m",
       "source_location": null,
@@ -28922,6 +29261,17 @@
       "contributor": null
     },
     {
+      "id": "plugins_fileprocessing_imageconverter_imageconverter_readdepthwithloader",
+      "label": "readDepthWithLoader",
+      "file_type": "code",
+      "source_file": "plugins\\FileProcessing\\ImageConverter\\ImageConverter.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "plugins_fileprocessing_imageconverter_imageconverter_writeimagewithprogress",
       "label": "writeImageWithProgress",
       "file_type": "code",
@@ -28935,6 +29285,17 @@
     {
       "id": "plugins_fileprocessing_imageconverter_imageconverter_readsourcegeometry",
       "label": "readSourceGeometry",
+      "file_type": "code",
+      "source_file": "plugins\\FileProcessing\\ImageConverter\\ImageConverter.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_fileprocessing_imageconverter_imageconverter_confirmzarrmemory",
+      "label": "confirmZarrMemory",
       "file_type": "code",
       "source_file": "plugins\\FileProcessing\\ImageConverter\\ImageConverter.m",
       "source_location": null,
@@ -29122,6 +29483,17 @@
     {
       "id": "plugins_fileprocessing_imageconverter_imageconverter_generatezarrnative",
       "label": "generateZarrNative",
+      "file_type": "code",
+      "source_file": "plugins\\FileProcessing\\ImageConverter\\ImageConverter.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_fileprocessing_imageconverter_imageconverter_getparallelpool",
+      "label": "getParallelPool",
       "file_type": "code",
       "source_file": "plugins\\FileProcessing\\ImageConverter\\ImageConverter.m",
       "source_location": null,
@@ -29487,6 +29859,490 @@
       "label": "continueBtn_Callback",
       "file_type": "code",
       "source_file": "plugins\\IntensityAnalysis\\TripleAreaIntensity\\TripleAreaIntensity.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_m",
+      "label": "MCcalc2.m",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_viewlistner_callback",
+      "label": "ViewListner_Callback",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_smoothboundarycontour",
+      "label": "smoothBoundaryContour",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_smoothdistanceprofile",
+      "label": "smoothDistanceProfile",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_nearestdistanceprofile",
+      "label": "nearestDistanceProfile",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_issightlineblocked",
+      "label": "isSightLineBlocked",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_detectwidecontacts",
+      "label": "detectWideContacts",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_assemblecontacts",
+      "label": "assembleContacts",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_suggestdistancegroups",
+      "label": "suggestDistanceGroups",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_mccalc2",
+      "label": "MCcalc2",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_restorethresholdlists",
+      "label": "restoreThresholdLists",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_convertcontactsettingunits",
+      "label": "convertContactSettingUnits",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_convertmissingcontactsettings",
+      "label": "convertMissingContactSettings",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_syncthresholdselection",
+      "label": "syncThresholdSelection",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_closewindow",
+      "label": "closeWindow",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_updatewidgets",
+      "label": "updateWidgets",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_updatebatchoptfromgui",
+      "label": "updateBatchOptFromGUI",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_returnbatchopt",
+      "label": "returnBatchOpt",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_dnd_files_callback",
+      "label": "dnd_files_callback",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_calculateinpixels_clicked",
+      "label": "calculateInPixels_clicked",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_scalelocalminimawithdistance_clicked",
+      "label": "scaleLocalMinimaWithDistance_clicked",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_updatecontacttable",
+      "label": "updateContactTable",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_updatecontactclasslabels",
+      "label": "updateContactClassLabels",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_contactthrestable_cellselection",
+      "label": "contactThresTable_cellselection",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_contactthrestable_update",
+      "label": "contactThresTable_update",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_suggestcalculationparameters",
+      "label": "suggestCalculationParameters",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_analysislistbox_clicked",
+      "label": "analysisListbox_clicked",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_analysiscontacts_menuclicked",
+      "label": "analysisContacts_MenuClicked",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_analysisfilelist_menuclicked",
+      "label": "AnalysisFilelist_MenuClicked",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_analysiscondition_menuclicked",
+      "label": "AnalysisCondition_MenuClicked",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_saveconfig",
+      "label": "saveConfig",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_loadconfig",
+      "label": "loadConfig",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_updategenerateimagesrendercutoffs",
+      "label": "updateGenerateImagesRenderCutoffs",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_extendedrays_clicked",
+      "label": "ExtendedRays_clicked",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_generateimages_clicked",
+      "label": "GenerateImages_clicked",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_exportresultstomatlab_clicked",
+      "label": "ExportResultsToMatlab_clicked",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_highlightcontacts_clicked",
+      "label": "highlightContacts_clicked",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_showhelp",
+      "label": "showHelp",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_raytraceobject",
+      "label": "raytraceObject",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_selectoutputdirectory",
+      "label": "selectOutputDirectory",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_savetoexcel",
+      "label": "saveToExcel",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_calculate",
+      "label": "Calculate",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_closeallfigures",
+      "label": "closeAllFigures",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_mccalc2_mccalc2_analysecontacts",
+      "label": "analyseContacts",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -31091,75 +31947,6 @@
   ],
   "edges": [
     {
-      "source": "utils_getexelocation",
-      "target": "mex",
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "+utils/GetExeLocation.c",
-      "source_location": "L1",
-      "weight": 1.0
-    },
-    {
-      "source": "utils_getexelocation",
-      "target": "windows",
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "+utils/GetExeLocation.c",
-      "source_location": "L4",
-      "weight": 1.0
-    },
-    {
-      "source": "utils_getexelocation",
-      "target": "dyld",
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "+utils/GetExeLocation.c",
-      "source_location": "L6",
-      "weight": 1.0
-    },
-    {
-      "source": "utils_getexelocation",
-      "target": "unistd",
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "+utils/GetExeLocation.c",
-      "source_location": "L8",
-      "weight": 1.0
-    },
-    {
-      "source": "utils_getexelocation",
-      "target": "utils_getexelocation_mexfunction",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "+utils/GetExeLocation.c",
-      "source_location": "L13",
-      "weight": 1.0
-    },
-    {
-      "source": "utils_getexelocation_mexfunction",
-      "target": "mxarray",
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "+utils/GetExeLocation.c",
-      "source_location": "L13",
-      "weight": 1.0,
-      "context": "parameter_type"
-    },
-    {
-      "source": "utils_getexelocation_mexfunction",
-      "target": "mxarray",
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "+utils/GetExeLocation.c",
-      "source_location": "L13",
-      "weight": 1.0,
-      "context": "parameter_type"
-    },
-    {
       "source": "controllers_about_about_m",
       "target": "controllers_about_about_about",
       "relation": "contains",
@@ -32302,6 +33089,56 @@
     {
       "source": "controllers_chunkingexport_chunkingexport_m",
       "target": "controllers_chunkingexport_chunkingexport_updatewidgets",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@ChunkingExport\\ChunkingExport.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_chunkingexport_chunkingexport_m",
+      "target": "controllers_chunkingexport_chunkingexport_updatelevelinfo",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@ChunkingExport\\ChunkingExport.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_chunkingexport_chunkingexport_m",
+      "target": "controllers_chunkingexport_chunkingexport_getlevelgeometry",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@ChunkingExport\\ChunkingExport.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_chunkingexport_chunkingexport_m",
+      "target": "controllers_chunkingexport_chunkingexport_format_callback",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@ChunkingExport\\ChunkingExport.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_chunkingexport_chunkingexport_m",
+      "target": "controllers_chunkingexport_chunkingexport_zarrpyramidlevel_callback",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@ChunkingExport\\ChunkingExport.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_chunkingexport_chunkingexport_m",
+      "target": "controllers_chunkingexport_chunkingexport_zarrsettingsbutton_callback",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -36751,6 +37588,16 @@
     },
     {
       "source": "controllers_mibdeep_mibdeep_m",
+      "target": "controllers_mibdeep_checkzarrstores_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\MibDeep.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_mibdeep_m",
       "target": "controllers_mibdeep_closewindow_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -37111,6 +37958,16 @@
     },
     {
       "source": "controllers_mibdeep_mibdeep_m",
+      "target": "controllers_mibdeep_selectmodelstoredestination_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\MibDeep.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_mibdeep_m",
       "target": "controllers_mibdeep_selectnetwork_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -37401,6 +38258,16 @@
     },
     {
       "source": "controllers_mibdeep_mibdeep_m",
+      "target": "controllers_mibdeep_updatemodeloutputsettings_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\MibDeep.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_mibdeep_m",
       "target": "controllers_mibdeep_updatenetworkinputlayer_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -37462,6 +38329,16 @@
     {
       "source": "controllers_mibdeep_mibdeep_m",
       "target": "controllers_mibdeep_updatewidgets_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\MibDeep.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_mibdeep_m",
+      "target": "controllers_mibdeep_writemodelstore_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -44931,6 +45808,16 @@
     },
     {
       "source": "core_mibbigdatalabels_mibbigdatalabels_m",
+      "target": "core_mibbigdatalabels_mibbigdatalabels_countmaterials",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibBigDataLabels\\MibBigDataLabels.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibbigdatalabels_mibbigdatalabels_m",
       "target": "core_mibbigdatalabels_mibbigdatalabels_writematerialmetadata",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -45061,6 +45948,56 @@
     },
     {
       "source": "core_mibbigdatalabels_mibbigdatalabels_m",
+      "target": "core_mibbigdatalabels_mibbigdatalabels_syncinstanceindex",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibBigDataLabels\\MibBigDataLabels.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibbigdatalabels_mibbigdatalabels_m",
+      "target": "core_mibbigdatalabels_mibbigdatalabels_marklabelschanged",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibBigDataLabels\\MibBigDataLabels.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibbigdatalabels_mibbigdatalabels_m",
+      "target": "core_mibbigdatalabels_mibbigdatalabels_saveinstanceindex",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibBigDataLabels\\MibBigDataLabels.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibbigdatalabels_mibbigdatalabels_m",
+      "target": "core_mibbigdatalabels_mibbigdatalabels_loadinstanceindex",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibBigDataLabels\\MibBigDataLabels.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibbigdatalabels_mibbigdatalabels_m",
+      "target": "core_mibbigdatalabels_mibbigdatalabels_resetinstanceindexstate",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibBigDataLabels\\MibBigDataLabels.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibbigdatalabels_mibbigdatalabels_m",
       "target": "core_mibbigdatalabels_mibbigdatalabels_orientphysranges",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -45132,6 +46069,16 @@
     {
       "source": "core_mibbigdatalabels_mibbigdatalabels_m",
       "target": "core_mibbigdatalabels_mibbigdatalabels_levelmappathfor",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibBigDataLabels\\MibBigDataLabels.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibbigdatalabels_mibbigdatalabels_m",
+      "target": "core_mibbigdatalabels_mibbigdatalabels_instanceindexpathfor",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -45372,6 +46319,16 @@
     {
       "source": "core_mibbigdatalabelszarr2_mibbigdatalabelszarr2_m",
       "target": "core_mibbigdatalabelszarr2_mibbigdatalabelszarr2_writepackedlevel",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibBigDataLabelsZarr2\\MibBigDataLabelsZarr2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibbigdatalabelszarr2_mibbigdatalabelszarr2_m",
+      "target": "core_mibbigdatalabelszarr2_mibbigdatalabelszarr2_writematerialmetadata",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -46632,6 +47589,16 @@
     {
       "source": "core_miblabels63_miblabels63_m",
       "target": "core_miblabels63_miblabels63_miblabels63",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibLabels63\\MibLabels63.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_miblabels63_miblabels63_m",
+      "target": "core_miblabels63_miblabels63_setlayout",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -51431,7 +52398,27 @@
     },
     {
       "source": "io_savers_imagedatastoresliceprovider_m",
+      "target": "io_savers_imagedatastoresliceprovider_getslicerows",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+savers\\ImageDatastoreSliceProvider.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_savers_imagedatastoresliceprovider_m",
       "target": "io_savers_imagedatastoresliceprovider_readfile",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+savers\\ImageDatastoreSliceProvider.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_savers_imagedatastoresliceprovider_m",
+      "target": "io_savers_imagedatastoresliceprovider_verifydepth",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -52051,6 +53038,16 @@
     },
     {
       "source": "io_savers_zarr3saver_m",
+      "target": "io_savers_zarr3saver_savestreamresumable",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+savers\\Zarr3Saver.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_savers_zarr3saver_m",
       "target": "io_savers_zarr3saver_resolveexportoptions",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -52082,6 +53079,36 @@
     {
       "source": "io_savers_zarr3saver_m",
       "target": "io_savers_zarr3saver_optionsdialog",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+savers\\Zarr3Saver.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_savers_zarr3saver_m",
+      "target": "io_savers_zarr3saver_optionsfrompyramid",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+savers\\Zarr3Saver.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_savers_zarr3saver_m",
+      "target": "io_savers_zarr3saver_reviewoptionsdialog",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+savers\\Zarr3Saver.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_savers_zarr3saver_m",
+      "target": "io_savers_zarr3saver_pyramidfromplan",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -52131,7 +53158,7 @@
     },
     {
       "source": "io_savers_zarr3saver_m",
-      "target": "io_savers_zarr3saver_addboundingbox",
+      "target": "io_savers_zarr3saver_writedirectslab",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -52141,7 +53168,17 @@
     },
     {
       "source": "io_savers_zarr3saver_m",
-      "target": "io_savers_zarr3saver_writestreambatch",
+      "target": "io_savers_zarr3saver_writelevel0band",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+savers\\Zarr3Saver.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_savers_zarr3saver_m",
+      "target": "io_savers_zarr3saver_buildlevelband",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -52162,6 +53199,86 @@
     {
       "source": "io_savers_zarr3saver_m",
       "target": "io_savers_zarr3saver_blockreduce3d",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+savers\\Zarr3Saver.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_savers_zarr3saver_m",
+      "target": "io_savers_zarr3saver_mapaxisvector",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+savers\\Zarr3Saver.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_savers_zarr3saver_m",
+      "target": "io_savers_zarr3saver_streamdefaults",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+savers\\Zarr3Saver.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_savers_zarr3saver_m",
+      "target": "io_savers_zarr3saver_createstreamstore",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+savers\\Zarr3Saver.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_savers_zarr3saver_m",
+      "target": "io_savers_zarr3saver_runtasks",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+savers\\Zarr3Saver.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_savers_zarr3saver_m",
+      "target": "io_savers_zarr3saver_reduceslicexy",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+savers\\Zarr3Saver.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_savers_zarr3saver_m",
+      "target": "io_savers_zarr3saver_writeregion",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+savers\\Zarr3Saver.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_savers_zarr3saver_m",
+      "target": "io_savers_zarr3saver_addboundingbox",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+savers\\Zarr3Saver.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_savers_zarr3saver_m",
+      "target": "io_savers_zarr3saver_writestreambatch",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -55921,6 +57038,16 @@
     },
     {
       "source": "plugins_fileprocessing_imageconverter_imageconverter_m",
+      "target": "plugins_fileprocessing_imageconverter_imageconverter_readdepthwithloader",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\FileProcessing\\ImageConverter\\ImageConverter.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_fileprocessing_imageconverter_imageconverter_m",
       "target": "plugins_fileprocessing_imageconverter_imageconverter_writeimagewithprogress",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -55932,6 +57059,16 @@
     {
       "source": "plugins_fileprocessing_imageconverter_imageconverter_m",
       "target": "plugins_fileprocessing_imageconverter_imageconverter_readsourcegeometry",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\FileProcessing\\ImageConverter\\ImageConverter.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_fileprocessing_imageconverter_imageconverter_m",
+      "target": "plugins_fileprocessing_imageconverter_imageconverter_confirmzarrmemory",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -56102,6 +57239,16 @@
     {
       "source": "plugins_fileprocessing_imageconverter_imageconverter_m",
       "target": "plugins_fileprocessing_imageconverter_imageconverter_generatezarrnative",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\FileProcessing\\ImageConverter\\ImageConverter.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_fileprocessing_imageconverter_imageconverter_m",
+      "target": "plugins_fileprocessing_imageconverter_imageconverter_getparallelpool",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -56416,6 +57563,436 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "plugins\\IntensityAnalysis\\TripleAreaIntensity\\TripleAreaIntensity.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_viewlistner_callback",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_smoothboundarycontour",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_smoothdistanceprofile",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_nearestdistanceprofile",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_issightlineblocked",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_detectwidecontacts",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_assemblecontacts",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_suggestdistancegroups",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_mccalc2",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_restorethresholdlists",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_convertcontactsettingunits",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_convertmissingcontactsettings",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_syncthresholdselection",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_closewindow",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_updatewidgets",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_updatebatchoptfromgui",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_returnbatchopt",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_dnd_files_callback",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_calculateinpixels_clicked",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_scalelocalminimawithdistance_clicked",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_updatecontacttable",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_updatecontactclasslabels",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_contactthrestable_cellselection",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_contactthrestable_update",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_suggestcalculationparameters",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_analysislistbox_clicked",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_analysiscontacts_menuclicked",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_analysisfilelist_menuclicked",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_analysiscondition_menuclicked",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_saveconfig",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_loadconfig",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_updategenerateimagesrendercutoffs",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_extendedrays_clicked",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_generateimages_clicked",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_exportresultstomatlab_clicked",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_highlightcontacts_clicked",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_showhelp",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_raytraceobject",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_selectoutputdirectory",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_savetoexcel",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_calculate",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_closeallfigures",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "plugins_myplugins_mccalc2_mccalc2_analysecontacts",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -58990,6 +60567,26 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_chunkingexport_chunkingexport_m",
+      "target": "core_miblabels_miblabels_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+controllers\\@ChunkingExport\\ChunkingExport.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_chunkingexport_chunkingexport_m",
+      "target": "io_savers_zarr3saver_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+controllers\\@ChunkingExport\\ChunkingExport.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_chunkingimport_chunkingimport_m",
       "target": "core_childview_childview_m",
       "relation": "calls",
@@ -61221,6 +62818,26 @@
     },
     {
       "source": "controllers_mibactivedataset_buffers_contextmenu_m",
+      "target": "core_miblabels63_miblabels63_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+controllers\\@MibActiveDataset\\buffers_ContextMenu.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibactivedataset_buffers_contextmenu_m",
+      "target": "core_miblabels_miblabels_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+controllers\\@MibActiveDataset\\buffers_ContextMenu.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibactivedataset_buffers_contextmenu_m",
       "target": "core_mibdataset_mibdataset_m",
       "relation": "calls",
       "confidence": "INFERRED",
@@ -61790,6 +63407,16 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_mibdeep_checkzarrstores_m",
+      "target": "io_extensionregistryload_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+controllers\\@MibDeep\\checkZarrStores.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_mibdeep_countlabels_m",
       "target": "core_poolwaitbar_poolwaitbar_m",
       "relation": "calls",
@@ -62320,11 +63947,51 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_mibdeep_startpredictionblockedimage_m",
+      "target": "controllers_mibdeep_writemodelstore_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@MibDeep\\startPredictionBlockedImage.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_mibdeep_startpredictioninstances_m",
       "target": "core_toggleeventdata_toggleeventdata_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.7,
+      "source_file": "+controllers\\@MibDeep\\startPredictionInstances.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_startpredictioninstances_m",
+      "target": "controllers_mibdeep_checkzarrstores_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@MibDeep\\startPredictionInstances.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_startpredictioninstances_m",
+      "target": "controllers_mibdeep_selectmodelstoredestination_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@MibDeep\\startPredictionInstances.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_startpredictioninstances_m",
+      "target": "controllers_mibdeep_writemodelstore_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
       "source_file": "+controllers\\@MibDeep\\startPredictionInstances.m",
       "source_location": null,
       "weight": 1.0
@@ -62491,6 +64158,16 @@
     },
     {
       "source": "controllers_mibdeep_updatebatchoptfromgui_m",
+      "target": "controllers_mibdeep_bioformatscallback_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@MibDeep\\updateBatchOptFromGUI.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_updatebatchoptfromgui_m",
       "target": "controllers_mibdeep_updatestartingweightslist_m",
       "relation": "calls",
       "confidence": "INFERRED",
@@ -62566,6 +64243,16 @@
       "confidence": "INFERRED",
       "confidence_score": 0.75,
       "source_file": "+controllers\\@MibDeep\\updateWidgets.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_writemodelstore_m",
+      "target": "core_mibbigdatalabels_mibbigdatalabels_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+controllers\\@MibDeep\\writeModelStore.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -63526,6 +65213,16 @@
       "confidence": "INFERRED",
       "confidence_score": 0.7,
       "source_file": "+controllers\\@MibRibbon\\MibRibbon.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibribbon_model_callbacks_m",
+      "target": "core_toggleeventdata_toggleeventdata_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+controllers\\@MibRibbon\\model_Callbacks.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -68811,6 +70508,26 @@
     },
     {
       "source": "core_mibbigdatalabels_setdata63_m",
+      "target": "core_mibbigdatalabels_mibbigdatalabels_tilesforfullregion",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+core\\@MibBigDataLabels\\setData63.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibbigdatalabels_setdata63_m",
+      "target": "core_mibbigdatalabels_mibbigdatalabels_marklabelschanged",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+core\\@MibBigDataLabels\\setData63.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibbigdatalabels_setdata63_m",
       "target": "core_mibbigdatalabels_mibbigdatalabels_propagateregion",
       "relation": "calls",
       "confidence": "INFERRED",
@@ -70272,6 +71989,16 @@
     {
       "source": "models_mibmodel_convertmodel_m",
       "target": "controllers_preferences_preferences_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+models\\@MibModel\\convertModel.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_convertmodel_m",
+      "target": "core_mibbigdatalabels_mibbigdatalabels_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.7,
@@ -72810,6 +74537,16 @@
       "weight": 1.0
     },
     {
+      "source": "io_savers_zarr3saver_m",
+      "target": "io_zarr_array_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+io\\+savers\\Zarr3Saver.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "io_zarr_array_m",
       "target": "external_zarr_matlab_zarrarray_m",
       "relation": "calls",
@@ -72976,6 +74713,46 @@
       "confidence": "INFERRED",
       "confidence_score": 0.7,
       "source_file": "plugins\\IntensityAnalysis\\TripleAreaIntensity\\TripleAreaIntensity.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "core_childview_childview_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "core_toggleeventdata_toggleeventdata_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "core_poolwaitbar_poolwaitbar_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "controllers_boundingbox_boundingbox_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -76480,6 +78257,16 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_mibactivedataset_buffers_contextmenu_m",
+      "target": "utils_buffertooltip_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibActiveDataset\\buffers_ContextMenu.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_mibactivedataset_datasettypechange_callback_m",
       "target": "utils_dlgs_inputquestdlg_m",
       "relation": "calls",
@@ -76820,6 +78607,16 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_mibcontroller_updateguiwidgets_m",
+      "target": "utils_buffertooltip_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibController\\updateGuiWidgets.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_mibcontroller_updateslicenumber_m",
       "target": "utils_dlgs_showerrordialog_m",
       "relation": "calls",
@@ -76876,6 +78673,26 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "+controllers\\@MibDeep\\checkNetwork.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_checkzarrstores_m",
+      "target": "utils_dlgs_inputuniversaldlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\checkZarrStores.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_checkzarrstores_m",
+      "target": "utils_dlgs_showerrordialog_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\checkZarrStores.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -77340,6 +79157,16 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_mibdeep_previewmodels_m",
+      "target": "utils_dlgs_showerrordialog_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\previewModels.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_mibdeep_previewpredictions_m",
       "target": "utils_dlgs_inputuniversaldlg_m",
       "relation": "calls",
@@ -77486,6 +79313,16 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "+controllers\\@MibDeep\\saveConfig.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_selectmodelstoredestination_m",
+      "target": "utils_dlgs_inputuniversaldlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\selectModelStoreDestination.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -77870,6 +79707,16 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_mibdeep_startpredictioninstances_m",
+      "target": "utils_dlgs_inputuniversaldlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\startPredictionInstances.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_mibdeep_startpreprocessing_m",
       "target": "utils_dlgs_inputuniversaldlg_m",
       "relation": "calls",
@@ -78066,6 +79913,16 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "+controllers\\@MibDeep\\updateDynamicMaskSettings.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_updatemodeloutputsettings_m",
+      "target": "utils_dlgs_inputuniversaldlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\updateModelOutputSettings.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -85006,6 +86863,136 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "plugins\\IntensityAnalysis\\TripleAreaIntensity\\TripleAreaIntensity.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "utils_align_windv_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "utils_updatebatchoptcombinefields_shared_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "utils_dlgs_showerrordialog_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "utils_applythemecolors_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "utils_movewindowoutside_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "utils_fontsizeupdate_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "utils_updateguifrombatchopt_shared_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "utils_attachfilednd_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "utils_updatebatchoptfromgui_shared_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "utils_dlgs_inputuniversaldlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "utils_dlgs_mibuigetfile_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "utils_concatenatestructures_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_mccalc2_mccalc2_m",
+      "target": "utils_openhelppage_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MCcalc2\\MCcalc2.m",
       "source_location": null,
       "weight": 1.0
     },

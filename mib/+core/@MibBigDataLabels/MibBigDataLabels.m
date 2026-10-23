@@ -52,6 +52,13 @@ classdef MibBigDataLabels < core.MibLabels63
         modelScaleFactors = []
         % [nLevels x 3] per-level [yScale, xScale, zScale] relative to level 0.
         Compressors = 'zstd'
+        ShardFactors = []
+        % [1x3 numeric] chunks per shard [y x z] used by createStore for zarr v3
+        % stores, as ``io.savers.Zarr3Saver.computeShard`` takes them; [] or 0s =
+        % no sharding (default). Ignored for zarr v2. Sharding cuts the file count
+        % of a large store, but every edit then rewrites whole shards (a
+        % partial-shard write re-reads and rewrites the shard, measured 3.4x
+        % slower), so the interactively created models leave it off.
         maxIndexUsed = 0
         % [double] highest material/instance index ever written to the store. Raised
         % by setData63 from the max of each written block (cost scales with the
@@ -168,7 +175,9 @@ classdef MibBigDataLabels < core.MibLabels63
             %     argument so the method signature stays stable for live instances.
             %
             % The level count, sizes, scale factors, and chunk shapes are copied from
-            % ``pyramid`` so the model mirrors the image pyramid exactly.  An empty level
+            % ``pyramid`` so the model mirrors the image pyramid exactly. The codec
+            % comes from ``obj.Compressors`` and, for zarr v3, sharding from
+            % ``obj.ShardFactors`` (off by default); set them before this call.  An empty level
             % map (``matLevel``) is initialised and persisted as a side-file.
             %
             % The store is written in zarr **v3** by default and in **v2** when the
@@ -259,8 +268,12 @@ classdef MibBigDataLabels < core.MibLabels63
                     if ~isempty(zIdx) && zIdx <= numel(c); ch(3) = c(zIdx); end
                 end
                 ch = max(min(double(ch), sz), [1 1 1]);
-                obj.modelArrays{L} = grp.createArray(name, sz, obj.containerClass, ...
-                    'chunkShape', ch, 'compressors', obj.Compressors, 'fillValue', 0);
+                createArgs = {'chunkShape', ch, 'compressors', obj.Compressors, 'fillValue', 0};
+                if zarrFormat == 3 && any(obj.ShardFactors > 0)
+                    % zarr v2 has no sharding codec
+                    createArgs = [createArgs, {'shardShape', io.savers.Zarr3Saver.computeShard(ch, obj.ShardFactors)}]; %#ok<AGROW>
+                end
+                obj.modelArrays{L} = grp.createArray(name, sz, obj.containerClass, createArgs{:});
                 obj.modelLevelNames{L} = name;
             end
             obj.writeMultiscales(grp, scaleFac);
