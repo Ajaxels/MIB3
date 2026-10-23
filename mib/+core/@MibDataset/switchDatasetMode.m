@@ -36,7 +36,7 @@ function newModeOut = switchDatasetMode(obj, newMode, enableSelection, initWithI
 %   .. code-block:: matlab
 %
 %
-%     result = obj.mibModel.I{obj.mibModel.Id}.switchDatasetMode(1, obj.mibModel.preferences.System.EnableSelection);% enable the virtual stacking mode
+%     result = obj.mibModel.I{obj.mibModel.getActiveId()}.switchDatasetMode(1, obj.mibModel.preferences.System.EnableSelection);% enable the virtual stacking mode
 %
 
 % Updates

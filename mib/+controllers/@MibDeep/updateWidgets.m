@@ -10,7 +10,7 @@ function updateWidgets(obj)
     % updateWidgets normally triggered during change of MIB
     % buffers, make sure that any widgets related changes are
     % correctly propagated into the BatchOpt structure
-    if isfield(obj.BatchOpt, 'id'); obj.BatchOpt.id = obj.mibModel.Id; end
+    if isfield(obj.BatchOpt, 'id'); obj.BatchOpt.id = obj.mibModel.getActiveId(); end
 
     % update lined widgets
     event.Source.Tag = 'BioformatsTraining';

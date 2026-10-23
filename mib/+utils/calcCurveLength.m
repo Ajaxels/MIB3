@@ -57,7 +57,7 @@ function STATS = calcCurveLength(slice, pixSize, CC)
 %
 %   .. code-block:: matlab
 %
-%      pixSize = obj.mibModel.I{obj.mibModel.Id}.pixSize;
+%      pixSize = obj.mibModel.I{obj.mibModel.getActiveId()}.pixSize;
 %      STATS = utils.calcCurveLength(slice, pixSize);
 %
 % See also:

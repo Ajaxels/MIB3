@@ -252,7 +252,7 @@ classdef MibDeepActivations < handle
             % updateWidgets normally triggered during change of MIB
             % buffers, make sure that any widgets related changes are
             % correctly propagated into the BatchOpt structure
-            if isfield(obj.BatchOpt, 'id'); obj.BatchOpt.id = obj.mibModel.Id; end
+            if isfield(obj.BatchOpt, 'id'); obj.BatchOpt.id = obj.mibModel.getActiveId(); end
             
             % when elements GIU needs to be updated, update obj.BatchOpt
             % structure and after that update elements of GUI by the
