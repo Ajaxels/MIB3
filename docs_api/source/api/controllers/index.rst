@@ -48,7 +48,7 @@ Script-driven processing of multiple datasets.
 Image processing tools
 ----------------------
 
-Dialogs that modify pixel data: contrast, filters, arithmetic, and colour.
+Dialogs that modify or measure pixel data: contrast, filters, arithmetic, colour, and sharpness.
 
 .. toctree::
    :maxdepth: 1
@@ -58,6 +58,7 @@ Dialogs that modify pixel data: contrast, filters, arithmetic, and colour.
    DisplayAdjust
    ImageArithmetics
    ImageFilters
+   ImageSharpness
    MorphOpsImages
    WhiteBalance
 

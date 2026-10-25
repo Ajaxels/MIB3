@@ -55,6 +55,6 @@ end
 % here, and a second copy that falls behind makes MIB discard the preferences
 % saved by the newer version (see models.MibModel.initializePreferences)
 
-mibVersion = 'ver. 2026.1024 / 24.10.2026';
+mibVersion = 'ver. 2026.1025 / 25.10.2026';
 
 end

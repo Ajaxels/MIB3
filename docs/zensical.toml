@@ -119,6 +119,7 @@ nav = [
         { "-> image arithmetics" = "user-interface/ribbon/image/image-tools-arithmetic.md" },
         { "-> intensity projection" = "user-interface/ribbon/image/image-tools-projections.md" },
         { "-> select image frame" = "user-interface/ribbon/image/image-tools-selectframe.md" },
+        { "-> sharpness and noise" = "user-interface/ribbon/image/image-tools-sharpness.md" },
         { "-> white balance correction" = "user-interface/ribbon/image/image-tools-whitebalance.md" },
         { "Morphological ops" = "user-interface/ribbon/image/image-morphops.md" },
       ]},

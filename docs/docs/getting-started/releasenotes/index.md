@@ -44,6 +44,10 @@ For the downloads visit [MIB website](https://mib.helsinki.fi/downloads.html) fo
     - **Stitching**: the inspector handles mosaics of Z-stacks; the *Fix Z* table lists the section
       or slice boundaries, each opened in the Fix Z boundary view
     - **Resize dataset** can be cancelled; downloads show their progress
+    - **Sharpness and noise**: a new tool in *Image tools* that measures the resolution and noise of selected
+      areas, detects astigmatism and gives focus scores; results of different images collect in one
+      table for comparison.
+      See [Sharpness and noise](../../user-interface/ribbon/image/image-tools-sharpness.md)
     - **Fixes**:
         - MATLAB no longer crashes at exit after ZARR files were opened in a session that also used
           Computer Vision Toolbox features

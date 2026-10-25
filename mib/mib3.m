@@ -126,6 +126,7 @@ if false
     views.ImageArithmeticsGUI;
     views.ImageFiltersGUI;
     views.ImageFrameGUI;
+    views.ImageSharpnessGUI;
     views.InstanceEditorGUI;
     views.Lines3dDialog;
     views.MakeMovieGUI;

@@ -1875,6 +1875,8 @@
       
         
       
+        
+      
     
     
     
@@ -2185,6 +2187,33 @@
     
   
   -> select image frame
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-interface/ribbon/image/image-tools-sharpness.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  -> sharpness and noise
 
     
   </span>
@@ -5501,67 +5530,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#plugins-with-gui-written-with-guide" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        Plugins with GUI written with GUIDE
-      </span>
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#plugins-with-gui-written-using-appdesigner" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        Plugins with GUI written using AppDesigner
-      </span>
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#writing-your-own-plugins_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        Writing your own plugins
-      </span>
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Writing your own plugins">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#plugins-without-gui_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        Plugins without GUI
-      </span>
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#plugins-with-gui-written-with-guide_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        Plugins with GUI written with GUIDE
-      </span>
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#plugins-with-gui-written-using-app-designer" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -5570,22 +5538,16 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Plugins with GUI written using App Designer">
-      <ul class="md-nav__list">
+</li>
         
           <li class="md-nav__item">
-  <a href="#why-choose-app-designer" class="md-nav__link">
+  <a href="#writing-plugins-with-ai-coding-agents" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Why choose App Designer?
+        Writing plugins with AI coding agents
       </span>
     </span>
   </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
         
@@ -5786,7 +5748,7 @@ No additional configuration is typically needed for detection.</p>
 <tr>
 <td><strong>Tutorials</strong></td>
 <td><a href="tutorials/gui-tutorial.html"><strong>GUI Tutorial</strong></a></td>
-<td>Reference App Designer GUI plugin with four operations (Crop, Resize, Convert, Invert) — the starting point for plugin development.</td>
+<td>Reference App Designer GUI plugin with four operations (Crop, Resize, Convert, Invert) - the starting point for plugin development.</td>
 </tr>
 <tr>
 <td></td>
@@ -5807,98 +5769,29 @@ No additional configuration is typically needed for detection.</p>
 </table>
 <hr />
 <h2 id="writing-your-own-plugins">Writing your own plugins<a class="headerlink" href="#writing-your-own-plugins" title="Permanent link">&para;</a></h2>
-<p>MIB supports custom plugin development in MATLAB.<br>
-Check the <a href="https://mib.helsinki.fi/tutorials_programming.html">Programming tutorials</a> section on MIB website for details.</p>
-<p>MIB is compatible with 3 types of plugins:</p>
+<p>MIB supports custom plugin development in MATLAB. The easiest start is to copy one of the <strong>Tutorials</strong> plugins from <code>mib\plugins\Tutorials\</code> and adapt it.
+More examples are in the <a href="https://mib.helsinki.fi/tutorials_programming.html">Programming tutorials</a> section on MIB website.</p>
 <h3 id="plugins-without-gui">Plugins without GUI<a class="headerlink" href="#plugins-without-gui" title="Permanent link">&para;</a></h3>
-<p>The simplest configuration, easy to implement. Suitable to perform specific operation with limited interaciton with the user.</p>
-<details class="info">
-<summary>Example</summary>
-<p>check <code>Development\mibPlugin_withoutGUI\</code> for example</p>
-</details>
-<h3 id="plugins-with-gui-written-with-guide">Plugins with GUI written with GUIDE<a class="headerlink" href="#plugins-with-gui-written-with-guide" title="Permanent link">&para;</a></h3>
-<p><a href="https://se.mathworks.com/help/matlab/ref/guide.html">GUIDE</a> is the original framework of MATLAB for development of tools with user interface (check <code>Development\mibPlugin_withoutGUI\</code> for example).</p>
-<details class="info">
-<summary>Examples</summary>
-<ul>
-<li>check <code>Development\mibPluginGUI_ver1\</code> for example of a basic plugin</li>
-<li>check <code>Development\mibPluginGUI_ver2_Batch_compatible\</code> for example of a plugin compatible with batch processing operations (<a href="../user-interface/ribbon/home/home-batchprocessing.html">Ribbon → Home-&gt;Batch processing</a>)</li>
-<li>check <code>Development\ccreating GUI with guide.pdf</code> for instructions on how to adapt the example towards a new plugin</li>
-</ul>
-</details>
-<div class="admonition warning">
-<p class="admonition-title">GUIDE is going to be removed from MATLAB</p>
-<p>GUIDE is expected to be removed in R2025a, but the syntax will still be working in MATLAB and MIB</p>
-</div>
-<h3 id="plugins-with-gui-written-using-appdesigner">Plugins with GUI written using AppDesigner<a class="headerlink" href="#plugins-with-gui-written-using-appdesigner" title="Permanent link">&para;</a></h3>
-<p><a href="https://se.mathworks.com/help/matlab/ref/appdesigner.html">AppDesigner</a> is a newer framework with many features. It is typically recommended for GUI development with MIB</p>
-<details class="info">
-<summary>Examples</summary>
-<ul>
-<li>check <code>Development\mibPluginGUI_ver3_appDesigner\</code> for example of a plugin compatible with batch processing operations (<a href="../user-interface/ribbon/home/home-batchprocessing.html">Ribbon → Home-&gt;Batch processing</a>) </li>
-<li>check <code>Development\creating GUI with appdesigner.pdf</code> for instructions on how to adapt the example towards a new plugin</li>
-</ul>
-</details>
-<h2 id="writing-your-own-plugins_1">Writing your own plugins<a class="headerlink" href="#writing-your-own-plugins_1" title="Permanent link">&para;</a></h2>
-<p>Microscopy Image Browser (MIB) supports custom plugin development in MATLAB, allowing users to tailor functionality to their specific needs. For detailed guidance, refer to the <a href="https://mib.helsinki.fi/tutorials_programming.html">Programming Tutorials</a> section on the MIB website, which includes step-by-step examples and best practices.</p>
-<p>MIB is compatible with three types of plugins, each suited to different levels of complexity and user interaction.</p>
-<h3 id="plugins-without-gui_1">Plugins without GUI<a class="headerlink" href="#plugins-without-gui_1" title="Permanent link">&para;</a></h3>
-<p>This is the simplest plugin type, ideal for performing specific operations with minimal user interaction. These plugins are lightweight, typically consisting of a single <code>.m</code> file that executes a predefined task without a graphical interface.</p>
-<details class="info">
-<summary>Example</summary>
-<ul>
-<li><strong>Location</strong>: Check the <code>Development\mibPlugin_withoutGUI\</code> folder in your MIB installation.</li>
-<li><strong>Purpose</strong>: Demonstrates a basic script that processes data directly (e.g., applying a filter to the current image).</li>
-<li><strong>Use Case</strong>: Perfect for quick automation tasks, such as batch-converting file formats or applying a fixed transformation.</li>
-</ul>
-</details>
-<h3 id="plugins-with-gui-written-with-guide_1">Plugins with GUI written with GUIDE<a class="headerlink" href="#plugins-with-gui-written-with-guide_1" title="Permanent link">&para;</a></h3>
-<p><a href="https://se.mathworks.com/help/matlab/ref/guide.html">GUIDE</a> is MATLAB’s original framework for creating tools with graphical user interfaces (GUIs). Plugins built with GUIDE offer interactive controls (e.g., buttons, sliders) and are well-suited for tasks requiring user input.</p>
-<details class="info">
-<summary>Examples</summary>
-<ul>
-<li><strong>Basic Plugin</strong>: <ul>
-<li><strong>Location</strong>: <code>Development\mibPluginGUI_ver1\</code> </li>
-<li><strong>Description</strong>: A simple GUIDE-based plugin with a minimal interface, useful as a starting point for customization.</li>
-</ul>
-</li>
-<li><strong>Batch-Compatible Plugin</strong>: <ul>
-<li><strong>Location</strong>: <code>Development\mibPluginGUI_ver2_Batch_compatible\</code> </li>
-<li><strong>Description</strong>: Extends the basic plugin to support batch processing, integrating with <a href="../user-interface/ribbon/home/home-batchprocessing.html">Ribbon → Home -&gt; Batch Processing</a>. Ideal for repetitive tasks across multiple datasets.</li>
-</ul>
-</li>
-<li><strong>Instructions</strong>: <ul>
-<li><strong>File</strong>: <code>Development\creating GUI with guide.pdf</code> </li>
-<li><strong>Content</strong>: A guide on adapting these examples to create your own GUIDE-based plugin.</li>
-</ul>
-</li>
-</ul>
-</details>
-<div class="admonition warning">
-<p class="admonition-title">GUIDE is scheduled for removal from MATLAB</p>
-<p>MATLAB plans to discontinue GUIDE in release R2025a. While existing GUIDE plugins will remain functional in MIB and MATLAB beyond this date, new development should consider App Designer for future-proofing. Check <a href="https://se.mathworks.com/help/matlab/ref/guide.html">MathWorks documentation</a> for updates on this transition.</p>
-</div>
+<p>The simplest type: a single <code>.m</code> file that performs an operation with little or no interaction with the user.</p>
+<p>Example: <a href="tutorials/mib-plugin-without-gui.html">MIB Plugin Without GUI</a></p>
 <h3 id="plugins-with-gui-written-using-app-designer">Plugins with GUI written using App Designer<a class="headerlink" href="#plugins-with-gui-written-using-app-designer" title="Permanent link">&para;</a></h3>
-<p><a href="https://se.mathworks.com/help/matlab/ref/appdesigner.html">App Designer</a> is MATLAB’s modern framework for GUI development, offering enhanced features like responsive layouts, better component libraries, and improved integration with MATLAB’s ecosystem. It’s the recommended choice for new plugin development in MIB.</p>
+<p><a href="https://se.mathworks.com/help/matlab/ref/appdesigner.html">App Designer</a> is the recommended framework for plugins with a user interface.</p>
 <details class="info">
 <summary>Examples</summary>
 <ul>
-<li><strong>Batch-Compatible Plugin</strong>: <ul>
-<li><strong>Location</strong>: <code>Development\mibPluginGUI_ver3_appDesigner\</code> </li>
-<li><strong>Description</strong>: An App Designer-based plugin supporting batch processing (see <a href="../user-interface/ribbon/home/home-batchprocessing.html">Ribbon → Home -&gt; Batch Processing</a>). It showcases interactive controls and data handling in a modern interface.</li>
-</ul>
-</li>
-<li><strong>Instructions</strong>: <ul>
-<li><strong>File</strong>: <code>Development\creating GUI with appdesigner.pdf</code> </li>
-<li><strong>Content</strong>: A tutorial on modifying this example to build your own plugin.</li>
-</ul>
-</li>
+<li><a href="tutorials/gui-tutorial.html">GUI Tutorial</a> - the starting point for a new plugin</li>
+<li><a href="tutorials/gui-tutorial-batch.html">GUI Tutorial (Batch)</a> - adds support for <a href="../user-interface/ribbon/home/home-batchprocessing.html">Ribbon → Home → Batch processing</a></li>
+<li><a href="tutorials/mib-app-design-plugin.html">Demo Plugin</a> - a minimal batch-compatible plugin</li>
 </ul>
 </details>
-<h4 id="why-choose-app-designer">Why choose App Designer?<a class="headerlink" href="#why-choose-app-designer" title="Permanent link">&para;</a></h4>
+<div class="admonition warning">
+<p class="admonition-title">GUIDE</p>
+<p><a href="https://se.mathworks.com/help/matlab/ref/guide.html">GUIDE</a>, the original MATLAB framework for user interfaces, is being removed from MATLAB. Write new plugins with App Designer.</p>
+</div>
+<h3 id="writing-plugins-with-ai-coding-agents">Writing plugins with AI coding agents<a class="headerlink" href="#writing-plugins-with-ai-coding-agents" title="Permanent link">&para;</a></h3>
+<p>Plugins can also be written with the help of AI coding agents; MIB3 includes instructions for the agents in <code>mib\plugins\plugins_instructions.md</code>.</p>
 <ul>
-<li><strong>Modern Features</strong>: Supports responsive UIs, modern MATLAB objects (e.g., <code>uitable</code>), and easier debugging.</li>
-<li><strong>Future-Proof</strong>: Unlike GUIDE, App Designer is actively supported and aligns with MATLAB’s long-term direction.</li>
+<li><a href="https://youtu.be/ZmeC7fZU0q0"><span class="twemoji red-color"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 7.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2026 Fonticons, Inc.--><path fill="currentColor" d="M549.7 124.1c-6.2-23.7-24.8-42.3-48.3-48.6C458.9 64 288.1 64 288.1 64S117.3 64 74.7 75.5c-23.5 6.3-42 24.9-48.3 48.6C15 167 15 256.4 15 256.4s0 89.4 11.4 132.3c6.3 23.6 24.8 41.5 48.3 47.8C117.3 448 288.1 448 288.1 448s170.8 0 213.4-11.5c23.5-6.3 42-24.2 48.3-47.8 11.4-42.9 11.4-132.3 11.4-132.3s0-89.4-11.4-132.3zM232.2 337.6V175.2l142.7 81.2z"/></svg></span> Vibe coding a plugin for MIB3</a></li>
 </ul>
 <hr />
 <p><em>Back to <a href="../index.html">MIB</a></em></p>

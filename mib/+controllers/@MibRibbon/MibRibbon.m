@@ -228,6 +228,7 @@ classdef MibRibbon
             obj.handles.ribbonImage.contentAware.ItemPushedFcn = @obj.image_Callbacks;
             obj.handles.ribbonImage.debrisRemoval.ItemPushedFcn = @obj.image_Callbacks;
             obj.handles.ribbonImage.imageMath.ItemPushedFcn = @obj.image_Callbacks;
+            obj.handles.ribbonImage.sharpness.ItemPushedFcn = @obj.image_Callbacks;
             obj.handles.ribbonImage.intProjection.ItemPushedFcn = @obj.image_Callbacks;
             obj.handles.ribbonImage.imgFrame.ItemPushedFcn = @obj.image_Callbacks;
             obj.handles.ribbonImage.whiteBalance.ItemPushedFcn = @obj.image_Callbacks;

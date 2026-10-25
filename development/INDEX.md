@@ -10,7 +10,7 @@ Folder layout:
 |--------|----------|
 | [`guides/`](#guides) | Evergreen how-to guides and lookup references — read **before** starting a task of that type |
 | [`ports/`](#port--feature-logs) | Completed MIB2→MIB3 port and feature logs — historical record; consult when revisiting that feature |
-| Subsystem folders | `bigdata/`, `deepmib/`, `stitching/`, `graphify/` — self-contained work areas with their own plans |
+| Subsystem folders | `bigdata/`, `deepmib/`, `stitching/`, `sharpness/`, `graphify/` — self-contained work areas with their own plans |
 | [`notes/`](#notes--scratch) | Scratch notes, code snippets, environment quirks |
 | `assets/` | Binary sources: `icons.cdr` (CorelDraw icon master), backup copy |
 
@@ -65,6 +65,7 @@ agent working on a plugin. Cheat sheet for converting MIB2 plugins:
 | `bigdata/` | BigData mode: tiled/WSI datasets, levelmap, block-mode brush | [bigdata/README.md](bigdata/README.md) |
 | `deepmib/` | DeepMIB deep learning: 2D/3D instance segmentation plans, 3D U-Net migration, MIB3 axis-order pitfalls (`deepmib_dimensions_problems.md`), deferred ideas ([deepmib/potential_improvements.md](deepmib/potential_improvements.md)), prediction from OME-Zarr pyramids into a BigData model store ([deepmib/plan_zarr_implementation.md](deepmib/plan_zarr_implementation.md), phase 1 implemented, GUI run pending), native StarDist 2D as a 2D Instance architecture ([deepmib/plan_stardist.md](deepmib/plan_stardist.md), implemented, GUI tests pending; proof of concept, source notes against StarDist 0.9.2, verification scripts and the pretrained-model converter in [private/deepmib/stardist_poc/](private/deepmib/stardist_poc/phase0_results.md), git-ignored) | folder files |
 | `stitching/` | Tile stitching tool — **implemented** (translation/affine/rigid/similarity, 2D+3D, seam inspector, Fibics Atlas import). [stitching/plan_stitching.md](stitching/plan_stitching.md) is the reference (architecture, load-bearing pitfalls, status); [stitching/plan_transforms.md](stitching/plan_transforms.md) covers transform models + future (elastic) directions; [stitching/plan_inspector.md](stitching/plan_inspector.md) the seam inspector; [stitching/mlapp_widgets.md](stitching/mlapp_widgets.md) the widget spec; [stitching/smoke_tests.md](stitching/smoke_tests.md) the GUI regression checklist (`NN_stitch_smoke*/` generators) | [stitching/plan_stitching.md](stitching/plan_stitching.md) |
+| `sharpness/` | Sharpness and noise tool (Image tools): FFT resolution, astigmatism and SNR, decorrelation resolution, focus scores. Methods, validation numbers on synthetic data, pitfalls (kernel truncation, decorrelation without a peak), `.mlapp` widget spec and GUI test checklist | [sharpness/plan_sharpness.md](sharpness/plan_sharpness.md) |
 | `graphify/` | Codebase knowledge-graph tooling (see graphify section in root CLAUDE.md) | [graphify/run_graphify.md](graphify/run_graphify.md) |
 
 Related, outside `development/`:

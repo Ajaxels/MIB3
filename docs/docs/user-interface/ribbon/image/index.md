@@ -263,6 +263,15 @@ See more on [Select image frame](image-tools-selectframe.md)
 
 ---
 
+#### Sharpness and noise
+
+Measures the resolution and noise of selected image areas, detects astigmatism and gives focus scores;
+results of different images collect in one table for comparison.
+
+See more on [Sharpness and noise](image-tools-sharpness.md)
+
+---
+
 #### White balance correction
 
 ![White Balance Correction](images/menuImageToolsWhiteBalanceCorrection.png){.on-glb align=left width="380"}

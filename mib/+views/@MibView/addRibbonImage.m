@@ -231,6 +231,10 @@ popupList.add(widgetHandles.intProjection);
 % % Select image frame
 widgetHandles.imgFrame =  ListItem('Select image frame', Icon(fullfile(iconPath, 'image_frame_24px.png')));
 popupList.add(widgetHandles.imgFrame);
+% % Sharpness and noise
+widgetHandles.sharpness =  ListItem('Sharpness and noise', Icon(fullfile(iconPath, 'image_sharpness_24px.png')));
+widgetHandles.sharpness.Description = 'Resolution, astigmatism, noise and focus scores of image regions';
+popupList.add(widgetHandles.sharpness);
 % % White balance correction
 widgetHandles.whiteBalance =  ListItem('White balance correction', Icon(fullfile(iconPath, 'white_balance_24px.png')));
 popupList.add(widgetHandles.whiteBalance);
