@@ -4,6 +4,11 @@ This page lists the current and potentially beta-version release notes for **Mic
 For the latest updates, visit [MIB website](https://mib.helsinki.fi/downloads.html) or check the [Current release notes](index.md).
 For the downloads visit [MIB website](https://mib.helsinki.fi/downloads.html) for the development history click [here](release-notes-history.md).
 
+<!-- mib.helsinki.fi/downloads.html shows this block as the "GitHub nightly version" notes: it reads the
+     built docs/html copy of this page from GitHub master and picks the collapsible block whose title
+     starts with "NEXT RELEASE". Keep that title prefix while the block exists; renaming it at a release
+     hides the box on the website. -->
+
 ???+ info "NEXT RELEASE (in development)"
     - **OME-Zarr pyramids**: every coarser level is now exactly half the size of the level above, so
       all levels line up with the full-resolution image, also in other OME-Zarr viewers. The same

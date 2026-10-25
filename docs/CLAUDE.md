@@ -129,7 +129,7 @@ Example: `### My Section` → `#my-section`.
 | New plugin | `docs/plugins/<category>/` + nav in `zensical.toml` |
 | New keyboard / mouse shortcut | `docs/user-interface/key-and-mouse-shortcuts.md` |
 | New preference | `docs/user-interface/ribbon/home/home-preferences.md` |
-| New release | `docs/getting-started/releasenotes/index.md` (current) + `release-notes-history.md` (older) |
+| New release | `docs/getting-started/releasenotes/index.md` (current) + `release-notes-history.md` (older). The website's downloads page shows the `NEXT RELEASE` block from the **built** `html/` copy on GitHub master and links it to the nightly user guide, `html/` published to https://ajaxels.github.io/MIB3/ by `.github/workflows/nightly-docs.yml`: keep that title prefix, rebuild and commit `html/` for changes to appear there |
 | New segmentation tool | `docs/user-interface/panels/segm/` |
 
 ---
