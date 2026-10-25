@@ -5671,11 +5671,11 @@
 <p>The <strong>API class reference</strong> documents the MATLAB classes, methods, and properties that make up
 Microscopy Image Browser. It is the starting point when writing plugins, scripting MIB, or
 extending its functionality.</p>
-<p><a href="http://mib.helsinki.fi/help/api3/index.html">Open the MIB API reference <span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .75.75 0 0 1 .018-1.042.75.75 0 0 1 1.042-.018 2 2 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.75.75 0 0 1-1.042-.018.75.75 0 0 1-.018-1.042m-4.69 9.64a2 2 0 0 0 2.83 0l1.25-1.25a.75.75 0 0 1 1.042.018.75.75 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .75.75 0 0 1-.018 1.042.75.75 0 0 1-1.042.018 2 2 0 0 0-2.83 0l-2.5 2.5a2 2 0 0 0 0 2.83"/></svg></span></a></p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>The online API reference for MIB3 is being prepared and may not be available yet.</p>
-</div>
+<ul>
+<li><a href="https://mib.helsinki.fi/help/api3/index.html">API reference of the current release <span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .75.75 0 0 1 .018-1.042.75.75 0 0 1 1.042-.018 2 2 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.75.75 0 0 1-1.042-.018.75.75 0 0 1-.018-1.042m-4.69 9.64a2 2 0 0 0 2.83 0l1.25-1.25a.75.75 0 0 1 1.042.018.75.75 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .75.75 0 0 1-.018 1.042.75.75 0 0 1-1.042.018 2 2 0 0 0-2.83 0l-2.5 2.5a2 2 0 0 0 0 2.83"/></svg></span></a></li>
+<li><a href="https://ajaxels.github.io/MIB3/api/">API reference of the nightly version <span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .75.75 0 0 1 .018-1.042.75.75 0 0 1 1.042-.018 2 2 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.75.75 0 0 1-1.042-.018.75.75 0 0 1-.018-1.042m-4.69 9.64a2 2 0 0 0 2.83 0l1.25-1.25a.75.75 0 0 1 1.042.018.75.75 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .75.75 0 0 1-.018 1.042.75.75 0 0 1-1.042.018 2 2 0 0 0-2.83 0l-2.5 2.5a2 2 0 0 0 0 2.83"/></svg></span></a> -
+  matches the source code on <a href="https://github.com/Ajaxels/MIB3">GitHub</a> and is updated with every change</li>
+</ul>
 <p>You can also open it from within MIB: <strong>Ribbon → Home → Help → Class Reference</strong>.</p>
 <h2 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h2>
 <p>The API reference is generated from the MATLAB docblocks with <strong>Sphinx</strong> and
@@ -5685,7 +5685,7 @@ extending its functionality.</p>
 Sphinx packages:</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>pip install sphinx sphinxcontrib-matlabdomain sphinx-rtd-theme sphinx-immaterial
 </span></code></pre></div>
-<p>Tested versions: Python 3.12, Sphinx 9.0.4, sphinxcontrib-matlabdomain 0.22.1.</p>
+<p>Tested versions: Python 3.12, Sphinx 9.1.0, sphinxcontrib-matlabdomain 0.22.1.</p>
 <h3 id="2-patch-sphinxcontrib-matlabdomain">2. Patch sphinxcontrib-matlabdomain<a class="headerlink" href="#2-patch-sphinxcontrib-matlabdomain" title="Permanent link">&para;</a></h3>
 <p>Version 0.22.1 of <code>sphinxcontrib-matlabdomain</code> does not resolve MATLAB <code>+package</code> folders and fails
 with Sphinx 9. Patched files are stored in <code>docs_api/sphinx/</code>; copy them over the installed library

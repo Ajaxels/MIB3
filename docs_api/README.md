@@ -18,7 +18,7 @@ Exact versions used:
 
 | Package | Version |
 |---------|---------|
-| Sphinx | 9.0.4 |
+| Sphinx | 9.1.0 |
 | sphinxcontrib-matlabdomain | 0.22.1 |
 | sphinx-immaterial | latest |
 | Python | 3.11.13 |

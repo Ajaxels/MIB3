@@ -4,10 +4,9 @@ The **API class reference** documents the MATLAB classes, methods, and propertie
 Microscopy Image Browser. It is the starting point when writing plugins, scripting MIB, or
 extending its functionality.
 
-[Open the MIB API reference :octicons-link-16:](http://mib.helsinki.fi/help/api3/index.html)
-
-!!! note
-    The online API reference for MIB3 is being prepared and may not be available yet.
+- [API reference of the current release :octicons-link-16:](https://mib.helsinki.fi/help/api3/index.html)
+- [API reference of the nightly version :octicons-link-16:](https://ajaxels.github.io/MIB3/api/) -
+  matches the source code on [GitHub](https://github.com/Ajaxels/MIB3) and is updated with every change
 
 You can also open it from within MIB: **Ribbon → Home → Help → Class Reference**.
 
@@ -25,7 +24,7 @@ Sphinx packages:
 pip install sphinx sphinxcontrib-matlabdomain sphinx-rtd-theme sphinx-immaterial
 ```
 
-Tested versions: Python 3.12, Sphinx 9.0.4, sphinxcontrib-matlabdomain 0.22.1.
+Tested versions: Python 3.12, Sphinx 9.1.0, sphinxcontrib-matlabdomain 0.22.1.
 
 ### 2. Patch sphinxcontrib-matlabdomain
 

@@ -21,7 +21,7 @@ Tested package versions:
 | Package | Version |
 |---------|---------|
 | Python | 3.12 |
-| Sphinx | 9.0.4 |
+| Sphinx | 9.1.0 |
 | sphinxcontrib-matlabdomain | 0.22.1 |
 | sphinx-immaterial | latest |
 

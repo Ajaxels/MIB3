@@ -54,7 +54,8 @@ Developed during 2010–2026 by:
 
 ## API Class Reference
 
-Access the API class reference from the MIB interface:
+The [API Reference](api.md) page links to the API class reference of the current release and of the
+nightly version, and describes how to build it. Access the API class reference from the MIB interface:
 
 * **Ribbon → Home → Help → [Class Reference :octicons-link-16:](user-interface/ribbon/help/index.md#class-reference)** 
 * directly from the website (1)
