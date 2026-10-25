@@ -1,14 +1,20 @@
-# Publishes the committed user guide build (docs/html) to GitHub Pages as the documentation of the
-# nightly version: https://ajaxels.github.io/MIB3/
-# The release documentation stays on https://mib.helsinki.fi/help/main3/ (uploaded by hand).
-# Runs when a push to master changes docs/html or this file; can also be started from the Actions tab.
+# Publishes the documentation of the nightly version to GitHub Pages: https://ajaxels.github.io/MIB3/
+#   /      user guide: the committed Zensical build, docs/html, published as-is
+#   /api/  API reference: built here with Sphinx from docs_api/source and the docblocks in mib/**/*.m
+#          (no MATLAB needed); package versions and patches as in docs_api/install.md
+# The release documentation stays on https://mib.helsinki.fi/help/main3/ and /help/api3/ (uploaded by hand).
+# Runs when a push to master changes any of the sources below; can also be started from the Actions tab.
 
 name: Nightly docs
 
 on:
   push:
     branches: [master]
-    paths: ['docs/html/**', '.github/workflows/nightly-docs.yml']
+    paths:
+      - 'docs/html/**'
+      - 'docs_api/**'
+      - 'mib/**/*.m'
+      - '.github/workflows/nightly-docs.yml'
   workflow_dispatch:
 
 permissions:
@@ -29,10 +35,26 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          sparse-checkout: docs/html
+          sparse-checkout: |
+            docs/html
+            docs_api
+            mib
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+
+      - name: Build the API reference
+        run: |
+          pip install "sphinx==9.1.0" "sphinxcontrib-matlabdomain==0.22.1" "sphinx-immaterial==0.13.9"
+          LIBRARY_DIR=$(python -c "import importlib.util, os; print(os.path.dirname(importlib.util.find_spec('sphinxcontrib.mat_types').origin))")
+          cp docs_api/sphinx/mat_types.py docs_api/sphinx/mat_documenters.py "$LIBRARY_DIR/"
+          cp -r docs/html site
+          sphinx-build -q -b html -D release=nightly -d "$RUNNER_TEMP/doctrees" docs_api/source site/api
+
       - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v5
         with:
-          path: docs/html
+          path: site
       - id: deployment
         uses: actions/deploy-pages@v5

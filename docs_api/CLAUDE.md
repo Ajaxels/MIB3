@@ -6,6 +6,12 @@ RST-based API reference for MIB3 MATLAB classes. Built with **Sphinx** +
 For build instructions, prerequisites, required library patches, and project
 structure see [`README.md`](README.md) in this directory.
 
+The nightly API reference, https://ajaxels.github.io/MIB3/api/, is built on GitHub by
+[`.github/workflows/nightly-docs.yml`](../.github/workflows/nightly-docs.yml) on every push that
+changes `docs_api/` or `mib/**/*.m`, on Linux (file names are case-sensitive there). It pins the
+package versions and copies the patched files from `sphinx/`: when either changes, update the
+workflow too.
+
 For the complete RST docblock style guide see
 [`development/guides/docs_api_sphinx.md`](../development/guides/docs_api_sphinx.md).
 

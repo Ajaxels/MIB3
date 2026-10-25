@@ -4,7 +4,7 @@ import os
 project = 'MIB3'
 copyright = '2026, Ilya Belevich'
 author = 'Ilya Belevich'
-release = '2026.04'
+release = '2026.10'
 
 # ── Extensions ──────────────────────────────────────────────────────────────
 extensions = [
