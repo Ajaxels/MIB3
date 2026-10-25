@@ -6579,6 +6579,17 @@
       "contributor": null
     },
     {
+      "id": "controllers_mibdeep_createstardistfrompretrained_m",
+      "label": "createStarDistFromPretrained.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@MibDeep\\createStarDistFromPretrained.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "controllers_mibdeep_customtrainingprogresswindow_callback_m",
       "label": "customTrainingProgressWindow_Callback.m",
       "file_type": "code",
@@ -6605,6 +6616,17 @@
       "label": "evaluateSegmentation.m",
       "file_type": "code",
       "source_file": "+controllers\\@MibDeep\\evaluateSegmentation.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_mibdeep_evaluatesegmentationinstances_m",
+      "label": "evaluateSegmentationInstances.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@MibDeep\\evaluateSegmentationInstances.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -6898,6 +6920,17 @@
       "contributor": null
     },
     {
+      "id": "controllers_mibdeep_savestardistnetwork_m",
+      "label": "saveStarDistNetwork.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@MibDeep\\saveStarDistNetwork.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "controllers_mibdeep_selectarchitecture_m",
       "label": "selectArchitecture.m",
       "file_type": "code",
@@ -7041,6 +7074,17 @@
       "contributor": null
     },
     {
+      "id": "controllers_mibdeep_setstardistsettings_m",
+      "label": "setStarDistSettings.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@MibDeep\\setStarDistSettings.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "controllers_mibdeep_setstartingweightssettings_m",
       "label": "setStartingWeightsSettings.m",
       "file_type": "code",
@@ -7166,6 +7210,17 @@
       "label": "startTrainingInstances.m",
       "file_type": "code",
       "source_file": "+controllers\\@MibDeep\\startTrainingInstances.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_mibdeep_starttrainingstardist_m",
+      "label": "startTrainingStarDist.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@MibDeep\\startTrainingStarDist.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -37638,6 +37693,16 @@
     },
     {
       "source": "controllers_mibdeep_mibdeep_m",
+      "target": "controllers_mibdeep_createstardistfrompretrained_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\MibDeep.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_mibdeep_m",
       "target": "controllers_mibdeep_customtrainingprogresswindow_callback_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -37659,6 +37724,16 @@
     {
       "source": "controllers_mibdeep_mibdeep_m",
       "target": "controllers_mibdeep_evaluatesegmentation_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\MibDeep.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_mibdeep_m",
+      "target": "controllers_mibdeep_evaluatesegmentationinstances_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -37928,6 +38003,16 @@
     },
     {
       "source": "controllers_mibdeep_mibdeep_m",
+      "target": "controllers_mibdeep_savestardistnetwork_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\MibDeep.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_mibdeep_m",
       "target": "controllers_mibdeep_selectarchitecture_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -38058,6 +38143,16 @@
     },
     {
       "source": "controllers_mibdeep_mibdeep_m",
+      "target": "controllers_mibdeep_setstardistsettings_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\MibDeep.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_mibdeep_m",
       "target": "controllers_mibdeep_setstartingweightssettings_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -38169,6 +38264,16 @@
     {
       "source": "controllers_mibdeep_mibdeep_m",
       "target": "controllers_mibdeep_starttraininginstances_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\MibDeep.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_mibdeep_m",
+      "target": "controllers_mibdeep_starttrainingstardist_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -63497,6 +63602,26 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_mibdeep_createstardistfrompretrained_m",
+      "target": "controllers_mibdeep_savestardistnetwork_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@MibDeep\\createStarDistFromPretrained.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_createstardistfrompretrained_m",
+      "target": "controllers_mibdeep_saveconfig_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@MibDeep\\createStarDistFromPretrained.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_mibdeep_customtrainingprogresswindow_callback_m",
       "target": "controllers_mibdeep_updatebatchoptfromgui_m",
       "relation": "calls",
@@ -63532,6 +63657,16 @@
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.7,
+      "source_file": "+controllers\\@MibDeep\\evaluateSegmentation.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_evaluatesegmentation_m",
+      "target": "controllers_mibdeep_evaluatesegmentationinstances_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
       "source_file": "+controllers\\@MibDeep\\evaluateSegmentation.m",
       "source_location": null,
       "weight": 1.0
@@ -63767,6 +63902,16 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_mibdeep_selectarchitecture_m",
+      "target": "controllers_mibdeep_createstardistfrompretrained_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@MibDeep\\selectArchitecture.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_mibdeep_selectnetwork_m",
       "target": "controllers_mibdeep_correctbatchopt_m",
       "relation": "calls",
@@ -63817,6 +63962,26 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_mibdeep_setstardistsettings_m",
+      "target": "controllers_mibdeep_createstardistfrompretrained_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@MibDeep\\setStarDistSettings.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_setstartingweightssettings_m",
+      "target": "controllers_mibdeep_setstardistsettings_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@MibDeep\\setStartingWeightsSettings.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_mibdeep_singlemodeltrainingfilevaluechanged_m",
       "target": "controllers_mibdeep_updatebatchoptfromgui_m",
       "relation": "calls",
@@ -63839,6 +64004,16 @@
     {
       "source": "controllers_mibdeep_start_m",
       "target": "controllers_mibdeep_customtrainingprogresswindow_callback_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@MibDeep\\start.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_start_m",
+      "target": "controllers_mibdeep_starttrainingstardist_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -64123,6 +64298,66 @@
       "confidence": "INFERRED",
       "confidence_score": 0.75,
       "source_file": "+controllers\\@MibDeep\\startTrainingInstances.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_starttrainingstardist_m",
+      "target": "core_toggleeventdata_toggleeventdata_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+controllers\\@MibDeep\\startTrainingStarDist.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_starttrainingstardist_m",
+      "target": "controllers_mibdeep_selectgpudevice_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@MibDeep\\startTrainingStarDist.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_starttrainingstardist_m",
+      "target": "controllers_mibdeep_setaugfunchandles_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@MibDeep\\startTrainingStarDist.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_starttrainingstardist_m",
+      "target": "controllers_mibdeep_prepraretrainingoptions_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@MibDeep\\startTrainingStarDist.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_starttrainingstardist_m",
+      "target": "controllers_mibdeep_saveconfig_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@MibDeep\\startTrainingStarDist.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_starttrainingstardist_m",
+      "target": "controllers_mibdeep_savestardistnetwork_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@MibDeep\\startTrainingStarDist.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -78668,6 +78903,36 @@
     },
     {
       "source": "controllers_mibdeep_checknetwork_m",
+      "target": "deepmib_stardist_defaultconfig_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\checkNetwork.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_checknetwork_m",
+      "target": "deepmib_stardist_loadpretrained_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\checkNetwork.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_checknetwork_m",
+      "target": "deepmib_stardist_createnetwork_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\checkNetwork.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_checknetwork_m",
       "target": "utils_dlgs_showerrordialog_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
@@ -78767,6 +79032,46 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_mibdeep_createstardistfrompretrained_m",
+      "target": "deepmib_stardist_loadpretrained_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\createStarDistFromPretrained.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_createstardistfrompretrained_m",
+      "target": "utils_dlgs_showerrordialog_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\createStarDistFromPretrained.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_createstardistfrompretrained_m",
+      "target": "deepmib_stardist_defaultconfig_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\createStarDistFromPretrained.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_createstardistfrompretrained_m",
+      "target": "utils_dlgs_inputuniversaldlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\createStarDistFromPretrained.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_mibdeep_duplicateconfigandnetwork_m",
       "target": "utils_dlgs_mibuigetfile_m",
       "relation": "calls",
@@ -78803,6 +79108,46 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "+controllers\\@MibDeep\\evaluateSegmentation.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_evaluatesegmentationinstances_m",
+      "target": "utils_dlgs_inputuniversaldlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\evaluateSegmentationInstances.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_evaluatesegmentationinstances_m",
+      "target": "deepmib_storeloadmodel_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\evaluateSegmentationInstances.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_evaluatesegmentationinstances_m",
+      "target": "deepmib_stardist_matchinstances_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\evaluateSegmentationInstances.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_evaluatesegmentationinstances_m",
+      "target": "utils_dlgs_showerrordialog_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\evaluateSegmentationInstances.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -78858,7 +79203,37 @@
     },
     {
       "source": "controllers_mibdeep_findbestminibatchsize_m",
+      "target": "deepmib_stardist_defaultconfig_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\findBestMinibatchSize.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_findbestminibatchsize_m",
+      "target": "deepmib_stardist_createnetwork_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\findBestMinibatchSize.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_findbestminibatchsize_m",
       "target": "utils_dlgs_inputquestdlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\findBestMinibatchSize.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_findbestminibatchsize_m",
+      "target": "deepmib_stardist_lossfunction_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -79093,6 +79468,16 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "+controllers\\@MibDeep\\MibDeep.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_prepraretrainingoptions_m",
+      "target": "deepmib_stardist_trainingmetrics_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\preprareTrainingOptions.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -79437,6 +79822,46 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_mibdeep_setstardistsettings_m",
+      "target": "utils_dlgs_inputuniversaldlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\setStarDistSettings.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_setstardistsettings_m",
+      "target": "deepmib_stardist_computetargets_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\setStarDistSettings.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_setstardistsettings_m",
+      "target": "deepmib_stardist_polygonstolabel_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\setStarDistSettings.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_setstardistsettings_m",
+      "target": "deepmib_stardist_matchinstances_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\setStarDistSettings.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_mibdeep_setstartingweightssettings_m",
       "target": "utils_dlgs_inputuniversaldlg_m",
       "relation": "calls",
@@ -79678,6 +80103,56 @@
     },
     {
       "source": "controllers_mibdeep_startpredictioninstances_m",
+      "target": "deepmib_stardist_defaultconfig_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\startPredictionInstances.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_startpredictioninstances_m",
+      "target": "deepmib_stardist_normalizeimage_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\startPredictionInstances.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_startpredictioninstances_m",
+      "target": "deepmib_stardist_predictmaps_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\startPredictionInstances.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_startpredictioninstances_m",
+      "target": "deepmib_stardist_nms_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\startPredictionInstances.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_startpredictioninstances_m",
+      "target": "deepmib_stardist_polygonstolabel_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\startPredictionInstances.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_startpredictioninstances_m",
       "target": "utils_instances_splitdisconnected_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
@@ -79858,6 +80333,16 @@
     },
     {
       "source": "controllers_mibdeep_starttraininginstances_m",
+      "target": "deepmib_instanceaugmentationmargin_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\startTrainingInstances.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_starttraininginstances_m",
       "target": "deepmib_augmentinstancedata2d_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
@@ -79883,6 +80368,156 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "+controllers\\@MibDeep\\startTrainingInstances.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_starttrainingstardist_m",
+      "target": "utils_dlgs_showerrordialog_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\startTrainingStarDist.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_starttrainingstardist_m",
+      "target": "deepmib_stardist_defaultconfig_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\startTrainingStarDist.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_starttrainingstardist_m",
+      "target": "deepmib_stardist_loadpretrained_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\startTrainingStarDist.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_starttrainingstardist_m",
+      "target": "deepmib_readinstancepatch_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\startTrainingStarDist.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_starttrainingstardist_m",
+      "target": "deepmib_instanceaugmentationmargin_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\startTrainingStarDist.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_starttrainingstardist_m",
+      "target": "deepmib_augmentinstancedata2d_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\startTrainingStarDist.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_starttrainingstardist_m",
+      "target": "deepmib_stardist_createnetwork_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\startTrainingStarDist.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_starttrainingstardist_m",
+      "target": "utils_themecolors_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\startTrainingStarDist.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_starttrainingstardist_m",
+      "target": "deepmib_stardist_lossfunction_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\startTrainingStarDist.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_starttrainingstardist_m",
+      "target": "deepmib_stardist_computetargets_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\startTrainingStarDist.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_starttrainingstardist_m",
+      "target": "deepmib_storeloadimages_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\startTrainingStarDist.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_starttrainingstardist_m",
+      "target": "deepmib_stardist_normalizeimage_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\startTrainingStarDist.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_starttrainingstardist_m",
+      "target": "deepmib_stardist_optimizethresholds_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\startTrainingStarDist.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_starttrainingstardist_m",
+      "target": "deepmib_savetrainingplot_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\startTrainingStarDist.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_starttrainingstardist_m",
+      "target": "utils_dlgs_inputuniversaldlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\startTrainingStarDist.m",
       "source_location": null,
       "weight": 1.0
     },

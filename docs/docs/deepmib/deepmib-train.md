@@ -75,6 +75,7 @@ the network is retrained. The available states are a property of the selected wo
         | DeepLab v3+ / Z2C + DLv3; U-net +Encoder with a Resnet encoder | `Pretrained` |
         | 2D Patch-wise (Resnet/Xception) | `None (random)` or `ImageNet` *(user choice)* |
         | 2D Instance (SOLOv2) | `COCO, frozen then trainable` *(default)*, `COCO, frozen backbone` or `COCO, trainable backbone` |
+        | 2D Instance (StarDist) | `2D_versatile_fluo` *(default)* or `None (random)`, see [2D Instance Segmentation](deepmib-instance.md#starting-weights) |
 
         - `Pretrained` means the network starts from an already trained template rather than from scratch. **What** that
         template is depends on the design: DeepLab v3+ with a Resnet encoder downloads a MIB-hosted template the first time
@@ -174,6 +175,18 @@ Augmentation enhances training data with image processing filters (17 for 2D, 18
 <br>
 Specify the fraction of patches to augment, plus probability and variation per filter. 
 Multiple filters may apply to a patch based on probability.
+
+!!! info "Empty corners after rotation, scaling and shear"
+
+    Rotating, downscaling or shearing a patch leaves areas that the original patch does not cover. The workflows
+    handle them differently:
+
+    - **Semantic segmentation**: the empty areas are filled with
+    <span class="widget widget-edit">FillValue</span> in the image and left without labels, so they are
+    **excluded from the loss function**.
+    - **Instance segmentation** (SOLOv2, StarDist): the patch is taken from an **enlarged view** of the image,
+    transformed, and then cropped back to the patch size, so the empty areas are filled with real image.
+    <span class="widget widget-edit">FillValue</span> is used only where the view reaches beyond the edge of the image.
 
 ??? abstract "2D/3D augmentation settings"
     Press <span class="widget widget-button">2D</span> or <span class="widget widget-button">3D</span> to open the settings dialog:  
@@ -366,7 +379,7 @@ Stop training with <span class="widget widget-button">Stop</span> or <span class
 !!! note "Stopping a **2D Instance** run early"
 
     Instance segmentation trains through MATLAB's `trainSOLOV2`, whose trainer only ends the
-    current epoch when asked to stop — it still walks through the epochs that were left
+    current epoch when asked to stop - it still walks through the epochs that were left
     before it returns. Deep MIB makes those leftover epochs as cheap as it can, but
     <span class="widget widget-button">Stop</span> still costs roughly a minute per 1000
     remaining epochs. The network and the full training curve are finalized normally.

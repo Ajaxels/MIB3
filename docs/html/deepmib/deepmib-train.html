@@ -4539,7 +4539,7 @@
   <span class="md-ellipsis">
     
   
-  2D Instance (SOLOv2)
+  2D Instance
 
     
   </span>
@@ -5816,6 +5816,10 @@ the network is retrained. The available states are a property of the selected wo
 <td>2D Instance (SOLOv2)</td>
 <td><code>COCO, frozen then trainable</code> <em>(default)</em>, <code>COCO, frozen backbone</code> or <code>COCO, trainable backbone</code></td>
 </tr>
+<tr>
+<td>2D Instance (StarDist)</td>
+<td><code>2D_versatile_fluo</code> <em>(default)</em> or <code>None (random)</code>, see <a href="deepmib-instance.html#starting-weights">2D Instance Segmentation</a></td>
+</tr>
 </tbody>
 </table>
 <ul>
@@ -5953,6 +5957,19 @@ enabled for <code>COCO, frozen then trainable</code> and configures the schedule
 Specify the fraction of patches to augment, plus probability and variation per filter. 
 Multiple filters may apply to a patch based on probability.</li>
 </ul>
+<div class="admonition info">
+<p class="admonition-title">Empty corners after rotation, scaling and shear</p>
+<p>Rotating, downscaling or shearing a patch leaves areas that the original patch does not cover. The workflows
+handle them differently:</p>
+<ul>
+<li><strong>Semantic segmentation</strong>: the empty areas are filled with
+<span class="widget widget-edit">FillValue</span> in the image and left without labels, so they are
+<strong>excluded from the loss function</strong>.</li>
+<li><strong>Instance segmentation</strong> (SOLOv2, StarDist): the patch is taken from an <strong>enlarged view</strong> of the image,
+transformed, and then cropped back to the patch size, so the empty areas are filled with real image.
+<span class="widget widget-edit">FillValue</span> is used only where the view reaches beyond the edge of the image.</li>
+</ul>
+</div>
 <details class="abstract">
 <summary>2D/3D augmentation settings</summary>
 <p>Press <span class="widget widget-button">2D</span> or <span class="widget widget-button">3D</span> to open the settings dialog:<br />
@@ -6161,7 +6178,7 @@ Stop training with <span class="widget widget-button">Stop</span> or <span class
 <div class="admonition note">
 <p class="admonition-title">Stopping a <strong>2D Instance</strong> run early</p>
 <p>Instance segmentation trains through MATLAB's <code>trainSOLOV2</code>, whose trainer only ends the
-current epoch when asked to stop — it still walks through the epochs that were left
+current epoch when asked to stop - it still walks through the epochs that were left
 before it returns. Deep MIB makes those leftover epochs as cheap as it can, but
 <span class="widget widget-button">Stop</span> still costs roughly a minute per 1000
 remaining epochs. The network and the full training curve are finalized normally.</p>

@@ -46,6 +46,7 @@ end
     ScoreExportOpt = obj.ScoreExportOpt;
     OverlapInstancesOpt = obj.OverlapInstancesOpt;
     StartingWeightsOpt = obj.StartingWeightsOpt;
+    StarDistOpt = obj.StarDistOpt;
     ZarrModelOpt = obj.ZarrModelOpt;
 
     % try to export path as relatives
@@ -62,7 +63,7 @@ end
     save(configName, ...
         'TrainingOptStruct', 'AugOpt2DStruct', 'AugOpt3DStruct', ...
         'SegmentationLayerOpt', 'ActivationLayerOpt', 'DynamicMaskOpt', 'ScoreExportOpt', ...
-        'OverlapInstancesOpt', 'StartingWeightsOpt', 'ZarrModelOpt', ...
+        'OverlapInstancesOpt', 'StartingWeightsOpt', 'StarDistOpt', 'ZarrModelOpt', ...
         'InputLayerOpt', 'BatchOpt', 'mibVersion', '-mat', '-v7.3');
 end
 

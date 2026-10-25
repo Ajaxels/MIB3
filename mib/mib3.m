@@ -91,6 +91,7 @@ else
     addpath(fullfile(func_dir, 'external', 'RandomForest', 'MembraneDetection'));
     addpath(fullfile(func_dir, 'external', 'RandomForest', 'RF_Class_C'));
     addpath(fullfile(func_dir, 'external', 'RandomForest', 'RF_Reg_C'));
+    addpath(fullfile(func_dir, 'external', 'stardist'));
     addpath(fullfile(func_dir, 'external', 'Supervoxels'));
     addpath(fullfile(func_dir, 'external', 'zarr-matlab'));
     addpath(fullfile(func_dir, 'legacy'));    
@@ -164,6 +165,9 @@ mibVersion = utils.getMibVersion();
 
 mibPath = utils.getInstallationPath('mib3');
 fprintf('MIB installation path: %s\n', mibPath);
+
+% keep the native zarr library loaded until exit; its worker threads crash MATLAB when it is unloaded
+io.zarr.pinNativeLibrary();
 
 %try
     model = models.MibModel(cpuParallelLimitMax, mibPath, mibVersion);     % initialize the model

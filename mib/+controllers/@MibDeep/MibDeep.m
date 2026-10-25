@@ -117,6 +117,18 @@ classdef MibDeep < handle
         % .PlateauWindowEpochs = 25;  % averaging window used to call the loss flat
         % .PlateauTolerance = 0.01;  % relative improvement below which the loss is flat
         % .TrainableLearnRate = 1e-4;  % absolute learn rate of phase 2, capped at InitialLearnRate
+        StarDistOpt
+        % options of the StarDist architecture of the 2D Instance workflow, edited with
+        % setStarDistSettings and used by startTrainingStarDist
+        % .NRays = 32;   % number of rays per object polygon
+        % .Grid = 2;     % output subsampling of the network (1, 2 or 4)
+        % .NormalizePercentiles = [1 99.8];   % intensity normalisation percentiles
+        % .OptimizeThresholds = true;   % tune the probability/NMS thresholds on the validation images after training
+        % .RayCheckFiles = 20;   % number of label files sampled by the ray reconstruction check
+        % .PredictThresholds = 'From the network';   % prediction thresholds: 'From the network' (tuned after training) or 'Custom'
+        % .ProbThresh = 0.5;   % custom probability threshold for prediction
+        % .NmsThresh = 0.4;    % custom NMS overlap threshold for prediction
+        % .PredictTileSize = 1024;   % tile size of the prediction, px; the overlap is added automatically
         OverlapInstancesOpt
         % options for stitching of instances across tiles during 2D Instance prediction
         % (the stitching mode itself is in BatchOpt.P_OverlapInstancesMode)
@@ -258,6 +270,8 @@ classdef MibDeep < handle
         duplicateConfigAndNetwork(obj)        % copy the network file and its config to a new filename
         evaluateSegmentation(obj)        % evaluate segmentation results by comparing predicted models with the ground truth models
         evaluateSegmentationPatches(obj)        % evaluate segmentation results for the patches in the patch-wise mode
+
+        evaluateSegmentationInstances(obj)        % evaluate 2D Instance predictions by matching objects with the ground truth
         exploreActivations(obj)        % [MOVE TO THE BUTTON CALLBACK] explore activations within the trained network
         exportNetwork(obj)        % convert and export network to ONNX or TensorFlow formats
         net = generateDeepLabV3Network(obj, imageSize, numClasses, targetNetwork)% generate DeepLab v3+ convolutional neural network for semantic image segmentation of 2D RGB images
@@ -311,8 +325,12 @@ classdef MibDeep < handle
         lgraph = updateConvolutionLayers(obj, lgraph)        % update the convolution layers by providing new set of weight initializers
         updateModelOutputSettings(obj)        % update settings for the "Zarr3 (BigData model)" output of prediction, the settings are stored in obj.ZarrModelOpt
         updateDynamicMaskSettings(obj)        % update settings for calculation of dynamic masks during prediction using blockedimage mode the settings are stored in obj.DynamicMaskOpt
-        updateOverlapInstancesSettings(obj)        % update settings for stitching of instances across tiles during 2D Instance prediction, the settings are stored in obj.OverlapInstancesOpt
+        updateOverlapInstancesSettings(obj)        % update settings for stitching of instances across tiles during 2D Instance prediction, the settings are stored in obj.OverlapInstancesOpt; for StarDist the prediction settings in obj.StarDistOpt
         setStartingWeightsSettings(obj)        % update settings for the two-phase "COCO, frozen then trainable" schedule, the settings are stored in obj.StartingWeightsOpt
+        setStarDistSettings(obj)        % update settings of the StarDist architecture, stored in obj.StarDistOpt, and optionally check how well the rays reconstruct the training labels
+        startTrainingStarDist(obj)        % train a StarDist network of the 2D Instance workflow
+        createStarDistFromPretrained(obj)        % write a network file and its config from a pretrained StarDist model, for prediction without training
+        saveStarDistNetwork(obj, networkFilename, net, config, inputPatchSize)        % write a StarDist network file with the usual DeepMIB variables and StarDistConfig
         previewValidationPatches(obj)        % show a collage of the patches that the current validation seed produces
         findBestMinibatchSize(obj)        % measure which mini-batch size gives the best throughput on this GPU
         updateImageDirectoryPath(obj, event)        % update directories with images for training, prediction and results
@@ -353,7 +371,7 @@ classdef MibDeep < handle
             architectureList{2} = {'Z2C + DLv3', 'Z2C + U-net', 'Z2C + U-net +Encoder'}; % 3DC + DLv3 Resnet18'
             architectureList{3} = {'U-net', 'U-net Anisotropic'};
             architectureList{4} = {'Resnet18', 'Resnet50', 'Resnet101', 'Xception'};
-            architectureList{5} = {'SOLOv2'};
+            architectureList{5} = {'SOLOv2', 'StarDist'};
             obj.availableArchitectures = containers.Map(workflowsList, architectureList);
             % define list of encoders for different architectures
             %workflowsArchList = {'2D Semantic DeepLab v3+', '2D Semantic U-net +Encoder', '2D Instance SOLOv2', '2.5D Semantic Z2C + U-net +Encoder', '2.5D Semantic Z2C + DLv3'};
@@ -530,7 +548,7 @@ classdef MibDeep < handle
             obj.BatchOpt.mibBatchTooltip.T_NumFirstEncoderFilters = 'Number of output channels for the first encoder stage';
             obj.BatchOpt.mibBatchTooltip.T_FilterSize = 'Convolutional layer filter size, specified as a positive odd integer';
             obj.BatchOpt.mibBatchTooltip.T_NumAnisotropicBlocks = 'Number of initial 2D-only downsampling blocks before full 3D convolutions; for anisotropic datasets where Z spacing is coarser than XY (U-net Anisotropic only)';
-            obj.BatchOpt.mibBatchTooltip.T_StartingWeights = 'Where the starting weights come from; the available states are decided by the network design, so the dropdown is disabled when there is no choice. For SOLOv2 use "frozen then trainable", which trains with the backbone frozen and then unfreezes it at a lower rate on its own; the single-phase states are there for comparison, and a backbone left trainable from the start destroys the pretrained weights unless the learning rate is lowered to about 1e-4';
+            obj.BatchOpt.mibBatchTooltip.T_StartingWeights = 'Where the starting weights come from; the available states are decided by the network design, so the dropdown is disabled when there is no choice. For SOLOv2 use "frozen then trainable", which trains with the backbone frozen and then unfreezes it at a lower rate on its own; the single-phase states are there for comparison, and a backbone left trainable from the start destroys the pretrained weights unless the learning rate is lowered to about 1e-4. For StarDist choose a pretrained StarDist model to fine-tune, or train from random weights';
             obj.BatchOpt.mibBatchTooltip.T_PatchesPerImage = 'Number of patches to extract from each image per epoch; it is applied to the validation images as well, so observations per epoch = this value x number of training images, and the validation set is this value x number of validation images';
             obj.BatchOpt.mibBatchTooltip.T_MiniBatchSize = 'Number of observations that are returned in each batch';
             obj.BatchOpt.mibBatchTooltip.T_augmentation = 'Augment images during training';
@@ -636,6 +654,21 @@ classdef MibDeep < handle
             end
             if ~isfield(obj.OverlapInstancesOpt, 'MinSplitArea')   % preferences saved before this field existed
                 obj.OverlapInstancesOpt.MinSplitArea = 100;
+            end
+
+            % StarDist architecture; the defaults are those of the StarDist pretrained models
+            % (32 rays, grid 2), the stored struct is merged so a new field never goes missing
+            obj.StarDistOpt.NRays = 32;
+            obj.StarDistOpt.Grid = 2;
+            obj.StarDistOpt.NormalizePercentiles = [1 99.8];
+            obj.StarDistOpt.OptimizeThresholds = true;
+            obj.StarDistOpt.RayCheckFiles = 20;
+            obj.StarDistOpt.PredictThresholds = 'From the network';
+            obj.StarDistOpt.ProbThresh = 0.5;
+            obj.StarDistOpt.NmsThresh = 0.4;
+            obj.StarDistOpt.PredictTileSize = 1024;
+            if isfield(obj.mibModel.preferences.Deep, 'StarDistOpt') && isstruct(obj.mibModel.preferences.Deep.StarDistOpt)
+                obj.StarDistOpt = utils.concatenateStructures(obj.StarDistOpt, obj.mibModel.preferences.Deep.StarDistOpt);
             end
 
             % two-phase "frozen then trainable" schedule

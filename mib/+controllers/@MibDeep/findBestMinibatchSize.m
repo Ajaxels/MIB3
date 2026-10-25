@@ -61,6 +61,12 @@ function findBestMinibatchSize(obj)
 % reads a sample of the project's own label maps first. Only the label maps are read, never
 % the images, and a project that is not preprocessed yet falls back to the old constant.
 %
+% The StarDist architecture of 2D Instance is probed like the semantic networks: its cost
+% does not depend on the object count, so it trains on random images and random targets of
+% the network's output size (``[h/g w/g 1+nRays]``) with deepmib.stardist.lossFunction. A
+% pretrained model is represented by its design (32 rays, grid 2) rather than downloaded.
+% Target computation runs on the CPU while the GPU trains and is not part of the probe.
+%
 % Measured against that same recorded run - Resnet50, 768x768, mini-batch 4, whose real
 % iteration took 3.700 s:
 %
@@ -138,7 +144,10 @@ dlgOpt.Icon = 'puffin_question';
 dlgOpt.WindowWidth = 490;
 dlgOpt.WindowHeight = 340;
 
-isInstanceWorkflow = strcmp(obj.BatchOpt.Workflow{1}, '2D Instance');
+% "instance" below means SOLOv2: StarDist is a plain dlnetwork whose cost depends on the
+% patch size only, so it is probed like the semantic networks, with its own targets and loss
+isStarDist = strcmp(obj.BatchOpt.Workflow{1}, '2D Instance') && strcmp(obj.BatchOpt.Architecture{1}, 'StarDist');
+isInstanceWorkflow = strcmp(obj.BatchOpt.Workflow{1}, '2D Instance') && ~isStarDist;
 
 header = 'Identify the best size for Mini Batch';
 dlgOpt.HeaderLines = 1;
@@ -196,6 +205,19 @@ try
         end
         probeNetwork = solov2(detectorName, {'object'}, 'InputSize', inputPatchSize);
         outputPatchSize = [];
+    elseif isStarDist
+        % the design is what costs, not the weights, so a pretrained model is represented by
+        % its known design (32 rays, grid 2) instead of being downloaded for a measurement
+        if strcmp(obj.BatchOpt.T_StartingWeights{1}, 'None (random)')
+            starDistConfig = struct('nRays', obj.StarDistOpt.NRays, 'grid', [1 1] * obj.StarDistOpt.Grid);
+        else
+            starDistConfig = struct('nRays', 32, 'grid', [2 2]);
+        end
+        starDistConfig.nChannelIn = inputPatchSize(4);
+        starDistConfig.patchSize = inputPatchSize(1:2);
+        starDistConfig = deepmib.stardist.defaultConfig(starDistConfig);
+        probeNetwork = deepmib.stardist.createNetwork(starDistConfig);
+        outputPatchSize = [starDistConfig.patchSize ./ starDistConfig.grid, 1 + starDistConfig.nRays];
     else
         [probeNetwork, outputPatchSize] = obj.createNetwork(1);   % previewSwitch, no class weights
         if isempty(probeNetwork)
@@ -400,6 +422,19 @@ trainingOptions_ = trainingOptions('adam', ...
 if isInstanceWorkflow
     probeDatastore = localSyntheticInstanceDatastore(inputPatchSize, numObservations, objectsPerPatch);
     trainSOLOV2(probeDatastore, probeNetwork, trainingOptions_, 'FreezeSubNetwork', 'none');
+elseif strcmp(obj.BatchOpt.Workflow{1}, '2D Instance')    % StarDist
+    % random images and targets of the network's output size, trained with the StarDist loss
+    images = cell(numObservations, 1);
+    targets = cell(numObservations, 1);
+    for observationIdx = 1:numObservations
+        images{observationIdx} = rand(inputPatchSize([1 2 4]), 'single');
+        targets{observationIdx} = rand(outputPatchSize, 'single');
+    end
+    probeDatastore = combine(arrayDatastore(images, 'OutputType', 'same'), ...
+        arrayDatastore(targets, 'OutputType', 'same'));
+    trainingOptions_.TargetDataFormats = "SSCB";
+    lossConfig = deepmib.stardist.defaultConfig();
+    trainnet(probeDatastore, probeNetwork, @(Y, T) deepmib.stardist.lossFunction(Y, T, lossConfig), trainingOptions_);
 else
     % trainNetwork cannot consume a dlnetwork, and from R2026a the network builders return
     % one (unet, unet3d), so the engine follows what createNetwork actually produced rather

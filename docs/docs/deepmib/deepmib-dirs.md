@@ -167,6 +167,7 @@ Sections below provide schemes for directories organization for several cases:
 - [Manual file splitting](deepmib-dirs.md#manual-file-splitting) without file conversion, files arranged manually into correct folders
 - [Conversion of files](deepmib-dirs.md#conversion-of-files) with preprocessing/file conversion, files are converted to `.mibImg` and `.mibCat` formats and split for training and validation
 - [Patch-wise workflow](deepmib-dirs.md#patch-wise-workflow) this workflow requires slightly different organization of directories 
+- [Instance segmentation](deepmib-dirs.md#instance-segmentation) the 2D Instance workflow (SOLOv2, StarDist), which always preprocesses its labels for training
 
 ### Automatic file splitting
 
@@ -259,6 +260,40 @@ Prediction ground truth follows the same options as above.
 
 ??? abstract "snapshot with the legend"
     ![Directory legend](images/DeepLearningDirectories_Legend.png){.on-glb}
+
+---
+
+### Instance segmentation
+
+Organization of directories for the [2D Instance workflow](deepmib-instance.md) (SOLOv2, StarDist).
+The labels are always preprocessed for training; the images are used as they are.
+
+1. **Arrange the files**
+    - `1_Training/Images`: training images
+    - `1_Training/Labels`: labels, one file per image (`.model`, or TIF/PNG label images set in
+      <span class="widget widget-dropdown">Labels extension</span>) or a single `.model` file with
+      <label class="widget widget-checkbox">Single MIB model file</label>; each object has its own index
+    - `2_Prediction/Images`: images to segment
+    - `2_Prediction/Labels` (optional): ground-truth labels for [evaluation](deepmib-instance.md#evaluating-the-predictions)
+2. **Preprocess for training**: set <span class="widget widget-dropdown">Preprocess for: Training</span>
+   and press <span class="widget widget-button">Preprocess</span>. The labels are converted to
+   `1_Training/LabelsInstances`.
+3. **Split for training and validation**: answer **Split labels** in the dialog that follows. The
+   images and preprocessed labels are copied to `TrainImages`, `TrainLabels`, `ValidationImages` and
+   `ValidationLabels` under `1_Training`, according to
+   <span class="widget widget-dropdown">Fraction of images for validation</span> and
+   <span class="widget widget-dropdown">Random generator seed</span>. To split again later, set
+   <span class="widget widget-dropdown">Preprocess for: Split files for training/validation</span>
+   and press <span class="widget widget-button">Preprocess</span>.
+4. **Train** in the [Train tab](deepmib-train.md).
+5. **Predict** in the [Predict tab](deepmib-predict.md): the images of `2_Prediction/Images` need no
+   preprocessing. The results are saved to `3_Results/PredictionImages/ResultsModels`.
+
+??? abstract "Directory tree before preprocessing"
+    ![Directory tree for instance segmentation before preprocessing](images/DeepLearningDirectories_Instance1.png){.on-glb}
+
+??? abstract "Directory tree after preprocessing and splitting"
+    ![Directory tree for instance segmentation after preprocessing and splitting](images/DeepLearningDirectories_Instance2.png){.on-glb}
 
 ---
 

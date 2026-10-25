@@ -144,6 +144,19 @@ Quickly access demo datasets and full DeepMIB projects for image segmentation, g
     |----------------|----------------------|
     | ![Project directory tree](images/examplesDeepMIB_2DLM_tree.png){.on-glb} | ![DeepMIB projects → 2D LM Nuclei](images/examplesDeepMIB_2DLM.jpg){.on-glb} |
 
+??? abstract "DeepMIB projects → 2D LM Nuclei, StarDist"
+    A complete DeepMIB project for instance segmentation of nuclei in fluorescence images  
+    Includes a [StarDist](../../../deepmib/deepmib-instance.md#stardist) network trained from random weights  
+    Load via `stardist_random.mibCfg` using:  
+    **Ribbon → Tools → Deep learning segmentation → Options tab → Config files → Load**  
+    See `README.md` for details  
+
+    | Directory Tree | Segmentation Example |
+    |----------------|----------------------|
+    | ![Project directory tree](images/examplesDeepMIB_Stardist_tree.png){.on-glb} | ![DeepMIB projects → 2D LM Nuclei, StarDist](images/examplesDeepMIB_2D_StarDist.jpg){.on-glb width="580"} |
+
+    **Data**: image set BBBC038v1 from the Broad Bioimage Benchmark Collection ([Caicedo et al., Nature Methods, 2019](https://doi.org/10.1038/s41592-019-0612-7)), subset prepared by the [StarDist](https://github.com/stardist/stardist) authors  
+
 ??? abstract "DeepMIB projects → 3D EM Mitochondria"
     A complete DeepMIB project for segmenting mitochondria  
     Includes a trained 3D U-net network  

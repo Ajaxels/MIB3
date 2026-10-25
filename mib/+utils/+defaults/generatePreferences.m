@@ -554,7 +554,8 @@ Prefs.Deep.Metrics.Accuracy = true;  % parameters for metrics evaluation
 Prefs.Deep.Metrics.BFscore = false;
 Prefs.Deep.Metrics.GlobalAccuracy = true;
 Prefs.Deep.Metrics.IOU = true;
-Prefs.Deep.Metrics.WeightedIOU = true; 
+Prefs.Deep.Metrics.WeightedIOU = true;
+Prefs.Deep.Metrics.InstanceIoUThresholds = '0.1:0.1:0.9';    % IoU thresholds of the 2D Instance evaluation, a MATLAB expression
 
 % Settings for sending 
 Prefs.Deep.SendReports.T_SendReports = false;   % main switch send or not the reports

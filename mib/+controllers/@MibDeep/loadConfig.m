@@ -176,6 +176,9 @@ try
             obj.StartingWeightsOpt = rmfield(obj.StartingWeightsOpt, 'TrainableLearnRateFactor');
         end
     end
+    if isfield(res, 'StarDistOpt') && isstruct(res.StarDistOpt)   % new in MIB3, StarDist architecture
+        obj.StarDistOpt = utils.concatenateStructures(obj.StarDistOpt, res.StarDistOpt);
+    end
     if isfield(res, 'ZarrModelOpt') && isstruct(res.ZarrModelOpt)   % new in MIB3, BigData model output of prediction
         obj.ZarrModelOpt = utils.concatenateStructures(obj.ZarrModelOpt, res.ZarrModelOpt);
     end

@@ -4577,7 +4577,7 @@
   <span class="md-ellipsis">
     
   
-  2D Instance (SOLOv2)
+  2D Instance
 
     
   </span>
@@ -5812,7 +5812,7 @@ in Microscopy Image Browser.</p>
 <li><strong>2.5D Semantic</strong>: uses 2D network architectures to process small subvolumes (3-9 stacks), segmenting only the central slice</li>
 <li><strong>3D Semantic</strong>: clusters 3D image voxels of the same material together</li>
 <li><strong>2D Patch-wise</strong>: predicts 2D images in blocks (patches), producing a downsampled image indicating object positions</li>
-<li><strong>2D Instance</strong>: detects each object individually (each object gets a distinct label), using the SOLOv2 network. See <a href="deepmib-instance.html">2D Instance Segmentation (SOLOv2)</a></li>
+<li><strong>2D Instance</strong>: detects each object individually (each object gets a distinct label), using the SOLOv2 or StarDist network. See <a href="deepmib-instance.html">2D Instance Segmentation</a></li>
 </ul>
 <hr />
 <h2 id="2d-semantic-workflow">2D Semantic workflow<a class="headerlink" href="#2d-semantic-workflow" title="Permanent link">&para;</a></h2>
@@ -5946,9 +5946,36 @@ A 71-layer network, computationally intensive, adjustable input size (default 29
 </details>
 <hr />
 <h2 id="2d-instance-workflow">2D Instance workflow<a class="headerlink" href="#2d-instance-workflow" title="Permanent link">&para;</a></h2>
-<p>Unlike the semantic workflows, which assign every pixel to a <em>class</em> (all objects of the same type share one label), the <strong>2D Instance</strong> workflow detects each object <em>individually</em> — every object receives its own distinct label, so touching or overlapping objects of the same type are separated. Deep MIB implements this using the MATLAB <strong>SOLOv2</strong> network (Resnet18 or Resnet50 backbone).</p>
-<p>This workflow requires a dedicated preprocessing step that converts the ground-truth models into the SOLOv2 annotation format before training, and it needs the <em>Computer Vision Toolbox Model for SOLO V2 Instance Segmentation</em> support package.</p>
-<p>For full details on source data requirements, preprocessing, training and prediction, see <a href="deepmib-instance.html">2D Instance Segmentation (SOLOv2)</a>.</p>
+<p>Unlike the semantic workflows, which assign every pixel to a <em>class</em> (all objects of the same type share one label), the <strong>2D Instance</strong> workflow detects each object <em>individually</em> - every object receives its own distinct label, so touching or overlapping objects of the same type are separated.</p>
+<details class="abstract" open="open">
+<summary>Application of DeepMIB for 2D instance segmentation</summary>
+<p><a class="glightbox" data-title="2D instance segmentation example" data-type="image" href="images/DeepLearning_2D_instance.png"><img alt="2D instance segmentation example" class="on-glb" src="images/DeepLearning_2D_instance.png" /></a></p>
+<p>Instance segmentation of mitochondria in zebrafish neuromast using SOLOv2 architecture.</p>
+<p>Sample was kindly provided by Aryan Kaveh and Elina Ikonen, University of Helsinki.</p>
+</details>
+<details class="abstract">
+<summary>List of available network architectures for 2D instance segmentation</summary>
+<ul>
+<li>
+<p><strong>SOLOv2</strong>: objects of any shape, such as cells with protrusions or organelles. Resnet18 or Resnet50 backbone; needs the <em>Computer Vision Toolbox Model for SOLO V2 Instance Segmentation</em> support package.<br />
+<strong>References</strong>:  </p>
+<ul>
+<li>Wang, X., et al. "SOLOv2: Dynamic and Fast Instance Segmentation." <em>NeurIPS</em>, 2020 (<a href="https://arxiv.org/abs/2003.10152">arXiv</a>).  </li>
+<li><a href="https://se.mathworks.com/help/vision/ref/solov2.html">MATLAB solov2</a>.</li>
+</ul>
+</li>
+<li>
+<p><strong>StarDist</strong>: round or oval objects, such as nuclei, round cells or vesicles, also when packed densely; a pretrained model for fluorescent nuclei can be <a href="deepmib-instance.html#stardist-prediction-without-training">used without training</a> or fine-tuned.<br />
+<strong>References</strong>:  </p>
+<ul>
+<li>Schmidt, U., et al. "Cell Detection with Star-Convex Polygons." <em>MICCAI</em>, 2018 (<a href="https://arxiv.org/abs/1806.03535">arXiv</a>).  </li>
+<li>Weigert, M., et al. "Star-convex Polyhedra for 3D Object Detection and Segmentation in Microscopy." <em>WACV</em>, 2020 (<a href="https://arxiv.org/abs/1908.03636">arXiv</a>).</li>
+</ul>
+</li>
+</ul>
+</details>
+<p>This workflow requires a preprocessing step that converts the ground-truth models into instance label files before training.</p>
+<p>For full details on source data requirements, preprocessing, training and prediction, see <a href="deepmib-instance.html">2D Instance Segmentation</a>.</p>
 <hr />
 <h2 id="network-filename">Network filename<a class="headerlink" href="#network-filename" title="Permanent link">&para;</a></h2>
 <p>The <span class="widget widget-button">Network filename</span> button selects a file for saving or loading a network:</p>

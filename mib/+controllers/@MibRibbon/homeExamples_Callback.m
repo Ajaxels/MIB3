@@ -23,7 +23,7 @@ function homeExamples_Callback(obj, BatchOptIn)
 BatchOpt = struct();
 BatchOpt.Dataset = {'Huh7 and model'};
 BatchOpt.Dataset{2} = {'Synthetic 2D Large spots', 'Synthetic 2D small spots', 'Synthetic 2.5D large spots', 'Synthetic 2D patch-wise', ...
-    '2D EM membranes', '2D LM nuclei', '3D EM mitochondria', '3D LM hair cells', ...
+    '2D EM membranes', '2D LM nuclei', '2D LM nuclei StarDist', '3D EM mitochondria', '3D LM hair cells', ...
     'LM 3D SIM ER', 'LM 3D STED', 'LM WF ER photobleaching', ...
     'Huh7 and model', 'Trypanosoma and model', 'MATLAB Brain and model'};
 BatchOpt.DirectoryName = {'Current MIB path'};
@@ -61,7 +61,7 @@ else
 end
 
 if ismember(BatchOpt.Dataset{1}, {'Synthetic 2D Large spots', 'Synthetic 2D small spots', 'Synthetic 2.5D large spots', 'Synthetic 2D patch-wise', ...
-        '2D EM membranes', '2D LM nuclei', '3D EM mitochondria', '3D LM hair cells'}) && ~batchMode
+        '2D EM membranes', '2D LM nuclei', '2D LM nuclei StarDist', '3D EM mitochondria', '3D LM hair cells'}) && ~batchMode
     BatchOpt.DirectoryName{1} = uigetdir(BatchOpt.DirectoryName{1}, 'Select directory to unzip the project');
     if BatchOpt.DirectoryName{1} == 0; return; end
 end
@@ -94,7 +94,7 @@ id = obj.mibModel.getActiveId();
 % Huh7 and Trypanosoma download two files (image, model); each is checked.
 switch BatchOpt.Dataset{1}
     case {'Synthetic 2D Large spots', 'Synthetic 2D small spots', 'Synthetic 2.5D large spots', 'Synthetic 2D patch-wise', ...
-            '2D EM membranes', '2D LM nuclei', '3D EM mitochondria', '3D LM hair cells'}
+            '2D EM membranes', '2D LM nuclei', '2D LM nuclei StarDist', '3D EM mitochondria', '3D LM hair cells'}
         switch BatchOpt.Dataset{1}
             case 'Synthetic 2D small spots'
                 url = 'http://mib.helsinki.fi/tutorials/datasets/2D_SmallSpots_3cl_Unet.zip';
@@ -108,6 +108,8 @@ switch BatchOpt.Dataset{1}
                 url = 'http://mib.helsinki.fi/tutorials/deepmib/1_2DEM_Files.zip';
             case '2D LM nuclei'
                 url = 'http://mib.helsinki.fi/tutorials/deepmib/2_2DLM_Files.zip';
+            case '2D LM nuclei StarDist'
+                url = 'http://mib.helsinki.fi/tutorials/deepmib/2D_Nuclei_StarDist.zip';
             case '3D EM mitochondria'
                 url = 'http://mib.helsinki.fi/tutorials/deepmib/3_3DEM_Files.zip';
             case '3D LM hair cells'

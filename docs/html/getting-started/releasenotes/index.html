@@ -29,7 +29,7 @@
     
     
       
-        <title>Index - Microscopy Image Browser v3</title>
+        <title>Current Release Notes - Microscopy Image Browser v3</title>
       
     
     
@@ -88,7 +88,8 @@
     <label class="md-overlay" for="__drawer" aria-label="Navigation"></label>
     <div data-md-component="skip">
       
-        <a href="#__skip" class="md-skip">
+        
+        <a href="#current-release-notes" class="md-skip">
           Skip to content
         </a>
       
@@ -123,7 +124,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Index
+              Current Release Notes
             
           </span>
         </div>
@@ -4419,7 +4420,7 @@
   <span class="md-ellipsis">
     
   
-  2D Instance (SOLOv2)
+  2D Instance
 
     
   </span>
@@ -5417,6 +5418,8 @@
                     
                     
                     
+                      
+                    
                     
                   
                   <div class="md-sidebar__inner">
@@ -5426,6 +5429,8 @@
 <nav class="md-nav md-nav--secondary" aria-label="On this page">
   
   
+  
+    
   
   
 </nav>
@@ -5502,9 +5507,7 @@
                 
                   
 
-  <h1 id="__skip">Index</h1>
-
-<p>i# Current Release Notes</p>
+<h1 id="current-release-notes">Current Release Notes<a class="headerlink" href="#current-release-notes" title="Permanent link">&para;</a></h1>
 <p>This page lists the current and potentially beta-version release notes for <strong>Microscopy Image Browser (MIB)</strong>, detailing new features, improvements, and fixes across versions.<br> 
 For the latest updates, visit <a href="https://mib.helsinki.fi/downloads.html">MIB website</a> or check the <a href="index.html">Current release notes</a>.
 For the downloads visit <a href="https://mib.helsinki.fi/downloads.html">MIB website</a> for the development history click <a href="release-notes-history.html">here</a>.</p>
@@ -5523,6 +5526,36 @@ For the downloads visit <a href="https://mib.helsinki.fi/downloads.html">MIB web
 <li>the memory needed is checked before the conversion starts</li>
 <li>a failed conversion is reported as failed, and MIB warns when an incomplete dataset is opened</li>
 <li>the output directory must be empty or hold a previous Zarr dataset</li>
+</ul>
+</li>
+<li><strong>DeepMIB, StarDist</strong>: a new architecture of the 2D Instance workflow for round and oval objects
+  such as nuclei, round cells or vesicles, also when they are packed densely. Fine-tune the
+  pretrained <code>2D_versatile_fluo</code> model (downloaded on first use) or train a new network; no
+  Python is needed, also in the standalone version. Includes a test of whether the objects suit
+  StarDist and tuning of the detection thresholds after training.
+  See <a href="../../deepmib/deepmib-instance.html#stardist">2D Instance Segmentation</a></li>
+<li><strong>DeepMIB, evaluation of 2D Instance predictions</strong>: <em>Evaluate segmentation</em> matches the
+  predicted objects with the ground-truth objects and reports precision, recall, F1 and panoptic
+  quality over a range of IoU thresholds, per image and for the whole set; export to MATLAB,
+  Excel or CSV. See <a href="../../deepmib/deepmib-instance.html#evaluating-the-predictions">Evaluating the predictions</a></li>
+<li><strong>DeepMIB, OME-Zarr images</strong>: OME-Zarr images (v2 and v3) are predicted directly, at a chosen
+  pyramid level. With the <em>Zarr3 (BigData model)</em> output, the result opens as an editable BigData
+  model</li>
+<li><strong>BigData instance model</strong>: a new 16383-material model for BigData datasets, one index per
+  object; 63-material BigData models can be converted to it, into a new model store</li>
+<li><strong>Close model</strong>: new entry of the buffer context menu in the Datasets panel; closes the model and
+  keeps the dataset open, <span class="keys"><kbd class="key-control">Ctrl</kbd><span>+</span><kbd class="key-z">Z</kbd></span> brings the model back</li>
+<li><strong>Chunk dataset</strong>: a downsampled pyramid level of a BigData or OME-Zarr dataset can be chunked;
+  a model segmented on these tiles is fused back into the matching level of the BigData model</li>
+<li><strong>Stitching</strong>: the inspector handles mosaics of Z-stacks; the <em>Fix Z</em> table lists the section
+  or slice boundaries, each opened in the Fix Z boundary view</li>
+<li><strong>Resize dataset</strong> can be cancelled; downloads show their progress</li>
+<li><strong>Fixes</strong>:<ul>
+<li>MATLAB no longer crashes at exit after ZARR files were opened in a session that also used
+  Computer Vision Toolbox features</li>
+<li>Image converter: OME-Zarr conversion of AmiraMesh volumes</li>
+<li>DeepMIB: <em>Export network</em></li>
+<li>the installation directory of MIB on macOS is detected correctly</li>
 </ul>
 </li>
 </ul>

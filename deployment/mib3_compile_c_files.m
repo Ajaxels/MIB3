@@ -33,6 +33,14 @@ function mib3_compile_c_files()
 %   - **NRRD reader** (``nrrdLoadWithMetadata``) needs the Teem library, see
 %     ``mib/external/nrrd/compilethis.m``; it is always skipped. macOS does not
 %     need it: ``io.loaders.NrrdLoader`` reads NRRD with ``nhdr_nrrd_read`` there.
+%   - **StarDist** (``stardistMex``, used by ``deepmib.stardist.nms`` and
+%     ``deepmib.stardist.computeTargets``) links ``-lut`` for Ctrl+C handling and
+%     is single-threaded: StarDist's OpenMP pragmas stay in the source but are not
+%     enabled, because the single-threaded build is already as fast as StarDist's
+%     own and OpenMP would add a runtime DLL (``libgomp-1.dll`` with MinGW,
+%     ``vcomp140.dll`` with MSVC) to the MEX file's dependencies.
+%   - **pinModule** (``utils.pinModule``, used by ``io.zarr.pinNativeLibrary``)
+%     links ``-ldl`` on Linux, where ``dlopen`` is in ``libdl`` before glibc 2.34.
 %   - **Fast Marching** keeps ``-compatibleArrayDims``: the sources pass
 %     ``mwSize`` arrays to helpers declared with ``int *``, which is only
 %     correct when ``mwSize`` is 32-bit.
@@ -93,6 +101,11 @@ targets(end+1) = makeTarget('Graphcut maxflow', 'external/Supervoxels', 'maxflow
     {'maxflowmex_v222.cpp', 'maxflow-v2.22/adjacency_list_new_interface/graph.cpp', ...
     'maxflow-v2.22/adjacency_list_new_interface/maxflow.cpp'}, {'-largeArrayDims'});
 targets(end+1) = makeTarget('Utilities', '+utils', 'GetExeLocation', {'GetExeLocation.c'}, {});
+pinModuleFlags = {};
+if isunix && ~ismac
+    pinModuleFlags = {'-ldl'};  % dlopen lives in libdl before glibc 2.34
+end
+targets(end+1) = makeTarget('Utilities', '+utils', 'pinModule', {'pinModule.c'}, pinModuleFlags);
 targets(end+1) = makeTarget('Region Growing', 'external/RegionGrowing', 'RegionGrowing_mex', {'RegionGrowing_mex.cpp'}, {});
 classRFSources = {'src/classRF.cpp', 'src/classTree.cpp', 'src/cokus.cpp', 'src/rfutils.cpp'};
 targets(end+1) = makeTarget('Random Forest classifier', 'external/RandomForest/RF_Class_C', 'mexClassRF_train', ...
@@ -103,6 +116,8 @@ targets(end+1) = makeTarget('Random Forest regression', 'external/RandomForest/R
     {'src/cokus.cpp', 'src/reg_RF.cpp', 'src/mex_regressionRF_train.cpp'}, {'-DMATLAB'});
 targets(end+1) = makeTarget('Random Forest regression', 'external/RandomForest/RF_Reg_C', 'mexRF_predict', ...
     {'src/cokus.cpp', 'src/reg_RF.cpp', 'src/mex_regressionRF_predict.cpp'}, {'-DMATLAB'});
+targets(end+1) = makeTarget('StarDist', 'external/stardist', 'stardistMex', ...
+    {'stardistMex.cpp', 'clipper.cpp'}, {['-I' fullfile(mibDir, 'external', 'stardist')], '-lut'});
 
 %% Fortran object for the Random Forest classifier
 [rfsubObject, rfsubFlags, rfsubSkipReason] = prepareRfsubObject(fullfile(mibDir, 'external', 'RandomForest', 'RF_Class_C'));

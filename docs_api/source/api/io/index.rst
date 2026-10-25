@@ -82,6 +82,14 @@ one request concurrently.
    :undoc-members:
    :show-inheritance:
 
+Native library
+--------------
+
+``zarrMex`` leaves worker threads alive inside the library after a call, so MATLAB crashes
+when it unloads the library at exit or on ``clear mex``. MIB pins it at startup.
+
+.. autofunction:: pinNativeLibrary
+
 .. currentmodule:: io
 
 Loaders and savers

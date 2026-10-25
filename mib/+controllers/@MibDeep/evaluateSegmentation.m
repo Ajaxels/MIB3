@@ -21,6 +21,11 @@ if strcmp(obj.BatchOpt.P_ModelFiles{1}, 'Zarr3 (BigData model)')
     return;
 end
 
+if strcmp(obj.BatchOpt.Workflow{1}, '2D Instance')
+    obj.evaluateSegmentationInstances();     % objects are matched, not pixel classes
+    return;
+end
+
 if exist(fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages', 'ResultsModels', 'patchPredictionResults.mat'), 'file') == 2
     obj.evaluateSegmentationPatches();
     return;
@@ -171,6 +176,8 @@ try
 catch err
     optionalSuffix = 'Most likely the class names in the GroundTruth do not match the class names of the model\nor alternatively, the ground truth model is in a single .MODEL file (preprecess the dataset in this case)';
     utils.dlgs.showErrorDialog(obj.view.gui, err, 'Wrong class names', '', optionalSuffix);
+    pw.deletePoolWaitbar();
+    return;
 end
 pw.increment();
 

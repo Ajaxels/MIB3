@@ -106,6 +106,11 @@ function updateWidgets(obj)
     else
         obj.view.handles.P_DynamicMasking.Enable = 'off';
     end
+    if strcmp(obj.BatchOpt.P_ModelFiles{1}, 'Zarr3 (BigData model)')
+        obj.view.handles.P_ModelFilesSettings.Enable = 'on';
+    else
+        obj.view.handles.P_ModelFilesSettings.Enable = 'off';
+    end
 
     % update widgets in Options panel
     if  obj.view.handles.O_CustomTrainingProgressWindow.Value

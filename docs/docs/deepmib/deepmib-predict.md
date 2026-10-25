@@ -66,7 +66,7 @@ minimize edge artefacts and improve segmentation. Define overlap percentage in <
 
 <span class="widget widget-edit">Padding, %%</span> pads images symmetrically to reduce edge artifacts  
 <span class="widget widget-edit">Downsample factor for images</span> downsamples prediction images to match training 
-(if applicable), upsampling results to original size and in case of networks with 2 classes are also smoothed  
+(if applicable), upsampling results to original size and in case of networks with 2 classes are also smoothed; with a **StarDist** network values below 1 enlarge the images, see [StarDist: prediction without training](deepmib-instance.md#stardist-prediction-without-training); SOLOv2 does not use it  
 <span class="widget widget-edit">Batch size for prediction...</span> sets the number of patches processed by GPU simultaneously, limited by GPU memory  
 <span class="widget widget-dropdown">Model files</span> selects output format for models (CSV for patch-wise), configured via the ![Settings button](images/DeepLearningTrainSettingsBtn.png){.inline-image} button  
 ??? abstract "list of available image formats for the model files"
@@ -102,6 +102,10 @@ Settings of the *Instance segmentation* subpanel are only available for the
 
 An image that is no larger than the network input patch is segmented in one piece, so the overlap
 mode and the tile overlap settings have no effect on it.
+
+With a **StarDist** network there is nothing to stitch: the overlap mode is not used, and the
+settings button opens the StarDist detection thresholds and tile size instead, see
+[StarDist prediction](deepmib-instance.md#prediction).
 
 The ![Settings button](images/DeepLearningTrainSettingsBtn.png){.inline-image} button configures the stitching parameters:
 
@@ -157,7 +161,9 @@ into MIB’s active buffer post-prediction
 <br>With ZARR images, one image is loaded at a time; when several were predicted, you choose which one.  
 <br><span class="widget widget-button">Load prediction scores</span> loads score images (probabilities) into the active buffer  
 <br><span class="widget widget-button">Evaluate segmentation</span> calculates precision metrics if 
-ground truth labels exist in `Labels` under `PredictionImages`. Material names must match training data  
+ground truth labels exist in `Labels` under `PredictionImages`. Material names must match training data. 
+For 2D Instance networks objects are matched instead, see 
+[Evaluating the predictions](deepmib-instance.md#evaluating-the-predictions)  
 ??? abstract "Details of the Evaluate segmentation operation"
       Select metrics to compute:  
       ![Evaluation metrics settings dialog](images/DeepLearning_Evaluation.png){.on-glb}  

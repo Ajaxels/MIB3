@@ -26,6 +26,7 @@ classdef StitchCoreTest < matlab.unittest.TestCase
             testCase.applyFixture(PathFixture({testsFolder, mibFolder, ...
                 fullfile(mibFolder, 'external'), ...
                 fullfile(mibFolder, 'external', 'zarr-matlab')}));
+            testCase.applyFixture(mibtest.fixtures.MibPathFixture);   % tests/ is on the path now
         end
     end
 

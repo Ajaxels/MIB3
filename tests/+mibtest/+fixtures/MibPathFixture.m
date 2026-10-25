@@ -9,6 +9,8 @@ classdef MibPathFixture < matlab.unittest.fixtures.Fixture
             repoRoot    = fileparts(testsFolder);
             mibFolder   = fullfile(repoRoot, 'mib');
             fixture.applyFixture(matlab.unittest.fixtures.PathFixture({mibFolder, testsFolder}));
+            % as mib3.m does: an unloaded zarrMex crashes MATLAB at exit (see io.zarr.pinNativeLibrary)
+            io.zarr.pinNativeLibrary();
             fixture.SetupDescription = sprintf('Added mib/ and tests/ to path (repo: %s)', repoRoot);
         end
     end

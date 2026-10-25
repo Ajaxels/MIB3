@@ -4545,7 +4545,7 @@
   <span class="md-ellipsis">
     
   
-  2D Instance (SOLOv2)
+  2D Instance
 
     
   </span>
@@ -5795,7 +5795,7 @@ minimize edge artefacts and improve segmentation. Define overlap percentage in <
 </details>
 <p><span class="widget widget-edit">Padding, %%</span> pads images symmetrically to reduce edge artifacts<br />
 <span class="widget widget-edit">Downsample factor for images</span> downsamples prediction images to match training 
-(if applicable), upsampling results to original size and in case of networks with 2 classes are also smoothed<br />
+(if applicable), upsampling results to original size and in case of networks with 2 classes are also smoothed; with a <strong>StarDist</strong> network values below 1 enlarge the images, see <a href="deepmib-instance.html#stardist-prediction-without-training">StarDist: prediction without training</a>; SOLOv2 does not use it<br />
 <span class="widget widget-edit">Batch size for prediction...</span> sets the number of patches processed by GPU simultaneously, limited by GPU memory<br />
 <span class="widget widget-dropdown">Model files</span> selects output format for models (CSV for patch-wise), configured via the <img alt="Settings button" class="inline-image" src="images/DeepLearningTrainSettingsBtn.png" /> button  </p>
 <details class="abstract">
@@ -5835,6 +5835,9 @@ minimize edge artefacts and improve segmentation. Define overlap percentage in <
 </ul>
 <p>An image that is no larger than the network input patch is segmented in one piece, so the overlap
 mode and the tile overlap settings have no effect on it.</p>
+<p>With a <strong>StarDist</strong> network there is nothing to stitch: the overlap mode is not used, and the
+settings button opens the StarDist detection thresholds and tile size instead, see
+<a href="deepmib-instance.html#prediction">StarDist prediction</a>.</p>
 <p>The <img alt="Settings button" class="inline-image" src="images/DeepLearningTrainSettingsBtn.png" /> button configures the stitching parameters:</p>
 <ul>
 <li><span class="widget widget-edit">Detection confidence threshold (0-1)</span> — minimal confidence score for a detected instance to be kept (both overlap modes); decrease to detect more (weaker) objects, increase to keep only confident detections (default: <code>0.5</code>)  </li>
@@ -5881,7 +5884,9 @@ into MIB’s active buffer post-prediction<br />
 <br>With ZARR images, one image is loaded at a time; when several were predicted, you choose which one.<br />
 <br><span class="widget widget-button">Load prediction scores</span> loads score images (probabilities) into the active buffer<br />
 <br><span class="widget widget-button">Evaluate segmentation</span> calculates precision metrics if 
-ground truth labels exist in <code>Labels</code> under <code>PredictionImages</code>. Material names must match training data  </p>
+ground truth labels exist in <code>Labels</code> under <code>PredictionImages</code>. Material names must match training data. 
+For 2D Instance networks objects are matched instead, see 
+<a href="deepmib-instance.html#evaluating-the-predictions">Evaluating the predictions</a>  </p>
 <details class="abstract">
 <summary>Details of the Evaluate segmentation operation</summary>
 <p>Select metrics to compute:<br />

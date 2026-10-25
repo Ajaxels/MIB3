@@ -191,7 +191,7 @@ nav = [
     { "Train" = "deepmib/deepmib-train.md" },
     { "Predict" = "deepmib/deepmib-predict.md" },
     { "Options" = "deepmib/deepmib-options.md" },
-    { "2D Instance (SOLOv2)" = "deepmib/deepmib-instance.md" },
+    { "2D Instance" = "deepmib/deepmib-instance.md" },
   ]},
   { "Plugins" = [
     "plugins/index.md",

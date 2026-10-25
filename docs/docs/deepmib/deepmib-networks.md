@@ -21,7 +21,7 @@ Start a new project by selecting a workflow:
 - **2.5D Semantic**: uses 2D network architectures to process small subvolumes (3-9 stacks), segmenting only the central slice
 - **3D Semantic**: clusters 3D image voxels of the same material together
 - **2D Patch-wise**: predicts 2D images in blocks (patches), producing a downsampled image indicating object positions
-- **2D Instance**: detects each object individually (each object gets a distinct label), using the SOLOv2 network. See [2D Instance Segmentation (SOLOv2)](deepmib-instance.md)
+- **2D Instance**: detects each object individually (each object gets a distinct label), using the SOLOv2 or StarDist network. See [2D Instance Segmentation](deepmib-instance.md)
 
 ---
 
@@ -146,11 +146,29 @@ In the 2D Patch-wise workflow, training uses image patches representing specific
 
 ## 2D Instance workflow
 
-Unlike the semantic workflows, which assign every pixel to a *class* (all objects of the same type share one label), the **2D Instance** workflow detects each object *individually* — every object receives its own distinct label, so touching or overlapping objects of the same type are separated. Deep MIB implements this using the MATLAB **SOLOv2** network (Resnet18 or Resnet50 backbone).
+Unlike the semantic workflows, which assign every pixel to a *class* (all objects of the same type share one label), the **2D Instance** workflow detects each object *individually* - every object receives its own distinct label, so touching or overlapping objects of the same type are separated.
 
-This workflow requires a dedicated preprocessing step that converts the ground-truth models into the SOLOv2 annotation format before training, and it needs the *Computer Vision Toolbox Model for SOLO V2 Instance Segmentation* support package.
+???+ abstract "Application of DeepMIB for 2D instance segmentation"
+    ![2D instance segmentation example](images/DeepLearning_2D_instance.png){.on-glb}
 
-For full details on source data requirements, preprocessing, training and prediction, see [2D Instance Segmentation (SOLOv2)](deepmib-instance.md).
+    Instance segmentation of mitochondria in zebrafish neuromast using SOLOv2 architecture.
+ 
+    Sample was kindly provided by Aryan Kaveh and Elina Ikonen, University of Helsinki.
+
+??? abstract "List of available network architectures for 2D instance segmentation"
+    - **SOLOv2**: objects of any shape, such as cells with protrusions or organelles. Resnet18 or Resnet50 backbone; needs the *Computer Vision Toolbox Model for SOLO V2 Instance Segmentation* support package.  
+      **References**:  
+        - Wang, X., et al. "SOLOv2: Dynamic and Fast Instance Segmentation." *NeurIPS*, 2020 ([arXiv](https://arxiv.org/abs/2003.10152)).  
+        - [MATLAB solov2](https://se.mathworks.com/help/vision/ref/solov2.html).
+
+    - **StarDist**: round or oval objects, such as nuclei, round cells or vesicles, also when packed densely; a pretrained model for fluorescent nuclei can be [used without training](deepmib-instance.md#stardist-prediction-without-training) or fine-tuned.  
+      **References**:  
+        - Schmidt, U., et al. "Cell Detection with Star-Convex Polygons." *MICCAI*, 2018 ([arXiv](https://arxiv.org/abs/1806.03535)).  
+        - Weigert, M., et al. "Star-convex Polyhedra for 3D Object Detection and Segmentation in Microscopy." *WACV*, 2020 ([arXiv](https://arxiv.org/abs/1908.03636)).
+
+This workflow requires a preprocessing step that converts the ground-truth models into instance label files before training.
+
+For full details on source data requirements, preprocessing, training and prediction, see [2D Instance Segmentation](deepmib-instance.md).
 
 ---
 

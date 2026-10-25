@@ -4491,6 +4491,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#instance-segmentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Instance segmentation
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -4600,7 +4611,7 @@
   <span class="md-ellipsis">
     
   
-  2D Instance (SOLOv2)
+  2D Instance
 
     
   </span>
@@ -5752,6 +5763,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#instance-segmentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Instance segmentation
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -5996,6 +6018,7 @@ During preprocessing, images and models are converted to <code>.mibImg</code> an
 <li><a href="deepmib-dirs.html#manual-file-splitting">Manual file splitting</a> without file conversion, files arranged manually into correct folders</li>
 <li><a href="deepmib-dirs.html#conversion-of-files">Conversion of files</a> with preprocessing/file conversion, files are converted to <code>.mibImg</code> and <code>.mibCat</code> formats and split for training and validation</li>
 <li><a href="deepmib-dirs.html#patch-wise-workflow">Patch-wise workflow</a> this workflow requires slightly different organization of directories </li>
+<li><a href="deepmib-dirs.html#instance-segmentation">Instance segmentation</a> the 2D Instance workflow (SOLOv2, StarDist), which always preprocesses its labels for training</li>
 </ul>
 <h3 id="automatic-file-splitting">Automatic file splitting<a class="headerlink" href="#automatic-file-splitting" title="Permanent link">&para;</a></h3>
 <p>Without file conversion, with automatic splitting of datasets into training and validation sets.<br>
@@ -6083,6 +6106,42 @@ Prediction ground truth follows the same options as above.</p>
 <details class="abstract">
 <summary>snapshot with the legend</summary>
 <p><a class="glightbox" data-title="Directory legend" data-type="image" href="images/DeepLearningDirectories_Legend.png"><img alt="Directory legend" class="on-glb" src="images/DeepLearningDirectories_Legend.png" /></a></p>
+</details>
+<hr />
+<h3 id="instance-segmentation">Instance segmentation<a class="headerlink" href="#instance-segmentation" title="Permanent link">&para;</a></h3>
+<p>Organization of directories for the <a href="deepmib-instance.html">2D Instance workflow</a> (SOLOv2, StarDist).
+The labels are always preprocessed for training; the images are used as they are.</p>
+<ol>
+<li><strong>Arrange the files</strong><ul>
+<li><code>1_Training/Images</code>: training images</li>
+<li><code>1_Training/Labels</code>: labels, one file per image (<code>.model</code>, or TIF/PNG label images set in
+  <span class="widget widget-dropdown">Labels extension</span>) or a single <code>.model</code> file with
+  <label class="widget widget-checkbox">Single MIB model file</label>; each object has its own index</li>
+<li><code>2_Prediction/Images</code>: images to segment</li>
+<li><code>2_Prediction/Labels</code> (optional): ground-truth labels for <a href="deepmib-instance.html#evaluating-the-predictions">evaluation</a></li>
+</ul>
+</li>
+<li><strong>Preprocess for training</strong>: set <span class="widget widget-dropdown">Preprocess for: Training</span>
+   and press <span class="widget widget-button">Preprocess</span>. The labels are converted to
+   <code>1_Training/LabelsInstances</code>.</li>
+<li><strong>Split for training and validation</strong>: answer <strong>Split labels</strong> in the dialog that follows. The
+   images and preprocessed labels are copied to <code>TrainImages</code>, <code>TrainLabels</code>, <code>ValidationImages</code> and
+   <code>ValidationLabels</code> under <code>1_Training</code>, according to
+   <span class="widget widget-dropdown">Fraction of images for validation</span> and
+   <span class="widget widget-dropdown">Random generator seed</span>. To split again later, set
+   <span class="widget widget-dropdown">Preprocess for: Split files for training/validation</span>
+   and press <span class="widget widget-button">Preprocess</span>.</li>
+<li><strong>Train</strong> in the <a href="deepmib-train.html">Train tab</a>.</li>
+<li><strong>Predict</strong> in the <a href="deepmib-predict.html">Predict tab</a>: the images of <code>2_Prediction/Images</code> need no
+   preprocessing. The results are saved to <code>3_Results/PredictionImages/ResultsModels</code>.</li>
+</ol>
+<details class="abstract">
+<summary>Directory tree before preprocessing</summary>
+<p><a class="glightbox" data-title="Directory tree for instance segmentation before preprocessing" data-type="image" href="images/DeepLearningDirectories_Instance1.png"><img alt="Directory tree for instance segmentation before preprocessing" class="on-glb" src="images/DeepLearningDirectories_Instance1.png" /></a></p>
+</details>
+<details class="abstract">
+<summary>Directory tree after preprocessing and splitting</summary>
+<p><a class="glightbox" data-title="Directory tree for instance segmentation after preprocessing and splitting" data-type="image" href="images/DeepLearningDirectories_Instance2.png"><img alt="Directory tree for instance segmentation after preprocessing and splitting" class="on-glb" src="images/DeepLearningDirectories_Instance2.png" /></a></p>
 </details>
 <hr />
 <p><em>Back to <a href="../index.html">MIB</a> | <a href="index.html">DeepMIB</a></em></p>

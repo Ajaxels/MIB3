@@ -1,5 +1,5 @@
 function out = readInstancePatch(filename, options)
-% READINSTANCEPATCH - Read one native-resolution training patch for 2D instance segmentation (SOLOv2).
+% READINSTANCEPATCH - Read one native-resolution training patch for 2D instance segmentation (SOLOv2 or StarDist).
 %
 % Syntax:
 %   .. code-block:: matlab
@@ -34,10 +34,34 @@ function out = readInstancePatch(filename, options)
 %       stream (that resampling is a large part of what "patches per image" buys). The
 %       private stream is used instead of ``rng`` so that seeding a validation read never
 %       disturbs the global stream feeding the training patches.
+%     - ``.outputFormat`` - *optional* ``'solov2'`` (default) or ``'labelMap'`` (StarDist)
+%     - ``.normalizePercentiles`` - ``[low high]`` percentiles, required for ``'labelMap'``
+%     - ``.margin`` - *optional* pixels of image read around the patch on every side, from
+%       deepmib.instanceAugmentationMargin; default 0. Only the training read sets it, together
+%       with the augmentation transform: deepmib.augmentInstanceData2D warps the larger patch
+%       and crops it back to ``.patchSize``, so rotation, scaling and shear bring real image
+%       into the patch instead of fill. The window is picked exactly as without a margin; the
+%       margin is added around it afterwards. Where it reaches past the image border, the image
+%       gets ``.fillValue`` and the labels 0, as an augmentation would fill it.
+%     - ``.fillValue`` - *optional* image value outside the image, ``AugOpt2D.FillValue``;
+%       default 0; used only with ``.margin``
+%
+% With ``'labelMap'`` the image keeps its native channel count (no RGB expansion), no
+% ground truth is rebuilt (StarDist computes its targets after augmentation, see
+% deepmib.stardist.computeTargets), and ``.minObjectArea`` is not used. The image is not
+% normalised here, because the intensity augmentations of deepmib.augmentInstanceData2D work
+% on raw values; instead the low/high percentiles of the **whole** image are returned, which
+% is what StarDist normalises with. They are cached per file (persistent ``dictionary``),
+% since every patch reloads the whole image.
 %
 % Output Arguments:
-%   - **out** - ``1×4`` cell ``{image HxWx3, boxes Kx4 [x y w h], labels Kx1 categorical,
-%     masks HxWxK logical}`` as required by ``trainSOLOV2``.
+%   - **out** - for ``'solov2'``: ``1×4`` cell ``{image HxWx3, boxes Kx4 [x y w h],
+%     labels Kx1 categorical, masks HxWxK logical}`` as required by ``trainSOLOV2``;
+%     for ``'labelMap'``: ``1×3`` cell ``{image HxWxC (original class), labelPatch HxW,
+%     normValues 2xC}`` with ``normValues(1, :)`` the low and ``normValues(2, :)`` the high
+%     percentile of each channel. With ``.margin``, ``H`` and ``W`` are the patch size plus
+%     twice the margin; for SOLOv2 the masks, boxes and ``.minObjectArea`` filter then refer to
+%     the larger patch, and deepmib.augmentInstanceData2D re-applies the filter after its crop.
 
 global mibDeepTrainingProgressStruct
 
@@ -70,13 +94,19 @@ if isfield(mibDeepTrainingProgressStruct, 'spinDownActive') && mibDeepTrainingPr
     return;
 end
 
+labelMapOutput = isfield(options, 'outputFormat') && strcmp(options.outputFormat, 'labelMap');
+
 data = load(filename);      % imageFilename, instanceLabelMap
 labelMap = data.instanceLabelMap;
 
 % load the corresponding image and squeeze to [H W C]
 imageFilename = fullfile(options.imageDir, data.imageFilename);
 image = squeeze(deepmib.storeLoadImages(imageFilename, options.getImageOptions));
-if size(image, 3) == 1      % grayscale -> RGB (SOLOv2 backbone expects 3 channels)
+if labelMapOutput
+    % StarDist keeps the native channel count; the whole-image percentiles are what StarDist
+    % normalises with, and they are cached because every patch reloads the whole image
+    normValues = localNormalizationValues(imageFilename, image, options.normalizePercentiles);
+elseif size(image, 3) == 1      % grayscale -> RGB (SOLOv2 backbone expects 3 channels)
     image = repmat(image, [1, 1, 3]);
 end
 
@@ -126,15 +156,37 @@ end
 
 imagePatch = image(y1:y1+ph-1, x1:x1+pw-1, :);
 
+if isfield(options, 'margin') && options.margin > 0
+    % the same window plus real image around it for the geometric augmentations; outside
+    % the image, fill as an augmentation would
+    fillValue = 0;
+    if isfield(options, 'fillValue'); fillValue = options.fillValue; end
+    rows = y1 - options.margin : y1 + ph - 1 + options.margin;
+    cols = x1 - options.margin : x1 + pw - 1 + options.margin;
+    rowsInside = rows >= 1 & rows <= height;
+    colsInside = cols >= 1 & cols <= width;
+    imagePatch = repmat(cast(fillValue, 'like', image), [numel(rows), numel(cols), size(image, 3)]);
+    imagePatch(rowsInside, colsInside, :) = image(rows(rowsInside), cols(colsInside), :);
+    labelPatch = zeros(numel(rows), numel(cols), 'like', labelMap);
+    labelPatch(rowsInside, colsInside) = labelMap(rows(rowsInside), cols(colsInside));
+end
+
+if labelMapOutput
+    % StarDist: the label patch itself, plus the normalisation values of the whole image
+    out = {imagePatch, labelPatch, normValues};
+    return;
+end
+
 % rebuild the SOLOv2 ground truth from the cropped label map
 stats = regionprops(labelPatch, {'Area', 'PixelIdxList'});
 stats = stats(arrayfun(@(s) ~isempty(s.PixelIdxList) && s.Area >= options.minObjectArea, stats));
 numObjects = numel(stats);
 
+[patchHeight, patchWidth] = size(labelPatch);   % larger than [ph pw] with a margin
 boxes = zeros(numObjects, 4);
-masks = false([ph, pw, numObjects]);
+masks = false([patchHeight, patchWidth, numObjects]);
 for k = 1:numObjects
-    masks(stats(k).PixelIdxList + ph*pw*(k-1)) = true;
+    masks(stats(k).PixelIdxList + patchHeight*patchWidth*(k-1)) = true;
     [rr, cc] = find(masks(:, :, k));
     boxes(k, :) = [min(cc), min(rr), max(cc)-min(cc)+1, max(rr)-min(rr)+1];
 end
@@ -174,4 +226,19 @@ end
 
 out = cachedObservation;
 
+end
+
+% -------------------------------------------------------------------------------------
+function normValues = localNormalizationValues(imageFilename, image, percentiles)
+% [2, C] low/high percentiles of the whole image, cached per file and percentile pair
+persistent cache
+if isempty(cache); cache = dictionary(string.empty, {}); end
+key = string(imageFilename) + "|" + strjoin(string(percentiles), ",");
+if isKey(cache, key)
+    normValues = cache{key};
+    return;
+end
+[~, lowValues, highValues] = deepmib.stardist.normalizeImage(image, percentiles);
+normValues = [lowValues; highValues];
+cache{key} = normValues;
 end

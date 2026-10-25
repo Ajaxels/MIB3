@@ -59,7 +59,20 @@ maxPoints = trainingProgressOptions.O_NumberOfPoints;
 if isempty(progressStruct.Iteration); return; end
 
 if ~isfield(progressStruct, 'ValidationLoss'); progressStruct.ValidationLoss = []; end
-if ~isfield(progressStruct, 'ValidationAccuracy'); progressStruct.ValidationAccuracy = []; end
+% StarDist has no accuracy; its core IoU metric (deepmib.stardist.trainingMetrics), which
+% trainnet reports as TrainingcoreIoU / ValidationcoreIoU, takes the place of one on
+% the gauges. Matched without case: trainnet builds the name from the metric's function name
+progressFields = fieldnames(progressStruct);
+for prefix = ["Training", "Validation"]
+    metricField = progressFields(strcmpi(progressFields, prefix + "coreIoU"));
+    if ~isempty(metricField)
+        progressStruct.(prefix + "Accuracy") = progressStruct.(metricField{1});
+    end
+end
+% without any metric trainnet reports no accuracy; NaN keeps the vectors below aligned, where
+% an empty value would delete an element instead of storing one
+if ~isfield(progressStruct, 'ValidationAccuracy') || isempty(progressStruct.ValidationAccuracy); progressStruct.ValidationAccuracy = NaN; end
+if ~isfield(progressStruct, 'TrainingAccuracy') || isempty(progressStruct.TrainingAccuracy); progressStruct.TrainingAccuracy = NaN; end
 
 if progressStruct.Iteration == 0
     mibDeepTrainingProgressStruct.TrainXvec = zeros([maxPoints, 1]);  % vector of iteration numbers for training
@@ -102,7 +115,12 @@ if progressStruct.Iteration == 0
 
     % Create Panels
     mibDeepTrainingProgressStruct.AccuracyPanel = uipanel(mibDeepTrainingProgressStruct.GridLayout2);
-    mibDeepTrainingProgressStruct.AccuracyPanel.Title = 'Accuracy';
+    if isfield(trainingProgressOptions, 'Architecture') && strcmp(trainingProgressOptions.Architecture, 'StarDist')
+        % deepmib.stardist.trainingMetrics, shown in place of an accuracy
+        mibDeepTrainingProgressStruct.AccuracyPanel.Title = 'Core IoU';
+    else
+        mibDeepTrainingProgressStruct.AccuracyPanel.Title = 'Accuracy';
+    end
     mibDeepTrainingProgressStruct.AccuracyPanel.Layout.Row = 1;
     mibDeepTrainingProgressStruct.AccuracyPanel.Layout.Column = 1;
 
@@ -390,7 +408,7 @@ else
     if ~isnan(progressStruct.TrainingAccuracy)
         mibDeepTrainingProgressStruct.AccTrainGauge.Value = progressStruct.TrainingAccuracy;
     end
-    mibDeepTrainingProgressStruct.AccTrainingValue.Text = sprintf('%.2f%%', progressStruct.TrainingAccuracy);
+    mibDeepTrainingProgressStruct.AccTrainingValue.Text = localAccuracyText(progressStruct.TrainingAccuracy);
 
     if isfield(progressStruct, 'TimeSinceStart') % when trainNetwork is used
         mibDeepTrainingProgressStruct.ElapsedTime.Text = ...
@@ -446,7 +464,7 @@ else
         if ~isnan(progressStruct.ValidationAccuracy)
             mibDeepTrainingProgressStruct.AccValGauge.Value = progressStruct.ValidationAccuracy;
         end
-        mibDeepTrainingProgressStruct.AccValidationValue.Text = sprintf('%.2f%%', progressStruct.ValidationAccuracy);
+        mibDeepTrainingProgressStruct.AccValidationValue.Text = localAccuracyText(progressStruct.ValidationAccuracy);
 
     end
     %drawnow;
@@ -480,4 +498,13 @@ end
 
 stopState = mibDeepStopTraining;
 drawnow;
+end
+
+function text = localAccuracyText(accuracy)
+% accuracy in percent, or a dash when the network reports none (StarDist)
+if isnan(accuracy)
+    text = '-';
+else
+    text = sprintf('%.2f%%', accuracy);
+end
 end

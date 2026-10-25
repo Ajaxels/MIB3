@@ -61,3 +61,6 @@ temp/
 
 # Compiled standalone build output, regenerated from mib/ by deploymentScript.m
 deployed/
+
+# local notes and correspondence, not for the repository
+development/private/

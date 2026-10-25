@@ -409,6 +409,16 @@ try
         mibDeepInstanceAugOpt.AugOpt2D = obj.AugOpt2D;
         mibDeepInstanceAugOpt.Aug2DFuncNames = obj.Aug2DFuncNames;
         mibDeepInstanceAugOpt.Aug2DFuncProbability = obj.Aug2DFuncProbability;
+        mibDeepInstanceAugOpt.patchSize = patchOpt.patchSize;
+        mibDeepInstanceAugOpt.minObjectArea = patchOpt.minObjectArea;
+        % re-create the training datastore to read the patches with a margin of real image,
+        % which the geometric augmentations rotate, scale or shear into the patch before it is
+        % cropped back (no fill inside the image); validation keeps valPatchOpt, without margin
+        trainPatchOpt = patchOpt;
+        trainPatchOpt.margin = deepmib.instanceAugmentationMargin(mibDeepInstanceAugOpt, patchOpt.patchSize);
+        trainPatchOpt.fillValue = obj.AugOpt2D.FillValue;
+        labelsDS = fileDatastore(trainModelFiles, ...
+            'ReadFcn', @(fn)deepmib.readInstancePatch(fn, trainPatchOpt));
         labelsDS = transform(labelsDS, @(dataIn)deepmib.augmentInstanceData2D(dataIn, mibDeepInstanceAugOpt));
     end
 

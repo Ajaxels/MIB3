@@ -24,6 +24,11 @@ function checkNetwork(obj, fn)
 % internal function it may change between MATLAB releases; if it fails the column
 % shows ``-`` and, in DeveloperMode, the error is printed to the command window.
 %
+% StarDist networks (2D Instance) are built with deepmib.stardist.createNetwork from
+% ``obj.StarDistOpt`` and "Input patch size", or from the selected pretrained model
+% (deepmib.stardist.loadPretrained, downloaded on first use), and shown like the
+% semantic networks; SOLOv2 shows a configuration summary only.
+%
 
 if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.MibDeep.checkNetwork: triggered\n');
@@ -47,7 +52,32 @@ end
         obj.wb = uiprogressdlg(obj.view.gui, 'Message', sprintf('%s\nPlease wait...', fn), ...
             'Title', 'Loading network', 'Cancelable','on');
     end
-    if isempty(fn) && strcmp(obj.BatchOpt.Workflow{1}, '2D Instance')
+    isStarDist = strcmp(obj.BatchOpt.Workflow{1}, '2D Instance') && strcmp(obj.BatchOpt.Architecture{1}, 'StarDist');
+    if isempty(fn) && isStarDist
+        % StarDist is a plain dlnetwork, so it goes to the common preview below; a pretrained
+        % model brings its own rays and grid and is downloaded on first use
+        inputPatchSize = str2num(obj.BatchOpt.T_InputPatchSize); %#ok<ST2NM>
+        try
+            if strcmp(obj.BatchOpt.T_StartingWeights{1}, 'None (random)')
+                config = deepmib.stardist.defaultConfig(struct('nRays', obj.StarDistOpt.NRays, ...
+                    'grid', [1 1] * obj.StarDistOpt.Grid, 'nChannelIn', inputPatchSize(4)));
+            else
+                [model, cancelled] = deepmib.stardist.loadPretrained(obj.BatchOpt.T_StartingWeights{1}, ...
+                    obj.mibModel.preferences.ExternalDirs.DeepMIBDir, obj.wb);
+                if cancelled; delete(obj.wb); return; end
+                config = model.config;
+            end
+            config.patchSize = inputPatchSize(1:2);
+            lgraph = deepmib.stardist.createNetwork(config);
+        catch err
+            utils.dlgs.showErrorDialog(obj.view.gui, err, 'Network initialization problem');
+            delete(obj.wb);
+            return;
+        end
+        architecture = sprintf('StarDist, %d rays, grid %d', config.nRays, config.grid(1));
+        inputPatchSize = obj.BatchOpt.T_InputPatchSize;
+        outputPatchSize = num2str([config.patchSize ./ config.grid, 1, 1 + config.nRays]);
+    elseif isempty(fn) && strcmp(obj.BatchOpt.Workflow{1}, '2D Instance')
         % SOLOv2 networks are built directly (not via createNetwork); preview them here
         inputPatchSize = str2num(obj.BatchOpt.T_InputPatchSize); %#ok<ST2NM>
         inputPatchSize = [inputPatchSize([1 2]) 3];
@@ -82,7 +112,9 @@ end
         return;
     end
 
-    if isempty(fn)
+    if isempty(fn) && isStarDist
+        % built above
+    elseif isempty(fn)
         previewSwitch = 1;  % indicate that the network is only for preview, the weights of classes won't be calculated
         [lgraph, outputPatchSize] = obj.createNetwork(previewSwitch);
         if isempty(lgraph); if ~isempty(obj.wb); delete(obj.wb); end; return; end

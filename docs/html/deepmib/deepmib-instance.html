@@ -29,7 +29,7 @@
     
     
       
-        <title>Deep MIB - 2D Instance Segmentation (SOLOv2) - Microscopy Image Browser v3</title>
+        <title>Deep MIB - 2D Instance Segmentation (SOLOv2, StarDist) - Microscopy Image Browser v3</title>
       
     
     
@@ -89,7 +89,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#deep-mib-2d-instance-segmentation-solov2" class="md-skip">
+        <a href="#deep-mib-2d-instance-segmentation-solov2-stardist" class="md-skip">
           Skip to content
         </a>
       
@@ -124,7 +124,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Deep MIB - 2D Instance Segmentation (SOLOv2)
+              Deep MIB - 2D Instance Segmentation (SOLOv2, StarDist)
             
           </span>
         </div>
@@ -4429,7 +4429,7 @@
   <span class="md-ellipsis">
     
   
-  2D Instance (SOLOv2)
+  2D Instance
 
     
   </span>
@@ -4446,7 +4446,7 @@
   <span class="md-ellipsis">
     
   
-  2D Instance (SOLOv2)
+  2D Instance
 
     
   </span>
@@ -4483,6 +4483,45 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#architectures" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Architectures
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Architectures">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#solov2" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        SOLOv2
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stardist" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        StarDist
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#compatible-source-datasets" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -4498,6 +4537,17 @@
     <span class="md-ellipsis">
       <span class="md-typeset">
         Network panel
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#stardist-prediction-without-training" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        StarDist: prediction without training
       </span>
     </span>
   </a>
@@ -4528,10 +4578,54 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#validation-accuracy-map" class="md-nav__link">
+  <a href="#starting-weights" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Validation accuracy (mAP)
+        Starting weights
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#patches-and-augmentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Patches and augmentation
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#learning-rate" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Learning rate
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#training-a-new-stardist-network" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Training a new StarDist network
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#training-progress" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Training progress
       </span>
     </span>
   </a>
@@ -4548,6 +4642,17 @@
     <span class="md-ellipsis">
       <span class="md-typeset">
         Prediction
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#evaluating-the-predictions" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Evaluating the predictions
       </span>
     </span>
   </a>
@@ -5597,6 +5702,45 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#architectures" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Architectures
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Architectures">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#solov2" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        SOLOv2
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stardist" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        StarDist
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#compatible-source-datasets" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -5612,6 +5756,17 @@
     <span class="md-ellipsis">
       <span class="md-typeset">
         Network panel
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#stardist-prediction-without-training" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        StarDist: prediction without training
       </span>
     </span>
   </a>
@@ -5642,10 +5797,54 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#validation-accuracy-map" class="md-nav__link">
+  <a href="#starting-weights" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Validation accuracy (mAP)
+        Starting weights
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#patches-and-augmentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Patches and augmentation
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#learning-rate" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Learning rate
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#training-a-new-stardist-network" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Training a new StarDist network
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#training-progress" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Training progress
       </span>
     </span>
   </a>
@@ -5662,6 +5861,17 @@
     <span class="md-ellipsis">
       <span class="md-typeset">
         Prediction
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#evaluating-the-predictions" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Evaluating the predictions
       </span>
     </span>
   </a>
@@ -5765,62 +5975,148 @@
                 
                   
 
-<h1 id="deep-mib-2d-instance-segmentation-solov2">Deep MIB - 2D Instance Segmentation (SOLOv2)<a class="headerlink" href="#deep-mib-2d-instance-segmentation-solov2" title="Permanent link">&para;</a></h1>
-<p>Training and application of the SOLOv2 network for 2D instance segmentation in Microscopy Image Browser.</p>
+<h1 id="deep-mib-2d-instance-segmentation-solov2-stardist">Deep MIB - 2D Instance Segmentation (SOLOv2, StarDist)<a class="headerlink" href="#deep-mib-2d-instance-segmentation-solov2-stardist" title="Permanent link">&para;</a></h1>
+<p>Training and application of networks that find every object individually in 2D images. Two
+architectures are available; choose by the shape of the objects:</p>
+<ul>
+<li><a href="#solov2"><strong>SOLOv2</strong></a> - objects of any shape: elongated, branched, bent or irregular, such as
+  cells with protrusions or organelles.</li>
+<li><a href="#stardist"><strong>StarDist</strong></a> - round or oval objects, such as nuclei, round cells or vesicles,
+  also when they are packed densely and touch each other. A pretrained model for
+  fluorescent nuclei can be <a href="#stardist-prediction-without-training">used without training</a>, or
+  fine-tuned with few annotated images.</li>
+</ul>
+<figure>
+<p><a class="glightbox" data-title="Examples of 2D instance segmentation" data-type="image" href="images/DeepLearning_2D_instance2.png"><img align="left" alt="Examples of 2D instance segmentation" class="on-glb" src="images/DeepLearning_2D_instance2.png" width="600" /></a></p>
+<figcaption>
+<p>Examples of 2D instance segmentation using SOLOv2 and StarDist architectures</p>
+</figcaption>
+</figure>
 <hr />
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
 <p>Unlike the semantic workflows, which assign every pixel to a <em>class</em> (all objects of the same
 type share one label), <strong>instance segmentation</strong> detects each object <em>individually</em>: every
 object receives its own distinct label, so touching or overlapping objects of the same type are
-separated. Deep MIB implements 2D instance segmentation using the MATLAB <strong>SOLOv2</strong> network.</p>
-<p>The typical procedure follows the same three phases as the other workflows — with one important
-difference: instance segmentation <strong>requires a preprocessing step</strong> before training (see
-<a href="#preprocessing-required-for-training">Preprocessing</a>).</p>
+separated.</p>
+<p>The procedure follows the same three phases as the other workflows, with one difference:
+instance segmentation <strong>requires a preprocessing step</strong> before training.</p>
 <ol>
-<li><strong>Preprocess</strong> the ground-truth models into the SOLOv2 annotation format (<em>Directories and Preprocessing tab</em>).</li>
-<li><strong>Train</strong> the SOLOv2 network (<em>Train tab</em>).</li>
-<li><strong>Predict</strong> new datasets and export the detected objects as MIB models (<em>Predict tab</em>).</li>
+<li><strong>Preprocess</strong> the ground-truth models into instance label files (<em>Directories and
+   Preprocessing tab</em>, see <a href="#preprocessing-required-for-training">Preprocessing</a>).</li>
+<li><strong>Train</strong> the network (<em>Train tab</em>, see <a href="#training">Training</a>).</li>
+<li><strong>Predict</strong> new datasets and export the detected objects as MIB models (<em>Predict tab</em>, see
+   <a href="#prediction">Prediction</a>). The result can then be
+   <a href="#evaluating-the-predictions">evaluated</a> against ground-truth labels, and objects predicted on
+   serial sections can be <a href="#merging-2d-predictions-into-a-3d-model">merged into 3D objects</a>.</li>
 </ol>
+<p>For nuclei in fluorescence images, StarDist can skip steps 1 and 2, see
+<a href="#stardist-prediction-without-training">StarDist: prediction without training</a>.</p>
+<hr />
+<h2 id="architectures">Architectures<a class="headerlink" href="#architectures" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>SOLOv2</th>
+<th>StarDist</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Object shapes</td>
+<td>any</td>
+<td>round or oval</td>
+</tr>
+<tr>
+<td>Image channels</td>
+<td>3; grayscale images are converted to RGB</td>
+<td>as in the images, e.g. 1 for grayscale</td>
+</tr>
+<tr>
+<td>Starting weights</td>
+<td>pretrained on everyday photos (COCO)</td>
+<td>pretrained on fluorescent nuclei, or random</td>
+</tr>
+<tr>
+<td>Large images</td>
+<td>processed in tiles, objects stitched across the tiles</td>
+<td>processed in tiles, nothing to stitch</td>
+</tr>
+<tr>
+<td>Requires</td>
+<td><em>SOLO V2</em> support package</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+<h3 id="solov2">SOLOv2<a class="headerlink" href="#solov2" title="Permanent link">&para;</a></h3>
+<p>SOLOv2 (<em>Segmenting Objects by Locations</em>) places a grid over the image. Every grid cell that holds
+the centre of an object predicts the whole mask of that object, together with a confidence score;
+masks predicted more than once for the same object are removed. The image features come from a
+ResNet encoder (Resnet18 or Resnet50) pretrained on COCO, a large collection of everyday
+photographs. Because the masks are predicted directly, the objects may have any shape.</p>
 <div class="admonition warning">
 <p class="admonition-title">Support package required</p>
-<p><code>solov2</code> requires the <em>Computer Vision Toolbox Model for SOLO V2 Instance Segmentation</em>
+<p>SOLOv2 requires the <em>Computer Vision Toolbox Model for SOLO V2 Instance Segmentation</em>
 support package. To install this support package, use the <strong>Add-On Explorer</strong>.</p>
 </div>
+<h3 id="stardist">StarDist<a class="headerlink" href="#stardist" title="Permanent link">&para;</a></h3>
+<p>StarDist uses a U-Net that predicts two maps for every pixel: the probability that the pixel lies
+inside an object, highest at the object centre, and the distances from the pixel to the object edge
+along a fixed set of directions (rays). Every pixel with a high probability thereby proposes a
+star-shaped polygon, and of the overlapping proposals of one object only the most confident is
+kept. Touching objects separate well, because each has its own centre.</p>
+<p>The polygons work for <strong>star-convex</strong> objects, whose whole edge can be seen in a straight line from
+the centre: round or oval shapes. For objects with arms, holes or strongly bent shapes use SOLOv2.
+Whether your objects suit StarDist can be tested on the training labels, see
+<a href="#starting-weights">Starting weights</a>.</p>
 <hr />
 <h2 id="compatible-source-datasets">Compatible source datasets<a class="headerlink" href="#compatible-source-datasets" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>Images</strong>: 2D images with <strong>1 (grayscale) or 3 (RGB)</strong> colour channels. Grayscale images are
-  automatically converted to RGB, because the SOLOv2 backbone expects 3-channel input.</li>
+<li><strong>Images</strong>: 2D images.<ul>
+<li><strong>SOLOv2</strong>: 1 (grayscale) or 3 (RGB) colour channels; grayscale images are converted to RGB
+  automatically.</li>
+<li><strong>StarDist</strong>: any number of colour channels, the same in all images; the images are used with
+  their own channels.</li>
+</ul>
+</li>
 <li><strong>Ground-truth labels</strong>: a MIB <code>.model</code> file per image (or a single <code>.model</code> file for all
   images when <label class="widget widget-checkbox">Single MIB model file</label> is checked),
-  in which <strong>each individual object is painted with its own unique index</strong> (<code>1, 2, 3, …</code>) and the
-  background is <code>0</code>. Touching objects must use different indices to be separated. <code>uint8</code> models
-  allow up to 255 objects per image; <code>uint16</code> models allow many more.</li>
-<li><strong>Classes</strong>: the current implementation is <strong>single-class</strong> — every detected object belongs to
+  in which <strong>each individual object is painted with its own unique index</strong> (<code>1, 2, 3, ...</code>) and
+  the background is <code>0</code>. Touching objects must use different indices to be separated. <code>uint8</code>
+  models allow up to 255 objects per image; <code>uint16</code> models allow many more.</li>
+<li><strong>Classes</strong>: the current implementation is <strong>single-class</strong> - every detected object belongs to
   one class named <code>object</code>. The <span class="widget widget-edit">Number of classes</span> field
   is not used for this workflow.</li>
 </ul>
 <div class="admonition tip">
 <p class="admonition-title">Preparing instance labels</p>
-<p>Paint each object as a separate material index in the MIB model (for example, using the
-watershed / object-separation tools), so that <code>regionprops</code> can extract one bounding box and
-one mask per object during preprocessing.</p>
+<p>Paint each object with its own index in the MIB model, for example using the watershed /
+object-separation tools.</p>
 </div>
 <hr />
 <h2 id="network-panel">Network panel<a class="headerlink" href="#network-panel" title="Permanent link">&para;</a></h2>
 <p>In the <a href="deepmib-networks.html">Network panel</a> select:</p>
 <ul>
 <li><span class="widget widget-dropdown">Workflow</span>: <strong>2D Instance</strong></li>
-<li><span class="widget widget-dropdown">Architecture</span>: <strong>SOLOv2</strong></li>
-<li><span class="widget widget-dropdown">Encoder</span>: <strong>Resnet18</strong> (lighter, faster) or
-  <strong>Resnet50</strong> (heavier, potentially more accurate). These map to the pretrained
-  <code>light-resnet18-coco</code> and <code>resnet50-coco</code> backbones.</li>
+<li><span class="widget widget-dropdown">Architecture</span>: <strong>SOLOv2</strong> or <strong>StarDist</strong></li>
+<li><span class="widget widget-dropdown">Encoder</span>:<ul>
+<li><strong>SOLOv2</strong>: <strong>Resnet18</strong> (lighter, faster) or <strong>Resnet50</strong> (heavier, potentially more
+  accurate). These map to the pretrained <code>light-resnet18-coco</code> and <code>resnet50-coco</code> backbones.</li>
+<li><strong>StarDist</strong>: not used.</li>
+</ul>
+</li>
 </ul>
 <p>The <span class="widget widget-edit">Input patch size</span> is given as
-<code>height width depth colors</code>, for example <code>800 800 1 3</code>. The width and height should be
-<strong>multiples of 32</strong>, the depth is always <code>1</code>, and the colour value is <code>3</code>. This size defines the
-<strong>patch</strong> cropped during training and the <strong>tile</strong> used during prediction — images are processed
-at native resolution in patches/tiles of this size, not downscaled as a whole.</p>
+<code>height width depth colors</code>; the depth is always <code>1</code>. This size defines the <strong>patch</strong> cropped
+during training: images are processed at native resolution, not downscaled as a whole.</p>
+<ul>
+<li><strong>SOLOv2</strong>: width and height multiples of <strong>32</strong>, colours <code>3</code>, for example <code>800 800 1 3</code>. The
+  same size is used for the tiles during prediction.</li>
+<li><strong>StarDist</strong>: width and height multiples of <strong>16</strong> (32 with a grid of 4), colours equal to the
+  number of colour channels of the images, for example <code>256 256 1 1</code> for grayscale images. The
+  tiles used during prediction are set separately, see <a href="#prediction">Prediction</a>.</li>
+</ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Use a <strong>square</strong> input patch size if you intend to enable the 90° rotation augmentations
@@ -5828,16 +6124,42 @@ at native resolution in patches/tiles of this size, not downscaled as a whole.</
 augmentations.</p>
 </div>
 <hr />
+<h2 id="stardist-prediction-without-training">StarDist: prediction without training<a class="headerlink" href="#stardist-prediction-without-training" title="Permanent link">&para;</a></h2>
+<p>The pretrained StarDist model <strong>2D_versatile_fluo</strong> segments nuclei in fluorescence images and can
+be used as it is: no ground-truth labels, preprocessing or training are needed.</p>
+<ol>
+<li>In the <a href="deepmib-networks.html">Network panel</a> select the <strong>2D Instance</strong> workflow and the
+   <strong>StarDist</strong> architecture.</li>
+<li>Confirm <strong>Create network from pretrained</strong> in the dialog that follows and choose a name for the
+   network file. Later, the same is available in the StarDist settings (the settings button next
+   to <span class="widget widget-dropdown">Starting weights</span>): tick
+   <strong>Create a network file from the pretrained model</strong>.</li>
+<li>If your nuclei are not about 20 pixels in diameter, set
+   <span class="widget widget-edit">Downsample factor for images</span> on the
+   <a href="deepmib-predict.html">Predict tab</a>, see below.</li>
+<li>Segment the images as with a trained network, see <a href="#prediction">Prediction</a>.</li>
+</ol>
+<p>The model was trained on nuclei of about 20 pixels in diameter, most of them between 10 and 50
+pixels, and works best on nuclei of that size. Measure the diameter of a few typical nuclei in your
+images and set <span class="widget widget-edit">Downsample factor for images</span> to
+<code>diameter / 20</code>: for example <code>2</code> for nuclei of 40 pixels, <code>0.5</code> for nuclei of 10 pixels. The
+results are returned at the original image size.</p>
+<p>The model expects single-channel images. If it finds too many or too few nuclei, adjust the
+detection thresholds with <strong>Custom</strong> in the prediction settings. If it still misses, merges or
+splits nuclei, annotate a few images and fine-tune the model, see
+<a href="#starting-weights">Starting weights</a>.</p>
+<hr />
 <h2 id="preprocessing-required-for-training">Preprocessing (required for training)<a class="headerlink" href="#preprocessing-required-for-training" title="Permanent link">&para;</a></h2>
 <p>Instance segmentation does not train directly on MIB <code>.model</code> files: preprocessing first
 converts each model into a lightweight MAT-file that stores the 2-D instance label map.
-Training then crops native-resolution patches from these maps on-the-fly.</p>
+Training then crops native-resolution patches from these maps on-the-fly. Preprocessing is the
+same for both architectures.</p>
 <p><strong>To preprocess for training:</strong></p>
 <ol>
 <li>Arrange the training data under the <em>training</em> directory (named <code>1_Training</code> in the
    <a href="deepmib-dirs.html#organization-of-directories">directory schemes</a>):<ul>
-<li><code>Images/</code> — the training images</li>
-<li><code>Labels/</code> — the corresponding <code>.model</code> files (one per image, or a single model file)</li>
+<li><code>Images/</code> - the training images</li>
+<li><code>Labels/</code> - the corresponding <code>.model</code> files (one per image, or a single model file)</li>
 </ul>
 </li>
 <li>Set <span class="widget widget-dropdown">Preprocess for</span> to <strong>Training</strong>.</li>
@@ -5868,61 +6190,201 @@ input models), splitting them into the <code>TrainLabels</code>/<code>Validation
 <tr>
 <td><code>instanceLabelMap</code></td>
 <td><code>H×W uint16</code></td>
-<td>2-D label map — each object a unique index, background <code>0</code></td>
+<td>2-D label map - each object a unique index, background <code>0</code></td>
 </tr>
 </tbody>
 </table>
 <p>Storing a compact 2-D label map (instead of a full <code>H×W×N</code> binary mask stack) keeps memory
 usage low for large / whole-slide images. Native-resolution training patches are cropped from
-this map on-the-fly, and the per-patch object masks and bounding boxes are rebuilt only for the
-small cropped patch.</p>
+this map on-the-fly.</p>
 </details>
 <div class="admonition info">
 <p class="admonition-title">Prediction needs no preprocessing</p>
-<p>Only <em>training</em> requires preprocessing. For <strong>prediction</strong>, SOLOv2 reads the raw images
-directly, so no label preprocessing is performed — place the images to segment in the
-prediction directory (<code>2_Prediction/Images</code>) and run the <a href="deepmib-predict.html">Predict tab</a>.</p>
+<p>Only <em>training</em> requires preprocessing. For <strong>prediction</strong> the network reads the raw images
+directly: place the images to segment in the prediction directory (<code>2_Prediction/Images</code>) and
+run the <a href="deepmib-predict.html">Predict tab</a>.</p>
 </div>
 <hr />
 <h2 id="training">Training<a class="headerlink" href="#training" title="Permanent link">&para;</a></h2>
 <p>Training is configured and started from the <a href="deepmib-train.html">Train tab</a>.</p>
+<h3 id="starting-weights">Starting weights<a class="headerlink" href="#starting-weights" title="Permanent link">&para;</a></h3>
+<p><span class="widget widget-dropdown">Starting weights</span>:</p>
+<ul>
+<li><strong>SOLOv2</strong> always starts from the COCO weights; the choice is what happens to the encoder during
+  training: <code>COCO, frozen then trainable</code> (default, recommended), <code>COCO, frozen backbone</code> or
+  <code>COCO, trainable backbone</code>. See the <a href="deepmib-train.html">Train tab</a> for details.</li>
+<li><strong>StarDist</strong>:<ul>
+<li><strong>2D_versatile_fluo</strong> - fine-tune the pretrained StarDist model for fluorescent nuclei
+  (grayscale images). It is downloaded the first time it is used. Fine-tuning needs far fewer
+  annotated images than training from scratch.</li>
+<li><strong>None (random)</strong> - train a new network.</li>
+</ul>
+</li>
+</ul>
+<p>The settings button next to <span class="widget widget-dropdown">Starting weights</span>:</p>
+<ul>
+<li><strong>SOLOv2</strong>: the schedule of the two-phase <code>COCO, frozen then trainable</code> training, see the
+  <a href="deepmib-train.html">Train tab</a>.</li>
+<li>
+<p><strong>StarDist</strong>: the StarDist settings:</p>
+<ul>
+<li>
+<p><strong>Number of rays</strong> and <strong>Grid</strong> - used for a new network only; a pretrained model keeps its
+  own (32 rays, grid 2). More rays follow the outline more closely. A grid of 2 trains faster
+  and suits most objects; use 1 for very small objects.</p>
+<details class="example">
+<summary>Number of rays: how closely the outline is followed</summary>
+<p>Each object is drawn as a polygon whose corners lie on rays from its centre (yellow lines);
+green is the true outline. A round nucleus is matched almost perfectly with 16 to 32 rays.
+An irregular shape stays inaccurate even with 64 rays: parts that cannot be seen in a straight
+line from the centre are cut off. 32 rays suit most nuclei.</p>
+<p><a class="glightbox" data-title="Star polygons with 8 to 64 rays" data-type="image" href="images/DeepLearning_StarDist_rays.png"><img alt="Star polygons with 8 to 64 rays" class="on-glb" src="images/DeepLearning_StarDist_rays.png" width="800" /></a></p>
+</details>
+<details class="example">
+<summary>Grid: the resolution of the predicted maps</summary>
+<p>The network predicts its maps at <code>1/grid</code> of the image resolution; the picture shows the
+probability map it learns, brighter towards the object centres. Grid 2 trains and predicts
+faster and suits most nuclei. The coarser the grid, the fewer values cover a small object; for
+objects of only a few pixels across use grid 1.</p>
+<p><a class="glightbox" data-title="Probability map at grid 1, 2 and 4" data-type="image" href="images/DeepLearning_StarDist_grid.png"><img alt="Probability map at grid 1, 2 and 4" class="on-glb" src="images/DeepLearning_StarDist_grid.png" width="800" /></a></p>
+</details>
+</li>
+<li>
+<p><strong>Normalisation percentiles</strong> - the image intensities are stretched between these percentiles
+  of each image. Keep the default <code>1</code> and <code>99.8</code> when fine-tuning a pretrained model.</p>
+<details class="example">
+<summary>Normalisation percentiles: what intensities the network sees</summary>
+<p>Each image is stretched so that its low percentile becomes black and its high percentile
+white. This makes dark and bright images look alike to the network (left pair). The high
+percentile is below <code>100</code> so that a few very bright pixels do not darken everything else
+(right pair).</p>
+<p><a class="glightbox" data-title="Effect of normalisation percentiles" data-type="image" href="images/DeepLearning_StarDist_normalization.png"><img alt="Effect of normalisation percentiles" class="on-glb" src="images/DeepLearning_StarDist_normalization.png" width="800" /></a></p>
+</details>
+</li>
+<li>
+<p><strong>Tune the detection thresholds</strong> - after training, the probability and overlap thresholds
+  used to detect objects are tuned on the validation images and stored with the network.</p>
+<details class="example">
+<summary>Detection thresholds: what tuning chooses</summary>
+<p>Two thresholds turn the predicted maps into objects:</p>
+<ul>
+<li><strong>Probability</strong>: pixels below it cannot become object centres. Too low adds false objects in
+  the background and on debris; too high misses faint nuclei (top row).</li>
+<li><strong>Overlap</strong>: a candidate is removed when it overlaps an already accepted object by more than
+  this fraction. Too low also removes touching neighbours; too high keeps several outlines on
+  one nucleus (bottom row).</li>
+</ul>
+<p>Tuning tries many pairs on the validation images and keeps the pair that matches the labels
+best. The tuned values can be overridden for prediction with <strong>Custom</strong> in the
+<a href="#prediction">StarDist prediction settings</a>.</p>
+<p><a class="glightbox" data-title="Detections at low, tuned and high thresholds" data-type="image" href="images/DeepLearning_StarDist_thresholds.png"><img alt="Detections at low, tuned and high thresholds" class="on-glb" src="images/DeepLearning_StarDist_thresholds.png" width="800" /></a></p>
+</details>
+</li>
+<li>
+<p><strong>Test whether my objects suit StarDist</strong> - before training, shows the best StarDist can
+  reach on your objects: each object of the training labels is replaced by the outline
+  StarDist would draw for it with a perfectly trained network, and compared with the original
+  shape, for 8 to 128 rays. Values close to 1 mean the objects suit StarDist; use a number of
+  rays after which the value hardly improves. If even 128 rays give a low value, the objects
+  are too irregular for StarDist; use SOLOv2. The labels must be preprocessed first.</p>
+</li>
+<li><strong>Create a network file from the pretrained model</strong> - see
+  <a href="#stardist-prediction-without-training">StarDist: prediction without training</a>.</li>
+</ul>
+</li>
+</ul>
+<h3 id="patches-and-augmentation">Patches and augmentation<a class="headerlink" href="#patches-and-augmentation" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>Native-resolution patches</strong>: the network trains on patches cropped <strong>on-the-fly from the
-  label maps at native resolution</strong> (the network input size, e.g. <code>800×800</code>), <em>not</em> on downscaled
-  whole images. This is essential for large / whole-slide microscopy images, where resizing the
-  whole image to the network input would destroy resolution and hide small objects. Images
-  smaller than the patch are symmetrically padded.</li>
+  label maps at native resolution</strong> (the size of
+  <span class="widget widget-edit">Input patch size</span>), <em>not</em> on downscaled whole images.
+  This is essential for large / whole-slide microscopy images, where resizing the whole image to
+  the network input would destroy resolution and hide small objects. Images smaller than the patch
+  are symmetrically padded.</li>
 <li><strong>Patch sampling</strong>: each image contributes <span class="widget widget-edit">Patches per image</span>
   patches per epoch. ~90 % are object-seeded (a random object is picked and the patch placed with a
   random offset so the object appears anywhere in the patch, never forced to the centre) and ~10 %
   are uniform-random (may be pure background).</li>
-<li><strong>Augmentation</strong> (<label class="widget widget-checkbox">Augmentation</label>): supported for
-  instance segmentation. Geometric augmentations (reflections, 90°/arbitrary rotation, scale,
-  shear) are applied to the image and every object mask together, and the bounding boxes are
-  recomputed from the transformed masks so that boxes, masks and labels stay in sync.
-  Intensity/colour augmentations (noise, blur, brightness/contrast/hue/saturation jitter) are
-  applied to the image only. Augmentation settings are shared with the 2D semantic workflow.</li>
-<li><strong>Validation</strong>: a validation set (created during the split step) is used when available; if the
-  installed MATLAB version does not support validation for SOLOv2, training automatically retries
-  without validation.</li>
-<li><strong>Progress</strong>: the SOLOv2 trainer reports the <strong>training loss</strong>, shown in the training progress
-  window. There is no <em>training</em> accuracy metric for this workflow (the Training accuracy gauge
-  reads <code>N/A</code>), but an optional <strong>validation</strong> accuracy can be enabled — see
-  <a href="#validation-accuracy-map">Validation accuracy (mAP)</a> below.</li>
+<li><strong>Augmentation</strong> (<label class="widget widget-checkbox">Augmentation</label>): geometric
+  augmentations (reflections, 90°/arbitrary rotation, scale, shear) are applied to the image and
+  its labels together, intensity/colour augmentations (noise, blur,
+  brightness/contrast/hue/saturation jitter) to the image only. Rotated, scaled and sheared
+  patches are filled from the surrounding image; <span class="widget widget-edit">FillValue</span>
+  is used only beyond the edge of the image. The augmentation settings are shared with the 2D
+  semantic workflow.</li>
 </ul>
-<h3 id="validation-accuracy-map">Validation accuracy (mAP)<a class="headerlink" href="#validation-accuracy-map" title="Permanent link">&para;</a></h3>
-<p>By default the trainer computes only the validation <strong>loss</strong>. To also track a validation
-accuracy, enable <label class="widget widget-checkbox">Calculate accuracy for instance 2D</label>
-on the <a href="deepmib-options.html#custom-training-plot-section">Options tab</a>. When checked, Deep MIB
-attaches the mean Average Precision (mAP) metric to the SOLOv2 training: at each validation
-interval the trained detector is run over the whole validation set and the resulting mAP is
-displayed on the <strong>Validation accuracy</strong> gauge of the custom training progress window.</p>
+<h3 id="learning-rate">Learning rate<a class="headerlink" href="#learning-rate" title="Permanent link">&para;</a></h3>
+<p><span class="widget widget-edit">Initial learn rate</span>:</p>
 <ul>
-<li>Requires a validation set (<em>Directories and Preprocessing → Fraction of images for validation</em> &gt; 0);
-  with no validation images the metric cannot be computed and the gauge stays <code>N/A</code>.</li>
-<li>It adds a noticeable cost — full inference plus IoU matching over the validation set on every
-  validation pass — so leave it <strong>unchecked</strong> to speed up training when only the validation loss
-  is needed.</li>
+<li><strong>SOLOv2</strong>: <code>0.001</code> with the <code>adam</code> solver; above about <code>0.003</code> the training collapses, see the
+  <a href="deepmib-train.html">Train tab</a>.</li>
+<li><strong>StarDist</strong>: about <code>1e-4</code> for fine-tuning a pretrained model; for a new network see below.</li>
+</ul>
+<h3 id="training-a-new-stardist-network">Training a new StarDist network<a class="headerlink" href="#training-a-new-stardist-network" title="Permanent link">&para;</a></h3>
+<p>A network trained from <strong>None (random)</strong> weights needs many small training steps. Recommended
+settings:</p>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Where</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="widget widget-edit">Mini-batch size</span></td>
+<td>Train tab</td>
+<td><code>8</code></td>
+</tr>
+<tr>
+<td><span class="widget widget-edit">Patches per image</span></td>
+<td>Train tab</td>
+<td><code>4</code></td>
+</tr>
+<tr>
+<td><code>MaxEpochs</code></td>
+<td><span class="widget widget-button">Training</span></td>
+<td>about <code>30000 / number of training images</code>, for example <code>75</code> for 400 images</td>
+</tr>
+<tr>
+<td><code>InitialLearnRate</code></td>
+<td><span class="widget widget-button">Training</span></td>
+<td><code>0.003</code></td>
+</tr>
+<tr>
+<td><code>LearnRateSchedule</code></td>
+<td><span class="widget widget-button">Training</span></td>
+<td><code>piecewise</code>, <code>LearnRateDropFactor</code> <code>0.5</code>, <code>LearnRateDropPeriod</code> one fifth of <code>MaxEpochs</code></td>
+</tr>
+<tr>
+<td><code>L2Regularization</code></td>
+<td><span class="widget widget-button">Training</span></td>
+<td><code>0</code></td>
+</tr>
+<tr>
+<td><span class="widget widget-edit">FillValue</span></td>
+<td>augmentation settings</td>
+<td><code>0</code> for images with a dark background</td>
+</tr>
+</tbody>
+</table>
+<h3 id="training-progress">Training progress<a class="headerlink" href="#training-progress" title="Permanent link">&para;</a></h3>
+<p>The training progress window shows the training and validation loss for both architectures. The
+accuracy gauges depend on the architecture:</p>
+<ul>
+<li><strong>SOLOv2</strong>: there is no <em>training</em> accuracy (the gauge reads <code>N/A</code>). A validation accuracy, the
+  mean Average Precision (mAP), is computed when
+  <label class="widget widget-checkbox">Calculate accuracy for instance 2D</label> is checked on
+  the <a href="deepmib-options.html#custom-training-plot-section">Options tab</a>: at each validation the
+  network is run over the whole validation set. This needs a validation set and adds a noticeable
+  cost, so leave it unchecked when the validation loss is enough. If the installed MATLAB version
+  does not support validation for SOLOv2, training automatically retries without validation.</li>
+<li><strong>StarDist</strong>: the gauges show the <strong>core IoU</strong>: how well the predicted object centres match the
+  true ones. It does not reach 100% even for a very good network; values of 70-85% are typical for
+  a well-trained one. Whether touching objects are also separated correctly is measured once,
+  after training, when the detection thresholds are tuned; that accuracy is shown when training
+  finishes.</li>
 </ul>
 <details class="abstract">
 <summary>Training parameters for the 2D Instance workflow</summary>
@@ -5938,12 +6400,12 @@ displayed on the <strong>Validation accuracy</strong> gauge of the custom traini
 <tr>
 <td>Input patch size</td>
 <td>Train tab</td>
-<td><code>height width 1 3</code>; width/height multiples of 32; use a <strong>square</strong> size to allow 90° rotation augmentations. Patches are cropped at this size from the images at native resolution.</td>
+<td><code>height width 1 colors</code>; SOLOv2: multiples of 32, colors <code>3</code>; StarDist: multiples of 16, colors as in the images. Use a <strong>square</strong> size to allow 90° rotation augmentations.</td>
 </tr>
 <tr>
 <td>Encoder</td>
 <td>Network panel</td>
-<td><code>Resnet18</code> (lighter, faster) or <code>Resnet50</code> (heavier, potentially more accurate).</td>
+<td>SOLOv2 only: <code>Resnet18</code> (lighter, faster) or <code>Resnet50</code> (heavier, potentially more accurate).</td>
 </tr>
 <tr>
 <td>Patches per image</td>
@@ -5958,7 +6420,7 @@ displayed on the <strong>Validation accuracy</strong> gauge of the custom traini
 <tr>
 <td>Augmentation</td>
 <td>Train tab</td>
-<td>enable to apply the shared 2D augmentations (geometric to image + masks, intensity to image only).</td>
+<td>enable to apply the shared 2D augmentations (geometric to image + labels, intensity to image only).</td>
 </tr>
 <tr>
 <td>Number of epochs</td>
@@ -5966,9 +6428,9 @@ displayed on the <strong>Validation accuracy</strong> gauge of the custom traini
 <td>more epochs = more augmented exposure (each epoch re-crops and re-augments every image).</td>
 </tr>
 <tr>
-<td>Solver / Initial learn rate / schedule</td>
+<td>Initial learn rate</td>
 <td>Train settings</td>
-<td>e.g. <code>sgdm</code>, initial learn rate <code>5e-4</code>, piecewise schedule (as in the MathWorks SOLOv2 example); <code>adam</code>/<code>rmsprop</code> also supported.</td>
+<td>SOLOv2: <code>0.001</code> with <code>adam</code>; StarDist: about <code>1e-4</code> for fine-tuning, <code>0.003</code> for a <a href="#training-a-new-stardist-network">new network</a>.</td>
 </tr>
 <tr>
 <td>Fraction of images for validation</td>
@@ -5983,7 +6445,7 @@ displayed on the <strong>Validation accuracy</strong> gauge of the custom traini
 </tbody>
 </table>
 <p>Only <em>training</em> uses patch cropping; <strong>Patches per image</strong> has no effect on prediction (which
-tiles whole images — see below).</p>
+tiles whole images - see below).</p>
 </details>
 <p>The trained network is saved to the <code>*.mibDeep</code> file specified by
 <span class="widget widget-button">Network filename</span>, together with its configuration
@@ -5996,30 +6458,64 @@ tiles whole images — see below).</p>
 <li>Place the images to segment in the prediction directory (<code>2_Prediction/Images</code>).</li>
 <li>Press <span class="widget widget-button">Predict</span>.</li>
 </ol>
-<p>Large images are <strong>tiled</strong> at native resolution using the blocked-image overlap strategy
-(controlled by <label class="widget widget-checkbox">Overlapping tiles</label> and
-<span class="widget widget-edit">Overlap, %</span> in the Predict tab): each tile is segmented with
-<code>segmentObjects</code> with a surrounding border of context, and objects are stitched across tiles. The
-stitching rule is selected with the <span class="widget widget-dropdown">Overlap mode</span>
-dropdown of the <em>Instance segmentation</em> subpanel in the Predict tab:</p>
+<p>Images must have the same number of colour channels as the images the network was trained on.
+Large images are <strong>tiled</strong> at native resolution. The <em>Instance segmentation</em> subpanel of the
+Predict tab sets how:</p>
 <ul>
-<li><strong>Centroid in core</strong> — each object is emitted by the tile that owns its centroid, so there are
-  no duplicates and no seam-splitting. Requires the tile overlap to be at least as large as the
-  biggest object.</li>
-<li><strong>IoU merge</strong> — all detections of every tile are kept, and detections from neighbouring tiles
+<li>
+<p><strong>SOLOv2</strong>: each tile is segmented with a surrounding border of context (controlled by
+  <label class="widget widget-checkbox">Overlapping tiles</label> and
+  <span class="widget widget-edit">Overlap, %</span>), and objects are stitched across tiles. The
+  stitching rule is selected with the <span class="widget widget-dropdown">Overlap mode</span>
+  dropdown:</p>
+<ul>
+<li><strong>Centroid in core</strong> - each object is emitted by the tile that owns its centroid, so there
+  are no duplicates and no seam-splitting. Requires the tile overlap to be at least as large as
+  the biggest object.</li>
+<li><strong>IoU merge</strong> - all detections of every tile are kept, and detections from neighbouring tiles
   are merged into one instance when their masks agree inside the shared overlap band
   (intersection-over-union test). Objects larger than the overlap are detected piecewise and
-  merged, so only the band width matters — use this mode when objects may exceed the overlap.</li>
+  merged, so only the band width matters - use this mode when objects may exceed the overlap.</li>
 </ul>
-<p>The detection confidence threshold, the merge IoU/IoA thresholds and the minimal object area are
-configured with the subpanel's <em>Settings</em> button — see the
-<a href="deepmib-predict.html#instance-segmentation-subpanel">Predict tab</a> for details.</p>
+<p>The detection confidence threshold, the merge IoU/IoA thresholds and the minimal object area
+are configured with the subpanel's <em>Settings</em> button - see the
+<a href="deepmib-predict.html#instance-segmentation-subpanel">Predict tab</a> for details. Two objects that
+are separated in the image never share an index: in both overlap modes each index is finally
+split into its separate objects, and components below
+<span class="widget widget-edit">Minimal object area, pixels</span> are discarded.</p>
+</li>
+<li>
+<p><strong>StarDist</strong>: there are no tile seams to stitch, so the overlap settings and the overlap mode are
+  not used. The <em>Settings</em> button sets the detection thresholds and the tile size:</p>
+<ul>
+<li><strong>From the network</strong> - the thresholds tuned on the validation images after training.</li>
+<li><strong>Custom</strong> - lower the probability threshold to detect more objects, lower the overlap
+  threshold to keep fewer overlapping detections.</li>
+<li><strong>Tile size</strong> - larger tiles are faster but need more GPU memory; the result does not depend
+  on it.</li>
+</ul>
+<p><span class="widget widget-edit">Downsample factor for images</span> on the Predict tab makes
+the objects the size the network was trained on: the images are reduced by this factor before
+detection, values below 1 enlarge them. Keep <code>1</code> for a network trained on images of the same
+resolution; for <strong>2D_versatile_fluo</strong> see
+<a href="#stardist-prediction-without-training">StarDist: prediction without training</a>. SOLOv2 does
+not use this factor.</p>
+</li>
+</ul>
+<div class="admonition warning">
+<p class="admonition-title">SOLOv2: overlap size vs stitching mode</p>
+<p>With <strong>Centroid in core</strong>, the <strong>tile overlap must be at least as large as the biggest
+object</strong> - otherwise an object that never fits fully inside a single tile's field of view
+will be truncated. Increase <span class="widget widget-edit">Overlap, %</span> for large
+objects, or switch to <strong>IoU merge</strong>, which lifts this restriction (the overlap band only
+needs to be wide enough - a few tens of pixels - for neighbouring tiles to produce
+consistent masks in it). If <strong>IoU merge</strong> is selected while
+<label class="widget widget-checkbox">Overlapping tiles</label> is unchecked, a default 5%
+overlap is applied automatically.</p>
+</div>
 <p>The result is written as a MIB <code>.model</code> file under
 <code>3_Results/PredictionImages/ResultsModels</code>, in which <strong>every object instance is a unique index</strong>
-(background <code>0</code>), matching the input labelling convention. Two objects that are separated in the
-image never share an index: in both overlap modes each index is finally split into its separate
-objects, and components below <span class="widget widget-edit">Minimal object area, pixels</span>
-are discarded.</p>
+(background <code>0</code>), matching the input labelling convention.</p>
 <p>Both 2D images and z-stacks may be used as prediction images, exactly as in the <em>2D Semantic</em>
 workflow:</p>
 <ul>
@@ -6036,17 +6532,82 @@ them. Linking them into true 3D objects is done afterwards with
 an instance model that is opened on the image in the BigData mode, with up to 16383 objects per 
 slice. <strong>Merge 2D to 3D</strong> does not work with these models, so in a z-stack the objects stay 
 numbered per slice.</p>
-<div class="admonition warning">
-<p class="admonition-title">Overlap size vs stitching mode</p>
-<p>With <strong>Centroid in core</strong>, the <strong>tile overlap must be at least as large as the biggest
-object</strong> — otherwise an object that never fits fully inside a single tile's field of view
-will be truncated. Increase <span class="widget widget-edit">Overlap, %</span> for large
-objects, or switch to <strong>IoU merge</strong>, which lifts this restriction (the overlap band only
-needs to be wide enough — a few tens of pixels — for neighbouring tiles to produce
-consistent masks in it). If <strong>IoU merge</strong> is selected while
-<label class="widget widget-checkbox">Overlapping tiles</label> is unchecked, a default 5%
-overlap is applied automatically.</p>
-</div>
+<hr />
+<h2 id="evaluating-the-predictions">Evaluating the predictions<a class="headerlink" href="#evaluating-the-predictions" title="Permanent link">&para;</a></h2>
+<p><a class="glightbox" data-title="Evaluation results of a 2D Instance network" data-type="image" href="images/DeepLearning_Instance_Evaluation.png"><img align="right" alt="Evaluation results of a 2D Instance network" class="on-glb" src="images/DeepLearning_Instance_Evaluation.png" width="280" /></a></p>
+<p>Put the ground-truth labels of the prediction images into <code>2_Prediction/Labels</code>, one index per
+object as for training, and press <span class="widget widget-button">Evaluate segmentation</span>
+in the Predict tab. Each predicted object is matched with at most one ground-truth object; a pair
+counts as a match when its overlap (IoU) reaches the threshold. Several thresholds can be typed at
+once, e.g. <code>0.1:0.1:0.9</code>.</p>
+<p>Label files are paired with the predictions in alphabetical order, so name them in the same order
+as the images. Z-stacks are evaluated slice by slice.</p>
+<p>F1 at IoU 0.5 is the usual single score; the higher thresholds show how closely the outlines
+follow the objects. Per-image values are in the exported tables (MATLAB, Excel or CSV, saved to
+<code>3_Results/PredictionImages/ResultsModels</code>).</p>
+<details class="abstract">
+<summary>What the evaluation reports</summary>
+<p><a class="glightbox" data-title="Matching of predicted objects with real objects" data-type="image" href="images/DeepLearning_Instance_Matching.svg"><img alt="Matching of predicted objects with real objects" class="on-glb" src="images/DeepLearning_Instance_Matching.svg" width="620" /></a></p>
+<p>Each predicted object is paired with the real object it overlaps best. The overlap is measured
+as <strong>IoU</strong> (intersection over union): the shared area divided by the area the two objects cover
+together; <code>1</code> means identical outlines. A pair counts as a match only when its IoU reaches the
+threshold, so every real and every predicted object ends up in one of three groups:</p>
+<ul>
+<li><strong>TP</strong>, true positive - a real object that was found;</li>
+<li><strong>FP</strong>, false positive - a wrong object: found by the network, but no real object matches it;</li>
+<li><strong>FN</strong>, false negative - a real object the network missed.</li>
+</ul>
+<p>The fourth group of the scheme, <strong>TN</strong> (true negative, background correctly left empty), holds
+no objects and is not used by any score.</p>
+<p>From these counts, per threshold (all scores between 0 and 1, higher is better):</p>
+<table>
+<thead>
+<tr>
+<th>Score</th>
+<th>Answers</th>
+<th>Formula</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Precision</td>
+<td>what fraction of the found objects is real?</td>
+<td>TP / (TP + FP)</td>
+</tr>
+<tr>
+<td>Recall</td>
+<td>what fraction of the real objects was found?</td>
+<td>TP / (TP + FN)</td>
+</tr>
+<tr>
+<td>F1</td>
+<td>precision and recall in one number</td>
+<td>2 TP / (2 TP + FP + FN)</td>
+</tr>
+<tr>
+<td>Accuracy</td>
+<td>as F1, but stricter</td>
+<td>TP / (TP + FP + FN)</td>
+</tr>
+<tr>
+<td>Mean matched IoU</td>
+<td>how well the outlines of the matched pairs fit</td>
+<td>average IoU of the TP pairs</td>
+</tr>
+<tr>
+<td>Panoptic quality</td>
+<td>finding the objects and outlining them well, together</td>
+<td>F1 x mean matched IoU</td>
+</tr>
+</tbody>
+</table>
+<p>The threshold sets how strict "found" is: at <code>0.5</code> the outline is roughly right, at <code>0.7</code>-<code>0.8</code>
+it fits closely, at <code>0.9</code> it is almost pixel-perfect. The scores therefore stay flat at low
+thresholds and drop at high ones: the flat part tells how well objects are detected, the drop
+how precise the outlines are. High precision with lower recall means a cautious network that
+misses some objects but rarely invents any; the opposite means it finds nearly everything but
+also adds wrong objects.</p>
+</details>
 <hr />
 <h2 id="merging-2d-predictions-into-a-3d-model">Merging 2D predictions into a 3D model<a class="headerlink" href="#merging-2d-predictions-into-a-3d-model" title="Permanent link">&para;</a></h2>
 <p>When the prediction images are serial sections of a volume, the predicted instance models can be
@@ -6085,7 +6646,7 @@ file dialog asks for the directory, filename and file format. When <strong>sever
 is then named after its input model with a <code>_stitched3D</code> suffix.</p>
 <p>The merged model can be written as a <strong>single 3D file</strong> (e.g. <em>Matlab format (*.model)</em>, TIF
 3D stack, Amira Mesh, HDF5, MRC, NRRD) or as a <strong>sequence of 2D files</strong> (e.g. <em>Matlab format 2D
-sequence (*.model)</em>, TIF/PNG 2D sequence) — for TIF the policy is asked during saving of a single
+sequence (*.model)</em>, TIF/PNG 2D sequence) - for TIF the policy is asked during saving of a single
 model, while multiple models are always written with the format's default policy to avoid one
 dialog per file.</p>
 <p>Merging takes a while. It can be stopped at any point with

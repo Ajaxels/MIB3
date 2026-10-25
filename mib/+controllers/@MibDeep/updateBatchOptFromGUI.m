@@ -29,6 +29,22 @@ end
                 case 'Legacy'
                     obj.view.handles.P_DynamicMasking.Enable = 'off';
             end
+            % MibDeepGUI.mlapp toggles "Downsample factor for images" with the mode; instance
+            % prediction ignores the mode, and only StarDist uses the factor (selectArchitecture)
+            if strcmp(obj.BatchOpt.Workflow{1}, '2D Instance')
+                if strcmp(obj.BatchOpt.Architecture{1}, 'StarDist')
+                    obj.view.handles.P_ImageDownsamplingFactor.Enable = 'on';
+                else
+                    obj.view.handles.P_ImageDownsamplingFactor.Enable = 'off';
+                end
+            end
+        case 'P_ModelFiles'
+            % the settings button has options only for the zarr model output
+            if strcmp(event.Source.Value, 'Zarr3 (BigData model)')
+                obj.view.handles.P_ModelFilesSettings.Enable = 'on';
+            else
+                obj.view.handles.P_ModelFilesSettings.Enable = 'off';
+            end
         case 'T_ConvolutionPadding'
             if strcmp(event.Source.Value, 'same')
                 obj.view.Figure.P_OverlappingTiles.Enable = 'on';

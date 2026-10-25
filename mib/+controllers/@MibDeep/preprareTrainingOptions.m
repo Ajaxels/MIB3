@@ -96,7 +96,15 @@ try
 
     % Accuracy metric is only used in the classification tasks
     % for semantic segmentation tasks TrainAccuracy is empty
-    if strcmp(obj.TrainEngine, 'trainnet')
+    % StarDist regresses probabilities and distances, where a classification accuracy
+    % is meaningless; it reports the overlap of predicted and true object area instead,
+    % shown on the accuracy gauges of the progress window
+    isStarDist = strcmp(obj.BatchOpt.Workflow{1}, '2D Instance') && strcmp(obj.BatchOpt.Architecture{1}, 'StarDist');
+    if isStarDist
+        evalTrainingOptions = join([evalTrainingOptions, ...
+            "'Metrics', deepmib.stardist.trainingMetrics(),"
+            ], ' ');
+    elseif strcmp(obj.TrainEngine, 'trainnet')
         evalTrainingOptions = join([evalTrainingOptions, ...
             "'Metrics', 'accuracy',"
             ], ' ');

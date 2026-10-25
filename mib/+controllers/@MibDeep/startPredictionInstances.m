@@ -1,5 +1,5 @@
 function startPredictionInstances(obj)
-% STARTPREDICTIONINSTANCES - predict 2D instance segmentation (SOLOv2) datasets.
+% STARTPREDICTIONINSTANCES - predict 2D instance segmentation (SOLOv2 or StarDist) datasets.
 %
 % Syntax:
 %   .. code-block:: matlab
@@ -42,6 +42,34 @@ function startPredictionInstances(obj)
 % The detection confidence threshold, the merge IoU/IoA thresholds and the minimal object
 % area are taken from obj.OverlapInstancesOpt (updateOverlapInstancesSettings).
 % Instance prediction does not require preprocessing: images are read directly.
+%
+% **StarDist networks** (the network file holds ``StarDistConfig``, see startTrainingStarDist;
+% the file decides, not the Architecture selected in the GUI) segment every slice with
+% deepmib.stardist: normalizeImage (percentiles of the slice) -> predictMaps (tiles of
+% ``obj.StarDistOpt.PredictTileSize`` whose overlap covers the receptive field, so the maps are
+% seamless) -> nms on the whole slice -> polygonsToLabel. Nothing is stitched, so
+% P_OverlapInstancesMode, P_OverlappingTiles and obj.OverlapInstancesOpt are not used, and
+% no index is split into connected components (as in StarDist, a polygon partly covered by a
+% higher-scoring one keeps its remaining pixels). Images keep their channel count, which must
+% equal the ``nChannelIn`` of the network. The thresholds are those stored in the network
+% (tuned after training) unless ``obj.StarDistOpt.PredictThresholds`` is ``'Custom'``.
+%
+% "Downsample factor for images" (``BatchOpt.P_ImageDownsamplingFactor``, values below 1
+% allowed for StarDist, see selectArchitecture) gives StarDist the scale
+% ``1 / factor``. With a scale other than 1 the normalised slice is zoomed to
+% ``round(size * scale)`` as ``scipy.ndimage.zoom`` with order 1 (linear, corner pixels aligned,
+% no antialiasing), and the kept polygon centres and ray lengths are divided by the scale before
+% they are drawn at the original size, as StarDist ``predict_instances(img, scale=...)``
+% (identical labels for scales 0.5-2). This lets
+% a network find objects of another size than in its training images; ``2D_versatile_fluo``
+% was trained on nuclei with a median equivalent diameter of 21 px (half of them 13-28 px, 90%
+% 7-50 px; StarDist's DSB2018 subset, 447 images, measured 2026-10-24), hence the advice
+% "factor = diameter of your nuclei / 20" in the dialogs and docs. SOLOv2 ignores the factor
+% (the field is disabled for it).
+%
+% The whole-slice maps are kept in memory: ``(1 + nRays)`` single-precision values per grid cell,
+% about 0.5 GB for a 16k x 16k slice with 32 rays and grid 2, times the square of the scale
+% factor.
 %
 % **OME-Zarr images** (``BatchOpt.ImageFilenameExtension = 'ZARR'``) are predicted
 % from one pyramid level, ``BatchOpt.BioformatsIndex`` (1 = full resolution),
@@ -166,6 +194,20 @@ res = load(obj.BatchOpt.NetworkFilename, '-mat');
 net = res.net;
 inputPatchSize = res.inputPatchSize;
 
+% a StarDist network file carries StarDistConfig; its thresholds were tuned after training
+isStarDist = isfield(res, 'StarDistConfig');
+if isStarDist
+    starDistConfig = deepmib.stardist.defaultConfig(res.StarDistConfig);
+    if strcmp(obj.StarDistOpt.PredictThresholds, 'Custom')
+        starDistProbThresh = obj.StarDistOpt.ProbThresh;
+        starDistNmsThresh = obj.StarDistOpt.NmsThresh;
+    else
+        starDistProbThresh = starDistConfig.probThresh;
+        starDistNmsThresh = starDistConfig.nmsThresh;
+    end
+    starDistScale = 1 / obj.BatchOpt.P_ImageDownsamplingFactor{1};
+end
+
 % select gpu or cpu for prediction and define executionEnvironment
 selectedIndex = find(ismember(obj.view.Figure.GPUDropDown.Items, obj.view.Figure.GPUDropDown.Value));
 switch obj.view.Figure.GPUDropDown.Value
@@ -226,19 +268,52 @@ while hasdata(imgDS)
     % image up to the core size, feeding the network context that is not in the data
     fitsInOnePatch = imgHeight <= inputPatchSize(1) && imgWidth <= inputPatchSize(2);
 
+    if isStarDist && size(vol, 4) ~= starDistConfig.nChannelIn
+        utils.dlgs.showErrorDialog(obj.view.gui, sprintf(['%s has %d color channel(s), while the StarDist network ' ...
+            'expects %d.\n\nPredict images with %d channel(s) or train a network for these images.'], ...
+            fn, size(vol, 4), starDistConfig.nChannelIn, starDistConfig.nChannelIn), 'Wrong number of colors');
+        if obj.BatchOpt.showWaitbar; close(pwb); end
+        return;
+    end
+
     outputLabels = zeros([imgHeight, imgWidth, imgDepth], 'uint32');
     maxInstancesPerSlice = 0;
     totalInstances = 0;
     for sliceId = 1:imgDepth
         if obj.BatchOpt.showWaitbar && pwb.CancelRequested; close(pwb); return; end
         sliceImg = squeeze(vol(:, :, sliceId, :, 1));    % [height, width, color]
-        if size(sliceImg, 3) == 1            % dynamically convert grayscale to RGB
+        if size(sliceImg, 3) == 1 && ~isStarDist     % SOLOv2 expects RGB, StarDist the native channels
             sliceImg = repmat(sliceImg, [1, 1, 3]);
         end
 
         % tile the slice and segment each tile, stitching instances across the seams
         try
-            if fitsInOnePatch
+            if isStarDist
+                % StarDist: the dense maps are tiled with enough overlap to be seamless, and
+                % the objects are found once on the whole slice, so nothing is stitched
+                normalizedSlice = deepmib.stardist.normalizeImage(sliceImg, starDistConfig.normalizePercentiles);
+                if starDistScale ~= 1
+                    % as StarDist predict_instances(scale=...): zoom as scipy.ndimage.zoom
+                    % with order 1 (corner pixels aligned, linear, no antialiasing)
+                    scaledSize = max(1, round([imgHeight, imgWidth] * starDistScale));
+                    rowQuery = (0:scaledSize(1)-1) * (imgHeight-1) / max(1, scaledSize(1)-1);
+                    colQuery = (0:scaledSize(2)-1) * (imgWidth-1) / max(1, scaledSize(2)-1);
+                    scaledSlice = zeros([scaledSize, size(normalizedSlice, 3)], 'single');
+                    for channelId = 1:size(normalizedSlice, 3)
+                        interpolant = griddedInterpolant({0:imgHeight-1, 0:imgWidth-1}, ...
+                            double(normalizedSlice(:, :, channelId)), 'linear');
+                        scaledSlice(:, :, channelId) = interpolant({rowQuery, colQuery});
+                    end
+                    normalizedSlice = scaledSlice;
+                end
+                [probMap, distMap] = deepmib.stardist.predictMaps(net, normalizedSlice, starDistConfig, ...
+                    struct('tileSize', [1 1] * obj.StarDistOpt.PredictTileSize, 'executionEnvironment', executionEnvironment));
+                [points, scores, rayDist] = deepmib.stardist.nms(probMap, distMap, starDistConfig.grid, ...
+                    starDistProbThresh, starDistNmsThresh);
+                % polygons found on the zoomed image are drawn at the original size
+                sliceLabels = deepmib.stardist.polygonsToLabel(points / starDistScale, rayDist / starDistScale, ...
+                    scores, [imgHeight, imgWidth]);
+            elseif fitsInOnePatch
                 % no tiles, no seams, no stitching: one segmentObjects call on the slice
                 [masks, ~, scores] = segmentObjects(net, sliceImg, ...
                     'Threshold', predictionThreshold, ...

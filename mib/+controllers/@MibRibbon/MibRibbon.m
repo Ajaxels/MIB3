@@ -64,6 +64,7 @@ classdef MibRibbon
             obj.handles.ribbonHome.deepmib2dPatchWise.ItemPushedFcn = @(h,d) obj.homeExamples_Callback(struct('Dataset', {{'Synthetic 2D patch-wise'}}));
             obj.handles.ribbonHome.deepmib2dMembranesEM.ItemPushedFcn = @(h,d) obj.homeExamples_Callback(struct('Dataset', {{'2D EM membranes'}}));
             obj.handles.ribbonHome.deepmib2dNucleiLM.ItemPushedFcn = @(h,d) obj.homeExamples_Callback(struct('Dataset', {{'2D LM nuclei'}}));
+            obj.handles.ribbonHome.deepmib2dNucleiStarDist.ItemPushedFcn = @(h,d) obj.homeExamples_Callback(struct('Dataset', {{'2D LM nuclei StarDist'}}));
             obj.handles.ribbonHome.deepmib3dMitoEM.ItemPushedFcn = @(h,d) obj.homeExamples_Callback(struct('Dataset', {{'3D EM mitochondria'}}));
             obj.handles.ribbonHome.deepmib3dHairCellsLM.ItemPushedFcn = @(h,d) obj.homeExamples_Callback(struct('Dataset', {{'3D LM hair cells'}}));
             obj.handles.ribbonHome.lm3dsimER.ItemPushedFcn = @(h,d) obj.homeExamples_Callback(struct('Dataset', {{'LM 3D SIM ER'}}));

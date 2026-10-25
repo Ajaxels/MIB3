@@ -15,9 +15,27 @@ function updateOverlapInstancesSettings(obj)
 %   - `.MergeIoA` - in-band intersection-over-smaller-area to merge detections ["IoU merge" mode]
 %   - `.MinSplitArea` - min area, px, of a component kept when a stitched label is split into
 %     one index per connected object [both overlap modes]
+%
+% With the StarDist architecture the button opens the StarDist prediction settings instead,
+% stored in obj.StarDistOpt and used by startPredictionInstances:
+%
+%   - `.PredictThresholds` - ``'From the network'`` uses the probability and NMS thresholds
+%     stored in the network file (tuned on the validation images after training, see
+%     startTrainingStarDist); ``'Custom'`` uses `.ProbThresh` and `.NmsThresh`. The header shows
+%     the thresholds of the network selected in the Predict tab when its file exists.
+%   - `.PredictTileSize` - core size of the prediction tiles, see deepmib.stardist.predictMaps;
+%     the overlap needed for seamless maps is added automatically, so larger tiles only trade
+%     memory for speed.
 
 if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.MibDeep.updateOverlapInstancesSettings: triggered\n');
+end
+
+% StarDist tiles its probability and distance maps, not the instances, so it has nothing to
+% stitch; the same button opens its prediction settings instead
+if strcmp(obj.BatchOpt.Workflow{1}, '2D Instance') && strcmp(obj.BatchOpt.Architecture{1}, 'StarDist')
+    localStarDistPredictionSettings(obj);
+    return;
 end
 
 % lazy init to cover instances created before this property was introduced
@@ -51,4 +69,45 @@ obj.OverlapInstancesOpt.DetectionThreshold = answer{1};
 obj.OverlapInstancesOpt.MergeIoU = answer{2};
 obj.OverlapInstancesOpt.MergeIoA = answer{3};
 obj.OverlapInstancesOpt.MinSplitArea = answer{4};
+end
+
+% -------------------------------------------------------------------------------------
+function localStarDistPredictionSettings(obj)
+% thresholds and tile size of StarDist prediction, stored in obj.StarDistOpt
+networkInfo = 'no StarDist network is selected';
+if isfile(obj.BatchOpt.NetworkFilename)
+    try
+        saved = load(obj.BatchOpt.NetworkFilename, '-mat', 'StarDistConfig');
+        if isfield(saved, 'StarDistConfig')
+            networkInfo = sprintf('the selected network has probability %.3f, overlap %.2f', ...
+                saved.StarDistConfig.probThresh, saved.StarDistConfig.nmsThresh);
+        else
+            networkInfo = 'the selected network is not a StarDist network';
+        end
+    catch
+        % an unreadable file is reported when Predict is pressed
+    end
+end
+
+thresholdItems = {'From the network', 'Custom'};
+thresholdIndex = find(strcmp(thresholdItems, obj.StarDistOpt.PredictThresholds), 1);
+if isempty(thresholdIndex); thresholdIndex = 1; end
+prompts = {sprintf('Detection thresholds:\n"From the network" uses the values tuned after training'); ...
+    sprintf('Custom probability threshold (0-1):\nlower to detect more (weaker) objects'); ...
+    sprintf('Custom overlap threshold (0-1):\nlower to suppress more overlapping detections'); ...
+    sprintf('Tile size, pixels:\nlarger tiles are faster but need more GPU memory')};
+defAns = {[thresholdItems, {thresholdIndex}]; ...
+    struct('Spinner', true, 'Value', obj.StarDistOpt.ProbThresh, 'Limits', [0 1], 'Step', 0.01, 'Round', false); ...
+    struct('Spinner', true, 'Value', obj.StarDistOpt.NmsThresh, 'Limits', [0 1], 'Step', 0.05, 'Round', false); ...
+    struct('Spinner', true, 'Value', obj.StarDistOpt.PredictTileSize, 'Limits', [64 16384], 'Step', 128, 'Round', true)};
+options.WindowStyle = 'normal';
+options.WindowWidth = 560;
+options.HeaderLines = 1;
+answer = utils.dlgs.inputUniversalDlg(obj.view.gui, sprintf('Thresholds: %s', networkInfo), ...
+    prompts, defAns, 'StarDist prediction settings', options);
+if isempty(answer); return; end
+obj.StarDistOpt.PredictThresholds = answer{1};
+obj.StarDistOpt.ProbThresh = answer{2};
+obj.StarDistOpt.NmsThresh = answer{3};
+obj.StarDistOpt.PredictTileSize = answer{4};
 end

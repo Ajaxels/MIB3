@@ -30,6 +30,12 @@ function updateStartingWeightsList(obj)
 %     cannot be reported here.
 %   - ``'ImageNet'`` - 2D Patch-wise classification networks initialized from the
 %     MathWorks ImageNet-pretrained weights (requires the matching support package)
+%   - ``'2D_versatile_fluo'`` *(StarDist default)* - fine-tune the pretrained StarDist model
+%     for fluorescent nuclei, converted for MIB and downloaded on first use
+%     (deepmib.stardist.loadPretrained); its number of rays, grid and channel count are
+%     fixed by the model. ``'None (random)'`` trains a StarDist network from scratch with the
+%     rays and grid of ``obj.StarDistOpt``. For StarDist the settings button opens
+%     :func:`setStarDistSettings` whatever the starting weights
 %   - ``'COCO, frozen then trainable'`` *(default)* - the two-phase schedule: train with the
 %     backbone frozen, then unfreeze it and continue at a much lower rate. Phase 1 ends as
 %     soon as the training loss goes flat, or at a cap, whichever comes first; the epochs it
@@ -60,6 +66,7 @@ function updateStartingWeightsList(obj)
 randomWeights = 'None (random)';
 pretrainedWeights = 'Pretrained';
 imagenetWeights = 'ImageNet';
+starDistPretrained = '2D_versatile_fluo';
 
 % by default a design offers no choice and starts from random weights
 itemsList = {randomWeights};
@@ -95,12 +102,18 @@ switch obj.BatchOpt.Workflow{1}
             itemsList = {randomWeights, imagenetWeights};
         end
     case '2D Instance'
-        % solov2() can only be built from a named COCO-pretrained detector, so random
-        % initialization is not offered; the choice is what happens to the backbone.
-        % The two-phase schedule is first, i.e. the default, because it measured best on
-        % the mitochondria benchmark (validation mAP 0.76 against 0.00 for a backbone
-        % unfrozen from the start at the rate that suits a frozen one)
-        itemsList = {'COCO, frozen then trainable', 'COCO, frozen backbone', 'COCO, trainable backbone'};
+        if strcmp(obj.BatchOpt.Architecture{1}, 'StarDist')
+            % a converted StarDist model to fine-tune (downloaded on first use by
+            % deepmib.stardist.loadPretrained), or a fresh network
+            itemsList = {starDistPretrained, randomWeights};
+        else
+            % solov2() can only be built from a named COCO-pretrained detector, so random
+            % initialization is not offered; the choice is what happens to the backbone.
+            % The two-phase schedule is first, i.e. the default, because it measured best on
+            % the mitochondria benchmark (validation mAP 0.76 against 0.00 for a backbone
+            % unfrozen from the start at the rate that suits a frozen one)
+            itemsList = {'COCO, frozen then trainable', 'COCO, frozen backbone', 'COCO, trainable backbone'};
+        end
 end
 
 obj.BatchOpt.T_StartingWeights{2} = itemsList;
@@ -118,11 +131,18 @@ else
     obj.view.handles.T_StartingWeights.Enable = 'off';
 end
 
-% the settings button only configures the two-phase schedule, so it is meaningless for
-% every other state
-if strcmp(obj.BatchOpt.T_StartingWeights{1}, 'COCO, frozen then trainable')
+% the settings button configures the two-phase schedule of SOLOv2, so it is meaningless for
+% every other state; for StarDist it opens the StarDist settings (setStarDistSettings)
+isStarDist = strcmp(obj.BatchOpt.Workflow{1}, '2D Instance') && strcmp(obj.BatchOpt.Architecture{1}, 'StarDist');
+if isStarDist
     obj.view.handles.T_StartingWeightsSettings.Enable = 'on';
+    obj.view.handles.T_StartingWeightsSettings.Tooltip = 'StarDist settings: number of rays, grid, normalisation, threshold tuning; check how well the rays reconstruct the training labels; create a network from the pretrained model to use without training';
 else
-    obj.view.handles.T_StartingWeightsSettings.Enable = 'off';
+    obj.view.handles.T_StartingWeightsSettings.Tooltip = 'define settings for initialization of the starting weights';   % as set in MibDeepGUI.mlapp
+    if strcmp(obj.BatchOpt.T_StartingWeights{1}, 'COCO, frozen then trainable')
+        obj.view.handles.T_StartingWeightsSettings.Enable = 'on';
+    else
+        obj.view.handles.T_StartingWeightsSettings.Enable = 'off';
+    end
 end
 end

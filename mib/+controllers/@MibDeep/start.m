@@ -70,7 +70,9 @@ end
                     end
                 end
             end
-            if strcmp(obj.BatchOpt.Workflow{1}, '2D Instance')
+            if strcmp(obj.BatchOpt.Workflow{1}, '2D Instance') && strcmp(obj.BatchOpt.Architecture{1}, 'StarDist')
+                obj.startTrainingStarDist();
+            elseif strcmp(obj.BatchOpt.Workflow{1}, '2D Instance')
                 obj.startTrainingInstances(); % do instance segmentation
             else
                 obj.startTraining(); % do semantic segmentation

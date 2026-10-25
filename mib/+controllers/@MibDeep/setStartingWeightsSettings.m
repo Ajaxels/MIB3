@@ -10,6 +10,9 @@ function setStartingWeightsSettings(obj)
 % Instance workflow when ``BatchOpt.T_StartingWeights`` is ``'COCO, frozen then trainable'``
 % (see :func:`startTrainingInstances`).
 %
+% It is the callback of the settings button next to "Starting weights". When the
+% architecture is StarDist the button opens :func:`setStarDistSettings` instead.
+%
 % Input Arguments:
 %   (none)
 %
@@ -19,6 +22,12 @@ function setStartingWeightsSettings(obj)
 
 if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.MibDeep.setStartingWeightsSettings: triggered\n');
+end
+
+% the same button opens the StarDist settings when that architecture is selected
+if strcmp(obj.BatchOpt.Workflow{1}, '2D Instance') && strcmp(obj.BatchOpt.Architecture{1}, 'StarDist')
+    obj.setStarDistSettings();
+    return;
 end
 
 prompts = {'Smallest share of the total epochs the frozen phase must use, no switch happens before this [0.07]'; ...

@@ -113,6 +113,10 @@ category.add(homeHandles.deepmib2dMembranesEM);
 homeHandles.deepmib2dNucleiLM = GalleryItem('2D LM Nuclei (174 Mb)', Icon(fullfile(iconPath, 'examples_nuclei_24px.png')));
 homeHandles.deepmib2dNucleiLM.Description = 'Segmentation of nuclei, boundaries, and touching edges';
 category.add(homeHandles.deepmib2dNucleiLM);
+% 2D LM Nuclei StarDist (60 Mb)
+homeHandles.deepmib2dNucleiStarDist = GalleryItem('2D LM Nuclei, StarDist (60 Mb)', Icon(fullfile(iconPath, 'examples_stardist_24px.png')));
+homeHandles.deepmib2dNucleiStarDist.Description = 'Instance segmentation of nuclei using StarDist';
+category.add(homeHandles.deepmib2dNucleiStarDist);
 % 3D EM Mitochondria (256 Mb)
 homeHandles.deepmib3dMitoEM = GalleryItem('3D EM Mitochondria (256 Mb)', Icon(fullfile(iconPath, 'examples_mito_24px.png')));
 homeHandles.deepmib3dMitoEM.Description = 'Segmentation of mitochondria using 3D U-net';
