@@ -217,10 +217,12 @@ multichannel images.
 | **Noise SD** | noise in grey values |
 | **SNR, dB** | signal-to-noise ratio of the area in decibels; *-Inf* when no signal stands out from the noise |
 | **Units** | unit of the resolution and pixel size values: nm when the dataset has its pixel size in length units |
-| **Note** | *FFT: pixel-limited* - detail reaches the pixel size, the true resolution may be finer than the 2 pixels reported; record with smaller pixels to measure it. *some directions pixel-limited* - the same for some directions, so the astigmatism ratio may be too low. *FFT: slow detector, not valid* - the noise is smeared along the scan lines; tick [Slow detector](#settings) and calculate again. *Decorr.: no peak* - the decorrelation analysis found no resolution; use the FFT value |
+| **Note** | *FFT: pixel-limited* - detail reaches the pixel size, the true resolution may be finer than the 2 pixels reported; record with smaller pixels to measure it. *some directions pixel-limited* - the same for some directions, so the astigmatism ratio may be too low. *FFT: slow detector, not valid* - the noise is smeared along the scan lines; tick [Slow detector](#settings) and calculate again. *denoised image: resolutions too fine* - almost no noise is left, so both resolution values come out far too fine; analyse the image as it comes from the microscope. *Decorr.: no peak* - the decorrelation analysis found no resolution; use the FFT value |
 
 A column stays empty when its method was switched off. The table keeps the measurements of all
-datasets for comparison; the rows of the active dataset are highlighted.
+datasets for comparison; the rows of the active dataset are highlighted. Drag the bar above the
+table to change its height; dragging it far up hides the Settings panel to make more room, and
+dragging it back down shows the panel again.
 
 ![Context menu](images/imageSharpness_context.png){align=right}
 

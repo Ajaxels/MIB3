@@ -32,7 +32,9 @@ measureType = hMeasure.Data(measurementIndex).type;
 
 % when recalculating, navigate to the measurement's slice first
 if useFixedZT
-    obj.mibModel.I{datasetId}.slices{3} = [hMeasure.Data(measurementIndex).Z, hMeasure.Data(measurementIndex).Z];
+    % .Z is the slice along the axis normal to the measurement orientation
+    obj.mibModel.I{datasetId}.slices{hMeasure.Data(measurementIndex).orientation} = ...
+        [hMeasure.Data(measurementIndex).Z, hMeasure.Data(measurementIndex).Z];
     obj.mibModel.I{datasetId}.slices{5} = [hMeasure.Data(measurementIndex).T, hMeasure.Data(measurementIndex).T];
     notify(obj.mibModel, 'SliceChanged');
 end

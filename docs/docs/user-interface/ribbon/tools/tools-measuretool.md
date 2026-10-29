@@ -23,7 +23,7 @@ Defines the measurement type, started with the <span class="widget widget-button
 
 <div class="clear-float"></div>
 
-- <span class="widget widget-dropdown">Type</span>: measurement type —
+- <span class="widget widget-dropdown">Type</span>: measurement type:
   *Angle*, *Caliper*, *Circle (R)*, *Distance (freehand)*, *Distance (linear)*, *Distance (polyline)*, *Point*.
 - <span class="widget widget-dropdown">Color channel</span>: color channel used for intensity profiles.
 - <label class="widget widget-checkbox">Fine-tuning</label>: allows position adjustment of each vertex during placement before accepting.
@@ -87,7 +87,7 @@ Defines the measurement type, started with the <span class="widget widget-button
   ![Polyline](images/menuToolsMeasureOverviewFreehand.jpg){.on-glb align=left}  
   a) select interpolation type with the <span class="widget widget-dropdown">Interpolation</span> combo box;  
   b) press <span class="widget widget-button">Add</span>;  
-  c) click to place vertices;  
+  c) click to place vertices, panning the image as usual when needed; double-click or press ++enter++ to finish;  
   d) adjust if needed; double-click above the path to accept.
 
 <div class="clear-float"></div>
@@ -161,7 +161,7 @@ the [Image View panel](../../image-document/index.md) centers on the selected me
 <div class="clear-float"></div>
 
 - <span class="widget widget-button">Load</span>: loads a measurement structure from a file or MATLAB workspace.
-- <span class="widget widget-button">Save</span>: saves measurements and intensity profiles to a file (MATLAB or Excel) or MATLAB workspace.
+- <span class="widget widget-button">Save</span>: saves measurements and intensity profiles to a file (MATLAB or Excel) or MATLAB workspace. In Excel files, each intensity profile is listed together with the coordinates of its points in physical units and the slice number; the voxel size is given in the header. See [below](#measurements-exported-to-matlab) for the structure exported to MATLAB.
 - <span class="widget widget-button">Delete all</span>: removes all measurements.
 - <span class="widget widget-button">?</span>: opens this help page.
 - <span class="widget widget-button">Add</span>: adds a new measurement of the type selected in the *Measure panel*.
@@ -171,6 +171,30 @@ the [Image View panel](../../image-document/index.md) centers on the selected me
 - <span class="widget widget-button">Close</span>: closes the tool.
 
 ---
+
+## Measurements exported to MATLAB
+
+<span class="widget widget-button">Save</span> &rarr; *Export to Matlab* creates a structure array in the MATLAB workspace (`mibMeasurements` by default) with one element per measurement. The same structure, without the `profileXY` field, is stored as variable `Data` in `*.measure` files.
+
+Coordinates are in pixels of the view where the measurement was made: horizontal and vertical are x and y for the XY view, x and z for ZX, and z and y for ZY.
+
+| Field | Meaning |
+|-------|---------|
+| `n` | measurement number, as in the table |
+| `type` | measurement type: `'Angle'`, `'Caliper'`, `'Circle (R)'`, `'Distance (linear)'`, `'Distance (polyline)'`, `'Distance (freehand)'` or `'Point'` |
+| `value` | result: angle in degrees; radius, length or caliper distance in the units of the voxel size; mean intensity for a point |
+| `X`, `Y` | horizontal and vertical coordinates of the measurement:<br>- *Point*: the point<br>- *Distance (linear)*: the 2 end points<br>- *Angle*: 3 points, the angle is at the second one<br>- *Caliper*: 4 points; the line, the placed point and the foot of the perpendicular<br>- *Circle (R)*: 60 points along the circle<br>- *Distance (polyline, freehand)*: the interpolated path |
+| `Z` | number of the slice the measurement was made on (the z slice for XY, y for ZX, x for ZY) |
+| `T` | time point |
+| `orientation` | view of the measurement: `3` = XY, `1` = ZX, `2` = ZY |
+| `spline` | *Distance (polyline, freehand)*: vertices of the path as `.x` and `.y`; empty for other types |
+| `circ` | *Circle (R)*: center `.xc`, `.yc` and radius `.R` in pixels; empty for other types |
+| `intensity` | mean intensity along the measurement, one value per color channel; `NaN` when <span class="widget widget-checkbox">Calculate intensity</span> was off |
+| `profile` | intensity profile: row 1 is the distance along the path in pixels, the next rows are intensities, one row per color channel; `NaN` when not calculated. For *Caliper* the profile runs along the perpendicular |
+| `profileXY` | coordinates of the profile points in the units of the voxel size: row 1 is horizontal, row 2 vertical, one column per column of `profile`; `NaN` when there is no profile |
+| `integrateWidth` | *Distance (linear)*: width used to integrate the profile; empty otherwise |
+| `info` | annotation text |
+| `colCh` | color channel used for intensities; `0` = all channels |
 
 ## Reference
 

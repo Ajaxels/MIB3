@@ -58,6 +58,9 @@ classdef ImageSharpness < handle
         % indices of the results table rows the context menu acts on
         exportChoices
         % logical vector, the outputs ticked in the last export dialog, see exportResults
+        settingsPanelHeight
+        % height of the settings panel row of mainGridLayout as set in the mlapp,
+        % to restore the panel after the splitter collapsed it, see splitterButtonDown
     end
 
     events
@@ -183,6 +186,11 @@ classdef ImageSharpness < handle
             obj.view.handles.plotTabGroup.SelectionChangedFcn = @(~,~) obj.updatePlots();
             obj.view.handles.clearButton.Tooltip = 'Remove all rows from the results table';
             obj.view.handles.exportButton.Tooltip = 'Save the results, export them to MATLAB, or write a Word or PDF report';
+            % the splitter above the results table changes its height when dragged
+            obj.view.gui.WindowButtonDownFcn = @(~,~) obj.splitterButtonDown();
+            obj.view.gui.WindowButtonMotionFcn = @(~,~) obj.splitterHover();
+            obj.view.handles.horisontalSplitter.Tooltip = 'Drag up or down to resize the results table; drag far up to hide the Settings panel';
+            obj.settingsPanelHeight = obj.view.handles.mainGridLayout.RowHeight{obj.view.handles.settingsPanel.Layout.Row};
 
             % context menu of the results table, created here and not in the mlapp
             tableMenu = uicontextmenu(obj.view.gui);
@@ -264,6 +272,98 @@ classdef ImageSharpness < handle
             eventData.eventdata = event;
             eventData = core.ToggleEventData(eventData);
             notify(obj.mibModel, 'KeyPressEvent', eventData);
+        end
+
+        % -----------------------------------------------------------
+        function overSplitter = isOverSplitter(obj)
+            % ISOVERSPLITTER - True when the mouse is over horisontalSplitter or the grid gaps next to it.
+            %
+            % The splitter is a few pixels high, so the row spacing of
+            % ``mainGridLayout`` on both sides of it counts as well. The
+            % position is computed from the grid rows below the splitter, which
+            % all have fixed heights, rather than from ``HitObject``, which in
+            % the gaps is the grid layout; the grid fills the figure.
+            mainGrid = obj.view.handles.mainGridLayout;
+            splitterRow = obj.view.handles.horisontalSplitter.Layout.Row;
+            rowsBelow = mainGrid.RowHeight(splitterRow+1:end);
+            overSplitter = false;
+            if ~all(cellfun(@isnumeric, [rowsBelow, mainGrid.RowHeight(splitterRow)])); return; end
+            % Padding is [left bottom right top]
+            splitterBottom = mainGrid.Padding(2) + sum([rowsBelow{:}]) + numel(rowsBelow)*mainGrid.RowSpacing;
+            pointY = obj.view.gui.CurrentPoint(2);
+            overSplitter = pointY >= splitterBottom - mainGrid.RowSpacing && ...
+                pointY <= splitterBottom + mainGrid.RowHeight{splitterRow} + mainGrid.RowSpacing;
+        end
+
+        % -----------------------------------------------------------
+        function splitterHover(obj)
+            % SPLITTERHOVER - Show a vertical resize pointer while the mouse is over the splitter.
+            %
+            % The figure's ``WindowButtonMotionFcn`` while no drag is running.
+            if obj.isOverSplitter(); pointer = 'top'; else; pointer = 'arrow'; end
+            if ~strcmp(obj.view.gui.Pointer, pointer); obj.view.gui.Pointer = pointer; end
+        end
+
+        % -----------------------------------------------------------
+        function splitterButtonDown(obj)
+            % SPLITTERBUTTONDOWN - Resize the results table while the splitter above it is dragged.
+            %
+            % A press over the splitter (see isOverSplitter) starts the drag:
+            % the height of the results table row of ``mainGridLayout`` follows
+            % the mouse until the button is released, and the '1x' row of the
+            % settings column and the plot tabs give way. The height stays
+            % between 60 px and ``fullHeight``, the height that keeps the
+            % fixed rows of the settings column whole.
+            %
+            % Dragged further up, the Settings panel collapses (row height 0,
+            % panel hidden) and the table may grow by its height as well. The
+            % panel snaps rather than shrinking, as a partly shown panel clips
+            % its widgets: in the first half of its height above
+            % ``fullHeight`` the table stays at ``fullHeight`` and the panel
+            % stays open, beyond that the panel collapses. Dragging back below
+            % that point opens it again. The panel height comes from
+            % ``settingsPanelHeight``, read in addCallbacks.
+            %
+            % Neither height is stored: the dialog opens with the layout of
+            % the mlapp.
+            if ~obj.isOverSplitter(); return; end
+            hFig = obj.view.gui;
+            mainGrid = obj.view.handles.mainGridLayout;
+            settingsPanel = obj.view.handles.settingsPanel;
+            tableRow = obj.view.handles.resultsTable.Layout.Row;
+            settingsRow = settingsPanel.Layout.Row;
+            startPointY = hFig.CurrentPoint(2);
+            startHeight = mainGrid.RowHeight{tableRow};
+            % fixed rows other than the table, with the settings panel open
+            otherRows = mainGrid.RowHeight;
+            otherRows{settingsRow} = obj.settingsPanelHeight;
+            otherRows(tableRow) = [];
+            fixedHeight = sum([otherRows{cellfun(@isnumeric, otherRows)}]);
+            minHeight = 60;
+            fullHeight = max(minHeight, hFig.Position(4) - sum(mainGrid.Padding([2 4])) - ...
+                (numel(mainGrid.RowHeight) - 1)*mainGrid.RowSpacing - fixedHeight);
+            collapseHeight = fullHeight + obj.settingsPanelHeight/2;
+            hFig.WindowButtonMotionFcn = @(~,~) dragSplitter();
+            hFig.WindowButtonUpFcn = @(~,~) releaseSplitter();
+
+            function dragSplitter()
+                newHeight = startHeight + hFig.CurrentPoint(2) - startPointY;
+                collapse = newHeight > collapseHeight;
+                if collapse
+                    newHeight = min(newHeight, fullHeight + obj.settingsPanelHeight);
+                    mainGrid.RowHeight{settingsRow} = 0;
+                else
+                    newHeight = min(max(newHeight, minHeight), fullHeight);
+                    mainGrid.RowHeight{settingsRow} = obj.settingsPanelHeight;
+                end
+                settingsPanel.Visible = ~collapse;
+                mainGrid.RowHeight{tableRow} = round(newHeight);
+            end
+
+            function releaseSplitter()
+                hFig.WindowButtonMotionFcn = @(~,~) obj.splitterHover();
+                hFig.WindowButtonUpFcn = [];
+            end
         end
 
         % -----------------------------------------------------------

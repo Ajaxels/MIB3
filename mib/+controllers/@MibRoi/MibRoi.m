@@ -13,7 +13,9 @@ classdef MibRoi < handle
         drawingROI      % struct tracking an in-progress interactive ROI:
         %   .active       - logical, true while a draw tool is waiting for user input
         %   .roi          - handle to the drawrectangle/drawellipse/drawpolygon/drawfreehand object
-        %   .type         - char: 'Rectangle','Ellipse','Polyline','Lasso'
+        %   .type         - char: 'Rectangle','Ellipse','Polyline','Lasso','Polygon'; during
+        %                   custom placement 'Polygon' (lasso tool) draws a closed outline,
+        %                   'Polyline' (Measure tool) an open one
         %   .dataPos      - data-pixel coords (updated on MovingROI; used by repositionDrawingROI)
         %   .repositioning - logical guard to prevent re-entry during programmatic repositioning
         %   .placementMode    - logical, true during custom Polyline Stage 1 vertex collection

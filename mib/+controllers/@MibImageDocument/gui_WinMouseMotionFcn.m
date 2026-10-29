@@ -71,6 +71,8 @@ try
         cursorX = position(1,1);
         cursorY = position(1,2);
         nVerts = size(placementVerts, 1);
+        % the Measure tool polyline ('Polyline') is open: no closing segment, no fill
+        isOpenPath = strcmp(cRoiCtrl.drawingROI.type, 'Polyline');
 
         % Convert last and first confirmed vertices to axes coords
         lastVert  = placementVerts(end, :);
@@ -79,7 +81,7 @@ try
         [firstAxX, firstAxY] = obj.mibModel.convertDataToMouseCoordinates(firstVert(1), firstVert(2), 'shown');
 
         % Rubber band: last → cursor → first (one segment when only 1 vertex)
-        if nVerts == 1
+        if nVerts == 1 || isOpenPath
             rbX = [lastAxX; cursorX];
             rbY = [lastAxY; cursorY];
         else
@@ -98,7 +100,7 @@ try
         end
 
         % Semi-transparent fill: all confirmed vertices + cursor (needs ≥ 3 total)
-        if nVerts >= 2
+        if nVerts >= 2 && ~isOpenPath
             [allAxX, allAxY] = obj.mibModel.convertDataToMouseCoordinates( ...
                 placementVerts(:,1), placementVerts(:,2), 'shown');
             patchX = [allAxX(:); cursorX];

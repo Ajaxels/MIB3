@@ -313,7 +313,7 @@ if strcmp(operation, 'pan') %& strcmp(modifier,'alt')
                     pverts = drawInfo.placementVertices;
                     pX = toX(pverts(:,1));
                     pY = toY(pverts(:,2));
-                    if numel(pX) >= 2
+                    if numel(pX) >= 2 && ~strcmp(drawInfo.type, 'Polyline')   % open for the Measure tool polyline
                         drawInfo.placementLine.XData = [pX(:); pX(1)];
                         drawInfo.placementLine.YData = [pY(:); pY(1)];
                     else

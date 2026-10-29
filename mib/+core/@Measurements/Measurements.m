@@ -24,7 +24,10 @@ classdef Measurements < matlab.mixin.Copyable
     % - ``.value``          - [double] numeric result in physical units
     % - ``.X``              - [double vector] data-space pixel X coordinates
     % - ``.Y``              - [double vector] data-space pixel Y coordinates
-    % - ``.Z``              - [double] Z slice index when measurement was made
+    % - ``.Z``              - [double] index of the slice the measurement was made on, along
+    %   the axis normal to ``.orientation`` (Z for yx, Y for zx, X for zy), as returned by
+    %   :meth:`core.MibDataset.getCurrentSliceNumber`; MIB3 versions before 2026-10 stored
+    %   the Z index for every orientation
     % - ``.T``              - [double] time-point index when measurement was made
     % - ``.orientation``    - [double] 1 = zx, 2 = zy, 3 = yx (MIB3 values)
     % - ``.spline``         - [struct | []] ppval data for ``'Distance (polyline)'``
@@ -562,7 +565,7 @@ classdef Measurements < matlab.mixin.Copyable
             if obj.getNumberOfMeasurements() == 0; return; end
 
             if ~isempty(obj.mibDataset)
-                sliceNo  = obj.mibDataset.slices{3}(1);
+                sliceNo  = obj.mibDataset.slices{orientation}(1);   % .Z is stored per orientation
                 timePnt  = obj.mibDataset.slices{5}(1);
             else
                 sliceNo = 1;
@@ -795,22 +798,25 @@ classdef Measurements < matlab.mixin.Copyable
                 if isempty(orientationValue); continue; end
 
                 switch orientationValue
-                    case 3  % yx
+                    case 3  % yx: slice axis = Z
                         ratioX = resampledRatio(1);
                         ratioY = resampledRatio(2);
-                    case 1  % zx: horizontal = X, vertical = Z
+                        ratioSlice = resampledRatio(3);
+                    case 1  % zx: horizontal = X, vertical = Z, slice axis = Y
                         ratioX = resampledRatio(1);
                         ratioY = resampledRatio(3);
-                    case 2  % zy
+                        ratioSlice = resampledRatio(2);
+                    case 2  % zy: slice axis = X
                         ratioX = resampledRatio(3);
                         ratioY = resampledRatio(2);
+                        ratioSlice = resampledRatio(1);
                     otherwise
                         continue;
                 end
 
                 obj.Data(measureIdx).X = obj.Data(measureIdx).X * ratioX;
                 obj.Data(measureIdx).Y = obj.Data(measureIdx).Y * ratioY;
-                obj.Data(measureIdx).Z = round(obj.Data(measureIdx).Z * resampledRatio(3));
+                obj.Data(measureIdx).Z = round(obj.Data(measureIdx).Z * ratioSlice);
 
                 % scale circle parameters
                 if ~isempty(obj.Data(measureIdx).circ)
@@ -874,22 +880,25 @@ classdef Measurements < matlab.mixin.Copyable
                 if isempty(orientationValue); continue; end
 
                 switch orientationValue
-                    case 3  % yx
+                    case 3  % yx: slice axis = Z
                         shiftX = cropF(1) - 1;
                         shiftY = cropF(2) - 1;
-                    case 1  % zx: horizontal = X, vertical = Z
+                        shiftSlice = cropF(5) - 1;
+                    case 1  % zx: horizontal = X, vertical = Z, slice axis = Y
                         shiftX = cropF(1) - 1;
                         shiftY = cropF(5) - 1;
-                    case 2  % zy
+                        shiftSlice = cropF(2) - 1;
+                    case 2  % zy: slice axis = X
                         shiftX = cropF(5) - 1;
                         shiftY = cropF(2) - 1;
+                        shiftSlice = cropF(1) - 1;
                     otherwise
                         continue;
                 end
 
                 obj.Data(measureIdx).X = obj.Data(measureIdx).X - shiftX;
                 obj.Data(measureIdx).Y = obj.Data(measureIdx).Y - shiftY;
-                obj.Data(measureIdx).Z = obj.Data(measureIdx).Z - (cropF(5) - 1);
+                obj.Data(measureIdx).Z = obj.Data(measureIdx).Z - shiftSlice;
 
                 % shift circle parameters
                 if ~isempty(obj.Data(measureIdx).circ)

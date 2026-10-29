@@ -195,6 +195,9 @@ if ~isempty(fftResult)
     if isfield(fftResult, 'correlatedNoise') && fftResult.correlatedNoise && ~slowDetector
         values.notes{end+1} = 'noise smeared along the scan lines (slow detector): FFT values not valid';
     end
+    if isfield(fftResult, 'denoised') && fftResult.denoised
+        values.notes{end+1} = 'noise below one grey value, image probably denoised: FFT and decorrelation resolutions far too fine';
+    end
     if ~isnan(fftResult.astigmatismRatio)
         values.bestResolution = fftResult.bestResolution;
         values.worstResolution = fftResult.worstResolution;

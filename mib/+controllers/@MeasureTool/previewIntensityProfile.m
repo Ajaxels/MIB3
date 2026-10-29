@@ -47,7 +47,7 @@ cla(plotAxes);
 hold(plotAxes, 'on');
 for selIdx = 1:numel(dataIndices)
     profileData = hMeasure.Data(dataIndices(selIdx)).profile;
-    if isequal(profileData, NaN) || isempty(profileData) || ~isnumeric(profileData)
+    if isempty(profileData) || ~isnumeric(profileData) || all(isnan(profileData(:)))
         continue;
     end
     distanceVec = profileData(1, :);

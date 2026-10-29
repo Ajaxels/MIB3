@@ -18,7 +18,12 @@ function [pixelX, pixelY, wasCancelled] = drawROI(obj, roiType, finetuneCheck, m
 %   - **roiType** - [char] one of:
 %
 %     - ``'line'``     - two-endpoint line (``drawline``)
-%     - ``'polyline'`` - open N-point polygon (``drawpolygon``)
+%     - ``'polyline'`` - open N-point path. Without ``maxVertices`` the
+%       vertices are not drawn with ``drawpolyline`` but collected by
+%       MIB's own mouse handlers (``cRoi.drawingROI.placementMode``), so
+%       the image can be panned between clicks; a double-click or Enter
+%       finishes, Escape cancels, and an ``images.roi.Polyline`` is then
+%       built from the vertices
 %     - ``'ellipse'``  - ellipse; returns boundary vertices (``drawellipse``)
 %     - ``'point'``    - single point (``drawpoint``)
 %     - ``'freehand'`` - open freehand path (``drawfreehand``)
@@ -76,7 +81,7 @@ try
                 if isfinite(maxVertices)
                     roiObject = drawPolylineWithVertexLimit(maxVertices);
                 else
-                    roiObject = drawpolyline(axesHandle);
+                    roiObject = placePolylineVertices();
                 end
             case 'ellipse'
                 roiObject = drawellipse(axesHandle, 'FixedAspectRatio', true, 'AspectRatio', 1);
@@ -291,6 +296,61 @@ wasCancelled = false;
             end
         catch
         end
+    end
+
+    function polylineObject = placePolylineVertices()
+        % Collect the vertices of an open polyline through MIB's own mouse
+        % handlers instead of drawpolyline. While drawpolyline is drawing, a
+        % right-click ends the drawing and the same press starts MIB's pan,
+        % so the measurement is finished on release and the image view is
+        % left broken. In placement mode gui_WindowButtonDownFcn adds a
+        % vertex on each selection click and pans on the pan button as
+        % usual; a double-click or Enter resumes the uiwait below, Escape
+        % empties the vertices first. drawingROI.type 'Polyline' (the lasso
+        % tool uses 'Polygon') makes the placement line and rubber band open.
+        % A double-click also delivers a single click just before it, which
+        % repeats the last vertex; consecutive duplicates are dropped
+        % because measureDistancePoly interpolates over the arc length and
+        % needs it strictly increasing. With fewer than two vertices a
+        % deleted Polyline is returned, which the caller treats as cancelled.
+        cRoi = obj.mibController.cRoi;
+        cRoi.drawingROI.type              = 'Polyline';
+        cRoi.drawingROI.roi               = [];
+        cRoi.drawingROI.dataPos           = [];
+        cRoi.drawingROI.repositioning     = false;
+        cRoi.drawingROI.placementVertices = zeros(0, 2);
+        cRoi.drawingROI.placementLine     = [];
+        cRoi.drawingROI.active            = true;
+        cRoi.drawingROI.placementMode     = true;
+
+        uiwait(cImageDoc.UIFigure);
+
+        placedVertices = cRoi.drawingROI.placementVertices;
+        placementGraphics = {cRoi.drawingROI.placementLine, cRoi.drawingROI.rubberBandLine, ...
+            cRoi.drawingROI.previewPatch};
+        for graphicsId = 1:numel(placementGraphics)
+            if ~isempty(placementGraphics{graphicsId}) && isvalid(placementGraphics{graphicsId})
+                delete(placementGraphics{graphicsId});
+            end
+        end
+        cRoi.drawingROI.placementLine     = [];
+        cRoi.drawingROI.rubberBandLine    = [];
+        cRoi.drawingROI.previewPatch      = [];
+        cRoi.drawingROI.placementVertices = [];
+        cRoi.drawingROI.placementMode     = false;
+        cRoi.drawingROI.active            = false;
+
+        if ~isempty(placedVertices)
+            placedVertices = placedVertices([true; any(diff(placedVertices, 1, 1) ~= 0, 2)], :);
+        end
+        if size(placedVertices, 1) < 2
+            polylineObject = images.roi.Polyline(axesHandle);
+            delete(polylineObject);
+            return;
+        end
+        [axesX, axesY] = obj.mibModel.convertDataToMouseCoordinates( ...
+            placedVertices(:, 1), placedVertices(:, 2), 'shown');
+        polylineObject = images.roi.Polyline(axesHandle, 'Position', [axesX(:), axesY(:)]);
     end
 
     function polylineObject = drawPolylineWithVertexLimit(nVertices)

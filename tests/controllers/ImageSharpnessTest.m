@@ -11,6 +11,7 @@ classdef ImageSharpnessTest < matlab.unittest.TestCase
 %   - noise smeared along the scan lines by a slow detector is detected and
 %     the correction restores the white-noise result; vertical detail is
 %     not taken for it
+%   - a strongly smoothed integer image is flagged as denoised
 %   - physical pixel sizes scale the results, also when x and y differ
 %   - small regions are refused; a sharp image is flagged as pixel-limited
 %     and pure noise gives no resolution
@@ -187,6 +188,31 @@ classdef ImageSharpnessTest < matlab.unittest.TestCase
             result = controllers.ImageSharpness.computeFftResolution( ...
                 controllers.ImageSharpness.preprocessRegion(sharp(1:2:end, :)), [1 2]);
             testCase.verifyFalse(result.correlatedNoise, 'every second row of a sharp image');
+        end
+
+        function denoisedImageIsFlagged(testCase)
+            % a smoothed uint8 image keeps only rounding noise in the spectrum
+            % corners; raw images, floating-point images and low-count images
+            % with little signal are not flagged
+            texture = ImageSharpnessTest.makeTexture(512, 15);
+            signal = ImageSharpnessTest.blurAndNoise(texture, 1.5, 0, 1);
+            randomStream = RandStream('mt19937ar', 'Seed', 41);
+            raw = 128 + 30*signal/std(signal(:)) + 15*randn(randomStream, size(signal));
+            smoothed = imgaussfilt(raw, 2);
+            options = struct('UseDecorrelation', false, 'UseSharpness', false);
+            rawResult = controllers.ImageSharpness.analyseRegion(uint8(raw), 1, options);
+            smoothedResult = controllers.ImageSharpness.analyseRegion(uint8(smoothed), 1, options);
+            floatResult = controllers.ImageSharpness.analyseRegion(smoothed, 1, options);
+            testCase.verifyFalse(rawResult.fft.denoised, sprintf('raw, noise SD %.3g', rawResult.fft.noiseSd));
+            testCase.verifyTrue(smoothedResult.fft.denoised, sprintf('smoothed, noise SD %.3g, SNR %.3g', ...
+                smoothedResult.fft.noiseSd, smoothedResult.fft.signalToNoise));
+            testCase.verifyFalse(floatResult.fft.denoised, 'floating-point image');
+            counts = uint8(rand(randomStream, size(signal)) < 0.2*(1 + 0.3*signal/std(signal(:))));
+            countsResult = controllers.ImageSharpness.analyseRegion(counts, 1, options);
+            testCase.verifyLessThan(countsResult.fft.noiseSd, 1);
+            testCase.verifyFalse(countsResult.fft.denoised, 'low-count image');
+            fftOff = controllers.ImageSharpness.analyseRegion(uint8(smoothed), 1, struct('UseFft', false));
+            testCase.verifyEmpty(fftOff.fft);
         end
 
         function mergeResultsWithDifferentFields(testCase)

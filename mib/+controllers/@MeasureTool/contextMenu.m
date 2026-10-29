@@ -61,7 +61,8 @@ switch parameter
         obj.updateTable();
 
     case 'Jump'
-        obj.mibModel.I{datasetId}.slices{3} = repmat(hMeasure.Data(dataIndex).Z, 1, 2);
+        % .Z is the slice along the axis normal to the measurement orientation
+        obj.mibModel.I{datasetId}.slices{hMeasure.Data(dataIndex).orientation} = repmat(hMeasure.Data(dataIndex).Z, 1, 2);
         obj.mibModel.I{datasetId}.slices{5} = repmat(hMeasure.Data(dataIndex).T, 1, 2);
         notify(obj.mibModel, 'SliceChanged');
 

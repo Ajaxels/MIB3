@@ -6127,12 +6127,14 @@ right; with it on, the result is that of the same image from a fast detector:</p
 </tr>
 <tr>
 <td><strong>Note</strong></td>
-<td><em>FFT: pixel-limited</em> - detail reaches the pixel size, the true resolution may be finer than the 2 pixels reported; record with smaller pixels to measure it. <em>some directions pixel-limited</em> - the same for some directions, so the astigmatism ratio may be too low. <em>FFT: slow detector, not valid</em> - the noise is smeared along the scan lines; tick <a href="#settings">Slow detector</a> and calculate again. <em>Decorr.: no peak</em> - the decorrelation analysis found no resolution; use the FFT value</td>
+<td><em>FFT: pixel-limited</em> - detail reaches the pixel size, the true resolution may be finer than the 2 pixels reported; record with smaller pixels to measure it. <em>some directions pixel-limited</em> - the same for some directions, so the astigmatism ratio may be too low. <em>FFT: slow detector, not valid</em> - the noise is smeared along the scan lines; tick <a href="#settings">Slow detector</a> and calculate again. <em>denoised image: resolutions too fine</em> - almost no noise is left, so both resolution values come out far too fine; analyse the image as it comes from the microscope. <em>Decorr.: no peak</em> - the decorrelation analysis found no resolution; use the FFT value</td>
 </tr>
 </tbody>
 </table>
 <p>A column stays empty when its method was switched off. The table keeps the measurements of all
-datasets for comparison; the rows of the active dataset are highlighted.</p>
+datasets for comparison; the rows of the active dataset are highlighted. Drag the bar above the
+table to change its height; dragging it far up hides the Settings panel to make more room, and
+dragging it back down shows the panel again.</p>
 <p><img align="right" alt="Context menu" src="images/imageSharpness_context.png" /></p>
 <p>Right-click the table for:</p>
 <ul>

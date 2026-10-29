@@ -130,8 +130,11 @@ switch source.Tag
                 dataset.slices{5} = [newT, newT];
                 notify(obj.mibModel, 'FrameChanged');
             end
-            if dataset.image.depth > 1
-                dataset.slices{3} = [newZ, newZ];
+            % .Z is the slice along the axis normal to the measurement orientation
+            sliceAxis = hMeasure.Data(dataIndex).orientation;
+            sliceCounts = [dataset.image.height, dataset.image.width, dataset.image.depth];
+            if sliceCounts(sliceAxis) > 1
+                dataset.slices{sliceAxis} = [newZ, newZ];
                 notify(obj.mibModel, 'SliceChanged');
             else
                 notify(obj.mibModel, 'ShowImage');

@@ -14,7 +14,9 @@ function updateResultsTable(obj)
 % along the scan lines (``correlatedNoise``) calculated without
 % ``SlowDetector`` - their FFT resolution, astigmatism, noise SD and SNR are
 % not valid, see :func:`controllers.ImageSharpness.computeFftResolution` -
-% and decorrelation curves without a peak (see
+% images that look denoised (``denoised``, see
+% :func:`controllers.ImageSharpness.analyseRegion`; FFT and decorrelation
+% resolutions far too fine) and decorrelation curves without a peak (see
 % :func:`controllers.ImageSharpness.computeDecorrelationResolution`). ``Noise
 % SD`` (grey values) and ``SNR, dB`` come from the FFT noise floor and are
 % empty when the FFT method was off; ``SNR, dB`` is
@@ -50,6 +52,9 @@ for rowId = 1:numel(obj.results)
         slowDetector = isfield(row.options, 'SlowDetector') && row.options.SlowDetector;
         if isfield(fftResult, 'correlatedNoise') && fftResult.correlatedNoise && ~slowDetector
             notes{end+1} = 'FFT: slow detector, not valid'; %#ok<AGROW>
+        end
+        if isfield(fftResult, 'denoised') && fftResult.denoised
+            notes{end+1} = 'denoised image: resolutions too fine'; %#ok<AGROW>
         end
         if ~isnan(fftResult.astigmatismRatio)
             tableData(rowId, 9:12) = {roundValue(fftResult.bestResolution), roundValue(fftResult.worstResolution), ...

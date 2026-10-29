@@ -2920,6 +2920,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#measurements-exported-to-matlab" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Measurements exported to MATLAB
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#reference" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -5702,6 +5713,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#measurements-exported-to-matlab" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Measurements exported to MATLAB
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#reference" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -5905,7 +5927,7 @@ the <a href="../../panels/selection_imview/viewsettings.html">View Settings pane
 <div class="clear-float"></div>
 
 <ul>
-<li><span class="widget widget-dropdown">Type</span>: measurement type —
+<li><span class="widget widget-dropdown">Type</span>: measurement type:
   <em>Angle</em>, <em>Caliper</em>, <em>Circle (R)</em>, <em>Distance (freehand)</em>, <em>Distance (linear)</em>, <em>Distance (polyline)</em>, <em>Point</em>.</li>
 <li><span class="widget widget-dropdown">Color channel</span>: color channel used for intensity profiles.</li>
 <li><label class="widget widget-checkbox">Fine-tuning</label>: allows position adjustment of each vertex during placement before accepting.</li>
@@ -5973,7 +5995,7 @@ the <a href="../../panels/selection_imview/viewsettings.html">View Settings pane
 <a class="glightbox" data-title="Polyline" data-type="image" href="images/menuToolsMeasureOverviewFreehand.jpg"><img align="left" alt="Polyline" class="on-glb" src="images/menuToolsMeasureOverviewFreehand.jpg" /></a><br />
   a) select interpolation type with the <span class="widget widget-dropdown">Interpolation</span> combo box;<br />
   b) press <span class="widget widget-button">Add</span>;<br />
-  c) click to place vertices;<br />
+  c) click to place vertices, panning the image as usual when needed; double-click or press <span class="keys"><kbd class="key-enter">Enter</kbd></span> to finish;<br />
   d) adjust if needed; double-click above the path to accept.</li>
 </ul>
 <div class="clear-float"></div>
@@ -6035,7 +6057,7 @@ the <a href="../../image-document/index.html">Image View panel</a> centers on th
 
 <ul>
 <li><span class="widget widget-button">Load</span>: loads a measurement structure from a file or MATLAB workspace.</li>
-<li><span class="widget widget-button">Save</span>: saves measurements and intensity profiles to a file (MATLAB or Excel) or MATLAB workspace.</li>
+<li><span class="widget widget-button">Save</span>: saves measurements and intensity profiles to a file (MATLAB or Excel) or MATLAB workspace. In Excel files, each intensity profile is listed together with the coordinates of its points in physical units and the slice number; the voxel size is given in the header. See <a href="#measurements-exported-to-matlab">below</a> for the structure exported to MATLAB.</li>
 <li><span class="widget widget-button">Delete all</span>: removes all measurements.</li>
 <li><span class="widget widget-button">?</span>: opens this help page.</li>
 <li><span class="widget widget-button">Add</span>: adds a new measurement of the type selected in the <em>Measure panel</em>.</li>
@@ -6048,6 +6070,79 @@ the <a href="../../image-document/index.html">Image View panel</a> centers on th
 <li><span class="widget widget-button">Close</span>: closes the tool.</li>
 </ul>
 <hr />
+<h2 id="measurements-exported-to-matlab">Measurements exported to MATLAB<a class="headerlink" href="#measurements-exported-to-matlab" title="Permanent link">&para;</a></h2>
+<p><span class="widget widget-button">Save</span> &rarr; <em>Export to Matlab</em> creates a structure array in the MATLAB workspace (<code>mibMeasurements</code> by default) with one element per measurement. The same structure, without the <code>profileXY</code> field, is stored as variable <code>Data</code> in <code>*.measure</code> files.</p>
+<p>Coordinates are in pixels of the view where the measurement was made: horizontal and vertical are x and y for the XY view, x and z for ZX, and z and y for ZY.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>n</code></td>
+<td>measurement number, as in the table</td>
+</tr>
+<tr>
+<td><code>type</code></td>
+<td>measurement type: <code>'Angle'</code>, <code>'Caliper'</code>, <code>'Circle (R)'</code>, <code>'Distance (linear)'</code>, <code>'Distance (polyline)'</code>, <code>'Distance (freehand)'</code> or <code>'Point'</code></td>
+</tr>
+<tr>
+<td><code>value</code></td>
+<td>result: angle in degrees; radius, length or caliper distance in the units of the voxel size; mean intensity for a point</td>
+</tr>
+<tr>
+<td><code>X</code>, <code>Y</code></td>
+<td>horizontal and vertical coordinates of the measurement:<br>- <em>Point</em>: the point<br>- <em>Distance (linear)</em>: the 2 end points<br>- <em>Angle</em>: 3 points, the angle is at the second one<br>- <em>Caliper</em>: 4 points; the line, the placed point and the foot of the perpendicular<br>- <em>Circle (R)</em>: 60 points along the circle<br>- <em>Distance (polyline, freehand)</em>: the interpolated path</td>
+</tr>
+<tr>
+<td><code>Z</code></td>
+<td>number of the slice the measurement was made on (the z slice for XY, y for ZX, x for ZY)</td>
+</tr>
+<tr>
+<td><code>T</code></td>
+<td>time point</td>
+</tr>
+<tr>
+<td><code>orientation</code></td>
+<td>view of the measurement: <code>3</code> = XY, <code>1</code> = ZX, <code>2</code> = ZY</td>
+</tr>
+<tr>
+<td><code>spline</code></td>
+<td><em>Distance (polyline, freehand)</em>: vertices of the path as <code>.x</code> and <code>.y</code>; empty for other types</td>
+</tr>
+<tr>
+<td><code>circ</code></td>
+<td><em>Circle (R)</em>: center <code>.xc</code>, <code>.yc</code> and radius <code>.R</code> in pixels; empty for other types</td>
+</tr>
+<tr>
+<td><code>intensity</code></td>
+<td>mean intensity along the measurement, one value per color channel; <code>NaN</code> when <span class="widget widget-checkbox">Calculate intensity</span> was off</td>
+</tr>
+<tr>
+<td><code>profile</code></td>
+<td>intensity profile: row 1 is the distance along the path in pixels, the next rows are intensities, one row per color channel; <code>NaN</code> when not calculated. For <em>Caliper</em> the profile runs along the perpendicular</td>
+</tr>
+<tr>
+<td><code>profileXY</code></td>
+<td>coordinates of the profile points in the units of the voxel size: row 1 is horizontal, row 2 vertical, one column per column of <code>profile</code>; <code>NaN</code> when there is no profile</td>
+</tr>
+<tr>
+<td><code>integrateWidth</code></td>
+<td><em>Distance (linear)</em>: width used to integrate the profile; empty otherwise</td>
+</tr>
+<tr>
+<td><code>info</code></td>
+<td>annotation text</td>
+</tr>
+<tr>
+<td><code>colCh</code></td>
+<td>color channel used for intensities; <code>0</code> = all channels</td>
+</tr>
+</tbody>
+</table>
 <h2 id="reference">Reference<a class="headerlink" href="#reference" title="Permanent link">&para;</a></h2>
 <ul>
 <li><a href="http://www.mathworks.com/matlabcentral/fileexchange/25964-image-measurement-utility/">Image Measurement Utility by Jan Neggers</a></li>

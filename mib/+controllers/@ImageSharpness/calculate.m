@@ -23,7 +23,9 @@ function calculate(obj)
 % pixels (memory of the Fourier transforms), are skipped and listed in a
 % warning. The same warning reports new rows whose FFT result has
 % ``correlatedNoise`` set while ``SlowDetector`` is off, and asks to tick
-% it (see :func:`controllers.ImageSharpness.computeFftResolution`). The
+% it (see :func:`controllers.ImageSharpness.computeFftResolution`), and
+% new rows whose FFT result has ``denoised`` set (see
+% :func:`controllers.ImageSharpness.analyseRegion`). The
 % progress dialog can be cancelled before every region; on cancel no rows
 % are added.
 %
@@ -192,6 +194,14 @@ if ~isempty(newResults) && analysisOptions.UseFft && ~analysisOptions.SlowDetect
         warnings{end+1} = sprintf(['The noise is smeared along the scan lines in %d of %d regions: the detector ' ...
             'is slow for this scan speed. FFT resolution, astigmatism, noise SD and SNR of these rows are not ' ...
             'valid.\nTick "Slow detector" in Settings and calculate again.'], numberCorrelated, numel(newResults));
+    end
+end
+if ~isempty(newResults) && analysisOptions.UseFft
+    numberDenoised = nnz(arrayfun(@(row) row.analysis.fft.denoised, newResults));
+    if numberDenoised > 0
+        warnings{end+1} = sprintf(['The noise is below one grey value in %d of %d regions: the image was probably ' ...
+            'denoised or smoothed. Its FFT and decorrelation resolutions come out far too fine and do not compare ' ...
+            'with those of raw images.\nAnalyse the image as it comes from the microscope.'], numberDenoised, numel(newResults));
     end
 end
 if ~isempty(skippedRegions)

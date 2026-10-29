@@ -128,5 +128,24 @@ classdef ZXOrientationFrameTest < matlab.unittest.TestCase
             testCase.verifyEqual(swapped(2), Data(2));
             testCase.verifyEqual(core.Measurements.swapZXAxes(swapped), Data);
         end
+
+        function measureSliceFollowsOrientationOnCropAndResample(testCase)
+            % .Z is the slice index along the axis normal to the orientation:
+            % Z for YX, Y for ZX, X for ZY. Distinct ratios and crop origins per
+            % axis expose a slice scaled or shifted along the wrong one.
+            hMeasure = core.Measurements();
+            orientations = [3 1 2];
+            for orientationId = 1:numel(orientations)
+                record = struct('n', NaN, 'type', 'Point', 'value', 0, 'X', 10, 'Y', 10, ...
+                    'Z', 8, 'T', 1, 'orientation', orientations(orientationId), 'spline', [], ...
+                    'circ', [], 'intensity', NaN, 'profile', NaN, 'integrateWidth', [], ...
+                    'info', '', 'colCh', 0);
+                hMeasure.storeMeasurement(record);
+            end
+            hMeasure.resample([2 3 4]);    % [x, y, z]
+            testCase.verifyEqual([hMeasure.Data.Z], [32 24 16]);
+            hMeasure.crop([3 5 10 10 7 10]);   % origins x = 3, y = 5, z = 7
+            testCase.verifyEqual([hMeasure.Data.Z], [26 20 14]);
+        end
     end
 end

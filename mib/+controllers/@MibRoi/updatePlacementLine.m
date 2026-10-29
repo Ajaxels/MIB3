@@ -28,7 +28,9 @@ end
 
 [axX, axY] = obj.mibModel.convertDataToMouseCoordinates(vertices(:,1), vertices(:,2), 'shown');
 
-if size(axX, 1) >= 2
+% close the outline for the lasso polygon ('Polygon'), keep it open for the
+% Measure tool polyline ('Polyline')
+if size(axX, 1) >= 2 && ~strcmp(obj.drawingROI.type, 'Polyline')
     plotX = [axX(:); axX(1)];
     plotY = [axY(:); axY(1)];
 else

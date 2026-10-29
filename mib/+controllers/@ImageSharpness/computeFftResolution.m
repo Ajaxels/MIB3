@@ -122,6 +122,8 @@ function result = computeFftResolution(periodicImage, pixelSize, options)
 % denoised or resampled images) carry less noise power at high frequencies:
 % the floor is too low, the SNR too high (5-9x for a 3-pixel smoothing
 % kernel) and, through the same floor, the resolution too optimistic.
+% Strongly denoised integer images are flagged by
+% :func:`controllers.ImageSharpness.analyseRegion` (``denoised``).
 %
 % The cutoff depends on the noise level as well as on blur: with the same
 % beam, a longer dwell time lowers the floor and raises the cutoff. Compare

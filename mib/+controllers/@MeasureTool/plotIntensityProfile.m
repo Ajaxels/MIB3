@@ -20,7 +20,7 @@ hMeasure  = obj.mibModel.I{datasetId}.measure;
 if dataIndex > hMeasure.getNumberOfMeasurements(); return; end
 
 profileData = hMeasure.Data(dataIndex).profile;
-if isequal(profileData, NaN) || isempty(profileData) || ~isnumeric(profileData)
+if isempty(profileData) || ~isnumeric(profileData) || all(isnan(profileData(:)))
     return;
 end
 
