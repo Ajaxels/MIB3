@@ -227,7 +227,7 @@ if options.roiId >= 0
     end
     roiId2 = 1;
     for roiId = options.roiId
-        mask = obj.hROI.returnMask(roiId);
+        mask = obj.hROI.returnMask(roiId, NaN, NaN, orient, 0);   % in the orientation being read, not the shown one; ROI mode is off in block mode
         bb = obj.hROI.getBoundingBox(roiId);
         options.x = [bb(1), bb(2)];
         options.y = [bb(3), bb(4)];

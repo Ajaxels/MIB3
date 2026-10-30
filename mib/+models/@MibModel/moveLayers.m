@@ -80,18 +80,19 @@ if ~isempty(DatasetType); BatchOpt.DatasetType = {DatasetType}; else; BatchOpt.D
 BatchOpt.DatasetType{2} = {'2D, Slice', '3D, Stack', '4D, Dataset'};
 if ~isempty(ActionType); BatchOpt.ActionType = {ActionType}; else; BatchOpt.ActionType = {'add'}; end
 BatchOpt.ActionType{2} = {'add', 'remove', 'replace'};
-BatchOpt.SelectedMaterial = num2str(obj.I{obj.id}.getSelectedMaterialIndex());
-BatchOpt.SelectedAddToMaterial = num2str(obj.I{obj.id}.getSelectedMaterialIndex('AddTo'));
-BatchOpt.restrictSelectionToMaterial = logical(obj.I{obj.id}.restrictSelectionToMaterial);
-BatchOpt.restrictSelectionToMask = logical(obj.I{obj.id}.restrictSelectionToMask);
-BatchOpt.blockModeSwitch = logical(obj.I{obj.id}.blockModeSwitch);
-if obj.I{obj.id}.roiShow
-    BatchOpt.roiId = num2str(obj.I{obj.id}.selectedROI);
+activeId = obj.getActiveId();
+BatchOpt.SelectedMaterial = num2str(obj.I{activeId}.getSelectedMaterialIndex());
+BatchOpt.SelectedAddToMaterial = num2str(obj.I{activeId}.getSelectedMaterialIndex('AddTo'));
+BatchOpt.restrictSelectionToMaterial = logical(obj.I{activeId}.restrictSelectionToMaterial);
+BatchOpt.restrictSelectionToMask = logical(obj.I{activeId}.restrictSelectionToMask);
+BatchOpt.blockModeSwitch = logical(obj.I{activeId}.blockModeSwitch);
+if obj.I{activeId}.roiShow
+    BatchOpt.roiId = num2str(obj.I{activeId}.selectedROI);
 else
     BatchOpt.roiId = '-1';
 end
 BatchOpt.fillBg = num2str(NaN);
-BatchOpt.id = obj.getActiveId();
+BatchOpt.id = activeId;
 BatchOpt.showWaitbar = true;
 
 switch BatchOpt.SourceLayer{1}
@@ -192,12 +193,12 @@ BatchOpt = rmfield(BatchOpt, 'id');
 % convert to numbers to use in MoveXXXtoXXXDataset functions
 BatchOptLocal.SelectedMaterial = str2double(BatchOptLocal.SelectedMaterial);
 if isnan(BatchOptLocal.SelectedMaterial)
-    BatchOptLocal.SelectedMaterial = obj.I{obj.id}.getSelectedMaterialIndex();
+    BatchOptLocal.SelectedMaterial = obj.I{BatchOptLocal.id}.getSelectedMaterialIndex();
 end
 
 BatchOptLocal.SelectedAddToMaterial = str2double(BatchOptLocal.SelectedAddToMaterial);
 if isnan(BatchOptLocal.SelectedAddToMaterial)
-    BatchOptLocal.SelectedAddToMaterial = obj.I{obj.id}.getSelectedMaterialIndex('AddTo');
+    BatchOptLocal.SelectedAddToMaterial = obj.I{BatchOptLocal.id}.getSelectedMaterialIndex('AddTo');
 end
 
 BatchOptLocal.roiId = str2double(BatchOptLocal.roiId);
@@ -464,7 +465,7 @@ else
                     case 'remove'
                         if BatchOptLocal.restrictSelectionToMaterial
                             for i = 1:numel(img)
-                                model{i}(bitand(img{i}, model{i}/contSelIndex) == 1) = 0;
+                                model{i}(img{i} == 1 & model{i} == contSelIndex) = 0;
                             end
                         else
                             for i = 1:numel(img)
@@ -491,7 +492,7 @@ else
                             selection{i}(img{i} == 1) = 0;
                         end
                 end
-                obj.I{obj.id}.setData2D(selection, 'selection', [], [], [], BatchOptLocal);
+                obj.I{BatchOptLocal.id}.setData2D(selection, 'selection', [], [], [], BatchOptLocal);
             case 'mask'
                 % allocate the mask container when it is missing (no-op for MibLabels63)
                 obj.I{BatchOptLocal.id}.allocateMask();
@@ -510,7 +511,7 @@ else
                             mask{i} = mask{i} - img{i};
                         end
                 end
-                obj.I{obj.id}.setData2D(mask, 'mask', [], [], [], BatchOptLocal);
+                obj.I{BatchOptLocal.id}.setData2D(mask, 'mask', [], [], [], BatchOptLocal);
             case 'labels'
                 if obj.I{BatchOptLocal.id}.modelExist == 0
                     dlgOpt.MsgBoxOnly = true;
@@ -545,7 +546,7 @@ else
                             end
                         end
                 end
-                obj.I{obj.id}.setData2D(model, 'labels', [], [], [], BatchOptLocal);
+                obj.I{BatchOptLocal.id}.setData2D(model, 'labels', [], [], [], BatchOptLocal);
         end
         % notify MibModel that slice was added, used in Graphcut
         setDataOpt.type = BatchOptLocal.DestinationLayer{1};

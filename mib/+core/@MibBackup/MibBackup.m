@@ -178,10 +178,10 @@ classdef MibBackup < handle
                 depth = 2;  % set depth to 2 to make sure options.switch3d operation
             else
                 % check for empty datasets, that are coming for example from
-                % ROIs outside the image
+                % ROIs outside the image or drawn in another orientation
                 for roiId=numel(data):-1:1
                     if isempty(data{roiId})
-                        data{roiId} = [];
+                        data(roiId) = [];
                         if isfield(options, 'x')
                             options.x(roiId, :) = [];
                         end
@@ -190,7 +190,7 @@ classdef MibBackup < handle
                         end
                     end
                 end
-                if isempty(data{1}); return; end   % no data to store
+                if isempty(data); return; end   % no data to store
             
                 if ~isfield(options, 'switch3d') 
                     % For image [h,w,depth,colors,time] and other types [h,w,depth,time],
