@@ -15,12 +15,17 @@ function result = setData63(obj, dataset, type, orient, materialIndex, options)
 %      signed-distance upsample** (``resizeLayerSmooth``) when the display is
 %      zoomed out and ``io.zarr.Config.smoothing()`` is on.
 %   3. Merged into the working level using the packed bit scheme (same logic as
-%      the parent ``MibLabels63``).
+%      the parent ``MibLabels63``). The working level is first brought up to date
+%      (``materializeForRead``) over the whole tiles of the region, so bits of a
+%      layer that is authoritative at a coarser level are current before they are
+%      written back.
 %   4. Propagated **downward to all coarser levels** (cheap nearest-neighbour
-%      downsample of the changed bounding box only).  Finer levels are marked
-%      dirty in the level map (``matLevel``) and recomputed lazily on the next
-%      ``getData63`` call, so a brush stroke at 2% zoom does not trigger a
-%      full-resolution write.
+%      downsample of the changed bounding box only), copying only the bits of
+%      the written layer.  Finer levels of that layer are marked dirty in the
+%      level map (``matLevel``, one plane per layer) and recomputed lazily on the
+%      next ``getData63`` call, so a brush stroke at 2% zoom does not trigger a
+%      full-resolution write. The other layers keep their finer data: a
+%      selection stroke drawn zoomed out leaves full-resolution labels intact.
 %
 % **Bit packing** - same scheme as ``getData63``:
 % bits 1-6 = material, bit 7 = mask, bit 8 = selection (uint8 layout), or bits
@@ -113,7 +118,28 @@ wSize = [Yl(2)-Yl(1)+1, Xl(2)-Xl(1)+1, Zl(2)-Zl(1)+1];
 % working-level sub-region back to full-resolution coords for propagation.
 sf = obj.modelScaleFactors(levelIdx, :);
 
-% --- read the working level ----------------------------------------------
+% layers this write changes, as planes of the level map (1 labels, 2 mask, 3 selection)
+switch type
+    case 'labels';      layerGroups = 1;
+    case 'mask';        layerGroups = 2;
+    case 'selection';   layerGroups = 3;
+    otherwise;          layerGroups = 1:3;
+end
+
+% --- bring the working level up to date, then read it ---------------------
+% A layer may be authoritative at a coarser level over part of the region, so its
+% bits at this level are stale there. They are written back below and copied into
+% the coarser levels, so they must be current first. markTiles marks WHOLE tiles,
+% so the update covers the whole tiles of the region: the part of an edge tile
+% outside the region becomes authoritative at this level too.
+[tileY, tileX, tileZ] = obj.tilesForFullRegion([(Yl(1)-1)*sf(1)+1, min(Yl(2)*sf(1), obj.height)], ...
+    [(Xl(1)-1)*sf(2)+1, min(Xl(2)*sf(2), obj.width)], [(Zl(1)-1)*sf(3)+1, min(Zl(2)*sf(3), obj.depth)]);
+tileSize = obj.modelScaleFactors(end, :);
+[tilesYl, tilesXl, tilesZl] = obj.regionForLevel(levelIdx, ...
+    [(tileY(1)-1)*tileSize(1)+1, min(tileY(2)*tileSize(1), obj.height)], ...
+    [(tileX(1)-1)*tileSize(2)+1, min(tileX(2)*tileSize(2), obj.width)], ...
+    [(tileZ(1)-1)*tileSize(3)+1, min(tileZ(2)*tileSize(3), obj.depth)]);
+obj.materializeForRead(levelIdx, tilesYl, tilesXl, tilesZl);
 before = obj.readPackedLevel(levelIdx, Yl, Xl, Zl);
 
 % --- locate the CHANGED sub-region with a CHEAP nearest pass ---------------
@@ -152,7 +178,8 @@ wZ = [Zl(1)+z0-1, Zl(1)+z1-1];
 % window edges introduce no spurious changes.
 dY = size(dataset, 1); dX = size(dataset, 2);
 fy = wSize(1) / dY; fx = wSize(2) / dX;
-if useSmooth && (fy > 1 || fx > 1)
+smoothWritten = useSmooth && (fy > 1 || fx > 1);
+if smoothWritten
     isLabelMap = strcmp(type, 'labels') && isempty(materialIndex);
     marg = 4;   % display-pixel margin around the footprint for smoothing context
     dy0 = max(1, floor((y0 - 1) / fy) + 1 - marg);   dy1 = min(dY, ceil(y1 / fy) + marg);
@@ -187,12 +214,11 @@ pfZ = [(wZ(1)-1)*sf(3)+1, min(wZ(2)*sf(3), obj.depth)];
 % window by definition; an 'everything' write - undo, selection->material moves -
 % may have changed only the selection or mask bits, so its labels bits are
 % compared to find the real box, and a write that left them alone marks nothing.
-% Above level 1 every write counts, a selection or mask stroke included: markTiles
-% below makes this level authoritative for the touched tiles, and the next
-% level-1 read rebuilds ALL their bits from here, labels too - measured, a
-% selection stroke at level 4 over a one-pixel checkerboard of two objects
-% changed 512 of its 1024 full-resolution label voxels.
-if ~isempty(obj.syncedInstanceIndex) && (strcmp(type, 'labels') || strcmp(type, 'everything') || levelIdx > 1)
+% A selection or mask write leaves the labels alone at every level: markTiles below
+% marks only its own layer stale at the finer levels. (Before the level map was
+% split per layer, a selection stroke at level 4 over a one-pixel checkerboard of
+% two objects changed 512 of its 1024 full-resolution label voxels.)
+if ~isempty(obj.syncedInstanceIndex) && (strcmp(type, 'labels') || strcmp(type, 'everything'))
     labelsBox = [pfY, pfX, pfZ];
     if strcmp(type, 'everything') && levelIdx == 1
         labelsDiff = bitand(packed, obj.materialMask) ~= bitand(before, obj.materialMask);
@@ -228,17 +254,27 @@ end
 % slide size: a 500 px brush at 2% no longer triggers a ~600 MB full-res write.
 % Durability is unaffected - every edit is persisted at its drawn resolution and
 % coarser, and the coarsest level holds every edit.
-obj.propagateRegion(subPacked, pfY, pfX, pfZ, levelIdx, 'coarser');
+obj.propagateRegion(subPacked, pfY, pfX, pfZ, levelIdx, 'coarser', layerGroups);
 
-% record the working level as authoritative for the touched tiles; finer levels
-% are now implicitly dirty and recomputed lazily on read (getData63) / at Save.
-obj.markTiles(pfY, pfX, pfZ, levelIdx);
+% record the working level as authoritative for the tiles of the written layers
+% the write changed; their finer levels are now implicitly dirty and recomputed
+% lazily on read (getData63) / at Save. The other layers keep their own finer data,
+% and so does a tile inside the written box the write left as it was - the box of
+% a selection made of separate pieces holds many such tiles.
+writtenBefore = before(wY(1)-Yl(1)+1:wY(2)-Yl(1)+1, wX(1)-Xl(1)+1:wX(2)-Xl(1)+1, wZ(1)-Zl(1)+1:wZ(2)-Zl(1)+1);
+[tileY, tileX, tileZ, changedTiles] = obj.tilesHit(levelIdx, subPacked ~= writtenBefore, wY, wX, wZ);
+obj.markTileHits(tileY, tileX, tileZ, changedTiles, levelIdx, layerGroups);
 
-% keep the selection footprint box in sync so selection→material/mask moves and
-% clear can scope to it instead of scanning the whole slice. 'packed' is the full
-% processed region [Yl Xl Zl]; its selection bit is authoritative there.
+% keep the selection footprint box and tile map in sync so selection→material/mask
+% moves and clear can scope to them instead of scanning the whole slice. 'packed'
+% is the full processed region [Yl Xl Zl]; its selection bit is authoritative there
+% (the smoothed footprint, when written, is added on top).
 if strcmp(type, 'selection') || strcmp(type, 'everything')
     obj.updateSelectionBBoxFromWrite(packed, Yl, Xl, Zl, levelIdx);
+    obj.noteSelectionWrite(levelIdx, bitand(packed, obj.selectionValue) > 0, Yl, Xl, Zl, true);
+    if smoothWritten
+        obj.noteSelectionWrite(levelIdx, bitand(subPacked, obj.selectionValue) > 0, wY, wX, wZ, false);
+    end
 end
 
 result = true;

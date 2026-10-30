@@ -270,6 +270,7 @@ if hasModel
     % is unnecessary - all coarser levels already hold correct data). closeStore
     % persists the level map.
     newLabels.markTiles([1 newH0], [1 newW0], [1 depth], 1);
+    newLabels.selectionTiles(:) = true;  % the strips carry the selection bits too, wherever they moved
     newLabels.writeMaterialMetadata();   % persist names/colours (mibMaterials attr)
     newLabels.closeStore();
     if ~isempty(wbL); delete(wbL); end

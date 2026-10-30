@@ -17,6 +17,10 @@ classdef MibBigDataLevelMapTest < matlab.unittest.TestCase
         W            % full-resolution width
     end
 
+    properties (TestParameter)
+        coarseLayer = {'selection', 'mask'};
+    end
+
     methods (TestClassSetup)
         function addPaths(testCase)
             testCase.applyFixture(mibtest.fixtures.MibPathFixture);
@@ -115,6 +119,54 @@ classdef MibBigDataLevelMapTest < matlab.unittest.TestCase
             testCase.verifyEqual(lb2.matLevel, mapBefore, 'matLevel must round-trip');
         end
 
+        function testVersion1SideFileFillsEveryLayer(testCase)
+            % a side-file written before the level map was split per layer holds one
+            % 3-D map; it is what every layer meant, so each layer gets a copy
+            lb = testCase.Lb;
+            lb.setData63(testCase.disk(2, 30), 'labels', 3, 1, testCase.opts(2));
+            singleMap = max(lb.matLevel, [], 4);
+            lb.closeStore();
+            S = struct('matLevel', singleMap, 'mapVersion', 1, 'coarsestSize', lb.modelLevelSizes(end, :));
+            save(core.MibBigDataLabels.levelMapPathFor(testCase.StorePath), '-struct', 'S', '-v7', '-mat');
+            bm = core.MibImage.initializeImgInfo('Height', 256, 'Width', 256, ...
+                'Depth', 1, 'Time', 1, 'Colors', 1);
+            lb2 = core.MibBigDataLabels([], bm); lb2.openStore(testCase.StorePath);
+            testCase.Lb = lb2;
+            testCase.verifyEqual(lb2.matLevel, repmat(singleMap, [1 1 1 3]), ...
+                'a version 1 map must be copied to the labels, mask and selection layers');
+            testCase.verifyTrue(all(lb2.selectionTiles(:)), ...
+                'a version 1 map does not say where the selection is: every tile is a candidate');
+        end
+
+        function testSelectionTilesRoundTrip(testCase)
+            lb = testCase.Lb;
+            lb.setData63(testCase.disk(2, 10), 'selection', 3, [], testCase.opts(2));
+            tilesBefore = lb.selectionTiles;
+            testCase.assertTrue(any(tilesBefore(:)));
+            lb.closeStore();
+            bm = core.MibImage.initializeImgInfo('Height', 256, 'Width', 256, ...
+                'Depth', 1, 'Time', 1, 'Colors', 1);
+            lb2 = core.MibBigDataLabels([], bm); lb2.openStore(testCase.StorePath);
+            testCase.Lb = lb2;
+            testCase.verifyEqual(lb2.selectionTiles, tilesBefore, 'selectionTiles must round-trip');
+        end
+
+        function testWriteMarksOnlyTheTilesItChanged(testCase)
+            % A level-3 write over the whole slice that changes one corner: only
+            % the corner tile becomes authoritative at level 3, the checkerboard
+            % tiles keep level 1 and their full-resolution data.
+            lb = testCase.Lb;
+            fineLabels = testCase.writeFineCheckerboard();
+            levelThree = squeeze(lb.getData63('labels', 3, [], testCase.opts(4)));
+            levelThree(64, 64) = 3;                         % full-res rows/cols 253:256
+            lb.setData63(levelThree, 'labels', 3, [], testCase.opts(4));
+            testCase.verifyEqual(lb.matLevel(32, 32, 1, 1), uint8(3), 'the changed tile is marked');
+            testCase.verifyTrue(all(lb.matLevel(1:16, 1:16, 1, 1) == 1, 'all'), 'the unchanged tiles are not');
+            labelsAfter = squeeze(lb.getData63('labels', 3, [], testCase.opts(1)));
+            testCase.verifyEqual(labelsAfter(1:128, 1:128), fineLabels(1:128, 1:128), ...
+                'the full-resolution data of the unchanged tiles survives');
+        end
+
         function testFallbackWhenSideFileMissing(testCase)
             % An imported / externally-created model has precise data at EVERY level but
             % no sidecar. Opening it must assume "fully precise" (matLevel = 1) and must
@@ -188,6 +240,59 @@ classdef MibBigDataLevelMapTest < matlab.unittest.TestCase
             testCase.verifyEmpty(lb.selectionBBoxFull, 'box must reset when selection cleared');
         end
 
+    end
+
+    methods (Test, TestTags = {'Unit'})
+        % -----------------------------------------------------------------
+        % A write of one layer at a coarse level must not damage the finer data
+        % of the other layers (one level map per layer)
+        % -----------------------------------------------------------------
+
+        function testCoarseSelectionStrokeKeepsFineLabels(testCase, coarseLayer)
+            lb = testCase.Lb;
+            fineLabels = testCase.writeFineCheckerboard();
+            % a stroke of the selection or mask drawn at 25% zoom (level 3) over the
+            % checkerboard
+            stroke = zeros(64, 64, 'uint8'); stroke(5:20, 5:20) = 1;
+            lb.setData63(stroke, coarseLayer, 3, [], testCase.opts(4));
+
+            labelsAfter = squeeze(lb.getData63('labels', 3, [], testCase.opts(1)));
+            testCase.verifyEqual(labelsAfter, fineLabels, ...
+                sprintf('a %s stroke at a coarse level must leave the full-resolution labels intact', coarseLayer));
+            strokeAfter = squeeze(lb.getData63(coarseLayer, 3, [], testCase.opts(1)));
+            testCase.verifyGreaterThan(nnz(strokeAfter(17:84, 17:84)), 0.9 * 64^2, ...
+                sprintf('the %s stroke must still be there at full resolution', coarseLayer));
+        end
+
+        function testCoarseClearSelectionKeepsFineLabels(testCase)
+            lb = testCase.Lb;
+            fineLabels = testCase.writeFineCheckerboard();
+            selection = zeros(256, 256, 'uint8'); selection(20:60, 20:60) = 1;
+            lb.setData63(selection, 'selection', 3, [], testCase.opts(1));
+
+            lb.clearLayer('selection', [], [], [1 1], [1 1], 8);    % 'c' at 12.5% zoom
+            testCase.verifyEqual(nnz(squeeze(lb.getData63('selection', 3, [], testCase.opts(1)))), 0, ...
+                'the selection must be cleared at full resolution');
+            testCase.verifyEqual(squeeze(lb.getData63('labels', 3, [], testCase.opts(1))), fineLabels, ...
+                'clearing the selection at a coarse level must leave the full-resolution labels intact');
+        end
+
+        function testZoomInKeepsCleanTilesBetweenCoarseEdits(testCase)
+            % Two strokes at level 3 in opposite corners, then a full-resolution edit
+            % between them. Reading level 1 rebuilds the corner tiles from level 3;
+            % the tiles between them hold newer level-1 data and must stay as they are.
+            lb = testCase.Lb;
+            corner = zeros(64, 64, 'uint8');
+            corner(1:4, 1:4) = 1; corner(61:64, 61:64) = 1;
+            lb.setData63(corner, 'labels', 3, 1, testCase.opts(4));
+            fine = zeros(256, 256, 'uint8');
+            fine(97:2:160, 97:160) = 2;                     % one-pixel stripes
+            lb.setData63(fine, 'labels', 3, [], testCase.opts(1));
+
+            labelsAfter = squeeze(lb.getData63('labels', 3, [], testCase.opts(1)));
+            testCase.verifyEqual(labelsAfter(97:160, 97:160), fine(97:160, 97:160), ...
+                'full-resolution data between two coarse edits must survive a zoom-in');
+        end
     end
 
     methods (Test, TestTags = {'Unit'})
@@ -278,6 +383,15 @@ classdef MibBigDataLevelMapTest < matlab.unittest.TestCase
         function o = opts(testCase, magFactor)
             o = struct('magFactor', magFactor, 'x', [1 testCase.W], 'y', [1 testCase.H], ...
                 'z', [1 1], 't', [1 1]);
+        end
+
+        function fineLabels = writeFineCheckerboard(testCase)
+            % one-pixel checkerboard of materials 1 and 2 over rows/columns 1:128,
+            % written at full resolution, so any rebuild from a coarser level shows
+            fineLabels = zeros(testCase.H, testCase.W, 'uint8');
+            [columns, rows] = meshgrid(1:128, 1:128);
+            fineLabels(1:128, 1:128) = uint8(1 + mod(rows + columns, 2));
+            testCase.Lb.setData63(fineLabels, 'labels', 3, [], testCase.opts(1));
         end
 
         function d = disk(testCase, magFactor, radius)

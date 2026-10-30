@@ -79,10 +79,28 @@ else                % when using arrow button in the toolbar
     end
 end
 
+% the undo history as it is now, to put back if the user cancels a BigData restore
+historyBefore = struct('undoList', obj.Backup.undoList, 'undoIndex', obj.Backup.undoIndex, ...
+    'prevUndoIndex', obj.Backup.prevUndoIndex, 'index3d', obj.Backup.index3d);
+
 % get the stored dataset
 [type, data, meta, storeOptions] = obj.Backup.undo(newIndex);
 if ~isfield(storeOptions, 'id'); storeOptions.id = obj.id; end
 id = storeOptions.id;
+
+% A 3D entry of a disk-backed model is written back in slabs of slices, with a
+% cancelable progress dialog (restoreBigDataInSlabs); the first slow step is the
+% redo copy of the current state, so the dialog opens here.
+wb = [];
+slabRestore = isfield(storeOptions, 'switch3d') && storeOptions.switch3d && ...
+    ismember(type, {'model', 'labels', 'selection', 'mask', 'everything'}) && ...
+    isa(obj.I{id}.labels, 'core.MibBigDataLabels');
+progressParent = obj.getProgressBarParent();
+if slabRestore && ~isempty(progressParent) && isvalid(progressParent)
+    wb = uiprogressdlg(progressParent, 'Title', 'Undo', 'Cancelable', 'on', ...
+        'Indeterminate', 'on', 'Message', 'Copying the current state for redo...');
+    drawnow;
+end
 obj.Backup.prevUndoIndex = newDataIndex;
 
 % get stored info about the new place (for selection clear logic)
@@ -139,6 +157,7 @@ if isfield(storeOptions, 'modelType') && storeOptions.modelType ~= obj.I{id}.lab
 end
 
 % store the current situation before applying undo data
+dataStore = {};     % the redo copy of a pixel layer, kept to roll back a cancelled restore
 if redoEntryStored
     % already written by the model-type guard above
 elseif obj.preferences.Undo.Max3dUndoHistory <= 1 && storeOptions.switch3d
@@ -229,6 +248,14 @@ end
 obj.Backup.undoIndex = newIndex;
 eventdata = core.ToggleEventData('');    % make empty event data for the notify function at the end
 
+% cancelled while the redo copy was taken: nothing is written yet (a model-type
+% conversion above has already happened, so that path goes on)
+if ~isempty(wb) && wb.CancelRequested && ~redoEntryStored
+    restoreHistory(obj, historyBefore);
+    delete(wb);
+    return;
+end
+
 % --- Apply the stored undo data ---
 setDataOptions = storeOptions;
 if storeOptions.switch3d     % 3D case
@@ -237,6 +264,28 @@ if storeOptions.switch3d     % 3D case
             setDataOptions.x = storeOptions.x(cellId, :);
             setDataOptions.y = storeOptions.y(cellId, :);
             setDataOptions2 = rmfield(setDataOptions, 'roiId');
+            if slabRestore && ~redoEntryStored && numel(dataStore) >= cellId
+                restoreType = type;
+                if strcmp(type, 'model'); restoreType = 'labels'; end
+                restored = restoreBigDataInSlabs(obj, id, restoreType, data{cellId}, dataStore{cellId}, ...
+                    storeOptions, setDataOptions2, wb);
+                if ~restored
+                    % cancelled: the entries restored before this one go back too
+                    for doneCell = 1:cellId-1
+                        doneOptions = setDataOptions2;
+                        doneOptions.x = storeOptions.x(doneCell, :);
+                        doneOptions.y = storeOptions.y(doneCell, :);
+                        obj.I{id}.setData3D(dataStore{doneCell}, restoreType, storeOptions.t(1), storeOptions.orient, NaN, doneOptions);
+                    end
+                    restoreHistory(obj, historyBefore);
+                    if ~isempty(wb); delete(wb); end
+                    notify(obj, 'ShowImage');
+                    return;
+                end
+                if strcmp(type, 'mask'); obj.I{id}.maskExist = 1; end
+                if ismember(type, {'model', 'labels'}); obj.I{id}.modelExist = 1; end
+                continue;
+            end
             switch type
                 case 'image'
                     obj.I{id}.setData3D(data{cellId}, 'image', storeOptions.t(1), storeOptions.orient, 0, setDataOptions2);
@@ -351,7 +400,70 @@ if linkedDataRestored
     notify(obj, 'UpdateGuiWidgets', core.ToggleEventData({'checkboxes'}));
 end
 
+if ~isempty(wb); delete(wb); end
 notify(obj, 'ShowImage');
 
 notify(obj, 'Undo', eventdata);
+end
+
+% ------------------------------------------------------------------------
+function restored = restoreBigDataInSlabs(obj, id, type, data, redoData, storeOptions, setOptions, wb)
+% Write a 3D undo entry of a disk-backed model back in slabs of slices, showing
+% progress in wb (a uiprogressdlg, or [] without a window). On cancel the slabs
+% already written are written back from redoData (the copy of the current state
+% undo took first) and false is returned, so the model is as it was before the
+% undo. A slab is about 3e7 voxels (storeOptions.undoSlabVoxels overrides it),
+% whole tile planes of the coarsest grid in z. storeOptions.undoCancelFcn, a
+% function handle returning true to cancel, stands in for the Cancel button
+% when there is no window. An entry whose slices are not along dimension 3
+% (orientation other than XY) is written in one call.
+restored = true;
+if ~isfield(storeOptions, 'z') || numel(storeOptions.z) < 2
+    storeOptions.z = [1 size(data, 3)];   % a whole-volume entry
+end
+depth = storeOptions.z(2) - storeOptions.z(1) + 1;
+if size(data, 3) ~= depth || storeOptions.orient ~= 3 || ~isequal(size(redoData), size(data))
+    obj.I{id}.setData3D(data, type, storeOptions.t(1), storeOptions.orient, NaN, setOptions);
+    return;
+end
+slabVoxels = 3e7;
+if isfield(storeOptions, 'undoSlabVoxels'); slabVoxels = storeOptions.undoSlabVoxels; end
+cancelFcn = @() false;
+if ~isempty(wb)
+    cancelFcn = @() wb.CancelRequested;
+    wb.Indeterminate = 'off';
+    wb.Message = 'Restoring the model...';
+elseif isfield(storeOptions, 'undoCancelFcn')
+    cancelFcn = storeOptions.undoCancelFcn;
+end
+tileDepth = obj.I{id}.labels.modelScaleFactors(end, 3);
+slabSlices = max(1, floor(slabVoxels / max(1, size(data, 1) * size(data, 2))));
+slabSlices = ceil(slabSlices / tileDepth) * tileDepth;
+for z0 = 1:slabSlices:depth
+    if z0 > 1 && cancelFcn()
+        if ~isempty(wb)
+            wb.Indeterminate = 'on';
+            wb.Message = 'Cancelling: putting the model back as it was...';
+            drawnow;
+        end
+        rollbackOptions = setOptions;
+        rollbackOptions.z = storeOptions.z(1) + [0, z0 - 2];
+        obj.I{id}.setData3D(redoData(:, :, 1:z0-1), type, storeOptions.t(1), storeOptions.orient, NaN, rollbackOptions);
+        restored = false;
+        return;
+    end
+    z1 = min(depth, z0 + slabSlices - 1);
+    slabOptions = setOptions;
+    slabOptions.z = storeOptions.z(1) + [z0, z1] - 1;
+    obj.I{id}.setData3D(data(:, :, z0:z1), type, storeOptions.t(1), storeOptions.orient, NaN, slabOptions);
+    if ~isempty(wb); wb.Value = z1 / depth; end
+end
+end
+
+function restoreHistory(obj, historyBefore)
+% put the undo history back as it was before this undo
+obj.Backup.undoList = historyBefore.undoList;
+obj.Backup.undoIndex = historyBefore.undoIndex;
+obj.Backup.prevUndoIndex = historyBefore.prevUndoIndex;
+obj.Backup.index3d = historyBefore.index3d;
 end

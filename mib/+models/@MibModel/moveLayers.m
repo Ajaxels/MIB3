@@ -166,6 +166,22 @@ if strcmp(obj.I{BatchOpt.id}.datasetType, 'Virtual')
     return;
 end
 
+% BigData: moves of the selection to the labels or the mask go to
+% MibBigDataLabels.moveSelection below. The other stack and dataset moves would go
+% to the fast path, which edits the in-memory labels array - empty for a
+% disk-backed model - so they would silently do nothing
+if strcmp(obj.I{BatchOpt.id}.datasetType, 'BigData') && ~strcmp(BatchOpt.DatasetType{1}, '2D, Slice') && ...
+        ~(strcmp(BatchOpt.SourceLayer{1}, 'selection') && ismember(BatchOpt.DestinationLayer{1}, {'labels', 'mask'}))
+    dlgOpt.MsgBoxOnly = true;
+    dlgOpt.Icon = 'puffin_warning';
+    dlgOpt.WindowHeight = 120;
+    utils.dlgs.inputUniversalDlg(obj.getProgressBarParent(), '', {''}, ...
+        {sprintf('For BigData datasets, only the selection can be moved for the whole stack.\nPlease use the 2D, Slice mode (shortcut without Shift)')}, ...
+        'Not implemented', dlgOpt);
+    notify(obj, 'StopProtocol');
+    return;
+end
+
 % when the Selection layer is disabled -> return
 if obj.I{BatchOpt.id}.enableSelection == 0
     dlgOpt.MsgBoxOnly = true;
@@ -244,6 +260,24 @@ if strcmp(BatchOptLocal.DatasetType{1}, '3D, Stack') && obj.I{BatchOptLocal.id}.
     BatchOptLocal.DatasetType{1} = '2D, Slice';
 end
 
+% BigData: selection -> labels/mask touches only the tiles holding selection, at
+% the level their data lives at (see MibBigDataLabels.moveSelection). Its own
+% progress dialog is cancelable, so this branch returns before the one below.
+if isa(obj.I{BatchOptLocal.id}.labels, 'core.MibBigDataLabels') && ...
+        strcmp(BatchOptLocal.SourceLayer{1}, 'selection') && ...
+        ismember(BatchOptLocal.DestinationLayer{1}, {'labels', 'mask'}) && ...
+        BatchOptLocal.roiId(1) < 0 && BatchOptLocal.blockModeSwitch == 0 && ...
+        (~strcmp(BatchOptLocal.DatasetType{1}, '2D, Slice') || obj.I{BatchOptLocal.id}.orientation == 3)
+    completed = moveSelectionBigData(obj, BatchOptLocal, contAddIndex, nargin < 6);
+    if completed
+        notify(obj, 'SyncBatch', core.ToggleEventData(BatchOpt));
+    else
+        notify(obj, 'StopProtocol');
+    end
+    notify(obj, 'ShowImage');
+    return;
+end
+
 if strcmp(BatchOptLocal.DatasetType{1}, '2D, Slice')
     switch3d = 0;
     showWaitbar = 0;
@@ -262,27 +296,6 @@ if strcmp(BatchOptLocal.DatasetType{1}, '4D, Dataset')
     BatchOptLocal.t = [1 obj.I{BatchOptLocal.id}.image.time];
 else
     BatchOptLocal.t = [obj.I{BatchOptLocal.id}.slices{5}(1) obj.I{BatchOptLocal.id}.slices{5}(1)];
-end
-
-% BigData fast-scope: for a selection→material/mask move on a disk-backed model,
-% read/back-up/write only the selection's tracked footprint (selectionBBoxFull,
-% maintained by setData63) instead of scanning the whole gigapixel slice. Setting
-% x/y here scopes the backup, every getData2D/getData4D read and every setData2D/4D
-% write below. Skipped under ROI/block mode (those already restrict the region) and
-% when no selection exists (box empty → the move is a no-op anyway). Only the in-plane
-% extent is pinned; z/t keep the requested 2D-slice / 3D-stack scope.
-bigDataScoped = false;
-if strcmp(BatchOptLocal.SourceLayer{1}, 'selection') && ...
-        isa(obj.I{BatchOptLocal.id}.labels, 'core.MibBigDataLabels') && ...
-        BatchOptLocal.blockModeSwitch == 0 && BatchOptLocal.roiId(1) < 0 && ...
-        ~isfield(BatchOptLocal, 'x') && ~isfield(BatchOptLocal, 'y') && ...
-        obj.I{BatchOptLocal.id}.orientation == 3
-    selBB = obj.I{BatchOptLocal.id}.labels.selectionBBoxFull;
-    if ~isempty(selBB)
-        BatchOptLocal.y = [selBB(1), selBB(2)];
-        BatchOptLocal.x = [selBB(3), selBB(4)];
-        bigDataScoped = true;
-    end
 end
 
 % Standard fast-scope: 'add' and 'remove' of the selection change nothing outside the
@@ -405,16 +418,7 @@ else
                 obj.I{BatchOptLocal.id}.clearLayer('selection', '3D');
             else
                 img = obj.I{BatchOptLocal.id}.getData2D('selection', [], [], NaN, BatchOptLocal);
-                if bigDataScoped
-                    % clear only the scoped footprint (not the whole slice): write zeros
-                    % over the same x/y region. setData63 then resets selectionBBoxFull
-                    % since the cleared region covers the previous box.
-                    zeroSel = img;
-                    for i = 1:numel(zeroSel); zeroSel{i}(:) = 0; end
-                    obj.I{BatchOptLocal.id}.setData2D(zeroSel, 'selection', [], [], NaN, BatchOptLocal);
-                else
-                    obj.I{BatchOptLocal.id}.clearLayer('selection', '2D');
-                end
+                obj.I{BatchOptLocal.id}.clearLayer('selection', '2D');
             end
     end
 
@@ -618,4 +622,234 @@ notify(obj, 'SyncBatch', eventdata);
 
 notify(obj, 'ShowImage');   % render image
 
+end
+
+% ------------------------------------------------------------------------
+function completed = moveSelectionBigData(obj, BatchOptLocal, contAddIndex, interactive)
+% Move the selection to the labels or the mask of a disk-backed model, for the
+% current slice (2D) or the whole stack (3D), through MibBigDataLabels.moveSelection.
+%
+% Shift+R (3D replace) asks first whether to replace only around the selection
+% (the tiles holding it; fast, with undo) or in the whole volume (eraseEverywhere
+% visits every written tile; slow, no undo). Batch runs take the whole volume,
+% which is what replace means for a Standard dataset. 2D replace is local.
+%
+% The undo copy is taken at the level the move works at, over the box of the
+% selection tiles. Above 2 GB the user is asked whether to keep it (batch runs
+% skip it). On cancel the copy is written back, so nothing is left half-moved;
+% without a copy the dialog says which slices were moved.
+%
+% Returns false when the move did not run to the end (the user cancelled).
+completed = false;
+id = BatchOptLocal.id;
+labels = obj.I{id}.labels;
+destination = BatchOptLocal.DestinationLayer{1};
+action = BatchOptLocal.ActionType{1};
+switch3d = ~strcmp(BatchOptLocal.DatasetType{1}, '2D, Slice');
+if switch3d
+    zRange = [1, obj.I{id}.image.depth];
+else
+    currentSlice = obj.I{id}.slices{3}(1);
+    zRange = [currentSlice, currentSlice];
+end
+dlgParent = obj.getProgressBarParent();
+dlgOpt = struct('Icon', 'puffin_question', 'WindowWidth', 540, 'WindowHeight', 270);
+
+moveOptions = struct('z', zRange, 'materialIndex', contAddIndex, 'restrictMaterial', [], ...
+    'restrictMask', BatchOptLocal.restrictSelectionToMask && strcmp(destination, 'labels'));
+if BatchOptLocal.restrictSelectionToMaterial && obj.I{id}.modelExist
+    moveOptions.restrictMaterial = BatchOptLocal.SelectedMaterial;
+end
+
+% --- Shift+R: around the selection or the whole volume
+moveAction = action;
+wholeVolume = false;
+if strcmp(action, 'replace') && switch3d
+    if interactive
+        if strcmp(destination, 'labels')
+            target = sprintf('material %d', contAddIndex);
+        else
+            target = 'the mask';
+        end
+        blockSize = labels.modelScaleFactors(end, 1:2);
+        answer = utils.dlgs.inputQuestDlg(dlgParent, sprintf(['Replace %s with the selection of every slice that has one:\n\n' ...
+            'Around the selection - on each slice with a selection, remove %s only inside the %d x %d pixel blocks ' ...
+            'that the selection touches, then add the selection. Other slices are not changed. Fast, can be undone.\n\n' ...
+            'Whole volume - remove %s from all slices, then add the selection. Reads the whole model, ' ...
+            'which may take long for a large dataset, and cannot be undone.'], target, target, blockSize(1), blockSize(2), target), ...
+            'Replace', 'Around the selection', 'Whole volume', 'Cancel', 'Around the selection', dlgOpt);
+        switch answer
+            case 'Whole volume'
+                wholeVolume = true;
+            case 'Around the selection'
+            otherwise
+                return;
+        end
+    else
+        wholeVolume = true;
+    end
+end
+if wholeVolume; moveAction = 'add'; end
+
+[box, levelIdx] = labels.selectionFootprint(zRange, 1:3);
+if isempty(box) && ~wholeVolume; completed = true; return; end   % nothing selected
+
+% --- undo copy, at the level the move works at: ask first, copy once the
+% progress dialog is up (reading the copy is the first slow step)
+keepUndo = ~wholeVolume && ~isempty(box) && obj.Backup.enableSwitch;
+if keepUndo
+    levelScale = labels.modelScaleFactors(levelIdx, :);
+    copyBytes = prod(ceil((box(2:2:end) - box(1:2:end) + 1) ./ levelScale)) * ...
+        numel(typecast(zeros(1, labels.containerClass), 'uint8'));
+    if copyBytes > 2 * 2^30
+        if interactive
+            dlgOpt.Icon = 'puffin_warning';
+            answer = utils.dlgs.inputQuestDlg(dlgParent, sprintf(['The undo copy of this move needs %.1f GB of memory.\n\n' ...
+                'Without undo the move cannot be reverted, nor stopped without leaving part of it done.'], copyBytes / 2^30), ...
+                'Undo copy', 'Keep undo', 'Without undo', 'Cancel', 'Keep undo', dlgOpt);
+            if strcmp(answer, 'Without undo')
+                keepUndo = false;
+            elseif ~strcmp(answer, 'Keep undo')
+                return;
+            end
+        else
+            keepUndo = false;
+        end
+    end
+end
+
+% --- progress, cancelable
+wb = [];
+moveMessage = sprintf('%s: selection to/with %s layer for %s\nPlease wait...', action, destination, BatchOptLocal.DatasetType{1});
+if switch3d && BatchOptLocal.showWaitbar
+    wb = uiprogressdlg(dlgParent, 'Title', 'Moving layers...', 'Value', 0, 'Cancelable', 'on', 'Message', moveMessage);
+end
+
+undoEntry = [];
+if keepUndo
+    if ~isempty(wb)
+        wb.Message = sprintf('Making the undo copy (%.0f MB)...', copyBytes / 2^20);
+        wb.Indeterminate = 'on';
+        drawnow;
+    end
+    historyBefore = struct('undoList', obj.Backup.undoList, 'undoIndex', obj.Backup.undoIndex, ...
+        'prevUndoIndex', obj.Backup.prevUndoIndex, 'index3d', obj.Backup.index3d);
+    backupOptions = struct('id', id, 'magFactor', levelScale(1), 'y', box(1:2), 'x', box(3:4), 'z', box(5:6));
+    obj.backup('everything', switch3d, backupOptions);
+    if obj.Backup.undoIndex > 1
+        % the entry just stored, to write back on cancel
+        lastEntry = obj.Backup.undoList(obj.Backup.undoIndex - 1);
+        if strcmp(lastEntry.type, 'everything') && isfield(lastEntry.options, 'z') && ...
+                isequal(lastEntry.options.y, box(1:2)) && isequal(lastEntry.options.z, box(5:6))
+            undoEntry = lastEntry;
+        end
+    end
+    if ~isempty(wb)
+        if wb.CancelRequested
+            % nothing is changed yet: drop the copy just taken
+            restoreHistory(obj, historyBefore);
+            delete(wb);
+            return;
+        end
+        wb.Indeterminate = 'off';
+        wb.Message = moveMessage;
+    end
+end
+progressStart = 0;
+progressShare = 1;
+if wholeVolume; progressShare = 0.5; end
+
+% --- whole volume: remove the material or the mask everywhere first (no undo)
+if wholeVolume
+    if strcmp(destination, 'labels'); layerGroup = 1; else; layerGroup = 2; end
+    eraseStatus = labels.eraseEverywhere(layerGroup, contAddIndex, makeProgressFcn(wb, 0, progressShare));
+    if eraseStatus.cancelled
+        if ~isempty(wb); delete(wb); end
+        reportCancel(obj, interactive, sprintf(['Replace was stopped while removing the old values: they were removed from %d of %d tile planes, ' ...
+            'and the selection was not added. This cannot be undone.'], eraseStatus.planesDone, size(labels.matLevel, 3)));
+        return;
+    end
+    progressStart = 0.5;
+end
+
+% --- the move itself
+moveOptions.progressFcn = makeProgressFcn(wb, progressStart, progressShare);
+moveStatus = labels.moveSelection(destination, moveAction, moveOptions);
+if moveStatus.cancelled
+    if ~isempty(undoEntry)
+        % write the copy back, then drop it: the move is as if never started
+        if ~isempty(wb)
+            wb.Message = 'Cancelling: restoring the model from the undo copy...';
+            wb.Indeterminate = 'on';
+            drawnow;
+        end
+        restoreHistory(obj, historyBefore);
+        restoreOptions = rmfield(undoEntry.options, intersect(fieldnames(undoEntry.options), {'roiId'}));
+        if undoEntry.options.switch3d
+            obj.I{id}.setData3D(undoEntry.data{1}, 'everything', undoEntry.options.t(1), undoEntry.options.orient, NaN, restoreOptions);
+        else
+            obj.I{id}.setData2D(undoEntry.data{1}, 'everything', undoEntry.options.z(1), undoEntry.options.orient, NaN, restoreOptions);
+        end
+        if ~isempty(wb); delete(wb); end
+        return;
+    end
+    if ~isempty(wb); delete(wb); end
+    if isempty(moveStatus.zDone)
+        doneText = 'No slices were changed.';
+    else
+        doneText = sprintf('Slices %d-%d were changed, the rest were not.', moveStatus.zDone(1), moveStatus.zDone(2));
+    end
+    reportCancel(obj, interactive, sprintf('The move was stopped without an undo copy. %s', doneText));
+    return;
+end
+if ~isempty(wb); delete(wb); end
+
+% --- switch the destination layer on, as for the other modes
+if strcmp(destination, 'labels')
+    obj.I{id}.modelExist = 1;
+    if ~obj.showModel
+        obj.showModel = true;
+        notify(obj, 'UpdateGuiWidgets', core.ToggleEventData({'checkboxes'}));
+    end
+else
+    obj.I{id}.maskExist = 1;
+    if ~obj.showMask
+        obj.showMask = true;
+        notify(obj, 'UpdateGuiWidgets', core.ToggleEventData({'checkboxes'}));
+    end
+end
+if ~switch3d
+    % notify MibModel that slice was added, used in Graphcut
+    notify(obj, 'SetData', core.ToggleEventData(struct('type', destination, 'mode', '2D')));
+end
+completed = true;
+end
+
+function restoreHistory(obj, historyBefore)
+% put the undo history back as it was before a backup taken by this move
+obj.Backup.undoList = historyBefore.undoList;
+obj.Backup.undoIndex = historyBefore.undoIndex;
+obj.Backup.prevUndoIndex = historyBefore.prevUndoIndex;
+obj.Backup.index3d = historyBefore.index3d;
+end
+
+function progressFcn = makeProgressFcn(wb, progressStart, progressShare)
+% cancel = progressFcn(fraction): show the progress of one stage, report a cancel
+if isempty(wb); progressFcn = []; return; end
+progressFcn = @(fraction) updateProgress(wb, progressStart + fraction * progressShare);
+end
+
+function cancelRequested = updateProgress(wb, value)
+wb.Value = min(1, max(0, value));
+cancelRequested = wb.CancelRequested;
+end
+
+function reportCancel(obj, interactive, message)
+% say what the cancelled operation did and did not do
+if interactive
+    dlgOpt = struct('MsgBoxOnly', true, 'Icon', 'puffin_warning', 'WindowHeight', 140);
+    utils.dlgs.inputUniversalDlg(obj.getProgressBarParent(), '', {''}, {message}, 'Stopped', dlgOpt);
+else
+    warning('MibModel:moveLayers:cancelled', '%s', message);
+end
 end

@@ -4,9 +4,11 @@ Goal: a selection made in 3D (e.g. SAM2 *Interactive 3D*) should go to the model
 and the cost should scale with the selection, not with the volume. Stages:
 
 1. **Standard** - measure the selection's bounding box on demand (done 2026-10-30).
-2. **BigData** - 3D branch in `moveLayers` using `selectionBBoxFull` incl. its z range (todo).
-3. **BigData** - per-tile selection occupancy map, so scattered selections do not collapse into
-   one large box (todo).
+2. **BigData** - level map split per layer (labels / mask / selection), so a coarse selection or
+   mask stroke no longer coarsens the labels under it (done 2026-10-30).
+3. **BigData** - per-tile selection map `selectionTiles` saved in `.levelmap`, and the moves,
+   Shift+R choice and clears built on it (done 2026-10-30). Description:
+   `development/bigdata/bigdata_logic.md` sections 5 and 6.
 
 ## 1. Standard (done)
 
@@ -81,10 +83,16 @@ Tests: `tests/models/SelectionBoundingBoxTest.m` (box exactness and time range f
 boxed helpers equal the whole-volume pass for add/remove x every restriction; `moveLayers` and
 `clearSelection` 3D results and undo).
 
-## 2-3. BigData (todo)
+## 2-3. BigData (done; the notes below are the plan as it was)
 
-Today Shift+A on BigData takes the fast path, which edits `labels.data` - empty on a disk-backed
-model - so the move does nothing (from reading the code; not reproduced).
+Decisions taken with the author: Shift+R asks between local and whole-volume replace; moves work
+at the finest level holding data in the footprint; the coarse-stroke damage is fixed; the tile map
+persists; undo is kept for 3D moves with a question above 2 GB. Not done: a performance
+measurement on a real large store, and a test of the cancel-restore path in `moveLayers` (it needs
+a progress dialog; `moveSelection`'s own cancel is tested).
+
+Before this work Shift+A on BigData took the fast path, which edits `labels.data` - empty on a
+disk-backed model - so the move did nothing.
 
 - Stage 2: loop z1..z2 of `selectionBBoxFull`, apply the 2D move to the y/x box per slice, one
   backup of the box, cancelable progress bar.

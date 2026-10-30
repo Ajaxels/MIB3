@@ -372,6 +372,7 @@ end
 
 %% Carry the session state over and switch
 target.matLevel = source.matLevel;
+target.selectionTiles = source.selectionTiles;
 target.selectionBBoxFull = source.selectionBBoxFull;
 target.maxIndexUsed = highestIndex;       % taken over every level, so deferred ones count too
 target.materialsCount = highestIndex;

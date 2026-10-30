@@ -120,22 +120,40 @@ BioFormats and OpenSlide all drive the same path.
 The level map solves the central problem: an edit drawn at one zoom must read back correctly at every
 zoom, without re-materializing the whole slide on every stroke.
 
-**`matLevel`** — a small `uint8` array over the **coarsest** level's pixel grid
-(`[coarseY × coarseX × coarseZ]`, Transient). `matLevel(tile)` = the **finest pyramid level that holds
-materialized data** for that tile. `0` = empty. Because the coarsest level is tiny, this map is ≲1 MB.
+**`matLevel`** - a small `uint8` array over the **coarsest** level's pixel grid, **one plane per
+layer**: `[coarseY x coarseX x coarseZ x 3]`, 4th index 1 = labels, 2 = mask, 3 = selection
+(`layerGroupBits` gives the packed bits of each). `matLevel(tile, layer)` = the **finest pyramid level
+that holds materialized data** of that layer for that tile. `0` = never written. Because the coarsest
+level is tiny, this map is a few MB at most.
 
-**Write rule (`setData63`, edit at working level x):**
-1. Merge the change into level **x** and **all coarser levels** (cheap downsample via
-   `propagateRegion(…, 'coarser')`), restricted to the changed bounding box.
-2. Set `matLevel(touched tiles) = x` (`markTiles`). Finer levels (`< x`) are now implicitly dirty.
-3. A later coarser edit over the same tile (working `x2 > x1`) sets `matLevel = x2` → invalidates any
-   finer materialized data there (latest edit wins per tile).
+**Write rule (`setData63`, edit of layer(s) G at working level x):**
+1. Bring level x up to date over the **whole tiles** of the region (`materializeForRead`), so the bits
+   of any layer still authoritative at a coarser level are current before they are written back.
+2. Merge the change into level **x**, and copy **only G's bits** into **all coarser levels** (cheap
+   downsample via `propagateRegion(..., 'coarser', layerGroups)`), restricted to the changed box.
+3. Set `matLevel(touched tiles, G) = x` (`markTiles`). Finer levels (`< x`) of G are now implicitly
+   dirty; the other layers keep their finer data. `'labels'` → G = 1, `'mask'` → 2, `'selection'` → 3,
+   `'everything'` → 1:3.
+4. A later coarser edit over the same tile (working `x2 > x1`) sets `matLevel = x2` for its layers →
+   invalidates their finer materialized data there (latest edit wins per tile and layer).
 
-**Read rule (`getData63`, request level L):** for tiles where `matLevel > L` (L finer than
-materialized), `materializeForRead` reads the source level, upsamples to L, **writes it down**, and
-sets `matLevel = L` (cache). Then a normal read returns correct data. Tiles where `matLevel <= L` read
-straight from disk. Bounded to the read window → a zoom/pan pays at most one viewport of recompute,
-once.
+**Read rule (`getData63`, request level L):** for tiles and layers where `matLevel > L` (L finer than
+materialized), `materializeForRead` reads the source level over the bounding box of those tiles,
+upsamples to L, replaces **only the stale layers' bits inside the stale tiles**, writes the block
+down, and sets `matLevel = L` (cache). Then a normal read returns correct data. Tiles where
+`matLevel <= L` read straight from disk. Bounded to the read window → a zoom/pan pays at most one
+viewport of recompute, once.
+
+**Why per layer and per tile (fixed 2026-10-30).** With one map for all bits, a selection or mask
+stroke drawn zoomed out made its level authoritative for the labels too, and the next full-resolution
+read rebuilt the fine labels from the coarse level (a level-3 stroke over a one-pixel checkerboard
+destroyed half of it; `c` at a coarse zoom did the same). Separately, `materializeForRead` wrote the
+upsampled **bounding box** back whole, so a full-resolution edit made between two coarse strokes was
+wiped on the next zoom-in. Repro tests: `MibBigDataLevelMapTest` `testCoarseSelectionStrokeKeepsFineLabels`,
+`testCoarseClearSelectionKeepsFineLabels`, `testZoomInKeepsCleanTilesBetweenCoarseEdits`. Undo needed
+the same care: `backup` keeps `'selection'`/`'mask'` entries as their own type for BigData instead of
+converting them to `'everything'`, whose restore would mark all three layers at the snapshot level
+(`EditInstanceObjectsBigDataTest/undoOfCoarseSelectionStrokeKeepsFullResolutionLabels`).
 
 **Why this matters:** reading a clean level returns stored data unchanged → the editing zoom is sharp
 with **no halo**; recompute only happens for finer levels not yet visited, sourced from the nearest
@@ -148,8 +166,9 @@ and is fully removed.)
   (e.g. `Labels_CMU-1.levelmap`) via the static `core.MibBigDataLabels.levelMapPathFor`. It is a
   **MAT-format file saved/loaded with the `'-mat'` key** (note: no `.mat` extension).
 - Written **only** by `closeStore` and by Save — it does **not** exist mid-session until you save or
-  close. Holds `matLevel` / `mapVersion` / `coarsestSize`. Tiny (one uint8 per coarsest tile); keep it
-  always (never delete after Save).
+  close. Holds `matLevel` / `mapVersion` / `coarsestSize`. Tiny (three uint8 per coarsest tile); keep
+  it always (never delete after Save). `mapVersion` 2 = per-layer map; a version 1 file (one 3-D map)
+  is copied to all three layers on load.
 - **A loaded model is always treated as precise.** `initLevelMapFallback` (run when no sidecar) sets
   `matLevel = 1` everywhere — an imported/externally-written pyramid has all levels properly
   downsampled, so deferral is purely a within-session optimisation captured in the sidecar. (The old
@@ -165,13 +184,59 @@ correct automatically. Two pieces keep them **fast** on gigapixel slides:
 - **`setData63` smooths only the changed footprint.** It reads `before`, locates the change with a
   cheap nearest pass, then runs the label-aware signed-distance `resizeLayerSmooth` over only the
   changed display crop → working window (+4 px margin), not the whole slice.
-- **Persistent selection footprint** `selectionBBoxFull` (`[y0 y1 x0 x1 z0 z1]` full-res, Transient,
+- **Selection footprint box** `selectionBBoxFull` (`[y0 y1 x0 x1 z0 z1]` full-res, Transient,
   maintained by `setData63` from the exact written selection bits): REPLACE when the processed region
-  covers the previous box (clear/consume shrinks/empties it), else UNION. `moveLayers` (selection
-  source, 2D, no ROI/block, orient 3) sets `BatchOptLocal.x/y` to this box so backup + all reads/writes
-  scope to the footprint, and the post-read selection clear writes zeros over the same scoped region.
-  Falls back to whole-slice when the box is unknown (freshly loaded model). Measured: `a` (add-to-model)
-  **4.85 s → 0.188 s**.
+  covers the previous box (clear/consume shrinks/empties it), else UNION. Still used by the instance
+  editor; the moves and clears below no longer read it. (Its first use, scoping the 2D `a`, measured
+  **4.85 s → 0.188 s**.)
+- **Selection tile map** `selectionTiles` (2026-10-30): logical over the coarsest grid
+  `[cy cx cz]`, true = the tile may hold selection. `setData63` keeps it (`noteSelectionWrite`) for
+  `'selection'`/`'everything'` writes: a tile with a selected voxel becomes true; a tile the write
+  covers whole becomes false only when the selection layer is authoritative at the written level or
+  coarser (`matLevel(..., 3) >= level`) - a nearest downsample can drop a fine stroke. Saved in the
+  `.levelmap` (field `selectionTiles`); a v1 file or no file gives all true (unknown).
+  `selectionFootprint(z, groups)` returns the tile-aligned box, the tile mask and the finest
+  `matLevel` of the given layers over those tiles.
+- **Moves (`a/s/r`, 2D in the XY view and Shift for the whole stack)** go to
+  `MibBigDataLabels.moveSelection` from `moveLayers` (selection source, labels/mask destination, no
+  ROI/block). Consecutive tile planes are grouped into chunks under ~1.5e8 voxels; each chunk works at
+  the finest `matLevel` of **any** layer in its selection tiles (a coarse selection over fine labels
+  works at full resolution; a coarse-only area stays coarse), reads with `materializeForRead`, applies
+  the bit operation, consumes the selection and writes `'everything'` through `setData63`.
+  `setData63` marks **only the tiles whose bytes changed** (`tilesHit` + `markTileHits`), so the
+  untouched tiles inside a chunk's box keep their finer data. Undo: one `'everything'` copy at the
+  footprint's finest level over the footprint box; above 2 GB the user is asked (Keep undo / Without
+  undo / Cancel), batch runs skip it. The progress dialog opens before the copy is read (an
+  indeterminate "Making the undo copy" phase: 0.6 s for a 560 x 492 x 204 box of the 16383 store, more
+  on a slow disk). Cancel writes the copy back and drops the entry from the history; without a copy
+  the dialog says which slices were moved.
+- **Shift+R** asks: *Around the selection* = `moveSelection(..., 'replace')`, which removes the material
+  (or the mask) **per slice** inside the y/x blocks of one coarsest tile (`modelScaleFactors(end,1:2)`
+  px, given in the dialog) that hold a moved voxel of that slice. The blocks come from the selection
+  read, not from `selectionTiles`: the map only says where selection may be (all true after a v1
+  side-file, which made the clear cover every tile in the footprint), and a tile of a pyramid that also
+  halves z spans two slices whose neighbour must keep its material (`MoveSelectionBigDataTest`
+  `localReplaceWithAnUnknownTileMap...`, `localReplaceKeepsTheNeighbourSliceOfAZTile`). *Whole
+  volume* = `eraseEverywhere` then `'add'`, no
+  undo. Batch runs take the whole volume. 2D `r` is local. `eraseEverywhere` visits every tile at the
+  level its layer is authoritative at, in bands of tile rows, and propagates to coarser levels only the
+  runs of tiles it changed: the other tiles hold stale data at that level, which must not reach the
+  level they are authoritative at.
+- **Clear (`c`, Shift+C)** goes to `clearSelectionTiles` from `clearSelection`: when the slices cover
+  the selection tiles whole in z, the selection bits are zeroed at the **coarsest** level only and the
+  selection layer of those tiles marked there - every finer level then reads as empty, a stroke drawn
+  finer than the display included. The undo copy is the selection at its finest level over the box;
+  reading it is the slow step, so Shift+C opens a cancelable dialog before it (cancel after the copy
+  drops it from the history and clears nothing).
+- **Undo (Ctrl+Z) of a 3D pixel entry** (`undo.m`, `restoreBigDataInSlabs`): a cancelable dialog opens
+  before the redo copy is read, then the entry is written back in slabs of ~3e7 voxels (whole coarsest
+  tile planes in z). Cancel writes the slabs already done back from the redo copy and restores the
+  history, so the model and the undo list are as before. Entries in a non-XY orientation or at a level
+  that halves z are written in one call. Measured on the 16383 store: undo of the Shift+R above took
+  2.7 s, most of it in `setData63` (tile diff + propagation).
+
+Tests: `tests/models/MoveSelectionBigDataTest.m`, `MibBigDataLevelMapTest`
+(`testWriteMarksOnlyTheTilesItChanged`, `testSelectionTilesRoundTrip`).
 
 ---
 
@@ -221,10 +286,10 @@ slice. Per-tool status:
 was last synced with (`syncedInstanceIndex`) and `indexDirtyBox`, the full-resolution box of every
 labels change since. `setData63` grows that box through `markLabelsChanged`: the written window for
 `'labels'`, the labels-bit diff for `'everything'` at level 1 (so a selection-only undo marks
-nothing). **Above level 1 every write counts, selection and mask strokes included**, widened to whole
-coarsest tiles: `markTiles` makes that level authoritative for them and the next level-1 read
-rebuilds all their bits, labels too (measured: a level-4 selection stroke changed 512 of 1024
-full-res label voxels of a checkerboard). A build is then the least work that gives an exact index:
+nothing). A labels write above level 1 is widened to whole coarsest tiles, since the next level-1
+read rebuilds the labels of those tiles. Selection and mask writes never mark the index: the level
+map is per layer, so they leave the labels at every level alone. A build is then the least work that
+gives an exact index:
 
 | State | Work |
 |-------|------|
@@ -423,7 +488,7 @@ is empty). Tests: `tests/controllers/AlignmentBigDataTest.m`.
 | BigData alignment | `+controllers/@Alignment/{Alignment,continueBtn_Callback,DriftCorrectionBigData_Alignment,AutomaticFeatureBasedV2BigData_Alignment,LandmarksBigData_Alignment,applyAlignmentBigData}.m`; `+io/+savers/AlignedImageSliceProvider.m`; shared v2 helpers `+utils/+align/{fitPerSliceV2,smoothCumulativeV2,interactiveSmoothingV2,plotCumulativeV2}.m` |
 | BigData image (read) | `+core/@MibBigDataImage/` (thin subclass of `@MibVirtualImage`) |
 | Image read seam | `+core/@MibVirtualImage/getDataZarr.m`, `getData.m`, `getOrCreateLoader.m` |
-| Disk-backed model | `+core/@MibBigDataLabels/` — `MibBigDataLabels.m` (class + `createStore`/`openStore`/`closeStore`/`readPackedLevel`/`writePackedLevel`/`propagateRegion`/`materializeForRead`/`materializeAll`/`markTiles`/`tilesForFullRegion`/`saveLevelMap`/`loadLevelMap`/`initLevelMapFallback`/`orientPhysRanges`/`levelMapPathFor`/`bboxUnion`/`updateSelectionBBoxFromWrite`/`resizeLayerSmooth`/`resizeBlockNearest`), `getData63.m`, `setData63.m` |
+| Disk-backed model | `+core/@MibBigDataLabels/` — `MibBigDataLabels.m` (class + `createStore`/`openStore`/`closeStore`/`readPackedLevel`/`writePackedLevel`/`propagateRegion`/`materializeForRead`/`materializeAll`/`markTiles`/`tilesForFullRegion`/`saveLevelMap`/`loadLevelMap`/`initLevelMapFallback`/`orientPhysRanges`/`levelMapPathFor`/`bboxUnion`/`updateSelectionBBoxFromWrite`/`markTileHits`/`tilesHit`/`tilesCovered`/`noteSelectionWrite`/`selectionFootprint`/`layerGroupBits`/`resizeLayerSmooth`/`resizeBlockNearest`), `getData63.m`, `setData63.m`, `moveSelection.m`, `eraseEverywhere.m`, `clearSelectionTiles.m` |
 | Dataset wiring | `+core/@MibDataset/{initialize,switchDatasetMode,createModel,getData2D/3D/4D,setData2D/3D/4D,clearLayer}.m` |
 | Model create/load/save | `+models/@MibModel/{createModel,loadModel,saveBigDataModel,backup,moveLayers,getRGBimage}.m` |
 | Save button | `+controllers/@MibRibbon/model_Callbacks.m` (`Save\nmodel` case, BigData branch) |

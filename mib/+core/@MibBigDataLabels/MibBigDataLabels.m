@@ -73,11 +73,17 @@ classdef MibBigDataLabels < core.MibLabels63
     properties (Transient)
         % --- multi-resolution "level map" (see setData63 / getData63 / materializeAll) ---
         matLevel = []
-        % [uint8 [coarseY x coarseX x coarseZ]] per coarsest-grid tile, the FINEST
-        % pyramid level index holding materialized data (0 = empty). Finer = smaller
-        % index; level 1 = full resolution; level N = coarsest. An edit writes the
-        % working level + coarser and sets matLevel = working level; finer levels are
-        % implicitly dirty and recomputed on read (getData63) or at Save (materializeAll).
+        % [uint8 [coarseY x coarseX x coarseZ x 3]] per coarsest-grid tile and per
+        % layer (4th index: 1 = labels, 2 = mask, 3 = selection, see layerGroupBits),
+        % the FINEST pyramid level index holding materialized data of that layer
+        % (0 = never written). Finer = smaller index; level 1 = full resolution;
+        % level N = coarsest. An edit of a layer writes the working level + coarser
+        % and sets that layer's entry to the working level; its finer levels are
+        % implicitly dirty and recomputed on read (getData63) or at Save
+        % (materializeAll). The layers are tracked separately so that, e.g., a
+        % selection stroke drawn zoomed out does not make the full-resolution labels
+        % under it stale. Side-files written before the split (mapVersion 1) hold one
+        % map for all layers; loadLevelMap copies it to each layer.
         levelMapPath = ''
         % [char] side-file path ('<storePath>.levelmap') persisting matLevel.
         selectionBBoxFull = []
@@ -85,9 +91,20 @@ classdef MibBigDataLabels < core.MibLabels63
         % SELECTION layer currently has data, or [] when there is no selection. Grown
         % by setData63 on every selection write (exact written bits → reliable even for
         % a 1-pixel stroke), reset/shrunk when the selection is cleared or consumed.
-        % Lets selection→material/mask moves (a/s/r) and clear (c) read/write only the
-        % selection's footprint instead of the whole gigapixel slice. Transient: not
-        % persisted; recomputed lazily as edits happen this session.
+        % Clamps the instance editor's drawing; the moves and clears use the finer
+        % selectionTiles instead. Transient: not persisted; recomputed lazily as
+        % edits happen this session.
+        selectionTiles = []
+        % [logical [coarseY x coarseX x coarseZ]] per coarsest-grid tile, false when
+        % the tile is known to hold no selection at any level, true when it may hold
+        % some. Kept by setData63 (noteSelectionWrite) on every write that sets
+        % selection bits: a tile the write covers whole gets the exact answer, a
+        % tile it covers in part can only become true. Unlike selectionBBoxFull it
+        % follows a selection made of many separate pieces through a 3D volume
+        % (SAM2 in 3D), and it is saved in the level-map side-file, so whole-stack
+        % moves (Shift+A/S/R) and clears (Shift+C) touch only these tiles
+        % (selectionFootprint). A store opened without a saved map starts all true:
+        % unknown, so every tile is a candidate until a write or a move settles it.
 
         % --- instance index bookkeeping (see core.MibDataset.buildInstanceIndex) ---
         syncedInstanceIndex = []
@@ -100,10 +117,10 @@ classdef MibBigDataLabels < core.MibLabels63
         % [1x6 double] full-resolution box [y0 y1 x0 x1 z0 z1] holding every
         % labels change made since syncedInstanceIndex was taken, or [] when
         % there is none. Grown by setData63 through markLabelsChanged, and only
-        % while syncedInstanceIndex is set. Any write at a coarser level counts,
-        % selection and mask strokes included, and is widened to whole coarsest
-        % tiles: reading level 1 later re-materializes every voxel of those
-        % tiles, labels too, from that level (materializeForRead).
+        % while syncedInstanceIndex is set. A labels write at a coarser level is
+        % widened to whole coarsest tiles: reading level 1 later re-materializes
+        % the labels of those tiles from that level (materializeForRead).
+        % Selection and mask writes never count - the level map is per layer.
         instanceIndexOnDisk = false
         % [logical] true while the side-file (instanceIndexPathFor) is a valid
         % description of the store as it is now. The first labels change after
@@ -119,6 +136,9 @@ classdef MibBigDataLabels < core.MibLabels63
         dataset = getData63(obj, type, orient, materialIndex, options)
         result  = setData63(obj, dataset, type, orient, materialIndex, options)
         [levelIdx, levelSize] = findClosestLevelForImport(obj, sourceDims)
+        status = moveSelection(obj, destination, action, options)       % Shift+A/S/R on the tiles holding selection
+        clearSelectionTiles(obj, fullZ)                                  % c/Shift+C on the tiles holding selection
+        status = eraseEverywhere(obj, layerGroup, materialIndex, progressFcn) % remove a material or the mask from the whole volume
 
         function obj = MibBigDataLabels(img, meta)
             % MIBBIGDATALABELS - Construct an empty disk-backed label container.
@@ -546,9 +566,19 @@ classdef MibBigDataLabels < core.MibLabels63
         end
 
         function initLevelMapEmpty(obj)
-            % INITLEVELMAPEMPTY - allocate an empty level map over the coarsest grid.
+            % INITLEVELMAPEMPTY - allocate an empty level map over the coarsest grid,
+            % one plane per layer (labels, mask, selection).
             cs = obj.modelLevelSizes(end, :);            % coarsest [y x z]
-            obj.matLevel = zeros([cs(1), cs(2), max(1, cs(3))], 'uint8');
+            obj.matLevel = zeros([cs(1), cs(2), max(1, cs(3)), 3], 'uint8');
+            obj.selectionTiles = false([cs(1), cs(2), max(1, cs(3))]);
+        end
+
+        function bits = layerGroupBits(obj)
+            % LAYERGROUPBITS - packed bits of each layer of the level map, in the
+            % order of its 4th dimension: [labels, mask, selection], of class
+            % ``obj.containerClass``.
+            bits = [cast(obj.materialMask, obj.containerClass), ...
+                cast(obj.maskValue, obj.containerClass), cast(obj.selectionValue, obj.containerClass)];
         end
 
         function [ty, tx, tz] = tilesForFullRegion(obj, fullY, fullX, fullZ)
@@ -560,12 +590,131 @@ classdef MibBigDataLabels < core.MibLabels63
             tz = [max(1, ceil(fullZ(1)/sfN(3))), min(max(1, cs(3)),  ceil(fullZ(2)/sfN(3)))];
         end
 
-        function markTiles(obj, fullY, fullX, fullZ, levelIdx)
+        function markTiles(obj, fullY, fullX, fullZ, levelIdx, layerGroups)
             % MARKTILES - set matLevel = levelIdx for every coarsest tile covering the
             % full-res region (latest-edit-wins: invalidates any finer materialization).
+            % ``layerGroups`` *(optional)* - layers whose entries are set, as indices
+            % into the 4th dimension of matLevel (1 labels, 2 mask, 3 selection);
+            % default all three, for a write of the whole packed value.
+            if nargin < 6 || isempty(layerGroups); layerGroups = 1:3; end
             if isempty(obj.matLevel); obj.initLevelMapEmpty(); end
             [ty, tx, tz] = obj.tilesForFullRegion(fullY, fullX, fullZ);
-            obj.matLevel(ty(1):ty(2), tx(1):tx(2), tz(1):tz(2)) = uint8(levelIdx);
+            obj.matLevel(ty(1):ty(2), tx(1):tx(2), tz(1):tz(2), layerGroups) = uint8(levelIdx);
+        end
+
+        function markTileHits(obj, tileY, tileX, tileZ, hits, levelIdx, layerGroups)
+            % MARKTILEHITS - markTiles for the tiles of a tile window where ``hits``
+            % is true only. ``tileY/tileX/tileZ`` - inclusive tile ranges of the
+            % window, ``hits`` - logical of the window's size (from tilesHit).
+            % A write marks only the tiles it changed: an unchanged tile keeps
+            % its finer data, which is still exact.
+            if isempty(obj.matLevel); obj.initLevelMapEmpty(); end
+            window = obj.matLevel(tileY(1):tileY(2), tileX(1):tileX(2), tileZ(1):tileZ(2), :);
+            for layer = layerGroups
+                plane = window(:, :, :, layer);
+                plane(hits) = uint8(levelIdx);
+                window(:, :, :, layer) = plane;
+            end
+            obj.matLevel(tileY(1):tileY(2), tileX(1):tileX(2), tileZ(1):tileZ(2), :) = window;
+        end
+
+        function [tileY, tileX, tileZ, hits] = tilesHit(obj, levelIdx, voxelMask, Yl, Xl, Zl)
+            % TILESHIT - which coarsest-grid tiles hold a true voxel of ``voxelMask``.
+            % ``voxelMask`` - logical [y x z] block at level ``levelIdx`` over the
+            % level index ranges ``Yl/Xl/Zl``. Returns the inclusive tile ranges
+            % the block spans and ``hits``, a logical over that tile window. One
+            % pass over the block, reducing rows, then columns, then slices of
+            % each tile in turn.
+            rowTiles   = obj.tileIndexOfLevelPixels(levelIdx, 1, Yl);
+            colTiles   = obj.tileIndexOfLevelPixels(levelIdx, 2, Xl);
+            sliceTiles = obj.tileIndexOfLevelPixels(levelIdx, 3, Zl);
+            tileY = rowTiles([1 end]);  tileX = colTiles([1 end]);  tileZ = sliceTiles([1 end]);
+            hits = anyPerTile(voxelMask, rowTiles - tileY(1) + 1, 1);
+            hits = anyPerTile(hits, colTiles - tileX(1) + 1, 2);
+            hits = anyPerTile(hits, sliceTiles - tileZ(1) + 1, 3);
+        end
+
+        function covered = tilesCovered(obj, levelIdx, Yl, Xl, Zl)
+            % TILESCOVERED - logical over the tile window of a level-``levelIdx``
+            % block (same window as tilesHit): true for a tile the block covers
+            % whole, so the block holds everything there is of it at that level.
+            % An edge tile of the volume counts as covered when the block reaches
+            % the edge.
+            sf = obj.modelScaleFactors(levelIdx, :);
+            tileSize = obj.modelScaleFactors(end, :);
+            volumeSize = [obj.height, obj.width, max(1, obj.depth)];
+            ranges = {Yl, Xl, Zl};
+            coveredAxis = cell(1, 3);
+            for axis = 1:3
+                pixels = obj.tileIndexOfLevelPixels(levelIdx, axis, ranges{axis});
+                fullStart = (ranges{axis}(1) - 1) * sf(axis) + 1;
+                fullEnd = min(ranges{axis}(2) * sf(axis), volumeSize(axis));
+                tiles = pixels(1):pixels(end);
+                coveredAxis{axis} = (tiles - 1) * tileSize(axis) + 1 >= fullStart & ...
+                    min(tiles * tileSize(axis), volumeSize(axis)) <= fullEnd;
+            end
+            covered = reshape(coveredAxis{1}, [], 1) & reshape(coveredAxis{2}, 1, []) & ...
+                reshape(coveredAxis{3}, 1, 1, []);
+        end
+
+        function noteSelectionWrite(obj, levelIdx, selectedVoxels, Yl, Xl, Zl, settles)
+            % NOTESELECTIONWRITE - keep selectionTiles in step with a write.
+            % ``selectedVoxels`` - logical [y x z] block at level ``levelIdx`` over
+            % ``Yl/Xl/Zl``: the selection as written there. A tile with a selected
+            % voxel becomes true. With ``settles`` true the block holds the whole
+            % selection of the region, so a tile it covers whole (tilesCovered) and
+            % has none in becomes false; with false nothing becomes false.
+            %
+            % Only where this level is authoritative for the selection (its matLevel
+            % entry is this level or coarser - call after marking the write): a
+            % tile whose selection lives at a finer level shows here only a nearest
+            % downsample of it, in which a small piece can be missing.
+            if isempty(obj.selectionTiles); return; end
+            [tileY, tileX, tileZ, hasSelection] = obj.tilesHit(levelIdx, selectedVoxels, Yl, Xl, Zl);
+            window = obj.selectionTiles(tileY(1):tileY(2), tileX(1):tileX(2), tileZ(1):tileZ(2));
+            if settles
+                selectionLevels = obj.matLevel(tileY(1):tileY(2), tileX(1):tileX(2), tileZ(1):tileZ(2), 3);
+                settled = obj.tilesCovered(levelIdx, Yl, Xl, Zl) & ...
+                    (selectionLevels >= levelIdx | selectionLevels == 0);
+                window = hasSelection | (window & ~settled);
+            else
+                window = window | hasSelection;
+            end
+            obj.selectionTiles(tileY(1):tileY(2), tileX(1):tileX(2), tileZ(1):tileZ(2)) = window;
+        end
+
+        function [box, levelIdx, tileMask] = selectionFootprint(obj, fullZ, layerGroups)
+            % SELECTIONFOOTPRINT - where the selection may be, over slices ``fullZ``.
+            %
+            % Returns:
+            %   **box** - full-resolution box ``[y1 y2 x1 x2 z1 z2]`` over the
+            %   selectionTiles tiles of the slices, aligned to whole tiles in y and
+            %   x and clipped to ``fullZ`` in z; [] when no tile may hold selection.
+            %   **levelIdx** - the finest level any layer of ``layerGroups``
+            %   (planes of matLevel, default all three) holds data at in those
+            %   tiles. An operation that rewrites those layers works there: a
+            %   coarser level would replace finer data with the coarse version.
+            %   **tileMask** - logical over the whole coarsest grid, the tiles.
+            if nargin < 3 || isempty(layerGroups); layerGroups = 1:3; end
+            box = []; levelIdx = []; tileMask = [];
+            if isempty(obj.selectionTiles); return; end
+            [~, ~, tileZ] = obj.tilesForFullRegion([1 1], [1 1], fullZ);
+            tileMask = false(size(obj.selectionTiles));
+            tileMask(:, :, tileZ(1):tileZ(2)) = obj.selectionTiles(:, :, tileZ(1):tileZ(2));
+            if ~any(tileMask(:)); tileMask = []; return; end
+            levels = obj.matLevel(:, :, :, layerGroups);
+            levels = levels(repmat(tileMask, [1 1 1 numel(layerGroups)]));
+            levels = levels(levels > 0);
+            if isempty(levels)
+                levelIdx = size(obj.modelLevelSizes, 1);   % nothing written yet: all zeros
+            else
+                levelIdx = double(min(levels));
+            end
+            tileSize = obj.modelScaleFactors(end, :);
+            rows = find(any(tileMask, [2 3]));  cols = find(any(tileMask, [1 3]));  planes = find(any(tileMask, [1 2]));
+            box = [(rows(1)-1)*tileSize(1)+1, min(rows(end)*tileSize(1), obj.height), ...
+                   (cols(1)-1)*tileSize(2)+1, min(cols(end)*tileSize(2), obj.width), ...
+                   max(fullZ(1), (planes(1)-1)*tileSize(3)+1), min(fullZ(2), planes(end)*tileSize(3))];
         end
 
         function updateSelectionBBoxFromWrite(obj, fullBlock, Yl, Xl, Zl, levelIdx)
@@ -616,10 +765,17 @@ classdef MibBigDataLabels < core.MibLabels63
 
         function materializeForRead(obj, L, Yl, Xl, Zl)
             % MATERIALIZEFORREAD - ensure level L holds materialized data over the
-            % level-L index window [Yl Xl Zl] for every non-empty tile. Tiles whose
-            % matLevel is FINER-than-materialized for L (matLevel > L) are recomputed by
-            % upsampling from their matLevel source, written to L, and marked matLevel=L.
-            % Bounded to this window. Clean tiles (matLevel <= L) are left untouched.
+            % level-L index window [Yl Xl Zl]. A layer of a tile whose matLevel entry
+            % is coarser than L (matLevel > L) is recomputed by upsampling from that
+            % source level, written to L, and its entry set to L. Bounded to this
+            % window. Clean layers and tiles (matLevel <= L) are left untouched.
+            %
+            % Only the bits of the stale layers of the stale tiles are replaced: the
+            % source block is read over the bounding box of those tiles, and the box
+            % can include clean tiles, and clean layers of the stale ones, that hold
+            % newer, finer data. Writing the upsampled box back whole would replace
+            % that data with the coarse version (zooming in used to wipe a full-res
+            % edit made between two coarse ones).
             %
             % Upsampling uses label-aware signed-distance smoothing (resizeBlockSmooth)
             % when the smoothing preference is on, so coarse-level block patterns do not
@@ -627,18 +783,20 @@ classdef MibBigDataLabels < core.MibLabels63
             % nearest-neighbour when smoothing is off or when the target is not finer
             % (resizeBlockSmooth already handles this internally).
             if isempty(obj.matLevel); return; end
-            smoothOn = io.zarr.Config.smoothing();
             sf = obj.modelScaleFactors(L, :);
             fullY = [(Yl(1)-1)*sf(1)+1, min(Yl(2)*sf(1), obj.height)];
             fullX = [(Xl(1)-1)*sf(2)+1, min(Xl(2)*sf(2), obj.width)];
             fullZ = [(Zl(1)-1)*sf(3)+1, min(Zl(2)*sf(3), obj.depth)];
             [ty, tx, tz] = obj.tilesForFullRegion(fullY, fullX, fullZ);
-            win = obj.matLevel(ty(1):ty(2), tx(1):tx(2), tz(1):tz(2));
-            srcLevels = unique(double(win(:)));
-            srcLevels = srcLevels(srcLevels > L);        % only finer-than-materialized tiles are dirty
+            win = obj.matLevel(ty(1):ty(2), tx(1):tx(2), tz(1):tz(2), :);
+            stale = win > L;                             % finer-than-materialized layers of tiles
+            if ~any(stale(:)); return; end
+            smoothOn = io.zarr.Config.smoothing();
+            layerBits = obj.layerGroupBits();
             sfN = obj.modelScaleFactors(end, :);         % tile size in full-res px = coarsest scale
-            for A = reshape(srcLevels, 1, [])
-                [iy, ix, iz] = ind2sub(size(win), find(win == A));
+            for A = reshape(unique(double(win(stale))), 1, [])
+                sourceTiles = stale & win == A;          % [tiles y x z, layer]
+                [iy, ix, iz] = ind2sub(size(sourceTiles, 1:3), find(any(sourceTiles, 4)));
                 tY = [min(iy)+ty(1)-1, max(iy)+ty(1)-1];
                 tX = [min(ix)+tx(1)-1, max(ix)+tx(1)-1];
                 tZ = [min(iz)+tz(1)-1, max(iz)+tz(1)-1];
@@ -650,14 +808,41 @@ classdef MibBigDataLabels < core.MibLabels63
                 [lY, lX, lZ] = obj.regionForLevel(L, fY, fX, fZ);
                 tgtSize = [lY(2)-lY(1)+1, lX(2)-lX(1)+1, lZ(2)-lZ(1)+1];
                 if smoothOn
-                    block = core.MibBigDataLabels.resizeBlockSmooth(src, tgtSize);
+                    upsampled = core.MibBigDataLabels.resizeBlockSmooth(src, tgtSize);
                 else
-                    block = core.MibBigDataLabels.resizeBlockNearest(src, tgtSize);
+                    upsampled = core.MibBigDataLabels.resizeBlockNearest(src, tgtSize);
+                end
+                boxTiles = sourceTiles(tY(1)-ty(1)+1:tY(2)-ty(1)+1, tX(1)-tx(1)+1:tX(2)-tx(1)+1, ...
+                    tZ(1)-tz(1)+1:tZ(2)-tz(1)+1, :);
+                if all(boxTiles(:))
+                    block = upsampled;
+                else
+                    % tile of every level-L voxel of the box, relative to the box
+                    rowTiles   = min(size(boxTiles, 1), max(1, obj.tileIndexOfLevelPixels(L, 1, lY) - tY(1) + 1));
+                    colTiles   = min(size(boxTiles, 2), max(1, obj.tileIndexOfLevelPixels(L, 2, lX) - tX(1) + 1));
+                    sliceTiles = min(size(boxTiles, 3), max(1, obj.tileIndexOfLevelPixels(L, 3, lZ) - tZ(1) + 1));
+                    block = obj.readPackedLevel(L, lY, lX, lZ);
+                    for layer = 1:3
+                        if ~any(boxTiles(:, :, :, layer), 'all'); continue; end
+                        replace = boxTiles(rowTiles, colTiles, sliceTiles, layer);
+                        block(replace) = bitor(bitand(block(replace), bitcmp(layerBits(layer))), ...
+                            bitand(upsampled(replace), layerBits(layer)));
+                    end
                 end
                 obj.writePackedLevel(L, block, lY, lX, lZ);
-                obj.matLevel(tY(1):tY(2), tX(1):tX(2), tZ(1):tZ(2)) = ...
-                    min(obj.matLevel(tY(1):tY(2), tX(1):tX(2), tZ(1):tZ(2)), uint8(L));
+                win(sourceTiles) = uint8(L);
             end
+            obj.matLevel(ty(1):ty(2), tx(1):tx(2), tz(1):tz(2), :) = win;
+        end
+
+        function tiles = tileIndexOfLevelPixels(obj, levelIdx, axis, pixelRange)
+            % TILEINDEXOFLEVELPIXELS - coarsest-grid tile index of each pixel of a
+            % level-``levelIdx`` index range along ``axis`` (1 y, 2 x, 3 z), taken
+            % from the full-resolution position of the pixel's first voxel and
+            % clamped to the grid.
+            fullStart = ((pixelRange(1):pixelRange(2)) - 1) * obj.modelScaleFactors(levelIdx, axis) + 1;
+            tileCount = max(1, obj.modelLevelSizes(end, axis));
+            tiles = min(tileCount, max(1, ceil(fullStart / obj.modelScaleFactors(end, axis))));
         end
 
         function materializeAll(obj, pwbFcn)
@@ -668,7 +853,7 @@ classdef MibBigDataLabels < core.MibLabels63
             if isempty(obj.matLevel); return; end
             nT = size(obj.matLevel, 1);
             for r = 1:nT
-                rowLevels = obj.matLevel(r, :, :);
+                rowLevels = obj.matLevel(r, :, :, :);
                 if all(rowLevels(:) <= 1); continue; end   % already at finest (or empty)
                 sfN = obj.modelScaleFactors(end, :);
                 fY = [(r-1)*sfN(1)+1, min(r*sfN(1), obj.height)];
@@ -687,19 +872,31 @@ classdef MibBigDataLabels < core.MibLabels63
             % importMaterial - saves both.
             obj.saveInstanceIndex();
             if isempty(obj.levelMapPath) || isempty(obj.matLevel); return; end
-            S = struct('matLevel', obj.matLevel, 'mapVersion', 1, ...
-                'coarsestSize', obj.modelLevelSizes(end, :));
+            % mapVersion 2: one level map per layer (4th dimension of matLevel), and
+            % the tiles that may hold selection
+            S = struct('matLevel', obj.matLevel, 'mapVersion', 2, ...
+                'coarsestSize', obj.modelLevelSizes(end, :), 'selectionTiles', obj.selectionTiles);
             save(obj.levelMapPath, '-struct', 'S', '-v7', '-mat');
         end
 
         function tf = loadLevelMap(obj)
             % LOADLEVELMAP - restore matLevel from the side-file; false if missing/mismatched.
-            % '-mat' forces MAT parsing since the file has no '.mat' extension.
+            % '-mat' forces MAT parsing since the file has no '.mat' extension. A
+            % mapVersion 1 file holds one map for all layers; it is copied to each,
+            % which is what it meant. It has no selectionTiles either: every tile
+            % may then hold selection.
             tf = false;
             if isempty(obj.levelMapPath) || ~isfile(obj.levelMapPath); return; end
             S = load(obj.levelMapPath, '-mat');
             if isfield(S, 'matLevel') && isequal(size(S.matLevel, 1:2), obj.modelLevelSizes(end, 1:2))
-                obj.matLevel = uint8(S.matLevel); tf = true;
+                levelMap = uint8(S.matLevel);
+                if size(levelMap, 4) == 1; levelMap = repmat(levelMap, [1 1 1 3]); end
+                obj.matLevel = levelMap; tf = true;
+                if isfield(S, 'selectionTiles') && isequal(size(S.selectionTiles, 1:3), size(levelMap, 1:3))
+                    obj.selectionTiles = logical(S.selectionTiles);
+                else
+                    obj.selectionTiles = true(size(levelMap, 1:3));
+                end
             end
         end
 
@@ -720,6 +917,7 @@ classdef MibBigDataLabels < core.MibLabels63
             % then recomputed lazily on read or rewritten on Save.
             obj.initLevelMapEmpty();
             obj.matLevel(:) = 1;
+            obj.selectionTiles(:) = true;   % unknown: the store may hold selection anywhere
         end
 
         function syncInstanceIndex(obj, index, remainingDirtyBox)
@@ -887,7 +1085,7 @@ classdef MibBigDataLabels < core.MibLabels63
             Zl = core.MibBigDataLabels.clampRange([ceil(fullZ(1)/sf(3)), ceil(fullZ(2)/sf(3))], lv(3));
         end
 
-        function propagateRegion(obj, packed, fullY, fullX, fullZ, sourceLevelIdx, direction)
+        function propagateRegion(obj, packed, fullY, fullX, fullZ, sourceLevelIdx, direction, layerGroups)
             % PROPAGATEREGION - write a merged working-level block into other pyramid
             % levels. Downsampling (source finer than target) uses a nearest-neighbour
             % resize. Up-sampling (source coarser than target, i.e. an edit made
@@ -901,7 +1099,20 @@ classdef MibBigDataLabels < core.MibLabels63
             %                     a cheap downsample, done eagerly per edit
             %   - ``'finer'``   - only levels finer than the source (index < source);
             %                     the expensive upsample toward full res, deferred/lazy
+            %
+            % ``layerGroups`` (optional) - layers whose bits are written, as indices
+            % into ``layerGroupBits`` (1 labels, 2 mask, 3 selection); default all
+            % three. With fewer, the target is read and only those bits replaced,
+            % so a selection write leaves the labels of a coarser level exactly as
+            % they were - that level may be the one the labels were drawn at.
             if nargin < 7 || isempty(direction); direction = 'all'; end
+            if nargin < 8 || isempty(layerGroups); layerGroups = 1:3; end
+            keptBits = cast(0, obj.containerClass);
+            if numel(layerGroups) < 3
+                layerBits = obj.layerGroupBits();
+                keptBits = bitor(bitor(layerBits(1), layerBits(2)), layerBits(3));
+                for layer = layerGroups; keptBits = bitxor(keptBits, layerBits(layer)); end
+            end
             smoothOn = io.zarr.Config.smoothing();
             srcSize  = size(packed, 1:3);
             % Memory guards: an edit made zoomed-out can span (nearly) the whole slide,
@@ -920,6 +1131,10 @@ classdef MibBigDataLabels < core.MibLabels63
                 isUpsample = targetSize(1) > srcSize(1) || targetSize(2) > srcSize(2);
                 if smoothOn && isUpsample && prod(targetSize) <= smoothBudget
                     block2 = core.MibBigDataLabels.resizeBlockSmooth(packed, targetSize);
+                    if keptBits ~= 0
+                        block2 = bitor(bitand(obj.readPackedLevel(L2, A2, B2, C2), keptBits), ...
+                            bitand(block2, bitcmp(keptBits)));
+                    end
                     obj.writePackedLevel(L2, block2, A2, B2, C2);
                 else
                     % Tiled, index-based nearest resize written in Y-strips so peak
@@ -936,6 +1151,10 @@ classdef MibBigDataLabels < core.MibLabels63
                     for r0 = 1:rowsPerStrip:ty
                         r1 = min(ty, r0 + rowsPerStrip - 1);
                         sub = pk(yMap(r0:r1), xMap, zMap);   % [(r1-r0+1) x tx x tz]
+                        if keptBits ~= 0
+                            sub = bitor(bitand(obj.readPackedLevel(L2, [A2(1)+r0-1, A2(1)+r1-1], B2, C2), keptBits), ...
+                                bitand(sub, bitcmp(keptBits)));
+                        end
                         obj.writePackedLevel(L2, sub, [A2(1)+r0-1, A2(1)+r1-1], B2, C2);
                     end
                 end
@@ -1235,4 +1454,23 @@ classdef MibBigDataLabels < core.MibLabels63
             if r(2) < r(1); r(2) = r(1); end
         end
     end
+end
+
+% ------------------------------------------------------------------------
+function reduced = anyPerTile(voxelMask, groupIndex, dim)
+% any() over runs of consecutive indices along dimension ``dim``: ``groupIndex``
+% gives the (non-decreasing, 1-based) tile of each index, the result has one
+% index per tile along ``dim``.
+reducedSize = size(voxelMask, 1:3);
+reducedSize(dim) = groupIndex(end);
+reduced = false(reducedSize);
+runStarts = [1, find(diff(groupIndex(:)')) + 1];
+runEnds = [runStarts(2:end) - 1, numel(groupIndex)];
+source = {':', ':', ':'};
+target = {':', ':', ':'};
+for run = 1:numel(runStarts)
+    source{dim} = runStarts(run):runEnds(run);
+    target{dim} = groupIndex(runStarts(run));
+    reduced(target{:}) = any(voxelMask(source{:}), dim);
+end
 end

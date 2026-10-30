@@ -91,17 +91,21 @@ classdef EditInstanceObjectsBigDataTest < matlab.unittest.TestCase
             EditInstanceObjectsBigDataTest.verifyIndexAgreesWithStore(testCase, mibModel, 'coarse write');
         end
 
-        function coarseSelectionStrokeMarksTheLabelsDirty(testCase)
-            % A selection drawn zoomed out leaves the labels bits alone at that
-            % level, but makes it authoritative for its tiles, and the next
-            % full-resolution read rebuilds their labels from it. The index has
-            % to hear about that like any labels write.
+        function coarseSelectionStrokeLeavesTheLabelsAlone(testCase)
+            % A selection drawn zoomed out marks only the selection layer of its
+            % tiles stale at the finer levels (the level map is kept per layer), so
+            % the full-resolution labels stay as they are and the index stays exact.
+            % Before the split it made the level authoritative for all bits and
+            % the next full-resolution read rebuilt the labels from it.
             mibModel = testCase.buildBigDataInstanceModel();
             mibModel.I{1}.buildInstanceIndex();
             labels = mibModel.I{1}.labels;
+            before = EditInstanceObjectsBigDataTest.readStore(mibModel);
             labels.setData63(ones(8, 8, 1, 'uint8'), 'selection', 3, [], ...
                 struct('magFactor', 4, 'y', [233 264], 'x', [17 48], 'z', [1 1]));   % over object 7
-            testCase.verifyNotEmpty(labels.indexDirtyBox, 'a coarse selection stroke can change the labels');
+            testCase.verifyEmpty(labels.indexDirtyBox, 'a coarse selection stroke leaves the labels alone');
+            testCase.verifyEqual(EditInstanceObjectsBigDataTest.readStore(mibModel), before, ...
+                'the full-resolution labels under a coarse selection stroke are unchanged');
 
             mibModel.I{1}.buildInstanceIndex();
             EditInstanceObjectsBigDataTest.verifyIndexAgreesWithStore(testCase, mibModel, 'coarse selection stroke');
@@ -172,6 +176,27 @@ classdef EditInstanceObjectsBigDataTest < matlab.unittest.TestCase
             % the repair the editor window does on the Undo event
             mibModel.I{1}.buildInstanceIndex(options.instanceIndexRepair);
             EditInstanceObjectsBigDataTest.verifyIndexAgreesWithStore(testCase, mibModel, 'undo repair');
+        end
+
+        function undoOfCoarseSelectionStrokeKeepsFullResolutionLabels(testCase)
+            % The stroke is backed up and restored as a selection entry, not as
+            % 'everything': restoring the whole packed value at the coarse level
+            % would make that level authoritative for the labels of its tiles too,
+            % and the next full-resolution read would rebuild them from it.
+            mibModel = testCase.buildBigDataInstanceModel();
+            before = EditInstanceObjectsBigDataTest.readStore(mibModel);
+            strokeRegion = struct('id', 1, 'magFactor', 4, 'y', [233 264], 'x', [17 48], 'z', [1 1]);
+            mibModel.backup('selection', 0, strokeRegion);
+            testCase.verifyEqual(mibModel.Backup.undoList(mibModel.Backup.undoIndex - 1).type, 'selection', ...
+                'a BigData selection stroke is backed up as the selection layer');
+            mibModel.I{1}.labels.setData63(ones(8, 8, 1, 'uint8'), 'selection', 3, [], ...
+                rmfield(strokeRegion, 'id'));   % over the edge of object 7
+
+            mibModel.undo();
+            testCase.verifyEqual(EditInstanceObjectsBigDataTest.readStore(mibModel), before, ...
+                'undo of a coarse selection stroke leaves the full-resolution labels exact');
+            selection = mibModel.I{1}.labels.getData63('selection', 3, [], struct('pyramidLevel', 1));
+            testCase.verifyEqual(nnz(selection), 0, 'undo removes the stroke');
         end
 
         function compactRenumbersThroughTheIndex(testCase)

@@ -293,8 +293,12 @@ end
 
 if switch3d && obj.Backup.max3d_steps == 0; return; end
 
-% replace types 'selection','mask','labels' to 'everything' for type-63 models
-if isa(obj.I{id}.labels, 'core.MibLabels63')
+% replace types 'selection','mask','labels' to 'everything' for type-63 models.
+% Not for BigData: there the level map is kept per layer, and restoring an
+% 'everything' snapshot marks all layers at the snapshot's level, so undoing a
+% selection stroke drawn zoomed out would turn full-resolution labels under it
+% into the coarse version. The layer's own type restores only that layer.
+if isa(obj.I{id}.labels, 'core.MibLabels63') && ~isa(obj.I{id}.labels, 'core.MibBigDataLabels')
     if strcmp(type, 'selection') || strcmp(type, 'mask') || strcmp(type, 'labels')
         type = 'everything';
     end
@@ -306,8 +310,8 @@ if ismember(type, {'selection', 'mask', 'labels', 'everything'})
     getDataOptions.modelType = obj.I{id}.labels.maxMaterials;
 end
 
-% return when no mask
-if strcmp(type, 'mask') && obj.I{id}.maskExist == 0; return; end
+% return when no mask; a packed model always holds the mask bits
+if strcmp(type, 'mask') && obj.I{id}.maskExist == 0 && ~isa(obj.I{id}.labels, 'core.MibLabels63'); return; end
 
 [axesX, axesY] = obj.getAxesLimits(id);
 orientation = obj.I{id}.orientation;
