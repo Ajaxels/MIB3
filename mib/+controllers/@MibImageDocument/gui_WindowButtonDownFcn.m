@@ -164,10 +164,12 @@ if strcmp(operation, 'pan') %& strcmp(modifier,'alt')
 
         if viewportW < imgFullWidth * 0.99 || viewportH < imgFullHeight * 0.99
             % Partial view: load padded region only (avoids fetching the full large image).
-            % Extends the current viewport by one viewport-size on each side so the
-            % user can pan freely without reloading, clamped to image boundaries.
-            paddedX = [max(1, floor(axesX(1) - viewportW)), min(imgFullWidth,  ceil(axesX(2) + viewportW))];
-            paddedY = [max(1, floor(axesY(1) - viewportH)), min(imgFullHeight, ceil(axesY(2) + viewportH))];
+            % Extends the current viewport by 0.75 of the viewport size on each side so
+            % the user can pan freely without reloading, clamped to image boundaries.
+            paddingW = 0.75 * viewportW;
+            paddingH = 0.75 * viewportH;
+            paddedX = [max(1, floor(axesX(1) - paddingW)), min(imgFullWidth,  ceil(axesX(2) + paddingW))];
+            paddedY = [max(1, floor(axesY(1) - paddingH)), min(imgFullHeight, ceil(axesY(2) + paddingH))];
 
             obj.mibModel.setAxesLimits(paddedX, paddedY);   % temporarily widen the model view
             rgbOptions.blockModeSwitch = 1;

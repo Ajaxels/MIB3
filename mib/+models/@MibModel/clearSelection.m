@@ -127,14 +127,29 @@ switch BatchOpt.DatasetType{1}
         end
 
     case '3D, Stack'
-        % backup the full z-stack
         backupOptions.id = id;
-        obj.backup('selection', 1, backupOptions);
-
-        t1 = obj.I{id}.slices{5}(1);
-        t2 = obj.I{id}.slices{5}(2);
-        
-        obj.I{id}.clearLayer('selection', '3D');
+        timePoint = obj.I{id}.slices{5}(1);
+        box = [];
+        boxFraction = 1;
+        if strcmp(obj.I{id}.datasetType, 'Standard')
+            [box, boxFraction] = obj.I{id}.getSelectionBoundingBox([timePoint, timePoint]);
+        end
+        if boxFraction == 0
+            % nothing is selected, nothing to clear
+        elseif boxFraction <= 0.25
+            % back up and clear only the box that holds the selection; a larger
+            % box is slower than the whole stack, as a ranged backup copies where a
+            % whole one shares memory with the layer
+            backupOptions.y = box(1:2);
+            backupOptions.x = box(3:4);
+            backupOptions.z = box(5:6);
+            obj.backup('selection', 1, backupOptions);
+            obj.I{id}.clearLayer('selection', box(1:2), box(3:4), box(5:6), [timePoint, timePoint], false);
+        else
+            % backup the full z-stack
+            obj.backup('selection', 1, backupOptions);
+            obj.I{id}.clearLayer('selection', '3D');
+        end
         if BatchOpt.showWaitbar; delete(wb); end
 
     case '4D, Dataset'

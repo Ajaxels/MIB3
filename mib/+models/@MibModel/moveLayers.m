@@ -285,6 +285,39 @@ if strcmp(BatchOptLocal.SourceLayer{1}, 'selection') && ...
     end
 end
 
+% Standard fast-scope: 'add' and 'remove' of the selection change nothing outside the
+% selected voxels, so measure the selection's bounding box once (a few max-reductions,
+% see MibDataset.getSelectionBoundingBox) and back up and process only that box.
+% A box over a quarter of the volume is slower than the whole-volume pass (copy out,
+% write back, and a ranged backup copies where a whole one shares memory), so it
+% falls back to that pass. 'replace' also clears the destination outside the
+% selection and keeps the whole-volume pass. Limited to the stack/dataset moves of
+% the fast path below.
+selectionBox = [];
+if strcmp(BatchOptLocal.SourceLayer{1}, 'selection') && ...
+        ismember(BatchOptLocal.DestinationLayer{1}, {'labels', 'mask'}) && ...
+        ismember(BatchOptLocal.ActionType{1}, {'add', 'remove'}) && ...
+        strcmp(obj.I{BatchOptLocal.id}.datasetType, 'Standard') && ...
+        (strcmp(BatchOptLocal.DatasetType{1}, '4D, Dataset') || ...
+        (strcmp(BatchOptLocal.DatasetType{1}, '3D, Stack') && obj.I{BatchOptLocal.id}.image.time == 1)) && ...
+        BatchOptLocal.roiId(1) < 0 && BatchOptLocal.blockModeSwitch == 0 && ...
+        ~any(isfield(BatchOptLocal, {'x', 'y', 'z'}))
+    [selectionBox, boxFraction] = obj.I{BatchOptLocal.id}.getSelectionBoundingBox(BatchOptLocal.t);
+    if isempty(selectionBox)    % nothing is selected, nothing to move
+        if showWaitbar; delete(wb); end
+        notify(obj, 'SyncBatch', core.ToggleEventData(BatchOpt));
+        return;
+    end
+    if boxFraction > 0.25
+        selectionBox = [];
+    else
+        BatchOptLocal.y = selectionBox(1:2);
+        BatchOptLocal.x = selectionBox(3:4);
+        BatchOptLocal.z = selectionBox(5:6);
+        BatchOptLocal.t = selectionBox(7:8);
+    end
+end
+
 % do backup, not for 4D data
 if ~strcmp(BatchOptLocal.DatasetType{1},'4D, Dataset')
     if isa(obj.I{BatchOptLocal.id}.labels, 'core.MibLabels63')
@@ -311,6 +344,7 @@ if strcmp(BatchOptLocal.DatasetType{1},'4D, Dataset') || ...
     if ~isempty(fieldsToRemove)
         helperOpt = rmfield(helperOpt, fieldsToRemove);
     end
+    helperOpt.box = selectionBox;
 
     switch BatchOptLocal.SourceLayer{1}
         case 'mask'

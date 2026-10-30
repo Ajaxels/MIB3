@@ -22,7 +22,14 @@ function moveSelectionToMaskDataset(obj, action_type, options)
 %     - ``.contSelIndex`` - [numeric] index of the "Select from" material
 %     - ``.contAddIndex`` - [numeric] index of the "Add to" material
 %     - ``.selected_sw`` - [logical] limit actions to the selected material only (``0`` or ``1``)
-%     - ``.maskedAreaSw`` - [logical] limit actions to masked areas only (``0`` or ``1``)%
+%     - ``.maskedAreaSw`` - [logical] limit actions to masked areas only (``0`` or ``1``)
+%     - ``.box`` *(optional)* - [1x8 double] ``[y1 y2 x1 x2 z1 z2 t1 t2]`` that
+%       holds every selected voxel, as returned by ``getSelectionBoundingBox``;
+%       only this box is read and written, which gives the same result as the
+%       whole-volume pass because 'add' and 'remove' change nothing outside the
+%       selection. Ignored for ``'replace'``, which also clears the mask outside
+%       the selection. Default: ``[]``, the whole dataset.
+%
 % Output Arguments:
 %   (none)
 %
@@ -52,11 +59,18 @@ isType63 = isa(obj.labels, 'core.MibLabels63');
 % also sets mask.exists so reads through getData do not return empty
 obj.allocateMask();
 
+% subscripts of the box that holds the selection; {} = the whole dataset
+boxIndex = {};
+if isfield(options, 'box') && ~isempty(options.box) && ~strcmp(action_type, 'replace')
+    box = options.box;
+    boxIndex = {box(1):box(2), box(3):box(4), box(5):box(6), 1, box(7):box(8)};
+end
+
 % compute filtered image based on selected_sw and maskedAreaSw
 useFiltered = false;
 filteredImg = [];
 if isType63
-    D = obj.labels.data;
+    D = readLayer(obj.labels, boxIndex);
     % packed bit layout: uint8 (63 materials) or uint16 (16383 instances)
     materialMask   = obj.labels.materialMask;
     maskValue      = obj.labels.maskValue;
@@ -77,23 +91,25 @@ if isType63
         filteredImg = bitand(filteredImg, bitand(D, maskValue)/maskValue);
     end
 else
+    selD = readLayer(obj.selection, boxIndex);
+    maskD = readLayer(obj.mask, boxIndex);
     if options.selected_sw && obj.modelExist && options.maskedAreaSw == 0
         useFiltered = true;
-        filteredImg = uint8(obj.labels.data == options.contSelIndex);
-        filteredImg = bitand(obj.selection.data, filteredImg);
+        filteredImg = uint8(readLayer(obj.labels, boxIndex) == options.contSelIndex);
+        filteredImg = bitand(selD, filteredImg);
     end
     if options.maskedAreaSw && options.selected_sw == 0
         if strcmp(action_type, 'add'); return; end
         if strcmp(action_type, 'replace')
             useFiltered = true;
-            filteredImg = bitand(obj.selection.data, obj.mask.data);
+            filteredImg = bitand(selD, maskD);
         end
     end
     if options.selected_sw && obj.modelExist && options.maskedAreaSw == 1
         if strcmp(action_type, 'add'); return; end
         useFiltered = true;
-        filteredImg = uint8(obj.labels.data == options.contSelIndex);
-        filteredImg = bitand(bitand(filteredImg, obj.mask.data), obj.selection.data);
+        filteredImg = uint8(readLayer(obj.labels, boxIndex) == options.contSelIndex);
+        filteredImg = bitand(bitand(filteredImg, maskD), selD);
     end
 end
 
@@ -106,18 +122,16 @@ switch action_type
                 D = bitor(D, filteredImg * cast(maskValue, 'like', D));
             end
             D = bitand(D, selectionValue - 1);                  % clear selection
-            obj.labels.data = D;
+            writeLayer(obj.labels, D, boxIndex);
         else
-            maskD = obj.mask.data;
-            selD = obj.selection.data;
             if ~useFiltered
                 maskD = bitor(selD, maskD);
             else
                 maskD = bitor(maskD, filteredImg);
             end
             selD(:) = 0;
-            obj.mask.data = maskD;
-            obj.selection.data = selD;
+            writeLayer(obj.mask, maskD, boxIndex);
+            writeLayer(obj.selection, selD, boxIndex);
         end
 
     case 'remove'
@@ -132,16 +146,16 @@ switch action_type
                 D = bitand(D, materialMask);           % clear selection and mask
                 D = bitor(D, filteredImg * cast(maskValue, 'like', D)); % set mask
             end
-            obj.labels.data = D;
+            writeLayer(obj.labels, D, boxIndex);
         else
-            maskD = obj.mask.data;
             if ~useFiltered
-                maskD = maskD - obj.selection.data;
+                maskD = maskD - selD;
             else
                 maskD = maskD - filteredImg;
             end
-            obj.mask.data = maskD;
-            obj.selection.data(:) = 0;
+            selD(:) = 0;
+            writeLayer(obj.mask, maskD, boxIndex);
+            writeLayer(obj.selection, selD, boxIndex);
         end
 
     case 'replace'
@@ -154,15 +168,35 @@ switch action_type
                 D = bitand(D, materialMask);           % clear selection and mask
                 D = bitor(D, filteredImg * cast(maskValue, 'like', D)); % set mask
             end
-            obj.labels.data = D;
+            writeLayer(obj.labels, D, boxIndex);
         else
             if ~useFiltered
-                obj.mask.data = obj.selection.data;
+                maskD = selD;
             else
-                obj.mask.data = filteredImg;
+                maskD = filteredImg;
             end
-            obj.selection.data(:) = 0;
+            selD(:) = 0;
+            writeLayer(obj.mask, maskD, boxIndex);
+            writeLayer(obj.selection, selD, boxIndex);
         end
 end
 obj.maskExist = 1;
+end
+
+function data = readLayer(layer, boxIndex)
+% the whole array when there is no box: indexing it with a cell of colons
+% would copy it
+if isempty(boxIndex)
+    data = layer.data;
+else
+    data = layer.data(boxIndex{:});
+end
+end
+
+function writeLayer(layer, data, boxIndex)
+if isempty(boxIndex)
+    layer.data = data;
+else
+    layer.data(boxIndex{:}) = data;
+end
 end

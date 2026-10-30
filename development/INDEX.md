@@ -116,6 +116,7 @@ debugging a regression in it, or looking for a precedent pattern. One line each:
 | [plan_sliceSize_implementation.md](ports/plan_sliceSize_implementation.md) | `MibImage.sliceSize` property (N×2 matrix) — 21 files touched |
 | [fixing_selection_documents.md](ports/fixing_selection_documents.md) + [port_splitpanel.md](ports/port_splitpanel.md) | Split-panel `mibModel.id` corruption: root causes, all fixes, reliable UI chain diagram |
 | [link_views_plan.md](ports/link_views_plan.md) | Linked-view propagation: `linkedPairs`, propagation in `showImage` |
+| [plan_selection_footprint.md](ports/plan_selection_footprint.md) | Shift+A/S/C limited to the selection's bounding box: Standard done (measured on demand, not tracked; reduction-order benchmarks), BigData stages planned |
 
 ---
 
