@@ -44,6 +44,7 @@ if numel(xy) < 2 || any(isnan(xy)); return; end
 
 options.id = id;   % pin to the active dataset; the wrapper default obj.id may be stale
 options.blockModeSwitch = 0;
+options.magFactor = 1;   % BigData reads at the display zoom otherwise: one pixel comes back as a block when zoomed in
 options.x = [xy(1) xy(1)];
 options.y = [xy(2) xy(2)];
 materialIndex = cell2mat(obj.mibModel.getData2D('labels', dataset.getCurrentSliceNumber(), [], [], options));

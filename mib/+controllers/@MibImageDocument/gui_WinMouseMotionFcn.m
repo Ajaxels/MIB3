@@ -175,11 +175,18 @@ try
             % is empty for these types)
             if any(dataset.datasetType(1) == ['V' 'B'])
                 % Iraw is the raw image displayed on screen.
-                % When zoomed in (magFactor < 1): Iraw is a full-res crop of the
-                % dataset - use 'blockmode' to get position within that crop.
+                % When zoomed in (magFactor < 1): Iraw is either a full-res crop of
+                % the dataset - use 'blockmode' to get position within that crop -
+                % or, for a pyramidal store, already on the screen grid.
                 % When zoomed out (magFactor >= 1): Iraw is at screen resolution -
                 % axes coordinates index directly into it.
-                if magFactor < 1
+                % A pyramidal store (getDataZarr, getData63) returns the zoomed-in
+                % view already enlarged to the screen, so Iraw is then on the
+                % screen grid as well; only a crop narrower than the axes needs
+                % the blockmode conversion
+                rawOnScreenGrid = ~isempty(obj.mibModel.Iraw) && ...
+                    size(obj.mibModel.Iraw, 2) > 0.75 * diff(obj.handles.imViewAxes.XLim);
+                if magFactor < 1 && ~rawOnScreenGrid
                     % blockmode conversion (inline)
                     xImage = ceil(xMouse * magFactor);
                     yImage = ceil(yMouse * magFactor);
