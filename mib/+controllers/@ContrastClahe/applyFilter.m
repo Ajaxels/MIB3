@@ -134,6 +134,10 @@ logText = sprintf('CLAHE; NumTiles: [%d %d]; ClipLimit: %.4f; NBins: %d; Distrib
     obj.BatchOpt.ColorChannel{1});
 obj.mibModel.I{id}.image.updateActionLog(logText);
 
+% count user's points
+obj.mibModel.preferences.Users.Tiers.numberOfContrastAdjustments = obj.mibModel.preferences.Users.Tiers.numberOfContrastAdjustments + 1;
+notify(obj.mibModel, 'UpdateUserScore', core.ToggleEventData(2));    % scale scoring by factor 2
+
 obj.returnBatchOpt();
 notify(obj.mibModel, 'ShowImage');
 end

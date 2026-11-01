@@ -64,7 +64,7 @@ classdef ContrastNormalization < handle
         options = normalizeTimeSeries(obj, colorChannel, options)
         options = normalizeMaskedArea(obj, colorChannel, options)
         options = normalizeBackground(obj, colorChannel, options)
-        [mean_val, std_val] = collectSliceStats(obj, z1, z2, t, colorCh, useMask, options)
+        [mean_val, std_val, cancelled] = collectSliceStats(obj, z1, z2, t, colorCh, useMask, options)
 
         % ---------------------------------------------------------------
         function obj = ContrastNormalization(mibModel, varargin)

@@ -220,7 +220,7 @@ Quickly access demo datasets and full DeepMIB projects for image segmentation, g
 Save the open dataset to disk in various formats:
 
 ??? info "Supported Image Formats"
-    - **AM, Amira Mesh**: Binary format for Amira Mesh
+    - **AM, Amira Mesh**: Binary format for Amira Mesh. The *RLE compression* variant is lossless and shrinks files with large uniform areas; noisy images do not get smaller
     - **JPEG, Joint Photographic Experts Group**: Lossy compressed RGB format
     - **HDF5, Hierarchical Data Format**: Version 5 format
     - **MRC, MRC format for IMOD**: Compatible with IMOD

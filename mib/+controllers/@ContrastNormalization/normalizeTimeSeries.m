@@ -23,6 +23,17 @@ function options = normalizeTimeSeries(obj, colorChannel, options)
 %     - ``.waitbar`` - handle to the ``uiprogressdlg``; may be ``[]``.
 %     - ``.waitbarOffset`` - base progress value before this target starts.
 %     - ``.totalSteps`` - total steps for the waitbar denominator.
+%
+% Output Arguments:
+%   - **options** - the input struct with the action-log strings
+%     ``.meanValsStr`` / ``.stdValsStr`` filled in, and with:
+%
+%     - ``.cancelled`` - set to ``true`` when the user pressed Cancel; the
+%       waitbar is polled before every frame while collecting statistics
+%       and before every slice while applying them
+%     - ``.modified`` - set to ``true`` once the first slice has been
+%       written. A time series has no undo backup, so a cancel after this
+%       point leaves frames that cannot be restored
 
 id         = options.id;
 maxZ       = obj.mibModel.I{id}.image.depth;
@@ -42,6 +53,10 @@ for chIdx = 1:numel(colorChannel)
     getOpt   = options;
 
     for t = t1:t2
+        if ~isempty(options.waitbar) && options.waitbar.CancelRequested
+            options.cancelled = true;
+            return;
+        end
         getOpt.t = [t t];
         if strcmp(obj.BatchOpt.TimeSeriesNormalization{1}, 'Based on current 2D slice')
             frameData = double(cell2mat(obj.mibModel.getData2D('image', options.currentZ, [], colorCh, getOpt)));
@@ -76,9 +91,14 @@ for chIdx = 1:numel(colorChannel)
         getOpt.t = [t t];
         ratio    = targetStd / std_val(t);
         for z = 1:maxZ
+            if ~isempty(options.waitbar) && options.waitbar.CancelRequested
+                options.cancelled = true;
+                return;
+            end
             currentImage = cell2mat(obj.mibModel.getData2D('image', z, [], colorCh, getOpt));
             shifted = (double(currentImage) - mean_val(t)) * ratio + targetMean;
             obj.mibModel.setData2D(shifted, 'image', z, [], colorCh, getOpt);
+            options.modified = true;
         end
 
         if ~isempty(options.waitbar)

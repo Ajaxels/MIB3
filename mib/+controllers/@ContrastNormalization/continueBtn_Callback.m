@@ -12,6 +12,15 @@ function continueBtn_Callback(obj, useBatchMode)
 % appropriate low-level normalization method based on ``obj.BatchOpt.Target``.
 % On completion the image is re-displayed and the batch controller is notified.
 %
+% The progress dialog is cancelable and every slice polls it. A cancel, or an
+% empty mask layer, stops the run without the action log entry, the user
+% points or the BatchOpt hand-over, and stops a running batch protocol. When
+% the stop comes after the first slice was written the image is partially
+% normalized, and the user is told so: a single time point was backed up
+% beforehand (when undo is enabled) and can be restored with Ctrl+Z, a time
+% series has no backup and cannot. The method does not run the undo itself,
+% because with undo disabled that would restore an older, unrelated state.
+%
 % Input Arguments:
 %   - **useBatchMode** *(optional)* - logical; ``true`` when invoked via
 %     the batch processor (no GUI). Default ``false``.
@@ -106,7 +115,8 @@ if obj.BatchOpt.showWaitbar
     waitbarHandle = uiprogressdlg(parentFig, ...
         'Title',   'Contrast Normalization', ...
         'Message', sprintf('Normalizing %s...\nPlease wait.', obj.BatchOpt.Target{1}), ...
-        'Value',   0);
+        'Value',   0, ...
+        'Cancelable', 'on');
 end
 
 % ---- Build shared options struct passed to per-target methods ----
@@ -123,6 +133,9 @@ normOpt.waitbarOffset = 0;
 normOpt.totalSteps   = numel(colorChannel) * maxZ * max(1, t2 - t1 + 1);
 normOpt.meanValsStr  = '';
 normOpt.stdValsStr   = '';
+normOpt.cancelled    = false;   % the user pressed Cancel
+normOpt.failed       = false;   % stopped by an error that was already reported
+normOpt.modified     = false;   % at least one slice was written
 
 % ---- Dispatch to target-specific method ----
 switch obj.BatchOpt.Target{1}
@@ -142,6 +155,27 @@ end
 % ---- Close waitbar ----
 if ~isempty(waitbarHandle); close(waitbarHandle); end
 
+% ---- Stopped by Cancel or by an error ----
+if normOpt.cancelled || normOpt.failed
+    if normOpt.modified
+        if t1 == t2 && obj.mibModel.Backup.enableSwitch
+            restoreText = 'Press Ctrl+Z to restore the original image.';
+        else
+            restoreText = 'This cannot be undone: reload the dataset to get the original image back.';
+        end
+        dlgOpt.MsgBoxOnly  = true;
+        dlgOpt.Icon        = 'puffin_warning';
+        dlgOpt.HeaderLines = 1;
+        utils.dlgs.inputUniversalDlg(parentFig, ...
+            'Contrast normalization was stopped before it finished.', {''}, ...
+            {sprintf('Part of the image is already normalized.\n%s', restoreText)}, ...
+            'Normalization stopped', dlgOpt);
+    end
+    notify(obj.mibModel, 'StopProtocol');
+    notify(obj.mibModel, 'ShowImage');
+    return;
+end
+
 % ---- Update the session settings with any Manual mode values ----
 if strcmp(obj.BatchOpt.Mode{1}, 'Manual')
     obj.mibModel.sessionSettings.ContNorm.Mean = obj.BatchOpt.Mean;
@@ -153,6 +187,10 @@ logText = sprintf('ContrastNorm: %s, Mode: %s, Ch: %s, Mean: %s, Std: %s', ...
     obj.BatchOpt.Target{1}, obj.BatchOpt.Mode{1}, ...
     num2str(colorChannel), normOpt.meanValsStr, normOpt.stdValsStr);
 obj.mibModel.I{id}.image.updateActionLog(logText);
+
+% ---- Count user's points ----
+obj.mibModel.preferences.Users.Tiers.numberOfContrastAdjustments = obj.mibModel.preferences.Users.Tiers.numberOfContrastAdjustments + 1;
+notify(obj.mibModel, 'UpdateUserScore', core.ToggleEventData(2));    % scale scoring by factor 2
 
 % ---- Notify ----
 obj.returnBatchOpt();

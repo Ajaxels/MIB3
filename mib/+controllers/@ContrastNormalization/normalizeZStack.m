@@ -21,6 +21,17 @@ function options = normalizeZStack(obj, colorChannel, options)
 %     - ``.waitbar`` - handle to the ``uiprogressdlg``; may be ``[]``.
 %     - ``.waitbarOffset`` - base progress value before this target starts.
 %     - ``.totalSteps`` - total number of (channel × slice) steps for the waitbar.
+%
+% Output Arguments:
+%   - **options** - the input struct with the action-log strings
+%     ``.meanValsStr`` / ``.stdValsStr`` filled in, and with:
+%
+%     - ``.cancelled`` - set to ``true`` when the user pressed Cancel; the
+%       waitbar is polled before every slice, while collecting statistics
+%       and while applying them
+%     - ``.modified`` - set to ``true`` once the first slice has been
+%       written, so that the caller can tell a cancel that left the image
+%       untouched from one that left it partially normalized
 
 id   = options.id;
 maxZ = obj.mibModel.I{id}.image.depth;
@@ -32,7 +43,8 @@ stdValsStr  = '';
 for chIdx = 1:numel(colorChannel)
     colorCh = colorChannel(chIdx);
 
-    [mean_val, std_val] = obj.collectSliceStats(1, maxZ, options.t(1), colorCh, false, options);
+    [mean_val, std_val, options.cancelled] = obj.collectSliceStats(1, maxZ, options.t(1), colorCh, false, options);
+    if options.cancelled; return; end
 
     % Fill NaN entries by nearest-neighbour interpolation
     [mean_val, std_val] = fillStatGaps(mean_val, std_val);
@@ -68,6 +80,10 @@ for chIdx = 1:numel(colorChannel)
     getOpt.t = options.t;
 
     for z = 1:maxZ
+        if ~isempty(options.waitbar) && options.waitbar.CancelRequested
+            options.cancelled = true;
+            return;
+        end
         currentImage = cell2mat(obj.mibModel.getData2D('image', z, [], colorCh, getOpt));
         ratio  = targetStd / std_val(z);
         shifted = double(currentImage) - mean_val(z);
@@ -86,6 +102,7 @@ for chIdx = 1:numel(colorChannel)
         end
 
         obj.mibModel.setData2D(currentImage, 'image', z, [], colorCh, getOpt);
+        options.modified = true;
 
         if ~isempty(options.waitbar)
             options.waitbar.Value = min(1, ...

@@ -15,6 +15,7 @@ function addMeasurement(obj)
 %
 
 datasetId = obj.mibModel.getActiveId();
+measurementsBefore = obj.mibModel.I{datasetId}.measure.getNumberOfMeasurements();
 obj.mibModel.backup('measurements');
 obj.mibModel.disableSegmentation = true;
 
@@ -87,6 +88,13 @@ catch measureError
 end
 
 obj.mibModel.disableSegmentation = false;
+
+% count user's points only when a measurement was actually added
+if obj.mibModel.I{datasetId}.measure.getNumberOfMeasurements() > measurementsBefore
+    obj.mibModel.preferences.Users.Tiers.numberOfMeasurements = obj.mibModel.preferences.Users.Tiers.numberOfMeasurements + 1;
+    notify(obj.mibModel, 'UpdateUserScore');
+end
+
 obj.updateTable();
 nRows = size(obj.view.handles.measureTable.Data, 1);
 if nRows > 0

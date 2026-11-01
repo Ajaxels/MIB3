@@ -730,6 +730,10 @@ classdef ChunkingExport < handle
             if obj.BatchOpt.showWaitbar; delete(waitbar); end
             fprintf('MIB ChunkingExport: %d tiles saved to %s\n', totalTiles, outputDir);
 
+            % count user's points
+            obj.mibModel.preferences.Users.Tiers.numberOfChunkings = obj.mibModel.preferences.Users.Tiers.numberOfChunkings + 1;
+            notify(obj.mibModel, 'UpdateUserScore', core.ToggleEventData(3));    % scale scoring by factor 3
+
             obj.returnBatchOpt();
         end
 

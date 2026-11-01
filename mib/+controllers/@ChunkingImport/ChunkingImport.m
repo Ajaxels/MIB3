@@ -1070,6 +1070,10 @@ classdef ChunkingImport < handle
                 obj.mibModel.I{id}.maskExist = 1;
             end
 
+            % count user's points
+            obj.mibModel.preferences.Users.Tiers.numberOfChunkings = obj.mibModel.preferences.Users.Tiers.numberOfChunkings + 1;
+            notify(obj.mibModel, 'UpdateUserScore', core.ToggleEventData(3));    % scale scoring by factor 3
+
             notify(obj.mibModel, 'NewDataset');
             notify(obj.mibModel, 'ShowImage');
 

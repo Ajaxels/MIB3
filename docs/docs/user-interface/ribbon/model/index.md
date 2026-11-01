@@ -275,7 +275,7 @@ Prompts for a filename and format to save the model.
 
 <div class="h4-like">Available formats</div>
 
-- [x] **AM (Amira Mesh)**: RAW, RAW-ASCII, or RLE compressed formats (RLE is slow).
+- [x] **AM (Amira Mesh)**: RAW, RAW-ASCII, or RLE compressed formats.
 - [x] **MAT (MATLAB format)**: Native format for MIB version 1.
 - [x] **MODEL (MATLAB format)** (*default*): Native format for MIB version 2.
 - [x] **MOD (IMOD format)**: Contours for IMOD.

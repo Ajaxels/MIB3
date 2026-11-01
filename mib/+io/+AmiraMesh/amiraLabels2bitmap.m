@@ -35,8 +35,9 @@ function [bitmap] = amiraLabels2bitmap(filename)
 % ver 1.01 - 18.05.2012 - updated read procedure
 % ver 1.02 - 06.08.2012 - compatible with RLE compression algorithm
 % ver 1.03 - 30.01.2019, IB updated to be compatible with version 3
+% ver 1.04 - 01.11.2026, RLE decoded by the MEX io.AmiraMesh.hxByteRleDecode; byte-level RLE
+%            for uint16/uint32, MIB2 word-level RLE files still read
 
-tic
 bitmap = NaN;
 if nargin < 1
     [filename, pathname] = utils.dlgs.mibUiGetFile( ...
@@ -74,12 +75,11 @@ tline = '';
 while numel(strfind(tline,'Lattice')) == 0
     tline = fgetl(fid);
 end
-if strfind(tline, 'HxByteRLE')
-    RLEcompression = 1;
-    indx = strfind(tline, 'HxByteRLE');
-    elementsInFile = str2num(tline(indx+10:end-1));
-else
-    RLEcompression = 0;
+% "@1(HxByteRLE,<size>)", where MIB3 pads the size with trailing spaces
+rleTokens = regexp(tline, 'HxByteRLE\s*,\s*(\d+)', 'tokens', 'once');
+RLEcompression = ~isempty(rleTokens);
+if RLEcompression
+    elementsInFile = str2double(rleTokens{1});
 end
 if isempty(strfind(tline, 'Labels'))
     msgbox(sprintf('Wrong data type!\nRequires Labels in the Lattice description!'), 'Error!', 'error');
@@ -121,50 +121,24 @@ else
                 bitmap_vec = fread(fid, height*width*depth, '*uint32', 0, 'ieee-le');
             end
         fclose(fid);
-    elseif RLEcompression == 1  % read RLE compressed block
-        switch imgClass
-            case 'uint8'
-                bitmap_vec = zeros(elements_no, 1, 'uint8');
-                index = double(1);
-                vec = fread(fid, elementsInFile, '*uint8');
-            case 'uint16'
-                bitmap_vec = zeros(elements_no, 1, 'uint16');
-                index = double(1);
-                vec = fread(fid, elementsInFile, '*uint16');
-            case 'uint32'
-                bitmap_vec = zeros(elements_no, 1, 'uint32');
-                index = double(1);
-                vec = fread(fid, elementsInFile, '*uint32');
+    else    % read RLE compressed block
+        % HxByteRLE is a byte stream and the size in the header counts bytes. MIB2 wrote
+        % uint16/uint32 labels with word-sized packets and counted words instead; such a file
+        % has (at least) size*bytesPerElement bytes after "@1", a byte stream only size + 1.
+        bytesPerElement = numel(typecast(zeros(1, imgClass), 'uint8'));
+        dataStart = ftell(fid);
+        fseek(fid, 0, 'eof');
+        bytesLeft = ftell(fid) - dataStart;
+        fseek(fid, dataStart, 'bof');
+        if bytesPerElement > 1 && bytesLeft >= elementsInFile * bytesPerElement
+            stream = fread(fid, elementsInFile, ['*' imgClass], 0, 'ieee-le');
+            bitmap_vec = io.AmiraMesh.hxByteRleDecode(stream, elements_no);
+        else
+            stream = fread(fid, elementsInFile, '*uint8');
+            bitmap_vec = io.AmiraMesh.hxByteRleDecode(stream, elements_no * bytesPerElement);
+            bitmap_vec = typecast(bitmap_vec, imgClass);
         end
         fclose(fid);
-        
-        i=1;
-        while i < numel(vec)
-            pixel = vec(i); 
-            count = double(bitand(pixel, 127));
-
-            if bitand(pixel, 128)      % no compression
-                bitmap_vec(index:index+count-1) = vec(i+1:i+count);
-                i = i + count + 1;
-            else
-                bitmap_vec(index:index+count-1) = vec(i+1);
-                i = i + 2;
-            end
-            index = index + count;
-        end
-        
-%         while ~feof(fid)
-%             pixel = fread(fid, 1); 
-%             count = bitand(pixel, 127);
-%             if bitand(pixel, 128)      % no compression
-%                 bitmap_vec(index:index+count-1) = fread(fid, count, '*uint8'); 
-%             else
-%                 bitmap_vec(index:index+count-1) = fread(fid, 1, '*uint8');
-%                 %index
-%                 %count
-%             end
-%             index = index + count;
-%         end
     end
 end
 
@@ -172,7 +146,6 @@ end
 %bitmap_list = reshape(permute(bitmap,[2 1 3]),1,[])';
 bitmap = reshape(bitmap_vec, [width, height, depth]);
 bitmap = permute(bitmap, [2 1 3]);
-toc
 disp(['amiraLabels2bitmap: ' filename ' was loaded!']);
 
 

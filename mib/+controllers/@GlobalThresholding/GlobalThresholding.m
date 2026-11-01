@@ -552,6 +552,10 @@ classdef GlobalThresholding < handle
 
             if BatchOptLoc.showWaitbar; progressBar.deletePoolWaitbar(); end
 
+            % count user's points
+            obj.mibModel.preferences.Users.Tiers.numberOfGlobalThresholdings = obj.mibModel.preferences.Users.Tiers.numberOfGlobalThresholdings + 1;
+            notify(obj.mibModel, 'UpdateUserScore', core.ToggleEventData(2));    % scale scoring by factor 2
+
             if strcmp(BatchOptLoc.Destination{1}, 'mask')
                 obj.mibModel.showMask = true;
                 notify(obj.mibModel, 'UpdateGuiWidgets', core.ToggleEventData({'checkboxes'}));

@@ -141,6 +141,10 @@ dsOpts.ParentFigure = obj.mibGUI;
 result = obj.I{BatchOpt.id}.resliceDataset(keepSlices, orientation, dsOpts);
 if result == 0; notify(obj, 'StopProtocol'); return; end
 
+% count user's points
+obj.preferences.Users.Tiers.numberOfTransformations = obj.preferences.Users.Tiers.numberOfTransformations + 1;
+notify(obj, 'UpdateUserScore');
+
 BatchOpt = rmfield(BatchOpt, 'id');
 notify(obj, 'SyncBatch', core.ToggleEventData(BatchOpt));
 % no keepBackup: the dimensions changed and no snapshot was stored, so older undo entries must be cleared

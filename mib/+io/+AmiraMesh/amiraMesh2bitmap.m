@@ -26,6 +26,12 @@ function [bitmap, par, status] = amiraMesh2bitmap(filename, options)
 %     - ``.getMeta`` - [logical] acquire metadata (default: ``true``)
 %     - ``.verbose`` - [logical] print loaded-file message (default: ``true``)
 %
+% Data blocks compressed with HxByteRLE (``@1(HxByteRLE,<bytes>)``) are decoded by the MEX
+% ``io.AmiraMesh.hxByteRleDecode``. Such a stream cannot be seeked, so a compressed block is
+% always decoded whole and ``depth_start``/``depth_step``/``depth_end`` pick slices from it.
+% Labels blocks (``byte Labels``, or RLE labels of any class) are read by
+% ``io.AmiraMesh.amiraLabels2bitmap``.
+%
 % Output Arguments:
 %   - **bitmap** - dataset [height, width, colors, depth]
 %   - **par** - struct array with Amira Mesh header parameters
@@ -43,6 +49,7 @@ function [bitmap, par, status] = amiraMesh2bitmap(filename, options)
 % ver 1.08 - 30.01.2019, updated to be compatible with version AM 3
 % ver 1.09 - 22.04.2022, fixed loading of parts of AM files with step==1 (added: && dataBlock < dataIndex - 1)
 % ver 1.10 - 10.02.2023, added cancel to the progress bar and status return argument
+% ver 1.11 - 01.11.2026, reads HxByteRLE blocks (decoded by io.AmiraMesh.hxByteRleDecode)
 
 % -- debug block starts --
 %filename = '.am';
@@ -90,6 +97,7 @@ width = str2double(tline(spaces(2):spaces(3)));
 height = str2double(tline(spaces(3):spaces(4)));
 depth = str2double(tline(spaces(4):end));
 
+fileDepth = depth;  % depth is reduced below when only a part is loaded
 depth_start = 1;
 depth_end = depth;
 depth_step = 1;
@@ -192,9 +200,15 @@ end
 
 % get number of data blocks
 dataIndex = 1;
+rleBytes = [];  % compressed size of each HxByteRLE block, 0 for an uncompressed block
 while numel(strfind(tline,'# Data section follows')) == 0
     if numel(strfind(tline,'Lattice')) ~= 0
-        if numel(strfind(tline,'byte Labels')) ~= 0 
+        % "@1(HxByteRLE,<size>)", where MIB3 pads the size with trailing spaces
+        rleTokens = regexp(tline, 'HxByteRLE\s*,\s*(\d+)', 'tokens', 'once');
+        % labels go to amiraLabels2bitmap: byte labels, and RLE labels of any class, which
+        % may be MIB2 files with word-sized RLE packets that only that reader understands
+        if numel(strfind(tline,'byte Labels')) ~= 0 || ...
+                (numel(strfind(tline,' Labels ')) ~= 0 && ~isempty(rleTokens))
             fclose(fid);
             if customSections == 1
                 msgbox(sprintf('The Amira Mesh Labels is not yet implemented for partial opening of the dataset!\n\nPlease open full dataset'),'Error','error','modal');
@@ -217,6 +231,11 @@ while numel(strfind(tline,'# Data section follows')) == 0
             colorChannels(dataIndex) = str2double(tline(openBlock+1:closeBlock-1));
         else
             colorChannels(dataIndex) = 1;
+        end
+        if isempty(rleTokens)
+            rleBytes(dataIndex) = 0; %#ok<AGROW>
+        else
+            rleBytes(dataIndex) = str2double(rleTokens{1}); %#ok<AGROW>
         end
         dataIndex = dataIndex + 1;
     end
@@ -244,12 +263,24 @@ color_id = 0;
 for dataBlock = 1:dataIndex - 1
     tline = fgetl(fid); % @1
     color_id = color_id + 1;
-    if customSections   % fseek to the start of the section to load
+    isRleBlock = rleBytes(dataBlock) > 0;
+    if isRleBlock
+        % an RLE stream cannot be seeked, so the whole block is decoded at once and the
+        % requested slices are taken from it below
+        sliceElements = height*width*colorChannels(dataBlock);
+        bytesPerElement = numel(typecast(zeros(1, classType{dataBlock}), 'uint8'));
+        rleStream = fread(fid, rleBytes(dataBlock), '*uint8');
+        decodedBlock = io.AmiraMesh.hxByteRleDecode(rleStream, sliceElements*fileDepth*bytesPerElement);
+        decodedBlock = reshape(typecast(decodedBlock, classType{dataBlock}), sliceElements, fileDepth);
+        clear rleStream;
+    elseif customSections   % fseek to the start of the section to load
         fseek(fid, height*width*colorChannels(dataBlock)*(depth_start-1)*bytesPerPixel, 0);
     end
     zIndex = 1;
     for zLayer=depth_start:depth_step:depth_end
-        if strcmp(type,'ascii')     % get ascii
+        if isRleBlock
+            dataVec = decodedBlock(:, zLayer);
+        elseif strcmp(type,'ascii')     % get ascii
             dataVec = zeros(height*width*colorChannels(dataBlock), 1, classType{dataBlock});
             for index=1 : height*width*colorChannels(dataBlock)
                 dataVec(index) = str2double(fgetl(fid));
@@ -295,7 +326,8 @@ for dataBlock = 1:dataIndex - 1
 
         zIndex = zIndex + 1;
     end
-    if depth_step == 1 && dataBlock < dataIndex - 1
+    % an RLE block was read to its end whatever part was requested
+    if (depth_step == 1 || isRleBlock) && dataBlock < dataIndex - 1
         tline = fgetl(fid);     % character return symbol
     end
 end

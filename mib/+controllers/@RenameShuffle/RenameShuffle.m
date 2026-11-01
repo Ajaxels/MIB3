@@ -567,6 +567,10 @@ classdef RenameShuffle < handle
             progressDlg.Value = 1;
             disp('MIB: the datasets were shuffled!');
             delete(progressDlg);
+
+            % count user's points
+            obj.mibModel.preferences.Users.Tiers.numberOfRenameShuffles = obj.mibModel.preferences.Users.Tiers.numberOfRenameShuffles + 1;
+            notify(obj.mibModel, 'UpdateUserScore', core.ToggleEventData(2));    % scale scoring by factor 2
         end
 
     end

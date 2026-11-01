@@ -1038,6 +1038,11 @@ classdef CropDataset < handle
             if strcmp(BatchOptLoc.cropMode{1}, 'ROI')
                 BatchOptLoc.cropMode{1} = 'Manual';
             end
+
+            % count user's points
+            obj.mibModel.preferences.Users.Tiers.numberOfCrops = obj.mibModel.preferences.Users.Tiers.numberOfCrops + 1;
+            notify(obj.mibModel, 'UpdateUserScore');
+
             obj.returnBatchOpt(BatchOptLoc);
         end
 

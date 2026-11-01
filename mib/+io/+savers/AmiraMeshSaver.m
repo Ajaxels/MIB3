@@ -1,14 +1,18 @@
 classdef AmiraMeshSaver < io.savers.BaseSaver
 % AMIRAMESHSAVER - Saver for Amira Mesh binary format output.
 %
-% Handles five format variants:
+% Handles these format variants:
 % 'Amira Mesh binary (``*.am``)'                      - full 3-D volume,
 % binary encoding, image layer
 % 'Amira Mesh binary file sequence (``*.am``)'        - per-slice .am files,
 % binary encoding, image layer
+% 'Amira Mesh binary RLE compression (``*.am``)'      - full 3-D volume,
+% HxByteRLE run-length encoding, image layer
 % 'Amira mesh binary (``*.am``)'                      - alias for labels/masks
-% 'Amira mesh binary RLE compression SLOW (``*.am``)' - run-length encoded,
-% binary, labels/masks only
+% 'Amira mesh binary RLE compression (``*.am``)'      - HxByteRLE run-length
+% encoding, labels/masks
+% 'Amira mesh binary RLE compression SLOW (``*.am``)' - former name of the
+% labels/masks RLE format, still accepted
 % 'Amira mesh ascii (``*.am``)'                       - ASCII text encoding,
 % labels/masks only
 %
@@ -17,10 +21,15 @@ classdef AmiraMeshSaver < io.savers.BaseSaver
 % legacy helper bitmap2amiraMesh(); mask and labels data are passed to
 % bitmap2amiraLabels().
 %
+% RLE compression is done by the MEX encoder io.AmiraMesh.hxByteRleEncode,
+% one slice at a time, so it costs about as much as an uncompressed write.
+% It is lossless and pays off for data with large uniform areas (labels,
+% masks, padded or masked images); on noisy images it adds up to 1/127.
+% Multi-byte classes are encoded as their little-endian byte stream.
+%
 % DATA DIMENSIONS
 % Input  data : [H, W, D, C, T]  (MIB3 native order)
-% bitmap2amiraMesh() expects [H, W, C, D] - permuted via
-% obj.permuteMib3ToHWCD() for the first time point.
+% bitmap2amiraMesh() takes [H, W, D, C] of the first time point.
 % bitmap2amiraLabels() expects [H, W, D] - squeezed from data.
 %
 % PIXEL-SIZE STRUCT (pixStr)
@@ -33,11 +42,12 @@ classdef AmiraMeshSaver < io.savers.BaseSaver
 %
 % COMPRESSION STRINGS
 % Format string                                   compression arg
-% 'Amira Mesh binary (``*.am``)'                   → 'binary'
-% 'Amira Mesh binary file sequence (``*.am``)'     → 'binary'
-% 'Amira mesh binary (``*.am``)'                   → 'binary'
-% 'Amira mesh binary RLE compression SLOW (``*.am``)' → 'binaryRLE'
-% 'Amira mesh ascii (``*.am``)'                    → 'ascii'
+% 'Amira Mesh binary (``*.am``)'                   -> 'binary'
+% 'Amira Mesh binary file sequence (``*.am``)'     -> 'binary'
+% 'Amira Mesh binary RLE compression (``*.am``)'   -> 'binaryRLE'
+% 'Amira mesh binary (``*.am``)'                   -> 'binary'
+% 'Amira mesh binary RLE compression (``*.am``)'   -> 'binaryRLE'
+% 'Amira mesh ascii (``*.am``)'                    -> 'ascii'
 %
 % USAGE EXAMPLES
 %
@@ -94,15 +104,29 @@ classdef AmiraMeshSaver < io.savers.BaseSaver
 %
 %     %% 3. Save labels with RLE compression
 %     saver = io.SaverFactory.create( ...
-%         'Amira mesh binary RLE compression SLOW (``*.am``)');
+%         'Amira mesh binary RLE compression (``*.am``)');
 %
-%     opts.Format      = 'Amira mesh binary RLE compression SLOW (``*.am``)';
+%     opts.Format      = 'Amira mesh binary RLE compression (``*.am``)';
 %     opts.layerType   = 'labels';
 %     opts.showWaitbar = true;
 %     opts.silent      = true;
 %     opts.overwrite   = true;
 %
 %     fnOut = saver.save(labels, meta, '/output/Labels_RLE.am', opts);
+%
+%
+%
+% .. code-block:: matlab
+%
+%     %% 4. Save an image volume with RLE compression
+%     saver = io.SaverFactory.create('Amira Mesh binary RLE compression (``*.am``)');
+%
+%     opts.Format      = 'Amira Mesh binary RLE compression (``*.am``)';
+%     opts.layerType   = 'image';
+%     opts.showWaitbar = false;
+%     opts.overwrite   = true;
+%
+%     fnOut = saver.save(data, meta, '/output/myStack_RLE.am', opts);
 %
 %
 % SEE ALSO
@@ -148,7 +172,9 @@ classdef AmiraMeshSaver < io.savers.BaseSaver
             formats = { ...
                 'Amira Mesh binary (*.am)'; ...
                 'Amira Mesh binary file sequence (*.am)'; ...
+                'Amira Mesh binary RLE compression (*.am)'; ...
                 'Amira mesh binary (*.am)'; ...
+                'Amira mesh binary RLE compression (*.am)'; ...
                 'Amira mesh binary RLE compression SLOW (*.am)'};
                 % 'Amira mesh ascii (*.am)' }; 
         end
@@ -186,7 +212,8 @@ classdef AmiraMeshSaver < io.savers.BaseSaver
             % Output Arguments:
             %   - **fnOut** - [char] path of the saved ``.am`` file, or [cell of
             %     char] the per-slice paths for the file-sequence format;
-            %     ``[]`` on failure
+            %     ``[]`` on failure or when the user canceled the progress dialog
+            %     (the partly written file is deleted then)
             %
             % **Example** - see class-level documentation above.
             %
@@ -308,7 +335,9 @@ classdef AmiraMeshSaver < io.savers.BaseSaver
                     writtenSlicePaths = slicePaths;
                 end
 
-                io.AmiraMesh.bitmap2amiraMesh(fullFilepath, data(:,:,:,:,1), metaMap, savingOptions);
+                if ~io.AmiraMesh.bitmap2amiraMesh(fullFilepath, data(:,:,:,:,1), metaMap, savingOptions)
+                    return;     % canceled
+                end
 
             else
                 % Mask / labels saving: squeeze to [H, W, D]
@@ -349,21 +378,10 @@ classdef AmiraMeshSaver < io.savers.BaseSaver
                 extraOptions.silent         = options.silent;
                 extraOptions.ParentFigure   = obj.ParentFigure;
 
-                % TODO: port bitmap2amiraLabels from
-                %   MIB2_RENAMED_FOR_MIB3/ImportExportTools/Amira/bitmap2amiraLabels.m
-                %   to mib/+io/+AmiraMesh/bitmap2amiraLabels.m
-                try
-                    io.AmiraMesh.bitmap2amiraLabels(fullFilepath, ...
+                if ~io.AmiraMesh.bitmap2amiraLabels(fullFilepath, ...
                         maskOrLabels_hwd, compressionStr, pixStr, ...
-                        colorList, materialNames, 1, options.showWaitbar, extraOptions);
-                catch ME
-                    error('AmiraMeshSaver:missingLabelsHelper', ...
-                        ['bitmap2amiraLabels() is not yet available.\n' ...
-                         'Please port it from:\n' ...
-                         '  MIB2_RENAMED_FOR_MIB3/ImportExportTools/Amira/bitmap2amiraLabels.m\n' ...
-                         'to:\n' ...
-                         '  mib/+io/+AmiraMesh/bitmap2amiraLabels.m\n\n' ...
-                         'Original error: %s'], ME.message);
+                        colorList, materialNames, 1, options.showWaitbar, extraOptions)
+                    return;     % canceled
                 end
             end
 

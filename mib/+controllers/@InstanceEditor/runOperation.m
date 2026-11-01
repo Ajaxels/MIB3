@@ -81,6 +81,10 @@ if applied; obj.invalidateSliceStats(); end
 % objects must not clear the selection as if it had worked.
 if applied
     obj.selectedObjects = [];
+
+    % count user's points
+    obj.mibModel.preferences.Users.Tiers.numberOfInstanceEdits = obj.mibModel.preferences.Users.Tiers.numberOfInstanceEdits + 1;
+    notify(obj.mibModel, 'UpdateUserScore');
 end
 
 obj.updateWidgets();

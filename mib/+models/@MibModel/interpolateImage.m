@@ -218,6 +218,10 @@ end
 
 if BatchOpt.showWaitbar; delete(wb); end
 
+% count user's points
+obj.preferences.Users.Tiers.numberOfInterpolations = obj.preferences.Users.Tiers.numberOfInterpolations + 1;
+notify(obj, 'UpdateUserScore');
+
 %% Notify batch mode and redraw
 BatchOpt = rmfield(BatchOpt, 'id');
 eventdata = core.ToggleEventData(BatchOpt);

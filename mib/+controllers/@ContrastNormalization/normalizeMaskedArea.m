@@ -21,6 +21,17 @@ function options = normalizeMaskedArea(obj, colorChannel, options)
 %     - ``.waitbarOffset`` - base progress value before this target starts.
 %     - ``.totalSteps`` - total steps for the waitbar denominator.
 %     - ``.parentFig`` - parent figure for error dialogs.
+%
+% Output Arguments:
+%   - **options** - the input struct with the action-log strings
+%     ``.meanValsStr`` / ``.stdValsStr`` filled in, and with:
+%
+%     - ``.cancelled`` - set to ``true`` when the user pressed Cancel; the
+%       waitbar is polled before every slice, while collecting statistics
+%       and while applying them
+%     - ``.failed`` - set to ``true`` when the mask layer is empty; the error
+%       has already been shown, the waitbar is left for the caller to close
+%     - ``.modified`` - set to ``true`` once the first slice has been written
 
 id       = options.id;
 maxZ     = obj.mibModel.I{id}.image.depth;
@@ -32,7 +43,8 @@ stdValsStr  = '';
 for chIdx = 1:numel(colorChannel)
     colorCh = colorChannel(chIdx);
 
-    [mean_val, std_val] = obj.collectSliceStats(1, maxZ, options.t(1), colorCh, true, options);
+    [mean_val, std_val, options.cancelled] = obj.collectSliceStats(1, maxZ, options.t(1), colorCh, true, options);
+    if options.cancelled; return; end
 
     % Fill NaN entries
     nanIds = find(isnan(mean_val));
@@ -42,7 +54,7 @@ for chIdx = 1:numel(colorChannel)
             sprintf('The "%s" layer appears to be empty!\nPlease draw the mask or select the correct Mask layer.', ...
             obj.BatchOpt.MaskLayer{1}), ...
             'ContrastNormalization: empty mask');
-        if ~isempty(options.waitbar); close(options.waitbar); end
+        options.failed = true;
         return;
     end
     for i = 1:numel(nanIds)
@@ -76,10 +88,15 @@ for chIdx = 1:numel(colorChannel)
     getOpt.t = options.t;
 
     for z = 1:maxZ
+        if ~isempty(options.waitbar) && options.waitbar.CancelRequested
+            options.cancelled = true;
+            return;
+        end
         ratio = targetStd / std_val(z);
         currentImage = cell2mat(obj.mibModel.getData2D('image', z, [], colorCh, getOpt));
         shifted = (double(currentImage) - mean_val(z)) * ratio + targetMean;
         obj.mibModel.setData2D(shifted, 'image', z, [], colorCh, getOpt);
+        options.modified = true;
 
         if ~isempty(options.waitbar)
             options.waitbar.Value = min(1, ...

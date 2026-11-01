@@ -288,6 +288,7 @@ else
             saveOpts.PyramidLevel = pyrLvl;
         end
         fnOut = obj.I{BatchOpt.id}.saveImage(layerType, filename, saveOpts);
+        countSavedLayer(obj, layerType, fnOut);
     else
         % No filename = show a save-file dialog so the user can choose
         formats   = io.SaverFactory.getFormats(layerType);
@@ -420,7 +421,8 @@ else
         end
 
         fnOut = obj.I{BatchOpt.id}.saveImage(layerType, filename, saveOpts);
-        
+        countSavedLayer(obj, layerType, fnOut);
+
         % update the list of files
         UpdateFilelist.filename = fname;
         eventdata = core.ToggleEventData(UpdateFilelist);
@@ -449,6 +451,7 @@ if ~isfield(BatchOptIn, 'mibBatchTooltip')
         if ~isnan(materialIndex); saveOpts.MaterialIndex = materialIndex; end
     end
     fnOut = obj.I{BatchOpt.id}.saveImage(layerType, filename, saveOpts);
+    countSavedLayer(obj, layerType, fnOut);
     if isempty(fnOut); notify(obj, 'StopProtocol'); end
     return;
 end
@@ -541,6 +544,7 @@ if isfield(BatchOpt,'MaterialIndex') && ~isempty(BatchOpt.MaterialIndex)
 end
 
 fnOut = obj.I{BatchOpt.id}.saveImage(layerType, outputFilename, saveOpts);
+countSavedLayer(obj, layerType, fnOut);
 if isempty(fnOut); notify(obj, 'StopProtocol'); end
 
 % update the list of files
@@ -551,8 +555,26 @@ notify(obj, 'UpdateFileList', eventdata);
 end
 
 % ------------------------------------------------------------------   %
-%   Local helper                                                       %
+%   Local helpers                                                      %
 % ------------------------------------------------------------------   %
+function countSavedLayer(obj, layerType, fnOut)
+% COUNTSAVEDLAYER - Add a successful save to the user statistics.
+%
+% Syntax:
+%   function countSavedLayer(obj, layerType, fnOut)
+%
+% An empty fnOut means that the save failed or was cancelled, and it is not
+% counted. Saving the image counts as a saved dataset; mask, labels and
+% 'everything' count as a saved model/mask layer.
+if isempty(fnOut); return; end
+if strcmpi(layerType, 'image')
+    obj.preferences.Users.Tiers.numberOfSavedDatasets = obj.preferences.Users.Tiers.numberOfSavedDatasets + 1;
+else
+    obj.preferences.Users.Tiers.numberOfSavedLayers = obj.preferences.Users.Tiers.numberOfSavedLayers + 1;
+end
+notify(obj, 'UpdateUserScore');     % default obj.preferences.Users.singleToolScores increase
+end
+
 function tf = isabsolute_path(p)
 % ISABSOLUTE_PATH - Return true if p is an absolute filesystem path.
 %

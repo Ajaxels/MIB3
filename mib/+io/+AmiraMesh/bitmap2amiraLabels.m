@@ -11,7 +11,10 @@ function result = bitmap2amiraLabels(filename, bitmap, format, voxel, color_list
 %   - **filename** - filename for Amira Mesh file
 %   - **bitmap** - the dataset [height, width, depth]
 %   - **format** - *(optional)* saving format: ``'binaryRLE'``, ``'ascii'``, or ``'binary'``
-%     (default: ``'binary'``)
+%     (default: ``'binary'``). ``'binaryRLE'`` compresses with Amira's HxByteRLE through the
+%     MEX encoder ``io.AmiraMesh.hxByteRleEncode``, one slice at a time; ``uint16``/``uint32``
+%     labels are encoded as their little-endian byte stream. The compressed size in the
+%     Lattice line is a placeholder padded with trailing spaces, filled in after the last slice
 %   - **voxel** - *(optional)* struct with voxel size:
 %
 %     - ``.x`` - physical width of a voxel
@@ -30,10 +33,12 @@ function result = bitmap2amiraLabels(filename, bitmap, format, voxel, color_list
 %
 %     - ``.TransformationMatrix`` - (char) transformation matrix string
 %     - ``.ParentFigure`` - handle to the main MIB UIFigure; when provided, progress bar
-%       is shown as a ``uiprogressdlg`` attached to that window; when absent, legacy ``waitbar`` is used
+%       is shown as a cancelable ``uiprogressdlg`` attached to that window (cancel is checked
+%       per slice in ``'binaryRLE'`` and deletes the partly written file); when absent,
+%       legacy ``waitbar`` is used
 %
 % Output Arguments:
-%   - **result** - ``1`` = success, ``0`` = failure
+%   - **result** - ``1`` = success, ``0`` = failure or canceled
 %
 % **Example 1** - standalone use (no GUI parent):
 %
@@ -64,9 +69,9 @@ function result = bitmap2amiraLabels(filename, bitmap, format, voxel, color_list
 % 15.03.2018 - added saving of models with more than 255 materials
 % 04.06.2018 - save TransformationMatrix with AmiraMesh
 % 11.12.2018 - added auto remove of spaces in material names
+% 01.11.2026 - binaryRLE through the MEX encoder, byte-level for uint16/uint32, cancelable
 
 result = 0;
-minValRLE = 1;
 if nargin < 2
     error('Please provide filename, and bitmap matrix!');
 end
@@ -136,7 +141,7 @@ if showWaitbar
     if nargin >= 9 && isstruct(extraOptions) && isfield(extraOptions,'ParentFigure') && ~isempty(extraOptions.ParentFigure)
         try
             wb = uiprogressdlg(extraOptions.ParentFigure, 'Title', sprintf('Saving Amira Mesh [%s]...', format), ...
-                'Message', sprintf('%s\nPlease wait...', filename));
+                'Message', sprintf('%s\nPlease wait...', filename), 'Cancelable', 'on');
         catch; wb = []; end
     else
         wb = waitbar(0, sprintf('%s\nPlease wait...', filename), 'Name', sprintf('Saving Amira Mesh [%s]...', format));
@@ -198,15 +203,16 @@ else
 end
 
 fprintf(fid,'}\n\n');
-bitmap = reshape(permute(bitmap,[2 1 3]),1,[])';
 if ~isempty(wb); if isa(wb,'matlab.ui.dialog.ProgressDialog'); wb.Value=0.1; else; waitbar(0.1,wb); end; end
 
 if strcmp(format,'binary')
+    bitmap = reshape(permute(bitmap,[2 1 3]),1,[])';
     fprintf(fid,'Lattice { %s Labels } @1\n\n', classText);
     fprintf(fid,'# Data section follows\n');
     fprintf(fid,'@1\n');
     fwrite(fid, bitmap, class(bitmap), 0, 'ieee-le');
 elseif strcmp(format,'ascii')
+    bitmap = reshape(permute(bitmap,[2 1 3]),1,[])';
     fprintf(fid,'Lattice { %s Labels } @1\n\n', classText);
     fprintf(fid,'# Data section follows\n');
     fprintf(fid,'@1\n');
@@ -217,90 +223,65 @@ elseif strcmp(format,'ascii')
         fprintf(fid,'%d \n',bitmap(ind));
     end
 elseif strcmp(format,'binaryRLE')
-    maxVal = numel(bitmap)-1;
-    indexBlockStart = 1;
-    lastCharacter = NaN;
-    bytesCounter = 0;
-    if ~isempty(wb); if isa(wb,'matlab.ui.dialog.ProgressDialog'); wb.Value=0.2; else; waitbar(0.2,wb); end; end
-
-    while indexBlockStart < maxVal
-        blockOut = zeros([127 1])*NaN;
-        commulativeIndex = 0;
-
-        for blockCounter=1:127
-            if indexBlockStart + blockCounter == maxVal
-                blockOut = blockOut(1:end);
-                indexBlockStart = maxVal+2;
-                lastCharacter = bitmap(end);
-                break;
-            end
-            currId = indexBlockStart+blockCounter-1;
-            nextId = indexBlockStart+blockCounter;
-            if bitmap(currId) ~= bitmap(nextId)
-                if commulativeIndex < minValRLE
-                    blockOut(blockCounter) = bitmap(currId);
-                else
-                    commulativeIndex = commulativeIndex + 1;
-                    indexBlockStart = nextId;
-                    break;
-                end
-            else
-                commulativeIndex = commulativeIndex + 1;
-                if commulativeIndex < minValRLE
-                    blockOut(blockCounter) = bitmap(currId);
-                else
-                    if commulativeIndex < blockCounter
-                        blockOut = blockOut(1:blockCounter-commulativeIndex);
-                        indexBlockStart = nextId-commulativeIndex;
-                        commulativeIndex = 0;
-                        break;
-                    else
-                        blockOut = bitmap(indexBlockStart);
-                    end
-                end
-            end
-            if commulativeIndex == 127
-                indexBlockStart = indexBlockStart + 127;
-            end
-        end
-
-        if isscalar(blockOut) && commulativeIndex ~= 0
-            counter = uint8(commulativeIndex);
-            bitmap(bytesCounter+1) = counter;
-            bitmap(bytesCounter+2) = blockOut;
-            bytesCounter = bytesCounter + 2;
-        else
-            counter = bitset(uint8(numel(blockOut)), 8, 1);
-            bitmap(bytesCounter+1) = counter;
-            bitmap(bytesCounter+2:bytesCounter+1+numel(blockOut)) = blockOut;
-            bytesCounter = bytesCounter + numel(blockOut) + 1;
-        end
-    end
-
-    if indexBlockStart == maxVal
-        lastCharacter = bitmap(end);
-    end
-    if ~isnan(lastCharacter)
-        bitmap(bytesCounter+1) = uint8(1);
-        bitmap(bytesCounter+2) = lastCharacter;
-        bytesCounter = bytesCounter + 2;
-    end
-    fprintf(fid,'Lattice { %s Labels } @1(HxByteRLE,%d)\n\n', classText, bytesCounter);
+    % HxByteRLE, encoded one slice at a time by the MEX encoder. The compressed size goes into
+    % the Lattice line but is known only at the end, so the line gets a fixed-width
+    % placeholder that is written over once all slices are written (same scheme as
+    % io.AmiraMesh.bitmap2amiraMesh). uint16/uint32 labels are encoded as their little-endian
+    % byte stream, as HxByteRLE defines it; MIB2 wrote word-sized packets instead, which
+    % io.AmiraMesh.amiraLabels2bitmap still reads.
+    fprintf(fid,'Lattice { %s Labels } @1(HxByteRLE,', classText);
+    sizeFieldPosition = ftell(fid);
+    fprintf(fid, '%s\n\n', rleSizeField(0));
     fprintf(fid,'# Data section follows\n');
     fprintf(fid,'@1\n');
-    if ~isempty(wb); if isa(wb,'matlab.ui.dialog.ProgressDialog'); wb.Value=0.8; else; waitbar(0.8,wb); end; end
-    switch class(bitmap)
-        case 'uint8'
-            fwrite(fid, bitmap(1:bytesCounter), '*uint8', 0, 'ieee-le');
-        case 'uint16'
-            fwrite(fid, bitmap(1:bytesCounter), '*uint16', 0, 'ieee-le');
-        case 'uint32'
-            fwrite(fid, bitmap(1:bytesCounter), '*uint32', 0, 'ieee-le');
+    numSlices = size(bitmap, 3);
+    encodedBytes = 0;
+    for sliceIndex = 1:numSlices
+        % MATLAB's .' is vectorised and faster than transposing inside the MEX file
+        sliceLabels = bitmap(:,:,sliceIndex);
+        encodedSlice = io.AmiraMesh.hxByteRleEncode(sliceLabels.');
+        fwrite(fid, encodedSlice, 'uint8');
+        encodedBytes = encodedBytes + numel(encodedSlice);
+        if ~isempty(wb)
+            if isa(wb,'matlab.ui.dialog.ProgressDialog')
+                if wb.CancelRequested
+                    fclose(fid);
+                    delete(filename);
+                    delete(wb);
+                    fprintf('bitmap2amiraLabels: canceled, %s was not saved\n', filename);
+                    return;
+                end
+                wb.Value = 0.1 + 0.9*sliceIndex/numSlices;
+            elseif mod(sliceIndex, ceil(numSlices/20)) == 0
+                waitbar(0.1 + 0.9*sliceIndex/numSlices, wb);
+            end
+        end
     end
+    fseek(fid, sizeFieldPosition, 'bof');
+    fprintf(fid, '%s', rleSizeField(encodedBytes));
+    fseek(fid, 0, 'eof');
 end
 fprintf(fid,'\n');
 fclose(fid);
 if ~isempty(wb); delete(wb); end
 disp(['bitmap2amiraLabels: ' filename ' was created!']);
 result = 1;
+end
+
+
+% ------------------------------------------------------------------ %
+function field = rleSizeField(numBytes)
+% RLESIZEFIELD - Fixed-width text for the compressed size in "@1(HxByteRLE,<size>)".
+%
+% Syntax:
+%   .. code-block:: matlab
+%
+%      field = rleSizeField(numBytes)
+%
+% The size, the closing bracket and trailing spaces padded to 21 characters (19 digits hold
+% any size up to 2^63), so the placeholder and the final value have the same length and the
+% value can be written over the placeholder in place. AmiraMesh parsers skip the whitespace
+% before the end of the line.
+%
+field = sprintf('%-21s', sprintf('%d)', numBytes));
 end

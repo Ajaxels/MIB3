@@ -266,6 +266,10 @@ switch transformMode
         return;
 end
 
+% count user's points
+obj.preferences.Users.Tiers.numberOfTransformations = obj.preferences.Users.Tiers.numberOfTransformations + 1;
+notify(obj, 'UpdateUserScore');
+
 %% Update display
 dimChangingTransforms = {'Rotate 90 degrees', 'Rotate -90 degrees', ...
     'Transpose YX -> YZ', 'Transpose YX -> XZ', 'Transpose YX -> XY', 'Transpose YX -> ZX', ...

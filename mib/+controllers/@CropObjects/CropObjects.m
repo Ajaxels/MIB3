@@ -619,6 +619,16 @@ classdef CropObjects < handle
             % Output format and inclusion of model/mask are controlled by
             % ``obj.parentController.BatchOpt`` fields.
             %
+            % The progress bar is cancelable and polled before every patch. A
+            % cancel keeps the window open and tells the user how many patches
+            % were already written and where; those files (or workspace
+            % variables) are left in place, because ``saveOpts.overwrite`` may
+            % have replaced older files of the same name, so deleting them would
+            % not restore anything. A cancelled crop gives no user points. On
+            % this and on the other early exit (the naming dialog cancelled)
+            % ``obj.annotationLabels.positions`` is restored, so that a retry
+            % does not apply the jitter a second time.
+            %
             % Output Arguments:
             %   (none)
             %
@@ -629,6 +639,10 @@ classdef CropObjects < handle
             if hasView; h = obj.view.handles; end
 
             % ---- jitter ------------------------------------------------
+            % jitter and rounding below change the positions in place; the
+            % originals are put back when the crop stops early, so that a
+            % retry from the still-open window does not jitter them twice
+            originalPositions = obj.annotationLabels.positions;
             if BatchOptLocal.CropObjectsJitter
                 randSeed = str2double(BatchOptLocal.CropObjectsJitterSeed);
                 if randSeed == 0
@@ -703,7 +717,10 @@ classdef CropObjects < handle
                     header        = 'Specify additional filename parameters';
                     dlgOpt.HeaderLines   = 1;
                     [answer, selValue] = utils.dlgs.inputUniversalDlg(obj.view.gui, header, prompts, defAns, 'Crop patches settings', dlgOpt);
-                    if isempty(answer); return; end
+                    if isempty(answer)
+                        obj.annotationLabels.positions = originalPositions;
+                        return;
+                    end
 
                     obj.mibModel.sessionSettings.(obj.sessionSettingsKey).includeName            = logical(answer{1});
                     obj.mibModel.sessionSettings.(obj.sessionSettingsKey).includeZ               = logical(answer{2});
@@ -785,6 +802,7 @@ classdef CropObjects < handle
 
             getDataOpt.blockModeSwitch = 0;
             getDataOpt.id              = id;
+            patchesDone = 0;    % patches written so far, reported when the crop is cancelled
 
             for pntId = 1:noPoints
                 if hasView
@@ -929,10 +947,34 @@ classdef CropObjects < handle
                     fprintf('MIB: "%s" was exported to MATLAB workspace\n', matlabVarName);
                 end
                 
+                patchesDone = patchesDone + 1;
                 if hasView
                     pwb.increment();
                 end
             end
+
+            % ---- cancelled: keep the window open and say what was written
+            if hasView && pwb.getCancelState()
+                pwb.deletePoolWaitbar();
+                obj.annotationLabels.positions = originalPositions;
+                if toMatlab
+                    doneText = sprintf('%d of %d patches were exported to the MATLAB workspace.', patchesDone, noPoints);
+                else
+                    doneText = sprintf('%d of %d patches were saved to:\n%s', patchesDone, noPoints, obj.outputDir);
+                end
+                dlgOpt = struct();
+                dlgOpt.MsgBoxOnly  = true;
+                dlgOpt.Icon        = 'puffin_warning';
+                dlgOpt.HeaderLines = 1;
+                dlgOpt.mibPath     = obj.mibModel.mibPath;
+                utils.dlgs.inputUniversalDlg(obj.view.gui, 'Cropping was cancelled before it finished.', {''}, ...
+                    {doneText}, 'Crop cancelled', dlgOpt);
+                return;
+            end
+
+            % count user's points
+            obj.mibModel.preferences.Users.Tiers.numberOfCroppedObjects = obj.mibModel.preferences.Users.Tiers.numberOfCroppedObjects + 1;
+            notify(obj.mibModel, 'UpdateUserScore', core.ToggleEventData(3));    % scale scoring by factor 3
 
             if hasView
                 pwb.deletePoolWaitbar();

@@ -834,6 +834,10 @@ classdef ResampleDataset < handle
             end
             toc;
 
+            % count user's points
+            obj.mibModel.preferences.Users.Tiers.numberOfResamplings = obj.mibModel.preferences.Users.Tiers.numberOfResamplings + 1;
+            notify(obj.mibModel, 'UpdateUserScore', core.ToggleEventData(2));    % scale scoring by factor 2
+
             obj.returnBatchOpt(obj.BatchOpt);
 
             notify(obj.mibModel, 'NewDataset');

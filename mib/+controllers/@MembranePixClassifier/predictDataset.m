@@ -125,6 +125,11 @@ if obj.BatchOpt.ExportVotes && exist('votesOut', 'var')
 end
 obj.updateLoglist('======= Prediction finished! =======');
 obj.updateLoglist(sprintf('Elapsed time is %f seconds.', toc(t1)));
+
+% count user's points
+obj.mibModel.preferences.Users.Tiers.numberOfPixelClassifiers = obj.mibModel.preferences.Users.Tiers.numberOfPixelClassifiers + 1;
+notify(obj.mibModel, 'UpdateUserScore', core.ToggleEventData(3));    % scale scoring by factor 3
+
 notify(obj.mibModel, 'ShowImage');
 
 end

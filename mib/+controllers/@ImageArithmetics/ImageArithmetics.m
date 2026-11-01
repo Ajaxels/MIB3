@@ -660,6 +660,10 @@ classdef ImageArithmetics < handle
                 pwb.deletePoolWaitbar();
             end
 
+            % count user's points
+            obj.mibModel.preferences.Users.Tiers.numberOfImageArithmetics = obj.mibModel.preferences.Users.Tiers.numberOfImageArithmetics + 1;
+            notify(obj.mibModel, 'UpdateUserScore', core.ToggleEventData(2));    % scale scoring by factor 2
+
             notify(obj.mibModel, 'ShowImage');
             obj.returnBatchOpt(obj.BatchOpt);
         end

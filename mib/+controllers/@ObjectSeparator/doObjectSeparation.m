@@ -384,5 +384,10 @@ end
 if obj.BatchOpt.showWaitbar; pwb.deletePoolWaitbar(); end
 
 fprintf('Object separation: elapsed time %.3f seconds\n', toc);
+
+% count user's points
+obj.mibModel.preferences.Users.Tiers.numberOfObjectSeparations = obj.mibModel.preferences.Users.Tiers.numberOfObjectSeparations + 1;
+notify(obj.mibModel, 'UpdateUserScore', core.ToggleEventData(2));    % scale scoring by factor 2
+
 notify(obj.mibModel, 'ShowImage');
 end

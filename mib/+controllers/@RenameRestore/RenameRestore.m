@@ -691,6 +691,10 @@ classdef RenameRestore < handle
             progressDlg.Message = sprintf('Finishing\nPlease wait...');
             disp('MIB: the models from shuffled datasets were restored!');
             delete(progressDlg);
+
+            % count user's points
+            obj.mibModel.preferences.Users.Tiers.numberOfRenameShuffles = obj.mibModel.preferences.Users.Tiers.numberOfRenameShuffles + 1;
+            notify(obj.mibModel, 'UpdateUserScore', core.ToggleEventData(2));    % scale scoring by factor 2
         end
 
     end

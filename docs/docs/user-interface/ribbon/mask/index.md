@@ -119,11 +119,7 @@ By default, the filename uses a `Mask_` prefix and `*.mask` extension.
 
 - [x] **MATLAB format (.mask)**: default format for saving masks.
 - [x] **Amira mesh binary (.am)**: Amira Mesh binary format.
-- [x] **Amira mesh binary RLE compression SLOW (.am)**: compressed Amira Mesh format.  
-  
-!!! warning
-      Not recommended due to slow performance. Export as *Amira mesh binary* and resave with RLE compression in Amira instead.
-
+- [x] **Amira mesh binary RLE compression (.am)**: compressed Amira Mesh format.
 - [x] **Hierarchical Data Format (.h5)**: chunked format suitable for Ilastik.
 - [x] **PNG format (.png)**: saves mask as 2D slices in Portable Network Graphic format.
 - [x] **TIF format (.tif)**: saves mask as 2D slices or a 3D volume in Tag Image File format.

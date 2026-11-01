@@ -1,10 +1,10 @@
-function [mean_val, std_val] = collectSliceStats(obj, z1, z2, t, colorCh, useMask, options)
+function [mean_val, std_val, cancelled] = collectSliceStats(obj, z1, z2, t, colorCh, useMask, options)
 % COLLECTSLICESTATS - Compute per-slice mean and std for one color channel.
 %
 % Syntax:
 %   .. code-block:: matlab
 %
-%      [mean_val, std_val] = obj.collectSliceStats(z1, z2, t, colorCh, useMask, options)
+%      [mean_val, std_val, cancelled] = obj.collectSliceStats(z1, z2, t, colorCh, useMask, options)
 %
 % Iterates over slices ``z1:z2`` at time point ``t`` and computes mean and
 % standard deviation of pixel intensities.  When ``useMask`` is ``true``,
@@ -20,10 +20,16 @@ function [mean_val, std_val] = collectSliceStats(obj, z1, z2, t, colorCh, useMas
 %   - **colorCh** - scalar color-channel index.
 %   - **useMask** - logical; ``true`` to restrict stats to the mask layer.
 %   - **options** - struct passed to ``getData2D``; must contain ``.id``.
+%     The ``.waitbar`` field (``uiprogressdlg`` or ``[]``) is polled for
+%     Cancel before every slice.
 %
 % Output Arguments:
 %   - **mean_val** - ``[maxZ x 1]`` double vector; ``NaN`` for empty-mask slices.
 %   - **std_val** - ``[maxZ x 1]`` double vector; ``NaN`` for empty-mask slices.
+%   - **cancelled** - logical; ``true`` when the user pressed Cancel. The
+%     statistics are then incomplete and must not be used. Nothing is
+%     written to the dataset by this method, so a cancel here leaves the
+%     image unchanged.
 
 maxZ    = obj.mibModel.I{options.id}.image.depth;
 getOpt  = options;
@@ -31,6 +37,7 @@ getOpt.t = [t t];
 
 mean_val = zeros(maxZ, 1);
 std_val  = zeros(maxZ, 1);
+cancelled = false;
 
 % Determine the exclusion value (0 = black, maxInt = white, empty = none)
 switch obj.BatchOpt.Exculude{1}
@@ -40,6 +47,10 @@ switch obj.BatchOpt.Exculude{1}
 end
 
 for z = z1:z2
+    if ~isempty(options.waitbar) && options.waitbar.CancelRequested
+        cancelled = true;
+        return;
+    end
     currentImage = cell2mat(obj.mibModel.getData2D('image', z, [], colorCh, getOpt));
 
     if useMask

@@ -391,6 +391,10 @@ classdef WhiteBalance < handle
             obj.mibModel.showMask = true;
             notify(obj.mibModel, 'ShowImage');
 
+            % count user's points
+            obj.mibModel.preferences.Users.Tiers.numberOfContrastAdjustments = obj.mibModel.preferences.Users.Tiers.numberOfContrastAdjustments + 1;
+            notify(obj.mibModel, 'UpdateUserScore', core.ToggleEventData(2));    % scale scoring by factor 2
+
             if ~currentMode
                 if strcmp(obj.BatchOpt.PickedRegion{1}, 'ManualValue')
                     dataset.image.updateActionLog(sprintf('WB correction: %d %d %d, %s, %s', ...

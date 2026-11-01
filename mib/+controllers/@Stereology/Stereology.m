@@ -564,6 +564,10 @@ classdef Stereology < handle
                 end
             end
 
+            % count user's points
+            obj.mibModel.preferences.Users.Tiers.numberOfStereologies = obj.mibModel.preferences.Users.Tiers.numberOfStereologies + 1;
+            notify(obj.mibModel, 'UpdateUserScore', core.ToggleEventData(3));    % scale scoring by factor 3
+
             notify(obj.mibModel, 'UpdateGuiWidgets');
             notify(obj.mibModel, 'ShowImage');
             pwb.deletePoolWaitbar();

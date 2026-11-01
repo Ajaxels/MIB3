@@ -616,7 +616,26 @@ Prefs.Users.Tiers.numberOfMeasurements = 0;
 Prefs.Users.Tiers.numberOfGetStats = 0;    
 Prefs.Users.Tiers.numberOfKeyShortcuts = 0; % key shortcuts
 Prefs.Users.Tiers.numberOfAlignments = 0; 
-Prefs.Users.Tiers.numberOfStitchings = 0; 
+Prefs.Users.Tiers.numberOfStitchings = 0;
+Prefs.Users.Tiers.numberOfRenameShuffles = 0;   % rename and shuffle, restore
+Prefs.Users.Tiers.numberOfSavedDatasets = 0;
+Prefs.Users.Tiers.numberOfSavedLayers = 0;  % saved models and masks
+Prefs.Users.Tiers.numberOfCrops = 0;
+Prefs.Users.Tiers.numberOfResamplings = 0;
+Prefs.Users.Tiers.numberOfTransformations = 0;  % flip, rotate, transpose, reslice
+Prefs.Users.Tiers.numberOfInterpolations = 0;
+Prefs.Users.Tiers.numberOfContrastAdjustments = 0;  % CLAHE, normalization, white balance
+Prefs.Users.Tiers.numberOfImageArithmetics = 0;
+Prefs.Users.Tiers.numberOfMorphOps = 0;     % morphological operations, content-aware fill, image frame
+Prefs.Users.Tiers.numberOfGlobalThresholdings = 0;
+Prefs.Users.Tiers.numberOfObjectSeparations = 0;
+Prefs.Users.Tiers.numberOfDebrisRemovals = 0;
+Prefs.Users.Tiers.numberOfInstanceEdits = 0;
+Prefs.Users.Tiers.numberOfPixelClassifiers = 0;     % trained and applied pixel classifiers
+Prefs.Users.Tiers.numberOfStereologies = 0;
+Prefs.Users.Tiers.numberOfCroppedObjects = 0;   % crop objects to files
+Prefs.Users.Tiers.numberOfChunkings = 0;    % chunking export and import
+Prefs.Users.Tiers.numberOfWoundHealings = 0;
 
 Prefs.Users.singleToolScores = 0.5;   % score awarded for a single standard tool use (i.e. Ball3D or spot)
 Prefs.Users.tierPointsCoef = 500;  % for points calculations, as nextTier = tierPointsCoef * 2^[userTier];

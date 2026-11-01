@@ -106,6 +106,8 @@ if isunix && ~ismac
     pinModuleFlags = {'-ldl'};  % dlopen lives in libdl before glibc 2.34
 end
 targets(end+1) = makeTarget('Utilities', '+utils', 'pinModule', {'pinModule.c'}, pinModuleFlags);
+targets(end+1) = makeTarget('AmiraMesh RLE', '+io/+AmiraMesh', 'hxByteRleEncode', {'hxByteRleEncode.c'}, {});
+targets(end+1) = makeTarget('AmiraMesh RLE', '+io/+AmiraMesh', 'hxByteRleDecode', {'hxByteRleDecode.c'}, {});
 targets(end+1) = makeTarget('Region Growing', 'external/RegionGrowing', 'RegionGrowing_mex', {'RegionGrowing_mex.cpp'}, {});
 classRFSources = {'src/classRF.cpp', 'src/classTree.cpp', 'src/cokus.cpp', 'src/rfutils.cpp'};
 targets(end+1) = makeTarget('Random Forest classifier', 'external/RandomForest/RF_Class_C', 'mexClassRF_train', ...

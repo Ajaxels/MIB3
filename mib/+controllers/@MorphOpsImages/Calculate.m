@@ -204,6 +204,11 @@ for t = timeStart:timeEnd
 end
 
 if obj.BatchOpt.showWaitbar; delete(progressBar); end
+
+% count user's points
+obj.mibModel.preferences.Users.Tiers.numberOfMorphOps = obj.mibModel.preferences.Users.Tiers.numberOfMorphOps + 1;
+notify(obj.mibModel, 'UpdateUserScore', core.ToggleEventData(2));    % scale scoring by factor 2
+
 notify(obj.mibModel, 'ShowImage');
 if ~batchModeSwitch; obj.returnBatchOpt(); end
 

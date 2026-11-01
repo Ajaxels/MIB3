@@ -118,6 +118,10 @@ logText = sprintf('ContentAwareFill; Method: %s; Mask: %s; Radius: %d; Smoothing
     obj.BatchOpt.Radius{1}, obj.BatchOpt.SmoothingFactor{1}, obj.BatchOpt.FillOrder{1});
 obj.mibModel.I{id}.image.updateActionLog(logText);
 
+% count user's points
+obj.mibModel.preferences.Users.Tiers.numberOfMorphOps = obj.mibModel.preferences.Users.Tiers.numberOfMorphOps + 1;
+notify(obj.mibModel, 'UpdateUserScore', core.ToggleEventData(2));    % scale scoring by factor 2
+
 obj.returnBatchOpt();
 notify(obj.mibModel, 'ShowImage');
 end

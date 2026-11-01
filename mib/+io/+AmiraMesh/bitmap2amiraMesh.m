@@ -27,8 +27,19 @@ function result = bitmap2amiraMesh(filename, bitmap, img_info, options)
 %     - ``.overwrite`` - ``1`` = do not check whether file already exists
 %     - ``.showWaitbar`` - ``1`` = show the progress bar
 %     - ``.ParentFigure`` - *(optional)* handle to the main MIB UIFigure; when provided,
-%       the progress bar is shown as a ``uiprogressdlg`` attached to that window;
-%       when absent or empty, the legacy ``waitbar`` is used as a fallback
+%       the progress bar is shown as a cancelable ``uiprogressdlg`` attached to that window;
+%       when absent or empty, the legacy ``waitbar`` is used as a fallback. On cancel the
+%       partly written file (for ``'sequence'``: every file of the sequence written so far)
+%       is deleted and ``result`` is ``0``
+%     - ``.compression`` - *(optional)* ``'binary'`` (default) or ``'binaryRLE'``. With
+%       ``'binaryRLE'`` every data block is compressed with Amira's HxByteRLE
+%       (``Lattice { byte Data } @1(HxByteRLE,<bytes>)``) by the MEX encoder
+%       ``io.AmiraMesh.hxByteRleEncode``, one slice at a time. Multi-byte classes are encoded
+%       as their little-endian byte stream, so ``uint16`` only shrinks where both bytes of
+%       neighbouring pixels repeat. The compressed size in the Lattice line is written as a
+%       placeholder padded with trailing spaces and filled in once the block is written; the
+%       file is never held in memory. Compression is lossless; noisy data grows by up to
+%       1/127 (one control byte per 127 literal bytes)
 %     - ``.colors`` - *(optional)* [C×3] colour matrix (0-1) for multichannel;
 %       overrides ``img_info`` ``'lutColors'``
 %     - ``.Saving3d`` - ``'multi'`` = save all z-slices in a single file (default);
@@ -70,6 +81,7 @@ function result = bitmap2amiraMesh(filename, bitmap, img_info, options)
 % ver 1.06 - 28.01.2022 replaced multiple spaces with single space chars in BoundingBox
 % ver 2.00 - 2025, MIB3 port: bitmap order changed to [H,W,D,C,T];
 %            img_info changed from containers.Map to MATLAB dictionary
+% ver 2.01 - 01.11.2026, HxByteRLE compression (options.compression), cancelable progress
 
 result = 0;
 if nargin < 2; error('Please provide filename, and bitmap matrix!'); end
@@ -112,7 +124,7 @@ if options.showWaitbar
     if ~isempty(options.ParentFigure)
         try
             wb = uiprogressdlg(options.ParentFigure, 'Title', 'Saving images as Amira Mesh...', ...
-                'Message', sprintf('%s\nPlease wait...', filename));
+                'Message', sprintf('%s\nPlease wait...', filename), 'Cancelable', 'on');
         catch
             wb = [];
         end
@@ -125,7 +137,7 @@ end
 nD = size(bitmap, 3);   % depth (number of z-slices)
 
 if strcmp(options.Saving3d, 'multi')
-    saveAmFile(filename, bitmap, img_info, options, wb);
+    isSaved = saveAmFile(filename, bitmap, img_info, options, wb);
 else
     [saveDir, saveFn, saveExt] = fileparts(filename);
     if ~isfield(options, 'SliceName') || numel(options.SliceName) ~= nD
@@ -134,27 +146,39 @@ else
             1:nD, 'UniformOutput', false)';
     end
     for fnId = 1:nD
-        saveAmFile(fullfile(saveDir, options.SliceName{fnId}), ...
+        isSaved = saveAmFile(fullfile(saveDir, options.SliceName{fnId}), ...
             bitmap(:,:,fnId,:,1), img_info, options, wb);
+        if ~isSaved
+            % canceled: remove the files of this sequence written so far
+            for previousId = 1:fnId - 1
+                delete(fullfile(saveDir, options.SliceName{previousId}));
+            end
+            break;
+        end
     end
 end
+if ~isempty(wb); delete(wb); end
 
+if ~isSaved
+    if options.verbose; fprintf('bitmap2amiraMesh: canceled, %s was not saved\n', filename); end
+    return;
+end
 if options.verbose; disp(['bitmap2amiraMesh: ' filename ' was created!']); end
 result = 1;
-if ~isempty(wb); delete(wb); end
 end
 
 
 % ------------------------------------------------------------------ %
-function saveAmFile(filename, bitmap, img_info, options, wb)
+function isSaved = saveAmFile(filename, bitmap, img_info, options, wb)
 % SAVEAMFILE - Write one Amira Mesh file.
 %
 % Syntax:
 %   .. code-block:: matlab
 %
-%      saveAmFile(filename, bitmap, img_info, options, wb)
+%      isSaved = saveAmFile(filename, bitmap, img_info, options, wb)
 %
 % bitmap: [H, W, D, C, T] - MIB3 native order; only first T is used.
+% isSaved: false when the user canceled via wb; the partial file is deleted then.
 
 nC = size(bitmap, 4);   % colour channels
 nD = size(bitmap, 3);   % depth (z-slices)
@@ -286,42 +310,90 @@ fprintf(fid, '}\n\n');
 imgClass = mibAmiraClass(bitmap);
 if ~isempty(wb); if isa(wb, 'matlab.ui.dialog.ProgressDialog'); wb.Value = 0.05; else; waitbar(0.05, wb); end; end
 
-if nC == 1  % grayscale
-    fprintf(fid, 'Lattice { %s Data } @1\n\n', imgClass);
-    fprintf(fid, '# Data section follows\n');
-    fprintf(fid, '@1\n');
-    for zIndex = 1:nD
-        img = bitmap(:,:,zIndex,1,1);
-        img = reshape(permute(img, [3 2 1]), 1, [])';
-        fwrite(fid, img, class(img), 0, 'ieee-le');
-        if ~isempty(wb) && mod(zIndex, ceil(nD/20)) == 0
-            if isa(wb, 'matlab.ui.dialog.ProgressDialog'); wb.Value = zIndex/nD; else; waitbar(zIndex/nD, wb); end
-        end
+% HxByteRLE: the compressed size of each block goes into its Lattice line, but it is only
+% known after the block is written. The line gets a fixed-width placeholder that is patched
+% at the end (see rleSizeField), so the data streams out one slice at a time.
+useRle = isfield(options, 'compression') && strcmp(options.compression, 'binaryRLE');
+rleSizeFieldPositions = zeros(nC, 1);
+rleBlockBytes = zeros(nC, 1);
+
+% grayscale: "Lattice { byte Data } @1" followed by an empty line;
+% multichannel: one "Lattice { byte DataN } @N" line per channel
+for ch = 1:nC
+    if nC == 1
+        fprintf(fid, 'Lattice { %s Data } @1', imgClass);
+    else
+        fprintf(fid, 'Lattice { %s Data%d } @%d', imgClass, ch, ch);
     end
-else  % multichannel
-    maxIndex = nD * nC;
-    index    = 1;
-    for ch = 1:nC
-        fprintf(fid, 'Lattice { %s Data%d } @%d\n', imgClass, ch, ch);
+    if useRle
+        fprintf(fid, '(HxByteRLE,');
+        rleSizeFieldPositions(ch) = ftell(fid);
+        fprintf(fid, '%s', rleSizeField(0));
     end
     fprintf(fid, '\n');
-    fprintf(fid, '# Data section follows');
-    for ch = 1:nC
-        fprintf(fid, '\n');
-        fprintf(fid, '@%d\n', ch);
-        for zIndex = 1:nD
+end
+fprintf(fid, '\n# Data section follows');
+
+maxIndex = nD * nC;
+index = 1;
+for ch = 1:nC
+    fprintf(fid, '\n@%d\n', ch);
+    for zIndex = 1:nD
+        if useRle
+            % MATLAB's .' is vectorised and faster than transposing inside the MEX file
+            sliceImage = bitmap(:,:,zIndex,ch,1);
+            encodedSlice = io.AmiraMesh.hxByteRleEncode(sliceImage.');
+            fwrite(fid, encodedSlice, 'uint8');
+            rleBlockBytes(ch) = rleBlockBytes(ch) + numel(encodedSlice);
+        else
             img = bitmap(:,:,zIndex,ch,1);
             img = reshape(permute(img, [3 2 1]), 1, [])';
             fwrite(fid, img, class(img), 0, 'ieee-le');
-            if ~isempty(wb) && mod(index, ceil(maxIndex/20)) == 0
-                if isa(wb, 'matlab.ui.dialog.ProgressDialog'); wb.Value = index/maxIndex; else; waitbar(index/maxIndex, wb); end
-            end
-            index = index + 1;
         end
+        if ~isempty(wb)
+            if isa(wb, 'matlab.ui.dialog.ProgressDialog')
+                if wb.CancelRequested
+                    fclose(fid);
+                    delete(filename);
+                    isSaved = false;
+                    return;
+                end
+                if mod(index, ceil(maxIndex/20)) == 0; wb.Value = index/maxIndex; end
+            elseif mod(index, ceil(maxIndex/20)) == 0
+                waitbar(index/maxIndex, wb);
+            end
+        end
+        index = index + 1;
     end
 end
 fprintf(fid, '\n');
+
+if useRle
+    for ch = 1:nC
+        fseek(fid, rleSizeFieldPositions(ch), 'bof');
+        fprintf(fid, '%s', rleSizeField(rleBlockBytes(ch)));
+    end
+end
 fclose(fid);
+isSaved = true;
+end
+
+
+% ------------------------------------------------------------------ %
+function field = rleSizeField(numBytes)
+% RLESIZEFIELD - Fixed-width text for the compressed size in "@N(HxByteRLE,<size>)".
+%
+% Syntax:
+%   .. code-block:: matlab
+%
+%      field = rleSizeField(numBytes)
+%
+% The size, the closing bracket and trailing spaces padded to 21 characters (19 digits hold
+% any size up to 2^63), so the placeholder written with the header and the final value have
+% the same length and the value can be written over the placeholder in place. AmiraMesh
+% parsers skip the whitespace before the end of the line.
+%
+field = sprintf('%-21s', sprintf('%d)', numBytes));
 end
 
 

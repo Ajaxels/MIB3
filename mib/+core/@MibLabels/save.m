@@ -25,7 +25,7 @@ function fnOut = save(obj, filename, options)
 %   - ``'Matlab format for MIB ver. 1 (*.mat)'`` - legacy MIB v1 compatibility
 %   - ``'Matlab categorical format (*.mibCat)'`` - MATLAB categorical array
 %   - ``'Amira mesh binary (*.am)'`` - Amira binary mesh
-%   - ``'Amira mesh binary RLE compression SLOW (*.am)'`` - Amira RLE
+%   - ``'Amira mesh binary RLE compression (*.am)'`` - Amira RLE (HxByteRLE)
 %   - ``'Amira mesh ascii (*.am)'`` - Amira ASCII mesh
 %   - ``'Hierarchical Data Format (*.h5)'`` - HDF5
 %   - ``'Hierarchical Data Format with XML header (*.xml)'`` - HDF5 + XML
