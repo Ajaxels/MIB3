@@ -23,6 +23,11 @@ function [par, img_info, dim_xyczt, materialNames, materialColors] = getAmiraMes
 %   - **materialNames** - cell array of detected material names (``Exterior`` excluded)
 %   - **materialColors** - [Nx3] RGB material colours (0-1); ``Exterior`` excluded
 %
+% An AmiraMesh file without a ``define Lattice`` line in its header (e.g. a spatial
+% graph, ``ContentType "HxSpatialGraph"``, as saved by ``Lines3D.saveToFile``) is not
+% an image or labels file: the function throws ``MIB:getAmiraMeshHeader:noLattice``
+% naming the ContentType, rather than scanning on into the binary data section.
+%
 
 % Updates
 % 09.01.2018, IB added extraction of embedded containers in the amiramesh headers
@@ -55,9 +60,20 @@ else
     disp('Error! Unknown type'); return;
 end
 
-% define lattice info
-while numel(strfind(tline,'Lattice')) == 0
+% define lattice info; stop at the data section or at the end of the file (fgetl
+% returns -1 there, which strfind never matches) - files without a Lattice, such as
+% spatial graphs, would otherwise loop forever
+contentType = 'unknown';
+while ischar(tline) && numel(strfind(tline,'Lattice')) == 0 && ~startsWith(tline, '# Data section follows')
+    contentTypeToken = regexp(tline, 'ContentType\s+"([^"]*)"', 'tokens', 'once');
+    if ~isempty(contentTypeToken); contentType = contentTypeToken{1}; end
     tline = fgetl(fid);
+end
+if ~ischar(tline) || numel(strfind(tline,'Lattice')) == 0
+    fclose(fid);
+    error('MIB:getAmiraMeshHeader:noLattice', ...
+        '%s\nis not an image or labels AmiraMesh file (ContentType: %s) and can not be opened as an image or a model', ...
+        filename, contentType);
 end
 spaces = strfind(tline,' ');
 width = str2double(tline(spaces(2):spaces(3)));
