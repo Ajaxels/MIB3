@@ -7,10 +7,10 @@
     "centerExpanded": false,
     "centerCollapsed": false,
     "left": {
-      "freeDimension": 350,
+      "freeDimension": 273,
       "collapsed": false,
       "expanded": false,
-      "portion": 0.25,
+      "portion": 0.195,
       "children": [
         {
           "id": "panel1",
@@ -53,13 +53,13 @@
     },
     "tileCount": 1,
     "tileCoverage": 0,
-    "referenceWidth": 1049,
+    "referenceWidth": 1126,
     "referenceHeight": 652,
     "columnWeights": 1,
     "rowWeights": 1,
     "columnLeft": [
       0,
-      1049
+      1126
     ],
     "rowTop": [
       0,
@@ -82,10 +82,10 @@
     "lastSelectedDocumentId": "document1"
   },
   "windowBounds": {
-    "x": 260,
-    "y": 110,
-    "w": 1400,
-    "h": 980
+    "x": 1366,
+    "y": 223,
+    "w": 1416,
+    "h": 1019
   },
   "toolstripCollapsed": false,
   "tools": {

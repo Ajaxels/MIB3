@@ -381,19 +381,13 @@ switch BatchOpt.LayerType{1}
                 loadOpts.labelPosition = varIn.labelPosition;
                 loadOpts.labelValue    = varIn.labelValue;
             end
-            if isfield(varIn, 'modelType')
-                loadOpts.modelType = varIn.modelType;
-            else
-                maxVal = double(max(modelArray(:)));
-                loadOpts.modelType = 63;
-                if maxVal >= 64; loadOpts.modelType = 255; end
-            end
+            if isfield(varIn, 'modelType'); loadOpts.modelType = varIn.modelType; end
         else
             modelArray = varIn;
-            maxVal = double(max(modelArray(:)));
-            loadOpts.modelType = 63;
-            if maxVal >= 64; loadOpts.modelType = 255; end
         end
+        % empty modelType: MibDataset.loadModel detects it from the class of
+        % modelArray (uint8 -> 63/255 by max value, uint16 -> 65535, uint32 -> 4294967295)
+        if ~isfield(loadOpts, 'modelType'); loadOpts.modelType = []; end
 
         %% --- build dsOpts and call MibDataset.loadModel directly ---
         % Calling obj.loadModel(modelArray, loadOpts) would lose modelMaterialNames /
