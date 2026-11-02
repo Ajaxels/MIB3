@@ -18,6 +18,15 @@ function clearSelection(obj, sel_switch, BatchOptIn)
 %   - **BatchOptIn** - *(optional)* structure for batch processing mode; when
 %     NaN, returns default options via the "SyncBatch" event
 %   - .DatasetType  - cell {value, {choices}} selecting the clear scope
+%   - .roiId        - string, ROI restriction: '-1' disables it, '0' uses all ROIs
+%     of the shown orientation, a number uses that ROI. Default: '-1', also when
+%     *Restrict to ROI* is checked: the magic wand, region growing and
+%     Quantification call this method to clear the whole selection before making
+%     a new one. The Clear button (MibSelection.clearSelection) passes the ROI
+%     when the checkbox is checked. Only pixels inside the ROI are
+%     cleared, slice by slice through the stack or dataset. Ignored in the block
+%     mode and for BigData datasets. With no ROI in the shown orientation nothing
+%     is cleared
 %   - .showWaitbar  - logical, show or not the progress bar
 %   - .id           - dataset index 1-9; default = obj.id
 %
@@ -64,7 +73,9 @@ end
 BatchOpt.DatasetType{2} = {'2D, Slice', '3D, Stack', '4D, Dataset'};
 BatchOpt.showWaitbar = true;
 BatchOpt.id = obj.getActiveId();
+BatchOpt.roiId = '-1';   % not from MibDataset.restrictToROI: tools that replace the selection call this to clear it all
 BatchOpt.mibBatchTooltip.DatasetType = 'Select to remove selection from the current slice, stack, or dataset';
+BatchOpt.mibBatchTooltip.roiId = 'Clear only pixels inside ROIs: -1 - do not use ROIs; 0 - all ROIs; any number - ROI with this index';
 BatchOpt.mibBatchTooltip.showWaitbar = 'Show or not the progress bar during execution';
 BatchOpt.mibBatchSectionName = 'Panel -> Selection and View Settings';
 BatchOpt.mibBatchActionName  = 'Clear selection';
@@ -98,6 +109,20 @@ if BatchOpt.showWaitbar && ~strcmp(BatchOpt.DatasetType{1}, '2D, Slice') && ...
 end
 
 id = BatchOpt.id;
+
+%% ROI restriction: clear only inside the ROI(s); off in the block mode, as in
+% getData/setData, and for BigData, whose clear works on tiles
+roiId = str2double(BatchOpt.roiId);
+if roiId >= 0 && obj.I{id}.blockModeSwitch == 0 && ~isa(obj.I{id}.labels, 'core.MibBigDataLabels')
+    roiMask = logical(obj.I{id}.hROI.returnMask(roiId, NaN, NaN, obj.I{id}.orientation, 0));
+    clearSelectionInROI(obj, id, roiMask, BatchOpt.DatasetType{1});
+    if ~isempty(wb); delete(wb); end
+    BatchOpt = rmfield(BatchOpt, 'id');
+    notify(obj, 'SyncBatch', core.ToggleEventData(BatchOpt));
+    notify(obj, 'ShowImage');
+    return;
+end
+
 %% Perform the clear
 switch BatchOpt.DatasetType{1}
     case '2D, Slice'
@@ -177,6 +202,35 @@ BatchOpt = rmfield(BatchOpt, 'id');
 eventdata = core.ToggleEventData(BatchOpt);
 notify(obj, 'SyncBatch', eventdata);
 notify(obj, 'ShowImage');
+end
+
+% ------------------------------------------------------------------------
+function clearSelectionInROI(obj, id, roiMask, datasetType)
+% Clear the selection only under roiMask ([height, width] in the shown
+% orientation): the current slice, every slice of the current time point, or of
+% all time points. The backup holds the current slice or time point, as for the
+% full clear.
+orient = obj.I{id}.orientation;
+backupOptions.id = id;
+if strcmp(datasetType, '2D, Slice')
+    obj.backup('selection', 0, backupOptions);
+    slice = cell2mat(obj.I{id}.getData2D('selection', [], orient));
+    slice(roiMask) = 0;
+    obj.I{id}.setData2D(slice, 'selection', [], orient);
+    return;
+end
+
+obj.backup('selection', 1, backupOptions);
+if strcmp(datasetType, '4D, Dataset')
+    timePoints = 1:obj.I{id}.image.time;
+else
+    timePoints = obj.I{id}.slices{5}(1);
+end
+for timePoint = timePoints
+    stack = cell2mat(obj.I{id}.getData3D('selection', timePoint, orient));
+    stack(repmat(roiMask, [1, 1, size(stack, 3)])) = 0;
+    obj.I{id}.setData3D(stack, 'selection', timePoint, orient);
+end
 end
 
 % ------------------------------------------------------------------------

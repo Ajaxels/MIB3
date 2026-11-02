@@ -79,6 +79,8 @@ classdef MibDataset < matlab.mixin.Copyable
         % a switch indicating the value of the obj.view.handles.panels.segmentation.handles.restrictMask
         restrictSelectionToMaterial
         % a switch indicating the value of the obj.view.handles.panels.segmentation.handles.restrictMaterial
+        restrictToROI
+        % a switch indicating the value of the obj.view.handles.panels.selection.handles.restrictToROI checkbox: limit operations to the selected ROI(s), independent of roiShow
         roiShow
         % a switch to show or not ROI on the image axes
         selectedAddToMaterial

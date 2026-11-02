@@ -6132,8 +6132,14 @@ must reconstruct first. Two consequences follow:</p>
 <li><strong>Selection-aware operations are fast.</strong> Assigning the selection to a material and the other
   shortcuts (<span class="widget widget-button">A</span> / <span class="widget widget-button">S</span> /
   <span class="widget widget-button">R</span>) and clearing it
-  (<span class="widget widget-button">C</span>) work only inside the selection's tracked footprint instead
-  of scanning the whole slide.</li>
+  (<span class="widget widget-button">C</span>) work only where the selection is, instead of scanning the
+  whole slide. With <span class="widget widget-button">Shift</span> they work on every slice at once, so a
+  selection made in 3D (for example with SAM) is assigned in one step. Labels drawn at a higher zoom than
+  the selection keep their detail.</li>
+<li><strong>Shift+R asks how far to replace.</strong> <em>Around the selection</em> changes only the slices that have a
+  selection: on each of them the material is removed inside the square blocks the selection touches,
+  and other slices keep their material. It can be undone. <em>Whole volume</em> removes the material from
+  every slice, which takes longer on a large dataset and cannot be undone.</li>
 <li><strong>The map is persisted as a sidecar file</strong> next to the model store, named <code>&lt;model-name&gt;.levelmap</code>
   (for example <code>Labels_CMU-1.levelmap</code>). It is written when you close the model and when you press
   <strong>Save model</strong> (see below). It does <strong>not</strong> exist mid-session until you save or close.</li>

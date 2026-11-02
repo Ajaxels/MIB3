@@ -108,19 +108,11 @@ Toggles the center marker on the image axes, useful for graphcut segmentation in
 
 ![ROI toggle](images/toolbar_roi.png){align=left}
 
-Toggles ROI visibility. When ROIs are shown, certain tools automatically restrict their operation to the ROI area.
+Toggles ROI visibility. To limit operations to the ROI area, check
+<span class="widget widget-checkbox">Restrict to ROI</span> in the
+[Selection Panel](../panels/selection_imview/selection.md#additional-controls).
 
 <div class="clear-float"></div>
-
-!!! info "ROI-aware tools"
-    Some tools respect the shown ROI and process only the pixels within it:
-
-    - **[Image Filters](../ribbon/image/image-filters.md)** — filtering is applied exclusively inside the ROI, both during preview and when committing the result.
-    - **Adding Selection to Model or Mask** (++a++, ++shift+a++, and related shortcuts) — the addition is restricted to the ROI area; pixels outside the ROI boundary are not affected.
-
-    Tools that are not ROI-aware always process the full dataset or current slice regardless of ROI visibility.
-
-See [ROI Panel](../panels/roi/index.md) for creating and managing ROIs.
 
 ---
 

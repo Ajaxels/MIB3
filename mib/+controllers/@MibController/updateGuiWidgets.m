@@ -585,10 +585,13 @@ if isempty(updatePanels) || ismember('roi', updatePanels)
             roiListHandle.ValueIndex = 1;
         end
         obj.cRoi.handles.roiShowROI.Value = dataset.roiShow;
+        obj.cSelection.handles.restrictToROI.Value = dataset.restrictToROI;
     else
         roiListHandle.Value = 'All';
         dataset.roiShow = false;
         obj.cRoi.handles.roiShowROI.Value = false;
+        dataset.restrictToROI = false;
+        obj.cSelection.handles.restrictToROI.Value = false;
     end
 end
 

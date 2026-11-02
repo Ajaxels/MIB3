@@ -5850,19 +5850,11 @@ See more <a href="../ribbon/tools/index.html#measure-tool">Ribbon → Tools → 
 <hr />
 <h2 id="roi-mode-switch">ROI mode switch<a class="headerlink" href="#roi-mode-switch" title="Permanent link">&para;</a></h2>
 <p><img align="left" alt="ROI toggle" src="images/toolbar_roi.png" /></p>
-<p>Toggles ROI visibility. When ROIs are shown, certain tools automatically restrict their operation to the ROI area.</p>
+<p>Toggles ROI visibility. To limit operations to the ROI area, check
+<span class="widget widget-checkbox">Restrict to ROI</span> in the
+<a href="../panels/selection_imview/selection.html#additional-controls">Selection Panel</a>.</p>
 <div class="clear-float"></div>
 
-<div class="admonition info">
-<p class="admonition-title">ROI-aware tools</p>
-<p>Some tools respect the shown ROI and process only the pixels within it:</p>
-<ul>
-<li><strong><a href="../ribbon/image/image-filters.html">Image Filters</a></strong> — filtering is applied exclusively inside the ROI, both during preview and when committing the result.</li>
-<li><strong>Adding Selection to Model or Mask</strong> (<span class="keys"><kbd class="key-a">A</kbd></span>, <span class="keys"><kbd class="key-shift">Shift</kbd><span>+</span><kbd class="key-a">A</kbd></span>, and related shortcuts) — the addition is restricted to the ROI area; pixels outside the ROI boundary are not affected.</li>
-</ul>
-<p>Tools that are not ROI-aware always process the full dataset or current slice regardless of ROI visibility.</p>
-</div>
-<p>See <a href="../panels/roi/index.html">ROI Panel</a> for creating and managing ROIs.</p>
 <hr />
 <h2 id="block-mode-switch">Block-mode switch<a class="headerlink" href="#block-mode-switch" title="Permanent link">&para;</a></h2>
 <p><img align="left" alt="Block mode" src="images/toolbar_blockmode.png" /></p>

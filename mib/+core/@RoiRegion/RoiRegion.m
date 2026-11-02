@@ -643,10 +643,15 @@ classdef RoiRegion < matlab.mixin.Copyable
             % For *'rectangle'* ROIs the mask is filled directly.  For
             % *'ellipse'* ROIs ``inpolygon`` is used.  For
             % *'polygon'* and *'freehand'* ROIs ``poly2mask``
-            % is used. A polygon that encloses no area (a straight
-            % *Polyline* ROI with 2 vertices, or collinear vertices)
-            % is rasterised as a 1-pixel line along its segments,
-            % because ``poly2mask`` would return an empty mask for it.
+            % is used, and the polygon outline (including the closing
+            % edge) is added as a 1-pixel line. ``poly2mask`` keeps only
+            % pixels whose centres lie inside the polygon, so without the
+            % outline a thin polygon (a *Polyline* ROI drawn along a line,
+            % a few pixels or less across) would give a broken mask and a
+            % zero-area one (2 vertices, collinear vertices) an empty mask.
+            % Boundary pixels that ``poly2mask`` excludes are therefore
+            % part of the mask, also when it restricts ``getData``/``setData``
+            % in ROI mode.
             %
             % When *blockModeSwitch* is 1 the ROI coordinates are shifted
             % by the current axes limits so that the mask aligns with the
@@ -770,19 +775,19 @@ classdef RoiRegion < matlab.mixin.Copyable
                         case {'impoly', 'polygon', 'imfreehand', 'freehand'}
                             X = double(X(:));
                             Y = double(Y(:));
-                            if numel(X) >= 3 && polyarea(X, Y) > 0
+                            if numel(X) >= 3
                                 mask(poly2mask(X, Y, Height, Width)) = 1;
-                            elseif ~isempty(X)
-                                % zero-area polygon (a straight polyline: 2 vertices or
-                                % collinear points) - rasterise its segments as a 1-pixel line
-                                for vertexId = 1:max(1, numel(X)-1)
-                                    nextId = min(vertexId+1, numel(X));
-                                    nPoints = ceil(max(abs([X(nextId)-X(vertexId), Y(nextId)-Y(vertexId)]))) + 1;
-                                    lineX = round(linspace(X(vertexId), X(nextId), nPoints));
-                                    lineY = round(linspace(Y(vertexId), Y(nextId), nPoints));
-                                    inside = lineX >= 1 & lineX <= Width & lineY >= 1 & lineY <= Height;
-                                    mask(sub2ind([Height, Width], lineY(inside), lineX(inside))) = 1;
-                                end
+                            end
+                            % add the outline as a 1-pixel line: poly2mask keeps only pixels
+                            % whose centres are inside, so a thin polygon (a polyline drawn
+                            % along a line) leaves gaps and a zero-area one gives nothing
+                            for vertexId = 1:numel(X)
+                                nextId = mod(vertexId, numel(X)) + 1;
+                                nPoints = ceil(max(abs([X(nextId)-X(vertexId), Y(nextId)-Y(vertexId)]))) + 1;
+                                lineX = round(linspace(X(vertexId), X(nextId), nPoints));
+                                lineY = round(linspace(Y(vertexId), Y(nextId), nPoints));
+                                inside = lineX >= 1 & lineX <= Width & lineY >= 1 & lineY <= Height;
+                                mask(sub2ind([Height, Width], lineY(inside), lineX(inside))) = 1;
                             end
                     end
                 end

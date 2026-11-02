@@ -30,7 +30,9 @@ function moveLayers(obj, SourceLayer, DestinationLayer, DatasetType, ActionType,
 %
 %     - ``.id`` *(optional)* - [numeric] dataset index from 1 to 9 (default: currently shown dataset)
 %     - ``.blockModeSwitch`` - [logical] use or not the block mode
-%     - ``.roiId`` - [char] ROI mode control; ``-1`` to disable
+%     - ``.roiId`` - [char] ROI mode control; ``-1`` to disable, ``0`` for all ROIs, a number for that ROI.
+%       Default: the selected ROI(s) when *Restrict to ROI* in the ROI panel is checked
+%       (``MibDataset.restrictToROI``), otherwise ``-1``. Whether ROIs are shown does not matter
 %     - ``.fillBg`` - [numeric] when ``NaN`` crops as rectangle; when a number fills out-of-ROI areas
 %     - ``.y`` *(optional)* - [numeric] ``[ymin, ymax]`` of the part of the dataset to take
 %     - ``.x`` *(optional)* - [numeric] ``[xmin, xmax]`` of the part of the dataset to take
@@ -86,7 +88,7 @@ BatchOpt.SelectedAddToMaterial = num2str(obj.I{activeId}.getSelectedMaterialInde
 BatchOpt.restrictSelectionToMaterial = logical(obj.I{activeId}.restrictSelectionToMaterial);
 BatchOpt.restrictSelectionToMask = logical(obj.I{activeId}.restrictSelectionToMask);
 BatchOpt.blockModeSwitch = logical(obj.I{activeId}.blockModeSwitch);
-if obj.I{activeId}.roiShow
+if obj.I{activeId}.restrictToROI
     BatchOpt.roiId = num2str(obj.I{activeId}.selectedROI);
 else
     BatchOpt.roiId = '-1';
@@ -197,7 +199,11 @@ end
 
 if BatchOpt.blockModeSwitch == 0
     if ~isfield(BatchOpt, 'roiId')
-        BatchOpt.roiId = num2str(obj.I{BatchOpt.id}.selectedROI);
+        if obj.I{BatchOpt.id}.restrictToROI
+            BatchOpt.roiId = num2str(obj.I{BatchOpt.id}.selectedROI);
+        else
+            BatchOpt.roiId = '-1';
+        end
     end
 else
     BatchOpt.roiId = '-1';

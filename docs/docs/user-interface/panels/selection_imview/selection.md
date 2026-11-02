@@ -174,9 +174,24 @@ function, with the size set in the <span class="widget widget-edit">Strel</span>
 
 - <span class="widget widget-dropdown">Color channel</span>: selects the color channel used for segmentation tools in 
 the [Segmentation Panel](../segm/index.md).
+- <span class="widget widget-checkbox">Apply in 3D</span>: enables 3D manipulations for image and Mask/Model layers.
+- <span class="widget widget-checkbox">Restrict to ROI</span>: limits ROI-aware tools to the ROI selected in the
+**ROI List** of the [ROI Panel](../roi/index.md), or to all ROIs when **All** is selected, whether the ROIs are
+shown or not. When unchecked, they process the whole slice or dataset.
+
+    !!! info "ROI-aware tools"
+        - **[(A)dd](#the-add-button)**, **[(S)ubtract](#the-subtract-button)**, **[(R)eplace](#the-replace-button)**
+          and other moves between the Selection, Mask and Model layers
+        - **[(C)lear](#the-clear-button)**, **[(F)ill](#the-fill-button)**, **[Erode](#the-erode-button)** and
+          **[Dilate](#the-dilate-button)**: only the pixels inside the ROI change. Fill and Dilate see the whole
+          image, so a hole or an object crossing the ROI edge is filled or grows up to the edge.
+        - **[Image Filters](../../ribbon/image/image-filters.md)**, both preview and result
+        - **Isosurface rendering** of the model or mask
+        - **Export to and import from Fiji**, which need a single ROI selected in the **ROI List**
+
+        The brush and other segmentation tools are not limited to the ROI.
 - <span class="widget widget-checkbox">Auto fill selection</span>: automatically fills shapes drawn with 
 the brush tool (and eraser) after releasing the left mouse button.
-- <span class="widget widget-checkbox">Apply in 3D</span>: enables 3D manipulations for image and Mask/Model layers.
 - <span class="widget widget-checkbox">Difference</span>: shows the difference between original and 
 eroded/dilated Selection layers.
 - <span class="widget widget-edit">Strel</span> edit boxes: set the structural element size for 

@@ -86,6 +86,11 @@ Enable manual ROI placement by checking
 
 <span class="widget widget-checkbox">Fix aspect</span>: locks the aspect ratio of ROIs during initial placement or later edits.
 
+<span class="widget widget-checkbox">Show label</span>: shows the ROI label next to each ROI.
+
+To limit operations to the ROI area, check <span class="widget widget-checkbox">Restrict to ROI</span> in the
+[Selection Panel](../selection_imview/selection.md#additional-controls).
+
 <span class="widget widget-button">ROI to Selection</span>: transfers the area under the current ROI to the Selection layer.
 
 ---

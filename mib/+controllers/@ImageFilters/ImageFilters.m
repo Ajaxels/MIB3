@@ -682,8 +682,8 @@ classdef ImageFilters < handle
             if isempty(img); return; end
             img = squeeze(img);  % doImageFiltering adds Z=1: [H,W,C]→[H,W,1,C]; remove it
 
-            % Restrict preview to the ROI area when ROI is shown
-            if dataset.roiShow
+            % Restrict preview to the ROI area when Restrict to ROI is checked
+            if dataset.restrictToROI
                 roiMask = logical(dataset.hROI.returnMask(0, size(imgPreFilter,1), size(imgPreFilter,2), dataset.orientation, 1));
                 isImageSource = strcmp(obj.BatchOpt.SourceLayer{1}, 'image') && ...
                                 ~strcmp(obj.BatchOpt.FilterGroup{1}, 'Image Binarization');

@@ -178,6 +178,7 @@ elseif obj.preferences.Undo.Max3dUndoHistory <= 1 && storeOptions.switch3d
             obj.Backup.replaceItem(newDataIndex, type, {obj.I{id}.copyModelLayers()}, NaN, storeOptions);
         otherwise
             dataStore = cell([size(storeOptions.x, 1), 1]);
+            getDataOptions.roiId = -1;  % x/y hold one ROI bounding box per row; in ROI mode getData would return every ROI on each pass
             for roiId = 1:size(storeOptions.x, 1)
                 getDataOptions.x = storeOptions.x(roiId, :);
                 getDataOptions.y = storeOptions.y(roiId, :);
@@ -214,6 +215,7 @@ else
                 obj.Backup.replaceItem(newDataIndex, type, {obj.I{id}.copyModelLayers()}, NaN, storeOptions);
             otherwise
                 dataStore = cell([size(storeOptions.x, 1), 1]);
+                getDataOptions.roiId = -1;  % x/y hold one ROI bounding box per row
                 for roiId = 1:size(storeOptions.x, 1)
                     getDataOptions.x = storeOptions.x(roiId, :);
                     getDataOptions.y = storeOptions.y(roiId, :);
@@ -236,6 +238,7 @@ else
                 obj.Backup.replaceItem(newDataIndex, type, {obj.I{id}.measure.Data}, NaN, storeOptions);
             otherwise
                 dataStore = cell([size(storeOptions.x, 1), 1]);
+                getDataOptions.roiId = -1;  % x/y hold one ROI bounding box per row
                 for roiId = 1:size(storeOptions.x, 1)
                     getDataOptions.x = storeOptions.x(roiId, :);
                     getDataOptions.y = storeOptions.y(roiId, :);

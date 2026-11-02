@@ -84,17 +84,17 @@ if any(obj.mibModel.I{id}.datasetType(1) == ['V' 'B'])
 end
 
 roiNo = obj.mibModel.I{id}.selectedROI;
-if ~obj.mibModel.I{id}.roiShow
-    roiNo = -1;  % ROI overlay is off; ignore stale selectedROI and use full dataset
+if ~obj.mibModel.I{id}.restrictToROI
+    roiNo = -1;  % Restrict to ROI is off; ignore stale selectedROI and use full dataset
 end
 % roiNo == 0  → "All ROIs" mode (multiple patches)
 % numel > 1   → several specific ROIs selected
-if (roiNo == 0 && obj.mibModel.I{id}.roiShow) || numel(roiNo) > 1
+if (roiNo == 0 && obj.mibModel.I{id}.restrictToROI) || numel(roiNo) > 1
     dlgOpt.MsgBoxOnly = true;
     dlgOpt.Icon = 'puffin_warning';
     dlgOpt.HeaderLines = 1;
     utils.dlgs.inputUniversalDlg(obj.mibModel.getProgressBarParent(), ...
-        'Please select a single ROI from the ROI list or disable the ROI mode!', ...
+        'Please select a single ROI from the ROI list or uncheck "Restrict to ROI" in the ROI panel!', ...
         {}, {}, 'Select ROI!', dlgOpt);
     return;
 end

@@ -39,6 +39,14 @@ function fillSelectionOrMask(obj, targetLayer, BatchOptIn)
 %       restrictSelectionToMaterial=true; ``'-1'`` mask, ``'0'`` exterior, ``'1'``, ``'2'``...
 %     - ``.restrictSelectionToMaterial`` - logical, clip filled result to the
 %       pixels of the selected model material
+%     - ``.roiId`` - string, ROI restriction: ``'-1'`` disables it, ``'0'`` uses all ROIs
+%       of the shown orientation, a number uses that ROI. Default: the ROI(s) selected
+%       in the ROI panel when *Restrict to ROI* is checked (``MibDataset.restrictToROI``),
+%       otherwise ``'-1'``. Holes are found on the whole slice, so a hole crossing the
+%       ROI edge is filled up to the edge; only pixels inside the ROI change, the
+%       outside is restored from the original before each write (the material clip
+%       too acts only inside the ROI). Ignored in the block mode. With no ROI in the
+%       shown orientation nothing changes
 %     - ``.Use2DParallelComputing`` - logical, use parfor for slice-by-slice fill
 %     - ``.showWaitbar`` - logical, show or not the progress dialog
 %     - ``.id`` - *(optional)* dataset index 1-9, default = obj.id
@@ -92,6 +100,11 @@ BatchOpt.SelectedMaterial            = num2str(obj.I{obj.id}.getSelectedMaterial
 BatchOpt.restrictSelectionToMaterial = logical(obj.I{obj.id}.restrictSelectionToMaterial);
 BatchOpt.Use2DParallelComputing      = false;
 BatchOpt.id          = obj.getActiveId();
+if obj.I{BatchOpt.id}.restrictToROI
+    BatchOpt.roiId = num2str(obj.I{BatchOpt.id}.selectedROI);
+else
+    BatchOpt.roiId = '-1';
+end
 BatchOpt.showWaitbar = true;
 
 BatchOpt.mibBatchSectionName = 'Panel -> Selection and View Settings';
@@ -101,6 +114,7 @@ BatchOpt.mibBatchTooltip.TargetLayer  = 'Layer to fill holes in';
 BatchOpt.mibBatchTooltip.DatasetType  = 'Specify whether to fill the current slice (2D, Slice), the stack (3D, Stack) or complete dataset (4D, Dataset)';
 BatchOpt.mibBatchTooltip.SelectedMaterial = 'Index of the selected material; -1 for mask, 0 for exterior, 1,2,3... model materials';
 BatchOpt.mibBatchTooltip.restrictSelectionToMaterial = 'When checked, clip the filled result to pixels of the selected model material';
+BatchOpt.mibBatchTooltip.roiId = 'Change only pixels inside ROIs: -1 - do not use ROIs; 0 - all ROIs; any number - ROI with this index';
 BatchOpt.mibBatchTooltip.Use2DParallelComputing = 'Use parallel processing for slice-by-slice hole filling';
 BatchOpt.mibBatchTooltip.showWaitbar  = 'Show or not the progress dialog during execution';
 
@@ -146,6 +160,14 @@ selcontour   = str2double(BatchOpt.SelectedMaterial);
 selectedOnly = BatchOpt.restrictSelectionToMaterial;
 
 getDataOptions.id = BatchOpt.id;
+
+%% ROI restriction: only pixels inside the ROI(s) change, the outside is restored
+% from the original before each write; off in the block mode, as in getData/setData
+roiMask = [];
+roiId = str2double(BatchOpt.roiId);
+if roiId >= 0 && obj.I{BatchOpt.id}.blockModeSwitch == 0
+    roiMask = logical(obj.I{BatchOpt.id}.hROI.returnMask(roiId, NaN, NaN, obj.I{BatchOpt.id}.orientation, 0));
+end
 
 %% Pre-compute dims, parallel setup, and waitbar (3D/4D only)
 if ~strcmp(BatchOpt.DatasetType{1}, '2D, Slice')
@@ -197,12 +219,13 @@ end
 %  2D Slice - single slice, no loop needed
 %% ================================================================
 if strcmp(BatchOpt.DatasetType{1}, '2D, Slice')
-    slice = cell2mat(obj.getData2D(BatchOpt.TargetLayer{1}, [], [], [], getDataOptions));
-    slice = imfill(slice, 'holes');
+    original = cell2mat(obj.getData2D(BatchOpt.TargetLayer{1}, [], [], [], getDataOptions));
+    slice = imfill(original, 'holes');
     if selectedOnly
         clip = cell2mat(obj.getData2D('labels', [], [], selcontour, getDataOptions));
         slice = slice & clip;
     end
+    if ~isempty(roiMask); slice(~roiMask) = original(~roiMask); end
     obj.I{BatchOpt.id}.setData2D(slice, BatchOpt.TargetLayer{1}, [], [], [], getDataOptions);
 
 %% ================================================================
@@ -231,7 +254,9 @@ else
                 if showWaitbar && mod(layer_id, 10) == 0; pwb.increment(); end %#ok<PFBNS>
                 slice = stack(:, :, layer_id);
                 if max(slice(:)) < 1; continue; end
-                stack(:, :, layer_id) = imfill(slice, 'holes');
+                filled = imfill(slice, 'holes');
+                if ~isempty(roiMask); filled(~roiMask) = slice(~roiMask); end
+                stack(:, :, layer_id) = filled;
             end
         end
         if ~isempty(cancelledAt); break; end
@@ -241,7 +266,11 @@ else
         % pool fails to slice, even when the branch never runs
         if selectedOnly
             model = cell2mat(obj.getData3D('labels', t, orient, selcontour, getDataOptions));
-            stack(~model) = 0;
+            if isempty(roiMask)
+                stack(~model) = 0;
+            else
+                stack(~model & repmat(roiMask, [1, 1, size(stack, 3)])) = 0;
+            end
         end
 
         obj.I{BatchOpt.id}.setData3D(stack, BatchOpt.TargetLayer{1}, t, orient, [], getDataOptions);

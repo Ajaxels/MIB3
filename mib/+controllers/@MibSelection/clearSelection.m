@@ -14,6 +14,10 @@ function clearSelection(obj)
 % When only one time point is present, '4D, Dataset' is demoted to
 % '3D, Stack' automatically.
 %
+% When *Restrict to ROI* is checked (``MibDataset.restrictToROI``), the selected
+% ROI(s) are passed as ``BatchOpt.roiId`` and only the selection inside them is
+% cleared; not for BigData datasets, which ignore ROIs.
+%
 % The method simply delegates to obj.mibModel.clearSelection with the
 % appropriate scope string; all backup, waitbar, and event handling is
 % done there.
@@ -57,5 +61,13 @@ else
     DatasetType = '2D, Slice';
 end
 
-obj.mibModel.clearSelection(DatasetType);
+dataset = obj.mibModel.I{obj.mibModel.id};
+if dataset.restrictToROI && ~isa(dataset.labels, 'core.MibBigDataLabels')
+    % clear only inside the ROI(s); BigData ignores ROIs and keeps its interactive undo question
+    BatchOpt.DatasetType = {DatasetType};
+    BatchOpt.roiId = num2str(dataset.selectedROI);
+    obj.mibModel.clearSelection(DatasetType, BatchOpt);
+else
+    obj.mibModel.clearSelection(DatasetType);
+end
 end

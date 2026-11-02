@@ -15,6 +15,12 @@ function selectionPanelCheckboxes(obj, BatchOptIn)
 %   - **BatchOptIn** - [struct] batch options structure with fields:
 %
 %     - ``.Apply3D`` - [cell] checkbox state (``'Unchanged'``, ``'Checked'`` or ``'Unchecked'``) - Apply-in-3D checkbox
+%     - ``.RestrictToROI`` - [cell] checkbox state - Restrict-to-ROI checkbox; limits ROI-aware operations
+%       (moving data between the Selection, Mask and Model layers, Clear, Fill, Erode, Dilate, image
+%       filters, isosurface rendering, Fiji export/import) to the ROI(s) selected in the ROI panel,
+%       whether ROIs are shown or not.
+%       Stored per dataset in ``MibDataset.restrictToROI``. ``'Checked'`` is ignored when the dataset
+%       has no ROIs, so the checkbox stays unchecked
 %     - ``.AutoFillSelection`` - [cell] checkbox state - Auto-fill checkbox
 %     - ``.Difference`` - [cell] checkbox state - Difference mode checkbox (erode/dilate)
 %     - ``.LutColors`` - [cell] checkbox state - LUT colors checkbox
@@ -86,6 +92,7 @@ BatchOpt = struct();
 availableOptions = {'Unchanged', 'Checked', 'Unchecked'};
 
 BatchOpt.Apply3D         = {'Unchanged'}; BatchOpt.Apply3D{2}         = availableOptions;
+BatchOpt.RestrictToROI   = {'Unchanged'}; BatchOpt.RestrictToROI{2}   = availableOptions;
 BatchOpt.AutoFillSelection        = {'Unchanged'}; BatchOpt.AutoFillSelection{2}        = availableOptions;
 BatchOpt.Difference      = {'Unchanged'}; BatchOpt.Difference{2}      = availableOptions;
 BatchOpt.LutColors       = {'Unchanged'}; BatchOpt.LutColors{2}       = availableOptions;
@@ -99,8 +106,9 @@ BatchOpt.ColorChannel    = '';   % '' = do not modify; '0'=All, '1'=Ch1, etc.
 BatchOpt.mibBatchSectionName = 'Panel -> Selection and View Settings';
 BatchOpt.mibBatchActionName  = 'Modify parameters';
 BatchOpt.mibBatchTooltip.Apply3D         = 'Tweak the state of the "Apply in 3D" checkbox; perform some segmentation tools in 3D';
+BatchOpt.mibBatchTooltip.RestrictToROI   = 'Tweak the state of the "Restrict to ROI" checkbox; limit ROI-aware operations to the ROI(s) selected in the ROI panel';
 BatchOpt.mibBatchTooltip.AutoFillSelection        = 'Tweak the state of the "Auto fill" checkbox; autofill selections';
-BatchOpt.mibBatchTooltip.Difference      = 'Tweak the state of the "differenceSelection" checkbox (erode/dilate mode); results in selection composed only of difference vs original selection';
+BatchOpt.mibBatchTooltip.Difference      = 'Tweak the state of the "difference" checkbox (erode/dilate mode); results in selection composed only of difference vs original selection';
 BatchOpt.mibBatchTooltip.LutColors       = 'Tweak the state of the "LUT colors" checkbox';
 BatchOpt.mibBatchTooltip.ShowModel       = 'Tweak the state of the "Show model" checkbox';
 BatchOpt.mibBatchTooltip.ShowMask        = 'Tweak the state of the "Show mask" checkbox';
@@ -147,12 +155,19 @@ for fieldId = 1:numel(fieldNames)
             case 'Apply3D'
                 obj.handles.applySegmentationIn3D.Value = state;
                 obj.mibModel.applySegmentationIn3D = state;
-                
+
+            case 'RestrictToROI'
+                if state && obj.mibModel.I{obj.mibModel.id}.hROI.getNumberOfROI(0) == 0
+                    state = false;  % no ROIs present - keep the restriction off
+                end
+                obj.handles.restrictToROI.Value = state;
+                obj.mibModel.I{obj.mibModel.id}.restrictToROI = state;
+
             case 'AutoFillSelection'
                 obj.handles.autoFillSelection.Value = state;
                 obj.mibModel.autoFillSelection = state;
 
-            case 'DifferenceSelection'
+            case 'Difference'
                 obj.handles.differenceSelection.Value = state;
                 obj.mibModel.differenceSelection = state;
                

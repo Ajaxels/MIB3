@@ -68,8 +68,8 @@ if isempty(img)
     end
 
     id = obj.BatchOpt.id;
-    if obj.mibModel.I{id}.roiShow
-        getDataOptions.roiId = 0;   % restrict to all shown ROIs
+    if obj.mibModel.I{id}.restrictToROI
+        getDataOptions.roiId = 0;   % restrict to all ROIs
     else
         getDataOptions.roiId = -1;  % no ROI restriction
     end

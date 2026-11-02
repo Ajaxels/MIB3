@@ -89,6 +89,7 @@ classdef MibSelection
 
             obj.handles.colChannel.ValueChangedFcn = @obj.gui_Callbacks;
             obj.handles.applySegmentationIn3D.ValueChangedFcn = @obj.gui_Callbacks;
+            obj.handles.restrictToROI.ValueChangedFcn = @obj.gui_Callbacks;
             obj.handles.autoFillSelection.ValueChangedFcn = @obj.gui_Callbacks;
             obj.handles.preset1.ButtonPushedFcn = @obj.gui_Callbacks;
             obj.handles.preset2.ButtonPushedFcn = @obj.gui_Callbacks;

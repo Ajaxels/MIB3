@@ -56,6 +56,14 @@ function dilateImage(obj, BatchOptIn)
 %     - ``.restrictSelectionToMaterial`` - string, material index (e.g. ``'2'``) or
 %       ``'NaN'`` to disable; clips dilation to pixels inside the material
 %     - ``.restrictSelectionToMask`` - logical, clip dilation to the mask layer
+%     - ``.roiId`` - string, ROI restriction: ``'-1'`` disables it, ``'0'`` uses all ROIs
+%       of the orientation the layer is processed in, a number uses that ROI. Default:
+%       the ROI(s) selected in the ROI panel when *Restrict to ROI* is checked
+%       (``MibDataset.restrictToROI``), otherwise ``'-1'``. Dilation is computed on
+%       the whole slice/volume, so selection outside the ROI can grow into it; only
+%       pixels inside the ROI change, the outside is restored from the original
+%       before each write. 3D dilation uses the XY ROIs on every slice. Ignored in
+%       the block mode. With no ROI in the processed orientation nothing changes
 %     - ``.MaterialIndex`` - string, material index for TargetLayer= ``'labels'``
 %     - ``.Use2DParallelComputing`` - logical, use parfor for 2D slice-by-slice dilation
 %     - ``.AnisotropicMethod`` - cell string, ``{'Accurate (slow)','Fast (bwdist)'}``;
@@ -139,6 +147,11 @@ BatchOpt.Use2DParallelComputing = false;
 BatchOpt.AnisotropicMethod = {'Accurate (slow)'};
 BatchOpt.AnisotropicMethod{2} = {'Accurate (slow)', 'Fast (bwdist)'};
 BatchOpt.id = obj.getActiveId();
+if obj.I{BatchOpt.id}.restrictToROI
+    BatchOpt.roiId = num2str(obj.I{BatchOpt.id}.selectedROI);
+else
+    BatchOpt.roiId = '-1';
+end
 BatchOpt.showWaitbar = true;
 
 BatchOpt.mibBatchSectionName = 'Panel -> Selection and View Settings';
@@ -152,6 +165,7 @@ BatchOpt.mibBatchTooltip.MaterialIndex = 'Index of the material to dilate; only 
 BatchOpt.mibBatchTooltip.Difference   = 'Obtain the difference between dilated and original (dilated ring only)';
 BatchOpt.mibBatchTooltip.restrictSelectionToMaterial = 'Clip dilation to pixels inside the specified material index; "NaN" disables';
 BatchOpt.mibBatchTooltip.restrictSelectionToMask = 'Clip dilation to the masked area';
+BatchOpt.mibBatchTooltip.roiId = 'Change only pixels inside ROIs: -1 - do not use ROIs; 0 - all ROIs; any number - ROI with this index';
 BatchOpt.mibBatchTooltip.Use2DParallelComputing = 'Use parallel processing for 2D slice-by-slice dilation';
 BatchOpt.mibBatchTooltip.AnisotropicMethod = 'For 3D dilation on anisotropic voxels with a large radius: keep the accurate ellipsoid (slow) or use the fast distance-transform approximation (bwdist, treats the element as a sphere)';
 BatchOpt.mibBatchTooltip.showWaitbar  = 'Show or not the progress dialog during execution';
@@ -228,6 +242,15 @@ end
 
 restrictSelectionToMaterial = str2double(BatchOpt.restrictSelectionToMaterial);
 
+%% ROI restriction: only pixels inside the ROI(s) change, the outside is restored
+% from the original before each write; off in the block mode, as in getData/setData
+roiMask = [];
+roiId = str2double(BatchOpt.roiId);
+if roiId >= 0 && obj.I{BatchOpt.id}.blockModeSwitch == 0
+    if strcmp(BatchOpt.DilateMode{1}, '3D'); roiOrient = 3; else; roiOrient = obj.I{BatchOpt.id}.orientation; end
+    roiMask = logical(obj.I{BatchOpt.id}.hROI.returnMask(roiId, NaN, NaN, roiOrient, 0));
+end
+
 %% ================================================================
 %  3D strel dilation
 %% ================================================================
@@ -296,6 +319,11 @@ if strcmp(BatchOpt.DilateMode{1}, '3D')
             dilated = dilated & mask3d;
         end
 
+        if ~isempty(roiMask)
+            outsideROI = repmat(~roiMask, [1, 1, size(dilated, 3)]);
+            dilated(outsideROI) = original(outsideROI);
+        end
+
         % the volume is one operation: a Cancel pressed meanwhile discards it
         if BatchOpt.showWaitbar && wb.CancelRequested; cancelledAt = t; break; end
         obj.I{BatchOpt.id}.setData3D(dilated, BatchOpt.TargetLayer{1}, t, 3, materialIndex, getDataOptions);
@@ -345,6 +373,7 @@ else
             mask2d = cell2mat(obj.getData2D('mask', [], [], [], getDataOptions));
         end
         sliceOut = do_dilate(sliceIn, model2d, mask2d, BatchOpt.Difference, se, useBwdist, se_size(1));
+        if ~isempty(roiMask); sliceOut(~roiMask) = sliceIn(~roiMask); end
         obj.I{BatchOpt.id}.setData2D(sliceOut, BatchOpt.TargetLayer{1}, [], [], materialIndex, getDataOptions);
 
     else
@@ -398,7 +427,9 @@ else
                     modelSlice = []; maskSlice = [];
                     if ~isempty(model3d); modelSlice = model3d(:,:,layer_id); end
                     if ~isempty(mask3d);  maskSlice  = mask3d(:,:,layer_id);  end
-                    stack(:, :, layer_id) = do_dilate(sliceIn, modelSlice, maskSlice, take_difference, se, useBwdist, se_size(1)); %#ok<PFBNS>
+                    sliceOut = do_dilate(sliceIn, modelSlice, maskSlice, take_difference, se, useBwdist, se_size(1)); %#ok<PFBNS>
+                    if ~isempty(roiMask); sliceOut(~roiMask) = sliceIn(~roiMask); end
+                    stack(:, :, layer_id) = sliceOut;
                 end
             end
             if ~isempty(cancelledAt); break; end

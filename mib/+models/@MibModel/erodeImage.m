@@ -48,6 +48,15 @@ function erodeImage(obj, BatchOptIn)
 %       or two values separated by a space (first = XY radius, second = Z radius
 %       for 3D mode or X radius for 2D mode)
 %     - ``.Difference`` - logical, keep only the eroded ring (original minus eroded)
+%     - ``.roiId`` - string, ROI restriction: ``'-1'`` disables it, ``'0'`` uses all ROIs
+%       of the orientation the layer is processed in, a number uses that ROI. Default:
+%       the ROI(s) selected in the ROI panel when *Restrict to ROI* is checked
+%       (``MibDataset.restrictToROI``), otherwise ``'-1'``. Erosion is computed on
+%       the whole slice/volume, so an object crossing the ROI edge is not eroded
+%       from that edge; only pixels inside the ROI change, the outside is restored
+%       from the original before each write. 3D erosion uses the XY ROIs on every
+%       slice. Ignored in the block mode. With no ROI in the processed orientation
+%       nothing changes
 %     - ``.MaterialIndex`` - string, material index for TargetLayer= ``'labels'``; use
 %       ``NaN`` to erode all materials (not yet implemented - pass a valid index)
 %     - ``.Use2DParallelComputing`` - logical, use parfor for 2D slice-by-slice erosion
@@ -127,6 +136,11 @@ BatchOpt.Use2DParallelComputing = false;
 BatchOpt.AnisotropicMethod = {'Accurate (slow)'};
 BatchOpt.AnisotropicMethod{2} = {'Accurate (slow)', 'Fast (bwdist)'};
 BatchOpt.id = obj.getActiveId();
+if obj.I{BatchOpt.id}.restrictToROI
+    BatchOpt.roiId = num2str(obj.I{BatchOpt.id}.selectedROI);
+else
+    BatchOpt.roiId = '-1';
+end
 BatchOpt.showWaitbar = true;
 
 BatchOpt.mibBatchSectionName = 'Panel -> Selection and View Settings';
@@ -138,6 +152,7 @@ BatchOpt.mibBatchTooltip.ErodeMode    = 'Type of the strel element for erosion';
 BatchOpt.mibBatchTooltip.StrelSize    = 'Radius of the strel element in pixels; one or two numbers - when two values are given the second defines Z radius (3D) or X radius (2D)';
 BatchOpt.mibBatchTooltip.MaterialIndex = 'Index of the material to erode; only for TargetLayer="labels"';
 BatchOpt.mibBatchTooltip.Difference   = 'Obtain the difference between eroded and original (eroded ring only)';
+BatchOpt.mibBatchTooltip.roiId = 'Change only pixels inside ROIs: -1 - do not use ROIs; 0 - all ROIs; any number - ROI with this index';
 BatchOpt.mibBatchTooltip.Use2DParallelComputing = 'Use parallel processing for 2D slice-by-slice erosion';
 BatchOpt.mibBatchTooltip.AnisotropicMethod = 'For 3D erosion on anisotropic voxels with a large radius: keep the accurate ellipsoid (slow) or use the fast distance-transform approximation (bwdist, treats the element as a sphere)';
 BatchOpt.mibBatchTooltip.showWaitbar  = 'Show or not the progress dialog during execution';
@@ -212,6 +227,15 @@ else
     materialIndex = [];
 end
 
+%% ROI restriction: only pixels inside the ROI(s) change, the outside is restored
+% from the original before each write; off in the block mode, as in getData/setData
+roiMask = [];
+roiId = str2double(BatchOpt.roiId);
+if roiId >= 0 && obj.I{BatchOpt.id}.blockModeSwitch == 0
+    if strcmp(BatchOpt.ErodeMode{1}, '3D'); roiOrient = 3; else; roiOrient = obj.I{BatchOpt.id}.orientation; end
+    roiMask = logical(obj.I{BatchOpt.id}.hROI.returnMask(roiId, NaN, NaN, roiOrient, 0));
+end
+
 %% ================================================================
 %  3D strel erosion
 %% ================================================================
@@ -267,6 +291,10 @@ if strcmp(BatchOpt.ErodeMode{1}, '3D')
         if BatchOpt.Difference
             eroded = imabsdiff(eroded, original);
         end
+        if ~isempty(roiMask)
+            outsideROI = repmat(~roiMask, [1, 1, size(eroded, 3)]);
+            eroded(outsideROI) = original(outsideROI);
+        end
         % the volume is one operation: a Cancel pressed meanwhile discards it
         if BatchOpt.showWaitbar && wb.CancelRequested; cancelledAt = t; break; end
         obj.I{BatchOpt.id}.setData3D(eroded, BatchOpt.TargetLayer{1}, t, 3, materialIndex, getDataOptions);
@@ -312,6 +340,7 @@ else
         if BatchOpt.Difference
             eroded = imabsdiff(eroded, original);
         end
+        if ~isempty(roiMask); eroded(~roiMask) = original(~roiMask); end
         obj.I{BatchOpt.id}.setData2D(eroded, BatchOpt.TargetLayer{1}, [], [], materialIndex, getDataOptions);
 
     else
@@ -359,6 +388,7 @@ else
                     if take_difference
                         eroded = imabsdiff(eroded, slice);
                     end
+                    if ~isempty(roiMask); eroded(~roiMask) = slice(~roiMask); end
                     stack(:, :, layer_id) = eroded;
                 end
             end

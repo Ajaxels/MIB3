@@ -57,7 +57,7 @@ sliceNo           = answer{4};
 
 %% ROI handling
 getDataOptions = struct();
-if dataset.roiShow
+if dataset.restrictToROI
     getDataOptions.roiId = [];   % restrict to active ROI
 end
 getDataOptions.fillBg = 0;

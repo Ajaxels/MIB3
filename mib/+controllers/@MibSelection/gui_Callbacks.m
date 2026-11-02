@@ -16,6 +16,7 @@ function gui_Callbacks(obj, hWidget, hData)
 %     - ``'fill'`` - fill selection
 %     - ``'colChannel'`` - select color channel
 %     - ``'applySegmentationIn3D'`` - apply segmentation tools in 3D
+%     - ``'restrictToROI'`` - limit ROI-aware operations to the selected ROI(s)
 %     - ``'autoFillSelection'`` - auto-fill selection
 %     - ``'preset1'`` - apply preset 1 to selected segmentation tool
 %     - ``'preset2'`` - apply preset 2 to selected segmentation tool
@@ -75,6 +76,10 @@ switch mode
         BatchOpt.Apply3D = checkboxOptions(obj.handles.applySegmentationIn3D.Value+1);
         obj.selectionPanelCheckboxes(BatchOpt);
 
+    case 'restrictToROI' % limit ROI-aware operations to the selected ROI(s)
+        BatchOpt.RestrictToROI = checkboxOptions(obj.handles.restrictToROI.Value+1);
+        obj.selectionPanelCheckboxes(BatchOpt);
+
     case 'autoFillSelection' % auto-fill selection
         BatchOpt.AutoFillSelection = checkboxOptions(obj.handles.autoFillSelection.Value+1);
         obj.selectionPanelCheckboxes(BatchOpt);
@@ -108,7 +113,7 @@ switch mode
         %fprintf('controller.selectionPanel_Callbacks: Clicked on a widget of the selection/view settings panel (obj.handles.panels.selection): %s -> %s\n', mode, hWidget.Value);
 
     case 'differenceSelection' % enable the differenceSelection mode for the dilate/erode
-        BatchOpt.DifferenceSelection = checkboxOptions(obj.handles.differenceSelection.Value+1);
+        BatchOpt.Difference = checkboxOptions(obj.handles.differenceSelection.Value+1);
         obj.selectionPanelCheckboxes(BatchOpt);
 
     case 'lutColors' % visualize image using LUT colors

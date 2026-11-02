@@ -61,6 +61,8 @@ if hROI.getNumberOfROI(0) == 0
     obj.handles.roiShowROI.Value = false;
     dataset.roiShow = false;
     obj.mibController.cQuickAccessBar.handles.roiMode.Value = false;
+    obj.mibController.cSelection.handles.restrictToROI.Value = false;
+    dataset.restrictToROI = false;
 end
 
 notify(obj.mibModel, 'ShowImage');
