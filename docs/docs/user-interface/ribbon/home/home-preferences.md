@@ -8,7 +8,7 @@ making it easy to tweak everything from fonts to undo history.
 
 ## Overview
 
-The dialog organizes settings into seven categories, shown as nodes in the **Categories Tree** on the left side:
+The dialog organizes settings into eight categories, shown as nodes in the **Categories Tree** on the left side:
 
 ![Preferences dialog](images/file-preferences-ui.png){.on-glb align=left width="300"}
 
@@ -20,6 +20,8 @@ The dialog organizes settings into seven categories, shown as nodes in the **Cat
 - **Segmentation tools**: adjusts settings and options for segmentation tools.
 - **Input / output**: selects the OME-Zarr (zarr3) read/write engine, the zarr chunk cache size, and
   BigData label smoothing.
+- **Fine-tuning**: small adjustments of existing actions, such as the zoom step of the
+  ++q++ / ++w++ keys.
 
 At the bottom, you’ll find buttons to manage changes:
 
@@ -535,6 +537,22 @@ higher-resolution pyramid levels (*default: enabled*).
 !!! note
     Smoothing rounds the staircase pattern of a coarse edit but cannot add detail finer than the
     level you drew at — draw at a higher magnification for crisp boundaries.
+
+---
+
+## Fine-tuning
+
+![Input / Output Preferences](images/file-preferences-finetune.png){.on-glb align=left width="300"}
+
+This category collects small settings that change *how much* an existing action does, for example
+how strongly the ++q++ / ++w++ keys and the mouse wheel zoom, or how many slices the arrow keys
+skip. Settings changed from their default are shown in bold.
+
+<div class="clear-float"></div>
+
+!!! tip
+    For a smooth zoom with the ++q++ / ++w++ keys, set **Zoom step of the Q/W keys** to `1.05`
+    or `1.1`; the default `2` doubles or halves the magnification.
 
 ---
 

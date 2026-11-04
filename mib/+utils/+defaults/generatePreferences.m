@@ -227,6 +227,18 @@ Prefs.IO.BioFormats.Library = 'mib';
 %% ----------- KEY SHORTCUTS PANEL -----------
 Prefs.KeyShortcuts = utils.defaults.generateKeyShortcuts();
 
+%% ----------- FINE-TUNING PANEL -----------
+% small settings without a widget of their own, edited in Preferences -> Fine-tuning;
+% each of them must also be described in utils.defaults.generateTweaks
+Prefs.Tweaks.Zoom.KeyFactor = 2;       % magnification factor of Zoom in/out (Q/W keys in the zoom mode)
+Prefs.Tweaks.Zoom.WheelFactor = 1.1;   % magnification factor of one mouse wheel step in the zoom mode
+Prefs.Tweaks.Navigation.SliceStep = 1;         % slices per arrow, Q/W or mouse wheel step
+Prefs.Tweaks.Navigation.SliceShiftStep = 10;   % the same with Shift
+Prefs.Tweaks.Navigation.FrameStep = 1;         % time points per Alt + mouse wheel step
+Prefs.Tweaks.Navigation.FrameShiftStep = 10;   % the same with Shift
+Prefs.Tweaks.Segmentation.ToolSizeWheelStep = 1;       % tool size change per Ctrl + mouse wheel step
+Prefs.Tweaks.Segmentation.ToolSizeWheelShiftStep = 5;  % the same with Shift
+
 %% ----------- SEGMENTATION TOOLS PANEL -------
 
 % ---------- Annotations ----------

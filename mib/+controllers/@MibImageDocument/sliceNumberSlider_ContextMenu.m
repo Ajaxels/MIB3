@@ -18,29 +18,32 @@ function sliceNumberSlider_ContextMenu(obj, menuEntry, selectedData)
 %   (none)
 %
 % **Available menu options** (via ``menuEntry.Tag``):
-%   - ``'sliceNumberSliderContextDefault'`` - reset Z slider settings to default values
-%   - ``'sliceNumberSliderContextSetStep'`` - update Z slider settings with new values
-%   - ``'frameNumberSliderContextDefault'`` - reset T slider settings to default values
-%   - ``'frameNumberSliderContextSetStep'`` - update T slider settings with new values
+%   - ``'sliceNumberSliderContextDefault'`` - reset Z slider steps to ``preferences.Tweaks.Navigation.SliceStep`` and ``.SliceShiftStep``
+%   - ``'sliceNumberSliderContextSetStep'`` - update Z slider steps with new values, for the current session only
+%   - ``'frameNumberSliderContextDefault'`` - reset T slider steps to ``preferences.Tweaks.Navigation.FrameStep`` and ``.FrameShiftStep``
+%   - ``'frameNumberSliderContextSetStep'`` - update T slider steps with new values, for the current session only
 
 
 if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.MibImageDocument.sliceNumberSlider_ContextMenu: selected menu entry (menuEntry.Tag): %s\n', menuEntry.Tag);
 end
 
+navigationPrefs = obj.mibModel.preferences.Tweaks.Navigation;
 if ismember(menuEntry.Tag, {'sliceNumberSliderContextDefault', 'sliceNumberSliderContextSetStep'})
     sliderStep = 'sliderZStep';
     sliderShiftStep = 'sliderZShiftStep';
+    defaultSteps = [navigationPrefs.SliceStep, navigationPrefs.SliceShiftStep];
 else
     sliderStep = 'sliderTStep';
     sliderShiftStep = 'sliderTShiftStep';
+    defaultSteps = [navigationPrefs.FrameStep, navigationPrefs.FrameShiftStep];
 end
 
 
 switch menuEntry.Tag
-    case {'sliceNumberSliderContextDefault', 'frameNumberSliderContextDefault'}  % set brightness on the screen to be the same as in the image
-        obj.(sliderStep) = 1;         % default slider step
-        obj.(sliderShiftStep) = 10;   % default slider step with shift pressed
+    case {'sliceNumberSliderContextDefault', 'frameNumberSliderContextDefault'}  % back to the steps of Preferences -> Fine-tuning
+        obj.(sliderStep) = defaultSteps(1);         % default slider step
+        obj.(sliderShiftStep) = defaultSteps(2);    % default slider step with shift pressed
     case {'sliceNumberSliderContextSetStep', 'frameNumberSliderContextSetStep'}
         prompt = {'Enter step for use with arrows or Q/W buttons:', 'Enter step for use with Shift+arrows or Shift+Q/W buttons:'};
         defAns = {obj.(sliderStep), obj.(sliderShiftStep)};

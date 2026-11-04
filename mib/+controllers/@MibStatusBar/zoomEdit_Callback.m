@@ -19,8 +19,9 @@ function zoomEdit_Callback(obj, recenterSwitch, BatchOptIn)
 %       - ``'Set magnification'`` - (default)
 %       - ``'Fit to screen'``
 %       - ``'100%'``
-%       - ``'Zoom in'``
-%       - ``'Zoom out'``
+%       - ``'Zoom in'`` - multiply the current magnification by
+%         ``preferences.Tweaks.Zoom.KeyFactor`` (default 2)
+%       - ``'Zoom out'`` - divide it by the same factor
 %
 %     - ``.MagnificationValue`` - [char] target magnification in percent (used when Mode is ``'Set magnification'``)
 %
@@ -144,10 +145,13 @@ switch BatchOpt.Mode{1}
         return;
     case '100%'
         BatchOpt.MagnificationValue = '100';
-    case 'Zoom in'
-        BatchOpt.MagnificationValue = num2str(str2double(newZoomValue) * 2);
-    case 'Zoom out'
-        BatchOpt.MagnificationValue = num2str(str2double(newZoomValue) / 2);
+    case {'Zoom in', 'Zoom out'}
+        % step from the actual magnification, not from the rounded percent of the
+        % zoom box: with a small factor (1.05) the rounding would eat the step at
+        % low zoom and the view would get stuck
+        zoomFactor = obj.mibModel.preferences.Tweaks.Zoom.KeyFactor;
+        if strcmp(BatchOpt.Mode{1}, 'Zoom out'); zoomFactor = 1 / zoomFactor; end
+        BatchOpt.MagnificationValue = num2str(100 / obj.mibModel.getMagFactor() * zoomFactor);
 end
 
 %% Apply the magnification value

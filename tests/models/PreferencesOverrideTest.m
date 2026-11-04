@@ -134,6 +134,23 @@ classdef PreferencesOverrideTest < matlab.unittest.TestCase
                 'a file that cannot be read leaves the defaults in place');
         end
 
+        function changedTweak_isWrittenWithItsDescription(testCase)
+            mibPath = testCase.useSandbox();
+            source = testCase.buildModel(mibPath, 'defaults');
+            source.preferences.Tweaks.Zoom.KeyFactor = 1.05;
+            overrideFile = fullfile(mibPath, 'mib3_prefs_override.json');
+
+            numberOfSettings = source.saveOverridePreferences(overrideFile);
+
+            testCase.verifyEqual(numberOfSettings, 1);
+            tweaks = utils.defaults.generateTweaks();
+            keyFactorDescription = tweaks(strcmp({tweaks.Path}, 'Tweaks.Zoom.KeyFactor')).Description;
+            testCase.verifySubstring(fileread(overrideFile), keyFactorDescription, ...
+                'the _comment of a fine-tuning setting comes from generateTweaks');
+            restored = testCase.buildModel(mibPath, 'saved').preferences;
+            testCase.verifyEqual(restored.Tweaks.Zoom.KeyFactor, 1.05);
+        end
+
     end
 
     methods (Access = private)

@@ -27,6 +27,14 @@ classdef Preferences < handle
         javaAppliedPath
         % Java folder that MATLAB / MATLAB Runtime is already set to; Apply connects the
         % ExternalDirs.JavaInstallationPath only when it differs from this one
+        tweaks
+        % struct array describing the settings of the Fine-tuning panel, see utils.defaults.generateTweaks
+        tweakDefaults
+        % cell array with the default value of each element of obj.tweaks
+        fineTuningRows
+        % indices into obj.tweaks of the rows shown in FineTuningTable, after the filter
+        selectedTweak = 0
+        % index into obj.tweaks of the setting edited in the Fine-tuning panel, 0 - none
     end
     
     events
@@ -226,7 +234,8 @@ classdef Preferences < handle
             % main MIB window, updates all GUI widgets, and registers a listener for model
             % updates. The preferences dialog allows users to configure MIB3 settings across
             % multiple panels: User Interface, Colors and Styles, Backup and Undo, External
-            % Directories, Keyboard Shortcuts, and Segmentation Tools.
+            % Directories, Keyboard Shortcuts, Segmentation Tools, Input / Output and
+            % Fine-tuning (see :func:`utils.defaults.generateTweaks`).
             %
             % Input Arguments:
             %   - **mibModel** - handle to the application MibModel instance
@@ -345,7 +354,7 @@ classdef Preferences < handle
 
             panelsList = {'UserInterfacePanel', 'ColorsPanel', 'BackupAndUndoPanel', ...
                 'ExternalDirectoriesPanel', 'KeyboardShortcutsPanel', 'SegmentationToolsPanel', ...
-                'InputOutputPanel'};
+                'InputOutputPanel', 'FineTuningPanel'};
 
             if nargin < 2
                 panelId = 'All';
@@ -609,8 +618,41 @@ classdef Preferences < handle
                 canon = io.BioFormats.Config.normalizeName(obj.preferences.IO.BioFormats.Library);
                 handles.BioFormatsLibrary.Value = obj.bioFormatsLibraryItem(handles.BioFormatsLibrary.Items, canon);
                 handles.BioFormatsLabel.Text = obj.bioFormatsLibraryDescription(canon);
-                
+
                 obj.renderedPanels(7) = 1;
+            end
+
+            % % -------------- FineTuningPanel ----------------
+            if strcmp(panelId, 'All') || strcmp(panelId, 'FineTuningPanel')
+                if obj.renderedPanels(8) == 1; return; end  % already rendered
+                % guard for a .mlapp that does not have the panel yet
+                if isfield(handles, 'FineTuningTable')
+                    % wired here rather than in App Designer, so that a new setting
+                    % in utils.defaults.generateTweaks never needs a change of the
+                    % .mlapp; assigning replaces, so wiring them in the designer as
+                    % well cannot double-fire
+                    fineTuningCallback = @(~, event) obj.FineTuningPanelCallbacks(event);
+                    handles.FineTuningFilter.ValueChangingFcn = fineTuningCallback;
+                    handles.FineTuningFilter.ValueChangedFcn = fineTuningCallback;
+                    handles.FineTuningTable.CellSelectionCallback = fineTuningCallback;
+                    handles.FineTuningNumeric.ValueChangedFcn = fineTuningCallback;
+                    handles.FineTuningCheckBox.ValueChangedFcn = fineTuningCallback;
+                    handles.FineTuningDropDown.ValueChangedFcn = fineTuningCallback;
+                    handles.FineTuningResetButton.ButtonPushedFcn = fineTuningCallback;
+
+                    if isempty(obj.tweaks)
+                        obj.tweaks = utils.defaults.generateTweaks();
+                        % listed by category; sort is stable, so within a category
+                        % the settings keep their order in generateTweaks
+                        [~, categoryOrder] = sort({obj.tweaks.Category});
+                        obj.tweaks = obj.tweaks(categoryOrder);
+                        defaultPreferences = utils.defaults.generatePreferences();
+                        obj.tweakDefaults = arrayfun(@(tweak) getPreferenceByPath(defaultPreferences, tweak.Path), ...
+                            obj.tweaks, 'UniformOutput', false);
+                    end
+                    obj.updateFineTuningTable(handles.FineTuningFilter.Value);
+                end
+                obj.renderedPanels(8) = 1;
             end
         end
 
@@ -674,7 +716,8 @@ classdef Preferences < handle
                 case 'KeyboardShortcutsPanel';   anchor = '#keyboard-shortcuts';
                 case 'SegmentationToolsPanel';   anchor = '#segmentation-tools';
                 case 'InputOutputPanel';         anchor = '#input-output';
-                otherwise;                       anchor = '';    % top of the page
+                case 'FineTuningPanel';          anchor = '#fine-tuning';
+                otherwise;                      anchor = '';    % top of the page
             end
 
             helpFilePath = fullfile(utils.getDocsPath(), ...
@@ -765,6 +808,20 @@ classdef Preferences < handle
             obj.preferences.Users.Tiers = obj.mibModel.preferences.Users.Tiers;
             obj.preferences.System.UserStatsProfile = obj.mibModel.preferences.System.UserStatsProfile;
             obj.preferences.System.UserStatsPromptShown = obj.mibModel.preferences.System.UserStatsPromptShown;
+
+            % the slider steps of the open image documents start from Fine-tuning; pass
+            % them on only when they were changed here, so that steps set for this
+            % session from the slider context menu survive an unrelated Apply
+            navigationPrefs = obj.preferences.Tweaks.Navigation;
+            if ~isequal(navigationPrefs, obj.mibModel.preferences.Tweaks.Navigation)
+                for docId = 1:numel(obj.mibController.cImageDoc)
+                    imageDoc = obj.mibController.cImageDoc{docId};
+                    imageDoc.sliderZStep = navigationPrefs.SliceStep;
+                    imageDoc.sliderZShiftStep = navigationPrefs.SliceShiftStep;
+                    imageDoc.sliderTStep = navigationPrefs.FrameStep;
+                    imageDoc.sliderTShiftStep = navigationPrefs.FrameShiftStep;
+                end
+            end
             obj.mibModel.preferences = obj.preferences;
 
             % a Java folder typed or selected without pressing "Configure Java..."
@@ -1330,7 +1387,191 @@ classdef Preferences < handle
             obj.shownPanelTag = newPanelTag;    % update currently selected node variable
             obj.updateWidgets(obj.shownPanelTag);
         end
-        
+
+        function FineTuningPanelCallbacks(obj, event)
+            % FINETUNINGPANELCALLBACKS - callbacks of the widgets of the Fine-tuning panel.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.FineTuningPanelCallbacks(event)
+            %
+            % The panel lists the settings described by
+            % :func:`utils.defaults.generateTweaks`. A row selected in
+            % ``FineTuningTable`` is edited with one of ``FineTuningNumeric``,
+            % ``FineTuningCheckBox`` or ``FineTuningDropDown``, chosen by the ``Type``
+            % of the setting; the value is written into the local copy
+            % ``obj.preferences`` and reaches MIB with Apply or OK, like every other
+            % setting of the dialog.
+            %
+            % Input Arguments:
+            %   - **event** - event data of the widget; dispatched on ``event.Source.Tag``:
+            %
+            %     - ``'FineTuningFilter'`` - ValueChanging (``event.Value`` holds the text
+            %       being typed) or ValueChanged; shows only the rows whose category,
+            %       name or description contain the text, case-insensitive
+            %     - ``'FineTuningTable'`` - CellSelection, ``event.Indices(1,1)`` is the row
+            %     - ``'FineTuningNumeric'``, ``'FineTuningCheckBox'``,
+            %       ``'FineTuningDropDown'`` - new value of the selected setting;
+            %       ``'integer'`` settings are rounded
+            %     - ``'FineTuningResetButton'`` - restore the default of the selected setting
+            %
+
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Preferences.FineTuningPanelCallbacks(%s): triggered\n', event.Source.Tag);
+            end
+            handles = obj.view.handles;
+
+            switch event.Source.Tag
+                case 'FineTuningFilter'
+                    % event.Value rather than the widget: during ValueChanging the
+                    % field still holds the text before the key press
+                    obj.updateFineTuningTable(event.Value);
+                    return;
+                case 'FineTuningTable'
+                    if isempty(event.Indices); return; end
+                    obj.selectedTweak = obj.fineTuningRows(event.Indices(1, 1));
+                    obj.showFineTuningEditor();
+                    return;
+            end
+
+            if obj.selectedTweak == 0; return; end
+            tweak = obj.tweaks(obj.selectedTweak);
+            switch event.Source.Tag
+                case 'FineTuningNumeric'
+                    newValue = handles.FineTuningNumeric.Value;
+                    if strcmp(tweak.Type, 'integer'); newValue = round(newValue); end
+                case 'FineTuningCheckBox'
+                    newValue = logical(handles.FineTuningCheckBox.Value);
+                case 'FineTuningDropDown'
+                    newValue = handles.FineTuningDropDown.Value;
+                case 'FineTuningResetButton'
+                    newValue = obj.tweakDefaults{obj.selectedTweak};
+                otherwise
+                    return;
+            end
+            obj.preferences = setPreferenceByPath(obj.preferences, tweak.Path, newValue);
+            obj.showFineTuningEditor();
+            obj.updateFineTuningTable(handles.FineTuningFilter.Value);
+        end
+
+        function updateFineTuningTable(obj, filterText)
+            % UPDATEFINETUNINGTABLE - fill FineTuningTable with the settings matching the filter.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.updateFineTuningTable(filterText)
+            %
+            % Shows the category, name, current value (from the local copy
+            % ``obj.preferences``) and default of every setting of ``obj.tweaks``
+            % whose category, name or description contain ``filterText``; a setting
+            % that differs from its default is shown in bold. The setting being edited
+            % stays in the editor below the table even when the filter hides its row.
+            % Category and Setting are sortable; Value and Default are not, as they
+            % hold text (``on``/``off`` for a checkbox), which would sort 10 before 2.
+            % A user sort does not break the row lookup: ``event.Indices`` of
+            % CellSelection and the ``'row'`` targets of ``addStyle`` refer to rows of
+            % ``Data``, not to the displayed order.
+            %
+            % Input Arguments:
+            %   - **filterText** - [char] text to look for, case-insensitive; ``''`` shows all
+
+            handles = obj.view.handles;
+            filterText = strtrim(char(filterText));
+            searchText = strcat({obj.tweaks.Category}, {' '}, {obj.tweaks.Label}, {' '}, {obj.tweaks.Description});
+            obj.fineTuningRows = find(contains(searchText, filterText, 'IgnoreCase', true));   % '' matches all
+
+            numberOfRows = numel(obj.fineTuningRows);
+            tableData = cell([numberOfRows, 4]);
+            isModified = false([numberOfRows, 1]);
+            for rowId = 1:numberOfRows
+                tweakId = obj.fineTuningRows(rowId);
+                currentValue = getPreferenceByPath(obj.preferences, obj.tweaks(tweakId).Path);
+                tableData(rowId, :) = {obj.tweaks(tweakId).Category, obj.tweaks(tweakId).Label, ...
+                    tweakValueText(currentValue), tweakValueText(obj.tweakDefaults{tweakId})};
+                isModified(rowId) = ~isequal(currentValue, obj.tweakDefaults{tweakId});
+            end
+
+            handles.FineTuningTable.ColumnName = {'Category', 'Setting', 'Value', 'Default'};
+            handles.FineTuningTable.ColumnEditable = false;
+            % Value and Default hold text, which would sort 10 before 2
+            handles.FineTuningTable.ColumnSortable = [true true false false];
+            handles.FineTuningTable.Data = tableData;
+            removeStyle(handles.FineTuningTable);
+            if any(isModified)
+                addStyle(handles.FineTuningTable, uistyle('FontWeight', 'bold'), 'row', find(isModified));
+            end
+            obj.showFineTuningEditor();
+        end
+
+        function showFineTuningEditor(obj)
+            % SHOWFINETUNINGEDITOR - show the editing widget of the selected Fine-tuning setting.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.showFineTuningEditor()
+            %
+            % Hides ``FineTuningNumeric``, ``FineTuningCheckBox`` and
+            % ``FineTuningDropDown``, then shows the one matching the ``Type`` of
+            % ``obj.tweaks(obj.selectedTweak)`` with its current value, limits or items,
+            % its category in ``FineTuningSettingLabel2`` (heading above the editor),
+            % its name in ``FineTuningSettingLabel`` (next to the editor) and its
+            % description in ``FineTuningDescription``. With no setting selected
+            % ``FineTuningSettingLabel2`` asks to select one, ``FineTuningSettingLabel``
+            % and the description are empty and the reset button is disabled.
+            % The same pattern as
+            % :func:`controllers.BatchProcessing.displaySelectedActionTableItems`: a
+            % ``uitable`` column has one format for all its rows, so settings of
+            % different types cannot be edited in the table itself.
+
+            handles = obj.view.handles;
+            handles.FineTuningNumeric.Visible = 'off';
+            handles.FineTuningCheckBox.Visible = 'off';
+            handles.FineTuningDropDown.Visible = 'off';
+
+            if obj.selectedTweak == 0
+                handles.FineTuningSettingLabel2.Text = 'Select a setting in the table';
+                handles.FineTuningSettingLabel.Text = '';
+                handles.FineTuningDescription.Value = {''};
+                handles.FineTuningResetButton.Enable = 'off';
+                return;
+            end
+
+            tweak = obj.tweaks(obj.selectedTweak);
+            currentValue = getPreferenceByPath(obj.preferences, tweak.Path);
+            switch tweak.Type
+                case {'numeric', 'integer'}
+                    editor = handles.FineTuningNumeric;
+                    editor.Limits = tweak.Limits;
+                    if strcmp(tweak.Type, 'integer')
+                        editor.RoundFractionalValues = 'on';
+                        editor.ValueDisplayFormat = '%d';
+                    else
+                        editor.RoundFractionalValues = 'off';
+                        editor.ValueDisplayFormat = '%.4g';
+                    end
+                    editor.Value = currentValue;
+                case 'logical'
+                    editor = handles.FineTuningCheckBox;
+                    editor.Value = currentValue;
+                case 'dropdown'
+                    editor = handles.FineTuningDropDown;
+                    editor.Items = tweak.Items;
+                    editor.Value = currentValue;
+            end
+            editor.Tooltip = tweak.Description;
+            editor.Visible = 'on';
+
+            handles.FineTuningSettingLabel2.Text = tweak.Category;
+            handles.FineTuningSettingLabel.Text = tweak.Label;
+            handles.FineTuningDescription.Value = {tweak.Description; ...
+                sprintf('Default: %s',tweakValueText(obj.tweakDefaults{obj.selectedTweak}))};
+            handles.FineTuningResetButton.Enable = ...
+                matlab.lang.OnOffSwitchState(~isequal(currentValue, obj.tweakDefaults{obj.selectedTweak}));
+        end
+
         
         function updateColorPalette(obj)
             % UPDATECOLORPALETTE - generate default colors for the selected palette.
@@ -2030,6 +2271,32 @@ if sum([0.2126 0.7152 0.0722] .* linearColor) > 0.179
     buttonHandle.FontColor = [0 0 0];
 else
     buttonHandle.FontColor = [1 1 1];
+end
+end
+
+% =====================================================================
+function value = getPreferenceByPath(preferences, path)
+% GETPREFERENCEBYPATH - value of a preference given by its dotted path, 'Tweaks.Zoom.KeyFactor'
+pathParts = strsplit(path, '.');
+value = getfield(preferences, pathParts{:});
+end
+
+% =====================================================================
+function preferences = setPreferenceByPath(preferences, path, value)
+% SETPREFERENCEBYPATH - set a preference given by its dotted path, 'Tweaks.Zoom.KeyFactor'
+pathParts = strsplit(path, '.');
+preferences = setfield(preferences, pathParts{:}, value);
+end
+
+% =====================================================================
+function text = tweakValueText(value)
+% TWEAKVALUETEXT - value of a Fine-tuning setting as shown in FineTuningTable
+if islogical(value)
+    if value; text = 'on'; else; text = 'off'; end
+elseif isnumeric(value)
+    text = num2str(value);
+else
+    text = char(value);
 end
 end
 

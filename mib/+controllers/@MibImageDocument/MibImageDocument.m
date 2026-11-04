@@ -80,10 +80,12 @@ classdef MibImageDocument < handle
         imageHandle = matlab.graphics.primitive.Image('CData', []); % handle to the rendered image
         listeners = {}          % cell array with handles to listeners
         quickMeasure = []       % struct with active quick measurement: .roi .textH .datasetId .lastPos; or []
-        sliderTStep = 1          % t-slider step, can be updated in obj.sliceNumberSlider_ContextMenu
-        sliderTShiftStep = 10    % t-slider step with shift pressed obj.sliceNumberSlider_ContextMenu
-        sliderZStep = 1          % z-slider step, can be updated in obj.sliceNumberSlider_ContextMenu
-        sliderZShiftStep = 10    % z-slider step with shift pressed obj.sliceNumberSlider_ContextMenu
+        % slider steps start from preferences.Tweaks.Navigation (Preferences -> Fine-tuning);
+        % obj.sliceNumberSlider_ContextMenu changes them for the current session only
+        sliderTStep = 1          % t-slider step
+        sliderTShiftStep = 10    % t-slider step with shift pressed
+        sliderZStep = 1          % z-slider step
+        sliderZShiftStep = 10    % z-slider step with shift pressed
         sliderDebounceTimer = [] % timer used to debounce rapid slider dragging (Zarr virtual datasets);
         sliderDragging = false       % true while the user is actively dragging a slice/frame slider
         lastSliderRenderTime = []    % tic id of the last throttled slider redraw (wall-clock throttle)
@@ -185,6 +187,11 @@ classdef MibImageDocument < handle
             obj.setOfDatasetsIndex = setOfDatasetsIndex;
             obj.brushCursor = [];
             obj.brushCursorOffset = [];
+            navigationPrefs = obj.mibModel.preferences.Tweaks.Navigation;
+            obj.sliderZStep = navigationPrefs.SliceStep;
+            obj.sliderZShiftStep = navigationPrefs.SliceShiftStep;
+            obj.sliderTStep = navigationPrefs.FrameStep;
+            obj.sliderTShiftStep = navigationPrefs.FrameShiftStep;
 
             %% Create FigureDocument
             figOptions.Title = title;

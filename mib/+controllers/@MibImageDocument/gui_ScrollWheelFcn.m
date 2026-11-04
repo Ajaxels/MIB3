@@ -10,11 +10,13 @@ function gui_ScrollWheelFcn(obj, eventdata)
 % and the MouseWheel mode preference.
 %
 % **Scroll behaviors:**
-%   - ``Ctrl + Scroll`` - adjust brush/tool size by 1 unit
-%   - ``Ctrl + Shift + Scroll`` - adjust brush/tool size by 5 units
+%   - ``Ctrl + Scroll`` - adjust brush/tool size by ``Tweaks.Segmentation.ToolSizeWheelStep`` (default 1)
+%   - ``Ctrl + Shift + Scroll`` - adjust brush/tool size by ``Tweaks.Segmentation.ToolSizeWheelShiftStep`` (default 5)
 %   - ``Alt + Scroll`` - navigate time frames (scroll mode + AltWithScrollWheel pref)
-%   - ``Scroll`` (zoom mode) - zoom in/out centred on cursor (power law, C=1.10)
+%   - ``Scroll`` (zoom mode) - zoom in/out centred on cursor (power law, C = ``Tweaks.Zoom.WheelFactor``, default 1.1)
 %   - ``Scroll`` (scroll mode) - navigate Z-slices
+%
+% The ``Tweaks`` settings are in ``obj.mibModel.preferences``, see :func:`utils.defaults.generateTweaks`.
 %
 % When adjusting brush size, cursor is temporarily replaced with numeric size indicator
 % (capped at display value 99). Brush size is clamped to minimum of 1.
@@ -63,9 +65,9 @@ end
 
 % Ctrl+Scroll: change brush/tool size
 if ismember('control', modifier)
-    step = 1;
+    step = obj.mibModel.preferences.Tweaks.Segmentation.ToolSizeWheelStep;
     if ismember('shift', modifier)
-        step = 5;
+        step = obj.mibModel.preferences.Tweaks.Segmentation.ToolSizeWheelShiftStep;
     end
 
     % Get appropriate widget based on current segmentation tool
@@ -164,8 +166,8 @@ if obj.mibModel.preferences.System.MouseWheel(1) == 's'  && ...  % scroll
 elseif obj.mibModel.preferences.System.MouseWheel(1) == 'z'                 % 'zoom', zoom in/zoom out with the mouse wheel
     % Power law allows for the inverse to work:
     %      C^(x) * C^(-x) = 1
-    % Choose C to get "appropriate" zoom factor
-    C = 1.10;
+    % C is the zoom factor of one wheel step, Preferences -> Fine-tuning
+    C = obj.mibModel.preferences.Tweaks.Zoom.WheelFactor;
     % Get mouse coordinates
     curPt = obj.handles.imViewAxes.CurrentPoint;
     curPt = curPt(1, 1:2);  % mouse coordinates
