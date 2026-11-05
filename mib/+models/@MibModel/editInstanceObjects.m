@@ -214,6 +214,12 @@ action = BatchOpt.Action{1};
 if ~localGuard(obj, dataset)
     return;
 end
+% locked labels: every action here rewrites objects (picking and highlighting
+% live in controllers.InstanceEditor and stay available)
+if strcmp(dataset.getLockedState('labels'), 'locked')
+    obj.showLockedNotice(id, 'labels', batchModeSwitch == 1);
+    return;
+end
 if localIsBigData(dataset)
     % The two whole-model actions that read the volume as one array
     problem = '';

@@ -104,6 +104,9 @@ classdef MibBigDataLabelsZarr2 < core.MibBigDataLabels
             if nargin < 2; meta = core.MibImage.initializeImgInfo(); end
             if nargin < 1; img = []; end
             obj = obj@core.MibBigDataLabels(img, meta);
+            % read-only for good: the GUI shows it locked, and
+            % models.MibModel.setLockedState refuses to unlock it
+            obj.lockedState = true;
         end
 
         function openStore(obj, storePath)

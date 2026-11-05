@@ -225,7 +225,9 @@ classdef MibModel < handle
         result = setData3D(obj, dataset, type, time, orient, col_channel, options)        % set a 3D dataset in the current dataset; wrapper around core.MibDataset.setData3D
         result = setData4D(obj, dataset, type, orient, col_channel, options)        % set the complete 4D dataset; wrapper around core.MibDataset.setData4D
         setDefaultColorPalette(obj, paletteName, colorsNo, randomSeed)        % set default color palette for materials of the model
+        status = setLockedState(obj, id, layer, state, options)        % lock or unlock the 'image' or 'labels' layer: BigData lockedState, or the disabled selection of a Standard dataset; read-only labels stay locked
         setMagFactor(obj, magFactor, id)        % set magnification for the currently shown or id dataset
+        unlocked = showLockedNotice(obj, id, layer, batchMode)        % explain a refused change of a locked layer, offer Unlock; "Do not show again" is kept in sessionSettings
         smoothImage(obj, type, BatchOptIn)      % smooth the selection, mask, or labels layer with a Gaussian kernel (2D or 3D)
         status = transformDataset(obj, BatchOptIn)  % Dispatcher for dataset geometry transforms (flip, rotate, transpose, add frame)
         undo(obj, newIndex)        % undo/redo the recent changes (Ctrl+Z)

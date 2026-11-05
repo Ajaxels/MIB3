@@ -572,7 +572,14 @@ classdef BoundingBox < handle
             % Persist bounding box to zarr3 file for BigData datasets (after user confirmation)
             if batchModeSw == 0
                 ds = obj.mibModel.I{obj.BatchOpt.id};
-                if strcmp(ds.image.type, 'bigdata') && endsWith(lower(ds.image.filename), '.zarr3')
+                % a locked image keeps the new box for this session unless
+                % the user unlocks it in the notice
+                writeAllowed = true;
+                if strcmp(ds.image.type, 'bigdata') && endsWith(lower(ds.image.filename), '.zarr3') && ...
+                        strcmp(ds.getLockedState('image'), 'locked')
+                    writeAllowed = obj.mibModel.showLockedNotice(obj.BatchOpt.id, 'image');
+                end
+                if writeAllowed && strcmp(ds.image.type, 'bigdata') && endsWith(lower(ds.image.filename), '.zarr3')
                     fmtVec = @(v) strjoin(arrayfun(@(x) sprintf('%.4g', x), v(:)', ...
                         'UniformOutput', false), ', ');
                     question = { ...

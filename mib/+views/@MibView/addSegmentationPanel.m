@@ -28,7 +28,18 @@ panelHandles = views.components.Segmentation('Parent', obj.handles.panels.segmen
     'Units', 'normalized', 'Position', [0 0 1 1]); % needs to have normalized units, by default those are pixels
 
 panelHandles.handles.colorWheel.Tooltip = ...
-    sprintf('Adjust the color scheme for visualization of materials.\nUse Ctrl+click for instant random colors, RMB for additional options');
+    sprintf('Visualization options and random colors of the materials\nCtrl+click: new random colors at once; RMB: color schemes');
+
+% labels lock: until Segmentation.mlapp has the labelsLock state button, it
+% takes the grid cell of the retired viewSettings button, whose options the
+% colorWheel click opens now (controllers.MibSegmentation.gui_Callbacks)
+if ~isfield(panelHandles.handles, 'labelsLock') && isfield(panelHandles.handles, 'viewSettings')
+    retiredButton = panelHandles.handles.viewSettings;
+    panelHandles.handles.labelsLock = uibutton(retiredButton.Parent, 'state', 'Text', '', 'Tag', 'labelsLock');
+    panelHandles.handles.labelsLock.Layout = retiredButton.Layout;
+    delete(retiredButton);
+    panelHandles.handles = rmfield(panelHandles.handles, 'viewSettings');
+end
 
 % add handle tags to tooltips
 if obj.mibModel.preferences.System.DeveloperMode

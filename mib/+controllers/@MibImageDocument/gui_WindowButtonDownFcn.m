@@ -356,6 +356,8 @@ elseif strcmp(operation, 'select')
     %x = round(xy(1,1));
 
     if dataset.enableSelection == 0 && ~ismember(tool, {'Annotations', '3D lines'})
+        % Standard with the selection disabled: the lock notice offers to enable it
+        if strcmp(dataset.getLockedState('labels'), 'locked'); obj.mibModel.showLockedNotice(obj.mibModel.id, 'labels'); end
         return;
     end    % no selection layer
 

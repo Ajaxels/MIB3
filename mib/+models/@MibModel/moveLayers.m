@@ -185,7 +185,11 @@ if strcmp(obj.I{BatchOpt.id}.datasetType, 'BigData') && ~strcmp(BatchOpt.Dataset
 end
 
 % when the Selection layer is disabled -> return
-if obj.I{BatchOpt.id}.enableSelection == 0
+if obj.I{BatchOpt.id}.enableSelection == 0 && strcmp(obj.I{BatchOpt.id}.getLockedState('labels'), 'locked')
+    % a Standard dataset with the selection disabled: the lock notice offers to enable it
+    obj.showLockedNotice(BatchOpt.id, 'labels', nargin == 6);
+    return;
+elseif obj.I{BatchOpt.id}.enableSelection == 0
     dlgOpt.MsgBoxOnly = true;
     dlgOpt.Icon = 'puffin_warning';
     dlgOpt.HeaderLines = 1;
@@ -194,6 +198,14 @@ if obj.I{BatchOpt.id}.enableSelection == 0
         {'The models, selection and mask layers are switched off! Please make sure that the "Enable selection" option in the Preferences dialog is set to "yes" and try again...'}, ...
         'The models are disabled', dlgOpt);
     notify(obj, 'StopProtocol');
+    return;
+end
+
+% locked labels: refused here, before the undo copy and the progress dialog;
+% the other destinations leave the materials alone
+if strcmp(BatchOpt.DestinationLayer{1}, 'labels') && ...
+        strcmp(obj.I{BatchOpt.id}.getLockedState('labels'), 'locked')
+    obj.showLockedNotice(BatchOpt.id, 'labels', nargin == 6);
     return;
 end
 

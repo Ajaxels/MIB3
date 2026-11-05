@@ -23,7 +23,7 @@ function buffers_Callback(obj, hWidget, hData, buttonId)
 
 if nargin < 4
     % get index of the pressed button
-    buttonId = str2double(hWidget.Text); 
+    buttonId = str2double(erase(hWidget.Tag, 'buffer'));   % from the Tag: a locked buffer shows no text
 end
 
 if obj.mibModel.preferences.System.DeveloperMode

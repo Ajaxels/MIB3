@@ -128,6 +128,13 @@ end
 
 modelType = obj.I{BatchOpt.id}.labels.maxMaterials;
 
+% locked labels: removing a material, and the squeeze of an instance model,
+% both rewrite the materials
+if strcmp(obj.I{BatchOpt.id}.getLockedState('labels'), 'locked')
+    obj.showLockedNotice(BatchOpt.id, 'labels', nargin == 2);
+    return;
+end
+
 %% Large models in interactive mode: squeeze labels to contiguous range
 if nargin < 2 && modelType >= 256 && ~obj.I{BatchOpt.id}.labels.objects3D
     % 2D objects: the numbering restarts on every slice, so a squeeze over the

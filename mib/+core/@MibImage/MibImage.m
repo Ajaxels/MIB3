@@ -102,6 +102,22 @@ classdef MibImage < matlab.mixin.Copyable
         % button.
     end
 
+    properties (Transient)
+        lockedState (1,1) logical = false
+        % logical switch protecting the layer from changes for the current session.
+        % Honoured only for BigData today: ``core.MibBigDataLabels.setData63``
+        % refuses writes that change material bits of a locked labels store, and
+        % the voxel-size and bounding-box writes into a BigData image store ask
+        % first when the image is locked. For other dataset types the switch is
+        % stored but nothing reads it. The read-only label overlays
+        % (``core.MibBigDataLabelsZarr2``, ``core.MibBigDataLabelsIndex``) set it to
+        % ``true`` in their constructors. Read the state for the GUI with
+        % ``core.MibDataset.getLockedState``; change it with
+        % ``models.MibModel.setLockedState``, which refuses to unlock a
+        % read-only overlay. Transient: never saved, a reopened store starts
+        % from the default chosen by the loader.
+    end
+
     methods
         % declaration of methods in external files
         output = addColorChannel(obj, img, channelId, lutColors, options)    % Add or replace a color channel in the dataset

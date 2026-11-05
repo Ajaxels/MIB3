@@ -342,6 +342,60 @@ Test: `EditInstanceObjectsBigDataTest/convert63To16383CopiesEveryLevel`.
 Undo-backups for Brush / ClickTracker use block mode; Wand / Region Growing back up *after* the radius
 window is built; Lasso / Drag&Drop back up their bbox/window.
 
+### Locked image and labels (2026-11-05)
+
+Edits go to disk at once, so a finished store can be locked. The state is a session-only `Transient`
+`lockedState` on `core.MibImage`, the base class of every layer object, so `ds.image.lockedState` and
+`ds.labels.lockedState` work alike. It is honoured only for BigData. Terms are the layer names,
+`'image'` and `'labels'`: "model" would wrongly include the mask and selection, which stay editable.
+
+| Layer | Protected | Default |
+|-------|-----------|---------|
+| labels | material bits and the material list | *Load model* asks (Locked default; batch `LockLabels = false`); a new store is unlocked; `MibBigDataLabelsZarr2` / `MibBigDataLabelsIndex` are always locked (`'readOnly'`) |
+| image | the voxel-size and bounding-box patches into the source store (`updateVoxelSizes`, `BoundingBox`); the session values still apply | locked, no dialog (`MibDataset.initialize`) |
+
+`MibDataset.getLockedState(layer)` gives `'none'` / `'unlocked'` / `'locked'` / `'readOnly'`;
+`MibModel.setLockedState(id, layer, state)` is the only setter the GUI and batch use (buffer menu,
+segmentation lock button, `buffers_ContextMenu` `'lockImage'`/`'lockLabels'`).
+
+**Two lines of defence for labels:**
+
+1. **Early guards in `MibModel`** refuse before any work or undo copy: `moveLayers` (destination labels),
+   `undo` (`labels`/`everything`/`modelLayers` entries; the history is kept), `addMaterial` (not the
+   16383 "next empty"), `removeMaterial`, `materialsActions` (insert/swap/reorder), `renameMaterial`,
+   `importMaterial`, `editInstanceObjects`, and `createModel` at the locked store's path (it would
+   delete the store).
+2. **The last line in `setData63`**: `'labels'` is refused; `'everything'` is refused only when
+   `bitand(x, materialMask)` differs from `before`, so selection/mask-only undo entries pass.
+   `setData63` cannot reach `MibModel` and 48 call sites use `I{id}.setData2D/3D/4D` directly, so it sets
+   `labels.lastWriteRefused`; `MibDataset.setData2D/3D/4D` clear it and fire `LockedWriteRefused`; the
+   listener attached in `MibController.listener_newDataset` calls `MibModel.showLockedNotice`.
+
+`showLockedNotice` is the single dialog (Unlock / Keep locked, *Do not show again* kept in
+`sessionSettings.DoNotShowDialogs.LockedImage/LockedLabels`). A stroke calls `setData63` on every
+mouse move, so the notice is throttled by `sessionSettings.LockedNotice`: no second dialog while one is
+open or within 1 s of closing it. The planned reset on mouse-up was dropped because `uiwait` keeps
+processing motion callbacks, so a mouse-up flag would re-open the dialog behind itself.
+
+**Not covered, on purpose:** level-map materialisation on read (a cache, content unchanged), side-file
+writes on close, material colours, *Save model* (side-file only), *Close model*, export, and
+63 -> 16383 conversion (writes a new store, unlocked). DeepMIB `writeModelStore` writes into its own
+results folder, never an open store, and is not guarded. Standard datasets are not enforced: their
+edits stay in memory with undo, and enforcement would need guards in the `setData*` fast paths and
+about 11 direct `labels.data` writes.
+
+**Standard datasets reuse the labels lock for the disabled selection** (2026-11-05):
+`getLockedState('labels')` is `'locked'` while `enableSelection` is false (`'none'` for the empty
+placeholder buffer). `setLockedState` locks by releasing the layers and unlocks by allocating them, using the
+static helpers `controllers.Preferences.releaseSegmentationLayers` / `allocateLabelsLayer` (left there because
+`PreferencesSelectionLayerTest` drives them; the only model -> controller call). The notice is shown where a
+segmentation action used to return silently: mouse press with a segmentation tool, a/s/r and f/z/x, `moveLayers`,
+and the material guards. The `System.EnableSelection` preference still decides for newly opened datasets.
+The Segmentation-panel lock button is hidden for non-BigData datasets (the author did not want a one-click
+delete of the labels there); the Standard lock is reached from the buffer menu **Lock labels** only.
+
+Tests: `tests/core/MibBigDataLockedStateTest.m`, `tests/models/SetLockedStateStandardTest.m`.
+
 ---
 
 ## 9. Saving a BigData model
@@ -419,6 +473,10 @@ drawn at — for crisp boundaries, draw at higher zoom.
   `setData63` does it; a new path that calls `writePackedLevel` directly on an *existing* store
   (today only new stores do: alignment, crop) must call it too, or the index and its side-file
   silently describe a different store.
+- **A new labels write path must respect `labels.lockedState`.** Anything that reaches
+  `writePackedLevel` on an existing store without going through `setData63` (as `moveSelection`,
+  `eraseEverywhere` do from behind a `moveLayers` guard) needs its own early guard in `MibModel`, or a
+  locked store is changed with no notice (§8, Locked image and labels).
 
 ---
 
@@ -498,5 +556,6 @@ is empty). Tests: `tests/controllers/AlignmentBigDataTest.m`.
 | Zarr3 writer / ingest | `+io/+savers/Zarr3Saver.m`, `+io/+adapters/ZarrBlockedAdapter.m` |
 | Streaming export | `+io/+savers/{SliceProvider,InMemorySliceProvider,MibImageSliceProvider,BaseSaver}.m` + per-format savers |
 | Instance index / editor | `+core/@MibDataset/buildInstanceIndex.m` (BigData branch), `+models/@MibModel/editInstanceObjects.m`, `+controllers/@InstanceEditor/` |
-| Tests | `tests/core/MibBigDataLevelMapTest.m`, `tests/models/EditInstanceObjectsBigDataTest.m` |
+| Locked state | `+core/@MibImage/MibImage.m` (`lockedState`), `+core/@MibBigDataLabels/setData63.m`, `+core/@MibDataset/{getLockedState,setData2D/3D/4D}.m`, `+models/@MibModel/{setLockedState,showLockedNotice}.m`, `+controllers/@MibActiveDataset/{buffersContext_Opening,paintBufferLock,buffers_ContextMenu}.m`, `+controllers/@MibSegmentation/gui_Callbacks.m` (`labelsLock`) |
+| Tests | `tests/core/MibBigDataLevelMapTest.m`, `tests/models/EditInstanceObjectsBigDataTest.m`, `tests/core/MibBigDataLockedStateTest.m` |
 | User docs | `docs/docs/getting-started/dataset-types/index.md` |

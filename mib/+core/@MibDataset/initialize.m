@@ -135,6 +135,10 @@ function initialize(obj, img, meta, datasetType, modelType, enableSelection)
             % empty MibLabels63; a disk-backed pyramidal model is created on
             % demand when the user starts segmentation (Phase 2).
             newImage = core.MibBigDataImage(img, meta);
+            % the source store is opened locked: browsing and segmenting do not
+            % write to it, only the voxel-size and bounding-box updates do, and
+            % those ask first while it is locked (see core.MibImage.lockedState)
+            newImage.lockedState = true;
             newLabels = core.MibLabels63(zeros([], 'uint8'), meta);
             % BigData opens browse-only: there is no in-memory selection/model
             % layer until a disk-backed model is created (createModel) or loaded

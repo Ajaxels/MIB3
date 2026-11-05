@@ -88,6 +88,15 @@ historyBefore = struct('undoList', obj.Backup.undoList, 'undoIndex', obj.Backup.
 if ~isfield(storeOptions, 'id'); storeOptions.id = obj.id; end
 id = storeOptions.id;
 
+% locked labels: an entry that can change materials is refused before anything
+% is read or replaced, so the history stays as it is; selection and mask
+% entries of BigData keep their own type (see backup) and still go through
+if ismember(type, {'model', 'labels', 'everything', 'modelLayers'}) && ...
+        strcmp(obj.I{id}.getLockedState('labels'), 'locked')
+    obj.showLockedNotice(id, 'labels');
+    return;
+end
+
 % A 3D entry of a disk-backed model is written back in slabs of slices, with a
 % cancelable progress dialog (restoreBigDataInSlabs); the first slow step is the
 % redo copy of the current state, so the dialog opens here.

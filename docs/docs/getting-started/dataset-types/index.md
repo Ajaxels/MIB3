@@ -135,6 +135,21 @@ Whichever the image is, the **model is always written as an OME-Zarr v3 store be
   [Black-and-White Thresholding](../../user-interface/panels/segm/segm-bwthres.md), and SAM's *Automatic everything*. Each
   [segmentation tool page](../../user-interface/panels/segm/index.md) states its BigData support.
 
+<div class="h4-like">Locked image and labels</div>
+
+Every edit goes straight to disk, so a finished model can be locked against accidental changes:
+
+- **Labels** - when you load a model, MIB asks whether to open it locked, which is the default; a new
+  model starts unlocked. Locked labels keep their materials: drawing into a material, adding the
+  selection to one, undoing such a change and editing the material list are refused. The selection
+  and the mask stay editable.
+- **Image** - the image always opens locked: a changed voxel size or bounding box is used for the
+  session but is not written into the image file.
+
+Lock or unlock either from the [buffer context menu](../../user-interface/panels/datasets/index.md#buffer-context-menu),
+and the labels also with the lock button of the [Segmentation panel](../../user-interface/panels/segm/index.md).
+A lock lasts until the dataset or the model is closed.
+
 !!! tip "Getting into BigData mode"
     Set the **Dataset type** dropdown to **BigData** before opening, and a `.zarr3` store or a
     pyramidal whole-slide file opens straight into it. To move a dataset that is already open, switch

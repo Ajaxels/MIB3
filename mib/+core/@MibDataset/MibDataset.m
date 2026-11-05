@@ -118,8 +118,14 @@ classdef MibDataset < matlab.mixin.Copyable
     end
 
     events
-        SetData 
+        SetData
         % when the set data method was used
+        LockedWriteRefused
+        % when a write to a locked layer was refused (BigData only today); the
+        % event data (core.ToggleEventData) carries ``.layer`` = ``'labels'``.
+        % Fired by setData2D/3D/4D after core.MibBigDataLabels.setData63 refused
+        % a write; controllers.MibController listens to it and shows
+        % models.MibModel.showLockedNotice
     end
 
     methods
@@ -154,6 +160,7 @@ classdef MibDataset < matlab.mixin.Copyable
         varargout = getDatasetDimensions(obj, type, orient, options) % Get dimensions of the dataset, [height, width, depth, color, time]
         dataset = getPixelIdxList(obj, type, PixelIdxList, options)  % Get pixel values at a list of linear indices; routes to correct layer (image/labels/mask/selection)
         bb = getRoiBoundingBox(obj, roiIndex)        % Return the bounding box for a ROI at its native orientation.
+        state = getLockedState(obj, layer)        % locked state of the 'image' or 'labels' layer for the GUI: 'none', 'unlocked', 'locked' or 'readOnly'
         index = getSelectedMaterialIndex(obj, target)        % return the index of the currently selected material in the mibView.handles.materialsTable
         [box, boxFraction] = getSelectionBoundingBox(obj, timeRange)        % bounding box [y1 y2 x1 x2 z1 z2 t1 t2] of the Selection layer, measured on demand; [] when nothing is selected
         [labelsList, labelValues, labelPositions, indices] = getSliceLabels(obj, sliceNumber, timePoint, options)        % Get list of labels (mibImage.hLabels) shown at the specified slice

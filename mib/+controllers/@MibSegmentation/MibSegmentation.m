@@ -103,7 +103,7 @@ classdef MibSegmentation
             obj.handles = guiHandles.handles;   % handles for the panel (equal to obj.view.handles.panels.segmentation.handles ...)
             obj.mibModel = model;               % handle to the main MIB model
             obj.UIFigure = ancestor(obj.gui, 'figure');  % handle to underlying UIFigure
-            
+
             %% Update widgets
             % define the last selection for each of the lasso/object picker types
             obj.handles.lassoType.UserData.lassoTypeIndex = 1;
@@ -207,7 +207,7 @@ classdef MibSegmentation
             obj.handles.removeMaterial.ButtonPushedFcn = @obj.gui_Callbacks;
             obj.handles.colorWheel.ButtonPushedFcn = @obj.gui_Callbacks;
             obj.handles.materialsTable.CellSelectionCallback = @(~,~)obj.materialsTable_CellSelectionCallback();
-            obj.handles.viewSettings.ButtonPushedFcn = @obj.gui_Callbacks;
+            obj.handles.labelsLock.ValueChangedFcn = @obj.gui_Callbacks;
             obj.handles.help.ButtonPushedFcn = @(src, event)obj.mibController.helpButtons_Callback(src, event);
 
             obj.handles.brushFixToScreen.ValueChangedFcn = @obj.brushPanel_Callback;

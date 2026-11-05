@@ -38,6 +38,8 @@ function palette = themeColors(themeSource)
 %       (e.g. Update in BatchProcessing), light ``[0.6314 0.9412 0.6471]``
 %     - ``.dialogStop``       - a running action that can be stopped (e.g. Stop protocol),
 %       light ``[1 0 0]``
+%     - ``.lockedBackground`` - a lock button in the locked state (the labels lock
+%       of the Segmentation panel), amber, light ``[1 0.8 0.4]``
 %     - ``.fieldError``       - background of an input field (dropdown, edit field) that
 %       shows a missing or invalid input (e.g. the material dropdowns of Graphcut without
 %       a model), light ``[1 0 0]``
@@ -119,6 +121,7 @@ if strcmp(themeSource, 'dark')
     palette.dialogClose      = palette.bufferInMemory;
     palette.dialogSecondary  = palette.bufferFileBacked;
     palette.dialogStop       = [0.6 0.1 0.1];
+    palette.lockedBackground = [0.48 0.33 0.05];
     palette.fieldError       = palette.dialogStop;
     palette.tabHighlight     = [0.25 0.25 0.25];
     palette.panelYellow      = [0.28 0.245 0.14];
@@ -148,6 +151,7 @@ else
     palette.dialogClose      = [1 0.5294 0.102];
     palette.dialogSecondary  = [0.6314 0.9412 0.6471];
     palette.dialogStop       = [1 0 0];
+    palette.lockedBackground = [1 0.8 0.4];
     palette.fieldError       = palette.dialogStop;
     palette.tabHighlight     = [0.8 0.8 0.8];
     palette.panelYellow      = [1 0.9804 0.7686];

@@ -63,5 +63,12 @@ sessionSettings.metersPerPixel = 0.0254/pixelsPerInch;
 % NOTE: the "do not show again" registry moved to a persistent location:
 % preferences.DoNotShowDialogs (see utils.defaults.generatePreferences), so the
 % choice survives across sessions.
+% The one exception is kept here, for this session only: the notice shown when
+% a change of a locked layer is refused (models.MibModel.showLockedNotice),
+% fields .LockedImage and .LockedLabels. A lock is a per-session safety net,
+% so silencing its notice must not outlive the session either.
+sessionSettings.DoNotShowDialogs = struct();
+% throttle of that notice: .isOpen while it is shown, .closedAt = tic when it closed
+sessionSettings.LockedNotice = struct('isOpen', false, 'closedAt', []);
 
 end

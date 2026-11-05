@@ -6014,6 +6014,20 @@ larger than memory and survives across sessions.</p>
   <a href="../../user-interface/panels/segm/segm-bwthres.html">Black-and-White Thresholding</a>, and SAM's <em>Automatic everything</em>. Each
   <a href="../../user-interface/panels/segm/index.html">segmentation tool page</a> states its BigData support.</li>
 </ul>
+<div class="h4-like">Locked image and labels</div>
+
+<p>Every edit goes straight to disk, so a finished model can be locked against accidental changes:</p>
+<ul>
+<li><strong>Labels</strong> - when you load a model, MIB asks whether to open it locked, which is the default; a new
+  model starts unlocked. Locked labels keep their materials: drawing into a material, adding the
+  selection to one, undoing such a change and editing the material list are refused. The selection
+  and the mask stay editable.</li>
+<li><strong>Image</strong> - the image always opens locked: a changed voxel size or bounding box is used for the
+  session but is not written into the image file.</li>
+</ul>
+<p>Lock or unlock either from the <a href="../../user-interface/panels/datasets/index.html#buffer-context-menu">buffer context menu</a>,
+and the labels also with the lock button of the <a href="../../user-interface/panels/segm/index.html">Segmentation panel</a>.
+A lock lasts until the dataset or the model is closed.</p>
 <div class="admonition tip">
 <p class="admonition-title">Getting into BigData mode</p>
 <p>Set the <strong>Dataset type</strong> dropdown to <strong>BigData</strong> before opening, and a <code>.zarr3</code> store or a

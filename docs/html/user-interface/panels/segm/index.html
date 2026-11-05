@@ -5843,9 +5843,10 @@ do different operations.</p>
 <li><span class="widget widget-checkbox">3D</span> tick when each index is one object through the whole volume, as after
   stitching; untick when the numbering restarts on every slice (<em>only for models with more than 255 materials</em>). The
   setting is saved with the model; when a model saved without it is opened, MIB asks.</li>
-<li><img src="images/PanelsSegmentation_recolor_button.png"> regenerate colors of materials: <mouse class="left"></mouse> for random colors (prompts for the
-random seed), <span class="keys"><kbd class="key-control">Ctrl</kbd></span> + <mouse class="left"></mouse> for random colors without the prompt, 
-<mouse class="right"></mouse> for a context menu with additional settings:</li>
+<li><img src="images/PanelsSegmentation_recolor_button.png"> visualization and colors of materials: <mouse class="left"></mouse> to choose
+<strong>Filled</strong> or <strong>Contour</strong> display of the labels and the mask, and to generate random colors from a seed
+(leave the seed empty to keep the colors), <span class="keys"><kbd class="key-control">Ctrl</kbd></span> + <mouse class="left"></mouse> for random colors without the prompt,
+<mouse class="right"></mouse> for a context menu with color schemes:</li>
 </ul>
 <details class="info">
 <summary>Color schemes and options</summary>
@@ -5891,11 +5892,13 @@ random seed), <span class="keys"><kbd class="key-control">Ctrl</kbd></span> + <m
 </ul>
 </details>
 <ul>
-<li><img src="images/PanelsSegmentation_eye_button.png"> update the visualization settings <strong>Filled</strong> or <strong>Contour</strong> for both models and mask.
-<strong>Note!</strong> Filled visualization is more efficient.</li>
+<li><img src="images/PanelsSegmentation_lock_button.png"> BigData only: lock or unlock the labels. Locked labels keep their
+materials, while the selection and mask stay editable (see
+<a href="../../../getting-started/dataset-types/index.html#bigdata">Locked image and labels</a>).</li>
 </ul>
 <details class="info">
-<summary>Color schemes and options</summary>
+<summary>Filled and contour display</summary>
+<p><strong>Note!</strong> Filled visualization is more efficient.</p>
 <p><img align="left" alt="Filled Mode" src="images/PanelsSegmentation_filled.png" />
 <img align="left" alt="Contour Mode" src="images/PanelsSegmentation_contour.png" /></p>
 <p><div class="clear-float"></div></p>

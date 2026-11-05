@@ -124,6 +124,12 @@ if ~obj.I{BatchOpt.id}.modelExist
     return;
 end
 
+% locked labels: an imported material is written into the labels
+if strcmp(obj.I{BatchOpt.id}.getLockedState('labels'), 'locked')
+    obj.showLockedNotice(BatchOpt.id, 'labels', nargin == 2);
+    return;
+end
+
 id = BatchOpt.id;
 
 % BigData (disk-backed pyramidal) datasets need pyramid-level matching and a

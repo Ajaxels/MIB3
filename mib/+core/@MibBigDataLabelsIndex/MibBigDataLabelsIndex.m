@@ -142,6 +142,9 @@ classdef MibBigDataLabelsIndex < core.MibLabels
             % branch for this class, so obj.type would be left empty while getData.m:76
             % and a dozen other places test strcmp(obj.type, 'labels').
             obj.type = 'labels';
+            % read-only for good: the GUI shows it locked, and
+            % models.MibModel.setLockedState refuses to unlock it
+            obj.lockedState = true;
         end
 
         function levelIndex = pickLevel(obj, options)

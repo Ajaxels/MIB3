@@ -5812,6 +5812,8 @@ and a dataset-type selector that controls how each dataset is stored in memory.<
 </tr>
 </tbody>
 </table>
+<p>A padlock in place of the number marks a BigData dataset whose image or labels are
+<a href="../../../getting-started/dataset-types/index.html#bigdata">locked</a>, or a Standard dataset whose selection is disabled.</p>
 <h3 id="buffer-context-menu">Buffer context menu<a class="headerlink" href="#buffer-context-menu" title="Permanent link">&para;</a></h3>
 <p><img align="right" alt="Buffers" src="images/datasets_buffers_context.png" /></p>
 <p><mouse class="right"></mouse> any buffer button for per-buffer operations:</p>
@@ -5849,6 +5851,14 @@ and a dataset-type selector that controls how each dataset is stored in memory.<
 <tr>
 <td><strong>[Linked: A &lt;-&gt; B] press to unlink</strong></td>
 <td>Unlink the currently linked pair</td>
+</tr>
+<tr>
+<td><strong>Lock image</strong></td>
+<td>BigData only: when checked, a changed voxel size or bounding box is not written into the image file</td>
+</tr>
+<tr>
+<td><strong>Lock labels</strong></td>
+<td>BigData: when checked, the materials of the model cannot be changed; the selection and mask stay editable. Standard: checked when the selection is disabled; checking it deletes the labels, mask and selection</td>
 </tr>
 <tr>
 <td><strong>Close model</strong></td>

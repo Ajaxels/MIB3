@@ -135,6 +135,13 @@ for datasetId = 1:Sets.datasetsInSet
         buttonHandle.Tooltip = img.filename;
     end
 
+    % padlock of a locked BigData image or labels, and the line naming them
+    obj.paintBufferLock(buttonHandle, obj.mibModel.I{globalIndex});
+    [~, ~, lockText] = utils.bufferTooltip(obj.mibModel.I{globalIndex});
+    if ~isempty(lockText)
+        buttonHandle.Tooltip = sprintf('%s\n%s', lockText, buttonHandle.Tooltip);
+    end
+
     % add DeveloperMode tag
     if obj.mibModel.preferences.System.DeveloperMode
         buttonHandle.Tooltip = sprintf('obj.view.handles.panels.activeDataset.handles.%s:\n%s', ...

@@ -208,6 +208,36 @@ if isempty(updatePanels) || ismember('ribbonModel', updatePanels)
         segmHandles.loadModel.Tooltip = sprintf('obj.view.handles.panels.segmentation.handles.loadModel:\n%s', segmHandles.loadModel.Tooltip);
     end
 
+    % labels lock: a state button, Value true = locked (see core.MibDataset.getLockedState);
+    % shown for BigData only, the Standard lock (the disabled selection) is set from the buffer menu
+    if isfield(segmHandles, 'labelsLock')
+        segmHandles.labelsLock.Visible = strcmp(dataset.datasetType, 'BigData');
+    end
+    if isfield(segmHandles, 'labelsLock') && strcmp(dataset.datasetType, 'BigData')
+        lockState = dataset.getLockedState('labels');
+        isLocked = ismember(lockState, {'locked', 'readOnly'});
+        segmHandles.labelsLock.Value = isLocked;
+        segmHandles.labelsLock.Enable = matlab.lang.OnOffSwitchState(ismember(lockState, {'unlocked', 'locked'}));
+        if isLocked
+            segmHandles.labelsLock.Icon = fullfile(obj.mibPath, 'assets', 'icons', 'lock_closed_16px.png');
+            segmHandles.labelsLock.BackgroundColor = utils.themeColors(ancestor(segmHandles.labelsLock, 'figure')).lockedBackground;
+        else
+            segmHandles.labelsLock.Icon = fullfile(obj.mibPath, 'assets', 'icons', 'lock_open_16px.png');
+            segmHandles.labelsLock.BackgroundColorMode = 'auto';
+        end
+        switch lockState
+            case 'readOnly'
+                segmHandles.labelsLock.Tooltip = 'Labels lock: these labels come from a read-only store and cannot be changed';
+            case 'none'
+                segmHandles.labelsLock.Tooltip = 'Labels lock: available once a model is created or loaded';
+            otherwise
+                segmHandles.labelsLock.Tooltip = 'Labels lock: when locked, materials cannot change; selection and mask stay editable';
+        end
+        if obj.mibModel.preferences.System.DeveloperMode
+            segmHandles.labelsLock.Tooltip = sprintf('obj.view.handles.panels.segmentation.handles.labelsLock:\n%s', segmHandles.labelsLock.Tooltip);
+        end
+    end
+
     if dataset.labels.maxMaterials < 256 && ...
             (isempty(segmHandles.addMaterial.Icon) || ~strcmp(segmHandles.addMaterial.Tooltip, 'Add a new material to the model'))
         % update the buttons in the panel to match the model type with less than 256 materials
@@ -658,6 +688,10 @@ function localUpdateBufferTooltip(obj, dataset, selectedSet)
 bufferId = sprintf('buffer%d', obj.mibModel.Sets.selectedDataset(selectedSet));
 bufferButton = obj.view.handles.panels.activeDataset.handles.(bufferId);
 bufferButton.Tooltip = utils.bufferTooltip(dataset);
+% during startup the Datasets controller may not exist yet
+if isa(obj.cActiveDataset, 'controllers.MibActiveDataset')
+    obj.cActiveDataset.paintBufferLock(bufferButton, dataset);
+end
 if obj.mibModel.preferences.System.DeveloperMode
     bufferButton.Tooltip = sprintf('obj.view.handles.panels.activeDataset.handles.%s:\n%s', ...
         bufferId, bufferButton.Tooltip);

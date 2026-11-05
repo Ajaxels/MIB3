@@ -35,7 +35,9 @@ classdef MibActiveDataset
         setsOps_Callbacks(obj, hWidget, hData, mode)        % callbacks for press of sets-related widgets in obj.view.handles.panels.activeDataset.handles
         datasetTypeChange_Callback(obj, hWidget, hData)        % callback for selection of entry in Datasets.datasetType dropdown to choose the type of the dataset stored in the selected buffer/container
 
+        buffersContext_Opening(obj, hContextMenu, openingData)        % ContextMenuOpeningFcn of the buffer context menu: check marks of Lock image / Lock labels for the clicked buffer
         paintBufferButton(obj, buttonHandle, state)        % set the background color of a buffer button of the Datasets panel, theme-aware
+        paintBufferLock(obj, buttonHandle, dataset)        % show a padlock icon on a buffer button when the image or labels of its dataset are locked
         update_fromModel(obj, src, evtData)        % update widgets of the Datasets panel from obj.mibModel
 
         function obj = MibActiveDataset(mainCtrl, view, guiHandles, model)
@@ -96,14 +98,17 @@ classdef MibActiveDataset
             %%  Add CALLBACKS to context menus ----------------------
             %% ---------------------- Add context menu for the Buffer buttons ----------------------
             % obj.handles.datasets
-            obj.handles.buffersContextDuplicate.MenuSelectedFcn  = @(src,evtData) obj.buffers_ContextMenu('duplicate',   str2double(evtData.ContextObject.Text));
-            obj.handles.buffersContextSyncXY.MenuSelectedFcn     = @(src,evtData) obj.buffers_ContextMenu('sync_xy',     str2double(evtData.ContextObject.Text));
-            obj.handles.buffersContextSyncXYZ.MenuSelectedFcn    = @(src,evtData) obj.buffers_ContextMenu('sync_xyz',    str2double(evtData.ContextObject.Text));
-            obj.handles.buffersContextSyncXYZT.MenuSelectedFcn   = @(src,evtData) obj.buffers_ContextMenu('sync_xyzt',   str2double(evtData.ContextObject.Text));
-            obj.handles.buffersContextLink.MenuSelectedFcn       = @(src,evtData) obj.buffers_ContextMenu('link_views',  str2double(evtData.ContextObject.Text));
-            obj.handles.buffersContextCloseModel.MenuSelectedFcn = @(src,evtData) obj.buffers_ContextMenu('closeModel',  str2double(evtData.ContextObject.Text));
-            obj.handles.buffersContextClose.MenuSelectedFcn      = @(src,evtData) obj.buffers_ContextMenu('close',       str2double(evtData.ContextObject.Text));
-            obj.handles.buffersContextCloseSet.MenuSelectedFcn   = @(src,evtData) obj.buffers_ContextMenu('closeSet',    str2double(evtData.ContextObject.Text));
+            obj.handles.buffersContextDuplicate.MenuSelectedFcn  = @(src,evtData) obj.buffers_ContextMenu('duplicate',   str2double(erase(evtData.ContextObject.Tag, 'buffer')));
+            obj.handles.buffersContextSyncXY.MenuSelectedFcn     = @(src,evtData) obj.buffers_ContextMenu('sync_xy',     str2double(erase(evtData.ContextObject.Tag, 'buffer')));
+            obj.handles.buffersContextSyncXYZ.MenuSelectedFcn    = @(src,evtData) obj.buffers_ContextMenu('sync_xyz',    str2double(erase(evtData.ContextObject.Tag, 'buffer')));
+            obj.handles.buffersContextSyncXYZT.MenuSelectedFcn   = @(src,evtData) obj.buffers_ContextMenu('sync_xyzt',   str2double(erase(evtData.ContextObject.Tag, 'buffer')));
+            obj.handles.buffersContextLink.MenuSelectedFcn       = @(src,evtData) obj.buffers_ContextMenu('link_views',  str2double(erase(evtData.ContextObject.Tag, 'buffer')));
+            obj.handles.buffersContextLockImage.MenuSelectedFcn  = @(src,evtData) obj.buffers_ContextMenu('lockImage',   str2double(erase(evtData.ContextObject.Tag, 'buffer')));
+            obj.handles.buffersContextLockLabels.MenuSelectedFcn = @(src,evtData) obj.buffers_ContextMenu('lockLabels',  str2double(erase(evtData.ContextObject.Tag, 'buffer')));
+            obj.handles.buffersContext.ContextMenuOpeningFcn     = @(src,evtData) obj.buffersContext_Opening(src, evtData);
+            obj.handles.buffersContextCloseModel.MenuSelectedFcn = @(src,evtData) obj.buffers_ContextMenu('closeModel',  str2double(erase(evtData.ContextObject.Tag, 'buffer')));
+            obj.handles.buffersContextClose.MenuSelectedFcn      = @(src,evtData) obj.buffers_ContextMenu('close',       str2double(erase(evtData.ContextObject.Tag, 'buffer')));
+            obj.handles.buffersContextCloseSet.MenuSelectedFcn   = @(src,evtData) obj.buffers_ContextMenu('closeSet',    str2double(erase(evtData.ContextObject.Tag, 'buffer')));
             
             %% ---------------------- Add context menu for the Sets dropdown ----------------------
             obj.handles.setsContextAdd.MenuSelectedFcn = @obj.setsOps_Callbacks;

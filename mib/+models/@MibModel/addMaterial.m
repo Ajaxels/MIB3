@@ -104,6 +104,13 @@ end
 
 modelType = obj.I{BatchOpt.id}.labels.maxMaterials;
 
+% locked labels: a new material changes the material list; for an instance
+% model this only selects the next empty index, which changes nothing
+if modelType < 256 && strcmp(obj.I{BatchOpt.id}.getLockedState('labels'), 'locked')
+    obj.showLockedNotice(BatchOpt.id, 'labels', nargin == 2);
+    return;
+end
+
 %% Interactive prompt for material name (small models, non-batch only)
 if nargin < 2
     if modelType < 256

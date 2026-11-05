@@ -86,6 +86,16 @@ end
 % update BioFormatsMemoizer directory
 obj.mibModel.I{Parameters.index}.bioFormatsMemoizerMemoDir = obj.mibModel.preferences.ExternalDirs.BioFormatsMemoizerMemoDir;
 
+% a write refused by locked BigData labels is reported by the dataset, which
+% cannot reach MibModel itself; attach once per dataset object (the listener
+% lives as long as the dataset). The index is looked up when the event fires,
+% because a dataset object can change its slot in obj.mibModel.I
+newDatasetObject = obj.mibModel.I{Parameters.index};
+if ~event.hasListener(newDatasetObject, 'LockedWriteRefused')
+    addlistener(newDatasetObject, 'LockedWriteRefused', @(src, evnt) obj.mibModel.showLockedNotice( ...
+        find(cellfun(@(dataset) dataset == src, obj.mibModel.I), 1), evnt.Parameters.layer));
+end
+
 % uncheck the linked views state
 % one context menu serves every buffer button, so its Link item holds the state
 if obj.cActiveDataset.handles.buffersContextLink.Text(1) == '[' % check for "[Linked ..."

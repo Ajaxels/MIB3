@@ -27,6 +27,15 @@ function result = setData63(obj, dataset, type, orient, materialIndex, options)
 %      full-resolution write. The other layers keep their finer data: a
 %      selection stroke drawn zoomed out leaves full-resolution labels intact.
 %
+% **Locked labels** (``obj.lockedState``, see ``core.MibImage.lockedState``) -
+% a ``'labels'`` write is refused before anything is read; an ``'everything'``
+% write is refused when it would change the material bits of the stored block,
+% and goes through when it changes only the mask and selection bits (a
+% selection-only undo entry, for instance). ``'mask'`` and ``'selection'``
+% writes are never refused. A refusal returns ``false``, leaves the store
+% untouched and sets ``obj.lastWriteRefused``, which ``core.MibDataset.setData2D``
+% (and 3D/4D) turn into the ``LockedWriteRefused`` event.
+%
 % **Bit packing** - same scheme as ``getData63``:
 % bits 1-6 = material, bit 7 = mask, bit 8 = selection (uint8 layout), or bits
 % 1-14 = index, bit 15 = mask, bit 16 = selection (uint16 layout). Index values
@@ -95,6 +104,13 @@ if isempty(type); type = 'labels'; end
 if isempty(orient); orient = 3; end
 if ~strcmp(type, 'labels'); materialIndex = []; end
 if isempty(dataset); return; end
+% locked labels: a labels write is refused before the read, so a brush
+% stroke over a locked store costs nothing per mouse-move; an 'everything'
+% write is checked below, after the read, on its material bits only
+if obj.lockedState && strcmp(type, 'labels')
+    obj.lastWriteRefused = true;
+    return;
+end
 if islogical(dataset(1)); dataset = uint8(dataset); end
 
 % --- incoming data into native [y, x, z] order ----------------------------
@@ -159,6 +175,13 @@ dataNear = core.MibBigDataLabels.resizeBlockNearest(dataset, wSize);
 packed = mergePacked(obj, before, dataNear, type, materialIndex);
 diff = packed ~= before;
 if ~any(diff(:)); result = true; return; end   % nothing changed → no disk I/O
+if obj.lockedState && strcmp(type, 'everything') && ...
+        any(bitand(packed, obj.materialMask) ~= bitand(before, obj.materialMask), 'all')
+    % an undo entry or a move that would change materials of locked labels;
+    % one that touches only the mask and selection bits goes through
+    obj.lastWriteRefused = true;
+    return;
+end
 
 anyY = find(any(any(diff, 2), 3));   y0 = anyY(1); y1 = anyY(end);
 anyX = find(any(any(diff, 1), 3));   x0 = anyX(1); x1 = anyX(end);

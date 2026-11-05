@@ -129,6 +129,15 @@ classdef MibBigDataLabels < core.MibLabels63
         instanceIndexUnsaved = false
         % [logical] syncedInstanceIndex or indexDirtyBox changed since the
         % side-file was written; saveInstanceIndex writes it then.
+
+        % --- locked state (see core.MibImage.lockedState) ---
+        lastWriteRefused (1,1) logical = false
+        % [logical] set by setData63 when it refused a write because the labels
+        % are locked. This class cannot reach MibModel to explain the refusal, so
+        % core.MibDataset.setData2D/3D/4D read the flag after each write, clear it
+        % and fire their LockedWriteRefused event; the controller listens to it
+        % and shows models.MibModel.showLockedNotice. A caller that writes
+        % through setData63 directly reads the boolean result instead.
     end
 
     methods

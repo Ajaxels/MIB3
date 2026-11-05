@@ -163,7 +163,11 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
             obj.mibModel.invertImage('4D, Dataset');
         case {'Add to selection to material', 'Subtract from material', 'Replace material with current selection'}
             % default 'a'/'Shift+a', 's'/'Shift+s', 'r'/'Shift+r'
-            if dataset.enableSelection == 0; return; end
+            if dataset.enableSelection == 0
+                % Standard with the selection disabled: the lock notice offers to enable it
+                if strcmp(dataset.getLockedState('labels'), 'locked'); obj.mibModel.showLockedNotice(obj.mibModel.id, 'labels'); end
+                return;
+            end
 
             % special SAM tweak - only for 'Add to selection to material'
             if strcmp(KeyShortcuts.Action{ActionId}, 'Add to selection to material')
@@ -215,7 +219,11 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
 
         case {'Fill the holes in the Selection layer', 'Erode the Selection layer', 'Dilate the Selection layer'}
             % default 'f'/'Shift+f', 'z'/'Shift+z', 'x'/'Shift+x'
-            if dataset.enableSelection == 0; return; end
+            if dataset.enableSelection == 0
+                % Standard with the selection disabled: the lock notice offers to enable it
+                if strcmp(dataset.getLockedState('labels'), 'locked'); obj.mibModel.showLockedNotice(obj.mibModel.id, 'labels'); end
+                return;
+            end
 
             switch KeyShortcuts.Action{ActionId}
                 case 'Fill the holes in the Selection layer' 

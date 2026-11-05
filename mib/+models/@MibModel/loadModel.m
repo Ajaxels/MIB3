@@ -36,6 +36,12 @@ function loadModel(obj, model, BatchOptIn)
 %       ``[F]`` is replaced with the image base name (no extension).
 %       Relative paths resolve against ``DirectoryName``; absolute paths bypass it.
 %       Wildcards (``*``) are expanded via ``dir()``.
+%     - ``.LockLabels`` - [logical, ``{false}``] BigData only: lock the labels of
+%       the loaded store (``core.MibImage.lockedState``). Read in batch runs only;
+%       an interactive load asks instead, with *Locked* as the default. The
+%       batch default is ``false`` so that protocols that load a model and then
+%       edit it keep working. Ignored for the read-only overlays, which are
+%       always locked
 %     - ``.showWaitbar`` - [logical, ``{true}``] show progress dialog
 %     - ``.id`` - [numeric, ``{obj.id}``] dataset index 1..9
 %
@@ -88,6 +94,7 @@ BatchOpt.DirectoryName{2} = {'Inherit from dataset filename', obj.currentDirecto
 BatchOpt.FilenameFilter  = 'Labels_[F].model';
 BatchOpt.Filenames       = {};   % cell array of full paths; bypasses filter/browser when non-empty
 BatchOpt.ZarrGroupPath   = '';   % [OME-Zarr only] nested labels group inside the container
+BatchOpt.LockLabels      = false;   % [BigData only] lock the labels of the loaded store; interactively asked instead
 BatchOpt.showWaitbar     = true;
 BatchOpt.id              = id;
 
@@ -99,6 +106,7 @@ BatchOpt.mibBatchTooltip.FilenameFilter = sprintf(['Filename or wildcard filter 
     '[F] is replaced with the image base name (no extension). ' ...
     'Relative paths resolve against DirectoryName (e.g. "labels\\Labels_[F].model" or "..\\Labels_[F].model"); ' ...
     'absolute paths bypass DirectoryName']);
+BatchOpt.mibBatchTooltip.LockLabels     = sprintf('[BigData only] lock the labels after loading: materials cannot change, the selection and mask stay editable');
 BatchOpt.mibBatchTooltip.showWaitbar    = sprintf('Show or not the progress bar during loading');
 
 batchModeSwitch = 0;
@@ -305,8 +313,31 @@ if strcmp(obj.I{id}.datasetType, 'BigData') && isempty(model)
     ds.selectedAddToMaterial  = 2;
     ds.lastSegmSelection      = [2 1];
 
+    % An existing store usually holds finished work and every edit goes
+    % straight to disk, so the labels open locked unless the user says
+    % otherwise. A batch run takes BatchOpt.LockLabels (default false), so
+    % protocols that load a model and then edit it keep working. The read-only
+    % overlays are locked by their constructors and are not asked about.
+    if strcmp(ds.getLockedState('labels'), 'unlocked')
+        if batchModeSwitch
+            ds.labels.lockedState = logical(BatchOpt.LockLabels);
+        else
+            closeProgressDialog(bigDataProgress);   % modal, and would sit in front of the question
+            questOptions = struct('Icon', 'puffin_question', 'WindowWidth', 460, 'WindowHeight', 190, ...
+                'mibPath', obj.mibPath, ...
+                'HelpUrl', 'https://mib.helsinki.fi/help/main3/getting-started/dataset-types/index.html');
+            answer = utils.dlgs.inputQuestDlg(obj.getProgressBarParent(), ...
+                sprintf(['Open the labels locked?\n\nLocked labels are protected from changes: the ' ...
+                'materials cannot be modified, while the selection and the mask stay editable. ' ...
+                'The lock can be changed later from the Segmentation panel.']), ...
+                'Load model', 'Locked', 'Unlocked', 'Locked', questOptions);
+            ds.labels.lockedState = ~strcmp(answer, 'Unlocked');
+        end
+    end
+
     obj.showModel = true;
     notify(obj, 'UpdateGuiWidgets');
+    notify(obj, 'DatasetsPanelUpdate');   % the padlock of the buffer button
     notify(obj, 'ShowImage');
 
     if batchModeSwitch

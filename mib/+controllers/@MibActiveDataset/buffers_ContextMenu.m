@@ -27,6 +27,14 @@ function buffers_ContextMenu(obj, parameter, buttonID, BatchOptIn)
 %       are bits of the store; the dataset becomes browse-only and the undo
 %       history is cleared. Interactively a confirmation names the model first;
 %       a dataset without a model is reported and left alone
+%     - ``'lockImage'`` / ``'lockLabels'`` - lock or unlock the image or the
+%       labels of a BigData dataset (``models.MibModel.setLockedState``);
+%       for a Standard dataset ``'lockLabels'`` disables or enables its
+%       selection, and locking it deletes the labels, mask and selection, which
+%       is confirmed first in interactive mode. ``BatchOpt.Locked`` defaults to
+%       the opposite of the current state, so a menu click toggles it. Nothing
+%       happens where the lock does not apply (Virtual, an empty buffer, BigData
+%       without a model) or the labels are read-only
 %     - ``'close'`` - close the current dataset in the buffer
 %     - ``'closeSet'`` - close all datasets in the current set
 %
@@ -143,6 +151,25 @@ switch parameter
         BatchOpt.mibBatchTooltip.SetName = 'Name of the set to close; use "Current" for the currently active set';
         BatchOpt.mibBatchTooltip.showWaitbar = 'Show or not the progress bar during execution';
         BatchOpt.mibBatchActionName = 'Close all datasets in set';
+
+    case {'lockImage', 'lockLabels'}
+        if strcmp(parameter, 'lockImage'); lockLayer = 'image'; else; lockLayer = 'labels'; end
+        BatchOpt.Target = {sprintf('Container %d', globalDatasetIndex)};
+        BatchOpt.Target{2} = [{'Current'}, arrayfun(@(x) sprintf('Container %d', x), 1:maxId, 'UniformOutput', false)];
+        % default: toggle the current state, which is what the menu item does
+        BatchOpt.Locked = ~strcmp(obj.mibModel.I{globalDatasetIndex}.getLockedState(lockLayer), 'locked');
+        BatchOpt.mibBatchTooltip.Target = sprintf('Index of the container with the dataset whose %s should be locked or unlocked', lockLayer);
+        if strcmp(lockLayer, 'image')
+            BatchOpt.mibBatchTooltip.Locked = 'Check to lock the image, uncheck to unlock; BigData only';
+        else
+            BatchOpt.mibBatchTooltip.Locked = sprintf(['Check to lock the labels, uncheck to unlock; for a Standard dataset ' ...
+                'locking disables the selection and deletes the labels, mask and selection']);
+        end
+        if strcmp(lockLayer, 'image')
+            BatchOpt.mibBatchActionName = 'Lock image';
+        else
+            BatchOpt.mibBatchActionName = 'Lock labels';
+        end
 
     case {'sync_xy', 'sync_xyz', 'sync_xyzt'}
         % find first loaded dataset different from current
@@ -506,6 +533,19 @@ switch parameter
         elseif floor((targetGlobalId - 1) / obj.mibModel.Sets.datasetsInSet) + 1 == selectedSet
             obj.handles.(sprintf('buffer%d', targetLocalId)).Tooltip = utils.bufferTooltip(dataset);
         end
+        notify(obj.mibModel, 'SyncBatch', core.ToggleEventData(BatchOpt));
+
+    case {'lockImage', 'lockLabels'}
+        % lock or unlock a layer of a BigData dataset; the menu items are
+        % disabled where the lock does not apply, setLockedState refuses there too
+        if strcmp(BatchOpt.Target{1}, 'Current')
+            targetGlobalId = obj.mibModel.getActiveId();
+        else
+            targetGlobalId = str2double(BatchOpt.Target{1}(10:end));
+        end
+        if strcmp(parameter, 'lockImage'); lockLayer = 'image'; else; lockLayer = 'labels'; end
+        obj.mibModel.setLockedState(targetGlobalId, lockLayer, logical(BatchOpt.Locked), Confirm = interactiveMode);
+        notify(obj.mibModel, 'DatasetsPanelUpdate');   % the padlock of a buffer that is not the active one
         notify(obj.mibModel, 'SyncBatch', core.ToggleEventData(BatchOpt));
 
     case 'close'

@@ -41,6 +41,9 @@ Button color indicates the state of each buffer:
 | Light orange | Buffer contains a loaded but not saved dataset            |
 | Default      | Buffer is empty                                           |
 
+A padlock in place of the number marks a BigData dataset whose image or labels are
+[locked](../../../getting-started/dataset-types/index.md#bigdata), or a Standard dataset whose selection is disabled.
+
 ### Buffer context menu
 
 ![Buffers](images/datasets_buffers_context.png){align=right}
@@ -59,6 +62,8 @@ Button color indicates the state of each buffer:
 | **Sync view (x,y,z,t) with...** | Copy view position, zoom, Z-slice, and time frame from another buffer |
 | **Link view with... \[Unlinked\]** | Link this buffer's view to another buffer - scrolling one updates the other |
 | **\[Linked: A <-> B\] press to unlink** | Unlink the currently linked pair |
+| **Lock image** | BigData only: when checked, a changed voxel size or bounding box is not written into the image file |
+| **Lock labels** | BigData: when checked, the materials of the model cannot be changed; the selection and mask stay editable. Standard: checked when the selection is disabled; checking it deletes the labels, mask and selection |
 | **Close model** | Close the model of the dataset in this buffer and keep the dataset open. The mask and selection stay, and ++ctrl+z++ brings the model back. For a BigData model the model store stays on disk to be loaded again, and its mask and selection close with it |
 | **Close dataset** | Close the dataset in this buffer (resets it to an empty placeholder) |
 | **Close all datasets of the set** | Close all datasets in the entire current set |

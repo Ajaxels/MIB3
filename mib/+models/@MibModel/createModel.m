@@ -180,6 +180,16 @@ if isBigData && isempty(BatchOpt.ModelStorePath) && nargin < 4
     BatchOpt.ModelStorePath = fullfile(storePathDir, storeFile);
 end
 
+% locked labels: createStore deletes a store already at the path, so the locked
+% store itself is never the target; any other path leaves it untouched
+if isBigData && strcmp(obj.I{BatchOpt.id}.getLockedState('labels'), 'locked')
+    normalisePath = @(storePath) lower(strip(strrep(char(storePath), '/', '\'), 'right', '\'));
+    if strcmp(normalisePath(BatchOpt.ModelStorePath), normalisePath(obj.I{BatchOpt.id}.labels.modelStorePath))
+        obj.showLockedNotice(BatchOpt.id, 'labels', nargin == 4);
+        return;
+    end
+end
+
 %%
 if BatchOpt.showWaitbar
     wbMessage = 'Creating model, please wait...';

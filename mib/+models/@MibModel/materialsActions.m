@@ -174,6 +174,14 @@ id = BatchOpt.id;
 modelType = obj.I{id}.labels.maxMaterials;
 nMats = numel(obj.I{id}.labels.materialNames);
 
+% locked labels: these actions change the materials here; rename, add, import
+% and remove check the lock in their own wrappers, export and save only read
+if ismember(BatchOpt.Action{1}, {'Insert material', 'Swap materials', 'Reorder materials'}) && ...
+        strcmp(obj.I{id}.getLockedState('labels'), 'locked')
+    obj.showLockedNotice(id, 'labels', nargin == 3);
+    return;
+end
+
 %% Dispatch actions
 switch BatchOpt.Action{1}
     case 'Rename material'

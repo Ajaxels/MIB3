@@ -283,7 +283,14 @@ else
     end
 end
 
-% update logical switches 
+% a locked BigData labels store refused the write; it cannot explain that
+% itself, so pass it on to the listener that shows the notice
+if isa(obj.labels, 'core.MibBigDataLabels') && obj.labels.lastWriteRefused
+    obj.labels.lastWriteRefused = false;
+    notify(obj, 'LockedWriteRefused', core.ToggleEventData(struct('layer', 'labels')));
+end
+
+% update logical switches
 if ismember(type, {'labels', 'everything'})
     obj.modelExist = true;
 elseif strcmp(type, 'mask')

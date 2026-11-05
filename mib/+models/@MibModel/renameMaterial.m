@@ -136,6 +136,12 @@ if ~obj.I{BatchOpt.id}.modelExist
     return;
 end
 
+% locked labels: the names belong to the material list the lock protects
+if strcmp(obj.I{BatchOpt.id}.getLockedState('labels'), 'locked')
+    obj.showLockedNotice(BatchOpt.id, 'labels', nargin == 2);
+    return;
+end
+
 id = BatchOpt.id;
 modelType = obj.I{id}.labels.maxMaterials;
 materialIndex = str2double(BatchOpt.MaterialIndex);

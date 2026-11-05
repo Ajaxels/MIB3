@@ -124,8 +124,14 @@ ds.image.boundingBox(2) = ds.image.boundingBox(1) + (ds.image.width  - 1) * ds.i
 ds.image.boundingBox(4) = ds.image.boundingBox(3) + (ds.image.height - 1) * ds.image.pixSize.y;
 ds.image.boundingBox(6) = ds.image.boundingBox(5) + (ds.image.depth  - 1) * ds.image.pixSize.z;
 
-% Persist voxel sizes and bounding box to zarr3 file for BigData datasets (after user confirmation)
-if strcmp(ds.image.type, 'bigdata') && endsWith(lower(ds.image.filename), '.zarr3')
+% Persist voxel sizes and bounding box to zarr3 file for BigData datasets (after user confirmation);
+% a locked image keeps the new values for this session unless the user unlocks it in the notice
+writeAllowed = true;
+if strcmp(ds.image.type, 'bigdata') && endsWith(lower(ds.image.filename), '.zarr3') && ...
+        strcmp(ds.getLockedState('image'), 'locked')
+    writeAllowed = obj.mibModel.showLockedNotice(BatchOpt.id, 'image');
+end
+if writeAllowed && strcmp(ds.image.type, 'bigdata') && endsWith(lower(ds.image.filename), '.zarr3')
     newUnits = ds.image.pixSize.units;
     question = { ...
         'The voxel sizes will be written to the zarr3 file on disk:'; ...

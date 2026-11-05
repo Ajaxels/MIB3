@@ -90,9 +90,10 @@ do different operations.
 - <span class="widget widget-checkbox">3D</span> tick when each index is one object through the whole volume, as after
   stitching; untick when the numbering restarts on every slice (*only for models with more than 255 materials*). The
   setting is saved with the model; when a model saved without it is opened, MIB asks.
-- <img src="images/PanelsSegmentation_recolor_button.png"> regenerate colors of materials: <mouse class="left"></mouse> for random colors (prompts for the
-random seed), ++ctrl++ + <mouse class="left"></mouse> for random colors without the prompt, 
-<mouse class="right"></mouse> for a context menu with additional settings:
+- <img src="images/PanelsSegmentation_recolor_button.png"> visualization and colors of materials: <mouse class="left"></mouse> to choose
+**Filled** or **Contour** display of the labels and the mask, and to generate random colors from a seed
+(leave the seed empty to keep the colors), ++ctrl++ + <mouse class="left"></mouse> for random colors without the prompt,
+<mouse class="right"></mouse> for a context menu with color schemes:
 
 ??? info "Color schemes and options"
 
@@ -139,10 +140,13 @@ random seed), ++ctrl++ + <mouse class="left"></mouse> for random colors without 
 
     - **Make current scheme as default** — saves the currently applied colors as the personal default, restored on next MIB start.
     - **Update colors from default** — resets material colors to the saved personal default.
-- <img src="images/PanelsSegmentation_eye_button.png"> update the visualization settings **Filled** or **Contour** for both models and mask.
-**Note!** Filled visualization is more efficient.
+- <img src="images/PanelsSegmentation_lock_button.png"> BigData only: lock or unlock the labels. Locked labels keep their
+materials, while the selection and mask stay editable (see
+[Locked image and labels](../../../getting-started/dataset-types/index.md#bigdata)).
 
-??? info "Color schemes and options"
+??? info "Filled and contour display"
+
+    **Note!** Filled visualization is more efficient.
     
     ![Filled Mode](images/PanelsSegmentation_filled.png){align=left}
     ![Contour Mode](images/PanelsSegmentation_contour.png){align=left}
