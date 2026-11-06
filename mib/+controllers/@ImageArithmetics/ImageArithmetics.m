@@ -114,14 +114,16 @@ classdef ImageArithmetics < handle
             obj.BatchOpt.mibBatchTooltip.Expression      = 'String with an arithmetic expression to execute, see help of the tool for details';
             obj.BatchOpt.mibBatchTooltip.showWaitbar     = 'Show or not the progress bar during execution';
 
-            %% Virtual stacking guard
+            %% Virtual / BigData guard
+            % both are read on demand: getData4D would read the whole volume at
+            % full resolution, and a BigData source image is read-only
             activeId = obj.mibModel.getActiveId();
-            if isprop(obj.mibModel.I{activeId}, 'Virtual') && obj.mibModel.I{activeId}.Virtual.virtual == 1
+            if any(obj.mibModel.I{activeId}.datasetType(1) == ['V' 'B'])
                 dlgOpt.MsgBoxOnly  = true;
                 dlgOpt.Icon        = 'puffin_warning';
                 dlgOpt.HeaderLines = 1;
                 utils.dlgs.inputUniversalDlg([], '!!! Warning !!!', {''}, ...
-                    {'Image Arithmetic is not compatible with the virtual stacking mode! Please switch to the memory-resident mode and try again.'}, ...
+                    {'Image Arithmetic is not compatible with the virtual or BigData mode! Please switch to the memory-resident mode and try again.'}, ...
                     'Not implemented', dlgOpt);
                 obj.closeWindow();
                 notify(obj.mibModel, 'StopProtocol');

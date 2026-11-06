@@ -54,13 +54,14 @@ end
 
 returnBatchSettings = 0;
 if isempty(img)
-    % check for virtual stacking mode
-    if isprop(obj.mibModel.I{obj.BatchOpt.id}, 'Virtual') && obj.mibModel.I{obj.BatchOpt.id}.Virtual.virtual == 1
+    % Virtual and BigData datasets are read on demand: getData3D would read the
+    % whole volume at full resolution, and a BigData source image is read-only
+    if any(obj.mibModel.I{obj.BatchOpt.id}.datasetType(1) == ['V' 'B'])
         dlgOpt.MsgBoxOnly = true;
         dlgOpt.Icon = 'puffin_warning';
         dlgOpt.HeaderLines = 1;
         utils.dlgs.inputUniversalDlg(obj.mibModel.getProgressBarParent(), '', {''}, ...
-            {sprintf('This tool is not compatible with the virtual stacking mode!\nPlease switch to the memory-resident mode and try again')}, ...
+            {sprintf('This tool is not compatible with the virtual or BigData mode!\nPlease switch to the memory-resident mode and try again')}, ...
             'Not implemented', dlgOpt);
         notify(obj.mibModel, 'StopProtocol');
         obj.closeWindow();
