@@ -378,7 +378,7 @@ interpreter (used by [SAM](../../panels/segm/segm-sam.md) and other Python-based
 
 Customize key bindings for quick access to MIB actions:
 
-- **Shortcuts Table**: A table to edit key bindings. Click a cell to assign a key combination.
+- **Shortcuts Table**: A table to edit key bindings. Click a cell to assign a key combination, or a column header to sort the table.
 - **Pressed Key**: A label showing the last key pressed (e.g., ++ctrl++ + ++s++) when the panel is active. Click the panel and press a key to test.
 - **Reset**: A button to restore default key shortcuts.
 

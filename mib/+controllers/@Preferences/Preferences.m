@@ -569,6 +569,8 @@ classdef Preferences < handle
 
                 ColumnEditable = [false false true true true true];
                 handles.shortcutsTable.ColumnEditable = ColumnEditable;
+                % the first column only shows the duplicate marker
+                handles.shortcutsTable.ColumnSortable = [false true true true true true];
                 handles.shortcutsTable.Data = data;
                 obj.renderedPanels(5) = 1;
             end
@@ -2169,7 +2171,8 @@ classdef Preferences < handle
             data = obj.view.handles.shortcutsTable.Data;    % have to take the whole table as looking for duplicates
             
             % make it impossible to change Shift action for some actions
-            if ismember(data(index, 2), obj.preferences.KeyShortcuts.Action(6:16))
+            % Data is written back only when a value changes, as writing it clears the sorting of the table
+            if data{index, 4} && ismember(data(index, 2), obj.preferences.KeyShortcuts.Action(6:16))
                 data(index, 4) = num2cell(false);
                 obj.view.handles.shortcutsTable.Data = data;
             end
@@ -2198,6 +2201,7 @@ classdef Preferences < handle
                     
                     if strcmp(button, 'Cancel')
                         data(index, eventdata.Indices(2)) = {eventdata.PreviousData};
+                        obj.view.handles.shortcutsTable.Data = data;
                     else
                         obj.duplicateEntries = [obj.duplicateEntries ActionId];     % add index of a duplicate entry
                         obj.duplicateEntries = unique(obj.duplicateEntries);     % add index of a duplicate entry
@@ -2227,7 +2231,6 @@ classdef Preferences < handle
                     addStyle(obj.view.handles.shortcutsTable, s, 'cell', [index, 1]);
                 end
             end
-            obj.view.handles.shortcutsTable.Data = data;
         end
         
         % ------------------------------------------------------------------

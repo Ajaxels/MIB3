@@ -25,7 +25,7 @@ function fileList_ContextMenu(obj, menuEntry, selectedData)
 %   - ``'fileListContextColorAdd'`` - add selected file(s) as a new color channel to current dataset
 %   - ``'fileListContextColorAddNth'`` - add every N-th file as a new color channel
 %   - ``'fileListContextRename'`` - rename the selected file
-%   - ``'fileListContextDelete'`` - delete the selected file
+%   - ``'fileListContextDelete'`` - permanently delete the selected files and folders, a folder with everything inside it; the whole selection is refused when any item is read on demand by an open Virtual or BigData dataset; for a ``.zarr*`` model store folder also deletes its ``.levelmap`` and ``.instanceindex`` side files, unless a sibling store shares the base name; Cancel takes effect between the selected items and does not interrupt a folder already being deleted
 %   - ``'fileListContextProps'`` - display file properties dialog
 %
 
@@ -130,8 +130,32 @@ switch menuEntry.Tag
         end
 
     case 'fileListContextDelete'
-        filenames = cellfun(@(f) fullfile(obj.mibModel.currentDirectory, f), obj.mibModel.selectedFiles, 'UniformOutput', false);
-        if numel(filenames) == 1 %#ok<ISCL>
+        if isempty(obj.mibModel.selectedFiles); return; end
+        % folders are listed as [name] (see updateFileList_Callback); the
+        % brackets belong to the list, not to the folder
+        selectedNames = obj.mibModel.selectedFiles;
+        isFolder = cellfun(@(name) numel(name) > 2 && name(1) == '[' && name(end) == ']', selectedNames);
+        selectedNames(isFolder) = cellfun(@(name) name(2:end-1), selectedNames(isFolder), 'UniformOutput', false);
+        filenames = cellfun(@(f) fullfile(obj.mibModel.currentDirectory, f), selectedNames, 'UniformOutput', false);
+        % refuse the whole selection before anything is gone
+        for i = 1:numel(filenames)
+            inUseBy = localDatasetReadingFrom(obj.mibModel, filenames{i});
+            if ~isempty(inUseBy)
+                utils.dlgs.showErrorDialog(obj.mibModel.getProgressBarParent(), ...
+                    sprintf(['"%s" is in use by dataset %d, which reads %s from it.\n\n' ...
+                    'Close that dataset, or open another one in its place, and delete then.'], ...
+                    selectedNames{i}, inUseBy.id, inUseBy.what), 'Delete');
+                return;
+            end
+        end
+
+        numFolders = nnz(isFolder);
+        if numel(filenames) == 1 && numFolders == 1
+            msg = sprintf('You are going to permanently delete the folder\n%s\nand everything inside it', filenames{1});
+        elseif numFolders > 0
+            msg = sprintf('You are going to permanently delete\n%d file(s) and %d folder(s) with everything inside them', ...
+                numel(filenames) - numFolders, numFolders);
+        elseif numel(filenames) == 1 %#ok<ISCL>
             msg = sprintf('You are going to delete\n%s', filenames{1});
         else
             msg = sprintf('You are going to delete\n%d files', numel(filenames));
@@ -139,18 +163,49 @@ switch menuEntry.Tag
         selection = uiconfirm(obj.mibModel.mibGUI, msg, 'Delete file(s)?', ...
             'Options', {'Delete', 'Cancel'}, 'DefaultOption', 2, 'CancelOption', 2, 'Icon', 'warning');
         if strcmp(selection, 'Cancel'); return; end
-        
+
         % convert warning into an error
         s = warning('error', 'MATLAB:DELETE:Permission');
         cleanupObj = onCleanup(@() warning(s));
 
+        % one rmdir call removes a whole folder, so Cancel acts between the selected items
+        wb = uiprogressdlg(obj.mibModel.getProgressBarParent(), 'Title', 'Delete', 'Indeterminate', 'on', 'Cancelable', 'on');
+        numDeleted = 0;
         try
             for i = 1:numel(filenames)
-                delete(filenames{i});
+                if wb.CancelRequested; break; end
+                wb.Message = sprintf('Deleting %d of %d\n%s', i, numel(filenames), selectedNames{i});
+                if isFolder(i)
+                    % A BigData model store keeps side files next to its folder; their
+                    % names drop the extension, so a plain folder or a sibling store
+                    % of the same name must not take them along
+                    sideFiles = {};
+                    [folderPath, folderName, folderExtension] = fileparts(filenames{i});
+                    siblingStores = dir(fullfile(folderPath, [folderName '.zarr*']));
+                    if startsWith(lower(folderExtension), '.zarr') && nnz([siblingStores.isdir]) == 1
+                        sideFiles = {core.MibBigDataLabels.levelMapPathFor(filenames{i}), core.MibBigDataLabels.instanceIndexPathFor(filenames{i})};
+                        sideFiles = sideFiles(isfile(sideFiles));
+                    end
+                    rmdir(filenames{i}, 's');
+                    for k = 1:numel(sideFiles)
+                        delete(sideFiles{k});
+                    end
+                else
+                    delete(filenames{i});
+                end
+                numDeleted = i;
+            end
+            delete(wb);
+            if numDeleted < numel(filenames)
+                uialert(obj.mibModel.mibGUI, sprintf('Delete was cancelled: %d of %d selected item(s) were deleted.', numDeleted, numel(filenames)), ...
+                    'Delete cancelled', 'Icon', 'info');
             end
         catch err
-            utils.dlgs.showErrorDialog(obj.view.gui, sprintf('%s:\n%s\n\nThe file is probably open in another application, or MATLAB lacks permission', err.message, filenames{i}), ...
-                'Delete failed', 'Cannot delete file!', '');
+            delete(wb);
+            utils.dlgs.showErrorDialog(obj.view.gui, sprintf(['%s:\n%s\n\nThe file or folder is probably open in another application, or MATLAB lacks permission.\n\n' ...
+                '%d of %d selected item(s) were deleted; a folder that failed may have lost part of its contents.'], ...
+                err.message, filenames{i}, numDeleted, numel(filenames)), ...
+                'Delete failed', 'Cannot delete file or folder!', '');
         end
         obj.updateFileList_Callback();
 
