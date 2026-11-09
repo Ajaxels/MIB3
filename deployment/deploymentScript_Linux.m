@@ -45,7 +45,7 @@ copyfile(docsSource, fullfile(stagedDocs, "html"));
 % The file naming is not uniform (*_license.txt, LICENSE, license.txt,
 % license_matGeom.txt, ...), so every file with "license" in its name is
 % taken, and its subfolder under mib/external is kept so that, e.g.,
-% export_fig/LICENSE and HistThresh/LICENSE do not overwrite each other.
+% HistThresh/LICENSE do not overwrite each other.
 externalRoot = fullfile(PROJECT_ROOT, "mib", "external");
 stagedLicenses = fullfile(tempdir, "MIB3_build_staging", "licenses");
 if isfolder(stagedLicenses); rmdir(stagedLicenses, "s"); end
