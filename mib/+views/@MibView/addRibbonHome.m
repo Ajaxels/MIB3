@@ -394,6 +394,10 @@ popupList.add(header2);
 homeHandles.prefOverrideMenu = ListItem('Make override default settings file', Icon(fullfile(iconPath, 'preferences_24px.png')));
 homeHandles.prefOverrideMenu.Description = 'Save the settings that differ from the MIB defaults as the starting settings of new users';
 popupList.add(homeHandles.prefOverrideMenu);
+% Start or stop the parallel pool; homeUpdateParallelPool sets the tick and description when the menu opens
+homeHandles.parallelPool = matlab.ui.internal.toolstrip.ListItemWithCheckBox('Parallel pool', false);
+homeHandles.parallelPool.Description = 'Start or stop the pool of parallel workers';
+popupList.add(homeHandles.parallelPool);
 homeHandles.preferences.Popup = popupList;
 column.add(homeHandles.preferences);
 

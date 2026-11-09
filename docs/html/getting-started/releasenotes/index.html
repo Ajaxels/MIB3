@@ -5588,6 +5588,35 @@ For the downloads visit <a href="https://mib.helsinki.fi/downloads.html">MIB web
   areas, detects astigmatism and gives focus scores; results of different images collect in one
   table for comparison.
   See <a href="../../user-interface/ribbon/image/image-tools-sharpness.html">Sharpness and noise</a></li>
+<li><strong>BigData image processing</strong>: the image tools now work on BigData datasets too large for the
+  memory, reading them from disk:<ul>
+<li><a href="../../user-interface/ribbon/image/image-filters.html#bigdata-datasets">Image filters</a>,
+  <a href="../../user-interface/ribbon/image/image-tools-arithmetic.html#bigdata-datasets">Image Arithmetics</a>,
+  <a href="../../user-interface/ribbon/image/image-morphops.html#bigdata-datasets">MorphOps</a>,
+  <a href="../../user-interface/ribbon/image/image-tools-whitebalance.html#bigdata-datasets">White balance</a>
+  and <a href="../../user-interface/ribbon/image/normalize.html#bigdata-datasets">Normalize layers</a>
+  write the result to a new OME-Zarr store or to a Standard dataset in memory; Image filters
+  and Image Arithmetics can also overwrite the image on disk</li>
+<li><a href="../../user-interface/ribbon/tools/tools-globalthres.html#bigdata-datasets">Global thresholding</a>
+  and the Edge filters write into the mask or selection</li>
+<li>Image filters can be limited to the ROIs and can run on parallel workers; the pool is
+  started and stopped from <em>Home ribbon -&gt; Preferences -&gt; Parallel pool</em></li>
+<li>a cancelled run to a new store can be kept and resumed later</li>
+</ul>
+</li>
+<li><strong>BigData locks</strong>: the image and the labels of a BigData dataset can be locked against
+  accidental changes; a loaded model opens locked by default.
+  See <a href="../dataset-types/index.html#bigdata">BigData datasets</a></li>
+<li><strong>Restrict to ROI</strong>: a new checkbox of the
+  <a href="../../user-interface/panels/selection_imview/selection.html#additional-controls">Selection panel</a>
+  limits the ROI-aware tools to the selected ROI, or to all ROIs</li>
+<li><strong>Selection in Standard datasets</strong>: moving a 3D selection to the model or mask and clearing it
+  take time and undo memory according to the size of the selection, not of the whole volume</li>
+<li><strong>Snapshot</strong>: outlines and labels of the ROIs can be added to the snapshot</li>
+<li><strong>Preferences, Fine-tuning</strong>: a new category for small adjustments of existing actions, such
+  as the zoom step of the <span class="keys"><kbd class="key-q">Q</kbd></span> / <span class="keys"><kbd class="key-w">W</kbd></span> keys.
+  See <a href="../../user-interface/ribbon/home/home-preferences.html#fine-tuning">Fine-tuning</a></li>
+<li><strong>Amira Mesh, RLE compression</strong>: reading and writing RLE-compressed AM files is faster</li>
 <li><strong>Fixes</strong>:<ul>
 <li>MATLAB no longer crashes at exit after ZARR files were opened in a session that also used
   Computer Vision Toolbox features</li>

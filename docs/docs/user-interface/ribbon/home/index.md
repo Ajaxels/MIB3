@@ -445,6 +445,7 @@ Edit MIB preferences, including colors for **Selection**, **Model**, and **Mask*
 See [Preferences](home-preferences.md) for details.
 
 - **Make override default settings file**: Save your changes to the default settings as the starting settings of new users of this computer or of this MIB installation, see [Overriding default settings](../../../getting-started/configuration/index.md#overriding-default-settings)
+- **Parallel pool**: Start or stop the pool of workers used by the parallel options of MIB tools, with the number of workers set in [Preferences](home-preferences.md). An open pool keeps its number of workers until it is stopped, and it cannot be stopped during a run
 
 <div class="clear-float"></div>
 

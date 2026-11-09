@@ -80,6 +80,7 @@ Define the destination for the rendered snapshot:
 
 - <label class="widget widget-checkbox">Measurements</label>: add the displayed measurements to the snapshot.
 - <span class="widget widget-button">Options</span> (next to Measurements): define visualization options for the measurements.
+- <label class="widget widget-checkbox">ROI</label>: add outlines and labels of the ROIs to the snapshot. When one ROI is selected in [the ROI panel](../../panels/roi/index.md), only that ROI is added.
 
 ---
 

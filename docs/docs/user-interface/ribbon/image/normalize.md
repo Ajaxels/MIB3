@@ -43,6 +43,13 @@ Normalizes image intensities slice-by-slice across Z or time to reduce illuminat
     For 4D datasets, normalization can be done across time.<br>
     For Z-stacks, black or white pixels can be excluded from the statistics.
 
+## BigData datasets
+
+On a [BigData](../../../getting-started/dataset-types/index.md#bigdata) dataset only **Z stack** is
+available. The mean and std of each slice are computed from a sample of its rows, and the normalized
+image is written to a new OME-Zarr store, as for the
+[image filters](image-filters.md#bigdata-datasets).
+
 ---
 
 *Back to [MIB](../../../index.md) | [User interface](../../index.md) | [Ribbon](../index.md) | [Image](index.md)*

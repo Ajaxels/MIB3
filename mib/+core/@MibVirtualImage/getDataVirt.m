@@ -59,7 +59,7 @@ if ~isfield(options, 'showWaitbar'); options.showWaitbar = []; end
 level = 2^(options.level - 1);   % resampling factor
 
 if strcmp(type, 'image')
-    if isempty(colChannel); colChannel = 1:obj.colors; end
+    if isempty(colChannel) || (isscalar(colChannel) && (colChannel == 0 || isnan(colChannel))); colChannel = 1:obj.colors; end   % 0 / NaN = all, as MibImage.getData
 end
 
 % --- coordinate ranges in original dataset --------------------------------

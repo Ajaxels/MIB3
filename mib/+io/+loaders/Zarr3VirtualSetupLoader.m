@@ -137,7 +137,9 @@ methods
                         ' %s\n(.zattrs / .zgroup found, but no zarr.json)\n\n' ...
                         'Only zarr v3 is supported by the zarr-matlab library.\n' ...
                         'Please convert the dataset to zarr v3 and try again.'], rootPath);
-                    utils.dlgs.showErrorDialog(obj.Options.ParentFigure, errorMessage, 'io:Zarr3VirtualSetupLoader:zarr2Detected', '', '');
+                    if ~isempty(obj.ParentFigure)   % without a window the error below says it
+                        utils.dlgs.showErrorDialog(obj.ParentFigure, errorMessage, 'io:Zarr3VirtualSetupLoader:zarr2Detected', '', '');
+                    end
                 end
             end
         end
@@ -169,7 +171,9 @@ methods
             end
             errorMessage = sprintf('Zarr3VirtualSetupLoader: cannot read zarr.json at\n %s\n%s%s', ...
                 rootPath, ME.message, versionHint);
-            utils.dlgs.showErrorDialog(obj.Options.ParentFigure, errorMessage, 'io:Zarr3VirtualSetupLoader:openFailed', '', '');
+            if ~isempty(obj.ParentFigure)   % without a window the error below says it
+                utils.dlgs.showErrorDialog(obj.ParentFigure, errorMessage, 'io:Zarr3VirtualSetupLoader:openFailed', '', '');
+            end
             % Abort. Without this the read carries on to rawMeta below, which was
             % never assigned, and the real cause is buried under an
             % "Unrecognized function or variable 'rawMeta'" raised 15 lines later.
@@ -427,7 +431,9 @@ methods (Access = private)
                 arrInfo = arr.info();
             catch ME
                 errorMessage = sprintf('Zarr3VirtualSetupLoader: cannot open level "%s":\n %s', ds.path, ME.message);
-                utils.dlgs.showErrorDialog(obj.Options.ParentFigure, errorMessage, 'io:Zarr3VirtualSetupLoader:arrayOpenFailed', '', '');
+                if ~isempty(obj.ParentFigure)   % without a window the error below says it
+                    utils.dlgs.showErrorDialog(obj.ParentFigure, errorMessage, 'io:Zarr3VirtualSetupLoader:arrayOpenFailed', '', '');
+                end
                 % Abort: arrInfo is unset below, so continuing reports an
                 % undefined-variable error instead of the real one.
                 error('io:Zarr3VirtualSetupLoader:arrayOpenFailed', '%s', errorMessage);
@@ -714,7 +720,9 @@ methods (Access = private)
             end
 
             errorMessage = sprintf('Zarr3VirtualSetupLoader: no multiscales metadata found and cannot open as ZarrArray at\n %s\n%s%s', rootPath, ME.message, hint);
-            utils.dlgs.showErrorDialog(obj.Options.ParentFigure, errorMessage, 'io:Zarr3VirtualSetupLoader:arrayOpenFailed', '', '');
+            if ~isempty(obj.ParentFigure)   % without a window the error below says it
+                utils.dlgs.showErrorDialog(obj.ParentFigure, errorMessage, 'io:Zarr3VirtualSetupLoader:arrayOpenFailed', '', '');
+            end
             % Abort: arrInfo is unset below, so continuing reports an
             % undefined-variable error instead of the real one.
             error('io:Zarr3VirtualSetupLoader:arrayOpenFailed', '%s', errorMessage);

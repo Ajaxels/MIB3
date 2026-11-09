@@ -30,6 +30,8 @@ classdef WhiteBalance < handle
         % cell array of listener handles
         BatchOpt
         % structure compatible with batch processing; field names match widget Tags
+        bigDataOptions
+        % controllers.BigDataOptions - BigData_* BatchOpt fields, the BigData output panel and the BigData run
     end
 
     events
@@ -82,6 +84,10 @@ classdef WhiteBalance < handle
             obj.BatchOpt.mibBatchTooltip.ColorSpace                = 'Color space of the image';
             obj.BatchOpt.mibBatchTooltip.ChromaticAdaptationMethod = 'Chromatic adaptation method used to scale the RGB values';
             obj.BatchOpt.mibBatchTooltip.showWaitbar               = 'Show or not the progress bar during execution';
+
+            % BigData: the result goes to a new store (BigData_* fields, ignored otherwise)
+            obj.bigDataOptions = controllers.BigDataOptions(obj, 'whitebalance');
+            obj.BatchOpt = obj.bigDataOptions.addBatchOptFields(obj.BatchOpt);
 
             %% Batch / headless mode
             if nargin == 3
@@ -160,8 +166,22 @@ classdef WhiteBalance < handle
         % -----------------------------------------------------------
         function updateWidgets(obj)
             % UPDATEWIDGETS - Refresh widgets to reflect current model state.
+            %
+            % On a BigData dataset only the manual white value is offered (the
+            % picked region and Detect read whole slices), the whole dataset is
+            % corrected (no Correct current), and the BigData output panel is
+            % shown; the widgets are enabled again for other datasets.
             obj.BatchOpt.id = obj.mibModel.getActiveId();
+            isBigData = strcmp(obj.mibModel.I{obj.BatchOpt.id}.datasetType, 'BigData');
+            if isBigData; obj.BatchOpt.PickedRegion{1} = 'ManualValue'; end
             utils.updateGUIFromBatchOpt_Shared(obj.view, obj.BatchOpt);
+            if isempty(obj.view) || ~isvalid(obj.view.gui); return; end
+            handles = obj.view.handles;
+            for widgetName = {'SelectedAreas', 'MaskedAreas', 'detectButton', 'correctCurrentButton'}
+                handles.(widgetName{1}).Enable = ~isBigData;
+            end
+            handles.ManualWhiteColor.Enable = strcmp(obj.BatchOpt.PickedRegion{1}, 'ManualValue');
+            obj.bigDataOptions.updateWidgets();
         end
 
         % -----------------------------------------------------------
@@ -281,9 +301,15 @@ classdef WhiteBalance < handle
             if nargin < 2; mode = 'Correct all'; end
             if nargin < 3; batchModeSwitch = false; end
 
+            obj.BatchOpt.id = obj.mibModel.getActiveId();
             id = obj.BatchOpt.id;
             dataset = obj.mibModel.I{id};
             colors = dataset.image.colors;
+
+            if strcmp(dataset.datasetType, 'BigData')     % read-only image: corrected into a new store
+                obj.correctBigData_(mode, batchModeSwitch);
+                return;
+            end
 
             if colors ~= 3
                 utils.dlgs.showErrorDialog(obj.mibModel.getProgressBarParent(), ...
@@ -305,15 +331,15 @@ classdef WhiteBalance < handle
                     'Message', 'Please wait...', 'Title', 'White balance correction');
             end
 
-            if any(dataset.datasetType(1) == ['V' 'B'])
+            if strcmp(dataset.datasetType, 'Virtual')
                 if obj.BatchOpt.showWaitbar; delete(progressBar); end
                 dlgOpt.MsgBoxOnly = true;
                 dlgOpt.Icon = 'puffin_warning';
                 utils.dlgs.inputUniversalDlg(obj.mibModel.getProgressBarParent(), '', {''}, ...
-                    {sprintf('This plugin is not compatible with the virtual or BigData mode!\nPlease switch to the memory-resident mode and try again')}, ...
+                    {sprintf('This plugin is not compatible with the virtual mode!\nPlease switch to the memory-resident mode and try again')}, ...
                     'Not implemented', dlgOpt);
                 notify(obj.mibModel, 'StopProtocol');
-                obj.closeWindow();
+                if ~isempty(obj.view); obj.closeWindow(); end   % batch mode has no window
                 return;
             end
 
@@ -409,5 +435,79 @@ classdef WhiteBalance < handle
             end
         end
 
+    end
+
+    methods (Access = private)
+        function correctBigData_(obj, mode, batchModeSwitch)
+            % CORRECTBIGDATA_ - White balance of a BigData image into a new OME-Zarr store.
+            %
+            % ``chromadapt`` with the white of ``ManualWhiteColor`` maps every pixel
+            % on its own (to linear RGB, a 3 x 3 adaptation matrix, back), so the
+            % level ``BigData_PyramidLevel`` is corrected in bands of rows without a
+            % halo and equals the Standard correction of the whole slices. The
+            % result goes to a new store, opened as ``BigData_OpenIn`` says
+            % (``controllers.BigDataOptions.run``).
+            %
+            % Refused, with a dialog or raised as ``controllers:WhiteBalance:bigData``
+            % when headless: an image without 3 channels; *SelectedAreas* /
+            % *MaskedAreas* (the white of every slice would need the image under
+            % the selection or mask, read band-aligned with the model - not done
+            % yet); *Correct current*, because a new store holds the whole dataset.
+            %
+            % Input Arguments:
+            %   - **mode** - ``'Correct all'`` or ``'Correct current'``
+            %   - **batchModeSwitch** - ``true`` from a batch protocol: no BatchOpt hand-over
+            BatchOpt = obj.BatchOpt;
+            dataset = obj.mibModel.I{BatchOpt.id};
+            parentFigure = obj.mibModel.mibGUI;     % [] headless: errors are raised
+            if ~isempty(obj.view) && isvalid(obj.view.gui); parentFigure = obj.view.gui; end
+            errorId = 'controllers:WhiteBalance:bigData';
+            title = 'BigData white balance';
+            if dataset.image.colors ~= 3
+                controllers.BigDataOptions.reportError(obj.mibModel, parentFigure, errorId, ...
+                    'White balance correction is only available for 3 color-channel RGB images!', title);
+                return;
+            end
+            if ~strcmp(BatchOpt.PickedRegion{1}, 'ManualValue')
+                controllers.BigDataOptions.reportError(obj.mibModel, parentFigure, errorId, sprintf(['On BigData ' ...
+                    'datasets the white is given as a manual value; "%s" is not available.\nPoint at an area that ' ...
+                    'should be white or gray to read its intensities, and enter them as the manual white value.'], ...
+                    BatchOpt.PickedRegion{1}), title);
+                return;
+            end
+            whiteColor = str2num(BatchOpt.ManualWhiteColor); %#ok<ST2NM> entered as text
+            if numel(whiteColor) ~= 3
+                controllers.BigDataOptions.reportError(obj.mibModel, parentFigure, errorId, ...
+                    'Please provide 3 values that describe intensity in an area that should be white or gray!', title);
+                return;
+            end
+            if strcmp(mode, 'Correct current')
+                controllers.BigDataOptions.reportError(obj.mibModel, parentFigure, errorId, ...
+                    'On BigData datasets the whole dataset is corrected into a new store; please use Correct all.', title);
+                return;
+            end
+
+            colorSpace = BatchOpt.ColorSpace{1};
+            method = BatchOpt.ChromaticAdaptationMethod{1};
+            blockFunction = @(block) chromadapt(block, whiteColor, 'ColorSpace', colorSpace, 'Method', method);
+            try
+                result = obj.bigDataOptions.run(BatchOpt, blockFunction, ...
+                    Fingerprint = jsonencode(struct('white', whiteColor, 'colorSpace', colorSpace, 'method', method)));
+            catch err
+                controllers.BigDataOptions.reportError(obj.mibModel, parentFigure, errorId, ...
+                    sprintf('White balance correction of the BigData dataset failed:\n%s', err.message), title);
+                return;
+            end
+            if isempty(result)      % cancelled; nothing is left on disk
+                notify(obj.mibModel, 'StopProtocol');
+                return;
+            end
+
+            obj.bigDataOptions.reportStoreResult(result, sprintf('WB correction: %g %g %g, %s, %s; level %s -> %s', ...
+                whiteColor, colorSpace, method, BatchOpt.BigData_PyramidLevel{1}, result.outputPath));
+            obj.mibModel.preferences.Users.Tiers.numberOfContrastAdjustments = obj.mibModel.preferences.Users.Tiers.numberOfContrastAdjustments + 1;
+            notify(obj.mibModel, 'UpdateUserScore', core.ToggleEventData(2));
+            if ~batchModeSwitch; obj.returnBatchOpt(); end
+        end
     end
 end

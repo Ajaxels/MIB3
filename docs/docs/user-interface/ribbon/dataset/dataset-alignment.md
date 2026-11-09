@@ -239,7 +239,7 @@ When the current dataset is a **BigData** store (a disk-backed pyramidal OME-Zar
 
 A dedicated **BigData panel** replaces the *HDD Mode* panel:
 
-- <span class="widget widget-dropdown">Analysis level</span>: the pyramid level used to *compute* the shifts/transforms. Coarser levels are much faster but quantise the result; `<auto>` picks the level nearest ~3000 px wide. Choose level 1 for the most precise shifts.
+- <span class="widget widget-dropdown">Analysis level</span>: the pyramid level used to *compute* the shifts/transforms. Coarser levels are much faster but quantise the result; `<auto>` picks the level nearest ~3000 px wide. Choose s0 (full resolution) for the most precise shifts.
 - <span class="widget widget-edit">Output store</span>: path of the new aligned `.zarr3` (prefilled as `<name>_aligned.zarr3`); use <span class="widget widget-button">...</span> to change it.
 
 !!! note "Supported in BigData"

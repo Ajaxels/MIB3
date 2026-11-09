@@ -125,8 +125,10 @@ for datasetId = 1:Sets.datasetsInSet
         % Empty placeholder buffer - no data loaded
         obj.paintBufferButton(buttonHandle, 'empty');
         buttonHandle.Tooltip = 'use RMB for a context menu with additional options';
-    elseif strcmp(img.filename, 'none.tif')
-        % In-memory dataset - data present but no file on disk (e.g. loaded from Examples)
+    elseif strcmp(img.filename, 'none.tif') || ...
+            (strcmp(obj.mibModel.I{globalIndex}.datasetType, 'Standard') && ~isfile(img.filename))
+        % In-memory dataset - data present but no file on disk (e.g. loaded from Examples), or only
+        % a suggested name that was not written yet (a BigData result in memory)
         obj.paintBufferButton(buttonHandle, 'inMemory');
         buttonHandle.Tooltip = sprintf('In-memory dataset (%dx%dx%d); use File -> Save to save', img.width, img.height, img.depth);
     else

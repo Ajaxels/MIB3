@@ -96,6 +96,7 @@ classdef Snapshot < handle
             obj.BatchOpt.ResizeMethod{2} = {'bicubic', 'bilinear', 'nearest'};
             obj.BatchOpt.Scalebar = false;
             obj.BatchOpt.Measurements = false;
+            obj.BatchOpt.ROIoutlines = false;
             obj.BatchOpt.WhiteBackground = true;
             obj.BatchOpt.SplitChannels = false;
             obj.BatchOpt.Grayscale = false;
@@ -128,6 +129,7 @@ classdef Snapshot < handle
             obj.BatchOpt.mibBatchTooltip.ResizeMethod = 'Method for image resizing, normally - bicubic for downsampling and nearest for upsampling';
             obj.BatchOpt.mibBatchTooltip.Scalebar = 'When checked, add a scale bar to the output image';
             obj.BatchOpt.mibBatchTooltip.Measurements = 'When checked, add measurements to the output image';
+            obj.BatchOpt.mibBatchTooltip.ROIoutlines = 'When checked, add outlines of the ROIs to the output image';
             obj.BatchOpt.mibBatchTooltip.WhiteBackground = 'When checked, use the white color for background, recommended for EM images, otherwise black - recommended for LM images';
             obj.BatchOpt.mibBatchTooltip.SplitChannels = 'When checked, make a montage image where the shown channels are split into a single images';
             obj.BatchOpt.mibBatchTooltip.Grayscale = '[Split channels only] render each channel as grayscale image, otherwise the color is defined by LUT';
@@ -219,6 +221,7 @@ classdef Snapshot < handle
             h.WhiteBackground.ValueChangedFcn = @(~, ~) obj.updateBatchOptFromGUI(h.WhiteBackground);
             h.Measurements.ValueChangedFcn = @(~, ~) obj.measurements_Callback();
             h.measurementsOptions.ButtonPushedFcn = @(~, ~) obj.measurementsOptions_Callback();
+            h.ROIoutlines.ValueChangedFcn = @(~, ~) obj.updateBatchOptFromGUI(h.ROIoutlines);
             
             % File format panel
             h.FileFormatTabGroup.SelectionChangedFcn = @(~, ~) obj.FileFormatTabGroup_Callback();
@@ -275,6 +278,7 @@ classdef Snapshot < handle
                 obj.view.handles.ROI.Enable = 'off';
                 obj.view.handles.SplitChannels.Enable = 'off';
                 obj.view.handles.Measurements.Enable = 'off';
+                obj.view.handles.ROIoutlines.Enable = 'off';
                 obj.view.handles.WhiteBackground.Enable = 'off';
             end
 
@@ -317,6 +321,8 @@ classdef Snapshot < handle
                 obj.view.handles.RoiIndex.Enable = 'off';
                 if obj.view.handles.ROI.Value
                     obj.view.handles.FullImage.Value = true;
+                    % a programmatic change does not fire SelectionChangedFcn
+                    obj.updateCropMode();
                 end
             else
                 obj.view.handles.ROI.Enable = 'on';
@@ -326,13 +332,18 @@ classdef Snapshot < handle
                 for i = 1:numberOfROI
                     roiNames(i) = obj.mibModel.I{activeId}.hROI.Data(indices(i)).label;
                 end
-                if numel(roiNames) < numel(obj.view.handles.RoiIndex.Items)
-                    obj.view.handles.RoiIndex.Value = roiNames{1};
-                end
+                % Value falls back to the first item when it is not in the new list
                 obj.view.handles.RoiIndex.Items = roiNames;
-                if obj.mibModel.I{activeId}.selectedROI >  0
-                    obj.view.handles.RoiIndex.ValueIndex = obj.mibModel.I{activeId}.selectedROI; 
-                    obj.BatchOpt.RoiIndex{1} = num2str(obj.mibModel.I{activeId}.selectedROI);
+                % selectedROI indexes hROI.Data, the list holds only the ROIs of the current orientation
+                listPosition = find(ismember(indices, obj.mibModel.I{activeId}.selectedROI), 1);
+                if ~isempty(listPosition)
+                    obj.view.handles.RoiIndex.ValueIndex = listPosition;
+                end
+                % always refresh: the stored index may come from a buffer with more ROIs
+                obj.BatchOpt.RoiIndex{1} = num2str(indices(obj.view.handles.RoiIndex.ValueIndex));
+                % updateWidthHeight above returns the size of the full image or the shown area
+                if obj.view.handles.ROI.Value
+                    obj.crop_Callback();
                 end
             end
         end
@@ -435,7 +446,8 @@ classdef Snapshot < handle
             roiItems = obj.view.handles.RoiIndex.Items;
             roiValue = obj.view.handles.RoiIndex.Value;
             roiIdx = find(strcmp(roiItems, roiValue), 1);
-            obj.mibModel.I{activeId}.selectedROI = roiIdx;
+            [~, indices] = obj.mibModel.I{activeId}.hROI.getNumberOfROI();
+            obj.mibModel.I{activeId}.selectedROI = indices(roiIdx);
             
             eventdata = core.ToggleEventData({'roi'});
             notify(obj.mibModel, 'UpdateGuiWidgets', eventdata);
@@ -548,18 +560,7 @@ classdef Snapshot < handle
                 fprintf('controllers.Snapshot.measurements_Callback: triggered\n');
             end
 
-            obj.view.handles.measurementsOptions.Enable = false;
-            if obj.view.handles.Measurements.Value
-                dlgOpt.MsgBoxOnly  = true;
-                dlgOpt.Icon        = 'puffin_warning';
-                dlgOpt.HeaderLines = 1;
-                dlgOpt.WindowHeight = 220;
-                msgText = sprintf('Addition of measurements to the snapshot may add artifacts at the borders of the image (at least in R2014b)!\n\nAfter rendering please make sure that the snapshot is good enough for your purposes!');
-                utils.dlgs.inputUniversalDlg(obj.view.gui, ...
-                    sprintf('Attention!'), ...
-                    {}, {msgText}, 'Adding measurements', dlgOpt);
-                obj.view.handles.measurementsOptions.Enable = true;
-            end
+            obj.view.handles.measurementsOptions.Enable = obj.view.handles.Measurements.Value;
             obj.updateBatchOptFromGUI(obj.view.handles.Measurements);
         end
 
@@ -797,6 +798,13 @@ classdef Snapshot < handle
             % (ShownArea), or ``newWidth / obj.origWidth`` (ROI).  ZX / ZY orientations are
             % unaffected because the Z dimension is never pyramided.
             %
+            % **Overlays** - measurements and ROI outlines are read once per snapshot by
+            % ``collectOverlayItems`` and drawn into every panel by ``burnOverlayItems`` after
+            % the crop and the resize, directly in the pixels of the output image. The region
+            % passed to ``burnOverlayItems`` is expressed in full-resolution dataset pixels, so
+            % pyramid levels, the shown area, ROI crops and anisotropic stretching all reduce
+            % to one offset and one scale.
+            %
             % Input Arguments:
             %   - **useBatchMode** *(optional)* - [logical] ``1`` = run silently (no GUI
             %     button flash), used when called from batch processing. Default: ``0``.
@@ -904,6 +912,21 @@ classdef Snapshot < handle
                 end
             end
 
+            overlayItems = [];
+            if isempty(obj.extraController) && (obj.BatchOpt.Measurements || obj.BatchOpt.ROIoutlines)
+                overlayItems = obj.collectOverlayItems(dataset);
+                % part of the dataset returned by getRGBimage, in full-resolution pixels
+                if options.blockModeSwitch
+                    [yMin, yMax, xMin, xMax] = dataset.getCoordinatesOfShownImage();
+                    regionOrigin = [xMin yMin] - 1;
+                    regionSize = [xMax - xMin + 1, yMax - yMin + 1];
+                else
+                    [fullHeight, fullWidth] = dataset.getDatasetDimensions('image', [], struct('blockModeSwitch', 0));
+                    regionOrigin = [0 0];
+                    regionSize = [fullWidth fullHeight];
+                end
+            end
+
             progressBar = core.PoolWaitbar(maxImageIndex, 'Generating images, please wait...', ...
                 obj.view.gui, 'Making snapshot', true);
 
@@ -926,29 +949,6 @@ classdef Snapshot < handle
                     end
                     dataset.slices{4} = colorChannels;
 
-                    if obj.BatchOpt.Measurements
-                        hFig = figure(153);
-                        hFig.Renderer = 'zbuffer';
-                        clf;
-                        warning('off', 'images:initSize:adjustingMag');
-                        warning('off', 'MATLAB:print:DeprecateZbuffer');
-
-                        imshow(img);
-                        axHandle = gca;
-                        hold(axHandle, 'on');
-                        % imshow maps image pixel (X,Y) to axes coords (X,Y) - identity conversion
-                        convertFcn = @(X, Y) deal(double(X), double(Y));
-                        dataset.measure.addMeasurementsToPlot(axHandle, 'full', dataset.orientation, convertFcn, 0);
-                        set(axHandle, 'xtick', []);
-                        set(axHandle, 'ytick', []);
-                        img2 = export_fig('-native', '-zbuffer', '-a1');
-
-                        delete(153);
-                        warning('on', 'images:initSize:adjustingMag');
-                        warning('on', 'MATLAB:print:DeprecateZbuffer');
-                        img = imresize(img2, [size(img, 1) size(img, 2)], 'nearest');
-                    end
-
                     if strcmp(obj.BatchOpt.Crop{1}, 'ROI')
                         roiImg = dataset.hROI.returnMask(str2double(obj.BatchOpt.RoiIndex{1}));
                         STATS = regionprops(roiImg, 'BoundingBox');
@@ -965,6 +965,16 @@ classdef Snapshot < handle
                     if newWidth ~= size(img, 2) || newHeight ~= size(img, 1)
                         resizeMethod = obj.view.handles.ResizeMethod.Value;
                         img = imresize(img, [newHeight newWidth], resizeMethod);
+                    end
+
+                    if ~isempty(overlayItems)
+                        overlayOrigin = regionOrigin;
+                        overlaySize = regionSize;
+                        if strcmp(obj.BatchOpt.Crop{1}, 'ROI')
+                            overlayOrigin = regionOrigin + ceil(STATS.BoundingBox(1:2)) - 1;
+                            overlaySize = STATS.BoundingBox(3:4);
+                        end
+                        img = obj.burnOverlayItems(img, overlayItems, overlayOrigin, overlaySize);
                     end
 
                     if obj.BatchOpt.Scalebar
@@ -1105,5 +1115,320 @@ classdef Snapshot < handle
             end
         end
 
+    end
+
+    methods (Access = private)
+        function overlayItems = collectOverlayItems(obj, dataset)
+            % COLLECTOVERLAYITEMS - Read the geometry and style of the overlays selected for the snapshot.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      overlayItems = obj.collectOverlayItems(dataset)
+            %
+            % Calls ``RoiRegion.addROIsToPlot`` and ``Measurements.addMeasurementsToPlot`` on
+            % an invisible axes that holds no image and reads back the created line and text
+            % objects, so that those two methods stay the only definition of what an overlay
+            % looks like (slice and time filtering, ``Options``, shapes of the measurement
+            % types). ROIs follow ``dataset.selectedROI``, the same as the image view, but
+            % their labels are always added: the label switch belongs to the ROI panel, which
+            % is not reachable from this controller.
+            %
+            % Input Arguments:
+            %   - **dataset** - [core.MibDataset] dataset the snapshot is made from
+            %
+            % Output Arguments:
+            %   - **overlayItems** - [struct] in the drawing order, coordinates in full-resolution
+            %     dataset pixels of the current orientation:
+            %
+            %     - ``.lines`` - struct array, fields ``X, Y, Color, LineStyle, LineWidth,
+            %       Marker, MarkerSize, MarkerEdgeColor``
+            %     - ``.texts`` - struct array, fields ``Position, String, Color,
+            %       BackgroundColor, FontSize``
+
+            hFig = figure('Visible', 'off');
+            figureCleanup = onCleanup(@() delete(hFig));
+            axHandle = axes(hFig);
+            convertFcn = @(X, Y) deal(double(X), double(Y));
+            if obj.BatchOpt.ROIoutlines
+                dataset.hROI.addROIsToPlot(axHandle, 'full', dataset.orientation, convertFcn, dataset.selectedROI, true);
+            end
+            if obj.BatchOpt.Measurements
+                dataset.measure.addMeasurementsToPlot(axHandle, 'full', dataset.orientation, convertFcn, 0);
+            end
+
+            % findobj returns the newest object first
+            lineHandles = flip(findobj(axHandle, 'Type', 'line'));
+            textHandles = flip(findobj(axHandle, 'Type', 'text'));
+            overlayItems.lines = arrayfun(@(h) struct('X', h.XData, 'Y', h.YData, 'Color', h.Color, ...
+                'LineStyle', char(h.LineStyle), 'LineWidth', h.LineWidth, 'Marker', char(h.Marker), ...
+                'MarkerSize', h.MarkerSize, 'MarkerEdgeColor', h.MarkerEdgeColor), lineHandles);
+            overlayItems.texts = arrayfun(@(h) struct('Position', h.Position, 'String', char(join(string(h.String))), ...
+                'Color', h.Color, 'BackgroundColor', h.BackgroundColor, 'FontSize', h.FontSize), textHandles);
+        end
+
+        function img = burnOverlayItems(obj, img, overlayItems, regionOrigin, regionSize)
+            % BURNOVERLAYITEMS - Draw the collected overlays directly into the pixels of an image.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      img = obj.burnOverlayItems(img, overlayItems, regionOrigin, regionSize)
+            %
+            % Only the pixels of the outlines change, so the cost follows the amount of drawn
+            % overlay and not the size of the image. Line widths, marker and font sizes are
+            % given in points; they are multiplied by ``imageWidth / 1000`` (at least 1), which
+            % keeps the share of the image taken by an overlay independent of the output size.
+            %
+            % Input Arguments:
+            %   - **img** - [RGB, unsigned integer] the cropped and resized output image
+            %   - **overlayItems** - [struct] output of ``collectOverlayItems``
+            %   - **regionOrigin** - [1x2 numeric] ``[x y]`` of the region shown by ``img``,
+            %     number of full-resolution pixels to the left of and above it
+            %   - **regionSize** - [1x2 numeric] ``[width height]`` of that region in
+            %     full-resolution pixels; differs from the size of ``img`` after resizing,
+            %     aspect correction or when a pyramid level was used
+            %
+            % Output Arguments:
+            %   - **img** - the image with the overlays. Parts of an overlay outside the region
+            %     are clipped.
+
+            [imageHeight, imageWidth, ~] = size(img);
+            scale = [imageWidth imageHeight] ./ regionSize;
+            styleScale = max(1, imageWidth / 1000);
+            maxIntensity = double(intmax(class(img)));
+
+            for itemId = 1:numel(overlayItems.lines)
+                item = overlayItems.lines(itemId);
+                % pixel centers: x in the dataset is (x - origin - 0.5) * scale + 0.5 in the output
+                pixelX = (item.X(:) - regionOrigin(1) - 0.5) * scale(1) + 0.5;
+                pixelY = (item.Y(:) - regionOrigin(2) - 0.5) * scale(2) + 0.5;
+                strokeWidth = max(1, round(item.LineWidth * styleScale));
+                if ~strcmp(item.LineStyle, 'none') && isnumeric(item.Color) && numel(pixelX) > 1
+                    [pathX, pathY] = obj.rasterizePolyline(pixelX, pixelY, item.LineStyle, strokeWidth);
+                    [brushX, brushY] = obj.discBrush(strokeWidth);
+                    img = obj.stampPixels(img, pathX, pathY, brushX, brushY, item.Color * maxIntensity);
+                end
+
+                markerColor = item.MarkerEdgeColor;
+                if ~isnumeric(markerColor); markerColor = item.Color; end
+                if ~strcmp(item.Marker, 'none') && isnumeric(markerColor)
+                    [brushX, brushY] = obj.markerBrush(item.Marker, item.MarkerSize * styleScale, strokeWidth);
+                    img = obj.stampPixels(img, round(pixelX), round(pixelY), brushX, brushY, markerColor * maxIntensity);
+                end
+            end
+
+            for itemId = 1:numel(overlayItems.texts)
+                item = overlayItems.texts(itemId);
+                if isempty(strtrim(item.String)) || ~isnumeric(item.Color); continue; end
+                fontSize = min(200, max(8, round(item.FontSize * styleScale)));
+                xPos = round((item.Position(1) - regionOrigin(1) - 0.5) * scale(1) + 0.5);
+                yPos = round((item.Position(2) - regionOrigin(2) - 0.5) * scale(2) + 0.5);
+
+                % insertText returns a copy of its input, give it only the area around the label
+                x1 = max(1, xPos);
+                x2 = min(imageWidth, xPos + numel(item.String) * fontSize + 8);
+                y1 = max(1, yPos - fontSize - 4);
+                y2 = min(imageHeight, yPos + fontSize + 4);
+                if x2 <= x1 || y2 <= y1; continue; end
+
+                textOptions = {'FontSize', fontSize, 'TextColor', item.Color * maxIntensity, ...
+                    'AnchorPoint', 'LeftCenter', 'BoxOpacity', 0};
+                if isnumeric(item.BackgroundColor)
+                    textOptions(end-1:end) = {'BoxOpacity', 1};
+                    textOptions = [textOptions, {'BoxColor', item.BackgroundColor * maxIntensity}]; %#ok<AGROW>
+                end
+                img(y1:y2, x1:x2, :) = insertText(img(y1:y2, x1:x2, :), ...
+                    [xPos - x1 + 1, yPos - y1 + 1], item.String, textOptions{:});
+            end
+        end
+
+        function [pathX, pathY] = rasterizePolyline(~, X, Y, lineStyle, strokeWidth)
+            % RASTERIZEPOLYLINE - Convert a polyline into a chain of integer pixel positions.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      [pathX, pathY] = obj.rasterizePolyline(X, Y, lineStyle, strokeWidth)
+            %
+            % Segments with a non-finite end are skipped, the same gaps as in ``plot``. Dashes
+            % are measured along the whole polyline in units of the stroke width.
+            %
+            % Input Arguments:
+            %   - **X**, **Y** - [numeric vectors] vertices in pixels of the output image
+            %   - **lineStyle** - [char] ``'-'``, ``'--'``, ``':'`` or ``'-.'``
+            %   - **strokeWidth** - [numeric] width of the stroke in pixels
+            %
+            % Output Arguments:
+            %   - **pathX**, **pathY** - [column vectors] pixel positions of the drawn part
+
+            X = X(:);
+            Y = Y(:);
+            segmentLength = hypot(diff(X), diff(Y));
+            validSegments = find(isfinite(segmentLength));
+            segmentLength(~isfinite(segmentLength)) = 0;
+            travelled = [0; cumsum(segmentLength)];
+
+            pathX = cell(numel(validSegments), 1);
+            pathY = pathX;
+            pathDistance = pathX;
+            for pathId = 1:numel(validSegments)
+                segmentId = validSegments(pathId);
+                pointCount = ceil(max(abs(X(segmentId + 1) - X(segmentId)), abs(Y(segmentId + 1) - Y(segmentId)))) + 1;
+                pathX{pathId} = round(linspace(X(segmentId), X(segmentId + 1), pointCount))';
+                pathY{pathId} = round(linspace(Y(segmentId), Y(segmentId + 1), pointCount))';
+                pathDistance{pathId} = linspace(travelled(segmentId), travelled(segmentId + 1), pointCount)';
+            end
+            pathX = vertcat(pathX{:});
+            pathY = vertcat(pathY{:});
+            pathDistance = vertcat(pathDistance{:});
+
+            switch lineStyle
+                case '--'
+                    dashPattern = [6 4];
+                case ':'
+                    dashPattern = [1 3];
+                case '-.'
+                    dashPattern = [6 3 1 3];
+                otherwise
+                    return;
+            end
+            dashPattern = dashPattern * max(strokeWidth, 2);
+            phase = mod(pathDistance, sum(dashPattern));
+            % the number of pattern edges passed is even inside a dash and odd inside a gap
+            isDrawn = mod(sum(phase >= cumsum(dashPattern), 2), 2) == 0;
+            pathX = pathX(isDrawn);
+            pathY = pathY(isDrawn);
+        end
+
+        function [brushX, brushY] = discBrush(~, diameter)
+            % DISCBRUSH - Pixel offsets of a filled disc used as the stroke of a line.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      [brushX, brushY] = obj.discBrush(diameter)
+            %
+            % Input Arguments:
+            %   - **diameter** - [numeric] diameter of the disc in pixels
+            %
+            % Output Arguments:
+            %   - **brushX**, **brushY** - [column vectors] offsets from the center
+
+            halfWidth = floor(diameter / 2);
+            [brushX, brushY] = meshgrid(-halfWidth:diameter - halfWidth - 1);
+            inDisc = brushX.^2 + brushY.^2 <= (diameter / 2 + 0.5)^2;
+            brushX = brushX(inDisc);
+            brushY = brushY(inDisc);
+        end
+
+        function [brushX, brushY] = markerBrush(obj, marker, markerSize, strokeWidth)
+            % MARKERBRUSH - Pixel offsets of a marker shape drawn around its center.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      [brushX, brushY] = obj.markerBrush(marker, markerSize, strokeWidth)
+            %
+            % Covers every marker offered by the ROI and Measurements options. Both the short
+            % and the long names are accepted, because the ``Marker`` property of a line
+            % returns the long ones (``'square'`` for ``'s'``). As in ``plot``, the ``'.'``
+            % marker is a filled dot a third of the marker size.
+            %
+            % Input Arguments:
+            %   - **marker** - [char] name of the marker
+            %   - **markerSize** - [numeric] size of the marker in pixels
+            %   - **strokeWidth** - [numeric] width of the marker edge in pixels
+            %
+            % Output Arguments:
+            %   - **brushX**, **brushY** - [column vectors] offsets from the center
+
+            if strcmp(marker, '.') || strcmp(marker, 'point')
+                [brushX, brushY] = obj.discBrush(max(1, round(markerSize / 3)));
+                return;
+            end
+
+            % outlines at radius 1, the Y axis points down as in the image
+            diagonal = sqrt(0.5);
+            circleAngles = linspace(0, 2*pi, 33);
+            plusShape = {[-1 1; 0 0], [0 0; -1 1]};
+            crossShape = {diagonal*[-1 1; -1 1], diagonal*[-1 1; 1 -1]};
+            starRadius = @(tips, innerRadius) [repmat([1 innerRadius], 1, tips) 1];
+            starAngles = @(tips) linspace(-pi/2, 3*pi/2, 2*tips + 1);
+            switch marker
+                case 'o'
+                    shapes = {[cos(circleAngles); sin(circleAngles)]};
+                case '+'
+                    shapes = plusShape;
+                case 'x'
+                    shapes = crossShape;
+                case '*'
+                    shapes = [plusShape, crossShape];
+                case {'s', 'square'}
+                    shapes = {[-1 1 1 -1 -1; -1 -1 1 1 -1]};
+                case {'d', 'diamond'}
+                    shapes = {[0 0.7 0 -0.7 0; -1 0 1 0 -1]};
+                case '^'
+                    shapes = {[0 1 -1 0; -1 1 1 -1]};
+                case 'v'
+                    shapes = {[0 1 -1 0; 1 -1 -1 1]};
+                case '>'
+                    shapes = {[1 -1 -1 1; 0 1 -1 0]};
+                case '<'
+                    shapes = {[-1 1 1 -1; 0 1 -1 0]};
+                case {'p', 'pentagram'}
+                    shapes = {starRadius(5, 0.38) .* [cos(starAngles(5)); sin(starAngles(5))]};
+                case {'h', 'hexagram'}
+                    shapes = {starRadius(6, 0.58) .* [cos(starAngles(6)); sin(starAngles(6))]};
+                otherwise
+                    shapes = {};
+            end
+
+            markerRadius = max(1, markerSize / 2);
+            [strokeX, strokeY] = obj.discBrush(strokeWidth);
+            offsets = zeros(0, 2);
+            for shapeId = 1:numel(shapes)
+                [pathX, pathY] = obj.rasterizePolyline(shapes{shapeId}(1, :) * markerRadius, ...
+                    shapes{shapeId}(2, :) * markerRadius, '-', 1);
+                offsets = [offsets; reshape(pathX + strokeX', [], 1), reshape(pathY + strokeY', [], 1)]; %#ok<AGROW>
+            end
+            offsets = unique(offsets, 'rows');
+            brushX = offsets(:, 1);
+            brushY = offsets(:, 2);
+        end
+
+        function img = stampPixels(~, img, centerX, centerY, brushX, brushY, color)
+            % STAMPPIXELS - Paint a brush at a list of positions, clipped to the image.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      img = obj.stampPixels(img, centerX, centerY, brushX, brushY, color)
+            %
+            % Input Arguments:
+            %   - **img** - [RGB, unsigned integer] image to paint on
+            %   - **centerX**, **centerY** - [numeric column vectors] integer positions in the
+            %     image, may lie outside of it or be NaN
+            %   - **brushX**, **brushY** - [numeric column vectors] pixel offsets of the brush
+            %   - **color** - [1x3 numeric] color in the intensity range of ``img``
+            %
+            % Output Arguments:
+            %   - **img** - the painted image
+
+            [imageHeight, imageWidth, colorChannels] = size(img);
+            margin = max(abs([brushX; brushY]));
+            nearImage = centerX >= 1 - margin & centerX <= imageWidth + margin & ...
+                centerY >= 1 - margin & centerY <= imageHeight + margin;
+            centers = unique([centerX(nearImage), centerY(nearImage)], 'rows');
+            if isempty(centers); return; end
+
+            stampX = reshape(centers(:, 1) + brushX', [], 1);
+            stampY = reshape(centers(:, 2) + brushY', [], 1);
+            inside = stampX >= 1 & stampX <= imageWidth & stampY >= 1 & stampY <= imageHeight;
+            pixelIds = unique(sub2ind([imageHeight imageWidth], stampY(inside), stampX(inside)));
+            for channelId = 1:colorChannels
+                img(pixelIds + (channelId - 1) * imageHeight * imageWidth) = color(channelId);
+            end
+        end
     end
 end

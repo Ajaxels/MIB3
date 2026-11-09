@@ -47,6 +47,13 @@ morphops to all images.
     results.
     
 
+## BigData datasets
+
+On a [BigData](../../../getting-started/dataset-types/index.md#bigdata) dataset the whole dataset is
+processed at the selected pyramid level and written to a new OME-Zarr store, as for the
+[image filters](image-filters.md#bigdata-datasets). Available: Bottom-hat filtering, Morphological
+closing, Dilate image, Erode image, Morphological opening and Top-hat filtering, in 2D mode.
+
 ## List of available morphological operations
 
 ### Bottom-hat Filtering

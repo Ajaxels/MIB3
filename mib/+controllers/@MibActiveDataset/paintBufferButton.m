@@ -26,7 +26,9 @@ function paintBufferButton(obj, buttonHandle, state)
 %   - **buttonHandle** - [matlab.ui.control.Button] handle of the buffer button
 %   - **state** - [char] state of the dataset stored in the buffer:
 %     ``'empty'`` - placeholder, no data loaded;
-%     ``'inMemory'`` - data present, but no file on disk (e.g. loaded from Examples);
+%     ``'inMemory'`` - data present, but no file on disk (e.g. loaded from Examples,
+%     or a Standard dataset whose filename was not written yet, as a BigData result
+%     processed into memory);
 %     ``'fileBacked'`` - data loaded from a file;
 %     ``'selected'`` - the currently shown buffer, overrides the other states
 %

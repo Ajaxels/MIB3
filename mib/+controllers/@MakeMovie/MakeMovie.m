@@ -169,7 +169,7 @@ classdef MakeMovie < handle
             h.Format.ValueChangedFcn        = @obj.gui_Callbacks;
             h.directionPopup.ValueChangedFcn    = @obj.gui_Callbacks;
             h.resizeMethodPopup.ValueChangedFcn = @obj.gui_Callbacks;
-            h.roiPopup.ValueChangedFcn          = @obj.gui_Callbacks;
+            h.RoiIndex.ValueChangedFcn          = @obj.gui_Callbacks;
 
             % checkboxes
             h.splitChannelsCheck.ValueChangedFcn = @obj.gui_Callbacks;
@@ -218,7 +218,7 @@ classdef MakeMovie < handle
                 h.shownAreaRadio.Text           = 'Animation';
                 h.splitChannelsCheck.Enable     = 'off';
                 h.roiRadio.Visible              = 'off';
-                h.roiPopup.Visible              = 'off';
+                h.RoiIndex.Visible              = 'off';
                 h.scalebarCheck.Enable          = 'off';
                 h.lastFrameEdit.Visible         = 'off';
                 h.firstFrameEdit.Value          = 360;
@@ -262,25 +262,27 @@ classdef MakeMovie < handle
                 [numberOfROI, indices] = dataset.hROI.getNumberOfROI();
                 if numberOfROI == 0
                     h.roiRadio.Enable = 'off';
-                    h.roiPopup.Enable = 'off';
+                    h.RoiIndex.Enable = 'off';
                     if h.roiRadio.Value
                         h.fullImageRadio.Value = true;
                     end
                 else
                     h.roiRadio.Enable = 'on';
-                    h.roiPopup.Enable = 'on';
+                    h.RoiIndex.Enable = 'on';
                     roiNames = cell([numberOfROI 1]);
                     for i = 1:numberOfROI
                         roiNames(i) = dataset.hROI.Data(indices(i)).label;
                     end
-                    if numel(roiNames) < numel(h.roiPopup.Items)
-                        h.roiPopup.Value = roiNames{1};
-                    end
-                    h.roiPopup.Items = roiNames;
+                    % Value falls back to the first item when it is not in the new list
+                    h.RoiIndex.Items = roiNames;
                 end
             end
 
             obj.updateWidthHeight();
+            % updateWidthHeight returns the size of the full image or the shown area
+            if h.roiRadio.Value
+                obj.crop_Callback();
+            end
             obj.splitChannelsCheck_Callback();
         end
 
@@ -353,10 +355,11 @@ classdef MakeMovie < handle
         function roiPopup_Callback(obj)
             % ROIPOPUP_CALLBACK - Update the selected ROI and refresh the view.
             activeId = obj.mibModel.getActiveId();
-            roiItems = obj.view.handles.roiPopup.Items;
-            roiValue = obj.view.handles.roiPopup.Value;
+            roiItems = obj.view.handles.RoiIndex.Items;
+            roiValue = obj.view.handles.RoiIndex.Value;
             roiIdx   = find(strcmp(roiItems, roiValue), 1);
-            obj.mibModel.I{activeId}.selectedROI = roiIdx;
+            [~, indices] = obj.mibModel.I{activeId}.hROI.getNumberOfROI();
+            obj.mibModel.I{activeId}.selectedROI = indices(roiIdx);
 
             eventdata = core.ToggleEventData({'roi'});
             notify(obj.mibModel, 'UpdateGuiWidgets', eventdata);
@@ -384,7 +387,7 @@ classdef MakeMovie < handle
             activeId = obj.mibModel.getActiveId();
 
             if h.roiRadio.Value
-                roiImg = obj.mibModel.I{activeId}.hROI.returnMask(h.roiPopup.Value);
+                roiImg = obj.mibModel.I{activeId}.hROI.returnMask(h.RoiIndex.Value);
                 STATS  = regionprops(roiImg, 'BoundingBox');
                 width  = ceil(STATS.BoundingBox(3));
                 height = ceil(STATS.BoundingBox(4));
@@ -737,7 +740,7 @@ classdef MakeMovie < handle
                 end
 
                 if h.roiRadio.Value
-                    roiImg = dataset.hROI.returnMask(h.roiPopup.Value);
+                    roiImg = dataset.hROI.returnMask(h.RoiIndex.Value);
                     STATS  = regionprops(roiImg, 'BoundingBox');
                     if isBigData && isfield(options, 'pyramidLevel')
                         % BigData: fetch full image at pyramid level, then imcrop per frame

@@ -130,7 +130,14 @@ Whichever the image is, the **model is always written as an OME-Zarr v3 store be
   [converted](../../user-interface/ribbon/model/index.md#convert-type) to one, and
   **a single time point** (time-series is not yet supported).
 - The **source image is read-only** - you edit the model, not the image pixels. To change image pixels,
-  convert the (cropped) region to Standard.
+  convert the (cropped) region to Standard; [Image filters](../../user-interface/ribbon/image/image-filters.md#bigdata-datasets),
+  [Image Arithmetics](../../user-interface/ribbon/image/image-tools-arithmetic.md#bigdata-datasets),
+  [MorphOps](../../user-interface/ribbon/image/image-morphops.md#bigdata-datasets),
+  [White balance](../../user-interface/ribbon/image/image-tools-whitebalance.md#bigdata-datasets)
+  and [Normalize layers](../../user-interface/ribbon/image/normalize.md#bigdata-datasets)
+  write their result to a new store, or to a Standard dataset in memory, and
+  [Global thresholding](../../user-interface/ribbon/tools/tools-globalthres.md#bigdata-datasets) to the
+  model.
 - A few tools are **not available**: [Object Picker](../../user-interface/panels/segm/segm-objpick.md),
   [Black-and-White Thresholding](../../user-interface/panels/segm/segm-bwthres.md), and SAM's *Automatic everything*. Each
   [segmentation tool page](../../user-interface/panels/segm/index.md) states its BigData support.

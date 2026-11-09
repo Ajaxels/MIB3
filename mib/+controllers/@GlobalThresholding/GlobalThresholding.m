@@ -32,6 +32,8 @@ classdef GlobalThresholding < handle
         % cell array of listener handles
         BatchOpt
         % structure compatible with batch processing; field names match widget Tags
+        bigDataOptions
+        % controllers.BigDataOptions - BigData_* BatchOpt fields, the BigData output panel and the BigData run
     end
 
     events
@@ -103,6 +105,12 @@ classdef GlobalThresholding < handle
             obj.BatchOpt.mibBatchTooltip.ThresholdOffset    = 'Offset added to the calculated threshold (positive = raise threshold, negative = lower it)';
             obj.BatchOpt.mibBatchTooltip.showWaitbar        = 'Show or not the progress bar during execution';
 
+            % BigData: the thresholds come from sampled histograms and the result
+            % replaces the mask / selection of the model (BigData_* fields, ignored otherwise)
+            obj.bigDataOptions = controllers.BigDataOptions(obj, 'threshold');
+            obj.BatchOpt = obj.bigDataOptions.addBatchOptFields(obj.BatchOpt);
+            obj.bigDataOptions.ModelOutput = true;
+
             %% Batch / headless mode
             if numel(varargin) >= 2
                 BatchOptIn = varargin{2};
@@ -121,12 +129,12 @@ classdef GlobalThresholding < handle
                 return;
             end
 
-            %% Virtual mode guard
-            if any(obj.mibModel.I{id}.datasetType(1) == ['V' 'B'])
+            %% Virtual mode guard (a BigData dataset is thresholded through the BigData panel)
+            if obj.mibModel.I{id}.datasetType(1) == 'V'
                 dlgOpt.MsgBoxOnly = true;
                 dlgOpt.Icon = 'puffin_warning';
                 utils.dlgs.inputUniversalDlg(obj.mibModel.getProgressBarParent(), '', {''}, ...
-                    {sprintf('Global thresholding is not available in virtual or BigData mode.\nPlease switch to the memory-resident mode and try again.')}, ...
+                    {sprintf('Global thresholding is not available in the virtual mode.\nPlease switch to the memory-resident or BigData mode and try again.')}, ...
                     'Not implemented', dlgOpt);
                 notify(obj, 'CloseEvent');
                 return;
@@ -375,6 +383,14 @@ classdef GlobalThresholding < handle
             obj.view.handles.offsetSlider.Value = obj.BatchOpt.ThresholdOffset{1};
             obj.view.handles.offsetSlider.Limits = [-maxVal maxVal];
             obj.applyUIRules();
+
+            % the preview thresholds the current slice read whole, which on a
+            % BigData dataset is the full-resolution slide
+            isBigData = strcmp(obj.mibModel.I{id}.datasetType, 'BigData');
+            if isBigData; obj.view.handles.autoPreviewCheck.Value = false; end
+            obj.view.handles.previewBtn.Enable = ~isBigData;
+            obj.view.handles.autoPreviewCheck.Enable = ~isBigData;
+            obj.bigDataOptions.updateWidgets();
         end
 
         % -----------------------------------------------------------
@@ -418,6 +434,7 @@ classdef GlobalThresholding < handle
                 fprintf('controllers.GlobalThresholding.previewBtn_Callback: triggered\n');
             end
             id = obj.BatchOpt.id;
+            if ~strcmp(obj.mibModel.I{id}.datasetType, 'Standard'); return; end   % reads the whole slice
             colChId = find(ismember(obj.BatchOpt.ColorChannel{2}, obj.BatchOpt.ColorChannel{1}), 1);
 
             getDataOptions.id = id;
@@ -465,6 +482,19 @@ classdef GlobalThresholding < handle
 
             BatchOptLoc = obj.BatchOpt;
             id = BatchOptLoc.id;
+
+            % checked here too, so a batch run is covered: a Virtual image would
+            % be read whole slice by slice, a BigData one goes through the BigData panel
+            switch obj.mibModel.I{id}.datasetType
+                case 'BigData'
+                    obj.applyBigData_(BatchOptLoc, parentFig);
+                    return;
+                case 'Virtual'
+                    controllers.BigDataOptions.reportError(obj.mibModel, parentFig, ...
+                        'controllers:GlobalThresholding:virtual', ...
+                        'Global thresholding is not available in the virtual mode.', 'Not implemented');
+                    return;
+            end
 
             colChId = find(ismember(BatchOptLoc.ColorChannel{2}, BatchOptLoc.ColorChannel{1}), 1);
             maxInt  = obj.mibModel.I{id}.image.maxInt;
@@ -578,5 +608,185 @@ classdef GlobalThresholding < handle
 
         end
 
+    end
+
+    methods (Access = private)
+        function applyBigData_(obj, BatchOpt, parentFigure)
+            % APPLYBIGDATA_ - Threshold a BigData dataset into the mask or selection of its model.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.applyBigData_(BatchOpt, parentFigure)
+            %
+            % Two passes over the level ``BatchOpt.BigData_PyramidLevel``:
+            %
+            % 1. **Statistics** - the histogram of the colour channel in every
+            %    slice, from evenly spaced stripes of rows
+            %    (``utils.bigdata.sliceHistograms``, 256 MB of image data by
+            %    default; exact when the level fits). A threshold per slice
+            %    follows from it (``thresholdFromCounts_``), as the Standard
+            %    path computes one per slice.
+            % 2. **Binarization** - every band of rows is compared with the
+            %    threshold of its slice and replaces ``BatchOpt.Destination`` of
+            %    the whole model (``controllers.BigDataOptions.runToModel``, no
+            %    undo, a confirmation in the GUI).
+            %
+            % As on a Standard dataset, the algorithms other than Otsu work on
+            % an 8-bit copy of a 16-bit image, scaled by the maximum of the
+            % slice; here the maximum of the sample, so a brighter pixel outside
+            % the sample saturates at 255 and stays above the threshold.
+            % ``Mode`` ``'2D, Slice'`` samples and thresholds the shown slice only
+            % (``BigDataOptions.levelSlices``); the other modes the whole dataset.
+            %
+            % The model is checked before the statistics pass
+            % (``checkModelOutput``), so a refusal costs no reading. Errors are
+            % shown in a dialog, or raised as
+            % ``controllers:GlobalThresholding:bigData`` when headless.
+            %
+            % Input Arguments:
+            %   - **BatchOpt** - the tool's BatchOpt with ``id`` and the BigData_* fields
+            %   - **parentFigure** - window for the dialogs, ``[]`` when headless
+            errorId = 'controllers:GlobalThresholding:bigData';
+            dataset = obj.mibModel.I{BatchOpt.id};
+            layer = BatchOpt.Destination{1};
+            channel = find(ismember(BatchOpt.ColorChannel{2}, BatchOpt.ColorChannel{1}), 1);
+            if ~ismember(dataset.image.dataClass, {'uint8', 'uint16'})
+                controllers.BigDataOptions.reportError(obj.mibModel, parentFigure, errorId, sprintf( ...
+                    'Global thresholding of a BigData dataset needs a uint8 or uint16 image; this one is %s.', ...
+                    dataset.image.dataClass), 'Global thresholding');
+                return;
+            end
+            try
+                level = obj.bigDataOptions.checkModelOutput(BatchOpt, layer);
+                slices = obj.bigDataOptions.levelSlices(BatchOpt, level, BatchOpt.Mode{1});
+            catch err
+                controllers.BigDataOptions.reportError(obj.mibModel, parentFigure, errorId, err.message, 'Global thresholding');
+                return;
+            end
+
+            % asked before the histogram pass; the probe of the time with a fixed threshold
+            if ~obj.bigDataOptions.confirmRun(BatchOpt, @(block) block > 0, Layer = layer, Slices = slices, ...
+                    ColChannel = channel, Note = ['A pass over a sample of rows of every slice comes first, ' ...
+                    'for the histograms; it is not in the estimate.'])
+                notify(obj.mibModel, 'StopProtocol');
+                return;
+            end
+            progressParent = [];
+            if ~isempty(obj.view) && isvalid(obj.view.gui); progressParent = obj.view.gui; end
+            [counts, info] = utils.bigdata.sliceHistograms(dataset.image, level, ColChannel = channel, ...
+                ParentFigure = progressParent, Slices = slices);
+            if isempty(counts)      % cancelled while collecting; nothing written
+                notify(obj.mibModel, 'StopProtocol');
+                return;
+            end
+
+            algorithm = BatchOpt.Algorithm{1};
+            scaleTo8bit = dataset.image.maxInt > 255 && ~strcmp(algorithm, 'Otsu');
+            depth = size(counts, 3);
+            processedSlices = slices;
+            if isempty(processedSlices); processedSlices = 1:depth; end
+            thresholds = NaN(1, depth);
+            scaleMax = zeros(1, depth);
+            for z = processedSlices
+                [thresholds(z), scaleMax(z)] = obj.thresholdFromCounts_(counts(:, 1, z), algorithm, ...
+                    BatchOpt.ForegroundFraction{1}, dataset.image.maxInt, scaleTo8bit);
+            end
+            thresholds = thresholds + BatchOpt.ThresholdOffset{1};
+            blockFunction = @(block, z) controllers.GlobalThresholding.binarizeBand_(block, thresholds(z), ...
+                scaleMax(z), scaleTo8bit);
+
+            try
+                result = obj.bigDataOptions.runToModel(BatchOpt, blockFunction, layer, ColChannel = channel, ...
+                    Slices = slices, Confirmed = true);
+            catch err
+                controllers.BigDataOptions.reportError(obj.mibModel, parentFigure, errorId, ...
+                    sprintf('Global thresholding of the BigData dataset failed:\n%s', err.message), 'Global thresholding');
+                return;
+            end
+            if isempty(result)      % cancelled at the confirmation, nothing written
+                notify(obj.mibModel, 'StopProtocol');
+                return;
+            end
+            if ~obj.bigDataOptions.reportModelResult(result, layer); return; end
+
+            sliceText = '';
+            if ~isempty(slices); sliceText = sprintf(', level slice %d', slices); end
+            if isscalar(processedSlices)
+                thresholdText = sprintf('%g', thresholds(processedSlices));
+            else
+                thresholdText = sprintf('%g-%g', min(thresholds), max(thresholds));
+            end
+            fprintf('%s thresholding of %s, level %s%s -> %s; threshold %s; statistics from %.1f%% of the slices processed\n', ...
+                algorithm, dataset.image.filename, BatchOpt.BigData_PyramidLevel{1}, sliceText, layer, thresholdText, ...
+                100 * info.fractionRead);
+            obj.mibModel.preferences.Users.Tiers.numberOfGlobalThresholdings = obj.mibModel.preferences.Users.Tiers.numberOfGlobalThresholdings + 1;
+            notify(obj.mibModel, 'UpdateUserScore', core.ToggleEventData(2));
+            obj.returnBatchOpt(BatchOpt);
+        end
+
+        function [threshold, scaleMax] = thresholdFromCounts_(obj, counts, algorithm, foregroundFraction, maxInt, scaleTo8bit)
+            % THRESHOLDFROMCOUNTS_ - Threshold of the selected algorithm for a slice given by its histogram.
+            %
+            % ``computeThreshold`` and the HistThresh functions take an image,
+            % but use only its histogram. So an image is built that has the
+            % histogram ``counts``, and the threshold is computed exactly as on a
+            % Standard dataset - the same result for the same pixels. The image
+            % has at most 4 million pixels: a larger sample is scaled down, each
+            % present value keeping at least one pixel, which changes the
+            % histogram shape by rounding only.
+            %
+            % Input Arguments:
+            %   - **counts** - [bins x 1] count of every value of the image class
+            %   - **algorithm**, **foregroundFraction** - as in ``BatchOpt``
+            %   - **maxInt** - [double] maximum of the image class
+            %   - **scaleTo8bit** - [logical] work on an 8-bit copy scaled by the
+            %     slice maximum (a 16-bit image, algorithms other than Otsu)
+            %
+            % Output Arguments:
+            %   - **threshold** - [double] threshold, in 8-bit units when scaled
+            %   - **scaleMax** - [double] the maximum used for scaling, 0 when not scaled
+            scaleMax = 0;
+            imageClass = 'uint16';
+            if maxInt <= 255; imageClass = 'uint8'; end
+            localMaxInt = maxInt;
+            if scaleTo8bit
+                values = find(counts) - 1;
+                scaleMax = max([values; 0]);
+                mapped = values;
+                if scaleMax > 0
+                    mapped = double(uint8(values / scaleMax * 255));   % as uint8(double(img)/double(maxPixel)*255)
+                end
+                counts = accumarray(mapped + 1, counts(values + 1), [256 1]);
+                imageClass = 'uint8';
+                localMaxInt = 255;
+            end
+            pixelCount = sum(counts);
+            maxPixels = 4e6;
+            if pixelCount > maxPixels
+                counts = max(round(counts * maxPixels / pixelCount), double(counts > 0));
+            end
+            image = cast(repelem((0:numel(counts) - 1)', counts), imageClass);
+            threshold = obj.computeThreshold(image, algorithm, foregroundFraction, localMaxInt);
+        end
+    end
+
+    methods (Static, Hidden)
+        function mask = binarizeBand_(block, threshold, scaleMax, scaleTo8bit)
+            % BINARIZEBAND_ - Block function of the BigData run: one band of the channel compared with the threshold of its slice.
+            %
+            % The comparison of the Standard path, including its 8-bit scaling
+            % of a 16-bit image by the slice maximum ``scaleMax``. Hidden rather
+            % than private: it is called through a function handle from
+            % ``controllers.BigDataOptions.runToModel``.
+            if scaleTo8bit
+                if scaleMax > 0
+                    block = uint8(double(block) / scaleMax * 255);
+                else
+                    block = uint8(block);
+                end
+            end
+            mask = block > threshold;
+        end
     end
 end

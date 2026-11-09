@@ -6009,7 +6009,14 @@ larger than memory and survives across sessions.</p>
   <a href="../../user-interface/ribbon/model/index.html#convert-type">converted</a> to one, and
   <strong>a single time point</strong> (time-series is not yet supported).</li>
 <li>The <strong>source image is read-only</strong> - you edit the model, not the image pixels. To change image pixels,
-  convert the (cropped) region to Standard.</li>
+  convert the (cropped) region to Standard; <a href="../../user-interface/ribbon/image/image-filters.html#bigdata-datasets">Image filters</a>,
+  <a href="../../user-interface/ribbon/image/image-tools-arithmetic.html#bigdata-datasets">Image Arithmetics</a>,
+  <a href="../../user-interface/ribbon/image/image-morphops.html#bigdata-datasets">MorphOps</a>,
+  <a href="../../user-interface/ribbon/image/image-tools-whitebalance.html#bigdata-datasets">White balance</a>
+  and <a href="../../user-interface/ribbon/image/normalize.html#bigdata-datasets">Normalize layers</a>
+  write their result to a new store, or to a Standard dataset in memory, and
+  <a href="../../user-interface/ribbon/tools/tools-globalthres.html#bigdata-datasets">Global thresholding</a> to the
+  model.</li>
 <li>A few tools are <strong>not available</strong>: <a href="../../user-interface/panels/segm/segm-objpick.html">Object Picker</a>,
   <a href="../../user-interface/panels/segm/segm-bwthres.html">Black-and-White Thresholding</a>, and SAM's <em>Automatic everything</em>. Each
   <a href="../../user-interface/panels/segm/index.html">segmentation tool page</a> states its BigData support.</li>

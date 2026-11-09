@@ -79,7 +79,6 @@ else
     addpath(fullfile(func_dir, 'external'));
     addpath(fullfile(func_dir, 'external', 'bioformats'));
     addpath(fullfile(func_dir, 'external', 'CellMigration'));
-    addpath(fullfile(func_dir, 'external', 'export_fig'));
     addpath(fullfile(func_dir, 'external', 'FastMarching'));
     addpath(fullfile(func_dir, 'external', 'HistThresh'));
     addpath(fullfile(func_dir, 'external', 'matGeom', 'geom2d'));

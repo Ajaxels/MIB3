@@ -12,13 +12,36 @@ function [img, DisplacementField, randomSeed] = elasticDistortionFilter(img, Bat
 % Visual Document Analysis* - Simard, Steinkraus & Platt (2003).
 % See also: https://cognitivemedium.com/assets/rmnist/Simard.pdf
 %
+% The displacement field is uniform noise in [-1, 1] for X and Y, smoothed by
+% a Gaussian of ``Sigma`` pixels (kernel ``2*ceil(2*Sigma)+1``, the
+% ``imgaussfilt`` default) and multiplied by ``ScalingFactor``, as in the
+% paper. Its spread does not depend on the image size: away from the borders
+% (where the replicate padding of ``imgaussfilt`` adds to it) the standard
+% deviation of a component is ``ScalingFactor * norm(kernel(:)) / sqrt(3)``,
+% 0.170-0.177 ``* ScalingFactor / Sigma`` pixels for a Sigma of 2-16 (1.3 px
+% for the defaults 30 and 4), and no displacement exceeds ``ScalingFactor``.
+%
+% Until 2026-11 the noise was first divided by ``norm`` (its largest
+% singular value, about ``(sqrt(H) + sqrt(W)) / sqrt(3)``) and smoothed by
+% an ``HSize`` kernel (default 7): the displacements were 0.1 px on a 512 px
+% image and shrank with the image, and ``norm`` took 1 s on 2048 x 2048. The
+% ``HSize`` field is no longer read.
+%
+% The image is warped by sampling it at the displaced position of every pixel
+% (``interp2``, linear for the image, nearest for model, mask and selection),
+% the position clamped to the image so its edge pixels repeat beyond it. Until
+% 2026-11 the moved pixels were interpolated as scattered points (``griddata``,
+% natural, 0 outside): the same distortion within 2.5 grey levels on average,
+% but 200-400 times slower (2.3 s against 0.012 s for 591 x 806, 21.7 s against
+% 0.05 s for 2048 x 2048). The BigData path (``ImageFilters/Filter.m``,
+% ``localElasticBand``) warps the same way.
+%
 % Input Arguments:
 %   - **img** - image array ``[height, width, colors, depth]``
 %   - **BatchOpt** - *(optional)* structure with filter parameters:
 %
 %     - ``.ScalingFactor`` - ``{value}`` amplitude of the displacement field (default: ``30``)
-%     - ``.HSize`` - ``char`` filter size for Gaussian smoothing of the field (default: ``'7'``)
-%     - ``.Sigma`` - ``{value}`` sigma for Gaussian smoothing of the field (default: ``4``)
+%     - ``.Sigma`` - ``{value}`` sigma for Gaussian smoothing of the field, pixels (default: ``4``)
 %     - ``.SourceLayer`` - ``{string}`` layer type; non-image layers use nearest-neighbour
 %       interpolation (default: ``'image'``)
 %     - ``.Mode3D`` - logical, apply 3D distortion (not yet implemented; default: ``false``)
@@ -45,7 +68,6 @@ if nargin < 4; DisplacementField = struct(); end
 if nargin < 3; randomSeed = 0; end
 if nargin < 2; BatchOpt = struct; end
 
-if ~isfield(BatchOpt, 'HSize'); BatchOpt.HSize = '7'; end
 if ~isfield(BatchOpt, 'ScalingFactor'); BatchOpt.ScalingFactor{1} = 30; end
 if ~isfield(BatchOpt, 'Sigma'); BatchOpt.Sigma{1} = 4; end
 if ~isfield(BatchOpt, 'Mode3D'); BatchOpt.Mode3D = false; end
@@ -53,14 +75,10 @@ if ~isfield(BatchOpt, 'SourceLayer'); BatchOpt.SourceLayer{1} = 'image'; end
 if ~isfield(BatchOpt, 'showWaitbar'); BatchOpt.showWaitbar = true; end
 if ~isfield(BatchOpt, 'UseParallelComputing'); BatchOpt.UseParallelComputing = false; end
 
-HSize = str2num(BatchOpt.HSize); %#ok<ST2NM>
-HSize = HSize - mod(HSize,2) + 1; % should be an odd number
-if numel(HSize) == 1; HSize = repmat(HSize, [3,1]); end
-
 % init random generator
 rng(randomSeed, 'twister');
 
-interpolationType = 'natural';
+interpolationType = 'linear';
 if ~strcmp(BatchOpt.SourceLayer{1}, 'image')
     interpolationType = 'nearest';  % for model, selection, mask
 end
@@ -72,16 +90,12 @@ if ~isfield(DisplacementField, 'fdx')
         dx = -1+2*rand([size(img, 1), size(img, 2)]);
         dy = -1+2*rand([size(img, 1), size(img, 2)]);
         
-        % Normalizing the field
-        nx = norm(dx);
-        ny = norm(dy);
-        dx = dx./nx; % Normalization: norm(dx) = 1
-        dy = dy./ny; % Normalization: norm(dy) = 1
-        
-        % Smoothing the field
-        DisplacementField.fdx = imgaussfilt(dx, BatchOpt.Sigma{1}, 'FilterSize', HSize(1)); % 2-D Gaussian filtering of dx
-        DisplacementField.fdy = imgaussfilt(dy, BatchOpt.Sigma{1}, 'FilterSize', HSize(2)); % 2-D Gaussian filtering of dy
-        
+        % Smoothing the field, not normalized (Simard et al.): the kernel spans
+        % 2*ceil(2*Sigma)+1 pixels, the imgaussfilt default; a shorter one
+        % leaves the field rough and tears the image
+        DisplacementField.fdx = imgaussfilt(dx, BatchOpt.Sigma{1}); % 2-D Gaussian filtering of dx
+        DisplacementField.fdy = imgaussfilt(dy, BatchOpt.Sigma{1}); % 2-D Gaussian filtering of dy
+
         % scale the field
         DisplacementField.fdx = BatchOpt.ScalingFactor{1} * DisplacementField.fdx; 
         DisplacementField.fdy = BatchOpt.ScalingFactor{1} * DisplacementField.fdy; 
@@ -113,16 +127,14 @@ if ~isfield(DisplacementField, 'fdx')
 end
 
 if BatchOpt.Mode3D == 0     % 2D
+    % each pixel samples the image at its displaced position, clamped to the
+    % image so the edge pixels repeat beyond it
     [y, x] = ndgrid(1:size(img,1), 1:size(img,2));
+    sampleX = min(max(x + DisplacementField.fdx, 1), size(img, 2));
+    sampleY = min(max(y + DisplacementField.fdy, 1), size(img, 1));
     for colCh=1:size(img, 3)
-        %currImg = double(img(:,:,colCh));
-        %filteredImage = griddata(x-DisplacementField.fdx, y-DisplacementField.fdy, currImg, x, y, interpolationType);
-        %filteredImage(isnan(filteredImage)) = currImg(isnan(filteredImage));
-        
-        filteredImage = griddata(x-DisplacementField.fdx, y-DisplacementField.fdy, double(img(:,:,colCh)), x, y, interpolationType);
-        filteredImage(isnan(filteredImage)) = 0;
-        img(:,:,colCh) = filteredImage;
-    end    
+        img(:,:,colCh) = interp2(double(img(:,:,colCh)), sampleX, sampleY, interpolationType);
+    end
 else
 %     [y, x, z] = ndgrid(1:size(img,1), 1:size(img,2), 1:size(img,4));
 %     for colCh=1:size(img, 3)

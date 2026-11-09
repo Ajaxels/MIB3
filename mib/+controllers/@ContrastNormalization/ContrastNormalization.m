@@ -23,6 +23,7 @@ classdef ContrastNormalization < handle
         view            % handle to the ContrastNormalizationGUI .mlapp (empty in batch mode)
         listener        % cell array of listener handles
         BatchOpt        % structure compatible with batch processing
+        bigDataOptions  % controllers.BigDataOptions - BigData_* BatchOpt fields, the BigData output panel and the BigData run
     end
 
     events
@@ -65,6 +66,7 @@ classdef ContrastNormalization < handle
         options = normalizeMaskedArea(obj, colorChannel, options)
         options = normalizeBackground(obj, colorChannel, options)
         [mean_val, std_val, cancelled] = collectSliceStats(obj, z1, z2, t, colorCh, useMask, options)
+        normalizeBigData(obj, colorChannel, parentFig)
 
         % ---------------------------------------------------------------
         function obj = ContrastNormalization(mibModel, varargin)
@@ -145,6 +147,11 @@ classdef ContrastNormalization < handle
                 '[BasedOnSlice only] Specify slice number to use as reference for normalization';
             obj.BatchOpt.mibBatchTooltip.TimeSeriesNormalization = ...
                 '[Time series only] Calculate mean/std for each 3D stack or only the shown Z-section';
+
+            % BigData: the statistics come from sampled histograms and the result
+            % goes to a new store (BigData_* fields, ignored otherwise)
+            obj.bigDataOptions = controllers.BigDataOptions(obj, 'normalized');
+            obj.BatchOpt = obj.bigDataOptions.addBatchOptFields(obj.BatchOpt);
             obj.BatchOpt.mibBatchTooltip.showWaitbar = 'Show or not the progress bar during execution';
 
             % ---- Batch-mode dispatch ----
@@ -249,9 +256,11 @@ classdef ContrastNormalization < handle
             %
             % Rebuilds the ``ColChannel`` dropdown to match the active dataset,
             % then applies the current ``BatchOpt`` to all widgets and updates
-            % context-sensitive enable states.
+            % context-sensitive enable states. Shows the BigData output panel
+            % for a BigData dataset and removes it otherwise.
 
             id = obj.mibModel.getActiveId();
+            obj.BatchOpt.id = id;
             dataset = obj.mibModel.I{id};
             [~, ~, depth] = dataset.getDatasetDimensions('image');
 
@@ -272,6 +281,7 @@ classdef ContrastNormalization < handle
 
             % Update context-sensitive enable states
             obj.updateContextualWidgets();
+            obj.bigDataOptions.updateWidgets();
         end
 
         % ---------------------------------------------------------------

@@ -32,6 +32,8 @@ classdef MorphOpsImages < handle
         % cell array of listener handles
         BatchOpt
         % structure compatible with batch processing; field names match widget Tags
+        bigDataOptions
+        % controllers.BigDataOptions - BigData_* BatchOpt fields, the BigData output panel and the BigData run
     end
 
     events
@@ -122,6 +124,9 @@ classdef MorphOpsImages < handle
             obj.BatchOpt.mibBatchTooltip.SmoothSigma     = 'Gaussian sigma used when SmoothHSize > 0';
             obj.BatchOpt.mibBatchTooltip.showWaitbar     = 'Show or hide the progress bar during execution';
 
+            % BigData: the result goes to a new store (BigData_* fields, ignored otherwise)
+            obj.bigDataOptions = controllers.BigDataOptions(obj, 'morphops');            obj.BatchOpt = obj.bigDataOptions.addBatchOptFields(obj.BatchOpt);
+
             %% Batch / headless mode
             if numel(varargin) >= 2
                 BatchOptIn = varargin{2};
@@ -141,12 +146,12 @@ classdef MorphOpsImages < handle
                 return;
             end
 
-            %% Virtual mode guard
-            if any(obj.mibModel.I{id}.datasetType(1) == ['V' 'B'])
+            %% Virtual mode guard (a BigData dataset is processed into a new store, see Calculate)
+            if strcmp(obj.mibModel.I{id}.datasetType, 'Virtual')
                 dlgOpt.MsgBoxOnly = true;
                 dlgOpt.Icon = 'puffin_warning';
                 utils.dlgs.inputUniversalDlg(obj.mibModel.getProgressBarParent(), '', {''}, ...
-                    {sprintf('Morphological operations are not available in virtual or BigData mode.\nPlease switch to the memory-resident mode and try again.')}, ...
+                    {sprintf('Morphological operations are not available in virtual mode.\nPlease switch to the memory-resident mode and try again.')}, ...
                     'Not implemented', dlgOpt);
                 notify(obj, 'CloseEvent');
                 return;
@@ -274,6 +279,7 @@ classdef MorphOpsImages < handle
             utils.updateGUIFromBatchOpt_Shared(obj.view, obj.BatchOpt);
             obj.updateConnectivityList();
             obj.applyUIRules();
+            obj.bigDataOptions.updateWidgets();   % shows the BigData output panel for a BigData dataset
         end
 
         % -----------------------------------------------------------
@@ -389,12 +395,14 @@ classdef MorphOpsImages < handle
             connOps = {'Clear border','H-maxima transform','H-minima transform'};
             handles.Connectivity.Enable = ismember(currentOp, connOps);
 
-            % Preview / auto-preview / smoothing only in 2D mode
-            handles.previewButton.Enable    = ~is3D;
-            handles.autoPreviewCheck.Enable = ~is3D;
+            % Preview / auto-preview / smoothing only in 2D mode; no preview on
+            % BigData, where the whole dataset is processed at the chosen level
+            isStandard = strcmp(obj.mibModel.I{obj.BatchOpt.id}.datasetType, 'Standard');
+            handles.previewButton.Enable    = ~is3D && isStandard;
+            handles.autoPreviewCheck.Enable = ~is3D && isStandard;
             handles.SmoothHSize.Enable      = ~is3D;
             handles.SmoothSigma.Enable      = ~is3D;
-            if is3D
+            if is3D || ~isStandard
                 handles.autoPreviewCheck.Value = false;
             end
 
@@ -537,6 +545,7 @@ classdef MorphOpsImages < handle
                 fprintf('controllers.MorphOpsImages.previewButtonPushed: triggered\n');
             end
             if isempty(obj.view) || ~isvalid(obj.view.gui); return; end
+            if ~strcmp(obj.mibModel.I{obj.BatchOpt.id}.datasetType, 'Standard'); return; end
 
             getDataOptions.blockModeSwitch = 1;
             getDataOptions.id = obj.BatchOpt.id;

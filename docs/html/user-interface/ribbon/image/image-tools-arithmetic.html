@@ -2211,6 +2211,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#bigdata-datasets" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        BigData datasets
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -5568,6 +5579,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#bigdata-datasets" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        BigData datasets
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -5786,8 +5808,9 @@ button to close the dialog without changes.</p>
 <li><code>I, I1, I2 ...</code>: image layer; number indicates MIB container (<code>I</code> is for the current dataset).</li>
 <li><code>O, O1, O2 ...</code>: model layer (<code>O</code> is for the current model).</li>
 <li><code>M, M1, M2 ...</code>: mask layer (<code>M</code> is for the current mask).</li>
+<li><code>S, S1, S2 ...</code>: selection layer (<code>S</code> is for the current selection).</li>
 <li>
-<p><code>S, S1, S2 ...</code>: selection layer (<code>S</code> is for the current selection).</p>
+<p>An image is indexed as <code>I(y, x, z, color)</code>; a model, mask or selection as <code>M(y, x, z)</code>.</p>
 </li>
 <li>
 <p><span class="widget widget-edit">Input variables</span>: list datasets used in the 
@@ -5808,20 +5831,34 @@ perform (see examples below).</li>
 <li><code>I1 = I1 + I2</code>: add image from container 2 to container 1, returning result to container 1.</li>
 <li><code>I3 = I3 + mean(I3(:))</code>: add mean value of image 3 to image 3.</li>
 <li><code>I1 = I1 - min(I1(:))</code>: decrease intensity in image 1 by its minimum value.</li>
-<li><code>I(:,:,2,:) = I(:,:,2,:)*1.4</code>: increase intensity of the second color channel by 1.4x.</li>
+<li><code>I(:,:,:,2) = I(:,:,:,2)*1.4</code>: increase intensity of the second color channel by 1.4x.</li>
 <li><code>I(I==0) = I(I==0)+100</code>: increase intensity of black areas by 100.</li>
 <li><code>disp(sum(abs(single(I1(:))-single(I2(:)))))</code>: find the difference between images in containers 1 and 2, printing to console (or use <code>msgbox(num2str())</code> for a message box).</li>
 <li><code>M2 = M1</code>: copy mask layer from image 1 to image 2.</li>
 <li>Replace intensity of the second color channel in the masked area with 0.
-<div class="language-matlab highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">for</span><span class="w"> </span><span class="n">z</span><span class="p">=</span><span class="mi">1</span><span class="p">:</span><span class="nb">size</span><span class="p">(</span><span class="n">I</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">)</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="nb">slice</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">I</span><span class="p">(:,:,</span><span class="mi">2</span><span class="p">,</span><span class="n">z</span><span class="p">);</span>
+<div class="language-matlab highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">for</span><span class="w"> </span><span class="n">z</span><span class="p">=</span><span class="mi">1</span><span class="p">:</span><span class="nb">size</span><span class="p">(</span><span class="n">I</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="nb">slice</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">I</span><span class="p">(:,:,</span><span class="n">z</span><span class="p">,</span><span class="mi">2</span><span class="p">);</span>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="n">mask</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">M</span><span class="p">(:,:,</span><span class="n">z</span><span class="p">);</span>
 </span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span><span class="nb">slice</span><span class="p">(</span><span class="n">mask</span><span class="o">==</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">    </span><span class="n">I</span><span class="p">(:,:,</span><span class="mi">2</span><span class="p">,</span><span class="n">z</span><span class="p">)</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">slice</span><span class="p">;</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">    </span><span class="n">I</span><span class="p">(:,:,</span><span class="n">z</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">slice</span><span class="p">;</span>
 </span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="k">end</span>
 </span></code></pre></div></li>
 </ul>
 </details>
+<h2 id="bigdata-datasets">BigData datasets<a class="headerlink" href="#bigdata-datasets" title="Permanent link">&para;</a></h2>
+<p>The image of a <a href="../../../getting-started/dataset-types/index.html#bigdata">BigData</a> dataset is
+read-only, so the result is written to a new OME-Zarr store, which can be opened in a buffer, as for
+the <a href="image-filters.html#bigdata-datasets">Image filters</a>.</p>
+<ul>
+<li>The expression can use only the image of the dataset (<code>I</code>).</li>
+<li>Output <code>I</code> writes the new store, or replaces the image on disk with
+  <span class="widget widget-dropdown">Current overwrite (BigData)</span> (level s0, unlocked image).
+  Output <code>M</code> or <code>S</code> replaces the mask or selection of the whole model, for example <code>M = I &gt; 100</code>;
+  the model must exist, and this cannot be undone.</li>
+<li>The image is processed in parts, so each pixel of the result must come from the same pixel of
+  the image, as in <code>I = I * 2</code>. Expressions that use the whole image - <code>min(I(:))</code>, <code>mean</code>,
+  flips or shifts along Y or Z, random numbers - are refused.</li>
+</ul>
 <hr />
 <p><em>Back to <a href="../../../index.html">MIB</a> | <a href="../../index.html">User interface</a> | <a href="../index.html">Ribbon</a> | <a href="index.html">Image</a></em></p>
 

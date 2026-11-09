@@ -43,6 +43,7 @@ button to close the dialog without changes.
 - `O, O1, O2 ...`: model layer (`O` is for the current model).
 - `M, M1, M2 ...`: mask layer (`M` is for the current mask).
 - `S, S1, S2 ...`: selection layer (`S` is for the current selection).
+- An image is indexed as `I(y, x, z, color)`; a model, mask or selection as `M(y, x, z)`.
 
 - <span class="widget widget-edit">Input variables</span>: list datasets used in the 
 expression (e.g., `I1, I2` for images from containers 1 and 2).
@@ -60,19 +61,34 @@ perform (see examples below).
     - `I1 = I1 + I2`: add image from container 2 to container 1, returning result to container 1.
     - `I3 = I3 + mean(I3(:))`: add mean value of image 3 to image 3.
     - `I1 = I1 - min(I1(:))`: decrease intensity in image 1 by its minimum value.
-    - `I(:,:,2,:) = I(:,:,2,:)*1.4`: increase intensity of the second color channel by 1.4x.
+    - `I(:,:,:,2) = I(:,:,:,2)*1.4`: increase intensity of the second color channel by 1.4x.
     - `I(I==0) = I(I==0)+100`: increase intensity of black areas by 100.
     - `disp(sum(abs(single(I1(:))-single(I2(:)))))`: find the difference between images in containers 1 and 2, printing to console (or use `msgbox(num2str())` for a message box).
     - `M2 = M1`: copy mask layer from image 1 to image 2.
     - Replace intensity of the second color channel in the masked area with 0.
     ```matlab
-    for z=1:size(I, 4)
-        slice = I(:,:,2,z);
+    for z=1:size(I, 3)
+        slice = I(:,:,z,2);
         mask = M(:,:,z);
         slice(mask==1) = 0;
-        I(:,:,2,z) = slice;
+        I(:,:,z,2) = slice;
     end
     ```
+
+## BigData datasets
+
+The image of a [BigData](../../../getting-started/dataset-types/index.md#bigdata) dataset is
+read-only, so the result is written to a new OME-Zarr store, which can be opened in a buffer, as for
+the [Image filters](image-filters.md#bigdata-datasets).
+
+- The expression can use only the image of the dataset (`I`).
+- Output `I` writes the new store, or replaces the image on disk with
+  <span class="widget widget-dropdown">Current overwrite (BigData)</span> (level s0, unlocked image).
+  Output `M` or `S` replaces the mask or selection of the whole model, for example `M = I > 100`;
+  the model must exist, and this cannot be undone.
+- The image is processed in parts, so each pixel of the result must come from the same pixel of
+  the image, as in `I = I * 2`. Expressions that use the whole image - `min(I(:))`, `mean`,
+  flips or shifts along Y or Z, random numbers - are refused.
 
 
 ---

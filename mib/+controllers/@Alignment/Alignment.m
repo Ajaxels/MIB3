@@ -404,8 +404,9 @@ classdef Alignment < handle
                 nLevels    = size(levelSizes, 1);
                 levelItems = cell(1, nLevels);
                 for levelIdx = 1:nLevels
-                    levelItems{levelIdx} = sprintf('%d: %d x %d', levelIdx, ...
-                        levelSizes(levelIdx, 2), levelSizes(levelIdx, 1));  % X x Y
+                    % plain names from s0 (full resolution), as the other level widgets;
+                    % no size, so a protocol recorded on one dataset matches another
+                    levelItems{levelIdx} = sprintf('s%d', levelIdx - 1);
                 end
                 % default analysis level: nearest ~3000 px wide (X dimension)
                 [~, defaultLevel] = min(abs(levelSizes(:, 2) - 3000));

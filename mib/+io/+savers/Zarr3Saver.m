@@ -291,7 +291,7 @@ classdef Zarr3Saver < io.savers.BaseSaver
                 % C byte order, no transpose codec - see "Chunk byte order" in the class help
                 createArgs = {'chunkShape', chunk, 'compressors', options.Compressors, 'filters', 'none'};
                 if ~isempty(options.ShardSize)
-                    createArgs = [createArgs, {'shardShape', io.savers.Zarr3Saver.computeShard(chunk, options.ShardSize)}]; %#ok<AGROW>
+                    createArgs = [createArgs, {'shardShape', io.savers.Zarr3Saver.computeShard(chunk, options.ShardSize, keepShape)}]; %#ok<AGROW>
                 end
                 arr = grp.createArray(name, keepShape, imgClass, createArgs{:});
                 if ndims(lvl) < numel(keepShape)
@@ -1367,18 +1367,27 @@ classdef Zarr3Saver < io.savers.BaseSaver
             end
         end
 
-        function shard = computeShard(chunk, shardMultiplier)
+        function shard = computeShard(chunk, shardMultiplier, arrayShape)
             % COMPUTESHARD - compute per-axis shard shape from chunk multipliers.
             %
             % ``shardMultiplier`` is a [y x z] integer vector where each value says how
             % many chunks to bundle per axis (e.g. [4 4 1] → 4 chunks in Y, 4 in X,
             % 1 in Z per shard file). Colour/time axes keep the chunk extent.
             % ``shard`` has the same length as ``chunk``.
+            %
+            % With ``arrayShape`` each axis is clamped to the array rounded up to
+            % whole chunks: a shard larger than the array holds nothing more, but
+            % zarrMex allocates it whole, and a multiplier given in voxels by
+            % mistake ([512 512 16] chunks of 128 x 128 x 16 = 1 TiB) aborted
+            % MATLAB with a failed allocation instead of raising an error.
             shard = chunk;
             n = min(3, numel(shardMultiplier));
             for i = 1:n
                 if shardMultiplier(i) > 0
                     shard(i) = chunk(i) * max(1, round(shardMultiplier(i)));
+                    if nargin > 2 && numel(arrayShape) >= i
+                        shard(i) = min(shard(i), chunk(i) * ceil(arrayShape(i) / chunk(i)));
+                    end
                 end
             end
         end
@@ -1911,7 +1920,7 @@ classdef Zarr3Saver < io.savers.BaseSaver
                 % C byte order, no transpose codec - see "Chunk byte order" in the class help
                 createArgs = {'chunkShape', chunk, 'compressors', options.Compressors, 'filters', 'none'};
                 if ~isempty(options.ShardSize)
-                    shard = io.savers.Zarr3Saver.computeShard(chunk, options.ShardSize);
+                    shard = io.savers.Zarr3Saver.computeShard(chunk, options.ShardSize, keepShape);
                     createArgs = [createArgs, {'shardShape', shard}]; %#ok<AGROW>
                     % a write must cover whole shards, or each partial write
                     % re-reads and rewrites the shard (see Memory in saveStream)

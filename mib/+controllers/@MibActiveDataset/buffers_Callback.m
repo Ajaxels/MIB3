@@ -46,8 +46,9 @@ if ~strcmp(prevBufferStringId, newBufferStringId)
     if strcmp(prevImg.filename, 'none.tif') && prevImg.height == 512 && prevImg.width == 512 && prevImg.depth == 1 && prevImg.time == 1
         % Empty placeholder buffer
         obj.paintBufferButton(prevButtonHandle, 'empty');
-    elseif strcmp(prevImg.filename, 'none.tif')
-        % In-memory dataset - data present but no file on disk
+    elseif strcmp(prevImg.filename, 'none.tif') || ...
+            (strcmp(obj.mibModel.I{prevDatasetId}.datasetType, 'Standard') && ~isfile(prevImg.filename))
+        % In-memory dataset - data present but no file on disk (or only a suggested name, as a BigData result)
         obj.paintBufferButton(prevButtonHandle, 'inMemory');
     else
         % File-backed dataset

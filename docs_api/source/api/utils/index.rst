@@ -8,6 +8,7 @@ deep-learning helpers, and standalone utility functions.
    :maxdepth: 1
    :caption: Sub-packages
 
+   bigdata/index
    dlgs/index
    instances/index
    sam/index

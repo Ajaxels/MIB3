@@ -8,7 +8,8 @@ function fontSizeUpdate(hFig, Font)
 %      fontSizeUpdate(hFig, Font)
 %
 % Input Arguments:
-%   - **hFig** - handle to the figure whose widgets should be updated
+%   - **hFig** - handle to the figure whose widgets should be updated, or to a
+%     panel or grid layout of an App Designer figure (only its widgets are updated)
 %   - **Font** - struct with font settings:
 %
 %     - ``.FontName``   - [char] font name (e.g. ``'Arial'``)
@@ -37,7 +38,7 @@ if isa(hFig, 'matlab.ui.container.internal.AppContainer')
     return;
 end
 
-if ~isprop(hFig, 'RunningAppInstance')  % guide type of figure
+if isa(hFig, 'matlab.ui.Figure') && ~isprop(hFig, 'RunningAppInstance')  % guide type of figure; a container of a uifigure goes to the app designer branch
     %Font.FontSize = Font.FontSize + 4; % it looks that guide app font size is 4 units larger than corresponding appdesigner
     Font.FontSize = Font.FontSize; % it looks that guide app font size is 2 units larger than corresponding appdesigner
 

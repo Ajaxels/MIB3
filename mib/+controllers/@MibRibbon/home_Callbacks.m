@@ -184,6 +184,37 @@ switch mode
         obj.mibModel.preferences.Colors.ModelMaterialColors = obj.mibModel.I{id}.labels.materialColors;
         obj.mibController.startController('controllers.Preferences', obj.mibController);  % a new appdesigner version
 
+    case 'Parallel pool'     % obj.handles.ribbonHome.parallelPool - start or stop the parallel pool
+        poolEntry = obj.handles.ribbonHome.parallelPool;
+        parentFig = obj.mibModel.getProgressBarParent();
+        pool = gcp('nocreate');
+        if hData.EventData.NewValue
+            if ~isempty(pool); return; end     % a tool started one after the menu was opened
+            poolEntry.Enabled = false;      % no second start while this one runs
+            % parpool cannot stop midway; Cancel is checked once it returns
+            progressDialog = uiprogressdlg(parentFig, 'Title', 'Parallel pool', ...
+                'Message', sprintf('Starting a parallel pool of %d workers...', obj.mibModel.preferences.System.cpuParallelLimit), ...
+                'Indeterminate', 'on', 'Cancelable', 'on');
+            startError = [];
+            try
+                pool = parpool(obj.mibModel.preferences.System.cpuParallelLimit);
+                if progressDialog.CancelRequested; delete(pool); end
+            catch startError
+            end
+            delete(progressDialog);
+            poolEntry.Value = ~isempty(gcp('nocreate'));
+            poolEntry.Enabled = true;
+            if ~isempty(startError); utils.dlgs.showErrorDialog(parentFig, startError, 'Parallel pool'); end
+        elseif ~isempty(pool)
+            % Busy covers parfor and parfeval of every tool; deleting the pool now would kill the run
+            if pool.Busy
+                poolEntry.Value = true;
+                utils.dlgs.showErrorDialog(parentFig, 'The parallel pool is processing a run. Finish or cancel the run, then stop the pool.', 'Parallel pool');
+                return;
+            end
+            delete(pool);
+        end
+
     case 'Make override default settings file'     % obj.handles.ribbonHome.prefOverrideMenu
         % the settings of this session that differ from the MIB defaults become the
         % starting preferences of every new user, see MibModel.saveOverridePreferences

@@ -31,11 +31,11 @@ The result is written to the **Selection** or **Mask** layer depending on the
 
 **Options panel**
 
-- <span class="widget widget-dropdown">Mode</span>: dataset extent to process —
+- <span class="widget widget-dropdown">Mode</span>: dataset extent to process -
   *2D, Slice* (current slice only), *3D, Stack* (all slices in the current Z-stack),
   or *4D, Dataset* (all slices and time points).
 - <span class="widget widget-dropdown">Color channel</span>: color channel used for thresholding.
-- <span class="widget widget-dropdown">Destination</span>: layer that receives the binary result —
+- <span class="widget widget-dropdown">Destination</span>: layer that receives the binary result -
   *selection* or *mask*.
 - <span class="widget widget-edit">Fraction of foreground pixels</span> + slider:
   fraction of pixels assumed to belong to the foreground (0–1). Active only for the **Percentile** algorithm.
@@ -51,6 +51,15 @@ The result is written to the **Selection** or **Mask** layer depending on the
   and shows the result in the Selection layer without committing to the chosen scope.
 - <span class="widget widget-button">Apply</span>: applies thresholding to the full selected scope.
 - <span class="widget widget-button">Close</span>: closes the dialog.
+
+---
+
+## BigData datasets
+
+On a [BigData](../../../getting-started/dataset-types/index.md#bigdata) dataset the shown slice, or
+the whole dataset, is thresholded at the selected pyramid level, and the result replaces the selection
+or mask there; the model must exist and the result cannot be undone. The threshold of each slice is computed
+from a sample of its rows. Only 8-bit and 16-bit images are supported; Preview is not available.
 
 ---
 

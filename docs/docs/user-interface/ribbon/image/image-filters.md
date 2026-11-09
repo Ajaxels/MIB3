@@ -39,6 +39,49 @@ The filtered image can be post-processed using a dropdown at the bottom of the d
 
 ---
 
+## BigData datasets
+
+The image of a [BigData](../../../getting-started/dataset-types/index.md#bigdata) dataset is
+read-only, so by default the filtered image is written to a new OME-Zarr store, which can be opened
+in a buffer.
+The dialog then shows the **BigData output** panel.
+
+- The whole dataset is filtered into the new store at the selected pyramid level, so *Dataset type* offers no *2D, Slice*. A coarser
+  level is faster and gives a result of that resolution.
+- <span class="widget widget-button">Filter</span> first asks for a confirmation with a rough estimate of the
+  time, then the Zarr settings of the new store.
+- A stopped or failed run into a new store can be kept and finished later: run the same tool again with the same
+  settings, level, ROI and output path, and choose <span class="widget widget-button">Resume</span>.
+- *Result* set to <span class="widget widget-dropdown">Standard (in memory)</span> opens the result as
+  a Standard dataset instead, without writing a store, when it fits in memory - for a coarse level or a
+  small dataset. Opened in *Current*, it replaces the BigData dataset in its buffer.
+- <span class="widget widget-dropdown">Current overwrite (BigData)</span> replaces the image of the dataset on
+  disk instead, keeping its model, with either *Result*. It needs level s0 and an unlocked image, and cannot be undone.
+  Here *Dataset type* offers *2D, Slice*, which replaces only the shown slice.
+- With [Restrict to ROI](../../panels/selection_imview/selection.md#additional-controls) checked, only the
+  ROI is processed: a new store or a Standard result holds the box around the ROI, and *Current overwrite
+  (BigData)* or the mask or selection change only inside the ROI. ROIs drawn in the XY view apply to every
+  slice.
+- <span class="widget widget-checkbox">use parallel</span> processes the dataset on the workers of the parallel
+  pool, starting one first when none is open. It pays off for slow filters such as NonLocalMeans, BMxD,
+  LocalContrast or FastLocalLaplacian, hardly for fast ones such as Gaussian or Median.
+- On the image layer, all filters except DistanceMap and DNNdenoise. The *circular* padding,
+  UnsharpMask with a *Threshold* above 0 and MathOps with another output class are not available.
+  An empty noise value of Wiener and NonLocalMeans is estimated for each slice from a sample of its
+  rows.
+- FlatfieldCorrection, LocalBrighten, ReduceHaze, LocalContrast and FastLocalLaplacian depend on the
+  whole slice. For slices above 32 megapixels that part is computed from a coarser pyramid level,
+  so the result may differ from the Standard dataset result by 1-2 grey levels on average. ReduceHaze
+  with *approxdcp* needs slices of at most 32 megapixels; select a coarser level for larger ones.
+- ElasticDistortion distorts the image only; it is refused when all layers should be distorted and
+  the dataset has a model or mask.
+- Image binarization: **Edge** with the Sobel, Prewitt, Roberts or LaplacianOfGaussian method. The
+  result replaces the selection or mask of the shown slice, or of the whole model, as set in *Dataset
+  type*, and cannot be undone; the model must exist.
+  An empty threshold is computed for each slice from a sample of its rows.
+
+---
+
 ## Basic image filtering in the spatial domain
 
 **Average filter**<br>  
@@ -65,6 +108,8 @@ The filtered image can be post-processed using a dropdown at the bottom of the d
 **Elastic distortion filter**  
   ![Elastic Distortion Filter](images/image_filters_elasticdist.jpg){.on-glb align=left width="300"}  
   Applies elastic distortion based on Simard et al., "Best Practices for Convolutional Neural Networks Applied to Visual Document Analysis" ([link](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.160.8494&rep=rep1&type=pdf)). See also [StackOverflow](https://stackoverflow.com/questions/39308301/expand-mnist-elastic-deformations-matlab) and [Elastic Distortion Transformation](https://se.mathworks.com/matlabcentral/fileexchange/66663-elastic-distortion-transformation-on-an-image) by David Franco.  
+  *Sigma* sets the size of the distorted features in pixels and *ScalingFactor* their strength: the
+  displacements spread about 0.17 × *ScalingFactor* / *Sigma* pixels, whatever the image size.  
   *Supports*: 2D  
   <div class="clear-float"></div>
 
@@ -286,7 +331,7 @@ Filters that process the image and generate a bitmap mask, assignable to the Sel
 
 !!! info "SLIC References"
 
-    * Radhakrishna Achanta, Appu Shaji, Kevin Smith, Aurelien Lucchi, Pascal Fua, and Sabine Süsstrunk, SLIC Superpixels Compared to State-of-the-art Superpixel Methods, [IEEE Transactions on Pattern Analysis and Machine Intelligence](https://infoscience.epfl.ch/record/177415), vol. 34, num. 11, p. 2274 – 2282, May 2012.
+    * Radhakrishna Achanta, Appu Shaji, Kevin Smith, Aurelien Lucchi, Pascal Fua, and Sabine Süsstrunk, SLIC Superpixels Compared to State-of-the-art Superpixel Methods, [IEEE Transactions on Pattern Analysis and Machine Intelligence](https://infoscience.epfl.ch/record/177415), vol. 34, num. 11, p. 2274-2282, May 2012.
     * Radhakrishna Achanta, Appu Shaji, Kevin Smith, Aurelien Lucchi, Pascal Fua, and Sabine Süsstrunk, SLIC Superpixels, [EPFL Technical Report](https://infoscience.epfl.ch/record/149300) no. 149300, June 2010.
 
 **Watershed clustering filter**  

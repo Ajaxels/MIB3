@@ -48,6 +48,33 @@ For the downloads visit [MIB website](https://mib.helsinki.fi/downloads.html) fo
       areas, detects astigmatism and gives focus scores; results of different images collect in one
       table for comparison.
       See [Sharpness and noise](../../user-interface/ribbon/image/image-tools-sharpness.md)
+    - **BigData image processing**: the image tools now work on BigData datasets too large for the
+      memory, reading them from disk:
+        - [Image filters](../../user-interface/ribbon/image/image-filters.md#bigdata-datasets),
+          [Image Arithmetics](../../user-interface/ribbon/image/image-tools-arithmetic.md#bigdata-datasets),
+          [MorphOps](../../user-interface/ribbon/image/image-morphops.md#bigdata-datasets),
+          [White balance](../../user-interface/ribbon/image/image-tools-whitebalance.md#bigdata-datasets)
+          and [Normalize layers](../../user-interface/ribbon/image/normalize.md#bigdata-datasets)
+          write the result to a new OME-Zarr store or to a Standard dataset in memory; Image filters
+          and Image Arithmetics can also overwrite the image on disk
+        - [Global thresholding](../../user-interface/ribbon/tools/tools-globalthres.md#bigdata-datasets)
+          and the Edge filters write into the mask or selection
+        - Image filters can be limited to the ROIs and can run on parallel workers; the pool is
+          started and stopped from *Home ribbon -> Preferences -> Parallel pool*
+        - a cancelled run to a new store can be kept and resumed later
+    - **BigData locks**: the image and the labels of a BigData dataset can be locked against
+      accidental changes; a loaded model opens locked by default.
+      See [BigData datasets](../dataset-types/index.md#bigdata)
+    - **Restrict to ROI**: a new checkbox of the
+      [Selection panel](../../user-interface/panels/selection_imview/selection.md#additional-controls)
+      limits the ROI-aware tools to the selected ROI, or to all ROIs
+    - **Selection in Standard datasets**: moving a 3D selection to the model or mask and clearing it
+      take time and undo memory according to the size of the selection, not of the whole volume
+    - **Snapshot**: outlines and labels of the ROIs can be added to the snapshot
+    - **Preferences, Fine-tuning**: a new category for small adjustments of existing actions, such
+      as the zoom step of the ++q++ / ++w++ keys.
+      See [Fine-tuning](../../user-interface/ribbon/home/home-preferences.md#fine-tuning)
+    - **Amira Mesh, RLE compression**: reading and writing RLE-compressed AM files is faster
     - **Fixes**:
         - MATLAB no longer crashes at exit after ZARR files were opened in a session that also used
           Computer Vision Toolbox features

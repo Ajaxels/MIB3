@@ -2131,6 +2131,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#bigdata-datasets" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        BigData datasets
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#basic-image-filtering-in-the-spatial-domain" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -5613,6 +5624,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#bigdata-datasets" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        BigData datasets
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#basic-image-filtering-in-the-spatial-domain" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -5871,6 +5893,47 @@
 <li><strong>Filter and add</strong>: filter and add the result to the unfiltered image.</li>
 </ul>
 <hr />
+<h2 id="bigdata-datasets">BigData datasets<a class="headerlink" href="#bigdata-datasets" title="Permanent link">&para;</a></h2>
+<p>The image of a <a href="../../../getting-started/dataset-types/index.html#bigdata">BigData</a> dataset is
+read-only, so by default the filtered image is written to a new OME-Zarr store, which can be opened
+in a buffer.
+The dialog then shows the <strong>BigData output</strong> panel.</p>
+<ul>
+<li>The whole dataset is filtered into the new store at the selected pyramid level, so <em>Dataset type</em> offers no <em>2D, Slice</em>. A coarser
+  level is faster and gives a result of that resolution.</li>
+<li><span class="widget widget-button">Filter</span> first asks for a confirmation with a rough estimate of the
+  time, then the Zarr settings of the new store.</li>
+<li>A stopped or failed run into a new store can be kept and finished later: run the same tool again with the same
+  settings, level, ROI and output path, and choose <span class="widget widget-button">Resume</span>.</li>
+<li><em>Result</em> set to <span class="widget widget-dropdown">Standard (in memory)</span> opens the result as
+  a Standard dataset instead, without writing a store, when it fits in memory - for a coarse level or a
+  small dataset. Opened in <em>Current</em>, it replaces the BigData dataset in its buffer.</li>
+<li><span class="widget widget-dropdown">Current overwrite (BigData)</span> replaces the image of the dataset on
+  disk instead, keeping its model, with either <em>Result</em>. It needs level s0 and an unlocked image, and cannot be undone.
+  Here <em>Dataset type</em> offers <em>2D, Slice</em>, which replaces only the shown slice.</li>
+<li>With <a href="../../panels/selection_imview/selection.html#additional-controls">Restrict to ROI</a> checked, only the
+  ROI is processed: a new store or a Standard result holds the box around the ROI, and <em>Current overwrite
+  (BigData)</em> or the mask or selection change only inside the ROI. ROIs drawn in the XY view apply to every
+  slice.</li>
+<li><span class="widget widget-checkbox">use parallel</span> processes the dataset on the workers of the parallel
+  pool, starting one first when none is open. It pays off for slow filters such as NonLocalMeans, BMxD,
+  LocalContrast or FastLocalLaplacian, hardly for fast ones such as Gaussian or Median.</li>
+<li>On the image layer, all filters except DistanceMap and DNNdenoise. The <em>circular</em> padding,
+  UnsharpMask with a <em>Threshold</em> above 0 and MathOps with another output class are not available.
+  An empty noise value of Wiener and NonLocalMeans is estimated for each slice from a sample of its
+  rows.</li>
+<li>FlatfieldCorrection, LocalBrighten, ReduceHaze, LocalContrast and FastLocalLaplacian depend on the
+  whole slice. For slices above 32 megapixels that part is computed from a coarser pyramid level,
+  so the result may differ from the Standard dataset result by 1-2 grey levels on average. ReduceHaze
+  with <em>approxdcp</em> needs slices of at most 32 megapixels; select a coarser level for larger ones.</li>
+<li>ElasticDistortion distorts the image only; it is refused when all layers should be distorted and
+  the dataset has a model or mask.</li>
+<li>Image binarization: <strong>Edge</strong> with the Sobel, Prewitt, Roberts or LaplacianOfGaussian method. The
+  result replaces the selection or mask of the shown slice, or of the whole model, as set in <em>Dataset
+  type</em>, and cannot be undone; the model must exist.
+  An empty threshold is computed for each slice from a sample of its rows.</li>
+</ul>
+<hr />
 <h2 id="basic-image-filtering-in-the-spatial-domain">Basic image filtering in the spatial domain<a class="headerlink" href="#basic-image-filtering-in-the-spatial-domain" title="Permanent link">&para;</a></h2>
 <p><strong>Average filter</strong><br><br />
 <a class="glightbox" data-title="Average Filter" data-type="image" href="images/image_filters_average.jpg"><img align="left" alt="Average Filter" class="on-glb" src="images/image_filters_average.jpg" width="300" /></a><br />
@@ -5898,6 +5961,8 @@
 <p><strong>Elastic distortion filter</strong><br />
 <a class="glightbox" data-title="Elastic Distortion Filter" data-type="image" href="images/image_filters_elasticdist.jpg"><img align="left" alt="Elastic Distortion Filter" class="on-glb" src="images/image_filters_elasticdist.jpg" width="300" /></a><br />
   Applies elastic distortion based on Simard et al., "Best Practices for Convolutional Neural Networks Applied to Visual Document Analysis" (<a href="http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.160.8494&amp;rep=rep1&amp;type=pdf">link</a>). See also <a href="https://stackoverflow.com/questions/39308301/expand-mnist-elastic-deformations-matlab">StackOverflow</a> and <a href="https://se.mathworks.com/matlabcentral/fileexchange/66663-elastic-distortion-transformation-on-an-image">Elastic Distortion Transformation</a> by David Franco.<br />
+<em>Sigma</em> sets the size of the distorted features in pixels and <em>ScalingFactor</em> their strength: the
+  displacements spread about 0.17 × <em>ScalingFactor</em> / <em>Sigma</em> pixels, whatever the image size.<br />
 <em>Supports</em>: 2D<br />
 <br />
 <div class="clear-float"></div>
@@ -6134,7 +6199,7 @@
 <div class="admonition info">
 <p class="admonition-title">SLIC References</p>
 <ul>
-<li>Radhakrishna Achanta, Appu Shaji, Kevin Smith, Aurelien Lucchi, Pascal Fua, and Sabine Süsstrunk, SLIC Superpixels Compared to State-of-the-art Superpixel Methods, <a href="https://infoscience.epfl.ch/record/177415">IEEE Transactions on Pattern Analysis and Machine Intelligence</a>, vol. 34, num. 11, p. 2274 – 2282, May 2012.</li>
+<li>Radhakrishna Achanta, Appu Shaji, Kevin Smith, Aurelien Lucchi, Pascal Fua, and Sabine Süsstrunk, SLIC Superpixels Compared to State-of-the-art Superpixel Methods, <a href="https://infoscience.epfl.ch/record/177415">IEEE Transactions on Pattern Analysis and Machine Intelligence</a>, vol. 34, num. 11, p. 2274-2282, May 2012.</li>
 <li>Radhakrishna Achanta, Appu Shaji, Kevin Smith, Aurelien Lucchi, Pascal Fua, and Sabine Süsstrunk, SLIC Superpixels, <a href="https://infoscience.epfl.ch/record/149300">EPFL Technical Report</a> no. 149300, June 2010.</li>
 </ul>
 </div>

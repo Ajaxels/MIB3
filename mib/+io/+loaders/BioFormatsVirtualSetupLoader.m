@@ -187,9 +187,17 @@ methods (Access = private)
         % when provided), builds the MIB pyramid via io.BioFormats.Reader.pyramidStruct,
         % and fills imginfo so MibBigDataImage/MibVirtualImage read on demand through the
         % getDataZarr → io.BioFormats.Reader seam (sourceType='bioformats').
+        %
+        % A progress dialog (options.waitbar) covers the whole setup. It is
+        % indeterminate because the first setId of a file is one blocking Java call
+        % with no progress to report; for the same reason Cancel cannot interrupt
+        % that call and is honoured as soon as it returns. A cancelled setup returns
+        % an empty imginfo, same as cancelling the scene picker.
         filename = filenames{1};
         utils.ensureJavaLibraries({'bioformats'});
         loci.common.DebugTools.setRootLevel('ERROR');
+
+        [wb, cleanupDialog] = obj.showOpeningDialog(filename, options); %#ok<ASGLU>
 
         % Open ONE Memoizer-cached reader for every setup-phase metadata query
         % (scenes, voxel size, LUT). This replaces the three separate raw setId
@@ -201,6 +209,7 @@ methods (Access = private)
         % onCleanup releases the handle on every exit path (incl. dialog cancel).
         sharedReader  = obj.openSharedReader(filename);
         cleanupReader = onCleanup(@() obj.safeCloseReader(sharedReader));
+        if obj.isCancelRequested(wb); imginfo = dictionary(); files = struct([]); return; end
 
         % --- enumerate pyramid scenes (un-flattened series) -------------------
         [sceneIdx, sceneName, sceneLevel0] = obj.enumeratePyramidScenes(sharedReader);
@@ -226,12 +235,14 @@ methods (Access = private)
                 dlgOpts.mibPath = obj.mibPath;
                 dlgOpts.WindowStyle = 'modal';
                 dlgOpts.HeaderLines = 2;
+                clear cleanupDialog;   % closes the progress dialog: it must not cover the picker
                 answer = utils.dlgs.inputUniversalDlg(obj.ParentFigure, ...
                     'This file contains several image scenes - choose one to open as BigData:', ...
                     {'Scene:'}, {[items, {defIdx}]}, 'Select scene', dlgOpts);
                 if isempty(answer); imginfo = dictionary(); files = struct([]); return; end
                 chosen = find(strcmp(items, answer{1}), 1);
                 if isempty(chosen); chosen = defIdx; end
+                [wb, cleanupDialog] = obj.showOpeningDialog(filename, options); %#ok<ASGLU>
             else
                 [~, chosen] = max(prod(sceneLevel0, 2));
             end
@@ -277,6 +288,11 @@ methods (Access = private)
                 rethrow(openErr);
             end
         end
+        if obj.isCancelRequested(wb)
+            rdr.close();
+            imginfo = dictionary(); files = struct([]);
+            return;
+        end
         py  = rdr.pyramidStruct(voxel);   % records sourceReaderLibrary = backend
         py.sourceSeries = seriesIndex0;
         rdr.close();
@@ -320,6 +336,44 @@ methods (Access = private)
         files(1).width        = s.width;
         files(1).time         = s.time;
         files(1).imgClass     = s.imgClass;
+    end
+
+    function [wb, cleanupDialog] = showOpeningDialog(obj, filename, options)
+        % SHOWOPENINGDIALOG - show the indeterminate, cancelable setup progress dialog.
+        %
+        % Input Arguments:
+        %   - **filename** - [char] full path to the file being opened
+        %   - **options** - [struct] loader options; the dialog is shown only when
+        %     ``.waitbar`` is true, the default of BioFormatsStdLoader.loadMetadata
+        %
+        % Output Arguments:
+        %   - **wb** - ``matlab.ui.dialog.ProgressDialog``, or ``[]`` when not shown
+        %   - **cleanupDialog** - ``onCleanup`` closing the dialog on every exit
+        %     path, an error included, as a leftover dialog would block the window
+        wb = [];
+        if isfield(options, 'waitbar') && options.waitbar
+            [~, name, ext] = fileparts(filename);
+            message = sprintf(['%s%s\n\nThe first opening of a large file from a network share ' ...
+                'may take several minutes, later openings are much faster.\n' ...
+                'Cancel is applied when the file scan finishes.'], name, ext);
+            wb = obj.createProgressDialog('Opening BigData dataset', message, true, true);
+            drawnow;    % render the dialog before setId blocks the MATLAB thread
+        end
+        cleanupDialog = onCleanup(@() obj.closeOpeningDialog(wb));
+    end
+
+    function closeOpeningDialog(~, wb)
+        % CLOSEOPENINGDIALOG - delete the setup progress dialog when it exists.
+        if ~isempty(wb) && isvalid(wb); delete(wb); end
+    end
+
+    function tf = isCancelRequested(~, wb)
+        % ISCANCELREQUESTED - true when Cancel was pressed in the setup progress dialog.
+        % The drawnow delivers a click made while a Java call was blocking MATLAB.
+        tf = false;
+        if isempty(wb); return; end
+        drawnow;
+        tf = wb.CancelRequested;
     end
 
     function reader = openSharedReader(~, filename)

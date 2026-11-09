@@ -10,6 +10,7 @@ function continueBtn_Callback(obj, useBatchMode)
 % Checks preconditions (virtual mode, indexed color type, mask presence),
 % creates a backup for single-frame operations, then dispatches to the
 % appropriate low-level normalization method based on ``obj.BatchOpt.Target``.
+% A BigData dataset goes to ``normalizeBigData`` instead (new store, no backup).
 % On completion the image is re-displayed and the batch controller is notified.
 %
 % The progress dialog is cancelable and every slice polls it. A cancel, or an
@@ -31,6 +32,7 @@ end
 if nargin < 2; useBatchMode = false; end
 
 id = obj.mibModel.getActiveId();
+obj.BatchOpt.id = id;
 
 % Resolve parent figure for dialogs
 if ~isempty(obj.view) && isvalid(obj.view) && isvalid(obj.view.gui)
@@ -39,8 +41,8 @@ else
     parentFig = obj.mibModel.mibGUI;
 end
 
-% --- Guard: virtual stacking mode
-if ~strcmp(obj.mibModel.I{id}.datasetType, 'Standard')
+% --- Guard: virtual stacking mode (a BigData dataset is normalized into a new store, below)
+if strcmp(obj.mibModel.I{id}.datasetType, 'Virtual')
     dlgOpt.MsgBoxOnly  = true;
     dlgOpt.Icon        = 'puffin_warning';
     dlgOpt.HeaderLines = 2;
@@ -80,6 +82,12 @@ switch obj.BatchOpt.ColChannel{1}
         colorChannel = dataset.slices{4};
     otherwise
         colorChannel = str2double(obj.BatchOpt.ColChannel{1}(7:end));
+end
+
+% ---- BigData: read-only image, normalized into a new store ----
+if strcmp(dataset.datasetType, 'BigData')
+    obj.normalizeBigData(colorChannel, parentFig);   % parentFig [] headless: errors are raised
+    return;
 end
 
 % ---- Resolve Z and time ranges ----

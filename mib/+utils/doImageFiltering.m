@@ -247,7 +247,7 @@ if BatchOpt.Mode3D  % perform the 3D filters
                 end
             case 'ElasticDistortion'
                 if colCh==1
-                    logText = sprintf('%s 3D, ScalingFactor: %d, HSize: %s, Sigma: %.1f', logText, BatchOpt.ScalingFactor{1}, BatchOpt.HSize, BatchOpt.Sigma{1});
+                    logText = sprintf('%s 3D, ScalingFactor: %g, Sigma: %.1f', logText, BatchOpt.ScalingFactor{1}, BatchOpt.Sigma{1});
                     randomSeed = 0;     % define random seed
                     [img(:,:,:,colCh), DisplacementField] = utils.elasticDistortionFilter(img(:,:,:,colCh), BatchOpt, randomSeed);
                 else
@@ -540,8 +540,8 @@ else    % perform 2D filters
                 end
             end
         case 'ElasticDistortion'
-            % not implemented, this version is very slow
-            logText = sprintf('%s, ScalingFactor: %d, HSize: %s, Sigma: %.1f', logText, BatchOpt.ScalingFactor{1}, BatchOpt.HSize, BatchOpt.Sigma{1});
+            % Simard field, sampled with interp2 and replicated edges (utils.elasticDistortionFilter)
+            logText = sprintf('%s, ScalingFactor: %g, Sigma: %.1f', logText, BatchOpt.ScalingFactor{1}, BatchOpt.Sigma{1});
             %for colCh=1:size(img, 4)
                 parfor (z = 1:size(img, 3), parforArg)
                     randomSeed = z;     % define random
@@ -649,17 +649,17 @@ else    % perform 2D filters
                 outputClass = BatchOpt.OutputImageClass{1};
             end
             value = str2double(BatchOpt.Value);
-            for colCh=1:size(img, 4)
-                switch BatchOpt.Operation{1}
-                    case 'Add'
-                        img = cast(double(img) + value, outputClass);
-                    case 'Subtract'
-                        img = cast(double(img) - value, outputClass);
-                    case 'Multiply'
-                        img = cast(double(img) * value, outputClass);
-                    case 'Divide'
-                        img = cast(double(img) / value, outputClass);
-                end
+            % one operation on all channels at once; a loop over the channels
+            % applied it once per channel
+            switch BatchOpt.Operation{1}
+                case 'Add'
+                    img = cast(double(img) + value, outputClass);
+                case 'Subtract'
+                    img = cast(double(img) - value, outputClass);
+                case 'Multiply'
+                    img = cast(double(img) * value, outputClass);
+                case 'Divide'
+                    img = cast(double(img) / value, outputClass);
             end
             if showWaitbar; pwb.increment(); end
         case 'Median'
@@ -748,10 +748,11 @@ else    % perform 2D filters
                     if showWaitbar; pwb.increment(); end
                 end
             else    % grayscale image
+                AtmosphericLight = AtmosphericLight(1:min(1, end));     % empty: estimated by imreducehaze
                 for colCh=1:size(img, 4)
                     parfor (z = 1:size(img, 3), parforArg)
                         img(:,:,z,colCh) = imreducehaze(img(:,:,z,colCh), ...
-                            BatchOpt.Amount{1}, 'method', BatchOpt.Method{1}, 'AtmosphericLight', AtmosphericLight(1), 'ContrastEnhancement', BatchOpt.ContrastEnhancement{1});
+                            BatchOpt.Amount{1}, 'method', BatchOpt.Method{1}, 'AtmosphericLight', AtmosphericLight, 'ContrastEnhancement', BatchOpt.ContrastEnhancement{1});
                         if showWaitbar; pwb.increment(); end
                     end
                 end

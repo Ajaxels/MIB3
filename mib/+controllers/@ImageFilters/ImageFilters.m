@@ -44,6 +44,8 @@ classdef ImageFilters < handle
         % structure compatible with batch processing; field names match widget Tags
         infoHtmlTempFile
         % path to the current InfoHTML temp file; deleted on next setInfoHtml call
+        bigDataOptions
+        % controllers.BigDataOptions - BigData_* BatchOpt fields, the BigData output panel and the BigData run
     end
 
     events
@@ -176,8 +178,14 @@ classdef ImageFilters < handle
             obj.BatchOpt.mibBatchTooltip.SourceLayer = 'Apply filter to the selected layer of MIB';
             obj.BatchOpt.mibBatchTooltip.MaterialIndex = 'Index of material to be filtered for SourceLayer==labels';
             obj.BatchOpt.mibBatchTooltip.ActionToResult = 'Depending on the choice, filter results can be shown as it is or Added/Subtracted from the dataset';
-            obj.BatchOpt.mibBatchTooltip.UseParallelComputing = 'Use parallel computing for 2D filters';
+            obj.BatchOpt.mibBatchTooltip.UseParallelComputing = 'Use parallel computing: 2D filters of a Standard dataset, every filter of a BigData dataset; worth it for slow filters';
             obj.BatchOpt.mibBatchTooltip.showWaitbar = 'Show or not waitbar';
+
+            % BigData: the result goes to a new store, or into the model for binarization (BigData_* fields, ignored otherwise)
+            obj.bigDataOptions = controllers.BigDataOptions(obj, obj.BatchOpt.FilterName{1});
+            obj.bigDataOptions.RoiAware = true;     % Restrict to ROI limits the run to the ROI box, as on a Standard dataset
+            obj.BatchOpt = obj.bigDataOptions.addBatchOptFields(obj.BatchOpt);
+            obj.bigDataOptions.ModelOutput = strcmp(obj.BatchOpt.FilterGroup{1}, 'Image Binarization');
 
             %% batch / headless mode
             if nargin == 3
@@ -352,6 +360,7 @@ classdef ImageFilters < handle
             end
 
             utils.updateGUIFromBatchOpt_Shared(obj.view, obj.BatchOpt);
+            obj.bigDataOptions.updateWidgets();
         end
 
         % ---------------------------------------------------------------
@@ -571,6 +580,8 @@ classdef ImageFilters < handle
 
             obj.BatchOpt.FilterName{1} = value;
             obj.BatchOpt.Mode3D = obj.view.handles.Mode3D.Value;
+            obj.bigDataOptions.setOutputSuffix(value);
+            obj.bigDataOptions.setModelOutput(ismember(value, obj.BinarizationFiltersList));
 
             % enable/disable preview buttons for 3D mode
             if obj.BatchOpt.Mode3D
@@ -715,11 +726,15 @@ classdef ImageFilters < handle
             viewPort = dataset.image.viewPort;
             maxInt = dataset.image.maxInt;
 
-            % Base RGB options: block mode, no resize so I has the same
-            % pixel dimensions as img (both at dataset block resolution).
+            % Base RGB options: block mode, at the resolution of img.
+            % Standard: no resize, both at dataset block resolution;
             % showImage/getRGBimage will apply magFactor scaling via sImgIn.
+            % A pyramid (BigData) dataset returns img at the display resolution
+            % already, so I is taken at that resolution too: read without the
+            % resize it would be the full-resolution block, which does not
+            % match img and on a zoomed-out slide is gigabytes
             getRGBimageOptions.blockModeSwitch = 1;
-            getRGBimageOptions.resizeToMagnification = false;
+            getRGBimageOptions.resizeToMagnification = ~isempty(dataset.image.pyramid.levelNames);
 
             switch SourceLayer
                 case {'selection', 'mask', 'labels'}

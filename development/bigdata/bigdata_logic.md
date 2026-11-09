@@ -539,6 +539,130 @@ is empty). Tests: `tests/controllers/AlignmentBigDataTest.m`.
 
 ---
 
+## 13b. Image tools on BigData - processing into a new store (2026-11-06)
+
+The source image is read-only, so an Image tool writes its result to a **new OME-Zarr store** and
+can open it in a buffer. Plan, options compared and status: [`shared_panel.md`](shared_panel.md).
+Image filters, Image Arithmetics, MorphOps, White balance (manual white), Normalize layers (Z
+stack) and Global thresholding support it; the other Image tools still refuse BigData.
+
+- **Engine** `utils.bigdata.processImageToStore(image, blockFunction, outputPath, ...)`: level
+  `Level` is read in **bands of rows** by `io.savers.FilteredSliceProvider` (full width, plus
+  `HaloYX` rows above and below, plus `HaloZ` slices for a 3D function), the block function runs on
+  each band, the halo is cropped, and `Zarr3Saver.saveStreamResumable` (`BandHeight`) writes the
+  pyramid. Memory is one band (`BandBytes`, default 256 MB), whatever the slide size. A band with a
+  halo covering the filter support equals the whole-slice result bit for bit
+  (`ProcessImageToStoreTest`).
+- **Level rows to `getData`:** `getData` maps full-resolution `y` with `ceil(y / scale)`, so level
+  rows `a..b` are requested as `(a-1)*scale+1 .. b*scale` - exact for any scale >= 1.
+- **Output geometry:** level 0 of the new store = level `Level` of the source; voxel size x the
+  level's scale factors; bounding box from the source origin. Pyramid settings from
+  `optionsFromPyramid` of the source with its level count from `Level` down, overridden by the
+  answer of `reviewOptionsDialog` (GUI). That dialog omits `Levels` for auto and `ShardSize` for no
+  sharding, so `BigDataOptions.run` passes them as `[]`, or the source values would win.
+- **Integer output only.** A float result is refused before writing (`utils:bigdata:outputClass`):
+  `MibVirtualImage.initialize` calls `intmax` on the class, so a float store cannot be opened, and
+  the zarr savers pass `class(data)` to `createArray`, which zarrMex refuses for `single`/`double`.
+- **`controllers.BigDataOptions`** gives a tool the `BigData_PyramidLevel` / `BigData_OutputPath` /
+  `BigData_OpenIn` BatchOpt fields, a panel inserted **in code** into the tool's top grid above the
+  button row (no `.mlapp` edit; removed again when the active dataset is not BigData), and `run`.
+  `run` refuses the path of any store open in MIB (image or labels), asks before replacing a folder
+  (GUI), deletes the partial store on cancel, and opens the result through
+  `BigDataOptions.openStoreInBuffer` (the Alignment buffer swap: slices, axes, `Sets.datasetTypes`,
+  `NewDataset` with the index).
+- **`Current overwrite (BigData)`** (`BigData_OpenIn`, offered with either `BigData_Result`;
+  renamed from `Current overwrite` on 2026-11-07) rewrites the source store instead: unlocked image,
+  level `s0`, OME-Zarr v3 only. Result to `<stem>.mib_overwrite<ext>`, folders swapped through
+  `<stem>.mib_replaced<ext>`, and only `dataset.image` is replaced, so labels, ROIs, annotations
+  and the model undo history stay. `io.zarr.ChunkCache` is cleared after the swap: its key is the
+  path plus the `zarr.json` time stamp and size, which a store rewritten within the same second can
+  match. Renaming the store folder while the dataset is open works on Windows once
+  `closeVirtualDataset` has run (`ImageFiltersBigDataTest`, local disk; a network share not tried).
+- **Into the model** (`BigDataOptions.runToModel`, 2026-11-06): the binarization result replaces
+  the mask or selection of the whole model. Bands from `FilteredSliceProvider`, each written by
+  `setData63` at the chosen level (full-resolution `y`/`z` as for `getData`), which propagates to the
+  coarser levels and marks the level map, so finer levels recompute on read as after any edit. No
+  undo (a slide's layer can be many GB; the GUI confirms). After a run at a level coarser than s0 the
+  GUI shows an info dialog: finer levels fill on zoom-in, or everywhere with Save model -> Finalize &
+  save (`materializeAll`). A cancel leaves the layer replaced on the
+  slices done, which the caller reports. Refused: no model, a read-only model, a model level whose
+  size differs from the image level. Mask/selection writes go through on locked labels, so no lock
+  check. Offered: Edge with Sobel / Prewitt / Roberts (halo 3) and LaplacianOfGaussian (halo
+  `ceil(3*Sigma)+2`) - bit-exact with 40-row bands
+  (`ImageFiltersBigDataTest/bandsGiveTheWholeSliceEdges`); an empty threshold is computed per slice
+  by a statistics pass (below). Not: Canny / approxcanny (hysteresis links edges at any distance),
+  SLIC / Watershed (global clusters, more ids than a BigData model holds).
+- **Statistics pass** (2026-11-06) for the tools whose parameters come from the whole slice.
+  `utils.bigdata.sampleStripes(image, level, reduceFunction, ...)` reads **stripes of whole chunk
+  rows** (full width; the y chunk size of the level, 256 when unknown) evenly spaced over each slice,
+  at the same rows in every slice so `io.zarr.ChunkCache` reuses chunks that span several slices.
+  The budget `SampleBytes` (256 MB) buys `floor(SampleBytes / (rowBytes * stripeHeight * depth))`
+  stripes per slice, at least `MinimumStripes` (16) in total, at least one per slice, so a 40 GB
+  level costs ~256 MB of reads plus the decode of those chunks; a level that fits is read whole and
+  the statistics are exact. Whole chunk rows rather than thin evenly spaced rows: a zarr read
+  decodes whole chunks, so 2-row stripes cost a full chunk row each. Optional block function with a
+  halo (the edge gradients), cancelable progress dialog, `info.fractionRead` for the log.
+  `utils.bigdata.sliceHistograms` builds one-bin-per-value histograms (uint8 / uint16) per channel
+  and slice on top of it. `FilteredSliceProvider` gives a 2-input block function the slice index,
+  `(block, z)`, so the second pass applies per-slice parameters.
+  - **Global thresholding**: every algorithm (HistThresh `th_*`, `graythresh`, percentile) depends
+    only on the histogram, so an image with the sampled histogram (at most 4e6 px, each present
+    value at least one pixel) is passed to the existing `computeThreshold` - bit-exact with
+    Standard in exact mode for all 12 algorithms; 16-bit with an algorithm other than Otsu maps the
+    histogram to the per-slice 8-bit scaling of Standard. The result goes to the model as above.
+    Preview is disabled on BigData.
+  - **Normalize layers** (Z stack only): per-slice mean / std from the histograms (Exclude blacks /
+    whites drop bin 0 / `maxInt`), then the `normalizeZStack` arithmetic per band into a new store.
+    Masked area / Background need the mask band-aligned, Time series has no meaning (one time
+    point): refused. Within 1 grey level of Standard (a mean from a histogram rounds differently).
+  - **Edge automatic threshold**: `edge` takes `sqrt(4*mean(b))` (Sobel, Prewitt) or
+    `sqrt(6*mean(b))` (Roberts) of the squared gradient `b` for the chosen direction, and
+    `0.75*mean(abs(b))` of the zero-sum LoG response for LaplacianOfGaussian; the stripes are read
+    with the kernel halo, so the per-slice thresholds equal those `edge` computes on whole slices.
+  - **Statistics come from the processed level** (user decision): never from a coarser level, which
+    is smoothed and gives different statistics; a user who processes a downsampled level gets that
+    level's statistics. The budget is fixed, no widget (user decision).
+  - **CLAHE: skipped for now** (user decision). Its tile grid spans the whole slice (`NumTiles`), and
+    the interpolation between tiles crosses band edges; a band-wise version means reimplementing
+    `adapthisteq`.
+- **Image Arithmetics** (2026-11-06): the expression is the block function. Each input name gets the
+  band as `[rows width 1 colors]`, the `getData4D` layout with one slice, so `I(:,:,:,2)` is channel
+  2 as on Standard. Inputs: the image of the active dataset only; output `I` -> `run`, `M`/`S` ->
+  `runToModel`, `O` and other buffers refused. A user expression has no declared halo, so it must
+  be pointwise in Y and Z: **`checkBandwise_`** evaluates it on a test block `[8 width 2 colors]`
+  and on its four quarters (row halves x slices), each quarter filled with random values in its own
+  range of the class (5-17 %, 27-39 %, 49-61 %, 71-83 % of `intmax`), and refuses it when the
+  reassembled quarters differ from the block. The disjoint ranges make every statistic (min, max,
+  mean, sum, numel) differ between the block and a quarter; flips/shifts/cumsum in Y or Z, row
+  indices and `rand` differ too. Along X and between channels passes, because a band holds whole
+  rows and all channels. The test values come from a private `RandStream`, not the global `rng`.
+  For a Standard active dataset every buffer the expression names is now checked (`I2`, `M3`...):
+  a Virtual or BigData one is refused (`getData4D` would read it whole), except an image output
+  into another buffer, which replaces that buffer with a new Standard dataset.
+  `ImageArithmeticsBigDataTest` (10), `ImageArithmeticsTest` (4, Standard path).
+- **MorphOps on the image** (2026-11-06, `@MorphOpsImages/Calculate.m` local functions): Dilate /
+  Erode (halo `floor(n/2)`, `n` the strel height), Opening / Closing / Top-hat / Bottom-hat (twice
+  that: an erosion and a dilation in a row), plus `floor(SmoothHSize/2)` for the smoothing; the
+  Standard 2D arithmetic (smooth, multiply, action) per band, bit-exact with 64-row bands. Refused:
+  Clear border, Fill regions, H-maxima / H-minima (morphological reconstruction reaches any
+  distance) and the 3D mode (only a batch protocol reaches it, and its GUI operations are those).
+  Preview disabled on BigData. `MorphOpsImagesBigDataTest` (6).
+- **White balance** (2026-11-06, `WhiteBalance.correctBigData_`): `chromadapt` is per pixel, so the
+  manual white is applied band-wise without a halo, bit-exact. Refused: a white from the selection /
+  mask (needs the image under the layer, read band-aligned with the model - a statistics pass over
+  image and labels together, not built), Detect (reads a whole slice), Correct current (a store
+  holds the whole dataset). The GUI selects the manual value and disables the rest on BigData.
+  `WhiteBalanceBigDataTest` (3).
+- **uifigure Position is asynchronous.** The window reports a size back after it was set, and that
+  late report overwrites a newer value: of three resizes in a row with `drawnow` only, the second
+  was lost. `BigDataOptions.resizeWindow` waits for a steady position, sets, and sets again until it
+  holds. Any code that resizes a uifigure twice in quick succession needs the same.
+- **Not yet:** output to a Standard buffer, a region smaller
+  than the whole dataset, CLAHE, pool workers (the provider holds the open image), a Resume entry
+  in the GUI.
+
+---
+
 ## 14. File map
 
 | Concern | File(s) |
@@ -555,7 +679,8 @@ is empty). Tests: `tests/controllers/AlignmentBigDataTest.m`.
 | Zarr facade (native/python) | `+io/+zarr/{Config,Array,Group,PyBackend}.m` |
 | Zarr3 writer / ingest | `+io/+savers/Zarr3Saver.m`, `+io/+adapters/ZarrBlockedAdapter.m` |
 | Streaming export | `+io/+savers/{SliceProvider,InMemorySliceProvider,MibImageSliceProvider,BaseSaver}.m` + per-format savers |
+| Image tools into a new store | `+utils/+bigdata/{processImageToStore,isSameStorePath}.m`, `+io/+savers/FilteredSliceProvider.m`, `+controllers/@BigDataOptions/BigDataOptions.m`; first tool `+controllers/@ImageFilters/Filter.m` (`localFilterBigData`) |
 | Instance index / editor | `+core/@MibDataset/buildInstanceIndex.m` (BigData branch), `+models/@MibModel/editInstanceObjects.m`, `+controllers/@InstanceEditor/` |
 | Locked state | `+core/@MibImage/MibImage.m` (`lockedState`), `+core/@MibBigDataLabels/setData63.m`, `+core/@MibDataset/{getLockedState,setData2D/3D/4D}.m`, `+models/@MibModel/{setLockedState,showLockedNotice}.m`, `+controllers/@MibActiveDataset/{buffersContext_Opening,paintBufferLock,buffers_ContextMenu}.m`, `+controllers/@MibSegmentation/gui_Callbacks.m` (`labelsLock`) |
-| Tests | `tests/core/MibBigDataLevelMapTest.m`, `tests/models/EditInstanceObjectsBigDataTest.m`, `tests/core/MibBigDataLockedStateTest.m` |
+| Tests | `tests/core/MibBigDataLevelMapTest.m`, `tests/models/EditInstanceObjectsBigDataTest.m`, `tests/core/MibBigDataLockedStateTest.m`, `tests/utils/ProcessImageToStoreTest.m`, `tests/controllers/ImageFiltersBigDataTest.m` |
 | User docs | `docs/docs/getting-started/dataset-types/index.md` |

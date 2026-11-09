@@ -38,7 +38,7 @@ switch source.Tag
         obj.directionPopup_Callback();
     case 'scalebarCheck'
         obj.scalebarCheck_Callback();
-    case 'roiPopup'
+    case 'RoiIndex'
         obj.roiPopup_Callback();
     case 'splitChannelsCheck'
         obj.splitChannelsCheck_Callback();

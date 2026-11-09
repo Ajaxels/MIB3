@@ -2805,6 +2805,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#bigdata-datasets" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        BigData datasets
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#algorithms" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -5729,6 +5740,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#bigdata-datasets" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        BigData datasets
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#algorithms" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -6087,11 +6109,11 @@ normalised to 8-bit per slice before thresholding (Otsu uses the full bit depth 
 </ul>
 <p><strong>Options panel</strong></p>
 <ul>
-<li><span class="widget widget-dropdown">Mode</span>: dataset extent to process —
+<li><span class="widget widget-dropdown">Mode</span>: dataset extent to process -
   <em>2D, Slice</em> (current slice only), <em>3D, Stack</em> (all slices in the current Z-stack),
   or <em>4D, Dataset</em> (all slices and time points).</li>
 <li><span class="widget widget-dropdown">Color channel</span>: color channel used for thresholding.</li>
-<li><span class="widget widget-dropdown">Destination</span>: layer that receives the binary result —
+<li><span class="widget widget-dropdown">Destination</span>: layer that receives the binary result -
   <em>selection</em> or <em>mask</em>.</li>
 <li><span class="widget widget-edit">Fraction of foreground pixels</span> + slider:
   fraction of pixels assumed to belong to the foreground (0–1). Active only for the <strong>Percentile</strong> algorithm.</li>
@@ -6111,6 +6133,12 @@ normalised to 8-bit per slice before thresholding (Otsu uses the full bit depth 
 <li><span class="widget widget-button">Apply</span>: applies thresholding to the full selected scope.</li>
 <li><span class="widget widget-button">Close</span>: closes the dialog.</li>
 </ul>
+<hr />
+<h2 id="bigdata-datasets">BigData datasets<a class="headerlink" href="#bigdata-datasets" title="Permanent link">&para;</a></h2>
+<p>On a <a href="../../../getting-started/dataset-types/index.html#bigdata">BigData</a> dataset the shown slice, or
+the whole dataset, is thresholded at the selected pyramid level, and the result replaces the selection
+or mask there; the model must exist and the result cannot be undone. The threshold of each slice is computed
+from a sample of its rows. Only 8-bit and 16-bit images are supported; Preview is not available.</p>
 <hr />
 <h2 id="algorithms">Algorithms<a class="headerlink" href="#algorithms" title="Permanent link">&para;</a></h2>
 <h3 id="concavity">Concavity<a class="headerlink" href="#concavity" title="Permanent link">&para;</a></h3>

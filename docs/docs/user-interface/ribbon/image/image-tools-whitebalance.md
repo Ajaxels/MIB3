@@ -44,6 +44,13 @@ dataset’s color balance for the currently shown slice, or the
     * [chromadapt](https://se.mathworks.com/help/images/ref/chromadapt.html) function at Mathworks.com
     * Lindbloom, Bruce. "Chromatic Adaptation." [http://www.brucelindbloom.com/index.html?Eqn_ChromAdapt.html](http://www.brucelindbloom.com/index.html?Eqn_ChromAdapt.html)
 
+## BigData datasets
+
+On a [BigData](../../../getting-started/dataset-types/index.md#bigdata) dataset only the manual white
+value is available: point at an area that should be white or gray and enter its intensities. The
+whole dataset is corrected at the selected pyramid level and written to a new OME-Zarr store, as for
+the [image filters](image-filters.md#bigdata-datasets).
+
 ---
 
 *Back to [MIB](../../../index.md) | [User interface](../../index.md) | [Ribbon](../index.md) | [Image](index.md)*

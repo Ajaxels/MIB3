@@ -1999,6 +1999,23 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Normalize layers
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="normalize.html" class="md-nav__link md-nav__link--active">
         
   
@@ -2014,6 +2031,37 @@
   
 
       </a>
+      
+        
+
+
+<nav class="md-nav md-nav--secondary" aria-label="On this page">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      On this page
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#bigdata-datasets" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        BigData datasets
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -5466,6 +5514,11 @@
                       
                     
                     
+                      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+                      <div class="md-sidebar-button__wrapper">
+                        <label class="md-sidebar-button" for="__toc"></label>
+                      </div>
+                    
                   
                   <div class="md-sidebar__inner">
                     
@@ -5477,6 +5530,25 @@
   
     
   
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      On this page
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#bigdata-datasets" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        BigData datasets
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
   
 </nav>
                   </div>
@@ -5722,6 +5794,11 @@
 <p>For 4D datasets, normalization can be done across time.<br>
 For Z-stacks, black or white pixels can be excluded from the statistics.</p>
 </details>
+<h2 id="bigdata-datasets">BigData datasets<a class="headerlink" href="#bigdata-datasets" title="Permanent link">&para;</a></h2>
+<p>On a <a href="../../../getting-started/dataset-types/index.html#bigdata">BigData</a> dataset only <strong>Z stack</strong> is
+available. The mean and std of each slice are computed from a sample of its rows, and the normalized
+image is written to a new OME-Zarr store, as for the
+<a href="image-filters.html#bigdata-datasets">image filters</a>.</p>
 <hr />
 <p><em>Back to <a href="../../../index.html">MIB</a> | <a href="../../index.html">User interface</a> | <a href="../index.html">Ribbon</a> | <a href="index.html">Image</a></em></p>
 

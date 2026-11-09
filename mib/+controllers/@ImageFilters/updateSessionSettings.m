@@ -55,13 +55,11 @@ ImageFilters.DistanceMap.mibBatchTooltip.AspectRatio3D = 'Aspect ratio for calcu
 ImageFilters.ElasticDistortion.mibBatchTooltip.Info = 'Elastic distortion filter, see details in <a href="http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.160.8494&rep=rep1&type=pdf" target="_blank">Best Practices for Convolutional Neural Networks Applied to Visual Document Analysis</a> (<a href="https://cognitivemedium.com/assets/rmnist/Simard.pdf" target="_blank">pdf</a>)';
 ImageFilters.ElasticDistortion.ScalingFactor{1} = 30;
 ImageFilters.ElasticDistortion.ScalingFactor{2} = [1 Inf];
-ImageFilters.ElasticDistortion.mibBatchTooltip.ScalingFactor = 'Scaling factor for distortions';
-ImageFilters.ElasticDistortion.HSize = '7';
-ImageFilters.ElasticDistortion.mibBatchTooltip.HSize = 'Size of the filter, specified as a positive integer or 2-element (3 element for 3D) vector of positive integers; HAS TO BE ODD';
+ImageFilters.ElasticDistortion.mibBatchTooltip.ScalingFactor = 'Strength of the distortion: the displacements spread about 0.17 x ScalingFactor / Sigma pixels';
 ImageFilters.ElasticDistortion.Sigma{1} = 4;
-ImageFilters.ElasticDistortion.Sigma{2} = [0 Inf];
+ImageFilters.ElasticDistortion.Sigma{2} = [0.5 Inf];
 ImageFilters.ElasticDistortion.Sigma{3} = 'off';
-ImageFilters.ElasticDistortion.mibBatchTooltip.Sigma = 'Standard deviation of the Gaussian distribution, normally HSize/5';
+ImageFilters.ElasticDistortion.mibBatchTooltip.Sigma = 'Size of the distorted features, pixels: sigma of the Gaussian smoothing the random displacements';
 ImageFilters.ElasticDistortion.DistortAllLAyers = true;
 ImageFilters.ElasticDistortion.mibBatchTooltip.DistortAllLAyers = 'When ticked the distortions are applied to all layers except selection';
 

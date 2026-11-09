@@ -125,11 +125,8 @@ classdef (Abstract) BaseImageLoader < handle
 
             try
                 args = {'Title', title, 'Message', message};
-                if indeterminate
-                    args = [args, {'Indeterminate', 'on'}];
-                elseif cancelable
-                    args = [args, {'Cancelable', 'on'}];
-                end
+                if indeterminate; args = [args, {'Indeterminate', 'on'}]; end
+                if cancelable;    args = [args, {'Cancelable', 'on'}];    end
                 wb = uiprogressdlg(obj.ParentFigure, args{:});
             catch
                 wb = [];

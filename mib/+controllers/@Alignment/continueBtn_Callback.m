@@ -92,15 +92,20 @@ parameters.maxY = obj.BatchOpt.maxY{1};
 % --- BigData mode: alignment writes a NEW aligned zarr3 store (never in-place)
 parameters.isBigData = ~isempty(obj.isBigData) && obj.isBigData;
 if parameters.isBigData
-    % Analysis pyramid level: parse the leading index from the dropdown item
-    % (e.g. '2: 12000 x 9000'); '<auto>' -> level nearest ~3000 px wide.
+    % Analysis pyramid level from the dropdown item, named from s0
+    % (e.g. 's1' -> level 2); '<auto>' -> level nearest ~3000 px
+    % wide. Protocols recorded before the s0 naming carry the 1-based index
+    % ('2: 12000 x 9000'), still read as such.
     levelStr = obj.BatchOpt.BigData_PyramidLevel{1};
-    levelTok = regexp(levelStr, '^\s*(\d+)\s*:', 'tokens', 'once');
-    if isempty(levelTok)
+    levelTok = regexp(levelStr, '^\s*s(\d+)', 'tokens', 'once');
+    oldLevelTok = regexp(levelStr, '^\s*(\d+)\s*:', 'tokens', 'once');
+    if ~isempty(levelTok)
+        parameters.pyramidLevel = str2double(levelTok{1}) + 1;
+    elseif ~isempty(oldLevelTok)
+        parameters.pyramidLevel = str2double(oldLevelTok{1});
+    else
         levelSizes = obj.mibModel.I{id}.image.pyramid.levelImageSizes;
         [~, parameters.pyramidLevel] = min(abs(levelSizes(:, 2) - 3000));
-    else
-        parameters.pyramidLevel = str2double(levelTok{1});
     end
     parameters.outputPath = obj.BatchOpt.BigData_OutputPath;
 

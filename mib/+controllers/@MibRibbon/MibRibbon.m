@@ -20,6 +20,7 @@ classdef MibRibbon
         homeImport_Callback(obj, hWidget, hData)        % callback on press of the import buttons in the Home ribbon
         home_Callbacks(obj, hWidget, hData)        % callback on press of the I/O tools buttons in the Home ribbon
         homeSelectRecentDir_Callback(obj, recentDir)        % callback on selection of the recent directory 
+        popup = homeUpdateParallelPool(obj, hButton, hData)        % refresh the Parallel pool entry when the Preferences menu opens
         homeUpdateRecentDirsList(obj)        % update the recent directories list
         image_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Image ribbon
         imageIntensityProfile(obj, mode)            % draw a line/freehand ROI and display the intensity profile in a figure
@@ -110,6 +111,8 @@ classdef MibRibbon
             obj.handles.ribbonHome.preferences.ButtonPushedFcn = @obj.home_Callbacks;
             obj.handles.ribbonHome.preferencesMenu.ItemPushedFcn = @obj.home_Callbacks;
             obj.handles.ribbonHome.prefOverrideMenu.ItemPushedFcn = @obj.home_Callbacks;            obj.handles.ribbonHome.help.ButtonPushedFcn = @obj.home_Callbacks;
+            obj.handles.ribbonHome.parallelPool.ValueChangedFcn = @obj.home_Callbacks;
+            obj.handles.ribbonHome.preferences.DynamicPopupFcn = @obj.homeUpdateParallelPool;
             obj.handles.ribbonHome.helpMenu.ItemPushedFcn = @obj.home_Callbacks;
             obj.handles.ribbonHome.tipOfDay.ItemPushedFcn = @obj.home_Callbacks;
             obj.handles.ribbonHome.support.ItemPushedFcn = @obj.home_Callbacks;

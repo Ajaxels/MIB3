@@ -14,7 +14,7 @@ function dataset = getDataZarr(obj, type, orient, colChannel, options)
 %     - ``2`` - YZ: output ``[y, z, x, c, t]``
 %     - ``3`` - YX: output ``[y, x, z, c, t]`` *(default)*
 %   - **colChannel** - *(optional)*, vector of 1-based colour channel indices;
-%     [] = all channels
+%     [], 0 or NaN = all channels (as ``MibImage.getData``)
 %   - **options** - *(optional)*, struct with optional fields:
 %
 %     - ``.y``, ``.x``, ``.z``  - [min, max] coordinate ranges (1-based, full resolution)
@@ -139,7 +139,7 @@ end
 
 % --- colour selection (1-based inclusive) ---------------------------------
 if strcmp(type, 'image')
-    if isempty(colChannel)
+    if isempty(colChannel) || (isscalar(colChannel) && (colChannel == 0 || isnan(colChannel)))
         Clim = [1, obj.colors];
     else
         Clim = [colChannel(1), colChannel(end)];

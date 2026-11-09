@@ -21,6 +21,16 @@ Savers
    StlSaver
    TiffSaver
 
+Slice providers
+---------------
+
+Per-slice sources for the streaming savers.
+
+.. toctree::
+   :maxdepth: 1
+
+   FilteredSliceProvider
+
 Base class
 ----------
 
