@@ -90,6 +90,56 @@ classdef PreferencesVersionTest < matlab.unittest.TestCase
             testCase.verifyFalse(isfield(model.sessionSettings, 'PreferencesDowngradeMessage'));
         end
 
+        function olderShortcuts_gainNewActionsAndKeepEdits(testCase)
+            sandbox = testCase.useSandbox();
+            defaults = testCase.buildQuietly(PreferencesVersionTest.NewVersion).preferences;
+            preferences = defaults;
+            shortcuts = testCase.withoutAction(defaults.KeyShortcuts, 'Favorite tool B');
+            shortcuts.Key{strcmp(shortcuts.Action, 'Clear selection')} = 'k';
+            preferences.KeyShortcuts = testCase.withExtraAction(shortcuts, 'Action of an older version');
+            testCase.saveAsSession(fullfile(sandbox, 'Matlab', 'mib3.mat'), preferences, 2025.12);
+
+            restored = testCase.buildQuietly(PreferencesVersionTest.NewVersion).preferences.KeyShortcuts;
+
+            testCase.verifyEqual(restored.Action, defaults.KeyShortcuts.Action, ...
+                'the list of actions is the one of the running version');
+            newRow = strcmp(restored.Action, 'Favorite tool B');
+            testCase.verifyEqual(restored.Key{newRow}, 'd', 'a new action gets its default key');
+            testCase.verifyEqual(restored.control(newRow), 1);
+            testCase.verifyEqual(restored.Key{strcmp(restored.Action, 'Clear selection')}, 'k', ...
+                'a key assigned by the user stays on its action');
+        end
+
+        function olderShortcuts_newActionYieldsToUserCombination(testCase)
+            sandbox = testCase.useSandbox();
+            defaults = testCase.buildQuietly(PreferencesVersionTest.NewVersion).preferences;
+            preferences = defaults;
+            shortcuts = testCase.withoutAction(defaults.KeyShortcuts, 'Favorite tool B');
+            clearRow = strcmp(shortcuts.Action, 'Clear selection');
+            shortcuts.Key{clearRow} = 'd';
+            shortcuts.control(clearRow) = 1;
+            preferences.KeyShortcuts = shortcuts;
+            testCase.saveAsSession(fullfile(sandbox, 'Matlab', 'mib3.mat'), preferences, 2025.12);
+
+            restored = testCase.buildQuietly(PreferencesVersionTest.NewVersion).preferences.KeyShortcuts;
+
+            testCase.verifyEqual(restored.Key{strcmp(restored.Action, 'Favorite tool B')}, '', ...
+                'two actions on one combination would make the key press fail');
+            testCase.verifyEqual(restored.Key{strcmp(restored.Action, 'Clear selection')}, 'd');
+        end
+
+        function damagedShortcuts_leaveDefaults(testCase)
+            sandbox = testCase.useSandbox();
+            defaults = testCase.buildQuietly(PreferencesVersionTest.NewVersion).preferences;
+            preferences = defaults;
+            preferences.KeyShortcuts.Key = preferences.KeyShortcuts.Key(1:end-1);
+            testCase.saveAsSession(fullfile(sandbox, 'Matlab', 'mib3.mat'), preferences, 2025.12);
+
+            restored = testCase.buildQuietly(PreferencesVersionTest.NewVersion).preferences.KeyShortcuts;
+
+            testCase.verifyEqual(restored, defaults.KeyShortcuts);
+        end
+
         function noPrefsFile_startsFromDefaultsWithoutParking(testCase)
             sandbox = testCase.useSandbox();
 
@@ -139,6 +189,23 @@ classdef PreferencesVersionTest < matlab.unittest.TestCase
 
             prefsFn = fullfile(sandbox, 'Matlab', 'mib3.mat');
             testCase.saveAsSession(prefsFn, preferences, mibVersionNumeric);
+        end
+
+        function shortcuts = withoutAction(~, shortcuts, actionName)
+            % the shortcuts as a version that did not have this action saved them
+            keptRows = ~strcmp(shortcuts.Action, actionName);
+            for fieldName = fieldnames(shortcuts)'
+                shortcuts.(fieldName{1}) = shortcuts.(fieldName{1})(keptRows);
+            end
+        end
+
+        function shortcuts = withExtraAction(~, shortcuts, actionName)
+            % the shortcuts as a version that had an action since removed saved them
+            shortcuts.Action{end+1} = actionName;
+            shortcuts.Key{end+1} = 'j';
+            for fieldName = {'shift', 'overrideShift', 'control', 'alt', 'overrideAlt'}
+                shortcuts.(fieldName{1})(end+1) = 0;
+            end
         end
 
         function saveAsSession(~, prefsFn, preferences, mibVersionNumeric)

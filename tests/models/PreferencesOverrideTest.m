@@ -134,6 +134,24 @@ classdef PreferencesOverrideTest < matlab.unittest.TestCase
                 'a file that cannot be read leaves the defaults in place');
         end
 
+        function shortcutsFromOtherVersion_areMatchedByName(testCase)
+            mibPath = testCase.useSandbox();
+            source = testCase.buildModel(mibPath, 'defaults');
+            defaults = source.preferences.KeyShortcuts;
+            keptRows = ~strcmp(defaults.Action, 'Favorite tool B');
+            for fieldName = fieldnames(defaults)'
+                source.preferences.KeyShortcuts.(fieldName{1}) = defaults.(fieldName{1})(keptRows);
+            end
+            source.preferences.KeyShortcuts.Key{strcmp(source.preferences.KeyShortcuts.Action, 'Clear selection')} = 'k';
+
+            source.saveOverridePreferences(fullfile(mibPath, 'mib3_prefs_override.json'));
+
+            restored = testCase.buildModel(mibPath, 'saved').preferences.KeyShortcuts;
+            testCase.verifyEqual(restored.Action, defaults.Action);
+            testCase.verifyEqual(restored.Key{strcmp(restored.Action, 'Favorite tool B')}, 'd');
+            testCase.verifyEqual(restored.Key{strcmp(restored.Action, 'Clear selection')}, 'k');
+        end
+
         function changedTweak_isWrittenWithItsDescription(testCase)
             mibPath = testCase.useSandbox();
             source = testCase.buildModel(mibPath, 'defaults');

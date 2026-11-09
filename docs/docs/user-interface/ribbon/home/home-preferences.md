@@ -378,9 +378,13 @@ interpreter (used by [SAM](../../panels/segm/segm-sam.md) and other Python-based
 
 Customize key bindings for quick access to MIB actions:
 
-- **Shortcuts Table**: A table to edit key bindings. Click a cell to assign a key combination, or a column header to sort the table.
+- **Shortcuts Table**: Lists the actions with their shortcuts; changed shortcuts are shown in bold. Click a column header to sort the table.
+- **Filter**: Shows only the actions whose category, name or shortcut contain the typed text. Type `Select` to find the actions that switch directly to one of the first nine materials or to a segmentation tool; they have no shortcut until you record one.
+- **Record**: Select an action, press **Record**, then press the new key combination; ++esc++ cancels. If another action already uses the combination, you can move it to the selected action.
+- **Clear**: Removes the shortcut of the selected action.
+- **Reset**: Restores the default shortcut of the selected action.
 - **Pressed Key**: A label showing the last key pressed (e.g., ++ctrl++ + ++s++) when the panel is active. Click the panel and press a key to test.
-- **Reset**: A button to restore default key shortcuts.
+- **Reset all**: Restores all default key shortcuts.
 
 !!! warning
     Ensure the Keyboard Shortcuts panel is selected to capture key presses for testing.

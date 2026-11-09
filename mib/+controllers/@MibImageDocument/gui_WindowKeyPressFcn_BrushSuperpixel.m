@@ -29,18 +29,7 @@ if strcmp(char, 'alt'); return; end
 modifier = eventdata.Modifier;
 
 % find shortcut action
-controlSw = 0;
-shiftSw = 0;
-altSw = 0;
-if ismember('control', modifier); controlSw = 1; end
-if ismember('shift', modifier); shiftSw = 1; end
-if ismember('alt', modifier); altSw = 1; end
-
-ActionId = ismember(obj.mibModel.preferences.KeyShortcuts.Key, char) & ...
-    ismember(obj.mibModel.preferences.KeyShortcuts.control, controlSw) & ...
-    ismember(obj.mibModel.preferences.KeyShortcuts.shift, shiftSw) & ...
-    ismember(obj.mibModel.preferences.KeyShortcuts.alt, altSw);
-ActionId = find(ActionId > 0);
+ActionId = utils.findKeyShortcut(obj.mibModel.preferences.KeyShortcuts, char, modifier);
 
 if ~isempty(ActionId)
     switch obj.mibModel.preferences.KeyShortcuts.Action{ActionId}

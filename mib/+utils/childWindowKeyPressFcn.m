@@ -60,26 +60,7 @@ if ~isvalid(controller) || ~isprop(controller, 'mibModel'); return; end
 mibModel = controller.mibModel;
 KeyShortcuts = mibModel.preferences.KeyShortcuts;
 
-keyMask = strcmp(KeyShortcuts.Key, char);
-controlSw    = any(strcmp(modifier, 'control'));
-shiftPressed = any(strcmp(modifier, 'shift'));
-altPressed   = any(strcmp(modifier, 'alt'));
-
-% correct with override shift/alt settings (same logic as gui_WindowKeyPressFcn)
-shiftSw = shiftPressed && ~any(strcmp(char, KeyShortcuts.Key(KeyShortcuts.overrideShift == 1)));
-if ~altPressed
-    altSw = false;
-else
-    overrideAlt = any(strcmp(char, KeyShortcuts.Key(KeyShortcuts.overrideAlt == 1)));
-    altPlusA    = any(strcmp(char, KeyShortcuts.Key(strcmp(KeyShortcuts.Action, 'Add to selection to material')))) && shiftPressed;
-    altSw = ~overrideAlt && ~altPlusA;
-end
-
-ActionId = find(keyMask & ...
-    (KeyShortcuts.control == controlSw) & ...
-    (KeyShortcuts.shift   == shiftSw) & ...
-    (KeyShortcuts.alt     == altSw));
-
+ActionId = utils.findKeyShortcut(KeyShortcuts, char, modifier);
 if isempty(ActionId); return; end
 
 % --- Handle whitelisted actions ---

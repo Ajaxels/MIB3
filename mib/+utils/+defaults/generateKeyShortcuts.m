@@ -1,13 +1,24 @@
-function KeyShortcuts = generateKeyShortcuts()
+function [KeyShortcuts, categories, labels] = generateKeyShortcuts()
 % GENERATEKEYSHORTCUTS - Generate KeyShortcuts structure with default key shortcuts.
 %
 % Syntax:
 %   .. code-block:: matlab
 %
 %      KeyShortcuts = generateKeyShortcuts()
+%      [KeyShortcuts, categories, labels] = generateKeyShortcuts()
 %
 % Output Arguments:
 %   - **KeyShortcuts** - structure with default keyboard shortcut bindings used by MIB
+%   - **categories** - [cell] group of each element of ``KeyShortcuts.Action``, shown in
+%     the Category column of Preferences -> Keyboard shortcuts. Kept out of the
+%     structure because it describes the action and is not a user setting: anything in
+%     ``KeyShortcuts`` is saved to ``mib3.mat`` and to the override JSON
+%   - **labels** - [cell] name of each element of ``KeyShortcuts.Action`` shown to the
+%     user, the same text unless a row below sets another one. ``Action`` is the
+%     identifier of an action: the ``case`` strings of the key press handlers use it
+%     and saved shortcuts are matched by it (``MibModel.initializePreferences``), so
+%     renaming an action would drop the key the user assigned to it. To improve a
+%     name, change its label and keep the ``Action``
 %
 % Usage:
 %
@@ -18,8 +29,14 @@ function KeyShortcuts = generateKeyShortcuts()
 %      KeyShortcuts = utils.defaults.generateKeyShortcuts();
 %
 
+% the Items of the segmTool dropdown of views.components.Segmentation
+segmentationTools = {'3D ball', '3D lines', 'Annotations', 'Brush', 'BW thresholding', 'Drag&Drop materials', ...
+    'Lasso', 'MagicWand/RegionGrowing', 'Membrane ClickTracker', 'Object picker', 'Segment-anything model', 'Spot'};
+
 % define keyboard shortcuts
-maxShortCutIndex = 45;  % total number of shortcuts
+selectMaterialRows = 47:55;
+selectToolRows = selectMaterialRows(end) + (1:numel(segmentationTools));
+maxShortCutIndex = selectToolRows(end) + 1;  % total number of shortcuts
 
 KeyShortcuts.shift(1:maxShortCutIndex) = 0;
 KeyShortcuts.overrideShift(1:maxShortCutIndex) = 0;     % here should be indices of operations that are used with Shifts, such as shift+a, shift+s...
@@ -199,12 +216,40 @@ KeyShortcuts.Key{44} = 'd';
 KeyShortcuts.Action{44} = 'Favorite tool B';
 KeyShortcuts.control(44) = 1;
 
+KeyShortcuts.Key{45} = 'a';
+KeyShortcuts.Action{45} = 'Select Mask or material in the current slice';
+KeyShortcuts.control(45) = 1;
+
+KeyShortcuts.Key{46} = 'a';
+KeyShortcuts.Action{46} = 'Select Mask or material in all slices';
+KeyShortcuts.alt(46) = 1;
+
+% direct selection of a material or a tool, without default keys
+KeyShortcuts.Key(selectMaterialRows) = {''};
+KeyShortcuts.Action(selectMaterialRows) = compose('Select material %d', 1:numel(selectMaterialRows));
+
+KeyShortcuts.Key(selectToolRows) = {''};
+KeyShortcuts.Action(selectToolRows) = append('Select segmentation tool: ', segmentationTools);
+
 % add a new key shortcut to the end of the list
 KeyShortcuts.Key{maxShortCutIndex} = 'n';
 KeyShortcuts.Action{maxShortCutIndex} = 'Increse active material index by 1 for models with 65535 materials';
 
+% groups for the Category column of Preferences, by the indices used above
+categories = repmat({'General'}, 1, maxShortCutIndex);
+categories([1 2 3 13 14 15 16 17 18 25 26 32 33]) = {'View'};
+categories([4 9 10 11 12 21 22 29 45 46]) = {'Selection'};
+categories([6 7 8 19 23 28 36 selectMaterialRows maxShortCutIndex]) = {'Materials'};
+categories([24 34 35 37:44 selectToolRows]) = {'Segmentation tools'};
+
+% names shown to the user where they differ from the Action, see the description of labels
+labels = KeyShortcuts.Action;
+labels{maxShortCutIndex} = 'Increase active material index by 1 for models with 65535 materials';
+
 % resort the shortcuts to be alphabetical
 [KeyShortcuts.Action, sortedIds] = sort(KeyShortcuts.Action);
+categories = categories(sortedIds);
+labels = labels(sortedIds);
 KeyShortcuts.shift = KeyShortcuts.shift(sortedIds);
 KeyShortcuts.overrideShift = KeyShortcuts.overrideShift(sortedIds);
 KeyShortcuts.control = KeyShortcuts.control(sortedIds);

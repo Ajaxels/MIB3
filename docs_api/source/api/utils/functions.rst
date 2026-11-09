@@ -25,6 +25,8 @@ Standalone utility functions
 
 .. autofunction:: ensureJavaLibraries
 
+.. autofunction:: findKeyShortcut
+
 .. autofunction:: fontSizeUpdate
 
 .. autofunction:: generateSequentialFilename

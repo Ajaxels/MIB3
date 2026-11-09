@@ -70,28 +70,12 @@ end
 cImageDoc = obj.cImageDoc{hoverDocIdx};
 cSegmentation = obj.cSegmentation;
 
-% cancel if button is not registered as a shortcut
-keyMask = strcmp(KeyShortcuts.Key, char);
-
 % define the modifiers press status
 controlSw  = any(strcmp(modifier, 'control'));
 shiftPressed = any(strcmp(modifier, 'shift'));
 altPressed   = any(strcmp(modifier, 'alt'));
 
-% correct with override shift setting
-shiftSw = shiftPressed && ~any(strcmp(char, KeyShortcuts.Key(KeyShortcuts.overrideShift == 1)));
-
-% alt override
-if ~altPressed
-    altSw = false;
-else
-    overrideAlt = any(strcmp(char, KeyShortcuts.Key(KeyShortcuts.overrideAlt == 1)));
-    altPlusA    = any(strcmp(char, KeyShortcuts.Key(strcmp(KeyShortcuts.Action, 'Add to selection to material')))) && shiftPressed;
-    altSw = ~overrideAlt && ~altPlusA;
-end
-
-ActionId = find(keyMask & ...
-    (KeyShortcuts.control == controlSw) & (KeyShortcuts.shift   == shiftSw)& (KeyShortcuts.alt     == altSw));
+ActionId = utils.findKeyShortcut(KeyShortcuts, char, modifier);
 
 % get image coordinates under the mouse cursor
 xyString = obj.cStatus.handles.pixelLabel.Text;
@@ -216,6 +200,26 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
 
         case 'Clear selection'                          % default 'c'/'Shift+c'
             obj.cSelection.clearSelection();
+
+        case {'Select Mask or material in the current slice', 'Select Mask or material in all slices'}
+            % default 'Ctrl + a', 'Alt + a'
+            if dataset.enableSelection == 0
+                % Standard with the selection disabled: the lock notice offers to enable it
+                if strcmp(dataset.getLockedState('labels'), 'locked'); obj.mibModel.showLockedNotice(obj.mibModel.id, 'labels'); end
+                return;
+            end
+
+            if dataset.labels.maxMaterials ~= 128
+                selectScope = '2D, Slice';
+                if strcmp(KeyShortcuts.Action{ActionId}, 'Select Mask or material in all slices'); selectScope = '3D, Stack'; end
+                obj.currentModifier = {};  % clear before notify/drawnow yield points below
+                if dataset.selectedMaterial == 1
+                    obj.mibModel.moveLayers('mask', 'selection', selectScope, 'replace');
+                elseif dataset.labels.exists
+                    obj.mibModel.moveLayers('labels', 'selection', selectScope, 'replace');
+                end
+            end
+            obj.showImage();
 
         case {'Fill the holes in the Selection layer', 'Erode the Selection layer', 'Dilate the Selection layer'}
             % default 'f'/'Shift+f', 'z'/'Shift+z', 'x'/'Shift+x'
@@ -412,11 +416,15 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
                 'Preset 2 update from the selected segmentation tool', ...
                 'Preset 3 update from the selected segmentation tool'}     % default Shift+1, Shift+2, Shift+3
             obj.cSelection.updateSegmentationPreset(str2double(KeyShortcuts.Action{ActionId}(8)));
-        case 'Zoom to 100% view'  % should be define in Preferences
-            error("MISSING IMPLEMENTATION: obj.mibToolbar_ZoomBtn_ClickedCallback('one2onePush');")
-
-        case 'Zoom to fit the view'  % should be define in Preferences
-            error("MISSING IMPLEMENTATION: obj.mibToolbar_ZoomBtn_ClickedCallback('fitPush');")
+        case {'Zoom to 100% view', 'Zoom to fit the view'}  % no default key, defined in Preferences
+            % apply to the panel the mouse is hovering over, as for zoom in/out above
+            if hoverDocIdx ~= obj.mibModel.Sets.selectedSet
+                obj.view.handles.panels.activeDataset.handles.sets.Value = obj.mibModel.Sets.names{hoverDocIdx};
+                obj.cActiveDataset.setsOps_Callbacks([], [], 'sets');
+            end
+            BatchOpt.Mode = 'Fit to screen';
+            if strcmp(KeyShortcuts.Action{ActionId}, 'Zoom to 100% view'); BatchOpt.Mode = '100%'; end
+            obj.cStatus.zoomEdit_Callback(false, BatchOpt);
 
         case {'Brush size decrease', 'Brush size increase'}  % default [ and ] as well as shift+[ and shift+]
             Parameters = struct();
@@ -425,6 +433,22 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
             eventdata = core.ToggleEventData(Parameters);
             obj.gui_ScrollWheelFcn(eventdata);
             return;
+
+        otherwise   % the actions generated from lists, no default keys, see utils.defaults.generateKeyShortcuts
+            actionName = KeyShortcuts.Action{ActionId};
+            if startsWith(actionName, 'Select material ')       % 'Select material 1'...'Select material 9'
+                if dataset.enableSelection == 0; return; end
+                % in the table the materials follow the Mask and Exterior rows; models with
+                % more than 255 materials list only the two materials being edited there
+                materialRow = str2double(actionName(end)) + 2;
+                if dataset.labels.maxMaterials > 255 || materialRow > size(cSegmentation.handles.materialsTable.Data, 1); return; end
+                cSegmentation.materialsTable_CellSelectionCallback([materialRow, 2]);
+            elseif startsWith(actionName, 'Select segmentation tool: ')
+                toolIndex = find(strcmp(cSegmentation.handles.segmTool.Items, extractAfter(actionName, 'Select segmentation tool: ')), 1);
+                if isempty(toolIndex); return; end
+                cSegmentation.handles.segmTool.ValueIndex = toolIndex;
+                cSegmentation.segmentationTool_Callback();
+            end
     end
 else    % all other possible shortcuts
     switch char
@@ -461,25 +485,6 @@ else    % all other possible shortcuts
             %         resume(dataset.hROI.roi.imroi);
             %     end
             % end
-        case 'a'    % Select the Mask or Material (when mask is not shown) layer
-            if strcmp(modifier, 'control') | strcmp(modifier, 'alt') 
-                if dataset.labels.maxMaterials ~= 128
-                    if strcmp(modifier, 'alt')
-                        if dataset.selectedMaterial == 1
-                            obj.mibModel.moveLayers('mask', 'selection', '3D, Stack', 'replace');
-                        elseif dataset.labels.exists
-                            obj.mibModel.moveLayers('labels', 'selection', '3D, Stack', 'replace');
-                        end
-                    else
-                        if dataset.selectedMaterial == 1
-                            obj.mibModel.moveLayers('mask', 'selection', '2D, Slice', 'replace');
-                        elseif dataset.labels.exists
-                            obj.mibModel.moveLayers('labels', 'selection', '2D, Slice', 'replace');
-                        end
-                    end
-                end
-                obj.showImage();
-            end
         case 'control'  % temporarily enlarge brush radius for eraser mode
             if controlSw && obj.view.ctrlPressed == 0
                 if obj.mibModel.preferences.SegmTools.Brush.EraserRadiusFactor == 1; return; end

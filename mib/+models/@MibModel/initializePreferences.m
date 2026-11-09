@@ -21,8 +21,16 @@ function initializePreferences(obj)
 % cannot hold ``Inf``/``NaN``, which the file stores as the strings ``"Inf"``,
 % ``"-Inf"``, ``"NaN"``. ``"_comment"`` keys are dropped, unknown settings are dropped
 % with a ``MIB:preferencesOverride`` warning, and a file that cannot be read is ignored
-% with the same warning. ``Users`` is never taken from an override file, and
-% ``KeyShortcuts`` only when the file has at least as many actions as this version.
+% with the same warning. ``Users`` is never taken from an override file.
+%
+% Saved ``KeyShortcuts`` are matched to the actions of this version by action name,
+% whichever file they come from: an action added since the file was written gets its
+% default combination, unless the user has already assigned that combination to
+% something else (two matches would make the key press fail, so the new action starts
+% without a key), and a saved action this version no longer has is dropped. Only
+% ``Key``, ``shift``, ``control`` and ``alt`` are restored; ``overrideShift`` and
+% ``overrideAlt`` describe how an action works and always come from the defaults. Saved
+% arrays of different lengths cannot be matched, and leave the defaults in place.
 %
 % The files that were picked up are reported to the command window unless the
 % model was constructed with ``Verbose = false`` (``obj.verboseStartup``);
@@ -50,6 +58,7 @@ mibVersionNumeric = utils.getMibVersionNumberic(obj.mibVersion);
 % generate default preferences
 % see also PreferencesController.defaultBtn_Callback()
 obj.preferences = utils.defaults.generatePreferences();
+defaultKeyShortcuts = obj.preferences.KeyShortcuts;     % restored preferences replace these, see mergeKeyShortcuts
 
 % ------------ define default starting path ------------
 % Set platform-specific default path for file operations
@@ -113,11 +122,15 @@ elseif restoreSavedPreferences
             end
 
             % Ensure key shortcuts are complete: the arrays are matched by index to
-            % KeyShortcuts.Action, so a file written by a MIB with a different number
-            % of actions would shift the shortcuts onto the wrong actions. A JSON
-            % file may hold only some of the arrays, each of them has to fit
+            % KeyShortcuts.Action. A file listing its own actions may differ from
+            % this version (mergeKeyShortcuts sorts that out below), while a JSON
+            % file holding only some of the arrays is matched to the actions of
+            % this version, so each of them has to fit
             if isfield(overridePreferences, 'KeyShortcuts')
                 numberOfActions = numel(obj.preferences.KeyShortcuts.Action);
+                if isfield(overridePreferences.KeyShortcuts, 'Action')
+                    numberOfActions = numel(overridePreferences.KeyShortcuts.Action);
+                end
                 shortcutArrays = struct2cell(overridePreferences.KeyShortcuts);
                 if ~all(cellfun(@(shortcutArray) numel(shortcutArray) == numberOfActions, shortcutArrays))
                     overridePreferences = rmfield(overridePreferences, 'KeyShortcuts');
@@ -195,6 +208,11 @@ if exist('mib_pars', 'var') && isfield(mib_pars, 'mibVersion')  %#ok<NODEF>
         obj.sessionSettings.PreferencesDowngradeMessage = downgradeMsg;
     end
 end
+
+% ------------ key shortcuts of this version ------------
+% The restored arrays have replaced the default ones whole, which would hide every
+% action added since they were saved
+obj.preferences.KeyShortcuts = mergeKeyShortcuts(defaultKeyShortcuts, obj.preferences.KeyShortcuts);
 
 % force update of cpuParallelLimit; when the limit was not provided to the
 % constructor it is computed lazily (get.cpuParallelLimitMax) to avoid the
@@ -430,6 +448,29 @@ if isempty(defaultValue) || isrow(defaultValue)
     value = reshape(value, 1, []);
 elseif iscolumn(defaultValue)
     value = reshape(value, [], 1);
+end
+end
+
+%% ------------------------------------------------------------------------
+function merged = mergeKeyShortcuts(defaults, saved)
+% The actions of this version with the key combinations the user saved, matched by
+% action name, see the description of initializePreferences
+merged = defaults;
+userFields = {'Key', 'shift', 'control', 'alt'};
+numberOfSaved = numel(saved.Action);
+if any(cellfun(@(fieldName) numel(saved.(fieldName)) ~= numberOfSaved, userFields)); return; end
+
+[isSaved, savedRow] = ismember(defaults.Action, saved.Action);
+for fieldId = 1:numel(userFields)
+    merged.(userFields{fieldId})(isSaved) = saved.(userFields{fieldId})(savedRow(isSaved));
+end
+
+for row = find(~isSaved)
+    sameCombination = strcmp(merged.Key, merged.Key{row}) & merged.shift == merged.shift(row) & ...
+        merged.control == merged.control(row) & merged.alt == merged.alt(row);
+    if ~isempty(merged.Key{row}) && any(sameCombination & isSaved)
+        merged.Key{row} = '';
+    end
 end
 end
 

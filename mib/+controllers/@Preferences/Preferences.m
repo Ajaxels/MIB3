@@ -21,8 +21,18 @@ classdef Preferences < handle
         % stored old preferences
         preferences
         % local copy of MIB preferences
-        duplicateEntries  
-        % array with duplicate key shortcut entries
+        keyShortcutDefaults
+        % default key shortcuts, in the order of obj.preferences.KeyShortcuts, see utils.defaults.generateKeyShortcuts
+        keyShortcutCategories
+        % cell array with the category of each element of obj.keyShortcutDefaults.Action
+        keyShortcutLabels
+        % cell array with the name shown to the user for each element of obj.keyShortcutDefaults.Action
+        keyShortcutRows
+        % indices into obj.preferences.KeyShortcuts of the rows shown in shortcutsTable, after the filter
+        selectedKeyShortcut = 0
+        % index into obj.preferences.KeyShortcuts of the action edited in the Keyboard shortcuts panel, 0 - none
+        recordingKeyShortcut = false
+        % true while the next key press defines the shortcut of the selected action
         renderedPanels     % indices of panels that are already rendered, for faster change upon press on new tree node
         javaAppliedPath
         % Java folder that MATLAB / MATLAB Runtime is already set to; Apply connects the
@@ -289,8 +299,6 @@ classdef Preferences < handle
                 utils.fontSizeUpdate(obj.view.gui, Font);
             end
 
-            obj.duplicateEntries = [];
-
             % Java row of External directories (MATLAB R2026b and newer come without
             % Java). The field shows the stored folder, or the Java MATLAB actually
             % uses when none is stored; both buttons have no callback in the mlapp
@@ -545,33 +553,25 @@ classdef Preferences < handle
             % % -------------- KeyboardShortcutsPanel ----------------
             if strcmp(panelId, 'All') || strcmp(panelId, 'KeyboardShortcutsPanel')
                 if obj.renderedPanels(5) == 1; return; end  % already rendered
-                % update table with contents of handles.KeyShortcuts
-                % Column names and column format
-                ColumnName =    {'',    'Action name',  'Key',      'Shift',    'Control',  'Alt'};
-                ColumnFormat =  {'char','char',         'char',     'logical',  'logical',  'logical'};
-                handles.shortcutsTable.ColumnName = ColumnName;
-                handles.shortcutsTable.ColumnFormat = ColumnFormat;
+                % wired here rather than in App Designer, as for the Fine-tuning panel
+                keyShortcutsCallback = @(~, event) obj.KeyboardShortcutsPanelCallbacks(event);
+                handles.KeyShortcutsFilter.ValueChangingFcn = keyShortcutsCallback;
+                handles.KeyShortcutsFilter.ValueChangedFcn = keyShortcutsCallback;
+                handles.shortcutsTable.CellSelectionCallback = keyShortcutsCallback;
+                handles.KeyShortcutsRecordButton.ButtonPushedFcn = keyShortcutsCallback;
+                handles.KeyShortcutsClearButton.ButtonPushedFcn = keyShortcutsCallback;
+                handles.KeyShortcutsResetRowButton.ButtonPushedFcn = keyShortcutsCallback;
+                obj.view.gui.WindowKeyPressFcn = @(~, event) obj.recordKeyShortcut(event);
 
-                data(:,2) = obj.preferences.KeyShortcuts.Action;
-                data(:,3) = obj.preferences.KeyShortcuts.Key;
-                data(:,4) = num2cell(logical(obj.preferences.KeyShortcuts.shift));
-                data(:,5) = num2cell(logical(obj.preferences.KeyShortcuts.control));
-                data(:,6) = num2cell(logical(obj.preferences.KeyShortcuts.alt));
-
-                handles.shortcutsTable.ColumnWidth = {8, 'auto', 62, 46, 56, 46};
-
-                removeStyle(handles.shortcutsTable);    % remove current styles
-
-                s1 = uistyle;
-                s1.BackgroundColor = [0 1 0];
-                addStyle(handles.shortcutsTable, s1, 'column', 1);
-                drawnow;
-
-                ColumnEditable = [false false true true true true];
-                handles.shortcutsTable.ColumnEditable = ColumnEditable;
-                % the first column only shows the duplicate marker
-                handles.shortcutsTable.ColumnSortable = [false true true true true true];
-                handles.shortcutsTable.Data = data;
+                if isempty(obj.keyShortcutDefaults)
+                    [obj.keyShortcutDefaults, obj.keyShortcutCategories, obj.keyShortcutLabels] = utils.defaults.generateKeyShortcuts();
+                end
+                handles.shortcutsTable.ColumnName = {'Category', 'Action', 'Shortcut', 'Default'};
+                handles.shortcutsTable.ColumnFormat = {};
+                handles.shortcutsTable.ColumnEditable = false;
+                handles.shortcutsTable.ColumnSortable = true;
+                handles.shortcutsTable.ColumnWidth = {120, 'auto', 120, 120};
+                obj.updateKeyShortcutsTable(handles.KeyShortcutsFilter.Value);
                 obj.renderedPanels(5) = 1;
             end
 
@@ -753,7 +753,6 @@ classdef Preferences < handle
             if obj.mibModel.preferences.System.DeveloperMode
                 fprintf('controllers.Preferences.ApplyButtonPushedCallback: triggered\n');
             end
-            status = 0;
             activeDataset = obj.mibModel.I{obj.mibModel.id};
             systemPrefs = obj.preferences.System;
             colorPrefs = obj.preferences.Colors;
@@ -765,20 +764,6 @@ classdef Preferences < handle
                 utils.fontSizeUpdate(obj.mibController.view.gui, systemPrefs.Font);
             end
             obj.mibController.cDirContents.handles.fileList.FontSize = systemPrefs.FontSizeDirView;
-
-            % update key shortcuts
-            if numel(obj.duplicateEntries) > 1
-                uialert(obj.view.gui, ...
-                    'Please check for duplicates in key shortcuts!', 'Duplicate shortcuts');
-                return;
-            end
-
-            data = obj.view.handles.shortcutsTable.Data;
-            obj.preferences.KeyShortcuts.Action = data(:, 2)';
-            obj.preferences.KeyShortcuts.Key = data(:, 3)';
-            obj.preferences.KeyShortcuts.shift = cell2mat(data(:, 4))';
-            obj.preferences.KeyShortcuts.control = cell2mat(data(:, 5))';
-            obj.preferences.KeyShortcuts.alt = cell2mat(data(:, 6))';
 
             % deal with change of selection mode
             % Virtual / BigData layers are read-on-demand / disk-backed: obj.data is
@@ -1082,23 +1067,261 @@ classdef Preferences < handle
             %
             %      obj.KeyboardShortcutsPanelCallbacks(event)
             %
+            % The panel lists the actions of ``obj.preferences.KeyShortcuts``. Changes go
+            % into this local copy and reach MIB with Apply or OK, like every other
+            % setting of the dialog.
+            %
             % Input Arguments:
-            %   - **event** - [struct] event data from the GUI element that triggered callback
-            
+            %   - **event** - event data of the widget; dispatched on ``event.Source.Tag``:
+            %
+            %     - ``'KeyShortcutsFilter'`` - ValueChanging (``event.Value`` holds the text
+            %       being typed) or ValueChanged; shows only the matching rows
+            %     - ``'shortcutsTable'`` - CellSelection, ``event.Indices(1,1)`` is the row
+            %     - ``'KeyShortcutsRecordButton'`` - start or cancel recording of the
+            %       shortcut of the selected action, see ``recordKeyShortcut``
+            %     - ``'KeyShortcutsClearButton'`` - remove the shortcut of the selected action
+            %     - ``'KeyShortcutsResetRowButton'`` - restore the default of the selected
+            %       action, through ``assignKeyShortcut`` as the default may be taken by now
+            %     - ``'ResetKeyShortcutsButton'`` - restore the defaults of all actions, after a confirmation
+            %
+
             if obj.mibModel.preferences.System.DeveloperMode
-                fprintf('controllers.Preferences.KeyboardShortcutsPanelCallbacks: triggered\n');
+                fprintf('controllers.Preferences.KeyboardShortcutsPanelCallbacks(%s): triggered\n', event.Source.Tag);
             end
+
             switch event.Source.Tag
+                case 'KeyShortcutsFilter'
+                    % event.Value rather than the widget: during ValueChanging the
+                    % field still holds the text before the key press
+                    obj.updateKeyShortcutsTable(event.Value);
+                    return;
+                case 'shortcutsTable'
+                    if isempty(event.Indices); return; end
+                    obj.recordingKeyShortcut = false;
+                    obj.selectedKeyShortcut = obj.keyShortcutRows(event.Indices(1, 1));
+                    obj.showKeyShortcutEditor();
+                    return;
                 case 'ResetKeyShortcutsButton'
                     selection = uiconfirm(obj.view.gui, ...
                         sprintf('!!! Warning !!!\n\nYou are going to reset all keyboard shortcuts to default values!'), ...
                         'Reset key shortcuts', 'Options', {'Confirm', 'Cancel'}, ...
                         'Icon', 'warning');
                     if strcmp(selection, 'Cancel'); return; end
-                    obj.preferences.KeyShortcuts = generateDefaultKeyShortcuts();
-                    obj.updateWidgets();
+                    obj.recordingKeyShortcut = false;
+                    obj.preferences.KeyShortcuts = utils.defaults.generateKeyShortcuts();
+                    % this panel only: the other panels may hold edits that are not applied yet
+                    obj.renderedPanels(5) = 0;
+                    obj.updateWidgets('KeyboardShortcutsPanel');
+                    return;
             end
-                
+
+            row = obj.selectedKeyShortcut;
+            if row == 0; return; end
+            switch event.Source.Tag
+                case 'KeyShortcutsRecordButton'
+                    obj.recordingKeyShortcut = ~obj.recordingKeyShortcut;
+                    % away from the button: Space or Enter would press it again
+                    focus(obj.view.gui);
+                    obj.showKeyShortcutEditor();
+                case 'KeyShortcutsClearButton'
+                    obj.recordingKeyShortcut = false;
+                    obj.preferences.KeyShortcuts.Key{row} = '';
+                    obj.preferences.KeyShortcuts.shift(row) = 0;
+                    obj.preferences.KeyShortcuts.control(row) = 0;
+                    obj.preferences.KeyShortcuts.alt(row) = 0;
+                    obj.updateKeyShortcutsTable(obj.view.handles.KeyShortcutsFilter.Value);
+                case 'KeyShortcutsResetRowButton'
+                    obj.recordingKeyShortcut = false;
+                    defaults = obj.keyShortcutDefaults;
+                    obj.assignKeyShortcut(row, defaults.Key{row}, defaults.shift(row), defaults.control(row), defaults.alt(row));
+            end
+        end
+
+        function updateKeyShortcutsTable(obj, filterText)
+            % UPDATEKEYSHORTCUTSTABLE - fill shortcutsTable with the actions matching the filter.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.updateKeyShortcutsTable(filterText)
+            %
+            % Shows the category, name, current shortcut (from the local copy
+            % ``obj.preferences``) and default shortcut of every action whose category,
+            % name or shortcut text contain ``filterText``, listed by category; an
+            % action that differs from its default is shown in bold. The action being
+            % edited stays in the editor above the table even when the filter hides its
+            % row. ``obj.keyShortcutRows`` maps the rows to the actions, which is valid
+            % under a user sort: ``event.Indices`` of CellSelection and the ``'row'``
+            % targets of ``addStyle`` refer to rows of ``Data``. Writing ``Data`` clears
+            % the sort, so the table returns to the category order after each change.
+            %
+            % Input Arguments:
+            %   - **filterText** - [char] text to look for, case-insensitive; ``''`` shows all
+
+            handles = obj.view.handles;
+            shortcuts = obj.preferences.KeyShortcuts;
+            defaults = obj.keyShortcutDefaults;
+            numberOfActions = numel(shortcuts.Action);
+            currentText = arrayfun(@(row) keyShortcutText(shortcuts, row), 1:numberOfActions, 'UniformOutput', false);
+
+            filterText = strtrim(char(filterText));
+            searchText = strcat(obj.keyShortcutCategories, {' '}, obj.keyShortcutLabels, {' '}, currentText);
+            rows = find(contains(searchText, filterText, 'IgnoreCase', true));   % '' matches all
+            % sort is stable, so within a category the actions stay alphabetical
+            [~, categoryOrder] = sort(obj.keyShortcutCategories(rows));
+            obj.keyShortcutRows = rows(categoryOrder);
+
+            shownRows = obj.keyShortcutRows;
+            defaultText = arrayfun(@(row) keyShortcutText(defaults, row), shownRows, 'UniformOutput', false);
+            handles.shortcutsTable.Data = [obj.keyShortcutCategories(shownRows)', obj.keyShortcutLabels(shownRows)', ...
+                currentText(shownRows)', defaultText'];
+            removeStyle(handles.shortcutsTable);
+            isModified = keyShortcutDiffers(shortcuts, defaults, shownRows);
+            if any(isModified)
+                addStyle(handles.shortcutsTable, uistyle('FontWeight', 'bold'), 'row', find(isModified));
+            end
+            obj.showKeyShortcutEditor();
+        end
+
+        function showKeyShortcutEditor(obj)
+            % SHOWKEYSHORTCUTEDITOR - show the action selected in the Keyboard shortcuts panel.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.showKeyShortcutEditor()
+            %
+            % Shows the name of the action in ``KeyShortcutsActionLabel``, and in
+            % ``KeyShortcutsHint`` either the recording prompt or a note for an action
+            % that uses Shift or Alt itself. **Clear** is enabled for an action with a
+            % shortcut and **Reset** for one that differs from its default. With no
+            % action selected the label asks to select one and the buttons are disabled.
+
+            handles = obj.view.handles;
+            handles.KeyShortcutsRecordButton.Text = 'Record';
+            row = obj.selectedKeyShortcut;
+            if row == 0
+                handles.KeyShortcutsActionLabel.Text = 'Select an action in the table';
+                handles.KeyShortcutsHint.Text = '';
+                handles.KeyShortcutsRecordButton.Enable = 'off';
+                handles.KeyShortcutsClearButton.Enable = 'off';
+                handles.KeyShortcutsResetRowButton.Enable = 'off';
+                return;
+            end
+
+            shortcuts = obj.preferences.KeyShortcuts;
+            handles.KeyShortcutsActionLabel.Text = obj.keyShortcutLabels{row};
+            if obj.recordingKeyShortcut
+                handles.KeyShortcutsRecordButton.Text = 'Press keys...';
+                hint = 'Press the new combination, Esc cancels';
+            elseif shortcuts.overrideShift(row) == 1 && shortcuts.overrideAlt(row) == 1
+                hint = 'This action uses Shift and Alt itself';
+            elseif shortcuts.overrideShift(row) == 1
+                hint = 'This action uses Shift itself';
+            else
+                hint = '';
+            end
+            handles.KeyShortcutsHint.Text = hint;
+            handles.KeyShortcutsRecordButton.Enable = 'on';
+            handles.KeyShortcutsClearButton.Enable = matlab.lang.OnOffSwitchState(~isempty(shortcuts.Key{row}));
+            handles.KeyShortcutsResetRowButton.Enable = ...
+                matlab.lang.OnOffSwitchState(keyShortcutDiffers(shortcuts, obj.keyShortcutDefaults, row));
+        end
+
+        function recordKeyShortcut(obj, event)
+            % RECORDKEYSHORTCUT - use a key press in the dialog as the shortcut of the selected action.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.recordKeyShortcut(event)
+            %
+            % WindowKeyPressFcn of the dialog; does nothing unless recording was started
+            % with the Record button. A press of a modifier alone is skipped, so that
+            % Ctrl+Shift+V is seen as one combination. Escape, or a key typed into an
+            % edit field (the filter clicked while recording), stops the recording
+            % without assigning anything.
+            %
+            % Input Arguments:
+            %   - **event** - ``matlab.ui.eventdata.KeyData`` with ``.Key`` and ``.Modifier``
+
+            if ~obj.recordingKeyShortcut; return; end
+            key = lower(event.Key);
+            if any(strcmp(key, {'control', 'shift', 'alt', 'command'})); return; end
+
+            obj.recordingKeyShortcut = false;
+            if strcmp(key, 'escape') || isa(obj.view.gui.CurrentObject, 'matlab.ui.control.EditField')
+                obj.showKeyShortcutEditor();
+                return;
+            end
+            obj.assignKeyShortcut(obj.selectedKeyShortcut, key, any(strcmp(event.Modifier, 'shift')), ...
+                any(strcmp(event.Modifier, 'control')), any(strcmp(event.Modifier, 'alt')));
+        end
+
+        function assignKeyShortcut(obj, row, key, shift, control, alt)
+            % ASSIGNKEYSHORTCUT - give an action a new key combination, after checking it can work.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.assignKeyShortcut(row, key, shift, control, alt)
+            %
+            % Shift is dropped for an ``overrideShift`` action and Alt for an
+            % ``overrideAlt`` action, as they use these modifiers themselves. The change
+            % is refused when it leaves a row that can never fire:
+            % ``utils.findKeyShortcut`` drops Shift for a key used by an ``overrideShift``
+            % action and Alt for a key used by an ``overrideAlt`` action, so a row that
+            % needs the dropped modifier on such a key is never matched. Both directions
+            % count: adding the modifier to a row, and moving an override action onto a
+            % key that another row uses with that modifier. When another action has the
+            % same combination the user may move it, which leaves that action without a
+            % shortcut; two actions on one combination would make the key press fail.
+            %
+            % Input Arguments:
+            %   - **row** - [number] index of the action in ``obj.preferences.KeyShortcuts``
+            %   - **key** - [char] lower-case key name, as in ``KeyData.Key``; ``''`` for no key
+            %   - **shift**, **control**, **alt** - [logical] modifiers of the combination
+
+            shortcuts = obj.preferences.KeyShortcuts;
+            if shortcuts.overrideShift(row) == 1; shift = false; end
+            if shortcuts.overrideAlt(row) == 1; alt = false; end
+            shortcuts.Key{row} = key;
+            shortcuts.shift(row) = shift;
+            shortcuts.control(row) = control;
+            shortcuts.alt(row) = alt;
+
+            if ~isempty(key)
+                sameKey = strcmp(shortcuts.Key, key);
+                usesShift = sameKey & shortcuts.overrideShift == 1;
+                usesAlt = sameKey & shortcuts.overrideAlt == 1;
+                neverRuns = sameKey & ((any(usesShift) & logical(shortcuts.shift)) | (any(usesAlt) & logical(shortcuts.alt)));
+                if any(neverRuns)
+                    uialert(obj.view.gui, sprintf(['"%s" would never run with this combination: "%s" handles Shift or Alt on the key "%s" itself.\n\n' ...
+                        'Please choose another combination.'], obj.keyShortcutLabels{find(neverRuns, 1)}, ...
+                        obj.keyShortcutLabels{find(usesShift | usesAlt, 1)}, key), 'Combination cannot be used');
+                    obj.showKeyShortcutEditor();
+                    return;
+                end
+
+                isTaken = sameKey & shortcuts.shift == shift & shortcuts.control == control & shortcuts.alt == alt;
+                isTaken(row) = false;
+                if any(isTaken)
+                    selection = uiconfirm(obj.view.gui, ...
+                        sprintf('%s is already used by\n"%s"\n\nMove it to "%s"? The other action will be left without a shortcut.', ...
+                        keyShortcutText(shortcuts, row), obj.keyShortcutLabels{find(isTaken, 1)}, obj.keyShortcutLabels{row}), ...
+                        'Shortcut in use', 'Options', {'Move', 'Cancel'}, 'DefaultOption', 2, 'CancelOption', 2, 'Icon', 'warning');
+                    if strcmp(selection, 'Cancel')
+                        obj.showKeyShortcutEditor();
+                        return;
+                    end
+                    shortcuts.Key(isTaken) = {''};
+                    shortcuts.shift(isTaken) = 0;
+                    shortcuts.control(isTaken) = 0;
+                    shortcuts.alt(isTaken) = 0;
+                end
+            end
+            obj.preferences.KeyShortcuts = shortcuts;
+            obj.updateKeyShortcutsTable(obj.view.handles.KeyShortcutsFilter.Value);
         end
 
         function InputOutputPanelCallbacks(obj, event)
@@ -1380,6 +1603,11 @@ classdef Preferences < handle
             % Input Arguments:
             %   - **selectedNodes** - [handle] handle to the selected tree node
             
+            if obj.recordingKeyShortcut     % a key pressed on another panel is not a shortcut
+                obj.recordingKeyShortcut = false;
+                obj.showKeyShortcutEditor();
+            end
+
             % hide currently visible (previous) panel
             obj.view.handles.(obj.shownPanelTag).Visible = 'off';
             
@@ -2150,89 +2378,6 @@ classdef Preferences < handle
             obj.mibModel.preferences.ExternalDirs.JavaInstallationPath = javaPath;
         end
 
-        function updateKeyShortcut(obj, eventdata)
-            % UPDATEKEYSHORTCUT - callback for change of key shortcuts in the table.
-            %
-            % Syntax:
-            %   .. code-block:: matlab
-            %
-            %      obj.updateKeyShortcut(eventdata)
-            %
-            % Input Arguments:
-            %   - **eventdata** - [struct] event data from the shortcuts table cell edit
-            %
-            % **Example** - update a keyboard shortcut:
-            %
-            %   .. code-block:: matlab
-            %
-            %      obj.updateKeyShortcut(eventdata);
-            
-            index = eventdata.Indices(1);
-            data = obj.view.handles.shortcutsTable.Data;    % have to take the whole table as looking for duplicates
-            
-            % make it impossible to change Shift action for some actions
-            % Data is written back only when a value changes, as writing it clears the sorting of the table
-            if data{index, 4} && ismember(data(index, 2), obj.preferences.KeyShortcuts.Action(6:16))
-                data(index, 4) = num2cell(false);
-                obj.view.handles.shortcutsTable.Data = data;
-            end
-            if ~isempty(data{index, 3})
-                % check for duplicates
-                KeyShortcutsLocal.Key = data(:, 3)';
-                KeyShortcutsLocal.shift = cell2mat(data(:, 4))';
-                KeyShortcutsLocal.control = cell2mat(data(:, 5))';
-                KeyShortcutsLocal.alt = cell2mat(data(:, 6))';
-                
-                shiftSw = data{index, 4};
-                controlSw = data{index, 5};
-                altSw = data{index, 6};
-                
-                ActionId = ismember(KeyShortcutsLocal.Key, data(index, 3)) & ismember(KeyShortcutsLocal.control, controlSw) & ...
-                    ismember(KeyShortcutsLocal.shift, shiftSw) & ismember(KeyShortcutsLocal.alt, altSw);
-                ActionId = find(ActionId > 0);    % action id is the index of the action, handles.preferences.KeyShortcuts.Action(ActionId)
-                if numel(ActionId) > 1
-                    actionId = ActionId(ActionId ~= index);
-                    
-                    button = uiconfirm(obj.view.gui, ...
-                        sprintf('!!! Warning !!!\n\nA duplicate entry was found in the list of shortcuts!\nThe keystroke "%s" is already assigned to action number "%d"\n"%s"\n\nContinue anyway?', data{index, 3}, actionId(1), data{actionId(1), 2}),...
-                        'Duplicate found!',...
-                        'Options', {'Continue','Cancel'},'DefaultOption', 2, ...
-                        'Icon','warning');
-                    
-                    if strcmp(button, 'Cancel')
-                        data(index, eventdata.Indices(2)) = {eventdata.PreviousData};
-                        obj.view.handles.shortcutsTable.Data = data;
-                    else
-                        obj.duplicateEntries = [obj.duplicateEntries ActionId];     % add index of a duplicate entry
-                        obj.duplicateEntries = unique(obj.duplicateEntries);     % add index of a duplicate entry
-                        
-                        s = uistyle('BackgroundColor','red');
-                        addStyle(obj.view.handles.shortcutsTable, s, 'cell', [ActionId', ones([numel(ActionId) 1])]);
-                    end
-                else
-                    obj.duplicateEntries(obj.duplicateEntries==ActionId) = [];  % remove possible diplicate
-                    s = uistyle('BackgroundColor', 'green');
-                    if numel(obj.duplicateEntries) < 2
-                        obj.duplicateEntries =[];
-                        removeStyle(obj.view.handles.shortcutsTable);
-                        addStyle(obj.view.handles.shortcutsTable, s, 'column', 1);
-                    else
-                        addStyle(obj.view.handles.shortcutsTable, s, 'cell', [index, 1]);
-                    end
-                end
-            else
-                obj.duplicateEntries(obj.duplicateEntries == index) = [];  % remove possible diplicate
-                s = uistyle('BackgroundColor', 'green');
-                if numel(obj.duplicateEntries) < 2
-                    obj.duplicateEntries =[];
-                    removeStyle(obj.view.handles.shortcutsTable);
-                    addStyle(obj.view.handles.shortcutsTable, s, 'column', 1);
-                else
-                    addStyle(obj.view.handles.shortcutsTable, s, 'cell', [index, 1]);
-                end
-            end
-        end
-        
         % ------------------------------------------------------------------
         % % Additional functions and callbacks
         function Calculate(obj)
@@ -2301,6 +2446,27 @@ elseif isnumeric(value)
 else
     text = char(value);
 end
+end
+
+% =====================================================================
+function text = keyShortcutText(shortcuts, row)
+% KEYSHORTCUTTEXT - shortcut of a row of KeyShortcuts as shown in shortcutsTable, e.g. 'Ctrl + Shift + V'
+text = '';
+key = shortcuts.Key{row};
+if isempty(key); return; end
+key(1) = upper(key(1));
+modifierNames = {'Ctrl', 'Shift', 'Alt'};
+pressedModifiers = modifierNames(logical([shortcuts.control(row), shortcuts.shift(row), shortcuts.alt(row)]));
+text = strjoin([pressedModifiers, {key}], ' + ');
+end
+
+% =====================================================================
+function differs = keyShortcutDiffers(shortcuts, defaults, rows)
+% KEYSHORTCUTDIFFERS - logical vector, true for the rows whose combination is not the default one
+differs = ~strcmp(shortcuts.Key(rows), defaults.Key(rows)) | ...
+    logical(shortcuts.shift(rows)) ~= logical(defaults.shift(rows)) | ...
+    logical(shortcuts.control(rows)) ~= logical(defaults.control(rows)) | ...
+    logical(shortcuts.alt(rows)) ~= logical(defaults.alt(rows));
 end
 
 % =====================================================================
