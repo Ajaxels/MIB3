@@ -5721,6 +5721,9 @@ from Jan Neggers’ <a href="http://www.mathworks.com/matlabcentral/fileexchange
 (fewer vertices improve rendering performance).</li>
 </ul>
 </li>
+<li><strong>Line</strong>: Open polyline, for example a straight line. A line encloses no area, so 
+    it is ignored by <span class="widget widget-checkbox">Restrict to ROI</span> and 
+    <span class="widget widget-button">ROI to Selection</span>.</li>
 </ul>
 <details class="info">
 <summary>How to place ROI</summary>
@@ -5738,6 +5741,7 @@ from Jan Neggers’ <a href="http://www.mathworks.com/matlabcentral/fileexchange
 <h3 id="settings-and-buttons">Settings and buttons<a class="headerlink" href="#settings-and-buttons" title="Permanent link">&para;</a></h3>
 <p><span class="widget widget-button">Add</span> button: adds ROI of the selected type to the image</p>
 <p><span class="widget widget-button">Modify</span> button: modify ROI selected in <strong>ROI List</strong></p>
+<p><span class="widget widget-button">Duplicate</span> button: copies the ROI selected in <strong>ROI List</strong> into a new ROI. When a single ROI is selected, the copy becomes the selected ROI, so it can be moved with <span class="widget widget-button">Modify</span>.</p>
 <p><span class="widget widget-button">Remove</span> button: deletes the highlighted ROI from the <strong>ROI List</strong>.</p>
 <p><span class="widget widget-button">Load</span> button: loads ROIs from disk.</p>
 <p><span class="widget widget-button">Save</span> button: saves ROI data to disk in MATLAB format (structure with <code>label</code>, <code>type</code>, <code>X</code>, <code>Y</code>, <code>orientation</code> fields).</p>

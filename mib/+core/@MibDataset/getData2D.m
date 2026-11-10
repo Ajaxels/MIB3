@@ -197,7 +197,10 @@ end
 if options.roiId >= 0
     % get indices of ROI
     if options.roiId == 0
-        [~, options.roiId] = obj.hROI.getNumberOfROI(orient);  % get number of ROI for the selected orientation
+        [~, options.roiId] = obj.hROI.getNumberOfROI(orient, true);  % ROIs of the selected orientation; Line ROIs enclose no area
+    else
+        [~, areaIndices] = obj.hROI.getNumberOfROI(0, true);
+        options.roiId = options.roiId(ismember(options.roiId, areaIndices));   % a Line ROI never restricts, as in setData2D
     end
     
     dataset = {};   % stays empty when no ROIs match, e.g. stale ROI mode without ROIs

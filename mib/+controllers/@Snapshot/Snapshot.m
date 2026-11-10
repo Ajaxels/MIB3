@@ -614,10 +614,10 @@ classdef Snapshot < handle
 
             if strcmp(obj.BatchOpt.Crop{1}, 'ROI')
                 roiValue = obj.view.handles.RoiIndex.Value;
-                roiImg = obj.mibModel.I{activeId}.hROI.returnMask(roiValue);
-                STATS = regionprops(roiImg, 'BoundingBox');
-                width = ceil(STATS.BoundingBox(3));
-                height = ceil(STATS.BoundingBox(4));
+                % the bounding box, not returnMask: a full-slice mask of a BigData image may not fit in memory
+                roiBox = obj.mibModel.I{activeId}.hROI.getBoundingBox(roiValue);  % [xmin xmax ymin ymax]
+                width = ceil(roiBox(2)) - floor(roiBox(1)) + 1;
+                height = ceil(roiBox(4)) - floor(roiBox(3)) + 1;
             else
                 [height, width] = obj.mibModel.I{activeId}.getDatasetDimensions('image', [], options);
             end
@@ -788,8 +788,14 @@ classdef Snapshot < handle
             %   - ``'FullImage'`` - selects the coarsest level ``L`` where
             %     ``levelScaleFactors(L) ≤ min(fullW/newW, fullH/newH)``.
             %   - ``'ROI'``       - same formula using ``obj.origWidth``/``obj.origHeight``
-            %     (ROI extent in full-res pixels set by ``crop_Callback``); the ROI bounding
-            %     box is divided by ``levelScaleFactors(L)`` before ``imcrop``.
+            %     (ROI extent in full-res pixels set by ``crop_Callback``).
+            %
+            % **ROI crop** - for every dataset type only the bounding box of the ROI is read:
+            % it is passed to ``getRGBimage`` as ``options.x`` / ``options.y`` (full-res
+            % pixels of the shown orientation, clamped to the image) with
+            % ``blockModeSwitch = 0``. Reading the whole slice and cropping it afterwards ran
+            % BigData BioFormats files out of Java heap, because at the default output size
+            % (ROI size) the selected pyramid level is the full-resolution one.
             %
             % **Scale bar correction** - ``utils.addScaleBar`` expects
             % ``scale = newWidth / fullResWidth``.  For a downsampled pyramid level the
@@ -845,7 +851,14 @@ classdef Snapshot < handle
             if strcmp(obj.BatchOpt.Crop{1}, 'ShownArea')
                 options.blockModeSwitch = true;
             elseif strcmp(obj.BatchOpt.Crop{1}, 'ROI')
-                options.blockModeSwitch = dataset.blockModeSwitch;
+                % read only the ROI bounding box (full-resolution pixels of the shown
+                % orientation): a whole BigData slice cropped afterwards does not fit
+                % in memory. blockModeSwitch must be off, otherwise getData2D replaces
+                % .x/.y with the shown area
+                roiBox = dataset.hROI.getBoundingBox(str2double(obj.BatchOpt.RoiIndex{1}));  % [xmin xmax ymin ymax]
+                [fullHeight, fullWidth] = dataset.getDatasetDimensions('image', [], struct('blockModeSwitch', 0));
+                options.x = [max(1, floor(roiBox(1))), min(fullWidth, ceil(roiBox(2)))];
+                options.y = [max(1, floor(roiBox(3))), min(fullHeight, ceil(roiBox(4)))];
             end
 
             slices = dataset.slices;
@@ -907,8 +920,6 @@ classdef Snapshot < handle
                                 options.pyramidLevel = validIdx(end);
                             end
                         end
-                        % Need the full image (not just the visible window) so we can crop to ROI afterwards
-                        options.blockModeSwitch = 0;
                 end
             end
 
@@ -920,6 +931,9 @@ classdef Snapshot < handle
                     [yMin, yMax, xMin, xMax] = dataset.getCoordinatesOfShownImage();
                     regionOrigin = [xMin yMin] - 1;
                     regionSize = [xMax - xMin + 1, yMax - yMin + 1];
+                elseif strcmp(obj.BatchOpt.Crop{1}, 'ROI')
+                    regionOrigin = [options.x(1) options.y(1)] - 1;
+                    regionSize = [diff(options.x) + 1, diff(options.y) + 1];
                 else
                     [fullHeight, fullWidth] = dataset.getDatasetDimensions('image', [], struct('blockModeSwitch', 0));
                     regionOrigin = [0 0];
@@ -949,18 +963,6 @@ classdef Snapshot < handle
                     end
                     dataset.slices{4} = colorChannels;
 
-                    if strcmp(obj.BatchOpt.Crop{1}, 'ROI')
-                        roiImg = dataset.hROI.returnMask(str2double(obj.BatchOpt.RoiIndex{1}));
-                        STATS = regionprops(roiImg, 'BoundingBox');
-                        if isfield(options, 'pyramidLevel')
-                            % BoundingBox is in full-res pixel space; scale to the fetched pyramid level
-                            scaleFactor = dataset.image.pyramid.levelScaleFactors(options.pyramidLevel, 1);
-                            img = imcrop(img, STATS.BoundingBox / scaleFactor);
-                        else
-                            img = imcrop(img, STATS.BoundingBox);
-                        end
-                    end
-
                     scale = newWidth / size(img, 2);
                     if newWidth ~= size(img, 2) || newHeight ~= size(img, 1)
                         resizeMethod = obj.view.handles.ResizeMethod.Value;
@@ -968,13 +970,7 @@ classdef Snapshot < handle
                     end
 
                     if ~isempty(overlayItems)
-                        overlayOrigin = regionOrigin;
-                        overlaySize = regionSize;
-                        if strcmp(obj.BatchOpt.Crop{1}, 'ROI')
-                            overlayOrigin = regionOrigin + ceil(STATS.BoundingBox(1:2)) - 1;
-                            overlaySize = STATS.BoundingBox(3:4);
-                        end
-                        img = obj.burnOverlayItems(img, overlayItems, overlayOrigin, overlaySize);
+                        img = obj.burnOverlayItems(img, overlayItems, regionOrigin, regionSize);
                     end
 
                     if obj.BatchOpt.Scalebar

@@ -54,6 +54,17 @@ for roiIndex = 1:numel(roiNo)
     end
 end
 
+% a Line ROI encloses no area and gives an empty mask
+if ~any(selectedMask(:))
+    dlgOpt.MsgBoxOnly = true;
+    dlgOpt.Icon = 'puffin_warning';
+    dlgOpt.HeaderLines = 1;
+    utils.dlgs.inputUniversalDlg(obj.UIFigure, ...
+        '!!! Warning !!!', {''}, {'The selected ROI encloses no area!\nLine ROIs cannot be transferred to the Selection layer.'}, ...
+        'Empty ROI', dlgOpt);
+    return;
+end
+
 selectedMask = uint8(selectedMask);
 
 % calculate bounding box for the backup (crop to the ROI extent)

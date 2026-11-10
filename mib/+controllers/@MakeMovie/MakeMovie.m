@@ -259,7 +259,7 @@ classdef MakeMovie < handle
                     h.directionPopup.Enable = 'on';
                 end
 
-                [numberOfROI, indices] = dataset.hROI.getNumberOfROI();
+                [numberOfROI, indices] = dataset.hROI.getNumberOfROI([], true);   % the movie is cropped to the ROI mask: no Line ROIs
                 if numberOfROI == 0
                     h.roiRadio.Enable = 'off';
                     h.RoiIndex.Enable = 'off';
@@ -358,7 +358,7 @@ classdef MakeMovie < handle
             roiItems = obj.view.handles.RoiIndex.Items;
             roiValue = obj.view.handles.RoiIndex.Value;
             roiIdx   = find(strcmp(roiItems, roiValue), 1);
-            [~, indices] = obj.mibModel.I{activeId}.hROI.getNumberOfROI();
+            [~, indices] = obj.mibModel.I{activeId}.hROI.getNumberOfROI([], true);   % same list as RoiIndex.Items
             obj.mibModel.I{activeId}.selectedROI = indices(roiIdx);
 
             eventdata = core.ToggleEventData({'roi'});

@@ -13,7 +13,7 @@ classdef MibRoi < handle
         drawingROI      % struct tracking an in-progress interactive ROI:
         %   .active       - logical, true while a draw tool is waiting for user input
         %   .roi          - handle to the drawrectangle/drawellipse/drawpolygon/drawfreehand object
-        %   .type         - char: 'Rectangle','Ellipse','Polyline','Lasso','Polygon'; during
+        %   .type         - char: 'Rectangle','Ellipse','Polyline','Lasso','Polygon','Line'; during
         %                   custom placement 'Polygon' (lasso tool) draws a closed outline,
         %                   'Polyline' (Measure tool) an open one
         %   .dataPos      - data-pixel coords (updated on MovingROI; used by repositionDrawingROI)
@@ -39,6 +39,7 @@ classdef MibRoi < handle
         repositionDrawingROI(obj) % reposition the active drawing tool after zoom/pan changes the axes coordinate system
         updatePlacementLine(obj, axH)  % update polygon outline during custom Polyline placement
         roiModify(obj) % interactively modify (redraw) an existing ROI in-place
+        roiDuplicate(obj) % duplicate an existing ROI into a new ROI
         roiSave(obj) % save ROIs of the current dataset to a .roi (MAT) file
         roiLoad(obj) % load ROIs from a .roi (MAT) file into the current dataset
         roiToSelection(obj) % rasterise selected ROI(s) into the Selection layer
@@ -80,6 +81,7 @@ classdef MibRoi < handle
             obj.handles.roiSave.ButtonPushedFcn = @obj.gui_Callbacks;
             obj.handles.roiAdd.ButtonPushedFcn = @obj.gui_Callbacks;
             obj.handles.roiModify.ButtonPushedFcn = @obj.gui_Callbacks;
+            obj.handles.roiDuplicate.ButtonPushedFcn = @obj.gui_Callbacks;
             obj.handles.roiRemove.ButtonPushedFcn = @obj.gui_Callbacks;
             obj.handles.roiType.ValueChangedFcn = @obj.gui_Callbacks;
             obj.handles.roiFixAspect.ValueChangedFcn = @obj.gui_Callbacks;

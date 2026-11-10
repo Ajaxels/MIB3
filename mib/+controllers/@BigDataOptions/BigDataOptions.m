@@ -1743,7 +1743,9 @@ classdef BigDataOptions < handle
             % whole box, and the region is ``[]`` when it is the whole level.
             %
             % Errors: ``noROI`` when Restrict to ROI is on but there is no ROI,
-            % ``roiOrientation`` for a ROI drawn in a view other than XY.
+            % ``roiOrientation`` for a ROI drawn in a view other than XY,
+            % ``roiLine`` when the selected ROI is a Line (``'polyline'``),
+            % which encloses no area. With All selected Line ROIs are skipped.
             %
             % Output Arguments:
             %   - **region** - ``[yFirst yLast xFirst xLast]`` in level pixels, or ``[]``
@@ -1754,12 +1756,17 @@ classdef BigDataOptions < handle
             if ~obj.RoiAware || ~dataset.restrictToROI; return; end
             roiIndices = dataset.selectedROI;
             if isempty(roiIndices) || all(roiIndices == 0)
-                [~, roiIndices] = dataset.hROI.getNumberOfROI(3);
+                [~, roiIndices] = dataset.hROI.getNumberOfROI(3, true);
             end
             roiIndices = roiIndices(roiIndices > 0);
             if isempty(roiIndices)
                 error('controllers:BigDataOptions:noROI', ...
-                    'Restrict to ROI is on, but the dataset has no ROI in the XY view; add one, or uncheck Restrict to ROI.');
+                    'Restrict to ROI is on, but the dataset has no area ROI in the XY view; add one, or uncheck Restrict to ROI.');
+            end
+            [~, areaIndices] = dataset.hROI.getNumberOfROI(0, true);
+            if ~all(ismember(roiIndices, areaIndices))
+                error('controllers:BigDataOptions:roiLine', ...
+                    'A Line ROI encloses no area and cannot restrict processing; select another ROI, or uncheck Restrict to ROI.');
             end
             if any([dataset.hROI.Data(roiIndices).orientation] ~= 3)
                 error('controllers:BigDataOptions:roiOrientation', ...

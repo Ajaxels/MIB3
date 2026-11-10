@@ -7,9 +7,14 @@ function addROI(obj)
 %      obj.addROI()
 %
 % Reads the selected ROI type from obj.handles.roiType dropdown
-% ('Rectangle', 'Ellipse', 'Polyline', 'Lasso') and either places the
+% ('Rectangle', 'Ellipse', 'Polyline', 'Lasso', 'Line') and either places the
 % ROI interactively on the current image axes or builds it from the
-% coordinate spinners when obj.handles.roiManually is checked.
+% coordinate spinners when obj.handles.roiManually is checked (Rectangle and
+% Ellipse only; the other types are always drawn).
+%
+% 'Polyline' is stored as a closed 'polygon', 'Line' as an open 'polyline'
+% that encloses no area and is ignored by the ROI-restricted operations,
+% see core.RoiRegion.getNumberOfROI.
 %
 % After successful placement the ROI data struct is stored via
 % core.RoiRegion.storeROI, the ROI list is refreshed, and a ShowImage
@@ -36,14 +41,14 @@ dataset  = obj.mibModel.I{obj.mibModel.id};        % current MibDataset
 hROI     = dataset.hROI;                            % core.RoiRegion
 newIndex = hROI.getNumberOfROI(0) + 1;              % append position
 
-roiType = obj.handles.roiType.Value;                % 'Rectangle','Ellipse','Polyline','Lasso'
+roiType = obj.handles.roiType.Value;                % 'Rectangle','Ellipse','Polyline','Lasso','Line'
 manual  = obj.handles.roiManually.Value;            % logical
 
 % remember current selection in the list
 prevListVal = obj.handles.roiList.Value;
 
 % --- Manual mode: build ROI from coordinate spinners ---
-if manual && ~strcmp(roiType, 'Polyline') && ~strcmp(roiType, 'Lasso')
+if manual && ismember(roiType, {'Rectangle', 'Ellipse'})
     x1     = obj.handles.roiX1.Value;
     y1     = obj.handles.roiY1.Value;
     roiW   = obj.handles.roiWidth.Value;
@@ -117,6 +122,8 @@ try
             roi = drawpolygon(axH);
         case 'Lasso'
             roi = drawfreehand(axH, 'Closed', true);
+        case 'Line'
+            roi = drawpolyline(axH);
     end
 catch ME
     obj.mibModel.disableSegmentation = false;
@@ -207,7 +214,7 @@ switch roiType
         roiCancelled = numel(roi.Position) < 4;
     case 'Ellipse'
         roiCancelled = size(roi.Vertices, 2) < 2 || isempty(roi.Vertices);
-    case {'Polyline', 'Lasso'}
+    case {'Polyline', 'Lasso', 'Line'}
         roiCancelled = size(roi.Position, 2) < 2 || size(roi.Position, 1) < 2;
 end
 if roiCancelled
@@ -238,6 +245,12 @@ switch roiType
         [X, Y] = obj.mibModel.convertMouseToDataCoordinates(verts(:,1), verts(:,2), 'shown');
         X = ceil(X(:));  Y = ceil(Y(:));
         newData.type = cellstr('polygon');
+
+    case 'Line'
+        verts = roi.Position;   % Nx2, open: the last vertex is not joined to the first
+        [X, Y] = obj.mibModel.convertMouseToDataCoordinates(verts(:,1), verts(:,2), 'shown');
+        X = ceil(X(:));  Y = ceil(Y(:));
+        newData.type = cellstr('polyline');
 
     case 'Lasso'
         verts = roi.Position;   % Nx2

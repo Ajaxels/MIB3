@@ -262,7 +262,8 @@ classdef Stereology < handle
                     end
                 end
 
-                if dataset.selectedROI > 0
+                [~, areaIndices] = dataset.hROI.getNumberOfROI(0, true);
+                if dataset.selectedROI > 0 && ismember(dataset.selectedROI, areaIndices)   % a Line ROI encloses no area: ignore it
                     roiMask = dataset.hROI.returnMask(dataset.selectedROI);
                     for sliceIndex = 1:size(mask, 3)
                         mask(:, :, sliceIndex) = mask(:, :, sliceIndex) & roiMask;

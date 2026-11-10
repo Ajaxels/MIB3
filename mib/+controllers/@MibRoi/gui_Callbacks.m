@@ -20,6 +20,7 @@ function gui_Callbacks(obj, hWidget, hData)
 % 'roiSave' -> save ROI to a file
 % 'roiAdd' -> add ROI
 % 'roiModify' -> modify ROI
+% 'roiDuplicate' -> duplicate ROI
 % 'roiRemove' -> remove ROI from the list
 % 'roiType' -> select type of ROI to add
 % 'roiFixAspect' -> fix aspect ration when adding a ROI
@@ -59,6 +60,19 @@ switch mode
         % subtract 1 so that entry maps to selectedROI=0 (show all) and
         % entry 2 maps to selectedROI=1 (first ROI in Data), etc.
         dataset.selectedROI = hWidget.ValueIndex - 1;
+        % a Line ROI encloses no area, so it cannot restrict operations
+        if dataset.restrictToROI && dataset.selectedROI > 0
+            [~, areaIndices] = dataset.hROI.getNumberOfROI(0, true);
+            if ~ismember(dataset.selectedROI, areaIndices)
+                obj.mibController.cSelection.selectionPanelCheckboxes(struct('RestrictToROI', {{'Unchecked'}}));
+                dlgOpt.MsgBoxOnly = true;
+                dlgOpt.Icon = 'puffin_warning';
+                dlgOpt.HeaderLines = 1;
+                utils.dlgs.inputUniversalDlg(obj.UIFigure, ...
+                    '!!! Warning !!!', {''}, {'A Line ROI encloses no area!\n"Restrict to ROI" in the Selection panel has been unchecked.'}, ...
+                    'Line ROI', dlgOpt);
+            end
+        end
         obj.mibController.showImage();
     case 'roiLoad' % load ROI from a file
         obj.roiLoad();
@@ -68,6 +82,8 @@ switch mode
         obj.addROI();
     case 'roiModify' % modify the selected ROI
         obj.roiModify();
+    case 'roiDuplicate' % duplicate the selected ROI
+        obj.roiDuplicate();
     case 'roiRemove' % remove ROI from the list
         obj.removeROI();
     case 'roiType' % select type of ROI to add

@@ -20,7 +20,10 @@ function [imgRGB, imgRAW, modelRAW] = getRGBimage(obj, options, datasetId, sImgI
 %     (``'Marker'``, ``'Label'``, ``'Value'``, ``'Label + Value'``)
 %   - ``.t`` - *(optional)* [tmin, tmax] time point to display
 %   - ``.y`` - *(optional)* [ymin, ymax] Y-coordinates of region to extract
-%   - ``.x`` - *(optional)* [xmin, xmax] X-coordinates of region to extract
+%   - ``.x`` - *(optional)* [xmin, xmax] X-coordinates of region to extract;
+%     full-resolution pixels of the shown orientation, used only with
+%     ``blockModeSwitch = 0`` (block mode replaces them with the shown area). Annotations
+%     and 3D lines are placed relative to the first pixel of the region
 %   - ``.useLut`` - *(optional)* ``0`` or ``1`` to use LUT color table [*default*: current dataset setting]
 %   - **datasetId** - *(optional)* index of the dataset; when empty uses the currently selected dataset
 %   - **sImgIn** - *(optional)* custom 3D image stack to use instead of loading from dataset
@@ -589,6 +592,9 @@ if obj.showLines3D && dataset.lines3D.noTrees > 0
         pixBox(2) = datasetWidth;
         pixBox(3) = 1;
         pixBox(4) = datasetHeight;
+        % a region requested with .x / .y
+        if isfield(options, 'x') && ~isempty(options.x); pixBox(1:2) = options.x([1 end]); end
+        if isfield(options, 'y') && ~isempty(options.y); pixBox(3:4) = options.y([1 end]); end
     end
 
     bb = dataset.image.boundingBox; % get bounding box of the dataset
@@ -643,13 +649,16 @@ if obj.showAnnotations
 
         % Calculate annotation positions
         if options.blockModeSwitch == 0
-            % Full image mode
+            % Full image mode, or the region requested with .x / .y
+            regionShift = [0 0];
+            if isfield(options, 'x') && ~isempty(options.x); regionShift(1) = options.x(1) - 1; end
+            if isfield(options, 'y') && ~isempty(options.y); regionShift(2) = options.y(1) - 1; end
             if options.resizeToMagnification
-                pos(:,1) = ceil(labelPos(:, xId) / max([magnificationFactor 1]));
-                pos(:,2) = ceil(labelPos(:, yId) / max([magnificationFactor 1]));
+                pos(:,1) = ceil((labelPos(:, xId) - regionShift(1)) / max([magnificationFactor 1]));
+                pos(:,2) = ceil((labelPos(:, yId) - regionShift(2)) / max([magnificationFactor 1]));
             else
-                pos(:,1) = ceil(labelPos(:, xId));
-                pos(:,2) = ceil(labelPos(:, yId));
+                pos(:,1) = ceil(labelPos(:, xId) - regionShift(1));
+                pos(:,2) = ceil(labelPos(:, yId) - regionShift(2));
             end
         else
             % Block mode - adjust for visible area

@@ -64,7 +64,7 @@ switch obj.BatchOpt.RegionSource{1}
         regions(1) = struct('image', regionImage, 'name', 'Whole slice', ...
             'position', [1 1 size(regionImage, 2) size(regionImage, 1)]);
     case 'ROIs'
-        [numberOfRoi, roiIndices] = dataset.hROI.getNumberOfROI(orientation);
+        [numberOfRoi, roiIndices] = dataset.hROI.getNumberOfROI(orientation, true);   % Line ROIs enclose no area
         if numberOfRoi == 0
             error('MIB:ImageSharpness:NoRegions', ...
                 'There are no ROIs in this orientation.\nAdd ROIs in the ROI panel, or choose another region.');

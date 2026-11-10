@@ -20,7 +20,9 @@ function selectionPanelCheckboxes(obj, BatchOptIn)
 %       filters, isosurface rendering, Fiji export/import) to the ROI(s) selected in the ROI panel,
 %       whether ROIs are shown or not.
 %       Stored per dataset in ``MibDataset.restrictToROI``. ``'Checked'`` is ignored when the dataset
-%       has no ROIs, so the checkbox stays unchecked
+%       has no area ROIs (only Line ROIs, ``'polyline'``, or none), or when a Line ROI is selected
+%       in the ROI list, so the checkbox stays unchecked. ``controllers.MibRoi.gui_Callbacks``
+%       unchecks it when a Line ROI gets selected
 %     - ``.AutoFillSelection`` - [cell] checkbox state - Auto-fill checkbox
 %     - ``.Difference`` - [cell] checkbox state - Difference mode checkbox (erode/dilate)
 %     - ``.LutColors`` - [cell] checkbox state - LUT colors checkbox
@@ -157,8 +159,10 @@ for fieldId = 1:numel(fieldNames)
                 obj.mibModel.applySegmentationIn3D = state;
 
             case 'RestrictToROI'
-                if state && obj.mibModel.I{obj.mibModel.id}.hROI.getNumberOfROI(0) == 0
-                    state = false;  % no ROIs present - keep the restriction off
+                selectedROI = obj.mibModel.I{obj.mibModel.id}.selectedROI;
+                [~, areaIndices] = obj.mibModel.I{obj.mibModel.id}.hROI.getNumberOfROI(0, true);
+                if state && (isempty(areaIndices) || (selectedROI > 0 && ~ismember(selectedROI, areaIndices)))
+                    state = false;  % no area ROIs present or a Line ROI is selected - keep the restriction off
                 end
                 obj.handles.restrictToROI.Value = state;
                 obj.mibModel.I{obj.mibModel.id}.restrictToROI = state;

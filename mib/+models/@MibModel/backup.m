@@ -339,7 +339,7 @@ if isfield(getDataOptions, 'roiId') && blockModeSwitch == 0
         roiIds = getDataOptions.roiId;
         if roiIds >= 0
             if roiIds == 0
-                [~, roiIds] = obj.I{id}.hROI.getNumberOfROI();
+                [~, roiIds] = obj.I{id}.hROI.getNumberOfROI([], true);   % same ROIs as setData in ROI mode: no Line ROIs
             end
             roiId2 = 1;
             getDataOptions.x = zeros([numel(roiIds), 2]);

@@ -67,6 +67,7 @@ if iscell(roiType); roiType = roiType{1}; end
 switch roiType
     case 'rectangle'; drawType = 'Rectangle';
     case 'ellipse';   drawType = 'Ellipse';
+    case 'polyline';  drawType = 'Line';      % open polyline
     otherwise;        drawType = 'Polygon';   % polygon / freehand stored as polygon
 end
 
@@ -94,6 +95,8 @@ try
             rx = (max(XAxes) - min(XAxes)) / 2;
             ry = (max(YAxes) - min(YAxes)) / 2;
             roi = drawellipse(axH, 'Center', [cx, cy], 'SemiAxes', [rx, ry]);
+        case 'Line'
+            roi = drawpolyline(axH, 'Position', [XAxes(:), YAxes(:)]);
         otherwise  % Polygon
             roi = drawpolygon(axH, 'Position', [XAxes(:), YAxes(:)]);
     end

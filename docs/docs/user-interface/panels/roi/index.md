@@ -34,6 +34,9 @@ Select the ROI type to add. By default, ROIs are placed interactively, but you c
 - **Lasso**: Freehand ROI.  
     - release to convert to a polyline ROI with a suggested vertex reduction 
     (fewer vertices improve rendering performance).
+- **Line**: Open polyline, for example a straight line. A line encloses no area, so 
+    it is ignored by <span class="widget widget-checkbox">Restrict to ROI</span> and 
+    <span class="widget widget-button">ROI to Selection</span>.
 
 ??? info "How to place ROI"
     - press <span class="widget widget-button">Add</span> 
@@ -53,6 +56,8 @@ Select single or all ROIs for filtering/analysis.
 <span class="widget widget-button">Add</span> button: adds ROI of the selected type to the image
 
 <span class="widget widget-button">Modify</span> button: modify ROI selected in **ROI List**
+
+<span class="widget widget-button">Duplicate</span> button: copies the ROI selected in **ROI List** into a new ROI. When a single ROI is selected, the copy becomes the selected ROI, so it can be moved with <span class="widget widget-button">Modify</span>.
 
 <span class="widget widget-button">Remove</span> button: deletes the highlighted ROI from the **ROI List**.
 

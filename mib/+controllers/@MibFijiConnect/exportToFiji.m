@@ -52,7 +52,7 @@ if ~obj.mibModel.I{id}.restrictToROI
 end
 % roiNo == 0  → "All ROIs" mode (multiple patches)
 % numel > 1   → several specific ROIs selected
-if obj.mibModel.I{id}.restrictToROI && (roiNo == 0 && obj.mibModel.I{id}.hROI.getNumberOfROI() > 1)
+if obj.mibModel.I{id}.restrictToROI && (roiNo == 0 && obj.mibModel.I{id}.hROI.getNumberOfROI([], true) > 1)
     dlgOpt.MsgBoxOnly = true;
     dlgOpt.Icon = 'puffin_warning';
     dlgOpt.HeaderLines = 3;

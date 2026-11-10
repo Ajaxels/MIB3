@@ -12,11 +12,15 @@ classdef RoiRegion < matlab.mixin.Copyable
     % - ``'ellipse'`` - elliptical ROI (MIB2 equivalent: ``'imellipse'``)
     % - ``'polygon'`` - polygonal ROI (MIB2 equivalent: ``'impoly'``)
     % - ``'freehand'`` - freehand ROI (MIB2 equivalent: ``'imfreehand'``)
+    % - ``'polyline'`` - open polyline, the *Line* ROI type (no MIB2 equivalent). The first and
+    %   last vertices are not connected, so it encloses no area: it gives no pixels in
+    %   :meth:`returnMask` and is skipped by ``getNumberOfROI(orientation, true)``, which the
+    %   ROI-restricted operations use, see :meth:`getNumberOfROI`
     %
     % **Data structure** - Each element of ``obj.Data`` struct array contains:
     %
     % - ``.label`` - [string or cellstr] user-visible label
-    % - ``.type`` - [char] ROI type: ``'rectangle'``, ``'ellipse'``, ``'polygon'``, or ``'freehand'``
+    % - ``.type`` - [char] ROI type: ``'rectangle'``, ``'ellipse'``, ``'polygon'``, ``'freehand'`` or ``'polyline'``
     % - ``.X`` - [numeric vector] X-coordinates of vertices
     % - ``.Y`` - [numeric vector] Y-coordinates of vertices
     % - ``.orientation`` - [numeric] orientation when created: ``1`` = zx, ``2`` = zy, ``3`` = yx;
@@ -487,13 +491,13 @@ classdef RoiRegion < matlab.mixin.Copyable
             end
         end
 
-        function [number, indices] = getNumberOfROI(obj, orientation)
+        function [number, indices] = getNumberOfROI(obj, orientation, areaOnly)
             % GETNUMBEROFROI - Get the count and indices of stored ROIs, optionally filtered by orientation.
             %
             % Syntax:
             %   .. code-block:: matlab
             %
-            %       [number, indices] = obj.getNumberOfROI(orientation)
+            %       [number, indices] = obj.getNumberOfROI(orientation, areaOnly)
             %
             % Returns the number of ROIs matching the specified orientation criteria,
             % and optionally returns the indices into ``obj.Data`` of the matching ROIs.
@@ -507,6 +511,11 @@ classdef RoiRegion < matlab.mixin.Copyable
             %     - ``0`` - all ROIs regardless of orientation
             %
             %     When omitted or empty, uses ``obj.mibDataset.orientation``.
+            %   - **areaOnly** - *(optional)* [logical] when ``true``, skip the ``'polyline'``
+            %     (Line) ROIs, which enclose no area. Use it wherever the ROIs restrict an
+            %     operation to their area (getData/setData in ROI mode, Restrict to ROI,
+            %     masks of all ROIs); keep the default ``false`` to list, show, save or crop
+            %     ROIs, where a Line is as valid as any other ROI. Default ``false``
             %
             % Output Arguments:
             %   - **number** - [numeric] count of ROIs matching the filter
@@ -555,6 +564,12 @@ classdef RoiRegion < matlab.mixin.Copyable
                 end
             else
                 indices = find(ismember([obj.Data.orientation], orientation));
+                number = numel(indices);
+            end
+
+            if nargin > 2 && areaOnly && number > 0
+                roiTypes = cellfun(@char, {obj.Data(indices).type}, 'UniformOutput', false);
+                indices = indices(~strcmp(roiTypes, 'polyline'));
                 number = numel(indices);
             end
         end
@@ -653,6 +668,10 @@ classdef RoiRegion < matlab.mixin.Copyable
             % part of the mask, also when it restricts ``getData``/``setData``
             % in ROI mode.
             %
+            % A *'polyline'* (Line) ROI encloses no area and adds no pixels:
+            % with *index* 0 it is not even visited, and an explicit index of
+            % a Line returns an all-zero mask.
+            %
             % When *blockModeSwitch* is 1 the ROI coordinates are shifted
             % by the current axes limits so that the mask aligns with the
             % visible viewport.
@@ -739,7 +758,7 @@ classdef RoiRegion < matlab.mixin.Copyable
             end
 
             if index == 0
-                [~, indexList] = obj.getNumberOfROI(orient);
+                [~, indexList] = obj.getNumberOfROI(orient, true);
             else
                 indexList = index;
             end
@@ -1093,6 +1112,17 @@ classdef RoiRegion < matlab.mixin.Copyable
                             'Tag', 'roi');
                         if showLabel
                             ht = text(spl_x(end), spl_y(end), ['  ' labelVal], 'Parent', axesHandle, ...
+                                'Color', textcolorfg, 'BackgroundColor', textcolorbg, ...
+                                'FontSize', fontsize, 'Tag', 'roi');
+                        end
+
+                    case 'polyline'   % open: no closing segment
+                        h = plot(axesHandle, X(:), Y(:), ...
+                            'Color', color, 'LineStyle', effectiveLineStyle, 'LineWidth', linewidth, ...
+                            'Marker', effectiveMarker, 'MarkerSize', markersize, 'MarkerEdgeColor', color, ...
+                            'Tag', 'roi');
+                        if showLabel
+                            ht = text(X(end), Y(end), ['  ' labelVal], 'Parent', axesHandle, ...
                                 'Color', textcolorfg, 'BackgroundColor', textcolorbg, ...
                                 'FontSize', fontsize, 'Tag', 'roi');
                         end
