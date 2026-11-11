@@ -13,6 +13,10 @@ function continueBtn_Callback(obj, useBatchMode)
 % Algorithms not yet ported in the current phase fall through to a friendly
 % error dialog.
 %
+% Each algorithm exports its coefficients to the MATLAB base workspace
+% itself (``exportShiftsToWorkspace``), because the ``NewDataset`` event it
+% fires clears ``obj.shiftsX`` / ``obj.shiftsY`` before control returns here.
+%
 % Input Arguments:
 %   - **useBatchMode** *(optional)* - [logical] ``true`` when the controller
 %     was invoked via the batch processor (no GUI). Default ``false``.

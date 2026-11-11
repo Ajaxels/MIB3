@@ -1861,6 +1861,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#pooling-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Pooling methods
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -5648,6 +5659,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#pooling-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Pooling methods
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -5965,6 +5987,20 @@ for affine transformation-based resampling, ideal for complex scaling and alignm
 <li>Same as image methods (<code>nearest</code>, <code>linear</code>, <code>cubic</code>), allowing flexible resampling of model layers.</li>
 </ul>
 <p>Select the desired method for images via <span class="widget widget-dropdown">Resampling Method</span> and for models via <span class="widget widget-dropdown">Resampling Method Models</span> to balance quality and performance based on your dataset’s needs.</p>
+<h2 id="pooling-methods">Pooling methods<a class="headerlink" href="#pooling-methods" title="Permanent link">&para;</a></h2>
+<p><code>max pooling</code> and <code>min pooling</code> are available for images and models with every resampling
+function. Each new pixel takes the highest (or lowest) value of the block of original pixels it
+replaces, so a structure thinner than the block keeps its full intensity instead of being
+skipped (<code>nearest</code>) or blurred (the interpolating methods).</p>
+<ul>
+<li><strong>Max pooling</strong> keeps thin bright structures. Use it to make a membrane probability map
+  smaller. On a model, the material or object with the highest index in each block wins, so thin
+  objects are kept.</li>
+<li><strong>Min pooling</strong> keeps thin dark structures, such as membranes in an EM image. On a model,
+  a block that touches the background becomes background, so objects shrink.</li>
+</ul>
+<p>With a 63-material model, pooling clears the Mask and Selection layers, as the interpolating
+methods do.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>For large datasets, use <code>nearest</code> or <code>imresize</code> for faster processing, and test settings on a small region using the <a href="../../panels/roi/index.html">ROI panel</a> before resampling the entire dataset.</p>

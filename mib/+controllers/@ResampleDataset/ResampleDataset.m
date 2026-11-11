@@ -91,9 +91,9 @@ classdef ResampleDataset < handle
             obj.BatchOpt.ResamplingFunction    = {'imresize'};
             obj.BatchOpt.ResamplingFunction{2} = {'interpn', 'imresize', 'tformarray'};
             obj.BatchOpt.ResamplingMethod    = {'cubic'};
-            obj.BatchOpt.ResamplingMethod{2} = {'nearest','linear','spline','cubic','box','triangle','lanczos2','lanczos3','osc'};
+            obj.BatchOpt.ResamplingMethod{2} = {'nearest','linear','spline','cubic','box','triangle','lanczos2','lanczos3','osc','max pooling','min pooling'};
             obj.BatchOpt.LabelsresampleDropDown    = {'nearest'};
-            obj.BatchOpt.LabelsresampleDropDown{2} = {'nearest','linear','spline','cubic'};
+            obj.BatchOpt.LabelsresampleDropDown{2} = {'nearest','linear','spline','cubic','max pooling','min pooling'};
             obj.BatchOpt.DimensionX   = num2str(obj.width);
             obj.BatchOpt.DimensionY   = num2str(obj.height);
             obj.BatchOpt.DimensionZ   = num2str(obj.depth);
@@ -107,8 +107,8 @@ classdef ResampleDataset < handle
             obj.BatchOpt.mibBatchActionName  = 'Resample...';
             obj.BatchOpt.mibBatchTooltip.ResamplingMode         = 'Resampling basis: pixel dimensions, voxel sizes, or percentage';
             obj.BatchOpt.mibBatchTooltip.ResamplingFunction     = 'Resampling function (interpn / imresize / tformarray)';
-            obj.BatchOpt.mibBatchTooltip.ResamplingMethod       = 'Interpolation method for images; cubic recommended for downsampling';
-            obj.BatchOpt.mibBatchTooltip.LabelsresampleDropDown = 'Interpolation method for labels/model; nearest recommended';
+            obj.BatchOpt.mibBatchTooltip.ResamplingMethod       = 'Interpolation method for images; cubic recommended for downsampling; max/min pooling keeps thin bright/dark structures';
+            obj.BatchOpt.mibBatchTooltip.LabelsresampleDropDown = 'Interpolation method for labels/model; nearest recommended; max pooling keeps thin objects';
             obj.BatchOpt.mibBatchTooltip.DimensionX   = '[Dimensions] New width in pixels';
             obj.BatchOpt.mibBatchTooltip.DimensionY   = '[Dimensions] New height in pixels';
             obj.BatchOpt.mibBatchTooltip.DimensionZ   = '[Dimensions] New depth in slices';
@@ -156,6 +156,8 @@ classdef ResampleDataset < handle
             obj.view = core.ChildView(obj, guiName);
             utils.applyThemeColors(obj.view.gui);   % adapt the standard dialog button colors to the light/dark theme
             obj.addCallbacks();
+            obj.view.handles.ResamplingMethod.Tooltip = obj.BatchOpt.mibBatchTooltip.ResamplingMethod;
+            obj.view.handles.LabelsresampleDropDown.Tooltip = obj.BatchOpt.mibBatchTooltip.LabelsresampleDropDown;
 
             Font = obj.mibModel.preferences.System.Font;
             if obj.view.handles.PixelsizeXLabel.FontSize ~= Font.FontSize ...
@@ -682,8 +684,9 @@ classdef ResampleDataset < handle
                     resizeLabOpts              = labelsOpts;
                     resizeLabOpts.showWaitbar  = 0;
                     resizeLabOpts.algorithm    = resamplingFn;
-                    if strcmp(resamplingFn, 'interpn') && ~strcmp(methodLabels, 'nearest')
-                        % per-material interpolation for non-nearest methods
+                    if strcmp(resamplingFn, 'interpn') && ~ismember(methodLabels, {'nearest', 'max pooling', 'min pooling'})
+                        % per-material interpolation for non-nearest methods; pooling works
+                        % on the indices directly and keeps the input values
                         modelTemp = zeros([newH, newW, newZ], class(model4D));
                         for matId = 1:materialsNumber
                             if ~isempty(wb) && wb.CancelRequested; break; end

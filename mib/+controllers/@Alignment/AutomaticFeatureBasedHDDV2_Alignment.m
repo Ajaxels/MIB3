@@ -380,6 +380,9 @@ alignStruct.widthVec         = widthVec;
 obj.shiftsX = alignStruct;
 obj.shiftsY = [];
 
+% --- Export coefficients to the MATLAB workspace (before NewDataset clears them)
+exportShiftsToWorkspace(obj);
+
 % --- Save tforms / params to file if requested
 if obj.BatchOpt.SaveShiftsToFile
     saveV2HDDToFile(obj, id, parameters.useBatchMode, parentFig, alignStruct);

@@ -291,6 +291,9 @@ else
         obj.BatchOpt.Algorithm{1}, ternary(useAnnotations, 'Annotations', 'Selection')));
 end
 
+% --- Export coefficients to the MATLAB workspace (before NewDataset clears them)
+exportShiftsToWorkspace(obj);
+
 % --- Save shifts to file if requested
 if obj.BatchOpt.SaveShiftsToFile
     saveShiftsToFile(obj, id, parameters.useBatchMode, parentFig);

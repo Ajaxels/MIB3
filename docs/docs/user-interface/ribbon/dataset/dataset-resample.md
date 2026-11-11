@@ -156,6 +156,22 @@ It applies a transformation matrix to the entire dataset.
 
 Select the desired method for images via <span class="widget widget-dropdown">Resampling Method</span> and for models via <span class="widget widget-dropdown">Resampling Method Models</span> to balance quality and performance based on your dataset’s needs.
 
+## Pooling methods
+
+`max pooling` and `min pooling` are available for images and models with every resampling
+function. Each new pixel takes the highest (or lowest) value of the block of original pixels it
+replaces, so a structure thinner than the block keeps its full intensity instead of being
+skipped (`nearest`) or blurred (the interpolating methods).
+
+- **Max pooling** keeps thin bright structures. Use it to make a membrane probability map
+  smaller. On a model, the material or object with the highest index in each block wins, so thin
+  objects are kept.
+- **Min pooling** keeps thin dark structures, such as membranes in an EM image. On a model,
+  a block that touches the background becomes background, so objects shrink.
+
+With a 63-material model, pooling clears the Mask and Selection layers, as the interpolating
+methods do.
+
 !!! note
     For large datasets, use `nearest` or `imresize` for faster processing, and test settings on a small region using the [ROI panel](../../panels/roi/index.md) before resampling the entire dataset.
 ---

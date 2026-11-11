@@ -325,6 +325,9 @@ else
     end
 end
 
+% --- Export coefficients to the MATLAB workspace (before NewDataset clears them)
+exportShiftsToWorkspace(obj);
+
 % --- Save tforms / rbMatrix to file if requested
 if obj.BatchOpt.SaveShiftsToFile
     saveHDDTformsToFile(obj, id, parameters.useBatchMode, parentFig, ...

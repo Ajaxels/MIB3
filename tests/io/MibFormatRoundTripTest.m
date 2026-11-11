@@ -104,6 +104,57 @@ classdef MibFormatRoundTripTest < matlab.unittest.TestCase
                 'exported mask pixel values must match source container 1');
         end
 
+        function importInstanceModel_intoType63_takesSourceType(testCase)
+            % an instance model imported over a 63-material model must arrive as
+            % an instance model; kept as 63, the indices above 63 are lost and the
+            % colour palette is made for the material list, not for the objects
+            [mibModel, instanceLabels] = MibFormatRoundTripTest.buildInstanceSourceAnd63Destination();
+
+            importOpt = struct('Source', {{'Container 1'}}, 'showWaitbar', false, 'id', 2);
+            mibModel.importDatasetFromMib('model', importOpt);
+
+            MibFormatRoundTripTest.verifyInstanceModelArrived(testCase, mibModel, instanceLabels);
+        end
+
+        function exportInstanceModel_intoType63_takesSourceType(testCase)
+            [mibModel, instanceLabels] = MibFormatRoundTripTest.buildInstanceSourceAnd63Destination();
+
+            exportOpt = struct('Destination', {{'Container 2'}}, 'showWaitbar', false, 'id', 1);
+            mibModel.exportDatasetToMib('model', exportOpt);
+
+            MibFormatRoundTripTest.verifyInstanceModelArrived(testCase, mibModel, instanceLabels);
+        end
+
+    end
+
+    methods (Static, Access = private)
+
+        function [mibModel, instanceLabels] = buildInstanceSourceAnd63Destination()
+            % Container 1: 65535 instance model with indices up to 300;
+            % Container 2: same image with a 63-material model
+            mibModel = mibtest.helpers.buildSyntheticModel('modelType', 'labels65535', 'dims', [16 24 4]);
+            instanceLabels = zeros(16, 24, 4, 'uint16');
+            instanceLabels(2:6, 2:8, :) = 300;
+            instanceLabels(10:14, 12:20, 2:3) = 7;
+            mibModel.setData3D(instanceLabels, 'labels', 1, 3, [], struct('id', 1, 'blockModeSwitch', 0));
+            mibModel.I{1}.labels.objects3D = true;
+
+            deepOpts.showWaitbar = false;
+            deepOpts.UIFigure    = [];
+            mibModel.deepCopyDataset(1, 2, deepOpts);
+            mibModel.I{2}.convertModel(63);
+            mibModel.setData3D(zeros(16, 24, 4, 'uint8'), 'labels', 1, 3, [], struct('id', 2, 'blockModeSwitch', 0));
+        end
+
+        function verifyInstanceModelArrived(testCase, mibModel, instanceLabels)
+            destination = mibModel.I{2}.labels;
+            testCase.verifyEqual(destination.maxMaterials, 65535, 'the destination takes the model type of the source');
+            result = mibModel.getData3D('labels', 1, 3, [], struct('id', 2, 'blockModeSwitch', 0));
+            testCase.verifyEqual(squeeze(result{1}), instanceLabels, 'indices above 63 are kept');
+            testCase.verifyGreaterThanOrEqual(size(destination.materialColors, 1), 300, ...
+                'every object index has a colour');
+            testCase.verifyTrue(destination.objects3D, 'the numbering mode of the source is kept');
+        end
     end
 
 end

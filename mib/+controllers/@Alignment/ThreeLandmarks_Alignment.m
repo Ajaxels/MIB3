@@ -116,6 +116,9 @@ end
 obj.shiftsX = shiftX;
 obj.shiftsY = shiftY;
 
+% --- Export coefficients to the MATLAB workspace (before NewDataset clears them)
+exportShiftsToWorkspace(obj);
+
 % --- Concatenate head [1:layerId] + warped tail via crossShiftStacks
 headOpts          = optionsGetData;
 headOpts.z        = [1, layerId];

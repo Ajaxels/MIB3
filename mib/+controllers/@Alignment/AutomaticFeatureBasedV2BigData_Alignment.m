@@ -282,6 +282,9 @@ if ds.annotations.getLabelsNumber() > 0
 end
 
 % --- Save the level-0 alignment struct to file if requested (replay via
+% --- Export coefficients to the MATLAB workspace (before NewDataset clears them)
+exportShiftsToWorkspace(obj);
+
 % loadShiftsCheck aligns another dataset with the same transforms).
 if obj.BatchOpt.SaveShiftsToFile
     saveV2ToFile(obj, id, parameters.useBatchMode, parentFig, obj.shiftsX);

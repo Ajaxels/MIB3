@@ -161,6 +161,9 @@ if isempty(obj.shiftsX)
     obj.shiftsY = shiftY;
 end
 
+% --- Export coefficients to the MATLAB workspace (freshly computed or loaded)
+exportShiftsToWorkspace(obj);
+
 % --- Phase 2: apply shifts - re-read, pad, save each image to the output dir
 shiftsX = obj.shiftsX;
 shiftsY = obj.shiftsY;

@@ -13,7 +13,10 @@ function importDatasetFromMib(obj, layerType, BatchOptIn)
 %   - **layerType** - a string specifying which layer to import:
 %
 %     - ``'mask'`` - copy the mask layer from another container
-%     - ``'model'`` - copy the model (labels) layer + material metadata from another container
+%     - ``'model'`` - copy the model (labels) layer + material metadata from another container.
+%       When the model types differ, the destination model is first converted
+%       to the type of the source (``core.MibDataset.convertModel``), so an
+%       instance model keeps its indices and its numbering mode (``objects3D``)
 %
 %   - **BatchOptIn** - *(optional)* a structure for batch processing mode; when ``NaN``
 %     returns a structure with default options via "SyncBatch" event:
@@ -236,11 +239,19 @@ switch BatchOpt.LayerType{1}
         obj.showMask = true;
 
     case 'model'
+        % the destination takes the model type of the source: written into a
+        % model of another type, an instance model would lose its indices above
+        % 63 and get a palette sized for the material list instead of the objects
+        sourceLabels = obj.I{sourceId}.labels;
+        if obj.I{destId}.labels.maxMaterials ~= sourceLabels.maxMaterials
+            obj.I{destId}.convertModel(sourceLabels.maxMaterials, []);
+        end
         layerData = obj.getData4D('labels', 3, NaN, getDataOptions);
         if BatchOpt.showWaitbar; progressBar.Value = 0.5; end
         obj.setData4D(layerData, 'labels', 3, NaN, setDataOptions);
-        obj.I{destId}.labels.materialNames  = obj.I{sourceId}.labels.materialNames;
-        obj.I{destId}.labels.materialColors = obj.I{sourceId}.labels.materialColors;
+        obj.I{destId}.labels.materialNames  = sourceLabels.materialNames;
+        obj.I{destId}.labels.materialColors = sourceLabels.materialColors;
+        obj.I{destId}.labels.objects3D      = sourceLabels.objects3D;
         obj.showModel = true;
 end
 

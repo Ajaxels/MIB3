@@ -265,6 +265,9 @@ alignStruct.affine_params    = affine_params;
 obj.shiftsX = alignStruct;
 obj.shiftsY = [];
 
+% --- Export coefficients to the MATLAB workspace (before NewDataset clears them)
+exportShiftsToWorkspace(obj);
+
 % --- Save tforms / rbMatrix to file if requested
 if obj.BatchOpt.SaveShiftsToFile
     saveV2ToFile(obj, id, parameters.useBatchMode, parentFig, alignStruct);

@@ -195,6 +195,9 @@ tformInfo.shiftX0         = shiftX0;
 tformInfo.shiftY0         = shiftY0;
 tformInfo.backgroundValue = backgroundValue;
 
+% --- Export coefficients to the MATLAB workspace (before NewDataset clears them)
+exportShiftsToWorkspace(obj);
+
 % Save shifts to file if requested (level-0 shifts)
 if obj.BatchOpt.SaveShiftsToFile
     saveShiftsBigData(obj, id, shiftX0, shiftY0, parameters.useBatchMode, parentFig);

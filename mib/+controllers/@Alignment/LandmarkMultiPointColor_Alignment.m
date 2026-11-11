@@ -177,6 +177,9 @@ end
 obj.shiftsX = tformMatrix;
 obj.shiftsY = rbMatrix;
 
+% --- Export coefficients to the MATLAB workspace (before NewDataset clears them)
+exportShiftsToWorkspace(obj);
+
 % --- Save tforms / rbMatrix to file if requested
 if obj.BatchOpt.SaveShiftsToFile
     saveTformsToFile(obj, id, parameters.useBatchMode, parentFig);

@@ -10,7 +10,10 @@ function exportDatasetToMib(obj, layerType, BatchOptIn)
 %   - **layerType** - a string specifying which layer to copy:
 %
 %     - ``'mask'`` - copy the mask layer
-%     - ``'model'`` - copy the model (labels) layer, including material metadata
+%     - ``'model'`` - copy the model (labels) layer, including material metadata.
+%       When the model types differ, the destination model is first converted
+%       to the type of the source (``core.MibDataset.convertModel``), so an
+%       instance model keeps its indices and its numbering mode (``objects3D``)
 %
 %   - **BatchOptIn** - *(optional)* a structure for batch processing mode; when ``NaN``
 %     returns a structure with default options via "SyncBatch" event:
@@ -213,11 +216,19 @@ switch BatchOpt.LayerType{1}
         obj.setData4D(layerData, 'mask', 3, NaN, setDataOptions);
 
     case 'model'
+        % the destination takes the model type of the source: written into a
+        % model of another type, an instance model would lose its indices above
+        % 63 and get a palette sized for the material list instead of the objects
+        sourceLabels = obj.I{sourceId}.labels;
+        if obj.I{destGlobalId}.labels.maxMaterials ~= sourceLabels.maxMaterials
+            obj.I{destGlobalId}.convertModel(sourceLabels.maxMaterials, []);
+        end
         layerData = obj.getData4D('labels', 3, NaN, getDataOptions);
         if BatchOpt.showWaitbar; progressBar.Value = 0.5; end
         obj.setData4D(layerData, 'labels', 3, NaN, setDataOptions);
-        obj.I{destGlobalId}.labels.materialNames  = obj.I{sourceId}.labels.materialNames;
-        obj.I{destGlobalId}.labels.materialColors = obj.I{sourceId}.labels.materialColors;
+        obj.I{destGlobalId}.labels.materialNames  = sourceLabels.materialNames;
+        obj.I{destGlobalId}.labels.materialColors = sourceLabels.materialColors;
+        obj.I{destGlobalId}.labels.objects3D      = sourceLabels.objects3D;
 end
 
 fprintf('MIB: the %s layer was exported from container %d to container %d\n', ...
