@@ -605,6 +605,15 @@ classdef Zarr3Saver < io.savers.BaseSaver
             % handles (e.g. ``ImageDatastoreSliceProvider``). Progress and Cancel
             % act between tasks, i.e. per slab.
             %
+            % **Time.** The progress dialog shows the stage (level 0, then the
+            % coarser levels), its parts done, the time since the run started and
+            % the time left of the stage, each stage timed on its own (see
+            % ``runTasks``); during level 0 it names the coarser levels that
+            % follow, as their time is not known yet. The console line printed
+            % at the end gives the time of the run (of this session, after a
+            % resume, with the parts written before); a cancel prints the time
+            % and the parts written.
+            %
             % **Memory.** Per worker (or on the client without a pool), phase 1
             % holds the slab of every full-Z level (~1.33 x writeDepth full slices)
             % plus the copy zarrMex makes while writing; phase 2 a block of
@@ -805,17 +814,51 @@ classdef Zarr3Saver < io.savers.BaseSaver
             doneTasks = numEntries(finishedTasks);
 
             if isempty(pool); workerText = 'on this computer'; else; workerText = sprintf('on %d workers', pool.NumWorkers); end
-            wb = obj.createProgressDialog('Saving Zarr...', sprintf('Writing %s\n%s', filename, workerText), true);
+            baseMessage = sprintf('Writing %s\n%s', filename, workerText);
+            wb = obj.createProgressDialog('Saving Zarr...', baseMessage, true);
             if ~isempty(wb); wb.Value = doneTasks / numberOfTasks; end
 
+            % time spent / left: level 0 (reading the source) and the coarser levels
+            % (built from the written data) cost differently per task, so each stage
+            % is timed on its own, see runTasks
+            remainingPerGroup = cellfun(@(group) nnz(~isKey(finishedTasks, string({group.key}))), taskGroups);
+            resumedTasks = doneTasks;
+            runTimer = tic;
+            coarseTimer = [];
+            coarseDone = 0;
+            thenText = '';
+            if numel(taskGroups) > 1
+                thenText = sprintf('then pyramid levels %d-%d', numberOfDirectLevels, nLevels - 1);
+                if numberOfDirectLevels == nLevels - 1; thenText = sprintf('then pyramid level %d', nLevels - 1); end
+            end
             for groupIndex = 1:numel(taskGroups)
                 tasks = taskGroups{groupIndex};
                 tasks = tasks(~isKey(finishedTasks, string({tasks.key})));
+                if groupIndex == 1
+                    firstStage = 'Level 0';     % the slab path writes the levels that keep the full Z with level 0
+                    if numberOfDirectLevels > 1; firstStage = sprintf('Levels 0-%d', numberOfDirectLevels - 1); end
+                    progress = struct('message', baseMessage, 'runTimer', runTimer, 'stage', firstStage, ...
+                        'stageTimer', runTimer, 'stageDone', 0, 'doneSeconds', 0, 'stageTotal', remainingPerGroup(1), 'then', thenText);
+                else
+                    if isempty(coarseTimer); coarseTimer = tic; end
+                    progress = struct('message', baseMessage, 'runTimer', runTimer, ...
+                        'stage', sprintf('Pyramid level %d of %d', numberOfDirectLevels + groupIndex - 2, nLevels - 1), ...
+                        'stageTimer', coarseTimer, 'stageDone', coarseDone, 'doneSeconds', toc(coarseTimer), ...
+                        'stageTotal', sum(remainingPerGroup(2:end)), 'then', '');
+                end
                 [finishedTasks, doneTasks, cancelled] = io.savers.Zarr3Saver.runTasks( ...
-                    tasks, pool, wb, doneTasks, numberOfTasks, finishedTasks, progressFile);
-                if cancelled; if ~isempty(wb); delete(wb); end; fnOut = []; return; end
+                    tasks, pool, wb, doneTasks, numberOfTasks, finishedTasks, progressFile, progress);
+                if cancelled
+                    if ~isempty(wb); delete(wb); end
+                    fprintf('Zarr3Saver: stopped after %s; %d of %d parts of %s are written\n', ...
+                        io.savers.Zarr3Saver.durationText(toc(runTimer)), doneTasks, numberOfTasks, filename);
+                    fnOut = [];
+                    return;
+                end
+                if groupIndex > 1; coarseDone = coarseDone + numel(tasks); end
             end
             if ~isempty(wb); delete(wb); end
+            runSeconds = toc(runTimer);
 
             maxLabel = max([0; values(finishedTasks)]);
             if trackMaxLabel && maxLabel > 0
@@ -827,7 +870,12 @@ classdef Zarr3Saver < io.savers.BaseSaver
             delete(progressFile);
 
             fnOut = filename;
-            fprintf('Zarr3Saver: written %s → %s\n', workerText, filename);
+            resumedText = '';
+            if resumedTasks > 0
+                resumedText = sprintf(' (resumed: %d of %d parts were written before)', resumedTasks, numberOfTasks);
+            end
+            fprintf('Zarr3Saver: written %s → %s in %s%s\n', workerText, filename, ...
+                io.savers.Zarr3Saver.durationText(runSeconds), resumedText);
         end
     end
 
@@ -1960,9 +2008,28 @@ classdef Zarr3Saver < io.savers.BaseSaver
             end
         end
 
-        function [finishedTasks, doneTasks, cancelled] = runTasks(tasks, pool, wb, doneTasks, totalTasks, finishedTasks, progressFile)
+        function [finishedTasks, doneTasks, cancelled] = runTasks(tasks, pool, wb, doneTasks, totalTasks, finishedTasks, progressFile, progress)
             % RUNTASKS - Run saveStreamResumable's tasks, record each finished one, show progress, honour Cancel.
             %
+            % ``progress`` (struct: ``message``, ``runTimer``, ``stage``,
+            % ``stageTimer``, ``stageDone``, ``doneSeconds``, ``stageTotal``,
+            % ``then``) drives the text of ``wb``: the stage, its parts done, the
+            % time since the run started, and the time left of the stage - its
+            % time projected from the parts finished (``doneSeconds``, the stage
+            % time when the last one finished, / ``stageDone`` x ``stageTotal``)
+            % minus its time so far, so it counts down between parts - followed
+            % by ``then``. The text is written after each task and, with a pool,
+            % every half second while waiting for one; without a pool the client
+            % computes the task itself and the text stands still meanwhile.
+            % Level 0 and the coarser levels are separate stages, because their
+            % parts cost differently: a level-0 part reads and processes the
+            % source (36 source voxels per written one when resampling to 1/6),
+            % a coarser part halves a band of level data written already, which
+            % the saver sizes alike for every level. Measured 2026-11-13: the
+            % coarser levels were 2-9 % of a resampling run, so a time left
+            % counting all parts alike would be far off during level 0. With a
+            % pool the parts finish in parallel and are counted as they are
+            % collected, so the time per part is the throughput of the pool.
             % ``tasks`` is a struct array with ``key``, ``label``, ``function``,
             % ``numberOfOutputs`` and ``arguments``. With a pool all tasks are
             % submitted at once and collected in order, each future polled so
@@ -1977,6 +2044,7 @@ classdef Zarr3Saver < io.savers.BaseSaver
             % (level, Z range).
             cancelled = false;
             if isempty(tasks); return; end
+            showProgress();
             futures = parallel.FevalFuture.empty;
             if ~isempty(pool)
                 for taskIndex = 1:numel(tasks)
@@ -2003,6 +2071,7 @@ classdef Zarr3Saver < io.savers.BaseSaver
                     end
                 else
                     while ~wait(futures(taskIndex), 'finished', 0.5)
+                        showProgress();     % the clock runs on while the workers compute
                         drawnow limitrate;
                         if ~isempty(wb) && wb.CancelRequested; break; end
                     end
@@ -2025,8 +2094,33 @@ classdef Zarr3Saver < io.savers.BaseSaver
                 fprintf(fileId, '%s %.17g\n', task.key, largestValue);
                 fclose(fileId);
                 doneTasks = doneTasks + 1;
+                progress.stageDone = progress.stageDone + 1;
+                progress.doneSeconds = toc(progress.stageTimer);
                 if ~isempty(wb); wb.Value = doneTasks / totalTasks; end
+                showProgress();
             end
+
+            function showProgress()
+                % the stage, its parts, the time spent and the time left in the dialog; nested, it reads progress and wb
+                if isempty(wb); return; end
+                message = sprintf('%s\n%s: %d of %d parts. Elapsed %s', progress.message, progress.stage, ...
+                    progress.stageDone, progress.stageTotal, io.savers.Zarr3Saver.durationText(toc(progress.runTimer)));
+                if progress.stageDone > 0
+                    % the stage's time projected from the parts finished, minus its time so far: counts down between parts
+                    secondsLeft = max(0, progress.doneSeconds / progress.stageDone * progress.stageTotal - toc(progress.stageTimer));
+                    message = sprintf('%s, about %s left', message, io.savers.Zarr3Saver.durationText(secondsLeft));
+                    if ~isempty(progress.then); message = sprintf('%s (%s)', message, progress.then); end
+                elseif ~isempty(progress.then)
+                    message = sprintf('%s; %s', message, progress.then);
+                end
+                wb.Message = message;
+            end
+        end
+
+        function text = durationText(seconds)
+            % DURATIONTEXT - ``h:mm:ss`` of a number of seconds, hours past 24 counted on (``27:05:00``).
+            text = char(duration(0, 0, round(seconds), 'Format', 'hh:mm:ss'));
+            if startsWith(text, '0') && numel(text) > 7; text = text(2:end); end   % 0:42:10, not 00:42:10
         end
 
         function xySlice = reduceSliceXY(previousOutput, sourceSlice, Yl, Xl, cumZFactor, downsampleMethod)

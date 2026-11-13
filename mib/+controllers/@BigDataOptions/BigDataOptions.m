@@ -886,7 +886,7 @@ classdef BigDataOptions < handle
             else
                 provider = io.savers.ResampledSliceProvider(dataset.image, level, options.ColChannel, ...
                     options.Resample.OutputSize, options.Resample.Method);
-                seconds = obj.estimateResampleSeconds(provider) + poolSeconds;
+                seconds = obj.estimateResampleSeconds(provider, pyramid, level) + poolSeconds;
             end
             cancelled = progressDialog.CancelRequested;
             delete(progressDialog);
@@ -1276,6 +1276,16 @@ classdef BigDataOptions < handle
             % bands in flight are then cancelled. An error of a band is raised
             % as the error of the worker, with its identifier.
             %
+            % After each band, and with a pool every half second while waiting
+            % for one, the dialog message (the caller's, then a line) shows the
+            % bands done, the time spent and the time left: the time projected
+            % from the bands done (the time when the last one finished / bands
+            % done x all bands) minus the time so far, so it counts down between
+            % bands; the bands are of one size, so counting them is fair. Without
+            % a pool the client computes the band itself and the text stands
+            % still meanwhile. The time of the whole loop is printed to the
+            % console at the end, or at a cancel with the bands done.
+            %
             % Input Arguments:
             %   - **provider** - ``io.savers.FilteredSliceProvider``
             %   - **tasks** - [n x 3] double, ``[z firstRow lastRow]`` per band
@@ -1289,13 +1299,24 @@ classdef BigDataOptions < handle
             cancelled = false;
             numberOfTasks = size(tasks, 1);
             written = false(1, numberOfTasks);
+            runTimer = tic;
+            doneSeconds = 0;    % time of the last band done
+            baseMessage = '';
+            if ~isempty(progressDialog); baseMessage = progressDialog.Message; end
             if isempty(pool)
-                for taskIndex = 1:numberOfTasks
-                    if ~isempty(progressDialog) && progressDialog.CancelRequested; cancelled = true; return; end
-                    consume(taskIndex, provider.getSliceRows(tasks(taskIndex, 1), tasks(taskIndex, 2), tasks(taskIndex, 3)));
-                    written(taskIndex) = true;
-                    if ~isempty(progressDialog); progressDialog.Value = taskIndex / numberOfTasks; end
+                try
+                    for taskIndex = 1:numberOfTasks
+                        if ~isempty(progressDialog) && progressDialog.CancelRequested; cancelled = true; break; end
+                        consume(taskIndex, provider.getSliceRows(tasks(taskIndex, 1), tasks(taskIndex, 2), tasks(taskIndex, 3)));
+                        written(taskIndex) = true;
+                        doneSeconds = toc(runTimer);
+                        localShowProgress(taskIndex);
+                    end
+                catch bandError
+                    localPrintTime();
+                    rethrow(bandError);
                 end
+                localPrintTime();
                 return;
             end
 
@@ -1314,23 +1335,52 @@ classdef BigDataOptions < handle
                     if ~isempty(progressDialog) && progressDialog.CancelRequested
                         cancelled = true;
                         cancel(futures);    % the bands in flight stop
+                        localPrintTime();
                         return;
                     end
                     [taskIndex, rows] = fetchNext(futures, 0.5);
-                    if isempty(taskIndex); continue; end    % none finished within the timeout
+                    if isempty(taskIndex); localShowProgress(consumed); continue; end    % none finished within the timeout: the clock runs on
                     consume(taskIndex, rows);
                     written(taskIndex) = true;
                     consumed = consumed + 1;
-                    if ~isempty(progressDialog); progressDialog.Value = consumed / numberOfTasks; end
+                    doneSeconds = toc(runTimer);
+                    localShowProgress(consumed);
                 end
             catch bandError
                 cancel(futures);
+                localPrintTime();
                 % a failed band: the error of the worker, not the wrapper of fetchNext
                 if strcmp(bandError.identifier, 'MATLAB:parallel:future:FetchNextFutureErrored') && ~isempty(bandError.cause)
                     remoteError = bandError.cause{1};    % a ParallelException, which rethrow refuses
                     throw(MException(remoteError.identifier, '%s', remoteError.message));
                 end
                 rethrow(bandError);
+            end
+            localPrintTime();
+
+            function localShowProgress(bandsDone)
+                % the bands done, the time spent and the time left; nested, it reads the timer and the dialog
+                if isempty(progressDialog); return; end
+                seconds = toc(runTimer);
+                progressDialog.Value = bandsDone / numberOfTasks;
+                message = sprintf('%s\n%d of %d parts. Elapsed %s', baseMessage, bandsDone, numberOfTasks, ...
+                    controllers.BigDataOptions.durationText(seconds));
+                if bandsDone > 0
+                    % the time projected from the bands done, minus the time so far: counts down between bands
+                    secondsLeft = max(0, doneSeconds / bandsDone * numberOfTasks - seconds);
+                    message = sprintf('%s, about %s left', message, controllers.BigDataOptions.durationText(secondsLeft));
+                end
+                progressDialog.Message = message;
+            end
+
+            function localPrintTime()
+                % the time of the loop in the console; called at every exit, after a cancel or an error too
+                if all(written)
+                    fprintf('BigData: %d parts processed in %s\n', numberOfTasks, controllers.BigDataOptions.durationText(toc(runTimer)));
+                else
+                    fprintf('BigData: stopped after %s; %d of %d parts processed\n', ...
+                        controllers.BigDataOptions.durationText(toc(runTimer)), nnz(written), numberOfTasks);
+                end
             end
         end
 
@@ -1440,27 +1490,57 @@ classdef BigDataOptions < handle
             seconds = 1.1 * numel(slices) * (max(0, computeTime(1) - computeTime(2)) + bands * perBand);
         end
 
-        function seconds = estimateResampleSeconds(~, provider)
-            % ESTIMATERESAMPLESECONDS - Rough time of a resampling run, from two bands of ``provider`` in the middle slice; NaN when a probe fails.
+        function seconds = estimateResampleSeconds(~, provider, pyramid, level)
+            % ESTIMATERESAMPLESECONDS - Rough time of a resampling run, from two bands of ``provider`` read through one chunk depth of slices; NaN when a probe fails.
             %
             % A probe is a band of ``provider.bandRows(32e6)`` output rows (a
-            % few Mpx of source read), in the middle of the middle output
-            % slice; the second, below the first, gives the rate (the first
-            % also pays for opening chunks the cache then holds). The run is
-            % taken as that rate over every output row of every output slice,
-            % plus a third for writing::
+            % few Mpx of source read) in the middle of the image, read for the
+            % output slices that one source chunk depth covers, from a slice at a
+            % chunk boundary - as the run reads it: the saver asks for one band
+            % of every slice of a slab in turn, so a chunk several slices deep
+            % is decompressed for the first slice and the chunk cache serves the
+            % others. The second probe, below the first, gives the rate (the
+            % first also pays for opening the arrays). The run is taken as that
+            % rate over every output row of every output slice, plus a third for
+            % writing::
             %
-            %   seconds = 1.3 * slices * height * secondProbeTime / secondProbeRows
+            %   seconds = 1.3 * slices * height * secondProbeTime / (secondProbeRows * probeSlices)
+            %
+            % Reading one slice per probe instead, as the first version did,
+            % charged the whole chunk to every slice: measured 2026-11-13 on a
+            % 3072 x 2560 x 64 uint8 store, max pooling 1/6 in XY, the estimate
+            % was 21x the real run with chunks 128 x 128 x 64 and 46x with
+            % 256 x 256 x 64 (1.5x with 256 x 256 x 16); a user's 270 GB stack
+            % got 5.4 days. The probe depth is capped at 128 source slices.
             %
             % The workers of a parallel run are not counted: reading the
             % source, the larger part of a resampling, shares one disk. Rough
-            % by design, as ``estimateRunSeconds``: chunk cache, disk and
-            % network speed are not modelled, and the larger bands of the run
-            % read their kernel margins fewer times.
+            % by design, as ``estimateRunSeconds``: disk and network speed are
+            % not modelled, and the larger bands of the run read their kernel
+            % margins fewer times.
+            %
+            % Input Arguments:
+            %   - **provider** - ``io.savers.ResampledSliceProvider`` of the run
+            %   - **pyramid** - ``image.pyramid`` with ``chunkSizes`` and ``axisOrder`` (chunk depth 1 when missing)
+            %   - **level** - [double] 1-based level that is read
             seconds = NaN;
+            chunkDepth = 1;
+            if isfield(pyramid, 'chunkSizes') && isfield(pyramid, 'axisOrder') && numel(pyramid.chunkSizes) >= level
+                % the chunk shape is in the stored axis order; a 3D array of a 'tczyx' default lacks the leading axes
+                chunk = double(pyramid.chunkSizes{level});
+                axisOrder = char(pyramid.axisOrder);
+                zIndex = find(axisOrder == 'z', 1) - (numel(axisOrder) - numel(chunk));
+                if ~isempty(zIndex) && zIndex >= 1 && zIndex <= numel(chunk); chunkDepth = chunk(zIndex); end
+            end
+            sourceSlices = min(chunkDepth, 128);
+            zScale = provider.VoxelScaleYXZ(3);         % source slices per output slice
+            probeSlices = max(1, min(provider.NumSlices, round(sourceSlices / zScale)));
+            % the output slice of the first source slice of the middle chunk
+            middleChunkStart = floor((ceil(provider.LevelSize(3) / 2) - 1) / chunkDepth) * chunkDepth + 1;
+            zFirst = max(1, min(provider.NumSlices - probeSlices + 1, floor((middleChunkStart - 1) / zScale) + 1));
+
             height = provider.SliceSize(1);
             probeRows = provider.bandRows(32e6);
-            z = ceil(provider.NumSlices / 2);
             firstRows = max(1, floor(height / 2) - probeRows + 1);
             firstRows = [firstRows, min(firstRows + probeRows, max(1, height - probeRows + 1))];
             probeTime = zeros(1, 2);
@@ -1468,8 +1548,10 @@ classdef BigDataOptions < handle
                 for probe = 1:2
                     lastRow = min(height, firstRows(probe) + probeRows - 1);
                     timer = tic;
-                    provider.getSliceRows(z, firstRows(probe), lastRow);
-                    probeTime(probe) = toc(timer) / (lastRow - firstRows(probe) + 1);   % per output row
+                    for z = zFirst:zFirst + probeSlices - 1
+                        provider.getSliceRows(z, firstRows(probe), lastRow);
+                    end
+                    probeTime(probe) = toc(timer) / ((lastRow - firstRows(probe) + 1) * probeSlices);   % per output row and slice
                 end
             catch
                 return;
@@ -2305,6 +2387,12 @@ classdef BigDataOptions < handle
 
             notify(mibModel, 'NewDataset', core.ToggleEventData(struct('index', targetId)));
             notify(mibModel, 'UpdateFileList');
+        end
+
+        function text = durationText(seconds)
+            % DURATIONTEXT - ``h:mm:ss`` of a number of seconds, hours past 24 counted on (``27:05:00``).
+            text = char(duration(0, 0, round(seconds), 'Format', 'hh:mm:ss'));
+            if startsWith(text, '0') && numel(text) > 7; text = text(2:end); end   % 0:42:10, not 00:42:10
         end
 
         function level = levelFromItem(levelItem)
