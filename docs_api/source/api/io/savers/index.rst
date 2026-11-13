@@ -30,6 +30,7 @@ Per-slice sources for the streaming savers.
    :maxdepth: 1
 
    FilteredSliceProvider
+   ResampledSliceProvider
 
 Base class
 ----------

@@ -35,6 +35,7 @@ function [outputLabeledImageBlock, scoreBlock] = segmentBlockedImage(block, net,
 %     - ``2`` - MATLAB non-compressed format
 %     - ``3`` - MATLAB compressed format
 %     - ``4`` - MATLAB non-compressed format (range 0-1)
+%     - ``5`` - Zarr3 (BigData), uint8 scores scaled to 0-255 as for 1-3
 %
 %   - **executionEnvironment** - [char] execution environment for prediction
 %     (e.g. ``'auto'``, ``'gpu'``, ``'cpu'``)
@@ -88,7 +89,7 @@ switch dataDimension
             outputLabeledImageBlock = reshape(outputLabeledImageBlock, [sz(1:2) 1 batchSize]);
             if generateScoreFiles > 0
                 sz = size(scoreBlock);
-                if generateScoreFiles < 4 %  convert to uint8
+                if generateScoreFiles ~= 4 %  convert to uint8 (all but the 0-1 range format)
                     scoreBlock = uint8(scoreBlock*255);     % scale and convert to uint8
                 end
                 scoreBlock = reshape(scoreBlock, [sz(1:3) batchSize]);
@@ -145,7 +146,7 @@ switch dataDimension
         outputLabeledImageBlock = reshape(outputLabeledImageBlock, [sz(1:2) 1 batchSize]);
         if generateScoreFiles > 0
             sz = size(scoreBlock);
-            if generateScoreFiles < 4 %  convert to uint8
+            if generateScoreFiles ~= 4 %  convert to uint8 (all but the 0-1 range format)
                 scoreBlock = uint8(scoreBlock*255);     % scale and convert to uint8
             end
             % scoreBlock = reshape(scoreBlock, [sz(1:4) batchSize]);
@@ -188,7 +189,7 @@ switch dataDimension
             outputLabeledImageBlock = reshape(outputLabeledImageBlock, [sz(1:3) 1 batchSize]);
             if generateScoreFiles > 0
                 sz = size(scoreBlock);
-                if generateScoreFiles < 4 %  convert to uint8
+                if generateScoreFiles ~= 4 %  convert to uint8 (all but the 0-1 range format)
                     scoreBlock = uint8(scoreBlock*255);     % scale and convert to uint8
                 end
                 scoreBlock = reshape(scoreBlock, [sz(1:4) batchSize]);

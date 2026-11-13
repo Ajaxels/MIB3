@@ -138,8 +138,17 @@ classdef BigDataOptions < handle
 % BMxD, but 16-48 % for Gaussian, Median and Bilateral, whose runs are mostly
 % reading and writing.
 %
+% **Resample** (``run`` with ``Resample``; ``controllers.ResampleDataset``)
+% changes the size of the result: the level is resampled to
+% ``Resample.OutputSize`` through ``io.savers.ResampledSliceProvider`` instead
+% of being passed through a block function, into a new store or a Standard
+% result. ``'Current overwrite (BigData)'`` is refused
+% (``resampleOverwrite``): a store of another size would no longer match the
+% model, ROIs and annotations of the dataset. The tool shows the size of the
+% result in the size label with ``setResultSize``.
+%
 % See also: utils.bigdata.processImageToStore, io.savers.FilteredSliceProvider,
-% io.savers.Zarr3Saver.reviewOptionsDialog
+% io.savers.ResampledSliceProvider, io.savers.Zarr3Saver.reviewOptionsDialog
 %
 % **Example** - in a tool controller:
 %
@@ -166,6 +175,8 @@ classdef BigDataOptions < handle
         % [logical] without a window (batch, tests): resume an unfinished store found at the output path instead of starting over; the window asks
         RoiAware (1,1) logical = false
         % [logical] true for a tool that honours Restrict to ROI on a Standard dataset (Image filters): its runs are then limited to the ROI box (``regionOfInterest``); the other tools process the whole dataset, as they do on a Standard one
+        LevelChangedFcn = []
+        % [function handle] called with no arguments after the user picks another level in the panel, for a tool whose own widgets show the level (Resample shows the size and voxel size of the level); ``[]`` for none
     end
 
     properties (SetAccess = private)
@@ -188,6 +199,8 @@ classdef BigDataOptions < handle
         % [logical] true while the panel's row has its height, false while it is 0 px (a dataset that is not BigData)
         datasetTypeItems = {}
         % [cell] the tool's own ``DatasetType`` items, kept while ``'2D, Slice'`` is removed from them
+        resultSize = []
+        % [double] ``[height width depth]`` of the result shown by the size label, ``[]`` for the size of the level (``setResultSize``)
     end
 
     properties (Constant)
@@ -337,6 +350,13 @@ classdef BigDataOptions < handle
             end
         end
 
+        function setResultSize(obj, resultSize)
+            % SETRESULTSIZE - Show ``[height width depth]`` of the result in the size label, for a tool that changes the size (Resample); ``[]`` shows the size of the level.
+            obj.resultSize = resultSize;
+            % a hidden panel belongs to a dataset that is not BigData, which has no levels to show
+            if ~isempty(obj.panel) && obj.panelShown; obj.updateSizeLabel(); end
+        end
+
         function result = run(obj, BatchOpt, blockFunction, options)
             % RUN - Process the BigData dataset ``BatchOpt.id`` into a new store and open it, or overwrite its store.
             %
@@ -359,6 +379,14 @@ classdef BigDataOptions < handle
             %   - **options.Confirmed** - [logical] the tool already asked
             %     ``confirmRun`` (before a statistics pass), default false: the
             %     window then asks here, before the store dialogs
+            %   - **options.Resample** - struct ``OutputSize`` ``[height width
+            %     depth]`` and ``Method`` (see ``io.savers.ResampledSliceProvider``),
+            %     default ``[]``: the level is resampled to that size instead of
+            %     processed, and ``blockFunction`` is not used (pass
+            %     ``@(block) block``). Refused with ``'Current overwrite (BigData)'``
+            %     (``resampleOverwrite``) and with Restrict to ROI in a
+            %     ``RoiAware`` tool. The Zarr settings dialog is pre-filled for
+            %     the new size, with the number of levels left to the saver
             %
             % With ``BigData_Result`` ``'Standard (in memory)'`` no store is
             % written: the result opens as a Standard dataset (``runToStandard``),
@@ -384,6 +412,7 @@ classdef BigDataOptions < handle
                 options.Fingerprint = ''
                 options.BandBytes double = []
                 options.Confirmed (1,1) logical = false
+                options.Resample = []
             end
             if isempty(options.BandBytes); options.BandBytes = obj.BandBytes; end
             result = [];
@@ -393,6 +422,12 @@ classdef BigDataOptions < handle
             end
             parentFigure = obj.guiFigure();
             level = obj.resolveLevel(BatchOpt);
+            if ~isempty(options.Resample) && strcmp(BatchOpt.BigData_OpenIn{1}, obj.CurrentOverwrite)
+                error('controllers:BigDataOptions:resampleOverwrite', ['A resampled image has another size and ' ...
+                    'cannot replace the image store of the dataset: its model, ROIs and annotations would no longer ' ...
+                    'match.\nSet Open in to "Current" (the new store replaces the dataset in this buffer, the source ' ...
+                    'store is kept) or to another container.']);
+            end
             % an overwrite rewrites the source store with either Result
             if strcmp(BatchOpt.BigData_OpenIn{1}, obj.CurrentOverwrite)
                 result = obj.runOverwrite(BatchOpt, level, blockFunction, options, parentFigure);
@@ -446,7 +481,8 @@ classdef BigDataOptions < handle
                 end
             end
             if ~resumeRun && ~options.Confirmed && ~obj.confirmRun(BatchOpt, blockFunction, HaloYX = options.HaloYX, ...
-                    HaloZ = options.HaloZ, ColChannel = options.ColChannel, BandBytes = options.BandBytes)
+                    HaloZ = options.HaloZ, ColChannel = options.ColChannel, BandBytes = options.BandBytes, ...
+                    Resample = options.Resample)
                 return;
             end
             if ~resumeRun && isfolder(outputPath) && ~isfile(fullfile(outputPath, '.mib_resume.json')) && ~isempty(parentFigure)
@@ -470,6 +506,12 @@ classdef BigDataOptions < handle
                 levelSize = dataset.image.pyramid.levelImageSizes(level, :);
                 if ~isempty(region); levelSize(1:2) = [region(2) - region(1), region(4) - region(3)] + 1; end
                 scale = dataset.image.pyramid.levelScaleFactors(level, :);
+                if ~isempty(options.Resample)
+                    % the new size, and as many levels as the saver chooses for it
+                    scale = scale .* levelSize ./ options.Resample.OutputSize;
+                    levelSize = options.Resample.OutputSize;
+                    saverOptions.Levels = [];
+                end
                 pixSize = dataset.image.pixSize;
                 pixSize.y = pixSize.y * scale(1); pixSize.x = pixSize.x * scale(2); pixSize.z = pixSize.z * scale(3);
                 datasetInfo = struct('Y', levelSize(1), 'X', levelSize(2), 'Z', levelSize(3), 'pixSize', pixSize);
@@ -489,7 +531,7 @@ classdef BigDataOptions < handle
                     Level = level, ColChannel = options.ColChannel, HaloYX = options.HaloYX, HaloZ = options.HaloZ, ...
                     SaverOptions = saverOptions, Fingerprint = options.Fingerprint, ParentFigure = parentFigure, ...
                     BandBytes = options.BandBytes, Region = region, RegionMask = regionMask, Resume = resumeRun, ...
-                    Pool = pool);
+                    Pool = pool, Resample = options.Resample);
             catch processError
                 if strcmp(processError.identifier, 'io:Zarr3Saver:cannotResume')
                     error('controllers:BigDataOptions:cannotResume', ['The unfinished store cannot be resumed ' ...
@@ -716,6 +758,10 @@ classdef BigDataOptions < handle
             %     for an image result the shown slice of a ``'2D, Slice'`` overwrite
             %     (``overwriteSlices``) when not given
             %   - **options.Note** - [char] a line added to the message
+            %   - **options.Resample** - as for ``run``: the message gives the
+            %     size of the result too, and the estimate times two bands of
+            %     ``io.savers.ResampledSliceProvider`` (``estimateResampleSeconds``)
+            %     instead of ``blockFunction``
             %
             % Return values:
             %   - **confirmed** - [logical] true to go on
@@ -730,6 +776,7 @@ classdef BigDataOptions < handle
                 options.Layer char = ''
                 options.Slices double = []
                 options.Note char = ''
+                options.Resample = []
             end
             confirmed = true;
             parentFigure = obj.guiFigure();
@@ -774,6 +821,11 @@ classdef BigDataOptions < handle
             unitIndex = min(numel(byteUnits), max(1, floor(log(max(bytes, 1)) / log(1024)) + 1));
             sizeText = sprintf('Level s%d: %d x %d px, %d slice(s), %d channel(s)\n%.3g %s to read', level - 1, ...
                 areaSize(2), areaSize(1), numel(slices), numel(channels), bytes / 1024^(unitIndex - 1), byteUnits{unitIndex});
+            if ~isempty(options.Resample)
+                outputSize = options.Resample.OutputSize;
+                sizeText = sprintf('%s\nResampled to %d x %d px, %d slice(s) (%s)', sizeText, outputSize(2), ...
+                    outputSize(1), outputSize(3), options.Resample.Method);
+            end
 
             if ~isempty(options.Layer)
                 message = sprintf('The %s of %s is replaced with the result, computed at level s%d.\nThis cannot be undone.', ...
@@ -827,9 +879,15 @@ classdef BigDataOptions < handle
 
             progressDialog = uiprogressdlg(parentFigure, 'Title', title, 'Message', 'Estimating the time...', ...
                 'Indeterminate', 'on', 'Cancelable', 'on');
-            seconds = obj.estimateRunSeconds(dataset.image, level, blockFunction, slices, channels, options);
-            % the ROI box: the time of the whole slice in proportion to its area, rough as the estimate
-            seconds = seconds * prod(areaSize) / prod(levelSize(1:2)) + poolSeconds;
+            if isempty(options.Resample)
+                seconds = obj.estimateRunSeconds(dataset.image, level, blockFunction, slices, channels, options);
+                % the ROI box: the time of the whole slice in proportion to its area, rough as the estimate
+                seconds = seconds * prod(areaSize) / prod(levelSize(1:2)) + poolSeconds;
+            else
+                provider = io.savers.ResampledSliceProvider(dataset.image, level, options.ColChannel, ...
+                    options.Resample.OutputSize, options.Resample.Method);
+                seconds = obj.estimateResampleSeconds(provider) + poolSeconds;
+            end
             cancelled = progressDialog.CancelRequested;
             delete(progressDialog);
             if cancelled        % Cancel during the probe: the run does not start
@@ -1382,6 +1440,43 @@ classdef BigDataOptions < handle
             seconds = 1.1 * numel(slices) * (max(0, computeTime(1) - computeTime(2)) + bands * perBand);
         end
 
+        function seconds = estimateResampleSeconds(~, provider)
+            % ESTIMATERESAMPLESECONDS - Rough time of a resampling run, from two bands of ``provider`` in the middle slice; NaN when a probe fails.
+            %
+            % A probe is a band of ``provider.bandRows(32e6)`` output rows (a
+            % few Mpx of source read), in the middle of the middle output
+            % slice; the second, below the first, gives the rate (the first
+            % also pays for opening chunks the cache then holds). The run is
+            % taken as that rate over every output row of every output slice,
+            % plus a third for writing::
+            %
+            %   seconds = 1.3 * slices * height * secondProbeTime / secondProbeRows
+            %
+            % The workers of a parallel run are not counted: reading the
+            % source, the larger part of a resampling, shares one disk. Rough
+            % by design, as ``estimateRunSeconds``: chunk cache, disk and
+            % network speed are not modelled, and the larger bands of the run
+            % read their kernel margins fewer times.
+            seconds = NaN;
+            height = provider.SliceSize(1);
+            probeRows = provider.bandRows(32e6);
+            z = ceil(provider.NumSlices / 2);
+            firstRows = max(1, floor(height / 2) - probeRows + 1);
+            firstRows = [firstRows, min(firstRows + probeRows, max(1, height - probeRows + 1))];
+            probeTime = zeros(1, 2);
+            try
+                for probe = 1:2
+                    lastRow = min(height, firstRows(probe) + probeRows - 1);
+                    timer = tic;
+                    provider.getSliceRows(z, firstRows(probe), lastRow);
+                    probeTime(probe) = toc(timer) / (lastRow - firstRows(probe) + 1);   % per output row
+                end
+            catch
+                return;
+            end
+            seconds = 1.3 * provider.NumSlices * height * probeTime(2);
+        end
+
         function [description, bufferId, layer] = openStoreAtPath(obj, outputPath)
             % OPENSTOREATPATH - Describe the store open in MIB at ``outputPath``, '' when none.
             %
@@ -1821,6 +1916,10 @@ classdef BigDataOptions < handle
             % (``<source stem>_<suffix>.tif`` when the path is empty), not written. ``'Current'`` replaces the BigData dataset of
             % this buffer: its readers and its model are closed, the stores on
             % disk are not touched; the GUI asks first (``confirmRun``).
+            % With ``options.Resample`` the level is resampled instead
+            % (``io.savers.ResampledSliceProvider``), the dataset has the new
+            % size and the level voxel size times ``levelSize ./ OutputSize``;
+            % Restrict to ROI is refused (``resampleRegion``).
             %
             % **Memory.** Refused before anything is read when the image plus
             % its model (1 byte per voxel) need more than half of the memory
@@ -1855,8 +1954,18 @@ classdef BigDataOptions < handle
             end
 
             [region, regionMask] = obj.regionOfInterest(BatchOpt, level);
-            provider = io.savers.FilteredSliceProvider(dataset.image, level, options.ColChannel, blockFunction, ...
-                HaloYX = options.HaloYX, HaloZ = options.HaloZ, Region = region, RegionMask = regionMask);
+            voxelScale = [1 1 1];       % level voxels per result voxel
+            if isempty(options.Resample)
+                provider = io.savers.FilteredSliceProvider(dataset.image, level, options.ColChannel, blockFunction, ...
+                    HaloYX = options.HaloYX, HaloZ = options.HaloZ, Region = region, RegionMask = regionMask);
+            else
+                if ~isempty(region)
+                    error('controllers:BigDataOptions:resampleRegion', 'Resampling processes the whole level; uncheck Restrict to ROI.');
+                end
+                provider = io.savers.ResampledSliceProvider(dataset.image, level, options.ColChannel, ...
+                    options.Resample.OutputSize, options.Resample.Method);
+                voxelScale = provider.VoxelScaleYXZ;
+            end
             if ~ismember(provider.DataClass, {'uint8', 'uint16', 'uint32'})
                 error('utils:bigdata:outputClass', ...
                     'The processing returns %s; convert the result to uint8, uint16 or uint32.', provider.DataClass);
@@ -1876,7 +1985,8 @@ classdef BigDataOptions < handle
             end
             parentFigure = obj.guiFigure();
             if ~options.Confirmed && ~obj.confirmRun(BatchOpt, blockFunction, HaloYX = options.HaloYX, ...
-                    HaloZ = options.HaloZ, ColChannel = options.ColChannel, BandBytes = options.BandBytes)
+                    HaloZ = options.HaloZ, ColChannel = options.ColChannel, BandBytes = options.BandBytes, ...
+                    Resample = options.Resample)
                 return;
             end
             [pool, releaseWorkers, cancelled] = obj.startPool(BatchOpt, parentFigure); %#ok<ASGLU> kept until the run returns
@@ -1884,7 +1994,11 @@ classdef BigDataOptions < handle
 
             height = outputSize(1);
             width = outputSize(2);
-            bandRows = max(1, min(height, floor(options.BandBytes / (8 * width * max(outputSize(4), dataset.image.colors)))));
+            if isempty(options.Resample)
+                bandRows = max(1, min(height, floor(options.BandBytes / (8 * width * max(outputSize(4), dataset.image.colors)))));
+            else
+                bandRows = provider.bandRows(options.BandBytes);    % counts the source rows under the kernel
+            end
             bandStarts = 1:bandRows:height;
             progressDialog = [];
             if ~isempty(parentFigure)
@@ -1900,7 +2014,7 @@ classdef BigDataOptions < handle
             if obj.processBands(provider, tasks, pool, progressDialog, @localStoreBand); return; end
 
             % the meta of the source, for the level and the result
-            scale = dataset.image.pyramid.levelScaleFactors(level, :);    % [y x z]
+            scale = dataset.image.pyramid.levelScaleFactors(level, :) .* voxelScale;    % [y x z]
             pixSize = dataset.image.pixSize;
             pixSize.y = pixSize.y * scale(1);
             pixSize.x = pixSize.x * scale(2);
@@ -2070,6 +2184,7 @@ classdef BigDataOptions < handle
             obj.updateSizeLabel();
             obj.updatePathEnable();
             if any(strcmp(source.Tag, {'BigData_OpenIn', 'BigData_Result'})); obj.updateDatasetType(true); end
+            if strcmp(source.Tag, 'BigData_PyramidLevel') && ~isempty(obj.LevelChangedFcn); obj.LevelChangedFcn(); end
         end
 
         function updateDatasetType(obj, isBigData)
@@ -2136,10 +2251,11 @@ classdef BigDataOptions < handle
         end
 
         function updateSizeLabel(obj)
-            % UPDATESIZELABEL - Show the size of the result at the selected level.
+            % UPDATESIZELABEL - Show the size of the result: the selected level, or the size given by ``setResultSize``.
             dataset = obj.mibModel.I{obj.controller.BatchOpt.id};
             level = obj.levelFromItem(obj.controller.BatchOpt.BigData_PyramidLevel{1});
             levelSize = dataset.image.pyramid.levelImageSizes(level, :);
+            if ~isempty(obj.resultSize); levelSize = obj.resultSize; end
             bytes = prod(levelSize) * dataset.image.colors * numel(typecast(zeros(1, dataset.image.dataClass), 'uint8'));
             if bytes >= 1e9
                 sizeText = sprintf('%.1f GB', bytes / 1e9);

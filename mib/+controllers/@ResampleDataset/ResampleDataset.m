@@ -2,9 +2,22 @@ classdef ResampleDataset < handle
 % RESAMPLEDATASET - @type ResampleDataset class is responsible for showing the dataset.
 %
 % resample window, available from MIB > Ribbon > Dataset > Resample
+%
+% **BigData.** A BigData dataset is resampled into a new OME-Zarr store, or
+% into a Standard dataset in memory, chosen in the BigData output panel
+% (``controllers.BigDataOptions``) that the window shows for a BigData buffer.
+% The panel's Level is the pyramid level that is read: the current size and
+% voxel size of the window, and the targets computed from percentages and
+% voxel sizes, are those of that level (``readCurrentSize``). Only the
+% ``imresize`` function and the methods of ``BigDataMethods`` are offered,
+% which ``io.savers.ResampledSliceProvider`` computes band by band with the
+% result of Standard Resample. The model, mask, selection, ROIs and
+% annotations are not carried over to the result, and the image store of the
+% dataset is never replaced ("Current overwrite (BigData)" is refused, as the
+% result has another size).
 
     % Updates
-    %
+    % 13.11.2026, IB resampling of BigData datasets
 
     properties
         mibModel
@@ -14,15 +27,28 @@ classdef ResampleDataset < handle
         listener
         % cell array of listener handles
         height
-        % current dataset height (pixels)
+        % current dataset height (pixels); for BigData the height of the selected pyramid level
         width
-        % current dataset width (pixels)
+        % current dataset width (pixels); for BigData the width of the selected pyramid level
         color
         % number of colour channels
         depth
-        % current dataset depth (slices)
+        % current dataset depth (slices); for BigData the depth of the selected pyramid level
+        pixSize
+        % voxel size of the dataset, struct ``.x .y .z .units``; for BigData that of the selected pyramid level
         BatchOpt
         % structure compatible with batch processing
+        bigDataOptions
+        % controllers.BigDataOptions - the BigData_* fields, the BigData output panel and the run
+    end
+
+    properties (Constant)
+        StandardFunctions = {'interpn', 'imresize', 'tformarray'}
+        % resampling functions offered for a Standard dataset
+        StandardMethods = {'nearest','linear','spline','cubic','box','triangle','lanczos2','lanczos3','osc','max pooling','min pooling'}
+        % resampling methods offered for a Standard dataset
+        BigDataMethods = {'nearest','linear','cubic','box','triangle','lanczos2','lanczos3','max pooling','min pooling'}
+        % resampling methods offered for a BigData dataset, with the imresize function only (io.savers.ResampledSliceProvider)
     end
 
     events
@@ -79,19 +105,34 @@ classdef ResampleDataset < handle
             obj.mibModel = mibModel;
             id = obj.mibModel.getActiveId();
 
-            getDataOpt.blockModeSwitch = 0;
-            [obj.height, obj.width, obj.depth, colors] = obj.mibModel.I{id}.getDatasetDimensions('image', 3, getDataOpt);
-            obj.color = numel(colors);
+            % ---- Guard: not available in Virtual mode
+            if obj.mibModel.I{id}.datasetType(1) == 'V'
+                if nargin ~= 3
+                    warnOpt.MsgBoxOnly = true;
+                    warnOpt.Icon       = 'puffin_warning';
+                    warnOpt.WindowHeight = 160;
+                    utils.dlgs.inputUniversalDlg(obj.mibModel.mibGUI, [], {}, ...
+                        {sprintf('Resample is not available in virtual mode.\nPlease switch to the memory-resident mode and try again.')}, ...
+                        'Not implemented', warnOpt);
+                end
+                notify(obj.mibModel, 'StopProtocol');
+                return;
+            end
 
-            pixSize = obj.mibModel.I{id}.image.pixSize;
+            % the BigData_* fields come before the batch dispatch, so protocols carry them
+            obj.BatchOpt.id = id;
+            obj.bigDataOptions = controllers.BigDataOptions(obj, 'resampled');
+            obj.BatchOpt = obj.bigDataOptions.addBatchOptFields(obj.BatchOpt);
+            obj.readCurrentSize();
+            pixSize = obj.pixSize;
 
             % ---- BatchOpt defaults
             obj.BatchOpt.ResamplingMode    = {'Dimensions'};
             obj.BatchOpt.ResamplingMode{2} = {'Dimensions', 'Voxels', 'PercentageXYZ', 'PercentageXY'};
             obj.BatchOpt.ResamplingFunction    = {'imresize'};
-            obj.BatchOpt.ResamplingFunction{2} = {'interpn', 'imresize', 'tformarray'};
+            obj.BatchOpt.ResamplingFunction{2} = obj.StandardFunctions;
             obj.BatchOpt.ResamplingMethod    = {'cubic'};
-            obj.BatchOpt.ResamplingMethod{2} = {'nearest','linear','spline','cubic','box','triangle','lanczos2','lanczos3','osc','max pooling','min pooling'};
+            obj.BatchOpt.ResamplingMethod{2} = obj.StandardMethods;
             obj.BatchOpt.LabelsresampleDropDown    = {'nearest'};
             obj.BatchOpt.LabelsresampleDropDown{2} = {'nearest','linear','spline','cubic','max pooling','min pooling'};
             obj.BatchOpt.DimensionX   = num2str(obj.width);
@@ -118,20 +159,6 @@ classdef ResampleDataset < handle
             obj.BatchOpt.mibBatchTooltip.VoxelZ       = '[Voxels] New voxel size in Z';
             obj.BatchOpt.mibBatchTooltip.FixAspectRatio = 'Lock XY aspect ratio when one dimension is changed';
             obj.BatchOpt.mibBatchTooltip.showWaitbar    = 'Show progress bar during execution';
-
-            % ---- Guard: not available in Virtual or BigData mode
-            if any(obj.mibModel.I{id}.datasetType(1) == ['V' 'B'])
-                if nargin ~= 3
-                    warnOpt.MsgBoxOnly = true;
-                    warnOpt.Icon       = 'puffin_warning';
-                    warnOpt.WindowHeight = 160;
-                    utils.dlgs.inputUniversalDlg(obj.mibModel.mibGUI, [], {}, ...
-                        {sprintf('Resample is not available in virtual or BigData mode.\nPlease switch to the memory-resident mode and try again.')}, ...
-                        'Not implemented', warnOpt);
-                end
-                notify(obj.mibModel, 'StopProtocol');
-                return;
-            end
 
             % ---- Batch-mode path
             if nargin == 3
@@ -165,6 +192,8 @@ classdef ResampleDataset < handle
                 utils.fontSizeUpdate(obj.view.gui, Font);
             end
             obj.view.gui = utils.moveWindowOutside(obj.view.gui, obj.mibModel.mibGUI, 'left');
+            % another level shows the size and voxel size of that level
+            obj.bigDataOptions.LevelChangedFcn = @() obj.updateWidgets();
             obj.updateWidgets();
 
             obj.view.gui.Visible = 'on';
@@ -267,14 +296,14 @@ classdef ResampleDataset < handle
             %
             %       obj.updateWidgets()
             %
-            id = obj.mibModel.getActiveId();
-            opts.blockModeSwitch = 0;
-            [obj.height, obj.width, obj.depth, colors] = ...
-                obj.mibModel.I{id}.getDatasetDimensions('image', 3, opts);
-            obj.color = numel(colors);
+            obj.BatchOpt.id = obj.mibModel.getActiveId();
+            % the panel first: it refreshes the levels of this dataset
+            obj.bigDataOptions.updateWidgets();
+            obj.readCurrentSize();
+            isBigData = strcmp(obj.mibModel.I{obj.BatchOpt.id}.datasetType, 'BigData');
 
             h = obj.view.handles;
-            pixSize = obj.mibModel.I{id}.image.pixSize;
+            pixSize = obj.pixSize;
 
             % current size labels
             h.widthTxt.Text   = num2str(obj.width);
@@ -294,6 +323,19 @@ classdef ResampleDataset < handle
             h.VoxelZ.Value     = pixSize.z;
             h.Percentage.Value = 100;
 
+            % BigData: imresize only, with the methods computed band by band; the model is not resampled
+            if isBigData
+                functionItems = {'imresize'};
+                methodItems = obj.BigDataMethods;
+            else
+                functionItems = obj.StandardFunctions;
+                methodItems = obj.StandardMethods;
+            end
+            if ~ismember(obj.BatchOpt.ResamplingFunction{1}, functionItems); obj.BatchOpt.ResamplingFunction{1} = 'imresize'; end
+            if ~ismember(obj.BatchOpt.ResamplingMethod{1}, methodItems); obj.BatchOpt.ResamplingMethod{1} = 'cubic'; end
+            obj.BatchOpt.ResamplingFunction{2} = functionItems;
+            obj.BatchOpt.ResamplingMethod{2} = methodItems;
+
             % populate dropdown Items before setting Value (AppDesigner requires Items first)
             h.ResamplingFunction.Items     = obj.BatchOpt.ResamplingFunction{2};
             h.ResamplingFunction.Value     = obj.BatchOpt.ResamplingFunction{1};
@@ -301,6 +343,7 @@ classdef ResampleDataset < handle
             h.ResamplingMethod.Value       = obj.BatchOpt.ResamplingMethod{1};
             h.LabelsresampleDropDown.Items = obj.BatchOpt.LabelsresampleDropDown{2};
             h.LabelsresampleDropDown.Value = 'nearest';
+            h.LabelsresampleDropDown.Enable = ~isBigData;
 
             % sync BatchOpt from current values
             obj.BatchOpt.DimensionX = num2str(obj.width);
@@ -311,9 +354,44 @@ classdef ResampleDataset < handle
             obj.BatchOpt.VoxelY     = num2str(pixSize.y);
             obj.BatchOpt.VoxelZ     = num2str(pixSize.z);
             obj.BatchOpt.LabelsresampleDropDown{1} = 'nearest';
+            obj.bigDataOptions.setResultSize([obj.height, obj.width, obj.depth]);
 
             % apply enable/disable state for the current mode
             obj.updateEditboxStates(obj.BatchOpt.ResamplingMode{1});
+        end
+
+        % ---------------------------------------------------------------
+        function readCurrentSize(obj)
+            % READCURRENTSIZE - Set height, width, depth, color and pixSize from the dataset BatchOpt.id.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %       obj.readCurrentSize()
+            %
+            % For a BigData dataset the size and voxel size are those of the
+            % pyramid level ``BatchOpt.BigData_PyramidLevel``, the level that is
+            % read and resampled, and ``color`` counts all channels (all are
+            % resampled). For a Standard dataset they are the dataset's, with
+            % ``color`` the shown channels, as before.
+            dataset = obj.mibModel.I{obj.BatchOpt.id};
+            obj.pixSize = dataset.image.pixSize;
+            if strcmp(dataset.datasetType, 'BigData')
+                level = obj.bigDataOptions.resolveLevel(obj.BatchOpt);
+                levelSize = dataset.image.pyramid.levelImageSizes(level, :);     % [Y X Z]
+                scale = dataset.image.pyramid.levelScaleFactors(level, :);       % [y x z]
+                obj.height = levelSize(1);
+                obj.width  = levelSize(2);
+                obj.depth  = levelSize(3);
+                obj.color  = dataset.image.colors;
+                obj.pixSize.y = obj.pixSize.y * scale(1);
+                obj.pixSize.x = obj.pixSize.x * scale(2);
+                obj.pixSize.z = obj.pixSize.z * scale(3);
+            else
+                getDataOpt.blockModeSwitch = 0;
+                [obj.height, obj.width, obj.depth, colors] = dataset.getDatasetDimensions('image', 3, getDataOpt);
+                obj.color = numel(colors);
+            end
         end
 
         % ---------------------------------------------------------------
@@ -404,8 +482,7 @@ classdef ResampleDataset < handle
             if obj.mibModel.preferences.System.DeveloperMode
                 fprintf('controllers.ResampleDataset.editbox_Callback: triggered\n');
             end
-            id = obj.mibModel.getActiveId();
-            pixSize = obj.mibModel.I{id}.image.pixSize;
+            pixSize = obj.pixSize;
             h = obj.view.handles;
 
             switch obj.BatchOpt.ResamplingMode{1}
@@ -489,6 +566,8 @@ classdef ResampleDataset < handle
             obj.BatchOpt.VoxelX     = num2str(h.VoxelX.Value);
             obj.BatchOpt.VoxelY     = num2str(h.VoxelY.Value);
             obj.BatchOpt.VoxelZ     = num2str(h.VoxelZ.Value);
+            % the size label of the BigData panel shows the result
+            obj.bigDataOptions.setResultSize([h.DimensionY.Value, h.DimensionX.Value, h.DimensionZ.Value]);
         end
 
         % ---------------------------------------------------------------
@@ -516,25 +595,23 @@ classdef ResampleDataset < handle
             %    dialog's ``Cancelable`` is switched off, because stopping part-way
             %    would leave layers at different sizes.
             %
+            %    **BigData.** The target size is computed from the size and voxel
+            %    size of the selected pyramid level, and ``resampleBigData`` writes
+            %    the result; the dataset itself is not changed.
+            %
 
             if obj.mibModel.preferences.System.DeveloperMode
                 fprintf('controllers.ResampleDataset.resampleBtn_Callback: triggered\n');
             end
             if nargin < 2; batchModeSwitch = false; end
-            id = obj.mibModel.getActiveId();
-            
+            if ~batchModeSwitch; obj.BatchOpt.id = obj.mibModel.getActiveId(); end
+            id = obj.BatchOpt.id;
+
             BatchOptLoc = obj.BatchOpt;
-            
-            pixSize = obj.mibModel.I{id}.image.pixSize;
-            
-            tic;
-            wb = [];
-            if BatchOptLoc.showWaitbar && ~batchModeSwitch
-                wb = uiprogressdlg(obj.view.gui, ...
-                    'Value', 0, ...
-                    'Message', 'Resampling image...', ...
-                    'Title', 'Resampling...', 'Cancelable', 'on');
-            end
+            % the size of the dataset, or of the level a BigData dataset is read at
+            obj.readCurrentSize();
+            pixSize = obj.pixSize;
+            isBigData = strcmp(obj.mibModel.I{id}.datasetType, 'BigData');
 
             % resolve target pixel dimensions from the selected mode
             switch BatchOptLoc.ResamplingMode{1}
@@ -578,9 +655,22 @@ classdef ResampleDataset < handle
                     utils.dlgs.inputUniversalDlg(obj.view.gui, 'The dimensions were not changed!', {''}, ...
                         {''}, 'Resample: no change', dlgOpt);
                 end
-                if ~isempty(wb); delete(wb); end
                 notify(obj.mibModel, 'StopProtocol');
                 return;
+            end
+
+            if isBigData
+                obj.resampleBigData(BatchOptLoc, [newH, newW, newZ]);
+                return;
+            end
+
+            tic;
+            wb = [];
+            if BatchOptLoc.showWaitbar && ~batchModeSwitch
+                wb = uiprogressdlg(obj.view.gui, ...
+                    'Value', 0, ...
+                    'Message', 'Resampling image...', ...
+                    'Title', 'Resampling...', 'Cancelable', 'on');
             end
 
             resampledRatio = [newW/obj.width, newH/obj.height, newZ/obj.depth];
@@ -845,6 +935,75 @@ classdef ResampleDataset < handle
 
             notify(obj.mibModel, 'NewDataset');
             notify(obj.mibModel, 'ShowImage');
+        end
+
+        % ---------------------------------------------------------------
+        function resampleBigData(obj, BatchOptLoc, outputSize)
+            % RESAMPLEBIGDATA - Resample the BigData dataset BatchOptLoc.id into a new store or a Standard dataset.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %       obj.resampleBigData(BatchOptLoc, [newHeight, newWidth, newDepth])
+            %
+            % The BigData branch of ``resampleBtn_Callback``. Level
+            % ``BigData_PyramidLevel`` is resampled to ``outputSize`` by
+            % ``controllers.BigDataOptions.run`` with ``Resample``, through
+            % ``io.savers.ResampledSliceProvider``; the result goes where
+            % ``BigData_Result`` / ``BigData_OpenIn`` / ``BigData_OutputPath``
+            % say. The window asks before the run, with a time estimate, and the
+            % run is cancelable (see ``BigDataOptions.run``). The model, mask,
+            % selection, ROIs and annotations are not carried over.
+            %
+            % Refused, with a dialog in the GUI and the error
+            % ``controllers:ResampleDataset:bigData`` without a window: a
+            % function other than ``imresize``, a method not in
+            % ``BigDataMethods``, a size below 1, ``'Current overwrite (BigData)'``,
+            % a Standard result that does not fit in memory, and every failure of
+            % the run.
+            %
+            % Input Arguments:
+            %   - **BatchOptLoc** - BatchOpt of the run, with ``id`` and the BigData_* fields
+            %   - **outputSize** - [double] ``[height width depth]`` of the result
+            parentFigure = [];
+            if ~isempty(obj.view) && isvalid(obj.view.gui); parentFigure = obj.view.gui; end
+            errorTitle = 'Resample BigData';
+            errorId = 'controllers:ResampleDataset:bigData';
+            method = BatchOptLoc.ResamplingMethod{1};
+            if ~strcmp(BatchOptLoc.ResamplingFunction{1}, 'imresize') || ~ismember(method, obj.BigDataMethods)
+                controllers.BigDataOptions.reportError(obj.mibModel, parentFigure, errorId, sprintf(['A BigData ' ...
+                    'dataset is resampled with the imresize function and one of these methods:\n%s\n(%s with %s was ' ...
+                    'selected)'], strjoin(obj.BigDataMethods, ', '), method, BatchOptLoc.ResamplingFunction{1}), errorTitle);
+                return;
+            end
+            if any(outputSize < 1)
+                controllers.BigDataOptions.reportError(obj.mibModel, parentFigure, errorId, sprintf(['The new size ' ...
+                    '%d x %d x %d (width x height x depth) must be at least 1 in every direction.'], ...
+                    outputSize(2), outputSize(1), outputSize(3)), errorTitle);
+                return;
+            end
+
+            try
+                result = obj.bigDataOptions.run(BatchOptLoc, @(block) block, ...
+                    Resample = struct('OutputSize', outputSize, 'Method', method));
+            catch err
+                controllers.BigDataOptions.reportError(obj.mibModel, parentFigure, errorId, ...
+                    sprintf('Resampling of the BigData dataset failed:\n%s', err.message), errorTitle);
+                return;
+            end
+            if isempty(result)      % cancelled; nothing half-written is opened
+                notify(obj.mibModel, 'StopProtocol');
+                return;
+            end
+
+            logText = sprintf('Resample s%d [%d %d %d %d]->[%d %d %d %d], method: %s, model not resampled -> %s', ...
+                obj.bigDataOptions.resolveLevel(BatchOptLoc) - 1, obj.height, obj.width, obj.color, obj.depth, ...
+                outputSize(1), outputSize(2), obj.color, outputSize(3), method, result.outputPath);
+            obj.bigDataOptions.reportStoreResult(result, logText);
+
+            obj.mibModel.preferences.Users.Tiers.numberOfResamplings = obj.mibModel.preferences.Users.Tiers.numberOfResamplings + 1;
+            notify(obj.mibModel, 'UpdateUserScore', core.ToggleEventData(2));    % scale scoring by factor 2
+            obj.returnBatchOpt(obj.BatchOpt);
         end
 
     end % methods

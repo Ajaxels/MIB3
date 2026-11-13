@@ -70,8 +70,14 @@ For Bio-Formats collections, use <span class="widget widget-edit">Index</span> t
 
 Select <span class="widget widget-dropdown">ZARR</span> to predict OME-Zarr images (v2 or v3) without converting 
 them. The field then becomes <span class="widget widget-edit">Level</span>: the pyramid level to segment, 
-where `1` is full resolution. The selected level of each image is loaded into memory, so choose a level 
-that fits; DeepMIB warns before starting when it may not.
+where `1` is full resolution. Images are read and predicted slab by slab, so a level larger than the 
+memory can be predicted. With 3D networks, keep <span class="widget widget-edit">Downsample factor for images</span> 
+at `1` and choose a coarser level instead. The directory with images for prediction can also be
+a zarr store itself (a folder named `*.zarr`, `*.zarr2` or `*.zarr3`).
+
+If the prediction of a ZARR image stops on an error or Cancel, the zarr model and score stores 
+written so far are kept. Press **Predict** again with the same settings and choose **Resume** to 
+continue where it stopped.
 
 <div class="clear-float"></div>
 

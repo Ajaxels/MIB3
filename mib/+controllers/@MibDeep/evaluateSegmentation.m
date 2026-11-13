@@ -13,10 +13,10 @@ if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.MibDeep.evaluateSegmentation: triggered\n');
 end
 
-if strcmp(obj.BatchOpt.P_ModelFiles{1}, 'Zarr3 (BigData model)')
+if ismember(obj.BatchOpt.P_ModelFiles{1}, {'Zarr3 (BigData model)', 'Do not generate'})
     mgsOpt.MsgBoxOnly = true;
     utils.dlgs.inputUniversalDlg(obj.view.gui, ...
-        sprintf('Evaluation is not available for the "Zarr3 (BigData model)" output\n\nTo evaluate, predict with "Model files" set to a MIB or TIF format'), ...
+        sprintf('Evaluation is not available when "Model files" is "%s"\n\nTo evaluate, predict with "Model files" set to a MIB or TIF format', obj.BatchOpt.P_ModelFiles{1}), ...
         {}, {}, 'Not available', mgsOpt);
     return;
 end

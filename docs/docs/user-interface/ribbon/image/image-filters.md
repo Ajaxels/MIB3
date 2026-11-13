@@ -41,6 +41,8 @@ The filtered image can be post-processed using a dropdown at the bottom of the d
 
 ## BigData datasets
 
+![BigData panel](../../images/BigData_panel.png){.on-glb align=right}
+
 The image of a [BigData](../../../getting-started/dataset-types/index.md#bigdata) dataset is
 read-only, so by default the filtered image is written to a new OME-Zarr store, which can be opened
 in a buffer.

@@ -75,6 +75,16 @@ function outputPath = processImageToStore(image, blockFunction, outputPath, opti
 %     ``blockFunction`` are sent to every worker, see "Parallel writing" in
 %     ``io.savers.FilteredSliceProvider``; the store equals the one written
 %     without a pool
+%   - **options.Resample** - struct ``OutputSize`` ``[height width depth]`` and
+%     ``Method``, default ``[]``: level ``Level`` is resampled to that size
+%     through ``io.savers.ResampledSliceProvider`` instead of being processed,
+%     and ``blockFunction`` is not used. Not with ``Region``. Level 0 of the
+%     store then has ``OutputSize``, its voxel size is the level's times
+%     ``levelSize ./ OutputSize`` (Standard Resample keeps the bounding box
+%     instead, ``(N - 1) / (n - 1)``, which differs by under one voxel over the
+%     image), its box starts where the source box starts, and the number of
+%     levels is chosen by the saver from the new size (``Levels = []``) unless
+%     ``SaverOptions`` gives it
 %
 % Output Arguments:
 %   - **outputPath** - [char] path of the written store, ``[]`` when cancelled
@@ -110,6 +120,7 @@ arguments
     options.Region double = []
     options.RegionMask = []
     options.Pool = []
+    options.Resample = []
 end
 outputPath = char(outputPath);
 
@@ -120,18 +131,30 @@ if utils.bigdata.isSameStorePath(outputPath, sourcePath)
         'The output store is the source image itself (%s); choose another path.', outputPath);
 end
 
-provider = io.savers.FilteredSliceProvider(image, options.Level, options.ColChannel, blockFunction, ...
-    HaloYX = options.HaloYX, HaloZ = options.HaloZ, Region = options.Region, RegionMask = options.RegionMask);
+scale = image.pyramid.levelScaleFactors(options.Level, :);   % [y x z]
+isResample = ~isempty(options.Resample);
+if isResample
+    if ~isempty(options.Region)
+        error('utils:bigdata:resampleRegion', 'Resampling processes the whole level; a Region is not supported.');
+    end
+    provider = io.savers.ResampledSliceProvider(image, options.Level, options.ColChannel, ...
+        options.Resample.OutputSize, options.Resample.Method);
+    scale = scale .* provider.VoxelScaleYXZ;    % source voxels per output voxel
+else
+    provider = io.savers.FilteredSliceProvider(image, options.Level, options.ColChannel, blockFunction, ...
+        HaloYX = options.HaloYX, HaloZ = options.HaloZ, Region = options.Region, RegionMask = options.RegionMask);
+end
 % MIB images are integer: a float store could be written but not opened as a dataset
 if ~ismember(provider.DataClass, {'uint8', 'uint16', 'uint32'})
     error('utils:bigdata:outputClass', ...
         'The processing returns %s; convert the result to uint8, uint16 or uint32.', provider.DataClass);
 end
-scale = image.pyramid.levelScaleFactors(options.Level, :);   % [y x z]
 
-% pyramid settings: the source's, as many levels as it has from Level down, then the caller's
+% pyramid settings: the source's, as many levels as it has from Level down (for a
+% resampled size, as many as the saver chooses for it), then the caller's
 saverOptions = io.savers.Zarr3Saver.optionsFromPyramid(image.pyramid);
 saverOptions.Levels = max(1, size(image.pyramid.levelImageSizes, 1) - options.Level + 1);
+if isResample; saverOptions.Levels = []; end
 overrideFields = fieldnames(options.SaverOptions);
 for fieldIndex = 1:numel(overrideFields)
     saverOptions.(overrideFields{fieldIndex}) = options.SaverOptions.(overrideFields{fieldIndex});
@@ -142,12 +165,20 @@ saverOptions.SourceFingerprint = struct('source', sourcePath, 'level', options.L
     'colChannel', options.ColChannel, 'haloYX', options.HaloYX, 'haloZ', options.HaloZ, ...
     'function', func2str(blockFunction), 'parameters', options.Fingerprint, ...
     'region', options.Region, 'regionMaskSum', sum(logical(options.RegionMask(:))));
+if isResample
+    saverOptions.SourceFingerprint.resample = struct('outputSize', options.Resample.OutputSize, ...
+        'method', options.Resample.Method);
+end
 
 % band height: one band of the widest working copy within BandBytes
 height = provider.SliceSize(1);
 width  = provider.SliceSize(2);
 channels = max(provider.NumChannels, image.colors);
-bandRows = floor(options.BandBytes / (8 * width * channels));
+if isResample
+    bandRows = provider.bandRows(options.BandBytes);    % counts the source rows under the kernel
+else
+    bandRows = floor(options.BandBytes / (8 * width * channels));
+end
 if bandRows >= height
     saverOptions.BandHeight = 0;    % whole slices
 else

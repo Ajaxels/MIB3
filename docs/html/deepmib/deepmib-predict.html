@@ -5830,13 +5830,16 @@ minimize edge artefacts and improve segmentation. Define overlap percentage in <
 <details class="abstract">
 <summary>list of available image formats for the model files</summary>
 <ul>
+<li><strong>Do not generate</strong>: no model files, for runs that only need the score files  </li>
 <li><strong>MIB Model format</strong>: <code>.model</code> files, loadable in MIB or MATLAB (<code>model = load('filename.model', '-mat');</code>)  </li>
 <li><strong>TIF compressed format</strong>: LZW-compressed TIF, pixels encode classes (1, 2, 3, etc.)  </li>
 <li><strong>TIF uncompressed format</strong>: uncompressed TIF, pixels encode classes  </li>
-<li><strong>Zarr3 (BigData model)</strong>: only for ZARR images, in the semantic and 2D Instance workflows. Writes 
-    <code>Labels_&lt;image name&gt;.zarr3</code> next to the images (the folder is confirmed when prediction starts). 
-    <strong>Load images and models</strong> opens the image in the BigData mode with this model, ready 
-    for editing. Before exporting the model, save it with <strong>Finalize &amp; save</strong>.  </li>
+<li><strong>Zarr3 (BigData model)</strong>: for any type of images, in the semantic and 2D Instance workflows. Writes 
+    <code>Labels_&lt;image name&gt;.zarr3</code> next to the images (the folder is confirmed when prediction starts), 
+    configured via the settings button. With ZARR images, <strong>Load images and models</strong> opens the image 
+    in the BigData mode with this model, ready for editing; before exporting the model, save it with 
+    <strong>Finalize &amp; save</strong>. For other images the store gets a generated pyramid, so it fits only an image 
+    of the same size converted to zarr with the default settings.  </li>
 </ul>
 <p>With ZARR images, the other formats are saved at the resolution of the predicted level.  </p>
 </details>
@@ -5849,6 +5852,9 @@ minimize edge artefacts and improve segmentation. Define overlap percentage in <
 <li><strong>Use Matlab non-compressed format</strong> <code>.mibImg</code>, loadable in MIB or MATLAB (<code>model = load('filename.mibImg', '-mat');</code>)  </li>
 <li><strong>Use Matlab compressed format</strong> compressed <code>.mibImg</code>, loadable in MIB or MATLAB  </li>
 <li><strong>Use Matlab non-compressed format (range 0-1)</strong> <code>.mibImg</code> with 0-1 range, MATLAB-only (<code>model = load('filename.mat');</code>)  </li>
+<li><strong>Zarr3 (BigData)</strong> for any type of images, in the semantic workflows with the Blocked-image engine. 
+    Writes <code>Score_&lt;image name&gt;.zarr3</code> (an image with a channel for each class, 0-255) next to the images. 
+    Format, destination, pyramid and compression are set via the settings button. Open it in the BigData mode  </li>
 </ul>
 </details>
 <ul>

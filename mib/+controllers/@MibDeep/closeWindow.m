@@ -34,6 +34,7 @@ obj.mibModel.preferences.Deep.OverlapInstancesOpt = obj.OverlapInstancesOpt;
 obj.mibModel.preferences.Deep.StartingWeightsOpt = obj.StartingWeightsOpt;
 obj.mibModel.preferences.Deep.StarDistOpt = obj.StarDistOpt;
 obj.mibModel.preferences.Deep.ZarrModelOpt = obj.ZarrModelOpt;
+obj.mibModel.preferences.Deep.ScoreExportOpt = obj.ScoreExportOpt;
 
 obj.mibModel.preferences.Deep.SendReports = obj.SendReports;
 

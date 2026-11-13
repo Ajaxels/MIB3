@@ -28,6 +28,12 @@ switch obj.BatchOpt.P_ScoreFiles{1}
         utils.dlgs.inputUniversalDlg(obj.view.gui, 'Loading of "Matlab non-compressed format (range 0-1)" is not yet implemented', {}, {msgText}, 'Ops!', mgsOpt);
         return;
 
+    case 'Zarr3 (BigData)'
+        mgsOpt.MsgBoxOnly = true;
+        utils.dlgs.inputUniversalDlg(obj.view.gui, ...
+            sprintf('Score_<image name>.zarr3 stores are images with a channel per class\n\nOpen them in the BigData mode, from the folder where they were written (next to the images by default)'), ...
+            {}, {}, 'Open the score stores manually', mgsOpt);
+        return;
     otherwise
         fnList = [];
 end

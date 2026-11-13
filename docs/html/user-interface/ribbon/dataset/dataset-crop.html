@@ -5982,8 +5982,8 @@ to keep the original.</p>
 resolution level of the pyramid is used as the source for the crop region.
 Level <strong>s0</strong> is the full-resolution data; <strong>s1</strong>, <strong>s2</strong>, … are progressively 
 downsampled versions (e.g. s1 is typically 2× downsampled in XY).</p>
-<p>The label below the dropdown shows the corresponding voxel downsampling factors 
-(XYZ) for the selected level, e.g. <code>Zarr downsampling scales (XYZ): 2 x 2 x 1</code> for s1.</p>
+<p>The label below the dropdown shows the downsampling factors (XYZ) of the selected level
+and the dimensions and voxel size the cropped dataset will have at that level.</p>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>
 <p>Choosing a coarser pyramid level (s1, s2, …) produces a smaller in-memory 

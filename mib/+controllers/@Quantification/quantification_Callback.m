@@ -499,6 +499,9 @@ for t = t1:t2
                 STATS = regionprops(CC, CC, [commonProps, {'MinIntensity'}]);
                 emptyIdx = find(arrayfun(@(s) isempty(s.PixelIdxList), STATS));
                 STATS(emptyIdx) = [];
+                % a slice without objects: skip it, as the material path does; its empty STATS
+                % would lack the fields of the measured properties and break the concatenation
+                if isempty(STATS); continue; end
                 CC = struct('PixelIdxList', {{STATS(:).PixelIdxList}}, ...
                             'NumObjects', numel({STATS(:).PixelIdxList}), ...
                             'ImageSize', size(slice), 'Connectivity', conn);

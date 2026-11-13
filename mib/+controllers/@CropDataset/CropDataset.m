@@ -512,6 +512,8 @@ classdef CropDataset < handle
             str2 = obj.BatchOpt.Time;
             obj.roiPos{1}(7) = min(str2num(str2)); %#ok<ST2NM>
             obj.roiPos{1}(8) = max(str2num(str2)); %#ok<ST2NM>
+
+            obj.selectZarrLevel();  % resulting dimensions follow the crop region
         end
 
         function SelectROI_Callback(obj)
@@ -559,6 +561,8 @@ classdef CropDataset < handle
             obj.BatchOpt.Height = obj.view.handles.Height.Value;
             obj.BatchOpt.Depth  = obj.view.handles.Depth.Value;
             obj.BatchOpt.Time   = obj.view.handles.Time.Value;
+
+            obj.selectZarrLevel();  % resulting dimensions follow the crop region
         end
 
         function resetBtn_Callback(obj)
@@ -653,6 +657,29 @@ classdef CropDataset < handle
             %
             %       obj.selectZarrLevel()
             %
+            % The label shows two lines: the downsampling scales of the selected
+            % level and the dimensions (XYZ) and voxel size of the crop result at
+            % that level, for example::
+            %
+            %   Zarr downsampling scales (XYZ): 2 x 2 x 1
+            %   Dims: 1233x1232x1321 (0.01x0.01x0.03 um)
+            %
+            % The units are shortened to fit the label: 'micrometer',
+            % 'micrometers' and 'µm' are shown as 'um'.
+            %
+            % The dimensions are computed from the current crop region
+            % (``obj.roiPos{1}``) the same way as ``core.MibVirtualImage.getDataZarr``
+            % maps a full-resolution range to a level: both ends are divided by the
+            % level scale factor, rounded up and clamped to the level size. When the
+            % region is not defined (ROI mode with "All" selected, or an edit box that
+            % does not parse) the full dataset is used, or "Multi" is shown for
+            % several ROIs ("Dims: Multi"). The voxel size is the dataset voxel size multiplied by
+            % the level scale factors, as in ``core.MibDataset.cropDataset``.
+            %
+            % Called from updateWidgets, editboxes_Callback, SelectROI_Callback
+            % and ZarrPyramidLevel_Callback, so the label follows both the level
+            % and the crop region.
+            %
 
             id = obj.mibModel.getActiveId();
 
@@ -666,9 +693,32 @@ classdef CropDataset < handle
                 obj.view.handles.ZarrPyramidLevel.Value = items{zarrIdx};
             end
 
-            scales = scaleFactors(zarrIdx, :);
-            obj.view.handles.zarrBinningFactors.Text = ...
-                sprintf('Zarr downsampling scales (XYZ): %d x %d x %d', scales(2), scales(1), scales(3));
+            scales = scaleFactors(zarrIdx, :);     % [y x z]
+            xyzScales = scales([2 1 3]);
+            scalesLine = sprintf('Zarr downsampling scales (XYZ): %d x %d x %d', xyzScales);
+
+            dataset = obj.mibModel.I{id};
+            pixSize = dataset.image.pixSize;
+            levelVoxelSize = [pixSize.x, pixSize.y, pixSize.z] .* xyzScales;
+            units = regexprep(pixSize.units, ['^(micrometers?|' char(181) 'm)$'], 'um');   % micrometer(s), µm -> um
+            voxelText = sprintf('%gx%gx%g %s', levelVoxelSize, units);
+
+            if strcmp(obj.view.handles.Width.Value, 'Multi')
+                dimensionsLine = sprintf('Dims: Multi (%s)', voxelText);
+            else
+                fullSize = [dataset.image.width, dataset.image.height, dataset.image.depth];
+                % crop region as [x1 x2 y1 y2 z1 z2]; full dataset when not defined
+                region = [1, fullSize(1), 1, fullSize(2), 1, fullSize(3)];
+                if ~isempty(obj.roiPos) && numel(obj.roiPos{1}) >= 6 && ~any(isnan(obj.roiPos{1}(1:6)))
+                    region = obj.roiPos{1}(1:6);
+                end
+                levelMin = max(ceil(region([1 3 5]) ./ xyzScales), 1);
+                levelMax = min(ceil(region([2 4 6]) ./ xyzScales), ceil(fullSize ./ xyzScales));
+                levelDims = levelMax - levelMin + 1;
+                dimensionsLine = sprintf('Dims: %dx%dx%d (%s)', levelDims, voxelText);
+            end
+
+            obj.view.handles.zarrBinningFactors.Text = {scalesLine; dimensionsLine};
         end
 
         function ZarrPyramidLevel_Callback(obj, hObject)

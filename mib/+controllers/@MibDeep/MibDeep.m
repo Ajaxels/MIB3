@@ -225,6 +225,11 @@ classdef MibDeep < handle
         % event firing when window is closed
     end
 
+    properties (Constant)
+        PredictionRecordFile = '.mib_prediction.json'
+        % file in a model or score store that predictZarrStore is writing: what the store is predicted from and, for a model store, the slices written; removed when the prediction completes, so an interrupted run can be resumed
+    end
+
     methods (Static)
         function viewListner_Callback(obj, src, evnt)
             switch evnt.EventName
@@ -245,6 +250,32 @@ classdef MibDeep < handle
             data = zeros([meta(1).Height, meta(1).Width, numel(meta)], 'uint8');
             for sliceId = 1:numel(meta)
                 data(:, :, sliceId) = imread(filename, 'Index', sliceId);
+            end
+        end
+
+        function tf = isPredictionStore(storePath)
+            % ISPREDICTIONSTORE - is this zarr store an output of DeepMIB prediction?
+            %
+            % Syntax:
+            %   tf = controllers.MibDeep.isPredictionStore(storePath)
+            %
+            % True for a BigData model store (``mibModelStore`` attribute, see
+            % ``core.MibBigDataLabels.isMibModelStore``) and for a score store
+            % (``mibPredictionScores`` attribute, written by ``startPredictionBlockedImage``
+            % for "Zarr3 (BigData)" score files), and for either kind while a
+            % prediction into it is unfinished (the ``PredictionRecordFile`` of
+            % ``predictZarrStore`` in the store folder; a partial score store has
+            % no ``mibPredictionScores`` yet). Such stores are skipped when the
+            % zarr images for prediction are listed, so the output written next
+            % to the images is not predicted by the next run. Never throws.
+            tf = core.MibBigDataLabels.isMibModelStore(storePath) || ...
+                isfile(fullfile(char(storePath), controllers.MibDeep.PredictionRecordFile));
+            if ~tf
+                try
+                    tf = isfield(io.zarr.Group(char(storePath)).getAttributes(), 'mibPredictionScores');
+                catch
+                    % not a readable zarr group -> not a prediction store
+                end
             end
         end
 
@@ -298,7 +329,7 @@ classdef MibDeep < handle
         selectArchitecture(obj, event)        % select the target architecture
         selectDirerctories(obj, event)        % select directories containing images for training and prediction
         selectGPUDevice(obj)        % select environment for computations
-        [storePaths, zarrFormat, cancelled] = selectModelStoreDestination(obj, zarrList)        % confirm where the BigData model stores of prediction are written
+        [storePaths, zarrFormat, cancelled, resumeStores] = selectModelStoreDestination(obj, zarrList, storeKind, allowResume)        % confirm where the BigData model or score stores of prediction are written
         net = selectNetwork(obj, networkName)        % select a filename for a new network in the Train mode, or select a network to use for the Predict mode
         selectWorkflow(obj, event)        % select deep learning workflow to perform
         sendReportsCallback(obj)        % define parameters for sending progress report to the user's email address
@@ -342,6 +373,12 @@ classdef MibDeep < handle
         lgraph = updateSegmentationLayer(obj, lgraph, classNames)        % redefine the segmentation layer of lgraph based on obj.BatchOpt settings
         updateWidgets(obj)        % update widgets of this window
         writeModelStore(obj, outputLabels, storePath, pyramid, zarrFormat, materialNames, materialColors)        % write a prediction of one pyramid level as a BigData model store
+
+        [labelsStore, predictedLevel] = createModelStore(obj, storePath, pyramid, predictionSize, zarrFormat, materialNames, materialColors, resume)        % create an empty BigData model store for the prediction of one image, or reopen an interrupted one
+
+        writeModelStoreSlab(obj, labelsStore, slabLabels, predictedLevel, zFirst)        % write a Z-slab of the prediction into a BigData model store
+
+        [outputLabels, scoreImg, cancelled] = predictZarrStore(obj, storeInfo, predictOpt)        % predict one zarr image store slab by slab, without loading it whole
        
         function obj = MibDeep(mibModel, varargin)
             obj.mibModel = mibModel;    % assign model
@@ -498,9 +535,9 @@ classdef MibDeep < handle
             obj.BatchOpt.P_PredictionMode = {'Blocked-image'};
             obj.BatchOpt.P_PredictionMode{2} = {'Blocked-image', 'Legacy'};
             obj.BatchOpt.P_ModelFiles = {'MIB Model format'};
-            obj.BatchOpt.P_ModelFiles{2} = {'MIB Model format', 'TIF compressed format', 'TIF uncompressed format', 'Zarr3 (BigData model)'};
+            obj.BatchOpt.P_ModelFiles{2} = {'Do not generate', 'MIB Model format', 'TIF compressed format', 'TIF uncompressed format', 'Zarr3 (BigData model)'};
             obj.BatchOpt.P_ScoreFiles = {'Use AM format'};
-            obj.BatchOpt.P_ScoreFiles{2} = {'Do not generate', 'Use AM format', 'Use Matlab non-compressed format', 'Use Matlab compressed format', 'Use Matlab non-compressed format (range 0-1)'};
+            obj.BatchOpt.P_ScoreFiles{2} = {'Do not generate', 'Use AM format', 'Use Matlab non-compressed format', 'Use Matlab compressed format', 'Use Matlab non-compressed format (range 0-1)', 'Zarr3 (BigData)'};
             obj.BatchOpt.P_ExtraPaddingPercentage{1} = 0;
             obj.BatchOpt.P_ExtraPaddingPercentage{2} = [0 100];
             obj.BatchOpt.P_ExtraPaddingPercentage{3} = false;
@@ -582,8 +619,8 @@ classdef MibDeep < handle
             obj.BatchOpt.mibBatchTooltip.P_ImageDownsamplingFactor = 'Downsample images by this number of times before prediction, [default=1, no downsampling]; for 2 classes predictions are also smoothed';
             obj.BatchOpt.mibBatchTooltip.P_DynamicMasking = 'When enabled, the images for predictions are thresholded to detect masked areas where segmentation occurs';
             obj.BatchOpt.mibBatchTooltip.P_PredictionMode = 'Main processing mode for prediction, the blocked image mode is recommended';
-            obj.BatchOpt.mibBatchTooltip.P_ScoreFiles = 'tweak generation of score files showing probability of each class';
-            obj.BatchOpt.mibBatchTooltip.P_ModelFiles = 'define output type for generated model files during prediction; "Zarr3 (BigData model)" (ZARR images only) writes an editable model for the image opened in BigData mode';
+            obj.BatchOpt.mibBatchTooltip.P_ScoreFiles = 'tweak generation of score files showing probability of each class; "Zarr3 (BigData)" (Blocked-image engine, semantic workflows) writes an image store with one channel per class, see the settings button';
+            obj.BatchOpt.mibBatchTooltip.P_ModelFiles = 'define output type for generated model files during prediction, "Do not generate" skips them; "Zarr3 (BigData model)" writes an editable model for the image opened in BigData mode, see the settings button';
             obj.BatchOpt.mibBatchTooltip.P_PatchWiseUpsample = 'upsample generated patch predictions to match resolution of underlying images for direct comparison';
             obj.BatchOpt.mibBatchTooltip.P_OverlapInstancesMode = 'stitching of instances across tiles during 2D Instance prediction: "Centroid in core" - each object is emitted by the tile owning its centroid (overlap must exceed the largest object); "IoU merge" - detections of neighboring tiles are merged when their masks agree in the overlap band (works for objects larger than the overlap)';
             obj.BatchOpt.mibBatchTooltip.O_CustomTrainingProgressWindow = 'When checked the custom progress plot is displayed during training, instead of Matlab default plot';
@@ -623,6 +660,11 @@ classdef MibDeep < handle
             % dynamic masking and score export properties
             obj.DynamicMaskOpt = obj.mibModel.preferences.Deep.DynamicMaskOpt;
             obj.ScoreExportOpt = obj.mibModel.preferences.Deep.ScoreExportOpt;
+            % settings of the "Zarr3 (BigData)" score files, missing in preferences saved earlier
+            zarrScoreDefaults = struct('ZarrFormat', 'v3', 'Location', 'Next to images', 'Levels', 0, ...
+                'ChunkSize', [0 0 0], 'ShardSize', [0 0 0], 'DownsampleMethod', 'bilinear', ...
+                'Compressors', 'zstd', 'CompressionLevel', 7);
+            obj.ScoreExportOpt = utils.concatenateStructures(zarrScoreDefaults, obj.ScoreExportOpt);
 
             % settings of the BigData model output of prediction
             obj.ZarrModelOpt.ZarrFormat = 'v3';

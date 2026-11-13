@@ -40,7 +40,7 @@ or use the <span class="widget widget-button">Reset</span> button to restore def
 
 ## Dimensions Mode
 
-In <label class="widget widget-checkbox">Dimensions</label> mode, you define the new 
+In <label class="widget widget-radio">Dimensions</label> mode, you define the new 
 size of the dataset by entering the desired width, height, and depth in pixels:
 
 - <span class="widget widget-edit">Width</span> field: set the number of pixels along the X-axis.
@@ -56,7 +56,7 @@ pixel counts, maintaining the aspect ratio if X, Y, and Z are scaled proportiona
 
 ## Voxels Mode
 
-In <label class="widget widget-checkbox">Voxels</label> mode, you specify the desired 
+In <label class="widget widget-radio">Voxels</label> mode, you specify the desired 
 voxel sizes in physical units (e.g., micrometers) to adjust the dataset’s 
 spatial resolution:
 
@@ -77,7 +77,7 @@ match the new voxel dimensions.
 
 ## Percentage XYZ Mode
 
-In <label class="widget widget-checkbox">Percentage XYZ</label> mode, you define a
+In <label class="widget widget-radio">Percentage XYZ</label> mode, you define a
 single scaling factor to resize all dimensions of the dataset:
 
 <span class="widget widget-edit">Scaling Factor</span> enter a percentage 
@@ -92,7 +92,7 @@ affecting the image and all layers.
 
 ## Percentage XY Mode
 
-In <label class="widget widget-checkbox">Percentage XY</label> mode, you define a 
+In <label class="widget widget-radio">Percentage XY</label> mode, you define a 
 scaling factor that applies only to the XY dimensions, 
 leaving the Z dimension unchanged:
 
@@ -174,6 +174,25 @@ methods do.
 
 !!! note
     For large datasets, use `nearest` or `imresize` for faster processing, and test settings on a small region using the [ROI panel](../../panels/roi/index.md) before resampling the entire dataset.
+
+## BigData datasets
+
+![BigData panel](../../images/BigData_panel.png){.on-glb align=right}
+
+A [BigData](../../../getting-started/dataset-types/index.md#bigdata) dataset is resampled into a new
+OME-Zarr store, or into a Standard dataset in memory
+
+<div class="clear-float"></div>
+The dataset destination can be chosen in the **BigData output** panel, as for the
+[Image filters](../image/image-filters.md#bigdata-datasets). The dataset itself is not changed.
+
+- The selected pyramid level is resampled, and the current size, voxel size and percentages refer
+  to that level. Starting from a coarser level is faster when the dataset is made much smaller.
+- Only the `imresize` function is available, with all its methods except `osc`, plus the pooling methods.
+  The result is the same as for a Standard dataset.
+- The model, mask, selection, ROIs and annotations are not carried over to the result.
+- *Current overwrite (BigData)* is not available: the resampled image has another size.
+
 ---
 
 *Back to [MIB](../../../index.md) | [User interface](../../index.md) | [Ribbon](../index.md) | [Dataset](index.md)*

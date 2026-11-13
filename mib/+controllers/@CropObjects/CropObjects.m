@@ -671,6 +671,7 @@ classdef CropObjects < handle
             imgH    = obj.mibModel.I{id}.image.height;
             imgZ    = obj.mibModel.I{id}.image.depth;
             pixSize = obj.mibModel.I{id}.image.pixSize;
+            datasetBoundingBox = obj.mibModel.I{id}.image.boundingBox;
 
             % ---- filename template(s) ----------------------------------
             if toMatlab
@@ -847,12 +848,15 @@ classdef CropObjects < handle
                 getDataOpt.z = [z1, z2];
 
                 % ---- bounding box in physical units ---------------------
-                xMinPhys = (x1 - 1) * pixSize.x;
-                yMinPhys = (y1 - 1) * pixSize.y;
-                zMinPhys = (z1 - 1) * pixSize.z;
-                xMaxPhys = xMinPhys + (x2 - x1 + 1) * pixSize.x;
-                yMaxPhys = yMinPhys + (y2 - y1 + 1) * pixSize.y;
-                zMaxPhys = zMinPhys + (z2 - z1 + 1) * pixSize.z;
+                % the crop origin is offset by the bounding box of the source dataset
+                xMinPhys = datasetBoundingBox(1) + (x1 - 1) * pixSize.x;
+                yMinPhys = datasetBoundingBox(3) + (y1 - 1) * pixSize.y;
+                zMinPhys = datasetBoundingBox(5) + (z1 - 1) * pixSize.z;
+                % MIB convention: the box spans first to last voxel, extent = (n-1)*pixSize
+                % (voxel size is recovered as extent/(n-1)); max([n 2]) as in MibImage.initialize
+                xMaxPhys = xMinPhys + (max([x2 - x1 + 1, 2]) - 1) * pixSize.x;
+                yMaxPhys = yMinPhys + (max([y2 - y1 + 1, 2]) - 1) * pixSize.y;
+                zMaxPhys = zMinPhys + (max([z2 - z1 + 1, 2]) - 1) * pixSize.z;
                 bb       = [xMinPhys, xMaxPhys, yMinPhys, yMaxPhys, zMinPhys, zMaxPhys];
 
                 % ---- generate output filename ---------------------------
@@ -1024,9 +1028,9 @@ classdef CropObjects < handle
                         modelType          = obj.mibModel.I{id}.labels.maxMaterials;
                         modelMaterialNames  = names;
                         modelMaterialColors = colors;
-                        BoundingBox        = [xMinPhys, xMinPhys + size(data,2)*pixSize.x, ...
-                                              yMinPhys, yMinPhys + size(data,1)*pixSize.y, ...
-                                              zMinPhys, zMinPhys + size(data,3)*pixSize.z];
+                        BoundingBox        = [xMinPhys, xMinPhys + (max([size(data,2), 2]) - 1)*pixSize.x, ...
+                                              yMinPhys, yMinPhys + (max([size(data,1), 2]) - 1)*pixSize.y, ...
+                                              zMinPhys, zMinPhys + (max([size(data,3), 2]) - 1)*pixSize.z];
                         save(fnOut, 'imOut', 'modelMaterialNames', 'modelMaterialColors', ...
                             'BoundingBox', 'modelVariable', 'modelType', '-mat', '-v7.3');
                     else
@@ -1048,9 +1052,9 @@ classdef CropObjects < handle
 
                 case 'NRRD Data Format (*.nrrd)'
                     fnOut = [fnBase '.nrrd'];
-                    bbVec = [xMinPhys, xMinPhys + size(data,2)*pixSize.x, ...
-                             yMinPhys, yMinPhys + size(data,1)*pixSize.y, ...
-                             zMinPhys, zMinPhys + size(data,3)*pixSize.z];
+                    bbVec = [xMinPhys, xMinPhys + (max([size(data,2), 2]) - 1)*pixSize.x, ...
+                             yMinPhys, yMinPhys + (max([size(data,1), 2]) - 1)*pixSize.y, ...
+                             zMinPhys, zMinPhys + (max([size(data,3), 2]) - 1)*pixSize.z];
                     nrrdOpt.overwrite   = 1;
                     nrrdOpt.showWaitbar = 0;
                     io.NRRD.bitmap2nrrd(fnOut, data, bbVec, nrrdOpt);

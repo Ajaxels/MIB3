@@ -432,3 +432,112 @@ worked before). It checks that level 0 round-trips and level 2 is 1/4 size. The 
   runs when `BatchOpt` has an `id` field, which MibDeep never sets.
 - Not run in the GUI yet: Preview loads into the user's active buffer, so the first run is the
   user's.
+
+### "Do not generate" model files, "Zarr3 (BigData)" score files (2026-11-11)
+
+- `P_ModelFiles` has a first item **Do not generate** (no model files). `start` refuses a run that
+  would generate nothing (both outputs off, or 2D Instance, which has no scores);
+  `previewModels` and `evaluateSegmentation` answer with a message.
+- `P_ScoreFiles` has **Zarr3 (BigData)** (`generateScoreFiles = 5`): ZARR input, Blocked-image engine,
+  semantic workflows only (checked in `start`). `Score_<name>.zarr3` is an *image* store `[y x z c]`
+  (uint8 0-255, channel per class), written by `Zarr3Saver.save` from the predicted level L down:
+  level L becomes level 1, the image's remaining levels follow (`optionsFromPyramid` on the sliced
+  pyramid), coarser levels are bilinear, voxel size = image voxel size x level scale. Format, location,
+  chunks, shards, compression come from `ZarrModelOpt` (levels and downsample method are model-only).
+- The score group carries a `mibPredictionScores` attribute; `MibDeep.isPredictionStore` (model or
+  score store) keeps both out of the zarr input list (`checkZarrStores`, `previewModels`).
+- `selectModelStoreDestination(..., 'score')`: when the models also go to zarr, the scores follow
+  them without a second folder question; `ResultsModels` maps to `ResultsScores`.
+- `segmentBlockedImage` converts to uint8 for every format except 4 (was `< 4`).
+- Checked headless (`matlab -batch`): v3 and v2 save from level 2 of a 3-level pyramid, exact
+  round trip, attribute survives `setAttributes`, single 2D slice. **Not run:** a full prediction in
+  the GUI, the second-store flow with both outputs zarr, `ResultsScores` cleanup.
+
+#### Follow-up (2026-11-11): zarr outputs for any input, score settings dialog
+
+- Both zarr outputs now accept any type of input images. The only reason for ZARR-only was the model
+  store mirroring the *source pyramid*, which other images do not have; `writeModelStore` now takes
+  `pyramid = []` and generates one from the size of the prediction (`Zarr3Saver.computeLevelPlan`,
+  XY halvings, `ZarrModelOpt.Levels` or automatic, chunk `[256 256 16]`, prediction = level 1;
+  `BioformatsIndex` is a series index there and is ignored). The store fits an image only if that
+  image has the same size and pyramid (e.g. converted to zarr with the export defaults).
+  Scores never needed the source pyramid; non-zarr images get an automatic XY pyramid and voxel
+  size 1 (the datastore returns pixels only).
+- `selectModelStoreDestination` is called once the image list is known (`predictionFiles`), so the
+  "clean ResultsModels/ResultsScores" block of `startPredictionBlockedImage` and `startPredictionInstances`
+  moved after it; a Cancel in the destination dialog still deletes nothing.
+- Score stores have their own settings in `ScoreExportOpt` (`ZarrFormat`, `Location` incl.
+  `ResultsScores`, `Levels`, `ChunkSize`, `ShardSize`, `Compressors`, `CompressionLevel`,
+  `DownsampleMethod` bilinear/nearest/bicubic), edited in `updateScoreExportSettings` together with
+  "Export exterior material"; the dialog shows the zarr part only when "Zarr3 (BigData)" is selected.
+  `ScoreExportOpt` is now also saved in the preferences by `closeWindow`.
+- `start.m`: zarr outputs need the Blocked-image engine (2D Instance has its own).
+- Checked headless: generated-pyramid model store, v3 and v2, `Levels` 0 and 2, level 1 exact, 2D
+  slice with 'mode'; score save with the non-zarr options. Not run: the GUI flow (both outputs zarr,
+  Cancel at the destination dialog, the settings dialog).
+
+## Phase 2 done (2026-11-11): slab streaming of zarr input
+
+Trigger: a 290 GB level 1 refused with "Not enough memory" (137 GB available). Zarr input is
+larger than memory by design, so no zarr path loads a whole level any more.
+
+- `deepmib.readZarrSlab` reads a Z-slab (full XY, all channels) of one level straight from
+  `io.zarr.Array` (v2/v3), honouring `levelRegionOrigins`; not through `ChunkCache` (a slab is
+  read once and is far larger than the 512 MB cache).
+- `MibDeep.predictZarrStore` (Blocked-image, semantic workflows): slab loop with a halo
+  (2.5D: `floor(depth/2)`, mirrored only at the level ends; 3D: whole blocks covering the
+  border, slab depth a multiple of the block depth, so the block grid is the whole-level one).
+  Slab depth = lcm(block depth (3D), model Z factor, image chunk Z, model chunk Z), terms dropped
+  from the end while the estimate exceeds 80% of `MaxPossibleArrayBytes`, then reduced in steps.
+- Outputs per slab: model store (`createModelStore` + `writeModelStoreSlab`, `writeModelStore`
+  is now create + one slab + close), TIF appended, zarr scores through `Zarr3Saver.saveStream`
+  pulling slices from `deepmib.PredictionSliceProvider` (the slabs are predicted from inside the
+  saver; no changes to the saver). "MIB Model format" and AM/mibImg/mat scores are gathered whole
+  (their memory is in the estimate).
+- 2D Instance: slices read per slab (`instanceSlabDepth`), model store written per slab.
+- `checkZarrStores` no longer estimates memory; it also returns `levelNames`,
+  `levelRegionOrigins`, `colors`, `imgClass`.
+- `start.m` refuses a downsampling factor other than 1 for 3D networks with ZARR images.
+- Cancel/error removes the partial stores and TIF of the current image.
+
+Verified headless (tiny random networks, 70x90x20/21 store, chunk Z 2/4): 2D, 2.5D (25% overlap)
+and 3D (25% overlap, halo 4) slab-by-slab labels, scores and TIF identical to whole-level
+prediction; model store levels identical to a whole write (XY-only and Z-halving pyramids,
+`mode`); level 2 prediction; factor 2; cancel leaves nothing. Nearest-neighbour coarser levels
+differ from a whole write only for a depth that is not a multiple of the Z factor (the whole
+write stretches the odd depth; slabs take the first slice of each block). Not verified: GUI run,
+the real 290 GB store over the network drive, a 2D Instance run, zarr v2 input.
+- Fix (same day): 2.5D streaming crashed (`MATLAB:sizeDimensionsMustMatch` in
+  `processBlocksBlockedImage`) with overlapping tiles: the whole-level loop sets
+  `blockSize(3) = inputPatchSize(3)`, `padShift(3) = 0` for 2.5D, and `predictZarrStore` got the
+  overlap-reduced Z block. Now set in `predictZarrStore`; the earlier test had applied the
+  adjustment itself. Re-verified with the caller's block size: 2.5D 3D-input and Z2C networks, 15%
+  overlap, dynamic masking on/off, labels and zarr scores equal to the whole-level loop.
+- 2026-11-12: a full run on another workstation (01_05nm, level 1, 83 slabs of 24 slices) stopped
+  with `zarr:error` "Invalid Signature. (os error -2146893818)" = 0x80090006 NTE_BAD_SIGNATURE,
+  i.e. SMB signing rejected a packet of the multi-GB slab read from the L: share; the partial
+  score store was removed, so nothing was left. Now: `readZarrSlab` retries reads failing with
+  "os error" 3 times (10/30/60 s, level reopened, each retry printed); `predictZarrStore` prints
+  the elapsed time at the end, and on an error/cancel the slab where it stopped. Open question:
+  resuming an interrupted store instead of deleting it.
+- 2026-11-12, resume of an interrupted zarr prediction (semantic, `predictZarrStore`):
+  - stores are kept on error/cancel (TIF removed); `.mib_prediction.json`
+    (`MibDeep.PredictionRecordFile`) in each store: fingerprint (image/network names without folders,
+    network bytes, level+size, prediction settings) + for the model store `finishedSlices` and the
+    downsample method, rewritten after each slab after `saveLevelMap` (tmp + movefile).
+  - scores moved from `saveStream` to `saveStreamResumable` (no pool), fingerprint as
+    `SourceFingerprint`; cost: the Z-downsampled score levels are rebuilt after the last slab by
+    reading the level above back (~0.28 x level-0 bytes for the halving pyramid of 01_05nm), and that
+    phase has no Cancel.
+  - restart slab: slabs the model store holds and that end before the saver's requested slice are
+    skipped; progress in slices, so a different slab depth on resume (other memory) is fine. TIF
+    and gathered outputs restart at slice 1.
+  - `selectModelStoreDestination(..., allowResume)` offers Resume/Overwrite/Cancel when a store holds
+    a record; `startPredictionBlockedImage` keeps resumed stores (and level maps) out of the
+    "empty the destination folders" cleanup; `isPredictionStore` skips stores with a record.
+  - Verified headless (testResume.m, 70x90x21, Z-halving 3-level pyramid, 2.5D, 15% overlap):
+    scores only / model+scores / model only, interrupted by an error after slab 2-4 or a cancel,
+    'nearest' and 'mode'; resumed stores (all levels, level map) equal to an uninterrupted run;
+    records removed, `mibIncomplete` gone. Changed settings refused with the record unchanged;
+    model overwritten + scores resumed also equal. Not verified: the dialogs (GUI), 2D Instance
+    (not resumable), a real store.

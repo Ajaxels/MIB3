@@ -10,27 +10,53 @@ function startPredictionBlockedImage(obj)
 %
 % **OME-Zarr images** (``BatchOpt.ImageFilenameExtension = 'ZARR'``). Each zarr
 % store (v2 or v3, detected per store) is predicted from one pyramid level,
-% ``BatchOpt.BioformatsIndex`` (1 = full resolution), which is loaded whole into
-% memory through ``deepmib.storeLoadImages`` with ``ZarrLevel``. The stores are
-% listed and checked by ``checkZarrStores`` before any output
-% is deleted or the network is loaded (level present in every store, integer
-% pixels, memory estimate). Stores are folders, so the datastore is an
-% ``arrayDatastore`` of store indices transformed by ``storeLoadImages``, and
-% ``predictionFiles`` replaces ``imgDS.Files`` for the file names. Preprocessing
-% for prediction is not available for zarr images.
+% ``BatchOpt.BioformatsIndex`` (1 = full resolution). Zarr stores are larger than
+% memory as a rule, so a store is never loaded whole: ``predictZarrStore`` reads
+% it in Z-slabs, predicts each slab and writes it to the outputs before reading
+% the next one (the slab depth, the halo of the 2.5D/3D networks and the memory
+% check are described there). The stores are listed and checked by
+% ``checkZarrStores`` before any output is deleted or the network is loaded
+% (level present in every store, integer pixels). Stores are folders, so the
+% datastore is an ``arrayDatastore`` of store indices, and ``predictionFiles``
+% replaces ``imgDS.Files`` for the file names. Preprocessing for prediction is not
+% available for zarr images.
 %
 % With the standard model formats the result is saved at the resolution of the
-% predicted level.
+% predicted level. TIF files and the zarr stores are written slab by slab; "MIB
+% Model format" and the AM, mibImg and mat score files hold the whole level in one
+% array, so ``predictZarrStore`` gathers them and they are saved here as for other
+% images (its memory check counts them).
 %
 % **BigData model output** (``BatchOpt.P_ModelFiles = 'Zarr3 (BigData model)'``,
-% zarr images only; here the semantic workflows, 2D Instance is in
+% any type of input images; here the semantic workflows, 2D Instance is in
 % ``startPredictionInstances``). For each image ``writeModelStore`` creates a
-% ``core.MibBigDataLabels`` store that mirrors the pyramid of the source store,
-% so it opens as an editable model of the image in BigData mode; the finer levels
-% are left to the level map, so no full-resolution array is built. The
-% destination (``Labels_<image name>.zarr3`` next to the images by default, see
-% ``obj.ZarrModelOpt``) and the overwriting of existing stores are confirmed by
-% ``selectModelStoreDestination`` before the run.
+% ``core.MibBigDataLabels`` store. For zarr images it mirrors the pyramid of the
+% source store, so it opens as an editable model of the image in BigData mode, and
+% it is written slab by slab (``createModelStore``, ``writeModelStoreSlab``); the
+% finer levels are left to the level map, so no full-resolution array is built.
+% Other images have no pyramid: one is generated from the size of the prediction
+% (``writeModelStore``). The destination (``Labels_<image name>.zarr3`` next to the
+% images by default, see ``obj.ZarrModelOpt``) and the overwriting of existing
+% stores are confirmed by ``selectModelStoreDestination`` before the run, once
+% the list of images is known. With ``BatchOpt.P_ModelFiles = 'Do not generate'``
+% no model files are written.
+%
+% **BigData score output** (``BatchOpt.P_ScoreFiles = 'Zarr3 (BigData)'``, any type
+% of input images, the semantic workflows only, checked in ``start``). Each image
+% gets ``Score_<image name>.zarr3`` (``.zarr2`` as set), an *image* store, not a
+% model: the scores of the predicted level as uint8 (0-255) with one channel per
+% class (``[y x z c]``; the Exterior class only with
+% ``obj.ScoreExportOpt.IncludeExterior``). It is written by
+% ``io.savers.Zarr3Saver.save`` (for zarr images ``saveStream``, fed slab by slab
+% by ``predictZarrStore``) with the settings of ``obj.ScoreExportOpt``
+% (``updateScoreExportSettings``: format, destination, levels, chunks, shards,
+% compression, downsampling method). For zarr images the pyramid is that of the
+% image from the predicted level down (that level becomes level 1 of the store)
+% and the voxel size is the image's scaled to the predicted level. Other images get
+% an automatic XY pyramid (chunk ``[256 256 16]``) and voxel size 1. The group
+% carries the ``mibPredictionScores`` attribute (class names), so
+% ``MibDeep.isPredictionStore`` keeps the store out of the next prediction. The
+% destination is chosen by ``selectModelStoreDestination(..., 'score')``.
 
     % detect 2D or 3D architecture
     if ismember(obj.BatchOpt.Workflow{1}, {'3D Semantic'})
@@ -86,10 +112,11 @@ function startPredictionBlockedImage(obj)
         patchwiseWorkflowSwitch = true;
     end
 
-    % OME-Zarr images: each store is predicted from one pyramid level loaded into
-    % memory; check every store before anything is deleted or the network is loaded
+    % OME-Zarr images: each store is predicted from one pyramid level, slab by slab
+    % (predictZarrStore); check every store before anything is deleted or the network is loaded
     zarrInput = strcmp(obj.BatchOpt.ImageFilenameExtension{1}, 'ZARR');
     zarrOutput = strcmp(obj.BatchOpt.P_ModelFiles{1}, 'Zarr3 (BigData model)');
+    zarrScores = strcmp(obj.BatchOpt.P_ScoreFiles{1}, 'Zarr3 (BigData)');   % zarr outputs are available for any type of input images
     if zarrInput
         if preprocessedSwitch
             mgsOpt.MsgBoxOnly = true;
@@ -100,16 +127,10 @@ function startPredictionBlockedImage(obj)
         end
         [zarrList, zarrStores, cancelled] = checkZarrStores(obj);
         if cancelled; return; end
-
-        if zarrOutput
-            [storePaths, zarrFormat, cancelled] = selectModelStoreDestination(obj, zarrList);
-            if cancelled; return; end
-            writtenStores = {};
-        end
     end
 
     % get settings for export of score files
-    % {'Do not generate', 'Use AM format', 'Use Matlab non-compressed format', 'Use Matlab compressed format', 'Use Matlab non-compressed format (range 0-1)'};
+    % {'Do not generate', 'Use AM format', 'Use Matlab non-compressed format', 'Use Matlab compressed format', 'Use Matlab non-compressed format (range 0-1)', 'Zarr3 (BigData)'};
     if strcmp(obj.BatchOpt.P_ScoreFiles{1}, 'Do not generate')
         generateScoreFiles = 0;
     else
@@ -118,6 +139,7 @@ function startPredictionBlockedImage(obj)
         % 2-> 'Use Matlab non-compressed format'
         % 3-> 'Use Matlab compressed format'
         % 4-> 'Use Matlab non-compressed format (range 0-1)'
+        % 5-> 'Zarr3 (BigData)'
 
         saveImageOpt.dimOrder = 'yxczt';    % for 2D or saveImageOpt.dimOrder = 'yxzct'; for 3D
     end
@@ -133,68 +155,17 @@ function startPredictionBlockedImage(obj)
             'Value', 0);
     end
 
-    % creating output directories
-    warning('off', 'MATLAB:MKDIR:DirectoryExists');
-    % check whether the output folder exists and whether there are
-    % some files in there
-    noOutputModelFiles = 0;
-    noOutputScoreFiles = 0;
-    outputModelStores = {};     % zarr model stores are folders, delete(*) does not remove them
-    if isfolder(fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages', 'ResultsModels'))
-        outputList = dir(fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages', 'ResultsModels'));
-        noOutputModelFiles = abs(sum([outputList.isdir]-1));
-        storeList = outputList([outputList.isdir] & ~cellfun(@isempty, regexpi({outputList.name}, '\.zarr[23]?$', 'once')));
-        outputModelStores = fullfile({storeList.folder}, {storeList.name});
-        noOutputModelFiles = noOutputModelFiles + numel(outputModelStores);
-    end
-    if isfolder(fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages', 'ResultsScores'))
-        outputList = dir(fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages', 'ResultsScores'));
-        noOutputScoreFiles = abs(sum([outputList.isdir]-1));
-    end
-    if noOutputModelFiles > 0 || noOutputScoreFiles > 0
-        selection = uiconfirm(obj.view.gui, ...
-            sprintf(['The destination directories:\n- PredictionImages/ResultsModels\n- PredictionImages/ResultsScores\n\n' ...
-            'in\n%s\n\n' ...
-            'are not empty!\n\nShell the destination folders be emptied and prediction started?'], obj.BatchOpt.ResultingImagesDir), ...
-            'Destination folders are not empty',...
-            'Icon','warning');
-        if strcmp(selection, 'Cancel'); if obj.BatchOpt.showWaitbar; close(pwb); end; return; end
-        if noOutputModelFiles > 0
-            delete(fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages', 'ResultsModels', '*'));
-            for storeId = 1:numel(outputModelStores)
-                rmdir(outputModelStores{storeId}, 's');
-            end
-        end
-        if noOutputScoreFiles > 0
-            delete(fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages', 'ResultsScores', '*'));
-        end
-    end
-
-    % isfolder(fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages', 'ResultsModels'))
-    mkdir(fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages', 'ResultsScores'));
-    mkdir(fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages', 'ResultsModels'));
-
     % prepare options for loading of images
     mibDeepStoreLoadImagesOpt.mibBioformatsCheck = obj.BatchOpt.Bioformats;
     mibDeepStoreLoadImagesOpt.BioFormatsIndices = obj.BatchOpt.BioformatsIndex{1};
     mibDeepStoreLoadImagesOpt.Workflow = obj.BatchOpt.Workflow{1};
-    if zarrInput
-        % per-store options: the level, and the image group resolved by the check
-        % above, so a container holding several images does not ask again
-        mibDeepStoreLoadImagesOpt.ZarrLevel = obj.BatchOpt.BioformatsIndex{1};
-        zarrReadOptions = repmat(mibDeepStoreLoadImagesOpt, [numel(zarrList), 1]);
-        for fileId = 1:numel(zarrList)
-            if ~strcmp(zarrStores(fileId).groupPath, zarrList{fileId})
-                zarrReadOptions(fileId).ZarrGroupPath = zarrStores(fileId).groupPath;
-            end
-        end
-    end
 
     % make a datastore for images
     try
-        if zarrInput    % zarr stores are folders, imageDatastore can not list them
-            imgDS = transform(arrayDatastore((1:numel(zarrList))', 'OutputType', 'same'), ...
-                @(fileId) deepmib.storeLoadImages(zarrList{fileId}, zarrReadOptions(fileId)));
+        if zarrInput
+            % zarr stores are folders, imageDatastore can not list them; the datastore
+            % gives the index of the store, which predictZarrStore reads slab by slab
+            imgDS = arrayDatastore((1:numel(zarrList))', 'OutputType', 'same');
         elseif preprocessedSwitch   % with preprocessing
             imgDS = imageDatastore(fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages'), ...
                 'FileExtensions', '.mibImg', 'ReadFcn', @deepmib.storeLoadImages);
@@ -263,6 +234,49 @@ function startPredictionBlockedImage(obj)
     else
         predictionFiles = imgDS.Files;
     end
+
+    % destinations of the zarr stores (model and score files of any type of input images),
+    % confirmed before anything is deleted
+    writtenStores = {};
+    if zarrOutput
+        [storePaths, zarrFormat, cancelled, resumeModelStores] = selectModelStoreDestination(obj, predictionFiles, 'model', zarrInput);
+        if cancelled; if obj.BatchOpt.showWaitbar; close(pwb); end; return; end
+    end
+    if zarrScores
+        [scoreStorePaths, scoreZarrFormat, cancelled, resumeScoreStores] = selectModelStoreDestination(obj, predictionFiles, 'score', zarrInput);
+        if cancelled; if obj.BatchOpt.showWaitbar; close(pwb); end; return; end
+    end
+
+    % creating output directories
+    warning('off', 'MATLAB:MKDIR:DirectoryExists');
+    % check whether the output folder exists and whether there are
+    % some files in there; stores to be resumed (and the level maps of the model
+    % stores) are kept
+    keptPaths = {};
+    if zarrOutput
+        keptPaths = [keptPaths, storePaths(resumeModelStores), ...
+            cellfun(@core.MibBigDataLabels.levelMapPathFor, storePaths(resumeModelStores), 'UniformOutput', false)];
+    end
+    if zarrScores; keptPaths = [keptPaths, scoreStorePaths(resumeScoreStores)]; end
+    [outputModelFiles, outputModelStores] = listOutputs(fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages', 'ResultsModels'), keptPaths);
+    [outputScoreFiles, outputScoreStores] = listOutputs(fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages', 'ResultsScores'), keptPaths);
+    noOutputModelFiles = numel(outputModelFiles) + numel(outputModelStores);
+    noOutputScoreFiles = numel(outputScoreFiles) + numel(outputScoreStores);
+    if noOutputModelFiles > 0 || noOutputScoreFiles > 0
+        selection = uiconfirm(obj.view.gui, ...
+            sprintf(['The destination directories:\n- PredictionImages/ResultsModels\n- PredictionImages/ResultsScores\n\n' ...
+            'in\n%s\n\n' ...
+            'are not empty!\n\nShell the destination folders be emptied and prediction started?'], obj.BatchOpt.ResultingImagesDir), ...
+            'Destination folders are not empty',...
+            'Icon','warning');
+        if strcmp(selection, 'Cancel'); if obj.BatchOpt.showWaitbar; close(pwb); end; return; end
+        cellfun(@delete, [outputModelFiles, outputScoreFiles]);
+        cellfun(@(storePath) rmdir(storePath, 's'), [outputModelStores, outputScoreStores]);
+    end
+
+    % isfolder(fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages', 'ResultsModels'))
+    mkdir(fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages', 'ResultsScores'));
+    mkdir(fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages', 'ResultsModels'));
 
     if obj.BatchOpt.showWaitbar
         if pwb.CancelRequested; close(pwb); return; end
@@ -416,117 +430,154 @@ function startPredictionBlockedImage(obj)
             end
         end
 
-        % read image
-        vol = read(imgDS);
         [~, fn] = fileparts(predictionFiles{id});
         if zarrInput; fn = regexprep(fn, '\.ome$', '', 'ignorecase'); end   % 'name.ome.zarr' -> 'name'
 
-        % downsample the input image corresponding to the
-        % downsampling factor
-        if obj.BatchOpt.P_ImageDownsamplingFactor{1} ~= 1
-            imResizeOpt.imgType = '3D';
-            imResizeOpt.showWaitbar = false;
-            if dataDimension == 2
-                [imgHeight, imgWidth, noColors] = size(vol);
-                imgDepth = 1;
+        if zarrScores
+            % settings of the score store: an image store of the predicted level, one channel per class
+            scoreOpt = obj.ScoreExportOpt;
+            scoreMetadata.pixSize = struct('x', 1, 'y', 1, 'z', 1);   % the voxel size of images that are not zarr is not known here
+            if zarrInput
+                % the predicted level becomes level 1; the coarser levels of the image follow
+                predictedLevel = obj.BatchOpt.BioformatsIndex{1};
+                imagePyramid = zarrStores(id).pyramid;
+                levelRange = predictedLevel:size(imagePyramid.levelImageSizes, 1);
+                scoreSaveOpt = io.savers.Zarr3Saver.optionsFromPyramid(struct('axisOrder', imagePyramid.axisOrder, ...
+                    'levelImageSizes', imagePyramid.levelImageSizes(levelRange, :), ...
+                    'levelScaleFactors', imagePyramid.levelScaleFactors(levelRange, :), ...
+                    'chunkSizes', {imagePyramid.chunkSizes(levelRange)}));
+                % voxel size of the predicted level, so the scores line up with the image
+                levelScale = imagePyramid.levelScaleFactors(predictedLevel, :);   % [y x z]
+                scoreMetadata.pixSize = zarrStores(id).pixSize;
+                scoreMetadata.pixSize.y = scoreMetadata.pixSize.y*levelScale(1);
+                scoreMetadata.pixSize.x = scoreMetadata.pixSize.x*levelScale(2);
+                scoreMetadata.pixSize.z = scoreMetadata.pixSize.z*levelScale(3);
             else
-                [imgHeight, imgWidth, imgDepth, noColors] = size(vol);
+                % no pyramid to follow: XY halvings until the smaller side is below 256 pixels
+                scoreSaveOpt = struct('silent', true, 'ChunkSize', [256 256 16], 'DownsampleStrategy', 'XY only');
             end
-            if noColors > 1; imResizeOpt.imgType = '4D'; end
-            imResizeOpt.width = round(imgWidth/obj.BatchOpt.P_ImageDownsamplingFactor{1});  % new width value, overrides the scale parameter
-            imResizeOpt.height = round(imgHeight/obj.BatchOpt.P_ImageDownsamplingFactor{1});  % new height value, overrides the scale parameter
-            imResizeOpt.depth = imgDepth;
-            if dataDimension == 3 % for 3D downsample all dimensions
-                imResizeOpt.depth = round(imgDepth/obj.BatchOpt.P_ImageDownsamplingFactor{1}); % % new depth value, overrides the scale parameter
+            scoreSaveOpt.ZarrFormat = scoreZarrFormat;
+            scoreSaveOpt.DownsampleMethod = scoreOpt.DownsampleMethod;
+            if scoreOpt.Levels > 0; scoreSaveOpt.Levels = scoreOpt.Levels; end
+            if all(scoreOpt.ChunkSize > 0); scoreSaveOpt.ChunkSize = scoreOpt.ChunkSize; end
+            if scoreZarrFormat == 2
+                scoreSaveOpt.ShardSize = [];    % no sharding in zarr v2
+            elseif all(scoreOpt.ShardSize > 0)
+                scoreSaveOpt.ShardSize = scoreOpt.ShardSize;
             end
-            vol = utils.resizeImage3d(vol, [], imResizeOpt);
+            scoreSaveOpt.Compressors = scoreOpt.Compressors;
+            if ~strcmp(scoreSaveOpt.Compressors, 'none')
+                scoreCompressionLevel = scoreOpt.CompressionLevel;
+                if strcmp(scoreSaveOpt.Compressors, 'gzip'); scoreCompressionLevel = min(scoreCompressionLevel, 9); end
+                scoreSaveOpt.Compressors = struct('name', scoreSaveOpt.Compressors, 'configuration', struct('level', scoreCompressionLevel));
+            end
+            scoreClassNames = cellstr(classNames(:))';
+            if ~obj.ScoreExportOpt.IncludeExterior; scoreClassNames(1) = []; end
         end
 
-        % depth of the volume
-        volDepth = size(vol, 3);
-        nextWaitbarIterationFromZ = volDepth/progressUpdatesPerFile; % z-value when the progress bar needs to be updated
-
-        if strcmp(obj.BatchOpt.Workflow{1}, '2.5D Semantic')
-            blockSize(3) = inputPatchSize(3);   % update blockSize for 2.5D networks
-            padShift(3) = 0;
-            paddingValue = floor(inputPatchSize(3)/2);
-
-            for zValue = 1:volDepth
-                if zValue <= paddingValue
-                    subVol = padarray(vol(:,:,max([zValue-paddingValue,1]):zValue+paddingValue), [0, 0, paddingValue-zValue+1], 'symmetric', 'pre');
-                elseif zValue > volDepth-paddingValue
-                    subVol = padarray(vol(:,:, zValue-paddingValue:min([zValue+paddingValue,volDepth])), [0, 0, zValue-volDepth+paddingValue], 'symmetric', 'post');
-                else
-                    subVol = vol(:,:,zValue-paddingValue:zValue+paddingValue);
-                end
-
-                [outputLabelsCurrent, scoreImgCurrent, cancelled] = obj.processBlocksBlockedImage(subVol, zValue, net, ...
-                    inputPatchSize, outputPatchSize, blockSize, padShift, ...
-                    dataDimension, patchwiseWorkflowSwitch, patchwisePatchesPredictSwitch, ...
-                    classNames, generateScoreFiles, executionEnvironment, fn, progressDialog);
-                if cancelled; if obj.BatchOpt.showWaitbar; close(pwb); end; return; end
-
-                if zValue == 1
-                    outputLabels = zeros([size(outputLabelsCurrent,1), size(outputLabelsCurrent,2), volDepth], 'uint8');
-                    if generateScoreFiles > 0
-                        if obj.ScoreExportOpt.IncludeExterior
-                            noOutputClasses = size(scoreImgCurrent,3);
-                        else
-                            noOutputClasses = size(scoreImgCurrent,3)-1;
-                        end
-                        scoreImg = zeros([size(scoreImgCurrent,1), size(scoreImgCurrent,2), noOutputClasses, volDepth], class(scoreImgCurrent));
-                    else
-                        scoreImg = 0;
-                    end
-                end
-                outputLabels(:,:,zValue) = outputLabelsCurrent; % (:,:,paddingValue+1);
-                if generateScoreFiles > 0
-                    % remove exterior
-                    if ~obj.ScoreExportOpt.IncludeExterior; scoreImgCurrent = scoreImgCurrent(:,:,2:end,:); end
-                    scoreImg(:,:,:,zValue) = scoreImgCurrent; % (:,:,:,paddingValue+1);
-                end
-
-                % check for Cancel
-                if obj.BatchOpt.showWaitbar && pwb.CancelRequested; close(pwb); return; end
-
-                % update progress bar
-                if obj.BatchOpt.showWaitbar && zValue >= nextWaitbarIterationFromZ
-                    elapsedTime = toc(t1);
-                    currIteration = currentIteration + 1;
-                    timerValue = elapsedTime/currIteration*(maxIterations - currIteration);
-                    pwb.Message = sprintf('%s\nHold on ~%.0f:%.2d mins left...', fn, floor(timerValue/60), mod(round(timerValue),60));
-                    currentIteration = currentIteration + incrementStep;
-                    pwb.Value = min(1, currentIteration / maxIterations);
-                    nextWaitbarIterationFromZ = nextWaitbarIterationFromZ + volDepth/progressUpdatesPerFile;
-                end
+        if zarrInput
+            % zarr stores are larger than memory as a rule: the store is read, predicted
+            % and written slab by slab; only the formats written whole below are gathered
+            read(imgDS);    % the index of the store
+            predictOpt = struct('net', net, 'inputPatchSize', inputPatchSize, 'outputPatchSize', outputPatchSize, ...
+                'blockSize', blockSize, 'padShift', padShift, 'dataDimension', dataDimension, ...
+                'patchwiseWorkflowSwitch', patchwiseWorkflowSwitch, 'classNames', {classNames}, ...
+                'generateScoreFiles', generateScoreFiles, 'executionEnvironment', executionEnvironment, ...
+                'fn', fn, 'pwb', progressDialog, 'fileIndex', id, 'noFiles', noFiles, 'startTime', t1, ...
+                'modelStorePath', '', 'tifFilename', '', 'scoreStorePath', '', ...
+                'keepLabels', strcmp(obj.BatchOpt.P_ModelFiles{1}, 'MIB Model format') || patchwiseWorkflowSwitch, ...
+                'keepScores', generateScoreFiles > 0 && ~zarrScores);
+            if zarrOutput
+                predictOpt.modelStorePath = storePaths{id};
+                predictOpt.resumeModel = resumeModelStores(id);
+                predictOpt.zarrFormat = zarrFormat;
+                predictOpt.modelMaterialNames = classNames(2:end);     % remove Exterior
+                predictOpt.modelMaterialColors = [modelMaterialColors; obj.modelMaterialColors];
             end
-        else   % '2D Semantic', '3D Semantic', '2D Patch-wise'
-            % detect whether to use 2D net with 3D datasets, in this
-            % case the full volume will be loaded and processed
-            % slice-by-slice
-            if dataDimension == 2       % 2D case
-                if volDepth > 3 && size(vol, 3) ~= inputPatchSize(4)
-                    use3DdatasetWith2Dnet = true;
-                    incrementStep = 1;
-                else
-                    use3DdatasetWith2Dnet = false;
-                    incrementStep = progressUpdatesPerFile;
+            if ismember(obj.BatchOpt.P_ModelFiles{1}, {'TIF compressed format', 'TIF uncompressed format'})
+                predictOpt.tifFilename = fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages', 'ResultsModels', ['Labels_' fn '.tif']);
+                predictOpt.tifCompression = 'none';
+                if strcmp(obj.BatchOpt.P_ModelFiles{1}, 'TIF compressed format'); predictOpt.tifCompression = 'lzw'; end
+            end
+            if zarrScores
+                predictOpt.scoreStorePath = scoreStorePaths{id};
+                predictOpt.resumeScores = resumeScoreStores(id);
+                predictOpt.scoreSaveOpt = scoreSaveOpt;
+                predictOpt.scoreMetadata = scoreMetadata;
+                predictOpt.scoreClassNames = scoreClassNames;
+            end
+            try
+                [outputLabels, scoreImg, cancelled] = obj.predictZarrStore(zarrStores(id), predictOpt);
+            catch err
+                if obj.BatchOpt.showWaitbar; close(pwb); end
+                if ~isempty(writtenStores)
+                    fprintf('DeepMIB: stores written before the error:\n%s\n', strjoin(writtenStores, newline));
                 end
-            elseif dataDimension == 3
-                use3DdatasetWith2Dnet = false;
-                incrementStep = progressUpdatesPerFile;
-            else
-                use3DdatasetWith2Dnet = false;
-                incrementStep = 1;
+                rethrow(err);
+            end
+            if cancelled
+                if obj.BatchOpt.showWaitbar; close(pwb); end
+                if ~isempty(writtenStores)
+                    fprintf('DeepMIB: prediction cancelled; stores written before:\n%s\n', strjoin(writtenStores, newline));
+                end
+                return;
+            end
+            if zarrOutput
+                writtenStores{end+1} = storePaths{id}; %#ok<AGROW>
+                fprintf('DeepMIB: model store written: %s\n', storePaths{id});
+            end
+            if zarrScores
+                writtenStores{end+1} = scoreStorePaths{id}; %#ok<AGROW>
+                fprintf('DeepMIB: score store written: %s\n', scoreStorePaths{id});
+            end
+        else
+            vol = read(imgDS);
+
+            % downsample the input image corresponding to the
+            % downsampling factor
+            if obj.BatchOpt.P_ImageDownsamplingFactor{1} ~= 1
+                imResizeOpt.imgType = '3D';
+                imResizeOpt.showWaitbar = false;
+                if dataDimension == 2
+                    [imgHeight, imgWidth, noColors] = size(vol);
+                    imgDepth = 1;
+                else
+                    [imgHeight, imgWidth, imgDepth, noColors] = size(vol);
+                end
+                if noColors > 1; imResizeOpt.imgType = '4D'; end
+                imResizeOpt.width = round(imgWidth/obj.BatchOpt.P_ImageDownsamplingFactor{1});  % new width value, overrides the scale parameter
+                imResizeOpt.height = round(imgHeight/obj.BatchOpt.P_ImageDownsamplingFactor{1});  % new height value, overrides the scale parameter
+                imResizeOpt.depth = imgDepth;
+                if dataDimension == 3 % for 3D downsample all dimensions
+                    imResizeOpt.depth = round(imgDepth/obj.BatchOpt.P_ImageDownsamplingFactor{1}); % % new depth value, overrides the scale parameter
+                end
+                vol = utils.resizeImage3d(vol, [], imResizeOpt);
             end
 
-            if use3DdatasetWith2Dnet
+            % depth of the volume
+            volDepth = size(vol, 3);
+            nextWaitbarIterationFromZ = volDepth/progressUpdatesPerFile; % z-value when the progress bar needs to be updated
+
+            if strcmp(obj.BatchOpt.Workflow{1}, '2.5D Semantic')
+                blockSize(3) = inputPatchSize(3);   % update blockSize for 2.5D networks
+                padShift(3) = 0;
+                paddingValue = floor(inputPatchSize(3)/2);
+
                 for zValue = 1:volDepth
-                    [outputLabelsCurrent, scoreImgCurrent, cancelled] = obj.processBlocksBlockedImage(squeeze(vol(:,:,zValue,:)), zValue, net, ...
+                    if zValue <= paddingValue
+                        subVol = padarray(vol(:,:,max([zValue-paddingValue,1]):zValue+paddingValue), [0, 0, paddingValue-zValue+1], 'symmetric', 'pre');
+                    elseif zValue > volDepth-paddingValue
+                        subVol = padarray(vol(:,:, zValue-paddingValue:min([zValue+paddingValue,volDepth])), [0, 0, zValue-volDepth+paddingValue], 'symmetric', 'post');
+                    else
+                        subVol = vol(:,:,zValue-paddingValue:zValue+paddingValue);
+                    end
+
+                    [outputLabelsCurrent, scoreImgCurrent, cancelled] = obj.processBlocksBlockedImage(subVol, zValue, net, ...
                         inputPatchSize, outputPatchSize, blockSize, padShift, ...
                         dataDimension, patchwiseWorkflowSwitch, patchwisePatchesPredictSwitch, ...
                         classNames, generateScoreFiles, executionEnvironment, fn, progressDialog);
                     if cancelled; if obj.BatchOpt.showWaitbar; close(pwb); end; return; end
+
                     if zValue == 1
                         outputLabels = zeros([size(outputLabelsCurrent,1), size(outputLabelsCurrent,2), volDepth], 'uint8');
                         if generateScoreFiles > 0
@@ -540,15 +591,16 @@ function startPredictionBlockedImage(obj)
                             scoreImg = 0;
                         end
                     end
-                    outputLabels(:,:,zValue) = outputLabelsCurrent;
+                    outputLabels(:,:,zValue) = outputLabelsCurrent; % (:,:,paddingValue+1);
                     if generateScoreFiles > 0
                         % remove exterior
                         if ~obj.ScoreExportOpt.IncludeExterior; scoreImgCurrent = scoreImgCurrent(:,:,2:end,:); end
-                        scoreImg(:,:,:,zValue) = scoreImgCurrent;
+                        scoreImg(:,:,:,zValue) = scoreImgCurrent; % (:,:,:,paddingValue+1);
                     end
 
                     % check for Cancel
                     if obj.BatchOpt.showWaitbar && pwb.CancelRequested; close(pwb); return; end
+
                     % update progress bar
                     if obj.BatchOpt.showWaitbar && zValue >= nextWaitbarIterationFromZ
                         elapsedTime = toc(t1);
@@ -560,67 +612,133 @@ function startPredictionBlockedImage(obj)
                         nextWaitbarIterationFromZ = nextWaitbarIterationFromZ + volDepth/progressUpdatesPerFile;
                     end
                 end
-            else
-                zValue = NaN;
-                [outputLabels, scoreImg, cancelled] = obj.processBlocksBlockedImage(vol, zValue, net, ...
-                    inputPatchSize, outputPatchSize, blockSize, padShift, ...
-                    dataDimension, patchwiseWorkflowSwitch, patchwisePatchesPredictSwitch, ...
-                    classNames, generateScoreFiles, executionEnvironment, fn, progressDialog);
-                if cancelled; if obj.BatchOpt.showWaitbar; close(pwb); end; return; end
-                
-                % remove exterior
-                if generateScoreFiles > 0 && ~obj.ScoreExportOpt.IncludeExterior
-                    scoreImg = scoreImg(:,:,2:end,:);
+            else   % '2D Semantic', '3D Semantic', '2D Patch-wise'
+                % detect whether to use 2D net with 3D datasets, in this
+                % case the full volume will be loaded and processed
+                % slice-by-slice
+                if dataDimension == 2       % 2D case
+                    if volDepth > 3 && size(vol, 3) ~= inputPatchSize(4)
+                        use3DdatasetWith2Dnet = true;
+                        incrementStep = 1;
+                    else
+                        use3DdatasetWith2Dnet = false;
+                        incrementStep = progressUpdatesPerFile;
+                    end
+                elseif dataDimension == 3
+                    use3DdatasetWith2Dnet = false;
+                    incrementStep = progressUpdatesPerFile;
+                else
+                    use3DdatasetWith2Dnet = false;
+                    incrementStep = 1;
                 end
 
-                % check for Cancel
-                if obj.BatchOpt.showWaitbar && pwb.CancelRequested; close(pwb); return; end
-                % update progress bar
-                if obj.BatchOpt.showWaitbar
-                    elapsedTime = toc(t1);
-                    currIteration = currentIteration + 1;
-                    timerValue = elapsedTime/currIteration*(maxIterations - currIteration);
-                    pwb.Message = sprintf('%s\nHold on ~%.0f:%.2d mins left...', fn, floor(timerValue/60), mod(round(timerValue),60));
-                    currentIteration = currentIteration + incrementStep;
-                    pwb.Value = min(1, currentIteration / maxIterations);
+                if use3DdatasetWith2Dnet
+                    for zValue = 1:volDepth
+                        [outputLabelsCurrent, scoreImgCurrent, cancelled] = obj.processBlocksBlockedImage(squeeze(vol(:,:,zValue,:)), zValue, net, ...
+                            inputPatchSize, outputPatchSize, blockSize, padShift, ...
+                            dataDimension, patchwiseWorkflowSwitch, patchwisePatchesPredictSwitch, ...
+                            classNames, generateScoreFiles, executionEnvironment, fn, progressDialog);
+                        if cancelled; if obj.BatchOpt.showWaitbar; close(pwb); end; return; end
+                        if zValue == 1
+                            outputLabels = zeros([size(outputLabelsCurrent,1), size(outputLabelsCurrent,2), volDepth], 'uint8');
+                            if generateScoreFiles > 0
+                                if obj.ScoreExportOpt.IncludeExterior
+                                    noOutputClasses = size(scoreImgCurrent,3);
+                                else
+                                    noOutputClasses = size(scoreImgCurrent,3)-1;
+                                end
+                                scoreImg = zeros([size(scoreImgCurrent,1), size(scoreImgCurrent,2), noOutputClasses, volDepth], class(scoreImgCurrent));
+                            else
+                                scoreImg = 0;
+                            end
+                        end
+                        outputLabels(:,:,zValue) = outputLabelsCurrent;
+                        if generateScoreFiles > 0
+                            % remove exterior
+                            if ~obj.ScoreExportOpt.IncludeExterior; scoreImgCurrent = scoreImgCurrent(:,:,2:end,:); end
+                            scoreImg(:,:,:,zValue) = scoreImgCurrent;
+                        end
+
+                        % check for Cancel
+                        if obj.BatchOpt.showWaitbar && pwb.CancelRequested; close(pwb); return; end
+                        % update progress bar
+                        if obj.BatchOpt.showWaitbar && zValue >= nextWaitbarIterationFromZ
+                            elapsedTime = toc(t1);
+                            currIteration = currentIteration + 1;
+                            timerValue = elapsedTime/currIteration*(maxIterations - currIteration);
+                            pwb.Message = sprintf('%s\nHold on ~%.0f:%.2d mins left...', fn, floor(timerValue/60), mod(round(timerValue),60));
+                            currentIteration = currentIteration + incrementStep;
+                            pwb.Value = min(1, currentIteration / maxIterations);
+                            nextWaitbarIterationFromZ = nextWaitbarIterationFromZ + volDepth/progressUpdatesPerFile;
+                        end
+                    end
+                else
+                    zValue = NaN;
+                    [outputLabels, scoreImg, cancelled] = obj.processBlocksBlockedImage(vol, zValue, net, ...
+                        inputPatchSize, outputPatchSize, blockSize, padShift, ...
+                        dataDimension, patchwiseWorkflowSwitch, patchwisePatchesPredictSwitch, ...
+                        classNames, generateScoreFiles, executionEnvironment, fn, progressDialog);
+                    if cancelled; if obj.BatchOpt.showWaitbar; close(pwb); end; return; end
+                    
+                    % remove exterior
+                    if generateScoreFiles > 0 && ~obj.ScoreExportOpt.IncludeExterior
+                        scoreImg = scoreImg(:,:,2:end,:);
+                    end
+
+                    % check for Cancel
+                    if obj.BatchOpt.showWaitbar && pwb.CancelRequested; close(pwb); return; end
+                    % update progress bar
+                    if obj.BatchOpt.showWaitbar
+                        elapsedTime = toc(t1);
+                        currIteration = currentIteration + 1;
+                        timerValue = elapsedTime/currIteration*(maxIterations - currIteration);
+                        pwb.Message = sprintf('%s\nHold on ~%.0f:%.2d mins left...', fn, floor(timerValue/60), mod(round(timerValue),60));
+                        currentIteration = currentIteration + incrementStep;
+                        pwb.Value = min(1, currentIteration / maxIterations);
+                    end
+                end
+            end
+
+            % upsample results beased on downsampling factor
+            if obj.BatchOpt.P_ImageDownsamplingFactor{1} ~= 1
+                imResizeOpt.imgType = '3D';
+                imResizeOpt.width = imgWidth;  % upsample width value, overrides the scale parameter
+                imResizeOpt.height = imgHeight;  % upsample height value, overrides the scale parameter
+                imResizeOpt.depth = imgDepth;
+                imResizeOpt.method = 'nearest';
+                outputLabels = utils.resizeImage3d(outputLabels, [], imResizeOpt);
+
+                % % smooth models for 2 classes outputs
+                if numClasses == 2
+                    % utils.doImageFiltering takes the ImageFilters BatchOpt format
+                    smoothOptions.SourceLayer = {'labels'};
+                    smoothOptions.FilterName = {'Gaussian'};
+                    smoothOptions.Mode3D = dataDimension == 3;
+                    smoothOptions.Sigma = {obj.BatchOpt.P_ImageDownsamplingFactor{1}+1};
+                    smoothOptions.HSize = num2str(obj.BatchOpt.P_ImageDownsamplingFactor{1}*2+1);
+                    smoothOptions.Padding = {'replicate'};
+                    smoothOptions.PaddingValue = {0};
+                    smoothOptions.FilterDomain = {'auto'};
+                    smoothOptions.showWaitbar = false;
+                    outputLabels = utils.doImageFiltering(outputLabels, smoothOptions);
+                end
+
+                if generateScoreFiles > 0
+                    imResizeOpt.imgType = '4D';
+                    scoreImg = utils.resizeImage3d(scoreImg, [], imResizeOpt);
                 end
             end
         end
 
-        % upsample results beased on downsampling factor
-        if obj.BatchOpt.P_ImageDownsamplingFactor{1} ~= 1
-            imResizeOpt.imgType = '3D';
-            imResizeOpt.width = imgWidth;  % upsample width value, overrides the scale parameter
-            imResizeOpt.height = imgHeight;  % upsample height value, overrides the scale parameter
-            imResizeOpt.depth = imgDepth;
-            imResizeOpt.method = 'nearest';
-            outputLabels = utils.resizeImage3d(outputLabels, [], imResizeOpt);
-
-            % % smooth models for 2 classes outputs
-            if numClasses == 2
-                % utils.doImageFiltering takes the ImageFilters BatchOpt format
-                smoothOptions.SourceLayer = {'labels'};
-                smoothOptions.FilterName = {'Gaussian'};
-                smoothOptions.Mode3D = dataDimension == 3;
-                smoothOptions.Sigma = {obj.BatchOpt.P_ImageDownsamplingFactor{1}+1};
-                smoothOptions.HSize = num2str(obj.BatchOpt.P_ImageDownsamplingFactor{1}*2+1);
-                smoothOptions.Padding = {'replicate'};
-                smoothOptions.PaddingValue = {0};
-                smoothOptions.FilterDomain = {'auto'};
-                smoothOptions.showWaitbar = false;
-                outputLabels = utils.doImageFiltering(outputLabels, smoothOptions);
-            end
-
-            if generateScoreFiles > 0
-                imResizeOpt.imgType = '4D';
-                scoreImg = utils.resizeImage3d(scoreImg, [], imResizeOpt);
-            end
-        end
-
-        % Save results
+        % Save results; for zarr images the TIF files and the zarr stores are
+        % already written by predictZarrStore
         if ~patchwisePatchesPredictSwitch % standard semantic segmentation mode or patch-wise mode when prediction images are not in patches
             % depending on the selected output type
-            switch obj.BatchOpt.P_ModelFiles{1}
+            modelFormat = obj.BatchOpt.P_ModelFiles{1};
+            if zarrInput && ismember(modelFormat, {'TIF compressed format', 'TIF uncompressed format', 'Zarr3 (BigData model)'})
+                modelFormat = 'written by predictZarrStore';
+            end
+            switch modelFormat
                 case 'MIB Model format'
                     modelMaterialNames = classNames;
                     if ~patchwiseWorkflowSwitch; modelMaterialNames(1) = []; end % remove Exterior
@@ -643,20 +761,20 @@ function startPredictionBlockedImage(obj)
                         tifCompression = 'none';
                     end
                     filename = fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages', 'ResultsModels', ['Labels_' fn '.tif']);
-                    imwrite(outputLabels(:,:,1), filename, 'tif', 'WriteMode', 'overwrite', 'Description', sprintf('DeepMIB segmentation: $s %s', obj.BatchOpt.Workflow{1}, obj.BatchOpt.Architecture{1}), 'Compression', tifCompression);
+                    imwrite(outputLabels(:,:,1), filename, 'tif', 'WriteMode', 'overwrite', 'Description', sprintf('DeepMIB segmentation: %s %s', obj.BatchOpt.Workflow{1}, obj.BatchOpt.Architecture{1}), 'Compression', tifCompression);
                     if dataDimension ~= 2 || use3DdatasetWith2Dnet % 2.5D and 3D case dataDimension == 2.5 or dataDimension == 3
                         for sliceId = 2:size(outputLabels, 3)
                             imwrite(outputLabels(:,:,sliceId), filename, 'tif', 'WriteMode', 'append', 'Compression', tifCompression);
                         end
                     end
                 case 'Zarr3 (BigData model)'
-                    % a BigData model store that mirrors the pyramid of the source
-                    % store, see writeModelStore
+                    % a BigData model store of an image that is not zarr, see writeModelStore
                     if obj.BatchOpt.showWaitbar && pwb.CancelRequested; close(pwb); return; end
                     modelMaterialNames = classNames(2:end);     % remove Exterior
                     modelMaterialColors = [modelMaterialColors; obj.modelMaterialColors];
+                    imagePyramid = [];  % images that are not zarr have no pyramid, writeModelStore generates one
                     try
-                        obj.writeModelStore(outputLabels, storePaths{id}, zarrStores(id).pyramid, zarrFormat, ...
+                        obj.writeModelStore(outputLabels, storePaths{id}, imagePyramid, zarrFormat, ...
                             modelMaterialNames, modelMaterialColors);
                     catch err
                         if obj.BatchOpt.showWaitbar; close(pwb); end
@@ -671,7 +789,29 @@ function startPredictionBlockedImage(obj)
             %
             %                     % save score map
             if generateScoreFiles > 0
-                if generateScoreFiles == 1    % 'Use AM format'
+                if zarrScores && zarrInput
+                    % 'Zarr3 (BigData)' of a zarr image: written slab by slab by predictZarrStore
+                elseif zarrScores    % 'Zarr3 (BigData)', the options are set before the prediction
+                    % an image store of the predicted level, one channel per class
+                    if obj.BatchOpt.showWaitbar && pwb.CancelRequested; close(pwb); return; end
+                    try
+                        % [y x c z] -> [y x z c]
+                        io.savers.Zarr3Saver().save(permute(scoreImg, [1 2 4 3]), scoreMetadata, scoreStorePaths{id}, scoreSaveOpt);
+                        scoreGroup = io.zarr.Group(scoreStorePaths{id});
+                        scoreAttributes = scoreGroup.getAttributes();
+                        scoreAttributes.mibPredictionScores = struct('classNames', {scoreClassNames});   % keeps the store out of the next prediction
+                        scoreGroup.setAttributes(scoreAttributes);
+                    catch err
+                        if isfolder(scoreStorePaths{id}); rmdir(scoreStorePaths{id}, 's'); end
+                        if obj.BatchOpt.showWaitbar; close(pwb); end
+                        if ~isempty(writtenStores)
+                            fprintf('DeepMIB: stores written before the error:\n%s\n', strjoin(writtenStores, newline));
+                        end
+                        rethrow(err);
+                    end
+                    writtenStores{end+1} = scoreStorePaths{id}; %#ok<AGROW>
+                    fprintf('DeepMIB: score store written: %s\n', scoreStorePaths{id});
+                elseif generateScoreFiles == 1    % 'Use AM format'
                     filename = fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages', 'ResultsScores', ['Score_' fn '.am']);
                     amiraOpt.overwrite = 1;
                     amiraOpt.showWaitbar = 0;
@@ -713,13 +853,34 @@ function startPredictionBlockedImage(obj)
     notify(obj.mibModel, 'UpdateUserScore', eventdata);
     if obj.BatchOpt.showWaitbar; close(pwb); end
 
-    if zarrInput && zarrOutput && obj.BatchOpt.showWaitbar
+    if zarrInput && (zarrOutput || zarrScores) && obj.BatchOpt.showWaitbar
         mgsOpt.MsgBoxOnly = true;
         mgsOpt.Icon = 'puffin_info';
         mgsOpt.WindowWidth = 560;
         mgsOpt.WindowHeight = 260;
+        finishedText = sprintf('%d store(s) were written.', numel(writtenStores));
+        if zarrOutput
+            finishedText = sprintf('%s\nOpen the image in the BigData mode and load its model store: Model -> Load model', finishedText);
+        end
+        if zarrScores
+            finishedText = sprintf('%s\nScore stores (Score_<image name>) are images with a channel per class: open them in the BigData mode', finishedText);
+        end
         utils.dlgs.inputUniversalDlg(obj.view.gui, ...
-            sprintf('%d model store(s) were written.\nOpen the image in the BigData mode and load its model store: Model -> Load model', numel(writtenStores)), ...
+            finishedText, ...
             {}, {strjoin(writtenStores, newline)}, 'Prediction finished', mgsOpt);
     end
+end
+
+function [files, stores] = listOutputs(folder, keptPaths)
+% files and zarr stores (folders) in an output folder, except keptPaths
+files = {};
+stores = {};
+if ~isfolder(folder); return; end
+outputList = dir(folder);
+outputList(ismember({outputList.name}, {'.', '..'})) = [];
+paths = fullfile({outputList.folder}, {outputList.name});
+isKept = ismember(paths, keptPaths);
+isStore = [outputList.isdir] & ~cellfun(@isempty, regexpi({outputList.name}, '\.zarr[23]?$', 'once'));
+files = paths(~[outputList.isdir] & ~isKept);
+stores = paths(isStore & ~isKept);
 end

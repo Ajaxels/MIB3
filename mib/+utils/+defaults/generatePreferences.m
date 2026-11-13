@@ -542,7 +542,17 @@ Prefs.Deep.AugOpt3D = deepmib.generateDefaultAugmentations('3D');
 Prefs.Deep.ScoreExportOpt.Precision = 8;   % define precision for the output scores, '8' or '16' bit
 Prefs.Deep.ScoreExportOpt.IncludeExterior = true;  % when false scores for exterior material are excluded from file output
 
-% settings of the "Zarr3 (BigData model)" output of prediction from zarr images
+% settings of the "Zarr3 (BigData)" score files of prediction (updateScoreExportSettings)
+Prefs.Deep.ScoreExportOpt.ZarrFormat = 'v3';   % 'v3' or 'v2', zarr format of the score stores
+Prefs.Deep.ScoreExportOpt.Location = 'Next to images';  % destination: 'Next to images', 'ResultsScores' or 'Ask' (folder asked at Predict)
+Prefs.Deep.ScoreExportOpt.Levels = 0;   % number of pyramid levels, 0 = the levels of the image below the predicted one (automatic for non-zarr images)
+Prefs.Deep.ScoreExportOpt.ChunkSize = [0 0 0];   % chunk [y x z], 0s = the chunks of the image ([256 256 16] for non-zarr images)
+Prefs.Deep.ScoreExportOpt.ShardSize = [0 0 0];   % chunks per shard [y x z], 0s = no sharding (zarr v3 only)
+Prefs.Deep.ScoreExportOpt.DownsampleMethod = 'bilinear';   % coarser levels: 'bilinear', 'nearest' or 'bicubic'
+Prefs.Deep.ScoreExportOpt.Compressors = 'zstd';   % 'zstd', 'gzip' or 'none'
+Prefs.Deep.ScoreExportOpt.CompressionLevel = 7;   % zstd 1-22, gzip 1-9
+
+% settings of the "Zarr3 (BigData model)" output of prediction (updateModelOutputSettings)
 Prefs.Deep.ZarrModelOpt.ZarrFormat = 'v3';   % 'v3' or 'v2', zarr format of the model stores
 Prefs.Deep.ZarrModelOpt.Location = 'Next to images';  % destination: 'Next to images', 'ResultsModels' or 'Ask' (folder asked at Predict)
 Prefs.Deep.ZarrModelOpt.Levels = 0;   % number of pyramid levels, 0 = as many as the image

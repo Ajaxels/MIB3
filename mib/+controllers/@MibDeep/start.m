@@ -80,17 +80,32 @@ end
         case 'PredictButton'
             % zarr images and the BigData model output are implemented in the
             % Blocked-image engine (semantic workflows; patch-wise for input only)
-            % and in the 2D Instance workflow, which has its own engine
+            % and in the 2D Instance workflow, which has its own engine. The same
+            % applies to the "Zarr3 (BigData)" score files (no instance scores);
+            % a run that would generate neither models nor scores is refused
             zarrInput = strcmp(obj.BatchOpt.ImageFilenameExtension{1}, 'ZARR');
             zarrOutput = strcmp(obj.BatchOpt.P_ModelFiles{1}, 'Zarr3 (BigData model)');
             isInstanceWorkflow = strcmp(obj.BatchOpt.Workflow{1}, '2D Instance');
+            zarrScores = strcmp(obj.BatchOpt.P_ScoreFiles{1}, 'Zarr3 (BigData)') && ~isInstanceWorkflow;   % instance prediction has no scores
             zarrErrorText = '';
-            if zarrInput && ~isInstanceWorkflow && ~strcmp(obj.BatchOpt.P_PredictionMode{1}, 'Blocked-image')
+            if strcmp(obj.BatchOpt.P_ModelFiles{1}, 'Do not generate') && isInstanceWorkflow
+                zarrErrorText = sprintf('Nothing would be generated: "Model files" is set to "Do not generate"\n\nSelect a format of model files');
+            elseif strcmp(obj.BatchOpt.P_ModelFiles{1}, 'Do not generate') && strcmp(obj.BatchOpt.P_ScoreFiles{1}, 'Do not generate')
+                zarrErrorText = sprintf('Nothing would be generated: both "Model files" and "Score files" are set to "Do not generate"\n\nSelect a format of model files or of score files');
+            elseif zarrScores && ~ismember(obj.BatchOpt.Workflow{1}, {'2D Semantic', '2.5D Semantic', '3D Semantic'})
+                zarrErrorText = sprintf('"Zarr3 (BigData)" score files are not available for the %s workflow', obj.BatchOpt.Workflow{1});
+            elseif (zarrScores || (zarrOutput && ~isInstanceWorkflow)) && ~strcmp(obj.BatchOpt.P_PredictionMode{1}, 'Blocked-image')
+                zarrErrorText = sprintf('The zarr outputs ("Zarr3 (BigData model)" and "Zarr3 (BigData)") are available only with the Blocked-image prediction engine\n\nSwitch the Prediction engine:\n    "Legacy" -> "Blocked-image"');
+            elseif zarrInput && ~isInstanceWorkflow && ~strcmp(obj.BatchOpt.P_PredictionMode{1}, 'Blocked-image')
                 zarrErrorText = sprintf('ZARR images can only be predicted using the Blocked-image prediction engine\n\nSwitch the Prediction engine:\n    "Legacy" -> "Blocked-image"');
-            elseif zarrOutput && ~zarrInput
-                zarrErrorText = sprintf('"Zarr3 (BigData model)" output requires ZARR images for prediction\n\nSelect ZARR as the extension of images for prediction, or select another format of model files');
             elseif zarrOutput && ~ismember(obj.BatchOpt.Workflow{1}, {'2D Semantic', '2.5D Semantic', '3D Semantic', '2D Instance'})
                 zarrErrorText = sprintf('"Zarr3 (BigData model)" output is not available for the %s workflow', obj.BatchOpt.Workflow{1});
+            elseif zarrInput && strcmp(obj.BatchOpt.Workflow{1}, '3D Semantic') && obj.BatchOpt.P_ImageDownsamplingFactor{1} ~= 1
+                % zarr images are predicted in Z-slabs (predictZarrStore), and a 3D
+                % resize of a slab would not match the resize of the whole level
+                zarrErrorText = sprintf(['ZARR images can not be downsampled for 3D networks\n\n' ...
+                    'Set "Downsample factor for images" to 1 and select a coarser pyramid level ' ...
+                    'in the "Level" field of the Directories and Preprocessing tab instead']);
             end
             if ~isempty(zarrErrorText)
                 mgsOpt.MsgBoxOnly = true;

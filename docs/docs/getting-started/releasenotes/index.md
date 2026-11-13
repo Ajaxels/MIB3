@@ -32,9 +32,12 @@ For the downloads visit [MIB website](https://mib.helsinki.fi/downloads.html) fo
       predicted objects with the ground-truth objects and reports precision, recall, F1 and panoptic
       quality over a range of IoU thresholds, per image and for the whole set; export to MATLAB,
       Excel or CSV. See [Evaluating the predictions](../../deepmib/deepmib-instance.md#evaluating-the-predictions)
-    - **DeepMIB, OME-Zarr images**: OME-Zarr images (v2 and v3) are predicted directly, at a chosen
-      pyramid level. With the *Zarr3 (BigData model)* output, the result opens as an editable BigData
-      model
+    - **DeepMIB, OME-Zarr images**: OME-Zarr images (v2 and v3) are predicted from disk without being
+      loaded into memory: they are read slab by slab at a chosen pyramid level, so images larger than
+      the memory can be predicted; an interrupted prediction can be resumed. The *Zarr3 (BigData model)*
+      output, now available for any type of images, opens with a ZARR image as an editable BigData
+      model; the score maps can be written as a BigData image (*Zarr3 (BigData)*), and *Model files*
+      has a *Do not generate* option
     - **BigData instance model**: a new 16383-material model for BigData datasets, one index per
       object; 63-material BigData models can be converted to it, into a new model store
     - **Close model**: new entry of the buffer context menu in the Datasets panel; closes the model and
@@ -59,6 +62,9 @@ For the downloads visit [MIB website](https://mib.helsinki.fi/downloads.html) fo
           and [Normalize layers](../../user-interface/ribbon/image/normalize.md#bigdata-datasets)
           write the result to a new OME-Zarr store or to a Standard dataset in memory; Image filters
           and Image Arithmetics can also overwrite the image on disk
+        - [Resize dataset](../../user-interface/ribbon/dataset/dataset-resample.md#bigdata-datasets)
+          resamples the image, from any pyramid level, into a new OME-Zarr store or a Standard dataset
+          in memory
         - [Global thresholding](../../user-interface/ribbon/tools/tools-globalthres.md#bigdata-datasets)
           and the Edge filters write into the mask or selection
         - Image filters can be limited to the ROIs and can run on parallel workers; the pool is

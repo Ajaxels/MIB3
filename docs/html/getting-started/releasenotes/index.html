@@ -5572,9 +5572,12 @@ For the downloads visit <a href="https://mib.helsinki.fi/downloads.html">MIB web
   predicted objects with the ground-truth objects and reports precision, recall, F1 and panoptic
   quality over a range of IoU thresholds, per image and for the whole set; export to MATLAB,
   Excel or CSV. See <a href="../../deepmib/deepmib-instance.html#evaluating-the-predictions">Evaluating the predictions</a></li>
-<li><strong>DeepMIB, OME-Zarr images</strong>: OME-Zarr images (v2 and v3) are predicted directly, at a chosen
-  pyramid level. With the <em>Zarr3 (BigData model)</em> output, the result opens as an editable BigData
-  model</li>
+<li><strong>DeepMIB, OME-Zarr images</strong>: OME-Zarr images (v2 and v3) are predicted from disk without being
+  loaded into memory: they are read slab by slab at a chosen pyramid level, so images larger than
+  the memory can be predicted; an interrupted prediction can be resumed. The <em>Zarr3 (BigData model)</em>
+  output, now available for any type of images, opens with a ZARR image as an editable BigData
+  model; the score maps can be written as a BigData image (<em>Zarr3 (BigData)</em>), and <em>Model files</em>
+  has a <em>Do not generate</em> option</li>
 <li><strong>BigData instance model</strong>: a new 16383-material model for BigData datasets, one index per
   object; 63-material BigData models can be converted to it, into a new model store</li>
 <li><strong>Close model</strong>: new entry of the buffer context menu in the Datasets panel; closes the model and
@@ -5599,6 +5602,9 @@ For the downloads visit <a href="https://mib.helsinki.fi/downloads.html">MIB web
   and <a href="../../user-interface/ribbon/image/normalize.html#bigdata-datasets">Normalize layers</a>
   write the result to a new OME-Zarr store or to a Standard dataset in memory; Image filters
   and Image Arithmetics can also overwrite the image on disk</li>
+<li><a href="../../user-interface/ribbon/dataset/dataset-resample.html#bigdata-datasets">Resize dataset</a>
+  resamples the image, from any pyramid level, into a new OME-Zarr store or a Standard dataset
+  in memory</li>
 <li><a href="../../user-interface/ribbon/tools/tools-globalthres.html#bigdata-datasets">Global thresholding</a>
   and the Edge filters write into the mask or selection</li>
 <li>Image filters can be limited to the ROIs and can run on parallel workers; the pool is

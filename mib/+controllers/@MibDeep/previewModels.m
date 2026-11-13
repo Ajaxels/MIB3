@@ -24,6 +24,23 @@ if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.MibDeep.previewModels: triggered\n');
 end
 
+if strcmp(obj.BatchOpt.P_ModelFiles{1}, 'Do not generate')
+    mgsOpt.MsgBoxOnly = true;
+    utils.dlgs.inputUniversalDlg(obj.view.gui, ...
+        sprintf('There are no models to preview: "Model files" is set to "Do not generate"\n\nSelect the format of the generated model files'), ...
+        {}, {}, 'Not available', mgsOpt);
+    return;
+end
+
+if strcmp(obj.BatchOpt.P_ModelFiles{1}, 'Zarr3 (BigData model)') && ~strcmp(obj.BatchOpt.ImageFilenameExtension{1}, 'ZARR')
+    mgsOpt.MsgBoxOnly = true;
+    utils.dlgs.inputUniversalDlg(obj.view.gui, ...
+        sprintf(['Labels_<image name>.zarr3 stores made from images that are not zarr can not be previewed here\n\n' ...
+        'Open an image of the same size and pyramid in the BigData mode (for example the image converted to zarr) and use Model -> Load model']), ...
+        {}, {}, 'Not available', mgsOpt);
+    return;
+end
+
 % zarr images are stores (folders) predicted at one pyramid level: they are
 % previewed one image at a time, see previewZarrPrediction below
 if strcmp(obj.BatchOpt.ImageFilenameExtension{1}, 'ZARR')
@@ -117,12 +134,19 @@ function previewZarrPrediction(obj, loadImagesSwitch)
     mgsOpt.MsgBoxOnly = true;
 
     % zarr images, as listed for prediction by checkZarrStores
-    imageDir = fullfile(obj.BatchOpt.OriginalPredictionImagesDir, 'Images');
-    if ~isfolder(imageDir); imageDir = obj.BatchOpt.OriginalPredictionImagesDir; end
-    listing = dir(imageDir);
-    listing = listing([listing.isdir] & ~cellfun(@isempty, regexpi({listing.name}, '\.zarr[23]?$', 'once')));
-    imageList = fullfile({listing.folder}, {listing.name});
-    imageList = imageList(~cellfun(@core.MibBigDataLabels.isMibModelStore, imageList));
+    predictionDir = regexprep(obj.BatchOpt.OriginalPredictionImagesDir, '[\\/]+$', '');
+    if isfolder(predictionDir) && ~isempty(regexpi(predictionDir, '\.zarr[23]?$', 'once'))
+        % the selected directory is a zarr store itself
+        imageDir = fileparts(predictionDir);
+        imageList = {predictionDir};
+    else
+        imageDir = fullfile(obj.BatchOpt.OriginalPredictionImagesDir, 'Images');
+        if ~isfolder(imageDir); imageDir = obj.BatchOpt.OriginalPredictionImagesDir; end
+        listing = dir(imageDir);
+        listing = listing([listing.isdir] & ~cellfun(@isempty, regexpi({listing.name}, '\.zarr[23]?$', 'once')));
+        imageList = fullfile({listing.folder}, {listing.name});
+    end
+    imageList = imageList(~cellfun(@controllers.MibDeep.isPredictionStore, imageList));
     imageNames = cell(size(imageList));
     for imageId = 1:numel(imageList)
         [~, imageNames{imageId}] = fileparts(imageList{imageId});

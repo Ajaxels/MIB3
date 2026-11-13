@@ -1,5 +1,5 @@
 function result = convertRelativeToAbsolutePath(relativePath, absolutePath, templateText)
-% MIBGETMIBVERSIONNUMBERIC - Convert a relative path back to an absolute path,
+% CONVERTRELATIVETOABSOLUTEPATH - Convert a relative path back to an absolute path,
 % where ``templateText`` in the relative path is replaced with ``absolutePath``.
 %
 % Syntax:
@@ -8,8 +8,11 @@ function result = convertRelativeToAbsolutePath(relativePath, absolutePath, temp
 %      result = convertRelativeToAbsolutePath(relativePath, absolutePath, templateText)
 %
 % Input Arguments:
-%   - **relativePath** - [string] relative path containing the template, e.g.
-%     ``'[RELATIVE]\..\..\dir1\subdir1'``
+%   - **relativePath** - [string] relative path starting with the template, e.g.
+%     ``'[RELATIVE]\..\..\dir1\subdir1'``. Each leading ``..`` segment moves one
+%     directory up from ``absolutePath``; any number of them is accepted. A path
+%     that does not start with the template (an absolute path, e.g. one on another
+%     drive, see ``deepmib.convertAbsoluteToRelativePath``) is returned unchanged
 %   - **absolutePath** - [string] absolute base path, e.g.
 %     ``'c:\myfiles\dir2\subdir2'``
 %   - **templateText** - [string] placeholder to replace, e.g. ``'[RELATIVE]'``
@@ -33,19 +36,19 @@ function result = convertRelativeToAbsolutePath(relativePath, absolutePath, temp
 %      % result = 'c:\myfiles\dir1\subdir1'
 %
 
-parentDirsIndices = strfind(relativePath, '..');  % get number of times the parent directory needs to be called
-parentDirsNo = numel(parentDirsIndices);  % get number of times the parent directory needs to be called
-if parentDirsNo == 0
-    result = strrep(relativePath, templateText, absolutePath);
-else
-    for dirIndex = 1:parentDirsNo
-        absolutePath = fileparts(absolutePath);
-    end
-    result = fullfile(absolutePath, relativePath(parentDirsIndices+3:end));
+if ~startsWith(relativePath, templateText)
+    result = relativePath;  % an absolute path, nothing to restore
+    return;
 end
 
-% fix double slashes
-result = strrep(result, '\\', '\');
-result = strrep(result, '//', '/');
+remainder = regexprep(relativePath(numel(templateText)+1:end), '^[\\/]+', '');
+% leading parent-directory segments; ".." inside a folder name (e.g. "a..b") is not one
+parentSteps = regexp(remainder, '^(\.\.([\\/]+|$))+', 'match', 'once');
+parentDirsNo = numel(strfind(parentSteps, '..'));
+for dirIndex = 1:parentDirsNo
+    absolutePath = fileparts(absolutePath);
+end
+% fullfile removes duplicated separators and keeps the leading \\ of a UNC path
+result = fullfile(absolutePath, remainder(numel(parentSteps)+1:end));
 
 end

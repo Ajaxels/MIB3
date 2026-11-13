@@ -1872,6 +1872,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#bigdata-datasets" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        BigData datasets
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -5670,6 +5681,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#bigdata-datasets" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        BigData datasets
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -5880,7 +5902,7 @@ and <span class="widget widget-dropdown">Resampling Method Models</span>. </p>
 <p>Click the <span class="widget widget-button">Resample</span> button to apply the changes, 
 or use the <span class="widget widget-button">Reset</span> button to restore default settings.</p>
 <h2 id="dimensions-mode">Dimensions Mode<a class="headerlink" href="#dimensions-mode" title="Permanent link">&para;</a></h2>
-<p>In <label class="widget widget-checkbox">Dimensions</label> mode, you define the new 
+<p>In <label class="widget widget-radio">Dimensions</label> mode, you define the new 
 size of the dataset by entering the desired width, height, and depth in pixels:</p>
 <ul>
 <li><span class="widget widget-edit">Width</span> field: set the number of pixels along the X-axis.</li>
@@ -5893,7 +5915,7 @@ dataset’s dimensions. </p>
 <p>The image and associated layers (Selection, Mask, Model) are resized to the specified 
 pixel counts, maintaining the aspect ratio if X, Y, and Z are scaled proportionally.</p>
 <h2 id="voxels-mode">Voxels Mode<a class="headerlink" href="#voxels-mode" title="Permanent link">&para;</a></h2>
-<p>In <label class="widget widget-checkbox">Voxels</label> mode, you specify the desired 
+<p>In <label class="widget widget-radio">Voxels</label> mode, you specify the desired 
 voxel sizes in physical units (e.g., micrometers) to adjust the dataset’s 
 spatial resolution:</p>
 <ul>
@@ -5912,7 +5934,7 @@ match the new voxel dimensions.</p>
 <p>The voxel size of the dataset are specified in <a href="index.html#voxels">Ribbon → Dataset →Parameters</a></p>
 </div>
 <h2 id="percentage-xyz-mode">Percentage XYZ Mode<a class="headerlink" href="#percentage-xyz-mode" title="Permanent link">&para;</a></h2>
-<p>In <label class="widget widget-checkbox">Percentage XYZ</label> mode, you define a
+<p>In <label class="widget widget-radio">Percentage XYZ</label> mode, you define a
 single scaling factor to resize all dimensions of the dataset:</p>
 <p><span class="widget widget-edit">Scaling Factor</span> enter a percentage 
 (e.g., 50 for half size, 200 for double size).</p>
@@ -5925,7 +5947,7 @@ lower-resolution preview or enlarging a dataset for detailed inspection,
 while preserving the dataset’s proportions.</p>
 </div>
 <h2 id="percentage-xy-mode">Percentage XY Mode<a class="headerlink" href="#percentage-xy-mode" title="Permanent link">&para;</a></h2>
-<p>In <label class="widget widget-checkbox">Percentage XY</label> mode, you define a 
+<p>In <label class="widget widget-radio">Percentage XY</label> mode, you define a 
 scaling factor that applies only to the XY dimensions, 
 leaving the Z dimension unchanged:</p>
 <p><span class="widget widget-edit">Scaling Factor</span> enter XY percentage 
@@ -6005,6 +6027,21 @@ methods do.</p>
 <p class="admonition-title">Note</p>
 <p>For large datasets, use <code>nearest</code> or <code>imresize</code> for faster processing, and test settings on a small region using the <a href="../../panels/roi/index.html">ROI panel</a> before resampling the entire dataset.</p>
 </div>
+<h2 id="bigdata-datasets">BigData datasets<a class="headerlink" href="#bigdata-datasets" title="Permanent link">&para;</a></h2>
+<p><a class="glightbox" data-title="BigData panel" data-type="image" href="../../images/BigData_panel.png"><img align="right" alt="BigData panel" class="on-glb" src="../../images/BigData_panel.png" /></a></p>
+<p>A <a href="../../../getting-started/dataset-types/index.html#bigdata">BigData</a> dataset is resampled into a new
+OME-Zarr store, or into a Standard dataset in memory</p>
+<div class="clear-float"></div>
+<p>The dataset destination can be chosen in the <strong>BigData output</strong> panel, as for the
+<a href="../image/image-filters.html#bigdata-datasets">Image filters</a>. The dataset itself is not changed.</p>
+<ul>
+<li>The selected pyramid level is resampled, and the current size, voxel size and percentages refer
+  to that level. Starting from a coarser level is faster when the dataset is made much smaller.</li>
+<li>Only the <code>imresize</code> function is available, with all its methods except <code>osc</code>, plus the pooling methods.
+  The result is the same as for a Standard dataset.</li>
+<li>The model, mask, selection, ROIs and annotations are not carried over to the result.</li>
+<li><em>Current overwrite (BigData)</em> is not available: the resampled image has another size.</li>
+</ul>
 <hr />
 <p><em>Back to <a href="../../../index.html">MIB</a> | <a href="../../index.html">User interface</a> | <a href="../index.html">Ribbon</a> | <a href="index.html">Dataset</a></em></p>
 

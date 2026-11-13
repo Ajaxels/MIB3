@@ -798,13 +798,13 @@ classdef ChunkingImport < handle
                         % then fall back to parsing ImageDescription
                         tilesBB = [];
                         if isKey(imginfo, 'BoundingBox')
-                            bbVal = imginfo('BoundingBox');
+                            bbVal = imginfo{'BoundingBox'};
                             if isnumeric(bbVal) && numel(bbVal) == 6
                                 tilesBB = bbVal(:)';
                             end
                         end
                         if isempty(tilesBB) && isKey(imginfo, 'ImageDescription')
-                            [bbPart, ~] = core.MibImage.splitImageDescription(char(imginfo('ImageDescription')));
+                            [bbPart, ~] = core.MibImage.splitImageDescription(char(imginfo{'ImageDescription'}));
                             coords = sscanf(bbPart, 'BoundingBox %f %f %f %f %f %f');
                             if numel(coords) == 6; tilesBB = coords(:)'; end
                         end
@@ -816,9 +816,9 @@ classdef ChunkingImport < handle
                             return;
                         end
 
-                        tilePix = imginfo('pixSize');
+                        tilePix = imginfo{'pixSize'};
                         if isfield(tilePix, 'x') && ...
-                                abs(tilePix.x - pixSize.x) > 1e-6 || abs(tilePix.y - pixSize.y) > 1e-6
+                                (abs(tilePix.x - pixSize.x) > 1e-6 || abs(tilePix.y - pixSize.y) > 1e-6)
                             utils.dlgs.showErrorDialog(obj.mibModel.getProgressBarParent(), ...
                                 sprintf('Pixel size mismatch!\n\nFile: %s', filenames{fileId}), ...
                                 'Pixel sizes mismatch!');
@@ -1165,12 +1165,12 @@ classdef ChunkingImport < handle
                     R.imOut = io.AmiraMesh.amiraLabels2bitmap(filename);
                     % Extract BoundingBox from Amira imginfo
                     if isKey(imginfo, 'BoundingBox')
-                        bbVal = imginfo('BoundingBox');
+                        bbVal = imginfo{'BoundingBox'};
                         if isnumeric(bbVal) && numel(bbVal) == 6
                             R.BoundingBox = bbVal(:)';
                         end
                     elseif isKey(imginfo, 'ImageDescription')
-                        [bbPart, ~] = core.MibImage.splitImageDescription(char(imginfo('ImageDescription')));
+                        [bbPart, ~] = core.MibImage.splitImageDescription(char(imginfo{'ImageDescription'}));
                         coords = sscanf(bbPart, 'BoundingBox %f %f %f %f %f %f');
                         if numel(coords) == 6; R.BoundingBox = coords(:)'; end
                     end

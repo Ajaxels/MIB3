@@ -71,13 +71,16 @@ minimize edge artefacts and improve segmentation. Define overlap percentage in <
 <span class="widget widget-dropdown">Model files</span> selects output format for models (CSV for patch-wise), configured via the ![Settings button](images/DeepLearningTrainSettingsBtn.png){.inline-image} button  
 ??? abstract "list of available image formats for the model files"
 
+      - **Do not generate**: no model files, for runs that only need the score files  
       - **MIB Model format**: `.model` files, loadable in MIB or MATLAB (`model = load('filename.model', '-mat');`)  
       - **TIF compressed format**: LZW-compressed TIF, pixels encode classes (1, 2, 3, etc.)  
       - **TIF uncompressed format**: uncompressed TIF, pixels encode classes  
-      - **Zarr3 (BigData model)**: only for ZARR images, in the semantic and 2D Instance workflows. Writes 
-        `Labels_<image name>.zarr3` next to the images (the folder is confirmed when prediction starts). 
-        **Load images and models** opens the image in the BigData mode with this model, ready 
-        for editing. Before exporting the model, save it with **Finalize & save**.  
+      - **Zarr3 (BigData model)**: for any type of images, in the semantic and 2D Instance workflows. Writes 
+        `Labels_<image name>.zarr3` next to the images (the folder is confirmed when prediction starts), 
+        configured via the settings button. With ZARR images, **Load images and models** opens the image 
+        in the BigData mode with this model, ready for editing; before exporting the model, save it with 
+        **Finalize & save**. For other images the store gets a generated pyramid, so it fits only an image 
+        of the same size converted to zarr with the default settings.  
 
       With ZARR images, the other formats are saved at the resolution of the predicted level.  
 <span class="widget widget-dropdown">Score files</span> selects output format for prediction score maps, configured via the ![Settings button](images/DeepLearningTrainSettingsBtn.png){.inline-image} button  
@@ -88,6 +91,9 @@ minimize edge artefacts and improve segmentation. Define overlap percentage in <
       - **Use Matlab non-compressed format** `.mibImg`, loadable in MIB or MATLAB (`model = load('filename.mibImg', '-mat');`)  
       - **Use Matlab compressed format** compressed `.mibImg`, loadable in MIB or MATLAB  
       - **Use Matlab non-compressed format (range 0-1)** `.mibImg` with 0-1 range, MATLAB-only (`model = load('filename.mat');`)  
+      - **Zarr3 (BigData)** for any type of images, in the semantic workflows with the Blocked-image engine. 
+        Writes `Score_<image name>.zarr3` (an image with a channel for each class, 0-255) next to the images. 
+        Format, destination, pyramid and compression are set via the settings button. Open it in the BigData mode  
 - <label class="widget widget-checkbox">upsample predictions</label>: (*2D patch-wise only*) upsamples downsampled patch-wise predictions to match original image size
 
 ### Instance segmentation subpanel

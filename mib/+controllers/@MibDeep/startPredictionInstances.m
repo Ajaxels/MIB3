@@ -72,15 +72,25 @@ function startPredictionInstances(obj)
 % factor.
 %
 % **OME-Zarr images** (``BatchOpt.ImageFilenameExtension = 'ZARR'``) are predicted
-% from one pyramid level, ``BatchOpt.BioformatsIndex`` (1 = full resolution),
-% loaded whole into memory; the stores are listed and checked by
-% ``checkZarrStores`` before the run, as in ``startPredictionBlockedImage``.
-% With the "MIB Model format" output the ``.model`` file has the size of that
-% level. With "Zarr3 (BigData model)" each image gets a uint16 BigData instance
-% model store (``writeModelStore``, at most 16383 objects per slice) that mirrors
-% the pyramid of the source store, at the destination confirmed by
-% ``selectModelStoreDestination``. Its objects keep the per-slice numbering
-% (``objects3D = false``); "Merge 2D to 3D" reads only ``.model`` files.
+% from one pyramid level, ``BatchOpt.BioformatsIndex`` (1 = full resolution);
+% the stores are listed and checked by ``checkZarrStores`` before the run, as in
+% ``startPredictionBlockedImage``. Zarr stores are larger than memory as a rule,
+% so a store is never loaded whole: its slices are read in slabs
+% (``deepmib.readZarrSlab``) of a depth set by ``instanceSlabDepth`` (a local
+% function: the Z chunk of the level, aligned to the Z factors and chunks of the
+% model store, halved while the slab takes more than half of the largest possible
+% array). With the "MIB Model format" output the ``.model`` file has the size of
+% that level and the labels of the level are held whole (uint32). With "Zarr3
+% (BigData model)", for any type of input images, each image gets a uint16
+% BigData instance model store (at most 16383 objects per slice) that mirrors the
+% pyramid of a zarr source store (generated from the size of the prediction for
+% other images), at the destination confirmed by ``selectModelStoreDestination``.
+% For zarr images the store is created before the first slice
+% (``createModelStore``) and each slab is written as soon as it is predicted
+% (``writeModelStoreSlab``); a cancel or an error removes the partial store. For
+% other images it is written whole (``writeModelStore``). Its objects keep the
+% per-slice numbering (``objects3D = false``); "Merge 2D to 3D" reads only
+% ``.model`` files.
 
 global mibInstanceIdCounter
 
@@ -110,18 +120,13 @@ if exist(obj.BatchOpt.NetworkFilename, 'file') ~= 2
     return;
 end
 
-% OME-Zarr images: each store is predicted from one pyramid level loaded into
-% memory; check every store before anything is deleted or the network is loaded
+% OME-Zarr images: each store is predicted from one pyramid level, slab by slab;
+% check every store before anything is deleted or the network is loaded
 zarrInput = strcmp(obj.BatchOpt.ImageFilenameExtension{1}, 'ZARR');
 zarrOutput = strcmp(obj.BatchOpt.P_ModelFiles{1}, 'Zarr3 (BigData model)');
 if zarrInput
     [zarrList, zarrStores, cancelled] = obj.checkZarrStores();
     if cancelled; return; end
-    if zarrOutput
-        [storePaths, zarrFormat, cancelled] = obj.selectModelStoreDestination(zarrList);
-        if cancelled; return; end
-        writtenStores = {};
-    end
 end
 
 if obj.BatchOpt.showWaitbar
@@ -131,22 +136,6 @@ if obj.BatchOpt.showWaitbar
         'Cancelable', true, 'Value', 0);
 end
 
-% prepare output directories
-warning('off', 'MATLAB:MKDIR:DirectoryExists');
-outputModelsDir = fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages', 'ResultsModels');
-if isfolder(outputModelsDir)
-    outputList = dir(fullfile(outputModelsDir, '*.model'));
-    if ~isempty(outputList)
-        selection = uiconfirm(obj.view.gui, ...
-            sprintf('!!! Warning !!!\n\nThe destination folder\n- PredictionImages/ResultsModels\n\nis not empty!\n\nEmpty it and start prediction?'), ...
-            'Destination folder is not empty', ...
-            'Options', {'Empty and continue', 'Cancel'}, 'DefaultOption', 2, 'CancelOption', 2, 'Icon', 'warning');
-        if strcmp(selection, 'Cancel'); if obj.BatchOpt.showWaitbar; close(pwb); end; return; end
-        delete(fullfile(outputModelsDir, '*'));
-    end
-end
-mkdir(outputModelsDir);
-
 % prepare options for loading of images
 mibDeepStoreLoadImagesOpt.mibBioformatsCheck = obj.BatchOpt.Bioformats;
 mibDeepStoreLoadImagesOpt.BioFormatsIndices = obj.BatchOpt.BioformatsIndex{1};
@@ -155,17 +144,9 @@ mibDeepStoreLoadImagesOpt.Workflow = obj.BatchOpt.Workflow{1};
 % make a datastore for the prediction images (read raw images directly)
 try
     if zarrInput
-        % zarr stores are folders, imageDatastore can not list them; each store is
-        % read at the selected level, from the image group resolved by checkZarrStores
-        mibDeepStoreLoadImagesOpt.ZarrLevel = obj.BatchOpt.BioformatsIndex{1};
-        zarrReadOptions = repmat(mibDeepStoreLoadImagesOpt, [numel(zarrList), 1]);
-        for fileId = 1:numel(zarrList)
-            if ~strcmp(zarrStores(fileId).groupPath, zarrList{fileId})
-                zarrReadOptions(fileId).ZarrGroupPath = zarrStores(fileId).groupPath;
-            end
-        end
-        imgDS = transform(arrayDatastore((1:numel(zarrList))', 'OutputType', 'same'), ...
-            @(fileId) deepmib.storeLoadImages(zarrList{fileId}, zarrReadOptions(fileId)));
+        % zarr stores are folders, imageDatastore can not list them; the datastore
+        % gives the index of the store, which is read slab by slab below
+        imgDS = arrayDatastore((1:numel(zarrList))', 'OutputType', 'same');
         predictionFiles = zarrList;
     else
         predictionImagesDir = fullfile(obj.BatchOpt.OriginalPredictionImagesDir, 'Images');
@@ -184,6 +165,30 @@ catch err
     if obj.BatchOpt.showWaitbar; close(pwb); end
     return;
 end
+
+% destination of the zarr model stores (any type of input images), confirmed before anything is deleted
+writtenStores = {};
+if zarrOutput
+    [storePaths, zarrFormat, cancelled] = obj.selectModelStoreDestination(predictionFiles);
+    if cancelled; if obj.BatchOpt.showWaitbar; close(pwb); end; return; end
+end
+
+% prepare output directories
+warning('off', 'MATLAB:MKDIR:DirectoryExists');
+outputModelsDir = fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages', 'ResultsModels');
+if isfolder(outputModelsDir)
+    outputList = dir(fullfile(outputModelsDir, '*.model'));
+    if ~isempty(outputList)
+        selection = uiconfirm(obj.view.gui, ...
+            sprintf('!!! Warning !!!\n\nThe destination folder\n- PredictionImages/ResultsModels\n\nis not empty!\n\nEmpty it and start prediction?'), ...
+            'Destination folder is not empty', ...
+            'Options', {'Empty and continue', 'Cancel'}, 'DefaultOption', 2, 'CancelOption', 2, 'Icon', 'warning');
+        if strcmp(selection, 'Cancel'); if obj.BatchOpt.showWaitbar; close(pwb); end; return; end
+        delete(fullfile(outputModelsDir, '*'));
+    end
+end
+mkdir(outputModelsDir);
+
 
 if obj.BatchOpt.showWaitbar
     if pwb.CancelRequested; close(pwb); return; end
@@ -254,10 +259,24 @@ while hasdata(imgDS)
     % io.loadImagesWrapper always returns [height, width, depth, color, time], so the
     % depth is read explicitly instead of guessing it from a squeezed array (where a
     % grayscale z-stack and an RGB 2D image are indistinguishable)
-    vol = read(imgDS);
-    [imgHeight, imgWidth, imgDepth, ~, noTimePoints] = size(vol, 1:5);
     [~, fn] = fileparts(predictionFiles{id});
-    if zarrInput; fn = regexprep(fn, '\.ome$', '', 'ignorecase'); end   % 'name.ome.zarr' -> 'name'
+    if zarrInput
+        % zarr stores are larger than memory as a rule: the store is read slab by slab
+        % (see the docblock), with the model store written as each slab is done
+        fn = regexprep(fn, '\.ome$', '', 'ignorecase');     % 'name.ome.zarr' -> 'name'
+        read(imgDS);    % the index of the store
+        zarrLevel = obj.BatchOpt.BioformatsIndex{1};
+        levelSize = zarrStores(id).pyramid.levelImageSizes(zarrLevel, :);
+        [imgHeight, imgWidth, imgDepth] = deal(levelSize(1), levelSize(2), levelSize(3));
+        numColors = zarrStores(id).colors;
+        noTimePoints = 1;
+        zarrSlabDepth = instanceSlabDepth(obj, zarrStores(id), zarrLevel, zarrOutput);
+        levelArray = deepmib.readZarrSlab([], zarrStores(id), zarrLevel);
+        slabLast = 0;
+    else
+        vol = read(imgDS);
+        [imgHeight, imgWidth, imgDepth, numColors, noTimePoints] = size(vol, 1:5);
+    end
     if noTimePoints > 1
         warning('MibDeep:startPredictionInstances:timePointsIgnored', ...
             '%s contains %d time points, only the first one is predicted', fn, noTimePoints);
@@ -268,20 +287,55 @@ while hasdata(imgDS)
     % image up to the core size, feeding the network context that is not in the data
     fitsInOnePatch = imgHeight <= inputPatchSize(1) && imgWidth <= inputPatchSize(2);
 
-    if isStarDist && size(vol, 4) ~= starDistConfig.nChannelIn
+    if isStarDist && numColors ~= starDistConfig.nChannelIn
         utils.dlgs.showErrorDialog(obj.view.gui, sprintf(['%s has %d color channel(s), while the StarDist network ' ...
             'expects %d.\n\nPredict images with %d channel(s) or train a network for these images.'], ...
-            fn, size(vol, 4), starDistConfig.nChannelIn, starDistConfig.nChannelIn), 'Wrong number of colors');
+            fn, numColors, starDistConfig.nChannelIn, starDistConfig.nChannelIn), 'Wrong number of colors');
         if obj.BatchOpt.showWaitbar; close(pwb); end
         return;
     end
 
-    outputLabels = zeros([imgHeight, imgWidth, imgDepth], 'uint32');
+    % a zarr image with the zarr model output never holds the labels of the whole level
+    streamModel = zarrInput && zarrOutput;
+    if streamModel
+        try
+            [labelsStore, predictedLevel] = obj.createModelStore(storePaths{id}, zarrStores(id).pyramid, ...
+                levelSize, zarrFormat, {}, []);
+        catch err
+            if obj.BatchOpt.showWaitbar; close(pwb); end
+            utils.dlgs.showErrorDialog(obj.view.gui, err, 'Instance prediction error');
+            return;
+        end
+        outputLabels = [];
+    else
+        outputLabels = zeros([imgHeight, imgWidth, imgDepth], 'uint32');
+    end
     maxInstancesPerSlice = 0;
     totalInstances = 0;
     for sliceId = 1:imgDepth
-        if obj.BatchOpt.showWaitbar && pwb.CancelRequested; close(pwb); return; end
-        sliceImg = squeeze(vol(:, :, sliceId, :, 1));    % [height, width, color]
+        if obj.BatchOpt.showWaitbar && pwb.CancelRequested
+            if streamModel; removeModelStore(storePaths{id}); end
+            close(pwb);
+            return;
+        end
+        if zarrInput
+            if sliceId > slabLast
+                slabFirst = sliceId;
+                slabLast = min(imgDepth, slabFirst + zarrSlabDepth - 1);
+                try
+                    vol = deepmib.readZarrSlab(levelArray, zarrStores(id), zarrLevel, [slabFirst slabLast]);
+                catch err
+                    if streamModel; removeModelStore(storePaths{id}); end
+                    if obj.BatchOpt.showWaitbar; close(pwb); end
+                    utils.dlgs.showErrorDialog(obj.view.gui, err, sprintf('Can not read %s', fn));
+                    return;
+                end
+                if streamModel; slabLabels = zeros([imgHeight, imgWidth, slabLast - slabFirst + 1], 'uint32'); end
+            end
+            sliceImg = squeeze(vol(:, :, sliceId - slabFirst + 1, :));     % [height, width, color]
+        else
+            sliceImg = squeeze(vol(:, :, sliceId, :, 1));    % [height, width, color]
+        end
         if size(sliceImg, 3) == 1 && ~isStarDist     % SOLOv2 expects RGB, StarDist the native channels
             sliceImg = repmat(sliceImg, [1, 1, 3]);
         end
@@ -344,6 +398,7 @@ while hasdata(imgDS)
                             'for the input patch size [%d x %d].\n\nPlease decrease the overlap percentage!'], ...
                             overlapPercentage, blockSize(1), blockSize(2), inputPatchSize(1), inputPatchSize(2)), ...
                             'Overlap too large');
+                        if streamModel; removeModelStore(storePaths{id}); end
                         if obj.BatchOpt.showWaitbar; close(pwb); end
                         return;
                     end
@@ -389,6 +444,7 @@ while hasdata(imgDS)
                 end
             end
         catch err
+            if streamModel; removeModelStore(storePaths{id}); end
             utils.dlgs.showErrorDialog(obj.view.gui, err, 'Instance prediction error');
             if obj.BatchOpt.showWaitbar; close(pwb); end
             return;
@@ -404,7 +460,24 @@ while hasdata(imgDS)
             remap(uniqueIds+1) = uint32(1:numInstances);
             sliceLabels = remap(uint32(sliceLabels)+1);
         end
-        outputLabels(:, :, sliceId) = sliceLabels;
+        if streamModel
+            slabLabels(:, :, sliceId - slabFirst + 1) = sliceLabels;
+            if sliceId == slabLast
+                try
+                    obj.writeModelStoreSlab(labelsStore, slabLabels, predictedLevel, slabFirst);
+                catch err
+                    removeModelStore(storePaths{id});
+                    if obj.BatchOpt.showWaitbar; close(pwb); end
+                    if ~isempty(writtenStores)
+                        fprintf('DeepMIB: model stores written before the error:\n%s\n', strjoin(writtenStores, newline));
+                    end
+                    utils.dlgs.showErrorDialog(obj.view.gui, err, 'Instance prediction error');
+                    return;
+                end
+            end
+        else
+            outputLabels(:, :, sliceId) = sliceLabels;
+        end
         maxInstancesPerSlice = max(maxInstancesPerSlice, numInstances);
         totalInstances = totalInstances + numInstances;
 
@@ -414,15 +487,24 @@ while hasdata(imgDS)
             pwb.Value = min(1, (id - 1 + sliceId/imgDepth)/noFiles);
         end
     end
-    if imgDepth == 1; outputLabels = outputLabels(:, :, 1); end   % 2D file -> 2D model
+    if ~streamModel && imgDepth == 1; outputLabels = outputLabels(:, :, 1); end   % 2D file -> 2D model
 
     if zarrOutput
-        % a uint16 BigData instance model store (up to 16383 objects per slice)
-        % mirroring the pyramid of the source store, see writeModelStore
-        if obj.BatchOpt.showWaitbar && pwb.CancelRequested; close(pwb); return; end
+        % a uint16 BigData instance model store (up to 16383 objects per slice): of a
+        % zarr image written slab by slab above, of other images here (writeModelStore)
+        if obj.BatchOpt.showWaitbar && pwb.CancelRequested
+            if streamModel; removeModelStore(storePaths{id}); end
+            close(pwb);
+            return;
+        end
         try
-            obj.writeModelStore(outputLabels, storePaths{id}, zarrStores(id).pyramid, zarrFormat, {}, []);
+            if streamModel
+                labelsStore.closeStore();   % persists the level map and the material names
+            else
+                obj.writeModelStore(outputLabels, storePaths{id}, [], zarrFormat, {}, []);
+            end
         catch err
+            if streamModel; removeModelStore(storePaths{id}); end
             if obj.BatchOpt.showWaitbar; close(pwb); end
             if ~isempty(writtenStores)
                 fprintf('DeepMIB: model stores written before the error:\n%s\n', strjoin(writtenStores, newline));
@@ -484,7 +566,7 @@ notify(obj.mibModel, 'UpdateUserScore', eventdata);
 
 if obj.BatchOpt.showWaitbar; close(pwb); end
 
-if zarrInput && zarrOutput && obj.BatchOpt.showWaitbar
+if zarrOutput && obj.BatchOpt.showWaitbar
     mgsOpt.MsgBoxOnly = true;
     mgsOpt.Icon = 'puffin_info';
     mgsOpt.WindowWidth = 560;
@@ -494,4 +576,45 @@ if zarrInput && zarrOutput && obj.BatchOpt.showWaitbar
         'Open the image in the BigData mode and load its model store: Model -> Load model'], numel(writtenStores)), ...
         {}, {strjoin(writtenStores, newline)}, 'Prediction finished', mgsOpt);
 end
+end
+
+function slabDepth = instanceSlabDepth(obj, storeInfo, level, zarrOutput)
+% number of slices of a zarr image read at once: a multiple of the Z chunk of the
+% level (each chunk read once) and, with the zarr model output, of the Z factor of
+% the coarsest model level and of the model chunk (each coarser slice from one slab,
+% whole-chunk writes); fewer while the slab would take more than half of the
+% largest possible array, down to one slice
+levelSize = storeInfo.pyramid.levelImageSizes(level, :);
+axisOrder = char(storeInfo.pyramid.axisOrder);
+imageChunk = storeInfo.pyramid.chunkSizes{level};
+slabDepth = 1;
+if any(axisOrder == 'z'); slabDepth = imageChunk(axisOrder == 'z'); end
+if zarrOutput
+    numModelLevels = size(storeInfo.pyramid.levelScaleFactors, 1);
+    if obj.ZarrModelOpt.Levels > 0; numModelLevels = min(numModelLevels, obj.ZarrModelOpt.Levels); end
+    zFactors = storeInfo.pyramid.levelScaleFactors(level:numModelLevels, 3) / storeInfo.pyramid.levelScaleFactors(level, 3);
+    slabDepth = lcm(slabDepth, max(1, round(max(zFactors))));
+    if all(obj.ZarrModelOpt.ChunkSize > 0); slabDepth = lcm(slabDepth, obj.ZarrModelOpt.ChunkSize(3)); end
+end
+slabDepth = min(levelSize(3), slabDepth);
+try
+    memoryInfo = memory();
+    availableBytes = memoryInfo.MaxPossibleArrayBytes;
+catch
+    availableBytes = Inf;   % memory() is available only on Windows
+end
+bytesPerPixel = numel(typecast(cast(0, storeInfo.imgClass), 'uint8'));
+% the image slab, the uint32 labels of the slab and their copy in setData63
+bytesPerSlice = levelSize(1)*levelSize(2)*(storeInfo.colors*bytesPerPixel + 8);
+while slabDepth > 1 && slabDepth*bytesPerSlice > 0.5*availableBytes
+    slabDepth = ceil(slabDepth/2);
+end
+end
+
+function removeModelStore(storePath)
+% remove a partial BigData model store and its level-map side file, so that no
+% store is left that would open as a valid model
+if isfolder(storePath); rmdir(storePath, 's'); end
+levelMapPath = core.MibBigDataLabels.levelMapPathFor(storePath);
+if isfile(levelMapPath); delete(levelMapPath); end
 end
