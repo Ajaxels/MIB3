@@ -82,7 +82,12 @@ classdef MibImgLoader < io.loaders.BaseImageLoader
             %     - ``Levels`` - number of pyramid levels (for BDV only)
             %     - ``ReturnedLevel`` - selected pyramid level (for BDV only)
             %     - ``pixSize`` - struct with pixel sizes: ``.x``, ``.y``, ``.z``, ``.t``,
-            %       ``.units``, ``.tunits``
+            %       ``.units``, ``.tunits``; ``.x .y .z .units`` are taken from
+            %       ``options.pixSize`` stored in the first file when present
+            %     - ``BoundingBox`` - ``[xmin xmax ymin ymax zmin zmax]`` from
+            %       ``options.boundingBox`` stored in the first file; only present
+            %       when the file has it (DeepMIB preprocessing for prediction and
+            %       score files, see ``deepmib.saveImageParFor``)
             %     - other format-specific metadata fields
             %
             %   - **files** - structure array with file information
@@ -209,7 +214,17 @@ classdef MibImgLoader < io.loaders.BaseImageLoader
                     else
                         imginfo{'ColorType'} = 'grayscale';
                     end
-                    imginfo{'ImageDescription'} = ''; 
+                    imginfo{'ImageDescription'} = '';
+                    % position and voxel size of the image the file was made from,
+                    % written by DeepMIB (preprocessing for prediction, score files)
+                    if isfield(fileOpts, 'boundingBox') && numel(fileOpts.boundingBox) == 6
+                        imginfo{'BoundingBox'} = reshape(double(fileOpts.boundingBox), 1, 6);
+                    end
+                    if isfield(fileOpts, 'pixSize') && isstruct(fileOpts.pixSize)
+                        for pixField = intersect(fieldnames(fileOpts.pixSize), {'x', 'y', 'z', 'units'})'
+                            pixSize.(pixField{1}) = fileOpts.pixSize.(pixField{1});
+                        end
+                    end
                 end
 
                 % Update waitbar

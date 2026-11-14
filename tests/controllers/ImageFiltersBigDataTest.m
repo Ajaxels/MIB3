@@ -127,13 +127,17 @@ classdef ImageFiltersBigDataTest < matlab.unittest.TestCase
             % other than XY is refused.
             scratch = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture).Folder;
             rng(3);
-            % channels, depth, saver options, band budget (40 rows, rounded to the 64-row chunks)
-            cases = {2, 3, struct('ChunkSize', [64 64 1], 'Levels', 3, 'DownsampleStrategy', 'XY only'), 256e6; ...
-                1, 6, struct('ChunkSize', [64 64 2], 'Levels', 4, 'DownsampleStrategy', 'Anisotropy-preserving'), 8 * 260 * 40};
-            metadata = struct('pixSize', struct('x', 0.02, 'y', 0.02, 'z', 0.05, 'units', 'um'));
+            % channels, depth, saver options, band budget (40 rows, rounded to the 64-row chunks), Z voxel
+            % size (0.12 um: ratio 6, so the isotropic level is at XY factor 6 and is built from the
+            % level of factor 2, with a level of factor 12 appended after it)
+            cases = {2, 3, struct('ChunkSize', [64 64 1], 'Levels', 3, 'DownsampleStrategy', 'XY only'), 256e6, 0.05; ...
+                1, 6, struct('ChunkSize', [64 64 2], 'Levels', 4, 'DownsampleStrategy', 'Anisotropy-preserving'), 8 * 260 * 40, 0.05; ...
+                1, 6, struct('ChunkSize', [64 64 2], 'Levels', 4, 'MinLevelSize', 16, ...
+                    'DownsampleStrategy', 'Anisotropy-preserving + isotropic level'), 8 * 260 * 40, 0.12};
             mibFolder = fullfile(fileparts(fileparts(fileparts(mfilename('fullpath')))), 'mib');
             for caseIndex = 1:size(cases, 1)
-                [colors, depth, saverOptions, bandBytes] = cases{caseIndex, :};
+                [colors, depth, saverOptions, bandBytes, zVoxel] = cases{caseIndex, :};
+                metadata = struct('pixSize', struct('x', 0.02, 'y', 0.02, 'z', zVoxel, 'units', 'um'));
                 saverOptions.silent = true;
                 saverOptions.showWaitbar = false;
                 volume = uint8(255 * mat2gray(convn(randn(300, 260, depth, colors), ones(5, 5), 'same')));
@@ -142,9 +146,13 @@ classdef ImageFiltersBigDataTest < matlab.unittest.TestCase
                 mibModel = models.MibModel(1, mibFolder, Verbose = false, Preferences = 'defaults');
                 controllers.BigDataOptions.openStoreInBuffer(mibModel, sourcePath, 1);
                 mibModel.setLockedState(1, 'image', false);
-                if caseIndex == 2
+                if caseIndex >= 2
                     testCase.assumeTrue(any(mibModel.I{1}.image.pyramid.levelScaleFactors(:, 3) > 1), ...
                         'the anisotropic store must have a level that halves Z');
+                end
+                if caseIndex == 3
+                    testCase.assertEqual(mibModel.I{1}.image.pyramid.levelScaleFactors(:, 1)', [1 2 4 6 12], ...
+                        'the store must hold the isotropic level');
                 end
                 shownSlice = depth - 1;
                 mibModel.I{1}.slices{3} = [shownSlice shownSlice];

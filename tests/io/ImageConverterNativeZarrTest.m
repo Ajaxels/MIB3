@@ -190,6 +190,53 @@ classdef ImageConverterNativeZarrTest < matlab.unittest.TestCase
             testCase.verifyEqual(size(arr0.read(), 1:3), [16 12 D], 'level-0 dims must match the odd-depth stack');
         end
 
+        function nativeZarr3_downsampleStrategyOptionReachesTheWriter(testCase)
+            % ZarrDownsampleStrategy: absent or 'Auto' keeps the old choice
+            % (anisotropic voxels -> 'Anisotropy-preserving'); the isotropic
+            % strategy adds the level where XY voxel = Z voxel (ratio 6 -> factor 6)
+            inDir  = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            outDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            vol = uint8(mod(reshape(0:256*256*8-1, [256 256 8]), 251) + 1);
+            for z = 1:8
+                imwrite(vol(:, :, z), fullfile(inDir.Folder, sprintf('s_%02d.tif', z)));
+            end
+            ds = imageDatastore(inDir.Folder, 'FileExtensions', '.tif');
+
+            BatchOpt = struct();
+            BatchOpt.ZarrImageType          = {'image'};
+            BatchOpt.ZarrChunkSizes         = '16, 16, 4, 1, 1';
+            BatchOpt.ZarrUseSharding        = false;
+            BatchOpt.ZarrShardXFactorsXYZ   = '2, 2, 1, 1, 1';
+            BatchOpt.ZarrCompression        = {'zstd'};
+            BatchOpt.ZarrVoxelSizeXYZ       = '0.005, 0.005, 0.030';
+            BatchOpt.ZarrUnits              = {'micrometers'};
+            BatchOpt.ZarrBBShiftsXYZ        = '0, 0, 0';
+            BatchOpt.ZarrDownsampleLimitXYZ = '32, 32, 4';
+
+            strategies = {'', 'Auto', 'Anisotropy-preserving + isotropic level'};
+            xySizes = cell(1, 3);
+            for k = 1:3
+                BatchOpt.OutputDirectory = fullfile(outDir.Folder, sprintf('out%d.zarr3', k));
+                if k > 1; BatchOpt.ZarrDownsampleStrategy = strategies(k); end
+                fnOut = ImageConverter.convertToZarr3Native(ds, BatchOpt, struct());
+                group = io.zarr.Group(fnOut);
+                level = 0; sizes = [];
+                while true
+                    try
+                        arrayShape = size(group.openArray(num2str(level)).read(), 1:2);
+                    catch
+                        break
+                    end
+                    sizes(end+1) = arrayShape(1); %#ok<AGROW>
+                    level = level + 1;
+                end
+                xySizes{k} = sizes;
+            end
+            testCase.verifyEqual(xySizes{1}, xySizes{2}, 'absent and Auto must agree');
+            testCase.verifyFalse(any(xySizes{2} == ceil(256/6)), 'Auto must not add the isotropic level');
+            testCase.verifyTrue(any(xySizes{3} == ceil(256/6)), 'the isotropic level (factor 6) must be present');
+        end
+
         function nativeZarr3_labels_materialNamesPopulatedFromData(testCase)
             % Regression: converting a folder of label slices wrote no
             % ``mibMaterials`` attribute at all (ImageConverter has no external

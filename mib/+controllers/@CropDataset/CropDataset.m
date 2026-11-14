@@ -887,6 +887,7 @@ classdef CropDataset < handle
                 z1 = min(cropDim);  z2 = max(cropDim);
                 crop_factor = [x1, y1, x2-x1+1, y2-y1+1, z1, z2-z1+1];
             end
+            cropTimer = tic;    % the crop area is known: time the work, not the drawing
 
             % determine destination buffer
             bigDataOutput = isfield(BatchOptLoc, 'OutputType') && strcmp(BatchOptLoc.OutputType{1}, 'BigData');
@@ -963,6 +964,7 @@ classdef CropDataset < handle
                 cropOpts.showWaitbar = BatchOptLoc.showWaitbar;
                 cropOpts.UIFigure    = progressParent;
                 cropOpts.outputPath  = outputPath;
+                cropTimer = tic;    % restart after the destination and settings dialogs
 
                 result = obj.mibModel.I{id}.cropToBigData(crop_factor, cropOpts);
                 if result == 0; notify(obj.mibModel, 'StopProtocol'); return; end
@@ -1094,6 +1096,9 @@ classdef CropDataset < handle
             notify(obj.mibModel, 'UpdateUserScore');
 
             obj.returnBatchOpt(BatchOptLoc);
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.CropDataset.cropBtn_Callback: finished, elapsed time %.2f s\n', toc(cropTimer));
+            end
         end
 
         function helpButton_Callback(obj)

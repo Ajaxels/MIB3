@@ -94,6 +94,24 @@ classdef ResampleDatasetBigDataTest < matlab.unittest.TestCase
             testCase.verifyEqual(result.boundingBox([1 3 5]), source.boundingBox([1 3 5]), 'AbsTol', 1e-9);
         end
 
+        function resampledStoreGetsItsOwnLevelsNotTheSourceOnes(testCase)
+            % A resampled store has another size and voxel size, so its levels are planned for
+            % it (LevelFactors of the source are not copied): the 300 x 260 source has the
+            % levels s0-s2, a result of 150 x 130 is too small for more than one
+            [mibModel, ~, scratch] = mibtest.helpers.buildBigDataModel(testCase, 1);
+            source = mibModel.I{1}.image;
+            testCase.assertEqual(size(source.pyramid.levelImageSizes, 1), 3);
+            BatchOpt = testCase.resampleBatchOpt(mibModel, fullfile(scratch, 'ownLevels.zarr3'), [150 130 3]);
+            controllers.ResampleDataset(mibModel, [], BatchOpt);
+            result = mibModel.I{2}.image;
+            expectedPlan = io.savers.Zarr3Saver.computeLevelPlan(150, 130, 3, result.pixSize, ...
+                rmfield(io.savers.Zarr3Saver.optionsFromPyramid(source.pyramid), {'Levels', 'LevelFactors'}));
+            testCase.verifyEqual(size(result.pyramid.levelImageSizes, 1), numel(expectedPlan));
+            testCase.verifyEqual(result.pyramid.levelScaleFactors(:, 1)', [expectedPlan.cumXYFactor], 'AbsTol', 1e-9);
+            testCase.verifyEqual(result.pyramid.levelImageSizes(1, :), [150 130 3]);
+            testCase.verifyEqual(result.pixSize.x, source.pixSize.x * 2, 'AbsTol', 1e-12);
+        end
+
         function percentageOfACoarserLevel(testCase)
             % PercentageXY 50 of level s1 resamples that level: the target is half the
             % level size, Z stays, and the result equals imresize3 of the level.

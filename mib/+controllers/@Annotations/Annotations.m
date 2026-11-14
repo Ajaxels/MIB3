@@ -185,6 +185,10 @@ classdef Annotations < handle
             %       obj.closeWindow()
             %
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Annotations.closeWindow: triggered\n');
+            end
+
             for i = numel(obj.childControllers):-1:1
                 child = obj.childControllers{i};
                 if isa(child, 'handle') && isvalid(child)
@@ -308,6 +312,10 @@ classdef Annotations < handle
             %       obj.loadBtn_Callback()
             %
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Annotations.loadBtn_Callback: triggered\n');
+            end
+
             id = obj.BatchOpt.id;
 
             button = utils.dlgs.inputQuestDlg(obj.view.gui, ...
@@ -385,6 +393,10 @@ classdef Annotations < handle
             %
             %       obj.saveBtn_Callback()
             %
+
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Annotations.saveBtn_Callback: triggered\n');
+            end
 
             id = obj.BatchOpt.id;
             [labelText, labelValue, labelPosition] = ...
@@ -539,6 +551,10 @@ classdef Annotations < handle
             %       obj.deleteBtn_Callback()
             %
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Annotations.deleteBtn_Callback: triggered\n');
+            end
+
             id = obj.BatchOpt.id;
             obj.mibModel.backup('annotations', 0);
             obj.mibModel.I{id}.annotations.removeLabels();
@@ -559,6 +575,10 @@ classdef Annotations < handle
             %   - **Selection** - Nx2 array of [row col] pairs (from SelectionChangedFcn event.Selection)
             %
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Annotations.annotationTable_CellSelectionCallback: triggered\n');
+            end
+
             obj.indices = Selection;
             if obj.view.handles.jumpCheck.Value
                 obj.tableContextMenu_cb('Jump');
@@ -577,6 +597,10 @@ classdef Annotations < handle
             % Input Arguments:
             %   - **Indices** - [row col] of the edited cell (from CellEditCallback event.Indices)
             %
+
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Annotations.annotationTable_CellEditCallback: triggered\n');
+            end
 
             data      = obj.view.handles.annotationTable.Data;
             rowNames  = obj.view.handles.annotationTable.RowName;
@@ -606,6 +630,10 @@ classdef Annotations < handle
             %
             %       obj.precisionEdit_Callback()
             %
+
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Annotations.precisionEdit_Callback: triggered\n');
+            end
 
             precision = obj.view.handles.precisionEdit.Value;
             % persist preference
@@ -643,6 +671,10 @@ classdef Annotations < handle
             %   - 'OrderTop' / 'OrderUp' / 'OrderDown' / 'OrderBottom' - reorder
             %   - 'Delete'      - delete selected annotations
             %
+
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Annotations.tableContextMenu_cb(%s): triggered\n', parameter);
+            end
 
             id = obj.BatchOpt.id;
             orientation = obj.mibModel.I{id}.orientation;
@@ -1205,6 +1237,10 @@ classdef Annotations < handle
             %       obj.gui_KeyPressFcn(eventdata)
             %
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Annotations.gui_KeyPressFcn: triggered\n');
+            end
+
             if ismember('control', eventdata.Modifier)
                 switch lower(eventdata.Key)
                     % Ctrl+Z undo - currently not implemented for annotations
@@ -1221,6 +1257,10 @@ classdef Annotations < handle
             %
             %       obj.annotationTable_KeyPressFcn(eventdata)
             %
+
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Annotations.annotationTable_KeyPressFcn: triggered\n');
+            end
 
             if ismember('control', eventdata.Modifier)
                 if ismember('shift', eventdata.Modifier)
@@ -1247,6 +1287,10 @@ classdef Annotations < handle
             %       obj.resortTablePopup_Callback()
             %
 
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Annotations.resortTablePopup_Callback: triggered\n');
+            end
+
             obj.mibModel.backup('annotations', 1);
             sortBy = lower(obj.view.handles.resortTablePopup.Value);
             obj.mibModel.I{obj.BatchOpt.id}.annotations.sortLabels(sortBy);
@@ -1262,6 +1306,10 @@ classdef Annotations < handle
             %
             %       obj.settingsBtn_Callback()
             %
+
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Annotations.settingsBtn_Callback: triggered\n');
+            end
 
             prompts = {'Show annotations for extra slices (positive integer or 0):'; ...
                        'Annotation font size:'; ...
@@ -1309,6 +1357,10 @@ classdef Annotations < handle
             %
             %       obj.helpBtn_Callback()
             %
+
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Annotations.helpBtn_Callback: triggered\n');
+            end
 
             helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'html', 'user-interface', 'panels', 'segm', 'segm-annotations.html');
             utils.openHelpPage(helpFilPath, ...

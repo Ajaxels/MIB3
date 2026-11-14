@@ -152,9 +152,13 @@ end
 
 % pyramid settings: the source's, as many levels as it has from Level down (for a
 % resampled size, as many as the saver chooses for it), then the caller's
-saverOptions = io.savers.Zarr3Saver.optionsFromPyramid(image.pyramid);
+saverOptions = io.savers.Zarr3Saver.optionsFromPyramid(image.pyramid, options.Level);
 saverOptions.Levels = max(1, size(image.pyramid.levelImageSizes, 1) - options.Level + 1);
-if isResample; saverOptions.Levels = []; end
+if isResample
+    % another size and voxel size: the levels of the source do not apply, the saver plans new ones
+    saverOptions.Levels = [];
+    if isfield(saverOptions, 'LevelFactors'); saverOptions = rmfield(saverOptions, 'LevelFactors'); end
+end
 overrideFields = fieldnames(options.SaverOptions);
 for fieldIndex = 1:numel(overrideFields)
     saverOptions.(overrideFields{fieldIndex}) = options.SaverOptions.(overrideFields{fieldIndex});

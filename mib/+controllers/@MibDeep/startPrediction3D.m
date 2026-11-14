@@ -451,6 +451,13 @@ function startPrediction3D(obj)
         outputLabels = outputLabels - 1;    % remove the first "exterior" class
         % get filename template
         [~, fn] = fileparts(imgDS.Files{id});
+        % bounding box of the predicted image, copied to the model and score files;
+        % preprocessed .mibImg files carry the one of their source file
+        if preprocessedSwitch
+            [BoundingBox, sourcePixSize] = deepmib.getSourceBoundingBox(imgDS.Files{id}, [height, width, depth]);
+        else
+            [BoundingBox, sourcePixSize] = deepmib.getSourceBoundingBox(imgDS.Files{id}, [height, width, depth], mibDeepStoreLoadImagesOpt);
+        end
 
         % depending on the selected output type
         switch obj.BatchOpt.P_ModelFiles{1}
@@ -462,12 +469,9 @@ function startPrediction3D(obj)
                 modelMaterialNames(1) = [];
                 modelMaterialColors = [modelMaterialColors; obj.modelMaterialColors]; %#ok<AGROW,PROP>
 
-                %rawFn = ls(fullfile(projDir, ImageSource, '01_input_images', '*.am'));
-                %amHeader = getAmiraMeshHeader(fullfile(projDir, ImageSource, '01_input_images', rawFn));
-                %BoundingBox = amHeader(find(ismember({amHeader.Name}', 'BoundingBox'))).Value;
                 modelVariable = 'outputLabels';
                 modelType = 63;
-                if exist('BoundingBox','var') == 0
+                if isempty(BoundingBox)
                     save(filename, 'outputLabels', 'modelMaterialNames', 'modelMaterialColors', ...
                         'modelVariable', 'modelType', '-mat', '-v7.3');
                 else
@@ -481,7 +485,9 @@ function startPrediction3D(obj)
                     tifCompression = 'none';
                 end
                 filename = fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages', 'ResultsModels', ['Labels_' fn '.tif']);
-                imwrite(outputLabels(:,:,1), filename, 'tif', 'WriteMode', 'overwrite', 'Description', sprintf('DeepMIB segmentation: %s %s', obj.BatchOpt.Workflow{1}, obj.BatchOpt.Architecture{1}), 'Compression', tifCompression);
+                tifDescription = core.MibImage.buildImageDescription(BoundingBox, ...
+                    {sprintf('DeepMIB segmentation: %s %s', obj.BatchOpt.Workflow{1}, obj.BatchOpt.Architecture{1})});
+                imwrite(outputLabels(:,:,1), filename, 'tif', 'WriteMode', 'overwrite', 'Description', tifDescription, 'Compression', tifCompression);
                 for sliceId = 2:size(outputLabels, 3)
                     imwrite(outputLabels(:,:,sliceId), filename, 'tif', 'WriteMode', 'append', 'Compression', tifCompression);
                 end
@@ -494,19 +500,27 @@ function startPrediction3D(obj)
         if generateScoreFiles > 0
             if generateScoreFiles == 1    % 'Use AM format'
                 filename = fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages', 'ResultsScores', ['Score_' fn '.am']);
-                %scoreImg = uint8(scoreImg*255);     % convert to 8bit and scale between 0-255
-                scoreImg = permute(scoreImg, [1 2 4 3]);    % convert to [height, width, color, depth]
+                % scoreImg is [H W D C], the order io.AmiraMesh.bitmap2amiraMesh expects
 
                 amiraOpt.overwrite = 1;
                 amiraOpt.showWaitbar = 0;
                 amiraOpt.verbose = false;
-                bitmap2amiraMesh(filename, scoreImg, [], amiraOpt);
-            elseif generateScoreFiles == 4   %  4=='Use Matlab non-compressed format (range 0-1)'
-                filename = fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages', 'ResultsScores', ['Score_' fn '.mat']);
-                deepmib.saveImageParFor(filename, scoreImg, false, saveImageOpt);
-            else    % 2=='Use Matlab non-compressed format', 3=='Use Matlab compressed format'
-                filename = fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages', 'ResultsScores', ['Score_' fn '.mibImg']);
-                deepmib.saveImageParFor(filename, scoreImg, generateScoreFiles-2, saveImageOpt);
+                amiraInfo = [];
+                if ~isempty(BoundingBox); amiraInfo = dictionary("BoundingBox", {BoundingBox}); end
+                io.AmiraMesh.bitmap2amiraMesh(filename, scoreImg, amiraInfo, amiraOpt);
+            else
+                scoreSaveOpt = saveImageOpt;
+                if ~isempty(BoundingBox)
+                    scoreSaveOpt.boundingBox = BoundingBox;
+                    scoreSaveOpt.pixSize = sourcePixSize;
+                end
+                if generateScoreFiles == 4   %  4=='Use Matlab non-compressed format (range 0-1)'
+                    filename = fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages', 'ResultsScores', ['Score_' fn '.mat']);
+                    deepmib.saveImageParFor(filename, scoreImg, false, scoreSaveOpt);
+                else    % 2=='Use Matlab non-compressed format', 3=='Use Matlab compressed format'
+                    filename = fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages', 'ResultsScores', ['Score_' fn '.mibImg']);
+                    deepmib.saveImageParFor(filename, scoreImg, generateScoreFiles == 3, scoreSaveOpt);
+                end
             end
         end
 

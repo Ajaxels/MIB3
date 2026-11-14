@@ -79,10 +79,12 @@ minimize edge artefacts and improve segmentation. Define overlap percentage in <
         `Labels_<image name>.zarr3` next to the images (the folder is confirmed when prediction starts), 
         configured via the settings button. With ZARR images, **Load images and models** opens the image 
         in the BigData mode with this model, ready for editing; before exporting the model, save it with 
-        **Finalize & save**. For other images the store gets a generated pyramid, so it fits only an image 
-        of the same size converted to zarr with the default settings.  
+        **Finalize & save**. For other images the store gets a generated pyramid, set by 
+        **Downsampling strategy** in the settings. It fits only an image of the same size converted to zarr 
+        with the same strategy.    
 
       With ZARR images, the other formats are saved at the resolution of the predicted level.  
+      The model files keep the bounding box of the predicted image, so they open at its position.  
 <span class="widget widget-dropdown">Score files</span> selects output format for prediction score maps, configured via the ![Settings button](images/DeepLearningTrainSettingsBtn.png){.inline-image} button  
 ??? abstract "list of available image formats for the score files"
 
@@ -93,7 +95,12 @@ minimize edge artefacts and improve segmentation. Define overlap percentage in <
       - **Use Matlab non-compressed format (range 0-1)** `.mibImg` with 0-1 range, MATLAB-only (`model = load('filename.mat');`)  
       - **Zarr3 (BigData)** for any type of images, in the semantic workflows with the Blocked-image engine. 
         Writes `Score_<image name>.zarr3` (an image with a channel for each class, 0-255) next to the images. 
-        Format, destination, pyramid and compression are set via the settings button. Open it in the BigData mode  
+        Format, destination, pyramid and compression are set via the settings button. For ZARR images the 
+        pyramid follows the image; for other images **Downsampling strategy** sets it. **Resampling method** 
+        makes the coarser levels: *cubic* (default), *bilinear*, *nearest* or *max pooling* (keeps the peaks 
+        of a class). Open it in the BigData mode  
+
+      The score files keep the bounding box and voxel size of the predicted image.  
 - <label class="widget widget-checkbox">upsample predictions</label>: (*2D patch-wise only*) upsamples downsampled patch-wise predictions to match original image size
 
 ### Instance segmentation subpanel

@@ -198,6 +198,13 @@ For anisotropic datasets, the downsampling procedure brings the volume first to 
 
     Example: '512, 512, 256' - if dataset is larger than this, downsampled levels will be generated until each axis fits within the limit.
 
+<span class="widget widget-dropdown">Downsample strategy</span>, how the coarser levels treat Z:
+
+- **Auto** - Anisotropy-preserving when the Z voxel is at least 1.5 times the XY voxel, otherwise XY only.
+- **XY only** - Z is never downsampled.
+- **Anisotropy-preserving** - Z is downsampled once the XY voxel reaches the Z voxel size.
+- **Anisotropy-preserving + isotropic level** - in addition, the pyramid contains the level where all three voxel sizes are equal.
+
 <span class="widget widget-dropdown">Compression</span>, compression algorithm used to store chunk data: **zstd**, **gzip** or **none**. 
 
 <span class="widget widget-edit">Compression level</span>, compression level settings: **1..9** - compression levels, the higher the value the more compression output is expected, but with the slowest computation times; **0** - the default level of the algorithm.

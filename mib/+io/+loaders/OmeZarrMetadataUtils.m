@@ -1180,13 +1180,44 @@ methods (Static)
         %
         %      r = io.loaders.OmeZarrMetadataUtils.safeRatio(levelScales, idx, level0Scales)
         %
+        % The ratio is the pyramid scale factor of a level, snapped by
+        % :meth:`snapRatio` so that a factor that is mathematically 3 or 2.6 is
+        % exactly that number and not 2.9999999999999996.
 
         if isempty(idx) || isempty(level0Scales) || idx > numel(level0Scales) ...
                 || level0Scales(idx) == 0
             r = 1;
         else
-            r = levelScales(idx) / level0Scales(idx);
+            r = io.loaders.OmeZarrMetadataUtils.snapRatio(levelScales(idx) / level0Scales(idx));
         end
+    end
+
+    function r = snapRatio(r)
+        % SNAPRATIO - Remove the floating-point noise of a pyramid scale factor.
+        %
+        % Syntax:
+        %   .. code-block:: matlab
+        %
+        %      r = io.loaders.OmeZarrMetadataUtils.snapRatio(r)
+        %
+        % Level scale factors are ratios of voxel sizes read from the store
+        % (``0.0053 * 3 / 0.0053``). Powers of 2 divide exactly, other factors
+        % do not, and the level map maps a full-resolution voxel to a level pixel
+        % with ``ceil(voxel / factor)``: ``ceil(3 / 2.9999999999999996)`` is 2,
+        % one pixel off. A ratio within ``1e-6`` (relative) of a multiple of
+        % 1/1000 is replaced by that multiple, so factors such as 3, 7 or 2.6
+        % are exact. Anything else is returned unchanged, a genuine factor of
+        % a WSI pyramid (for example 4.0003) included.
+        %
+        % Input Arguments:
+        %   - **r** - [numeric] scale factor(s), any size
+        %
+        % Output Arguments:
+        %   - **r** - [numeric] the factor(s), snapped where they are within 1e-6 (relative) of a multiple of 1/1000
+
+        snapped = round(r * 1000) / 1000;
+        near = abs(r - snapped) <= 1e-6 * abs(r);
+        r(near) = snapped(near);
     end
 
     function mx = classMaxInt(imgClass)

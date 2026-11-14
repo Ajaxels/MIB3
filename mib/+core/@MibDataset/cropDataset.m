@@ -140,22 +140,28 @@ else
     if ~isempty(wb) && wb.CancelRequested; delete(wb); return; end
 
     % Save image metadata before switchDatasetMode/initialize resets them to defaults.
-    % xyzShiftBB uses s0 voxel size because x1/y1/z1 are always in s0 pixel coords.
     srcFilename    = obj.image.filename;
     srcPixSize     = obj.image.pixSize;
     srcBoundingBox = obj.image.boundingBox;
-    xyzShiftBB     = [(x1-1)*srcPixSize.x, (y1-1)*srcPixSize.y, (z1-1)*srcPixSize.z];
 
     % Scale voxel size to the selected pyramid level (e.g. s1 doubles x/y voxel size).
     % Level index 1 = finest (s0, scale [1 1 1]), level 2 = s1, etc.
     scaledPixSize = srcPixSize;
+    sf = [1 1 1];   % [sfY sfX sfZ]
     sfMatrix = obj.image.pyramid.levelScaleFactors;
     if ~isempty(sfMatrix) && options.pyramidLevel >= 1 && options.pyramidLevel <= size(sfMatrix, 1)
-        sf = sfMatrix(options.pyramidLevel, :);   % [sfY sfX sfZ]
+        sf = sfMatrix(options.pyramidLevel, :);
         scaledPixSize.x = srcPixSize.x * sf(2);
         scaledPixSize.y = srcPixSize.y * sf(1);
         scaledPixSize.z = srcPixSize.z * sf(3);
     end
+    % Shift of the box origin. x1/y1/z1 are s0 pixel coords, but a coarser level
+    % is read from its voxel ceil(x1/sf) (getDataZarr), whose centre lies
+    % (ceil(x1/sf)-1)*sf s0 voxels from the origin: the levels share the origin
+    % (OmeZarrMetadataUtils.applySelectedLevelGeometry). (x1-1) s0 voxels would be
+    % up to sf-1 voxels off whenever x1-1 is not a multiple of sf.
+    xyzScale   = sf([2 1 3]);
+    xyzShiftBB = (ceil([x1, y1, z1] ./ xyzScale) - 1) .* xyzScale .* [srcPixSize.x, srcPixSize.y, srcPixSize.z];
 
     % Read packed model from BigData BEFORE switchDatasetMode replaces MibBigDataLabels
     packedBigDataModel = [];

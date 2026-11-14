@@ -84,6 +84,15 @@ classdef MibBigDataLabels < core.MibLabels63
         % selection stroke drawn zoomed out does not make the full-resolution labels
         % under it stale. Side-files written before the split (mapVersion 1) hold one
         % map for all layers; loadLevelMap copies it to each layer.
+        tileSize = []
+        % [1x3 integer] edge of a level-map tile in full-resolution voxels, ``[y x z]``.
+        % The smallest whole multiple of the coarsest scale factor that is also a whole
+        % number of pixels of EVERY level (``tileSizeForFactors``). For a power-of-2
+        % pyramid that is the coarsest factor itself, so a tile is one coarsest-level
+        % pixel; for factors such as 1, 2, 2.6, 5.2, 10.4 (5x5x13 nm with an isotropic
+        % level) it is 52, so a tile is 5 pixels of the coarsest level and no level
+        % pixel straddles a tile border. Set by ``refreshTileSize``; ``matLevel`` has
+        % ``ceil(volume / tileSize)`` tiles per axis.
         levelMapPath = ''
         % [char] side-file path ('<storePath>.levelmap') persisting matLevel.
         selectionBBoxFull = []
@@ -279,6 +288,7 @@ classdef MibBigDataLabels < core.MibLabels63
                 scaleFac   = [1 1 1];
             end
             nLevels = size(levelSizes, 1);
+            core.MibBigDataLabels.tileSizeForFactors(scaleFac, storePath);   % refuse an untileable pyramid before writing
 
             % --- build the group + one packed array per level ------------------
             % backend per io.zarr.Config; format per the path (or the override);
@@ -419,7 +429,8 @@ classdef MibBigDataLabels < core.MibLabels63
             % getData63 expect.
             base = scaleFac(1, :);
             base(base == 0) = 1;
-            obj.modelScaleFactors = scaleFac ./ base;
+            obj.modelScaleFactors = io.loaders.OmeZarrMetadataUtils.snapRatio(scaleFac ./ base);   % 3 stays 3, not 2.9999999999999996
+            core.MibBigDataLabels.tileSizeForFactors(obj.modelScaleFactors, storePath);   % refuse an untileable pyramid
             obj.height    = levelSizes(1, 1);
             obj.width     = levelSizes(1, 2);
             obj.depth     = levelSizes(1, 3);
@@ -574,12 +585,26 @@ classdef MibBigDataLabels < core.MibLabels63
             obj.modelArrays{levelIdx}.write(cast(block, obj.containerClass), bbox);
         end
 
+        function refreshTileSize(obj)
+            % REFRESHTILESIZE - set ``tileSize`` from ``modelScaleFactors``. Called first
+            % by every path that sets up the level map (``initLevelMapEmpty``,
+            % ``loadLevelMap``), so a subclass that fills ``modelScaleFactors`` and then
+            % initialises the map needs nothing else.
+            obj.tileSize = core.MibBigDataLabels.tileSizeForFactors(obj.modelScaleFactors, obj.modelStorePath);
+        end
+
+        function grid = tileGridSize(obj)
+            % TILEGRIDSIZE - number of level-map tiles along ``[y x z]``.
+            grid = max(1, ceil([obj.height, obj.width, max(1, obj.depth)] ./ obj.tileSize));
+        end
+
         function initLevelMapEmpty(obj)
-            % INITLEVELMAPEMPTY - allocate an empty level map over the coarsest grid,
+            % INITLEVELMAPEMPTY - allocate an empty level map over the tile grid,
             % one plane per layer (labels, mask, selection).
-            cs = obj.modelLevelSizes(end, :);            % coarsest [y x z]
-            obj.matLevel = zeros([cs(1), cs(2), max(1, cs(3)), 3], 'uint8');
-            obj.selectionTiles = false([cs(1), cs(2), max(1, cs(3))]);
+            obj.refreshTileSize();
+            grid = obj.tileGridSize();
+            obj.matLevel = zeros([grid, 3], 'uint8');
+            obj.selectionTiles = false(grid);
         end
 
         function bits = layerGroupBits(obj)
@@ -592,11 +617,10 @@ classdef MibBigDataLabels < core.MibLabels63
 
         function [ty, tx, tz] = tilesForFullRegion(obj, fullY, fullX, fullZ)
             % TILESFORFULLREGION - full-res region -> inclusive coarsest-grid tile ranges.
-            sfN = obj.modelScaleFactors(end, :);         % coarsest [yScale xScale zScale]
-            cs  = obj.modelLevelSizes(end, :);
-            ty = [max(1, ceil(fullY(1)/sfN(1))), min(cs(1),          ceil(fullY(2)/sfN(1)))];
-            tx = [max(1, ceil(fullX(1)/sfN(2))), min(cs(2),          ceil(fullX(2)/sfN(2)))];
-            tz = [max(1, ceil(fullZ(1)/sfN(3))), min(max(1, cs(3)),  ceil(fullZ(2)/sfN(3)))];
+            grid = obj.tileGridSize();
+            ty = [max(1, ceil(fullY(1)/obj.tileSize(1))), min(grid(1), ceil(fullY(2)/obj.tileSize(1)))];
+            tx = [max(1, ceil(fullX(1)/obj.tileSize(2))), min(grid(2), ceil(fullX(2)/obj.tileSize(2)))];
+            tz = [max(1, ceil(fullZ(1)/obj.tileSize(3))), min(grid(3), ceil(fullZ(2)/obj.tileSize(3)))];
         end
 
         function markTiles(obj, fullY, fullX, fullZ, levelIdx, layerGroups)
@@ -650,7 +674,7 @@ classdef MibBigDataLabels < core.MibLabels63
             % An edge tile of the volume counts as covered when the block reaches
             % the edge.
             sf = obj.modelScaleFactors(levelIdx, :);
-            tileSize = obj.modelScaleFactors(end, :);
+            tileSize = obj.tileSize;
             volumeSize = [obj.height, obj.width, max(1, obj.depth)];
             ranges = {Yl, Xl, Zl};
             coveredAxis = cell(1, 3);
@@ -719,7 +743,7 @@ classdef MibBigDataLabels < core.MibLabels63
             else
                 levelIdx = double(min(levels));
             end
-            tileSize = obj.modelScaleFactors(end, :);
+            tileSize = obj.tileSize;
             rows = find(any(tileMask, [2 3]));  cols = find(any(tileMask, [1 3]));  planes = find(any(tileMask, [1 2]));
             box = [(rows(1)-1)*tileSize(1)+1, min(rows(end)*tileSize(1), obj.height), ...
                    (cols(1)-1)*tileSize(2)+1, min(cols(end)*tileSize(2), obj.width), ...
@@ -802,8 +826,8 @@ classdef MibBigDataLabels < core.MibLabels63
             if ~any(stale(:)); return; end
             smoothOn = io.zarr.Config.smoothing();
             layerBits = obj.layerGroupBits();
-            sfN = obj.modelScaleFactors(end, :);         % tile size in full-res px = coarsest scale
-            for A = reshape(unique(double(win(stale))), 1, [])
+            sfN = obj.tileSize;                          % tile edge in full-res voxels
+            for A =reshape(unique(double(win(stale))), 1, [])
                 sourceTiles = stale & win == A;          % [tiles y x z, layer]
                 [iy, ix, iz] = ind2sub(size(sourceTiles, 1:3), find(any(sourceTiles, 4)));
                 tY = [min(iy)+ty(1)-1, max(iy)+ty(1)-1];
@@ -850,8 +874,9 @@ classdef MibBigDataLabels < core.MibLabels63
             % from the full-resolution position of the pixel's first voxel and
             % clamped to the grid.
             fullStart = ((pixelRange(1):pixelRange(2)) - 1) * obj.modelScaleFactors(levelIdx, axis) + 1;
-            tileCount = max(1, obj.modelLevelSizes(end, axis));
-            tiles = min(tileCount, max(1, ceil(fullStart / obj.modelScaleFactors(end, axis))));
+            grid = obj.tileGridSize();
+            tileCount = grid(axis);
+            tiles = min(tileCount, max(1, ceil(fullStart / obj.tileSize(axis) - 1e-9)));
         end
 
         function materializeAll(obj, pwbFcn)
@@ -864,7 +889,7 @@ classdef MibBigDataLabels < core.MibLabels63
             for r = 1:nT
                 rowLevels = obj.matLevel(r, :, :, :);
                 if all(rowLevels(:) <= 1); continue; end   % already at finest (or empty)
-                sfN = obj.modelScaleFactors(end, :);
+                sfN = obj.tileSize;
                 fY = [(r-1)*sfN(1)+1, min(r*sfN(1), obj.height)];
                 fX = [1, obj.width]; fZ = [1, obj.depth];
                 [lY, lX, lZ] = obj.regionForLevel(1, fY, fX, fZ);
@@ -883,7 +908,9 @@ classdef MibBigDataLabels < core.MibLabels63
             if isempty(obj.levelMapPath) || isempty(obj.matLevel); return; end
             % mapVersion 2: one level map per layer (4th dimension of matLevel), and
             % the tiles that may hold selection
-            S = struct('matLevel', obj.matLevel, 'mapVersion', 2, ...
+            % mapVersion 3: also the tile size in full-resolution voxels, which is no
+            % longer the coarsest scale factor for a pyramid with a non-integer factor
+            S = struct('matLevel', obj.matLevel, 'mapVersion', 3, 'tileSize', obj.tileSize, ...
                 'coarsestSize', obj.modelLevelSizes(end, :), 'selectionTiles', obj.selectionTiles);
             save(obj.levelMapPath, '-struct', 'S', '-v7', '-mat');
         end
@@ -897,7 +924,12 @@ classdef MibBigDataLabels < core.MibLabels63
             tf = false;
             if isempty(obj.levelMapPath) || ~isfile(obj.levelMapPath); return; end
             S = load(obj.levelMapPath, '-mat');
-            if isfield(S, 'matLevel') && isequal(size(S.matLevel, 1:2), obj.modelLevelSizes(end, 1:2))
+            obj.refreshTileSize();
+            grid = obj.tileGridSize();
+            % a file of mapVersion 3 names its tile size; older files are of a power-of-2
+            % style pyramid whose tile was the coarsest level pixel (= obj.tileSize then)
+            sameTiles = ~isfield(S, 'tileSize') || isequal(double(S.tileSize(:)'), obj.tileSize);
+            if sameTiles && isfield(S, 'matLevel') && isequal(size(S.matLevel, 1:2), grid(1:2))
                 levelMap = uint8(S.matLevel);
                 if size(levelMap, 4) == 1; levelMap = repmat(levelMap, [1 1 1 3]); end
                 obj.matLevel = levelMap; tf = true;
@@ -1076,9 +1108,9 @@ classdef MibBigDataLabels < core.MibLabels63
             end
             sf  = obj.modelScaleFactors(levelIdx, :);   % [yScale xScale zScale]
             lvl = obj.modelLevelSizes(levelIdx, :);      % [Y X Z]
-            physYlim = ceil(physYfull ./ sf(1));
-            physXlim = ceil(physXfull ./ sf(2));
-            physZlim = ceil(physZfull ./ sf(3));
+            physYlim = ceil(physYfull ./ sf(1) - 1e-9);
+            physXlim = ceil(physXfull ./ sf(2) - 1e-9);
+            physZlim = ceil(physZfull ./ sf(3) - 1e-9);
             physYlim = [max(physYlim(1), 1), min(physYlim(2), lvl(1))];
             physXlim = [max(physXlim(1), 1), min(physXlim(2), lvl(2))];
             physZlim = [max(physZlim(1), 1), min(physZlim(2), lvl(3))];
@@ -1089,9 +1121,9 @@ classdef MibBigDataLabels < core.MibLabels63
             % clamped index range (shared by setData63 / getData63 / propagateRegion).
             sf = obj.modelScaleFactors(levelIdx, :);
             lv = obj.modelLevelSizes(levelIdx, :);
-            Yl = core.MibBigDataLabels.clampRange([ceil(fullY(1)/sf(1)), ceil(fullY(2)/sf(1))], lv(1));
-            Xl = core.MibBigDataLabels.clampRange([ceil(fullX(1)/sf(2)), ceil(fullX(2)/sf(2))], lv(2));
-            Zl = core.MibBigDataLabels.clampRange([ceil(fullZ(1)/sf(3)), ceil(fullZ(2)/sf(3))], lv(3));
+            Yl = core.MibBigDataLabels.clampRange([ceil(fullY(1)/sf(1) - 1e-9), ceil(fullY(2)/sf(1) - 1e-9)], lv(1));
+            Xl = core.MibBigDataLabels.clampRange([ceil(fullX(1)/sf(2) - 1e-9), ceil(fullX(2)/sf(2) - 1e-9)], lv(2));
+            Zl = core.MibBigDataLabels.clampRange([ceil(fullZ(1)/sf(3) - 1e-9), ceil(fullZ(2)/sf(3) - 1e-9)], lv(3));
         end
 
         function propagateRegion(obj, packed, fullY, fullX, fullZ, sourceLevelIdx, direction, layerGroups)
@@ -1196,6 +1228,55 @@ classdef MibBigDataLabels < core.MibLabels63
     end
 
     methods (Static)
+        function tileSize = tileSizeForFactors(scaleFactors, storePath)
+            % TILESIZEFORFACTORS - edge of a level-map tile, in full-resolution voxels.
+            %
+            % The level map copies whole tiles between levels, so a tile must be a
+            % whole number of pixels of every level: no level pixel may straddle a
+            % tile border, or an edit of one tile would change its neighbour.
+            % Per axis this returns the smallest whole multiple of the coarsest
+            % scale factor that every level factor divides: the coarsest factor
+            % itself for a power-of-2 pyramid (a tile = one coarsest pixel, as
+            % always), 12 for factors 1, 2, 4, 6, 12 or 1, 4, 6 (a pyramid of an
+            % isotropic level 6), 52 for factors 1, 2, 2.6, 5.2, 10.4 (5x5x13 nm,
+            % isotropic level 2.6). Level pixels map to a tile by the full-resolution
+            % position of their first voxel (``tileIndexOfLevelPixels``).
+            % Called through ``refreshTileSize`` and by ``createStore`` /
+            % ``openStore``, so a pyramid that cannot be tiled is refused when it is
+            % attached, not edited wrongly.
+            %
+            % Input Arguments:
+            %   - **scaleFactors** - [nLevels x 3] ``[y x z]`` level-0-relative factors,
+            %     already snapped (``OmeZarrMetadataUtils.snapRatio``)
+            %   - **storePath** - only for the message
+            %
+            % Output Arguments:
+            %   - **tileSize** - [1x3 integer valued double] ``[y x z]``
+            %
+            % Errors:
+            %   ``core:MibBigDataLabels:levelFactors`` when no tile of up to 64 coarsest
+            %   pixels per axis fits (factors that are not simple ratios of each other).
+            tileSize = zeros(1, 3);
+            for axis = 1:3
+                levelFactors = scaleFactors(:, axis);
+                for multiple = 1:64
+                    candidate = scaleFactors(end, axis) * multiple;
+                    pixelsPerTile = candidate ./ levelFactors;
+                    if abs(candidate - round(candidate)) <= 1e-6 * candidate && ...
+                            all(abs(pixelsPerTile - round(pixelsPerTile)) <= 1e-6 * pixelsPerTile)
+                        tileSize(axis) = round(candidate);
+                        break
+                    end
+                end
+                if tileSize(axis) == 0
+                    error('core:MibBigDataLabels:levelFactors', ...
+                        ['The pyramid of "%s" cannot hold an editable model: no tile of whole pixels fits all its ' ...
+                         'scale factors (%s along axis %d).'], ...
+                        storePath, strjoin(string(levelFactors'), ' '), axis);
+                end
+            end
+        end
+
         function marker = storeMarker()
             % STOREMARKER - the ``mibModelStore`` attribute stamped on a MIB model store.
             %

@@ -785,7 +785,10 @@ classdef ImageConverter < handle
             %     ``ZarrVoxelSizeXYZ``, ``ZarrUnits``, ``ZarrBBShiftsXYZ``,
             %     ``ZarrDownsampleLimitXYZ``) and ``OutputDirectory``. ``ZarrVersion`` may
             %     be absent, meaning v3; ``ZarrCompressionLevel`` may be absent, meaning
-            %     the codec default.
+            %     the codec default; ``ZarrDownsampleStrategy`` (``'Auto'``, ``'XY only'``,
+            %     ``'Anisotropy-preserving'`` or ``'Anisotropy-preserving + isotropic
+            %     level'``) may be absent, meaning ``'Auto'``: anisotropic voxels (Z at
+            %     least 1.5 times XY) get ``'Anisotropy-preserving'``, others ``'XY only'``.
             %   - **options** - *(optional)* struct with ``.ParentFigure`` (progress and
             %     dialog parent), ``.mibPath``, ``.pool`` (process-based
             %     ``parallel.Pool`` whose workers write the store, ``[]`` = write on
@@ -870,11 +873,13 @@ classdef ImageConverter < handle
             saverOpts.ChunkSize    = chunkYXZ;
             saverOpts.Compressors  = compressors;
             saverOpts.MinLevelSize = minLevelSize;
-            if pixSize.z >= 1.5 * max(pixSize.x, pixSize.y)
-                saverOpts.DownsampleStrategy = 'Anisotropy-preserving';
-            else
-                saverOpts.DownsampleStrategy = 'XY only';
+            % 'Auto' (also a BatchOpt saved before ZarrDownsampleStrategy existed): anisotropic
+            % voxels get 'Anisotropy-preserving'
+            requestedStrategy = 'Auto';
+            if isfield(BatchOpt, 'ZarrDownsampleStrategy') && ~isempty(BatchOpt.ZarrDownsampleStrategy)
+                requestedStrategy = BatchOpt.ZarrDownsampleStrategy{1};
             end
+            saverOpts.DownsampleStrategy = io.savers.Zarr3Saver.resolveDownsampleStrategy(requestedStrategy, pixSize);
             if strcmp(dataType, 'labels')
                 saverOpts.DownsampleMethod = 'nearest';
                 saverOpts.layerType        = 'labels';
@@ -1014,6 +1019,9 @@ classdef ImageConverter < handle
             obj.BatchOpt.ZarrUseSharding = false;
             obj.BatchOpt.ZarrShardXFactorsXYZ = '4, 4, 1, 1, 1';
             obj.BatchOpt.ZarrDownsampleLimitXYZ = '512, 512, 256';
+            % 'Auto' keeps the choice made before this option existed (see convertToZarr3Native)
+            obj.BatchOpt.ZarrDownsampleStrategy = {'Auto'};
+            obj.BatchOpt.ZarrDownsampleStrategy{2} = {'Auto', 'XY only', 'Anisotropy-preserving', 'Anisotropy-preserving + isotropic level'};
             obj.BatchOpt.ZarrCompression = {'zstd'};
             obj.BatchOpt.ZarrCompression{2} = {'zstd','gzip','none'};
             obj.BatchOpt.ZarrCompressionLevel{1} = 1;
@@ -1053,6 +1061,7 @@ classdef ImageConverter < handle
             obj.BatchOpt.mibBatchTooltip.ZarrUseSharding = 'Select to enable merging of chunks into large files';
             obj.BatchOpt.mibBatchTooltip.ZarrShardXFactorsXYZ = 'Vector of shard x-factors defining how many chunks are merged into a single shard file, 5 values (x,y,z,c,d) for images and 4 values (x,y,z,t) for models';
             obj.BatchOpt.mibBatchTooltip.ZarrDownsampleLimitXYZ = 'Target size for image downsampling during calculation of pyramid of magnifications, the scale factors are calculated automatically';
+            obj.BatchOpt.mibBatchTooltip.ZarrDownsampleStrategy = 'Auto: Anisotropy-preserving when the Z voxel is at least 1.5 times the XY voxel, else XY only. "+ isotropic level" adds the level where all voxels are equal (native Zarr writer only)';
             obj.BatchOpt.mibBatchTooltip.ZarrCompression = 'Compression algorithm or do not use compression, when none';
             obj.BatchOpt.mibBatchTooltip.ZarrCompressionLevel{1} = 'Compression level from 1 (fastest, least compression) to 9 (slowest, best compression); 0 = codec default (zstd 3, gzip 5)';
             obj.BatchOpt.mibBatchTooltip.ZarrVoxelSizeXYZ = 'Image voxel sizes as X, Y, Z';

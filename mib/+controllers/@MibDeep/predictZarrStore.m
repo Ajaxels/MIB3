@@ -115,7 +115,10 @@ function [outputLabels, scoreImg, cancelled] = predictZarrStore(obj, storeInfo, 
 %     - ``.fileIndex``, ``.noFiles``, ``.startTime`` (``tic``) - for the progress
 %     - ``.modelStorePath`` - [char] or ``''``; with ``.zarrFormat``,
 %       ``.modelMaterialNames``, ``.modelMaterialColors``
-%     - ``.tifFilename`` - [char] or ``''``; with ``.tifCompression``
+%     - ``.tifFilename`` - [char] or ``''``; with ``.tifCompression`` and,
+%       optionally, ``.tifDescription`` - [char] ``ImageDescription`` of the TIF
+%       (``core.MibImage.buildImageDescription`` with the bounding box of the
+%       predicted level); default ``'DeepMIB segmentation: <workflow> <architecture>'``
 %     - ``.scoreStorePath`` - [char] or ``''``; with ``.scoreSaveOpt``,
 %       ``.scoreMetadata``, ``.scoreClassNames`` (the group attribute
 %       ``mibPredictionScores``)
@@ -148,6 +151,11 @@ function [outputLabels, scoreImg, cancelled] = predictZarrStore(obj, storeInfo, 
     if predictOpt.generateScoreFiles == 4; scoreBytes = 4; end   % the 0-1 range format keeps single
     writeModel = ~isempty(predictOpt.modelStorePath);
     writeTif = ~isempty(predictOpt.tifFilename);
+    if isfield(predictOpt, 'tifDescription')
+        tifDescription = predictOpt.tifDescription;
+    else
+        tifDescription = sprintf('DeepMIB segmentation: %s %s', obj.BatchOpt.Workflow{1}, obj.BatchOpt.Architecture{1});
+    end
     writeScores = ~isempty(predictOpt.scoreStorePath);
     downsampleFactor = obj.BatchOpt.P_ImageDownsamplingFactor{1};
 
@@ -437,7 +445,7 @@ function [outputLabels, scoreImg, cancelled] = predictZarrStore(obj, storeInfo, 
             for sliceId = 1:slabLength
                 if ~tifStarted
                     imwrite(slabLabels(:, :, sliceId), predictOpt.tifFilename, 'tif', 'WriteMode', 'overwrite', ...
-                        'Description', sprintf('DeepMIB segmentation: %s %s', obj.BatchOpt.Workflow{1}, obj.BatchOpt.Architecture{1}), ...
+                        'Description', tifDescription, ...
                         'Compression', predictOpt.tifCompression);
                     tifStarted = true;
                 else

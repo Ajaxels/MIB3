@@ -662,7 +662,7 @@ classdef MibDeep < handle
             obj.ScoreExportOpt = obj.mibModel.preferences.Deep.ScoreExportOpt;
             % settings of the "Zarr3 (BigData)" score files, missing in preferences saved earlier
             zarrScoreDefaults = struct('ZarrFormat', 'v3', 'Location', 'Next to images', 'Levels', 0, ...
-                'ChunkSize', [0 0 0], 'ShardSize', [0 0 0], 'DownsampleMethod', 'bilinear', ...
+                'ChunkSize', [0 0 0], 'ShardSize', [0 0 0], 'DownsampleMethod', 'cubic', 'DownsampleStrategy', 'Auto', ...
                 'Compressors', 'zstd', 'CompressionLevel', 7);
             obj.ScoreExportOpt = utils.concatenateStructures(zarrScoreDefaults, obj.ScoreExportOpt);
 
@@ -673,6 +673,7 @@ classdef MibDeep < handle
             obj.ZarrModelOpt.ChunkSize = [0 0 0];
             obj.ZarrModelOpt.ShardSize = [0 0 0];
             obj.ZarrModelOpt.DownsampleMethod = 'nearest';
+            obj.ZarrModelOpt.DownsampleStrategy = 'Auto';
             obj.ZarrModelOpt.Compressors = 'zstd';
             % labels compress well: zstd 7 measured 15-25% smaller than the codec
             % default 3 for 5-15% more write time (development/deepmib/plan_zarr_implementation.md)

@@ -302,8 +302,9 @@ elseif strcmp(outputMode, 'OME-Zarr3 (BigData)')
     if ~batchModeSwitch && isempty(obj.zarrExportOptions)
         datasetInfo = struct('Y', obj.canvas.size(1), 'X', obj.canvas.size(2), ...
             'Z', obj.canvas.size(3), 'pixSize', obj.canvas.pixSize);
+        % no isotropic-level strategy: the fuse writer builds each level from the one above
         zarrOptions = io.savers.Zarr3Saver.optionsDialog(obj.view.gui, ...
-            obj.mibModel.mibPath, false, datasetInfo);
+            obj.mibModel.mibPath, false, datasetInfo, [], false);
         if isempty(zarrOptions)
             return;   % user cancelled the settings dialog
         end

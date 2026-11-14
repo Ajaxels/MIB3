@@ -158,7 +158,9 @@ classdef Zarr3Saver < io.savers.BaseSaver
             %     - ``.ShardSize`` - [y x z] chunk multipliers; ``[]`` = no sharding. Each
             %       value says how many chunks to bundle per axis (e.g. [4 4 1])
             %     - ``.Compressors`` - codec spec for ZarrArray.create (default 'zstd')
-            %     - ``.DownsampleMethod`` - 'bilinear', 'nearest', 'bicubic', 'median', or 'mode' (default 'bilinear').
+            %     - ``.DownsampleMethod`` - 'bilinear', 'nearest', 'bicubic', 'cubic', 'median', 'mode', or
+            %       'max' (default 'bilinear'). ``'max'`` is max pooling: the maximum of each block of
+            %       source pixels in XY and of each pair of slices in Z (``resizeXY``, ``reduceZBuffer``).
             %       ``'median'`` picks the median value per block (noise-robust, image data).
             %       ``'mode'`` picks the dominant value per block (categorical label data).
             %
@@ -222,6 +224,7 @@ classdef Zarr3Saver < io.savers.BaseSaver
             grp = io.zarr.Group.create(filename, 'zarrFormat', zarrFormat);
 
             datasets = cell(1, nLevels);
+            levelData = cell(1, nLevels);   % levels still needed as the source of a later one
             for L = 1:nLevels
                 Yl = plan(L).Yl;
                 Xl = plan(L).Xl;
@@ -252,14 +255,18 @@ classdef Zarr3Saver < io.savers.BaseSaver
                     % pair of slices (reduceZBuffer, a trailing single slice kept).
                     % The same pyramid as saveStreamResumable (buildLevelBand), so
                     % a dataset saved from memory equals one converted by streaming.
-                    zFactor = round(plan(L).cumZFactor / plan(L-1).cumZFactor);
-                    previousDepth = size(previousLevel, 3);
+                    % The source level is the level above, except for the isotropic level
+                    % (plan(L).sourceLevel, step plan(L).relXY).
+                    sourceLevel = levelData{plan(L).sourceLevel};
+                    zFactor = round(plan(L).cumZFactor / plan(plan(L).sourceLevel).cumZFactor);
+                    previousDepth = size(sourceLevel, 3);
                     lvl = zeros(Yl, Xl, Zl, C, T, imgClass);
                     for t = 1:T
                         for c = 1:C
                             resized = zeros(Yl, Xl, previousDepth, imgClass);
                             for z = 1:previousDepth
-                                resized(:,:,z) = imresize(previousLevel(:,:,z,c,t), 0.5, options.DownsampleMethod);
+                                resized(:,:,z) = io.savers.Zarr3Saver.resizeXY( ...
+                                    sourceLevel(:,:,z,c,t), plan(L).relXY, [Yl Xl], options.DownsampleMethod);
                             end
                             if zFactor == 1
                                 lvl(:,:,:,c,t) = resized;
@@ -274,7 +281,13 @@ classdef Zarr3Saver < io.savers.BaseSaver
                         end
                     end
                 end
-                previousLevel = lvl;   % [y x z c t], before the singleton c/t are dropped
+                % [y x z c t], before the singleton c/t are dropped. Kept while a later
+                % level is built from it (the level above, and the source of the isotropic level)
+                levelData{L} = lvl;
+                laterSources = [plan(L+1:end).sourceLevel];
+                for keptLevel = 1:L - 1
+                    if ~any(laterSources == keptLevel); levelData{keptLevel} = []; end
+                end
 
                 % drop trailing singleton c/t to match the declared axes
                 keepShape = [Yl, Xl, Zl];
@@ -432,7 +445,9 @@ classdef Zarr3Saver < io.savers.BaseSaver
             % region write per full chunk, mirroring how the legacy Python pipeline
             % (ImageConverter.processZChunk) always writes whole Z-chunks.
             cumZFactors = [plan.cumZFactor];
-            zFactors    = [1, round(cumZFactors(2:end) ./ cumZFactors(1:end-1))];   % per level, from the level above
+            sourceLevels = [plan.sourceLevel];   % the level above, except for the isotropic level
+            relSteps    = [plan.relXY];
+            zFactors    = [1, round(cumZFactors(2:end) ./ cumZFactors(sourceLevels(2:end)))];   % per level, from its source level
             zBuffers    = cell(1, nLevels);   % {Yl×Xl×C} XY-reduced slices of level L-1 pending Z-averaging, per level
             writeBatch  = cell(1, nLevels);   % {Yl×Xl×C} output slices pending a chunk-aligned write, per level
             writeStart  = ones(1, nLevels);   % 1-based Z index where the pending writeBatch{L} begins
@@ -448,15 +463,15 @@ classdef Zarr3Saver < io.savers.BaseSaver
                     slice = provider.getSlice(z, t);   % [Y X C]
                     if trackMaxLabel; maxLabel = max(maxLabel, double(max(slice, [], 'all'))); end
 
-                    levelOutput = [];   % output slice of the level above, [] when it produced none
+                    levelOutputs = cell(1, nLevels);   % output slice of each level for this source slice, [] when it produced none
                     for L = 1:nLevels
                         Yl = levelInfo(L).Yl; Xl = levelInfo(L).Xl;
                         if L == 1
                             outputSlice = slice;
                         else
-                            if isempty(levelOutput); break; end   % level L-1 is still filling a Z group
-                            xySlice = io.savers.Zarr3Saver.reduceSliceXY(levelOutput, slice, Yl, Xl, ...
-                                cumZFactors(L), options.DownsampleMethod);
+                            if isempty(levelOutputs{sourceLevels(L)}); break; end   % its source level is still filling a Z group
+                            xySlice = io.savers.Zarr3Saver.reduceSliceXY(levelOutputs{sourceLevels(L)}, slice, Yl, Xl, ...
+                                cumZFactors(L), options.DownsampleMethod, relSteps(L));
                             if zFactors(L) == 1
                                 outputSlice = xySlice;
                             else
@@ -479,7 +494,7 @@ classdef Zarr3Saver < io.savers.BaseSaver
                                 writeBatch{L} = {};
                             end
                         end
-                        levelOutput = outputSlice;
+                        levelOutputs{L} = outputSlice;
                     end
 
                     done = done + 1;
@@ -491,14 +506,14 @@ classdef Zarr3Saver < io.savers.BaseSaver
                 % buffer of level L before that buffer is averaged in turn; then
                 % flush the remaining partial write batch (number of output slices
                 % not divisible by chunkZ).
-                levelOutput = [];
+                levelOutputs = cell(1, nLevels);
                 for L = 1:nLevels
                     Yl = levelInfo(L).Yl; Xl = levelInfo(L).Xl;
                     outputSlice = [];
                     if L > 1
-                        if ~isempty(levelOutput)
-                            xySlice = io.savers.Zarr3Saver.reduceSliceXY(levelOutput, [], Yl, Xl, ...
-                                cumZFactors(L), options.DownsampleMethod);
+                        if ~isempty(levelOutputs{sourceLevels(L)})
+                            xySlice = io.savers.Zarr3Saver.reduceSliceXY(levelOutputs{sourceLevels(L)}, [], Yl, Xl, ...
+                                cumZFactors(L), options.DownsampleMethod, relSteps(L));
                             if zFactors(L) == 1
                                 outputSlice = xySlice;
                             else
@@ -516,7 +531,7 @@ classdef Zarr3Saver < io.savers.BaseSaver
                         io.savers.Zarr3Saver.writeStreamBatch( ...
                             levelInfo(L).arr, writeBatch{L}, writeStart(L), t, C, T, Yl, Xl, imgClass);
                     end
-                    levelOutput = outputSlice;
+                    levelOutputs{L} = outputSlice;
                 end
             end
             if ~isempty(wb); delete(wb); end
@@ -774,16 +789,19 @@ classdef Zarr3Saver < io.savers.BaseSaver
                     'function', @io.savers.Zarr3Saver.writeDirectSlab, 'numberOfOutputs', 1, ...
                     'arguments', arrayfun(@(first, last) {filename, levelNames(1:numberOfDirectLevels), ...
                         levelSizes(1:numberOfDirectLevels, :), providerArgument, first, last, C, imgClass, ...
-                        options.DownsampleMethod, trackMaxLabel}, zFirsts, zLasts, 'UniformOutput', false))};
+                        options.DownsampleMethod, trackMaxLabel, [plan(1:numberOfDirectLevels).sourceLevel], ...
+                        [plan(1:numberOfDirectLevels).relXY]}, zFirsts, zLasts, 'UniformOutput', false))};
             end
             for L = numberOfDirectLevels+1:nLevels
-                zFactor = round(plan(L).cumZFactor / plan(L-1).cumZFactor);
+                % built from its source level: the level above, except for the isotropic level
+                sourceLevel = plan(L).sourceLevel;
+                zFactor = round(plan(L).cumZFactor / plan(sourceLevel).cumZFactor);
                 if useBands
-                    % the source block of a band (2 rows per output row at the width
-                    % of the level above, writeDepth x zFactor deep) stays about the
+                    % the source block of a band (relXY rows per output row at the width
+                    % of the source level, writeDepth x zFactor deep) stays about the
                     % size of a level-0 band
                     rowsPerBand = floor(bandHeight * X * slabDepth / ...
-                        (2 * levelSizes(L-1, 2) * levelInfo(L).chunkZ * zFactor));
+                        (plan(L).relXY * levelSizes(sourceLevel, 2) * levelInfo(L).chunkZ * zFactor));
                     rowsPerBand = max(1, floor(rowsPerBand / levelInfo(L).rowAlign)) * levelInfo(L).rowAlign;
                     rowsPerBand = min(rowsPerBand, levelInfo(L).Yl);
                 else
@@ -805,9 +823,9 @@ classdef Zarr3Saver < io.savers.BaseSaver
                 end
                 taskGroups{end+1} = struct('key', keys, 'label', labels, ...
                     'function', @io.savers.Zarr3Saver.buildLevelBand, 'numberOfOutputs', 0, ...
-                    'arguments', arrayfun(@(s, b) {filename, levelNames{L-1}, levelNames{L}, ...
-                        levelSizes(L-1, :), levelSizes(L, :), outFirsts(s), outLasts(s), rowFirsts(b), rowLasts(b), ...
-                        zFactor, levelInfo(L-1).Zl, C, imgClass, options.DownsampleMethod}, ...
+                    'arguments', arrayfun(@(s, b) {filename, levelNames{sourceLevel}, levelNames{L}, ...
+                        levelSizes(sourceLevel, :), levelSizes(L, :), outFirsts(s), outLasts(s), rowFirsts(b), rowLasts(b), ...
+                        zFactor, levelInfo(sourceLevel).Zl, C, imgClass, options.DownsampleMethod, plan(L).relXY}, ...
                         slabIndex, bandIndex, 'UniformOutput', false)); %#ok<AGROW>
             end
             numberOfTasks = sum(cellfun(@numel, taskGroups));
@@ -991,7 +1009,7 @@ classdef Zarr3Saver < io.savers.BaseSaver
             end
         end
 
-        function options = optionsDialog(parentFig, mibPath, isModel, datasetInfo, presetDefaults)
+        function options = optionsDialog(parentFig, mibPath, isModel, datasetInfo, presetDefaults, offerIsotropicLevel)
             % OPTIONSDIALOG - collect zarr3 export settings; returns [] if cancelled.
             %
             % Shared by the image/model export menus, the "Convert to BigData"
@@ -1016,6 +1034,14 @@ classdef Zarr3Saver < io.savers.BaseSaver
             %   - ``Anisotropy-preserving`` - halves XY until voxels are near-isotropic,
             %     then also halves Z to keep the aspect ratio ~1 at coarser levels.
             %     Recommended for 3-D datasets where vxZ >> vxXY.
+            %   - ``Anisotropy-preserving + isotropic level`` - as above, and the level
+            %     where the XY voxel equals the Z voxel is always present (5x5x30 nm:
+            %     5, 10, 20, 30, 60 nm), see ``computeLevelPlan``. Needs a Z/XY voxel
+            %     ratio above 1.5 that is a whole number; otherwise the pyramid is built
+            %     as ``Anisotropy-preserving`` and a warning is printed. Not offered
+            %     when ``offerIsotropicLevel`` is false (stitching, whose writer cannot
+            %     build it); a preset with that strategy then shows
+            %     ``Anisotropy-preserving``.
             %
             % **Pyramid levels - auto rule (when "Pyramid levels" = 0):** level 0 is
             % full resolution; levels are added while the next halving keeps
@@ -1039,6 +1065,9 @@ classdef Zarr3Saver < io.savers.BaseSaver
             % corresponding heuristic default. ``Compressors`` takes the same forms the
             % dialog returns: a codec name, or a struct whose ``configuration.level``
             % pre-fills the compression level.
+            %
+            % **offerIsotropicLevel** (optional logical, default ``true``) - list the
+            % strategy ``Anisotropy-preserving + isotropic level``.
             %
             % Output Arguments:
             %   - **options** - struct with fields ``Levels`` (omitted when auto),
@@ -1105,6 +1134,13 @@ classdef Zarr3Saver < io.savers.BaseSaver
                                'bicubic (slower, sharp)', 'median (very slow, noise-robust)', ...
                                'mode (precise, very slow)'};
             end
+            if nargin < 6 || isempty(offerIsotropicLevel); offerIsotropicLevel = true; end
+            isotropicLines = {};
+            if offerIsotropicLevel
+                isotropicLines = { ...
+                    '"+ isotropic level": also adds the level where the XY voxel equals the'; ...
+                    'Z voxel (5x5x30 nm: 5, 10, 20, 30, 60 nm). Needs a whole Z/XY ratio.'};
+            end
             headerLines = [{ ...
                     'Pyramid levels = 0 (auto): adds levels while min(Y,X)/2 >= 256 px'; ...
                     '(up to 8); a fixed count (1-12) overrides.'; ...
@@ -1114,8 +1150,9 @@ classdef Zarr3Saver < io.savers.BaseSaver
                     'Strategy "XY only": halves X & Y at every level, Z constant.'; ...
                     '"Anisotropy-preserving": halves XY until voxels near-isotropic,'; ...
                     'then also halves Z - keeps aspect ratio ~1 at coarser levels. Use the'; ...
-                    'same strategy as the paired image export so the level shapes match.'; ...
-                    ''; ...
+                    'same strategy as the paired image export so the level shapes match.'}; ...
+                    isotropicLines; ...
+                    { ''; ...
                     'Shard X-factors [Y,X,Z]: how many chunks to bundle per axis into'; ...
                     'one shard file (e.g. 4,4,1 = 16 chunks/file in XY). 0 = off.'; ...
                     ''; ...
@@ -1128,6 +1165,9 @@ classdef Zarr3Saver < io.savers.BaseSaver
                        'Compression level (0 = default):'; ...
                        'Downsampling method:'; 'Downsampling strategy:'};
             strategyItems   = {'XY only', 'Anisotropy-preserving'};
+            if offerIsotropicLevel
+                strategyItems{end+1} = 'Anisotropy-preserving + isotropic level';
+            end
             compressorItems = {'zstd', 'gzip', 'none'};
 
             % --- override the heuristic defaults with an existing dataset's settings ---
@@ -1171,6 +1211,9 @@ classdef Zarr3Saver < io.savers.BaseSaver
                 end
             end
 
+            if ~offerIsotropicLevel && strcmp(defaultStrategy, 'Anisotropy-preserving + isotropic level')
+                defaultStrategy = 'Anisotropy-preserving';
+            end
             defaultStrategyIdx = find(strcmp(strategyItems, defaultStrategy), 1);
             if isempty(defaultStrategyIdx); defaultStrategyIdx = 1; end
             defAns  = {struct('Spinner', true, 'Value', levelDefault, 'Limits', [0 12], 'Step', 1, 'Round', true); ...
@@ -1206,13 +1249,18 @@ classdef Zarr3Saver < io.savers.BaseSaver
             options.DownsampleStrategy = answer{7};
         end
 
-        function saverOptions = optionsFromPyramid(pyramid)
+        function saverOptions = optionsFromPyramid(pyramid, firstLevel)
             % OPTIONSFROMPYRAMID - Saver options that rebuild a store the way an existing pyramid was built.
             %
             % Syntax:
             %   .. code-block:: matlab
             %
             %       saverOptions = io.savers.Zarr3Saver.optionsFromPyramid(pyramid)
+            %       saverOptions = io.savers.Zarr3Saver.optionsFromPyramid(pyramid, firstLevel)
+            %
+            % With ``firstLevel`` (1-based, default 1) only the levels from it down are
+            % described, for a store derived from a coarser level (a tool run with a pyramid
+            % level selected): that level becomes level 1 of the result.
             %
             % A store derived from a BigData dataset (aligned, cropped) keeps the
             % chunking, level count, downsampling strategy and sharding of its
@@ -1226,7 +1274,17 @@ classdef Zarr3Saver < io.savers.BaseSaver
             % - **Levels** - the source level count, explicit, so the automatic
             %   ``MinLevelSize`` stop does not shorten a small crop.
             % - **Strategy** - ``'Anisotropy-preserving'`` when any source level
-            %   halves Z, otherwise ``'XY only'``.
+            %   halves Z, otherwise ``'XY only'``. ``'Anisotropy-preserving + isotropic level'``
+            %   when a level before the first one that halves Z has an XY factor
+            %   that is not a power of 2 (the isotropic level), so a store derived
+            %   from one (crop, alignment) keeps it. The level count is explicit,
+            %   which is enough for the planner to reproduce the levels, the extra
+            %   ones appended after the isotropic level included.
+            % - **LevelFactors** - the source level scale factors divided by those of
+            %   its first level (a pyramid cut from a coarser level starts at ``[1 1 1]``),
+            %   when the source has two or more levels with equal Y and X factors.
+            %   ``computeLevelPlan`` then gives exactly these levels. ``reviewOptionsDialog``
+            %   drops them when the user changes the strategy or the level count.
             % - **Shard** - only when the source shard spans more than one chunk,
             %   and as chunks per shard (``ShardSize`` is a multiplier everywhere in
             %   this saver; the source records it in voxels).
@@ -1242,6 +1300,20 @@ classdef Zarr3Saver < io.savers.BaseSaver
             %     ``[y x z]``, ``Levels``, ``DownsampleStrategy``,
             %     ``DownsampleMethod`` and, when the source is sharded,
             %     ``ShardSize`` ``[y x z]`` in chunks
+
+            if nargin > 1 && firstLevel > 1
+                for perLevelField = {'levelImageSizes', 'levelScaleFactors'}
+                    if isfield(pyramid, perLevelField{1}) && ~isempty(pyramid.(perLevelField{1}))
+                        pyramid.(perLevelField{1}) = pyramid.(perLevelField{1})(firstLevel:end, :);
+                    end
+                end
+                for perLevelField = {'chunkSizes', 'shardSizes'}
+                    if isfield(pyramid, perLevelField{1}) && iscell(pyramid.(perLevelField{1})) ...
+                            && numel(pyramid.(perLevelField{1})) >= firstLevel
+                        pyramid.(perLevelField{1}) = pyramid.(perLevelField{1})(firstLevel:end);
+                    end
+                end
+            end
 
             axisOrder = 'yxz';
             if isfield(pyramid, 'axisOrder') && ~isempty(pyramid.axisOrder)
@@ -1262,6 +1334,15 @@ classdef Zarr3Saver < io.savers.BaseSaver
             if isfield(pyramid, 'levelScaleFactors') && size(pyramid.levelScaleFactors, 1) >= 2 ...
                     && any(diff(pyramid.levelScaleFactors(:, 3)) > 0)
                 downsampleStrategy = 'Anisotropy-preserving';
+                % an isotropic level: a level that keeps Z (factor 1) at an XY factor that is
+                % not a power of 2, followed by a level that halves Z
+                xyFactors = pyramid.levelScaleFactors(:, 1);
+                zFactors = pyramid.levelScaleFactors(:, 3);
+                isOffGrid = abs(log2(xyFactors) - round(log2(xyFactors))) > 1e-6;
+                firstHalvedZ = find(zFactors > 1, 1);
+                if any(isOffGrid(1:firstHalvedZ - 1) & zFactors(1:firstHalvedZ - 1) == 1)
+                    downsampleStrategy = 'Anisotropy-preserving + isotropic level';
+                end
             end
 
             saverOptions = struct();
@@ -1270,6 +1351,14 @@ classdef Zarr3Saver < io.savers.BaseSaver
             saverOptions.DownsampleStrategy = downsampleStrategy;
             saverOptions.DownsampleMethod   = 'bilinear';
             saverOptions.Levels             = sourceLevels;
+            % the levels themselves, so the result has exactly the scales of the source whatever the
+            % voxel ratio (the strategy alone misses some, e.g. Z / XY of 1.5 or less at a cut level)
+            if isfield(pyramid, 'levelScaleFactors') && size(pyramid.levelScaleFactors, 1) >= 2 ...
+                    && size(pyramid.levelScaleFactors, 1) == sourceLevels ...
+                    && all(abs(pyramid.levelScaleFactors(:, 1) - pyramid.levelScaleFactors(:, 2)) ...
+                    <= 1e-6 * pyramid.levelScaleFactors(:, 1))
+                saverOptions.LevelFactors = double(pyramid.levelScaleFactors) ./ double(pyramid.levelScaleFactors(1, :));
+            end
 
             if isfield(pyramid, 'shardSizes') && ~isempty(pyramid.shardSizes) && ~isempty(pyramid.shardSizes{1})
                 shardYXZ = io.savers.Zarr3Saver.mapAxisVector(double(pyramid.shardSizes{1}), axisOrder, chunkYXZ);
@@ -1325,6 +1414,12 @@ classdef Zarr3Saver < io.savers.BaseSaver
             dialogFields = fieldnames(dialogOptions);
             for fieldId = 1:numel(dialogFields)
                 saverOptions.(dialogFields{fieldId}) = dialogOptions.(dialogFields{fieldId});
+            end
+            % the levels of the source stay only while the user kept the strategy and the level count
+            if isfield(saverOptions, 'LevelFactors') && (~isfield(saverOptions, 'Levels') ...
+                    || ~isfield(preset, 'Levels') || saverOptions.Levels ~= preset.Levels ...
+                    || ~strcmp(saverOptions.DownsampleStrategy, preset.DownsampleStrategy))
+                saverOptions = rmfield(saverOptions, 'LevelFactors');
             end
         end
 
@@ -1440,6 +1535,80 @@ classdef Zarr3Saver < io.savers.BaseSaver
             end
         end
 
+        function strategy = resolveDownsampleStrategy(requested, pixSize)
+            % RESOLVEDOWNSAMPLESTRATEGY - the strategy for a requested one that may be ``'Auto'``.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      strategy = io.savers.Zarr3Saver.resolveDownsampleStrategy(requested, pixSize)
+            %
+            % ``'Auto'`` (the default of the ImageConverter and of the DeepMIB output
+            % settings, for images without a pyramid to follow) becomes
+            % ``'Anisotropy-preserving'`` when the Z voxel is at least 1.5 times the XY voxel
+            % and ``'XY only'`` otherwise, or when the voxel size is not known. Any other
+            % ``requested`` is returned as it is.
+            %
+            % Input Arguments:
+            %   - **requested** - [char] ``'Auto'``, ``'XY only'``, ``'Anisotropy-preserving'``
+            %     or ``'Anisotropy-preserving + isotropic level'``
+            %   - **pixSize** - [struct] with ``.x .y .z``, or ``[]`` when not known
+            strategy = requested;
+            if ~strcmp(requested, 'Auto'); return; end
+            strategy = 'XY only';
+            if isstruct(pixSize) && all(isfield(pixSize, {'x', 'y', 'z'})) && ...
+                    pixSize.z >= 1.5 * max(pixSize.x, pixSize.y)
+                strategy = 'Anisotropy-preserving';
+            end
+        end
+
+        function [sourceLevels, relXY, relZ] = levelSourcesFromFactors(cumXYFactors, cumZFactors)
+            % LEVELSOURCESFROMFACTORS - which level each pyramid level is built from, and by what step.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      [sourceLevels, relXY, relZ] = io.savers.Zarr3Saver.levelSourcesFromFactors(cumXYFactors, cumZFactors)
+            %
+            % The rule of ``computeLevelPlan``, stated on the stored scale factors so a
+            % writer that rebuilds levels of an existing store (``BigDataOptions``
+            % overwrite) finds the same source as the one that created it: the source
+            % of a level is the **coarsest finer level whose XY factor divides the
+            % level's XY factor** and whose Z factor divides its Z factor. That is
+            % the level above for every level of a power-of-2 pyramid, and for the
+            % level after an isotropic one; the isotropic level itself has the
+            % coarsest finer level that divides ``F`` (5x5x30 nm: the 10 nm level,
+            % ``relXY = 3``). A level that no finer level divides takes **level 1**
+            % (full resolution) and the actual, non-integer, ratio: the isotropic level
+            % of a non-integer ``F`` (5x5x13 nm: ``F = 2.6``, ``relXY = 2.6``), or a
+            % store this saver did not write. A caller that only handles whole steps
+            % (``BigDataOptions``) must check ``relXY``.
+            %
+            % Input Arguments:
+            %   - **cumXYFactors** - ``[1 x nLevels]`` XY factor of each level vs level 0
+            %   - **cumZFactors** - ``[1 x nLevels]`` Z factor of each level vs level 0
+            %
+            % Output Arguments:
+            %   - **sourceLevels** - ``[1 x nLevels]`` 1-based source level, ``0`` for level 1
+            %   - **relXY**, **relZ** - ``[1 x nLevels]`` XY and Z steps from the source, ``1`` for level 1
+            cumXYFactors = cumXYFactors(:)';
+            cumZFactors = cumZFactors(:)';
+            nLevels = numel(cumXYFactors);
+            sourceLevels = zeros(1, nLevels);
+            relXY = ones(1, nLevels);
+            relZ = ones(1, nLevels);
+            isInteger = @(ratio) abs(ratio - round(ratio)) < 1e-9;
+            for levelId = 2:nLevels
+                xyRatio = cumXYFactors(levelId) ./ cumXYFactors(1:levelId - 1);
+                zRatio = cumZFactors(levelId) ./ cumZFactors(1:levelId - 1);
+                candidate = find(isInteger(xyRatio) & isInteger(zRatio) & xyRatio >= 1 & zRatio >= 1, 1, 'last');
+                if isempty(candidate); candidate = 1; end
+                sourceLevels(levelId) = candidate;
+                relXY(levelId) = xyRatio(candidate);
+                relZ(levelId) = zRatio(candidate);
+            end
+        end
+
         function plan = computeLevelPlan(Y, X, Z, pixSize, options)
             % COMPUTELEVELPLAN - build per-level size/scale table for the pyramid.
             %
@@ -1448,20 +1617,166 @@ classdef Zarr3Saver < io.savers.BaseSaver
             %   - ``Yl``, ``Xl``, ``Zl``       - pixel dimensions at this level
             %   - ``cumXYFactor``, ``cumZFactor`` - cumulative scale vs level 0
             %   - ``physScaleY``, ``physScaleX``, ``physScaleZ`` - physical voxel size
+            %   - ``sourceLevel`` - 1-based index of the level this one is built from
+            %     (``0`` for level 0). ``L-1`` for every level but the isotropic one
+            %   - ``relXY`` - XY downsampling step from ``sourceLevel`` (``1`` for
+            %     level 0, ``2`` for a cascaded level, ``F / factor(sourceLevel)`` for the isotropic level)
             %
             % Options fields consumed:
-            %   - ``DownsampleStrategy`` - 'XY only' (default) | 'Anisotropy-preserving'
+            %   - ``DownsampleStrategy`` - 'XY only' (default) | 'Anisotropy-preserving' |
+            %     'Anisotropy-preserving + isotropic level'
             %   - ``Levels``             - explicit level count (overrides auto when > 0)
             %   - ``MinLevelSize``       - auto stop when min(Y,X) would drop below this (default 256)
             %   - ``MaxLevels``          - hard cap on level count (default 8)
+            %   - ``LevelFactors``       - optional ``[N x 3]`` cumulative scale factors
+            %     ``[y x z]`` of the levels, the first row ``[1 1 1]`` and equal Y and X
+            %     factors. The plan then has exactly these levels and ignores the strategy,
+            %     ``MinLevelSize`` and ``MaxLevels``; a smaller ``Levels`` keeps only the finest
+            %     ones, a larger one adds none: for a store that has to line up
+            %     with the levels of an existing pyramid (the scores of DeepMIB of a zarr image),
+            %     which a plan rebuilt from the strategy reproduces only for some voxel ratios
+            %
+            % **Isotropic level.** ``'Anisotropy-preserving + isotropic level'`` adds the
+            % level whose voxels are equal in all three axes. With ``F = vxZ / vxXY``
+            % (not a power of 2, and > 1.5; a whole number, or a ratio of small whole numbers
+            % such as 13/5 = 2.6, found as ``F * d`` whole for some ``d <= 20``) the levels are:
+            %
+            % - level 0 and the usual 2x levels while ``2^j < F`` (Z unchanged);
+            % - the isotropic level at XY factor ``F``, Z unchanged, built from the coarsest
+            %   finer level whose factor divides ``F`` (the step from the level just below it
+            %   is not an integer): 5x5x30 builds the 30 nm level from the 10 nm level
+            %   (``relXY = 3``), 5x5x35 from level 0 (``relXY = 7``);
+            % - then every level halves XY and Z, ``F * 2^k``, so all coarser levels stay
+            %   isotropic.
+            %
+            % 5x5x30 nm gives XY 5, 10, 20, 30, 60, 120 nm; 5x5x35 gives 5, 10, 20, 35, 70, 140;
+            % 5x5x13 gives 5, 10, 13, 26, 52 (``F = 2.6``, built from level 0 in one 2.6 step).
+            % The isotropic level is mandatory: it is built even when ``Levels`` or
+            % ``MaxLevels`` would stop earlier. For a whole ``F``, 2x levels are appended after
+            % it until the coarsest XY factor is a multiple of every other (7 needs 28 for the 4:
+            % levels 1, 2, 4, 7, 14, 28), so the BigData level-map tile stays one coarsest pixel;
+            % this may exceed ``Levels`` and ``MaxLevels`` and ignores ``MinLevelSize`` down to
+            % 16 px. A non-whole ``F`` needs no extension: the level map then uses a larger
+            % whole tile (``core.MibBigDataLabels.tileSizeForFactors``, 52 voxels for 2.6).
+            %
+            % The plan silently equals ``'Anisotropy-preserving'`` when ``F`` is a power of 2.
+            % It falls back to ``'Anisotropy-preserving'`` **with a warning** when ``F <= 1.5``
+            % (no anisotropy; no warning), when ``vxZ / vxXY`` is no ratio of small whole numbers
+            % (``Zarr3Saver:isotropicLevelNonInteger``) and when the isotropic level or the
+            % levels needed after it would be too small (``Zarr3Saver:isotropicLevelTooSmall``).
+            %
+            % Level sizes are ``ceil(source / step)``, what ``imresize`` produces and what the
+            % tile grid of a model store needs. ``imresize`` for the isotropic level is given the
+            % scale ``1 / relXY``, and the level size when that disagrees (``resizeXY``).
             if ~isfield(options, 'DownsampleStrategy'); options.DownsampleStrategy = 'XY only'; end
             if ~isfield(options, 'MinLevelSize');       options.MinLevelSize = 256; end
             if ~isfield(options, 'MaxLevels');          options.MaxLevels = 8; end
+
+            if isfield(options, 'LevelFactors') && ~isempty(options.LevelFactors)
+                % the levels are given (a store that has to line up with an existing
+                % pyramid): taken as they are, whatever the strategy or voxel ratio
+                givenFactors = double(options.LevelFactors);    % [N x 3] [y x z], level 1 = [1 1 1]
+                if size(givenFactors, 2) ~= 3 || any(abs(givenFactors(1, :) - 1) > 1e-6) || ...
+                        any(abs(givenFactors(:, 1) - givenFactors(:, 2)) > 1e-6 * givenFactors(:, 1))
+                    error('Zarr3Saver:levelFactors', ...
+                        'LevelFactors must be [N x 3] [y x z], start at [1 1 1] and have equal Y and X factors');
+                end
+                if isfield(options, 'Levels') && ~isempty(options.Levels) && options.Levels > 0
+                    givenFactors = givenFactors(1:min(options.Levels, end), :);   % fewer levels: the finest ones
+                end
+                nGiven = size(givenFactors, 1);
+                [sourceLevels, relSteps] = io.savers.Zarr3Saver.levelSourcesFromFactors(givenFactors(:, 1)', givenFactors(:, 3)');
+                plan = struct('Yl', {}, 'Xl', {}, 'Zl', {}, 'cumXYFactor', {}, 'cumZFactor', {}, ...
+                    'physScaleY', {}, 'physScaleX', {}, 'physScaleZ', {}, 'sourceLevel', {}, 'relXY', {});
+                for levelId = 1:nGiven
+                    plan(levelId) = struct('Yl', ceil(Y / givenFactors(levelId, 1) - 1e-9), ...
+                        'Xl', ceil(X / givenFactors(levelId, 1) - 1e-9), ...
+                        'Zl', ceil(Z / givenFactors(levelId, 3) - 1e-9), ...
+                        'cumXYFactor', givenFactors(levelId, 1), 'cumZFactor', givenFactors(levelId, 3), ...
+                        'physScaleY', pixSize.y * givenFactors(levelId, 1), 'physScaleX', pixSize.x * givenFactors(levelId, 1), ...
+                        'physScaleZ', pixSize.z * givenFactors(levelId, 3), ...
+                        'sourceLevel', sourceLevels(levelId), 'relXY', relSteps(levelId));
+                end
+                return
+            end
 
             vxXY = max(pixSize.x, pixSize.y);
             if vxXY <= 0; vxXY = 1; end
             vxZ  = pixSize.z;
             if vxZ  <= 0; vxZ  = 1; end
+
+            useExplicit = isfield(options, 'Levels') && ~isempty(options.Levels) && options.Levels > 0;
+
+            if strcmp(options.DownsampleStrategy, 'Anisotropy-preserving + isotropic level')
+                ratio = vxZ / vxXY;
+                % F as a ratio of small whole numbers (5x5x13 nm: 13/5): the level map
+                % needs a whole tile of voxels that holds a whole number of pixels of
+                % every level, which exists for those and not for an arbitrary decimal
+                isoFactor = NaN;
+                for denominator = 1:20
+                    if abs(ratio * denominator - round(ratio * denominator)) <= 1e-6 * ratio * denominator
+                        isoFactor = round(ratio * denominator) / denominator;
+                        break
+                    end
+                end
+                integerFactor = abs(isoFactor - round(isoFactor)) < 1e-9;
+                if ratio > 1.5 && isnan(isoFactor)
+                    warning('Zarr3Saver:isotropicLevelNonInteger', ...
+                        ['Z voxel / XY voxel = %.4g is not a ratio of small whole numbers (such as 6 or 13/5), so no' ...
+                         ' isotropic level is added; the pyramid is built with "Anisotropy-preserving".'], ratio);
+                elseif ratio > 1.5 && 2^round(log2(isoFactor)) ~= isoFactor
+                    % level factors: 1, the 2x levels below F, F, then F*2^k
+                    belowCount = ceil(log2(isoFactor)) - 1;
+                    isoIndex = belowCount + 2;
+                    extraCount = belowCount + 1;
+                    if useExplicit; extraCount = max(extraCount, options.Levels - isoIndex); end
+                    factors = [1, 2.^(1:belowCount), isoFactor * 2.^(0:extraCount)];
+                    nKeep = isoIndex;
+                    if useExplicit
+                        nKeep = max(isoIndex, options.Levels);
+                    else
+                        while nKeep < numel(factors) && nKeep < options.MaxLevels && ...
+                                min(floor(Y / factors(nKeep + 1)), floor(X / factors(nKeep + 1))) >= options.MinLevelSize
+                            nKeep = nKeep + 1;
+                        end
+                    end
+                    nKeep = min(nKeep, numel(factors));
+                    % integer F: the coarsest factor is kept a multiple of every other one,
+                    % so the level-map tile stays one coarsest pixel (a non-integer F gets a
+                    % larger whole tile instead, core.MibBigDataLabels.tileSizeForFactors)
+                    if integerFactor
+                        while nKeep < numel(factors) && any(mod(factors(nKeep), factors(1:nKeep-1)) ~= 0)
+                            nKeep = nKeep + 1;
+                        end
+                    end
+                    factors = factors(1:nKeep);
+                    isoTooSmall = ~useExplicit && min(floor(Y / isoFactor), floor(X / isoFactor)) < options.MinLevelSize;
+                    tooSmall = min(floor(Y / factors(end)), floor(X / factors(end))) < 16;
+                    if (integerFactor && any(mod(factors(end), factors(1:end-1)) ~= 0)) || isoTooSmall || tooSmall
+                        warning('Zarr3Saver:isotropicLevelTooSmall', ...
+                            ['The isotropic level (XY factor %.4g) or the levels needed after it are too small' ...
+                             ' for %d x %d pixels, so none is added; the pyramid is built with "Anisotropy-preserving".'], ...
+                            isoFactor, Y, X);
+                    else
+                        cumZFactors = [ones(1, isoIndex), 2.^(1:nKeep - isoIndex)];
+                        plan = struct('Yl', {}, 'Xl', {}, 'Zl', {}, 'cumXYFactor', {}, 'cumZFactor', {}, ...
+                            'physScaleY', {}, 'physScaleX', {}, 'physScaleZ', {}, 'sourceLevel', {}, 'relXY', {});
+                        [sourceLevels, relSteps] = io.savers.Zarr3Saver.levelSourcesFromFactors(factors, cumZFactors);
+                        for levelId = 1:nKeep
+                            sourceLevel = sourceLevels(levelId);
+                            relXY = relSteps(levelId);
+                            plan(levelId) = struct('Yl', ceil(Y / factors(levelId)), 'Xl', ceil(X / factors(levelId)), ...
+                                'Zl', ceil(Z / cumZFactors(levelId)), ...
+                                'cumXYFactor', factors(levelId), 'cumZFactor', cumZFactors(levelId), ...
+                                'physScaleY', pixSize.y * factors(levelId), 'physScaleX', pixSize.x * factors(levelId), ...
+                                'physScaleZ', pixSize.z * cumZFactors(levelId), ...
+                                'sourceLevel', sourceLevel, 'relXY', relXY);
+                        end
+                        return
+                    end
+                end
+                options.DownsampleStrategy = 'Anisotropy-preserving';
+            end
 
             curY  = Y;    curX  = X;    curZ  = Z;
             curVxXY = vxXY;  curVxZ = vxZ;
@@ -1469,9 +1784,8 @@ classdef Zarr3Saver < io.savers.BaseSaver
 
             plan = struct('Yl', Y, 'Xl', X, 'Zl', Z, ...
                 'cumXYFactor', 1, 'cumZFactor', 1, ...
-                'physScaleY', pixSize.y, 'physScaleX', pixSize.x, 'physScaleZ', pixSize.z);
-
-            useExplicit = isfield(options, 'Levels') && ~isempty(options.Levels) && options.Levels > 0;
+                'physScaleY', pixSize.y, 'physScaleX', pixSize.x, 'physScaleZ', pixSize.z, ...
+                'sourceLevel', 0, 'relXY', 1);
 
             while true
                 % stop conditions
@@ -1506,7 +1820,8 @@ classdef Zarr3Saver < io.savers.BaseSaver
                     'cumXYFactor', cumXYFactor, 'cumZFactor', cumZFactor, ...
                     'physScaleY', pixSize.y * cumXYFactor, ...
                     'physScaleX', pixSize.x * cumXYFactor, ...
-                    'physScaleZ', pixSize.z * cumZFactor);
+                    'physScaleZ', pixSize.z * cumZFactor, ...
+                    'sourceLevel', numel(plan), 'relXY', 2);
             end
         end
 
@@ -1634,7 +1949,7 @@ classdef Zarr3Saver < io.savers.BaseSaver
         % call them on a pool worker; not meant to be called directly.
 
         function maxLabel = writeDirectSlab(storePath, levelNames, levelSizes, providerConstant, ...
-                zFirst, zLast, C, imgClass, downsampleMethod, trackMaxLabel)
+                zFirst, zLast, C, imgClass, downsampleMethod, trackMaxLabel, sourceLevels, relSteps)
             % WRITEDIRECTSLAB - Read source slices zFirst..zLast and write them to every full-Z level.
             %
             % Runs on a pool worker. Reads each slice from the provider in
@@ -1654,11 +1969,19 @@ classdef Zarr3Saver < io.savers.BaseSaver
             %   - **imgClass** - [char] data class
             %   - **downsampleMethod** - [char] ``imresize`` method, ``'mode'`` or ``'median'``
             %   - **trackMaxLabel** - [logical] return the largest value of the slab
+            %   - **sourceLevels** - *(optional)* ``[1 x nLevels]`` 1-based index of the
+            %     level each level is cascaded from, ``0`` for level 1; default
+            %     ``0:nLevels-1`` (each from the level above). The isotropic level
+            %     (``computeLevelPlan``) names an earlier one
+            %   - **relSteps** - *(optional)* ``[1 x nLevels]`` XY step from that level,
+            %     default ``[1 2 2 ...]``
             %
             % Output Arguments:
             %   - **maxLabel** - [double] the largest value read, ``0`` unless tracked
             provider = providerConstant.Value;
             numberOfLevels = numel(levelNames);
+            if nargin < 11 || isempty(sourceLevels); sourceLevels = 0:numberOfLevels - 1; end
+            if nargin < 12 || isempty(relSteps); relSteps = [1, 2 * ones(1, numberOfLevels - 1)]; end
             depth = zLast - zFirst + 1;
             cascadeDownsampling = ~ismember(downsampleMethod, {'mode', 'median'});
             slabs = cell(1, numberOfLevels);
@@ -1670,16 +1993,19 @@ classdef Zarr3Saver < io.savers.BaseSaver
             for z = zFirst:zLast
                 slice = provider.getSlice(z, 1);   % [Y X C]
                 if trackMaxLabel; maxLabel = max(maxLabel, double(max(slice, [], 'all'))); end
+                levelSlices = cell(1, numberOfLevels);   % this slice at every level, a source for later ones
                 xySlice = slice;
                 for L = 1:numberOfLevels
                     Yl = levelSizes(L, 1); Xl = levelSizes(L, 2);
                     if L > 1
                         if cascadeDownsampling
-                            xySlice = imresize(xySlice, 0.5, downsampleMethod);   % from level L-1, [Yl Xl]
+                            % from its source level, [Yl Xl]; the level above unless it is the isotropic one
+                            xySlice = io.savers.Zarr3Saver.resizeXY(levelSlices{sourceLevels(L)}, relSteps(L), [Yl Xl], downsampleMethod);
                         else
                             xySlice = io.savers.Zarr3Saver.blockReduce2D(slice, Yl, Xl, str2func(downsampleMethod));
                         end
                     end
+                    levelSlices{L} = xySlice;
                     slabs{L}(:, :, z - zFirst + 1, :) = reshape(cast(xySlice, imgClass), Yl, Xl, 1, C);
                 end
             end
@@ -1722,21 +2048,23 @@ classdef Zarr3Saver < io.savers.BaseSaver
         end
 
         function buildLevelBand(storePath, sourceName, targetName, sourceSize, targetSize, ...
-                zOutFirst, zOutLast, yOutFirst, yOutLast, zFactor, sourceDepth, C, imgClass, downsampleMethod)
-            % BUILDLEVELBAND - Build rows yOutFirst..yOutLast of slices zOutFirst..zOutLast of a level from the level above.
+                zOutFirst, zOutLast, yOutFirst, yOutLast, zFactor, sourceDepth, C, imgClass, downsampleMethod, relXY)
+            % BUILDLEVELBAND - Build rows yOutFirst..yOutLast of slices zOutFirst..zOutLast of a level from its source level.
             %
-            % Runs on a pool worker. Every level halves XY (``computeLevelPlan``),
-            % so the interpolating methods resize by exactly 0.5 (``imresize(...,
-            % 0.5, method)``): output row ``u`` is centred on source row
-            % ``2u - 0.5``, the same mapping as the ``2^k`` scale written in the
-            % metadata, and ``ceil(rows/2)`` rows come out - the level size. A band
-            % reads the source rows it needs plus ``halo`` rows on either side
-            % (the bicubic antialiasing kernel reaches 4 source rows at 0.5) and
-            % starts on an odd source row, so its resize equals the whole-slice
-            % resize exactly (measured, bilinear/bicubic/nearest, odd and even
-            % sizes) and bands join without seams. ``'mode'``/``'median'`` reduce
-            % blocks with ``blockReduce2D`` and need the whole slice
-            % (``yOutFirst = 1``, ``yOutLast = targetSize(1)``).
+            % Runs on a pool worker. The source level is the level above, except for the
+            % isotropic level (``computeLevelPlan``), whose source is an earlier one.
+            % The step ``relXY`` is 2 for the levels above, so the interpolating methods
+            % resize by exactly 0.5 (``imresize(..., 0.5, method)``): output row ``u`` is
+            % centred on source row ``2u - 0.5``, the same mapping as the ``2^k`` scale
+            % written in the metadata, and ``ceil(rows/2)`` rows come out - the level
+            % size. A band reads the source rows it needs plus ``halo = 4 * relXY`` rows
+            % on either side (the bicubic antialiasing kernel reaches 4 source rows at
+            % 0.5, and its support grows with the step) and starts on a source row
+            % ``relXY * k + 1``, so its resize equals the whole-slice resize exactly
+            % (measured for ``relXY = 2``: bilinear/bicubic/nearest, odd and even sizes)
+            % and bands join without seams. ``'mode'``/``'median'`` reduce blocks with
+            % ``blockReduce2D`` and need the whole slice (``yOutFirst = 1``,
+            % ``yOutLast = targetSize(1)``).
             %
             % The source block is ``zFactor``-times deeper than the output; each
             % group of ``zFactor`` resized slices is reduced in Z with
@@ -1754,16 +2082,22 @@ classdef Zarr3Saver < io.savers.BaseSaver
             %   - **C** - number of channels
             %   - **imgClass** - [char] data class
             %   - **downsampleMethod** - [char] as for ``writeDirectSlab``
-            halo = 8;   % even, so the band starts on an odd source row
+            %   - **relXY** - *(optional)* XY step from the source level, an integer, default 2
+            if nargin < 15 || isempty(relXY); relXY = 2; end
+            if relXY ~= round(relXY)
+                error('Zarr3Saver:nonIntegerStep', ...
+                    'buildLevelBand: a band can only be cut along the output grid for an integer XY step, got %g.', relXY);
+            end
+            halo = 4 * relXY;   % a multiple of relXY, so the band starts on the output grid (rowFirst - 1 = relXY * k)
             cascadeDownsampling = ~ismember(downsampleMethod, {'mode', 'median'});
             if cascadeDownsampling
-                rowFirst = max(1, 2 * yOutFirst - 1 - halo);
-                rowLast = min(sourceSize(1), 2 * yOutLast + halo);
+                rowFirst = max(1, relXY * (yOutFirst - 1) + 1 - halo);
+                rowLast = min(sourceSize(1), relXY * yOutLast + halo);
             else
                 rowFirst = 1;
                 rowLast = sourceSize(1);
             end
-            rowOffset = (rowFirst - 1) / 2;   % output rows before the block's first one
+            rowOffset = (rowFirst - 1) / relXY;   % output rows before the block's first one
 
             source = io.zarr.Array(fullfile(storePath, sourceName));
             zInFirst = (zOutFirst - 1) * zFactor + 1;
@@ -1785,7 +2119,7 @@ classdef Zarr3Saver < io.savers.BaseSaver
                 for inputIndex = firstInput:lastInput
                     sourceSlice = reshape(block(:, :, inputIndex, :), inputRows, sourceSize(2), C);
                     if cascadeDownsampling
-                        resized = imresize(sourceSlice, 0.5, downsampleMethod);
+                        resized = io.savers.Zarr3Saver.resizeXY(sourceSlice, relXY, [ceil(inputRows / relXY), targetSize(2)], downsampleMethod);
                         group{inputIndex - firstInput + 1} = resized(yOutFirst - rowOffset : yOutLast - rowOffset, :, :);
                     else
                         group{inputIndex - firstInput + 1} = io.savers.Zarr3Saver.blockReduce2D( ...
@@ -1796,6 +2130,57 @@ classdef Zarr3Saver < io.savers.BaseSaver
                     group, downsampleMethod, imgClass, outputRows, Xl, C), outputRows, Xl, 1, C);
             end
             io.savers.Zarr3Saver.writeRegion(fullfile(storePath, targetName), output, yOutFirst, zOutFirst, C);
+        end
+
+        function out = resizeXY(inputSlice, relXY, targetYX, method)
+            % RESIZEXY - reduce a slice in XY by the step ``relXY`` of a pyramid level.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      out = io.savers.Zarr3Saver.resizeXY(inputSlice, relXY, targetYX, method)
+            %
+            % ``imresize(inputSlice, 1 / relXY, method)``: for 2 exactly the 0.5 every
+            % level was built with, so a pyramid of 2x steps is unchanged, bit for bit.
+            % That is not the same as asking ``imresize`` for the output size: with
+            % an odd size the two sample at slightly different positions. Only when
+            % the scale gives a size other than ``targetYX`` (``ceil(size / relXY)``
+            % can come out one too large through floating-point noise in
+            % ``size * (1 / relXY)``) the output size is requested instead.
+            %
+            % Input Arguments:
+            %   - **inputSlice** - [numeric] ``[Y X]`` or ``[Y X C]`` slice
+            %   - **relXY** - [double] XY step from the source level (2 for a cascaded level,
+            %     ``F / factor`` for the isotropic one)
+            %   - **targetYX** - [1x2 double] ``[Yl Xl]`` of the level being built
+            %   - **method** - [char] ``imresize`` method, or ``'max'`` for max pooling: the
+            %     maximum of each ``relXY x relXY`` block (a partial last block is padded
+            %     with its edge pixels, so it takes the maximum of what it has). Pooling a
+            %     level from the level above equals pooling from the finest level for
+            %     an integer step, and a band that starts on a ``relXY`` row boundary
+            %     (``buildLevelBand``) gives the same result as the whole slice
+            %
+            % Output Arguments:
+            %   - **out** - [numeric] slice of size ``targetYX``
+            if strcmp(method, 'max')
+                % max pooling: the maximum of each block of relXY x relXY source pixels, the
+                % last partial block of an odd size included
+                if abs(relXY - round(relXY)) < 1e-9
+                    relXY = round(relXY);
+                    pooled = inputSlice(1:min(end, targetYX(1) * relXY), 1:min(end, targetYX(2) * relXY), :);
+                    pooled = padarray(pooled, [targetYX(1) * relXY - size(pooled, 1), targetYX(2) * relXY - size(pooled, 2)], 'replicate', 'post');
+                    pooled = reshape(pooled, relXY, targetYX(1), relXY, targetYX(2), size(pooled, 3));
+                    out = reshape(max(max(pooled, [], 1), [], 3), targetYX(1), targetYX(2), size(pooled, 5));
+                else
+                    out = io.savers.Zarr3Saver.blockReduce2D(inputSlice, targetYX(1), targetYX(2), ...
+                        @(block, varargin) max(block(:, :), [], 1));
+                end
+                return
+            end
+            out = imresize(inputSlice, 1 / relXY, method);
+            if size(out, 1) ~= targetYX(1) || size(out, 2) ~= targetYX(2)
+                out = imresize(inputSlice, targetYX, method);
+            end
         end
 
         function out = blockReduce2D(inputSlice, Yl, Xl, reduceFcn)
@@ -2123,17 +2508,20 @@ classdef Zarr3Saver < io.savers.BaseSaver
             if startsWith(text, '0') && numel(text) > 7; text = text(2:end); end   % 0:42:10, not 00:42:10
         end
 
-        function xySlice = reduceSliceXY(previousOutput, sourceSlice, Yl, Xl, cumZFactor, downsampleMethod)
-            % REDUCESLICEXY - XY step of saveStream's level cascade: one output slice of level L-1 to level L.
+        function xySlice = reduceSliceXY(previousOutput, sourceSlice, Yl, Xl, cumZFactor, downsampleMethod, relXY)
+            % REDUCESLICEXY - XY step of saveStream's level cascade: one output slice of a level's source level to the level.
             %
-            % The interpolating methods resize ``previousOutput`` (an output slice
-            % of the level above) by exactly 0.5 - the ``2^k`` scale of the
+            % ``previousOutput`` is the output slice of the source level: the level
+            % above, or an earlier one for the isotropic level (``relXY`` is the
+            % step from it, default 2). The interpolating methods resize it by
+            % exactly ``1 / relXY`` - for 2 the ``2^k`` scale of the
             % metadata, see ``buildLevelBand``. ``'mode'``/``'median'`` reduce
             % blocks of ``sourceSlice`` (the full-resolution slice) while the
             % level keeps the full Z (``cumZFactor == 1``, as ``writeDirectSlab``)
             % and of ``previousOutput`` once Z was halved (as ``buildLevelBand``).
+            if nargin < 7 || isempty(relXY); relXY = 2; end
             if ~ismember(downsampleMethod, {'mode', 'median'})
-                xySlice = imresize(previousOutput, 0.5, downsampleMethod);
+                xySlice = io.savers.Zarr3Saver.resizeXY(previousOutput, relXY, [Yl Xl], downsampleMethod);
             elseif cumZFactor == 1
                 xySlice = io.savers.Zarr3Saver.blockReduce2D(sourceSlice, Yl, Xl, str2func(downsampleMethod));
             else
@@ -2231,8 +2619,15 @@ classdef Zarr3Saver < io.savers.BaseSaver
             %
             % 'mode'   - majority vote per spatial position (for categorical labels).
             % 'median' - median per spatial position (noise-robust, for images).
+            % 'max'    - maximum per spatial position (max pooling).
             % All other methods - arithmetic mean cast to imgClass.
-            if ismember(method, {'mode', 'median'})
+            if strcmp(method, 'max')
+                result = bufferCell{1};
+                for k = 2:numel(bufferCell)
+                    result = max(result, bufferCell{k});
+                end
+                result = cast(result, imgClass);
+            elseif ismember(method, {'mode', 'median'})
                 stacked   = cat(4, bufferCell{:});          % [Yl Xl C nAccum]
                 flat      = reshape(stacked, [], numel(bufferCell));
                 reduceFcn = str2func(method);

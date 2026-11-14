@@ -433,32 +433,45 @@ function startPredictionBlockedImage(obj)
         [~, fn] = fileparts(predictionFiles{id});
         if zarrInput; fn = regexprep(fn, '\.ome$', '', 'ignorecase'); end   % 'name.ome.zarr' -> 'name'
 
+        % bounding box and voxel size of the predicted image, copied to the model and
+        % score files: for zarr images those of the predicted level; for other images
+        % they are read after the prediction, when the size of the image is known
+        BoundingBox = [];
+        sourcePixSize = [];
+        if zarrInput
+            predictedLevel = obj.BatchOpt.BioformatsIndex{1};
+            BoundingBox = zarrStores(id).boundingBox;
+            levelScale = zarrStores(id).pyramid.levelScaleFactors(predictedLevel, :);   % [y x z]
+            sourcePixSize = zarrStores(id).pixSize;
+            sourcePixSize.y = sourcePixSize.y*levelScale(1);
+            sourcePixSize.x = sourcePixSize.x*levelScale(2);
+            sourcePixSize.z = sourcePixSize.z*levelScale(3);
+        end
+
         if zarrScores
             % settings of the score store: an image store of the predicted level, one channel per class
             scoreOpt = obj.ScoreExportOpt;
-            scoreMetadata.pixSize = struct('x', 1, 'y', 1, 'z', 1);   % the voxel size of images that are not zarr is not known here
+            scoreMetadata = struct();
+            scoreMetadata.pixSize = struct('x', 1, 'y', 1, 'z', 1);   % images that are not zarr: set when the score store is saved
             if zarrInput
                 % the predicted level becomes level 1; the coarser levels of the image follow
-                predictedLevel = obj.BatchOpt.BioformatsIndex{1};
                 imagePyramid = zarrStores(id).pyramid;
                 levelRange = predictedLevel:size(imagePyramid.levelImageSizes, 1);
                 scoreSaveOpt = io.savers.Zarr3Saver.optionsFromPyramid(struct('axisOrder', imagePyramid.axisOrder, ...
                     'levelImageSizes', imagePyramid.levelImageSizes(levelRange, :), ...
                     'levelScaleFactors', imagePyramid.levelScaleFactors(levelRange, :), ...
                     'chunkSizes', {imagePyramid.chunkSizes(levelRange)}));
-                % voxel size of the predicted level, so the scores line up with the image
-                levelScale = imagePyramid.levelScaleFactors(predictedLevel, :);   % [y x z]
-                scoreMetadata.pixSize = zarrStores(id).pixSize;
-                scoreMetadata.pixSize.y = scoreMetadata.pixSize.y*levelScale(1);
-                scoreMetadata.pixSize.x = scoreMetadata.pixSize.x*levelScale(2);
-                scoreMetadata.pixSize.z = scoreMetadata.pixSize.z*levelScale(3);
+                % optionsFromPyramid also sets LevelFactors, the levels of the image from the predicted level down
+                % voxel size and position of the predicted level, so the scores line up with the image
+                scoreMetadata.pixSize = sourcePixSize;
+                scoreMetadata.boundingBox = BoundingBox;
             else
-                % no pyramid to follow: XY halvings until the smaller side is below 256 pixels
-                scoreSaveOpt = struct('silent', true, 'ChunkSize', [256 256 16], 'DownsampleStrategy', 'XY only');
+                % no pyramid to follow: the strategy of the score settings, levels until the smaller side is below 256 pixels
+                scoreSaveOpt = struct('silent', true, 'ChunkSize', [256 256 16], 'DownsampleStrategy', scoreOpt.DownsampleStrategy);   % 'Auto' is resolved with the voxel size before the save
             end
             scoreSaveOpt.ZarrFormat = scoreZarrFormat;
             scoreSaveOpt.DownsampleMethod = scoreOpt.DownsampleMethod;
-            if scoreOpt.Levels > 0; scoreSaveOpt.Levels = scoreOpt.Levels; end
+            if scoreOpt.Levels > 0; scoreSaveOpt.Levels = scoreOpt.Levels; end   % LevelFactors is cut to it
             if all(scoreOpt.ChunkSize > 0); scoreSaveOpt.ChunkSize = scoreOpt.ChunkSize; end
             if scoreZarrFormat == 2
                 scoreSaveOpt.ShardSize = [];    % no sharding in zarr v2
@@ -496,6 +509,8 @@ function startPredictionBlockedImage(obj)
             end
             if ismember(obj.BatchOpt.P_ModelFiles{1}, {'TIF compressed format', 'TIF uncompressed format'})
                 predictOpt.tifFilename = fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages', 'ResultsModels', ['Labels_' fn '.tif']);
+                predictOpt.tifDescription = core.MibImage.buildImageDescription(BoundingBox, ...
+                    {sprintf('DeepMIB segmentation: %s %s', obj.BatchOpt.Workflow{1}, obj.BatchOpt.Architecture{1})});
                 predictOpt.tifCompression = 'none';
                 if strcmp(obj.BatchOpt.P_ModelFiles{1}, 'TIF compressed format'); predictOpt.tifCompression = 'lzw'; end
             end
@@ -733,6 +748,24 @@ function startPredictionBlockedImage(obj)
         % Save results; for zarr images the TIF files and the zarr stores are
         % already written by predictZarrStore
         if ~patchwisePatchesPredictSwitch % standard semantic segmentation mode or patch-wise mode when prediction images are not in patches
+            if ~zarrInput
+                % the results are at the size of the image, also after P_ImageDownsamplingFactor;
+                % preprocessed .mibImg files carry the bounding box of their source file
+                if preprocessedSwitch
+                    sourceLoadOpt = struct();
+                else
+                    sourceLoadOpt = mibDeepStoreLoadImagesOpt;
+                end
+                [BoundingBox, sourcePixSize] = deepmib.getSourceBoundingBox(predictionFiles{id}, ...
+                    [size(outputLabels, 1), size(outputLabels, 2), size(outputLabels, 3)], sourceLoadOpt);
+                if zarrScores && ~isempty(BoundingBox)
+                    scoreMetadata.pixSize = sourcePixSize;
+                    scoreMetadata.boundingBox = BoundingBox;
+                end
+            end
+            tifDescription = core.MibImage.buildImageDescription(BoundingBox, ...
+                {sprintf('DeepMIB segmentation: %s %s', obj.BatchOpt.Workflow{1}, obj.BatchOpt.Architecture{1})});
+
             % depending on the selected output type
             modelFormat = obj.BatchOpt.P_ModelFiles{1};
             if zarrInput && ismember(modelFormat, {'TIF compressed format', 'TIF uncompressed format', 'Zarr3 (BigData model)'})
@@ -747,7 +780,7 @@ function startPredictionBlockedImage(obj)
                     filename = fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages', 'ResultsModels', ['Labels_' fn '.model']);
                     modelVariable = 'outputLabels';
                     modelType = 63;
-                    if exist('BoundingBox','var') == 0
+                    if isempty(BoundingBox)
                         save(filename, 'outputLabels', 'modelMaterialNames', 'modelMaterialColors', ...
                             'modelVariable', 'modelType', '-mat', '-v7.3');
                     else
@@ -761,7 +794,7 @@ function startPredictionBlockedImage(obj)
                         tifCompression = 'none';
                     end
                     filename = fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages', 'ResultsModels', ['Labels_' fn '.tif']);
-                    imwrite(outputLabels(:,:,1), filename, 'tif', 'WriteMode', 'overwrite', 'Description', sprintf('DeepMIB segmentation: %s %s', obj.BatchOpt.Workflow{1}, obj.BatchOpt.Architecture{1}), 'Compression', tifCompression);
+                    imwrite(outputLabels(:,:,1), filename, 'tif', 'WriteMode', 'overwrite', 'Description', tifDescription, 'Compression', tifCompression);
                     if dataDimension ~= 2 || use3DdatasetWith2Dnet % 2.5D and 3D case dataDimension == 2.5 or dataDimension == 3
                         for sliceId = 2:size(outputLabels, 3)
                             imwrite(outputLabels(:,:,sliceId), filename, 'tif', 'WriteMode', 'append', 'Compression', tifCompression);
@@ -775,7 +808,7 @@ function startPredictionBlockedImage(obj)
                     imagePyramid = [];  % images that are not zarr have no pyramid, writeModelStore generates one
                     try
                         obj.writeModelStore(outputLabels, storePaths{id}, imagePyramid, zarrFormat, ...
-                            modelMaterialNames, modelMaterialColors);
+                            modelMaterialNames, modelMaterialColors, sourcePixSize);
                     catch err
                         if obj.BatchOpt.showWaitbar; close(pwb); end
                         if ~isempty(writtenStores)
@@ -796,6 +829,7 @@ function startPredictionBlockedImage(obj)
                     if obj.BatchOpt.showWaitbar && pwb.CancelRequested; close(pwb); return; end
                     try
                         % [y x c z] -> [y x z c]
+                        scoreSaveOpt.DownsampleStrategy = io.savers.Zarr3Saver.resolveDownsampleStrategy(scoreSaveOpt.DownsampleStrategy, scoreMetadata.pixSize);
                         io.savers.Zarr3Saver().save(permute(scoreImg, [1 2 4 3]), scoreMetadata, scoreStorePaths{id}, scoreSaveOpt);
                         scoreGroup = io.zarr.Group(scoreStorePaths{id});
                         scoreAttributes = scoreGroup.getAttributes();
@@ -816,15 +850,24 @@ function startPredictionBlockedImage(obj)
                     amiraOpt.overwrite = 1;
                     amiraOpt.showWaitbar = 0;
                     amiraOpt.verbose = false;
+                    amiraInfo = [];
+                    if ~isempty(BoundingBox); amiraInfo = dictionary("BoundingBox", {BoundingBox}); end
                     % scoreImg is [H W C] (pure 2D) or [H W C D] (2.5D / 3D / use3DdatasetWith2Dnet);
                     % bitmap2amiraMesh expects [H W D C T] - trailing singleton handles the 2D case
-                    io.AmiraMesh.bitmap2amiraMesh(filename, permute(scoreImg, [1 2 4 3]), [], amiraOpt);
-                elseif generateScoreFiles == 4   %  4=='Use Matlab non-compressed format (range 0-1)'
-                    filename = fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages', 'ResultsScores', ['Score_' fn '.mat']);
-                    deepmib.saveImageParFor(filename, scoreImg, false, saveImageOpt);
-                else  % 2=='Use Matlab non-compressed format', 3=='Use Matlab compressed format'
-                    filename = fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages', 'ResultsScores', ['Score_' fn '.mibImg']);
-                    deepmib.saveImageParFor(filename, scoreImg, generateScoreFiles, saveImageOpt);
+                    io.AmiraMesh.bitmap2amiraMesh(filename, permute(scoreImg, [1 2 4 3]), amiraInfo, amiraOpt);
+                else
+                    scoreSaveOpt = saveImageOpt;
+                    if ~isempty(BoundingBox)
+                        scoreSaveOpt.boundingBox = BoundingBox;
+                        scoreSaveOpt.pixSize = sourcePixSize;
+                    end
+                    if generateScoreFiles == 4   %  4=='Use Matlab non-compressed format (range 0-1)'
+                        filename = fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages', 'ResultsScores', ['Score_' fn '.mat']);
+                        deepmib.saveImageParFor(filename, scoreImg, false, scoreSaveOpt);
+                    else  % 2=='Use Matlab non-compressed format', 3=='Use Matlab compressed format'
+                        filename = fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages', 'ResultsScores', ['Score_' fn '.mibImg']);
+                        deepmib.saveImageParFor(filename, scoreImg, generateScoreFiles == 3, scoreSaveOpt);
+                    end
                 end
             end
         else    % patchwisePatchesPredictSwitch == true, patch-wise mode, when each patch is contained in its own subfolder

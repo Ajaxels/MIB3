@@ -395,9 +395,15 @@ function processImages(obj, preprocessFor)
         %                     outImg = obj.channelWisePreProcess(outImg);     % normalize the signals, remove outliers and scale between 0 and 1
         %                 end
 
-        % saving image
+        % saving image; images for prediction keep the bounding box of the source
+        % file, which the prediction copies to its model and score files
+        imageSaveOpt = saveImageOpt;
+        if ~trainingSwitch
+            [imageSaveOpt.boundingBox, imageSaveOpt.pixSize] = deepmib.getSourceBoundingBox(imgDS.Files{imgId}, ...
+                [size(mibImg, 1), size(mibImg, 2), size(mibImg, 3)], getDataOptions);
+        end
         fn = fullfile(imDir, sprintf('%s.mibImg', fnOut));
-        deepmib.saveImageParFor(fn, mibImg, compressImages, saveImageOpt);
+        deepmib.saveImageParFor(fn, mibImg, compressImages, imageSaveOpt);
 
         if GroundTruthModelSwitch
             if strcmp(mode2D3DParFor, '2D')

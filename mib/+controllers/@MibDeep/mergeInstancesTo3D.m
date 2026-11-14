@@ -28,6 +28,14 @@ function mergeInstancesTo3D(obj)
 % stacks are stitched. The merged model can be written as a single 3D file or as
 % a sequence of 2D files depending on the selected format/policy.
 %
+% The merged model gets the bounding box the prediction stored in the input
+% models (the box of the predicted images). A z-stack model keeps its own box and
+% the voxel size that follows from it. A stack of 2D models takes X, Y and the Z
+% origin from the first slice, and the Z step as the X voxel size times the
+% anisotropy ratio of the dialog, since separate 2D images do not record their
+% spacing. Models without a box (saved by older versions) give 1x1 um voxels at
+% the origin, Z again from the ratio.
+%
 % Input Arguments:
 %   (none)
 %
@@ -199,7 +207,7 @@ for jobId = 1:numJobs
     try
         if stackPerFile
             wb.Message = sprintf('Loading %s (%d of %d)...', modelFiles(jobId).name, jobId, numJobs);
-            inputVol = localLoadLabels(fullfile(resultsModelsDir, modelFiles(jobId).name));
+            [inputVol, sourceBoundingBox] = localLoadLabels(fullfile(resultsModelsDir, modelFiles(jobId).name));
             [~, inputBase] = fileparts(modelFiles(jobId).name);
             numSlices = size(inputVol, 3);
             if numSlices == 1
@@ -225,7 +233,8 @@ for jobId = 1:numJobs
                 if mod(sliceId, 10) == 0
                     wb.Message = sprintf('Loading instance models: %d of %d...', sliceId, numSlices);
                 end
-                sliceLabels = localLoadLabels(fullfile(resultsModelsDir, modelFiles(sliceId).name));
+                [sliceLabels, sliceBoundingBox] = localLoadLabels(fullfile(resultsModelsDir, modelFiles(sliceId).name));
+                if sliceId == 1; sourceBoundingBox = sliceBoundingBox; end   % position of the stack
                 if size(sliceLabels, 3) > 1
                     error('MibDeep:mergeInstancesTo3D:mixedDimensions', ...
                         ['%s is a 3D model (%d slices) while the first model file is 2D.\n\n' ...
@@ -312,10 +321,28 @@ for jobId = 1:numJobs
     metadata.labelsVariable = 'mibModel';
     metadata.modelType      = modelType;
     metadata.layerType      = 'labels';
-    % voxel size is unknown for raw prediction images: default to 1x1x1 um, with Z
-    % scaled by the user-provided anisotropy ratio when one was given
-    metadata.pixSize        = struct('x', 1, 'y', 1, 'z', anisotropyZ, 't', 1, 'units', 'um', 'tunits', 's');
-    metadata.boundingBox    = [0, imgWidth, 0, imgHeight, 0, numSlices];
+    % position and voxel size: from the bounding box the prediction stored in the
+    % models (the box of the predicted image), else 1x1 um at the origin. A z-stack
+    % model keeps its own box; a stack of 2D models takes XY and the Z origin from
+    % the first slice, and the Z step from the anisotropy ratio of the dialog
+    pixSize = struct('x', 1, 'y', 1, 'z', anisotropyZ, 't', 1, 'units', 'um', 'tunits', 's');
+    origin = [0 0 0];   % [x y z]
+    if ~isempty(sourceBoundingBox)
+        origin = sourceBoundingBox([1 3 5]);
+        pixSize.x = (sourceBoundingBox(2) - sourceBoundingBox(1)) / max(imgWidth - 1, 1);
+        pixSize.y = (sourceBoundingBox(4) - sourceBoundingBox(3)) / max(imgHeight - 1, 1);
+        pixSize.z = pixSize.x * anisotropyZ;
+    end
+    if stackPerFile && ~isempty(sourceBoundingBox)
+        pixSize.z = (sourceBoundingBox(6) - sourceBoundingBox(5)) / max(numSlices - 1, 1);
+        metadata.boundingBox = sourceBoundingBox;
+    else
+        % MIB convention: the box spans voxel centres, see core.MibImage.updateBoundingBox
+        metadata.boundingBox = [origin(1), origin(1) + (max(imgWidth, 2) - 1) * pixSize.x, ...
+            origin(2), origin(2) + (max(imgHeight, 2) - 1) * pixSize.y, ...
+            origin(3), origin(3) + (max(numSlices, 2) - 1) * pixSize.z];
+    end
+    metadata.pixSize        = pixSize;
     metadata.sliceName      = sliceStems;
     metadata.sliceSize      = [];
 
@@ -426,9 +453,15 @@ end
 labelsSize = info(strcmp(names, labelsName)).size;
 end
 
-function labels = localLoadLabels(filename)
-% load the label array out of a MIB *.model file saved by the instance prediction
+function [labels, boundingBox] = localLoadLabels(filename)
+% load the label array out of a MIB *.model file saved by the instance prediction,
+% and its bounding box ([] when the file has none, e.g. saved before the
+% prediction stored it)
 modelStruct = load(filename, '-mat');
+boundingBox = [];
+if isfield(modelStruct, 'BoundingBox') && numel(modelStruct.BoundingBox) == 6
+    boundingBox = reshape(double(modelStruct.BoundingBox), 1, 6);
+end
 if isfield(modelStruct, 'modelVariable') && isfield(modelStruct, modelStruct.modelVariable)
     labels = modelStruct.(modelStruct.modelVariable);
 elseif isfield(modelStruct, 'outputLabels')

@@ -501,7 +501,8 @@ while hasdata(imgDS)
             if streamModel
                 labelsStore.closeStore();   % persists the level map and the material names
             else
-                obj.writeModelStore(outputLabels, storePaths{id}, [], zarrFormat, {}, []);
+                [~, sourcePixSize] = deepmib.getSourceBoundingBox(predictionFiles{id}, size(outputLabels, 1:3), mibDeepStoreLoadImagesOpt);   % voxel size for the pyramid
+                obj.writeModelStore(outputLabels, storePaths{id}, [], zarrFormat, {}, [], sourcePixSize);
             end
         catch err
             if streamModel; removeModelStore(storePaths{id}); end
@@ -537,9 +538,20 @@ while hasdata(imgDS)
     % one colour per material (cycled palette) so the colormap always covers all labels
     modelMaterialColors = obj.colormap255(mod((0:numMaterials-1), size(obj.colormap255, 1))+1, :);
     modelVariable = 'outputLabels';
+    % bounding box of the predicted image
+    if zarrInput
+        BoundingBox = zarrStores(id).boundingBox;
+    else
+        BoundingBox = deepmib.getSourceBoundingBox(predictionFiles{id}, [imgHeight, imgWidth, imgDepth], mibDeepStoreLoadImagesOpt);
+    end
     filename = fullfile(outputModelsDir, ['Labels_' fn '.model']);
-    save(filename, 'outputLabels', 'modelMaterialNames', 'modelMaterialColors', ...
-        'modelVariable', 'modelType', '-mat', '-v7.3');
+    if isempty(BoundingBox)
+        save(filename, 'outputLabels', 'modelMaterialNames', 'modelMaterialColors', ...
+            'modelVariable', 'modelType', '-mat', '-v7.3');
+    else
+        save(filename, 'outputLabels', 'modelMaterialNames', 'modelMaterialColors', ...
+            'BoundingBox', 'modelVariable', 'modelType', '-mat', '-v7.3');
+    end
 
     if obj.BatchOpt.showWaitbar
         if pwb.CancelRequested; close(pwb); return; end

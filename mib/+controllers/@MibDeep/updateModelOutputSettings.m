@@ -45,20 +45,26 @@ function updateModelOutputSettings(obj)
 %     the prediction only: later edits of the model in MIB propagate to the
 %     coarser levels with nearest-neighbour, as every BigData edit does
 %
+%   - ``.DownsampleStrategy`` - the pyramid of a model of an image that is not
+%     zarr: ``'Auto'`` (default), ``'XY only'``, ``'Anisotropy-preserving'`` or
+%     ``'Anisotropy-preserving + isotropic level'``, as in the standard zarr
+%     export dialog (``io.savers.Zarr3Saver.optionsDialog``). ``'Auto'`` gives
+%     ``'Anisotropy-preserving'`` when the Z voxel of the image is at least 1.5
+%     times the XY voxel and ``'XY only'`` otherwise
+%     (``io.savers.Zarr3Saver.resolveDownsampleStrategy``). **Ignored for zarr
+%     images:** the level shapes must be those of the image so the model lines up
+%     with it at every zoom, whatever the strategy of the image is, including an
+%     isotropic level
+%
 % For images that are not zarr there is no pyramid to mirror, so the pyramid is
-% generated from the size of the prediction (``writeModelStore``): ``.Levels``
-% (0 = automatic, until the smaller side is below 256 pixels) halvings in XY,
-% chunk ``[256 256 16]`` when ``.ChunkSize`` is 0. The store then opens only on
-% an image of the same size that has this pyramid, e.g. the image converted to
-% zarr with the default settings of the export dialog.
+% generated from the size and voxel size of the prediction (``writeModelStore``):
+% ``.Levels`` (0 = automatic, until the smaller side is below 256 pixels) levels
+% of ``.DownsampleStrategy``, chunk ``[256 256 16]`` when ``.ChunkSize`` is 0.
+% The store then opens only on an image of the same size that has this pyramid,
+% e.g. the image converted to zarr with the same strategy.
 %
 % The settings of the "Zarr3 (BigData)" score files are in
 % ``updateScoreExportSettings``.
-%
-% The one setting of the standard zarr export dialog
-% (``io.savers.Zarr3Saver.optionsDialog``) that is not offered is the
-% downsampling strategy: the level shapes must be those of the image so the
-% model lines up with it at every zoom.
 
 if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.MibDeep.updateModelOutputSettings: triggered\n');
@@ -68,6 +74,7 @@ end
     locationList = {'Next to images', 'ResultsModels', 'Ask'};
     compressorList = {'zstd', 'gzip', 'none'};
     methodList = {'nearest (fast)', 'mode (precise, very slow)'};
+    strategyList = {'Auto', 'XY only', 'Anisotropy-preserving', 'Anisotropy-preserving + isotropic level'};
     chunkText = sprintf('%d, %d, %d', obj.ZarrModelOpt.ChunkSize);
     shardText = sprintf('%d, %d, %d', obj.ZarrModelOpt.ShardSize);
 
@@ -78,7 +85,8 @@ end
         'Shard X-factors [Y, X, Z] (0 = off):'; ...
         'Compression:'; ...
         'Compression level:'; ...
-        'Downsampling method:'};
+        'Downsampling method:'; ...
+        'Downsampling strategy (images that are not zarr):'};
     defAns = {[formatList, {max([1, find(ismember(formatList, obj.ZarrModelOpt.ZarrFormat), 1)])}]; ...
         [locationList, {max([1, find(ismember(locationList, obj.ZarrModelOpt.Location), 1)])}]; ...
         struct('Spinner', true, 'Value', obj.ZarrModelOpt.Levels, 'Limits', [0 12], 'Step', 1, 'Round', true); ...
@@ -86,7 +94,8 @@ end
         shardText; ...
         [compressorList, {max([1, find(ismember(compressorList, obj.ZarrModelOpt.Compressors), 1)])}]; ...
         struct('Spinner', true, 'Value', max(1, obj.ZarrModelOpt.CompressionLevel), 'Limits', [1 22], 'Step', 1, 'Round', true); ...
-        [methodList, {max([1, find(startsWith(methodList, obj.ZarrModelOpt.DownsampleMethod), 1)])}]};
+        [methodList, {max([1, find(startsWith(methodList, obj.ZarrModelOpt.DownsampleMethod), 1)])}]; ...
+        [strategyList, {max([1, find(strcmp(strategyList, obj.ZarrModelOpt.DownsampleStrategy), 1)])}]};
     dlgTitle = 'BigData model output settings';
 
     headerLines = {'Model stores written by prediction ("Model files" = "Zarr3 (BigData model)")'; ...
@@ -102,7 +111,11 @@ end
         'nearest pixel; "mode" (slow) takes the dominant label of each block and'; ...
         'keeps thin structures and small objects better'; ...
         ''; ...
-        'Level shapes follow the image, so the model matches it at every zoom.'};
+        'Zarr images: the levels follow the image, so the model matches it at every zoom.'; ...
+        'Other images have no pyramid, it is made with the Downsampling strategy:'; ...
+        '"Auto" = Anisotropy-preserving when the Z voxel is at least 1.5 x the XY voxel,'; ...
+        'else XY only; "+ isotropic level" also adds the level where XY voxel = Z voxel.'; ...
+        'Use the strategy of the zarr export of the image, so that they match.'};
     options.WindowStyle = 'normal';
     options.LabelPosition = 'left';
     options.WindowWidth = 560;
@@ -146,4 +159,5 @@ end
     obj.ZarrModelOpt.Compressors = answer{6};
     obj.ZarrModelOpt.CompressionLevel = answer{7};
     obj.ZarrModelOpt.DownsampleMethod = strtok(answer{8}, ' ');   % 'nearest' or 'mode'
+    obj.ZarrModelOpt.DownsampleStrategy = answer{9};
 end

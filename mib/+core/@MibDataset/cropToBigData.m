@@ -126,14 +126,17 @@ if ~isempty(wb); wb.Value = 0.3; wb.Message = 'Writing image pyramid...'; end
 % =========================================================================
 meta = struct('pixSize', obj.image.pixSize);
 % the crop keeps its position in the source: shift the origin by the crop offset
-% (bounding boxes span voxel centres, so max = min + (n-1)*voxel)
+% (bounding boxes span voxel centres, so max = min + (n-1)*voxel, with n taken as
+% at least 2 as in core.MibImage.updateBoundingBox, so a single slice keeps a Z
+% extent of one voxel instead of 0). A source without a box starts at 0.
 sourceBB = obj.image.boundingBox;
-if numel(sourceBB) == 6
-    pixSize = obj.image.pixSize;
-    meta.boundingBox = [sourceBB(1) + (x1-1)*pixSize.x, sourceBB(1) + (x1+dx-2)*pixSize.x, ...
-                        sourceBB(3) + (y1-1)*pixSize.y, sourceBB(3) + (y1+dy-2)*pixSize.y, ...
-                        sourceBB(5) + (z1-1)*pixSize.z, sourceBB(5) + (z1+dz-2)*pixSize.z];
-end
+if numel(sourceBB) ~= 6; sourceBB = zeros(1, 6); end
+pixSize = obj.image.pixSize;
+cropOrigin = [sourceBB(1) + (x1-1)*pixSize.x, sourceBB(3) + (y1-1)*pixSize.y, sourceBB(5) + (z1-1)*pixSize.z];
+cropExtent = (max([dx, dy, dz], 2) - 1) .* [pixSize.x, pixSize.y, pixSize.z];
+meta.boundingBox = [cropOrigin(1), cropOrigin(1) + cropExtent(1), ...
+                    cropOrigin(2), cropOrigin(2) + cropExtent(2), ...
+                    cropOrigin(3), cropOrigin(3) + cropExtent(3)];
 if isfield(options, 'saverOptions') && ~isempty(options.saverOptions)
     saverOpts = options.saverOptions;
 else

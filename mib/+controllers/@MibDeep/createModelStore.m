@@ -1,4 +1,4 @@
-function [labelsStore, predictedLevel] = createModelStore(obj, storePath, pyramid, predictionSize, zarrFormat, materialNames, materialColors, resume)
+function [labelsStore, predictedLevel] = createModelStore(obj, storePath, pyramid, predictionSize, zarrFormat, materialNames, materialColors, resume, sourcePixSize)
 % CREATEMODELSTORE - create an empty BigData model store for the prediction of one image, or reopen an interrupted one.
 %
 % Syntax:
@@ -6,6 +6,7 @@ function [labelsStore, predictedLevel] = createModelStore(obj, storePath, pyrami
 %
 %       [labelsStore, predictedLevel] = obj.createModelStore(storePath, pyramid, predictionSize, zarrFormat, materialNames, materialColors)
 %       [labelsStore, predictedLevel] = obj.createModelStore(..., resume)
+%       [labelsStore, predictedLevel] = obj.createModelStore(..., resume, sourcePixSize)
 %
 % First step of the "Zarr3 (BigData model)" output. Creates a
 % ``core.MibBigDataLabels`` store at ``storePath`` that mirrors ``pyramid``, the
@@ -71,6 +72,10 @@ function [labelsStore, predictedLevel] = createModelStore(obj, storePath, pyrami
 %     one row per name; ignored for an instance model
 %   - **resume** - *(optional)* [logical] reopen the existing store at
 %     ``storePath`` instead of creating it, default false
+%   - **sourcePixSize** - *(optional)* [struct] ``.x .y .z`` voxel size of the image,
+%     used only when ``pyramid`` is empty (an image that is not zarr) to resolve
+%     ``obj.ZarrModelOpt.DownsampleStrategy``; ``[]`` (default) = not known, which
+%     makes ``'Auto'`` the ``'XY only'`` pyramid
 %
 % Output Arguments:
 %   - **labelsStore** - [core.MibBigDataLabels] the open store
@@ -80,10 +85,15 @@ function [labelsStore, predictedLevel] = createModelStore(obj, storePath, pyrami
         % an image that is not zarr has no pyramid to mirror: the prediction is level 1 of
         % a generated pyramid (XY halvings, the plan of the zarr export, 16 slices per chunk)
         predictedLevel = 1;
-        levelOptions = struct('DownsampleStrategy', 'XY only');
+        if nargin < 9 || isempty(sourcePixSize); sourcePixSize = []; end
+        requestedStrategy = 'Auto';
+        if isfield(obj.ZarrModelOpt, 'DownsampleStrategy'); requestedStrategy = obj.ZarrModelOpt.DownsampleStrategy; end
+        levelOptions = struct('DownsampleStrategy', io.savers.Zarr3Saver.resolveDownsampleStrategy(requestedStrategy, sourcePixSize));
+        planPixSize = struct('x', 1, 'y', 1, 'z', 1);
+        if isstruct(sourcePixSize); planPixSize = struct('x', sourcePixSize.x, 'y', sourcePixSize.y, 'z', sourcePixSize.z); end
         if obj.ZarrModelOpt.Levels > 0; levelOptions.Levels = obj.ZarrModelOpt.Levels; end
         plan = io.savers.Zarr3Saver.computeLevelPlan(predictionSize(1), predictionSize(2), predictionSize(3), ...
-            struct('x', 1, 'y', 1, 'z', 1), levelOptions);
+            planPixSize, levelOptions);
         pyramid = struct('axisOrder', 'yxz', ...
             'levelImageSizes', [[plan.Yl]', [plan.Xl]', [plan.Zl]'], ...
             'levelScaleFactors', [[plan.cumXYFactor]', [plan.cumXYFactor]', [plan.cumZFactor]'], ...

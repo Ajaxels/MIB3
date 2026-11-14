@@ -33,7 +33,7 @@ function status = moveSelection(obj, destination, action, options)
 %     - ``'remove'`` - selected voxels lose their material (labels) or the mask
 %     - ``'replace'`` - local replace: on each slice, the material
 %       ``options.materialIndex`` (or the mask) is first removed from the blocks of
-%       one coarsest-grid tile in y/x (``modelScaleFactors(end, 1:2)`` pixels) that
+%       one level-map tile in y/x (``tileSize(1:2)`` voxels) that
 %       hold a moved voxel ON THAT SLICE, then the selection is added as ``'add'``.
 %       Decided per slice, not per tile: a tile of a pyramid that also downsamples
 %       z spans several slices, and the neighbouring slices of a selection must
@@ -87,7 +87,7 @@ status = struct('changed', false, 'cancelled', false, 'zDone', [], 'levels', [])
 if isempty(tileMask); return; end
 
 voxelBudget = 1.5e8;     % per chunk: the packed block plus a few logical copies of it
-tileSize = obj.modelScaleFactors(end, :);
+tileSize = obj.tileSize;
 selectionValue = cast(obj.selectionValue, obj.containerClass);
 maskValue = cast(obj.maskValue, obj.containerClass);
 materialMask = cast(obj.materialMask, obj.containerClass);
@@ -190,7 +190,7 @@ if isempty(levels)
 else
     levelIdx = double(min(levels));
 end
-tileSize = obj.modelScaleFactors(end, :);
+tileSize = obj.tileSize;
 box = [(rows(1)-1)*tileSize(1)+1, min(rows(end)*tileSize(1), obj.height), ...
        (cols(1)-1)*tileSize(2)+1, min(cols(end)*tileSize(2), obj.width), ...
        max(fullZ(1), (tilePlanes(1)-1)*tileSize(3)+1), min(fullZ(2), tilePlanes(end)*tileSize(3))];

@@ -1057,8 +1057,8 @@ classdef Annotations < matlab.mixin.Copyable
             %
             %     - ``.parentFigure`` - handle to parent UIFigure for dialogs (required for the CSV column-mapping dialog)
             %     - ``.currentDirectory`` - starting directory for the file-selection dialog; default ``''``
-            %     - ``.boundingBox`` - ``[x1 width y1 height z1 depth]`` bounding box for Amira coordinate conversion
-            %     - ``.pixSize`` - MIB pixSize struct (``.x`` ``.y`` ``.z``) for Amira coordinate conversion
+            %     - ``.boundingBox`` - ``[x1 width y1 height z1 depth]`` bounding box for Amira landmark and PSI coordinate conversion
+            %     - ``.pixSize`` - MIB pixSize struct (``.x`` ``.y`` ``.z``) for Amira landmark and PSI coordinate conversion
             %     - ``.currentT`` - current time point; used when the file stores only 3-column positions; default ``1``
             %
             % Output Arguments:
@@ -1096,6 +1096,7 @@ classdef Annotations < matlab.mixin.Copyable
                      '*.csv',  'CSV format (*.csv)'; ...
                      '*.landmarkAscii', 'landmarkAscii Amira format (*.landmarkAscii)'; ...
                      '*.landmarkBin',   'landmarkBin Amira format (*.landmarkBin)'; ...
+                     '*.psi',  'PSI format ASCII (*.psi)'; ...
                      '*.*',     'All Files (*.*)'}, ...
                     'Load annotations...', options.currentDirectory);
                 if isequal(fn, 0); return; end
@@ -1114,9 +1115,10 @@ classdef Annotations < matlab.mixin.Copyable
                 case '.csv';            fileFormat = 2;
                 case '.landmarkascii';  fileFormat = 3;
                 case '.landmarkbin';    fileFormat = 4;
+                case '.psi';            fileFormat = 5;
                 otherwise
                     % unknown extension: trust the filter selected in the dialog
-                    if isscalar(indx) && ismember(indx, 2:4)
+                    if isscalar(indx) && ismember(indx, 2:5)
                         fileFormat = indx;
                     else
                         fileFormat = 1;
@@ -1209,6 +1211,87 @@ classdef Annotations < matlab.mixin.Copyable
                         res.labelPosition(:,2) = amiraLandmarks(:,1);
                         res.labelPosition(:,3) = amiraLandmarks(:,2);
                     end
+
+                case 5  % PSI point cloud (ASCII), as written by io.AmiraMesh.points2psi
+                    psiLines = cellstr(strtrim(readlines(filename, 'EmptyLineRule', 'skip')));
+                    isComment = startsWith(psiLines, '#');
+
+                    % column order comes from the '# column[N] = "name"' header lines;
+                    % fall back to the points2psi order when the header has none
+                    columnNames = {'x', 'y', 'z', 'id', 'labels', 'values'};
+                    headerColumns = regexp(psiLines(isComment), '^#\s*column\[(\d+)\]\s*=\s*"([^"]*)"', 'tokens', 'once');
+                    headerColumns = headerColumns(~cellfun(@isempty, headerColumns));
+                    if ~isempty(headerColumns)
+                        columnNames = {};
+                        for columnId = 1:numel(headerColumns)
+                            columnNames{str2double(headerColumns{columnId}{1}) + 1} = lower(headerColumns{columnId}{2}); %#ok<AGROW>
+                        end
+                    end
+                    columnIndex = @(name) find(cellfun(@(c) ischar(c) && strcmp(c, name), columnNames), 1);
+                    xColumn = columnIndex('x');
+                    yColumn = columnIndex('y');
+                    zColumn = columnIndex('z');
+                    labelColumn = columnIndex('labels');
+                    valueColumn = columnIndex('values');
+
+                    % body: a "N -1 -1" point-count line, 3 bounding-box lines
+                    % (ignored by Amira), then one line per point
+                    dataLines = psiLines(~isComment);
+                    if isempty(xColumn) || isempty(yColumn) || isempty(zColumn) || numel(dataLines) < 5
+                        utils.dlgs.showErrorDialog(options.parentFigure, ...
+                            sprintf('%s\nis not a PSI point file: the x, y, z columns or the points are missing.', filename), ...
+                            'Wrong PSI file');
+                        return;
+                    end
+                    noPoints = sscanf(dataLines{1}, '%d', 1);
+                    dataLines = dataLines(5:end);
+                    if ~isempty(noPoints) && noPoints < numel(dataLines)
+                        dataLines = dataLines(1:noPoints);
+                    end
+                    noPoints = numel(dataLines);
+                    requiredColumns = max([xColumn, yColumn, zColumn, labelColumn, valueColumn]);
+
+                    psiPoints = zeros([noPoints, 3]);
+                    res.labelText  = repmat({'PsiPoint'}, [noPoints, 1]);
+                    res.labelValue = ones([noPoints, 1]);
+                    for pointId = 1:noPoints
+                        % a quoted label is one field
+                        fields = strrep(regexp(dataLines{pointId}, '"[^"]*"|\S+', 'match'), '"', '');
+                        if numel(fields) < requiredColumns
+                            utils.dlgs.showErrorDialog(options.parentFigure, ...
+                                sprintf('Point %d of %s has %d columns, %d expected:\n%s', ...
+                                pointId, filename, numel(fields), requiredColumns, dataLines{pointId}), ...
+                                'Wrong PSI file');
+                            return;
+                        end
+                        psiPoints(pointId, :) = str2double(fields([xColumn, yColumn, zColumn]));
+                        if ~isempty(labelColumn); res.labelText{pointId} = fields{labelColumn}; end
+                        if ~isempty(valueColumn); res.labelValue(pointId) = str2double(fields{valueColumn}); end
+                    end
+
+                    % the export lets the user recalculate coordinates to physical units or
+                    % keep pixels, and the file does not record which; ask
+                    recalculate = false;
+                    if isfield(options, 'boundingBox') && isfield(options, 'pixSize')
+                        answer = utils.dlgs.inputQuestDlg(options.parentFigure, ...
+                            'Were the coordinates recalculated with respect to the bounding box when the PSI file was exported?', ...
+                            'Import PSI coordinates', 'Recalculated', 'Saved as they are', 'Cancel', 'Recalculated');
+                        if isempty(answer) || strcmp(answer, 'Cancel'); return; end
+                        recalculate = strcmp(answer, 'Recalculated');
+                    end
+
+                    % [x y z] in the file -> [z x y t] in MIB
+                    res.labelPosition = zeros([noPoints, 4]);
+                    if recalculate
+                        bb      = options.boundingBox;
+                        pixSize = options.pixSize;
+                        res.labelPosition(:,1) = round((psiPoints(:,3) - bb(5) + pixSize.z) / pixSize.z);
+                        res.labelPosition(:,2) = (psiPoints(:,1) - bb(1) + pixSize.x/2) / pixSize.x;
+                        res.labelPosition(:,3) = (psiPoints(:,2) - bb(3) + pixSize.y/2) / pixSize.y;
+                    else
+                        res.labelPosition(:,1:3) = psiPoints(:, [3 1 2]);
+                    end
+                    res.labelPosition(:,4) = options.currentT;
 
                 otherwise
                     return

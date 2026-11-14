@@ -501,7 +501,7 @@ classdef BigDataOptions < handle
                 end
             elseif ~isempty(parentFigure)
                 % the settings of the source pyramid, as many levels as it has from this level down
-                saverOptions = io.savers.Zarr3Saver.optionsFromPyramid(dataset.image.pyramid);
+                saverOptions = io.savers.Zarr3Saver.optionsFromPyramid(dataset.image.pyramid, level);
                 saverOptions.Levels = max(1, size(dataset.image.pyramid.levelImageSizes, 1) - level + 1);
                 levelSize = dataset.image.pyramid.levelImageSizes(level, :);
                 if ~isempty(region); levelSize(1:2) = [region(2) - region(1), region(4) - region(3)] + 1; end
@@ -511,6 +511,7 @@ classdef BigDataOptions < handle
                     scale = scale .* levelSize ./ options.Resample.OutputSize;
                     levelSize = options.Resample.OutputSize;
                     saverOptions.Levels = [];
+                    if isfield(saverOptions, 'LevelFactors'); saverOptions = rmfield(saverOptions, 'LevelFactors'); end
                 end
                 pixSize = dataset.image.pixSize;
                 pixSize.y = pixSize.y * scale(1); pixSize.x = pixSize.x * scale(2); pixSize.z = pixSize.z * scale(3);
@@ -1747,13 +1748,18 @@ classdef BigDataOptions < handle
             dataClass = dataset.image.dataClass;
             if isempty(region); region = [1 levelSizes(1, 1) 1 levelSizes(1, 2)]; end
 
-            % the layout Zarr3Saver writes, which buildLevelBand rebuilds
-            zFactors = [1; round(pyramid.levelScaleFactors(2:end, 3) ./ pyramid.levelScaleFactors(1:end-1, 3))];
+            % the layout Zarr3Saver writes, which buildLevelBand rebuilds: every level is
+            % ceil(source / step) of the level it is built from, the level above or, for
+            % an isotropic level, an earlier one (levelSourcesFromFactors)
+            [sourceLevels, relSteps, zSteps] = io.savers.Zarr3Saver.levelSourcesFromFactors( ...
+                pyramid.levelScaleFactors(:, 1), pyramid.levelScaleFactors(:, 3));
+            zFactors = zSteps(:);   % Z step from the source level of each level
             expectedOrder = 'yxz';
             if colors > 1; expectedOrder = 'yxzc'; end
             sameLayout = isfield(pyramid, 'axisOrder') && strcmp(char(pyramid.axisOrder), expectedOrder) && ...
-                all(ismember(zFactors, [1 2])) && isequal(levelSizes(2:end, :), ...
-                [ceil(levelSizes(1:end-1, 1:2) / 2), ceil(levelSizes(1:end-1, 3) ./ zFactors(2:end))]);
+                all(ismember(zFactors, [1 2])) && all(relSteps == round(relSteps)) && ...
+                isequal(levelSizes(2:end, :), [ceil(levelSizes(sourceLevels(2:end), 1:2) ./ relSteps(2:end)'), ...
+                ceil(levelSizes(sourceLevels(2:end), 3) ./ zFactors(2:end))]);
             if ~sameLayout
                 error('controllers:BigDataOptions:overwriteSliceLayout', ...
                     ['A slice or a ROI is written into a store only with the layout MIB writes, which this store ' ...
@@ -1827,24 +1833,34 @@ classdef BigDataOptions < handle
                     end
                     if ~isempty(progressDialog); progressDialog.Value = 0.75 * sliceIndex / numel(slices); end
                 end
-                changedRows = region(1:2);
-                levelSlices = unique(slices);
+                % the rows and slices the change reaches, per level: a level takes them from the
+                % level it is built from, which is not the level above for an isotropic level
+                changedRowsOfLevel = cell(1, size(levelSizes, 1));
+                changedRowsOfLevel{1} = region(1:2);
+                slicesOfLevel = cell(1, size(levelSizes, 1));
+                slicesOfLevel{1} = unique(slices);
                 for level = 2:size(levelSizes, 1)
-                    levelSlices = unique(ceil(levelSlices / zFactors(level)));
-                    % the bilinear kernel at 0.5 reaches one more source row on either side
-                    changedRows = [max(1, floor((changedRows(1) - 1) / 2)), min(levelSizes(level, 1), ceil((changedRows(2) + 2) / 2))];
+                    sourceLevel = sourceLevels(level);
+                    relXY = relSteps(level);
+                    levelSlices = unique(ceil(slicesOfLevel{sourceLevel} / zFactors(level)));
+                    slicesOfLevel{level} = levelSlices;
+                    % the bilinear kernel reaches relXY more source rows on either side (2 at the step of 2)
+                    sourceRows = changedRowsOfLevel{sourceLevel};
+                    changedRows = [max(1, floor((sourceRows(1) - 1 - relXY) / relXY)), ...
+                        min(levelSizes(level, 1), ceil((sourceRows(2) + relXY) / relXY))];
+                    changedRowsOfLevel{level} = changedRows;
                     align = localRowAlign(level);
                     rebuildRows = [floor((changedRows(1) - 1) / align) * align + 1, ...
                         min(levelSizes(level, 1), ceil(changedRows(2) / align) * align)];
                     % a source block of a band about as large as a band of s0, as in saveStreamResumable
-                    rowsPerBand = floor(bandRows * boxWidth / (2 * levelSizes(level - 1, 2) * zFactors(level)));
+                    rowsPerBand = floor(bandRows * boxWidth / (relXY * levelSizes(sourceLevel, 2) * zFactors(level)));
                     rowsPerBand = max(1, floor(rowsPerBand / align)) * align;
                     for levelSlice = levelSlices
                         for rowFirst = rebuildRows(1):rowsPerBand:rebuildRows(2)
-                            io.savers.Zarr3Saver.buildLevelBand(sourcePath, pyramid.levelNames{level - 1}, pyramid.levelNames{level}, ...
-                                levelSizes(level - 1, 1:2), levelSizes(level, 1:2), levelSlice, levelSlice, rowFirst, ...
-                                min(rowFirst + rowsPerBand - 1, rebuildRows(2)), zFactors(level), levelSizes(level - 1, 3), ...
-                                colors, dataClass, 'bilinear');
+                            io.savers.Zarr3Saver.buildLevelBand(sourcePath, pyramid.levelNames{sourceLevel}, pyramid.levelNames{level}, ...
+                                levelSizes(sourceLevel, 1:2), levelSizes(level, 1:2), levelSlice, levelSlice, rowFirst, ...
+                                min(rowFirst + rowsPerBand - 1, rebuildRows(2)), zFactors(level), levelSizes(sourceLevel, 3), ...
+                                colors, dataClass, 'bilinear', relXY);
                         end
                     end
                     if ~isempty(progressDialog)

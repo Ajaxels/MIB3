@@ -98,9 +98,9 @@ if ~isfield(options, 't') || isempty(options.t); options.t = [1, obj.time]; end
 
 sf  = obj.pyramid.levelScaleFactors(levelIdx, :);   % [yScale xScale zScale]
 lvl = obj.pyramid.levelImageSizes(levelIdx, :);      % [Y X Z]
-physYlim = ceil(physYfull ./ sf(1));
-physXlim = ceil(physXfull ./ sf(2));
-physZlim = ceil(physZfull ./ sf(3));
+physYlim = ceil(physYfull ./ sf(1) - 1e-9);
+physXlim = ceil(physXfull ./ sf(2) - 1e-9);
+physZlim = ceil(physZfull ./ sf(3) - 1e-9);
 physYlim = [max(physYlim(1), 1), min(physYlim(2), lvl(1))];
 physXlim = [max(physXlim(1), 1), min(physXlim(2), lvl(2))];
 physZlim = [max(physZlim(1), 1), min(physZlim(2), lvl(3))];

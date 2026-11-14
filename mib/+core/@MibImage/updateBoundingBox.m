@@ -13,7 +13,8 @@ function updateBoundingBox(obj, newBB, xyzShift, imgDims)
 % Input Arguments:
 %   - **newBB** - new bounding box vector [xmin xmax ymin ymax zmin zmax] in
 %     obj.pixSize.units. Pass [] (empty) to shift the existing bounding
-%     box instead of replacing it entirely.
+%     box instead of replacing it entirely; a dataset without a box (empty
+%     obj.boundingBox) is shifted from the origin 0.
 %   - **xyzShift** - [optional] vector [dx dy dz] with shifts in
 %     obj.pixSize.units to apply to the current bounding box origin when
 %     newBB is empty. When omitted the origin remains unchanged.
@@ -71,6 +72,9 @@ obj.pixSize.units = 'um';
 
 if isempty(newBB)   % shift the existing bounding box
     bb = obj.boundingBox;   % [xmin xmax ymin ymax zmin zmax]
+    if numel(bb) ~= 6
+        bb = zeros(1, 6);   % no box yet (e.g. BigData without one): the origin is 0
+    end
     xyzZero(1) = bb(1);
     xyzZero(2) = bb(3);
     xyzZero(3) = bb(5);

@@ -448,7 +448,7 @@ if ~isempty(wb)
 elseif isfield(storeOptions, 'undoCancelFcn')
     cancelFcn = storeOptions.undoCancelFcn;
 end
-tileDepth = obj.I{id}.labels.modelScaleFactors(end, 3);
+tileDepth = obj.I{id}.labels.tileSize(3);
 slabSlices = max(1, floor(slabVoxels / max(1, size(data, 1) * size(data, 2))));
 slabSlices = ceil(slabSlices / tileDepth) * tileDepth;
 for z0 = 1:slabSlices:depth

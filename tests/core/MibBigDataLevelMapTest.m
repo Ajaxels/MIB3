@@ -362,7 +362,177 @@ classdef MibBigDataLevelMapTest < matlab.unittest.TestCase
 
     end
 
+    methods (Test, TestTags = {'Unit'})
+        % -----------------------------------------------------------------
+        % isotropic-level pyramid: XY factors 1 2 4 7 14 28 (5x5x35 nm). The tile
+        % is 28 full-resolution pixels; the 7x level has 4 pixels per tile
+        % -----------------------------------------------------------------
+
+        function testEditAtTheSevenTimesLevelIsReadAtFullResolution(testCase)
+            lb = testCase.buildSevenStore();
+            o7 = MibBigDataLevelMapTest.optionsAt(7, 280);
+            edit = zeros(40, 40, 'uint8');
+            edit(6:13, 6:13) = 1;               % level-7 pixels 6:13 = full-res 36:91, crosses tile borders
+            lb.setData63(edit, 'labels', 3, 1, o7);
+
+            testCase.verifyEqual(squeeze(lb.getData63('labels', 3, [], o7)), edit, ...
+                'the painting level reads back what was written');
+            full = squeeze(lb.getData63('labels', 3, [], MibBigDataLevelMapTest.optionsAt(1, 280)));
+            expected = zeros(280, 280, 'uint8');
+            expected(36:91, 36:91) = 1;         % each level-7 pixel covers 7 full-resolution pixels
+            testCase.verifyEqual(size(full), [280 280]);
+            testCase.verifyGreaterThan(nnz(full(36:91, 36:91)), 0.95 * 56^2, 'the edit is present at level 0');
+            testCase.verifyEqual(nnz(full(1:28, :)) + nnz(full(:, 1:28)), 0, ...
+                'tiles the edit does not touch stay empty');
+            testCase.verifyLessThan(nnz(full & ~expected), 0.05 * nnz(expected), ...
+                'the edit does not spread beyond the pixels it covers');
+        end
+
+        function testEditAtFullResolutionIsReadAtTheSevenTimesLevel(testCase)
+            lb = testCase.buildSevenStore();
+            full = zeros(280, 280, 'uint8');
+            full(29:112, 57:140) = 1;           % whole tiles: rows 29:112 = tiles 2..4, columns 57:140 = tiles 3..5
+            lb.setData63(full, 'labels', 3, 1, MibBigDataLevelMapTest.optionsAt(1, 280));
+
+            coarse = squeeze(lb.getData63('labels', 3, [], MibBigDataLevelMapTest.optionsAt(7, 280)));
+            expected = zeros(40, 40, 'uint8');
+            expected(5:16, 9:20) = 1;           % 29/7 -> 5 .. 112/7 = 16, 57/7 -> 9 .. 140/7 = 20
+            testCase.verifyEqual(coarse, expected, ...
+                'a whole-tile edit at level 0 appears at the 7x level on exactly the same pixels');
+            level14 = squeeze(lb.getData63('labels', 3, [], MibBigDataLevelMapTest.optionsAt(14, 280)));
+            testCase.verifyEqual(nnz(level14), 6 * 6, 'and at the 14x level');
+            testCase.verifyEqual(lb.matLevel(2:4, 3:5, 1, 1), ones(3, 3, 'uint8'), ...
+                'the three by three tiles are authoritative at level 0');
+            testCase.verifyTrue(all(lb.matLevel([1 5:10], :, 1, 1) == 0, 'all'), 'neighbouring tiles are not');
+        end
+
+        function testSevenTimesStoreSurvivesReopen(testCase)
+            lb = testCase.buildSevenStore();
+            o7 = MibBigDataLevelMapTest.optionsAt(7, 280);
+            edit = zeros(40, 40, 'uint8'); edit(5:16, 5:16) = 2;
+            lb.setData63(edit, 'labels', 3, [], o7);
+            storePath = char(lb.modelStorePath);
+            lb.closeStore();
+            meta = core.MibImage.initializeImgInfo('Height', 280, 'Width', 280, 'Depth', 1, 'Time', 1, 'Colors', 1);
+            reopened = core.MibBigDataLabels([], meta);
+            reopened.openStore(storePath);
+            testCase.addTeardown(@() MibBigDataLevelMapTest.closeQuietly(reopened));
+            testCase.verifyEqual(reopened.modelScaleFactors(:, 1)', [1 2 4 7 14 28]);
+            testCase.verifyEqual(squeeze(reopened.getData63('labels', 3, [], o7)), edit);
+        end
+
+        % -----------------------------------------------------------------
+        % non-integer factors 1 2 2.6 5.2 10.4 (5x5x13 nm): a tile is 52 voxels,
+        % 20 pixels of the 2.6 level and 5 of the coarsest one
+        % -----------------------------------------------------------------
+
+        function testNonIntegerStoreTilesAreWholePixelsOfEveryLevel(testCase)
+            lb = testCase.buildStoreFromFactors([1 2 2.6 5.2 10.4]', 260);
+            testCase.verifyEqual(lb.tileSize, [52 52 1]);
+            testCase.verifyEqual(size(lb.matLevel), [5 5 1 3], 'the level map has one entry per 52 voxels');
+            % the last pixel of a tile belongs to it, the next pixel starts the next tile, on every level
+            testCase.verifyEqual(lb.tileIndexOfLevelPixels(3, 1, [19 22]), [1 1 2 2]);   % 2.6: pixel 20 ends at voxel 52
+            testCase.verifyEqual(lb.tileIndexOfLevelPixels(4, 1, [9 12]),  [1 1 2 2]);   % 5.2: pixel 10 ends at voxel 52
+            testCase.verifyEqual(lb.tileIndexOfLevelPixels(5, 1, [4 7]),   [1 1 2 2]);   % 10.4: pixel 5 ends at voxel 52
+        end
+
+        function testEditAtTheIsotropicLevelIsReadAtFullResolution(testCase)
+            lb = testCase.buildStoreFromFactors([1 2 2.6 5.2 10.4]', 260);
+            o = MibBigDataLevelMapTest.optionsAt(2.6, 260);
+            edit = zeros(100, 100, 'uint8');
+            edit(21:60, 21:60) = 1;             % voxels 53:156 = tiles 2 and 3
+            lb.setData63(edit, 'labels', 3, 1, o);
+            testCase.verifyEqual(squeeze(lb.getData63('labels', 3, [], o)), edit);
+            full = squeeze(lb.getData63('labels', 3, [], MibBigDataLevelMapTest.optionsAt(1, 260)));
+            testCase.verifyEqual(size(full), [260 260]);
+            outside = true(260); outside(53:156, 53:156) = false;
+            testCase.verifyEqual(nnz(full(outside)), 0, 'tiles the edit does not cover stay empty, to the voxel');
+            testCase.verifyGreaterThan(nnz(full(53:156, 53:156)), 0.95 * 104^2);
+            coarse = squeeze(lb.getData63('labels', 3, [], MibBigDataLevelMapTest.optionsAt(10.4, 260)));
+            expected = zeros(25, 25, 'uint8'); expected(6:15, 6:15) = 1;   % 53/10.4 -> 6 .. 156/10.4 = 15
+            testCase.verifyEqual(coarse, expected, 'and the coarsest level shows it on the same pixels');
+        end
+
+        function testEditAtFullResolutionIsReadAtEveryCoarserLevel(testCase)
+            lb = testCase.buildStoreFromFactors([1 2 2.6 5.2 10.4]', 260);
+            full = zeros(260, 260, 'uint8');
+            full(53:208, 105:208) = 1;          % tiles 2..4 by 3..4
+            lb.setData63(full, 'labels', 3, 1, MibBigDataLevelMapTest.optionsAt(1, 260));
+            levels = [2 2.6 5.2 10.4];
+            for level = levels
+                read = squeeze(lb.getData63('labels', 3, [], MibBigDataLevelMapTest.optionsAt(level, 260)));
+                expected = zeros(size(read), 'uint8');
+                expected(ceil(53 / level - 1e-9):floor(208 / level + 1e-9), ceil(105 / level - 1e-9):floor(208 / level + 1e-9)) = 1;
+                testCase.verifyEqual(read, expected, sprintf('level %g shows the edit on exactly its pixels', level));
+            end
+            testCase.verifyEqual(lb.matLevel(2:4, 3:4, 1, 1), ones(3, 2, 'uint8'));
+            testCase.verifyTrue(all(lb.matLevel([1 5], :, 1, 1) == 0, 'all'), 'the other tile rows are not touched');
+        end
+
+        function testNonIntegerStoreSurvivesReopen(testCase)
+            lb = testCase.buildStoreFromFactors([1 2 2.6 5.2 10.4]', 260);
+            o = MibBigDataLevelMapTest.optionsAt(2.6, 260);
+            edit = zeros(100, 100, 'uint8'); edit(21:60, 21:60) = 3;
+            lb.setData63(edit, 'labels', 3, [], o);
+            mapBefore = lb.matLevel;
+            storePath = char(lb.modelStorePath);
+            lb.closeStore();
+            meta = core.MibImage.initializeImgInfo('Height', 260, 'Width', 260, 'Depth', 1, 'Time', 1, 'Colors', 1);
+            reopened = core.MibBigDataLabels([], meta);
+            reopened.openStore(storePath);
+            testCase.addTeardown(@() MibBigDataLevelMapTest.closeQuietly(reopened));
+            testCase.verifyEqual(reopened.tileSize, [52 52 1]);
+            testCase.verifyEqual(reopened.modelScaleFactors(:, 1)', [1 2 2.6 5.2 10.4], 'AbsTol', 1e-12);
+            testCase.verifyEqual(reopened.matLevel, mapBefore, 'the level map is restored for the same tiles');
+            testCase.verifyEqual(squeeze(reopened.getData63('labels', 3, [], o)), edit);
+        end
+
+        function testTileSizeIsTheCoarsestFactorWhenEveryLevelDividesIt(testCase)
+            testCase.verifyEqual(core.MibBigDataLabels.tileSizeForFactors([1 1 1; 2 2 1; 4 4 2; 8 8 4], ''), [8 8 4]);
+            testCase.verifyEqual(testCase.Lb.tileSize, [8 8 1], 'the stock store: a tile is one coarsest pixel');
+        end
+
+        function testTileSizeIsAWholeNumberOfPixelsOfEveryLevel(testCase)
+            testCase.verifyEqual(core.MibBigDataLabels.tileSizeForFactors([1 1 1; 4 4 1; 6 6 1], ''), [12 12 1]);
+            nonInteger = [1 1 1; 2 2 1; 2.6 2.6 1; 5.2 5.2 2; 10.4 10.4 4];
+            testCase.verifyEqual(core.MibBigDataLabels.tileSizeForFactors(nonInteger, ''), [52 52 4]);
+        end
+
+        function testPyramidWithoutAWholeTileIsRefused(testCase)
+            pyramid = struct('axisOrder', 'yxz', 'levelImageSizes', [120 120 1; 60 60 1; 39 39 1], ...
+                'levelScaleFactors', [1 1 1; 2 2 1; 3.14159 3.14159 1], 'chunkSizes', {{[32 32 1], [32 32 1], [32 32 1]}});
+            meta = core.MibImage.initializeImgInfo('Height', 120, 'Width', 120, 'Depth', 1, 'Time', 1, 'Colors', 1);
+            lb = core.MibBigDataLabels([], meta);
+            storePath = [tempname '_notile.zarr3'];
+            testCase.addTeardown(@() MibBigDataLevelMapTest.removeStore(storePath));
+            testCase.verifyError(@() lb.createStore([120 120 1], storePath, pyramid), ...
+                'core:MibBigDataLabels:levelFactors');
+        end
+
+    end
+
     methods (Access = private)
+        function lb = buildSevenStore(testCase)
+            % XY factors 1 2 4 7 14 28 over 280 x 280 (the planner's pyramid for 5x5x35 nm)
+            lb = testCase.buildStoreFromFactors([1 2 4 7 14 28]', 280);
+        end
+
+        function lb = buildStoreFromFactors(testCase, factors, fullSize)
+            % single-slice XY pyramid with the given level factors over fullSize x fullSize
+            levelCount = numel(factors);
+            pyramid = struct();
+            pyramid.axisOrder         = 'yxz';
+            pyramid.levelImageSizes   = [ceil(fullSize ./ factors), ceil(fullSize ./ factors), ones(levelCount, 1)];
+            pyramid.levelScaleFactors = [factors, factors, ones(levelCount, 1)];
+            pyramid.chunkSizes        = repmat({[32 32 1]}, 1, levelCount);
+            meta = core.MibImage.initializeImgInfo('Height', fullSize, 'Width', fullSize, 'Depth', 1, 'Time', 1, 'Colors', 1);
+            storePath = [tempname '_factors.zarr3'];
+            lb = core.MibBigDataLabels([], meta);
+            lb.createStore([fullSize fullSize 1], storePath, pyramid);
+            testCase.addTeardown(@() MibBigDataLevelMapTest.removeStore(storePath));
+            testCase.addTeardown(@() MibBigDataLevelMapTest.closeQuietly(lb));   % runs first (LIFO)
+        end
+
         function lb = buildUint16Store(testCase)
             % same 4-level pyramid as buildStore, as a uint16 (16383) store
             pyramid = struct();
@@ -402,6 +572,11 @@ classdef MibBigDataLevelMapTest < matlab.unittest.TestCase
     end
 
     methods (Static, Access = private)
+        function o = optionsAt(magFactor, fullSize)
+            o = struct('magFactor', magFactor, 'x', [1 fullSize], 'y', [1 fullSize], ...
+                'z', [1 1], 't', [1 1]);
+        end
+
         function closeQuietly(labels)
             if isvalid(labels) && labels.exists
                 try labels.closeStore(); catch; end %#ok<CTCH>

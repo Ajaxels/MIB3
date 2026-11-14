@@ -40,7 +40,7 @@ status = struct('changed', false, 'cancelled', false, 'planesDone', 0);
 if isempty(obj.matLevel); return; end
 
 voxelBudget = 6e7;
-tileSize = obj.modelScaleFactors(end, :);
+tileSize = obj.tileSize;
 if layerGroup == 1
     layerBits = cast(obj.materialMask, obj.containerClass);
 else

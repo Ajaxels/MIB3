@@ -1,10 +1,11 @@
-function writeModelStore(obj, outputLabels, storePath, pyramid, zarrFormat, materialNames, materialColors)
+function writeModelStore(obj, outputLabels, storePath, pyramid, zarrFormat, materialNames, materialColors, sourcePixSize)
 % WRITEMODELSTORE - write a prediction of one pyramid level as a BigData model store.
 %
 % Syntax:
 %   .. code-block:: matlab
 %
 %       obj.writeModelStore(outputLabels, storePath, pyramid, zarrFormat, materialNames, materialColors)
+%       obj.writeModelStore(..., sourcePixSize)
 %
 % The "Zarr3 (BigData model)" output for a prediction held in memory whole: the
 % semantic workflows with images that are not zarr (``startPredictionBlockedImage``)
@@ -33,9 +34,12 @@ function writeModelStore(obj, outputLabels, storePath, pyramid, zarrFormat, mate
 %     instance model
 %   - **materialColors** - [numeric] ``[N x 3]`` colours of the classes, at least
 %     one row per name; ignored for an instance model
+%   - **sourcePixSize** - *(optional)* [struct] ``.x .y .z`` voxel size of the image, for the
+%     pyramid of an image that is not zarr (``pyramid`` empty), see ``createModelStore``
 
+    if nargin < 8; sourcePixSize = []; end
     [labelsStore, predictedLevel] = obj.createModelStore(storePath, pyramid, size(outputLabels, 1:3), ...
-        zarrFormat, materialNames, materialColors);
+        zarrFormat, materialNames, materialColors, false, sourcePixSize);
     try
         obj.writeModelStoreSlab(labelsStore, outputLabels, predictedLevel, 1);
         labelsStore.closeStore();   % persists the level map and the material names

@@ -21,6 +21,13 @@ function saveImageParFor(fn, imgOut, compressImage, options)
 %     - ``.modelType`` - [double] label model type: ``63``, ``255``, or ``65536``
 %     - ``.modelMaterialNames`` - cell array of class name strings
 %     - ``.modelMaterialColors`` - ``[N×3 double]`` RGB colour matrix per class
+%     - ``.boundingBox`` - ``[xmin xmax ymin ymax zmin zmax]`` of the image the
+%       data was made from (``deepmib.getSourceBoundingBox``); returned by
+%       ``io.loaders.MibImgLoader`` as the ``BoundingBox`` metadata key
+%     - ``.pixSize`` - voxel size struct (``.x .y .z .units``) of that image
+%
+% The whole ``options`` struct is stored in the file, so the optional fields
+% are written only by callers that set them.
 %
 
 if nargin < 4; options = struct(); end

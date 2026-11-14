@@ -548,7 +548,8 @@ Prefs.Deep.ScoreExportOpt.Location = 'Next to images';  % destination: 'Next to 
 Prefs.Deep.ScoreExportOpt.Levels = 0;   % number of pyramid levels, 0 = the levels of the image below the predicted one (automatic for non-zarr images)
 Prefs.Deep.ScoreExportOpt.ChunkSize = [0 0 0];   % chunk [y x z], 0s = the chunks of the image ([256 256 16] for non-zarr images)
 Prefs.Deep.ScoreExportOpt.ShardSize = [0 0 0];   % chunks per shard [y x z], 0s = no sharding (zarr v3 only)
-Prefs.Deep.ScoreExportOpt.DownsampleMethod = 'bilinear';   % coarser levels: 'bilinear', 'nearest' or 'bicubic'
+Prefs.Deep.ScoreExportOpt.DownsampleMethod = 'cubic';   % coarser levels of the scores: 'cubic', 'bilinear', 'nearest' or 'max' (max pooling)
+Prefs.Deep.ScoreExportOpt.DownsampleStrategy = 'Auto';   % pyramid of images that are not zarr: 'Auto' (Anisotropy-preserving for Z voxel >= 1.5 x XY voxel, else XY only), 'XY only', 'Anisotropy-preserving' or 'Anisotropy-preserving + isotropic level'; zarr images always follow the pyramid of the image
 Prefs.Deep.ScoreExportOpt.Compressors = 'zstd';   % 'zstd', 'gzip' or 'none'
 Prefs.Deep.ScoreExportOpt.CompressionLevel = 7;   % zstd 1-22, gzip 1-9
 
@@ -559,6 +560,7 @@ Prefs.Deep.ZarrModelOpt.Levels = 0;   % number of pyramid levels, 0 = as many as
 Prefs.Deep.ZarrModelOpt.ChunkSize = [0 0 0];   % chunk [y x z], 0s = the chunks of the image
 Prefs.Deep.ZarrModelOpt.ShardSize = [0 0 0];   % chunks per shard [y x z], 0s = no sharding (zarr v3 only)
 Prefs.Deep.ZarrModelOpt.DownsampleMethod = 'nearest';   % coarser levels: 'nearest' or 'mode' (majority vote)
+Prefs.Deep.ZarrModelOpt.DownsampleStrategy = 'Auto';   % pyramid of images that are not zarr: 'Auto', 'XY only', 'Anisotropy-preserving' or 'Anisotropy-preserving + isotropic level'; zarr images always follow the pyramid of the image
 Prefs.Deep.ZarrModelOpt.Compressors = 'zstd';   % 'zstd', 'gzip' or 'none'
 Prefs.Deep.ZarrModelOpt.CompressionLevel = 7;   % zstd 1-22, gzip 1-9; 7 compresses labels 15-25% better than the zstd default 3 at similar speed
 

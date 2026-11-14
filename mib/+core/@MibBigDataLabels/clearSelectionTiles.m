@@ -32,7 +32,7 @@ if isempty(box)
     return;
 end
 
-tileSize = obj.modelScaleFactors(end, :);
+tileSize = obj.tileSize;
 planes = find(any(tileMask, [1 2]));
 wholePlanes = (planes(1)-1)*tileSize(3)+1 >= fullZ(1) && ...
     min(planes(end)*tileSize(3), max(1, obj.depth)) <= fullZ(2);

@@ -290,6 +290,11 @@ Export the current dataset to external applications:
           aspect ratio close to 1 : 1 at every pyramid level. Recommended for 3-D datasets where the
           Z step is coarser than the XY pixel size (e.g. confocal, SBEM stacks with vxZ >> vxXY).
 
+        - **Anisotropy-preserving + isotropic level** - as above, and the pyramid always contains the
+          level where the XY voxel equals the Z voxel (5 × 5 × 30 nm gives 5, 10, 20, 30, 60 nm).
+          The Z/XY voxel ratio must be a whole number or a simple fraction such as 13/5; otherwise the
+          pyramid is built as **Anisotropy-preserving** and a warning is shown.
+
         ---
 
         **Smart defaults (computed from the open dataset)**

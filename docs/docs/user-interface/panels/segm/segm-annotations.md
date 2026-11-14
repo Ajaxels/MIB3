@@ -131,7 +131,7 @@ Use the following key shortcuts to define and restore presets
 
 ![Convert to Mask](images/PanelsSegmentationAnn-tools.png){.on-glb align=left width="300}
 
-- <span class="widget widget-button">Load</span> import annotations from MATLAB or a file.
+- <span class="widget widget-button">Load</span> import annotations from MATLAB or a file: MATLAB, CSV, Amira landmarks, or PSI format.
 - <span class="widget widget-button">Save</span> export to MATLAB, CSV, Excel, Amira landmarks (coordinates only), or PSI format. [:fontawesome-brands-youtube:{.red-color} Demo](https://youtu.be/wHr6nHpmVMo)
 
 <div class="clear-float"></div>

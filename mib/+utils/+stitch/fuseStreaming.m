@@ -159,6 +159,12 @@ for planField = {'DownsampleStrategy', 'Levels', 'MinLevelSize', 'MaxLevels'}
     if isfield(options, planField{1}); planOptions.(planField{1}) = options.(planField{1}); end
 end
 if ~isfield(planOptions, 'DownsampleStrategy'); planOptions.DownsampleStrategy = 'XY only'; end
+if strcmp(planOptions.DownsampleStrategy, 'Anisotropy-preserving + isotropic level')
+    % downsampleLevel below always builds a level from the level above, which is not the
+    % source of the isotropic level, and it does not reduce Z at all
+    error('fuseStreaming:isotropicLevel', ...
+        'The strategy "Anisotropy-preserving + isotropic level" is not supported when fusing; use "XY only" or "Anisotropy-preserving".');
+end
 plan = io.savers.Zarr3Saver.computeLevelPlan(H, W, Z, pixSize, planOptions);
 nLevels = numel(plan);
 

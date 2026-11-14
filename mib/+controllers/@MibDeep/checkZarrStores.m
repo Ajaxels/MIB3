@@ -40,12 +40,22 @@ function [zarrList, zarrStores, cancelled] = checkZarrStores(obj)
 %     group itself); ``.levelRegionOrigins`` - ``[y x z]`` first voxel of each
 %     level when the store was opened with a region, ones otherwise;
 %     ``.colors`` - number of channels; ``.imgClass`` - pixel class. The last
-%     four are what ``deepmib.readZarrSlab`` needs
+%     four are what ``deepmib.readZarrSlab`` needs; ``.boundingBox`` -
+%     ``[xmin xmax ymin ymax zmin zmax]`` of the predicted level
+%     (``BatchOpt.BioformatsIndex``), copied by the prediction to the model and
+%     score files. It is the box MIB shows when that level is opened in the
+%     Standard mode: for level 1 the ``BoundingBox`` of the loader metadata
+%     (``mibBoundingBox``, else the box from the OME transforms); for a coarser
+%     level ``files.levelWorldBoxes`` of that level, as
+%     ``io.loaders.OmeZarrMetadataUtils.applySelectedLevelGeometry`` does when the
+%     level is loaded (same origin, the extent of the coarser grid). ``[]`` when
+%     the loader gives none
 %   - **cancelled** - [logical] true when the run must stop
 
     cancelled = true;
     zarrStores = struct('groupPath', {}, 'pyramid', {}, 'pixSize', {}, ...
-        'levelNames', {}, 'levelRegionOrigins', {}, 'colors', {}, 'imgClass', {});
+        'levelNames', {}, 'levelRegionOrigins', {}, 'colors', {}, 'imgClass', {}, ...
+        'boundingBox', {});
     zarrLevel = obj.BatchOpt.BioformatsIndex{1};
 
     predictionDir = regexprep(obj.BatchOpt.OriginalPredictionImagesDir, '[\\/]+$', '');
@@ -79,7 +89,7 @@ function [zarrList, zarrStores, cancelled] = checkZarrStores(obj)
             loaderInfo = extReg.resolveLoader(zarrList{fileId}, 'Standard', 'Default');
             if ischar(loaderInfo); error('%s', loaderInfo); end
             loader = io.LoaderFactory.create(loaderInfo, struct('ParentFigure', obj.view.gui, 'silentMode', true));
-            [~, files] = loader.loadMetadata(zarrList(fileId), struct('silentMode', true));
+            [imginfo, files] = loader.loadMetadata(zarrList(fileId), struct('silentMode', true));
         catch err
             utils.dlgs.showErrorDialog(obj.view.gui, err, sprintf('Can not read %s', storeName));
             return;
@@ -110,6 +120,19 @@ function [zarrList, zarrStores, cancelled] = checkZarrStores(obj)
         end
         zarrStores(fileId).colors = files.color;
         zarrStores(fileId).imgClass = files.imgClass;
+
+        % bounding box of the predicted level, the one MIB shows when that level is
+        % opened: the box of the store for level 1, the world box of the level for
+        % the coarser ones (io.loaders.OmeZarrMetadataUtils.applySelectedLevelGeometry)
+        zarrStores(fileId).boundingBox = [];
+        if isa(imginfo, 'dictionary') && isConfigured(imginfo) && isKey(imginfo, "BoundingBox") ...
+                && numel(imginfo{"BoundingBox"}) == 6
+            zarrStores(fileId).boundingBox = reshape(double(imginfo{"BoundingBox"}), 1, 6);
+        end
+        if zarrLevel > 1 && isfield(files, 'levelWorldBoxes') && size(files.levelWorldBoxes, 1) >= zarrLevel ...
+                && any(files.levelWorldBoxes(zarrLevel, :))
+            zarrStores(fileId).boundingBox = files.levelWorldBoxes(zarrLevel, :);
+        end
     end
 
     if ~isempty(problems)
