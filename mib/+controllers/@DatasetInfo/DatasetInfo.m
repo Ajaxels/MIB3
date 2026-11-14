@@ -1403,6 +1403,9 @@ classdef DatasetInfo < handle
                     dims  = pyramid.levelImageSizes(levelIdx, 1:2);
                     levelText = sprintf('Level %d (%c%g): %d %c %d px', ...
                         levelIdx, char(215), scale, dims(2), char(215), dims(1));
+                    if size(pyramid.levelImageSizes, 2) >= 3
+                        levelText = [levelText, sprintf(', %d z', pyramid.levelImageSizes(levelIdx, 3))];
+                    end
                     if iscell(pyramid.chunkSizes) && levelIdx <= numel(pyramid.chunkSizes) ...
                             && ~isempty(pyramid.chunkSizes{levelIdx})
                         chunkShape = pyramid.chunkSizes{levelIdx};
@@ -1421,11 +1424,17 @@ classdef DatasetInfo < handle
                     end
                     if ~isempty(pyramid.levelVoxelSizes)
                         if size(pyramid.levelVoxelSizes, 1) >= levelIdx
-                            voxelX = pyramid.levelVoxelSizes(levelIdx, 2);
+                            voxelSize = pyramid.levelVoxelSizes(levelIdx, :);    % [Y X Z]
                         else
-                            voxelX = pyramid.levelVoxelSizes(1, 2) * scale;
+                            scaleFactors = pyramid.levelScaleFactors(levelIdx, :);
+                            voxelSize = pyramid.levelVoxelSizes(1, :) .* scaleFactors(1:numel(pyramid.levelVoxelSizes(1, :)));
                         end
-                        levelText = [levelText, sprintf('  %.4g %sm/px', voxelX, char(956))];
+                        if numel(voxelSize) >= 3
+                            levelText = [levelText, sprintf('  voxel %.4g %c %.4g %c %.4g %sm', ...
+                                voxelSize(2), char(215), voxelSize(1), char(215), voxelSize(3), char(956))];
+                        else
+                            levelText = [levelText, sprintf('  %.4g %sm/px', voxelSize(2), char(956))];
+                        end
                     end
                     list{end+1} = struct('text', levelText, ...
                         'sectionKey', '__pyramid__', 'sectionPopulationType', 'pyramid_levels'); %#ok<AGROW>

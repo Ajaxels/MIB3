@@ -649,6 +649,9 @@ classdef Zarr3Saver < io.savers.BaseSaver
             %       compared on resume; default empty
             %     - ``.BandHeight`` - rows of a level-0 band, ``0`` (default) or at
             %       least the slice height for whole slices
+            %     - ``.reportDone`` - [logical] print the one-line "written ... in ..."
+            %       summary to the command window when finished, default true; a caller
+            %       that reports the result itself (``ImageConverter``) sets it false
             %
             %   - **pool** - *(optional)* process-based ``parallel.Pool``; ``[]`` runs
             %     the tasks on the client
@@ -892,8 +895,10 @@ classdef Zarr3Saver < io.savers.BaseSaver
             if resumedTasks > 0
                 resumedText = sprintf(' (resumed: %d of %d parts were written before)', resumedTasks, numberOfTasks);
             end
-            fprintf('Zarr3Saver: written %s → %s in %s%s\n', workerText, filename, ...
-                io.savers.Zarr3Saver.durationText(runSeconds), resumedText);
+            if ~isfield(options, 'reportDone') || options.reportDone
+                fprintf('Zarr3Saver: written %s → %s in %s%s\n', workerText, filename, ...
+                    io.savers.Zarr3Saver.durationText(runSeconds), resumedText);
+            end
         end
     end
 

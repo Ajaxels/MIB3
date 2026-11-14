@@ -870,6 +870,7 @@ classdef ImageConverter < handle
             % --- Zarr3Saver options (silent: ImageConverter already collected settings) ---
             saverOpts = struct();
             saverOpts.silent       = true;
+            saverOpts.reportDone   = false;   % generateZarrNative prints the one summary
             saverOpts.ChunkSize    = chunkYXZ;
             saverOpts.Compressors  = compressors;
             saverOpts.MinLevelSize = minLevelSize;
@@ -1734,10 +1735,12 @@ classdef ImageConverter < handle
             end
 
             zarrVersion = obj.BatchOpt.ZarrVersion{1};   % e.g. 'Zarr v3'
-            fprintf('Native %s written to: %s\nElapsed time is %f seconds\n', zarrVersion, fnOut, t2);
+            if isempty(pool); coresText = 'no parallel pool'; else; coresText = sprintf('%d parallel workers', pool.NumWorkers); end
+            fprintf('Native %s written to: %s\nElapsed time is %.1f seconds, %s\n', ...
+                zarrVersion, fnOut, t2, coresText);
             if ~isempty(parentFig)
-                uialert(parentFig, sprintf('Native %s written to:\n%s\n\nElapsed time is %.1f seconds', ...
-                    zarrVersion, fnOut, t2), 'Zarr conversion done!', 'Icon', 'success');
+                uialert(parentFig, sprintf('Native %s written to:\n%s\n\nElapsed time is %.1f seconds, %s', ...
+                    zarrVersion, fnOut, t2, coresText), 'Zarr conversion done!', 'Icon', 'success');
             end
         end
 
