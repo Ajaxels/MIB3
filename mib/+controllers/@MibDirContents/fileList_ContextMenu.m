@@ -151,12 +151,13 @@ switch menuEntry.Tag
 
         numFolders = nnz(isFolder);
         if numel(filenames) == 1 && numFolders == 1
-            msg = sprintf('You are going to permanently delete the folder\n%s\nand everything inside it', filenames{1});
+            msg = sprintf('You are going to permanently delete the folder\n%s\n\n%s\n\nand everything inside it', ...
+                selectedNames{1}, filenames{1});
         elseif numFolders > 0
             msg = sprintf('You are going to permanently delete\n%d file(s) and %d folder(s) with everything inside them', ...
                 numel(filenames) - numFolders, numFolders);
         elseif numel(filenames) == 1 %#ok<ISCL>
-            msg = sprintf('You are going to delete\n%s', filenames{1});
+            msg = sprintf('You are going to permanently delete the file\n%s\n\n%s', selectedNames{1}, filenames{1});
         else
             msg = sprintf('You are going to delete\n%d files', numel(filenames));
         end

@@ -6426,6 +6426,12 @@ see the <strong>Smart defaults</strong> table at the bottom.</p>
   aspect ratio close to 1 : 1 at every pyramid level. Recommended for 3-D datasets where the
   Z step is coarser than the XY pixel size (e.g. confocal, SBEM stacks with vxZ &gt;&gt; vxXY).</p>
 </li>
+<li>
+<p><strong>Anisotropy-preserving + isotropic level</strong> - as above, and the pyramid always contains the
+  level where the XY voxel equals the Z voxel (5 × 5 × 30 nm gives 5, 10, 20, 30, 60 nm).
+  The Z/XY voxel ratio must be a whole number or a simple fraction such as 13/5; otherwise the
+  pyramid is built as <strong>Anisotropy-preserving</strong> and a warning is shown.</p>
+</li>
 </ul>
 <hr />
 <p><strong>Smart defaults (computed from the open dataset)</strong></p>

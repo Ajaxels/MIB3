@@ -830,7 +830,9 @@ classdef Annotations < matlab.mixin.Copyable
             %
             %     - ``.format`` - (char) output file format:
             %
-            %       - ``'ann'`` - MIB annotation format
+            %       - ``'ann'`` - MIB annotation format; when ``.boundingBox`` and ``.pixSize`` are
+            %         provided they are stored in the file too, so that :func:`loadAnnotations` can
+            %         recalculate the coordinates for a cropped or resampled dataset
             %       - ``'landmarksAscii'`` - Amira landmarks in ASCII format
             %       - ``'landmarksBin'`` - Amira landmarks as binaries
             %       - ``'psi'`` - PSI format ASCII
@@ -928,7 +930,16 @@ classdef Annotations < matlab.mixin.Copyable
             
             switch options.format
                 case 'ann'
-                    save(filename, 'labelText', 'labelValue', 'labelPosition', '-mat', '-v7.3');
+                    % the bounding box and pixel size of the source dataset are kept,
+                    % so that loadAnnotations can recalculate the pixel coordinates
+                    % for a cropped or resampled dataset
+                    if isfield(options, 'boundingBox') && isfield(options, 'pixSize')
+                        boundingBox = options.boundingBox; %#ok<NASGU>
+                        pixSize = options.pixSize; %#ok<NASGU>
+                        save(filename, 'labelText', 'labelValue', 'labelPosition', 'boundingBox', 'pixSize', '-mat', '-v7.3');
+                    else
+                        save(filename, 'labelText', 'labelValue', 'labelPosition', '-mat', '-v7.3');
+                    end
                 case 'csv'
                     LabelText = labelText;
                     LabelValue = labelValue;
@@ -1057,8 +1068,14 @@ classdef Annotations < matlab.mixin.Copyable
             %
             %     - ``.parentFigure`` - handle to parent UIFigure for dialogs (required for the CSV column-mapping dialog)
             %     - ``.currentDirectory`` - starting directory for the file-selection dialog; default ``''``
-            %     - ``.boundingBox`` - ``[x1 width y1 height z1 depth]`` bounding box for Amira landmark and PSI coordinate conversion
-            %     - ``.pixSize`` - MIB pixSize struct (``.x`` ``.y`` ``.z``) for Amira landmark and PSI coordinate conversion
+            %     - ``.boundingBox`` - ``[x1 width y1 height z1 depth]`` bounding box of the open dataset, for Amira landmark and PSI coordinate conversion
+            %       and for recalculation of coordinates of ``.ann`` files
+            %     - ``.pixSize`` - MIB pixSize struct (``.x`` ``.y`` ``.z``) of the open dataset, used as ``.boundingBox``
+            %
+            %   When an ``.ann`` file holds a bounding box and pixel size that differ from ``options.boundingBox``
+            %   and ``options.pixSize``, the user is asked whether to import the coordinates as pixels (default)
+            %   or to recalculate them for the open dataset (pixels -> physical units -> pixels). The Z coordinate
+            %   is rounded to a slice index.
             %     - ``.currentT`` - current time point; used when the file stores only 3-column positions; default ``1``
             %
             % Output Arguments:
@@ -1146,6 +1163,38 @@ classdef Annotations < matlab.mixin.Copyable
                     end
                     if size(res.labelPosition, 2) == 3
                         res.labelPosition(:,4) = options.currentT;
+                    end
+
+                    % the file may carry the bounding box and pixel size of the dataset
+                    % the annotations were made for; when they differ from the open
+                    % dataset (cropped, resampled) offer to recalculate the pixel
+                    % coordinates through the physical coordinates
+                    if isfield(res, 'boundingBox') && isfield(res, 'pixSize') ...
+                            && isfield(options, 'boundingBox') && isfield(options, 'pixSize')
+                        sameGeometry = isequal(res.boundingBox(:), options.boundingBox(:)) ...
+                            && isequal([res.pixSize.x, res.pixSize.y, res.pixSize.z], ...
+                                       [options.pixSize.x, options.pixSize.y, options.pixSize.z]);
+                        if ~sameGeometry
+                            answer = utils.dlgs.inputQuestDlg(options.parentFigure, ...
+                                sprintf(['The annotations were saved with a different bounding box or pixel size than the open dataset.\n\n' ...
+                                'Recalculate their coordinates for the open dataset or import them as pixels?']), ...
+                                'Import annotations', 'Import as pixels', 'Recalculate', 'Cancel', 'Import as pixels');
+                            if isempty(answer) || strcmp(answer, 'Cancel'); return; end
+                            if strcmp(answer, 'Recalculate')
+                                oldBb = res.boundingBox;
+                                oldPix = res.pixSize;
+                                newBb = options.boundingBox;
+                                newPix = options.pixSize;
+                                % pixels of the saved dataset -> physical units -> pixels of the open dataset
+                                % (the same conventions as in the export to units)
+                                zUnits = res.labelPosition(:,1)*oldPix.z + oldBb(5) - oldPix.z;
+                                xUnits = res.labelPosition(:,2)*oldPix.x + oldBb(1) - oldPix.x/2;
+                                yUnits = res.labelPosition(:,3)*oldPix.y + oldBb(3) - oldPix.y/2;
+                                res.labelPosition(:,1) = round((zUnits - newBb(5) + newPix.z) / newPix.z);
+                                res.labelPosition(:,2) = (xUnits - newBb(1) + newPix.x/2) / newPix.x;
+                                res.labelPosition(:,3) = (yUnits - newBb(3) + newPix.y/2) / newPix.y;
+                            end
+                        end
                     end
 
                 case 2  % CSV

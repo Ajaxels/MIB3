@@ -58,7 +58,10 @@ classdef MibBigDataLabels < core.MibLabels63
         % no sharding (default). Ignored for zarr v2. Sharding cuts the file count
         % of a large store, but every edit then rewrites whole shards (a
         % partial-shard write re-reads and rewrites the shard, measured 3.4x
-        % slower), so the interactively created models leave it off.
+        % slower, yet a brush stroke still took ~0.2 s). ``MibModel.createModel`` asks
+        % for it in a dialog seeded from the image's own shard: without shards one slice is hundreds
+        % of files, and on a network drive each missing chunk costs ~110 ms (a
+        % 3100 x 3100 slice took 68 s). Batch runs still get no sharding.
         maxIndexUsed = 0
         % [double] highest material/instance index ever written to the store. Raised
         % by setData63 from the max of each written block (cost scales with the
@@ -226,6 +229,12 @@ classdef MibBigDataLabels < core.MibLabels63
             % which is how ``models.MibModel.loadModel`` later tells a MIB-written
             % store from a foreign one (see ``core.MibBigDataLabelsZarr2``).
             %
+            % For zarr v3 the empty ``<level>/c/<y>/<x>`` folders of every chunk (or
+            % shard) file are created too, up to 100 folders in all (a larger store
+            % leaves them to appear on write): opening a file whose parent folder is
+            % missing costs 111 ms on the lsdcc network drive, against 1 ms when only
+            % the file is missing, and every file of a new model is missing.
+            %
             % Input Arguments:
             %   - **dims** - [1x3 numeric] ``[height, width, depth]`` in pixels; used as the
             %     fallback level-0 size when ``pyramid`` is empty.
@@ -295,6 +304,8 @@ classdef MibBigDataLabels < core.MibLabels63
             % array class from the packed layout (obj.setLayout before this call)
             grp = io.zarr.Group.create(storePath, 'zarrFormat', zarrFormat);
             obj.modelArrays = cell(1, nLevels);
+            foldersToCreate = 0;                      % chunk folders made so far, see below
+            maxPrecreatedFolders = 100;               % ~0.3 s each on lsdcc (71 folders = 22 s); a larger store keeps lazy folders
             obj.modelLevelNames = cell(1, nLevels);
             for L = 1:nLevels
                 name = num2str(L - 1);
@@ -312,8 +323,27 @@ classdef MibBigDataLabels < core.MibLabels63
                     % zarr v2 has no sharding codec
                     createArgs = [createArgs, {'shardShape', io.savers.Zarr3Saver.computeShard(ch, obj.ShardFactors)}]; %#ok<AGROW>
                 end
+                fileShape = ch;                       % voxels held by one chunk file (a shard when sharded)
+                if zarrFormat == 3 && any(obj.ShardFactors > 0)
+                    fileShape = io.savers.Zarr3Saver.computeShard(ch, obj.ShardFactors);
+                end
                 obj.modelArrays{L} = grp.createArray(name, sz, obj.containerClass, createArgs{:});
                 obj.modelLevelNames{L} = name;
+                levelFolders = prod(ceil(sz(1:2) ./ fileShape(1:2)));
+                if zarrFormat == 3 && foldersToCreate + levelFolders <= maxPrecreatedFolders
+                    % A zarr v3 chunk file is c/<y>/<x>/<z>. Opening a file whose
+                    % parent folder is missing took 111 ms on the lsdcc network
+                    % drive (0.5 ms on the old one; 1 ms when only the file is
+                    % missing), and every file of an empty model is missing, so a
+                    % slice read of 625 chunks took 68 s. Creating the c/<y>/<x>
+                    % folders turns those lookups into the cheap kind.
+                    foldersToCreate = foldersToCreate + levelFolders;
+                    for folderY = 0:ceil(sz(1) / fileShape(1)) - 1
+                        for folderX = 0:ceil(sz(2) / fileShape(2)) - 1
+                            mkdir(fullfile(storePath, name, 'c', sprintf('%d', folderY), sprintf('%d', folderX)));
+                        end
+                    end
+                end
             end
             obj.writeMultiscales(grp, scaleFac);
 

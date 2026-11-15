@@ -98,7 +98,9 @@ are cleaned up.
 Allocates space for a new model. Use this to start a new model or delete the existing one.<br>
 Alternatively, use the <span class="widget widget-button">New</span> button in the [Segmentation Panel](../../panels/segm/index.md).<br>
 <br>
-For model types see [Convert type](#convert-type) above.
+For model types see [Convert type](#convert-type) above.<br>
+<br>
+For a [BigData](../../panels/datasets/index.md) dataset, you choose where to keep the model and then confirm its storage settings (chunk size, shard size, compression), which start from the settings of the image. Keep them when the model is on a network drive: a store without shards is very slow there.
 
 <div class="clear-float"></div>
 

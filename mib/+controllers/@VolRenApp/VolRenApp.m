@@ -1178,6 +1178,10 @@ classdef VolRenApp < handle
             %     - ``'modelTable_cm_generateSurfaceByIndex'`` - ask for a material index and generate
             %       its surface; the only option in the cycled color mode, where a table row stands
             %       for 255 materials rather than one
+            %     - ``'modelTable_cm_showMaterials'`` - tick *Show* of the selected rows and
+            %       render them (also clears *Hide all*)
+            %     - ``'modelTable_cm_hideMaterials'`` - untick *Show* of the selected rows and
+            %       stop rendering them
             %     - ``'modelTable_cm_removeMaterials'`` - drop the selected rows from the
             %       ``'Selected materials'`` list and refresh the overlay
             if obj.mibModel.preferences.System.DeveloperMode
@@ -1222,6 +1226,18 @@ classdef VolRenApp < handle
                     end
                 case 'modelTable_cm_generateSurfaceByIndex'
                     obj.generateSurfaceByMaterialIndex();
+                case {'modelTable_cm_showMaterials', 'modelTable_cm_hideMaterials'}
+                    rowIds = obj.modelTableIndex;
+                    rowIds = rowIds(rowIds >= 1 & rowIds <= numel(obj.overlayShownMaterials));
+                    if isempty(rowIds); return; end
+                    showRows = strcmp(event.Source.Tag, 'modelTable_cm_showMaterials');
+                    % showing a material makes no sense while everything is hidden
+                    if showRows && obj.view.handles.modelHideAllCheckBox.Value
+                        obj.view.handles.modelHideAllCheckBox.Value = false;
+                    end
+                    obj.overlayShownMaterials(rowIds) = showRows;
+                    obj.view.handles.modelTable.Data(rowIds, 4) = {showRows};
+                    obj.applyOverlayAlphamap();
                 case 'modelTable_cm_removeMaterials'
                     rowIds = obj.modelTableIndex;
                     if isempty(rowIds) || isempty(obj.overlayRowMaterials); return; end
@@ -1245,6 +1261,10 @@ classdef VolRenApp < handle
             %   - **event** - [event] UI callback event; ``event.Source.Tag`` selects the action:
             %
             %     - ``'surfaceTable_cm_saveSurface'`` - save the selected surface to an STL file
+            %     - ``'surfaceTable_cm_showSurface'`` - tick *Show* of the selected surfaces and
+            %       render them (also clears *Hide all*)
+            %     - ``'surfaceTable_cm_hideSurface'`` - untick *Show* of the selected surfaces and
+            %       stop rendering them
             %     - ``'surfaceTable_cm_removeSurface'`` - delete the selected surface from the viewer
             if obj.mibModel.preferences.System.DeveloperMode
                 fprintf('controllers.VolRenApp.surfaceTable_cm_Callback(%s): triggered\n', event.Source.Tag);
@@ -1278,6 +1298,18 @@ classdef VolRenApp < handle
                         pwb.increment();
                     end
                     pwb.deletePoolWaitbar();
+                case {'surfaceTable_cm_showSurface', 'surfaceTable_cm_hideSurface'}
+                    rowIds = obj.surfaceTableIndex;
+                    rowIds = rowIds(rowIds >= 1 & rowIds <= numel(obj.surfList));
+                    if isempty(rowIds); return; end
+                    showRows = strcmp(event.Source.Tag, 'surfaceTable_cm_showSurface');
+                    % showing a surface makes no sense while all surfaces are hidden
+                    if showRows && obj.surfacesHiddenAll()
+                        obj.view.handles.surfacesHideAll.Value = false;
+                    end
+                    obj.surfListShown(rowIds) = showRows;
+                    obj.view.handles.surfaceTable.Data(rowIds, 4) = {showRows};
+                    obj.applySurfaceVisibility();
                 case 'surfaceTable_cm_removeSurface'
                     selection = uiconfirm(obj.view.gui, ...
                         sprintf('!!! Warning !!!\n\nYou are going to remove selected surfaces!\nContinue?'), ...

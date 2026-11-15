@@ -917,8 +917,24 @@ classdef ResampleDataset < handle
 
             % clear selection and mask unless 'everything' was resampled together
             if ~strcmp(modelDataType, 'everything')
-                obj.mibModel.I{id}.clearLayer('selection');
-                obj.mibModel.I{id}.clearLayer('mask');
+                if isLabels63
+                    obj.mibModel.I{id}.clearLayer('selection');
+                    obj.mibModel.I{id}.clearLayer('mask');
+                else
+                    % clearLayer zeroes the layer in place and keeps its old size, which leaves
+                    % a selection of the original size under the resampled image (the next
+                    % repaint fails in getRGBimage); allocate empty layers of the new size
+                    for layerName = {'selection', 'mask'}
+                        layer = obj.mibModel.I{id}.(layerName{1});
+                        if ~layer.exists; continue; end
+                        layer.data      = zeros([newH, newW, newZ, 1, maxT], 'uint8');
+                        layer.height    = newH;
+                        layer.width     = newW;
+                        layer.depth     = newZ;
+                        layer.time      = maxT;
+                        layer.dim_yxzct = [newH, newW, newZ, 1, maxT];
+                    end
+                end
             end
 
             if ~isempty(wb)

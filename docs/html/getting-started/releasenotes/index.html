@@ -5553,7 +5553,12 @@ For the downloads visit <a href="https://mib.helsinki.fi/downloads.html">MIB web
   data gives the same pyramid whether it is converted to BigData, saved as OME-Zarr, or written
   by the Image converter. Pyramids written by earlier versions can differ slightly at the coarser
   levels when the image width or height is an odd number.</li>
+<li><strong>OME-Zarr pyramids with an isotropic level</strong>: the new downsampling strategy
+  <strong>Anisotropy-preserving + isotropic level</strong> adds the level where the XY voxel equals the Z voxel,
+  for example 30 × 30 × 30 nm for a 5 × 5 × 30 nm stack. It is available in <strong>Export to Zarr3</strong>,
+  <strong>Convert to BigData</strong> and the Image converter.</li>
 <li><strong>Image converter, OME-Zarr output</strong>:<ul>
+<li>a <strong>Downsample strategy</strong> setting</li>
 <li>faster; with <strong>Parallel processing</strong> the workers share the conversion</li>
 <li>an interrupted or cancelled conversion can be resumed with the same settings</li>
 <li>TIF images too large for the memory are converted in parts</li>

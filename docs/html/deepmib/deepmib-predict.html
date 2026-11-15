@@ -5838,10 +5838,12 @@ minimize edge artefacts and improve segmentation. Define overlap percentage in <
     <code>Labels_&lt;image name&gt;.zarr3</code> next to the images (the folder is confirmed when prediction starts), 
     configured via the settings button. With ZARR images, <strong>Load images and models</strong> opens the image 
     in the BigData mode with this model, ready for editing; before exporting the model, save it with 
-    <strong>Finalize &amp; save</strong>. For other images the store gets a generated pyramid, so it fits only an image 
-    of the same size converted to zarr with the default settings.  </li>
+    <strong>Finalize &amp; save</strong>. For other images the store gets a generated pyramid, set by 
+    <strong>Downsampling strategy</strong> in the settings. It fits only an image of the same size converted to zarr 
+    with the same strategy.    </li>
 </ul>
-<p>With ZARR images, the other formats are saved at the resolution of the predicted level.  </p>
+<p>With ZARR images, the other formats are saved at the resolution of the predicted level.<br />
+  The model files keep the bounding box of the predicted image, so they open at its position.  </p>
 </details>
 <p><span class="widget widget-dropdown">Score files</span> selects output format for prediction score maps, configured via the <img alt="Settings button" class="inline-image" src="images/DeepLearningTrainSettingsBtn.png" /> button  </p>
 <details class="abstract">
@@ -5854,8 +5856,12 @@ minimize edge artefacts and improve segmentation. Define overlap percentage in <
 <li><strong>Use Matlab non-compressed format (range 0-1)</strong> <code>.mibImg</code> with 0-1 range, MATLAB-only (<code>model = load('filename.mat');</code>)  </li>
 <li><strong>Zarr3 (BigData)</strong> for any type of images, in the semantic workflows with the Blocked-image engine. 
     Writes <code>Score_&lt;image name&gt;.zarr3</code> (an image with a channel for each class, 0-255) next to the images. 
-    Format, destination, pyramid and compression are set via the settings button. Open it in the BigData mode  </li>
+    Format, destination, pyramid and compression are set via the settings button. For ZARR images the 
+    pyramid follows the image; for other images <strong>Downsampling strategy</strong> sets it. <strong>Resampling method</strong> 
+    makes the coarser levels: <em>cubic</em> (default), <em>bilinear</em>, <em>nearest</em> or <em>max pooling</em> (keeps the peaks 
+    of a class). Open it in the BigData mode  </li>
 </ul>
+<p>The score files keep the bounding box and voxel size of the predicted image.  </p>
 </details>
 <ul>
 <li><label class="widget widget-checkbox">upsample predictions</label>: (<em>2D patch-wise only</em>) upsamples downsampled patch-wise predictions to match original image size</li>

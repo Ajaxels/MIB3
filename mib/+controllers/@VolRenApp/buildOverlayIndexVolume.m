@@ -20,9 +20,11 @@ function [overlayIdx, overlayInfo] = buildOverlayIndexVolume(obj, overlayData, o
 % - ``'mask'`` / ``'selection'`` layers, or a single material fetched as a binary
 %   mask: one row, using the layer or material colour
 % - models with fewer than 256 materials: the label values are used directly
-% - large models (65535 / 4294967295) in ``'All materials'`` mode: labels are
-%   cycled into 255 colour bins with ``mod(index-1, 255)+1``, the same trick
-%   :func:`models.MibModel.getRGBimage` uses for the 2D view
+% - large models (65535 / 4294967295) in ``'All materials'`` mode: when the volume holds
+%   at most 255 different materials each gets its own row and exact colour; otherwise
+%   labels are cycled into 255 colour bins with ``mod(index-1, 255)+1``, the same trick
+%   :func:`models.MibModel.getRGBimage` uses for the 2D view (a cell then shows the
+%   colour of material ``mod(index-1, 255)+1``, not its own)
 % - large models in ``'Selected materials'`` mode: only the indices listed in
 %   ``obj.overlayMaterialsSelection`` are shown, each with its exact colour
 %
@@ -82,6 +84,18 @@ switch overlayType
         if isempty(materialId); materialId = NaN; end
         isLargeModel = dataset.labels.maxMaterials >= 256;
 
+        useMaterialList = false;
+        materialList = [];
+        if isLargeModel && (isnan(materialId) || materialId <= 0)
+            if strcmp(obj.overlayMaterialsMode, 'Selected materials')
+                materialList = obj.overlayMaterialsSelection(:)';
+                useMaterialList = true;
+            else
+                materialList = presentMaterials(overlayData, maxRows);
+                useMaterialList = ~isempty(materialList);
+            end
+        end
+
         if ~isnan(materialId) && materialId > 0
             % a single material was fetched, getData3D returned it as a binary mask
             palette = ensurePalette(dataset, min(materialId, 65535));
@@ -102,8 +116,10 @@ switch overlayType
             colormapRows = rowColors;
             overlayIdx = uint8(overlayData);
             overlayIdx(overlayIdx > noMaterials) = 0;
-        elseif strcmp(obj.overlayMaterialsMode, 'Selected materials')
-            selectedMaterials = obj.overlayMaterialsSelection(:)';
+        elseif useMaterialList
+            % the listed materials, or, in the All materials mode, the materials
+            % present when there are few enough to give each its own color
+            selectedMaterials = materialList;
             noMaterials = numel(selectedMaterials);
             rowMaterials = selectedMaterials;
             rowNames = arrayfun(@(x) sprintf('%d', x), selectedMaterials, 'UniformOutput', false)';
@@ -199,4 +215,26 @@ else
         overlayIdx(overlayData == selectedMaterials(matId)) = uint8(matId);
     end
 end
+end
+
+function materials = presentMaterials(overlayData, limit)
+% the different non-zero values of the overlay, sorted; empty when there are none
+% or more than limit of them. Scans slice by slice, so no copy of the volume is made
+materials = [];
+if isa(overlayData, 'uint8') || isa(overlayData, 'uint16')
+    isPresent = false([65536, 1]);
+    for z = 1:size(overlayData, 3)
+        isPresent(double(overlayData(:, :, z)) + 1) = true;
+    end
+    isPresent(1) = false;
+    materials = find(isPresent)' - 1;
+else
+    for z = 1:size(overlayData, 3)
+        materials = union(materials, double(unique(overlayData(:, :, z)))');
+        materials(materials == 0) = [];
+        if numel(materials) > limit; materials = []; return; end
+    end
+end
+if numel(materials) > limit; materials = []; end
+materials = materials(:)';
 end

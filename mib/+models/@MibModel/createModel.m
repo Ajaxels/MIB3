@@ -148,6 +148,12 @@ if isempty(ModelType) && nargin < 4
     BatchOpt.ModelType{1} = num2str(selectedType);
 end
 
+% BigData store settings chosen in the dialog below; [] = leave the defaults
+% (image chunks, no sharding, zstd), which is what a batch run gets
+storeChunk = [];
+storeShard = [];
+storeCompressor = [];
+
 % BigData: ask where to keep the on-disk model store (unless given via batch).
 % The model is persisted on disk, so a deliberate location is required rather
 % than a hidden temp folder.
@@ -178,6 +184,54 @@ if isBigData && isempty(BatchOpt.ModelStorePath) && nargin < 4
         return;
     end
     BatchOpt.ModelStorePath = fullfile(storePathDir, storeFile);
+
+    % Chunking, sharding and compression of the store start from the image (the
+    % pyramid levels always follow the image). A model with one file per chunk is
+    % very slow on a network drive: a missing chunk costs a round trip, ~110 ms,
+    % so one 3100 x 3100 slice of 128 x 128 chunks (625 files) took 68 s.
+    % The shard is the image's too: an edit rewrites the shards it touches, but
+    % measured on a 3100 x 3100 x 1193 image with 2048 x 2048 x 4 shards a brush
+    % stroke cost ~0.2 s over the network (development/bigdata/bigdata_logic.md).
+    imageStoreOptions = io.savers.Zarr3Saver.optionsFromPyramid(obj.I{BatchOpt.id}.image.pyramid);
+    shardDefault = [0 0 0];
+    if isfield(imageStoreOptions, 'ShardSize'); shardDefault = imageStoreOptions.ShardSize; end
+    isZarr2 = core.MibBigDataLabels.zarrFormatFromPath(BatchOpt.ModelStorePath) == 2;
+    if isZarr2; shardDefault = [0 0 0]; end   % zarr v2 has no sharding codec
+    compressorList = {'zstd', 'gzip', 'none'};
+    storePrompts = {'Chunk size [Y, X, Z]:'; 'Shard size, chunks per shard [Y, X, Z] (0 = no sharding):'; ...
+        'Compression:'; 'Compression level:'};
+    storeDefaults = {sprintf('%d, %d, %d', imageStoreOptions.ChunkSize); ...
+        sprintf('%d, %d, %d', shardDefault); ...
+        [compressorList, {1}]; ...
+        struct('Spinner', true, 'Value', 3, 'Limits', [1 22], 'Step', 1, 'Round', true)};
+    storeHeader = sprintf(['Settings of the on-disk model store, taken from the image.\n' ...
+        'The pyramid levels always follow the image.\n' ...
+        'Sharding bundles chunks into fewer files (zarr v3 only): much faster on a network drive,\n' ...
+        'but editing rewrites whole shards. Compression level: zstd 1-22, gzip 1-9.']);
+    storeDlgOptions = struct('LabelPosition', 'left', 'WindowWidth', 560, 'HeaderLines', 4, 'mibPath', obj.mibPath);
+    storeAnswer = utils.dlgs.inputUniversalDlg(obj.getProgressBarParent(), storeHeader, storePrompts, ...
+        storeDefaults, 'BigData model store', storeDlgOptions);
+    if isempty(storeAnswer)   % user cancelled
+        notify(obj, 'StopProtocol');
+        return;
+    end
+    storeChunk = str2num(storeAnswer{1}); %#ok<ST2NM>
+    storeShard = str2num(storeAnswer{2}); %#ok<ST2NM>
+    if numel(storeChunk) ~= 3 || any(storeChunk < 1) || any(storeChunk ~= round(storeChunk)) || ...
+            numel(storeShard) ~= 3 || any(storeShard < 0) || any(storeShard ~= round(storeShard))
+        utils.dlgs.showErrorDialog(obj.getProgressBarParent(), ...
+            sprintf(['Chunk size must be three positive integers and shard size three\n' ...
+            'non-negative integers, [Y, X, Z]; the model was not created']), 'Create model');
+        notify(obj, 'StopProtocol');
+        return;
+    end
+    if isZarr2; storeShard = [0 0 0]; end
+    storeCompressor = storeAnswer{3};
+    if ~strcmp(storeCompressor, 'none')
+        compressionLevel = storeAnswer{4};
+        if strcmp(storeCompressor, 'gzip'); compressionLevel = min(compressionLevel, 9); end
+        storeCompressor = struct('name', storeCompressor, 'configuration', struct('level', compressionLevel));
+    end
 end
 
 % locked labels: createStore deletes a store already at the path, so the locked
@@ -220,8 +274,25 @@ if isBigData
     ds.labels = core.MibBigDataLabels([], bigMeta);
     isInstanceModel = strcmp(BatchOpt.ModelType{1}, '16383');
     if isInstanceModel; ds.labels.setLayout('uint16'); end   % uint16 store, set before createStore
+    storePyramid = ds.image.pyramid;
+    if ~isempty(storeChunk)
+        % createStore reads the chunk of every level in the axis order of the
+        % pyramid, so place [y x z] at their positions in that order
+        storeAxisOrder = 'tczyx';
+        if isfield(storePyramid, 'axisOrder') && ~isempty(storePyramid.axisOrder)
+            storeAxisOrder = char(storePyramid.axisOrder);
+        end
+        chunkVector = ones(1, numel(storeAxisOrder));
+        yxzLetters = 'yxz';
+        for axisId = 1:3
+            chunkVector(storeAxisOrder == yxzLetters(axisId)) = storeChunk(axisId);
+        end
+        storePyramid.chunkSizes = repmat({chunkVector}, max(1, size(storePyramid.levelImageSizes, 1)), 1);
+        ds.labels.Compressors = storeCompressor;
+        if any(storeShard > 0); ds.labels.ShardFactors = storeShard; end
+    end
     ds.labels.createStore([ds.image.height, ds.image.width, ds.image.depth], ...
-        BatchOpt.ModelStorePath, ds.image.pyramid);   % mirror the image pyramid levels
+        BatchOpt.ModelStorePath, storePyramid);   % mirror the image pyramid levels
     ds.labels.materialColors  = obj.preferences.Colors.ModelMaterialColors;
     ds.labels.labelsVariable  = 'mibModel';
     ds.labels.filename        = '';

@@ -86,8 +86,41 @@ BioFormats and OpenSlide all drive the same path.
   `modelLevelSizes`, `modelScaleFactors` — normalised to level-0-relative factors on open). Native
   MATLAB axis order (transpose codec → no permute for MIB-written stores).
 - Unsharded by default; `ShardFactors` (chunks per shard `[y x z]`, zarr v3 only) shards a store
-  created by `createStore` - used by the DeepMIB prediction output, never by New model, because
-  every edit of a sharded store rewrites whole shards.
+  created by `createStore`. Used by the DeepMIB prediction output and by *New model* (GUI), which
+  shows a "BigData model store" dialog seeded from the image (`Zarr3Saver.optionsFromPyramid`):
+  chunk, shard in chunks, codec and level (3, the old default; the image's codec is not in the
+  pyramid). The levels always follow the image. Batch `createModel` calls (`ModelStorePath` given)
+  skip the dialog and stay unsharded.
+  **Why (measured 2026-11-15, 3100 x 3100 x 1193 image on a network drive, `L:`):** a missing file
+  costs ~110 ms there, and an unsharded model (128 x 128 x 4 chunks) needs 625 files per slice, so
+  the first read of a slice of an empty model took 68 s. With 4 x 4 x 1 shards it is ~5 s on the
+  first slice of each Z shard (49 files, every 4th slice), with the image's 16 x 16 x 1 shards
+  0.13 s. A brush stroke on the 16 x 16 x 1 store (2048 x 2048 x 4 shards) cost ~0.2 s (6 strokes,
+  24 shard writes of ~37 ms), so the 3.4x partial-shard rewrite cost does not matter in practice
+  and the dialog default is the image's shard. Not done: skipping the lookups of known-empty
+  regions through the level map, which would make even an unsharded store cheap.
+  Tests: `tests/core/MibBigDataStoreSettingsTest.m` (the dialog needs a window, so they cover the
+  seed and the store it feeds).
+- **Chunk folders of a v3 store are created up front** (`createStore`, up to 100 folders in all, v3
+  only; v2 chunk files sit in the array folder). Cause, measured 2026-11-15 on the new `lsdcc`
+  network drive with plain Windows file calls (no MATLAB, no zarr): opening a file whose **parent
+  folder is missing** costs a constant **111 ms** (0.5 ms on the old `em_vault` drive; 1-3 ms when
+  only the file is missing; repeating it on the same folder is not cached), and every file of a
+  new model is missing. A/B on the same 3100 x 3100 x 1193 store, same drive load: slice read with
+  the `c/<y>/<x>` folders 0.05 s, without 5.4 s (4 x 4 x 1 shards, 71 folders), 0.03 s against
+  0.46 s (16 x 16 x 1, 9 folders). The folders cost ~0.3 s each to create (`mkdir` of a nested
+  path; `java.io.File.mkdirs` 3 s, .NET and `cmd` the same as `mkdir`), 22 s for the 71, so a store
+  with more than 100 (an unsharded 128-chunk 3100 x 3100 store has 625 at level 0) keeps lazy
+  folders; created for it they took minutes and the slice read was still 7 s (625 files).
+- **Deleting many small files on `lsdcc` is very slow** (relevant to zarr v2 stores and to the
+  Delete of the file list), measured 2026-11-15 with 2000 files of 1 KB in 20 folders, new / old
+  drive (files per second): `Remove-Item -Recurse` 7 / 227, `cmd rd /s /q` 12.5 / 651,
+  `Directory.Delete(path, true)` 4.7 / 540, sequential `File.Delete` 6 / 493, parallel
+  `File.Delete` 4 threads 18 / 450, 16 threads 14 / 496. Single files in one folder are fine
+  (7 ms), so it is deleting across folders that is slow. Not fixed in MIB, reported to IT; `rd /s /q`
+  and 4 parallel threads are the fastest of what was tried and still 25-35x slower than the old drive.
+  Other costs there: `mkdir` 87 ms (33), listing a folder 20 ms (1.1), create a 1 KB file 37 ms
+  (34), write 89 MB/s (65), read 104 MB/s (104). Parallel access scales (4 threads ~2-4x).
 - Created on demand (browse-only until a model exists). Default store name `Labels_<imageStem>.zarr3`
   next to the image; the user is prompted for the location (`uiputfile`).
 - Written **live**: every `setData63` writes to disk, so "save" happens continuously — the only thing
