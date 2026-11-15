@@ -88,7 +88,21 @@ For the downloads visit [MIB website](https://mib.helsinki.fi/downloads.html) fo
       as the zoom step of the ++q++ / ++w++ keys.
       See [Fine-tuning](../../user-interface/ribbon/home/home-preferences.md#fine-tuning)
     - **Amira Mesh, RLE compression**: reading and writing RLE-compressed AM files is faster
+    - **BigData model creation**: when a new model is created for a BigData dataset, the chunk size, shard
+      size and compression of its store can be set; they start from the settings of the image
+    - **Annotations**: saved annotation files (`.ann`) keep the bounding box and pixel size of their
+      dataset. When such a file is loaded into a cropped or resampled dataset, you can recalculate the
+      annotation coordinates for the open dataset instead of importing them as pixels. Annotations
+      can also be loaded from PSI format ASCII files (`*.psi`)
+    - **Volume rendering**:
+        - the context menu of the material table has **Show selected material(s)** and **Hide selected
+          material(s)**, and that of the surface table **Show surface** and **Hide surface**, to switch
+          several rows at once
+        - a model with up to 255 objects is rendered with the exact color of every object; models with
+          more objects still cycle the colors
     - **Fixes**:
+        - Resize dataset: the Selection and Mask layers of a dataset with an instance model follow the
+          new size, which previously caused an error when the resized image was displayed
         - MATLAB no longer crashes at exit after ZARR files were opened in a session that also used
           Computer Vision Toolbox features
         - Image converter: OME-Zarr conversion of AmiraMesh volumes
