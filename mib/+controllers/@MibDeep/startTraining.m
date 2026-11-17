@@ -857,6 +857,10 @@ drawnow;
 fprintf('Preparation for training is finished, elapsed time: %f\n', toc(trainTimer));
 
 trainTimer = tic;
+% MaxTime limit, enforced from the OutputFcn by deepmib.checkMaxTimeReached
+mibDeepTrainingProgressStruct.maxTimeSeconds = obj.TrainingOpt.MaxTime * 3600;
+mibDeepTrainingProgressStruct.maxTimeTimer = trainTimer;
+mibDeepTrainingProgressStruct.maxTimeReached = false;
 try
     mibDeepStopTraining = false;
     %obj.TrainEngine = 'trainNetwork'; % use this later as one of the parameters for main obj.BatchOpt

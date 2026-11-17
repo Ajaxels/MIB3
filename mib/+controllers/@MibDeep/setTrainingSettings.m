@@ -13,6 +13,7 @@ end
 
     prompts = {'solverName, solver for training network'; ...
         'MaxEpochs, maximum number of epochs to use for training [30]'; ...
+        'MaxTime, maximum training time in hours, use fractions for minutes (0.5 = 30 min); training stops at whichever of MaxTime or MaxEpochs comes first; 0 - not used [0]'; ...
         'Shuffle, options for data shuffling [once]'; ...
         ['InitialLearnRate, used for training;  The default value is 0.01 for the "sgdm" solver and 0.001 for the "rmsprop" and "adam" solvers. ' ...
             'If the learning rate is too low, then training takes a long time. If the learning rate is too high, then training might reach a suboptimal result or diverge. ' ...
@@ -33,6 +34,7 @@ end
         'Frequency of saving checkpoint networks once per N epochs (R2022a)'};
     defAns = {{'adam', 'rmsprop', 'sgdm', find(ismember({'adam', 'rmsprop', 'sgdm'}, obj.TrainingOpt.solverName))};...
         struct('Spinner', true, 'Value', obj.TrainingOpt.MaxEpochs, 'Limits', [1 Inf], 'Step', 1, 'Round', true);...
+        struct('Spinner', true, 'Value', obj.TrainingOpt.MaxTime, 'Limits', [0 Inf], 'Step', 5/60, 'Round', false);...  % 5 min step
         {'once', 'never', 'every-epoch', find(ismember({'once', 'never', 'every-epoch'}, obj.TrainingOpt.Shuffle))};...
         struct('Spinner', true, 'Value', obj.TrainingOpt.InitialLearnRate, 'Limits', [0 Inf], 'Step', 0.002, 'Round', false);...
         {'none', 'piecewise', find(ismember({'none', 'piecewise'}, obj.TrainingOpt.LearnRateSchedule))};...
@@ -51,9 +53,10 @@ end
         struct('Spinner', true, 'Value', obj.TrainingOpt.CheckpointFrequency, 'Limits', [1 Inf], 'Step', 1, 'Round', true) };
     dlgTitle = 'Training settings';
     options.WindowStyle = 'normal';
-    options.WindowWidth = 760;
+    options.WindowWidth = 840;
     options.WindowHeight = 640;
     options.Columns = 2;    % [optional] define number of columns
+    options.ItemsPerColumn = 9; % 9 / 10 split: Momentum opens the second column
     options.Focus = 1;      % [optional] define index of the widget to get focus
     options.HelpUrl = 'https://se.mathworks.com/help/deeplearning/ref/trainingoptions.html'; % [optional], an url for the Help button
     %options.LastItemColumns = 1; % [optional] force the last entry to be on a single column
@@ -63,21 +66,22 @@ end
 
     obj.TrainingOpt.solverName = answer{1};
     obj.TrainingOpt.MaxEpochs = answer{2};
-    obj.TrainingOpt.Shuffle = answer{3};
-    obj.TrainingOpt.InitialLearnRate = answer{4};
-    obj.TrainingOpt.LearnRateSchedule = answer{5};
-    obj.TrainingOpt.LearnRateDropPeriod = answer{6};
-    obj.TrainingOpt.LearnRateDropFactor = answer{7};
-    obj.TrainingOpt.L2Regularization = answer{8};
-    obj.TrainingOpt.Momentum = answer{9};
-    obj.TrainingOpt.GradientDecayFactor = answer{10};
-    obj.TrainingOpt.SquaredGradientDecayFactor = answer{11};
-    obj.TrainingOpt.GradientThreshold = answer{12};
-    obj.TrainingOpt.GradientThresholdMethod = answer{13};
-    obj.TrainingOpt.ValidationFrequency = answer{14};
-    obj.TrainingOpt.ValidationPatience = answer{15};
-    obj.TrainingOpt.Plots = answer{16};
-    obj.TrainingOpt.OutputNetwork = answer{17};
-    obj.TrainingOpt.CheckpointFrequency = answer{18};
+    obj.TrainingOpt.MaxTime = answer{3};
+    obj.TrainingOpt.Shuffle = answer{4};
+    obj.TrainingOpt.InitialLearnRate = answer{5};
+    obj.TrainingOpt.LearnRateSchedule = answer{6};
+    obj.TrainingOpt.LearnRateDropPeriod = answer{7};
+    obj.TrainingOpt.LearnRateDropFactor = answer{8};
+    obj.TrainingOpt.L2Regularization = answer{9};
+    obj.TrainingOpt.Momentum = answer{10};
+    obj.TrainingOpt.GradientDecayFactor = answer{11};
+    obj.TrainingOpt.SquaredGradientDecayFactor = answer{12};
+    obj.TrainingOpt.GradientThreshold = answer{13};
+    obj.TrainingOpt.GradientThresholdMethod = answer{14};
+    obj.TrainingOpt.ValidationFrequency = answer{15};
+    obj.TrainingOpt.ValidationPatience = answer{16};
+    obj.TrainingOpt.Plots = answer{17};
+    obj.TrainingOpt.OutputNetwork = answer{18};
+    obj.TrainingOpt.CheckpointFrequency = answer{19};
 end
 

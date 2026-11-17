@@ -57,6 +57,10 @@ function [answer, selectedIndices, dontShowAgain] = inputUniversalDlg(ParentFigu
 %       ``'puffin_error'``, ``'puffin_measure'``, ``'puffin_waiting'``,
 %       ``'question'``, ``'celebrate'``, ``'call4help'``, ``'warning'``
 %     - ``.IconWidth`` - [numeric] icon column width in pixels (default: ``[]``, i.e. use the image's natural width)
+%     - ``.ItemsPerColumn`` - [integer] number of widgets placed in each column before moving to the
+%       next one; the last column takes all remaining widgets, so ``9`` with 19 widgets in 2 columns
+%       gives a 9 / 10 split (default: ``[]``, i.e. ``ceil(number of widgets / Columns)``, which
+%       fills the first columns first)
 %     - ``.LabelPosition`` - [char] ``'left'`` (default, label beside widget) or ``'top'`` (label above widget)
 %     - ``.LastItemColumns`` - [integer] ``1`` to force the last widget to span all columns, ``0`` otherwise (default: ``0``)
 %     - ``.MainColumnWidths`` - cell array of main-grid column widths, e.g. ``{'1x', '2x'}`` for 2 columns (default: ``'1x'`` for all)
@@ -185,7 +189,7 @@ end
 % field case-insensitively but differs in case (e.g. 'msgBoxOnly' -> 'MsgBoxOnly')
 % and renames it to the canonical form before the defaults section runs.
 knownOptionFields = {'Icon','IconWidth','WindowStyle','Columns','MainColumnWidths', ...
-    'LabelPosition','SectionsColumnWidths','Focus','LastItemColumns', ...
+    'LabelPosition','SectionsColumnWidths','Focus','LastItemColumns','ItemsPerColumn', ...
     'OkBtnText','HelpBtnText','HelpUrl','MsgBoxOnly', ...
     'HeaderLines','Header','WindowWidth','WindowHeight','DoNotShowAgain', ...
     'DoNotShowAgainText','ParentFigure','DefaultKey','mibPath'};
@@ -220,6 +224,7 @@ if ~isfield(options, 'LabelPosition'); options.LabelPosition = 'top'; end  % 'to
 if ~isfield(options, 'SectionsColumnWidths'); options.SectionsColumnWidths = repmat({'fit', '1x'}, 1, options.Columns); end
 if ~isfield(options, 'Focus'); options.Focus = 0; end
 if ~isfield(options, 'LastItemColumns'); options.LastItemColumns = 0; end
+if ~isfield(options, 'ItemsPerColumn'); options.ItemsPerColumn = []; end
 if ~isfield(options, 'OkBtnText'); options.OkBtnText = 'OK'; end
 if ~isfield(options, 'HelpBtnText'); options.HelpBtnText = 'Help'; end
 if ~isfield(options, 'HelpUrl'); options.HelpUrl = []; end
@@ -323,6 +328,7 @@ if isempty(options.WindowHeight)
         % Per-item heights, distributed into columns the same way the widget builder does
         numRegular = numel(prompts) - (options.LastItemColumns == 1);
         itemsPerCol = max(1, ceil(numRegular / options.Columns));
+        if ~isempty(options.ItemsPerColumn); itemsPerCol = max(1, options.ItemsPerColumn); end
         columnHeights = zeros(options.Columns, 1);
         for itemIdx = 1:numel(prompts)
             colIdx = min(options.Columns, ceil(itemIdx / itemsPerCol));
@@ -507,6 +513,9 @@ else
     % Distribute items into columns
     numRegular = n - (options.LastItemColumns == 1);
     itemsPerCol = max(1, ceil(numRegular / options.Columns));
+    % the min(Columns, ...) clamp below sends every widget past the last full column into the
+    % last column, which is what lets ItemsPerColumn give an uneven split such as 9 / 10
+    if ~isempty(options.ItemsPerColumn); itemsPerCol = max(1, options.ItemsPerColumn); end
     
     % Build widgets - each widget is parented directly into the column grid using a
     % fixed-height row (no per-widget wrapper grids: saves one container per row)

@@ -306,7 +306,11 @@ obj.view.handles.TrainButton.Text = 'Stop training';
 obj.view.handles.TrainButton.BackgroundColor = utils.themeColors(obj.view.gui).dialogAction;
 drawnow;
 mibDeepStopTraining = false;
-lossFcn = @(Y, T) deepmib.stardist.lossFunction(Y, T, config);
+% MaxTime limit, enforced from the OutputFcn by deepmib.checkMaxTimeReached
+mibDeepTrainingProgressStruct.maxTimeSeconds = obj.TrainingOpt.MaxTime * 3600;
+mibDeepTrainingProgressStruct.maxTimeTimer = tic;
+mibDeepTrainingProgressStruct.maxTimeReached = false;
+lossFcn =@(Y, T) deepmib.stardist.lossFunction(Y, T, config);
 try
     [net, info] = trainnet(trainDS, net, lossFcn, TrainingOptions);
 catch err

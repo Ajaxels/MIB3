@@ -140,7 +140,8 @@ else
     end
 
     [imginfo, files] = loader.loadMetadata(filenames, loaderOpts);
-    if ~isKey(imginfo, 'numEntries') || imginfo{"numEntries"} == 0
+    % a loader that failed or was cancelled returns an unconfigured dictionary (isKey throws on it)
+    if ~isConfigured(imginfo) || ~isKey(imginfo, 'numEntries') || imginfo{"numEntries"} == 0
         warning('MibDataset:loadMask', 'Loader returned no entries for: %s', filenames{1});
         return;
     end
@@ -164,30 +165,30 @@ maskW = sz(2);
 maskD = 1;
 if numel(sz) >= 3; maskD = sz(3); end
 
-% H×W mismatch
-if maskH ~= imgH || maskW ~= imgW
+% Size mismatch; unattended (batch / no parent figure) keeps the silent
+% top-left, first-slice crop/pad fallback
+action = 'Crop';
+choice = struct('offsetY', 0, 'offsetX', 0, 'offsetZ', 0);
+if maskH ~= imgH || maskW ~= imgW || maskD ~= imgD
     if ~options.batchModeSwitch && isfield(options, 'ParentFigure') && ~isempty(options.ParentFigure)
-        choice = obj.promptSizeMismatch('Mask', maskH, maskW, imgH, imgW, [], options);
+        choice = obj.promptSizeMismatch('Mask', [maskH maskW maskD], [imgH imgW imgD], [], options);
         if choice.cancelled; return; end
-        if strcmp(choice.action, 'Resize'); action = 'Resize'; else; action = 'Crop'; end
-    else
-        % unattended (batch / no parent figure): keep the previous silent
-        % top-left crop/pad fallback
-        action = 'Crop';
-        choice = struct('offsetY', 0, 'offsetX', 0);
+        if strcmp(choice.action, 'Resize'); action = 'Resize'; end
     end
+end
+if maskH ~= imgH || maskW ~= imgW
     maskArray = core.MibDataset.applySizeMismatch(maskArray, imgH, imgW, action, choice.offsetY, choice.offsetX);
     maskH = imgH;  %#ok<NASGU>
     maskW = imgW;  %#ok<NASGU>
 end
 
-% Depth adjustment
+% Depth adjustment: cut or place at the Z offset
 if maskD > imgD
-    maskArray = maskArray(:, :, 1:imgD);
+    maskArray = maskArray(:, :, choice.offsetZ + (1:imgD));
     maskD = imgD;
 elseif maskD < imgD
     padded = zeros(imgH, imgW, imgD, 'uint8');
-    padded(:, :, 1:maskD) = maskArray;
+    padded(:, :, choice.offsetZ + (1:maskD)) = maskArray;
     maskArray = padded;
     maskD = imgD;  %#ok<NASGU>
 end

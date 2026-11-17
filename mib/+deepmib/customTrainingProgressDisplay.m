@@ -392,6 +392,7 @@ if (isempty(progressStruct.Iteration) || progressStruct.Iteration == 0 || ...
     mibDeepTrainingProgressStruct.Workflow = trainingProgressOptions.Workflow;
     mibDeepTrainingProgressStruct.Architecture = trainingProgressOptions.Architecture;
 else
+    deepmib.checkMaxTimeReached();     % raises mibDeepStopTraining once TrainingOpt.MaxTime has passed
     if mibDeepStopTraining == true % stop training
         % The dltrain-based trainer behind trainSOLOV2 ('2D Instance') only leaves the
         % inner per-epoch loop when asked to stop; its outer "for epoch = 1:MaxEpochs"

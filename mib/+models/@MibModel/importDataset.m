@@ -11,7 +11,14 @@ function importDataset(obj, layerType, BatchOptIn)
 %
 %     - ``'image'`` - replace the active dataset with an image variable from workspace
 %     - ``'mask'`` - import a mask array from workspace into the active dataset
-%     - ``'model'`` - import a model array or struct from workspace into the active dataset
+%     - ``'model'`` - import a model array or struct from workspace into the active dataset.
+%       The struct may carry ``.model``, ``.modelMaterialNames``, ``.modelMaterialColors``,
+%       ``.modelType``, ``.BoundingBox`` and ``.labelText``/``.labelPosition``/``.labelValue``
+%       (the layout written by ``exportDataset('model')``). When the model height, width
+%       or depth differ from the image, ``core.MibDataset.loadModel`` asks how to fit it,
+%       the same dialog as for a model loaded from a file; ``.BoundingBox`` adds the
+%       "Use bounding box" choice that places the model in Y, X and Z by its physical
+%       coordinates (offered when the model and image pixel sizes agree)
 %
 %   - **BatchOptIn** - *(optional)* a structure for batch processing mode; when ``NaN``
 %     returns a structure with default options via "SyncBatch" event:
@@ -115,7 +122,7 @@ switch layerType
         BatchOpt.mibBatchSectionName = 'Ribbon -> Model';
         BatchOpt.mibBatchActionName  = 'Import model from MATLAB';
         BatchOpt.mibBatchTooltip.LayerType     = 'Layer to import from MATLAB workspace';
-        BatchOpt.mibBatchTooltip.ModelVariable = 'Name of the variable in the MATLAB workspace (numeric array or struct with .model, .modelMaterialNames, .modelMaterialColors, .modelType, .labelText fields)';
+        BatchOpt.mibBatchTooltip.ModelVariable = 'Name of the variable in the MATLAB workspace (numeric array or struct with .model, .modelMaterialNames, .modelMaterialColors, .modelType, .BoundingBox, .labelText fields)';
         BatchOpt.mibBatchTooltip.showWaitbar   = 'Show or not the progress bar during execution';
 end
 
@@ -201,8 +208,8 @@ if nargin < 3
             defaultIdx = find(ismember(modelVars, 'O'), 1);
             if isempty(defaultIdx); defaultIdx = 1; end
             
-            dlgOpt.WindowHeight=200;
-            prompts  = {sprintf('Model variable\nnumeric array or struct with:\n\t.model\n\t.modelMaterialNames\n\t.modelMaterialColors\n\t.modelType:')};
+            dlgOpt.WindowHeight=215;
+            prompts  = {sprintf('Model variable\nnumeric array or struct with:\n\t.model\n\t.modelMaterialNames\n\t.modelMaterialColors\n\t.modelType\n\t.BoundingBox:')};
             defAns   = {[modelVarsDetails(:)', {defaultIdx}]};
             [answer, selIndex] = utils.dlgs.inputUniversalDlg(obj.getProgressBarParent(), '', prompts, defAns, ...
                 'Import model from MATLAB', dlgOpt);
@@ -382,6 +389,7 @@ switch BatchOpt.LayerType{1}
                 loadOpts.labelValue    = varIn.labelValue;
             end
             if isfield(varIn, 'modelType'); loadOpts.modelType = varIn.modelType; end
+            if isfield(varIn, 'BoundingBox'); loadOpts.boundingBox = varIn.BoundingBox; end
         else
             modelArray = varIn;
         end
@@ -402,6 +410,7 @@ switch BatchOpt.LayerType{1}
         dsOpts.ParentFigure = obj.mibGUI;
         if isfield(loadOpts, 'modelMaterialNames');  dsOpts.modelMaterialNames  = loadOpts.modelMaterialNames;  end
         if isfield(loadOpts, 'modelMaterialColors'); dsOpts.modelMaterialColors = loadOpts.modelMaterialColors; end
+        if isfield(loadOpts, 'boundingBox');         dsOpts.boundingBox         = loadOpts.boundingBox;         end
         if isfield(loadOpts, 'labelText')
             dsOpts.labelText     = loadOpts.labelText;
             dsOpts.labelPosition = loadOpts.labelPosition;

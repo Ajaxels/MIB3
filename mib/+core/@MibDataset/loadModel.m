@@ -30,6 +30,16 @@ function result = loadModel(obj, filenames, options)
 %     - ``.modelMaterialNames`` - cell array of names for the import path
 %     - ``.modelMaterialColors`` - Nx3 RGB matrix for the import path
 %     - ``.modelType`` - numeric model type (63/255/16383/65535/4294967295)
+%     - ``.boundingBox`` - [1x6] ``[xmin xmax ymin ymax zmin zmax]`` of the
+%       imported model (import path only; the file path reads it from the file).
+%       On a size mismatch it enables the "Use bounding box" choice of
+%       ``promptSizeMismatch``, which places the model in Y, X and Z by the
+%       difference between the starts of the two boxes; offered only when the
+%       model's pixel size (box span over its dimensions) matches the image
+%       within 1%, since the placement does not resample. It is copied to the dataset only when the model
+%       matched the image in height, width and depth: after a crop, resize or
+%       sub-stack insertion it describes a different grid, and
+%       ``updateBoundingBox`` would rescale the image pixel size to it
 %     - ``.labelText`` - annotation text cell array (or [])
 %     - ``.labelPosition`` - annotation positions (or [])
 %     - ``.labelValue`` - annotation values (or [])
@@ -112,6 +122,9 @@ if ~isempty(options.model)
     if ~isempty(options.modelType)
         modelType = options.modelType;
     end
+    if isfield(options, 'boundingBox') && numel(options.boundingBox) == 6
+        boundingBox = options.boundingBox;
+    end
     labelsVariable = 'mibModel';
 
 else
@@ -145,7 +158,9 @@ else
     % Load metadata
     [imginfo, files] = loader.loadMetadata(filenames, loaderOpts);
 
-    % Check success
+    % Check success; a loader that failed or was cancelled returns an empty, unconfigured
+    % dictionary (isKey throws on it) after reporting the problem itself
+    if ~isConfigured(imginfo); return; end
     if ~isKey(imginfo, 'numEntries') || imginfo{"numEntries"} == 0
         parentFig = [];
         if isfield(loaderOpts, 'ParentFigure'); parentFig = loaderOpts.ParentFigure; end
@@ -260,50 +275,69 @@ modelD = 1;
 modelT = 1;
 if numel(sz) >= 3; modelD = sz(3); end
 if numel(sz) >= 5; modelT = sz(5); end
+% the model's own bounding box describes the dataset only when nothing below
+% has to crop, resize or pad the model
+modelMatchesImage = modelH == imgH && modelW == imgW && modelD == imgD;
 
-% Check H/W mismatch
-if modelH ~= imgH || modelW ~= imgW
-    if ~options.batchModeSwitch && ~isempty(options.ParentFigure)
-        choice = obj.promptSizeMismatch('Model', modelH, modelW, imgH, imgW, boundingBox, options);
-        if choice.cancelled; return; end
-        switch choice.action
-            case 'Use bounding box'
-                % offset comes from the model's own BoundingBox rather than user
-                % entry - both bounding boxes are normalized to micrometres by
-                % MibImage.updateBoundingBox, which is how the current image's
-                % own boundingBox was set in the first place
-                shiftY = (boundingBox(3) - obj.image.boundingBox(3)) / obj.image.pixSize.y;
-                shiftX = (boundingBox(1) - obj.image.boundingBox(1)) / obj.image.pixSize.x;
-                choice.offsetY = min(round(abs(shiftY)), abs(imgH - modelH));
-                choice.offsetX = min(round(abs(shiftX)), abs(imgW - modelW));
-                action = 'Crop';
-            case 'Crop / Place'
-                action = 'Crop';
-            otherwise
-                action = 'Resize';
-        end
+% Resolve a size mismatch. offsetY/X/Z follow core.MibDataset.applySizeMismatch:
+% where the kept part starts in the model when the model is bigger on that
+% axis, where the model starts in the image when it is smaller.
+% Without a dialog the model goes to the top-left corner, and a thinner model
+% to the current slice (a thicker one is cut from its first slice).
+offsetY = 0;
+offsetX = 0;
+offsetZ = 0;
+if modelD < imgD; offsetZ = obj.slices{3}(1) - 1; end
+xyAction = 'Crop';
+if ~modelMatchesImage && ~options.batchModeSwitch && ~isempty(options.ParentFigure)
+    % "Use bounding box" maps the model by coordinates on the image grid, which
+    % is only right when both share the pixel size; otherwise it is not offered
+    if isempty(boundingBox) || ~pixelSizeMatches(boundingBox, [modelH modelW modelD], obj.image.pixSize)
+        promptBoundingBox = [];
     else
-        % unattended (batch / no parent figure): keep the previous silent
-        % top-left crop/pad fallback
-        action = 'Crop';
-        choice = struct('offsetY', 0, 'offsetX', 0);
+        promptBoundingBox = boundingBox;
     end
-    rawModel = core.MibDataset.applySizeMismatch(rawModel, imgH, imgW, action, choice.offsetY, choice.offsetX);
+    promptOptions = options;
+    promptOptions.defaultOffsetZ = offsetZ;
+    choice = obj.promptSizeMismatch('Model', [modelH modelW modelD], [imgH imgW imgD], promptBoundingBox, promptOptions);
+    if choice.cancelled; return; end
+    switch choice.action
+        case 'Use bounding box'
+            % offsets come from the model's own BoundingBox rather than user
+            % entry - both bounding boxes are normalized to micrometres by
+            % MibImage.updateBoundingBox, which is how the current image's
+            % own boundingBox was set in the first place
+            imageBoundingBox = obj.image.boundingBox;
+            pixSize = obj.image.pixSize;
+            offsetY = boundingBoxOffset(boundingBox(3), imageBoundingBox(3), pixSize.y, modelH, imgH);
+            offsetX = boundingBoxOffset(boundingBox(1), imageBoundingBox(1), pixSize.x, modelW, imgW);
+            offsetZ = boundingBoxOffset(boundingBox(5), imageBoundingBox(5), pixSize.z, modelD, imgD);
+        case 'Crop / Place'
+            [offsetY, offsetX, offsetZ] = deal(choice.offsetY, choice.offsetX, choice.offsetZ);
+        otherwise   % 'Resize' scales height and width only; depth still uses the Z offset
+            xyAction = 'Resize';
+            offsetZ = choice.offsetZ;
+    end
+end
+
+if modelH ~= imgH || modelW ~= imgW
+    rawModel = core.MibDataset.applySizeMismatch(rawModel, imgH, imgW, xyAction, offsetY, offsetX);
     modelH = imgH;
     modelW = imgW;
 end
 
-% Adjust depth: crop if too many slices, insert at current slice if too few
+% Adjust depth: cut imgD slices from offsetZ when too many, insert at offsetZ
+% when too few
 isPartialImport = false;
 insertStart     = 1;
 insertEnd       = imgD;
 if modelD > imgD
-    rawModel = rawModel(:, :, 1:imgD, :, :);
+    rawModel = rawModel(:, :, offsetZ + (1:imgD), :, :);
     modelD = imgD;
 elseif modelD < imgD
-    % Place the sub-stack starting at the currently viewed slice
+    % Place the sub-stack at the Z offset
     isPartialImport = true;
-    insertStart  = obj.slices{3}(1);
+    insertStart  = offsetZ + 1;
     insertEnd    = min(insertStart + modelD - 1, imgD);
     insertCount  = insertEnd - insertStart + 1;
     padded = zeros(modelH, modelW, imgD, 1, modelT, class(rawModel));
@@ -454,8 +488,9 @@ if ~isempty(filenames) && iscell(filenames) && ~isempty(filenames{1})
     obj.labels.filename = filenames{1};
 end
 
-% Apply bounding box if present
-if ~isempty(boundingBox) && numel(boundingBox) == 6
+% Apply bounding box if present; skipped for an adjusted model - its box spans
+% another grid and updateBoundingBox would rescale the image pixel size to it
+if modelMatchesImage && ~isempty(boundingBox) && numel(boundingBox) == 6
     obj.updateBoundingBox(boundingBox);
 end
 
@@ -479,4 +514,40 @@ result.materialNames  = materialNames;
 result.materialColors = materialColors;
 result.modelType      = modelType;
 result.labelsVariable = labelsVariable;
+end
+
+% =========================================================================
+function offset = boundingBoxOffset(modelStart, imageStart, pixelSize, modelSize, imageSize)
+% BOUNDINGBOXOFFSET - Offset on one axis from the starts of two bounding boxes.
+%
+% The signed shift is the model pixel (0-based) that lies under the first
+% image pixel. A bigger model is cut from there, a smaller one is placed at
+% minus that shift. Clamped to [0, abs(imageSize - modelSize)] as
+% core.MibDataset.applySizeMismatch requires; a model only partly overlapping
+% the image therefore ends at the nearest edge. Equal sizes give 0.
+shift = round((imageStart - modelStart) / pixelSize);
+if modelSize < imageSize; shift = -shift; end
+offset = min(max(shift, 0), abs(imageSize - modelSize));
+end
+
+% =========================================================================
+function matches = pixelSizeMatches(boundingBox, modelSize, pixSize)
+% PIXELSIZEMATCHES - True when the model box spans its pixels at the image pixel size.
+%
+% A bounding box runs from the first to the last pixel centre, as in
+% core.MibImage.updateBoundingBox, so a model of n pixels spans (n - 1)
+% pixel sizes. Only axes with more than one pixel can be checked; 1% allows
+% for the rounding of the box written to file.
+tolerance = 0.01;
+imagePixelSizes = [pixSize.y, pixSize.x, pixSize.z];
+modelSpans = [boundingBox(4) - boundingBox(3), boundingBox(2) - boundingBox(1), boundingBox(6) - boundingBox(5)];
+matches = true;
+for axisIndex = 1:3
+    if modelSize(axisIndex) > 1
+        modelPixelSize = modelSpans(axisIndex) / (modelSize(axisIndex) - 1);
+        if abs(modelPixelSize - imagePixelSizes(axisIndex)) > tolerance * imagePixelSizes(axisIndex)
+            matches = false;
+        end
+    end
+end
 end

@@ -776,6 +776,7 @@ classdef ChunkingImport < handle
                         'Value', 0, 'Cancelable', 'on');
                 end
 
+                fuseDespitePixelSize = false;   % set by "Fuse the other files without asking"
                 for fileId = 1:numberOfFiles
                     if obj.BatchOpt.showWaitbar
                         waitbar.Value = (fileId-1) / numberOfFiles;
@@ -817,13 +818,35 @@ classdef ChunkingImport < handle
                         end
 
                         tilePix = imginfo{'pixSize'};
-                        if isfield(tilePix, 'x') && ...
+                        if isfield(tilePix, 'x') && ~fuseDespitePixelSize && ...
                                 (abs(tilePix.x - pixSize.x) > 1e-6 || abs(tilePix.y - pixSize.y) > 1e-6)
-                            utils.dlgs.showErrorDialog(obj.mibModel.getProgressBarParent(), ...
-                                sprintf('Pixel size mismatch!\n\nFile: %s', filenames{fileId}), ...
-                                'Pixel sizes mismatch!');
-                            if obj.BatchOpt.showWaitbar; delete(waitbar); end
-                            return;
+                            % a pixel size that differs only by rounding (e.g. from a bounding box
+                            % saved with few digits) is common: show both and let the user fuse anyway;
+                            % the file is placed with the pixel size of the open dataset
+                            [~, shortName, ext] = fileparts(filenames{fileId});
+                            mismatchText = sprintf(['Pixel size mismatch!\n\nFile: %s\n' ...
+                                'File:      x %.8g, y %.8g, z %.8g %s\nDataset: x %.8g, y %.8g, z %.8g %s\n' ...
+                                'Difference: x %.3g, y %.3g %s\n\nFuse it with the pixel size of the dataset?'], ...
+                                [shortName ext], tilePix.x, tilePix.y, tilePix.z, tilePix.units, ...
+                                pixSize.x, pixSize.y, pixSize.z, pixSize.units, ...
+                                tilePix.x - pixSize.x, tilePix.y - pixSize.y, pixSize.units);
+                            if obj.BatchOpt.showWaitbar
+                                dlgOpt = struct('Icon', 'puffin_warning', 'WindowWidth', 520, 'WindowHeight', 260, ...
+                                    'DoNotShowAgain', numberOfFiles > fileId, ...
+                                    'DoNotShowAgainText', 'Fuse the other files without asking');
+                                [answer, fuseAll] = utils.dlgs.inputQuestDlg(obj.mibModel.getProgressBarParent(), ...
+                                    mismatchText, 'Pixel sizes mismatch', 'Fuse', 'Cancel', 'Cancel', dlgOpt);
+                                if ~strcmp(answer, 'Fuse')
+                                    delete(waitbar);
+                                    return;
+                                end
+                                fuseDespitePixelSize = fuseAll;
+                            else
+                                % without a progress window (batch) there is nobody to ask: stop as before
+                                utils.dlgs.showErrorDialog(obj.mibModel.getProgressBarParent(), mismatchText, ...
+                                    'Pixel sizes mismatch!');
+                                return;
+                            end
                         end
 
                         % round() tolerates floating-point rounding errors (~0.001) that

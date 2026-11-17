@@ -16,6 +16,7 @@ function stopTrainingSwitch = stopTrainingWithoutPlots(progressStruct)
 global mibDeepStopTraining
 global mibDeepTrainingProgressStruct
 
+deepmib.checkMaxTimeReached();     % raises mibDeepStopTraining once TrainingOpt.MaxTime has passed
 stopTrainingSwitch =  mibDeepStopTraining;
 
 % The dltrain-based trainer behind trainSOLOV2 ('2D Instance') only leaves the inner

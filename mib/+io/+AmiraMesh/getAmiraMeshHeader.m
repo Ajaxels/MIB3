@@ -233,9 +233,11 @@ for p=1:numel(par)
         % get material names and colors
         if strcmp(par(p).Name, 'Materials')
             matName = par(p).Value{1};
+            % the first brace opens the material group; Amira 2024 adds a line
+            % UUID "{...}" to each material, so there may be more of them
             pos1 = strfind(matName, '{');
             if ~isempty(pos1)
-                matName = matName(1:pos1-2);
+                matName = strtrim(matName(1:pos1(1)-1));
                 if ~strcmp(matName, 'Exterior')
                     materialNames = [materialNames; {matName}];
                     % Extract Color field: "Color R G B [A]"

@@ -150,6 +150,7 @@ The **Import** dropdown contains:
 
 Imports a model from the main MATLAB workspace.
 Provide a variable name with a matrix matching the dataset dimensions `[height, width, depth]` of `uint8` class, or a structure with the fields below.
+When the model size differs from the dataset, MIB asks how to fit it, the same way as when loading a model from a file.
 
 <div class="clear-float"></div>
 
@@ -158,6 +159,7 @@ Provide a variable name with a matrix matching the dataset dimensions `[height, 
 - **.model**: Matrix `[height, width, depth, time]` of `uint8` class.
 - **.modelMaterialNames** *(optional)*: Cell array with material names.
 - **.modelMaterialColors** *(optional)*: Matrix with colors (0-1) `[materialIndex, R G B]`.
+- **.BoundingBox** *(optional)*: Bounding box of the model `[xmin xmax ymin ymax zmin zmax]`; places the model by its coordinates when its size differs from the dataset.
 - **.labelText** *(optional)*: Cell array with annotation labels.
 - **.labelPosition** *(optional)*: Matrix with annotation positions `[annotationIndex, x y z]`.
 

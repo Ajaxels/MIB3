@@ -316,6 +316,8 @@ Training patches are re-sampled every epoch either way - this seed only fixes th
 
 - <span class="widget widget-button">Training</span> sets multiple parameters 
 (see [trainingOptions](https://se.mathworks.com/help/deeplearning/ref/trainingoptions.html)). 
+*MaxTime* limits the training time in hours (`0.5` for 30 minutes); training stops at *MaxTime* or *MaxEpochs*,
+whichever comes first, and the network is kept as after pressing *Stop training*. `0` switches the limit off.
 
     !!! tip
         set *Plots* to "none" for up to 25% faster training

@@ -24,7 +24,7 @@ function loadModel(obj, model, BatchOptIn)
 %
 %     - ``numeric`` - raw [H W D] or [H W D 1 T] label array
 %     - ``struct`` - may contain: ``.modelMaterialNames``, ``.modelMaterialColors``,
-%       ``.modelType``, ``.modelVariable``, ``.labelText``, ``.labelPosition``,
+%       ``.modelType``, ``.BoundingBox``, ``.modelVariable``, ``.labelText``, ``.labelPosition``,
 %       ``.labelValue``, and a field whose name matches ``.modelVariable``
 %       (or any field holding the array)
 %
@@ -429,6 +429,9 @@ if ~isempty(model)
         end
         if isfield(model, 'modelType')
             dsOpts.modelType = model.modelType;
+        end
+        if isfield(model, 'BoundingBox')
+            dsOpts.boundingBox = model.BoundingBox;
         end
         if isfield(model, 'labelText')
             dsOpts.labelText = model.labelText;

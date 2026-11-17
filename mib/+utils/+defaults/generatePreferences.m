@@ -505,6 +505,7 @@ Prefs.Deep.RelativePaths = false;
 
 Prefs.Deep.TrainingOpt.solverName = 'adam';
 Prefs.Deep.TrainingOpt.MaxEpochs = 500;
+Prefs.Deep.TrainingOpt.MaxTime = 0;     % new in MIB3, maximal training time in hours, 0 - not used
 Prefs.Deep.TrainingOpt.Shuffle = 'every-epoch';
 Prefs.Deep.TrainingOpt.InitialLearnRate = 0.001;
 Prefs.Deep.TrainingOpt.LearnRateSchedule = 'piecewise';

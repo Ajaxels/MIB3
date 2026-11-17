@@ -307,6 +307,6 @@ classdef MibDataset < matlab.mixin.Copyable
     end
 
     methods (Static, Access = private)
-        choice = promptSizeMismatch(itemLabel, curH, curW, imgH, imgW, boundingBox, options)   % ask the user how to resolve a Model/Mask size mismatch (crop/place, resize, or use bounding box); returns struct('action','offsetY','offsetX','cancelled')
+        choice = promptSizeMismatch(itemLabel, itemSize, imageSize, boundingBox, options)   % ask the user how to resolve a Model/Mask size mismatch in [H W D] (crop/place, resize, or use bounding box); returns struct('action','offsetY','offsetX','offsetZ','cancelled')
     end
 end

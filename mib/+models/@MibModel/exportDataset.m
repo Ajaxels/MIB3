@@ -11,7 +11,11 @@ function exportDataset(obj, layerType, BatchOptIn)
 %
 %     - ``'image'`` - export image data with metadata (and colormap if indexed)
 %     - ``'mask'`` - export mask layer as a uint8 array
-%     - ``'model'`` - export model (labels) as a struct with material info
+%     - ``'model'`` - export model (labels) as a struct with fields ``.model``,
+%       ``.modelMaterialNames``, ``.modelMaterialColors``, ``.modelType``,
+%       ``.BoundingBox`` (the dataset bounding box ``[xmin xmax ymin ymax zmin zmax]``,
+%       same field name as in the *.model file) and, when annotations exist,
+%       ``.labelText``, ``.labelValue``, ``.labelPosition``
 %
 %   - **BatchOptIn** - *(optional)* a structure for batch processing mode; when ``NaN``
 %     returns a structure with default options via "SyncBatch" event:
@@ -251,6 +255,10 @@ switch BatchOpt.LayerType{1}
         outputStruct.modelMaterialNames  = obj.I{BatchOpt.id}.labels.materialNames;
         outputStruct.modelMaterialColors = obj.I{BatchOpt.id}.labels.materialColors;
         outputStruct.modelType           = obj.I{BatchOpt.id}.labels.maxMaterials;
+        % same field name as in the *.model file (io.savers.MatlabSaver), so
+        % importDataset can place the model when it is imported into a
+        % dataset of a different size
+        outputStruct.BoundingBox         = obj.I{BatchOpt.id}.image.boundingBox;
 
         if ~isnan(materialIndex)
             materialOutputIndex = str2double(BatchOpt.MaterialOutputIndex);

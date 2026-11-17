@@ -680,6 +680,12 @@ if twoPhaseSchedule
         frozenPhaseEpochs, obj.TrainingOpt.InitialLearnRate);
 end
 
+% MaxTime limit, enforced from the OutputFcn by deepmib.checkMaxTimeReached. Started once
+% here, so for the two-phase schedule the limit covers the frozen and the trainable phase
+% together; the trainable phase below keeps this timer running.
+mibDeepTrainingProgressStruct.maxTimeSeconds = obj.TrainingOpt.MaxTime * 3600;
+mibDeepTrainingProgressStruct.maxTimeTimer = tic;
+mibDeepTrainingProgressStruct.maxTimeReached = false;
 try
     mibDeepStopTraining = false;
 
@@ -820,7 +826,11 @@ if twoPhaseSchedule && ~emergencyBrakeUsed
         utils.dlgs.inputUniversalDlg(obj.view.gui, collapseMessage, {}, {}, ...
             'Frozen phase collapsed', collapseDlgOpt);
     elseif userStopped
-        fprintf('DeepMIB: training was stopped during the frozen phase, the trainable phase is skipped\n');
+        if isfield(mibDeepTrainingProgressStruct, 'maxTimeReached') && mibDeepTrainingProgressStruct.maxTimeReached
+            fprintf('DeepMIB: MaxTime was reached during the frozen phase, the trainable phase is skipped\n');
+        else
+            fprintf('DeepMIB: training was stopped during the frozen phase, the trainable phase is skipped\n');
+        end
     else
         % Phase 1 is over, but the window is still on screen and will stay there while the
         % 170+ MB frozen-phase checkpoint is written and the snapshot is captured - long

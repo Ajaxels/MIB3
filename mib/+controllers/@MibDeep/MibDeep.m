@@ -186,6 +186,7 @@ classdef MibDeep < handle
         % from obj.mibModel.preferences.Deep.TrainingOpt, see getDefaultParameters.m
         % .solverName = 'adam';
         % .MaxEpochs = 50;
+        % .MaxTime = 0;     % maximal training time in hours, 0 - not used
         % .Shuffle = 'once';
         % .InitialLearnRate = 0.0005;
         % .LearnRateSchedule = 'piecewise';
@@ -656,6 +657,9 @@ classdef MibDeep < handle
             if ~isfield(obj.TrainingOpt, 'GradientThreshold')      % add new fields in MIB 2.85
                 obj.TrainingOpt.GradientThreshold = Inf;            % Inf = no clipping (default)
                 obj.TrainingOpt.GradientThresholdMethod = 'l2norm'; % recommended for Dice loss
+            end
+            if ~isfield(obj.TrainingOpt, 'MaxTime')    % add new field in MIB 3
+                obj.TrainingOpt.MaxTime = 0;    % hours, 0 = no time limit
             end
             % dynamic masking and score export properties
             obj.DynamicMaskOpt = obj.mibModel.preferences.Deep.DynamicMaskOpt;

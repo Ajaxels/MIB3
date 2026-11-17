@@ -18,7 +18,8 @@ function gui_WindowButtonUpFcn(obj, brush_switch)
 %      to selection layer, applying fill-holes, material/mask restriction, and add/subtract mode
 %   2. Clears brush state and updates ROI screen positions
 %   3. Restores all figure callbacks and pointer disabled during panning or brush operation,
-%      then triggers full image refresh
+%      then triggers full image refresh; after a pan, notifies ``AxesLimitsChanged`` (the
+%      pan moves the axes limits without the event during the drag)
 %
 % Input Arguments:
 %   - **brush_switch** *(optional)* - [char] brush mode: when ``'subtract'``, brush stroke is removed from
@@ -120,6 +121,9 @@ obj.brushPrevXY = [];
 % ---- 3. Restore figure callbacks and pointer ----
 hFig = obj.UIFigure;
 
+% only a pan sets this pointer (gui_WindowButtonDownFcn): its release notifies AxesLimitsChanged below
+wasPanning = strcmp(hFig.Pointer, 'fleur');
+
 % Restore default crosshair pointer
 hFig.Pointer = 'crosshair';
 
@@ -161,6 +165,8 @@ end
 % Refresh the full image display, explicitly specifying this document's set
 % so the correct panel is rendered regardless of mibModel.Sets.selectedSet state.
 obj.mibController.showImage(true, obj.setOfDatasetsIndex);
+% the view moved: the listeners of the axes limits (zoom and pan) learn it once, at the release
+if wasPanning; notify(obj.mibModel, 'AxesLimitsChanged'); end
 
 % Update the dashed brush cursor outline for the next stroke
 % Pass [] so the position is read from CurrentPoint (not treated as xy)

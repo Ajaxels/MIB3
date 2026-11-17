@@ -360,6 +360,7 @@ if progressStruct.Iteration == 0
     mibDeepTrainingProgressStruct.Workflow = trainingProgressOptions.Workflow;
     mibDeepTrainingProgressStruct.Architecture = trainingProgressOptions.Architecture;
 else
+    deepmib.checkMaxTimeReached();     % raises mibDeepStopTraining once TrainingOpt.MaxTime has passed
     if mibDeepStopTraining == true % stop training
         stopState = true;
         return;
