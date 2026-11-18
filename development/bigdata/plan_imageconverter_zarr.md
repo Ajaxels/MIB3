@@ -13,6 +13,42 @@ loader's metadata), holds one volume at a time, and never uses bands for volumes
 that file: level 0 identical to the source, 13 s. The python pipeline refuses volumes. Tests in
 `tests/io/ImageDatastoreSliceProviderTest.m`.
 
+**2026-11-18: chunk timing window** (`ZarrChunkTimer.m` in the plugin folder, opened by
+`ImageConverter.suggestZarrChunks`). Writes one test store per candidate chunk/shard into a temporary
+folder on the chosen drive, reads XY, ZX and ZY views of the size of MIB's image view through
+`Zarr3VirtualLoader.readRegion` + `io.zarr.ChunkCache`, scores by a browse model (jump + 20 scrolled
+slices, weighted by the XY share) times `(files / min files) ^ filesWeight`. Model and limits in the
+class help; tests `tests/io/ZarrChunkTimerTest.m`. Feasibility run that motivated it, local SSD,
+1024 x 2048 x 256 uint8, view 1000 x 1800, cache 512 MB (reads right after writing, so OS-cached):
+
+| chunk [x y z], shard factors | write s | files | XY first | XY step | ZX first | ZX step | ZY first |
+|---|---|---|---|---|---|---|---|
+| 256x256x16 | 1.7 | 513 | 0.22 | 0.009 | 0.36 | 0.011 | 0.16 |
+| 256x256x16, 4x4x1 | 1.7 | 33 | 0.09 | 0.008 | 0.45 | 0.009 | 0.19 |
+| 512x512x1, 4x4x1 | 9.1 | 257 | 0.02 | 0.015 | 1.85 | 0.053 | 1.14 |
+| 256x256x1, 8x8x16 | 3.3 | 17 | 0.02 | 0.021 | 0.98 | 0.099 | 0.49 |
+| 128x128x128 | 1.4 | 257 | 0.76 | 0.009 | 0.16 | 0.006 | 0.10 |
+| 128x128x128, 4x4x2 | 1.3 | 9 | 0.83 | 0.008 | 0.16 | 0.005 | 0.10 |
+| 64x64x64, 8x8x4 | 1.2 | 9 | 0.50 | 0.028 | 0.07 | 0.007 | 0.05 |
+| 256x256x64, 2x2x1 | 1.3 | 33 | 0.30 | 0.004 | 0.34 | 0.005 | 0.20 |
+
+A full window run with synthetic 2000 x 2400 x 600 uint8 on the same disk: 2D list 120 s (chunks one
+slice deep write at 30-46 MB/s), hybrid 48 s, 3D 38 s. Winners there: 256x256x16 / 4x4x1 (2D: thin
+chunks lose on scrolling, every slice is a cold read), 256x256x32 / 4x4x1 (hybrid), 128x128x32 / 8x8x1
+(3D). Found on the way: `io.zarr.ChunkCache.clear` resets the budget to the 512 MB default, dropping
+the `IO.Zarr.ChunkCacheMB` preference; the timer puts it back, other callers of `clear` do not.
+
+**Heat map run** (same day, `timeGrid` / `gridCandidates`): power-of-2 grid X = Y 16-1024, Z 1-256,
+shard options none / ~64 MB / ~512 MB (one chunk deep), filtered by chunk size 128 KB-16 MB, the
+memory of the conversion (`2.5 z + 2` slices per process, 80% of RAM), the XY view fitting the chunk
+cache, and sizes beyond the dataset. Counts: the 10936 x 13424 x 1974 uint8 case with 6 workers gives
+60 settings on 128 GB (Z <= 45 by memory) and 72 on 256 GB; synthetic 2000 x 2400 x 600 gives 84.
+That synthetic run, view 700 x 500 (test store 0.19 GB), local SSD: 138 s, about 9 s per GB of test
+store per setting (default of the estimate set to 10). Suggested 128x128x16 / 32x32x1 at XY share 80;
+neighbouring cells differ by 10-20%, hence the neighbourhood rating in `suggestFromGrid`. Rejected:
+a 3D surface plot (surfaces of the shard options hide each other) and a shard factor axis (shards
+change file count and memory, barely the local read times).
+
 ### Result, measured end to end
 
 48 LZW TIFFs of 4096 x 4096 uint8 (805 MB), native v3, chunk `256 256 16`, zstd level 1, 10-core

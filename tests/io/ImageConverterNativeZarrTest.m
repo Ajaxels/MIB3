@@ -282,6 +282,49 @@ classdef ImageConverterNativeZarrTest < matlab.unittest.TestCase
             testCase.verifyEqual(labels.materialNames, {'Material 1'; 'Material 2'; 'Material 3'});
         end
 
+        function nativeZarr3_mibModelFile_convertedAsLabelsWithItsMaterials(testCase)
+            % a .model file is read by the model loader and converted as labels even
+            % when the type says image, with the material names and colours it stores
+            inDir  = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            outDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            labels = zeros(32, 24, 6, 'uint8');
+            labels(5:20, 4:15, 2:5) = 2;
+            labels(22:30, 16:22, 1:3) = 1;
+            materialNames = {'Mitochondria'; 'ER'};
+            materialColors = [1 0 0; 0 0.5 1];
+            modelFile = ImageConverterNativeZarrTest.writeModelFile(inDir.Folder, labels, materialNames, materialColors, ...
+                [1, 1 + 23*0.01, 2, 2 + 31*0.01, 3, 3 + 5*0.06]);
+            ds = ImageConverterNativeZarrTest.modelDatastore(inDir.Folder);
+
+            BatchOpt = struct();
+            BatchOpt.OutputDirectory        = fullfile(outDir.Folder, 'out');
+            BatchOpt.ZarrImageType          = {'image'};
+            BatchOpt.ZarrChunkSizes         = '8, 8, 2, 1, 1';
+            BatchOpt.ZarrUseSharding        = false;
+            BatchOpt.ZarrShardXFactorsXYZ   = '2, 2, 1, 1, 1';
+            BatchOpt.ZarrCompression        = {'zstd'};
+            BatchOpt.ZarrVoxelSizeXYZ       = '0.01, 0.01, 0.06';   % Z halved at the coarser levels
+            BatchOpt.ZarrUnits              = {'micrometers'};
+            BatchOpt.ZarrBBShiftsXYZ        = '0, 0, 0';
+            BatchOpt.ZarrDownsampleLimitXYZ = '4, 4, 2';
+
+            fnOut = ImageConverter.convertToZarr3Native(ds, BatchOpt, struct());
+
+            group = io.zarr.Group(fnOut);
+            testCase.verifyEqual(group.openArray('0').read(), labels, 'level 0 must hold the model');
+            attrs = group.getAttributes();
+            testCase.assertTrue(isfield(attrs, 'mibMaterials'), sprintf('no mibMaterials in %s', modelFile));
+            testCase.verifyEqual(attrs.mibMaterials.materialNames, materialNames);
+            testCase.verifyEqual(attrs.mibMaterials.materialColors, materialColors, 'AbsTol', 1e-9);
+            numberOfLevels = numel(attrs.multiscales.datasets);
+            testCase.assertGreaterThan(numberOfLevels, 2, 'the fixture must give a Z-halved level');
+            for level = 1:numberOfLevels - 1
+                values = unique(group.openArray(num2str(level)).read());
+                testCase.verifyTrue(all(ismember(values, uint8([0 1 2]))), ...
+                    sprintf('level %d: labels were downsampled as an image', level));
+            end
+        end
+
         function nativeZarr2_keepsBoundingBox(testCase)
             % Regression: the bounding box was written with patchMetadata, which read
             % zarr.json and so returned silently on a v2 store - a Zarr v2 conversion
@@ -429,5 +472,43 @@ classdef ImageConverterNativeZarrTest < matlab.unittest.TestCase
             testCase.verifyEqual(geometry.originXYZ, [4.61, 6.95, 4.47], 'AbsTol', 1e-5);
         end
 
+        function readSourceGeometry_mibModel(testCase)
+            % a .model volume: the voxel from its box and label size; it has no units
+            inDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            boundingBox = [4.61, 4.61 + 11*0.014, 6.95, 6.95 + 15*0.015, 4.47, 4.47 + 5*0.03];
+            modelFile = ImageConverterNativeZarrTest.writeModelFile(inDir.Folder, zeros(16, 12, 6, 'uint8'), ...
+                {'Material 1'}, [1 0 0], boundingBox);
+
+            geometry = ImageConverter.readSourceGeometry({modelFile});
+
+            testCase.verifyEqual(geometry.voxelSizeXYZ, [0.014, 0.015, 0.03], 'AbsTol', 1e-9);
+            testCase.verifyEqual(geometry.originXYZ, [4.61, 6.95, 4.47], 'AbsTol', 1e-9);
+            testCase.verifyEmpty(geometry.units);
+        end
+
+    end
+
+    methods (Static, Access = private)
+        function modelFile = writeModelFile(folder, labels, materialNames, materialColors, boundingBox)
+            % a .model file as io.savers.MatlabSaver.saveModel3D writes it
+            vars = struct();
+            vars.mibModel = labels;
+            vars.modelMaterialNames = materialNames;
+            vars.modelMaterialColors = materialColors;
+            vars.BoundingBox = boundingBox;
+            vars.modelVariable = 'mibModel';
+            vars.modelType = 255;
+            modelFile = fullfile(folder, 'Labels_test.model');
+            save(modelFile, '-struct', 'vars', '-mat', '-v7.3');
+        end
+
+        function ds = modelDatastore(folder)
+            % the datastore ImageConverter.createImageDatastore builds for the 'model' extension
+            loaderOptions = struct('waitbar', false, 'silentMode', true, 'verbose', false);
+            registry = io.ExtensionRegistryLoad();
+            loader = io.LoaderFactory.create(registry.resolveLoader('file.model', 'Model', 'Default'), loaderOptions);
+            ds = imageDatastore(folder, 'FileExtensions', '.model', ...
+                'ReadFcn', @(filename) ImageConverter.readWithLoader(loader, filename, loaderOptions));
+        end
     end
 end

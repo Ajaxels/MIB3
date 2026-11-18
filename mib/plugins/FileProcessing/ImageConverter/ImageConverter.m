@@ -45,6 +45,8 @@ classdef ImageConverter < handle
         % .ParameterNumeric{1} - [numeric editbox], cell with a number 
         % .ParameterNumeric{2} - [optional], vector with limits [min, max]
         % .ParameterNumeric{3} - [optional], string 'on' - to round the value, 'off' to do not round the value
+        zarrChunkTimer = []
+        % ZarrChunkTimer window opened by suggestZarrChunks, or []
     end
     
     events
@@ -685,6 +687,28 @@ classdef ImageConverter < handle
                 'units', firstFile.pixSize.units);
         end
 
+        function compressors = zarrCompressors(BatchOpt)
+            % ZARRCOMPRESSORS - The Zarr codec of ``BatchOpt.ZarrCompression`` and ``ZarrCompressionLevel``.
+            %
+            % zstd, gzip or none; 'blosc' is the name of zstd before 2026.10, kept for
+            % recorded protocols. Level 0 (or an absent ``ZarrCompressionLevel``) is
+            % the codec default (zstd 3, gzip 5), as in ``Zarr3Saver.optionsDialog``.
+            %
+            % Output Arguments:
+            %   - **compressors** - the codec name, or ``struct('name', codec,
+            %     'configuration', struct('level', level))`` for ``Zarr3Saver``
+            switch lower(BatchOpt.ZarrCompression{1})
+                case {'zstd', 'blosc'}; compressors = 'zstd';
+                case 'gzip';            compressors = 'gzip';
+                otherwise;              compressors = 'none';
+            end
+            if ~strcmp(compressors, 'none') && isfield(BatchOpt, 'ZarrCompressionLevel') && ...
+                    ~isempty(BatchOpt.ZarrCompressionLevel) && BatchOpt.ZarrCompressionLevel{1} > 0
+                compressors = struct('name', compressors, 'configuration', ...
+                    struct('level', BatchOpt.ZarrCompressionLevel{1}));
+            end
+        end
+
         function proceed = confirmZarrMemory(parentFig, requiredBytes, details)
             % CONFIRMZARRMEMORY - Check the estimated peak memory of a Zarr conversion before it starts.
             %
@@ -775,6 +799,12 @@ classdef ImageConverter < handle
             % label value, found while streaming (``MaterialNamesFromData``) rather
             % than in a separate pass over every file.
             %
+            % MIB models (every file ``.model``) are converted as labels whatever
+            % ``ZarrImageType`` says, with the material names and colours of the
+            % first file (``modelMaterialNames``, ``modelMaterialColors``, read
+            % without its label array). A 2-D sequence of models whose files list
+            % different materials therefore keeps the list of its first slice.
+            %
             % Input Arguments:
             %   - **imgDS** - a ``matlab.io.datastore.ImageDatastore`` of single images
             %     (one Z-slice each) or volumes, in Z order; its reader returns
@@ -814,6 +844,12 @@ classdef ImageConverter < handle
 
             zarrPath = BatchOpt.OutputDirectory;
             dataType = BatchOpt.ZarrImageType{1};   % 'image' | 'labels'
+            % MIB models are labels whatever the type says, named as in the first file
+            modelMaterials = [];
+            if all(endsWith(lower(imgDS.Files), '.model'))
+                dataType = 'labels';
+                modelMaterials = readModelVariables(imgDS.Files{1}, {'modelMaterialNames', 'modelMaterialColors'});
+            end
 
             % chunk [y x z] from the (x,y,z,c,t) UI vector
             chunks = str2num(BatchOpt.ZarrChunkSizes); %#ok<ST2NM>
@@ -837,19 +873,7 @@ classdef ImageConverter < handle
             dsLimit = str2num(BatchOpt.ZarrDownsampleLimitXYZ); %#ok<ST2NM>
             if numel(dsLimit) >= 2; minLevelSize = min(dsLimit(1), dsLimit(2)); else; minLevelSize = 256; end
 
-            % compression: zstd, gzip or none; 'blosc' is the name of zstd before
-            % 2026.10, kept for recorded protocols. Level 0 = the codec default
-            % (zstd 3, gzip 5), as in Zarr3Saver.optionsDialog
-            switch lower(BatchOpt.ZarrCompression{1})
-                case {'zstd', 'blosc'}; compressors = 'zstd';
-                case 'gzip';            compressors = 'gzip';
-                otherwise;              compressors = 'none';
-            end
-            if ~strcmp(compressors, 'none') && isfield(BatchOpt, 'ZarrCompressionLevel') && ...
-                    ~isempty(BatchOpt.ZarrCompressionLevel) && BatchOpt.ZarrCompressionLevel{1} > 0
-                compressors = struct('name', compressors, 'configuration', ...
-                    struct('level', BatchOpt.ZarrCompressionLevel{1}));
-            end
+            compressors = ImageConverter.zarrCompressors(BatchOpt);
 
             % --- slices per write: the chunk Z, or the shard Z when sharded ---
             shardYXZ = [];
@@ -967,6 +991,13 @@ classdef ImageConverter < handle
             writeStarted = true;
             saver = io.savers.Zarr3Saver(struct('ParentFigure', parentFig, 'mibPath', mibPath));
             metadata = struct('pixSize', pixSize, 'boundingBox', boundingBox);
+            if isfield(modelMaterials, 'modelMaterialNames') && ~isempty(modelMaterials.modelMaterialNames)
+                % the saver writes mibMaterials from these and skips MaterialNamesFromData
+                metadata.materialNames = modelMaterials.modelMaterialNames;
+                if isfield(modelMaterials, 'modelMaterialColors')
+                    metadata.materialColors = modelMaterials.modelMaterialColors;
+                end
+            end
             fnOut = saver.saveStreamResumable(provider, metadata, zarrPath, saverOpts, pool);
         end
 
@@ -987,7 +1018,10 @@ classdef ImageConverter < handle
             obj.BatchOpt.InputDirectory = obj.mibModel.currentDirectory;
             obj.BatchOpt.OutputDirectory = fullfile(obj.mibModel.currentDirectory, 'FileConvert');
             obj.BatchOpt.InputImageFormatExtension = {'tif'};
-            obj.BatchOpt.InputImageFormatExtension{2} = obj.mibModel.extensionRegistryLoad.getAllowedExtensions('Standard', 'Default', false);
+            % the image formats of the standard reader and MIB models (.model, read by
+            % the model loader and converted as labels)
+            inputExtensions = sort([obj.mibModel.extensionRegistryLoad.getAllowedExtensions('Standard', 'Default', false), {'model'}]);
+            obj.BatchOpt.InputImageFormatExtension{2} = inputExtensions;
             obj.BatchOpt.BioFormatsReader = false;
             obj.BatchOpt.BioFormatsInputImageFormatExtension = {'dm4'};
             obj.BatchOpt.BioFormatsInputImageFormatExtension{2} = obj.mibModel.extensionRegistryLoad.getAllowedExtensions('Standard', 'BioFormats', false);
@@ -1005,9 +1039,6 @@ classdef ImageConverter < handle
             obj.BatchOpt.Prefix = '';
             obj.BatchOpt.Suffix = '';
             obj.BatchOpt.ParallelProcessing = false;
-            obj.BatchOpt.ParallelWorkersNumber{1} = 1;
-            obj.BatchOpt.ParallelWorkersNumber{2} = [0 obj.mibModel.cpuParallelLimitMax];
-            obj.BatchOpt.ParallelWorkersNumber{3} = 'on';
             % Zarr settings
             obj.BatchOpt.ZarrVersion = {'Zarr v2'};
             obj.BatchOpt.ZarrVersion{2} = {'Zarr v2', 'Zarr v3'};
@@ -1053,14 +1084,14 @@ classdef ImageConverter < handle
             obj.BatchOpt.mibBatchTooltip.PyramidalTIFlevels = 'Specify output levels of the pyramid as numbers, for example "1,2,3,4"';
             obj.BatchOpt.mibBatchTooltip.Prefix = 'Prefix to the output filename';
             obj.BatchOpt.mibBatchTooltip.Suffix = 'Suffix to the output filename';
-            obj.BatchOpt.mibBatchTooltip.ParallelProcessing = 'Use parallel processing during image conversion';
-            obj.BatchOpt.mibBatchTooltip.ParallelWorkersNumber = 'Number of workers to use for parallel processing';
+            obj.BatchOpt.mibBatchTooltip.ParallelProcessing = ['Use parallel processing during image conversion, on the running ' ...
+                'parallel pool, or on a new pool of the number of workers set in the MIB preferences'];
 
             obj.BatchOpt.mibBatchTooltip.ZarrVersion = 'Version of Zarr';
-            obj.BatchOpt.mibBatchTooltip.ZarrImageType = 'Image type: image or model, image has 5 dimensions (width, height, depth, colors, time), while model only 4 (width, height, depth, time)';
-            obj.BatchOpt.mibBatchTooltip.ZarrChunkSizes = 'Vector of chunk sizes, 5 values (x,y,z,c,d) for images and 4 values (x,y,z,t) for models';
+            obj.BatchOpt.mibBatchTooltip.ZarrImageType = 'Image type: image (width, height, depth, colors, time) or labels, a segmentation model (width, height, depth, time); MIB models are always converted as labels';
+            obj.BatchOpt.mibBatchTooltip.ZarrChunkSizes = 'Vector of chunk sizes, 5 values (x,y,z,c,t) for images and 4 values (x,y,z,t) for labels';
             obj.BatchOpt.mibBatchTooltip.ZarrUseSharding = 'Select to enable merging of chunks into large files';
-            obj.BatchOpt.mibBatchTooltip.ZarrShardXFactorsXYZ = 'Vector of shard x-factors defining how many chunks are merged into a single shard file, 5 values (x,y,z,c,d) for images and 4 values (x,y,z,t) for models';
+            obj.BatchOpt.mibBatchTooltip.ZarrShardXFactorsXYZ = 'Vector of shard x-factors defining how many chunks are merged into a single shard file, 5 values (x,y,z,c,t) for images and 4 values (x,y,z,t) for labels';
             obj.BatchOpt.mibBatchTooltip.ZarrDownsampleLimitXYZ = 'Target size for image downsampling during calculation of pyramid of magnifications, the scale factors are calculated automatically';
             obj.BatchOpt.mibBatchTooltip.ZarrDownsampleStrategy = 'Auto: Anisotropy-preserving when the Z voxel is at least 1.5 times the XY voxel, else XY only. "+ isotropic level" adds the level where all voxels are equal (native Zarr writer only)';
             obj.BatchOpt.mibBatchTooltip.ZarrCompression = 'Compression algorithm or do not use compression, when none';
@@ -1096,7 +1127,11 @@ classdef ImageConverter < handle
             end
 
             if isfield(obj.mibModel.sessionSettings, 'ImageConverter')
+               currentTooltips = obj.BatchOpt.mibBatchTooltip;
                obj.BatchOpt = obj.mibModel.sessionSettings.ImageConverter;
+               % the lists and tooltips of this version, not those of the stored settings
+               obj.BatchOpt.InputImageFormatExtension{2} = inputExtensions;
+               obj.BatchOpt.mibBatchTooltip = currentTooltips;
             end
             
             guiName = 'ImageConverterGUI';
@@ -1161,6 +1196,9 @@ classdef ImageConverter < handle
             % store the current settings
             obj.mibModel.sessionSettings.ImageConverter = obj.BatchOpt;
             % closing
+            if ~isempty(obj.zarrChunkTimer) && isvalid(obj.zarrChunkTimer)
+                obj.zarrChunkTimer.closeWindow();
+            end
             if isvalid(obj.view.gui)
                 delete(obj.view.gui);   % delete childController window
             end
@@ -1230,12 +1268,18 @@ classdef ImageConverter < handle
         function inputSourceChanged(obj, event)
             % INPUTSOURCECHANGED - Callback for the input directory, extension and
             % subfolder widgets: store the value, then refill the Zarr voxel size,
-            % bounding box shift and units from the new source.
+            % bounding box shift and units from the new source. MIB models
+            % (``.model``) switch the Zarr image type to labels, which the
+            % conversion uses for them in any case (``convertToZarr3Native``).
 
             if obj.mibModel.preferences.System.DeveloperMode
                 fprintf('ImageConverter.inputSourceChanged(%s): triggered\n', event.Source.Tag);
             end
             obj.updateBatchOptFromGUI(event);
+            if strcmpi(obj.BatchOpt.InputImageFormatExtension{1}, 'model')
+                obj.view.handles.ZarrImageType.Value = 'labels';
+                obj.updateBatchOptFromGUI(struct('Source', obj.view.handles.ZarrImageType));
+            end
             obj.prefillZarrGeometry();
         end
 
@@ -1358,18 +1402,15 @@ classdef ImageConverter < handle
         end
 
         function parallelProcessingCallback(obj, event)
-            % function parallelProcessingCallback(obj, event)
-            % callback on press of the parallel processing checkbox
+            % PARALLELPROCESSINGCALLBACK - Callback of the Parallel processing checkbox.
+            %
+            % Only stores the choice: the conversion uses the running parallel pool
+            % or starts one of the size set in the preferences (``getParallelPool``).
 
             if obj.mibModel.preferences.System.DeveloperMode
                 fprintf('ImageConverter.parallelProcessingCallback: triggered\n');
             end
             obj.BatchOpt.ParallelProcessing = obj.view.handles.ParallelProcessing.Value;
-            if obj.BatchOpt.ParallelProcessing % enable parallel processing
-                obj.view.handles.ParallelWorkersNumber.Enable = 'on';
-            else % disable parallel processing
-                obj.view.handles.ParallelWorkersNumber.Enable = 'off';
-            end
         end
 
         function zarrVersionValueChanged(obj, event)
@@ -1412,7 +1453,187 @@ classdef ImageConverter < handle
                 obj.view.handles.ZarrShardXFactorsXYZ.Enable = false;
                 obj.BatchOpt.ZarrUseSharding = false;
             end
-        
+
+        end
+
+        function [imgDS, fileDepthFcn] = createImageDatastore(obj)
+            % CREATEIMAGEDATASTORE - The image datastore of the input files, read by MIB's loaders.
+            %
+            % Lists the files of ``InputDirectory`` with the extension of the chosen
+            % reader (``IncludeSubfolders``), read by the standard loader of that
+            % extension, by BioFormats (``BioFormatsReader``, series
+            % ``BioFormatsIndex``), or by ``imread`` without the colormap for PNG
+            % with ``DiscardColormap``. MIB models (``.model``) are read by the
+            % model loader (``io.loaders.MatModelLoader``): a 3-D model is one
+            % volume file, a 2-D sequence of models one slice per file. Used by
+            % ``Convert`` and ``suggestZarrChunks``.
+            %
+            % Output Arguments:
+            %   - **imgDS** - ``imageDatastore``; its reader returns ``[H W C]`` or,
+            %     for a volume, ``[H W C Z]`` (``readWithLoader``)
+            %   - **fileDepthFcn** - the slices of a file from its metadata
+            %     (``readDepthWithLoader``), ``[]`` for the PNG reader
+            fileDepthFcn = [];
+            if ~obj.BatchOpt.BioFormatsReader    % standard reader
+                if strcmp(obj.BatchOpt.InputImageFormatExtension{1}, 'png') && obj.BatchOpt.DiscardColormap
+                    imgDS = imageDatastore(obj.BatchOpt.InputDirectory, ...
+                        'FileExtensions', lower(['.' obj.BatchOpt.InputImageFormatExtension{1}]), ...
+                        'IncludeSubfolders', obj.BatchOpt.IncludeSubfolders, ...
+                        'ReadFcn', @(fn)ImageConverter.getPNGwithoutColormap(fn));
+                else
+                    standardLoaderOptions = struct('waitbar', false, 'silentMode', true, ...
+                        'mibPath', obj.mibModel.mibPath, 'verbose', false);
+                    loaderMode = 'Standard';
+                    if strcmpi(obj.BatchOpt.InputImageFormatExtension{1}, 'model'); loaderMode = 'Model'; end   % MatModelLoader
+                    standardLoaderInfo = obj.mibModel.extensionRegistryLoad.resolveLoader( ...
+                        ['file.' obj.BatchOpt.InputImageFormatExtension{1}], loaderMode, 'Default');
+                    standardLoader = io.LoaderFactory.create(standardLoaderInfo, standardLoaderOptions);
+                    imgDS = imageDatastore(obj.BatchOpt.InputDirectory, ...
+                        'FileExtensions', lower(['.' obj.BatchOpt.InputImageFormatExtension{1}]), ...
+                        'IncludeSubfolders', obj.BatchOpt.IncludeSubfolders, ...
+                        'ReadFcn', @(fn) ImageConverter.readWithLoader(standardLoader, fn, standardLoaderOptions));
+                    fileDepthFcn = @(fn) ImageConverter.readDepthWithLoader(standardLoader, fn, standardLoaderOptions);
+                end
+            else    % BioFormats reader
+                bioFormatsLoaderOptions = struct('waitbar', false, 'silentMode', true, ...
+                    'BioFormatsIndices', obj.BatchOpt.BioFormatsIndex{1}, ...
+                    'bioFormatsMemoizerMemoDir', tempdir(), 'verbose', false);
+                bioFormatsLoaderInfo = obj.mibModel.extensionRegistryLoad.resolveLoader( ...
+                    ['file.' obj.BatchOpt.BioFormatsInputImageFormatExtension{1}], 'Standard', 'BioFormats');
+                bioFormatsLoader = io.LoaderFactory.create(bioFormatsLoaderInfo, bioFormatsLoaderOptions);
+                imgDS = imageDatastore(obj.BatchOpt.InputDirectory, ...
+                    'FileExtensions', lower(['.' obj.BatchOpt.BioFormatsInputImageFormatExtension{1}]), ...
+                    'IncludeSubfolders', obj.BatchOpt.IncludeSubfolders, ...
+                    'ReadFcn', @(fn) ImageConverter.readWithLoader(bioFormatsLoader, fn, bioFormatsLoaderOptions));
+                fileDepthFcn = @(fn) ImageConverter.readDepthWithLoader(bioFormatsLoader, fn, bioFormatsLoaderOptions);
+            end
+        end
+
+        function suggestZarrChunks(obj)
+            % SUGGESTZARRCHUNKS - Open the Zarr chunk timing window for the input files.
+            %
+            % Callback of the Time chunks button of the Zarr settings. The window
+            % (``ZarrChunkTimer``) gets the size, class and channels of the input
+            % stack (``io.savers.ImageDatastoreSliceProvider`` over
+            % ``createImageDatastore``) and the provider for its sample; when the
+            % input cannot be read it times synthetic data of 4096 x 4096 x 1024
+            % uint8, and says so. It also gets the Zarr version, codec, voxel size,
+            % downsampling limit and strategy (for the file count of the pyramid),
+            % the current chunk and shard, the size of the image view of MIB,
+            % as test folder, the parent of the output directory, and the number
+            % of conversion processes (the running pool, or the pool size of the
+            % preferences, with Parallel processing; otherwise 1). Use selected
+            % writes the chosen values back with ``applyZarrChunks``.
+
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('ImageConverter.suggestZarrChunks: triggered\n');
+            end
+            if ~isempty(obj.zarrChunkTimer) && isvalid(obj.zarrChunkTimer) && isvalid(obj.zarrChunkTimer.figureHandle)
+                figure(obj.zarrChunkTimer.figureHandle);
+                return;
+            end
+            wb = uiprogressdlg(obj.view.gui, 'Title', 'Zarr chunk timing', ...
+                'Message', 'Reading the input files...', 'Indeterminate', 'on');
+            provider = [];
+            try
+                [imgDS, fileDepthFcn] = obj.createImageDatastore();
+                provider = io.savers.ImageDatastoreSliceProvider(imgDS, fileDepthFcn);
+            catch
+                % no readable input: synthetic data
+            end
+            delete(wb);
+
+            settings = struct();
+            if isempty(provider)
+                settings.datasetSize = [4096 4096 1024];
+                settings.channels = 1;
+                settings.dataClass = 'uint8';
+                settings.sourceText = ['The input files could not be read: timing synthetic data of a ' ...
+                    '4096 x 4096 x 1024 uint8 dataset.'];
+            else
+                sourceSize = provider.OutputSize;
+                settings.datasetSize = sourceSize(1:3);
+                settings.channels = sourceSize(4);
+                settings.dataClass = provider.DataClass;
+                settings.sourceText = sprintf('Dataset: %d x %d x %d (X x Y x Z), %s, %d channel(s), %d files in %s', ...
+                    sourceSize([2 1 3]), provider.DataClass, sourceSize(4), numel(imgDS.Files), obj.BatchOpt.InputDirectory);
+            end
+            settings.isLabels = strcmp(obj.BatchOpt.ZarrImageType{1}, 'labels');
+            settings.zarrFormat = 3;
+            if strcmp(obj.BatchOpt.ZarrVersion{1}, 'Zarr v2'); settings.zarrFormat = 2; end
+            settings.compressors = ImageConverter.zarrCompressors(obj.BatchOpt);
+
+            chunks = str2num(obj.BatchOpt.ZarrChunkSizes); %#ok<ST2NM>
+            if numel(chunks) < 3; chunks = [256 256 16]; end
+            settings.currentChunk = chunks([2 1 3]);
+            settings.chunkChannels = 1;
+            if ~settings.isLabels && numel(chunks) >= 4; settings.chunkChannels = chunks(4); end
+            settings.currentShard = [];
+            shard = str2num(obj.BatchOpt.ZarrShardXFactorsXYZ); %#ok<ST2NM>
+            if obj.BatchOpt.ZarrUseSharding && numel(shard) >= 3; settings.currentShard = shard([2 1 3]); end
+
+            voxel = str2num(obj.BatchOpt.ZarrVoxelSizeXYZ); %#ok<ST2NM>
+            if numel(voxel) ~= 3; voxel = [1 1 1]; end
+            settings.pixSize = struct('x', voxel(1), 'y', voxel(2), 'z', voxel(3));
+            downsampleLimit = str2num(obj.BatchOpt.ZarrDownsampleLimitXYZ); %#ok<ST2NM>
+            minLevelSize = 256;
+            if numel(downsampleLimit) >= 2; minLevelSize = min(downsampleLimit(1), downsampleLimit(2)); end
+            requestedStrategy = 'Auto';
+            if isfield(obj.BatchOpt, 'ZarrDownsampleStrategy') && ~isempty(obj.BatchOpt.ZarrDownsampleStrategy)
+                requestedStrategy = obj.BatchOpt.ZarrDownsampleStrategy{1};
+            end
+            settings.levelOptions = struct('MinLevelSize', minLevelSize, 'DownsampleStrategy', ...
+                io.savers.Zarr3Saver.resolveDownsampleStrategy(requestedStrategy, settings.pixSize));
+
+            % the size of the image view in screen pixels; a guess from the screen without one
+            screenSize = get(groot, 'ScreenSize');
+            settings.viewSize = round(screenSize(3:4) .* [0.6 0.7]);
+            try
+                imageDocument = obj.mibModel.mibController.cImageDoc{obj.mibModel.Sets.selectedSet};
+                settings.viewSize = round(imageDocument.handles.imViewAxes.InnerPosition(3:4));
+            catch
+            end
+            settings.testFolder = fileparts(obj.BatchOpt.OutputDirectory);
+            if ~isfolder(settings.testFolder); settings.testFolder = obj.BatchOpt.InputDirectory; end
+            settings.parentFigure = obj.view.gui;
+            settings.font = obj.mibModel.preferences.System.Font;
+            % processes of the conversion, as getParallelPool will use them, for the memory limit of the heat map
+            settings.numWorkers = 1;
+            if obj.BatchOpt.ParallelProcessing
+                pool = gcp('nocreate');
+                if isempty(pool)
+                    settings.numWorkers = obj.mibModel.preferences.System.cpuParallelLimit;
+                else
+                    settings.numWorkers = pool.NumWorkers;
+                end
+            end
+
+            obj.zarrChunkTimer = ZarrChunkTimer(settings, provider, ...
+                @(chunkYXZ, shardYXZ) obj.applyZarrChunks(chunkYXZ, shardYXZ));
+        end
+
+        function applyZarrChunks(obj, chunkYXZ, shardYXZ)
+            % APPLYZARRCHUNKS - Set the Zarr chunk sizes and sharding from [y x z] vectors.
+            %
+            % The first three values of ``ZarrChunkSizes`` and ``ZarrShardXFactorsXYZ``
+            % are replaced (written as X, Y, Z), the channel and time values are
+            % kept. An empty ``shardYXZ`` switches sharding off.
+            chunks = str2num(obj.BatchOpt.ZarrChunkSizes); %#ok<ST2NM>
+            if numel(chunks) < 3; chunks = [0 0 0 1 1]; end
+            chunks(1:3) = chunkYXZ([2 1 3]);
+            obj.BatchOpt.ZarrChunkSizes = char(strjoin(string(chunks), ', '));
+            if isempty(shardYXZ)
+                obj.BatchOpt.ZarrUseSharding = false;
+            else
+                shard = str2num(obj.BatchOpt.ZarrShardXFactorsXYZ); %#ok<ST2NM>
+                if numel(shard) < 3; shard = [0 0 0 1 1]; end
+                shard(1:3) = shardYXZ([2 1 3]);
+                obj.BatchOpt.ZarrShardXFactorsXYZ = char(strjoin(string(shard), ', '));
+                obj.BatchOpt.ZarrUseSharding = true;
+            end
+            if ~isempty(obj.view) && isvalid(obj.view.gui)
+                obj.updateWidgets();
+            end
         end
 
         % ------------------------------------------------------------------
@@ -1536,47 +1757,17 @@ classdef ImageConverter < handle
             
             fileDepthFcn = [];   % slices in a file from its metadata, set for the loader-based readers
             try
-                if ~obj.BatchOpt.BioFormatsReader    % standard reader
-                    if strcmp(obj.BatchOpt.OutputImageFormatExtension{1}, 'xml')
-                        % use datastore instead of imageDatastore as we are
-                        % interested to process only metadata and reading of
-                        % the whole image is not needed
-                        imgDS = datastore(obj.BatchOpt.InputDirectory, ...
-                            'FileExtensions', lower(['.' obj.BatchOpt.InputImageFormatExtension{1}]), ...
-                            'Type', 'file', ...
-                            'IncludeSubfolders', obj.BatchOpt.IncludeSubfolders, ...
-                            'ReadFcn', @readMetaDataFromFibicsTIFs);
-                    else
-                        if strcmp(obj.BatchOpt.InputImageFormatExtension{1}, 'png') && obj.BatchOpt.DiscardColormap
-                            imgDS = imageDatastore(obj.BatchOpt.InputDirectory, ...
-                                'FileExtensions', lower(['.' obj.BatchOpt.InputImageFormatExtension{1}]), ...
-                                'IncludeSubfolders', obj.BatchOpt.IncludeSubfolders, ...
-                                'ReadFcn', @(fn)ImageConverter.getPNGwithoutColormap(fn));
-                        else
-                            standardLoaderOptions = struct('waitbar', false, 'silentMode', true, ...
-                                'mibPath', obj.mibModel.mibPath, 'verbose', false);
-                            standardLoaderInfo = obj.mibModel.extensionRegistryLoad.resolveLoader( ...
-                                ['file.' obj.BatchOpt.InputImageFormatExtension{1}], 'Standard', 'Default');
-                            standardLoader = io.LoaderFactory.create(standardLoaderInfo, standardLoaderOptions);
-                            imgDS = imageDatastore(obj.BatchOpt.InputDirectory, ...
-                                'FileExtensions', lower(['.' obj.BatchOpt.InputImageFormatExtension{1}]), ...
-                                'IncludeSubfolders', obj.BatchOpt.IncludeSubfolders, ...
-                                'ReadFcn', @(fn) ImageConverter.readWithLoader(standardLoader, fn, standardLoaderOptions));
-                            fileDepthFcn = @(fn) ImageConverter.readDepthWithLoader(standardLoader, fn, standardLoaderOptions);
-                        end
-                    end
-                else    % BioFormats reader
-                    bioFormatsLoaderOptions = struct('waitbar', false, 'silentMode', true, ...
-                        'BioFormatsIndices', obj.BatchOpt.BioFormatsIndex{1}, ...
-                        'bioFormatsMemoizerMemoDir', tempdir(), 'verbose', false);
-                    bioFormatsLoaderInfo = obj.mibModel.extensionRegistryLoad.resolveLoader( ...
-                        ['file.' obj.BatchOpt.BioFormatsInputImageFormatExtension{1}], 'Standard', 'BioFormats');
-                    bioFormatsLoader = io.LoaderFactory.create(bioFormatsLoaderInfo, bioFormatsLoaderOptions);
-                    imgDS = imageDatastore(obj.BatchOpt.InputDirectory, ...
-                        'FileExtensions', lower(['.' obj.BatchOpt.BioFormatsInputImageFormatExtension{1}]), ...
+                if ~obj.BatchOpt.BioFormatsReader && strcmp(obj.BatchOpt.OutputImageFormatExtension{1}, 'xml')
+                    % use datastore instead of imageDatastore as we are
+                    % interested to process only metadata and reading of
+                    % the whole image is not needed
+                    imgDS = datastore(obj.BatchOpt.InputDirectory, ...
+                        'FileExtensions', lower(['.' obj.BatchOpt.InputImageFormatExtension{1}]), ...
+                        'Type', 'file', ...
                         'IncludeSubfolders', obj.BatchOpt.IncludeSubfolders, ...
-                        'ReadFcn', @(fn) ImageConverter.readWithLoader(bioFormatsLoader, fn, bioFormatsLoaderOptions));
-                    fileDepthFcn = @(fn) ImageConverter.readDepthWithLoader(bioFormatsLoader, fn, bioFormatsLoaderOptions);
+                        'ReadFcn', @readMetaDataFromFibicsTIFs);
+                else
+                    [imgDS, fileDepthFcn] = obj.createImageDatastore();
                 end
             catch err
                 if obj.BatchOpt.showWaitbar; delete(wb); end
@@ -1628,7 +1819,8 @@ classdef ImageConverter < handle
                     sourceFiles = imgDS.Files;
                     noSourceFiles = numel(sourceFiles);
                     if obj.BatchOpt.ParallelProcessing
-                        parforArg = obj.BatchOpt.ParallelWorkersNumber{1};
+                        pool = obj.getParallelPool(wb);
+                        parforArg = pool.NumWorkers;
                         parfor (fileIdx = 1:noSourceFiles, parforArg)
                             [~, nameOut, ~] = fileparts(sourceFiles{fileIdx});
                             outputFilename = fullfile(obj.BatchOpt.OutputDirectory, ...
@@ -1745,23 +1937,26 @@ classdef ImageConverter < handle
         end
 
         function pool = getParallelPool(obj, wb)
-            % GETPARALLELPOOL - Parallel pool with ``BatchOpt.ParallelWorkersNumber`` workers.
+            % GETPARALLELPOOL - The MIB parallel pool, started when none is running.
             %
-            % Reuses the current pool when it has that many workers, otherwise
-            % (re)starts it, showing the progress in ``wb`` (a ``core.PoolWaitbar`` or
-            % ``[]``). Returns ``[]`` for fewer than one worker, meaning: no pool.
-            pool = [];
-            numberOfWorkers = obj.BatchOpt.ParallelWorkersNumber{1};
-            if numberOfWorkers < 1; return; end
+            % The pool that runs (started by the user, e.g. with Home -> Preferences
+            % -> Parallel pool, or by another tool) is used whatever its size and is
+            % never restarted. Without one, a pool of
+            % ``preferences.System.cpuParallelLimit`` workers is started, as the
+            % ribbon entry does, showing the progress in ``wb`` (a
+            % ``core.PoolWaitbar`` or ``[]``).
+            %
+            % Before 2026-11-18 the size came from ``BatchOpt.ParallelWorkersNumber``,
+            % a field without a widget in the window, so it stayed 1 and a running
+            % pool of any other size was deleted and replaced by one worker.
             pool = gcp('nocreate');
-            if ~isempty(pool) && pool.NumWorkers == numberOfWorkers; return; end
+            if ~isempty(pool); return; end
 
             if ~isempty(wb)
                 wbText = wb.getText();
                 wb.updateText(sprintf('Starting the parallel pool\nPlease wait...'));
             end
-            if ~isempty(pool); delete(pool); end
-            pool = parpool(numberOfWorkers);
+            pool = parpool(obj.mibModel.preferences.System.cpuParallelLimit);
             if ~isempty(wb); wb.updateText(wbText); end
         end
 
@@ -2181,6 +2376,23 @@ function fileGeometry = sourceFileGeometry(filename, loaderOptions)
 % returns an empty dictionary, missing keys) means "no geometry", never an error.
 fileGeometry = [];
 try
+    [~, ~, extension] = fileparts(filename);
+    if strcmpi(extension, '.model')
+        % the model loader loads the whole label array; its size and box are enough.
+        % A model stores no voxel size or units: the voxel comes from the box, the
+        % units field is left as it is
+        stored = readModelVariables(filename, {'BoundingBox'});
+        if isempty(stored.labelsSize); return; end
+        labelsSize = [stored.labelsSize, 1];
+        boundingBox = [];
+        if isfield(stored, 'BoundingBox') && isnumeric(stored.BoundingBox) && numel(stored.BoundingBox) == 6
+            boundingBox = double(stored.BoundingBox(:)');
+        end
+        fileGeometry = struct('boundingBox', boundingBox, ...
+            'width', labelsSize(2), 'height', labelsSize(1), 'depth', labelsSize(3), ...
+            'pixSize', struct('x', 1, 'y', 1, 'z', 1, 'units', ''));
+        return;
+    end
     extReg = io.ExtensionRegistryLoad();
     loader = io.LoaderFactory.create(extReg.resolveLoader(filename, 'Standard', 'Default'), loaderOptions);
     imgInfo = loader.loadMetadata({filename}, loaderOptions);
@@ -2206,4 +2418,24 @@ try
 catch
     fileGeometry = [];
 end
+end
+
+function stored = readModelVariables(filename, variableNames)
+% READMODELVARIABLES - Small variables and the label array size of a MIB model, without its labels.
+% Loads only those of ``variableNames`` (e.g. 'BoundingBox', 'modelMaterialNames') the
+% .model MAT-file holds; ``stored.labelsSize`` is the size of the label array, from
+% ``whos`` (the variable ``modelVariable`` names, else the largest variable), [] when
+% the file has none. Used by sourceFileGeometry and ImageConverter.convertToZarr3Native.
+variables = whos('-file', filename);
+names = {variables.name};
+toLoad = intersect([variableNames(:)', {'modelVariable'}], names);
+stored = struct();
+if ~isempty(toLoad); stored = load(filename, '-mat', toLoad{:}); end
+labelsIndex = [];
+if isfield(stored, 'modelVariable'); labelsIndex = find(strcmp(names, stored.modelVariable), 1); end
+if isempty(labelsIndex) && ~isempty(variables)
+    [~, labelsIndex] = max([variables.bytes]);
+end
+stored.labelsSize = [];
+if ~isempty(labelsIndex); stored.labelsSize = variables(labelsIndex).size; end
 end

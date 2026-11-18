@@ -86,7 +86,9 @@ Access the plugin via:
 
 <span class="widget widget-checkbox">Include subfolder</span>, check to process subdirectories.
 
-<span class="widget widget-dropdown">Image filename extension</span>, input format dropdown for standard image formats
+<span class="widget widget-dropdown">Image filename extension</span>, input format dropdown for standard image formats.
+Select `model` to convert MIB models (`.model`) without opening them in MIB; they are converted as labels
+with their material names and colors.
 
 <span class="widget widget-checkbox">Bio-Formats reader</span>, enable Bio-Formats reader to read variety of microscopy image formats.
 
@@ -116,7 +118,9 @@ for resulting images:
 
 <span class="widget widget-checkbox">Discard colormap</span>, remove colormap from output files.
 
-<span class="widget widget-checkbox">Parallel processing</span>, enable multi-core file conversion.
+<span class="widget widget-checkbox">Parallel processing</span>, enable multi-core file conversion. It uses the running
+parallel pool (Home -> Preferences -> Parallel pool); without one, a pool of the number of workers set in the
+preferences is started.
 
 <span class="widget widget-checkbox">Generate pyramidal TIFs</span>, create multi-resolution TIFs.
 
@@ -190,6 +194,28 @@ Reduces overhead when dealing with many small chunks, improves cloud performance
     Example: '4, 4, 1, 1, 1' (default) - each shard groups 4×4×1 chunks in XYZ per color channel and timepoint
 
     **Note:** Only relevant if Zarr version = 3. A Z factor above 1 makes the conversion need more memory.
+
+The stopwatch button next to <span class="widget widget-edit">Chunk sizes</span> finds the chunk and shard sizes with which MIB browses
+the converted dataset fastest. The window writes small test datasets of your input files with each candidate
+setting and reads them back the way the image view does; the test files are deleted afterwards.
+
+- <span class="widget widget-edit">Test folder</span> - a folder on the drive that will hold the dataset; a
+  network drive and a local disk give different results.
+- <span class="widget widget-dropdown">Use case</span> - **2D** when the dataset is browsed in XY only, **3D**
+  when it is also viewed in ZX and ZY, **Hybrid** for occasional ZX/ZY views. It fills the candidates and the
+  <span class="widget widget-edit">XY share, %</span>.
+- <span class="widget widget-edit">Files weight</span> - how much a large number of files counts against a
+  candidate; 0 ignores it.
+
+Press <span class="widget widget-button">Time candidates</span>, select the best row (listed first) and press
+<span class="widget widget-button">Use selected</span> to copy its chunk and shard sizes to the Zarr settings.
+Every run opens in its own tab, so runs with test folders on different drives can be compared.
+
+<span class="widget widget-button">Heat map...</span> times all reasonable chunk sizes from 16 to 1024 pixels in X and Y
+and from 1 to 256 slices in Z, without shards and with two shard sizes. Sizes that are too small, too large or too
+deep for the memory of the conversion are skipped. The run takes several minutes, much longer on a network drive.
+It suggests the best setting whose neighbours are also good, rather than the single fastest one, which is often
+chance; click a cell to select another setting.
 
 <span class="widget widget-edit">Downsample limit</span>, definition of the smallest volume size until which the dataset is downsampled. 
 For anisotropic datasets, the downsampling procedure brings the volume first to the isotropic voxels and after that downsamples all dimensions evenly.

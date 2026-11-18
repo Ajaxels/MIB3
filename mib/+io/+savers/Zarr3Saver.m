@@ -135,7 +135,8 @@ classdef Zarr3Saver < io.savers.BaseSaver
             % ``2^k`` scale written in the metadata; resizing to ``[Yl Xl]`` would
             % stretch an odd size by ``size/Yl``), and where the level halves Z,
             % the mean of each pair of slices (``reduceZBuffer``; a trailing
-            % single slice is kept). This is the pyramid ``saveStreamResumable``
+            % single slice is kept). ``'nearest'`` takes one slice of each pair
+            % instead of the mean, so label indices are never blended. This is the pyramid ``saveStreamResumable``
             % writes, so the same data gives the same store from memory and by
             % streaming. ``'mode'``/``'median'`` reduce blocks of the
             % full-resolution data (``blockReduce2D``/``blockReduce3D``).
@@ -2625,8 +2626,17 @@ classdef Zarr3Saver < io.savers.BaseSaver
             % 'mode'   - majority vote per spatial position (for categorical labels).
             % 'median' - median per spatial position (noise-robust, for images).
             % 'max'    - maximum per spatial position (max pooling).
+            % 'nearest' - one slice of the group, never a blend: slice
+            %            ``ceil((n + 1) / 2)`` of ``n``, the slice ``imresize3`` with
+            %            ``'nearest'`` picks along Z (the second of a pair, the only
+            %            one of a trailing single slice). Label values are material
+            %            indices, so averaging them invents indices: the mean of
+            %            label 2018 and background 0 is label 1009, which drew a
+            %            false object around every boundary in Z.
             % All other methods - arithmetic mean cast to imgClass.
-            if strcmp(method, 'max')
+            if strcmp(method, 'nearest')
+                result = cast(bufferCell{ceil((numel(bufferCell) + 1) / 2)}, imgClass);
+            elseif strcmp(method, 'max')
                 result = bufferCell{1};
                 for k = 2:numel(bufferCell)
                     result = max(result, bufferCell{k});

@@ -6097,7 +6097,8 @@ than 255 materials, plain numeric names are used instead, since the number <em>i
 <h4 id="import-model-from-matlab">Import model from MATLAB<a class="headerlink" href="#import-model-from-matlab" title="Permanent link">&para;</a></h4>
 <p><a class="glightbox" data-title="Import model from the main MATLAB workspace" data-type="image" href="images/menuModelImportModel.png"><img align="left" alt="Import model from the main MATLAB workspace" class="on-glb" src="images/menuModelImportModel.png" width="300" /></a></p>
 <p>Imports a model from the main MATLAB workspace.
-Provide a variable name with a matrix matching the dataset dimensions <code>[height, width, depth]</code> of <code>uint8</code> class, or a structure with the fields below.</p>
+Provide a variable name with a matrix matching the dataset dimensions <code>[height, width, depth]</code> of <code>uint8</code> class, or a structure with the fields below.
+When the model size differs from the dataset, MIB asks how to fit it, the same way as when loading a model from a file.</p>
 <div class="clear-float"></div>
 
 <div class="h4-like">Fields of the MIB model structure</div>
@@ -6106,6 +6107,7 @@ Provide a variable name with a matrix matching the dataset dimensions <code>[hei
 <li><strong>.model</strong>: Matrix <code>[height, width, depth, time]</code> of <code>uint8</code> class.</li>
 <li><strong>.modelMaterialNames</strong> <em>(optional)</em>: Cell array with material names.</li>
 <li><strong>.modelMaterialColors</strong> <em>(optional)</em>: Matrix with colors (0-1) <code>[materialIndex, R G B]</code>.</li>
+<li><strong>.BoundingBox</strong> <em>(optional)</em>: Bounding box of the model <code>[xmin xmax ymin ymax zmin zmax]</code>; places the model by its coordinates when its size differs from the dataset.</li>
 <li><strong>.labelText</strong> <em>(optional)</em>: Cell array with annotation labels.</li>
 <li><strong>.labelPosition</strong> <em>(optional)</em>: Matrix with annotation positions <code>[annotationIndex, x y z]</code>.</li>
 </ul>

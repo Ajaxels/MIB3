@@ -196,6 +196,33 @@ classdef Zarr3SaverIsotropicSaveTest < matlab.unittest.TestCase
             end
         end
 
+        function nearestNeverBlendsLabelsInZ(testCase)
+            % labels 0 and 2018 only: where a level halves Z, 'nearest' must take a slice, not
+            % the mean of a pair (the mean of 2018 and 0 is a false label 1009 at every Z edge)
+            tmp = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            volume = uint16(2018 * (randi(2, 300, 289, 9) - 1));
+            metadata = struct('pixSize', struct('x', 1, 'y', 1, 'z', 6));
+            saverOpts = testCase.saverOptions('nearest');
+            saverOpts.layerType = 'labels';
+            paths = {io.savers.Zarr3Saver().save(volume, metadata, fullfile(tmp.Folder, 'save.zarr3'), saverOpts), ...
+                io.savers.Zarr3Saver().saveStream(io.savers.InMemorySliceProvider(volume), metadata, fullfile(tmp.Folder, 'stream.zarr3'), saverOpts), ...
+                io.savers.Zarr3Saver(struct()).saveStreamResumable(io.savers.InMemorySliceProvider(volume), metadata, fullfile(tmp.Folder, 'resumable.zarr3'), saverOpts)};
+            names = {'save', 'saveStream', 'saveStreamResumable'};
+            for pathIndex = 1:numel(paths)
+                numberOfLevels = testCase.levelCount(paths{pathIndex});
+                testCase.assertEqual(numberOfLevels, 5, names{pathIndex});
+                for L = 1:numberOfLevels
+                    level = io.zarr.Group(paths{pathIndex}).openArray(num2str(L - 1)).read();
+                    testCase.verifyEqual(unique(level(:))', uint16([0 2018]), ...
+                        sprintf('%s: level %d has label values that are not in the data', names{pathIndex}, L - 1));
+                end
+            end
+            % the Z-halved level picks the second slice of each pair, as imresize3 'nearest' does
+            level4 = io.zarr.Group(paths{1}).openArray('4').read();
+            level3 = io.zarr.Group(paths{1}).openArray('3').read();
+            testCase.verifyEqual(level4(:, :, 1), io.savers.Zarr3Saver.resizeXY(level3(:, :, 2), 2, size(level4, 1:2), 'nearest'));
+        end
+
         function givenLevelFactorsAreWrittenAsTheyAreByAllWriters(testCase)
             % the levels of a pyramid cut at its 20 nm level (5x5x30 nm image): XY factors 1, 1.5, 3,
             % Z 1, 1, 2. The strategy alone rebuilds 1, 2, 4 for Z / XY = 1.5

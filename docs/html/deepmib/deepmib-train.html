@@ -6141,7 +6141,9 @@ randomised rather than risking the run. Lower <em>Patches per image</em> or use 
 </li>
 <li>
 <p><span class="widget widget-button">Training</span> sets multiple parameters 
-(see <a href="https://se.mathworks.com/help/deeplearning/ref/trainingoptions.html">trainingOptions</a>). </p>
+(see <a href="https://se.mathworks.com/help/deeplearning/ref/trainingoptions.html">trainingOptions</a>). 
+<em>MaxTime</em> limits the training time in hours (<code>0.5</code> for 30 minutes); training stops at <em>MaxTime</em> or <em>MaxEpochs</em>,
+whichever comes first, and the network is kept as after pressing <em>Stop training</em>. <code>0</code> switches the limit off.</p>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>
 <p>set <em>Plots</em> to "none" for up to 25% faster training</p>
