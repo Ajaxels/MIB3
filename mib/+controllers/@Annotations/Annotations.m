@@ -242,6 +242,21 @@ classdef Annotations < handle
             h.cmMask.MenuSelectedFcn          = @(~,~) obj.tableContextMenu_cb('Mask');
             h.cmCropPatches.MenuSelectedFcn   = @(~,~) obj.tableContextMenu_cb('CropPatches');
             h.cmInterpolate.MenuSelectedFcn   = @(~,~) obj.tableContextMenu_cb('Interpolate');
+            % "Convert model to indexed objects from annotations" is created here, not in
+            % the mlapp, and placed before "Export selected annotations", which hands its
+            % separator over to it. A menu shows its Children in reverse order; the
+            % context menu has no Tag, so it is not in obj.view.handles.
+            tableContextMenu = h.cmExport.Parent;
+            obj.view.handles.cmConvertModel = uimenu(tableContextMenu, ...
+                'Text', 'Convert model to indexed objects from annotations...', ...
+                'Tag', 'cmConvertModel', 'Separator', 'on', ...
+                'MenuSelectedFcn', @(~,~) obj.tableContextMenu_cb('ConvertModel'));
+            h.cmExport.Separator = 'off';
+            menuOrder = flipud(tableContextMenu.Children);
+            menuOrder(menuOrder == obj.view.handles.cmConvertModel) = [];
+            exportPosition = find(menuOrder == h.cmExport, 1);
+            menuOrder = [menuOrder(1:exportPosition-1); obj.view.handles.cmConvertModel; menuOrder(exportPosition:end)];
+            tableContextMenu.Children = flipud(menuOrder);
             h.cmExport.MenuSelectedFcn        = @(~,~) obj.tableContextMenu_cb('Export');
             h.cmImaris.MenuSelectedFcn        = @(~,~) obj.tableContextMenu_cb('Imaris');
             h.cmOrderTop.MenuSelectedFcn      = @(~,~) obj.tableContextMenu_cb('OrderTop');
@@ -666,6 +681,7 @@ classdef Annotations < handle
             %   - 'CropPatches' - crop image patches around selected annotations
             %   - 'Mask'        - rasterise selected annotations into the mask layer
             %   - 'Interpolate' - interpolate positions between selected annotations
+            %   - 'ConvertModel' - convert the model to indexed objects numbered from the annotation names, see convertModelFromAnnotations
             %   - 'Export'      - export selected annotations to file
             %   - 'Imaris'      - export selected annotations to Imaris
             %   - 'OrderTop' / 'OrderUp' / 'OrderDown' / 'OrderBottom' - reorder
@@ -1151,6 +1167,9 @@ classdef Annotations < handle
                     obj.updateWidgets();
                     notify(obj.mibModel, 'ShowImage');
 
+                case 'ConvertModel'
+                    obj.convertModelFromAnnotations();
+
                 case 'Export'
                     if isempty(obj.indices); return; end
                     indList       = unique(obj.indices(:,1));
@@ -1225,6 +1244,387 @@ classdef Annotations < handle
                     obj.updateWidgets();
                     notify(obj.mibModel, 'ShowImage');
             end
+        end
+
+        % -----------------------------------------------------------------
+        function convertModelFromAnnotations(obj)
+            % CONVERTMODELFROMANNOTATIONS - Convert a 63/255-material model into an indexed-object model numbered by the annotation names.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %       obj.convertModelFromAnnotations()
+            %
+            % Takes the first run of digits in the name of each annotation (``'cell 305b'``
+            % -> 305, ``'12_nucleus_3'`` -> 12, leading zeros dropped) and gives that index
+            % to the object under the annotation. The object is the connected component of
+            % the material at the annotation voxel (the position rounded to the nearest
+            % voxel), with the connectivity chosen in the dialog: 3D (26 or 6 neighbours)
+            % through the volume, or 2D (8 or 4) in the plane of the annotation only.
+            % Objects without an annotation are not kept: the new model holds only the
+            % numbered objects. The mask and the selection are kept. The dialog also picks
+            % the annotations to use (the selected rows of the table or all of them) and
+            % the colors of the objects:
+            %
+            %   - **Material colors** - each object takes the color of the material it
+            %     came from, so the model looks as before. The color is written to row
+            %     ``mod(index - 1, 65535) + 1`` of ``labels.materialColors``, the row the
+            %     display uses for that index; indices above 65535 share rows with lower
+            %     ones, so when two objects of different materials land on one row the
+            %     later one sets the color. A material without a color row keeps the
+            %     generated color
+            %   - **Material color variation** - as *Material colors*, then the color is
+            %     varied per object the way the Membrane instances plugin varies seed
+            %     colors (its ``seedMaterialColors``): converted to HSV, the hue kept,
+            %     saturation and value moved by up to +-0.30 and +-0.25 by the R2
+            %     low-discrepancy sequence of the object index, so objects with nearby
+            %     indices of one material differ clearly while keeping its hue. The
+            %     same index always gets the same color. Grays (saturation below 0.05)
+            %     keep their saturation; saturation is kept at 0.2 or above and value
+            %     at 0.35 or above, to avoid white and black objects
+            %   - **Random colors** - the colors generated by the conversion
+            %
+            % **Finding an object.** A box is grown around the annotation voxel: it starts
+            % at 65 x 65 x 17 voxels (one plane in 2D), the material is read inside it and
+            % the component holding the annotation voxel is taken from ``bwconncomp`` (not
+            % ``imreconstruct``, which was about 100 times slower per box). The start box is
+            % small because the cost of each object grows with its box, and a larger object
+            % only costs a few doublings. While that component touches a face of the
+            % box that is not the image border, the box is doubled across that face and the
+            % component found again. The volume is therefore never read whole, which is
+            % what makes the tool work on BigData. There a box may not grow past
+            % 2^28 voxels; an object that needs more is skipped and reported. A single-plane
+            % box takes the 2D connectivity of the chosen one (26 -> 8, 6 -> 4).
+            %
+            % Every object is found before anything changes, so a Cancel during the search
+            % leaves the model as it was. Then:
+            %
+            %   - **Standard** - the objects are drawn into a new uint16 array (uint32 when
+            %     an index exceeds 65535), the model is converted to 65535 (or 4294967295)
+            %     with ``core.MibDataset.convertModel``, which unpacks the mask and the
+            %     selection of a 63 model, and the array replaces its labels. One
+            %     ``'modelLayers'`` backup is taken first, so Ctrl+Z restores the original
+            %     model with its materials.
+            %   - **BigData** - only a 63-material store is accepted, with indices up to
+            %     16383. ``models.MibModel.convertModel`` creates a new 16383 store with
+            %     ``convertOptions.keepMaterials = false`` (mask and selection only; the user
+            %     picks the path; the 63 store stays on disk unchanged), then each object is
+            %     written into it as a read-modify-write of its box at full resolution. There
+            %     is no undo. A Cancel while writing stops there, and the report says how
+            %     many objects were written and where the 63 store is.
+            %
+            % Annotations that number nothing are counted in the report by reason: no
+            % number in the name (or the number 0), an index above what the model can hold,
+            % outside the image, on the background, on an object already numbered from
+            % another annotation with a different number (the first number is kept), or
+            % (BigData) on an object too large to read. An annotation on an object already
+            % numbered with the same number is not a problem and is not reported. One
+            % number on several separate objects gives all of them that index, which makes
+            % them one object; the report lists such numbers (per time point, and per slice
+            % for the 2D connectivity, where one number on consecutive slices is the normal
+            % way to build one object). The full report also goes to the Command Window.
+            %
+            % The new model has ``labels.objects3D = true``: an index names one object
+            % wherever it is, so the next free index is the largest one in the volume. The
+            % instance index of the dataset is cleared.
+
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Annotations.convertModelFromAnnotations: triggered\n');
+            end
+
+            id = obj.BatchOpt.id;
+            dataset = obj.mibModel.I{id};
+            dialogTitle = 'Convert model to indexed objects';
+            msgOpt.MsgBoxOnly  = true;
+            msgOpt.Icon        = 'puffin_warning';
+            msgOpt.HeaderLines = 1;
+            msgOpt.mibPath     = obj.mibModel.mibPath;
+
+            %% Checks
+            if dataset.enableSelection == 0
+                utils.dlgs.inputUniversalDlg(obj.view.gui, 'The models are switched off!', {''}, ...
+                    {'Please enable the "Enable selection" option in Preferences (Ribbon -> Home -> Preferences) and try again.'}, ...
+                    dialogTitle, msgOpt);
+                return;
+            end
+            if dataset.datasetType(1) == 'V'
+                utils.dlgs.inputUniversalDlg(obj.view.gui, 'Not available in Virtual mode!', {''}, ...
+                    {'Please switch to the standard mode and try again.'}, dialogTitle, msgOpt);
+                return;
+            end
+            isBigData = dataset.datasetType(1) == 'B';
+            if ~dataset.modelExist
+                utils.dlgs.inputUniversalDlg(obj.view.gui, 'No model exists!', {''}, ...
+                    {'Please create or load a model with materials first.'}, dialogTitle, msgOpt);
+                return;
+            end
+            if dataset.labels.maxMaterials > 255
+                utils.dlgs.inputUniversalDlg(obj.view.gui, 'The model already has indexed objects!', {''}, ...
+                    {sprintf(['This tool numbers the objects of a model with 63 or 255 materials. ' ...
+                    'The current model is of the %d type.'], dataset.labels.maxMaterials)}, dialogTitle, msgOpt);
+                return;
+            end
+
+            [labelText, ~, labelPosition] = dataset.annotations.getLabels();
+            annotationCount = numel(labelText);
+            if annotationCount == 0
+                utils.dlgs.inputUniversalDlg(obj.view.gui, 'There are no annotations!', {''}, ...
+                    {'Please add annotations with numbers in their names first.'}, dialogTitle, msgOpt);
+                return;
+            end
+            selectedRows = [];
+            if ~isempty(obj.indices)
+                selectedRows = unique(obj.indices(:,1));
+                selectedRows(selectedRows > annotationCount) = [];
+            end
+
+            %% Settings
+            sourceList = {sprintf('All annotations (%d)', annotationCount)};
+            if ~isempty(selectedRows)
+                sourceList = [{sprintf('Selected annotations (%d)', numel(selectedRows))}, sourceList];
+            end
+            connectivityList = {'3D, 26 neighbours', '3D, 6 neighbours', '2D, 8 neighbours', '2D, 4 neighbours'};
+            connectivityValues = [26 6 8 4];
+            colorList = {'Material colors', 'Material color variation', 'Random colors'};
+            header = sprintf(['Converts the model of materials into a model of indexed objects, ' ...
+                'where every object has its own number.\n' ...
+                'Place an annotation on each object to keep: the first number in the annotation ' ...
+                'name becomes the number of the object under it ("cell 305" gives object 305).\n' ...
+                'Objects without an annotation are not kept; the mask and selection stay as they are.']);
+            prompts = {'Annotations to use:'; 'Connect the voxels of an object in:'; 'Object colors:'};
+            defAns = {[sourceList, {1}]; [connectivityList, {1}]; [colorList, {1}]};
+            setOpt.HeaderLines = 6;
+            setOpt.WindowWidth = 500;
+            setOpt.mibPath = obj.mibModel.mibPath;
+            [answer, selIndex] = utils.dlgs.inputUniversalDlg(obj.view.gui, header, prompts, defAns, ...
+                dialogTitle, setOpt);
+            if isempty(answer); return; end
+
+            if ~isempty(selectedRows) && selIndex(1) == 1
+                annotationIds = selectedRows(:);
+            else
+                annotationIds = (1:annotationCount)';
+            end
+            connectivity = connectivityValues(selIndex(2));
+            is3D = connectivity > 8;
+            keepMaterialColors = selIndex(3) < 3;    % 1 = material colors, 2 = their variation
+            varyMaterialColors = selIndex(3) == 2;
+            materialColors = dataset.labels.materialColors;   % the conversion replaces them
+
+            %% Find the object under each annotation; nothing changes yet
+            if isBigData
+                maxIndex = 16383;          % the largest BigData model store
+                voxelBudget = 2^28;        % largest box read for one object
+                oldStorePath = char(dataset.labels.modelStorePath);
+            else
+                maxIndex = 4294967295;
+                voxelBudget = Inf;
+            end
+            volumeSize = [dataset.image.height, dataset.image.width, dataset.image.depth];
+            timePoints = dataset.image.time;
+            names = reshape(labelText(annotationIds), [], 1);
+            numbers = str2double(regexp(names, '\d+', 'match', 'once'));
+            positions = labelPosition(annotationIds, :);                                  % [z x y t]
+            seeds = round([positions(:,3), positions(:,2), positions(:,1)]);              % [y x z]
+            seedTimes = round(positions(:,4));
+            startHalfSize = [32 32 8];
+            if ~is3D; startHalfSize(3) = 0; end
+            boxOptions = struct('blockModeSwitch', 0, 'id', id);
+            if isBigData; boxOptions.magFactor = 1; end   % BigData reads and writes at full resolution
+
+            % reason codes: 0 = new object, 1 = no number, 2 = index too large,
+            % 3 = outside, 4 = background, 5 = numbered already with another number,
+            % 6 = object too large, 7 = numbered already with the same number
+            reason = zeros(numel(annotationIds), 1);
+            objectBoxes = zeros(0, 6);       % [y1 y2 x1 x2 z1 z2] per object
+            objectTimes = zeros(0, 1);
+            objectNumbers = zeros(0, 1);
+            objectMaterials = zeros(0, 1);   % material the object came from, for its color
+            objectVoxels = {};               % linear indices of the object inside its box
+
+            wb = uiprogressdlg(obj.view.gui, 'Title', dialogTitle, 'Value', 0, 'Cancelable', 'on', ...
+                'Message', 'Finding the objects under the annotations...');
+            for annIdx = 1:numel(annotationIds)
+                if wb.CancelRequested
+                    delete(wb);
+                    fprintf('Convert model from annotations: cancelled, the model was not changed\n');
+                    return;
+                end
+                wb.Value = 0.9 * (annIdx - 1) / numel(annotationIds);
+
+                number = numbers(annIdx);
+                seed = seeds(annIdx, :);
+                timePoint = seedTimes(annIdx);
+                if isnan(number) || number < 1
+                    reason(annIdx) = 1; continue;
+                end
+                if number > maxIndex
+                    reason(annIdx) = 2; continue;
+                end
+                if any(isnan(seed)) || any(seed < 1) || any(seed > volumeSize) || ...
+                        isnan(timePoint) || timePoint < 1 || timePoint > timePoints
+                    reason(annIdx) = 3; continue;
+                end
+                owner = localFindObject(objectBoxes, objectTimes, objectVoxels, seed, timePoint);
+                if owner > 0
+                    if objectNumbers(owner) == number
+                        reason(annIdx) = 7;
+                    else
+                        reason(annIdx) = 5;
+                    end
+                    continue;
+                end
+                seedBox = [seed(1) seed(1) seed(2) seed(2) seed(3) seed(3)];
+                material = cell2mat(obj.mibModel.getData3D('labels', timePoint, 3, NaN, ...
+                    localBoxOptions(boxOptions, seedBox)));
+                material = double(material(1));
+                if material == 0
+                    reason(annIdx) = 4; continue;
+                end
+                box = [max(1, seed - startHalfSize); min(volumeSize, seed + startHalfSize)];
+                box = box(:)';                                                            % [y1 y2 x1 x2 z1 z2]
+                [voxels, box] = localGrowObject(obj.mibModel, boxOptions, timePoint, material, ...
+                    seed, box, volumeSize, connectivity, is3D, voxelBudget);
+                if isempty(voxels)
+                    reason(annIdx) = 6; continue;
+                end
+                objectBoxes(end+1, :) = box; %#ok<AGROW>
+                objectTimes(end+1, 1) = timePoint; %#ok<AGROW>
+                objectNumbers(end+1, 1) = number; %#ok<AGROW>
+                objectMaterials(end+1, 1) = material; %#ok<AGROW>
+                objectVoxels{end+1, 1} = voxels; %#ok<AGROW>
+            end
+
+            if isempty(objectNumbers)
+                delete(wb);
+                report = localReport(reason, names, maxIndex, voxelBudget);
+                fprintf('Convert model from annotations: no object was numbered, the model was not changed\n%s\n', report);
+                utils.dlgs.inputUniversalDlg(obj.view.gui, 'No object was numbered, the model was not changed', ...
+                    {''}, {localEscapeHtml(report)}, dialogTitle, msgOpt);
+                return;
+            end
+            highestNumber = max(objectNumbers);
+
+            %% Write the new model
+            writtenCount = numel(objectNumbers);
+            if ~isBigData
+                wb.Message = 'Writing the indexed objects...';
+                if highestNumber > 65535
+                    newType = 4294967295; dataClass = 'uint32';
+                else
+                    newType = 65535; dataClass = 'uint16';
+                end
+                newLabels = zeros([volumeSize, 1, timePoints], dataClass);
+                for objIdx = 1:numel(objectNumbers)
+                    if wb.CancelRequested
+                        delete(wb);
+                        fprintf('Convert model from annotations: cancelled, the model was not changed\n');
+                        return;
+                    end
+                    box = objectBoxes(objIdx, :);
+                    [rows, cols, planes] = ind2sub(box([2 4 6]) - box([1 3 5]) + 1, double(objectVoxels{objIdx}));
+                    fullIndices = sub2ind([volumeSize, timePoints], rows + box(1) - 1, cols + box(3) - 1, ...
+                        planes + box(5) - 1, objectTimes(objIdx) + zeros(size(rows)));
+                    newLabels(fullIndices) = objectNumbers(objIdx);
+                end
+                wb.Value = 0.95;
+                % Ctrl+Z brings back the 63/255 model with its materials
+                obj.mibModel.backup('modelLayers', 1, struct('id', id));
+                dataset.convertModel(newType);          % unpacks mask and selection of a 63 model
+                dataset.labels.data = newLabels;
+                dataset.labels.materialsCount = highestNumber;
+                dataset.labels.objects3D = true;        % an index names one object wherever it is
+                dataset.instanceIndex = [];
+                if keepMaterialColors
+                    dataset.labels.materialColors = localMaterialColors(dataset.labels.materialColors, ...
+                        materialColors, objectNumbers, objectMaterials, varyMaterialColors);
+                end
+                delete(wb);
+                cancelledAt = 0;
+            else
+                % the conversion asks for the path of the new store and shows its own progress
+                delete(wb);
+                if ~obj.mibModel.convertModel(16383, struct('id', id), struct('keepMaterials', false))
+                    fprintf('Convert model from annotations: the model was not converted and was not changed\n');
+                    return;
+                end
+                newType = 16383;
+                wb = uiprogressdlg(obj.view.gui, 'Title', dialogTitle, 'Value', 0, 'Cancelable', 'on', ...
+                    'Message', 'Writing the indexed objects...');
+                cancelledAt = 0;
+                for objIdx = 1:numel(objectNumbers)
+                    if wb.CancelRequested
+                        cancelledAt = objIdx;
+                        break;
+                    end
+                    wb.Value = (objIdx - 1) / numel(objectNumbers);
+                    writeOptions = localBoxOptions(boxOptions, objectBoxes(objIdx, :));
+                    crop = cell2mat(obj.mibModel.getData3D('labels', objectTimes(objIdx), 3, NaN, writeOptions));
+                    crop(objectVoxels{objIdx}) = objectNumbers(objIdx);
+                    obj.mibModel.setData3D(crop, 'labels', objectTimes(objIdx), 3, [], writeOptions);
+                end
+                if cancelledAt > 0; writtenCount = cancelledAt - 1; end
+                labels = obj.mibModel.I{id}.labels;
+                if writtenCount > 0
+                    labels.maxIndexUsed = max(labels.maxIndexUsed, max(objectNumbers(1:writtenCount)));
+                end
+                labels.materialsCount = labels.maxIndexUsed;
+                if keepMaterialColors && writtenCount > 0
+                    labels.materialColors = localMaterialColors(labels.materialColors, materialColors, ...
+                        objectNumbers(1:writtenCount), objectMaterials(1:writtenCount), varyMaterialColors);
+                end
+                labels.writeMaterialMetadata();
+                labels.saveLevelMap();
+                delete(wb);
+            end
+
+            notify(obj.mibModel, 'UpdateGuiWidgets', core.ToggleEventData({'ribbonModel', 'checkboxes'}));
+            notify(obj.mibModel, 'ShowImage');
+
+            %% Report
+            if cancelledAt > 0
+                resultHeader = 'Cancelled while writing the objects';
+                summary = sprintf(['Written: %d of %d objects. The new model store holds only these.\n' ...
+                    'The 63-material model is unchanged at:\n%s\nLoad it again to return to it.'], ...
+                    writtenCount, numel(objectNumbers), oldStorePath);
+            else
+                resultHeader = 'The model was converted to indexed objects';
+                summary = sprintf('Numbered objects: %d, indices %d to %d\nNew model type: %d', ...
+                    writtenCount, min(objectNumbers), highestNumber, newType);
+                if isBigData
+                    summary = sprintf(['%s\nThere is no undo. The 63-material model is unchanged at:\n%s\n' ...
+                        'Load it again to return to it.'], summary, oldStorePath);
+                else
+                    summary = sprintf('%s\nPress Ctrl+Z to return to the previous model.', summary);
+                end
+            end
+            summary = sprintf('%s\nObjects without an annotation were not kept.', summary);
+
+            % numbers on several separate objects: per time point, and per slice for 2D objects
+            if is3D
+                numberKeys = [objectNumbers, objectTimes];
+            else
+                numberKeys = [objectNumbers, objectTimes, objectBoxes(:, 5)];
+            end
+            [uniqueKeys, ~, keyIds] = unique(numberKeys, 'rows');
+            sharedNumbers = unique(uniqueKeys(accumarray(keyIds, 1) > 1, 1));
+            if ~isempty(sharedNumbers)
+                summary = sprintf(['%s\n\nThese numbers were given to more than one separate object, ' ...
+                    'each set is now one object: %s'], summary, localListNumbers(sharedNumbers));
+            end
+            report = localReport(reason, names, maxIndex, voxelBudget);
+            if ~isempty(report)
+                summary = sprintf('%s\n\n%s', summary, report);
+            end
+            fprintf('%s\n%s\n', resultHeader, summary);
+
+            resultOpt = msgOpt;
+            if cancelledAt == 0 && isempty(report) && isempty(sharedNumbers)
+                resultOpt.Icon = 'puffin_info';
+            end
+            resultOpt.WindowWidth = 500;
+            utils.dlgs.inputUniversalDlg(obj.view.gui, resultHeader, {''}, {localEscapeHtml(summary)}, ...
+                dialogTitle, resultOpt);
         end
 
         % -----------------------------------------------------------------
@@ -1368,4 +1768,155 @@ classdef Annotations < handle
         end
 
     end
+end
+
+% =====================================================================
+% Local functions of convertModelFromAnnotations
+% =====================================================================
+function options = localBoxOptions(boxOptions, box)
+% getData3D / setData3D options for the box [y1 y2 x1 x2 z1 z2]
+options = boxOptions;
+options.y = box(1:2);
+options.x = box(3:4);
+options.z = box(5:6);
+end
+
+% =====================================================================
+function owner = localFindObject(objectBoxes, objectTimes, objectVoxels, seed, timePoint)
+% Index of the object found already that holds the voxel seed [y x z], or 0.
+% Two annotations on one object must not find it twice: the second would write
+% its number over the first one's object.
+owner = 0;
+if isempty(objectTimes); return; end
+candidates = find(objectTimes == timePoint & ...
+    objectBoxes(:,1) <= seed(1) & objectBoxes(:,2) >= seed(1) & ...
+    objectBoxes(:,3) <= seed(2) & objectBoxes(:,4) >= seed(2) & ...
+    objectBoxes(:,5) <= seed(3) & objectBoxes(:,6) >= seed(3));
+for candidate = reshape(candidates, 1, [])
+    box = objectBoxes(candidate, :);
+    localIndex = sub2ind(box([2 4 6]) - box([1 3 5]) + 1, ...
+        seed(1) - box(1) + 1, seed(2) - box(3) + 1, seed(3) - box(5) + 1);
+    if any(objectVoxels{candidate} == localIndex)
+        owner = candidate;
+        return;
+    end
+end
+end
+
+% =====================================================================
+function [voxels, box] = localGrowObject(mibModel, boxOptions, timePoint, material, seed, box, ...
+    volumeSize, connectivity, is3D, voxelBudget)
+% Connected component of material holding the voxel seed [y x z], found in a box
+% grown until the component no longer touches a face that is not the image
+% border; see convertModelFromAnnotations. Returns the linear indices of the component
+% inside the final box [y1 y2 x1 x2 z1 z2], or [] when the box would exceed
+% voxelBudget voxels.
+%
+% The component is taken from bwconncomp + labelmatrix at the seed voxel rather
+% than from imreconstruct: on a 257 x 257 x 33 box imreconstruct took 175 ms,
+% bwconncomp about 100 times less.
+voxels = [];
+planeConnectivity = 8;
+if connectivity == 6 || connectivity == 4; planeConnectivity = 4; end
+while true
+    crop = cell2mat(mibModel.getData3D('labels', timePoint, 3, material, localBoxOptions(boxOptions, box))) > 0;
+    cropSize = size(crop, 1, 2, 3);
+    if cropSize(3) == 1   % one plane takes the 2D connectivity
+        components = bwconncomp(crop, planeConnectivity);
+    else
+        components = bwconncomp(crop, connectivity);
+    end
+    componentMap = labelmatrix(components);
+    seedComponent = componentMap(seed(1) - box(1) + 1, seed(2) - box(3) + 1, seed(3) - box(5) + 1);
+    componentVoxels = components.PixelIdxList{seedComponent};
+    [rows, cols, planes] = ind2sub(cropSize, componentVoxels);
+    touched = [box(1) > 1 && min(rows) == 1, ...
+        box(2) < volumeSize(1) && max(rows) == cropSize(1), ...
+        box(3) > 1 && min(cols) == 1, ...
+        box(4) < volumeSize(2) && max(cols) == cropSize(2), ...
+        is3D && box(5) > 1 && min(planes) == 1, ...
+        is3D && box(6) < volumeSize(3) && max(planes) == cropSize(3)];
+    if ~any(touched); break; end
+
+    % double the box across every face the object touches
+    extent = box([2 4 6]) - box([1 3 5]) + 1;
+    for axisId = 1:3
+        if touched(2*axisId - 1)
+            box(2*axisId - 1) = max(1, box(2*axisId - 1) - extent(axisId));
+        end
+        if touched(2*axisId)
+            box(2*axisId) = min(volumeSize(axisId), box(2*axisId) + extent(axisId));
+        end
+    end
+    if prod(box([2 4 6]) - box([1 3 5]) + 1) > voxelBudget; return; end
+end
+voxels = componentVoxels;
+if prod(cropSize) < double(intmax('uint32')); voxels = uint32(voxels); end
+end
+
+% =====================================================================
+function report = localReport(reason, names, maxIndex, voxelBudget)
+% Annotations that numbered nothing, by reason, with up to five names each; ''
+% when there are none. Reason 7 (on an object numbered already with the same
+% number) is not a problem and is not listed.
+descriptions = {1, 'no number in the name'; ...
+    2, sprintf('a number above %d, the largest index this model can hold', maxIndex); ...
+    3, 'outside the image'; ...
+    4, 'on the background, with no material under it'; ...
+    5, 'on an object numbered already from another annotation with a different number; the first number was kept'; ...
+    6, sprintf('on an object larger than %d voxels, too large to read', voxelBudget)};
+reportLines = {};
+for row = 1:size(descriptions, 1)
+    hits = find(reason == descriptions{row, 1});
+    if isempty(hits); continue; end
+    shownNames = names(hits(1:min(5, numel(hits))));
+    nameList = strjoin(strcat('"', shownNames, '"'), ', ');
+    if numel(hits) > 5; nameList = [nameList ', ...']; end %#ok<AGROW>
+    reportLines{end+1} = sprintf('- %s: %d (%s)', descriptions{row, 2}, numel(hits), nameList); %#ok<AGROW>
+end
+report = '';
+if isempty(reportLines); return; end
+report = sprintf('Annotations not used: %d\n%s', sum(reason >= 1 & reason <= 6), strjoin(reportLines, newline));
+end
+
+% =====================================================================
+function colors = localMaterialColors(colors, materialColors, objectNumbers, objectMaterials, varyColors)
+% Give every object the color of the material it came from, varied per object
+% when varyColors is true (see "Material color variation" in
+% convertModelFromAnnotations; the same formula as seedMaterialColors of the
+% Membrane instances plugin). The display picks the color of index k from row
+% mod(k - 1, 65535) + 1, so that row is set; a material without a color row keeps
+% the generated color.
+if size(materialColors, 2) ~= 3; return; end
+hasColor = objectMaterials <= size(materialColors, 1);
+objectNumbers = objectNumbers(hasColor);
+rows = mod(objectNumbers - 1, 65535) + 1;
+if max([rows; 0]) > size(colors, 1)
+    colors(end+1:max(rows), :) = rand(max(rows) - size(colors, 1), 3);
+end
+objectColors = materialColors(objectMaterials(hasColor), :);
+if varyColors && ~isempty(objectColors)
+    hsvColors = rgb2hsv(objectColors);
+    saturationOffset = mod(0.5 + objectNumbers * 0.7548776662466927, 1);   % R2 sequence, 0-1
+    valueOffset = mod(0.5 + objectNumbers * 0.5698402909980532, 1);
+    isColored = hsvColors(:, 2) >= 0.05;                                      % grays keep their saturation
+    saturation = hsvColors(:, 2) + 0.30 * (2 * saturationOffset - 1);
+    hsvColors(isColored, 2) = min(1, max(0.2, saturation(isColored)));
+    hsvColors(:, 3) = min(1, max(0.35, hsvColors(:, 3) + 0.25 * (2 * valueOffset - 1)));
+    objectColors = hsv2rgb(hsvColors);
+end
+colors(rows, :) = objectColors;
+end
+
+% =====================================================================
+function text = localListNumbers(numbers)
+% Comma-separated list of up to 20 numbers
+text = strjoin(arrayfun(@(x) sprintf('%d', x), numbers(1:min(20, numel(numbers))), 'UniformOutput', false), ', ');
+if numel(numbers) > 20; text = [text ', ...']; end
+end
+
+% =====================================================================
+function text = localEscapeHtml(text)
+% The message box shows its text as HTML; annotation names may hold < > &
+text = strrep(strrep(strrep(text, '&', '&amp;'), '<', '&lt;'), '>', '&gt;');
 end

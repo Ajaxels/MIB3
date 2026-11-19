@@ -28,6 +28,8 @@ classdef Quantification < handle
         % selected mode index for 3D object mode
         runId
         % [datasetId, materialId] vector for which STATS were calculated; empty if not yet run
+        runPyramidLevel
+        % BigData run only: struct with .level (1-based pyramid level), .size ([Y X Z] of the level) and .scale ([y x z] full-resolution voxels per level voxel) - the frame of STATS.PixelIdxList; [] for a Standard run
         sessionSettingsKey
         % key into mibModel.sessionSettings used by CropObjects to persist crop/jitter settings
         sortingDirection
@@ -81,6 +83,7 @@ classdef Quantification < handle
                             obj.STATS = struct;
                             obj.view.handles.statTable.Data = cell([1, 4]);
                             obj.runId = [];
+                            obj.runPyramidLevel = [];
                         end
                     end
                     obj.updateWidgets();
@@ -112,6 +115,7 @@ classdef Quantification < handle
         tableContextMenu_cb(obj, parameter) % Handle context menu actions on statTable rows
         units_Callback(obj) % Handle selection change in the Units dropdown
         updateBatchOptFromGUI(obj, hObject, eventData)  % Sync BatchOpt from a changed widget using the shared utility
+        updatePyramidLevelOptions(obj) % Refresh BatchOpt.BigData_PyramidLevel from the pyramid of the active dataset
         updateSortingSettings(obj) % Sync sort direction and column index from the sortTable dropdown
         updateWidgets(obj) % Refresh all GUI widgets from the current model state and BatchOpt
 
@@ -218,6 +222,9 @@ classdef Quantification < handle
             obj.BatchOpt.CropObjectsJitterVariation = mibModel.sessionSettings.quantificationCropPatches.CropObjectsJitterVariation;
             obj.BatchOpt.CropObjectsJitterSeed = mibModel.sessionSettings.quantificationCropPatches.CropObjectsJitterSeed;
             obj.BatchOpt.SingleMaskObjectPerDataset = false;
+            obj.BatchOpt.BigData_PyramidLevel = {'s0'};
+            obj.BatchOpt.BigData_PyramidLevel{2} = {'s0'};
+            obj.updatePyramidLevelOptions();   % the levels of a BigData dataset
             obj.BatchOpt.showWaitbar = true;
 
             if contIndex == -1
@@ -249,6 +256,7 @@ classdef Quantification < handle
             obj.BatchOpt.mibBatchTooltip.CropObjectsIncludeMask = 'Also crop mask and save next to the images';
             obj.BatchOpt.mibBatchTooltip.SingleMaskObjectPerDataset = 'Remove other objects within the clipping box of the main detected object';
             obj.BatchOpt.mibBatchTooltip.showWaitbar = 'Show or hide the progress bar during execution';
+            obj.BatchOpt.mibBatchTooltip.BigData_PyramidLevel = '[BigData] pyramid level to measure; s0 is full resolution, results are in the voxels of the level';
             obj.BatchOpt.mibBatchTooltip.CropObjectsJitter = 'Enable jitter for centroid coordinates when cropping objects';
             obj.BatchOpt.mibBatchTooltip.Generate3DPatches = 'Crop 3D patches with a fixed depth around each object centroid';
             obj.BatchOpt.mibBatchTooltip.CropObjectsDepth = 'Depth in Z slices for 3D patches';
@@ -304,6 +312,7 @@ classdef Quantification < handle
             obj.histLimits = [0 1];
             obj.STATS = struct();
             obj.runId = [];
+            obj.runPyramidLevel = [];
             obj.sessionSettingsKey = 'quantificationCropPatches';
             obj.anisotropicVoxelsAgree = 0;
             obj.childControllers = {};

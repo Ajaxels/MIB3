@@ -66,7 +66,10 @@ grep -rn --include=*.m "—\|–" . | grep -v "^./deployed/"
 
 `docs/` is the level that gets over-written. Re-read a user-facing addition before finishing and
 delete every sentence the user could have learned by looking at the screen; deleting the whole
-addition is a normal outcome. Nothing is lost by trimming - the docblock takes the edge cases and
+addition is a normal outcome. Trimming removes sentences, it never compresses the ones that stay:
+each must name its subject, use the screen's words rather than the code's, and state a trap as an
+instruction ("Do not press X after Y"). Re-read the page as its reader (a biologist new to the
+tool) before finishing - see "Short is not the same as compressed" in the style guide. Nothing is lost by trimming - the docblock takes the edge cases and
 contracts, `development/` the rationale and measurements. Worked examples:
 [`guides/documentation_style.md`](development/guides/documentation_style.md).
 

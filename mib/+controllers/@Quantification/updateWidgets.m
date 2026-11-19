@@ -15,6 +15,8 @@ function updateWidgets(obj)
 %   - DatasetType, ObjectShape, DetectionType, Property, Connectivity, Units dropdowns
 %   - Multiple checkbox and MultipleProperty string
 %   - Sorting popup
+%   - BigData_PyramidLevel dropdown - the levels of a BigData dataset, disabled
+%     for other dataset types (skipped while the widget is not in the view)
 %   - Slice/time-point slider state
 %   - statTable enable/disable state via enableStatTable
 %
@@ -100,6 +102,12 @@ if colorChannels > 1
 else
     obj.view.handles.ColorChannel2.Value = colorChannelsList{1};
 end
+
+% --- BigData pyramid level ---
+obj.updatePyramidLevelOptions();
+obj.view.handles.BigData_PyramidLevel.Items = obj.BatchOpt.BigData_PyramidLevel{2};
+obj.view.handles.BigData_PyramidLevel.Value = obj.BatchOpt.BigData_PyramidLevel{1};
+obj.view.handles.BigData_PyramidLevel.Enable = strcmp(dataset.datasetType, 'BigData');
 
 % --- Table enable state ---
 obj.enableStatTable();

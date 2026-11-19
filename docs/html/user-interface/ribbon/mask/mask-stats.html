@@ -5961,7 +5961,20 @@
 <ul>
 <li><strong>Object source</strong> (<span class="widget widget-dropdown">Material</span>): choose <em>Mask</em>, <em>Exterior</em>, or any model material. For models with more than 255 materials a <em>Model</em> option is also listed, quantifying all materials at once.</li>
 <li><strong>Dataset extent</strong> (<span class="widget widget-dropdown">DatasetType</span>): <em>2D, Slice</em> (current slice), <em>3D, Stack</em> (current Z-stack), or <em>4D, Dataset</em> (whole volume).</li>
+<li><strong>Level</strong> (<span class="widget widget-dropdown">Level</span>, BigData datasets only): the resolution level to measure, from <em>s0</em> (full resolution) to the coarsest level. A coarser level is faster and needs less memory.</li>
 </ul>
+<div class="admonition info">
+<p class="admonition-title">Quantification of BigData datasets</p>
+<ul>
+<li>Values are measured in the pixels of the chosen level. With physical units, the pixel size of that level is used. A coarse level gives coarser values, because small details are lost.</li>
+<li>Centroids, the slice numbers in the table and the exported coordinates are in full-resolution pixels, so clicking a row jumps to the object at any zoom.</li>
+<li>The whole level is measured, even when the block mode is on.</li>
+<li>Use the XY view for <strong>Shape2D</strong>.</li>
+<li><strong>Shape3D</strong> loads the whole level into memory. If it does not fit, choose a coarser level or use <strong>Shape2D</strong>.</li>
+<li>The selection made from the table follows the outlines at the chosen level, so a coarse level gives coarse outlines when you zoom in.</li>
+<li><strong>Objects to a new model</strong> is not available.</li>
+</ul>
+</div>
 <hr />
 <h2 id="object-shape">Object shape<a class="headerlink" href="#object-shape" title="Permanent link">&para;</a></h2>
 <p><img align="left" alt="Materials panel" src="images/menuMaskStatistics-objshape.png" /></p>

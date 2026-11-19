@@ -64,6 +64,18 @@ classdef FilteredSliceProvider < io.savers.SliceProvider
 % channels of the source read, or the constructor errors
 % (``io:FilteredSliceProvider:regionMaskResult``).
 %
+% **Slice range.** ``SliceRange = [first last]`` (level slices) streams those
+% slices only: ``NumSlices`` is the range, and slice ``z`` of ``getSlice`` /
+% ``getSliceRows`` is level slice ``first + z - 1``. The ``z`` given to a block
+% function of two or three inputs is the level slice, as without a range. The
+% Z halo of a 3D function is read beyond the range, clamped to the level, as
+% the Y/X halo is beyond the ``Region``. ``core.MibDataset.cropToBigData``
+% uses ``Region`` and ``SliceRange`` with an identity function to stream a crop.
+%
+% **Time point.** One time point is streamed, ``TimePoint`` (default 1); the
+% reads ask for it explicitly, since ``getData`` without ``t`` returns every
+% time point of the store.
+%
 % **Parallel writing.** The provider can be sent to the workers of a process
 % pool (``saveStreamResumable`` with a pool, ``parallel.pool.Constant``). The
 % image handle with its open readers is ``Transient`` and is not serialised:
@@ -112,6 +124,9 @@ classdef FilteredSliceProvider < io.savers.SliceProvider
         LevelSize    (1,2) double = [1 1] % [height width] of the level
         Region       (1,4) double = [1 1 1 1]   % [yFirst yLast xFirst xLast] of the streamed box, level pixels
         RegionMask   = []                 % logical box mask, [] = the whole box; false keeps the source
+        SliceRange   (1,2) double = [1 1] % [first last] level slices that are streamed
+        LevelDepth   (1,1) double = 1     % slices of the level, the clamp of the Z halo
+        TimePoint    (1,1) double = 1     % time point that is read
     end
 
     methods
@@ -137,6 +152,9 @@ classdef FilteredSliceProvider < io.savers.SliceProvider
             %     stream, default ``[]`` (the whole level); see the class help
             %   - **options.RegionMask** - logical ``[boxHeight boxWidth]``, default ``[]``
             %     (the whole box); false pixels keep the source values
+            %   - **options.SliceRange** - ``[first last]`` level slices to stream,
+            %     default ``[]`` (all slices); see the class help
+            %   - **options.TimePoint** - [double] time point to read, default 1
             arguments
                 source
                 level (1,1) double {mustBeInteger, mustBePositive}
@@ -146,6 +164,8 @@ classdef FilteredSliceProvider < io.savers.SliceProvider
                 options.HaloZ (1,1) double {mustBeInteger, mustBeNonnegative} = 0
                 options.Region double = []
                 options.RegionMask = []
+                options.SliceRange double = []
+                options.TimePoint (1,1) double {mustBeInteger, mustBePositive} = 1
             end
             levelSizes = source.pyramid.levelImageSizes;   % [N x 3] Y X Z
             if level > size(levelSizes, 1)
@@ -176,7 +196,22 @@ classdef FilteredSliceProvider < io.savers.SliceProvider
             obj.Region = region(:)';
             height = region(2) - region(1) + 1;
             width  = region(4) - region(3) + 1;
-            depth  = levelSizes(level, 3);
+            obj.LevelDepth = levelSizes(level, 3);
+            sliceRange = options.SliceRange;
+            if isempty(sliceRange); sliceRange = [1 obj.LevelDepth]; end
+            if numel(sliceRange) ~= 2 || any(sliceRange ~= round(sliceRange)) || sliceRange(1) < 1 || ...
+                    sliceRange(2) > obj.LevelDepth || sliceRange(2) < sliceRange(1)
+                error('io:FilteredSliceProvider:wrongSliceRange', ...
+                    'The slice range [%s] is not inside the %d slices of level %d.', ...
+                    num2str(sliceRange(:)'), obj.LevelDepth, level);
+            end
+            obj.SliceRange = sliceRange(:)';
+            if options.TimePoint > source.time
+                error('io:FilteredSliceProvider:wrongTimePoint', ...
+                    'Time point %d requested, the image has %d.', options.TimePoint, source.time);
+            end
+            obj.TimePoint = options.TimePoint;
+            depth  = sliceRange(2) - sliceRange(1) + 1;
             if ~isempty(options.RegionMask) && ~isequal(size(options.RegionMask), [height width])
                 error('io:FilteredSliceProvider:wrongRegion', 'The region mask is %d x %d, the region %d x %d.', ...
                     size(options.RegionMask, 1), size(options.RegionMask, 2), height, width);
@@ -230,8 +265,10 @@ classdef FilteredSliceProvider < io.savers.SliceProvider
         function rows = processRows(obj, z, rowFirst, rowLast)
             % PROCESSROWS - Read the band with its halo, apply the function, crop the halo.
             %
-            % ``rowFirst``, ``rowLast`` count from the top of the region; the
-            % reads are in level rows and columns.
+            % ``rowFirst``, ``rowLast`` count from the top of the region and ``z``
+            % from the first slice of the range; the reads are in level rows,
+            % columns and slices.
+            z = obj.SliceRange(1) + z - 1;          % the level slice
             levelFirst = obj.Region(1) + rowFirst - 1;
             levelLast = obj.Region(1) + rowLast - 1;
             readFirst = max(1, levelFirst - obj.HaloYX);
@@ -245,7 +282,7 @@ classdef FilteredSliceProvider < io.savers.SliceProvider
                 columnLast = min(obj.LevelSize(2), obj.Region(4) + obj.HaloYX);
             end
             zFirst = max(1, z - obj.HaloZ);
-            zLast  = min(obj.NumSlices, z + obj.HaloZ);
+            zLast  = min(obj.LevelDepth, z + obj.HaloZ);
 
             if isempty(obj.Source)
                 % deserialised on a pool worker: the image handle is Transient, open the store again
@@ -263,6 +300,7 @@ classdef FilteredSliceProvider < io.savers.SliceProvider
                 readOptions.x = [(columnFirst - 1) * obj.ScaleYXZ(2) + 1, columnLast * obj.ScaleYXZ(2)];
             end
             readOptions.z = [(zFirst - 1) * obj.ScaleYXZ(3) + 1, zLast * obj.ScaleYXZ(3)];
+            readOptions.t = [obj.TimePoint, obj.TimePoint];
             block = obj.Source.getData('image', 3, obj.ColChannel, readOptions);   % [y x z c]
 
             keepRows = (levelFirst - readFirst + 1):(levelLast - readFirst + 1);

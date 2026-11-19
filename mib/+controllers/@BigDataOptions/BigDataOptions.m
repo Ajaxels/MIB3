@@ -1211,49 +1211,23 @@ classdef BigDataOptions < handle
         function [pool, releaseWorkers, cancelled] = startPool(obj, BatchOpt, parentFigure)
             % STARTPOOL - The process pool of a run with ``BatchOpt.UseParallelComputing``; ``[]`` without it.
             %
-            % The open pool is used as it is; when none is open, one of
-            % ``preferences.System.cpuParallelLimit`` workers is started (about
-            % 15 s for 4 workers), as the Standard filters do. A thread pool is
-            % refused (``controllers:BigDataOptions:threadPool``): zarrMex and
-            % the loaders need process workers. On every worker zarrMex is
-            % pinned (``io.zarr.pinNativeLibrary``, as ``mib3.m`` does on the
-            % client), otherwise a worker may crash when the pool closes.
+            % The pool itself comes from ``utils.bigdata.startProcessPool`` (the
+            % open pool, or ``preferences.System.cpuParallelLimit`` new workers;
+            % a thread pool is refused, ``utils:bigdata:threadPool``; zarrMex is
+            % pinned on every worker), shared with ``controllers.CropDataset``.
             %
             % Output Arguments:
             %   - **pool** - ``parallel.Pool`` or ``[]`` (run on the client)
             %   - **releaseWorkers** - ``onCleanup`` that clears the chunk cache
-            %     of every worker; keep it until the run returns. The cache holds
-            %     chunks of the source (up to 512 MB per worker), and an overwrite
-            %     changes them without changing their cache keys, so a later run on
-            %     the workers would read the old pixels
+            %     of every worker; keep it until the run returns (see
+            %     ``utils.bigdata.startProcessPool``)
             %   - **cancelled** - [logical] Cancel while the pool was starting
             pool = [];
             releaseWorkers = [];
             cancelled = false;
             if ~isfield(BatchOpt, 'UseParallelComputing') || ~BatchOpt.UseParallelComputing; return; end
-            pool = gcp('nocreate');
-            if isempty(pool)
-                progressDialog = [];
-                if ~isempty(parentFigure)
-                    % parpool cannot stop midway; Cancel is checked once it returns
-                    progressDialog = uiprogressdlg(parentFigure, 'Title', 'Parallel processing', ...
-                        'Message', sprintf('Starting a parallel pool of %d workers...', ...
-                        obj.mibModel.preferences.System.cpuParallelLimit), 'Indeterminate', 'on', 'Cancelable', 'on');
-                    cleanupDialog = onCleanup(@() delete(progressDialog));
-                end
-                pool = parpool(obj.mibModel.preferences.System.cpuParallelLimit);
-                if ~isempty(progressDialog) && progressDialog.CancelRequested
-                    cancelled = true;
-                    return;
-                end
-            end
-            if isa(pool, 'parallel.ThreadPool')
-                error('controllers:BigDataOptions:threadPool', ['The open parallel pool runs on threads; BigData ' ...
-                    'processing needs a pool of processes.\nStop the pool (Home ribbon, Preferences, Parallel pool) and start again, or ' ...
-                    'clear Use parallel computing.']);
-            end
-            wait(parfevalOnAll(pool, @io.zarr.pinNativeLibrary, 0));
-            releaseWorkers = onCleanup(@() parfevalOnAll(pool, @io.zarr.ChunkCache.clear, 0));
+            [pool, releaseWorkers, cancelled] = utils.bigdata.startProcessPool( ...
+                obj.mibModel.preferences.System.cpuParallelLimit, parentFigure);
         end
 
         function [cancelled, written] = processBands(~, provider, tasks, pool, progressDialog, consume)

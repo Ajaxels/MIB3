@@ -6,7 +6,9 @@ function refreshROIList(obj, previousValue)
 %
 %      obj.refreshROIList(previousValue)
 %
-% preserve the previously selected value.
+% preserve the previously selected value. Then notifies ``UpdateDialog`` with
+% ``Parameters.DialogName = 'ROI'``, so open dialogs that list the ROIs update
+% their lists (``controllers.CropDataset``).
 %
 % Input Arguments:
 %   - **obj** - controllers.MibRoi - the ROI panel controller
@@ -58,4 +60,8 @@ if nargin >= 2 && ~isempty(previousValue)
 else
     obj.handles.roiList.Value = 'All';
 end
+
+% the ROIs changed (added, removed, duplicated, loaded): dialogs that list them
+% follow, e.g. controllers.CropDataset (ROI mode, Select ROI)
+notify(obj.mibModel, 'UpdateDialog', core.ToggleEventData(struct('DialogName', 'ROI')));
 end

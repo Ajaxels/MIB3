@@ -64,8 +64,14 @@ classdef BoundingBox < handle
                 return;
             end
             switch evnt.EventName
-                case {'UpdateGuiWidgets', 'NewDataset', 'UpdateDialog'}
+                case {'UpdateGuiWidgets', 'NewDataset'}
                     obj.updateWidgets();
+                case 'UpdateDialog'
+                    % only the request for this dialog (other dialogs use the event too, e.g. 'ROI')
+                    if isprop(evnt, 'Parameters') && isfield(evnt.Parameters, 'DialogName') && ...
+                            strcmp(evnt.Parameters.DialogName, 'BoundingBox')
+                        obj.updateWidgets();
+                    end
             end
         end
     end

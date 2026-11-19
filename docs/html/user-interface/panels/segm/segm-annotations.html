@@ -5951,6 +5951,12 @@
 <div class="clear-float"></div>
 <ul>
 <li>
+<p><strong>Convert model to indexed objects from annotations</strong>: turn a model of materials into a model of numbered objects. The object under each annotation gets the first number found in the annotation name: "cell 305" gives object 305. Put the object number before any other digits in the name, because "m2_cell12" gives 2, not 12. Objects without an annotation are removed from the new model; the mask and the selection are kept. <em>Material color variation</em> keeps the hue of each material but makes neighbouring objects lighter, darker or paler, so touching objects of one material can be told apart. A report at the end lists the annotations that were not used and why.</p>
+<ul>
+<li>On BigData, the new model is saved as a new model file at a place you choose, and the original model file stays unchanged. Ctrl+Z cannot undo this step; load the original model file to return to it. Object numbers can be at most 16383.</li>
+</ul>
+</li>
+<li>
 <p><strong>Export selected annotations</strong>:</p>
 <ul>
 <li>export to MATLAB</li>

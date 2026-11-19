@@ -75,6 +75,23 @@ For the downloads visit [MIB website](https://mib.helsinki.fi/downloads.html) fo
         - Image filters can be limited to the ROIs and can run on parallel workers; the pool is
           started and stopped from *Home ribbon -> Preferences -> Parallel pool*
         - a cancelled run to a new store can be kept and resumed later
+    - **Quantification of BigData datasets**: objects of the model or mask of a BigData dataset can
+      be measured with **Quantify** (Mask and Model ribbon tabs). The **Level** dropdown selects the resolution level to
+      measure; a coarser level is faster and needs less memory. Values are given in the pixels of the
+      chosen level, while object positions are given in full-resolution pixels, so jumping to an
+      object, annotations and cropping of objects work at any level. Objects selected in the table
+      are highlighted at the chosen level.
+      See [Quantification](../../user-interface/ribbon/mask/mask-stats.md#material)
+    - **Crop of BigData datasets**:
+        - with *Output type* **BigData**, the crop is read and written piece by piece, so it can be
+          larger than the memory of the computer
+        - the new **parallel processing** checkbox uses several processor cores, which is faster for
+          large crops
+        - a crop stopped with *Cancel* can be kept and finished later with *Resume*
+        - a model with up to 16383 objects keeps the numbers of its objects
+        - with *Output type* **Standard**, MIB first checks that the crop fits into the free memory;
+          if it does not, a message says how much memory is needed and nothing is cropped
+      See [Crop dataset](../../user-interface/ribbon/dataset/dataset-crop.md#bigdata-datasets)
     - **BigData locks**: the image and the labels of a BigData dataset can be locked against
       accidental changes; a loaded model opens locked by default.
       See [BigData datasets](../dataset-types/index.md#bigdata)
@@ -107,6 +124,8 @@ For the downloads visit [MIB website](https://mib.helsinki.fi/downloads.html) fo
           Computer Vision Toolbox features
         - Image converter: OME-Zarr conversion of AmiraMesh volumes
         - DeepMIB: *Export network*
+        - Quantify: *Correlation* of 2D objects used the wrong color channels when some
+          channels of the image were hidden
         - the installation directory of MIB on macOS is detected correctly
 
 ???+ info "RELEASE 2026.09 / 03.06.2025 (MIB3 release)"

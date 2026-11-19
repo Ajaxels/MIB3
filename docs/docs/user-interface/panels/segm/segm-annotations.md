@@ -117,6 +117,9 @@ Use the following key shortcuts to define and restore presets
 - ![Interpolate annotations across slices](images/PanelsSegmentationAnn-interpolate.png){.on-glb align=right width="320"}
 **Interpolate between selected annotations**: interpolate annotations across slices (linear for two, linear/cubic/spline for more).
 <div class="clear-float"></div>
+- **Convert model to indexed objects from annotations**: turn a model of materials into a model of numbered objects. The object under each annotation gets the first number found in the annotation name: "cell 305" gives object 305. Put the object number before any other digits in the name, because "m2_cell12" gives 2, not 12. Objects without an annotation are removed from the new model; the mask and the selection are kept. *Material color variation* keeps the hue of each material but makes neighbouring objects lighter, darker or paler, so touching objects of one material can be told apart. A report at the end lists the annotations that were not used and why.
+    - On BigData, the new model is saved as a new model file at a place you choose, and the original model file stays unchanged. Ctrl+Z cannot undo this step; load the original model file to return to it. Object numbers can be at most 16383.
+
 - **Export selected annotations**:
     - export to MATLAB
     - Amira landmarks (coordinates only)

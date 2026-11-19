@@ -84,6 +84,10 @@ OPTIONS.connectivity  = obj.BatchOpt.Connectivity{1};
 OPTIONS.colorChannel1 = obj.BatchOpt.ColorChannel1{1};
 OPTIONS.colorChannel2 = obj.BatchOpt.ColorChannel2{1};
 OPTIONS.units         = obj.BatchOpt.Units{1};
+if ~isempty(obj.runPyramidLevel)
+    % BigData: values are in the voxels of the measured level; centroids and boxes in full resolution
+    OPTIONS.pyramidLevel = sprintf('s%d', obj.runPyramidLevel.level - 1);
+end
 
 if strcmp(obj.BatchOpt.MaterialIndex, '-1')
     OPTIONS.type = 'Mask';
@@ -218,6 +222,15 @@ elseif ismember(obj.BatchOpt.ExportResultsTo{1}, obj.BatchOpt.ExportResultsTo{2}
             end
         end
         pixSize = dataset.image.pixSize;
+        if ~isempty(obj.runPyramidLevel)
+            % BigData: the voxel size of the measured level, in which the values are
+            levelScale = obj.runPyramidLevel.scale;
+            pixSize.y = pixSize.y * levelScale(1);
+            pixSize.x = pixSize.x * levelScale(2);
+            pixSize.z = pixSize.z * levelScale(3);
+            s(6,1) = {sprintf('BigData pyramid level %s: values in its voxels, centroids in full-resolution pixels', ...
+                OPTIONS.pyramidLevel)};
+        end
         fieldNames = fieldnames(pixSize);
         s(4,1) = {'Pixel size and units:'};
         for field = 1:numel(fieldNames)

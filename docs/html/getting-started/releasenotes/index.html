@@ -5617,6 +5617,19 @@ For the downloads visit <a href="https://mib.helsinki.fi/downloads.html">MIB web
 <li>a cancelled run to a new store can be kept and resumed later</li>
 </ul>
 </li>
+<li><strong>Quantification of BigData datasets</strong>: objects of the model or mask of a BigData dataset can
+  be measured with <strong>Quantify</strong> (Mask and Model ribbon tabs). The <strong>Level</strong> dropdown selects the resolution level to
+  measure; a coarser level is faster and needs less memory. Values are given in the pixels of the
+  chosen level, while object positions are given in full-resolution pixels, so jumping to an
+  object, annotations and cropping of objects work at any level. Objects selected in the table
+  are highlighted at the chosen level.
+  See <a href="../../user-interface/ribbon/mask/mask-stats.html#material">Quantification</a></li>
+<li><strong>Crop of BigData datasets</strong>: with <em>Output type</em> <strong>BigData</strong> the crop is read and written part by
+  part, so crops larger than the memory of the computer can be made; it can run on parallel
+  workers (<strong>parallel processing</strong>), and a stopped crop can be kept and resumed later. A 16383 instance
+  model keeps its object numbers. With <em>Output type</em> <strong>Standard</strong> a crop that does not fit into
+  the free memory is refused with a message instead of being started.
+  See <a href="../../user-interface/ribbon/dataset/dataset-crop.html#bigdata-datasets">Crop dataset</a></li>
 <li><strong>BigData locks</strong>: the image and the labels of a BigData dataset can be locked against
   accidental changes; a loaded model opens locked by default.
   See <a href="../dataset-types/index.html#bigdata">BigData datasets</a></li>
@@ -5651,6 +5664,8 @@ For the downloads visit <a href="https://mib.helsinki.fi/downloads.html">MIB web
   Computer Vision Toolbox features</li>
 <li>Image converter: OME-Zarr conversion of AmiraMesh volumes</li>
 <li>DeepMIB: <em>Export network</em></li>
+<li>Quantify: <em>Correlation</em> of 2D objects used the wrong color channels when some
+  channels of the image were hidden</li>
 <li>the installation directory of MIB on macOS is detected correctly</li>
 </ul>
 </li>

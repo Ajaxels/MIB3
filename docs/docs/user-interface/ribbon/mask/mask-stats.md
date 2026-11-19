@@ -34,6 +34,17 @@ Use the combo boxes to select the object source and the dataset extent:
 
 - **Object source** (<span class="widget widget-dropdown">Material</span>): choose *Mask*, *Exterior*, or any model material. For models with more than 255 materials a *Model* option is also listed, quantifying all materials at once.
 - **Dataset extent** (<span class="widget widget-dropdown">DatasetType</span>): *2D, Slice* (current slice), *3D, Stack* (current Z-stack), or *4D, Dataset* (whole volume).
+- **Level** (<span class="widget widget-dropdown">Level</span>, BigData datasets only): the resolution level to measure, from *s0* (full resolution) to the coarsest level. A coarser level is faster and needs less memory.
+
+!!! info "Quantification of BigData datasets"
+
+    - The objects are measured at the level selected in **Level**. Areas, lengths and volumes are given in the pixels of that level, or, with physical units, in units computed from the pixel size of that level. A coarse level gives less precise values, because small details are lost.
+    - Object positions (centroids, the slice numbers in the table and the exported coordinates) are always given for the full-resolution image. Clicking a row in the table therefore takes you to the object at any zoom.
+    - The whole level is measured, even when the block mode is on.
+    - **Shape2D** works only in the XY view. Switch the view to XY before starting.
+    - **Shape3D** loads the whole level into memory. If MIB reports that it does not fit, choose a coarser level or use **Shape2D**.
+    - Objects selected from the table are drawn into the selection at the chosen level. When you zoom in, their outlines therefore look as coarse as that level.
+    - **Objects to a new model** is not available for BigData datasets.
 
 ---
 

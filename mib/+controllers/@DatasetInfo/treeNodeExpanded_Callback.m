@@ -69,13 +69,14 @@ switch nodeData.populationType
             scale  = pyramid.levelScaleFactors(levelIdx, 1);
             dims   = pyramid.levelImageSizes(levelIdx, 1:2);     % [Y X] pixels
 
-            levelText = sprintf('Level %d (%c%g): %d %c %d px', ...
+            levelText = sprintf('Level %d (%c%g): %d%c%d', ...
                 levelIdx, char(215), scale, dims(2), char(215), dims(1));
             if size(pyramid.levelImageSizes, 2) >= 3
-                levelText = [levelText, sprintf(', %d z', pyramid.levelImageSizes(levelIdx, 3))]; %#ok<AGROW>
+                levelText = [levelText, sprintf('%c%d', char(215), pyramid.levelImageSizes(levelIdx, 3))]; %#ok<AGROW>
             end
 
-            % chunk dimensions as Y x X x Z, mapped through the store's axis order
+            % chunk dimensions as X x Y x Z, mapped through the store's axis order
+            chunkShape = [];
             if iscell(pyramid.chunkSizes) && levelIdx <= numel(pyramid.chunkSizes) ...
                     && ~isempty(pyramid.chunkSizes{levelIdx})
                 chunkShape = pyramid.chunkSizes{levelIdx};
@@ -85,13 +86,15 @@ switch nodeData.populationType
                 end
             end
 
-            % shard dimensions (same convention)
+            % shard as a factor of the chunk (same convention); its full size without a chunk shape
             if iscell(pyramid.shardSizes) && levelIdx <= numel(pyramid.shardSizes) ...
                     && ~isempty(pyramid.shardSizes{levelIdx})
                 shardShape = pyramid.shardSizes{levelIdx};
                 if numel(shardShape) >= 2
-                    levelText = [levelText, '  shard ', ...
-                        controllers.DatasetInfo.formatBlockShape(shardShape, pyramid)]; %#ok<AGROW>
+                    shardLabel = '  shard ';
+                    if numel(chunkShape) == numel(shardShape); shardLabel = '  shard factor '; end
+                    levelText = [levelText, shardLabel, ...
+                        controllers.DatasetInfo.formatBlockShape(shardShape, pyramid, chunkShape)]; %#ok<AGROW>
                 end
             end
 

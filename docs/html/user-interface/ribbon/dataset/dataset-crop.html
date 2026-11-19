@@ -5998,6 +5998,9 @@ format the cropped data is saved in. It is enabled only when the source dataset 
 can be worked on with all standard MIB tools.</p>
 <p>The voxel size of the output reflects the selected pyramid level - cropping at s1 
 doubles the voxel size relative to s0.</p>
+<p>When the cropped area does not fit into the free memory of the computer, the crop is not done and 
+a message gives the memory needed. Select a coarser 
+<span class="widget widget-dropdown">Zarr pyramid level</span>, a smaller area, or the <strong>BigData</strong> output.</p>
 <h4 id="bigdata">BigData<a class="headerlink" href="#bigdata" title="Permanent link">&para;</a></h4>
 <p>The cropped region is written to a <strong>new OME-Zarr v3 pyramid</strong> on disk. A file-save 
 dialog appears to choose the destination <code>.zarr3</code> folder, followed by the Zarr settings 
@@ -6009,6 +6012,21 @@ of the same level of the source, or change them before writing.</p>
 <p>A confirmation dialog is shown before the file picker because this operation writes 
 a new pyramid to disk and replaces the dataset in the destination buffer.</p>
 </div>
+<p>The crop is read and written part by part, so it can be larger than the memory of the computer. 
+It is always written at full resolution (s0), for one time point: set 
+<span class="widget widget-edit">Time (min:max)</span> to a single time point for a time series.</p>
+<ul>
+<li><span class="widget widget-checkbox">parallel processing</span> reads and writes the image on the workers 
+  of the parallel pool, starting one first when none is open. It is available only for this output; the 
+  model is copied without it. The pool is started and stopped from 
+  <em>Home ribbon -&gt; Preferences -&gt; Parallel pool</em>.</li>
+<li>A crop stopped with <span class="widget widget-button">Cancel</span> while the image is written can be 
+  kept and finished later: crop the same area to the same <code>.zarr3</code> path again, with the same settings, 
+  and choose <span class="widget widget-button">Resume</span>. A crop stopped by an error is kept the 
+  same way.</li>
+<li>A crop stopped while the model is copied keeps the complete image on disk, deletes the unfinished 
+  model and is not opened.</li>
+</ul>
 <p><strong>Output files created:</strong></p>
 <table>
 <thead>

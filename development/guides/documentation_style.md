@@ -88,6 +88,47 @@ The cancel behaviour of the same tool, first draft and final:
 The stage names and the slice counter are on screen. That cancelling is *safe* is not - the user
 cannot tell by looking whether a half-stitched model was written - so that clause stays.
 
+## Short is not the same as compressed
+
+The habits above remove **sentences**. They never license squeezing the sentences that stay. The
+typical failure is a page that is short and correct, yet unreadable, because it was written from the
+code's point of view: every sentence is true, but it rests on knowledge the reader does not have.
+
+> ~~Both drop the corrections and can be taken back with Undo. Update merge afterwards joins the
+> fragments again by the merge settings and does not keep the objects taken from a model.~~
+>
+> Two buttons throw away all corrections and start again from another set of objects. If you change
+> your mind, Undo brings the corrections back.
+>
+> !!! warning
+>     Do not press *Update merge* after *Table from model*. Update merge calculates the objects
+>     again from the fragments with the merge settings, so the objects taken from the model are lost.
+
+The first version names no subject ("Both" points two bullets back), uses the code's model ("joins
+the fragments again", "does not keep") and leaves the reader to work out the conclusion, which is an
+instruction: do not press that button. Before finishing a `docs/` page, check every sentence that
+survived the trimming:
+
+- **Name the subject.** No "both", "it", "them", "this" whose referent is in another paragraph or
+  bullet. A reader arrives from search, in the middle of the page.
+- **Use the words of the screen and of the field, not of the code.** Widget labels as shown, plain
+  words for the rest. Terms from docblocks and variable names (*destination*, *table*, *pending*,
+  *left out*, *graph*, *block*) need a definition on the page, or a plain replacement. A word with
+  two meanings on one page (the starting points of a watershed and manual *seeds*) gets two names.
+- **State the consequence as an instruction.** When a sentence describes an effect the reader must
+  avoid or rely on, say what to do: "Do not press X after Y: it ...", not "X afterwards does not
+  keep ...". A trap the reader can fall into belongs in a `!!! warning`.
+- **Keep the "so" that makes a rule usable.** "No justification" means no answer to a question the
+  user never asked. A one-clause reason the reader needs to decide or to avoid a mistake ("so the
+  objects taken from the model are lost") stays.
+- **Prefer steps over a paragraph** when the reader has to do things in order.
+- **Do not save words** by dropping subjects, articles or connectives. A sentence a reader has to
+  read twice costs more than the five words it saved.
+
+Then read the page once as its reader, for a user page a biologist new to the tool: for each
+paragraph, would they know every term, and could they act on it? Mechanical checks (dashes, links,
+images) do not catch this; only this read does.
+
 ## Docblocks are the opposite case
 
 Being terse there is the mistake. They are the developer reference, so an argument with a

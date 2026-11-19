@@ -43,11 +43,11 @@ classdef DatasetInfo < handle
             end
         end
 
-        function shapeText = formatBlockShape(blockShape, pyramid)
-            % FORMATBLOCKSHAPE - Chunk or shard shape as ``Y×X×Z`` text for the pyramid rows.
+        function shapeText = formatBlockShape(blockShape, pyramid, chunkShape)
+            % FORMATBLOCKSHAPE - Chunk shape or shard factor as ``X×Y×Z`` text for the pyramid rows.
             %
-            % The level rows print image sizes as width x height, but a block
-            % shape is printed Y, X, Z so its depth is visible - that depth is
+            % Printed in the same width x height x depth order as the level
+            % image size, so the depth of a block is visible - that depth is
             % what a single-slice read over-fetches.
             %
             % Syntax:
@@ -55,7 +55,9 @@ classdef DatasetInfo < handle
             %
             %      pyramid = obj.mibModel.I{id}.image.pyramid;
             %      shapeText = controllers.DatasetInfo.formatBlockShape(pyramid.chunkSizes{1}, pyramid)
-            %      % returns '128×128×128' for a 'zyx' store chunked [128 128 128]
+            %      % returns '64×64×16' for a 'zyx' store chunked [16 64 64]
+            %      factorText = controllers.DatasetInfo.formatBlockShape(pyramid.shardSizes{1}, pyramid, pyramid.chunkSizes{1})
+            %      % returns '4×4×4' for shards [64 256 256] of those chunks
             %
             % Input Arguments:
             %   - **blockShape** - [numeric vector] one entry of
@@ -67,18 +69,28 @@ classdef DatasetInfo < handle
             %     field; when it is missing, empty or not the same length as
             %     ``blockShape``, the axes are taken as the trailing axes of
             %     ``'tczyx'``, the OME-Zarr order
+            %   - **chunkShape** - [numeric vector, optional] the chunk shape of
+            %     the same level, in the same axis order. When given and of the
+            %     same length as ``blockShape``, the text is the shard factor
+            %     ``blockShape ./ chunkShape`` (chunks per shard along each axis)
+            %     instead of the shape; Zarr v3 requires shards to be whole
+            %     multiples of the chunk, the division is rounded only to absorb
+            %     a malformed store
             %
             % Output Arguments:
-            %   - **shapeText** - [char] ``'Y×X×Z'``, or ``'Y×X'`` when the store
+            %   - **shapeText** - [char] ``'X×Y×Z'``, or ``'X×Y'`` when the store
             %     has no z axis
             blockShape = double(blockShape(:)');
+            if nargin > 2 && numel(chunkShape) == numel(blockShape) && all(chunkShape > 0)
+                blockShape = round(blockShape ./ double(chunkShape(:)'));
+            end
             axisOrder = '';
             if isfield(pyramid, 'axisOrder'); axisOrder = lower(char(pyramid.axisOrder)); end
             if numel(axisOrder) ~= numel(blockShape)
                 fallbackOrder = 'tczyx';
                 axisOrder = fallbackOrder(max(1, end-numel(blockShape)+1):end);
             end
-            axisIndex = [find(axisOrder == 'y', 1), find(axisOrder == 'x', 1), find(axisOrder == 'z', 1)];
+            axisIndex = [find(axisOrder == 'x', 1), find(axisOrder == 'y', 1), find(axisOrder == 'z', 1)];
             axisIndex = axisIndex(axisIndex <= numel(blockShape));
             shapeText = char(strjoin(string(blockShape(axisIndex)), char(215)));
         end
@@ -1401,11 +1413,12 @@ classdef DatasetInfo < handle
                 for levelIdx = 1:nLevels
                     scale = pyramid.levelScaleFactors(levelIdx, 1);
                     dims  = pyramid.levelImageSizes(levelIdx, 1:2);
-                    levelText = sprintf('Level %d (%c%g): %d %c %d px', ...
+                    levelText = sprintf('Level %d (%c%g): %d%c%d', ...
                         levelIdx, char(215), scale, dims(2), char(215), dims(1));
                     if size(pyramid.levelImageSizes, 2) >= 3
-                        levelText = [levelText, sprintf(', %d z', pyramid.levelImageSizes(levelIdx, 3))];
+                        levelText = [levelText, sprintf('%c%d', char(215), pyramid.levelImageSizes(levelIdx, 3))];
                     end
+                    chunkShape = [];
                     if iscell(pyramid.chunkSizes) && levelIdx <= numel(pyramid.chunkSizes) ...
                             && ~isempty(pyramid.chunkSizes{levelIdx})
                         chunkShape = pyramid.chunkSizes{levelIdx};
@@ -1414,12 +1427,15 @@ classdef DatasetInfo < handle
                                 controllers.DatasetInfo.formatBlockShape(chunkShape, pyramid)];
                         end
                     end
+                    % shard as a factor of the chunk; its full size without a chunk shape
                     if iscell(pyramid.shardSizes) && levelIdx <= numel(pyramid.shardSizes) ...
                             && ~isempty(pyramid.shardSizes{levelIdx})
                         shardShape = pyramid.shardSizes{levelIdx};
                         if numel(shardShape) >= 2
-                            levelText = [levelText, '  shard ', ...
-                                controllers.DatasetInfo.formatBlockShape(shardShape, pyramid)];
+                            shardLabel = '  shard ';
+                            if numel(chunkShape) == numel(shardShape); shardLabel = '  shard factor '; end
+                            levelText = [levelText, shardLabel, ...
+                                controllers.DatasetInfo.formatBlockShape(shardShape, pyramid, chunkShape)];
                         end
                     end
                     if ~isempty(pyramid.levelVoxelSizes)

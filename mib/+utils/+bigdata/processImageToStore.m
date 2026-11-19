@@ -22,7 +22,8 @@ function outputPath = processImageToStore(image, blockFunction, outputPath, opti
 % level's scale factors, and its bounding box starts where the source box
 % starts, so the result overlays the source. With ``Region`` level 0 is that
 % box of the level, and its bounding box starts at the box, so it still
-% overlays the source.
+% overlays the source. With ``SliceRange`` only those slices are written and the
+% box starts at the first of them.
 %
 % **Pyramid settings.** ``SaverOptions`` fields override the settings derived
 % from the source pyramid by ``io.savers.Zarr3Saver.optionsFromPyramid`` -
@@ -70,6 +71,10 @@ function outputPath = processImageToStore(image, blockFunction, outputPath, opti
 %     process, default ``[]`` (the whole level); see ``io.savers.FilteredSliceProvider``
 %   - **options.RegionMask** - logical mask of the box, default ``[]`` (all of it);
 %     false pixels keep the source values
+%   - **options.SliceRange** - ``[first last]`` level slices to process, default
+%     ``[]`` (all slices); see ``io.savers.FilteredSliceProvider``. Not with ``Resample``
+%   - **options.TimePoint** - [double] time point to process, default 1 (the store
+%     is written with one time point). Not with ``Resample``
 %   - **options.Pool** - process ``parallel.Pool`` whose workers process and write
 %     the bands, default ``[]`` (on the client). The provider and
 %     ``blockFunction`` are sent to every worker, see "Parallel writing" in
@@ -119,6 +124,8 @@ arguments
     options.ParentFigure = []
     options.Region double = []
     options.RegionMask = []
+    options.SliceRange double = []
+    options.TimePoint (1,1) double {mustBeInteger, mustBePositive} = 1
     options.Pool = []
     options.Resample = []
 end
@@ -134,15 +141,17 @@ end
 scale = image.pyramid.levelScaleFactors(options.Level, :);   % [y x z]
 isResample = ~isempty(options.Resample);
 if isResample
-    if ~isempty(options.Region)
-        error('utils:bigdata:resampleRegion', 'Resampling processes the whole level; a Region is not supported.');
+    if ~isempty(options.Region) || ~isempty(options.SliceRange) || options.TimePoint ~= 1
+        error('utils:bigdata:resampleRegion', ['Resampling processes the whole level of time point 1; ' ...
+            'a Region, SliceRange or TimePoint is not supported.']);
     end
     provider = io.savers.ResampledSliceProvider(image, options.Level, options.ColChannel, ...
         options.Resample.OutputSize, options.Resample.Method);
     scale = scale .* provider.VoxelScaleYXZ;    % source voxels per output voxel
 else
     provider = io.savers.FilteredSliceProvider(image, options.Level, options.ColChannel, blockFunction, ...
-        HaloYX = options.HaloYX, HaloZ = options.HaloZ, Region = options.Region, RegionMask = options.RegionMask);
+        HaloYX = options.HaloYX, HaloZ = options.HaloZ, Region = options.Region, RegionMask = options.RegionMask, ...
+        SliceRange = options.SliceRange, TimePoint = options.TimePoint);
 end
 % MIB images are integer: a float store could be written but not opened as a dataset
 if ~ismember(provider.DataClass, {'uint8', 'uint16', 'uint32'})
@@ -169,6 +178,11 @@ saverOptions.SourceFingerprint = struct('source', sourcePath, 'level', options.L
     'colChannel', options.ColChannel, 'haloYX', options.HaloYX, 'haloZ', options.HaloZ, ...
     'function', func2str(blockFunction), 'parameters', options.Fingerprint, ...
     'region', options.Region, 'regionMaskSum', sum(logical(options.RegionMask(:))));
+if ~isempty(options.SliceRange)
+    % only when given, so a resume of a run made before this field existed still matches
+    saverOptions.SourceFingerprint.sliceRange = options.SliceRange;
+end
+if options.TimePoint ~= 1; saverOptions.SourceFingerprint.timePoint = options.TimePoint; end
 if isResample
     saverOptions.SourceFingerprint.resample = struct('outputSize', options.Resample.OutputSize, ...
         'method', options.Resample.Method);
@@ -199,10 +213,13 @@ if ~isempty(image.boundingBox)
     sourceBox = image.boundingBox;   % [xmin xmax ymin ymax zmin zmax]
     regionOrigin = [0 0];            % level pixels before the region, [y x]
     if ~isempty(options.Region); regionOrigin = options.Region([1 3]) - 1; end
+    sliceOrigin = 0;                 % level slices before the range
+    if ~isempty(options.SliceRange); sliceOrigin = options.SliceRange(1) - 1; end
     xMin = sourceBox(1) + regionOrigin(2) * pixSize.x;
     yMin = sourceBox(3) + regionOrigin(1) * pixSize.y;
+    zMin = sourceBox(5) + sliceOrigin * pixSize.z;
     metadata.boundingBox = [xMin, xMin + (width - 1) * pixSize.x, yMin, yMin + (height - 1) * pixSize.y, ...
-        sourceBox(5), sourceBox(5) + (provider.NumSlices - 1) * pixSize.z];
+        zMin, zMin + (provider.NumSlices - 1) * pixSize.z];
 end
 
 saver = io.savers.Zarr3Saver(struct('ParentFigure', options.ParentFigure));

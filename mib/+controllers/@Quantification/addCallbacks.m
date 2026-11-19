@@ -43,6 +43,7 @@ h.sortTable.ValueChangedFcn = @(~,~) obj.updateSortingSettings();
 h.DatasetType.ValueChangedFcn = @(hObj,~) obj.updateBatchOptFromGUI(hObj);
 h.ColorChannel1.ValueChangedFcn = @(hObj,~) obj.updateBatchOptFromGUI(hObj);
 h.ColorChannel2.ValueChangedFcn = @(hObj,~) obj.updateBatchOptFromGUI(hObj);
+h.BigData_PyramidLevel.ValueChangedFcn = @(hObj,~) obj.updateBatchOptFromGUI(hObj);
 
 % checkboxes
 h.Multiple.ValueChangedFcn     = @(~,~) obj.multiple_Callback();

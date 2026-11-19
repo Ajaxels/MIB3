@@ -51,6 +51,67 @@ classdef CropToBigDataTest < matlab.unittest.TestCase
             testCase.verifyEqual(nnz(labelsLevel0 == 3), 80 * 80 * 5, 'the painted block must survive the crop');
         end
 
+        function cropEqualsTheArrayCropAtEveryLevel(testCase)
+            % Image level 0 is the array crop, the box starts at the crop origin, the
+            % model level 1 is the source model box and every coarser model level is
+            % filled (the 80 x 80 block is still there at the coarsest level).
+            [mibModel, scratch, volume, packed] = testCase.buildShardedBigData();
+            outputPath = fullfile(scratch, 'crop.zarr3');
+            cropF = [33 17 300 280 2 5];      % x1 y1 dx dy z1 dz
+            [result, stopStage] = mibModel.I{1}.cropToBigData(cropF, ...
+                struct('outputPath', outputPath, 'showWaitbar', false, 'BandBytes', 8 * 300 * 40));
+            testCase.verifyEqual(result, 1);
+            testCase.verifyEqual(stopStage, '');
+
+            cropped = testCase.openImage(outputPath);
+            level0 = cropped.getData('image', 3, [], struct('pyramidLevel', 1));
+            level0 = reshape(level0, size(level0, 1), size(level0, 2), []);
+            testCase.verifyEqual(level0, volume(17:296, 33:332, 2:6));
+            source = mibModel.I{1}.image;
+            expectedOrigin = source.boundingBox([1 3 5]) + ([33 17 2] - 1) .* [source.pixSize.x source.pixSize.y source.pixSize.z];
+            testCase.verifyEqual(cropped.boundingBox([1 3 5]), expectedOrigin, 'AbsTol', 1e-9);
+
+            labels = core.MibBigDataLabels([], core.MibImage.initializeImgInfo());
+            labels.openStore(fullfile(scratch, 'Labels_crop.zarr3'));
+            testCase.verifyEqual(labels.getData63('everything', 3, [], struct('pyramidLevel', 1)), ...
+                packed(17:296, 33:332, 2:6));
+            coarsest = size(labels.modelLevelSizes, 1);
+            coarseLevel = labels.getData63('labels', 3, [], struct('pyramidLevel', coarsest));
+            testCase.verifyGreaterThan(nnz(coarseLevel == 3), 0, 'the coarsest model level must be written');
+            testCase.verifyEqual(labels.materialNames, {'a'; 'b'; 'c'});
+            labels.closeStore();
+        end
+
+        function instanceModelKeepsItsLayout(testCase)
+            % A 16383 (uint16) model is copied into a uint16 store with its indices.
+            [mibModel, scratch] = testCase.buildShardedBigData();
+            instanceLabels = core.MibBigDataLabels([], core.MibImage.initializeImgInfo());
+            instanceLabels.setLayout('uint16');
+            instanceLabels.createStore([600 640 8], fullfile(scratch, 'Labels_instances.zarr3'), mibModel.I{1}.image.pyramid);
+            packed = zeros(600, 640, 8, 'uint16');
+            packed(101:150, 201:260, 3:5) = 1234;
+            instanceLabels.setData63(packed, 'everything', 3, [], struct('pyramidLevel', 1));
+            instanceLabels.materializeAll();
+            mibModel.I{1}.labels = instanceLabels;
+
+            outputPath = fullfile(scratch, 'crop.zarr3');
+            result = mibModel.I{1}.cropToBigData([1 1 640 600 1 8], struct('outputPath', outputPath, 'showWaitbar', false));
+            testCase.verifyEqual(result, 1);
+            labels = core.MibBigDataLabels([], core.MibImage.initializeImgInfo());
+            labels.openStore(fullfile(scratch, 'Labels_crop.zarr3'));
+            testCase.verifyEqual(labels.containerClass, 'uint16');
+            testCase.verifyEqual(labels.getData63('everything', 3, [], struct('pyramidLevel', 1)), packed);
+            labels.closeStore();
+        end
+
+        function severalTimePointsAreRefused(testCase)
+            [mibModel, scratch] = testCase.buildShardedBigData();
+            outputPath = fullfile(scratch, 'crop.zarr3');
+            testCase.verifyError(@() mibModel.I{1}.cropToBigData([1 1 10 10 1 2 1 2], ...
+                struct('outputPath', outputPath, 'showWaitbar', false)), 'core:MibDataset:cropToBigDataTime');
+            testCase.verifyFalse(isfolder(outputPath));
+        end
+
         function saverOptionsOverrideTheSource(testCase)
             % options.saverOptions (the dialog result) wins over the source settings
             [mibModel, scratch] = testCase.buildShardedBigData();
@@ -74,7 +135,7 @@ classdef CropToBigDataTest < matlab.unittest.TestCase
     end
 
     methods (Access = private)
-        function [mibModel, scratch] = buildShardedBigData(testCase)
+        function [mibModel, scratch, volume, packed] = buildShardedBigData(testCase)
             % 600 x 640 x 8 voxels, chunk [64 64 2], shard 2 x 2 x 1 chunks, 4 levels,
             % anisotropy-preserving, with a model holding an 80 x 80 x 8 block of material 3
             folderFixture = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
@@ -114,6 +175,18 @@ classdef CropToBigDataTest < matlab.unittest.TestCase
             testCase.assertNotEmpty(mibModel.I{1}.image.pyramid.shardSizes{1}, 'the source must be sharded');
             testCase.assertGreaterThan(max(diff(mibModel.I{1}.image.pyramid.levelScaleFactors(:, 3))), 0, ...
                 'the source must halve Z somewhere');
+        end
+
+        function image = openImage(~, storePath)
+            % The store as the image of a BigData dataset of a fresh headless MibModel
+            mibFolder = fullfile(fileparts(fileparts(fileparts(mfilename('fullpath')))), 'mib');
+            mibModel = models.MibModel(1, mibFolder, Verbose = false, Preferences = 'defaults');
+            loaderOptions = struct('datasetMode', 'BigData');
+            loader = io.loaders.Zarr3VirtualSetupLoader(loaderOptions);
+            [imageInfo, files] = loader.loadMetadata({storePath}, loaderOptions);
+            [imageRaw, imageInfo] = loader.loadImages(files, imageInfo, loaderOptions);
+            mibModel.I{1}.initialize(imageRaw, imageInfo, 'BigData');
+            image = mibModel.I{1}.image;
         end
 
         function pyramid = loadBigData(~, storePath)

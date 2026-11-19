@@ -59,6 +59,12 @@ classdef CropDataset < handle
             switch evnt.EventName
                 case {'UpdateGuiWidgets', 'NewDataset'}
                     obj.updateWidgets();
+                case 'UpdateDialog'
+                    % the ROI panel added, removed or loaded ROIs (MibRoi.refreshROIList)
+                    if isprop(evnt, 'Parameters') && isfield(evnt.Parameters, 'DialogName') && ...
+                            strcmp(evnt.Parameters.DialogName, 'ROI')
+                        obj.updateROIList();
+                    end
             end
         end
     end
@@ -139,6 +145,7 @@ classdef CropDataset < handle
             obj.BatchOpt.SelectROI    = {'All'};
             obj.BatchOpt.SelectROI{2} = ROIlist;
 
+            obj.BatchOpt.UseParallelComputing = false;
             obj.BatchOpt.showWaitbar = true;
 
             % batch tool metadata
@@ -155,6 +162,7 @@ classdef CropDataset < handle
             obj.BatchOpt.mibBatchTooltip.SelectROI        = sprintf('[ROI mode only]\nSelected ROI for the cropping');
             obj.BatchOpt.mibBatchTooltip.showWaitbar      = sprintf('Show or not the progress bar during execution');
             obj.BatchOpt.mibBatchTooltip.OutputType       = sprintf('[BigData source only]\n"Standard" = load cropped region into memory\n"BigData" = write cropped pyramid to a new Zarr folder on disk');
+            obj.BatchOpt.mibBatchTooltip.UseParallelComputing = sprintf('[BigData source, OutputType BigData only] Read and write the crop on parallel workers;\nuses the open pool or starts one');
 
             % ---- parse varargin ----
             % Canonical: varargin{1} = controllers.MibController
@@ -255,6 +263,7 @@ classdef CropDataset < handle
             % add listeners
             obj.listener{1} = addlistener(obj.mibModel, 'UpdateGuiWidgets', @(src, evnt) obj.ViewListner_Callback2(obj, src, evnt));
             obj.listener{2} = addlistener(obj.mibModel, 'NewDataset',       @(src, evnt) obj.ViewListner_Callback2(obj, src, evnt));
+            obj.listener{3} = addlistener(obj.mibModel, 'UpdateDialog',     @(src, evnt) obj.ViewListner_Callback2(obj, src, evnt));
         end
 
         function closeWindow(obj)
@@ -307,6 +316,9 @@ classdef CropDataset < handle
             h.SelectROI.ValueChangedFcn        = @(~,~) obj.SelectROI_Callback();
             h.ZarrPyramidLevel.ValueChangedFcn = @(src,~) obj.ZarrPyramidLevel_Callback(src);
             h.OutputType.ValueChangedFcn       = @(src,~) obj.OutputType_Callback(src);
+            h.UseParallelComputing.ValueChangedFcn = @(src,~) obj.updateBatchOptFromGUI(src);
+            h.UseParallelComputing.Tooltip = ['Read and write the crop on the workers of the parallel pool, ' ...
+                'starting one when none is open; available for BigData datasets with Output type BigData'];
 
             % buttons
             h.selectAreaBtn.ButtonPushedFcn = @(~,~) obj.selectAreaBtn_Callback();
@@ -373,36 +385,10 @@ classdef CropDataset < handle
             % read currently selected mode from the button group
             obj.currentMode = obj.view.handles.cropMode.SelectedObject.Tag;
 
-            % check ROI availability
-            [numberOfROI, indicesOfROI] = dataset.hROI.getNumberOfROI(0);
-            if numberOfROI == 0
-                obj.view.handles.ROI.Enable = 'off';
-                if strcmp(obj.currentMode, 'ROI')
-                    obj.currentMode = 'Manual';
-                    obj.BatchOpt.cropMode{1} = 'Manual';
-                    obj.view.handles.cropMode.SelectedObject = obj.view.handles.Manual;
-                end
-            end
+            % ROI radio button and Select ROI list of this dataset (may switch ROI -> Manual)
+            obj.updateROIList(true);
 
             obj.radio_Callback(obj.view.handles.(obj.currentMode));
-
-            % populate ROI dropdown
-            list{1} = 'All';
-            i = 2;
-            for idx = indicesOfROI
-                list(i) = dataset.hROI.Data(idx).label; %#ok<AGROW>
-                i = i + 1;
-            end
-            obj.view.handles.SelectROI.Items = list;
-
-            if numel(list) > 1
-                selIdx = max([dataset.selectedROI + 1, 2]);
-                if selIdx > numel(list); selIdx = numel(list); end
-                obj.view.handles.SelectROI.Value = list{selIdx};
-                obj.view.handles.ROI.Enable = 'on';
-            else
-                obj.view.handles.SelectROI.Value = list{1};
-            end
 
             % update OutputType and Zarr pyramid dropdowns
             isBigData = ~isempty(dataset.image.pyramid.levelNames) && strcmp(dataset.datasetType, 'BigData');
@@ -420,7 +406,94 @@ classdef CropDataset < handle
             end
             obj.view.handles.ZarrPyramidLevel.Items = obj.BatchOpt.ZarrPyramidLevel{2};
             obj.view.handles.ZarrPyramidLevel.Value = obj.BatchOpt.ZarrPyramidLevel{1};
+            obj.view.handles.UseParallelComputing.Value = obj.BatchOpt.UseParallelComputing;
+            obj.view.handles.UseParallelComputing.Enable = matlab.lang.OnOffSwitchState(~outputIsStandard);
             obj.selectZarrLevel();
+        end
+
+        function updateROIList(obj, fromUpdateWidgets)
+            % UPDATEROILIST - refresh the ROI radio button and the Select ROI dropdown from the ROIs of the active dataset.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %       obj.updateROIList()
+            %       obj.updateROIList(fromUpdateWidgets)
+            %
+            % Called from ``updateWidgets`` and when the ROI panel adds, removes,
+            % duplicates or loads ROIs (``MibModel`` event ``UpdateDialog`` with
+            % ``Parameters.DialogName = 'ROI'``, notified by
+            % ``controllers.MibRoi.refreshROIList``).
+            %
+            % The dropdown lists ``'All'`` and the ROI labels; ``BatchOpt.SelectROI``
+            % follows it. The ROI radio button is enabled when the dataset has ROIs.
+            % The selected item:
+            %
+            %   - from ``updateWidgets`` (a new dataset): the ROI selected in the ROI
+            %     panel (``dataset.selectedROI``), the first ROI when none is
+            %     selected, as before;
+            %   - after an ROI change: the item selected before, when it still
+            %     exists and the list held ROIs before (``'All'`` alone, with no
+            %     ROIs, is not a choice to keep); otherwise as from ``updateWidgets``,
+            %     so the first ROI added is selected.
+            %
+            % When the last ROI is removed in the ROI mode, the dialog switches to the
+            % Manual mode; edit boxes showing ``'Multi'`` (all ROIs) are reset to the
+            % whole dataset first, since the Manual mode parses them. After an ROI
+            % change in the ROI mode the crop area is recomputed from the selected
+            % item (``SelectROI_Callback``). From ``updateWidgets`` neither is done
+            % here: ``updateWidgets`` calls ``radio_Callback`` itself.
+            %
+            % Input Arguments:
+            %   - **fromUpdateWidgets** - *(optional)* logical, default false
+            %
+            if nargin < 2; fromUpdateWidgets = false; end
+            dataset = obj.mibModel.I{obj.mibModel.getActiveId()};
+            [numberOfROI, indicesOfROI] = dataset.hROI.getNumberOfROI(0);
+            list = cell(1, numberOfROI + 1);
+            list{1} = 'All';
+            for roiIndex = 1:numberOfROI
+                roiLabel = dataset.hROI.Data(indicesOfROI(roiIndex)).label;
+                if iscell(roiLabel); roiLabel = roiLabel{1}; end
+                list{roiIndex + 1} = roiLabel;
+            end
+
+            previousValue = obj.view.handles.SelectROI.Value;
+            hadROIs = numel(obj.view.handles.SelectROI.Items) > 1;   % 'All' alone: there were none
+            obj.view.handles.SelectROI.Items = list;
+            if numberOfROI > 0
+                if ~fromUpdateWidgets && hadROIs && ismember(previousValue, list)
+                    selectedValue = previousValue;      % an ROI, or 'All' chosen while ROIs existed
+                else
+                    selectedIndex = min(max(dataset.selectedROI + 1, 2), numel(list));
+                    selectedValue = list{selectedIndex};
+                end
+                obj.view.handles.ROI.Enable = 'on';
+            else
+                selectedValue = 'All';
+                obj.view.handles.ROI.Enable = 'off';
+            end
+            obj.view.handles.SelectROI.Value = selectedValue;
+            obj.BatchOpt.SelectROI = {selectedValue, list};
+
+            if ~strcmp(obj.currentMode, 'ROI'); return; end
+            if numberOfROI == 0
+                % no ROI left: the Manual mode, with numbers it can parse
+                for fieldName = {'Width', 'Height', 'Depth'}
+                    if strcmp(obj.view.handles.(fieldName{1}).Value, 'Multi')
+                        obj.view.handles.Width.Value  = sprintf('1:%d', dataset.image.width);
+                        obj.view.handles.Height.Value = sprintf('1:%d', dataset.image.height);
+                        obj.view.handles.Depth.Value  = sprintf('1:%d', dataset.image.depth);
+                        break;
+                    end
+                end
+                obj.currentMode = 'Manual';
+                obj.BatchOpt.cropMode{1} = 'Manual';
+                obj.view.handles.cropMode.SelectedObject = obj.view.handles.Manual;
+                if ~fromUpdateWidgets; obj.radio_Callback(obj.view.handles.Manual); end
+            elseif ~fromUpdateWidgets
+                obj.SelectROI_Callback();   % the crop area of the (new) selection
+            end
         end
 
         function radio_Callback(obj, hObject)
@@ -746,7 +819,8 @@ classdef CropDataset < handle
             %       obj.OutputType_Callback(hObject)
             %
             % Toggles ZarrPyramidLevel enable based on the selected output type.
-            % ZarrPyramidLevel is only applicable for BigData → Standard export.
+            % ZarrPyramidLevel is only applicable for BigData → Standard export,
+            % UseParallelComputing only for BigData → BigData.
 
             if obj.mibModel.preferences.System.DeveloperMode
                 fprintf('controllers.CropDataset.OutputType_Callback: triggered\n');
@@ -758,6 +832,7 @@ classdef CropDataset < handle
             if ~isempty(dataset.image.pyramid.levelNames)
                 obj.view.handles.ZarrPyramidLevel.Enable = matlab.lang.OnOffSwitchState(outputIsStandard);
             end
+            obj.view.handles.UseParallelComputing.Enable = matlab.lang.OnOffSwitchState(~outputIsStandard);
         end
 
         function cropToBtn_Callback(obj)
@@ -889,8 +964,52 @@ classdef CropDataset < handle
             end
             cropTimer = tic;    % the crop area is known: time the work, not the drawing
 
-            % determine destination buffer
+            cropDim = str2num(BatchOptLoc.Time); %#ok<ST2NM>
+            tMin = min(cropDim);
+            tMax = max(cropDim);
+            crop_factor = [crop_factor, tMin, tMax-tMin+1];
+
             bigDataOutput = isfield(BatchOptLoc, 'OutputType') && strcmp(BatchOptLoc.OutputType{1}, 'BigData');
+            sourceDataset = obj.mibModel.I{id};
+            if ~bigDataOutput && sourceDataset.datasetType(1) ~= 'S'
+                % A Virtual/BigData crop to Standard reads the whole region into memory in
+                % one call, which cannot be stopped; refuse it before anything is copied
+                % when it does not fit. Image at the chosen level + the packed labels
+                % container (allocated whenever selection is enabled or a model exists).
+                % Skipped where memory() is not available (macOS, Linux).
+                zarrStr = BatchOptLoc.ZarrPyramidLevel{1};
+                levelIndex = str2double(zarrStr(2:end)) + 1;
+                scale = [1 1 1];                                     % [y x z]
+                scaleFactors = sourceDataset.image.pyramid.levelScaleFactors;
+                if ~isempty(scaleFactors) && levelIndex <= size(scaleFactors, 1); scale = scaleFactors(levelIndex, :); end
+                firstFull = crop_factor([2 1 5]);                    % [y x z]
+                lastFull = firstFull + crop_factor([4 3 6]) - 1;
+                levelDims = ceil(lastFull ./ scale) - ceil(firstFull ./ scale) + 1;
+                bytesOfClass = @(className) numel(typecast(zeros(1, 1, className), 'uint8'));
+                neededBytes = prod(levelDims) * sourceDataset.image.colors * crop_factor(8) * ...
+                    bytesOfClass(sourceDataset.image.dataClass);
+                if sourceDataset.enableSelection || sourceDataset.modelExist
+                    labelsClass = 'uint8';
+                    if isa(sourceDataset.labels, 'core.MibLabels63'); labelsClass = sourceDataset.labels.containerClass; end
+                    neededBytes = neededBytes + prod(levelDims) * crop_factor(8) * bytesOfClass(labelsClass);
+                end
+                try
+                    [~, systemView] = memory();
+                    availableBytes = systemView.PhysicalMemory.Available;
+                catch
+                    availableBytes = Inf;
+                end
+                if neededBytes > availableBytes
+                    utils.dlgs.showErrorDialog(progressParent, sprintf(['The cropped dataset needs about %.1f GB ' ...
+                        'of memory, but only %.1f GB is available.\n\nChoose a coarser Zarr pyramid level, a smaller ' ...
+                        'area, or Output type BigData, which writes the crop to disk.'], ...
+                        neededBytes / 1e9, availableBytes / 1e9), 'Crop dataset');
+                    notify(obj.mibModel, 'StopProtocol');
+                    return;
+                end
+            end
+
+            % determine destination buffer
             if ~strcmp(BatchOptLoc.Destination{1}, sprintf('Container %d', id)) && ...
                     ~strcmp(BatchOptLoc.Destination{1}, 'Current')
                 % 'Container 12' -> 12; parsing only the last character breaks
@@ -910,11 +1029,6 @@ classdef CropDataset < handle
                 end
             end
 
-            cropDim = str2num(BatchOptLoc.Time); %#ok<ST2NM>
-            tMin = min(cropDim);
-            tMax = max(cropDim);
-            crop_factor = [crop_factor, tMin, tMax-tMin+1];
-
             % Note: enableSelection is intentionally NOT touched here.
             % Cropping is a geometric operation and must not change whether
             % models/selection are enabled in the destination buffer:
@@ -932,6 +1046,15 @@ classdef CropDataset < handle
             bigDataOutputDone = false;
             if bigDataOutput
                 % --- BigData → BigData output path ---
+                % The image is streamed into the new store (see core.MibDataset.cropToBigData),
+                % one time point only
+                if crop_factor(8) > 1
+                    utils.dlgs.showErrorDialog(progressParent, sprintf(['A crop to BigData writes one time point; ' ...
+                        '%d are selected.\n\nSet Time (min:max) to a single time point, or choose Output type ' ...
+                        'Standard.'], crop_factor(8)), 'Crop to BigData');
+                    notify(obj.mibModel, 'StopProtocol');
+                    return;
+                end
                 % Warn: a new Zarr3 pyramid will be written to disk. When the
                 % destination buffer is the current one the dataset will be
                 % replaced; the original file on disk is not deleted.
@@ -950,24 +1073,104 @@ classdef CropDataset < handle
                 if isequal(outputFilename, 0); return; end
                 outputPath = fullfile(outputFolder, outputFilename);
 
-                % the crop is written like its source; the settings dialog shows
-                % those settings and lets them be changed (batch keeps them)
-                cropOpts.saverOptions = io.savers.Zarr3Saver.optionsFromPyramid(obj.mibModel.I{id}.image.pyramid);
-                if ~obj.batchProcessingSwitch
-                    datasetInfo = struct('Y', crop_factor(4), 'X', crop_factor(3), 'Z', crop_factor(6), ...
-                        'pixSize', obj.mibModel.I{id}.image.pixSize);
-                    cropOpts.saverOptions = io.savers.Zarr3Saver.reviewOptionsDialog(cropOpts.saverOptions, ...
-                        progressParent, obj.mibModel.mibPath, datasetInfo);
-                    if isempty(cropOpts.saverOptions); return; end   % settings dialog cancelled
+                % an unfinished crop into this path: resume it or start over (batch: start over)
+                resumeMarker = fullfile(outputPath, '.mib_resume.json');
+                settingsFile = fullfile(outputPath, controllers.BigDataOptions.ResumeSettingsFile);
+                resumeRun = false;
+                if isfile(resumeMarker) && ~obj.batchProcessingSwitch
+                    answer = uiconfirm(progressParent, sprintf(['An earlier crop into\n%s\nstopped before it ' ...
+                        'finished. Resume it from where it stopped, or start over?\n\nResume needs the same ' ...
+                        'crop area and settings as that crop.'], outputPath), ...
+                        'Resume the crop?', 'Options', {'Resume', 'Start over', 'Cancel'}, ...
+                        'DefaultOption', 1, 'CancelOption', 3, 'Icon', 'question');
+                    if strcmp(answer, 'Cancel'); return; end
+                    resumeRun = strcmp(answer, 'Resume');
+                end
+
+                if resumeRun && isfile(settingsFile)
+                    % the store settings of the stopped crop, which the saver must find again
+                    stored = load(settingsFile, 'saverOptions');
+                    cropOpts.saverOptions = stored.saverOptions;
+                else
+                    % the crop is written like its source; the settings dialog shows
+                    % those settings and lets them be changed (batch keeps them)
+                    cropOpts.saverOptions = io.savers.Zarr3Saver.optionsFromPyramid(obj.mibModel.I{id}.image.pyramid);
+                    if ~obj.batchProcessingSwitch
+                        datasetInfo = struct('Y', crop_factor(4), 'X', crop_factor(3), 'Z', crop_factor(6), ...
+                            'pixSize', obj.mibModel.I{id}.image.pixSize);
+                        cropOpts.saverOptions = io.savers.Zarr3Saver.reviewOptionsDialog(cropOpts.saverOptions, ...
+                            progressParent, obj.mibModel.mibPath, datasetInfo);
+                        if isempty(cropOpts.saverOptions); return; end   % settings dialog cancelled
+                    end
+                end
+
+                % parallel workers read and write the image bands; releaseWorkers clears
+                % their chunk caches when this function returns
+                pool = [];
+                releaseWorkers = []; %#ok<NASGU> kept until the crop returns
+                if BatchOptLoc.UseParallelComputing
+                    try
+                        [pool, releaseWorkers, poolCancelled] = utils.bigdata.startProcessPool( ...
+                            obj.mibModel.preferences.System.cpuParallelLimit, progressParent); %#ok<ASGLU>
+                    catch poolError
+                        utils.dlgs.showErrorDialog(progressParent, poolError.message, 'Parallel processing');
+                        notify(obj.mibModel, 'StopProtocol');
+                        return;
+                    end
+                    if poolCancelled; return; end
                 end
 
                 cropOpts.showWaitbar = BatchOptLoc.showWaitbar;
                 cropOpts.UIFigure    = progressParent;
                 cropOpts.outputPath  = outputPath;
+                cropOpts.Pool        = pool;
+                cropOpts.Resume      = resumeRun;
                 cropTimer = tic;    % restart after the destination and settings dialogs
 
-                result = obj.mibModel.I{id}.cropToBigData(crop_factor, cropOpts);
-                if result == 0; notify(obj.mibModel, 'StopProtocol'); return; end
+                saverOptions = cropOpts.saverOptions;   % saved for a resume under this name
+                try
+                    [result, stopStage] = obj.mibModel.I{id}.cropToBigData(crop_factor, cropOpts);
+                catch cropError
+                    errorText = cropError.message;
+                    if strcmp(cropError.identifier, 'io:Zarr3Saver:cannotResume')
+                        errorText = sprintf(['The unfinished crop cannot be resumed with these settings:\n%s\n\n' ...
+                            'Crop the area of the stopped crop with its settings, or choose Start over.'], errorText);
+                    elseif isfile(resumeMarker)
+                        % a failed band leaves the store resumable, as a cancel that is kept
+                        save(settingsFile, 'saverOptions');
+                        errorText = sprintf(['%s\n\nThe part written so far is kept in\n%s\nTo finish it, crop the ' ...
+                            'same area to the same path again and choose Resume; or delete the folder.'], errorText, outputPath);
+                    end
+                    utils.dlgs.showErrorDialog(progressParent, errorText, 'Crop to BigData');
+                    notify(obj.mibModel, 'StopProtocol');
+                    return;
+                end
+                if result == 0
+                    if strcmp(stopStage, 'image') && isfile(resumeMarker)
+                        % keep the partial store to resume it later, or delete it (batch: delete)
+                        keepStore = false;
+                        if ~obj.batchProcessingSwitch
+                            answer = uiconfirm(progressParent, sprintf(['The crop was stopped; the image is ' ...
+                                'written only in part, to\n%s\n\nKeep it to finish later: crop the same area to ' ...
+                                'the same path again and choose Resume.\nDelete it to free the disk space.'], outputPath), ...
+                                'Keep the unfinished crop?', 'Options', {'Keep', 'Delete'}, ...
+                                'DefaultOption', 1, 'CancelOption', 1, 'Icon', 'question');
+                            keepStore = strcmp(answer, 'Keep');
+                        end
+                        if keepStore
+                            save(settingsFile, 'saverOptions');
+                        else
+                            rmdir(outputPath, 's');
+                        end
+                    elseif strcmp(stopStage, 'model') && ~obj.batchProcessingSwitch
+                        uialert(progressParent, sprintf(['The crop was stopped while copying the model.\n\n' ...
+                            'The image is written completely to\n%s\nThe model was not copied; its unfinished store ' ...
+                            'was deleted. The crop is not opened.'], outputPath), 'Crop to BigData', 'Icon', 'warning');
+                    end
+                    notify(obj.mibModel, 'StopProtocol');
+                    return;
+                end
+                if isfile(settingsFile); delete(settingsFile); end   % the settings of a resumed crop, no longer needed
 
                 % Capture model metadata from the source BEFORE initialize wipes I{bufferId}
                 % (when bufferId == id, initialize replaces the source dataset in-place)

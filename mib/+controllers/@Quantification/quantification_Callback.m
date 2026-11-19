@@ -23,6 +23,31 @@ function quantification_Callback(obj, batchModeSwitch)
 % Orientation, Perimeter, SecondAxisLength, Solidity, Correlation,
 % and all intensity properties.
 %
+% **BigData datasets** are measured at the pyramid level
+% ``BatchOpt.BigData_PyramidLevel`` (``'s0'`` = full resolution), read with an
+% explicit ``pyramidLevel`` so the display zoom does not matter:
+%
+%   - Shape3D reads the whole level at once; Shape2D walks the XY slices of the
+%     level (``'2D, Slice'``: the level slice holding the shown slice,
+%     ``ceil(z / scaleZ)``). Each level slice ``k`` is requested as the
+%     full-resolution slice ``floor((k-1)*scaleZ)+1``, which getData maps back to
+%     ``k``.
+%   - Values are in the voxels of the level: ``pixels`` means level pixels, and
+%     physical units use the level voxel size (``pixSize .* levelScaleFactors``).
+%     Rescaling to full-resolution pixels is not exact for every shape property
+%     (a perimeter, an Euler number), so it is not done.
+%   - After the run ``Centroid`` and ``BoundingBox`` are mapped to full
+%     resolution (``(c - 0.5)*s + 0.5``; widths ``*s``), and the slice column of
+%     the table holds the first full-resolution slice of the level slice, so
+%     navigation, annotations, Crop objects and the export take them as for a
+%     Standard dataset. ``PixelIdxList`` stays in level-linear indices, the frame
+%     recorded in ``obj.runPyramidLevel`` and used by ``highlightSelection``.
+%   - Block mode is ignored: the whole level is measured.
+%   - Refused (error dialog, ``StopProtocol``): a level the dataset lacks, no
+%     model store, a model level of another size than the image level, Shape2D
+%     outside XY, Shape3D when the level does not fit the available memory; see
+%     the local ``resolveBigDataLevel``.
+%
 % Input Arguments:
 %   - **batchModeSwitch** - *(optional)* logical; 1 = headless batch mode (no
 %     GUI updates, no statTable write, auto-exports if configured);
@@ -97,6 +122,7 @@ else
 end
 
 obj.indices = [];
+intProps = {'SumIntensity','StdIntensity','MeanIntensity','MaxIntensity','MinIntensity'};
 
 if obj.BatchOpt.Multiple
     colorChannel = 1:dataset.image.colors;
@@ -159,6 +185,21 @@ else    % mask
     end
 end
 
+% --- BigData: the pyramid level to measure ---
+isBigData = strcmp(dataset.datasetType, 'BigData');
+if isBigData
+    imageChannelsAtOnce = 0;    % image channels a Shape3D run holds next to the labels
+    if any(ismember(property, intProps)); imageChannelsAtOnce = 1; end
+    if ismember('Correlation', property); imageChannelsAtOnce = 2; end
+    [pyramidLevel, levelSize, levelScale, errorText] = resolveBigDataLevel(obj, dataset, imageChannelsAtOnce);
+    if ~isempty(errorText)
+        utils.dlgs.showErrorDialog(parentFig, errorText, 'Quantification of BigData');
+        notify(obj.mibModel, 'StopProtocol');
+        return;
+    end
+    waitbarTitle = sprintf('%s\nBigData level: %s', waitbarTitle, obj.BatchOpt.BigData_PyramidLevel{1});
+end
+
 % --- Create progress dialog ---
 wb = [];
 isUiDlg = false;
@@ -174,6 +215,13 @@ end
 
 getDataOptions.blockModeSwitch = 0;
 [img_height, img_width, img_depth, ~, img_time] = dataset.getDatasetDimensions('image', [], getDataOptions);
+if isBigData
+    % every read is of the chosen level, in its voxels; x/y/z stay full-resolution coordinates
+    getDataOptions.pyramidLevel = pyramidLevel;
+    img_height = levelSize(1);
+    img_width = levelSize(2);
+    img_depth = levelSize(3);
+end
 
 t1 = dataset.slices{5}(1);
 t2 = dataset.slices{5}(1);
@@ -188,9 +236,17 @@ property{end+1} = 'TimePnt';
 property{end+1} = 'BoundingBox';
 
 obj.STATS = [];
-intProps = {'SumIntensity','StdIntensity','MeanIntensity','MaxIntensity','MinIntensity'};
+obj.runPyramidLevel = [];
 
 pixSize = dataset.image.pixSize;
+if isBigData
+    % PixelIdxList is in the voxels of the level; highlightSelection needs that frame
+    obj.runPyramidLevel = struct('level', pyramidLevel, 'size', levelSize, 'scale', levelScale);
+    % physical units: the voxel size of the level
+    pixSize.y = pixSize.y * levelScale(1);
+    pixSize.x = pixSize.x * levelScale(2);
+    pixSize.z = pixSize.z * levelScale(3);
+end
 
 for t = t1:t2
     if obj.BatchOpt.showWaitbar && checkCancel(wb, isUiDlg)
@@ -218,7 +274,7 @@ for t = t1:t2
         end
 
         % XY orientation in MIB3 is 3 (was 4 in MIB2)
-        if dataset.orientation ~= 3 && dataset.blockModeSwitch == 1
+        if dataset.orientation ~= 3 && dataset.blockModeSwitch == 1 && ~isBigData
             if obj.BatchOpt.showWaitbar; delete(wb); end
             dlgOpt.MsgBoxOnly = true; dlgOpt.Icon = 'puffin_warning';
             header = sprintf(['!!! Warning !!!\n\nBlock mode requires XY orientation.\n' ...
@@ -228,7 +284,9 @@ for t = t1:t2
             notify(obj.mibModel, 'StopProtocol');
             return;
         end
-        getDataOptions.blockModeSwitch = dataset.blockModeSwitch;
+        % BigData: the whole level is measured; the block-mode limits are full-resolution
+        % screen coordinates, and the index conversion below assumes full resolution
+        getDataOptions.blockModeSwitch = dataset.blockModeSwitch && ~isBigData;
 
         if selectedMaterial == -1
             img = cell2mat(obj.mibModel.getData3D('mask', t, 3, [], getDataOptions));
@@ -454,7 +512,11 @@ for t = t1:t2
 
         if strcmp(obj.BatchOpt.DatasetType{1}, '2D, Slice')
             start_id = dataset.getCurrentSliceNumber();
+            if isBigData; start_id = ceil(start_id / levelScale(3)); end   % the level slice that holds the shown one
             end_id = start_id;
+        elseif isBigData
+            start_id = 1;
+            end_id = img_depth;     % slices of the level (XY only, checked above)
         else
             start_id = 1;
             end_id = dataset.dim_yxzct(orientation);  % number of slices along the current orientation
@@ -478,10 +540,16 @@ for t = t1:t2
                 return;
             end
 
+            % getData2D takes a full-resolution slice number; on BigData lay_id is a
+            % level slice, so pass a full-resolution slice inside it (getData maps z
+            % with ceil(z / scale), and floor((k-1)*s)+1 maps back to k for s >= 1)
+            readSliceNo = lay_id;
+            if isBigData; readSliceNo = floor((lay_id - 1) * levelScale(3)) + 1; end
+
             if selectedMaterial == -1
-                slice = cell2mat(obj.mibModel.getData2D('mask', lay_id, orientation, [], getDataOptions));
+                slice = cell2mat(obj.mibModel.getData2D('mask', readSliceNo, orientation, [], getDataOptions));
             else
-                slice = cell2mat(obj.mibModel.getData2D('labels', lay_id, orientation, selectedMaterial, getDataOptions));
+                slice = cell2mat(obj.mibModel.getData2D('labels', readSliceNo, orientation, selectedMaterial, getDataOptions));
             end
 
             if ~isempty(property(ismember(property, 'HolesArea')))
@@ -560,7 +628,7 @@ for t = t1:t2
             prop1 = property(ismember(property, intProps));
             if ~isempty(prop1)
                 for i = 1:numel(colorChannel)
-                    imgSlice = cell2mat(obj.mibModel.getData2D('image', lay_id, orientation, colorChannel(i), getDataOptions));
+                    imgSlice = cell2mat(obj.mibModel.getData2D('image', readSliceNo, orientation, colorChannel(i), getDataOptions));
                     STATS2 = regionprops(CC, imgSlice, 'PixelValues');
                     vals = arrayfun(@(x) double(x.PixelValues), STATS2, 'UniformOutput', false);
                     STATS2 = cell2struct(vals', {'PixelValues'});
@@ -574,9 +642,9 @@ for t = t1:t2
 
             % Correlation (2D)
             if ~isempty(property(ismember(property, 'Correlation')))
-                imgFull = cell2mat(obj.mibModel.getData2D('image', lay_id, orientation, [], getDataOptions));
-                img1 = imgFull(:,:,colorChannel1);
-                img2 = imgFull(:,:,colorChannel2);
+                % read each channel by its number: [] would return only the displayed channels
+                img1 = cell2mat(obj.mibModel.getData2D('image', readSliceNo, orientation, colorChannel1, getDataOptions));
+                img2 = cell2mat(obj.mibModel.getData2D('image', readSliceNo, orientation, colorChannel2, getDataOptions));
                 for object = 1:numel(STATS)
                     STATS(object).Correlation = corr2(img1(STATS(object).PixelIdxList), img2(STATS(object).PixelIdxList));
                 end
@@ -617,6 +685,23 @@ for t = t1:t2
     end
 end
 
+% --- BigData: centroids and bounding boxes to full-resolution coordinates ---
+% Measured at the level; navigation, annotations, Crop objects and the export
+% take full-resolution coordinates. Level voxel k covers full-resolution voxels
+% (k-1)*s+1 .. k*s, so a coordinate c (voxel centres at integers, edges at
+% half-integers) maps to (c - 0.5)*s + 0.5 and a width w to w*s.
+% PixelIdxList stays in the voxels of the level (obj.runPyramidLevel).
+if isBigData && ~isempty(obj.STATS)
+    scaleXYZ = levelScale([2 1 3]);
+    centroids = (vertcat(obj.STATS.Centroid) - 0.5) .* scaleXYZ + 0.5;
+    centroids = num2cell(centroids, 2);
+    [obj.STATS.Centroid] = centroids{:};
+    boxes = vertcat(obj.STATS.BoundingBox);
+    boxes = [(boxes(:, 1:3) - 0.5) .* scaleXYZ + 0.5, boxes(:, 4:6) .* scaleXYZ];
+    boxes = num2cell(boxes, 2);
+    [obj.STATS.BoundingBox] = boxes{:};
+end
+
 % --- Store which dataset was quantified ---
 if isnan(selectedMaterial); selectedMaterial = -2; end
 obj.runId = [id, selectedMaterial];
@@ -641,10 +726,18 @@ if numel(data) ~= 0
     dataWidth  = dataset.image.width;
     dataHeight = dataset.image.height;
     dataDepth  = dataset.image.depth;
+    if isBigData    % PixelIdxList is in the voxels of the level
+        dataWidth  = img_width;
+        dataHeight = img_height;
+        dataDepth  = img_depth;
+    end
     for row = 1:size(data, 1)
         pixelId = max([1, floor(numel(obj.STATS(obj.sortingRowIndex(row)).PixelIdxList)/2)]);
         [~, ~, data(row,3)] = ind2sub([dataWidth, dataHeight, dataDepth], ...
             obj.STATS(obj.sortingRowIndex(row)).PixelIdxList(pixelId));
+    end
+    if isBigData    % the first full-resolution slice of the level slice, for navigation
+        data(:,3) = floor((data(:,3) - 1) * levelScale(3)) + 1;
     end
     data(:,4) = [obj.STATS(obj.sortingRowIndex).TimePnt]';
 
@@ -708,6 +801,92 @@ notify(obj.mibModel, 'UpdateUserScore', eventdata);
 
 obj.returnBatchOpt(obj.BatchOpt);
 toc
+end
+
+% -------------------------------------------------------------------------
+function [pyramidLevel, levelSize, levelScale, errorText] = resolveBigDataLevel(obj, dataset, imageChannelsAtOnce)
+% RESOLVEBIGDATALEVEL - local helper: the pyramid level of a BigData run, or why it cannot run.
+%
+% Syntax:
+%   function [pyramidLevel, levelSize, levelScale, errorText] = resolveBigDataLevel(obj, dataset, imageChannelsAtOnce)
+%
+% Parses ``obj.BatchOpt.BigData_PyramidLevel{1}`` (``'sN'`` -> level N+1) and
+% refuses, with ``errorText`` for the error dialog:
+%
+%   - a level the dataset does not have (a protocol recorded on a dataset with
+%     more levels);
+%   - a dataset without a model store (the mask lives in the same store);
+%   - a model level whose size differs from the image level (a label overlay
+%     with its own pyramid): the reads and the coordinate mapping assume one
+%     size, the check of ``controllers.BigDataOptions.checkModelOutput``;
+%   - Shape2D when the view is not XY: the 2D loop walks XY slices of the level;
+%   - Shape3D when the level does not fit the available physical memory. The
+%     estimate counts per voxel the packed store block, the unpacked labels and
+%     ``imageChannelsAtOnce`` image channels (2 for Correlation). It is a lower
+%     bound: regionprops adds 8 bytes per object voxel (PixelIdxList) on top.
+%     ``memory`` exists on Windows only; elsewhere the check is skipped.
+%
+% Output Arguments:
+%   - **pyramidLevel** - [double] 1-based level (1 = full resolution)
+%   - **levelSize** - [1x3 double] ``[Y X Z]`` of the level
+%   - **levelScale** - [1x3 double] ``[y x z]`` full-resolution voxels per level voxel
+%   - **errorText** - [char] empty when the run can go ahead
+
+levelSize = [];
+levelScale = [];
+errorText = '';
+pyramid = dataset.image.pyramid;
+levelCount = size(pyramid.levelImageSizes, 1);
+levelItem = obj.BatchOpt.BigData_PyramidLevel{1};
+pyramidLevel = sscanf(levelItem, 's%d', 1) + 1;
+if isempty(pyramidLevel) || pyramidLevel < 1 || pyramidLevel > levelCount
+    errorText = sprintf('Unknown pyramid level "%s" (BigData_PyramidLevel); this dataset has levels s0..s%d.', ...
+        levelItem, levelCount - 1);
+    return;
+end
+levelSize = pyramid.levelImageSizes(pyramidLevel, :);
+levelScale = pyramid.levelScaleFactors(pyramidLevel, :);
+
+labels = dataset.labels;
+if ~isprop(labels, 'modelLevelSizes') || isempty(labels.modelLevelSizes)
+    errorText = sprintf(['This BigData dataset has no model, which also holds the mask.\n' ...
+        'Create one first (Segmentation panel -> Create).']);
+    return;
+end
+if pyramidLevel > size(labels.modelLevelSizes, 1) || ~isequal(labels.modelLevelSizes(pyramidLevel, :), levelSize)
+    errorText = sprintf(['Level %s of the model does not have the size of the image level (%d x %d x %d); ' ...
+        'the model has its own pyramid. Choose a level they share.'], levelItem, levelSize(2), levelSize(1), levelSize(3));
+    return;
+end
+
+if strcmp(obj.BatchOpt.ObjectShape{1}, 'Shape2D') && dataset.orientation ~= 3
+    errorText = sprintf(['Shape2D on a BigData dataset measures the XY slices of the level.\n' ...
+        'Switch the view to XY, or use Shape3D.']);
+    return;
+end
+
+if strcmp(obj.BatchOpt.ObjectShape{1}, 'Shape3D')
+    bytesOf = @(className) numel(typecast(zeros(1, 1, className), 'uint8'));
+    if isprop(labels, 'containerClass')
+        packedClass = labels.containerClass;    % packed store, core.MibLabels63 layout
+    else
+        packedClass = labels.dataClass;         % instance index overlay, core.MibBigDataLabelsIndex
+    end
+    packedBytes = bytesOf(packedClass);
+    voxelBytes = 2 * packedBytes + imageChannelsAtOnce * bytesOf(dataset.image.dataClass);
+    requiredBytes = prod(levelSize) * voxelBytes;
+    try
+        [~, systemView] = memory();
+        availableBytes = systemView.PhysicalMemory.Available;
+    catch
+        availableBytes = Inf;
+    end
+    if requiredBytes > availableBytes
+        errorText = sprintf(['Shape3D reads level %s whole: %d x %d x %d voxels, at least %.1f GB, ' ...
+            'while %.1f GB of memory is available.\nChoose a coarser level, or use Shape2D.'], ...
+            levelItem, levelSize(2), levelSize(1), levelSize(3), requiredBytes / 1e9, availableBytes / 1e9);
+    end
+end
 end
 
 % -------------------------------------------------------------------------

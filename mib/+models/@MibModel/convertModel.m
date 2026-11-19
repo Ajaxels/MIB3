@@ -1,4 +1,4 @@
-function convertModel(obj, ModelType, BatchOptIn)
+function converted = convertModel(obj, ModelType, BatchOptIn, convertOptions)
 % CONVERTMODEL - Convert the segmentation model to a different type.
 %
 % Syntax:
@@ -7,6 +7,7 @@ function convertModel(obj, ModelType, BatchOptIn)
 %       obj.convertModel()
 %       obj.convertModel(ModelType)
 %       obj.convertModel(ModelType, BatchOptIn)
+%       converted = obj.convertModel(ModelType, BatchOptIn, convertOptions)
 %
 % Converts the segmentation model between capacity types (63, 255, 16383, 65535,
 % 4294967295 materials) or generates a new model where each connected
@@ -41,8 +42,21 @@ function convertModel(obj, ModelType, BatchOptIn)
 %     - ``.showWaitbar``  - logical, show or not the waitbar [*default* ``true``]
 %     - ``.id``           - *(optional)* dataset index 1-9; default = active dataset
 %
+%   - **convertOptions** *(optional)* - structure with options for callers in
+%     code, not part of BatchOpt and never recorded by the batch tool:
+%
+%     - ``.keepMaterials`` - logical, **BigData only** [*default* ``true``]. When
+%       ``false`` the new 16383 store gets only the mask and selection bits of
+%       the old one, the labels stay empty and the colors are generated. Used by
+%       ``controllers.Annotations.convertModelFromAnnotations``, which
+%       writes its own objects into the empty store afterwards; the explanation
+%       shown before the store path is asked says so. Ignored on Standard
+%       datasets, whose callers convert with ``core.MibDataset.convertModel``
+%
 % Output Arguments:
-%   (none)
+%   - **converted** - logical, true when the model now has the requested type
+%     (also when it already had it). False after a refusal or a cancel; the
+%     model is then unchanged
 %
 % .. note::
 %    **BigData** converts from 63 materials to 16383 only, and into a **new
@@ -78,7 +92,10 @@ function convertModel(obj, ModelType, BatchOptIn)
 % Updates
 % Ported from MIB2 mibModel.convertModel
 
+converted = false;
 if nargin < 2; ModelType = []; end
+if nargin < 4 || isempty(convertOptions); convertOptions = struct(); end
+if ~isfield(convertOptions, 'keepMaterials'); convertOptions.keepMaterials = true; end
 
 %% Declaration of the BatchOpt structure
 BatchOpt = struct();
@@ -108,8 +125,8 @@ BatchOpt.mibBatchTooltip.ModelStorePath = 'BigData only: path of the new 16383 m
 BatchOpt.mibBatchTooltip.showWaitbar = 'Show or not the progress bar during execution';
 
 %% Batch mode check actions
-batchModeSwitch = nargin == 3 && isstruct(BatchOptIn) && isfield(BatchOptIn, 'mibBatchTooltip');
-if nargin == 3
+batchModeSwitch = nargin >= 3 && isstruct(BatchOptIn) && isfield(BatchOptIn, 'mibBatchTooltip');
+if nargin >= 3 && ~isempty(BatchOptIn)
     if isstruct(BatchOptIn) == 0
         if isnan(BatchOptIn)
             BatchOpt = rmfield(BatchOpt, 'id');
@@ -177,11 +194,13 @@ switch BatchOpt.ModelType{1}
 end
 
 %% Early-exit if already the requested type
-if modelType == obj.I{BatchOpt.id}.labels.maxMaterials; return; end
+if modelType == obj.I{BatchOpt.id}.labels.maxMaterials; converted = true; return; end
 
 %% BigData: 63 -> 16383 into a new store
 if obj.I{BatchOpt.id}.datasetType(1) == 'B'
-    if localConvertBigData(obj, BatchOpt, modelType, batchModeSwitch, dlgOpt)
+    converted = localConvertBigData(obj, BatchOpt, modelType, batchModeSwitch, dlgOpt, ...
+        convertOptions.keepMaterials);
+    if converted
         notify(obj, 'UpdateGuiWidgets', core.ToggleEventData({'ribbonModel', 'checkboxes'}));
         notify(obj, 'ShowImage');
         notify(obj, 'SyncBatch', core.ToggleEventData(rmfield(BatchOpt, 'id')));
@@ -246,10 +265,11 @@ eventdata = core.ToggleEventData(BatchOpt);
 notify(obj, 'SyncBatch', eventdata);
 
 if BatchOpt.showWaitbar; delete(wb); end
+converted = true;
 end
 
 % =====================================================================
-function converted = localConvertBigData(obj, BatchOpt, modelType, batchModeSwitch, dlgOpt)
+function converted = localConvertBigData(obj, BatchOpt, modelType, batchModeSwitch, dlgOpt, keepMaterials)
 % Convert a BigData 63-material store into a new 16383 store and switch to it.
 %
 % See the BigData note of the main docblock for what is converted and why into a
@@ -257,6 +277,11 @@ function converted = localConvertBigData(obj, BatchOpt, modelType, batchModeSwit
 % downsampling that built the coarser levels: converting each level on its own
 % gives the pyramid a 16383 model would have had from the start, and the copied
 % level map keeps its meaning.
+%
+% With keepMaterials false (``convertOptions.keepMaterials``) the material bits
+% are dropped in the same pass: only mask and selection reach the new store.
+% The level map is still copied, so a labels tile keeps its level and now holds
+% zeros there, which is what a recomputation from that level gives too.
 %
 % Output Arguments:
 %   - **converted** - logical, true when the dataset now uses the new store.
@@ -284,11 +309,16 @@ if isempty(targetPath)
         % it is, so nothing is lost that loading it again would not bring back
         parent = obj.getProgressBarParent();
         if ~isempty(parent) && all(isvalid(parent))
+            if keepMaterials
+                contentsText = 'Each material becomes one object with the same number and color.';
+            else
+                contentsText = ['Only the objects under the annotations are written, with the numbers ' ...
+                    'from the annotation names. The mask and selection are kept.'];
+            end
             answer = uiconfirm(parent, sprintf(['The model will be copied into a new 16383 model store; ' ...
-                'you choose where in the next step.\n\n' ...
-                'Each material becomes one object with the same number and colour.\n\n' ...
+                'you choose where in the next step.\n\n%s\n\n' ...
                 'The 63-material store stays on disk unchanged, so you can return to it by loading it again. ' ...
-                'Earlier undo steps are not kept.']), ...
+                'Earlier undo steps are not kept.'], contentsText), ...
                 'Convert model', 'Options', {'Continue', 'Cancel'}, ...
                 'DefaultOption', 1, 'CancelOption', 2, 'Icon', 'info');
             if ~strcmp(answer, 'Continue'); return; end
@@ -359,6 +389,7 @@ for level = 1:size(levelSizes, 1)
             voxelsDone = voxelsDone + numel(block);
             if any(block(:))   % an untouched block stays at the fill value 0
                 materials = bitand(block, source.materialMask);
+                if ~keepMaterials; materials(:) = 0; end
                 highestIndex = max(highestIndex, double(max(materials, [], 'all')));
                 remapped = uint16(materials) + ...
                     uint16(bitget(block, source.maskBit)) * uint16(target.maskValue) + ...
@@ -379,7 +410,7 @@ target.materialsCount = highestIndex;
 target.objects3D = true;                  % a material is numbered through the volume
 target.materialNames = {'1'; '2'};
 colors = rand(65535, 3);
-if size(source.materialColors, 2) == 3
+if keepMaterials && size(source.materialColors, 2) == 3
     % material k becomes object k, so it keeps the colour it is drawn in now
     keptRows = min(size(source.materialColors, 1), 65535);
     colors(1:keptRows, :) = source.materialColors(1:keptRows, :);

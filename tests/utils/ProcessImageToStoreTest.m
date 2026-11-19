@@ -82,6 +82,35 @@ classdef ProcessImageToStoreTest < matlab.unittest.TestCase
             testCase.verifyEqual(result, imgaussfilt3(volume, 1));
         end
 
+        function sliceRangeReadsTheZHaloBeyondTheRange(testCase)
+            % Slices 2-3 of a 3D function equal those slices of the whole-volume result,
+            % and the bounding box starts at slice 2.
+            [image, volume, scratch] = testCase.buildBigData();
+            gaussian3 = @(block) imgaussfilt3(block, 1);
+            outputPath = utils.bigdata.processImageToStore(image, gaussian3, ...
+                fullfile(scratch, 'range.zarr3'), HaloYX = 3, HaloZ = 2, SliceRange = [2 3]);
+            [result, outputImage] = testCase.readLevel(outputPath, 1);
+            whole = imgaussfilt3(volume, 1);
+            testCase.verifyEqual(result, whole(:, :, 2:3));
+            testCase.verifyEqual(outputImage.boundingBox(5), image.boundingBox(5) + image.pixSize.z, 'AbsTol', 1e-9);
+        end
+
+        function regionAndSliceRangeCropTheVolume(testCase)
+            % The identity function over a box and a slice range is the crop of the array.
+            [image, volume, scratch] = testCase.buildBigData();
+            outputPath = utils.bigdata.processImageToStore(image, @(block) block, ...
+                fullfile(scratch, 'crop.zarr3'), Region = [31 250 17 200], SliceRange = [2 2], ...
+                BandBytes = testCase.bandBytesForRows(image, 40));
+            result = testCase.readLevel(outputPath, 1);
+            testCase.verifyEqual(result, volume(31:250, 17:200, 2));
+        end
+
+        function wrongSliceRangeIsRefused(testCase)
+            [image, ~, scratch] = testCase.buildBigData();
+            testCase.verifyError(@() utils.bigdata.processImageToStore(image, @(block) block, ...
+                fullfile(scratch, 'bad.zarr3'), SliceRange = [2 4]), 'io:FilteredSliceProvider:wrongSliceRange');
+        end
+
         function classChangeIsWritten(testCase)
             % A function returning uint16 from uint8 writes a uint16 store.
             [image, volume, scratch] = testCase.buildBigData();
