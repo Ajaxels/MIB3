@@ -195,6 +195,9 @@ clicks in split-panel mode. A direct `obj.id` is fine only after the caller set 
 modifier = obj.mibController.currentModifier;  % CORRECT
 modifier = hFig.CurrentModifier;               % WRONG
 ```
+This applies to panels and documents of the main MIB window. A separate dialog window that reads
+Ctrl+click on its own widgets uses its own `CurrentModifier` (`obj.view.gui.CurrentModifier`): its
+key presses never reach `MibController`, whose `currentModifier` would stay empty.
 
 **A BatchOpt widget must be named exactly as its BatchOpt field.** `utils.updateBatchOptFromGUI_Shared`
 writes `BatchOpt.(hObject.Tag)`, so a mismatched handle dumps the value into a junk field and the tool

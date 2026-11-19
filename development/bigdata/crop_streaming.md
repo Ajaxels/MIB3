@@ -2,7 +2,8 @@
 
 Status: implemented 2026-11-19, uncommitted. The `UseParallelComputing` checkbox ("parallel
 processing", between Reset and Output type) is in `views.CropDatasetGUI`; guards removed, tooltip
-set in `addCallbacks`. Its Tag still has to be set in the .mlapp. GUI checks below are open.
+set in `addCallbacks`. Its Tag comes from the property name (`core.ChildView` copies every
+property name to `Tag`), so none is needed in the .mlapp. GUI checks below are open.
 
 ## Problem
 
@@ -107,7 +108,7 @@ model copy.
 ## Widget to add (author)
 
 Checkbox `UseParallelComputing` (Tag = handle name) in `views.CropDatasetGUI`, label "parallel
-processing" (added 2026-11-19; Tag not yet set). Value, Enable (BigData source with Output type
+processing" (added 2026-11-19; Tag from the property name). Value, Enable (BigData source with Output type
 BigData only) and the tooltip are set in code.
 
 ## GUI checks (open)

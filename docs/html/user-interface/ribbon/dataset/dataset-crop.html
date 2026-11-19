@@ -5998,9 +5998,16 @@ format the cropped data is saved in. It is enabled only when the source dataset 
 can be worked on with all standard MIB tools.</p>
 <p>The voxel size of the output reflects the selected pyramid level - cropping at s1 
 doubles the voxel size relative to s0.</p>
-<p>When the cropped area does not fit into the free memory of the computer, the crop is not done and 
-a message gives the memory needed. Select a coarser 
-<span class="widget widget-dropdown">Zarr pyramid level</span>, a smaller area, or the <strong>BigData</strong> output.</p>
+<p>Before cropping, MIB checks that the cropped area fits into the free memory of the computer. If it 
+does not, nothing is cropped and a message shows how much memory is needed and how much is free. 
+In that case, do one of the following:</p>
+<ul>
+<li>select a coarser <span class="widget widget-dropdown">Zarr pyramid level</span> (s1, s2, ...), which 
+  makes the crop smaller;</li>
+<li>crop a smaller area;</li>
+<li>set <span class="widget widget-dropdown">Output type</span> to <strong>BigData</strong>, which writes the crop to disk 
+  instead of loading it into memory.</li>
+</ul>
 <h4 id="bigdata">BigData<a class="headerlink" href="#bigdata" title="Permanent link">&para;</a></h4>
 <p>The cropped region is written to a <strong>new OME-Zarr v3 pyramid</strong> on disk. A file-save 
 dialog appears to choose the destination <code>.zarr3</code> folder, followed by the Zarr settings 
@@ -6012,21 +6019,36 @@ of the same level of the source, or change them before writing.</p>
 <p>A confirmation dialog is shown before the file picker because this operation writes 
 a new pyramid to disk and replaces the dataset in the destination buffer.</p>
 </div>
-<p>The crop is read and written part by part, so it can be larger than the memory of the computer. 
-It is always written at full resolution (s0), for one time point: set 
-<span class="widget widget-edit">Time (min:max)</span> to a single time point for a time series.</p>
+<p>MIB reads and writes the cropped area piece by piece, so the crop can be larger than the 
+memory of the computer. The crop is always written at full resolution (level s0).</p>
+<p>The BigData output writes one time point. For a time series, set 
+<span class="widget widget-edit">Time (min:max)</span> to a single time point, for example <code>3:3</code>.</p>
+<p><strong>Faster cropping with several processor cores</strong></p>
+<p>Check <span class="widget widget-checkbox">parallel processing</span> to let several processor cores 
+read and write the image at the same time. This is faster for large crops.</p>
 <ul>
-<li><span class="widget widget-checkbox">parallel processing</span> reads and writes the image on the workers 
-  of the parallel pool, starting one first when none is open. It is available only for this output; the 
-  model is copied without it. The pool is started and stopped from 
-  <em>Home ribbon -&gt; Preferences -&gt; Parallel pool</em>.</li>
-<li>A crop stopped with <span class="widget widget-button">Cancel</span> while the image is written can be 
-  kept and finished later: crop the same area to the same <code>.zarr3</code> path again, with the same settings, 
-  and choose <span class="widget widget-button">Resume</span>. A crop stopped by an error is kept the 
-  same way.</li>
-<li>A crop stopped while the model is copied keeps the complete image on disk, deletes the unfinished 
-  model and is not opened.</li>
+<li>The checkbox is available only when the dataset is BigData and <em>Output type</em> is <strong>BigData</strong>.</li>
+<li>If no parallel pool is running, MIB starts one first, which takes a few seconds. You can also start 
+  and stop the pool yourself from <em>Home ribbon -&gt; Preferences -&gt; Parallel pool</em>.</li>
+<li>The model is always copied by one core, also with this checkbox.</li>
 </ul>
+<p><strong>Stopping a crop and finishing it later</strong></p>
+<p>If you press <span class="widget widget-button">Cancel</span> while the image is written, MIB asks 
+whether to keep the unfinished crop:</p>
+<ul>
+<li><span class="widget widget-button">Keep</span> leaves the part written so far on disk. To finish it, 
+  crop the same area again, save it to the same <code>.zarr3</code> folder, keep the same Zarr settings, and 
+  choose <span class="widget widget-button">Resume</span> when MIB asks.</li>
+<li><span class="widget widget-button">Delete</span> removes the unfinished crop from the disk.</li>
+</ul>
+<p>If the crop stops because of an error, the part written so far is kept in the same way, and the 
+error message tells you so.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>If you press <strong>Cancel</strong> while the model is copied, the image of the crop is already complete and 
+stays on disk, but the model is not: MIB deletes the unfinished model and does not open the crop. 
+Crop again to get the image together with its model.</p>
+</div>
 <p><strong>Output files created:</strong></p>
 <table>
 <thead>

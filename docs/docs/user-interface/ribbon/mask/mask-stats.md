@@ -54,8 +54,8 @@ Use the combo boxes to select the object source and the dataset extent:
 
 Select the dimensionality of the objects to detect:
 
-- **Shape2D** — detects 2D objects on each slice independently.
-- **Shape3D** — detects 3D connected objects across the stack.
+- **Shape2D** - detects 2D objects on each slice independently.
+- **Shape3D** - detects 3D connected objects across the stack.
 
 ---
 
@@ -65,8 +65,8 @@ Select the dimensionality of the objects to detect:
 
 Choose what to measure:
 
-- **Object** — statistics based on shape properties of the objects (see [3D properties](#quantification-properties-of-3d-objects) and [2D properties](#quantification-properties-of-2d-objects) below).
-- **Intensity** — statistics based on image intensities inside the objects (see [intensity properties](#quantification-properties-of-intensities-of-2d3d-objects) below).
+- **Object** - statistics based on shape properties of the objects (see [3D properties](#quantification-properties-of-3d-objects) and [2D properties](#quantification-properties-of-2d-objects) below).
+- **Intensity** - statistics based on image intensities inside the objects (see [intensity properties](#quantification-properties-of-intensities-of-2d3d-objects) below).
 
 ---
 
@@ -82,8 +82,8 @@ Choose what to measure:
     **EndpointsLength** requires 1-pixel-wide lines with 8/26 connectivity.
 
 - <span class="widget widget-dropdown">Connectivity</span>: defines how pixels/voxels are grouped into objects:
-    - **4/6 connectivity** — combines pixels touching at North, West, South, East sides (2D) and also Top, Bottom (3D).
-    - **8/26 connectivity** — same as 4/6, plus diagonal (45°) neighbours.
+    - **4/6 connectivity** - combines pixels touching at North, West, South, East sides (2D) and also Top, Bottom (3D).
+    - **8/26 connectivity** - same as 4/6, plus diagonal (45°) neighbours.
 - <span class="widget widget-dropdown">ColorChannel1</span>: color channel for intensity analysis.
 - <span class="widget widget-dropdown">ColorChannel2</span>: second color channel for correlation analysis.
 - <span class="widget widget-dropdown">Units</span>: *pixels* or physical units.
@@ -131,15 +131,15 @@ Choose what to measure:
 
     ![Crop Objects Dialog](images/menuMaskStatisticsCropObj.png){.on-glb align=left width="300"}
     <div class="h3-like">Parameters</div>
-    - <span class="widget widget-dropdown">Target</span>: output format — *Crop to MATLAB*, *Amira Mesh binary (\*.am)*, *MRC format for IMOD (\*.mrc)*, *NRRD Data Format (\*.nrrd)*, *TIF format LZW compression (\*.tif)*, or *TIF format uncompressed (\*.tif)*.
+    - <span class="widget widget-dropdown">Target</span>: output format - *Crop to MATLAB*, *Amira Mesh binary (\*.am)*, *MRC format for IMOD (\*.mrc)*, *NRRD Data Format (\*.nrrd)*, *TIF format LZW compression (\*.tif)*, or *TIF format uncompressed (\*.tif)*.
     - <label class="widget widget-checkbox">3D</label>: crop using the full 3D bounding box of each object (rather than centroid-based patches).
     - <span class="widget widget-edit">MarginXY</span>: extend the bounding box in XY by this many pixels.
     - <span class="widget widget-edit">MarginZ</span>: extend the bounding box in Z by this many pixels.
     - <label class="widget widget-checkbox">Generate 3D patches</label>: crop fixed-depth 3D patches centred on each object centroid instead of using bounding boxes.
     - <span class="widget widget-edit">Depth</span>: Z depth in slices for 3D patches (active when *Generate 3D patches* is checked).
     - <label class="widget widget-checkbox">Jitter XY centroids</label>: randomly offsets the crop window. Controlled by <span class="widget widget-edit">Variation</span> (max shift in pixels) and <span class="widget widget-edit">Seed</span> (0 = random seed).
-    - <span class="widget widget-dropdown">Include Model</span>: also export the model layer — *Do not include*, *Crop to MATLAB*, or a file format. Use <span class="widget widget-edit">Material index</span> to specify a single material (*NaN* for all).
-    - <span class="widget widget-dropdown">Include Mask</span>: also export the mask layer — *Do not include*, *Crop to MATLAB*, or a file format.
+    - <span class="widget widget-dropdown">Include Model</span>: also export the model layer - *Do not include*, *Crop to MATLAB*, or a file format. Use <span class="widget widget-edit">Material index</span> to specify a single material (*NaN* for all).
+    - <span class="widget widget-dropdown">Include Mask</span>: also export the mask layer - *Do not include*, *Crop to MATLAB*, or a file format.
     - <label class="widget widget-checkbox">Single Mask object per dataset</label>: keep only the main object within the clipping box when exporting mask-derived objects.
     <div class="clear-float"></div>
     **Exported MATLAB structure** (variable name: `OutputName_ObjectId`):
@@ -162,11 +162,11 @@ Choose what to measure:
 
 ??? info "Export formats"
 
-    - [x] **Export to MATLAB** — saves the STATS struct to the MATLAB workspace under a user-defined variable name.
-    - [x] **Excel format (*.xls)** — Microsoft Excel format.
-    - [x] **Comma-separated values (*.csv)** — comma-separated text.
-    - [x] **MATLAB format (*.mat)** — standard MATLAB format, **including** `.PixelIdxList` and `.BoundingBox` fields.
-    - [x] **MATLAB format minimalistic (*.mat)** — standard MATLAB format, **excluding** `.PixelIdxList` and `.BoundingBox` fields.
+    - [x] **Export to MATLAB** - saves the STATS struct to the MATLAB workspace under a user-defined variable name.
+    - [x] **Excel format (*.xls)** - Microsoft Excel format.
+    - [x] **Comma-separated values (*.csv)** - comma-separated text.
+    - [x] **MATLAB format (*.mat)** - standard MATLAB format, **including** `.PixelIdxList` and `.BoundingBox` fields.
+    - [x] **MATLAB format minimalistic (*.mat)** - standard MATLAB format, **excluding** `.PixelIdxList` and `.BoundingBox` fields.
 
 ---
 
@@ -182,8 +182,8 @@ Use <mouse class="left"></mouse> / <mouse class="right"></mouse> on the histogra
 
 - <label class="widget widget-checkbox">Auto highlight on a click</label>: instantly highlights the clicked objects in the Image View panel. ++ctrl++ + <mouse class="left"></mouse> deselects an object.
 - <span class="widget widget-dropdown">Sorting</span>: changes table sort order.
-- <span class="widget widget-edit">Highlight range</span> + <span class="widget widget-button">Do</span>: select all objects whose value falls within the specified min–max range.
-- **The Details panel**: defines the selection action — add, remove, or replace the *Selection* layer.
+- <span class="widget widget-edit">Highlight range</span> + <span class="widget widget-button">Do</span>: select all objects whose value falls within the specified min-max range.
+- **The Details panel**: defines the selection action - add, remove, or replace the *Selection* layer.
 
 ---
 

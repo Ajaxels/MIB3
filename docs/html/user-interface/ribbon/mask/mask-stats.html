@@ -5966,13 +5966,13 @@
 <div class="admonition info">
 <p class="admonition-title">Quantification of BigData datasets</p>
 <ul>
-<li>Values are measured in the pixels of the chosen level. With physical units, the pixel size of that level is used. A coarse level gives coarser values, because small details are lost.</li>
-<li>Centroids, the slice numbers in the table and the exported coordinates are in full-resolution pixels, so clicking a row jumps to the object at any zoom.</li>
+<li>The objects are measured at the level selected in <strong>Level</strong>. Areas, lengths and volumes are given in the pixels of that level, or, with physical units, in units computed from the pixel size of that level. A coarse level gives less precise values, because small details are lost.</li>
+<li>Object positions (centroids, the slice numbers in the table and the exported coordinates) are always given for the full-resolution image. Clicking a row in the table therefore takes you to the object at any zoom.</li>
 <li>The whole level is measured, even when the block mode is on.</li>
-<li>Use the XY view for <strong>Shape2D</strong>.</li>
-<li><strong>Shape3D</strong> loads the whole level into memory. If it does not fit, choose a coarser level or use <strong>Shape2D</strong>.</li>
-<li>The selection made from the table follows the outlines at the chosen level, so a coarse level gives coarse outlines when you zoom in.</li>
-<li><strong>Objects to a new model</strong> is not available.</li>
+<li><strong>Shape2D</strong> works only in the XY view. Switch the view to XY before starting.</li>
+<li><strong>Shape3D</strong> loads the whole level into memory. If MIB reports that it does not fit, choose a coarser level or use <strong>Shape2D</strong>.</li>
+<li>Objects selected from the table are drawn into the selection at the chosen level. When you zoom in, their outlines therefore look as coarse as that level.</li>
+<li><strong>Objects to a new model</strong> is not available for BigData datasets.</li>
 </ul>
 </div>
 <hr />
@@ -5980,16 +5980,16 @@
 <p><img align="left" alt="Materials panel" src="images/menuMaskStatistics-objshape.png" /></p>
 <p>Select the dimensionality of the objects to detect:</p>
 <ul>
-<li><strong>Shape2D</strong> — detects 2D objects on each slice independently.</li>
-<li><strong>Shape3D</strong> — detects 3D connected objects across the stack.</li>
+<li><strong>Shape2D</strong> - detects 2D objects on each slice independently.</li>
+<li><strong>Shape3D</strong> - detects 3D connected objects across the stack.</li>
 </ul>
 <hr />
 <h2 id="detection-type">Detection type<a class="headerlink" href="#detection-type" title="Permanent link">&para;</a></h2>
 <p><img align="left" alt="Materials panel" src="images/menuMaskStatistics-detection.png" /></p>
 <p>Choose what to measure:</p>
 <ul>
-<li><strong>Object</strong> — statistics based on shape properties of the objects (see <a href="#quantification-properties-of-3d-objects">3D properties</a> and <a href="#quantification-properties-of-2d-objects">2D properties</a> below).</li>
-<li><strong>Intensity</strong> — statistics based on image intensities inside the objects (see <a href="#quantification-properties-of-intensities-of-2d3d-objects">intensity properties</a> below).</li>
+<li><strong>Object</strong> - statistics based on shape properties of the objects (see <a href="#quantification-properties-of-3d-objects">3D properties</a> and <a href="#quantification-properties-of-2d-objects">2D properties</a> below).</li>
+<li><strong>Intensity</strong> - statistics based on image intensities inside the objects (see <a href="#quantification-properties-of-intensities-of-2d3d-objects">intensity properties</a> below).</li>
 </ul>
 <hr />
 <h2 id="properties">Properties<a class="headerlink" href="#properties" title="Permanent link">&para;</a></h2>
@@ -6005,8 +6005,8 @@
 </div>
 <ul>
 <li><span class="widget widget-dropdown">Connectivity</span>: defines how pixels/voxels are grouped into objects:<ul>
-<li><strong>4/6 connectivity</strong> — combines pixels touching at North, West, South, East sides (2D) and also Top, Bottom (3D).</li>
-<li><strong>8/26 connectivity</strong> — same as 4/6, plus diagonal (45°) neighbours.</li>
+<li><strong>4/6 connectivity</strong> - combines pixels touching at North, West, South, East sides (2D) and also Top, Bottom (3D).</li>
+<li><strong>8/26 connectivity</strong> - same as 4/6, plus diagonal (45°) neighbours.</li>
 </ul>
 </li>
 <li><span class="widget widget-dropdown">ColorChannel1</span>: color channel for intensity analysis.</li>
@@ -6056,15 +6056,15 @@ and <strong>SurfaceArea</strong> for 3D objects in physical units require isotro
 <summary>Details on Crop to a file/MATLAB</summary>
 <p><a class="glightbox" data-title="Crop Objects Dialog" data-type="image" href="images/menuMaskStatisticsCropObj.png"><img align="left" alt="Crop Objects Dialog" class="on-glb" src="images/menuMaskStatisticsCropObj.png" width="300" /></a>
 <div class="h3-like">Parameters</div>
-- <span class="widget widget-dropdown">Target</span>: output format — <em>Crop to MATLAB</em>, <em>Amira Mesh binary (*.am)</em>, <em>MRC format for IMOD (*.mrc)</em>, <em>NRRD Data Format (*.nrrd)</em>, <em>TIF format LZW compression (*.tif)</em>, or <em>TIF format uncompressed (*.tif)</em>.
+- <span class="widget widget-dropdown">Target</span>: output format - <em>Crop to MATLAB</em>, <em>Amira Mesh binary (*.am)</em>, <em>MRC format for IMOD (*.mrc)</em>, <em>NRRD Data Format (*.nrrd)</em>, <em>TIF format LZW compression (*.tif)</em>, or <em>TIF format uncompressed (*.tif)</em>.
 - <label class="widget widget-checkbox">3D</label>: crop using the full 3D bounding box of each object (rather than centroid-based patches).
 - <span class="widget widget-edit">MarginXY</span>: extend the bounding box in XY by this many pixels.
 - <span class="widget widget-edit">MarginZ</span>: extend the bounding box in Z by this many pixels.
 - <label class="widget widget-checkbox">Generate 3D patches</label>: crop fixed-depth 3D patches centred on each object centroid instead of using bounding boxes.
 - <span class="widget widget-edit">Depth</span>: Z depth in slices for 3D patches (active when <em>Generate 3D patches</em> is checked).
 - <label class="widget widget-checkbox">Jitter XY centroids</label>: randomly offsets the crop window. Controlled by <span class="widget widget-edit">Variation</span> (max shift in pixels) and <span class="widget widget-edit">Seed</span> (0 = random seed).
-- <span class="widget widget-dropdown">Include Model</span>: also export the model layer — <em>Do not include</em>, <em>Crop to MATLAB</em>, or a file format. Use <span class="widget widget-edit">Material index</span> to specify a single material (<em>NaN</em> for all).
-- <span class="widget widget-dropdown">Include Mask</span>: also export the mask layer — <em>Do not include</em>, <em>Crop to MATLAB</em>, or a file format.
+- <span class="widget widget-dropdown">Include Model</span>: also export the model layer - <em>Do not include</em>, <em>Crop to MATLAB</em>, or a file format. Use <span class="widget widget-edit">Material index</span> to specify a single material (<em>NaN</em> for all).
+- <span class="widget widget-dropdown">Include Mask</span>: also export the mask layer - <em>Do not include</em>, <em>Crop to MATLAB</em>, or a file format.
 - <label class="widget widget-checkbox">Single Mask object per dataset</label>: keep only the main object within the clipping box when exporting mask-derived objects.
 <div class="clear-float"></div>
 <strong>Exported MATLAB structure</strong> (variable name: <code>OutputName_ObjectId</code>):
@@ -6091,11 +6091,11 @@ and <strong>SurfaceArea</strong> for 3D objects in physical units require isotro
 <details class="info">
 <summary>Export formats</summary>
 <ul class="task-list">
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> <strong>Export to MATLAB</strong> — saves the STATS struct to the MATLAB workspace under a user-defined variable name.</li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> <strong>Excel format (*.xls)</strong> — Microsoft Excel format.</li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> <strong>Comma-separated values (*.csv)</strong> — comma-separated text.</li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> <strong>MATLAB format (*.mat)</strong> — standard MATLAB format, <strong>including</strong> <code>.PixelIdxList</code> and <code>.BoundingBox</code> fields.</li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> <strong>MATLAB format minimalistic (*.mat)</strong> — standard MATLAB format, <strong>excluding</strong> <code>.PixelIdxList</code> and <code>.BoundingBox</code> fields.</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> <strong>Export to MATLAB</strong> - saves the STATS struct to the MATLAB workspace under a user-defined variable name.</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> <strong>Excel format (*.xls)</strong> - Microsoft Excel format.</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> <strong>Comma-separated values (*.csv)</strong> - comma-separated text.</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> <strong>MATLAB format (*.mat)</strong> - standard MATLAB format, <strong>including</strong> <code>.PixelIdxList</code> and <code>.BoundingBox</code> fields.</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> <strong>MATLAB format minimalistic (*.mat)</strong> - standard MATLAB format, <strong>excluding</strong> <code>.PixelIdxList</code> and <code>.BoundingBox</code> fields.</li>
 </ul>
 </details>
 <hr />
@@ -6108,8 +6108,8 @@ and <strong>SurfaceArea</strong> for 3D objects in physical units require isotro
 <ul>
 <li><label class="widget widget-checkbox">Auto highlight on a click</label>: instantly highlights the clicked objects in the Image View panel. <span class="keys"><kbd class="key-control">Ctrl</kbd></span> + <mouse class="left"></mouse> deselects an object.</li>
 <li><span class="widget widget-dropdown">Sorting</span>: changes table sort order.</li>
-<li><span class="widget widget-edit">Highlight range</span> + <span class="widget widget-button">Do</span>: select all objects whose value falls within the specified min–max range.</li>
-<li><strong>The Details panel</strong>: defines the selection action — add, remove, or replace the <em>Selection</em> layer.</li>
+<li><span class="widget widget-edit">Highlight range</span> + <span class="widget widget-button">Do</span>: select all objects whose value falls within the specified min-max range.</li>
+<li><strong>The Details panel</strong>: defines the selection action - add, remove, or replace the <em>Selection</em> layer.</li>
 </ul>
 <hr />
 <h2 id="quantification-properties-of-3d-objects">Quantification properties of 3D objects<a class="headerlink" href="#quantification-properties-of-3d-objects" title="Permanent link">&para;</a></h2>

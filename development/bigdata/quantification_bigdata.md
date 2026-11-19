@@ -1,8 +1,9 @@
 # Quantification on BigData
 
 Status: implemented 2026-11-18, uncommitted. The `BigData_PyramidLevel` dropdown (label
-"Level") is in `views.QuantificationGUI`; the controller no longer guards for its absence. Its
-Tag still has to be set to `BigData_PyramidLevel` in the .mlapp. GUI checks below are open.
+"Level") is in `views.QuantificationGUI` with its tooltip; the controller no longer guards for its
+absence. Its Tag comes from the property name (`core.ChildView` copies every property name to
+`Tag`). GUI checks below are open.
 
 Also fixed in the same change: Shape2D Correlation read the slice with `[]` channels (only the
 displayed ones) and indexed the result by channel number; it now reads `ColorChannel1` and
@@ -76,9 +77,8 @@ dialogs (they open a dialog headless), export, Crop objects.
 
 ## Widget to add (author)
 
-Dropdown `BigData_PyramidLevel` (Tag = handle name, the BatchOpt rule), label "Level" (added
-2026-11-18; Tag and tooltip not yet set). Suggested tooltip: `BigData: pyramid level to measure; s0 is full resolution, a
-coarser level is faster and measured in its own pixels`. Items, value and Enable are set in code.
+Dropdown `BigData_PyramidLevel`, label "Level", tooltip in the .mlapp (added 2026-11-18; Tag from
+the property name). Items, value and Enable are set in code.
 
 ## GUI checks (open)
 

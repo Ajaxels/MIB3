@@ -44,6 +44,10 @@ end
 
 id = obj.mibModel.getActiveId();
 dataset = obj.mibModel.I{id};
+% The modifier of this window, not mibController.currentModifier: the Quantification
+% window is a separate figure, so a Ctrl held while clicking its table is a key press
+% of this figure and never reaches MibController.gui_WindowKeyPressFcn (the
+% controller's value would stay empty and Ctrl+click would not remove the object).
 modifier = obj.view.gui.CurrentModifier;
 
 if strcmp(parameter, 'obj2model')

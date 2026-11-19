@@ -5624,12 +5624,18 @@ For the downloads visit <a href="https://mib.helsinki.fi/downloads.html">MIB web
   object, annotations and cropping of objects work at any level. Objects selected in the table
   are highlighted at the chosen level.
   See <a href="../../user-interface/ribbon/mask/mask-stats.html#material">Quantification</a></li>
-<li><strong>Crop of BigData datasets</strong>: with <em>Output type</em> <strong>BigData</strong> the crop is read and written part by
-  part, so crops larger than the memory of the computer can be made; it can run on parallel
-  workers (<strong>parallel processing</strong>), and a stopped crop can be kept and resumed later. A 16383 instance
-  model keeps its object numbers. With <em>Output type</em> <strong>Standard</strong> a crop that does not fit into
-  the free memory is refused with a message instead of being started.
+<li><strong>Crop of BigData datasets</strong>:<ul>
+<li>with <em>Output type</em> <strong>BigData</strong>, the crop is read and written piece by piece, so it can be
+  larger than the memory of the computer</li>
+<li>the new <strong>parallel processing</strong> checkbox uses several processor cores, which is faster for
+  large crops</li>
+<li>a crop stopped with <em>Cancel</em> can be kept and finished later with <em>Resume</em></li>
+<li>a model with up to 16383 objects keeps the numbers of its objects</li>
+<li>with <em>Output type</em> <strong>Standard</strong>, MIB first checks that the crop fits into the free memory;
+  if it does not, a message says how much memory is needed and nothing is cropped
   See <a href="../../user-interface/ribbon/dataset/dataset-crop.html#bigdata-datasets">Crop dataset</a></li>
+</ul>
+</li>
 <li><strong>BigData locks</strong>: the image and the labels of a BigData dataset can be locked against
   accidental changes; a loaded model opens locked by default.
   See <a href="../dataset-types/index.html#bigdata">BigData datasets</a></li>
