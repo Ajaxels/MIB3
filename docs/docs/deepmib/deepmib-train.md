@@ -401,11 +401,11 @@ estimated **Time to go**, and **Time/epoch** - the average time one epoch has ta
 that the configured *Max epochs* is affordable before leaving a run overnight: multiply it by the epochs remaining.
 Hover it to see the time per iteration.
 
-??? info "GPU memory readout"
+When *MaxTime* is set, **Time to go** and the progress gauge count towards whichever limit is reached first: the end
+of *MaxEpochs* or the end of *MaxTime*. The device name at the top of the panel says which one is expected to stop the
+run, for example `1. NVIDIA GeForce RTX 3080 Ti 12GB (stop: time limit)`.
 
-    On a single GPU the device name also shows how much memory the run has used at most:
-    `1. NVIDIA GeForce RTX 3080 Ti (peak 7.2/12.0 GB)`. It is a conservative figure - the real peak inside an iteration is
-    higher - so treat it as a rough guide to how much headroom is left rather than an exact measurement.
+??? info "GPU running out of memory"
 
     If the card runs short of memory, Windows does not report an error: it moves GPU memory into ordinary system RAM and
     training carries on many times slower. Deep MIB notices this by watching how long an iteration takes, and when the

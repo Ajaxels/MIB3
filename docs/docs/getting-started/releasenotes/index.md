@@ -43,6 +43,8 @@ For the downloads visit [MIB website](https://mib.helsinki.fi/downloads.html) fo
       output, now available for any type of images, opens with a ZARR image as an editable BigData
       model; the score maps can be written as a BigData image (*Zarr3 (BigData)*), and *Model files*
       has a *Do not generate* option
+    - **DeepMIB**: training can be limited in time (*MaxTime*); the progress window shows the time to go
+      to whichever limit comes first
     - **BigData instance model**: a new 16383-material model for BigData datasets, one index per
       object; 63-material BigData models can be converted to it, into a new model store
     - **Close model**: new entry of the buffer context menu in the Datasets panel; closes the model and

@@ -161,30 +161,33 @@ if progressStruct.Iteration == 0
 
     mibDeepTrainingProgressStruct.TrainingProgress = uilabel(mibDeepTrainingProgressStruct.InformationPanel);
     % 385 wide (the full panel width from x=7) rather than 220: the plain device name
-    % already needed 182 px, and the memory figure appended by
-    % deepmib.updateGpuMemoryStatus takes it to 296, or 361 with the overcommit marker
+    % already needed 182 px, and the stop mode plus the overcommit marker appended by
+    % deepmib.updateStopEstimate take it to about 360
     mibDeepTrainingProgressStruct.TrainingProgress.Position = [7 238 385 22];
     mibDeepTrainingProgressStruct.TrainingProgress.FontWeight = 'bold';
-    mibDeepTrainingProgressStruct.TrainingProgress.Text = trainingProgressOptions.gpuDevice;
+    mibDeepTrainingProgressStruct.TrainingProgress.Tooltip = ...
+        'Training stops at Max epochs or at Max time, whichever comes first; "stop" names the one expected to end it';
+    mibDeepTrainingProgressStruct.deviceLabel = trainingProgressOptions.gpuDevice;
 
-    % GPU memory / overcommit tracking, see deepmib.updateGpuMemoryStatus
-    mibDeepTrainingProgressStruct.gpuBaseLabel = '';
-    mibDeepTrainingProgressStruct.gpuTotalMemory = 0;
-    mibDeepTrainingProgressStruct.gpuPeakUsed = 0;
+    % GPU overcommit tracking, see deepmib.updateGpuMemoryStatus
+    mibDeepTrainingProgressStruct.gpuSlowdownCheck = isfield(trainingProgressOptions, 'executionEnvironment') && ...
+        strcmp(trainingProgressOptions.executionEnvironment, 'gpu');
     mibDeepTrainingProgressStruct.gpuRateSamples = [];
     mibDeepTrainingProgressStruct.gpuBaselineRate = NaN;
     mibDeepTrainingProgressStruct.gpuPrevIteration = 0;
     mibDeepTrainingProgressStruct.gpuPrevElapsed = 0;
     mibDeepTrainingProgressStruct.gpuSpillWarned = false;
-    if isfield(trainingProgressOptions, 'executionEnvironment') && ...
-            strcmp(trainingProgressOptions.executionEnvironment, 'gpu')
+    if mibDeepTrainingProgressStruct.gpuSlowdownCheck
+        % card memory after the model name, e.g. "1. NVIDIA GeForce RTX 3080 Ti 12GB";
+        % gpuDevice() without an index only queries the current device, it does not reset it
         try
-            mibDeepTrainingProgressStruct.gpuTotalMemory = gpuDevice().TotalMemory;
-            mibDeepTrainingProgressStruct.gpuBaseLabel = trainingProgressOptions.gpuDevice;
+            mibDeepTrainingProgressStruct.deviceLabel = sprintf('%s %.0fGB', ...
+                trainingProgressOptions.gpuDevice, gpuDevice().TotalMemory/2^30);
         catch
-            % no usable device, leave gpuBaseLabel empty and the reporting stays off
+            % no usable device, keep the plain name
         end
     end
+    deepmib.updateStopEstimate(0, 0);   % device name plus the stop mode known before the first iteration
 
     mibDeepTrainingProgressStruct.StartTime = uilabel(mibDeepTrainingProgressStruct.InformationPanel);
     mibDeepTrainingProgressStruct.StartTime.Position = [7 216 184 22];
@@ -338,7 +341,7 @@ if progressStruct.Iteration == 0
         mibDeepTrainingProgressStruct.labelPatch.YTickLabel = '';
         mibDeepTrainingProgressStruct.labelPatch.XColor = 'none';
         mibDeepTrainingProgressStruct.labelPatch.YColor = 'none';
-        mibDeepTrainingProgressStruct.labelPatch.Position = [127 123 116 116];
+        mibDeepTrainingProgressStruct.labelPatch.Position = [127 143 116 116];   % same height as imgPatch
         mibDeepTrainingProgressStruct.labelPatch.Box = 'on';
         mibDeepTrainingProgressStruct.labelPatch.Units = 'pixels';
         mibDeepTrainingProgressStruct.labelPatch.DataAspectRatio = [1 1 1];
@@ -414,15 +417,10 @@ else
     if isfield(progressStruct, 'TimeSinceStart') % when trainNetwork is used
         mibDeepTrainingProgressStruct.ElapsedTime.Text = ...
             sprintf('Elapsed time: %.0f h %.0f min %.2d sec', floor(progressStruct.TimeSinceStart/3600), floor(mod(round(progressStruct.TimeSinceStart),3600)/60), mod(round(progressStruct.TimeSinceStart),60));
-        timerValue = progressStruct.TimeSinceStart/progressStruct.Iteration*(mibDeepTrainingProgressStruct.maxIter-progressStruct.Iteration);
-        mibDeepTrainingProgressStruct.TimeToGo.Text = ...
-            sprintf('Time to go: ~%.0f h %.0f min %.2d sec', floor(timerValue/3600), floor(mod(round(timerValue),3600)/60), mod(round(timerValue),60));
         mibDeepTrainingProgressStruct.BaseLearnRate.Text = sprintf('Base learn rate: %.3e', progressStruct.BaseLearnRate);
         elapsedSeconds = progressStruct.TimeSinceStart;
     else %  when trainnet is used
         mibDeepTrainingProgressStruct.ElapsedTime.Text = sprintf('Elapsed time: %s sec', progressStruct.TimeElapsed);
-        timerValue = progressStruct.TimeElapsed/progressStruct.Iteration*(mibDeepTrainingProgressStruct.maxIter-progressStruct.Iteration);
-        mibDeepTrainingProgressStruct.TimeToGo.Text = sprintf('Time to go: ~%s sec', timerValue);
         mibDeepTrainingProgressStruct.BaseLearnRate.Text = sprintf('Base learn rate: %.3e', progressStruct.LearnRate); % renamed to LearnRate
         elapsedSeconds = progressStruct.TimeElapsed;
         % trainnet reports this as a duration while trainNetwork uses plain seconds;
@@ -444,15 +442,13 @@ else
             secondsPerIteration, progressStruct.Iteration, trainingProgressOptions.iterPerEpoch);
     end
 
-    % GPU memory headroom, plus the one-off warning when the card is overcommitted
+    % one-off warning when the GPU looks overcommitted, then Time to go, the gauge and the
+    % stop mode (MaxEpochs or MaxTime, whichever is expected first), which also draws that warning
     deepmib.updateGpuMemoryStatus(progressStruct.Iteration, elapsedSeconds);
+    deepmib.updateStopEstimate(elapsedSeconds, progressStruct.Iteration);
     mibDeepTrainingProgressStruct.Epoch.Text = sprintf('Epoch: %d of %d', progressStruct.Epoch, trainingProgressOptions.TrainingOpt.MaxEpochs);
     mibDeepTrainingProgressStruct.IterationNumberValue.Text = sprintf('%d of %d', progressStruct.Iteration, round(mibDeepTrainingProgressStruct.maxIter));
-    % maxIter is an estimate (iterations per epoch x epochs), so clamp: the gauge limits
-    % are [0 100] and a needle drawn past the edge looks like a fault rather than an
-    % off-by-one in the estimate
-    mibDeepTrainingProgressStruct.ProgressGauge.Value = min(100, progressStruct.Iteration/mibDeepTrainingProgressStruct.maxIter*100);
-    
+
 
     if ~isempty(progressStruct.ValidationLoss)
         mibDeepTrainingProgressStruct.ValidationXvec(mibDeepTrainingProgressStruct.ValidationXvecIndex) = progressStruct.Iteration;

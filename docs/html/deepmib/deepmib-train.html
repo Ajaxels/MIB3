@@ -6226,11 +6226,11 @@ uncheck <strong>Options tab → Custom training plot → Custom training progres
 estimated <strong>Time to go</strong>, and <strong>Time/epoch</strong> - the average time one epoch has taken so far. Use the last one to check
 that the configured <em>Max epochs</em> is affordable before leaving a run overnight: multiply it by the epochs remaining.
 Hover it to see the time per iteration.</p>
+<p>When <em>MaxTime</em> is set, <strong>Time to go</strong> and the progress gauge count towards whichever limit is reached first: the end
+of <em>MaxEpochs</em> or the end of <em>MaxTime</em>. The device name at the top of the panel says which one is expected to stop the
+run, for example <code>1. NVIDIA GeForce RTX 3080 Ti 12GB (stop: time limit)</code>.</p>
 <details class="info">
-<summary>GPU memory readout</summary>
-<p>On a single GPU the device name also shows how much memory the run has used at most:
-<code>1. NVIDIA GeForce RTX 3080 Ti (peak 7.2/12.0 GB)</code>. It is a conservative figure - the real peak inside an iteration is
-higher - so treat it as a rough guide to how much headroom is left rather than an exact measurement.</p>
+<summary>GPU running out of memory</summary>
 <p>If the card runs short of memory, Windows does not report an error: it moves GPU memory into ordinary system RAM and
 training carries on many times slower. Deep MIB notices this by watching how long an iteration takes, and when the
 run slows down sharply it colours the device name red and adds <code>- over limit</code>. Training is not stopped, but it is
