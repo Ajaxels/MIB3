@@ -122,6 +122,17 @@ debugging a regression in it, or looking for a precedent pattern. One line each:
 
 ---
 
+## To do
+
+`development/todo/`: evaluations and plans not implemented yet.
+
+| File | What |
+|------|------|
+| [graphcut_improvements.md](todo/graphcut_improvements.md) | Graphcut superpixel graph: edge weights without contact size, axis-only neighbours, speed, edge cases; the isolated-supervoxel bug and the graph size fixed 2026-11-21 |
+| [maxflow_replacement.md](todo/maxflow_replacement.md) | MATLAB `maxflow` against MIB's `maxflow_v222` mex, measured (built-in 1.5-2x slower, same cut); when and how a replacement would make sense |
+
+---
+
 ## Notes & scratch
 
 `development/notes/` — small odds and ends:

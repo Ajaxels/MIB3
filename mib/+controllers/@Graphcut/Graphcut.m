@@ -1082,8 +1082,8 @@ classdef Graphcut < handle
                         progressBar.Message = 'Calculating connectivity...';
                         [obj.graphcut(1).Edges{1}, edgeIndsList] = imRichRAG(obj.graphcut(1).slic);
                         obj.graphcut(1).EdgesValues{1} = cell2mat(cellfun(@(idx) mean(img(idx)), edgeIndsList, 'UniformOutput', false));
+                        obj.graphcut(1).noPix      = double(max(obj.graphcut(1).slic(:)));   % before the graph: it gives its size
                         obj.recalcGraph_Callback();
-                        obj.graphcut(1).noPix      = max(obj.graphcut(1).slic(:));
                         obj.graphcut(1).dilateMode = 'pre';
                         if strcmp(obj.graphcut(1).dilateMode, 'pre')
                             obj.graphcut(1).slic = imdilate(obj.graphcut(1).slic, ones(3));
@@ -1964,6 +1964,13 @@ classdef Graphcut < handle
         %
         % Input Arguments:
         %   - **showWaitbar** *(optional)* - [logical] show a progress dialog; default: ``0``
+        %
+        % Every graph is a symmetric ``[noPix x noPix]`` sparse matrix (``noPix`` of the
+        % graph, or of the slice in 2D; larger only if an edge names a higher label), so
+        % that it matches the data term ``T`` of ``doGraphcutSegmentation``, which has
+        % ``noPix`` rows, also when the superpixel with the largest label has no edge. The
+        % caller must therefore set ``noPix`` before calling this method. A graph that can
+        % not be built is reported in the command window and keeps its previous value.
             if obj.mibModel.preferences.System.DeveloperMode
                 fprintf('controllers.Graphcut.recalcGraph_Callback: triggered\n');
             end
@@ -1992,9 +1999,17 @@ classdef Graphcut < handle
 
                     Edges2 = fliplr(obj.graphcut(graphId).Edges{i});
                     Edges  = double([obj.graphcut(graphId).Edges{i}; Edges2]);
+                    % one node per superpixel, also when the largest has no edge, so that the
+                    % matrix matches the data term T of noPix rows in doGraphcutSegmentation
+                    numNodes = 0;
+                    if ~isempty(obj.graphcut(graphId).noPix)
+                        numNodes = obj.graphcut(graphId).noPix(min(i, numel(obj.graphcut(graphId).noPix)));
+                    end
+                    numNodes = max([double(numNodes); Edges(:)]);
                     try
-                        obj.graphcut(graphId).Graph{i} = sparse(Edges(:,1), Edges(:,2), [EdgesValues EdgesValues]);
-                    catch
+                        obj.graphcut(graphId).Graph{i} = sparse(Edges(:,1), Edges(:,2), [EdgesValues(:); EdgesValues(:)], numNodes, numNodes);
+                    catch err
+                        fprintf('Graphcut: the graph %d of part %d could not be built: %s\n', i, graphId, err.message);
                     end
                 end
             end

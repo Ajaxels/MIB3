@@ -218,13 +218,11 @@ else    % Watershed supervoxels
     % cancel check
     if ~isempty(cancelPB) && isvalid(cancelPB) && cancelPB.CancelRequested; cancelled = true; return; end
 
-    % remove isolated supervoxels not present in the edge list
-    vec = sort(unique(Graphcut.Edges{1}));
-    excludeSupervoxels = find(diff(vec) > 1);
-    if ~isempty(excludeSupervoxels)
-        vec2 = 1:numel(excludeSupervoxels);
-        excludeSupervoxels = excludeSupervoxels + vec2';
-        Graphcut.slic(ismember(Graphcut.slic, excludeSupervoxels)) = 0;
+    % remove isolated supervoxels: every label that no edge reaches, also below the
+    % smallest and above the largest label of the edge list and in runs of missing labels
+    isolatedSupervoxels = setdiff(1:double(Graphcut.noPix), double(Graphcut.Edges{1}(:)));
+    if ~isempty(isolatedSupervoxels)
+        Graphcut.slic(ismember(Graphcut.slic, isolatedSupervoxels)) = 0;
     end
 
     if ~isempty(parLoopOptions.waitbar)
