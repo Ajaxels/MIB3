@@ -32,6 +32,13 @@ function varargout = imRichRAG(img, varargin)
 %   adjacent superpixels, 1 - is gap between superpixels, IMG2 - the image
 %   to be used for MEAN_INTENSITY calculation
 %
+%   [ADJ, MEAN_INTENSITY, CONTACTS] = imRichRAG(IMG, GAP, IMG2);
+%   CONTACTS [N*1] the size of the contact of each edge: the number of
+%   positions that link the two regions (one per axis direction and gap
+%   position, so a voxel of a 1-voxel line can count up to 3 times in 3D);
+%   with GAP = 0 it is the number of touching pixel/voxel faces. GAP = 0
+%   gives the same edges as imRAG(IMG, 0)
+%
 %   [ADJ, BORDER_IDXS, NODES] = imRichRAG(IMG);
 %   Return three arrays: ADJ is the adjacency; BORDER_IDXS - border
 %   indices; NODES [N*2] array containing centroids
@@ -106,6 +113,11 @@ function varargout = imRichRAG(img, varargin)
 %               of the code to detect border indices for 3D
 %   2015-11-05 Ilya Belevich added the 3rd input parameter, that is image
 %               to be used for calculation of mean intensities between each superpixel
+%   2026-11-21 with the image: mean intensity and the new 3rd output (number of
+%               contacts per edge) by accumarray, one pass for 2D and 3D; fixes
+%               the 3D error for a single edge
+%   2026-11-21 without the image: border lists by one sort + mat2cell, 2D and 3D
+%               (no loop over edges; also for a single edge or none)
 %
 %% Initialisations
 % size of image
@@ -225,45 +237,23 @@ end
 % remove double edges, keeping in indsC indices of merged edge for each
 % original edge
 [edges, indsA, indsC] = unique(edges, 'rows'); %#ok<ASGLU>
-if nd == 2
-    % Original code, may be used for 2D cases
+if nargin == 3
+    % mean intensity and number of contacts per edge in one pass, for 2D and 3D;
+    % replaces the loops over edges below (the 2D one scanned all positions per edge)
     nEdges = size(edges, 1);
-    % original FOR loop - FASTEST FOR 2D
-    if nargin==3    % when 3rd input parameter present return mean internsity at the edges between superpixels
-        edgeInds = zeros(nEdges, 1);  % allocate space
-        intImage = varargin{2};     % get image
-        for iEdge = 1:nEdges        % when using parfor 1.889 times faster
-            inds = indsC == iEdge;
-            edgeInds(iEdge) = mean(intImage(posList(inds)));
-        end
-    else            % when the 3rd input parameter is missing return indices of borders
-        edgeInds = cell(nEdges, 1);
-        for iEdge = 1:nEdges        % when using parfor 1.889 times faster
-            inds = indsC == iEdge;
-            %edgeInds{iEdge} = unique(posList(inds));
-            edgeInds{iEdge} = posList(inds);
-        end
-    end
+    intImage = varargin{2};
+    contactCount = accumarray(indsC(:), 1, [nEdges 1]);
+    edgeInds = accumarray(indsC(:), double(intImage(posList(:))), [nEdges 1]) ./ max(contactCount, 1);
+elseif nargout > 1
+    % without the image: the border positions of every edge, 2D and 3D. The stable
+    % sort keeps the positions of an edge in their original order (as the former
+    % per-edge loop did); one call also for a single edge or none, where the former
+    % 3D loop failed with an undefined index
+    nEdges = size(edges, 1);
+    [~, order] = sort(indsC(:));
+    edgeInds = mat2cell(posList(order), accumarray(indsC(:), 1, [nEdges 1]), 1);
 else
-    % % % Alternative version 2, faster than the FOR Loop especially for 3D cases
-    [B,I] = sort(indsC);
-    dB = diff(B);
-    inds = [0; find(dB==1)];
-    noInd = numel(inds);
-    if nargin==3    % when 3rd input parameter present return mean internsity at the edges between superpixels
-        edgeInds = zeros(noInd,1);  % allocate space
-        intImage = varargin{2};     % get image
-        for iEdge=2:noInd
-            edgeInds(iEdge-1) = mean(intImage(posList(I(inds(iEdge-1)+1:inds(iEdge)))));
-        end
-        edgeInds(end) = mean(intImage(posList(I(inds(iEdge)+1:end))));
-    else            % when the 3rd input parameter is missing return indices of borders
-        edgeInds = cell(noInd,1);
-        for iEdge=2:noInd
-            edgeInds{iEdge-1} = posList(I(inds(iEdge-1)+1:inds(iEdge)));
-        end
-        edgeInds{end} = posList(I(inds(iEdge)+1:end));
-    end
+    edgeInds = {};
 end
 % % % Alternative version 2, faster for 3D than original, but not as good
 % as alternative 1
@@ -284,6 +274,11 @@ if nargout == 1
 elseif nargout == 2
     varargout{1} = edges;
     varargout{2} = edgeInds;
+elseif nargout == 3 && nargin == 3
+    % with the image: the number of contacts of every edge
+    varargout{1} = edges;
+    varargout{2} = edgeInds;
+    varargout{3} = contactCount;
 elseif nargout == 3
     % Also compute region centroids
     N = max(img(:));

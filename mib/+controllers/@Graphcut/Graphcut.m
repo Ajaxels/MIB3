@@ -20,7 +20,11 @@ classdef Graphcut < handle
         %   .noPix         - number of superpixels/supervoxels
         %   .Graph         - cell of sparse adjacency graphs for maxflow
         %   .Edges         - cell of edge lists [src dst]
-        %   .EdgesValues   - cell of edge intensity differences
+        %   .EdgesValues   - cell of edge values (SLIC: difference of the mean intensities,
+        %                    Watershed: mean intensity of the line between the superpixels)
+        %   .EdgesArea     - cell of contact sizes per edge (third output of imRichRAG);
+        %                    missing in graphs made before 2026-11-21
+        %   .weightByContact - logical, the edge weights were multiplied by the contact size
         %   .PixelIdxList  - (optional) pixel index lists per superpixel
         %   .bb            - bounding box [x1 x2 y1 y2 z1 z2]
         %   .grid          - struct with grid tile bounding boxes (mode3dGridRadio)
@@ -187,6 +191,9 @@ classdef Graphcut < handle
             handles.realtimeCheck.ValueChangedFcn     = @(h,~) obj.realtimeCheck_Callback(h);
             handles.parforCheck.ValueChangedFcn       = @(~,~) obj.parforCheck_Callback();
             handles.pixelIdxListCheck.ValueChangedFcn = @(~,~) obj.pixelIdxListCheck_Callback();
+            if isfield(handles, 'weightByContactCheck')
+                handles.weightByContactCheck.ValueChangedFcn = @(~,~) obj.weightByContactCheck_Callback();
+            end
 
             % buttons
             handles.updateMaterialsBtn.ButtonPushedFcn      = @(~,~) obj.updateMaterialsBtn_Callback();
@@ -202,8 +209,17 @@ classdef Graphcut < handle
             handles.segmentAllBtn.ButtonPushedFcn            = @(~,~) obj.segmentAllBtn_Callback();
             handles.closeButton.ButtonPushedFcn              = @(~,~) obj.closeWindow();
             handles.recalculateGraph.ButtonPushedFcn         = @(~,~) obj.recalcGraph_Callback();
+            handles.helpBtn.ButtonPushedFcn                  = @(~,~) obj.helpBtn_Callback();
+        end
 
-            
+        function helpBtn_Callback(obj)
+        % HELPBTN_CALLBACK - Open the Graphcut page of the user documentation.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Graphcut.helpBtn_Callback: triggered\n');
+            end
+            helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'html', 'user-interface', 'ribbon', 'tools', 'tools-graphcut.html');
+            utils.openHelpPage(helpFilPath, ...
+                'http://mib.helsinki.fi/help/main3/user-interface/ribbon/tools/tools-graphcut.html');
         end
 
         function closeWindow(obj)
@@ -1064,13 +1080,11 @@ classdef Graphcut < handle
                         obj.graphcut(1).noPix = double(obj.graphcut(1).noPix);
                         obj.graphcut(1).slic  = obj.graphcut(1).slic + 1;
                         STATS = regionprops(obj.graphcut(1).slic, img, 'MeanIntensity');
-                        gap = 0;
-                        obj.graphcut(1).Edges{1}      = double(imRAG(obj.graphcut(1).slic, gap));
-                        obj.graphcut(1).EdgesValues{1} = zeros([size(obj.graphcut(1).Edges{1},1), 1]);
+                        % regions in direct contact (gap 0), with the contact size
+                        [edges, ~, obj.graphcut(1).EdgesArea{1}] = imRichRAG(obj.graphcut(1).slic, 0, img);
+                        obj.graphcut(1).Edges{1} = double(edges);
                         meanVals = [STATS.MeanIntensity];
-                        for i = 1:size(obj.graphcut(1).Edges{1}, 1)
-                            obj.graphcut(1).EdgesValues{1}(i) = abs(meanVals(obj.graphcut(1).Edges{1}(i,1)) - meanVals(obj.graphcut(1).Edges{1}(i,2)));
-                        end
+                        obj.graphcut(1).EdgesValues{1} = abs(meanVals(obj.graphcut(1).Edges{1}(:,1)) - meanVals(obj.graphcut(1).Edges{1}(:,2)))';
                         progressBar.Message = 'Calculating boundary weights...';
                         obj.recalcGraph_Callback();
                     else
@@ -1080,8 +1094,9 @@ classdef Graphcut < handle
                         mask = imimposemin(img, mask);
                         obj.graphcut(1).slic = watershed(mask);
                         progressBar.Message = 'Calculating connectivity...';
-                        [obj.graphcut(1).Edges{1}, edgeIndsList] = imRichRAG(obj.graphcut(1).slic);
-                        obj.graphcut(1).EdgesValues{1} = cell2mat(cellfun(@(idx) mean(img(idx)), edgeIndsList, 'UniformOutput', false));
+                        [obj.graphcut(1).Edges{1}, obj.graphcut(1).EdgesValues{1}, obj.graphcut(1).EdgesArea{1}] = ...
+                            imRichRAG(obj.graphcut(1).slic, 1, img);
+                        obj.graphcut(1).Edges{1}   = double(obj.graphcut(1).Edges{1});
                         obj.graphcut(1).noPix      = double(max(obj.graphcut(1).slic(:)));   % before the graph: it gives its size
                         obj.recalcGraph_Callback();
                         obj.graphcut(1).dilateMode = 'pre';
@@ -1140,15 +1155,12 @@ classdef Graphcut < handle
                             obj.graphcut(1).noPix(i) = double(noPixCurrent);
                             obj.graphcut(1).slic(:,:,i) = obj.graphcut(1).slic(:,:,i) + 1;
                             STATS = regionprops(obj.graphcut(1).slic(:,:,i), img(:,:,i), 'MeanIntensity');
-                            gap = 0;
-                            Edges      = double(imRAG(obj.graphcut(1).slic(:,:,i), gap));
+                            % regions in direct contact (gap 0), with the contact size
+                            [Edges, ~, obj.graphcut(1).EdgesArea{i}] = imRichRAG(obj.graphcut(1).slic(:,:,i), 0, img(:,:,i));
+                            Edges      = double(Edges);
                             meanVals   = [STATS.MeanIntensity];
-                            EdgesValues = zeros([size(Edges,1), 1]);
-                            for j = 1:size(Edges,1)
-                                EdgesValues(j) = abs(meanVals(Edges(j,1)) - meanVals(Edges(j,2)));
-                            end
                             obj.graphcut(1).Edges{i}      = Edges;
-                            obj.graphcut(1).EdgesValues{i} = EdgesValues;
+                            obj.graphcut(1).EdgesValues{i} = abs(meanVals(Edges(:,1)) - meanVals(Edges(:,2)))';
 
                             if progressBar.CancelRequested()
                                 delete(progressBar);
@@ -1173,8 +1185,8 @@ classdef Graphcut < handle
                             mask = imextendedmin(currImg, superpixelSize);
                             mask = imimposemin(currImg, mask);
                             obj.graphcut(1).slic(:,:,i)    = watershed(mask);
-                            [obj.graphcut(1).Edges{i}, edgeIndsList] = imRichRAG(obj.graphcut(1).slic(:,:,i));
-                            obj.graphcut(1).EdgesValues{i} = cell2mat(cellfun(@(idx) mean(currImg(idx)), edgeIndsList, 'UniformOutput', false));
+                            [obj.graphcut(1).Edges{i}, obj.graphcut(1).EdgesValues{i}, obj.graphcut(1).EdgesArea{i}] = ...
+                                imRichRAG(obj.graphcut(1).slic(:,:,i), 1, currImg);
                             obj.graphcut(1).Edges{i}       = double(obj.graphcut(1).Edges{i});
                             obj.graphcut(1).noPix(i)       = double(max(max(obj.graphcut(1).slic(:,:,i))));
                             obj.graphcut(1).dilateMode     = 'pre';
@@ -1234,6 +1246,7 @@ classdef Graphcut < handle
                         end
                         Graphcut(graphId).Edges      = cell(1);
                         Graphcut(graphId).EdgesValues = cell(1);
+                        Graphcut(graphId).EdgesArea  = cell(1);
                     end
 
                     parallelSwitch = strcmp(obj.mode, 'mode3dGridRadio') && obj.view.handles.parforCheck.Value;
@@ -1763,6 +1776,11 @@ classdef Graphcut < handle
             if isfield(obj.graphcut(1), 'scaleFactor')
                 obj.view.handles.edgeFactorEdit.Value = obj.graphcut(1).scaleFactor;
             end
+            if isfield(obj.view.handles, 'weightByContactCheck')
+                % a graph saved before the checkbox existed was not weighted by contact size
+                obj.view.handles.weightByContactCheck.Value = isfield(obj.graphcut(1), 'weightByContact') && ...
+                    ~isempty(obj.graphcut(1).weightByContact) && obj.graphcut(1).weightByContact;
+            end
 
             if strcmp(obj.graphcut(1).superPixType, 'SLIC')
                 obj.view.handles.superpixTypePopup.Value = 'SLIC';
@@ -1971,6 +1989,17 @@ classdef Graphcut < handle
         % ``noPix`` rows, also when the superpixel with the largest label has no edge. The
         % caller must therefore set ``noPix`` before calling this method. A graph that can
         % not be built is reported in the command window and keeps its previous value.
+        %
+        % Edge weight: ``w = exp(-E / (max(E) - min(E)) * scaleFactor)``, ``E`` being
+        % ``EdgesValues{i}`` and ``scaleFactor`` the *Edge factor* field. When all values
+        % of a graph are equal (``max(E) = min(E)``: a slice with one edge, or a flat
+        % image) every edge gets ``w = 1``; the formula would give NaN or Inf. With *Weight by
+        % contact size* ticked (``weightByContactCheck``, stored as ``.weightByContact``)
+        % it is multiplied by ``EdgesArea{i} / mean(EdgesArea{i})``, per graph (per slice
+        % in 2D, per block in the 3D grid): cutting a large contact then costs more than
+        % cutting a touch of a few voxels, while the average edge keeps its weight. A graph
+        % without ``EdgesArea`` (made before 2026-11-21) keeps the plain weights, and a
+        % dialog asks to press *Calculate Superpixels*.
             if obj.mibModel.preferences.System.DeveloperMode
                 fprintf('controllers.Graphcut.recalcGraph_Callback: triggered\n');
             end
@@ -1987,15 +2016,36 @@ classdef Graphcut < handle
                 progressBar = uiprogressdlg(obj.view.gui, 'Value', 0, 'Message', 'Calculating boundary weights...', 'Title', 'Recalculating graph', 'Indeterminate', true);
             end
 
+            weightByContact = isfield(obj.view.handles, 'weightByContactCheck') && obj.view.handles.weightByContactCheck.Value;
+            missingArea = false;
             for graphId = 1:numel(obj.graphcut)
                 obj.graphcut(graphId).scaleFactor = obj.view.handles.edgeFactorEdit.Value;
-                
+                obj.graphcut(graphId).weightByContact = weightByContact;
+
                 for i = 1:numel(obj.graphcut(graphId).EdgesValues)
                     edgeMax = max(obj.graphcut(graphId).EdgesValues{i});
                     edgeMin = min(obj.graphcut(graphId).EdgesValues{i});
                     edgeVar = edgeMax - edgeMin;
-                    normE   = obj.graphcut(graphId).EdgesValues{i} / edgeVar;
+                    if isempty(edgeVar) || edgeVar == 0
+                        % all edges equal (one edge, or a flat image): no boundary is stronger
+                        % than another, every edge gets weight 1 instead of NaN from 0/0 or E/0
+                        normE = zeros(size(obj.graphcut(graphId).EdgesValues{i}));
+                    else
+                        normE = obj.graphcut(graphId).EdgesValues{i} / edgeVar;
+                    end
                     EdgesValues = exp(-normE * obj.graphcut(graphId).scaleFactor);
+                    if weightByContact
+                        % the cost of a cut grows with the contact it separates; divided by the
+                        % mean contact, so that the average edge keeps its weight and the edge
+                        % factor keeps its range
+                        if isfield(obj.graphcut(graphId), 'EdgesArea') && numel(obj.graphcut(graphId).EdgesArea) >= i && ...
+                                numel(obj.graphcut(graphId).EdgesArea{i}) == numel(EdgesValues)
+                            contactSize = double(obj.graphcut(graphId).EdgesArea{i}(:));
+                            EdgesValues = EdgesValues(:) .* (contactSize / mean(contactSize));
+                        else
+                            missingArea = true;
+                        end
+                    end
 
                     Edges2 = fliplr(obj.graphcut(graphId).Edges{i});
                     Edges  = double([obj.graphcut(graphId).Edges{i}; Edges2]);
@@ -2014,6 +2064,24 @@ classdef Graphcut < handle
                 end
             end
             if showWaitbar; delete(progressBar); end
+            if missingArea
+                utils.dlgs.showErrorDialog(obj.view.gui, ...
+                    sprintf(['The graph has no contact sizes: it was calculated with an older version of MIB.\n' ...
+                    'The edges are not weighted by contact size. Press Calculate Superpixels to calculate them.']), ...
+                    'Contact sizes missing');
+            end
+        end
+
+        function weightByContactCheck_Callback(obj)
+        % WEIGHTBYCONTACTCHECK_CALLBACK - Rebuild the graph after the *Weight by contact size* checkbox changed.
+        %
+        % The weights are made in ``recalcGraph_Callback``; without a calculated graph
+        % there is nothing to rebuild, and the checkbox is used at the next calculation.
+            if obj.mibModel.preferences.System.DeveloperMode
+                fprintf('controllers.Graphcut.weightByContactCheck_Callback: triggered\n');
+            end
+            if isempty(obj.graphcut(1).noPix) || ~isfield(obj.graphcut(1), 'EdgesValues'); return; end
+            obj.recalcGraph_Callback(1);
         end
 
         function pixelIdxListCheck_Callback(obj)

@@ -14,7 +14,13 @@ function [Graphcut, cancelled] = calcSupervoxels(Graphcut, img, parLoopOptions, 
 %     - ``.slic``        - label array (read when ``usePrecomputedSlic=1``, written otherwise)
 %     - ``.noPix``       - number of supervoxels (written)
 %     - ``.Edges``       - cell of ``[N×2]`` adjacency edge lists (written)
-%     - ``.EdgesValues`` - cell of ``[N×1]`` mean-intensity differences per edge (written)
+%     - ``.EdgesValues`` - cell of ``[N×1]`` edge values (written): SLIC - the absolute
+%       difference of the mean intensities of the two supervoxels; Watershed - the mean
+%       intensity of the watershed-line voxels between them
+%     - ``.EdgesArea``   - cell of ``[N×1]`` contact sizes per edge (written), the third
+%       output of ``imRichRAG``: SLIC - the number of touching voxel faces; Watershed -
+%       the number of line positions that link the two supervoxels. Used by
+%       ``recalcGraph_Callback`` when *Weight by contact size* is ticked
 %     - ``.dilateMode``  - ``'pre'`` or ``'post'``; set by Watershed path
 %
 %   - **img** - [uint8 | uint16] 3-D image array ``[height × width × depth]``
@@ -41,7 +47,7 @@ function [Graphcut, cancelled] = calcSupervoxels(Graphcut, img, parLoopOptions, 
 %
 % Output Arguments:
 %   - **Graphcut** - updated struct with ``.slic``, ``.noPix``, ``.Edges``,
-%     ``.EdgesValues``, and (Watershed only) ``.dilateMode`` populated
+%     ``.EdgesValues``, ``.EdgesArea``, and (Watershed only) ``.dilateMode`` populated
 %   - **cancelled** *(optional)* - [logical] ``true`` when the user cancelled via
 %     ``parLoopOptions.cancelProgressBar``; the caller must detect this and clean up
 
@@ -143,13 +149,11 @@ if strcmp(parLoopOptions.superPixType, 'SLIC')
         parLoopOptions.waitbar.Value = 0.3;
         parLoopOptions.waitbar.Message = 'Calculating adjacent matrix for labels...';
     end
-    gap = 0;
-    Graphcut.Edges{1}      = double(imRAG(Graphcut.slic, gap));
-    Graphcut.EdgesValues{1} = zeros([size(Graphcut.Edges{1},1), 1]);
+    % regions in direct contact (gap 0): the same edges as imRAG(slic, 0), with the contact size
+    [edges, ~, Graphcut.EdgesArea{1}] = imRichRAG(Graphcut.slic, 0, img);
+    Graphcut.Edges{1} = double(edges);
     meanVals = [STATS.MeanIntensity];
-    for i = 1:size(Graphcut.Edges{1}, 1)
-        Graphcut.EdgesValues{1}(i) = abs(meanVals(Graphcut.Edges{1}(i,1)) - meanVals(Graphcut.Edges{1}(i,2)));
-    end
+    Graphcut.EdgesValues{1} = abs(meanVals(Graphcut.Edges{1}(:,1)) - meanVals(Graphcut.Edges{1}(:,2)))';
 
 else    % Watershed supervoxels
 
@@ -212,7 +216,7 @@ else    % Watershed supervoxels
         parLoopOptions.waitbar.Value = 0.7;
         parLoopOptions.waitbar.Message = 'Calculating adjacency graph...';
     end
-    [Graphcut.Edges{1}, Graphcut.EdgesValues{1}] = imRichRAG(Graphcut.slic, 1, img);
+    [Graphcut.Edges{1}, Graphcut.EdgesValues{1}, Graphcut.EdgesArea{1}] = imRichRAG(Graphcut.slic, 1, img);
     Graphcut.noPix = double(max(max(max(Graphcut.slic))));
 
     % cancel check

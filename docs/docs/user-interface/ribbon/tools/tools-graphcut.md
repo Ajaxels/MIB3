@@ -101,6 +101,12 @@ Watershed excels for boundary-defined objects.
   supervoxel (3D) in pixels. Smaller values give finer segmentation but increase computation time.
 - <span class="widget widget-edit">Compactness</span>: controls SLIC superpixel squareness
   (higher values yield squarer shapes). Not applicable to Watershed.
+- <span class="widget widget-checkbox">Weight by contact size</span>: makes it harder to cut
+  between superpixels that share a large border than between superpixels that touch only at
+  a few pixels, so the object grows further from fewer seeds. Untick it to get the
+  segmentation of older MIB versions. A graph saved with an older MIB version has no border
+  sizes, so the checkbox is unticked when the graph is loaded: press
+  <span class="widget widget-button">Calculate Superpixels</span> again to use it.
 - <span class="widget widget-dropdown">Color channel</span>: color channel for superpixel calculation.
 - <span class="widget widget-dropdown">Type of signal</span>: signal polarity —
   *black-on-white* (electron microscopy) or *light-on-black* (light microscopy, fluorescence).
