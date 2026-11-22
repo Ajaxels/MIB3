@@ -1090,7 +1090,7 @@ classdef InstanceEditor < handle
             if obj.view.handles.Mode3D.Value
                 if ~obj.indexIsUsable(); return; end
                 index = obj.mibModel.I{obj.mibModel.getActiveId()}.instanceIndex;
-                if objectId > index.maxIndex || ~index.exists(objectId)
+                if ~ismember(objectId, index.ids)
                     uialert(obj.view.gui, sprintf('There is no object %d in this model.', objectId), ...
                         'Unknown object', 'Icon', 'warning');
                     return;
@@ -1125,8 +1125,9 @@ classdef InstanceEditor < handle
             if use3D
                 if ~obj.indexIsUsable(); return; end
                 index = dataset.instanceIndex;
-                if objectId > index.maxIndex || ~index.exists(objectId); return; end
-                centroid = double(index.centroid(objectId, :));
+                [found, row] = ismember(objectId, index.ids);
+                if ~found; return; end
+                centroid = double(index.centroid(row, :));
             else
                 % The object is on the shown slice by definition here, so the
                 % whole-volume centroid - the centre of every object that shares

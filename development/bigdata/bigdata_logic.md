@@ -27,7 +27,7 @@ model** is a separate disk-backed pyramidal packed-63 store that mirrors the ima
 live as you edit. Cost of every operation scales with the **size of the edit**, not the slide.
 
 **Single time point only** (T=1). 63 materials max, or 16383 objects in the instance model (packed
-uint16 store, chosen at *New model*; see §4). Source image is read-only — you
+uint16 store), or 1073741823 objects (packed uint32 store), chosen at *New model*; see §4. Source image is read-only — you
 edit the model, never the image pixels.
 
 ---
@@ -42,7 +42,8 @@ core.MibDataset (datasetType = 'BigData')
   │              obj.data is EMPTY (on-demand); dims from height/width/depth/pixSize
   └── labels : core.MibBigDataLabels   < core.MibLabels63
                  packed model in a writable OME-Zarr v3 group (one array per pyramid level):
-                 uint8 = 63 materials, uint16 = 16383-object instance model (MibLabels63.setLayout)
+                 uint8 = 63 materials, uint16 = 16383-object instance model,
+                 uint32 = 1073741823-object instance model (MibLabels63.setLayout)
                  obj.data EMPTY; getData63/setData63 read/modify/write the store block-wise
 ```
 
@@ -137,6 +138,28 @@ BioFormats and OpenSlide all drive the same path.
   instances); `openStore` picks the layout from the level-0 data type (`uint16` / `<u2`), so old
   stores open as uint8 unchanged. The static resize helpers (`resizeBlockNearest/Smooth`,
   `resizeLayerSmooth`) take the layout from the block's class.
+- **uint32 layout (1073741823-object instance model, 2026-11-23).** Same scheme in 32 bits:
+  `bitand(x, 2^30-1)` = object index, bit 31 = mask, bit 32 = selection, 4 bytes per voxel
+  (`setLayout('uint32')`; `openStore` detects `uint32` / `<u4`). The flag values 2^30 / 2^31 are
+  exact doubles, so `bitand(uint32, double)` keeps working with the layout constants. **BigData
+  only** (user decision): *New model* offers it on BigData, `createModel`/`convertModel` map a
+  `'1073741823'` request on Standard to 4294967295, and a Standard dataset that receives a packed
+  uint32 model turns it into 4294967295 with separate mask and selection (`cropDataset` to
+  Standard, `MibDataset.loadModel` of a `.model` file saved from such a store), so no Standard code
+  path ever holds the packed uint32 layout. Colours wrap at 65535 rows as for 4294967295
+  (`getRGBimage`); `editInstanceObjects` grows the table to at most 65535 rows (it grew it to the
+  index before, which would be 24 GB near the top index).
+  **Sparse instance index (2026-11-23).** The index used to be dense, ~45 bytes per index value up
+  to the highest index (45 GB at 1e9). It now has one row per present object, sorted by index
+  (`.ids`; no `.exists`), so it follows the number of objects. Lookups are `ismember(id, index.ids)`;
+  rows are replaced with `utils.instances.replaceIndexRows` (objectIndex refresh, the BigData
+  refresh, BigData Compact rewrites `.ids(k) = k` in place). Full build: `regionprops` up to a highest
+  index of 2^20 (it returns one struct per value up to the max), slice-by-slice `unique`/`accumarray`
+  above. The BigData strip scan keeps sparse rows per slice and combines them every ~4 M rows. A
+  refresh now equals a rebuild exactly (the old "a refresh never shrinks the index space" is gone:
+  `maxIndex = max(ids)`). Side-files written before (with `.exists`) are refused by
+  `loadInstanceIndex`, so an old store is scanned once. Standard 4294967295 benefits too.
+  Tests: `tests/core/MibBigDataLabelsUint32Test.m`, `tests/utils/instances/InstanceObjectIndexTest.m`.
 - **Instance semantics on disk.** `maxIndexUsed` (persisted in `mibMaterials`) is raised by
   `setData63` from each written block's max - cost scales with the edit - and answers
   `countMaterials` / "next empty material" without a scan. A crash-closed store falls back to the
@@ -356,7 +379,9 @@ Measured (12288 × 12288 × 2, 10 000 objects, local NVMe): full scan 3.2 s; bui
 
 ### Converting a 63 store to 16383 (2026-10-23)
 
-`MibModel.convertModel` on BigData accepts 63 -> 16383 only (`localConvertBigData`). A store's array
+`MibModel.convertModel` on BigData accepts 63 -> 16383, and since 2026-11-23 also 63 -> 1073741823
+and 16383 -> 1073741823 (`localConvertBigData`; the same remap with the flags moved to the top two
+bits of the target class; from 16383 the colours and `objects3D` carry over). A store's array
 type is fixed at `createStore`, so it writes a **new** uint16 store (default
 `<name>_16383<ext>` next to the old one, `BatchOpt.ModelStorePath` or `uiputfile` otherwise) and swaps
 `dataset.labels`. The new store copies the **old store's** geometry (level sizes, scale factors,
@@ -371,6 +396,16 @@ object rows 1..63. The old store is closed and left untouched (reloading it is t
 the dialog before the store dialog explains rather than warns - no "cannot be undone" wording;
 `Backup.clearContents()` because the undo entries are 63-type snapshots. Cancel deletes the partial store and keeps the 63 model.
 Test: `EditInstanceObjectsBigDataTest/convert63To16383CopiesEveryLevel`.
+
+**To a smaller type (2026-11-23, user decision).** 1073741823 -> 16383 / 63 and 16383 -> 63 are
+allowed: every index above the target's top index becomes the top index (per voxel, so it
+commutes with the pyramid like the remap), merging all such objects into one. Warned in the
+confirm dialog (icon `warning`) when `maxIndexUsed` is above the target's top index; a protocol or
+a caller with `ModelStorePath` gets the warning on stderr. The count of clamped level-1 voxels is
+printed afterwards. To 63, `materialNames` = '1'..N. The Standard route still refuses an index the
+target cannot hold (the older decision in `MibModel.convertModel`); it has an undo but no kept
+copy, so clamping there would lose data. Tests: `MibBigDataLabelsUint32Test/convert1073741823To16383ClampsHighIndices`,
+`convert16383To63ListsTheMaterials`.
 
 Undo-backups for Brush / ClickTracker use block mode; Wand / Region Growing back up *after* the radius
 window is built; Lasso / Drag&Drop back up their bbox/window.

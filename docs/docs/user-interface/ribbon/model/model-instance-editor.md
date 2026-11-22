@@ -18,8 +18,8 @@ slices are fused, and one object that breaks in two far apart in Z stays two - a
 here.
 
 Requires an instance model (16383, 65535 or 4294967295 materials) in a Standard dataset, or a 16383
-model in a [BigData](../../../getting-started/dataset-types/index.md) dataset, where every object has
-its own index.
+or 1073741823 model in a [BigData](../../../getting-started/dataset-types/index.md) dataset, where
+every object has its own index.
 
 <div class="clear-float"></div>
 

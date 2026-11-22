@@ -266,6 +266,7 @@ classdef MibRibbon
             obj.handles.ribbonModel.mat16383.ValueChangedFcn = @obj.model_Callbacks;
             obj.handles.ribbonModel.mat65535.ValueChangedFcn = @obj.model_Callbacks;
             obj.handles.ribbonModel.mat4294967295.ValueChangedFcn = @obj.model_Callbacks;
+            obj.handles.ribbonModel.mat1073741823.ValueChangedFcn = @obj.model_Callbacks;
             obj.handles.ribbonModel.indexed2dconn4.ItemPushedFcn = @obj.model_Callbacks;
             obj.handles.ribbonModel.indexed2dconn8.ItemPushedFcn = @obj.model_Callbacks;
             obj.handles.ribbonModel.indexed3dconn4.ItemPushedFcn = @obj.model_Callbacks;

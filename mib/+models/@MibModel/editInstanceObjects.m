@@ -98,12 +98,12 @@ function applied = editInstanceObjects(obj, BatchOptIn)
 %     of assuming the edit went through and updating its own state to match.
 %
 % .. note::
-%    Only 16383, 65535 and 4294967295 model types are handled. A model with 63 or
-%    255 materials has no per-object identity to edit. ``Virtual`` datasets are
-%    refused.
+%    Only 16383, 65535, 4294967295 and 1073741823 (BigData) model types are
+%    handled. A model with 63 or 255 materials has no per-object identity to
+%    edit. ``Virtual`` datasets are refused.
 %
 % .. note::
-%    **BigData** (a 16383 store, ``core.MibBigDataLabels``) works with the same
+%    **BigData** (a 16383 or 1073741823 store, ``core.MibBigDataLabels``) works with the same
 %    actions, with these differences:
 %
 %    - every read, write and backup is made at full resolution (level 1), so an
@@ -403,7 +403,7 @@ if ~dataset.modelExist
 end
 if dataset.labels.maxMaterials < 256
     localComplain(obj, 'Not an instance model!', 'Wrong model type', ...
-        {'The instance editor works on 16383, 65535 and 4294967295 model types, where every object has its own index.', ...
+        {'The instance editor works on 16383, 65535, 4294967295 and (BigData) 1073741823 model types, where every object has its own index.', ...
          'Convert the model first: Ribbon -> Model -> Convert type.'});
     notify(obj, 'StopProtocol');
     return;
@@ -902,12 +902,12 @@ if isempty(objectIds)
     problem = 'Select at least one object first.';
     return;
 end
-outOfRange = objectIds(objectIds > index.maxIndex);
+missing = objectIds(~ismember(objectIds, index.ids));
+outOfRange = missing(missing > index.maxIndex);
 if ~isempty(outOfRange)
     problem = sprintf('There is no object with index %d in this model.', outOfRange(1));
     return;
 end
-missing = objectIds(~index.exists(objectIds));
 if ~isempty(missing)
     problem = sprintf('Object %d is not present in the model - the index may be out of date.', missing(1));
     return;
@@ -945,9 +945,25 @@ end
 end
 
 % =====================================================================
+function boxes = localBoxes(index, objectIds)
+% [n x 6] double bounding boxes of objects of the index, one row per objectIds.
+%
+% The index holds rows of present objects only, sorted by index
+% (utils.instances.objectIndex), so a box is found through .ids. Every caller has
+% validated objectIds against the index first; an id without a row would give a
+% silently wrong box, so it is an error.
+[found, rows] = ismember(objectIds(:), index.ids);
+if ~all(found)
+    error('MibModel:editInstanceObjects:objectNotInIndex', ...
+        'Object %d is not in the instance index', objectIds(find(~found, 1)));
+end
+boxes = double(index.bbox(rows, :));
+end
+
+% =====================================================================
 function box = localUnionBox(index, objectIds)
 % Smallest box containing all of the given objects
-boxes = double(index.bbox(objectIds, :));
+boxes = localBoxes(index, objectIds);
 box = [min(boxes(:, 1)), max(boxes(:, 2)), ...
        min(boxes(:, 3)), max(boxes(:, 4)), ...
        min(boxes(:, 5)), max(boxes(:, 6))];
@@ -1092,12 +1108,16 @@ newIds = [];
 problem = '';
 if count == 0; return; end
 
-free = find(~index.exists);
-free = free(:)';
-if numel(free) >= count
-    newIds = free(1:count);
-else
-    newIds = [free, index.maxIndex + (1:(count - numel(free)))];
+% The index lists the values in use, sorted, so the free ones are the runs
+% between neighbours: lower(k)..upper(k), the last run open-ended above the
+% highest index.
+usedIds = double(index.ids(:));
+lower = [0; usedIds] + 1;
+upper = [usedIds - 1; Inf];
+for run = find(upper >= lower)'
+    take = min(count - numel(newIds), upper(run) - lower(run) + 1);
+    newIds = [newIds, lower(run) + (0:take-1)]; %#ok<AGROW>
+    if numel(newIds) == count; break; end
 end
 
 capacity = obj.I{id}.labels.maxMaterials;
@@ -1109,11 +1129,15 @@ if any(newIds > capacity)
 end
 
 % The renderer looks the colour up by index, so a new index without a colour row
-% would error on the next redraw.
+% would error on the next redraw. Above 65535 it takes row mod(k - 1, 65535) + 1
+% (models.MibModel.getRGBimage), so the table never needs more than 65535 rows:
+% growing it to the index would cost 24 bytes per index, 24 GB near the top of
+% the 1073741823 type.
 colors = obj.I{id}.labels.materialColors;
 highest = max(newIds);
-if size(colors, 1) < highest
-    colors(size(colors, 1)+1:highest, :) = rand(highest - size(colors, 1), 3);
+neededRows = min(highest, 65535);
+if size(colors, 1) < neededRows
+    colors(size(colors, 1)+1:neededRows, :) = rand(neededRows - size(colors, 1), 3);
     obj.I{id}.labels.materialColors = colors;
 end
 obj.I{id}.labels.materialsCount = max(obj.I{id}.labels.materialsCount, highest);
@@ -1137,8 +1161,9 @@ sliceNumber = dataset.getCurrentSliceNumber();
 touchedIds = objectIds;
 box = localClipToSlice(localUnionBox(index, objectIds), sliceNumber, use3D);
 
-if use3D == false && (sliceNumber < min(index.bbox(objectIds, 5)) || ...
-        sliceNumber > max(index.bbox(objectIds, 6)))
+selectedBoxes = localBoxes(index, objectIds);
+if use3D == false && (sliceNumber < min(selectedBoxes(:, 5)) || ...
+        sliceNumber > max(selectedBoxes(:, 6)))
     localComplain(obj, 'None of the selected objects is present on the shown slice.', 'Instance editor');
     return;
 end
@@ -1230,7 +1255,7 @@ end
 % the editor to repair. Doing that in silence was the defect: it looked like a
 % Connect and was a Merge.
 if strcmp(action, 'Connect') && ~bridged && ...
-        ~localBoxesCanTouch(double(index.bbox(objectIds(1), :)), double(index.bbox(objectIds(2), :)))
+        ~localBoxesCanTouch(localBoxes(index, objectIds(1)), localBoxes(index, objectIds(2)))
     localComplain(obj, sprintf('Objects %d and %d were joined, but nothing was bridged.', ...
         objectIds(1), objectIds(2)), 'Connect', ...
         {'They overlap in Z, so "interpolate" had no gap to fill, and they are too far apart to be touching.', ...
@@ -1258,9 +1283,9 @@ end
 % =====================================================================
 function pixels = localObjectPixels(obj, id, index, objectId, timePoint, sliceNumber, use3D)
 % Full-volume linear indices of one object, found inside its own bounding box
-box = localClipToSlice(double(index.bbox(objectId, :)), sliceNumber, use3D);
+box = localClipToSlice(localBoxes(index, objectId), sliceNumber, use3D);
 sub = localReadBox(obj, id, 'labels', timePoint, box);
-pixels = localCropToFull(obj, id, box, find(sub == objectId), timePoint);
+pixels =localCropToFull(obj, id, box, find(sub == objectId), timePoint);
 end
 
 % =====================================================================
@@ -1277,7 +1302,7 @@ connectivity = localConnectivity(BatchOpt);
 workingIndex = index;
 
 for objectId = objectIds
-    box = localClipToSlice(double(index.bbox(objectId, :)), sliceNumber, use3D);
+    box = localClipToSlice(localBoxes(index, objectId), sliceNumber, use3D);
     sub = localReadBox(obj, id, 'labels', timePoint, box);
     objectMask = (sub == objectId);
     if ~any(objectMask, 'all'); continue; end
@@ -1340,12 +1365,9 @@ for objectId = objectIds
     touchedIds = [touchedIds, newIds]; %#ok<AGROW>
 
     % Reserve what was just handed out so the next object cannot be given the
-    % same values.
-    if max(newIds) > workingIndex.maxIndex
-        workingIndex.exists(workingIndex.maxIndex+1:max(newIds), 1) = false;
-        workingIndex.maxIndex = max(newIds);
-    end
-    workingIndex.exists(newIds) = true;
+    % same values. localAllocateIndices reads .ids only, so the other fields
+    % of the working copy are left as they are.
+    workingIndex.ids = union(workingIndex.ids(:), newIds(:));
 end
 end
 
@@ -1430,8 +1452,8 @@ if strcmp(BatchOpt.ConnectMode{1}, 'selection')
     return;
 end
 
-boxA = double(index.bbox(objectIds(1), :));
-boxB = double(index.bbox(objectIds(2), :));
+boxA = localBoxes(index, objectIds(1));
+boxB = localBoxes(index, objectIds(2));
 if boxA(5) <= boxB(6) && boxB(5) <= boxA(6)
     return;     % they overlap in Z: no two faces, nothing to interpolate between
 end
@@ -1477,7 +1499,7 @@ isBigData = localIsBigData(dataset);
 if isBigData && ~batchModeSwitch
     % Nothing can be backed up for the undo here - see localCompactBigData - so
     % the user decides first. Only Compact reaches this on BigData.
-    oldIds = find(dataset.instanceIndex.exists)';
+    oldIds = dataset.instanceIndex.ids(:)';
     moving = nnz(oldIds ~= 1:numel(oldIds));
     parent = obj.getProgressBarParent();
     if moving > 0 && ~isempty(parent) && all(isvalid(parent))
@@ -1531,7 +1553,7 @@ switch action
         % index is guaranteed fresh here - the caller rebuilds a stale one
         % before dispatching.
         previous = dataset.instanceIndex;
-        compactStats = struct('oldIds', find(previous.exists)', ...
+        compactStats = struct('oldIds', previous.ids(:)', ...
             'oldMax', double(previous.maxIndex), ...
             'perSlice', ~BatchOpt.Mode3D, 'slicesChanged', 0, ...
             'slicesWithObjects', 0, 'depth', 0, 'notReached', 0);
@@ -1685,6 +1707,8 @@ function notReached = localCompactBigData(obj, id, timePoint, wb)
 % k, and k is free by then - either never used, or the old number of an object
 % of lower rank, which has already moved. The index rows move with the objects,
 % so no rescan follows; the voxels of an object do not change, only its number.
+% Row k of the sorted index is the k-th object in use, so a move only rewrites
+% ``.ids(k)`` to k, and the rows stay sorted at every step, also after Cancel.
 %
 % There is no backup: the Standard route backs up the whole model, which a
 % disk-backed one is too large for, so the caller asks the user first. Cancel
@@ -1699,7 +1723,7 @@ function notReached = localCompactBigData(obj, id, timePoint, wb)
 %     pressed; 0 when the renumbering is complete
 dataset = obj.I{id};
 index = dataset.instanceIndex;   % fresh: editInstanceObjects synced it before dispatching
-oldIds = find(index.exists)';
+oldIds = index.ids(:)';
 moves = find(oldIds ~= 1:numel(oldIds));
 notReached = 0;
 
@@ -1716,29 +1740,13 @@ for step = 1:numel(moves)
     oldId = oldIds(newId);
     localWriteLabels(obj, id, localObjectPixels(obj, id, index, oldId, timePoint, [], true), newId);
 
-    index.exists(newId) = true;
-    index.voxels(newId) = index.voxels(oldId);
-    index.bbox(newId, :) = index.bbox(oldId, :);
-    index.centroid(newId, :) = index.centroid(oldId, :);
-    index.sliceCount(newId) = index.sliceCount(oldId);
-    index.exists(oldId) = false;
-    index.voxels(oldId) = 0;
-    index.bbox(oldId, :) = 0;
-    index.centroid(oldId, :) = 0;
-    index.sliceCount(oldId) = 0;
+    index.ids(newId) = newId;   % row newId is the object that moved, see above
     if ~isempty(wb); wb.Value = step / numel(moves); end
 end
 
-% Unlike a refresh, Compact is meant to bring the highest index down
-highest = find(index.exists, 1, 'last');
-if isempty(highest); highest = 0; end
-index.exists = index.exists(1:highest);
-index.voxels = index.voxels(1:highest);
-index.bbox = index.bbox(1:highest, :);
-index.centroid = index.centroid(1:highest, :);
-index.sliceCount = index.sliceCount(1:highest);
+highest = 0;
+if ~isempty(index.ids); highest = index.ids(end); end
 index.maxIndex = highest;
-index.numObjects = nnz(index.exists);
 
 % The writes above grew the dirty box, but every change in it is the move just
 % recorded in the rows, so the index describes the store exactly.

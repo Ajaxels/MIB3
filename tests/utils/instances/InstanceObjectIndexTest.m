@@ -9,10 +9,15 @@ classdef InstanceObjectIndexTest < matlab.unittest.TestCase
 %   **an incrementally refreshed index is bit-identical to one rebuilt from
 %   scratch on the same volume.**
 %
+% The index is sparse: one row per present object, sorted by index, named by
+% ``.ids``. Above a highest index of 2^20 the full build measures slice by
+% slice instead of with regionprops; both routes must give the same index.
+%
 % All cases are synthetic, headless and offline. No MibModel is needed: the
 % utility is a pure [H x W x Z] label volume -> struct function.
 %
-% See also: utils.instances.objectIndex, development/deepmib/split_and_merge_toolbox.md
+% See also: utils.instances.objectIndex, utils.instances.replaceIndexRows,
+% development/deepmib/split_and_merge_toolbox.md
 
     methods (TestClassSetup)
         function addPaths(testCase)
@@ -37,54 +42,37 @@ classdef InstanceObjectIndexTest < matlab.unittest.TestCase
             volume(35:36, 40:42, 1:3)  = 7;
         end
 
+        function row = rowOf(testCase, index, objectId)
+            % row of an object in the index; fails the test when it has none
+            [found, row] = ismember(objectId, index.ids);
+            testCase.assertTrue(found, sprintf('object %d should have a row', objectId));
+        end
+
         function verifyMatchesBruteForce(testCase, volume, index)
             % Recompute every field the slow, obvious way and compare.
-            for objectId = 1:index.maxIndex
+            present = unique(volume(volume > 0));
+            testCase.verifyEqual(index.ids, double(present(:)), 'one row per present object');
+            testCase.verifyEqual(index.numObjects, numel(present));
+            for row = 1:numel(present)
+                objectId = double(present(row));
                 voxelIndices = find(volume == objectId);
-                if isempty(voxelIndices)
-                    testCase.verifyFalse(index.exists(objectId), ...
-                        sprintf('object %d should be absent', objectId));
-                    testCase.verifyEqual(index.voxels(objectId), uint32(0));
-                    testCase.verifyEqual(index.bbox(objectId, :), zeros(1, 6, 'int32'));
-                    continue;
-                end
                 [y, x, z] = ind2sub(size(volume), voxelIndices);
-                testCase.verifyTrue(index.exists(objectId));
-                testCase.verifyEqual(index.voxels(objectId), uint32(numel(voxelIndices)));
-                testCase.verifyEqual(double(index.bbox(objectId, :)), ...
+                testCase.verifyEqual(index.voxels(row), uint32(numel(voxelIndices)));
+                testCase.verifyEqual(double(index.bbox(row, :)), ...
                     [min(y) max(y) min(x) max(x) min(z) max(z)], ...
                     sprintf('bounding box of object %d', objectId));
-                testCase.verifyEqual(double(index.centroid(objectId, :)), ...
+                testCase.verifyEqual(double(index.centroid(row, :)), ...
                     [mean(x) mean(y) mean(z)], 'AbsTol', 1e-3, ...
                     sprintf('centroid of object %d', objectId));
-                testCase.verifyEqual(index.sliceCount(objectId), uint32(numel(unique(z))));
+                testCase.verifyEqual(index.sliceCount(row), uint32(numel(unique(z))));
             end
         end
 
         function verifySameIndex(testCase, actual, expected, message)
-            for field = {'exists', 'voxels', 'bbox', 'centroid', 'sliceCount', 'maxIndex', 'numObjects'}
+            for field = {'ids', 'voxels', 'bbox', 'centroid', 'sliceCount', 'maxIndex', 'numObjects'}
                 testCase.verifyEqual(actual.(field{1}), expected.(field{1}), ...
                     sprintf('%s: field %s', message, field{1}));
             end
-        end
-
-        function verifySameOverSharedRange(testCase, refreshed, rebuilt, message)
-            % A refresh never shrinks the index space, so when an edit removes
-            % the highest label value the two indices have different lengths by
-            % design. Compare the range they share and require the refreshed
-            % tail to be free - those vacated values are what the next split
-            % allocates from, which a rebuild cannot know about.
-            shared = rebuilt.maxIndex;
-            testCase.verifyGreaterThanOrEqual(refreshed.maxIndex, shared);
-            for field = {'exists', 'voxels', 'bbox', 'centroid', 'sliceCount'}
-                testCase.verifyEqual(refreshed.(field{1})(1:shared, :), ...
-                    rebuilt.(field{1})(1:shared, :), ...
-                    sprintf('%s: field %s', message, field{1}));
-            end
-            testCase.verifyEqual(refreshed.numObjects, rebuilt.numObjects, ...
-                sprintf('%s: object count', message));
-            testCase.verifyFalse(any(refreshed.exists(shared+1:end)), ...
-                sprintf('%s: entries above the rebuilt maximum must be free', message));
         end
     end
 
@@ -103,17 +91,56 @@ classdef InstanceObjectIndexTest < matlab.unittest.TestCase
             InstanceObjectIndexTest.verifyMatchesBruteForce(testCase, volume, index);
         end
 
-        function gapsInTheIndexSpaceAreMarkedAbsent(testCase)
+        function onlyPresentObjectsHaveRows(testCase)
             % An instance model that has had objects deleted has holes in its
-            % index space. Those entries must read as absent rather than as
-            % zero-sized objects, because the first hole is where the next
-            % split allocates its new index from.
+            % index space. They get no rows, so the size of the index follows
+            % the objects and not the highest index.
             volume = InstanceObjectIndexTest.makeVolume();
             index = utils.instances.objectIndex(volume);
 
-            testCase.verifyEqual(find(~index.exists)', [2 4 5 6]);
-            testCase.verifyEqual(find(~index.exists, 1), 2, ...
-                'the next free index is the first gap');
+            testCase.verifyEqual(index.ids, [1; 3; 7]);
+            testCase.verifySize(index.bbox, [3 6]);
+            testCase.verifySize(index.centroid, [3 3]);
+        end
+
+        function highIndicesAreMeasuredSliceBySlice(testCase)
+            % Above 2^20 regionprops would return one struct per value up to
+            % the maximum; the slice-by-slice route must give the same index,
+            % only with the higher numbers.
+            volume = uint32(InstanceObjectIndexTest.makeVolume());
+            reference = utils.instances.objectIndex(volume);
+
+            offset = 1e9;
+            shifted = volume;
+            shifted(volume > 0) = volume(volume > 0) + offset;
+            index = utils.instances.objectIndex(shifted);
+
+            testCase.verifyEqual(index.ids, reference.ids + offset);
+            testCase.verifyEqual(index.maxIndex, 7 + offset);
+            for field = {'voxels', 'bbox', 'centroid', 'sliceCount', 'numObjects'}
+                testCase.verifyEqual(index.(field{1}), reference.(field{1}), ...
+                    'AbsTol', cast(1e-4, 'like', reference.(field{1})), sprintf('field %s', field{1}));
+            end
+        end
+
+        function highIndicesOnASinglePlane(testCase)
+            volume = uint32(InstanceObjectIndexTest.makeVolume());
+            plane = volume(:, :, 7);
+            plane(plane > 0) = plane(plane > 0) + 2^21;
+            index = utils.instances.objectIndex(plane);
+
+            testCase.verifyEqual(index.ids, [1; 7] + 2^21);
+            testCase.verifyEqual(double(index.bbox(2, :)), [30 32 10 14 1 1]);
+            testCase.verifyEqual(double(index.centroid(2, 3)), 1);
+        end
+
+        function highIndicesWithoutSliceCount(testCase)
+            volume = uint32(InstanceObjectIndexTest.makeVolume());
+            volume(volume > 0) = volume(volume > 0) + 2^21;
+            index = utils.instances.objectIndex(volume, struct('computeSliceCount', false));
+
+            testCase.verifyEqual(index.sliceCount, zeros(3, 1, 'uint32'));
+            testCase.verifyEqual(index.voxels(1), uint32(7 * 9 * 8));
         end
 
         function sliceCountIsOccupiedSlicesNotSpan(testCase)
@@ -122,9 +149,10 @@ classdef InstanceObjectIndexTest < matlab.unittest.TestCase
             % pass a depth filter it should fail.
             volume = InstanceObjectIndexTest.makeVolume();
             index = utils.instances.objectIndex(volume);
+            row = InstanceObjectIndexTest.rowOf(testCase, index, 7);
 
-            testCase.verifyEqual(index.sliceCount(7), uint32(4));
-            testCase.verifyEqual(double(index.bbox(7, 5:6)), [1 7]);
+            testCase.verifyEqual(index.sliceCount(row), uint32(4));
+            testCase.verifyEqual(double(index.bbox(row, 5:6)), [1 7]);
         end
 
         function boundingBoxSpansDisconnectedBlobs(testCase)
@@ -133,8 +161,9 @@ classdef InstanceObjectIndexTest < matlab.unittest.TestCase
             % blobs must be inside it or an edit would miss one of them.
             volume = InstanceObjectIndexTest.makeVolume();
             index = utils.instances.objectIndex(volume);
+            row = InstanceObjectIndexTest.rowOf(testCase, index, 7);
 
-            testCase.verifyEqual(double(index.bbox(7, 1:4)), [30 36 10 42]);
+            testCase.verifyEqual(double(index.bbox(row, 1:4)), [30 36 10 42]);
         end
 
         function twoDimensionalVolumeStillGivesSixColumnBox(testCase)
@@ -143,12 +172,13 @@ classdef InstanceObjectIndexTest < matlab.unittest.TestCase
             % depend on the depth of the volume.
             volume = InstanceObjectIndexTest.makeVolume();
             index = utils.instances.objectIndex(volume(:, :, 7));
+            row = InstanceObjectIndexTest.rowOf(testCase, index, 7);
 
-            testCase.verifySize(index.bbox, [7 6]);
-            testCase.verifyEqual(double(index.bbox(7, :)), [30 32 10 14 1 1]);
-            testCase.verifySize(index.centroid, [7 3]);
-            testCase.verifyEqual(double(index.centroid(7, 3)), 1);
-            testCase.verifyEqual(index.sliceCount(7), uint32(1));
+            testCase.verifySize(index.bbox, [2 6]);
+            testCase.verifyEqual(double(index.bbox(row, :)), [30 32 10 14 1 1]);
+            testCase.verifySize(index.centroid, [2 3]);
+            testCase.verifyEqual(double(index.centroid(row, 3)), 1);
+            testCase.verifyEqual(index.sliceCount(row), uint32(1));
         end
 
         function emptyVolumeGivesEmptyIndex(testCase)
@@ -156,15 +186,15 @@ classdef InstanceObjectIndexTest < matlab.unittest.TestCase
 
             testCase.verifyEqual(index.maxIndex, 0);
             testCase.verifyEqual(index.numObjects, 0);
-            testCase.verifyEmpty(index.exists);
-            testCase.verifyEmpty(index.bbox);
+            testCase.verifySize(index.ids, [0 1]);
+            testCase.verifySize(index.bbox, [0 6]);
         end
 
         function computeSliceCountFalseLeavesTheCountsZero(testCase)
             volume = InstanceObjectIndexTest.makeVolume();
             index = utils.instances.objectIndex(volume, struct('computeSliceCount', false));
 
-            testCase.verifyEqual(index.sliceCount, zeros(7, 1, 'uint32'));
+            testCase.verifyEqual(index.sliceCount, zeros(3, 1, 'uint32'));
             testCase.verifyEqual(index.voxels(1), uint32(7 * 9 * 8), ...
                 'the rest of the index is still built');
         end
@@ -185,14 +215,14 @@ classdef InstanceObjectIndexTest < matlab.unittest.TestCase
             rebuilt = utils.instances.objectIndex(merged);
 
             InstanceObjectIndexTest.verifySameIndex(testCase, refreshed, rebuilt, 'merge');
-            testCase.verifyFalse(refreshed.exists(3), 'the absorbed object is gone');
+            testCase.verifyFalse(ismember(3, refreshed.ids), 'the absorbed object is gone');
             testCase.verifyEqual(double(refreshed.bbox(1, :)), [5 26 5 38 2 11], ...
                 'the surviving object owns the union box');
         end
 
-        function refreshAfterSplitGrowsTheIndex(testCase)
-            % A split allocates a label value above the previous maximum, so the
-            % arrays have to grow. Getting this wrong writes out of bounds.
+        function refreshAfterSplitAddsARow(testCase)
+            % A split allocates a label value above the previous maximum; it
+            % gets a row in index order.
             volume = InstanceObjectIndexTest.makeVolume();
             index = utils.instances.objectIndex(volume);
 
@@ -207,10 +237,27 @@ classdef InstanceObjectIndexTest < matlab.unittest.TestCase
             testCase.verifyEqual(refreshed.maxIndex, 9);
             InstanceObjectIndexTest.verifySameIndex(testCase, refreshed, rebuilt, 'split');
             testCase.verifyEqual(double(refreshed.bbox(1, 5:6)), [4 7]);
-            testCase.verifyEqual(double(refreshed.bbox(9, 5:6)), [8 11]);
+            testCase.verifyEqual(double(refreshed.bbox(end, 5:6)), [8 11]);
         end
 
-        function refreshAfterDeleteClearsTheEntry(testCase)
+        function refreshWithAHighIndex(testCase)
+            % A split into an index near the top of the 1073741823 type: the
+            % refresh adds one row, it does not grow anything to that size.
+            volume = uint32(InstanceObjectIndexTest.makeVolume());
+            index = utils.instances.objectIndex(volume);
+
+            highId = 1073741000;
+            split = volume;
+            split(volume == 3) = highId;
+            refreshed = utils.instances.objectIndex(split, ...
+                struct('index', index, 'objectIds', [3 highId]));
+            rebuilt = utils.instances.objectIndex(split);
+
+            InstanceObjectIndexTest.verifySameIndex(testCase, refreshed, rebuilt, 'high index');
+            testCase.verifyEqual(refreshed.ids, [1; 7; highId]);
+        end
+
+        function refreshAfterDeleteRemovesTheRow(testCase)
             volume = InstanceObjectIndexTest.makeVolume();
             index = utils.instances.objectIndex(volume);
 
@@ -220,22 +267,18 @@ classdef InstanceObjectIndexTest < matlab.unittest.TestCase
             refreshed = utils.instances.objectIndex(deleted, ...
                 struct('index', index, 'objectIds', 3));
 
-            testCase.verifyFalse(refreshed.exists(3));
-            testCase.verifyEqual(refreshed.voxels(3), uint32(0));
-            testCase.verifyEqual(refreshed.bbox(3, :), zeros(1, 6, 'int32'));
-            testCase.verifyEqual(refreshed.centroid(3, :), zeros(1, 3, 'single'));
-            testCase.verifyEqual(refreshed.sliceCount(3), uint32(0));
+            testCase.verifyEqual(refreshed.ids, [1; 7]);
             testCase.verifyEqual(refreshed.numObjects, 2);
+            InstanceObjectIndexTest.verifySameIndex(testCase, refreshed, ...
+                utils.instances.objectIndex(deleted), 'delete');
         end
 
         function refreshWithoutABoxUsesThePreviousBoxes(testCase)
             % .bbox is optional. With only .objectIds the rescan region is the
             % union of those objects' previous boxes, which is enough whenever
             % the edit did not move voxels outside them (a delete, or a merge of
-            % objects that are being rescanned anyway).
-            %
-            % This merge also removes the highest label value, so it is the case
-            % where refresh and rebuild legitimately differ in length.
+            % objects that are being rescanned anyway). This merge also removes
+            % the highest label value, so the highest index comes down.
             volume = InstanceObjectIndexTest.makeVolume();
             index = utils.instances.objectIndex(volume);
 
@@ -246,11 +289,8 @@ classdef InstanceObjectIndexTest < matlab.unittest.TestCase
                 struct('index', index, 'objectIds', [3 7]));
             rebuilt = utils.instances.objectIndex(merged);
 
-            InstanceObjectIndexTest.verifySameOverSharedRange(testCase, refreshed, rebuilt, 'no box');
-            testCase.verifyEqual(rebuilt.maxIndex, 3, 'the rebuild shrinks to the new maximum');
-            testCase.verifyEqual(refreshed.maxIndex, 7, 'the refresh keeps the vacated values free');
-            testCase.verifyEqual(find(~refreshed.exists)', [2 4 5 6 7], ...
-                'index 7 is now available for the next split');
+            InstanceObjectIndexTest.verifySameIndex(testCase, refreshed, rebuilt, 'no box');
+            testCase.verifyEqual(refreshed.maxIndex, 3);
         end
 
         function refreshKeepsFieldsItDoesNotOwn(testCase)
@@ -361,13 +401,13 @@ classdef InstanceObjectIndexTest < matlab.unittest.TestCase
 
             testCase.verifyEqual(refreshed.bbox(1, :), index.bbox(1, :), 'the box is not narrowed');
             testCase.verifyEqual(double(rebuilt.bbox(1, 5)), 5, 'the object now starts on slice 5');
-            for field = {'exists', 'voxels', 'centroid', 'sliceCount', 'numObjects'}
+            for field = {'ids', 'voxels', 'centroid', 'sliceCount', 'numObjects'}
                 testCase.verifyEqual(refreshed.(field{1}), rebuilt.(field{1}), ...
                     sprintf('field %s', field{1}));
             end
         end
 
-        function sliceRefreshTakingAllOfAnObjectClearsTheEntry(testCase)
+        function sliceRefreshTakingAllOfAnObjectRemovesTheRow(testCase)
             volume = InstanceObjectIndexTest.makeVolume();
             volume(2:3, 2:3, 9) = 4;             % an object on a single slice
             index = utils.instances.objectIndex(volume);
@@ -378,18 +418,16 @@ classdef InstanceObjectIndexTest < matlab.unittest.TestCase
                 'objectIds', 4, 'bbox', [2 3 2 3 9 9], ...
                 'previousSlices', volume(:, :, 9)));
 
-            testCase.verifyFalse(refreshed.exists(4));
-            testCase.verifyEqual(refreshed.voxels(4), uint32(0));
-            testCase.verifyEqual(refreshed.bbox(4, :), zeros(1, 6, 'int32'));
-            testCase.verifyEqual(refreshed.centroid(4, :), zeros(1, 3, 'single'));
-            testCase.verifyEqual(refreshed.sliceCount(4), uint32(0));
+            testCase.verifyFalse(ismember(4, refreshed.ids));
             testCase.verifyEqual(refreshed.numObjects, index.numObjects - 1);
+            InstanceObjectIndexTest.verifySameIndex(testCase, refreshed, ...
+                utils.instances.objectIndex(edited), 'object removed from its slice');
         end
 
         function sliceRefreshFallsBackWhenTheIndexCannotBeRight(testCase)
             % Slices claiming more of an object than the index says it has mean
             % the index does not describe the volume. Correcting it would write
-            % a wrong entry, so the exact rescan is done instead.
+            % a wrong row, so the exact rescan is done instead.
             volume = InstanceObjectIndexTest.makeVolume();
             index = utils.instances.objectIndex(volume);
 
@@ -416,6 +454,25 @@ classdef InstanceObjectIndexTest < matlab.unittest.TestCase
         end
 
         % -----------------------------------------------------------------
+        % replaceIndexRows
+        % -----------------------------------------------------------------
+
+        function replaceIndexRowsKeepsTheRowsSorted(testCase)
+            volume = InstanceObjectIndexTest.makeVolume();
+            index = utils.instances.objectIndex(volume);
+            rows = struct('ids', [5; 2], 'voxels', [10; 20], 'bbox', [1 2 1 2 1 1; 3 4 3 4 2 2], ...
+                'centroid', [1.5 1.5 1; 3.5 3.5 2], 'sliceCount', [1; 1]);
+
+            updated = utils.instances.replaceIndexRows(index, [7 5 2], rows);
+
+            testCase.verifyEqual(updated.ids, [1; 2; 3; 5]);
+            testCase.verifyEqual(updated.voxels, uint32([index.voxels(1); 20; index.voxels(2); 10]));
+            testCase.verifyEqual(updated.bbox(2, :), int32([3 4 3 4 2 2]));
+            testCase.verifyEqual(updated.maxIndex, 5);
+            testCase.verifyEqual(updated.numObjects, 4);
+        end
+
+        % -----------------------------------------------------------------
         % cancellation
         % -----------------------------------------------------------------
 
@@ -436,6 +493,17 @@ classdef InstanceObjectIndexTest < matlab.unittest.TestCase
             % spent before regionprops runs.
             volume = InstanceObjectIndexTest.makeVolume();
             wb = mibtest.helpers.FakeProgressDialog(1);
+
+            [index, cancelled] = utils.instances.objectIndex(volume, struct(), wb);
+
+            testCase.verifyTrue(cancelled);
+            testCase.verifyEmpty(index);
+        end
+
+        function cancelDuringTheSliceBySliceBuildReturnsNothing(testCase)
+            volume = uint32(InstanceObjectIndexTest.makeVolume());
+            volume(volume > 0) = volume(volume > 0) + 2^21;
+            wb = mibtest.helpers.FakeProgressDialog(3);
 
             [index, cancelled] = utils.instances.objectIndex(volume, struct(), wb);
 

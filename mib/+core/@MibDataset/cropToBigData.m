@@ -224,7 +224,7 @@ function copied = localCopyModel(source, target, cropOrigin, cropSize, wb)
 % Returns false when the dialog was cancelled.
 copied = false;
 stripBytes = 2^27;                                       % 128 MB per strip
-bytesPerVoxel = 1 + strcmp(target.containerClass, 'uint16');
+bytesPerVoxel = numel(typecast(zeros(1, target.containerClass), 'uint8'));   % 1, 2 or 4
 levelSizes = target.modelLevelSizes;                     % [y x z] per level
 totalVoxels = sum(prod(levelSizes, 2));
 voxelsDone = 0;

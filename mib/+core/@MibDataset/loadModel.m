@@ -356,6 +356,12 @@ if modelType == 16383
     if max(rawModel, [], 'all') > 16383; modelType = 65535; end
     rawModel = uint16(rawModel);
 end
+% A 1073741823 model (packed uint32, BigData only) saved from a BigData store is
+% its index map too; a Standard dataset holds it as the 4294967295 type
+if modelType == 1073741823
+    modelType = 4294967295;
+    rawModel = uint32(rawModel);
+end
 
 %% Preserve existing labels on non-imported slices
 

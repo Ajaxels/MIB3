@@ -230,6 +230,16 @@ else
             obj.labels.depth     = emptyDims(3);
             obj.labels.time      = emptyDims(5);
             obj.labels.dim_yxzct = emptyDims;
+            if strcmp(obj.labels.containerClass, 'uint32')
+                % the packed uint32 type (1073741823) is BigData only; on Standard
+                % the separate-layer 4294967295 type holds the same indices, with
+                % the mask and selection unpacked into their own layers.
+                % convertModel unpacks the mask only when maskExist is set, which
+                % the switch to Standard left false; the packed bits say whether
+                % there is one
+                obj.maskExist = any(bitget(obj.labels.data, obj.labels.maskBit), 'all');
+                obj.convertModel(4294967295);
+            end
         else
             obj.labels.data    = NaN;
             obj.mask.data      = zeros(emptyDims, 'uint8');

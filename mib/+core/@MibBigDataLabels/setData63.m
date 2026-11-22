@@ -37,12 +37,13 @@ function result = setData63(obj, dataset, type, orient, materialIndex, options)
 % (and 3D/4D) turn into the ``LockedWriteRefused`` event.
 %
 % **Bit packing** - same scheme as ``getData63``:
-% bits 1-6 = material, bit 7 = mask, bit 8 = selection (uint8 layout), or bits
-% 1-14 = index, bit 15 = mask, bit 16 = selection (uint16 layout). Index values
-% above ``obj.materialMask`` are not clamped and would spill into the flag bits.
+% bits 1-6 = material, bit 7 = mask, bit 8 = selection (uint8 layout), bits
+% 1-14 = index, bit 15 = mask, bit 16 = selection (uint16 layout), or bits 1-30 =
+% index, bit 31 = mask, bit 32 = selection (uint32 layout). Index values above
+% ``obj.materialMask`` are not clamped and would spill into the flag bits.
 %
 % Input Arguments:
-%   - **dataset** - [uint8|uint16|logical] layer data at display resolution, in screen
+%   - **dataset** - [uint8|uint16|uint32|logical] layer data at display resolution, in screen
 %     orientation; cast to the container class before merging.
 %     Shape ``[ny, nx, nz]`` matching what ``getData63`` would return for the same
 %     ``orient``/``options``.

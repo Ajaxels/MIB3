@@ -246,9 +246,9 @@ if isempty(dirtyBox); return; end
 index = [];
 [inDirtyBox, cancelled] = localScanRegion(obj, dirtyBox, options.timePoint, wb);
 if cancelled; return; end
-presentNow = find(inDirtyBox.voxels > 0);
-presentBefore = find(base.exists & localBoxesOverlap(double(base.bbox), dirtyBox));
-objectIds = unique([presentNow(:); presentBefore(:)])';
+presentNow = inDirtyBox.ids;
+presentBefore = base.ids(localBoxesOverlap(double(base.bbox), dirtyBox));
+objectIds = unique([presentNow(:); presentBefore(:)]);
 [index, cancelled] = localRefreshObjects(obj, base, objectIds, dirtyBox, ...
     options.timePoint, wb, inDirtyBox);
 end
@@ -270,28 +270,15 @@ function [index, cancelled] = localRefreshObjects(obj, base, objectIds, seedBox,
 %     itself, which saves reading it twice
 index = base;
 cancelled = false;
-objectIds = double(objectIds(:))';
+objectIds = double(objectIds(:));
 objectIds = unique(objectIds(objectIds > 0));
 if isempty(objectIds); return; end
 
 labels = obj.labels;
-oldMax = double(index.maxIndex);
-newMax = max([oldMax, objectIds]);
-if newMax > oldMax
-    % an edit introduced indices above the old maximum
-    index.exists(oldMax+1:newMax, 1) = false;
-    index.voxels(oldMax+1:newMax, 1) = 0;
-    index.bbox(oldMax+1:newMax, 1:6) = 0;
-    index.centroid(oldMax+1:newMax, 1:3) = 0;
-    index.sliceCount(oldMax+1:newMax, 1) = 0;
-    index.maxIndex = newMax;
-end
-
 region = seedBox;
-known = objectIds(objectIds <= oldMax);
-known = known(base.exists(known));
-for objectId = known
-    region = core.MibBigDataLabels.bboxUnion(region, double(base.bbox(objectId, :)));
+[isKnown, knownRows] = ismember(objectIds, base.ids);
+for row = knownRows(isKnown)'
+    region = core.MibBigDataLabels.bboxUnion(region, double(base.bbox(row, :)));
 end
 if isempty(region)
     region = [1, labels.height, 1, labels.width, 1, labels.depth];
@@ -307,24 +294,18 @@ else
     if cancelled; index = []; return; end
 end
 
-% Clear first: an object that lost all of its voxels must come back absent.
-index.exists(objectIds) = false;
-index.voxels(objectIds) = 0;
-index.bbox(objectIds, :) = 0;
-index.centroid(objectIds, :) = 0;
-index.sliceCount(objectIds) = 0;
-
-found = objectIds(objectIds <= numel(measured.voxels));
-found = found(measured.voxels(found) > 0);
-% explicit columns: an empty index keeps its own 0x0 or 1x0 shape when used
-% for indexing, and the division below would then not broadcast
-voxels = reshape(measured.voxels(found), [], 1);
-index.exists(found) = true;
-index.voxels(found) = uint32(voxels);
-index.bbox(found, :) = int32(measured.bbox(found, :));
-index.centroid(found, :) = single(reshape(measured.sums(found, :), [], 3) ./ voxels);
-index.sliceCount(found) = uint32(measured.slices(found));
-index.numObjects = nnz(index.exists);
+% The named objects get the rows measured now, and an object that lost all of
+% its voxels gets none, so it comes back absent.
+[found, measuredRows] = ismember(objectIds, measured.ids);
+measuredRows = measuredRows(found);
+% explicit columns: an empty selection keeps the 0x0 or 1x0 shape of what it
+% indexes, and the division below would then not broadcast
+voxels = reshape(measured.voxels(measuredRows), [], 1);
+rows = struct('ids', objectIds(found), 'voxels', voxels, ...
+    'bbox', reshape(measured.bbox(measuredRows, :), [], 6), ...
+    'centroid', reshape(measured.sums(measuredRows, :), [], 3) ./ voxels, ...
+    'sliceCount', measured.slices(measuredRows));
+index = utils.instances.replaceIndexRows(index, objectIds, rows);
 end
 
 % =====================================================================
@@ -338,15 +319,24 @@ function [measured, cancelled] = localScanRegion(obj, region, timePoint, wb)
 % coarser zoom (core.MibBigDataLabels.materializeForRead), so a model painted
 % zoomed out is written out at full resolution here - the same work Save does.
 %
+% The totals are sparse, one row per object found, like the index itself: a
+% model of type 1073741823 can use indices near 1e9. Each strip gives one row
+% per object on it; the strips of one slice are combined into one row per
+% object with a slice count of 1, and the rows of the slices pile up until
+% there are about 4 M of them, when they are combined per object. Memory
+% therefore follows the number of objects, not the highest index or the
+% number of slices.
+%
 % Output Arguments:
-%   - **measured** - struct of arrays indexed by object index: ``.voxels`` and
-%     ``.slices`` [n x 1], ``.bbox`` [n x 6] ``[yMin yMax xMin xMax zMin zMax]``
-%     (``[Inf -Inf ...]`` for an absent index), ``.sums`` [n x 3] of ``[x y z]``,
-%     the centroid order. n is the highest index found
+%   - **measured** - struct with one row per object found, sorted by index:
+%     ``.ids``, ``.voxels`` and ``.slices`` [n x 1], ``.bbox`` [n x 6]
+%     ``[yMin yMax xMin xMax zMin zMax]``, ``.sums`` [n x 3] of ``[x y z]``,
+%     the centroid order; all double
 %   - **cancelled** - logical, the user pressed Cancel; measured is then partial
 cancelled = false;
-measured = struct('voxels', zeros(0, 1), 'bbox', zeros(0, 6), ...
-    'sums', zeros(0, 3), 'slices', zeros(0, 1));
+% rows of [id voxels yMin yMax xMin xMax zMin zMax sumX sumY sumZ slices]
+pending = zeros(0, 12);
+measured = localRowsToMeasured(pending);
 
 stripVoxels = 2^25;
 regionWidth = region(4) - region(3) + 1;
@@ -358,8 +348,9 @@ step = 0;
 
 readOptions = struct('blockModeSwitch', 0, 'x', region(3:4));
 for z = region(5):region(6)
-    onSlice = false(numel(measured.voxels), 1);
-    for firstRow = rowStarts
+    sliceRows = cell(numel(rowStarts), 1);
+    for stripNumber = 1:numel(rowStarts)
+        firstRow = rowStarts(stripNumber);
         if localCancelled(wb); cancelled = true; return; end
         step = step + 1;
         if mod(step, messageStep) == 0 && ~isempty(wb) && isvalid(wb)
@@ -370,56 +361,70 @@ for z = region(5):region(6)
         readOptions.z = [z, z];
         strip = cell2mat(obj.getData3D('labels', timePoint, 3, NaN, readOptions));
         stripIndex = utils.instances.objectIndex(strip, struct('computeSliceCount', false));
-        ids = find(stripIndex.exists);
-        if isempty(ids); continue; end
-
-        highest = max(ids);
-        known = numel(measured.voxels);
-        if highest > known
-            measured.voxels(known+1:highest, 1) = 0;
-            measured.bbox(known+1:highest, 1:6) = repmat([Inf -Inf Inf -Inf Inf -Inf], highest - known, 1);
-            measured.sums(known+1:highest, 1:3) = 0;
-            measured.slices(known+1:highest, 1) = 0;
-            onSlice(known+1:highest, 1) = false;
-        end
+        if stripIndex.numObjects == 0; continue; end
 
         % strip coordinates -> volume coordinates
-        voxels = double(stripIndex.voxels(ids));
-        boxes = double(stripIndex.bbox(ids, :));
+        voxels = double(stripIndex.voxels);
+        boxes = double(stripIndex.bbox);
         boxes(:, 1:2) = boxes(:, 1:2) + firstRow - 1;
         boxes(:, 3:4) = boxes(:, 3:4) + region(3) - 1;
         boxes(:, 5:6) = z;
-        centroids = double(stripIndex.centroid(ids, :));
+        centroids = double(stripIndex.centroid);
         centroids(:, 1) = centroids(:, 1) + region(3) - 1;
         centroids(:, 2) = centroids(:, 2) + firstRow - 1;
         centroids(:, 3) = z;
-
-        measured.voxels(ids) = measured.voxels(ids) + voxels;
-        measured.bbox(ids, [1 3 5]) = min(measured.bbox(ids, [1 3 5]), boxes(:, [1 3 5]));
-        measured.bbox(ids, [2 4 6]) = max(measured.bbox(ids, [2 4 6]), boxes(:, [2 4 6]));
-        measured.sums(ids, :) = measured.sums(ids, :) + centroids .* voxels;
-        onSlice(ids) = true;
+        sliceRows{stripNumber} = [stripIndex.ids, voxels, boxes, centroids .* voxels, ones(numel(voxels), 1)];
     end
-    measured.slices = measured.slices + onSlice;
+
+    % every object of this slice is on it once, however many strips it spans
+    sliceRows = localCombineRows(vertcat(sliceRows{:}));
+    sliceRows(:, 12) = 1;
+    pending = [pending; sliceRows]; %#ok<AGROW>
+    if size(pending, 1) > 2^22
+        pending = localCombineRows(pending);
+    end
 end
+measured = localRowsToMeasured(localCombineRows(pending));
+end
+
+% =====================================================================
+function rows = localCombineRows(rows)
+% One row per object out of rows [id voxels yMin yMax xMin xMax zMin zMax sumX
+% sumY sumZ slices]: voxels, coordinate sums and slice counts are summed, the
+% boxes joined. The result is sorted by id.
+if isempty(rows); return; end
+[ids, ~, group] = unique(rows(:, 1));
+n = numel(ids);
+rows = [ids, accumarray(group, rows(:, 2), [n 1]), ...
+    accumarray(group, rows(:, 3), [n 1], @min), accumarray(group, rows(:, 4), [n 1], @max), ...
+    accumarray(group, rows(:, 5), [n 1], @min), accumarray(group, rows(:, 6), [n 1], @max), ...
+    accumarray(group, rows(:, 7), [n 1], @min), accumarray(group, rows(:, 8), [n 1], @max), ...
+    accumarray(group, rows(:, 9), [n 1]), accumarray(group, rows(:, 10), [n 1]), ...
+    accumarray(group, rows(:, 11), [n 1]), accumarray(group, rows(:, 12), [n 1])];
+end
+
+% =====================================================================
+function measured = localRowsToMeasured(rows)
+% Combined rows [id voxels yMin yMax xMin xMax zMin zMax sumX sumY sumZ
+% slices] -> the measured struct of localScanRegion
+if isempty(rows); rows = zeros(0, 12); end
+measured = struct('ids', rows(:, 1), 'voxels', rows(:, 2), 'bbox', rows(:, 3:8), ...
+    'sums', rows(:, 9:11), 'slices', rows(:, 12));
 end
 
 % =====================================================================
 function index = localMeasuredToIndex(measured)
 % localScanRegion totals of the whole volume -> an index in the shape
 % utils.instances.objectIndex returns
-maxIndex = numel(measured.voxels);
-exists = measured.voxels > 0;
 index = struct();
-index.exists = exists;
+index.ids = measured.ids;
 index.voxels = uint32(measured.voxels);
-index.bbox = zeros(maxIndex, 6, 'int32');
-index.bbox(exists, :) = int32(measured.bbox(exists, :));
-index.centroid = zeros(maxIndex, 3, 'single');
-index.centroid(exists, :) = single(measured.sums(exists, :) ./ measured.voxels(exists));
+index.bbox = int32(measured.bbox);
+index.centroid = single(measured.sums ./ measured.voxels);
 index.sliceCount = uint32(measured.slices);
-index.maxIndex = maxIndex;
-index.numObjects = nnz(exists);
+index.numObjects = numel(measured.ids);
+index.maxIndex = 0;
+if ~isempty(measured.ids); index.maxIndex = measured.ids(end); end
 end
 
 % =====================================================================

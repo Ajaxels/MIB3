@@ -9,7 +9,7 @@ You can toggle each layer on or off, adjust transparency, and change colors (see
 
 ![Schematic of data layers combined into the final image](images/dataLayersToFinalImage.jpg)
 
-By default, the **Model**, **Mask**, and **Selection** layers share a single memory container, limiting materials to 63 but minimising memory use. MIB supports five model types with increasing material limits and memory costs:
+By default, the **Model**, **Mask**, and **Selection** layers share a single memory container, limiting materials to 63 but minimising memory use. MIB supports these model types with increasing material limits and memory costs:
 
 | Model type | Max materials | Memory (relative) |
 |-----------|:-------------:|:-----------------:|
@@ -18,6 +18,7 @@ By default, the **Model**, **Mask**, and **Selection** layers share a single mem
 | **16383 materials** | 16 383 | ~2× default |
 | **65535 materials** | 65 535 | ~2.5× default |
 | **4294967295 materials** | ~4.3 billion | ~5× default |
+| **1073741823 materials** *(BigData only)* | ~1.07 billion | ~4× default, on disk |
 
 Choose the organization type in the [Ribbon → Model → Convert type](../user-interface/ribbon/model/index.md#convert-type).
 

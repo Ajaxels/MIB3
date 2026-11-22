@@ -36,8 +36,10 @@ classdef EditInstanceObjectsBigDataTest < matlab.unittest.TestCase
             testCase.verifyFalse(index.stale);
             testCase.verifyEqual(index.timePoint, 1);
             EditInstanceObjectsBigDataTest.verifyIndexAgreesWithStore(testCase, mibModel, 'full scan');
-            testCase.verifyEqual(double(index.sliceCount(7)), 3, 'object 7 spans the three slices');
-            testCase.verifyEqual(double(index.bbox(7, 1:2)), [240 270], 'object 7 crosses the strip boundary at row 256');
+            [~, row] = ismember(7, index.ids);
+            testCase.assertGreaterThan(row, 0, 'object 7 has a row');
+            testCase.verifyEqual(double(index.sliceCount(row)), 3, 'object 7 spans the three slices');
+            testCase.verifyEqual(double(index.bbox(row, 1:2)), [240 270], 'object 7 crosses the strip boundary at row 256');
         end
 
         function sideFileRestoresTheIndexOnReopen(testCase)
@@ -67,7 +69,7 @@ classdef EditInstanceObjectsBigDataTest < matlab.unittest.TestCase
             mibModel.I{1}.buildInstanceIndex();
             testCase.verifyEmpty(reopened.indexDirtyBox, 'the repair accounts for the dirty box');
             EditInstanceObjectsBigDataTest.verifyIndexAgreesWithStore(testCase, mibModel, 'repair after reopen');
-            testCase.verifyTrue(mibModel.I{1}.instanceIndex.exists(4000));
+            testCase.verifyTrue(ismember(4000, mibModel.I{1}.instanceIndex.ids));
 
             reopened.saveLevelMap();
             testCase.verifyTrue(isfile(sideFile), 'Save writes the side-file again');
@@ -413,17 +415,12 @@ classdef EditInstanceObjectsBigDataTest < matlab.unittest.TestCase
             % precision, so they are compared with a tolerance
             actual = mibModel.I{1}.instanceIndex;
             expected = utils.instances.objectIndex(EditInstanceObjectsBigDataTest.readStore(mibModel));
-            shared = expected.maxIndex;
-            testCase.verifyGreaterThanOrEqual(actual.maxIndex, shared, message);
-            for field = {'exists', 'voxels', 'bbox', 'sliceCount'}
-                testCase.verifyEqual(actual.(field{1})(1:shared, :), expected.(field{1})(1:shared, :), ...
+            for field = {'ids', 'voxels', 'bbox', 'sliceCount', 'maxIndex', 'numObjects'}
+                testCase.verifyEqual(actual.(field{1}), expected.(field{1}), ...
                     sprintf('%s: index field %s disagrees with the store', message, field{1}));
             end
-            testCase.verifyEqual(actual.centroid(1:shared, :), expected.centroid(1:shared, :), ...
+            testCase.verifyEqual(actual.centroid, expected.centroid, ...
                 'AbsTol', single(1e-2), sprintf('%s: centroids disagree with the store', message));
-            testCase.verifyFalse(any(actual.exists(shared+1:end)), ...
-                sprintf('%s: index claims objects the store does not have', message));
-            testCase.verifyEqual(actual.numObjects, expected.numObjects, message);
         end
 
         function closeQuietly(mibModel)

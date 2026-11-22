@@ -45,8 +45,9 @@ For the downloads visit [MIB website](https://mib.helsinki.fi/downloads.html) fo
       has a *Do not generate* option
     - **DeepMIB**: training can be limited in time (*MaxTime*); the progress window shows the time to go
       to whichever limit comes first
-    - **BigData instance model**: a new 16383-material model for BigData datasets, one index per
-      object; 63-material BigData models can be converted to it, into a new model store
+    - **BigData instance model**: new 16383- and 1073741823-material models for BigData datasets,
+      one index per object; a BigData model can be converted to another of these types, into a new
+      model store. The Instance editor works with models that use very high object numbers
     - **Close model**: new entry of the buffer context menu in the Datasets panel; closes the model and
       keeps the dataset open, ++ctrl+z++ brings the model back
     - **Chunk dataset**: a downsampled pyramid level of a BigData or OME-Zarr dataset can be chunked;

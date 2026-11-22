@@ -15,19 +15,32 @@ function [index, cancelled] = objectIndex(labelVol, options, wb)
 % cached. This function builds that cache, and can refresh a part of it after an
 % edit without rescanning the volume.
 %
-% The returned arrays are **index-aligned**: entry ``k`` describes the object
-% whose label value is ``k``, so ``index.voxels(objId)`` is a direct lookup and
-% no id-to-row mapping is needed. Entries for label values that are not present
-% carry ``exists(k) == false`` and zeros elsewhere.
+% The index is **sparse**: it has one row per object that has voxels, sorted by
+% index, and ``.ids`` names the object of each row. Its size therefore follows
+% the number of objects, not the highest index: a BigData model of type
+% 1073741823 can use indices near 1e9, and an index with one row per possible
+% value (about 45 bytes each) would need 45 GB there. Look an object up with
+% ``ismember``::
+%
+%     [found, row] = ismember(objectId, index.ids);
+%     if found; box = double(index.bbox(row, :)); end
 %
 % ``PixelIdxList`` is deliberately **not** stored - it is the one per-object
 % quantity whose size grows with the data, and it is cheap to derive from the
 % bounding box when a single object is actually operated on::
 %
-%     bb  = index.bbox(objId, :);
+%     bb  = double(index.bbox(row, :));
 %     sub = labelVol(bb(1):bb(2), bb(3):bb(4), bb(5):bb(6));
-%     idx = dataset.convertPixelIdxListCrop2Full(find(sub == objId), ...
+%     idx = dataset.convertPixelIdxListCrop2Full(find(sub == objectId), ...
 %             struct('y', bb(1:2), 'x', bb(3:4), 'z', bb(5:6)));
+%
+% **Full build.** Up to a highest index of 2^20 the volume is measured by one
+% ``regionprops`` call, a single C pass that allocates only per label value;
+% its result has one entry per value from 1 to the maximum, which is what makes
+% it unusable above that. A volume with a higher index is measured slice by
+% slice instead (``unique`` and ``accumarray`` over the labelled pixels of one
+% plane), so memory follows one slice and the number of objects. Both routes
+% give the same index.
 %
 % Input Arguments:
 %   - **labelVol** - ``[height, width, depth]`` numeric array of instance labels
@@ -39,7 +52,7 @@ function [index, cancelled] = objectIndex(labelVol, options, wb)
 %       ``.objectIds``. Fields of the passed struct that this function does not
 %       own (for example the caller's ``.timePoint``) are carried over untouched
 %     - ``.objectIds`` - vector of label values whose extent may have changed.
-%       Only these entries are recomputed. The caller must list **every** object
+%       Only their rows are recomputed. The caller must list **every** object
 %       the edit could have touched, before and after: an object left out keeps
 %       its stale bounding box, and acting on a stale box writes the wrong voxels
 %     - ``.bbox`` - ``[yMin yMax xMin xMax zMin zMax]`` region in which voxels
@@ -51,15 +64,16 @@ function [index, cancelled] = objectIndex(labelVol, options, wb)
 %     - ``.previousSlices`` - ``[height, width, zMax-zMin+1]`` labels of the whole
 %       slices ``bbox(5):bbox(6)`` as they were **before** the edit (default:
 %       ``[]``). Turns the refresh into a difference over those slices: what each
-%       object had on them before is taken out of its entry and what it has now
+%       object had on them before is taken out of its row and what it has now
 %       is put in, and nothing outside them is read. For an edit confined to a
 %       few slices of objects that span the stack - every 2-D edit of an
 %       unstitched model - the union rule above would otherwise rescan nearly the
 %       whole volume. Voxel count, centroid and slice count stay exact; the
 %       bounding box only grows, see the note below. Requires ``.bbox``
-%     - ``.computeSliceCount`` - fill ``.sliceCount`` (default: ``true``). The
-%       only part of a full build that needs its own pass over the volume; set
-%       ``false`` when the count is not going to be read
+%     - ``.computeSliceCount`` - fill ``.sliceCount`` of a full build (default:
+%       ``true``). The only part of a ``regionprops`` build that needs its own
+%       pass over the volume; set ``false`` when the count is not going to be
+%       read. A refresh always fills it
 %
 %   - **wb** - *(optional)* handle of a caller-owned ``uiprogressdlg`` created
 %     with ``'Cancelable', 'on'``. Its ``Message`` is updated and
@@ -67,21 +81,22 @@ function [index, cancelled] = objectIndex(labelVol, options, wb)
 %     scaling one bar over several volumes. Pass ``[]`` for no progress dialog.
 %
 % Output Arguments:
-%   - **index** - structure with index-aligned arrays of length ``maxIndex``:
+%   - **index** - structure with one row per present object, ``n = numObjects``:
 %
-%     - ``.exists`` - ``[maxIndex x 1]`` logical, object k has at least one voxel
-%     - ``.voxels`` - ``[maxIndex x 1]`` uint32, voxel count of object k
-%     - ``.bbox`` - ``[maxIndex x 6]`` int32 ``[yMin yMax xMin xMax zMin zMax]``,
+%     - ``.ids`` - ``[n x 1]`` double, the index of the object of each row, sorted
+%       ascending, without 0
+%     - ``.voxels`` - ``[n x 1]`` uint32, voxel count
+%     - ``.bbox`` - ``[n x 6]`` int32 ``[yMin yMax xMin xMax zMin zMax]``,
 %       inclusive and 1-based, ready to be used as ``options.y/.x/.z`` of
-%       ``getData3D`` / ``backup``. All zero for an absent object
-%     - ``.centroid`` - ``[maxIndex x 3]`` single ``[x y z]`` - the ``regionprops``
+%       ``getData3D`` / ``backup``
+%     - ``.centroid`` - ``[n x 3]`` single ``[x y z]`` - the ``regionprops``
 %       ordering, so it can be passed straight to ``MibDataset.moveView(x, y)``
-%     - ``.sliceCount`` - ``[maxIndex x 1]`` uint32, number of z-slices the object
+%     - ``.sliceCount`` - ``[n x 1]`` uint32, number of z-slices the object
 %       actually occupies (not its first-to-last span, so an object with a gap in
 %       the middle is judged on the slices it is really on). All zero when
 %       ``computeSliceCount`` was false
-%     - ``.maxIndex`` - highest label value the arrays are sized for
-%     - ``.numObjects`` - ``nnz(exists)``
+%     - ``.maxIndex`` - highest index in use, ``max(ids)``, 0 for an empty model
+%     - ``.numObjects`` - ``numel(ids)``
 %
 %     Empty (``[]``) when the run was cancelled.
 %   - **cancelled** - logical, true when the user pressed Cancel. No partial
@@ -89,16 +104,8 @@ function [index, cancelled] = objectIndex(labelVol, options, wb)
 %     would silently corrupt the next edit.
 %
 % .. note::
-%    The next free label value is ``find(~index.exists, 1)``, falling back to
-%    ``index.maxIndex + 1`` when every value below the maximum is in use.
-%
-% .. note::
-%    **A refresh never shrinks the index space.** If an edit removes the highest
-%    label value, ``maxIndex`` stays where it was and the vacated entry becomes a
-%    free index; a full rebuild of the same volume would size its arrays to the
-%    new maximum instead and has no way of knowing the higher value ever existed.
-%    So a refreshed index equals a rebuilt one *over the range they share*, with
-%    the refreshed tail marked absent - not element for element.
+%    The next free label value is the lowest positive integer not in ``.ids``:
+%    the first gap of the sorted ids, or ``maxIndex + 1`` when there is none.
 %
 % .. note::
 %    **A refresh from** ``previousSlices`` **never shrinks a bounding box** of an
@@ -106,8 +113,9 @@ function [index, cancelled] = objectIndex(labelVol, options, wb)
 %    is known only by the box it already had, so when the edit removes the voxels
 %    that set a box edge, the box stays larger than the object until the next
 %    full build. This is safe - every reader uses the box as the bound of a
-%    search - but such an entry is not equal to a rebuilt one. An object that has
-%    nothing left outside the slices gets its exact box.
+%    search - but such a row is not equal to a rebuilt one. An object that has
+%    nothing left outside the slices gets its exact box. Every other refresh
+%    gives exactly the index a full build of the edited volume gives.
 %
 % Usage:
 %   **Example 1** - full build with a cancelable progress dialog
@@ -132,8 +140,11 @@ function [index, cancelled] = objectIndex(labelVol, options, wb)
 %
 %   .. code-block:: matlab
 %
-%      bb = double(index.bbox(objId, :));
+%      [~, row] = ismember(objectId, index.ids);
+%      bb = double(index.bbox(row, :));
 %      getDataOptions.y = bb(1:2);  getDataOptions.x = bb(3:4);  getDataOptions.z = bb(5:6);
+%
+% See also: utils.instances.replaceIndexRows, core.MibDataset.buildInstanceIndex
 
 % Updates
 %
@@ -155,32 +166,38 @@ if ~isempty(options.index)
 end
 
 %% Full build
-depth = size(labelVol, 3);
-
 maxIndex = double(max(labelVol, [], 'all'));
 if isempty(maxIndex) || maxIndex == 0
-    index = localEmptyIndex(0);
+    index = localEmptyIndex();
     return;
 end
 
 localReport(wb, 'Indexing objects: measuring bounding boxes...');
 if localCancelled(wb); index = []; cancelled = true; return; end
 
+% regionprops returns one struct per label value from 1 to the maximum, each
+% field an array of its own: above about a million values that is more memory
+% than the objects, near 1e9 it is out of reach.
+if maxIndex > 2^20
+    [index, cancelled] = localPlaneBuild(labelVol, wb);
+    if cancelled; index = []; return; end
+    if ~options.computeSliceCount; index.sliceCount(:) = 0; end
+    return;
+end
+
 % One regionprops call rather than a hand-written accumulation: it is a single
 % C pass that allocates only per object, where find/ind2sub over every labelled
 % voxel of a multi-GB volume would need several arrays the size of the
 % segmentation. The label matrix must be a non-sparse numeric array with
 % positive integer values, which an instance model always is.
+depth = size(labelVol, 3);
 stats = regionprops(labelVol, {'Area', 'BoundingBox', 'Centroid'});
-
-index = localEmptyIndex(maxIndex);
-% regionprops returns one entry per label value from 1 to max, so the struct
-% array is already index-aligned and absent labels come back with Area 0.
 areas = [stats.Area]';
-index.voxels = uint32(areas);
-index.exists = areas > 0;
+present = find(areas > 0);
 
-present = find(index.exists);
+index = localEmptyIndex();
+index.ids = double(present(:));
+index.voxels = uint32(areas(present));
 if ~isempty(present)
     boxes = reshape([stats(present).BoundingBox], [], numel(present))';
     centroids = reshape([stats(present).Centroid], [], numel(present))';
@@ -192,19 +209,74 @@ if ~isempty(present)
         centroids = [centroids, ones(numel(present), 1)];
     end
     xMin = ceil(boxes(:, 1));   yMin = ceil(boxes(:, 2));   zMin = ceil(boxes(:, 3));
-    index.bbox(present, :) = int32([yMin, yMin + boxes(:, 5) - 1, ...
-                                    xMin, xMin + boxes(:, 4) - 1, ...
-                                    zMin, zMin + boxes(:, 6) - 1]);
-    index.centroid(present, :) = single(centroids);
+    index.bbox = int32([yMin, yMin + boxes(:, 5) - 1, ...
+                        xMin, xMin + boxes(:, 4) - 1, ...
+                        zMin, zMin + boxes(:, 6) - 1]);
+    index.centroid = single(centroids);
 end
+index.sliceCount = zeros(numel(present), 1, 'uint32');
 
 if options.computeSliceCount
-    [index.sliceCount, cancelled] = localSliceCounts(labelVol, maxIndex, wb);
+    [sliceCount, cancelled] = localSliceCounts(labelVol, maxIndex, wb);
     if cancelled; index = []; return; end
+    index.sliceCount = sliceCount(present);
 end
 
-index.numObjects = nnz(index.exists);
+index.numObjects = numel(index.ids);
 index.maxIndex = maxIndex;
+end
+
+% =====================================================================
+function [index, cancelled] = localPlaneBuild(labelVol, wb)
+% Full build one slice at a time, for a volume whose highest index is too large
+% for regionprops.
+%
+% Each plane gives one row per object on it - voxel count, in-plane box and
+% coordinate sums - from unique and accumarray over its labelled pixels. The
+% rows of all planes are then combined per object; as every plane contributes
+% at most one row per object, the number of rows of an object is the number
+% of slices it is on.
+cancelled = false;
+index = localEmptyIndex();
+depth = size(labelVol, 3);
+planeIds = cell(depth, 1);
+planeRows = cell(depth, 1);
+messageStep = max(1, floor(depth/100));
+for z = 1:depth
+    if localCancelled(wb); cancelled = true; return; end
+    if mod(z, messageStep) == 0
+        localReport(wb, sprintf('Indexing objects: slice %d of %d...', z, depth));
+    end
+    plane = labelVol(:, :, z);
+    linear = find(plane);
+    if isempty(linear); continue; end
+    [sliceIds, ~, slot] = unique(plane(linear));
+    [y, x] = ind2sub(size(plane), linear);
+    n = numel(sliceIds);
+    % [voxels yMin yMax xMin xMax sumX sumY z]
+    planeRows{z} = [accumarray(slot, 1, [n 1]), ...
+        accumarray(slot, y, [n 1], @min), accumarray(slot, y, [n 1], @max), ...
+        accumarray(slot, x, [n 1], @min), accumarray(slot, x, [n 1], @max), ...
+        accumarray(slot, x, [n 1]), accumarray(slot, y, [n 1]), repmat(z, n, 1)];
+    planeIds{z} = double(sliceIds(:));
+end
+
+allRows = vertcat(planeRows{:});
+if isempty(allRows); return; end
+[ids, ~, group] = unique(vertcat(planeIds{:}));
+n = numel(ids);
+voxels = accumarray(group, allRows(:, 1), [n 1]);
+index.ids = ids;
+index.voxels = uint32(voxels);
+index.bbox = int32([accumarray(group, allRows(:, 2), [n 1], @min), accumarray(group, allRows(:, 3), [n 1], @max), ...
+                    accumarray(group, allRows(:, 4), [n 1], @min), accumarray(group, allRows(:, 5), [n 1], @max), ...
+                    accumarray(group, allRows(:, 8), [n 1], @min), accumarray(group, allRows(:, 8), [n 1], @max)]);
+sums = [accumarray(group, allRows(:, 6), [n 1]), accumarray(group, allRows(:, 7), [n 1]), ...
+        accumarray(group, allRows(:, 8) .* allRows(:, 1), [n 1])];
+index.centroid = single(sums ./ voxels);
+index.sliceCount = uint32(accumarray(group, 1, [n 1]));
+index.numObjects = n;
+index.maxIndex = ids(end);
 end
 
 % =====================================================================
@@ -223,12 +295,6 @@ if isempty(objectIds); return; end
 
 [height, width, depth] = size(labelVol, 1, 2, 3);
 
-% Grow the arrays when the edit introduced label values above the old maximum.
-newMax = max([index.maxIndex; objectIds]);
-if newMax > index.maxIndex
-    index = localGrowIndex(index, newMax);
-end
-
 % Match against the volume's own class rather than casting the crop to double -
 % the crop can be a large fraction of the volume when a big object is edited,
 % and double() would quadruple it.
@@ -241,17 +307,13 @@ end
 
 if ~isempty(options.previousSlices)
     [index, done] = localRefreshFromSlices(labelVol, options, index, objectIds, searchIds);
-    if done
-        index.numObjects = nnz(index.exists);
-        return;
-    end
+    if done; return; end
 end
 
 region = options.bbox;
-known = objectIds(objectIds <= size(index.bbox, 1));
-known = known(index.exists(known));
-if ~isempty(known)
-    previous = double(index.bbox(known, :));
+[isKnown, knownRows] = ismember(objectIds, index.ids);
+if any(isKnown)
+    previous = double(index.bbox(knownRows(isKnown), :));
     previousUnion = [min(previous(:, 1)), max(previous(:, 2)), ...
                      min(previous(:, 3)), max(previous(:, 4)), ...
                      min(previous(:, 5)), max(previous(:, 6))];
@@ -270,28 +332,18 @@ region = [max(1, region(1)), min(height, region(2)), ...
           max(1, region(3)), min(width,  region(4)), ...
           max(1, region(5)), min(depth,  region(6))];
 
-% Clear the entries first: an object that lost all of its voxels in the edit
-% must come back as absent, not keep its old numbers.
-index.exists(objectIds) = false;
-index.voxels(objectIds) = 0;
-index.bbox(objectIds, :) = 0;
-index.centroid(objectIds, :) = 0;
-index.sliceCount(objectIds) = 0;
-
 sub = labelVol(region(1):region(2), region(3):region(4), region(5):region(6));
 measured = localMeasure(sub, searchIds, region([1 3 5]), depth);
 
-% Only objects that actually have voxels are written back; the rest were
-% cleared above and must stay cleared.
+% Only objects that actually have voxels get a row; the rest lose theirs, so an
+% object that lost all of its voxels in the edit comes back absent.
 filled = measured.counts > 0;
-ids = objectIds(filled);
-index.exists(ids) = true;
-index.voxels(ids) = uint32(measured.counts(filled));
-index.bbox(ids, :) = int32(measured.bbox(filled, :));
-index.centroid(ids, :) = single(measured.sums(filled, :) ./ measured.counts(filled, 1));
-index.sliceCount(ids) = uint32(measured.slices(filled));
-
-index.numObjects = nnz(index.exists);
+rows = struct('ids', objectIds(filled), ...
+    'voxels', measured.counts(filled), ...
+    'bbox', measured.bbox(filled, :), ...
+    'centroid', measured.sums(filled, :) ./ measured.counts(filled, 1), ...
+    'sliceCount', measured.slices(filled));
+index = utils.instances.replaceIndexRows(index, objectIds, rows);
 end
 
 % =====================================================================
@@ -303,7 +355,7 @@ function [index, done] = localRefreshFromSlices(labelVol, options, index, object
 % localRefresh then rescans nearly the whole volume to account for an edit on
 % one slice: 8.8 s per 2-D split on a 1636x2556x1250 uint16 model (2026-10-02).
 %
-% Everything an entry holds except the box is a sum over voxels, so it can be
+% Everything a row holds except the box is a sum over voxels, so it can be
 % corrected by what changed: the counts and coordinate sums of each object on
 % these slices before the edit are taken out, the ones after are put in. Slices
 % are taken whole so that "the object is on slice z" is known exactly from them.
@@ -313,9 +365,9 @@ function [index, done] = localRefreshFromSlices(labelVol, options, index, object
 % here and never narrowed. An object with nothing left outside these slices is
 % described by them completely and gets its exact box.
 %
-% done is false, with the index untouched, when an entry cannot have described
+% done is false, with the index untouched, when a row cannot have described
 % the volume: an object would have lost more voxels here than it had. The
-% caller then falls back to the exact rescan rather than writing a wrong entry.
+% caller then falls back to the exact rescan rather than writing a wrong row.
 done = false;
 [height, width, depth] = size(labelVol, 1, 2, 3);
 if numel(options.bbox) ~= 6
@@ -334,14 +386,24 @@ origin = [1, 1, zRange(1)];
 prior = localMeasure(before, searchIds, origin, depth);
 current = localMeasure(labelVol(:, :, zRange), searchIds, origin, depth);
 
-previousVoxels = double(index.voxels(objectIds));
+% the rows these objects had, zero for an object new to the index
+count = numel(objectIds);
+[isKnown, knownRows] = ismember(objectIds, index.ids);
+previousVoxels = zeros(count, 1);
+previousCentroids = zeros(count, 3);
+previousSlices = zeros(count, 1);
+boxes = zeros(count, 6);
+previousVoxels(isKnown) = double(index.voxels(knownRows(isKnown)));
+previousCentroids(isKnown, :) = double(index.centroid(knownRows(isKnown), :));
+previousSlices(isKnown) = double(index.sliceCount(knownRows(isKnown)));
+boxes(isKnown, :) = double(index.bbox(knownRows(isKnown), :));
+
 elsewhere = previousVoxels - prior.counts;       % voxels on slices the edit did not touch
 if any(elsewhere < 0); return; end
 
 voxels = elsewhere + current.counts;
-sums = double(index.centroid(objectIds, :)) .* previousVoxels - prior.sums + current.sums;
-sliceCount = double(index.sliceCount(objectIds)) - prior.slices + current.slices;
-boxes = double(index.bbox(objectIds, :));
+sums = previousCentroids .* previousVoxels - prior.sums + current.sums;
+sliceCount = previousSlices - prior.slices + current.slices;
 
 % Objects that live only on these slices are measured, not corrected.
 onlyHere = elsewhere == 0;
@@ -354,16 +416,12 @@ boxes(grown, [1 3 5]) = min(boxes(grown, [1 3 5]), current.bbox(grown, [1 3 5]))
 boxes(grown, [2 4 6]) = max(boxes(grown, [2 4 6]), current.bbox(grown, [2 4 6]));
 
 present = voxels > 0;
-centroid = zeros(numel(objectIds), 3);
-centroid(present, :) = sums(present, :) ./ voxels(present, 1);
-boxes(~present, :) = 0;
-sliceCount(~present) = 0;
-
-index.exists(objectIds) = present;
-index.voxels(objectIds) = uint32(voxels);
-index.bbox(objectIds, :) = int32(boxes);
-index.centroid(objectIds, :) = single(centroid);
-index.sliceCount(objectIds) = uint32(max(sliceCount, 0));
+rows = struct('ids', objectIds(present), ...
+    'voxels', voxels(present), ...
+    'bbox', boxes(present, :), ...
+    'centroid', sums(present, :) ./ voxels(present, 1), ...
+    'sliceCount', max(sliceCount(present), 0));
+index = utils.instances.replaceIndexRows(index, objectIds, rows);
 done = true;
 end
 
@@ -400,12 +458,13 @@ end
 
 % =====================================================================
 function [sliceCount, cancelled] = localSliceCounts(labelVol, maxIndex, wb)
-% Number of z-slices each object actually occupies.
+% Number of z-slices each label value 1..maxIndex actually occupies.
 %
 % Counted with one pass of unique() per plane rather than from the bounding box,
 % so an object with a hole in the middle of its z-range is judged on the slices
 % it is really on. Same loop as the minObjectSlices filter of
-% utils.instances.stitch2Dto3D.
+% utils.instances.stitch2Dto3D. Indexed by value, which the regionprops route
+% that calls it bounds to 2^20.
 
 cancelled = false;
 depth = size(labelVol, 3);
@@ -429,28 +488,16 @@ end
 end
 
 % =====================================================================
-function index = localEmptyIndex(maxIndex)
-% An index sized for maxIndex label values with nothing in it yet
+function index = localEmptyIndex()
+% An index with no objects
 index = struct();
-index.exists = false(maxIndex, 1);
-index.voxels = zeros(maxIndex, 1, 'uint32');
-index.bbox = zeros(maxIndex, 6, 'int32');
-index.centroid = zeros(maxIndex, 3, 'single');
-index.sliceCount = zeros(maxIndex, 1, 'uint32');
-index.maxIndex = maxIndex;
+index.ids = zeros(0, 1);
+index.voxels = zeros(0, 1, 'uint32');
+index.bbox = zeros(0, 6, 'int32');
+index.centroid = zeros(0, 3, 'single');
+index.sliceCount = zeros(0, 1, 'uint32');
+index.maxIndex = 0;
 index.numObjects = 0;
-end
-
-% =====================================================================
-function index = localGrowIndex(index, newMax)
-% Extend the arrays to cover label values up to newMax, keeping other fields
-old = index.maxIndex;
-index.exists(old+1:newMax, 1) = false;
-index.voxels(old+1:newMax, 1) = 0;
-index.bbox(old+1:newMax, 1:6) = 0;
-index.centroid(old+1:newMax, 1:3) = 0;
-index.sliceCount(old+1:newMax, 1) = 0;
-index.maxIndex = newMax;
 end
 
 % =====================================================================

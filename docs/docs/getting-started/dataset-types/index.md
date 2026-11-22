@@ -126,9 +126,10 @@ Whichever the image is, the **model is always written as an OME-Zarr v3 store be
   not. Converting a slide you will return to often therefore still pays off.
 - **Browse-only until a model exists** - create a model (Segmentation panel → *Create*, or *Ribbon → Model →
   New model*, or load one) to enable segmentation.
-- Up to **63 materials**, or **16383 objects** when the model is created as an instance model or
-  [converted](../../user-interface/ribbon/model/index.md#convert-type) to one, and
-  **a single time point** (time-series is not yet supported).
+- Up to **63 materials**, or **16383** or **1073741823 objects** when the model is created as an
+  instance model or [converted](../../user-interface/ribbon/model/index.md#convert-type) to one; the
+  1073741823 model takes twice the disk space of the 16383 model.
+- **A single time point** (time-series is not yet supported).
 - The **source image is read-only** - you edit the model, not the image pixels. To change image pixels,
   convert the (cropped) region to Standard; [Image filters](../../user-interface/ribbon/image/image-filters.md#bigdata-datasets),
   [Image Arithmetics](../../user-interface/ribbon/image/image-tools-arithmetic.md#bigdata-datasets),

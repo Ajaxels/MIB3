@@ -70,6 +70,10 @@ popupList.add(widgetHandles.mat65535);
 % % Convert to 4294967295 materials
 widgetHandles.mat4294967295 =  matlab.ui.internal.toolstrip.ListItemWithCheckBox('4294967295 materials', false);
 popupList.add(widgetHandles.mat4294967295);
+% % Convert to 1073741823 materials (packed uint32 instance model, BigData only)
+widgetHandles.mat1073741823 =  matlab.ui.internal.toolstrip.ListItemWithCheckBox('1073741823 materials', false);
+widgetHandles.mat1073741823.Description = "BigData instance model: index, mask and selection packed in 32 bits; a Standard model converts to 4294967295";
+popupList.add(widgetHandles.mat1073741823);
 % separator
 separator = PopupListSeparator();
 popupList.add(separator);

@@ -25,7 +25,8 @@ end
 BatchOpt = struct();
 switch mode
     % -------------- Convert model section --------------
-    case {'63 materials', '255 materials', '16383 materials', '65535 materials', '4294967295 materials'}
+    case {'63 materials', '255 materials', '16383 materials', '65535 materials', '4294967295 materials', ...
+            '1073741823 materials'}
         BatchOpt.ModelType = {strrep(mode, ' materials', '')};
         obj.mibModel.convertModel([], BatchOpt);
         % Clicking a type has already checked it. When the conversion does not

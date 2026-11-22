@@ -35,12 +35,19 @@ reducing memory requirements with some performance costs and limiting materials 
 - **65535 materials**: Allows up to 65535 materials, requiring ~1.25× more memory than 255 materials. The [Segmentation panel](../../panels/segm/index.md) appearance changes in this mode.  
   [:fontawesome-brands-youtube:{.red-color} Short demonstration](https://youtu.be/r3lpmWyvrJU)
 - **4294967295 materials**: Allows up to 4294967295 materials, requiring twice the memory of 65535 materials.
+- **1073741823 materials**: [BigData](../../../getting-started/dataset-types/index.md) only. An instance model for up to 1073741823 objects; the Labels, Selection and Mask layers share one container, so the model store takes twice the disk space of 16383 materials. A Standard model converts to 4294967295 materials instead.
 
 !!! note "BigData"
-    A BigData model converts from **63 materials** to **16383 materials** only. The model is copied
-    into a new model store, which you choose; the 63-material store stays on disk unchanged, so you
-    can go back to it by loading it again. Each material becomes one object with the same number and
-    colour.
+    A BigData model converts between **63**, **16383** and **1073741823 materials**. The model is
+    copied into a new model store, which you choose; the old store stays on disk unchanged, so you
+    can go back to it by loading it again. Each material becomes one object with the same number
+    and colour, and objects keep their numbers and colours.
+
+    When you convert to a smaller type, every object with a number above the largest number of the
+    new type gets that largest number, so all these objects become one. MIB warns you before the
+    conversion when this happens. Use **Compact** in the
+    [Instance editor](model-instance-editor.md) first to renumber the objects from 1, which can
+    make them fit.
 
 <div class="h4-like">Indexed objects</div>
 
@@ -365,7 +372,7 @@ in the Selection layer.
 
 It is the proofreading step after **Stitch 2D instances to 3D**, which leaves errors that no
 threshold can remove. Requires an instance model (16383, 65535 or 4294967295 materials), where every object
-has its own index; on BigData datasets, a 16383 model.
+has its own index; on BigData datasets, a 16383 or 1073741823 model.
 
 See [Instance editor](model-instance-editor.md) for details.
 

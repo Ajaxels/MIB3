@@ -178,6 +178,9 @@ if isempty(updatePanels) || ismember('ribbonModel', updatePanels)
     ribbonModel.mat16383.Value = false;
     ribbonModel.mat65535.Value = false;
     ribbonModel.mat4294967295.Value = false;
+    if isfield(ribbonModel, 'mat1073741823')   % a ribbon built before this item existed lacks it until restart
+        ribbonModel.mat1073741823.Value = dataset.labels.maxMaterials == 1073741823;
+    end
     if dataset.labels.maxMaterials == 63
         ribbonModel.mat63.Value = true;
     elseif dataset.labels.maxMaterials == 255 

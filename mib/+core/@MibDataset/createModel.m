@@ -15,8 +15,10 @@ function createModel(obj, modelType, modelMaterialNames)
 % types 255/65535/4294967295), the selection and mask layers are converted
 % automatically.
 %
-% For a BigData dataset the model is a disk store of type 63; the interactive
-% path (models.MibModel.createModel) also builds type 16383 stores.
+% For a BigData dataset the model is a disk store of type 63, 16383 (uint16) or
+% 1073741823 (uint32: bits 1-30 index, bit 31 mask, bit 32 selection); the
+% interactive path (models.MibModel.createModel) builds the same stores at a
+% path the user chooses. Type 1073741823 exists for BigData only.
 %
 % Input Arguments:
 %   - **modelType** *(optional)* - [numeric] model type (default: current model type):
@@ -60,8 +62,8 @@ if nargin < 3; modelMaterialNames = []; end
 if nargin < 2; modelType = NaN; end
 
 % BigData: the model is kept on disk as a packed pyramidal zarr (not in
-% memory). Only the packed types are supported: 16383 (uint16 store) when asked
-% for, otherwise 63. Creating the model allocates the disk store and enables
+% memory). Only the packed types are supported: 16383 (uint16 store) or
+% 1073741823 (uint32 store) when asked for, otherwise 63. Creating the model allocates the disk store and enables
 % segmentation for the browse-only set.
 if strcmp(obj.datasetType, 'BigData')
     meta = core.MibImage.initializeImgInfo( ...
@@ -76,11 +78,12 @@ if strcmp(obj.datasetType, 'BigData')
     % Either way the model mirrors the image pyramid levels.
     obj.labels = core.MibBigDataLabels([], meta);
     if modelType == 16383; obj.labels.setLayout('uint16'); end
+    if modelType == 1073741823; obj.labels.setLayout('uint32'); end
     obj.labels.createStore([obj.image.height, obj.image.width, obj.image.depth], ...
         '', obj.image.pyramid);
     obj.labels.labelsVariable = 'mibModel';
     obj.labels.filename = '';   % not saved yet; Phase 3 "save as" suggests the name
-    if modelType == 16383
+    if modelType == 16383 || modelType == 1073741823
         % instance model: two name slots and generated colours, as for 65535
         obj.labels.materialNames  = {'1'; '2'};
         obj.labels.materialColors = rand(65535, 3);

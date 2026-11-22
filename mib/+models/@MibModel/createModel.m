@@ -11,15 +11,19 @@ function createModel(obj, ModelType, ModelMaterialNames, BatchOptIn)
 %   - 63 - 63 material model
 %   - 255 - 255 material model
 %   - 16383 - 16383 object instance model, packed in uint16 with mask and selection;
-%     the instance model for BigData datasets
+%     an instance model for BigData datasets
+%   - 1073741823 - **BigData only**: 1073741823 object instance model, packed in
+%     uint32 (bits 1-30 index, bit 31 mask, bit 32 selection); 4 bytes per voxel
 %   - 65535 - 65535 material model
 %   - 4294967295 - 4294967295 material model
 %   - **ModelMaterialNames** - *(optional)* can be empty: []; a cell array with
 %     names of materials; not used for ModelType > 255
 %   - **BatchOptIn** - a structure for batch processing mode; when NaN, returns a
 %     structure with default options via "SyncBatch" event
-%   - .ModelType - cell string, {'63', '255', '16383', '65535', '4294967295'};
-%     BigData accepts '63' and '16383' only, any other value creates a 63 model
+%   - .ModelType - cell string, {'63', '255', '16383', '65535', '4294967295',
+%     '1073741823'}; BigData accepts '63', '16383' and '1073741823' only, any
+%     other value creates a 63 model. A Standard dataset given '1073741823' gets
+%     a 4294967295 model, the separate-layer type that holds the same indices
 %   - .ModelMaterialNames - string with semicolon-separated material names
 %   - .showWaitbar - logical, show or not the waitbar
 %   - .id *(optional)*, dataset index from 1 to 9, default = obj.id
@@ -47,7 +51,7 @@ if ~isempty(ModelType)
 else
     BatchOpt.ModelType = {'63'};
 end
-BatchOpt.ModelType{2} = {'63', '255', '16383', '65535', '4294967295'};
+BatchOpt.ModelType{2} = {'63', '255', '16383', '65535', '4294967295', '1073741823'};
 if ~isempty(ModelMaterialNames)
     BatchOpt.ModelMaterialNames = sprintf('%s;', ModelMaterialNames{:});
     BatchOpt.ModelMaterialNames(end) = [];
@@ -61,7 +65,7 @@ BatchOpt.id = obj.getActiveId();
 BatchOpt.mibBatchSectionName = 'Ribbon -> Model';
 BatchOpt.mibBatchActionName = 'New model';
 BatchOpt.mibBatchTooltip.ModelType = ...
-    'Specify type of the new model; the model type indicates the maximum number of materials. More materials require more memory and are slower to work with';
+    'Specify type of the new model; the model type indicates the maximum number of materials. More materials require more memory and are slower to work with. BigData: 63, 16383 or 1073741823 only';
 BatchOpt.mibBatchTooltip.ModelMaterialNames = sprintf( ...
     '[For 63 and 255 only]\nOptionally, specify names for materials as a semicolon-separated list: "mat1; mat2; mat3"');
 BatchOpt.mibBatchTooltip.ModelStorePath = sprintf( ...
@@ -92,10 +96,15 @@ end
 
 %% Initial checks
 % BigData: only the packed disk-backed models are supported - 63 materials
-% (uint8 store) or 16383 instances (uint16 store); anything else becomes 63.
+% (uint8 store), 16383 instances (uint16 store) or 1073741823 instances (uint32
+% store); anything else becomes 63. The packed uint32 type is BigData only: on a
+% Standard dataset 4294967295 holds the same indices.
 isBigData = strcmp(obj.I{BatchOpt.id}.datasetType, 'BigData');
-if isBigData && ~ismember(BatchOpt.ModelType{1}, {'63', '16383'})
+if isBigData && ~ismember(BatchOpt.ModelType{1}, {'63', '16383', '1073741823'})
     BatchOpt.ModelType{1} = '63';
+end
+if ~isBigData && strcmp(BatchOpt.ModelType{1}, '1073741823')
+    BatchOpt.ModelType{1} = '4294967295';
 end
 
 % Check for virtual stacking mode
@@ -135,10 +144,10 @@ if obj.I{BatchOpt.id}.modelExist && nargin < 4
 end
 
 % Show model-type selection dialog when the type was not provided
-% (BigData offers only the two packed types)
+% (BigData offers only the packed types)
 if isempty(ModelType) && nargin < 4
     if isBigData
-        dlg = utils.dlgs.selectModelTypeDlg(obj.getProgressBarParent(), obj.mibPath, [63 16383]);
+        dlg = utils.dlgs.selectModelTypeDlg(obj.getProgressBarParent(), obj.mibPath, [63 16383 1073741823]);
     else
         dlg = utils.dlgs.selectModelTypeDlg(obj.getProgressBarParent(), obj.mibPath);
     end
@@ -272,8 +281,12 @@ if isBigData
         'Time',    ds.image.time,   ...
         'Colors',  1);
     ds.labels = core.MibBigDataLabels([], bigMeta);
-    isInstanceModel = strcmp(BatchOpt.ModelType{1}, '16383');
-    if isInstanceModel; ds.labels.setLayout('uint16'); end   % uint16 store, set before createStore
+    isInstanceModel = ismember(BatchOpt.ModelType{1}, {'16383', '1073741823'});
+    % the layout is set before createStore, which creates arrays of its class
+    switch BatchOpt.ModelType{1}
+        case '16383';      ds.labels.setLayout('uint16');
+        case '1073741823'; ds.labels.setLayout('uint32');
+    end
     storePyramid = ds.image.pyramid;
     if ~isempty(storeChunk)
         % createStore reads the chunk of every level in the axis order of the

@@ -23,6 +23,9 @@ function converted = convertModel(obj, ModelType, BatchOptIn, convertOptions)
 %
 %     - ``63``         - packed uint8; mask and selection stored in bits 7-8
 %     - ``16383``      - packed uint16 instance model; mask and selection in bits 15-16
+%     - ``1073741823`` - **BigData only**: packed uint32 instance model; mask and
+%       selection in bits 31-32. A Standard dataset converts to ``4294967295``
+%       instead, the separate-layer type that holds the same indices
 %     - ``255``        - separate uint8 labels layer
 %     - ``65535``      - separate uint16 labels layer
 %     - ``4294967295`` - separate uint32 labels layer
@@ -35,10 +38,10 @@ function converted = convertModel(obj, ModelType, BatchOptIn, convertOptions)
 %     ``NaN`` to return default options via ``SyncBatch`` event
 %
 %     - ``.ModelType``    - cell string dropdown, first element is selected value
-%     - ``.ModelStorePath`` - char, BigData only: path of the new 16383 model
-%       store (``.zarr3`` or ``.zarr2``). Empty (default) = next to the current
-%       store, with ``_16383`` added to its name; interactively the user is asked
-%       with that as the suggestion
+%     - ``.ModelStorePath`` - char, BigData only: path of the new model store
+%       (``.zarr3`` or ``.zarr2``). Empty (default) = next to the current store,
+%       with ``_63``, ``_16383`` or ``_1073741823`` added to its name;
+%       interactively the user is asked with that as the suggestion
 %     - ``.showWaitbar``  - logical, show or not the waitbar [*default* ``true``]
 %     - ``.id``           - *(optional)* dataset index 1-9; default = active dataset
 %
@@ -46,7 +49,7 @@ function converted = convertModel(obj, ModelType, BatchOptIn, convertOptions)
 %     code, not part of BatchOpt and never recorded by the batch tool:
 %
 %     - ``.keepMaterials`` - logical, **BigData only** [*default* ``true``]. When
-%       ``false`` the new 16383 store gets only the mask and selection bits of
+%       ``false`` the new store gets only the mask and selection bits of
 %       the old one, the labels stay empty and the colors are generated. Used by
 %       ``controllers.Annotations.convertModelFromAnnotations``, which
 %       writes its own objects into the empty store afterwards; the explanation
@@ -59,21 +62,36 @@ function converted = convertModel(obj, ModelType, BatchOptIn, convertOptions)
 %     model is then unchanged
 %
 % .. note::
-%    **BigData** converts from 63 materials to 16383 only, and into a **new
-%    store**: a store's array type is fixed when it is created, so the uint8
-%    packed levels cannot become uint16 in place. Every pyramid level is
-%    remapped voxel by voxel in chunk-aligned strips (material index kept,
-%    mask bit 7 -> 15, selection bit 8 -> 16) and the level map is copied, so
-%    levels that were still deferred stay deferred and nothing is materialized.
-%    Material index k becomes object index k with the colour it had; as on a
-%    Standard dataset, one material is one object until it is split. The
-%    dataset then switches to the new store and the old one is closed and left
-%    on disk unchanged - loading it again is the way back, so the dialog
-%    shown first explains rather than warns. Ctrl+Z does not switch back (a
-%    disk-backed model cannot be snapshotted), and the undo history is cleared:
-%    it holds 63-type snapshots the new store cannot take back. Cancel removes
-%    the partly written store and keeps the 63-material model. Virtual
-%    datasets are refused.
+%    **BigData** converts between the packed types 63, 16383 and 1073741823, in
+%    either direction, into a **new store**: a store's array type is fixed when
+%    it is created, so the uint8 packed levels cannot become uint16 (or uint32)
+%    in place. Every pyramid level is remapped voxel by voxel in chunk-aligned
+%    strips (index kept, mask bit and selection bit moved to the top two bits of
+%    the new class: 7/8, 15/16 or 31/32) and the level map is copied, so levels
+%    that were still deferred stay deferred and nothing is materialized. From 63,
+%    material index k becomes object index k with the colour it had; as on a
+%    Standard dataset, one material is one object until it is split. Between the
+%    instance types the object indices, their colours and ``objects3D`` carry
+%    over. To 63, object k becomes material k and the materials ``1..N`` are
+%    listed by number. The instance index is not copied and is rebuilt by the
+%    next scan.
+%
+%    **To a smaller type** every index above the top index of the target
+%    (``modelType``) is set to it, so all such objects become one. Unlike the
+%    Standard route, which refuses this, the conversion goes ahead because the
+%    old store is kept: the dialog shown first warns when
+%    ``labels.maxIndexUsed`` (the highest index over every level) is above the
+%    target's top index; a protocol, or a call with ``.ModelStorePath`` set,
+%    prints the warning to the command window instead. After the copy the
+%    number of full-resolution voxels that were clamped is printed too. Clamping
+%    is per voxel, so it commutes with the nearest-neighbour pyramid just like
+%    the remap. The dataset then switches
+%    to the new store and the old one is closed and left on disk unchanged -
+%    loading it again is the way back, so the dialog shown first explains
+%    rather than warns. Ctrl+Z does not switch back (a disk-backed model cannot
+%    be snapshotted), and the undo history is cleared: it holds snapshots of the
+%    old type the new store cannot take back. Cancel removes the partly written
+%    store and keeps the old model. Virtual datasets are refused.
 %
 % **Example 1** - convert current model to 255-material type
 %
@@ -110,7 +128,7 @@ if ~isempty(ModelType)
 else
     BatchOpt.ModelType = {'63'};
 end
-BatchOpt.ModelType{2} = {'63', '255', '16383', '65535', '4294967295', ...
+BatchOpt.ModelType{2} = {'63', '255', '16383', '65535', '4294967295', '1073741823', ...
     'indexed objects 2D/4', 'indexed objects 2D/8', ...
     'indexed objects 3D/6', 'indexed objects 3D/26'};
 
@@ -120,8 +138,8 @@ BatchOpt.id = obj.getActiveId();
 
 BatchOpt.mibBatchSectionName = 'Ribbon -> Model';
 BatchOpt.mibBatchActionName  = 'Convert type';
-BatchOpt.mibBatchTooltip.ModelType   = 'Type of model to convert to; higher capacity types use more memory. BigData: 63 to 16383 only';
-BatchOpt.mibBatchTooltip.ModelStorePath = 'BigData only: path of the new 16383 model store; empty = next to the current store, with _16383 added to its name';
+BatchOpt.mibBatchTooltip.ModelType   = 'Type of model to convert to; higher capacity types use more memory. BigData: between 63, 16383 and 1073741823; to a smaller type, indices above its maximum become the maximum. 1073741823 is BigData only (Standard gets 4294967295)';
+BatchOpt.mibBatchTooltip.ModelStorePath = 'BigData only: path of the new model store; empty = next to the current store, with _63, _16383 or _1073741823 added to its name';
 BatchOpt.mibBatchTooltip.showWaitbar = 'Show or not the progress bar during execution';
 
 %% Batch mode check actions
@@ -192,11 +210,15 @@ switch BatchOpt.ModelType{1}
     case 'indexed objects 3D/26'; modelType = 3.26;
     otherwise;                    modelType = str2double(BatchOpt.ModelType{1});
 end
+% the packed uint32 type is BigData only; on Standard 4294967295 holds the same indices
+if modelType == 1073741823 && obj.I{BatchOpt.id}.datasetType(1) ~= 'B'
+    modelType = 4294967295;
+end
 
 %% Early-exit if already the requested type
 if modelType == obj.I{BatchOpt.id}.labels.maxMaterials; converted = true; return; end
 
-%% BigData: 63 -> 16383 into a new store
+%% BigData: to another packed type, into a new store
 if obj.I{BatchOpt.id}.datasetType(1) == 'B'
     converted = localConvertBigData(obj, BatchOpt, modelType, batchModeSwitch, dlgOpt, ...
         convertOptions.keepMaterials);
@@ -270,12 +292,14 @@ end
 
 % =====================================================================
 function converted = localConvertBigData(obj, BatchOpt, modelType, batchModeSwitch, dlgOpt, keepMaterials)
-% Convert a BigData 63-material store into a new 16383 store and switch to it.
+% Convert a BigData packed store into a new store of another packed type
+% (63, 16383, 1073741823, either direction) and switch to it.
 %
-% See the BigData note of the main docblock for what is converted and why into a
-% new store. The remap is per voxel, so it commutes with the nearest-neighbour
+% See the BigData note of the main docblock for what is converted, why into a
+% new store, and how indices above a smaller target's top index are clamped.
+% The remap is per voxel, so it commutes with the nearest-neighbour
 % downsampling that built the coarser levels: converting each level on its own
-% gives the pyramid a 16383 model would have had from the start, and the copied
+% gives the pyramid the new type would have had from the start, and the copied
 % level map keeps its meaning.
 %
 % With keepMaterials false (``convertOptions.keepMaterials``) the material bits
@@ -286,54 +310,88 @@ function converted = localConvertBigData(obj, BatchOpt, modelType, batchModeSwit
 % Output Arguments:
 %   - **converted** - logical, true when the dataset now uses the new store.
 %     False on every refusal, a cancel from the user, or a Cancel during the
-%     copy - the 63-material model is then still the one in use
+%     copy - the old model is then still the one in use
 converted = false;
 dataset = obj.I{BatchOpt.id};
 source = dataset.labels;
 
-if modelType ~= 16383 || ~isa(source, 'core.MibBigDataLabels') || ...
-        isa(source, 'core.MibBigDataLabelsZarr2') || ~strcmp(source.containerClass, 'uint8')
+% target layout of each packed type
+switch modelType
+    case 63;         targetClass = 'uint8';
+    case 16383;      targetClass = 'uint16';
+    case 1073741823; targetClass = 'uint32';
+    otherwise;       targetClass = '';
+end
+isEditableStore = isa(source, 'core.MibBigDataLabels') && ~isa(source, 'core.MibBigDataLabelsZarr2');
+if isempty(targetClass) || ~isEditableStore || ...
+        ~ismember(source.containerClass, {'uint8', 'uint16', 'uint32'}) || source.maxMaterials == modelType
     localMessage(obj, dlgOpt, 'Not available for this BigData model!', ...
-        {'A BigData model converts from 63 materials to 16383 only, and only when its store was created by MIB.'});
+        {['A BigData model converts between the packed types 63, 16383 and 1073741823, ' ...
+        'and only when its store was created by MIB.']});
     return;
 end
+sourceTypeText = sprintf('%d-material', source.maxMaterials);
+targetTypeText = sprintf('%d', modelType);
+% The material bits of the target type hold indices up to modelType; a higher
+% index of a smaller target is clamped to it, which merges all such objects
+% into one. maxIndexUsed is the highest index of every level of the store.
+targetMaxIndex = modelType;
+if modelType == 63; indexWord = 'material'; else; indexWord = 'object'; end
+clampWarning = '';
+if keepMaterials && double(source.maxIndexUsed) > targetMaxIndex
+    clampWarning = sprintf(['The model uses indices up to %d, but a %s model holds indices up to %d. ' ...
+        'Every voxel with a higher index gets index %d, so all those objects become %s %d.'], ...
+        double(source.maxIndexUsed), targetTypeText, targetMaxIndex, targetMaxIndex, indexWord, targetMaxIndex);
+end
+warningShown = false;
 
 %% Where the new store goes
 sourcePath = char(source.modelStorePath);
 [sourceFolder, sourceName, sourceExtension] = fileparts(sourcePath);
 targetPath = char(BatchOpt.ModelStorePath);
 if isempty(targetPath)
-    targetPath = fullfile(sourceFolder, [sourceName '_16383' sourceExtension]);
+    targetPath = fullfile(sourceFolder, [sourceName '_' targetTypeText sourceExtension]);
     if ~batchModeSwitch
-        % An explanation rather than a warning: the 63-material store is kept as
-        % it is, so nothing is lost that loading it again would not bring back
+        % An explanation rather than a warning: the old store is kept as it is,
+        % so nothing is lost that loading it again would not bring back
         parent = obj.getProgressBarParent();
         if ~isempty(parent) && all(isvalid(parent))
-            if keepMaterials
-                contentsText = 'Each material becomes one object with the same number and color.';
-            else
+            if ~keepMaterials
                 contentsText = ['Only the objects under the annotations are written, with the numbers ' ...
                     'from the annotation names. The mask and selection are kept.'];
+            elseif modelType == 63
+                contentsText = 'Each object becomes the material with the same number and color.';
+            elseif source.maxMaterials > 255
+                contentsText = 'Every object keeps its number and color.';
+            else
+                contentsText = 'Each material becomes one object with the same number and color.';
             end
-            answer = uiconfirm(parent, sprintf(['The model will be copied into a new 16383 model store; ' ...
+            icon = 'info';
+            if ~isempty(clampWarning)
+                contentsText = sprintf('%s\n\nWARNING: %s', contentsText, clampWarning);
+                icon = 'warning';
+            end
+            answer = uiconfirm(parent, sprintf(['The model will be copied into a new %s model store; ' ...
                 'you choose where in the next step.\n\n%s\n\n' ...
-                'The 63-material store stays on disk unchanged, so you can return to it by loading it again. ' ...
-                'Earlier undo steps are not kept.'], contentsText), ...
+                'The %s store stays on disk unchanged, so you can return to it by loading it again. ' ...
+                'Earlier undo steps are not kept.'], targetTypeText, contentsText, sourceTypeText), ...
                 'Convert model', 'Options', {'Continue', 'Cancel'}, ...
-                'DefaultOption', 1, 'CancelOption', 2, 'Icon', 'info');
+                'DefaultOption', 1, 'CancelOption', 2, 'Icon', icon);
             if ~strcmp(answer, 'Continue'); return; end
+            warningShown = true;
         end
         [storeFile, storeFolder] = uiputfile( ...
             {'*.zarr3', 'OME-Zarr v3 model store (*.zarr3)'; ...
              '*.zarr2', 'OME-Zarr v2 model store (*.zarr2)'}, ...
-            'Save the 16383 model as a new store (the 63-material store is kept)', targetPath);
+            sprintf('Save the %s model as a new store (the %s store is kept)', targetTypeText, sourceTypeText), ...
+            targetPath);
         if isequal(storeFile, 0); return; end
         targetPath = fullfile(storeFolder, storeFile);
     end
 end
 if strcmpi(strrep(targetPath, '/', '\'), strrep(sourcePath, '/', '\'))
     localMessage(obj, dlgOpt, 'The new store needs a path of its own!', ...
-        {'The 16383 model is written next to the current one, which stays as it is. Choose another name.'});
+        {sprintf('The %s model is written next to the current one, which stays as it is. Choose another name.', targetTypeText)});
     return;
 end
 if batchModeSwitch && isfolder(targetPath)
@@ -341,12 +399,16 @@ if batchModeSwitch && isfolder(targetPath)
     localMessage(obj, dlgOpt, 'The target model store already exists!', {targetPath});
     return;
 end
+if ~isempty(clampWarning) && ~warningShown
+    % a protocol, or a caller that named the store: nobody to ask, so it is said
+    fprintf(2, 'Convert model: WARNING: %s\n', clampWarning);
+end
 
 %% Copy, level by level
 wb = [];
 if BatchOpt.showWaitbar
     wb = uiprogressdlg(obj.getProgressBarParent(), 'Value', 0, 'Cancelable', 'on', ...
-        'Message', sprintf('Converting the model to 16383 objects\nPlease wait...'), 'Title', 'Convert model');
+        'Message', sprintf('Converting the model to %s objects\nPlease wait...', targetTypeText), 'Title', 'Convert model');
 end
 
 meta = core.MibImage.initializeImgInfo('pixSize', dataset.image.pixSize, ...
@@ -364,16 +426,18 @@ for level = 1:size(levelSizes, 1)
     storeGeometry.chunkSizes{level} = double(source.modelArrays{level}.info().chunkShape);   % [y x z]
 end
 target = core.MibBigDataLabels([], meta);
-target.setLayout('uint16');
+target.setLayout(targetClass);
 target.createStore([source.height, source.width, source.depth], targetPath, storeGeometry);
 
 totalVoxels = sum(prod(levelSizes, 2));
 voxelsDone = 0;
 highestIndex = 0;
+clampedVoxels = 0;     % full-resolution voxels whose index was above targetMaxIndex
 for level = 1:size(levelSizes, 1)
     levelSize = levelSizes(level, :);
     chunkShape = double(target.modelArrays{level}.info().chunkShape);   % [y x z]
     planesPerStrip = min(chunkShape(3), levelSize(3));
+    % ~32 M voxels of the source per strip (the target block is up to 4x its bytes)
     rowsPerStrip = max(chunkShape(1), floor(2^25 / (levelSize(2) * planesPerStrip) / chunkShape(1)) * chunkShape(1));
     for firstPlane = 1:planesPerStrip:levelSize(3)
         planes = [firstPlane, min(firstPlane + planesPerStrip - 1, levelSize(3))];
@@ -381,7 +445,7 @@ for level = 1:size(levelSizes, 1)
             if ~isempty(wb) && wb.CancelRequested
                 localRemoveStore(target, targetPath);
                 delete(wb);
-                fprintf('Convert model: cancelled, the 63-material model is still in use\n');
+                fprintf('Convert model: cancelled, the %s model is still in use\n', sourceTypeText);
                 return;
             end
             rows = [firstRow, min(firstRow + rowsPerStrip - 1, levelSize(1))];
@@ -390,10 +454,20 @@ for level = 1:size(levelSizes, 1)
             if any(block(:))   % an untouched block stays at the fill value 0
                 materials = bitand(block, source.materialMask);
                 if ~keepMaterials; materials(:) = 0; end
-                highestIndex = max(highestIndex, double(max(materials, [], 'all')));
-                remapped = uint16(materials) + ...
-                    uint16(bitget(block, source.maskBit)) * uint16(target.maskValue) + ...
-                    uint16(bitget(block, source.selectionBit)) * uint16(target.selectionValue);
+                blockHighest = double(max(materials, [], 'all'));
+                if blockHighest > targetMaxIndex
+                    % a smaller target: everything above its top index becomes it
+                    above = materials > targetMaxIndex;
+                    if level == 1; clampedVoxels = clampedVoxels + nnz(above); end
+                    materials(above) = targetMaxIndex;
+                    blockHighest = targetMaxIndex;
+                end
+                highestIndex = max(highestIndex, blockHighest);
+                % the index now fits the target type as it is; mask and selection
+                % move to its top two bits
+                remapped = cast(materials, targetClass) + ...
+                    cast(bitget(block, source.maskBit), targetClass) * cast(target.maskValue, targetClass) + ...
+                    cast(bitget(block, source.selectionBit), targetClass) * cast(target.selectionValue, targetClass);
                 target.writePackedLevel(level, remapped, rows, [1 levelSize(2)], planes);
             end
             if ~isempty(wb); wb.Value = voxelsDone / totalVoxels; end
@@ -407,11 +481,22 @@ target.selectionTiles = source.selectionTiles;
 target.selectionBBoxFull = source.selectionBBoxFull;
 target.maxIndexUsed = highestIndex;       % taken over every level, so deferred ones count too
 target.materialsCount = highestIndex;
-target.objects3D = true;                  % a material is numbered through the volume
-target.materialNames = {'1'; '2'};
+if source.maxMaterials > 255 && modelType > 255 && keepMaterials
+    target.objects3D = source.objects3D;  % instance to instance: the numbering means what it meant
+else
+    target.objects3D = true;              % a material is numbered through the volume
+end
+if modelType == 63
+    % a material model lists its materials; index k becomes material k
+    target.materialNames = arrayfun(@num2str, (1:max(highestIndex, 1))', 'UniformOutput', false);
+else
+    target.materialNames = {'1'; '2'};
+end
 colors = rand(65535, 3);
 if keepMaterials && size(source.materialColors, 2) == 3
-    % material k becomes object k, so it keeps the colour it is drawn in now
+    % material (or object) k becomes object k, so it keeps the colour it is
+    % drawn in now; the display takes the colour of index k from row
+    % mod(k - 1, 65535) + 1, the same in both types
     keptRows = min(size(source.materialColors, 1), 65535);
     colors(1:keptRows, :) = source.materialColors(1:keptRows, :);
 end
@@ -425,12 +510,16 @@ target.saveLevelMap();
 source.closeStore();                      % persists its level map; the store stays on disk
 dataset.labels = target;
 dataset.instanceIndex = [];
-dataset.selectedMaterial = 3;             % instance models start at slot 3
+dataset.selectedMaterial = 3;             % slot 3 is the first material or object
 dataset.selectedAddToMaterial = 3;
-% the entries hold 63-type snapshots of the old store, which the new one cannot take back
+% the entries hold snapshots of the old store's type, which the new one cannot take back
 obj.Backup.clearContents();
 
 if ~isempty(wb); delete(wb); end
+if clampedVoxels > 0
+    fprintf(2, 'Convert model: %d voxels of the full-resolution level had an index above %d and got index %d\n', ...
+        clampedVoxels, targetMaxIndex, targetMaxIndex);
+end
 converted = true;
 end
 

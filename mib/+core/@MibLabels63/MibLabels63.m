@@ -1,8 +1,9 @@
 classdef MibLabels63 < core.MibImage 
     % MIBLABELS63 - memory optimized packed label class of MIB3: material index,
     %
-    % mask and selection in one container - uint8 (63 materials) or uint16
-    % (16383-object instance model); see setLayout for the bit layout.
+    % mask and selection in one container - uint8 (63 materials), uint16
+    % (16383-object instance model) or uint32 (1073741823-object instance model,
+    % BigData); see setLayout for the bit layout.
     % The class inherits properties and function of the parent class
     % (core.MibImage).
     % Constructor requires initialization as
@@ -21,7 +22,8 @@ classdef MibLabels63 < core.MibImage
         % removeMaterial (-N), and createModel (initial value).
         maxMaterials = 63;
         % maximal number of materials available in this model type: 63 for the
-        % uint8 layout, 16383 for the uint16 layout (see setLayout)
+        % uint8 layout, 16383 for the uint16 layout, 1073741823 for the uint32
+        % layout (see setLayout)
         objects3D = false
         % instance models (uint16 layout, maxMaterials 16383) only: true when one
         % index names one object through the whole volume, false when the numbering
@@ -31,17 +33,18 @@ classdef MibLabels63 < core.MibImage
     properties (SetAccess = protected)
         % --- packed bit layout, set together by setLayout ---
         containerClass = 'uint8'
-        % class of obj.data: 'uint8' (63 materials) or 'uint16' (16383 instances)
+        % class of obj.data: 'uint8' (63 materials), 'uint16' (16383 instances)
+        % or 'uint32' (1073741823 instances, BigData)
         materialMask = 63
-        % bitand(data, materialMask) extracts the material index: 63 or 16383
+        % bitand(data, materialMask) extracts the material index: 63, 16383 or 1073741823
         maskBit = 7
-        % bit position of the mask flag: 7 (uint8) or 15 (uint16)
+        % bit position of the mask flag: 7 (uint8), 15 (uint16) or 31 (uint32)
         selectionBit = 8
-        % bit position of the selection flag: 8 (uint8) or 16 (uint16)
+        % bit position of the selection flag: 8 (uint8), 16 (uint16) or 32 (uint32)
         maskValue = 64
-        % value of the mask flag, 2^(maskBit-1): 64 or 16384
+        % value of the mask flag, 2^(maskBit-1): 64, 16384 or 2^30
         selectionValue = 128
-        % value of the selection flag, 2^(selectionBit-1): 128 or 32768
+        % value of the selection flag, 2^(selectionBit-1): 128, 32768 or 2^31
         flagsMask = 192
         % maskValue + selectionValue; bitand(data, flagsMask) keeps mask+selection
         %
@@ -74,7 +77,8 @@ classdef MibLabels63 < core.MibImage
             %
             % Initializes a memory-optimised segmentation label container that packs up to
             % 63 materials, mask, and selection into a single uint8 array (uint16 input
-            % selects the 16383 layout: bits 1-14 index, 15 mask, 16 selection):
+            % selects the 16383 layout: bits 1-14 index, 15 mask, 16 selection; uint32
+            % input the 1073741823 layout: bits 1-30 index, 31 mask, 32 selection):
             % bits 1-6 = material index, bit 7 = mask, bit 8 = selection.
             % Inherits all properties and methods from ``core.MibImage``.
             %
@@ -134,7 +138,7 @@ classdef MibLabels63 < core.MibImage
             obj = obj@core.MibImage(img, meta);  % Call parent constructor
             obj.filename = 'Labels_none.model';
             obj.maskFilename = 'Mask_none.mask';
-            if isa(img, 'uint16'); obj.setLayout('uint16'); end
+            if isa(img, 'uint16') || isa(img, 'uint32'); obj.setLayout(class(img)); end
         end
 
         function setLayout(obj, containerClass)
@@ -145,6 +149,14 @@ classdef MibLabels63 < core.MibImage
             %
             %       obj.setLayout('uint8')    % 63 materials, mask bit 7, selection bit 8
             %       obj.setLayout('uint16')   % 16383 instances, mask bit 15, selection bit 16
+            %       obj.setLayout('uint32')   % 1073741823 instances, mask bit 31, selection bit 32
+            %
+            % The ``uint32`` layout is the large BigData instance model: the
+            % model types offer it on BigData only, and a Standard dataset turns
+            % it into the separate-layer 4294967295 type when it gets one (crop
+            % to Standard, loading a model saved from such a store). The flag
+            % values stay exact as doubles (2^30, 2^31), so ``bitand`` with them
+            % works on uint32 data as for the smaller layouts.
             %
             % Sets ``containerClass``, ``materialMask``, ``maskBit``, ``selectionBit``,
             % ``maskValue``, ``selectionValue``, ``flagsMask`` and ``maxMaterials``
@@ -159,15 +171,17 @@ classdef MibLabels63 < core.MibImage
             % between layouts is ``core.MibDataset.convertModel``'s job.
             %
             % Input Arguments:
-            %   - **containerClass** - ``'uint8'`` or ``'uint16'``
+            %   - **containerClass** - ``'uint8'``, ``'uint16'`` or ``'uint32'``
             switch containerClass
                 case 'uint8'
                     bits = 8;
                 case 'uint16'
                     bits = 16;
+                case 'uint32'
+                    bits = 32;
                 otherwise
                     error('MibLabels63:setLayout:badClass', ...
-                        'Packed labels support uint8 or uint16, not %s', containerClass);
+                        'Packed labels support uint8, uint16 or uint32, not %s', containerClass);
             end
             obj.containerClass = containerClass;
             obj.maskBit        = bits - 1;

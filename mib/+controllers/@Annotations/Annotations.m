@@ -1306,7 +1306,9 @@ classdef Annotations < handle
             %     ``'modelLayers'`` backup is taken first, so Ctrl+Z restores the original
             %     model with its materials.
             %   - **BigData** - only a 63-material store is accepted, with indices up to
-            %     16383. ``models.MibModel.convertModel`` creates a new 16383 store with
+            %     1073741823. ``models.MibModel.convertModel`` creates a new 16383 store
+            %     (uint16) when every number fits, a 1073741823 store (packed uint32,
+            %     twice the disk space) otherwise, with
             %     ``convertOptions.keepMaterials = false`` (mask and selection only; the user
             %     picks the path; the 63 store stays on disk unchanged), then each object is
             %     written into it as a read-modify-write of its box at full resolution. There
@@ -1413,7 +1415,7 @@ classdef Annotations < handle
 
             %% Find the object under each annotation; nothing changes yet
             if isBigData
-                maxIndex = 16383;          % the largest BigData model store
+                maxIndex = 1073741823;     % the largest BigData model store (packed uint32)
                 voxelBudget = 2^28;        % largest box read for one object
                 oldStorePath = char(dataset.labels.modelStorePath);
             else
@@ -1542,13 +1544,19 @@ classdef Annotations < handle
                 delete(wb);
                 cancelledAt = 0;
             else
-                % the conversion asks for the path of the new store and shows its own progress
+                % the conversion asks for the path of the new store and shows its own
+                % progress; 16383 (2 bytes per voxel) when the numbers fit, else the
+                % packed uint32 store (4 bytes per voxel)
                 delete(wb);
-                if ~obj.mibModel.convertModel(16383, struct('id', id), struct('keepMaterials', false))
+                if highestNumber > 16383
+                    newType = 1073741823;
+                else
+                    newType = 16383;
+                end
+                if ~obj.mibModel.convertModel(newType, struct('id', id), struct('keepMaterials', false))
                     fprintf('Convert model from annotations: the model was not converted and was not changed\n');
                     return;
                 end
-                newType = 16383;
                 wb = uiprogressdlg(obj.view.gui, 'Title', dialogTitle, 'Value', 0, 'Cancelable', 'on', ...
                     'Message', 'Writing the indexed objects...');
                 cancelledAt = 0;

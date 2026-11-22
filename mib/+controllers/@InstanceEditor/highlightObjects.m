@@ -51,13 +51,13 @@ if use3D
     % nothing to read.
     if ~obj.indexIsUsable(); return; end
     index = dataset.instanceIndex;
-    objectIds = objectIds(objectIds <= index.maxIndex);
-    if ~isempty(objectIds); objectIds = objectIds(index.exists(objectIds)); end
+    [found, rows] = ismember(objectIds, index.ids);
+    objectIds = objectIds(found);
     if isempty(objectIds)
         notify(obj.mibModel, 'ShowImage');
         return;
     end
-    boxes = double(index.bbox(objectIds, :));
+    boxes = double(index.bbox(rows(found), :));
     box = [min(boxes(:, 1)), max(boxes(:, 2)), ...
            min(boxes(:, 3)), max(boxes(:, 4)), ...
            min(boxes(:, 5)), max(boxes(:, 6))];

@@ -1,14 +1,18 @@
 classdef selectModelTypeDlg < handle
 % SELECTMODELTYPEDLG - Controller for the Select Model Type dialog.
 %
-% Displays a dialog with five radio buttons that let the user choose
-% the model type (63 / 255 / 16383 / 65535 / 4294967295 materials).
+% Displays a dialog with radio buttons that let the user choose
+% the model type (63 / 255 / 16383 / 65535 / 4294967295 materials, and
+% 1073741823 for BigData).
 % A description text area updates to explain the selected type.
 % Logic ported from MIB2 mibSelectModelTypeDlg.m.
 %
 % The 16383 radio button is not part of ``views.SelectModelTypeGUI``: it is
 % created in ``initView``, which also grows the figure by one row, so the
-% .mlapp did not have to change.
+% .mlapp did not have to change. The 1073741823 radio button (packed uint32
+% instance model, BigData only) is created the same way, below 16383, and only
+% when ``allowedTypes`` holds it, so the dialog of a Standard dataset keeps its
+% five types.
 %
 % Usage:
 %   Example 1::
@@ -19,7 +23,7 @@ classdef selectModelTypeDlg < handle
 %
 %   Example 2 - offer only the packed types, as for a BigData dataset::
 %
-%       dlg = utils.dlgs.selectModelTypeDlg(parentFig, mibPath, [63 16383]);
+%       dlg = utils.dlgs.selectModelTypeDlg(parentFig, mibPath, [63 16383 1073741823]);
 %
 
     properties (Access = private)
@@ -27,7 +31,9 @@ classdef selectModelTypeDlg < handle
         ParentFigure    % handle to the parent GUI figure
         mibPath         % path to MIB installation directory (for icons)
         material16383   % radio button for the packed uint16 instance model, created in initView
+        material1073741823  % radio button for the packed uint32 instance model (BigData), created in initView when allowed; [] otherwise
         allowedTypes    % model types that can be selected; the other radio buttons are disabled
+        typeButtons     % {modelType, radioButton} rows in display order, built in initView
 
         % Output state
         selectedModelType = 63;   % default; set to [] on Cancel
@@ -51,7 +57,11 @@ classdef selectModelTypeDlg < handle
                          'as a loaded 16-bit dataset.']; ...
             4294967295, ['This model type supports up to 4294967295 materials. ' ...
                          'It requires additionally the same amount of memory ' ...
-                         'as a loaded 32-bit dataset.'] }
+                         'as a loaded 32-bit dataset.']; ...
+            1073741823, ['This instance model supports up to 1073741823 objects. ' ...
+                         'Objects, mask and selection share one 32-bit layer, so the model ' ...
+                         'store takes 4 bytes per voxel, twice the 16383 model. ' ...
+                         'Available for BigData datasets only.'] }
     end
 
     methods
@@ -69,7 +79,9 @@ classdef selectModelTypeDlg < handle
             %     used to locate icon images.  Pass [] or '' to use auto-detection.
             %   - **allowedTypes** - *(optional)* numeric vector of the model types that
             %     can be selected; the radio buttons of the other types are disabled and
-            %     the first allowed type is preselected. Default: all five types.
+            %     the first allowed type is preselected. Default: the five types of a
+            %     Standard dataset. Include ``1073741823`` to add the packed uint32
+            %     instance model (BigData).
             %
 
             if nargin < 3 || isempty(allowedTypes); allowedTypes = [63 255 16383 65535 4294967295]; end
@@ -97,7 +109,8 @@ classdef selectModelTypeDlg < handle
             %   function modelType = run(obj)
             %
             % Output Arguments:
-            %   - **modelType** - one of {63, 255, 16383, 65535, 4294967295}, or [] if cancelled
+            %   - **modelType** - one of {63, 255, 16383, 1073741823, 65535, 4294967295},
+            %     or [] if cancelled
             %
 
             obj.view.Figure.WindowStyle = 'modal';
@@ -139,11 +152,29 @@ classdef selectModelTypeDlg < handle
                 'Text', '16383 materials', ...
                 'Position', [obj.view.material65535.Position(1), ...
                     obj.view.material65535.Position(2) + rowStep, 160, 22]);
-
-            % disable the types the caller does not allow; preselect the first allowed
             typeButtons = {63, obj.view.material63; 255, obj.view.material255; ...
                 16383, obj.material16383; 65535, obj.view.material65535; ...
                 4294967295, obj.view.material4294967295};
+
+            % The packed uint32 instance model (BigData) goes between 65535 and
+            % 4294967295, one more row, and only when the caller allows it
+            if ismember(1073741823, obj.allowedTypes)
+                fig.Position(4) = fig.Position(4) + rowStep;
+                obj.view.material63.Position(2)    = obj.view.material63.Position(2)    + rowStep;
+                obj.view.material255.Position(2)   = obj.view.material255.Position(2)   + rowStep;
+                obj.material16383.Position(2)      = obj.material16383.Position(2)      + rowStep;
+                obj.view.material65535.Position(2) = obj.view.material65535.Position(2) + rowStep;
+                obj.material1073741823 = uiradiobutton(obj.view.modelTypeButtonGroup, ...
+                    'Text', '1073741823 materials', ...
+                    'Position', [obj.view.material4294967295.Position(1), ...
+                        obj.view.material4294967295.Position(2) + rowStep, ...
+                        max(160, obj.view.material4294967295.Position(3)), 22]);
+                typeButtons = [typeButtons(1:4, :); {1073741823, obj.material1073741823}; typeButtons(5, :)];
+            end
+
+            obj.typeButtons = typeButtons;
+
+            % disable the types the caller does not allow; preselect the first allowed
             for typeIndex = 1:size(typeButtons, 1)
                 typeButtons{typeIndex, 2}.Enable = ismember(typeButtons{typeIndex, 1}, obj.allowedTypes);
             end
@@ -186,21 +217,23 @@ classdef selectModelTypeDlg < handle
             %   function updateDescription(obj, radioBtn)
             %
 
-            switch radioBtn
-                case obj.view.material63
-                    txt = obj.Descriptions{1, 2};
-                case obj.view.material255
-                    txt = obj.Descriptions{2, 2};
-                case obj.material16383
-                    txt = obj.Descriptions{3, 2};
-                case obj.view.material65535
-                    txt = obj.Descriptions{4, 2};
-                case obj.view.material4294967295
-                    txt = obj.Descriptions{5, 2};
-                otherwise
-                    txt = '';
+            txt = '';
+            modelType = obj.typeOfButton(radioBtn);
+            if ~isempty(modelType)
+                txt = obj.Descriptions{[obj.Descriptions{:, 1}] == modelType, 2};
             end
             obj.view.modelDescriptionText.Value = {txt};
+        end
+
+        function modelType = typeOfButton(obj, radioBtn)
+            % TYPEOFBUTTON - model type of a radio button, [] when it is none of them
+            modelType = [];
+            for typeIndex = 1:size(obj.typeButtons, 1)
+                if obj.typeButtons{typeIndex, 2} == radioBtn
+                    modelType = obj.typeButtons{typeIndex, 1};
+                    return;
+                end
+            end
         end
 
         % ---- Callbacks ----
@@ -215,21 +248,8 @@ classdef selectModelTypeDlg < handle
             % Syntax:
             %   function onOK(obj)
             %
-            selected = obj.view.modelTypeButtonGroup.SelectedObject;
-            switch selected
-                case obj.view.material63
-                    obj.selectedModelType = 63;
-                case obj.view.material255
-                    obj.selectedModelType = 255;
-                case obj.material16383
-                    obj.selectedModelType = 16383;
-                case obj.view.material65535
-                    obj.selectedModelType = 65535;
-                case obj.view.material4294967295
-                    obj.selectedModelType = 4294967295;
-                otherwise
-                    obj.selectedModelType = 63;
-            end
+            obj.selectedModelType = obj.typeOfButton(obj.view.modelTypeButtonGroup.SelectedObject);
+            if isempty(obj.selectedModelType); obj.selectedModelType = 63; end
             uiresume(obj.view.Figure);
         end
 

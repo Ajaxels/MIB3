@@ -211,9 +211,13 @@ classdef MibBigDataLabels < core.MibLabels63
             %   - ``'uint8'`` (default) - bits 1-6 = material 0-63, bit 7 = mask,
             %     bit 8 = selection;
             %   - ``'uint16'`` - bits 1-14 = instance index 0-16383, bit 15 = mask,
-            %     bit 16 = selection. Select it with ``obj.setLayout('uint16')``
-            %     **before** this call; the layout is a property rather than an
-            %     argument so the method signature stays stable for live instances.
+            %     bit 16 = selection;
+            %   - ``'uint32'`` - bits 1-30 = instance index 0-1073741823, bit 31 =
+            %     mask, bit 32 = selection (4 bytes per voxel).
+            %
+            %   Select the layout with ``obj.setLayout('uint16')`` (or ``'uint32'``)
+            %   **before** this call; the layout is a property rather than an
+            %   argument so the method signature stays stable for live instances.
             %
             % The level count, sizes, scale factors, and chunk shapes are copied from
             % ``pyramid`` so the model mirrors the image pyramid exactly. The codec
@@ -395,8 +399,8 @@ classdef MibBigDataLabels < core.MibLabels63
             %
             % Reattaches this labels object to a model store previously written
             % by createStore (or a compatible OME-NGFF multiscales group of
-            % packed uint8 or uint16 levels). Level sizes and scale factors are
-            % restored from the stored ``multiscales`` metadata and array shapes;
+            % packed uint8, uint16 or uint32 levels). Level sizes and scale factors
+            % are restored from the stored ``multiscales`` metadata and array shapes;
             % the packed layout (``setLayout``) follows the data type of level 0,
             % so stores written before the uint16 layout existed open as uint8.
             % No pixel data is read into memory. Use this to reopen a saved model
@@ -445,6 +449,8 @@ classdef MibBigDataLabels < core.MibLabels63
             levelDataType = char(obj.modelArrays{1}.dataType());
             if ~isempty(regexp(levelDataType, '^(uint16|[<>|]?u2)$', 'once'))
                 obj.setLayout('uint16');
+            elseif ~isempty(regexp(levelDataType, '^(uint32|[<>|]?u4)$', 'once'))
+                obj.setLayout('uint32');
             else
                 obj.setLayout('uint8');
             end
@@ -498,7 +504,7 @@ classdef MibBigDataLabels < core.MibLabels63
             obj.maxIndexUsed = 0;
             if isfield(attrs, 'mibMaterials') && isfield(attrs.mibMaterials, 'maxIndexUsed')
                 obj.maxIndexUsed = double(attrs.mibMaterials.maxIndexUsed);
-            elseif strcmp(obj.containerClass, 'uint16')
+            elseif obj.maxMaterials > 255
                 % no persisted value (store closed by a crash): the coarsest level
                 % is the only affordable scan; objects lost to its downsampling
                 % are missed, so the next new index may collide with one of them
@@ -507,7 +513,7 @@ classdef MibBigDataLabels < core.MibLabels63
                 obj.maxIndexUsed = double(max(bitand(coarsest, obj.materialMask), [], 'all'));
             end
             if obj.maxMaterials > 255
-                % uint16 instance model: two name slots; the count is the highest index
+                % instance model (uint16 or uint32): two name slots; the count is the highest index
                 obj.materialsCount = obj.maxIndexUsed;
                 obj.objects3D = true;
                 if isfield(attrs, 'mibMaterials') && isfield(attrs.mibMaterials, 'objects3D')
@@ -1074,8 +1080,12 @@ classdef MibBigDataLabels < core.MibLabels63
             % LOADINSTANCEINDEX - Restore the instance index from the side-file.
             %
             % Accepted only when the file was written for a store of the same
-            % full-resolution size; anything else is ignored and the index is
-            % rebuilt on demand.
+            % full-resolution size and holds the sparse index (``.ids``, see
+            % ``utils.instances.objectIndex``); anything else is ignored and
+            % the index is rebuilt on demand. A side-file written before the
+            % index became sparse (2026-11-23) has one row per index value and
+            % an ``.exists`` field instead, so it is refused and the store
+            % scanned once.
             %
             % Output Arguments:
             %   - **tf** - logical, true when an index was restored
@@ -1088,7 +1098,8 @@ classdef MibBigDataLabels < core.MibLabels63
                 return;
             end
             if ~isfield(S, 'instanceIndex') || ~isfield(S, 'indexDirtyBox') || ...
-                    ~isfield(S, 'storeSize') || ~isequal(double(S.storeSize), obj.modelLevelSizes(1, :))
+                    ~isfield(S, 'storeSize') || ~isequal(double(S.storeSize), obj.modelLevelSizes(1, :)) || ...
+                    ~isstruct(S.instanceIndex) || ~isfield(S.instanceIndex, 'ids')
                 return;
             end
             obj.syncedInstanceIndex = S.instanceIndex;
@@ -1418,7 +1429,8 @@ classdef MibBigDataLabels < core.MibLabels63
             %
             % The packed layout follows the block's class: uint8 = material bits
             % 1-6, mask bit 7, selection bit 8; uint16 = index bits 1-14, mask bit
-            % 15, selection bit 16 (see ``core.MibLabels63.setLayout``). Any other
+            % 15, selection bit 16; uint32 = index bits 1-30, mask bit 31,
+            % selection bit 32 (see ``core.MibLabels63.setLayout``). Any other
             % class is cast to uint8. Taking the layout from the class keeps this a
             % static method with an unchanged signature.
             %
@@ -1439,8 +1451,8 @@ classdef MibBigDataLabels < core.MibLabels63
             %
             % Z is resized first with nearest (the pyramid keeps Z, so usually a no-op).
             % Falls back to nearest when not actually up-sampling in YX.
-            if ~isa(block, 'uint16'); block = uint8(block); end
-            bits = 8 * (1 + isa(block, 'uint16'));      % 8 or 16
+            if ~isa(block, 'uint16') && ~isa(block, 'uint32'); block = uint8(block); end
+            bits = 8 * numel(typecast(zeros(1, 'like', block), 'uint8'));   % 8, 16 or 32
             sz = size(block, 1:3);
             ty = targetSize(1); tx = targetSize(2); tz = targetSize(3);
             if isequal(sz, [ty tx tz]); out = block; return; end

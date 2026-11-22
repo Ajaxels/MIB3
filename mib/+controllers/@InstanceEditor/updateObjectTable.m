@@ -89,12 +89,12 @@ if isempty(index) || ~isstruct(index)
     return;
 end
 
-objectIds = find(index.exists);
-objectIds = objectIds(:);
-columns.voxels = double(index.voxels(objectIds));
-columns.slices = double(index.sliceCount(objectIds));
-columns.zMin = double(index.bbox(objectIds, 5));
-columns.zMax = double(index.bbox(objectIds, 6));
+% one row of the index per object, so its columns are the table's
+objectIds = index.ids(:);
+columns.voxels = double(index.voxels(:));
+columns.slices = double(index.sliceCount(:));
+columns.zMin = double(index.bbox(:, 5));
+columns.zMax = double(index.bbox(:, 6));
 end
 
 % =====================================================================

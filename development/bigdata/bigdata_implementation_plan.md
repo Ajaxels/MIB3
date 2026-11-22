@@ -31,6 +31,7 @@ Every change ends with `check_matlab_code` clean + an MCP verification snippet o
 | Streaming export plan — remaining per-format deep streaming + mask path | ⏳ OPEN (see §2) |
 | **16383-object instance model** (packed uint16 store, chosen at New model; `maxIndexUsed` instead of scans) | ✅ DONE (2026-10-22, unit tests); live-GUI check open, see §5.9 |
 | **Instance index + Instance editor on BigData** (streamed scan, dirty-box repair, side-file; per-object edits, undo, Compact) | ✅ DONE (2026-10-22, integration tests); live-GUI check open, see §5.8 |
+| **1073741823-object instance model** (packed uint32 store, BigData only; New model, Convert between 63/16383/1073741823 both ways with clamping to a smaller type, Annotations to objects above 16383; Standard gets 4294967295) | ✅ DONE (2026-11-23, `MibBigDataLabelsUint32Test` 11/11, uncommitted); instance index made sparse the same day (`bigdata_logic.md` §4). Live-GUI check open: New model dialog (6th radio button), ribbon item `1073741823 materials` (restart), Convert (incl. the clamp warning), Annotations, Instance editor on a high-index model |
 | Backlog (T>1, removeMaterial renumber, remote zarr, etc.) | ⏳ DEFERRED (see §5) |
 | Audit findings — correctness/perf/tool-coverage gaps not yet acted on | ⏳ OPEN (see §9) |
 

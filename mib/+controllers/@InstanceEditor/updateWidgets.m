@@ -52,8 +52,7 @@ obj.applyModeToWidgets();
 dataset = obj.mibModel.I{obj.mibModel.getActiveId()};
 index = dataset.instanceIndex;
 if ~isempty(obj.selectedObjects) && obj.indexIsUsable()
-    stillThere = obj.selectedObjects <= index.maxIndex;
-    stillThere(stillThere) = index.exists(obj.selectedObjects(stillThere));
+    stillThere = ismember(obj.selectedObjects, index.ids);
     obj.selectedObjects = obj.selectedObjects(stillThere);
 end
 

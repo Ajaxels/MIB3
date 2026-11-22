@@ -100,15 +100,10 @@ classdef EditInstanceObjectsTest < matlab.unittest.TestCase
             volume = EditInstanceObjectsTest.readLabels(mibModel);
             expected = utils.instances.objectIndex(volume);
 
-            shared = expected.maxIndex;
-            testCase.verifyGreaterThanOrEqual(actual.maxIndex, shared, message);
-            for field = {'exists', 'voxels', 'bbox', 'centroid', 'sliceCount'}
-                testCase.verifyEqual(actual.(field{1})(1:shared, :), ...
-                    expected.(field{1})(1:shared, :), ...
+            for field = {'ids', 'voxels', 'bbox', 'centroid', 'sliceCount', 'maxIndex', 'numObjects'}
+                testCase.verifyEqual(actual.(field{1}), expected.(field{1}), ...
                     sprintf('%s: index field %s disagrees with the volume', message, field{1}));
             end
-            testCase.verifyFalse(any(actual.exists(shared+1:end)), ...
-                sprintf('%s: index claims objects the volume does not have', message));
         end
     end
 
@@ -179,9 +174,9 @@ classdef EditInstanceObjectsTest < matlab.unittest.TestCase
             EditInstanceObjectsTest.runAction(mibModel, 'Merge', '2, 5');
 
             index = mibModel.I{1}.instanceIndex;
-            testCase.verifyFalse(index.exists(5));
-            testCase.verifyEqual(find(~index.exists, 1), 3, ...
-                'the lowest gap is offered first');
+            testCase.verifyFalse(ismember(5, index.ids));
+            free = setdiff(1:index.maxIndex + 1, index.ids);
+            testCase.verifyEqual(free(1), 3, 'the lowest gap is offered first');
         end
 
         function mergeNeedsTwoObjects(testCase)
@@ -542,7 +537,7 @@ classdef EditInstanceObjectsTest < matlab.unittest.TestCase
             testCase.verifyEqual(nnz(after == 5), 0, 'object 5 is gone');
             testCase.verifyEqual(nnz(after == 1), 7 * 7 * 6, 'object 1 untouched');
             testCase.verifyEqual(nnz(after == 2), 5 * 5 * 4 + 5 * 4 * 4, 'object 2 untouched');
-            testCase.verifyFalse(mibModel.I{1}.instanceIndex.exists(5), 'the index is freed');
+            testCase.verifyFalse(ismember(5, mibModel.I{1}.instanceIndex.ids), 'the index is freed');
             EditInstanceObjectsTest.verifyIndexAgreesWithVolume(testCase, mibModel, 'splitBySelection, whole object');
         end
 
@@ -566,7 +561,7 @@ classdef EditInstanceObjectsTest < matlab.unittest.TestCase
             after = EditInstanceObjectsTest.readLabels(mibModel);
             testCase.verifyEqual(nnz(after(:, :, 5) == 1), 0, 'the slice was cleared');
             testCase.verifyEqual(nnz(after == 1), 7 * 7 * 5, 'the other five slices keep index 1');
-            testCase.verifyTrue(mibModel.I{1}.instanceIndex.exists(1), 'the object still exists');
+            testCase.verifyTrue(ismember(1, mibModel.I{1}.instanceIndex.ids), 'the object still exists');
             EditInstanceObjectsTest.verifyIndexAgreesWithVolume(testCase, mibModel, 'splitBySelection, slice cleared');
         end
 
@@ -932,7 +927,7 @@ classdef EditInstanceObjectsTest < matlab.unittest.TestCase
                 'the clipped neighbour was left alone');
             testCase.verifyEqual(nnz(after == 2), nnz(volume == 2), ...
                 'the poorer end was left alone');
-            testCase.verifyTrue(mibModel.I{1}.instanceIndex.exists(3));
+            testCase.verifyTrue(ismember(3, mibModel.I{1}.instanceIndex.ids));
             EditInstanceObjectsTest.verifyIndexAgreesWithVolume(testCase, mibModel, 'connect, largest');
         end
 
@@ -1120,7 +1115,7 @@ classdef EditInstanceObjectsTest < matlab.unittest.TestCase
 
             after = EditInstanceObjectsTest.readLabels(mibModel);
             testCase.verifyEqual(nnz(after == 2), 0);
-            testCase.verifyFalse(mibModel.I{1}.instanceIndex.exists(2));
+            testCase.verifyFalse(ismember(2, mibModel.I{1}.instanceIndex.ids));
             EditInstanceObjectsTest.verifyIndexAgreesWithVolume(testCase, mibModel, 'delete');
         end
 
@@ -1322,9 +1317,8 @@ classdef EditInstanceObjectsTest < matlab.unittest.TestCase
             truth = double(expected.bbox(1, :));
             testCase.verifyTrue(all(box([1 3 5]) <= truth([1 3 5])) && all(box([2 4 6]) >= truth([2 4 6])), ...
                 'the box must still contain the object');
-            for field = {'exists', 'voxels', 'centroid', 'sliceCount'}
-                testCase.verifyEqual(actual.(field{1})(1:expected.maxIndex, :), ...
-                    expected.(field{1})(1:expected.maxIndex, :), sprintf('field %s', field{1}));
+            for field = {'ids', 'voxels', 'centroid', 'sliceCount'}
+                testCase.verifyEqual(actual.(field{1}), expected.(field{1}), sprintf('field %s', field{1}));
             end
         end
 
