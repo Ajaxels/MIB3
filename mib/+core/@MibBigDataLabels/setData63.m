@@ -65,7 +65,15 @@ function result = setData63(obj, dataset, type, orient, materialIndex, options)
 %     unchanged).  Pass ``[]`` to replace the full material map.
 %
 %   - **options** *(optional)* - [struct] with the same fields as ``getData63``:
-%     ``.magFactor``, ``.pyramidLevel``, ``.x``, ``.y``, ``.z``.
+%     ``.magFactor``, ``.pyramidLevel``, ``.x``, ``.y``, ``.z``, and
+%     ``.coarserLevels`` *(optional, default true)*: false writes the working
+%     level only and skips step 4 for the coarser levels, which keep what they
+%     held. For a transient overlay that is put back the same way while the
+%     view shows the working level or a finer one, such as the ridge highlight
+%     of the MembraneInstances plugin: the copy to the coarser levels is about
+%     two thirds of the time of a write (3 coarser levels, 128 x 128 x 64
+%     chunks). The coarser levels do not show such a write until it is put
+%     back, so it must not be used for an edit that is meant to stay.
 %
 % Output Arguments:
 %   - **result** - [logical] ``true`` when at least one voxel changed and was
@@ -277,7 +285,9 @@ end
 % slide size: a 500 px brush at 2% no longer triggers a ~600 MB full-res write.
 % Durability is unaffected - every edit is persisted at its drawn resolution and
 % coarser, and the coarsest level holds every edit.
-obj.propagateRegion(subPacked, pfY, pfX, pfZ, levelIdx, 'coarser', layerGroups);
+if ~isfield(options, 'coarserLevels') || options.coarserLevels
+    obj.propagateRegion(subPacked, pfY, pfX, pfZ, levelIdx, 'coarser', layerGroups);
+end
 
 % record the working level as authoritative for the tiles of the written layers
 % the write changed; their finer levels are now implicitly dirty and recomputed

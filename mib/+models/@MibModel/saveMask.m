@@ -61,12 +61,9 @@ function fnOut = saveMask(obj, filename, BatchOptIn)
 % Updates
 
 if nargin < 2
-    id = obj.getActiveId();
-    if isa(obj.I{id}.labels, 'core.MibLabels63')
-        filename = obj.I{id}.labels.maskFilename;
-    else
-        filename = obj.I{id}.mask.filename;
-    end
+    % image.maskFilename is the name kept current by load and save, see the
+    % mask branch of models.MibModel.saveImage
+    filename = obj.I{obj.getActiveId()}.image.maskFilename;
 end
 if nargin < 3
     fnOut = obj.saveImage('mask', filename);

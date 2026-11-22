@@ -343,38 +343,45 @@ function filename = resolveFallbackFilename(obj, layerType, options)
 % Input Arguments:
 %   obj       - MibDataset instance
 %   layerType - (char) 'image' | 'labels' | 'mask'
-%   options   - (struct) forwarded options; only .Format is inspected for
-%   the 'image' case, to pick the correct file extension
+%   options   - (struct) forwarded options; only .Format is inspected, to
+%   pick the file extension
 %
 % Output Arguments:
 %   filename  - (char) resolved absolute path, or '' if layerType is unknown
 %
-%   Naming conventions applied:
-%   'image'  → <dir>/<name>.<ext>  where <ext> is extracted from
-%   options.Format ('*.<ext>)') or defaults to '.tif'
-%   'labels' → <dir>/Labels_<name>.model
-%   'mask'   → obj.image.maskFilename  (if set), otherwise
-%   <dir>/Mask_<name>.mask
+%   Naming conventions applied, where <ext> is the extension of
+%   options.Format ('(*.<ext>)', compound ones such as '.ome.tiff' kept):
+%   'image'  → <dir>/<name><ext>, '.tif' without a Format
+%   'labels' → <dir>/Labels_<name><ext>, '.model' without a Format
+%   'mask'   → obj.image.maskFilename with its extension replaced by <ext>
+%   (kept without a Format), or <dir>/Mask_<name><ext>, '.mask' without a
+%   Format, when no mask name was derived
 %
 
 [fileDir, baseName] = fileparts(obj.image.filename);
+% Extension of options.Format ('...(*.<ext>)'), empty without a Format. It
+% replaces the extension of the derived name for every layer, otherwise a
+% Format other than the default would write e.g. TIFF data into 'Mask_x.mask'.
+formatExt = '';
+if isfield(options, 'Format') && ~isempty(options.Format)
+    extToken = regexp(options.Format, '\*(\.[\w.]+)\)', 'tokens', 'once');
+    if ~isempty(extToken); formatExt = extToken{1}; end
+end
 switch lower(layerType)
     case 'image'
-        fileExt = '';
-        if isfield(options,'Format')
-            % Extract extension from format string: '...(*.<ext>)'
-            extToken = regexp(options.Format, '\*\.(\w+)\)', 'tokens', 'once');
-            if ~isempty(extToken); fileExt = ['.' extToken{1}]; end
-        end
-        if isempty(fileExt); fileExt = '.tif'; end
-        filename = fullfile(fileDir, [baseName fileExt]);
+        if isempty(formatExt); formatExt = '.tif'; end
+        filename = fullfile(fileDir, [baseName formatExt]);
     case 'labels'
-        filename = fullfile(fileDir, ['Labels_' baseName '.model']);
+        if isempty(formatExt); formatExt = '.model'; end
+        filename = fullfile(fileDir, ['Labels_' baseName formatExt]);
     case 'mask'
         if ~isempty(obj.image.maskFilename)
-            filename = obj.image.maskFilename;
+            [maskDir, maskName, maskExt] = fileparts(obj.image.maskFilename);
+            if isempty(formatExt); formatExt = maskExt; end
+            filename = fullfile(maskDir, [maskName formatExt]);
         else
-            filename = fullfile(fileDir, ['Mask_' baseName '.mask']);
+            if isempty(formatExt); formatExt = '.mask'; end
+            filename = fullfile(fileDir, ['Mask_' baseName formatExt]);
         end
     otherwise
         filename = '';

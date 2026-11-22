@@ -141,13 +141,16 @@ else
     switch lower(layerType)
         case 'image';  BatchOpt.Filename = [inputFilenameName inputFilenameExt];
         case 'mask'
-            if isa(obj.I{BatchOpt.id}.labels, 'core.MibLabels63') % mask included into the labels with selection
-                mask_fn = obj.I{BatchOpt.id}.labels.maskFilename;
-            else
-                mask_fn = obj.I{BatchOpt.id}.mask.filename;
-            end
-            if ~isempty(mask_fn)
-                [~, mask_name, mask_ext] = fileparts(mask_fn);
+            % image.maskFilename is the one name kept current: initialize
+            % derives it, loadMask and core.MibDataset.saveImage update it.
+            % mask.filename is reset to 'Labels_none.model' by every
+            % core.MibLabels constructor (createModel, allocateMask,
+            % convertModel), and labels.maskFilename of MibLabels63 is not
+            % updated by a save, so neither is read here. The class defaults
+            % 'Mask_none.*' mean that no name was derived yet.
+            mask_fn = obj.I{BatchOpt.id}.image.maskFilename;
+            [~, mask_name, mask_ext] = fileparts(mask_fn);
+            if ~isempty(mask_fn) && ~strcmp(mask_name, 'Mask_none')
                 BatchOpt.Filename = [mask_name mask_ext];
             else
                 BatchOpt.Filename = ['Mask_' inputFilenameName '.mask'];
@@ -176,7 +179,16 @@ end
 % iteration overwrite the previous one's output.
 existingLayerFilename = BatchOpt.Filename;
 
-BatchOpt.Format    = {io.SaverFactory.getDefaultFormat(layerType, inputFilenameExt)}; % --- file formats list (depends on LayerType) ---
+% --- default format: from the layer's own file, not from the image's ---
+% The image extension says nothing about the mask or the model: a TIF dataset
+% would make every batch save of its mask / model a TIF (MIB2 defaulted these
+% to *.mask / *.model). The layer's name gives *.mask / *.model, or the format
+% the mask was loaded from.
+if strcmpi(layerType, 'image')
+    BatchOpt.Format = {io.SaverFactory.getDefaultFormat(layerType, inputFilenameExt)};
+else
+    BatchOpt.Format = {io.SaverFactory.getDefaultFormat(layerType, existingLayerFilename)};
+end
 BatchOpt.Format{2} = io.SaverFactory.getFormats(layerType);
 BatchOpt.FilenamePolicy    = {'Use existing name'};         % --- filename policy ---                                   
 BatchOpt.FilenamePolicy{2} = {'Use existing name', 'Use new provided name'};
